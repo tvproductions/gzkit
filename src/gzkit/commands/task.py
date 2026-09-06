@@ -19,6 +19,7 @@ from gzkit.events import (
     TaskStartedEvent,
 )
 from gzkit.ledger import LEDGER_SCHEMA, Ledger, LedgerEvent
+from gzkit.ledger_corrections import live_events
 from gzkit.tasks import TaskId, TaskStatus, derive_req_task_id, get_task_registry, next_seq_for_req
 from gzkit.triangle import extract_reqs_from_brief
 
@@ -38,7 +39,7 @@ def _load_tasks_for_obpi(ledger: Ledger, obpi_id: str) -> dict[str, dict[str, st
     Returns a dict keyed by task_id with ``status`` and ``description`` fields.
     """
     tasks: dict[str, dict[str, str]] = {}
-    for event in ledger.read_all():
+    for event in live_events(ledger.read_all()):
         extra = event.extra
         ev_type = event.event
         ev_obpi = extra.get("obpi_id", "")
@@ -72,7 +73,7 @@ def _ledger_obpi_for_task(ledger: Ledger, task_id_str: str) -> str:
     Returns ``""`` when no ``task_started`` event names the task.
     """
     obpi_id = ""
-    for event in ledger.read_all():
+    for event in live_events(ledger.read_all()):
         extra = event.extra
         if extra.get("task_id") == task_id_str and event.event == "task_started":
             recorded = extra.get("obpi_id", "")
@@ -118,7 +119,7 @@ def _all_started_task_ids(ledger: Ledger) -> set[str]:
     full slug (GHI #653).
     """
     started: set[str] = set()
-    for event in ledger.read_all():
+    for event in live_events(ledger.read_all()):
         if event.event == "task_started":
             task_id = event.extra.get("task_id", "")
             if task_id:
@@ -148,7 +149,7 @@ def _resolve_task_context(ledger: Ledger, task_id_str: str) -> tuple[TaskId, str
 def _current_task_status(ledger: Ledger, task_id_str: str, obpi_id: str) -> TaskStatus:
     """Determine the current status of a task from ledger events."""
     status = TaskStatus.PENDING
-    for event in ledger.read_all():
+    for event in live_events(ledger.read_all()):
         extra = event.extra
         if extra.get("task_id") != task_id_str or extra.get("obpi_id") != obpi_id:
             continue
@@ -708,7 +709,7 @@ def _build_fanout_rows(ledger: Ledger, req_id: str) -> list[FanoutRow]:
     task_files: dict[str, set[str]] = {}
     task_edits: dict[str, int] = {}
 
-    for event in ledger.read_all():
+    for event in live_events(ledger.read_all()):
         extra = event.extra
         ev_type = event.event
         ev_obpi = extra.get("obpi_id", "")

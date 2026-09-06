@@ -148,6 +148,13 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         "pipeline_marker_purged",
         "project_init",
         "red_receipt_emitted",
+        # `ledger_event_corrected` (GHI #611) is the append-only corrective action.
+        # DISPOSITIONED OUT: its subject is another ledger ROW — named by the
+        # `(event, id, ts)` triple — never a governance artifact, so it draws no
+        # PRD -> ADR -> OBPI edge. Its effect on lineage is already in this
+        # projection, because the source graph it images is built from the NETTED
+        # event stream; imaging the correction itself would double-count it.
+        "ledger_event_corrected",
         "rendition_advisor_verdict",
         "rendition_committed",
         "security_floor_overridden",

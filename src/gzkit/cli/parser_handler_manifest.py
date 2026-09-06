@@ -97,6 +97,8 @@ _LAZY_HANDLERS: dict[str, str] = {
     "skill_new": "gzkit.commands.skills_cmd",
     "git_sync": "gzkit.commands.sync",
     "ledger_merge_driver_cmd": "gzkit.commands.ledger",
+    "ledger_correct_cmd": "gzkit.commands.ledger_correct",
+    "ledger_corrections_cmd": "gzkit.commands.ledger_correct",
     "sync_control_surfaces": "gzkit.commands.tidy",
     "tidy": "gzkit.commands.tidy",
     "validate": "gzkit.commands.validate_cmd",

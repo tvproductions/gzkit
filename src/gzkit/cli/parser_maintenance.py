@@ -21,6 +21,7 @@ from gzkit.cli.helpers import (
 )
 from gzkit.cli.parser_handler_manifest import _lazy
 from gzkit.cli.parser_handoff import register_handoff_parsers
+from gzkit.ledger_corrections import CAUSES, DISPOSITIONS
 from gzkit.skills import DEFAULT_MAX_REVIEW_AGE_DAYS
 
 
@@ -1156,7 +1157,16 @@ def _register_tooling_parsers(commands: argparse._SubParsersAction) -> None:
         "ledger",
         help="Append-only ledger plumbing",
         description="Commands operating directly on the append-only ledger file.",
-        epilog=build_epilog(["gz ledger merge-driver ANCESTOR OURS THEIRS"]),
+        epilog=build_epilog(
+            [
+                "gz ledger corrections",
+                "gz ledger correct --subject-event pipeline_launched --subject-id OBPI-0.35.0-08 "
+                "--subject-ts 2026-08-23T13:12:21.832251+00:00 --disposition void "
+                '--cause agent-error --reason "started without operator initiation" '
+                "--attestor g0 --dry-run",
+                "gz ledger merge-driver ANCESTOR OURS THEIRS",
+            ]
+        ),
     )
     ledger_commands = p_ledger.add_subparsers(dest="ledger_command")
     ledger_commands.required = True
@@ -1182,6 +1192,76 @@ def _register_tooling_parsers(commands: argparse._SubParsersAction) -> None:
             theirs=a.theirs,
         )
     )
+
+    p_correct = ledger_commands.add_parser(
+        "correct",
+        help="Append a corrective action against a prior ledger row",
+        description=(
+            "Record an append-only corrective action naming one prior ledger row "
+            "by its (event, id, ts) triple. The original row is never edited or "
+            "removed; readers net the correction forward. 'void' means the row "
+            "recorded something that was not true and no reader may count it; "
+            "'discharged' means the row was true and its condition has since been "
+            "resolved; 'reinstated' clears a prior correction. Requires a "
+            "non-empty --attestor and --reason; both fail closed."
+        ),
+        epilog=build_epilog(
+            [
+                "gz ledger correct --subject-event pipeline_launched "
+                "--subject-id OBPI-0.35.0-08 "
+                "--subject-ts 2026-08-23T13:12:21.832251+00:00 "
+                '--disposition void --cause agent-error --reason "started in error" '
+                "--attestor g0 --dry-run",
+                "gz ledger correct --subject-event task_blocked "
+                "--subject-id TASK-0.35.0-08-05-01 "
+                "--subject-ts 2026-08-23T14:27:39.933308+00:00 "
+                "--disposition discharged --cause condition-resolved "
+                '--reason "operator ruled 2026-08-24" --attestor g0',
+            ]
+        ),
+    )
+    p_correct.add_argument(
+        "--subject-event", required=True, help="Event type of the row being corrected"
+    )
+    p_correct.add_argument("--subject-id", required=True, help="'id' field of the row")
+    p_correct.add_argument("--subject-ts", required=True, help="'ts' field of the row")
+    p_correct.add_argument(
+        "--disposition",
+        required=True,
+        choices=sorted(DISPOSITIONS),
+        help="void | discharged | reinstated",
+    )
+    p_correct.add_argument(
+        "--cause", required=True, choices=sorted(CAUSES), help="Closed cause vocabulary"
+    )
+    p_correct.add_argument("--reason", required=True, help="Why the correction is warranted")
+    p_correct.add_argument("--attestor", required=True, help="Human recording the correction")
+    add_dry_run_flag(p_correct)
+    p_correct.set_defaults(
+        func=lambda a: _lazy("ledger_correct_cmd")(
+            subject_event=a.subject_event,
+            subject_id=a.subject_id,
+            subject_ts=a.subject_ts,
+            disposition=a.disposition,
+            cause=a.cause,
+            reason=a.reason,
+            attestor=a.attestor,
+            dry_run=a.dry_run,
+        )
+    )
+
+    p_corrections = ledger_commands.add_parser(
+        "corrections",
+        help="List every ledger row currently under a correction",
+        description=(
+            "Show the net of the append-only correction sequence: which prior "
+            "ledger rows are currently voided or discharged, and by which "
+            "disposition. Nothing is edited; this is the census view."
+        ),
+        epilog=build_epilog(["gz ledger corrections", "gz ledger corrections --json"]),
+    )
+    add_json_flag(p_corrections)
+    p_corrections.set_defaults(func=lambda a: _lazy("ledger_corrections_cmd")(as_json=a.as_json))
 
     p_readiness = commands.add_parser(
         "readiness",

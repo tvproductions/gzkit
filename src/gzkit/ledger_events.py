@@ -130,6 +130,40 @@ def obpi_completion_repudiated_event(
     )
 
 
+def ledger_event_corrected_event(
+    *,
+    subject_event: str,
+    subject_id: str,
+    subject_ts: str,
+    disposition: str,
+    cause: str,
+    attestor: str,
+    reason: str,
+    parent: str | None = None,
+) -> LedgerEvent:
+    """Create a ``ledger_event_corrected`` event (GHI #611).
+
+    The append-only corrective action: the subject row is never touched, and
+    this forward event is what every reader nets against it
+    (:mod:`gzkit.ledger_corrections`). The event's ``id`` is the SUBJECT's id so
+    the correction attaches to the artifact it corrects.
+    """
+    return LedgerEvent(
+        event="ledger_event_corrected",
+        id=subject_id,
+        parent=parent,
+        extra={
+            "subject_event": subject_event,
+            "subject_id": subject_id,
+            "subject_ts": subject_ts,
+            "disposition": disposition,
+            "cause": cause,
+            "attestor": attestor,
+            "reason": reason,
+        },
+    )
+
+
 def security_floor_overridden_event(
     *,
     obpi_id: str,

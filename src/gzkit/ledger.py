@@ -890,7 +890,12 @@ class Ledger:
             return self._cached_graph
 
         graph: dict[str, dict[str, Any]] = {}
-        events = self.read_all()
+        history = self.read_all()
+        # State derivation reads the NETTED stream: a corrected row must not
+        # contribute to what is currently true (GHI #611). The replay manifest
+        # below stays over the raw history, because replay fidelity is a claim
+        # about what the ledger CONTAINS, not about what it currently asserts.
+        events = live_events(history)
         rename_map = self._build_rename_map(events)
 
         for event in events:
@@ -906,9 +911,9 @@ class Ledger:
         self._resolve_short_form_parents(graph)
 
         self._replay_manifest = LedgerReplayManifest(
-            event_types=frozenset(event.event for event in events),
-            latest_ts=max((event.ts for event in events), default=None),
-            event_count=len(events),
+            event_types=frozenset(event.event for event in history),
+            latest_ts=max((event.ts for event in history), default=None),
+            event_count=len(history),
         )
         self._cached_graph = graph
         return graph
@@ -982,6 +987,7 @@ class Ledger:
 # which breaks the circular-import chain (the sub-modules only need names
 # that are already bound above).
 # ---------------------------------------------------------------------------
+from gzkit.ledger_corrections import live_events  # noqa: E402
 from gzkit.ledger_events import (  # noqa: E402, F401
     adr_created_event,
     adr_eval_completed_event,
@@ -994,6 +1000,7 @@ from gzkit.ledger_events import (  # noqa: E402, F401
     closeout_initiated_event,
     constitution_created_event,
     gate_checked_event,
+    ledger_event_corrected_event,
     lifecycle_transition_event,
     obpi_blocked_on_operator_event,
     obpi_completion_repudiated_event,

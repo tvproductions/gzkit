@@ -2323,6 +2323,56 @@
           "min_length": 1
         }
       }
+    },
+    "ledger_event_corrected": {
+      "required": [
+        "subject_event",
+        "subject_id",
+        "subject_ts",
+        "disposition",
+        "cause",
+        "attestor",
+        "reason"
+      ],
+      "properties": {
+        "subject_event": {
+          "type": "string",
+          "min_length": 1
+        },
+        "subject_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "subject_ts": {
+          "type": "string",
+          "min_length": 1
+        },
+        "disposition": {
+          "type": "string",
+          "enum": [
+            "void",
+            "discharged",
+            "reinstated"
+          ]
+        },
+        "cause": {
+          "type": "string",
+          "enum": [
+            "agent-error",
+            "operator-error",
+            "runtime-error",
+            "condition-resolved"
+          ]
+        },
+        "attestor": {
+          "type": "string",
+          "min_length": 1
+        },
+        "reason": {
+          "type": "string",
+          "min_length": 1
+        }
+      }
     }
   }
 }

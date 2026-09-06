@@ -480,6 +480,36 @@ class ObpiCompletionRepudiatedEvent(_EventBase):
     reason: str = Field(..., min_length=1)
 
 
+class LedgerEventCorrectedEvent(_EventBase):
+    """ledger_event_corrected — append-only corrective action over any event (GHI #611).
+
+    Operator intent, verbatim: *"we need the power to UNDO agent (or human)
+    error"*, *"not to erase the ledger, but to provide subsequent corrective
+    actions."* Corrective work under ADR-0.0.71, whose § Intent named
+    repudiation a **port** with ``obpi_completion_repudiated`` as its *first
+    adapter*; this is that port, generalized past OBPI Gate-5 to every event
+    type.
+
+    The subject is named by the ``(event, id, ts)`` triple rather than by a row
+    id, because the ledger has none: ``id`` carries the *artifact*, so an
+    artifact's tenth event and its first share it. See
+    :mod:`gzkit.ledger_corrections` for the netting rule and for why ``void``
+    and ``discharged`` are two dispositions rather than one.
+
+    This event's own ``id`` is the SUBJECT's id, so a correction sits on the
+    artifact it corrects and a lineage query finds it without a join.
+    """
+
+    event: Literal["ledger_event_corrected"]
+    subject_event: str = Field(..., min_length=1, description="Corrected row's event type")
+    subject_id: str = Field(..., min_length=1, description="Corrected row's id field")
+    subject_ts: str = Field(..., min_length=1, description="Corrected row's timestamp")
+    disposition: Literal["void", "discharged", "reinstated"]
+    cause: Literal["agent-error", "operator-error", "runtime-error", "condition-resolved"]
+    attestor: str = Field(..., min_length=1, description="Human recording the correction")
+    reason: str = Field(..., min_length=1, description="Why the correction is warranted")
+
+
 class SecurityFloorOverriddenEvent(_EventBase):
     """security_floor_overridden — witnessed --accept-security-floor override (ADR-0.0.72-04)."""
 
@@ -1341,6 +1371,7 @@ TypedLedgerEvent = Annotated[
     | Stage2SingleDriverDeclaredEvent
     | ObpiSupersededEvent
     | ObpiCompletionRepudiatedEvent
+    | LedgerEventCorrectedEvent
     | SecurityFloorOverriddenEvent
     | ObpiCompletionUncoveredAcceptEvent
     | PatchReleaseEvent

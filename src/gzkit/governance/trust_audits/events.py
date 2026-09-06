@@ -19,6 +19,17 @@ from pathlib import Path
 from gzkit.validate import ValidationError
 
 _NO_GRAPH_IMPACT: dict[str, str] = {
+    "ledger_event_corrected": (
+        "The append-only corrective action (GHI #611). It has no `_apply_*` graph "
+        "handler BY DESIGN, and adding one would undo the fix: the correction is "
+        "netted at the READER boundary — `get_artifact_graph` builds from "
+        "`live_events(...)` — so every existing handler became correction-aware "
+        "without a branch of its own. A per-event handler here would be a second, "
+        "partial implementation of the netting, which is the per-verb hand-patching "
+        "this GHI exists to end. Its subject is another ledger ROW, named by the "
+        "`(event, id, ts)` triple, not a governance artifact, so there is no node to "
+        "add and no edge to draw."
+    ),
     "surface_weight_recalibrated": (
         "Witness that the surface-weight bands and/or floor moved (GHI #791), required "
         "by ADR-0.0.33 § Anti-Patterns item 3 — 'Band changes are ledger events, not "

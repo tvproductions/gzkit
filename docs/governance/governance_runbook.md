@@ -928,6 +928,30 @@ additions. `gz git-sync --apply` registers a merge driver
 reconciles them as a timestamp-ordered union, so the ritual no longer forces a
 hand-edit of the ledger — the action `AGENTS.md` § Never #2 prohibits.
 
+### Correcting an erroneous ledger row
+
+The same prohibition that forbids hand-editing a conflicted ledger forbids
+editing out a row recorded in error, so corrections are appended forward
+([`gz ledger correct`](../user/manpages/ledger-correct.md)). One verb covers
+every event type: a wrongly-started pipeline, a TASK blocker whose reason the
+operator has since resolved, a factually-false evidentiary row. It generalizes
+the port ADR-0.0.71 declared, whose first adapter was
+[`gz obpi repudiate`](../user/manpages/obpi-repudiate.md).
+
+Three dispositions, and the split is load-bearing. `void` says the row records
+something that was not true, and no reader may count it — state derivation or
+evidence audit alike. `discharged` says the row was TRUE when written and its
+condition has ended, so it leaves the liveness reading but stays evidence.
+`reinstated` clears a prior correction and is the only way to undo one.
+Corrections compose by last-correction-wins, the netting rule
+`obpi_parked`/`obpi_unparked` already use.
+
+Operator-gated on ADR-0.0.71 Boundary Invariant 1's terms: `--attestor` and
+`--reason` are required and fail closed when empty. A subject reference that
+matches no row is refused and writes nothing.
+[`gz ledger corrections`](../user/manpages/ledger-corrections.md) is the census
+of what is currently in force.
+
 Registration is per-clone (git reads a driver command from local config, which
 cannot be committed) and idempotent, so it self-heals on any clone that
 predates it. When the driver exits 1 the sides were not plain appends — a row

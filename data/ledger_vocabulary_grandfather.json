@@ -7,6 +7,7 @@
     "constitution_created",
     "discovered_from",
     "intrinsic-complexity-attestation",
+    "ledger_event_corrected",
     "obpi_blocked_on_operator",
     "obpi_superseded",
     "obpi_unblocked",
@@ -19,6 +20,7 @@
   ],
   "notes": {
     "section_ownership_unowned": "OBPI-0.35.0-04. Producer IS wired -- `_append_event_once` in src/gzkit/commands/content/unown.py emits it on the attested raise-path. Zero rows exist because `gz content unown` has not yet been run against this repository; the day-one declaration was minted at genesis and no section has been un-owned. Drains on the first real un-owning.",
-    "unowned_ratchet_updated": "OBPI-0.35.0-04. Producer is `emit_unowned_ratchet_updated`, called only by `record_unowned_total`, which has NO production caller -- the disclosed, deliberate deferral recorded in the brief's Tracked Defects (Step-4b round-2 finding 3). Its caller is OBPI-0.35.0-05's materialization path. This entry is the honest witness that the type records nothing today, and it drains when that caller lands."
+    "unowned_ratchet_updated": "OBPI-0.35.0-04. Producer is `emit_unowned_ratchet_updated`, called only by `record_unowned_total`, which has NO production caller -- the disclosed, deliberate deferral recorded in the brief's Tracked Defects (Step-4b round-2 finding 3). Its caller is OBPI-0.35.0-05's materialization path. This entry is the honest witness that the type records nothing today, and it drains when that caller lands.",
+    "ledger_event_corrected": "GHI #611. Producer IS wired -- `ledger_correct_cmd` in src/gzkit/commands/ledger_correct.py mints the event via `ledger_event_corrected_event` and appends it. Zero rows exist because no correction has been applied to this repository's ledger yet: the three live targets (the wrongly-started OBPI-0.35.0-08 pipeline launch, and two task_blocked rows whose reason the operator resolved on 2026-08-24) are held for operator review before application, per the standing rule that only the operator initiates work against an OBPI's state. Drains on the first applied correction."
   }
 }

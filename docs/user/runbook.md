@@ -302,6 +302,16 @@ uv run gz git-sync --apply --lint --test
 > ledger. If the driver exits 1, the sides were not plain appends; resolve as a
 > timestamp-ordered union, never by appending one side to the other.
 
+> **Undoing an erroneous ledger row.** The ledger is append-only, so a row
+> recorded in error is corrected forward rather than edited out.
+> [`gz ledger correct`](manpages/ledger-correct.md) appends one corrective
+> action naming the prior row by its `(event, id, ts)` triple: `void` when the
+> row records something that was not true, `discharged` when it was true and
+> its condition has since been resolved, `reinstated` to undo a correction.
+> Review the target with `--dry-run` first, and see what is currently in force
+> with [`gz ledger corrections`](manpages/ledger-corrections.md). Both require
+> a non-empty `--attestor` and `--reason`; the original row is never touched.
+
 ---
 
 ## Cross-Repo Defect Filing (gzkit-Owned Surfaces)

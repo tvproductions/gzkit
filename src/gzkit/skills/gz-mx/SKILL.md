@@ -13,7 +13,7 @@ last_reviewed: 2026-07-24
 model: haiku
 gz_command: mx
 metadata:
-  skill-version: "1.0.1"
+  skill-version: "1.1.0"
 ---
 
 # gz mx
@@ -69,6 +69,38 @@ uv run gz mx enter
 # Exit — guards re-enforce; exit fails if any guard is still red
 uv run gz mx exit
 ```
+
+## Repairing a ledger row
+
+The ledger is the one governance surface hangar mode can never make writable:
+`AGENTS.md` § Never #2 forbids modifying it, and that prohibition is what makes
+it trustworthy. A row recorded in error is therefore repaired *forward*, and
+the repair is available inside or outside the hangar.
+
+`gz ledger correct` appends one corrective action naming the prior row by its
+`(event, id, ts)` triple — the ledger has no per-row id, because `id` carries
+the artifact rather than the event. `gz ledger corrections` is the census of
+what is currently in force.
+
+```bash
+# Review the exact target first; nothing is written
+uv run gz ledger correct \
+  --subject-event pipeline_launched \
+  --subject-id OBPI-0.35.0-08-remember-post-append-advisory \
+  --subject-ts 2026-08-23T13:12:21.832251+00:00 \
+  --disposition void --cause agent-error \
+  --reason "pipeline launched without operator initiation" \
+  --attestor g0 --dry-run
+
+# What is corrected right now
+uv run gz ledger corrections
+```
+
+Three dispositions: `void` (the row records something that was not true — no
+reader may count it), `discharged` (the row was true and its condition has
+since been resolved — it leaves the liveness reading but stays evidence), and
+`reinstated` (undo a prior correction). Operator-gated: `--attestor` and
+`--reason` fail closed when empty, on the same terms as `gz obpi repudiate`.
 
 ## Constraints
 

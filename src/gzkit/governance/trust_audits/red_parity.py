@@ -24,6 +24,7 @@ import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from gzkit.ledger_corrections import evidence_events
 from gzkit.validate import ValidationError
 
 if TYPE_CHECKING:
@@ -100,7 +101,11 @@ def _collect(project_root: Path) -> tuple[dict[str, dict], dict[str, dt.datetime
     """Single ledger pass: RED witnesses by REQ, and completion instants by OBPI."""
     witnesses: dict[str, dict] = {}
     completions: dict[str, dt.datetime] = {}
-    for event in _iter_ledger(project_root):
+    # A raw-row audit must honour the write-side void, or every audit grows its
+    # own void-awareness — the per-verb hand-patching GHI #611 exists to end.
+    # ``evidence_events`` and not ``live_events``: this reads what a run FOUND,
+    # so only ``void`` (the finding was false) may unmake a witness.
+    for event in evidence_events(_iter_ledger(project_root)):
         name = event.get("event")
         if name == "red_receipt_emitted":
             req_id = event.get("req_id")
