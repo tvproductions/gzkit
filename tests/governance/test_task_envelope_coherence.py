@@ -1560,6 +1560,109 @@ class TestFrontmatterChannelFullSlugResolution(unittest.TestCase):
             )
 
 
+class TestDiagnoseDriftAgreesWithTheValidator(unittest.TestCase):
+    """The diagnose view and signature (c) must apply ONE drift predicate (GHI #820).
+
+    #820 replaced ``tids != all_tasks`` with ``_crossing_channels``: channels whose
+    declarations are NESTED do not cross, because the smaller is merely further
+    behind — the normal state of a channel that accretes. That correction landed in
+    the validator only. ``task.py`` kept ``len({frozenset(s) for s in populated}) > 1``,
+    which is the same any-inequality-is-drift semantics under a different spelling.
+
+    The coupling is not incidental: the validator's own error text tells the operator
+    to ``Run `gz task envelope diagnose <OBPI>` `` to interpret the failure, so the two
+    surfaces are read back-to-back by design. Worse, the diagnostic was the STRICTER
+    of the two — it reported drift where the gate reported none, which invites exactly
+    the remedy #820's class-of-failure forbids: stamping trailers onto commits that
+    did not do that work, to make a red view go green.
+
+    These tests assert AGREEMENT rather than a hardcoded verdict on each side. A test
+    pinning ``drift is False`` would still pass if someone later loosened the validator
+    and left the diagnostic behind; the invariant is that one predicate governs both.
+    """
+
+    def _both_verdicts(self, frontmatter: list[str], ledger: list[str]) -> tuple[bool, bool]:
+        """Return ``(diagnose_drift, validator_drift)`` for one channel arrangement."""
+        import contextlib  # noqa: PLC0415
+        import io  # noqa: PLC0415
+
+        from gzkit.commands import task as task_cmd  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            _write_brief(root, {**_BASE_FM, "id": "OBPI-0.0.64-04-fixture", "tasks": frontmatter})
+            _write_ledger(
+                root,
+                [
+                    json.dumps(
+                        {
+                            "schema": "gzkit.ledger.v1",
+                            "event": "task_started",
+                            "id": f"t-{tid}",
+                            "ts": "2026-09-01T00:00:00+00:00",
+                            "obpi_id": "OBPI-0.0.64-04-fixture",
+                            "task_id": tid,
+                        }
+                    )
+                    for tid in ledger
+                ],
+            )
+            buf = io.StringIO()
+            with (
+                mock.patch.object(task_cmd, "get_project_root", return_value=root),
+                contextlib.redirect_stdout(buf),
+            ):
+                task_cmd.task_envelope_diagnose_cmd("OBPI-0.0.64-04-fixture", as_json=True)
+            diagnose_drift = json.loads(buf.getvalue())["drift"]
+
+            decls = validate_task_envelope._channel_declarations_for_obpi(
+                root, "OBPI-0.0.64-04-fixture"
+            )
+            non_empty = {k: v for k, v in decls.items() if v}
+            validator_drift = bool(validate_task_envelope._crossing_channels(non_empty))
+            return diagnose_drift, validator_drift
+
+    def test_a_nested_subset_is_not_drift_in_either_consumer(self) -> None:
+        """Ledger behind frontmatter: no channel names a TASK the other lacks."""
+        diagnose, validator = self._both_verdicts(
+            frontmatter=["TASK-0.0.64-04-01-01", "TASK-0.0.64-04-02-01"],
+            ledger=["TASK-0.0.64-04-01-01"],
+        )
+        self.assertEqual(
+            (diagnose, validator),
+            (False, False),
+            "a channel merely behind is not drift (GHI #820); both consumers must say so",
+        )
+
+    def test_genuine_crossing_is_drift_in_both_consumers(self) -> None:
+        """Each channel holds a TASK the other lacks — the signal #820 preserved."""
+        diagnose, validator = self._both_verdicts(
+            frontmatter=["TASK-0.0.64-04-01-01", "TASK-0.0.64-04-02-01"],
+            ledger=["TASK-0.0.64-04-01-01", "TASK-0.0.64-04-03-01"],
+        )
+        self.assertEqual(
+            (diagnose, validator),
+            (True, True),
+            "contradicting declarations must still fire in both consumers",
+        )
+
+    def test_identical_channels_are_not_drift_in_either_consumer(self) -> None:
+        """The unambiguous agreement case, pinned so the fix cannot invert it."""
+        diagnose, validator = self._both_verdicts(
+            frontmatter=["TASK-0.0.64-04-01-01"],
+            ledger=["TASK-0.0.64-04-01-01"],
+        )
+        self.assertEqual((diagnose, validator), (False, False))
+
+    def test_a_disjoint_pair_is_drift_in_both_consumers(self) -> None:
+        """Wholly disjoint channels cross in both directions at once."""
+        diagnose, validator = self._both_verdicts(
+            frontmatter=["TASK-0.0.64-04-02-01"],
+            ledger=["TASK-0.0.64-04-01-01"],
+        )
+        self.assertEqual((diagnose, validator), (True, True))
+
+
 class TestSignatureCCommitTrailerChannel(unittest.TestCase):
     """Signature (c): the commit-trailer channel participates in drift detection.
 

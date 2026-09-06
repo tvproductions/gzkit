@@ -627,6 +627,7 @@ def task_envelope_diagnose_cmd(obpi_id: str, *, as_json: bool = False) -> None:
 
     from gzkit.commands.validate_task_envelope import (  # noqa: PLC0415
         _channel_declarations_for_obpi,
+        _crossing_channels,
     )
     from gzkit.governance.brief_structure import LegacyBriefShape, parse_brief  # noqa: PLC0415
 
@@ -657,8 +658,14 @@ def task_envelope_diagnose_cmd(obpi_id: str, *, as_json: bool = False) -> None:
         "commit trailers (ch3)": sorted(decls["commit_trailer"]),
         "ledger task_id (ch4)": sorted(decls["ledger"]),
     }
-    populated = [s for s in decls.values() if s]
-    drift = len(populated) > 1 and len({frozenset(s) for s in populated}) > 1
+    # ONE drift predicate for both consumers. Computing it locally re-stated
+    # `tids != all_tasks` under another spelling — any inequality read as drift —
+    # which GHI #820 overturned: a channel merely BEHIND is not contradicting, and
+    # reporting it as drift invites the falsified attribution #820 forbids. The
+    # validator's own failure text sends the operator straight to this view, so the
+    # two must not answer differently (GHI #820, reopened).
+    non_empty = {name: tids for name, tids in decls.items() if tids}
+    drift = bool(_crossing_channels(non_empty))
 
     if as_json:
         print(_json.dumps({"obpi_id": brief.id, "channels": channels, "drift": drift}, indent=2))

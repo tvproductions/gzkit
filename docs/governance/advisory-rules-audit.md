@@ -74,7 +74,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `pythonic.md` | `0.5.1` |
 | `tool-skill-runbook-alignment.md` | `0.5.0` |
 | `tests.md` | `0.22.0` |
-| `task-discovery.md` | `0.8.0` |
+| `task-discovery.md` | `0.9.0` |
 | `token-block-discipline.md` | `0.7.0` |
 
 **Pre-ledger debt is frozen, not laundered.** The rules still enumerated in [`data/advisory_scorecard_grandfather.json`](../../data/advisory_scorecard_grandfather.json) carry rows written before this ledger existed, against versions nobody recorded. They are enumerated in [`data/advisory_scorecard_grandfather.json`](../../data/advisory_scorecard_grandfather.json), pinned at their current versions and registered shrink-only in `data/waiver_ratchet_registry.json` (ADR-0.0.73 Boundary Invariant #8). The pin is the honesty mechanism: a grandfathered rule that is *edited* leaves its pinned version behind and must be scored for real before `gz check` goes green. Debt can only shrink, and it cannot follow a rule forward in silence.
@@ -391,6 +391,7 @@ The Claude-specific invariant 10a is scored as a row rather than in prose:
 | 60 | Every unit of labor traceable to a TASK MUST surface that attribution through at least one of four discovery channels — with a floor: any commit touching `src/**` or `tests/**` MUST additionally carry a `Task:` trailer | **Mechanical** | `gz validate --task-envelope-coherence` is a bound QC step; `gz validate --commit-trailers` fail-closes the floor on src/tests scope. All four channels are live: ledger `task_id` (OBPI-0.0.64-01), `@advances` (OBPI-0.0.64-02), commit trailer (auto-stamped, GHI #731), and frontmatter `tasks:` (producer-stamped by `gz task start`, GHI #752). **`tasks:` schema enforcement is LIVE on both readers** — `BriefStructure._validate_tasks` (model path) and signature (e) of `--task-envelope-coherence` (corpus path), each delegating to `TaskId.parse` (GHI #753). Parent ADR-0.0.64. |
 | 60a | `@advances` is advisory and expected to be empty | **Judgment** | GHI #752 demoted it deliberately: it marks the function an author judges *materially advances* a TASK, which no runtime can determine, so it has no producer by construction. Its emptiness is asserted rather than assumed (`test_advances_channel_is_asserted_dead_not_assumed_dead`) and is **not** a defect. Scoring it Promotable would misread a designed property as debt. |
 | 60b | The OBPI-04 validator will fail Heavy lane closeouts on layer-drift; Lite lane warns. | **Mechanical** | Signature (c) of `gz validate --task-envelope-coherence` compares channels where two or more carry data. Heavy lane fails closed; Lite warns. |
+| 60c | Drift is contradiction, never shortfall — nested channels do not drift, and consumers share `_crossing_channels` rather than restating it | **Promotable** | **Added 2026-09-06 (rule `0.9.0`), GHI #820 reopened.** `_crossing_channels` implements the carve-out and `TestDiagnoseDriftAgreesWithTheValidator` pins that `gz task envelope diagnose` and signature (c) agree on nested subsets, genuine crossing, identical channels, and disjoint pairs. **Scored Promotable, not Mechanical — the 33a / 33b / 45b / 62c precedent:** that test witnesses the two consumers that exist today, while the row also claims consumers *share* the predicate, and no registered `NC:<claim-id>` plants a third consumer re-implementing it. Claiming Mechanical would assert the sharing obligation is witnessed when only today's two callers are. This is not hypothetical debt: the diagnostic carried its own spelling and kept the overturned reading for 19 days after #820 corrected the validator, with no check failing. Promotion path: author an `@enforces` control that plants a local drift computation in a consumer and asserts the scorecard or a guard rejects it, then cite its claim id. |
 
 ### Guardrail Feedback Prose (`.gzkit/rules/guardrail-feedback-prose.md`)
 
@@ -485,7 +486,7 @@ decays in whichever direction the next reader's grep happens to point.
 | Score | Rows | % of scored rows |
 |-------|-------|---|
 | **Mechanical** | 67 | 42% |
-| **Promotable** | 30 | 19% |
+| **Promotable** | 31 | 19% |
 | **Judgment** | 63 | 39% |
 | **Ambiguous** | 0 | 0% |
 

@@ -159,7 +159,19 @@ Lifted at version `0.3.0` (rule now at `0.3.1`).
 
 <!-- lifted-from: .claude/rules/task-discovery.md#task-discoverymd -->
 
-Lifted at version `0.7.1` (rule now at `0.8.0`).
+Lifted at version `0.7.1` (rule now at `0.9.0`).
+
+> **Rule version:** `0.9.0` — GHI #820 (reopened): § Layer-drift fail-close now states
+> explicitly that drift is CONTRADICTION and never shortfall, and binds consumers to the
+> single `_crossing_channels` predicate. #820 corrected the validator on 2026-08-18 but the
+> carve-out was recorded only in that function's docstring, so `gz task envelope diagnose`
+> kept computing `len({frozenset(s) for s in populated}) > 1` — the overturned
+> any-inequality-is-drift reading — for 19 more days. The coupling is not incidental: the
+> validator's own failure text sends the operator to the disagreeing view, and the
+> diagnostic was the STRICTER side, so it reported drift where the gate reported none and
+> invited the falsified attribution #820 exists to prevent. Measured at repair
+> (`OBPI-0.35.0-04`): ch3 a strict subset of ch2, ch2 == ch4, validator crossing `[]`,
+> diagnostic `drift: True`.
 
 > **Rule version:** `0.8.0` — operator ruling 2026-09-01 (verbatim *"never"*) CLOSED the
 > commit-trailer set to `Task:`, `Ceremony:`, and `Eval-feedback-source:`, and corrected the
