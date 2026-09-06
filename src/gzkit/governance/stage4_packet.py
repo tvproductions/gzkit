@@ -381,8 +381,10 @@ def _blockers(results: list[TranscriptResult], transcripts: list[Transcript]) ->
             continue
         if result.masked_verifier:
             blockers.append(
-                f"Trailing filter discards {result.masked_verifier}'s exit status, so the "
-                f"replay observes the filter's success, not the verifier's: {result.command}"
+                f"Command discards {result.masked_verifier}'s exit status, so the replay "
+                f"observes something else's success, not the verifier's: {result.command}. "
+                "A pipe reports the last stage; a sequence reports the last statement "
+                "(GHI #940)."
             )
         if result.status_suppressor:
             blockers.append(

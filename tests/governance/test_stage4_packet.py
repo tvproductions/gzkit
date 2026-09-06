@@ -312,6 +312,28 @@ class TestExitStatus(unittest.TestCase):
         self.assertFalse(result.verified)
         self.assertTrue(any("exit status" in b for b in result.blockers))
 
+    def test_a_sequenced_verifier_is_refused_on_this_surface_too(self) -> None:
+        # THE FAILURE CLASS ACROSS BOTH SURFACES (GHI #940). This module does not
+        # own the masking predicate — it consumes `masked_verifier`, the same one
+        # the Bash hook uses (GHI #589). Extending that predicate to the sequence
+        # form therefore reaches this surface without a second copy, and this test
+        # is what proves the reuse is real rather than assumed.
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            body = "```\n$ uv run gz check > log 2>&1; tail -6 log\nAll checks passed\n```\n"
+            result = verify_packet(tmp, _packet(tmp, body))
+        self.assertFalse(result.verified)
+        self.assertTrue(any("exit status" in b for b in result.blockers), result.blockers)
+
+    def test_a_sequenced_verifier_that_reads_its_status_is_accepted(self) -> None:
+        # The preserved half, pinned on this surface too: a packet showing an
+        # honest run must stay authorable, or authors route around the check.
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            body = '```\n$ echo hi > log 2>&1; echo "REAL EXIT: $?"\n```\n'
+            result = verify_packet(tmp, _packet(tmp, body))
+        self.assertTrue(result.verified, result.blockers)
+
     def test_a_piped_verifier_that_keeps_its_status_is_accepted(self) -> None:
         # pipefail keeps the pipe AND reports the verifier's own status, so the
         # replay observes the real result. The escape must stay open, or authors

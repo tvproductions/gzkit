@@ -71,9 +71,24 @@ class TestMaskedVerifierDetection(unittest.TestCase):
         """`||` is a control operator, not a pipeline — the verifier's exit survives."""
         self.assertIsNone(masked_verifier("uv run gz check || echo FAILED"))
 
-    def test_a_pipeline_in_a_later_statement_does_not_taint_the_verifier(self) -> None:
-        """`;` ends the pipeline. The verifier ran unpiped; `ls | head` is unrelated."""
-        self.assertIsNone(masked_verifier("uv run gz check; ls | head -3"))
+    def test_a_later_pipeline_does_not_taint_the_verifier_but_the_sequence_masks_it(
+        self,
+    ) -> None:
+        """AMENDED under GHI #940. `;` ends the PIPELINE; it does not preserve the status.
+
+        This assertion previously read `assertIsNone` on the premise that "`gz
+        check; ls | head` masks nothing" — the module comment GHI #940 quotes as
+        the defect itself. The premise is half right and was applied whole: the
+        later pipe is genuinely unrelated to the verifier, so ARM 1 must stay
+        silent about it. But the shell reports the LAST statement's status, so
+        `ls | head` overwrites the verifier's exit just as a pipe would.
+
+        What is pinned here is that the refusal comes from the SEQUENCE arm and
+        names the verifier — not that the later pipeline tainted it.
+        """
+        self.assertEqual(masked_verifier("uv run gz check; ls | head -3"), "gz check")
+        # Same statement shape, verifier last: nothing overwrites its status.
+        self.assertIsNone(masked_verifier("ls | head -3; uv run gz check"))
 
 
 class TestExitPreservingEscapes(unittest.TestCase):
@@ -364,3 +379,152 @@ class TheRecoveryIsTheCallersOwnCommandTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestSequenceFormMasking(unittest.TestCase):
+    """GHI #940: the pipe form was guarded; the SEQUENCE form was not.
+
+    `gz check > log; tail log` masks exactly as thoroughly as `gz check | tail`:
+    the shell reports the LAST statement's status either way. The module scoped
+    its predicate to pipes and treated a statement separator as ENDING the risk —
+    true for the verifier's own visible output in a foreground run, false for the
+    aggregate status, which is the only signal a backgrounded run surfaces.
+
+    The discriminator applied here is the one GHI #942 landed one surface over:
+    a trailing statement that SURFACES the status is a legitimate explicit failure
+    demonstration; one that says nothing about it presents a masked failure as
+    success. These cases pin that line, not a list of filter names.
+    """
+
+    def test_a_verifier_followed_by_a_filter_statement_is_masked(self) -> None:
+        # The issue's named class. No pipe, so the old predicate saw nothing.
+        self.assertEqual(masked_verifier("uv run gz check > log 2>&1; tail -6 log"), "gz check")
+
+    def test_masking_does_not_depend_on_the_trailing_statement_being_a_filter(self) -> None:
+        # Keying to tail/head/grep would repeat the enumerate-the-examples miss
+        # the module's own docstring names. `echo done` discards the status just
+        # as completely, and `true` is the shape GHI #942 closed on the packet side.
+        for trailer in ("echo done", "true", ":", "ls"):
+            with self.subTest(trailer=trailer):
+                self.assertEqual(
+                    masked_verifier(f"uv run gz check > log 2>&1; {trailer}"), "gz check"
+                )
+
+    def test_a_newline_separated_sequence_masks_the_same_way(self) -> None:
+        # The harness `run_in_background` surface sends newline-separated
+        # statements; that is the shape the defect was observed on.
+        self.assertEqual(masked_verifier("uv run gz check > log 2>&1\ntail -6 log"), "gz check")
+
+    def test_reading_the_status_immediately_after_is_preserved(self) -> None:
+        # THE LEGITIMATE EXPLICIT FAILURE DEMONSTRATION. This exact shape is what
+        # the gate's own block prose tells the caller to write; refusing it would
+        # make the rule un-compliable by its own recovery instruction.
+        self.assertIsNone(masked_verifier('uv run gz check > log 2>&1; echo "REAL EXIT: $?"'))
+
+    def test_a_status_read_after_an_intervening_statement_does_not_protect(self) -> None:
+        # `$?` reads the LAST statement's status. After `tail` has run, it reports
+        # tail's exit, not the verifier's — the read looks like evidence and is not.
+        self.assertEqual(
+            masked_verifier('uv run gz check > log 2>&1; tail -6 log; echo "exit $?"'),
+            "gz check",
+        )
+
+    def test_and_and_propagates_failure_so_it_is_not_masking(self) -> None:
+        # `&&` short-circuits: a failing verifier aborts the sequence and its
+        # status IS the aggregate. Blocking this would be a false refusal.
+        self.assertIsNone(masked_verifier("uv run gz check && echo ok"))
+
+    def test_errexit_protects_the_statements_that_follow_it(self) -> None:
+        # `set -e` aborts on the verifier's failure, so the aggregate carries it.
+        # Honored on USE, like pipefail: the head must be `set` (GHI #796).
+        self.assertIsNone(masked_verifier("set -e; uv run gz check > log; tail log"))
+
+    def test_naming_errexit_without_setting_it_does_not_disarm_the_gate(self) -> None:
+        # The GHI #796 rule applied to the new escape: the word is not the state.
+        self.assertEqual(
+            masked_verifier('grep -rn "set -e" docs/; uv run gz check > log; tail log'),
+            "gz check",
+        )
+
+    def test_pipefail_alone_does_not_enable_errexit(self) -> None:
+        # Isolates the OPERAND half of the errexit escape. The named-not-used test
+        # above is guarded by the `set` HEAD check and so never reaches this logic —
+        # a mutation loosening the operand test to a bare `"e" in token` survived it,
+        # because `pipefail` contains an `e`. `set -o pipefail` enables a different
+        # option entirely and must leave the sequence arm armed.
+        self.assertEqual(
+            masked_verifier("set -o pipefail; uv run gz check > log; tail log"),
+            "gz check",
+        )
+
+    def test_a_long_form_errexit_operand_is_honored(self) -> None:
+        # `set -o errexit` is the same state by its other spelling.
+        self.assertIsNone(masked_verifier("set -o errexit; uv run gz check > log; tail log"))
+
+    def test_a_verifier_in_the_final_statement_is_not_masked(self) -> None:
+        self.assertIsNone(masked_verifier("ls > log; uv run gz check"))
+
+    def test_a_trailing_separator_does_not_make_the_verifier_non_final(self) -> None:
+        # `gz check;` splits into the verifier plus an EMPTY tail segment, so an
+        # index-based "is this the last statement" test says no and the arm would
+        # refuse a command that masks nothing. Nothing runs after the verifier, so
+        # nothing overwrites its status. Pinned because the empty-tail filter that
+        # prevents this survived its first mutation sweep untested.
+        for command in (
+            "uv run gz check;",
+            "uv run gz check; ",
+            "uv run gz check\n",
+        ):
+            with self.subTest(command=command):
+                self.assertIsNone(masked_verifier(command))
+
+    def test_a_non_verifier_sequence_is_not_this_gates_business(self) -> None:
+        self.assertIsNone(masked_verifier("ls > log; tail -6 log"))
+
+
+class TestArmSpecificRecovery(unittest.TestCase):
+    """The two arms have DIFFERENT remedies, so one prose for both would misinform.
+
+    `.claude/rules/guardrail-feedback-prose.md` requires the NEXT STEP be the
+    caller's own command corrected. `set -o pipefail` genuinely fixes a pipe and
+    genuinely does NOT fix a sequence — prepending it to `gz check > log; tail log`
+    leaves the command exactly as masked. Handing that back as the correction
+    would teach the caller a fix that does not fix.
+    """
+
+    def _reason(self, command: str) -> str:
+        verdict = decide("Bash", {"command": command})
+        self.assertTrue(verdict.blocked, command)
+        return verdict.reason or ""
+
+    def test_the_pipe_arm_recommends_pipefail(self) -> None:
+        reason = self._reason("uv run gz check | tail -1")
+        self.assertIn("set -o pipefail; uv run gz check | tail -1", reason)
+
+    def test_the_sequence_arm_recommends_errexit_not_pipefail(self) -> None:
+        reason = self._reason("uv run gz check > log 2>&1; tail -6 log")
+        self.assertIn("set -e; uv run gz check > log 2>&1; tail -6 log", reason)
+        self.assertNotIn("set -o pipefail; uv run gz check", reason)
+
+    def test_the_sequence_arm_says_pipefail_will_not_help(self) -> None:
+        # Naming the non-remedy matters: pipefail is the escape this gate has
+        # taught for a year, so a caller meeting the sequence block will reach
+        # for it first unless told plainly that it does nothing here.
+        reason = self._reason("uv run gz check > log 2>&1; tail -6 log")
+        self.assertIn("`pipefail` does NOT help here", reason)
+
+    def test_the_sequence_arm_names_the_verifier_not_the_pipe(self) -> None:
+        reason = self._reason("uv run gz check > log 2>&1; tail -6 log")
+        self.assertIn("not the last statement", reason)
+        self.assertNotIn("this command pipes", reason)
+
+    def test_both_arms_carry_all_three_guardrail_parts(self) -> None:
+        for command in (
+            "uv run gz check | tail -1",
+            "uv run gz check > log 2>&1; tail -6 log",
+        ):
+            with self.subTest(command=command):
+                reason = self._reason(command)
+                self.assertIn("BLOCKED:", reason)
+                self.assertIn("WHY:", reason)
+                self.assertIn("NEXT STEP:", reason)

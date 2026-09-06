@@ -40,6 +40,7 @@ from collections.abc import Iterable
 __all__ = [
     "PIPE",
     "STATEMENT_SEPARATORS",
+    "normalize_statement_newlines",
     "program_name",
     "split_on",
     "strip_uv_run",
@@ -74,6 +75,53 @@ def tokenize_shell(command: str) -> list[str] | None:
         return list(lexer)
     except ValueError:
         return None
+
+
+def normalize_statement_newlines(command: str) -> str:
+    r"""Rewrite unquoted newlines as ``;`` so a multi-line command reads as a sequence.
+
+    ``shlex`` treats ``\n`` as whitespace, so a newline never survives
+    :func:`tokenize_shell` as a token and the ``"\n"`` entry in
+    :data:`STATEMENT_SEPARATORS` is unreachable by that route. A multi-line
+    command therefore collapses into ONE statement, which is precisely the shape
+    the harness's background surface sends (GHI #940) — three statements on three
+    lines read as a single run, and any per-statement reasoning silently sees one.
+
+    A newline and a ``;`` end a statement identically, so rewriting loses nothing
+    a statement-level reader needs. The scan is quote- and escape-aware because a
+    newline INSIDE a quoted argument is data, not a separator.
+
+    Offered as a separate function rather than folded into :func:`tokenize_shell`:
+    other readers of this grammar are entitled to the tokens the shell would
+    actually produce, and only a caller reasoning about statement sequence needs
+    this normalization.
+    """
+    out: list[str] = []
+    quote: str | None = None
+    index = 0
+    while index < len(command):
+        char = command[index]
+        if quote is not None:
+            if char == "\\" and quote == '"' and index + 1 < len(command):
+                out.append(command[index : index + 2])
+                index += 2
+                continue
+            if char == quote:
+                quote = None
+            out.append(char)
+        elif char == "\\" and index + 1 < len(command):
+            out.append(command[index : index + 2])
+            index += 2
+            continue
+        elif char in "'\"":
+            quote = char
+            out.append(char)
+        elif char == "\n":
+            out.append(";")
+        else:
+            out.append(char)
+        index += 1
+    return "".join(out)
 
 
 def strip_uv_run(tokens: Iterable[str]) -> list[str]:

@@ -66,6 +66,7 @@ from gzkit.canonical_steps import CANONICAL_STEP_COMMANDS
 from gzkit.shell_reading import (
     PIPE,
     STATEMENT_SEPARATORS,
+    normalize_statement_newlines,
     program_name,
     split_on,
     strip_uv_run,
@@ -82,6 +83,7 @@ __all__ = [
     "Verdict",
     "decide",
     "masked_verifier",
+    "masked_verifier_reason",
 ]
 
 #: Tokens that END a pipeline. A verifier in an earlier statement is not upstream
@@ -109,6 +111,22 @@ _PIPEFAIL_OPERAND = "pipefail"
 #: ``$PIPESTATUS`` read the array the clause names; ``PIPESTATUS.md`` is a
 #: filename and reads nothing.
 _PIPESTATUS_REFERENCES: tuple[str, ...] = ("${PIPESTATUS", "$PIPESTATUS")
+
+#: Separators after which the aggregate exit status is NO LONGER the preceding
+#: statement's (GHI #940). ``&&`` and ``||`` are deliberately absent: ``&&``
+#: short-circuits, so a failing verifier aborts the sequence and its status IS
+#: the aggregate, and ``||`` runs its right side only ON failure, which is the
+#: verdict idiom GHI #942 preserved one surface over rather than a concealment.
+_MASKING_SEPARATORS: frozenset[str] = frozenset({";", "\n", "&"})
+
+#: Short-flag bundle or long operand that turns on ``errexit``. ``set -e`` and
+#: ``set -euo pipefail`` both abort the sequence on a failing verifier, so the
+#: aggregate carries the failure. Read on USE like ``pipefail`` (GHI #796).
+_ERREXIT_LONG_OPERAND = "errexit"
+
+#: A parameter REFERENCE to the last exit status. ``$?`` and ``${?}`` retrieve
+#: it; a bare word containing a question mark retrieves nothing.
+_EXIT_STATUS_REFERENCES: tuple[str, ...] = ("$?", "${?")
 
 #: `gz` sub-verbs that run a verification tier. `gz` alone is far too coarse —
 #: `gz state | grep ADR-x` is an ordinary read and must stay permitted.
@@ -144,6 +162,21 @@ UNWITNESSABLE: tuple[str, ...] = (
     "pipeline, and then ignores the value is permitted. Scoping the read to the "
     "pipeline it describes needs dataflow the token stream does not carry. "
     "Merely NAMING an escape no longer disarms the gate (GHI #796).",
+    "`set -e` and an immediate `$?` read are honored on the same terms (GHI "
+    "#940): a command that reads the status and then discards the value is "
+    "permitted, because whether a printed status is READ is not a property of "
+    "the command string.",
+    "THE AGGREGATE STATUS ITSELF (GHI #940). Even a correctly-written `verifier "
+    '> log 2>&1; echo "REAL EXIT: $?"` still exits with the LAST statement\'s '
+    "code, so a harness that reports only the aggregate still announces success "
+    "over a red suite. The gate can require the status be surfaced; it cannot "
+    "make a summary line report it. This is why the clause's last word is to "
+    "cite the ARB receipt's `exit_status` — the receipt is the only channel that "
+    "carries the verifier's own result out of the shell.",
+    "`||` right-hand sides are permitted: `verifier || echo failed` reports 0 on "
+    "failure, but the branch runs ONLY on failure and announces it, which is the "
+    "verdict idiom preserved one surface over (GHI #942). A `||` branch that "
+    "announces nothing is masking this gate does not refuse.",
 )
 
 
@@ -221,6 +254,40 @@ def _reads_pipestatus(statement: list[str]) -> bool:
     return any(ref in token for token in statement for ref in _PIPESTATUS_REFERENCES)
 
 
+def _sets_errexit(statement: list[str]) -> bool:
+    """Return True when this statement is a ``set`` builtin enabling ``errexit``.
+
+    Head-resolved exactly as :func:`_sets_pipefail` is (GHI #796): ``grep -rn
+    "set -e" docs/`` names the escape and enables nothing. Accepts both the
+    short-flag bundle (``-e``, ``-euo``) and the long form (``-o errexit``).
+    """
+    tokens = _strip_env_assignments(statement)
+    if not tokens or tokens[0] != _SET_BUILTIN:
+        return False
+    for token in tokens[1:]:
+        if token == _ERREXIT_LONG_OPERAND:
+            return True
+        if token.startswith("-") and not token.startswith("--") and "e" in token[1:]:
+            return True
+    return False
+
+
+def _reads_exit_status(statement: list[str]) -> bool:
+    """Return True when a token READS ``$?``."""
+    return any(ref in token for token in statement for ref in _EXIT_STATUS_REFERENCES)
+
+
+def _statement_terminators(tokens: list[str]) -> list[str | None]:
+    """Separator ending each statement, aligned 1:1 with :func:`split_on`'s output.
+
+    ``split_on`` emits one segment per separator plus a final one, so the
+    terminator list is the separators in order with ``None`` appended. The
+    separator matters because ``&&`` propagates a failure and ``;`` discards it —
+    a splitter that forgets which one was used cannot tell those apart.
+    """
+    return [*(token for token in tokens if token in _STATEMENT_SEPARATORS), None]
+
+
 def _module_verifier(rest: list[str]) -> str | None:
     """Return the verifier named by a ``-m <module>`` invocation, if any."""
     if not rest:
@@ -265,6 +332,9 @@ def _verifier_name(segment: list[str]) -> str | None:
 def masked_verifier(command: str) -> str | None:
     """Return the verifier whose exit status this command discards, or None.
 
+    The name-only facade over :func:`masked_verifier_reason`, kept because most
+    callers only need to know THAT a verifier was silenced.
+
     A verifier is masked when it runs in any pipeline stage other than the last:
     the shell reports only the final process's status, so every upstream exit is
     thrown away. Returns the verifier's display name so the block prose can name
@@ -277,32 +347,75 @@ def masked_verifier(command: str) -> str | None:
     substring scan over every token in the command, which let any mention of
     either name — a ``grep`` pattern, a filename — disarm the gate wholesale.
     """
-    tokens = tokenize_shell(command)
+    reason = masked_verifier_reason(command)
+    return reason[0] if reason else None
+
+
+def masked_verifier_reason(command: str) -> tuple[str, str] | None:
+    """Return ``(verifier, arm)`` for a masked verifier, or None.
+
+    ``arm`` is ``"pipe"`` or ``"sequence"``. The caller needs it because the two
+    have DIFFERENT remedies: ``pipefail`` makes a pipeline report its first
+    failing stage and does nothing for a later statement overwriting the status,
+    while ``set -e`` aborts the sequence and does nothing about a pipe. Prose that
+    named one remedy for both would hand the caller a correction that leaves the
+    command exactly as masked as it was (`.claude/rules/guardrail-feedback-prose.md`).
+    """
+    # Unquoted newlines become `;` first: shlex eats a newline as whitespace, so
+    # a multi-line command would otherwise read as ONE statement — and the
+    # harness background surface that GHI #940 was observed on sends exactly that.
+    tokens = tokenize_shell(normalize_statement_newlines(command))
     if tokens is None:
         # Unbalanced quotes. The shell will reject this too; a gate that guesses
         # at unparseable input refuses commands nobody could have run anyway.
         return None
     statements = split_on(tokens, _STATEMENT_SEPARATORS)
+    terminators = _statement_terminators(tokens)
     pipefail_active = False
+    errexit_active = False
     for index, statement in enumerate(statements):
-        if _sets_pipefail(statement):
-            pipefail_active = True
+        if _sets_pipefail(statement) or _sets_errexit(statement):
+            pipefail_active = pipefail_active or _sets_pipefail(statement)
+            errexit_active = errexit_active or _sets_errexit(statement)
             continue
-        if pipefail_active:
-            continue
+
+        # ARM 1 — the pipe. A verifier upstream of any pipe has its status
+        # replaced by the last stage's.
         stages = split_on(statement, frozenset({_PIPE}))
-        if len(stages) < 2:
+        if (
+            not pipefail_active
+            and len(stages) >= 2
+            and not any(_reads_pipestatus(later) for later in statements[index + 1 :])
+        ):
+            for upstream in stages[:-1]:
+                name = _verifier_name(upstream)
+                if name is not None:
+                    return name, "pipe"
+
+        # ARM 2 — the sequence (GHI #940). The shell reports the LAST statement's
+        # status, so a verifier in an earlier one is discarded just as completely.
+        # `pipefail` does not help here: it fixes which status a PIPELINE reports,
+        # not whether a later statement then overwrites it.
+        if errexit_active or terminators[index] not in _MASKING_SEPARATORS:
             continue
-        if any(_reads_pipestatus(later) for later in statements[index + 1 :]):
+        later = [rest for rest in statements[index + 1 :] if rest]
+        if not later:
+            # A trailing separator (`gz check;`) leaves an empty tail. Nothing
+            # runs after the verifier, so nothing overwrites its status.
             continue
-        for upstream in stages[:-1]:
-            name = _verifier_name(upstream)
-            if name is not None:
-                return name
+        name = _verifier_name(stages[-1])
+        if name is None:
+            continue
+        # `$?` reads the status of the statement that JUST ran. A read placed
+        # after an intervening statement reports that statement's exit instead —
+        # it looks like evidence and is not, so only the next statement counts.
+        if _reads_exit_status(later[0]):
+            continue
+        return name, "sequence"
     return None
 
 
-def _block_prose(verifier: str, command: str) -> str:
+def _block_prose(verifier: str, command: str, arm: str = "pipe") -> str:
     """Three-part guardrail prose: what failed, why forbidden, governed next step.
 
     Per `.claude/rules/guardrail-feedback-prose.md` — the feedback IS the prompt
@@ -323,6 +436,29 @@ def _block_prose(verifier: str, command: str) -> str:
     caller re-runs is the whole line, and ``pipefail`` is shell state that protects
     every pipeline following the ``set``.
     """
+    if arm == "sequence":
+        return (
+            f"BLOCKED: Bash refused — `{verifier}` is not the last statement, so "
+            "the exit status you would read back is the final statement's, not "
+            f"`{verifier}`'s.\n\n"
+            "WHY: `.gzkit/rules/tests.md` § Verification exit-code integrity "
+            "(binding, GHI #589, extended GHI #940) — the shell reports the LAST "
+            "statement's exit, so `verifier > log; tail log` discards the "
+            "verifier's status exactly as a pipe would. On a backgrounded run the "
+            "aggregate status is the ONLY signal reported, and that false green is "
+            "what then gets relayed as attestation evidence.\n\n"
+            "NEXT STEP: re-run with errexit, which aborts the sequence the moment "
+            f"`{verifier}` fails so its status survives as the command's. This is "
+            "your command, corrected — paste it:\n"
+            f"  set -e; {command}\n\n"
+            "Or read the status immediately after the verifier, before anything "
+            "else runs:\n"
+            '  <verifier> > out.log 2>&1; echo "REAL EXIT: $?"\n\n'
+            "`pipefail` does NOT help here — it fixes which status a PIPELINE "
+            "reports, not a later statement overwriting it. For attestation "
+            "evidence, cite the ARB receipt's `exit_status` "
+            "(`uv run gz arb step ...`), never an aggregate status."
+        )
     return (
         f"BLOCKED: Bash refused — this command pipes `{verifier}` into another "
         "process, so the exit status you would read back is the last stage's, not "
@@ -353,10 +489,11 @@ def decide(tool_name: str, tool_input: dict | None = None) -> Verdict:
     if tool_name != "Bash":
         return Verdict(blocked=False)
     command = str((tool_input or {}).get("command", ""))
-    verifier = masked_verifier(command)
-    if verifier is None:
+    reason = masked_verifier_reason(command)
+    if reason is None:
         return Verdict(blocked=False)
-    return Verdict(blocked=True, reason=_block_prose(verifier, command))
+    verifier, arm = reason
+    return Verdict(blocked=True, reason=_block_prose(verifier, command, arm))
 
 
 # ---------------------------------------------------------------------------

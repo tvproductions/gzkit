@@ -5,11 +5,11 @@ paths:
 description: Test policy and coverage requirements
 ---
 
-<!-- rule-version: 0.20.0 -->
+<!-- rule-version: 0.21.0 -->
 
 # Test Policy (canonical)
 
-> **Rule version:** `0.20.0` — adds § Mutation-sweep integrity (GHI #963): a failing mutant run is not a kill, sweeps report four outcomes, and every mutant runs with its own bytecode cache. Prior `0.19.0` diet pass under GHI #921 (operator ruling 2026-08-29, *"we are compressing everything and anything that the agent can consume"*). Version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#testsmd). Binding rules unchanged.
+> **Rule version:** `0.21.0` — GHI #940 extends § Verification exit-code integrity to the SEQUENCE form: the clause was scoped to the pipe character while the shell reports the last *statement* just as it reports the last *stage*, so `verifier > log; tail log` read as compliant. Names the two non-interchangeable remedies (`pipefail` for a pipe, `set -e` for a sequence), the immediacy requirement on a `$?` read, and — declared rather than hidden — that the aggregate status is a floor a shell-level rule cannot lift. Prior `0.20.0` — adds § Mutation-sweep integrity (GHI #963): a failing mutant run is not a kill, sweeps report four outcomes, and every mutant runs with its own bytecode cache. Prior `0.19.0` diet pass under GHI #921 (operator ruling 2026-08-29, *"we are compressing everything and anything that the agent can consume"*). Version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#testsmd). Binding rules unchanged.
 
 ## General Rules (binding)
 
@@ -98,6 +98,10 @@ print(s.killed, s.survived, s.invalid, s.inconclusive, s.is_conclusive)'
 Only a sweep whose `is_conclusive` is true may be cited as evidence about coverage; a sweep carrying `invalid` or `inconclusive` rows reports what it could not grade, and those rows are disclosed rather than dropped.
 
 **Verification exit-code integrity (binding, GHI #589).** A verifier's truth is its own exit code, never a downstream filter's. NEVER pipe `unittest`/`behave`/`mkdocs --strict` (or any ARB-wrapped verifier) through `tail`/`head`/`grep`/`Select-Object`: the shell reports the *last* process's exit (the filter's — always 0), masking a failing suite as a green run. Capture to a file (`> out.log 2>&1`) and read the ARB receipt's `exit_status` (GHI #317). A harness "exit code 0" notification on a piped command attests the filter, not the verifier.
+
+**The sequence form masks identically (GHI #940).** The rule is about the LAST thing the shell runs, not about the pipe character. `verifier > log; tail log` discards the verifier's status exactly as `verifier | tail` does — the shell reports the last *statement* just as it reports the last *stage*. Fixing this by naming `tail`/`head`/`grep` would repeat the enumerate-the-examples miss the clause already made once: `verifier > log; echo done` masks just as completely. Two remedies, and they are **not interchangeable** — `set -o pipefail` fixes a pipe and does nothing for a sequence; `set -e` aborts a sequence and does nothing for a pipe. Reading `$?` in the statement *immediately* after the verifier is the third route, and immediacy is load-bearing: `$?` reports whatever ran last, so a read placed after an intervening statement reports that statement instead and only looks like evidence. `&&` is not masking (it short-circuits, so a failure becomes the aggregate).
+
+**The aggregate status is a floor, not a proof.** Even a correctly-written `verifier > out.log 2>&1; echo "REAL EXIT: $?"` still *exits* with the last statement's code, so a harness summary that reports only the aggregate can still announce success over a red suite. The shell-level rule makes the truth visible in the output; it cannot make a notification line carry it. For attestation, cite the ARB receipt's `exit_status` — the only channel that carries the verifier's own result out of the shell.
 
 **Mechanized** by the `verifier-pipe-gate.py` PreToolUse hook over `Bash` (decision: `gzkit.verifier_pipe_gate.decide`; live negative control `verifier-exit-status-masked`). The gate refuses a verifier in any *non-final* pipeline stage — the masking is the pipe, not the filter's identity, so `gz check | cat` is the same defect as `gz check | tail` and both are refused. Two escapes are permitted because they genuinely preserve the status: `set -o pipefail` and reading `${PIPESTATUS[0]}`. The verifier set is READ from `CANONICAL_STEP_COMMANDS` (AGENTS.md § Attestation), so a canonical step added there is covered without a second edit.
 
