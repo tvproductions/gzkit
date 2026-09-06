@@ -66,13 +66,27 @@ class HandoffResult(BaseModel):
 
 
 class ReviewResult(BaseModel):
-    """Structured result from a reviewer subagent."""
+    """Structured result from a reviewer subagent.
+
+    ``findings`` and ``verification_gaps`` are separate channels on purpose
+    (GHI #941). A reviewer granted ``Read, Glob, Grep`` cannot run the command a
+    prompt asked it to run; when that inability was reported as a *finding*, it
+    entered the same list as defects in the code and pulled a PASS-shaped review
+    down to CONCERNS. ``review_blocks_advancement`` reads ``findings``, so a gap
+    reported at critical severity would also have blocked the pipeline on the
+    reviewer's own tool grant. What the reviewer could not check belongs here;
+    the verdict describes the code.
+    """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     verdict: ReviewVerdict = Field(..., description="Overall review outcome")
     findings: list[ReviewFinding] = Field(
-        default_factory=list, description="Specific review findings"
+        default_factory=list, description="Defects observed in the code under review"
+    )
+    verification_gaps: list[str] = Field(
+        default_factory=list,
+        description="Checks the reviewer could not perform — its own coverage, never a defect",
     )
     summary: str = Field("", description="Brief review summary")
 

@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-09-06
 metadata:
-  skill-version: "6.47.0"
+  skill-version: "6.48.0"
 model: sonnet
 ---
 
@@ -33,8 +33,8 @@ The pipeline dispatches four subagent personas across its stages. Stage-2 implem
 | Persona | Function in this ceremony | Invoked at |
 |---|---|---|
 | `implementer` | Methodical, test-first code authoring per the approved plan; one task at a time; complete units (imports + usage + tests + docs as one edit) | Stage 2 step c–g (see § Stage 2 for dispatch mechanics) |
-| `spec-reviewer` | Independent requirement-tracing against the brief's `## Requirements (FAIL-CLOSED)` list; each REQ must map to implementation and test | Stage 2 step h.i–vii (two-stage review) |
-| `quality-reviewer` | Independent architectural assessment: SOLID, size-discipline, maintainability of the produced diff | Stage 2 step h.i–vii (two-stage review) |
+| `spec-reviewer` | Independent requirement-tracing against the brief's `## Requirements (FAIL-CLOSED)` list; each REQ must map to implementation and test. **Read-only — cannot execute** (GHI #941) | Stage 2 step h.i–viii (two-stage review) |
+| `quality-reviewer` | Independent architectural assessment: SOLID, size-discipline, maintainability of the produced diff. **Read-only — cannot execute** (GHI #941) | Stage 2 step h.i–viii (two-stage review) |
 | `narrator` | Composes the Stage 4 evidence packet in operator-value framing — value narrative, key proof, evidence table, REQ coverage rendered for the human's attestation decision | Stage 4 (Present Evidence) — see § Stage 4 |
 
 The mechanical attestation that these dispatches occurred was scoped by `ADR-pool.obpi-pipeline-dispatch-attestation` Target Scopes #5/#6. That ADR is **Superseded** (`absorbed_into: ADR-0.0.73`, itself Validated 9/9), so there is no promotion pending and nothing arrives from one — the absorption delivered an absorption-marker audit, and that ADR's own § Notes place the receipt machinery (ledger events, bail-to-inline gates, validator scopes) in "a future feature-kind ADR work surface" that is not yet authored (GHI #846). **Stage-2 dispatch IS attestable today**: record each one with `uv run gz obpi dispatch <OBPI-ID> --role <Role> --model <tier>`, and `gz obpi precomplete` fails closed on a silent single-driver run (GHI #845). Credit is never inferred. The Stage-4 narrator dispatch has no channel yet.
@@ -368,6 +368,24 @@ The per-behavior cycle (never batch all tests then implement the whole unit):
       vii. **Log review concerns** — if `DONE_WITH_CONCERNS` from implementer, pass concerns
          as additional context to reviewers. Accumulate review findings in dispatch state for
          the Stage 4 ceremony.
+
+      viii. **Read `verification_gaps` separately from `findings` (GHI #941).** Reviewers are
+         granted `Read, Glob, Grep` and **cannot execute anything**. Both composers now disclose
+         that grant — read from the agent definition, so it tracks the file rather than a prose
+         claim — and instruct the reviewer to put whatever it could not check into
+         `verification_gaps`, never into `findings`.
+
+         A gap is **not** a defect and never blocks: `review_blocks_advancement` reads
+         `findings`, so a gap kept in its own channel cannot pull a passing review down.
+         Measured 2026-09-02 on OBPI-0.35.0-04: a reviewer asked to re-derive a byte span and
+         re-run a behave selection could do neither, reported both honestly as `info` findings,
+         and returned **CONCERNS** — every finding about its own coverage, none about the code.
+         Re-derived by the orchestrator, both checks passed.
+
+         **Do not ask a reviewer to verify by running.** If a check needs execution, run it
+         yourself and hand the reviewer the observed output to check *against the code*. A
+         non-empty `verification_gaps` is a signal to you, not a verdict: it names what this
+         review did not cover, and the coverage is yours to close.
 
 5. **Persist dispatch state** after each task completes (success or failure), including review results.
 6. **After all tasks complete:** persist dispatch summary for `gz roles --pipeline` queries.

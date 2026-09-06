@@ -436,6 +436,75 @@ def select_review_model(complexity: TaskComplexity) -> str:
     return REVIEW_MODEL_MAP[complexity]
 
 
+class ReviewerCapability(BaseModel):
+    """What a reviewer persona can actually do, read from its agent definition."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    agent: str = Field(..., description="Agent definition name")
+    tools: list[str] = Field(default_factory=list, description="Declared tool grant")
+    can_execute: bool = Field(False, description="True if the grant includes a shell")
+
+
+_EXECUTION_TOOLS: frozenset[str] = frozenset({"Bash", "BashOutput"})
+
+
+def reviewer_capability(project_root: Path, agent: str) -> ReviewerCapability:
+    """Read a reviewer persona's declared tool grant (GHI #941).
+
+    The grant is READ, never asserted in prose. A composer that hardcoded
+    "read-only" would contradict the agent definition the moment the grant
+    changed — and granting reviewers execution is exactly the open question this
+    issue leaves to the operator, so the disclosure has to track the file.
+
+    Fails safe toward the restrictive claim: an unreadable or absent definition
+    reports no execution, because promising a capability the reviewer may not
+    have is the direction that produces the unrunnable ask.
+    """
+    definition = project_root / ".claude" / "agents" / f"{agent}.md"
+    try:
+        lines = definition.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return ReviewerCapability(agent=agent)
+    for line in lines:
+        if line.lower().startswith("tools:"):
+            tools = [t.strip() for t in line.split(":", 1)[1].split(",") if t.strip()]
+            return ReviewerCapability(
+                agent=agent,
+                tools=tools,
+                can_execute=bool(_EXECUTION_TOOLS & set(tools)),
+            )
+    return ReviewerCapability(agent=agent)
+
+
+def _capability_frame(project_root: Path, agent: str) -> list[str]:
+    """Disclose the reviewer's own reach, and route its gaps out of the verdict."""
+    capability = reviewer_capability(project_root, agent)
+    lines = ["### Your Capability", ""]
+    if capability.tools:
+        lines.append(f"Your tool grant is: {', '.join(capability.tools)}.")
+    else:
+        lines.append("Your tool grant could not be resolved; assume reading only.")
+    if not capability.can_execute:
+        lines.extend(
+            [
+                "You **cannot execute** commands. Verify by reading the code, never by",
+                "running it. If a check in this prompt requires execution, do not attempt",
+                "it and do not treat it as a defect.",
+            ]
+        )
+    lines.extend(
+        [
+            "",
+            "Anything you could not verify goes in `verification_gaps` — never in",
+            "`findings`, and never in the verdict. `findings` and the verdict describe",
+            "the CODE under review; a limit of your own is not a defect in it.",
+            "",
+        ]
+    )
+    return lines
+
+
 def compose_spec_review_prompt(
     task: DispatchTask,
     brief_requirements: list[str],
@@ -458,6 +527,7 @@ def compose_spec_review_prompt(
             "",
         ]
     )
+    lines.extend(_capability_frame(project_root, "spec-reviewer"))
     lines.extend(_why_frame(why))
     lines.extend(
         [
@@ -495,6 +565,7 @@ def compose_spec_review_prompt(
             '    {"file": "...", "line": null, "severity": "critical|major|minor|info",',
             '     "message": "..."}',
             "  ],",
+            '  "verification_gaps": ["checks you could not perform, if any"],',
             '  "summary": "Brief explanation of overall verdict"',
             "}",
             "```",
@@ -530,6 +601,7 @@ def compose_quality_review_prompt(
             "",
         ]
     )
+    lines.extend(_capability_frame(project_root, "quality-reviewer"))
     lines.extend(_why_frame(why))
     lines.extend(
         [
@@ -580,6 +652,7 @@ def compose_quality_review_prompt(
             '    {"file": "...", "line": null, "severity": "critical|major|minor|info",',
             '     "message": "..."}',
             "  ],",
+            '  "verification_gaps": ["checks you could not perform, if any"],',
             '  "summary": "Brief explanation of overall verdict"',
             "}",
             "```",
