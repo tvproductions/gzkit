@@ -962,6 +962,16 @@
       },
       "governance_relevant": false
     },
+    "obpi verify-packet": {
+      "surfaces": {
+        "manpage": false,
+        "index_entry": false,
+        "operator_runbook": false,
+        "governance_runbook": false,
+        "docstring": true
+      },
+      "governance_relevant": false
+    },
     "obpi repudiate": {
       "surfaces": {
         "manpage": true,

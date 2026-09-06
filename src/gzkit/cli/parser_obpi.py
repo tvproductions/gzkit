@@ -357,6 +357,28 @@ def register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         func=lambda a: _lazy("obpi_present_evidence_cmd")(obpi_id=a.obpi, as_json=a.as_json)
     )
 
+    p_obpi_verify_packet = obpi_commands.add_parser(
+        "verify-packet",
+        help="Re-run a Step-4a packet's pasted transcripts (GHI #942)",
+        description=(
+            "Re-execute every $-prompted transcript in a composed Step-4a evidence "
+            "packet and report which pasted output lines the command did not produce. "
+            "Fenced shell blocks with no $ prompt claim no output and are reported as "
+            "citations, never re-run. Exits 3 (NOT-VERIFIED) on any blocker."
+        ),
+        epilog=build_epilog(
+            [
+                "gz obpi verify-packet .gzkit/evidence/OBPI-0.1.0-01.stage4a.md",
+                "gz obpi verify-packet packet.md --json",
+            ]
+        ),
+    )
+    p_obpi_verify_packet.add_argument("packet", help="Path to the composed Step-4a packet")
+    add_json_flag(p_obpi_verify_packet)
+    p_obpi_verify_packet.set_defaults(
+        func=lambda a: _lazy("obpi_verify_packet_cmd")(packet=a.packet, as_json=a.as_json)
+    )
+
     p_obpi_withdraw = obpi_commands.add_parser(
         "withdraw",
         help="Withdraw a phantom or erroneous OBPI from the ledger",

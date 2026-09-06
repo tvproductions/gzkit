@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-09-06
 metadata:
-  skill-version: "6.45.0"
+  skill-version: "6.46.0"
 model: sonnet
 ---
 
@@ -685,6 +685,50 @@ The **Proof location** column is proof-channel specific, not always `@covers`. F
 >
 > You do not get to skip 4b because your own evidence looks green. Your evidence
 > looking green is *why* 4b exists. You are not the exception.
+
+#### Step 4a-v — Re-run the packet's own transcripts (GHI #942)
+
+Write the composed packet to `.gzkit/evidence/<OBPI-ID>.stage4a.md`, then run it back
+through the tool before presenting it:
+
+```bash
+uv run gz obpi verify-packet .gzkit/evidence/<OBPI-ID>.stage4a.md
+```
+
+Exit 0 = VERIFIED. Exit 3 = a pasted line did not reproduce; repair the packet and
+re-run. Present the verdict alongside 4a and 4b — the operator attests against all
+three.
+
+**Why this is not covered by Step 4b.** 4b re-derives the *claim* from the REQs and
+the repository; it is never handed the *packet*, so a fabricated transcript passes an
+adversary that never looks at it. Observed 2026-09-02 on OBPI-0.35.0-04: a `$` block
+rendered `gz covers --json` output with keys the command does not emit (`obpi_id`,
+`coverage_pct`) around figures that were themselves correct — the numbers came from
+the dispatch prompt and the *evidence was constructed around them*. It was caught only
+because a human happened to re-run the commands.
+
+**The authoring contract.** A `$` prompt is a claim — *"I ran this and this came
+back"* — and every one of them is re-executed:
+
+- **Paste only what the command produced.** The comparison is containment, so
+  abridging and re-indenting are fine; a line the command never wrote is a blocker.
+- **Elide what cannot reproduce.** A timestamp or a freshly minted receipt id is
+  written `...`, never pasted. Pasting an unreproducible line is what fails.
+- **Cite proof commands as transcripts.** A command offered as proof of a REQ goes
+  under a `$` prompt with its output. The second half of the same observed instance
+  was a REQ-08 proof command that returns nothing when run — as a transcript that is
+  a `witnesses nothing` blocker; left bare it is only reported.
+- **For a silent assert-shaped probe, show the status:** `$ <cmd>; echo "exit $?"`.
+  The exit code is the information the reader needs, and it reproduces.
+- **A fenced shell block with no `$` claims no output** and is never re-run — that is
+  what the `arb:` incantation blocks are, and their result is carried by the receipt
+  rows. They are listed back as citations so the operator sees what was *not*
+  witnessed.
+
+**Reach, stated plainly.** This witnesses every transcript that claims to be one. It
+does not verify a command cited without a prompt, and it does not know whether a
+transcript's command is the *right* proof for the REQ it sits under — that judgment
+stays with Step 4b and the operator.
 
 #### Step 4b — Independent Adversarial Validation (GHI #643) — MANDATORY, NON-SKIPPABLE
 
