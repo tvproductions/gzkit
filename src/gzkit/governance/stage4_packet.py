@@ -27,11 +27,33 @@ containment, not equality: the packet may show *less* than the command produced,
 never something it did not. Output that cannot reproduce — a timestamp, a freshly
 minted receipt id — is elided with ``...`` rather than pasted.
 
+**Concealment by omission is why a non-zero exit blocks.** Containment alone is not
+enough: a packet can quote only the success lines of a command that failed, and every
+quoted line reproduces. The omission is the lie, and no per-line check can see it. So a
+transcript whose command exits non-zero is a blocker outright. An honest RED run stays
+authorable — ``$ <cmd>; echo "exit $?"`` exits 0 and puts the real status in output that
+reproduces, which shows the operator the failure instead of dropping it.
+
+The same reasoning reaches a trailing filter: a piped verifier reports the *filter's*
+status, so a failing suite would replay as exit 0. That is ``masked_verifier`` from
+:mod:`gzkit.verifier_pipe_gate` — the same predicate the Bash hook uses (GHI #589), never
+a second copy. Its scope is the canonical one: recognized **verifiers**. A generic
+non-verifier command piped without ``pipefail`` still reports the last stage's status, and
+this module does not widen the rule to cover it — a stricter local rule on the same
+subject is how two surfaces fall out of agreement.
+
 **What is deliberately NOT re-run.** A fenced shell block with no ``$`` prompt claims
 no output; it cites an incantation whose result is carried elsewhere (the ARB receipt
 rows). Re-running those would spend a full unittest sweep to witness a claim nobody
 made. They are reported as citations so the operator sees what this check did not
 witness.
+
+**The claim this module makes, and its limits.** Replay verifies *displayed output
+against command output*. It does not prove the packet is **complete** — that the
+transcripts chosen are the ones the REQs needed — nor that its **interpretation** is
+correct, that a reproducing command actually demonstrates what the surrounding prose says
+it does. Those stay with Step 4b and the operator. What replay does close is the gap
+between what the packet says a command printed and what the command prints.
 """
 
 from __future__ import annotations
@@ -43,6 +65,7 @@ from pathlib import Path
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.governance.stage4_evidence import _join_demo_commands
+from gzkit.verifier_pipe_gate import masked_verifier
 
 # A fenced block cites shell commands only when it says so. A ``json``/``text``
 # block is data: reading its lines as commands fills the operator's surface with
@@ -75,6 +98,9 @@ class TranscriptResult(BaseModel):
     exit_status: int = Field(..., description="Observed exit code (-1 if it did not run)")
     timed_out: bool = Field(default=False, description="True if the command exceeded the limit")
     produced_output: bool = Field(..., description="True if the re-run wrote anything")
+    masked_verifier: str | None = Field(
+        default=None, description="Verifier whose exit status a trailing filter discards"
+    )
     missing_lines: list[str] = Field(..., description="Claimed lines the command did not produce")
     output_tail: str = Field(default="", description="Last lines of the observed output")
 
@@ -221,6 +247,7 @@ def _verify_transcript(transcript: Transcript, project_root: Path) -> Transcript
         produced_output=bool(output.strip()),
         missing_lines=missing,
         output_tail=tail,
+        masked_verifier=masked_verifier(transcript.command),
     )
 
 
@@ -237,6 +264,17 @@ def _blockers(results: list[TranscriptResult], transcripts: list[Transcript]) ->
                 f"Command timed out after {_COMMAND_TIMEOUT_SECONDS}s: {result.command}"
             )
             continue
+        if result.masked_verifier:
+            blockers.append(
+                f"Trailing filter discards {result.masked_verifier}'s exit status, so the "
+                f"replay observes the filter's success, not the verifier's: {result.command}"
+            )
+        if result.exit_status != 0:
+            blockers.append(
+                f"Command exited {result.exit_status} (expected 0): {result.command}. A "
+                "packet may not present a failing command as success; to show a RED run, "
+                'write `<cmd>; echo "exit $?"` so the status itself reproduces.'
+            )
         if result.missing_lines:
             shown = "; ".join(result.missing_lines[:3])
             blockers.append(

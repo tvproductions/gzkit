@@ -152,16 +152,63 @@ class TestHollowTranscript(unittest.TestCase):
 
 
 class TestExitStatus(unittest.TestCase):
-    def test_a_failing_command_is_not_a_blocker_when_its_output_reproduces(self) -> None:
-        # A packet may legitimately show a RED run. The fabrication witness is
-        # whether the output reproduces, never whether the command succeeded —
-        # blocking on exit status would false-block an honest failure transcript.
+    def test_selective_omission_cannot_conceal_a_failure(self) -> None:
+        # THE CONCEALMENT VECTOR (operator directive 2026-09-06). Containment
+        # alone lets a packet quote only the success lines of a command that
+        # failed: every pasted line reproduces, so the packet verifies while the
+        # failure it omitted never reaches the operator. Every line below IS in
+        # the real output — the lie is the omission, not any single line.
         with tempfile.TemporaryDirectory() as td:
             tmp = Path(td)
-            body = "```\n$ python3 -c 'print(\"boom\"); raise SystemExit(1)'\nboom\n```\n"
+            body = (
+                "```\n"
+                "$ python3 -c \"import sys; print('ruff: clean'); "
+                "print('FAILED (failures=12)', file=sys.stderr); sys.exit(1)\"\n"
+                "ruff: clean\n"
+                "```\n"
+            )
+            result = verify_packet(tmp, _packet(tmp, body))
+        self.assertFalse(result.verified)
+        self.assertEqual(result.transcripts[0].missing_lines, [])
+        self.assertTrue(any("exited 1" in b for b in result.blockers))
+
+    def test_an_honest_red_run_is_authorable_by_showing_the_status(self) -> None:
+        # The escape, and the reason the rule above is not a false-block: a
+        # packet that WANTS to show a RED run shows the status, which reproduces
+        # and puts the failure in front of the operator instead of omitting it.
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            body = (
+                "```\n"
+                '$ python3 -c \'print("boom"); raise SystemExit(1)\'; echo "exit $?"\n'
+                "boom\n"
+                "exit 1\n"
+                "```\n"
+            )
             result = verify_packet(tmp, _packet(tmp, body))
         self.assertTrue(result.verified, result.blockers)
-        self.assertEqual(result.transcripts[0].exit_status, 1)
+
+    def test_a_piped_verifier_cannot_report_its_own_green(self) -> None:
+        # The adjacent concealment: a trailing filter makes the shell report the
+        # FILTER's status, so a failing suite replays as exit 0 and the verifier
+        # cannot see the failure at all. Same rule as the Bash hook (GHI #589),
+        # via the same predicate — never a second copy of it.
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            body = "```\n$ uv run -m unittest tests.foo | tail -1\nOK\n```\n"
+            result = verify_packet(tmp, _packet(tmp, body))
+        self.assertFalse(result.verified)
+        self.assertTrue(any("exit status" in b for b in result.blockers))
+
+    def test_a_piped_verifier_that_keeps_its_status_is_accepted(self) -> None:
+        # pipefail keeps the pipe AND reports the verifier's own status, so the
+        # replay observes the real result. The escape must stay open, or authors
+        # route around the rule by dropping the pipe and the evidence with it.
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            body = "```\n$ set -o pipefail; echo OK | tail -1\nOK\n```\n"
+            result = verify_packet(tmp, _packet(tmp, body))
+        self.assertTrue(result.verified, result.blockers)
 
     def test_a_command_that_cannot_run_is_a_blocker(self) -> None:
         # An unresolvable command produces shell error text, never the pasted claim.

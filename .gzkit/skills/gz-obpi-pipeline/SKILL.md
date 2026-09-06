@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-09-06
 metadata:
-  skill-version: "6.46.0"
+  skill-version: "6.47.0"
 model: sonnet
 ---
 
@@ -725,10 +725,20 @@ back"* — and every one of them is re-executed:
   rows. They are listed back as citations so the operator sees what was *not*
   witnessed.
 
-**Reach, stated plainly.** This witnesses every transcript that claims to be one. It
-does not verify a command cited without a prompt, and it does not know whether a
-transcript's command is the *right* proof for the REQ it sits under — that judgment
-stays with Step 4b and the operator.
+- **A failing command cannot be presented as success.** A non-zero exit is a blocker
+  outright, because containment alone lets a packet quote only the success lines of a
+  command that failed — every quoted line reproduces, and the omission is the lie. To
+  show a RED run, use the status form above; it exits 0 and puts the failure in front of
+  the operator rather than dropping it.
+- **Do not pipe a verifier into a filter.** The shell reports the filter's status, so a
+  failing suite would replay green. Use `set -o pipefail` or redirect to a file.
+
+**Reach, stated plainly.** Replay verifies *displayed output against command output*. It
+does **not** prove the packet is **complete** — that the transcripts chosen are the ones
+the REQs needed — nor that its **interpretation** is correct, that a reproducing command
+demonstrates what the prose around it claims. It does not verify a command cited without a
+prompt, and the piped-verifier guard covers recognized verifiers only, not every generic
+command piped without `pipefail`. Those judgments stay with Step 4b and the operator.
 
 #### Step 4b — Independent Adversarial Validation (GHI #643) — MANDATORY, NON-SKIPPABLE
 
