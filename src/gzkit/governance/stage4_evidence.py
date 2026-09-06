@@ -26,6 +26,7 @@ non-zero live exit as fail-closed.
 from __future__ import annotations
 
 import json
+import re
 import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
@@ -83,19 +84,118 @@ class EvidencePacket(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-def extract_demo_commands(brief_path: Path) -> list[str]:
-    """Return the executable command lines from the brief's ``## Demo`` fenced block.
+_HEREDOC_INTRO = re.compile(r"""<<-?[ \t]*(?:'([^']+)'|"([^"]+)"|([A-Za-z_][A-Za-z0-9_]*))""")
 
-    Reads the first fenced code block under a ``## Demo`` heading; returns its non-empty,
-    non-comment lines (a leading ``#`` marks a comment). Returns ``[]`` when no Demo
-    section or fenced block is present.
+
+def _read_heredoc_delimiter(text: str, index: int) -> tuple[str | None, int]:
+    """Return the heredoc delimiter introduced at ``index``, and the index past it."""
+    match = _HEREDOC_INTRO.match(text, index)
+    if match is None:
+        return None, index
+    return (match.group(1) or match.group(2) or match.group(3)), match.end()
+
+
+def _scan_shell(text: str) -> tuple[bool, list[str]]:
+    """Return ``(is_open, heredoc_delimiters)`` for an accumulated shell command.
+
+    ``is_open`` is True while the text is mid-construct — an unclosed quote, an
+    unbalanced ``$(``, or a trailing backslash — meaning the next physical line
+    belongs to this same command. Heredoc delimiters are reported separately
+    because their bodies end at a sentinel line, not at a balanced character.
+    """
+    quote: str | None = None
+    depth = 0
+    escaped = False
+    heredocs: list[str] = []
+    index = 0
+    while index < len(text):
+        char = text[index]
+        if escaped:
+            escaped = False
+        elif quote == "'":
+            # Single quotes are literal in POSIX shell: backslash does not escape.
+            if char == "'":
+                quote = None
+        elif char == "\\":
+            escaped = True
+        elif quote is not None:
+            if char == quote:
+                quote = None
+        elif char in "'\"`":
+            quote = char
+        elif char == "$" and text.startswith("$(", index):
+            depth += 1
+            index += 1
+        elif char == ")" and depth:
+            depth -= 1
+        elif text.startswith("<<", index) and not text.startswith("<<<", index):
+            delimiter, end = _read_heredoc_delimiter(text, index)
+            if delimiter is not None:
+                heredocs.append(delimiter)
+                index = end
+                continue
+        index += 1
+    return quote is not None or depth > 0 or escaped, heredocs
+
+
+def _join_demo_commands(fence_lines: list[str]) -> list[str]:
+    r"""Join physical lines into whole shell commands (GHI #965).
+
+    Each returned string is executed with ``shell=True``, so the contract is to
+    return exactly what a human would have pasted. Splitting at physical line
+    boundaries shattered any command spanning lines — a quoted ``python -c``
+    program, a ``\\``-continued line, a multi-line ``$(...)`` — and reported
+    NOT-ATTESTABLE for a green state.
+
+    A blank or ``#`` line is a fence comment only at the *start* of a command;
+    inside a continuation it is program text, and interior lines keep their
+    indentation because the languages they carry are whitespace-significant.
+    """
+    commands: list[str] = []
+    pending: list[str] = []
+    heredocs: list[str] = []
+    for line in fence_lines:
+        if heredocs:
+            # A heredoc body is opaque: it ends at its sentinel, never at a quote.
+            pending.append(line)
+            if line.strip() == heredocs[0]:
+                heredocs.pop(0)
+                if not heredocs:
+                    commands.append("\n".join(pending))
+                    pending = []
+            continue
+        if pending:
+            pending.append(line)
+        else:
+            stripped = line.strip()
+            if not stripped or stripped.startswith("#"):
+                continue
+            pending.append(stripped)
+        is_open, heredocs = _scan_shell("\n".join(pending))
+        if is_open or heredocs:
+            continue
+        commands.append("\n".join(pending))
+        pending = []
+    if pending:
+        # Fail-closed: hand an unterminated command to the shell so it reports a
+        # real non-zero exit. Dropping it would turn a malformed Demo into a pass.
+        commands.append("\n".join(pending))
+    return commands
+
+
+def extract_demo_commands(brief_path: Path) -> list[str]:
+    """Return the executable commands from the brief's ``## Demo`` fenced block.
+
+    Reads the first fenced code block under a ``## Demo`` heading and joins its lines
+    into whole commands (see ``_join_demo_commands``); a line starting a command with
+    ``#`` marks a comment. Returns ``[]`` when no Demo section or fenced block is present.
     """
     if not brief_path.is_file():
         return []
     lines = brief_path.read_text(encoding="utf-8").splitlines()
     in_demo = False
     in_fence = False
-    commands: list[str] = []
+    fence_lines: list[str] = []
     for line in lines:
         if line.startswith("## "):
             # Entering Demo, or leaving it for the next H2.
@@ -109,10 +209,8 @@ def extract_demo_commands(brief_path: Path) -> list[str]:
             in_fence = True
             continue
         if in_fence:
-            stripped = line.strip()
-            if stripped and not stripped.startswith("#"):
-                commands.append(stripped)
-    return commands
+            fence_lines.append(line)
+    return _join_demo_commands(fence_lines)
 
 
 # ---------------------------------------------------------------------------

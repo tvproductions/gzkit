@@ -81,6 +81,85 @@ class TestExtractDemoCommands(unittest.TestCase):
             self.assertEqual(extract_demo_commands(path), ["echo one"])
 
 
+class TestExtractDemoCommandsMultiLine(unittest.TestCase):
+    """A command spanning physical lines is ONE command (GHI #965).
+
+    ``generate_evidence_packet`` feeds every returned string to ``_run_demo``, which
+    executes it with ``shell=True``. The joiner's contract is therefore exactly "return
+    what a human would have pasted into a shell". Splitting at physical line boundaries
+    made the tool report NOT-ATTESTABLE for a green state — a false red landing on
+    precisely the assert-shaped Demos this module's keystone prescribes.
+    """
+
+    def _extract(self, demo_body: str) -> list[str]:
+        with tempfile.TemporaryDirectory() as t:
+            return extract_demo_commands(_brief(Path(t), demo_body))
+
+    def test_single_quoted_program_is_one_command(self) -> None:
+        # The GHI #965 reproduction shape: `uv run python -c '` opens a quote that
+        # stays open across the program until a lone closing line.
+        body = "uv run python -c '\nimport sys\nraise SystemExit(0)\n'"
+        self.assertEqual(self._extract(body), [body])
+
+    def test_double_quoted_program_is_one_command(self) -> None:
+        body = 'python3 -c "\nimport sys\nprint(1)\n"'
+        self.assertEqual(self._extract(body), [body])
+
+    def test_backslash_continuation_is_one_command(self) -> None:
+        body = "echo one \\\n  two \\\n  three"
+        self.assertEqual(self._extract(body), [body])
+
+    def test_command_substitution_spanning_lines_is_one_command(self) -> None:
+        body = "echo $(\n  printf hi\n)"
+        self.assertEqual(self._extract(body), [body])
+
+    def test_backtick_substitution_spanning_lines_is_one_command(self) -> None:
+        body = "echo `\nprintf hi\n`"
+        self.assertEqual(self._extract(body), [body])
+
+    def test_heredoc_is_one_command(self) -> None:
+        body = "python3 - <<'PY'\nimport sys\nraise SystemExit(0)\nPY"
+        self.assertEqual(self._extract(body), [body])
+
+    def test_interior_comment_line_is_program_text_not_a_fence_comment(self) -> None:
+        # `#` inside a quoted program is Python source. Stripping it as a fence
+        # comment silently rewrites the operator's probe into a different program.
+        body = "python3 -c '\n# not a fence comment\nraise SystemExit(0)\n'"
+        self.assertEqual(self._extract(body), [body])
+
+    def test_interior_blank_line_is_preserved(self) -> None:
+        body = "python3 -c '\nimport sys\n\nraise SystemExit(0)\n'"
+        self.assertEqual(self._extract(body), [body])
+
+    def test_interior_indentation_is_preserved(self) -> None:
+        # Python is whitespace-significant: stripping interior lines changes the
+        # program's meaning, not merely its shape.
+        body = "python3 -c '\nfor i in (1, 2):\n    print(i)\n'"
+        self.assertEqual(self._extract(body), [body])
+
+    def test_escaped_quote_outside_quotes_does_not_open_a_continuation(self) -> None:
+        # `\"` outside quotes is an escaped literal, not a quote opener; treating it
+        # as one would swallow every following command into a single string.
+        body = 'echo \\"\necho after'
+        self.assertEqual(self._extract(body), ['echo \\"', "echo after"])
+
+    def test_unterminated_quote_is_returned_not_dropped(self) -> None:
+        # Fail-closed: an unclosed quote must still reach the shell so the demo
+        # reports a real non-zero exit. Dropping it would turn a malformed Demo
+        # into a silent pass — the fabrication class this module exists to stop.
+        body = "python3 -c '\nimport sys"
+        self.assertEqual(self._extract(body), [body])
+
+    def test_commands_after_a_multiline_command_still_separate(self) -> None:
+        body = "python3 -c '\nprint(1)\n'\necho after"
+        self.assertEqual(self._extract(body), ["python3 -c '\nprint(1)\n'", "echo after"])
+
+    def test_top_level_comments_and_blanks_are_still_dropped(self) -> None:
+        # The pre-existing single-line contract is unchanged by the joiner.
+        body = "# a fence comment\n\necho hello\n\n# another\necho world"
+        self.assertEqual(self._extract(body), ["echo hello", "echo world"])
+
+
 class TestGenerateBlockers(unittest.TestCase):
     def test_no_demo_is_a_blocker(self) -> None:
         with tempfile.TemporaryDirectory() as t:
@@ -97,6 +176,26 @@ class TestGenerateBlockers(unittest.TestCase):
             brief = _brief(tmp, 'python3 -c "raise SystemExit(1)"')
             packet = generate_evidence_packet(tmp, brief, "OBPI-x")
             self.assertFalse(packet.attestable)
+            self.assertTrue(any("Demo exited 1" in b for b in packet.blockers))
+
+    def test_multiline_demo_that_passes_is_not_a_blocker(self) -> None:
+        # GHI #965's false red: a multi-line assert-shaped probe that exits 0 must
+        # produce no Demo blocker. Before the joiner this yielded one blocker per
+        # physical line (exit 2 on the opener, 127 on each interior line).
+        with tempfile.TemporaryDirectory() as t:
+            tmp = Path(t)
+            brief = _brief(tmp, "python3 -c '\nimport sys\nraise SystemExit(0)\n'")
+            packet = generate_evidence_packet(tmp, brief, "OBPI-x")
+            self.assertEqual([b for b in packet.blockers if "Demo exited" in b], [])
+            self.assertEqual([d.exit_status for d in packet.demos], [0])
+
+    def test_multiline_demo_that_fails_is_still_a_blocker(self) -> None:
+        # The keystone survives the joiner: a multi-line demo asserting a bad state
+        # still fails closed. Joining commands must not soften the fail-closed edge.
+        with tempfile.TemporaryDirectory() as t:
+            tmp = Path(t)
+            brief = _brief(tmp, "python3 -c '\nimport sys\nraise SystemExit(1)\n'")
+            packet = generate_evidence_packet(tmp, brief, "OBPI-x")
             self.assertTrue(any("Demo exited 1" in b for b in packet.blockers))
 
     def test_missing_receipts_are_blockers(self) -> None:
