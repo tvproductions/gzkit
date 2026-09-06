@@ -795,6 +795,147 @@ class TestPrecompleteAdversarialValidationCheck(unittest.TestCase):
         self.assertTrue(result.ok, msg=result.message)
 
 
+class TestPrecompleteStandingVerdictDeclaration(unittest.TestCase):
+    """A discharged refutation must be declarable, not permanently blocking (GHI #964).
+
+    GHI #879 made the check fail closed whenever a refutation token APPEARS, because
+    position cannot tell which verdict stands. That direction is right, but it left a
+    converged Step 4b with no way out: under the GHI #960 loop doctrine a refutation is
+    an INPUT to ``if(4a && 4b) pass; else loop``, so the normal shape of a finished
+    Step 4b is a history of refuted rounds ending in a clean one. The more faithfully a
+    brief records its rounds, the more certainly the pre-flight failed.
+
+    The remedy is a DECLARATION the check can read, never a position rule: a brief says
+    which verdict stands, and the check believes the declaration rather than guessing.
+    Absent a declaration the pre-existing fail-closed behavior is unchanged.
+    """
+
+    _seed = staticmethod(TestPrecompleteAdversarialValidationCheck._seed)
+
+    def test_declared_standing_verdict_clears_discharged_refutation_history(self) -> None:
+        # The GHI #964 reproduction: rounds 6-11 REFUTED, round 12 not-refuted and
+        # declared standing. This is the case that could never pass before.
+        result = _check_adversarial_validation(
+            self._seed(
+                "**Standing verdict:** not-refuted (round 12, receipt "
+                "`arb-step-codexadversary-fe5cf406`)\n\n"
+                "Round 11 is SUPERSEDED. Its verdict was `REFUTED`.\n"
+                "Round 10 is SUPERSEDED. Its verdict was `REFUTED-WITH-CAVEATS`.\n"
+            )
+        )
+        self.assertTrue(result.ok, msg=result.message)
+        self.assertIn("not-refuted", result.message.lower())
+
+    def test_declared_standing_refutation_still_fails(self) -> None:
+        # A declaration is not an escape hatch: declaring that a REFUTATION stands
+        # must still block. The check believes the brief in both directions.
+        result = _check_adversarial_validation(
+            self._seed(
+                "**Standing verdict:** refuted\n\nRound 1 returned `not-refuted`, "
+                "but round 2 found a blocking defect.\n"
+            )
+        )
+        self.assertFalse(result.ok, msg=result.message)
+        self.assertIn("refuted", result.message.lower())
+
+    def test_declaration_is_tolerant_of_emphasis_and_case(self) -> None:
+        # Briefs are hand-authored markdown; the declaration must not hinge on
+        # whether the author bolded it.
+        for body in (
+            "Standing verdict: NOT-REFUTED\n\nEarlier round: `REFUTED`.\n",
+            "**Standing Verdict:** not-refuted\n\nEarlier round: `REFUTED`.\n",
+            "**standing verdict**: not-refuted\n\nEarlier round: `REFUTED`.\n",
+        ):
+            with self.subTest(body=body.splitlines()[0]):
+                result = _check_adversarial_validation(self._seed(body))
+                self.assertTrue(result.ok, msg=result.message)
+
+    def test_conflicting_declarations_fail_rather_than_pick_one(self) -> None:
+        # Two declarations disagreeing is the exact ambiguity this check exists to
+        # refuse. Picking either one silently would reintroduce the position rule
+        # by the back door.
+        result = _check_adversarial_validation(
+            self._seed("**Standing verdict:** not-refuted\n\n**Standing verdict:** refuted\n")
+        )
+        self.assertFalse(result.ok, msg=result.message)
+        self.assertIn("conflict", result.message.lower())
+
+    def test_unrecognized_declared_verdict_fails(self) -> None:
+        # A declaration naming a token outside the completion command's vocabulary
+        # is not a verdict; treating it as one would let any word license the step.
+        result = _check_adversarial_validation(
+            self._seed("**Standing verdict:** shipped\n\nEarlier round: `REFUTED`.\n")
+        )
+        self.assertFalse(result.ok, msg=result.message)
+
+    def test_declaration_outside_the_step_4b_section_is_ignored(self) -> None:
+        # The section boundary is load-bearing: a declaration in a later section
+        # must not reach back and clear this OBPI's refutation.
+        result = _check_adversarial_validation(
+            self._seed(
+                "Round 1 verdict: `REFUTED`.\n",
+                trailing="\n### Value Narrative\n\n**Standing verdict:** not-refuted\n",
+            )
+        )
+        self.assertFalse(result.ok, msg=result.message)
+
+    def test_remediation_does_not_offer_the_completion_path_960_removed(self) -> None:
+        # The old remediation told the operator to run
+        # `--adversary-verdict refuted --adversary-resolution`. GHI #960 removed that
+        # path: _enforce_adversarial_validation refuses every refutation verdict
+        # regardless of resolution. Naming a refused remedy is worse than naming none.
+        result = _check_adversarial_validation(self._seed("Round 1 verdict: `REFUTED`.\n"))
+        self.assertFalse(result.ok, msg=result.message)
+        assert result.remediation is not None
+        self.assertNotIn("--adversary-verdict refuted", result.remediation)
+
+    def test_remediation_names_the_declaration_as_the_overturn_remedy(self) -> None:
+        # The old remediation said "if the refutation was overturned, say so in the
+        # section" while nothing the section could say cleared the check. The
+        # remediation must name a remedy that actually works.
+        result = _check_adversarial_validation(self._seed("Round 1 verdict: `REFUTED`.\n"))
+        assert result.remediation is not None
+        self.assertIn("Standing verdict", result.remediation)
+
+    def test_headings_and_prose_using_the_words_are_not_declarations(self) -> None:
+        """A sentence using the words is not a declaration — the real-world shape.
+
+        OBPI-0.35.0-04 carries three round headings of exactly this form. A
+        colon-only rule read all three as declarations and then refused the brief for
+        "conflicting standing verdicts" it had invented itself. The declaration must
+        own its line; caught by running the check against the real brief, not by the
+        fixtures above, which is why this shape is pinned verbatim.
+        """
+        result = _check_adversarial_validation(
+            self._seed(
+                "#### Round 10 — THE STANDING VERDICT: round 9's root CLOSED, a new high\n\n"
+                "#### Round 12 — THE STANDING VERDICT: NOT-REFUTED, the acceptance round\n\n"
+                "Round 11 verdict was `REFUTED`.\n"
+            )
+        )
+        # No declaration was made, so the refutation in the history still fails closed.
+        self.assertFalse(result.ok, msg=result.message)
+        self.assertNotIn("conflict", result.message.lower())
+        self.assertIn("refuted", result.message.lower())
+
+    def test_declaration_is_found_when_indented_or_quoted(self) -> None:
+        """Leading indentation, a list dash or a blockquote marker are still line-start."""
+        for prefix in ("  ", "- ", "> "):
+            with self.subTest(prefix=prefix):
+                result = _check_adversarial_validation(
+                    self._seed(
+                        f"{prefix}**Standing verdict:** not-refuted\n\nEarlier round: `REFUTED`.\n"
+                    )
+                )
+                self.assertTrue(result.ok, msg=result.message)
+
+    def test_no_declaration_and_no_refutation_still_passes(self) -> None:
+        # The declaration is required only to discharge a refutation; a clean
+        # section needs nothing new.
+        result = _check_adversarial_validation(self._seed("**Verdict: NOT-REFUTED** - clean."))
+        self.assertTrue(result.ok, msg=result.message)
+
+
 class TestPrecompleteOperatorBlockCheck(unittest.TestCase):
     """Precomplete must not report READY while a human ruling is outstanding (GHI #887).
 

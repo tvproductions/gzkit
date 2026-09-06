@@ -584,12 +584,51 @@ def _verdict_vocabulary() -> tuple[str, ...]:
     return ADVERSARY_VERDICTS
 
 
-def _step_4b_verdicts(text: str, step_4b_end: int) -> list[str]:
-    """Return the verdict tokens recorded in the Step-4b section, in order."""
+# A brief declares which verdict STANDS; the check reads the declaration rather
+# than inferring it from position. Emphasis is optional on either side of the
+# label because briefs are hand-authored markdown.
+#
+# The declaration must OWN ITS LINE. A colon alone is not enough of a
+# discriminator: OBPI-0.35.0-04 carries three round headings shaped
+# `#### Round 12 - THE STANDING VERDICT: NOT-REFUTED, the acceptance round`, and a
+# colon-only rule read all three as declarations, then refused the brief for
+# declaring verdicts that "conflicted" -- a check inventing its own ambiguity out
+# of ordinary prose. Anchoring to line start (and admitting only indentation,
+# blockquote and list markers before the label, never `#`) separates a deliberate
+# one-line declaration from a sentence that happens to use the words. Whitespace
+# inside the pattern is `[ \t]` rather than `\s` for the same reason: a declaration
+# is one line, so the label may not pair with a colon on a later one.
+_STANDING_VERDICT_RE = re.compile(
+    r"^[ \t>\-]*\*{0,2}[ \t]*standing[ \t]+verdict[ \t]*\*{0,2}[ \t]*:"
+    r"[ \t]*\*{0,2}[ \t]*([\w-]+)",
+    re.IGNORECASE | re.MULTILINE,
+)
+
+
+def _step_4b_section(text: str, step_4b_end: int) -> str:
+    """Return the Step-4b section body, bounded by the next heading."""
     rest = text[step_4b_end:]
     next_heading = _NEXT_HEADING_RE.search(rest)
-    section = rest[: next_heading.start()] if next_heading else rest
+    return rest[: next_heading.start()] if next_heading else rest
+
+
+def _step_4b_verdicts(text: str, step_4b_end: int) -> list[str]:
+    """Return the verdict tokens recorded in the Step-4b section, in order."""
+    section = _step_4b_section(text, step_4b_end)
     return [m.group(1).lower() for m in _verdict_pattern().finditer(section)]
+
+
+def _declared_standing_verdicts(text: str, step_4b_end: int) -> list[str]:
+    """Return every DECLARED standing verdict in the Step-4b section, in order.
+
+    Returns the raw declared tokens -- including ones outside the vocabulary -- so
+    the caller can refuse an unrecognized declaration rather than silently ignoring
+    it. A declaration naming a non-verdict is a failed declaration, never an absent
+    one: ignoring it would let ``**Standing verdict:** shipped`` fall through to the
+    history scan and read as if nothing had been claimed.
+    """
+    section = _step_4b_section(text, step_4b_end)
+    return [m.group(1).lower() for m in _STANDING_VERDICT_RE.finditer(section)]
 
 
 def _check_adversarial_validation(brief_path: Path) -> CheckResult:
@@ -618,10 +657,20 @@ def _check_adversarial_validation(brief_path: Path) -> CheckResult:
     the honest direction for a pre-flight: it converts a green that licenses into a
     red that requires a human to read the section.
 
+    **A refutation must be DISCHARGEABLE, not permanently blocking (GHI #964).** Under
+    the GHI #960 loop doctrine a refutation is an INPUT to ``if(4a && 4b) pass; else
+    loop``, so the normal shape of a converged Step 4b is a history of refuted rounds
+    ending in a clean one — and failing on any refutation token made the pre-flight
+    unpassable for exactly that shape. The escape is a DECLARATION the brief writes and
+    this check reads (``**Standing verdict:** <verdict>``), never a position rule. Absent
+    a declaration the fail-closed behavior above is unchanged, so nothing is weakened:
+    a brief must SAY which verdict stands to get credit for it.
+
     The asymmetry with ``gz obpi complete`` is deliberate and preserved. This is the
-    bypassable pre-flight; the chokepoint is ``_enforce_adversarial_validation``,
-    which accepts a standing refutation alongside ``--adversary-resolution``. This
-    check adds no new gate — it stops the pre-flight from reporting green about a
+    bypassable pre-flight; the chokepoint is ``_enforce_adversarial_validation``, which
+    refuses EVERY refutation verdict regardless of resolution (GHI #960 removed the
+    ``refuted`` + ``--adversary-resolution`` completion path this docstring once named).
+    This check adds no new gate — it stops the pre-flight from reporting green about a
     state the chokepoint would refuse.
     """
     from gzkit.governance.trust_audits.adversarial_validation import (  # noqa: PLC0415
@@ -681,6 +730,58 @@ def _check_adversarial_validation(brief_path: Path) -> CheckResult:
             ),
         )
 
+    # A DECLARED standing verdict governs, in BOTH directions (GHI #964). It is read
+    # before the history scan because that scan cannot distinguish a discharged round
+    # from a live one -- which is precisely why the declaration exists.
+    declared = _declared_standing_verdicts(text, step_4b.end())
+    distinct = sorted(set(declared))
+    if len(distinct) > 1:
+        return CheckResult(
+            name="adversarial_validation",
+            ok=False,
+            message=f"Step 4b declares conflicting standing verdicts: {', '.join(distinct)}",
+            remediation=(
+                "Leave exactly one `**Standing verdict:** <verdict>` line in the Step 4b "
+                "section, naming the verdict of the round that STANDS. Two declarations "
+                "that disagree are the ambiguity this check exists to refuse — resolving "
+                "it by picking one would restore the position rule the check dropped."
+            ),
+        )
+    if distinct:
+        standing = distinct[0]
+        if standing not in _verdict_vocabulary():
+            return CheckResult(
+                name="adversarial_validation",
+                ok=False,
+                message=f"Step 4b declares an unrecognized standing verdict '{standing}'",
+                remediation=(
+                    "Declare the standing verdict using the same vocabulary "
+                    "`gz obpi complete --adversary-verdict` accepts "
+                    f"({', '.join(sorted(_verdict_vocabulary()))}). A declaration naming "
+                    "something else is a failed declaration, not an absent one, so it is "
+                    "refused rather than ignored."
+                ),
+            )
+        if standing in _refutation_verdicts():
+            return CheckResult(
+                name="adversarial_validation",
+                ok=False,
+                message=f"Step 4b declares standing verdict '{standing}'",
+                remediation=(
+                    "The brief declares that a REFUTATION stands. Return to Stage 2, fix "
+                    "the refuted claim and re-run the adversary, then declare the verdict "
+                    "that round returns. `gz obpi complete` refuses every refutation "
+                    "verdict (GHI #960), so a standing refutation cannot be completed "
+                    "past — it loops. A known refutation must never be handed to the "
+                    "operator dressed as clean."
+                ),
+            )
+        return CheckResult(
+            name="adversarial_validation",
+            ok=True,
+            message=f"Step 4b declares standing verdict '{standing}'",
+        )
+
     refutations = sorted({v for v in verdicts if v in _refutation_verdicts()})
     if refutations:
         return CheckResult(
@@ -688,13 +789,16 @@ def _check_adversarial_validation(brief_path: Path) -> CheckResult:
             ok=False,
             message=f"Step 4b records {', '.join(refutations)}",
             remediation=(
-                "Read the Step 4b section and establish which verdict STANDS — this "
-                "check cannot tell from prose. If the refutation was overturned in a "
-                "later round, say so in the section. If it stands, either return to "
-                "Stage 2 and fix the refuted claim, or complete with the refutation "
-                "recorded: --adversary-verdict refuted --adversary-resolution '<what "
-                "was fixed and how the adversary's own check was re-run>'. A known "
-                "refutation must never be handed to the operator dressed as clean."
+                "Establish which verdict STANDS — this check cannot tell from prose, and "
+                "position is not the answer. If a later round overturned the refutation, "
+                "add one `**Standing verdict:** <verdict>` line to the Step 4b section "
+                "naming that round's verdict; the historical refutation tokens may stay "
+                "exactly as recorded. If the refutation still stands, return to Stage 2, "
+                "fix the refuted claim and re-run the adversary — `gz obpi complete` "
+                "refuses every refutation verdict (GHI #960), so complete on the verdict "
+                "the passing round returns and cite the earlier rounds in "
+                "--adversary-resolution as the record of what was found and discharged. "
+                "A known refutation must never be handed to the operator dressed as clean."
             ),
         )
 

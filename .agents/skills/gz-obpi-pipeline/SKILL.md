@@ -5,9 +5,9 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-05
+last_reviewed: 2026-09-06
 metadata:
-  skill-version: "6.44.0"
+  skill-version: "6.45.0"
 model: sonnet
 ---
 
@@ -886,6 +886,14 @@ catch.
 The prior 2026-09-03 rule said: "A round returning no critical and no high IN-SCOPE findings converges the gate." This ruling supersedes that severity-only stopping condition: do not solicit completion attestation while any finding against the agreed OBPI requirements remains unresolved, or while a claimed fix has only the implementing agent's confirmation. A non-refuting verdict on the earlier state does not independently verify later repairs, including repairs to evidence or missing witnesses.
 
 After fixing a finding, obtain a focused independent Step 4b follow-up. Supply the prior findings, the changed artifacts and evidence, and the unchanged scope/threat-model boundary. The adversary must verify each claimed closure and check the affected requirements for regressions; it must not restart an unrestricted search for stronger guarantees. Record the actual new verdict and receipt, with each prior finding's disposition and demonstrated evidence. Preserve earlier rounds as history. Never request a preferred verdict or relabel `CORROBORATED-WITH-CAVEATS` as clean yourself.
+
+**Preserving history means you MUST declare which verdict stands (GHI #964).** `gz obpi precomplete` reads the Step 4b section and cannot tell a discharged round from a live one — position is not the answer, since a section may open with its standing verdict and then narrate six earlier refutations. So a converged section whose history holds any refutation carries exactly one declaration line:
+
+```markdown
+**Standing verdict:** not-refuted
+```
+
+Use the same vocabulary `gz obpi complete --adversary-verdict` accepts, name the round and receipt alongside it, and leave the historical refutation tokens exactly as recorded — they are the record of what was found and discharged. The check believes the declaration in BOTH directions: declaring that a refutation stands still blocks, two declarations that disagree are refused as ambiguous, and with no declaration at all a refutation in the history still fails closed. This is the one sanctioned way to say "overturned"; it is not a relabelling, because the round's own verdict stays written where it happened.
 
 **Clean means no unresolved in-scope findings, not absence of all limitations.** Accepted residual risks and future ADR-wide obligations remain disclosed separately; they are not failed present-tense OBPI requirements. Filing a GHI alone does not discharge an unmet requirement. A newly proposed boundary change requires operator ruling and independent revalidation; the implementing agent cannot move a finding outside scope to clear the gate. The latest independent review must explicitly confirm closure on the corrected artifacts and return `not-refuted` before soliciting attestation. Scope-boundary disclosures may remain, provided the adversary distinguishes them from unresolved findings.
 
