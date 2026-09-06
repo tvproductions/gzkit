@@ -172,6 +172,54 @@ class TestExitStatus(unittest.TestCase):
         self.assertEqual(result.transcripts[0].missing_lines, [])
         self.assertTrue(any("exited 1" in b for b in result.blockers))
 
+    def test_the_status_escape_cannot_itself_conceal_the_failure(self) -> None:
+        # NEGATIVE CONTROL for the escape this module documents. `; echo "exit $?"`
+        # makes the shell's own status 0, so the non-zero blocker cannot fire —
+        # the failure now lives only in the OUTPUT. A packet that appends the
+        # probe and then omits the line it emitted is back to presenting a
+        # failing command as success, and the convention alone does not stop it.
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            body = (
+                "```\n"
+                "$ python3 -c \"import sys; print('ruff: clean'); sys.exit(1)\"; "
+                'echo "exit $?"\n'
+                "ruff: clean\n"
+                "```\n"
+            )
+            result = verify_packet(tmp, _packet(tmp, body))
+        self.assertFalse(result.verified)
+        self.assertEqual(result.transcripts[0].exit_status, 0)
+        self.assertEqual(result.transcripts[0].missing_lines, [])
+        self.assertTrue(any("exit 1" in b for b in result.blockers))
+
+    def test_an_elision_cannot_stand_in_for_an_omitted_failure_status(self) -> None:
+        # The `...` escape exists for output that cannot reproduce, never for
+        # output the author would rather not show. Eliding the status line is
+        # the same concealment wearing the sanctioned marker.
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            body = (
+                "```\n"
+                "$ python3 -c \"import sys; print('ruff: clean'); sys.exit(3)\"; "
+                'echo "exit $?"\n'
+                "ruff: clean\n"
+                "...\n"
+                "```\n"
+            )
+            result = verify_packet(tmp, _packet(tmp, body))
+        self.assertFalse(result.verified)
+
+    def test_a_zero_status_line_need_not_be_pasted(self) -> None:
+        # Only a FAILURE indicator must survive abridgement. Requiring `exit 0`
+        # to be quoted would make ordinary editing a blocker and teach authors
+        # to route around the check.
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            body = '```\n$ echo hello; echo "exit $?"\nhello\n```\n'
+            result = verify_packet(tmp, _packet(tmp, body))
+        self.assertTrue(result.verified, result.blockers)
+
     def test_an_honest_red_run_is_authorable_by_showing_the_status(self) -> None:
         # The escape, and the reason the rule above is not a false-block: a
         # packet that WANTS to show a RED run shows the status, which reproduces

@@ -75,6 +75,10 @@ _SHELL_INFO_STRINGS: frozenset[str] = frozenset({"bash", "sh", "shell", "console
 _FENCE_RE = re.compile(r"^\s*```+\s*([A-Za-z0-9_+.-]*)\s*$")
 _PROMPT_RE = re.compile(r"^\s*\$[ \t]?(.*)$")
 _ELISION_RE = re.compile(r"^(?:#\s*)?(?:\.{2,}|…)$")
+# A standalone status line emitted by an explicit probe (`; echo "exit $?"`).
+# Nonzero only: requiring `exit 0` to be quoted would make ordinary abridgement
+# a blocker and teach authors to route around the check.
+_EMITTED_FAILURE_RE = re.compile(r"^\s*exit[:\s]\s*([1-9]\d*)\s*$", re.IGNORECASE)
 
 _COMMAND_TIMEOUT_SECONDS = 120
 _OUTPUT_TAIL_LINES = 40
@@ -100,6 +104,10 @@ class TranscriptResult(BaseModel):
     produced_output: bool = Field(..., description="True if the re-run wrote anything")
     masked_verifier: str | None = Field(
         default=None, description="Verifier whose exit status a trailing filter discards"
+    )
+    omitted_failure_lines: list[str] = Field(
+        default_factory=list,
+        description="Non-zero status lines the command emitted and the packet did not show",
     )
     missing_lines: list[str] = Field(..., description="Claimed lines the command did not produce")
     output_tail: str = Field(default="", description="Last lines of the observed output")
@@ -231,6 +239,31 @@ def _run(command: str, project_root: Path) -> tuple[int, str, bool]:
     return proc.returncode, (proc.stdout or "") + (proc.stderr or ""), False
 
 
+def _omitted_failure_lines(claimed: list[str], output: str) -> list[str]:
+    """Return non-zero status lines the command emitted that the packet did not show.
+
+    The negative control for this module's own escape. ``; echo "exit $?"`` is the
+    documented way to present an honest RED run, and it works by moving the status
+    out of the process — the shell then exits 0 because ``echo`` succeeded, so the
+    non-zero blocker cannot fire and the failure survives only as a line of output.
+    A packet that appends the probe and then omits the line it emitted is back to
+    presenting a failing command as success, and the authoring convention alone
+    does not stop it.
+
+    An elision cannot satisfy this: ``...`` exists for output that cannot reproduce,
+    never for output the author would rather not show.
+    """
+    shown = [line.strip() for line in claimed if line.strip()]
+    omitted: list[str] = []
+    for line in output.splitlines():
+        if not _EMITTED_FAILURE_RE.match(line):
+            continue
+        status = line.strip()
+        if not any(status in candidate for candidate in shown):
+            omitted.append(status)
+    return omitted
+
+
 def _verify_transcript(transcript: Transcript, project_root: Path) -> TranscriptResult:
     """Re-run one transcript and record which of its claimed lines did not reproduce."""
     exit_status, output, timed_out = _run(transcript.command, project_root)
@@ -239,6 +272,7 @@ def _verify_transcript(transcript: Transcript, project_root: Path) -> Transcript
     # (abridging) and may re-indent what it shows (presentation). It may not show
     # what the command never wrote — that is the one direction fabrication takes.
     missing = [] if timed_out else [line for line in claimed if line not in output]
+    omitted = [] if timed_out else _omitted_failure_lines(claimed, output)
     tail = "\n".join(output.splitlines()[-_OUTPUT_TAIL_LINES:])
     return TranscriptResult(
         command=transcript.command,
@@ -248,6 +282,7 @@ def _verify_transcript(transcript: Transcript, project_root: Path) -> Transcript
         missing_lines=missing,
         output_tail=tail,
         masked_verifier=masked_verifier(transcript.command),
+        omitted_failure_lines=omitted,
     )
 
 
@@ -274,6 +309,12 @@ def _blockers(results: list[TranscriptResult], transcripts: list[Transcript]) ->
                 f"Command exited {result.exit_status} (expected 0): {result.command}. A "
                 "packet may not present a failing command as success; to show a RED run, "
                 'write `<cmd>; echo "exit $?"` so the status itself reproduces.'
+            )
+        if result.omitted_failure_lines:
+            shown = "; ".join(result.omitted_failure_lines)
+            blockers.append(
+                f"Command emitted a non-zero status the packet does not show [{shown}]: "
+                f"{result.command}. Paste the status line; eliding it conceals the failure."
             )
         if result.missing_lines:
             shown = "; ".join(result.missing_lines[:3])

@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-09-06
 metadata:
-  skill-version: "6.48.0"
+  skill-version: "6.49.0"
 model: sonnet
 ---
 
@@ -737,7 +737,12 @@ back"* — and every one of them is re-executed:
   was a REQ-08 proof command that returns nothing when run — as a transcript that is
   a `witnesses nothing` blocker; left bare it is only reported.
 - **For a silent assert-shaped probe, show the status:** `$ <cmd>; echo "exit $?"`.
-  The exit code is the information the reader needs, and it reproduces.
+  The exit code is the information the reader needs, and it reproduces. **Then paste the
+  line it emits.** The probe moves the status out of the process — the shell exits 0
+  because `echo` succeeded — so a packet that appends the probe and omits the `exit 1` it
+  printed is presenting a failing command as success again. Omitting it is a blocker, and
+  `...` does not satisfy it: elision is for output that cannot reproduce, never for output
+  you would rather not show.
 - **A fenced shell block with no `$` claims no output** and is never re-run — that is
   what the `arb:` incantation blocks are, and their result is carried by the receipt
   rows. They are listed back as citations so the operator sees what was *not*
@@ -746,8 +751,8 @@ back"* — and every one of them is re-executed:
 - **A failing command cannot be presented as success.** A non-zero exit is a blocker
   outright, because containment alone lets a packet quote only the success lines of a
   command that failed — every quoted line reproduces, and the omission is the lie. To
-  show a RED run, use the status form above; it exits 0 and puts the failure in front of
-  the operator rather than dropping it.
+  show a RED run, use the status form above **and paste the status it prints**; the
+  convention is not the enforcement, and the check holds you to both halves.
 - **Do not pipe a verifier into a filter.** The shell reports the filter's status, so a
   failing suite would replay green. Use `set -o pipefail` or redirect to a file.
 
