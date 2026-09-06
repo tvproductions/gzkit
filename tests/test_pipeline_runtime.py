@@ -520,7 +520,7 @@ class TestPlanFileDualScan(unittest.TestCase):
             global_dir = home / ".claude" / "plans"
             global_dir.mkdir(parents=True)
             (global_dir / "humble-fluttering-shore.md").write_text(
-                "Plan for OBPI-0.25.0-26 — drift detection pattern.\n",
+                "# Plan — OBPI-0.25.0-26\n\nPlan for OBPI-0.25.0-26 — drift detection pattern.\n",
                 encoding="utf-8",
             )
 
@@ -544,13 +544,13 @@ class TestPlanFileDualScan(unittest.TestCase):
             global_plans.mkdir(parents=True)
 
             old_plan = project_plans / "old.md"
-            old_plan.write_text("Plan for OBPI-0.25.0-26\n", encoding="utf-8")
+            old_plan.write_text("# Plan — OBPI-0.25.0-26\n\nOlder plan\n", encoding="utf-8")
             import os
 
             os.utime(old_plan, (1_000_000, 1_000_000))
 
             new_plan = global_plans / "new.md"
-            new_plan.write_text("Newer plan for OBPI-0.25.0-26\n", encoding="utf-8")
+            new_plan.write_text("# Plan — OBPI-0.25.0-26\n\nNewer plan\n", encoding="utf-8")
             os.utime(new_plan, (2_000_000, 2_000_000))
 
             with patch.dict("os.environ", {"GZKIT_CLAUDE_HOME": str(home)}):
@@ -581,7 +581,7 @@ class TestPlanFileDualScan(unittest.TestCase):
             (home / ".claude" / "plans").mkdir(parents=True)
 
             local_plan = project_plans / "already-here.md"
-            local_plan.write_text("Existing plan for OBPI-0.25.0-26\n", encoding="utf-8")
+            local_plan.write_text("# Plan — OBPI-0.25.0-26\n\nExisting plan\n", encoding="utf-8")
 
             with patch.dict("os.environ", {"GZKIT_CLAUDE_HOME": str(home)}):
                 found = find_plan_for_obpi(project_root, "OBPI-0.25.0-26")
@@ -604,7 +604,7 @@ class TestPlanFileDualScan(unittest.TestCase):
             global_dir = home / ".claude" / "plans"
             global_dir.mkdir(parents=True)
             (global_dir / "glimmering-crafting-hedgehog.md").write_text(
-                "Plan for OBPI-0.0.21-07 -- bdd chores distribution.\n",
+                "# Plan — OBPI-0.0.21-07\n\nPlan for OBPI-0.0.21-07 -- bdd chores distribution.\n",
                 encoding="utf-8",
             )
 

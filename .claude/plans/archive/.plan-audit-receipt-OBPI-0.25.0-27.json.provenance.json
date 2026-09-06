@@ -1,0 +1,9 @@
+{
+  "original_path": "/Users/jeff/Documents/Code/gzkit/.claude/plans/.plan-audit-receipt-OBPI-0.25.0-27.json",
+  "archived_at": "2026-09-06T11:24:09.482367+00:00",
+  "sha256": "dff2d72155f61d5ff5d3bde2492b284639f91ccd9d7d99fc37a80b7e6d83a4a0",
+  "obpi_id": "OBPI-0.25.0-27",
+  "verdict": "PASS",
+  "finding_resolved": false,
+  "note": "Preserved by gz preflight --apply. Moving evidence does not resolve its finding: the verdict above still stands."
+}

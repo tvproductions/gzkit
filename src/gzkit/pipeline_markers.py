@@ -45,6 +45,14 @@ STALE_MARKER_HOURS = 24
 _OBPI_SHORT_FORM_RE = re.compile(r"OBPI-\d+\.\d+\.\d+-\d+")
 
 
+# A plan's declaration block names its subject structurally — an H1, or the
+# ``**OBPI:**`` / ``**OBPI slug:**`` label the plan templates carry. Deliberately
+# NOT a line-count window: the incidental mention this rule exists to reject sat
+# at line 19 of the real conflicting plan, so a positional rule would have passed
+# by accident of where one sentence landed.
+_OBPI_LABEL_RE = re.compile(r"^\s*\**OBPI(?:\s+slug)?\**\s*:", re.IGNORECASE)
+
+
 def _obpi_short_form(obpi_id: str) -> str:
     """Return the short form ``OBPI-X.Y.Z-NN`` from any OBPI identifier.
 
@@ -113,6 +121,51 @@ def pipeline_plan_search_dirs(project_root: Path) -> list[Path]:
     return candidates
 
 
+def _declared_obpi_ids(plan_path: Path) -> set[str]:
+    """Return the short-form OBPI ids a plan DECLARES — filename plus its H1.
+
+    Declaration is STRUCTURAL — the filename, an H1, or an ``**OBPI:**`` label —
+    and stops at the first ``##``, below which everything is body prose.
+
+    Measured over the live corpus 2026-09-06: of 306 plans, 304 name their OBPI
+    in the H1 and only 217 in the filename, so filename-only ownership would
+    orphan every auto-named plan. The two that declare neither own no OBPI (one
+    is ADR-scoped, one is a superseded stub).
+    """
+    declared = set(_OBPI_SHORT_FORM_RE.findall(plan_path.name))
+    try:
+        lines = plan_path.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return declared
+    for line in lines:
+        if line.startswith("## "):
+            break  # past the declaration block; everything below is body prose
+        if line.startswith("# ") or _OBPI_LABEL_RE.match(line):
+            declared.update(_OBPI_SHORT_FORM_RE.findall(line))
+    return declared
+
+
+def plan_declares_obpi(plan_path: Path, obpi_id: str) -> bool:
+    """Report whether this plan OWNS ``obpi_id`` rather than merely mentioning it.
+
+    The single ownership rule for the plans directory. Two callers disagreed:
+    discovery accepted any mention of the short form anywhere in the body, while
+    orphan detection required the full slug. The same plan was therefore both
+    "the plan for OBPI-05" and "no plan exists for OBPI-05", so a
+    FAIL-because-no-plan-exists receipt orphaned itself by construction — the way
+    a sibling plan mentions an unplanned OBPI IS the short-form exclusion
+    sentence, and the more correctly a plan disclaims scope it does not carry,
+    the more certainly the resulting receipt self-orphaned.
+
+    Ownership is DECLARED (filename, H1, or ``**OBPI:**`` label), never
+    incidental. Comparison is on the short form so the short-form and
+    canonical-slug callers agree (GHI #313, GHI #967).
+    """
+    if not obpi_id:
+        return False
+    return _obpi_short_form(obpi_id) in _declared_obpi_ids(plan_path)
+
+
 def find_plan_for_obpi(project_root: Path, obpi_id: str) -> Path | None:
     """Locate the most recent plan file referencing ``obpi_id`` across both dirs (#128).
 
@@ -133,11 +186,7 @@ def find_plan_for_obpi(project_root: Path, obpi_id: str) -> Path | None:
         for plan_path in plans_dir.glob("*.md"):
             if plan_path.name.startswith("."):
                 continue
-            try:
-                content = plan_path.read_text(encoding="utf-8")
-            except OSError:
-                continue
-            if short_form not in content and obpi_id not in content:
+            if short_form not in _declared_obpi_ids(plan_path):
                 continue
             try:
                 mtime = plan_path.stat().st_mtime
