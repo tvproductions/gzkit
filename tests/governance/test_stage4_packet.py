@@ -386,3 +386,85 @@ class TestPacketLevel(unittest.TestCase):
             result = verify_packet(tmp, _packet(tmp, "# Stage 4\n\nAll good.\n"))
         self.assertFalse(result.verified)
         self.assertTrue(any("no `$` transcript" in b for b in result.blockers))
+
+
+class TestOrElseConcealment(unittest.TestCase):
+    """A `||` suffix defeated every guard at once (GHI #970).
+
+    The packet surface is where this matters most, because a packet is a CURATED
+    excerpt and omission is the attack it was built against. The module's own
+    docstring says so — *"the omission is the lie, and no per-line check can see
+    it. So a transcript whose command exits non-zero is a blocker outright"* — and
+    `||` is the one shape that turns that sentence's own remedy off: it makes the
+    exit zero, so the blocker that exists BECAUSE omission is invisible never fires.
+
+    The carve-out's stated justification was that the branch's line *"must still
+    reproduce under the fabrication guard."* That guard is containment: it blocks
+    a line the packet SHOWS and the command did not produce. It says nothing about
+    a line the command produced and the packet does not show.
+    """
+
+    def test_an_or_else_branch_cannot_present_a_failed_verifier_as_success(self) -> None:
+        # The end-to-end reproduction. The command exits 1; the run prints both
+        # `failed` and `FAILED (errors=1)`; the packet pastes one reproducing line
+        # and claims the suite is green. Before the fix: verified=True, 0 blockers.
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            body = (
+                "The suite is green; the run below reproduces cleanly.\n\n"
+                "```bash\n"
+                "$ uv run -m unittest tests.nonexistent_xyz || echo failed\n"
+                "Ran 1 test in 0.000s\n"
+                "```\n"
+            )
+            result = verify_packet(Path.cwd(), _packet(tmp, body))
+        self.assertFalse(result.verified)
+        self.assertTrue(any("unittest" in b for b in result.blockers), result.blockers)
+
+    def test_the_verdict_idiom_survives_because_its_left_side_runs_no_verifier(self) -> None:
+        # The false-block this fix must not cause, stated as its own claim rather
+        # than left implicit in the test above. `test -f` exiting non-zero IS the
+        # verdict; scoping the arm to recognized verifiers is what tells the two
+        # apart, and all 3 top-level `||` transcripts in this repo are this shape.
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            body = (
+                '```\n$ test -f nope.txt && echo "DEFECT" || echo "OK: absent"\nOK: absent\n```\n'
+            )
+            result = verify_packet(tmp, _packet(tmp, body))
+        self.assertTrue(result.verified, result.blockers)
+
+    def test_the_gates_own_recommended_status_line_is_recognised_when_omitted(self) -> None:
+        # COUPLED-SURFACE COHERENCE (AGENTS.md § DO IT RIGHT 1a). `verifier_pipe_gate`
+        # hands the caller `echo "REAL EXIT: $?"`; this module's omission guard read
+        # only a bare `exit N`. An author following the gate's own prose therefore
+        # produced a status line this surface could not see, and could drop it
+        # freely — the sanctioned escape, unguarded, which is the hole the escape's
+        # own docstring says the authoring convention alone does not close.
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            body = (
+                "```\n"
+                "$ python3 -c \"import sys; print('ruff: clean'); sys.exit(3)\"; "
+                'echo "REAL EXIT: $?"\n'
+                "ruff: clean\n"
+                "```\n"
+            )
+            result = verify_packet(tmp, _packet(tmp, body))
+        self.assertFalse(result.verified)
+        self.assertTrue(any("REAL EXIT: 3" in b for b in result.blockers), result.blockers)
+
+    def test_that_status_line_shown_is_accepted(self) -> None:
+        # The escape stays authorable in the spelling the gate recommends.
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            body = (
+                "```\n"
+                "$ python3 -c \"import sys; print('ruff: clean'); sys.exit(3)\"; "
+                'echo "REAL EXIT: $?"\n'
+                "ruff: clean\n"
+                "REAL EXIT: 3\n"
+                "```\n"
+            )
+            result = verify_packet(tmp, _packet(tmp, body))
+        self.assertTrue(result.verified, result.blockers)

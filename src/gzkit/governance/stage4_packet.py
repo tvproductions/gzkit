@@ -75,10 +75,17 @@ _SHELL_INFO_STRINGS: frozenset[str] = frozenset({"bash", "sh", "shell", "console
 _FENCE_RE = re.compile(r"^\s*```+\s*([A-Za-z0-9_+.-]*)\s*$")
 _PROMPT_RE = re.compile(r"^\s*\$[ \t]?(.*)$")
 _ELISION_RE = re.compile(r"^(?:#\s*)?(?:\.{2,}|…)$")
-# A standalone status line emitted by an explicit probe (`; echo "exit $?"`).
-# Nonzero only: requiring `exit 0` to be quoted would make ordinary abridgement
-# a blocker and teach authors to route around the check.
-_EMITTED_FAILURE_RE = re.compile(r"^\s*exit[:\s]\s*([1-9]\d*)\s*$", re.IGNORECASE)
+# A standalone status line emitted by an explicit probe. Nonzero only: requiring
+# `exit 0` to be quoted would make ordinary abridgement a blocker and teach
+# authors to route around the check.
+#
+# The optional leading word is coupled-surface coherence, not generosity (GHI
+# #970, AGENTS.md § DO IT RIGHT 1a). `verifier_pipe_gate._block_prose` hands every
+# blocked caller `echo "REAL EXIT: $?"`, while this pattern read only a bare
+# `exit N` — so an author following the gate's OWN recovery instruction emitted a
+# status line this guard could not see, and could drop it freely. The sanctioned
+# escape was unguarded in precisely the spelling the sanction recommends.
+_EMITTED_FAILURE_RE = re.compile(r"^\s*(?:[A-Za-z]+\s+)?exit[:\s]\s*([1-9]\d*)\s*$", re.IGNORECASE)
 
 # A trailing segment that cannot fail and says nothing. `true`/`:`/`exit 0`
 # replace the witnessed command's status with a constant, and — unlike the
@@ -383,8 +390,8 @@ def _blockers(results: list[TranscriptResult], transcripts: list[Transcript]) ->
             blockers.append(
                 f"Command discards {result.masked_verifier}'s exit status, so the replay "
                 f"observes something else's success, not the verifier's: {result.command}. "
-                "A pipe reports the last stage; a sequence reports the last statement "
-                "(GHI #940)."
+                "A pipe reports the last stage, a sequence reports the last statement, "
+                "and a `||` branch reports the branch (GHI #940, #970)."
             )
         if result.status_suppressor:
             blockers.append(

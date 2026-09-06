@@ -22,7 +22,7 @@ import unittest
 from pathlib import Path
 
 from gzkit.arb.validator import CANONICAL_STEP_COMMANDS
-from gzkit.verifier_pipe_gate import decide, masked_verifier
+from gzkit.verifier_pipe_gate import decide, masked_verifier, masked_verifier_reason
 
 
 class TestMaskedVerifierDetection(unittest.TestCase):
@@ -68,8 +68,18 @@ class TestMaskedVerifierDetection(unittest.TestCase):
         self.assertIsNone(masked_verifier('uv run gz check --filter "unit|integration"'))
 
     def test_logical_or_is_not_a_pipe(self) -> None:
-        """`||` is a control operator, not a pipeline — the verifier's exit survives."""
-        self.assertIsNone(masked_verifier("uv run gz check || echo FAILED"))
+        """AMENDED under GHI #970. `||` is not a PIPE; it does not preserve the status.
+
+        The half that was right is kept: `||` is a control operator, so the PIPE
+        arm must not claim it. The premise appended to it — "the verifier's exit
+        survives" — was the defect. A `||` branch runs only on failure and then
+        REPLACES the failing status with its own, so the aggregate is 0 exactly
+        when the verifier failed.
+        """
+        self.assertEqual(
+            masked_verifier_reason("uv run gz check || echo FAILED"),
+            ("gz check", "or-else"),
+        )
 
     def test_a_later_pipeline_does_not_taint_the_verifier_but_the_sequence_masks_it(
         self,
@@ -528,3 +538,110 @@ class TestArmSpecificRecovery(unittest.TestCase):
                 self.assertIn("BLOCKED:", reason)
                 self.assertIn("WHY:", reason)
                 self.assertIn("NEXT STEP:", reason)
+
+
+class TestOrElseArm(unittest.TestCase):
+    """`||` replaces a failing verifier's status with the branch's (GHI #970).
+
+    The exclusion this class overturns was reasoned, not careless: a `||` branch
+    runs ONLY on failure and announces it, so on a surface where the caller reads
+    the whole terminal the failure is visible. What that reasoning missed is that
+    the announcement is not the STATUS. `verifier || echo failed` exits 0 precisely
+    when the verifier failed, so every consumer reading the aggregate — a harness
+    notification, a packet replay — sees green at the exact moment there is
+    something to hide.
+
+    Scope is the canonical one, and it is what keeps the verdict idiom alive: the
+    arm fires on a recognized VERIFIER, so `test -f x && echo DEFECT || echo OK`
+    (whose left side exits non-zero by design, and whose head runs no verifier) is
+    untouched. Measured 2026-09-06 over 1154 packet transcripts in this repository:
+    3 carry a top-level `||`, all 3 are that idiom, and all 3 stay permitted.
+    """
+
+    def test_an_or_else_branch_masks_the_verifier(self) -> None:
+        self.assertEqual(masked_verifier("uv run gz check || echo failed"), "gz check")
+
+    def test_it_is_not_keyed_to_what_the_branch_says(self) -> None:
+        # The concealment does not depend on the branch's text: `echo failed`
+        # announces and `true` does not, and BOTH exit 0 over a failed verifier.
+        # Keying to a reassuring-word list would repeat the enumerate-the-examples
+        # miss the module's own docstring names.
+        for branch in ("echo failed", "echo 'all good'", "true", ":", "tail -6 log"):
+            with self.subTest(branch=branch):
+                self.assertEqual(masked_verifier(f"uv run gz check || {branch}"), "gz check")
+
+    def test_reading_the_status_in_the_branch_is_preserved(self) -> None:
+        # THE LEGITIMATE FAILURE DEMONSTRATION, and the caller's own shape kept:
+        # the branch still runs only on failure, and now reports the real status.
+        # This is what the or-else block prose hands back, so refusing it would
+        # make the rule un-compliable by its own recovery instruction.
+        self.assertIsNone(masked_verifier('uv run gz check || echo "REAL EXIT: $?"'))
+
+    def test_a_non_verifier_verdict_idiom_is_not_this_gates_business(self) -> None:
+        # The three shapes actually present in this repository's packet corpus.
+        # Their left side exits non-zero when the ASSERTION HOLDS — that non-zero
+        # is the verdict, not a suppressed failure — and none of them runs a
+        # recognized verifier.
+        for command in (
+            'test -d ops/chores && echo "DEFECT" || echo "OK: ops/chores deleted"',
+            'test -f config/gzkit.chores.json && echo "DEFECT" || echo "OK: deleted"',
+            'rg -n "vendor == .claude." src/ && echo "FAIL" || echo "PASS: no branches"',
+        ):
+            with self.subTest(command=command):
+                self.assertIsNone(masked_verifier(command))
+
+    def test_errexit_does_not_protect_an_or_else(self) -> None:
+        # THE ESCAPE THAT DOES NOT ESCAPE. POSIX suppresses errexit for a command
+        # on the left of `||`, so `set -e` aborts nothing here. Honoring it would
+        # hand the caller a disarm that disarms only the gate.
+        self.assertEqual(masked_verifier("set -e; uv run gz check || echo failed"), "gz check")
+
+    def test_errexit_does_not_protect_a_backgrounded_verifier(self) -> None:
+        # The same defect's other instance, fixed as a class: errexit cannot abort
+        # on a background job's failure either, so `&` is not a separator it
+        # protects. The escape is now scoped to the separators where the shell
+        # genuinely aborts — `;` and a newline.
+        self.assertEqual(masked_verifier("set -e; uv run gz check & tail -6 log"), "gz check")
+
+    def test_errexit_still_protects_the_sequence_it_does_abort(self) -> None:
+        # The other direction, so the narrowing above cannot be over-applied.
+        self.assertIsNone(masked_verifier("set -e; uv run gz check > log; tail log"))
+        self.assertIsNone(masked_verifier("set -e\nuv run gz check > log\ntail log"))
+
+
+class TestOrElseRecovery(unittest.TestCase):
+    """The or-else arm's remedy differs from BOTH existing arms (GHI #970).
+
+    `pipefail` fixes a pipe and `set -e` fixes a sequence; neither fixes this one,
+    and `set -e` is the actively misleading suggestion because the shell
+    SUPPRESSES it left of `||`. Handing it back would satisfy
+    `.claude/rules/guardrail-feedback-prose.md`'s shape while teaching a fix that
+    does not fix — the exact failure the sequence arm's prose was branched to avoid.
+    """
+
+    def _reason(self, command: str) -> str:
+        verdict = decide("Bash", {"command": command})
+        self.assertTrue(verdict.blocked, command)
+        return verdict.reason or ""
+
+    def test_the_or_else_arm_recommends_reading_the_status_in_the_branch(self) -> None:
+        # No PREFIX corrects this arm — that is the point, and why the prose
+        # cannot follow the other two arms' "paste your command back" shape. The
+        # correction is a one-token substitution inside the branch the caller wrote.
+        reason = self._reason("uv run gz check || echo failed")
+        self.assertIn('|| echo "REAL EXIT: $?"', reason)
+
+    def test_the_or_else_arm_says_errexit_will_not_help(self) -> None:
+        reason = self._reason("uv run gz check || echo failed")
+        self.assertIn("`set -e` does NOT help here", reason)
+        self.assertNotIn("set -e; uv run gz check || echo failed", reason)
+
+    def test_the_or_else_arm_names_the_branch_not_the_pipe_or_the_sequence(self) -> None:
+        reason = self._reason("uv run gz check || echo failed")
+        self.assertNotIn("this command pipes", reason)
+        self.assertNotIn("not the last statement", reason)
+
+    def test_the_or_else_arm_carries_all_three_guardrail_parts(self) -> None:
+        reason = self._reason("uv run gz check || echo failed")
+        for part in ("BLOCKED:", "WHY:", "NEXT STEP:"):
+            self.assertIn(part, reason)

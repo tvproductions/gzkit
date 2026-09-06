@@ -113,11 +113,39 @@ _PIPEFAIL_OPERAND = "pipefail"
 _PIPESTATUS_REFERENCES: tuple[str, ...] = ("${PIPESTATUS", "$PIPESTATUS")
 
 #: Separators after which the aggregate exit status is NO LONGER the preceding
-#: statement's (GHI #940). ``&&`` and ``||`` are deliberately absent: ``&&``
-#: short-circuits, so a failing verifier aborts the sequence and its status IS
-#: the aggregate, and ``||`` runs its right side only ON failure, which is the
-#: verdict idiom GHI #942 preserved one surface over rather than a concealment.
-_MASKING_SEPARATORS: frozenset[str] = frozenset({";", "\n", "&"})
+#: statement's (GHI #940, widened GHI #970). ``&&`` is absent because it
+#: short-circuits: a failing verifier aborts the list and its status IS the
+#: aggregate.
+#:
+#: ``||`` WAS absent on the reasoning that its branch "runs only on failure and
+#: announces it", which is the verdict idiom GHI #942 preserved one surface over.
+#: That reasoning conflated ANNOUNCING with REPORTING. The branch does announce,
+#: in output — and then replaces the failing status with its own, so
+#: ``verifier || echo failed`` exits 0 *exactly when* the verifier failed. Every
+#: consumer that reads the status rather than the transcript therefore sees green
+#: at the one moment there is something to hide, and on the Step-4a packet surface
+#: — a CURATED excerpt, where omission is the whole attack — the announcement can
+#: simply not be pasted. Measured 2026-09-06: such a packet verified with zero
+#: blockers.
+#:
+#: What keeps the verdict idiom alive is not this set but the scope the arm
+#: already had — a recognized VERIFIER. ``test -f x && echo DEFECT || echo OK``
+#: exits non-zero when the assertion HOLDS, and runs no verifier, so it never
+#: reaches here. All 3 top-level ``||`` transcripts in this repository's 1154 are
+#: that shape.
+_MASKING_SEPARATORS: frozenset[str] = frozenset({";", "\n", "&", "||"})
+
+#: The masking separators ``set -e`` genuinely aborts on — a strict subset, and
+#: the distinction is measured, not reasoned (GHI #970). ``sh -c 'set -e; false
+#: || echo caught'`` exits 0 because POSIX suppresses errexit for a command on
+#: the left of ``||``, and ``sh -c 'set -e; false & wait'`` exits 0 because
+#: errexit cannot fire on a background job. Honoring the escape there would hand
+#: the caller a disarm that disarms only the gate.
+_ERREXIT_PROTECTED_SEPARATORS: frozenset[str] = frozenset({";", "\n"})
+
+#: The separator whose branch REPLACES a failing status rather than discarding a
+#: silent one. Named because the arm it selects has its own recovery.
+_OR_ELSE = "||"
 
 #: Short-flag bundle or long operand that turns on ``errexit``. ``set -e`` and
 #: ``set -euo pipefail`` both abort the sequence on a failing verifier, so the
@@ -173,10 +201,18 @@ UNWITNESSABLE: tuple[str, ...] = (
     "make a summary line report it. This is why the clause's last word is to "
     "cite the ARB receipt's `exit_status` — the receipt is the only channel that "
     "carries the verifier's own result out of the shell.",
-    "`||` right-hand sides are permitted: `verifier || echo failed` reports 0 on "
-    "failure, but the branch runs ONLY on failure and announces it, which is the "
-    "verdict idiom preserved one surface over (GHI #942). A `||` branch that "
-    "announces nothing is masking this gate does not refuse.",
+    "A `||` branch whose LEFT SIDE runs no recognized verifier (GHI #970). "
+    "`test -f x && echo DEFECT || echo OK` exits non-zero when the assertion "
+    "HOLDS, so its status is a verdict rather than a suppressed failure, and this "
+    "gate does not widen past its canonical scope to read it. A generic command "
+    "silenced by `||` is therefore unseen, exactly as a generic command piped "
+    "without `pipefail` is.",
+    "An `&&` CHAIN that a masking separator then catches (GHI #971). The arm "
+    "reads the verifier's OWN terminator, and `&&` propagates a failure rather "
+    "than replacing it — but `verifier && ok; ls` and `verifier && ok || echo x` "
+    "both exit 0 (measured), because the chain's failure is caught further along. "
+    "Covering it needs the recovery prose to name the verifier's statement, which "
+    "needs a raw-text statement split the shared grammar does not yet carry.",
 )
 
 
@@ -351,14 +387,64 @@ def masked_verifier(command: str) -> str | None:
     return reason[0] if reason else None
 
 
+def _pipe_arm(
+    stages: list[list[str]], rest: list[list[str]], *, pipefail_active: bool
+) -> str | None:
+    """ARM 1 — the pipe. A verifier upstream of any pipe loses its status to the last stage."""
+    if pipefail_active or len(stages) < 2:
+        return None
+    if any(_reads_pipestatus(later) for later in rest):
+        return None
+    for upstream in stages[:-1]:
+        name = _verifier_name(upstream)
+        if name is not None:
+            return name
+    return None
+
+
+def _replacement_arm(
+    stages: list[list[str]],
+    rest: list[list[str]],
+    terminator: str | None,
+    *,
+    errexit_active: bool,
+) -> tuple[str, str] | None:
+    """ARMS 2 and 3 — a later statement REPLACES the verifier's status.
+
+    The shell reports the last statement exactly as it reports the last stage
+    (GHI #940), and a ``||`` branch reports the branch (GHI #970). ``pipefail``
+    reaches neither: it fixes which status a PIPELINE reports, not whether
+    something afterwards overwrites it.
+    """
+    if terminator not in _MASKING_SEPARATORS:
+        return None
+    if errexit_active and terminator in _ERREXIT_PROTECTED_SEPARATORS:
+        return None
+    later = [statement for statement in rest if statement]
+    if not later:
+        # A trailing separator (`gz check;`) leaves an empty tail. Nothing runs
+        # after the verifier, so nothing overwrites its status.
+        return None
+    name = _verifier_name(stages[-1])
+    if name is None:
+        return None
+    # `$?` reads the status of the statement that JUST ran. A read placed after
+    # an intervening statement reports that statement's exit instead — it looks
+    # like evidence and is not, so only the next statement counts.
+    if _reads_exit_status(later[0]):
+        return None
+    return name, ("or-else" if terminator == _OR_ELSE else "sequence")
+
+
 def masked_verifier_reason(command: str) -> tuple[str, str] | None:
     """Return ``(verifier, arm)`` for a masked verifier, or None.
 
-    ``arm`` is ``"pipe"`` or ``"sequence"``. The caller needs it because the two
-    have DIFFERENT remedies: ``pipefail`` makes a pipeline report its first
-    failing stage and does nothing for a later statement overwriting the status,
-    while ``set -e`` aborts the sequence and does nothing about a pipe. Prose that
-    named one remedy for both would hand the caller a correction that leaves the
+    ``arm`` is ``"pipe"``, ``"sequence"`` or ``"or-else"``. The caller needs it
+    because the three have DIFFERENT remedies: ``pipefail`` makes a pipeline report
+    its first failing stage and does nothing for a later statement overwriting the
+    status; ``set -e`` aborts the sequence and does nothing about a pipe; and
+    NEITHER reaches ``||``, where the shell suppresses errexit outright. Prose that
+    named one remedy for all would hand the caller a correction that leaves the
     command exactly as masked as it was (`.claude/rules/guardrail-feedback-prose.md`).
     """
     # Unquoted newlines become `;` first: shlex eats a newline as whitespace, so
@@ -379,39 +465,18 @@ def masked_verifier_reason(command: str) -> tuple[str, str] | None:
             errexit_active = errexit_active or _sets_errexit(statement)
             continue
 
-        # ARM 1 — the pipe. A verifier upstream of any pipe has its status
-        # replaced by the last stage's.
         stages = split_on(statement, frozenset({_PIPE}))
-        if (
-            not pipefail_active
-            and len(stages) >= 2
-            and not any(_reads_pipestatus(later) for later in statements[index + 1 :])
-        ):
-            for upstream in stages[:-1]:
-                name = _verifier_name(upstream)
-                if name is not None:
-                    return name, "pipe"
-
-        # ARM 2 — the sequence (GHI #940). The shell reports the LAST statement's
-        # status, so a verifier in an earlier one is discarded just as completely.
-        # `pipefail` does not help here: it fixes which status a PIPELINE reports,
-        # not whether a later statement then overwrites it.
-        if errexit_active or terminators[index] not in _MASKING_SEPARATORS:
-            continue
-        later = [rest for rest in statements[index + 1 :] if rest]
-        if not later:
-            # A trailing separator (`gz check;`) leaves an empty tail. Nothing
-            # runs after the verifier, so nothing overwrites its status.
-            continue
-        name = _verifier_name(stages[-1])
-        if name is None:
-            continue
-        # `$?` reads the status of the statement that JUST ran. A read placed
-        # after an intervening statement reports that statement's exit instead —
-        # it looks like evidence and is not, so only the next statement counts.
-        if _reads_exit_status(later[0]):
-            continue
-        return name, "sequence"
+        name = _pipe_arm(stages, statements[index + 1 :], pipefail_active=pipefail_active)
+        if name is not None:
+            return name, "pipe"
+        found = _replacement_arm(
+            stages,
+            statements[index + 1 :],
+            terminators[index],
+            errexit_active=errexit_active,
+        )
+        if found is not None:
+            return found
     return None
 
 
@@ -436,6 +501,29 @@ def _block_prose(verifier: str, command: str, arm: str = "pipe") -> str:
     caller re-runs is the whole line, and ``pipefail`` is shell state that protects
     every pipeline following the ``set``.
     """
+    if arm == "or-else":
+        return (
+            f"BLOCKED: Bash refused — `{verifier}` is followed by a `||` branch, so "
+            "the exit status you would read back is the BRANCH's. The branch runs "
+            f"only when `{verifier}` fails, which means this command reports 0 "
+            "exactly when there is a failure to report.\n\n"
+            "WHY: `.gzkit/rules/tests.md` § Verification exit-code integrity "
+            "(binding, GHI #589, extended GHI #970) — a `||` branch ANNOUNCES the "
+            "failure in output and REPLACES it in status, and those are different "
+            "claims. Anything reading the status rather than the transcript — a "
+            "harness notification, a Step-4a packet replay — sees green; and a "
+            "packet is a curated excerpt, so the announcement can simply not be "
+            "pasted.\n\n"
+            "NEXT STEP: keep the `||` and have its branch report the real status. "
+            "No prefix corrects this arm, so the fix is a one-token substitution "
+            "inside the branch you already wrote:\n"
+            '  <your command> || echo "REAL EXIT: $?"\n\n'
+            "`set -e` does NOT help here — the shell suppresses errexit for a "
+            "command on the left of `||`, so it aborts nothing (`sh -c 'set -e; "
+            "false || echo caught'` exits 0). For attestation evidence, cite the "
+            "ARB receipt's `exit_status` (`uv run gz arb step ...`), never an "
+            "aggregate status."
+        )
     if arm == "sequence":
         return (
             f"BLOCKED: Bash refused — `{verifier}` is not the last statement, so "
