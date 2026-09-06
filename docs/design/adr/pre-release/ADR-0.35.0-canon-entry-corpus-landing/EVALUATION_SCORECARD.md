@@ -3,7 +3,7 @@ ADR STRUCTURAL-COMPLETENESS SCORECARD
 
 ADR: ADR-0.35.0
 Evaluator: gz adr eval (deterministic STRUCTURAL-COMPLETENESS lint)
-Date: 2026-09-05
+Date: 2026-09-06
 
 NOTE: This scorecard grades STRUCTURAL COMPLETENESS only — section
 presence, depth, counts, and references. It is NOT a judgment of decision
@@ -41,10 +41,10 @@ THRESHOLD: 3.0 (GO), 2.5 (CONDITIONAL GO), <2.5 (NO GO)
 | content-land-orchestrator | 4 | 4 | 4 | 2 | 4 | 3.6 |
 | remember-post-append-advisory | 2 | 4 | 4 | 2 | 4 | 3.2 |
 | codex-playback-wiring | 4 | 4 | 4 | 2 | 4 | 3.6 |
-| classification-reader-and-ownership | 4 | 4 | 4 | 3 | 4 | 3.8 |
+| classification-reader-and-ownership | 4 | 4 | 4 | 2 | 4 | 3.6 |
 | corpus-shape-witness | 4 | 4 | 4 | 3 | 3 | 3.6 |
 | rules-corpus-onboarding | 4 | 4 | 4 | 2 | 3 | 3.4 |
-| render-order-truncation-survival | 4 | 4 | 4 | 2 | 4 | 3.6 |
+| render-order-truncation-survival | 4 | 4 | 4 | 3 | 4 | 3.8 |
 
 OBPI THRESHOLD: Average >= 3.0 per OBPI. Any dimension scoring 1 must be revised.
 

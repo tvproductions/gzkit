@@ -7,9 +7,12 @@ status: Draft
 allowlist:
 - src/gzkit/governance/trust_audits/rendition_lineage.py
 - src/gzkit/governance/trust_audits/__init__.py
+- src/gzkit/cli/parser_maintenance.py
+- src/gzkit/governance/trust_audits/_qc_negative_controls.py
 - src/gzkit/commands/validate_cmd.py
 - tests/governance/test_rendition_lineage.py
-- features/**
+- features/rendition_lineage.feature
+- features/steps/rendition_lineage_steps.py
 - docs/user/manpages/validate.md
 - docs/governance/governance_runbook.md
 - docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-06-validate-rendition-lineage.md
@@ -23,6 +26,8 @@ reqs:
 - REQ-0.35.0-06-07
 - REQ-0.35.0-06-08
 verification:
+- uv run -m unittest tests.governance.test_rendition_lineage
+- uv run -m behave features/rendition_lineage.feature
 - uv run gz lint
 - uv run gz typecheck
 - uv run gz test
@@ -46,7 +51,7 @@ verification:
 
 Ship gz validate --rendition-lineage: exit 0 when every owned section in a committed rendition is derivable from the effective corpus, exit 3 on hand-authored prose inside an owned section, unowned bytes reported as measured debt and never failed, and the coverage percentage surfaced so the gate's partial scope is declared rather than implied.
 
-**Dependency order (ADR-0.35.0 § Scope Minimization):** 06 depends on 04 (the ownership declaration that defines the gate's scope) and 05 (the lineage map and the generator whose output the gate compares against). Per § Scope Minimization, 04 and 06 are cut together or not at all — cutting 06 alone leaves ownership as a claim with no enforcement, which IS pre-mortem #2 and the worst possible combination.
+**Dependency order (ADR-0.35.0 § Scope Minimization):** 06 depends on 04 (the ownership declaration that defines the gate's scope) and 05 (the lineage map and the generator whose output the gate compares against). 04 is delivered; the instruction that 04 and 06 are cut together is a scope-retention rule, not simultaneous execution. This item completes enforcement over the delivered ownership declaration.
 
 ## Lane
 
@@ -60,9 +65,11 @@ Ship gz validate --rendition-lineage: exit 0 when every owned section in a commi
 
 - `src/gzkit/governance/trust_audits/rendition_lineage.py` — the new validator scope **CREATE**
 - `src/gzkit/governance/trust_audits/__init__.py` — scope registration
-- `src/gzkit/commands/validate_cmd.py` — `--rendition-lineage` flag wiring
+- `src/gzkit/cli/parser_maintenance.py` — argparse option and handler forwarding
+- `src/gzkit/governance/trust_audits/_qc_negative_controls.py` — live scope negative control
+- `src/gzkit/commands/validate_cmd.py` — handler/default-scope wiring
 - `tests/governance/test_rendition_lineage.py` — covering tests **CREATE**
-- `features/**` — Gate 4 scenarios
+- `features/rendition_lineage.feature`, `features/steps/rendition_lineage_steps.py` — **CREATE**, Gate 4 scenarios
 - `docs/user/manpages/validate.md`, `docs/governance/governance_runbook.md` — the new scope
 - `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-06-validate-rendition-lineage.md` — this brief's evidence sections
 
@@ -78,7 +85,7 @@ Ship gz validate --rendition-lineage: exit 0 when every owned section in a commi
 ## Requirements (FAIL-CLOSED)
 
 1. ALWAYS fail closed over OWNED SECTIONS ONLY. Unowned bytes are reported as measured debt and MUST NEVER contribute to a non-zero exit. A gate whose scope is partial and undeclared is the theater ADR-0.35.0 exists to remove.
-2. ALWAYS surface the coverage figure in the scope's output — sections owned of total, bytes owned of total, and the percentage — so every run re-measures the 31.2% claim rather than reprinting it. The figure is asserted in the parent ADR's Fidelity Assertions and must be reproducible from this scope's output.
+2. ALWAYS surface the coverage figure in the scope's output — sections owned of total, bytes owned of total, and the percentage — using OBPI-04's owned-section UTF-8 spans over total section spans. Report effective-entry text bytes and per-section entry counts separately as population statistics; neither is the ratchet nor unique rendered-byte coverage. The authoring-era 31.2% is historical, not a target. The figure is asserted in the parent ADR's Fidelity Assertions and must be reproducible from this scope's output.
 3. NEVER hardcode 31.2%, 8, 22, 9,966, or 22,378. Every figure is computed from the ownership declaration, the effective corpus, and the committed rendition at run time. A stored constant is a witness that cannot fail — the same defect class as the `ByteEvidence` inflation.
 4. ALWAYS read the EFFECTIVE corpus (OBPI-0.35.0-01), never `load_corpus`'s raw return. A consumer left on the raw log is a one-line omission whose symptom is a GREEN gate over a rendition that omits canon — pre-mortem #3, the worst detection latency in this ADR.
 5. ALWAYS emit three-part recovery prose on the exit-3 path per `.claude/rules/guardrail-feedback-prose.md`: which owned section drifted, that owned sections are corpus-derived by ADR-0.35.0 § Decision item 4, and the runnable next step.
@@ -87,6 +94,28 @@ Ship gz validate --rendition-lineage: exit 0 when every owned section in a commi
 8. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+
+## Audit Contract
+
+Read the declared active route set, not a glob of retained renditions. The public scope validates required committed renditions plus their committed lineage and
+ownership; it does not require a retained candidate. Expose a pure verification function for
+an explicitly supplied candidate/lineage pair, which 07 uses before publication. That
+candidate check must not reject a valid repair because the old committed rendition is stale. Missing
+or corrupt required lineage, duplicate/unknown section identities, missing/extra entry ids,
+retired ids, overlapping or out-of-bounds byte spans, and wrong corpus/rendition bindings
+fail closed. Derive the expected output independently from current effective corpus and
+ownership; do not trust an artifact's self-reported owned flags or spans as evidence.
+
+REQ-01/02 include these artifact-integrity controls and a registered negative control through
+the public scope. REQ-03 permits arbitrary valid unowned content only when metadata is sound;
+it is not an exemption for missing proof artifacts. REQ-04 verifies multibyte text, H1/preamble
+accounting, section histograms, and recomputation after ownership changes. Population entry
+bytes must never be labeled rendered coverage. REQ-06 proves the CLI parser reaches the scope.
+
+Normal execution fails closed. MX checkpoint policy may downgrade findings according to its
+explicit mode; downgraded findings remain reported and do not count as normal-mode proof for
+landing or completion. The audit core returns findings independently of presentation severity
+so 07 can reject any owned drift even in MX mode.
 
 ## Discovery Checklist
 
@@ -167,6 +196,8 @@ Ship gz validate --rendition-lineage: exit 0 when every owned section in a commi
 
 <!-- gz-validate-skip: command-shape -->
 ```bash
+uv run -m unittest tests.governance.test_rendition_lineage
+uv run -m behave features/rendition_lineage.feature
 uv run gz lint
 uv run gz typecheck
 uv run gz test
@@ -183,7 +214,7 @@ uv run mkdocs build --strict
 ```bash
 uv run gz validate --rendition-lineage
 uv run gz validate --rendition-lineage --json
-uv run gz adr fidelity ADR-0.35.0
+uv run -m behave features/rendition_lineage.feature
 ```
 
 ## Acceptance Criteria

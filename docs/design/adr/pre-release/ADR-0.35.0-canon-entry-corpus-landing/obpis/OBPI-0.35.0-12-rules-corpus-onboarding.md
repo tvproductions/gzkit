@@ -205,7 +205,9 @@ verify their bytes through the governed sync operation, never patch them by hand
    corpus capture, not edits of materialized rule files. The section names the rule id;
    text carries the full rule document. A replacement explicitly names `--supersedes`
    for that rule's effective entry; unrelated targets and duplicate live rule ids are refused.
-   Corpus-delta attestation applies to the capture, never to an unchanged re-render; preserve
+   Valid capture remains append-first and has no new downstream-governance refusal. Corpus-delta
+   attestation applies when onboarding/landing activates the new source, never as a new remember
+   precondition or on an unchanged re-render; preserve
    the existing AgentContract capture/advisory contract. Retirement uses the existing verb.
 6. KEEP source enrollment explicit in schema-validated `.gzkit/rules-corpus.json`, naming
    the logical family and the verified activation landing. A typed ledger activation event
@@ -231,6 +233,16 @@ verify their bytes through the governed sync operation, never patch them by hand
 
 > STOP-on-BLOCKERS: 05/06/07 must exist with reviewed Rule integration seams before implementation.
 > If those interfaces cannot carry this losslessly, surface the concrete conflict in plan review.
+
+## Implementation Boundary
+
+This item is one source-authority migration, with three test groups: complete capture and
+identity preservation; verified activation and recovery; lossless vendor/nested projection.
+05/06/07 supply generation, validation and publication, including the ledger durability
+prerequisite of 07. The rule adapter adds no independent transaction engine, reclassification
+heuristic, per-rule compression framework or vendor-specific corpus. Mapping review is an
+implementation input under the existing operator policy. Capture works independently of
+activation; invalid downstream state blocks activation, never an otherwise valid remember.
 
 ## Discovery Checklist
 
@@ -322,7 +334,7 @@ uv run -m behave features/rules_corpus.feature
 
 - [ ] REQ-0.35.0-12-01 [BEHAVIOR]: Given canonical rule files plus generated redirects and non-rule assets, onboarding dry-run identifies exactly the canonical rule ids and paths, reports their byte hashes, excludes projections/assets, reports missing explicit migration assignments and writes nothing; duplicate identities, malformed frontmatter and unsafe output paths are rejected before capture or publication.
 - [ ] REQ-0.35.0-12-02 [BEHAVIOR]: Given attested onboarding of a valid family, its complete source metadata and text are stored once per rule in the flat rules corpus through governed append operations; repeating or resuming the same onboarding creates no duplicate live entry and preserves all pre-existing corpus bytes.
-- [ ] REQ-0.35.0-12-03 [BEHAVIOR]: Given an enrolled rules family, an attested replacement capture with matching rule id and supersedes target leaves prior rows unchanged and supplies the replacement through the effective view; retirement removes the rule from both vendor and nested delivery, while same-id duplication or cross-rule replacement is refused.
+- [ ] REQ-0.35.0-12-03 [BEHAVIOR]: Given an enrolled rules family, a valid replacement capture with matching rule id and supersedes target leaves prior rows unchanged and supplies the replacement through the effective view; retirement removes the rule from both vendor and nested delivery, while same-id duplication or cross-rule replacement is refused.
 - [ ] REQ-0.35.0-12-04 [BEHAVIOR]: Given full rule documents containing scoped metadata, tables, fenced code and version markers, the family candidate/lineage/landing path reconstructs every CanonicalRule without losing metadata or body content; initial vendor and nested output bytes equal the pre-onboarding baseline, and a later captured body change affects the appropriate projections.
 - [ ] REQ-0.35.0-12-05 [BEHAVIOR]: Given enrollment witnessed independently by the typed ledger activation event, missing/corrupt corpus, enrollment data or committed family evidence fails closed with a recovery path; a valid all-retired family removes stale projections without falling back to legacy files, while an unenrolled adopter retains bootstrap behavior.
 - [ ] REQ-0.35.0-12-06 [BEHAVIOR]: Given an onboarding failure before final activation, synchronization continues to use the previous complete source state or refuses inconsistent state; resume reuses verified landing evidence without duplicating capture or asking again for the same corpus-delta attestation. Unchanged re-rendering requires no new corpus attestation.

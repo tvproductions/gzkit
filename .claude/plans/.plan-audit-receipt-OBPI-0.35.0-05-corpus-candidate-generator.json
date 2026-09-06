@@ -1,0 +1,138 @@
+{
+  "obpi_id": "OBPI-0.35.0-05-corpus-candidate-generator",
+  "timestamp": "2026-09-06T01:22:30.511821+00:00",
+  "verdict": "FAIL",
+  "plan_file": "section-ownership-and-ratchet-OBPI-0.35.0-04.md",
+  "gaps_found": 1,
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-04-okf-cli-surface",
+      "contested_paths": [
+        "src/gzkit/commands/content/__init__.py",
+        "src/gzkit/commands/content/compose.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.22.0",
+      "sibling_obpi": "OBPI-0.22.0-05-status-and-state-integration",
+      "contested_paths": [
+        "src/gzkit/commands/content/__init__.py",
+        "src/gzkit/commands/content/compose.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.21.0",
+      "sibling_obpi": "OBPI-0.21.0-04-adr-audit-integration",
+      "contested_paths": [
+        "src/gzkit/commands/content/__init__.py",
+        "src/gzkit/commands/content/compose.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.33.0",
+      "sibling_obpi": "OBPI-0.33.0-01-airlock-data-model-and-events",
+      "contested_paths": [
+        "docs/user/manpages/content.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.10.0",
+      "sibling_obpi": "OBPI-0.10.0-03-obpi-proof-and-lifecycle-integration",
+      "contested_paths": [
+        "src/gzkit/commands/content/__init__.py",
+        "src/gzkit/commands/content/compose.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.10.0",
+      "sibling_obpi": "OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces",
+      "contested_paths": [
+        "src/gzkit/commands/content/__init__.py",
+        "src/gzkit/commands/content/compose.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.9",
+      "sibling_obpi": "OBPI-0.0.9-02-ledger-first-status-reads",
+      "contested_paths": [
+        "src/gzkit/commands/content/__init__.py",
+        "src/gzkit/commands/content/compose.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-13-reverse-parse-migration",
+      "contested_paths": [
+        "src/gzkit/commands/content/__init__.py",
+        "src/gzkit/commands/content/compose.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-21-authoring-time-compression-composer-tool-skill",
+      "contested_paths": [
+        "src/gzkit/content/composer.py",
+        "src/gzkit/content/rendition.py",
+        "src/gzkit/commands/content/__init__.py",
+        "src/gzkit/commands/content/compose.py",
+        "tests/content/test_composer.py",
+        "docs/user/manpages/content.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-19-corpus-capture-tool-skill",
+      "contested_paths": [
+        "src/gzkit/commands/content/__init__.py",
+        "docs/user/manpages/content.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-24-advisor-panel-info-retention-qc-loop",
+      "contested_paths": [
+        "src/gzkit/commands/content/__init__.py",
+        "docs/user/manpages/content.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-23-invariant-tier",
+      "contested_paths": [
+        "src/gzkit/content/composer.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.34",
+      "sibling_obpi": "OBPI-0.0.34-04-authoring-cli",
+      "contested_paths": [
+        "src/gzkit/commands/content/__init__.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.34",
+      "sibling_obpi": "OBPI-0.0.34-03-reverse-parse-migration",
+      "contested_paths": [
+        "src/gzkit/commands/content/__init__.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.4",
+      "sibling_obpi": "OBPI-0.0.4-01-cli-module-restructure",
+      "contested_paths": [
+        "src/gzkit/commands/content/__init__.py",
+        "src/gzkit/commands/content/compose.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.54",
+      "sibling_obpi": "OBPI-0.0.54-03-agents-md-map-conformance-validator",
+      "contested_paths": [
+        "src/gzkit/commands/content/__init__.py",
+        "src/gzkit/commands/content/compose.py"
+      ]
+    }
+  ],
+  "semantic_review": "Selected plan belongs to OBPI-0.35.0-04 and explicitly excludes 05 materialization; no OBPI-05 implementation plan exists. ADR-to-brief alignment passes; plan-to-brief alignment is missing."
+}

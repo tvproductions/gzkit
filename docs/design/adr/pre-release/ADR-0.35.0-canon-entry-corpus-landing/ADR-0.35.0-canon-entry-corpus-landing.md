@@ -68,6 +68,15 @@ figures as authoritative -- they are a dated record; re-derive via
 
 Close the seam with section ownership plus a debt ratchet, not a total backfill.
 
+**Readiness reconciliation 2026-09-05:** pending briefs now consume the delivered root-only
+AgentContract route (OBPI-09), effective fold/retirement (01–03) and section-span ratchet (04).
+Historical byte counts and old consumer names below remain dated design evidence, not runtime
+constants. Decision 6's publication contract is ratified below and in OBPI-07
+§ Publication Amendment (Ratified). Operator g0 approved verbatim: "approve the 07 work".
+Decision 5 and BI-03 prohibit embedded lineage, while Decision 6 permits the additive
+commit-time landing_id; the provenance model remains frozen and rejects unknown fields.
+
+
 **AMENDED 2026-08-18 (operator-ruled, GHI #822): this ADR's content-surface attestation is named CORPUS ATTESTATION, never "Gate 5."** Items 2, 3 and 6 below, the Fidelity Assertion on `content retire`, the Decomposition Scorecard's Interface count, and the Checklist originally called it "Gate 5." Gate 5 names OBPI/ADR completion attestation (`ADR-0.0.36`) and NOTHING else — operator ruling 2026-08-17, carried verbatim in `AGENTS.md` § Operator Doctrine: *"a build step wearing that name is the collision the transit/exchange/handoff fence forbids."* The replacement noun is `corpus`, not `rendition`, because the same ruling puts the attestable subject on the CORPUS (adding and removing entries are attested; a re-render of unchanged canon is not) and holds that a rendition is a Layer-3 derived view, "never the thing attested" — item 6 already wrote "attestation on the corpus delta," so this keeps the ADR's own noun and drops only the colliding name. Each OBPI's own `### Gate 5 (Human)` gate-covenant section is UNCHANGED: those are the genuine Gate 5, on that OBPI's completion. § Q&A Transcript is likewise unchanged — it is the verbatim authoring-time record, and the 2026-08-07 amendment left it reading `content withdraw` on the same principle.
 
 ### Tombstone fold algebra (binding)
@@ -92,12 +101,12 @@ SOURCE-OF-TRUTH DIRECTION (operator-ruled this session, stated explicitly rather
 
 3. SECTION OWNERSHIP + DECREASE-ONLY RATCHET. Sections declare `corpus-owned` or `unowned`. The generator materializes owned sections from the corpus and carries unowned sections forward verbatim. The unowned byte total is recorded in a decrease-only ratchet. Un-owning a section (which raises the ratchet) requires an attested raise-path, corpus-attested, the same shape as the retire path -- an undefined reversal path is the one agents invent.
 
-4. `gz validate --rendition-lineage` fails closed over OWNED SECTIONS ONLY -- 31.2% coverage day one, 8 of 22 sections. The 22,378 B is declared as declining debt, not ignored. The coverage percentage appears in Fidelity Assertions, because a gate whose scope is partial and undeclared is the theater this design exists to kill.
+4. `gz validate --rendition-lineage` fails closed over OWNED SECTIONS ONLY. Ownership coverage is measured from owned section spans divided by total surface spans, and the ratchet is the sum of unowned spans, following the operator's September 2 ruling in OBPI-04: "span-based, consistent with REQ-05". Effective-entry text bytes and per-section entry counts are separately labeled population statistics, never unique rendered-byte coverage. The authoring-era 31.2%, 8 of 22 and 22,378 B described entry-witness arithmetic; they are historical and are not the span-based ratchet or current gate coverage. The coverage percentage appears in Fidelity Assertions, because a gate whose scope is partial and undeclared is the theater this design exists to kill.
 
 5. The lineage map is a SEPARATE `<consumer>.lineage.json` artifact ({section_id: {owned, entry_ids, byte_span}}), not bolted onto `RenditionProvenance` -- generate-time versus commit-time lifecycle, and `RenditionProvenance` is frozen/extra=forbid.
 
 <!-- gz-validate-skip: command-shape -->
-6. `gz content land <surface>` (required positional, matching compose/commit) orchestrates atomic multi-consumer write. ONE corpus attestation on the corpus delta covers N consumers; each sidecar records the same `attestation_text` and a shared `landing_id`. Justified because renditions are Layer-3 derived views and generation over owned sections is deterministic -- N attestations would demand N human judgments where only one exists.
+6. `gz content land <surface>` (required positional, matching compose/commit) orchestrates journaled multi-consumer publication: every artifact is staged and verified before per-file atomic replacement; interrupted publication may expose mixed files, retains durable recovery evidence, and cannot report success until the entire target set verifies. ONE corpus attestation on the corpus delta covers N consumers; each sidecar records the same `attestation_text` and a shared `landing_id`. Justified because renditions are Layer-3 derived views and generation over owned sections is deterministic -- N attestations would demand N human judgments where only one exists.
 
 7. `gz content remember` gains a POST-APPEND ADVISORY -- three-part recovery prose per `.claude/rules/guardrail-feedback-prose.md`, never a refusal, exit stays 0. Capture must never be blocked: losing the operator's words is strictly worse than a red tree. The tree going red is correct; GHI #654's defect is the SILENCE, not the redness.
 
@@ -147,21 +156,19 @@ PRECEDENT NOTED (operator-ruled): attested-record edit is decided locally, scope
      with no parseable block fails `gz validate --fidelity-presence` (exit 3,
      ADR-0.0.73 Boundary Invariant #4). Keep at least one claim/command/exit row. -->
 
-Coverage is part of the thesis, not a footnote: this ADR ships a gate that binds
-over **31.2% of the AGENTS.md surface** (9,966 B of 31,990 B, across 8
-corpus-addressed sections of 22 — of which **7 carry invariant-tier entries**
-and so are what the floor actually binds over; see § Consequences Negative #1)
-and declares the remaining **22,378 B** as decrease-only debt. A gate
-whose scope is partial and undeclared is the theater this ADR exists to remove,
-so the coverage figure is asserted here and re-measured on every run.
+Coverage is part of the thesis, not a footnote. Every lineage run reports owned-section
+UTF-8 spans over total surface spans, unowned-span debt, and separately labeled effective-entry
+text bytes and per-section populations. OBPI-04's delivered span measurement governs the
+ratchet. The original 31.2%/9,966/31,990/22,378 figures remain historical population/accounting
+evidence; they are not asserted as present-day coverage or silently re-used as a denominator.
 
 <!-- gz-validate-skip: command-shape -->
 | Claim | Command | Expected exit |
 |-------|---------|---------------|
 | Owned sections derive from the corpus; hand-authored prose in an owned section is refused. | `uv run gz validate --rendition-lineage` | 0 |
-| No invariant-tier entry is emitted twice into a rendition (the duplicate-emission regression this ADR retires). | `uv run gz validate --rendition-floor-coherence` | 0 |
+| Generated owned sections refuse duplicate live invariant identities rather than electing a text winner (isolated semantic fixture). | `uv run -m unittest tests.content.test_composer` | 0 |
 | Retiring an invariant-tier entry without an attestor is refused (corpus attestation fail-closed, empty `--attestor`). | `uv run gz content retire AGENTS.md --entry corpus-prime-directive-ownership-2026-06-19T22:55:06.046462+00:00 --attestor "" --reason "probe"` | 1 |
-| Capture never refuses: `remember` appends and warns rather than blocking, so operator words are never lost. | `uv run gz content remember AGENTS.md --section fidelity-probe --tier compressible --text "fidelity probe"` | 0 |
+| Valid capture survives advisory failures without changing the corpus payload (isolated fixture; no production append). | `uv run -m unittest tests.commands.test_content_remember` | 0 |
 | The corpus materializes a candidate without agent hand-authoring (the `candidate_text` gap this ADR closes). | `uv run gz content land AGENTS.md --dry-run` | 0 |
 | Byte accounting is honest: `compressible_bytes_after` no longer reports a 63x inflation as compression. | `uv run gz validate --rendition-lineage` | 0 |
 
@@ -173,8 +180,10 @@ so the coverage figure is asserted here and re-measured on every run.
      brief's own diff. -->
 
 **BI-01 — Every corpus consumer reads the effective view, never the raw log.**
-The complete consumer set is `tier_policy.invariant_entries()` (OBPI-01),
-`rendition_floor_coherence.py` (OBPI-06), and `composer.py` (OBPI-05). A
+The consumer set includes tier_policy.invariant_entries() and rendition_floor_coherence.py
+(landed effective-fold integration), composer.py (05), the lineage validator (06), the
+classification resolver (10), corpus shape audit (11), and the rule-family resolver (12).
+Every new corpus reader introduced by this decomposition must join this audit roster. A
 consumer left on the raw log resurrects retired canon **behind a green gate** —
 pre-mortem #3, the worst detection latency in this ADR. Audited once every OBPI
 that adds a consumer has landed. *Proves REQ-0.35.0-01-09.*
@@ -188,7 +197,9 @@ materializes. *Proves REQ-0.35.0-03-04.*
 
 **BI-03 — The lineage map lives in `<consumer>.lineage.json` and nowhere inside
 `RenditionProvenance`.** `RenditionProvenance` remains `frozen=True` /
-`extra="forbid"` and unextended across every OBPI. Generate-time and commit-time
+`extra="forbid"` with no embedded per-section lineage fields across any OBPI.
+The optional commit-time `landing_id` required by Decision 6 is permitted; sidecars written
+before that field existed remain readable. Generate-time and commit-time
 lifecycles stay separated (§ Alternatives O). Cross-OBPI because OBPI-06 and
 OBPI-07 both read these artifacts and either could bolt the map on.
 *Proves REQ-0.35.0-05-10.*
@@ -213,7 +224,10 @@ Widening the gate silently would convert a declared 31.2% into an implied 100%,
 which is the theater this ADR exists to remove. *Proves REQ-0.35.0-06-08.*
 
 **BI-06 — `gz content remember` refuses an append on no path introduced anywhere
-in ADR-0.35.0.** Capture is unblockable across the whole decomposition. OBPI-06's
+in ADR-0.35.0.** This prohibits adding a governance/advisory precondition to an otherwise valid capture;
+existing syntax, identity and type validation remain intact. Rule-family onboarding adds
+a supported input type, not permission to reject its valid captures for downstream drift.
+Capture is unblockable across the whole decomposition. OBPI-06's
 gate and OBPI-07's orchestrator both make the tree redder, and either could be
 tempted to add a precondition to `remember` to keep it green. Losing the
 operator's words is strictly worse than a red tree; the defect this ADR fixes is
@@ -249,6 +263,39 @@ criticality. Ranking comes from the ratified
 Audited at closeout as the STRUCTURAL-FENCE proof channel for REQ-0.35.0-13-06.
 Absorbed with the render-order scope from
 `ADR-pool.render-order-truncation-survival` (operator ruling 2026-09-02).
+
+## Remaining Delivery Plan
+
+Planning estimates, not elapsed-time evidence or implementation authorization:
+
+| Item | Estimated engineering days | Entry condition |
+|---|---:|---|
+| 05 | 2–3 | Completed 01/03/04/09 |
+| 06 | 1–2 | 05 |
+| 07 | 3–5 | 05/06/09, ratified publication amendment, verified GHI #952/#953 ledger corrections |
+| 08 | 1 | 07 and an explicit draw despite Active residue |
+| 10 | 2–3 | 01/02/04; 07 before repository reconciliation/landing |
+| 11 | 1–2 | Completed 01 |
+| 12 | 3–5 | 01/02/05/06/07 |
+| 13 | 2–3 | 05/06/07/09 |
+
+The dependency spine is 05 -> 06 -> 07 -> downstream completion. 11 may be planned in
+parallel with 05; 10 may prepare fixture-based resolver work while the spine progresses.
+After 07, 08/10/12/13 are dependency-parallel candidates, but their actual repository
+publication must be serialized where corpus, renditions or control surfaces overlap.
+Use isolated development contexts and revalidate shared inputs at integration; this table
+does not authorize concurrent writes or draw any OBPI.
+
+With prerequisites already repaired and approval supplied, the idealized critical-path
+lower bound is 9 engineering days (2 + 1 + 3 + 3), with the estimated path spanning 9–15.
+This excludes human review latency and shared-surface integration. The unfinished ledger
+repairs make an unconditional calendar minimum unknowable. A single implementer doing all
+remaining work has 15–24 estimated engineering days before those external waits.
+
+07 and 12 deliberately score lower on Size: recovery and complete authority migration are
+broad transactions. Their plans must preserve the three bounded test groups in each brief;
+a newly discovered independent product requires a decomposition decision, not silent
+expansion or deletion of a failure scenario. The current count remains thirteen.
 
 ## Decomposition Scorecard
 
@@ -350,7 +397,7 @@ Absorbed with the render-order scope from
 - [ ] corpus->candidate generator (owned materialize / unowned carry-forward) + `<consumer>.lineage.json` emission + `ByteEvidence` accounting correction
 - [ ] `gz validate --rendition-lineage` -- fail-closed over owned sections, coverage % surfaced to Fidelity Assertions
 <!-- gz-validate-skip: command-shape -->
-- [ ] `gz content land <surface>` orchestrator -- atomic multi-consumer write, single corpus attestation on the corpus delta, shared `landing_id`, landing state file written first and cleared last, `--status` and non-destructive resume that does NOT re-prompt for attestation
+- [ ] `gz content land <surface>` orchestrator -- journaled multi-consumer publication with per-file atomic replacement, single corpus attestation on the corpus delta, shared `landing_id`, landing state file written first and cleared last, `--status` and non-destructive resume that does NOT re-prompt for attestation
 - [ ] `gz content remember` post-append advisory -- three-part recovery prose, exit stays 0, never refuses the append
 - [ ] Codex playback wiring -- make the `lite` setpoint falsifiable; coordinates with ADR-pool.vendor-alignment-codex
 - [ ] `classification` reader -- corpus-owned sections resolve from `CorpusEntry.classification`, scorecard elsewhere; the 36 `Ambiguous` capture-defaults reconciled before ownership binds (GHI #737)

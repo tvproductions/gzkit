@@ -1,161 +1,129 @@
 # ADR-0.35.0 Quality and Readiness Review
 
-Date: 2026-09-05
-Scope: all thirteen OBPIs; current implementation evidence, amended intent and next-work readiness.
-Verdict: **CONDITIONAL GO — 2.70/4.00**. Reconcile the named contracts before drawing dependent implementation.
+Date: 2026-09-05 (local); final checks 2026-09-06 UTC.
 
-## Evidence and disposition
+**Technical authoring verdict: GO — 3.25/4.00.**
+**Package design-readiness verdict: GO.** Operator g0 ratified the final publication
+amendment with the verbatim approval **"approve the 07 work"**.
+This score evaluates the complete ratified contracts, including that amendment. It is not
+an implementation draw, completion attestation, or a claim that pending prerequisites shipped.
 
-The parent decomposition target and checklist both specify thirteen items. The missing files
-were 11 and 12. They are now semantically authored, linked to their existing parent items,
-and individually pass authored validation. Another concurrent session committed scaffold
-versions during review; the reviewed authored versions were restored and revalidated.
-This authoring does not constitute an implementation draw or completion attestation.
+## Result and evidence
 
-Ledger-grounded status reports thirteen total, five completed, eight remaining, zero missing
-brief files. Completed: 01, 02, 03, 04 and 09. Remaining: 05, 06, 07, 08, 10, 11, 12 and 13.
-08's Active status is explicitly unauthorized residue; its dated note forbids treating that
-status as authorization to resume. The campaign permits ADR-0.35.0 to remain Draft through
-implementation; Draft alone is not the blocker.
+All thirteen checklist items have briefs. Ledger-grounded completion remains five attested
+(01, 02, 03, 04, 09) and eight pending. All eight pending briefs pass authored validation.
+Documents, decomposition, REQ-kind discipline, command shape and brief reconciliation pass.
+The machine structural pre-screen is separately **3.55/4.00**, with thirteen briefs scored.
+The previous **2.70 Conditional Go** review was superseded by actual brief repairs below.
 
-Independent session inputs were supplied by the spec-reviewer, quality-reviewer and narrator
-agents. Final focused spec review found no remaining authoring blockers in 11/12.
-The machine scorecard has no recorded dispatch receipts and therefore still reports
-SINGLE-DRIVER / NOT DISPATCHED. These session inputs are not claimed as mechanically receipted
-dispatches. No ten-challenge red-team protocol was run.
+Independent quality review reports PASS with no remaining technical authoring findings.
+Narrator red-team review reports **10/10 PASS** after adding the delivery schedule.
+Independent spec review also reports PASS with no remaining technical authoring findings.
+These are actual session reviews, not fabricated ledger dispatch receipts: the generated
+scorecard still reports no receipted dispatch and ungraded machine substance channels.
 
-## Configurable Codex cap
+## Recorded operator decision
 
-The operator's correction is accepted: Codex's default 32 KiB documentation budget is
-configurable through project_doc_max_bytes. It is not an immutable vendor ceiling.
-[Official AGENTS.md documentation](https://learn.chatgpt.com/docs/agent-configuration/agents-md)
-describes increasing this value; the
-[configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference)
-documents the setting and configuration layers.
+[OBPI-07, Publication Amendment (Ratified)](obpis/OBPI-0.35.0-07-content-land-orchestrator.md)
+contains the approved contract. Its original Requirement 4 says:
 
-The observed local setting and declared-cap witness use 32768 bytes. The budget audit reported
-46876 bytes, 14108 above that declaration, with advisory exit 0. This establishes a comparison
-against the local declared value, not proof of the effective limit used by every running
-Codex session. Configuration changes and manifest-witness changes are distinct operations.
-No cap/configuration change was made by this review. OBPI-13 must state its desired configured
-budget and ordering contract explicitly, without presenting the default as unchangeable.
+> ALWAYS write atomically across the whole consumer set — temp-then-rename for every consumer, with no rename performed until every consumer's bytes are staged. A failure at consumer 2 of 3 MUST leave all three committed renditions unmodified.
 
-## ADR dimensions and CLI reconciliation
+Its REQ-05 simultaneously says:
 
-The generated structural pre-screen is 3.55/4.00. It measures section presence, counts and
-references; this manual score measures whether the contracts agree and can be implemented.
+> Given a landing interrupted after the first consumer, when the filesystem is inspected, then the landing state file EXISTS
 
-| Dimension | Weight | CLI | Manual | Weighted | Reason for manual assessment |
+Sequential renames cannot give atomic visibility of a whole set. **Approved: journaled per-file publication:** stage and verify everything first; atomically replace
+each file; retain durable journal evidence through interruption; identify actual old/new/
+indeterminate states by hashes; resume without rewriting verified files or re-attesting the
+same corpus delta; emit success only after every artifact verifies. Readers of individual
+files may observe mixed bytes while publication is incomplete.
+
+The alternative is atomic activation of an immutable generation, requiring a changed storage
+and reader protocol. That is not what the current file-layout/resume requirements describe.
+The operator's approval resolves the final policy choice; existing decisions settle routing,
+metrics and corpus-attestation reuse. AGENTS.md Behavior Rule Always #9 requires:
+**“On inconsistencies: STOP, name confusion, present tradeoff, wait. Don't resolve unilaterally.”**
+The explicit ruling above now ratifies the proposal; no policy decision remains pending.
+
+## ADR rubric and structural-score reconciliation
+
+| Dimension | Weight | CLI | Manual | Weighted | Rationale |
 |---|---:|---:|---:|---:|---|
-| Problem clarity | 15% | 4 | 4 | 0.60 | The source-to-delivery gap and retirement need are concrete; agree with CLI. |
-| Decision justification | 15% | 4 | 3 | 0.45 | Extensive rationale satisfies presence heuristics, but later root-routing and metric rulings are not fully propagated. |
-| Feature checklist | 15% | 1 | 3 | 0.45 | Prefix/granularity heuristics understate actual coverage: all thirteen numbered items now map to briefs. The delivery units remain uneven. |
-| OBPI decomposition | 15% | 4 | 2 | 0.30 | Brief count and sections conceal broad 07/12 scope and unresolved prerequisite contracts. |
-| Lane assignment | 10% | 4 | 3 | 0.30 | Heavy is defensible for public validators and runtime changes; implementation scope for 13 still needs reconciliation. |
-| Scope discipline | 10% | 4 | 2 | 0.20 | Allowed/denied sections exist, but 06/13 omit required implementation paths and 13 contradicts exclusions. |
-| Evidence requirements | 10% | 4 | 2 | 0.20 | Numerous commands satisfy heuristics; several assertions do not prove the intended failure states. |
-| Architectural alignment | 10% | 4 | 2 | 0.20 | Architectural references exist, but lineage immutability and landing publication contracts conflict. |
-| **Total** | **100%** | **3.55** | | **2.70** | **CONDITIONAL GO** |
+| Problem clarity | 15% | 4 | 4 | 0.60 | Concrete source/delivery, retirement and provenance gaps; agrees with CLI. |
+| Decision justification | 15% | 4 | 3 | 0.45 | Existing rulings now reconcile; the publication amendment is approved. Specific alternatives and integration tradeoffs justify the manual score rather than section depth alone. |
+| Checklist completeness | 15% | 1 | 3 | 0.45 | All thirteen items earn their place and map 1:1; prefix/granularity lint understates substantive coverage. |
+| Decomposition quality | 15% | 4 | 3 | 0.45 | Explicit acyclic prerequisites and bounded responsibilities; 07/12 are broad transactions, which count heuristics miss. |
+| Lane assignment | 10% | 4 | 3 | 0.30 | Public runtime/validator contracts justify Heavy; gates are specified without confusing corpus and completion attestation. |
+| Scope discipline | 10% | 4 | 3 | 0.30 | Parser, shared scanner, generated artifacts and schema consumers are now included; actual boundaries matter more than section presence. |
+| Evidence requirements | 10% | 4 | 4 | 0.40 | Specific unittest/BDD commands, negative controls and failure-state assertions define delivery; agrees with CLI after repairs. |
+| Architectural alignment | 10% | 4 | 3 | 0.30 | Shared scanner, separate lineage, source identity and ledger prerequisites follow real modules; the publication guarantee is explicitly ratified. |
+| **Total** | **100%** | **3.55** | | **3.25** | **GO; implementation dependencies remain explicit.** |
 
 ## All OBPI scores
 
-I = independence; T = testability; V = value; S = size; C = clarity. Scores evaluate
-brief quality, not a reversal of existing human attestation. Passing historical items
-are not reopened by current-template drift.
+I/T/V/S/C = independence, testability, value, size, clarity. Scores describe briefs, not
+re-attestation of completed work. Seven test groups becoming three state-machine groups
+does not hide work: 07/12 retain Size=2 and all semantic failure cases.
 
-| OBPI | I | T | V | S | C | Mean | Readiness |
+| Item | I | T | V | S | C | Mean | Disposition |
 |---|---:|---:|---:|---:|---:|---:|---|
-| 01 Tombstone schema/fold | 4 | 3 | 4 | 3 | 3 | 3.4 | Completed in ledger |
-| 02 Withdraw verb | 3 | 3 | 4 | 3 | 3 | 3.2 | Completed in ledger |
-| 03 Duplicate retirement | 3 | 3 | 4 | 4 | 3 | 3.4 | Completed in ledger |
-| 04 Ownership/ratchet | 4 | 3 | 4 | 2 | 3 | 3.2 | Completed; its metric ruling must reach consumers |
-| 05 Candidate generator | 3 | 3 | 4 | 3 | 2 | 3.0 | Reconcile root route, metrics and provenance before implementation |
-| 06 Lineage validator | 3 | 3 | 4 | 4 | 2 | 3.2 | Depends on 05; repair parser allowlist |
-| 07 Land orchestrator | 3 | 3 | 4 | 2 | 2 | 2.8 | Revise publication/recovery and attestation contracts |
-| 08 Post-append advisory | 3 | 3 | 4 | 4 | 2 | 3.2 | Depends on 07; requires explicit draw |
-| 09 Codex wiring | 4 | 3 | 4 | 3 | 3 | 3.4 | Completed; root-only amendment governs |
-| 10 Classification ownership | 2 | 3 | 4 | 3 | 2 | 2.8 | Specify section-aware identity joins and failure cases |
-| 11 Corpus shape witness | 3 | 3 | 4 | 4 | 3 | 3.4 | Authored; ready for planning against landed 01 |
-| 12 Rules onboarding | 3 | 3 | 4 | 2 | 3 | 3.0 | Authored; depends on 05/06/07 and focused migration-plan review |
-| 13 Render order | 4 | 2 | 4 | 4 | 1 | 3.0 | Mandatory revision: clarity dimension is 1 |
+| 01 | 4 | 3 | 4 | 3 | 3 | 3.4 | Attested; unchanged |
+| 02 | 3 | 3 | 4 | 3 | 3 | 3.2 | Attested; unchanged |
+| 03 | 3 | 3 | 4 | 4 | 3 | 3.4 | Attested; unchanged |
+| 04 | 4 | 3 | 4 | 2 | 3 | 3.2 | Attested; unchanged |
+| 05 | 3 | 3 | 4 | 3 | 3 | 3.2 | Ready for implementation planning |
+| 06 | 3 | 3 | 4 | 3 | 3 | 3.2 | Ready against declared 05 dependency |
+| 07 | 3 | 3 | 4 | 2 | 3 | 3.0 | Approved contract; predecessor and ledger repairs required |
+| 08 | 3 | 3 | 4 | 4 | 3 | 3.4 | Ready after 07 and explicit draw; Active residue preserved |
+| 09 | 4 | 3 | 4 | 3 | 3 | 3.4 | Attested; unchanged |
+| 10 | 3 | 3 | 4 | 3 | 3 | 3.2 | Explicit identity/reconciliation and publication dependencies |
+| 11 | 3 | 3 | 4 | 4 | 4 | 3.6 | Ready for planning; independently bounded |
+| 12 | 3 | 3 | 4 | 2 | 3 | 3.0 | Complete migration contract, depends on 05/06/07 |
+| 13 | 3 | 3 | 4 | 3 | 3 | 3.2 | Lossless ordering contract, depends on generation/landing |
 
-## Trackable findings and required corrections
+## Finding closure
 
-Paths below are relative to this ADR package unless stated otherwise.
+| Finding | Resolution and evidence |
+|---|---|
+| F01 Missing 11/12 | Both are semantically authored and validate; thirteen-file decomposition preserved. |
+| F02 Retired consumers | 05/07 consume manifest routes; root only for AgentContract. Multi-consumer tests use isolated declared fixtures. Equal candidate spans are valid. |
+| F03 Mixed metrics | Parent Decision 4, Fidelity Assertions and 05/06 distinguish ownership-span coverage/ratchet from entry-text population statistics. The recorded span-based ruling governs; historical counts are not runtime constants. |
+| F04 Atomicity contradiction | Concrete journaled-publication amendment in 07; technical review passed and operator ratification recorded. |
+| F05 Provenance conflict | BI-03 and 05 prohibit embedded lineage while permitting the optional commit-time landing_id expressly required by Decision 6. Old sidecars remain readable. |
+| F06 Attestation condition | 07 refuses new unattested corpus deltas; unchanged re-render and verified resume reuse evidence. 12 does not add a downstream attestation gate to valid remember capture. |
+| F07 Missing parser scope | 06 includes parser_maintenance.py; 05 includes content parser/help. Both include named tests and BDD surfaces. |
+| F08 Classification identities | 10 retains section-qualified row identities and explicit source/section/effective-entry mapping; no fuzzy first-match authority. Reconciliation preserves old raw rows and prefix fingerprint while deliberately changing the full fingerprint. |
+| F09 08 readiness residue | Historical unauthorized Active status preserved; dependency on 07 now explicit. Advisory proof uses observable combined output and real exception branches. |
+| F10 13 scope/acceptance | Six REQs match metadata; raw-byte permutation, required generated artifacts, repeat-generation persistence and independent delivery findings replace file-presence checks. Configurable cap is explicit. |
+| R11 Shared boundaries | 05 owns one fence-aware byte iterator and ownership regression tests; 13 reuses it. No claim that the old scanner already handled fences. |
+| R12 Durable ledger | 07 names verified GHI #952/#953 correction as an entry prerequisite; no private ledger writer or assumption that current append is durable. |
+| R13 Candidate versus committed audit | 06 distinguishes public committed-state audit from pure candidate verification so 07 can repair stale committed output. |
+| R14 Invariant inventory/fidelity | BI-01 includes all new readers. BI-06 preserves valid capture while existing type/identity validation remains. Fidelity proof uses isolated semantic tests rather than a production append or a substring gate incapable of detecting duplicates. |
+| R15 Schedule | Parent Remaining Delivery Plan records estimates, external prerequisites, parallel opportunities and serialization of shared publication. |
 
-1. **F01 — Missing decomposition, repaired.** Parent Decomposition target is 13 and checklist
-   items 11/12 already existed. Authored
-   [11](obpis/OBPI-0.35.0-11-corpus-shape-witness.md) and
-   [12](obpis/OBPI-0.35.0-12-rules-corpus-onboarding.md) now supply those items.
-   11 audits effective corpus entries separately from the template and rendered-budget checks.
-   12 preserves full rule documents, requires explicit migration assignments, uses the shared
-   delivery chain and independently witnesses activation in the ledger.
+## Ten red-team challenges
 
-2. **F02 — Root routing conflicts in 05/07.** OBPI-05 REQ-05 requires claude/heavy and
-   codex/lite spans to differ; its demo still uses retired routing. OBPI-07 prerequisites
-   likewise name claude/codex artifacts. OBPI-09's root-only amendment and current
-   AgentContract manifest route govern. Rewrite the target matrix and expected spans;
-   distinct consumers cannot be required where only root is configured.
+| Challenge | Result | Evidence |
+|---|---|---|
+| So what? | PASS | Thirteen distinct source, retirement, ownership, delivery and witness capabilities. |
+| Scope | PASS | Rule vendor/nested consumers are coupled; ordering excludes rank/cap edits. |
+| Alternatives/granularity | PASS | Generator, verifier and publisher stay separate; broad 07/12 size acknowledged. |
+| Dependencies | PASS | 05 -> 06 -> 07 spine; 11 independent; ledger corrections explicitly precede 07. |
+| Gold standard | PASS | Compared with validated ADR-0.0.26: traceability and proof commands retained, interruption controls extended; pending execution evidence is not claimed. |
+| Timeline | PASS | 9–15 idealized critical-path engineering days; 15–24 single-implementer days, excluding prerequisite repairs/approval/integration waits. |
+| Evidence | PASS | Every brief provides specific proof commands; pending tests are deliverables, not asserted results. |
+| Consumer | PASS | Status/resume/rollback, corpus attestation and actual delivery findings are specified. |
+| Regression | PASS | Effective-view, duplicate, identity, artifact-integrity and byte-boundary controls are explicit. |
+| Parity/doctrine | PASS | Root-only route, source authority, configurable budget and remaining publication decision are honestly bounded. |
 
-3. **F03 — Metric contract unresolved in 05/06.** OBPI-04's operator amendment explicitly
-   chooses section-span bytes for the ownership ratchet. Its coupling note preserves
-   the parent's 31.2% entry-witness metric pending a separate ruling for 05/06.
-   These are different denominators, not merely stale counts. Present the two calculations
-   and obtain a scoped ruling before propagating either into generator/lineage acceptance.
+## Codex cap and next work
 
-4. **F04 — Whole-set atomicity is unproved in 07.** Staging every temporary file then
-   sequentially renaming destinations cannot itself make publication of the whole set atomic.
-   REQ-02 only proves staging failure behavior; REQ-05 must exercise failure after the
-   first destination is published. Define observable mixed-state refusal and recovery,
-   or an actual atomic publication mechanism, then test that state.
+Codex project_doc_max_bytes is configurable; 32 KiB is the default, not an immutable ceiling.
+The order-only comparison holds its observed configuration fixed without declaring that
+configuration unchangeable. See [official configuration guidance](https://learn.chatgpt.com/docs/agent-configuration/agents-md).
+No configuration was changed during authoring.
 
-5. **F05 — Provenance shape conflicts.** Parent BI-03 says RenditionProvenance is
-   unextended across every OBPI; 05 repeats the invariant. 07 explicitly permits adding
-   landing_id. Reconcile storage ownership and the invariant before implementing 07.
-
-6. **F06 — Attestation condition conflicts in 07.** Its unconditional empty-attestation
-   rejection conflicts with its discovery note describing corpus-delta-only attestation.
-   Specify initial/delta capture versus unchanged re-render behavior and refusal tests.
-
-7. **F07 — Missing parser scope in 06.** Add the actual CLI forwarding surface
-   src/gzkit/cli/parser_maintenance.py to both allowed-path representations and discovery.
-   Declaring a new validator flag without its parser path is not execution-ready.
-
-8. **F08 — Identity mapping ambiguity in 10.** The existing bullet-retention scorecard
-   parser yields text/classification tuples without section identity. Define handling of
-   identical text in distinct sections, missing matches and ambiguous matches. Prove
-   identity-preserving ownership, not only equal totals.
-
-9. **F09 — Unauthorized residue in 08.** Preserve the dated prohibition against resuming
-   from Active status. Clarify its dependency on 07 instead of describing it as independent.
-   A fresh explicit draw is required before implementation.
-
-10. **F10 — Scope and acceptance mismatch in 13.** Frontmatter has three REQs while the
-    body has six; allowed templates also appear denied; runtime/tests and the rendition
-    required by its joint-commit contract are absent. Demo is a placeholder and file-presence
-    checks cannot prove ordering/truncation behavior. Repair these together and express
-    the configurable-budget assumption accurately.
-
-## Next work
-
-**Recommend 05 next as a brief-reconciliation task, followed by implementation once resolved.**
-It advances the governing campaign's corpus-to-delivery chain and unlocks 06/07, then 08/12.
-First resolve F02/F03/F05 using current root-only routing and an explicit metric ruling.
-A scope recommendation is not authorization to pick between contradictory operator decisions.
-
-**If selecting an implementation candidate with the fewest unresolved contracts, choose 11.**
-Its fold prerequisite is delivered, it has a bounded audit surface, and the authored brief
-includes semantic negative controls through the public validator. It is ready for planning,
-not automatically drawn or attested. 12 is correctly authored but cannot precede 05/06/07.
-
-## Verification limits
-
-- Both new briefs pass individual gz obpi validate --authored checks after final edits.
-- Document, decomposition, requirement-kind, command-shape and brief-reconcile validations pass.
-- The full authored-validation batch also inspects completed briefs and reported historical
-  completion/scope/template evidence issues; this review does not claim all thirteen pass
-  that command or use those failures to nullify recorded attestation.
-- No implementation test suite, runtime delivery gate or completion attestation was claimed.
-- Existing brief conflicts remain tracked as F02–F10 here; they were not silently rewritten.
-
-> Consider: uv run -m gzkit justify OBPI-0.35.0-05
+**Next implementation: 05**, after its plan is reviewed. It unlocks 06 and the landing spine.
+11 is an independent planning candidate. **Before 07:** verify the GHI #952/#953 ledger corrections, in addition to its OBPI prerequisites.
+No implementation, completion attestation, commit or push was performed by this repair pass.

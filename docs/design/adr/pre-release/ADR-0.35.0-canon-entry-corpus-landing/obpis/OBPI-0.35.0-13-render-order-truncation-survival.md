@@ -5,24 +5,31 @@ item: 13
 lane: Heavy
 status: Draft
 allowlist:
-  - docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/ADR-0.35.0-canon-entry-corpus-landing.md
+  - src/gzkit/content/render/order.py
+  - src/gzkit/content/composer.py
+  - tests/content/test_render_order.py
+  - tests/content/test_composer.py
+  - tests/content/test_round_trip_agent_contract.py
+  - tests/content/test_byte_stability.py
+  - features/render_order.feature
+  - features/steps/render_order_steps.py
+  - .gzkit/renditions/AGENTS.md/
   - AGENTS.md
-  - data/agents_md_survival_declaration.json
-  - AGENTS.md
-  - src/gzkit/templates/agents.md
-  - src/gzkit/templates/adr.md
-  - src/gzkit/sync_surfaces.py
+  - docs/user/manpages/content.md
+  - docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-13-render-order-truncation-survival.md
 reqs:
   - REQ-0.35.0-13-01
   - REQ-0.35.0-13-02
   - REQ-0.35.0-13-03
+  - REQ-0.35.0-13-04
+  - REQ-0.35.0-13-05
+  - REQ-0.35.0-13-06
 verification:
-  - test -f docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/ADR-0.35.0-canon-entry-corpus-landing.md
-  - rg -n "^## Persona$" AGENTS.md
-  - test -f data/agents_md_survival_declaration.json
-  - test -f src/gzkit/templates/agents.md
-  - test -f src/gzkit/templates/adr.md
-  - test -f src/gzkit/sync_surfaces.py
+  - uv run -m unittest tests.content.test_render_order tests.content.test_composer tests.content.test_round_trip_agent_contract tests.content.test_byte_stability
+  - uv run -m behave features/render_order.feature
+  - uv run gz validate --instructions-files-budget --invariant-coherence --rendition-freshness
+  - uv run gz validate --documents --req-kind-discipline
+  - uv run mkdocs build --strict
 ---
 
 # OBPI-0.35.0-13-render-order-truncation-survival: Render Order Truncation Survival
@@ -48,25 +55,25 @@ Render-order permutation for truncation survival -- order `AGENTS.md` sections s
 
 ## Allowed Paths
 
-<!-- Verified against on-disk reality 2026-09-02 per gz-obpi-specify
-     § Pre-Save Ground-Truth Check. Every path below was globbed; the
-     pool ADR's stale `markdown_parser.py` reference resolves to
-     `src/gzkit/content/parse/markdown_parser.py`, not `content/`. -->
-
-- `src/gzkit/content/render/pipeline.py` — the render surface the permutation applies at
-- `src/gzkit/content/models/agent_contract.py` — `Pillar.order` (line 18, `"Render order (ascending)."`)
-- `src/gzkit/content/parse/markdown_parser.py` — builds one `Pillar` per `##` section "in document order" (line 295)
-- `data/agents_md_survival_declaration.json` — the ratified ranking source (read-only here; ranks are operator policy)
-- `AGENTS.md` — the Layer-1 surface being permuted
-- `tests/content/test_render_pipeline.py` — render-order coverage
-- `tests/content/test_round_trip_agent_contract.py` — round-trip fidelity coverage
-- `tests/content/test_byte_stability.py` — verbatim-preservation coverage
-- `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-13-render-order-truncation-survival.md` — this brief
+- `src/gzkit/content/render/order.py` — **CREATE**, following adjacent render/test/BDD modules
+- `src/gzkit/content/composer.py`
+- `tests/content/test_render_order.py` — **CREATE**, following adjacent render/test/BDD modules
+- `tests/content/test_composer.py`
+- `tests/content/test_round_trip_agent_contract.py`
+- `tests/content/test_byte_stability.py`
+- `features/render_order.feature` — **CREATE**, following adjacent render/test/BDD modules
+- `features/steps/render_order_steps.py` — **CREATE**, following adjacent render/test/BDD modules
+- `.gzkit/renditions/AGENTS.md/` — governed publication/playback only; never manual authoring
+- `AGENTS.md` — governed publication/playback only; never manual authoring
+- `docs/user/manpages/content.md`
+- `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-13-render-order-truncation-survival.md`
 
 ## Denied Paths
 
 - `src/gzkit/governance/trust_audits/surface_delivery_witness.py` — the witness LANDED under GHI #712 and is the independent check on this work. Editing the instrument that grades the change is the failure this brief must not commit.
-- `data/vendor-manifest.json` — the cap is gzkit's belief about a vendor's physical truncation; raising it cannot relieve the cap and would fake the result.
+- `data/vendor-manifest.json`, `.codex/config.toml` — read-only configuration inputs for this order-only unit. Codex project_doc_max_bytes is configurable, including trusted project configuration; changing the budget is legitimate but is not this unit's mechanism.
+- `data/agents_md_survival_declaration.json` — read-only ratified ranks; no policy edits
+- `src/gzkit/content/models/agent_contract.py`, `src/gzkit/content/parse/markdown_parser.py` — consume document-order metadata without redefining it
 - `.gzkit/corpus/AGENTS.md.jsonl` — permutation reorders; it never adds, removes, or edits a corpus entry.
 - `src/gzkit/templates/agents.md` — the adopter-bootstrap template is a different surface from the rendered root contract.
 - Paths not listed in Allowed Paths
@@ -76,11 +83,11 @@ Render-order permutation for truncation survival -- order `AGENTS.md` sections s
 ## Requirements (FAIL-CLOSED)
 
 1. REQUIREMENT: The ranking source is `data/agents_md_survival_declaration.json`. NEVER infer criticality from `Bullet.classification` / `Bullet.witness` — that was built, measured and REFUTED 2026-07-24: run live it pushed § Attestation 15->18 and § Defect-fix routing 16->19 (the two sections GHI #580 was filed to lift) and demoted PRIME DIRECTIVE 3->9. Root cause: those are `Bullet` fields and gzkit's most binding material is TABLES, which rank 0.
-2. REQUIREMENT: Do NOT repurpose `Pillar.order` as a criticality field. It carries DOCUMENT order for round-trip fidelity. The permutation MUST renumber `order` to match the new document order so round-trip parity still holds, per the field's own contract (`"Render order (ascending)."`).
+2. REQUIREMENT: Do NOT repurpose `Pillar.order` as a criticality field. It carries DOCUMENT order for round-trip fidelity. After the byte permutation, parsing derives order from the new document position. Never sort by an invented criticality value in Pillar.order, and never claim the existing model parser preserves arbitrary raw bytes.
 3. REQUIREMENT: The permutation is ORDER-ONLY. Every section's text MUST survive byte-identical — no trim, no rewrite, no merge. A reorder that changes a byte is a different operation with a different attestation disposition.
 4. REQUIREMENT: The recomposed `AGENTS.md` and its rendition MUST be committed TOGETHER. `gz validate --invariant-coherence` byte-compares deterministic rendition playback against the committed surface and is in the default `gz check` scope, so a surface committed without its rendition fails closed.
 5. REQUIREMENT: After permutation, `uv run gz validate --instructions-files-budget` MUST report ZERO must-survive sections straddling or past the codex cap. Measured 2026-09-01 before the change: 11,768 B undelivered (`operator-doctrine-verbatim-canon` straddling, losing 11,173 B; `architectural-boundaries` lost entire).
-6. NEVER: edit the surface-delivery witness or the vendor cap to obtain a green reading. Both are in Denied Paths.
+6. NEVER modify the independent witness or the declared/configured budget during the order-only comparison. Record the current configured budget and its observed delivery evidence; use no hardcoded 32768-byte requirement.
 7. ALWAYS: treat this as a Layer-1 canon change. An agent silently reordering the canon it is governed by is the failure gzkit exists to prevent (pool ADR constraint 2).
 
 > **RULED 2026-09-02 — OPERATOR GATE-5 ATTESTATION IS REQUIRED for this permutation.**
@@ -105,6 +112,40 @@ Render-order permutation for truncation survival -- order `AGENTS.md` sections s
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
+## Lossless Ordering Contract
+
+Dependencies: 05/06/07 provide candidate generation, lineage verification and governed
+landing; 09 supplies root playback. This item hooks the pure generator immediately before
+lineage offsets are computed, so later generation and landing preserve the approved order.
+It introduces no alternate CLI writer and leaves ordinary adopter/model rendering alone.
+
+The helper in content/render/order.py accepts raw UTF-8 surface bytes and the validated
+survival declaration. It preserves the H1/preamble and moves complete H2 spans, including
+their trailing whitespace and delimiters. Consume the fence-aware shared boundary iterator delivered by 05 so ownership, generation
+and permutation agree. Example headings inside fences never become sections. Reuse the
+existing section-id vocabulary and reject duplicate ids.
+Do not parse and re-render through AgentContract to perform the permutation: the current
+parser strips trailing blanks and special-cases Tech Stack/Rules. Renumbered Pillar.order
+is a derived observation after parsing, not the mechanism that preserves text.
+
+The current declaration uses unique contiguous ranks. Validate its exact membership against
+the surface before ordering; do not infer a rank for a new section or mutate the declaration.
+Apply ascending rank order and retain all bytes, even expendable-under-pressure sections.
+With no declaration, preserve the existing order. An existing but invalid declaration fails.
+Reject malformed UTF-8 and preserve multibyte sequences without byte/character confusion.
+
+Before publication, compute must-survive end offsets including the preamble. If any exceed
+the recorded current budget, show the exact residual and refuse to claim survival; policy or
+budget changes require their own authorized correction. Exact-boundary fixtures pass.
+Keep the independent delivery-witness implementation unchanged and compare its actual
+findings, including a deliberately infeasible cap fixture. Repeat generation and playback
+must remain coherent with the committed rendition and its lineage/provenance.
+
+The approved permutation is prepared and verified in isolated acceptance fixtures first.
+The September 2 operator ruling below still governs real publication: present the exact
+per-section before/after hashes and byte offsets for human approval, then use governed
+landing/playback and commit the rendition and AGENTS.md together. Do not mutate corpus entries.
+
 ## Discovery Checklist
 
 <!-- What to read before implementation. Complete this checklist first.
@@ -126,7 +167,7 @@ Render-order permutation for truncation survival -- order `AGENTS.md` sections s
 
 **Context:**
 
-- [ ] Related OBPIs in same ADR
+- [ ] Read the ratified survival declaration and agents-md-map-doctrine.md; verify current configured budget and record observed delivery evidence
 
 **Prerequisites (check existence, STOP if missing):**
 
@@ -136,7 +177,10 @@ Render-order permutation for truncation survival -- order `AGENTS.md` sections s
 
 **Existing Code (understand current state):**
 
-- [ ] Existing tests adjacent to the Allowed Paths reviewed before implementation
+- [ ] Read content/render/pipeline.py and its template iteration; changing Pillar.order alone does not sort the list
+- [ ] Read content/parse/markdown_parser.py and content/ownership.py for section ids, fence behavior and normalization limits
+- [ ] Read content/composer.py and the landed 05/06/07 generation/lineage/publication interfaces
+- [ ] Read tests/content/test_render_pipeline.py, test_round_trip_agent_contract.py and test_byte_stability.py
 - [ ] Parent ADR integration points reviewed for local conventions
 
 ## Quality Gates
@@ -176,55 +220,38 @@ Render-order permutation for truncation survival -- order `AGENTS.md` sections s
 
 ## Verification
 
-<!-- What commands verify this work? Use real repo commands, then paste the
-     outputs into Evidence. These are CONSTRUCTION HOUSEKEEPING (lint, type,
-     test, mkdocs) — they prove the codebase is healthy, not what the OBPI
-     yielded. The yielded product belongs in the `## Demo` section below.
-
-     AUTHORING CONTRACT: Every command in this section must be a single-program,
-     shell-less invocation — no &&, ||, |, ;, $(...), or redirects. The
-     OBPI-pipeline verify stage executes commands via shlex.split + shell=False
-     (GHI #415); compound commands are blocked at authoring time by
-     gz validate --brief-command-shape and rejected at the verify stage.
-     Write multi-step verification as separate uv run ... lines. -->
+The new tests and feature are implementation deliverables. Budget findings are advisory;
+exit 0 alone is not survival proof. Assert the witness's actual per-section offsets and
+must-survive loss count, with a too-small-cap negative control.
 
 ```bash
-uv run gz validate --documents
-uv run gz lint
-uv run gz typecheck
-uv run gz test
-
-# Specific verification for this OBPI
-test -f docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/ADR-0.35.0-canon-entry-corpus-landing.md
-rg -n "^## Persona$" AGENTS.md
-test -f data/agents_md_survival_declaration.json
-test -f src/gzkit/templates/agents.md
-test -f src/gzkit/templates/adr.md
-test -f src/gzkit/sync_surfaces.py
+uv run -m unittest tests.content.test_render_order tests.content.test_composer tests.content.test_round_trip_agent_contract tests.content.test_byte_stability
+uv run -m behave features/render_order.feature
+uv run gz validate --instructions-files-budget --invariant-coherence --rendition-freshness
+uv run gz validate --documents --req-kind-discipline
+uv run mkdocs build --strict
 ```
 
 ## Demo
 
-<!-- THE YIELDED PRODUCT, not housekeeping. Concrete, runnable invocations
-     that demonstrate the capability this OBPI delivers — e.g. an actual
-     diagnosis run against a real file, the `--json` form, an auto-chain
-     trigger. The closeout ceremony walkthrough harvests this section
-     (parser-validated; unregistered verbs are dropped). Prefer real paths
-     and arguments over `<placeholder>` syntax. `--help` is not a demo. -->
+Run these after governed permutation/publication; retain the witness's before/after section
+readout rather than reporting its exit status alone.
 
 ```bash
-# Replace with concrete product demonstrations for this OBPI.
+uv run gz validate --instructions-files-budget --json
+uv run gz validate --invariant-coherence --rendition-freshness
+uv run -m behave features/render_order.feature
 ```
 
 ## Acceptance Criteria
 
 <!-- REQ kinds per ADR-0.0.59; enforced by gz validate --req-kind-discipline. -->
 
-- [ ] REQ-0.35.0-13-01 [BEHAVIOR]: Given the ratified survival declaration, when the render pipeline emits `AGENTS.md`, then sections are ordered by declared rank ascending, ranks at or above `must_survive_through_rank` first, and ties keep document order via a stable sort
-- [ ] REQ-0.35.0-13-02 [BEHAVIOR]: Given a permuted surface, when `Pillar.order` is read back, then it has been renumbered to match the new document order, so a parse/render round trip reproduces the committed surface byte-for-byte
+- [ ] REQ-0.35.0-13-01 [BEHAVIOR]: Given the ratified survival declaration, when the render pipeline emits `AGENTS.md`, then sections are ordered by declared rank ascending, numeric ranks <= `must_survive_through_rank` first; declaration identity and contiguous unique-rank validation fail before publication for duplicate, unknown, omitted or dangling section ids
+- [ ] REQ-0.35.0-13-02 [BEHAVIOR]: Given a permuted surface, when `Pillar.order` is read back, then it matches the new document position; governed rendition playback is byte-identical to the approved surface, including repeated generation, without asserting that the lossy model parser itself preserves arbitrary bytes
 - [ ] REQ-0.35.0-13-03 [BEHAVIOR]: Given any section, when the surface is permuted, then that section's text is byte-identical before and after — the permutation reorders and never rewrites
-- [ ] REQ-0.35.0-13-04 [BEHAVIOR]: Given the permuted `AGENTS.md`, when the surface-delivery witness runs, then it reports zero must-survive sections straddling or past the codex delivery cap
-- [ ] REQ-0.35.0-13-05 [SUPPORT]: `data/agents_md_survival_declaration.json` is the sole ranking source and is read, never written, by this OBPI — `gz validate --instructions-files-budget` + `artifact_edited` event
+- [ ] REQ-0.35.0-13-04 [BEHAVIOR]: Given the permuted `AGENTS.md`, when the surface-delivery witness runs, then its measured byte offsets show every must-survive section ending at or before the recorded configured cap; a too-small-cap fixture reports residual loss and refuses publication rather than trimming text or changing policy
+- [ ] REQ-0.35.0-13-05 [SUPPORT]: `docs/user/manpages/content.md` documents the read-only ranking source, configurable budget, infeasible-order refusal and governed publication flow — `gz validate --documents` + path-citing `artifact_edited` event
 - [ ] REQ-0.35.0-13-06 [STRUCTURAL-FENCE]: `Pillar.order` remains document order and is never repurposed as a criticality axis — audited at ADR closeout against § Boundary Invariants
 
 ## Completion Checklist

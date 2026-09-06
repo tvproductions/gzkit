@@ -9,8 +9,12 @@ allowlist:
   - tests/governance/test_bullet_retention.py
   - src/gzkit/content/models/corpus.py
   - .gzkit/corpus/AGENTS.md.jsonl
+  - .gzkit/renditions/AGENTS.md/
+  - AGENTS.md
+  - docs/user/manpages/validate.md
   - docs/governance/advisory-rules-audit.md
-  - features/**
+  - features/classification_ownership.feature
+  - features/steps/classification_ownership_steps.py
   - docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-10-classification-reader-and-ownership.md
 reqs:
   - REQ-0.35.0-10-01
@@ -21,6 +25,8 @@ reqs:
   - REQ-0.35.0-10-06
   - REQ-0.35.0-10-07
 verification:
+  - uv run -m unittest tests.governance.test_bullet_retention
+  - uv run -m behave features/classification_ownership.feature
   - uv run gz lint
   - uv run gz typecheck
   - uv run gz test
@@ -48,16 +54,14 @@ corpus-owned, and from `docs/governance/advisory-rules-audit.md` otherwise. The
 field is schema-required and identity-fingerprinted today with **zero** read
 sites anywhere in `src/` — every hit is a declaration or a writer — while the
 binding copy of the same concept lives in a hand-maintained markdown table. Done
-means exactly one surface classifies any given bullet, the scorecard's 144-row
+means exactly one surface classifies any given bullet, every identity in the measured pre-change scorecard
 population is preserved, and no corpus section binds while its entries still
 carry the capture-default.
 
-**Dependency order (ADR-0.35.0 § Scope Minimization):** 10 depends on
-**OBPI-0.35.0-04**, which introduces the section-ownership declaration this
-brief's resolution rule keys on — "corpus-owned" is not yet a property anything
-can answer (`grep -rn "corpus-owned" src/gzkit/content` returns nothing as of
-2026-08-02). 10 is independent of the 01 -> 02 -> 03 chain and of 05 -> 06 -> 07,
-and MUST land after 04.
+**Dependency order:** 10 consumes landed 01/02 (effective fold and governed retirement),
+04 (ownership), and 07 for the post-reconciliation landing. 09 supplies the root-only
+AgentContract route. Development may use isolated fixtures; completion includes governed
+retirement/capture and re-landing so the repository is coherent.
 
 > **Amendment provenance.** This item was folded into ADR-0.35.0 on 2026-08-02
 > by operator ruling, from GHI #737, while the ADR stood at 0/9 landed. It is a
@@ -86,9 +90,12 @@ this ADR exists to kill.
 - `src/gzkit/governance/trust_audits/bullet_retention.py` — the resolver; today `_SCORECARD_PATH` (line 48) is its only classification input
 - `tests/governance/test_bullet_retention.py` — covering tests for the resolution order
 - `src/gzkit/content/models/corpus.py` — docstring only, to name the reader the field now has; the field, its `BASELINE_IDENTITY_FIELDS` membership, and its ordering are all untouched
-- `.gzkit/corpus/AGENTS.md.jsonl` — the reconciliation of the 36 `Ambiguous` capture-defaults, appended never edited
+- `.gzkit/corpus/AGENTS.md.jsonl` — governed retire/capture reconciliation; no manual JSONL edits
+- `.gzkit/renditions/AGENTS.md/` — governed candidate, lineage, rendition and provenance publication only
+- `AGENTS.md` — generated playback only; never manually edited to satisfy the audit
+- `docs/user/manpages/validate.md` — observed classification-source and recovery examples
 - `docs/governance/advisory-rules-audit.md` — the scorecard states its own now-narrowed authority
-- `features/**` — Gate 4 scenarios
+- `features/classification_ownership.feature`, `features/steps/classification_ownership_steps.py` — **CREATE**, Gate 4 scenarios
 - `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-10-classification-reader-and-ownership.md` — this brief's evidence sections
 
 ## Denied Paths
@@ -97,23 +104,57 @@ this ADR exists to kill.
 - `src/gzkit/content/models/bullet.py` — `Bullet.classification` is the *rendering* join (`markdown_parser.py:290`), a separate consumer; re-pointing it is not this OBPI's scope
 - `src/gzkit/content/parse/markdown_parser.py` — same reason
 - `src/gzkit/commands/content/**` — the writers (`remember.py:112,158`, `retire.py:66`, `__init__.py:296`) keep their current behavior; this OBPI adds a reader, never changes capture
-- `src/gzkit/content/rendition_store.py` — `corpus_fingerprint()` must not move
-- `AGENTS.md`, `CLAUDE.md`, `.claude/rules/**` — the rendered surfaces are inputs to the audit, never edited to make it pass
+- `src/gzkit/content/rendition_store.py` — the fingerprint algorithm and pre-existing-row identity remain unchanged
+- `CLAUDE.md`, `.claude/rules/**` — read-only audit inputs; root AGENTS.md may change only through the governed publication allowance
 - New dependencies, CI files, lockfiles
 - Any path not listed in Allowed Paths
 
 ## Requirements (FAIL-CLOSED)
 
 1. ALWAYS resolve a corpus-owned bullet's classification from `CorpusEntry.classification`, and a non-owned bullet's from the scorecard. Exactly one surface answers for any given bullet; there is no merge, no union, and no "most severe wins."
-2. NEVER shrink the audited population. The scorecard carries 144 rows against the corpus's 52 over 8 sections; a wholesale swap to the corpus is a ~64% coverage regression and is the shape the parent ADR § Decision 9 explicitly REJECTS. The post-change row count MUST be >= the pre-change count, asserted, not assumed.
+2. NEVER shrink the audited population. The scorecard carries 144 rows against the corpus's 52 over 8 sections; a wholesale swap to the corpus is a ~64% coverage regression and is the shape the parent ADR § Decision 9 explicitly REJECTS. The post-change population MUST retain every pre-change `(scorecard section id, row number)` identity and its source attribution. Equal counts are insufficient: substitution of one identity for another must fail. Historical 144/52/36 counts are context, never constants.
 3. NEVER let a corpus-owned section bind while any of its live entries carries the capture-default `Ambiguous`. 36 of 52 rows carry it today, every one with `origin: cli:content-remember` — the default was never revisited. Binding on an unreviewed default would let the capture path silently author gate verdicts. Fail closed with three-part recovery prose per `.claude/rules/guardrail-feedback-prose.md`.
 4. NEVER mutate a corpus row to reconcile a classification. Reconciliation is an APPEND — the corpus is an append-only log and OBPI-0.35.0-01's tombstone algebra is the only retirement channel. An in-place edit destroys provenance and re-fingerprints the corpus.
-5. NEVER change `corpus_fingerprint()` output for the already-committed corpus. `classification` stays in `BASELINE_IDENTITY_FIELDS` (`corpus.py:53-64`) in its current position; that tuple's own comment says reordering or removing "re-fingerprints every committed rendition."
+5. NEVER change `corpus_fingerprint()` output over the already-committed prefix. Governed appends intentionally change the full-corpus fingerprint and require rendition refresh. `classification` stays in `BASELINE_IDENTITY_FIELDS` (`corpus.py:53-64`) in its current position; that tuple's own comment says reordering or removing "re-fingerprints every committed rendition."
 6. ALWAYS surface a corpus/scorecard disagreement on an owned bullet rather than silently resolving it. Precedence decides which value BINDS; it never decides whether the operator gets to see that the two surfaces disagreed.
 7. NEVER add a second classification model. `.claude/rules/hexagonal-architecture.md` § Operative rules 8 forbids "a second, differently-typed representation of the same objects" — this OBPI's whole purpose is to collapse one such pair, not to add a third resolver.
 8. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
+
+## Identity and Reconciliation Contract
+
+Retain scorecard identity as (scorecard section id, row number); bare row numbers are
+not unique. Record explicit source attribution in the existing scorecard Notes column:
+source path, canonical section id and, for an owned AgentContract row, its unique effective
+corpus entry id. This mapping is reviewed during implementation planning. It is evidence
+of intended correspondence, not fuzzy text matching: do not infer it from the first
+substring hit, manufacture ids, or silently choose among ambiguous candidates. Multiple
+rows may reference one entry where the reviewed mapping explicitly says so.
+
+Validate the mapping against the source section and effective corpus. Missing/duplicate
+row identities, missing attribution, wrong-section or retired entry ids, and unknown
+owned sections are named failures; never fall back to scorecard authority for a broken
+owned mapping. Non-AgentContract rows retain their current authority. Missing/corrupt
+enrolled ownership cannot silently convert owned rows to scorecard-only rows. A project
+without ownership enrollment retains the legacy audit path.
+
+For classification reconciliation, prepare a before/after mapping for operator review;
+do not auto-reclassify from prose. Use shipped retire followed by remember for unchanged
+text with new classification: the existing writer rejects identical live text and has
+no supersedes option. Reuse the approved source witness and record retirement/replacement
+ids. Interrupted migration is explicitly incomplete and cannot produce a successful
+owned audit until capture and mapping refresh finish. All old raw rows and the old-prefix
+fingerprint remain byte-identical; the new full fingerprint changes. Use 07 to re-land,
+with corpus-delta attestation; never edit rendered output as an audit workaround.
+
+REQ-01 covers exact entry-id authority and missing/wrong-section/retired ids.
+REQ-02 compares identity sets and source attribution, including same text in two sections.
+REQ-03 changes the corpus classification while holding the scorecard fixed, and vice versa.
+REQ-04 covers invalid ownership and every live Ambiguous entry, not just mapped rows.
+REQ-05 covers interrupted retire/capture, old-prefix bytes, new fingerprint and re-landing.
+The scorecard's existing NC/grandfather requirements continue to bind any reclassified row;
+reader work does not waive them.
 
 ## Discovery Checklist
 
@@ -186,6 +227,8 @@ this ADR exists to kill.
 ## Verification
 
 ```bash
+uv run -m unittest tests.governance.test_bullet_retention
+uv run -m behave features/classification_ownership.feature
 uv run gz lint
 uv run gz typecheck
 uv run gz test
@@ -214,7 +257,7 @@ uv run gz content show AGENTS.md --section prime-directive-ownership
 ## Acceptance Criteria
 
 - [ ] REQ-0.35.0-10-01 [behavior]: Given a bullet whose section is corpus-owned, when `validate_bullet_retention` runs, then the bullet's classification is read from that section's `CorpusEntry.classification` and NOT from `docs/governance/advisory-rules-audit.md`
-- [ ] REQ-0.35.0-10-02 [behavior]: Given a bullet whose section is not corpus-owned, when `validate_bullet_retention` runs, then the bullet's classification is read from the scorecard, and the total number of classified bullets is not less than the pre-change count
+- [ ] REQ-0.35.0-10-02 [behavior]: Given a bullet whose section is not corpus-owned, when `validate_bullet_retention` runs, then the bullet's classification is read from the scorecard, and every measured pre-change row identity/source remains represented, with unchanged retention/tier behavior for unowned and non-AgentContract rows
 - [ ] REQ-0.35.0-10-03 [behavior]: Given a bullet classified by BOTH surfaces with disagreeing values on an owned section, when the audit runs, then the corpus value binds AND the disagreement is reported to the operator rather than silently discarded
 - [ ] REQ-0.35.0-10-04 [behavior]: Given a corpus-owned section with at least one live entry whose classification is the capture-default `Ambiguous`, when the audit runs, then it fails closed naming each unreconciled entry id, the rule that binds, and the runnable next step
 - [ ] REQ-0.35.0-10-05 [behavior]: Given the committed corpus, when this OBPI's reconciliation has landed, then `corpus_fingerprint()` over the pre-existing rows is unchanged and every reconciliation is an appended row rather than an edited one
