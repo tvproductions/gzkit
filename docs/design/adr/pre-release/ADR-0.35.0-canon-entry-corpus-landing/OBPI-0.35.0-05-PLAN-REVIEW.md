@@ -58,3 +58,33 @@ without borrowing 07's publication implementation.
 
 **Brief: ready for planning. Implementation plan: missing; execution review FAIL.**
 Next action is to author the 05 implementation plan, then audit that actual plan.
+
+## Archived audit receipt
+
+The generated receipt this review corrected is preserved here, unchanged, as
+`OBPI-0.35.0-05-PLAN-AUDIT-RECEIPT.json`. It was archived because the live copy had
+become **operational orphan residue**: a legitimate failed pre-planning audit, sitting in
+the project-local plans directory, failing `gz preflight` and so blocking the whole
+`gz check` gate for unrelated work. Archiving preserves the finding; only the operational
+copy was removed.
+
+| Field | Value |
+|---|---|
+| Original path | `.claude/plans/.plan-audit-receipt-OBPI-0.35.0-05-corpus-candidate-generator.json` |
+| Receipt timestamp | `2026-09-06T01:22:30.511821+00:00` |
+| Disposition | **FAIL** — 1 gap, `plan_file` `section-ownership-and-ratchet-OBPI-0.35.0-04.md` |
+| Author | Codex (confirmed by the operator, 2026-09-06) |
+| SHA-256 | `3b879346d3844017e57726054869a88b082b0963719dba45f310c3c7c1f12931` |
+| Size | 4376 bytes |
+| Archived | 2026-09-06, operator-authorized; byte identity verified by `shasum -a 256` and `cmp` |
+
+**The verdict is unchanged and still stands.** Archiving is records handling, not
+adjudication: the FAIL is not softened, OBPI-0.35.0-05 is not started, and its brief
+remains ready-for-planning with no implementation plan. The root failure is the one this
+review already names — no OBPI-05 implementation plan exists, and discovery incorrectly
+selected OBPI-04's plan (`src/gzkit/pipeline_markers.py:140` accepts any mention of the
+target id, a false positive for plan ownership).
+
+The 16 `scope_collisions` rows in the receipt are **advisory path intersections, not
+established active-work conflicts** — the same reading recorded above. They are retained
+verbatim in the archived JSON so the advisory overlap set stays inspectable.
