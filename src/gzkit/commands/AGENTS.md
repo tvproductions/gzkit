@@ -7,9 +7,11 @@
 
 # CLI Contract Doctrine
 
-<!-- rule-version: 0.5.1 -->
+<!-- rule-version: 0.6.0 -->
 
-> **Rule version:** `0.5.1` — diet pass under GHI #921 (operator ruling 2026-08-30, *"do 3, 4, and 5"*): the superseded `0.5.0`–`0.3.1` version chain is lifted to [Rule Version History](../../docs/governance/rule-version-history.md#climd), restoring the one-sentence shape `skill-surface-sync.md` § Non-negotiable rules #2 requires. Binding rules unchanged; scoped `src/gzkit/commands/**`, this rule loads on every CLI-command edit, so narrative is the most expensive thing it can carry.
+> **Rule version:** `0.6.0` — operator ruling 2026-09-06 carves the GHI direct-repair exception into § Adding CLI Features, which had read as though every contract-bearing CLI change requires OBPI ceremony and so contradicted `AGENTS.md` § Operator Doctrine; `0.5.1` and the superseded `0.5.0`–`0.3.1` chain are lifted to [Rule Version History](../../docs/governance/rule-version-history.md#climd). Scoped `src/gzkit/commands/**`, this rule loads on every CLI-command edit, so narrative is the most expensive thing it can carry.
+>
+> _Prior `0.5.1`:_ diet pass under GHI #921 (operator ruling 2026-08-30, *"do 3, 4, and 5"*): the superseded `0.5.0`–`0.3.1` version chain is lifted to [Rule Version History](../../docs/governance/rule-version-history.md#climd), restoring the one-sentence shape `skill-surface-sync.md` § Non-negotiable rules #2 requires. Binding rules unchanged; scoped `src/gzkit/commands/**`, this rule loads on every CLI-command edit, so narrative is the most expensive thing it can carry.
 
 **Baseline:** [clig.dev](https://clig.dev/) — Human-first CLI design principles.
 **Canonical specification:** [`docs/design/cli-standards-v3.md`](../../docs/design/cli-standards-v3.md) — named canonical by [`ADR-0.0.4`](../../docs/design/adr/foundation/ADR-0.0.4-cli-standards-presentation-foundation/ADR-0.0.4-cli-standards-presentation-foundation.md). **Read its § Document status before citing any section:** parts are live-and-met, parts are live-but-UNMET, parts are RETIRED or superseded.
@@ -97,7 +99,9 @@ Every command must:
 
 ## Adding CLI Features
 
-**Lane authority is `AGENTS.md` § Gate Covenant — Lane Rules, not this file.** Both a new flag and a new subcommand are CLI-contract changes used by humans, so both are **Heavy**, consistent with this rule's own § Heavy Lane Trigger above (*"Any CLI contract change (subcommands, flags, exit codes, output schemas)"*). `AGENTS.md` § Defect-fix routing adds: *"Adds/changes CLI surface … OBPI ceremony is required"* — so contract-bearing CLI work runs `gz obpi pipeline`, not a freeform direct fix.
+**Lane authority is `AGENTS.md` § Gate Covenant — Lane Rules, not this file.** Both a new flag and a new subcommand are CLI-contract changes used by humans, so both are **Heavy**, consistent with this rule's own § Heavy Lane Trigger above (*"Any CLI contract change (subcommands, flags, exit codes, output schemas)"*). `AGENTS.md` § Defect-fix routing adds: *"Adds/changes CLI surface … OBPI ceremony is required"* — so **planned** contract-bearing CLI work runs `gz obpi pipeline`, not a freeform direct fix.
+
+**Lane is not route. A GHI-tracked defect repair routes DIRECT even when it adds a CLI surface** — `AGENTS.md` § Operator Doctrine, verbatim: *"GHIs are AUTHORIZED for direct repair, always… A GHI-tracked defect repair routes to direct fix (`fix(<scope>): <summary> (GHI #N)`, close citing the commit SHA) regardless of the 'OBPI ceremony required when ANY hold' criteria below; those criteria gate planned ADR work, not defect repair. Never spin up an ADR or OBPI merely to discharge a GHI."* Reaffirmed 2026-09-06: *"'may add a CLI surface' alone does not require new ADR/OBPI ceremony: GHI-tracked corrections are authorized for direct repair."* The IRON LAW makes this more than a preference — only the operator initiates OBPI work, so an agent that read the un-carved sentence literally could not proceed by either route. Heavy lane still binds the **gates** the repair must clear (§ New Subcommand's seven obligations, `gz cli audit` exit 0); it never converts the repair into OBPI ceremony.
 
 > `gz cli audit` does **not** adjudicate this. It audits a flag's *documentation* — that the flag is named in its manpage (GHI #350) and that the usage line's required/value-taking claims match the parser (GHI #693) — and exits 0 with full cross-coverage regardless of a new flag's **lane**. Its green is evidence about docs, never about lane assignment. Its green is not evidence of correct lane assignment.
 
