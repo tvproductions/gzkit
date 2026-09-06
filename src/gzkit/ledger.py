@@ -6,14 +6,22 @@ State is derived from the ledger, not stored separately.
 
 import json
 import re
+import sys
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, ClassVar, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_serializer, model_validator
 
+from gzkit.file_lock import exclusive_file_lock
 from gzkit.ledger_corrections import LEDGER_SCHEMA, evidence_events, live_events
 from gzkit.obpi_lifecycle import fold_renames
+
+#: Backward scan block for :meth:`Ledger.discard_trailing_fragment`. A fragment
+#: is a prefix of ONE row, and rows run a few hundred bytes, so the first block
+#: carries the boundary in every realistic case; the loop exists so correctness
+#: does not depend on that.
+_FRAGMENT_SCAN_BLOCK = 65536
 
 _ADR_SEMVER_RE = re.compile(r"^ADR-(\d+\.\d+\.\d+)(?:-.*)?$")
 _OBPI_BARE_RE = re.compile(r"^OBPI-(\d+\.\d+\.\d+-\d+)(?:-.*)?$")
@@ -288,8 +296,61 @@ class Ledger:
         self._cached_graph = None
         self._replay_manifest = None
 
+    def discard_trailing_fragment(self) -> int:
+        r"""Remove bytes after the final newline; return how many were removed.
+
+        Those bytes are an INTERRUPTED APPEND'S RESIDUE, never a committed row.
+        :meth:`append` writes one newline-terminated line and rolls back on
+        ``OSError``, so every row this ledger ever reported as appended carries
+        its terminator. Bytes past the last ``\n`` are therefore a prefix of a
+        line no writer completed — which is what makes the newline a
+        *verifiable* boundary rather than a heuristic, and why removing them
+        cannot discard anyone's committed work.
+
+        Only reachable when the process died between the write and the rollback
+        — a kill, a power loss — since an ``OSError`` mid-write is already
+        truncated back by :meth:`append` itself.
+
+        MUST be called under :func:`~gzkit.file_lock.exclusive_file_lock`: it
+        truncates, and a concurrent appender's bytes would be inside the window
+        it computes. :meth:`append` is the only caller for that reason.
+        """
+        size = self.path.stat().st_size
+        if size == 0:
+            return 0
+        with self.path.open("rb+") as handle:
+            handle.seek(size - 1)
+            if handle.read(1) == b"\n":
+                return 0
+            boundary = 0
+            pos = size
+            while pos > 0:
+                block = min(_FRAGMENT_SCAN_BLOCK, pos)
+                pos -= block
+                handle.seek(pos)
+                index = handle.read(block).rfind(b"\n")
+                if index != -1:
+                    boundary = pos + index + 1
+                    break
+            handle.truncate(boundary)
+            handle.flush()
+        return size - boundary
+
     def append(self, event: LedgerEvent) -> None:
         """Append an event to the ledger.
+
+        The whole transaction — fragment recovery, the length probe, the write
+        and the rollback — runs under ONE inter-process lock (GHI #953). Without
+        it the three steps were unserialized over one shared file and the
+        rollback truncated to a length another writer had already moved past:
+        writer A probed, writer B appended and reported SUCCESS, A failed
+        mid-write and truncated back to its own probe, deleting B's committed
+        row. B's caller had already been told the row was durable.
+
+        The lock is :func:`~gzkit.file_lock.exclusive_file_lock`, the
+        repository's one implementation, rather than a second one here — two
+        implementations of an OS lock drift apart, and the drift only shows
+        under concurrency.
 
         Args:
             event: The event to append.
@@ -302,21 +363,37 @@ class Ledger:
         # cannot leave a partial JSONL line on disk (failure-atomic, GHI #687).
         line = json.dumps(event.model_dump(), separators=(",", ":")) + "\n"
 
-        # Record the pre-append length so a mid-write failure (disk full, I/O
-        # error, interrupted write) can be rolled back to a clean record
-        # boundary — the ledger is the system-of-record and MUST always replay.
-        start = self.path.stat().st_size
+        with exclusive_file_lock(self.path):
+            discarded = self.discard_trailing_fragment()
+            if discarded:
+                # Reported, never silent: after this append the fragment is gone
+                # and `gz validate --ledger` — which reports it as invalid JSON
+                # while it exists — has nothing left to see. This line is the
+                # only remaining witness that a previous run died mid-write.
+                print(
+                    f"gzkit: recovered {self.path} — discarded {discarded} byte(s) "
+                    "of an interrupted append before the record boundary",
+                    file=sys.stderr,
+                )
 
-        with self.path.open("a", encoding="utf-8") as f:
-            try:
-                f.write(line)
-                f.flush()
-            except OSError:
-                # Truncate away any partial bytes: restore the file to its
-                # pre-append length so read_all() never hits a truncated line.
-                f.truncate(start)
-                f.flush()
-                raise
+            # Record the pre-append length so a mid-write failure (disk full,
+            # I/O error, interrupted write) can be rolled back to a clean record
+            # boundary — the ledger is the system-of-record and MUST always
+            # replay. Valid only under the lock above: unserialized, it names a
+            # length another writer has already grown past.
+            start = self.path.stat().st_size
+
+            with self.path.open("a", encoding="utf-8") as f:
+                try:
+                    f.write(line)
+                    f.flush()
+                except OSError:
+                    # Truncate away any partial bytes: restore the file to its
+                    # pre-append length so read_all() never hits a truncated
+                    # line.
+                    f.truncate(start)
+                    f.flush()
+                    raise
 
         self._invalidate_cache()
 
@@ -376,8 +453,20 @@ class Ledger:
 
         events = []
         with self.path.open(encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
+            for raw in f:
+                if not raw.endswith("\n"):
+                    # The unterminated FINAL line, and only it: an interrupted
+                    # append's residue, never a committed row (GHI #953, see
+                    # :meth:`discard_trailing_fragment` for why the newline is a
+                    # verifiable boundary). Skipping is exact rather than
+                    # permissive — every OTHER undecodable line still raises,
+                    # which is this reader's contract. Raising here instead
+                    # wedged the store: `latest_event` reads before any write,
+                    # so a crash-recovery retry died on the fragment before it
+                    # could reach the intact journal that would restore the
+                    # witness, and every subsequent retry died the same way.
+                    break
+                line = raw.strip()
                 if line:
                     data = json.loads(line)
                     events.append(LedgerEvent.parse_stored_row(data))

@@ -107,6 +107,15 @@ site/
 # The `**` is load-bearing: a rule-surface corpus nests under its own path
 # (.gzkit/corpus/.gzkit/rules/<name>.md.jsonl), which a single-level glob misses.
 
+# Ledger transaction-boundary sidecar (GHI #953). `Ledger.append` serializes the whole
+# transaction — fragment recovery, the length probe, the write and the rollback — under an
+# OS lock on `.gzkit/ledger.jsonl.lock`, because the rollback truncates to a length another
+# writer had already grown past. `.gzkit/ledger.jsonl` IS tracked (it is Layer 2, the
+# system-of-record), so the sidecar must be ignored by name or every governance event
+# dirties the tree. The kernel releases the lock when the handle closes, abnormal exit
+# included, so a stale sidecar is an empty file and never a held lock.
+.gzkit/ledger.jsonl.lock
+
 # Section-ownership write-discipline sidecars (OBPI-0.35.0-04). Same shape as the corpus
 # store above: `gz content unown` takes an OS lock on `<surface>.json.lock` and stages the
 # new declaration beside the target before one atomic `os.replace`. `.gzkit/ownership/` IS
