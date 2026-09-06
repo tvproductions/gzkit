@@ -14,7 +14,31 @@ SESSION-CLOSE. FINAL STATE: HEAD 126c5d09, tree clean, nothing unpushed, uv run 
 
 ## Important Context
 
-=== #963 IS NEXT AND THIS SESSION IS EVIDENCE FOR IT ===
+=== CORRECTION 2026-09-06 (operator ruling) — READ BEFORE THE NEXT BLOCK ===
+
+The reasoning in the block below is WRONG and was retired the same day. It claims a
+mutant reported CAUGHT is trustworthy "because the suite FAILED, which requires the
+mutation to have taken effect". Operator ruling, verbatim:
+
+  "A failing mutant run does not prove the mutation took effect or that a relevant
+   assertion caught it. Import errors, invalid mutations, unrelated failures, and
+   harness failures can all produce false kills. A reported survivor can also conceal
+   ineffective mutation or inadequate test execution."
+
+GHI #963's own body already said it cuts both ways; I argued past it. The correct
+contract, and the four checks a sweep must perform (baseline, mutation activation,
+relevant test execution, failure cause) now live in `.gzkit/rules/tests.md` § Mutation-
+sweep integrity and in `gzkit.mutation_witness.run_mutation_sweep`, which reports
+killed / survived / INVALID / INCONCLUSIVE and keeps run verdicts apart from guard
+verdicts. Landed at df0c2387. Read that, not the block below.
+
+The block's conclusion about THIS session's sweeps ("false survivors make an agent add
+tests it did not need") also does not hold in general — a false KILL credits coverage
+that does not exist, which is the dangerous direction. The two #967 survivors were
+re-examined and were real gaps; that remains true, but it is an observation about those
+two runs, not a property of sweeps.
+
+=== #963 IS NEXT AND THIS SESSION IS EVIDENCE FOR IT (SUPERSEDED — see correction above) ===
 
 I ran mutation sweeps on every fix this session (that is now the working method — see
 Decisions). #963 says byte-identical mutations collide in the pyc cache and a sweep can
