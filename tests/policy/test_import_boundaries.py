@@ -469,10 +469,7 @@ PRIVATE_CROSS_PACKAGE_IMPORT_BASELINE: dict[str, tuple[str, ...]] = {
         "governance.trust_audits.briefs._load_behave_coverage_waivers",
         "governance.trust_audits.briefs._scan_one_brief_headings",
     ),
-    "commands/register.py": (
-        "ledger._extract_bare_adr_semver",
-        "ledger._extract_bare_obpi_id",
-    ),
+    "commands/register.py": ("ledger._extract_bare_adr_semver",),
     "commands/sync.py": (
         "git_sync._compute_git_sync_state",
         "git_sync._git_status_lines",
@@ -520,7 +517,6 @@ PRIVATE_CROSS_PACKAGE_IMPORT_BASELINE: dict[str, tuple[str, ...]] = {
     "governance/brief_reconcile.py": ("governance.trust_audits.cli._known_cli_verbs",),
     "governance/frontmatter_coherence.py": ("commands.common._is_pool_adr_id",),
     "governance/obpi_park_backfill.py": ("governance.trust_audits.taxonomy._live_adr_ids",),
-    "governance/obpi_slug_rename.py": ("ledger._extract_bare_obpi_id",),
     "governance/trust_audits/_qc_nc_entrypoints.py": (
         "commands.chores._resolve_chore_dir",
         "commands.validate_briefs._validate_interviews",

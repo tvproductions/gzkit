@@ -17,9 +17,9 @@ from gzkit.governance.adr_status_index import regenerate_adr_status_md
 from gzkit.ledger import (
     Ledger,
     _extract_bare_adr_semver,
-    _extract_bare_obpi_id,
     adr_created_event,
     artifact_renamed_event,
+    extract_bare_obpi_id,
     obpi_created_event,
 )
 from gzkit.models.foundation_grandfather import (
@@ -256,7 +256,7 @@ def _collect_disk_drift_renames(
 
     for obpi_file in artifacts.get("obpis", []):
         stem = obpi_file.stem
-        _consider(stem, _extract_bare_obpi_id(stem))
+        _consider(stem, extract_bare_obpi_id(stem))
 
     candidates.sort(key=lambda item: item[0])
     return candidates

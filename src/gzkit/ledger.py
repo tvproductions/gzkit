@@ -34,7 +34,7 @@ def _extract_bare_adr_semver(adr_id: str) -> str | None:
     return f"ADR-{match.group(1)}"
 
 
-def _extract_bare_obpi_id(obpi_id: str) -> str | None:
+def extract_bare_obpi_id(obpi_id: str) -> str | None:
     """Return the bare ``OBPI-X.Y.Z-NN`` form for any indexed OBPI id.
 
     Symmetric with :func:`_extract_bare_adr_semver` — used by the on-disk

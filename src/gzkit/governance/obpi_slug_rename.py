@@ -29,7 +29,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from gzkit.ledger import Ledger, _extract_bare_obpi_id
+from gzkit.ledger import Ledger, extract_bare_obpi_id
 from gzkit.ledger_events import artifact_renamed_event
 from gzkit.obpi_lifecycle import (
     COMPLETION_EVENTS,
@@ -81,7 +81,7 @@ def _refusals(
         problems.append(f"{old_id} is still on disk — rename the brief first, then record it")
     if new_id not in stems:
         problems.append(f"{new_id} is not on disk — the new id must name a real brief")
-    if _extract_bare_obpi_id(old_id) != _extract_bare_obpi_id(new_id):
+    if extract_bare_obpi_id(old_id) != extract_bare_obpi_id(new_id):
         problems.append(
             f"{old_id} and {new_id} are different OBPIs, not one renamed — a slug "
             "correction preserves the ADR semver and item number"

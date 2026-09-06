@@ -1443,6 +1443,123 @@ class TestDiagnoseCmd(unittest.TestCase):
             self.assertTrue(json.loads(buf.getvalue())["drift"])
 
 
+class TestFrontmatterChannelFullSlugResolution(unittest.TestCase):
+    """ch2 must resolve a brief whose ``id:`` carries the authored full slug (GHI #946).
+
+    Briefs are authored with the full slug in ``id:``
+    (``OBPI-0.35.0-04-section-ownership-and-ratchet``), while the three TASK-id
+    channels resolve on the bare ``OBPI-<semver>-<NN>`` form — ``_task_matches_obpi``
+    reconstructs exactly that shape out of a TASK id and compares it for equality.
+    ``_channel_declarations_for_obpi`` hands ONE id to all four collectors, so
+    whichever form the caller picks, the other side cannot match. The caller picked
+    bare, so the frontmatter map — keyed on the authored slug — missed for EVERY
+    real brief and ch2 read empty everywhere.
+
+    That is invisible rather than loud: ``drift`` is computed over
+    ``populated = [s for s in decls.values() if s]``, so a structurally empty channel
+    is dropped from the comparison instead of disagreeing with it. The named
+    layer-drift recovery view reports a clean or partial verdict over a channel it
+    cannot see.
+
+    The fixtures elsewhere in this file set ``id: OBPI-0.0.64-04`` — the bare form,
+    not the authored convention — which is why the existing diagnose test passed
+    while the shipped command was blind. That test also mocks
+    ``_channel_declarations_for_obpi`` outright, so it pins rendering and never
+    resolution.
+    """
+
+    def test_a_full_slug_brief_resolves_from_the_bare_obpi_id(self) -> None:
+        """The bare id the other three channels require must still find the brief."""
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            _write_brief(
+                root,
+                {
+                    **_BASE_FM,
+                    "id": "OBPI-0.0.64-04-fixture",
+                    "tasks": ["TASK-0.0.64-04-01-01", "TASK-0.0.64-04-02-01"],
+                },
+            )
+            found = validate_task_envelope._frontmatter_channel_for_obpi(root, "OBPI-0.0.64-04")
+            self.assertEqual(found, {"TASK-0.0.64-04-01-01", "TASK-0.0.64-04-02-01"})
+
+    def test_a_full_slug_query_resolves_the_same_brief(self) -> None:
+        """Either spelling names one OBPI, so either must reach the same tasks."""
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            _write_brief(
+                root,
+                {**_BASE_FM, "id": "OBPI-0.0.64-04-fixture", "tasks": ["TASK-0.0.64-04-01-01"]},
+            )
+            self.assertEqual(
+                validate_task_envelope._frontmatter_channel_for_obpi(
+                    root, "OBPI-0.0.64-04-fixture"
+                ),
+                {"TASK-0.0.64-04-01-01"},
+            )
+
+    def test_a_bare_form_brief_still_resolves(self) -> None:
+        """Briefs authored with a bare ``id:`` must not regress — exact hit stays first."""
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            _write_brief(root, {**_BASE_FM, "tasks": ["TASK-0.0.64-04-01-01"]})
+            self.assertEqual(
+                validate_task_envelope._frontmatter_channel_for_obpi(root, "OBPI-0.0.64-04"),
+                {"TASK-0.0.64-04-01-01"},
+            )
+
+    def test_a_different_obpi_does_not_borrow_this_briefs_tasks(self) -> None:
+        """Widening the lookup must not make ch2 answer for an unrelated OBPI.
+
+        The fallback matches on the bare form, so it must still distinguish
+        ``-04`` from ``-05``; a prefix/substring widening would not.
+        """
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            _write_brief(
+                root,
+                {**_BASE_FM, "id": "OBPI-0.0.64-04-fixture", "tasks": ["TASK-0.0.64-04-01-01"]},
+            )
+            self.assertEqual(
+                validate_task_envelope._frontmatter_channel_for_obpi(root, "OBPI-0.0.64-05"),
+                set(),
+            )
+
+    def test_diagnose_renders_ch2_for_a_full_slug_brief(self) -> None:
+        """End-to-end: the recovery view must show the tasks the brief declares.
+
+        Deliberately does NOT mock ``_channel_declarations_for_obpi`` — the defect
+        lives in the resolution the existing diagnose test mocks away.
+        """
+        import contextlib  # noqa: PLC0415
+        import io  # noqa: PLC0415
+
+        from gzkit.commands import task as task_cmd  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            _write_brief(
+                root,
+                {
+                    **_BASE_FM,
+                    "id": "OBPI-0.0.64-04-fixture",
+                    "tasks": ["TASK-0.0.64-04-01-01", "TASK-0.0.64-04-02-01"],
+                },
+            )
+            buf = io.StringIO()
+            with (
+                mock.patch.object(task_cmd, "get_project_root", return_value=root),
+                contextlib.redirect_stdout(buf),
+            ):
+                task_cmd.task_envelope_diagnose_cmd("OBPI-0.0.64-04-fixture", as_json=True)
+
+            payload = json.loads(buf.getvalue())
+            self.assertEqual(
+                payload["channels"]["frontmatter tasks: (ch2)"],
+                ["TASK-0.0.64-04-01-01", "TASK-0.0.64-04-02-01"],
+            )
+
+
 class TestSignatureCCommitTrailerChannel(unittest.TestCase):
     """Signature (c): the commit-trailer channel participates in drift detection.
 

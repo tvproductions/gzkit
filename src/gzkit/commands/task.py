@@ -646,9 +646,10 @@ def task_envelope_diagnose_cmd(obpi_id: str, *, as_json: bool = False) -> None:
     # commit-trailer (ch3) channels the validator's signature (c) evaluates, not just
     # frontmatter + ledger. Routes through the validator's own four-channel collector
     # (single source of truth) rather than re-deriving a 2-channel subset.
-    m = re.match(r"^(OBPI-[\d.]+-\d{2})", brief.id)
-    bare_obpi_id = m.group(1) if m else brief.id
-    decls = _channel_declarations_for_obpi(project_root, bare_obpi_id)
+    # ``_obpi_lineage_id`` rather than a fourth inline spelling of the same regex:
+    # the local one truncated on ``\d{2}`` where every other normalizer reads ``\d+``
+    # (GHI #946).
+    decls = _channel_declarations_for_obpi(project_root, _obpi_lineage_id(brief.id))
 
     channels: dict[str, list[str]] = {
         "@advances (ch1)": sorted(decls["advances"]),

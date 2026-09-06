@@ -15,6 +15,7 @@ from pathlib import Path
 
 from gzkit.commands.validate_briefs import _find_obpi_briefs
 from gzkit.doc_coverage.manifest import MANPAGE_DIR
+from gzkit.ledger import extract_bare_obpi_id
 from gzkit.validate import ValidationError
 
 # ---------------------------------------------------------------------------
@@ -646,8 +647,30 @@ def _advances_channel_for_obpi(obpi_id: str) -> set[str]:
 
 
 def _frontmatter_channel_for_obpi(project_root: Path, obpi_id: str) -> set[str]:
+    """Collect the ``tasks:`` a brief declares, on either spelling of its id.
+
+    The frontmatter map is keyed on the brief's authored ``id:`` — conventionally
+    the full slug — while the other three channels resolve on the bare
+    ``OBPI-<semver>-<NN>`` form, because that is the shape ``_task_matches_obpi``
+    rebuilds out of a TASK id. ``_channel_declarations_for_obpi`` hands ONE id to
+    all four collectors, so a caller must pick a form that is wrong for one side
+    of that split; it picked bare, and this channel read empty for every
+    full-slug brief in the repo (GHI #946).
+
+    Accepting both here rather than at the caller keeps the choice off the one
+    surface whose job is comparing these channels: an empty channel is dropped
+    from the drift comparison (``populated``), so the failure is a quiet wrong
+    verdict rather than a loud disagreement.
+    """
     brief_fms = _collect_obpi_brief_frontmatter(project_root)
-    fm_tasks = brief_fms.get(obpi_id, {}).get("tasks") or []
+    fm = brief_fms.get(obpi_id)
+    if fm is None:
+        bare = extract_bare_obpi_id(obpi_id)
+        fm = next(
+            (v for k, v in brief_fms.items() if bare and extract_bare_obpi_id(k) == bare),
+            None,
+        )
+    fm_tasks = (fm or {}).get("tasks") or []
     if not isinstance(fm_tasks, list):
         return set()
     return {str(t) for t in fm_tasks if isinstance(t, str)}
