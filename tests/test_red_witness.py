@@ -17,9 +17,11 @@ import unittest
 from pathlib import Path
 
 from gzkit.red_witness import (
+    RedWitness,
     changed_test_files,
     classify_failure,
     resolve_base_commit,
+    resolve_introducing_base,
     run_red_witness,
 )
 
@@ -264,3 +266,335 @@ class TestRunRedWitness(_GitFixture):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestResolveIntroducingBase(_GitFixture):
+    """The base for LANDED work is the parent of the commit that introduced the test.
+
+    `resolve_base_commit` returns HEAD, which is correct while work is in flight and
+    vacuous once it lands: HEAD already carries the implementation, so nothing is
+    withheld and the experiment has no premise (GHI #839). `--from=verify` — the
+    pipeline's supported entry point for already-implemented work — runs entirely on
+    that path, so the falsifiability check it mandates could never execute there
+    (GHI #849).
+    """
+
+    def _land_a_covering_test(self, req: str) -> None:
+        (self.root / "impl.py").write_text("", encoding="utf-8")
+        self._commit("base")
+        (self.root / "impl.py").write_text("def added():\n    return 1\n", encoding="utf-8")
+        (self.root / "tests" / "test_impl.py").write_text(
+            "import unittest\nfrom impl import added\n\n"
+            "class T(unittest.TestCase):\n"
+            f'    @covers("{req}")\n'
+            "    def test_added(self):\n        self.assertEqual(added(), 1)\n",
+            encoding="utf-8",
+        )
+        self._commit("land the REQ and its covering test")
+
+    def test_it_resolves_the_parent_of_the_introducing_commit(self) -> None:
+        req = "REQ-1.2.3-01-01"
+        self._land_a_covering_test(req)
+        introducing = subprocess.run(
+            ["git", "log", "-S", f'@covers("{req}")', "--format=%H", "--reverse", "--", "tests"],
+            cwd=self.root,
+            capture_output=True,
+            text=True,
+            check=True,
+            encoding="utf-8",
+            errors="replace",
+        ).stdout.split()[0]
+        expected = subprocess.run(
+            ["git", "rev-parse", f"{introducing}^"],
+            cwd=self.root,
+            capture_output=True,
+            text=True,
+            check=True,
+            encoding="utf-8",
+            errors="replace",
+        ).stdout.strip()
+        self.assertEqual(resolve_introducing_base(self.root, req), expected)
+
+    def test_a_req_that_never_appears_resolves_to_nothing(self) -> None:
+        # Must return None rather than guess. A wrong base is worse than no base:
+        # it would run the experiment against a tree with no relationship to the REQ
+        # and report a confident class for it.
+        self._land_a_covering_test("REQ-1.2.3-01-01")
+        self.assertIsNone(resolve_introducing_base(self.root, "REQ-9.9.9-99-99"))
+
+    def test_an_introducing_root_commit_resolves_to_nothing(self) -> None:
+        # A root commit has no parent, so there is no tree that predates the test.
+        req = "REQ-1.2.3-01-01"
+        (self.root / "tests" / "test_impl.py").write_text(f'@covers("{req}")\n', encoding="utf-8")
+        self._commit("root commit carries the covering test")
+        self.assertIsNone(resolve_introducing_base(self.root, req))
+
+
+class TestLandedWorkStillWitnesses(_GitFixture):
+    """`--from=verify` must actually run the witness, not report `not-applicable`."""
+
+    def _land(self, req: str, *, test_body: str) -> None:
+        (self.root / "impl.py").write_text("", encoding="utf-8")
+        self._commit("base")
+        (self.root / "impl.py").write_text("def value():\n    return 2\n", encoding="utf-8")
+        (self.root / "tests" / "test_impl.py").write_text(test_body, encoding="utf-8")
+        self._commit("land the REQ and its covering test")
+
+    def test_a_landed_req_falls_back_to_the_reconstructed_base(self) -> None:
+        req = "REQ-1.2.3-01-01"
+        self._land(
+            req,
+            test_body=(
+                "import unittest\nfrom impl import value\n\n"
+                "class T(unittest.TestCase):\n"
+                f'    @covers("{req}")\n'
+                "    def test_value(self):\n        self.assertEqual(value(), 2)\n"
+            ),
+        )
+        witness = run_red_witness(
+            project_root=self.root,
+            req_id=req,
+            test_names=["tests.test_impl"],
+            test_runner=_RUNNER,
+        )
+        self.assertNotEqual(
+            witness.failure_class,
+            "not-applicable",
+            "the witness must RUN on landed work, not merely be honest about not running",
+        )
+        self.assertEqual(witness.base_provenance, "reconstructed")
+        # And this is the fail-open hole closed in the same breath: the module dies on
+        # `from impl import value` against the old tree, which is an `error` — real
+        # evidence in flight, and no evidence at all here, so the run reports that it
+        # could not tell rather than banking a weak RED it did not earn.
+        self.assertEqual(witness.failure_class, "error")
+        self.assertFalse(witness.is_red)
+        self.assertFalse(witness.is_conclusive)
+
+    def test_a_hollow_test_is_still_caught_on_a_reconstructed_base(self) -> None:
+        # The accusation that MUST survive the change. A test that passes against a
+        # tree without its implementation cannot fail — reconstructing the base does
+        # not soften that, it is what finally makes it observable for landed work.
+        req = "REQ-1.2.3-01-02"
+        # Imports nothing from `impl`, so the module loads cleanly against the old
+        # tree and the test actually RUNS there — which is what makes its passing a
+        # finding rather than an import accident.
+        self._land(
+            req,
+            test_body=(
+                "import unittest\n\n"
+                "def covers(req):\n    return lambda fn: fn\n\n"
+                "class T(unittest.TestCase):\n"
+                f'    @covers("{req}")\n'
+                "    def test_tautology(self):\n        self.assertTrue(True)\n"
+            ),
+        )
+        witness = run_red_witness(
+            project_root=self.root,
+            req_id=req,
+            test_names=["tests.test_impl"],
+            test_runner=_RUNNER,
+        )
+        self.assertEqual(witness.failure_class, "none")
+        self.assertFalse(witness.is_red)
+        self.assertTrue(witness.is_conclusive, "a `none` on a reconstructed base is a real finding")
+
+    def test_in_flight_work_still_uses_the_working_tree_base(self) -> None:
+        # The fallback must not displace the in-flight path: while the production
+        # change is uncommitted, HEAD is the right base and the provenance says so.
+        (self.root / "impl.py").write_text("", encoding="utf-8")
+        self._commit("base")
+        (self.root / "impl.py").write_text("def added():\n    return 1\n", encoding="utf-8")
+        (self.root / "tests" / "test_impl.py").write_text(
+            "import unittest\nfrom impl import added\n\n"
+            "class T(unittest.TestCase):\n"
+            "    def test_added(self):\n        self.assertEqual(added(), 1)\n",
+            encoding="utf-8",
+        )
+        witness = run_red_witness(
+            project_root=self.root,
+            req_id="REQ-1.2.3-01-03",
+            test_names=["tests.test_impl"],
+            test_runner=_RUNNER,
+        )
+        self.assertEqual(witness.base_provenance, "working-tree")
+        self.assertEqual(witness.failure_class, "error")
+        self.assertTrue(witness.is_red, "an ImportError in flight is a legitimate weak RED")
+
+
+class TestErrorMeansDifferentThingsByProvenance(unittest.TestCase):
+    """THE FAIL-OPEN HOLE the reconstruction opens, and the reason it is not bundled.
+
+    A reconstructed base can be months old, so a grafted modern test meets an old tree
+    and dies on an unrelated `ImportError`. `classify_failure` calls that `error`, and
+    `error` counts as a weak RED — so a genuinely hollow test in old code would clear
+    the gate. On a reconstructed base an `error` therefore witnesses NOTHING; in flight
+    it remains a legitimate weak RED, because there the withheld hunk is the only thing
+    that changed.
+    """
+
+    def _witness(self, failure_class: str, provenance: str) -> RedWitness:
+        return RedWitness(
+            req_id="REQ-1.2.3-01-01",
+            base_commit="a" * 40,
+            test_names=["t"],
+            exit_status=1 if failure_class != "none" else 0,
+            failure_class=failure_class,
+            base_provenance=provenance,
+        )
+
+    def test_an_error_in_flight_is_a_weak_red(self) -> None:
+        witness = self._witness("error", "working-tree")
+        self.assertTrue(witness.is_red)
+        self.assertTrue(witness.is_conclusive)
+
+    def test_an_error_on_a_reconstructed_base_is_void_not_red(self) -> None:
+        witness = self._witness("error", "reconstructed")
+        self.assertFalse(witness.is_red, "an unrelated ImportError is not falsifiability")
+        self.assertFalse(
+            witness.is_conclusive,
+            "and it is not an accusation either — the run simply could not tell",
+        )
+
+    def test_an_assertion_is_a_strong_red_on_either_base(self) -> None:
+        # The assertion class is unaffected: the test reached its assertion and it
+        # failed, which is the same evidence whichever tree it ran against.
+        for provenance in ("working-tree", "reconstructed"):
+            with self.subTest(provenance=provenance):
+                witness = self._witness("assertion", provenance)
+                self.assertTrue(witness.is_red)
+                self.assertTrue(witness.is_conclusive)
+
+    def test_a_not_applicable_run_is_never_conclusive(self) -> None:
+        witness = self._witness("not-applicable", "working-tree")
+        self.assertFalse(witness.is_red)
+        self.assertFalse(witness.is_conclusive)
+
+
+class TestUnrelatedDirtDoesNotFakeThePremise(_GitFixture):
+    """A dirty tree must not manufacture a premise for a REQ it has nothing to do with.
+
+    `withheld_production_files` asks *"is ANY production file uncommitted"*, never
+    *"is THIS REQ's implementation withheld"*. So while any unrelated production edit
+    sits in the tree, a landed REQ's covering test is grafted onto a HEAD that already
+    contains its implementation, passes, and is classed `none` — a confident accusation
+    against a test that was never actually tested. That is GHI #839's own class
+    (*"an experiment that silently degenerates while reporting a confident verdict"*)
+    surviving in a second guise.
+
+    Observed on this repository 2026-09-06 during the GHI #849 fix, with a receipt:
+    `arb red --req REQ-0.35.0-09-01` returned `failure_class=none`,
+    `base_provenance=working-tree`, base `77402bdf8848` — while the only dirty
+    production files were this fix's own, none of them that REQ's implementation.
+
+    The discriminator is exact and needs no heuristic: a REQ whose `@covers` string is
+    ABSENT from the test tree's history is in flight, and HEAD is its base; a REQ whose
+    string is present has landed, and the reconstructed base is the only tree that
+    genuinely predates it.
+    """
+
+    REQ = "REQ-1.2.3-01-09"
+
+    def _land_then_dirty_something_unrelated(self) -> None:
+        (self.root / "impl.py").write_text("def value():\n    return 1\n", encoding="utf-8")
+        self._commit("base: value() returns 1")
+        (self.root / "impl.py").write_text("def value():\n    return 2\n", encoding="utf-8")
+        (self.root / "tests" / "test_impl.py").write_text(
+            "import unittest\nfrom impl import value\n\n"
+            "def covers(req):\n    return lambda fn: fn\n\n"
+            "class T(unittest.TestCase):\n"
+            f'    @covers("{self.REQ}")\n'
+            "    def test_value(self):\n        self.assertEqual(value(), 2)\n",
+            encoding="utf-8",
+        )
+        self._commit("land the REQ and its covering test")
+        # Unrelated in-flight work — the whole point: it touches nothing this REQ owns.
+        (self.root / "unrelated.py").write_text("SOMETHING = 1\n", encoding="utf-8")
+
+    def test_a_landed_req_ignores_unrelated_dirt_and_reconstructs(self) -> None:
+        self._land_then_dirty_something_unrelated()
+        witness = run_red_witness(
+            project_root=self.root,
+            req_id=self.REQ,
+            test_names=["tests.test_impl"],
+            test_runner=_RUNNER,
+        )
+        self.assertEqual(
+            witness.base_provenance,
+            "reconstructed",
+            "an unrelated uncommitted file is not this REQ's withheld implementation",
+        )
+        self.assertNotEqual(
+            witness.failure_class,
+            "none",
+            "the test DOES depend on its implementation; a `none` here is a false accusation",
+        )
+        self.assertEqual(witness.failure_class, "assertion")
+        self.assertTrue(witness.is_red)
+
+    def test_an_in_flight_req_whose_test_is_unlanded_still_uses_head(self) -> None:
+        # The other side, so the ordering cannot be over-applied. A REQ whose `@covers`
+        # has never been committed IS in flight, HEAD is the tree that lacks its
+        # implementation, and an ImportError there is a legitimate weak RED.
+        (self.root / "impl.py").write_text("", encoding="utf-8")
+        self._commit("base")
+        (self.root / "impl.py").write_text("def added():\n    return 1\n", encoding="utf-8")
+        (self.root / "tests" / "test_impl.py").write_text(
+            "import unittest\nfrom impl import added\n\n"
+            "def covers(req):\n    return lambda fn: fn\n\n"
+            "class T(unittest.TestCase):\n"
+            '    @covers("REQ-1.2.3-01-10")\n'
+            "    def test_added(self):\n        self.assertEqual(added(), 1)\n",
+            encoding="utf-8",
+        )
+        witness = run_red_witness(
+            project_root=self.root,
+            req_id="REQ-1.2.3-01-10",
+            test_names=["tests.test_impl"],
+            test_runner=_RUNNER,
+        )
+        self.assertEqual(witness.base_provenance, "working-tree")
+        self.assertTrue(witness.is_red)
+
+
+class TestReconstructedPremiseIsRecheckedNotAssumed(_GitFixture):
+    """A reconstructed base that withholds NOTHING is as vacuous as HEAD was.
+
+    Surfaced by a mutation sweep: deleting the premise re-check on the reconstructed
+    base survived every other test. The case it guards is real — a covering test added
+    for code that already existed, in a commit touching only `tests/`. The parent of
+    that commit carries the SAME production tree, so grafting the test there proves
+    nothing about it, and without the re-check the run would class the pass as `none`:
+    a confident accusation manufactured entirely by reconstructing a base.
+
+    Reconstruction widens where the witness can run; it must not widen what it is
+    willing to accuse.
+    """
+
+    REQ = "REQ-1.2.3-01-11"
+
+    def test_a_test_only_commit_yields_no_verdict_rather_than_a_false_none(self) -> None:
+        (self.root / "impl.py").write_text("def value():\n    return 2\n", encoding="utf-8")
+        self._commit("production, complete and unchanged hereafter")
+        (self.root / "tests" / "test_impl.py").write_text(
+            "import unittest\nfrom impl import value\n\n"
+            "def covers(req):\n    return lambda fn: fn\n\n"
+            "class T(unittest.TestCase):\n"
+            f'    @covers("{self.REQ}")\n'
+            "    def test_value(self):\n        self.assertEqual(value(), 2)\n",
+            encoding="utf-8",
+        )
+        self._commit("add the covering test only — no production change")
+
+        witness = run_red_witness(
+            project_root=self.root,
+            req_id=self.REQ,
+            test_names=["tests.test_impl"],
+            test_runner=_RUNNER,
+        )
+        self.assertEqual(
+            witness.failure_class,
+            "not-applicable",
+            "nothing was withheld against EITHER base, so there is no experiment to report",
+        )
+        self.assertFalse(witness.is_conclusive)

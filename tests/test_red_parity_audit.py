@@ -52,16 +52,25 @@ class _Project(unittest.TestCase):
             }
         )
 
-    def witness(self, failure_class: str, req_id: str | None = None) -> None:
-        self.events.append(
-            {
-                "event": "red_receipt_emitted",
-                "req_id": req_id or self.REQ,
-                "receipt_id": "arb-red-x",
-                "failure_class": failure_class,
-                "base_commit": "abc1234",
-            }
-        )
+    def witness(
+        self,
+        failure_class: str,
+        req_id: str | None = None,
+        *,
+        base_provenance: str | None = None,
+    ) -> None:
+        event = {
+            "event": "red_receipt_emitted",
+            "req_id": req_id or self.REQ,
+            "receipt_id": "arb-red-x",
+            "failure_class": failure_class,
+            "base_commit": "abc1234",
+        }
+        # Omitted by default on purpose: every witness emitted before GHI #849 lacks
+        # the field, and the audit must read that absence as `working-tree`.
+        if base_provenance is not None:
+            event["base_provenance"] = base_provenance
+        self.events.append(event)
 
     def audit(self) -> list:
         (self.root / ".gzkit" / "ledger.jsonl").write_text(
@@ -151,3 +160,62 @@ class TestRedParity(_Project):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestVoidWitnessesDoNotCount(_Project):
+    """A run that could not tell is not a witness — on either of its two shapes.
+
+    `not-applicable` was the first shape (GHI #839). The reconstructed base adds the
+    second (GHI #849): a modern test grafted onto a tree months older than itself dies
+    on an import, and `classify_failure` calls that `error`. Banking it would let a
+    genuinely hollow test in old code satisfy this gate — a fail-OPEN direction, and
+    the reason the reconstruction could not simply be switched on.
+    """
+
+    def test_an_error_on_a_reconstructed_base_does_not_satisfy_the_gate(self) -> None:
+        self.brief(_brief())
+        self.completed(_AFTER)
+        self.witness("error", base_provenance="reconstructed")
+        errors = self.audit()
+        self.assertEqual(len(errors), 1)
+        self.assertIn("no 'red_receipt_emitted' witness", errors[0].message)
+
+    def test_an_error_with_no_provenance_still_satisfies_it(self) -> None:
+        # Every witness banked before the field existed ran against HEAD, where an
+        # error IS a legitimate weak RED. Reading the absence as "unknown" would
+        # retroactively invalidate the whole pre-#849 corpus.
+        self.brief(_brief())
+        self.completed(_AFTER)
+        self.witness("error")
+        self.assertEqual(self.audit(), [])
+
+    def test_an_assertion_on_a_reconstructed_base_does_satisfy_it(self) -> None:
+        # Reconstruction is not distrusted wholesale — only the `error` class is
+        # ambiguous on it. The test reached its assertion and the assertion failed,
+        # which is the same evidence whichever tree it ran against.
+        self.brief(_brief())
+        self.completed(_AFTER)
+        self.witness("assertion", base_provenance="reconstructed")
+        self.assertEqual(self.audit(), [])
+
+    def test_a_void_rerun_cannot_erase_an_earlier_genuine_witness(self) -> None:
+        # The ordering trap this dict is exposed to: it keeps the LAST event per REQ,
+        # so a later run that could not tell would otherwise overwrite a real finding
+        # with silence. Pinned for the reconstructed-error shape as it already is for
+        # `not-applicable`.
+        self.brief(_brief())
+        self.completed(_AFTER)
+        self.witness("assertion")
+        self.witness("error", base_provenance="reconstructed")
+        self.assertEqual(self.audit(), [])
+
+    def test_a_void_rerun_cannot_erase_an_earlier_hollow_finding_either(self) -> None:
+        # And the same in the accusing direction: a `none` already found must not be
+        # laundered away by a later run that witnessed nothing.
+        self.brief(_brief())
+        self.completed(_AFTER)
+        self.witness("none")
+        self.witness("error", base_provenance="reconstructed")
+        errors = self.audit()
+        self.assertEqual(len(errors), 1)
+        self.assertIn("failure_class 'none'", errors[0].message)

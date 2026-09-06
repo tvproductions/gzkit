@@ -98,6 +98,7 @@ def arb_red_cmd(
             receipt_id=str(receipt_path.stem),
             failure_class=witness.failure_class,
             base_commit=witness.base_commit,
+            base_provenance=witness.base_provenance,
             obpi_id=obpi,
             test_names=witness.test_names,
         )
@@ -112,11 +113,24 @@ def arb_red_cmd(
     if witness.failure_class == "not-applicable":
         print(
             f"RED WITNESS DID NOT RUN: no production hunks were withheld against base "
-            f"{witness.base_commit[:12]}, so the base tree already carries {req}'s "
-            "implementation and its covering test would pass there no matter what it "
-            "asserts. This is NOT a finding about the test — do NOT rewrite it. The "
-            "experiment needs the production change still in the working tree; run the "
-            "witness while the work is in flight, before it lands (GHI #839).",
+            f"{witness.base_commit[:12]}, and no earlier tree could be reconstructed for "
+            f"{req} — its `@covers` string is absent from the test tree's history, or the "
+            "commit that introduced it has no parent. So the base tree already carries "
+            f"{req}'s implementation and its covering test would pass there no matter what "
+            "it asserts. This is NOT a finding about the test — do NOT rewrite it "
+            "(GHI #839, #849).",
+            file=sys.stderr,
+        )
+        return 0
+    if not witness.is_conclusive:
+        print(
+            f"RED WITNESS INCONCLUSIVE: {req}'s test failed with an ERROR against the "
+            f"RECONSTRUCTED base {witness.base_commit[:12]} (the parent of the commit that "
+            "introduced the test). On that tree an error is as likely to be unrelated "
+            "drift as the missing implementation, so it witnesses nothing either way — "
+            "and counting it would let a hollow test in old code clear this gate. This is "
+            "NOT a finding about the test. To get a real verdict, run the witness while "
+            "the production change is still in the working tree (GHI #849).",
             file=sys.stderr,
         )
         return 0
@@ -131,7 +145,7 @@ def arb_red_cmd(
             file=sys.stderr,
         )
         return 1
-    if witness.failure_class == "error" and not quiet:
+    if witness.failure_class == "error" and not quiet:  # working-tree only: see above
         print(
             f"weak RED: {req}'s test failed with an error, not an assertion — it failed "
             "for the wrong reason (usually a not-yet-existing symbol). Recorded as "

@@ -1179,6 +1179,7 @@ def red_receipt_emitted_event(
     receipt_id: str,
     failure_class: str,
     base_commit: str,
+    base_provenance: str = "working-tree",
     obpi_id: str | None = None,
     test_names: list[str] | None = None,
 ) -> LedgerEvent:
@@ -1187,12 +1188,18 @@ def red_receipt_emitted_event(
     ``failure_class`` is the verdict: ``assertion`` (strong RED), ``error`` (weak
     RED — failed for the wrong reason), or ``none`` (the test passed without its
     implementation and therefore cannot fail).
+
+    ``base_provenance`` says WHICH tree produced it, because that changes what
+    ``error`` means (GHI #849). It defaults to ``working-tree``, which is also how a
+    reader must treat an event that predates the field: every witness emitted before
+    the reconstructed base existed ran against HEAD.
     """
     extra: dict[str, object] = {
         "req_id": req_id,
         "receipt_id": receipt_id,
         "failure_class": failure_class,
         "base_commit": base_commit,
+        "base_provenance": base_provenance,
     }
     if obpi_id:
         extra["obpi_id"] = obpi_id

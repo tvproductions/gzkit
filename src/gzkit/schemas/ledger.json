@@ -1806,6 +1806,10 @@
           "type": "string",
           "min_length": 7
         },
+        "base_provenance": {
+          "type": "string",
+          "min_length": 1
+        },
         "obpi_id": {
           "type": [
             "string",

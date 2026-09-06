@@ -48,6 +48,7 @@ def build_red_receipt(
         "timestamp_utc": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "git": _git_context(),
         "base_commit": witness.base_commit,
+        "base_provenance": witness.base_provenance,
         "exit_status": witness.exit_status,
         "failure_class": witness.failure_class,
         "duration_ms": duration_ms,

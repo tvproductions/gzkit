@@ -44,6 +44,29 @@ _LANE_RE = re.compile(r"^lane:\s*[\"']?(\w+)", re.MULTILINE)
 _STATUS_RE = re.compile(r"^status:\s*[\"']?([\w-]+)", re.MULTILINE)
 
 
+def _is_void_witness(event: dict) -> bool:
+    """Report whether a RED event says the run could not tell, rather than what it found.
+
+    Two shapes, and they are the same claim (GHI #839, #849):
+
+    * ``not-applicable`` — nothing was withheld, so the experiment never ran.
+    * ``error`` on a ``reconstructed`` base — the test met a tree months older than
+      itself and died on an import. That is as likely to be unrelated drift as the
+      missing implementation, so banking it as a weak RED would let a hollow test in
+      old code clear this gate. Fail-OPEN, which is why it is excluded here rather
+      than merely reported.
+
+    An event with no ``base_provenance`` predates the reconstructed base and therefore
+    ran against HEAD, where ``error`` IS a legitimate weak RED — so the field's absence
+    must read as ``working-tree``, never as unknown.
+    """
+    failure_class = event.get("failure_class")
+    if failure_class == "not-applicable":
+        return True
+    provenance = event.get("base_provenance", "working-tree")
+    return failure_class == "error" and provenance == "reconstructed"
+
+
 def _iter_ledger(project_root: Path) -> Iterator[dict]:
     """Yield each well-formed ledger event; skip unparseable lines."""
     try:
@@ -81,12 +104,12 @@ def _collect(project_root: Path) -> tuple[dict[str, dict], dict[str, dt.datetime
         name = event.get("event")
         if name == "red_receipt_emitted":
             req_id = event.get("req_id")
-            # A `not-applicable` run withheld nothing, so it witnessed nothing and is
-            # not recorded here (GHI #839). Skipping rather than storing also keeps it
-            # from OVERWRITING an earlier genuine witness for the same REQ — this dict
-            # keeps the last event per REQ, so a void re-run after a real one would
-            # otherwise erase the finding it could not reproduce.
-            if isinstance(req_id, str) and event.get("failure_class") != "not-applicable":
+            # A run that witnessed nothing is not recorded here (GHI #839, #849).
+            # Skipping rather than storing also keeps it from OVERWRITING an earlier
+            # genuine witness for the same REQ — this dict keeps the last event per
+            # REQ, so a void re-run after a real one would otherwise erase the finding
+            # it could not reproduce.
+            if isinstance(req_id, str) and not _is_void_witness(event):
                 witnesses[req_id] = event
         elif name == "obpi_receipt_emitted" and event.get("receipt_event") == "completed":
             obpi_id = event.get("obpi_id") or event.get("id")

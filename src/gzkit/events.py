@@ -980,6 +980,15 @@ class RedReceiptEmittedEvent(_EventBase):
     * ``not-applicable`` — nothing was withheld, so the experiment never ran. Not a
       verdict on the test; recorded so a void run is distinguishable from a hollow
       one rather than sharing ``none``'s name (GHI #839).
+
+    ``base_provenance`` says WHICH tree produced the class, and it changes what
+    ``error`` means (GHI #849). On ``working-tree`` the withheld hunk is the only
+    difference, so an import failure can only be the missing implementation — a weak
+    RED. On ``reconstructed`` (the parent of the commit that introduced the covering
+    test) the tree can be months older than the test, so the same class is as likely
+    to be unrelated drift and witnesses nothing. Defaults to ``working-tree`` because
+    that is what every event predating the field actually ran against; reading the
+    absence as unknown would retroactively void the whole prior corpus.
     """
 
     event: Literal["red_receipt_emitted"]
@@ -989,6 +998,9 @@ class RedReceiptEmittedEvent(_EventBase):
         ..., description="How the test failed against the base tree; a closed vocabulary"
     )
     base_commit: str = Field(..., min_length=7, description="Commit the test ran against")
+    base_provenance: Literal["working-tree", "reconstructed"] = Field(
+        default="working-tree", description="Which tree the base commit is; a closed vocabulary"
+    )
     obpi_id: str | None = Field(default=None, description="Owning OBPI, when run in a pipeline")
     test_names: list[str] = Field(
         default_factory=list, description="unittest-addressable names executed"

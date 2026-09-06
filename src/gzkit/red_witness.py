@@ -47,6 +47,17 @@ if TYPE_CHECKING:
 
 FailureClass = Literal["assertion", "error", "none", "not-applicable"]
 
+#: WHICH tree the test was run against, and it changes what a class MEANS (GHI #849).
+#:
+#: * ``working-tree`` — the base is HEAD and the implementation is still uncommitted,
+#:   so the withheld hunk is the ONLY difference. An ImportError here can only be the
+#:   missing implementation, which is why it counts as a weak RED.
+#: * ``reconstructed`` — the base is the parent of the commit that introduced the
+#:   covering test, months old on a live repository. A grafted modern test meets an
+#:   old tree, so an ImportError here is as likely to be unrelated drift as the
+#:   implementation under test, and it witnesses nothing either way.
+BaseProvenance = Literal["working-tree", "reconstructed"]
+
 # `FAILED (failures=2, errors=1)` — unittest's own summary line.
 _FAILED_SUMMARY_RE = re.compile(r"FAILED\s*\((?P<body>[^)]*)\)")
 _FAILURES_RE = re.compile(r"failures=(\d+)")
@@ -66,19 +77,45 @@ class RedWitness(BaseModel):
     test_names: list[str] = Field(..., description="unittest-addressable names executed")
     exit_status: int = Field(..., description="Exit code of the base-tree test run")
     failure_class: FailureClass = Field(..., description="assertion | error | none")
+    base_provenance: BaseProvenance = Field(
+        default="working-tree", description="working-tree (HEAD) | reconstructed (pre-test parent)"
+    )
     output_tail: str = Field(default="", description="Tail of the base-tree run's output")
 
     @property
     def is_red(self) -> bool:
         """True when the test demonstrably fails without its implementation.
 
-        A weak RED (``error``) still witnesses falsifiability — the test cannot pass
-        without the production change. ``none`` means the test proves nothing, and
-        ``not-applicable`` means the RUN proves nothing — different findings, and
-        neither is a RED. Enumerated positively rather than as ``!= "none"`` so a
-        future class cannot default into counting as falsifiability (GHI #839).
+        ``none`` means the test proves nothing and ``not-applicable`` means the RUN
+        proves nothing — different findings, and neither is a RED. Enumerated
+        positively rather than as ``!= "none"`` so a future class cannot default into
+        counting as falsifiability (GHI #839).
+
+        A weak RED (``error``) counts ONLY on the working-tree base (GHI #849). There
+        the withheld hunk is the sole difference, so an ImportError can only be the
+        missing implementation. On a reconstructed base — months of unrelated drift
+        between the tree and the test — an ImportError is not evidence about this
+        test at all, and counting it would let a genuinely hollow test in old code
+        clear the gate. That is a fail-OPEN direction, which is why it is decided
+        here rather than left to each caller.
         """
-        return self.failure_class in {"assertion", "error"}
+        if self.failure_class == "assertion":
+            return True
+        return self.failure_class == "error" and self.base_provenance == "working-tree"
+
+    @property
+    def is_conclusive(self) -> bool:
+        """True when the run can support ANY verdict — RED or hollow — about the test.
+
+        Kept apart from :attr:`is_red` because ``not is_red`` has two very different
+        causes, and GHI #839's whole lesson is that conflating them turns a run that
+        could not tell into a confident accusation. ``none`` on either base is a real
+        finding; ``not-applicable``, and ``error`` on a reconstructed base, are the
+        run reporting that it could not tell.
+        """
+        if self.failure_class == "not-applicable":
+            return False
+        return not (self.failure_class == "error" and self.base_provenance == "reconstructed")
 
 
 def classify_failure(exit_status: int, output: str) -> FailureClass:
@@ -125,6 +162,43 @@ def resolve_base_commit(project_root: Path) -> str:
     if result.returncode != 0:
         raise RuntimeError(f"cannot resolve base commit: {result.stderr.strip()}")
     return result.stdout.strip()
+
+
+def resolve_introducing_base(
+    project_root: Path, req_id: str, tests_dir: str = "tests"
+) -> str | None:
+    """Return the commit BEFORE the covering test for ``req_id`` first appeared.
+
+    The base :func:`resolve_base_commit` returns is HEAD, which is right while work is
+    in flight and vacuous once it lands: HEAD already carries the implementation, so
+    nothing is withheld and the experiment has no premise. `--from=verify` — the
+    pipeline's supported entry point for already-implemented work — runs entirely on
+    that path, so the falsifiability check it mandates could never execute there
+    (GHI #849).
+
+    ``git log -S`` finds the commit where the ``@covers`` string entered the test tree;
+    its PARENT is the last tree that predates both the test and its implementation,
+    which is the premise the experiment needs.
+
+    Returns ``None`` rather than guessing — a wrong base is worse than no base, because
+    the run would then report a confident class about a tree with no relationship to
+    the REQ. Two ways to get None: the string never appears in history, or the
+    introducing commit is a root commit and no earlier tree exists.
+    """
+    found = _git(
+        ["log", "-S", f'@covers("{req_id}")', "--format=%H", "--reverse", "--", tests_dir],
+        project_root,
+    )
+    if found.returncode != 0:
+        return None
+    commits = found.stdout.split()
+    if not commits:
+        return None
+    parent = _git(["rev-parse", f"{commits[0]}^"], project_root)
+    if parent.returncode != 0:
+        return None
+    resolved = parent.stdout.strip()
+    return resolved or None
 
 
 def changed_test_files(
@@ -223,6 +297,49 @@ def _graft_test_files(project_root: Path, worktree: Path, test_files: list[Path]
 DEFAULT_TEST_RUNNER: tuple[str, ...] = ("uv", "run", "-m", "unittest")
 
 
+def _resolve_base(
+    project_root: Path, req_id: str, base_commit: str | None, tests_dir: str
+) -> tuple[str, BaseProvenance] | None:
+    """Pick the tree to run against, and say which KIND of tree it is.
+
+    Three cases, in order:
+
+    * An explicit ``base_commit`` is the caller's choice and is taken as given. Its
+      provenance is a FACT about the commit rather than a flag — HEAD means the
+      working tree's own base, anything else is a reconstruction.
+    * The REQ's ``@covers`` string is IN the test tree's history: the work landed, so
+      the base is the parent of the commit that introduced it (GHI #849).
+    * The string is absent: the covering test is itself uncommitted, which is what
+      "in flight" means, and HEAD is the tree that lacks the implementation.
+
+    **The reconstruction is tried FIRST, and the order is the load-bearing part.**
+    Asking ``withheld_production_files`` first reads *"is ANY production file
+    uncommitted"* as if it meant *"is THIS REQ's implementation withheld"* — so while
+    any unrelated edit sits in the tree, a landed REQ's test grafts onto a HEAD that
+    already contains its implementation, passes, and is classed ``none``: a confident
+    accusation against a test that was never tested. Observed on this repository
+    2026-09-06 with a receipt (`REQ-0.35.0-09-01`, `base_provenance=working-tree`,
+    `failure_class=none`, while the only dirty files belonged to an unrelated fix).
+    Whether the covering test is in history is the exact discriminator and needs no
+    heuristic, because a test cannot be in flight and already committed.
+
+    The premise is re-checked against whichever base is chosen rather than assumed —
+    a base that withholds nothing is as vacuous as HEAD was. ``None`` means no tree
+    satisfies it, and the caller reports ``not-applicable`` rather than a verdict.
+    """
+    head = resolve_base_commit(project_root)
+    if base_commit is not None:
+        return base_commit, ("working-tree" if base_commit == head else "reconstructed")
+    reconstructed = resolve_introducing_base(project_root, req_id, tests_dir)
+    if reconstructed is not None and withheld_production_files(
+        project_root, reconstructed, tests_dir
+    ):
+        return reconstructed, "reconstructed"
+    if withheld_production_files(project_root, head, tests_dir):
+        return head, "working-tree"
+    return None
+
+
 def run_red_witness(
     *,
     project_root: Path,
@@ -243,26 +360,25 @@ def run_red_witness(
     if not test_names:
         raise ValueError(f"no covering tests supplied for {req_id}; nothing to witness")
 
-    base = base_commit or resolve_base_commit(project_root)
-
-    # Check the premise BEFORE spending a worktree on it. With nothing withheld the
-    # base tree already carries the implementation, so the run would pass and be
-    # classified `none` — an accusation the experiment never earned (GHI #839).
-    withheld = withheld_production_files(project_root, base, tests_dir)
-    if not withheld:
+    resolved = _resolve_base(project_root, req_id, base_commit, tests_dir)
+    if resolved is None:
+        head = base_commit or resolve_base_commit(project_root)
         return RedWitness(
             req_id=req_id,
-            base_commit=base,
+            base_commit=head,
             test_names=sorted(test_names),
             exit_status=0,
             failure_class="not-applicable",
             output_tail=(
                 f"RED witness did not run: no production hunks were withheld against "
-                f"base {base[:12]}. The base tree already carries the implementation "
-                f"under test, so the covering test would pass there no matter what it "
-                f"asserts. This is NOT a finding about the test."
+                f"base {head[:12]}, and no earlier tree could be reconstructed for "
+                f"{req_id} — its `@covers` string is absent from the test tree's history, "
+                f"or the commit that introduced it has no parent. The base tree already "
+                f"carries the implementation under test, so the covering test would pass "
+                f"there no matter what it asserts. This is NOT a finding about the test."
             ),
         )
+    base, provenance = resolved
 
     test_files = changed_test_files(project_root, base, tests_dir)
     runner = list(test_runner) if test_runner else list(DEFAULT_TEST_RUNNER)
@@ -287,6 +403,7 @@ def run_red_witness(
         test_names=sorted(test_names),
         exit_status=int(result.returncode),
         failure_class=classify_failure(int(result.returncode), output),
+        base_provenance=provenance,
         output_tail=output[-4000:],
     )
 
@@ -318,6 +435,7 @@ def resolve_covering_test_names(project_root: Path, req_id: str) -> list[str]:
 
 
 __all__ = [
+    "BaseProvenance",
     "FailureClass",
     "RedWitness",
     "base_tree_worktree",
@@ -325,6 +443,7 @@ __all__ = [
     "DEFAULT_TEST_RUNNER",
     "classify_failure",
     "resolve_base_commit",
+    "resolve_introducing_base",
     "resolve_covering_test_names",
     "run_red_witness",
     "withheld_production_files",

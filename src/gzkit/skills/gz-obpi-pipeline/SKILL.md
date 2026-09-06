@@ -502,13 +502,24 @@ This reconstructs the base tree in a throwaway git worktree, copies in **only** 
 | `failure_class` | Meaning | Action |
 |---|---|---|
 | `assertion` | Strong RED — the test failed on an assertion | Proceed |
-| `error` | Weak RED — failed for the wrong reason (usually a not-yet-existing symbol) | Proceed; **never** report it as an assertion RED |
+| `error` | Weak RED — failed for the wrong reason (usually a not-yet-existing symbol) | Proceed **only on a `working-tree` base**; on a `reconstructed` base it is inconclusive (below). **Never** report it as an assertion RED |
 | `none` | The test PASSED without its implementation | **Blocking.** Rewrite the test to assert the REQ's semantics, then re-run |
-| `not-applicable` | Nothing was withheld — the experiment did not run | **Non-blocking.** NOT a finding about the test; do **not** rewrite it. Note in the evidence that the witness did not run |
+| `not-applicable` | Nothing was withheld and no earlier tree could be reconstructed | **Non-blocking.** NOT a finding about the test; do **not** rewrite it. Note in the evidence that the witness did not run |
+
+Every receipt and ledger event also records a **`base_provenance`**, and it changes what `error` means:
+
+| `base_provenance` | Which tree | What `error` means there |
+|---|---|---|
+| `working-tree` | HEAD, with the production change still uncommitted | A weak RED. The withheld hunk is the only difference, so the import can only have failed for the missing implementation |
+| `reconstructed` | The parent of the commit that introduced the covering test | **Inconclusive — not a RED and not an accusation.** The tree can be months older than the test, so the import is as likely to have failed on unrelated drift |
 
 A `none` verdict means the test cannot fail when the business logic changes (AGENTS.md § DO IT RIGHT Rule 6), so it witnesses nothing. `uv run gz validate --red-parity`, a bound `gz check` step, re-audits this repo-wide past the cutover.
 
-**On the `--from=verify` path this witness usually cannot run (GHI #839).** The base commit is HEAD, so once the production code has landed the base tree already carries the implementation and nothing is withheld. That returns `not-applicable`, not `none`. Read it as *the experiment had no premise*, never as a verdict — a `none` that means "I could not run the experiment" must not share a name with a `none` that means "your test cannot fail", and the locally obvious response to ten blocking verdicts (rewrite ten passing tests until the witness goes quiet) weakens real assertions to satisfy a degenerate experiment. Run the witness **while the work is in flight**, before it lands; that is the only condition under which it witnesses anything.
+**On the `--from=verify` path the witness now runs, against a reconstructed base (GHI #849).** It used to be inert there: the base was HEAD, so once the production code landed the base tree already carried the implementation, nothing was withheld, and every BEHAVIOR REQ returned `not-applicable` — the pipeline mandating, on its own already-implemented path, a check that structurally could not execute. The base is now resolved from the commit that introduced the REQ's covering test, whose parent predates both the test and its implementation.
+
+**What that path can and cannot conclude.** A `none` is a real finding on either base — a test that passes against a tree without its implementation cannot fail, whichever tree it was. An `error` is not: see the provenance table above. So `--from=verify` can still catch a hollow test, and cannot bank a weak RED. `not-applicable` survives for the case where no earlier tree exists at all (the `@covers` string is absent from the test tree's history, or the commit that introduced it is a root commit).
+
+Read a non-verdict as *the experiment had no premise*, never as a verdict — a `none` that means "I could not run the experiment" must not share a name with a `none` that means "your test cannot fail", and the locally obvious response to ten blocking verdicts (rewrite ten passing tests until the witness goes quiet) weakens real assertions to satisfy a degenerate experiment. The strongest evidence still comes from running the witness **while the work is in flight**, before it lands: that is the only condition under which `error` counts for anything.
 
 **Anti-pattern:** Treating the `error` class as equivalent to `assertion`. An ImportError proves only that the symbol is absent — not that the test asserts the REQ's semantics.
 
