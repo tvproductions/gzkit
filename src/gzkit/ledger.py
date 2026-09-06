@@ -12,6 +12,7 @@ from typing import Any, ClassVar, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_serializer, model_validator
 
+from gzkit.ledger_corrections import LEDGER_SCHEMA, evidence_events, live_events
 from gzkit.obpi_lifecycle import fold_renames
 
 _ADR_SEMVER_RE = re.compile(r"^ADR-(\d+\.\d+\.\d+)(?:-.*)?$")
@@ -50,7 +51,9 @@ def extract_bare_obpi_id(obpi_id: str) -> str | None:
     return f"OBPI-{match.group(1)}"
 
 
-LEDGER_SCHEMA = "gzkit.ledger.v1"
+#: Re-exported from :mod:`gzkit.ledger_corrections`, which owns the single
+#: definition. Every module that stamps a row still imports it from here; the
+#: value moved so the replay-side envelope check and the producers cannot drift.
 
 
 ATTESTATION_CANONICAL_TERMS: dict[str, str] = {
@@ -1039,7 +1042,6 @@ class Ledger:
 # which breaks the circular-import chain (the sub-modules only need names
 # that are already bound above).
 # ---------------------------------------------------------------------------
-from gzkit.ledger_corrections import evidence_events, live_events  # noqa: E402
 
 
 def read_corrected_rows(

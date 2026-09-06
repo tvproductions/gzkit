@@ -36,8 +36,6 @@ from gzkit.ledger_corrections import (
 )
 from gzkit.ledger_events import ledger_event_corrected_event
 
-_SCHEMA_PATH = Path(__file__).parent.parent / "src" / "gzkit" / "schemas" / "ledger.json"
-
 
 def _row(event: str, ident: str, ts: str, **extra: object) -> dict:
     """Build a raw ledger row in the on-disk (flattened) shape."""
@@ -67,16 +65,26 @@ def _correction(
     )
 
 
-def _validate_rows(case: unittest.TestCase, rows: list[dict]) -> list:
-    """Run the shipped ledger validator over ``rows`` in a temp file."""
-    from gzkit.validate_pkg.ledger_check import validate_ledger
+def _ledger_file(case: unittest.TestCase, rows: list[dict]) -> Path:
+    """Write ``rows`` to a real temp ledger and return its path.
 
+    Shared so the validator and replay are handed the SAME bytes: the defect
+    these tests cover is the two paths disagreeing about one row, which is only
+    observable when neither gets its own fixture.
+    """
     tmp = Path(case.enterContext(tempfile.TemporaryDirectory()))
     path = tmp / "ledger.jsonl"
     path.write_text(
         "".join(json.dumps(r, separators=(",", ":")) + "\n" for r in rows), encoding="utf-8"
     )
-    return validate_ledger(path)
+    return path
+
+
+def _validate_rows(case: unittest.TestCase, rows: list[dict]) -> list:
+    """Run the shipped ledger validator over ``rows`` in a temp file."""
+    from gzkit.validate_pkg.ledger_check import validate_ledger
+
+    return validate_ledger(_ledger_file(case, rows))
 
 
 class TestCorrectionEventFailsClosed(unittest.TestCase):
@@ -1191,3 +1199,349 @@ class TestInvalidCorrectionsCannotChangeDerivedState(unittest.TestCase):
         void = _correction(self.SUBJECT, "void", ts="2026-09-06T01:00:00+00:00")
         good = _correction(self.SUBJECT, "reinstated", ts="2026-09-06T02:00:00+00:00")
         self.assertIn(self.SUBJECT, live_events([self.SUBJECT, void, good]))
+
+
+class TestMalformedContainersAreRejectedNotFatal(unittest.TestCase):
+    """A value of the wrong CONTAINER type is refused, never fatal.
+
+    Two closed vocabularies and one identity triple are the surfaces, and both
+    failed the same way. ``DISPOSITIONS`` and ``CAUSES`` are frozensets, so
+    ``[] in DISPOSITIONS`` RAISES rather than returning ``False``; the
+    ``(event, id, ts)`` triple is hashed into every subject index, so an ordinary
+    row carrying ``id: []`` raised on the way in — with no correction anywhere in
+    the file.
+
+    The distinction that matters is between a finding and a crash. Both readers
+    below are documented as reporting malformed input:
+    ``gz validate --ledger`` exists to say what is wrong with a row, and
+    :func:`~gzkit.ledger.read_corrected_rows` is the TOLERANT reader whose whole
+    reason to exist is that a pipeline gate or a commit hook must not raise. An
+    exception from either does not report the defect — it disables the reader
+    that would have.
+    """
+
+    _SUBJECT_TS = "2026-09-02T00:00:00+00:00"
+
+    def _rows_with(self, **overrides: object) -> list[dict]:
+        subject = _row("pipeline_launched", "OBPI-X", self._SUBJECT_TS)
+        correction = _correction(subject, "void", ts="2026-09-06T20:00:00+00:00")
+        correction.update(overrides)
+        return [subject, correction]
+
+    def test_an_unhashable_disposition_is_inert_rather_than_fatal(self) -> None:
+        rows = self._rows_with(disposition={})
+        self.assertEqual(correction_state(rows), {})
+        self.assertIn(rows[0], live_events(rows))
+
+    def test_an_unhashable_cause_is_inert_rather_than_fatal(self) -> None:
+        rows = self._rows_with(cause=[])
+        self.assertEqual(correction_state(rows), {})
+        self.assertIn(rows[0], live_events(rows))
+
+    def test_an_unhashable_correction_is_inert_through_a_real_ledger(self) -> None:
+        """Replay through the shipped reader, not the primitive in isolation."""
+        rows = self._rows_with(cause=[])
+        ledger = Ledger(_ledger_file(self, rows))
+        self.assertEqual([e.event for e in ledger.read_all()], ["pipeline_launched"])
+
+    def test_an_unhashable_identity_validates_to_findings_not_an_exception(self) -> None:
+        """No correction is present at all — an ordinary malformed row sufficed."""
+        for field in ("id", "ts"):
+            with self.subTest(field=field):
+                row = _row("pipeline_launched", "OBPI-X", self._SUBJECT_TS)
+                row[field] = []
+                messages = [e.message for e in _validate_rows(self, [row])]
+                self.assertTrue(
+                    any(f"Field '{field}'" in message for message in messages),
+                    f"the malformed {field} was not reported: {messages}",
+                )
+
+    def test_the_tolerant_reader_survives_an_unhashable_identity(self) -> None:
+        """Its contract is to skip what it cannot read, never to raise (GHI #611)."""
+        from gzkit.ledger import read_corrected_rows
+
+        row = _row("pipeline_launched", "OBPI-X", self._SUBJECT_TS)
+        row["id"] = []
+        self.assertEqual(read_corrected_rows(_ledger_file(self, [row])), [row])
+
+    def test_a_correction_naming_an_unhashable_subject_is_inert(self) -> None:
+        rows = self._rows_with(subject_id=[])
+        self.assertEqual(correction_state(rows), {})
+        self.assertIn(rows[0], live_events(rows))
+
+
+class TestValidationAndReplayRefuseTheSameCorrections(unittest.TestCase):
+    """One contract, two paths — a row either reader rejects is inert in both.
+
+    The checks were split: envelope validity and append order lived only in
+    ``gz validate --ledger``, and replay read neither. So a correction stamped
+    with a foreign ``schema`` tag, or an unparseable ``ts``, or standing ahead of
+    the row it corrects, was REPORTED by the validator and then went on voiding
+    its subject everywhere derived state is read — which is every consumer. A
+    guard only the write path enforces is decorative (the module says so of the
+    payload checks); a guard only the validator enforces is worse, because the
+    operator has seen it fire and believes the row was refused.
+
+    Every case runs through an actual temporary :class:`~gzkit.ledger.Ledger`
+    file: the same bytes are handed to the validator and to replay, so the two
+    answers are comparable rather than merely both asserted.
+    """
+
+    SUBJECT_TS = "2026-09-02T00:00:00+00:00"
+    LATER_TS = "2026-09-06T20:00:00+00:00"
+
+    #: A SCHEMA-COMPLETE subject. The positive cases below assert the validator
+    #: reports nothing at all, which is only meaningful when the rows carry every
+    #: field their event declares — otherwise the assertion passes or fails on
+    #: fixture shape rather than on the correction under test.
+    LAUNCH_FIELDS = {
+        "nonce": "b8f1c2",
+        "marker_path": ".gzkit/pipeline/OBPI-0.35.0-08.json",
+        "lane": "lite",
+    }
+
+    def setUp(self) -> None:
+        self.subject = _row(
+            "pipeline_launched", "OBPI-0.35.0-08", self.SUBJECT_TS, **self.LAUNCH_FIELDS
+        )
+
+    def _correcting(self, disposition: str = "void", **overrides: object) -> dict:
+        correction = _correction(
+            self.subject,
+            disposition,
+            ts=self.LATER_TS,
+            cause="agent-error" if disposition != "reinstated" else "operator-error",
+        )
+        correction.update(overrides)
+        return correction
+
+    def _both(self, rows: list[dict]) -> tuple[list[str], list[str]]:
+        """Return ``(validator messages, replayed event names)`` for one file."""
+        path = _ledger_file(self, rows)
+        from gzkit.validate_pkg.ledger_check import validate_ledger
+
+        return (
+            [e.message for e in validate_ledger(path)],
+            [e.event for e in Ledger(path).read_all()],
+        )
+
+    def _assert_refused_by_both(self, rows: list[dict], expected: str) -> None:
+        messages, replayed = self._both(rows)
+        self.assertTrue(
+            any(expected in message for message in messages),
+            f"the validator did not report it: {messages}",
+        )
+        self.assertEqual(
+            replayed,
+            ["pipeline_launched"],
+            "the validator refused this correction and replay applied it anyway",
+        )
+
+    def test_a_foreign_schema_tag_is_reported_and_inert(self) -> None:
+        self._assert_refused_by_both(
+            [self.subject, self._correcting(schema="gzkit.ledger.v0")],
+            "Invalid schema value",
+        )
+
+    def test_an_unparseable_timestamp_is_reported_and_inert(self) -> None:
+        self._assert_refused_by_both(
+            [self.subject, self._correcting(ts="not-a-date")],
+            "not valid ISO8601",
+        )
+
+    def test_an_empty_row_id_is_reported_and_inert(self) -> None:
+        self._assert_refused_by_both(
+            [self.subject, self._correcting(id="   ")],
+            "must be a non-empty string",
+        )
+
+    def test_a_correction_preceding_its_subject_is_reported_and_inert(self) -> None:
+        correction = self._correcting(ts="2026-09-01T00:00:00+00:00")
+        self._assert_refused_by_both([correction, self.subject], "precedes its subject")
+
+    def test_an_equal_timestamp_inversion_is_reported_and_inert(self) -> None:
+        """Timestamps alone do not establish append order — position does.
+
+        The ledger already contains a byte-identical pair sharing a ``ts``, so
+        two rows may legitimately carry the same instant. An ordering rule that
+        compares timestamps therefore reads ``correction_ts < subject_ts`` as
+        false here and reports NOTHING, while the correction sits ahead of the
+        row it names.
+        """
+        correction = self._correcting(ts=self.SUBJECT_TS)
+        self._assert_refused_by_both([correction, self.subject], "precedes its subject")
+
+    def test_an_invalid_reinstatement_cannot_revive_a_voided_row(self) -> None:
+        """The reversal arm fails the same way, in the direction that restores state.
+
+        A void that must not apply and a reinstatement that must not apply are
+        not symmetric defects: the first wrongly hides a row, the second wrongly
+        RESURRECTS one that a valid correction voided. Both are the same missing
+        check, so both are asserted.
+        """
+        rows = [
+            self.subject,
+            self._correcting("void"),
+            self._correcting("reinstated", ts="not-a-date"),
+        ]
+        messages, replayed = self._both(rows)
+        self.assertTrue(any("not valid ISO8601" in message for message in messages), messages)
+        self.assertEqual(replayed, [], "an invalid reinstatement revived a voided row")
+
+    def test_a_reinstatement_preceding_its_subject_cannot_revive_it(self) -> None:
+        rows = [self.subject, self._correcting("void")]
+        early = _correction(
+            self.subject, "reinstated", ts="2026-09-01T00:00:00+00:00", cause="operator-error"
+        )
+        messages, replayed = self._both([early, *rows])
+        self.assertTrue(any("precedes its subject" in message for message in messages), messages)
+        self.assertEqual(replayed, [])
+
+    # --- positive cases: the legitimate shapes must keep working -------------
+
+    def test_a_legitimate_void_is_accepted_by_both_paths(self) -> None:
+        messages, replayed = self._both([self.subject, self._correcting()])
+        self.assertEqual(messages, [])
+        self.assertEqual(replayed, [])
+
+    def test_repeated_corrections_resolve_to_the_last(self) -> None:
+        rows = [
+            self.subject,
+            self._correcting("void"),
+            _correction(
+                self.subject,
+                "discharged",
+                ts="2026-09-07T00:00:00+00:00",
+                cause="condition-resolved",
+            ),
+        ]
+        messages, replayed = self._both(rows)
+        self.assertEqual(messages, [])
+        self.assertEqual(replayed, [])
+        path = _ledger_file(self, rows)
+        self.assertEqual(
+            [e.event for e in Ledger(path).read_evidence()],
+            ["pipeline_launched"],
+            "a discharged row is still evidence that it was once true",
+        )
+
+    def test_a_reinstatement_restores_its_subject(self) -> None:
+        rows = [
+            self.subject,
+            self._correcting("void"),
+            _correction(
+                self.subject, "reinstated", ts="2026-09-07T00:00:00+00:00", cause="operator-error"
+            ),
+        ]
+        messages, replayed = self._both(rows)
+        self.assertEqual(messages, [])
+        self.assertEqual(replayed, ["pipeline_launched"])
+
+    def test_intervening_work_between_subject_and_correction_is_untouched(self) -> None:
+        other = _row(
+            "pipeline_launched",
+            "OBPI-0.35.0-09",
+            "2026-09-03T00:00:00+00:00",
+            **self.LAUNCH_FIELDS,
+        )
+        messages, replayed = self._both([self.subject, other, self._correcting()])
+        self.assertEqual(messages, [])
+        self.assertEqual(replayed, ["pipeline_launched"])
+        self.assertEqual(
+            [
+                e.id
+                for e in Ledger(
+                    _ledger_file(self, [self.subject, other, self._correcting()])
+                ).read_all()
+            ],
+            ["OBPI-0.35.0-09"],
+            "the correction voided a neighbour it did not name",
+        )
+
+    def test_equal_timestamps_in_valid_order_are_accepted(self) -> None:
+        """Sharing an instant is legitimate; only the INVERSION is refused.
+
+        The counterpart to the equal-timestamp inversion above. Position, not the
+        timestamp, is what the rule reads — so a correction stamped identically to
+        its subject but appended AFTER it is a normal correction.
+        """
+        messages, replayed = self._both([self.subject, self._correcting(ts=self.SUBJECT_TS)])
+        self.assertEqual(messages, [])
+        self.assertEqual(replayed, [])
+
+
+class TestProducerAuditReadsTheRealAirlockProducer(unittest.TestCase):
+    """Coverage is proven against the SHIPPED producer, never a stand-in.
+
+    Two passes of this audit reported zero findings on ``gzkit/airlock/enter.py``
+    while its override fields were undeclared, and each was defended by a
+    synthetic fixture written in a shape the scanner could already read — a
+    plain ``payload = {}`` opened with :class:`ast.Assign`, and a helper CALLED
+    at the merge. The real producer has neither: ``_book_transit`` opens with an
+    ANNOTATED assignment and merges ``payload.update(extra)``, where ``extra`` is
+    a parameter its caller binds to ``_override_extra(override)``. So the scan
+    saw nothing at all on that file — not the override fields, and not
+    ``decision`` or ``unaccounted`` either — and reported clean.
+
+    The fixture therefore copies the real ``enter.py`` and drops one declaration
+    at a time from a copy of the real schema. A test that removes a declaration
+    and still sees zero findings is the exact false green this class exists to
+    make impossible.
+    """
+
+    #: What ``_book_transit`` writes on ``airlock_in``: two literal keys and the
+    #: three the override helper contributes. Hard-coded rather than read back
+    #: through the scanner under test, which would be circular; pinned against
+    #: the schema below so a sixth field cannot be added silently.
+    WRITTEN_FIELDS = frozenset(
+        {"decision", "unaccounted", "override_seam", "override_attestor", "override_revoked"}
+    )
+
+    def _audit(self, dropped: str | None = None) -> list[str]:
+        """Run the shipped audit over a tree holding the REAL producer source."""
+        import shutil
+
+        from gzkit.governance.trust_audits import audit_producer_fields
+
+        repo = Path(__file__).resolve().parents[1]
+        root = Path(self.enterContext(tempfile.TemporaryDirectory()))
+        package = root / "src" / "gzkit"
+        (package / "airlock").mkdir(parents=True)
+        (package / "schemas").mkdir(parents=True)
+        shutil.copy(repo / "src" / "gzkit" / "airlock" / "enter.py", package / "airlock")
+
+        schema = json.loads(
+            (repo / "src" / "gzkit" / "schemas" / "ledger.json").read_text(encoding="utf-8")
+        )
+        if dropped is not None:
+            del schema["events"]["airlock_in"]["properties"][dropped]
+        (package / "schemas" / "ledger.json").write_text(json.dumps(schema), encoding="utf-8")
+        return [e.artifact for e in audit_producer_fields(root)]
+
+    def test_the_declared_airlock_in_fields_are_the_ones_the_producer_writes(self) -> None:
+        """Pins the roster below, so a new payload field cannot slip past it."""
+        from gzkit.schemas import load_schema
+
+        self.assertEqual(
+            set(load_schema("ledger")["events"]["airlock_in"]["properties"]),
+            set(self.WRITTEN_FIELDS),
+            "airlock_in's declared fields changed; extend WRITTEN_FIELDS and confirm "
+            "the audit still reports each one's removal",
+        )
+
+    def test_the_real_producer_is_clean_against_the_shipped_schema(self) -> None:
+        self.assertEqual(self._audit(), [])
+
+    def test_removing_any_declaration_the_real_producer_writes_is_reported(self) -> None:
+        """The claim the previous two passes made and could not support.
+
+        Each field is dropped from the schema in turn; the audit must name that
+        exact field on that exact producer. ``override_seam`` is the operator's
+        named counterexample — it yielded zero findings before this pass.
+        """
+        for field in sorted(self.WRITTEN_FIELDS):
+            with self.subTest(field=field):
+                self.assertEqual(
+                    self._audit(field),
+                    [f"src/gzkit/airlock/enter.py::airlock_in.{field}"],
+                )

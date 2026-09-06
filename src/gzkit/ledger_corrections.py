@@ -40,7 +40,14 @@ silently wrong for the other.
 from __future__ import annotations
 
 from collections.abc import Iterable, Mapping
+from datetime import UTC, datetime
 from typing import Any
+
+#: The ledger format tag every row carries. Defined HERE, in the module both the
+#: reader and the validator already import, rather than in :mod:`gzkit.ledger`
+#: which re-exports it. One definition, so the envelope check below cannot drift
+#: from the value producers stamp.
+LEDGER_SCHEMA = "gzkit.ledger.v1"
 
 #: The one corrective event. Deliberately not per-subject-type: a family of
 #: typed corrective events would be the point-solution shape this closes.
@@ -122,6 +129,45 @@ def _envelope(event: Any, key: str) -> Any:
     return getattr(event, key, "")
 
 
+def _schema_value(event: Any) -> Any:
+    """Read the ledger-format tag across both serialization shapes.
+
+    Raw JSONL spells it ``schema``; the typed model spells it ``schema_``,
+    because ``schema`` collides with a ``BaseModel`` method. Reading it through
+    :func:`_envelope` would therefore return that bound METHOD on a
+    :class:`~gzkit.ledger.LedgerEvent` — truthy, unequal to the tag, and so a
+    typed correction would fail the envelope check that a raw one passes.
+    """
+    if isinstance(event, Mapping):
+        return event.get("schema", event.get("schema_"))
+    return getattr(event, "schema_", None)
+
+
+def parse_ledger_ts(ts_value: Any) -> datetime | None:
+    """Parse a ledger ``ts`` into an aware datetime, or ``None`` when unusable.
+
+    Returns ``None`` rather than raising for malformed input: a bad timestamp is
+    a finding to report, never an exception that aborts the reader holding it.
+
+    A naive timestamp is read as UTC. Every live row is tz-aware, but comparing
+    a naive datetime against an aware one raises ``TypeError``, which would turn
+    a malformed row into a crash instead of a finding.
+
+    Defined here rather than in the validator so the ONE timestamp contract is
+    shared by everything that judges a ledger row — ``gz validate --ledger``
+    re-exports it, and the envelope check below is the replay-side consumer that
+    made sharing necessary: a correction whose ``ts`` the validator refuses was
+    still voiding its subject at replay.
+    """
+    if not isinstance(ts_value, str) or not ts_value.strip():
+        return None
+    try:
+        parsed = datetime.fromisoformat(ts_value.replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return parsed.replace(tzinfo=UTC) if parsed.tzinfo is None else parsed
+
+
 def subject_key(event: Any) -> SubjectKey:
     """Return the identity of ``event`` itself — what a correction would name.
 
@@ -129,6 +175,27 @@ def subject_key(event: Any) -> SubjectKey:
     is type-strict: an integer ``7`` and the string ``"7"`` are different rows.
     """
     return (_envelope(event, "event"), _envelope(event, "id"), _envelope(event, "ts"))
+
+
+def identity_key(event: Any) -> SubjectKey | None:
+    """Return the HASHABLE identity of ``event``, or ``None`` when it has none.
+
+    :func:`subject_key` reads the triple as it is, so a row carrying ``id: []``
+    yields a tuple no ``set`` or ``dict`` will take. Every reader that indexes
+    rows by identity therefore has to ask whether the row HAS an identity before
+    hashing it, and three of them did not: :func:`_without`, the subject index in
+    ``gz validate --ledger``, and through them
+    :func:`~gzkit.ledger.read_corrected_rows` — whose entire contract is that it
+    must not raise — all died with ``TypeError: unhashable type`` on an ordinary
+    malformed row, corrections absent entirely.
+
+    ``None`` rather than a coerced key: the ledger's identity rule declares all
+    three components ``str``, so a row failing that has no identity to compute,
+    and no well-formed correction can name it. Skipping it from an index is
+    therefore complete as well as safe — never a dropped match.
+    """
+    key = subject_key(event)
+    return key if all(isinstance(part, str) for part in key) else None
 
 
 def corrected_subject(correction: Any) -> SubjectKey:
@@ -161,6 +228,22 @@ def resolve_subject(events: Iterable[Any], key: SubjectKey) -> list[Any]:
     return [event for event in events if subject_key(event) == key]
 
 
+def _has_valid_envelope(event: Any) -> bool:
+    """Report whether ``event`` is a well-formed ledger row at the envelope level.
+
+    The three envelope facts ``gz validate --ledger`` checks on every row before
+    it looks at any payload: the format tag is THIS ledger's, ``id`` is a
+    non-empty string, and ``ts`` parses as ISO8601. ``event`` itself is not
+    re-checked here — :func:`is_correction` has already matched it.
+    """
+    if _schema_value(event) != LEDGER_SCHEMA:
+        return False
+    row_id = _envelope(event, "id")
+    if not isinstance(row_id, str) or not row_id.strip():
+        return False
+    return parse_ledger_ts(_envelope(event, "ts")) is not None
+
+
 def is_well_formed(correction: Any) -> bool:
     """Report whether a correction satisfies its own declared contract.
 
@@ -180,15 +263,29 @@ def is_well_formed(correction: Any) -> bool:
     Type is checked, not just emptiness. Reading these fields through ``str()``
     made ``None``, ``7``, ``False`` and ``{}`` all read as non-empty content, so
     a correction both declared validators refuse still changed derived state.
+
+    The vocabulary reads go through :func:`_text` for a second reason beyond
+    content: ``DISPOSITIONS`` and ``CAUSES`` are frozensets, and testing an
+    unhashable value against one RAISES rather than returning ``False``. A
+    correction carrying ``cause: []`` therefore did not read as malformed — it
+    took down every reader that touched it.
+
+    The ENVELOPE is checked too, not only the payload. A correction is first a
+    ledger row: it carries this ledger's ``schema`` tag, a non-empty ``id``, and
+    a parseable ``ts``. Omitting that check is what let a row ``gz validate
+    --ledger`` rejects go on voiding its subject at replay, which is the split
+    this contract exists to close — the two paths now refuse the same rows.
     """
+    if not _has_valid_envelope(correction):
+        return False
     subject = corrected_subject(correction)
     if not all(isinstance(part, str) and part.strip() for part in subject):
         return False
     if subject[0] == CORRECTION_EVENT:
         return False
-    if _field(correction, "disposition") not in DISPOSITIONS:
+    if _text(correction, "disposition") not in DISPOSITIONS:
         return False
-    if _field(correction, "cause") not in CAUSES:
+    if _text(correction, "cause") not in CAUSES:
         return False
     return bool(_text(correction, "attestor").strip() and _text(correction, "reason").strip())
 
@@ -220,23 +317,58 @@ def correction_state(events: Iterable[Any]) -> dict[SubjectKey, str]:
       correction is reversed by ``reinstated``, never by a second correction
       naming it, so the netting can never need to resolve itself recursively.
 
-    A reference that resolves to no row is NOT filtered here: this function is
-    pure over the sequence it is handed, and a caller holding only a window of
-    the ledger would otherwise drop a correction whose subject sits outside it.
-    The dangling case is refused at the write boundary, where the whole ledger
-    is in hand, and is inert here because nothing matches the key.
+    * one whose subject has not been seen YET at the point the correction
+      appears. A corrective action is appended after the fact it corrects, so a
+      correction standing ahead of its subject in the sequence cannot have been
+      written by ``gz ledger correct``, and applying it lets a row be voided
+      before it exists.
+
+    **Append order is POSITION, never the timestamp.** Two rows may legitimately
+    share a ``ts`` — the ledger holds a byte-identical pair already — so an
+    ordering rule reading timestamps alone accepts a correction that precedes its
+    subject whenever the two are stamped the same instant. It also cannot see the
+    ordering at all when either ``ts`` fails to parse. The sequence handed to
+    this function IS the append order; comparing positions in it needs neither.
+
+    Requiring the subject to have been seen also subsumes the dangling case in
+    the direction that matters, WITHOUT the global knowledge a resolution check
+    would need. A correction whose subject sits outside the window this caller
+    holds nets nothing — which was already true, because nothing in the window
+    matches its key — so a windowed reader is no worse off than before, while a
+    correction inverted against a subject the window DOES contain is now refused.
+    Dangling references are reported by ``gz validate --ledger``, which holds the
+    whole file and can tell "outside my window" from "nowhere at all."
     """
     state: dict[SubjectKey, str] = {}
+    seen: set[SubjectKey] = set()
     for event in events:
-        if not is_correction(event) or not is_well_formed(event):
+        if not is_correction(event):
+            if (key := identity_key(event)) is not None:
+                seen.add(key)
+            continue
+        if not is_well_formed(event):
             continue
         subject = corrected_subject(event)
+        if subject not in seen:
+            continue
         disposition = _text(event, "disposition")
         if disposition in {VOID, DISCHARGED}:
             state[subject] = disposition
         else:  # REINSTATED — the only remaining member of the closed vocabulary
             state.pop(subject, None)
     return state
+
+
+def _disposition(event: Any, state: dict[SubjectKey, str]) -> str | None:
+    """Return the disposition currently in force over ``event``, if any.
+
+    A row with no computable identity (:func:`identity_key` returns ``None``) is
+    uncorrectable rather than corrected: no well-formed correction can name it,
+    so it is never dropped — and, critically, never HASHED, which is what made
+    a single malformed row abort the whole read.
+    """
+    key = identity_key(event)
+    return None if key is None else state.get(key)
 
 
 def _without[EventT](events: Iterable[EventT], dropped: frozenset[str]) -> list[EventT]:
@@ -246,7 +378,7 @@ def _without[EventT](events: Iterable[EventT], dropped: frozenset[str]) -> list[
     return [
         event
         for event in materialized
-        if not is_correction(event) and state.get(subject_key(event)) not in dropped
+        if not is_correction(event) and _disposition(event, state) not in dropped
     ]
 
 

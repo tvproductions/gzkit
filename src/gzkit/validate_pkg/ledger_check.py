@@ -1,7 +1,7 @@
 """Ledger validation for append-only JSONL governance ledger."""
 
 import json
-from datetime import UTC, datetime
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -9,27 +9,24 @@ from pydantic import ValidationError as PydanticValidationError
 
 from gzkit.core.validation_rules import ValidationError
 from gzkit.event_evidence import ObpiReceiptEvidence, pydantic_loc_to_field_path
+from gzkit.ledger_corrections import (
+    CORRECTION_EVENT,
+    SubjectKey,
+    corrected_subject,
+    identity_key,
+    is_correction,
+    is_well_formed,
+    parse_ledger_ts,
+)
 from gzkit.schemas import load_schema
 
-
-def parse_ledger_ts(ts_value: Any) -> datetime | None:
-    """Parse a ledger `ts` into an aware datetime, or None when unusable.
-
-    Returns None rather than raising for malformed input: shape errors are
-    already reported per-row by `_validate_ledger_metadata`, and the ordering
-    check has nothing to say about a timestamp that does not parse.
-
-    A naive timestamp is read as UTC. Every live row is tz-aware, but comparing
-    a naive datetime against an aware one raises TypeError, which would turn a
-    malformed row into a crash instead of a finding.
-    """
-    if not isinstance(ts_value, str) or not ts_value.strip():
-        return None
-    try:
-        parsed = datetime.fromisoformat(ts_value.replace("Z", "+00:00"))
-    except ValueError:
-        return None
-    return parsed.replace(tzinfo=UTC) if parsed.tzinfo is None else parsed
+#: Re-exported so ``gzkit.ledger_merge`` keeps its existing import. The
+#: definition moved to :mod:`gzkit.ledger_corrections` — a stdlib-only leaf both
+#: the validator and the replay netting import — because the two paths judge the
+#: same rows and were judging them by different timestamp contracts: a
+#: correction whose ``ts`` this file refused went on voiding its subject at
+#: replay, which read no timestamp at all.
+__all__ = ["parse_ledger_ts", "validate_ledger"]
 
 
 def _append_ledger_error(
@@ -554,24 +551,35 @@ def _validate_ledger_corrections(
     hand-written — and `gz validate --ledger` is the gate that reads what actually
     landed. Its silence meant such a row sat in the ledger reading as valid.
 
-    **The contract is imported, never restated.** `is_well_formed` and
-    `corrected_subject` come from `gzkit.ledger_corrections`, which is where the
-    netting rule lives. A validator that re-derived "is this correction well
-    formed" would be a second, drifting implementation of the primitive — the
-    per-consumer hand-patching GHI #611 exists to end — and the two copies would
-    disagree at the first amendment to either.
-    """
-    from gzkit.ledger_corrections import (  # noqa: PLC0415 — avoids an import cycle
-        CORRECTION_EVENT,
-        corrected_subject,
-        is_correction,
-        is_well_formed,
-        subject_key,
-    )
+    **The contract is imported, never restated.** `is_well_formed`,
+    `corrected_subject`, `identity_key` and `parse_ledger_ts` all come from
+    `gzkit.ledger_corrections`, which is where the netting rule lives. A
+    validator that re-derived "is this correction well formed" would be a
+    second, drifting implementation of the primitive — the per-consumer
+    hand-patching GHI #611 exists to end — and the two copies would disagree at
+    the first amendment to either. They already had: envelope validity and
+    ordering were checked HERE and nowhere else, so a correction this function
+    rejected still voided its subject at replay.
 
-    subjects = {
-        subject_key(entry): line_no for line_no, entry in entries if not is_correction(entry)
-    }
+    **Order is POSITION in the file, never the timestamp.** The file IS the
+    append order. Comparing timestamps accepted a correction standing ahead of
+    its subject whenever the two shared a `ts` — which the ledger already
+    contains a pair of — and said nothing at all when either failed to parse.
+    Line numbers are exactly the sequence positions `correction_state` counts,
+    so the two paths now agree by construction rather than by coincidence.
+    """
+    #: First appearance wins: a subject repeated later is still, at its earliest
+    #: line, ahead of a correction naming it. `identity_key` skips rows whose
+    #: `(event, id, ts)` triple is not all strings — such a row has no identity
+    #: under this ledger's rule, no well-formed correction can name it, and
+    #: hashing it raised `TypeError` and aborted the whole validation run.
+    subjects: dict[SubjectKey, int] = {}
+    for line_no, entry in entries:
+        if is_correction(entry):
+            continue
+        if (key := identity_key(entry)) is not None:
+            subjects.setdefault(key, line_no)
+
     for line_no, entry in entries:
         if not is_correction(entry):
             continue
@@ -605,18 +613,18 @@ def _validate_ledger_corrections(
                 field="subject_ts",
             )
             continue
-        correction_ts = parse_ledger_ts(entry.get("ts"))
-        subject_ts = parse_ledger_ts(subject[2])
-        if correction_ts is not None and subject_ts is not None and correction_ts < subject_ts:
+        if subject_line > line_no:
             _append_ledger_error(
                 errors,
                 ledger_path,
                 line_no,
-                f"This correction precedes its subject: the correction is stamped "
-                f"{correction_ts.isoformat()} and the row it corrects (line "
-                f"{subject_line}) is stamped {subject_ts.isoformat()}. A corrective "
-                "action is appended AFTER the fact it corrects; a row ordered before "
-                "its subject cannot have been written by `gz ledger correct`.",
+                f"This correction precedes its subject: the correction is at line "
+                f"{line_no} and the row it corrects is at line {subject_line} "
+                f"(stamped {subject[2]}). A corrective action is appended AFTER the "
+                "fact it corrects, so a row standing ahead of its subject cannot have "
+                "been written by `gz ledger correct` — and it is inert at replay, "
+                "which counts the same positions. Re-append the correction at the end "
+                "of the ledger rather than editing either row in place.",
                 field="ts",
             )
 

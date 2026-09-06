@@ -101,6 +101,46 @@ An operator ruling on this would be recorded here and in
   Asserted by
   `tests/test_ledger_correction_consumers.py::VoidedReconcileReceiptsStopCountingAsReceipts::test_an_earlier_receipt_resurfaces_when_the_later_one_is_voided`.
 
+## Which corrections apply at all — one contract, both paths
+
+Choosing a reading is the *second* question. The first is whether a correction
+counts, and every reader answers it identically because they share one
+predicate: `is_well_formed` plus the append-order rule in `correction_state`
+(`gzkit.ledger_corrections`), which `gz validate --ledger` imports rather than
+restates. A correction applies only when **all** of the following hold.
+
+| Requirement | Refused when | Checked by |
+|---|---|---|
+| **Envelope** — this ledger's `schema` tag, a non-empty `id`, a parseable ISO8601 `ts` | a foreign tag, a blank id, `ts: "not-a-date"` | `_has_valid_envelope` |
+| **Payload** — seven `str` fields; `disposition` and `cause` in their closed vocabularies | a wrong type, whitespace-only content, an unknown term | `is_well_formed` |
+| **Subject resolution** — the named `(event, id, ts)` triple exists | nothing carries that identity | `gz validate --ledger` (it holds the whole file) |
+| **Append order** — the subject appears *earlier in the sequence* | the correction stands ahead of the row it names | `correction_state`, and the validator by line number |
+
+Two of these used to live only in the validator, so a correction it **reported**
+still voided its subject at replay — the operator saw the gate fire and the row
+was corrected anyway. That split is the defect; sharing the predicate is the fix.
+
+**Order is position, never the timestamp.** The file *is* the append order. Two
+rows may legitimately share a `ts` — the committed ledger already holds such a
+pair — so a rule comparing timestamps reads an inversion between same-instant
+rows as fine, and says nothing at all when either `ts` fails to parse.
+
+**A malformed row is a finding, never an exception.** Values of the wrong
+*container* type are ordinary malformed input: `cause: []` cannot be tested
+against a frozenset and `id: []` cannot be hashed into a subject index. Both
+raised `TypeError` and took down the reader that existed to report them —
+including the tolerant reader, whose whole contract is that a pipeline gate or
+commit hook must not raise. `identity_key` returns `None` for a row that has no
+identity under the ledger's rule, and such a row is *uncorrectable* rather than
+corrected: no well-formed correction can name it.
+
+Subject resolution is the one requirement replay does **not** enforce, and
+deliberately: a caller holding only a window of the ledger would otherwise drop
+a correction whose subject sits outside it. Requiring the subject to have been
+*seen* covers the harmful half without needing global knowledge — a correction
+whose subject is outside the window nets nothing anyway, because nothing in the
+window carries its key.
+
 ## Known limit
 
 This inventory is a **reading**, not a mechanically enforced partition. Nothing
