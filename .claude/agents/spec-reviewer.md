@@ -1,6 +1,6 @@
 ---
 name: spec-reviewer
-description: Verifies implementation matches plan/brief requirements. Read-only independent review.
+description: Verifies implementation matches plan/brief requirements. Independent review by reading; cannot execute commands (GHI #968).
 tools: Read, Glob, Grep
 model: inherit
 maxTurns: 15

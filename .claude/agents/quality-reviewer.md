@@ -1,6 +1,6 @@
 ---
 name: quality-reviewer
-description: Evaluates code architecture, SOLID, test coverage, maintainability. Read-only independent review.
+description: Evaluates code architecture, SOLID, test coverage, maintainability. Independent review by reading; cannot execute commands (GHI #968).
 tools: Read, Glob, Grep
 model: inherit
 maxTurns: 15
