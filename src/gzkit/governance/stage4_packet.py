@@ -80,6 +80,13 @@ _ELISION_RE = re.compile(r"^(?:#\s*)?(?:\.{2,}|…)$")
 # a blocker and teach authors to route around the check.
 _EMITTED_FAILURE_RE = re.compile(r"^\s*exit[:\s]\s*([1-9]\d*)\s*$", re.IGNORECASE)
 
+# A trailing segment that cannot fail and says nothing. `true`/`:`/`exit 0`
+# replace the witnessed command's status with a constant, and — unlike the
+# sanctioned `echo "exit $?"` probe — emit no status line, so there is nothing
+# for the omitted-status rule to catch. Closed set: these are the shell's
+# no-op successes, not a sample of them.
+_NOOP_SUCCESS_SUFFIXES: frozenset[str] = frozenset({"true", ":", "exit 0"})
+
 _COMMAND_TIMEOUT_SECONDS = 120
 _OUTPUT_TAIL_LINES = 40
 
@@ -108,6 +115,10 @@ class TranscriptResult(BaseModel):
     omitted_failure_lines: list[str] = Field(
         default_factory=list,
         description="Non-zero status lines the command emitted and the packet did not show",
+    )
+    status_suppressor: str | None = Field(
+        default=None,
+        description="Trailing no-op-success segment that discards the witnessed exit status",
     )
     missing_lines: list[str] = Field(..., description="Claimed lines the command did not produce")
     output_tail: str = Field(default="", description="Last lines of the observed output")
@@ -239,6 +250,74 @@ def _run(command: str, project_root: Path) -> tuple[int, str, bool]:
     return proc.returncode, (proc.stdout or "") + (proc.stderr or ""), False
 
 
+def _last_top_level_segment(command: str) -> tuple[str, str | None]:
+    """Split off the final ``;``- or ``||``-joined segment run by the shell itself.
+
+    Quote- and paren-aware, because it must be. 167 of this repository's 2076 packet
+    transcripts contain ``;`` or ``||`` and nearly all of them are ``python -c "a; b"``
+    — a separator inside a quoted program, belonging to that program and not to the
+    shell. A substring match would read those as shell suffixes and block the corpus
+    this module exists to protect.
+    """
+    depth = 0
+    quote: str | None = None
+    index = -1
+    separator: str | None = None
+    i = 0
+    while i < len(command):
+        char = command[i]
+        if quote is not None:
+            if char == "\\" and quote == '"':
+                i += 2
+                continue
+            if char == quote:
+                quote = None
+            i += 1
+            continue
+        if char == "\\":
+            i += 2
+            continue
+        if char in "'\"":
+            quote = char
+        elif char == "(":
+            depth += 1
+        elif char == ")":
+            depth -= 1
+        elif depth == 0 and command.startswith("||", i):
+            index, separator = i, "||"
+            i += 2
+            continue
+        elif depth == 0 and char == ";":
+            index, separator = i, ";"
+        i += 1
+    if separator is None:
+        return command, None
+    return command[index + len(separator) :], separator
+
+
+def _status_suppressing_suffix(command: str) -> str | None:
+    """Return a trailing no-op-success segment that silently discards the status.
+
+    The third escape's own escape. ``; echo "exit $?"`` moves the status out of the
+    process but PRINTS it, so concealing it is visible as an omitted output line.
+    ``; true`` moves the status out of the process and prints nothing: the shell
+    reports 0, no status line is emitted, no pasted line is fabricated, and every
+    other guard reads green. Nothing about the failure survives anywhere.
+
+    Aimed at a suffix that says NOTHING, never at every suffix returning zero. A
+    verdict idiom (``cmd && echo FAIL || echo PASS``) also ends at 0, but its
+    trailing segment prints which branch ran and that line must reproduce under the
+    fabrication guard — it discloses the outcome instead of erasing it.
+    """
+    segment, separator = _last_top_level_segment(command)
+    if separator is None:
+        return None
+    candidate = segment.strip().rstrip(";").strip()
+    if candidate in _NOOP_SUCCESS_SUFFIXES:
+        return f"{separator} {candidate}"
+    return None
+
+
 def _omitted_failure_lines(claimed: list[str], output: str) -> list[str]:
     """Return non-zero status lines the command emitted that the packet did not show.
 
@@ -283,6 +362,7 @@ def _verify_transcript(transcript: Transcript, project_root: Path) -> Transcript
         output_tail=tail,
         masked_verifier=masked_verifier(transcript.command),
         omitted_failure_lines=omitted,
+        status_suppressor=_status_suppressing_suffix(transcript.command),
     )
 
 
@@ -303,6 +383,13 @@ def _blockers(results: list[TranscriptResult], transcripts: list[Transcript]) ->
             blockers.append(
                 f"Trailing filter discards {result.masked_verifier}'s exit status, so the "
                 f"replay observes the filter's success, not the verifier's: {result.command}"
+            )
+        if result.status_suppressor:
+            blockers.append(
+                f"Trailing `{result.status_suppressor}` discards the command's exit "
+                f"status without emitting it, so a failure replays as success and "
+                f"leaves no trace in the output: {result.command}. Drop the suffix, or "
+                'write `<cmd>; echo "exit $?"` so the status itself reproduces.'
             )
         if result.exit_status != 0:
             blockers.append(

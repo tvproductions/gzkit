@@ -193,6 +193,70 @@ class TestExitStatus(unittest.TestCase):
         self.assertEqual(result.transcripts[0].missing_lines, [])
         self.assertTrue(any("exit 1" in b for b in result.blockers))
 
+    def test_a_noop_success_suffix_cannot_swallow_the_failure(self) -> None:
+        # THE OPERATOR-NAMED NEGATIVE CONTROL, and a hole the `echo "exit $?"`
+        # control cannot reach. `; true` differs from the status probe in the one
+        # way that matters: the probe EMITS the status, so omitting it is
+        # detectable in the output. `true` emits nothing, so the shell reports 0,
+        # no status line exists to be omitted, and the failure leaves no trace at
+        # all. Re-checking the probe case proves nothing about this one.
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            body = (
+                "```\n"
+                "$ python3 -c \"import sys; print('ruff: clean'); sys.exit(1)\"; true\n"
+                "ruff: clean\n"
+                "```\n"
+            )
+            result = verify_packet(tmp, _packet(tmp, body))
+        self.assertFalse(result.verified)
+        # The status the shell reports is the suffix's, not the command's — which
+        # is precisely why no other guard fires: nothing here looks like failure.
+        self.assertEqual(result.transcripts[0].exit_status, 0)
+        self.assertEqual(result.transcripts[0].missing_lines, [])
+        self.assertEqual(result.transcripts[0].omitted_failure_lines, [])
+        self.assertTrue(any("true" in b for b in result.blockers), result.blockers)
+
+    def test_every_noop_success_suffix_is_refused_however_it_is_joined(self) -> None:
+        # The class, not the instance. `||` swallows only on failure, which is the
+        # more precisely targeted concealment; `:` is `true` spelled shorter; and
+        # `exit 0` states the lie outright. One rule must reach all of them.
+        for suffix in ("; true", "|| true", "; :", "|| :", "; exit 0"):
+            with self.subTest(suffix=suffix), tempfile.TemporaryDirectory() as td:
+                tmp = Path(td)
+                body = (
+                    "```\n"
+                    f"$ python3 -c \"import sys; print('ok'); sys.exit(1)\" {suffix}\n"
+                    "ok\n"
+                    "```\n"
+                )
+                result = verify_packet(tmp, _packet(tmp, body))
+                self.assertFalse(result.verified, f"{suffix} was accepted")
+
+    def test_a_semicolon_inside_a_quoted_program_is_not_a_shell_suffix(self) -> None:
+        # The false-block this guard must not cause. `python -c "a; true"` holds a
+        # semicolon in PYTHON, inside quotes; 167 of this repo's own 2076 packet
+        # transcripts carry `;` or `||` and nearly all are this shape. A guard that
+        # substring-matches the separator would block the corpus it protects.
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            body = "```\n$ python3 -c \"x = True; print('ok' if x else 'no')\"\nok\n```\n"
+            result = verify_packet(tmp, _packet(tmp, body))
+        self.assertTrue(result.verified, result.blockers)
+
+    def test_a_verdict_idiom_that_discloses_its_branch_is_accepted(self) -> None:
+        # `cmd && echo FAIL || echo PASS` also ends at exit 0, but it is not
+        # concealment: the trailing segment PRINTS which branch ran, and that line
+        # must reproduce under the fabrication guard. The rule is aimed at a suffix
+        # that says nothing, never at every suffix that returns zero.
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            body = (
+                '```\n$ test -f nope.txt && echo "DEFECT" || echo "OK: absent"\nOK: absent\n```\n'
+            )
+            result = verify_packet(tmp, _packet(tmp, body))
+        self.assertTrue(result.verified, result.blockers)
+
     def test_an_elision_cannot_stand_in_for_an_omitted_failure_status(self) -> None:
         # The `...` escape exists for output that cannot reproduce, never for
         # output the author would rather not show. Eliding the status line is
