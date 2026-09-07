@@ -96,7 +96,15 @@ excluded when `--epic` is set. An epic with no members exits 0 with an empty `ad
 
 If an OBPI brief records a `## Tracked Defects` section, the corresponding
 closeout blockers carry those linked `GHI-*` refs so summary drilldowns keep
-defect-level traceability without requiring live GitHub access.
+defect-level traceability. Each ref carries a state: the all-ADR summary never
+resolves it live — one `gh` call per cited GHI across the whole corpus is the
+cost it must not pay — so here every ref renders `(unresolved)` and, when the
+brief authored an `(open)`/`(closed)` token, `(unresolved; brief says open)`.
+An authored token is a dated record of the day the line was written, never the
+defect's truth. The single-ADR drilldown (`gz adr status <ADR-ID>`) and
+`gz obpi status <OBPI-ID>` resolve each ref against live GitHub state and
+render `(open)` / `(closed)`, naming the brief's token beside it when the two
+disagree (GHI #966).
 
 ---
 

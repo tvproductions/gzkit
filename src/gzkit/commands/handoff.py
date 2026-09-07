@@ -23,15 +23,12 @@ from pathlib import Path
 from rich.markup import escape
 
 from gzkit.commands.common import console, get_project_root
+from gzkit.commands.reference_checker import live_reference_checker
 from gzkit.handoff_api import (
     DecisionAttribution,
     HandoffInfo,
     NextStep,
-    ReferenceChecker,
-    ReferenceKind,
-    ReferenceState,
     ResumeResult,
-    StepReference,
     create_handoff,
     list_handoffs,
     resume_handoff,
@@ -47,7 +44,7 @@ from gzkit.remote_divergence import (
     behind_origin_caveat,
     probe_remote_divergence,
 )
-from gzkit.utils import git_cmd, run_exec
+from gzkit.utils import git_cmd
 
 # Required section -> the handoff_create_cmd parameter that fills it. Every
 # REQUIRED_SECTIONS entry MUST appear here: a section with no parameter cannot be
@@ -90,60 +87,6 @@ def handoff_list_cmd(
         return
     for info in infos:
         console.print(f"{info.timestamp}  {info.adr_id}  {info.obpi_id or '-'}  {info.path}")
-
-
-def _gh_issue_state(number: str, project_root: Path) -> ReferenceState:
-    """Resolve one GHI number to a live/settled verdict via the ``gh`` read verb.
-
-    Any failure — ``gh`` absent, unauthenticated, offline, malformed payload —
-    resolves to ``UNKNOWN`` rather than to ``LIVE``. Degrading to "verified"
-    when the check could not run would reintroduce exactly the unverified
-    advisory this adapter exists to catch.
-    """
-    rc, out, _ = run_exec(
-        ["gh", "issue", "view", number, "--json", "state"], project_root, timeout=10
-    )
-    if rc != 0:
-        return ReferenceState.UNKNOWN
-    try:
-        payload = json.loads(out)
-    except json.JSONDecodeError:
-        return ReferenceState.UNKNOWN
-    state = str(payload.get("state", "")).upper() if isinstance(payload, dict) else ""
-    if state == "CLOSED":
-        return ReferenceState.SETTLED
-    if state == "OPEN":
-        return ReferenceState.LIVE
-    return ReferenceState.UNKNOWN
-
-
-def _live_reference_checker(project_root: Path) -> ReferenceChecker:
-    """Adapter: resolve a step's cited references against live state (GHI #696).
-
-    GHI state is read through ``gh``, which is its only Layer-2 surface. OBPI and
-    ADR references resolve to ``UNKNOWN``: their only repo-local index
-    (``adr-status.md``) is a **Layer-3 derived view**, and
-    ``docs/governance/state-doctrine.md`` forbids reading one as truth — an
-    honest UNKNOWN beats a confident answer sourced from a non-authority.
-
-    Results are memoized per reference, and a missing/failing ``gh`` latches the
-    adapter off so an offline resume costs one failed call, not one per citation.
-    """
-    cache: dict[str, ReferenceState] = {}
-    reachable = True
-
-    def check(reference: StepReference) -> ReferenceState:
-        nonlocal reachable
-        if reference.kind is not ReferenceKind.GHI or not reachable:
-            return ReferenceState.UNKNOWN
-        if reference.identifier not in cache:
-            state = _gh_issue_state(reference.identifier, project_root)
-            if state is ReferenceState.UNKNOWN:
-                reachable = False
-            cache[reference.identifier] = state
-        return cache[reference.identifier]
-
-    return check
 
 
 def _render_step_references(step: NextStep) -> None:
@@ -316,7 +259,7 @@ def handoff_resume_cmd(
         adr_id=adr,
         base_path=base_path,
         now=resolved_now,
-        reference_checker=_live_reference_checker(root),
+        reference_checker=live_reference_checker(root),
     )
     if as_json:
         # Deliberately unqualified: `--json` is the ``ResumeResult`` dump, and
@@ -413,7 +356,7 @@ def handoff_create_cmd(
             session_id=session_id,
             base_path=base_path,
             mode=mode,
-            reference_checker=_live_reference_checker(base_path),
+            reference_checker=live_reference_checker(base_path),
         )
     except HandoffValidationError as exc:
         console.print(f"[red]Refusing to write handoff:[/red] {exc}", style="red")

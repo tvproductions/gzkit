@@ -63,7 +63,21 @@ OBPI can still surface `drift` issues when later changes touched its recorded sc
 receipt captured degraded git-sync state.
 When a brief records local `## Tracked Defects` bullets, closeout blockers and
 human-facing issue strings annotate the linked `GHI-*` refs instead of
-collapsing every blocker to the same generic symptom text.
+collapsing every blocker to the same generic symptom text. Each ref's state is
+resolved against live GitHub state through `gh` at render time, never read from
+the brief's own `(open)`/`(closed)` token — that token is a dated record of the
+day the line was written (GHI #966). A resolved ref renders `GHI-737 (closed)`;
+when the brief's token disagrees with live state the token is named beside it,
+in both directions: `GHI-11 (closed; brief says open)` for a GHI closed after
+the line was authored, `GHI-12 (open; brief says closed)` for one reopened. A
+ref that cannot be resolved — `gh` absent, unauthenticated, offline — renders
+`(unresolved)` (or `(unresolved; brief says closed)`), never bare and never as
+live: not having checked is not the same as having checked. Resolution costs
+one `gh` call per distinct GHI cited under the ADR; the first failure switches
+the resolver off for the rest of the run, so an offline drilldown pays one
+failed call. In `--json`, each `tracked_defects[]` entry carries `state`
+(`open` / `closed` / `unresolved`) and `authored_state` (the brief's token, or
+`null`).
 Anchor freshness does not downgrade a completed OBPI back to `pending`; it
 remains `completed` or `attested_completed` while `closeout_blockers` stays
 fail-closed until the anchor issue is reconciled.

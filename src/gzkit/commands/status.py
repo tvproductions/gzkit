@@ -20,6 +20,7 @@ from gzkit.commands.common import (
     resolve_adr_ledger_id,
     resolve_obpi,
 )
+from gzkit.commands.reference_checker import live_reference_checker
 from gzkit.commands.status_obpi import (
     _adr_closeout_readiness,
     _adr_obpi_status_rows,
@@ -392,7 +393,13 @@ def obpi_status_cmd(obpi: str, as_json: bool) -> None:
     ledger = Ledger(project_root / config.paths.ledger)
 
     obpi_id, _obpi_file = resolve_obpi(project_root, config, ledger, obpi)
-    result = _build_obpi_status_entry(project_root, config, ledger, obpi_id)
+    result = _build_obpi_status_entry(
+        project_root,
+        config,
+        ledger,
+        obpi_id,
+        reference_checker=live_reference_checker(project_root),
+    )
     if as_json:
         print(json.dumps(result, indent=2))  # noqa: T201
         return
@@ -406,7 +413,13 @@ def obpi_reconcile_cmd(obpi: str, as_json: bool) -> None:
     ledger = Ledger(project_root / config.paths.ledger)
 
     obpi_id, obpi_file = resolve_obpi(project_root, config, ledger, obpi)
-    result = _build_obpi_status_entry(project_root, config, ledger, obpi_id)
+    result = _build_obpi_status_entry(
+        project_root,
+        config,
+        ledger,
+        obpi_id,
+        reference_checker=live_reference_checker(project_root),
+    )
 
     # Auto-fix OBPI brief frontmatter to match ledger-derived state (ADR-0.0.9-04)
     runtime_state = result.get("runtime_state", "pending")
@@ -500,7 +513,17 @@ def _build_adr_status_result(adr: str) -> dict[str, Any]:
         },
         "observed_post_validation_gate_failures": observed_post_validation_failures,
     }
-    obpi_rows = _adr_obpi_status_rows(project_root, config, ledger, adr_id)
+    # The single-ADR drilldown resolves tracked defects against live state
+    # (GHI #966). The all-ADR summary deliberately does not: at one `gh` call
+    # per cited GHI it would pay for every reference in the corpus, so its rows
+    # carry `unresolved` rather than a state they did not check.
+    obpi_rows = _adr_obpi_status_rows(
+        project_root,
+        config,
+        ledger,
+        adr_id,
+        reference_checker=live_reference_checker(project_root),
+    )
     _apply_pool_adr_status_overrides(adr_id, result)
     result["obpis"] = obpi_rows
     result["withdrawn_obpis"] = sorted(

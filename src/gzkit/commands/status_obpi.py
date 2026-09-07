@@ -28,6 +28,7 @@ from gzkit.commands.status_obpi_inspect import (
     _tracked_defect_refs,
 )
 from gzkit.config import GzkitConfig
+from gzkit.handoff_api import ReferenceChecker
 from gzkit.ledger import (
     Ledger,
     derive_obpi_semantics,
@@ -124,8 +125,15 @@ def _adr_obpi_status_rows(
     ledger: Ledger,
     adr_id: str,
     obpi_index: list[tuple[str, str, Path]] | None = None,
+    reference_checker: ReferenceChecker | None = None,
 ) -> list[dict[str, Any]]:
-    """Build per-OBPI status rows for a target ADR."""
+    """Build per-OBPI status rows for a target ADR.
+
+    ``reference_checker`` resolves each brief's tracked defects against live
+    state (GHI #966). Pass one checker for the whole call so its memo spans
+    every row; pass ``None`` for a view that must not resolve — its rows then
+    carry ``unresolved``, never a state they did not check.
+    """
     obpi_files, expected_obpis = _collect_obpi_files_for_adr(
         project_root, config, ledger, adr_id, obpi_index=obpi_index
     )
@@ -188,7 +196,12 @@ def _adr_obpi_status_rows(
     authored_validator = ObpiValidator(project_root)
     for obpi_id, obpi_file in sorted(obpi_files.items()):
         inspection = _inspect_obpi_brief(
-            project_root, obpi_file, obpi_id=obpi_id, graph=graph, validator=authored_validator
+            project_root,
+            obpi_file,
+            obpi_id=obpi_id,
+            graph=graph,
+            validator=authored_validator,
+            reference_checker=reference_checker,
         )
         rows.append(
             {
@@ -328,8 +341,13 @@ def _build_obpi_status_entry(
     config: GzkitConfig,
     ledger: Ledger,
     obpi_id: str,
+    reference_checker: ReferenceChecker | None = None,
 ) -> dict[str, Any]:
-    """Build enriched runtime status payload for one OBPI."""
+    """Build enriched runtime status payload for one OBPI.
+
+    ``reference_checker`` resolves the brief's tracked defects against live
+    state (GHI #966); ``None`` leaves them ``unresolved``.
+    """
     graph = ledger.get_artifact_graph()
     raw_info = graph.get(obpi_id)
     _resolved_id, obpi_file = resolve_obpi(project_root, config, ledger, obpi_id)
@@ -395,7 +413,9 @@ def _build_obpi_status_entry(
         )
         return result
 
-    inspection = _inspect_obpi_brief(project_root, obpi_file, obpi_id=obpi_id, graph=graph)
+    inspection = _inspect_obpi_brief(
+        project_root, obpi_file, obpi_id=obpi_id, graph=graph, reference_checker=reference_checker
+    )
     result.update(
         {
             "completed": bool(inspection["completed"]),

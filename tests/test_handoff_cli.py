@@ -59,7 +59,7 @@ class _HandoffCliCase(unittest.TestCase):
         # nests its own `mock.patch` over this one.
         self.enterContext(
             mock.patch(
-                "gzkit.commands.handoff._gh_issue_state",
+                "gzkit.commands.reference_checker.gh_issue_state",
                 side_effect=lambda _number, _root: ReferenceState.UNKNOWN,
             )
         )
@@ -234,7 +234,7 @@ class TestHandoffResumeReferenceRendering(_HandoffCliCase):
             next_steps=next_steps,
         )
         with mock.patch(
-            "gzkit.commands.handoff._gh_issue_state",
+            "gzkit.commands.reference_checker.gh_issue_state",
             side_effect=lambda number, _root: states.get(number, ReferenceState.UNKNOWN),
         ):
             return self._capture_console(

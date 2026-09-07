@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from gzkit.governance.brief_structure import is_terminal_brief_status
+from gzkit.handoff_api import ReferenceChecker, ReferenceKind, ReferenceState, StepReference
 from gzkit.ledger import (
     derive_obpi_semantics,
     parse_frontmatter_value,
@@ -189,7 +190,14 @@ def _extract_human_attestation(content: str) -> dict[str, Any]:
 
 
 def _extract_tracked_defects(content: str) -> list[dict[str, Any]]:
-    """Parse brief-local tracked GitHub defects from a dedicated section."""
+    """Parse brief-local tracked GitHub defects from a dedicated section.
+
+    The ``(open)``/``(closed)`` token an author wrote is kept as
+    ``authored_state`` — a dated record of the day the line was written, never
+    the defect's truth. ``state`` starts ``unresolved``; only
+    :func:`_resolve_tracked_defects` may move it, and only from live state
+    (GHI #966). Pure and adapter-free.
+    """
     body = _section_body(content, "Tracked Defects")
     if not body:
         return []
@@ -220,7 +228,7 @@ def _extract_tracked_defects(content: str) -> list[dict[str, Any]]:
             continue
 
         state_match = re.search(r"\((open|closed)\)", candidate, flags=re.IGNORECASE)
-        state = state_match.group(1).lower() if state_match else "unknown"
+        authored_state = state_match.group(1).lower() if state_match else None
         summary_match = re.match(
             r".*?(?:GHI-|#)\d+(?:\s*\((?:open|closed)\))?\s*(?::|-)\s*(?P<summary>.+)$",
             candidate,
@@ -231,7 +239,8 @@ def _extract_tracked_defects(content: str) -> list[dict[str, Any]]:
             {
                 "id": issue_id,
                 "number": int(match.group("number")),
-                "state": state,
+                "state": "unresolved",
+                "authored_state": authored_state,
                 "summary": summary,
             }
         )
@@ -239,15 +248,54 @@ def _extract_tracked_defects(content: str) -> list[dict[str, Any]]:
     return defects
 
 
+_REFERENCE_STATE_LABELS: dict[ReferenceState, str] = {
+    ReferenceState.LIVE: "open",
+    ReferenceState.SETTLED: "closed",
+    ReferenceState.UNKNOWN: "unresolved",
+}
+
+
+def _resolve_tracked_defects(
+    tracked_defects: list[dict[str, Any]], checker: ReferenceChecker | None
+) -> list[dict[str, Any]]:
+    """Resolve each tracked defect's ``state`` from live GitHub state (GHI #966).
+
+    Goes through the ``ReferenceChecker`` port so the view never names the
+    technology behind it. ``UNKNOWN`` stays ``unresolved`` — the port's own
+    contract says it is never a synonym for live — and with no ``checker`` every
+    defect stays ``unresolved``: not having checked is not the same as having
+    checked. The authored token is never promoted to the verdict on either path.
+    """
+    resolved: list[dict[str, Any]] = []
+    for defect in tracked_defects:
+        state = ReferenceState.UNKNOWN
+        if checker is not None:
+            reference = StepReference(kind=ReferenceKind.GHI, identifier=str(defect["number"]))
+            state = checker(reference)
+        resolved.append({**defect, "state": _REFERENCE_STATE_LABELS[state]})
+    return resolved
+
+
 def _tracked_defect_refs(tracked_defects: list[dict[str, Any]]) -> str:
-    """Render one compact tracked-defect reference list."""
+    """Render one compact tracked-defect reference list.
+
+    Every ref carries its resolved state, ``unresolved`` included — a bare ref
+    inside a blockers list reads as live, which is the GHI #966 defect. When the
+    brief's authored token disagrees with the live verdict (or could not be
+    checked against it) the token is named as the brief's claim, so a stale line
+    is visible in both directions rather than silently overwritten or trusted.
+    """
     refs: list[str] = []
     for defect in tracked_defects:
         issue_id = str(defect.get("id", "")).strip()
         if not issue_id:
             continue
-        state = str(defect.get("state", "")).strip().lower()
-        refs.append(f"{issue_id} ({state})" if state and state != "unknown" else issue_id)
+        state = str(defect.get("state", "")).strip().lower() or "unresolved"
+        authored = defect.get("authored_state")
+        annotation = state
+        if authored and authored != state:
+            annotation = f"{state}; brief says {authored}"
+        refs.append(f"{issue_id} ({annotation})")
     return ", ".join(refs)
 
 
@@ -307,6 +355,7 @@ def _inspect_obpi_brief(
     obpi_id: str | None = None,
     graph: dict[str, Any] | None = None,
     validator: "ObpiValidator | None" = None,
+    reference_checker: ReferenceChecker | None = None,
 ) -> dict[str, Any]:
     content = obpi_file.read_text(encoding="utf-8")
     frontmatter_status = (parse_frontmatter_value(content, "status") or "").strip().lower()
@@ -332,7 +381,7 @@ def _inspect_obpi_brief(
     key_proof_body = _resolved_key_proof_body(content)
     key_proof_ok = key_proof_body is not None
     human_attestation = _extract_human_attestation(content)
-    tracked_defects = _extract_tracked_defects(content)
+    tracked_defects = _resolve_tracked_defects(_extract_tracked_defects(content), reference_checker)
     info = graph.get(obpi_id, {}) if obpi_id and graph else {}
     semantics = derive_obpi_semantics(
         info,

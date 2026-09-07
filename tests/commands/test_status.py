@@ -9,6 +9,7 @@ from gzkit.cli import main
 from gzkit.commands.status_render import TABLE_TITLE_FEATURE  # noqa: F401
 from gzkit.config import GzkitConfig
 from gzkit.event_evidence import EventAnchor
+from gzkit.handoff_api import ReferenceState
 from gzkit.ledger import (
     Ledger,
     adr_created_event,
@@ -657,14 +658,26 @@ class TestStatusCommand(unittest.TestCase):
                 errors="replace",
             )
 
-            result = runner.invoke(main, ["obpi", "status", "OBPI-0.1.0-01-demo", "--json"])
+            # Live state contradicts BOTH authored tokens (GHI #966): #11 has
+            # closed since the line was written, #12 was reopened. The view
+            # reports what GitHub says and keeps the authored token beside it.
+            with patch(
+                "gzkit.commands.reference_checker.gh_issue_state",
+                side_effect=lambda number, _root: {
+                    "11": ReferenceState.SETTLED,
+                    "12": ReferenceState.LIVE,
+                }[number],
+            ):
+                result = runner.invoke(main, ["obpi", "status", "OBPI-0.1.0-01-demo", "--json"])
 
             self.assertEqual(result.exit_code, 0)
             payload = json.loads(result.output)
             self.assertEqual(payload["tracked_defects"][0]["id"], "GHI-11")
-            self.assertEqual(payload["tracked_defects"][0]["state"], "open")
+            self.assertEqual(payload["tracked_defects"][0]["state"], "closed")
+            self.assertEqual(payload["tracked_defects"][0]["authored_state"], "open")
             self.assertEqual(payload["tracked_defects"][1]["id"], "GHI-12")
-            self.assertEqual(payload["tracked_defects"][1]["state"], "closed")
+            self.assertEqual(payload["tracked_defects"][1]["state"], "open")
+            self.assertEqual(payload["tracked_defects"][1]["authored_state"], "closed")
             # Anchor is superseded (later commits on top), not stale
             self.assertEqual(payload["anchor_state"], "superseded")
 
@@ -1552,7 +1565,14 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
                 errors="replace",
             )
 
-            result = runner.invoke(main, ["adr", "status", "ADR-0.1.0-f", "--json"])
+            with patch(
+                "gzkit.commands.reference_checker.gh_issue_state",
+                side_effect=lambda number, _root: {
+                    "11": ReferenceState.LIVE,
+                    "12": ReferenceState.SETTLED,
+                }[number],
+            ):
+                result = runner.invoke(main, ["adr", "status", "ADR-0.1.0-f", "--json"])
 
             self.assertEqual(result.exit_code, 0)
             payload = json.loads(result.output)
@@ -1560,6 +1580,116 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
             self.assertEqual(payload["closeout_blockers"], [])
             self.assertEqual(payload["obpis"][0]["anchor_state"], "superseded")
             self.assertEqual(payload["obpis"][0]["tracked_defects"][0]["id"], "GHI-11")
+            self.assertEqual(payload["obpis"][0]["tracked_defects"][0]["state"], "open")
+            # GHI #966: the brief still says (open); live state says closed.
+            self.assertEqual(payload["obpis"][0]["tracked_defects"][1]["state"], "closed")
+            self.assertEqual(payload["obpis"][0]["tracked_defects"][1]["authored_state"], "open")
+
+    def test_adr_status_closeout_blocker_renders_live_defect_state(self) -> None:
+        """A closed GHI must not render as a live tracked defect (GHI #966).
+
+        The reproduction: the brief line carries no state token at all, the
+        GHI closed the day after it was authored, and the closeout blocker
+        rendered the bare ref — indistinguishable from a live defect.
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            _write_obpi(
+                path=obpi_path,
+                status="Active",
+                brief_status="In Progress",
+                implementation_line="src/module.py",
+                tracked_defects=["GHI #737 — folded into this ADR by operator ruling"],
+            )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
+
+            with patch(
+                "gzkit.commands.reference_checker.gh_issue_state",
+                side_effect=lambda number, _root: ReferenceState.SETTLED,
+            ):
+                result = runner.invoke(main, ["adr", "status", "ADR-0.1.0-f", "--json"])
+
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            blockers = [b for b in payload["closeout_blockers"] if "tracked defects" in b]
+            self.assertTrue(blockers, payload["closeout_blockers"])
+            for blocker in blockers:
+                self.assertIn("GHI-737 (closed)", blocker)
+
+    def test_adr_status_unresolvable_defect_renders_unresolved_not_live(self) -> None:
+        """Offline or unauthenticated, the view says it did not check (GHI #966)."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            _write_obpi(
+                path=obpi_path,
+                status="Active",
+                brief_status="In Progress",
+                implementation_line="src/module.py",
+                tracked_defects=["GHI-737 (closed): authored, but nobody can check it now"],
+            )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
+
+            with patch(
+                "gzkit.commands.reference_checker.gh_issue_state",
+                side_effect=lambda number, _root: ReferenceState.UNKNOWN,
+            ):
+                result = runner.invoke(main, ["adr", "status", "ADR-0.1.0-f", "--json"])
+
+            self.assertEqual(result.exit_code, 0)
+            payload = json.loads(result.output)
+            blockers = [b for b in payload["closeout_blockers"] if "tracked defects" in b]
+            self.assertTrue(blockers, payload["closeout_blockers"])
+            for blocker in blockers:
+                self.assertIn("GHI-737 (unresolved; brief says closed)", blocker)
+                self.assertNotIn("GHI-737 (closed)", blocker)
+
+    def test_status_summary_never_resolves_tracked_defects_live(self) -> None:
+        """The all-ADR summary carries refs as `unresolved` and never shells out.
+
+        One `gh` call per cited GHI across the whole corpus is the cost the
+        summary must not pay (GHI #966); only the single-ADR drilldown resolves.
+        """
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            _write_obpi(
+                path=obpi_path,
+                status="Active",
+                brief_status="In Progress",
+                implementation_line="src/module.py",
+                tracked_defects=["GHI-737 (open): still cited"],
+            )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
+
+            with patch("gzkit.commands.reference_checker.gh_issue_state") as gh_state:
+                result = runner.invoke(main, ["status", "--json"])
+
+            self.assertEqual(result.exit_code, 0)
+            gh_state.assert_not_called()
+            payload = json.loads(result.output)
+            entry = payload["adrs"]["ADR-0.1.0-f"]
+            self.assertEqual(entry["obpis"][0]["tracked_defects"][0]["state"], "unresolved")
+            blockers = [b for b in entry["closeout_blockers"] if "tracked defects" in b]
+            self.assertTrue(blockers, entry["closeout_blockers"])
+            for blocker in blockers:
+                self.assertIn("GHI-737 (unresolved; brief says open)", blocker)
 
     def test_adr_status_json_validated(self) -> None:
         runner = CliRunner()

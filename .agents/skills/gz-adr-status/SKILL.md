@@ -80,21 +80,14 @@ never source-of-truth: every fact traces to Layer 1 canon or the Layer 2 ledger,
 `AGENTS.md` § Never #7 binds that distinction. Relay the table; do not promote it to
 evidence for a gate decision.
 
-One arm of it is **known stale today**. The `tracked defects:` annotation on a closeout
-blocker is parsed out of the brief's own prose — an authored `(open)`/`(closed)` token is
-its only state input, and nothing re-resolves it against GitHub. A defect closed after the
-brief line was authored keeps rendering as live, in both directions. Observed 2026-09-06:
-
-```text
-$ uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing
-  - OBPI-0.35.0-10-classification-reader-and-ownership: ledger proof of
-    completion is missing [tracked defects: GHI-737]
-$ gh issue view 737 --json state,closedAt
-  #737 CLOSED closed=2026-08-03T01:26:01Z
-```
-
-Tracked at **GHI #966** (open). Until it lands: re-resolve any `tracked defects:` reference
-against live GitHub before repeating it to the operator as a live defect.
+The `tracked defects:` annotation on a closeout blocker is resolved against live
+GitHub state at render time (GHI #966): `GHI-737 (closed)` is what `gh` said when the
+command ran, and `GHI-11 (closed; brief says open)` means the brief's authored token has
+gone stale in the direction shown. `(unresolved)` means the resolver could not answer —
+`gh` absent, unauthenticated, or offline — and the ref is NOT verified live; do not repeat
+an unresolved ref to the operator as a live defect. The all-ADR summary (`gz status`)
+never resolves live and renders every ref `(unresolved)` by design; drill into the ADR
+for the verdict.
 
 ## References
 

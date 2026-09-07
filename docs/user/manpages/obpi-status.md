@@ -31,9 +31,15 @@ The payload includes:
 - anchor state
 - completion anchor commit and current HEAD
 - anchor-specific issues and recorded drift files when applicable
-- tracked GitHub defect refs parsed from the brief's `## Tracked Defects` section
+- tracked GitHub defect refs parsed from the brief's `## Tracked Defects`
+  section, each resolved against live GitHub state through `gh` — `state` is
+  `open`, `closed`, or `unresolved` (never read from the brief's own
+  `(open)`/`(closed)` token, which is kept separately as `authored_state`;
+  GHI #966)
 - `issue_details`, which preserve the raw fail-closed issue text and append
-  linked `GHI-*` refs for operator-facing output
+  linked `GHI-*` refs with their resolved state for operator-facing output —
+  `GHI-737 (closed)`, `GHI-11 (closed; brief says open)` when the brief's
+  token is stale, `GHI-737 (unresolved)` when `gh` could not answer
 - issue list derived fail-closed from ledger/brief evidence
 
 This command is informational. It exits `0` when the OBPI resolves, even when
