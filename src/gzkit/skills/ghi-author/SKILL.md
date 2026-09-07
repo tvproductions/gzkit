@@ -5,9 +5,9 @@ description: Author a GitHub Issue (GHI) for a defect, enhancement, or investiga
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-08-22
+last_reviewed: 2026-09-07
 metadata:
-  skill-version: "1.4.0"
+  skill-version: "1.5.0"
 model: sonnet
 ---
 
@@ -36,6 +36,15 @@ commits cannot cite it, `fix(<scope>): ... (GHI #N)` trailers cannot form,
 and the ARB receipt chain has no anchor.
 
 ## Doctrine — A GHI's purpose is observation routing, not implementation tracking (binding)
+
+**Invocation boundary (GHI #980).** When this skill is invoked only to record
+an independent discovery during another work order, or the operator requested
+authoring only, create the durable issue, record its eligibility and next-work
+disposition, then return. Do not implement it or author an ADR/OBPI destination
+as a side effect. An eligible but unselected issue is open work, not a technical
+blocker and not a dead letter. This branch takes precedence over the same-session
+execution and destination-authoring instructions below. Those instructions
+apply when resolution of this finding is part of the selected work order.
 
 A GHI exists to **route an observation to a durable governance artifact**.
 Once the finding has been homed in a registered destination (a commit SHA,
@@ -175,6 +184,17 @@ Surface **the brief id, its `status:`, its parent ADR, and the requirement lines
    - The canonical source of truth the output contradicts (file path + line, or rule citation)
    - The class of failure (not just the instance — see `AGENTS.md` § DO IT RIGHT #1)
 
+2a. **Draft the bounded closure contract.** Follow
+   [`ghi-close` § Bounded closure contract](../ghi-close/SKILL.md#bounded-closure-contract-ghi-980):
+   identify the violated invariant, relevant input/state population and
+   consumers, semantic acceptance evidence, and exit condition. A failure
+   class names a mechanism across that population, not every nearby defect.
+   The proposed fix remains a hypothesis; do not prescribe its shape as the
+   acceptance criterion. For an investigation, name the question, bounded
+   evidence population, and deliverable; leave an unknown cause unknown.
+   State uncertainties for the executing agent to resolve during Read rather
+   than turning authoring into an unlimited investigation.
+
 3. **Draft the title.** Format: `<surface>: <symptom>`. Keep under 70 characters; the body carries detail.
 
    | Good | Bad |
@@ -200,6 +220,14 @@ Surface **the brief id, its `status:`, its parent ADR, and the requirement lines
    ## Class of failure
 
    <one sentence: what family of inputs produces this? Not just this instance.>
+
+   ## Closure contract
+
+   - Invariant and authority: <required behavior; for investigation, the question>
+   - Boundary: <inputs/states, producers and consumers tied to the failure mechanism>
+   - Acceptance evidence: <state/input → required outcome → check; valid controls included>
+   - Exit condition: <demonstrated outcome and required gates; for investigation, evidence deliverable>
+   - Known uncertainties / independent findings: <named unknowns and tracked neighbors, or none>
 
    ## Scope hint (advisory, for routing)
 
@@ -230,7 +258,7 @@ Surface **the brief id, its `status:`, its parent ADR, and the requirement lines
 
 6. **Record the issue number** in the session evidence so downstream commits and briefs can cite `(GHI #N)`. If the GHI was filed during an OBPI pipeline run, add it to the brief's evidence section.
 
-7. **Route to a destination, then close.** Per § Doctrine — A GHI's purpose is observation routing, decide whether the finding has a same-session destination:
+7. **Apply the invocation boundary, then route.** For authoring-only or independent-discovery capture, record the created issue's eligibility and next-work disposition and stop; do not invoke the execution rows below. Otherwise, per § Doctrine — A GHI's purpose is observation routing, decide whether the selected finding has a same-session destination:
 
    | Finding shape | Destination | Same-session action |
    |---|---|---|
@@ -239,7 +267,11 @@ Surface **the brief id, its `status:`, its parent ADR, and the requirement lines
    | Bounded planned-increment finding under an existing active ADR | OBPI brief | `gz-obpi-specify` against the parent ADR, then close `superseded` citing the new OBPI ID |
    | No same-session destination yet (genuinely needs operator design conversation) | None yet | Leave the GHI **open** with a blocker comment naming the next concrete operator action — see `ghi-close` § Doctrine — NEVER, EVER, EVER dead-letter a GHI |
 
-   Routing-and-closing is the normal completion path. Filing-and-leaving-open is the exception, not the default. A GHI sitting open without a blocker comment is a tracker waiting for a destination — author the destination or surface the blocker.
+   For a selected resolution work order, routing-and-closing is the normal
+   completion path; name a real blocker when resolution cannot proceed.
+   For capture-only invocations, the durable issue and next-work disposition
+   complete this invocation. Do not invent a blocker to justify leaving
+   unselected work open.
 
 ## Examples
 
@@ -278,7 +310,7 @@ Surface **the brief id, its `status:`, its parent ADR, and the requirement lines
 - **Never author a GHI with the user's personal email in the body, title, or evidence block.** Use GitHub noreply or just a name; see `AGENTS.md` § Local Agent Rules.
 - **Never paraphrase observed output.** Paste verbatim or cite the file:line. Narrative reconstruction is the reporting-pathway drift `AGENTS.md` § DO IT RIGHT 6h exists to prevent.
 - **Never bundle unrelated defects into one GHI.** One GHI, one class of failure. Bundling creates a routing ambiguity the matrix cannot resolve.
-- **Never author a GHI to substitute for fixing something you could fix now.** The Prime Directive #4 (scope expansion is not scope creep) takes precedence — file a GHI only when the fix genuinely cannot land in-patch.
+- **Do not substitute filing for completing the active repair contract.** Fix its failure mechanism and directly coupled correctness surfaces. Track independent discoveries without automatically implementing them; sharing a file or being easy to fix does not make a new finding part of the active work order. Follow `ghi-close`'s evidence-based expansion rule.
 - **Never omit a secondary label whose Step-1 predicate fired.** Missing `runtime` on a runtime-touching GHI silently drops it from `gz patch release` qualification; missing `security` defeats the Gate-5 walkthrough trigger; missing `eval-feedback` breaks the commit-trailer requirement under ADR-0.0.26. Secondary labels are not optional triage hints — they are mechanical inputs to downstream gates.
 - **Never call `gh issue create` outside this skill.** Bypassing `/ghi-author` skips Step 0's prior-art lookup, which is the only defense against sibling-cut duplicates (canonical regression: GHI #459/#460, 2026-05-12). The binding agent rule lives at `AGENTS.md` § Behavior Rules — Always #13; the skill is the mechanical home of the pre-flight. Cross-repo filing goes through `gz issue file`, which itself must run Step 0's pre-flight against the target repository before delegating to `gh issue create`.
 
@@ -309,6 +341,7 @@ These thoughts mean STOP — you are about to produce a low-quality GHI:
 - Body cites `src/gzkit/` paths, `gz <verb>` runtime symptoms, or a `fix(...)` remedy shape but the `gh issue create` invocation omits `--label runtime` — this is the GHI #402 silent-qualifier-drift signature
 - Personal email or other PII in the body
 - Filed as a replacement for a fix that was in-scope and skipped
+- No bounded closure contract, or an acceptance criterion that merely repeats the proposed implementation
 
 ## Related Skills
 

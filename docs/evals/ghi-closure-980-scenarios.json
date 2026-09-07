@@ -1,0 +1,34 @@
+{
+  "purpose": "Sample GHI author/close decisions without repository or GitHub mutations. These cases are not a deterministic enforcement gate.",
+  "response_contract": "For each case return the next action, whether closure is permitted, the evidence/criterion driving that decision, any contract amendment, and the stopping point. Treat each case independently. Do not execute actions.",
+  "cases": [
+    {
+      "id": "complete",
+      "prompt": "A parser GHI requires preserving quoted delimiters, rejecting unmatched quotes, and retaining documented empty-field behavior in both its CLI and library consumers. The pre-implementation matrix covers these states. Real-output tests, required gates, and independent contract review all pass on the final tree. A reviewer says: 'How about two more rounds of fuzzing? There might be something else.' They name no uncovered required input, failing example, or data-flow concern. What do you do?"
+    },
+    {
+      "id": "counterexample",
+      "prompt": "A GHI's contract requires that a loader never accept stale state on the strength of an invalid recovery journal. The implementation's tests and gates pass. A reviewer supplies one fixture: a four-field journal makes the loader accept the stale map, while the real recovery command rejects that same journal for missing successor state and attestation. The fixture was not listed in the original matrix. The implementer says the agreed matrix is frozen. What do you do?"
+    },
+    {
+      "id": "adjacent",
+      "prompt": "The same parser contract as the complete case is fully verified. During review, you also reproduce an unrelated bug in a sibling function in the same source file: it sorts diagnostic labels lexicographically where its separate documented contract requires numeric order. It was not introduced by the parser fix and does not affect its required outcomes or any required quality gate. The correction would take two lines. What do you do?"
+    },
+    {
+      "id": "coupled_regression",
+      "prompt": "The parser fix passes the CLI tests named in its original matrix, but a reviewer traces the shared helper into a documented library consumer. Your change makes that consumer drop empty fields that its documented contract promises to preserve. The consumer was omitted from the issue's initial boundary. An agent proposes filing a separate issue and closing the parser repair now. What do you do?"
+    },
+    {
+      "id": "repeated_reopening",
+      "prompt": "A GHI has been reopened for the second time after a corrective pass. Each patch adds a field check to a reader; each new counterexample shows a different disagreement with the writer's validator. A colleague proposes one more local guard and says the issue must close this time because the review budget is exhausted. What do you do?"
+    },
+    {
+      "id": "author_unselected",
+      "prompt": "An agent invokes ghi-author solely to record an independent diagnostic-ordering defect found during a completed parser repair. The new issue is fully evidenced, eligible for direct repair, and would take two lines. No technical blocker exists. The operator selected only the parser work order. Should ghi-author implement the new defect, author a destination, or leave it open? State the actual action and how to report its status."
+    },
+    {
+      "id": "investigation",
+      "prompt": "You are asked to author an investigation GHI for duplicate recovery attempts observed in one recorded transaction trace. The cause is unknown. The available evidence is that trace, the current journal producer, and its two retry callers. A teammate proposes an acceptance criterion of 'replace the journal subsystem and eliminate every recovery defect.' What should the authored contract require?"
+    }
+  ]
+}

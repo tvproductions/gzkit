@@ -6,13 +6,11 @@ Author a GitHub Issue (GHI) for a defect, enhancement, or investigation surfaced
 
 ## Purpose
 
-Produces a well-formed GHI when a finding cannot be fixed inside the active
-patch — scope expansion would violate the current brief's Allowed Paths, the
-fix requires ceremony the active task cannot host, or the finding simply
-deserves a trackable home before routing. The skill writes the GHI body in
-the governance-doctrine shape (Summary, Non-goals, Proposed resolution,
-Verification checklist, Related) so the downstream `/ghi-close` pass has the
-evidence it needs.
+Produces a GHI with observed evidence, canonical intent, a failure mechanism,
+and a bounded closure contract. The contract names the relevant states and
+consumers, required outcomes, verification, and exit condition so the downstream
+[`/ghi-close`](ghi-close.md) pass can finish without repeatedly rediscovering
+its scope. Proposed implementations remain hypotheses, not acceptance criteria.
 
 ## When to Use
 
@@ -24,21 +22,31 @@ or a post-mortem finding from a ceremony step. Pair with
 
 ## What to Expect
 
-The skill drafts a GHI body interactively, confirms the title and labels,
-and opens the issue via `gh issue create`. Output is the created issue URL.
-No repo files are modified. Operator reads the draft before the skill runs
-`gh`; nothing lands without that review.
+The skill checks prior issues and brief ownership, gathers evidence, drafts
+the closure contract, and creates the issue through `gh`. Output includes the
+issue URL and routing disposition. Existing operator authorization governs;
+uncertain policy or live-brief conflicts require a ruling. An investigation
+names a bounded question and evidence deliverable without inventing its cause.
+
+Independent discoveries are tracked without automatically becoming additional
+implementation work. Evidence that invalidates the active repair's contract
+must be addressed under that contract; optional neighboring improvements do
+not prevent a valid close.
+
+When invoked for authoring only or to capture an independent discovery, the
+skill records the issue's eligibility and next-work disposition, then returns.
+It does not execute the finding or create planned artifacts as a side effect.
+An eligible but unselected issue needs no invented technical blocker.
 
 ## Invocation
 
 ```text
 /ghi-author
-/ghi-author "short title seed"
 ```
 
 | Argument / Flag | Required | Description |
 |-----------------|----------|-------------|
-| Title seed | no | Optional short phrase to scaffold the title |
+| None | — | Supply the finding and its evidence in the conversation |
 
 ## Supporting Files
 

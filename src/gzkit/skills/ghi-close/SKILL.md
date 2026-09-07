@@ -5,9 +5,9 @@ description: Do the work described in a GHI, then close it with verifiable evide
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-08-07
+last_reviewed: 2026-09-07
 metadata:
-  skill-version: "2.7.1"
+  skill-version: "2.8.0"
 model: opus
 ---
 
@@ -38,6 +38,62 @@ The skill is not an evaluator-only surface. If it terminates without
 closing, the reason is a concrete blocker the agent cannot remove
 unilaterally — not a missing pre-existing commit. "No fix landed yet" is
 not an exit condition; it is the *trigger* to author the fix.
+
+### Bounded closure contract (GHI #980)
+
+Before implementation, record the closure contract in the issue body or a
+comment. Read the issue's Expected behavior and canonical intent first; the
+contract makes them testable, never narrows them to what already passes.
+Use these four fields, scaled to the finding:
+
+| Field | Required content |
+|---|---|
+| Invariant | The required behavior and its authority; distinguish the requirement from a proposed implementation |
+| Boundary | Relevant inputs, states, producers and consumers; explain the failure mechanism connecting them |
+| Acceptance | State/input → required outcome → semantic evidence; include valid controls and directly coupled correctness surfaces |
+| Exit | Evidence and required gates that permit the disposition; name unresolved dependencies separately |
+
+For an investigation, record the question, bounded evidence population, and
+deliverable instead of inventing a known cause or requiring a fix. An older
+issue without these fields is completed by the executing agent during Read;
+routine elaboration of settled intent needs no extra operator approval.
+
+**Fix the class within this contract.** Shared filenames, conceptual similarity,
+and the possibility of more tests do not alone make a finding part of the
+repair. Expand when evidence identifies an omitted member of the same failure
+mechanism, an unmet acceptance criterion, or a regression introduced by the
+repair. Record the evidence and contract amendment before continuing; do not
+silently shrink the claim or widen the work. A genuinely new policy choice or
+live-brief conflict still follows the existing operator routing rules.
+
+**Review the contract, not an unlimited neighborhood.** Each blocking review
+finding names the violated criterion (or the canonical obligation omitted
+from it), the counterexample or concrete evidence gap, and the smallest
+relevant verification. A reproduction is preferred, but an identified untested
+required state or contradictory data flow is sufficient to require a focused
+check. "How about two more?" without such a link is not a blocking finding.
+Track independent discoveries through `ghi-author` or `gz insights remember`;
+do not automatically execute them or make them prerequisites for this close.
+Required quality gates remain required, including failures discovered there.
+
+**Finish and stop.** Before closing, independently assess whether the evidence
+satisfies the contract: a reviewer reasons from the required outcomes, rather
+than treating the implementation's tests or receipts as the specification.
+Use an existing review stage or a focused review where appropriate; this adds
+no OBPI ceremony or mandatory additional agent. Re-run verification when a
+change, failure, or unresolved contract claim warrants it. Once the contract,
+review, and required gates pass, close with that evidence and stop this work
+order. Further investigation needs new evidence or another work order.
+
+When the same GHI is reopened again after a corrective pass, reassess the
+contract, shared validation authority, and fixture assumptions before another
+local patch. The new counterexample becomes part of the acceptance matrix;
+repeated reopening is a trigger to change method, never permission to waive
+an unresolved defect or cap the number of necessary repairs.
+
+This is agent-facing procedural guidance, not a runtime enforcement claim.
+Scenario evaluations sample decisions; a filled table, green suite, or passing
+sample cannot establish complete coverage by itself.
 
 ### Doctrine — NEVER, EVER, EVER dead-letter a GHI (binding, top-priority)
 
@@ -207,6 +263,10 @@ to produce one. Fix that instinct.
 
    If a commit exists and fully resolves the GHI, this is the "already-resolved" shape — skip to Phase 3. If the commit is a partial fix, continue to Phase 2 to complete the class-of-failure coverage.
 
+3a. **Establish the bounded closure contract** above before Phase 2. For an
+   already-resolved issue, reconstruct it from the original intent before
+   verifying the existing fix. Do not derive the contract from its passing tests.
+
 ### Phase 2 — Execute
 
 4. **Route the fix.** **Defect remedies are direct fixes — full stop.**
@@ -260,7 +320,7 @@ to produce one. Fix that instinct.
 
    a. **Commit trailer check.** `git log --all --grep="GHI #<N>\|Closes #<N>\|Fixes #<N>"` returns the fix commit(s). Missing trailer is a process defect — amend via a new trailer-bearing commit before continuing.
 
-   b. **Class-of-failure check — enumerate the family, then bind each member to its witness.** Does the fix close the class the GHI body named, or only the specific instance? An instance fix with no coverage of adjacent inputs is `AGENTS.md` § DO IT RIGHT #1 violation — expand the fix or file a follow-up GHI and keep this one open with a parent/child link.
+   b. **Class-of-failure check — verify the contract's family against its witnesses.** Does the fix cover the failure mechanism across the declared inputs, states and consumers? A missing member blocks a `fixed` disposition: amend the contract with the evidence and repair it, or retain an explicit unresolved obligation with a real destination. An independent neighboring finding does not block this issue once its own contract passes. Follow the expansion and stopping rules above.
 
       **Naming tests is not the check.** Write the family out as a list of causes, and for each cause name the test that exercises *that cause*. A cause with no test of its own is uncovered no matter how many tests the fix added — and a family you cannot enumerate is a family you have not verified. Ask the inverse explicitly: *which input in this family does no test drive?* If the answer is "none", say how you determined that; if you cannot enumerate exhaustively, say so and scope the claim to the causes you did cover.
 
@@ -308,6 +368,9 @@ to produce one. Fix that instinct.
 
    **Resolved by:** <commit-sha(s) / ADR-X.Y.Z / OBPI-X.Y.Z-NN / GHI #M>
 
+   **Closure contract:** <invariant, population/consumers, and exit condition>
+   **Contract amendments:** <new evidence and resulting changes, or none>
+
    **Verification:**
    - Tests: <file::TestClass::test_name>  (or "doc-only: no test tier")
    - Observed output: `<command>` → <brief excerpt>
@@ -321,6 +384,9 @@ to produce one. Fix that instinct.
    | <cause 2> | `<file::TestClass::test_name>` |
 
    <one sentence: how you determined the enumeration is exhaustive — or which causes it deliberately does not claim>
+
+   **Review:** <criterion-based findings and their disposition; remaining blockers, or none>
+   **Independent discoveries:** <tracked references that do not block this contract, or none>
    ```
 
    The table is the step-7b answer made checkable: a row with an empty right cell
@@ -341,7 +407,7 @@ to produce one. Fix that instinct.
    )"
    ```
 
-10. **Propagate.** If the GHI was linked from an OBPI brief, ADR evidence section, or `.gzkit/insights/agent-insights.jsonl` entry, update those surfaces to reference the close state.
+10. **Propagate and stop.** Record the close through the permitted surfaces; preserve append-only history and operator-only brief-edit rules. Report references requiring another authorized workflow rather than initiating it. Once accounting and guarded sync finish, stop this work order; do not draw a discovered sibling automatically.
 
 ## Examples
 
@@ -390,7 +456,7 @@ to produce one. Fix that instinct.
 ## Constraints
 
 - **NEVER, EVER, EVER dead-letter a GHI.** A close is valid only when the disposition cites a real, registered destination — commit SHA, registered ADR ID (visible in `gz adr status`), registered OBPI brief ID, or higher-numbered GHI that exists. "Operator should run /gz-design next" / "this should become an ADR" / "re-route to design pipeline" without authoring the destination in the same close action is a dead-letter and is forbidden. If the destination cannot be created in-session, the GHI stays open with a blocker comment naming the next concrete operator action. See § Doctrine — NEVER, EVER, EVER dead-letter a GHI for the binding rule.
-- **Never terminate without closing unless a Phase 2 escalation blocker holds.** "No commit found" is the trigger to author one, not the reason to stop.
+- **Complete the bounded closure contract, then stop.** "No commit found" is the trigger to author one, not an exit condition. An unmet criterion or a Phase 2 escalation blocker remains visible; closure pressure never licenses a false `fixed` disposition or an unbounded neighboring repair.
 - **Never close on a narrative claim.** Cite a commit SHA, ADR ID, brief ID, or receipt ID — every close comment references a verifiable artifact.
 - **Never close with the operator's personal email in the comment.** `AGENTS.md` § Local Agent Rules applies to `gh` comments as much as to commits.
 - **Never use `gh issue close` without a `--comment`.** Silent close corrupts the audit trail.
