@@ -64,6 +64,7 @@ from gzkit.content.ownership import (
     UNOWN_WITNESS_EVENT,
     OwnershipDeclaration,
     OwnershipLoadError,
+    PredecessorDefect,
     SectionCoverage,
     declaration_journal_path,
     declaration_journal_source_path,
@@ -76,6 +77,7 @@ from gzkit.content.ownership import (
     mint_event_id,
     section_coverage,
     sections_digest,
+    stale_predecessor_defect,
     transition_kind,
     unowned_span_total,
     witness_divergence,
@@ -651,6 +653,79 @@ def _refuse_forged_journal(target: _TransactionTarget, defect: str) -> NoReturn:
     sys.exit(2)
 
 
+def _refuse_stale_predecessor(target: _TransactionTarget, defect: PredecessorDefect) -> NoReturn:
+    """Refuse and exit 2: the journal continues a declaration the chain has moved past.
+
+    GHI #978's write-side entry. Separate from `_refuse_forged_journal` because
+    the journal here is NOT malformed and may be entirely genuine -- what fails
+    is the PREDECESSOR's currency, and prose calling the journal "unreadable or
+    malformed" would send an operator to inspect the one artifact that is
+    fine. The two also prescribe different recoveries: a forged journal is
+    diagnosed from the declaration's `floor_event_id` and the ledger together,
+    while this state is repaired by recovering the declaration copy that names
+    the chain's tip.
+
+    IT IS RAISED BEFORE ANY WRITE. The declaration replacement and the ledger
+    append both happen after this point in `_replay_pending_transition`, so the
+    "nothing was written" clause is a fact about where this refusal sits, not a
+    premise about an all-or-nothing write -- the premise `_refuse_forged_journal`
+    had to retract on the declaration path.
+    """
+    journal = target.journal_path.as_posix()
+    source = target.journal_source_path.as_posix()
+    declaration = target.declaration_path.as_posix()
+    aside = (
+        f"move it aside for the record -- `mv {journal} {journal}.superseded` and "
+        f"`mv {source} {source}.superseded` -- rather than deleting it"
+    )
+    if defect.tip_id is None:
+        recovery = (
+            "  The declaration names a witness the chain does not carry, so the ledger "
+            "offers no head to restore toward. Recover a copy whose `floor_event_id` "
+            f"resolves to one of {target.surface!r}'s attested ownership rows -- `git log -- "
+            f"{declaration}` lists this file's revisions, `git checkout <sha> -- {declaration}` "
+            "restores one, and `gz validate --ledger` confirms the row it names is carried. "
+            "The journal continues the id this declaration currently names, so it cannot "
+            f"complete onto a restored copy either: {aside}, and start any further transition "
+            "fresh from the restored declaration. If no such copy survives, or the surface "
+            "carries no attested ownership row at all, that state has NO governed recovery "
+            "today: stop and escalate (GHI #978)."
+        )
+    else:
+        recovery = (
+            "  Two states produce this and they repair DIFFERENT artifacts. (a) The "
+            "declaration was restored or rolled back over the transition(s) above: recover "
+            f"the copy that names {defect.tip_id!r} -- `git log -- {declaration}` lists this "
+            f"file's revisions and `git checkout <sha> -- {declaration}` restores one -- then "
+            f"verify it carries floor {defect.tip_floor!r}. The journal describes a move from "
+            "a floor that copy has already left, so it can NEVER be completed onto it: "
+            f"{aside}, and start any further transition fresh from the restored declaration. "
+            f"(b) No copy naming {defect.tip_id!r} survives: no `gz content` verb re-points a "
+            "declaration at an event already in the ledger -- `own` and `unown` each MINT a "
+            "new transition, chained from the stale floor and map this declaration still "
+            "carries -- so that state has NO governed recovery today: stop and escalate "
+            "(GHI #978)."
+        )
+    print(
+        f"Error: the pending-transition journal {journal!r} continues {declaration!r}, but "
+        f"that declaration is not the current state of {target.surface!r}'s ownership "
+        f"chain: {defect.detail}.\n"
+        "Why forbidden: REQ-0.35.0-04-02 -- an increase is only reachable through the "
+        "attested raise-path, which is a claim about the chain's CURRENT state and never "
+        "about a valid predecessor existing somewhere in it. A journal may FINISH a "
+        "transition, never MINT one: completing this would chain a second witness from a "
+        "floor the chain has already left, forking it, and every later load would then fail "
+        "closed on that fork -- so the run would report success while creating residue no "
+        "`gz content` verb can clear (GHI #978). A valid witness EXISTING behind this floor "
+        "answers 'is something armed', never 'did the governed procedure run' (AGENTS.md "
+        "\u00a7 DO IT RIGHT). NOTHING WAS WRITTEN: the declaration is untouched, no ledger "
+        f"witness was appended, and the journal and its retained source at {source!r} are "
+        f"RETAINED.\n{recovery}",
+        file=sys.stderr,
+    )
+    sys.exit(2)
+
+
 def _apply_unlanded_transition(
     root: Path,
     target: _TransactionTarget,
@@ -658,7 +733,7 @@ def _apply_unlanded_transition(
     on_disk: dict[str, Any],
     surface_text: str,
 ) -> None:
-    """Prove a not-yet-landed journal continues the declaration on disk, then apply it.
+    """Prove a not-yet-landed journal continues the CURRENT declaration, then apply it.
 
     Extracted from `_replay_pending_transition`, which had grown to rank D on the
     xenon ceiling by conflating two responsibilities the reader has to separate
@@ -666,9 +741,17 @@ def _apply_unlanded_transition(
     describes. An auditor asking "can a hand-authored journal move the floor"
     should not have to read the write/rollback machinery to answer it.
 
+    TWO QUESTIONS, NOT ONE (GHI #978's write-side entry). Corroborating the
+    journal against the declaration ON DISK is the first; whether that
+    declaration is the ownership chain's CURRENT state is the second, and it
+    was missing. A VALID PREDECESSOR IS NOT A CURRENT ONE: a self-consistent
+    journal planted over a rolled-back declaration satisfied every check here
+    and minted a competing row from a superseded floor.
+
     Every check here is a REFUSAL that exits; reaching the end means the journal
-    is corroborated by the live declaration and surface, and the DERIVED successor
-    has been written.
+    is corroborated by the live declaration and surface, that declaration is the
+    chain's current state or the one shape a pending journal accounts for, and
+    the DERIVED successor has been written.
     """
     # The predecessor CONSUMED here is the snapshot the derived successor is
     # built from, so its identity is checked before anything is derived. Read
@@ -695,6 +778,18 @@ def _apply_unlanded_transition(
             f"parent_event_id {record['parent_event_id']!r} does not match "
             f"the on-disk floor_event_id ({on_disk.get('floor_event_id')!r})",
         )
+    # ...AND that the declaration it continues is the chain's CURRENT state.
+    # The checks above prove the journal continues the declaration ON DISK; a
+    # VALID predecessor is not a CURRENT one, and extending a superseded floor
+    # mints a competing row rather than finishing an interrupted transition
+    # (GHI #978's write-side entry). Placed here because everything below
+    # DERIVES the successor from this predecessor, so an unusable predecessor
+    # is met by name rather than through whichever later check first notices a
+    # consequence of it -- and because the declaration write at the end of this
+    # function is the first store either branch touches.
+    stale = stale_predecessor_defect(root, target.surface, on_disk.get("floor_event_id"), record)
+    if stale is not None:
+        _refuse_stale_predecessor(target, stale)
     spans = measure_section_spans(surface_text)
     if record["section"] not in spans:
         _refuse_forged_journal(
@@ -1446,10 +1541,12 @@ def _replay_pending_transition(
     it is derived from the same value.
 
     The journal is CRASH-RECOVERY STATE ONLY, never a second write path: every
-    field is proven to CONTINUE the live on-disk predecessor before anything
-    is written, so a hand-forged journal cannot mint a floor raise or an
-    ownership flip that the real `content_unown_cmd` transition never
-    produced (Step-4b adversary finding 2).
+    field is proven to CONTINUE the live on-disk predecessor, AND that
+    predecessor is proven to be the ownership chain's current state, before
+    anything is written -- so a hand-forged journal cannot mint a floor raise
+    or an ownership flip that the real `content_unown_cmd` transition never
+    produced (Step-4b adversary finding 2; GHI #978's write-side entry, which
+    is the half continuing-the-on-disk-predecessor alone did not cover).
     """
     if not target.journal_path.exists():
         # The durability boundary and the orphan sweep this state owes were
@@ -2641,7 +2738,8 @@ def content_unown_cmd(*, surface: str, section: str, attestor: str, reason: str)
     or malformed declaration, an unknown section id, a section that is already
     ``unowned``, or a surface that moved between measurement and commit; 2 on
     IO error writing the declaration or the ledger, on a journal that cannot be
-    proven to continue the declaration on disk, and on a transition whose
+    proven to continue the declaration on disk or whose predecessor is not the
+    ownership chain's current state, and on a transition whose
     source is unreconciled -- including one already witnessed, because a
     durable witness discharges the witness obligation and neither of the other
     two (operator ruling 2026-09-05; Step-4b round-11 finding 1).

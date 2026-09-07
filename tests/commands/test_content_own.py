@@ -30,6 +30,7 @@ from gzkit.content.ownership import (
     OwnershipLoadError,
     load_declaration,
     measure_section_spans,
+    mint_event_id,
     sections_digest,
 )
 from gzkit.governance.events import emit_section_ownership_genesis
@@ -649,6 +650,68 @@ class TestInterruptedOwningIsRecoverableButNotCurrent(unittest.TestCase):
                 "the owning witness is appended exactly once across both runs",
             )
             self.assertFalse(_JOURNAL_PATH.exists())
+
+
+class TestOwningReplayMayNotMintFromAStalePredecessor(unittest.TestCase):
+    """GHI #978, write-side entry -- the owning half of the shared refusal.
+
+    `_apply_unlanded_transition` is imported, not copied, so the check is one
+    piece of code; what differs is the ENTRY POINT, and this file's own history
+    is why that is worth a test rather than an argument. Round-8 finding 1 on
+    this surface was exactly "a binding implemented on the fresh path and left
+    off its twin", and the owning direction reaches the replay through
+    `content_own_cmd`, past a coverage gate the un-owning path does not have.
+    The un-owning matrix lives at
+    `tests/commands/test_content_unown.py::TestReplayMayNotMintFromAStalePredecessor`.
+    """
+
+    def setUp(self) -> None:
+        self._runner = CliRunner()
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_planted_owning_journal_over_a_stale_declaration_writes_nothing(self) -> None:
+        with self._runner.isolated_filesystem():
+            _write_surface(_SEED_SURFACE_TEXT)
+            _seed_declaration(
+                {"doc-title": "corpus-owned", "alpha-section": "unowned", "beta-section": "unowned"}
+            )
+            _seed_corpus(_entry(0, "alpha body line one"), _entry(1, "alpha body line two"))
+            predecessor = _DECLARATION_PATH.read_bytes()
+
+            with patch.object(unown_module, "_clear_recovery_state", lambda target, **_: None):
+                landed = _own(self._runner)
+            self.assertEqual(landed.exit_code, 0, msg=landed.output)
+            (attested,) = _ownership_events()
+            _DECLARATION_PATH.write_bytes(predecessor)
+
+            # A journal for a DIFFERENT owning of the same section from the same
+            # (now superseded) predecessor: wholly self-consistent, and not the
+            # transition the chain already carries.
+            record = json.loads(_JOURNAL_PATH.read_text(encoding="utf-8"))
+            record["reason"] = "a different owning entirely"
+            record["event_id"] = mint_event_id(record, record["parent_event_id"])
+            successor = json.loads(record["declaration_json"])
+            successor["floor_event_id"] = record["event_id"]
+            record["declaration_json"] = json.dumps(successor, indent=2) + "\n"
+            _JOURNAL_PATH.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
+            declaration_before = _DECLARATION_PATH.read_bytes()
+            ledger_before = _LEDGER_PATH.read_bytes()
+            journal_before = _JOURNAL_PATH.read_bytes()
+
+            result = _own(self._runner, reason="a different owning entirely")
+
+            self.assertEqual(result.exit_code, 2, msg=result.output)
+            self.assertEqual(_DECLARATION_PATH.read_bytes(), declaration_before)
+            self.assertEqual(_LEDGER_PATH.read_bytes(), ledger_before)
+            self.assertEqual(_JOURNAL_PATH.read_bytes(), journal_before)
+            self.assertEqual(
+                [event["id"] for event in _ownership_events()],
+                [attested["id"]],
+                "no competing owning row may be minted from the superseded floor",
+            )
+            self.assertIn("is not the current state", result.output)
+            self.assertIn("may FINISH a transition, never MINT one", result.output)
+            self.assertIn(attested["id"], result.output)
 
 
 class TestContentOwnIsSerialized(unittest.TestCase):

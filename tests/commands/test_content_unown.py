@@ -6113,33 +6113,16 @@ if __name__ == "__main__":
     unittest.main()
 
 
-class TestDeclarationRolledBackUnderAPendingJournal(unittest.TestCase):
-    """GHI #979 acceptance matrix -- one fixture, both consumers, per state.
+class _RolledBackUnderAPendingJournal:
+    """The one fixture both consumers of a rolled-back declaration are tested on.
 
-    `_commit_transition` writes the declaration BEFORE the ledger, so the
-    ordinary interruption leaves the declaration ahead of its witness. The
-    reverse interval -- the witness durable and the declaration replacement
-    lost or rolled back while the journal survives -- is reachable too, and it
-    is the one state in which a declaration legitimately TRAILS its chain's
-    tip.
-
-    RECOVERABLE IS NOT CURRENT (operator ruling 2026-09-07). That interval used
-    to EXEMPT the declaration from the chain-tip check, so `load_declaration`
-    returned the stale map and floor as authoritative on the strength of a
-    journal that could still complete the transition. Those are two claims and
-    the second does not follow: an interrupted transition is precisely a
-    declaration that is NOT yet the chain's current state. The journal now
-    selects WHICH RECOVERY THE REFUSAL PRESCRIBES and never whether the state
-    is accepted, and nothing is lost by that -- `load_declaration`'s only
-    production consumer (`_load_declaration_or_exit`) runs AFTER
-    `_replay_pending_transition`, which returns solely when no journal exists.
-
-    Every negative below MUTATES A JOURNAL THE REAL TRANSACTION PATH WROTE,
-    one field at a time, and is asserted through BOTH consumers -- the loader
-    and the real `gz content unown`. A hand-built journal missing six required
-    fields is refused by field-completeness before any relation is reached, so
-    a test built on one witnesses the field check while claiming to witness the
-    relation: that was the shape of the fixture this class replaces.
+    Extracted so the loader matrix below and the write-side matrix that follows
+    it drive the SAME state rather than two hand-built lookalikes. The journal
+    is always the one `_commit_transition` wrote -- only `_clear_recovery_state`
+    is suppressed -- because a hand-built journal missing required fields is
+    refused by field-completeness before any relation is reached, and a test
+    built on one witnesses the field check while claiming to witness the
+    relation.
     """
 
     _JOURNAL = _DECLARATION_PATH.parent / "Doc.md.json.journal"
@@ -6153,10 +6136,6 @@ class TestDeclarationRolledBackUnderAPendingJournal(unittest.TestCase):
 
     def _rolled_back_state(self) -> bytes:
         """Land a witnessed transition, retain its journal, then roll the declaration back.
-
-        The journal is the one `_commit_transition` wrote: only
-        `_clear_recovery_state` is suppressed, so every field is authored by
-        the real transaction path rather than by this fixture.
 
         Returns the predecessor bytes that were restored over the successor.
         """
@@ -6191,6 +6170,41 @@ class TestDeclarationRolledBackUnderAPendingJournal(unittest.TestCase):
         record["declaration_json"] = json.dumps(successor, indent=2) + "\n"
         return record
 
+    def _recovery_exit(self) -> int:
+        return _unown(self._runner, attestor="g0", reason="probe").exit_code
+
+
+class TestDeclarationRolledBackUnderAPendingJournal(
+    _RolledBackUnderAPendingJournal, unittest.TestCase
+):
+    """GHI #979 acceptance matrix -- one fixture, both consumers, per state.
+
+    `_commit_transition` writes the declaration BEFORE the ledger, so the
+    ordinary interruption leaves the declaration ahead of its witness. The
+    reverse interval -- the witness durable and the declaration replacement
+    lost or rolled back while the journal survives -- is reachable too, and it
+    is the one state in which a declaration legitimately TRAILS its chain's
+    tip.
+
+    RECOVERABLE IS NOT CURRENT (operator ruling 2026-09-07). That interval used
+    to EXEMPT the declaration from the chain-tip check, so `load_declaration`
+    returned the stale map and floor as authoritative on the strength of a
+    journal that could still complete the transition. Those are two claims and
+    the second does not follow: an interrupted transition is precisely a
+    declaration that is NOT yet the chain's current state. The journal now
+    selects WHICH RECOVERY THE REFUSAL PRESCRIBES and never whether the state
+    is accepted, and nothing is lost by that -- `load_declaration`'s only
+    production consumer (`_load_declaration_or_exit`) runs AFTER
+    `_replay_pending_transition`, which returns solely when no journal exists.
+
+    Every negative below MUTATES A JOURNAL THE REAL TRANSACTION PATH WROTE,
+    one field at a time, and is asserted through BOTH consumers -- the loader
+    and the real `gz content unown`. A hand-built journal missing six required
+    fields is refused by field-completeness before any relation is reached, so
+    a test built on one witnesses the field check while claiming to witness the
+    relation: that was the shape of the fixture this class replaces.
+    """
+
     def _assert_loader_refuses(self, *, naming: str) -> str:
         """The loader must refuse, and the refusal must name *naming*."""
         with self.assertRaises(OwnershipLoadError) as refused:
@@ -6199,9 +6213,6 @@ class TestDeclarationRolledBackUnderAPendingJournal(unittest.TestCase):
         self.assertIn("not the TIP", message)
         self.assertIn(naming, message)
         return message
-
-    def _recovery_exit(self) -> int:
-        return _unown(self._runner, attestor="g0", reason="probe").exit_code
 
     # ---- legitimate interrupted transaction: recoverable, and NOT current ----
 
@@ -6505,12 +6516,14 @@ class TestDeclarationRolledBackUnderAPendingJournal(unittest.TestCase):
             message = self._assert_loader_refuses(naming="does NOT account for this gap")
             self.assertIn(standing, message)
             self.assertIn("would witness", message)
-            # The second consumer's answer differs here, and deliberately: this
-            # journal IS valid and DOES continue the declaration on disk, so the
-            # command replays it rather than refusing. What that produces, and
-            # why it still cannot make the stale state authoritative, is pinned
-            # by `test_replaying_a_planted_journal_cannot_make_the_stale_state_authoritative`.
-            self.assertEqual(self._recovery_exit(), 0)
+            # BOTH consumers now answer the same way, and that is the repair.
+            # This journal IS valid and DOES continue the declaration on disk,
+            # so the command used to replay it and exit 0 -- minting a second
+            # row from a floor the chain had already moved past. Continuing a
+            # valid predecessor is not continuing a CURRENT one; what the write
+            # side does instead is pinned by
+            # `TestReplayMayNotMintFromAStalePredecessor`.
+            self.assertEqual(self._recovery_exit(), 2)
 
     @covers("REQ-0.35.0-04-02")
     def test_replaying_a_planted_journal_cannot_make_the_stale_state_authoritative(self) -> None:
@@ -6519,17 +6532,22 @@ class TestDeclarationRolledBackUnderAPendingJournal(unittest.TestCase):
         The loader is not the only way a declaration can be written. A journal
         that is wholly self-consistent and continues the on-disk predecessor
         reaches `_apply_unlanded_transition` -- which proves it against the
-        declaration ACTUALLY on disk, and that declaration is the stale one --
-        so the replay mints a transition from the stale floor and writes a
-        successor naming it. If nothing caught that, a planted journal would
-        launder a rolled-back declaration into an accepted one, which is the
-        defect this GHI is about arriving one layer over.
+        declaration ACTUALLY on disk, and that declaration is the stale one.
 
-        It is caught: the minted row claims a predecessor floor the chain does
-        not support, and `_refuse_broken_prefix` fails closed on the fork. What
-        remains is an unloadable declaration beside an orphaned row -- the
-        no-governed-recovery arm GHI #978 already tracks, not a silent
-        authority.
+        WHAT THIS TEST USED TO PIN WAS THE DEFECT (GHI #978, write-side entry).
+        The replay minted a transition from the stale floor, wrote a successor
+        naming it and exited 0; the only thing standing between that and a
+        laundered rollback was `_refuse_broken_prefix` refusing the fork on
+        EVERY subsequent load -- so the command reported success while creating
+        an unloadable declaration beside an orphaned row. Detection downstream
+        of an invalid write is not prevention of it.
+
+        The write side now holds the same claim the loader does: a valid
+        predecessor is not a current one. The refusal is asserted in full by
+        `TestReplayMayNotMintFromAStalePredecessor`; what is pinned HERE is the
+        consequence that motivated this issue -- no second row, and the
+        declaration still loadable-or-not exactly as the rollback left it,
+        never made worse by the run that refused.
         """
         with self._runner.isolated_filesystem():
             self._rolled_back_state()
@@ -6542,13 +6560,19 @@ class TestDeclarationRolledBackUnderAPendingJournal(unittest.TestCase):
 
             replayed = _unown(self._runner, attestor="g0", reason="probe")
 
-            self.assertEqual(replayed.exit_code, 0, msg=replayed.output)
-            minted = [row["id"] for row in self._witnesses()]
-            self.assertEqual(len(minted), 2, "the replay minted a second row from the stale floor")
-            self.assertIn(attested, minted)
+            self.assertEqual(replayed.exit_code, 2, msg=replayed.output)
+            self.assertEqual(
+                [row["id"] for row in self._witnesses()],
+                [attested],
+                "no second row may be minted from the stale floor",
+            )
+            # The refusal leaves the fork UNCREATED, so the state the loader
+            # meets is still the plain rollback -- named by the chain-tip
+            # refusal, never by the broken-prefix one a fork would have caused.
             with self.assertRaises(OwnershipLoadError) as refused:
                 load_declaration(_DECLARATION_PATH, _SURFACE_TEXT, Path.cwd())
-            self.assertIn("its real predecessor", str(refused.exception))
+            self.assertIn("not the TIP", str(refused.exception))
+            self.assertNotIn("its real predecessor", str(refused.exception))
 
     @covers("REQ-0.35.0-04-02")
     def test_a_ledger_row_that_disagrees_with_the_journal_is_not_its_witness(self) -> None:
@@ -6558,6 +6582,13 @@ class TestDeclarationRolledBackUnderAPendingJournal(unittest.TestCase):
         existing-row arm; the read side needs it too, or a row wearing the
         journal's id while describing a different transition would license the
         loader to discard that row's move.
+
+        THE WRITE SIDE NOW MAKES IT EARLIER, and the coupling is asserted here
+        rather than left to reading (GHI #978's write-side entry). This state
+        used to reach `_append_event_once` only AFTER the replay had already
+        rewritten the declaration from the journal; the predecessor-currency
+        check meets it before either store is touched, so the same divergence
+        is reported with nothing written.
         """
         with self._runner.isolated_filesystem():
             self._rolled_back_state()
@@ -6568,12 +6599,262 @@ class TestDeclarationRolledBackUnderAPendingJournal(unittest.TestCase):
             _LEDGER_PATH.write_text(
                 "".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8"
             )
+            stale = _DECLARATION_PATH.read_bytes()
 
             message = self._assert_loader_refuses(naming="disagrees with the")
             # Name the field that diverged, not a bare word: "reason" occurs in
             # this refusal's own boilerplate and would pass on any divergence.
             self.assertIn("on reason --", message)
             self.assertIn("an id already being present is not proof", message)
+
+            refused = _unown(self._runner, attestor="g0", reason="probe")
+
+            self.assertEqual(refused.exit_code, 2, msg=refused.output)
+            self.assertIn("on reason --", refused.output)
+            self.assertEqual(
+                _DECLARATION_PATH.read_bytes(),
+                stale,
+                "the divergence is met BEFORE the declaration is rewritten",
+            )
+
+
+class TestReplayMayNotMintFromAStalePredecessor(_RolledBackUnderAPendingJournal, unittest.TestCase):
+    """GHI #978, write-side entry -- a journal may FINISH a transition, never MINT one.
+
+    GHI #979 made the LOADER hold that the ratchet is a claim about the chain's
+    CURRENT state, not about a valid witness existing somewhere in it. The
+    write side made the narrower claim: `_apply_unlanded_transition` proves a
+    journal continues the declaration ACTUALLY ON DISK -- its floor, its
+    `floor_event_id`, and the successor derived from it byte for byte -- and
+    never asked whether that declaration is the chain's current state. A VALID
+    PREDECESSOR IS NOT A CURRENT ONE, so a wholly self-consistent journal
+    planted over a rolled-back declaration replayed cleanly, minted a second
+    row chained from a floor the chain had already moved past, and EXITED 0 --
+    reporting success while creating the residue.
+
+    The condition is orthogonal to § Recovery Protocol A-D the way state E is:
+    a transition may be in state A and still be extending a stale predecessor.
+    Four dispositions, and only the first two may write:
+
+    | rows standing after the on-disk `floor_event_id` | disposition |
+    |---|---|
+    | none -- the declaration IS the chain tip | ordinary state A; extend it |
+    | exactly this journal's own witness | the witness landed and the
+      declaration replacement did not; re-apply under the SAME id |
+    | any other non-empty set | stale: refuse, write nothing |
+    | the `floor_event_id` is not in the chain at all | currency unprovable:
+      refuse, write nothing |
+
+    Whether a journal accounts for the gap is decided by
+    `ownership._journal_completes_this_gap` -- the SAME authority the loader
+    reads -- so neither consumer can hold a journal to a standard the other
+    does not. That is the drift its own docstring names, arriving on the write
+    side.
+
+    The legitimate halves of this interval are pinned by
+    `TestDeclarationRolledBackUnderAPendingJournal::test_a_valid_journal_prescribes_the_retry_and_does_not_make_the_stale_state_current`
+    (un-owning), `test_content_own.py::TestInterruptedOwningIsRecoverableButNotCurrent`
+    (owning) and `TestRecoveryProtocolStateA` (declaration untouched); what is
+    asserted here is that the refusal writes NOTHING and that its prescribed
+    recovery actually runs (AGENTS.md Invariant 6g).
+    """
+
+    @staticmethod
+    def _bytes_or_absent(path: Path) -> bytes | None:
+        """Content, or None for a file that is not there -- absence is a state too."""
+        return path.read_bytes() if path.exists() else None
+
+    def _persisted(self) -> tuple[bytes | None, ...]:
+        """Every artifact the replay could touch, so no-change is asserted over all of them.
+
+        Read as CONTENT-OR-ABSENCE rather than as existence: a fixture reached
+        through real runs does not always leave a retained source behind, and a
+        helper asserting one exists would then be asserting the fixture rather
+        than the refusal.
+        """
+        return tuple(
+            self._bytes_or_absent(path)
+            for path in (_DECLARATION_PATH, _LEDGER_PATH, self._JOURNAL, self._SNAPSHOT)
+        )
+
+    def _assert_wrote_nothing(self, before: tuple[bytes | None, ...]) -> None:
+        declaration, ledger, journal, snapshot = before
+        self.assertEqual(
+            self._bytes_or_absent(_DECLARATION_PATH),
+            declaration,
+            "the declaration must be untouched",
+        )
+        self.assertEqual(
+            self._bytes_or_absent(_LEDGER_PATH), ledger, "no ledger witness may be appended"
+        )
+        self.assertEqual(self._bytes_or_absent(self._JOURNAL), journal, "the journal is RETAINED")
+        self.assertEqual(
+            self._bytes_or_absent(self._SNAPSHOT),
+            snapshot,
+            "the retained measured source is neither cleared nor rewritten",
+        )
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_planted_journal_over_a_stale_declaration_writes_nothing(self) -> None:
+        """The recorded reproduction, asserted on PERSISTED STATE and not on prose.
+
+        Would pass vacuously if it asserted only the exit code: the defect was
+        exit 0 *plus* a minted row, and a refusal that still wrote the
+        declaration would be the same defect wearing a different status.
+        """
+        with self._runner.isolated_filesystem():
+            self._rolled_back_state()
+            attested = self._witnesses()[0]["id"]
+            self._write_journal(
+                self._remint(
+                    {**self._journal_record(), "reason": "a different transition entirely"}
+                )
+            )
+            before = self._persisted()
+
+            result = _unown(self._runner, attestor="g0", reason="probe")
+
+            self.assertEqual(result.exit_code, 2, msg=result.output)
+            self._assert_wrote_nothing(before)
+            self.assertTrue(
+                self._SNAPSHOT.exists(),
+                "this state HAS a retained source, and a refusal never clears it",
+            )
+            self.assertEqual(
+                [row["id"] for row in self._witnesses()],
+                [attested],
+                "no competing row may be minted from the superseded floor",
+            )
+            self.assertIn("is not the current state", result.output)
+            self.assertIn(attested, result.output)
+            self.assertIn("may FINISH a transition, never MINT one", result.output)
+            self.assertIn("NOT account for that gap", result.output)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_the_refusals_prescribed_recovery_is_executed_and_reaches_a_working_surface(
+        self,
+    ) -> None:
+        """AGENTS.md Invariant 6g -- run, observe, paste. The prose is EXECUTED here.
+
+        A refusal that names a next step re-raising itself is the GHI #976/#978
+        family, so the recovery is followed literally: restore the copy naming
+        the chain tip, move the superseded journal aside, then transact again.
+        Restoring alone is deliberately asserted to be INSUFFICIENT first --
+        the journal still describes a move from a floor the declaration has
+        left behind, so the run refuses until it is moved aside.
+        """
+        with self._runner.isolated_filesystem():
+            self._rolled_back_state()
+            tip_naming_copy = self._journal_record()["declaration_json"]
+            attested = self._witnesses()[0]["id"]
+            self._write_journal(
+                self._remint(
+                    {**self._journal_record(), "reason": "a different transition entirely"}
+                )
+            )
+
+            refusal = _unown(self._runner, attestor="g0", reason="probe")
+            self.assertEqual(refusal.exit_code, 2, msg=refusal.output)
+            self.assertIn("recover the copy that names", refusal.output)
+            self.assertIn("move it aside for the record", refusal.output)
+
+            # Step one of the prescription, alone: not yet enough. The journal
+            # still describes a move from the floor this declaration has left
+            # behind, so the run keeps refusing and keeps the journal.
+            _DECLARATION_PATH.write_text(tip_naming_copy, encoding="utf-8")
+            still_refused = _unown(self._runner, section="doc-title", attestor="g0", reason="x")
+            self.assertEqual(still_refused.exit_code, 2, msg=still_refused.output)
+            self.assertTrue(self._JOURNAL.exists(), "a refused run never clears recovery material")
+
+            # Step two: the superseded journal is moved aside, never deleted.
+            self._JOURNAL.rename(self._JOURNAL.with_name(self._JOURNAL.name + ".superseded"))
+            self._SNAPSHOT.rename(self._SNAPSHOT.with_name(self._SNAPSHOT.name + ".superseded"))
+
+            restored = load_declaration(_DECLARATION_PATH, _SURFACE_TEXT, Path.cwd())
+            self.assertEqual(restored.floor_event_id, attested)
+            self.assertEqual(restored.sections["alpha-section"], "unowned")
+
+            # Step three: a fresh governed transition from the restored state.
+            fresh = _unown(self._runner, section="doc-title", attestor="g0", reason="fresh")
+
+            self.assertEqual(fresh.exit_code, 0, msg=fresh.output)
+            self.assertEqual(
+                [row["id"] for row in self._witnesses()][0],
+                attested,
+                "the attested row is preserved, never rewritten",
+            )
+            self.assertEqual(len(self._witnesses()), 2)
+            reloaded = load_declaration(_DECLARATION_PATH, _SURFACE_TEXT, Path.cwd())
+            self.assertEqual(reloaded.sections["doc-title"], "unowned")
+
+    @covers("REQ-0.35.0-04-02")
+    def test_more_rows_than_one_journal_accounts_for_are_refused(self) -> None:
+        """One journal describes ONE pending transition -- the write side's cut.
+
+        The loader states this at `_journal_completes_this_gap`; asserted here
+        through the command, because a journal whose own witness stands in the
+        chain is the one shape that legitimately trails the tip, and trailing
+        by TWO is not that shape.
+        """
+        with self._runner.isolated_filesystem():
+            self._rolled_back_state()
+            record = self._journal_record()
+            _DECLARATION_PATH.write_text(record["declaration_json"], encoding="utf-8")
+            self._JOURNAL.unlink()
+            second = _unown(self._runner, section="doc-title", attestor="g0", reason="second")
+            self.assertEqual(second.exit_code, 0, msg=second.output)
+            # Roll all the way back to the original predecessor and restore the
+            # first transition's journal over a chain that has moved twice.
+            _seed_declaration(alpha="corpus-owned", floor=_SEED_FLOOR)
+            self._write_journal(record)
+            before = self._persisted()
+
+            result = _unown(self._runner, attestor="g0", reason="probe")
+
+            self.assertEqual(result.exit_code, 2, msg=result.output)
+            self._assert_wrote_nothing(before)
+            self.assertIn("2 rows stand after this declaration", result.output)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_predecessor_absent_from_the_chain_is_refused(self) -> None:
+        """Currency cannot be PROVEN, so it is not assumed.
+
+        The journal and the declaration agree with each other and name an event
+        the surface's chain does not carry. Agreement between two artifacts a
+        planter controls is not evidence about the ledger, and completing here
+        would witness a transition chained to a predecessor that does not
+        exist -- the state `load_declaration` already refuses on the read side.
+        """
+        absent = "section-ownership-unowned-Doc.md-no-such-event"
+        with self._runner.isolated_filesystem():
+            self._rolled_back_state()
+            declaration = json.loads(_DECLARATION_PATH.read_bytes())
+            declaration["floor_event_id"] = absent
+            _DECLARATION_PATH.write_text(json.dumps(declaration), encoding="utf-8")
+            self._write_journal(self._remint({**self._journal_record(), "parent_event_id": absent}))
+            before = self._persisted()
+
+            result = _unown(self._runner, attestor="g0", reason="probe")
+
+            self.assertEqual(result.exit_code, 2, msg=result.output)
+            self._assert_wrote_nothing(before)
+            self.assertIn(absent, result.output)
+            self.assertIn("ownership chain", result.output)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_transition_from_the_current_declaration_still_succeeds(self) -> None:
+        """The control. A tightened write path that refused here would be a regression."""
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            _seed_declaration(alpha="corpus-owned", floor=_SEED_FLOOR)
+
+            result = _unown(self._runner, attestor="g0", reason="ordinary")
+
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            self.assertEqual(len(self._witnesses()), 1)
+            self.assertFalse(self._JOURNAL.exists())
+            reloaded = load_declaration(_DECLARATION_PATH, _SURFACE_TEXT, Path.cwd())
+            self.assertEqual(reloaded.sections["alpha-section"], "unowned")
 
 
 class TestJournalIsClearedOnlyAfterADurableWitness(unittest.TestCase):

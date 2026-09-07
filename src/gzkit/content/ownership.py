@@ -1317,6 +1317,100 @@ def _journal_witness_defect(
     return None
 
 
+class PredecessorDefect(NamedTuple):
+    """Why the declaration a pending journal continues is not the chain's current state.
+
+    *tip_id* and *tip_floor* describe the chain's HEAD when one exists, so a
+    refusal can name the copy an operator has to recover rather than describing
+    it. Both are None when the declaration's witness is not in the chain at all
+    and there is therefore no head to point at.
+    """
+
+    detail: str
+    tip_id: str | None
+    tip_floor: Any
+
+
+def stale_predecessor_defect(
+    root: Path, declared_surface: str, floor_event_id: Any, record: Mapping[str, Any]
+) -> PredecessorDefect | None:
+    """Return why *record* may NOT be replayed onto the declaration on disk, or None.
+
+    GHI #978's write-side entry. `_refuse_superseded_witness` above holds the
+    READ side to the chain's current state; this is the same claim for the ONE
+    other path that can write a declaration -- `commands/content/unown.py`'s
+    journal replay, shared by `gz content own` and `gz content unown`.
+
+    That path proves a journal continues the declaration ACTUALLY ON DISK: its
+    floor, its `floor_event_id`, and the successor derived from it byte for
+    byte. A VALID PREDECESSOR IS NOT A CURRENT ONE, and nothing asked the
+    second question. Measured 2026-09-07 through the real CLI: a wholly
+    self-consistent journal planted over a declaration rolled back behind an
+    attested raise replayed cleanly, minted a SECOND `section_ownership_*` row
+    chained from the superseded floor, and exited 0 reporting
+    `Completed the interrupted un-owning ... floor rose from 26 to 83`. The
+    only thing between that and a laundered rollback was `_refuse_broken_prefix`
+    failing closed on the fork at every LATER load -- detection downstream of an
+    invalid write, never prevention of it. The command reported success while
+    creating the residue, and clearing that residue needs a verb that re-points
+    a declaration at an event already in the ledger, which does not exist
+    (GHI #978's fourth missing mechanism).
+
+    Returns None -- replay may proceed -- in exactly two states:
+
+    * no attested row stands after the on-disk witness, so the declaration IS
+      the chain's tip and the journal extends it (§ Recovery Protocol state A);
+    * the ONE row standing after it is this journal's own witness, proven by
+      `_journal_completes_this_gap`. That is the reverse interval the two-store
+      order makes reachable -- witness durable, declaration replacement lost or
+      rolled back -- and it is the one shape the journal exists to complete, so
+      refusing it would fail closed on legitimate recovery.
+
+    THE GAP QUESTION IS ANSWERED BY THE READ SIDE'S AUTHORITY, never by a
+    second implementation of it: `_journal_completes_this_gap`'s own docstring
+    forbids a second reader holding a journal to a standard the other does not,
+    and that is precisely the drift that produced its four-field acceptance.
+    """
+    chain, _inert = _ownership_chain(Ledger(root / ".gzkit" / "ledger.jsonl"), declared_surface)
+    position = next(
+        (index for index, candidate in enumerate(chain) if candidate.id == floor_event_id),
+        None,
+    )
+    if position is None:
+        # Not "no rows stand after it" -- the witness is not IN the chain, so
+        # its position in it is unknown and currency cannot be proven either
+        # way. A duplicate id cannot reach this arm: `next` finds the first
+        # occurrence, and the second then stands after it, so the ambiguity the
+        # loader refuses at `_refuse_duplicate_chain_ids` refuses here too.
+        return PredecessorDefect(
+            f"its floor_event_id {floor_event_id!r} is not in {declared_surface!r}'s "
+            f"ownership chain ({len(chain)} attested row(s)), so its position in that "
+            "chain -- and therefore whether anything stands after it -- cannot be "
+            "established at all",
+            None,
+            None,
+        )
+    later = chain[position + 1 :]
+    if not later:
+        return None
+    gap_defect = _journal_completes_this_gap(record, declared_surface, chain[position], later)
+    if gap_defect is None:
+        return None
+    listed = ", ".join(
+        f"{row.id!r} ({row.extra.get('prior_unowned_byte_floor')!r} -> "
+        f"{row.extra.get('new_unowned_byte_floor')!r})"
+        for row in later
+    )
+    tip = later[-1]
+    return PredecessorDefect(
+        f"{len(later)} attested transition(s) stand after its floor_event_id "
+        f"{floor_event_id!r}: {listed} -- and the pending-transition journal does "
+        f"NOT account for that gap: {gap_defect}",
+        tip.id,
+        tip.extra.get("new_unowned_byte_floor"),
+    )
+
+
 def _refuse_unwitnessed_section_map(
     path: Path, event: Any, floor_event_id: str, declared_sections: dict[str, str]
 ) -> None:

@@ -313,6 +313,7 @@ starts. Preserve the reported recovery material and follow the named next step.
 | 2 | the ledger witness could not be appended |
 | 2 | the surface changed DURING the un-owning, after the declaration and the witness were both durable |
 | 2 | a pending journal cannot be proven to continue the declaration on disk |
+| 2 | the declaration a pending journal continues is not the CURRENT state of the surface's ownership chain — replaying would mint a competing transition rather than finish an interrupted one |
 | 2 | the surface no longer carries the bytes a pending transition was measured against — recovery state E below |
 | 2 | the transition was witnessed by an EARLIER run and the source is unreconciled — the state D+E pair; the witness stands, the claim of clean completion does not |
 | 2 | THIS transaction's recovery cleanup could not complete — one of its own retained artifacts could not be removed for a reason other than already being gone |
@@ -466,6 +467,31 @@ state means; every refusal names the state its instruction was derived from.
 | D | the ledger carries the transition's `event_id` | clears the journal and the retained material — **only when the source axis is also reconciled** |
 | E | the surface no longer matches the journalled digest | refuses, extracts the retained measured bytes beside the surface, and names the reconciliation |
 | **D+E** | the witness is durable AND the source has moved | **refuses** — the witness is preserved unduplicated, every retained artifact is kept, your edit is untouched, and the exit is non-zero |
+
+**The predecessor's CURRENCY is a second orthogonal condition (GHI #978).** A
+journal is replayed onto the declaration on disk, and every check above proves
+it *continues* that declaration — its floor, its `floor_event_id`, and the
+successor derived from it byte for byte. **A valid predecessor is not a current
+one.** Like `E`, the question cuts across `A`–`D`: a transition in state `A` may
+still be extending a declaration the chain has already moved past, and
+completing it would chain a second witness from a superseded floor — forking the
+chain, so every later load fails closed while the run itself reported success.
+Only two shapes may write: the declaration IS the chain's tip, or the single row
+standing after it is this journal's own witness (the reverse interval `A` exists
+to complete, decided by the same authority the loader reads). Anything else
+refuses before either store is touched:
+
+```console
+$ gz content unown Doc.md --section alpha-section --attestor "g0" --reason "probe"
+Error: the pending-transition journal '.../.gzkit/ownership/Doc.md.json.journal' continues '.../.gzkit/ownership/Doc.md.json', but that declaration is not the current state of 'Doc.md''s ownership chain: 1 attested transition(s) stand after its floor_event_id 'section-ownership-genesis-Doc.md-26': 'section-ownership-unowned-Doc.md-alpha-section-6e99068b77f764bd' (26 -> 83) -- and the pending-transition journal does NOT account for that gap: the pending-transition journal would witness 'section-ownership-unowned-Doc.md-alpha-section-b02ac8490d53e081', not the 'section-ownership-unowned-Doc.md-alpha-section-6e99068b77f764bd' standing after this declaration.
+Why forbidden: REQ-0.35.0-04-02 -- an increase is only reachable through the attested raise-path, which is a claim about the chain's CURRENT state and never about a valid predecessor existing somewhere in it. A journal may FINISH a transition, never MINT one: completing this would chain a second witness from a floor the chain has already left, forking it, and every later load would then fail closed on that fork -- so the run would report success while creating residue no `gz content` verb can clear (GHI #978). A valid witness EXISTING behind this floor answers 'is something armed', never 'did the governed procedure run' (AGENTS.md § DO IT RIGHT). NOTHING WAS WRITTEN: the declaration is untouched, no ledger witness was appended, and the journal and its retained source at '.../.gzkit/ownership/Doc.md.json.journal.source' are RETAINED.
+  Two states produce this and they repair DIFFERENT artifacts. (a) The declaration was restored or rolled back over the transition(s) above: recover the copy that names 'section-ownership-unowned-Doc.md-alpha-section-6e99068b77f764bd' -- `git log -- .../Doc.md.json` lists this file's revisions and `git checkout <sha> -- .../Doc.md.json` restores one -- then verify it carries floor 83. The journal describes a move from a floor that copy has already left, so it can NEVER be completed onto it: move it aside for the record -- `mv .../Doc.md.json.journal .../Doc.md.json.journal.superseded` and `mv .../Doc.md.json.journal.source .../Doc.md.json.journal.source.superseded` -- rather than deleting it, and start any further transition fresh from the restored declaration. (b) No copy naming 'section-ownership-unowned-Doc.md-alpha-section-6e99068b77f764bd' survives: no `gz content` verb re-points a declaration at an event already in the ledger -- `own` and `unown` each MINT a new transition, chained from the stale floor and map this declaration still carries -- so that state has NO governed recovery today: stop and escalate (GHI #978).
+```
+
+**Prevention is not recovery.** The refusal stops the invalid write; it supplies
+no verb for residue already on disk, because none exists — `own` and `unown`
+each MINT a transition and neither can adopt one the ledger already carries.
+Arm (b) says so plainly rather than naming a command that cannot act.
 
 **Three obligations, established separately (operator ruling, 2026-09-05).** A
 transition is *witnessed*, its source is *reconciled*, and its recovery material
