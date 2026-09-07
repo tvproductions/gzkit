@@ -948,3 +948,207 @@ class TestUnownHelpAttributesTheLoweringPath(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestDeclarationDamageRefusalsPrescribeConditionalRecovery(unittest.TestCase):
+    """GHI #978: declaration-damage refusals name a CONDITIONAL recovery, not a command.
+
+    Eight arms of `load_declaration` refuse a declaration that disagrees with
+    the ledger evidence witnessing it. Each used to prescribe either
+    `gz content unown` -- which loads the declaration first and so re-raises
+    the very refusal that named it -- or a hand-edit of the witnessed artifact.
+
+    Restoring the tracked declaration DOES recover these states, but only when
+    the saved copy still agrees with the surviving ledger evidence AND no
+    governed transition has run since it was saved. The second precondition is
+    load-bearing and invisible to the loader: restoring over a governed
+    transition produces a declaration that LOADS while silently reverting an
+    attested raise, so loader success can never stand as proof the recovery
+    was safe. Everything here drives the real loader and the real CLI.
+    """
+
+    def setUp(self) -> None:
+        self._runner = CliRunner()
+
+    def _seed(self) -> int:
+        _write_surface(_SEED_SURFACE_TEXT)
+        return _seed_declaration(
+            {
+                "doc-title": "corpus-owned",
+                "alpha-section": "corpus-owned",
+                "beta-section": "unowned",
+            }
+        )
+
+    def _damage(self, **fields: object) -> None:
+        raw = json.loads(_DECLARATION_PATH.read_text(encoding="utf-8"))
+        raw.update(fields)
+        _DECLARATION_PATH.write_text(json.dumps(raw), encoding="utf-8")
+
+    def _refusal(self) -> str:
+        with self.assertRaises(OwnershipLoadError) as refused:
+            load_declaration(_DECLARATION_PATH, _SEED_SURFACE_TEXT, Path.cwd())
+        return str(refused.exception)
+
+    def _assert_conditional_recovery(self, message: str) -> None:
+        """The recovery is stated with BOTH preconditions and an honest blocker."""
+        self.assertIn("git checkout --", message)
+        self.assertIn("agrees with the ownership events", message)
+        self.assertIn("no governed ownership transition has run", message)
+        self.assertIn("proves neither", message)
+        self.assertIn("NO governed recovery", message)
+        # The circular prescriptions and hand-edits are gone.
+        self.assertNotIn("raise the floor again through", message)
+        self.assertNotIn("raise it again through", message)
+        self.assertNotIn("repoint floor_event_id", message)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_null_pointer_with_surviving_events_states_the_restore_preconditions(self) -> None:
+        with self._runner.isolated_filesystem():
+            self._seed()
+            self._damage(floor_event_id=None)
+            message = self._refusal()
+            self.assertIn("declares floor_event_id null", message)
+            self._assert_conditional_recovery(message)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_an_unresolvable_pointer_no_longer_prescribes_the_verb_that_refuses(self) -> None:
+        with self._runner.isolated_filesystem():
+            self._seed()
+            self._damage(floor_event_id="section-ownership-genesis-Doc.md-absent")
+            message = self._refusal()
+            self.assertIn("resolves to no event", message)
+            self._assert_conditional_recovery(message)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_floor_witness_mismatch_no_longer_prescribes_a_hand_edit(self) -> None:
+        with self._runner.isolated_filesystem():
+            floor = self._seed()
+            self._damage(unowned_byte_floor=floor + 500)
+            message = self._refusal()
+            self.assertIn("resolves to a ledger event recording", message)
+            self.assertNotIn("set unowned_byte_floor back to", message)
+            self._assert_conditional_recovery(message)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_an_out_of_enum_value_no_longer_prescribes_editing_the_declaration(self) -> None:
+        with self._runner.isolated_filesystem():
+            self._seed()
+            raw = json.loads(_DECLARATION_PATH.read_text(encoding="utf-8"))
+            raw["sections"]["alpha-section"] = "partially-owned"
+            _DECLARATION_PATH.write_text(json.dumps(raw), encoding="utf-8")
+            message = self._refusal()
+            self.assertIn("declares ownership value", message)
+            self.assertNotIn("is exactly 'corpus-owned' or 'unowned', then retry", message)
+            self._assert_conditional_recovery(message)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_surface_gained_section_names_the_absent_mechanism_not_a_command(self) -> None:
+        """No `gz content` verb declares a new section, so the prose must say so."""
+        with self._runner.isolated_filesystem():
+            self._seed()
+            _write_surface(_SEED_SURFACE_TEXT + "## Gamma Section\ngamma body\n")
+            with self.assertRaises(OwnershipLoadError) as refused:
+                load_declaration(
+                    _DECLARATION_PATH,
+                    _SEED_SURFACE_TEXT + "## Gamma Section\ngamma body\n",
+                    Path.cwd(),
+                )
+            message = str(refused.exception)
+            self.assertIn("has no ownership declaration", message)
+            self.assertIn("no `gz content` verb declares a new section", message)
+            self.assertIn("stop and escalate", message)
+            # It must not invent a command that does not exist.
+            self.assertNotIn("gz content declare", message)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_surface_dropped_section_names_the_absent_mechanism_not_a_command(self) -> None:
+        with self._runner.isolated_filesystem():
+            self._seed()
+            shrunk = (
+                "# Doc Title\npreamble text under the H1\n"
+                "## Alpha Section\nalpha body line one\nalpha body line two\n"
+            )
+            with self.assertRaises(OwnershipLoadError) as refused:
+                load_declaration(_DECLARATION_PATH, shrunk, Path.cwd())
+            message = str(refused.exception)
+            self.assertIn("absent from the surface", message)
+            self.assertIn("no `gz content` verb removes a declaration entry", message)
+            self.assertIn("stop and escalate", message)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_genesis_absence_is_distinguished_from_a_damaged_pointer(self) -> None:
+        """A null pointer with NO surviving ownership event is a different state."""
+        with self._runner.isolated_filesystem():
+            self._seed()
+            self._damage(floor_event_id=None)
+            message = self._refusal()
+            # Both branches are named, and neither is collapsed into the other.
+            self.assertIn("still carries", message)
+            self.assertIn("no `gz content` verb mints a genesis event", message)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_restoring_over_a_governed_transition_loads_but_reverts_the_attested_raise(
+        self,
+    ) -> None:
+        """Loader success is NOT proof the restore was safe -- the demonstrated case.
+
+        A governed `unown` raises the floor under attestation. Damaging the
+        pointer afterwards and following a bare `git checkout --` yields a
+        declaration the loader ACCEPTS, while the attested transition is
+        reverted in the declaration and its event is left orphaned in the
+        ledger, with nothing refusing. This is why the recovery prose states
+        preconditions rather than naming a command.
+        """
+        with self._runner.isolated_filesystem():
+            env = _isolated_git_env()
+            run = lambda args: subprocess.run(  # noqa: E731
+                ["git", *args],
+                check=True,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                env=env,
+            )
+            run(["init", "."])
+            run(["config", "user.email", "g0@users.noreply.github.com"])
+            run(["config", "user.name", "g0"])
+            seed_floor = self._seed()
+            run(["add", "-A", "-f"])
+            run(["commit", "-m", "declaration witnessed at the seed floor"])
+
+            raised = _unown(self._runner, section="alpha-section")
+            self.assertEqual(raised.exit_code, 0, msg=raised.output)
+            after = load_declaration(_DECLARATION_PATH, _SEED_SURFACE_TEXT, Path.cwd())
+            self.assertEqual(after.sections["alpha-section"], "unowned")
+            self.assertGreater(after.unowned_byte_floor, seed_floor)
+            attested = [
+                e for e in _ownership_events() if e.get("event") == "section_ownership_unowned"
+            ]
+            self.assertEqual(len(attested), 1, "fixture sanity: one attested raise")
+            attested_id = attested[0]["id"]
+
+            self._damage(floor_event_id=None)
+            message = self._refusal()
+            # The prose must warn about exactly this outcome BEFORE it is followed.
+            self.assertIn("silently reverts", message)
+            self.assertIn("orphaned", message)
+
+            run(["checkout", "--", str(_DECLARATION_PATH)])
+
+            # The loader ACCEPTS the restored declaration -- and that is the trap.
+            restored = load_declaration(_DECLARATION_PATH, _SEED_SURFACE_TEXT, Path.cwd())
+            self.assertEqual(
+                restored.sections["alpha-section"],
+                "corpus-owned",
+                "the attested transition was reverted by the restore",
+            )
+            self.assertEqual(restored.unowned_byte_floor, seed_floor)
+            # ...while its attested event survives in the ledger, now orphaned.
+            surviving = [e["id"] for e in _ownership_events()]
+            self.assertIn(
+                attested_id,
+                surviving,
+                "the attested raise is still in the ledger with nothing pointing at it",
+            )

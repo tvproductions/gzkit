@@ -357,6 +357,36 @@ def section_coverage(surface_text: str, corpus: Corpus, section: str) -> Section
     )
 
 
+#: The conditional recovery shared by every declaration-damage refusal (GHI #978).
+#:
+#: Restoring the tracked declaration DOES recover these states -- but only when
+#: the saved copy still agrees with the ownership events surviving in the ledger
+#: AND no governed ownership transition has run since it was saved. The second
+#: precondition is invisible to the loader, which is exactly why it must be
+#: stated: restoring over a governed transition yields a declaration that LOADS
+#: while silently reverting an attested raise and orphaning its event. Naming a
+#: bare command here would prescribe that outcome. Where the preconditions
+#: cannot be established there is no governed recovery today, and the prose says
+#: so rather than inventing a verb.
+_RESTORE_GUIDANCE = (
+    "restore the tracked declaration (`git checkout -- {path}`) and retry -- but "
+    "verify FIRST that the saved copy still agrees with the ownership events "
+    "surviving in the ledger, and that no governed ownership transition has run "
+    "since it was saved. A restored declaration that merely LOADS proves neither: "
+    "restoring over a governed transition silently reverts it, leaving its attested "
+    "`section_ownership_*` event orphaned in the ledger with nothing refusing. If "
+    "the declaration is untracked, if the ledger no longer carries the events it "
+    "names, or if a transition has run since the save, this state has NO governed "
+    "recovery today -- stop and escalate rather than hand-editing the declaration "
+    "or the ledger."
+)
+
+
+def _restore_or_escalate(path: Path) -> str:
+    """Conditional recovery text for a declaration that disagrees with its witness."""
+    return _RESTORE_GUIDANCE.format(path=path.as_posix())
+
+
 def load_declaration(
     path: Path,
     surface_text: str,
@@ -424,8 +454,7 @@ def load_declaration(
             "Why forbidden: REQ-0.35.0-04-01 requires 'sections' to map each "
             "section id to a closed-enum ownership value; a non-object cannot "
             "be cross-checked against the surface.\n"
-            f"Next step: rewrite {path.as_posix()!r} so 'sections' is a JSON "
-            "object of {section-id: 'corpus-owned'|'unowned'}, then retry."
+            f"Next step: {_restore_or_escalate(path)}"
         )
         raise OwnershipLoadError(msg)
 
@@ -437,8 +466,7 @@ def load_declaration(
                 "Why forbidden: REQ-0.35.0-04-01 -- ownership is a closed enum "
                 "of exactly 'corpus-owned' or 'unowned'; there is no undeclared "
                 "third state.\n"
-                f"Next step: edit {path.as_posix()!r} so section {offending_id!r} "
-                "is exactly 'corpus-owned' or 'unowned', then retry."
+                f"Next step: {_restore_or_escalate(path)}"
             )
             raise OwnershipLoadError(msg)
 
@@ -450,8 +478,12 @@ def load_declaration(
             f"but has no ownership declaration in {path.as_posix()!r}.\n"
             "Why forbidden: REQ-0.35.0-04-01 -- an undeclared section is the "
             "silent third state this OBPI exists to remove.\n"
-            f"Next step: add {offending_id!r}: 'corpus-owned' or 'unowned' to "
-            f"the 'sections' map in {path.as_posix()!r}, then retry."
+            f"Next step: if the surface legitimately gained {offending_id!r}, the "
+            "declaration must gain a matching entry -- and no `gz content` verb "
+            "declares a new section today (`own` and `unown` both act on "
+            "already-declared sections), so that state has NO governed recovery: "
+            "stop and escalate (GHI #978). If instead the declaration was edited or "
+            f"truncated, {_restore_or_escalate(path)}"
         )
         raise OwnershipLoadError(msg)
 
@@ -462,8 +494,11 @@ def load_declaration(
             "Why forbidden: a stale declaration for a section id the surface "
             "no longer carries cannot be cross-checked (REQ-0.35.0-04-01 "
             "declared-vs-measured coverage).\n"
-            f"Next step: remove {offending_id!r} from {path.as_posix()!r}, or "
-            "restore the section under that id, then retry."
+            f"Next step: if the surface legitimately dropped {offending_id!r}, the "
+            "declaration must drop its entry -- and no `gz content` verb removes a "
+            "declaration entry today, so that state has NO governed recovery: stop "
+            "and escalate (GHI #978). If instead the declaration was edited, or the "
+            f"section was removed in error, {_restore_or_escalate(path)}"
         )
         raise OwnershipLoadError(msg)
 
@@ -534,9 +569,12 @@ def load_declaration(
             "stored floor agreeing with the summed unowned span -- which an "
             "attacker can simply recompute after hand-editing the "
             "declaration.\n"
-            f"Next step: mint a `section_ownership_genesis` event for "
-            f"{declared_surface!r} (or the appropriate raise event) and set "
-            "floor_event_id to its id, then retry."
+            f"Next step: if the ledger still carries {declared_surface!r}'s "
+            "`section_ownership_*` events, this pointer was damaged rather than "
+            f"never written -- {_restore_or_escalate(path)} If NO ownership event "
+            f"for {declared_surface!r} survives, its floor has never been witnessed "
+            "and no `gz content` verb mints a genesis event today: that state has NO "
+            "governed recovery -- stop and escalate (GHI #978)."
         )
         raise OwnershipLoadError(msg)
 
@@ -551,10 +589,7 @@ def load_declaration(
             "reachable through the attested raise-path, and a floor "
             "chain pointer naming an event that does not exist proves "
             "nothing.\n"
-            "Next step: restore the declaration to a state whose "
-            "floor_event_id resolves in the ledger, or raise the floor "
-            "again through `gz content unown` so it gains a fresh, "
-            "resolvable floor_event_id, then retry."
+            f"Next step: {_restore_or_escalate(path)}"
         )
         raise OwnershipLoadError(msg)
 
@@ -567,10 +602,7 @@ def load_declaration(
             f"{sorted(_OWNERSHIP_EVENT_TYPES)} events may witness a "
             "section-ownership floor; any other event type resolving to "
             "the right id proves nothing about this declaration's floor.\n"
-            "Next step: repoint floor_event_id at a "
-            "section_ownership_genesis, unowned_ratchet_updated, or "
-            "section_ownership_unowned event, or raise the floor again "
-            "through `gz content unown` so it gains one, then retry."
+            f"Next step: {_restore_or_escalate(path)}"
         )
         raise OwnershipLoadError(msg)
 
@@ -602,10 +634,7 @@ def load_declaration(
             "that disagrees with the event it claims to be proven by is "
             "an unattested direct edit (e.g. a hand-raised floor after "
             "the attested event was written).\n"
-            f"Next step: set unowned_byte_floor back to {event_floor!r} "
-            "to match the attested event, or raise it again through "
-            "`gz content unown` so it gains a fresh floor_event_id, then "
-            "retry."
+            f"Next step: {_restore_or_escalate(path)}"
         )
         raise OwnershipLoadError(msg)
 
