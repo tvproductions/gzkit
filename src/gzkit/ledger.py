@@ -9,7 +9,7 @@ import re
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, ClassVar, Literal
+from typing import Any, ClassVar, Literal, NamedTuple
 
 from pydantic import BaseModel, ConfigDict, Field, model_serializer, model_validator
 
@@ -17,11 +17,56 @@ from gzkit.file_lock import exclusive_file_lock
 from gzkit.ledger_corrections import LEDGER_SCHEMA, evidence_events, live_events
 from gzkit.obpi_lifecycle import fold_renames
 
-#: Backward scan block for :meth:`Ledger.discard_trailing_fragment`. A fragment
-#: is a prefix of ONE row, and rows run a few hundred bytes, so the first block
-#: carries the boundary in every realistic case; the loop exists so correctness
-#: does not depend on that.
+#: Backward scan block for :meth:`Ledger.restore_record_boundary`. The trailing
+#: segment is at most ONE row, and rows run a few hundred bytes, so the first
+#: block carries the boundary in every realistic case; the loop exists so
+#: correctness does not depend on that.
 _FRAGMENT_SCAN_BLOCK = 65536
+
+
+class BoundaryRepair(NamedTuple):
+    """What :meth:`Ledger.restore_record_boundary` found past the final newline.
+
+    ``tail_bytes`` is the size of that trailing segment in both non-``intact``
+    cases; ``action`` says what became of it. Keeping them separate is what
+    lets a caller report a DISCARD (bytes destroyed) differently from a
+    TERMINATION (a whole row kept, one separator supplied) without
+    re-deriving which happened.
+    """
+
+    action: Literal["intact", "terminated", "discarded"]
+    tail_bytes: int
+
+
+def _stored_record(text: str) -> dict[str, Any] | None:
+    r"""Return the record *text* holds, or ``None`` for an interrupted append's residue.
+
+    This is the discriminator between *a complete row that lacks its separator*
+    and *a prefix of a row nobody finished*, and for this writer it is a PROOF
+    rather than a convention (GHI #953). :meth:`Ledger.append` writes
+    ``json.dumps(...) + "\n"``, so an interrupted write leaves a proper prefix
+    of a serialized JSON object — and no proper prefix of a JSON object is
+    itself a valid JSON object, because the opening brace closes only at the
+    final one, which no proper prefix contains. A write cut short before that
+    brace therefore cannot pass this test, while a write cut short only between
+    the brace and the newline holds every byte of its record and must survive.
+
+    The test is deliberately the WEAKEST acceptance anything in this module
+    applies — the same ``json.loads``-to-a-``dict`` that
+    :func:`read_corrected_rows` uses, so a row any reader would accept is a row
+    no writer deletes. ``append`` is not the validator: a row that decodes but
+    fails the event schema is a finding for ``gz validate --ledger`` to report,
+    never bytes for a writer to discard.
+    """
+    stripped = text.strip()
+    if not stripped:
+        return None
+    try:
+        parsed = json.loads(stripped)
+    except json.JSONDecodeError:
+        return None
+    return parsed if isinstance(parsed, dict) else None
+
 
 _ADR_SEMVER_RE = re.compile(r"^ADR-(\d+\.\d+\.\d+)(?:-.*)?$")
 _OBPI_BARE_RE = re.compile(r"^OBPI-(\d+\.\d+\.\d+-\d+)(?:-.*)?$")
@@ -296,32 +341,42 @@ class Ledger:
         self._cached_graph = None
         self._replay_manifest = None
 
-    def discard_trailing_fragment(self) -> int:
-        r"""Remove bytes after the final newline; return how many were removed.
+    def restore_record_boundary(self) -> BoundaryRepair:
+        r"""Make the file end on a record boundary without losing a stored row.
 
-        Those bytes are an INTERRUPTED APPEND'S RESIDUE, never a committed row.
-        :meth:`append` writes one newline-terminated line and rolls back on
-        ``OSError``, so every row this ledger ever reported as appended carries
-        its terminator. Bytes past the last ``\n`` are therefore a prefix of a
-        line no writer completed — which is what makes the newline a
-        *verifiable* boundary rather than a heuristic, and why removing them
-        cannot discard anyone's committed work.
+        Bytes past the final newline are one of two different things, and the
+        first cut of this repair conflated them (GHI #953): an INTERRUPTED
+        APPEND'S RESIDUE, which must go, or a COMPLETE RECORD MISSING ONLY ITS
+        SEPARATOR, which must stay. :func:`_stored_record` decides which, by
+        PARSING the segment rather than by reading the writer's newline
+        convention — that convention describes what :meth:`append` emits and
+        proves nothing about bytes already on disk. A last row stored without a
+        trailing newline is what an editor, a ``printf``, a partial restore, or
+        any non-``append`` writer produces, and the ledger is a tracked file
+        such tools reach.
 
-        Only reachable when the process died between the write and the rollback
-        — a kill, a power loss — since an ``OSError`` mid-write is already
-        truncated back by :meth:`append` itself.
+        A complete record is TERMINATED in place rather than merely left alone:
+        the newline it lacks is the boundary every reader here splits on, so
+        supplying it is what makes the row visible to :meth:`read_history` and
+        leaves the file appendable-after. It adds one byte and changes no
+        record's content.
+
+        Reachable when a process died between the write and the rollback — a
+        kill, a power loss — or when something other than :meth:`append` wrote
+        the file, since an ``OSError`` mid-write is already truncated back by
+        :meth:`append` itself.
 
         MUST be called under :func:`~gzkit.file_lock.exclusive_file_lock`: it
-        truncates, and a concurrent appender's bytes would be inside the window
-        it computes. :meth:`append` is the only caller for that reason.
+        writes, and a concurrent appender's bytes would be inside the window it
+        computes. :meth:`append` is the only caller for that reason.
         """
         size = self.path.stat().st_size
         if size == 0:
-            return 0
+            return BoundaryRepair("intact", 0)
         with self.path.open("rb+") as handle:
             handle.seek(size - 1)
             if handle.read(1) == b"\n":
-                return 0
+                return BoundaryRepair("intact", 0)
             boundary = 0
             pos = size
             while pos > 0:
@@ -332,9 +387,20 @@ class Ledger:
                 if index != -1:
                     boundary = pos + index + 1
                     break
+            handle.seek(boundary)
+            tail = handle.read(size - boundary)
+            # ``errors="replace"`` rather than strict, to match
+            # :func:`read_corrected_rows` exactly: the segment is judged by the
+            # most permissive reader in the module, so nothing a reader would
+            # show the operator is deleted by a writer.
+            if _stored_record(tail.decode("utf-8", errors="replace")) is not None:
+                handle.seek(size)
+                handle.write(b"\n")
+                handle.flush()
+                return BoundaryRepair("terminated", size - boundary)
             handle.truncate(boundary)
             handle.flush()
-        return size - boundary
+            return BoundaryRepair("discarded", size - boundary)
 
     def append(self, event: LedgerEvent) -> None:
         """Append an event to the ledger.
@@ -364,15 +430,27 @@ class Ledger:
         line = json.dumps(event.model_dump(), separators=(",", ":")) + "\n"
 
         with exclusive_file_lock(self.path):
-            discarded = self.discard_trailing_fragment()
-            if discarded:
+            repair = self.restore_record_boundary()
+            if repair.action == "discarded":
                 # Reported, never silent: after this append the fragment is gone
                 # and `gz validate --ledger` — which reports it as invalid JSON
                 # while it exists — has nothing left to see. This line is the
                 # only remaining witness that a previous run died mid-write.
                 print(
-                    f"gzkit: recovered {self.path} — discarded {discarded} byte(s) "
-                    "of an interrupted append before the record boundary",
+                    f"gzkit: recovered {self.path} — discarded {repair.tail_bytes} "
+                    "byte(s) of an interrupted append before the record boundary",
+                    file=sys.stderr,
+                )
+            elif repair.action == "terminated":
+                # Nothing was destroyed here, and it is still worth saying: the
+                # file ended mid-record, which means a previous run died between
+                # the write and its newline, or a writer that is not `append`
+                # touched the system-of-record. Both are worth an operator's
+                # attention, and neither leaves any other trace.
+                print(
+                    f"gzkit: recovered {self.path} — supplied the missing final "
+                    f"newline for a complete {repair.tail_bytes}-byte record; "
+                    "no row was discarded",
                     file=sys.stderr,
                 )
 
@@ -455,16 +533,25 @@ class Ledger:
         with self.path.open(encoding="utf-8") as f:
             for raw in f:
                 if not raw.endswith("\n"):
-                    # The unterminated FINAL line, and only it: an interrupted
-                    # append's residue, never a committed row (GHI #953, see
-                    # :meth:`discard_trailing_fragment` for why the newline is a
-                    # verifiable boundary). Skipping is exact rather than
-                    # permissive — every OTHER undecodable line still raises,
-                    # which is this reader's contract. Raising here instead
-                    # wedged the store: `latest_event` reads before any write,
+                    # The unterminated FINAL line. Whether it is a stored row or
+                    # an interrupted append's residue is decided by PARSING it
+                    # (GHI #953, see :func:`_stored_record` for why that is a
+                    # proof), never by the missing terminator: a row can reach
+                    # disk complete and still lack its separator, and dropping
+                    # it here silently hid a row `read_corrected_rows` and
+                    # `validate_ledger` both go on reporting.
+                    #
+                    # Residue is SKIPPED rather than raised, which is what
+                    # unwedged the store: `latest_event` reads before any write,
                     # so a crash-recovery retry died on the fragment before it
-                    # could reach the intact journal that would restore the
-                    # witness, and every subsequent retry died the same way.
+                    # could reach the intact journal holding the witness, and
+                    # every retry died the same way. The skip stays exact — the
+                    # final line, and only when it does not parse; every other
+                    # undecodable line still raises, which is this reader's
+                    # contract.
+                    record = _stored_record(raw)
+                    if record is not None:
+                        events.append(LedgerEvent.parse_stored_row(record))
                     break
                 line = raw.strip()
                 if line:

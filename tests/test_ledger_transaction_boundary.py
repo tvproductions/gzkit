@@ -30,7 +30,8 @@ import threading
 import unittest
 from pathlib import Path
 
-from gzkit.ledger import Ledger, LedgerEvent
+from gzkit.ledger import BoundaryRepair, Ledger, LedgerEvent, read_corrected_rows
+from gzkit.validate_pkg.ledger_check import validate_ledger
 
 #: How long writer A holds the window open for writer B. Unserialized, B needs
 #: microseconds and releases the wait itself; serialized, B cannot run at all
@@ -45,6 +46,20 @@ _SEED = (
 
 def _event(artifact_id: str, ts: str) -> LedgerEvent:
     return LedgerEvent(event="adr_created", id=artifact_id, ts=ts)
+
+
+def _stored_line(artifact_id: str, ts: str) -> str:
+    """One record exactly as ``append`` serializes it, WITHOUT its terminator.
+
+    Built from ``LedgerEvent`` rather than hand-written JSON so the fixture
+    cannot drift from what the writer actually emits — the claim under test is
+    about a record this store really produces, not about a string an author
+    thought it produced. ``lane`` is carried because ``adr_created`` requires
+    it, which is what lets the coherence test below assert that
+    ``validate_ledger`` reports NOTHING against the row the reader was dropping.
+    """
+    event = LedgerEvent(event="adr_created", id=artifact_id, ts=ts, lane="lite")
+    return json.dumps(event.model_dump(), separators=(",", ":"))
 
 
 def _ids_on_disk(path: Path) -> list[str]:
@@ -220,7 +235,7 @@ class TestTrailingFragmentRecovery(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             path = self._seeded(tmp, "")
 
-            self.assertEqual(Ledger(path).discard_trailing_fragment(), 0)
+            self.assertEqual(Ledger(path).restore_record_boundary(), BoundaryRepair("intact", 0))
             self.assertEqual(_ids_on_disk(path), ["SEED"])
 
     def test_a_file_that_is_entirely_a_fragment_is_emptied_not_half_kept(self) -> None:
@@ -229,9 +244,9 @@ class TestTrailingFragmentRecovery(unittest.TestCase):
             path = Path(tmp) / "ledger.jsonl"
             path.write_text('{"schema":"gzkit.ledger', encoding="utf-8")
 
-            discarded = Ledger(path).discard_trailing_fragment()
+            repair = Ledger(path).restore_record_boundary()
 
-            self.assertEqual(discarded, 23)
+            self.assertEqual(repair, BoundaryRepair("discarded", 23))
             self.assertEqual(path.read_text(encoding="utf-8"), "")
 
     def test_recovery_is_reported_rather_than_silent(self) -> None:
@@ -308,6 +323,194 @@ class TestTrailingFragmentRecovery(unittest.TestCase):
 
             self.assertEqual(_ids_on_disk(path), ["SEED", "AFTER"])
             self.assertEqual([event.id for event in Ledger(path).read_history()], ["SEED", "AFTER"])
+
+
+class TestACompleteRecordMissingItsSeparatorIsNotResidue(unittest.TestCase):
+    """GHI #953 regression — the writer's convention proved nothing about stored bytes.
+
+    The first cut of the fragment repair read *bytes past the final newline* as
+    *an interrupted append*, on the reasoning that ``append`` terminates every
+    row it writes. That is true of rows ``append`` wrote and says nothing about
+    a file an editor, a ``printf``, a partial restore, or a crash between the
+    closing brace and the newline left behind. A complete, schema-valid row
+    stored without its separator was therefore invisible to ``read_history``
+    and DELETED by the next ``append`` — while ``validate_ledger`` and
+    ``read_corrected_rows`` both went on reporting it, so no surface said the
+    row had gone.
+
+    The discriminator is now the parse, which is exact for this writer: an
+    interrupted write leaves a proper prefix of a serialized JSON object, and no
+    proper prefix of a JSON object parses as one.
+    """
+
+    def _ledger_containing(self, tmp: str, text: str) -> Path:
+        path = Path(tmp) / "ledger.jsonl"
+        path.write_text(text, encoding="utf-8")
+        return path
+
+    def test_a_lone_complete_record_without_its_newline_survives_append(self) -> None:
+        """A one-row file whose only row lacks a terminator loses that row.
+
+        This is the smallest possible instance and the worst: the whole ledger
+        was replaced by the row being appended.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            stored = _stored_line("ADR-0.1.0-only", "2026-01-01T00:00:00+00:00")
+            path = self._ledger_containing(tmp, stored)
+
+            Ledger(path).append(_event("ADR-0.9.0-new", "2026-01-05T00:00:00+00:00"))
+
+            self.assertEqual(_ids_on_disk(path), ["ADR-0.1.0-only", "ADR-0.9.0-new"])
+
+    def test_a_complete_record_without_its_newline_after_earlier_rows_survives_append(
+        self,
+    ) -> None:
+        """The same loss with history in front of it, which is the live shape.
+
+        A real ledger is thousands of rows; the one at risk is whichever was
+        written last. Asserting only the single-row file would leave the
+        backward scan for the record boundary unexercised.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            first = _stored_line("ADR-0.1.0-first", "2026-01-01T00:00:00+00:00")
+            last = _stored_line("ADR-0.2.0-last", "2026-01-02T00:00:00+00:00")
+            path = self._ledger_containing(tmp, f"{first}\n{last}")
+
+            Ledger(path).append(_event("ADR-0.9.0-new", "2026-01-05T00:00:00+00:00"))
+
+            self.assertEqual(
+                _ids_on_disk(path),
+                ["ADR-0.1.0-first", "ADR-0.2.0-last", "ADR-0.9.0-new"],
+            )
+
+    def test_the_file_is_left_parseable_row_by_row_after_append(self) -> None:
+        """Every row must stand alone afterwards, terminator included.
+
+        Preserving the row's BYTES while welding the next one onto it would
+        satisfy an id census and still corrupt the store, so the check is that
+        each line decodes on its own and the file ends on a boundary.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            stored = _stored_line("ADR-0.1.0-only", "2026-01-01T00:00:00+00:00")
+            path = self._ledger_containing(tmp, stored)
+
+            Ledger(path).append(_event("ADR-0.9.0-new", "2026-01-05T00:00:00+00:00"))
+
+            text = path.read_text(encoding="utf-8")
+            self.assertTrue(text.endswith("\n"))
+            lines = text.splitlines()
+            self.assertEqual(len(lines), 2)
+            for line in lines:
+                self.assertIsInstance(json.loads(line), dict)
+
+    def test_every_reader_agrees_about_a_complete_record_missing_its_newline(
+        self,
+    ) -> None:
+        """The defect was a DISAGREEMENT between readers, and that is what is fixed.
+
+        ``validate_ledger`` and ``read_corrected_rows`` split on lines and saw
+        the row; ``read_history`` skipped it. A row the validator reports as
+        clean while the strict reader denies it exists is the state that let the
+        writer delete it without any surface objecting.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            stored = _stored_line("ADR-0.1.0-only", "2026-01-01T00:00:00+00:00")
+            path = self._ledger_containing(tmp, stored)
+
+            self.assertEqual(validate_ledger(path), [])
+            self.assertEqual([row["id"] for row in read_corrected_rows(path)], ["ADR-0.1.0-only"])
+            self.assertEqual(
+                [event.id for event in Ledger(path).read_history()],
+                ["ADR-0.1.0-only"],
+            )
+
+    def test_the_repair_supplies_the_separator_rather_than_dropping_the_row(self) -> None:
+        """Named at the repair itself, so the outcome cannot be inferred from a byte count.
+
+        ``discarded`` and ``terminated`` differ in what they do to the file, not
+        in how many bytes they looked at — asserting the count alone would pass
+        for either.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            stored = _stored_line("ADR-0.1.0-only", "2026-01-01T00:00:00+00:00")
+            path = self._ledger_containing(tmp, stored)
+
+            repair = Ledger(path).restore_record_boundary()
+
+            self.assertEqual(repair, BoundaryRepair("terminated", len(stored)))
+            self.assertEqual(path.read_text(encoding="utf-8"), f"{stored}\n")
+
+    def test_a_truncated_record_is_still_discarded(self) -> None:
+        """The control on the repair: preserving everything is the opposite failure.
+
+        A guard that answered "keep it" unconditionally would pass every test
+        above. What separates the two cases is the parse, so the fixture here is
+        a genuine PREFIX of the same record the sibling tests store whole.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            first = _stored_line("ADR-0.1.0-first", "2026-01-01T00:00:00+00:00")
+            partial = _stored_line("ADR-0.2.0-last", "2026-01-02T00:00:00+00:00")[:60]
+            path = self._ledger_containing(tmp, f"{first}\n{partial}")
+
+            repair = Ledger(path).restore_record_boundary()
+
+            self.assertEqual(repair, BoundaryRepair("discarded", len(partial)))
+            self.assertEqual(_ids_on_disk(path), ["ADR-0.1.0-first"])
+
+    def test_no_prefix_of_a_stored_record_can_pass_the_discriminator(self) -> None:
+        """The proof the repair rests on, exercised rather than asserted in prose.
+
+        ``append`` writes ``json.dumps(...) + chr(10)``, so an interrupted write
+        leaves a proper prefix of a serialized JSON object. The repair keeps a
+        trailing segment only when it parses as an object, which is safe exactly
+        because no such prefix does. Sweeping every cut point is what makes that
+        a measured property of this writer's output rather than a claim about
+        JSON in general.
+        """
+        stored = _stored_line("ADR-0.1.0-swept", "2026-01-01T00:00:00+00:00")
+
+        for cut in range(1, len(stored)):
+            with tempfile.TemporaryDirectory() as tmp:
+                path = self._ledger_containing(tmp, stored[:cut])
+                repair = Ledger(path).restore_record_boundary()
+                self.assertEqual(
+                    repair.action,
+                    "discarded",
+                    f"prefix of length {cut} was kept as a complete record",
+                )
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = self._ledger_containing(tmp, stored)
+            self.assertEqual(Ledger(path).restore_record_boundary().action, "terminated")
+
+    def test_termination_is_reported_rather_than_silent(self) -> None:
+        """A file that ended mid-record is evidence, even when nothing is lost.
+
+        Either a run died between the write and its newline, or a writer that is
+        not ``append`` touched the system-of-record. Once the separator is
+        supplied there is no trace left on any other surface, so the append that
+        supplies it owes the operator the notice.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            stored = _stored_line("ADR-0.1.0-only", "2026-01-01T00:00:00+00:00")
+            path = self._ledger_containing(tmp, stored)
+            script = (
+                "from pathlib import Path;"
+                "from gzkit.ledger import Ledger, LedgerEvent;"
+                f"Ledger(Path({str(path)!r})).append("
+                "LedgerEvent(event='adr_created', id='R',"
+                " ts='2026-01-04T00:00:00+00:00'))"
+            )
+            result = subprocess.run(  # noqa: S603
+                [sys.executable, "-c", script],
+                capture_output=True,
+                text=True,
+                errors="replace",
+                check=True,
+            )
+
+            self.assertIn("missing final newline", result.stderr)
+            self.assertIn("no row was discarded", result.stderr)
 
 
 class TestLockSidecarIsNotCommittable(unittest.TestCase):
