@@ -5,6 +5,7 @@ State is derived from the ledger, not stored separately.
 """
 
 import json
+import os
 import re
 import sys
 from datetime import UTC, datetime
@@ -13,6 +14,7 @@ from typing import Any, ClassVar, Literal, NamedTuple
 
 from pydantic import BaseModel, ConfigDict, Field, model_serializer, model_validator
 
+from gzkit.durability import commit_directory_entry
 from gzkit.file_lock import exclusive_file_lock
 from gzkit.ledger_corrections import LEDGER_SCHEMA, evidence_events, live_events
 from gzkit.obpi_lifecycle import fold_renames
@@ -331,9 +333,22 @@ class Ledger:
         return self.path.exists()
 
     def create(self) -> None:
-        """Create an empty ledger file."""
+        """Create an empty ledger file, with its directory entry committed.
+
+        ``touch`` makes the file VISIBLE; it does not make it EXIST after a
+        power loss (GHI #952). Without the barrier, the first append can fsync
+        its bytes, report the row durable, and lose the whole file to a crash
+        that never committed the entry naming it — so the ledger's own creation
+        needs the same guarantee its rows do.
+
+        The barrier is :func:`~gzkit.durability.commit_directory_entry`, the
+        repository's one implementation, and a failure PROPAGATES: refusing is
+        correct where reporting a durable witness on a file that may not
+        survive is not.
+        """
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.path.touch()
+        commit_directory_entry(self.path.parent)
 
     def _invalidate_cache(self) -> None:
         """Invalidate all in-memory caches after a mutation."""
@@ -464,11 +479,27 @@ class Ledger:
             with self.path.open("a", encoding="utf-8") as f:
                 try:
                     f.write(line)
+                    # `flush` pushes the Python buffer to the OS; `fsync` pushes
+                    # the OS page cache to the device. Only the second one makes
+                    # the row survive a power loss (GHI #952), and this method
+                    # RETURNING is what tells a caller the witness is durable —
+                    # callers delete recovery journals on the strength of it.
+                    # Ordered before the lock is released, so no writer observes
+                    # a commit this one has not yet made durable.
                     f.flush()
+                    os.fsync(f.fileno())
                 except OSError:
                     # Truncate away any partial bytes: restore the file to its
                     # pre-append length so read_all() never hits a truncated
                     # line.
+                    #
+                    # Deliberately NOT fsynced. This path makes no durability
+                    # claim — it raises — and its residue is self-healing: a
+                    # partial write is a proper prefix of one record, which
+                    # `restore_record_boundary` discards on the next append
+                    # (GHI #953). A barrier here would only narrow the window in
+                    # which `gz validate --ledger` reports a fragment whose
+                    # rollback had already been reported complete.
                     f.truncate(start)
                     f.flush()
                     raise

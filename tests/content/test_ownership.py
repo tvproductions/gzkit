@@ -26,6 +26,7 @@ from unittest import mock
 import jsonschema
 from pydantic import ValidationError
 
+from gzkit import durability
 from gzkit.content import ownership
 from gzkit.content.models.corpus import Corpus, CorpusEntry, effective_corpus
 from gzkit.content.ownership import (
@@ -1683,10 +1684,8 @@ class TestWindowsDirectoryBarrier(unittest.TestCase):
         directory = Path("ownership")
         unavailable = OSError(errno.ENOSYS, "native directory flush unavailable")
         with (
-            mock.patch.object(ownership, "os", wraps=os, name="nt") as platform_os,
-            mock.patch.object(
-                ownership, "_windows_directory_apis", side_effect=unavailable, create=True
-            ),
+            mock.patch.object(durability, "os", wraps=os, name="nt") as platform_os,
+            mock.patch.object(durability, "_windows_directory_apis", side_effect=unavailable),
             self.assertRaises(OSError) as refused,
         ):
             platform_os.name = "nt"
@@ -1702,7 +1701,7 @@ class TestWindowsDirectoryBarrier(unittest.TestCase):
         kernel32.WaitForSingleObject.return_value = 0
         ntdll.NtFlushBuffersFileEx.return_value = 0
         ntdll.RtlNtStatusToDosError.return_value = 5
-        pending_before = len(ownership._PENDING_DIRECTORY_FLUSHES)
+        pending_before = len(durability._PENDING_DIRECTORY_FLUSHES)
         # kernel32 is bound with `use_last_error=True`, so the callee's error code
         # lives in the thread-local slot `ctypes.get_last_error()` reads back. The
         # double parks ERROR_SHARING_VIOLATION (32) there, a transient fault that
@@ -1713,9 +1712,9 @@ class TestWindowsDirectoryBarrier(unittest.TestCase):
         )
         try:
             with (
-                mock.patch.object(ownership, "os", wraps=os) as platform_os,
+                mock.patch.object(durability, "os", wraps=os) as platform_os,
                 mock.patch.object(
-                    ownership, "_windows_directory_apis", return_value=(kernel32, ntdll)
+                    durability, "_windows_directory_apis", return_value=(kernel32, ntdll)
                 ),
                 mock.patch.object(ctypes, "get_last_error", return_value=32, create=True),
                 mock.patch.object(ctypes, "WinError", self.win_error, create=True),
@@ -1724,7 +1723,7 @@ class TestWindowsDirectoryBarrier(unittest.TestCase):
                 yield kernel32, ntdll
         finally:
             # These requests were Python doubles, so no kernel owns their buffers.
-            del ownership._PENDING_DIRECTORY_FLUSHES[pending_before:]
+            del durability._PENDING_DIRECTORY_FLUSHES[pending_before:]
 
     @covers("REQ-0.35.0-04-02")
     def test_native_flush_requests_metadata_and_storage_synchronization(self) -> None:
@@ -1803,7 +1802,7 @@ class TestWindowsDirectoryBarrier(unittest.TestCase):
         with self._native_fault_boundary() as (kernel32, ntdll):
 
             def completed_flush(_handle, _flags, _params, _size, output):
-                block = ctypes.cast(output, ctypes.POINTER(ownership._WindowsIOStatusBlock))
+                block = ctypes.cast(output, ctypes.POINTER(durability._WindowsIOStatusBlock))
                 block.contents.Status = ctypes.c_int32(0xC0000022).value
                 return 0
 
@@ -1815,7 +1814,7 @@ class TestWindowsDirectoryBarrier(unittest.TestCase):
     @covers("REQ-0.35.0-04-02")
     def test_pending_flush_waits_then_checks_the_completion_status(self) -> None:
         operations: list[str] = []
-        buffers: list[ownership._WindowsIOStatusBlock] = []
+        buffers: list[durability._WindowsIOStatusBlock] = []
         for completed_status in (0, ctypes.c_int32(0xC0000022).value):
             with (
                 self.subTest(completed_status=completed_status),
@@ -1825,7 +1824,7 @@ class TestWindowsDirectoryBarrier(unittest.TestCase):
                 buffers.clear()
 
                 def pending_flush(_handle, _flags, _params, _size, output):
-                    block = ctypes.cast(output, ctypes.POINTER(ownership._WindowsIOStatusBlock))
+                    block = ctypes.cast(output, ctypes.POINTER(durability._WindowsIOStatusBlock))
                     block.contents.Status = 0x103
                     buffers.append(block.contents)
                     operations.append("pending")
@@ -1852,21 +1851,21 @@ class TestWindowsDirectoryBarrier(unittest.TestCase):
             with self.subTest(wait=wait_result), self._native_fault_boundary() as (kernel32, ntdll):
 
                 def pending_flush(_handle, _flags, _params, _size, output):
-                    block = ctypes.cast(output, ctypes.POINTER(ownership._WindowsIOStatusBlock))
+                    block = ctypes.cast(output, ctypes.POINTER(durability._WindowsIOStatusBlock))
                     block.contents.Status = 0x103
                     return 0x103
 
                 ntdll.NtFlushBuffersFileEx.side_effect = pending_flush
                 kernel32.WaitForSingleObject.return_value = wait_result
-                before = len(ownership._PENDING_DIRECTORY_FLUSHES)
+                before = len(durability._PENDING_DIRECTORY_FLUSHES)
                 with self.assertRaises(OSError):
                     ownership.commit_directory_entry(Path("ownership"))
-                self.assertEqual(len(ownership._PENDING_DIRECTORY_FLUSHES), before + 1)
+                self.assertEqual(len(durability._PENDING_DIRECTORY_FLUSHES), before + 1)
                 kernel32.CloseHandle.assert_called_once_with(51)
 
     @covers("REQ-0.35.0-04-02")
     def test_unknown_platform_has_no_successful_no_op(self) -> None:
-        with mock.patch.object(ownership, "os", wraps=os) as platform_os:
+        with mock.patch.object(durability, "os", wraps=os) as platform_os:
             platform_os.name = "unsupported"
             with self.assertRaises(OSError) as refused:
                 ownership.commit_directory_entry(Path("ownership"))
@@ -1876,7 +1875,7 @@ class TestWindowsDirectoryBarrier(unittest.TestCase):
     def test_native_abi_uses_windows_widths_and_pointer_alignment_on_every_host(self) -> None:
         kernel32, ntdll = mock.Mock(), mock.Mock()
         with mock.patch.object(ctypes, "WinDLL", side_effect=(kernel32, ntdll), create=True):
-            ownership._windows_directory_apis()
+            durability._windows_directory_apis()
         pointer_size = ctypes.sizeof(ctypes.c_void_p)
         self.assertEqual(ctypes.sizeof(kernel32.CreateFileW.restype), pointer_size)
         self.assertEqual(ctypes.sizeof(kernel32.CloseHandle.restype), 4)
@@ -1900,7 +1899,7 @@ class TestWindowsDirectoryBarrier(unittest.TestCase):
             ),
             self.assertRaises(OSError) as refused,
         ):
-            ownership._windows_directory_apis()
+            durability._windows_directory_apis()
         self.assertEqual(refused.exception.errno, errno.ENOSYS)
         kernel32.CreateFileW.assert_not_called()
 
@@ -1910,7 +1909,7 @@ class TestNativeWindowsDirectoryBarrier(unittest.TestCase):
     """Call real DLLs and inspect their actual handle target, including a no-op control."""
 
     def _assert_real_windows_barrier(self, directory_override: Path | None = None) -> None:
-        kernel32, ntdll = ownership._windows_directory_apis()
+        kernel32, ntdll = durability._windows_directory_apis()
         final_path = kernel32.GetFinalPathNameByHandleW
         final_path.argtypes = [ctypes.c_void_p, ctypes.c_wchar_p, ctypes.c_uint32, ctypes.c_uint32]
         final_path.restype = ctypes.c_uint32
@@ -1926,7 +1925,7 @@ class TestNativeWindowsDirectoryBarrier(unittest.TestCase):
                     args = (str(directory_override), *args[1:])
                 handle = kernel32.CreateFileW(*args)
                 if handle is None or handle == ctypes.c_void_p(-1).value:
-                    raise ownership._windows_directory_error(parent)
+                    raise durability._windows_directory_error(parent)
                 handles.add(handle)
                 try:
                     length = final_path(handle, None, 0, 0)
@@ -1971,7 +1970,7 @@ class TestNativeWindowsDirectoryBarrier(unittest.TestCase):
             )
             with (
                 mock.patch.object(
-                    ownership, "_windows_directory_apis", return_value=(native_kernel, native_nt)
+                    durability, "_windows_directory_apis", return_value=(native_kernel, native_nt)
                 ),
                 mock.patch.object(os, "fsync", synced_file),
                 mock.patch.object(os, "replace", replaced_file),
@@ -2008,7 +2007,7 @@ class TestNativeWindowsDirectoryBarrier(unittest.TestCase):
                 ownership.commit_directory_entry(missing)
         self.assertEqual(getattr(refused.exception, "winerror"), 3)  # noqa: B009
         self.assertEqual(refused.exception.errno, errno.ENOENT)
-        self.assertNotIn(refused.exception.errno, ownership.BARRIER_UNSUPPORTED_ERRNOS)
+        self.assertNotIn(refused.exception.errno, durability.BARRIER_UNSUPPORTED_ERRNOS)
         self.assertEqual(refused.exception.filename, str(missing))
 
     @covers("REQ-0.35.0-04-02")

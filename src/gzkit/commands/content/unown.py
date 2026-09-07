@@ -39,10 +39,8 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.commands.common import get_project_root
 from gzkit.content.ownership import (
-    BARRIER_UNSUPPORTED_ERRNOS,
     OwnershipDeclaration,
     OwnershipLoadError,
-    commit_directory_entry,
     declaration_journal_path,
     declaration_journal_source_path,
     declaration_path,
@@ -53,6 +51,7 @@ from gzkit.content.ownership import (
     write_bytes_atomically,
     write_declaration_atomically,
 )
+from gzkit.durability import BARRIER_UNSUPPORTED_ERRNOS, commit_directory_entry
 from gzkit.ledger import Ledger, LedgerEvent
 
 
@@ -1780,7 +1779,7 @@ def _establish_durable_journal_absence(
     of every fresh transaction. An absence nobody committed is an absence a
     crash can take back.
 
-    The barrier itself is `gzkit.content.ownership.commit_directory_entry` --
+    The barrier itself is `gzkit.durability.commit_directory_entry` --
     the SAME statement of the discipline `write_bytes_atomically` ends with,
     extracted rather than restated. Two descriptions of one durability
     discipline drift the way two implementations do (GHI #945).

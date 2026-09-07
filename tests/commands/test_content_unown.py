@@ -6100,3 +6100,57 @@ class TestRetryProseMatchesWhatTheRetryDoes(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestJournalIsClearedOnlyAfterADurableWitness(unittest.TestCase):
+    """GHI #952 — the journal unlink rides on `Ledger.append`'s durability claim.
+
+    `_commit_transition` deletes the recovery journal as soon as
+    `_append_event_once` returns. That is sound only if returning means the row
+    reached the DEVICE. While `append` merely flushed, a power loss could keep
+    the already-fsynced declaration AND the journal's removal while losing the
+    buffered ledger row — leaving a new floor whose witness and recovery journal
+    were both absent, which is the exact crash window the GHI describes.
+
+    The ordering is the coupled surface the durability repair had to make true,
+    so it is pinned rather than left to reading: a future reorder that cleared
+    recovery state before the barrier would reopen the window silently.
+    """
+
+    _JOURNAL_NAME = "Doc.md.json.journal"
+
+    def test_the_ledger_row_reaches_the_device_before_the_journal_is_removed(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _seed_surface()
+            _seed_declaration()
+
+            order: list[str] = []
+            real_fsync = os.fsync
+            real_unlink = Path.unlink
+
+            def spy_fsync(fd: int) -> None:
+                with contextlib.suppress(OSError):
+                    if _LEDGER_PATH.exists() and os.fstat(fd).st_ino == _LEDGER_PATH.stat().st_ino:
+                        order.append("ledger-durable")
+                real_fsync(fd)
+
+            def spy_unlink(self, *args, **kwargs):  # noqa: ANN001, ANN002, ANN003, ANN202
+                if self.name == TestJournalIsClearedOnlyAfterADurableWitness._JOURNAL_NAME:
+                    order.append("journal-removed")
+                return real_unlink(self, *args, **kwargs)
+
+            with (
+                patch.object(os, "fsync", spy_fsync),
+                patch.object(Path, "unlink", spy_unlink),
+            ):
+                result = _unown(runner, attestor="g0", reason="durability ordering probe")
+
+            self.assertEqual(result.exit_code, 0, result.output)
+            self.assertIn("ledger-durable", order)
+            self.assertIn("journal-removed", order)
+            self.assertLess(
+                order.index("ledger-durable"),
+                order.index("journal-removed"),
+                f"the journal was cleared before the witness was durable: {order}",
+            )
