@@ -13,6 +13,7 @@ import ast
 import contextlib
 import ctypes
 import errno
+import inspect
 import json
 import os
 import stat
@@ -2785,6 +2786,290 @@ class TestOwnershipPrefixIsReplayedWhole(_DeclarationFixtureMixin, unittest.Test
         with self.assertRaises(OwnershipLoadError) as caught:
             load_declaration(path, _SIMPLE_SURFACE, self._root)
         self.assertIn("integer", str(caught.exception).lower())
+
+
+# ---------------------------------------------------------------------------
+# GHI #974 -- the owning direction's content half
+# ---------------------------------------------------------------------------
+
+
+def _own_entry(
+    index: int, text: str, *, section: str = "alpha-section", **overrides: object
+) -> CorpusEntry:
+    base: dict[str, object] = {
+        "id": f"corpus-{section}-{index:02d}",
+        "surface": "Doc.md",
+        "section": section,
+        "tier": "invariant",
+        "classification": "Judgment",
+        "text": text,
+        "origin": "test",
+        "ts": "2026-09-07T00:00:00Z",
+    }
+    base.update(overrides)
+    return CorpusEntry(**base)
+
+
+_GROWN_ALPHA_SURFACE = (
+    "# Doc Title\n"
+    "preamble text under the H1\n"
+    "## Alpha Section\n"
+    "alpha body line one\n"
+    "\n"
+    "> See [alpha rationale](docs/alpha.md#why) for the lifted rationale.\n"
+    "### Alpha operative claims\n"
+    "1. **Alpha claim one.** The detail of claim one.\n"
+    "```bash\n"
+    "uv run gz check\n"
+    "```\n"
+    "## Beta Section\n"
+    "beta body\n"
+)
+
+
+class TestSectionCoverage(unittest.TestCase):
+    """`section_coverage` asks whether the corpus CARRIES a section, not whether it addresses it."""
+
+    def _coverage(self, *entries: CorpusEntry, section: str = "alpha-section"):
+        return ownership.section_coverage(_GROWN_ALPHA_SURFACE, Corpus(entries=entries), section)
+
+    def test_every_content_line_carried_verbatim_is_complete(self) -> None:
+        coverage = self._coverage(
+            _own_entry(0, "alpha body line one"),
+            _own_entry(1, "See [alpha rationale](docs/alpha.md#why) for the lifted rationale."),
+            _own_entry(2, "**Alpha claim one.** The detail of claim one."),
+            _own_entry(3, "```bash\nuv run gz check\n```"),
+        )
+        self.assertTrue(coverage.complete, coverage)
+        self.assertEqual(coverage.body_lines, 6)
+        self.assertEqual(coverage.covered_lines, 6)
+        self.assertEqual(coverage.structural_lines, 1)
+        self.assertEqual(coverage.uncovered_lines, ())
+        self.assertEqual(
+            coverage.covering_entry_ids,
+            tuple(f"corpus-alpha-section-{i:02d}" for i in range(4)),
+        )
+
+    def test_one_nominal_entry_addressing_the_section_is_not_complete(self) -> None:
+        """The exact measure `compute_baseline` calls 'owned' -- one addressed entry."""
+        coverage = self._coverage(_own_entry(0, "alpha body line one"))
+        self.assertFalse(coverage.complete)
+        self.assertEqual(coverage.covered_lines, 1)
+        self.assertEqual(len(coverage.uncovered_lines), 5)
+        self.assertIn("1. **Alpha claim one.** The detail of claim one.", coverage.uncovered_lines)
+
+    def test_sub_heading_lines_are_structure_not_content(self) -> None:
+        coverage = self._coverage(_own_entry(0, "alpha body line one"))
+        self.assertNotIn("### Alpha operative claims", coverage.uncovered_lines)
+        self.assertEqual(coverage.structural_lines, 1)
+
+    def test_an_entry_addressed_to_another_section_carries_nothing(self) -> None:
+        coverage = self._coverage(_own_entry(0, "alpha body line one", section="beta-section"))
+        self.assertEqual(coverage.covered_lines, 0)
+        self.assertEqual(coverage.covering_entry_ids, ())
+
+    def test_a_retired_entry_carries_nothing(self) -> None:
+        live = _own_entry(0, "alpha body line one")
+        tombstone = _own_entry(1, "", retires=live.id, id="tomb")
+        coverage = self._coverage(live, tombstone)
+        self.assertEqual(coverage.covered_lines, 0)
+
+    def test_a_multi_line_entry_carries_each_of_its_own_lines_only(self) -> None:
+        coverage = self._coverage(_own_entry(0, "```bash\nuv run gz check\n```"))
+        self.assertEqual(coverage.covered_lines, 3)
+        self.assertNotIn("```bash", coverage.uncovered_lines)
+        self.assertIn("alpha body line one", coverage.uncovered_lines)
+
+    def test_a_blank_entry_text_carries_nothing(self) -> None:
+        coverage = self._coverage(_own_entry(0, "   "))
+        self.assertEqual(coverage.covered_lines, 0)
+
+    def test_a_section_with_no_content_lines_is_never_complete(self) -> None:
+        surface = "# Doc Title\n\n## Alpha Section\n\n## Beta Section\nbeta body\n"
+        coverage = ownership.section_coverage(
+            surface, Corpus(entries=(_own_entry(0, "x"),)), "alpha-section"
+        )
+        self.assertEqual(coverage.body_lines, 0)
+        self.assertFalse(coverage.complete)
+
+    def test_a_section_the_surface_does_not_carry_is_refused(self) -> None:
+        with self.assertRaises(OwnershipLoadError):
+            ownership.section_coverage(_GROWN_ALPHA_SURFACE, Corpus(), "gamma-section")
+
+    def test_body_lines_agree_with_the_span_scanner_on_section_boundaries(self) -> None:
+        """Coverage and the floor read the same H1/H2 boundaries: every body line
+        of every section, concatenated with its heading, is the whole surface."""
+        rebuilt = []
+        for line in _GROWN_ALPHA_SURFACE.splitlines():
+            if line.startswith(("# ", "## ")):
+                rebuilt.append(line)
+        spans = measure_section_spans(_GROWN_ALPHA_SURFACE)
+        total_body = 0
+        for sid in spans:
+            body = ownership.section_body_lines(_GROWN_ALPHA_SURFACE, sid)
+            self.assertIsNotNone(body)
+            total_body += len(body)
+        self.assertEqual(total_body + len(rebuilt), len(_GROWN_ALPHA_SURFACE.splitlines()))
+
+
+class TestUnownedSpanTotal(unittest.TestCase):
+    def test_sums_only_the_sections_declared_unowned(self) -> None:
+        spans = {"a": 10, "b": 20, "c": 30}
+        self.assertEqual(
+            ownership.unowned_span_total(
+                spans, {"a": "unowned", "b": "corpus-owned", "c": "unowned"}
+            ),
+            40,
+        )
+
+    def test_a_section_missing_from_the_map_is_not_counted(self) -> None:
+        self.assertEqual(ownership.unowned_span_total({"a": 10, "b": 5}, {"a": "unowned"}), 10)
+
+    def test_the_loader_reads_its_span_relation_through_it(self) -> None:
+        """The loader's arithmetic is the shared function, not a private sum."""
+        source = inspect.getsource(load_declaration)
+        self.assertIn("unowned_span_total(", source)
+
+
+class TestLoadDeclarationSectionsBecomingOwned(_DeclarationFixtureMixin, unittest.TestCase):
+    """GHI #974: the floor relation can be read over the map an owning produces."""
+
+    _GROWN = _SIMPLE_SURFACE.replace(
+        "alpha body line one\n", "alpha body line one " + "x" * 200 + "\n"
+    )
+
+    def _seed(self) -> Path:
+        sections = {
+            "doc-title": "corpus-owned",
+            "alpha-section": "unowned",
+            "beta-section": "unowned",
+        }
+        spans = measure_section_spans(_SIMPLE_SURFACE)
+        floor = sum(s for sid, s in spans.items() if sections[sid] == "unowned")
+        event_id = self._seed_genesis_event("Doc.md", floor, sections=sections)
+        return self._write_declaration(sections, unowned_byte_floor=floor, floor_event_id=event_id)
+
+    def test_an_overgrown_unowned_section_is_refused_on_a_plain_load(self) -> None:
+        path = self._seed()
+        with self.assertRaises(OwnershipLoadError) as refused:
+            load_declaration(path, self._GROWN, self._root)
+        self.assertIn("exceeds it", str(refused.exception))
+
+    def test_the_same_declaration_loads_when_the_grown_section_is_becoming_owned(self) -> None:
+        path = self._seed()
+        loaded = load_declaration(
+            path, self._GROWN, self._root, sections_becoming_owned=frozenset({"alpha-section"})
+        )
+        # The declaration returned is the one ON DISK -- the section is still
+        # 'unowned' here; only the arithmetic read the successor map.
+        self.assertEqual(loaded.sections["alpha-section"], "unowned")
+
+    def test_a_remainder_still_above_the_floor_is_refused_naming_the_remainder(self) -> None:
+        path = self._seed()
+        grown_beta = self._GROWN.replace("beta body\n", "beta body " + "y" * 300 + "\n")
+        with self.assertRaises(OwnershipLoadError) as refused:
+            load_declaration(
+                path, grown_beta, self._root, sections_becoming_owned=frozenset({"alpha-section"})
+            )
+        message = str(refused.exception)
+        self.assertIn("'beta-section'", message)
+        self.assertIn("gz content own", message)
+        self.assertNotIn("gz content unown", message)
+
+    def test_every_other_check_still_binds_the_declaration_on_disk(self) -> None:
+        """The keyword relaxes the arithmetic's map and nothing else: a map the
+        witness does not corroborate is refused exactly as on a plain load."""
+        sections = {
+            "doc-title": "corpus-owned",
+            "alpha-section": "unowned",
+            "beta-section": "unowned",
+        }
+        spans = measure_section_spans(_SIMPLE_SURFACE)
+        floor = sum(s for sid, s in spans.items() if sections[sid] == "unowned")
+        witnessed_other_map = {**sections, "doc-title": "unowned"}
+        event_id = self._seed_genesis_event("Doc.md", floor, sections=witnessed_other_map)
+        path = self._write_declaration(sections, unowned_byte_floor=floor, floor_event_id=event_id)
+        with self.assertRaises(OwnershipLoadError) as refused:
+            load_declaration(
+                path, self._GROWN, self._root, sections_becoming_owned=frozenset({"alpha-section"})
+            )
+        self.assertIn("does not witness", str(refused.exception))
+
+
+class TestRatchetLinkThatChangesTheMapIsAttested(_DeclarationFixtureMixin, unittest.TestCase):
+    """GHI #974: an `unowned_ratchet_updated` link may change the map only with attestation."""
+
+    _SECTIONS = {"doc-title": "corpus-owned", "alpha-section": "unowned", "beta-section": "unowned"}
+
+    def _chain_to_owned_alpha(self, *, attested: bool) -> tuple[Path, dict[str, str]]:
+        spans = measure_section_spans(_SIMPLE_SURFACE)
+        genesis_floor = sum(s for sid, s in spans.items() if self._SECTIONS[sid] == "unowned")
+        genesis_id = self._seed_genesis_event("Doc.md", genesis_floor, sections=self._SECTIONS)
+        owned = {**self._SECTIONS, "alpha-section": "corpus-owned"}
+        new_floor = spans["beta-section"]
+        extra: dict[str, object] = {
+            "surface": "Doc.md",
+            "sections_digest": sections_digest(owned),
+            "prior_unowned_byte_floor": genesis_floor,
+            "new_unowned_byte_floor": new_floor,
+        }
+        if attested:
+            extra.update(
+                {
+                    "section": "alpha-section",
+                    "attestor": "g0",
+                    "reason": "corpus carries every line",
+                    "predecessor_event_id": genesis_id,
+                }
+            )
+        link_id = "unowned-ratchet-updated-Doc.md-owned-alpha-section-test"
+        Ledger(self._root / ".gzkit" / "ledger.jsonl").append(
+            LedgerEvent(
+                event="unowned_ratchet_updated", id=link_id, ts="2026-09-07T00:00:01Z", extra=extra
+            )
+        )
+        path = self._write_declaration(owned, unowned_byte_floor=new_floor, floor_event_id=link_id)
+        return path, owned
+
+    def test_an_unattested_ratchet_row_that_changes_the_map_is_refused(self) -> None:
+        """The hand-emitted probe of GHI #974: new map digest, no attestor."""
+        path, _ = self._chain_to_owned_alpha(attested=False)
+        with self.assertRaises(OwnershipLoadError) as refused:
+            load_declaration(path, _SIMPLE_SURFACE, self._root)
+        message = str(refused.exception)
+        self.assertIn("section, attestor, reason", message)
+        self.assertIn("gz content own", message)
+
+    def test_an_attested_ratchet_row_that_changes_the_map_is_accepted(self) -> None:
+        path, owned = self._chain_to_owned_alpha(attested=True)
+        loaded = load_declaration(path, _SIMPLE_SURFACE, self._root)
+        self.assertEqual(loaded.sections, owned)
+
+    def test_a_map_invariant_ratchet_row_owes_no_attestation(self) -> None:
+        """`record_unowned_total`'s witness: same map, lower floor, no attestor -- still legal."""
+        spans = measure_section_spans(_SIMPLE_SURFACE)
+        genesis_floor = sum(s for sid, s in spans.items() if self._SECTIONS[sid] == "unowned") + 50
+        self._seed_genesis_event("Doc.md", genesis_floor, sections=self._SECTIONS)
+        lower = genesis_floor - 50
+        link_id = "unowned-ratchet-updated-Doc.md-invariant"
+        Ledger(self._root / ".gzkit" / "ledger.jsonl").append(
+            LedgerEvent(
+                event="unowned_ratchet_updated",
+                id=link_id,
+                ts="2026-09-07T00:00:01Z",
+                extra={
+                    "surface": "Doc.md",
+                    "sections_digest": sections_digest(self._SECTIONS),
+                    "prior_unowned_byte_floor": genesis_floor,
+                    "new_unowned_byte_floor": lower,
+                },
+            )
+        )
+        path = self._write_declaration(
+            self._SECTIONS, unowned_byte_floor=lower, floor_event_id=link_id
+        )
+        loaded = load_declaration(path, _SIMPLE_SURFACE, self._root)
+        self.assertEqual(loaded.unowned_byte_floor, lower)
 
 
 if __name__ == "__main__":

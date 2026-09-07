@@ -432,6 +432,112 @@ $ tail -1 .gzkit/ledger.jsonl
 {"schema":"gzkit.ledger.v1","event":"section_ownership_unowned","id":"section-ownership-unowned-Doc.md-alpha-section-ff1301bc5136427b","ts":"2026-09-05T10:01:23.556123+00:00","surface":"Doc.md","section":"alpha-section","sections_digest":"9b85bce39e25102c6cc439ef0ad84664","prior_unowned_byte_floor":26,"new_unowned_byte_floor":63,"attestor":"g0","reason":"materialized as prose doc instead"}
 ```
 
+### own
+
+Own an `unowned` section: the governed lowering move that CHANGES THE MAP
+(GHI #974; ADR-0.35.0 § Decision item 3 declares the seam two-directional,
+and OBPI-0.35.0-04 shipped only `unown`). Once the LIVE corpus carries every
+content line of the section verbatim, the section becomes `corpus-owned` and
+the decrease-only unowned-byte floor falls to the summed span of the sections
+that REMAIN unowned, as the surface measures them. Same corpus-attestation
+shape as `unown`: `--attestor` and `--reason` are unconditionally required.
+
+```bash
+gz content own <surface> --section <id> --attestor <name> --reason <text>
+gz content own AGENTS.md --section stdlib-first-doctrine-dependency-posture --attestor "g0" --reason "corpus carries every line of the section"
+```
+
+#### Coverage is a state check, never a presence check
+
+`compute_baseline` calls a section owned when ONE live entry addresses it —
+the measure REQ-0.35.0-04-08 names as inflated. `own` does not trust it. Every
+non-blank body line of the section must be carried verbatim by a live corpus
+entry addressed to that section (the substring relation the invariant floor
+already uses, applied per line); a multi-line entry carries each of its own
+lines. H3–H6 sub-heading lines are structure the surface supplies and are
+exempt. One uncovered line refuses the whole transition and names the line:
+
+```console
+$ gz content own Doc.md --section alpha-section --attestor "g0" --reason "corpus carries it"
+Error: the live corpus carries 3 of the 4 content line(s) of section 'alpha-section' of 'Doc.md'; uncovered:
+    - '1. **Alpha claim one.** The detail of claim one.'.
+Why forbidden: a section becomes corpus-owned only when the corpus carries EVERY content line of it verbatim -- one entry that merely addresses the section is a presence check, and AGENTS.md § DO IT RIGHT forbids a gate whose only witness is that something exists (ADR-0.35.0 § Decision 3; GHI #974). Sub-headings inside the section (1 here) are structure and are exempt. Nothing was un-owned: no declaration byte changed and no witness was appended. That is NOT a claim that this run touched no file -- the entry boundary runs before every check below it, and on an entry that finds no journal it removes the recovery material that outlived one, reporting separately any removal it could not make.
+  Capture each uncovered line with `gz content remember Doc.md --section alpha-section --text "<line>" --tier invariant --classification <Mechanical|Promotable|Judgment|Ambiguous> --origin "<why>"`, then retry the same command.
+$ echo $?
+1
+```
+
+#### The floor is measured, never subtracted
+
+The new floor is `unowned_span_total` over the successor map on the LIVE
+surface — the same arithmetic `load_declaration` reads. `prior - span` would
+assume every other unowned section still has the span it had when the prior
+floor was recorded, and the state `own` exists for is the one where an unowned
+section GREW. The loader reads the floor relation over the successor map for
+this verb (`sections_becoming_owned`), so an overgrown surface that the loader
+otherwise refuses can still be brought back under its floor; a remainder
+still above the stored floor is refused, because this is the ordinary,
+decrease-or-equal path and may never raise the ratchet (REQ-0.35.0-04-02):
+
+```console
+$ gz content own AGENTS.md --section make-llm-stochastic-vibes-inert-anti-vibing-mantra --attestor "g0" --reason "corpus carries all content lines"
+Owned section 'make-llm-stochastic-vibes-inert-anti-vibing-mantra' of 'AGENTS.md'. Unowned-byte floor fell from 8637 to 7663 (-974 B). Coverage: 6 live entries carry 6/6 content lines (1 sub-heading line(s) exempt as structure). Attested by g0: corpus carries all content lines
+$ echo $?
+0
+```
+
+(Observed 2026-09-07 in an isolated fixture copy of the repository; the
+figures are a dated record, never the current floor.)
+
+#### Fail-closed paths
+
+Exit 1 refuses before either store is touched; exit 2 reports a storage
+failure or an outstanding recovery obligation and RETAINS the journal.
+
+| Exit | Refused when |
+|------|--------------|
+| 1 | `--attestor` or `--reason` is empty or whitespace-only |
+| 1 | `<surface>` does not resolve to the identity its ownership declaration declares |
+| 1 | the surface or the corpus cannot be read, or the declaration fails `load_declaration` on any check other than the floor relation over the successor map |
+| 1 | `--section` names no id in the declaration, or is already `corpus-owned` |
+| 1 | the live corpus does not carry every content line of the section, or the section has no content lines |
+| 1 | the sections that would remain unowned exceed the stored floor — the loader names them |
+| 1 | the surface's bytes changed between measurement and the commit |
+| 1 | a pending transition for a different section, or a pending un-owning, was completed by this run; the requested owning is a separate run |
+| 2 | any storage failure or recovery state listed under [`unown` § Fail-closed paths](#fail-closed-paths) — the machinery is shared |
+| 2 | a pending owning's section is no longer fully carried by the corpus (an entry was retired in between): § Recovery Protocol state A with the corpus moved; capture the named lines and re-run |
+
+#### One journal, two verbs
+
+`own` and `unown` share the declaration lock, the entry-time recovery
+boundary, the retained measured source, the pending-transition journal, the
+two-store commit, § Recovery Protocol states A–E and the cleanup. A surface has
+ONE pending transition; whichever verb runs next completes it, reports it, and
+exits 1 without starting its own — the journal's `transition` field
+(`"own"`, absent for an un-owning) selects the direction. The recovery
+artifacts and their `.gitignore` rules are the ones documented under `unown`.
+
+#### Ledger witness
+
+A successful owning emits exactly one `unowned_ratchet_updated` event — it IS
+the decrease-or-equal move that type witnesses — after the declaration write:
+
+| Field | Carries |
+|-------|---------|
+| `surface`, `section` | the surface and the section that became corpus-owned |
+| `sections_digest` | the digest of the COMPLETE map that landed |
+| `prior_unowned_byte_floor`, `new_unowned_byte_floor` | the floor pair; new is at or below prior |
+| `predecessor_event_id` | the ownership event this owning chains from |
+| `attestor`, `reason` | the attestation |
+| `covering_entry_ids`, `covered_lines`, `body_lines` | the coverage evidence the owning rested on, as journalled |
+
+`record_unowned_total` witnesses map-INVARIANT lowering under the same type
+with none of the last four groups; `load_declaration` holds any ratchet row
+whose map differs from its predecessor's to the section, attestor and reason
+(`_refuse_unattested_map_change`). The event `id` is deterministic and chained
+(`unowned-ratchet-updated-<surface>-owned-<section>-<digest>`), so a retry
+re-mints the same id and completing an interrupted append is idempotent.
+
 ### reconcile-retirements
 
 Append a Layer-2 witness for corpus retirements that have none. This is the
@@ -679,6 +785,8 @@ grep "rendition_advisor_verdict" .gzkit/ledger.jsonl
 | `src/gzkit/commands/content/` | Operator CLI surface (this OBPI-0.0.34-04) |
 | `src/gzkit/content/corpus_store.py` | Append-only per-surface corpus persistence (`remember`, OBPI-0.0.37-19) |
 | `.gzkit/corpus/<surface>.jsonl` | Append-only corpus store written by `gz content remember` |
+| `src/gzkit/commands/content/own.py` | The governed `unowned -> corpus-owned` transition (`own`, GHI #974); shares `unown.py`'s journalled transaction |
+| `.gzkit/ownership/<surface>.json` | Section-ownership declaration read and written by `own` / `unown` (OBPI-0.35.0-04) |
 | `src/gzkit/content/advisor_qc.py` | Deterministic advisor-QC verdict-record engine (`advise-rendition`, OBPI-0.0.37-24) |
 | `artifacts/receipts/arb-step-judge-<hash>.json` | Advisor-QC verdict ARB receipt cited at Gate 5 |
 
@@ -693,4 +801,5 @@ grep "rendition_advisor_verdict" .gzkit/ledger.jsonl
 - OBPI-0.0.34-05 — Light TUI affordances (forthcoming)
 - OBPI-0.0.34-06 — Validation hooks (forthcoming)
 - ADR-0.0.37 — Constitutional Invariant Composition; the `remember` corpus-capture write path (OBPI-0.0.37-19)
+- ADR-0.35.0 § Decision item 3 — section ownership and the decrease-only ratchet; `unown` (OBPI-0.35.0-04) raises it, `own` (GHI #974) lowers it by owning
 - `.gzkit/skills/gz-content-remember/SKILL.md` — the capture skill that wields `gz content remember`

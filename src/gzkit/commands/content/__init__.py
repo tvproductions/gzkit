@@ -53,6 +53,7 @@ def register_content_parsers(commands: argparse._SubParsersAction) -> None:
     _register_remember(content_commands)
     _register_retire(content_commands)
     _register_unown(content_commands)
+    _register_own(content_commands)
     _register_compose(content_commands)
     _register_commit(content_commands)
     _register_advise_rendition(content_commands)
@@ -430,6 +431,52 @@ def _register_unown(content_commands: argparse._SubParsersAction) -> None:
     )
     p.set_defaults(
         func=lambda a: _content("unown", "content_unown_cmd")(
+            surface=a.surface,
+            section=a.section,
+            attestor=a.attestor,
+            reason=a.reason,
+        )
+    )
+
+
+def _register_own(content_commands: argparse._SubParsersAction) -> None:
+    p = content_commands.add_parser(
+        "own",
+        help="Governed lowering move: make the corpus own a section and lower the ratchet",
+        description=(
+            "Own an 'unowned' section: once the LIVE corpus carries every content line of "
+            "it verbatim, the section becomes 'corpus-owned' and the decrease-only "
+            "unowned-byte floor falls to the remaining unowned span the surface MEASURES "
+            "(never a prior floor minus a span). One entry that merely addresses the "
+            "section owns nothing; a remainder above the stored floor is refused, because "
+            "this ordinary path may never raise the ratchet. Same corpus-attestation shape "
+            "as `gz content unown`: empty or whitespace-only --attestor or --reason exits "
+            "non-zero and writes nothing. On success, emits an unowned_ratchet_updated "
+            "ledger event carrying the section, the new map digest, the predecessor link, "
+            "the attestor, the reason and the coverage evidence. Shares the un-owning "
+            "journal: a pending transition of either verb is completed first (GHI #974)."
+        ),
+        epilog=_build_epilog(
+            [
+                "gz content own AGENTS.md --section stdlib-first-doctrine-dependency-posture "
+                '--attestor "g0" --reason "corpus carries every line of the section"',
+            ]
+        ),
+    )
+    p.add_argument("surface", help="Control surface the section belongs to (e.g. AGENTS.md).")
+    p.add_argument("--section", required=True, help="Section id to own (kebab-case).")
+    p.add_argument(
+        "--attestor",
+        default="",
+        help="Operator attesting the ownership change; required and never empty.",
+    )
+    p.add_argument(
+        "--reason",
+        default="",
+        help="Why the corpus now owns the section; required and never empty.",
+    )
+    p.set_defaults(
+        func=lambda a: _content("own", "content_own_cmd")(
             surface=a.surface,
             section=a.section,
             attestor=a.attestor,

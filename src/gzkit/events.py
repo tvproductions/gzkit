@@ -1309,6 +1309,16 @@ class UnownedRatchetUpdatedEvent(_EventBase):
     (REQ-0.35.0-04-03). An increase is unreachable here by construction; raising
     the floor is the attested `gz content unown` path alone, which emits
     `section_ownership_unowned` instead.
+
+    Two producers, one direction (GHI #974). `record_unowned_total` records a
+    map-INVARIANT lowering and carries only the floor pair and the map digest.
+    `gz content own` records a map-CHANGING lowering -- one section becoming
+    `corpus-owned` -- and additionally carries the section, the predecessor
+    link, the attestor, the reason and the coverage evidence the owning rested
+    on. The loader distinguishes the two by the map digest against the
+    predecessor's and holds a map-changing row to its attestation
+    (`ownership._refuse_unattested_map_change`); the presence of `section` is
+    the row's own statement of which kind it is.
     """
 
     event: Literal["unowned_ratchet_updated"]
@@ -1325,6 +1335,34 @@ class UnownedRatchetUpdatedEvent(_EventBase):
     )
     prior_unowned_byte_floor: int
     new_unowned_byte_floor: int
+    section: str | None = Field(
+        default=None,
+        description="The section that became corpus-owned; absent on a map-invariant move.",
+    )
+    predecessor_event_id: str | None = Field(
+        default=None,
+        description=(
+            "The ownership event this owning chains from -- the declaration's prior floor_event_id."
+        ),
+    )
+    attestor: str | None = Field(
+        default=None,
+        description="Who attested the ownership change; absent on a map-invariant move.",
+    )
+    reason: str | None = Field(
+        default=None,
+        description="Why the corpus now owns the section; absent on a map-invariant move.",
+    )
+    covering_entry_ids: list[str] | None = Field(
+        default=None,
+        description="Live corpus entries that carried at least one content line of the section.",
+    )
+    covered_lines: int | None = Field(
+        default=None, description="Content lines of the section carried by the corpus."
+    )
+    body_lines: int | None = Field(
+        default=None, description="Content lines of the section (blank and H3+ lines excluded)."
+    )
 
 
 class SectionOwnershipUnownedEvent(_EventBase):

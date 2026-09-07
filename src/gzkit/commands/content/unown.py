@@ -24,6 +24,22 @@ The event is emitted from THIS command layer, not from
 ``gzkit.content.ownership`` — the correct layer per this OBPI's Tracked
 Defects: the content layer stays pure and the command layer owns the ledger
 write, mirroring ``commands/content/commit.py``.
+
+**Two verbs, one transaction (GHI #974).** ``gz content own``
+(`commands/content/own.py`) performs the reverse move -- ``unowned`` to
+``corpus-owned`` -- and REUSES every mechanism here rather than copying it: the
+resolved target, the declaration lock, the entry-time recovery boundary, the
+retained source, the journal, the two-store commit, § Recovery Protocol
+states A-E and the cleanup. A surface has ONE pending-transition journal, so
+whichever verb runs next completes what is pending; the journal's
+``transition`` field (``"own"``; absent or anything else reads as an
+un-owning, which every journal written before the field existed is) selects
+the direction-specific pieces -- eligibility, successor derivation, event id,
+witness shape and prose -- through ``_transition_kind``. An owning is
+witnessed by an ``unowned_ratchet_updated`` row carrying the section, the
+attestor, the reason and the coverage evidence, because it IS the
+decrease-or-equal move that type witnesses; the loader holds a ratchet row
+that changes the map to that attestation (``_refuse_unattested_map_change``).
 """
 
 from __future__ import annotations
@@ -31,6 +47,7 @@ from __future__ import annotations
 import hashlib
 import json
 import sys
+from collections.abc import Mapping
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, NoReturn
@@ -38,16 +55,20 @@ from typing import Any, NoReturn
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.commands.common import get_project_root
+from gzkit.content.corpus_store import load_corpus
 from gzkit.content.ownership import (
     OwnershipDeclaration,
     OwnershipLoadError,
+    SectionCoverage,
     declaration_journal_path,
     declaration_journal_source_path,
     declaration_path,
     exclusive_declaration_lock,
     load_declaration,
     measure_section_spans,
+    section_coverage,
     sections_digest,
+    unowned_span_total,
     write_bytes_atomically,
     write_declaration_atomically,
 )
@@ -55,12 +76,15 @@ from gzkit.durability import BARRIER_UNSUPPORTED_ERRNOS, commit_directory_entry
 from gzkit.ledger import Ledger, LedgerEvent
 
 
-def _refuse_blank_attestation(surface: str, section: str, attestor: str, reason: str) -> None:
+def _refuse_blank_attestation(
+    surface: str, section: str, attestor: str, reason: str, *, verb: str = "unown"
+) -> None:
     """Refuse and exit 1 when either --attestor or --reason is blank after strip().
 
     Runs BEFORE any filesystem read of the declaration, so a refusal here
     structurally guarantees the declaration stays byte-unchanged and no
-    ledger event is written (REQ-0.35.0-04-04).
+    ledger event is written (REQ-0.35.0-04-04). *verb* names the command the
+    retry line prescribes -- `gz content own` takes the same ceremony (GHI #974).
     """
     if attestor.strip() and reason.strip():
         return
@@ -69,14 +93,15 @@ def _refuse_blank_attestation(surface: str, section: str, attestor: str, reason:
         for name, value in (("--attestor", attestor), ("--reason", reason))
         if not value.strip()
     ]
-    verb = "is" if len(missing) == 1 else "are"
+    copula = "is" if len(missing) == 1 else "are"
+    act = "un-owning" if verb == "unown" else "owning"
     print(
-        f"Error: {' and '.join(missing)} {verb} empty or whitespace-only.\n"
-        "Why forbidden: un-owning a section is a canon change with the same "
+        f"Error: {' and '.join(missing)} {copula} empty or whitespace-only.\n"
+        f"Why forbidden: {act} a section is a canon change with the same "
         "corpus-attestation shape as `gz content retire` -- it always requires a "
         "named attestor and a reason, fail-closed, with no unchanged-canon exemption "
         "(REQ-0.35.0-04-04; AGENTS.md § Operator Doctrine). Nothing written.\n"
-        f"  Retry with `gz content unown {surface} --section {section} "
+        f"  Retry with `gz content {verb} {surface} --section {section} "
         '--attestor "<your name>" --reason "<why>"`.',
         file=sys.stderr,
     )
@@ -190,7 +215,9 @@ def _is_same_file(left: Path, right: Path) -> bool:
         return False
 
 
-def _resolve_target_or_exit(root: Path, surface: str, section: str) -> _TransactionTarget:
+def _resolve_target_or_exit(
+    root: Path, surface: str, section: str, *, verb: str = "unown"
+) -> _TransactionTarget:
     """Resolve the ONE transaction target this invocation operates on, or exit 1.
 
     Step-4b round-9 finding 1, `[high]`. On a case-insensitive filesystem
@@ -228,6 +255,7 @@ def _resolve_target_or_exit(root: Path, surface: str, section: str) -> _Transact
             section,
             None,
             f"its ownership declaration exists but could not be read ({exc})",
+            verb=verb,
         )
     requested_path = root / surface
     declared_path = root / declared
@@ -258,11 +286,11 @@ def _resolve_target_or_exit(root: Path, surface: str, section: str) -> _Transact
         )
     else:
         return _target_for(root, declared)
-    _refuse_surface_identity(surface, section, declared, detail)
+    _refuse_surface_identity(surface, section, declared, detail, verb=verb)
 
 
 def _refuse_surface_identity(
-    surface: str, section: str, declared: str | None, detail: str
+    surface: str, section: str, declared: str | None, detail: str, *, verb: str = "unown"
 ) -> NoReturn:
     """Refuse and exit 1: the request does not resolve to ONE surface identity.
 
@@ -280,7 +308,7 @@ def _refuse_surface_identity(
     """
     if declared is not None:
         retry = (
-            f"  Retry with `gz content unown {declared} --section {section} "
+            f"  Retry with `gz content {verb} {declared} --section {section} "
             '--attestor "<your name>" --reason "<why>"`.'
         )
     else:
@@ -375,10 +403,23 @@ def _refuse_foreign_declaration_snapshot(
     sys.exit(exit_code)
 
 
-def _load_declaration_or_exit(path: Path, surface_text: str, root: Path):
-    """Load the ownership declaration, or exit 1 with three-part recovery prose."""
+def _load_declaration_or_exit(
+    path: Path,
+    surface_text: str,
+    root: Path,
+    *,
+    sections_becoming_owned: frozenset[str] = frozenset(),
+):
+    """Load the ownership declaration, or exit 1 with three-part recovery prose.
+
+    *sections_becoming_owned* is passed straight through to `load_declaration`
+    (GHI #974): the owning path reads the floor relation over the map it is
+    about to produce, and nothing else about the load is relaxed.
+    """
     try:
-        return load_declaration(path, surface_text, root)
+        return load_declaration(
+            path, surface_text, root, sections_becoming_owned=sections_becoming_owned
+        )
     except OwnershipLoadError as exc:
         print(f"Error: {exc}", file=sys.stderr)
         sys.exit(1)
@@ -406,6 +447,39 @@ def _load_declaration_or_exit(path: Path, surface_text: str, root: Path):
 
 
 _EVENT = "section_ownership_unowned"
+
+#: The journal `transition` value that selects the OWNING direction (GHI #974).
+#: Absent -- every journal written before the field existed -- reads as an
+#: un-owning, so no legacy journal changes meaning.
+_OWN_TRANSITION = "own"
+#: An owning is the decrease-or-equal move `unowned_ratchet_updated` witnesses.
+_OWN_EVENT = "unowned_ratchet_updated"
+#: The coverage evidence an owning journal must carry to be replayable, on top
+#: of `_JOURNAL_FIELDS`: it is copied onto the witness, never recomputed there.
+_OWN_JOURNAL_FIELDS: tuple[str, ...] = ("covering_entry_ids", "covered_lines", "body_lines")
+
+
+def _transition_kind(record: dict[str, Any]) -> str:
+    """Return ``"own"`` for an owning record and ``"unown"`` for everything else."""
+    return _OWN_TRANSITION if record.get("transition") == _OWN_TRANSITION else "unown"
+
+
+def _gerund(record: dict[str, Any]) -> str:
+    """Return the transition's name in prose: ``"owning"`` or ``"un-owning"``."""
+    return "owning" if _transition_kind(record) == _OWN_TRANSITION else "un-owning"
+
+
+def _floor_moved(record: dict[str, Any]) -> str:
+    """Return ``"rose"`` or ``"fell"``, derived from the record's own floor values."""
+    return (
+        "fell" if record["new_unowned_byte_floor"] < record["prior_unowned_byte_floor"] else "rose"
+    )
+
+
+def _witness_event_type(record: dict[str, Any]) -> str:
+    """Return the ledger event type this record's witness is written under."""
+    return _OWN_EVENT if _transition_kind(record) == _OWN_TRANSITION else _EVENT
+
 
 # Every field a journalled record must carry to be replayable: the
 # `_replay_pending_transition` reads (including `parent_event_id`, needed to
@@ -447,20 +521,25 @@ def _mint_event_id(record: dict[str, Any], parent_event_id: str | None) -> str:
     and so earn different ids, where a pure content hash would collide and
     silently drop the second witness.
     """
-    payload = json.dumps(
-        {
-            "surface": record["surface"],
-            "section": record["section"],
-            "prior_unowned_byte_floor": record["prior_unowned_byte_floor"],
-            "new_unowned_byte_floor": record["new_unowned_byte_floor"],
-            "attestor": record["attestor"],
-            "reason": record["reason"],
-            "parent_event_id": parent_event_id,
-        },
-        sort_keys=True,
-        separators=(",", ":"),
-    )
+    fields = {
+        "surface": record["surface"],
+        "section": record["section"],
+        "prior_unowned_byte_floor": record["prior_unowned_byte_floor"],
+        "new_unowned_byte_floor": record["new_unowned_byte_floor"],
+        "attestor": record["attestor"],
+        "reason": record["reason"],
+        "parent_event_id": parent_event_id,
+    }
+    if _transition_kind(record) == _OWN_TRANSITION:
+        # The direction is IN the digest, so an owning and an un-owning of one
+        # section from one predecessor with one attestation can never collide;
+        # the un-owning payload is byte-unchanged so every legacy journal still
+        # re-mints its own id.
+        fields["transition"] = _OWN_TRANSITION
+    payload = json.dumps(fields, sort_keys=True, separators=(",", ":"))
     digest = hashlib.sha256(payload.encode("utf-8")).hexdigest()[:16]
+    if _transition_kind(record) == _OWN_TRANSITION:
+        return f"unowned-ratchet-updated-{record['surface']}-owned-{record['section']}-{digest}"
     return f"section-ownership-unowned-{record['surface']}-{record['section']}-{digest}"
 
 
@@ -530,6 +609,16 @@ def _append_event_once(root: Path, target: _TransactionTarget, record: dict[str,
         "attestor": record["attestor"],
         "reason": record["reason"],
     }
+    if _transition_kind(record) == _OWN_TRANSITION:
+        # The witness names the link it continues and the evidence the owning
+        # rested on (GHI #974). The evidence is the JOURNALLED measurement,
+        # because a witness describes the transition that was decided, and a
+        # corpus that grew afterwards must not make an existing witness read
+        # as divergent (round-5's idempotence arm below compares field by field).
+        expected["predecessor_event_id"] = record["parent_event_id"]
+        for field in _OWN_JOURNAL_FIELDS:
+            expected[field] = record[field]
+    event_type = _witness_event_type(record)
 
     existing = ledger.latest_event(record["event_id"])
     if existing is not None:
@@ -543,7 +632,7 @@ def _append_event_once(root: Path, target: _TransactionTarget, record: dict[str,
         divergent = [
             field for field, value in expected.items() if existing.extra.get(field) != value
         ]
-        if existing.event != _EVENT:
+        if existing.event != event_type:
             divergent.insert(0, "event")
         if divergent:
             _refuse_forged_journal(
@@ -559,7 +648,7 @@ def _append_event_once(root: Path, target: _TransactionTarget, record: dict[str,
 
     ledger.append(
         LedgerEvent(
-            event=_EVENT,
+            event=event_type,
             id=record["event_id"],
             ts=record["ts"],
             extra=expected,
@@ -636,6 +725,7 @@ def _refuse_forged_journal(target: _TransactionTarget, defect: str) -> NoReturn:
 
 
 def _apply_unlanded_transition(
+    root: Path,
     target: _TransactionTarget,
     record: dict[str, Any],
     on_disk: dict[str, Any],
@@ -678,44 +768,22 @@ def _apply_unlanded_transition(
             f"parent_event_id {record['parent_event_id']!r} does not match "
             f"the on-disk floor_event_id ({on_disk.get('floor_event_id')!r})",
         )
-    try:
-        span = measure_section_spans(surface_text)[record["section"]]
-    except KeyError:
+    spans = measure_section_spans(surface_text)
+    if record["section"] not in spans:
         _refuse_forged_journal(
             target,
             f"section {record['section']!r} does not exist on the live surface",
-        )
-    if record["new_unowned_byte_floor"] != record["prior_unowned_byte_floor"] + span:
-        _refuse_forged_journal(
-            target,
-            f"new_unowned_byte_floor {record['new_unowned_byte_floor']!r} does "
-            "not equal the on-disk floor plus section "
-            f"{record['section']!r}'s real measured byte span "
-            f"({record['prior_unowned_byte_floor'] + span!r})",
         )
     try:
         predecessor = OwnershipDeclaration(**on_disk)
     except (TypeError, ValueError) as exc:
         _refuse_forged_journal(target, f"on-disk declaration does not validate: {exc}")
-    # The section must actually BE 'corpus-owned' on the on-disk predecessor
-    # -- the same eligibility the live command path enforces at unown.py
-    # (`current != "corpus-owned"` refusal). Without this check, a journal
-    # naming an ALREADY-unowned section with a self-consistent event id, a
-    # real prior floor/parent, and a real measured span still passes every
-    # check above: flipping an already-'unowned' section to 'unowned' is a
-    # no-op on `sections`, so the derived successor JSON matches too, and
-    # the floor is durably inflated a second time for one section with a
-    # genuine ledger event witnessing a flip that never happened.
-    predecessor_status = predecessor.sections.get(record["section"])
-    if predecessor_status != "corpus-owned":
-        _refuse_forged_journal(
-            target,
-            f"section {record['section']!r} is {predecessor_status!r} on the "
-            "on-disk predecessor, not 'corpus-owned' -- only a corpus-owned "
-            "section may be un-owned",
+    if _transition_kind(record) == _OWN_TRANSITION:
+        new_sections = _owning_successor_map_or_refuse(
+            root, target, record, predecessor, spans, surface_text
         )
-    new_sections = dict(predecessor.sections)
-    new_sections[record["section"]] = "unowned"
+    else:
+        new_sections = _unowning_successor_map_or_refuse(target, record, predecessor, spans)
     expected_declaration = predecessor.model_copy(
         update={
             "sections": new_sections,
@@ -739,7 +807,7 @@ def _apply_unlanded_transition(
         write_declaration_atomically(target.declaration_path, expected_declaration_json)
     except OSError as exc:
         print(
-            f"Error completing the interrupted un-owning of "
+            f"Error completing the interrupted {_gerund(record)} of "
             f"{record['section']!r}: cannot write "
             f"{target.declaration_path.as_posix()!r}: {exc}.\n"
             "Why forbidden: the journalled transition must be re-applied to "
@@ -751,6 +819,153 @@ def _apply_unlanded_transition(
             file=sys.stderr,
         )
         sys.exit(2)
+
+
+def _unowning_successor_map_or_refuse(
+    target: _TransactionTarget,
+    record: dict[str, Any],
+    predecessor: OwnershipDeclaration,
+    spans: dict[str, int],
+) -> Mapping[str, str]:
+    """Prove an un-owning journal continues *predecessor*; return the successor map."""
+    span = spans[record["section"]]
+    if record["new_unowned_byte_floor"] != record["prior_unowned_byte_floor"] + span:
+        _refuse_forged_journal(
+            target,
+            f"new_unowned_byte_floor {record['new_unowned_byte_floor']!r} does "
+            "not equal the on-disk floor plus section "
+            f"{record['section']!r}'s real measured byte span "
+            f"({record['prior_unowned_byte_floor'] + span!r})",
+        )
+    # The section must actually BE 'corpus-owned' on the on-disk predecessor
+    # -- the same eligibility the live command path enforces at unown.py
+    # (`current != "corpus-owned"` refusal). Without this check, a journal
+    # naming an ALREADY-unowned section with a self-consistent event id, a
+    # real prior floor/parent, and a real measured span still passes every
+    # check above: flipping an already-'unowned' section to 'unowned' is a
+    # no-op on `sections`, so the derived successor JSON matches too, and
+    # the floor is durably inflated a second time for one section with a
+    # genuine ledger event witnessing a flip that never happened.
+    predecessor_status = predecessor.sections.get(record["section"])
+    if predecessor_status != "corpus-owned":
+        _refuse_forged_journal(
+            target,
+            f"section {record['section']!r} is {predecessor_status!r} on the "
+            "on-disk predecessor, not 'corpus-owned' -- only a corpus-owned "
+            "section may be un-owned",
+        )
+    new_sections = dict(predecessor.sections)
+    new_sections[record["section"]] = "unowned"
+    return new_sections
+
+
+def _owning_successor_map_or_refuse(
+    root: Path,
+    target: _TransactionTarget,
+    record: dict[str, Any],
+    predecessor: OwnershipDeclaration,
+    spans: dict[str, int],
+    surface_text: str,
+) -> Mapping[str, str]:
+    """Prove an owning journal continues *predecessor*; return the successor map (GHI #974).
+
+    The mirror of `_unowning_successor_map_or_refuse` with the direction's own
+    three facts: the section must be `unowned` on the predecessor, the new
+    floor must be what the LIVE surface measures under the successor map
+    (`unowned_span_total`, never `prior - span`), and the live corpus must
+    still carry every content line of the section. The third is re-checked
+    because a journal may finish a transition, never re-decide one: coverage
+    that was true when the journal was written and is false now -- an entry
+    retired in between -- is refused with the journal RETAINED, so the same
+    transition completes once coverage is restored. The evidence fields the
+    journal carries are copied onto the witness unchanged; what is re-verified
+    is the PREDICATE, not the measurement.
+    """
+    predecessor_status = predecessor.sections.get(record["section"])
+    if predecessor_status != "unowned":
+        _refuse_forged_journal(
+            target,
+            f"section {record['section']!r} is {predecessor_status!r} on the "
+            "on-disk predecessor, not 'unowned' -- only an unowned section may be owned",
+        )
+    new_sections = dict(predecessor.sections)
+    new_sections[record["section"]] = "corpus-owned"
+    remaining = unowned_span_total(spans, new_sections)
+    if record["new_unowned_byte_floor"] != remaining:
+        _refuse_forged_journal(
+            target,
+            f"new_unowned_byte_floor {record['new_unowned_byte_floor']!r} does not equal "
+            f"the live surface's remaining unowned span under the successor map ({remaining!r})",
+        )
+    coverage = _coverage_or_refuse(
+        root, target, record["section"], surface_text, journal_retained=True
+    )
+    if not coverage.complete:
+        _refuse_pending_owning_uncovered(target, record, coverage)
+    return new_sections
+
+
+def _coverage_or_refuse(
+    root: Path,
+    target: _TransactionTarget,
+    section: str,
+    surface_text: str,
+    *,
+    journal_retained: bool,
+) -> SectionCoverage:
+    """Measure *section*'s live coverage, or exit in prose when the corpus cannot be read."""
+    try:
+        corpus = load_corpus(root, target.surface)
+    except (OSError, ValueError) as exc:
+        residue = (
+            f"The journal is RETAINED at {target.journal_path.as_posix()!r}, so the "
+            "transition stays completable."
+            if journal_retained
+            else _ENTRY_SWEEP_CAVEAT
+        )
+        print(
+            f"Error: cannot read the corpus for {target.surface!r}: {exc}.\n"
+            "Why forbidden: a section becomes corpus-owned only when the LIVE corpus "
+            "carries every content line of it, and a corpus that cannot be read proves "
+            f"nothing either way (ADR-0.35.0 § Decision 3; GHI #974). {residue}\n"
+            f"  Restore `.gzkit/corpus/{target.surface}.jsonl` -- it must parse under "
+            "the tombstone algebra -- then retry the same command.",
+            file=sys.stderr,
+        )
+        sys.exit(2 if journal_retained else 1)
+    return section_coverage(surface_text, corpus, section)
+
+
+def _refuse_pending_owning_uncovered(
+    target: _TransactionTarget, record: dict[str, Any], coverage: SectionCoverage
+) -> NoReturn:
+    """Refuse and exit 2: a pending owning's section is no longer covered by the corpus.
+
+    § Recovery Protocol state A with the CORPUS moved underneath -- the
+    corpus-side twin of state E. The declaration is untouched, so nothing is
+    retracted; the journal is retained, so the transition completes as soon as
+    the corpus carries the section again. The corpus is append-only, so
+    "restore" means capture the missing lines through `gz content remember`,
+    never an edit of the store.
+    """
+    named = "\n".join(f"    - {line!r}" for line in coverage.uncovered_lines)
+    print(
+        f"Error: the pending owning of section {record['section']!r} of "
+        f"{target.surface!r} cannot be completed: the live corpus no longer carries "
+        f"{len(coverage.uncovered_lines)} of its {coverage.body_lines} content line(s):\n"
+        f"{named}\n"
+        "Why forbidden: a journal may finish a transition, never re-decide one, and an "
+        "owning was decided on the corpus carrying EVERY content line of the section "
+        "(ADR-0.35.0 § Decision 3; GHI #974). The declaration is untouched -- this is "
+        "§ Recovery Protocol state A -- and no witness was written. The journal is "
+        f"RETAINED at {target.journal_path.as_posix()!r}.\n"
+        f"  Capture each line above with `gz content remember {target.surface} --section "
+        f'{record["section"]} --text "<line>" --tier invariant ...`, then re-run the same '
+        "command, which completes the pending owning. If the section should no longer "
+        "be owned, move the journal aside for the record instead -- nothing landed.",
+        file=sys.stderr,
+    )
+    sys.exit(2)
 
 
 def _refuse_incoherent_landed_state(
@@ -924,7 +1139,7 @@ def _refuse_source_changed_since_measurement(
         )
     print(
         f"Error: surface {target.surface!r} no longer carries the bytes the "
-        f"pending un-owning of section {record['section']!r} was measured "
+        f"pending {_gerund(record)} of section {record['section']!r} was measured "
         "against.\n"
         "Why forbidden: this is § Recovery Protocol state E -- the journalled "
         "floor counts PHYSICAL BYTES of the surface as it was read, so "
@@ -1191,7 +1406,10 @@ def _journal_record_or_refuse(target: _TransactionTarget) -> dict[str, Any]:
         if not isinstance(record, dict):
             defect = f"expected a JSON object, found {type(record).__name__}"
         else:
-            missing = [field for field in _JOURNAL_FIELDS if field not in record]
+            required = _JOURNAL_FIELDS
+            if _transition_kind(record) == _OWN_TRANSITION:
+                required = (*_JOURNAL_FIELDS, *_OWN_JOURNAL_FIELDS)
+            missing = [field for field in required if field not in record]
             if missing:
                 defect = f"missing required field(s) {', '.join(missing)}"
     if defect is not None:
@@ -1219,7 +1437,11 @@ def _journal_record_or_refuse(target: _TransactionTarget) -> dict[str, Any]:
     # for a blank attestor/reason (REQ-0.35.0-04-04) -- reuse the one
     # governed check rather than a second copy that could drift from it.
     _refuse_blank_attestation(
-        record["surface"], record["section"], record["attestor"], record["reason"]
+        record["surface"],
+        record["section"],
+        record["attestor"],
+        record["reason"],
+        verb=_transition_kind(record),
     )
 
     # `event_id` must re-mint from the record's OWN claimed content -- a
@@ -1294,7 +1516,7 @@ def _append_witness_or_exit(root: Path, target: _TransactionTarget, record: dict
         _append_event_once(root, target, record)
     except OSError as exc:
         print(
-            f"Error completing the interrupted un-owning of {record['section']!r}: "
+            f"Error completing the interrupted {_gerund(record)} of {record['section']!r}: "
             f"cannot append the ledger event: {exc}.\n"
             f"Why forbidden: {target.declaration_path.as_posix()!r} already carries "
             "the new floor, so "
@@ -1375,7 +1597,7 @@ def _replay_pending_transition(
         # rather than merely claim to. When it HAS landed, that proof is
         # unavailable by construction (the predecessor is gone) and the
         # coherence gate below is what guards the completion instead.
-        _apply_unlanded_transition(target, record, on_disk, surface_text)
+        _apply_unlanded_transition(root, target, record, on_disk, surface_text)
 
     # The coherence gate asks whether an interrupted transition may be
     # COMPLETED into a state the loader accepts. In D nothing is being
@@ -1438,7 +1660,7 @@ def _replay_pending_transition(
     # preserved, never duplicated.
     _refuse_clean_success_on_a_moved_surface(target, record, committed_now=not settled)
 
-    _clear_recovery_state(target)
+    _clear_recovery_state(target, gerund=_gerund(record))
     return record, not settled
 
 
@@ -1494,7 +1716,7 @@ def _commit_transition(
         write_declaration_atomically(target.journal_path, json.dumps(record, indent=2) + "\n")
     except OSError as exc:
         print(
-            f"Error journalling the un-owning of {record['section']!r}: "
+            f"Error journalling the {_gerund(record)} of {record['section']!r}: "
             f"cannot write {target.journal_path.as_posix()!r}: {exc}.\n"
             "Why forbidden: the pending transition is recorded before either "
             "store is touched so an interrupted raise can be completed rather "
@@ -1551,7 +1773,8 @@ def _commit_transition(
         print(
             f"Error writing ledger event for {target.surface!r}/"
             f"{record['section']!r}: {exc}. "
-            f"THE UN-OWNING ALREADY HAPPENED — {target.declaration_path.as_posix()!r} is on "
+            f"THE {_gerund(record).upper()} ALREADY HAPPENED — "
+            f"{target.declaration_path.as_posix()!r} is on "
             "disk with the new floor, but the ledger witness is incomplete.\n"
             "Why forbidden: the declaration now names a `floor_event_id` the "
             "ledger does not carry, so it fails closed on every subsequent "
@@ -1567,7 +1790,7 @@ def _commit_transition(
 
     _refuse_clean_success_on_a_moved_surface(target, record, committed_now=True)
 
-    _clear_recovery_state(target, already_warned=already_warned)
+    _clear_recovery_state(target, already_warned=already_warned, gerund=_gerund(record))
 
 
 def _remove_if_present(path: Path) -> OSError | None:
@@ -1670,7 +1893,12 @@ _CLEANUP_REMEDIES = (
 
 
 def _refuse_cleanup_pending(
-    target: _TransactionTarget, path: Path, exc: OSError, *, dependents_retained: bool
+    target: _TransactionTarget,
+    path: Path,
+    exc: OSError,
+    *,
+    dependents_retained: bool,
+    gerund: str = "un-owning",
 ) -> NoReturn:
     """Refuse and exit 2: THIS run's transition completed, its cleanup did NOT.
 
@@ -1721,7 +1949,7 @@ def _refuse_cleanup_pending(
             "passed over."
         )
     print(
-        f"Error: the un-owning of {target.surface!r} is complete, but its recovery "
+        f"Error: the {gerund} of {target.surface!r} is complete, but its recovery "
         f"material could not be cleared: cannot remove {path.as_posix()!r}: {exc}.\n"
         f"{_TWO_OF_THREE_DISCHARGED} "
         "This is § Recovery Protocol state D with cleanup outstanding. "
@@ -1753,7 +1981,7 @@ both kinds of failure preserve recovery material and refuse.
 
 
 def _establish_durable_journal_absence(
-    target: _TransactionTarget, *, removed_by_this_run: bool
+    target: _TransactionTarget, *, removed_by_this_run: bool, gerund: str = "un-owning"
 ) -> None:
     """Commit the journal's ABSENCE before any dependent is deleted or reused.
 
@@ -1797,7 +2025,7 @@ def _establish_durable_journal_absence(
         commit_directory_entry(target.journal_path.parent)
     except OSError as exc:
         if removed_by_this_run:
-            _refuse_unbarriered_journal_removal(target, exc)
+            _refuse_unbarriered_journal_removal(target, exc, gerund=gerund)
         _refuse_unbarriered_orphan_boundary(target, exc)
 
 
@@ -1816,7 +2044,9 @@ def _barrier_next_step(directory: Path, exc: OSError) -> str:
     )
 
 
-def _refuse_unbarriered_journal_removal(target: _TransactionTarget, exc: OSError) -> NoReturn:
+def _refuse_unbarriered_journal_removal(
+    target: _TransactionTarget, exc: OSError, *, gerund: str = "un-owning"
+) -> NoReturn:
     """Refuse and exit 2: THIS run removed the journal, and the removal is not durable.
 
     Reached only from `_clear_recovery_state`, so the transition is complete:
@@ -1832,7 +2062,7 @@ def _refuse_unbarriered_journal_removal(target: _TransactionTarget, exc: OSError
     material no longer exists.
     """
     print(
-        f"Error: the un-owning of {target.surface!r} is complete, but the removal of "
+        f"Error: the {gerund} of {target.surface!r} is complete, but the removal of "
         f"its pending-transition journal {target.journal_path.as_posix()!r} could not "
         f"be made durable: {exc}.\n"
         f"{_TWO_OF_THREE_DISCHARGED} "
@@ -1842,7 +2072,7 @@ def _refuse_unbarriered_journal_removal(target: _TransactionTarget, exc: OSError
         "journal gates replay, so deleting the retained source while the journal's "
         "absence can still be taken back is the one ordering recovery cannot "
         "survive -- a journal that comes back with its measured source destroyed "
-        "(REQ-0.35.0-04-02). The un-owning itself is sound and no later run "
+        f"(REQ-0.35.0-04-02). The {gerund} itself is sound and no later run "
         "repeats it.\n"
         f"{_barrier_next_step(target.journal_path.parent, exc)}"
         "The unlink SUCCEEDED -- only its barrier did not -- so the next run finds "
@@ -2037,6 +2267,7 @@ def _sweep_recovery_residue(
     *,
     after_completion: bool,
     already_warned: frozenset[str] = frozenset(),
+    gerund: str = "un-owning",
 ) -> frozenset[str]:
     """Remove every artifact whose only purpose was to serve the journal.
 
@@ -2086,7 +2317,7 @@ def _sweep_recovery_residue(
     unreported = [(path, exc) for path, exc in failures if path.as_posix() not in already_warned]
     if unreported:
         path, failure = unreported[0]
-        _refuse_cleanup_pending(target, path, failure, dependents_retained=False)
+        _refuse_cleanup_pending(target, path, failure, dependents_retained=False, gerund=gerund)
     return frozenset()
 
 
@@ -2118,7 +2349,10 @@ def _establish_recovery_boundary(target: _TransactionTarget) -> frozenset[str]:
 
 
 def _clear_recovery_state(
-    target: _TransactionTarget, *, already_warned: frozenset[str] = frozenset()
+    target: _TransactionTarget,
+    *,
+    already_warned: frozenset[str] = frozenset(),
+    gerund: str = "un-owning",
 ) -> None:
     """Clear the journal, then every piece of material that depends on it.
 
@@ -2159,12 +2393,16 @@ def _clear_recovery_state(
     if failure is not None:
         # The dependents are NOT touched. The journal gates replay, so its
         # dependents may never predecease it.
-        _refuse_cleanup_pending(target, target.journal_path, failure, dependents_retained=True)
-    _establish_durable_journal_absence(target, removed_by_this_run=True)
+        _refuse_cleanup_pending(
+            target, target.journal_path, failure, dependents_retained=True, gerund=gerund
+        )
+    _establish_durable_journal_absence(target, removed_by_this_run=True, gerund=gerund)
     # *already_warned* is what this run reported on ENTRY, before its own
     # transaction began. Those paths are an earlier run's residue, so meeting
     # them again here is not a failure of this transaction's cleanup.
-    _sweep_recovery_residue(target, after_completion=True, already_warned=already_warned)
+    _sweep_recovery_residue(
+        target, after_completion=True, already_warned=already_warned, gerund=gerund
+    )
 
 
 def _reconciliation_sequence(target: _TransactionTarget, step_four: str) -> str:
@@ -2282,7 +2520,7 @@ def _refuse_clean_success_on_a_moved_surface(
 
     if committed_now:
         opening = (
-            f"surface {target.surface!r} changed DURING the un-owning of "
+            f"surface {target.surface!r} changed DURING the {_gerund(record)} of "
             f"section {record['section']!r}: {detail}"
         )
         step_four = (
@@ -2292,7 +2530,7 @@ def _refuse_clean_success_on_a_moved_surface(
         )
     else:
         opening = (
-            f"the un-owning of section {record['section']!r} of "
+            f"the {_gerund(record)} of section {record['section']!r} of "
             f"{target.surface!r} was witnessed by an earlier run, but the "
             f"surface no longer carries the bytes its floor was measured "
             f"against: {detail}"
@@ -2346,18 +2584,19 @@ def _recovery_summary(surface: str, record: dict[str, Any], *, committed_now: bo
     corrected for. The floor values stay in the sentence because they are true
     of the transition; what changes is whose run made the move.
     """
+    moved = _floor_moved(record)
     if committed_now:
         opening = (
-            f"Completed the interrupted un-owning of section {record['section']!r} "
-            f"of {surface!r}. Unowned-byte floor rose from "
+            f"Completed the interrupted {_gerund(record)} of section {record['section']!r} "
+            f"of {surface!r}. Unowned-byte floor {moved} from "
             f"{record['prior_unowned_byte_floor']} to {record['new_unowned_byte_floor']}."
         )
     else:
         opening = (
-            f"Cleared the recovery material for the un-owning of section "
+            f"Cleared the recovery material for the {_gerund(record)} of section "
             f"{record['section']!r} of {surface!r}. This run wrote no declaration "
             "and appended no ledger event: an EARLIER run committed and witnessed "
-            f"the transition, which raised the unowned-byte floor from "
+            f"the transition, in which the unowned-byte floor {moved} from "
             f"{record['prior_unowned_byte_floor']} to {record['new_unowned_byte_floor']}."
         )
     return f"{opening} Attested by {record['attestor']}: {record['reason']}"
@@ -2438,7 +2677,12 @@ def _read_transaction_surface_or_exit(target: _TransactionTarget) -> tuple[str, 
 
 
 def _refuse_surface_changed_under_us(
-    surface_path: Path, surface: str, section: str, measured_digest: str
+    surface_path: Path,
+    surface: str,
+    section: str,
+    measured_digest: str,
+    *,
+    gerund: str = "un-owning",
 ) -> None:
     """Refuse and exit 1 if the surface changed since it was measured.
 
@@ -2480,7 +2724,7 @@ def _refuse_surface_changed_under_us(
         detail = "its bytes changed"
     del current
     print(
-        f"Error: surface {surface!r} changed while un-owning section {section!r}: "
+        f"Error: surface {surface!r} changed while {gerund} section {section!r}: "
         f"{detail}.\n"
         "Why forbidden: the floor about to be witnessed was measured against the "
         "surface as it was read; committing it now would record a byte span the "
@@ -2545,7 +2789,7 @@ def content_unown_cmd(*, surface: str, section: str, attestor: str, reason: str)
         if replayed is not None:
             recovered, committed_now = replayed
             print(_recovery_summary(surface, recovered, committed_now=committed_now))
-            if recovered["section"] != section:
+            if recovered["section"] != section or _transition_kind(recovered) != "unown":
                 # Step-4b round-8 finding 3: this used to fall THROUGH to the
                 # ordinary refusal paths, whose prose says "nothing written" --
                 # after a witness had landed and its journal had been deleted.
@@ -2556,7 +2800,7 @@ def content_unown_cmd(*, surface: str, section: str, attestor: str, reason: str)
                 # that performed it; the requested section is a separate run.
                 print(
                     f"Error: section {section!r} was NOT un-owned by this "
-                    f"invocation — it completed the pending transition for "
+                    f"invocation — it completed the pending {_gerund(recovered)} of "
                     f"{recovered['section']!r} instead.\n"
                     "Why forbidden: a recovery is a durable state change, and "
                     "reporting it alongside a second, unrelated transition would "

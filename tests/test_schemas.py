@@ -634,6 +634,92 @@ class TestSectionOwnershipReanchoredRegistration(unittest.TestCase):
         )
 
 
+class TestUnownedRatchetUpdatedOwningArm(unittest.TestCase):
+    """``unowned_ratchet_updated`` carries the owning transition's evidence (GHI #974).
+
+    The owning move -- a section becoming ``corpus-owned`` -- is the
+    decrease-or-equal move this type already witnesses, so it is recorded under
+    it rather than under a new type the real ledger has never fired. What
+    separates an owning row from `record_unowned_total`'s map-invariant row is
+    the section, the predecessor link, the attestation and the coverage
+    evidence, all additive and all optional on the model: a row minted before
+    they existed still parses, and the loader -- never the schema -- is what
+    holds a map-changing row to its attestation.
+    """
+
+    _OWNING_PAYLOAD = {
+        "schema": "gzkit.ledger.v1",
+        "event": "unowned_ratchet_updated",
+        "id": "unowned-ratchet-updated-Doc.md-owned-alpha-section-abcd",
+        "ts": "2026-09-07T00:00:00+00:00",
+        "surface": "Doc.md",
+        "section": "alpha-section",
+        "sections_digest": "0123456789abcdef0123456789abcdef",
+        "prior_unowned_byte_floor": 83,
+        "new_unowned_byte_floor": 26,
+        "predecessor_event_id": "section-ownership-genesis-Doc.md-own",
+        "attestor": "g0",
+        "reason": "corpus carries every line",
+        "covering_entry_ids": ["corpus-alpha-section-00", "corpus-alpha-section-01"],
+        "covered_lines": 2,
+        "body_lines": 2,
+    }
+
+    def test_the_model_accepts_an_owning_row_and_exposes_its_evidence(self) -> None:
+        event = parse_typed_event(dict(self._OWNING_PAYLOAD))
+        self.assertEqual(event.extra["section"], "alpha-section")
+        self.assertEqual(
+            event.extra["covering_entry_ids"],
+            ["corpus-alpha-section-00", "corpus-alpha-section-01"],
+        )
+        self.assertEqual(
+            event.extra["predecessor_event_id"], "section-ownership-genesis-Doc.md-own"
+        )
+
+    def test_the_model_still_accepts_a_map_invariant_row(self) -> None:
+        payload = {
+            k: v
+            for k, v in self._OWNING_PAYLOAD.items()
+            if k
+            not in {
+                "section",
+                "predecessor_event_id",
+                "attestor",
+                "reason",
+                "covering_entry_ids",
+                "covered_lines",
+                "body_lines",
+            }
+        }
+        event = parse_typed_event(payload)
+        self.assertNotIn("section", event.extra)
+
+    def test_the_schema_declares_every_owning_field_the_model_carries(self) -> None:
+        """A field the model carries and the schema does not is a field the
+        ledger validator never types -- the on-disk contract must name them."""
+        rules = load_schema("ledger")["events"]["unowned_ratchet_updated"]["properties"]
+        for field in (
+            "section",
+            "predecessor_event_id",
+            "attestor",
+            "reason",
+            "covering_entry_ids",
+            "covered_lines",
+            "body_lines",
+        ):
+            with self.subTest(field=field):
+                self.assertIn(field, rules)
+        # Nullable on the schema exactly as on the model: absent on a map-invariant
+        # row, so the reader-parity fence reads both sides the same way.
+        self.assertEqual(rules["covering_entry_ids"]["type"], ["array", "null"])
+        self.assertEqual(rules["section"]["type"], ["string", "null"])
+        self.assertEqual(
+            set(load_schema("ledger")["events"]["unowned_ratchet_updated"]["required"]),
+            {"surface", "prior_unowned_byte_floor", "new_unowned_byte_floor"},
+            "the owning fields are ADDITIVE; the map-invariant producer owes none of them",
+        )
+
+
 # ---------------------------------------------------------------------------
 # Schema loading regression tests
 # ---------------------------------------------------------------------------

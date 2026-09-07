@@ -13,6 +13,13 @@ undeclared third state: every H1/H2 section of the surface must carry exactly
 one of the two closed-enum values, or loading fails closed naming the
 offending section id (REQ-0.35.0-04-01).
 
+GHI #974 added the content half of the OWNING transition: `section_coverage`
+answers whether the live corpus actually carries every content line of a
+section (never whether one entry merely addresses it), `unowned_span_total`
+is the one floor arithmetic every reader shares, and `load_declaration` can
+evaluate that arithmetic over the map an owning transition produces. The
+transaction that performs the transition lives in `commands/content/own.py`,
+sharing `commands/content/unown.py`'s journalled two-store machinery.
 """
 
 from __future__ import annotations
@@ -215,7 +222,148 @@ def measure_section_spans(surface_text: str) -> dict[str, int]:
     return spans
 
 
-def load_declaration(path: Path, surface_text: str, root: Path) -> OwnershipDeclaration:
+def unowned_span_total(spans: Mapping[str, int], sections: Mapping[str, str]) -> int:
+    """Return the summed byte span of every section *sections* declares `unowned`.
+
+    THE ONE floor arithmetic (GHI #974). The loader's span-versus-floor check,
+    the owning transition's floor derivation and its journal replay all read
+    this: a floor is what the surface MEASURES under a map, never a prior
+    floor with one span subtracted from it. Subtraction assumes every other
+    unowned section still has the span it had when the prior floor was
+    recorded, and the state that motivates owning a section -- an unowned
+    section that GREW -- is exactly the state in which that assumption fails.
+    """
+    return sum(span for sid, span in spans.items() if sections.get(sid) == "unowned")
+
+
+#: A heading line inside a section (H3-H6) is STRUCTURE the surface supplies,
+#: not canon the corpus must carry; H1/H2 open sections and never appear here.
+_STRUCTURAL_HEADING_PREFIX = "###"
+
+
+class SectionCoverage(BaseModel):
+    """How much of one section's content the LIVE corpus actually carries (GHI #974).
+
+    `compute_baseline` calls a section owned when ONE live entry addresses it;
+    REQ-0.35.0-04-08 names that measure honestly as inflated. The owning
+    transition may not rest on it: a section becomes `corpus-owned` only when
+    every content line of its body is carried verbatim by a live entry
+    addressed to that section -- the substring relation the invariant floor
+    (`tier_policy.assert_invariant_verbatim`) already uses, applied per line.
+    A nominal entry is a presence check; this is the state check.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    section: str
+    body_lines: int = Field(..., description="Non-blank, non-structural lines after the heading.")
+    covered_lines: int
+    uncovered_lines: tuple[str, ...] = Field(
+        ..., description="Every content line no live entry carries, verbatim, in surface order."
+    )
+    covering_entry_ids: tuple[str, ...] = Field(
+        ..., description="Live entries addressed to the section that carry at least one line."
+    )
+    structural_lines: int = Field(..., description="H3-H6 heading lines, exempt as structure.")
+
+    @property
+    def complete(self) -> bool:
+        """True only when there is content, all of it is covered, and an entry covers it."""
+        return self.body_lines > 0 and not self.uncovered_lines and bool(self.covering_entry_ids)
+
+
+def section_body_lines(surface_text: str, section: str) -> list[str] | None:
+    """Return *section*'s body lines (heading excluded), or None when no H1/H2 resolves to it.
+
+    Walks the same H1/H2 boundaries `measure_section_spans` walks, keyed by the
+    same `section_id`, so what coverage reads is what the floor measures.
+    """
+    current: str | None = None
+    found = False
+    body: list[str] = []
+    for line in surface_text.splitlines():
+        title: str | None = None
+        if line.startswith(_H1_PREFIX):
+            title = line[len(_H1_PREFIX) :].strip()
+        elif line.startswith(_H2_PREFIX):
+            title = line[len(_H2_PREFIX) :].strip()
+        if title is not None:
+            current = section_id(title)
+            if current == section:
+                found = True
+            continue
+        if current == section:
+            body.append(line)
+    return body if found else None
+
+
+def _entry_carries_line(entry_text: str, line: str) -> bool:
+    """Report whether *entry_text* carries *line*.
+
+    A single-line entry carries the line when its text sits inside it verbatim
+    (the leading structural marker -- `> `, `- `, `1. ` -- is the surface's);
+    a multi-line entry carries the line when the line is one of its own.
+    """
+    stripped = entry_text.strip()
+    if not stripped:
+        return False
+    if "\n" not in stripped:
+        return stripped in line
+    return line.strip() in {part.strip() for part in stripped.splitlines() if part.strip()}
+
+
+def section_coverage(surface_text: str, corpus: Corpus, section: str) -> SectionCoverage:
+    """Measure how completely the LIVE corpus carries *section*'s content.
+
+    Raises `OwnershipLoadError` when no H1/H2 of *surface_text* resolves to
+    *section* -- coverage of a section that is not there is not zero, it is
+    a question about the wrong surface.
+    """
+    body = section_body_lines(surface_text, section)
+    if body is None:
+        msg = (
+            f"What failed: no H1/H2 heading of the surface resolves to section {section!r}.\n"
+            "Why forbidden: coverage is measured over a section's body, and a section the "
+            "surface does not carry has no body to measure (REQ-0.35.0-04-01).\n"
+            "Next step: name a section id the surface carries, then retry."
+        )
+        raise OwnershipLoadError(msg)
+    entries = [e for e in effective_corpus(corpus).entries if e.section == section]
+    uncovered: list[str] = []
+    covering: list[str] = []
+    content = 0
+    structural = 0
+    for line in body:
+        if not line.strip():
+            continue
+        if line.startswith(_STRUCTURAL_HEADING_PREFIX):
+            structural += 1
+            continue
+        content += 1
+        carriers = [e.id for e in entries if _entry_carries_line(e.text, line)]
+        if not carriers:
+            uncovered.append(line)
+            continue
+        for entry_id in carriers:
+            if entry_id not in covering:
+                covering.append(entry_id)
+    return SectionCoverage(
+        section=section,
+        body_lines=content,
+        covered_lines=content - len(uncovered),
+        uncovered_lines=tuple(uncovered),
+        covering_entry_ids=tuple(covering),
+        structural_lines=structural,
+    )
+
+
+def load_declaration(
+    path: Path,
+    surface_text: str,
+    root: Path,
+    *,
+    sections_becoming_owned: frozenset[str] = frozenset(),
+) -> OwnershipDeclaration:
     """Load an OwnershipDeclaration at *path*, fail-closed against *surface_text*.
 
     Fails closed (raises `OwnershipLoadError`) on:
@@ -254,6 +402,18 @@ def load_declaration(path: Path, surface_text: str, root: Path) -> OwnershipDecl
     Every failure names the offending section id or value and carries
     three-part recovery prose (what failed / why forbidden / governed next
     step) per `.claude/rules/guardrail-feedback-prose.md`.
+
+    *sections_becoming_owned* (GHI #974) names sections a governed owning
+    transition is about to flip to `corpus-owned`. The span-versus-floor
+    relation is then evaluated over the map that transition PRODUCES, because
+    that transition is the one governed way an unowned section that grew past
+    the floor is brought back under it -- read strictly, the loader would
+    refuse the very state the transition exists to repair, and its own recovery
+    prose would point at nothing. Every other check is unchanged and binds the
+    declaration AS IT IS ON DISK: the closed enum, the section coverage, the
+    witness chain and the map digest all still hold, and the new floor the
+    transition records must still be at or below the stored one. The keyword
+    changes which map the arithmetic reads, never whether it is read.
     """
     raw = json.loads(path.read_text(encoding="utf-8"))
     declared_sections = raw.get("sections", {})
@@ -318,9 +478,33 @@ def load_declaration(path: Path, surface_text: str, root: Path) -> OwnershipDecl
     # an equality check would fail closed on that legitimate shrink. `>`
     # is the reproduced attack: flipping a corpus-owned section to
     # 'unowned' raises the true span past the recorded floor.
-    unowned_span_sum = sum(
-        span for sid, span in measured.items() if declared_sections.get(sid) == "unowned"
-    )
+    arithmetic_map = {
+        sid: ("corpus-owned" if sid in sections_becoming_owned else value)
+        for sid, value in declared_sections.items()
+    }
+    unowned_span_sum = unowned_span_total(measured, arithmetic_map)
+    if unowned_span_sum > stored_floor and sections_becoming_owned:
+        remaining = ", ".join(
+            f"{sid!r} ({span} B)"
+            for sid, span in sorted(measured.items())
+            if arithmetic_map.get(sid) == "unowned"
+        )
+        owning = ", ".join(repr(sid) for sid in sorted(sections_becoming_owned))
+        msg = (
+            f"What failed: {path.as_posix()!r} declares unowned_byte_floor "
+            f"{stored_floor!r}, but owning section(s) {owning} would leave the summed "
+            f"byte span of the sections that remain 'unowned' at {unowned_span_sum}, "
+            "which exceeds it.\n"
+            "Why forbidden: REQ-0.35.0-04-02 -- `gz content own` is the ordinary, "
+            "decrease-or-equal path; it lowers the floor to what the surface measures "
+            "and may never raise it. The sections that would remain unowned have grown "
+            f"past the floor's headroom on their own: {remaining}.\n"
+            "Next step: own another of those sections first (capture its content, then "
+            "`gz content own <surface> --section <id> --attestor <name> --reason "
+            "<reason>`), or reduce their spans, then retry. Un-owning a further section "
+            "raises the floor and the live span equally and creates no headroom."
+        )
+        raise OwnershipLoadError(msg)
     if unowned_span_sum > stored_floor:
         msg = (
             f"What failed: {path.as_posix()!r} declares unowned_byte_floor "
@@ -582,6 +766,53 @@ def _refuse_broken_prefix(
 
         if event.event == "section_ownership_reanchored":
             _refuse_non_migration_reanchor(path, event, predecessor)
+        if event.event == "unowned_ratchet_updated":
+            _refuse_unattested_map_change(path, event, predecessor)
+
+
+def _refuse_unattested_map_change(path: Path, event: Any, predecessor: Any) -> None:
+    """Hold an ordinary ratchet link that CHANGES THE MAP to a named section and attestation.
+
+    GHI #974. `unowned_ratchet_updated` witnesses two moves: the map-invariant
+    lowering `record_unowned_total` records, and the owning transition, which
+    lowers the floor by making one section `corpus-owned`. The second is an
+    ownership change, and the loader's own doctrine for those is that they are
+    "reachable only through the attested path" (`_refuse_unwitnessed_section_map`).
+    Measured before this arm existed: a hand-written declaration plus a
+    hand-emitted ratchet row carrying the NEW map's digest and no attestor
+    loaded cleanly -- the same shape `_refuse_non_migration_reanchor` closed on
+    the re-anchor type. A row that moves the map must say which section moved,
+    who attested it and why; a map-invariant row owes none of that.
+
+    Vacuous when the predecessor records no digest, for the reason the
+    re-anchor arm gives: genesis rows minted before `sections_digest` existed
+    have nothing to compare against.
+    """
+    predecessor_digest = predecessor.extra.get("sections_digest")
+    event_digest = event.extra.get("sections_digest")
+    if predecessor_digest is None or event_digest == predecessor_digest:
+        return
+    missing = [
+        field
+        for field in ("section", "attestor", "reason")
+        if not str(event.extra.get(field) or "").strip()
+    ]
+    if not missing:
+        return
+    msg = (
+        f"What failed: {path.as_posix()!r} rests on ratchet link {event.id!r}, which "
+        f"records section map {event_digest!r} while its predecessor {predecessor.id!r} "
+        f"records {predecessor_digest!r}, and it carries no {', '.join(missing)}.\n"
+        "Why forbidden: REQ-0.35.0-04-02 and REQ-0.35.0-04-05 -- an ordinary "
+        "'unowned_ratchet_updated' row may lower the floor under an UNCHANGED map "
+        "without attestation, but a row that changes which sections are owned is an "
+        "ownership transition, and every ownership transition names the section it "
+        "moved, its attestor and its reason (`gz content own` records all three).\n"
+        "Next step: make the ownership change through `gz content own`, which records "
+        "the section, the attestor and the reason alongside the new map, then repoint "
+        "floor_event_id at that event and retry."
+    )
+    raise OwnershipLoadError(msg)
 
 
 def _refuse_non_migration_reanchor(path: Path, event: Any, predecessor: Any) -> None:

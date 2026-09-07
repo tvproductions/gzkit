@@ -268,7 +268,10 @@ class TestCommandSurfaceUnchanged(unittest.TestCase):
         # already-retired id, so repair had no governed path at all; unown by
         # OBPI-0.35.0-04 — the attested raise-path is the ONLY move that raises the
         # decrease-only unowned-byte ratchet, and ADR-0.35.0 § Decision item 3 requires
-        # it precisely because "an undefined reversal path is the one agents invent")
+        # it precisely because "an undefined reversal path is the one agents invent";
+        # own by GHI #974 — the same Decision declares the seam two-directional and
+        # only the raise arm had shipped, so an unowned section that grew past its
+        # floor had no governed exit but a hand-edited declaration)
         expected_subcommands = {
             "import",
             "list",
@@ -282,6 +285,7 @@ class TestCommandSurfaceUnchanged(unittest.TestCase):
             "advise-rendition",
             "reconcile-retirements",
             "unown",
+            "own",
         }
 
         # Run `gz content --help` via uv run (gzkit has no __main__.py)
