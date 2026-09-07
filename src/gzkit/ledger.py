@@ -324,6 +324,12 @@ class Ledger:
 
         """
         self.path = path
+        #: Whether THIS instance has committed the ledger's directory entry.
+        #: Never inferred from the file existing — that inference is the
+        #: durability bypass GHI #952 reopened on. False on every fresh
+        #: instance, so a process that inherits an uncommitted file re-commits
+        #: it rather than trusting it.
+        self._entry_committed = False
         self._cached_events: list[LedgerEvent] | None = None
         self._cached_graph: dict[str, dict[str, Any]] | None = None
         self._replay_manifest: LedgerReplayManifest | None = None
@@ -345,10 +351,54 @@ class Ledger:
         repository's one implementation, and a failure PROPAGATES: refusing is
         correct where reporting a durable witness on a file that may not
         survive is not.
+
+        **A FAILURE HERE LEAVES A VISIBLE FILE, and that file's existence is
+        NOT evidence of durability.** ``touch`` runs before the barrier, so a
+        raised barrier — or a crash between the two, which raises nothing at
+        all — leaves the file on disk with its entry uncommitted. This is why
+        :meth:`append` gates the barrier on
+        :attr:`_entry_committed` rather than on ``self.path.exists()``:
+        testing existence read the residue of a FAILED creation as proof of a
+        successful one, and appended to it reporting the row durable.
         """
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self.path.touch()
         commit_directory_entry(self.path.parent)
+
+    def _establish_creation(self) -> None:
+        """Ensure the file exists AND that ITS DIRECTORY ENTRY WAS COMMITTED.
+
+        The entry is treated as durable only when BOTH hold: this instance
+        committed it, and the file has not disappeared since. Neither alone is
+        sufficient, and the discarded third option — *the file exists* — is the
+        bypass this method replaces (GHI #952).
+
+        Existence proved nothing because :meth:`create` touches before it
+        commits. A failed barrier and a crash between the two leave byte-identical
+        residue, so `if not self.path.exists(): self.create()` skipped the
+        barrier for a file whose entry had never been committed, and the append
+        that followed reported its row durable. Measured on the reported
+        sequence: attempt 1 refused with the file left behind, attempt 2 on a
+        FRESH instance succeeded, and the barrier call count stayed at 1.
+
+        Because the flag starts ``False`` on every instance, a process that
+        inherits such a file re-commits the entry rather than trusting it —
+        which is what closes the crash path, where no exception was ever raised
+        for an error handler to catch.
+
+        Retry is the consequence, not a separate mechanism: the flag is set only
+        after :meth:`create` returns, so while the barrier is unavailable every
+        attempt re-runs it and every attempt refuses. The first one that
+        succeeds is the one that may report a durable row.
+
+        Called under :func:`~gzkit.file_lock.exclusive_file_lock` so a
+        concurrent writer cannot observe the file between its creation and its
+        entry being committed.
+        """
+        if self._entry_committed and self.path.exists():
+            return
+        self.create()
+        self._entry_committed = True
 
     def _invalidate_cache(self) -> None:
         """Invalidate all in-memory caches after a mutation."""
@@ -437,14 +487,18 @@ class Ledger:
             event: The event to append.
 
         """
-        if not self.path.exists():
-            self.create()
+        # The lock's sidecar is opened BESIDE the ledger, so the directory has
+        # to exist before the lock can be taken. Only the directory: the ledger
+        # file itself is created under the lock, with its entry, by
+        # `_establish_creation`.
+        self.path.parent.mkdir(parents=True, exist_ok=True)
 
         # Serialize fully BEFORE touching the file so a serialization error
         # cannot leave a partial JSONL line on disk (failure-atomic, GHI #687).
         line = json.dumps(event.model_dump(), separators=(",", ":")) + "\n"
 
         with exclusive_file_lock(self.path):
+            self._establish_creation()
             repair = self.restore_record_boundary()
             if repair.action == "discarded":
                 # Reported, never silent: after this append the fragment is gone
