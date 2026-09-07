@@ -73,8 +73,24 @@ def is_repo_local_git_var(name: str) -> bool:
     return name in GIT_REPO_LOCAL_ENV or name.startswith(GIT_CONFIG_INJECTION_PREFIXES)
 
 
+#: Config a fixture git is PINNED to, injected after the inherited injection is
+#: scrubbed. ``core.autocrlf`` is the one that bites: Git for Windows defaults it
+#: to ``true``, so ``git checkout -- <surface>`` rewrites LF to CRLF and a
+#: BYTE-MEASURED surface gains a byte per line. Measured 2026-09-07 on
+#: ``windows-latest``: a fixture seeded a declaration at floor 26 from the
+#: in-memory text, checked the surface back out through git, and the loader then
+#: refused — ``summed byte span ... is 28, which exceeds it`` (GHI #982). The
+#: fixtures already write surfaces with ``write_bytes`` for exactly this reason
+#: (GHI #958); git was the remaining translation point, and it sat outside every
+#: guard because it is not a Python write.
+PINNED_FIXTURE_GIT_CONFIG: tuple[tuple[str, str], ...] = (
+    ("core.autocrlf", "false"),
+    ("core.eol", "lf"),
+)
+
+
 def isolated_git_env(base: Mapping[str, str]) -> dict[str, str]:
-    """Return a copy of *base* minus git's repo-local variables.
+    """Return a copy of *base* minus git's repo-local variables, plus pinned config.
 
     Pass the result as ``env=`` to a ``git`` spawned against a temporary
     repository, so it operates on the repository its ``cwd`` (or ``-C``) names
@@ -83,8 +99,25 @@ def isolated_git_env(base: Mapping[str, str]) -> dict[str, str]:
     scrubbed ``git`` still discovers that same checkout — the main one through
     ``.git/``, a linked worktree through its gitfile — so a command that means
     to inspect its hosting repository is not redirected.
+
+    ISOLATION IS FROM THE PLATFORM, NOT ONLY FROM THE REPOSITORY. Scrubbing
+    answers *which repository* a fixture git operates on; it said nothing about
+    *what bytes* that git writes, and on Windows the answer differs from POSIX
+    by default. :data:`PINNED_FIXTURE_GIT_CONFIG` is therefore injected here
+    rather than repeated at each ``git init`` — the same one-authority argument
+    the scrub list makes, and the reason a per-fixture ``git config`` call would
+    have closed one instance of the failure rather than its class.
+
+    The injection uses ``GIT_CONFIG_COUNT``/``GIT_CONFIG_KEY_<n>``, which the
+    scrub above removes from the inherited environment; these are written AFTER
+    that filter, so a fixture's pins can never be a caller's leftovers.
     """
-    return {key: value for key, value in base.items() if not is_repo_local_git_var(key)}
+    env = {key: value for key, value in base.items() if not is_repo_local_git_var(key)}
+    for index, (key, value) in enumerate(PINNED_FIXTURE_GIT_CONFIG):
+        env[f"GIT_CONFIG_KEY_{index}"] = key
+        env[f"GIT_CONFIG_VALUE_{index}"] = value
+    env["GIT_CONFIG_COUNT"] = str(len(PINNED_FIXTURE_GIT_CONFIG))
+    return env
 
 
 def scrub_repo_local_git_env(environ: MutableMapping[str, str]) -> list[str]:

@@ -223,48 +223,97 @@ def extract_demo_commands(brief_path: Path) -> list[str]:
 
 @lru_cache(maxsize=1)
 def replay_shell() -> str | None:
-    """Return the shell transcript replay runs under, or None to inherit the default.
+    r"""Return the POSIX shell transcript replay runs under, or None if there is none.
 
     THE GATE AND ITS VERIFIER MUST AGREE ON WHAT A SHELL IS. `verifier_pipe_gate`
     refuses a verifier in a non-final pipeline stage and sanctions exactly two
     opt-outs -- `set -o pipefail` and `${PIPESTATUS[0]}` -- and BOTH ARE BASH
-    FEATURES. Replay ran through `subprocess.run(shell=True)`, which is
-    `/bin/sh`: bash on macOS, and **dash** on Debian/Ubuntu, where neither
-    exists. Measured 2026-09-07:
+    FEATURES. Replay ran through `subprocess.run(shell=True)`, whose shell is
+    the platform's default, and on neither platform is that a shell the gate's
+    own recommendations run under. Measured 2026-09-07:
 
         $ /bin/dash -c 'set -o pipefail; echo OK | tail -1'
         /bin/dash: 1: set: Illegal option -o pipefail
         dash exit: 2
 
-    So on every Linux runner a packet using the SANCTIONED escape was rejected
-    as a fabricated transcript -- `Command exited 2 (expected 0)` with the
-    pasted `OK` never produced -- while the same packet verified on a macOS
-    developer machine. The gate recommended an incantation its own consumer
-    could not run (AGENTS.md Invariant 6g; coupled-surface coherence, § DO IT
-    RIGHT 1a).
+    `/bin/sh` is bash on macOS and **dash** on Debian/Ubuntu, so a packet using
+    the SANCTIONED escape was rejected as a fabricated transcript on every Linux
+    runner while verifying on a developer machine (GHI #981). On Windows the
+    default is `cmd.exe`, which is not a POSIX shell at all: `;` is not a
+    statement separator and `$?` is not a variable, so a transcript reading
+    `python3 -c "...; sys.exit(3)"; echo "REAL EXIT: $?"` had its whole suffix
+    swallowed as an argument -- the run exited 3 with the pasted status line
+    never produced, and the verifier reported a fabricated transcript
+    (GHI #982). One defect, two platforms, one seam.
 
     Resolved ONCE and shared by both replay sites (`_run_demo` here and
     `stage4_packet._run`), because two callers deciding independently which
     shell replays a transcript are two callers that can disagree about whether
-    a given packet verifies -- the same single-authority reason
-    `shell_reading` is shared between the gates that PARSE these commands.
+    a given packet verifies -- the same single-authority reason `shell_reading`
+    is shared between the gates that PARSE these commands.
 
-    Returns None on Windows, where `shell=True` means COMSPEC and an
-    `executable` override would change the argument quoting rules rather than
-    the language: that platform's replay is out of this repair's scope and is
-    left exactly as it was.
+    **The Windows lookup is explicit rather than a bare `which`.** Git for
+    Windows ships bash and is present on the GitHub runner image; so, on some
+    images, is `System32\\bash.exe`, which is the WSL LAUNCHER -- a different
+    filesystem namespace, where the packet's `cwd` and its relative paths do
+    not mean what they mean here. Resolving that would replay transcripts
+    against a different tree and report the result as this one's.
+
+    Returns None when no POSIX shell is available. Callers then fall back to the
+    platform default, which is the pre-existing behaviour, and the tests that
+    depend on POSIX shell semantics declare the limit and skip rather than
+    asserting a shell that is not there.
     """
     if os.name == "nt":
-        return None
+        return _windows_posix_shell()
     return shutil.which("bash")
+
+
+def _windows_posix_shell() -> str | None:
+    r"""Return Git for Windows' bash, never the WSL launcher, or None.
+
+    DERIVED FROM THE ``git`` ON PATH rather than from ``%PROGRAMFILES%``: the
+    bash that should replay a transcript is the one shipped beside the git this
+    process already resolves, so a non-default install is found and no env-var
+    read is needed (``tests/policy/test_env_usage.py`` allowlists env access,
+    and this lookup has a better answer than widening it). Git for Windows lays
+    out ``<root>\cmd\git.exe`` beside ``<root>\bin\bash.exe``.
+    """
+    git = shutil.which("git")
+    if git is not None:
+        candidate = Path(git).resolve().parent.parent / "bin" / "bash.exe"
+        if candidate.is_file():
+            return str(candidate)
+    found = shutil.which("bash")
+    if found is None:
+        return None
+    # ``System32\bash.exe`` is the WSL LAUNCHER. It runs in a different
+    # filesystem namespace, so a transcript replayed there would be verified
+    # against a different tree and the result reported as this one's.
+    return None if "system32" in found.replace("/", "\\").lower() else found
+
+
+def replay_invocation(command: str) -> tuple[list[str] | str, bool]:
+    """Return the ``(args, shell)`` pair replaying *command* under `replay_shell`.
+
+    An ARGV, not `shell=True` plus `executable=`. On POSIX the two are the same
+    thing -- CPython builds `[executable, "-c", command]` either way -- but on
+    Windows `shell=True` appends the command to `COMSPEC /c`, so an `executable`
+    override hands `/c` to a shell that does not take it. The argv form is the
+    one spelling that means the same thing on both platforms.
+    """
+    shell = replay_shell()
+    if shell is None:
+        return command, True
+    return [shell, "-c", command], False
 
 
 def _run_demo(command: str, project_root: Path) -> DemoResult:
     """Execute one demo command, capturing exit status and a stdout/stderr tail."""
+    args, use_shell = replay_invocation(command)
     proc = subprocess.run(  # noqa: S602 — demo commands are operator-authored in the brief
-        command,
-        shell=True,
-        executable=replay_shell(),
+        args,
+        shell=use_shell,
         cwd=project_root,
         capture_output=True,
         text=True,

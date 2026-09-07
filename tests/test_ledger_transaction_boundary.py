@@ -23,6 +23,7 @@ committed row is the whole defect.
 from __future__ import annotations
 
 import json
+import signal
 import subprocess
 import sys
 import tempfile
@@ -290,6 +291,16 @@ class TestTrailingFragmentRecovery(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "ledger.jsonl"
             path.write_text(_SEED, encoding="utf-8")
+            # THE KILL IS ABRUPT ON BOTH PLATFORMS; ONLY ITS SPELLING DIFFERS.
+            # `signal.SIGKILL` does not exist on Windows, so this raised
+            # `AttributeError` there and the process exited 1 -- the assertion
+            # below then read `1 != -9` and reported a durability regression
+            # where the only difference was the POSIX encoding of a kill
+            # (GHI #982). `os._exit` is the portable equivalent for what this
+            # test needs: immediate termination with no unwinding, no `finally`,
+            # no buffer flush beyond the explicit one above. SIGKILL is kept
+            # where it exists because it is the stronger witness -- it cannot be
+            # caught by the interpreter at all.
             script = (
                 "import os, signal;"
                 "from pathlib import Path;"
@@ -302,7 +313,8 @@ class TestTrailingFragmentRecovery(unittest.TestCase):
                 "    if mode == 'a':\n"
                 '        h.write(\'{"schema":"gzkit.ledger.v1","eve\')\n'
                 "        h.flush()\n"
-                "        os.kill(os.getpid(), signal.SIGKILL)\n"
+                "        kill = getattr(signal, 'SIGKILL', None)\n"
+                "        os.kill(os.getpid(), kill) if kill else os._exit(137)\n"
                 "    return h\n"
                 "Path.open = killing\n"
                 f"Ledger(Path({str(path)!r})).append("
@@ -317,7 +329,14 @@ class TestTrailingFragmentRecovery(unittest.TestCase):
                 check=False,
             )
 
-            self.assertEqual(killed.returncode, -9)
+            # The SUBJECT is what an interrupted append leaves behind, so the
+            # binding assertion is that the writer died mid-append -- not which
+            # integer the platform uses to say so. The POSIX encoding is still
+            # pinned where it exists, so this keeps the stronger claim there
+            # rather than trading it for portability.
+            self.assertNotEqual(killed.returncode, 0, msg=killed.stderr)
+            if hasattr(signal, "SIGKILL"):
+                self.assertEqual(killed.returncode, -signal.SIGKILL)
             self.assertFalse(path.read_text(encoding="utf-8").endswith("\n"))
 
             Ledger(path).append(_event("AFTER", "2026-01-03T00:00:00+00:00"))

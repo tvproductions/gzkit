@@ -64,7 +64,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from gzkit.governance.stage4_evidence import _join_demo_commands, replay_shell
+from gzkit.governance.stage4_evidence import _join_demo_commands, replay_invocation
 from gzkit.verifier_pipe_gate import masked_verifier
 
 # A fenced block cites shell commands only when it says so. A ``json``/``text``
@@ -244,14 +244,14 @@ def _run(command: str, project_root: Path) -> tuple[int, str, bool]:
     The shell is CHOSEN, never inherited: `/bin/sh` is dash on Debian/Ubuntu and
     cannot run `set -o pipefail` or `${PIPESTATUS[0]}`, the two escapes
     `verifier_pipe_gate` sanctions — so replay rejected the very transcripts the
-    gate tells authors to write. See `replay_shell`, which both replay sites
-    share.
+    gate tells authors to write, and `cmd.exe` is not a POSIX shell at all.
+    See `replay_shell` / `replay_invocation`, which both replay sites share.
     """
+    args, use_shell = replay_invocation(command)
     try:
         proc = subprocess.run(  # noqa: S602 — re-running the packet's own claim is the check
-            command,
-            shell=True,
-            executable=replay_shell(),
+            args,
+            shell=use_shell,
             cwd=project_root,
             capture_output=True,
             text=True,

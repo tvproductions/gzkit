@@ -16,7 +16,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from gzkit.git_spawn_boundary import git_spawns_outside_boundary
+from gzkit.git_spawn_boundary import PINNED_FIXTURE_GIT_CONFIG, git_spawns_outside_boundary
 from tests.commands.common import _ignore_transient_git, _init_git_repo, _isolated_git_env
 
 _TESTS_ROOT = Path(__file__).resolve().parents[1]
@@ -331,9 +331,39 @@ class TestFixtureGitIsolation(unittest.TestCase):
             "HOME": "/home/u",
         }
         scrubbed = _isolated_git_env({**dropped, **kept})
+        pins = {
+            key: value
+            for key, value in scrubbed.items()
+            if key.startswith(("GIT_CONFIG_KEY_", "GIT_CONFIG_VALUE_", "GIT_CONFIG_COUNT"))
+        }
         self.assertEqual(
-            scrubbed, kept, "only repo-local and config-injecting variables may be removed"
+            {key: value for key, value in scrubbed.items() if key not in pins},
+            kept,
+            "only repo-local and config-injecting variables may be removed",
         )
+        # The boundary INJECTS as well as scrubs, and the caller's injection is
+        # replaced rather than merged: `GIT_CONFIG_VALUE_0` above is
+        # 'Injected', and what survives must be the pinned config.
+        self.assertEqual(pins["GIT_CONFIG_COUNT"], str(len(PINNED_FIXTURE_GIT_CONFIG)))
+        self.assertEqual(
+            [(pins[f"GIT_CONFIG_KEY_{i}"], pins[f"GIT_CONFIG_VALUE_{i}"]) for i in range(2)],
+            list(PINNED_FIXTURE_GIT_CONFIG),
+            "an inherited injection must never survive as a fixture's pinned config",
+        )
+
+    def test_the_boundary_pins_line_endings_so_a_checkout_cannot_retranslate(self) -> None:
+        """GHI #982 — git was the last LF/CRLF translation point outside the guards.
+
+        Fixtures write byte-measured surfaces with `write_bytes` precisely so no
+        `os.linesep` translation reaches them (GHI #958). `git checkout -- <surface>`
+        under Git for Windows' default `core.autocrlf=true` re-introduced it, and a
+        declaration seeded at floor 26 met a surface measuring 28.
+        """
+        self.assertIn(("core.autocrlf", "false"), PINNED_FIXTURE_GIT_CONFIG)
+        env = _isolated_git_env({"PATH": "/usr/bin"})
+        count = int(env["GIT_CONFIG_COUNT"])
+        pinned = {env[f"GIT_CONFIG_KEY_{i}"]: env[f"GIT_CONFIG_VALUE_{i}"] for i in range(count)}
+        self.assertEqual(pinned.get("core.autocrlf"), "false")
 
     def test_the_boundary_reads_the_live_environment_by_default(self) -> None:
         with patch.dict(os.environ, {"GIT_DIR": "/elsewhere/.git", "GIT_SSH_COMMAND": "ssh"}):

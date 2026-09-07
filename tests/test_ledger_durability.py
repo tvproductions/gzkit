@@ -56,6 +56,34 @@ class _FsyncSpy:
         self._real(fd)
 
 
+class _DirectoryBarrierSpy:
+    """Record which directories had their entry committed, and call through.
+
+    THE ENTRY BARRIER IS NOT AN ``os.fsync`` ON EVERY PLATFORM (GHI #982).
+    ``durability.commit_directory_entry`` syncs an open directory descriptor on
+    POSIX and sends ``NtFlushBuffersFileEx`` through a directory handle on
+    Windows -- the guarantee is one, the syscall is not. Spying on ``os.fsync``
+    and classifying by ``st_ino`` therefore observed the POSIX implementation
+    rather than the barrier, so on Windows these tests reported the barrier
+    missing while the production code was running it correctly:
+
+        AssertionError: 31806672368344265 not found in [126382264543372735]
+
+    Observing the barrier's own seam asserts what the tests are actually about
+    -- *this directory's entry was committed* -- and is platform-independent by
+    construction. The file barrier keeps its ``os.fsync`` spy, which IS the
+    mechanism on both platforms.
+    """
+
+    def __init__(self) -> None:
+        self.directories: list[Path] = []
+        self._real = ledger_module.commit_directory_entry
+
+    def __call__(self, directory: Path) -> None:
+        self.directories.append(Path(directory))
+        self._real(directory)
+
+
 class TestAppendIsDurableBeforeItReturns(unittest.TestCase):
     """The whole point of the method: returning is a durability claim."""
 
@@ -86,11 +114,15 @@ class TestAppendIsDurableBeforeItReturns(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             path = self._ledger(tmp, precreate=False)
             spy = _FsyncSpy()
+            barrier = _DirectoryBarrierSpy()
 
-            with mock.patch.object(os, "fsync", spy):
+            with (
+                mock.patch.object(os, "fsync", spy),
+                mock.patch.object(ledger_module, "commit_directory_entry", barrier),
+            ):
                 Ledger(path).append(_event("ADR-0.1.0-x"))
 
-            self.assertIn(path.parent.stat().st_ino, spy.inodes)
+            self.assertIn(path.parent, barrier.directories)
             self.assertIn(path.stat().st_ino, spy.inodes)
 
     def test_the_entry_is_committed_once_per_instance_not_once_per_row(self) -> None:
@@ -109,21 +141,24 @@ class TestAppendIsDurableBeforeItReturns(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             path = self._ledger(tmp, precreate=True)
             ledger = Ledger(path)
-            parent_inode = path.parent.stat().st_ino
 
-            first = _FsyncSpy()
-            with mock.patch.object(os, "fsync", first):
+            first = _DirectoryBarrierSpy()
+            with mock.patch.object(ledger_module, "commit_directory_entry", first):
                 ledger.append(_event("ADR-0.1.0-x"))
 
-            second = _FsyncSpy()
-            with mock.patch.object(os, "fsync", second):
+            second = _DirectoryBarrierSpy()
+            second_rows = _FsyncSpy()
+            with (
+                mock.patch.object(ledger_module, "commit_directory_entry", second),
+                mock.patch.object(os, "fsync", second_rows),
+            ):
                 ledger.append(_event("ADR-0.2.0-y"))
 
-            self.assertIn(parent_inode, first.inodes)
-            self.assertNotIn(parent_inode, second.inodes)
+            self.assertIn(path.parent, first.directories)
+            self.assertNotIn(path.parent, second.directories)
             # The row's own barrier is still paid every time; only the entry's
             # is amortised.
-            self.assertIn(path.stat().st_ino, second.inodes)
+            self.assertIn(path.stat().st_ino, second_rows.inodes)
 
     def test_a_ledger_that_disappeared_is_re_created_and_re_committed(self) -> None:
         """Committed-once is true of a file, not of a path.
@@ -136,16 +171,15 @@ class TestAppendIsDurableBeforeItReturns(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             path = self._ledger(tmp, precreate=True)
             ledger = Ledger(path)
-            parent_inode = path.parent.stat().st_ino
 
             ledger.append(_event("ADR-0.1.0-x"))
             path.unlink()
 
-            spy = _FsyncSpy()
-            with mock.patch.object(os, "fsync", spy):
+            barrier = _DirectoryBarrierSpy()
+            with mock.patch.object(ledger_module, "commit_directory_entry", barrier):
                 ledger.append(_event("ADR-0.2.0-y"))
 
-            self.assertIn(parent_inode, spy.inodes)
+            self.assertIn(path.parent, barrier.directories)
 
 
 class TestAFailedBarrierRefusesRatherThanReporting(unittest.TestCase):
@@ -370,18 +404,24 @@ class TestTheBarrierRunsInsideTheTransaction(unittest.TestCase):
             path = Path(tmp) / "ledger.jsonl"
             path.write_text("", encoding="utf-8")
             file_inode = path.stat().st_ino
-            parent_inode = path.parent.stat().st_ino
+            real_barrier = ledger_module.commit_directory_entry
 
             def recording_fsync(fd: int) -> None:
-                inode = os.fstat(fd).st_ino
-                if inode == file_inode:
+                if os.fstat(fd).st_ino == file_inode:
                     order.append("row-durable")
-                elif inode == parent_inode:
-                    order.append("entry-durable")
                 real_fsync(fd)
+
+            # The entry barrier is recorded at ITS OWN seam, never at `os.fsync`:
+            # it is `NtFlushBuffersFileEx` on Windows, so an fsync spy observed
+            # the POSIX implementation and reported the barrier missing where it
+            # had in fact run (GHI #982).
+            def recording_barrier(directory: Path) -> None:
+                order.append("entry-durable")
+                real_barrier(directory)
 
             with (
                 mock.patch.object(ledger_module, "exclusive_file_lock", recording_lock),
+                mock.patch.object(ledger_module, "commit_directory_entry", recording_barrier),
                 mock.patch.object(os, "fsync", recording_fsync),
             ):
                 Ledger(path).append(_event("ADR-0.1.0-x"))

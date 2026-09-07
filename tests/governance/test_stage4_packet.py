@@ -15,7 +15,6 @@ re-run the bare ARB incantations that carry no output claim.
 
 from __future__ import annotations
 
-import os
 import subprocess
 import tempfile
 import unittest
@@ -23,6 +22,7 @@ from pathlib import Path
 from unittest import mock
 
 from gzkit.governance import stage4_evidence, stage4_packet
+from gzkit.governance.stage4_evidence import replay_shell
 from gzkit.governance.stage4_packet import (
     _run,
     extract_citation_commands,
@@ -499,37 +499,37 @@ class TestReplayShellCanRunWhatTheGateSanctions(unittest.TestCase):
     green on one developer's machine and red on every Linux runner.
     """
 
-    def _spy_on_replay(self, command: str) -> dict:
-        """Return the kwargs `_run` actually handed subprocess."""
+    def _spy_on_replay(self, command: str) -> tuple:
+        """Return the ``(args, shell=)`` pair `_run` actually handed subprocess."""
         captured: dict = {}
         real_run = subprocess.run
 
         def spy(*args, **kwargs):  # noqa: ANN002, ANN003, ANN202
-            captured.update(kwargs)
+            captured["args"] = args[0]
+            captured["shell"] = kwargs.get("shell")
             return real_run(*args, **kwargs)
 
         with mock.patch.object(stage4_packet.subprocess, "run", spy):
             _run(command, Path.cwd())
-        return captured
+        return captured["args"], captured["shell"]
 
-    def test_replay_never_inherits_whatever_bin_sh_happens_to_be(self) -> None:
-        if os.name == "nt":
-            self.skipTest("POSIX shell selection; Windows replays through COMSPEC")
-        captured = self._spy_on_replay("echo hi")
-        self.assertIsNotNone(
-            captured.get("executable"),
-            "replay must CHOOSE its shell; inheriting /bin/sh is dash on Debian/Ubuntu",
-        )
+    def test_replay_never_inherits_the_platform_default_shell(self) -> None:
+        """`/bin/sh` is dash on Ubuntu and `cmd.exe` on Windows; neither is the gate's."""
+        if replay_shell() is None:
+            self.skipTest("no POSIX shell on this host; replay declares the limit")
+        args, shell = self._spy_on_replay("echo hi")
+        self.assertFalse(shell, "an argv, never shell=True -- see `replay_invocation`")
+        self.assertEqual(args[:2], [replay_shell(), "-c"])
 
     def test_the_chosen_shell_executes_both_sanctioned_escapes(self) -> None:
         """Naming a shell is not the check -- it must actually run the escapes.
 
-        An `executable` that pointed at dash would satisfy the test above and
-        leave the defect exactly where it was.
+        A shell that resolved to dash, or to the WSL launcher, would satisfy the
+        test above and leave the defect exactly where it was.
         """
-        if os.name == "nt":
-            self.skipTest("POSIX shell selection; Windows replays through COMSPEC")
-        shell = self._spy_on_replay("echo hi")["executable"]
+        if replay_shell() is None:
+            self.skipTest("no POSIX shell on this host; replay declares the limit")
+        shell = self._spy_on_replay("echo hi")[0][0]
         for escape in (
             "set -o pipefail; echo OK | tail -1",
             "echo OK | tail -1; exit ${PIPESTATUS[0]}",
@@ -551,6 +551,7 @@ class TestReplayShellCanRunWhatTheGateSanctions(unittest.TestCase):
         `stage4_evidence._run_demo` carried the identical `shell=True`, so
         repairing only the packet site would leave the same defect one module
         over -- the twin-path asymmetry this repository has been bitten by
-        before (Step-4b round-8 finding 1).
+        before (Step-4b round-8 finding 1). Identity, not equality: two callers
+        that merely agreed today could drift tomorrow.
         """
-        self.assertIs(stage4_evidence.replay_shell(), stage4_packet.replay_shell())
+        self.assertIs(stage4_evidence.replay_invocation, stage4_packet.replay_invocation)
