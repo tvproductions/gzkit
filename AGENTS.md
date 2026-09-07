@@ -71,6 +71,8 @@ See [`.gzkit/rules/agent-failure-modes.md`](.gzkit/rules/agent-failure-modes.md)
 
 > gzkit's purpose is to make stochastic LLM vibing structurally inert. Governance is the surface that steers direction and holds agent-driven work accountable — not overhead to be optimized against. Every option is framed by *"which choice leaves the smallest surface for vibing to leak through,"* never by maintenance burden or velocity. *"Lighter ceremony"* is not a tradeoff axis on its own.
 
+> See [`docs/governance/agent-contract-rationale.md` § Anti-vibing mantra](docs/governance/agent-contract-rationale.md#anti-vibing-mantra--relationship-to-the-rest-of-the-contract) for the rationale and relationship to the other contract pillars; see [`docs/governance/harness-engineering-appraisal.md`](docs/governance/harness-engineering-appraisal.md) for the appraisal of gzkit's harness fitness against the Böckeler ("Harness Engineering") and Greyling ("98% of Claude Code Is Not AI") external theses.
+
 ### Operative claims (binding)
 
 1. **Governance is the steering and accountability surface for agent-driven work, not overhead.** Volume follows steering need; "lighter ceremony" alone is never the tradeoff axis. (Prior framings invoking a literal "5:1 ratio" were rhetorical — read the rule, not the metaphor.)
@@ -81,6 +83,8 @@ See [`.gzkit/rules/agent-failure-modes.md`](.gzkit/rules/agent-failure-modes.md)
 ## STDLIB-FIRST DOCTRINE (DEPENDENCY POSTURE)
 
 **Default answer to every dependency question: what is the stdlib path?**
+
+> See [`docs/governance/agent-contract-rationale.md` § Stdlib-First doctrine](docs/governance/agent-contract-rationale.md#stdlib-first-doctrine--rationale) for the corpus-bias rationale, opinionated-defaults framing, and relationship to the Exemplar-Corpus Doctrine.
 
 ### Operative claims (binding)
 
@@ -109,6 +113,8 @@ See [`.gzkit/rules/agent-failure-modes.md`](.gzkit/rules/agent-failure-modes.md)
 5. **Decisions accumulate; agent maintains running state.** Every decision in a design dialogue is captured in agent's running model and surfaces in subsequent drafts. Operator never re-states a prior booked decision.
 6. **Agent never asks operator to type more than necessary.** Bundled questions, unjustified open prompts, *"please specify"* when a draft would have sufficed are violations.
 7. NEVER ask the operator a question canon already answers. Operator verbatim (2026-08-23): 'why do you burn tokens, ask me questions that you have an answer to/guidance for, and coerce me into drift?' The ask is not merely wasted tokens — it is a DRIFT VECTOR. Presenting a settled matter as an open choice invites a re-ruling, and a re-ruling can land somewhere other than canon; the question manufactures an opportunity for drift that would not otherwise exist. Before any question to the operator, search canon first; where canon rules, ACT and name the rule that governed, never render it as a menu. Reserve questions for genuinely unbounded answer spaces. Measured instance: an agent proposed a pool ADR for a corrective finding while § Operator Doctrine says verbatim 'never a fresh pool ADR, new-design ceremony, or enhancement', then used a multiple-choice prompt to make the operator restate their own canon back to it. Three settled rulings were re-elicited in one session — correction-vs-new-work, no-pool-ADR-for-a-correction, and GHI-as-work-order. A prose acknowledgement of the miss is NOT capture: this rule reached canon only because the operator asked whether it had, after the agent named the gap in conversation and moved on without recording it. (Advisory — whether an answer is already in canon is a reading, not a state gzkit models.)
+
+> See [`docs/governance/agent-contract-rationale.md` § Operator economy](docs/governance/agent-contract-rationale.md#operator-economy--why-this-is-canon) for rationale and anti-pattern catalog.
 
 ## Behavior Rules
 

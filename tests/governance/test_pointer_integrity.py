@@ -404,5 +404,175 @@ class TestPointerAnchorsRoutesToExit3(unittest.TestCase):
         self.assertEqual(ctx.exception.code, 3)
 
 
+class TestReverseArmOrphanedBackPointer(unittest.TestCase):
+    """The reverse half of Invariant 3 (GHI #933).
+
+    ``docs/governance/agent-control-surface-fidelity-doctrine.md`` § Invariant 3:
+    *"Reverse-checks: every `<!-- lifted-from: -->` comment in `docs/governance/**`
+    has a matching back-pointer at the origin."* ADR-0.0.33 Anti-Pattern 5 calls
+    the comment *"the reverse half of the pointer-integrity contract."* The arm
+    was declared and never built; three orphaned declarations accumulated in
+    ``agent-contract-rationale.md`` unobserved.
+
+    The origin's matching link may be prose or a ``> See`` blockquote: the
+    reverse arm asks whether the lift is still pointed at, while the shape of
+    the forward pointer stays REQ-0.0.33-03-04's question, not this one.
+    """
+
+    def _tree(self, tmp: str, *, origin: str, dest: str) -> Path:
+        return _make_tree(
+            tmp,
+            agents_content=origin,
+            extra_files={"docs/governance/r.md": dest},
+        )
+
+    def test_blockquote_forward_pointer_satisfies_the_declaration(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._tree(
+                tmp,
+                origin="> See [`docs/governance/r.md` § H](docs/governance/r.md#h) for detail.\n",
+                dest="<!-- lifted-from: AGENTS.md#h -->\n## H\n\nbody\n",
+            )
+            self.assertEqual(validate_pointer_integrity(root), [])
+
+    def test_prose_forward_link_satisfies_the_declaration(self) -> None:
+        # The task-discovery shape: the origin points at the lift in prose.
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._tree(
+                tmp,
+                origin="Version history lifted to [History](docs/governance/r.md#h).\n",
+                dest="<!-- lifted-from: AGENTS.md#h -->\n## H\n\nbody\n",
+            )
+            self.assertEqual(validate_pointer_integrity(root), [])
+
+    def test_prose_link_resolves_relative_to_the_origin_file(self) -> None:
+        # A nested origin links with `../../`, as its reader resolves it (GHI #931).
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_tree(
+                tmp,
+                rule_content="Lifted to [History](../../docs/governance/r.md#h).\n",
+                extra_files={
+                    "docs/governance/r.md": (
+                        "<!-- lifted-from: .claude/rules/test-rule.md#h -->\n## H\n\nbody\n"
+                    )
+                },
+            )
+            self.assertEqual(validate_pointer_integrity(root), [])
+
+    def test_origin_without_a_forward_link_is_an_orphaned_declaration(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._tree(
+                tmp,
+                origin="## Section\n\nThe pointer that used to be here is gone.\n",
+                dest="# R\n\n<!-- lifted-from: AGENTS.md#h -->\n## H\n\nbody\n",
+            )
+            errors = validate_pointer_integrity(root)
+            self.assertEqual(len(errors), 1)
+            self.assertEqual(errors[0].type, "pointer_anchors")
+            self.assertEqual(errors[0].artifact, "docs/governance/r.md")
+            self.assertIn("docs/governance/r.md:3", errors[0].message)
+            self.assertIn("AGENTS.md", errors[0].message)
+            self.assertIn("#h", errors[0].message)
+
+    def test_missing_origin_file_is_a_finding(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_tree(
+                tmp,
+                extra_files={
+                    "docs/governance/r.md": "<!-- lifted-from: docs/gone.md#h -->\n## H\n\nbody\n"
+                },
+            )
+            errors = validate_pointer_integrity(root)
+            self.assertEqual(len(errors), 1)
+            self.assertIn("docs/gone.md", errors[0].message)
+            self.assertIn("does not exist", errors[0].message)
+
+    def test_forward_link_with_a_different_anchor_does_not_satisfy(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._tree(
+                tmp,
+                origin="See [R](docs/governance/r.md#other) for detail.\n",
+                dest="<!-- lifted-from: AGENTS.md#h -->\n## H\n\n## Other\n\nbody\n",
+            )
+            errors = validate_pointer_integrity(root)
+            self.assertEqual(len(errors), 1)
+            self.assertIn("#h", errors[0].message)
+
+    def test_forward_link_to_a_different_destination_does_not_satisfy(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_tree(
+                tmp,
+                agents_content="See [Elsewhere](docs/governance/elsewhere.md#h) for detail.\n",
+                extra_files={
+                    "docs/governance/r.md": "<!-- lifted-from: AGENTS.md#h -->\n## H\n\nbody\n",
+                    "docs/governance/elsewhere.md": "## H\n\nbody\n",
+                },
+            )
+            errors = validate_pointer_integrity(root)
+            self.assertEqual(len(errors), 1)
+            self.assertIn("docs/governance/r.md", errors[0].message)
+
+    def test_declaration_naming_an_anchor_the_destination_lacks_is_a_finding(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._tree(
+                tmp,
+                origin="See [R](docs/governance/r.md#h) for detail.\n",
+                dest="<!-- lifted-from: AGENTS.md#h -->\n## Renamed Heading\n\nbody\n",
+            )
+            errors = validate_pointer_integrity(root)
+            self.assertEqual(len(errors), 1)
+            self.assertIn("no heading", errors[0].message)
+
+    def test_two_declarations_one_orphaned_reports_exactly_the_orphan(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._tree(
+                tmp,
+                origin="See [R](docs/governance/r.md#kept) for detail.\n",
+                dest=(
+                    "<!-- lifted-from: AGENTS.md#kept -->\n## Kept\n\nbody\n\n"
+                    "<!-- lifted-from: AGENTS.md#dropped -->\n## Dropped\n\nbody\n"
+                ),
+            )
+            errors = validate_pointer_integrity(root)
+            self.assertEqual(len(errors), 1)
+            self.assertIn("#dropped", errors[0].message)
+            self.assertNotIn("#kept", errors[0].message)
+
+    def test_the_doctrines_literal_placeholder_is_not_a_declaration(self) -> None:
+        # agent-control-surface-fidelity-doctrine.md:88 shows the comment's shape.
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_tree(
+                tmp,
+                extra_files={
+                    "docs/governance/doctrine.md": (
+                        "Pages carry a `<!-- lifted-from: <path>#<anchor> -->` comment.\n"
+                    )
+                },
+            )
+            self.assertEqual(validate_pointer_integrity(root), [])
+
+    def test_a_near_placeholder_with_a_missing_origin_is_still_a_finding(self) -> None:
+        # The exclusion is the literal example only; a real declaration naming a
+        # missing origin must not disappear through it.
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_tree(
+                tmp,
+                extra_files={
+                    "docs/governance/r.md": "<!-- lifted-from: <path>#real-anchor -->\n## H\n"
+                },
+            )
+            errors = validate_pointer_integrity(root)
+            self.assertEqual(len(errors), 1)
+            self.assertIn("does not exist", errors[0].message)
+
+    def test_declarations_outside_docs_governance_are_out_of_scope(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_tree(
+                tmp,
+                extra_files={"docs/user/page.md": "<!-- lifted-from: AGENTS.md#h -->\n## H\n"},
+            )
+            self.assertEqual(validate_pointer_integrity(root), [])
+
+
 if __name__ == "__main__":
     unittest.main()

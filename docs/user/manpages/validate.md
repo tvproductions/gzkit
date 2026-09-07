@@ -452,7 +452,23 @@ unresolvable destination path/anchor or missing back-pointer.
 Scope: only blockquote (`> ...`) lines containing the `See` keyword are
 checked. Regular inline markdown links and unrelated blockquotes are
 ignored — this matches the canonical `> See [...]` pointer style used
-throughout `AGENTS.md` and the `.claude/rules/**` corpus.
+throughout `AGENTS.md` and the `.claude/rules/**` corpus, and is the
+attested scope of REQ-0.0.33-03-04.
+
+**Reverse arm (GHI #933).** The same scope also walks every
+`<!-- lifted-from: <origin>#<anchor> -->` declaration under
+`docs/governance/**` and asserts, for each: the origin file exists; the
+anchor resolves to a heading in the declaring page; and the origin carries a
+link to that page with that anchor, resolved relative to the origin's own
+directory. Any `[...](path#anchor)` link at the origin satisfies the reverse
+relationship, prose or blockquote — the reverse arm asks whether the lift is
+still pointed at, while the pointer's shape stays the forward arm's question.
+The doctrine's literal format example, `<path>#<anchor>`, is excluded
+exactly; any other declaration naming a missing origin is a finding. A
+reverse-arm finding is reported against the declaring page and carries the
+recovery step: restore the pointer at the origin's canonical source (for
+`AGENTS.md`, the committed rendition via `gz content compose` then
+`gz content commit`), or retire the declaration if the lift was undone.
 
 ```bash
 # Check pointer integrity across the per-turn surface
@@ -504,11 +520,32 @@ $ echo $?
 3
 ```
 
+**Orphaned back-pointer (reverse arm; observed 2026-09-07 before the GHI #933
+content repair, one of three identical findings):**
+
+```
+$ uv run gz validate --pointer-anchors
+Validated: pointer_anchors
+
+❌ Validation failed with 3 error(s):
+
+   → [pointer_anchors] docs/governance/agent-contract-rationale.md
+    Orphaned back-pointer: docs/governance/agent-contract-rationale.md:471 names
+    AGENTS.md#stdlib-first-doctrine--rationale but AGENTS.md carries no link to
+    docs/governance/agent-contract-rationale.md#stdlib-first-doctrine--rationale.
+    Invariant 3 (docs/governance/agent-control-surface-fidelity-doctrine.md)
+    requires the origin to carry the forward pointer for every lift it declares.
+    ...
+$ echo $?
+3
+```
+
 | Code | Meaning | Recovery |
 |------|---------|----------|
-| 0 | All blockquote-See pointers resolve and every destination carries a back-pointer | — |
+| 0 | All blockquote-See pointers resolve, every destination carries a back-pointer, and every `lifted-from` declaration under `docs/governance/**` is pointed at by its origin | — |
 | 3 | One or more pointers unresolved (path missing or anchor not present) | Fix the link target or add the heading to the destination |
 | 3 | Destination referenced by forward pointer lacks `<!-- lifted-from: -->` back-pointer | Add `<!-- lifted-from: <source-path>#<anchor> -->` to the destination file |
+| 3 | A `lifted-from` declaration names a missing origin, an anchor its own page lacks, or an origin carrying no link back to it | Restore the pointer at the origin's canonical source, or retire the declaration if the lift was undone |
 
 ### `--vendor-manifest`
 

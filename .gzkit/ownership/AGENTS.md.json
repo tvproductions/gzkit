@@ -12,7 +12,7 @@
     "gate-covenant": "corpus-owned",
     "governance-doctrine-surfaces": "corpus-owned",
     "local-agent-rules": "unowned",
-    "make-llm-stochastic-vibes-inert-anti-vibing-mantra": "unowned",
+    "make-llm-stochastic-vibes-inert-anti-vibing-mantra": "corpus-owned",
     "obpi-acceptance-protocol": "corpus-owned",
     "operator-doctrine-verbatim-canon": "corpus-owned",
     "operator-economy-of-effort-design-dialogue-mode": "corpus-owned",
@@ -22,9 +22,9 @@
     "project-identity": "unowned",
     "skills": "unowned",
     "skills-first-execution-routing": "unowned",
-    "stdlib-first-doctrine-dependency-posture": "unowned"
+    "stdlib-first-doctrine-dependency-posture": "corpus-owned"
   },
-  "unowned_byte_floor": 8637,
+  "unowned_byte_floor": 6005,
   "measured_at": "2026-09-02T19:42:47.447619+00:00",
-  "floor_event_id": "section-ownership-reanchored-AGENTS.md-8fff9b203d481c48"
+  "floor_event_id": "unowned-ratchet-updated-AGENTS.md-owned-stdlib-first-doctrine-dependency-posture-255e275ac942653f"
 }
