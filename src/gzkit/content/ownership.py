@@ -31,7 +31,7 @@ import os
 import tempfile
 from collections.abc import Iterator, Mapping
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, NoReturn
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -506,23 +506,15 @@ def load_declaration(
         )
         raise OwnershipLoadError(msg)
     if unowned_span_sum > stored_floor:
-        msg = (
-            f"What failed: {path.as_posix()!r} declares unowned_byte_floor "
-            f"{stored_floor!r}, but the summed byte span of its declared-"
-            f"'unowned' sections is {unowned_span_sum}, which exceeds it.\n"
-            "Why forbidden: REQ-0.35.0-04-02 -- the unowned-byte ratchet is "
-            "decrease-only. The true unowned span may legitimately sit BELOW "
-            "the stored floor (a surface shrink before the next ratchet "
-            "recording), but it may never sit ABOVE it -- exceeding the "
-            "floor is the reproduced attack, where flipping a "
-            "'corpus-owned' section to 'unowned' raises the true span past "
-            "the recorded floor.\n"
-            "Next step: restore the flipped section(s) to their prior "
-            "ownership value, or raise the floor through `gz content "
-            "unown` so it gains a fresh, attested floor_event_id covering "
-            "the new total, then retry."
+        _refuse_grown_or_flipped_span(
+            path,
+            root,
+            declared_surface,
+            declared_sections,
+            measured,
+            stored_floor=stored_floor,
+            unowned_span_sum=unowned_span_sum,
         )
-        raise OwnershipLoadError(msg)
 
     # ONE uniform path: a null floor_event_id is refused outright, day-one
     # declarations included. Self-coherence (the stored floor merely
@@ -622,6 +614,76 @@ def load_declaration(
     _refuse_unwitnessed_section_map(path, event, floor_event_id, declared_sections)
 
     return OwnershipDeclaration.model_validate(raw)
+
+
+def _refuse_grown_or_flipped_span(
+    path: Path,
+    root: Path,
+    declared_surface: Any,
+    declared_sections: Mapping[str, str],
+    measured: Mapping[str, int],
+    *,
+    stored_floor: int,
+    unowned_span_sum: int,
+) -> NoReturn:
+    """Refuse a live unowned span above the stored floor, naming the state and its recovery.
+
+    GHI #976. One arithmetic, two states, two recoveries: a scalar floor cannot
+    tell a hand-flipped map from a grown unowned section, so the prose names
+    both, describes the live state, and prescribes for each a step that can act
+    on THIS declaration -- `gz content unown` loads it first and so refuses in
+    both states; `gz content own` reads the floor over the successor map and
+    recovers the grown state only. The restore shape is the one
+    `foundation/sunset_migrate.py` already prescribes for a torn governed
+    artifact, and the declaration is tracked (`TestCommittedDeclarationLoadsCleanly`
+    proves the committed copy loads on every `gz check`).
+    """
+    # GHI #976: one arithmetic, two states, two recoveries. A scalar floor
+    # cannot tell a hand-flipped map from a grown unowned section, so the
+    # prose names both, describes the live state, and prescribes for each
+    # a step that can act on THIS declaration -- `gz content unown` loads
+    # it first and so refuses in both states; `gz content own` reads the
+    # floor over the successor map and recovers the grown state only.
+    try:
+        tracked = path.relative_to(root).as_posix()
+    except ValueError:
+        tracked = path.as_posix()
+    live = ", ".join(
+        f"{sid!r} ({span} B)"
+        for sid, span in sorted(measured.items())
+        if declared_sections.get(sid) == "unowned"
+    )
+    msg = (
+        f"What failed: {path.as_posix()!r} declares unowned_byte_floor "
+        f"{stored_floor!r}, but the summed byte span of its declared-"
+        f"'unowned' sections is {unowned_span_sum}, which exceeds it. The "
+        f"'unowned' sections as the surface measures them now: {live}.\n"
+        "Why forbidden: REQ-0.35.0-04-02 -- the unowned-byte ratchet is "
+        "decrease-only. The true unowned span may legitimately sit BELOW "
+        "the stored floor (a surface shrink before the next ratchet "
+        "recording), but it may never sit ABOVE it. Two different states "
+        "produce this, and a scalar floor cannot tell them apart: a section "
+        "flipped from 'corpus-owned' to 'unowned' outside the governed path "
+        "(the reproduced attack), or a section that was already 'unowned' "
+        "and GREW past the floor's headroom. `gz content unown` loads this "
+        "declaration first and refuses it in both states; `gz content own` "
+        "reads the floor over the map it produces, so it can act on a grown "
+        "section but never on an edited map.\n"
+        "Next step: if the declaration's section map was edited, restore the "
+        "tracked declaration to the state its witness recorded (`git checkout "
+        f"-- {tracked}`), then make any intended un-owning through `gz content "
+        f"unown {declared_surface} --section <id> --attestor <name> --reason "
+        "<reason>`, which raises the floor under a fresh attested witness. If "
+        "an 'unowned' section grew, either shrink it back under the floor, or "
+        "own it: capture every content line the corpus does not yet carry "
+        f"(`gz content remember {declared_surface} --section <id> --text "
+        '"<line>" --tier invariant --classification <Mechanical|Promotable|'
+        'Judgment|Ambiguous> --origin "<why>"`), then `gz content own '
+        f"{declared_surface} --section <id> --attestor <name> --reason "
+        "<reason>`, which lowers the floor to what the surface measures. "
+        "Then retry."
+    )
+    raise OwnershipLoadError(msg)
 
 
 def _ownership_chain(ledger: Any, surface: str) -> tuple[list[Any], set[str]]:

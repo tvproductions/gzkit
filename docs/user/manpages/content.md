@@ -251,6 +251,11 @@ unchanged-canon exemption `gz content commit` carries forward a standing
 attestation through — `--attestor` and `--reason` are unconditionally
 required, never conditional on what moved.
 
+Its counterpart is [`gz content own`](#own), the ordinary decrease-or-equal
+path, which lowers the floor to what the surface measures. `gz content
+remember` captures corpus entries and never touches the ownership declaration
+or its floor (GHI #976 corrected an earlier attribution).
+
 ```bash
 gz content unown <surface> --section <id> --attestor <name> --reason <text>
 gz content unown AGENTS.md --section attestation --attestor "g0" --reason "materialized as prose doc instead"
@@ -314,6 +319,55 @@ starts. Preserve the reported recovery material and follow the named next step.
 | 2 | the journal's absence could not be made DURABLE after this run removed it — its dependent recovery material is preserved untouched |
 | 2 | the journal's absence could not be made DURABLE on an entry that found none — every orphaned artifact is preserved and no new transaction starts |
 | 2 | a declaration snapshot consumed under the lock DURING RECOVERY — the on-disk predecessor, the landed declaration, or the witness source — declares a different identity than the transaction's target; the journal is retained, so the transition stays completable |
+
+#### One growth refusal, two states, two recoveries
+
+`load_declaration` refuses any declaration whose live unowned span exceeds the
+stored floor, and it does so before the witness chain is read — so `unown`,
+which loads the declaration first, refuses in this state whatever section it
+names. Two different states produce the same arithmetic, and a scalar floor
+cannot tell them apart: a section hand-flipped from `corpus-owned` to
+`unowned` outside the governed path, or a section that was already `unowned`
+and grew. The refusal names every unowned section with its live span, so the
+grown one is readable off the message, and prescribes a recovery for each
+state that can act on *this* declaration (GHI #976):
+
+```console
+$ gz content unown AGENTS.md --section prime-directive-ownership --attestor "g0" --reason "probe"
+Error: What failed: '.../.gzkit/ownership/AGENTS.md.json' declares unowned_byte_floor 6005, but the summed byte span of its declared-'unowned' sections is 7586, which exceeds it. The 'unowned' sections as the surface measures them now: 'agents-md' (50 B), 'architectural-boundaries' (595 B), 'control-surfaces' (191 B), 'execution-rules' (690 B), 'local-agent-rules' (1758 B), 'pattern-discovery' (383 B), 'persona' (1180 B), 'prime-directive-ownership' (1581 B), 'project-identity' (123 B), 'skills' (688 B), 'skills-first-execution-routing' (347 B).
+Why forbidden: REQ-0.35.0-04-02 -- the unowned-byte ratchet is decrease-only. The true unowned span may legitimately sit BELOW the stored floor (a surface shrink before the next ratchet recording), but it may never sit ABOVE it. Two different states produce this, and a scalar floor cannot tell them apart: a section flipped from 'corpus-owned' to 'unowned' outside the governed path (the reproduced attack), or a section that was already 'unowned' and GREW past the floor's headroom. `gz content unown` loads this declaration first and refuses it in both states; `gz content own` reads the floor over the map it produces, so it can act on a grown section but never on an edited map.
+Next step: if the declaration's section map was edited, restore the tracked declaration to the state its witness recorded (`git checkout -- .gzkit/ownership/AGENTS.md.json`), then make any intended un-owning through `gz content unown AGENTS.md --section <id> --attestor <name> --reason <reason>`, which raises the floor under a fresh attested witness. If an 'unowned' section grew, either shrink it back under the floor, or own it: capture every content line the corpus does not yet carry (`gz content remember AGENTS.md --section <id> --text "<line>" --tier invariant --classification <Mechanical|Promotable|Judgment|Ambiguous> --origin "<why>"`), then `gz content own AGENTS.md --section <id> --attestor <name> --reason <reason>`, which lowers the floor to what the surface measures. Then retry.
+$ echo $?
+1
+```
+
+Captured 2026-09-07 in an isolated, git-initialised copy of the repository
+after `prime-directive-ownership` was flipped to `unowned` by hand; the
+project-root-absolute path is elided to `...` and the figures are a dated
+record, never the current floor. Both prescriptions were then driven through
+the real command path in that copy:
+
+- **Edited map.** `git checkout -- .gzkit/ownership/AGENTS.md.json` restored
+  the tracked declaration and the loader accepted it at floor 6005; the
+  un-owning the edit was reaching for then landed through the governed verb —
+  `Un-owned section 'prime-directive-ownership' of 'AGENTS.md'. Unowned-byte
+  floor rose from 6005 to 7586 (+1581 B).` The tracked copy is the state the
+  suite last proved loadable (`TestCommittedDeclarationLoadsCleanly` loads the
+  committed declaration against the committed surface on every `gz check`).
+  Neither `unown` nor `own` can act on an edited map: `own` clears the floor
+  relation over its successor map and is then refused because the map on disk
+  is not the one its `floor_event_id` witnesses — the edit never had a witness.
+- **Grown section.** With `project-identity` grown by one line, `own` refused
+  until the corpus carried every content line and named each uncovered line
+  with the `gz content remember` capture for it; after four captures, `own`
+  landed — `Unowned-byte floor fell from 6005 to 5882 (-123 B). Coverage: 4
+  live entries carry 4/4 content lines.` — and the loader accepted the
+  result. Reverting the growth instead (the section back under the floor)
+  also loads cleanly; a surface shrink never needs a transition.
+
+Neither branch hand-edits the declaration, and the message never names a
+verb for a state that verb refuses: that was the defect (GHI #976), the same
+family as GHI #863.
 
 #### Recovery protocol
 
@@ -475,9 +529,12 @@ assume every other unowned section still has the span it had when the prior
 floor was recorded, and the state `own` exists for is the one where an unowned
 section GREW. The loader reads the floor relation over the successor map for
 this verb (`sections_becoming_owned`), so an overgrown surface that the loader
-otherwise refuses can still be brought back under its floor; a remainder
-still above the stored floor is refused, because this is the ordinary,
-decrease-or-equal path and may never raise the ratchet (REQ-0.35.0-04-02):
+otherwise refuses can still be brought back under its floor — the loader's
+growth refusal names this verb for exactly that state (see
+[`unown` § One growth refusal, two states, two recoveries](#one-growth-refusal-two-states-two-recoveries));
+a remainder still above the stored floor is refused, because this is the
+ordinary, decrease-or-equal path and may never raise the ratchet
+(REQ-0.35.0-04-02):
 
 ```console
 $ gz content own AGENTS.md --section make-llm-stochastic-vibes-inert-anti-vibing-mantra --attestor "g0" --reason "corpus carries all content lines"

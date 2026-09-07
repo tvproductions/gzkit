@@ -402,8 +402,11 @@ def _register_unown(content_commands: argparse._SubParsersAction) -> None:
         help="Attested raise-path: un-own a corpus-owned section and raise the ratchet",
         description=(
             "Un-own a 'corpus-owned' section, the one legitimate move that RAISES the "
-            "decrease-only unowned-byte ratchet (`gz content remember`'s ordinary path is "
-            "decrease-or-equal only). Same corpus-attestation shape as `gz content retire`: "
+            "decrease-only unowned-byte ratchet. Its counterpart is `gz content own`, the "
+            "ordinary decrease-or-equal path, which lowers the floor to what the surface "
+            "measures; `gz content remember` captures corpus entries and never touches the "
+            "ownership declaration or its floor. Same corpus-attestation shape as "
+            "`gz content retire`: "
             "empty or whitespace-only --attestor or --reason exits non-zero and writes "
             "nothing -- un-owning a section is a canon change every time, so it never "
             "reaches an unchanged-canon exemption (unlike `gz content commit`). On success, "

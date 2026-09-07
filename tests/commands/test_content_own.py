@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import contextlib
 import json
+import subprocess
 import threading
 import unittest
 from pathlib import Path
@@ -34,7 +35,7 @@ from gzkit.content.ownership import (
 from gzkit.governance.events import emit_section_ownership_genesis
 from gzkit.ledger import Ledger
 from gzkit.traceability import covers
-from tests.commands.common import CliRunner
+from tests.commands.common import CliRunner, _isolated_git_env
 
 _SEED_SURFACE_TEXT = (
     "# Doc Title\n"
@@ -722,6 +723,227 @@ class TestContentOwnReplayJournalValidation(unittest.TestCase):
             remaining = measure_section_spans(_GROWN_SURFACE_TEXT)["beta-section"]
             self._forge(section="alpha-section", new_floor=remaining + 1)
             self._assert_refused_by("remaining unowned span under the successor map")
+
+
+def _git(*args: str) -> None:
+    """Run one ``git`` against the isolated fixture repository (GHI #977 boundary)."""
+    subprocess.run(["git", *args], check=True, capture_output=True, env=_isolated_git_env())
+
+
+class TestGrowthRefusalPrescribesAUsableRecovery(unittest.TestCase):
+    """GHI #976: the loader's growth refusal names the state and a recovery that runs.
+
+    One arithmetic -- the live unowned span above the stored floor -- is produced
+    by two states, an unowned section that GREW and a section hand-flipped to
+    'unowned', and the recovery differs. The prose used to prescribe
+    `gz content unown` for both, which loads the declaration first and so
+    refuses in both. Each test drives the refusal, then follows the message's
+    own prescription through the real command path to a declaration the
+    loader accepts.
+    """
+
+    def setUp(self) -> None:
+        self._runner = CliRunner()
+
+    def _growth_refusal(self, surface_text: str) -> str:
+        with self.assertRaises(OwnershipLoadError) as refused:
+            load_declaration(_DECLARATION_PATH, surface_text, Path.cwd())
+        message = str(refused.exception)
+        self.assertIn("exceeds it", message, "fixture sanity: this must be the growth refusal")
+        return message
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_grown_unowned_section_is_recovered_by_own_after_capture(self) -> None:
+        with self._runner.isolated_filesystem():
+            _seed_overgrown_alpha(corpus_texts=())
+            message = self._growth_refusal(_GROWN_SURFACE_TEXT)
+            spans = measure_section_spans(_GROWN_SURFACE_TEXT)
+            # The failing state is described: every unowned section with its
+            # LIVE span, so the one that grew is readable off the message.
+            self.assertIn(f"'alpha-section' ({spans['alpha-section']} B)", message)
+            self.assertIn(f"'beta-section' ({spans['beta-section']} B)", message)
+            self.assertIn("gz content own Doc.md --section <id>", message)
+
+            # Following the prescription: `own` states its own precondition --
+            # the corpus must carry every content line -- and names the capture.
+            uncovered = _own(self._runner)
+            self.assertEqual(uncovered.exit_code, 1, msg=uncovered.output)
+            self.assertIn("gz content remember Doc.md --section alpha-section", uncovered.output)
+            self.assertIn(
+                "gz content remember Doc.md --section <id>",
+                message,
+                "the loader's next step must state the coverage prerequisite `own` enforces",
+            )
+            _seed_corpus(*(_entry(i, text) for i, text in enumerate(_ALPHA_COVERAGE)))
+
+            owned = _own(self._runner)
+            self.assertEqual(owned.exit_code, 0, msg=owned.output)
+            reloaded = load_declaration(_DECLARATION_PATH, _GROWN_SURFACE_TEXT, Path.cwd())
+            self.assertEqual(reloaded.sections["alpha-section"], "corpus-owned")
+            self.assertEqual(reloaded.unowned_byte_floor, spans["beta-section"])
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_grown_unowned_section_is_recovered_by_shrinking_it_back(self) -> None:
+        with self._runner.isolated_filesystem():
+            floor = _seed_overgrown_alpha(corpus_texts=())
+            message = self._growth_refusal(_GROWN_SURFACE_TEXT)
+            self.assertIn("shrink it back under the floor", message)
+
+            _write_surface(_SEED_SURFACE_TEXT)
+
+            reloaded = load_declaration(_DECLARATION_PATH, _SEED_SURFACE_TEXT, Path.cwd())
+            self.assertEqual(reloaded.sections["alpha-section"], "unowned")
+            self.assertEqual(reloaded.unowned_byte_floor, floor)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_hand_flipped_map_is_recovered_by_restoring_the_tracked_declaration(
+        self,
+    ) -> None:
+        with self._runner.isolated_filesystem():
+            _write_surface(_SEED_SURFACE_TEXT)
+            floor = _seed_declaration(
+                {"doc-title": "corpus-owned", "alpha-section": "unowned", "beta-section": "unowned"}
+            )
+            _git("init", "-q")
+            _git("add", "-A")
+            _git(
+                "-c",
+                "user.name=g0",
+                "-c",
+                "user.email=g0@users.noreply.github.com",
+                "-c",
+                "commit.gpgsign=false",
+                "commit",
+                "-q",
+                "-m",
+                "witnessed declaration",
+            )
+            raw = _declaration()
+            raw["sections"]["doc-title"] = "unowned"
+            _DECLARATION_PATH.write_text(json.dumps(raw), encoding="utf-8")
+
+            message = self._growth_refusal(_SEED_SURFACE_TEXT)
+            restore = f"git checkout -- {_DECLARATION_PATH.as_posix()}"
+            self.assertIn(restore, message)
+            self.assertIn("gz content unown Doc.md --section <id>", message)
+            # The claim the message makes about this state: neither verb can
+            # act on an edited map, so the prescription must not be a verb.
+            self.assertEqual(_unown(self._runner, section="doc-title").exit_code, 1)
+            self.assertEqual(_own(self._runner, section="doc-title").exit_code, 1)
+            self.assertEqual(_declaration()["sections"]["doc-title"], "unowned")
+
+            _git("checkout", "--", _DECLARATION_PATH.as_posix())
+
+            restored = load_declaration(_DECLARATION_PATH, _SEED_SURFACE_TEXT, Path.cwd())
+            self.assertEqual(restored.sections["doc-title"], "corpus-owned")
+            self.assertEqual(restored.unowned_byte_floor, floor)
+            # ...and the un-owning the edit was reaching for lands through the
+            # governed verb, under a fresh attested witness.
+            result = _unown(self._runner, section="doc-title")
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            after = load_declaration(_DECLARATION_PATH, _SEED_SURFACE_TEXT, Path.cwd())
+            self.assertEqual(after.sections["doc-title"], "unowned")
+            spans = measure_section_spans(_SEED_SURFACE_TEXT)
+            self.assertEqual(after.unowned_byte_floor, floor + spans["doc-title"])
+
+
+_CONTRACT_SURFACE_TEXT = (
+    "# Test Agent Contract\n"
+    "Purpose line.\n"
+    "## Behavior Rules\n"
+    "- Do the thing.\n"
+    "## Prime Directive\n"
+    "- Own it.\n"
+)
+
+
+class TestUnownHelpAttributesTheLoweringPath(unittest.TestCase):
+    """GHI #976: `unown --help` attributes the decrease-or-equal path to the verb
+    that performs it. `gz content remember` captures corpus entries and never
+    touches the declaration; `gz content own` is the lowering move. Both halves
+    are bound to observed behaviour, never to the help text alone."""
+
+    def setUp(self) -> None:
+        self._runner = CliRunner()
+
+    def _normalized_help(self) -> str:
+        result = self._runner.invoke(main, ["content", "unown", "--help"])
+        self.assertEqual(result.exit_code, 0, msg=result.output)
+        return " ".join(result.output.split())
+
+    def test_help_names_own_as_the_lowering_move_and_own_lowers_the_floor(self) -> None:
+        help_text = self._normalized_help()
+        self.assertIn("`gz content own`, the ordinary decrease-or-equal path", help_text)
+        self.assertNotIn("`gz content remember`'s ordinary path", help_text)
+        with self._runner.isolated_filesystem():
+            seed_floor = _seed_overgrown_alpha()
+            result = _own(self._runner)
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            self.assertLess(_declaration()["unowned_byte_floor"], seed_floor)
+
+    def test_help_says_remember_never_touches_the_ratchet_and_it_does_not(self) -> None:
+        help_text = self._normalized_help()
+        self.assertIn(
+            "`gz content remember` captures corpus entries and never touches the ownership "
+            "declaration",
+            help_text,
+        )
+        with self._runner.isolated_filesystem():
+            Path("AGENTS.md").write_bytes(_CONTRACT_SURFACE_TEXT.encode("utf-8"))
+            sections = {
+                "test-agent-contract": "corpus-owned",
+                "behavior-rules": "unowned",
+                "prime-directive": "unowned",
+            }
+            spans = measure_section_spans(_CONTRACT_SURFACE_TEXT)
+            floor = spans["behavior-rules"] + spans["prime-directive"]
+            declaration_path = Path(".gzkit") / "ownership" / "AGENTS.md.json"
+            declaration_path.parent.mkdir(parents=True, exist_ok=True)
+            declaration_path.write_text(
+                json.dumps(
+                    {
+                        "surface": "AGENTS.md",
+                        "sections": sections,
+                        "unowned_byte_floor": floor,
+                        "measured_at": "2026-09-07T00:00:00Z",
+                        "floor_event_id": "section-ownership-genesis-AGENTS.md-976",
+                    }
+                ),
+                encoding="utf-8",
+            )
+            emit_section_ownership_genesis(
+                Path("."),
+                "section-ownership-genesis-AGENTS.md-976",
+                "AGENTS.md",
+                sections_digest(sections),
+                floor,
+            )
+            before = declaration_path.read_bytes()
+
+            result = self._runner.invoke(
+                main,
+                [
+                    "content",
+                    "remember",
+                    "AGENTS.md",
+                    "--section",
+                    "behavior-rules",
+                    "--text",
+                    "- Do the thing.",
+                    "--tier",
+                    "invariant",
+                    "--classification",
+                    "Judgment",
+                    "--origin",
+                    "GHI #976",
+                ],
+            )
+
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            self.assertEqual(declaration_path.read_bytes(), before)
+            reloaded = load_declaration(declaration_path, _CONTRACT_SURFACE_TEXT, Path.cwd())
+            self.assertEqual(reloaded.unowned_byte_floor, floor)
+            self.assertEqual(reloaded.sections, sections)
 
 
 if __name__ == "__main__":
