@@ -26,9 +26,12 @@ non-zero live exit as fail-closed.
 from __future__ import annotations
 
 import json
+import os
 import re
+import shutil
 import subprocess
 from datetime import UTC, datetime
+from functools import lru_cache
 from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -218,11 +221,50 @@ def extract_demo_commands(brief_path: Path) -> list[str]:
 # ---------------------------------------------------------------------------
 
 
+@lru_cache(maxsize=1)
+def replay_shell() -> str | None:
+    """Return the shell transcript replay runs under, or None to inherit the default.
+
+    THE GATE AND ITS VERIFIER MUST AGREE ON WHAT A SHELL IS. `verifier_pipe_gate`
+    refuses a verifier in a non-final pipeline stage and sanctions exactly two
+    opt-outs -- `set -o pipefail` and `${PIPESTATUS[0]}` -- and BOTH ARE BASH
+    FEATURES. Replay ran through `subprocess.run(shell=True)`, which is
+    `/bin/sh`: bash on macOS, and **dash** on Debian/Ubuntu, where neither
+    exists. Measured 2026-09-07:
+
+        $ /bin/dash -c 'set -o pipefail; echo OK | tail -1'
+        /bin/dash: 1: set: Illegal option -o pipefail
+        dash exit: 2
+
+    So on every Linux runner a packet using the SANCTIONED escape was rejected
+    as a fabricated transcript -- `Command exited 2 (expected 0)` with the
+    pasted `OK` never produced -- while the same packet verified on a macOS
+    developer machine. The gate recommended an incantation its own consumer
+    could not run (AGENTS.md Invariant 6g; coupled-surface coherence, § DO IT
+    RIGHT 1a).
+
+    Resolved ONCE and shared by both replay sites (`_run_demo` here and
+    `stage4_packet._run`), because two callers deciding independently which
+    shell replays a transcript are two callers that can disagree about whether
+    a given packet verifies -- the same single-authority reason
+    `shell_reading` is shared between the gates that PARSE these commands.
+
+    Returns None on Windows, where `shell=True` means COMSPEC and an
+    `executable` override would change the argument quoting rules rather than
+    the language: that platform's replay is out of this repair's scope and is
+    left exactly as it was.
+    """
+    if os.name == "nt":
+        return None
+    return shutil.which("bash")
+
+
 def _run_demo(command: str, project_root: Path) -> DemoResult:
     """Execute one demo command, capturing exit status and a stdout/stderr tail."""
     proc = subprocess.run(  # noqa: S602 — demo commands are operator-authored in the brief
         command,
         shell=True,
+        executable=replay_shell(),
         cwd=project_root,
         capture_output=True,
         text=True,

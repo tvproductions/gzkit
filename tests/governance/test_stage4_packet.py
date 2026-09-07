@@ -15,12 +15,16 @@ re-run the bare ARB incantations that carry no output claim.
 
 from __future__ import annotations
 
+import os
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
 
+from gzkit.governance import stage4_evidence, stage4_packet
 from gzkit.governance.stage4_packet import (
+    _run,
     extract_citation_commands,
     extract_transcripts,
     verify_packet,
@@ -468,3 +472,85 @@ class TestOrElseConcealment(unittest.TestCase):
             )
             result = verify_packet(tmp, _packet(tmp, body))
         self.assertTrue(result.verified, result.blockers)
+
+
+class TestReplayShellCanRunWhatTheGateSanctions(unittest.TestCase):
+    """The verifier must be able to execute the escapes the pipe-gate hands authors.
+
+    `verifier_pipe_gate` refuses a verifier in a non-final pipeline stage and
+    names exactly two opt-outs: `set -o pipefail` and `${PIPESTATUS[0]}`. BOTH
+    ARE BASH FEATURES. Replay ran the transcript through `shell=True`, which is
+    `/bin/sh` -- bash on macOS, and **dash** on Debian/Ubuntu, where neither
+    exists. Measured 2026-09-07:
+
+        $ /bin/dash -c 'set -o pipefail; echo OK | tail -1'
+        /bin/dash: 1: set: Illegal option -o pipefail
+        dash exit: 2
+
+    So on Linux -- which is what CI and most agents run -- a packet using the
+    SANCTIONED escape was rejected by the verifier as a fabricated transcript:
+    `Command exited 2 (expected 0)`, and the pasted `OK` line never produced.
+    The gate recommended an incantation its own consumer could not run
+    (AGENTS.md Invariant 6g; coupled-surface coherence, DO IT RIGHT 1a).
+
+    This is asserted as a PROPERTY of the resolved shell rather than by running
+    the escape here: running it under the ambient `/bin/sh` passes on macOS
+    whatever the code does, which is precisely how the defect reached `main`
+    green on one developer's machine and red on every Linux runner.
+    """
+
+    def _spy_on_replay(self, command: str) -> dict:
+        """Return the kwargs `_run` actually handed subprocess."""
+        captured: dict = {}
+        real_run = subprocess.run
+
+        def spy(*args, **kwargs):  # noqa: ANN002, ANN003, ANN202
+            captured.update(kwargs)
+            return real_run(*args, **kwargs)
+
+        with mock.patch.object(stage4_packet.subprocess, "run", spy):
+            _run(command, Path.cwd())
+        return captured
+
+    def test_replay_never_inherits_whatever_bin_sh_happens_to_be(self) -> None:
+        if os.name == "nt":
+            self.skipTest("POSIX shell selection; Windows replays through COMSPEC")
+        captured = self._spy_on_replay("echo hi")
+        self.assertIsNotNone(
+            captured.get("executable"),
+            "replay must CHOOSE its shell; inheriting /bin/sh is dash on Debian/Ubuntu",
+        )
+
+    def test_the_chosen_shell_executes_both_sanctioned_escapes(self) -> None:
+        """Naming a shell is not the check -- it must actually run the escapes.
+
+        An `executable` that pointed at dash would satisfy the test above and
+        leave the defect exactly where it was.
+        """
+        if os.name == "nt":
+            self.skipTest("POSIX shell selection; Windows replays through COMSPEC")
+        shell = self._spy_on_replay("echo hi")["executable"]
+        for escape in (
+            "set -o pipefail; echo OK | tail -1",
+            "echo OK | tail -1; exit ${PIPESTATUS[0]}",
+        ):
+            with self.subTest(escape=escape):
+                proc = subprocess.run(  # noqa: S603 - fixed argv, no shell
+                    [shell, "-c", escape],
+                    capture_output=True,
+                    text=True,
+                    errors="replace",
+                    check=False,
+                )
+                self.assertEqual(proc.returncode, 0, f"{shell} cannot run {escape!r}: {proc}")
+                self.assertEqual(proc.stdout.strip(), "OK")
+
+    def test_the_demo_collector_resolves_the_same_shell(self) -> None:
+        """One authority. Both replay sites run agent/operator-authored transcripts.
+
+        `stage4_evidence._run_demo` carried the identical `shell=True`, so
+        repairing only the packet site would leave the same defect one module
+        over -- the twin-path asymmetry this repository has been bitten by
+        before (Step-4b round-8 finding 1).
+        """
+        self.assertIs(stage4_evidence.replay_shell(), stage4_packet.replay_shell())
