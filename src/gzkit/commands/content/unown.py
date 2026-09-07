@@ -57,6 +57,11 @@ from pydantic import BaseModel, ConfigDict, Field
 from gzkit.commands.common import get_project_root
 from gzkit.content.corpus_store import load_corpus
 from gzkit.content.ownership import (
+    JOURNAL_FIELDS,
+    OWN_JOURNAL_FIELDS,
+    OWN_TRANSITION,
+    OWN_WITNESS_EVENT,
+    UNOWN_WITNESS_EVENT,
     OwnershipDeclaration,
     OwnershipLoadError,
     SectionCoverage,
@@ -64,11 +69,17 @@ from gzkit.content.ownership import (
     declaration_journal_source_path,
     declaration_path,
     exclusive_declaration_lock,
+    expected_witness_extra,
+    journal_replay_defect,
     load_declaration,
     measure_section_spans,
+    mint_event_id,
     section_coverage,
     sections_digest,
+    transition_kind,
     unowned_span_total,
+    witness_divergence,
+    witness_event_type,
     write_bytes_atomically,
     write_declaration_atomically,
 )
@@ -446,22 +457,15 @@ def _load_declaration_or_exit(
         sys.exit(1)
 
 
-_EVENT = "section_ownership_unowned"
-
-#: The journal `transition` value that selects the OWNING direction (GHI #974).
-#: Absent -- every journal written before the field existed -- reads as an
-#: un-owning, so no legacy journal changes meaning.
-_OWN_TRANSITION = "own"
-#: An owning is the decrease-or-equal move `unowned_ratchet_updated` witnesses.
-_OWN_EVENT = "unowned_ratchet_updated"
-#: The coverage evidence an owning journal must carry to be replayable, on top
-#: of `_JOURNAL_FIELDS`: it is copied onto the witness, never recomputed there.
-_OWN_JOURNAL_FIELDS: tuple[str, ...] = ("covering_entry_ids", "covered_lines", "body_lines")
-
-
-def _transition_kind(record: dict[str, Any]) -> str:
-    """Return ``"own"`` for an owning record and ``"unown"`` for everything else."""
-    return _OWN_TRANSITION if record.get("transition") == _OWN_TRANSITION else "unown"
+# The journal's shape contract lives in `content/ownership.py` beside
+# `declaration_journal_path`, because BOTH this replay path and the canonical
+# loader's stale-declaration exemption must decide replayability the same way
+# (GHI #979). These are the module's local names for it, not second copies.
+_EVENT = UNOWN_WITNESS_EVENT
+_OWN_TRANSITION = OWN_TRANSITION
+_OWN_EVENT = OWN_WITNESS_EVENT
+_OWN_JOURNAL_FIELDS = OWN_JOURNAL_FIELDS
+_transition_kind = transition_kind
 
 
 def _gerund(record: dict[str, Any]) -> str:
@@ -476,71 +480,11 @@ def _floor_moved(record: dict[str, Any]) -> str:
     )
 
 
-def _witness_event_type(record: dict[str, Any]) -> str:
-    """Return the ledger event type this record's witness is written under."""
-    return _OWN_EVENT if _transition_kind(record) == _OWN_TRANSITION else _EVENT
+_witness_event_type = witness_event_type
+_JOURNAL_FIELDS = JOURNAL_FIELDS
 
 
-# Every field a journalled record must carry to be replayable: the
-# `_replay_pending_transition` reads (including `parent_event_id`, needed to
-# re-mint `event_id` and check it against the on-disk chain pointer) plus the
-# `_append_event_once` reads (including `ts`, which it copies onto the
-# `LedgerEvent`). A line number is not a citation -- it rots on the next edit
-# and cites a stranger; the function is the stable name.  A record
-# missing any of them cannot complete the interrupted transition, so it is
-# refused in prose rather than half-applied or left to crash with a raw
-# KeyError.
-_JOURNAL_FIELDS: tuple[str, ...] = (
-    "event_id",
-    "surface",
-    "section",
-    "prior_unowned_byte_floor",
-    "new_unowned_byte_floor",
-    "attestor",
-    "reason",
-    "declaration_json",
-    "parent_event_id",
-    "ts",
-)
-
-
-def _mint_event_id(record: dict[str, Any], parent_event_id: str | None) -> str:
-    """Mint the DETERMINISTIC event id witnessing *record*'s pending transition.
-
-    The previous id embedded `datetime.now()`, so an interrupted run could
-    never reproduce it -- which is precisely why the residue of a failed
-    ledger append was unrecoverable rather than merely untidy. Deriving the id
-    from the transition's own content makes a retry mint the SAME id, so
-    completing the interrupted append is idempotent by construction instead of
-    by bookkeeping.
-
-    *parent_event_id* -- the floor_event_id the transition starts FROM -- is in
-    the digest to make this a chain link rather than a content fingerprint: two
-    genuinely distinct un-ownings of the same section with the same attestor
-    and reason (un-own, re-own, un-own again) start from different predecessors
-    and so earn different ids, where a pure content hash would collide and
-    silently drop the second witness.
-    """
-    fields = {
-        "surface": record["surface"],
-        "section": record["section"],
-        "prior_unowned_byte_floor": record["prior_unowned_byte_floor"],
-        "new_unowned_byte_floor": record["new_unowned_byte_floor"],
-        "attestor": record["attestor"],
-        "reason": record["reason"],
-        "parent_event_id": parent_event_id,
-    }
-    if _transition_kind(record) == _OWN_TRANSITION:
-        # The direction is IN the digest, so an owning and an un-owning of one
-        # section from one predecessor with one attestation can never collide;
-        # the un-owning payload is byte-unchanged so every legacy journal still
-        # re-mints its own id.
-        fields["transition"] = _OWN_TRANSITION
-    payload = json.dumps(fields, sort_keys=True, separators=(",", ":"))
-    digest = hashlib.sha256(payload.encode("utf-8")).hexdigest()[:16]
-    if _transition_kind(record) == _OWN_TRANSITION:
-        return f"unowned-ratchet-updated-{record['surface']}-owned-{record['section']}-{digest}"
-    return f"section-ownership-unowned-{record['surface']}-{record['section']}-{digest}"
+_mint_event_id = mint_event_id
 
 
 def _checked_landed_snapshot(target: _TransactionTarget, record: dict[str, Any]) -> dict[str, Any]:
@@ -600,24 +544,11 @@ def _append_event_once(root: Path, target: _TransactionTarget, record: dict[str,
     # forged journal author the digest for a map that never landed (round-4
     # finding 2). Derived BEFORE the existence check, because the expected
     # witness is what an existing row must be compared against.
-    expected = {
-        "surface": target.surface,
-        "section": record["section"],
-        "sections_digest": sections_digest(_checked_landed_snapshot(target, record)),
-        "prior_unowned_byte_floor": record["prior_unowned_byte_floor"],
-        "new_unowned_byte_floor": record["new_unowned_byte_floor"],
-        "attestor": record["attestor"],
-        "reason": record["reason"],
-    }
-    if _transition_kind(record) == _OWN_TRANSITION:
-        # The witness names the link it continues and the evidence the owning
-        # rested on (GHI #974). The evidence is the JOURNALLED measurement,
-        # because a witness describes the transition that was decided, and a
-        # corpus that grew afterwards must not make an existing witness read
-        # as divergent (round-5's idempotence arm below compares field by field).
-        expected["predecessor_event_id"] = record["parent_event_id"]
-        for field in _OWN_JOURNAL_FIELDS:
-            expected[field] = record[field]
+    expected = expected_witness_extra(
+        record,
+        surface=target.surface,
+        landed_sections_digest=sections_digest(_checked_landed_snapshot(target, record)),
+    )
     event_type = _witness_event_type(record)
 
     existing = ledger.latest_event(record["event_id"])
@@ -629,11 +560,7 @@ def _append_event_once(root: Path, target: _TransactionTarget, record: dict[str,
         # `journal_unlinked=True`, then `post_replay_load=REJECTED`. Idempotence
         # means "this exact witness is already recorded", never "something wears
         # this id".
-        divergent = [
-            field for field, value in expected.items() if existing.extra.get(field) != value
-        ]
-        if existing.event != event_type:
-            divergent.insert(0, "event")
+        divergent = witness_divergence(existing, expected, event_type)
         if divergent:
             _refuse_forged_journal(
                 target,
@@ -1396,62 +1323,32 @@ def _journal_record_or_refuse(target: _TransactionTarget) -> dict[str, Any]:
         # Content that does not parse IS a claim about the contents, so it
         # keeps the refusal that enumerates the interruption states.
         defect = str(exc)
-    if defect is None:
-        # A journal that PARSES is not yet a journal that can be REPLAYED. An
-        # interrupted write can leave valid JSON that is `null`, a list, or an
-        # object missing fields; every one of those reaches a key lookup below
-        # and escapes as a TypeError/KeyError traceback, past the three-part
-        # prose this same branch supplies for the unparseable case. Shape is
-        # checked here so both defects exit through one governed message.
-        if not isinstance(record, dict):
-            defect = f"expected a JSON object, found {type(record).__name__}"
-        else:
-            required = _JOURNAL_FIELDS
-            if _transition_kind(record) == _OWN_TRANSITION:
-                required = (*_JOURNAL_FIELDS, *_OWN_JOURNAL_FIELDS)
-            missing = [field for field in required if field not in record]
-            if missing:
-                defect = f"missing required field(s) {', '.join(missing)}"
     if defect is not None:
         _refuse_forged_journal(target, defect)
 
-    # The journal's OWN `surface` is a value that reaches durable state: it is
-    # what `_checked_landed_snapshot` resolves a declaration path from and what
-    # `_append_event_once` writes into the witness. Resolving the identity at
-    # transaction entry stops the CALLER's spelling reaching the ledger and
-    # leaves this twin open -- on a case-insensitive filesystem a journal
-    # naming `doc.md` passes the prior-floor, parent, span, eligibility and
-    # derived-successor checks unchanged, then lands a witness the
-    # declaration's own loader rejects. Same finding, second site; binding one
-    # and not the other is the round-8 finding-1 asymmetry (round-9 finding 1).
-    if record["surface"] != target.surface:
-        _refuse_forged_journal(
-            target,
-            f"surface {record['surface']!r} is not this transaction's target "
-            f"({target.surface!r}) -- a journal completes a transition for THIS "
-            "target or none. The journal is a PAYLOAD: its identity is CHECKED "
-            "against the target, never used to choose a path",
+    # A journal that PARSES is not yet a journal that can be REPLAYED, and
+    # WHAT MAKES IT REPLAYABLE IS ONE STATEMENT, not this module's alone
+    # (GHI #979): shape, field completeness, the surface identity that reaches
+    # durable state through `_checked_landed_snapshot` and `_append_event_once`,
+    # the attestation, and the `event_id` re-mint that proves the record came
+    # from a real `_commit_transition` run. `load_declaration`'s stale-state
+    # exemption reads the same authority, so an exception there can never
+    # authorize a journal this path would refuse.
+    #
+    # The two defect kinds keep their OWN exits and their own prose: a blank
+    # attestor or reason is the REQ-0.35.0-04-04 refusal at exit 1, everything
+    # else is the forgery-class refusal at exit 2.
+    replay_defect = journal_replay_defect(record, surface=target.surface)
+    if replay_defect is not None and replay_defect.kind == "attestation":
+        _refuse_blank_attestation(
+            record["surface"],
+            record["section"],
+            record["attestor"],
+            record["reason"],
+            verb=_transition_kind(record),
         )
-
-    # The replay path takes the SAME fail-closed shape as the command path
-    # for a blank attestor/reason (REQ-0.35.0-04-04) -- reuse the one
-    # governed check rather than a second copy that could drift from it.
-    _refuse_blank_attestation(
-        record["surface"],
-        record["section"],
-        record["attestor"],
-        record["reason"],
-        verb=_transition_kind(record),
-    )
-
-    # `event_id` must re-mint from the record's OWN claimed content -- a
-    # journal whose id does not match what `_mint_event_id` derives from its
-    # own fields did not come from a real `_commit_transition` run.
-    if _mint_event_id(record, record["parent_event_id"]) != record["event_id"]:
-        _refuse_forged_journal(
-            target,
-            f"event_id {record['event_id']!r} does not re-mint from the journal's own content",
-        )
+    if replay_defect is not None:
+        _refuse_forged_journal(target, replay_defect.detail)
 
     return record
 

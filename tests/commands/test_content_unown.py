@@ -17,6 +17,7 @@ import hashlib
 import json
 import os
 import re
+import shlex
 import shutil
 import stat
 import subprocess
@@ -36,6 +37,7 @@ from gzkit.content.ownership import (
     exclusive_declaration_lock,
     load_declaration,
     measure_section_spans,
+    mint_event_id,
     sections_digest,
     write_bytes_atomically,
 )
@@ -2796,20 +2798,28 @@ class TestContentUnownRound9(unittest.TestCase):
         residual. It pins the NOT-YET-LANDED recovery branch's half of the
         fixed-target contract.
 
-        The journal names the target, so the journal-identity check passes and
-        cannot mask this one. The predecessor ON DISK names something else, and
-        the successor the branch derives from that predecessor inherits it --
+        The journal names the target, and its serialized successor does too, so
+        neither the journal-identity check nor the successor check can mask
+        this one. The predecessor ON DISK names something else, and the
+        successor the branch would derive from that predecessor inherits it --
         so completing would write a declaration under the target's path
         declaring a foreign identity, with a witness naming the target.
+
+        `declaration_json` is derived from the LEGITIMATE declaration for that
+        reason. Deriving it from the foreign one — as this fixture first did —
+        makes the journal itself invalid (its successor declares 'Other.md'),
+        which `journal_replay_defect` now refuses one step earlier, and the
+        branch under test is never reached. An independent review found the
+        equivalent masking in a sibling fixture; the discipline is the same
+        one this module's docstrings repeat, that a forged fixture must be
+        wrong in exactly the ONE way its test names.
         """
         with self._runner.isolated_filesystem():
             prior_floor, span = self._seed_for_journal()
             record = self._journal_record(prior_floor, span)
-            foreign = {
-                **json.loads(_DECLARATION_PATH.read_text(encoding="utf-8")),
-                "surface": "Other.md",
-            }
-            record["declaration_json"] = self._derived_successor(foreign, record)
+            legitimate = json.loads(_DECLARATION_PATH.read_text(encoding="utf-8"))
+            foreign = {**legitimate, "surface": "Other.md"}
+            record["declaration_json"] = self._derived_successor(legitimate, record)
             self._JOURNAL.write_text(json.dumps(record), encoding="utf-8")
             before_events = len(_ledger_events())
 
@@ -6104,17 +6114,32 @@ if __name__ == "__main__":
 
 
 class TestDeclarationRolledBackUnderAPendingJournal(unittest.TestCase):
-    """GHI #979: the chain-head check must not close the window the journal completes.
+    """GHI #979 acceptance matrix -- one fixture, both consumers, per state.
 
     `_commit_transition` writes the declaration BEFORE the ledger, so the
     ordinary interruption leaves the declaration ahead of its witness. The
     reverse interval -- the witness durable and the declaration replacement
     lost or rolled back while the journal survives -- is reachable too, and it
-    is the ONE state in which a declaration legitimately trails its chain's
-    tip. Refusing it would fail closed on the state the journal exists to
-    complete, so the loader admits it only when the journal PROVES the gap is
-    this declaration's own interrupted transition; presence alone authorizes
-    nothing (`_journal_completes_this_gap`).
+    is the one state in which a declaration legitimately TRAILS its chain's
+    tip.
+
+    RECOVERABLE IS NOT CURRENT (operator ruling 2026-09-07). That interval used
+    to EXEMPT the declaration from the chain-tip check, so `load_declaration`
+    returned the stale map and floor as authoritative on the strength of a
+    journal that could still complete the transition. Those are two claims and
+    the second does not follow: an interrupted transition is precisely a
+    declaration that is NOT yet the chain's current state. The journal now
+    selects WHICH RECOVERY THE REFUSAL PRESCRIBES and never whether the state
+    is accepted, and nothing is lost by that -- `load_declaration`'s only
+    production consumer (`_load_declaration_or_exit`) runs AFTER
+    `_replay_pending_transition`, which returns solely when no journal exists.
+
+    Every negative below MUTATES A JOURNAL THE REAL TRANSACTION PATH WROTE,
+    one field at a time, and is asserted through BOTH consumers -- the loader
+    and the real `gz content unown`. A hand-built journal missing six required
+    fields is refused by field-completeness before any relation is reached, so
+    a test built on one witnesses the field check while claiming to witness the
+    relation: that was the shape of the fixture this class replaces.
     """
 
     _JOURNAL = _DECLARATION_PATH.parent / "Doc.md.json.journal"
@@ -6129,6 +6154,10 @@ class TestDeclarationRolledBackUnderAPendingJournal(unittest.TestCase):
     def _rolled_back_state(self) -> bytes:
         """Land a witnessed transition, retain its journal, then roll the declaration back.
 
+        The journal is the one `_commit_transition` wrote: only
+        `_clear_recovery_state` is suppressed, so every field is authored by
+        the real transaction path rather than by this fixture.
+
         Returns the predecessor bytes that were restored over the successor.
         """
         _seed_surface()
@@ -6142,16 +6171,70 @@ class TestDeclarationRolledBackUnderAPendingJournal(unittest.TestCase):
         _DECLARATION_PATH.write_bytes(predecessor)
         return predecessor
 
+    def _journal_record(self) -> dict:
+        return json.loads(self._JOURNAL.read_text(encoding="utf-8"))
+
+    def _write_journal(self, record: object) -> None:
+        self._JOURNAL.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
+
+    def _remint(self, record: dict) -> dict:
+        """Re-derive the id and the serialized successor after mutating a record.
+
+        A record whose `event_id` no longer matches its content is refused by
+        the re-mint check FIRST, so a relational test built on one never
+        reaches the relation it names. Re-minting keeps the journal internally
+        self-consistent and wrong in exactly the one way the test is about.
+        """
+        record["event_id"] = mint_event_id(record, record["parent_event_id"])
+        successor = json.loads(record["declaration_json"])
+        successor["floor_event_id"] = record["event_id"]
+        record["declaration_json"] = json.dumps(successor, indent=2) + "\n"
+        return record
+
+    def _assert_loader_refuses(self, *, naming: str) -> str:
+        """The loader must refuse, and the refusal must name *naming*."""
+        with self.assertRaises(OwnershipLoadError) as refused:
+            load_declaration(_DECLARATION_PATH, _SURFACE_TEXT, Path.cwd())
+        message = str(refused.exception)
+        self.assertIn("not the TIP", message)
+        self.assertIn(naming, message)
+        return message
+
+    def _recovery_exit(self) -> int:
+        return _unown(self._runner, attestor="g0", reason="probe").exit_code
+
+    # ---- legitimate interrupted transaction: recoverable, and NOT current ----
+
     @covers("REQ-0.35.0-04-02")
-    def test_the_retry_completes_the_transition_without_a_second_witness(self) -> None:
-        """The whole interval, end to end: roll back, load, re-run, land exactly once."""
+    def test_a_valid_journal_prescribes_the_retry_and_does_not_make_the_stale_state_current(
+        self,
+    ) -> None:
+        """The whole interval end to end -- and the loader never returns the stale map.
+
+        Would break if the journal exemption returned: the pre-retry
+        `load_declaration` would hand back `alpha-section='corpus-owned'` at
+        the predecessor floor, which is the state the attested witness already
+        superseded.
+        """
         with self._runner.isolated_filesystem():
             self._rolled_back_state()
             witness_id = self._witnesses()[0]["id"]
+            record = self._journal_record()
 
-            # Re-entrancy: the recovery path's own reader must accept this state.
-            trailing = load_declaration(_DECLARATION_PATH, _SURFACE_TEXT, Path.cwd())
-            self.assertEqual(trailing.sections["alpha-section"], "corpus-owned")
+            message = self._assert_loader_refuses(naming="RECOVERABLE")
+            self.assertIn("which is not the same as CURRENT", message)
+            # The prescribed recovery is executable and derived from the journal.
+            # Shell-quoted, so an attestor or reason containing a quote still
+            # yields a runnable line rather than a broken one.
+            self.assertIn(
+                "gz content unown Doc.md "
+                f"--section {shlex.quote(record['section'])} "
+                f"--attestor {shlex.quote(record['attestor'])} "
+                f"--reason {shlex.quote(record['reason'])}",
+                message,
+            )
+            self.assertIn(witness_id, message)
+            self.assertIn("Do NOT delete the journal", message)
 
             retry = _unown(self._runner, attestor="g0", reason="probe")
 
@@ -6167,6 +6250,8 @@ class TestDeclarationRolledBackUnderAPendingJournal(unittest.TestCase):
             self.assertFalse(self._JOURNAL.exists())
             self.assertFalse(self._SNAPSHOT.exists())
 
+    # ---- stale state without valid recovery material ----
+
     @covers("REQ-0.35.0-04-02")
     def test_the_same_rollback_without_its_journal_is_refused(self) -> None:
         """The discriminator is the JOURNAL, not the shape of the disagreement.
@@ -6180,26 +6265,315 @@ class TestDeclarationRolledBackUnderAPendingJournal(unittest.TestCase):
             witness_id = self._witnesses()[0]["id"]
             self._JOURNAL.unlink()
 
-            with self.assertRaises(OwnershipLoadError) as refused:
-                load_declaration(_DECLARATION_PATH, _SURFACE_TEXT, Path.cwd())
-            message = str(refused.exception)
-            self.assertIn("not the TIP", message)
-            self.assertIn(witness_id, message)
+            message = self._assert_loader_refuses(naming=witness_id)
+            self.assertIn("NO governed recovery", message)
+            self.assertNotIn("RECOVERABLE", message)
 
     @covers("REQ-0.35.0-04-02")
-    def test_a_journal_for_another_transition_does_not_license_the_rollback(self) -> None:
-        """Presence is not authority: the journal must name THIS declaration's gap."""
+    def test_a_second_attested_transition_is_beyond_one_journal(self) -> None:
+        """One journal describes ONE pending transition, so it accounts for one row."""
         with self._runner.isolated_filesystem():
             self._rolled_back_state()
-            record = json.loads(self._JOURNAL.read_text(encoding="utf-8"))
-            record["parent_event_id"] = "some-other-predecessor"
-            self._JOURNAL.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
+            record = self._journal_record()
+            successor = json.loads(record["declaration_json"])
+            _DECLARATION_PATH.write_text(record["declaration_json"], encoding="utf-8")
+            self._JOURNAL.unlink()
+            second = _unown(self._runner, section="doc-title", attestor="g0", reason="second")
+            self.assertEqual(second.exit_code, 0, msg=second.output)
+            # Roll all the way back to the original predecessor, restoring the
+            # first transition's journal over a chain that has moved twice.
+            del successor
+            _seed_declaration(alpha="corpus-owned", floor=_SEED_FLOOR)
+            self._write_journal(record)
 
+            message = self._assert_loader_refuses(naming="does NOT account for this gap")
+            self.assertIn("2 rows stand after this declaration", message)
+            self.assertNotIn("RECOVERABLE", message)
+
+    # ---- malformed recovery material: both consumers refuse ----
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_journal_that_does_not_parse_authorizes_nothing(self) -> None:
+        with self._runner.isolated_filesystem():
+            self._rolled_back_state()
+            self._JOURNAL.write_text("{not json", encoding="utf-8")
+
+            self._assert_loader_refuses(naming="does not parse")
+            self.assertEqual(self._recovery_exit(), 2)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_journal_that_cannot_be_READ_is_refused_in_prose_not_a_traceback(self) -> None:
+        """A storage fault is a governed refusal, never an escaping OSError.
+
+        The record is read once, in the recovery selector, and a journal that
+        disappears or turns unreadable between a caller's check and that read
+        is ordinary -- a concurrent `gz content` run clearing its own recovery
+        material produces it. Would break if the read were left unguarded.
+        """
+        with self._runner.isolated_filesystem():
+            self._rolled_back_state()
+            self._JOURNAL.unlink()
+            self._JOURNAL.mkdir()
+
+            message = self._assert_loader_refuses(naming="no readable pending-transition journal")
+            self.assertIn("does NOT account for this gap", message)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_journal_that_is_not_an_object_authorizes_nothing(self) -> None:
+        with self._runner.isolated_filesystem():
+            self._rolled_back_state()
+            self._write_journal([])
+
+            self._assert_loader_refuses(naming="expected a JSON object, found list")
+            self.assertEqual(self._recovery_exit(), 2)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_journal_missing_a_required_field_authorizes_nothing(self) -> None:
+        """The reproduced counterexample: the loader accepted six fields short.
+
+        Would break if the exemption kept a checklist of its own -- the field
+        set is `JOURNAL_FIELDS`, the one the replay path holds a journal to.
+        """
+        with self._runner.isolated_filesystem():
+            self._rolled_back_state()
+            record = self._journal_record()
+            self._write_journal({k: v for k, v in record.items() if k != "ts"})
+
+            self._assert_loader_refuses(naming="missing required field(s) ts")
+            self.assertEqual(self._recovery_exit(), 2)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_the_four_field_journal_of_the_reproduction_authorizes_nothing(self) -> None:
+        """The exact counterexample GHI #979 was reopened on, both consumers.
+
+        `surface`, `parent_event_id`, `prior_unowned_byte_floor` and `event_id`
+        are every field the retired exemption checked, and they are all true of
+        this gap. The journal still cannot perform the recovery it would have
+        authorized: the real command names the six fields it lacks.
+        """
+        with self._runner.isolated_filesystem():
+            self._rolled_back_state()
+            record = self._journal_record()
+            self._write_journal(
+                {
+                    field: record[field]
+                    for field in (
+                        "surface",
+                        "parent_event_id",
+                        "prior_unowned_byte_floor",
+                        "event_id",
+                    )
+                }
+            )
+
+            message = self._assert_loader_refuses(naming="does NOT account for this gap")
+            for field in ("section", "new_unowned_byte_floor", "attestor", "reason"):
+                self.assertIn(field, message)
+            self.assertEqual(self._recovery_exit(), 2)
+
+    @covers("REQ-0.35.0-04-04")
+    def test_a_blank_attestation_authorizes_nothing_and_keeps_its_own_exit(self) -> None:
+        """Shared validity, separate answers: the command path still exits 1 here."""
+        with self._runner.isolated_filesystem():
+            self._rolled_back_state()
+            self._write_journal(self._remint({**self._journal_record(), "attestor": "   "}))
+
+            self._assert_loader_refuses(naming="empty or whitespace-only")
+            self.assertEqual(self._recovery_exit(), 1)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_journal_whose_id_does_not_remint_authorizes_nothing(self) -> None:
+        with self._runner.isolated_filesystem():
+            self._rolled_back_state()
+            record = self._journal_record()
+            self._write_journal({**record, "event_id": record["event_id"] + "-tampered"})
+
+            self._assert_loader_refuses(naming="does not re-mint")
+            self.assertEqual(self._recovery_exit(), 2)
+
+    # ---- contradictory recovery material: predecessor, successor, witness ----
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_journal_for_another_surface_authorizes_nothing(self) -> None:
+        with self._runner.isolated_filesystem():
+            self._rolled_back_state()
+            self._write_journal({**self._journal_record(), "surface": "Other.md"})
+
+            self._assert_loader_refuses(naming="is not this transaction's target")
+            self.assertEqual(self._recovery_exit(), 2)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_journal_continuing_another_predecessor_authorizes_nothing(self) -> None:
+        """Self-consistent and wrong in ONE relation: it continues another event."""
+        with self._runner.isolated_filesystem():
+            self._rolled_back_state()
+            record = self._remint(
+                {**self._journal_record(), "parent_event_id": "some-other-predecessor"}
+            )
+            self._write_journal(record)
+
+            self._assert_loader_refuses(naming="not this declaration's witness")
+            self.assertEqual(self._recovery_exit(), 2)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_journal_starting_from_another_floor_authorizes_nothing(self) -> None:
+        """Self-consistent and wrong in ONE relation: it starts from another floor."""
+        with self._runner.isolated_filesystem():
+            self._rolled_back_state()
+            record = self._journal_record()
+            self._write_journal(
+                self._remint(
+                    {**record, "prior_unowned_byte_floor": record["prior_unowned_byte_floor"] + 500}
+                )
+            )
+
+            # The message must name THIS check, not its neighbour: the
+            # predecessor arm also says "not this declaration's", so asserting
+            # that phrase alone would pass on either.
+            message = self._assert_loader_refuses(
+                naming=f"starts from floor {record['prior_unowned_byte_floor'] + 500}"
+            )
+            self.assertIn(f"not this declaration's {record['prior_unowned_byte_floor']}", message)
+            self.assertEqual(self._recovery_exit(), 2)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_an_unparseable_successor_is_a_governed_refusal_on_the_command_path_too(self) -> None:
+        """The successor check belongs to BOTH consumers, including in state D.
+
+        `_apply_unlanded_transition` compares the derived successor byte for
+        byte, but only on the NOT-YET-LANDED branch. In § Recovery Protocol
+        state D the declaration is already the successor, that derivation is
+        skipped, and `_checked_landed_snapshot` then parsed `declaration_json`
+        unguarded -- the id digest deliberately excludes that field, so a
+        garbage value re-mints cleanly. Measured before the repair: exit 1 with
+        `Unexpected error: Expecting property name enclosed in double quotes`
+        -- no three-part prose, no statement that the journal is retained, and
+        the exit code of a declaration fault rather than a journal one.
+        """
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            _seed_declaration(alpha="corpus-owned", floor=_SEED_FLOOR)
+            with patch.object(unown_module, "_clear_recovery_state", lambda target, **_: None):
+                landed = _unown(self._runner, attestor="g0", reason="probe")
+            self.assertEqual(landed.exit_code, 0, msg=landed.output)
+            record = self._journal_record()
+            self.assertEqual(
+                json.loads(_DECLARATION_PATH.read_text(encoding="utf-8"))["floor_event_id"],
+                record["event_id"],
+                "state D: the declaration is already this transition's successor",
+            )
+            self._write_journal({**record, "declaration_json": "{not json at all"})
+
+            result = _unown(self._runner, attestor="g0", reason="probe")
+
+            self.assertEqual(result.exit_code, 2, msg=result.output)
+            self.assertIn("declaration_json does not parse", result.output)
+            self.assertIn("RETAINED", result.output)
+            self.assertNotIn("Unexpected error", result.output)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_journal_whose_successor_is_not_this_transitions_authorizes_nothing(self) -> None:
+        """`declaration_json` must BE the successor: this surface, this event, this floor."""
+        with self._runner.isolated_filesystem():
+            self._rolled_back_state()
+            record = self._journal_record()
+            successor = json.loads(record["declaration_json"])
+            successor["unowned_byte_floor"] = 999
+            self._write_journal(
+                {**record, "declaration_json": json.dumps(successor, indent=2) + "\n"}
+            )
+
+            self._assert_loader_refuses(naming="declaration_json carries floor 999")
+            self.assertEqual(self._recovery_exit(), 2)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_valid_journal_for_a_different_pending_transition_is_not_this_gap(self) -> None:
+        """Wholly valid, and still not proof that THIS gap is pending.
+
+        The journal describes a legitimate transition from the same
+        predecessor with a different attestation, so its own `event_id` is not
+        the row standing after this declaration. The loader must refuse: the
+        stale state is not made current by a journal about something else.
+        """
+        with self._runner.isolated_filesystem():
+            self._rolled_back_state()
+            standing = self._witnesses()[0]["id"]
+            self._write_journal(
+                self._remint({**self._journal_record(), "reason": "a different transition"})
+            )
+
+            message = self._assert_loader_refuses(naming="does NOT account for this gap")
+            self.assertIn(standing, message)
+            self.assertIn("would witness", message)
+            # The second consumer's answer differs here, and deliberately: this
+            # journal IS valid and DOES continue the declaration on disk, so the
+            # command replays it rather than refusing. What that produces, and
+            # why it still cannot make the stale state authoritative, is pinned
+            # by `test_replaying_a_planted_journal_cannot_make_the_stale_state_authoritative`.
+            self.assertEqual(self._recovery_exit(), 0)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_replaying_a_planted_journal_cannot_make_the_stale_state_authoritative(self) -> None:
+        """The criterion holds through the RECOVERY path, not only through the loader.
+
+        The loader is not the only way a declaration can be written. A journal
+        that is wholly self-consistent and continues the on-disk predecessor
+        reaches `_apply_unlanded_transition` -- which proves it against the
+        declaration ACTUALLY on disk, and that declaration is the stale one --
+        so the replay mints a transition from the stale floor and writes a
+        successor naming it. If nothing caught that, a planted journal would
+        launder a rolled-back declaration into an accepted one, which is the
+        defect this GHI is about arriving one layer over.
+
+        It is caught: the minted row claims a predecessor floor the chain does
+        not support, and `_refuse_broken_prefix` fails closed on the fork. What
+        remains is an unloadable declaration beside an orphaned row -- the
+        no-governed-recovery arm GHI #978 already tracks, not a silent
+        authority.
+        """
+        with self._runner.isolated_filesystem():
+            self._rolled_back_state()
+            attested = self._witnesses()[0]["id"]
+            self._write_journal(
+                self._remint(
+                    {**self._journal_record(), "reason": "a different transition entirely"}
+                )
+            )
+
+            replayed = _unown(self._runner, attestor="g0", reason="probe")
+
+            self.assertEqual(replayed.exit_code, 0, msg=replayed.output)
+            minted = [row["id"] for row in self._witnesses()]
+            self.assertEqual(len(minted), 2, "the replay minted a second row from the stale floor")
+            self.assertIn(attested, minted)
             with self.assertRaises(OwnershipLoadError) as refused:
                 load_declaration(_DECLARATION_PATH, _SURFACE_TEXT, Path.cwd())
-            message = str(refused.exception)
-            self.assertIn("not the TIP", message)
-            self.assertIn("does NOT account for this gap", message)
+            self.assertIn("its real predecessor", str(refused.exception))
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_ledger_row_that_disagrees_with_the_journal_is_not_its_witness(self) -> None:
+        """An id already being present is not proof the SAME transition is pending.
+
+        The write side makes this statement in `_append_event_once`'s
+        existing-row arm; the read side needs it too, or a row wearing the
+        journal's id while describing a different transition would license the
+        loader to discard that row's move.
+        """
+        with self._runner.isolated_filesystem():
+            self._rolled_back_state()
+            rows = _ledger_events()
+            for row in rows:
+                if row["event"] == "section_ownership_unowned":
+                    row["reason"] = "not what the journal describes"
+            _LEDGER_PATH.write_text(
+                "".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8"
+            )
+
+            message = self._assert_loader_refuses(naming="disagrees with the")
+            # Name the field that diverged, not a bare word: "reason" occurs in
+            # this refusal's own boilerplate and would pass on any divergence.
+            self.assertIn("on reason --", message)
+            self.assertIn("an id already being present is not proof", message)
 
 
 class TestJournalIsClearedOnlyAfterADurableWitness(unittest.TestCase):

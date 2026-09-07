@@ -411,17 +411,42 @@ the real command path in that copy:
   re-points a declaration at an event already in the ledger, so the message
   says to stop and escalate rather than naming a verb that cannot act.
 
-**One state is exempt, and it is proven rather than assumed.** The two-store
-commit writes the declaration before its ledger witness, and the reverse
-interval — the witness durable while the declaration replacement is lost or
-rolled back — is completed by the pending-transition journal (§ Recovery
-protocol). The loader admits a trailing declaration only when that journal
-PROVES the gap is this declaration's own interrupted transition: same surface,
-starting from this declaration's floor and `floor_event_id`, and its own
-`event_id` is the single row standing after them. A journal for another
-transition, a journal that cannot account for every later row, or one that does
-not parse leaves the refusal standing and is named in it — presence authorizes
-nothing.
+**No state is exempt: recoverable is not current.** The two-store commit writes
+the declaration before its ledger witness, and the reverse interval — the
+witness durable while the declaration replacement is lost or rolled back — is
+completed by the pending-transition journal (§ Recovery protocol). A journal
+proving that interval makes the state RECOVERABLE, which is a different claim
+from the one a reader of this loader is making: an interrupted transition is
+exactly a declaration that is not yet the chain's current state, so it may not
+be read as one. The journal therefore selects **which recovery the refusal
+prescribes** — an executable retry rather than "no governed recovery exists" —
+and never whether the declaration is accepted:
+
+```console
+$ gz content unown Doc.md --section beta-section --attestor "g0" --reason "probe"
+Error: What failed: '.../.gzkit/ownership/Doc.md.json' names floor_event_id 'section-ownership-genesis-Doc.md-26', which is not the TIP of 'Doc.md''s ownership chain -- 1 attested transition(s) stand after it: 'section-ownership-unowned-Doc.md-alpha-section-a2b8dac2c44ea20e' (26 -> 83).
+Why forbidden: [as above]
+Next step: a pending-transition journal at '.../.gzkit/ownership/Doc.md.json.journal' PROVES this gap is this declaration's own interrupted transition -- so this state is RECOVERABLE, which is not the same as CURRENT: the declaration does not become the chain's current state until the transition is completed, and until then it may not be read as one. Complete it: `gz content unown Doc.md --section alpha-section --attestor "g0" --reason "probe"` replays the journalled transition under its own event id 'section-ownership-unowned-Doc.md-alpha-section-a2b8dac2c44ea20e' and writes the successor declaration. Do NOT delete the journal and do NOT hand-edit the declaration.
+```
+
+The journal earns that branch only by being **valid on the same terms
+`gz content own`/`unown` replays it under** — one authority, read by the loader
+and the recovery path alike, so nothing admitted here would be refused there as
+a journal. The two consumers are not interchangeable beyond that, and the
+message says which one it is: the loader speaks to the CHAIN and never reads
+the surface, so a source that moved since the transition was measured, or
+corpus coverage lost since an owning was decided, is met by name when the
+prescribed verb runs, not here (§ Recovery protocol states A–E). It must carry every field the replay reads, name this
+surface, carry a non-blank attestation, re-mint its own `event_id` from its own
+content, serialize this transition's own successor, start from this
+declaration's floor and `floor_event_id`, and its `event_id` must be the single
+row standing after them — a row that agrees with the witness the journal
+describes, not merely one wearing its id. Anything else leaves the two-arm
+refusal above standing and is named in it. Presence authorizes nothing, and
+neither does a partial resemblance: the earlier form of this check read four
+fields, so a journal six fields short of what the recovery requires made the
+loader accept the stale map and floor while `gz content unown` exited 2 on the
+same journal (GHI #979).
 
 #### Recovery protocol
 

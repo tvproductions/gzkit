@@ -28,10 +28,11 @@ import contextlib
 import hashlib
 import json
 import os
+import shlex
 import tempfile
 from collections.abc import Iterator, Mapping
 from pathlib import Path
-from typing import Any, Literal, NoReturn
+from typing import Any, Literal, NamedTuple, NoReturn
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -1097,27 +1098,31 @@ def _refuse_superseded_witness(
     checks answered *"does a valid witness exist behind this floor"*; the claim
     the ratchet rests on is *"is this declaration the current state of the
     governed chain"*.
+
+    RECOVERABLE IS NOT CURRENT (operator ruling 2026-09-07). A pending journal
+    used to EXEMPT this state -- the loader returned the stale map and floor as
+    authoritative because a retry could still complete the transition. Those are
+    different claims, and the second does not follow from the first: an
+    interrupted transition means the declaration is not yet the chain's current
+    state, which is exactly what a reader of this loader is asking. A journal
+    therefore changes WHICH RECOVERY THIS REFUSAL PRESCRIBES -- from "no
+    governed recovery exists, escalate" to an executable retry -- and never
+    whether the state is accepted. Nothing is lost by refusing: measured
+    2026-09-07, `load_declaration` has ONE production consumer
+    (`commands/content/unown.py::_load_declaration_or_exit`), reached from
+    `content_own_cmd` and `content_unown_cmd` only AFTER
+    `_replay_pending_transition`, which returns solely when no journal exists.
+    The exemption could never fire on the recovery path it was written for; it
+    could only hand stale ownership state to some other reader as current.
     """
     later = chain[position + 1 :]
     if not later:
         return
-    if _journal_completes_this_gap(root, declared_surface, event, later):
-        return
-
     tip = later[-1]
     listed = ", ".join(
         f"{row.id!r} ({row.extra.get('prior_unowned_byte_floor')!r} -> "
         f"{row.extra.get('new_unowned_byte_floor')!r})"
         for row in later
-    )
-    journal_path = declaration_journal_path(root, declared_surface)
-    journal_note = (
-        f" A pending-transition journal is present at {journal_path.as_posix()!r}, and it does "
-        "NOT account for this gap -- presence alone authorizes nothing. Do not delete it: run "
-        f"the `gz content own`/`unown` transition for {declared_surface!r} so the journal is "
-        "validated and replayed on its own terms first."
-        if journal_path.exists()
-        else ""
     )
     msg = (
         f"What failed: {path.as_posix()!r} names floor_event_id {event.id!r}, which is not "
@@ -1132,8 +1137,72 @@ def _refuse_superseded_witness(
         "stay in the ledger with nothing pointing at them. A valid witness EXISTING behind "
         "this floor answers 'is something armed', never 'did the governed procedure run' "
         "(AGENTS.md § DO IT RIGHT).\n"
-        f"Next step: two states produce this, and they repair DIFFERENT artifacts. (a) The "
-        f"declaration was restored or rolled back over the transition(s) above: recover the "
+        "Next step: "
+        + _superseded_witness_recovery(path, root, declared_surface, event, later, tip)
+    )
+    raise OwnershipLoadError(msg)
+
+
+def _superseded_witness_recovery(
+    path: Path, root: Path, declared_surface: str, event: Any, later: list[Any], tip: Any
+) -> str:
+    """Return the recovery a superseded witness earns -- its STATE decides which.
+
+    Three states reach this refusal and they repair different artifacts. A
+    journalled transition that PROVES this gap has an executable retry; a
+    rollback with a saved copy naming the tip has an executable restore; a
+    rollback with neither has no governed recovery today and is said so plainly
+    (GHI #978's missing-mechanism arm). Extracted because the branch is the
+    refusal's whole content and `_refuse_superseded_witness` states the
+    invariant, not the remedy.
+    """
+    journal_path = declaration_journal_path(root, declared_surface)
+    record: Any = None
+    gap_defect: str | None
+    try:
+        record = json.loads(journal_path.read_text(encoding="utf-8"))
+    except OSError:
+        # Read ONCE. The record was previously re-read here after the gap check
+        # had already parsed it, so a journal removed between the two reads
+        # escaped this refusal as an unhandled OSError instead of the governed
+        # prose -- and the state that produces it, a concurrent `gz content`
+        # run clearing its own recovery material, is ordinary rather than exotic.
+        gap_defect = "no readable pending-transition journal is present"
+    except ValueError as exc:
+        gap_defect = f"the pending-transition journal does not parse ({exc})"
+    else:
+        gap_defect = _journal_completes_this_gap(record, declared_surface, event, later)
+    if gap_defect is None:
+        verb = "own" if transition_kind(record) == OWN_TRANSITION else "unown"
+        return (
+            f"a pending-transition journal at {journal_path.as_posix()!r} PROVES this gap is "
+            "this declaration's own interrupted transition -- so this state is RECOVERABLE, "
+            "which is not the same as CURRENT: the declaration does not become the chain's "
+            "current state until the transition is completed, and until then it may not be "
+            f"read as one. Complete it: `gz content {verb} {shlex.quote(declared_surface)} "
+            f"--section {shlex.quote(record['section'])} "
+            f"--attestor {shlex.quote(record['attestor'])} "
+            f"--reason {shlex.quote(record['reason'])}` replays the journalled transition "
+            f"under its own event id {record['event_id']!r}. That verb re-validates the "
+            "journal against the live surface before it writes, so a source that moved since "
+            "the transition was measured, or corpus coverage lost since an owning was "
+            "decided, is met THERE by name -- this refusal speaks to the CHAIN and can see "
+            "neither. Do NOT delete the journal and do NOT hand-edit the declaration."
+        )
+    journal_note = (
+        f" A pending-transition journal is present at {journal_path.as_posix()!r}, and it does "
+        f"NOT account for this gap: {gap_defect}. Presence alone authorizes nothing, and neither "
+        "does a partial resemblance -- a journal's VALIDITY is decided by the one "
+        "authority `gz content own`/`unown` replays it under, so nothing admitted here "
+        "would be refused there (GHI #979). Do not delete it: run the "
+        f"`gz content own`/`unown` transition for {declared_surface!r} so the journal is "
+        "validated and replayed on its own terms first."
+        if journal_path.exists()
+        else ""
+    )
+    return (
+        "two states produce this, and they repair DIFFERENT artifacts. (a) The "
+        "declaration was restored or rolled back over the transition(s) above: recover the "
         f"copy that names {tip.id!r} -- `git log -- {path.as_posix()}` lists its revisions and "
         f"`git checkout <sha> -- {path.as_posix()}` restores one -- then verify the restored "
         f"copy carries floor {tip.extra.get('new_unowned_byte_floor')!r}. (b) No copy naming "
@@ -1142,13 +1211,12 @@ def _refuse_superseded_witness(
         "the stale floor and map this declaration still carries -- so that state has NO "
         f"governed recovery today: stop and escalate (GHI #978).{journal_note}"
     )
-    raise OwnershipLoadError(msg)
 
 
 def _journal_completes_this_gap(
-    root: Path, declared_surface: str, event: Any, later: list[Any]
-) -> bool:
-    """Report whether a pending journal PROVES *later* is this declaration's own move.
+    record: Any, declared_surface: str, event: Any, later: list[Any]
+) -> str | None:
+    """Return None when a pending journal PROVES *later* is this declaration's own move.
 
     The two-store transaction writes the declaration before its ledger witness
     (`commands/content/unown.py` § Recovery Protocol), so the ordinary
@@ -1158,30 +1226,95 @@ def _journal_completes_this_gap(
     the journalled successor under the SAME event id. Refusing that state would
     fail closed on the one shape the journal exists to complete.
 
-    PRESENCE AUTHORIZES NOTHING (GHI #979; the same posture
-    `_refuse_forged_journal` takes). The journal must be shown to CONTINUE this
-    declaration and to account for exactly the gap observed: it names this
-    surface, starts from this declaration's floor and witness, and its own
-    event id IS the single row standing after them. Anything else -- a journal
-    for another transition, a second row it cannot describe, a journal that
-    does not parse -- leaves the refusal standing.
+    PRESENCE AUTHORIZES NOTHING, AND NEITHER DOES A PARTIAL RESEMBLANCE. This
+    check first admitted any journal carrying four fields -- `surface`,
+    `parent_event_id`, `prior_unowned_byte_floor`, `event_id` -- while the
+    recovery it claimed was pending requires ten (`JOURNAL_FIELDS`, plus
+    `OWN_JOURNAL_FIELDS` for an owning) and proves several relationships
+    besides. Measured 2026-09-07 in a disposable fixture, through the real
+    `gz content unown` and the real loader: a four-field journal made the
+    loader accept a declaration rolled back behind an attested raise
+    (`alpha-section='corpus-owned' floor=26`, the attested tip discarded),
+    while the recovery command exited 2 on the same fixture and the same
+    journal -- `missing required field(s) section, new_unowned_byte_floor,
+    attestor, reason, declaration_json, ts`. An exemption authorized by a
+    journal that CANNOT PERFORM the recovery it supposedly proves is the
+    presence-check family wearing a longer checklist (GHI #979).
+
+    So the proof is now the recovery contract itself plus the gap-specific
+    relations, applied to a record the caller has already read, and it returns
+    the REASON the proof is unmet so the refusal can name it:
+
+    * `journal_replay_defect` -- the ONE authority `_journal_record_or_refuse`
+      also reads, so this can never admit a journal that path would refuse. It
+      covers the serialized successor too, so neither consumer proves the
+      journal's shape to a standard the other does not.
+    * the gap relations -- exactly ONE row stands after the declaration, the
+      journal starts from THIS declaration's witness and floor, and its own
+      `event_id` IS that row.
+    * `_journal_witness_defect` -- the standing row is that journal's WITNESS,
+      not merely a row wearing its id, compared through the same
+      `expected_witness_extra` / `witness_divergence` pair `_append_event_once`
+      uses.
     """
+    replay_defect = journal_replay_defect(record, surface=declared_surface)
+    if replay_defect is not None:
+        return f"the pending-transition journal is not replayable: {replay_defect.detail}"
     if len(later) != 1:
-        return False
-    try:
-        record = json.loads(
-            declaration_journal_path(root, declared_surface).read_text(encoding="utf-8")
+        return (
+            f"one journal describes ONE pending transition, and {len(later)} rows stand "
+            "after this declaration"
         )
-    except (OSError, ValueError):
-        return False
-    if not isinstance(record, dict):
-        return False
-    return (
-        record.get("surface") == declared_surface
-        and record.get("parent_event_id") == event.id
-        and record.get("prior_unowned_byte_floor") == event.extra.get("new_unowned_byte_floor")
-        and record.get("event_id") == later[0].id
+    if record["parent_event_id"] != event.id:
+        return (
+            f"the pending-transition journal continues {record['parent_event_id']!r}, "
+            f"not this declaration's witness {event.id!r}"
+        )
+    if record["prior_unowned_byte_floor"] != event.extra.get("new_unowned_byte_floor"):
+        return (
+            f"the pending-transition journal starts from floor "
+            f"{record['prior_unowned_byte_floor']!r}, not this declaration's "
+            f"{event.extra.get('new_unowned_byte_floor')!r}"
+        )
+    if record["event_id"] != later[0].id:
+        return (
+            f"the pending-transition journal would witness {record['event_id']!r}, "
+            f"not the {later[0].id!r} standing after this declaration"
+        )
+    return _journal_witness_defect(record, later[0], declared_surface)
+
+
+def _journal_witness_defect(
+    record: dict[str, Any], standing: Any, declared_surface: str
+) -> str | None:
+    """Return why *standing* is not the witness *record* describes, or None.
+
+    An id already being present is not proof that the SAME transition was
+    already witnessed -- the statement `_append_event_once`'s existing-row arm
+    makes on the write side, made here on the read side through the same pair
+    of helpers. Without it a journal could be wholly self-consistent, name the
+    standing row's id, and still describe a different section, a different
+    floor move, a different attestation or a different ownership map from the
+    one the attested row actually carries; the loader would then discard that
+    row's transition on the strength of a journal contradicting it.
+
+    The section map is pinned through the row's own `sections_digest`, taken
+    from the journal's serialized successor. On the write side the equivalent
+    binding is `_checked_landed_snapshot`, which compares the same map against
+    the declaration that actually landed.
+    """
+    successor_sections = json.loads(record["declaration_json"])["sections"]
+    expected = expected_witness_extra(
+        record, surface=declared_surface, landed_sections_digest=sections_digest(successor_sections)
     )
+    divergent = witness_divergence(standing, expected, witness_event_type(record))
+    if divergent:
+        return (
+            f"the row {standing.id!r} standing after this declaration disagrees with the "
+            f"witness the pending-transition journal describes on {', '.join(divergent)} -- "
+            "an id already being present is not proof that the SAME transition is pending"
+        )
+    return None
 
 
 def _refuse_unwitnessed_section_map(
@@ -1484,6 +1617,251 @@ def declaration_journal_source_path(root: Path, surface: str) -> Path:
     the source surface is never rewritten from it.
     """
     return declaration_path(root, surface).with_name(f"{surface}.json.journal.source")
+
+
+#: The journal `transition` value selecting the OWNING direction (GHI #974).
+#: Absent -- every journal written before the field existed -- reads as an
+#: un-owning, so no legacy journal changes meaning.
+OWN_TRANSITION = "own"
+#: The ledger event type witnessing each direction. An owning is the
+#: decrease-or-equal move `unowned_ratchet_updated` witnesses; an un-owning is
+#: the one attested raise.
+OWN_WITNESS_EVENT = "unowned_ratchet_updated"
+UNOWN_WITNESS_EVENT = "section_ownership_unowned"
+
+#: Every field a journalled record must carry to be replayable: what
+#: `_replay_pending_transition` reads (including `parent_event_id`, needed to
+#: re-mint `event_id` and check it against the on-disk chain pointer) plus what
+#: `_append_event_once` reads (including `ts`, which it copies onto the
+#: `LedgerEvent`). A record missing any of them cannot complete the interrupted
+#: transition.
+JOURNAL_FIELDS: tuple[str, ...] = (
+    "event_id",
+    "surface",
+    "section",
+    "prior_unowned_byte_floor",
+    "new_unowned_byte_floor",
+    "attestor",
+    "reason",
+    "declaration_json",
+    "parent_event_id",
+    "ts",
+)
+#: The coverage evidence an owning journal must carry on top of
+#: `JOURNAL_FIELDS`: it is copied onto the witness, never recomputed there.
+OWN_JOURNAL_FIELDS: tuple[str, ...] = ("covering_entry_ids", "covered_lines", "body_lines")
+
+
+class JournalDefect(NamedTuple):
+    """A named reason a pending-transition journal cannot be replayed.
+
+    *kind* exists because the two consumers of this authority answer a defect
+    differently and must keep doing so. A blank attestor or reason is the
+    REQ-0.35.0-04-04 attestation refusal the command path already exits 1 on,
+    with its own prose; everything else is the forgery-class refusal that exits
+    2. Collapsing them to one string would have silently moved a blank
+    attestation from exit 1 to exit 2.
+    """
+
+    kind: Literal["forged", "attestation"]
+    detail: str
+
+
+def transition_kind(record: Mapping[str, Any]) -> str:
+    """Return ``"own"`` for an owning record and ``"unown"`` for everything else."""
+    return OWN_TRANSITION if record.get("transition") == OWN_TRANSITION else "unown"
+
+
+def witness_event_type(record: Mapping[str, Any]) -> str:
+    """Return the ledger event type *record*'s witness is written under."""
+    return OWN_WITNESS_EVENT if transition_kind(record) == OWN_TRANSITION else UNOWN_WITNESS_EVENT
+
+
+def mint_event_id(record: Mapping[str, Any], parent_event_id: str | None) -> str:
+    """Mint the DETERMINISTIC event id witnessing *record*'s pending transition.
+
+    The previous id embedded `datetime.now()`, so an interrupted run could
+    never reproduce it -- which is precisely why the residue of a failed
+    ledger append was unrecoverable rather than merely untidy. Deriving the id
+    from the transition's own content makes a retry mint the SAME id, so
+    completing the interrupted append is idempotent by construction instead of
+    by bookkeeping.
+
+    *parent_event_id* -- the floor_event_id the transition starts FROM -- is in
+    the digest to make this a chain link rather than a content fingerprint: two
+    genuinely distinct un-ownings of the same section with the same attestor
+    and reason (un-own, re-own, un-own again) start from different predecessors
+    and so earn different ids, where a pure content hash would collide and
+    silently drop the second witness.
+    """
+    fields: dict[str, Any] = {
+        "surface": record["surface"],
+        "section": record["section"],
+        "prior_unowned_byte_floor": record["prior_unowned_byte_floor"],
+        "new_unowned_byte_floor": record["new_unowned_byte_floor"],
+        "attestor": record["attestor"],
+        "reason": record["reason"],
+        "parent_event_id": parent_event_id,
+    }
+    if transition_kind(record) == OWN_TRANSITION:
+        # The direction is IN the digest, so an owning and an un-owning of one
+        # section from one predecessor with one attestation can never collide;
+        # the un-owning payload is byte-unchanged so every legacy journal still
+        # re-mints its own id.
+        fields["transition"] = OWN_TRANSITION
+    payload = json.dumps(fields, sort_keys=True, separators=(",", ":"))
+    digest = hashlib.sha256(payload.encode("utf-8")).hexdigest()[:16]
+    if transition_kind(record) == OWN_TRANSITION:
+        return f"unowned-ratchet-updated-{record['surface']}-owned-{record['section']}-{digest}"
+    return f"section-ownership-unowned-{record['surface']}-{record['section']}-{digest}"
+
+
+def journal_replay_defect(record: Any, *, surface: str) -> JournalDefect | None:
+    """Return why *record* cannot be replayed for *surface*, or None if it can.
+
+    THE ONE STATEMENT OF WHAT MAKES A JOURNAL REPLAYABLE (GHI #979). It used to
+    live only in `commands/content/unown.py::_journal_record_or_refuse`, while
+    `load_declaration`'s stale-declaration exemption carried a four-field
+    checklist of its own -- so a journal missing `section`,
+    `new_unowned_byte_floor`, `attestor`, `reason`, `declaration_json` and `ts`
+    authorized the loader to accept a stale ownership map and floor, and the
+    real `gz content unown` recovery it supposedly proved pending then exited 2
+    naming those six fields. An exception is only as good as the contract it
+    proves, so both consumers read this.
+
+    Reaching None means the record parses to an object, carries every
+    replayable field, names THIS surface, carries a non-blank attestation, and
+    re-mints its own `event_id` from its own content. Nothing on disk has been
+    consulted: relationships to a declaration, a chain or a ledger row are the
+    CALLER's to prove, because the two consumers stand in different states and
+    prove them against different evidence.
+    """
+    if not isinstance(record, dict):
+        return JournalDefect("forged", f"expected a JSON object, found {type(record).__name__}")
+    required = JOURNAL_FIELDS
+    if transition_kind(record) == OWN_TRANSITION:
+        required = (*JOURNAL_FIELDS, *OWN_JOURNAL_FIELDS)
+    missing = [field for field in required if field not in record]
+    if missing:
+        return JournalDefect("forged", f"missing required field(s) {', '.join(missing)}")
+    if record["surface"] != surface:
+        return JournalDefect(
+            "forged",
+            f"surface {record['surface']!r} is not this transaction's target "
+            f"({surface!r}) -- a journal completes a transition for THIS "
+            "target or none. The journal is a PAYLOAD: its identity is CHECKED "
+            "against the target, never used to choose a path",
+        )
+    attestor, reason = record["attestor"], record["reason"]
+    if not (isinstance(attestor, str) and attestor.strip()) or not (
+        isinstance(reason, str) and reason.strip()
+    ):
+        return JournalDefect(
+            "attestation",
+            "attestor or reason is empty or whitespace-only (REQ-0.35.0-04-04)",
+        )
+    if mint_event_id(record, record["parent_event_id"]) != record["event_id"]:
+        return JournalDefect(
+            "forged",
+            f"event_id {record['event_id']!r} does not re-mint from the journal's own content",
+        )
+    successor_defect = _journal_successor_defect(record, surface=surface)
+    if successor_defect is not None:
+        return JournalDefect("forged", successor_defect)
+    return None
+
+
+def expected_witness_extra(
+    record: Mapping[str, Any], *, surface: str, landed_sections_digest: str
+) -> dict[str, Any]:
+    """Build the `extra` payload the witness for *record* carries.
+
+    ONE derivation, read by the append path and by the loader's stale-state
+    exemption (GHI #979). The append path passes the digest of the declaration
+    ACTUALLY ON DISK; the loader passes the digest of the successor the journal
+    serialized. Both then compare against a real ledger row through
+    `witness_divergence`, so "the row standing here IS this journal's witness"
+    is decided by one shape rather than by two field lists that can drift.
+    """
+    extra: dict[str, Any] = {
+        "surface": surface,
+        "section": record["section"],
+        "sections_digest": landed_sections_digest,
+        "prior_unowned_byte_floor": record["prior_unowned_byte_floor"],
+        "new_unowned_byte_floor": record["new_unowned_byte_floor"],
+        "attestor": record["attestor"],
+        "reason": record["reason"],
+    }
+    if transition_kind(record) == OWN_TRANSITION:
+        # The witness names the link it continues and the evidence the owning
+        # rested on (GHI #974). The evidence is the JOURNALLED measurement,
+        # because a witness describes the transition that was decided, and a
+        # corpus that grew afterwards must not make an existing witness read
+        # as divergent.
+        extra["predecessor_event_id"] = record["parent_event_id"]
+        for field in OWN_JOURNAL_FIELDS:
+            extra[field] = record[field]
+    return extra
+
+
+def witness_divergence(existing: Any, expected: Mapping[str, Any], event_type: str) -> list[str]:
+    """Fields on which *existing* disagrees with the witness *expected* describes.
+
+    An id already being present is not proof that the SAME transition was
+    already witnessed (Step-4b round-5), and the loader's exemption needs the
+    same statement: a journal whose `event_id` happens to name the row standing
+    after a stale declaration has not shown that the row is ITS witness.
+    """
+    divergent = [field for field, value in expected.items() if existing.extra.get(field) != value]
+    if existing.event != event_type:
+        divergent.insert(0, "event")
+    return divergent
+
+
+def _journal_successor_defect(record: Mapping[str, Any], *, surface: str) -> str | None:
+    """Return why *record*'s `declaration_json` is not this transition's successor.
+
+    Reached only through `journal_replay_defect`, so BOTH consumers make this
+    decision. It was briefly the loader's alone, and the asymmetry was the
+    finding an independent review returned: the command path proves the
+    successor at full strength in `_apply_unlanded_transition` -- re-derived
+    from the on-disk predecessor and compared byte for byte -- but that branch
+    runs only when the declaration has NOT landed. In § Recovery Protocol state
+    D the declaration is already the successor, the derivation is skipped, and
+    `_checked_landed_snapshot` then parsed `declaration_json` unguarded.
+    Measured 2026-09-07: a state-D journal carrying `"{not json at all"`
+    re-mints cleanly (the id digest deliberately excludes `declaration_json`)
+    and exited 1 as `Unexpected error: Expecting property name enclosed in
+    double quotes` -- no three-part prose, no statement that the journal is
+    retained, and the exit code of a declaration fault rather than a journal one.
+
+    What is checkable without the derivation is what the serialized successor
+    must be true of regardless of it: it parses, it declares this surface, it
+    names this transition's own event as its floor witness, and it carries the
+    floor the transition moves to. The full-strength byte comparison is
+    unweakened and still runs where it can; this is the floor beneath it, not a
+    replacement for it. The section map is pinned separately, against the
+    attested row's own `sections_digest`.
+    """
+    try:
+        successor = json.loads(record["declaration_json"])
+    except (TypeError, ValueError) as exc:
+        return f"declaration_json does not parse as a declaration ({exc})"
+    if not isinstance(successor, dict):
+        return f"declaration_json is a {type(successor).__name__}, not a declaration object"
+    if successor.get("surface") != surface:
+        return f"declaration_json declares surface {successor.get('surface')!r}, not {surface!r}"
+    if successor.get("floor_event_id") != record["event_id"]:
+        return (
+            f"declaration_json names floor_event_id {successor.get('floor_event_id')!r}, "
+            f"not this transition's own {record['event_id']!r}"
+        )
+    if successor.get("unowned_byte_floor") != record["new_unowned_byte_floor"]:
+        return (
+            f"declaration_json carries floor {successor.get('unowned_byte_floor')!r}, "
+            f"not the {record['new_unowned_byte_floor']!r} this transition moves to"
+        )
+    return None
 
 
 def declaration_path(root: Path, surface: str) -> Path:

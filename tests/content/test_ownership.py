@@ -3087,6 +3087,18 @@ class TestDeclarationMustNameItsChainTip(_DeclarationFixtureMixin, unittest.Test
     claim about the chain's CURRENT state -- not about a valid point existing
     somewhere in it (AGENTS.md § DO IT RIGHT: a presence check answers "is
     something armed", never "did the governed procedure run").
+
+    A pending-transition journal makes this state RECOVERABLE, which is not the
+    same as CURRENT (operator ruling 2026-09-07): it selects which recovery the
+    refusal prescribes and never whether the declaration is accepted. Five
+    journal cases lived here and every one of them was built by hand, so each
+    was refused by field-completeness before reaching the relation it named --
+    and the positive twin, six fields short of what `gz content unown` requires
+    to replay, endorsed the defect it was written to fence (GHI #979). The
+    journal matrix is exercised against material the real transaction path
+    wrote, through BOTH consumers, in
+    `tests/commands/test_content_unown.py::TestDeclarationRolledBackUnderAPendingJournal`
+    and its owning twin in `tests/commands/test_content_own.py`.
     """
 
     _OWNED_ALPHA = {
@@ -3145,12 +3157,6 @@ class TestDeclarationMustNameItsChainTip(_DeclarationFixtureMixin, unittest.Test
             reason="corpus carries every line",
         )
         return genesis, owned
-
-    def _journal(self, **record: object) -> Path:
-        journal = ownership.declaration_journal_path(self._root, "Doc.md")
-        journal.parent.mkdir(parents=True, exist_ok=True)
-        journal.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
-        return journal
 
     @covers("REQ-0.35.0-04-02")
     def test_a_witness_behind_an_attested_raise_is_refused(self) -> None:
@@ -3261,110 +3267,6 @@ class TestDeclarationMustNameItsChainTip(_DeclarationFixtureMixin, unittest.Test
         self.assertEqual(
             load_declaration(path, _SIMPLE_SURFACE, self._root).floor_event_id, genesis
         )
-
-    @covers("REQ-0.35.0-04-02")
-    def test_a_journal_that_continues_this_declaration_permits_its_own_witness(self) -> None:
-        """The interrupted transaction between the ledger append and the declaration.
-
-        `_commit_transition` writes the declaration before the ledger, and the
-        replay path re-applies the journalled successor -- so a run interrupted
-        with its witness durable and its declaration still at the predecessor
-        leaves exactly this shape. The retry that completes it must be able to
-        read the declaration, so the check must not fire on it.
-        """
-        genesis, raised = self._attested_raise()
-        self._journal(
-            surface="Doc.md",
-            section="alpha-section",
-            parent_event_id=genesis,
-            event_id=raised,
-            prior_unowned_byte_floor=self._low,
-            new_unowned_byte_floor=self._high,
-        )
-        path = self._write_declaration(
-            self._OWNED_ALPHA, unowned_byte_floor=self._low, floor_event_id=genesis
-        )
-        loaded = load_declaration(path, _SIMPLE_SURFACE, self._root)
-        self.assertEqual(loaded.floor_event_id, genesis)
-
-    @covers("REQ-0.35.0-04-02")
-    def test_a_journal_for_a_different_transition_authorizes_nothing(self) -> None:
-        """PRESENCE IS NOT AUTHORITY: the journal must name THIS gap, not merely exist."""
-        genesis, raised = self._attested_raise()
-        self._journal(
-            surface="Doc.md",
-            section="beta-section",
-            parent_event_id="some-other-event",
-            event_id="some-other-witness",
-            prior_unowned_byte_floor=self._low,
-            new_unowned_byte_floor=self._high,
-        )
-        path = self._write_declaration(
-            self._OWNED_ALPHA, unowned_byte_floor=self._low, floor_event_id=genesis
-        )
-        with self.assertRaises(OwnershipLoadError) as refused:
-            load_declaration(path, _SIMPLE_SURFACE, self._root)
-        message = str(refused.exception)
-        self.assertIn(raised, message)
-        self.assertIn("journal", message)
-
-    @covers("REQ-0.35.0-04-02")
-    def test_a_journal_naming_a_different_predecessor_floor_authorizes_nothing(self) -> None:
-        """The journal must start FROM this declaration's floor, not merely name its id."""
-        genesis, raised = self._attested_raise()
-        self._journal(
-            surface="Doc.md",
-            section="alpha-section",
-            parent_event_id=genesis,
-            event_id=raised,
-            prior_unowned_byte_floor=self._low + 500,
-            new_unowned_byte_floor=self._high,
-        )
-        path = self._write_declaration(
-            self._OWNED_ALPHA, unowned_byte_floor=self._low, floor_event_id=genesis
-        )
-        with self.assertRaises(OwnershipLoadError):
-            load_declaration(path, _SIMPLE_SURFACE, self._root)
-
-    @covers("REQ-0.35.0-04-02")
-    def test_a_journal_cannot_explain_two_later_transitions(self) -> None:
-        """One journal describes ONE pending transition, so it accounts for one row."""
-        genesis, raised = self._attested_raise()
-        self._append(
-            "unowned_ratchet_updated",
-            "unowned-ratchet-updated-Doc.md-later",
-            surface="Doc.md",
-            sections_digest=sections_digest(self._UNOWNED_ALPHA),
-            prior_unowned_byte_floor=self._high,
-            new_unowned_byte_floor=self._high,
-            predecessor_event_id=raised,
-        )
-        self._journal(
-            surface="Doc.md",
-            section="alpha-section",
-            parent_event_id=genesis,
-            event_id=raised,
-            prior_unowned_byte_floor=self._low,
-            new_unowned_byte_floor=self._high,
-        )
-        path = self._write_declaration(
-            self._OWNED_ALPHA, unowned_byte_floor=self._low, floor_event_id=genesis
-        )
-        with self.assertRaises(OwnershipLoadError):
-            load_declaration(path, _SIMPLE_SURFACE, self._root)
-
-    @covers("REQ-0.35.0-04-02")
-    def test_an_unreadable_journal_authorizes_nothing(self) -> None:
-        """A journal that does not parse cannot prove a relationship to anything."""
-        genesis, _ = self._attested_raise()
-        journal = ownership.declaration_journal_path(self._root, "Doc.md")
-        journal.parent.mkdir(parents=True, exist_ok=True)
-        journal.write_text("{not json", encoding="utf-8")
-        path = self._write_declaration(
-            self._OWNED_ALPHA, unowned_byte_floor=self._low, floor_event_id=genesis
-        )
-        with self.assertRaises(OwnershipLoadError):
-            load_declaration(path, _SIMPLE_SURFACE, self._root)
 
     @covers("REQ-0.35.0-04-02")
     def test_the_refusal_states_what_failed_why_and_an_honest_next_step(self) -> None:

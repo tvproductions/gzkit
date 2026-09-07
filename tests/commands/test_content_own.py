@@ -575,6 +575,82 @@ class TestOwnAndUnownShareOneJournal(unittest.TestCase):
             self.assertEqual(reloaded.floor_event_id, event["id"])
 
 
+class TestInterruptedOwningIsRecoverableButNotCurrent(unittest.TestCase):
+    """GHI #979, owning direction: the same interval, the same two claims.
+
+    `_commit_transition` writes the declaration before its ledger witness, so
+    the reverse interval -- witness durable, declaration replacement rolled
+    back, journal retained -- is reachable for `own` exactly as it is for
+    `unown`. The journal a real run wrote is the fixture; nothing here builds
+    one by hand.
+
+    RECOVERABLE IS NOT CURRENT: the loader refuses and prescribes the retry
+    that completes the transition, rather than returning the predecessor's map
+    and floor as though the attested owning had not happened. The un-owning
+    twin, and the malformed/contradictory matrix both directions share, live in
+    `tests/commands/test_content_unown.py::TestDeclarationRolledBackUnderAPendingJournal`.
+    """
+
+    def setUp(self) -> None:
+        self._runner = CliRunner()
+
+    @covers("REQ-0.35.0-04-02")
+    def test_the_loader_refuses_and_the_retry_lands_exactly_one_witness(self) -> None:
+        """THE LOADER IS ALWAYS FED THE BYTES ON DISK, as production feeds it.
+
+        The first form of this test seeded `_seed_overgrown_alpha` and then
+        handed `load_declaration` `_SEED_SURFACE_TEXT` — a surface text that was
+        NOT the one on disk. Against the live bytes the rolled-back map
+        (`alpha-section: unowned`) sums 231 B over a stored floor of 83, so the
+        loader refuses at the span check and never reaches the chain-tip
+        refusal: every assertion about `RECOVERABLE` was unreachable in the
+        state the fixture actually left behind. An independent review caught it.
+        The fixture here keeps the live surface consistent with the predecessor
+        map, which is what makes the owning direction reachable at all, and the
+        surface is read from disk rather than named.
+        """
+        with self._runner.isolated_filesystem():
+            _write_surface(_SEED_SURFACE_TEXT)
+            _seed_declaration(
+                {"doc-title": "corpus-owned", "alpha-section": "unowned", "beta-section": "unowned"}
+            )
+            _seed_corpus(_entry(0, "alpha body line one"), _entry(1, "alpha body line two"))
+            predecessor = _DECLARATION_PATH.read_bytes()
+
+            with patch.object(unown_module, "_clear_recovery_state", lambda target, **_: None):
+                landed = _own(self._runner)
+            self.assertEqual(landed.exit_code, 0, msg=landed.output)
+            (witness,) = _ownership_events()
+            self.assertEqual(witness["event"], "unowned_ratchet_updated")
+            self.assertTrue(_JOURNAL_PATH.exists())
+            _DECLARATION_PATH.write_bytes(predecessor)
+
+            record = json.loads(_JOURNAL_PATH.read_text(encoding="utf-8"))
+            self.assertEqual(record["transition"], "own")
+            live = Path("Doc.md").read_bytes().decode("utf-8")
+            with self.assertRaises(OwnershipLoadError) as refused:
+                load_declaration(_DECLARATION_PATH, live, Path.cwd())
+            message = str(refused.exception)
+            self.assertIn("not the TIP", message)
+            self.assertIn("RECOVERABLE", message)
+            self.assertIn("which is not the same as CURRENT", message)
+            self.assertIn(f"gz content own Doc.md --section {record['section']}", message)
+            self.assertIn(witness["id"], message)
+
+            retry = _own(self._runner)
+
+            self.assertEqual(retry.exit_code, 0, msg=retry.output)
+            recovered = load_declaration(_DECLARATION_PATH, live, Path.cwd())
+            self.assertEqual(recovered.sections["alpha-section"], "corpus-owned")
+            self.assertEqual(recovered.floor_event_id, witness["id"])
+            self.assertEqual(
+                [event["id"] for event in _ownership_events()],
+                [witness["id"]],
+                "the owning witness is appended exactly once across both runs",
+            )
+            self.assertFalse(_JOURNAL_PATH.exists())
+
+
 class TestContentOwnIsSerialized(unittest.TestCase):
     def setUp(self) -> None:
         self._runner = CliRunner()
@@ -1196,8 +1272,9 @@ class TestDeclarationDamageRefusalsPrescribeConditionalRecovery(unittest.TestCas
 
             # The trap: restore the copy saved BEFORE the attested transition.
             run(["checkout", "HEAD~1", "--", str(_DECLARATION_PATH)])
+            live = Path("Doc.md").read_bytes().decode("utf-8")
             with self.assertRaises(OwnershipLoadError) as refused:
-                load_declaration(_DECLARATION_PATH, _SEED_SURFACE_TEXT, Path.cwd())
+                load_declaration(_DECLARATION_PATH, live, Path.cwd())
             message = str(refused.exception)
             self.assertIn("not the TIP", message)
             self.assertIn(attested_id, message)
@@ -1249,8 +1326,9 @@ class TestDeclarationDamageRefusalsPrescribeConditionalRecovery(unittest.TestCas
             witness = after.floor_event_id
 
             run(["checkout", "HEAD", "--", str(_DECLARATION_PATH)])
+            live = Path("Doc.md").read_bytes().decode("utf-8")
             with self.assertRaises(OwnershipLoadError) as refused:
-                load_declaration(_DECLARATION_PATH, _SEED_SURFACE_TEXT, Path.cwd())
+                load_declaration(_DECLARATION_PATH, live, Path.cwd())
             message = str(refused.exception)
             self.assertIn("not the TIP", message)
             self.assertIn(witness, message)
