@@ -415,3 +415,84 @@ class TestExitBeatIsIntentionalAboutBookmarks(unittest.TestCase):
             self._authored(root)
             result = book_exit_bookmark(root, session_id="s1", exit_reason="clear")
             self.assertTrue(result.written)
+
+
+class TestTranscriptReferenceIsPortable(unittest.TestCase):
+    """The bookmark records a portable transcript reference, never the host's
+    absolute path (GHI #951).
+
+    The harness supplies ``transcript_path`` absolute — ``$HOME``, the
+    operator's username and the workstation layout — and the writer
+    interpolated it verbatim into a file destined for commit. Only the final
+    component names the session; every directory above it is host layout that
+    dangles in every other checkout. These assertions derive from the GHI's
+    acceptance criteria: no directory component of the supplied path reaches
+    the artifact, and the reference still identifies the transcript.
+    """
+
+    _POSIX = (
+        "/Users/someone/.claude/projects/-Users-someone-Documents-Code-gzkit/"
+        "c3de81d9-c767-47e1-8944-57a5e830668f.jsonl"
+    )
+    _WINDOWS = (
+        "C:\\Users\\someone\\.claude\\projects\\-C-Users-someone-Code-gzkit\\"
+        "c3de81d9-c767-47e1-8944-57a5e830668f.jsonl"
+    )
+    _BASENAME = "c3de81d9-c767-47e1-8944-57a5e830668f.jsonl"
+
+    def _root(self) -> Path:
+        root = Path(self.enterContext(tempfile.TemporaryDirectory()))
+        (root / ".gzkit" / "handoffs").mkdir(parents=True)
+        return root
+
+    def _bookmark(self, transcript_path: str) -> str:
+        result = book_exit_bookmark(
+            self._root(),
+            session_id="c3de81d9-c767-47e1-8944-57a5e830668f",
+            exit_reason="clear",
+            transcript_path=transcript_path,
+        )
+        assert result.path is not None, result.detail
+        return Path(result.path).read_text(encoding="utf-8")
+
+    def test_no_directory_component_of_the_host_path_reaches_the_artifact(self) -> None:
+        content = self._bookmark(self._POSIX)
+        leaked = ("/Users/", "someone", "-Users-someone-Documents-Code-gzkit", ".claude/projects")
+        for component in leaked:
+            self.assertNotIn(component, content, f"host layout leaked: {component!r}")
+
+    def test_a_windows_host_path_is_redacted_the_same_way(self) -> None:
+        content = self._bookmark(self._WINDOWS)
+        for component in ("C:\\", "someone", "-C-Users-someone-Code-gzkit"):
+            self.assertNotIn(component, content, f"host layout leaked: {component!r}")
+        self.assertIn(self._BASENAME, content)
+
+    def test_the_reference_still_identifies_the_transcript(self) -> None:
+        """Redaction must not become deletion: the file that corroborates the
+        session is still named, in both places the writer emits it."""
+        content = self._bookmark(self._POSIX)
+        self.assertEqual(
+            content.count(self._BASENAME),
+            2,
+            "the transcript is cited in Important Context and in Evidence / Artifacts",
+        )
+        frontmatter = parse_frontmatter(content)
+        assert isinstance(frontmatter, dict)
+        self.assertEqual(frontmatter["session_id"], "c3de81d9-c767-47e1-8944-57a5e830668f")
+
+    def test_the_absent_transcript_case_is_unchanged(self) -> None:
+        root = self._root()
+        result = book_exit_bookmark(root, session_id="s-1", exit_reason="clear")
+        assert result.path is not None
+        content = Path(result.path).read_text(encoding="utf-8")
+        self.assertIn("No transcript path was supplied by the harness.", content)
+        self.assertNotIn("Session transcript:", content)
+
+    def test_the_redacted_artifact_still_passes_the_authoring_gate(self) -> None:
+        root = self._root()
+        result = book_exit_bookmark(
+            root, session_id="s-1", exit_reason="clear", transcript_path=self._POSIX
+        )
+        assert result.path is not None
+        content = Path(result.path).read_text(encoding="utf-8")
+        self.assertEqual(validate_handoff_document(content, root), [])

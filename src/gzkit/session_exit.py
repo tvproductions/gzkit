@@ -29,6 +29,7 @@ bookmark completes before exit.
 
 from __future__ import annotations
 
+import re
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -83,8 +84,12 @@ def book_exit_bookmark(
     ruling forbids, and the callers that matter (harness hooks at process exit)
     have nowhere to report one.
 
-    ``transcript_path`` is recorded as plain text, never as a backtick-quoted
-    path: ``validate_referenced_files`` requires backticked paths to exist in
+    ``transcript_path`` is reduced to its final component before it is recorded
+    (:func:`_portable_transcript_reference`, GHI #951): the harness supplies it
+    absolute, and every directory above the file name is host layout that would
+    disclose the operator's environment and dangle in every other checkout. It
+    is recorded as plain text, never as a backtick-quoted path:
+    ``validate_referenced_files`` requires backticked paths to exist in
     committed state, and the transcript lives outside the repository.
     """
     timestamp = now or datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
@@ -289,7 +294,7 @@ def _draft_sections(
     this is the *floor*, not the ceiling.
     """
     transcript_line = (
-        f"Session transcript: {transcript_path}"
+        _portable_transcript_reference(transcript_path)
         if transcript_path
         else "No transcript path was supplied by the harness."
     )
@@ -334,6 +339,33 @@ def _draft_sections(
             f"- {transcript_line}"
         ),
     }
+
+
+#: Path separators a harness may hand over. Split on both: a Windows harness
+#: sends backslashes, and `PurePath` on POSIX would treat them as name characters.
+_SEPARATOR_RE = re.compile(r"[\\/]+")
+
+
+def _portable_transcript_reference(transcript_path: str) -> str:
+    """Return the host-neutral reference for a harness-supplied transcript path.
+
+    The harness hands over an absolute path — ``$HOME``, the operator's
+    username, the workstation's project slug — and only the FINAL component
+    names the session (``<session_id>.jsonl``). Everything above it is host
+    layout: written into a repo-bound artifact it discloses the environment and
+    is an unusable reference in every other checkout (GHI #951). So the writer
+    records the file name and says where to resolve it, and never the
+    directory. This is the redaction seam for the class — any further
+    harness-supplied value the bookmark records goes through a helper like
+    this one, not through an f-string.
+    """
+    parts = [part for part in _SEPARATOR_RE.split(transcript_path.strip()) if part]
+    name = parts[-1] if parts else "(unnamed)"
+    return (
+        f"Session transcript: {name} — in the harness's transcript store on the host "
+        "that ran this session; resolve it by session id. The store's directory is "
+        "host layout and is deliberately not recorded."
+    )
 
 
 def _current_branch(project_root: Path) -> str:
