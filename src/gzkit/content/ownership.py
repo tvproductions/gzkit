@@ -387,6 +387,77 @@ def _restore_or_escalate(path: Path) -> str:
     return _RESTORE_GUIDANCE.format(path=path.as_posix())
 
 
+#: The counterpart for the two section-coverage arms, where the drifted artifact
+#: may be the SURFACE rather than the declaration. Restoring the declaration
+#: repairs nothing in that state -- the declaration is already correct -- so the
+#: prescription must name the damaged artifact, not the one the check happens to
+#: be reading (GHI #978).
+_RESTORE_SURFACE_GUIDANCE = (
+    "restore the surface itself (`git checkout -- {surface}`) and retry -- the "
+    "declaration is NOT the drifted artifact in that state, so restoring it "
+    "repairs nothing. Verify FIRST that the surface's saved copy is the one this "
+    "declaration describes: restoring discards every authoring edit made since, "
+    "and the loader accepting the result proves only that the two agree again, "
+    "never which of them was right."
+)
+
+
+def _restore_surface_or_escalate(surface: str) -> str:
+    """Conditional recovery text for a surface that drifted from its declaration."""
+    return _RESTORE_SURFACE_GUIDANCE.format(surface=surface)
+
+
+def _refuse_section_coverage_drift(
+    path: Path,
+    raw: Mapping[str, Any],
+    declared_sections: Mapping[str, str],
+    measured: Mapping[str, int],
+) -> None:
+    """Fail closed when the declaration and the surface disagree about sections.
+
+    Lifted out of `load_declaration` so it holds at xenon rank C (the shape
+    `_refuse_grown_or_flipped_span` was lifted into under GHI #976). Three
+    states produce each direction of the disagreement and they repair DIFFERENT
+    artifacts, so each arm routes by cause rather than prescribing the artifact
+    the check happens to be reading (GHI #978).
+    """
+    surface = raw.get("surface") or "the surface"
+
+    for offending_id in sorted(measured.keys() - declared_sections.keys()):
+        msg = (
+            f"What failed: section {offending_id!r} is present in the surface "
+            f"but has no ownership declaration in {path.as_posix()!r}.\n"
+            "Why forbidden: REQ-0.35.0-04-01 -- an undeclared section is the "
+            "silent third state this OBPI exists to remove.\n"
+            f"Next step: three states produce this, and they repair DIFFERENT "
+            f"artifacts. (a) The surface legitimately gained {offending_id!r}: the "
+            "declaration must gain a matching entry, and no `gz content` verb "
+            "declares a new section today (`own` and `unown` both act on "
+            "already-declared sections), so that state has NO governed recovery -- "
+            f"stop and escalate (GHI #978). (b) The surface gained {offending_id!r} "
+            f"in error: {_restore_surface_or_escalate(surface)} "
+            f"(c) The declaration was edited or truncated: {_restore_or_escalate(path)}"
+        )
+        raise OwnershipLoadError(msg)
+
+    for offending_id in sorted(declared_sections.keys() - measured.keys()):
+        msg = (
+            f"What failed: section {offending_id!r} is declared in "
+            f"{path.as_posix()!r} but is absent from the surface.\n"
+            "Why forbidden: a stale declaration for a section id the surface "
+            "no longer carries cannot be cross-checked (REQ-0.35.0-04-01 "
+            "declared-vs-measured coverage).\n"
+            f"Next step: three states produce this, and they repair DIFFERENT "
+            f"artifacts. (a) The surface legitimately dropped {offending_id!r}: the "
+            "declaration must drop its entry, and no `gz content` verb removes a "
+            "declaration entry today, so that state has NO governed recovery -- stop "
+            f"and escalate (GHI #978). (b) The section was removed from the surface "
+            f"in error: {_restore_surface_or_escalate(surface)} "
+            f"(c) The declaration gained a stale entry: {_restore_or_escalate(path)}"
+        )
+        raise OwnershipLoadError(msg)
+
+
 def load_declaration(
     path: Path,
     surface_text: str,
@@ -472,35 +543,7 @@ def load_declaration(
 
     measured = measure_section_spans(surface_text)
 
-    for offending_id in sorted(measured.keys() - declared_sections.keys()):
-        msg = (
-            f"What failed: section {offending_id!r} is present in the surface "
-            f"but has no ownership declaration in {path.as_posix()!r}.\n"
-            "Why forbidden: REQ-0.35.0-04-01 -- an undeclared section is the "
-            "silent third state this OBPI exists to remove.\n"
-            f"Next step: if the surface legitimately gained {offending_id!r}, the "
-            "declaration must gain a matching entry -- and no `gz content` verb "
-            "declares a new section today (`own` and `unown` both act on "
-            "already-declared sections), so that state has NO governed recovery: "
-            "stop and escalate (GHI #978). If instead the declaration was edited or "
-            f"truncated, {_restore_or_escalate(path)}"
-        )
-        raise OwnershipLoadError(msg)
-
-    for offending_id in sorted(declared_sections.keys() - measured.keys()):
-        msg = (
-            f"What failed: section {offending_id!r} is declared in "
-            f"{path.as_posix()!r} but is absent from the surface.\n"
-            "Why forbidden: a stale declaration for a section id the surface "
-            "no longer carries cannot be cross-checked (REQ-0.35.0-04-01 "
-            "declared-vs-measured coverage).\n"
-            f"Next step: if the surface legitimately dropped {offending_id!r}, the "
-            "declaration must drop its entry -- and no `gz content` verb removes a "
-            "declaration entry today, so that state has NO governed recovery: stop "
-            "and escalate (GHI #978). If instead the declaration was edited, or the "
-            f"section was removed in error, {_restore_or_escalate(path)}"
-        )
-        raise OwnershipLoadError(msg)
+    _refuse_section_coverage_drift(path, raw, declared_sections, measured)
 
     stored_floor = raw.get("unowned_byte_floor")
     floor_event_id = raw.get("floor_event_id")

@@ -970,15 +970,60 @@ class TestDeclarationDamageRefusalsPrescribeConditionalRecovery(unittest.TestCas
     def setUp(self) -> None:
         self._runner = CliRunner()
 
+    _MAP = {
+        "doc-title": "corpus-owned",
+        "alpha-section": "corpus-owned",
+        "beta-section": "unowned",
+    }
+
     def _seed(self) -> int:
         _write_surface(_SEED_SURFACE_TEXT)
-        return _seed_declaration(
-            {
-                "doc-title": "corpus-owned",
-                "alpha-section": "corpus-owned",
-                "beta-section": "unowned",
-            }
+        return _seed_declaration(dict(self._MAP))
+
+    def _seed_without_ownership_events(self) -> None:
+        """A declaration whose surface has NO ownership event anywhere in the ledger.
+
+        `_seed_declaration` emits a genesis row; genesis ABSENCE is a different
+        state and needs a fixture that never writes one, or the test asserts
+        prose against a ledger that would in fact support the restore branch.
+        """
+        _write_surface(_SEED_SURFACE_TEXT)
+        spans = measure_section_spans(_SEED_SURFACE_TEXT)
+        floor = sum(span for sid, span in spans.items() if self._MAP[sid] == "unowned")
+        _DECLARATION_PATH.parent.mkdir(parents=True, exist_ok=True)
+        _DECLARATION_PATH.write_text(
+            json.dumps(
+                {
+                    "surface": "Doc.md",
+                    "sections": dict(self._MAP),
+                    "unowned_byte_floor": floor,
+                    "measured_at": "2026-09-07T00:00:00Z",
+                    "floor_event_id": None,
+                }
+            ),
+            encoding="utf-8",
         )
+        self.assertEqual(_ownership_events(), [], "fixture: no ownership events may exist")
+
+    def _git(self):
+        """An initialised repo in the isolated filesystem, returning a runner."""
+        env = _isolated_git_env()
+
+        def run(args):
+            return subprocess.run(
+                ["git", *args],
+                check=True,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                env=env,
+            )
+
+        run(["init", "."])
+        run(["config", "user.email", "g0@users.noreply.github.com"])
+        run(["config", "user.name", "g0"])
+        return run
 
     def _damage(self, **fields: object) -> None:
         raw = json.loads(_DECLARATION_PATH.read_text(encoding="utf-8"))
@@ -1003,13 +1048,23 @@ class TestDeclarationDamageRefusalsPrescribeConditionalRecovery(unittest.TestCas
         self.assertNotIn("repoint floor_event_id", message)
 
     @covers("REQ-0.35.0-04-02")
-    def test_a_null_pointer_with_surviving_events_states_the_restore_preconditions(self) -> None:
+    def test_a_null_pointer_with_surviving_events_is_recovered_by_restoring(self) -> None:
+        """The restore branch is REAL here: the surface's genesis row survives."""
         with self._runner.isolated_filesystem():
+            run = self._git()
             self._seed()
+            run(["add", "-A", "-f"])
+            run(["commit", "-m", "witnessed declaration"])
             self._damage(floor_event_id=None)
             message = self._refusal()
             self.assertIn("declares floor_event_id null", message)
             self._assert_conditional_recovery(message)
+
+            run(["checkout", "--", str(_DECLARATION_PATH)])
+            restored = load_declaration(_DECLARATION_PATH, _SEED_SURFACE_TEXT, Path.cwd())
+            self.assertEqual(restored.sections, self._MAP)
+            landed = _unown(self._runner, section="alpha-section")
+            self.assertEqual(landed.exit_code, 0, msg=landed.output)
 
     @covers("REQ-0.35.0-04-02")
     def test_an_unresolvable_pointer_no_longer_prescribes_the_verb_that_refuses(self) -> None:
@@ -1077,15 +1132,32 @@ class TestDeclarationDamageRefusalsPrescribeConditionalRecovery(unittest.TestCas
             self.assertIn("stop and escalate", message)
 
     @covers("REQ-0.35.0-04-02")
-    def test_genesis_absence_is_distinguished_from_a_damaged_pointer(self) -> None:
-        """A null pointer with NO surviving ownership event is a different state."""
+    def test_genesis_absence_is_not_recovered_by_restoring_the_declaration(self) -> None:
+        """The OTHER branch, against a ledger that genuinely carries no genesis.
+
+        The prose names two states behind one null pointer. This fixture is the
+        one the restore branch cannot serve: no ownership event exists for the
+        surface at all, so restoring the tracked declaration reproduces the
+        refusal rather than clearing it, and the missing-mechanism branch is
+        the true one.
+        """
         with self._runner.isolated_filesystem():
-            self._seed()
-            self._damage(floor_event_id=None)
-            message = self._refusal()
-            # Both branches are named, and neither is collapsed into the other.
-            self.assertIn("still carries", message)
-            self.assertIn("no `gz content` verb mints a genesis event", message)
+            run = self._git()
+            self._seed_without_ownership_events()
+            run(["add", "-A", "-f"])
+            run(["commit", "-m", "declaration with no witness behind it"])
+
+            before = self._refusal()
+            self.assertIn("no `gz content` verb mints a genesis event", before)
+            self.assertIn("NO governed recovery", before)
+
+            run(["checkout", "--", str(_DECLARATION_PATH)])
+            after = self._refusal()
+            self.assertEqual(
+                before,
+                after,
+                "restoring cannot serve this state -- the saved copy is unwitnessed too",
+            )
 
     @covers("REQ-0.35.0-04-02")
     def test_restoring_over_a_governed_transition_loads_but_reverts_the_attested_raise(
@@ -1152,3 +1224,141 @@ class TestDeclarationDamageRefusalsPrescribeConditionalRecovery(unittest.TestCas
                 surviving,
                 "the attested raise is still in the ledger with nothing pointing at it",
             )
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_non_object_sections_field_states_the_restore_preconditions(self) -> None:
+        """Condition 1 had no direct case: a 'sections' field that is not an object."""
+        with self._runner.isolated_filesystem():
+            self._seed()
+            self._damage(sections=["alpha-section", "beta-section"])
+            message = self._refusal()
+            self.assertIn("non-object 'sections' field", message)
+            self.assertNotIn("so 'sections' is a JSON", message)
+            self._assert_conditional_recovery(message)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_non_ownership_event_type_states_the_restore_preconditions(self) -> None:
+        """Condition 7 had no direct case: the witness resolves, but to the wrong type."""
+        with self._runner.isolated_filesystem():
+            self._seed()
+            foreign = "task-started-probe"
+            # Appended as a raw row into the FIXTURE's ledger: the point is a
+            # resolvable id whose event type is outside the ownership roster.
+            with _LEDGER_PATH.open("a", encoding="utf-8") as handle:
+                handle.write(
+                    json.dumps(
+                        {
+                            "schema": "gzkit.ledger.v1",
+                            "event": "task_started",
+                            "id": foreign,
+                            "ts": "2026-09-07T00:00:00Z",
+                        },
+                        separators=(",", ":"),
+                    )
+                    + "\n"
+                )
+            self._damage(floor_event_id=foreign)
+            message = self._refusal()
+            self.assertIn("not a recognized section-ownership event", message)
+            self._assert_conditional_recovery(message)
+
+    @covers("REQ-0.35.0-04-01")
+    def test_a_surface_removed_in_error_is_repaired_by_restoring_the_surface(self) -> None:
+        """The damaged artifact is the SURFACE, so the surface is what must be restored.
+
+        Restoring the declaration here repairs nothing -- the declaration is
+        already correct, and it is the surface that drifted. The prose must
+        name the damaged artifact, and following it must reach a declaration
+        the loader accepts and a governed verb can act on.
+        """
+        with self._runner.isolated_filesystem():
+            run = self._git()
+            self._seed()
+            run(["add", "-A", "-f"])
+            run(["commit", "-m", "surface and declaration agree"])
+
+            shrunk = "# Doc Title\npreamble text under the H1\n## Alpha Section\nalpha body\n"
+            _write_surface(shrunk)
+            with self.assertRaises(OwnershipLoadError) as refused:
+                load_declaration(_DECLARATION_PATH, shrunk, Path.cwd())
+            message = str(refused.exception)
+            self.assertIn("absent from the surface", message)
+            # The prescription names the SURFACE, not the declaration.
+            self.assertIn("git checkout -- Doc.md", message)
+
+            # Restoring the declaration instead changes nothing -- it is not damaged.
+            run(["checkout", "--", str(_DECLARATION_PATH)])
+            with self.assertRaises(OwnershipLoadError):
+                load_declaration(_DECLARATION_PATH, shrunk, Path.cwd())
+
+            # Following the prescription repairs the artifact that actually drifted.
+            run(["checkout", "--", "Doc.md"])
+            restored = load_declaration(
+                _DECLARATION_PATH, Path("Doc.md").read_text(encoding="utf-8"), Path.cwd()
+            )
+            self.assertEqual(restored.sections, self._MAP)
+            landed = _unown(self._runner, section="alpha-section")
+            self.assertEqual(landed.exit_code, 0, msg=landed.output)
+
+    @covers("REQ-0.35.0-04-01")
+    def test_a_surface_gained_in_error_is_repaired_by_restoring_the_surface(self) -> None:
+        """Symmetric: an unintended surface ADDITION is repaired at the surface."""
+        with self._runner.isolated_filesystem():
+            run = self._git()
+            self._seed()
+            run(["add", "-A", "-f"])
+            run(["commit", "-m", "surface and declaration agree"])
+
+            grown = _SEED_SURFACE_TEXT + "## Gamma Section\ngamma body\n"
+            _write_surface(grown)
+            with self.assertRaises(OwnershipLoadError) as refused:
+                load_declaration(_DECLARATION_PATH, grown, Path.cwd())
+            message = str(refused.exception)
+            self.assertIn("has no ownership declaration", message)
+            self.assertIn("git checkout -- Doc.md", message)
+
+            run(["checkout", "--", "Doc.md"])
+            restored = load_declaration(
+                _DECLARATION_PATH, Path("Doc.md").read_text(encoding="utf-8"), Path.cwd()
+            )
+            self.assertEqual(restored.sections, self._MAP)
+
+    @covers("REQ-0.35.0-04-01")
+    def test_a_truncated_declaration_is_repaired_by_restoring_the_declaration(self) -> None:
+        """Cause (c) of the undeclared-section arm: the DECLARATION lost the entry."""
+        with self._runner.isolated_filesystem():
+            run = self._git()
+            self._seed()
+            run(["add", "-A", "-f"])
+            run(["commit", "-m", "surface and declaration agree"])
+
+            raw = json.loads(_DECLARATION_PATH.read_text(encoding="utf-8"))
+            del raw["sections"]["alpha-section"]
+            _DECLARATION_PATH.write_text(json.dumps(raw), encoding="utf-8")
+            message = self._refusal()
+            self.assertIn("has no ownership declaration", message)
+            self.assertIn("git checkout -- .gzkit/ownership/Doc.md.json", message)
+
+            run(["checkout", "--", str(_DECLARATION_PATH)])
+            restored = load_declaration(_DECLARATION_PATH, _SEED_SURFACE_TEXT, Path.cwd())
+            self.assertEqual(restored.sections, self._MAP)
+
+    @covers("REQ-0.35.0-04-01")
+    def test_a_stale_declaration_entry_is_repaired_by_restoring_the_declaration(self) -> None:
+        """Cause (c) of the absent-section arm: the DECLARATION gained a ghost."""
+        with self._runner.isolated_filesystem():
+            run = self._git()
+            self._seed()
+            run(["add", "-A", "-f"])
+            run(["commit", "-m", "surface and declaration agree"])
+
+            raw = json.loads(_DECLARATION_PATH.read_text(encoding="utf-8"))
+            raw["sections"]["ghost-section"] = "unowned"
+            _DECLARATION_PATH.write_text(json.dumps(raw), encoding="utf-8")
+            message = self._refusal()
+            self.assertIn("absent from the surface", message)
+            self.assertIn("git checkout -- .gzkit/ownership/Doc.md.json", message)
+
+            run(["checkout", "--", str(_DECLARATION_PATH)])
+            restored = load_declaration(_DECLARATION_PATH, _SEED_SURFACE_TEXT, Path.cwd())
+            self.assertEqual(restored.sections, self._MAP)
