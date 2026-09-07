@@ -26,13 +26,13 @@ would otherwise decide it by race.
 from __future__ import annotations
 
 import json
-import os
 import subprocess
 import tempfile
 import unittest
 from pathlib import Path
 
 from gzkit.hooks.commit_ledger import record_committed_artifact_edits
+from tests.commands.common import _isolated_git_env
 
 _BRIEF = "docs/design/adr/pre-release/ADR-0.35.0-x/obpis/OBPI-0.35.0-09-playback.md"
 _ADR = "docs/design/adr/pre-release/ADR-0.35.0-x/ADR-0.35.0-x.md"
@@ -45,9 +45,9 @@ _T2 = "2026-08-22T00:00:00+00:00"
 
 
 def _git(args: list[str], cwd: Path, when: str | None = None) -> str:
-    env = None
+    env = _isolated_git_env()
     if when is not None:
-        env = {**os.environ, "GIT_AUTHOR_DATE": when, "GIT_COMMITTER_DATE": when}
+        env.update({"GIT_AUTHOR_DATE": when, "GIT_COMMITTER_DATE": when})
     result = subprocess.run(
         ["git", *args],
         cwd=cwd,

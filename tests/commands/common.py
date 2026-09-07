@@ -10,6 +10,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from gzkit.commands.common import console as _cli_console
+from gzkit.git_spawn_boundary import isolated_git_env
 
 
 class SilencedConsoleTestCase(unittest.TestCase):
@@ -146,69 +147,17 @@ def _git_subprocess_patcher(
             p.stop()
 
 
-# Git's own list of the environment variables that are LOCAL TO ONE REPOSITORY
-# — ``local_repo_env`` in git's ``environment.c``, the set git itself clears
-# before running a child git against a *different* repository (a submodule).
-# A hook inherits ``GIT_DIR`` from the git that spawned it: absolute, and
-# naming ``<repo>/.git/worktrees/<name>`` when the checkout is a linked
-# worktree. Every ``git`` the suite spawns inherits it in turn, so ``git init``
-# in a temp dir re-initialises the HOSTING repository instead — and, because
-# that gitdir's basename is not ``.git``, guesses bare and writes
-# ``core.bare = true`` into the shared config — while ``git config user.name``
-# writes the fixture identity into the same file (GHI #977, measured
-# 2026-09-07 from a pre-push ``gz check``).
-#
-# Deliberately NOT here: ``GIT_CONFIG_GLOBAL`` / ``GIT_CONFIG_SYSTEM`` /
-# ``GIT_CONFIG_NOSYSTEM`` (they route the USER's own config, which a fixture
-# inherits by design), ``GIT_AUTHOR_*`` / ``GIT_COMMITTER_*`` (identity),
-# ``GIT_SSH*`` / ``GIT_ASKPASS`` / ``GIT_TERMINAL_PROMPT`` (auth and
-# transport), ``GIT_EXEC_PATH`` / ``GIT_EDITOR`` / ``GIT_TRACE*``
-# (toolchain and diagnostics), and the discovery modifiers
-# ``GIT_CEILING_DIRECTORIES`` / ``GIT_DISCOVERY_ACROSS_FILESYSTEM`` /
-# ``GIT_NAMESPACE``, which git does not classify as repo-local either.
-_GIT_REPO_LOCAL_ENV: frozenset[str] = frozenset(
-    {
-        "GIT_ALTERNATE_OBJECT_DIRECTORIES",
-        "GIT_CONFIG",
-        "GIT_CONFIG_PARAMETERS",
-        "GIT_CONFIG_COUNT",
-        "GIT_OBJECT_DIRECTORY",
-        "GIT_DIR",
-        "GIT_WORK_TREE",
-        "GIT_IMPLICIT_WORK_TREE",
-        "GIT_GRAFT_FILE",
-        "GIT_INDEX_FILE",
-        "GIT_NO_REPLACE_OBJECTS",
-        "GIT_REPLACE_REF_BASE",
-        "GIT_PREFIX",
-        "GIT_SHALLOW_FILE",
-        "GIT_COMMON_DIR",
-    }
-)
-# ``GIT_CONFIG_KEY_<n>`` / ``GIT_CONFIG_VALUE_<n>`` inject config values and
-# are read only under ``GIT_CONFIG_COUNT``; dropped with it so no half-pair
-# lingers.
-_GIT_CONFIG_INJECTION_PREFIXES = ("GIT_CONFIG_KEY_", "GIT_CONFIG_VALUE_")
-
-
 def _isolated_git_env(base: Mapping[str, str] | None = None) -> dict[str, str]:
     """Return *base* (default: the live environment) minus git's repo-local variables.
 
     Pass the result as ``env=`` to every ``git`` a fixture spawns against a
-    temporary repository, so the command operates on the repository its
-    ``cwd`` (or ``-C``) names regardless of what the process inherited —
-    from a git hook, an IDE task, ``git bisect run``, or a ``GIT_DIR=`` shell.
-
-    Not a redirect for commands that mean to inspect their hosting checkout:
-    run inside a checkout, a scrubbed ``git`` discovers that same checkout —
-    the main one through ``.git/``, a linked worktree through its gitfile.
+    temporary repository (GHI #977). The variable set, the rationale for what
+    is dropped and what is deliberately kept, and the process-level chokepoint
+    ``tests/__init__.py`` applies live in ``gzkit.git_spawn_boundary``; this
+    is the name the fence in ``test_common_fixtures.py`` checks for at each
+    spawn site.
     """
-    source = os.environ if base is None else base
-    return {
-        key: value
-        for key, value in source.items()
-        if key not in _GIT_REPO_LOCAL_ENV and not key.startswith(_GIT_CONFIG_INJECTION_PREFIXES)
-    }
+    return isolated_git_env(os.environ if base is None else base)
 
 
 def _ignore_transient_git(src: str, names: list[str]) -> set[str]:

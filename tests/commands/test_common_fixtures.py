@@ -6,6 +6,7 @@ so a regression here is a regression in every suite that builds a repo fixture.
 
 from __future__ import annotations
 
+import json
 import os
 import shutil
 import subprocess
@@ -449,6 +450,54 @@ class TestFixtureGitIsolation(unittest.TestCase):
                     _git_out(sentinel.linked, "rev-parse", "HEAD", env=scrubbed),
                     _git_out(sentinel.linked, "rev-parse", "HEAD", env=raw),
                 )
+
+    def test_importing_the_tests_package_scrubs_the_process_environment(self) -> None:
+        """Production code a test drives spawns git with the PROCESS environment.
+
+        Per-call ``env=`` cannot reach it, so ``tests/__init__.py`` is the
+        chokepoint: measured 2026-09-07 with every fixture site guarded, a
+        linked-worktree push still left the hosting clone bare, carrying the
+        merge-driver config the installer under test wrote and three commits
+        the commit-locus recorder's test made. Proven in a fresh interpreter,
+        because this process already imported the package.
+        """
+        probe = (
+            "import json, os, tests\n"
+            "print(json.dumps({k: os.environ.get(k) for k in "
+            "('GIT_DIR', 'GIT_WORK_TREE', 'GIT_CONFIG_COUNT', 'GIT_CONFIG_KEY_0', "
+            "'GIT_SSH_COMMAND', 'GIT_AUTHOR_NAME')}))\n"
+        )
+        planted = {
+            **_isolated_git_env(),
+            "GIT_DIR": "/elsewhere/.git/worktrees/x",
+            "GIT_WORK_TREE": "/elsewhere",
+            "GIT_CONFIG_COUNT": "1",
+            "GIT_CONFIG_KEY_0": "core.bare",
+            "GIT_SSH_COMMAND": "ssh -i key",
+            "GIT_AUTHOR_NAME": "Hook Author",
+        }
+        result = subprocess.run(
+            [sys.executable, "-c", probe],
+            cwd=_PROJECT_ROOT,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            env=planted,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(
+            json.loads(result.stdout),
+            {
+                "GIT_DIR": None,
+                "GIT_WORK_TREE": None,
+                "GIT_CONFIG_COUNT": None,
+                "GIT_CONFIG_KEY_0": None,
+                "GIT_SSH_COMMAND": "ssh -i key",
+                "GIT_AUTHOR_NAME": "Hook Author",
+            },
+            "importing the test package must drop repo-local git state and keep the rest",
+        )
 
     # --- the real hook path -------------------------------------------------
 

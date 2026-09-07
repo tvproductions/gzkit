@@ -8,6 +8,15 @@ HOSTING repository (guessing bare, because that gitdir's basename is not ``.git`
 and ``git config`` writes the fixture identity into its shared config. Measured
 2026-09-07 from the pre-push ``gz check`` gate.
 
+Two layers, one definition of "repo-local" (:data:`GIT_REPO_LOCAL_ENV`):
+
+* :func:`scrub_repo_local_git_env` — the process chokepoint ``tests/__init__.py``
+  applies once, so every child process a test or the code it drives spawns
+  starts clean.
+* :func:`isolated_git_env` — the per-call ``env=`` every ``git`` a test spawns
+  passes, the explicit local statement of the same boundary, fenced by
+  :func:`git_spawns_outside_boundary`.
+
 The predicate is production code so the enforcement floor can drive it against a
 planted violation (claim ``git-fixture-isolation``); the fail-closed gate is the
 suite itself, through ``tests/commands/test_common_fixtures.py``, which fails on
@@ -21,7 +30,80 @@ A helper whose argv arrives as a parameter is outside the fence and must be read
 from __future__ import annotations
 
 import ast
+from collections.abc import Mapping, MutableMapping
 from pathlib import Path
+
+#: Git's own list of the environment variables that are LOCAL TO ONE REPOSITORY —
+#: ``local_repo_env`` in git's ``environment.c``, the set git itself clears before
+#: running a child git against a *different* repository (a submodule). Deliberately
+#: NOT here: ``GIT_CONFIG_GLOBAL`` / ``GIT_CONFIG_SYSTEM`` / ``GIT_CONFIG_NOSYSTEM``
+#: (they route the USER's own config, which a fixture inherits by design),
+#: ``GIT_AUTHOR_*`` / ``GIT_COMMITTER_*`` (identity), ``GIT_SSH*`` / ``GIT_ASKPASS`` /
+#: ``GIT_TERMINAL_PROMPT`` (auth and transport), ``GIT_EXEC_PATH`` / ``GIT_EDITOR`` /
+#: ``GIT_TRACE*`` (toolchain and diagnostics), and the discovery modifiers
+#: ``GIT_CEILING_DIRECTORIES`` / ``GIT_DISCOVERY_ACROSS_FILESYSTEM`` / ``GIT_NAMESPACE``,
+#: which git does not classify as repo-local either.
+GIT_REPO_LOCAL_ENV: frozenset[str] = frozenset(
+    {
+        "GIT_ALTERNATE_OBJECT_DIRECTORIES",
+        "GIT_CONFIG",
+        "GIT_CONFIG_PARAMETERS",
+        "GIT_CONFIG_COUNT",
+        "GIT_OBJECT_DIRECTORY",
+        "GIT_DIR",
+        "GIT_WORK_TREE",
+        "GIT_IMPLICIT_WORK_TREE",
+        "GIT_GRAFT_FILE",
+        "GIT_INDEX_FILE",
+        "GIT_NO_REPLACE_OBJECTS",
+        "GIT_REPLACE_REF_BASE",
+        "GIT_PREFIX",
+        "GIT_SHALLOW_FILE",
+        "GIT_COMMON_DIR",
+    }
+)
+
+#: ``GIT_CONFIG_KEY_<n>`` / ``GIT_CONFIG_VALUE_<n>`` inject config values and are read
+#: only under ``GIT_CONFIG_COUNT``; dropped with it so no half-pair lingers.
+GIT_CONFIG_INJECTION_PREFIXES: tuple[str, ...] = ("GIT_CONFIG_KEY_", "GIT_CONFIG_VALUE_")
+
+
+def is_repo_local_git_var(name: str) -> bool:
+    """Return True when *name* selects a repository or injects config for git."""
+    return name in GIT_REPO_LOCAL_ENV or name.startswith(GIT_CONFIG_INJECTION_PREFIXES)
+
+
+def isolated_git_env(base: Mapping[str, str]) -> dict[str, str]:
+    """Return a copy of *base* minus git's repo-local variables.
+
+    Pass the result as ``env=`` to a ``git`` spawned against a temporary
+    repository, so it operates on the repository its ``cwd`` (or ``-C``) names
+    regardless of what the process inherited — from a git hook, an IDE task,
+    ``git bisect run``, or a ``GIT_DIR=`` shell. Run INSIDE a checkout, a
+    scrubbed ``git`` still discovers that same checkout — the main one through
+    ``.git/``, a linked worktree through its gitfile — so a command that means
+    to inspect its hosting repository is not redirected.
+    """
+    return {key: value for key, value in base.items() if not is_repo_local_git_var(key)}
+
+
+def scrub_repo_local_git_env(environ: MutableMapping[str, str]) -> list[str]:
+    """Remove git's repo-local variables from *environ* in place; return what was removed.
+
+    The process-level form of :func:`isolated_git_env`, for a chokepoint every
+    child process descends from — the test package's ``__init__``. Per-call
+    ``env=`` covers the git a test spawns itself; it cannot cover the git that
+    PRODUCTION code spawns when a test drives it against a temp root (the
+    merge-driver installer, the commit-locus recorder, ``git_cmd``), and
+    production code honouring ``GIT_DIR`` is correct git-tool behaviour. Measured
+    2026-09-07: with every fixture site guarded, a linked-worktree push still
+    left the hosting clone bare with three foreign commits on its branch.
+    """
+    removed = sorted(key for key in environ if is_repo_local_git_var(key))
+    for key in removed:
+        del environ[key]
+    return removed
+
 
 #: ``subprocess`` attributes that start a child process.
 SPAWNERS: frozenset[str] = frozenset({"run", "check_output", "check_call", "call", "Popen"})
