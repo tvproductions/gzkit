@@ -58,7 +58,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `changelog-release-notes.md` | `1.2.0` |
 | `complexity-doctrine.md` | `0.4.0` |
 | `complexity-thresholds.md` | `0.5.0` |
-| `gh-cli.md` | `0.4.0` |
+| `gh-cli.md` | `0.5.0` |
 | `hexagonal-architecture.md` | `0.3.0` |
 | `models.md` | `0.2.0` |
 | `model-selection.md` | `0.6.0` |
@@ -256,6 +256,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | 51 | Use `gh` for defect tracking, ADR closeout, release ceremony, or active brief / explicit user request | **Judgment** | Agent-behavior rule; no compile-time signal. **Row corrected 2026-08-30 (rule `0.4.0`), GHI #921:** it read *"only when explicitly requested"*, which is narrower than the rule and would make three sanctioned uses — defect tracking, closeout, release ceremony — read as violations. The rule sat grandfathered, so no version-attributed review had compared the two. |
 | 51a | **`gh issue create` is forbidden as a direct agent invocation** — author every GHI through `/ghi-author`; file cross-repo through `gz issue file` | **Judgment** | **Scored 2026-08-30 (rule `0.4.0`), GHI #921 — the file's headline clause carried no row at all.** The rule states its own unmechanizability and the reason: *"The prohibition is on the caller, not the string"* — `/ghi-author` invokes `gh issue create` at its own `SKILL.md:199`, so the sanctioned and forbidden invocations are byte-identical commands. Distinguishing them requires attributing a call to its caller, which gzkit does not model (the unmodelled-caller ground of row 62b). Backstop is the skill's Step-0 prior-art lookup, whose absence produced the canonical sibling-cut regression GHI #459/#460. No mechanical witness, and none is planned. |
 | 51b | MUST go to `tvproductions/gzkit` via `gz issue file` | **Promotable** | **Scored 2026-08-30 (rule `0.4.0`), GHI #921.** The wrapper itself fails closed on a body referencing no gzkit-owned surface and auto-stamps provenance, so the *filing path* is enforced once taken; what is unwitnessed is the choice to take it rather than file locally. Promotion path: the same caller-attribution problem as 51a bounds a general check, but the narrow arm is tractable — scan a consuming repo's issue bodies for gzkit-owned surface references. Scored Promotable on that narrow arm, not the general one. |
+| 51c | **Census queries establish completeness** — a whole-queue count reads the search API `total_count` (and treats `incomplete_results` as no count obtained); an inventory paginates or verifies its population against that total; a bounded search never supports "no such issue exists"; an explicit `--limit` alone is insufficient | **Judgment** | **Scored 2026-09-07 (rule `0.5.0`), GHI #972.** Written guidance whose recommended commands were verified to return the complete result (41 by `total_count`, 41 by `--paginate`, 30 by the default page, 10 by `--limit 10`) — that the command works is evidence the guidance is *correct*, not that it is *enforced*. Whether a given `gh <noun> list` is a census or a scoped search is a reading of the consumer's intent, which gzkit does not model (the unmodelled-caller ground of 51a / 62b). The narrow syntactic arm — a Bash PreToolUse hook refusing `gh <noun> list … --jq 'length'` with no `--limit`, the verifier-pipe-gate pattern — is deliberately NOT scored Promotable: the `--limit 200` form passes it and still truncates silently, so the check would grade by shape (the `shape-graded-not-substance` signature this scorecard exists to close). Reclassify on a named session where a capped page was booked as a total after this clause landed. |
 | 52 | Prohibited commands (settings mutations, secret management, force push, un-authorized merges) | **Judgment** | Permission model lives in `.claude/settings.json`; gh-level enforcement is server-side |
 | 53 | Defect tracking: create GHI when fix deferred | **Judgment** | Cultural enforcement; see rule 17 |
 
@@ -488,7 +489,7 @@ decays in whichever direction the next reader's grep happens to point.
 |-------|-------|---|
 | **Mechanical** | 68 | 42% |
 | **Promotable** | 31 | 19% |
-| **Judgment** | 63 | 39% |
+| **Judgment** | 64 | 40% |
 | **Ambiguous** | 0 | 0% |
 
 <!-- The Rows column is machine-checked by `gz validate --advisory-scorecard`;
@@ -504,7 +505,8 @@ decays in whichever direction the next reader's grep happens to point.
      unit-test enforcement is not a registered negative control. The denominator is
      158 as of row 58c (GHI #962, 2026-09-05), and 159 as of row 88 (the CLI
      lane-is-not-route carve-out, 2026-09-06), and 160 as of row 89 (mutation-sweep
-     integrity, GHI #963); the entries between 131 and 158 were
+     integrity, GHI #963), and 161 as of row 51c (census-query completeness,
+     GHI #972); the entries between 131 and 158 were
      not recorded here as they landed, so this list names the endpoints it can
      evidence rather than reconstructing a history it cannot. -->
 

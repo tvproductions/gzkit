@@ -7,11 +7,11 @@ paths:
 description: GitHub CLI guardrails and cross-repo filing protocol.
 ---
 
-<!-- rule-version: 0.4.0 -->
+<!-- rule-version: 0.5.0 -->
 
 # GitHub CLI Guardrails (gzkit)
 
-> **Rule version:** `0.4.0` — scored for real under GHI #921 (2026-08-30). This rule sat in `data/advisory_scorecard_grandfather.json`, pinned at `0.3.1` against a version nobody recorded; the pin is stripped by any edit, so its clauses were re-read and its Coverage Ledger rows added or corrected in the same commit. Prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#gh-climd). Binding rules unchanged.
+> **Rule version:** `0.5.0` — GHI #972 (2026-09-07): adds § Census queries. § Allowed commands sanctioned `gh issue list` by *verb* while the hazard is scoped by *result-set size* — every `gh <noun> list` returns a 30-row page with no truncation marker and exit 0, and the handoff chain's own "re-derive the count" step was that capped command, so a session that noticed a wrong count re-derived `30` with fresh confidence. Scored **Judgment** at row 51c. Prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#gh-climd).
 
 Use `gh` for defect tracking, ADR closeout, release ceremony, or active brief / explicit user request.
 
@@ -34,6 +34,16 @@ gh release create vX.Y.Z --title "vX.Y.Z" --notes-file RELEASE_NOTES.md
 # per AGENTS.md § Behavior Rules — Always #13.
 gh issue create --label <class> --title "..." --body "..."
 ```
+
+## Census queries — establish completeness, never count a page (binding)
+
+Every `gh <noun> list` returns ONE page — `--limit` defaults to 30 — with no truncation marker and exit 0, so `--json number --jq 'length'` faithfully counts a silently capped page. Measured 2026-09-06 (GHI #972): the default form returned `30` against a true open count of 44, the handoff chain booked that page size as the queue three times, and the "re-derive the count" step it carried was the same capped command.
+
+- **Scoped search (bounded by design).** `gh issue list --search "ADR-X.Y.Z" --state open` and `/ghi-author` Step 0's `--limit 20` queries answer *"what is in the first N matches"*. They may support *"no match in the first N"*; they can never support *"no such issue exists"* — a completeness claim needs the total below.
+- **Count.** Read the authoritative total, never a page length: `gh api -X GET search/issues -f q='repo:<owner>/<repo> is:issue is:open' --jq '.total_count'`. Treat `incomplete_results: true` on that response as *no count obtained* — re-run or say so; never book the number.
+- **Inventory.** Retrieve every page — `gh api --paginate 'repos/<owner>/<repo>/issues?state=open&per_page=100' --jq '.[] | select(.pull_request == null) | .number'` — or verify the population: a `gh <noun> list --limit N` result is complete only when it returns fewer than N rows AND its length equals the total above. A result whose length equals its `--limit` is a truncated page.
+- **An explicit `--limit` alone is insufficient.** `--limit 200` moves the failure threshold from 30 to 200 and stays silent past it.
+- **Book the method beside the figure** (`41 by search total_count`), so the next reader can tell a measurement from a page.
 
 ## Prohibited without explicit approval
 
