@@ -20,13 +20,16 @@ import unittest
 from pathlib import Path
 
 from gzkit.governance.trust_audits import audit_line_endings
+from tests.commands.common import _isolated_git_env
 
 _GITATTRIBUTES = "* text=auto eol=lf\n"
 
 
 def _git(root: Path, *args: str) -> None:
     """Run a git command in ``root``, raising on failure."""
-    subprocess.run(["git", "-C", str(root), *args], check=True, capture_output=True)
+    subprocess.run(
+        ["git", "-C", str(root), *args], check=True, capture_output=True, env=_isolated_git_env()
+    )
 
 
 def _init_repo(root: Path, *, autocrlf: str = "false") -> None:

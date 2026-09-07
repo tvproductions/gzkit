@@ -35,6 +35,7 @@ from gzkit.red_witness import (
     run_red_witness,
     withheld_production_files,
 )
+from tests.commands.common import _isolated_git_env
 
 _IMPL = "VALUE = 1\n"
 _TEST = (
@@ -54,6 +55,7 @@ def _git(args: list[str], cwd: Path) -> None:
         text=True,
         encoding="utf-8",
         errors="replace",
+        env=_isolated_git_env(),
     )
 
 

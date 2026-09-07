@@ -552,6 +552,13 @@ def _ep_tautological_test_audit(root: Path) -> list[ValidationError]:
     return audit_drift(root)
 
 
+def _ep_git_fixture_isolation(root: Path) -> int:
+    """Run the predicate the suite's fence fails on; one offender under ``tests/`` is a catch."""
+    from gzkit.git_spawn_boundary import git_spawns_outside_boundary  # noqa: PLC0415
+
+    return int(bool(git_spawns_outside_boundary(root / "tests")))
+
+
 def _ep_task_envelope_coherence(root: Path) -> list[ValidationError]:
     from gzkit.commands.validate_task_envelope import (  # noqa: PLC0415
         _validate_task_envelope_coherence,

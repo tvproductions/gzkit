@@ -25,6 +25,7 @@ from gzkit.check_fingerprint import (
     tree_is_fully_staged,
     verified_fingerprint,
 )
+from tests.commands.common import _isolated_git_env
 
 
 def _git(args: list[str], cwd: Path) -> None:
@@ -36,6 +37,7 @@ def _git(args: list[str], cwd: Path) -> None:
         text=True,
         encoding="utf-8",
         errors="replace",
+        env=_isolated_git_env(),
     )
 
 
@@ -99,6 +101,7 @@ class TestFingerprintNamesTheCommittableTree(unittest.TestCase):
             check=True,
             encoding="utf-8",
             errors="replace",
+            env=_isolated_git_env(),
         ).stdout
         self.assertIn(
             " M src/mod.py",

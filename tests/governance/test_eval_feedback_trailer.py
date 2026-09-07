@@ -13,7 +13,7 @@ from unittest.mock import MagicMock, patch
 
 from gzkit.cli import main
 from gzkit.traceability import covers
-from tests.commands.common import CliRunner, _init_git_repo, _quick_init
+from tests.commands.common import CliRunner, _init_git_repo, _isolated_git_env, _quick_init
 
 
 def _make_completed_process(stdout: str, returncode: int = 0) -> MagicMock:
@@ -46,7 +46,13 @@ class TestEvalFeedbackTrailerValidation(unittest.TestCase):
             src_file = project_root / "src" / "mypkg" / "module.py"
             src_file.parent.mkdir(parents=True, exist_ok=True)
             src_file.write_text("x = 1\n", encoding="utf-8")
-            subprocess.run(["git", "add", "src"], cwd=project_root, check=True, capture_output=True)
+            subprocess.run(
+                ["git", "add", "src"],
+                cwd=project_root,
+                check=True,
+                capture_output=True,
+                env=_isolated_git_env(),
+            )
             subprocess.run(
                 [
                     "git",
@@ -57,6 +63,7 @@ class TestEvalFeedbackTrailerValidation(unittest.TestCase):
                 cwd=project_root,
                 check=True,
                 capture_output=True,
+                env=_isolated_git_env(),
             )
             result = runner.invoke(main, ["validate", "--commit-trailers"])
             self.assertNotEqual(result.exit_code, 0)
@@ -139,7 +146,13 @@ class TestEvalFeedbackTrailerValidation(unittest.TestCase):
             src_file = project_root / "src" / "mypkg" / "module.py"
             src_file.parent.mkdir(parents=True, exist_ok=True)
             src_file.write_text("x = 1\n", encoding="utf-8")
-            subprocess.run(["git", "add", "src"], cwd=project_root, check=True, capture_output=True)
+            subprocess.run(
+                ["git", "add", "src"],
+                cwd=project_root,
+                check=True,
+                capture_output=True,
+                env=_isolated_git_env(),
+            )
             subprocess.run(
                 [
                     "git",
@@ -154,6 +167,7 @@ class TestEvalFeedbackTrailerValidation(unittest.TestCase):
                 cwd=project_root,
                 check=True,
                 capture_output=True,
+                env=_isolated_git_env(),
             )
             result = runner.invoke(main, ["validate", "--commit-trailers"])
             self.assertEqual(result.exit_code, 0)

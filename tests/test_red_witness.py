@@ -24,6 +24,7 @@ from gzkit.red_witness import (
     resolve_introducing_base,
     run_red_witness,
 )
+from tests.commands.common import _isolated_git_env
 
 # Hermetic runner: the temp fixtures have no pyproject.toml, so `uv run` would build
 # an env (slow) or fail (an "error" class that would mask the assertion RED we assert).
@@ -39,6 +40,7 @@ def _git(args: list[str], cwd: Path) -> None:
         text=True,
         encoding="utf-8",
         errors="replace",
+        env=_isolated_git_env(),
     )
 
 
@@ -258,6 +260,7 @@ class TestRunRedWitness(_GitFixture):
             encoding="utf-8",
             errors="replace",
             check=True,
+            env=_isolated_git_env(),
         )
         self.assertEqual(
             len(listing.stdout.strip().splitlines()), 1, "the throwaway worktree leaked"
@@ -303,6 +306,7 @@ class TestResolveIntroducingBase(_GitFixture):
             check=True,
             encoding="utf-8",
             errors="replace",
+            env=_isolated_git_env(),
         ).stdout.split()[0]
         expected = subprocess.run(
             ["git", "rev-parse", f"{introducing}^"],
@@ -312,6 +316,7 @@ class TestResolveIntroducingBase(_GitFixture):
             check=True,
             encoding="utf-8",
             errors="replace",
+            env=_isolated_git_env(),
         ).stdout.strip()
         self.assertEqual(resolve_introducing_base(self.root, req), expected)
 

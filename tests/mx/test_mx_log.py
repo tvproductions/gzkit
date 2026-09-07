@@ -17,7 +17,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from gzkit.traceability import covers
-from tests.commands.common import SilencedConsoleTestCase
+from tests.commands.common import SilencedConsoleTestCase, _isolated_git_env
 
 
 def _mk_root(tmp: str) -> Path:
@@ -53,15 +53,21 @@ def _read_ledger_events(root: Path, event_type: str) -> list[dict]:
 
 def _init_git_repo(root: Path) -> None:
     """Initialise a real git repo so window assembly can read commits."""
-    subprocess.run(["git", "init", "-q"], cwd=root, check=True)
-    subprocess.run(["git", "config", "user.email", "t@e.st"], cwd=root, check=True)
-    subprocess.run(["git", "config", "user.name", "tester"], cwd=root, check=True)
+    subprocess.run(["git", "init", "-q"], cwd=root, check=True, env=_isolated_git_env())
+    subprocess.run(
+        ["git", "config", "user.email", "t@e.st"], cwd=root, check=True, env=_isolated_git_env()
+    )
+    subprocess.run(
+        ["git", "config", "user.name", "tester"], cwd=root, check=True, env=_isolated_git_env()
+    )
 
 
 def _commit(root: Path, filename: str, message: str) -> None:
     (root / filename).write_text("x", encoding="utf-8")
-    subprocess.run(["git", "add", "-A"], cwd=root, check=True)
-    subprocess.run(["git", "commit", "-q", "-m", message], cwd=root, check=True)
+    subprocess.run(["git", "add", "-A"], cwd=root, check=True, env=_isolated_git_env())
+    subprocess.run(
+        ["git", "commit", "-q", "-m", message], cwd=root, check=True, env=_isolated_git_env()
+    )
 
 
 # ---------------------------------------------------------------------------

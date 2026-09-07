@@ -10,6 +10,8 @@ import subprocess
 import unittest
 from pathlib import Path
 
+from tests.commands.common import _isolated_git_env
+
 
 def _repo_root() -> Path:
     """Return the project root by walking up from this file."""
@@ -30,6 +32,9 @@ def _run(args: list[str], cwd: Path, *, check: bool = True) -> subprocess.Comple
         encoding="utf-8",
         errors="replace",
         check=check,
+        # Inspects the hosting repo through its own checkout; the boundary keeps
+        # an inherited GIT_DIR from pointing it elsewhere (GHI #977).
+        env=_isolated_git_env(),
     )
 
 

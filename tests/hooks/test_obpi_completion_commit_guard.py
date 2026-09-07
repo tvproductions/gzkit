@@ -22,6 +22,7 @@ import unittest
 from pathlib import Path
 
 from gzkit.hooks.guards import forbid_unattested_obpi_completion_commits
+from tests.commands.common import _isolated_git_env
 
 _OBPI = "OBPI-0.35.0-09"
 _BRIEF_REL = f"docs/design/adr/pre-release/ADR-0.35.0-x/obpis/{_OBPI}-codex-playback.md"
@@ -76,6 +77,7 @@ def _git(args: list[str], cwd: Path) -> None:
         text=True,
         encoding="utf-8",
         errors="replace",
+        env=_isolated_git_env(),
     )
 
 

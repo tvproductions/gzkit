@@ -20,6 +20,7 @@ from pathlib import Path
 
 from gzkit.skills import _parse_frontmatter
 from gzkit.traceability import covers
+from tests.commands.common import _isolated_git_env
 from tests.vendor_surfaces import skill_mirror_paths
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -102,6 +103,7 @@ class TestREQ04_EphemeralDiagnosisOnly(unittest.TestCase):
             encoding="utf-8",
             errors="replace",
             check=False,
+            env=_isolated_git_env(),
         ).stdout
         completed = subprocess.run(
             [sys.executable, str(_TRIAGE_SCRIPT), "--format", "json"],
@@ -125,6 +127,7 @@ class TestREQ04_EphemeralDiagnosisOnly(unittest.TestCase):
             encoding="utf-8",
             errors="replace",
             check=False,
+            env=_isolated_git_env(),
         ).stdout
         # Compare BEFORE vs AFTER rather than asserting fully-clean — the
         # ledger may already be dirty from a prior governance event (lock

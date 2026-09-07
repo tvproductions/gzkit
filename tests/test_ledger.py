@@ -29,6 +29,7 @@ from gzkit.ledger import (
     project_init_event,
 )
 from gzkit.traceability import covers  # noqa: F401
+from tests.commands.common import _isolated_git_env
 
 
 class _PartialWriteHandle:
@@ -1764,16 +1765,26 @@ class TestEventAnchor(unittest.TestCase):
             # Initialize a minimal git repo so the helper can resolve HEAD.
             import subprocess
 
-            subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+            subprocess.run(["git", "init", "-q"], cwd=root, check=True, env=_isolated_git_env())
             subprocess.run(
                 ["git", "config", "user.email", "test@example.com"],
                 cwd=root,
                 check=True,
+                env=_isolated_git_env(),
             )
-            subprocess.run(["git", "config", "user.name", "Test"], cwd=root, check=True)
+            subprocess.run(
+                ["git", "config", "user.name", "Test"],
+                cwd=root,
+                check=True,
+                env=_isolated_git_env(),
+            )
             (root / "file.txt").write_text("x", encoding="utf-8")
-            subprocess.run(["git", "add", "file.txt"], cwd=root, check=True)
-            subprocess.run(["git", "commit", "-q", "-m", "init"], cwd=root, check=True)
+            subprocess.run(
+                ["git", "add", "file.txt"], cwd=root, check=True, env=_isolated_git_env()
+            )
+            subprocess.run(
+                ["git", "commit", "-q", "-m", "init"], cwd=root, check=True, env=_isolated_git_env()
+            )
 
             anchor, warnings = capture_validation_anchor_with_warnings(root, adr_id="ADR-0.25.0")
             self.assertIsInstance(anchor, EventAnchor)

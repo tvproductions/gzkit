@@ -26,6 +26,7 @@ from gzkit.temporal_drift import (
     detect_obpi_drift,
 )
 from gzkit.traceability import covers
+from tests.commands.common import _isolated_git_env
 
 
 def _git(cwd: Path, *args: str) -> str:
@@ -38,6 +39,7 @@ def _git(cwd: Path, *args: str) -> str:
         encoding="utf-8",
         errors="replace",
         check=True,
+        env=_isolated_git_env(),
     )
     return result.stdout.strip()
 

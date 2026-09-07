@@ -32,6 +32,7 @@ from types import ModuleType
 
 from gzkit.commands.common import get_project_root
 from gzkit.hooks import guards
+from tests.commands.common import _isolated_git_env
 
 _RATCHET = (
     get_project_root()
@@ -59,7 +60,9 @@ def _git_repo(root: Path) -> None:
         ["config", "user.email", "t@example.invalid"],
         ["config", "user.name", "t"],
     ):
-        subprocess.run(["git", *args], cwd=root, capture_output=True, check=True)
+        subprocess.run(
+            ["git", *args], cwd=root, capture_output=True, check=True, env=_isolated_git_env()
+        )
 
 
 class RepoContentWalkTest(unittest.TestCase):

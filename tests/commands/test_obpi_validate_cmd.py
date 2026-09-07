@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 
 from gzkit.cli import main
-from tests.commands.common import CliRunner, _quick_init
+from tests.commands.common import CliRunner, _isolated_git_env, _quick_init
 
 
 class TestObpiValidateCommand(unittest.TestCase):
@@ -15,6 +15,7 @@ class TestObpiValidateCommand(unittest.TestCase):
             text=True,
             encoding="utf-8",
             errors="replace",
+            env=_isolated_git_env(),
         )
 
     def _commit_all(self, message: str) -> None:
@@ -26,6 +27,7 @@ class TestObpiValidateCommand(unittest.TestCase):
             text=True,
             encoding="utf-8",
             errors="replace",
+            env=_isolated_git_env(),
         ).stdout.strip()
         if status:
             self._git("commit", "-m", message)

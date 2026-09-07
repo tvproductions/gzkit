@@ -3,7 +3,7 @@ import os
 import subprocess
 import tempfile
 import unittest
-from collections.abc import Iterator
+from collections.abc import Iterator, Mapping
 from contextlib import contextmanager, redirect_stderr, redirect_stdout
 from dataclasses import dataclass
 from pathlib import Path
@@ -146,6 +146,71 @@ def _git_subprocess_patcher(
             p.stop()
 
 
+# Git's own list of the environment variables that are LOCAL TO ONE REPOSITORY
+# — ``local_repo_env`` in git's ``environment.c``, the set git itself clears
+# before running a child git against a *different* repository (a submodule).
+# A hook inherits ``GIT_DIR`` from the git that spawned it: absolute, and
+# naming ``<repo>/.git/worktrees/<name>`` when the checkout is a linked
+# worktree. Every ``git`` the suite spawns inherits it in turn, so ``git init``
+# in a temp dir re-initialises the HOSTING repository instead — and, because
+# that gitdir's basename is not ``.git``, guesses bare and writes
+# ``core.bare = true`` into the shared config — while ``git config user.name``
+# writes the fixture identity into the same file (GHI #977, measured
+# 2026-09-07 from a pre-push ``gz check``).
+#
+# Deliberately NOT here: ``GIT_CONFIG_GLOBAL`` / ``GIT_CONFIG_SYSTEM`` /
+# ``GIT_CONFIG_NOSYSTEM`` (they route the USER's own config, which a fixture
+# inherits by design), ``GIT_AUTHOR_*`` / ``GIT_COMMITTER_*`` (identity),
+# ``GIT_SSH*`` / ``GIT_ASKPASS`` / ``GIT_TERMINAL_PROMPT`` (auth and
+# transport), ``GIT_EXEC_PATH`` / ``GIT_EDITOR`` / ``GIT_TRACE*``
+# (toolchain and diagnostics), and the discovery modifiers
+# ``GIT_CEILING_DIRECTORIES`` / ``GIT_DISCOVERY_ACROSS_FILESYSTEM`` /
+# ``GIT_NAMESPACE``, which git does not classify as repo-local either.
+_GIT_REPO_LOCAL_ENV: frozenset[str] = frozenset(
+    {
+        "GIT_ALTERNATE_OBJECT_DIRECTORIES",
+        "GIT_CONFIG",
+        "GIT_CONFIG_PARAMETERS",
+        "GIT_CONFIG_COUNT",
+        "GIT_OBJECT_DIRECTORY",
+        "GIT_DIR",
+        "GIT_WORK_TREE",
+        "GIT_IMPLICIT_WORK_TREE",
+        "GIT_GRAFT_FILE",
+        "GIT_INDEX_FILE",
+        "GIT_NO_REPLACE_OBJECTS",
+        "GIT_REPLACE_REF_BASE",
+        "GIT_PREFIX",
+        "GIT_SHALLOW_FILE",
+        "GIT_COMMON_DIR",
+    }
+)
+# ``GIT_CONFIG_KEY_<n>`` / ``GIT_CONFIG_VALUE_<n>`` inject config values and
+# are read only under ``GIT_CONFIG_COUNT``; dropped with it so no half-pair
+# lingers.
+_GIT_CONFIG_INJECTION_PREFIXES = ("GIT_CONFIG_KEY_", "GIT_CONFIG_VALUE_")
+
+
+def _isolated_git_env(base: Mapping[str, str] | None = None) -> dict[str, str]:
+    """Return *base* (default: the live environment) minus git's repo-local variables.
+
+    Pass the result as ``env=`` to every ``git`` a fixture spawns against a
+    temporary repository, so the command operates on the repository its
+    ``cwd`` (or ``-C``) names regardless of what the process inherited —
+    from a git hook, an IDE task, ``git bisect run``, or a ``GIT_DIR=`` shell.
+
+    Not a redirect for commands that mean to inspect their hosting checkout:
+    run inside a checkout, a scrubbed ``git`` discovers that same checkout —
+    the main one through ``.git/``, a linked worktree through its gitfile.
+    """
+    source = os.environ if base is None else base
+    return {
+        key: value
+        for key, value in source.items()
+        if key not in _GIT_REPO_LOCAL_ENV and not key.startswith(_GIT_CONFIG_INJECTION_PREFIXES)
+    }
+
+
 def _ignore_transient_git(src: str, names: list[str]) -> set[str]:
     """``shutil.copytree`` ignore callable dropping transient files under ``.git``.
 
@@ -179,6 +244,7 @@ def _init_git_repo(path: Path, *, seed_file: str = "README.md") -> str:
     Each spawn is ~30ms on Windows, so the savings matter for tests that
     rebuild a repo per-test (GHI #253).
     """
+    env = _isolated_git_env()
     run = lambda args: subprocess.run(  # noqa: E731
         ["git", *args],
         cwd=path,
@@ -187,6 +253,7 @@ def _init_git_repo(path: Path, *, seed_file: str = "README.md") -> str:
         text=True,
         encoding="utf-8",
         errors="replace",
+        env=env,
     )
     run(["init", "-b", "main"])
     # Append the [user] section instead of spawning ``git config`` twice.

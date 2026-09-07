@@ -22,7 +22,13 @@ from gzkit.ledger import (
     obpi_withdrawn_event,
 )
 from gzkit.traceability import covers  # noqa: F401
-from tests.commands.common import CliRunner, _init_git_repo, _quick_init, _write_obpi
+from tests.commands.common import (
+    CliRunner,
+    _init_git_repo,
+    _isolated_git_env,
+    _quick_init,
+    _write_obpi,
+)
 
 
 class TestStatusCommand(unittest.TestCase):
@@ -568,6 +574,7 @@ class TestStatusCommand(unittest.TestCase):
                 text=True,
                 encoding="utf-8",
                 errors="replace",
+                env=_isolated_git_env(),
             )
             subprocess.run(
                 ["git", "commit", "-m", "change module"],
@@ -576,6 +583,7 @@ class TestStatusCommand(unittest.TestCase):
                 text=True,
                 encoding="utf-8",
                 errors="replace",
+                env=_isolated_git_env(),
             )
 
             result = runner.invoke(main, ["obpi", "sync", "OBPI-0.1.0-01-demo", "--json"])
@@ -648,6 +656,7 @@ class TestStatusCommand(unittest.TestCase):
                 text=True,
                 encoding="utf-8",
                 errors="replace",
+                env=_isolated_git_env(),
             )
             subprocess.run(
                 ["git", "commit", "-m", "change module"],
@@ -656,6 +665,7 @@ class TestStatusCommand(unittest.TestCase):
                 text=True,
                 encoding="utf-8",
                 errors="replace",
+                env=_isolated_git_env(),
             )
 
             # Live state contradicts BOTH authored tokens (GHI #966): #11 has
@@ -775,6 +785,7 @@ class TestStatusCommand(unittest.TestCase):
                 text=True,
                 encoding="utf-8",
                 errors="replace",
+                env=_isolated_git_env(),
             )
             subprocess.run(
                 ["git", "commit", "-m", "later sibling change"],
@@ -783,6 +794,7 @@ class TestStatusCommand(unittest.TestCase):
                 text=True,
                 encoding="utf-8",
                 errors="replace",
+                env=_isolated_git_env(),
             )
             second_anchor = subprocess.run(
                 ["git", "rev-parse", "--short=7", "HEAD"],
@@ -791,6 +803,7 @@ class TestStatusCommand(unittest.TestCase):
                 text=True,
                 encoding="utf-8",
                 errors="replace",
+                env=_isolated_git_env(),
             ).stdout.strip()
 
             ledger.append(
@@ -1555,6 +1568,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
                 text=True,
                 encoding="utf-8",
                 errors="replace",
+                env=_isolated_git_env(),
             )
             subprocess.run(
                 ["git", "commit", "-m", "change module"],
@@ -1563,6 +1577,7 @@ class TestLifecycleStatusSemantics(unittest.TestCase):
                 text=True,
                 encoding="utf-8",
                 errors="replace",
+                env=_isolated_git_env(),
             )
 
             with patch(

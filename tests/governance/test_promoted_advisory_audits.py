@@ -36,6 +36,7 @@ from gzkit.governance.trust_audits import (
     audit_version_release,
 )
 from gzkit.traceability import covers
+from tests.commands.common import _isolated_git_env
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
@@ -971,7 +972,7 @@ class VersionReleaseAuditChickenAndEgg(unittest.TestCase):
     def _init_empty_git(self, root: Path) -> None:
         import subprocess  # noqa: PLC0415
 
-        subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+        subprocess.run(["git", "init", "-q"], cwd=root, check=True, env=_isolated_git_env())
 
     def test_naked_bump_still_fails(self) -> None:
         """Bump without manifest and without tag — class of failure the audit catches."""
@@ -1095,6 +1096,7 @@ class VersionReleaseAuditTagReachability(unittest.TestCase):
             text=True,
             errors="replace",
             encoding="utf-8",
+            env=_isolated_git_env(),
         )
         return result.stdout.strip()
 
@@ -1201,6 +1203,7 @@ class VersionReleaseAuditDocumentedSweep(unittest.TestCase):
             text=True,
             errors="replace",
             encoding="utf-8",
+            env=_isolated_git_env(),
         )
         return result.stdout.strip()
 
@@ -1336,6 +1339,7 @@ class VersionReleaseAuditUndocumentedTagSweep(unittest.TestCase):
             text=True,
             errors="replace",
             encoding="utf-8",
+            env=_isolated_git_env(),
         )
         return result.stdout.strip()
 

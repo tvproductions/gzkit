@@ -28,6 +28,7 @@ from pathlib import Path
 from unittest import mock
 
 from gzkit.traceability import covers
+from tests.commands.common import _isolated_git_env
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPT_PATH = REPO_ROOT / "scripts" / "session_orientation.py"
@@ -1204,14 +1205,18 @@ class TestHandoffAccountSynthesis(unittest.TestCase):
     def _repo(self, tmp: str) -> Path:
         root = Path(tmp)
         (root / ".gzkit" / "handoffs").mkdir(parents=True)
-        subprocess.run(["git", "init", "-q", str(root)], check=True)
+        subprocess.run(["git", "init", "-q", str(root)], check=True, env=_isolated_git_env())
         for key, val in (("user.email", "t@e.com"), ("user.name", "t")):
-            subprocess.run(["git", "-C", str(root), "config", key, val], check=True)
+            subprocess.run(
+                ["git", "-C", str(root), "config", key, val], check=True, env=_isolated_git_env()
+            )
         return root
 
     def _commit(self, root: Path, message: str) -> None:
-        subprocess.run(["git", "-C", str(root), "add", "-A"], check=True)
-        subprocess.run(["git", "-C", str(root), "commit", "-qm", message], check=True)
+        subprocess.run(["git", "-C", str(root), "add", "-A"], check=True, env=_isolated_git_env())
+        subprocess.run(
+            ["git", "-C", str(root), "commit", "-qm", message], check=True, env=_isolated_git_env()
+        )
 
     def _handoff(self, root: Path, name: str, ts: datetime, agent: str = "claude-code") -> Path:
         path = root / ".gzkit" / "handoffs" / name

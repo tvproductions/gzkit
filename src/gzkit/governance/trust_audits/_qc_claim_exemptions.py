@@ -89,6 +89,11 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     # defines what a violation IS -- the threshold case the bar above excludes --
     # and the .md-only walk is a scope predicate, also excluded. GHI #900.
     "wheel-path-literals": EXEMPTS_NONE,
+    # AST scan of tests/** for a literal `git` argv spawned without the boundary
+    # env. No waiver table, allowlist, escape marker or opt-in flag admits an
+    # offender; the literal-argv scope is a scope predicate, disclosed in the
+    # module docstring, not an exemption. GHI #977.
+    "git-fixture-isolation": EXEMPTS_NONE,
     # Requires a substantive `## Why foundation tier?` on every foundation ADR.
     # The sidecar filter selects WHICH files are ADRs; it admits no failing ADR.
     "kind-invariance": EXEMPTS_NONE,

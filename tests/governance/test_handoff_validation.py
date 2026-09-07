@@ -36,6 +36,7 @@ from gzkit.handoff_validation import (
 )
 from gzkit.rules import NESTED_SURFACE_NAMES
 from gzkit.traceability import covers
+from tests.commands.common import _isolated_git_env
 
 # ---------------------------------------------------------------------------
 # Fixture helpers
@@ -481,7 +482,9 @@ class TestValidateReferencedFiles(unittest.TestCase):
 
     @staticmethod
     def _git(root: Path, *args: str) -> None:
-        subprocess.run(["git", *args], cwd=root, capture_output=True, check=True)
+        subprocess.run(
+            ["git", *args], cwd=root, capture_output=True, check=True, env=_isolated_git_env()
+        )
 
     def _init_repo(self, root: Path) -> None:
         self._git(root, "init", "--quiet")
@@ -1250,7 +1253,9 @@ class TestReferencedFilesGitCostTests(unittest.TestCase):
 
     @staticmethod
     def _git(root: Path, *args: str) -> None:
-        subprocess.run(["git", *args], cwd=root, capture_output=True, check=True)
+        subprocess.run(
+            ["git", *args], cwd=root, capture_output=True, check=True, env=_isolated_git_env()
+        )
 
     def _repo_with_tracked_files(self, root: Path, count: int) -> list[str]:
         self._git(root, "init", "--quiet")

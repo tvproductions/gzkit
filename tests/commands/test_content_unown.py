@@ -42,7 +42,7 @@ from gzkit.content.ownership import (
 from gzkit.governance.events import emit_section_ownership_genesis
 from gzkit.ledger import Ledger, LedgerEvent
 from gzkit.traceability import covers
-from tests.commands.common import CliRunner
+from tests.commands.common import CliRunner, _isolated_git_env
 
 _SURFACE_TEXT = (
     "# Doc Title\n"
@@ -4136,6 +4136,7 @@ class TestRecoveryArtifactsAreIgnored(unittest.TestCase):
                 encoding="utf-8",
                 errors="replace",
                 check=False,
+                env=_isolated_git_env(),
             )
             if completed.returncode != 0:
                 unignored.append(f"{label}: {path.relative_to(self._REPO_ROOT).as_posix()}")

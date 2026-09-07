@@ -8,7 +8,7 @@ from gzkit.cli import main
 from gzkit.config import GzkitConfig
 from gzkit.ledger import Ledger, adr_created_event, obpi_created_event
 from gzkit.traceability import covers
-from tests.commands.common import CliRunner, _init_git_repo, _quick_init
+from tests.commands.common import CliRunner, _init_git_repo, _isolated_git_env, _quick_init
 
 
 class TestValidateCommand(unittest.TestCase):
@@ -357,12 +357,19 @@ Do the thing.
             src_file = project_root / "src" / "mypkg" / "module.py"
             src_file.parent.mkdir(parents=True, exist_ok=True)
             src_file.write_text("x = 1\n", encoding="utf-8")
-            subprocess.run(["git", "add", "src"], cwd=project_root, check=True, capture_output=True)
+            subprocess.run(
+                ["git", "add", "src"],
+                cwd=project_root,
+                check=True,
+                capture_output=True,
+                env=_isolated_git_env(),
+            )
             subprocess.run(
                 ["git", "commit", "-m", "feat: add module"],
                 cwd=project_root,
                 check=True,
                 capture_output=True,
+                env=_isolated_git_env(),
             )
             result = runner.invoke(main, ["validate", "--commit-trailers"])
             self.assertNotEqual(result.exit_code, 0)
@@ -378,12 +385,19 @@ Do the thing.
             src_file = project_root / "src" / "mypkg" / "module.py"
             src_file.parent.mkdir(parents=True, exist_ok=True)
             src_file.write_text("x = 1\n", encoding="utf-8")
-            subprocess.run(["git", "add", "src"], cwd=project_root, check=True, capture_output=True)
+            subprocess.run(
+                ["git", "add", "src"],
+                cwd=project_root,
+                check=True,
+                capture_output=True,
+                env=_isolated_git_env(),
+            )
             subprocess.run(
                 ["git", "commit", "-m", "feat: add module\n\nTask: TASK-0.0.1-01-01-01"],
                 cwd=project_root,
                 check=True,
                 capture_output=True,
+                env=_isolated_git_env(),
             )
             result = runner.invoke(main, ["validate", "--commit-trailers"])
             self.assertEqual(result.exit_code, 0)
@@ -405,7 +419,13 @@ Do the thing.
             src_file = project_root / "src" / "mypkg" / "module.py"
             src_file.parent.mkdir(parents=True, exist_ok=True)
             src_file.write_text("x = 1\n", encoding="utf-8")
-            subprocess.run(["git", "add", "src"], cwd=project_root, check=True, capture_output=True)
+            subprocess.run(
+                ["git", "add", "src"],
+                cwd=project_root,
+                check=True,
+                capture_output=True,
+                env=_isolated_git_env(),
+            )
             subprocess.run(
                 [
                     "git",
@@ -416,6 +436,7 @@ Do the thing.
                 cwd=project_root,
                 check=True,
                 capture_output=True,
+                env=_isolated_git_env(),
             )
             result = runner.invoke(main, ["validate", "--commit-trailers"])
             self.assertNotEqual(result.exit_code, 0)
@@ -436,7 +457,13 @@ Do the thing.
             src_file = project_root / "src" / "mypkg" / "module.py"
             src_file.parent.mkdir(parents=True, exist_ok=True)
             src_file.write_text("x = 1\n", encoding="utf-8")
-            subprocess.run(["git", "add", "src"], cwd=project_root, check=True, capture_output=True)
+            subprocess.run(
+                ["git", "add", "src"],
+                cwd=project_root,
+                check=True,
+                capture_output=True,
+                env=_isolated_git_env(),
+            )
             subprocess.run(
                 [
                     "git",
@@ -450,6 +477,7 @@ Do the thing.
                 cwd=project_root,
                 check=True,
                 capture_output=True,
+                env=_isolated_git_env(),
             )
             result = runner.invoke(main, ["validate", "--commit-trailers"])
             self.assertEqual(result.exit_code, 0)
@@ -465,13 +493,18 @@ Do the thing.
             docs_file.parent.mkdir(parents=True, exist_ok=True)
             docs_file.write_text("note\n", encoding="utf-8")
             subprocess.run(
-                ["git", "add", "docs"], cwd=project_root, check=True, capture_output=True
+                ["git", "add", "docs"],
+                cwd=project_root,
+                check=True,
+                capture_output=True,
+                env=_isolated_git_env(),
             )
             subprocess.run(
                 ["git", "commit", "-m", "docs: add note"],
                 cwd=project_root,
                 check=True,
                 capture_output=True,
+                env=_isolated_git_env(),
             )
             result = runner.invoke(main, ["validate", "--commit-trailers"])
             self.assertEqual(result.exit_code, 0)

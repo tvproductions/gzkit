@@ -11,6 +11,7 @@ from gzkit.commands.ledger import (
     ensure_jsonl_merge_driver,
     ledger_merge_driver_cmd,
 )
+from tests.commands.common import _isolated_git_env
 
 
 def _row(ts: str, event: str = "project_init") -> str:
@@ -84,6 +85,7 @@ class TestEnsureMergeDriverRegistration(unittest.TestCase):
             capture_output=True,
             text=True,
             errors="replace",
+            env=_isolated_git_env(),
         )
 
     def test_registers_driver_then_is_idempotent(self) -> None:
@@ -106,6 +108,7 @@ class TestEnsureMergeDriverRegistration(unittest.TestCase):
                 capture_output=True,
                 text=True,
                 errors="replace",
+                env=_isolated_git_env(),
             ).stdout.strip()
 
         self.assertEqual(configured, "uv run gz ledger merge-driver %O %A %B")

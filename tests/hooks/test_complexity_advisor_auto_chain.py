@@ -28,6 +28,7 @@ from gzkit.hooks.install_complexity_advisor import (
     install,
     run_auto_chain,
 )
+from tests.commands.common import _isolated_git_env
 
 # --- test-data helpers ---------------------------------------------------
 
@@ -311,6 +312,7 @@ class TestShellHookContract(unittest.TestCase):
             encoding="utf-8",
             errors="replace",
             check=True,
+            env=_isolated_git_env(),
         )
         stored_mode = result.stdout.split()[0] if result.stdout.strip() else ""
         self.assertEqual(

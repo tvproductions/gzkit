@@ -46,6 +46,8 @@ import re
 import subprocess
 from pathlib import Path
 
+from tests.commands.common import _isolated_git_env
+
 # Suffixes worth scanning for a governed-surface pointer. The three guards
 # disagreed here — two scanned ``.py`` and one did not — with no stated reason.
 # The union is correct: a dead pointer in a docstring misroutes an agent exactly
@@ -105,6 +107,7 @@ def tracked_files(repo_root: Path) -> list[str]:
         encoding="utf-8",
         errors="replace",
         check=True,
+        env=_isolated_git_env(),
     )
     return [rel for rel in completed.stdout.split("\0") if rel]
 

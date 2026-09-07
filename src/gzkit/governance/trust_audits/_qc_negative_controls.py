@@ -1126,6 +1126,28 @@ def _build_tautological_test_audit() -> Path:
     return root
 
 
+def _build_git_fixture_isolation() -> Path:
+    """Plant one test that spawns ``git`` with the inherited environment (GHI #977).
+
+    The same file also carries a spawn INSIDE the boundary and a non-git spawn
+    with no ``env`` at all, so the control fails for the planted reason — an
+    unguarded ``git`` argv — and not for any spawn lacking ``env``.
+    """
+    root = _mkroot("git-fixture-isolation")
+    _write(
+        root / "tests" / "test_fixture.py",
+        "import subprocess\n\n"
+        "def _isolated_git_env():\n    return {}\n\n"
+        "def guarded(tmp):\n"
+        '    subprocess.run(["git", "init"], cwd=tmp, env=_isolated_git_env())\n\n'
+        "def other(tmp):\n"
+        '    subprocess.run(["uv", "--version"], cwd=tmp)\n\n'
+        "def unguarded(tmp):\n"
+        '    subprocess.run(["git", "init"], cwd=tmp)\n',
+    )
+    return root
+
+
 def _build_task_envelope_coherence() -> Path:
     root = _mkroot("task-envelope")
     _write_jsonl(
@@ -1454,6 +1476,7 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
     ),
     ("req-kind-discipline", _build_req_kind_discipline, _ep._ep_req_kind_discipline),
     ("tautological-test-audit", _build_tautological_test_audit, _ep._ep_tautological_test_audit),
+    ("git-fixture-isolation", _build_git_fixture_isolation, _ep._ep_git_fixture_isolation),
     ("task-envelope-coherence", _build_task_envelope_coherence, _ep._ep_task_envelope_coherence),
     ("lock-exchange-coupling", _build_lock_exchange_coupling, _ep._ep_lock_exchange_coupling),
     ("handoff-documents", _build_handoff_documents, _ep._ep_handoff_documents),

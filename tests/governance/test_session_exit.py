@@ -21,6 +21,7 @@ from gzkit.handoff_validation import (
     validate_handoff_document,
 )
 from gzkit.session_exit import book_exit_bookmark
+from tests.commands.common import _isolated_git_env
 
 
 class SessionExitBookmarkTests(unittest.TestCase):
@@ -202,14 +203,18 @@ class TestExitBeatIsIntentionalAboutBookmarks(unittest.TestCase):
     def _repo(self, tmp: str) -> Path:
         root = Path(tmp)
         (root / ".gzkit" / "handoffs").mkdir(parents=True)
-        subprocess.run(["git", "init", "-q", str(root)], check=True)
+        subprocess.run(["git", "init", "-q", str(root)], check=True, env=_isolated_git_env())
         for key, val in (("user.email", "t@e.com"), ("user.name", "t")):
-            subprocess.run(["git", "-C", str(root), "config", key, val], check=True)
+            subprocess.run(
+                ["git", "-C", str(root), "config", key, val], check=True, env=_isolated_git_env()
+            )
         return root
 
     def _commit(self, root: Path, message: str) -> None:
-        subprocess.run(["git", "-C", str(root), "add", "-A"], check=True)
-        subprocess.run(["git", "-C", str(root), "commit", "-qm", message], check=True)
+        subprocess.run(["git", "-C", str(root), "add", "-A"], check=True, env=_isolated_git_env())
+        subprocess.run(
+            ["git", "-C", str(root), "commit", "-qm", message], check=True, env=_isolated_git_env()
+        )
 
     def _authored(self, root: Path, name: str = "20260101T000000Z-real.md") -> Path:
         path = root / ".gzkit" / "handoffs" / name
@@ -304,7 +309,11 @@ class TestExitBeatIsIntentionalAboutBookmarks(unittest.TestCase):
                 "## Decisions Made\n\n- [agent-chose] floor\n",
                 encoding="utf-8",
             )
-            subprocess.run(["git", "-C", str(root), "add", "--", str(stray)], check=True)
+            subprocess.run(
+                ["git", "-C", str(root), "add", "--", str(stray)],
+                check=True,
+                env=_isolated_git_env(),
+            )
             result = book_exit_bookmark(root, session_id="s2", exit_reason="clear")
             self.assertTrue(result.skipped, "a staged bookmark must not count as a dirty tree")
 
@@ -340,7 +349,11 @@ class TestExitBeatIsIntentionalAboutBookmarks(unittest.TestCase):
             (root / "seed.txt").write_text("x\n", encoding="utf-8")
             self._commit(root, "seed")
             authored = self._authored(root)
-            subprocess.run(["git", "-C", str(root), "add", "--", str(authored)], check=True)
+            subprocess.run(
+                ["git", "-C", str(root), "add", "--", str(authored)],
+                check=True,
+                env=_isolated_git_env(),
+            )
             result = book_exit_bookmark(root, session_id="s1", exit_reason="clear")
             self.assertTrue(result.skipped, "staged counts as durable — it needs no commit")
 
@@ -359,6 +372,7 @@ class TestExitBeatIsIntentionalAboutBookmarks(unittest.TestCase):
                 encoding="utf-8",
                 errors="replace",
                 check=True,
+                env=_isolated_git_env(),
             ).stdout
             self.assertIn("session-exit-bookmark", staged)
 
@@ -371,8 +385,16 @@ class TestExitBeatIsIntentionalAboutBookmarks(unittest.TestCase):
             self._commit(root, "seed")
             book_exit_bookmark(root, session_id="s1", exit_reason="clear")
             (root / "later.py").write_text("y = 2\n", encoding="utf-8")
-            subprocess.run(["git", "-C", str(root), "add", "--", "later.py"], check=True)
-            subprocess.run(["git", "-C", str(root), "commit", "-qm", "unrelated"], check=True)
+            subprocess.run(
+                ["git", "-C", str(root), "add", "--", "later.py"],
+                check=True,
+                env=_isolated_git_env(),
+            )
+            subprocess.run(
+                ["git", "-C", str(root), "commit", "-qm", "unrelated"],
+                check=True,
+                env=_isolated_git_env(),
+            )
             tree = subprocess.run(
                 ["git", "-C", str(root), "ls-tree", "-r", "--name-only", "HEAD"],
                 capture_output=True,
@@ -380,6 +402,7 @@ class TestExitBeatIsIntentionalAboutBookmarks(unittest.TestCase):
                 encoding="utf-8",
                 errors="replace",
                 check=True,
+                env=_isolated_git_env(),
             ).stdout
             self.assertIn("session-exit-bookmark", tree)
 

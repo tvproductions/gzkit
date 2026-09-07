@@ -32,6 +32,7 @@ from pathlib import Path
 
 from gzkit.ledger import BoundaryRepair, Ledger, LedgerEvent, read_corrected_rows
 from gzkit.validate_pkg.ledger_check import validate_ledger
+from tests.commands.common import _isolated_git_env
 
 #: How long writer A holds the window open for writer B. Unserialized, B needs
 #: microseconds and releases the wait itself; serialized, B cannot run at all
@@ -548,6 +549,7 @@ class TestLockSidecarIsNotCommittable(unittest.TestCase):
             ["git", "check-ignore", "-q", f".gzkit/{opened[0]}"],  # noqa: S607
             cwd=repo_root,
             check=False,
+            env=_isolated_git_env(),
         )
         self.assertEqual(result.returncode, 0, f".gzkit/{opened[0]} is not gitignored")
 

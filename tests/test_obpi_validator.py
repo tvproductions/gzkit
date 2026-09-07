@@ -19,7 +19,7 @@ from gzkit.ledger import (
     project_init_event,
 )
 from gzkit.traceability import covers  # noqa: F401
-from tests.commands.common import _ignore_transient_git
+from tests.commands.common import _ignore_transient_git, _isolated_git_env
 
 
 class TestObpiValidator(unittest.TestCase):
@@ -53,7 +53,13 @@ class TestObpiValidator(unittest.TestCase):
         ledger = Ledger(gzkit_dir / "ledger.jsonl")
         ledger.append(project_init_event("test-project", "lite"))
 
-        subprocess.run(["git", "init", "-b", "main"], cwd=root, check=True, capture_output=True)
+        subprocess.run(
+            ["git", "init", "-b", "main"],
+            cwd=root,
+            check=True,
+            capture_output=True,
+            env=_isolated_git_env(),
+        )
         # Append the [user] section directly instead of ``git config`` x2.
         config_path = root / ".git" / "config"
         config_path.write_text(
@@ -65,12 +71,15 @@ class TestObpiValidator(unittest.TestCase):
             + "[gc]\n\tauto = 0\n[maintenance]\n\tauto = false\n",
             encoding="utf-8",
         )
-        subprocess.run(["git", "add", "-A"], cwd=root, check=True, capture_output=True)
+        subprocess.run(
+            ["git", "add", "-A"], cwd=root, check=True, capture_output=True, env=_isolated_git_env()
+        )
         subprocess.run(
             ["git", "commit", "-m", "chore: initial"],
             cwd=root,
             check=True,
             capture_output=True,
+            env=_isolated_git_env(),
         )
         cls._shutil = shutil
 
@@ -104,6 +113,7 @@ class TestObpiValidator(unittest.TestCase):
             text=True,
             encoding="utf-8",
             errors="replace",
+            env=_isolated_git_env(),
         )
         return result.stdout.strip()
 

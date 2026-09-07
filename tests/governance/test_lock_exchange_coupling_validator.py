@@ -17,6 +17,7 @@ from pathlib import Path
 from gzkit.governance.trust_audits.lock_exchange_coupling import (
     validate_lock_exchange_coupling,
 )
+from tests.commands.common import _isolated_git_env
 
 
 def covers(target: str):  # noqa: D401
@@ -535,11 +536,12 @@ class TestLockHandoffCouplingRequiresRepositoryDurability(unittest.TestCase):
             encoding="utf-8",
             errors="replace",
             check=True,
+            env=_isolated_git_env(),
         )
 
     def _repo(self, tmp: str) -> Path:
         root = Path(tmp)
-        subprocess.run(["git", "init", "-q", str(root)], check=True)
+        subprocess.run(["git", "init", "-q", str(root)], check=True, env=_isolated_git_env())
         self._git(root, "config", "user.email", "t@e.com")
         self._git(root, "config", "user.name", "t")
         return root

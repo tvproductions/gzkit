@@ -47,6 +47,7 @@ from gzkit.remote_divergence import (
     probe_remote_divergence,
 )
 from gzkit.session_start import build_advisement
+from tests.commands.common import _isolated_git_env
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ORIENTATION = REPO_ROOT / "scripts" / "session_orientation.py"
@@ -592,6 +593,7 @@ class TestTheProbeMeasuresTheRealTree(unittest.TestCase):
             text=True,
             encoding="utf-8",
             errors="replace",
+            env=_isolated_git_env(),
         )
 
     def _commit(self, repo: Path, name: str) -> None:
