@@ -1135,17 +1135,26 @@ class TestInvariantFloorRoutesThroughTheFold(unittest.TestCase):
         self.assertIn("inv-x", [e.id for e in floor])
 
     @covers("REQ-0.35.0-01-08")
-    def test_the_real_on_disk_corpus_still_yields_a_floor_of_exactly_54(self) -> None:
-        """Regression: the repoint must not move the measured floor.
+    def test_the_real_on_disk_floor_is_the_folded_invariant_set(self) -> None:
+        """The repoint reads the fold on the corpus that actually ships.
 
-        Measured 2026-08-24: 79 raw rows fold to 55; all 12 tombstones are
-        `compressible` tier, so the fold does not move the invariant floor.
-        Asserted against `load_corpus`, never a hardcoded '51 rows' table --
-        a value in a Markdown doc is illustrative, never authoritative
-        (`.claude/rules/governance-core.md`).
+        Asserts the REQ's relation, not a count: the floor is exactly the
+        `invariant`-tier rows that survive the production fold, and it is
+        strictly smaller than the raw invariant set because real tombstones
+        are on disk. This test pinned the floor to `54` until GHI #975: a
+        count of a LIVE append-only store turns red on every governed
+        `gz content remember --tier invariant`, the operation the store
+        exists for (ADR-0.35.0 BI-06), and cannot tell that from a fold
+        regression. The relation moves only when the fold does.
         """
         corpus = load_corpus(_PROJECT_ROOT, "AGENTS.md")
-        self.assertEqual(len(invariant_entries(corpus)), 54)
+        raw_invariant_ids = {e.id for e in corpus.entries if e.tier == "invariant"}
+        floor_ids = {e.id for e in invariant_entries(corpus)}
+        folded_invariant_ids = {
+            e.id for e in effective_corpus(corpus).entries if e.tier == "invariant"
+        }
+        self.assertEqual(floor_ids, folded_invariant_ids)
+        self.assertLess(floor_ids, raw_invariant_ids)
 
 
 class TestRetiredIdsAndLiveEntryWithTextUnderUnRetirement(unittest.TestCase):
