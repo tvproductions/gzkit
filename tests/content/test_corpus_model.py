@@ -26,14 +26,23 @@ from gzkit.content.rendition_store import corpus_fingerprint
 from gzkit.content.tier_policy import assert_invariant_verbatim, invariant_entries
 from gzkit.traceability import covers
 
-#: The corpus fingerprint at the pre-OBPI-0.35.0-01 baseline (REQ-0.35.0-01-01),
-#: asserted against the PRODUCTION `corpus_fingerprint()` over the real on-disk
-#: corpus below — so this REQ's covering test fails if the production hash
-#: algorithm, encoding, or normalization ever changes. The additive `supersedes`
-#: field must never perturb this — a value in a Markdown doc is illustrative,
-#: never authoritative (`.claude/rules/governance-core.md`), so this constant is
-#: the load-bearing assertion, not the OBPI brief's stale "51 rows" table.
-_PRE_OBPI_0_35_0_01_FINGERPRINT = "8459d30b0fbacc8e5e33da8dd391f9355daef6ac1912d5c175f53888bd3f92de"
+#: The rows REQ-0.35.0-01-01 names — "the shape of all 51 rows on disk today" —
+#: are the first 51 rows of the append-only corpus: the store as committed at
+#: `6c3d1bd5` (2026-06-30), unchanged through the brief's authoring (2026-07-21)
+#: until row 52 landed at `f314da7f` (2026-07-22). None of them carries
+#: `supersedes` or `retires`, and the log is append-only, so they are a FIXED
+#: input set: `git show 6c3d1bd5:.gzkit/corpus/AGENTS.md.jsonl` reproduces them.
+_PRE_OBPI_0_35_0_01_ROW_COUNT = 51
+
+#: The PRODUCTION `corpus_fingerprint()` over exactly those 51 rows. The covering
+#: test below fails if the hash algorithm, encoding, or normalization changes, or
+#: if any pre-field row is edited in place — and it CANNOT fail on a governed
+#: `gz content remember`, because an appended row is outside the fixed set. The
+#: previous pin (`8459d30b…`, at `1bc7196b`) hashed the whole live 79-row corpus,
+#: so every legitimate capture turned the suite red (GHI #975). A value in a
+#: Markdown doc is illustrative, never authoritative
+#: (`.claude/rules/governance-core.md`); this constant is the load-bearing pin.
+_PRE_OBPI_0_35_0_01_FINGERPRINT = "a862c327d6d9bb39cd73769fdf8963972e89c012d46a2c67b814e665316a2919"
 
 _SCHEMA_PATH = (
     Path(__file__).resolve().parents[2] / "src" / "gzkit" / "schemas" / "corpus_entry.json"
@@ -379,16 +388,46 @@ class TestSupersedesAdditive(unittest.TestCase):
         self.assertNotIn("supersedes", dumped)
         self.assertEqual(Corpus.loads(dumped).dumps(), dumped)
 
+    def _pre_field_rows(self) -> Corpus:
+        """The REQ's fixed input set: the 51 committed rows that predate the field."""
+        live = load_corpus(_PROJECT_ROOT, "AGENTS.md")
+        prefix = live.entries[:_PRE_OBPI_0_35_0_01_ROW_COUNT]
+        self.assertEqual(len(prefix), _PRE_OBPI_0_35_0_01_ROW_COUNT)
+        for entry in prefix:
+            self.assertIsNone(entry.supersedes, entry.id)
+            self.assertIsNone(entry.retires, entry.id)
+        return Corpus(entries=tuple(prefix))
+
     @covers("REQ-0.35.0-01-01")
     def test_real_on_disk_corpus_fingerprint_is_unchanged(self) -> None:
-        """The additive field must not re-fingerprint the real, committed corpus.
+        """The additive field must not re-fingerprint the rows that predate it.
 
-        Asserts against the PRODUCTION `corpus_fingerprint()` over the real,
-        on-disk corpus — this fails if the production hash algorithm, encoding,
-        or normalization ever changes, which a local reimplementation would not.
+        Asserts the PRODUCTION `corpus_fingerprint()` over the 51 real, committed
+        pre-field rows — this fails if the hash algorithm, encoding, or
+        normalization ever changes, or if one of those rows is edited in place,
+        which a local reimplementation would not catch. It is computed over the
+        FIXED pre-field set, never the whole live store: the corpus is an
+        append-only log whose growth is its governed operation (ADR-0.35.0
+        BI-06: capture must never be blocked), so a pin of the live fingerprint
+        could not tell "the hash changed" from "an operator captured canon"
+        (GHI #975).
         """
+        pre_field = self._pre_field_rows()
+        self.assertEqual(corpus_fingerprint(pre_field), _PRE_OBPI_0_35_0_01_FINGERPRINT)
+        dumped = pre_field.dumps()
+        self.assertEqual(Corpus.loads(dumped).dumps(), dumped)
+
+    @covers("REQ-0.35.0-01-01")
+    def test_a_governed_append_does_not_move_the_pre_field_fingerprint(self) -> None:
+        """Appending a row moves the live fingerprint and leaves the pre-field one alone.
+
+        This is the discriminator GHI #975 named: a capture is not a hash change.
+        """
+        pre_field = self._pre_field_rows()
+        grown = pre_field.append(_entry(id="appended-after-the-field", ts="2026-09-07T00:00:00Z"))
+        self.assertNotEqual(corpus_fingerprint(grown), _PRE_OBPI_0_35_0_01_FINGERPRINT)
         self.assertEqual(
-            corpus_fingerprint(load_corpus(_PROJECT_ROOT, "AGENTS.md")),
+            corpus_fingerprint(Corpus(entries=grown.entries[:_PRE_OBPI_0_35_0_01_ROW_COUNT])),
             _PRE_OBPI_0_35_0_01_FINGERPRINT,
         )
 
