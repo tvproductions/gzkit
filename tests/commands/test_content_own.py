@@ -960,11 +960,13 @@ class TestDeclarationDamageRefusalsPrescribeConditionalRecovery(unittest.TestCas
 
     Restoring the tracked declaration DOES recover these states, but only when
     the saved copy still agrees with the surviving ledger evidence AND no
-    governed transition has run since it was saved. The second precondition is
-    load-bearing and invisible to the loader: restoring over a governed
-    transition produces a declaration that LOADS while silently reverting an
-    attested raise, so loader success can never stand as proof the recovery
-    was safe. Everything here drives the real loader and the real CLI.
+    governed transition has run since it was saved. The second precondition was
+    load-bearing and invisible to the loader -- restoring over a governed
+    transition produced a declaration that LOADED while silently reverting an
+    attested transition. GHI #979 made it visible: the loader refuses a witness
+    that is not its chain's TIP, so that precondition is now machine-held and
+    the prose says so rather than asking the operator to verify it by eye.
+    Everything here drives the real loader and the real CLI.
     """
 
     def setUp(self) -> None:
@@ -1040,7 +1042,7 @@ class TestDeclarationDamageRefusalsPrescribeConditionalRecovery(unittest.TestCas
         self.assertIn("git checkout --", message)
         self.assertIn("agrees with the ownership events", message)
         self.assertIn("no governed ownership transition has run", message)
-        self.assertIn("proves neither", message)
+        self.assertIn("REFUSED naming the chain tip", message)
         self.assertIn("NO governed recovery", message)
         # The circular prescriptions and hand-edits are gone.
         self.assertNotIn("raise the floor again through", message)
@@ -1160,32 +1162,21 @@ class TestDeclarationDamageRefusalsPrescribeConditionalRecovery(unittest.TestCas
             )
 
     @covers("REQ-0.35.0-04-02")
-    def test_restoring_over_a_governed_transition_loads_but_reverts_the_attested_raise(
+    def test_restoring_over_a_governed_transition_is_refused_naming_the_chain_tip(
         self,
     ) -> None:
-        """Loader success is NOT proof the restore was safe -- the demonstrated case.
+        """GHI #979: the demonstrated silent revert is now a refusal.
 
-        A governed `unown` raises the floor under attestation. Damaging the
-        pointer afterwards and following a bare `git checkout --` yields a
-        declaration the loader ACCEPTS, while the attested transition is
-        reverted in the declaration and its event is left orphaned in the
-        ledger, with nothing refusing. This is why the recovery prose states
-        preconditions rather than naming a command.
+        A governed `unown` raises the floor under attestation. Restoring a
+        declaration saved BEFORE it used to load, reverting the attested
+        transition in the declaration while its event stayed in the ledger with
+        nothing pointing at it. The loader now refuses that copy, names the
+        attested transition standing after its witness, and the saved copy that
+        DOES name the tip still recovers the state -- so the refusal is a
+        diagnosis with an executable exit, not a dead end.
         """
         with self._runner.isolated_filesystem():
-            env = _isolated_git_env()
-            run = lambda args: subprocess.run(  # noqa: E731
-                ["git", *args],
-                check=True,
-                capture_output=True,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-                env=env,
-            )
-            run(["init", "."])
-            run(["config", "user.email", "g0@users.noreply.github.com"])
-            run(["config", "user.name", "g0"])
+            run = self._git()
             seed_floor = self._seed()
             run(["add", "-A", "-f"])
             run(["commit", "-m", "declaration witnessed at the seed floor"])
@@ -1200,29 +1191,74 @@ class TestDeclarationDamageRefusalsPrescribeConditionalRecovery(unittest.TestCas
             ]
             self.assertEqual(len(attested), 1, "fixture sanity: one attested raise")
             attested_id = attested[0]["id"]
+            run(["add", "-A", "-f"])
+            run(["commit", "-m", "declaration carries the attested raise"])
 
-            self._damage(floor_event_id=None)
-            message = self._refusal()
-            # The prose must warn about exactly this outcome BEFORE it is followed.
-            self.assertIn("silently reverts", message)
-            self.assertIn("orphaned", message)
-
-            run(["checkout", "--", str(_DECLARATION_PATH)])
-
-            # The loader ACCEPTS the restored declaration -- and that is the trap.
-            restored = load_declaration(_DECLARATION_PATH, _SEED_SURFACE_TEXT, Path.cwd())
-            self.assertEqual(
-                restored.sections["alpha-section"],
-                "corpus-owned",
-                "the attested transition was reverted by the restore",
-            )
-            self.assertEqual(restored.unowned_byte_floor, seed_floor)
-            # ...while its attested event survives in the ledger, now orphaned.
-            surviving = [e["id"] for e in _ownership_events()]
+            # The trap: restore the copy saved BEFORE the attested transition.
+            run(["checkout", "HEAD~1", "--", str(_DECLARATION_PATH)])
+            with self.assertRaises(OwnershipLoadError) as refused:
+                load_declaration(_DECLARATION_PATH, _SEED_SURFACE_TEXT, Path.cwd())
+            message = str(refused.exception)
+            self.assertIn("not the TIP", message)
+            self.assertIn(attested_id, message)
+            # The reverted state is named, never adopted.
+            self.assertEqual(_declaration()["sections"]["alpha-section"], "corpus-owned")
+            self.assertEqual(_declaration()["unowned_byte_floor"], seed_floor)
             self.assertIn(
                 attested_id,
-                surviving,
-                "the attested raise is still in the ledger with nothing pointing at it",
+                [e["id"] for e in _ownership_events()],
+                "the attested raise is still in the ledger",
+            )
+            # A governed verb refuses on the same reading rather than building on
+            # it. 'doc-title' is corpus-owned in this fixture, so the ONLY reason
+            # `unown` can refuse it is the loader's chain-head check.
+            blocked = _unown(self._runner, section="doc-title")
+            self.assertEqual(blocked.exit_code, 1, msg=blocked.output)
+            self.assertIn("not the TIP", blocked.output)
+
+            # Recovery arm (a): the saved copy that names the tip.
+            run(["checkout", "HEAD", "--", str(_DECLARATION_PATH)])
+            recovered = load_declaration(_DECLARATION_PATH, _SEED_SURFACE_TEXT, Path.cwd())
+            self.assertEqual(recovered.floor_event_id, attested_id)
+            self.assertEqual(recovered.sections["alpha-section"], "unowned")
+            landed = _unown(self._runner, section="doc-title")
+            self.assertEqual(landed.exit_code, 0, msg=landed.output)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_restoring_over_a_governed_owning_is_refused_naming_the_chain_tip(self) -> None:
+        """The OTHER direction, which moves the floor the way the ratchet forbids.
+
+        Restoring behind a governed `own` puts the floor back UP -- a raise
+        reachable only through `gz content unown` (REQ-0.35.0-04-02) -- and
+        re-declares a corpus-owned section unowned. The arithmetic is
+        self-consistent, so only chain-head identity catches it.
+        """
+        with self._runner.isolated_filesystem():
+            run = self._git()
+            self._seed()
+            _seed_corpus(_entry(0, "beta body", section="beta-section"))
+            run(["add", "-A", "-f"])
+            run(["commit", "-m", "declaration witnessed at the seed floor"])
+            before = load_declaration(_DECLARATION_PATH, _SEED_SURFACE_TEXT, Path.cwd())
+
+            owned = _own(self._runner, section="beta-section")
+            self.assertEqual(owned.exit_code, 0, msg=owned.output)
+            after = load_declaration(_DECLARATION_PATH, _SEED_SURFACE_TEXT, Path.cwd())
+            self.assertEqual(after.sections["beta-section"], "corpus-owned")
+            self.assertLess(after.unowned_byte_floor, before.unowned_byte_floor)
+            witness = after.floor_event_id
+
+            run(["checkout", "HEAD", "--", str(_DECLARATION_PATH)])
+            with self.assertRaises(OwnershipLoadError) as refused:
+                load_declaration(_DECLARATION_PATH, _SEED_SURFACE_TEXT, Path.cwd())
+            message = str(refused.exception)
+            self.assertIn("not the TIP", message)
+            self.assertIn(witness, message)
+            # The restored copy would have RAISED the floor with no attested raise.
+            self.assertGreater(
+                _declaration()["unowned_byte_floor"],
+                after.unowned_byte_floor,
+                "the restored copy carries the higher, pre-owning floor",
             )
 
     @covers("REQ-0.35.0-04-02")

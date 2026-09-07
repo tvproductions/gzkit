@@ -369,6 +369,60 @@ Neither branch hand-edits the declaration, and the message never names a
 verb for a state that verb refuses: that was the defect (GHI #976), the same
 family as GHI #863.
 
+#### A witness that is not its chain's tip
+
+A declaration's `floor_event_id` must be the **tip** of its surface's ownership
+chain, not merely a valid point in it. Every check behind that pointer — the id
+resolves, the type is an ownership type, the surface matches, the recorded floor
+matches, the whole prefix replays — is satisfied by any *prefix* of a valid
+chain, so a declaration restored to an earlier witness used to load while the
+attested transitions after it were discarded from the declaration and left in
+the ledger with nothing pointing at them (GHI #979). The floor moved without a
+governed transition, in both directions: restoring behind an `unown` drops it,
+and restoring behind an `own` raises it through the one move only `unown` may
+make.
+
+```console
+$ gz content unown AGENTS.md --section gate-covenant --attestor "g0" --reason "materialized as prose doc instead"
+Un-owned section 'gate-covenant' of 'AGENTS.md'. Unowned-byte floor rose from 6005 to 9112 (+3107 B). Attested by g0: materialized as prose doc instead
+$ git checkout -- .gzkit/ownership/AGENTS.md.json
+$ gz content unown AGENTS.md --section attestation --attestor "g0" --reason "probe"
+Error: What failed: '.../.gzkit/ownership/AGENTS.md.json' names floor_event_id 'unowned-ratchet-updated-AGENTS.md-owned-stdlib-first-doctrine-dependency-posture-255e275ac942653f', which is not the TIP of 'AGENTS.md''s ownership chain -- 1 attested transition(s) stand after it: 'section-ownership-unowned-AGENTS.md-gate-covenant-281f92a5ef705b2a' (6005 -> 9112).
+Why forbidden: REQ-0.35.0-04-02 -- an increase is only reachable through the attested raise-path, which is a claim about the chain's CURRENT state and not about a valid witness existing somewhere in it. Every prefix of a valid chain replays cleanly, so a declaration rolled back behind a governed transition is indistinguishable from one that never advanced: its floor and its section map revert with no governed transition recorded, while the attested events after it stay in the ledger with nothing pointing at them. A valid witness EXISTING behind this floor answers 'is something armed', never 'did the governed procedure run' (AGENTS.md § DO IT RIGHT).
+Next step: two states produce this, and they repair DIFFERENT artifacts. (a) The declaration was restored or rolled back over the transition(s) above: recover the copy that names 'section-ownership-unowned-AGENTS.md-gate-covenant-281f92a5ef705b2a' -- `git log -- .../.gzkit/ownership/AGENTS.md.json` lists its revisions and `git checkout <sha> -- .../.gzkit/ownership/AGENTS.md.json` restores one -- then verify the restored copy carries floor 9112. (b) No copy naming 'section-ownership-unowned-AGENTS.md-gate-covenant-281f92a5ef705b2a' survives: no `gz content` verb re-points a declaration at an event already in the ledger -- `own` and `unown` each MINT a new transition, chained from the stale floor and map this declaration still carries -- so that state has NO governed recovery today: stop and escalate (GHI #978).
+$ echo $?
+1
+```
+
+Captured 2026-09-07 in an isolated, git-initialised copy of the repository;
+the project-root-absolute path is elided to `...` and the figures are a dated
+record, never the current floor. Both prescriptions were then driven through
+the real command path in that copy:
+
+- **Arm (a), a saved copy names the tip.** With the post-transition
+  declaration committed, `git checkout HEAD~1 -- .gzkit/ownership/AGENTS.md.json`
+  reproduced the refusal above, and `git checkout HEAD -- ...` recovered it —
+  the next governed verb then landed, `Un-owned section 'attestation' of
+  'AGENTS.md'. Unowned-byte floor rose from 9112 to 10657 (+1545 B).`, with the
+  ledger carrying both raises and neither lost.
+- **Arm (b), no saved copy names the tip.** Where the transition was never
+  committed, `git checkout --` restores the copy that predates it, so the
+  refusal repeats verbatim. That is the honest branch: no `gz content` verb
+  re-points a declaration at an event already in the ledger, so the message
+  says to stop and escalate rather than naming a verb that cannot act.
+
+**One state is exempt, and it is proven rather than assumed.** The two-store
+commit writes the declaration before its ledger witness, and the reverse
+interval — the witness durable while the declaration replacement is lost or
+rolled back — is completed by the pending-transition journal (§ Recovery
+protocol). The loader admits a trailing declaration only when that journal
+PROVES the gap is this declaration's own interrupted transition: same surface,
+starting from this declaration's floor and `floor_event_id`, and its own
+`event_id` is the single row standing after them. A journal for another
+transition, a journal that cannot account for every later row, or one that does
+not parse leaves the refusal standing and is named in it — presence authorizes
+nothing.
+
 #### Recovery protocol
 
 `gz content unown` updates two stores — a mutable declaration and the

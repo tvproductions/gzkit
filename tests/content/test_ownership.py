@@ -3072,5 +3072,330 @@ class TestRatchetLinkThatChangesTheMapIsAttested(_DeclarationFixtureMixin, unitt
         self.assertEqual(loaded.unowned_byte_floor, lower)
 
 
+class TestDeclarationMustNameItsChainTip(_DeclarationFixtureMixin, unittest.TestCase):
+    """GHI #979: a witness may be ANY point in its chain, so a rollback reverts silently.
+
+    `load_declaration` proved the witness resolved, carried an ownership type,
+    named this surface, recorded the stored floor, and that the whole prefix
+    BEHIND it replayed. Every one of those is true of a PREFIX of a valid
+    chain, so a declaration restored to an earlier witness was indistinguishable
+    from one that never advanced: the floor moved to whatever that earlier
+    witness recorded, with no governed lowering transition, and the attested
+    transitions after it stayed in the ledger with nothing pointing at them.
+
+    The property REQ-0.35.0-04-02 rests on is an ATTESTED CHAIN, which is a
+    claim about the chain's CURRENT state -- not about a valid point existing
+    somewhere in it (AGENTS.md § DO IT RIGHT: a presence check answers "is
+    something armed", never "did the governed procedure run").
+    """
+
+    _OWNED_ALPHA = {
+        "doc-title": "corpus-owned",
+        "alpha-section": "corpus-owned",
+        "beta-section": "unowned",
+    }
+    _UNOWNED_ALPHA = {
+        "doc-title": "corpus-owned",
+        "alpha-section": "unowned",
+        "beta-section": "unowned",
+    }
+
+    def setUp(self) -> None:
+        super().setUp()
+        self._spans = measure_section_spans(_SIMPLE_SURFACE)
+        self._low = self._spans["beta-section"]
+        self._high = self._spans["alpha-section"] + self._spans["beta-section"]
+
+    def _append(self, event: str, event_id: str, **extra: object) -> str:
+        Ledger(self._root / ".gzkit" / "ledger.jsonl").append(
+            LedgerEvent(event=event, id=event_id, ts="2026-09-07T00:00:00Z", extra=extra)
+        )
+        return event_id
+
+    def _attested_raise(self) -> tuple[str, str]:
+        """Genesis at the owned-alpha map, then the attested `unown` of alpha."""
+        genesis = self._seed_genesis_event("Doc.md", self._low, sections=self._OWNED_ALPHA)
+        raised = self._append(
+            "section_ownership_unowned",
+            "section-ownership-unowned-Doc.md-alpha-section-test",
+            surface="Doc.md",
+            section="alpha-section",
+            sections_digest=sections_digest(self._UNOWNED_ALPHA),
+            prior_unowned_byte_floor=self._low,
+            new_unowned_byte_floor=self._high,
+            predecessor_event_id=genesis,
+            attestor="g0",
+            reason="moving to a prose doc",
+        )
+        return genesis, raised
+
+    def _governed_owning(self) -> tuple[str, str]:
+        """Genesis at the unowned-alpha map, then the attested `own` of alpha."""
+        genesis = self._seed_genesis_event("Doc.md", self._high, sections=self._UNOWNED_ALPHA)
+        owned = self._append(
+            "unowned_ratchet_updated",
+            "unowned-ratchet-updated-Doc.md-owned-alpha-section-test",
+            surface="Doc.md",
+            section="alpha-section",
+            sections_digest=sections_digest(self._OWNED_ALPHA),
+            prior_unowned_byte_floor=self._high,
+            new_unowned_byte_floor=self._low,
+            predecessor_event_id=genesis,
+            attestor="g0",
+            reason="corpus carries every line",
+        )
+        return genesis, owned
+
+    def _journal(self, **record: object) -> Path:
+        journal = ownership.declaration_journal_path(self._root, "Doc.md")
+        journal.parent.mkdir(parents=True, exist_ok=True)
+        journal.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
+        return journal
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_witness_behind_an_attested_raise_is_refused(self) -> None:
+        """The reproduced defect, raise direction: the floor falls with no governed move."""
+        genesis, raised = self._attested_raise()
+        path = self._write_declaration(
+            self._OWNED_ALPHA, unowned_byte_floor=self._low, floor_event_id=genesis
+        )
+        with self.assertRaises(OwnershipLoadError) as refused:
+            load_declaration(path, _SIMPLE_SURFACE, self._root)
+        message = str(refused.exception)
+        self.assertIn(raised, message)
+        self.assertIn("not the TIP", message)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_witness_behind_a_governed_owning_is_refused(self) -> None:
+        """The other direction: restoring behind an `own` RAISES the floor unattested.
+
+        Asserted separately because the two directions fail different halves of
+        the ratchet -- the raise direction loses an attested transition, and
+        this one moves the floor UP through a path REQ-0.35.0-04-02 permits
+        only `gz content unown` to take.
+        """
+        genesis, owned = self._governed_owning()
+        path = self._write_declaration(
+            self._UNOWNED_ALPHA, unowned_byte_floor=self._high, floor_event_id=genesis
+        )
+        with self.assertRaises(OwnershipLoadError) as refused:
+            load_declaration(path, _SIMPLE_SURFACE, self._root)
+        message = str(refused.exception)
+        self.assertIn(owned, message)
+        self.assertIn("not the TIP", message)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_the_current_declaration_still_loads(self) -> None:
+        """The control: a declaration AT the tip is untouched by this check."""
+        _, raised = self._attested_raise()
+        path = self._write_declaration(
+            self._UNOWNED_ALPHA, unowned_byte_floor=self._high, floor_event_id=raised
+        )
+        loaded = load_declaration(path, _SIMPLE_SURFACE, self._root)
+        self.assertEqual(loaded.floor_event_id, raised)
+        self.assertEqual(loaded.unowned_byte_floor, self._high)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_genesis_only_chain_loads(self) -> None:
+        """A day-one declaration is its own tip -- the check must not fire on it."""
+        genesis = self._seed_genesis_event("Doc.md", self._high, sections=self._UNOWNED_ALPHA)
+        path = self._write_declaration(
+            self._UNOWNED_ALPHA, unowned_byte_floor=self._high, floor_event_id=genesis
+        )
+        self.assertEqual(
+            load_declaration(path, _SIMPLE_SURFACE, self._root).floor_event_id, genesis
+        )
+
+    @covers("REQ-0.35.0-04-02")
+    def test_another_surfaces_later_ownership_history_does_not_supersede(self) -> None:
+        """The chain is PER SURFACE: another surface's transitions are not this one's."""
+        genesis = self._seed_genesis_event("Doc.md", self._high, sections=self._UNOWNED_ALPHA)
+        self._append(
+            "section_ownership_unowned",
+            "section-ownership-unowned-Other.md-x",
+            surface="Other.md",
+            sections_digest=sections_digest({"x": "unowned"}),
+            prior_unowned_byte_floor=0,
+            new_unowned_byte_floor=99,
+            attestor="g0",
+            reason="a different surface entirely",
+        )
+        path = self._write_declaration(
+            self._UNOWNED_ALPHA, unowned_byte_floor=self._high, floor_event_id=genesis
+        )
+        self.assertEqual(
+            load_declaration(path, _SIMPLE_SURFACE, self._root).floor_event_id, genesis
+        )
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_later_unrelated_event_type_does_not_supersede(self) -> None:
+        """Only the recognized ownership roster forms the chain."""
+        genesis = self._seed_genesis_event("Doc.md", self._high, sections=self._UNOWNED_ALPHA)
+        self._append("task_started", "task-started-probe", surface="Doc.md")
+        path = self._write_declaration(
+            self._UNOWNED_ALPHA, unowned_byte_floor=self._high, floor_event_id=genesis
+        )
+        self.assertEqual(
+            load_declaration(path, _SIMPLE_SURFACE, self._root).floor_event_id, genesis
+        )
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_later_inert_genesis_does_not_supersede(self) -> None:
+        """Inert rows are skipped by `_ownership_chain`, so they are not transitions.
+
+        This repository's own AGENTS.md chain carries a second genesis row
+        (operator ruling 2026-09-03: later genesis rows are INERT). Reading one
+        as a superseding transition would fail-close the live surface.
+        """
+        genesis = self._seed_genesis_event("Doc.md", self._high, sections=self._UNOWNED_ALPHA)
+        self._append(
+            "section_ownership_genesis",
+            "section-ownership-genesis-Doc.md-second",
+            surface="Doc.md",
+            sections_digest=sections_digest(self._UNOWNED_ALPHA),
+            new_unowned_byte_floor=self._high,
+        )
+        path = self._write_declaration(
+            self._UNOWNED_ALPHA, unowned_byte_floor=self._high, floor_event_id=genesis
+        )
+        self.assertEqual(
+            load_declaration(path, _SIMPLE_SURFACE, self._root).floor_event_id, genesis
+        )
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_journal_that_continues_this_declaration_permits_its_own_witness(self) -> None:
+        """The interrupted transaction between the ledger append and the declaration.
+
+        `_commit_transition` writes the declaration before the ledger, and the
+        replay path re-applies the journalled successor -- so a run interrupted
+        with its witness durable and its declaration still at the predecessor
+        leaves exactly this shape. The retry that completes it must be able to
+        read the declaration, so the check must not fire on it.
+        """
+        genesis, raised = self._attested_raise()
+        self._journal(
+            surface="Doc.md",
+            section="alpha-section",
+            parent_event_id=genesis,
+            event_id=raised,
+            prior_unowned_byte_floor=self._low,
+            new_unowned_byte_floor=self._high,
+        )
+        path = self._write_declaration(
+            self._OWNED_ALPHA, unowned_byte_floor=self._low, floor_event_id=genesis
+        )
+        loaded = load_declaration(path, _SIMPLE_SURFACE, self._root)
+        self.assertEqual(loaded.floor_event_id, genesis)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_journal_for_a_different_transition_authorizes_nothing(self) -> None:
+        """PRESENCE IS NOT AUTHORITY: the journal must name THIS gap, not merely exist."""
+        genesis, raised = self._attested_raise()
+        self._journal(
+            surface="Doc.md",
+            section="beta-section",
+            parent_event_id="some-other-event",
+            event_id="some-other-witness",
+            prior_unowned_byte_floor=self._low,
+            new_unowned_byte_floor=self._high,
+        )
+        path = self._write_declaration(
+            self._OWNED_ALPHA, unowned_byte_floor=self._low, floor_event_id=genesis
+        )
+        with self.assertRaises(OwnershipLoadError) as refused:
+            load_declaration(path, _SIMPLE_SURFACE, self._root)
+        message = str(refused.exception)
+        self.assertIn(raised, message)
+        self.assertIn("journal", message)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_journal_naming_a_different_predecessor_floor_authorizes_nothing(self) -> None:
+        """The journal must start FROM this declaration's floor, not merely name its id."""
+        genesis, raised = self._attested_raise()
+        self._journal(
+            surface="Doc.md",
+            section="alpha-section",
+            parent_event_id=genesis,
+            event_id=raised,
+            prior_unowned_byte_floor=self._low + 500,
+            new_unowned_byte_floor=self._high,
+        )
+        path = self._write_declaration(
+            self._OWNED_ALPHA, unowned_byte_floor=self._low, floor_event_id=genesis
+        )
+        with self.assertRaises(OwnershipLoadError):
+            load_declaration(path, _SIMPLE_SURFACE, self._root)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_journal_cannot_explain_two_later_transitions(self) -> None:
+        """One journal describes ONE pending transition, so it accounts for one row."""
+        genesis, raised = self._attested_raise()
+        self._append(
+            "unowned_ratchet_updated",
+            "unowned-ratchet-updated-Doc.md-later",
+            surface="Doc.md",
+            sections_digest=sections_digest(self._UNOWNED_ALPHA),
+            prior_unowned_byte_floor=self._high,
+            new_unowned_byte_floor=self._high,
+            predecessor_event_id=raised,
+        )
+        self._journal(
+            surface="Doc.md",
+            section="alpha-section",
+            parent_event_id=genesis,
+            event_id=raised,
+            prior_unowned_byte_floor=self._low,
+            new_unowned_byte_floor=self._high,
+        )
+        path = self._write_declaration(
+            self._OWNED_ALPHA, unowned_byte_floor=self._low, floor_event_id=genesis
+        )
+        with self.assertRaises(OwnershipLoadError):
+            load_declaration(path, _SIMPLE_SURFACE, self._root)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_an_unreadable_journal_authorizes_nothing(self) -> None:
+        """A journal that does not parse cannot prove a relationship to anything."""
+        genesis, _ = self._attested_raise()
+        journal = ownership.declaration_journal_path(self._root, "Doc.md")
+        journal.parent.mkdir(parents=True, exist_ok=True)
+        journal.write_text("{not json", encoding="utf-8")
+        path = self._write_declaration(
+            self._OWNED_ALPHA, unowned_byte_floor=self._low, floor_event_id=genesis
+        )
+        with self.assertRaises(OwnershipLoadError):
+            load_declaration(path, _SIMPLE_SURFACE, self._root)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_the_refusal_states_what_failed_why_and_an_honest_next_step(self) -> None:
+        """`.gzkit/rules/guardrail-feedback-prose.md` § Invariant, and GHI #978's bar.
+
+        The recovery must name the artifact that drifted, describe an
+        executable path where one exists, and say plainly where none does --
+        no `gz content` verb re-points a declaration at an event already in
+        the ledger.
+        """
+        genesis, raised = self._attested_raise()
+        path = self._write_declaration(
+            self._OWNED_ALPHA, unowned_byte_floor=self._low, floor_event_id=genesis
+        )
+        with self.assertRaises(OwnershipLoadError) as refused:
+            load_declaration(path, _SIMPLE_SURFACE, self._root)
+        message = str(refused.exception)
+        self.assertIn("What failed:", message)
+        self.assertIn("Why forbidden:", message)
+        self.assertIn("Next step:", message)
+        self.assertIn("REQ-0.35.0-04-02", message)
+        # (a) the executable arm names the artifact and a command that acts.
+        self.assertIn(f"git log -- {path.as_posix()}", message)
+        self.assertIn("git checkout <sha> --", message)
+        self.assertIn(raised, message)
+        # (b) the blocker arm is stated, not implied.
+        self.assertIn("NO governed recovery", message)
+        self.assertIn("stop and escalate", message)
+        # It must not prescribe a verb that loads this declaration first.
+        self.assertNotIn("retry the same command", message)
+
+
 if __name__ == "__main__":
     unittest.main()

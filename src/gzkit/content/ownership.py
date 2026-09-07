@@ -372,13 +372,14 @@ _RESTORE_GUIDANCE = (
     "restore the tracked declaration (`git checkout -- {path}`) and retry -- but "
     "verify FIRST that the saved copy still agrees with the ownership events "
     "surviving in the ledger, and that no governed ownership transition has run "
-    "since it was saved. A restored declaration that merely LOADS proves neither: "
-    "restoring over a governed transition silently reverts it, leaving its attested "
-    "`section_ownership_*` event orphaned in the ledger with nothing refusing. If "
-    "the declaration is untracked, if the ledger no longer carries the events it "
-    "names, or if a transition has run since the save, this state has NO governed "
-    "recovery today -- stop and escalate rather than hand-editing the declaration "
-    "or the ledger."
+    "since it was saved. The loader now holds the second of those itself: a copy "
+    "restored behind an attested `own`/`unown` is REFUSED naming the chain tip and "
+    "the transitions standing after it (GHI #979), where it used to load while "
+    "silently reverting them. That refusal is a DIAGNOSIS, not a repair -- it still "
+    "needs the saved copy that names the tip. If the declaration is untracked, if "
+    "the ledger no longer carries the events it names, or if no saved copy names "
+    "the chain tip, this state has NO governed recovery today -- stop and escalate "
+    "rather than hand-editing the declaration or the ledger."
 )
 
 
@@ -682,7 +683,7 @@ def load_declaration(
         raise OwnershipLoadError(msg)
 
     _refuse_wrong_direction_witness(path, event, floor_event_id)
-    _refuse_unchained_witness(path, ledger, event, floor_event_id, declared_surface)
+    _refuse_unchained_witness(path, root, ledger, event, floor_event_id, declared_surface)
     _refuse_unwitnessed_section_map(path, event, floor_event_id, declared_sections)
 
     return OwnershipDeclaration.model_validate(raw)
@@ -1002,13 +1003,26 @@ def _refuse_non_migration_reanchor(path: Path, event: Any, predecessor: Any) -> 
 
 
 def _refuse_unchained_witness(
-    path: Path, ledger: Any, event: Any, floor_event_id: str, declared_surface: str
+    path: Path,
+    root: Path,
+    ledger: Any,
+    event: Any,
+    floor_event_id: str,
+    declared_surface: str,
 ) -> None:
-    """Fail closed unless the WHOLE prefix behind this witness replays cleanly.
+    """Fail closed unless the witness is the chain TIP and its whole prefix replays.
 
     Round 4 chained a witness to its immediate predecessor; round 5 showed that
-    validating one edge trusts everything behind it. This now locates the
-    witness in its surface's chain and replays every edge from the root to it.
+    validating one edge trusts everything behind it. This locates the witness in
+    its surface's chain and replays every edge from the root to it.
+
+    GHI #979 added the other half. Replaying the prefix says the witness is a
+    VALID POINT in the chain; it never said the declaration is the chain's
+    CURRENT state, and every prefix of a valid chain is itself a valid chain --
+    so a declaration rolled back to an earlier witness replayed exactly as
+    cleanly as one that never advanced. `_refuse_superseded_witness` is the
+    head-identity half, and it needs *root* to reach the pending-transition
+    journal.
     """
     chain, inert_genesis = _ownership_chain(ledger, declared_surface)
     _refuse_duplicate_chain_ids(path, chain, declared_surface)
@@ -1054,6 +1068,120 @@ def _refuse_unchained_witness(
         raise OwnershipLoadError(msg)
 
     _refuse_broken_prefix(path, chain, position, declared_surface, inert_genesis)
+    _refuse_superseded_witness(path, root, chain, position, event, declared_surface)
+
+
+def _refuse_superseded_witness(
+    path: Path,
+    root: Path,
+    chain: list[Any],
+    position: int,
+    event: Any,
+    declared_surface: str,
+) -> None:
+    """Fail closed when attested transitions stand AFTER this declaration's witness.
+
+    GHI #979. The ratchet is an attested-CHAIN property (REQ-0.35.0-04-02: "an
+    increase is only reachable through the attested raise-path"), and a chain
+    claim is about its HEAD, never about a valid point somewhere in it. Every
+    other check on this path is satisfied by any prefix of a valid chain, so
+    reverting a declaration to an earlier witness was indistinguishable from
+    never having advanced: measured 2026-09-07 through the real CLI, a governed
+    `unown` raising the floor 26 -> 83 was restored away and the loader accepted
+    the result, leaving the attested `section_ownership_unowned` row orphaned in
+    the ledger with nothing refusing. The reverse direction is worse: restoring
+    behind a governed `own` moves the floor UP -- 26 back to 83 -- through a
+    path only `gz content unown` may take.
+
+    This is the presence-check family AGENTS.md § DO IT RIGHT names. The prior
+    checks answered *"does a valid witness exist behind this floor"*; the claim
+    the ratchet rests on is *"is this declaration the current state of the
+    governed chain"*.
+    """
+    later = chain[position + 1 :]
+    if not later:
+        return
+    if _journal_completes_this_gap(root, declared_surface, event, later):
+        return
+
+    tip = later[-1]
+    listed = ", ".join(
+        f"{row.id!r} ({row.extra.get('prior_unowned_byte_floor')!r} -> "
+        f"{row.extra.get('new_unowned_byte_floor')!r})"
+        for row in later
+    )
+    journal_path = declaration_journal_path(root, declared_surface)
+    journal_note = (
+        f" A pending-transition journal is present at {journal_path.as_posix()!r}, and it does "
+        "NOT account for this gap -- presence alone authorizes nothing. Do not delete it: run "
+        f"the `gz content own`/`unown` transition for {declared_surface!r} so the journal is "
+        "validated and replayed on its own terms first."
+        if journal_path.exists()
+        else ""
+    )
+    msg = (
+        f"What failed: {path.as_posix()!r} names floor_event_id {event.id!r}, which is not "
+        f"the TIP of {declared_surface!r}'s ownership chain -- {len(later)} attested "
+        f"transition(s) stand after it: {listed}.\n"
+        "Why forbidden: REQ-0.35.0-04-02 -- an increase is only reachable through the "
+        "attested raise-path, which is a claim about the chain's CURRENT state and not "
+        "about a valid witness existing somewhere in it. Every prefix of a valid chain "
+        "replays cleanly, so a declaration rolled back behind a governed transition is "
+        "indistinguishable from one that never advanced: its floor and its section map "
+        "revert with no governed transition recorded, while the attested events after it "
+        "stay in the ledger with nothing pointing at them. A valid witness EXISTING behind "
+        "this floor answers 'is something armed', never 'did the governed procedure run' "
+        "(AGENTS.md § DO IT RIGHT).\n"
+        f"Next step: two states produce this, and they repair DIFFERENT artifacts. (a) The "
+        f"declaration was restored or rolled back over the transition(s) above: recover the "
+        f"copy that names {tip.id!r} -- `git log -- {path.as_posix()}` lists its revisions and "
+        f"`git checkout <sha> -- {path.as_posix()}` restores one -- then verify the restored "
+        f"copy carries floor {tip.extra.get('new_unowned_byte_floor')!r}. (b) No copy naming "
+        f"{tip.id!r} survives: no `gz content` verb re-points a declaration at an event "
+        "already in the ledger -- `own` and `unown` each MINT a new transition, chained from "
+        "the stale floor and map this declaration still carries -- so that state has NO "
+        f"governed recovery today: stop and escalate (GHI #978).{journal_note}"
+    )
+    raise OwnershipLoadError(msg)
+
+
+def _journal_completes_this_gap(
+    root: Path, declared_surface: str, event: Any, later: list[Any]
+) -> bool:
+    """Report whether a pending journal PROVES *later* is this declaration's own move.
+
+    The two-store transaction writes the declaration before its ledger witness
+    (`commands/content/unown.py` § Recovery Protocol), so the ordinary
+    interruption leaves the declaration AHEAD of the ledger. The reverse window
+    is reachable too -- a witness durable and the declaration replacement lost
+    or rolled back while the journal survives -- and there the retry re-applies
+    the journalled successor under the SAME event id. Refusing that state would
+    fail closed on the one shape the journal exists to complete.
+
+    PRESENCE AUTHORIZES NOTHING (GHI #979; the same posture
+    `_refuse_forged_journal` takes). The journal must be shown to CONTINUE this
+    declaration and to account for exactly the gap observed: it names this
+    surface, starts from this declaration's floor and witness, and its own
+    event id IS the single row standing after them. Anything else -- a journal
+    for another transition, a second row it cannot describe, a journal that
+    does not parse -- leaves the refusal standing.
+    """
+    if len(later) != 1:
+        return False
+    try:
+        record = json.loads(
+            declaration_journal_path(root, declared_surface).read_text(encoding="utf-8")
+        )
+    except (OSError, ValueError):
+        return False
+    if not isinstance(record, dict):
+        return False
+    return (
+        record.get("surface") == declared_surface
+        and record.get("parent_event_id") == event.id
+        and record.get("prior_unowned_byte_floor") == event.extra.get("new_unowned_byte_floor")
+        and record.get("event_id") == later[0].id
+    )
 
 
 def _refuse_unwitnessed_section_map(

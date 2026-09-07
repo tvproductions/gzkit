@@ -6103,6 +6103,105 @@ if __name__ == "__main__":
     unittest.main()
 
 
+class TestDeclarationRolledBackUnderAPendingJournal(unittest.TestCase):
+    """GHI #979: the chain-head check must not close the window the journal completes.
+
+    `_commit_transition` writes the declaration BEFORE the ledger, so the
+    ordinary interruption leaves the declaration ahead of its witness. The
+    reverse interval -- the witness durable and the declaration replacement
+    lost or rolled back while the journal survives -- is reachable too, and it
+    is the ONE state in which a declaration legitimately trails its chain's
+    tip. Refusing it would fail closed on the state the journal exists to
+    complete, so the loader admits it only when the journal PROVES the gap is
+    this declaration's own interrupted transition; presence alone authorizes
+    nothing (`_journal_completes_this_gap`).
+    """
+
+    _JOURNAL = _DECLARATION_PATH.parent / "Doc.md.json.journal"
+    _SNAPSHOT = _DECLARATION_PATH.parent / "Doc.md.json.journal.source"
+
+    def setUp(self) -> None:
+        self._runner = CliRunner()
+
+    def _witnesses(self) -> list[dict]:
+        return [e for e in _ledger_events() if e["event"] == "section_ownership_unowned"]
+
+    def _rolled_back_state(self) -> bytes:
+        """Land a witnessed transition, retain its journal, then roll the declaration back.
+
+        Returns the predecessor bytes that were restored over the successor.
+        """
+        _seed_surface()
+        _seed_declaration(alpha="corpus-owned", floor=_SEED_FLOOR)
+        predecessor = _DECLARATION_PATH.read_bytes()
+        with patch.object(unown_module, "_clear_recovery_state", lambda target, **_: None):
+            landed = _unown(self._runner, attestor="g0", reason="probe")
+        self.assertEqual(landed.exit_code, 0, msg=landed.output)
+        self.assertEqual(len(self._witnesses()), 1)
+        self.assertTrue(self._JOURNAL.exists(), "the journal must survive to describe the gap")
+        _DECLARATION_PATH.write_bytes(predecessor)
+        return predecessor
+
+    @covers("REQ-0.35.0-04-02")
+    def test_the_retry_completes_the_transition_without_a_second_witness(self) -> None:
+        """The whole interval, end to end: roll back, load, re-run, land exactly once."""
+        with self._runner.isolated_filesystem():
+            self._rolled_back_state()
+            witness_id = self._witnesses()[0]["id"]
+
+            # Re-entrancy: the recovery path's own reader must accept this state.
+            trailing = load_declaration(_DECLARATION_PATH, _SURFACE_TEXT, Path.cwd())
+            self.assertEqual(trailing.sections["alpha-section"], "corpus-owned")
+
+            retry = _unown(self._runner, attestor="g0", reason="probe")
+
+            self.assertEqual(retry.exit_code, 0, msg=retry.output)
+            recovered = load_declaration(_DECLARATION_PATH, _SURFACE_TEXT, Path.cwd())
+            self.assertEqual(recovered.sections["alpha-section"], "unowned")
+            self.assertEqual(recovered.floor_event_id, witness_id)
+            self.assertEqual(
+                [e["id"] for e in self._witnesses()],
+                [witness_id],
+                "the witness is appended exactly once across both runs",
+            )
+            self.assertFalse(self._JOURNAL.exists())
+            self.assertFalse(self._SNAPSHOT.exists())
+
+    @covers("REQ-0.35.0-04-02")
+    def test_the_same_rollback_without_its_journal_is_refused(self) -> None:
+        """The discriminator is the JOURNAL, not the shape of the disagreement.
+
+        Identical declaration, identical ledger; only the journal is gone. That
+        is a rollback over a completed transition with nothing outstanding to
+        complete, and it is exactly the state GHI #979 was filed on.
+        """
+        with self._runner.isolated_filesystem():
+            self._rolled_back_state()
+            witness_id = self._witnesses()[0]["id"]
+            self._JOURNAL.unlink()
+
+            with self.assertRaises(OwnershipLoadError) as refused:
+                load_declaration(_DECLARATION_PATH, _SURFACE_TEXT, Path.cwd())
+            message = str(refused.exception)
+            self.assertIn("not the TIP", message)
+            self.assertIn(witness_id, message)
+
+    @covers("REQ-0.35.0-04-02")
+    def test_a_journal_for_another_transition_does_not_license_the_rollback(self) -> None:
+        """Presence is not authority: the journal must name THIS declaration's gap."""
+        with self._runner.isolated_filesystem():
+            self._rolled_back_state()
+            record = json.loads(self._JOURNAL.read_text(encoding="utf-8"))
+            record["parent_event_id"] = "some-other-predecessor"
+            self._JOURNAL.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8")
+
+            with self.assertRaises(OwnershipLoadError) as refused:
+                load_declaration(_DECLARATION_PATH, _SURFACE_TEXT, Path.cwd())
+            message = str(refused.exception)
+            self.assertIn("not the TIP", message)
+            self.assertIn("does NOT account for this gap", message)
+
+
 class TestJournalIsClearedOnlyAfterADurableWitness(unittest.TestCase):
     """GHI #952 — the journal unlink rides on `Ledger.append`'s durability claim.
 
