@@ -341,8 +341,12 @@ class TestBoundariesAgainstContractDerivedExpectations(unittest.TestCase):
 
     What this class adds is FIXTURE COVERAGE those expectations do not reach: a
     fenced heading that must contribute no section, combined with a multibyte
-    character, asserted as a complete identity->offset mapping rather than a
-    single boundary pair. It does not establish that it is the only such check.
+    character in the same document. It adds no comparison strength -- round 9
+    established that the older test already compares BOTH sections' complete
+    `SectionBoundary` values (identity, level and both offsets), so an earlier
+    claim here that this class upgrades "a single boundary pair" to a complete
+    identity->offset mapping was FALSE and is withdrawn. It does not establish
+    that it is the only such check.
     """
 
     # Segment byte lengths, spelled out so a reader can verify the literals:
@@ -396,10 +400,11 @@ class TestBoundariesAgainstContractDerivedExpectations(unittest.TestCase):
             if line.startswith("## ")
         ]
 
-        # A same-parser agreement check is blind to it: the broken roster is
-        # self-consistent, so comparing it to itself proves nothing.
-        self.assertEqual(broken_ids, broken_ids)
-        # The contract-derived oracle is not blind to it.
+        # Round 9: the former `assertEqual(broken_ids, broken_ids)` here was a
+        # tautology -- it could not fail, and asserting that a value equals
+        # itself proves nothing about anything. Removed. What remains are the
+        # two assertions that can fail: the fence-blind roster differs from the
+        # contract literals, and it contains the heading the fence should hide.
         self.assertNotEqual(broken_ids, self.EXPECTED_IDS)
         self.assertIn("fake", broken_ids)
 

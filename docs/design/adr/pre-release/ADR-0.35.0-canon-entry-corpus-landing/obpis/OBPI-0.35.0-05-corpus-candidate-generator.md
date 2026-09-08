@@ -709,8 +709,13 @@ not absent before this OBPI either.
    gap; neither says the offsets are the CONTRACT'S offsets. Rows 15 and 17 fire on
    literals for that reason.
 2. **Fixture coverage the pre-existing independent test does not reach** — a fenced heading
-   that must contribute no section, combined with a multibyte character, asserted as a
-   complete identity→offset mapping rather than one boundary pair.
+   that must contribute no section, combined with a multibyte character in the same
+   document. **Coverage only; no added comparison strength.** Round 9 established that
+   `TestIterSectionBoundaries` already compares BOTH sections' complete `SectionBoundary`
+   values (identity, level, and both offsets) — observed expectations
+   `[('caf-n-c-d', 0, 33), ('second', 33, 52)]` — so the earlier claim that this class
+   upgrades *"one boundary pair"* to a complete identity→offset mapping was FALSE and is
+   withdrawn. A dictionary representation of the same comparison adds no semantic coverage.
 3. **Sensitivity to post-validation serialization corruption** (row 18), stated as
    sensitivity and NOT as exclusive detection.
 
@@ -863,6 +868,48 @@ as clean.
 Its Weakest point — *"a scoped assertion kill is still being promoted into an unmeasured
 claim that competing checks cannot detect the defect"* — is the exact residue these three
 repairs remove.
+
+**Round 9 — `CORROBORATED-WITH-CAVEATS | not-refuted`** (receipt
+`arb-step-codexadversary-8552aa57cf4b470a9c7b4cb0e99b3619`, `exit_status: 0`), tier 1,
+scoped `--scope branch --base 1b66a328` against revision `ba997aae`, with the audit
+re-run from scratch rather than inheriting round 8's sweep.
+
+- **Finding 1 (exclusivity claims) — CLOSED.**
+- **Finding 2 (row 17 cell + premature correction disclosure) — CLOSED**, *"including both
+  message pairings and the premature-correction disclosure."*
+- **Finding 3 — NOT CLOSED.** The blanket claim was withdrawn, but *"its replacement
+  overstates incremental coverage."*
+
+`[medium]` **The replacement coverage claim understated the pre-existing test.** This brief
+said the oracle asserts *"a complete identity→offset mapping rather than one boundary
+pair."* Verified false: `TestIterSectionBoundaries` compares the entire list of two
+`SectionBoundary` objects — identity, level and BOTH offsets — observed expectations
+`[('caf-n-c-d', 0, 33), ('second', 33, 52)]`. *"A dictionary representation adds no
+corresponding semantic coverage."* Corrected: the combined fenced-heading/multibyte fixture
+is demonstrated added COVERAGE; the comparison-strength claim is withdrawn.
+
+**Two further items it surfaced, both repaired:**
+
+- **A tautological assertion of this agent's own authorship.** `assertEqual(broken_ids,
+  broken_ids)` — a value compared to itself, which cannot fail. Round 9: *":401 remains a
+  tautological self-comparison."* Removed; the two assertions that CAN fail remain. That
+  this brief argued for falsifiable negative controls while carrying an unfalsifiable
+  assertion is the sharpest instance of the class named above.
+- **Line numbers drifted under this brief's own edits.** Round 9 measured row 17's messages
+  at `:372`/`:378` and row 18's literal failure at `:563`, where the brief recorded
+  `:367`/`:373` and `:552`. The figures were correct when captured and went stale as the
+  files grew. Citations are now anchored to the revision they were measured at rather than
+  presented as current.
+
+**Its fresh audit** covered *"all 18 control rows and recorded sweep results, relevant
+assertions, both changed docstrings, renamed test, three oracle-value claims, round records,
+Gate 2 captured Windows evidence, Stage 4a Value Narrative/Key Proof, and Tracked
+Defects"*, reporting *"no additional material class instance found beyond the two locations
+reported."* It reproduced row 13's failure at `:446`, row 14's at `:478` with 95→95 bytes,
+row 18's sibling failure at `:457` and literal failure at `:563`, confirmed
+*"the round-8 account accurately records its three findings"*, one standing-verdict
+declaration retaining the prohibition, and no round described as clean. Claims 1 and 3 of
+the oracle's value are *"supported"*.
 
 ### Value Narrative
 
