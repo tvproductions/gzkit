@@ -7,7 +7,7 @@ Wrap an arbitrary command and emit a schema-validated step receipt.
 ## Usage
 
 ```bash
-gz arb step --name <label> [--soft-fail] -- <command> [ARGS...]
+gz arb step --name <label> [--soft-fail] [--max-output-chars N] -- <command> [ARGS...]
 ```
 
 Runs the given command, captures stdout/stderr tail, duration, and exit code,
@@ -22,6 +22,7 @@ dedicated wrapper (ruff / ty / typecheck / coverage) exists for your QA step.
 |--------|-------------|
 | `--name` | Logical step name for the receipt (required) |
 | `--soft-fail` | Emit the receipt but return exit 0 even on failure |
+| `--max-output-chars N` | Characters retained per stdout/stderr stream (default: 8000); negative values retain all output, zero retains none |
 | `argv` | Command and arguments after `--` |
 
 ---
@@ -31,6 +32,7 @@ dedicated wrapper (ruff / ty / typecheck / coverage) exists for your QA step.
 ```bash
 gz arb step --name unittest -- uv run -m unittest -q
 gz arb step --name mkdocs -- uv run mkdocs build --strict
+gz arb step --name review --max-output-chars -1 -- claude --print "Review the supplied acceptance evidence."
 ```
 
 ---
@@ -40,7 +42,7 @@ gz arb step --name mkdocs -- uv run mkdocs build --strict
 | Code | Meaning |
 |------|---------|
 | 0 | Wrapped command succeeded; receipt created |
-| 1 | Wrapped command failed; receipt created |
+| Other command status | Wrapped command exit status is propagated; receipt created |
 | 2 | ARB internal error |
 
 ---

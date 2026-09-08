@@ -172,6 +172,12 @@ def _register_step(arb_commands: argparse._SubParsersAction) -> None:
         help="Emit a receipt but always return exit 0 (measurement-only mode).",
     )
     p.add_argument(
+        "--max-output-chars",
+        type=int,
+        default=None,
+        help="Retained characters per stream; negative: all, zero: none (default: 8000).",
+    )
+    p.add_argument(
         "argv",
         nargs=argparse.REMAINDER,
         help="Command to run (everything after '--').",
@@ -182,6 +188,7 @@ def _register_step(arb_commands: argparse._SubParsersAction) -> None:
             argv=[arg for arg in a.argv if arg != "--"],
             quiet=getattr(a, "quiet", False),
             soft_fail=a.soft_fail,
+            max_output_chars=a.max_output_chars,
         )
     )
 

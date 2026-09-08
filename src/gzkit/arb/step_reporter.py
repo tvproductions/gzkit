@@ -35,7 +35,7 @@ def _tail(text: str, max_chars: int) -> tuple[str, bool]:
         return text, False
     if len(text) <= max_chars:
         return text, False
-    return text[-max_chars:], True
+    return text[-max_chars:] if max_chars else "", True
 
 
 def _write_receipt(receipt: dict[str, object]) -> Path:
@@ -64,6 +64,7 @@ def run_step_via_arb(
         soft_fail: When true, emit a receipt but return exit status 0 to avoid
             blocking caller workflows.
         max_output_chars: Maximum characters stored per stdout/stderr tail.
+            Negative values retain complete output; zero retains no characters.
 
     Returns:
         Tuple of (exit_status, receipt_path).

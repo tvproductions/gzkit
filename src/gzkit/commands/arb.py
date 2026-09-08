@@ -19,7 +19,7 @@ from pathlib import Path
 from gzkit.arb.advisor import collect_arb_advice, render_arb_advice_text
 from gzkit.arb.patterns import collect_patterns, render_patterns_compact, render_patterns_markdown
 from gzkit.arb.ruff_reporter import run_ruff_via_arb
-from gzkit.arb.step_reporter import run_step_via_arb
+from gzkit.arb.step_reporter import DEFAULT_MAX_OUTPUT_CHARS, run_step_via_arb
 from gzkit.arb.validator import (
     CANONICAL_STEP_COMMANDS,
     render_validation_text,
@@ -161,6 +161,7 @@ def arb_step_cmd(
     argv: list[str],
     quiet: bool = False,
     soft_fail: bool = False,
+    max_output_chars: int | None = None,
 ) -> int:
     """Run an arbitrary command via ARB and emit a step receipt."""
     try:
@@ -169,6 +170,9 @@ def arb_step_cmd(
             cmd=argv,
             quiet=quiet,
             soft_fail=soft_fail,
+            max_output_chars=(
+                DEFAULT_MAX_OUTPUT_CHARS if max_output_chars is None else max_output_chars
+            ),
         )
     except ValueError as exc:
         print(f"arb: invalid step invocation: {exc}", file=sys.stderr)
