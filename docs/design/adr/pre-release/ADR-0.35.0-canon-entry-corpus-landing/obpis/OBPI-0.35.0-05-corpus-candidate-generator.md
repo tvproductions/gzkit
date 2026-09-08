@@ -3,12 +3,13 @@ id: OBPI-0.35.0-05-corpus-candidate-generator
 parent: ADR-0.35.0-canon-entry-corpus-landing
 item: 5
 lane: Heavy
-status: Draft
+status: Active
 allowlist:
 - src/gzkit/content/composer.py
 - src/gzkit/content/rendition.py
 - src/gzkit/content/lineage.py
 - src/gzkit/content/ownership.py
+- src/gzkit/content/corpus_store.py
 - tests/content/test_ownership.py
 - src/gzkit/commands/content/__init__.py
 - src/gzkit/commands/content/compose.py
@@ -41,6 +42,20 @@ verification:
 - uv run gz validate --invariant-coherence
 - uv run gz validate --rendition-floor-coherence
 - uv run mkdocs build --strict
+tasks:
+  - TASK-0.35.0-05-01-01
+  - TASK-0.35.0-05-02-01
+  - TASK-0.35.0-05-03-01
+  - TASK-0.35.0-05-04-01
+  - TASK-0.35.0-05-05-01
+  - TASK-0.35.0-05-06-01
+  - TASK-0.35.0-05-07-01
+  - TASK-0.35.0-05-08-01
+  - TASK-0.35.0-05-09-01
+  - TASK-0.35.0-05-10-01
+  - TASK-0.35.0-05-01-02
+  - TASK-0.35.0-05-02-02
+  - TASK-0.35.0-05-04-02
 ---
 
 # OBPI-0.35.0-05-corpus-candidate-generator: Corpus Candidate Generator
@@ -72,6 +87,7 @@ Make the corpus actually materialize a candidate: owned sections are generated f
 - `src/gzkit/content/rendition.py` — `ByteEvidence` field semantics, if the correction requires it
 - `src/gzkit/content/lineage.py` — the `<consumer>.lineage.json` model and writer **CREATE**
 - `src/gzkit/content/ownership.py` — shared byte-boundary iterator only; preserve declaration and ratchet policy
+- `src/gzkit/content/corpus_store.py` — **READ-ONLY dependency, never modified.** Declared because this OBPI's REQ-covering tests import `append_entry`/`load_corpus` to seed fixture corpora, and `_compute_missing_in_brief` reports an undeclared same-neighborhood src import as allowlist drift (amended in flight 2026-09-07; the file's own diff stays empty)
 - `tests/content/test_ownership.py` — shared-boundary and existing ownership regression proof
 - `src/gzkit/commands/content/__init__.py` — compose help/examples for generated versus explicit-candidate mode
 - `src/gzkit/commands/content/compose.py` — route compose through the generator
@@ -290,26 +306,87 @@ Each checkbox carries a deterministic REQ ID and exactly one kind tag
 
 ### Gate 2 (TDD — Red-Green-Refactor)
 
+Scoped suite (`uv run -m unittest tests.content.test_composer tests.content.test_lineage
+tests.commands.test_content_compose`): **53 tests, OK**. Full suite: 9952 tests, receipt
+`arb-step-unittest-5a440760fc5542ab9d08a48c18d4de08` (`exit_status: 0`).
+
+#### Falsifiability — per-REQ behavioural negative controls
+
+The `gz arb red` witness returned `failure_class: error` for all nine BEHAVIOR REQs: the
+covering tests import `generate_candidate` / `_byte_evidence` at module level, so
+withholding the production hunks breaks the import before any assertion runs. Per
+`.gzkit/rules/tests.md` that is a WEAK red — it proves the symbols are absent, never that
+the assertions bite. It is recorded here for completeness and is **superseded as the
+falsifiability evidence** by the controls below.
+
+Each row below is a **behavioural** negative control: a one-edit mutation of production
+code that VIOLATES the named requirement, leaves the module importable (`imports=True`,
+so the failure is never an import error), and is run against **only that REQ's own
+`@covers` test** — so the observed `failure_class` is that test's own verdict and never
+collateral from a neighbour. Every row therefore carries both halves the operator asked
+for: a **green baseline** on the unmutated tree, and a **failure caused by violating the
+requirement**, reaching the assertion.
+
+Run via the repository's sanctioned `gzkit.mutation_witness.run_mutation_sweep`, one sweep
+per REQ (its own baseline, its own scope).
+
+| REQ | Mutation (the requirement violated) | Baseline | Outcome | `failure_class` | Assertion reached in |
+|-----|-------------------------------------|----------|---------|-----------------|----------------------|
+| 05-01 | owned section body taken from PRIOR TEXT (`chunk = heading_bytes + body` → `chunk = prior_bytes[boundary.start : boundary.end]`) | green | killed | `assertion` | `test_owned_section_body_is_derived_from_corpus_not_prior_text` |
+| 05-02 | unowned carry-forward REFLOWED LF→CRLF instead of byte-verbatim | green | killed | `assertion` | `test_unowned_section_bytes_are_byte_verbatim` |
+| 05-03 | owned sections derived from the RAW log (`effective = effective_corpus(corpus)` → `effective = corpus`), resurrecting retired entries | green | killed | `assertion` | `test_retired_entry_contributes_nothing_while_verbatim_span_is_unaffected` |
+| 05-04 | lineage emits no contributing `entry_ids` (`tuple(e.id for e in section_entries)` → `()`) | green | killed | `assertion` | `test_lineage_carries_owned_entry_ids_and_byte_span_for_every_section` |
+| 05-05 | off-route consumer not refused (`if consumer not in declared_routes:` → `if not declared_routes:`) | green | killed | `assertion` | `test_two_routed_consumers_get_different_offsets_and_off_route_is_refused` |
+| 05-06 | attribution counts compressible entries ABSENT from the candidate (presence filter dropped) | green | killed | `assertion` | `test_candidate_with_no_compressible_text_reports_zero_after` |
+| 05-07 | inflation guard defeated (`if compressible_bytes_after > compressible_bytes_before:` → `if False:`) — the inflated figure is emitted, not refused | green | killed | `assertion` | `test_byte_evidence_raises_when_attributed_exceeds_before` |
+| 05-08 | generation made call-history dependent — same inputs, different bytes | green | killed | `assertion` | `test_two_runs_produce_byte_identical_candidate_and_lineage` |
+| 05-09 | duplicate-live-invariant refusal defeated (`len(group) <= 1` → `len(group) <= 2`) | green | killed | `assertion` | `test_two_live_byte_identical_invariant_entries_are_refused` |
+
+Observed transcript (`baseline_green` is the unmutated scoped run; `failing` is the test
+the mutation broke):
+
 ```text
-# Paste test output here
+REQ-0.35.0-05-01  baseline_green=True  outcome=killed       failure_class=assertion imports=True  failing=['test_owned_section_body_is_derived_from_corpus_not_prior_text']
+REQ-0.35.0-05-02  baseline_green=True  outcome=killed       failure_class=assertion imports=True  failing=['test_unowned_section_bytes_are_byte_verbatim']
+REQ-0.35.0-05-03  baseline_green=True  outcome=killed       failure_class=assertion imports=True  failing=['test_retired_entry_contributes_nothing_while_verbatim_span_is_unaffected']
+REQ-0.35.0-05-04  baseline_green=True  outcome=killed       failure_class=assertion imports=True  failing=['test_lineage_carries_owned_entry_ids_and_byte_span_for_every_section']
+REQ-0.35.0-05-05  baseline_green=True  outcome=killed       failure_class=assertion imports=True  failing=['test_two_routed_consumers_get_different_offsets_and_off_route_is_refused']
+REQ-0.35.0-05-06  baseline_green=True  outcome=killed       failure_class=assertion imports=True  failing=['test_candidate_with_no_compressible_text_reports_zero_after']
+REQ-0.35.0-05-07  baseline_green=True  outcome=killed       failure_class=assertion imports=True  failing=['test_byte_evidence_raises_when_attributed_exceeds_before']
+REQ-0.35.0-05-08  baseline_green=True  outcome=killed       failure_class=assertion imports=True  failing=['test_two_runs_produce_byte_identical_candidate_and_lineage']
+REQ-0.35.0-05-09  baseline_green=True  outcome=killed       failure_class=assertion imports=True  failing=['test_two_live_byte_identical_invariant_entries_are_refused']
+
+CONCLUSIVE: 9/9 assertion-class kills; all baselines green=True
 ```
+
+The source file is restored by the sweep and after the run
+`src/gzkit/content/composer.py` carries none of the nine mutation strings and all six
+canonical guards at their original lines (verified by grep; the 53-test scoped suite is
+green again).
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+uv run gz arb ruff        -> clean, receipt arb-ruff-77cc404ebe724bb6bfe0388427961906        (exit_status: 0)
+uv run gz arb typecheck   -> clean, receipt arb-step-typecheck-8438242770414aa8b1dc4e3d07ddf786 (exit_status: 0)
 ```
 
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here when Gate 3 applies
+uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
+-> clean, receipt arb-step-mkdocs-dd58dc103a2d45cb89bec1322bba805a (exit_status: 0)
 ```
+
+`docs/user/manpages/content.md` carries both compose modes (explicit candidate and
+generated) and the `<consumer>.candidate.lineage.json` artifact.
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here when Gate 4 applies
+uv run gz arb step --name behave -- uv run -m behave \
+  --tags=@REQ-0.35.0-05-01,@REQ-0.35.0-05-02,@REQ-0.35.0-05-04,@REQ-0.35.0-05-05,@REQ-0.35.0-05-08 features/
+-> 5/5 scoped scenarios pass, receipt arb-step-behave-b0eb5da37ce642699734e2de4707cdd6 (exit_status: 0)
 ```
 
 ### Gate 5 (Human)
@@ -317,6 +394,60 @@ Each checkbox carries a deterministic REQ ID and exactly one kind tag
 ```text
 # Record attestation text here when required by parent lane
 ```
+
+### Step 4b — Independent Adversarial Validation
+
+**Standing verdict:** not-refuted
+
+Tier 1 (cross-vendor, Codex via the `codex-companion.mjs` plugin), two rounds. The
+round-1 refutation token below is the historical record of what was found and
+discharged; the standing verdict above is the state after closure.
+
+**Round 1 — `NOT-CORROBORATED | refuted`** (receipt
+`arb-step-codexadversary-eee752c4e22645739c0e20a0451aa563`, `exit_status: 0`). It
+confirmed the live feature (deterministic candidate+lineage, exact owned ids, unowned
+byte equality, partition, invariant floor, emission attribution, off-route refusal) and
+then reproduced five defects — three high:
+
+1. `[high]` `e.text.strip()` mutilated entry text: a valid indented compressible entry
+   emitted without its indentation while accounting still reported the original bytes,
+   trailing Markdown hard-breaks removed, and a valid indented **invariant** entry was
+   FALSELY REFUSED by the floor (the floor searches the unstripped text).
+2. `[high]` An entry whose *text* carried a heading injected a rendered section with no
+   lineage record (`extra rendered ids=['unexpected-new-section']`) while
+   `assert_complete_partition` still passed, because it validated the generator's own
+   numeric assignments rather than the rendered output; and an entry addressed to an
+   unknown section id was silently dropped instead of refused.
+3. `[high]` The CLI persisted the candidate with `Path.write_text`, so Windows LF→CRLF
+   translation would invalidate every lineage offset (`generated= 31244 persisted= 31520`).
+4. `[medium]` The explicit path overwrote the candidate but left the stale generated
+   lineage beside it.
+5. `[medium]` Fence tracking toggled on any three-backtick prefix, so a four-backtick
+   fence containing a three-backtick example closed early (roster `['a','fake','b']`);
+   tilde fences were unrecognized.
+
+**Round 2 — `CORROBORATED-WITH-CAVEATS | not-refuted`** (receipt
+`arb-step-codexadversary-43e450a13deb4649a432b7e3356d5d66`, `exit_status: 0`), a focused
+closure review over the unchanged scope. All five findings **CLOSED** with pasted
+evidence, no material findings, LIVE PASS retained
+(`deterministic=True exact_owned_ids=True unowned_byte_equality=True actual_spans=True
+partition=True invariant_floor=True emission_attribution=True`), and no regression across
+REQ-01/02/04/05. Each closure was checked in both directions — the guard refuses the
+defect AND still accepts the legitimate positive case.
+
+**Caveats, and their disposition.** Round 2's caveats were sandbox coverage limits (its
+filesystem is read-only), not defects. Two were closed locally in a writable environment
+after the review, which is what its own "next steps" asked for:
+
+- Closure 3 real write: persisted candidate `31244 B` == lineage max span end `31244`.
+- Closure 4 real generated→explicit round-trip: `after generated: lineage=present
+  candidate=31244B` → `after explicit (exit 0): lineage=absent candidate=47851B`.
+- The seven disk-fixture tests it could not run are green in the full suite
+  (`arb-step-unittest-5a440760fc5542ab9d08a48c18d4de08`, 9952 tests, `exit_status: 0`).
+
+**Residual, disclosed:** native Windows persistence was not executed here. The fix is a
+`write_bytes` call whose correctness follows from removing text-mode translation, and the
+repository runs `windows-latest` in CI, but this session did not observe it.
 
 ### Value Narrative
 
@@ -339,7 +470,7 @@ Each checkbox carries a deterministic REQ ID and exactly one kind tag
 <!-- Record GitHub defect linkage when defects are discovered during this OBPI.
      Use one bullet per issue so status surfaces can preserve traceability. -->
 
-_No defects tracked._
+- **GHI #983** — `section ownership: 10 of 12 corpus-owned sections carry no covering corpus content`. Surfaced by this OBPI's generator: materializing from the live corpus yields 31,244 B against the 47,851 B committed rendition, a −16,607 B delta (113 uncovered content lines, 16 H3+ structural lines) because 10 of 12 sections the declaration marks `corpus-owned` fail OBPI-04's own `section_coverage` completeness predicate — three of them at zero coverage. The 0-Kelvin invariant floor still passes on the generated candidate. Operator ruled 2026-09-07 that this OBPI's generator stays faithful to its brief (emits what the corpus carries; no new refusal surface) and that the finding routes to a GHI rather than widening this OBPI's scope. Not a defect of this OBPI's deliverable — a pre-existing declaration state this OBPI made measurable for the first time.
 
 ## Human Attestation
 

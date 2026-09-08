@@ -757,29 +757,64 @@ reads, and is reported loudly rather than as a clean exit over a still-red gate.
 
 ### compose
 
-Validate and stage a **candidate rendition** from the corpus. This is the
-**compress** stage of the ADR-0.0.37 CMS pipeline
-(`corpus → compress → rendition → playback`): the agent wielding the
-`gz-content-compose` skill supplies the candidate text; the tool validates
-invariant-tier verbatim preservation, computes per-tier byte evidence, writes
-the candidate to `.gzkit/renditions/<surface>/<consumer>.candidate.md`, and
-emits a `composition_candidate_emitted` ledger event.
+Stage a **candidate rendition** from the corpus. This is the **compress**
+stage of the ADR-0.0.37 CMS pipeline (`corpus → compress → rendition →
+playback`), in **two modes** selected implicitly by the arguments given —
+never by a flag:
 
-**`compose` is deterministic** — NO LLM call, NO network I/O. The
-drop/combine/rewrite compression judgment is the agent's.
+| Mode | Selected when | What it does |
+|------|---------------|--------------|
+| **Explicit** (OBPI-0.0.37-21) | `--candidate <file>` given, OR no `--candidate` and stdin is piped/redirected (not a tty) with real (non-whitespace) content | The agent (wielding `gz-content-compose`) supplies the candidate text; the tool validates invariant-tier verbatim preservation and computes per-tier byte evidence |
+| **Generated** (OBPI-0.35.0-05) | no `--candidate` AND (stdin IS a tty, OR stdin is piped/redirected but empty/whitespace-only) | The candidate is DERIVED from the corpus itself: `corpus-owned` sections are materialized from the effective corpus, `unowned` sections are carried forward byte-verbatim from the prior committed rendition (`.gzkit/ownership/<surface>.json` — see [`own`](#own)/[`unown`](#unown)) |
+
+**A tty stdin is never read; empty/whitespace-only non-tty stdin IS read, once, to learn it carries no caller-supplied text.** The generated path's whole purpose is to let an operator run `gz content compose AGENTS.md --consumer root` at an interactive terminal without it hanging on a stdin read, AND to let a non-interactive caller — CI, a script, a behave scenario — redirect from `/dev/null` and land on the same path rather than composing against an empty string: empty stdin IS "no caller-supplied text." The explicit path's `cat candidate.md | gz content compose ...` idiom is unchanged.
+
+Both write the candidate to
+`.gzkit/renditions/<surface>/<consumer>.candidate.md` and emit a
+`composition_candidate_emitted` ledger event. **The generated path
+additionally writes the staged provenance map**
+`.gzkit/renditions/<surface>/<consumer>.candidate.lineage.json` — the bare
+`{section_id: {owned, entry_ids, byte_span}}` map (ADR-0.35.0 Decision 5)
+naming, for every section, whether it was corpus-owned or carried forward,
+which corpus entry ids contributed its bytes (empty for a carried-forward
+section), and its half-open UTF-8 `byte_span` in the candidate text. It is
+staged alongside the candidate — never overwriting the prior consumer's
+committed lineage — and is a **separate** artifact from
+`RenditionProvenance` (`<consumer>.corpus.json`, frozen, written at commit
+time): the lineage map is generate-time and per-section, the provenance
+sidecar is commit-time and per-artifact.
+
+**Both modes are deterministic** — NO LLM call, NO network I/O. On the
+explicit path the drop/combine/rewrite compression judgment is the agent's;
+on the generated path there is no judgment to make, because the tool derives
+every owned byte from the corpus itself.
 **`compose` NEVER writes a rendered surface** (`AGENTS.md`, `CLAUDE.md`,
-or any mirror) — only the candidate artifact and ledger change.
+or any mirror) — only the candidate artifact, its lineage (generated path),
+and the ledger change.
 
 ```bash
+# Explicit: agent-authored candidate file
 gz content compose <surface> --consumer <vendor> --candidate <file>
 gz content compose AGENTS.md --consumer root --candidate /tmp/candidate.md
+
+# Explicit: piped/redirected stdin with real content (not a tty -- still the explicit path)
 cat /tmp/candidate.md | gz content compose AGENTS.md --consumer root
+
+# Generated: no --candidate, run at an interactive terminal
+gz content compose AGENTS.md --consumer root
+
+# Generated: no --candidate, non-interactive with no stdin content (CI, scripts, behave)
+gz content compose AGENTS.md --consumer root < /dev/null
 ```
 
-The command **fails closed** (non-zero exit, no candidate written) when:
+The command **fails closed** (non-zero exit, no candidate and no lineage
+written) when:
 - the corpus store for `<surface>` does not exist,
-- the `(surface, consumer)` setpoint is undeclared in `data/vendor-manifest.json`, or
-- the candidate drops or rewrites any `tier: invariant` corpus entry (0-Kelvin floor).
+- the `(surface, consumer)` setpoint is undeclared in `data/vendor-manifest.json`,
+- the candidate drops or rewrites any `tier: invariant` corpus entry (0-Kelvin floor) — both paths,
+- `<consumer>` is not on `<surface>`'s declared content-type route — generated path,
+- two LIVE `tier: invariant` corpus entries share byte-identical text — generated path (never silently deduplicated; retire one via [`gz content retire`](#retire)), or
+- no prior committed rendition exists for `(surface, consumer)`, or an unowned section's bytes precede the rendition's first H1/H2 heading (preamble) — generated path.
 
 ### commit
 
@@ -871,7 +906,7 @@ verdict value itself is never the fail-closed trigger.
 | `--entry <id>` | retire | Id of the corpus entry to retire (required) |
 | `--reason <text>` | retire | Why the entry is superseded; becomes the retraction row's text (required on every tier) |
 | `--consumer <vendor>` | compose, commit, advise-rendition | Target vendor consumer (e.g. `codex`, `claude`); optional for advise-rendition (surface-wide when omitted) |
-| `--candidate <file>` | compose | Path to the candidate rendition file (reads from stdin when omitted) |
+| `--candidate <file>` | compose | Path to the candidate rendition file; when omitted, reads piped/redirected stdin with real content (explicit path), or generates from the corpus when stdin is a tty or is empty/whitespace-only (generated path) |
 | `--attestor <name>` | retire, commit | Operator retiring (retire) or attesting the corpus delta this promotion renders (commit); empty fails closed **only when** the retirement moves invariant-tier liveness (retire) or the corpus moved since the last commit (commit) |
 | `--attestation-text <text>` | commit | Operator's verbatim corpus-attestation token; same conditional requirement as `--attestor` |
 | `--score <float>` | advise-rendition | Information-retained-per-byte verdict value; advisory, never gates (required) |
@@ -951,6 +986,9 @@ grep "rendition_advisor_verdict" .gzkit/ledger.jsonl
 | `.gzkit/ownership/<surface>.json` | Section-ownership declaration read and written by `own` / `unown` (OBPI-0.35.0-04) |
 | `src/gzkit/content/advisor_qc.py` | Deterministic advisor-QC verdict-record engine (`advise-rendition`, OBPI-0.0.37-24) |
 | `artifacts/receipts/arb-step-judge-<hash>.json` | Advisor-QC verdict ARB receipt cited at Gate 5 |
+| `src/gzkit/content/composer.py` | `compose()` (explicit path) and `generate_candidate()` (generated path, OBPI-0.35.0-05) |
+| `src/gzkit/content/lineage.py` | `ConsumerLineage`/`SectionLineage` models and the staged/committed lineage path helpers |
+| `.gzkit/renditions/<surface>/<consumer>.candidate.lineage.json` | Staged section-provenance map written by the `compose` generated path |
 
 ## Related
 

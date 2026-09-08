@@ -491,20 +491,27 @@ def _register_own(content_commands: argparse._SubParsersAction) -> None:
 def _register_compose(content_commands: argparse._SubParsersAction) -> None:
     p = content_commands.add_parser(
         "compose",
-        help="Validate and stage a candidate rendition from the corpus",
+        help="Stage a candidate rendition from the corpus (explicit or generated)",
         description=(
-            "Accept an agent-supplied candidate rendition, validate invariant-tier "
-            "verbatim preservation, compute per-tier byte evidence, write the candidate "
-            "to .gzkit/renditions/<surface>/<consumer>.candidate.md, and emit a "
-            "composition_candidate_emitted ledger event. "
-            "The tool is deterministic: NO LLM call, NO network I/O. "
-            "The compression judgment (drop/combine/rewrite) is the agent's. "
-            "NEVER writes a rendered surface (AGENTS.md, CLAUDE.md, mirrors)."
+            "Stage a candidate rendition to .gzkit/renditions/<surface>/<consumer>."
+            "candidate.md and emit a composition_candidate_emitted ledger event. "
+            "Two modes, selected implicitly: EXPLICIT (--candidate <file>, or "
+            "piped/redirected stdin) validates an agent-supplied candidate's "
+            "invariant-tier verbatim preservation and computes per-tier byte "
+            "evidence. GENERATED (no --candidate, stdin is a tty) derives the "
+            "candidate from the corpus itself -- owned sections materialized, "
+            "unowned sections carried forward byte-verbatim from the prior "
+            "committed rendition -- and additionally writes the staged "
+            "<consumer>.candidate.lineage.json provenance map. Neither mode "
+            "blocks on an interactive terminal. Both are deterministic: NO LLM "
+            "call, NO network I/O. NEVER writes a rendered surface (AGENTS.md, "
+            "CLAUDE.md, mirrors)."
         ),
         epilog=_build_epilog(
             [
-                "gz content compose AGENTS.md --consumer codex --candidate /tmp/candidate.md",
-                "gz content compose AGENTS.md --consumer claude --candidate /tmp/candidate.md",
+                "gz content compose AGENTS.md --consumer root --candidate /tmp/candidate.md",
+                "gz content compose AGENTS.md --consumer root < /tmp/candidate.md",
+                "gz content compose AGENTS.md --consumer root",
             ]
         ),
     )

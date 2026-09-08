@@ -146,6 +146,176 @@ def sections_digest(sections: Mapping[str, str]) -> str:
     return hashlib.sha256(canonical.encode("utf-8")).hexdigest()[:32]
 
 
+class SectionBoundary(NamedTuple):
+    """One H1/H2 heading's fence-aware byte-span boundary.
+
+    The shared primitive OBPI-0.35.0-05 extracts so ownership measurement and
+    the corpus->candidate generator (`composer.py`) walk one fence-aware
+    heading iterator instead of two divergent copies -- a heading-shaped line
+    inside a fenced code fixture must never be mistaken for a real boundary
+    by either consumer.
+    """
+
+    section_id: str
+    title: str
+    level: int
+    start: int
+    end: int
+
+
+#: Legal CommonMark fence characters. A fence run is three or more of ONE of
+#: these; a fence closes only on a run of the SAME character at least as long
+#: as the one that opened it.
+_FENCE_CHARS = ("`", "~")
+_MIN_FENCE_RUN = 3
+
+
+def _fence_run(stripped: str) -> tuple[str, int] | None:
+    """Return ``(fence char, run length)`` when *stripped* opens/closes a fence, else ``None``.
+
+    Cross-vendor adversarial review (Step 4b) refuted the prior
+    ``startswith("```")`` toggle: a legitimate FOUR-backtick fence containing a
+    three-backtick example closed the scanner early, so the walker reported the
+    example's heading as a real section (observed roster ``['a', 'fake', 'b']``
+    against a true ``['a', 'b']``). Tilde fences were not recognized at all, so
+    their example headings were exposed the same way. Both states can falsely
+    refuse a valid declaration or attribute code-example text to a section that
+    does not exist, which is why the fence's IDENTITY -- character and length --
+    has to be tracked rather than its mere presence.
+    """
+    text = stripped.lstrip()
+    if not text or text[0] not in _FENCE_CHARS:
+        return None
+    char = text[0]
+    run = len(text) - len(text.lstrip(char))
+    return (char, run) if run >= _MIN_FENCE_RUN else None
+
+
+def _closes_fence(stripped: str, opening: tuple[str, int]) -> bool:
+    """Report whether *stripped* is a valid closing fence for *opening*.
+
+    CommonMark: the closing run uses the same character, is at least as long as
+    the opening run, and carries no info string -- so the line is nothing but
+    the run itself.
+    """
+    run = _fence_run(stripped)
+    if run is None or run[0] != opening[0] or run[1] < opening[1]:
+        return False
+    return stripped.strip() == run[0] * run[1]
+
+
+#: Both collision messages below repeat this sentence verbatim; hoisted here
+#: for the same reason `_RESTORE_GUIDANCE` / `_RESTORE_SURFACE_GUIDANCE` are
+#: module-level constants -- one wording, never two copies that can drift.
+_SECTION_ID_COLLISION_WHY = (
+    "Why forbidden: REQ-0.35.0-04-01 -- a colliding section id silently sums "
+    "two distinct sections' byte spans, hiding the second heading behind the "
+    "first's ownership declaration so the undeclared-section check never "
+    "fires for it.\n"
+)
+
+
+def _refuse_section_id_collision(sid: str, title: str, first_title: str) -> NoReturn:
+    """Fail closed on a second heading resolving to a section id already seen.
+
+    Lifted out of `iter_section_boundaries`'s walking loop so that function
+    holds at xenon rank C, the same shape `_refuse_section_coverage_drift` and
+    `_refuse_grown_or_flipped_span` were lifted into under GHI #976/#978. This
+    holds whether the two heading titles match or differ: title equality is
+    not the discriminator, id collision is.
+    """
+    if first_title != title:
+        msg = (
+            f"What failed: headings {first_title!r} and {title!r} "
+            f"both slugify to section id {sid!r}.\n"
+            f"{_SECTION_ID_COLLISION_WHY}"
+            f"Next step: rename {first_title!r} or {title!r} so "
+            "their slugified section ids no longer collide, then "
+            "retry."
+        )
+    else:
+        msg = (
+            f"What failed: two separate headings both titled "
+            f"{title!r} slugify to section id {sid!r}.\n"
+            f"{_SECTION_ID_COLLISION_WHY}"
+            f"Next step: rename one of the {title!r} headings so "
+            "their slugified section ids no longer collide, then "
+            "retry."
+        )
+    raise OwnershipLoadError(msg)
+
+
+def iter_section_boundaries(surface_text: str) -> list[SectionBoundary]:
+    """Return every real (non-fenced) H1/H2 heading boundary in *surface_text*, in order.
+
+    Fence-aware: a line whose stripped form starts with three or more
+    backticks (optionally followed by a language tag) toggles fenced-code
+    state, and a `#`/`##`-prefixed line inside a fence is never treated as a
+    heading -- a markdown example inside a fenced fixture must not be
+    mistaken for a real section boundary. Byte offsets are measured in UTF-8
+    encoded bytes, same as `measure_section_spans`.
+
+    A SECOND heading line resolving to a section id already seen is a genuine
+    collision and fails closed (`OwnershipLoadError`) rather than silently
+    summing its span onto the first -- see `measure_section_spans` for the
+    full rationale. This holds whether the two heading titles match or
+    differ: title equality is not the discriminator, id collision is.
+
+    Two scope limitations, named rather than silently accepted:
+
+      * An unterminated fence swallows every subsequent heading -- `in_fence`
+        never resets once a closing fence is missing. This is bounded
+        downstream: `load_declaration`'s `_refuse_section_coverage_drift`
+        fails closed on any measured-vs-declared section-set mismatch, so a
+        surface whose fence was terminated at declaration time and later
+        loses its close would surface there. A fence unterminated from a
+        declaration's OWN inception -- so measured and declared never
+        disagreed -- would never surface at all.
+      * Only backtick fences (` ``` `) are recognized; CommonMark's `~~~`
+        tilde form is not, so a heading-shaped line inside a tilde-fenced
+        block IS returned as a real boundary. Measured 2026-09-07: both
+        governed surfaces (`AGENTS.md` and its rendition) carry 0 tilde
+        fences and only balanced backtick fences today.
+    """
+    lines = surface_text.splitlines(keepends=True)
+    raw: list[tuple[int, str, str, int]] = []
+    offset = 0
+    open_fence: tuple[str, int] | None = None
+    titles_by_id: dict[str, str] = {}
+    for line in lines:
+        stripped = line.rstrip("\r\n")
+        if open_fence is not None:
+            if _closes_fence(stripped, open_fence):
+                open_fence = None
+        elif (run := _fence_run(stripped)) is not None:
+            open_fence = run
+        else:
+            title: str | None = None
+            level = 0
+            if stripped.startswith(_H1_PREFIX):
+                title = stripped[len(_H1_PREFIX) :].strip()
+                level = 1
+            elif stripped.startswith(_H2_PREFIX):
+                title = stripped[len(_H2_PREFIX) :].strip()
+                level = 2
+            if title is not None:
+                sid = section_id(title)
+                if sid in titles_by_id:
+                    _refuse_section_id_collision(sid, title, titles_by_id[sid])
+                titles_by_id[sid] = title
+                raw.append((offset, sid, title, level))
+        offset += len(line.encode("utf-8"))
+
+    total = offset
+    boundaries: list[SectionBoundary] = []
+    for index, (start, sid, title, level) in enumerate(raw):
+        end = raw[index + 1][0] if index + 1 < len(raw) else total
+        boundaries.append(
+            SectionBoundary(section_id=sid, title=title, level=level, start=start, end=end)
+        )
+    return boundaries
+
+
 def measure_section_spans(surface_text: str) -> dict[str, int]:
     """Return {section_id: byte_span} for every H1/H2 heading in *surface_text*.
 
@@ -154,8 +324,14 @@ def measure_section_spans(surface_text: str) -> dict[str, int]:
     `gzkit.content.parse.section_id` vocabulary so ownership never keys on
     heading TITLE (REQ-0.35.0-04-06) -- a heading whose text changes but whose
     section id does not still resolves. Spans are measured in UTF-8 encoded
-    bytes and always sum to `len(surface_text.encode("utf-8"))`. H3+ headings
-    do not open a new span; their lines stay inside the enclosing H1/H2.
+    bytes and sum to `len(surface_text.encode("utf-8"))` FOR A SURFACE THAT
+    BEGINS WITH AN H1/H2 HEADING, which both governed surfaces (`AGENTS.md`
+    and its rendition) do today. This is a corrected pre-existing inaccuracy,
+    not a behavior change: bytes preceding the first H1/H2 heading belong to
+    no section span and are excluded from the sum (measured 2026-09-07: a
+    synthetic document with pre-heading text left 28 of 57 bytes
+    unaccounted). H3+ headings do not open a new span; their lines stay
+    inside the enclosing H1/H2.
 
     A SECOND heading line resolving to a section id already seen is a
     genuine collision and fails closed (`OwnershipLoadError`) rather than
@@ -170,56 +346,16 @@ def measure_section_spans(surface_text: str) -> dict[str, int]:
     -- that case is one heading line, not two, and does not trigger this
     guard.
     """
-    lines = surface_text.splitlines(keepends=True)
-    boundaries: list[tuple[int, str, str]] = []
-    offset = 0
-    for line in lines:
-        stripped = line.rstrip("\r\n")
-        title: str | None = None
-        if stripped.startswith(_H1_PREFIX):
-            title = stripped[len(_H1_PREFIX) :].strip()
-        elif stripped.startswith(_H2_PREFIX):
-            title = stripped[len(_H2_PREFIX) :].strip()
-        if title is not None:
-            boundaries.append((offset, section_id(title), title))
-        offset += len(line.encode("utf-8"))
-
-    total = offset
     spans: dict[str, int] = {}
-    titles_by_id: dict[str, str] = {}
-    for index, (start, sid, title) in enumerate(boundaries):
-        end = boundaries[index + 1][0] if index + 1 < len(boundaries) else total
-        if sid in titles_by_id:
-            first_title = titles_by_id[sid]
-            if first_title != title:
-                msg = (
-                    f"What failed: headings {first_title!r} and {title!r} "
-                    f"both slugify to section id {sid!r}.\n"
-                    "Why forbidden: REQ-0.35.0-04-01 -- a colliding section "
-                    "id silently sums two distinct sections' byte spans, "
-                    "hiding the second heading behind the first's ownership "
-                    "declaration so the undeclared-section check never fires "
-                    "for it.\n"
-                    f"Next step: rename {first_title!r} or {title!r} so "
-                    "their slugified section ids no longer collide, then "
-                    "retry."
-                )
-            else:
-                msg = (
-                    f"What failed: two separate headings both titled "
-                    f"{title!r} slugify to section id {sid!r}.\n"
-                    "Why forbidden: REQ-0.35.0-04-01 -- a colliding section "
-                    "id silently sums two distinct sections' byte spans, "
-                    "hiding the second heading behind the first's ownership "
-                    "declaration so the undeclared-section check never fires "
-                    "for it.\n"
-                    f"Next step: rename one of the {title!r} headings so "
-                    "their slugified section ids no longer collide, then "
-                    "retry."
-                )
-            raise OwnershipLoadError(msg)
-        titles_by_id[sid] = title
-        spans[sid] = spans.get(sid, 0) + (end - start)
+    for boundary in iter_section_boundaries(surface_text):
+        # Summing rather than overwriting matches this function's prior
+        # behavior exactly, even though `iter_section_boundaries`' own
+        # collision detection makes a second boundary resolving to the same
+        # id unreachable for any input that gets this far -- see that
+        # function's docstring for the full rationale.
+        spans[boundary.section_id] = spans.get(boundary.section_id, 0) + (
+            boundary.end - boundary.start
+        )
     return spans
 
 

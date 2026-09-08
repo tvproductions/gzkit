@@ -35,9 +35,11 @@ from gzkit.content.ownership import (
     OwnershipDeclaration,
     OwnershipLoadError,
     RatchetRefusedError,
+    SectionBoundary,
     _Ownership,
     compute_baseline,
     declaration_path,
+    iter_section_boundaries,
     load_declaration,
     measure_section_spans,
     record_unowned_total,
@@ -223,6 +225,149 @@ class TestMeasureSectionSpans(unittest.TestCase):
         self.assertIn("related", message)
         # Why forbidden: the governing REQ is cited.
         self.assertIn("REQ-0.35.0-04-01", message)
+
+
+class TestIterSectionBoundaries(unittest.TestCase):
+    """OBPI-0.35.0-05 Task 1: the shared fence-aware H1/H2 boundary walker."""
+
+    def test_finds_ordinary_unfenced_boundaries_with_correct_byte_offsets(self) -> None:
+        # "café — Ünïcödé" mixes an accented char and an em dash so a
+        # codepoint-offset implementation (rather than byte-offset) would
+        # compute the wrong `start`/`end` for the second boundary.
+        surface_text = "# café — Ünïcödé\nbody one\n## Second\nbody two\n"
+        boundaries = iter_section_boundaries(surface_text)
+        second_start = len("# café — Ünïcödé\nbody one\n".encode())
+        total = len(surface_text.encode("utf-8"))
+        self.assertEqual(
+            boundaries,
+            [
+                SectionBoundary(
+                    section_id=section_id("café — Ünïcödé"),
+                    title="café — Ünïcödé",
+                    level=1,
+                    start=0,
+                    end=second_start,
+                ),
+                SectionBoundary(
+                    section_id="second",
+                    title="Second",
+                    level=2,
+                    start=second_start,
+                    end=total,
+                ),
+            ],
+        )
+
+    def test_heading_shaped_line_inside_a_fence_is_not_a_boundary(self) -> None:
+        # The fenced fixture shows what an H1 looks like; it must not be
+        # mistaken for a real section boundary.
+        surface_text = (
+            "# Real Title\n"
+            "```markdown\n"
+            "# Not A Real Heading\n"
+            "## Also Not Real\n"
+            "```\n"
+            "trailing body\n"
+        )
+        boundaries = iter_section_boundaries(surface_text)
+        self.assertEqual([b.section_id for b in boundaries], ["real-title"])
+        self.assertEqual(boundaries[0].end, len(surface_text.encode("utf-8")))
+
+    def test_fence_toggling_works_across_multiple_fenced_blocks(self) -> None:
+        surface_text = (
+            "# Title\n"
+            "```\n"
+            "# fenced one\n"
+            "```\n"
+            "## Real Section\n"
+            "```python\n"
+            "## fenced two\n"
+            "```\n"
+            "trailing\n"
+        )
+        boundaries = iter_section_boundaries(surface_text)
+        self.assertEqual([b.section_id for b in boundaries], ["title", "real-section"])
+
+    def test_two_headings_colliding_on_the_same_id_fail_closed(self) -> None:
+        surface_text = "# Alpha Beta\nbody one\n\n## Alpha, Beta!\nbody two\n"
+        with self.assertRaises(OwnershipLoadError) as ctx:
+            iter_section_boundaries(surface_text)
+        message = str(ctx.exception)
+        self.assertIn("Alpha Beta", message)
+        self.assertIn("Alpha, Beta!", message)
+        self.assertIn("alpha-beta", message)
+        self.assertIn("REQ-0.35.0-04-01", message)
+
+    def test_empty_and_heading_free_documents_return_no_boundaries(self) -> None:
+        # A surface carrying no H1/H2 heading at all -- the empty string being
+        # the degenerate case -- has no section to open a boundary, so the
+        # walk must return an empty list rather than raising or fabricating
+        # one.
+        self.assertEqual(iter_section_boundaries(""), [])
+        self.assertEqual(iter_section_boundaries("just prose\nno headings here\n"), [])
+
+
+# -- Fix 5: real fence tracking by opening character + length ---------------
+#
+# Adversary-reproduced (cross-vendor Codex tier-1 review): `_FENCE_PREFIX`
+# toggled on any line starting with three-or-more backticks, so a legitimate
+# FOUR-backtick fence containing a three-backtick example closed early --
+# probe returned boundaries ['a', 'fake', 'b'] instead of ['a', 'b']. Tilde
+# (~~~) fences were not recognized as fences at all, so a heading-shaped line
+# inside one was exposed exactly the same way. The fix tracks the OPENING
+# fence's character and run length; a fence closes only on a matching-or-
+# longer run of the SAME character.
+
+
+class TestFenceTracksOpeningCharacterAndLength(unittest.TestCase):
+    def test_ordinary_three_backtick_fence_still_yields_the_control_boundaries(self) -> None:
+        """The pre-existing three-backtick control must still yield ['a', 'b']."""
+        surface_text = "# a\n```\nfenced content\n```\n# b\nbody\n"
+
+        boundaries = iter_section_boundaries(surface_text)
+
+        self.assertEqual([b.title for b in boundaries], ["a", "b"])
+        self.assertEqual(set(measure_section_spans(surface_text)), {"a", "b"})
+
+    def test_four_backtick_fence_is_not_closed_by_an_embedded_three_backtick_pair(self) -> None:
+        """A four-backtick fence containing a real three-backtick example stays open.
+
+        Adversary probe: the old toggle-on-any-3+-backticks rule closed the
+        outer fence at the embedded three-backtick pair, exposing the
+        '## fake' line between them as a real boundary.
+        """
+        surface_text = "# a\n````\nsome example:\n```\n## fake\n```\n````\n# b\nbody\n"
+
+        boundaries = iter_section_boundaries(surface_text)
+
+        self.assertEqual([b.title for b in boundaries], ["a", "b"])
+        self.assertEqual(set(measure_section_spans(surface_text)), {"a", "b"})
+
+    def test_tilde_fences_are_recognized_and_hide_embedded_headings(self) -> None:
+        """A '~~~' tilde fence is real; a heading-shaped line inside it is not a boundary."""
+        surface_text = "# a\n~~~\n## fake\n~~~\n# b\nbody\n"
+
+        boundaries = iter_section_boundaries(surface_text)
+
+        self.assertEqual([b.title for b in boundaries], ["a", "b"])
+        self.assertEqual(set(measure_section_spans(surface_text)), {"a", "b"})
+
+    def test_a_shorter_tilde_run_does_not_close_a_longer_tilde_fence(self) -> None:
+        """A four-tilde fence containing a nested three-tilde fence stays open."""
+        surface_text = "# a\n~~~~\n## fake\n~~~\nexample\n~~~\n~~~~\n# b\nbody\n"
+
+        boundaries = iter_section_boundaries(surface_text)
+
+        self.assertEqual([b.title for b in boundaries], ["a", "b"])
+
+    def test_unterminated_fence_swallows_every_subsequent_heading(self) -> None:
+        """An unterminated fence never re-closes -- a named scope limitation, unchanged by Fix 5."""
+        surface_text = "# a\n```\n## never closes\n# also never closes\n"
+
+        boundaries = iter_section_boundaries(surface_text)
+
+        self.assertEqual([b.title for b in boundaries], ["a"])
+        self.assertEqual(set(measure_section_spans(surface_text)), {"a"})
 
 
 class TestLoadDeclarationFailClosed(_DeclarationFixtureMixin, unittest.TestCase):

@@ -59,3 +59,45 @@ Feature: gz content compose — authoring-time compression candidate validation
     Then the command exits 0
     And "AGENTS.md" is byte-unchanged
     And "CLAUDE.md" is byte-unchanged
+
+  @REQ-0.35.0-05-01
+  Scenario: Generated path derives an owned section's body from the corpus
+    Given the prior committed rendition for "AGENTS.md" toward "root" contains a corpus-owned section and an unowned section
+    And a valid section-ownership declaration exists for "AGENTS.md"
+    When I run "gz content compose AGENTS.md --consumer root" with no candidate and empty stdin
+    Then the command exits 0
+    And the candidate at ".gzkit/renditions/AGENTS.md/root.candidate.md" contains the invariant text verbatim
+    And the candidate at ".gzkit/renditions/AGENTS.md/root.candidate.md" does not contain "stale prior wording that must never survive generation"
+
+  @REQ-0.35.0-05-02
+  Scenario: Generated path carries an unowned section forward byte-verbatim
+    Given the prior committed rendition for "AGENTS.md" toward "root" contains a corpus-owned section and an unowned section
+    And a valid section-ownership declaration exists for "AGENTS.md"
+    When I run "gz content compose AGENTS.md --consumer root" with no candidate and empty stdin
+    Then the command exits 0
+    And the candidate at ".gzkit/renditions/AGENTS.md/root.candidate.md" contains "carried forward text verbatim" verbatim
+
+  @REQ-0.35.0-05-04
+  Scenario: A generator run writes a lineage artifact covering every section
+    Given the prior committed rendition for "AGENTS.md" toward "root" contains a corpus-owned section and an unowned section
+    And a valid section-ownership declaration exists for "AGENTS.md"
+    When I run "gz content compose AGENTS.md --consumer root" with no candidate and empty stdin
+    Then the command exits 0
+    And the lineage file exists at ".gzkit/renditions/AGENTS.md/root.candidate.lineage.json"
+    And the lineage file declares owned, entry_ids, and byte_span for every section
+
+  @REQ-0.35.0-05-05
+  Scenario: Generated path refuses an off-route consumer
+    When I run "gz content compose AGENTS.md --consumer codex" with no candidate and empty stdin
+    Then the command exits non-zero
+    And no candidate file is written for "codex"
+    And no lineage file is written for "codex"
+
+  @REQ-0.35.0-05-08
+  Scenario: Two generator runs produce byte-identical candidate and lineage
+    Given the prior committed rendition for "AGENTS.md" toward "root" contains a corpus-owned section and an unowned section
+    And a valid section-ownership declaration exists for "AGENTS.md"
+    When I run "gz content compose AGENTS.md --consumer root" with no candidate and empty stdin twice
+    Then both runs exit 0
+    And the candidate file is byte-identical between runs
+    And the lineage file is byte-identical between runs
