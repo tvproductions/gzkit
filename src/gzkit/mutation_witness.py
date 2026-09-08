@@ -52,6 +52,8 @@ _RUN_TIMEOUT_S = 600
 # unittest -v writes `test_name (module.Class.test_name) ... FAIL` and a
 # `FAIL: test_name (...)` block; the summary line is the reliable one to read.
 _TEST_LINE = re.compile(r"^\s*(\w+) \(([^)]+)\)(?: \(.*\))? \.\.\. (ok|FAIL|ERROR|skipped.*)$")
+_TEST_ID_LINE = re.compile(r"^\s*(\w+) \(([^)]+)\)(?: \(.*\))?$")
+_STATUS_TAIL = re.compile(r" \.\.\. (ok|FAIL|ERROR|skipped.*)$")
 _FAILURE_LINE = re.compile(r"^(FAIL|ERROR): (\w+) \(([^)]+)\)")
 _RAN_TESTS = re.compile(r"^Ran (\d+) tests? in ", re.MULTILINE)
 _FIXTURE_FRAME = re.compile(
@@ -149,6 +151,31 @@ def _test_id(method: str, context: str) -> str:
     return context if context.endswith("." + method) else f"{context}.{method}"
 
 
+def _one_line_descriptions(output: str) -> list[str]:
+    """Fold unittest's TWO-line verbose description back into the one-line form.
+
+    ``TextTestResult.getDescription`` joins ``str(test)`` and the docstring's
+    first line with a newline whenever the test is documented, so the trailing
+    ``... ok`` lands on the SECOND line and a parser keyed to the one-line form
+    sees no result at all -- a green baseline reads red and every mutation is
+    graded ``inconclusive`` (GHI #986). Undocumented output is returned
+    unchanged, so the one-line form keeps its existing behaviour exactly.
+    """
+    lines = output.splitlines()
+    folded: list[str] = []
+    index = 0
+    while index < len(lines):
+        following = lines[index + 1] if index + 1 < len(lines) else ""
+        status = _STATUS_TAIL.search(following) if _TEST_ID_LINE.match(lines[index]) else None
+        if status:
+            folded.append(f"{lines[index]} ... {status.group(1)}")
+            index += 2
+            continue
+        folded.append(lines[index])
+        index += 1
+    return folded
+
+
 def _test_observations(output: str) -> tuple[set[str], list[str], int]:
     """Read completed, non-skipped unittest IDs and failure identities.
 
@@ -157,7 +184,7 @@ def _test_observations(output: str) -> tuple[set[str], list[str], int]:
     """
     executed: set[str] = set()
     failures: list[str] = []
-    for line in output.splitlines():
+    for line in _one_line_descriptions(output):
         if match := _TEST_LINE.match(line):
             method, context, status = match.groups()
             if not status.startswith("skipped"):

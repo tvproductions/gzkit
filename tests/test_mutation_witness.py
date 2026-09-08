@@ -501,3 +501,89 @@ class TestBehavioralFailure(unittest.TestCase):
         )
         self.assertTrue(sweep.witnesses[0].compiles)
         self.assertEqual(sweep.witnesses[0].tests_run, 2)
+
+
+_DOCUMENTED_TESTS = '''import unittest
+
+from subject import guard
+
+
+class TestGuard(unittest.TestCase):
+    def test_rejects_zero(self) -> None:
+        """Zero is rejected -- this docstring is the whole point of the fixture."""
+        self.assertFalse(guard(0))
+
+    def test_accepts_one(self) -> None:
+        """One is accepted."""
+        self.assertTrue(guard(1))
+'''
+
+
+def _documented_fixture(root: Path) -> Path:
+    """Same subject as `_fixture`, but every test method carries a docstring."""
+    (root / "subject.py").write_text(_MODULE, encoding="utf-8")
+    (root / "test_subject.py").write_text(_DOCUMENTED_TESTS, encoding="utf-8")
+    return root / "subject.py"
+
+
+class TestDocumentedTestsAreObservable(unittest.TestCase):
+    """A covering test's docstring must not hide its result from the sweep (GHI #986).
+
+    `unittest.TextTestResult.getDescription` joins `str(test)` and the docstring's
+    first line with a newline whenever the test is documented, so the trailing
+    status lands on the SECOND line. A parser keyed only to the one-line form sees
+    zero executed tests, reports a green baseline as red, and grades every mutation
+    `inconclusive`. Measured on this repo: 4,443 of 10,069 test methods are
+    documented, so that blind spot covered 44% of the suite -- and it was invisible
+    to this module's own tests because `_TESTS` above carries no docstrings.
+    """
+
+    def test_a_documented_baseline_reads_green_and_still_yields_an_assertion_kill(self) -> None:
+        with TemporaryDirectory() as td:
+            root = Path(td)
+            source = _documented_fixture(root)
+            sweep = run_mutation_sweep(
+                root,
+                source,
+                [
+                    Mutation(
+                        find="if value <= 0:",
+                        replace="if False:",
+                        label="guard",
+                        expected_tests=["test_rejects_zero"],
+                    )
+                ],
+                _TEST_CMD,
+            )
+        self.assertTrue(sweep.baseline_green, "a passing documented baseline must read green")
+        self.assertIn("test_rejects_zero", " ".join(sweep.baseline_executed_tests))
+        witness = sweep.witnesses[0]
+        self.assertEqual(witness.outcome, "killed")
+        self.assertEqual(witness.failure_class, "assertion")
+        self.assertIn("test_rejects_zero", " ".join(witness.failing_tests))
+
+    def test_a_documented_skip_is_not_counted_as_executed(self) -> None:
+        """A skipped documented test must not read as a completed one."""
+        skipped = _DOCUMENTED_TESTS.replace(
+            "    def test_accepts_one",
+            "    @unittest.skip('deliberate')\n    def test_accepts_one",
+        )
+        with TemporaryDirectory() as td:
+            root = Path(td)
+            (root / "subject.py").write_text(_MODULE, encoding="utf-8")
+            (root / "test_subject.py").write_text(skipped, encoding="utf-8")
+            sweep = run_mutation_sweep(
+                root,
+                root / "subject.py",
+                [
+                    Mutation(
+                        find="if value <= 0:",
+                        replace="if False:",
+                        label="guard",
+                        expected_tests=["test_rejects_zero"],
+                    )
+                ],
+                _TEST_CMD,
+            )
+        self.assertIn("test_rejects_zero", " ".join(sweep.baseline_executed_tests))
+        self.assertNotIn("test_accepts_one", " ".join(sweep.baseline_executed_tests))
