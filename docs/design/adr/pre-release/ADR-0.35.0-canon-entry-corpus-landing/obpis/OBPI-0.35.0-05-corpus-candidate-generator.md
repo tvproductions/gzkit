@@ -344,6 +344,7 @@ per REQ (its own baseline, its own scope).
 | 05-04/05 *(round-3 high)* | lineage validated by section-id ROSTER instead of actual boundary offsets (`if actual == claimed:` → `if set(actual) == set(claimed):`) | green | killed | `assertion` | `test_same_roster_heading_injection_that_moves_boundaries_is_refused` |
 | 05-02 *(round-3 medium)* | fence scanner enters fence state on a 4-space-indented code block | green | killed | `assertion` | `test_four_space_indented_backtick_run_is_an_indented_code_block_not_a_fence` |
 | 05-02 *(round-3 medium)* | fence scanner treats an inline code span as a backtick fence opener | green | killed | `assertion` | `test_inline_code_span_is_not_a_backtick_fence_opener` |
+| 05-04/05 *(round-4 weakest point)* | persisted candidate newline-translated, sliding every lineage offset — the Windows `write_text` defect simulated platform-independently | green | killed | `assertion` | `test_generated_lineage_spans_index_the_PERSISTED_candidate_bytes` |
 
 Observed transcript (`baseline_green` is the unmutated scoped run; `failing` is the test
 the mutation broke):
@@ -361,8 +362,9 @@ REQ-0.35.0-05-09  baseline_green=True  outcome=killed       failure_class=assert
 REQ-0.35.0-05-04/05 (round-3 high)  baseline_green=True  outcome=killed       failure_class=assertion imports=True  failing=['test_same_roster_heading_injection_that_moves_boundaries_is_refused']
 REQ-0.35.0-05-02 (round-3 medium)  baseline_green=True  outcome=killed       failure_class=assertion imports=True  failing=['test_four_space_indented_backtick_run_is_an_indented_code_block_not_a_fence']
 REQ-0.35.0-05-02 (round-3 medium)  baseline_green=True  outcome=killed       failure_class=assertion imports=True  failing=['test_inline_code_span_is_not_a_backtick_fence_opener']
+REQ-0.35.0-05-04/05 (round-4 weakest point)  baseline_green=True  outcome=killed       failure_class=assertion imports=True  failing=['test_generated_lineage_spans_index_the_PERSISTED_candidate_bytes']
 
-CONCLUSIVE: 12/12 assertion-class kills; all baselines green=True
+CONCLUSIVE: 13/13 assertion-class kills; all baselines green=True
 ```
 
 **Two rows of the first 9-row sweep were faulted by round 3's mutation audit and are
@@ -414,12 +416,12 @@ uv run gz arb step --name behave -- uv run -m behave \
 
 ### Step 4b — Independent Adversarial Validation
 
-**Standing verdict:** refuted
+**Standing verdict:** not-refuted
 
-> Round 3 REFUTED this OBPI. Both findings are fixed and a round-4 independent
-> re-review is required before this line may change; it is NOT changed by the
-> implementing agent's own confirmation of its fixes. `gz obpi complete` refuses a
-> refuting verdict outright (GHI #960), so no completion may be recorded against it.
+> Declared per GHI #964: the round-3 refutation token below is the historical record of
+> what was found and discharged; the standing verdict is the state after round 4's
+> INDEPENDENT confirmation of the corrected artifacts. It is not a relabelling — round 3's
+> own verdict stays written where it happened.
 
 
 Tier 1 (cross-vendor, Codex via the `codex-companion.mjs` plugin), two rounds. The
@@ -520,6 +522,50 @@ operator's to overturn.**
 fires on the defect AND still accepts the legitimate case, and each with a behavioural
 negative control (rows 10-12 above). Round 4 re-review pending; the standing verdict stays
 `refuted` until an independent round returns otherwise.
+
+**Round 4 — `CORROBORATED-WITH-CAVEATS | not-refuted`** (receipt
+`arb-step-codexadversary-e82f72ebb97543668d9a86790ee4d0a2`, `exit_status: 0`), tier 1,
+same cross-vendor Codex plugin, scoped `--scope branch --base edb52f10` against revision
+`c4055edf` — a FOCUSED closure re-review over the unchanged scope and threat model, not a
+fresh unrestricted search.
+
+Both round-3 findings **CLOSED**, each checked in both directions with pasted output:
+
+- Finding 1 CLOSED — `ATTACK refused=True` with the moved spans named
+  (`governance-doctrine-surfaces lineage=(30261, 30682), actual=(30261, 30650)`), three-part
+  recovery prose present, and the legitimate direction still succeeding:
+  `LIVE accepted=True deterministic=True actual_spans=True unowned_verbatim=True
+  exact_owned_ids=True partition=True invariant_floor=True emission_attribution=True
+  explicit_compatible=True bytes=31244 sections=22`. Its own partition probes:
+  `exact: accepted / missing: refused / extra: refused / moved: refused`.
+- Finding 2 CLOSED — `Ran 10 tests ... OK`, and eight scanner+live-generation probes
+  (`indented`, `inline`, `plain`, `long`, `python`, `tilde`, `long-tilde`, `tilde-info`)
+  each returning `roster=['a', 'b'] live_generation=accepted`.
+- Mutation correction ACCEPTED as semantic, not wording-only: *"Row 05 supplies vendorC's
+  temperature and prior rendition, so disabling route refusal permits forbidden generation
+  rather than merely changing diagnostics... These are semantic failures, not wording-only
+  kills."* It also noted the brief *"explicitly retracts 9/9 as overstated and records 7/9
+  sound rows."*
+
+**No material findings.**
+
+**Its caveats were coverage limits of a read-only sandbox, and their disposition:**
+
+- Could not execute disk-fixture tests, the persisted-byte CLI test, Windows behaviour, or
+  the mutation sweep (`FileNotFoundError: No usable temporary directory found`). Its own
+  next step was *"Run the focused disk-fixture tests, including the persisted-byte test on
+  Windows, in writable CI."* — discharged by the native `windows-latest` run recorded in
+  § Gate 2 below, which executes the whole suite on Windows Server 2025.
+- Weakest point: *"Persisted-file coherence remains source-inspected rather than
+  independently executed here."* The test-strength half is CLOSED — the persisted-byte test
+  now re-parses the bytes that reached disk and holds every section's identity and exact
+  offsets to the same bar `_refuse_generated_lineage_drift` applies in memory, with control
+  row 13 proving it fails under simulated newline translation. **Production code is
+  BYTE-IDENTICAL to the round-4 reviewed revision** (`git diff c4055edf -- src/` is empty),
+  so round 4's verdict covers the entire production surface presented.
+- IRREDUCIBLE, disclosed: the mutation sweep *"remains recorded evidence, not an
+  independently executed sweep."* No read-only reviewer can execute a sweep that edits and
+  restores a guard. The record is reproducible by the operator from the table above.
 
 ### Value Narrative
 

@@ -18,6 +18,7 @@ from gzkit.cli.main import main
 from gzkit.content.corpus_store import append_entry
 from gzkit.content.lineage import candidate_lineage_path
 from gzkit.content.models import CorpusEntry
+from gzkit.content.ownership import iter_section_boundaries
 from gzkit.content.rendition import candidate_path
 from gzkit.traceability import covers
 from tests.commands.common import CliRunner
@@ -462,6 +463,24 @@ class TestContentComposeCmd(unittest.TestCase):
                 len(persisted),
                 "lineage partition must end at the PERSISTED candidate's byte length -- a "
                 "newline-translating write would slide every offset",
+            )
+
+            # Round 4's weakest point: contiguity plus one owned body is weaker
+            # than the production guard, which compares EVERY section's identity
+            # and exact offsets. Re-parse the bytes that actually reached disk
+            # and hold the persisted file to that same bar, so this test cannot
+            # pass on a file whose real boundaries moved.
+            actual = {
+                b.section_id: (b.start, b.end)
+                for b in iter_section_boundaries(persisted.decode("utf-8"))
+            }
+            claimed = {sid: tuple(s["byte_span"]) for sid, s in document.items()}
+            self.assertEqual(
+                actual,
+                claimed,
+                "every PERSISTED section's identity and exact half-open offsets must equal "
+                "the staged lineage -- the same bar `_refuse_generated_lineage_drift` holds "
+                "the in-memory candidate to, applied to the bytes on disk",
             )
 
     @covers("REQ-0.35.0-05-04")
