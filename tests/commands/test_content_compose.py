@@ -484,6 +484,81 @@ class TestContentComposeCmd(unittest.TestCase):
             )
 
     @covers("REQ-0.35.0-05-04")
+    @covers("REQ-0.35.0-05-05")
+    def test_persisted_lineage_matches_contract_derived_offsets_not_just_the_parser(
+        self,
+    ) -> None:
+        """The persisted lineage is held to hand-derived literals, not to a parser run.
+
+        Operator ruling 2026-09-08: comparing the persisted lineage to
+        `iter_section_boundaries` proves the two AGREE; it cannot prove the
+        boundaries are CORRECT, because a defect inside the shared parser moves
+        both sides together. An independent oracle does not require a second
+        parser -- it requires expectations derived from the contract.
+
+        Both sections are `unowned`, so the candidate is byte-identical to the
+        prior rendition and the correct spans are fully determined by the
+        fixture text. Segment byte lengths, spelled out:
+        "# A\n"=4, "café\n"=6 (é is 2 bytes), "```\n"=4, "## fake\n"=8
+        (FENCED, not a real heading), "```\n"=4, "## B\n"=5, "x\n"=2.
+        Therefore section "a" = [0, 26) and section "b" = [26, 33), total 33.
+        """
+        surface_text = "# A\ncafé\n```\n## fake\n```\n## B\nx\n"
+        expected_spans = {"a": [0, 26], "b": [26, 33]}
+        expected_total = 33
+        self.assertEqual(
+            len(surface_text.encode("utf-8")),
+            expected_total,
+            "the oracle's literals must describe this fixture",
+        )
+
+        with self._runner.isolated_filesystem():
+            fixture = _GeneratedFixtureBuilder()
+            fixture._root = Path(".")  # noqa: SLF001 -- see class docstring
+            fixture._seed(  # noqa: SLF001
+                prior_text=surface_text, sections={"a": "unowned", "b": "unowned"}
+            )
+            append_entry(
+                Path("."),
+                _GEN_SURFACE,
+                CorpusEntry(
+                    id="e-unowned-only",
+                    surface=_GEN_SURFACE,
+                    section="a",
+                    tier="compressible",
+                    classification="Ambiguous",
+                    text="Never emitted; section a is unowned.",
+                    origin="test",
+                    ts="2026-09-08T00:00:00Z",
+                ),
+            )
+            fake_stdin = MagicMock()
+            fake_stdin.isatty.return_value = True
+            with patch("sys.stdin", fake_stdin):
+                result = self._runner.invoke(
+                    main, ["content", "compose", _GEN_SURFACE, "--consumer", _GEN_CONSUMER]
+                )
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+
+            persisted = candidate_path(Path("."), _GEN_SURFACE, _GEN_CONSUMER).read_bytes()
+            document = json.loads(
+                candidate_lineage_path(Path("."), _GEN_SURFACE, _GEN_CONSUMER).read_text(
+                    encoding="utf-8"
+                )
+            )
+
+            self.assertEqual(persisted, surface_text.encode("utf-8"))
+            self.assertEqual(len(persisted), expected_total)
+            self.assertEqual(
+                {sid: s["byte_span"] for sid, s in document.items()},
+                expected_spans,
+                "persisted lineage must match the CONTRACT-derived offsets, not merely "
+                "agree with another run of the same parser",
+            )
+            # The fenced heading must contribute no section at all.
+            self.assertNotIn("fake", document)
+
+    @covers("REQ-0.35.0-05-04")
     def test_explicit_candidate_removes_a_stale_generated_lineage(self) -> None:
         """A generated->explicit compose sequence does not leave a stale lineage map.
 

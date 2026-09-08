@@ -345,6 +345,9 @@ per REQ (its own baseline, its own scope).
 | 05-02 *(round-3 medium)* | fence scanner enters fence state on a 4-space-indented code block | green | killed | `assertion` | `test_four_space_indented_backtick_run_is_an_indented_code_block_not_a_fence` |
 | 05-02 *(round-3 medium)* | fence scanner treats an inline code span as a backtick fence opener | green | killed | `assertion` | `test_inline_code_span_is_not_a_backtick_fence_opener` |
 | 05-04/05 *(round-4 weakest point)* | persisted candidate newline-translated, sliding every lineage offset — the Windows `write_text` defect simulated platform-independently | green | killed | `assertion` | `test_generated_lineage_spans_index_the_PERSISTED_candidate_bytes` |
+| 05-04/05 *(round-5 isolation)* | persisted boundary MOVED AT CONSTANT LENGTH — 58 B → 58 B, so the length assertion structurally cannot fire and only the added identity/offset mapping assertion can catch it | green | killed | `assertion` | `test_generated_lineage_spans_index_the_PERSISTED_candidate_bytes` |
+| 05-02 *(oracle, parser side)* | SHARED-parser defect — fence tracking disabled | green | killed | `assertion` | `test_parser_reproduces_the_contract_derived_identities_and_offsets` |
+| 05-04/05 *(oracle, persisted side)* | SHARED-parser defect — fence tracking disabled | green | killed | `assertion` | `test_persisted_lineage_matches_contract_derived_offsets_not_just_the_parser` |
 
 Observed transcript (`baseline_green` is the unmutated scoped run; `failing` is the test
 the mutation broke):
@@ -363,9 +366,30 @@ REQ-0.35.0-05-04/05 (round-3 high)  baseline_green=True  outcome=killed       fa
 REQ-0.35.0-05-02 (round-3 medium)  baseline_green=True  outcome=killed       failure_class=assertion imports=True  failing=['test_four_space_indented_backtick_run_is_an_indented_code_block_not_a_fence']
 REQ-0.35.0-05-02 (round-3 medium)  baseline_green=True  outcome=killed       failure_class=assertion imports=True  failing=['test_inline_code_span_is_not_a_backtick_fence_opener']
 REQ-0.35.0-05-04/05 (round-4 weakest point)  baseline_green=True  outcome=killed       failure_class=assertion imports=True  failing=['test_generated_lineage_spans_index_the_PERSISTED_candidate_bytes']
+REQ-0.35.0-05-04/05 (round-5 isolation)  baseline_green=True  outcome=killed       failure_class=assertion imports=True  failing=['test_generated_lineage_spans_index_the_PERSISTED_candidate_bytes']
+REQ-0.35.0-05-02 (oracle, parser side)  baseline_green=True  outcome=killed       failure_class=assertion imports=True  failing=['test_measured_spans_match_the_contract_derived_widths', 'test_parser_reproduces_the_contract_derived_identities_and_offsets']
+REQ-0.35.0-05-04/05 (oracle, persisted side)  baseline_green=True  outcome=killed       failure_class=assertion imports=True  failing=['test_persisted_lineage_matches_contract_derived_offsets_not_just_the_parser']
 
-CONCLUSIVE: 13/13 assertion-class kills; all baselines green=True
+CONCLUSIVE: 16/16 assertion-class kills; all baselines green=True
 ```
+
+**Which assertion killed a mutation is OBSERVED, never inferred** (operator ruling
+2026-09-08: *"constant byte length alone does not prove which assertion killed the
+mutation"*). Both persisted-candidate rows were re-run with the mutation applied and the
+failure read:
+
+- Row 14 (constant-length boundary move) fails at **`test_content_compose.py:478`**, the
+  added identity/offset mapping assertion, with its own message:
+  `AssertionError: {'owned-section': (0, 95)} != {'owned-section': (0, 46), 'unowned-section': (46, 95)}`.
+  The fixture is 58 B → 58 B under the mutation, so the length assertion structurally
+  cannot fire; the mapping assertion is what caught it. Its incremental strength is
+  therefore demonstrated, not assumed.
+- Row 13 (LF→CRLF) fails at **`test_content_compose.py:446`**, the owned-body slice
+  assertion — `AssertionError: b'Owned body from the corpus.' not found in
+  b'## Owned Section\r\n\r\nOwned body from the corpus'`. **This corrects round 5's
+  account**, which attributed the pre-emption to the final-length assertion; the
+  conclusion it drew (row 13 does not isolate the mapping assertion) was right, its
+  mechanism was not.
 
 **Two rows of the first 9-row sweep were faulted by round 3's mutation audit and are
 corrected above, not defended.** Row 05's off-route vendor also lacked a declared
@@ -418,10 +442,14 @@ uv run gz arb step --name behave -- uv run -m behave \
 
 **Standing verdict:** not-refuted
 
-> Declared per GHI #964: the round-3 refutation token below is the historical record of
-> what was found and discharged; the standing verdict is the state after round 4's
-> INDEPENDENT confirmation of the corrected artifacts. It is not a relabelling — round 3's
-> own verdict stays written where it happened.
+> Declared per GHI #964 — exactly one declaration line; round 3's refutation token below
+> stays written where it happened and is not relabelled. The word is round 5's ACTUAL
+> verdict and is not adjusted by this agent's confidence in its own subsequent repairs.
+>
+> **ATTESTATION MUST NOT BE SOLICITED ON THIS LINE ALONE.** Round 5 raised two findings
+> against the EVIDENCE and both were repaired after it reviewed, so no independent round
+> has yet seen the corrected evidence or the contract-derived oracle. Round 6 is dispatched
+> for exactly that. Closure is demonstrated, never round-counted.
 
 
 Tier 1 (cross-vendor, Codex via the `codex-companion.mjs` plugin), two rounds. The
@@ -566,6 +594,73 @@ Both round-3 findings **CLOSED**, each checked in both directions with pasted ou
 - IRREDUCIBLE, disclosed: the mutation sweep *"remains recorded evidence, not an
   independently executed sweep."* No read-only reviewer can execute a sweep that edits and
   restores a guard. The record is reproducible by the operator from the table above.
+
+**Round 5 — `CORROBORATED-WITH-CAVEATS | not-refuted`** (receipt
+`arb-step-codexadversary-27a74d68972e47d4b26f7e6bcad878d5`, `exit_status: 0`), tier 1,
+scoped `--scope branch --base c4055edf` against revision `04f18f0e` — a narrow
+confirmation over a test-only delta. It verified `git diff c4055edf -- src/` itself (exit
+0, empty), confirmed the strengthened assertion matches `_refuse_generated_lineage_drift`'s
+bar, and confirmed exactly one standing-verdict declaration with round 3's refutation
+preserved as history.
+
+**This round is NOT recorded as clean.** It returned no material findings about the
+implementation, but it raised **two findings against the EVIDENCE**, and both were
+repaired AFTER it had reviewed — so its verdict describes the pre-repair evidence and
+cannot certify the repair (operator ruling 2026-09-08: *"Do not describe round 5 as clean
+while its evidence findings remain awaiting verification."*). Their closure is what round 6
+exists to verify.
+
+1. **Dangling Windows citation — the OBPI's own defect, not the reviewer's.** *"The cited
+   Gate 2 section does not identify the claimed native Windows run."* The round-4 record
+   asserted the sandbox coverage limit was discharged by a `windows-latest` run *"recorded
+   in § Gate 2 below"*, and no such record existed. A citation naming an artifact that is
+   not there is the presence-check family AGENTS.md names. Closed by § Gate 2 —
+   § Native Windows execution below, which now carries run and job ids, the runner OS, and
+   the executed gate list.
+2. **Row 13 did not isolate the added assertion.** Closed by row 14 above, with the
+   killing assertion observed rather than inferred.
+
+**Withdrawn claim — independent verification never required a second parser.** A prior
+revision of this brief asserted that closing round 5's shared-parser weakest point *"would
+need a second, independent parser, which is beyond this brief."* **That does not follow and
+is withdrawn** (operator ruling 2026-09-08: *"Independent expected results do not require
+another parser."*). Using one parser on both sides proves the two AGREE; it cannot prove the
+boundaries are CORRECT. An oracle only needs expectations derived from the CONTRACT — so
+`TestBoundariesAgainstContractDerivedExpectations` and
+`test_persisted_lineage_matches_contract_derived_offsets_not_just_the_parser` state the
+section identities and exact half-open byte offsets as hand-derived literals (segment
+lengths spelled out in the fixture: `# A\n`=4, `café\n`=6, ` ```\n `=4, `## fake\n`=8
+FENCED, ` ```\n `=4, `## B\n`=5, `x\n`=2 ⇒ `a`=[0,26), `b`=[26,33), total 33).
+
+Measured with a SHARED-parser defect injected (fence tracking disabled), which moves both
+sides of any agreement check together:
+
+| Test | Kind | Under the shared-parser defect |
+|---|---|---|
+| `test_ordinary_generation_is_still_accepted` | parser vs lineage | **PASSES — blind** |
+| `test_generated_lineage_spans_index_the_PERSISTED_candidate_bytes` | parser vs lineage | **PASSES — blind** |
+| `test_parser_reproduces_the_contract_derived_identities_and_offsets` | contract oracle | **FAILS — catches it** |
+| `test_persisted_lineage_matches_contract_derived_offsets_not_just_the_parser` | contract oracle | **FAILS — catches it** |
+
+Control rows 15-16 pin this. The claim is refuted by this OBPI's own evidence, not merely
+retracted in prose.
+
+**Disposition of the remaining limitations — environment, not defect, and each justified
+under the governing skill:**
+
+- **The mutation sweep is not executed by the adversary.** This is an ENVIRONMENT limitation
+  of the tier-1 reviewer *and a sanctioned division of labour*, not an impossibility. The
+  governing skill states it directly (`.claude/skills/gz-obpi-pipeline/SKILL.md`): *"the
+  mutation sweep (which must edit a guard and restore it) and any negative control that
+  mutates the tree are Step 4a's burden; Step 4b audits that record rather than reproducing
+  it."* Rounds 4 and 5 each performed that audit, round 4 finding the record semantically
+  sound and round 5 correctly faulting row 13. A prior revision of this brief called this
+  *"irreducible"*, which overstated: it is reproducible by the operator from the table
+  above, and the skill assigns the audit — not the re-execution — as the correct Step 4b
+  treatment.
+- **Disk-fixture tests error in the sandbox** (`No usable temporary directory found`).
+  Environment limitation; the skill instructs the adversary to *"report it as a coverage
+  limit, never as a defect."* Discharged by execution in writable CI — § Gate 2 below.
 
 ### Value Narrative
 

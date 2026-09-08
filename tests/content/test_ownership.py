@@ -319,6 +319,82 @@ class TestIterSectionBoundaries(unittest.TestCase):
 # longer run of the SAME character.
 
 
+class TestBoundariesAgainstContractDerivedExpectations(unittest.TestCase):
+    """An INDEPENDENT oracle: expectations stated from the contract, not from the parser.
+
+    Every other boundary/lineage assertion in this OBPI compares one parser run
+    against another (or against a lineage the same parser produced). That proves
+    AGREEMENT; it cannot prove CORRECT boundaries, because a defect inside the
+    shared parser moves both sides together and the comparison still passes.
+
+    These fixtures fix that without a second parser implementation: the expected
+    section identities and exact half-open UTF-8 byte offsets are written out as
+    literals, derived by hand from the contract --
+
+      * a section runs from the first byte of its heading line to the byte
+        before the next REAL heading (or to end of document);
+      * a heading-shaped line inside a fence is not a real heading;
+      * offsets are UTF-8 BYTES, never codepoints.
+
+    `test_a_shared_parser_defect_is_caught_by_the_oracle` demonstrates the
+    difference: it is the reason these literals are worth their maintenance.
+    """
+
+    # Segment byte lengths, spelled out so a reader can verify the literals:
+    #   "# A\n"      ->  4   ("#", " ", "A", "\n")
+    #   "café\n"     ->  6   (c, a, f, é=2 bytes, \n)
+    #   "```\n"      ->  4
+    #   "## fake\n"  ->  8   fenced, therefore NOT a real heading
+    #   "```\n"      ->  4
+    #   "## B\n"     ->  5
+    #   "x\n"        ->  2
+    # section "a": starts at 0, ends where "## B" begins = 4+6+4+8+4 = 26
+    # section "b": starts at 26, ends at total = 26+5+2   = 33
+    SURFACE = "# A\ncafé\n```\n## fake\n```\n## B\nx\n"
+    EXPECTED_IDS = ["a", "b"]
+    EXPECTED_SPANS = {"a": (0, 26), "b": (26, 33)}
+    EXPECTED_TOTAL = 33
+
+    def test_fixture_byte_length_matches_the_hand_derived_total(self) -> None:
+        """Guard the oracle itself: the literals must describe THIS fixture."""
+        self.assertEqual(len(self.SURFACE.encode("utf-8")), self.EXPECTED_TOTAL)
+
+    def test_parser_reproduces_the_contract_derived_identities_and_offsets(self) -> None:
+        """`iter_section_boundaries` must match hand-derived literals exactly."""
+        boundaries = iter_section_boundaries(self.SURFACE)
+
+        self.assertEqual([b.section_id for b in boundaries], self.EXPECTED_IDS)
+        self.assertEqual({b.section_id: (b.start, b.end) for b in boundaries}, self.EXPECTED_SPANS)
+
+    def test_measured_spans_match_the_contract_derived_widths(self) -> None:
+        """`measure_section_spans` widths must equal the hand-derived end-minus-start."""
+        expected = {sid: end - start for sid, (start, end) in self.EXPECTED_SPANS.items()}
+
+        self.assertEqual(measure_section_spans(self.SURFACE), expected)
+
+    def test_a_shared_parser_defect_is_caught_by_the_oracle(self) -> None:
+        """The point of the literals: an agreement check cannot see a shared defect.
+
+        Simulates a parser that forgets fences -- the exact defect class round 3
+        found -- by re-deriving the roster with fence tracking disabled. An
+        assertion that compared this to another run of the SAME broken parser
+        would pass; compared to the contract-derived literals it fails, which is
+        what makes this oracle independent without a second implementation.
+        """
+        broken_ids = [
+            line[len("## ") :].strip().lower()
+            for line in self.SURFACE.splitlines()
+            if line.startswith("## ")
+        ]
+
+        # A same-parser agreement check is blind to it: the broken roster is
+        # self-consistent, so comparing it to itself proves nothing.
+        self.assertEqual(broken_ids, broken_ids)
+        # The contract-derived oracle is not blind to it.
+        self.assertNotEqual(broken_ids, self.EXPECTED_IDS)
+        self.assertIn("fake", broken_ids)
+
+
 class TestFenceTracksOpeningCharacterAndLength(unittest.TestCase):
     def test_ordinary_three_backtick_fence_still_yields_the_control_boundaries(self) -> None:
         """The pre-existing three-backtick control must still yield ['a', 'b']."""
