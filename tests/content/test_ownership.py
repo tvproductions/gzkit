@@ -360,6 +360,60 @@ class TestFenceTracksOpeningCharacterAndLength(unittest.TestCase):
 
         self.assertEqual([b.title for b in boundaries], ["a", "b"])
 
+    def test_four_space_indented_backtick_run_is_an_indented_code_block_not_a_fence(self) -> None:
+        """CommonMark: 4+ spaces of indentation makes the line indented CODE, not a fence.
+
+        Round 3 (cross-vendor adversarial review): `_fence_run` called
+        `lstrip()`, so an indented run opened fence state and every heading
+        after it vanished -- measured roster ['a'] against a true ['a', 'b'].
+        The failure direction is a FALSE REFUSAL: legitimate entry text is
+        rejected because a real section appears to have gone missing.
+        """
+        surface_text = "# a\n    ```\n## b\nbody\n"
+
+        boundaries = iter_section_boundaries(surface_text)
+
+        self.assertEqual([b.title for b in boundaries], ["a", "b"])
+        self.assertEqual(set(measure_section_spans(surface_text)), {"a", "b"})
+
+    def test_three_space_indented_fence_is_still_a_real_fence(self) -> None:
+        """The positive direction: 3 spaces is still within CommonMark's fence indent."""
+        surface_text = "# a\n   ```\n## fake\n   ```\n# b\nbody\n"
+
+        boundaries = iter_section_boundaries(surface_text)
+
+        self.assertEqual([b.title for b in boundaries], ["a", "b"])
+
+    def test_inline_code_span_is_not_a_backtick_fence_opener(self) -> None:
+        """A backtick fence's info string may not contain a backtick (CommonMark).
+
+        Round 3: ```` ```inline code``` ```` read as a fence opener on its
+        leading run, hiding every following heading -- roster ['a'] against a
+        true ['a', 'b']. Same false-refusal direction as the indent case.
+        """
+        surface_text = "# a\n```inline code```\n## b\nbody\n"
+
+        boundaries = iter_section_boundaries(surface_text)
+
+        self.assertEqual([b.title for b in boundaries], ["a", "b"])
+        self.assertEqual(set(measure_section_spans(surface_text)), {"a", "b"})
+
+    def test_tilde_fence_info_string_may_contain_tildes(self) -> None:
+        """CommonMark's asymmetry is preserved: only BACKTICK info strings are restricted."""
+        surface_text = "# a\n~~~ lang~with~tildes\n## fake\n~~~\n# b\nbody\n"
+
+        boundaries = iter_section_boundaries(surface_text)
+
+        self.assertEqual([b.title for b in boundaries], ["a", "b"])
+
+    def test_backtick_fence_with_an_ordinary_info_string_still_opens(self) -> None:
+        """The positive direction: a normal ```python fence still hides its contents."""
+        surface_text = "# a\n```python\n## fake\n```\n# b\nbody\n"
+
+        boundaries = iter_section_boundaries(surface_text)
+
+        self.assertEqual([b.title for b in boundaries], ["a", "b"])
+
     def test_unterminated_fence_swallows_every_subsequent_heading(self) -> None:
         """An unterminated fence never re-closes -- a named scope limitation, unchanged by Fix 5."""
         surface_text = "# a\n```\n## never closes\n# also never closes\n"

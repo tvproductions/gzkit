@@ -626,10 +626,17 @@ class TestPerConsumerOffsetsAndRouteRefusal(_GenerateCandidateFixtureMixin, unit
     @covers("REQ-0.35.0-05-05")
     def test_two_routed_consumers_get_different_offsets_and_off_route_is_refused(self) -> None:
         """Spans are computed per-candidate; an off-route consumer is refused."""
+        # vendorC is deliberately given a DECLARED TEMPERATURE and (below) a
+        # prior rendition, while being left OFF the route list. Round 3's
+        # mutation audit found the earlier fixture could not isolate the route
+        # gate: vendorC lacked a temperature, so defeating the route guard
+        # still refused -- via `temperature_for` -- and the covering assertion
+        # could only fail on diagnostic wording. With every other precondition
+        # satisfied, the refusal is now attributable to the route gate alone.
         manifest = {
             "content_type_routes": {_GEN_OWNER: ["vendorA", "vendorB"]},
             "content_type_temperatures": {
-                _GEN_OWNER: {"vendorA": "lite", "vendorB": "lite"},
+                _GEN_OWNER: {"vendorA": "lite", "vendorB": "lite", "vendorC": "lite"},
             },
             "surface_content_types": {_GEN_SURFACE: _GEN_OWNER},
         }
@@ -646,6 +653,7 @@ class TestPerConsumerOffsetsAndRouteRefusal(_GenerateCandidateFixtureMixin, unit
 
         self._write_prior_rendition(_GEN_SURFACE, "vendorA", prior_a)
         self._write_prior_rendition(_GEN_SURFACE, "vendorB", prior_b)
+        self._write_prior_rendition(_GEN_SURFACE, "vendorC", prior_a)
 
         spans_a = measure_section_spans(prior_a)
         spans_b = measure_section_spans(prior_b)
@@ -799,6 +807,137 @@ class TestDuplicateLiveInvariantRefusal(_GenerateCandidateFixtureMixin, unittest
 # A post-fix independent review found these promised in the brief's
 # Generation and Accounting Contract but absent from this file. Added as a
 # direct repair, not new-design; no production change expected.
+
+
+class TestGeneratedLineageSpansMatchActualBoundaries(
+    _GenerateCandidateFixtureMixin, unittest.TestCase
+):
+    @covers("REQ-0.35.0-05-04")
+    @covers("REQ-0.35.0-05-05")
+    def test_same_roster_heading_injection_that_moves_boundaries_is_refused(self) -> None:
+        """A same-roster injection that MOVES real boundaries is refused.
+
+        Round 3 (cross-vendor adversarial review) refuted the roster-only
+        check: an entry whose text carries a heading DUPLICATING an existing
+        later heading, plus an unbalanced fence hiding the original, leaves the
+        section-id roster byte-identical while the actual boundary moves. The
+        id comparison and `assert_complete_partition` both passed, because the
+        generator's own numbers stayed internally consistent -- so the lineage
+        named spans belonging to a different section (REQ-04/05 false
+        provenance). Reproduced on the live corpus at
+        lineage (30261, 30682) vs actual (30261, 30650).
+        """
+        prior_text = "## Owned Section\nold body\n## Unowned Section\ncarried text\n"
+        self._seed(prior_text=prior_text)
+        append_entry(
+            self._root,
+            _GEN_SURFACE,
+            CorpusEntry(
+                id="e-attack",
+                surface=_GEN_SURFACE,
+                section="owned-section",
+                tier="compressible",
+                classification="Ambiguous",
+                # Duplicates the later heading AND opens a fence that hides it.
+                text="## Unowned Section\n```",
+                origin="test",
+                ts="2026-09-07T00:00:00Z",
+            ),
+        )
+
+        with self.assertRaises(ValueError) as ctx:
+            generate_candidate(self._root, _GEN_SURFACE, _GEN_CONSUMER)
+
+        message = str(ctx.exception)
+        self.assertIn("moved spans", message)
+        self.assertIn("EXACT UTF-8 section bytes", message)
+
+    @covers("REQ-0.35.0-05-04")
+    def test_ordinary_generation_is_still_accepted(self) -> None:
+        """The positive direction: a legitimate body-only entry still generates."""
+        self._seed()
+        append_entry(
+            self._root,
+            _GEN_SURFACE,
+            CorpusEntry(
+                id="e-ok",
+                surface=_GEN_SURFACE,
+                section="owned-section",
+                tier="compressible",
+                classification="Ambiguous",
+                text="Ordinary body text, no heading.",
+                origin="test",
+                ts="2026-09-07T00:00:00Z",
+            ),
+        )
+
+        result = generate_candidate(self._root, _GEN_SURFACE, _GEN_CONSUMER)
+
+        candidate_bytes = result.rendition.candidate_text.encode("utf-8")
+        for boundary in iter_section_boundaries(result.rendition.candidate_text):
+            self.assertEqual(
+                tuple(result.lineage.sections[boundary.section_id].byte_span),
+                (boundary.start, boundary.end),
+                "every lineage span must equal the candidate's actual boundary",
+            )
+        self.assertEqual(
+            max(s.byte_span[1] for s in result.lineage.sections.values()),
+            len(candidate_bytes),
+        )
+
+
+class TestGeneratedEmissionAttributionCountsOnlyEmittedEntries(
+    _GenerateCandidateFixtureMixin, unittest.TestCase
+):
+    @covers("REQ-0.35.0-05-06")
+    def test_a_compressible_entry_in_an_unowned_section_is_never_attributed(self) -> None:
+        """`compressible_bytes_after` counts only entries the generator EMITTED.
+
+        Round 3's mutation audit found the prior REQ-06 control bound to the
+        EXPLICIT path's presence filter, which leaves generated emission
+        attribution unaffected -- so it did not witness the generator-specific
+        requirement it claimed. This binds it: a compressible entry addressed
+        to an UNOWNED section is a member of the effective corpus (so it counts
+        toward `before`) but is never emitted, because unowned sections carry
+        forward from the prior rendition only. Attributing it would be exactly
+        the substring-subtraction accounting REQ-06 retires.
+        """
+        self._seed()
+        append_entry(
+            self._root,
+            _GEN_SURFACE,
+            CorpusEntry(
+                id="e-owned",
+                surface=_GEN_SURFACE,
+                section="owned-section",
+                tier="compressible",
+                classification="Ambiguous",
+                text="Emitted body.",
+                origin="test",
+                ts="2026-09-07T00:00:00Z",
+            ),
+        )
+        append_entry(
+            self._root,
+            _GEN_SURFACE,
+            CorpusEntry(
+                id="e-unowned",
+                surface=_GEN_SURFACE,
+                section="unowned-section",
+                tier="compressible",
+                classification="Ambiguous",
+                text="Never emitted -- this section carries forward verbatim.",
+                origin="test",
+                ts="2026-09-07T00:00:01Z",
+            ),
+        )
+
+        evidence = generate_candidate(
+            self._root, _GEN_SURFACE, _GEN_CONSUMER
+        ).rendition.byte_evidence
+
+        self.assertEqual(evidence.compressible_bytes_after, len(b"Emitted body."))
+        self.assertGreater(evidence.compressible_bytes_before, evidence.compressible_bytes_after)
 
 
 class TestEmptyOwnedSectionRetainsHeading(_GenerateCandidateFixtureMixin, unittest.TestCase):

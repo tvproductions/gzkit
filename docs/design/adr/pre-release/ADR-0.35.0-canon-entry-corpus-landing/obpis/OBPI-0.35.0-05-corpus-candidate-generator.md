@@ -337,10 +337,13 @@ per REQ (its own baseline, its own scope).
 | 05-03 | owned sections derived from the RAW log (`effective = effective_corpus(corpus)` → `effective = corpus`), resurrecting retired entries | green | killed | `assertion` | `test_retired_entry_contributes_nothing_while_verbatim_span_is_unaffected` |
 | 05-04 | lineage emits no contributing `entry_ids` (`tuple(e.id for e in section_entries)` → `()`) | green | killed | `assertion` | `test_lineage_carries_owned_entry_ids_and_byte_span_for_every_section` |
 | 05-05 | off-route consumer not refused (`if consumer not in declared_routes:` → `if not declared_routes:`) | green | killed | `assertion` | `test_two_routed_consumers_get_different_offsets_and_off_route_is_refused` |
-| 05-06 | attribution counts compressible entries ABSENT from the candidate (presence filter dropped) | green | killed | `assertion` | `test_candidate_with_no_compressible_text_reports_zero_after` |
+| 05-06 | GENERATED emission attribution counts entries the generator never emitted (`section_entries` → `effective.entries`) | green | killed | `assertion` | `test_a_compressible_entry_in_an_unowned_section_is_never_attributed` |
 | 05-07 | inflation guard defeated (`if compressible_bytes_after > compressible_bytes_before:` → `if False:`) — the inflated figure is emitted, not refused | green | killed | `assertion` | `test_byte_evidence_raises_when_attributed_exceeds_before` |
 | 05-08 | generation made call-history dependent — same inputs, different bytes | green | killed | `assertion` | `test_two_runs_produce_byte_identical_candidate_and_lineage` |
 | 05-09 | duplicate-live-invariant refusal defeated (`len(group) <= 1` → `len(group) <= 2`) | green | killed | `assertion` | `test_two_live_byte_identical_invariant_entries_are_refused` |
+| 05-04/05 *(round-3 high)* | lineage validated by section-id ROSTER instead of actual boundary offsets (`if actual == claimed:` → `if set(actual) == set(claimed):`) | green | killed | `assertion` | `test_same_roster_heading_injection_that_moves_boundaries_is_refused` |
+| 05-02 *(round-3 medium)* | fence scanner enters fence state on a 4-space-indented code block | green | killed | `assertion` | `test_four_space_indented_backtick_run_is_an_indented_code_block_not_a_fence` |
+| 05-02 *(round-3 medium)* | fence scanner treats an inline code span as a backtick fence opener | green | killed | `assertion` | `test_inline_code_span_is_not_a_backtick_fence_opener` |
 
 Observed transcript (`baseline_green` is the unmutated scoped run; `failing` is the test
 the mutation broke):
@@ -351,13 +354,27 @@ REQ-0.35.0-05-02  baseline_green=True  outcome=killed       failure_class=assert
 REQ-0.35.0-05-03  baseline_green=True  outcome=killed       failure_class=assertion imports=True  failing=['test_retired_entry_contributes_nothing_while_verbatim_span_is_unaffected']
 REQ-0.35.0-05-04  baseline_green=True  outcome=killed       failure_class=assertion imports=True  failing=['test_lineage_carries_owned_entry_ids_and_byte_span_for_every_section']
 REQ-0.35.0-05-05  baseline_green=True  outcome=killed       failure_class=assertion imports=True  failing=['test_two_routed_consumers_get_different_offsets_and_off_route_is_refused']
-REQ-0.35.0-05-06  baseline_green=True  outcome=killed       failure_class=assertion imports=True  failing=['test_candidate_with_no_compressible_text_reports_zero_after']
+REQ-0.35.0-05-06  baseline_green=True  outcome=killed       failure_class=assertion imports=True  failing=['test_a_compressible_entry_in_an_unowned_section_is_never_attributed']
 REQ-0.35.0-05-07  baseline_green=True  outcome=killed       failure_class=assertion imports=True  failing=['test_byte_evidence_raises_when_attributed_exceeds_before']
 REQ-0.35.0-05-08  baseline_green=True  outcome=killed       failure_class=assertion imports=True  failing=['test_two_runs_produce_byte_identical_candidate_and_lineage']
 REQ-0.35.0-05-09  baseline_green=True  outcome=killed       failure_class=assertion imports=True  failing=['test_two_live_byte_identical_invariant_entries_are_refused']
+REQ-0.35.0-05-04/05 (round-3 high)  baseline_green=True  outcome=killed       failure_class=assertion imports=True  failing=['test_same_roster_heading_injection_that_moves_boundaries_is_refused']
+REQ-0.35.0-05-02 (round-3 medium)  baseline_green=True  outcome=killed       failure_class=assertion imports=True  failing=['test_four_space_indented_backtick_run_is_an_indented_code_block_not_a_fence']
+REQ-0.35.0-05-02 (round-3 medium)  baseline_green=True  outcome=killed       failure_class=assertion imports=True  failing=['test_inline_code_span_is_not_a_backtick_fence_opener']
 
-CONCLUSIVE: 9/9 assertion-class kills; all baselines green=True
+CONCLUSIVE: 12/12 assertion-class kills; all baselines green=True
 ```
+
+**Two rows of the first 9-row sweep were faulted by round 3's mutation audit and are
+corrected above, not defended.** Row 05's off-route vendor also lacked a declared
+temperature, so defeating the route guard still refused — via `temperature_for` — and the
+covering assertion could only fail on diagnostic wording; the fixture now gives that vendor
+a temperature AND a prior rendition, so the refusal is attributable to the route gate
+alone. Row 06 dropped the EXPLICIT path's presence filter, which leaves GENERATED emission
+attribution untouched, so it never witnessed the generator-specific REQ-06 it claimed; it
+is rebound to emission attribution with a new covering test. The earlier
+"9/9 assertion-class kills" therefore **overstated** what was established — 7 of 9 rows
+were sound. The corrected sweep is 12/12.
 
 The source file is restored by the sweep and after the run
 `src/gzkit/content/composer.py` carries none of the nine mutation strings and all six
@@ -397,7 +414,13 @@ uv run gz arb step --name behave -- uv run -m behave \
 
 ### Step 4b — Independent Adversarial Validation
 
-**Standing verdict:** not-refuted
+**Standing verdict:** refuted
+
+> Round 3 REFUTED this OBPI. Both findings are fixed and a round-4 independent
+> re-review is required before this line may change; it is NOT changed by the
+> implementing agent's own confirmation of its fixes. `gz obpi complete` refuses a
+> refuting verdict outright (GHI #960), so no completion may be recorded against it.
+
 
 Tier 1 (cross-vendor, Codex via the `codex-companion.mjs` plugin), two rounds. The
 round-1 refutation token below is the historical record of what was found and
@@ -448,6 +471,55 @@ after the review, which is what its own "next steps" asked for:
 **Residual, disclosed:** native Windows persistence was not executed here. The fix is a
 `write_bytes` call whose correctness follows from removing text-mode translation, and the
 repository runs `windows-latest` in CI, but this session did not observe it.
+
+**Round 3 — `NOT-CORROBORATED | refuted`** (receipt
+`arb-step-codexadversary-6d6d992d16e2466cb6a8af7d18073620`, `exit_status: 0`), tier 1,
+cross-vendor Codex via the `codex-companion.mjs` plugin, scoped
+`--scope branch --base c9e62790` against revision `edb52f10`. Dispatched under the
+operator's 2026-09-07 instruction to re-review the final implementation with the round-1
+findings supplied, their closure verified, and freedom to discover new defects.
+
+It CONFIRMED the live feature positively — `LIVE deterministic=True actual_spans=True
+unowned_verbatim=True exact_owned_ids=True partition=True invariant_floor=True
+emission_attribution=True`, all five round-1 closures verified in BOTH directions, every
+refusal guard exercised against a legitimate control, `REQ10 frozen=True extra=forbid
+lineage_fields=[]` — and then reproduced **two new defects**:
+
+1. `[high]` **Roster-only lineage validation** (`composer.py`). Round 1's fix re-walked the
+   candidate but compared only section-id SETS. An entry whose text carries a heading
+   DUPLICATING an existing later heading, plus an unbalanced fence hiding the original,
+   leaves the roster byte-identical while the real boundary MOVES — so the lineage names
+   spans belonging to a different section. Both the roster check and
+   `assert_complete_partition` passed, because the generator's own numbers stayed
+   internally consistent. **Independently reproduced here against the live corpus** before
+   acting: `governance-doctrine-surfaces` lineage `(30261, 30682)` vs actual
+   `(30261, 30650)`; `architectural-boundaries` lineage `(30682, 31277)` vs actual
+   `(30650, 31277)` — 32 bytes of false provenance, roster 22 = 22, partition "complete".
+2. `[medium]` **Fence scanner over-acceptance** (`ownership.py`). `_fence_run` `lstrip()`ed
+   arbitrary indentation and read any leading three-backtick run as a fence. Under
+   CommonMark a 4-space-indented run is an indented CODE BLOCK, and a backtick fence's info
+   string may not contain a backtick — so ` ```inline code``` ` is not a fence opener.
+   Both entered fence state and swallowed the next heading. The failure direction is a
+   **FALSE REFUSAL**: legitimate invariant entry text is rejected because a real section
+   appears to have gone missing. Independently reproduced: `# a` + the line + `## b`
+   returned roster `['a']` against a true `['a', 'b']` for both inputs.
+
+It also **audited the recorded mutation table** and faulted two rows as not witnessing the
+REQ they claimed (05 and 06) — corrected in § Falsifiability above rather than defended.
+
+**Same-root escalation, surfaced not resolved.** Round 1's finding 2 and round 3's high
+finding share one root: *the lineage is validated against a weaker proxy than the rendered
+bytes* (first the generator's own numeric assignments, then the section-id roster). The
+`gz-obpi-pipeline` skill directs that a repeated root be escalated to the operator rather
+than patched again. The fix applied compares each reparsed section's identity AND exact
+half-open offsets — which IS the rendered output, leaving nothing weaker to regress to — so
+it is judged terminal for this root rather than a third layer. **That judgment is the
+operator's to overturn.**
+
+**Disposition:** both findings fixed, each with a paired covering test proving the guard
+fires on the defect AND still accepts the legitimate case, and each with a behavioural
+negative control (rows 10-12 above). Round 4 re-review pending; the standing verdict stays
+`refuted` until an independent round returns otherwise.
 
 ### Value Narrative
 

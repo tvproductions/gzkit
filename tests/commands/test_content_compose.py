@@ -404,6 +404,67 @@ class TestContentComposeCmd(unittest.TestCase):
             self.assertEqual(candidate_out.read_bytes(), candidate_text.encode("utf-8"))
 
     @covers("REQ-0.35.0-05-04")
+    @covers("REQ-0.35.0-05-05")
+    def test_generated_lineage_spans_index_the_PERSISTED_candidate_bytes(self) -> None:
+        """Every staged lineage span slices its section out of the PERSISTED candidate file.
+
+        Fix 3's residual (cross-vendor adversarial review round 1): the CLI
+        persisted the candidate with `Path.write_text`, whose `newline=None`
+        performs platform-dependent LF -> CRLF translation on Windows. The
+        existing `write_bytes`-never-`write_text` test guards the EXPLICIT
+        path's write boundary; nothing asserted that the GENERATED path's
+        lineage offsets still index the bytes that actually reached disk.
+
+        That coherence is the property CRLF translation destroys, and it is
+        the one this OBPI's lineage contract rests on (REQ-0.35.0-05-04/05:
+        spans index "its own candidate's exact UTF-8 section bytes"). Asserted
+        against the file read back as BYTES, so the check is platform-sensitive
+        by construction: on a newline-translating write the spans would slide
+        and the final span end would no longer equal the file length.
+        """
+        with self._runner.isolated_filesystem():
+            _seed_generated_fixture(Path("."))
+            fake_stdin = MagicMock()
+            fake_stdin.isatty.return_value = True
+            with patch("sys.stdin", fake_stdin):
+                args = ["content", "compose", _GEN_SURFACE, "--consumer", _GEN_CONSUMER]
+                result = self._runner.invoke(main, args)
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+
+            persisted = candidate_path(Path("."), _GEN_SURFACE, _GEN_CONSUMER).read_bytes()
+            document = json.loads(
+                candidate_lineage_path(Path("."), _GEN_SURFACE, _GEN_CONSUMER).read_text(
+                    encoding="utf-8"
+                )
+            )
+
+            # The owned section's corpus body must be sliceable out of the
+            # PERSISTED bytes by its own recorded span -- not merely present
+            # somewhere in the file.
+            owned_start, owned_end = document["owned-section"]["byte_span"]
+            self.assertIn(
+                _OWNED_CORPUS_TEXT.encode("utf-8"),
+                persisted[owned_start:owned_end],
+                "owned section's span must slice its corpus body out of the persisted file",
+            )
+
+            # The partition must cover the persisted file exactly: contiguous
+            # from 0, no gap, no overlap, ending at the real byte length.
+            spans = sorted(tuple(s["byte_span"]) for s in document.values())
+            cursor = 0
+            for start, end in spans:
+                self.assertEqual(
+                    start, cursor, f"span {start, end} does not resume at byte {cursor}"
+                )
+                cursor = end
+            self.assertEqual(
+                cursor,
+                len(persisted),
+                "lineage partition must end at the PERSISTED candidate's byte length -- a "
+                "newline-translating write would slide every offset",
+            )
+
+    @covers("REQ-0.35.0-05-04")
     def test_explicit_candidate_removes_a_stale_generated_lineage(self) -> None:
         """A generated->explicit compose sequence does not leave a stale lineage map.
 

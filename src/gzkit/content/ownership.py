@@ -168,12 +168,15 @@ class SectionBoundary(NamedTuple):
 #: as the one that opened it.
 _FENCE_CHARS = ("`", "~")
 _MIN_FENCE_RUN = 3
+#: CommonMark: a fence may be indented at most 3 spaces. At 4+ the line is an
+#: indented code block, not a fence opener.
+_MAX_FENCE_INDENT = 3
 
 
-def _fence_run(stripped: str) -> tuple[str, int] | None:
-    """Return ``(fence char, run length)`` when *stripped* opens/closes a fence, else ``None``.
+def _fence_run(line: str) -> tuple[str, int] | None:
+    """Return ``(fence char, run length)`` when *line* opens/closes a fence, else ``None``.
 
-    Cross-vendor adversarial review (Step 4b) refuted the prior
+    Cross-vendor adversarial review round 1 refuted the prior
     ``startswith("```")`` toggle: a legitimate FOUR-backtick fence containing a
     three-backtick example closed the scanner early, so the walker reported the
     example's heading as a real section (observed roster ``['a', 'fake', 'b']``
@@ -182,13 +185,35 @@ def _fence_run(stripped: str) -> tuple[str, int] | None:
     refuse a valid declaration or attribute code-example text to a section that
     does not exist, which is why the fence's IDENTITY -- character and length --
     has to be tracked rather than its mere presence.
+
+    Round 3 refuted the follow-up: recognizing the identity was not enough
+    because the scanner still entered fence state on lines CommonMark does not
+    treat as fences, and the failure direction inverted -- legitimate entry
+    text was FALSELY REFUSED because a real heading after it disappeared:
+
+      * ``lstrip()`` accepted arbitrary indentation, so a four-space-indented
+        run (an indented CODE BLOCK under CommonMark) opened a fence.
+      * A backtick fence's info string may not contain a backtick, so an inline
+        code span such as ``` ```inline code``` ``` is not a fence opener --
+        but its leading run of three read as one.
+
+    Measured: ``# a`` + the line + ``## b`` returned roster ``['a']`` for both,
+    against a true ``['a', 'b']``. Tilde fences keep the permissive info-string
+    rule, which is CommonMark's actual asymmetry, not an oversight.
     """
-    text = stripped.lstrip()
+    indent = len(line) - len(line.lstrip(" "))
+    if indent > _MAX_FENCE_INDENT:
+        return None
+    text = line[indent:]
     if not text or text[0] not in _FENCE_CHARS:
         return None
     char = text[0]
     run = len(text) - len(text.lstrip(char))
-    return (char, run) if run >= _MIN_FENCE_RUN else None
+    if run < _MIN_FENCE_RUN:
+        return None
+    if char == "`" and "`" in text[run:]:
+        return None
+    return (char, run)
 
 
 def _closes_fence(stripped: str, opening: tuple[str, int]) -> bool:

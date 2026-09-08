@@ -13,9 +13,9 @@ undeclared or when the candidate violates the invariant-floor constraint.
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Mapping, Sequence
+from collections.abc import Mapping, Sequence
 from pathlib import Path
-from typing import NamedTuple
+from typing import NamedTuple, NoReturn
 
 from gzkit.content.corpus_store import corpus_path, load_corpus
 from gzkit.content.lineage import ConsumerLineage, SectionLineage
@@ -297,40 +297,72 @@ def _refuse_unknown_section_addressing(
             raise ValueError(msg)
 
 
-def _refuse_generated_section_roster_drift(
-    surface: str, consumer: str, candidate_text: str, lineage_ids: Iterable[str]
+def _refuse_generated_lineage_drift(
+    surface: str,
+    consumer: str,
+    candidate_text: str,
+    sections: Mapping[str, SectionLineage],
 ) -> None:
-    """Refuse when the ACTUAL generated section roster disagrees with the lineage.
+    r"""Refuse unless the lineage describes the candidate's ACTUAL section boundaries.
 
-    Fix 2b (cross-vendor adversarial review). `assert_complete_partition`
-    validates only the generator's OWN numeric byte-span assignments; it never
-    re-reads the candidate text. An effective entry whose TEXT contains a real
-    heading line injects a genuine, un-lineaged H1/H2 section that partition
-    check cannot see. This re-walks `iter_section_boundaries` over the
-    candidate the generator is about to return and refuses unless its
-    section-id roster is EXACTLY the lineage's roster -- the lineage must
-    describe the actual generated Markdown, never merely the generator's intent.
+    Fix 2b (round 1) re-walked ``iter_section_boundaries`` over the candidate
+    but compared only the section-id ROSTER. Round 3 refuted that: comparing
+    id SETS is still a projection of the rendered output, not the rendered
+    output. An entry whose text carries a heading line that DUPLICATES an
+    existing later heading, and opens a fence that hides the original, leaves
+    the roster byte-identical while MOVING the real boundary -- so the lineage
+    named spans that no longer describe the sections they claim, and both the
+    roster check and ``assert_complete_partition`` passed (the generator's own
+    numbers stayed internally consistent). Reproduced against the live corpus:
+    an entry addressed to ``governance-doctrine-surfaces`` with text
+    ``"## Architectural Boundaries\n```"`` yielded lineage
+    ``(30261, 30682)`` against an actual ``(30261, 30650)``.
+
+    The comparison is therefore the FULL partition -- every section's identity
+    AND its exact half-open start/end -- because that IS the rendered output;
+    nothing weaker can witness REQ-0.35.0-05-04/05's "spans index its own
+    candidate's exact UTF-8 section bytes".
     """
-    generated_ids = {boundary.section_id for boundary in iter_section_boundaries(candidate_text)}
-    lineage_id_set = set(lineage_ids)
-    if generated_ids == lineage_id_set:
+    actual = {b.section_id: (b.start, b.end) for b in iter_section_boundaries(candidate_text)}
+    claimed = {sid: tuple(s.byte_span) for sid, s in sections.items()}
+    if actual == claimed:
         return
-    extra = sorted(generated_ids - lineage_id_set)
-    missing = sorted(lineage_id_set - generated_ids)
+    _refuse_lineage_mismatch(surface, consumer, actual, claimed)
+
+
+def _refuse_lineage_mismatch(
+    surface: str,
+    consumer: str,
+    actual: Mapping[str, tuple[int, int]],
+    claimed: Mapping[str, tuple[int, int]],
+) -> NoReturn:
+    """Raise the three-part recovery prose for a lineage/candidate disagreement.
+
+    Lifted out of :func:`_refuse_generated_lineage_drift` so that function
+    holds at xenon rank C, the same shape ``_refuse_section_id_collision`` was
+    lifted into in ``ownership.py``.
+    """
+    extra = sorted(set(actual) - set(claimed))
+    missing = sorted(set(claimed) - set(actual))
+    moved = {
+        sid: {"lineage": claimed[sid], "actual": actual[sid]}
+        for sid in sorted(set(actual) & set(claimed))
+        if actual[sid] != claimed[sid]
+    }
     msg = (
-        f"What failed: the generated candidate for ({surface!r}, {consumer!r}) carries "
-        f"H1/H2 section ids {sorted(generated_ids)!r}, but the lineage this generator "
-        f"produced names {sorted(lineage_id_set)!r} (extra rendered ids={extra!r}; "
-        f"missing from candidate={missing!r}).\n"
-        "Why forbidden: REQ-0.35.0-05 -- the lineage must describe the ACTUAL "
-        "generated Markdown, never the generator's own numeric intent. A corpus "
-        "entry whose text carries its own heading line renders a real, un-lineaged "
-        "H1/H2 section that `ConsumerLineage.assert_complete_partition` cannot "
-        "detect, because it validates only the byte spans the generator itself "
-        "assigned.\n"
-        "Next step: an entry's text is section BODY, never a new heading -- remove "
-        "the embedded heading line from the offending corpus entry's text (or, if a "
-        "declared section is genuinely missing from the candidate, restore it), "
+        f"What failed: the lineage produced for ({surface!r}, {consumer!r}) does not "
+        f"describe the candidate's actual H1/H2 section partition (extra rendered "
+        f"ids={extra!r}; missing from candidate={missing!r}; moved spans={moved!r}).\n"
+        "Why forbidden: REQ-0.35.0-05-04/05 -- a lineage span must index its own "
+        "candidate's EXACT UTF-8 section bytes. A corpus entry whose text carries a "
+        "heading line can duplicate an existing heading and fence the original away, "
+        "leaving the section-id roster identical while the real boundaries move; the "
+        "spans then name bytes belonging to a different section, and neither an id "
+        "comparison nor `ConsumerLineage.assert_complete_partition` can see it, "
+        "because the generator's own numbers remain internally consistent.\n"
+        "Next step: an entry's text is section BODY, never a heading -- remove the "
+        "embedded heading line (and any unbalanced fence) from the offending corpus "
+        "entry's text, or restore a declared section missing from the candidate, "
         "then regenerate."
     )
     raise ValueError(msg)
@@ -444,7 +476,7 @@ def generate_candidate(
 
     candidate_text = b"".join(chunks).decode("utf-8")
 
-    _refuse_generated_section_roster_drift(surface, consumer, candidate_text, sections)
+    _refuse_generated_lineage_drift(surface, consumer, candidate_text, sections)
 
     lineage = ConsumerLineage(surface=surface, consumer=consumer, sections=sections)
     lineage.assert_complete_partition(len(candidate_text.encode("utf-8")))
