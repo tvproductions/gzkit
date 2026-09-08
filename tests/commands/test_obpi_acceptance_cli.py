@@ -10,6 +10,7 @@ import os
 import shutil
 import subprocess
 import sys
+from pathlib import Path
 
 from gzkit.acceptance import Proof
 from tests.test_acceptance_execution import REQ, SELECTOR, TEST, ExecutionFixture
@@ -62,7 +63,18 @@ class TestAcceptanceProcessExit(ExecutionFixture):
                 self.fail("The installed gz console script is required")
             entrypoint = [executable]
         return subprocess.run(
-            [*entrypoint, "obpi", "acceptance", OBPI, *arguments],
+            [
+                "uv",
+                "run",
+                "--project",
+                str(Path(__file__).resolve().parents[2]),
+                "--no-sync",
+                *entrypoint,
+                "obpi",
+                "acceptance",
+                OBPI,
+                *arguments,
+            ],
             cwd=self.root,
             env=self.env,
             capture_output=True,

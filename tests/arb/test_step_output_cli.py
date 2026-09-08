@@ -22,30 +22,33 @@ class TestStepOutputRetentionCli(unittest.TestCase):
         self.stderr = "stderr-begin:" + "é" * 9011 + ":stderr-end\n"
 
     def invoke(self, limit=None, *, exit_status=0):
-        command = [
-            "uv",
-            "run",
-            "--project",
-            str(self.project),
-            "--no-sync",
-            "gz",
-            "arb",
-            "step",
-            "--name",
-            "outputprobe",
-            "--quiet",
-        ]
-        if limit is not None:
-            command.extend(["--max-output-chars", str(limit)])
+        limit_args = [] if limit is None else ["--max-output-chars", str(limit)]
         child = (
             "import sys; sys.stdout.write(sys.argv[1]); sys.stderr.write(sys.argv[2]); "
             "sys.exit(int(sys.argv[3]))"
         )
-        command.extend(
-            ["--", sys.executable, "-c", child, self.stdout, self.stderr, str(exit_status)]
-        )
         completed = subprocess.run(
-            command,
+            [
+                "uv",
+                "run",
+                "--project",
+                str(self.project),
+                "--no-sync",
+                "gz",
+                "arb",
+                "step",
+                "--name",
+                "outputprobe",
+                "--quiet",
+                *limit_args,
+                "--",
+                sys.executable,
+                "-c",
+                child,
+                self.stdout,
+                self.stderr,
+                str(exit_status),
+            ],
             cwd=self.root,
             env={**os.environ, "GZKIT_ARB_RECEIPTS_ROOT": str(self.receipts)},
             capture_output=True,
