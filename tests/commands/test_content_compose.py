@@ -492,9 +492,20 @@ class TestContentComposeCmd(unittest.TestCase):
 
         Operator ruling 2026-09-08: comparing the persisted lineage to
         `iter_section_boundaries` proves the two AGREE; it cannot prove the
-        boundaries are CORRECT, because a defect inside the shared parser moves
-        both sides together. An independent oracle does not require a second
+        boundaries are CORRECT. An independent oracle does not require a second
         parser -- it requires expectations derived from the contract.
+
+        **Scope (round-8 adversarial review).** This does NOT claim to be the only
+        check able to detect a given corruption, and the earlier "shared parser
+        moves both sides together" rationale is withdrawn: the production check
+        compares a chunk-accumulated lineage against a parse of the candidate --
+        two different computations -- and was measured REFUSING a codepoint
+        defect. A serialization shift applied after in-memory validation is also
+        caught by the sibling test's contiguity assertion at
+        `test_generated_lineage_spans_index_the_PERSISTED_candidate_bytes`
+        (measured: "span (1, 47) does not resume at byte 0"). What this test adds
+        is an ABSOLUTE expectation -- the offsets must equal these literals, not
+        merely match another computation.
 
         Both sections are `unowned`, so the candidate is byte-identical to the
         prior rendition and the correct spans are fully determined by the

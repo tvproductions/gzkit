@@ -320,24 +320,29 @@ class TestIterSectionBoundaries(unittest.TestCase):
 
 
 class TestBoundariesAgainstContractDerivedExpectations(unittest.TestCase):
-    """An INDEPENDENT oracle: expectations stated from the contract, not from the parser.
+    """Contract-derived expectations: identities and offsets stated, not parser-derived.
 
-    Every other boundary/lineage assertion in this OBPI compares one parser run
-    against another (or against a lineage the same parser produced). That proves
-    AGREEMENT; it cannot prove CORRECT boundaries, because a defect inside the
-    shared parser moves both sides together and the comparison still passes.
-
-    These fixtures fix that without a second parser implementation: the expected
-    section identities and exact half-open UTF-8 byte offsets are written out as
-    literals, derived by hand from the contract --
+    Expected section identities and exact half-open UTF-8 byte offsets are written
+    as literals derived by hand from the contract --
 
       * a section runs from the first byte of its heading line to the byte
         before the next REAL heading (or to end of document);
       * a heading-shaped line inside a fence is not a real heading;
       * offsets are UTF-8 BYTES, never codepoints.
 
-    `test_a_shared_parser_defect_is_caught_by_the_oracle` demonstrates the
-    difference: it is the reason these literals are worth their maintenance.
+    **Scope, stated honestly (round-8 adversarial review).** An earlier version of
+    this docstring claimed every other boundary/lineage assertion in this OBPI
+    compares one parser run against another and so cannot see a shared-parser
+    defect. That is FALSE and is withdrawn:
+    ``TestIterSectionBoundaries.test_finds_ordinary_unfenced_boundaries_with_correct_byte_offsets``
+    already derives its expected offsets independently from fixture bytes, and it
+    fails under a codepoint-offset defect (measured: expected first-section
+    ``end=33``, actual ``26``). Independent expectations already existed.
+
+    What this class adds is FIXTURE COVERAGE those expectations do not reach: a
+    fenced heading that must contribute no section, combined with a multibyte
+    character, asserted as a complete identity->offset mapping rather than a
+    single boundary pair. It does not establish that it is the only such check.
     """
 
     # Segment byte lengths, spelled out so a reader can verify the literals:
@@ -372,14 +377,18 @@ class TestBoundariesAgainstContractDerivedExpectations(unittest.TestCase):
 
         self.assertEqual(measure_section_spans(self.SURFACE), expected)
 
-    def test_a_shared_parser_defect_is_caught_by_the_oracle(self) -> None:
-        """The point of the literals: an agreement check cannot see a shared defect.
+    def test_contract_literals_reject_a_roster_a_fence_blind_parser_would_produce(
+        self,
+    ) -> None:
+        """The literals reject a fence-blind roster that is internally self-consistent.
 
-        Simulates a parser that forgets fences -- the exact defect class round 3
-        found -- by re-deriving the roster with fence tracking disabled. An
-        assertion that compared this to another run of the SAME broken parser
-        would pass; compared to the contract-derived literals it fails, which is
-        what makes this oracle independent without a second implementation.
+        Scope (round-7/8 adversarial review): this shows only that a
+        self-consistent-but-wrong roster fails against contract literals. It does
+        NOT establish that the production check is blind to such a defect --
+        `_refuse_generated_lineage_drift` compares a chunk-accumulated lineage
+        against a parse of the candidate, which are two DIFFERENT computations,
+        and it was measured refusing the codepoint defect. That stronger claim
+        was withdrawn.
         """
         broken_ids = [
             line[len("## ") :].strip().lower()

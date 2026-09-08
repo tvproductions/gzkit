@@ -385,8 +385,8 @@ per REQ (its own baseline, its own scope).
 | 05-04/05 *(round-5 isolation)* | persisted boundary MOVED AT CONSTANT LENGTH — 95 B → 95 B, so the length assertion structurally cannot fire and only the added identity/offset mapping assertion can catch it | green | killed | `assertion` | `test_generated_lineage_spans_index_the_PERSISTED_candidate_bytes` |
 | 05-02 *(oracle, parser side)* | SHARED-parser defect — fence tracking disabled. Fires on the literals | green | killed | `assertion` | `test_parser_reproduces_the_contract_derived_identities_and_offsets` |
 | 05-04/05 *(oracle, persisted side)* | SHARED-parser defect — fence tracking disabled. **Kills at `test_content_compose.py:541` (the exit-code assertion), NOT the literals at :552** — `load_declaration` refuses the undeclared `fake` section first. Retained as a real kill, but it does NOT evidence the persisted oracle's incremental strength | green | killed | `assertion` | `test_persisted_lineage_matches_contract_derived_offsets_not_just_the_parser` |
-| 05-02 *(oracle literals, parser side)* | SHARED-parser defect — byte offsets computed as CODEPOINTS; roster unchanged, so only the contract literals can catch it. Fires on the literals: `{'a': 25, 'b': 7} != {'a': 26, 'b': 7}` | green | killed | `assertion` | `test_parser_reproduces_the_contract_derived_identities_and_offsets` |
-| 05-04 *(oracle literals, persisted side)* | PERSISTED lineage diverges from the validated in-memory lineage — every span shifted +1, so roster is unchanged, spans stay CONTIGUOUS and widths constant; declaration validation and persistence both succeed. Fires at `:552` on the literals: `{'a': [1, 27], 'b': [27, 34]} != {'a': [0, 26], 'b': [26, 33]}`. Authored to round 6's recommendation | green | killed | `assertion` | `test_persisted_lineage_matches_contract_derived_offsets_not_just_the_parser` |
+| 05-02 *(oracle literals, parser side)* | byte offsets computed as CODEPOINTS; roster unchanged. Fires on the literals in BOTH oracle tests — `test_parser_reproduces_the_contract_derived_identities_and_offsets` at `:367` with `{'a': (0, 25), 'b': (25, 32)} != {'a': (0, 26), 'b': (26, 33)}`, and `test_measured_spans_match_the_contract_derived_widths` at `:373` with `{'a': 25, 'b': 7} != {'a': 26, 'b': 7}`. **Not exclusive** — production refuses this candidate too, and the pre-existing `TestIterSectionBoundaries` test fails at `:241` | green | killed | `assertion` | `test_parser_reproduces_...` `:367` / `test_measured_spans_...` `:373` |
+| 05-04 *(oracle literals, persisted side)* | PERSISTED lineage diverges from the validated in-memory lineage — every span shifted +1; roster unchanged, spans contiguous, widths constant; declaration validation and persistence both succeed. Fires at `:552` on the literals: `{'a': [1, 27], 'b': [27, 34]} != {'a': [0, 26], 'b': [26, 33]}`. **Not exclusive** — the sibling test's contiguity assertion at `:457` also catches it (`span (1, 47) does not resume at byte 0`). Demonstrates the literal assertion's SENSITIVITY to post-validation serialization corruption, nothing more | green | killed | `assertion` | `test_persisted_lineage_matches_contract_derived_offsets_not_just_the_parser` |
 
 Observed transcript (`baseline_green` is the unmutated scoped run; `failing` is the test
 the mutation broke):
@@ -691,23 +691,32 @@ defect the two parser walks agree, and the real generator REFUSES anyway —
 check is **not** blind to parser defects, precisely because its two sides are not the same
 computation. Round 7's own probe reproduced this.
 
-So the contract oracle's value is NOT "it catches what the agreement check misses" for
-parser defects — production already catches those. Its two demonstrated values are
-narrower and worth stating exactly:
+So the contract oracle's value is NOT *"it catches what the agreement check misses"* —
+production already catches those. Round 8 then withdrew the replacement framing too: the
+claims *"only witness for persisted-artifact divergence"* and *"invisible to every
+agreement check"* are **also false**, and are withdrawn. Measured: row 18's serialization
+shift is caught at `test_content_compose.py:457` by the sibling test's contiguity assertion
+(`span (1, 47) does not resume at byte 0`), so `:552` is not the exclusive detector; and a
+pre-existing test, `TestIterSectionBoundaries.test_finds_ordinary_unfenced_boundaries_with_correct_byte_offsets`,
+already derives its expected offsets independently and fails at `:241` under the codepoint
+defect (expected first-section `end=33`, actual `26`) — so independent expectations were
+not absent before this OBPI either.
 
-1. **It pins ABSOLUTE correctness.** An agreement check asserts that two things match; it
-   never asserts they are RIGHT. Rows 15 and 17 fire on the literals — row 17's identity
-   /offset assertion at `test_ownership.py:367` reads
-   `{'a': (0, 25), 'b': (25, 32)} != {'a': (0, 26), 'b': (26, 33)}`, and its width
-   assertion at `:373` reads `{'a': 25, 'b': 7} != {'a': 26, 'b': 7}`. (An earlier revision
-   quoted the `:373` width message while naming the `:367` test — round 7 caught that
-   mis-pairing; both messages are now quoted against their own assertions.)
-2. **It is the only witness for persisted-artifact divergence.** Row 18 mutates
-   serialization AFTER in-memory validation, so roster, contiguity and widths all survive
-   and every in-memory guard passes by construction. Round 7 traced the assertion order and
-   confirmed `:509`, `:541`, `:550` and `:551` pass and **`:552` is the first failing
-   assertion**. That class is genuinely invisible to every agreement check, and it is the
-   one blindness this evidence actually demonstrates.
+**What the oracle demonstrably adds, and nothing beyond it:**
+
+1. **An ABSOLUTE expectation** where the neighbouring assertions state relative ones. An
+   agreement or contiguity check says two computations match, or that spans tile without a
+   gap; neither says the offsets are the CONTRACT'S offsets. Rows 15 and 17 fire on
+   literals for that reason.
+2. **Fixture coverage the pre-existing independent test does not reach** — a fenced heading
+   that must contribute no section, combined with a multibyte character, asserted as a
+   complete identity→offset mapping rather than one boundary pair.
+3. **Sensitivity to post-validation serialization corruption** (row 18), stated as
+   sensitivity and NOT as exclusive detection.
+
+No claim of uniqueness or of competing-check blindness survives anywhere in this section;
+round 8 audited all 18 rows, the Gate 2 record, Value Narrative, Key Proof, rounds 1-7 and
+Tracked Defects and found no further instance of the class.
 
 Control rows 15-18 pin this, with the scope above and no wider claim. The claim is refuted by this OBPI's own evidence, not merely
 retracted in prose.
@@ -795,8 +804,10 @@ scoped `--scope branch --base 3738d606` against revision `fc3b51b8`.
   parser defects. The claim is withdrawn; § Falsifiability now states the oracle's two
   demonstrated values instead, neither of which needs it.
 - It also caught a third mis-pairing: *"row 17 quotes the width-test failure while naming
-  the identity/offset test."* Verified and corrected — `:367` and `:373` now each carry
-  their own message.
+  the identity/offset test."* Verified. **The correction was recorded as complete before it
+  was** — round 8 found the prose fixed but the control-table cell still carrying the wrong
+  message and an exclusivity claim. Both are now corrected; the premature claim is left
+  standing here as the record of it.
 - *"No implementation DEFECT was demonstrated within the unchanged boundary."*
 
 **The repeating root is in this agent's evidence discipline, and is named here rather than
@@ -810,6 +821,48 @@ wrong — the gap was between what the tool measured and what the prose asserted
 **Standing discipline for this brief: any sentence naming the mechanism that produced an
 observed result must quote the captured line number and assertion message, or must not name
 a mechanism at all.**
+
+**Round 8 — `CORROBORATED-WITH-CAVEATS | not-refuted`** (receipt
+`arb-step-codexadversary-9668c407b8b346c283f31cdf90fbe112`, `exit_status: 0`), tier 1,
+scoped `--scope branch --base fc3b51b8` against revision `1b66a328`. Dispatched to verify
+round 7's open item AND to sweep the whole evidence surface for the defect CLASS named
+above, rather than accept this agent's assurance that the instances were all found.
+
+**Item 3 — still NOT CLOSED, with three `[medium]` MISSING PROOF findings.** All three are
+verified here and repaired; none is an implementation defect
+(*"No implementation DEFECT demonstrated within the unchanged GHI #983 boundary"*).
+
+1. **The replacement framing overclaimed too.** *"only witness for persisted-artifact
+   divergence"* and *"invisible to every agreement check"* are false. Verified: row 18's
+   serialization shift is caught at `test_content_compose.py:457` by the sibling test's
+   contiguity assertion — `AssertionError: 1 != 0 : span (1, 47) does not resume at byte 0`.
+   Row 18 shows the literal assertion's SENSITIVITY, not exclusive detection. Withdrawn to
+   round 8's own recommendation.
+2. **Row 17's table cell still quoted the wrong assertion**, and still claimed *"only the
+   contract literals can catch it"*. The round-7 record had already called this corrected —
+   the prose was, the cell was not. Both fixed; the premature claim is left standing in the
+   round-7 entry as the record of it.
+3. **The test docstrings retained the withdrawn blanket claim.** Verified that the
+   pre-existing `TestIterSectionBoundaries.test_finds_ordinary_unfenced_boundaries_with_correct_byte_offsets`
+   already derives expectations independently and fails at `:241` under the codepoint defect
+   (`end=26` against an expected `33`) — so *"every other boundary/lineage assertion
+   compares one parser run against another"* was false. Both oracle docstrings now state
+   scope accurately: what they add is fixture coverage and an absolute expectation, never
+   uniqueness.
+
+**Class audit result, which is the substance of this round.** Round 8 audited *"all 18
+control rows against the recorded sweep and relevant assertions; Gate 2 Windows records and
+captured logs; Value Narrative and Key Proof in the Stage 4a packet; rounds 1-7 receipts;
+and Tracked Defects"* and reported **no additional surviving class instance beyond those
+three**. It independently reproduced the live figures (31,244 B vs 47,851 B, deterministic,
+exact carried bytes, 354→354 accounting), GHI #983's 10/12 incomplete sections, and the
+60 successful checks in the captured Windows log; and confirmed exactly one standing-verdict
+declaration retaining the attestation prohibition, with rounds 5, 6 and 7 nowhere described
+as clean.
+
+Its Weakest point — *"a scoped assertion kill is still being promoted into an unmeasured
+claim that competing checks cannot detect the defect"* — is the exact residue these three
+repairs remove.
 
 ### Value Narrative
 
