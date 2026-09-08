@@ -5,9 +5,9 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-06
+last_reviewed: 2026-09-08
 metadata:
-  skill-version: "6.50.0"
+  skill-version: "6.51.0"
 model: sonnet
 ---
 
@@ -70,7 +70,7 @@ These thoughts mean STOP — you are about to break the pipeline:
 | "The adversary refuted again, so I'll fix these findings and re-run" | Check its `Weakest point` against the previous round FIRST. If it names the same root, another fix cycle surfaces it one layer deeper — that is three rounds and ~9 hours in the measured case. Stop and put the design to the operator. |
 | "I'll tell the adversary to REFUTE the claim — that's what adversarial means" | It is not, and this exact wording cost OBPI-0.35.0-04 six rounds. A model told "your job is to REFUTE this, not to confirm it" will escalate until something falls, and its best available outcome is "I could not refute it" — absence of evidence, never confirmation. Prompt for independent confirmation, with probing as the method. |
 | "This is a security property, so the claim should be absolute" | An absolute claim cannot be refuted in bounded time: the adversary escalates the attacker until something falls. Declare the threat model in the brief FIRST, state it in the prompt, and forbid out-of-scope findings — otherwise the gate never converges. |
-| "The adversary found something, so the OBPI cannot pass" | Only an IN-SCOPE critical or high blocks. Medium and below are disclosed in Tracked Defects or routed to a GHI. An attack the brief's Threat Model puts outside the boundary is not a finding to fix — say so plainly and do not act on it. |
+| "The adversary found something, so the OBPI cannot pass" | Apply the September 5 independent-closure rule below: every finding against the agreed requirements or their required proof needs a disposition and independent closure. Severity alone does not clear it. Track independent discoveries without silently making them acceptance prerequisites; never dismiss a relevant finding merely because it arose in an auxiliary audit. |
 | "The round refuted, but I fixed everything it found — I'll complete with `--adversary-verdict refuted` and explain the fixes in the resolution" | **Refused, and a resolution string does not change that (GHI #960).** *"refuted is an outcome, but it is an input into if(4a && 4b) pass; else: loop"* (operator, 2026-09-04). If your fixes are real, a re-run returns `not-refuted` — go get that verdict. Completing on the refuted one records the completion against a tree that no longer exists. |
 | "The block says refuted can't complete, so I'll pass `not-refuted` since the findings are fixed anyway" | **That is verdict laundering and it is the exact substitution Step 4b exists to catch.** The verdict word belongs to the round that ran, not to your assessment of it. `gz obpi precomplete` reads the brief's Step 4b section, so a completion disagreeing with the recorded standing verdict is detectable — and fabricating it is the GHI #643 failure with a different noun. Re-run the adversary. |
 
@@ -337,6 +337,17 @@ The per-behavior cycle (never batch all tests then implement the whole unit):
          - The size/complexity criterion is rendered from `.gzkit/rules/complexity-thresholds.json`, never restated as literals (GHI #861)
          - Findings are scoped: only correctness and stated brief requirements block; style is `minor`/`info` and non-blocking
 
+         **Evidence handoff (GHI #984):** append the paths to the implementer's
+         observed execution records to BOTH composed prompts before dispatch.
+         Include the relevant requirement, test selector, base/changed revision
+         (and dirty-tree source identity), command, actual result, and failure
+         traceback for any RED or negative-control claim. If missing, obtain the
+         record from the implementer; do not reconstruct it from a summary.
+         Reviewers read the records against the code and contract. A green
+         coverage inventory does not establish semantic adequacy. Check where
+         expected values come from and whether the test exercises production
+         behavior; shared-parser agreement is not independent boundary proof.
+
       iv. **Dispatch both reviewers concurrently:**
          ```
          Agent tool call 1 (background):
@@ -372,10 +383,10 @@ The per-behavior cycle (never batch all tests then implement the whole unit):
       viii. **Read `verification_gaps` separately from `findings` (GHI #941).** Reviewers are
          granted `Read, Glob, Grep` and **cannot execute anything**. Both composers now disclose
          that grant — read from the agent definition, so it tracks the file rather than a prose
-         claim — and instruct the reviewer to put whatever it could not check into
+         claim — and instruct the reviewer to put its tool limitations into
          `verification_gaps`, never into `findings`.
 
-         A gap is **not** a defect and never blocks: `review_blocks_advancement` reads
+         A reviewer capability gap is **not** a defect and never blocks: `review_blocks_advancement` reads
          `findings`, so a gap kept in its own channel cannot pull a passing review down.
          Measured 2026-09-02 on OBPI-0.35.0-04: a reviewer asked to re-derive a byte span and
          re-run a behave selection could do neither, reported both honestly as `info` findings,
@@ -386,6 +397,12 @@ The per-behavior cycle (never batch all tests then implement the whole unit):
          yourself and hand the reviewer the observed output to check *against the code*. A
          non-empty `verification_gaps` is a signal to you, not a verdict: it names what this
          review did not cover, and the coverage is yours to close.
+
+         Distinguish that limitation from an identified defect in REQUIRED proof:
+         an import failure described as an assertion failure, a test that never
+         calls the required behavior, or an unsupported acceptance claim belongs
+         in `findings`, with its requirement and consequence. Do not demote such
+         a finding because the reviewer also lacks an execution tool.
 
 5. **Persist dispatch state** after each task completes (success or failure), including review results.
 6. **After all tasks complete:** persist dispatch summary for `gz roles --pipeline` queries.
@@ -523,6 +540,17 @@ Read a non-verdict as *the experiment had no premise*, never as a verdict — a 
 
 **Anti-pattern:** Treating the `error` class as equivalent to `assertion`. An ImportError proves only that the symbol is absent — not that the test asserts the REQ's semantics.
 
+**Behavioral evidence remains necessary (GHI #984).** The provenance rules above
+classify the RED experiment; they do not certify the covering test's assertions.
+Where that experiment cannot demonstrate the required behavior, inspect the
+test and use a focused behavioral control for the unresolved claim under
+`.gzkit/rules/tests.md`. Preserve its green baseline, activated change, selector,
+actual failure and restoration result. A non-zero run does not identify the
+guard or assertion that failed. If a claim names that assertion, inspect the
+traceback; if another guard masks it, repair the fixture. Do not infer exclusive
+detection or comparative strength, and do not build an all-assertions classifier
+to satisfy a requirement that asks for production behavior.
+
 #### Phase 2: REQ-Level Verification Dispatch
 
 **Check the `--no-subagents` flag first.** If set, skip to the [Inline Verification Fallback](#inline-verification-fallback) below.
@@ -597,6 +625,17 @@ No subagent dispatch, no worktree isolation, no parallel execution.
 **Trigger:** "Present OBPI Acceptance Ceremony" task becomes next pending. Mark `in_progress`.
 
 **Narrator dispatch** (per § Persona Dispatch). Stage 4 evidence composition is the narrator's function — "evidence-to-decision," "operator-value-framing," "every word load-bearing." Dispatch a `narrator` subagent with the populated template fields (Value Narrative input, REQ coverage table from Stage 3, ARB receipts from quality gates) and instruct it to render the final attestation surface per the template below. Record the dispatch via `SubagentDispatchRecord` (`role="Narrator"`) so the eventual `gz validate --pipeline-review-receipts` (ADR-pool.obpi-pipeline-dispatch-attestation T5) can attest the surface was produced by the named persona, not by the orchestrator inhabiting a register it isn't framed for.
+
+**Compose from inspected evidence (GHI #984).** Give the narrator the actual
+artifact paths and observed results, including limits, not only a success
+summary. Keep one current REQ proof table; preserve prior rounds separately as
+history tied to their reviewed state. The Proof cell states what the observation
+establishes and any unresolved limitation. Do not invent counts, line references,
+failure mechanisms, independence claims, or claims about the remedy's benefit.
+Tool-emitted output establishes only what its method measures. Interpretation
+must be identified as interpretation and supported; reproduction alone does not
+make its method sound. Expected output may explain a planned demonstration but
+cannot substitute for observed output in the Key Proof of completed work.
 
 Present evidence using the **exact template below**. This is the human's attestation surface — they cannot provide attestation without seeing this output. Every field is mandatory. Do not omit, reorder, or freeform this.
 
@@ -728,8 +767,8 @@ Exit 0 = VERIFIED. Exit 3 = a pasted line did not reproduce; repair the packet a
 re-run. Present the verdict alongside 4a and 4b — the operator attests against all
 three.
 
-**Why this is not covered by Step 4b.** 4b re-derives the *claim* from the REQs and
-the repository; it is never handed the *packet*, so a fabricated transcript passes an
+**Why replay is separate from Step 4b.** 4b re-derives the *claim* from the REQs and
+the repository; historically it was not handed the *packet*, so a fabricated transcript passed an
 adversary that never looks at it. Observed 2026-09-02 on OBPI-0.35.0-04: a `$` block
 rendered `gz covers --json` output with keys the command does not emit (`obpi_id`,
 `coverage_pct`) around figures that were themselves correct — the numbers came from
@@ -825,7 +864,8 @@ Refutation remains essential, but as a METHOD:
 > **Purpose:** independently corroborate correctness.
 > **Method:** adversarially attempt to falsify it.
 > **Boundary:** the brief, requirements, and threat model.
-> **Pass condition:** positive behavior demonstrated and no critical/high in-scope defect remains.
+> **Pass condition:** positive behavior demonstrated and independent closure of findings
+> against the agreed requirements and their required proof, per the September 5 rule below.
 
 That gives the operator EVIDENCE FOR AN ATTESTATION DECISION, instead of an
 unbounded argument.
@@ -948,7 +988,26 @@ catch.
 
 > This paragraph named `SubagentDispatchRecord` and two fields (`adversary_tier`, `codex_availability_checked`) from 2026-07-12 until 2026-08-07 — a contract no surface implemented. That model is Stage-2 dispatch tracking, it is `extra="forbid"`, and no adversary is ever constructed through it, so an agent following the sentence literally raised `ValidationError` rather than recording anything (GHI #678, reopened). `codex_availability_checked` is deliberately **not** reinstated: the fallback reason must name *observed* unavailability, so it already evidences the check, and a separate boolean is redundant state that can disagree with the reason it duplicates. Omitting `--adversary-tier` no longer preserves name inference for a tier-1 claim — GHI #780 retired that path after measuring that it was not a legacy tail but the only route in use (of 17 recorded `adversarial_validation` events, zero declare a tier and 14 resolved cross-vendor by name).
 
-**Dispatch contract.** Give the adversary: the completion CLAIM (the brief's REQs + what the agent says it built); the gzkit tools as its framework — `gz obpi present-evidence <OBPI>` (tool-generated 4a packet), `gz covers <OBPI> --json`, the scoped test suite, the brief's `## Demo`, `git status --short` + `git diff`; and the instruction to **INDEPENDENTLY CONFIRM THE IMPLEMENTATION IS CORRECT**, probing hard as the means of doing so — attack production-discovery/regression holes, tautological or mock-only tests that cannot fail when the real deliverable breaks, weakened assertions, anything claimed but not real; and DEMONSTRATE the feature working, not merely failing to break. Require a confirmation line — `CORROBORATED` | `CORROBORATED-WITH-CAVEATS` | `NOT-CORROBORATED` — with pasted output per check, an explicit statement of what could NOT be confirmed, and a "Weakest point" section.
+**Dispatch contract.** Give the adversary the completion CLAIM (the brief's REQs
+and what the agent says it built), the actual Step-4a packet path, source/test
+paths, relevant raw execution artifacts, and prior findings with dispositions.
+Identify the reviewed revision and dirty-tree artifact identities. Give the gzkit
+tools as its framework — `gz obpi present-evidence <OBPI>`, `gz covers <OBPI> --json`,
+the scoped tests, the brief's Demo, `git status --short` and `git diff` — subject to
+the documented execution limits above. Instruct it to **INDEPENDENTLY CONFIRM THE
+IMPLEMENTATION IS CORRECT**, probing the bounded requirements in both directions.
+Judge whether each cited method supports its acceptance claim, not just whether
+its output reproduces. For each finding, name the violated requirement or
+required-proof claim, the counterexample or concrete evidence gap, and the
+relevant verification. Review allegations also need source/observed support;
+do not adopt an explanation solely because another reviewer wrote it.
+
+Require `CORROBORATED` | `CORROBORATED-WITH-CAVEATS` | `NOT-CORROBORATED`, the
+separate verdict token, output for checks it executed, artifact references for
+records it inspected, an explicit statement of what it could NOT confirm, and
+a "Weakest point" section. An auxiliary audit is not automatically a new
+deliverable. Determine a finding's relevance by the acceptance claim it affects,
+not the document or review round where it originated.
 
 **Two transport facts that decide what actually reaches it (measured 2026-09-04, GHI #961).** The suite runs under `./.venv/bin/python -m unittest`, never `uv run` — uv cannot initialize its cache in the sandbox. And the diff you assume was delivered usually was not: `collectReviewContext` injects `git status` + `git diff` as `REVIEW_INPUT` only while the target is within `DEFAULT_INLINE_DIFF_MAX_FILES = 2` files and 256 KB, then drops to `inputMode: "self-collect"` and sends file NAMES only — which is every multi-file OBPI. Your focus text is a shell positional (`positionals.join(" ")`), not a document channel: there is no `--prompt-file` and no stdin on this path, so name the artifacts BY PATH and let the adversary open them itself.
 
@@ -974,6 +1033,25 @@ catch.
 The prior 2026-09-03 rule said: "A round returning no critical and no high IN-SCOPE findings converges the gate." This ruling supersedes that severity-only stopping condition: do not solicit completion attestation while any finding against the agreed OBPI requirements remains unresolved, or while a claimed fix has only the implementing agent's confirmation. A non-refuting verdict on the earlier state does not independently verify later repairs, including repairs to evidence or missing witnesses.
 
 After fixing a finding, obtain a focused independent Step 4b follow-up. Supply the prior findings, the changed artifacts and evidence, and the unchanged scope/threat-model boundary. The adversary must verify each claimed closure and check the affected requirements for regressions; it must not restart an unrestricted search for stronger guarantees. Record the actual new verdict and receipt, with each prior finding's disposition and demonstrated evidence. Preserve earlier rounds as history. Never request a preferred verdict or relabel `CORROBORATED-WITH-CAVEATS` as clean yourself.
+
+**Repair the whole obligation before redispatch (GHI #984).** Carry the accepted
+finding back through the existing implementation and verification stages. Trace
+the relevant producers, consumers, fresh/retry paths, early returns and cleanup;
+use the states needed by the requirement, not an unlimited neighboring audit.
+A retry retaining its journal does not prove it restores durability before
+witnessing. A rejection does not prove which guard caused it. Recheck affected
+controls when a repair adds another guard that could mask them. Preserve the
+complete finding and the execution record beside its closure, rather than
+replacing it with a new explanatory claim.
+
+For an operator-initiated OBPI, authorized corrections continue within its
+approved scope; the initiation rule is not a new permission checkpoint for
+each finding. A real requirement/allowlist/threat-model amendment still needs
+the existing operator ruling. Repeated roots trigger the design escalation
+below, not a round cap or a waived defect. Auxiliary diagnostic errors may be
+removed from the acceptance argument when no requirement depends on them;
+retain their history and every still-relevant finding. If required proof does
+depend on the diagnostic, repair and verify it before using its result.
 
 **Preserving history means you MUST declare which verdict stands (GHI #964).** `gz obpi precomplete` reads the Step 4b section and cannot tell a discharged round from a live one — position is not the answer, since a section may open with its standing verdict and then narrate six earlier refutations. So a converged section whose history holds any refutation carries exactly one declaration line:
 
@@ -1106,8 +1184,10 @@ the reconcile output and ADR status refresh.
    >
    > **Two exits, both ending in a non-refuting verdict:**
    > 1. **FIX** the refuted claim, then re-run the adversary.
-   > 2. **BOUND** it — route an out-of-scope finding to a GHI and declare the boundary in
-   >    the brief's `## Threat Model`, then re-run. (This is the mechanism OBPI-0.35.0-04
+   > 2. **BOUND** it — obtain the operator ruling for a proposed boundary change,
+   >    record it in the brief's `## Threat Model`, then independently revalidate.
+   >    Filing a GHI alone does not discharge an unmet requirement.
+   >    (This is the mechanism OBPI-0.35.0-04
    >    built at round 6 for the #952/#953 ledger-atomicity case.)
    >
    > Then complete on the verdict THAT round returns, citing the earlier rounds in

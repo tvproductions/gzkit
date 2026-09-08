@@ -478,7 +478,7 @@ def reviewer_capability(project_root: Path, agent: str) -> ReviewerCapability:
 
 
 def _capability_frame(project_root: Path, agent: str) -> list[str]:
-    """Disclose the reviewer's own reach, and route its gaps out of the verdict."""
+    """Separate tool limits from identified defects in code or required evidence."""
     capability = reviewer_capability(project_root, agent)
     lines = ["### Your Capability", ""]
     if capability.tools:
@@ -490,19 +490,45 @@ def _capability_frame(project_root: Path, agent: str) -> list[str]:
             [
                 "You **cannot execute** commands. Verify by reading the code, never by",
                 "running it. If a check in this prompt requires execution, do not attempt",
-                "it and do not treat it as a defect.",
+                "it. Inspect supplied execution artifacts and disclose what you did not run.",
             ]
         )
     lines.extend(
         [
             "",
-            "Anything you could not verify goes in `verification_gaps` — never in",
-            "`findings`, and never in the verdict. `findings` and the verdict describe",
-            "the CODE under review; a limit of your own is not a defect in it.",
+            "Your tool limits belong in `verification_gaps`, not `findings`; inability",
+            "to execute a check alone is not a defect and must not change the verdict.",
+            "Positively identified missing or invalid required evidence belongs in `findings`.",
+            "Name the governing requirement, the observed gap or counterexample, and the",
+            "consequence for the acceptance claim. Do not infer missing evidence merely",
+            "because you could not execute it; distinguish unavailable artifacts from",
+            "an established omission or invalid proof. The verdict assesses the code",
+            "and its required evidence, not your own tool limits.",
             "",
         ]
     )
     return lines
+
+
+def _test_evidence_frame() -> list[str]:
+    """Carry the existing test-semantics obligation to both independent reviewers."""
+    return [
+        "### Required Behavior and Evidence",
+        "",
+        "Trace each claimed behavior from its governing requirement through the production",
+        "entry point, relevant callers, and the test assertion. Establish expected results",
+        "independently from the contract; comparing two values derived through the same",
+        "production helper proves agreement, not correctness of that helper.",
+        "Read supplied execution artifacts: verify a green baseline, the intended broken",
+        "behavior, and the actual failing assertion or exception and its cause. An import",
+        "error or unrelated failure is not behavioral RED. Require isolation or exclusivity",
+        "only when the acceptance claim depends on it, and then inspect the supporting control.",
+        "Where a finding exposes a shared failure mechanism, inspect its coupled producers",
+        "and consumers; verify the whole required obligation after repair.",
+        "Review requirement-specific proof; do not introduce an all-assertion classifier or",
+        "make auxiliary diagnostics a new acceptance prerequisite.",
+        "",
+    ]
 
 
 def compose_spec_review_prompt(
@@ -548,6 +574,7 @@ def compose_spec_review_prompt(
             lines.append(f"- {req}")
         lines.append("")
 
+    lines.extend(_test_evidence_frame())
     lines.extend(
         [
             "### Instructions",
@@ -620,6 +647,7 @@ def compose_quality_review_prompt(
             lines.append(f"- `{f}`")
         lines.append("")
 
+    lines.extend(_test_evidence_frame())
     lines.extend(
         [
             "### Quality Criteria",
@@ -628,7 +656,8 @@ def compose_quality_review_prompt(
             "",
             "1. **SOLID principles** -- single responsibility, open/closed, dependency inversion",
             _threshold_criterion(project_root),
-            "3. **Test coverage** -- tests exist and cover the implementation surfaces",
+            "3. **Test coverage** -- assertions exercise required production behavior",
+            "   with independently justified expectations and observed failure evidence",
             "4. **Error handling** -- no bare `except:` / `except Exception:`, typed errors",
             "5. **Cross-platform compliance** -- pathlib.Path for all paths, UTF-8 encoding,",
             "   context managers for temp files, no shell=True",

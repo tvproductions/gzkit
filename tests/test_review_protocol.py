@@ -319,6 +319,39 @@ class TestComposeQualityReviewPrompt(unittest.TestCase):
 # ---------------------------------------------------------------------------
 
 
+class TestReviewEvidenceInstructionsOutputContract(unittest.TestCase):
+    """Check instructions delivered to both roles, not their reasoning or compliance."""
+
+    def test_both_review_roles_receive_semantic_proof_instructions(self):
+        prompts = {
+            "spec": compose_spec_review_prompt(
+                _make_task(),
+                ["REQ-01: preserve bytes"],
+                ["src/a.py"],
+                why="GHI #984 evidence review",
+                project_root=_NO_PERSONA_ROOT,
+            ),
+            "quality": compose_quality_review_prompt(
+                ["src/a.py"],
+                ["tests/test_a.py"],
+                why="GHI #984 evidence review",
+                project_root=_NO_PERSONA_ROOT,
+            ),
+        }
+        for role, prompt in prompts.items():
+            with self.subTest(role=role):
+                text = " ".join(prompt.split())
+                self.assertIn("through the production entry point", text)
+                self.assertIn("expected results independently from the contract", text)
+                self.assertIn("same production helper proves agreement", text)
+                self.assertIn("actual failing assertion or exception and its cause", text)
+                self.assertIn("unrelated failure is not behavioral RED", text)
+                self.assertIn("only when the acceptance claim depends on it", text)
+                self.assertIn("whole required obligation after repair", text)
+                self.assertIn("do not introduce an all-assertion classifier", text)
+                self.assertNotIn("tests exist and cover the implementation surfaces", text)
+
+
 def _json_block(obj: dict) -> str:
     """Wrap a dict as a JSON code block for output parsing tests."""
     return f"```json\n{json.dumps(obj)}\n```"

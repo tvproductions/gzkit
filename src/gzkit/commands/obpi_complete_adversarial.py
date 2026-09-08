@@ -77,6 +77,16 @@ ADVERSARY_VERDICTS: tuple[str, ...] = (
 # failure this repository keeps paying for" (that module's own words).
 REFUTATION_VERDICTS: frozenset[str] = frozenset({"refuted", "refuted-with-caveats"})
 
+# Keep receipt-recovery branches on the skill's permitted dispatch surface.
+# The skill resolves the installed plugin path; a versioned cache path is not
+# portable CLI configuration, and raw `codex exec` is not the permitted route.
+_REVIEW_RECOVERY = (
+    "Follow gz-obpi-pipeline Step 4b: independently review the bounded acceptance "
+    "claim through the installed Codex plugin's adversarial-review command. "
+    "Wrap that plugin invocation with uv run gz arb step --name codexadversary -- "
+    "and cite the successful run_id with --adversary-receipt. "
+)
+
 # Step-4b tier order (GHI #678). Codex (a different vendor) is REQUIRED first
 # because a Claude validating Claude shares this agent's blind spots — the exact
 # failure 4b exists to break. A named non-Claude vendor is proof of the cross-vendor
@@ -260,9 +270,7 @@ def _enforce_adversary_receipt(
             f"Completion blocked: Step 4b for {obpi_id} cites adversary receipt "
             f"'{receipt}', which does not resolve to a readable ARB step receipt. "
             "A receipt id naming no artifact is an assertion wearing the shape of "
-            "proof. Run the adversary under ARB so the receipt exists: "
-            "uv run gz arb step --name codexadversary -- codex exec '<refute prompt>', "
-            "then cite the run_id it prints with --adversary-receipt.",
+            "proof. " + _REVIEW_RECOVERY,
             exit_code=1,
             as_json=as_json,
             obpi_id=obpi_id,
@@ -272,9 +280,7 @@ def _enforce_adversary_receipt(
             f"Completion blocked: Step 4b for {obpi_id} cites adversary receipt "
             f"'{receipt}', which records exit_status={loaded.get('exit_status')!r} — "
             "the adversary run did not succeed. A failed run cannot have re-derived "
-            "the completion claim. Re-run the adversary under ARB (uv run gz arb step "
-            "--name codexadversary -- codex exec '<refute prompt>') and cite the "
-            "successful run_id.",
+            "the completion claim. " + _REVIEW_RECOVERY,
             exit_code=1,
             as_json=as_json,
             obpi_id=obpi_id,
@@ -313,14 +319,14 @@ def _enforce_adversarial_validation(
     """Fail closed unless Step 4b's adversary verdict is recorded (GHI #676).
 
     Step 4b is already a fail-closed gate in the pipeline skill: no OBPI reaches
-    attestation without an independent adversary re-deriving the completion claim
-    under instruction to REFUTE. Nothing enforced it at the chokepoint, so an agent
+    attestation without an independent adversary testing the bounded completion
+    claim in both directions. Nothing enforced it at the chokepoint, so an agent
     that skipped 4b and one that was refuted and attested anyway left indistinguishable
     durable records — the verdict lived only in a transcript or a vendor cache.
 
     Heavy lane only, matching the lane that already carries fail-closed Gate 3/4.
-    A ``refuted`` verdict with no recorded resolution is itself blocking: a known
-    refutation must never be handed to the operator dressed as clean.
+    Refutation verdicts block even with a recorded resolution: fixes need a new
+    independent review, never a substituted verdict word.
     """
     if parent_lane.lower() != "heavy":
         return
@@ -330,8 +336,8 @@ def _enforce_adversarial_validation(
             "Completion blocked: Step 4b independent adversarial validation is not "
             f"recorded for {obpi_id}. The heavy lane forbids attestation on evidence "
             "the authoring agent produced alone (GHI #643/#676) — an adversary "
-            "prompted to REFUTE must re-derive the completion claim, and its verdict "
-            "must land in the ledger, not a transcript. Re-run with "
+            "must re-derive and test the bounded completion claim, and its verdict "
+            "must land in the ledger, not a transcript. " + _REVIEW_RECOVERY + "Re-run with "
             "--adversary-verdict <" + "|".join(ADVERSARY_VERDICTS) + "> "
             "--adversary <vendor/model>. If neither a different-vendor adversary nor "
             "an independent subagent could run, record the degraded floor explicitly: "
@@ -347,9 +353,12 @@ def _enforce_adversarial_validation(
             "LOOPS rather than completes. The verdict itself is a legitimate outcome and is "
             "not the problem — completion is a conjunction, and 4a passing while 4b refutes "
             "is the case that sends the work back to Stage 2. Two exits, both ending in a "
-            "non-refuting verdict: FIX the refuted claim and re-run the adversary, or BOUND "
-            "it — route an out-of-scope finding to a GHI and declare the boundary in the "
-            "brief's '## Threat Model', then re-run. Complete on the verdict that round "
+            "non-refuting verdict: FIX the refuted claim and re-run the adversary, or seek "
+            "an operator ruling for a proposed boundary change in the brief's "
+            "'## Threat Model', then obtain independent revalidation. Filing a GHI alone "
+            "does not discharge an unmet requirement. "
+            + _REVIEW_RECOVERY
+            + "Complete on the verdict that round "
             "returns (--adversary-verdict not-refuted), citing the earlier rounds in "
             "--adversary-resolution as the record of what was found and discharged. Do NOT "
             "relabel this round's verdict to get past this message: the brief's Step 4b "
@@ -430,9 +439,8 @@ def _enforce_adversarial_validation(
             "a declared tier are both typed by the agent making that claim — their "
             "agreement is self-agreement, not corroboration (GHI #765/#780). A receipt is "
             "written by ARB at invocation time and records the argv that actually ran. "
-            "Wrap the adversary run and cite it: uv run gz arb step --name codexadversary "
-            "-- codex exec '<refute prompt>', then re-run with --adversary-receipt "
-            "<RUN_ID>. If Codex was genuinely unavailable, record the degraded run "
+            + _REVIEW_RECOVERY
+            + "If Codex was genuinely unavailable, record the degraded run "
             "honestly instead: --adversary-tier 2 --adversary-fallback-reason '<observed "
             "Codex unavailability>'.",
             exit_code=1,

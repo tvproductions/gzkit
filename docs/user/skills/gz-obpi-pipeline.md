@@ -16,6 +16,19 @@ Invoke this skill when the task described above matches your current workflow st
 
 The skill reads its canonical execution contract from `.gzkit/skills/gz-obpi-pipeline/SKILL.md` (mirrored into `.claude/skills/`, `.agents/skills/`, and `.github/skills/`). Follow the agent-facing instructions in that file for the exact execution protocol, stages, and evidence requirements.
 
+Reviewers receive the execution records supporting each requirement, including
+observed failure evidence where claimed. Stage 4 presents one current proof table
+and supplies that packet to independent review. Review checks whether the evidence
+supports the requirement; a reproducing transcript or coverage inventory alone
+does not establish that relationship.
+
+Findings return through implementation and verification with their full repair
+obligation preserved. Follow-up review verifies the correction and affected
+requirements. Auxiliary diagnostics do not automatically become acceptance
+requirements, and findings remain relevant when they expose missing required
+proof regardless of where they were discovered. Authorized corrections continue
+within the initiated OBPI; human completion attestation remains required.
+
 ## Invocation
 
 ```text

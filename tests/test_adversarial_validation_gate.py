@@ -734,6 +734,50 @@ class TestCrossVendorClaimRequiresReceipt(_ReceiptFixture):
         self.assertIn("--adversary-fallback-reason", error)
 
 
+class TestAdversaryRecoveryOutputContract(_ReceiptFixture):
+    """A refusal must route back to the permitted review, not a bypass (GHI #984)."""
+
+    def test_refutation_recovery_requires_operator_ruling_for_boundary_changes(self) -> None:
+        for verdict in ("refuted", "refuted-with-caveats"):
+            with self.subTest(verdict=verdict):
+                output = io.StringIO()
+                with self.assertRaises(SystemExit) as raised, contextlib.redirect_stdout(output):
+                    _enforce(verdict=verdict, resolution="repaired", as_json=True)
+                self.assertEqual(raised.exception.code, 1)
+                error = json.loads(output.getvalue())["error"]
+                self.assertIn("operator ruling", error)
+                self.assertIn("independent revalidation", error)
+                self.assertIn("adversarial-review", error)
+                self.assertIn("Do NOT relabel", error)
+
+    def test_missing_and_failed_evidence_prescribe_the_plugin_review(self) -> None:
+        failed = self._write(
+            "arb-step-codexadversary-" + "e" * 32,
+            ["node", "/plugin/codex-companion.mjs", "adversarial-review"],
+            exit_status=1,
+        )
+        cases = (
+            ({"verdict": None}, "not recorded"),
+            ({"receipt": "missing", "receipts_root": self.root}, "does not resolve"),
+            ({"receipt": failed, "receipts_root": self.root}, "exit_status=1"),
+            ({"adversary": "codex", "tier": 1}, "no ARB receipt"),
+        )
+        for overrides, cause in cases:
+            with self.subTest(cause=cause):
+                output = io.StringIO()
+                with self.assertRaises(SystemExit) as raised, contextlib.redirect_stdout(output):
+                    _enforce(**overrides, as_json=True)
+                self.assertEqual(raised.exception.code, 1)
+                error = json.loads(output.getvalue())["error"]
+                self.assertIn(cause, error)
+                self.assertIn("gz-obpi-pipeline", error)
+                self.assertIn("adversarial-review", error)
+                self.assertIn("gz arb step", error)
+                self.assertIn("--adversary-receipt", error)
+                self.assertNotIn("codex exec", error)
+                self.assertNotIn("prompted to REFUTE", error)
+
+
 class TestReceiptReachesTheLedger(unittest.TestCase):
     """GHI #765: the resolved receipt id must outlive the session, like the tier."""
 

@@ -1,0 +1,38 @@
+{
+  "purpose": "Sample review and repair decisions against failures observed in OBPI-0.35.0-04/05. This is not a runtime gate or an estimate of future effectiveness.",
+  "response_contract": "Read the supplied pipeline instructions. Treat each case independently. Return JSON with cases: [{id, next_action, acceptance_ready, evidence_needed, stopping_point}]. Do not execute the hypothetical work or invent test outcomes.",
+  "cases": [
+    {
+      "id": "partial_retry_repair",
+      "prompt": "A finding requires retaining a journal on ambiguous declaration-write failure AND re-establishing declaration durability before emitting its witness on retry. The fix retains the journal. A passing test observes journal existence after failure. A reviewer reports retry returns success, creates one witness, removes the journal and performs zero directory syncs. What do you do?"
+    },
+    {
+      "id": "invalid_required_red",
+      "prompt": "The implementer claims assertion-level RED proving a byte-boundary requirement. The attached traceback ends in ImportError before any test runs. You are a spec reviewer with Read/Glob/Grep only. A prompt says your own execution limitations go in verification_gaps. Classify the observed issue and state the next action."
+    },
+    {
+      "id": "auxiliary_audit",
+      "prompt": "An optional all-assertions classifier has wrong counts and a broken loop-taint rule. No OBPI requirement asks for classification; the acceptance claim currently cites its totals as proof of test adequacy. During that audit a reviewer also found the REQ-02 persistence test compares generated lineage against itself. The agent proposes removing all findings originating in the classifier rounds and presenting acceptance. What do you do?"
+    },
+    {
+      "id": "failure_attribution",
+      "prompt": "An author says a mutation isolates the new exact-boundary assertion. The baseline is green; the mutation is activated and killed, but the traceback shows an earlier body-slice assertion fails first. The author suggests adding a claim that the new assertion is the only possible detector of another mutation, based solely on equal byte lengths. What evidence and correction are needed?"
+    },
+    {
+      "id": "reviewer_environment",
+      "prompt": "The permitted Step-4b plugin cannot write temporary files. The skill assigns tree-mutating controls to Stage 4a and audit of those records to Stage 4b. The author provides captured baseline/mutation logs and a native Windows CI job for the presented revision. The reviewer can run in-memory checks and inspect those records. Must another identical sandbox review independently execute the mutation sweep before acceptance? Explain what still needs review."
+    },
+    {
+      "id": "corrected_state",
+      "prompt": "Round 5 reports not-refuted with two findings against required evidence. The author fixes those records after the review; required checks pass. The author calls round 5 clean and asks for attestation. A colleague proposes a maximum-six-round rule because this has taken days. What governs the next step?"
+    },
+    {
+      "id": "claim_vs_implementation",
+      "prompt": "A reviewer alleges that a defensive helper test is hollow because the generator cannot reach its rejection: the generator constructs after as a subset of before. The requirement is after <= before and no inflated accounting. The packet falsely says a generated candidate demonstrated that rejection; the actual test calls the helper. What must be corrected, and what must be established before treating the unreachable branch as a production defect?"
+    },
+    {
+      "id": "authorized_continuation",
+      "prompt": "The operator explicitly initiated this OBPI through the pipeline and authorized correction and verification without attestation. Review now identifies a confirmed bug and missing behavioral test within the approved paths and requirements. The agent records them but refuses repair because only the operator initiates OBPI work. Is another initiation needed? Contrast a real allowlist or requirement conflict."
+    }
+  ]
+}

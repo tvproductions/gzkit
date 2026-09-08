@@ -1,0 +1,99 @@
+{
+  "cases": [
+    {
+      "id": "partial_retry_repair",
+      "next_action": "Keep the finding open and return it through implementation and verification. Repair the complete obligation: retain the journal on ambiguous failure and restore declaration durability before emitting a witness on retry. Trace fresh and retry paths, early returns, witness production, and cleanup.",
+      "acceptance_ready": false,
+      "evidence_needed": [
+        "A behavioral test that fails because retry witnesses without first restoring required durability.",
+        "Observed ordering of durability restoration, witness emission, and journal cleanup.",
+        "Controls covering ambiguous failure, successful retry, and continued failure during retry.",
+        "Independent follow-up confirming the complete finding is closed on the corrected artifacts."
+      ],
+      "stopping_point": "Await attestation only after independent closure and a current not-refuted verdict. If this repeats the previous round's root cause, escalate the design to the operator instead of another patch cycle."
+    },
+    {
+      "id": "invalid_required_red",
+      "next_action": "Report a finding against required proof: the claimed assertion-level RED is contradicted by an ImportError before test execution. Separately record the reviewer's inability to execute in verification_gaps. Ask the implementer or orchestrator to obtain a genuine behavioral failure and correct the evidence claim.",
+      "acceptance_ready": false,
+      "evidence_needed": [
+        "The requirement, selector, base provenance, source identity, command, and actual traceback.",
+        "An importable test setup and an observed failure on the intended behavioral assertion.",
+        "A green result after implementation and independent review of the corrected records."
+      ],
+      "stopping_point": "Do not advance on the false assertion-level RED claim. The reviewer remains read-only; execution belongs to an authorized execution stage."
+    },
+    {
+      "id": "auxiliary_audit",
+      "next_action": "Reject blanket removal by audit origin. Remove the classifier totals from the acceptance argument if no required proof depends on them, preserving their errors and history; otherwise repair and verify the classifier before citing it. Retain and repair the REQ-02 tautological persistence-test finding regardless of where it was discovered.",
+      "acceptance_ready": false,
+      "evidence_needed": [
+        "A revised acceptance argument demonstrating required behavior without unsupported classifier totals.",
+        "A REQ-02 test with an independently derived expected lineage that exercises actual persistence behavior.",
+        "A focused control demonstrating that the test detects a persistence regression.",
+        "Independent closure of all remaining required-proof findings on the corrected packet and tests."
+      ],
+      "stopping_point": "Present acceptance only after relevant findings are independently closed. An optional classifier is not automatically a new OBPI deliverable."
+    },
+    {
+      "id": "failure_attribution",
+      "next_action": "Correct the record to name the earlier body-slice assertion as the observed detector. Repair the fixture or focused control so that the exact-boundary assertion is reached and its detection is actually observed. Do not replace the unsupported isolation claim with an exclusivity claim inferred from equal byte lengths.",
+      "acceptance_ready": false,
+      "evidence_needed": [
+        "Green baseline, activated mutation, exact selector, reviewed source identity, full failure traceback, and restored-green result.",
+        "A failure attributable to the exact-boundary assertion rather than a masking guard.",
+        "Rechecked affected controls if fixture or guard changes alter failure ordering.",
+        "Independent review that the revised claims match the observed mechanism; any comparative claim requires its own controlled evidence."
+      ],
+      "stopping_point": "Continue focused verification until the required boundary proof is valid, then obtain independent closure before attestation."
+    },
+    {
+      "id": "reviewer_environment",
+      "next_action": "Do not require another identical sandbox review to execute the mutation sweep. Step 4a owns tree-mutating controls; Step 4b independently audits their records and performs available read-only or in-memory checks. The filesystem restriction is a verification limitation, not a production defect.",
+      "acceptance_ready": false,
+      "evidence_needed": [
+        "Review of baseline, activated mutation, selector, actual failing assertion, and restoration logs against source and requirements.",
+        "Confirmation that execution artifacts and the native Windows CI job correspond to the presented revision and any relevant dirty-tree identities.",
+        "Independent assessment that the methods demonstrate intended positive behavior and required rejection behavior, rather than merely producing matching output.",
+        "Explicit remaining limitations and independent closure of relevant findings with a current not-refuted verdict."
+      ],
+      "stopping_point": "Once the permitted review establishes the required behavior and closure, proceed to the human attestation gate without an identical redundant sandbox rerun. Supplied records alone do not establish that review has already passed."
+    },
+    {
+      "id": "corrected_state",
+      "next_action": "Preserve round 5 and its two findings as history; do not relabel it clean. Obtain a focused independent Step 4b follow-up on the corrected evidence, carrying prior findings, changed artifacts, and the unchanged requirements and threat-model boundary. Reject an invented maximum-six-round acceptance rule.",
+      "acceptance_ready": false,
+      "evidence_needed": [
+        "Independent confirmation of each evidence repair and affected requirements' regression checks.",
+        "The actual new verdict and receipt tied to the corrected artifacts.",
+        "An explicit disposition for each prior finding and a clear standing verdict.",
+        "Comparison of successive Weakest point sections for a repeated root cause."
+      ],
+      "stopping_point": "Await attestation only after current independent closure and not-refuted. If the root repeats, stop patch-and-review cycling and obtain an operator design ruling; elapsed days or round count cannot waive a defect."
+    },
+    {
+      "id": "claim_vs_implementation",
+      "next_action": "Correct the packet to say the test invokes the defensive helper directly; withdraw the false generated-candidate rejection claim. Independently inspect the review allegation. Generator construction that guarantees after is a subset of before can satisfy the requirement without reaching the helper rejection, so unreachability alone does not establish a production defect.",
+      "acceptance_ready": false,
+      "evidence_needed": [
+        "A trace of generator construction, helper callers, and accounting consumers against after <= before and no inflated accounting.",
+        "Observed production-path behavior with independently derived expected sets and accounting values.",
+        "Evidence that the direct helper test detects the helper behavior it actually claims.",
+        "A reachable counterexample violating the requirement, or evidence of a required but untested production path, before accepting the production-defect allegation.",
+        "Independent confirmation of the corrected evidence claim and resolution of the allegation."
+      ],
+      "stopping_point": "Do not manufacture an unreachable generator state merely to satisfy the allegation. Proceed to attestation only after required production behavior and corrected proof are independently corroborated."
+    },
+    {
+      "id": "authorized_continuation",
+      "next_action": "Continue the already authorized OBPI correction through its existing implementation, verification, and independent review stages. Another initiation is unnecessary for the confirmed bug and missing behavioral test within approved paths and requirements.",
+      "acceptance_ready": false,
+      "evidence_needed": [
+        "A behavioral assertion-level failure for the confirmed bug, followed by corrected green behavior.",
+        "Required verification records and independent closure on the repaired implementation and test.",
+        "For a genuine conflict, the exact requirement, allowlist, or threat-model boundary and the proposed amendment supported by evidence."
+      ],
+      "stopping_point": "Continue authorized repair without a new permission checkpoint, then stop at human completion attestation. A real requirement or allowlist conflict requires an operator ruling before dependent work proceeds; record the block rather than silently widening scope."
+    }
+  ]
+}

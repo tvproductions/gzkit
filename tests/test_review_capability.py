@@ -27,6 +27,7 @@ from gzkit.pipeline_dispatch import (
     DispatchState,
     DispatchTask,
     TaskComplexity,
+    compose_quality_review_prompt,
     compose_spec_review_prompt,
     handle_review_cycle,
     review_blocks_advancement,
@@ -74,10 +75,16 @@ class TestReviewerCapability(unittest.TestCase):
         self.assertEqual(cap.tools, [])
 
 
-class TestPromptDisclosesCapability(unittest.TestCase):
-    def _prompt(self, tools: str) -> str:
+class TestPromptDisclosesCapabilityOutputContract(unittest.TestCase):
+    """Prompt delivery only: matching instructions do not prove reviewer compliance."""
+
+    def _prompt(self, tools: str, agent: str = "spec-reviewer") -> str:
         with TemporaryDirectory() as td:
-            root = _agents(Path(td), tools)
+            root = _agents(Path(td), tools, agent)
+            if agent == "quality-reviewer":
+                return compose_quality_review_prompt(
+                    ["src/x.py"], ["tests/test_x.py"], why="because", project_root=root
+                )
             return compose_spec_review_prompt(
                 _task(),
                 ["REQ-1 must hold"],
@@ -100,6 +107,19 @@ class TestPromptDisclosesCapability(unittest.TestCase):
     def test_an_executing_reviewer_is_not_told_it_cannot_execute(self) -> None:
         prompt = self._prompt("Read, Glob, Grep, Bash")
         self.assertNotIn("cannot execute", prompt.lower())
+
+    def test_tool_limits_do_not_hide_identified_required_evidence_defects(self) -> None:
+        for agent in ("spec-reviewer", "quality-reviewer"):
+            for tools in ("Read, Glob, Grep", "Read, Glob, Grep, Bash"):
+                with self.subTest(agent=agent, tools=tools):
+                    prompt = self._prompt(tools, agent)
+                    self.assertIn("Your tool limits belong in `verification_gaps`", prompt)
+                    self.assertIn(
+                        "missing or invalid required evidence belongs in `findings`", prompt
+                    )
+                    self.assertIn("Name the governing requirement", prompt)
+                    self.assertIn("consequence for the acceptance claim", prompt)
+                    self.assertNotIn("Anything you could not verify", prompt)
 
 
 class TestVerdictIsolation(unittest.TestCase):

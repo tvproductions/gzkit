@@ -1,0 +1,98 @@
+{
+  "cases": [
+    {
+      "id": "partial_retry_repair",
+      "next_action": "Treat the repair as incomplete. Redispatch the implementer to establish declaration durability before the retry witness, add a behavioral regression test, and obtain independent review of the corrected state.",
+      "acceptance_ready": false,
+      "evidence_needed": [
+        "A test demonstrating journal retention after ambiguous declaration-write failure.",
+        "Observed retry evidence showing the required durability operation precedes witness emission.",
+        "Negative-control evidence that omitting retry durability fails the behavioral test.",
+        "Independent confirmation of closure and affected-requirement regressions."
+      ],
+      "stopping_point": "Await attestation only after independent closure. If this repeats the previous round's root cause, stop patch cycles and escalate the design."
+    },
+    {
+      "id": "invalid_required_red",
+      "next_action": "Report a red-verification finding: the supplied traceback contradicts the assertion-level RED claim. Put only the reviewer's inability to execute in verification_gaps. Have the implementer or orchestrator produce and capture the missing semantic evidence.",
+      "acceptance_ready": false,
+      "evidence_needed": [
+        "The RED receipt's failure_class and base_provenance.",
+        "An executable test reaching the byte-boundary assertion and failing for the claimed semantic reason.",
+        "A passing corrected implementation run and independent inspection of the resulting records."
+      ],
+      "stopping_point": "Do not accept the assertion-level RED claim until corrected. A working-tree ImportError may qualify as weak RED under the supplied skill, but never as assertion RED; reconstructed-base ImportError is inconclusive."
+    },
+    {
+      "id": "auxiliary_audit",
+      "next_action": "Reject blanket removal by finding origin. Correct or withdraw the classifier totals as acceptance proof, track its defects, and repair the independently substantive REQ-02 tautological test. Judge each finding against the requirements and actual evidence.",
+      "acceptance_ready": false,
+      "evidence_needed": [
+        "REQ-02 persistence expectations derived independently of generated lineage.",
+        "A behavioral test that fails when required persistence behavior breaks.",
+        "An acceptance packet supported by valid requirement-level evidence rather than classifier totals.",
+        "Focused independent confirmation of the repaired test and corrected evidence."
+      ],
+      "stopping_point": "Await attestation after required findings close independently. Optional classifier limitations can remain separately disclosed and tracked if no acceptance claim depends on them."
+    },
+    {
+      "id": "failure_attribution",
+      "next_action": "Correct the attribution to the earlier body-slice assertion that actually failed. Do not claim the new assertion was isolated or is the sole detector from equal byte lengths alone. Construct and execute an appropriate control if that stronger claim is needed.",
+      "acceptance_ready": false,
+      "evidence_needed": [
+        "Green baseline, activated mutation, and full failing traceback identifying the actual detector.",
+        "For an isolation claim, a control that reaches the new assertion with earlier assertions satisfied and demonstrates its semantic failure.",
+        "For a sole-detector claim, evidence that the relevant failure escapes the remaining checks when the new assertion is absent.",
+        "Corrected packet interpretation and independent review of the records."
+      ],
+      "stopping_point": "Do not present unsupported attribution. Proceed toward attestation after the required evidence is valid and its correction independently confirmed."
+    },
+    {
+      "id": "reviewer_environment",
+      "next_action": "Do not require an identical sandbox reviewer to repeat unavailable tree mutations. Use the permitted reviewer to audit Stage-4a mutation records, inspect the implementation and tests, perform available in-memory checks, and evaluate the native Windows CI evidence.",
+      "acceptance_ready": false,
+      "evidence_needed": [
+        "Independent inspection tying baseline, mutation activation, failure attribution, restoration, and CI records to the presented revision.",
+        "Positive legitimate behavior and relevant refusal behavior demonstrated for the bounded requirements.",
+        "Assessment of whether the captured checks actually prove their claimed semantics and cover the required platform behavior.",
+        "An actual independent verdict with remaining execution limitations disclosed."
+      ],
+      "stopping_point": "Acceptance may proceed after independent corroboration and required finding closure; inability to write temporary files alone does not require another identical review or establish a production defect."
+    },
+    {
+      "id": "corrected_state",
+      "next_action": "Preserve round 5's actual verdict and findings. Obtain a focused independent Step-4b follow-up on the corrected evidence and affected requirements. Reject a maximum-six-round acceptance rule: elapsed time and round count do not establish closure.",
+      "acceptance_ready": false,
+      "evidence_needed": [
+        "The two prior findings, their dispositions, and changed evidence records.",
+        "Independent confirmation that both corrections are valid and affected requirements remain satisfied.",
+        "The follow-up's actual not-refuted verdict and receipt, clearly identified as the standing verdict."
+      ],
+      "stopping_point": "Await attestation only after independent confirmation of the corrected state. If the same root cause recurs, escalate the design rather than continuing another patch cycle."
+    },
+    {
+      "id": "claim_vs_implementation",
+      "next_action": "Correct the false packet claim to identify the direct helper test. Assess that test's assertions separately from generator reachability. Trace the generator's subset construction and accounting behavior before deciding whether there is a production defect.",
+      "acceptance_ready": false,
+      "evidence_needed": [
+        "Accurate test provenance showing the helper was called directly.",
+        "Evidence that the helper test fails when its claimed defensive behavior breaks.",
+        "Independent tracing or observed cases establishing after <= before and no inflated accounting along the production path.",
+        "A reachable requirement-violating production case, or a requirement explicitly demanding production rejection, before classifying the unreachable rejection branch as a production defect.",
+        "Independent confirmation of the corrected evidence."
+      ],
+      "stopping_point": "Do not require making an invalid state reachable merely to exercise a defensive branch. Await attestation after the actual requirements and corrected packet are independently corroborated."
+    },
+    {
+      "id": "authorized_continuation",
+      "next_action": "Continue the already initiated pipeline: dispatch repair of the confirmed bug and missing behavioral test within the authorized scope, verify, and obtain independent closure. Another operator initiation is unnecessary.",
+      "acceptance_ready": false,
+      "evidence_needed": [
+        "Behavioral RED/GREEN evidence for the confirmed bug.",
+        "Required verification results and independent review of the corrected state.",
+        "For a genuine allowlist or requirement conflict, cited conflicting requirements or paths and a concrete proposed resolution."
+      ],
+      "stopping_point": "After authorized repair and independent confirmation, pause for completion attestation. A real scope or canon conflict instead requires recording the operator blocker, presenting the evidence and proposed resolution, and waiting for the operator's ruling before dependent work."
+    }
+  ]
+}
