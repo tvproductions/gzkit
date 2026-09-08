@@ -35,6 +35,8 @@ size)`` heuristic to match and each run must compile from source.
 
 from __future__ import annotations
 
+import hashlib
+import re
 import subprocess
 import tempfile
 from pathlib import Path
@@ -49,7 +51,14 @@ MutationOutcome = Literal["killed", "survived", "invalid", "inconclusive"]
 _RUN_TIMEOUT_S = 600
 # unittest -v writes `test_name (module.Class.test_name) ... FAIL` and a
 # `FAIL: test_name (...)` block; the summary line is the reliable one to read.
-_FAILING_PREFIXES = ("FAIL: ", "ERROR: ")
+_TEST_LINE = re.compile(r"^\s*(\w+) \(([^)]+)\)(?: \(.*\))? \.\.\. (ok|FAIL|ERROR|skipped.*)$")
+_FAILURE_LINE = re.compile(r"^(FAIL|ERROR): (\w+) \(([^)]+)\)")
+_RAN_TESTS = re.compile(r"^Ran (\d+) tests? in ", re.MULTILINE)
+_FIXTURE_FRAME = re.compile(
+    r"^  File .*, line \d+, in (?:setUp|tearDown|setUpClass|tearDownClass|"
+    r"setUpModule|tearDownModule|asyncSetUp|asyncTearDown|_callCleanup)$",
+    re.MULTILINE,
+)
 
 
 class Mutation(BaseModel):
@@ -62,7 +71,7 @@ class Mutation(BaseModel):
     label: str = Field(..., min_length=1, description="Short name for this mutation")
     expected_tests: list[str] = Field(
         default_factory=list,
-        description="Tests said to cover this guard; a kill must name at least one",
+        description="Nominated unittest IDs; short method names must resolve unambiguously",
     )
 
 
@@ -76,7 +85,13 @@ class MutationWitness(BaseModel):
     reason: str = Field(default="", description="Why this outcome, when it is not a plain kill")
     target_present: bool = Field(default=False, description="The find-text existed in the source")
     source_changed: bool = Field(default=False, description="The edit actually altered the bytes")
-    imports: bool = Field(default=False, description="The mutated source imports cleanly")
+    imports: bool = Field(
+        default=False, description="Legacy field: source compiled; runtime import is not proven"
+    )
+    compiles: bool = Field(default=False, description="The mutated source compiled successfully")
+    source_sha256: str = Field(default="", description="Digest of exact mutated source bytes")
+    executed_tests: list[str] = Field(default_factory=list, description="Observed non-skipped IDs")
+    tests_run: int = Field(default=0, description="unittest's reported run count")
     exit_status: int = Field(default=-1, description="Exit code of the mutated test run")
     failure_class: str = Field(default="", description="assertion | error | none")
     failing_tests: list[str] = Field(default_factory=list, description="Tests that failed")
@@ -92,6 +107,10 @@ class MutationSweep(BaseModel):
     source: str = Field(..., description="File that was mutated")
     baseline_green: bool = Field(..., description="The unmutated tree passed")
     baseline_output_tail: str = Field(default="", description="Tail of the baseline run")
+    source_sha256: str = Field(default="", description="Original source byte digest")
+    restored_source_sha256: str = Field(default="", description="Restored source byte digest")
+    baseline_executed_tests: list[str] = Field(default_factory=list)
+    baseline_tests_run: int = Field(default=0)
     witnesses: list[MutationWitness] = Field(default_factory=list, description="Per-mutation")
 
     @property
@@ -125,17 +144,48 @@ class MutationSweep(BaseModel):
         return bool(self.witnesses) and not (self.invalid or self.inconclusive)
 
 
-def _failing_test_names(output: str) -> list[str]:
-    """Extract the test names unittest reported as FAIL or ERROR."""
-    names: list[str] = []
+def _test_id(method: str, context: str) -> str:
+    """Normalize the two stdlib unittest identity display formats."""
+    return context if context.endswith("." + method) else f"{context}.{method}"
+
+
+def _test_observations(output: str) -> tuple[set[str], list[str], int]:
+    """Read completed, non-skipped unittest IDs and failure identities.
+
+    Unknown/custom runner output is inconclusive. This parses execution reports;
+    it does not decide whether an assertion expresses the intended requirement.
+    """
+    executed: set[str] = set()
+    failures: list[str] = []
     for line in output.splitlines():
-        stripped = line.strip()
-        for prefix in _FAILING_PREFIXES:
-            if stripped.startswith(prefix):
-                name = stripped[len(prefix) :].split(" ", 1)[0].strip()
-                if name and name not in names:
-                    names.append(name)
-    return names
+        if match := _TEST_LINE.match(line):
+            method, context, status = match.groups()
+            if not status.startswith("skipped"):
+                executed.add(_test_id(method, context))
+        if match := _FAILURE_LINE.match(line):
+            _, method, context = match.groups()
+            identity = _test_id(method, context)
+            executed.add(identity)
+            if identity not in failures:
+                failures.append(identity)
+    summaries = _RAN_TESTS.findall(output)
+    count = int(summaries[0]) if len(summaries) == 1 else 0
+    return executed, failures, count
+
+
+def _resolve_tests(selectors: list[str], executed: set[str]) -> set[str] | None:
+    """Require each nominated selector to identify one actually executed test."""
+    if not selectors:
+        return None
+    resolved: set[str] = set()
+    for selector in selectors:
+        matches = {identity for identity in executed if identity == selector}
+        if "." not in selector:
+            matches = {identity for identity in executed if identity.rsplit(".", 1)[-1] == selector}
+        if len(matches) != 1:
+            return None
+        resolved.update(matches)
+    return resolved
 
 
 def _run(command: list[str], cwd: Path, pycache_prefix: Path) -> subprocess.CompletedProcess[str]:
@@ -156,13 +206,13 @@ def _run(command: list[str], cwd: Path, pycache_prefix: Path) -> subprocess.Comp
     )
 
 
-def _imports(source: Path, cwd: Path, pycache_prefix: Path) -> bool:
-    """Report whether the mutated source compiles; an unimportable mutant grades nothing."""
+def _compiles(source: Path, cwd: Path, pycache_prefix: Path) -> bool:
+    """Check syntax only; the test execution must separately establish usable behavior."""
     result = _run(
         [
             "python3",
             "-c",
-            f"import py_compile,sys; py_compile.compile({str(source)!r}, doraise=True)",
+            f"import py_compile; py_compile.compile({str(source)!r}, doraise=True)",
         ],
         cwd,
         pycache_prefix,
@@ -177,6 +227,7 @@ def _witness_one(
     original: str,
     cwd: Path,
     command: list[str],
+    baseline_tests: set[str],
 ) -> MutationWitness:
     """Apply one mutation, run the tree in isolation, and classify what happened."""
     if mutation.find not in original:
@@ -194,21 +245,21 @@ def _witness_one(
             target_present=True,
         )
 
-    source.write_text(mutated, encoding="utf-8")
+    source.write_bytes(mutated.encode("utf-8"))
     with tempfile.TemporaryDirectory() as cache:
         prefix = Path(cache)
-        if not _imports(source, cwd, prefix):
+        if not _compiles(source, cwd, prefix):
             return MutationWitness(
                 label=mutation.label,
                 outcome="invalid",
-                reason="mutated source does not import — the failure is the edit, not a guard",
+                reason="mutated source does not compile — the failure is the edit, not a guard",
                 target_present=True,
                 source_changed=True,
                 pycache_prefix=str(prefix),
             )
         result = _run(command, cwd, prefix)
         output = (result.stdout or "") + (result.stderr or "")
-        failing = _failing_test_names(output)
+        executed, failing, count = _test_observations(output)
 
         def observed(outcome: MutationOutcome, reason: str = "") -> MutationWitness:
             """Build the witness from what this run actually observed."""
@@ -219,6 +270,10 @@ def _witness_one(
                 target_present=True,
                 source_changed=True,
                 imports=True,
+                compiles=True,
+                source_sha256=hashlib.sha256(mutated.encode("utf-8")).hexdigest(),
+                executed_tests=sorted(executed),
+                tests_run=count,
                 exit_status=result.returncode,
                 failure_class=classify_failure(result.returncode, output),
                 failing_tests=failing,
@@ -226,18 +281,26 @@ def _witness_one(
                 output_tail="\n".join(output.splitlines()[-40:]),
             )
 
+        nominated = _resolve_tests(mutation.expected_tests, baseline_tests)
+        if nominated is None:
+            return observed(
+                "inconclusive", "nominated tests are absent, skipped, or ambiguous in baseline"
+            )
+        if count == 0 or not nominated.issubset(executed):
+            return observed(
+                "inconclusive", "nominated tests did not execute in a completed mutant run"
+            )
         if result.returncode == 0:
             return observed("survived")
-        if mutation.expected_tests and not (set(failing) & set(mutation.expected_tests)):
+        if classify_failure(result.returncode, output) != "assertion":
+            return observed("inconclusive", "the run did not report a clean assertion failure")
+        if _FIXTURE_FRAME.search(output):
+            return observed("inconclusive", "a fixture assertion failed outside the test body")
+        if not (set(failing) & nominated):
             return observed(
                 "inconclusive",
                 "no expected test failed — the run witnessed collateral, not this guard's "
                 f"coverage (expected any of {mutation.expected_tests})",
-            )
-        if not failing:
-            return observed(
-                "inconclusive",
-                "non-zero exit with no named failing test — a harness or collection failure",
             )
         return observed("killed")
 
@@ -253,11 +316,13 @@ def run_mutation_sweep(
     The source file is always restored, including when a mutant leaves it
     unimportable — a sweep that can strand a broken tree is worse than no sweep.
     """
-    original = source.read_text(encoding="utf-8")
+    original_bytes = source.read_bytes()
+    original = original_bytes.decode("utf-8")
     with tempfile.TemporaryDirectory() as cache:
         baseline = _run(command, project_root, Path(cache))
     baseline_output = (baseline.stdout or "") + (baseline.stderr or "")
-    baseline_green = baseline.returncode == 0
+    baseline_tests, _, baseline_count = _test_observations(baseline_output)
+    baseline_green = baseline.returncode == 0 and baseline_count > 0 and bool(baseline_tests)
 
     witnesses: list[MutationWitness] = []
     try:
@@ -273,16 +338,25 @@ def run_mutation_sweep(
                 continue
             witnesses.append(
                 _witness_one(
-                    mutation, source=source, original=original, cwd=project_root, command=command
+                    mutation,
+                    source=source,
+                    original=original,
+                    cwd=project_root,
+                    command=command,
+                    baseline_tests=baseline_tests,
                 )
             )
-            source.write_text(original, encoding="utf-8")
+            source.write_bytes(original_bytes)
     finally:
-        source.write_text(original, encoding="utf-8")
+        source.write_bytes(original_bytes)
 
     return MutationSweep(
         source=str(source),
         baseline_green=baseline_green,
+        source_sha256=hashlib.sha256(original_bytes).hexdigest(),
+        restored_source_sha256=hashlib.sha256(source.read_bytes()).hexdigest(),
+        baseline_executed_tests=sorted(baseline_tests),
+        baseline_tests_run=baseline_count,
         baseline_output_tail="\n".join(baseline_output.splitlines()[-40:]),
         witnesses=witnesses,
     )

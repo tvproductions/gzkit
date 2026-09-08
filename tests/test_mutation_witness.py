@@ -133,7 +133,14 @@ class TestFailureCause(unittest.TestCase):
             sweep = run_mutation_sweep(
                 root,
                 source,
-                [Mutation(find="if value <= 0:", replace="if False:", label="guard")],
+                [
+                    Mutation(
+                        find="if value <= 0:",
+                        replace="if False:",
+                        label="guard",
+                        expected_tests=["test_rejects_zero"],
+                    )
+                ],
                 _TEST_CMD,
             )
         w = sweep.witnesses[0]
@@ -170,7 +177,14 @@ class TestFailureCause(unittest.TestCase):
             sweep = run_mutation_sweep(
                 root,
                 source,
-                [Mutation(find='"""Subject under mutation."""', replace='"""x."""', label="doc")],
+                [
+                    Mutation(
+                        find='"""Subject under mutation."""',
+                        replace='"""x."""',
+                        label="doc",
+                        expected_tests=["test_rejects_zero"],
+                    )
+                ],
                 _TEST_CMD,
             )
         self.assertEqual(sweep.witnesses[0].outcome, "survived")
@@ -190,7 +204,8 @@ class TestIsolation(unittest.TestCase):
         probe = (
             "import os, pathlib; "
             "pathlib.Path('seen.txt').open('a', encoding='utf-8')"
-            ".write(os.environ.get('PYTHONPYCACHEPREFIX', 'UNSET') + chr(10))"
+            ".write(os.environ.get('PYTHONPYCACHEPREFIX', 'UNSET') + chr(10)); "
+            "import unittest; unittest.main(module='test_subject', verbosity=2)"
         )
         with TemporaryDirectory() as td:
             root = Path(td)
@@ -205,6 +220,7 @@ class TestIsolation(unittest.TestCase):
                 ["python3", "-c", probe],
             )
             seen = (root / "seen.txt").read_text(encoding="utf-8").split()
+        self.assertEqual(len(seen), 3, "baseline and both mutant commands must execute")
         self.assertNotIn("UNSET", seen, "the subprocess ran with no isolated bytecode cache")
         self.assertEqual(len(set(seen)), len(seen), "two runs shared a bytecode cache")
 
@@ -234,9 +250,17 @@ class TestSweepReporting(unittest.TestCase):
                 root,
                 source,
                 [
-                    Mutation(find="if value <= 0:", replace="if False:", label="killed"),
                     Mutation(
-                        find='"""Subject under mutation."""', replace='"""x."""', label="survived"
+                        find="if value <= 0:",
+                        replace="if False:",
+                        label="killed",
+                        expected_tests=["test_rejects_zero"],
+                    ),
+                    Mutation(
+                        find='"""Subject under mutation."""',
+                        replace='"""x."""',
+                        label="survived",
+                        expected_tests=["test_rejects_zero"],
                     ),
                     Mutation(find="nope", replace="x", label="invalid"),
                 ],
@@ -247,3 +271,233 @@ class TestSweepReporting(unittest.TestCase):
         self.assertEqual(sweep.invalid, 1)
         self.assertEqual(sweep.inconclusive, 0)
         self.assertFalse(sweep.is_conclusive)
+
+
+class TestBehavioralFailure(unittest.TestCase):
+    def test_named_runtime_error_does_not_kill_mutation(self) -> None:
+        with TemporaryDirectory() as td:
+            root = Path(td)
+            source = _fixture(root)
+            sweep = run_mutation_sweep(
+                root,
+                source,
+                [
+                    Mutation(
+                        find="return False",
+                        replace="raise TypeError('broken runtime')",
+                        label="runtime",
+                        expected_tests=["test_rejects_zero"],
+                    )
+                ],
+                _TEST_CMD,
+            )
+        self.assertEqual(sweep.witnesses[0].outcome, "inconclusive")
+        self.assertEqual(sweep.witnesses[0].failure_class, "error")
+        self.assertFalse(sweep.is_conclusive)
+
+    def test_full_test_identity_selects_semantic_failure(self) -> None:
+        with TemporaryDirectory() as td:
+            root = Path(td)
+            source = _fixture(root)
+            sweep = run_mutation_sweep(
+                root,
+                source,
+                [
+                    Mutation(
+                        find="if value <= 0:",
+                        replace="if False:",
+                        label="semantic",
+                        expected_tests=["test_subject.TestGuard.test_rejects_zero"],
+                    )
+                ],
+                _TEST_CMD,
+            )
+        self.assertEqual(sweep.witnesses[0].outcome, "killed")
+        self.assertEqual(
+            sweep.witnesses[0].failing_tests, ["test_subject.TestGuard.test_rejects_zero"]
+        )
+
+    def test_zero_and_skipped_baselines_do_not_grade_mutations(self) -> None:
+        programs = [
+            "import unittest\n",
+            "import unittest\n@unittest.skip('not exercised')\n"
+            + _TESTS.removeprefix("import unittest\n\nfrom subject import guard\n\n\n"),
+        ]
+        for program in programs:
+            with self.subTest(program=program), TemporaryDirectory() as td:
+                root = Path(td)
+                source = _fixture(root)
+                (root / "test_subject.py").write_text(program, encoding="utf-8")
+                sweep = run_mutation_sweep(
+                    root,
+                    source,
+                    [
+                        Mutation(
+                            find="return True",
+                            replace="return False",
+                            label="unrun",
+                            expected_tests=["test_accepts_one"],
+                        )
+                    ],
+                    _TEST_CMD,
+                )
+                self.assertFalse(sweep.baseline_green)
+                self.assertEqual(sweep.witnesses[0].outcome, "inconclusive")
+
+    def test_missing_selector_does_not_prove_survival(self) -> None:
+        with TemporaryDirectory() as td:
+            root = Path(td)
+            source = _fixture(root)
+            sweep = run_mutation_sweep(
+                root,
+                source,
+                [
+                    Mutation(
+                        find='"""Subject under mutation."""',
+                        replace='"""other."""',
+                        label="missing",
+                        expected_tests=["test_missing"],
+                    )
+                ],
+                _TEST_CMD,
+            )
+        self.assertEqual(sweep.witnesses[0].outcome, "inconclusive")
+
+    def test_source_bytes_are_restored_without_newline_translation(self) -> None:
+        with TemporaryDirectory() as td:
+            root = Path(td)
+            source = _fixture(root)
+            original = _MODULE.replace("\n", "\r\n").encode("utf-8")
+            source.write_bytes(original)
+            sweep = run_mutation_sweep(
+                root,
+                source,
+                [
+                    Mutation(
+                        find="return False",
+                        replace="return True",
+                        label="crlf",
+                        expected_tests=["test_rejects_zero"],
+                    )
+                ],
+                _TEST_CMD,
+            )
+            self.assertEqual(source.read_bytes(), original)
+            self.assertEqual(sweep.witnesses[0].outcome, "killed")
+
+    def test_setup_assertion_is_not_a_behavioral_kill(self) -> None:
+        with TemporaryDirectory() as td:
+            root = Path(td)
+            source = _fixture(root)
+            (root / "test_subject.py").write_text(
+                _TESTS.replace(
+                    "    def test_rejects_zero",
+                    "    def setUp(self):\n"
+                    "        self.assertFalse(guard(0))\n\n"
+                    "    def test_rejects_zero",
+                ),
+                encoding="utf-8",
+            )
+            sweep = run_mutation_sweep(
+                root,
+                source,
+                [
+                    Mutation(
+                        find="return False",
+                        replace="return True",
+                        label="setup",
+                        expected_tests=["test_rejects_zero"],
+                    )
+                ],
+                _TEST_CMD,
+            )
+        self.assertEqual(sweep.witnesses[0].outcome, "inconclusive")
+
+    def test_unknown_and_ambiguous_nominations_are_inconclusive(self) -> None:
+        for expected in ([], ["test_rejects_zero"]):
+            with self.subTest(expected=expected), TemporaryDirectory() as td:
+                root = Path(td)
+                source = _fixture(root)
+                (root / "test_subject.py").write_text(
+                    _TESTS + "\nclass OtherGuard(TestGuard):\n    pass\n", encoding="utf-8"
+                )
+                sweep = run_mutation_sweep(
+                    root,
+                    source,
+                    [
+                        Mutation(
+                            find="return False",
+                            replace="return True",
+                            label="nomination",
+                            expected_tests=expected,
+                        )
+                    ],
+                    _TEST_CMD,
+                )
+                self.assertEqual(sweep.witnesses[0].outcome, "inconclusive")
+
+    def test_import_failure_and_mutant_skip_are_not_conclusive(self) -> None:
+        cases = [
+            ("return False", "import missing_dependency", _TESTS),
+            (
+                "return False",
+                "return True",
+                _TESTS.replace(
+                    "    def test_rejects_zero",
+                    "    @unittest.skipIf(guard(0), 'mutated')\n    def test_rejects_zero",
+                ),
+            ),
+        ]
+        for find, replacement, tests in cases:
+            with self.subTest(replacement=replacement), TemporaryDirectory() as td:
+                root = Path(td)
+                source = _fixture(root)
+                (root / "test_subject.py").write_text(tests, encoding="utf-8")
+                sweep = run_mutation_sweep(
+                    root,
+                    source,
+                    [
+                        Mutation(
+                            find=find,
+                            replace=replacement,
+                            label="unexecuted",
+                            expected_tests=["test_rejects_zero"],
+                        )
+                    ],
+                    _TEST_CMD,
+                )
+                self.assertTrue(sweep.baseline_green)
+                self.assertEqual(sweep.witnesses[0].outcome, "inconclusive")
+
+    def test_witness_reports_executed_ids_and_exact_source_digests(self) -> None:
+        import hashlib
+
+        with TemporaryDirectory() as td:
+            root = Path(td)
+            source = _fixture(root)
+            sweep = run_mutation_sweep(
+                root,
+                source,
+                [
+                    Mutation(
+                        find="return False",
+                        replace="return True",
+                        label="observed",
+                        expected_tests=["test_rejects_zero"],
+                    )
+                ],
+                _TEST_CMD,
+            )
+        self.assertEqual(sweep.baseline_tests_run, 2)
+        self.assertEqual(
+            sweep.baseline_executed_tests,
+            ["test_subject.TestGuard.test_accepts_one", "test_subject.TestGuard.test_rejects_zero"],
+        )
+        self.assertEqual(sweep.source_sha256, hashlib.sha256(_MODULE.encode()).hexdigest())
+        self.assertEqual(sweep.restored_source_sha256, sweep.source_sha256)
+        self.assertEqual(
+            sweep.witnesses[0].source_sha256,
+            hashlib.sha256(_MODULE.replace("return False", "return True").encode()).hexdigest(),
+        )
+        self.assertTrue(sweep.witnesses[0].compiles)
+        self.assertEqual(sweep.witnesses[0].tests_run, 2)

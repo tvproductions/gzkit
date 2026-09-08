@@ -16,7 +16,7 @@
       "type": "exitCodeEquals",
       "command": "uv run python src/gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py",
       "expected": 0,
-      "description": "No undisclosed never-fired event type — every declared type either fires or is disclosed"
+      "description": "Every declared type has live use, baseline disclosure, or freshly verified isolated producer execution"
     }
   ]
 }

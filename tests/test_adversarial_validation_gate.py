@@ -379,10 +379,10 @@ class TestGateIsWiredIntoCompletion(unittest.TestCase):
             )
 
         gate.assert_called_once()
-        kwargs = gate.call_args.kwargs
-        self.assertEqual(kwargs["obpi_id"], obpi_id)
-        self.assertEqual(kwargs["parent_lane"], "heavy")
-        self.assertIsNone(kwargs["verdict"])
+        # The durable closure reader is the governing boundary. Old caller
+        # verdict/tier flags are not arguments capable of licensing this gate.
+        self.assertEqual(gate.call_args.args[1], obpi_id)
+        self.assertEqual(gate.call_args.kwargs, {})
         # The transaction must never run when Step 4b is unrecorded.
         execute.assert_not_called()
 
@@ -421,8 +421,10 @@ class TestGateIsWiredIntoCompletion(unittest.TestCase):
             mock.patch.object(mod, "_execute_transaction") as execute,
             mock.patch.object(
                 mod,
-                "_enforce_adversarial_validation",
-                side_effect=SystemExit(1) if gate_raises else None,
+                "completion_review",
+                side_effect=ValueError("required acceptance proof missing")
+                if gate_raises
+                else None,
             ) as gate,
             mock.patch.object(
                 mod,

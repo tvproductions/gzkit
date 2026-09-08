@@ -11,6 +11,7 @@ import json
 import unittest
 from pathlib import Path
 
+from gzkit.acceptance import Obligation, Readiness, assess_readiness
 from gzkit.pipeline_runtime import (
     MAX_REVIEW_FIX_CYCLES,
     REVIEW_MODEL_MAP,
@@ -36,6 +37,9 @@ from gzkit.roles import (
     ReviewVerdict,
 )
 from gzkit.traceability import covers  # noqa: F401
+
+# Dispatch mechanics consume readiness derived and tested by the acceptance store.
+_READY = Readiness(ready=True, blockers=(), open_findings=())
 
 # ---------------------------------------------------------------------------
 # Helper factories
@@ -638,25 +642,85 @@ class TestHandleReviewCycle(unittest.TestCase):
     # Advancement paths
     # -----------------------------------------------------------------------
 
+    def test_pass_tokens_without_current_acceptance_cannot_advance(self):
+        state = _make_dispatch_state(num_tasks=1)
+        action = handle_review_cycle(state, 0, self._passing_spec(), self._passing_quality())
+        self.assertEqual(action, "fix")
+        self.assertEqual(state.records[0].review_fix_count, 1)
+
+    def test_reducer_missing_proof_blocks_pass_and_consumes_bounded_retries(self):
+        readiness = assess_readiness(
+            [
+                Obligation(
+                    id="REQ-1",
+                    kind="BEHAVIOR",
+                    statement="Reject zero",
+                    authority="brief#REQ-1",
+                    contract_digest="contract",
+                )
+            ],
+            [],
+            [],
+            input_digest="current",
+            author_id="implementer",
+            stage="stage2",
+        )
+        state = _make_dispatch_state(num_tasks=1)
+        for _ in range(MAX_REVIEW_FIX_CYCLES):
+            action = handle_review_cycle(
+                state, 0, self._passing_spec(), self._passing_quality(), acceptance=readiness
+            )
+            self.assertEqual(action, "fix")
+        self.assertEqual(
+            handle_review_cycle(
+                state, 0, self._passing_spec(), self._passing_quality(), acceptance=readiness
+            ),
+            "blocked",
+        )
+
+    def test_ready_token_cannot_override_its_outstanding_findings_or_blockers(self):
+        cases = [
+            Readiness(ready=True, blockers=("stale proof",), open_findings=()),
+            Readiness(ready=True, blockers=(), open_findings=("REQ-1-F1",)),
+            Readiness(ready=False, blockers=(), open_findings=()),
+        ]
+        for readiness in cases:
+            with self.subTest(readiness=readiness):
+                state = _make_dispatch_state(num_tasks=1)
+                self.assertEqual(
+                    handle_review_cycle(
+                        state,
+                        0,
+                        self._passing_spec(),
+                        self._passing_quality(),
+                        acceptance=readiness,
+                    ),
+                    "fix",
+                )
+
     def test_spec_passes_no_quality_result_advances(self):
         state = _make_dispatch_state(num_tasks=1)
-        action = handle_review_cycle(state, 0, self._passing_spec(), None)
+        action = handle_review_cycle(state, 0, self._passing_spec(), None, acceptance=_READY)
         self.assertEqual(action, "advance")
 
     def test_spec_passes_quality_passes_advances(self):
         state = _make_dispatch_state(num_tasks=1)
-        action = handle_review_cycle(state, 0, self._passing_spec(), self._passing_quality())
+        action = handle_review_cycle(
+            state, 0, self._passing_spec(), self._passing_quality(), acceptance=_READY
+        )
         self.assertEqual(action, "advance")
 
     def test_spec_concerns_only_no_critical_advances_to_quality_check(self):
         """CONCERNS spec (non-critical) should not block — quality review then proceeds."""
         state = _make_dispatch_state(num_tasks=1)
-        action = handle_review_cycle(state, 0, self._concerns_only_spec(), self._passing_quality())
+        action = handle_review_cycle(
+            state, 0, self._concerns_only_spec(), self._passing_quality(), acceptance=_READY
+        )
         self.assertEqual(action, "advance")
 
     def test_spec_concerns_only_no_quality_result_advances(self):
         state = _make_dispatch_state(num_tasks=1)
-        action = handle_review_cycle(state, 0, self._concerns_only_spec(), None)
+        action = handle_review_cycle(state, 0, self._concerns_only_spec(), None, acceptance=_READY)
         self.assertEqual(action, "advance")
 
     # -----------------------------------------------------------------------
@@ -665,12 +729,14 @@ class TestHandleReviewCycle(unittest.TestCase):
 
     def test_spec_fails_critical_returns_fix_on_first_cycle(self):
         state = _make_dispatch_state(num_tasks=1)
-        action = handle_review_cycle(state, 0, self._blocking_spec(), None)
+        action = handle_review_cycle(state, 0, self._blocking_spec(), None, acceptance=_READY)
         self.assertEqual(action, "fix")
 
     def test_quality_fails_critical_returns_fix_on_first_cycle(self):
         state = _make_dispatch_state(num_tasks=1)
-        action = handle_review_cycle(state, 0, self._passing_spec(), self._blocking_quality())
+        action = handle_review_cycle(
+            state, 0, self._passing_spec(), self._blocking_quality(), acceptance=_READY
+        )
         self.assertEqual(action, "fix")
 
     # -----------------------------------------------------------------------
@@ -681,13 +747,15 @@ class TestHandleReviewCycle(unittest.TestCase):
         state = _make_dispatch_state(num_tasks=1)
         # Pre-fill review_fix_count to the maximum
         state.records[0].review_fix_count = MAX_REVIEW_FIX_CYCLES
-        action = handle_review_cycle(state, 0, self._blocking_spec(), None)
+        action = handle_review_cycle(state, 0, self._blocking_spec(), None, acceptance=_READY)
         self.assertEqual(action, "blocked")
 
     def test_quality_fails_after_max_cycles_returns_blocked(self):
         state = _make_dispatch_state(num_tasks=1)
         state.records[0].review_fix_count = MAX_REVIEW_FIX_CYCLES
-        action = handle_review_cycle(state, 0, self._passing_spec(), self._blocking_quality())
+        action = handle_review_cycle(
+            state, 0, self._passing_spec(), self._blocking_quality(), acceptance=_READY
+        )
         self.assertEqual(action, "blocked")
 
     # -----------------------------------------------------------------------
@@ -697,24 +765,32 @@ class TestHandleReviewCycle(unittest.TestCase):
     def test_spec_fail_increments_review_fix_count(self):
         state = _make_dispatch_state(num_tasks=1)
         self.assertEqual(state.records[0].review_fix_count, 0)
-        handle_review_cycle(state, 0, self._blocking_spec(), None)
+        handle_review_cycle(state, 0, self._blocking_spec(), None, acceptance=_READY)
         self.assertEqual(state.records[0].review_fix_count, 1)
 
     def test_quality_fail_increments_review_fix_count(self):
         state = _make_dispatch_state(num_tasks=1)
         self.assertEqual(state.records[0].review_fix_count, 0)
-        handle_review_cycle(state, 0, self._passing_spec(), self._blocking_quality())
+        handle_review_cycle(
+            state, 0, self._passing_spec(), self._blocking_quality(), acceptance=_READY
+        )
         self.assertEqual(state.records[0].review_fix_count, 1)
 
     def test_review_fix_count_increments_across_repeated_calls(self):
         state = _make_dispatch_state(num_tasks=1)
-        handle_review_cycle(state, 0, self._blocking_spec(), None)  # count → 1, returns "fix"
-        handle_review_cycle(state, 0, self._blocking_spec(), None)  # count → 2, returns "fix"
+        handle_review_cycle(
+            state, 0, self._blocking_spec(), None, acceptance=_READY
+        )  # count → 1, returns "fix"
+        handle_review_cycle(
+            state, 0, self._blocking_spec(), None, acceptance=_READY
+        )  # count → 2, returns "fix"
         self.assertEqual(state.records[0].review_fix_count, 2)
 
     def test_advance_does_not_increment_review_fix_count(self):
         state = _make_dispatch_state(num_tasks=1)
-        handle_review_cycle(state, 0, self._passing_spec(), self._passing_quality())
+        handle_review_cycle(
+            state, 0, self._passing_spec(), self._passing_quality(), acceptance=_READY
+        )
         self.assertEqual(state.records[0].review_fix_count, 0)
 
     # -----------------------------------------------------------------------
@@ -723,12 +799,12 @@ class TestHandleReviewCycle(unittest.TestCase):
 
     def test_invalid_task_index_negative_returns_blocked(self):
         state = _make_dispatch_state(num_tasks=1)
-        action = handle_review_cycle(state, -1, self._passing_spec(), None)
+        action = handle_review_cycle(state, -1, self._passing_spec(), None, acceptance=_READY)
         self.assertEqual(action, "blocked")
 
     def test_invalid_task_index_out_of_bounds_returns_blocked(self):
         state = _make_dispatch_state(num_tasks=1)
-        action = handle_review_cycle(state, 99, self._passing_spec(), None)
+        action = handle_review_cycle(state, 99, self._passing_spec(), None, acceptance=_READY)
         self.assertEqual(action, "blocked")
 
     # -----------------------------------------------------------------------
@@ -737,7 +813,7 @@ class TestHandleReviewCycle(unittest.TestCase):
 
     def test_only_targeted_record_review_fix_count_changes(self):
         state = _make_dispatch_state(num_tasks=3)
-        handle_review_cycle(state, 1, self._blocking_spec(), None)
+        handle_review_cycle(state, 1, self._blocking_spec(), None, acceptance=_READY)
         self.assertEqual(state.records[0].review_fix_count, 0)
         self.assertEqual(state.records[1].review_fix_count, 1)
         self.assertEqual(state.records[2].review_fix_count, 0)
@@ -749,6 +825,52 @@ class TestHandleReviewCycle(unittest.TestCase):
     def test_max_review_fix_cycles_is_positive_int(self):
         self.assertIsInstance(MAX_REVIEW_FIX_CYCLES, int)
         self.assertGreater(MAX_REVIEW_FIX_CYCLES, 0)
+
+
+class TestAcceptancePromptOutputContract(unittest.TestCase):
+    """Prompt rendering transports record identities; it cannot prove review compliance."""
+
+    def test_both_reviewers_receive_the_current_records_and_stage_schema(self):
+        import re
+
+        from gzkit.acceptance import Review
+        from gzkit.acceptance_store import REVIEW_SCHEMA
+
+        context = json.dumps({"input_digest": "observed-bytes", "proofs": [{"id": "proof-7"}]})
+        prompts = {
+            "spec": compose_spec_review_prompt(
+                _make_task(),
+                ["REQ-1 rejects zero"],
+                ["source.py"],
+                why="Verify required behavior",
+                project_root=Path("/nonexistent"),
+                acceptance_context=context,
+            ),
+            "quality": compose_quality_review_prompt(
+                ["source.py"],
+                ["test_source.py"],
+                why="Verify production-bound tests",
+                project_root=Path("/nonexistent"),
+                acceptance_context=context,
+            ),
+        }
+        for stage, prompt in prompts.items():
+            with self.subTest(stage=stage):
+                self.assertIn(context, prompt)
+                blocks = re.findall(r"```json\s*(\{.*?\})\s*```", prompt, re.DOTALL)
+                payloads = [json.loads(block) for block in blocks]
+                acceptance = [
+                    payload for payload in payloads if payload.get("schema") == REVIEW_SCHEMA
+                ]
+                self.assertEqual(len(acceptance), 1)
+                payload = acceptance[0]
+                payload.pop("schema")
+                review = Review(id="receipt-derived", receipt_id="executed-receipt", **payload)
+                self.assertEqual(review.stage, stage)
+                self.assertEqual(len(review.proof_ids), len(review.obligation_ids))
+                self.assertEqual(review.accepted_proof_ids, review.proof_ids)
+                self.assertIn("Auxiliary observations alone cannot", prompt)
+                self.assertIn("finding_id, obligation_id", prompt)
 
 
 if __name__ == "__main__":

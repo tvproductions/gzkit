@@ -12,6 +12,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from gzkit.acceptance import Readiness
 from gzkit.pipeline_runtime import (
     DISPATCH_MODEL_MAP,
     MAX_BLOCKED_FIX_ATTEMPTS,
@@ -37,6 +38,9 @@ from gzkit.roles import (
     HandoffStatus,
 )
 from gzkit.traceability import covers
+
+# Dispatch mechanics consume readiness derived and tested by the acceptance store.
+_READY = Readiness(ready=True, blockers=(), open_findings=())
 
 # ---------------------------------------------------------------------------
 # Task complexity classification
@@ -696,7 +700,7 @@ class TestStage2ReviewDispatchContract(unittest.TestCase):
         spec_pass = ReviewResult(verdict=ReviewVerdict.PASS, findings=[], summary="OK")
         quality_pass = ReviewResult(verdict=ReviewVerdict.PASS, findings=[], summary="OK")
 
-        action = handle_review_cycle(state, 0, spec_pass, quality_pass)
+        action = handle_review_cycle(state, 0, spec_pass, quality_pass, acceptance=_READY)
         self.assertEqual(action, "advance")
 
     def test_review_cycle_fix_on_critical_spec_finding(self):
@@ -726,7 +730,7 @@ class TestStage2ReviewDispatchContract(unittest.TestCase):
         )
         quality_pass = ReviewResult(verdict=ReviewVerdict.PASS, findings=[], summary="OK")
 
-        action = handle_review_cycle(state, 0, spec_fail, quality_pass)
+        action = handle_review_cycle(state, 0, spec_fail, quality_pass, acceptance=_READY)
         self.assertEqual(action, "fix")
         self.assertEqual(state.records[0].review_fix_count, 1)
 
@@ -758,11 +762,11 @@ class TestStage2ReviewDispatchContract(unittest.TestCase):
 
         # Exhaust fix cycles
         for _ in range(MAX_REVIEW_FIX_CYCLES):
-            action = handle_review_cycle(state, 0, spec_fail, None)
+            action = handle_review_cycle(state, 0, spec_fail, None, acceptance=_READY)
             self.assertEqual(action, "fix")
 
         # One more should block
-        action = handle_review_cycle(state, 0, spec_fail, None)
+        action = handle_review_cycle(state, 0, spec_fail, None, acceptance=_READY)
         self.assertEqual(action, "blocked")
 
     def test_full_loop_with_review_after_each_task(self):
@@ -816,7 +820,9 @@ class TestStage2ReviewDispatchContract(unittest.TestCase):
             # Both reviews pass
             spec_pass = ReviewResult(verdict=ReviewVerdict.PASS, findings=[], summary="OK")
             quality_pass = ReviewResult(verdict=ReviewVerdict.PASS, findings=[], summary="OK")
-            review_action = handle_review_cycle(state, i, spec_pass, quality_pass)
+            review_action = handle_review_cycle(
+                state, i, spec_pass, quality_pass, acceptance=_READY
+            )
             self.assertEqual(review_action, "advance")
 
         self.assertTrue(state.is_finished)
@@ -855,7 +861,7 @@ class TestStage2ReviewDispatchContract(unittest.TestCase):
             ],
             summary="Fails",
         )
-        review_action = handle_review_cycle(state, 0, spec_fail, None)
+        review_action = handle_review_cycle(state, 0, spec_fail, None, acceptance=_READY)
         self.assertEqual(review_action, "fix")
 
         # Redispatch implementer with finding context
@@ -867,7 +873,7 @@ class TestStage2ReviewDispatchContract(unittest.TestCase):
 
         # Re-review passes
         spec_pass = ReviewResult(verdict=ReviewVerdict.PASS, findings=[], summary="OK")
-        review_action2 = handle_review_cycle(state, 0, spec_pass, None)
+        review_action2 = handle_review_cycle(state, 0, spec_pass, None, acceptance=_READY)
         self.assertEqual(review_action2, "advance")
 
     def test_no_review_for_blocked_task(self):

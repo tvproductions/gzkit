@@ -26,6 +26,7 @@ from gzkit.cli.helpers import (
     add_json_flag,
     build_epilog,
 )
+from gzkit.cli.parser_acceptance import acceptance_handler, configure_acceptance_parser
 from gzkit.cli.parser_handler_manifest import _lazy
 from gzkit.lock_manager import DEFAULT_LOCK_TTL_MINUTES
 
@@ -47,6 +48,22 @@ def register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
     )
     obpi_commands = p_obpi.add_subparsers(dest="obpi_command")
     obpi_commands.required = True
+    p_obpi_acceptance = obpi_commands.add_parser(
+        "acceptance",
+        help="Preserve requirement proof and independent finding closure",
+        description=(
+            "Execute requirement controls, record independent reviews, and derive readiness."
+        ),
+        epilog=build_epilog(
+            [
+                "gz obpi acceptance OBPI-0.1.0-01 init --author implementing-session",
+                "gz obpi acceptance OBPI-0.1.0-01 prove --spec controls.json",
+                "gz obpi acceptance OBPI-0.1.0-01 status --stage stage2 --json",
+            ]
+        ),
+    )
+    configure_acceptance_parser(p_obpi_acceptance)
+    p_obpi_acceptance.set_defaults(func=acceptance_handler)
 
     p_obpi_emit = obpi_commands.add_parser(
         "emit-receipt",
@@ -339,10 +356,10 @@ def register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         "present-evidence",
         help="Generate tool-derived Stage-4 acceptance evidence (GHI #643)",
         description=(
-            "Generate the Stage-4 evidence packet from observables the agent cannot "
-            "author: run the brief's ## Demo (assert-shaped), read on-disk ARB receipts, "
-            "and run gz covers. Writes .gzkit/evidence/<OBPI>.evidence.json and prints it "
-            "for operator attestation. Exits 3 (NOT-ATTESTABLE) on any blocker."
+            "Generate Stage-4a evidence from the brief Demo, ARB receipts, coverage, "
+            "and current acceptance proof. Writes .gzkit/evidence/<OBPI>.evidence.json. "
+            "Exits 3 on proof blockers. Pending independent Step-4b review permits "
+            "packet generation with exit 0 but keeps attestable false."
         ),
         epilog=build_epilog(
             [

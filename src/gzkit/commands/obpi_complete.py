@@ -18,6 +18,7 @@ from typing import Any, NoReturn, cast
 
 from rich.markup import escape
 
+from gzkit.acceptance_store import completion_review
 from gzkit.arb.paths import receipts_root
 from gzkit.canonical_steps import CANONICAL_STEP_COMMANDS
 from gzkit.commands.adr_audit import (
@@ -38,7 +39,9 @@ from gzkit.commands.common import (
 )
 from gzkit.commands.obpi_complete_adversarial import (
     _build_adversarial_event,
-    _enforce_adversarial_validation,
+)
+from gzkit.commands.obpi_complete_adversarial import (
+    _enforce_adversarial_validation as _enforce_adversarial_validation,
 )
 from gzkit.commands.validate_task_envelope import pending_obpi_task_envelope_errors
 from gzkit.governance.req_coverage import (
@@ -1009,6 +1012,31 @@ def _enforce_task_envelope_gate(
         )
 
 
+def _current_adversarial_event(
+    project_root: Path,
+    obpi_id: str,
+    as_json: bool,
+    job_id: str | None,
+    refuted_claim: str | None,
+    resolution: str | None,
+) -> LedgerEvent | None:
+    """Build completion provenance from current independently accepted proof."""
+    try:
+        review = completion_review(project_root, obpi_id)
+    except ValueError as exc:
+        _fail(str(exc), exit_code=3, as_json=as_json, obpi_id=obpi_id)
+    return _build_adversarial_event(
+        obpi_id=obpi_id,
+        verdict="degraded-human-only" if review.tier == 3 else "not-refuted",
+        adversary=review.reviewer_id,
+        job_id=job_id,
+        refuted_claim=refuted_claim,
+        resolution=resolution,
+        tier=review.tier,
+        receipt=review.receipt_id,
+    )
+
+
 def obpi_complete_cmd(
     obpi: str,
     attestor: str,
@@ -1296,31 +1324,17 @@ def obpi_complete_cmd(
     # their own cause first: an operator with an uncovered REQ must hear about the
     # REQ, not the adversary. A --dry-run has already returned above; it writes
     # nothing, so it gates nothing.
-    arb_receipts_dir = receipts_root(project_root=project_root)
-    _enforce_adversarial_validation(
-        obpi_id=obpi_id,
-        parent_lane=parent_lane,
-        verdict=adversary_verdict,
-        adversary=adversary,
-        resolution=adversary_resolution,
-        as_json=as_json,
-        fallback_reason=adversary_fallback_reason,
-        tier=adversary_tier,
-        receipt=adversary_receipt,
-        receipts_root=arb_receipts_dir,
+    # The current closure set supplies the completion judgment. Historical
+    # flags/prose cannot relabel a round or overrule its unresolved findings.
+    adversarial_event = _current_adversarial_event(
+        project_root,
+        obpi_id,
+        as_json,
+        adversary_job_id,
+        refuted_claim,
+        adversary_resolution,
     )
-
     # 6-8. Execute atomic transaction
-    adversarial_event = _build_adversarial_event(
-        obpi_id=obpi_id,
-        verdict=adversary_verdict,
-        adversary=adversary,
-        job_id=adversary_job_id,
-        refuted_claim=refuted_claim,
-        resolution=adversary_resolution,
-        tier=adversary_tier,
-        receipt=adversary_receipt,
-    )
     try:
         _execute_transaction(
             obpi_file=obpi_file,

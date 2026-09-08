@@ -147,6 +147,12 @@ uv run gz obpi pipeline OBPI-<X.Y.Z-NN> --from=verify
 uv run gz obpi pipeline OBPI-<X.Y.Z-NN> --from=ceremony
 ```
 
+Within the operator-initiated pipeline, `gz obpi acceptance` executes requirement
+controls and records receipt-bound independent reviews. Its `status` action
+reports current proof and unresolved findings; historical verdict prose does
+not own readiness. See [acceptance commands](manpages/obpi-acceptance.md).
+Step 4a can prepare evidence while Step 4b is pending; completion requires both.
+
 Stage 2 dispatches an implementer and then a two-stage spec-reviewer +
 quality-reviewer review. Record each dispatch so `gz obpi precomplete` can
 attest it at Stage 5 — credit is never inferred from the presence of code:

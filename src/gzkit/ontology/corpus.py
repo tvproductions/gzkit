@@ -69,6 +69,10 @@ _CORPUS_LINEAGE_EVENT_TYPES: frozenset[str] = frozenset(
 # surfaces as unaccounted -> complete=False (parent ADR Boundary Invariant #1).
 _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
     {
+        # Acceptance contracts, execution proofs and reviews describe the
+        # existing OBPI's evidence (GHI #985). They create no artifact lineage
+        # and do not attest completion; the acceptance reducer owns readiness.
+        "acceptance_recorded",
         "adr-evaluation",
         "adr_annotated",
         "adr_eval_completed",

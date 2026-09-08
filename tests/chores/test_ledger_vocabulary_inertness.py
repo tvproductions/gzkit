@@ -32,8 +32,11 @@ import importlib.util
 import json
 import tempfile
 import unittest
+from contextlib import redirect_stdout
+from io import StringIO
 from pathlib import Path
 from typing import Any
+from unittest.mock import patch
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _SCRIPT = (
@@ -46,9 +49,9 @@ _SCRIPT = (
 )
 
 
-def _load() -> Any:
+def _load(script: Path = _SCRIPT) -> Any:
     """Import the chore script by path — its directory is not an importable package."""
-    spec = importlib.util.spec_from_file_location("_check_ledger_inertness", _SCRIPT)
+    spec = importlib.util.spec_from_file_location("_check_ledger_inertness", script)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -124,6 +127,58 @@ class TheBaselineOnlyEverDecreases(unittest.TestCase):
         """Guard: the gate must be satisfiable, or the refusals prove nothing."""
         root = self._root(declared=["a", "b"], fired=[], baseline=["a", "b"])
         self.assertEqual(self.chore.enforce(root), 0)
+
+    def test_real_isolated_producer_satisfies_gate_without_changing_live_counts(self) -> None:
+        self.chore = _load(
+            _REPO_ROOT / ".gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py"
+        )
+        root = self._root(declared=["acceptance_recorded"], fired=[], baseline=[])
+        ledger = root / ".gzkit/ledger.jsonl"
+        before = ledger.read_bytes()
+        self.assertEqual(self.chore.enforce(root), 0)
+        self.assertEqual(ledger.read_bytes(), before)
+        self.assertEqual(self.chore.never_fired(root), ["acceptance_recorded"])
+        self.assertEqual(self._baseline(root), [])
+        self.assertEqual(self.chore.report(root, write=True), 3)
+        self.assertEqual(self._baseline(root), [])
+
+    def test_current_failed_execution_blocks_despite_previous_report(self) -> None:
+        self.chore = _load(
+            _REPO_ROOT / ".gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py"
+        )
+        root = self._root(declared=["acceptance_recorded"], fired=[], baseline=[])
+        ledger = root / ".gzkit/ledger.jsonl"
+        before = ledger.read_bytes()
+        output = StringIO()
+        with redirect_stdout(output):
+            self.assertEqual(self.chore.enforce(root), 0)
+        (root / "previous-producer-report.json").write_text(output.getvalue(), encoding="utf-8")
+        with patch("gzkit.acceptance_store.initialize", return_value=None):
+            self.assertEqual(self.chore.enforce(root), 3)
+        self.assertEqual(ledger.read_bytes(), before)
+        self.assertEqual(self._baseline(root), [])
+
+    def test_live_or_disclosed_types_do_not_trigger_isolated_execution(self) -> None:
+        self.chore = _load(
+            _REPO_ROOT / ".gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py"
+        )
+        for fired, baseline in ((["acceptance_recorded"], []), ([], ["acceptance_recorded"])):
+            with self.subTest(fired=fired, baseline=baseline):
+                root = self._root(declared=["acceptance_recorded"], fired=fired, baseline=baseline)
+                with patch("gzkit.acceptance_store.initialize") as producer:
+                    self.assertEqual(self.chore.enforce(root), 0)
+                producer.assert_not_called()
+
+    def test_verified_producer_cannot_cover_another_undisclosed_event(self) -> None:
+        self.chore = _load(
+            _REPO_ROOT / ".gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py"
+        )
+        root = self._root(
+            declared=["acceptance_recorded", "unregistered_event"], fired=[], baseline=[]
+        )
+        self.assertEqual(self.chore.enforce(root), 3)
+        self.assertEqual(self.chore.fired_events(root), {})
+        self.assertEqual(self._baseline(root), [])
 
 
 if __name__ == "__main__":

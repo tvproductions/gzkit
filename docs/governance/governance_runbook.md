@@ -519,6 +519,13 @@ uv run gz check-config-paths
 
 **When:** Implementing one checklist item.
 
+`gz obpi acceptance` preserves the canonical requirement population, executed
+proof, and independently verified finding closure across pipeline stages.
+Stage 4a prepares the review input; Step 4b approves current proof before
+attestation is requested. Historical narrative alone cannot reopen acceptance.
+See [acceptance obligations](acceptance-obligations.md) and the
+[command reference](../user/manpages/obpi-acceptance.md).
+
 Skill shortcuts for OBPI execution:
 
 - [`/gz-obpi-pipeline`](../user/skills/gz-obpi-pipeline.md) — post-plan execution pipeline (implement, verify, present, sync)

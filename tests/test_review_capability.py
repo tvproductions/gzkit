@@ -22,6 +22,7 @@ import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from gzkit.acceptance import Readiness
 from gzkit.pipeline_dispatch import (
     DispatchRecord,
     DispatchState,
@@ -34,6 +35,9 @@ from gzkit.pipeline_dispatch import (
     reviewer_capability,
 )
 from gzkit.roles import ReviewFinding, ReviewFindingSeverity, ReviewResult, ReviewVerdict
+
+# Dispatch mechanics consume readiness derived and tested by the acceptance store.
+_READY = Readiness(ready=True, blockers=(), open_findings=())
 
 
 def _agents(root: Path, tools: str, name: str = "spec-reviewer") -> Path:
@@ -169,7 +173,7 @@ class TestVerdictIsolation(unittest.TestCase):
             records=[DispatchRecord(task=_task())],
         )
         result = ReviewResult(verdict=ReviewVerdict.PASS, verification_gaps=["no shell"])
-        self.assertEqual(handle_review_cycle(state, 0, result, None), "advance")
+        self.assertEqual(handle_review_cycle(state, 0, result, None, acceptance=_READY), "advance")
         self.assertEqual(state.records[0].review_fix_count, 0)
 
 

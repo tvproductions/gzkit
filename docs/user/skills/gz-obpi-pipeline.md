@@ -22,12 +22,28 @@ and supplies that packet to independent review. Review checks whether the eviden
 supports the requirement; a reproducing transcript or coverage inventory alone
 does not establish that relationship.
 
+The runtime now retains these obligations and judgments through
+[`gz obpi acceptance`](../manpages/obpi-acceptance.md). Initialize once, execute
+requirement proof, and import each independent review from its actual ARB
+execution output. Stage 2 requires current spec and quality approval; Stage 4
+adds adversarial approval. Intermediate tasks may inspect their Stage-2 REQ
+scope, while stage advancement requires the complete canonical population.
+The existing ledger-declared single-driver mode retains its Stage-2 reviewer
+exception; executed proof, findings, and Step-4b approval remain required.
+Step 4a can generate the independent review's input once Stage-2 proof is ready.
+Pending Step-4b closure keeps that packet non-attestable, even when packet
+generation exits zero. The ceremony waits for both proof and review readiness.
+See [acceptance obligations](../../governance/acceptance-obligations.md) for the
+finding and closure lifecycle, conservative freshness boundary, and judgment limits.
+
 Findings return through implementation and verification with their full repair
 obligation preserved. Follow-up review verifies the correction and affected
 requirements. Auxiliary diagnostics do not automatically become acceptance
 requirements, and findings remain relevant when they expose missing required
 proof regardless of where they were discovered. Authorized corrections continue
 within the initiated OBPI; human completion attestation remains required.
+Historical standing-verdict prose remains history. Current readiness derives
+from proof identities, explicit independent approvals, and verified closure.
 
 ## Invocation
 

@@ -13,6 +13,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit.acceptance import Readiness
 from gzkit.complexity.thresholds import load_threshold_table
 from gzkit.models.persona import load_persona
 from gzkit.roles import (
@@ -531,6 +532,53 @@ def _test_evidence_frame() -> list[str]:
     ]
 
 
+def _acceptance_review_frame(stage: str, acceptance_context: str) -> list[str]:
+    """Request the receipt-bound record consumed by acceptance ingestion."""
+    payload = {
+        "schema": "gzkit.acceptance.review.v1",
+        "stage": stage,
+        "input_digest": "digest from the current acceptance proof records",
+        "obligation_ids": ["reviewed canonical requirement or invariant ID"],
+        "proof_ids": ["corresponding executed proof ID"],
+        "accepted_proof_ids": ["corresponding executed proof ID"],
+        "findings": [],
+        "closures": [],
+        "reviewer_id": "your independent reviewer identity",
+        "verdict": "accepted",
+    }
+    return [
+        "### Durable Acceptance Result",
+        "",
+        acceptance_context,
+        "If acceptance records were not supplied, obtain the named OBPI's acceptance",
+        "status JSON using `uv run gz obpi acceptance <OBPI-ID> status --stage stage2`.",
+        "Ask the controller for that output if your tool grant does not permit execution.",
+        "After the legacy ReviewResult block, return one additional JSON object with",
+        "the schema below. Use the supplied current acceptance contract and executed",
+        "proof records for identities and digests; never invent an artifact reference.",
+        "If these records are missing, report the evidence gap and do not claim acceptance.",
+        "Preserve the overall verdict as accepted or refuted; that token is historical.",
+        "List only explicitly approved examined proofs in accepted_proof_ids. That list",
+        "supplies proof approval; the raw verdict grants or revokes no approval.",
+        "Auxiliary observations alone cannot revoke acceptance. A mapped counterexample",
+        "or missing-proof finding blocks its obligation until independently verified closure.",
+        "Each finding needs a stable id, obligation_id, kind (counterexample or",
+        "missing-proof), and description of the counterexample or required evidence gap.",
+        "Auxiliary observations use obligation_id null; retain any real requirement",
+        "finding they expose. Do not replace or rename an outstanding finding on repair.",
+        "Each independently verified closure names finding_id, obligation_id, and the",
+        "current proof_id that demonstrates the original obligation after repair.",
+        "The receipt assigns id and receipt_id; do not supply either in this object.",
+        "Persist the executed reviewer output through acceptance review ingestion.",
+        "Acceptance readiness derives from those records, not a hand-authored standing verdict.",
+        "",
+        "```json",
+        json.dumps(payload, indent=2),
+        "```",
+        "",
+    ]
+
+
 def compose_spec_review_prompt(
     task: DispatchTask,
     brief_requirements: list[str],
@@ -538,11 +586,12 @@ def compose_spec_review_prompt(
     *,
     why: str,
     project_root: Path,
+    acceptance_context: str = "",
 ) -> str:
     """Build the prompt for the spec compliance reviewer subagent.
 
     The reviewer must independently verify all requirements.
-    Output must be a JSON code block in ReviewResult format.
+    Output carries legacy ReviewResult and a receipt-bound acceptance review.
     """
     lines = _persona_frame(project_root, "Reviewer")
     lines.extend(
@@ -605,6 +654,7 @@ def compose_spec_review_prompt(
             "",
         ]
     )
+    lines.extend(_acceptance_review_frame("spec", acceptance_context))
     return "\n".join(lines)
 
 
@@ -614,12 +664,13 @@ def compose_quality_review_prompt(
     *,
     why: str,
     project_root: Path,
+    acceptance_context: str = "",
 ) -> str:
     """Build the prompt for the code quality reviewer subagent.
 
     Reviewer checks SOLID principles, size limits, test coverage, error handling,
     cross-platform compliance, and Pydantic conventions.
-    Output must be a JSON code block in ReviewResult format.
+    Output carries legacy ReviewResult and a receipt-bound acceptance review.
     """
     lines = _persona_frame(project_root, "QualityReviewer")
     lines.extend(
@@ -694,6 +745,7 @@ def compose_quality_review_prompt(
             "",
         ]
     )
+    lines.extend(_acceptance_review_frame("quality", acceptance_context))
     return "\n".join(lines)
 
 
@@ -734,6 +786,8 @@ def handle_review_cycle(
     task_index: int,
     spec_result: ReviewResult,
     quality_result: ReviewResult | None,
+    *,
+    acceptance: Readiness | None = None,
 ) -> str:
     """Process review results for a task and determine the next action.
 
@@ -743,7 +797,8 @@ def handle_review_cycle(
     - If spec blocks advancement: increment review_fix_count, return "fix" or "blocked".
     - If spec passes: check quality result (if provided).
     - If quality blocks advancement: increment review_fix_count, return "fix" or "blocked".
-    - If both pass: return "advance".
+    - Current Stage 2 acceptance readiness is required even when both reviews pass.
+      The caller obtains it from the acceptance store for the current artifacts.
     """
     if task_index < 0 or task_index >= len(state.records):
         return "blocked"
@@ -757,6 +812,17 @@ def handle_review_cycle(
         return "fix"
 
     if quality_result is not None and review_blocks_advancement(quality_result):
+        record.review_fix_count += 1
+        if record.review_fix_count > MAX_REVIEW_FIX_CYCLES:
+            return "blocked"
+        return "fix"
+
+    if (
+        acceptance is None
+        or not acceptance.ready
+        or acceptance.blockers
+        or acceptance.open_findings
+    ):
         record.review_fix_count += 1
         if record.review_fix_count > MAX_REVIEW_FIX_CYCLES:
             return "blocked"

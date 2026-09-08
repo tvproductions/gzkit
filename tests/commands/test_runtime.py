@@ -46,6 +46,11 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         )
         coverage_gate_patcher.start()
         self.addCleanup(coverage_gate_patcher.stop)
+        # Receipt enrichment/attestation semantics are this fixture's subject.
+        # Actual durable acceptance gating is exercised by test_acceptance_integration.
+        acceptance_patcher = patch("gzkit.acceptance_store.completion_review", return_value=None)
+        acceptance_patcher.start()
+        self.addCleanup(acceptance_patcher.stop)
 
     @staticmethod
     def _write_obpi(

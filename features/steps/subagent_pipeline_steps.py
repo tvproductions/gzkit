@@ -8,6 +8,7 @@ from pathlib import Path
 
 from behave import given, then, when
 
+from gzkit.acceptance import Readiness
 from gzkit.pipeline_runtime import (
     DispatchTask,
     TaskComplexity,
@@ -434,8 +435,15 @@ def step_both_reviews_pass(context, idx):
 
     spec_pass = ReviewResult(verdict=ReviewVerdict.PASS, findings=[], summary="OK")
     quality_pass = ReviewResult(verdict=ReviewVerdict.PASS, findings=[], summary="OK")
+    # This scenario exercises review-cycle dispatch after its acceptance
+    # precondition has cleared; the durable gate has separate execution tests.
+    ready_fixture = Readiness(ready=True, blockers=(), open_findings=())
     context.review_action = handle_review_cycle(
-        context.dispatch_state, idx - 1, spec_pass, quality_pass
+        context.dispatch_state,
+        idx - 1,
+        spec_pass,
+        quality_pass,
+        acceptance=ready_fixture,
     )
 
 

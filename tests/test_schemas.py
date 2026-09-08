@@ -11,6 +11,7 @@ from typing import Literal, get_args, get_origin
 from pydantic import BaseModel, ValidationError
 
 from gzkit.events import (
+    AcceptanceRecordedEvent,
     AdrAnnotatedEvent,
     AdrCreatedEvent,
     AdrEvalCompletedEvent,
@@ -273,6 +274,7 @@ class TestFrontmatterSchemaAlignment(unittest.TestCase):
 
 # Maps ledger.json event names -> typed event model classes
 _EVENT_MODELS: dict[str, type[BaseModel]] = {
+    "acceptance_recorded": AcceptanceRecordedEvent,
     "project_init": ProjectInitEvent,
     "prd_created": PrdCreatedEvent,
     "constitution_created": ConstitutionCreatedEvent,

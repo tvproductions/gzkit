@@ -1,6 +1,6 @@
 # CHORE: Ledger Vocabulary Inertness
 
-**Version:** 1.0.0
+**Version:** 1.1.0
 **Lane:** Lite
 **Slug:** `ledger-vocabulary-inertness`
 
@@ -12,7 +12,8 @@ Audit-plus-disclosure pass over the **ledger's vocabulary**. Two dimensions:
 
 1. **Never-fired types (enforced).** Event types declared in
    `src/gzkit/schemas/ledger.json` that have never appeared in
-   `.gzkit/ledger.jsonl`. Held to a shrink-only disclosure baseline.
+   `.gzkit/ledger.jsonl`. Held to a shrink-only disclosure baseline, with fresh
+   isolated execution available for a registered real producer (GHI #985).
 2. **Paired-event ratios (reported, never judged).** For event types that open
    and close a state, the ratio of one half to the other.
 
@@ -38,12 +39,18 @@ that every *emitted* type has a schema entry; nothing checks the converse.
 
 - **Lane:** Lite — audit-only; this chore never edits the schema, the ledger, or
   any producer.
-- **The ledger is never modified.** `.gzkit/ledger.jsonl` is append-only and
+- **The project ledger is never modified.** `.gzkit/ledger.jsonl` is append-only and
   agent-writable only through `gz` verbs (`AGENTS.md` § Never #2). This chore
-  reads it and nothing else.
+  reads it. A registered probe invokes the real producer in a disposable project
+  and checks its typed persisted record against the expected subject and contract.
+- **Isolated execution is observed afresh.** The gate runs the probe when needed;
+  an old report, a declared test name, or an event factory alone grants no credit.
+  Failed, missing, malformed, or wrong-subject emissions block. The observation
+  is reported separately from live counts and cannot assert live OBPI work.
 - **Growth is disclosed, not forbidden.** Declaring a type before wiring its
   producer is legitimate work. What is forbidden is absorbing it silently: a new
-  never-fired type must be added to the baseline deliberately, with a reason.
+  never-fired type requires actual production use, verified isolated producer
+  execution, or an explicit operator ruling on disclosure.
   Same posture as `data/uncalled_gate_grandfather.json` — an entry records an
   absence, it does not justify one.
 - **Ratios are reported and NOT interpreted, and this is binding.** The
@@ -76,8 +83,9 @@ Each one owes exactly one of:
 | Disposition | When |
 |---|---|
 | **Wire the producer** | the type models something real that is happening and simply is not recorded |
+| **Verify isolated execution** | a registered real producer emits the expected typed record in a fresh disposable project |
 | **Retire the declaration** | the modelled thing does not happen, or happens under another type |
-| **Disclose** | the producer is genuinely planned; add it to the baseline with a reason and raise `baseline_count` in `data/waiver_ratchet_registry.json` in the same commit |
+| **Disclose** | the producer is genuinely planned; baseline growth requires an explicit operator ruling, never an automatic re-baseline |
 
 Disclosure is the honest holding state, never the default. A type that has been
 disclosed across several runs is a retirement candidate, not a fixture.
@@ -94,12 +102,15 @@ answer to the operator — this chore does not rule.
 uv run python src/gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py
 ```
 
-Exit 3 when an undisclosed never-fired type appears.
+Exit 3 when an undisclosed never-fired type lacks verified isolated execution.
+Live counts and `--report --write` retain their original meaning; an isolated
+execution does not drain the live never-fired baseline or change paired ratios.
 
 ## Acceptance Criteria
 
 - `check_ledger_inertness.py --self-test` exits 0
-- `check_ledger_inertness.py` exits 0 (no undisclosed never-fired type)
+- `check_ledger_inertness.py` exits 0 (every undisclosed never-fired type has a
+  freshly verified isolated producer execution)
 - Proof artifacts postdate the surfaces they audit
 
 ## Cadence

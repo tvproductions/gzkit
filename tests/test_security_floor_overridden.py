@@ -30,6 +30,7 @@ from unittest.mock import MagicMock, patch
 from pydantic import ValidationError
 from rich.console import Console
 
+from gzkit.acceptance import Review
 from gzkit.events import SecurityFloorOverriddenEvent, parse_typed_event
 from gzkit.ledger_events import security_floor_overridden_event
 from gzkit.traceability import covers
@@ -287,6 +288,23 @@ class _EmissionFixture(unittest.TestCase):
                     "gzkit.commands.obpi_complete._enforce_attestation_receipt_gate", MagicMock()
                 ),
                 patch("gzkit.commands.obpi_complete._enforce_req_coverage_gate", MagicMock()),
+                # This fixture isolates security-floor emission. Durable review
+                # acceptance itself is exercised by test_acceptance_integration.
+                patch(
+                    "gzkit.commands.obpi_complete.completion_review",
+                    return_value=Review(
+                        id="synthetic-security-test-review",
+                        stage="adversarial",
+                        input_digest="synthetic-input",
+                        obligation_ids=("synthetic-obligation",),
+                        proof_ids=("synthetic-proof",),
+                        accepted_proof_ids=("synthetic-proof",),
+                        receipt_id="arb-step-synthetic-security-review",
+                        reviewer_id="reviewer",
+                        tier=2,
+                        fallback_reason="synthetic unavailable-vendor fixture",
+                    ),
+                ),
                 patch("gzkit.commands.obpi_complete._execute_transaction", exec_mock),
                 patch(
                     "gzkit.commands.obpi_complete._emit_security_floor_override_best_effort",

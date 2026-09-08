@@ -199,6 +199,7 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertFalse(marker_path.exists())
             self.assertFalse(legacy_path.exists())
 
+    @patch("gzkit.commands.obpi_stages.acceptance_blockers", new=lambda *_args, **_kwargs: [])
     @patch("gzkit.cli.main.run_command")
     @covers("REQ-0.13.0-03-02")
     def test_verify_runs_commands_and_preserves_markers(self, run_command_mock) -> None:
@@ -259,6 +260,7 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertTrue(marker_path.exists())
             self.assertTrue(legacy_path.exists())
 
+    @patch("gzkit.commands.obpi_stages.acceptance_blockers", new=lambda *_args, **_kwargs: [])
     @patch("gzkit.cli.main.run_command")
     def test_verify_dispatches_baseline_arb_gates_concurrently(self, run_command_mock) -> None:
         """GHI #421: Stage 3 must dispatch the canonical ARB gates concurrently.
@@ -305,6 +307,7 @@ class TestObpiPipelineCommand(unittest.TestCase):
             for command in baseline_commands:
                 self.assertIn(command, mock_calls)
 
+    @patch("gzkit.commands.obpi_stages.acceptance_blockers", new=lambda *_args, **_kwargs: [])
     @patch("gzkit.cli.main.run_command")
     def test_verify_rewrites_markers_with_verify_stage_state(self, run_command_mock) -> None:
         runner = CliRunner()
@@ -340,6 +343,7 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertEqual(payload["lane"], "heavy")
             self.assertEqual(payload, self._load_json(legacy_path))
 
+    @patch("gzkit.commands.obpi_stages.acceptance_blockers", new=lambda *_args, **_kwargs: [])
     @patch("gzkit.cli.main.run_command")
     def test_verify_failure_persists_blockers_and_resume_point(self, run_command_mock) -> None:
         runner = CliRunner()
@@ -385,6 +389,7 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertEqual(payload["resume_point"], "verify")
             self.assertEqual(payload, self._load_json(legacy_path))
 
+    @patch("gzkit.commands.obpi_stages.acceptance_blockers", new=lambda *_args, **_kwargs: [])
     @covers("REQ-0.13.0-03-02")
     @covers("REQ-0.13.0-01-03")
     def test_ceremony_prints_next_steps_and_preserves_markers(self) -> None:
@@ -406,6 +411,7 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertTrue(marker_path.exists())
             self.assertTrue(legacy_path.exists())
 
+    @patch("gzkit.commands.obpi_stages.acceptance_blockers", new=lambda *_args, **_kwargs: [])
     @covers("REQ-0.13.0-03-04")
     def test_ceremony_rewrites_markers_with_ceremony_stage_state(self) -> None:
         runner = CliRunner()
@@ -438,6 +444,7 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertEqual(payload["lane"], "heavy")
             self.assertEqual(payload, self._load_json(legacy_path))
 
+    @patch("gzkit.commands.obpi_stages.acceptance_blockers", new=lambda *_args, **_kwargs: [])
     @patch("gzkit.cli.main.run_command")
     @covers("REQ-0.13.0-04-02")
     @covers("REQ-0.0.36-02-04")
@@ -470,6 +477,7 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertIn("Human attestation required.", result.output)
             self.assertIn("--from=sync", result.output)
 
+    @patch("gzkit.commands.obpi_stages.acceptance_blockers", new=lambda *_args, **_kwargs: [])
     @covers("REQ-0.13.0-04-01")
     @covers("REQ-0.13.0-04-03")
     def test_ceremony_foundation_parent_requires_human_attestation(self) -> None:

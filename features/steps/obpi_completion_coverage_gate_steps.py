@@ -31,11 +31,13 @@ from __future__ import annotations
 import io
 import json
 import os
-from contextlib import redirect_stderr, redirect_stdout
+from contextlib import nullcontext, redirect_stderr, redirect_stdout
 from pathlib import Path
+from unittest.mock import patch
 
 from behave import given, then, when
 
+from gzkit.acceptance import Review
 from gzkit.cli import main
 from gzkit.config import GzkitConfig
 from gzkit.ledger import Ledger, adr_created_event, obpi_created_event
@@ -45,9 +47,31 @@ from gzkit.ledger import Ledger, adr_created_event, obpi_created_event
 # ---------------------------------------------------------------------------
 
 
-def _invoke(args: list[str]) -> tuple[int, str]:
+# Synthetic ready-review fixture: these scenarios exercise the earlier
+# receipt/coverage gate, whose real checks remain active. Acceptance readiness
+# itself is exercised with real proof in tests/test_acceptance_integration.py.
+_ACCEPTED_REVIEW_FIXTURE = Review(
+    id="synthetic-bdd-review",
+    stage="adversarial",
+    input_digest="synthetic-input",
+    obligation_ids=("synthetic-obligation",),
+    proof_ids=("synthetic-proof",),
+    accepted_proof_ids=("synthetic-proof",),
+    reviewer_id="fixture-independent-reviewer",
+    receipt_id="arb-step-synthetic-bdd-review",
+    tier=2,
+    fallback_reason="synthetic unavailable-vendor fixture",
+)
+
+
+def _invoke(args: list[str], *, accepted_review: Review | None = None) -> tuple[int, str]:
     output = io.StringIO()
-    with redirect_stdout(output), redirect_stderr(output):
+    acceptance_boundary = (
+        patch("gzkit.commands.obpi_complete.completion_review", return_value=accepted_review)
+        if accepted_review is not None
+        else nullcontext()
+    )
+    with redirect_stdout(output), redirect_stderr(output), acceptance_boundary:
         try:
             code = main(args)
         except SystemExit as exc:
@@ -317,23 +341,6 @@ _IMPL_SUMMARY = (
 )
 _KEY_PROOF = "uv run -m unittest tests.test_fixture -v passes 1/1."
 
-# Heavy-lane completion fails closed without a Step-4b adversary verdict (GHI #676).
-# These scenarios are about the REQ-coverage gate, not Step 4b, so they satisfy the
-# gate rather than exercise it — its own behaviour is covered in tests/.
-#
-# The tier-2 shape is deliberate (GHI #780): a cross-vendor claim now requires an
-# ARB receipt, so naming a codex adversary here would make these scenarios assert
-# an unproven tier-1 claim in passing. A recorded fallback reason is the honest
-# way to satisfy a gate you are not exercising.
-_ADVERSARY_ARGS = [
-    "--adversary-verdict",
-    "not-refuted",
-    "--adversary",
-    "claude/general-purpose",
-    "--adversary-fallback-reason",
-    "codex setup reported ready=false",
-]
-
 
 def _complete_args(
     obpi_id: str,
@@ -355,7 +362,6 @@ def _complete_args(
         _IMPL_SUMMARY,
         "--key-proof",
         _KEY_PROOF,
-        *_ADVERSARY_ARGS,
     ]
     if attestor_present:
         args.append("--attestor-present")
@@ -464,7 +470,7 @@ def step_seed_completed_obpi_with_gap(context, adr_id: str, obpi_id: str, req_id
 @when('I complete coverage-gate OBPI "{obpi_id}" citing receipt "{run_id}" using attestor-present')
 def step_complete_with_attestor_present(context, obpi_id: str, run_id: str) -> None:
     args = _complete_args(obpi_id, run_id, attestor_present=True)
-    context.exit_code, context.output = _invoke(args)
+    context.exit_code, context.output = _invoke(args, accepted_review=_ACCEPTED_REVIEW_FIXTURE)
 
 
 @when(
@@ -480,7 +486,7 @@ def step_complete_accept_uncovered_with_marker(
         accept_uncovered=[req_id],
         accept_uncovered_reason=[reason],
     )
-    context.exit_code, context.output = _invoke(args)
+    context.exit_code, context.output = _invoke(args, accepted_review=_ACCEPTED_REVIEW_FIXTURE)
 
 
 @when(
@@ -496,7 +502,7 @@ def step_complete_accept_uncovered_headless(
         accept_uncovered=[req_id],
         accept_uncovered_reason=[reason],
     )
-    context.exit_code, context.output = _invoke(args)
+    context.exit_code, context.output = _invoke(args, accepted_review=_ACCEPTED_REVIEW_FIXTURE)
 
 
 @when(
@@ -512,7 +518,7 @@ def step_complete_partial_accept(
         accept_uncovered=[req_id],
         accept_uncovered_reason=[reason],
     )
-    context.exit_code, context.output = _invoke(args)
+    context.exit_code, context.output = _invoke(args, accepted_review=_ACCEPTED_REVIEW_FIXTURE)
 
 
 @when(
@@ -534,9 +540,8 @@ def step_complete_accept_no_reason(context, obpi_id: str, req_id: str, run_id: s
         "--accept-uncovered",
         req_id,
         "--attestor-present",
-        *_ADVERSARY_ARGS,
     ]
-    context.exit_code, context.output = _invoke(args)
+    context.exit_code, context.output = _invoke(args, accepted_review=_ACCEPTED_REVIEW_FIXTURE)
 
 
 @when('I emit ADR receipt for "{adr_id}" event "{event}" attestor "{attestor}" text "{text}"')

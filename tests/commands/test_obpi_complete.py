@@ -33,10 +33,25 @@ from unittest.mock import MagicMock, patch
 
 from rich.console import Console
 
+from gzkit.acceptance import Review
 from gzkit.arb.validator import CANONICAL_STEP_COMMANDS
 from gzkit.commands.obpi_complete import obpi_complete_cmd
 from gzkit.event_evidence import EventAnchor
 from gzkit.traceability import covers
+
+# This module exercises other completion gates/transactions. Acceptance execution
+# and ledger freshness are exercised through the actual store in test_acceptance*.
+_ACCEPTED_REVIEW = Review(
+    id="review-fixture",
+    stage="adversarial",
+    input_digest="fixture-input",
+    obligation_ids=("REQ-fixture",),
+    proof_ids=("proof-fixture",),
+    accepted_proof_ids=("proof-fixture",),
+    tier=1,
+    receipt_id="arb-step-review-fixture",
+    reviewer_id="independent-reviewer",
+)
 
 # ---------------------------------------------------------------------------
 # Brief fixtures — minimal shapes for the wire tests
@@ -414,6 +429,10 @@ class TestObpiCompleteGateRunsBeforeTtyGate(_ObpiCompleteWireFixture):
 class TestObpiCompleteHeavyValidReceipt(_ObpiCompleteWireFixture):
     """REQ-0.0.24-02-01 — heavy-lane completion with resolved receipt succeeds."""
 
+    @patch(
+        "gzkit.commands.obpi_complete.completion_review",
+        new=lambda *_args, **_kwargs: _ACCEPTED_REVIEW,
+    )
     @covers("REQ-0.0.24-02-01")
     def test_heavy_lane_valid_receipt_emits_completion_and_meta_bind(self) -> None:
         with tempfile.TemporaryDirectory() as receipts_dir:
@@ -461,6 +480,10 @@ class TestObpiCompleteMetaReceiptBindEvent(_ObpiCompleteWireFixture):
     # in the brief; it is the mechanism that satisfies REQ-01's
     # acceptance ("a `arb-meta-receipt-bind-…` event appears in the
     # ledger"). We tag against REQ-01.
+    @patch(
+        "gzkit.commands.obpi_complete.completion_review",
+        new=lambda *_args, **_kwargs: _ACCEPTED_REVIEW,
+    )
     @covers("REQ-0.0.24-02-01")
     def test_meta_receipt_bind_event_payload(self) -> None:
         with tempfile.TemporaryDirectory() as receipts_dir:
@@ -509,6 +532,10 @@ class TestObpiCompleteMetaReceiptBindEvent(_ObpiCompleteWireFixture):
 class TestObpiCompleteLiteNonFoundationMissing(_ObpiCompleteWireFixture):
     """REQ-0.0.24-02-03 — lite + non-foundation + missing receipt → warn-only."""
 
+    @patch(
+        "gzkit.commands.obpi_complete.completion_review",
+        new=lambda *_args, **_kwargs: _ACCEPTED_REVIEW,
+    )
     @covers("REQ-0.0.24-02-03")
     def test_lite_non_foundation_missing_receipt_warns_and_proceeds(self) -> None:
         with tempfile.TemporaryDirectory() as receipts_dir:

@@ -89,7 +89,7 @@ def obpi_precomplete_cmd(*, obpi_id: str, as_json: bool = False) -> int:
     return EXIT_SUCCESS
 
 
-def _resolve_brief_path(project_root: Path, obpi_id: str) -> Path | None:
+def resolve_brief_path(project_root: Path, obpi_id: str) -> Path | None:
     """Find the OBPI brief by id under either obpis/ or briefs/ layout.
 
     Matches on the id the caller SUPPLIED, never on a prefix derived from it. A
@@ -119,6 +119,9 @@ def _resolve_brief_path(project_root: Path, obpi_id: str) -> Path | None:
     return sorted(candidates)[0] if candidates else None
 
 
+_resolve_brief_path = resolve_brief_path  # Compatibility for existing command callers.
+
+
 def _run_all_checks(project_root: Path, brief_path: Path, obpi_id: str) -> Iterable[CheckResult]:
     """Run every Stage 5 precondition check; yield each CheckResult in order."""
     yield _check_brief_readiness(project_root, brief_path)
@@ -129,9 +132,22 @@ def _run_all_checks(project_root: Path, brief_path: Path, obpi_id: str) -> Itera
     yield _check_brief_headings_scoped(project_root, brief_path)
     yield _check_behave_req_coverage_scoped(project_root, brief_path, obpi_id)
     yield _check_task_envelope_coherence(project_root, brief_path)
-    yield _check_adversarial_validation(brief_path)
+    yield _check_acceptance_records(project_root, obpi_id)
     yield _check_operator_block(project_root, obpi_id)
     yield _check_stage2_dispatch(project_root, obpi_id)
+
+
+def _check_acceptance_records(project_root: Path, obpi_id: str) -> CheckResult:
+    """Read current proof and closure, never reinterpret historical verdict prose."""
+    from gzkit.acceptance_store import acceptance_blockers  # noqa: PLC0415
+
+    blockers = acceptance_blockers(project_root, obpi_id)
+    return CheckResult(
+        name="adversarial_validation",
+        ok=not blockers,
+        message="; ".join(blockers) if blockers else "Current obligations independently accepted",
+        remediation=f"gz obpi acceptance {obpi_id} status",
+    )
 
 
 def _check_stage2_dispatch(project_root: Path, obpi_id: str) -> CheckResult:

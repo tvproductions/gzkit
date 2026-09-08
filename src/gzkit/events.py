@@ -410,6 +410,14 @@ class ObpiUnblockedEvent(_EventBase):
     operator: str = Field(..., min_length=1, description="Who ruled")
 
 
+class AcceptanceRecordedEvent(_EventBase):
+    """Immutable acceptance contract, executed proof, or receipted review (GHI #985)."""
+
+    event: Literal["acceptance_recorded"]
+    record_type: Literal["contract", "proof", "review", "human-review"]
+    payload: dict[str, Any] = Field(..., description="Captured canonical or executed record")
+
+
 class Stage2DispatchRecordedEvent(_EventBase):
     """stage2_dispatch_recorded event — one mandated Stage-2 role produced input.
 
@@ -1458,6 +1466,7 @@ TypedLedgerEvent = Annotated[
     | ObpiBlockedOnOperatorEvent
     | ObpiUnblockedEvent
     | Stage2DispatchRecordedEvent
+    | AcceptanceRecordedEvent
     | Stage2SingleDriverDeclaredEvent
     | ObpiSupersededEvent
     | ObpiCompletionRepudiatedEvent

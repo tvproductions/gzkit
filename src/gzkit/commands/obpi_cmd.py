@@ -507,6 +507,20 @@ def _gate_completed_receipt_authenticity(
     evidence["attestation_type"] = ATTESTATION_TYPE_OPERATOR_VERBATIM
 
 
+def _require_completed_receipt_acceptance(
+    project_root: Path, obpi_id: str, receipt_event: str
+) -> None:
+    """Validate durable closure before a completion receipt can be appended."""
+    if receipt_event != "completed":
+        return
+    from gzkit.acceptance_store import completion_review  # noqa: PLC0415
+
+    try:
+        completion_review(project_root, obpi_id)
+    except ValueError as exc:
+        raise GzCliError(str(exc)) from exc
+
+
 def obpi_emit_receipt_cmd(
     obpi: str,
     receipt_event: str,
@@ -626,6 +640,7 @@ def obpi_emit_receipt_cmd(
         console.print(json.dumps(event.model_dump(), indent=2))
         return
 
+    _require_completed_receipt_acceptance(project_root, obpi_id, receipt_event)
     ledger.append(event)
     console.print("[green]OBPI receipt emitted.[/green]")
     console.print(f"  OBPI: {obpi_id}")

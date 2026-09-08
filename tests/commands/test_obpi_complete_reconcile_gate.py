@@ -27,9 +27,24 @@ from unittest.mock import MagicMock, patch
 
 from rich.console import Console
 
+from gzkit.acceptance import Review
 from gzkit.commands.obpi_complete import obpi_complete_cmd
 from gzkit.event_evidence import EventAnchor
 from gzkit.traceability import covers
+
+# This module exercises other completion gates/transactions. Acceptance execution
+# and ledger freshness are exercised through the actual store in test_acceptance*.
+_ACCEPTED_REVIEW = Review(
+    id="review-fixture",
+    stage="adversarial",
+    input_digest="fixture-input",
+    obligation_ids=("REQ-fixture",),
+    proof_ids=("proof-fixture",),
+    accepted_proof_ids=("proof-fixture",),
+    tier=1,
+    receipt_id="arb-step-review-fixture",
+    reviewer_id="independent-reviewer",
+)
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -363,6 +378,10 @@ class TestReconcileGateFreshButDrifted(_ReconcileGateFixture):
 
 
 class TestReconcileGateFreshClean(_ReconcileGateFixture):
+    @patch(
+        "gzkit.commands.obpi_complete.completion_review",
+        new=lambda *_args, **_kwargs: _ACCEPTED_REVIEW,
+    )
     @covers("REQ-0.0.37-08-04")
     def test_fresh_clean_receipt_passes_gate(self) -> None:
         future_ts = datetime.now(UTC) + timedelta(hours=1)
@@ -416,6 +435,10 @@ class TestReconcileGateEscapeHatchMissingReason(_ReconcileGateFixture):
 
 
 class TestReconcileGateEscapeHatchEmitsEvent(_ReconcileGateFixture):
+    @patch(
+        "gzkit.commands.obpi_complete.completion_review",
+        new=lambda *_args, **_kwargs: _ACCEPTED_REVIEW,
+    )
     @covers("REQ-0.0.37-08-05")
     def test_escape_hatch_emits_override_event_and_completes(self) -> None:
         # No reconciled event — escape hatch should override, emit event, complete
@@ -441,6 +464,10 @@ class TestReconcileGateEscapeHatchEmitsEvent(_ReconcileGateFixture):
                 "First ledger event must be brief_reconcile_drift_overridden",
             )
 
+    @patch(
+        "gzkit.commands.obpi_complete.completion_review",
+        new=lambda *_args, **_kwargs: _ACCEPTED_REVIEW,
+    )
     @covers("REQ-0.0.37-08-06")
     def test_escape_hatch_universal_across_lanes(self) -> None:
         # escape hatch with reason passes regardless of lane or kind

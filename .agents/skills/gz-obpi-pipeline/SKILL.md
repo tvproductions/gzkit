@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-09-08
 metadata:
-  skill-version: "6.51.0"
+  skill-version: "6.52.0"
 model: sonnet
 ---
 
@@ -21,6 +21,15 @@ The canonical runtime launch surface is `uv run gz obpi pipeline`. The CLI
 runtime, generated hook surfaces, and reminder messages share the same
 runtime engine in `src/gzkit/pipeline_runtime.py`. This skill remains the
 wrapper/operator ritual around that runtime rather than a second stage engine.
+
+**Durable acceptance (GHI #985).** The existing stages share the ledger-backed
+`gz obpi acceptance` contract: canonical obligations, executed proof, scoped
+independent reviews, and explicit finding closure. Read
+`docs/governance/acceptance-obligations.md` and
+`docs/user/manpages/obpi-acceptance.md` before producing or importing these records.
+This replaces authored standing-verdict lines as the acceptance authority;
+historical verdicts remain unchanged. It does not authorize starting an OBPI:
+the operator initiates this pipeline, and GHI corrective work retains its direct route.
 
 ## Persona
 
@@ -72,7 +81,7 @@ These thoughts mean STOP — you are about to break the pipeline:
 | "This is a security property, so the claim should be absolute" | An absolute claim cannot be refuted in bounded time: the adversary escalates the attacker until something falls. Declare the threat model in the brief FIRST, state it in the prompt, and forbid out-of-scope findings — otherwise the gate never converges. |
 | "The adversary found something, so the OBPI cannot pass" | Apply the September 5 independent-closure rule below: every finding against the agreed requirements or their required proof needs a disposition and independent closure. Severity alone does not clear it. Track independent discoveries without silently making them acceptance prerequisites; never dismiss a relevant finding merely because it arose in an auxiliary audit. |
 | "The round refuted, but I fixed everything it found — I'll complete with `--adversary-verdict refuted` and explain the fixes in the resolution" | **Refused, and a resolution string does not change that (GHI #960).** *"refuted is an outcome, but it is an input into if(4a && 4b) pass; else: loop"* (operator, 2026-09-04). If your fixes are real, a re-run returns `not-refuted` — go get that verdict. Completing on the refuted one records the completion against a tree that no longer exists. |
-| "The block says refuted can't complete, so I'll pass `not-refuted` since the findings are fixed anyway" | **That is verdict laundering and it is the exact substitution Step 4b exists to catch.** The verdict word belongs to the round that ran, not to your assessment of it. `gz obpi precomplete` reads the brief's Step 4b section, so a completion disagreeing with the recorded standing verdict is detectable — and fabricating it is the GHI #643 failure with a different noun. Re-run the adversary. |
+| "The block says refuted can't complete, so I'll pass `not-refuted` since the findings are fixed anyway" | A caller-supplied word cannot close a finding. Import the independent review's actual executed output with its original finding IDs and current proof IDs. `gz obpi acceptance ... status --stage stage4` derives readiness; historical verdicts remain unchanged. |
 
 ### The Plan-Mode Gate
 
@@ -192,6 +201,11 @@ Stage 4 = HUMAN GATE (wait for attestation) — universal per ADR-0.0.36
         enum value matching the lifecycle step in progress.
     - This unblocks the pipeline-gate PreToolUse hook for src/ and tests/ writes.
 11. Apply the brief allowlist as the working scope contract before any edits.
+12. Initialize the acceptance population once:
+    `uv run gz obpi acceptance {OBPI-SLUG} init --author {implementing-session-id}`.
+    Reuse the recorded author and obligations when resuming. Initialization reads
+    the canonical brief and parent ADR; it cannot erase history or silently
+    replace the obligation roster. `--from` does not waive current proof or review.
 
 > **Derived in-flight status (GHI #646).** Launching the pipeline emits
 > `pipeline_launched`, which IS the `in_progress` transition. The brief's
@@ -247,6 +261,22 @@ The per-behavior cycle (never batch all tests then implement the whole unit):
 3. **GREEN — write the simplest code** that makes that one test pass.
 4. **REFACTOR** — clean up (duplication, names, helpers) with the bar staying green.
 5. Repeat for the next behavior.
+
+**Execute acceptance proof before review (GHI #985).** For the current task's
+BEHAVIOR obligations, write a proof specification naming its production source,
+full covering test IDs, and exact behavioral substitutions; run
+`uv run gz obpi acceptance {OBPI-SLUG} prove --spec {controls.json}`. The command
+observes the baseline, activated controls, nominated assertion failures, source
+restoration, and restored green run. A runtime error or skipped selector cannot
+earn a behavioral kill. SUPPORT and STRUCTURAL-FENCE specifications name only the
+REQ; the command executes their existing canonical proof resolvers. The complete
+schema is in the acceptance manpage. Historical RED evidence remains useful, but
+does not substitute for this current execution record.
+
+The reviewer must still judge whether the oracle and control express the
+requirement, exercise production behavior, and include legitimate positive cases.
+The command proves recorded observations, not the semantic adequacy of arbitrary
+assertions. Do not build an all-assertions classifier or count mutations as coverage.
 
 > **Anti-pattern — the import-error red (the false red).** A first run that
 > ERRORs with `ModuleNotFoundError` / `ImportError` / `AttributeError` because
@@ -327,15 +357,17 @@ The per-behavior cycle (never batch all tests then implement the whole unit):
          - `simple`/`standard` → `sonnet` (reviews always require judgment — never haiku)
          - `complex` → `opus`
 
-      ii. **Compose spec reviewer prompt** via `compose_spec_review_prompt(task, brief_requirements, files_changed, why=..., project_root=...)`:
+      ii. **Compose spec reviewer prompt** via `compose_spec_review_prompt(task, brief_requirements, files_changed, why=..., project_root=..., acceptance_context=...)`:
          - Includes the task description, brief requirements, and the diff produced
          - Instructs the reviewer: "The implementer may be optimistic. Verify everything independently."
          - `why` and `project_root` are required keyword arguments — the composer emits the `spec-reviewer` persona frame and the Why block from them (GHI #861)
 
-      iii. **Compose quality reviewer prompt** via `compose_quality_review_prompt(files_changed, test_files, why=..., project_root=...)`:
+      iii. **Compose quality reviewer prompt** via `compose_quality_review_prompt(files_changed, test_files, why=..., project_root=..., acceptance_context=...)`:
          - Includes changed files, test files, and quality criteria (SOLID, coverage, error handling, cross-platform, Pydantic)
          - The size/complexity criterion is rendered from `.gzkit/rules/complexity-thresholds.json`, never restated as literals (GHI #861)
-         - Findings are scoped: only correctness and stated brief requirements block; style is `minor`/`info` and non-blocking
+         - Findings are scoped by the obligation they affect. A mapped defect
+           blocks regardless of severity; optional style observations stay
+           unmapped and do not create another acceptance requirement.
 
          **Evidence handoff (GHI #984):** append the paths to the implementer's
          observed execution records to BOTH composed prompts before dispatch.
@@ -348,28 +380,48 @@ The per-behavior cycle (never batch all tests then implement the whole unit):
          expected values come from and whether the test exercises production
          behavior; shared-parser agreement is not independent boundary proof.
 
-      iv. **Dispatch both reviewers concurrently:**
-         ```
-         Agent tool call 1 (background):
-           subagent_type: "spec-reviewer"
-           model: <review model from step i>
-           prompt: <spec review prompt from step ii>
-           run_in_background: true
-           description: "Spec review task N"
+         Supply `acceptance_context` from
+         `uv run gz obpi acceptance {OBPI-SLUG} status --stage stage2 --json`.
+         A blocked status before reviews is expected; its payload contains the
+         canonical obligations, actual proofs, and retained findings. The composer
+         requests exactly one `gzkit.acceptance.review.v1` result in addition to
+         the legacy `ReviewResult`. The reviewer uses actual IDs and digest from
+         that context and explicitly lists `accepted_proof_ids`; the importer
+         assigns the review and receipt IDs. Missing proof is recorded as a
+         mapped `missing-proof` finding with no invented proof or approval ID.
 
-         Agent tool call 2 (foreground):
-           subagent_type: "quality-reviewer"
-           model: <review model from step i>
-           prompt: <quality review prompt from step iii>
-           description: "Quality review task N"
+      iv. **Dispatch both reviewers concurrently through receipted agent execution.**
+         Preserve the selected model, the `spec-reviewer` and `quality-reviewer`
+         personas, their read-only tool grants, and separate contexts. Wrap each
+         actual reviewer invocation in `gz arb step --max-output-chars -1`; do
+         not wrap a command that merely prints previously authored review JSON.
+         Native Claude execution is admitted for these Stage-2 roles. For example,
+         with the composed prompt saved at the named path:
+
+         ```bash
+         uv run gz arb step --name specreview --max-output-chars -1 -- \
+           claude --agent spec-reviewer --model sonnet --print \
+           'Read /tmp/obpi-spec-review-prompt.md and perform that review.'
          ```
-         Wait for both to complete. Parse `ReviewResult` from each using `parse_review_result()`.
+
+         Use the quality persona and its own prompt for the second invocation.
+         Wait for both, parse their legacy `ReviewResult`, and import each actual
+         ARB run ID with
+         `uv run gz obpi acceptance {OBPI-SLUG} review --receipt {arb-run-id}`.
+         A native Agent-tool summary alone does not supply the required receipt.
 
       v. **Record review dispatches** — run `uv run gz obpi dispatch <OBPI-ID> --role SpecReviewer --model <tier> --task <n>` and the same for `--role QualityReviewer`. Partial dispatch is still SINGLE-DRIVER: the reviewers catch what the implementer cannot see in its own work, so recording only the implementer launders the review that never ran. This records one `stage2_dispatch_recorded` ledger event per
          reviewer, and refreshes the marker's `SubagentDispatchRecord` cache with model, timestamps, and result.
 
-      vi. **Handle review results** via `handle_review_cycle(state, task_index, spec_result, quality_result)`:
-         - Both reviewers pass → **advance** to next task (or complete if last task)
+      vi. **Handle review results** via `handle_review_cycle(state, task_index, spec_result, quality_result, acceptance=...)`:
+         - Both reviewers pass AND current task-scoped Stage-2 acceptance is ready
+           → **advance** to the next task. Obtain that readiness using
+           `status --stage stage2 --req {REQ-ID}` (repeat `--req` for this task's
+           obligations). Scope selects the readiness decision; the full canonical
+           roster and finding history remain retained. Before leaving Stage 2,
+           require unscoped `status --stage stage2` to clear every obligation.
+         - Any mapped acceptance finding remains blocking until an independent
+           closure names its original finding, obligation, and current proof.
          - Critical finding from either reviewer → **fix** — redispatch the implementer with
            the finding as additional context, then re-review after the fix
          - Fix cycles are bounded: maximum 2 fix cycles per task (`MAX_REVIEW_FIX_CYCLES`).
@@ -433,6 +485,12 @@ When `--no-subagents` is set, Stage 2 runs entirely in the main session (no Agen
    `TempDBMixin` for DB, coverage >= 40%. Do not batch all tests then implement.
 5. Run `uv run ruff check . --fix && uv run ruff format .` after code changes
 6. Run `uv run -m unittest -q` after implementation
+
+Record the existing single-driver declaration in the ledger via
+`gz obpi dispatch ... --single-driver --reason ...`. That declaration preserves
+the Stage-2 spec/quality exception; a marker flag alone does not. Execute the same
+proof commands and retain mapped findings. Step 4b remains mandatory, and neither
+the declaration nor an inline implementation can close its own acceptance finding.
 
 **Abort if:** Tests fail after 2 fix attempts. Release lock via `uv run gz obpi lock release {OBPI-SLUG} --force`, create handoff, and stop.
 
@@ -540,6 +598,11 @@ Read a non-verdict as *the experiment had no premise*, never as a verdict — a 
 
 **Anti-pattern:** Treating the `error` class as equivalent to `assertion`. An ImportError proves only that the symbol is absent — not that the test asserts the REQ's semantics.
 
+The historical RED classifications above do not determine acceptance readiness.
+The current `acceptance prove` record supplies the executed behavioral control;
+spec and quality reviewers judge its adequacy. Preserve RED receipts without
+promoting a weak or unavailable experiment into a current proof.
+
 **Behavioral evidence remains necessary (GHI #984).** The provenance rules above
 classify the RED experiment; they do not certify the covering test's assertions.
 Where that experiment cannot demonstrate the required behavior, inspect the
@@ -637,6 +700,21 @@ must be identified as interpretation and supported; reproduction alone does not
 make its method sound. Expected output may explain a planned demonstration but
 cannot substitute for observed output in the Key Proof of completed work.
 
+Load `gz obpi acceptance {OBPI-SLUG} status --stage stage4 --json` and give the
+narrator its canonical obligations, current proof IDs, open findings, and imported
+review records. The missing adversarial review blocks final readiness until 4b
+runs; it does not prevent preparing 4a. Cite those proof IDs in the REQ table.
+Preserve their executed payloads rather than reconstructing another evidence
+classification. Packet replay remains a separate check of displayed transcripts.
+
+Run `gz obpi present-evidence {OBPI-SLUG} --json` to generate Step-4a review input.
+It exits 3 on proof blockers; when Stage-2 proof is ready and only Step-4b closure
+is pending, it exits 0 with `attestable: false` and separate `review_blockers`.
+Give that packet to the adversary. Do not confuse successful packet generation
+with permission to solicit attestation. After importing independent approval and
+finding closure, refresh the packet; final validation requires both proof and
+review blockers to clear.
+
 Present evidence using the **exact template below**. This is the human's attestation surface — they cannot provide attestation without seeing this output. Every field is mandatory. Do not omit, reorder, or freeform this.
 
 **Required output template:**
@@ -650,8 +728,8 @@ Present evidence using the **exact template below**. This is the human's attesta
 
 **2. Key Proof**
 
-<One concrete command + output the reviewer can run or mentally execute.
-Include the exact command and its output or expected output.>
+<One concrete command and its observed output. Cite the executed proof record.
+Expected output is not evidence of completed work.>
 
 **3. Evidence**
 
@@ -918,7 +996,26 @@ feature still worked.
 
 > **⚠ Clear prop before firing up the tier-1 Codex adversary.** The Codex runtime (`openai/codex-plugin-cc`) routes every rescue through a long-lived, shared broker process that can silently wedge — a stale/hung broker is reused without a health check, and the adversarial job then **hangs indefinitely with no output** (the job log reaches "Turn started" and never completes; upstream `openai/codex-plugin-cc` #509). Before dispatching, *clear prop*: if a prior run may have left one wedged, reset it — `rm -f ~/.claude/plugins/data/codex-openai-codex/state/<workspace-slug>/broker.json` and kill any stray `app-server-broker` / `codex app-server` processes — then run `codex:setup` and confirm `ready: true`. **A wedged broker is NOT a genuine tier-1 unavailability.** `codex:setup` checks only the binary + auth, so it reports `ready: true` even when the broker is hung; the true signature is `ready: true` but a `task` that emits nothing within ~30s. In that case clear prop and retry tier 1 — do **not** record it as `ready: false` and drop to tier 2, which would be a tier-order bypass (GHI #678).
 
-**Record the tier and why.** The tier is recorded on the **completion call**, not on a dispatch record: pass `--adversary-tier {1,2,3}` to `gz obpi complete`, plus — for tier 2/3 — `--adversary-fallback-reason` naming the observed unavailability. Both land on the `adversarial_validation` ledger event, which is the verdict's durable home (GHI #676). **The declared tier GOVERNS but does not AUTHORIZE**: `gz obpi complete` fail-closes when tier 1 is declared while the named adversary is not a recognized different-vendor model, when a tier-1 claim cites no `--adversary-receipt` (GHI #780), and when a tier-2/3 verdict carries no fallback reason. "The Claude subagent was convenient" is not a fallback reason; it is the bypass the gate refuses.
+**Record the tier and why.** Preserve the actual reviewer execution and observed
+fallback reason in the acceptance record. Completion carries its derived tier
+and provenance into the `adversarial_validation` event (GHI #676, #985).
+A caller declaration cannot promote a same-vendor execution to tier 1 or replace
+missing review evidence. "The Claude subagent was convenient" is not a fallback
+reason. Legacy `--adversary-tier` and `--adversary-fallback-reason` inputs remain
+compatibility fields, not authority over the recorded execution.
+
+**Acceptance transport preserves that tier order (GHI #985).** The acceptance
+importer derives tier from actual execution; do not put a caller-authored `tier`
+in the review JSON. A native Claude adversarial fallback includes
+`fallback_reason` naming the observed tier-1 unavailability. Native Claude spec
+and quality execution needs no fallback reason. If the operator explicitly acts
+as the degraded human adversary after reviewing current proof and findings,
+record their exact ruling with `gz obpi acceptance {OBPI-SLUG} human-review
+--attestor g0 --ruling '<verbatim judgment>'`. This records the current proof
+approval and finding closure as tier 3, without inventing an agent receipt.
+Never infer that ruling from permission to implement or repair, and retain the
+separate completion attestation. Completion records the resulting derived tier;
+legacy tier flags cannot override the imported judgment.
 
 > ### 🛑 THE PLUGIN IS THE ONLY TIER-1 DISPATCH SURFACE (operator directive, 2026-08-25)
 >
@@ -947,13 +1044,18 @@ second assertion from the same caller — as is `--adversary-job-id`, which **no
 resolves**. Wrap the PLUGIN invocation in ARB and cite the receipt:
 
 ```bash
-uv run gz arb step --name codexadversary -- \
+uv run gz arb step --name codexadversary --max-output-chars -1 -- \
   node "$HOME/.claude/plugins/cache/openai-codex/codex/<ver>/scripts/codex-companion.mjs" \
   adversarial-review --wait --scope working-tree '<focus text>'
 # → arb step name=codexadversary exit_status=0 receipt=.../arb-step-codexadversary-<hash>.json
 uv run gz obpi complete <OBPI> ... --adversary-tier 1 \
   --adversary-receipt arb-step-codexadversary-<hash>
 ```
+
+Before completion, import that run with
+`uv run gz obpi acceptance <OBPI> review --receipt arb-step-codexadversary-<hash>`.
+The executed output must contain the structured acceptance judgment described
+below. The receipt's successful exit alone cannot establish acceptance.
 
 If the run cannot be ARB-wrapped, that is a **tier-2 outcome** and must be recorded as one
 (`--adversary-tier 2 --adversary-fallback-reason '<observed>'`). Reaching for `codex exec`
@@ -1009,6 +1111,20 @@ a "Weakest point" section. An auxiliary audit is not automatically a new
 deliverable. Determine a finding's relevance by the acceptance claim it affects,
 not the document or review round where it originated.
 
+Also supply the current acceptance status JSON and require exactly one
+`gzkit.acceptance.review.v1` object in the actual reviewer output, using the
+schema in the acceptance manpage. Set `stage` to `adversarial`; copy the current
+input digest and proof/obligation IDs from the supplied records. Explicitly list
+`accepted_proof_ids` for the proof the reviewer approves; never infer this set
+from a global verdict. The `accepted`/`refuted` verdict is retained as review
+history. Mapped findings and explicit proof approvals govern readiness, so an
+auxiliary observation cannot revoke an approved requirement through its wording.
+Mapped findings retain stable IDs. A verified repair emits a closure containing
+`finding_id`, `obligation_id`, and the current `proof_id`. The reviewer must not
+author `id` or `receipt_id`; ingestion derives them from the executed receipt.
+Record the review through `gz obpi acceptance ... review --receipt ...`, including
+truthful refutations, so the next round receives the same outstanding obligations.
+
 **Two transport facts that decide what actually reaches it (measured 2026-09-04, GHI #961).** The suite runs under `./.venv/bin/python -m unittest`, never `uv run` — uv cannot initialize its cache in the sandbox. And the diff you assume was delivered usually was not: `collectReviewContext` injects `git status` + `git diff` as `REVIEW_INPUT` only while the target is within `DEFAULT_INLINE_DIFF_MAX_FILES = 2` files and 256 KB, then drops to `inputMode: "self-collect"` and sends file NAMES only — which is every multi-file OBPI. Your focus text is a shell positional (`positionals.join(" ")`), not a document channel: there is no `--prompt-file` and no stdin on this path, so name the artifacts BY PATH and let the adversary open them itself.
 
 > **`not-refuted` IS the corroborated state — it is phrased passively, not missing.** Operator
@@ -1053,23 +1169,39 @@ removed from the acceptance argument when no requirement depends on them;
 retain their history and every still-relevant finding. If required proof does
 depend on the diagnostic, repair and verify it before using its result.
 
-**Preserving history means you MUST declare which verdict stands (GHI #964).** `gz obpi precomplete` reads the Step 4b section and cannot tell a discharged round from a live one — position is not the answer, since a section may open with its standing verdict and then narrate six earlier refutations. So a converged section whose history holds any refutation carries exactly one declaration line:
+**Readiness is derived; historical verdicts are immutable (GHI #985).** Run:
 
-```markdown
-**Standing verdict:** not-refuted
+```bash
+uv run gz obpi acceptance {OBPI-SLUG} status --stage stage4 --json
 ```
 
-Use the same vocabulary `gz obpi complete --adversary-verdict` accepts, name the round and receipt alongside it, and leave the historical refutation tokens exactly as recorded — they are the record of what was found and discharged. The check believes the declaration in BOTH directions: declaring that a refutation stands still blocks, two declarations that disagree are refused as ambiguous, and with no declaration at all a refutation in the history still fails closed. This is the one sanctioned way to say "overturned"; it is not a relabelling, because the round's own verdict stays written where it happened.
+Readiness requires current valid proof, accepted spec/quality/adversarial reviews
+for every obligation, and independently verified closure of all mapped findings.
+The ledger-backed single-driver declaration retains its documented Stage-2
+spec/quality exception; proof and Step-4b closure remain mandatory.
+An unchanged obligation cannot lose its finding because an auxiliary audit was
+removed. An edit confined to recognized history sections does not invalidate executable proof.
+The earlier GHI #964 standing-line convention is superseded as a gate: preserve
+existing historical words, but never edit a Markdown verdict to change readiness.
+`gz obpi precomplete` and completion consume the durable records.
 
 **Clean means no unresolved in-scope findings, not absence of all limitations.** Accepted residual risks and future ADR-wide obligations remain disclosed separately; they are not failed present-tense OBPI requirements. Filing a GHI alone does not discharge an unmet requirement. A newly proposed boundary change requires operator ruling and independent revalidation; the implementing agent cannot move a finding outside scope to clear the gate. The latest independent review must explicitly confirm closure on the corrected artifacts and return `not-refuted` before soliciting attestation. Scope-boundary disclosures may remain, provided the adversary distinguishes them from unresolved findings.
 
-Do not redispatch merely to remove harmless caveat wording after independent closure is established. If a follow-up exposes the same root cause again, use the design-escalation rule below rather than another patch/review cycle. This closure discipline is a skill-level obligation; the runtime's existing refusal of refutation verdicts does not by itself verify finding closure or review freshness.
+Do not redispatch merely to remove harmless caveat wording after independent
+closure is established. If a follow-up exposes the same root cause again, use
+the design-escalation rule below. The runtime checks proof identities, current
+input digests, and explicit closure links. Whether an oracle or control fulfills
+the requirement remains the independent reviewer's judgment.
 
 **When a round repeats the prior round's ROOT, stop dispatching and escalate the DESIGN (operator ruling 2026-09-03).** Compare each round's `Weakest point` against the last. If it names the same root cause at a different surface, another fix cycle will surface it again one layer deeper: stop, and put the design decision to the operator (§ Behavior Rules — Always #9). Measured: rounds 2, 3 and 4 each patched a different surfacing of one root cause — provenance inferred from a witness's self-consistent claims rather than chained to prior ledger state — at roughly 3h per cycle; the operator ruled the design in a single exchange and it closed in one pass. Round 4's fix also INTRODUCED round 5's critical, which is the signature of patching a surfacing rather than the design.
 
 **Act on the verdict before attestation.** `REFUTED` → return to Stage 2. `REFUTED-WITH-CAVEATS` naming a real gap (e.g. a missing regression test, an injected-only test that wouldn't catch a production regression) → FIX it now, then re-validate. Never hand the operator an unresolved finding dressed as clean. Apply the independent-closure rule above to fixes after ANY verdict, including `not-refuted` with caveats; present the latest independent verdict and closure evidence alongside Step 4a.
 
-**This is now MECHANICAL, not advice (GHI #960).** `gz obpi complete` refuses both refutation verdicts outright — a resolution string does not clear one — so *"return to Stage 2"* is the only path a refuted round has. Do not solicit attestation on a refuted round: the completion it is attesting cannot be recorded. Re-run first, then attest on the verdict that round returns.
+**The gate consumes current closure (GHI #985).** A resolution string or new
+caller-supplied verdict cannot discharge an open finding. Repair its obligation,
+execute current proof, and import independent closure before soliciting
+attestation. Historical refutations do not block a correctly closed current
+state merely because their original words remain in the brief.
 
 Wait for the human to respond "Accepted", "Completed", "attest completed", or equivalent. Do NOT proceed until attestation is received.
 
@@ -1103,11 +1235,10 @@ the reconcile output and ADR status refresh.
    remediation: subdivide labor via `uv run gz task start --seq next` or declare
    `req_atomic:` (Sig b), attribute worklog events with a `task_id` (Sig a),
    reconcile divergent TASK ids across channels (Sig c) —
-   `uv run gz task envelope diagnose {OBPI-SLUG}`), and **Step-4b adversarial
-   validation** (GHI #676 — a heavy-lane brief must already carry its
-   `### Step 4b — Independent Adversarial Validation` section; the check reads
-   the brief, not the ledger, because `gz obpi complete` is what writes the
-   `adversarial_validation` event).
+   `uv run gz task envelope diagnose {OBPI-SLUG}`), and **current acceptance
+   proof plus independent closure** (GHI #985). The acceptance records are
+   already in the ledger before this check; Markdown review history does not
+   supply the current verdict.
    **If exit code is non-zero, do NOT invoke `gz obpi complete` — fix each
    reported precondition first using the named remediation.** Exit 0 here is
    the gate that prevents the reactive-triage class of failure (the original
@@ -1167,45 +1298,20 @@ the reconcile output and ADR status refresh.
    exits 1. Never hand the invocation back to the operator — they already
    attested in Stage 4.
 
-   **Step 4b's verdict is passed here (GHI #676).** On the heavy lane `gz obpi complete`
-   fails closed without it, and records it as an `adversarial_validation` ledger event
-   emitted BEFORE the completion receipt — so a receipt can never exist without the
-   adversarial finding that gated it. Pass `--adversary-verdict` (one of `refuted` |
-   `not-refuted` | `refuted-with-caveats` | `degraded-human-only`) and `--adversary`
-   (the vendor/model, or `human` in degraded mode).
+   **Completion uses the imported current review (GHI #985).** The command
+   derives the accepted adversarial judgment from durable acceptance records
+   after every current obligation and mapped finding clears. Legacy
+   `--adversary-*` arguments remain compatibility/provenance inputs; they cannot
+   replace a missing review, invent approval, or discharge a finding. Preserve
+   the binding tier and observed fallback requirements in Step 4b.
 
-   > ### 🛑 A REFUTATION LOOPS — IT NEVER COMPLETES (GHI #960)
-   >
-   > Operator ruling 2026-09-04, verbatim: ***"refuted is an outcome, but it is an input
-   > into if(4a && 4b) pass; else: loop"***. Completion is a CONJUNCTION. A `refuted` or
-   > `refuted-with-caveats` verdict is a legitimate Step-4b outcome and is **not** the
-   > problem — but `gz obpi complete` refuses it **whether or not** a resolution is
-   > supplied, and the OBPI returns to Stage 2.
-   >
-   > **Two exits, both ending in a non-refuting verdict:**
-   > 1. **FIX** the refuted claim, then re-run the adversary.
-   > 2. **BOUND** it — obtain the operator ruling for a proposed boundary change,
-   >    record it in the brief's `## Threat Model`, then independently revalidate.
-   >    Filing a GHI alone does not discharge an unmet requirement.
-   >    (This is the mechanism OBPI-0.35.0-04
-   >    built at round 6 for the #952/#953 ledger-atomicity case.)
-   >
-   > Then complete on the verdict THAT round returns, citing the earlier rounds in
-   > `--adversary-resolution` as the record of what was found and discharged.
-   >
-   > **Never relabel a round's verdict to get past the block.** The brief's Step 4b
-   > section is read by `gz obpi precomplete`, so a completion disagreeing with it is the
-   > exact substitution this gate exists to catch.
-   >
-   > **Why a resolution string is not enough.** It is specified to name *"what was fixed
-   > and how the adversary's own check was re-run"* — but if the adversary re-ran its check
-   > and it passed, the verdict is `not-refuted`. A truthful, fully-discharged
-   > `refuted + resolution` is a contradiction: a completion recorded against a verdict
-   > describing a tree that no longer exists. Measured 2026-09-04: **13 of 13** completed
-   > refutations in `.gzkit/ledger.jsonl` carried NO resolution at all, and three shipped
-   > while their own verdict named live blockers (*"the mandatory full check is red"*,
-   > *"REQ-0.35.0-09-11 was categorically false"*, *"three real defects the green Stage-3
-   > evidence missed"*). Prevalence was never precedent; it was the size of the hole.
+   Operator ruling 2026-09-04 remains verbatim: ***"refuted is an outcome, but it
+   is an input into if(4a && 4b) pass; else: loop"***. The loop now preserves the
+   obligation and verified closure. Fix the required behavior or obtain the
+   existing operator ruling for an actual contract boundary amendment, then
+   independently verify the changed proof. A GHI or resolution paragraph alone
+   cannot satisfy a missing obligation. Historical round verdicts remain exact;
+   no authored standing line determines the current acceptance decision.
 
    ```bash
    uv run gz obpi complete {OBPI-SLUG} \
@@ -1213,8 +1319,6 @@ the reconcile output and ADR status refresh.
      --attestation-text "$(cat /tmp/obpi-attestation.txt)" \
      --implementation-summary "$(cat /tmp/obpi-summary.md)" \
      --key-proof "$(cat /tmp/obpi-keyproof.md)" \
-     --adversary-verdict {refuted|not-refuted|refuted-with-caveats|degraded-human-only} \
-     --adversary '{vendor/model or human}' \
      [--adversary-job-id '{job-id}'] \
      [--refuted-claim "$(cat /tmp/obpi-refuted-claim.txt)"] \
      [--adversary-resolution "$(cat /tmp/obpi-adversary-resolution.txt)"]

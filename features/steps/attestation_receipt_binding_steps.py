@@ -4,8 +4,9 @@ Covers REQ-0.0.24-01-01..06 (validator scope), REQ-0.0.24-02-01..05 (gate
 wiring into ``gz obpi complete`` / ``gz adr emit-receipt``), and
 REQ-0.0.24-04-01..03 (this OBPI's own self-coverage of the gate itself).
 
-Scenarios run end-to-end against the registered CLI surfaces (no
-subprocess mocking) — fixtures are staged on disk in the per-scenario
+Scenarios exercise the registered CLI and real receipt checks; the unrelated
+durable acceptance boundary uses an explicit synthetic ready-review fixture.
+Fixtures are staged on disk in the per-scenario
 tempdir, ARB receipts are routed through the ``GZKIT_ARB_RECEIPTS_ROOT``
 env override, and the OBPI brief / parent ADR are written to the
 configured ``adrs`` root so ``resolve_adr_file`` / ``resolve_obpi_file``
@@ -32,11 +33,13 @@ from __future__ import annotations
 import io
 import json
 import os
-from contextlib import redirect_stderr, redirect_stdout
+from contextlib import nullcontext, redirect_stderr, redirect_stdout
 from pathlib import Path
+from unittest.mock import patch
 
 from behave import given, then, when
 
+from gzkit.acceptance import Review
 from gzkit.cli import main
 from gzkit.config import GzkitConfig
 from gzkit.ledger import Ledger, adr_created_event, obpi_created_event
@@ -102,9 +105,31 @@ def _write_lint_receipt(root: Path, run_id: str, *, exit_status: int) -> None:
 # ---------------------------------------------------------------------------
 
 
-def _invoke(args: list[str]) -> tuple[int, str]:
+# Synthetic ready-review fixture: these scenarios exercise the earlier
+# receipt/coverage gate, whose real checks remain active. Acceptance readiness
+# itself is exercised with real proof in tests/test_acceptance_integration.py.
+_ACCEPTED_REVIEW_FIXTURE = Review(
+    id="synthetic-bdd-review",
+    stage="adversarial",
+    input_digest="synthetic-input",
+    obligation_ids=("synthetic-obligation",),
+    proof_ids=("synthetic-proof",),
+    accepted_proof_ids=("synthetic-proof",),
+    reviewer_id="fixture-independent-reviewer",
+    receipt_id="arb-step-synthetic-bdd-review",
+    tier=2,
+    fallback_reason="synthetic unavailable-vendor fixture",
+)
+
+
+def _invoke(args: list[str], *, accepted_review: Review | None = None) -> tuple[int, str]:
     output = io.StringIO()
-    with redirect_stdout(output), redirect_stderr(output):
+    acceptance_boundary = (
+        patch("gzkit.commands.obpi_complete.completion_review", return_value=accepted_review)
+        if accepted_review is not None
+        else nullcontext()
+    )
+    with redirect_stdout(output), redirect_stderr(output), acceptance_boundary:
         try:
             code = main(args)
         except SystemExit as exc:
@@ -433,23 +458,6 @@ _FIXTURE_IMPL_SUMMARY = (
 )
 _FIXTURE_KEY_PROOF = "uv run -m unittest tests/test_fixture.py -v passes 1/1."
 
-# Heavy-lane completion fails closed without a Step-4b adversary verdict (GHI #676).
-# These scenarios are about receipt binding, not Step 4b, so they satisfy the gate
-# rather than exercise it — its own behaviour is covered in tests/.
-#
-# The tier-2 shape is deliberate (GHI #780): a cross-vendor claim now requires an
-# ARB receipt, so naming a codex adversary here would make these scenarios assert
-# an unproven tier-1 claim in passing. A recorded fallback reason is the honest
-# way to satisfy a gate you are not exercising.
-_ADVERSARY_ARGS = [
-    "--adversary-verdict",
-    "not-refuted",
-    "--adversary",
-    "claude/general-purpose",
-    "--adversary-fallback-reason",
-    "codex setup reported ready=false",
-]
-
 
 @when('I complete OBPI "{obpi_id}" with attestation citing "{run_id}" using attestor-present')
 def step_complete_with_attestor_present(context, obpi_id: str, run_id: str) -> None:
@@ -466,9 +474,8 @@ def step_complete_with_attestor_present(context, obpi_id: str, run_id: str) -> N
         "--key-proof",
         _FIXTURE_KEY_PROOF,
         "--attestor-present",
-        *_ADVERSARY_ARGS,
     ]
-    context.exit_code, context.output = _invoke(args)
+    context.exit_code, context.output = _invoke(args, accepted_review=_ACCEPTED_REVIEW_FIXTURE)
 
 
 @when('I complete OBPI "{obpi_id}" with attestation citing "{run_id}" without attestor-present')
@@ -485,9 +492,8 @@ def step_complete_without_attestor_present(context, obpi_id: str, run_id: str) -
         _FIXTURE_IMPL_SUMMARY,
         "--key-proof",
         _FIXTURE_KEY_PROOF,
-        *_ADVERSARY_ARGS,
     ]
-    context.exit_code, context.output = _invoke(args)
+    context.exit_code, context.output = _invoke(args, accepted_review=_ACCEPTED_REVIEW_FIXTURE)
 
 
 @when(

@@ -132,6 +132,8 @@ nav:
     - gz flags: user/manpages/flags.md
     - gz flag explain: user/manpages/flag-explain.md
     - gz obpi status: user/manpages/obpi-status.md
+    - gz obpi acceptance: user/manpages/obpi-acceptance.md
+    - gz obpi present-evidence: user/manpages/obpi-present-evidence.md
     - gz obpi pipeline: user/manpages/obpi-pipeline.md
     - gz obpi validate: user/manpages/obpi-validate.md
     - gz obpi sync: user/manpages/obpi-sync.md

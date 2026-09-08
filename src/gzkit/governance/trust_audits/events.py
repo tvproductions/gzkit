@@ -19,6 +19,11 @@ from pathlib import Path
 from gzkit.validate import ValidationError
 
 _NO_GRAPH_IMPACT: dict[str, str] = {
+    "acceptance_recorded": (
+        "Canonical acceptance snapshot, execution proof, or independent review history "
+        "for an existing OBPI. The acceptance reducer consumes this evidence to derive "
+        "readiness; it creates no artifact relationship or lifecycle transition."
+    ),
     "ledger_event_corrected": (
         "The append-only corrective action (GHI #611). It has no `_apply_*` graph "
         "handler BY DESIGN, and adding one would undo the fix: the correction is "

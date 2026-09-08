@@ -7,9 +7,12 @@ reads the on-disk ARB receipts, and runs ``gz covers`` — writes the packet to
 at Stage 4. The agent relays this output; it does not type the evidence.
 
 Exit codes (`.claude/rules/cli.md`):
-  0 = packet is ATTESTABLE (every blocker clear)
+  0 = Stage-4a proof packet is ready for independent review
   1 = user/config error (brief not found)
-  3 = packet is NOT-ATTESTABLE (one or more blockers) — fail-closed signal
+  3 = Stage-4a proof has blockers
+
+``attestable`` remains false until independent review also clears. Producing
+the review input must not require the review that consumes it.
 """
 
 from __future__ import annotations
@@ -58,8 +61,8 @@ def obpi_present_evidence_cmd(*, obpi_id: str, as_json: bool = False) -> int:
     """Handle ``gz obpi present-evidence``.
 
     Generates and persists the tool-derived evidence packet. Returns
-    ``EXIT_POLICY_BREACH`` (3) when the packet is NOT-ATTESTABLE so the operator and
-    any downstream gate see the fail-closed signal.
+    ``EXIT_POLICY_BREACH`` (3) when required proof has blockers. Pending review
+    permits packet generation but still prevents final acceptance.
     """
     project_root = get_project_root()
     brief_path = _resolve_brief_path(project_root, obpi_id)
@@ -76,6 +79,8 @@ def obpi_present_evidence_cmd(*, obpi_id: str, as_json: bool = False) -> int:
     else:
         _render_human(packet, rel)
 
-    if not packet.attestable:
+    if packet.review_blockers and not packet.blockers and not as_json:
+        console.print("Stage 4a evidence ready; independent Step 4b closure is pending.")
+    if packet.blockers:
         raise SystemExit(EXIT_POLICY_BREACH)
     return EXIT_SUCCESS

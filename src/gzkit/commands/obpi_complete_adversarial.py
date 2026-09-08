@@ -142,7 +142,7 @@ _RUNTIME_WRAPPERS: frozenset[str] = frozenset(
 )
 
 
-def _receipt_binary_name(argv_head: str) -> str:
+def receipt_binary_name(argv_head: str) -> str:
     """Return the bare binary name from a recorded argv head.
 
     Handles both separators explicitly rather than via ``Path``: the receipt may
@@ -152,7 +152,7 @@ def _receipt_binary_name(argv_head: str) -> str:
     return argv_head.replace("\\", "/").rsplit("/", 1)[-1]
 
 
-def _receipt_proves_cross_vendor(receipt: dict[str, Any]) -> bool:
+def receipt_proves_cross_vendor(receipt: dict[str, Any]) -> bool:
     """Return True when the receipt records a cross-vendor binary that actually ran.
 
     The proof is ``step.command`` — the argv ARB executed — never a caller-supplied
@@ -186,6 +186,10 @@ def _receipt_proves_cross_vendor(receipt: dict[str, Any]) -> bool:
             continue
         return _is_cross_vendor_adversary(name)
     return False
+
+
+_receipt_binary_name = receipt_binary_name
+_receipt_proves_cross_vendor = receipt_proves_cross_vendor
 
 
 def _load_adversary_receipt(run_id: str, *, root: Path) -> dict[str, Any] | None:

@@ -42,6 +42,8 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz audit`](audit.md) | Run strict post-attestation audit reconciliation |
 | [`gz adr emit-receipt`](adr-emit-receipt.md) | Emit completed/validated receipt with optional evidence scope |
 | [`gz obpi status`](obpi-status.md) | Show focused runtime status for one OBPI |
+| [`gz obpi acceptance`](obpi-acceptance.md) | Execute obligation proof and retain independent review closure |
+| [`gz obpi present-evidence`](obpi-present-evidence.md) | Generate Step-4a proof input and report pending independent closure |
 | [`gz obpi pipeline`](obpi-pipeline.md) | Launch the OBPI pipeline runtime surface |
 | [`gz obpi dispatch`](obpi-dispatch.md) | Record a Stage-2 subagent dispatch, or declare a single-driver run |
 | [`gz obpi validate`](obpi-validate.md) | Validate OBPI brief(s) for authored, scaffold, and completion readiness |

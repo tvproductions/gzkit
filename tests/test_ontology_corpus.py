@@ -11,6 +11,9 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
+from pydantic import ValidationError
+
+from gzkit.events import parse_typed_event
 from gzkit.ledger import (
     Ledger,
     adr_created_event,
@@ -20,6 +23,7 @@ from gzkit.ledger import (
     obpi_superseded_event,
     prd_created_event,
 )
+from gzkit.ledger_events import acceptance_recorded_event
 from gzkit.ontology.corpus import (
     _ACCOUNTED_EVENT_TYPES,
     RebuildFidelity,
@@ -188,6 +192,26 @@ class TestCorpusSingleReplay(unittest.TestCase):
 
 class TestCorpusRebuildFidelity(unittest.TestCase):
     """REQ-0.32.0-02-05: registry-coupled completeness + freshness self-report."""
+
+    def test_acceptance_records_do_not_create_lineage_or_attestation(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            ledger = _lineage_ledger(tmp)
+            before = project_corpus(ledger)
+            ledger.append(acceptance_recorded_event("OBPI-0.1.0-01", "proof", {"id": "proof-1"}))
+            after = project_corpus(ledger)
+            self.assertTrue(after.fidelity.complete, after.fidelity.unaccounted_event_types)
+            self.assertEqual(set(after.graph.node_ids()), set(before.graph.node_ids()))
+            self.assertEqual(after.graph.edges(), before.graph.edges())
+            self.assertFalse(after.source_graph["OBPI-0.1.0-01"].get("attested", False))
+
+    def test_acceptance_factory_preserves_payload_and_refuses_unknown_record_kind(self) -> None:
+        payload = {"id": "review-1", "findings": [{"id": "F1", "obligation_id": "REQ-1"}]}
+        event = acceptance_recorded_event("OBPI-0.1.0-01", "review", payload)
+        typed = parse_typed_event(event.model_dump())
+        self.assertEqual(typed.id, "OBPI-0.1.0-01")
+        self.assertEqual(event.extra, {"record_type": "review", "payload": payload})
+        with self.assertRaises(ValidationError):
+            acceptance_recorded_event("OBPI-0.1.0-01", "invented", payload)
 
     @covers("REQ-0.32.0-02-05")
     def test_all_live_discriminators_are_dispositioned(self) -> None:

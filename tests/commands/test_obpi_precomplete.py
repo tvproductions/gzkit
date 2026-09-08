@@ -7,6 +7,7 @@ holds) and a negative test (fails with a named remediation when it doesn't).
 import json
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from gzkit.cli import main
 from gzkit.commands.obpi_precomplete import (
@@ -395,6 +396,7 @@ class TestPrecompleteCliEndToEnd(unittest.TestCase):
             self.assertEqual(result.exit_code, 3, msg=result.output)
             self.assertIn("BLOCKED", result.output)
 
+    @patch("gzkit.acceptance_store.acceptance_blockers", new=lambda *_args, **_kwargs: [])
     def test_exits_0_when_all_preconditions_met(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():

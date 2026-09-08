@@ -13,7 +13,10 @@ Two dimensions, deliberately unequal in force:
 forbidden outright — declaring a type before wiring its producer is legitimate —
 but it must be DISCLOSED by an explicit baseline entry, never absorbed silently.
 Same posture as ``data/uncalled_gate_grandfather.json``: an entry records an
-absence, it does not justify one.
+absence, it does not justify one. An undisclosed never-fired type may also pass
+by invoking a registered real producer in a fresh disposable project and
+verifying its typed persisted record. This observation never changes live
+counts or drains the baseline; previous reports grant no credit (GHI #985).
 
 **Paired-event ratios (reported, never judged).** For event types that come in
 enter/exit pairs, the ratio of one to the other is reported and nothing else.
@@ -120,14 +123,29 @@ def enforce(root: Path) -> int:
         print(f"never-fired: {len(current)} (baseline {len(baseline)}) — disclosure holds")
         return 0
 
+    from gzkit.ledger_producer_probe import probe_producer
+
+    unverified: list[str] = []
+    for event_type in added:
+        observation = probe_producer(event_type)
+        print(json.dumps({"isolated_producer_execution": observation.model_dump(mode="json")}))
+        if observation.status != "verified":
+            unverified.append(event_type)
+    if not unverified:
+        print(
+            f"never-fired in live ledger: {len(current)}; isolated producers verified: {len(added)}"
+        )
+        return 0
+
     print(
-        f"POLICY BREACH: {len(added)} declared event type(s) fire nowhere and are "
-        f"not disclosed: {', '.join(added)}\n"
+        f"POLICY BREACH: {len(unverified)} declared event type(s) have no live occurrence, "
+        f"disclosure, or verified isolated producer: {', '.join(unverified)}\n"
         "  Why: a declared type with no producer is vocabulary that records "
         "nothing while reading as a modelled fact. Growth is allowed but must be "
         "visible — an undisclosed one is indistinguishable from a wired producer.\n"
-        "  Next step: WIRE THE PRODUCER, or retire the declaration. Those are the "
-        "two recoveries this gate has. ADR-0.0.73 BI #8 registers this surface as a "
+        "  Next step: WIRE THE PRODUCER and verify actual production use or register "
+        "a fresh isolated execution, or retire the declaration. "
+        "ADR-0.0.73 BI #8 registers this surface as a "
         "shrink-ratchet -- 'a committed baseline the list can only decrease against' "
         "-- so raising 'baseline_count' is not a recovery step and is never an "
         "agent's move to make: it is the laundering the ratchet exists to refuse. "

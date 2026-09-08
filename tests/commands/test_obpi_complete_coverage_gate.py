@@ -33,10 +33,25 @@ from unittest.mock import MagicMock, patch
 
 from rich.console import Console
 
+from gzkit.acceptance import Review
 from gzkit.commands.obpi_complete import obpi_complete_cmd
 from gzkit.event_evidence import EventAnchor
 from gzkit.traceability import covers
 from tests.commands.common import SilencedConsoleTestCase
+
+# This module exercises other completion gates/transactions. Acceptance execution
+# and ledger freshness are exercised through the actual store in test_acceptance*.
+_ACCEPTED_REVIEW = Review(
+    id="review-fixture",
+    stage="adversarial",
+    input_digest="fixture-input",
+    obligation_ids=("REQ-fixture",),
+    proof_ids=("proof-fixture",),
+    accepted_proof_ids=("proof-fixture",),
+    tier=1,
+    receipt_id="arb-step-review-fixture",
+    reviewer_id="independent-reviewer",
+)
 
 _BRIEF_TEMPLATE = """\
 ---
@@ -287,6 +302,10 @@ def _multi_covering_body(req_id: str) -> str:
 class TestObpiCompleteHeavyAllReqsCovered(_CoverageGateWireFixture):
     """REQ-0.0.25-01-01 — every REQ has a passing covered test → exit 0."""
 
+    @patch(
+        "gzkit.commands.obpi_complete.completion_review",
+        new=lambda *_args, **_kwargs: _ACCEPTED_REVIEW,
+    )
     @covers("REQ-0.0.25-01-01")
     def test_heavy_all_covered_passes(self) -> None:
         criteria = "\n".join(
@@ -403,6 +422,10 @@ class TestObpiCompleteFoundationLiteUncovered(_CoverageGateWireFixture):
 class TestObpiCompleteLiteNonFoundationUncovered(_CoverageGateWireFixture):
     """REQ-0.0.25-01-04 — lite-non-foundation uncovered REQ warns, proceeds."""
 
+    @patch(
+        "gzkit.commands.obpi_complete.completion_review",
+        new=lambda *_args, **_kwargs: _ACCEPTED_REVIEW,
+    )
     @covers("REQ-0.0.25-01-04")
     def test_lite_non_foundation_uncovered_warns_only(self) -> None:
         criteria = "- [ ] REQ-9.9.9-99-01: Uncovered."
@@ -472,6 +495,10 @@ class TestObpiCompleteHeavyCoveredTestFails(_CoverageGateWireFixture):
 class TestObpiCompleteMultipleCoversOnePassing(_CoverageGateWireFixture):
     """REQ-0.0.25-01-06 — when multiple covering tests exist, one pass satisfies."""
 
+    @patch(
+        "gzkit.commands.obpi_complete.completion_review",
+        new=lambda *_args, **_kwargs: _ACCEPTED_REVIEW,
+    )
     @covers("REQ-0.0.25-01-06")
     def test_multiple_covers_one_passes_satisfies(self) -> None:
         criteria = "- [ ] REQ-9.9.9-99-01: covered by two tests."

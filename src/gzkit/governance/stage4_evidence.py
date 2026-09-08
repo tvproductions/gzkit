@@ -36,6 +36,7 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit.acceptance_store import acceptance_blockers
 from gzkit.core.validation_rules import ValidationError
 
 # Canonical ARB steps whose receipts back a Heavy-lane completion.
@@ -80,6 +81,9 @@ class EvidencePacket(BaseModel):
     covers_uncovered: int = Field(..., description="REQs with no covering test (uncovered)")
     attestable: bool = Field(..., description="True only if every blocker is clear")
     blockers: list[str] = Field(..., description="Reasons the packet is NOT attestable")
+    review_blockers: list[str] = Field(
+        default_factory=list, description="Step 4b still required before attestation"
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -418,6 +422,8 @@ def generate_evidence_packet(project_root: Path, brief_path: Path, obpi_id: str)
     receipts = _collect_receipts(project_root)
     total, uncovered = _covers_counts(project_root, obpi_id)
     blockers = _compute_blockers(demos, receipts, uncovered)
+    blockers.extend(acceptance_blockers(project_root, obpi_id, stage="stage2"))
+    review_blockers = acceptance_blockers(project_root, obpi_id)
     return EvidencePacket(
         obpi_id=obpi_id,
         generated_at=datetime.now(UTC).isoformat(),
@@ -425,8 +431,9 @@ def generate_evidence_packet(project_root: Path, brief_path: Path, obpi_id: str)
         receipts=receipts,
         covers_total=total,
         covers_uncovered=uncovered,
-        attestable=not blockers,
+        attestable=not blockers and not review_blockers,
         blockers=blockers,
+        review_blockers=review_blockers,
     )
 
 
@@ -488,4 +495,5 @@ def validate_stage4_evidence(
     # Re-derive live, independently of the packet's recorded values.
     fresh = generate_evidence_packet(project_root, brief_path, obpi_id)
     errors.extend(_err(b) for b in fresh.blockers)
+    errors.extend(_err(b) for b in fresh.review_blockers)
     return errors

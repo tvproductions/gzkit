@@ -16,6 +16,7 @@ from typing import Any
 
 from rich.markup import escape
 
+from gzkit.acceptance_store import acceptance_blockers
 from gzkit.brief_commands import extract_fenced_commands, is_shell_less_executable
 from gzkit.commands.common import GzCliError, _cli_main, console
 from gzkit.decomposition import extract_markdown_section
@@ -245,6 +246,10 @@ def _run_pipeline_verify_stage(
     evidence_json: str | None,
 ) -> None:
     """Run the verify stage, then chain into ceremony and sync."""
+    blockers = acceptance_blockers(project_root, obpi_id, stage="stage2")
+    if blockers:
+        _print_pipeline_blockers(obpi_id, blockers)
+        raise SystemExit(3)
     behave_tags: list[str] | None = None
     if lane == "heavy":
         from gzkit.commands.quality import resolve_obpi_behave_tags  # noqa: PLC0415
@@ -307,8 +312,20 @@ def _run_pipeline_ceremony_stage(
     verification_results: list[tuple[str, bool, str]] | None = None,
 ) -> None:
     """Render evidence and either pause for human gate or self-close and chain into sync."""
+    blockers = acceptance_blockers(project_root, obpi_id, stage="stage2")
+    if blockers:
+        _print_pipeline_blockers(obpi_id, blockers)
+        raise SystemExit(3)
     console.print("")
     console.print("[bold]Stage 4: Ceremony[/bold]")
+
+    review_blockers = acceptance_blockers(project_root, obpi_id)
+    if review_blockers:
+        console.print("Stage 4a proof is ready for independent Step 4b review.")
+        console.print(f"Prepare evidence: gz obpi present-evidence {obpi_id}")
+        console.print(f"Review obligations: gz obpi acceptance {obpi_id} status")
+        console.print("Record the independent review before requesting human attestation.")
+        return
 
     if verification_results:
         console.print("")

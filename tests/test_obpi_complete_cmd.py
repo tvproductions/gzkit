@@ -11,6 +11,7 @@ from unittest.mock import MagicMock, patch
 
 from rich.console import Console
 
+from gzkit.acceptance import Review
 from gzkit.commands.obpi_complete import (
     _append_audit_ledger,
     _build_attestation_audit_entry,
@@ -32,6 +33,20 @@ from gzkit.obpi_completion_fence import (
     has_substantive_key_proof as _has_substantive_key_proof,
 )
 from tests.commands.common import SilencedConsoleTestCase
+
+# This module exercises other completion gates/transactions. Acceptance execution
+# and ledger freshness are exercised through the actual store in test_acceptance*.
+_ACCEPTED_REVIEW = Review(
+    id="review-fixture",
+    stage="adversarial",
+    input_digest="fixture-input",
+    obligation_ids=("REQ-fixture",),
+    proof_ids=("proof-fixture",),
+    accepted_proof_ids=("proof-fixture",),
+    tier=1,
+    receipt_id="arb-step-review-fixture",
+    reviewer_id="independent-reviewer",
+)
 
 
 def covers(target: str):  # noqa: D401
@@ -697,6 +712,10 @@ class TestObpiCompleteCmdHappyPath(SilencedConsoleTestCase):
     the new TestObpiCompleteHeavy* / TestObpiCompleteFoundation* classes.
     """
 
+    @patch(
+        "gzkit.commands.obpi_complete.completion_review",
+        new=lambda *_args, **_kwargs: _ACCEPTED_REVIEW,
+    )
     @patch("gzkit.commands.obpi_complete._enforce_reconcile_receipt_gate")
     @patch("gzkit.commands.obpi_complete._enforce_req_coverage_gate")
     @patch("gzkit.commands.obpi_complete._enforce_attestation_receipt_gate")
@@ -798,6 +817,10 @@ class TestObpiCompleteCmdRollback(SilencedConsoleTestCase):
     the new gate is covered in tests/commands/test_obpi_complete.py.
     """
 
+    @patch(
+        "gzkit.commands.obpi_complete.completion_review",
+        new=lambda *_args, **_kwargs: _ACCEPTED_REVIEW,
+    )
     @patch("gzkit.commands.obpi_complete._enforce_reconcile_receipt_gate")
     @patch("gzkit.commands.obpi_complete._enforce_req_coverage_gate")
     @patch("gzkit.commands.obpi_complete._enforce_attestation_receipt_gate")
@@ -888,6 +911,10 @@ class TestObpiCompleteOperatorVerbatimAttestation(SilencedConsoleTestCase):
     attestation behavior is exercised in isolation.
     """
 
+    @patch(
+        "gzkit.commands.obpi_complete.completion_review",
+        new=lambda *_args, **_kwargs: _ACCEPTED_REVIEW,
+    )
     @patch("gzkit.commands.obpi_complete._enforce_reconcile_receipt_gate")
     @patch("gzkit.commands.obpi_complete._enforce_req_coverage_gate")
     @patch("gzkit.commands.obpi_complete._enforce_attestation_receipt_gate")
@@ -1482,6 +1509,10 @@ class TestObpiCompleteSecuritySensitivityGate(SilencedConsoleTestCase):
     attestation-requirement composition is exercised in isolation.
     """
 
+    @patch(
+        "gzkit.commands.obpi_complete.completion_review",
+        new=lambda *_args, **_kwargs: _ACCEPTED_REVIEW,
+    )
     @patch("gzkit.commands.obpi_complete._enforce_reconcile_receipt_gate")
     @patch("gzkit.commands.obpi_complete._enforce_req_coverage_gate")
     @patch("gzkit.commands.obpi_complete._enforce_attestation_receipt_gate")
@@ -1547,6 +1578,10 @@ class TestObpiCompleteSecuritySensitivityGate(SilencedConsoleTestCase):
             parsed = json.loads(audit_file.read_text(encoding="utf-8").strip())
             self.assertEqual(parsed["attestation_type"], "operator-verbatim-conversational")
 
+    @patch(
+        "gzkit.commands.obpi_complete.completion_review",
+        new=lambda *_args, **_kwargs: _ACCEPTED_REVIEW,
+    )
     @patch("gzkit.commands.obpi_complete._enforce_reconcile_receipt_gate")
     @patch("gzkit.commands.obpi_complete._enforce_req_coverage_gate")
     @patch("gzkit.commands.obpi_complete._enforce_attestation_receipt_gate")
@@ -1559,7 +1594,7 @@ class TestObpiCompleteSecuritySensitivityGate(SilencedConsoleTestCase):
     @patch("gzkit.commands.obpi_complete.resolve_obpi_file")
     @patch("gzkit.commands.obpi_complete.Ledger")
     @covers("REQ-0.0.22-04-03")
-    def test_lite_feature_no_sensitivity_remains_self_closeable_e2e(
+    def test_lite_feature_no_sensitivity_completes_with_attestation(
         self,
         mock_ledger_cls,
         mock_resolve,
@@ -1574,9 +1609,8 @@ class TestObpiCompleteSecuritySensitivityGate(SilencedConsoleTestCase):
     ):
         del mock_security_gate, mock_receipt_gate, mock_coverage_gate  # patched no-op
         del mock_reconcile_gate  # OBPI-0.0.37-08 reconcile gate patched no-op
-        # Sister proof to REQ-05: the *same* lite + feature parent without
-        # the sensitivity field does NOT require human attestation — it
-        # self-closes (attestation_type self-close-exception).
+        # Sister proof to REQ-05: removing the sensitivity field retains the
+        # ordinary operator-attested completion path.
         baseline_brief = _SECURITY_BRIEF.replace("sensitivity: security\n", "")
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
@@ -1599,19 +1633,24 @@ class TestObpiCompleteSecuritySensitivityGate(SilencedConsoleTestCase):
             mock_ledger_cls.return_value = ledger
             mock_adr_resolve.return_value = (adr_dir / f"{adr_id}.md", adr_id)
 
-            # Self-closeable path completes because the predicate returns
-            # False — no security axis, lite lane, feature kind.
             obpi_complete_cmd(
                 obpi=obpi_id,
                 attestor="g0",
-                attestation_text="self-close evidence baseline",
+                attestation_text="ordinary completion evidence baseline",
                 implementation_summary="- Files: tests/test_obpi_complete_cmd.py",
                 key_proof="completion succeeds when no sensitivity axis is present",
                 as_json=False,
                 dry_run=False,
             )
             self.assertIn("status: Completed", obpi_file.read_text(encoding="utf-8"))
-            ledger.append.assert_called_once()
+            completions = [
+                call.args[0]
+                for call in ledger.append.call_args_list
+                if call.args[0].event == "obpi_receipt_emitted"
+            ]
+            self.assertEqual(len(completions), 1)
+            self.assertEqual(completions[0].id, obpi_id)
+            self.assertTrue(completions[0].extra["evidence"]["human_attestation"])
 
 
 # ---------------------------------------------------------------------------

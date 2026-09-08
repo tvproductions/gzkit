@@ -7,7 +7,7 @@ re-exports.
 """
 
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
 from gzkit.ledger import LedgerEvent
 
@@ -51,6 +51,24 @@ def obpi_created_event(obpi_id: str, parent: str) -> LedgerEvent:
         id=obpi_id,
         parent=parent,
     )
+
+
+def acceptance_recorded_event(
+    obpi_id: str,
+    record_type: Literal["contract", "proof", "review", "human-review"],
+    payload: dict[str, Any],
+) -> LedgerEvent:
+    """Capture acceptance evidence without a completion or attestation transition.
+
+    The typed envelope validates the record kind before the ledger writer sees
+    it. Contract/proof/review payload validation belongs to the acceptance store.
+    """
+    from gzkit.events import AcceptanceRecordedEvent
+
+    typed = AcceptanceRecordedEvent(
+        event="acceptance_recorded", id=obpi_id, record_type=record_type, payload=payload
+    )
+    return LedgerEvent.model_validate(typed.model_dump())
 
 
 def obpi_withdrawn_event(obpi_id: str, parent: str, reason: str, attestor: str = "") -> LedgerEvent:

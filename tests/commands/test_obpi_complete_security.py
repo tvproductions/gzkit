@@ -27,6 +27,7 @@ from unittest.mock import MagicMock, patch
 
 from rich.console import Console
 
+from gzkit.acceptance import Review
 from gzkit.commands.common import GzCliError
 from gzkit.commands.obpi_complete import (
     _find_fresh_security_receipt,
@@ -36,6 +37,20 @@ from gzkit.commands.obpi_complete import (
 )
 from gzkit.event_evidence import EventAnchor
 from gzkit.traceability import covers
+
+# This module exercises other completion gates/transactions. Acceptance execution
+# and ledger freshness are exercised through the actual store in test_acceptance*.
+_ACCEPTED_REVIEW = Review(
+    id="review-fixture",
+    stage="adversarial",
+    input_digest="fixture-input",
+    obligation_ids=("REQ-fixture",),
+    proof_ids=("proof-fixture",),
+    accepted_proof_ids=("proof-fixture",),
+    tier=1,
+    receipt_id="arb-step-review-fixture",
+    reviewer_id="independent-reviewer",
+)
 
 # ---------------------------------------------------------------------------
 # Shared fixtures
@@ -523,6 +538,10 @@ class TestSecurityFloorAutoDetectFiresWithoutDeclaration(_ObpiCompleteIntegratio
             joined = "\n".join(output)
             self.assertIn("Security-scan canonical slot", joined)
 
+    @patch(
+        "gzkit.commands.obpi_complete.completion_review",
+        new=lambda *_args, **_kwargs: _ACCEPTED_REVIEW,
+    )
     def test_operator_override_allows_auto_detected_brief_when_slot_unfilled(self) -> None:
         with (
             tempfile.TemporaryDirectory() as receipts_dir,
