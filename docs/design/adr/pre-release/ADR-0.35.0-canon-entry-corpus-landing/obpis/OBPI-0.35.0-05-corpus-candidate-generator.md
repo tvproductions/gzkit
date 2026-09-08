@@ -382,9 +382,11 @@ per REQ (its own baseline, its own scope).
 | 05-02 *(round-3 medium)* | fence scanner enters fence state on a 4-space-indented code block | green | killed | `assertion` | `test_four_space_indented_backtick_run_is_an_indented_code_block_not_a_fence` |
 | 05-02 *(round-3 medium)* | fence scanner treats an inline code span as a backtick fence opener | green | killed | `assertion` | `test_inline_code_span_is_not_a_backtick_fence_opener` |
 | 05-04/05 *(round-4 weakest point)* | persisted candidate newline-translated, sliding every lineage offset — the Windows `write_text` defect simulated platform-independently | green | killed | `assertion` | `test_generated_lineage_spans_index_the_PERSISTED_candidate_bytes` |
-| 05-04/05 *(round-5 isolation)* | persisted boundary MOVED AT CONSTANT LENGTH — 58 B → 58 B, so the length assertion structurally cannot fire and only the added identity/offset mapping assertion can catch it | green | killed | `assertion` | `test_generated_lineage_spans_index_the_PERSISTED_candidate_bytes` |
-| 05-02 *(oracle, parser side)* | SHARED-parser defect — fence tracking disabled | green | killed | `assertion` | `test_parser_reproduces_the_contract_derived_identities_and_offsets` |
-| 05-04/05 *(oracle, persisted side)* | SHARED-parser defect — fence tracking disabled | green | killed | `assertion` | `test_persisted_lineage_matches_contract_derived_offsets_not_just_the_parser` |
+| 05-04/05 *(round-5 isolation)* | persisted boundary MOVED AT CONSTANT LENGTH — 95 B → 95 B, so the length assertion structurally cannot fire and only the added identity/offset mapping assertion can catch it | green | killed | `assertion` | `test_generated_lineage_spans_index_the_PERSISTED_candidate_bytes` |
+| 05-02 *(oracle, parser side)* | SHARED-parser defect — fence tracking disabled. Fires on the literals | green | killed | `assertion` | `test_parser_reproduces_the_contract_derived_identities_and_offsets` |
+| 05-04/05 *(oracle, persisted side)* | SHARED-parser defect — fence tracking disabled. **Kills at `test_content_compose.py:541` (the exit-code assertion), NOT the literals at :552** — `load_declaration` refuses the undeclared `fake` section first. Retained as a real kill, but it does NOT evidence the persisted oracle's incremental strength | green | killed | `assertion` | `test_persisted_lineage_matches_contract_derived_offsets_not_just_the_parser` |
+| 05-02 *(oracle literals, parser side)* | SHARED-parser defect — byte offsets computed as CODEPOINTS; roster unchanged, so only the contract literals can catch it. Fires on the literals: `{'a': 25, 'b': 7} != {'a': 26, 'b': 7}` | green | killed | `assertion` | `test_parser_reproduces_the_contract_derived_identities_and_offsets` |
+| 05-04 *(oracle literals, persisted side)* | PERSISTED lineage diverges from the validated in-memory lineage — every span shifted +1, so roster is unchanged, spans stay CONTIGUOUS and widths constant; declaration validation and persistence both succeed. Fires at `:552` on the literals: `{'a': [1, 27], 'b': [27, 34]} != {'a': [0, 26], 'b': [26, 33]}`. Authored to round 6's recommendation | green | killed | `assertion` | `test_persisted_lineage_matches_contract_derived_offsets_not_just_the_parser` |
 
 Observed transcript (`baseline_green` is the unmutated scoped run; `failing` is the test
 the mutation broke):
@@ -406,8 +408,10 @@ REQ-0.35.0-05-04/05 (round-4 weakest point)  baseline_green=True  outcome=killed
 REQ-0.35.0-05-04/05 (round-5 isolation)  baseline_green=True  outcome=killed       failure_class=assertion imports=True  failing=['test_generated_lineage_spans_index_the_PERSISTED_candidate_bytes']
 REQ-0.35.0-05-02 (oracle, parser side)  baseline_green=True  outcome=killed       failure_class=assertion imports=True  failing=['test_measured_spans_match_the_contract_derived_widths', 'test_parser_reproduces_the_contract_derived_identities_and_offsets']
 REQ-0.35.0-05-04/05 (oracle, persisted side)  baseline_green=True  outcome=killed       failure_class=assertion imports=True  failing=['test_persisted_lineage_matches_contract_derived_offsets_not_just_the_parser']
+REQ-0.35.0-05-02 (oracle literals, parser side)  baseline_green=True  outcome=killed       failure_class=assertion imports=True  failing=['test_measured_spans_match_the_contract_derived_widths', 'test_parser_reproduces_the_contract_derived_identities_and_offsets']
+REQ-0.35.0-05-04 (oracle literals, persisted side)  baseline_green=True  outcome=killed       failure_class=assertion imports=True  failing=['test_persisted_lineage_matches_contract_derived_offsets_not_just_the_parser']
 
-CONCLUSIVE: 16/16 assertion-class kills; all baselines green=True
+CONCLUSIVE: 18/18 assertion-class kills; all baselines green=True
 ```
 
 **Which assertion killed a mutation is OBSERVED, never inferred** (operator ruling
@@ -418,8 +422,10 @@ failure read:
 - Row 14 (constant-length boundary move) fails at **`test_content_compose.py:478`**, the
   added identity/offset mapping assertion, with its own message:
   `AssertionError: {'owned-section': (0, 95)} != {'owned-section': (0, 46), 'unowned-section': (46, 95)}`.
-  The fixture is 58 B → 58 B under the mutation, so the length assertion structurally
-  cannot fire; the mapping assertion is what caught it. Its incremental strength is
+  The fixture is **95 B → 95 B** under the mutation, so the length assertion structurally
+  cannot fire; the mapping assertion is what caught it. (An earlier revision wrote 58 B
+  here — that measured a hand-typed snippet, not `_GEN_PRIOR_TEXT`. Round 6 caught it;
+  the constant-length property holds, the number did not.) Its incremental strength is
   therefore demonstrated, not assumed.
 - Row 13 (LF→CRLF) fails at **`test_content_compose.py:446`**, the owned-body slice
   assertion — `AssertionError: b'Owned body from the corpus.' not found in
@@ -669,17 +675,37 @@ section identities and exact half-open byte offsets as hand-derived literals (se
 lengths spelled out in the fixture: `# A\n`=4, `café\n`=6, ` ```\n `=4, `## fake\n`=8
 FENCED, ` ```\n `=4, `## B\n`=5, `x\n`=2 ⇒ `a`=[0,26), `b`=[26,33), total 33).
 
-Measured with a SHARED-parser defect injected (fence tracking disabled), which moves both
-sides of any agreement check together:
+**The first version of this demonstration was an ARTEFACT, and round 6 caught it.** It ran
+the fence-disabling defect against `_GEN_PRIOR_TEXT` and reported the agreement tests as
+"blind". That fixture carries **no fence and no multibyte character** (95 B, verified), so
+the defect could not act on it at all — the tests survived because nothing touched them,
+not because agreement checks are inherently blind. Re-measured on the ORACLE fixture, which
+does carry both triggers:
 
-| Test | Kind | Under the shared-parser defect |
+```text
+agreement check (parser vs parser): AGREE -> PASSES (blind)
+  both walks see roster: ['a', 'b', 'fake']
+contract oracle (vs literals)   : MISMATCH -> FAILS (catches it)
+  literals expect roster: ['a', 'b']
+```
+
+Two walks of the same defective parser agree on a roster that is WRONG; the contract
+literals do not. That is the property, demonstrated where the defect actually bites.
+
+**Which assertion fires, per oracle** (observed, never inferred):
+
+| Injected defect | Parser oracle | Persisted oracle |
 |---|---|---|
-| `test_ordinary_generation_is_still_accepted` | parser vs lineage | **PASSES — blind** |
-| `test_generated_lineage_spans_index_the_PERSISTED_candidate_bytes` | parser vs lineage | **PASSES — blind** |
-| `test_parser_reproduces_the_contract_derived_identities_and_offsets` | contract oracle | **FAILS — catches it** |
-| `test_persisted_lineage_matches_contract_derived_offsets_not_just_the_parser` | contract oracle | **FAILS — catches it** |
+| fence tracking disabled | FAILS **on literals** | fails at `:541` (exit code) — declaration roster refusal pre-empts |
+| byte offsets → codepoints | FAILS **on literals** `{'a': 25} != {'a': 26}` | fails at `:541` (exit code) — production drift guard pre-empts |
+| persisted lineage shifted +1 (contiguous, constant width) | n/a | FAILS **on literals** at `:552` |
 
-Control rows 15-16 pin this. The claim is refuted by this OBPI's own evidence, not merely
+The persisted oracle's literals are pre-empted by production's own guards under every
+parser defect tried — which is a strength of those guards and, until row 18, a gap in this
+evidence. Row 18 supplies the defect class no in-memory guard can pre-empt by construction:
+the persisted artifact diverging from the validated in-memory lineage.
+
+Control rows 15-18 pin this. The claim is refuted by this OBPI's own evidence, not merely
 retracted in prose.
 
 **Disposition of the remaining limitations — environment, not defect, and each justified
@@ -698,6 +724,53 @@ under the governing skill:**
 - **Disk-fixture tests error in the sandbox** (`No usable temporary directory found`).
   Environment limitation; the skill instructs the adversary to *"report it as a coverage
   limit, never as a defect."* Discharged by execution in writable CI — § Gate 2 below.
+
+**Round 6 — `CORROBORATED-WITH-CAVEATS | not-refuted`** (receipt
+`arb-step-codexadversary-da4ad857527848f09d88932990096780`, `exit_status: 0`), tier 1,
+scoped `--scope branch --base 04f18f0e` against revision `3738d606`. Dispatched to verify
+closure of round 5's two EVIDENCE findings and to adversarially assess the
+contract-derived oracle.
+
+- **Finding A (dangling Windows citation) — CLOSED.** *"Gate 2 now identifies concrete
+  Windows executions, including revision 53b6b0f6, run 34177044358, job 101908408526,
+  Windows Server 2025, the job window, and named checks. The generic windows-latest wording
+  survives only as explicitly rejected history."*
+- **Finding B (row 13 did not isolate) — CLOSED.** It confirmed by reading that for the
+  row-14 mutation *"the owned-body slice, contiguity, and final-length assertions pass;
+  line 478 is the first failing assertion"*, and that row 13 instead fails at line 446 —
+  *"so the correction to round 5 is right."*
+- It independently answered the oracle questions: the literals are **arithmetically
+  correct** (`4+6+4+8+4+5+2` ⇒ `a=[0,26)`, `b=[26,33)`, total 33); the oracle is genuinely
+  independent (*"Fixture setup uses production measurement for the ownership floor, but
+  does not derive the expected mapping from it"*); no false-positive risk on this fixed
+  fixture; and *"The withdrawn second-parser claim is correctly withdrawn."* It also
+  confirmed the Step-4a/4b sweep division *"is justified; it does not excuse misattributing
+  a mutation kill."*
+
+**It found one new `[medium]` and one factual error, both in THIS OBPI's evidence:**
+
+1. `[medium]` **Row 16's kill was misattributed.** The table credited the persisted contract
+   oracle; the fence-disabled defect actually fails at `:541`, because `load_declaration`
+   refuses the undeclared `fake` section before generation or persistence. *"Thus the
+   reported FAIL is credible, but its attribution does not establish the incremental
+   persisted-oracle strength… This is missing proof, not a demonstrated implementation
+   defect."* Correctly classified as MISSING PROOF, not a defect. Closed by recording row
+   16's actual first failing assertion and by adding row 18 to its recommendation — a
+   same-roster, contiguous, constant-width shift that permits declaration validation and
+   persistence and fires at `:552` on the literals.
+2. **Row 14's fixture is 95 B, not the 58 B recorded.** The 58 B figure measured a
+   hand-typed snippet rather than `_GEN_PRIOR_TEXT`. The constant-length property holds
+   (95 → 95, which round 6 verified); the number was wrong. Corrected above.
+3. It further observed that the original blindness demonstration proved less than claimed —
+   *"The two older agreement fixtures contain no fences, explaining their predicted survival
+   without demonstrating two incorrect parses agreeing."* Verified: that fixture carries no
+   fence and no multibyte character, so the defect could not act on it. The demonstration is
+   re-measured on the oracle fixture above, where two walks of the defective parser agree on
+   the wrong roster `['a','b','fake']` while the literals expect `['a','b']`.
+
+**Round 6 is therefore NOT recorded as clean either.** Its `[medium]` and its factual
+correction were repaired after it reviewed, so no independent round has yet seen rows 17-18,
+the corrected attribution table, or the re-measured demonstration. Round 7 exists for that.
 
 ### Value Narrative
 
