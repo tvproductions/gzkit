@@ -310,6 +310,43 @@ Scoped suite (`uv run -m unittest tests.content.test_composer tests.content.test
 tests.commands.test_content_compose`): **53 tests, OK**. Full suite: 9952 tests, receipt
 `arb-step-unittest-5a440760fc5542ab9d08a48c18d4de08` (`exit_status: 0`).
 
+#### Native Windows execution — observed, not asserted
+
+Round 1 finding 3 (the CLI persisting the candidate through `Path.write_text`, whose
+`newline=None` performs LF→CRLF translation on Windows and would slide every lineage
+offset) left a residual: *"native Windows persistence was not executed here."* A prior
+revision discharged it with *"the repository runs `windows-latest` in CI"* — which is a
+**presence check**, answering *"is a Windows job armed"* and never *"did it run against
+this revision"*. Round 5 then caught this section citing a run it did not contain. Both are
+closed by the runs below, which were obtained and inspected rather than cited.
+
+`.github/workflows/ci.yml` is a **Denied Path** for this OBPI and operator canon forbids
+feature branches, so the only native-Windows surface available is CI on push to `main`.
+The implementation was therefore pushed ahead of Gate 5 deliberately; the brief stays
+`Active`, no completion receipt exists, and Stage 5 is not entered.
+
+| Revision | Run | Windows job | Result |
+|---|---|---|---|
+| `edb52f10` | `34173295241` | `101897663925` | success |
+| `c4055edf` (round-4 reviewed; last production change) | `34175266902` | — | success |
+| `04f18f0e` (round-5 reviewed) | `34175949868` | `101905245705` | success |
+| **`53b6b0f6`** (contract-derived oracle) | **`34177044358`** | **`101908408526`** | **success** |
+
+Job `101908408526`, `2026-09-08T01:33:25Z → 01:46:17Z`:
+
+- Runner OS read from the job log: **`Microsoft Windows Server 2025`** — a native runner,
+  not a claim about workflow configuration.
+- Step 7 `uv run gz check` — the full gate — passed, with **60 named checks** green,
+  including `Test` (the whole unittest suite, so every test in this OBPI's scope executed
+  natively), `Behave`, `Format`, `Line endings`, `Invariant coherence`,
+  `Rendition floor coherence`, `RED parity` and `Surface fidelity`.
+
+This discharges the tier-1 adversary's own recorded next step — *"Run the focused
+disk-fixture tests, including the persisted-byte test on Windows, in writable CI"* — and
+the sandbox `No usable temporary directory found` coverage limit, which is an environment
+limitation of the read-only reviewer rather than a defect. The persisted-byte and
+contract-oracle tests both ran under that suite on Windows.
+
 #### Falsifiability — per-REQ behavioural negative controls
 
 The `gz arb red` witness returned `failure_class: error` for all nine BEHAVIOR REQs: the
