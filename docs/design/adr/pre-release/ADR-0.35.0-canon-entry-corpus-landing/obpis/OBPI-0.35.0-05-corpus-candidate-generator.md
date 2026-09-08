@@ -675,37 +675,41 @@ section identities and exact half-open byte offsets as hand-derived literals (se
 lengths spelled out in the fixture: `# A\n`=4, `café\n`=6, ` ```\n `=4, `## fake\n`=8
 FENCED, ` ```\n `=4, `## B\n`=5, `x\n`=2 ⇒ `a`=[0,26), `b`=[26,33), total 33).
 
-**The first version of this demonstration was an ARTEFACT, and round 6 caught it.** It ran
-the fence-disabling defect against `_GEN_PRIOR_TEXT` and reported the agreement tests as
-"blind". That fixture carries **no fence and no multibyte character** (95 B, verified), so
-the defect could not act on it at all — the tests survived because nothing touched them,
-not because agreement checks are inherently blind. Re-measured on the ORACLE fixture, which
-does carry both triggers:
+**The blindness claim is WITHDRAWN — it was overstated twice, and neither correction
+rescued it.** Round 6 showed the first version was an ARTEFACT: it ran the fence-disabling
+defect against `_GEN_PRIOR_TEXT`, which carries no fence and no multibyte character (95 B,
+verified), so the agreement tests survived because nothing touched them. Round 7 then
+showed the *re-measurement* was still overstated: comparing two walks of the same
+deterministic parser establishes only that a deterministic function is deterministic. It
+says nothing about `_refuse_generated_lineage_drift`, which compares **two different
+computations** — a lineage accumulated from emitted byte-chunk lengths
+(`composer.py:449-479`) against a parse of the resulting candidate.
 
-```text
-agreement check (parser vs parser): AGREE -> PASSES (blind)
-  both walks see roster: ['a', 'b', 'fake']
-contract oracle (vs literals)   : MISMATCH -> FAILS (catches it)
-  literals expect roster: ['a', 'b']
-```
+**Measured, and it settles the question in production's favour:** under the codepoint
+defect the two parser walks agree, and the real generator REFUSES anyway —
+`moved spans={'b': {'lineage': (25, 32), 'actual': (25, 31)}}`. The production agreement
+check is **not** blind to parser defects, precisely because its two sides are not the same
+computation. Round 7's own probe reproduced this.
 
-Two walks of the same defective parser agree on a roster that is WRONG; the contract
-literals do not. That is the property, demonstrated where the defect actually bites.
+So the contract oracle's value is NOT "it catches what the agreement check misses" for
+parser defects — production already catches those. Its two demonstrated values are
+narrower and worth stating exactly:
 
-**Which assertion fires, per oracle** (observed, never inferred):
+1. **It pins ABSOLUTE correctness.** An agreement check asserts that two things match; it
+   never asserts they are RIGHT. Rows 15 and 17 fire on the literals — row 17's identity
+   /offset assertion at `test_ownership.py:367` reads
+   `{'a': (0, 25), 'b': (25, 32)} != {'a': (0, 26), 'b': (26, 33)}`, and its width
+   assertion at `:373` reads `{'a': 25, 'b': 7} != {'a': 26, 'b': 7}`. (An earlier revision
+   quoted the `:373` width message while naming the `:367` test — round 7 caught that
+   mis-pairing; both messages are now quoted against their own assertions.)
+2. **It is the only witness for persisted-artifact divergence.** Row 18 mutates
+   serialization AFTER in-memory validation, so roster, contiguity and widths all survive
+   and every in-memory guard passes by construction. Round 7 traced the assertion order and
+   confirmed `:509`, `:541`, `:550` and `:551` pass and **`:552` is the first failing
+   assertion**. That class is genuinely invisible to every agreement check, and it is the
+   one blindness this evidence actually demonstrates.
 
-| Injected defect | Parser oracle | Persisted oracle |
-|---|---|---|
-| fence tracking disabled | FAILS **on literals** | fails at `:541` (exit code) — declaration roster refusal pre-empts |
-| byte offsets → codepoints | FAILS **on literals** `{'a': 25} != {'a': 26}` | fails at `:541` (exit code) — production drift guard pre-empts |
-| persisted lineage shifted +1 (contiguous, constant width) | n/a | FAILS **on literals** at `:552` |
-
-The persisted oracle's literals are pre-empted by production's own guards under every
-parser defect tried — which is a strength of those guards and, until row 18, a gap in this
-evidence. Row 18 supplies the defect class no in-memory guard can pre-empt by construction:
-the persisted artifact diverging from the validated in-memory lineage.
-
-Control rows 15-18 pin this. The claim is refuted by this OBPI's own evidence, not merely
+Control rows 15-18 pin this, with the scope above and no wider claim. The claim is refuted by this OBPI's own evidence, not merely
 retracted in prose.
 
 **Disposition of the remaining limitations — environment, not defect, and each justified
@@ -771,6 +775,41 @@ contract-derived oracle.
 **Round 6 is therefore NOT recorded as clean either.** Its `[medium]` and its factual
 correction were repaired after it reviewed, so no independent round has yet seen rows 17-18,
 the corrected attribution table, or the re-measured demonstration. Round 7 exists for that.
+
+**Round 7 — `CORROBORATED-WITH-CAVEATS | not-refuted`** (receipt
+`arb-step-codexadversary-ad3c9965e26243a0a1f8e232dab5fa1c`, `exit_status: 0`), tier 1,
+scoped `--scope branch --base 3738d606` against revision `fc3b51b8`.
+
+- **Item 1 (row 16 misattribution) — CLOSED.** It traced the assertion order and confirmed
+  row 18 satisfies the shape it had itself recommended: *"Row 18 changes serialized lineage
+  after in-memory validation: roster unchanged, adjacent spans contiguous, summed widths 33
+  … assertions :509, :541, :550 and :551 pass; :552 is the first failing assertion."*
+- **Item 2 (95 B vs 58 B) — CLOSED.** *"Measured `_GEN_PRIOR_TEXT` and generated candidate
+  are both 95 B… The remaining '58 B' mentions explicitly describe the withdrawn error, not
+  current measurements."*
+- **Item 3 (blindness demonstration) — NOT CLOSED, and now WITHDRAWN rather than repaired
+  a third time.** *"Two defective walks do agree incorrectly, but that weaker comparison
+  does not establish that chunk-accumulated lineage agrees with a parser re-walk."* Its
+  probe settled it: *"two parser walks agreed, but the actual generator refused b's claimed
+  (25,32) versus reparsed (25,31)."* The production agreement check is **not** blind to
+  parser defects. The claim is withdrawn; § Falsifiability now states the oracle's two
+  demonstrated values instead, neither of which needs it.
+- It also caught a third mis-pairing: *"row 17 quotes the width-test failure while naming
+  the identity/offset test."* Verified and corrected — `:367` and `:373` now each carry
+  their own message.
+- *"No implementation DEFECT was demonstrated within the unchanged boundary."*
+
+**The repeating root is in this agent's evidence discipline, and is named here rather than
+patched a fourth time.** Rounds 5, 6 and 7 each found the same class: a claim of the form
+*"defect X was caught by mechanism Y"* written without observing Y — row 13's killer
+(round 5), row 16's killer and the 58 B figure and the artefact demonstration (round 6),
+row 17's quoted message and the parser-self-agreement substitution (round 7). None was an
+implementation defect; every one was an unobserved mechanism attribution in the prose. The
+sweep's own `failing=[…]` list and `failure_class` are observed output and were never
+wrong — the gap was between what the tool measured and what the prose asserted about it.
+**Standing discipline for this brief: any sentence naming the mechanism that produced an
+observed result must quote the captured line number and assertion message, or must not name
+a mechanism at all.**
 
 ### Value Narrative
 
