@@ -19,15 +19,69 @@ class ByteEvidence(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    invariant_bytes: int = Field(..., description="Bytes of all invariant-tier corpus entries")
+    invariant_bytes: int = Field(
+        ...,
+        description=(
+            "POPULATION: summed text bytes of every effective invariant-tier corpus "
+            "entry. Never a claim of unique rendered-byte coverage -- two entries whose "
+            "texts overlap in the rendition are both counted in full here (brief "
+            "§ Generation and Accounting Contract)."
+        ),
+    )
     compressible_bytes_before: int = Field(
-        ..., description="Bytes of all compressible-tier corpus entries (pre-compression)"
+        ...,
+        description=(
+            "POPULATION: summed text bytes of every effective compressible-tier corpus "
+            "entry, pre-compression. Same overlap caveat as invariant_bytes."
+        ),
     )
     compressible_bytes_after: int = Field(
         ..., description="Compressible bytes in the candidate (post-compression)"
     )
+    emitted_entry_bytes: int | None = Field(
+        None,
+        description=(
+            "RENDERED: bytes of corpus entry text the generator actually emitted into "
+            "owned sections, measured during assembly. `None` on the explicit-candidate "
+            "path, which assembles nothing and therefore claims no rendered partition."
+        ),
+    )
+    generated_structural_bytes: int | None = Field(
+        None,
+        description=(
+            "RENDERED: bytes of the headings and separators the generator itself wrote, "
+            "measured during assembly. `None` on the explicit-candidate path."
+        ),
+    )
+    carried_forward_bytes: int | None = Field(
+        None,
+        description=(
+            "RENDERED: bytes copied byte-verbatim out of unowned sections of the prior "
+            "rendition, measured during assembly. `None` on the explicit-candidate path."
+        ),
+    )
     total_bytes: int = Field(..., description="Total bytes in the candidate rendition")
     setpoint: str = Field(..., description="Compression setpoint tier: lite | medium | heavy")
+
+    @property
+    def rendered_bytes_total(self) -> int | None:
+        """Sum of the three measured rendered contributions; ``None`` when unmeasured.
+
+        On the generated path this equals ``total_bytes`` by construction --
+        the three contributions are the lengths of disjoint byte ranges the
+        generator wrote. It is deliberately NOT an identity involving
+        ``invariant_bytes`` or ``compressible_bytes_before``: those are
+        population statistics over corpus entry text and may exceed the
+        candidate when entry texts overlap.
+        """
+        parts = (
+            self.emitted_entry_bytes,
+            self.generated_structural_bytes,
+            self.carried_forward_bytes,
+        )
+        if any(part is None for part in parts):
+            return None
+        return sum(part for part in parts if part is not None)
 
 
 class CandidateRendition(BaseModel):

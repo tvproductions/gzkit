@@ -408,6 +408,21 @@ class TestBoundariesAgainstContractDerivedExpectations(unittest.TestCase):
         self.assertNotEqual(broken_ids, self.EXPECTED_IDS)
         self.assertIn("fake", broken_ids)
 
+        # F10 (round-15 adversarial review): everything above is test-local --
+        # it derives `broken_ids` from `self.SURFACE` and compares it against
+        # `self.EXPECTED_IDS`, both class constants, without calling anything
+        # from `gzkit.content`. Under the discriminator ("if the production
+        # code's behavior changed but its text did not, would this test
+        # fail?") the answer was "no, under every possible change" -- it
+        # exercised zero production code. The point this test is trying to
+        # make is that the PRODUCTION parser is not fence-blind, so assert
+        # that directly: the production roster must differ from the
+        # fence-blind roster this test builds by hand, and must exclude the
+        # fenced "fake" heading the fence-blind roster wrongly includes.
+        production_ids = [b.section_id for b in iter_section_boundaries(self.SURFACE)]
+        self.assertNotEqual(production_ids, broken_ids)
+        self.assertNotIn("fake", production_ids)
+
 
 class TestFenceTracksOpeningCharacterAndLength(unittest.TestCase):
     def test_ordinary_three_backtick_fence_still_yields_the_control_boundaries(self) -> None:

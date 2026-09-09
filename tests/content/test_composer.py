@@ -237,6 +237,28 @@ class TestByteEvidenceAccounting(unittest.TestCase):
             result.byte_evidence.compressible_bytes_before,
         )
 
+    @covers("REQ-0.35.0-05-06")
+    def test_explicit_path_claims_no_rendered_partition(self) -> None:
+        """`compose()` assembles nothing, so it reports no rendered byte partition.
+
+        Brief § Generation and Accounting Contract keeps entry-text totals as
+        "separately labeled population statistics, never a claim of unique
+        rendered-byte coverage." The explicit path receives finished text from
+        the caller and never places a byte itself, so it has nothing to measure
+        during assembly -- and the honest report is the absence of the rendered
+        figures, not a remainder standing in for them.
+        """
+        candidate_text = f"{_INVARIANT_TEXT}\n{_COMPRESSIBLE_TEXT}\nsome extra freehand prose too"
+        result = compose(self._root, "AGENTS.md", "root", candidate_text)
+        ev = result.byte_evidence
+
+        self.assertIsNone(ev.emitted_entry_bytes)
+        self.assertIsNone(ev.generated_structural_bytes)
+        self.assertIsNone(ev.carried_forward_bytes)
+        # The population figures are still reported, and still population-shaped.
+        self.assertEqual(ev.invariant_bytes, len(_INVARIANT_TEXT.encode("utf-8")))
+        self.assertEqual(ev.total_bytes, len(candidate_text.encode("utf-8")))
+
     def test_retired_compressible_entry_contributes_to_neither_before_nor_after(self) -> None:
         """A retired compressible entry counts toward neither before nor after (BI-01)."""
         retired_text = "This wording was retired and must never be counted again."
@@ -321,6 +343,61 @@ class TestByteEvidenceAccounting(unittest.TestCase):
         message = str(ctx.exception)
         self.assertIn("compressible_bytes_after", message)
         self.assertIn("compressible_bytes_before", message)
+
+    @covers("REQ-0.35.0-05-06")
+    def test_overlapping_invariant_and_compressible_text_is_accepted(self) -> None:
+        """An explicit candidate whose tier texts overlap is ACCEPTED, not refused.
+
+        ADV-OVERLAPPING-BYTE-ACCOUNTING's second counterexample (2026-09-09,
+        receipt `arb-step-codexadversary-a4e87abb4af74cb0a38de4106239a684`). The
+        invariant entry "Always preserve words." (22 B) contains the compressible
+        entry "preserve words." (15 B), so presence attribution finds both in a
+        22-byte candidate and the population figures sum to 37 -- against a
+        candidate of 22. Nothing is wrong: the shorter text is counted once on
+        its own and once inside the longer one. A remainder formula read the
+        15-byte excess as a negative structural count and refused this valid
+        candidate; the two measurements are simply not the same measurement.
+        """
+        invariant_text = "Always preserve words."  # 22 bytes
+        compressible_text = "preserve words."  # 15 bytes, a suffix of the above
+        corpus = Corpus(
+            entries=(
+                CorpusEntry(
+                    id="e-invariant",
+                    surface="AGENTS.md",
+                    section="prime-directive",
+                    tier="invariant",
+                    classification="Mechanical",
+                    text=invariant_text,
+                    origin="test",
+                    ts="2026-06-14T00:00:00Z",
+                ),
+                CorpusEntry(
+                    id="e-compressible",
+                    surface="AGENTS.md",
+                    section="behavior-rules",
+                    tier="compressible",
+                    classification="Ambiguous",
+                    text=compressible_text,
+                    origin="test",
+                    ts="2026-06-14T00:00:01Z",
+                ),
+            )
+        )
+
+        evidence = _byte_evidence(
+            corpus=corpus,
+            candidate_text=invariant_text,
+            setpoint="lite",
+        )
+
+        self.assertEqual(evidence.invariant_bytes, 22)
+        self.assertEqual(evidence.compressible_bytes_after, 15)
+        self.assertEqual(evidence.total_bytes, 22)
+        self.assertGreater(
+            evidence.invariant_bytes + evidence.compressible_bytes_after,
+            evidence.total_bytes,
+        )
 
     def test_emission_attribution_counts_only_attributed_entries(self) -> None:
         """Passing `attributed_compressible` counts exactly those entries, ignoring presence."""
@@ -505,11 +582,18 @@ class TestUnownedSectionByteVerbatim(_GenerateCandidateFixtureMixin, unittest.Te
 
         result = generate_candidate(self._root, _GEN_SURFACE, _GEN_CONSUMER)
 
-        prior_bytes = rendition_path(self._root, _GEN_SURFACE, _GEN_CONSUMER).read_bytes()
-        boundary = next(
-            b for b in iter_section_boundaries(_GEN_PRIOR_TEXT) if b.section_id == "unowned-section"
-        )
-        expected = prior_bytes[boundary.start : boundary.end]
+        # F13 (round-15 adversarial review): the former `expected` here was
+        # `prior_bytes[boundary.start : boundary.end]` with `boundary` located
+        # by `iter_section_boundaries` -- literally the same expression
+        # production evaluates at `composer.py`'s `chunk = prior_bytes[boundary
+        # .start : boundary.end]`, located by the SAME parser. That proved an
+        # expression equals itself. `expected` is now a contract literal: the
+        # known carried-forward text of `unowned-section` in `_GEN_PRIOR_TEXT`.
+        # Segment byte lengths, spelled out:
+        # "## Unowned Section\n" = 19B, "carried forward text verbatim\n" = 30B
+        # -> unowned-section chunk = 19 + 30 = 49B.
+        expected = b"## Unowned Section\ncarried forward text verbatim\n"
+        self.assertEqual(len(expected), 49, "the oracle's literal must describe this fixture")
 
         span = result.lineage.sections["unowned-section"].byte_span
         actual = result.rendition.candidate_text.encode("utf-8")[span[0] : span[1]]
@@ -617,9 +701,22 @@ class TestLineageCoversEverySectionId(_GenerateCandidateFixtureMixin, unittest.T
         self.assertEqual(owned.entry_ids, ("e-owned",))
         self.assertFalse(unowned.owned)
         self.assertEqual(unowned.entry_ids, ())
-        for lineage in result.lineage.sections.values():
-            self.assertIsInstance(lineage.byte_span, tuple)
-            self.assertEqual(len(lineage.byte_span), 2)
+
+        # Hand-derived byte_span oracle (REQ-0.35.0-05-04 Q2 finding: the
+        # REQ's third element, byte_span, went unasserted). Arithmetic
+        # derived BY HAND from the fixture literals, never by calling
+        # production or `iter_section_boundaries`:
+        #   owned heading  "## Owned Section\n"            = 17 bytes
+        #   owned body     "\n" + "Owned body." + "\n"      = 1 + 11 + 1 = 13 bytes
+        #   owned chunk total                                = 17 + 13 = 30 bytes
+        # The unowned section carries forward byte-verbatim from the prior
+        # rendition; its own chunk is independently pinned elsewhere in this
+        # file (`TestUnownedSectionByteVerbatim`) as the 49-byte literal
+        # b"## Unowned Section\ncarried forward text verbatim\n".
+        #   owned span   = (0, 30)
+        #   unowned span = (30, 30 + 49) = (30, 79)
+        self.assertEqual(owned.byte_span, (0, 30))
+        self.assertEqual(unowned.byte_span, (30, 79))
 
 
 class TestPerConsumerOffsetsAndRouteRefusal(_GenerateCandidateFixtureMixin, unittest.TestCase):
@@ -873,16 +970,52 @@ class TestGeneratedLineageSpansMatchActualBoundaries(
 
         result = generate_candidate(self._root, _GEN_SURFACE, _GEN_CONSUMER)
 
-        candidate_bytes = result.rendition.candidate_text.encode("utf-8")
-        for boundary in iter_section_boundaries(result.rendition.candidate_text):
-            self.assertEqual(
-                tuple(result.lineage.sections[boundary.section_id].byte_span),
-                (boundary.start, boundary.end),
-                "every lineage span must equal the candidate's actual boundary",
-            )
+        # F11 (round-15 adversarial review): `generate_candidate` cannot
+        # return without passing `_refuse_generated_lineage_drift`
+        # (`composer.py:479`), which builds this exact
+        # `{section_id: (start, end)}` mapping via `iter_section_boundaries`
+        # and raises on any mismatch, and `assert_complete_partition`
+        # (`:482`), which already guarantees the partition's max span end
+        # equals the candidate's byte length. The former per-boundary loop
+        # and `max(...) == len(candidate_bytes)` recomputed exactly what
+        # those two guards already enforce -- neither could fail while they
+        # stand. Replaced with hand-derived literals for this fixture.
+        #
+        # Segment byte lengths, spelled out:
+        # heading "## Owned Section\n" = 17B, blank-line separator "\n" = 1B,
+        # body "Ordinary body text, no heading." = 31B, trailing "\n" = 1B
+        # -> owned chunk = 17 + 1 + 31 + 1 = 50B
+        # unowned chunk (carried forward verbatim) =
+        # "## Unowned Section\ncarried forward text verbatim\n" = 49B
+        # -> total candidate = 50 + 49 = 99B, spans owned-section [0, 50),
+        # unowned-section [50, 99).
+        expected_owned_chunk = b"## Owned Section\n\nOrdinary body text, no heading.\n"
+        expected_unowned_chunk = b"## Unowned Section\ncarried forward text verbatim\n"
+        expected_candidate = expected_owned_chunk + expected_unowned_chunk
+        expected_spans = {
+            "owned-section": (0, len(expected_owned_chunk)),
+            "unowned-section": (
+                len(expected_owned_chunk),
+                len(expected_owned_chunk) + len(expected_unowned_chunk),
+            ),
+        }
         self.assertEqual(
-            max(s.byte_span[1] for s in result.lineage.sections.values()),
-            len(candidate_bytes),
+            (len(expected_owned_chunk), len(expected_candidate)),
+            (50, 99),
+            "the oracle's literals must describe this fixture",
+        )
+
+        candidate_bytes = result.rendition.candidate_text.encode("utf-8")
+        self.assertEqual(
+            candidate_bytes,
+            expected_candidate,
+            "the generated candidate's bytes must match the contract-derived literal",
+        )
+        self.assertEqual(
+            {sid: tuple(s.byte_span) for sid, s in result.lineage.sections.items()},
+            expected_spans,
+            "the lineage spans must match the contract-derived literal, not merely "
+            "the guard's own internal consistency",
         )
 
 
@@ -940,6 +1073,41 @@ class TestGeneratedEmissionAttributionCountsOnlyEmittedEntries(
         self.assertGreater(evidence.compressible_bytes_before, evidence.compressible_bytes_after)
 
 
+class TestGeneratedByteEvidenceReconciles(_GenerateCandidateFixtureMixin, unittest.TestCase):
+    @covers("REQ-0.35.0-05-06")
+    def test_rendered_partition_reconciles_total_for_generated_candidate(self) -> None:
+        """The generated path's RENDERED partition reconciles to the candidate's own size.
+
+        Proved against a REAL generated candidate carrying both an owned
+        (emitted) section and an unowned (carried-forward) section, not merely
+        against the formula in isolation. The population totals
+        (`invariant_bytes`, `compressible_bytes_before`) are deliberately NOT
+        part of this identity -- they sum over corpus entry text and can exceed
+        the candidate when entry texts overlap.
+        """
+        self._seed()
+        append_entry(
+            self._root,
+            _GEN_SURFACE,
+            CorpusEntry(
+                id="e-owned",
+                surface=_GEN_SURFACE,
+                section="owned-section",
+                tier="compressible",
+                classification="Ambiguous",
+                text="Owned body.",
+                origin="test",
+                ts="2026-09-07T00:00:00Z",
+            ),
+        )
+
+        evidence = generate_candidate(
+            self._root, _GEN_SURFACE, _GEN_CONSUMER
+        ).rendition.byte_evidence
+
+        self.assertEqual(evidence.rendered_bytes_total, evidence.total_bytes)
+
+
 class TestEmptyOwnedSectionRetainsHeading(_GenerateCandidateFixtureMixin, unittest.TestCase):
     @covers("REQ-0.35.0-05-01")
     def test_empty_owned_section_retains_its_heading(self) -> None:
@@ -980,12 +1148,23 @@ class TestEmptyOwnedSectionRetainsHeading(_GenerateCandidateFixtureMixin, unitte
 
         result = generate_candidate(self._root, _GEN_SURFACE, _GEN_CONSUMER)
 
-        prior_bytes = _GEN_PRIOR_TEXT.encode("utf-8")
-        boundary = next(
-            b for b in iter_section_boundaries(_GEN_PRIOR_TEXT) if b.section_id == "owned-section"
+        # Hand-derived oracle (REQ-0.35.0-05-01 oracle-independence finding
+        # F15/Q1) -- NOT computed via `iter_section_boundaries`, which is the
+        # same helper `generate_candidate` calls internally (`composer.py`'s
+        # `_assemble_section`) to find this exact heading. Sharing that parser
+        # between test and production means a defect in it is invisible to
+        # this assertion, so the oracle is instead a literal typed by hand
+        # from `_GEN_PRIOR_TEXT`'s own module-level source text:
+        #   "## Owned Section\n"              <- the owned-section heading
+        #   "old body text to be replaced\n"  <- old body (retired below)
+        #   "## Unowned Section\n"
+        #   "carried forward text verbatim\n"
+        # The heading is the first line. Byte count, counted by hand:
+        # "##"(2) + " "(1) + "Owned"(5) + " "(1) + "Section"(7) + "\n"(1) = 17.
+        expected_heading = b"## Owned Section\n"
+        self.assertEqual(
+            len(expected_heading), 17, "the oracle's literal must describe this fixture"
         )
-        newline_index = prior_bytes.find(b"\n", boundary.start, boundary.end)
-        expected_heading = prior_bytes[boundary.start : newline_index + 1]
 
         # The "retain" claim is that the heading TEXT is present in the
         # candidate -- asserting only that the section exists in the lineage
@@ -1306,3 +1485,193 @@ class TestGeneratedOutputSectionRosterMustMatchLineage(
 
         message = str(ctx.exception)
         self.assertIn("unexpected-new-section", message)
+
+
+# -- Rendered-byte accounting (adversarial round 2026-09-09) ------------------
+#
+# ADV-OVERLAPPING-BYTE-ACCOUNTING refuted the remainder formula
+# `total_bytes - invariant_bytes - compressible_bytes_after`: `invariant_bytes`
+# is a POPULATION statistic (the summed length of every effective invariant
+# entry) while `total_bytes` is a RENDERED measurement. Two distinct live
+# invariant entries whose texts OVERLAP in the rendered bytes -- one a suffix of
+# the other -- sum to more than the span that carries both, so the remainder
+# went negative and a valid candidate was refused. Brief § Generation and
+# Accounting Contract already ruled this out: "entry-text totals remain
+# separately labeled population statistics, never a claim of unique
+# rendered-byte coverage."
+#
+# The fixtures below are CONTRACT-DERIVED: every expected figure is hand-counted
+# from the fixture text in the comment beside it, never re-executed from
+# production's own arithmetic.
+
+# "Always preserve every single word verbatim." -- 43 bytes.
+_OVERLAP_INVARIANT_LONG = "Always preserve every single word verbatim."
+# "preserve every single word verbatim." -- 43 - len("Always ") == 36 bytes.
+_OVERLAP_INVARIANT_SHORT = "preserve every single word verbatim."
+
+# "## Owned\n"                                    ->  9 bytes  [0, 9)
+# "## Unowned\nAlways preserve every single word verbatim.\n"
+#   -> 11 + 44                                    -> 55 bytes  [9, 64)
+_OVERLAP_PRIOR_TEXT = "## Owned\n## Unowned\nAlways preserve every single word verbatim.\n"
+_OVERLAP_DECL_SECTIONS = {"owned": "corpus-owned", "unowned": "unowned"}
+
+
+class TestOverlappingInvariantsInCarriedForwardAreAccepted(
+    _GenerateCandidateFixtureMixin, unittest.TestCase
+):
+    """Two overlapping live invariant texts in a valid unowned span are ACCEPTED.
+
+    ADV-OVERLAPPING-BYTE-ACCOUNTING (2026-09-09, receipt
+    `arb-step-codexadversary-a4e87abb4af74cb0a38de4106239a684`). Both entries
+    are distinct (so REQ-0.35.0-05-09's duplicate-live fence does not fire) and
+    both appear verbatim in the carried-forward section (so the 0-Kelvin floor
+    passes), yet their POPULATION total is 43 + 36 == 79 bytes against a 64-byte
+    candidate. Nothing is wrong with the candidate: 79 counts the shorter text
+    twice, once on its own and once inside the longer one. Generation must not
+    refuse it.
+    """
+
+    def _seed_overlap(self) -> None:
+        self._seed(
+            prior_text=_OVERLAP_PRIOR_TEXT,
+            sections=dict(_OVERLAP_DECL_SECTIONS),
+        )
+        for entry_id, text in (
+            ("e-inv-long", _OVERLAP_INVARIANT_LONG),
+            ("e-inv-short", _OVERLAP_INVARIANT_SHORT),
+        ):
+            append_entry(
+                self._root,
+                _GEN_SURFACE,
+                CorpusEntry(
+                    id=entry_id,
+                    surface=_GEN_SURFACE,
+                    section="unowned",
+                    tier="invariant",
+                    classification="Mechanical",
+                    text=text,
+                    origin="test",
+                    ts="2026-09-09T00:00:00Z",
+                ),
+            )
+
+    @covers("REQ-0.35.0-05-02")
+    def test_overlapping_invariant_texts_in_an_unowned_section_are_accepted(self) -> None:
+        """Generation succeeds and carries the unowned span forward byte-verbatim."""
+        self._seed_overlap()
+
+        result = generate_candidate(self._root, _GEN_SURFACE, _GEN_CONSUMER)
+
+        # The candidate is the 9-byte owned heading plus the 55-byte unowned
+        # span copied verbatim -- both counted by hand off _OVERLAP_PRIOR_TEXT.
+        self.assertEqual(
+            result.rendition.candidate_text,
+            "## Owned\n## Unowned\nAlways preserve every single word verbatim.\n",
+        )
+
+    @covers("REQ-0.35.0-05-06")
+    def test_population_invariant_total_may_exceed_the_rendered_candidate(self) -> None:
+        """`invariant_bytes` stays a population statistic, above `total_bytes` and unrefused."""
+        self._seed_overlap()
+
+        ev = generate_candidate(self._root, _GEN_SURFACE, _GEN_CONSUMER).rendition.byte_evidence
+
+        self.assertEqual(ev.invariant_bytes, 79)  # 43 + 36, counted twice by overlap
+        self.assertEqual(ev.total_bytes, 64)  # 9 + 55, the rendered candidate
+        self.assertGreater(ev.invariant_bytes, ev.total_bytes)
+
+    @covers("REQ-0.35.0-05-06")
+    def test_rendered_partition_is_measured_not_derived_from_the_population(self) -> None:
+        """The rendered partition reconciles to `total_bytes` despite the 79-byte population."""
+        self._seed_overlap()
+
+        ev = generate_candidate(self._root, _GEN_SURFACE, _GEN_CONSUMER).rendition.byte_evidence
+
+        self.assertEqual(ev.emitted_entry_bytes, 0)  # the owned section has no entries
+        self.assertEqual(ev.generated_structural_bytes, 9)  # "## Owned\n"
+        self.assertEqual(ev.carried_forward_bytes, 55)  # "## Unowned\n" + 44-byte line
+        self.assertEqual(ev.rendered_bytes_total, ev.total_bytes)
+
+
+# "## Owned\n"        ->  9 bytes  [0, 9)
+# "## Unowned\ncarried tail\n" -> 11 + 13 -> 24 bytes  [9, 33)
+_MEASURED_PRIOR_TEXT = "## Owned\n## Unowned\ncarried tail\n"
+
+
+class TestRenderedByteContributionsAreMeasuredDuringAssembly(
+    _GenerateCandidateFixtureMixin, unittest.TestCase
+):
+    """Each rendered contribution equals an independently counted byte length.
+
+    Brief § Generation and Accounting Contract: "Report these structural/carried
+    bytes separately so total output reconciles." The three figures are measured
+    as the generator assembles each section -- emitted entry text, the headings
+    and separators it writes itself, and the unowned bytes it copies -- so no
+    figure is a remainder and none is inferred from a corpus population total.
+    """
+
+    def _seed_measured(self) -> None:
+        self._seed(
+            prior_text=_MEASURED_PRIOR_TEXT,
+            sections=dict(_OVERLAP_DECL_SECTIONS),
+        )
+        for entry_id, text, ts in (
+            ("e-alpha", "alpha", "2026-09-09T00:00:00Z"),  # 5 bytes
+            ("e-beta", "beta", "2026-09-09T00:00:01Z"),  # 4 bytes
+        ):
+            append_entry(
+                self._root,
+                _GEN_SURFACE,
+                CorpusEntry(
+                    id=entry_id,
+                    surface=_GEN_SURFACE,
+                    section="owned",
+                    tier="compressible",
+                    classification="Ambiguous",
+                    text=text,
+                    origin="test",
+                    ts=ts,
+                ),
+            )
+
+    @covers("REQ-0.35.0-05-06")
+    def test_each_rendered_contribution_matches_its_hand_counted_length(self) -> None:
+        """emitted / structural / carried each equal a length counted off the fixture."""
+        self._seed_measured()
+
+        ev = generate_candidate(self._root, _GEN_SURFACE, _GEN_CONSUMER).rendition.byte_evidence
+
+        # Owned chunk = "## Owned\n" + "\n" + "alpha" + "\n\n" + "beta" + "\n"
+        #             =      9      +  1   +   5     +   2    +   4    +  1   = 22
+        # Unowned chunk = "## Unowned\ncarried tail\n"                        = 24
+        self.assertEqual(ev.emitted_entry_bytes, 9)  # 5 + 4, the two entry texts
+        self.assertEqual(ev.generated_structural_bytes, 13)  # 9 heading + 1 + 2 + 1
+        self.assertEqual(ev.carried_forward_bytes, 24)  # the unowned span, verbatim
+        self.assertEqual(ev.total_bytes, 46)  # 22 + 24
+
+    @covers("REQ-0.35.0-05-06")
+    def test_rendered_contributions_reconcile_to_the_candidates_own_size(self) -> None:
+        """The three measured contributions sum to exactly the candidate's byte length."""
+        self._seed_measured()
+
+        result = generate_candidate(self._root, _GEN_SURFACE, _GEN_CONSUMER)
+        ev = result.rendition.byte_evidence
+
+        self.assertEqual(
+            ev.rendered_bytes_total,
+            len(result.rendition.candidate_text.encode("utf-8")),
+        )
+
+    @covers("REQ-0.35.0-05-04")
+    def test_lineage_boundaries_index_the_candidates_own_bytes(self) -> None:
+        """Lineage spans stay the hand-counted candidate offsets, not the prior text's."""
+        self._seed_measured()
+
+        result = generate_candidate(self._root, _GEN_SURFACE, _GEN_CONSUMER)
+        candidate_bytes = result.rendition.candidate_text.encode("utf-8")
+
+        # Owned grew from 9 prior bytes to 22 candidate bytes, so the unowned
+        # span starts at 22 in the CANDIDATE where it started at 9 in the prior.
+        self.assertEqual(result.lineage.sections["owned"].byte_span, (0, 22))
+        self.assertEqual(result.lineage.sections["unowned"].byte_span, (22, 46))
+        self.assertEqual(candidate_bytes[22:46], b"## Unowned\ncarried tail\n")

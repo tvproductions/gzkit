@@ -161,7 +161,15 @@ def save_candidate_lineage(root: Path, lineage: ConsumerLineage) -> Path:
         section_id: section.model_dump(mode="json")
         for section_id, section in lineage.sections.items()
     }
-    path.write_text(json.dumps(document, indent=2) + "\n", encoding="utf-8")
+    # write_bytes, never write_text: write_text opens with newline=None and
+    # newline-translates (LF -> CRLF on Windows), which would make THIS file's
+    # own persisted bytes platform-dependent. REQ-0.35.0-05-08 requires
+    # byte-identical lineage, and OBPI-0.35.0-07 publishes this artifact.
+    # The hazard here is byte-IDENTITY, not offset corruption: `byte_span`
+    # values index the CANDIDATE text, never this file, and the sibling
+    # candidate writer (compose.py, Fix 3 of this OBPI's round-1 adversarial
+    # review) is what guards those offsets.
+    path.write_bytes((json.dumps(document, indent=2) + "\n").encode("utf-8"))
     return path
 
 

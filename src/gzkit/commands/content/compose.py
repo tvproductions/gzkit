@@ -166,9 +166,21 @@ def content_compose_cmd(*, surface: str, consumer: str, candidate: str | None) -
     lines = [f"Candidate: {out_path.as_posix()}"]
     if lineage_out_path is not None:
         lines.append(f"Lineage: {lineage_out_path.as_posix()}")
+    # Two labelled measurements, never one blended line: the corpus tier totals
+    # are POPULATION statistics over entry text (overlapping entry texts are each
+    # counted in full), while the rendered partition is measured during assembly
+    # and sums to total_bytes exactly. Blending them is what let a remainder
+    # formula refuse a valid candidate (ADV-OVERLAPPING-BYTE-ACCOUNTING).
     lines.append(
-        f"Byte evidence: invariant={ev.invariant_bytes}B "
+        f"Byte evidence (population): invariant={ev.invariant_bytes}B "
         f"compressible={ev.compressible_bytes_before}B→{ev.compressible_bytes_after}B "
         f"total={ev.total_bytes}B setpoint={ev.setpoint}"
     )
+    if ev.emitted_entry_bytes is not None:
+        lines.append(
+            f"Rendered bytes (assembled): emitted={ev.emitted_entry_bytes}B "
+            f"structural={ev.generated_structural_bytes}B "
+            f"carried={ev.carried_forward_bytes}B "
+            f"total={ev.total_bytes}B"
+        )
     print("\n".join(lines))

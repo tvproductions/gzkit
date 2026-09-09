@@ -784,6 +784,44 @@ committed lineage — and is a **separate** artifact from
 time): the lineage map is generate-time and per-section, the provenance
 sidecar is commit-time and per-artifact.
 
+#### Byte evidence: two measurements, never one
+
+`compose` prints **two separately labelled** accountings, because they measure
+different things and blending them produces false refusals:
+
+| Line | What it measures | Reconciles to `total_bytes`? |
+|------|------------------|------------------------------|
+| `Byte evidence (population):` | Summed text bytes of the effective corpus entries, by tier. A **population statistic** — two entries whose texts overlap in the rendition are each counted in full, so this can legitimately exceed the candidate's size | **No, and it is not meant to** |
+| `Rendered bytes (assembled):` | The three disjoint byte ranges the generator actually wrote — `emitted` (corpus entry text placed into owned sections), `structural` (the headings and separators the generator itself wrote), `carried` (unowned section bytes copied byte-verbatim from the prior rendition) | **Yes, exactly** |
+
+The rendered line appears on the **generated path only**. The explicit path
+receives finished text from the caller and places no byte itself, so it has
+nothing to measure during assembly and reports no rendered partition rather
+than manufacturing one by subtraction.
+
+Observed against gzkit's own `AGENTS.md` corpus on 2026-09-09 (a dated record,
+not a live figure). `compose` prints the two path lines as absolute paths; they
+are shown here rooted at `<project-root>` so the example reads the same on any
+machine.
+
+```console
+$ uv run gz content compose AGENTS.md --consumer root < /dev/null
+Candidate: <project-root>/.gzkit/renditions/AGENTS.md/root.candidate.md
+Lineage: <project-root>/.gzkit/renditions/AGENTS.md/root.candidate.lineage.json
+Byte evidence (population): invariant=24350B compressible=354B→354B total=31244B setpoint=lite
+Rendered bytes (assembled): emitted=24704B structural=535B carried=6005B total=31244B
+```
+
+> **Why the split is load-bearing.** An earlier revision derived the structural
+> figure as `total_bytes - invariant_bytes - compressible_bytes_after` — a
+> rendered remainder computed from a population total. Two distinct live
+> invariant entries whose texts overlap (one a suffix of the other) sum to more
+> than the span carrying both, so the remainder went negative and the generator
+> refused a perfectly valid candidate. The brief's Generation and Accounting
+> Contract had already ruled it out: entry-text totals "remain separately
+> labeled population statistics, never a claim of unique rendered-byte
+> coverage."
+
 **Both modes are deterministic** — NO LLM call, NO network I/O. On the
 explicit path the drop/combine/rewrite compression judgment is the agent's;
 on the generated path there is no judgment to make, because the tool derives

@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import tempfile
 import unittest
+import unittest.mock
 from pathlib import Path
 
 from pydantic import ValidationError
@@ -80,6 +81,61 @@ class TestSaveCandidateLineageShape(unittest.TestCase):
             },
         }
         self.assertEqual(on_disk, expected)
+
+
+class TestSaveCandidateLineagePersistsExactBytes(unittest.TestCase):
+    """REQ-0.35.0-05-08 (determinism): persisted bytes must be platform-independent.
+
+    ``save_candidate_lineage``'s sibling writer for the same staged artifact
+    pair (``compose.py``'s candidate rendition writer, Fix 3 of this OBPI's
+    round-1 adversarial review) already avoids ``Path.write_text`` because it
+    opens with ``newline=None`` and performs platform-dependent line-ending
+    translation (LF -> CRLF on Windows). This class proves the lineage
+    writer carries the same guarantee: two runs must produce byte-identical
+    lineage regardless of platform, not merely byte-identical on macOS/Linux
+    where the translation happens to be a no-op.
+    """
+
+    def setUp(self) -> None:
+        self._tempdir = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tempdir.cleanup)
+        self._root = Path(self._tempdir.name)
+
+    def test_does_not_route_through_write_text(self) -> None:
+        """save_candidate_lineage must not persist via Path.write_text.
+
+        Patching ``write_text`` to raise proves the writer takes the
+        ``write_bytes`` path instead of merely happening to match on a
+        platform where the two are byte-equivalent.
+        """
+        lineage = ConsumerLineage(
+            surface="AGENTS.md",
+            consumer="root",
+            sections={
+                "prime-directive": SectionLineage(
+                    owned=True, entry_ids=("e-1",), byte_span=(0, 10)
+                ),
+            },
+        )
+
+        def _raise_if_called(*_args: object, **_kwargs: object) -> None:
+            raise AssertionError("write_text must not be used: it newline-translates on Windows")
+
+        with unittest.mock.patch.object(Path, "write_text", _raise_if_called):
+            path = save_candidate_lineage(self._root, lineage)
+
+        expected_document = {
+            "prime-directive": {
+                "owned": True,
+                "entry_ids": ["e-1"],
+                "byte_span": [0, 10],
+            },
+        }
+        expected_bytes = (json.dumps(expected_document, indent=2) + "\n").encode("utf-8")
+
+        persisted = path.read_bytes()
+        self.assertEqual(persisted, expected_bytes)
+        self.assertNotIn(b"\r\n", persisted)
 
 
 class TestLineagePaths(unittest.TestCase):

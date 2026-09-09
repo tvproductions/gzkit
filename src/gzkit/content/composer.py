@@ -21,11 +21,115 @@ from gzkit.content.corpus_store import corpus_path, load_corpus
 from gzkit.content.lineage import ConsumerLineage, SectionLineage
 from gzkit.content.models import Corpus, CorpusEntry
 from gzkit.content.models.corpus import effective_corpus
-from gzkit.content.ownership import declaration_path, iter_section_boundaries, load_declaration
+from gzkit.content.ownership import (
+    SectionBoundary,
+    declaration_path,
+    iter_section_boundaries,
+    load_declaration,
+)
 from gzkit.content.rendition import ByteEvidence, CandidateRendition
 from gzkit.content.rendition_store import load_rendition
 from gzkit.content.tier_policy import assert_invariant_verbatim
 from gzkit.content.vendors import content_type_for_surface, routes_for, temperature_for
+
+
+class RenderedBytes(NamedTuple):
+    """The three contributions to a GENERATED candidate's bytes, measured as it is assembled.
+
+    Rendered accounting answers "which bytes did the generator put here", and it
+    is measured per section during assembly -- never derived by subtracting a
+    corpus population total from the candidate's size. Those are different
+    measurements: ``ByteEvidence.invariant_bytes`` sums every effective
+    invariant entry's text, so two entries whose texts OVERLAP in the rendition
+    (one a suffix of the other) are each counted in full and their sum can
+    legitimately exceed the candidate that carries both. A remainder formula
+    read that excess as a negative structural count and refused a valid
+    candidate (ADV-OVERLAPPING-BYTE-ACCOUNTING, 2026-09-09, receipt
+    `arb-step-codexadversary-a4e87abb4af74cb0a38de4106239a684`).
+
+    The three fields partition the candidate exactly -- their sum IS
+    ``total_bytes`` -- because each is the length of a disjoint byte range the
+    generator wrote:
+
+    * *emitted_entry* -- corpus entry text copied into an owned section's body.
+    * *generated_structural* -- the section headings and the separators the
+      generator writes around and between those entries.
+    * *carried_forward* -- an unowned section's bytes, copied byte-verbatim out
+      of the prior rendition (REQ-0.35.0-05-02).
+    """
+
+    emitted_entry: int
+    generated_structural: int
+    carried_forward: int
+
+    def merge(self, other: RenderedBytes) -> RenderedBytes:
+        """Accumulate another section's contributions.
+
+        Named rather than spelled ``__add__``: ``RenderedBytes`` is a
+        ``NamedTuple``, and overriding ``+`` would give the same operator two
+        meanings on the same object -- field-wise addition here, tuple
+        concatenation everywhere tuple code touches it.
+        """
+        return RenderedBytes(
+            self.emitted_entry + other.emitted_entry,
+            self.generated_structural + other.generated_structural,
+            self.carried_forward + other.carried_forward,
+        )
+
+
+def _emission_attributed_bytes(attributed_compressible: Sequence[CorpusEntry]) -> int:
+    """EMISSION attribution: sum *attributed_compressible*'s byte length, deduped by ``id``.
+
+    The generated path's attribution mode (a later task): sum the byte length
+    of exactly the entries the generator actually emitted, deduplicated by
+    ``id``. This is the brief's mandated form -- accounting reflects what was
+    emitted, never substring subtraction.
+    """
+    seen_ids: set[str] = set()
+    total = 0
+    for entry in attributed_compressible:
+        if entry.id in seen_ids:
+            continue
+        seen_ids.add(entry.id)
+        total += len(entry.text.encode("utf-8"))
+    return total
+
+
+def _presence_attributed_bytes(
+    compressible_entries: Sequence[CorpusEntry], candidate_text: str
+) -> int:
+    """PRESENCE attribution: sum each effective compressible entry found verbatim in the text.
+
+    The explicit-candidate path's attribution mode, used by ``compose()``
+    today: sum the byte length of each effective compressible entry whose
+    ``.text`` occurs verbatim in *candidate_text*, counting each entry at
+    most once. This is the WEAKER of the two attributions: nothing tracks
+    which entries the caller *intended* to include in freehand text, so
+    verbatim textual presence is the only signal available.
+    """
+    return sum(
+        len(e.text.encode("utf-8")) for e in compressible_entries if e.text in candidate_text
+    )
+
+
+def _refuse_compressible_inflation(bytes_after: int, bytes_before: int) -> None:
+    """Fail closed (REQ-0.35.0-05-07) when accounting would report inflated bytes.
+
+    Compression cannot add compressible bytes, and an inflated figure is a
+    witness that cannot fail. The figure is never clamped and never emitted;
+    the caller must fix its attribution instead.
+    """
+    if bytes_after > bytes_before:
+        raise ValueError(
+            f"compressible_bytes_after ({bytes_after}) exceeds "
+            f"compressible_bytes_before ({bytes_before}). Compression "
+            "cannot add compressible bytes, and an inflated figure is a witness that "
+            "cannot fail (ADR-0.35.0 REQ-0.35.0-05-07). Fix the attribution passed to "
+            "_byte_evidence -- attributed_compressible for the generated path, or the "
+            "candidate text itself for the presence-attribution path -- so it names "
+            "only entries that are true members of the corpus's effective compressible "
+            "set; never clamp or emit the inflated number."
+        )
 
 
 def _byte_evidence(
@@ -35,6 +139,7 @@ def _byte_evidence(
     setpoint: str,
     attributed_compressible: Sequence[CorpusEntry] | None = None,
     effective: Corpus | None = None,
+    rendered: RenderedBytes | None = None,
 ) -> ByteEvidence:
     """Compute per-tier byte accounting for a candidate rendition.
 
@@ -46,27 +151,27 @@ def _byte_evidence(
 
     ``compressible_bytes_after`` never uses ``total_bytes - invariant_bytes``
     (the retired formula: a 63x inflation on today's corpus, ADR-0.35.0
-    § Intent). It uses one of two attributions instead:
+    § Intent). It uses one of two attributions instead, each its own helper:
 
-    * **EMISSION attribution** (``attributed_compressible`` supplied -- the
-      generated path, a later task): sum the byte length of exactly those
-      entries, deduplicated by ``id``. This is the brief's mandated form --
-      accounting reflects what the generator actually emitted, never
-      substring subtraction.
-    * **PRESENCE attribution** (``attributed_compressible`` is ``None`` -- the
-      explicit-candidate path, used by ``compose()`` today): sum the byte
-      length of each effective compressible entry whose ``.text`` occurs
-      verbatim in *candidate_text*, counting each entry at most once. This is
-      the WEAKER of the two attributions: nothing tracks which entries the
-      caller *intended* to include in freehand text, so verbatim textual
-      presence is the only signal available.
+    * **EMISSION attribution** (``attributed_compressible`` supplied) --
+      see :func:`_emission_attributed_bytes`.
+    * **PRESENCE attribution** (``attributed_compressible`` is ``None``) --
+      see :func:`_presence_attributed_bytes`.
+
+    Those three figures are POPULATION statistics over corpus entry text. The
+    RENDERED accounting is a separate measurement and arrives already measured:
+    *rendered* carries the emitted-entry, generated-structural and
+    carried-forward byte counts :func:`generate_candidate` accumulated as it
+    assembled each section. It is ``None`` on the explicit-candidate path, which
+    assembles nothing -- there the model reports no rendered partition rather
+    than inventing one by subtraction (brief § Generation and Accounting
+    Contract: entry-text totals "remain separately labeled population
+    statistics, never a claim of unique rendered-byte coverage").
 
     Raises:
         ValueError: when the computed ``compressible_bytes_after`` would
-            exceed ``compressible_bytes_before`` -- compression cannot add
-            compressible bytes, and an inflated figure is a witness that
-            cannot fail (REQ-0.35.0-05-07). The figure is never clamped and
-            never emitted; the caller must fix its attribution instead.
+            exceed ``compressible_bytes_before`` -- see
+            :func:`_refuse_compressible_inflation` (REQ-0.35.0-05-07).
 
     *effective* lets a caller that already folded ``effective_corpus(corpus)``
     (``generate_candidate``, which also needs the fold for its own section
@@ -88,34 +193,19 @@ def _byte_evidence(
     total_bytes = len(candidate_text.encode("utf-8"))
 
     if attributed_compressible is None:
-        compressible_bytes_after = sum(
-            len(e.text.encode("utf-8")) for e in compressible_entries if e.text in candidate_text
-        )
+        compressible_bytes_after = _presence_attributed_bytes(compressible_entries, candidate_text)
     else:
-        seen_ids: set[str] = set()
-        compressible_bytes_after = 0
-        for entry in attributed_compressible:
-            if entry.id in seen_ids:
-                continue
-            seen_ids.add(entry.id)
-            compressible_bytes_after += len(entry.text.encode("utf-8"))
+        compressible_bytes_after = _emission_attributed_bytes(attributed_compressible)
 
-    if compressible_bytes_after > compressible_bytes_before:
-        raise ValueError(
-            f"compressible_bytes_after ({compressible_bytes_after}) exceeds "
-            f"compressible_bytes_before ({compressible_bytes_before}). Compression "
-            "cannot add compressible bytes, and an inflated figure is a witness that "
-            "cannot fail (ADR-0.35.0 REQ-0.35.0-05-07). Fix the attribution passed to "
-            "_byte_evidence -- attributed_compressible for the generated path, or the "
-            "candidate text itself for the presence-attribution path -- so it names "
-            "only entries that are true members of the corpus's effective compressible "
-            "set; never clamp or emit the inflated number."
-        )
+    _refuse_compressible_inflation(compressible_bytes_after, compressible_bytes_before)
 
     return ByteEvidence(
         invariant_bytes=invariant_bytes,
         compressible_bytes_before=compressible_bytes_before,
         compressible_bytes_after=compressible_bytes_after,
+        emitted_entry_bytes=rendered.emitted_entry if rendered else None,
+        generated_structural_bytes=rendered.generated_structural if rendered else None,
+        carried_forward_bytes=rendered.carried_forward if rendered else None,
         total_bytes=total_bytes,
         setpoint=setpoint,
     )
@@ -273,11 +363,27 @@ def _refuse_unknown_section_addressing(
 ) -> None:
     """Refuse an effective entry addressed to a section id the declaration lacks.
 
-    Fix 2a (cross-vendor adversarial review). ADR-0.35.0's Generation Contract:
-    "Unknown section ids ... fail before writing." Without this check, an
-    entry addressed to an undeclared section id is silently omitted from both
-    the candidate text and the lineage -- no boundary's `section_entries`
-    filter ever matches it, so nothing notices it was dropped.
+    Fix 2a (cross-vendor adversarial review). The governing rule is ADR-0.35.0's
+    Generation Contract: "Unknown section ids ... fail before writing." The
+    mechanism it closes is specific -- an UNDECLARED id matches no boundary, so
+    no `section_entries` filter ever selects the entry, it reaches neither the
+    candidate text nor the lineage, AND the declaration that would otherwise
+    record where it was meant to land never mentions it either.
+
+    Scoped deliberately (finding 15, 2026-09-08). This is NOT a general
+    "nothing is ever dropped without a trace" guarantee and must not be read as
+    one. A `compressible` entry addressed to a section the declaration DOES
+    carry but marks `unowned` is likewise emitted nowhere and likewise carries
+    no lineage `entry_ids` -- and that is contracted behaviour, not an
+    oversight: unowned sections carry forward byte-verbatim from the prior
+    rendition (REQ-0.35.0-05-02), `compressible` is the tier the setpoint dial
+    may drop (ADR-0.0.37 Decision 3 -- the 0-Kelvin floor binds `invariant`
+    only), and REQ-0.35.0-05-06 requires precisely that such an entry count
+    toward `compressible_bytes_before` and never toward
+    `compressible_bytes_after`, pinned by
+    `test_a_compressible_entry_in_an_unowned_section_is_never_attributed`.
+    What makes THIS case fail closed is the unknown id: no governed surface
+    records the entry's intended home at all.
     """
     declared_ids = set(declaration_sections)
     for entry in effective.entries:
@@ -287,9 +393,11 @@ def _refuse_unknown_section_addressing(
                 f"addressed to section {entry.section!r}, which the ownership "
                 f"declaration for {surface!r} does not carry.\n"
                 "Why forbidden: ADR-0.35.0's Generation Contract requires unknown "
-                "section ids to fail before writing -- silently omitting the entry "
-                "would drop it from both the candidate text and its lineage with no "
-                "trace.\n"
+                "section ids to fail before writing. The declaration is the record of "
+                "where an entry is meant to land, so an id absent from it names no "
+                "section any boundary can match: the entry would reach neither the "
+                "candidate nor the lineage, and no governed surface would record that "
+                "it was ever meant to be anywhere.\n"
                 f"Next step: declare section {entry.section!r} in the ownership "
                 f"declaration, or repoint entry {entry.id!r} at a section id the "
                 "declaration already carries, then regenerate."
@@ -366,6 +474,66 @@ def _refuse_lineage_mismatch(
         "then regenerate."
     )
     raise ValueError(msg)
+
+
+class _SectionAssembly(NamedTuple):
+    """One boundary's contribution to the candidate: its chunk, lineage facts, and bytes."""
+
+    chunk: bytes
+    owned: bool
+    entry_ids: tuple[str, ...]
+    emitted_compressible: tuple[CorpusEntry, ...]
+    rendered: RenderedBytes
+
+
+def _assemble_section(
+    boundary: SectionBoundary,
+    *,
+    declaration_sections: Mapping[str, str],
+    effective: Corpus,
+    prior_bytes: bytes,
+) -> _SectionAssembly:
+    """Compute one section boundary's candidate chunk and lineage facts.
+
+    Per-section seam of :func:`generate_candidate`'s assembly loop (step 10):
+    an ``unowned`` section carries its bytes forward byte-verbatim from
+    *prior_bytes*; an owned section rebuilds its heading plus a body joined
+    from the effective corpus entries addressed to it (see
+    :func:`_join_section_body`), and reports which of those entries are
+    compressible-tier so the caller can fold them into EMISSION attribution
+    (:func:`_emission_attributed_bytes`).
+    """
+    ownership_state = declaration_sections[boundary.section_id]
+    if ownership_state == "unowned":
+        carried = prior_bytes[boundary.start : boundary.end]
+        return _SectionAssembly(
+            chunk=carried,
+            owned=False,
+            entry_ids=(),
+            emitted_compressible=(),
+            rendered=RenderedBytes(0, 0, len(carried)),
+        )
+
+    newline_index = prior_bytes.find(b"\n", boundary.start, boundary.end)
+    heading_end = newline_index + 1 if newline_index != -1 else boundary.end
+    heading_bytes = prior_bytes[boundary.start : heading_end]
+    section_entries = [e for e in effective.entries if e.section == boundary.section_id]
+    body = b"\n" + _join_section_body(section_entries) + b"\n" if section_entries else b""
+    chunk = heading_bytes + body
+    # Measured, never inferred: entry text is emitted once each at a distinct
+    # offset, so summing the emitted entries IS this section's emitted-entry
+    # byte count even when two entries' texts overlap as strings. Everything
+    # else in the chunk -- the heading, the body's leading and trailing newline,
+    # and `_join_section_body`'s blank-line separators -- is structure the
+    # generator wrote, so it is exactly the chunk minus the emitted text.
+    emitted_entry_bytes = sum(len(e.text.encode("utf-8")) for e in section_entries)
+    return _SectionAssembly(
+        chunk=chunk,
+        owned=True,
+        entry_ids=tuple(e.id for e in section_entries),
+        emitted_compressible=tuple(e for e in section_entries if e.tier == "compressible"),
+        rendered=RenderedBytes(emitted_entry_bytes, len(chunk) - emitted_entry_bytes, 0),
+    )
 
 
 def generate_candidate(
@@ -449,30 +617,25 @@ def generate_candidate(
     chunks: list[bytes] = []
     sections: dict[str, SectionLineage] = {}
     emitted_compressible: list[CorpusEntry] = []
+    rendered = RenderedBytes(0, 0, 0)
     offset = 0
     for boundary in boundaries:
-        ownership_state = declaration.sections[boundary.section_id]
-        if ownership_state == "unowned":
-            chunk = prior_bytes[boundary.start : boundary.end]
-            entry_ids: tuple[str, ...] = ()
-            owned = False
-        else:
-            newline_index = prior_bytes.find(b"\n", boundary.start, boundary.end)
-            heading_end = newline_index + 1 if newline_index != -1 else boundary.end
-            heading_bytes = prior_bytes[boundary.start : heading_end]
-            section_entries = [e for e in effective.entries if e.section == boundary.section_id]
-            body = b"\n" + _join_section_body(section_entries) + b"\n" if section_entries else b""
-            chunk = heading_bytes + body
-            entry_ids = tuple(e.id for e in section_entries)
-            owned = True
-            emitted_compressible.extend(e for e in section_entries if e.tier == "compressible")
-
-        start_in_candidate = offset
-        offset += len(chunk)
-        sections[boundary.section_id] = SectionLineage(
-            owned=owned, entry_ids=entry_ids, byte_span=(start_in_candidate, offset)
+        assembled = _assemble_section(
+            boundary,
+            declaration_sections=declaration.sections,
+            effective=effective,
+            prior_bytes=prior_bytes,
         )
-        chunks.append(chunk)
+        start_in_candidate = offset
+        offset += len(assembled.chunk)
+        sections[boundary.section_id] = SectionLineage(
+            owned=assembled.owned,
+            entry_ids=assembled.entry_ids,
+            byte_span=(start_in_candidate, offset),
+        )
+        chunks.append(assembled.chunk)
+        emitted_compressible.extend(assembled.emitted_compressible)
+        rendered = rendered.merge(assembled.rendered)
 
     candidate_text = b"".join(chunks).decode("utf-8")
 
@@ -495,6 +658,7 @@ def generate_candidate(
         setpoint=setpoint,
         attributed_compressible=emitted_compressible,
         effective=effective,
+        rendered=rendered,
     )
     rendition = CandidateRendition(
         surface=surface,

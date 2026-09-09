@@ -134,6 +134,35 @@ class TestContentComposeCmd(unittest.TestCase):
             self.assertIn("Byte evidence", result.output)
             self.assertIn("setpoint=lite", result.output)
 
+    @covers("REQ-0.35.0-05-06")
+    def test_explicit_path_prints_population_only_and_claims_no_rendered_partition(self) -> None:
+        """The explicit path labels its figures POPULATION and prints no rendered line.
+
+        # output-contract: the byte-evidence line is the operator-facing
+        # accounting surface, and the two measurements must not read as one.
+        # `compose --candidate` assembles nothing, so it has no emitted /
+        # structural / carried bytes to report and must not manufacture them.
+        """
+        with self._runner.isolated_filesystem():
+            _setup_project()
+            candidate_text = f"{_INVARIANT_TEXT}\nsome compressed content"
+            Path("candidate.md").write_text(candidate_text, encoding="utf-8")
+
+            args = [
+                "content",
+                "compose",
+                "AGENTS.md",
+                "--consumer",
+                "root",
+                "--candidate",
+                "candidate.md",
+            ]
+            result = self._runner.invoke(main, args)
+
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            self.assertIn("Byte evidence (population):", result.output)
+            self.assertNotIn("Rendered bytes", result.output)
+
     @covers("REQ-0.0.37-21-04")
     def test_compose_exits_nonzero_on_absent_corpus(self) -> None:
         """Absent corpus → exit 1, no candidate written."""
@@ -293,6 +322,74 @@ class TestContentComposeCmd(unittest.TestCase):
             candidate_out = candidate_path(Path("."), _GEN_SURFACE, _GEN_CONSUMER)
             self.assertTrue(candidate_out.exists())
             self.assertIn(_OWNED_CORPUS_TEXT, candidate_out.read_text(encoding="utf-8"))
+
+    @covers("REQ-0.35.0-05-06")
+    def test_generated_path_prints_the_measured_rendered_partition(self) -> None:
+        """The generated path prints emitted / structural / carried, hand-counted.
+
+        # output-contract: the operator reads the rendered partition to see
+        # where the candidate's bytes came from. Every figure below is counted
+        # off `_GEN_PRIOR_TEXT` and `_OWNED_CORPUS_TEXT` by hand, never
+        # re-derived from the generator's own arithmetic.
+        """
+        with self._runner.isolated_filesystem():
+            _seed_generated_fixture(Path("."))
+            fake_stdin = MagicMock()
+            fake_stdin.isatty.return_value = True
+
+            with patch("sys.stdin", fake_stdin):
+                args = ["content", "compose", _GEN_SURFACE, "--consumer", _GEN_CONSUMER]
+                result = self._runner.invoke(main, args)
+
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            # emitted   = len("Owned body from the corpus.")                = 27
+            # structural= len("## Owned Section\n") + "\n" + "\n"            = 17 + 1 + 1 = 19
+            # carried   = len("## Unowned Section\ncarried forward text verbatim\n") = 49
+            # total     = 27 + 19 + 49                                      = 95
+            self.assertIn(
+                "Rendered bytes (assembled): emitted=27B structural=19B carried=49B total=95B",
+                result.output,
+            )
+
+    @covers("REQ-0.35.0-05-04")
+    def test_generated_candidate_persists_the_bytes_its_lineage_indexes(self) -> None:
+        """The persisted candidate bytes and the persisted lineage spans agree, hand-counted.
+
+        Directive: the repair must not disturb what actually lands on disk. The
+        spans below index the CANDIDATE's own bytes, so slicing the persisted
+        file at a persisted span must return that section's persisted text.
+        """
+        with self._runner.isolated_filesystem():
+            _seed_generated_fixture(Path("."))
+            fake_stdin = MagicMock()
+            fake_stdin.isatty.return_value = True
+
+            with patch("sys.stdin", fake_stdin):
+                args = ["content", "compose", _GEN_SURFACE, "--consumer", _GEN_CONSUMER]
+                result = self._runner.invoke(main, args)
+
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            candidate_bytes = candidate_path(Path("."), _GEN_SURFACE, _GEN_CONSUMER).read_bytes()
+            document = json.loads(
+                candidate_lineage_path(Path("."), _GEN_SURFACE, _GEN_CONSUMER).read_text(
+                    encoding="utf-8"
+                )
+            )
+
+            # The owned section rebuilt from the corpus is 46 bytes
+            # (17-byte heading + "\n" + 27-byte entry + "\n"); the unowned
+            # section carries its 49 prior bytes forward unchanged.
+            self.assertEqual(len(candidate_bytes), 95)
+            self.assertEqual(document["owned-section"]["byte_span"], [0, 46])
+            self.assertEqual(document["unowned-section"]["byte_span"], [46, 95])
+            self.assertEqual(
+                candidate_bytes[0:46],
+                b"## Owned Section\n\nOwned body from the corpus.\n",
+            )
+            self.assertEqual(
+                candidate_bytes[46:95],
+                b"## Unowned Section\ncarried forward text verbatim\n",
+            )
 
     def test_compose_generates_candidate_when_stdin_is_empty_and_not_a_tty(self) -> None:
         """No --candidate, stdin not a tty but carries no content: GENERATED path.
@@ -568,6 +665,83 @@ class TestContentComposeCmd(unittest.TestCase):
             )
             # The fenced heading must contribute no section at all.
             self.assertNotIn("fake", document)
+
+    @covers("REQ-0.35.0-05-02")
+    def test_mixed_owned_unowned_candidate_matches_contract_derived_literals(self) -> None:
+        """A mixed owned+unowned candidate is checked against hand-derived literals.
+
+        F7 (round-15 adversarial review). REQ-0.35.0-05-02: an unowned
+        section's bytes appear in the candidate BYTE-VERBATIM -- carry-forward
+        reflows nothing. The contiguity loop in
+        ``test_generated_lineage_spans_index_the_PERSISTED_candidate_bytes``
+        walks ``cursor = 0`` then ``cursor = end`` taken from the lineage's
+        OWN values, so every internal boundary is lineage-vs-lineage; only its
+        final ``cursor == len(persisted)`` is anchored to reality.
+        ``test_persisted_lineage_matches_contract_derived_offsets_not_just_the_parser``
+        uses hand-derived literals but marks BOTH its sections unowned, so it
+        cannot reach the mixed shape the real generator produces. This test
+        seeds ``_seed_generated_fixture`` -- ``owned-section`` owned,
+        ``unowned-section`` unowned -- and holds the persisted candidate to
+        literals derived from the contract, never from
+        ``iter_section_boundaries`` or from a slice of ``prior_bytes``.
+
+        Segment byte lengths, spelled out:
+        prior text = "## Owned Section\\n" (17B)
+            + "old body text to be replaced\\n" (29B)
+            + "## Unowned Section\\n" (19B)
+            + "carried forward text verbatim\\n" (30B) = 95B
+        corpus body for owned-section = "Owned body from the corpus." (27B)
+        generated owned chunk = "## Owned Section\\n" (17B) + "\\n" (1B)
+            + body (27B) + "\\n" (1B) = 46B
+        generated unowned chunk = "## Unowned Section\\ncarried forward text
+            verbatim\\n" = 49B (carried forward, byte-identical to the prior
+            rendition's own unowned-section bytes)
+        total candidate = 46 + 49 = 95B, spans owned-section [0, 46),
+            unowned-section [46, 95).
+        """
+        expected_candidate = (
+            b"## Owned Section\n"
+            b"\n"
+            b"Owned body from the corpus.\n"
+            b"## Unowned Section\n"
+            b"carried forward text verbatim\n"
+        )
+        expected_unowned_bytes = b"## Unowned Section\ncarried forward text verbatim\n"
+        expected_spans = {"owned-section": [0, 46], "unowned-section": [46, 95]}
+        self.assertEqual(
+            len(expected_candidate),
+            95,
+            "the oracle's literals must describe this fixture",
+        )
+
+        with self._runner.isolated_filesystem():
+            _seed_generated_fixture(Path("."))
+            fake_stdin = MagicMock()
+            fake_stdin.isatty.return_value = True
+            with patch("sys.stdin", fake_stdin):
+                result = self._runner.invoke(
+                    main, ["content", "compose", _GEN_SURFACE, "--consumer", _GEN_CONSUMER]
+                )
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+
+            persisted = candidate_path(Path("."), _GEN_SURFACE, _GEN_CONSUMER).read_bytes()
+            document = json.loads(
+                candidate_lineage_path(Path("."), _GEN_SURFACE, _GEN_CONSUMER).read_text(
+                    encoding="utf-8"
+                )
+            )
+
+            self.assertEqual(persisted, expected_candidate)
+            # Carried-forward bytes sliced out of the PERSISTED file by
+            # hand-derived literal offsets -- never `iter_section_boundaries`,
+            # never `prior_bytes[...]`.
+            self.assertEqual(persisted[46:95], expected_unowned_bytes)
+            self.assertEqual(
+                {sid: s["byte_span"] for sid, s in document.items()},
+                expected_spans,
+                "persisted spans must match the CONTRACT-derived literals for the "
+                "mixed owned+unowned fixture",
+            )
 
     @covers("REQ-0.35.0-05-04")
     def test_explicit_candidate_removes_a_stale_generated_lineage(self) -> None:
