@@ -56,6 +56,28 @@ Reviews explicitly name which proofs they approve. Historical verdict words do
 not silently grant or revoke approval. The earlier Markdown standing-verdict
 convention remains readable history; it no longer owns current acceptance state.
 
+## Tracking corrections during implementation
+
+An operator-initiated OBPI owns corrections necessary to satisfy its approved
+obligations. Keep implementation, test, documentation, and evidence adjustments
+in `### Change Log` under the brief's `## Evidence` section. Cite the existing
+finding identity when present, affected REQ or contract clause, change, and
+proof/independent-closure references. Group related repairs and link execution
+artifacts; do not duplicate transcripts or introduce another finding roster.
+
+This log is an index for readers, not acceptance authority. The existing ledger
+still owns proof and closure. History edits alone do not create another review
+obligation; an actual counterexample against required behavior or proof does.
+Normative amendments remain in the relevant contract sections with the existing
+operator ruling, referenced from the log. An unmet obligation cannot be moved
+into history to make it disappear.
+
+Create a GHI only for an independent work order or disposition, or an explicit
+operator request. Separate infrastructure defects and post-acceptance defects
+can need issues; routine corrections within the active OBPI do not. Filing an
+issue never discharges required work. See
+[defect-fix routing](defect-fix-routing.md#corrections-within-an-active-obpi).
+
 ## Advancement and invalidation
 
 Intermediate task review uses the task's Stage-2 obligation scope while retaining

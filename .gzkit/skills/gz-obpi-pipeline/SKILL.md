@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-09-08
 metadata:
-  skill-version: "6.52.0"
+  skill-version: "6.53.0"
 model: sonnet
 ---
 
@@ -106,11 +106,37 @@ This is not optional. This is not something you can "derive informally." The pla
 - When implementation is already done but governance stages (verify, ceremony, or
   sync) were skipped — use `--from=verify` or `--from=ceremony`
 
+## Corrections belong to the active OBPI
+
+Within an operator-initiated OBPI, implementation, test, documentation, and
+evidence corrections necessary to satisfy its approved obligations remain part
+of that OBPI. Do not create a GHI for each adjustment or re-ask permission for
+an authorized correction. A real requirement/allowlist/threat-model amendment
+still needs the existing operator ruling. A GHI is reserved for a finding that
+needs an independent work order or disposition, including separate infrastructure
+or post-acceptance defects, or an explicit operator request to file an issue.
+Filing one does not discharge an unmet obligation.
+
+Keep a concise `### Change Log` under the brief's existing `## Evidence` section.
+Record substantive corrections and decisions: the finding identity when one
+exists, its REQ or contract clause, what changed, and the proof/independent-closure
+references. Reuse identities; do not invent a parallel finding roster. Log related
+repairs together, not every edit or command. Link receipts and transcripts rather
+than reproducing them. Keep approved amendments in their normative sections and
+reference the operator ruling from the log; history cannot amend the contract.
+
+The log is a human-readable index. Existing ledger records continue to govern
+proof, review, closure, and readiness. Optional commentary does not create a new
+deliverable, and historical prose edits alone do not require another review.
+A concrete counterexample against an obligation or its required proof still does.
+For existing briefs, add the log during the authorized run; do not retrofit other
+live or completed briefs. Keep independently routed issue links in Tracked Defects.
+
 ## When NOT to Use
 
 - For planning — use Claude Code plan mode instead
 - When no OBPI brief exists for the work
-- For in-flight defect fixes that meet the direct-fix thresholds in AGENTS.md § Defect-fix routing (≤10 source lines AND ≤2 source files AND in-flight trigger AND unit-test coverage AND ≥3 recent `fix(…)` precedents). Route those to a direct `fix(<scope>): … (GHI #N)` commit instead of this pipeline. The Iron Law governs ceremony-scoped work; it does not license wrapping a 5-line patch in a 5-stage run.
+- For independently routed defect repairs: use AGENTS.md § Defect-fix routing and its GHI direct-repair authority. Do not start an OBPI merely to repair a defect. Corrections already owned by the active, operator-initiated OBPI stay in that pipeline regardless of patch size.
 
 ---
 

@@ -187,6 +187,20 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 <!-- Record observations during/after implementation.
      Command outputs, file:line references, dates. -->
 
+### Change Log
+
+<!-- Keep substantive implementation, test, documentation, and evidence
+     corrections within this OBPI. Reuse existing finding identities and cite
+     the affected REQ or contract clause, change, and proof/closure references.
+     Group related repairs; do not log every edit or duplicate transcripts.
+     This is an index to evidence, not a second acceptance ledger. Record approved
+     amendments in their normative sections and reference the ruling here.
+     Create a GHI only when independent work or disposition is needed, or the
+     operator explicitly requests an issue; link it back to the owning work.
+     Keep this subsection under Evidence so history is not treated as contract. -->
+
+_No substantive adjustments recorded yet._
+
 ### Gate 1 (ADR)
 
 - [ ] Intent and scope recorded
@@ -239,8 +253,10 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 ## Tracked Defects
 
-<!-- Record GitHub defect linkage when defects are discovered during this OBPI.
-     Use one bullet per issue so status surfaces can preserve traceability. -->
+<!-- Link independently routed GitHub defects, one bullet per issue so status
+     surfaces preserve traceability. Within-OBPI corrections belong in the
+     Change Log above; they do not need a GHI. An issue link does not discharge
+     an unmet acceptance obligation. -->
 
 _No defects tracked._
 

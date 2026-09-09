@@ -1,12 +1,45 @@
 # Defect-fix routing
 
-> Binding content lives in [AGENTS.md § Defect-fix routing](../../AGENTS.md#defect-fix-routing). This page carries the deep-dive rationale: the anti-pattern catalog, the origin GHI #195 narrative, and the related-rules cross-references that would otherwise clutter the per-turn agent context.
+> Read [AGENTS.md § Defect-fix routing](../../AGENTS.md#defect-fix-routing) with the active-OBPI clarification below (operator ruling, 2026-09-08). The clarification governs continued work in an already-authorized pipeline; the ownership precondition still governs entry into another live brief's work.
 
 When a defect surfaces, the routing decision (direct `fix(...)` commit vs. full OBPI ceremony) is made against the explicit thresholds in AGENTS.md. This page records *why* those thresholds exist, what they look like when applied wrong, and which other rules they compose with.
 
+## Corrections within an active OBPI
+
+**Operator ruling, 2026-09-08:** Changes necessary to satisfy an
+operator-initiated OBPI's approved obligations are part of that OBPI's
+implementation and are recorded in its change log. Create a GHI when a finding
+requires an independent work order or disposition. Filing a GHI does not
+discharge an unmet OBPI obligation.
+
+The OBPI already provides authority, ownership, requirement identities, and
+evidence provenance. Implementation adjustments, weak-test repairs, documentation
+alignment, and evidence corrections stay there. A review finding or repeated
+repair is not by itself a reason to open an issue or re-request initiation.
+Real requirement, allowlist, or threat-model amendments retain the existing
+operator decision; record that decision in the owning brief rather than
+automatically creating another work order.
+
+| Finding | Tracking home |
+|---|---|
+| Correction needed to meet the active OBPI's approved obligations | Its Evidence → Change Log and existing finding/closure records |
+| Separate infrastructure defect or independently owned work | GHI, with ownership coordination when another live brief owns it |
+| Defect discovered after acceptance | GHI corrective work |
+| Explicit operator request to file an issue | GHI linked to the owning work; no acceptance obligation is discharged by filing |
+
+Use `### Change Log` under `## Evidence`, following the brief template and
+[`gz-obpi-pipeline`](../../.gzkit/skills/gz-obpi-pipeline/SKILL.md#corrections-belong-to-the-active-obpi).
+Capture substantive adjustments, affected requirements or contract clauses,
+changes, and verification/closure references. Reuse finding identities and group
+related repairs. The log indexes existing evidence and ledger records; it does
+not create new acceptance obligations or an independently maintained status
+database. Approved amendments belong in normative sections, with a ruling
+reference in the log. Optional commentary is not another deliverable; concrete
+counterexamples against required behavior or proof still reopen acceptance.
+
 ## Precondition: does an OBPI brief already own this work?
 
-The thresholds in AGENTS.md ask how big the fix is, how many surfaces it touches, and whether it surfaced in flight. **They never ask who owns the work**, and that question is upstream of all of them: a defect whose surface is already decomposed into an authored OBPI brief is not a routing choice the agent makes, whichever side of the thresholds it falls on.
+The thresholds in AGENTS.md ask how big the fix is, how many surfaces it touches, and whether it surfaced in flight. **They never ask who owns the work**, and that question is upstream of all of them. First retain corrections in the already-authorized owning pipeline as described above. For a proposed independent repair, check whether another authored brief owns the work before applying size thresholds.
 
 Check before applying the matrix:
 
@@ -14,7 +47,7 @@ Check before applying the matrix:
 grep -rln "<surface path / entry id / symbol>" docs/design/adr/*/*/obpis/*.md
 ```
 
-A hit on a **live** brief (`Draft`, `pending`, `in_progress`) makes the routing question operator-level. Two rules in AGENTS.md both apply and they select on which *description* of the work governs — "NEVER work an OBPI without running it through the gz-obpi-pipeline skill" against "GHIs are AUTHORIZED for direct repair, always … those criteria gate planned ADR work, not defect repair." Neither is wrong; they answer different questions about the same commit. Surface the brief id, its status, its parent ADR, and the requirement lines that match, then let the operator rule.
+A hit on **another live** brief (`Draft`, `pending`, `in_progress`) makes the routing question operator-level. Two rules in AGENTS.md both apply and they select on which *description* of the work governs — "NEVER work an OBPI without running it through the gz-obpi-pipeline skill" against "GHIs are AUTHORIZED for direct repair, always … those criteria gate planned ADR work, not defect repair." Surface the brief id, its status, its parent ADR, and the requirement lines that match, then let the operator rule. This ownership protection does not require another ruling for each correction inside the operator-initiated owning pipeline.
 
 A hit on a **terminal** brief (`Completed`, `attested_completed`, `Validated`, `Superseded`, `Withdrawn`, `Abandoned`) does not block. That work shipped; a fresh defect against the same surface is an ordinary GHI.
 
@@ -24,6 +57,8 @@ A hit on a **terminal** brief (`Completed`, `attested_completed`, `Validated`, `
 
 ## Anti-patterns
 
+- Filing a GHI for each correction within the active OBPI, then immediately routing it back to that same brief. The finding already has a durable home.
+- Treating a change-log entry or an issue link as proof that a required behavior works. Acceptance still needs the existing proof channel and independent closure.
 - Authoring an OBPI brief for a defect surfaced mid-pipeline because "the parent ADR is the natural home." The parent ADR may be the natural home for the *fix description in the commit body*; it is not necessarily the home for ceremony.
 - Adding a Surface Boundary scorecard split + WBS item + brief + audit + attest + sync for a 5-line filter change. Per the OBPI-04 → OBPI-06 → revert sequence (commits `4d14ebf9` → `d2ed160b`), this exact pattern produced 30%+ session waste with zero governance benefit a direct `fix(validator)` commit didn't produce.
 - Applying the threshold matrix without first asking whether a live OBPI brief owns the surface. The matrix answers *how much ceremony*; it cannot answer *whose work this is*, and a clean pass through it is not evidence that nobody else owns the change (GHI #864).

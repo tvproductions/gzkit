@@ -1,6 +1,6 @@
 # /ghi-author
 
-Author a GitHub Issue (GHI) for a defect, enhancement, or investigation surfaced in flight.
+Author a GitHub Issue (GHI) when a finding needs an independent work order or disposition.
 
 ---
 
@@ -14,18 +14,23 @@ its scope. Proposed implementations remain hypotheses, not acceptance criteria.
 
 ## When to Use
 
-Reach for `/ghi-author` the moment a defect surfaces that you decide not to
-fix in-scope. Common triggers: a brief-boundary conflict, a class-of-failure
-wider than the current patch, an investigation needing its own audit trail,
-or a post-mortem finding from a ceremony step. Pair with
-[`/ghi-close`](ghi-close.md) downstream.
+Use `/ghi-author` for independent infrastructure defects, post-acceptance
+defects, investigations needing their own home, or an explicit operator request
+for an issue. Pair with [`/ghi-close`](ghi-close.md) downstream.
+
+Corrections necessary to satisfy an active, operator-initiated OBPI stay in
+that OBPI's `Evidence` → `Change Log`. Weak tests, implementation adjustments,
+and evidence repairs do not need a new issue or fresh initiation. Preserve
+finding identities and proof/closure references. Real boundary amendments
+retain the existing operator ruling; filing an issue never discharges an
+unmet obligation. See [defect-fix routing](../../governance/defect-fix-routing.md).
 
 ## What to Expect
 
 The skill checks prior issues and brief ownership, gathers evidence, drafts
 the closure contract, and creates the issue through `gh`. Output includes the
 issue URL and routing disposition. Existing operator authorization governs;
-uncertain policy or live-brief conflicts require a ruling. An investigation
+uncertain policy or ownership conflicts with another live brief require a ruling. An investigation
 names a bounded question and evidence deliverable without inventing its cause.
 
 Independent discoveries are tracked without automatically becoming additional

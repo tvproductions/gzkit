@@ -1,13 +1,13 @@
 ---
 name: ghi-author
 persona: main-session
-description: Author a GitHub Issue (GHI) for a defect, enhancement, or investigation surfaced in flight. Use when a defect cannot be fixed in the current patch, when scope expansion would violate the active brief's boundaries, or when a finding deserves a trackable home before routing.
+description: Author a GitHub Issue (GHI) when a finding needs an independent work order or disposition, or the operator explicitly requests an issue. Corrections to an active, operator-initiated OBPI stay in that OBPI's change log.
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-09-07
 metadata:
-  skill-version: "1.5.0"
+  skill-version: "1.6.0"
 model: sonnet
 ---
 
@@ -24,16 +24,25 @@ the remote; the skill records the assigned number into session evidence
 after creation (step 6). Passing an ID would conflict with GitHub's
 auto-assignment and corrupt cross-references.
 
-Author a GitHub Issue so a surfaced defect, enhancement, or investigation
-becomes trackable. This is the mechanical counterpart to `AGENTS.md` §
-Prime Directive #6 ("every defect must be trackable") and the upstream of
-AGENTS.md § Defect-fix routing (the routing decision consumes the
-GHI's evidence — it does not substitute for authoring one).
+First determine whether the finding needs an independent work order or
+disposition. `AGENTS.md` § Prime Directive #6 requires durable tracking;
+an active OBPI already supplies a work order, requirement identities, and
+evidence provenance. It does not need an issue number for each correction.
 
-A GHI that exists only in session memory is not a GHI. The ledger-of-truth
-doctrine applies: if the finding has no `gh issue` number, downstream
-commits cannot cite it, `fix(<scope>): ... (GHI #N)` trailers cannot form,
-and the ARB receipt chain has no anchor.
+**Active-OBPI boundary (operator ruling, 2026-09-08).** Changes necessary to
+satisfy an operator-initiated OBPI's approved obligations remain part of that
+OBPI. Record substantive corrections under `## Evidence` → `### Change Log`,
+reuse existing finding identities, and continue its authorized pipeline.
+Do not file a GHI merely because a review found a defect, a test was weak,
+evidence needed correction, or a repair took several iterations. A genuine
+requirement/allowlist/threat-model amendment still uses the existing operator
+ruling; it does not automatically need an issue. A GHI is appropriate for a
+separate infrastructure defect, independently owned work, or a post-acceptance
+defect. Filing one never discharges an unmet OBPI obligation.
+
+An explicit operator request to file an issue takes precedence over the default
+no-issue branch. Link the issue to the owning OBPI; its obligations and existing
+finding/closure records remain there.
 
 ## Doctrine — A GHI's purpose is observation routing, not implementation tracking (binding)
 
@@ -92,10 +101,9 @@ when they silently shadow Layer-2 truth.
 
 ## Trigger
 
-- A defect surfaces during work on an unrelated brief and cannot be fixed in-scope
-- AGENTS.md § Defect-fix routing resolves to "ceremony" or "ambiguous" and the operator needs a trackable artifact before deciding
-- Pre-existing defect discovered during audit, reconcile, or review
-- Template/doc drift, schema inconsistency, or invariant weakness that needs a home
+- A finding needs an independent work order or disposition beyond the active OBPI
+- A defect in an accepted deliverable needs corrective work
+- An investigation or enhancement needs its own durable home
 - Operator says "file a GHI for that" or equivalent
 
 ## Behavior
@@ -139,7 +147,8 @@ routing matrix will consume.
    | An open GHI already covers this exact finding | **Do not file.** Add a comment to the existing GHI with this session's new evidence; record the issue number in session evidence; stop. Duplicate-filing is the failure mode this step closes. |
    | An open GHI covers an adjacent / sibling-cut of the same root cause | Author this GHI but include `Related: #N` in the body's `## Related` section AND post a cross-link comment on the sibling GHI naming the relationship (root vs. symptom, per-skill vs. catalog-wide, etc.) at authoring time, not as a follow-up |
    | A recently-closed GHI (≤30 days) addressed this exact finding | Re-open it (`gh issue reopen <N>`) with a comment citing the regression evidence — never file a fresh GHI for the same root cause |
-   | **An authored OBPI brief owns the work** | **Do not resolve this yourself.** Read the brief's `status:`, its parent ADR, and the requirement lines that match — then surface all three to the operator and wait. See § When a brief owns the work below. |
+   | The active, operator-initiated OBPI owns this correction under its approved obligations | **Do not file unless the operator explicitly requested an issue.** Keep the correction and evidence in that OBPI's change log and continue its pipeline; an explicitly requested issue links back to that work. |
+   | Another live OBPI owns the work, or the correction requires an unapproved amendment | Read the brief's `status:`, parent ADR, and matching requirement lines; surface the actual ownership or amendment decision to the operator. Do not initiate that OBPI or file a duplicate work order. |
    | No prior or adjacent GHI exists | Proceed to Step 1 |
 
    **Canonical sibling-cut regression:** GHIs #459 and #460 (2026-05-12) shared the T1→T2 doctrine-drift root cause (skill prose declares an agent action with no mechanical fail-close) but shared no title keywords — #459 named the per-skill Stage 2 dispatch gap, #460 named the catalog-wide skill-body-as-procedural-script surface. #460 was filed ~17 minutes after #459 without cross-link at authoring time; the relationship was only recorded in a follow-up comment after the operator noticed the overlap. The recent-by-date skim catches this class even when keywords disagree.
@@ -150,7 +159,13 @@ routing matrix will consume.
 
 ### When a brief owns the work
 
-A GHI colliding with a brief is not a duplicate to dedupe — it is a **routing question only the operator can answer**, because two rules in `AGENTS.md` both apply and they select on which description of the work governs:
+**Already-authorized corrections stay in their owning pipeline.** The live-brief
+precondition below applies to entering another OBPI's work or changing approved
+boundaries; it is not a new permission checkpoint for each finding within the
+operator-initiated OBPI. See the Active-OBPI boundary above.
+
+A proposed independent repair colliding with another live brief is a **routing
+question only the operator can answer**, because two rules in `AGENTS.md` apply:
 
 > NEVER work an OBPI without running it through the gz-obpi-pipeline skill … the implementer dispatch and the two-stage spec-reviewer + quality-reviewer review ARE the work
 
@@ -158,7 +173,7 @@ A GHI colliding with a brief is not a duplicate to dedupe — it is a **routing 
 
 Surface **the brief id, its `status:`, its parent ADR, and the requirement lines that match** — never a bare "a brief mentions this surface." The distinction is load-bearing and was learned the expensive way: the first report of the GHI #862 collision measured `entry_id in brief`, got 7/7, and concluded only that the work overlapped. Measured properly against the brief's `retire X; RETAIN Y` structure, the operator's ruling had **inverted** the brief on all seven groups — its `REQUIREMENT 12` said the opposite in as many words. A presence check answers *"is something armed"*, never *"what does it say"* (`AGENTS.md` § DO IT RIGHT). The operator then ruled on a disposition question without being shown that a written brief had already answered it the other way.
 
-**A terminal brief does not block** (`Completed`, `attested_completed`, `Validated`, `Superseded`, `Withdrawn`, `Abandoned`) — its work shipped, and a fresh defect against that surface is an ordinary GHI. It is a **live** brief (`Draft`, `pending`, `in_progress`) that makes the routing operator-level.
+**A terminal brief does not block** (`Completed`, `attested_completed`, `Validated`, `Superseded`, `Withdrawn`, `Abandoned`) — a fresh defect against that surface is an ordinary GHI. Another **live** brief (`Draft`, `pending`, `in_progress`) makes ownership routing operator-level; correction within the already-authorized owning pipeline does not.
 
 1. **Classify the GHI** using the table below. Pick exactly one; a single GHI is one class.
 
@@ -275,11 +290,26 @@ Surface **the brief id, its `status:`, its parent ADR, and the requirement lines
 
 ## Examples
 
-### Example 1 — Defect surfaced mid-pipeline
+### Example 1 — Correction within the active OBPI
+
+**Input**: Review finds that a corpus-generator test derives expected boundaries
+from the same production parser it is supposed to check.
+
+**Output**: Keep the finding attached to the generator's boundary obligation.
+Repair the test using contract-derived expectations, demonstrate sensitivity to
+the production fault, and obtain the required independent closure. Record the
+change and proof/closure references in the OBPI change log. No GHI is needed.
+
+### Example 1a — Independent infrastructure defect surfaced mid-pipeline
 
 **Input**: During OBPI-0.0.16-04 implementation, `uv run gz validate --documents` flagged a pool ADR for drifted frontmatter. Pool ADRs are supposed to skip that check per schema.
 
-**Output**: File `defect` GHI titled `validator: frontmatter check does not skip pool ADRs`. Body includes the exact `gz validate` command output, citation of the pool-skip rule in `src/gzkit/schemas/adr.json`, and a scope hint of "≤10 lines, single file, in-flight." Routing decision deferred — operator applies AGENTS.md § Defect-fix routing at fix time. Trailer candidate: `fix(validator): skip pool ADRs in validate_frontmatter (GHI #192)`.
+**Output**: The validator defect needs its own disposition beyond the OBPI's
+deliverable. After ownership/prior-art lookup, file `defect` GHI titled
+`validator: frontmatter check does not skip pool ADRs`, with observed output and
+the pool-skip rule. Link the independent issue from the brief's Tracked Defects
+section. The GHI's direct-repair authority applies; discovery during the pipeline
+does not make the validator repair a new OBPI.
 
 ### Example 2 — Enhancement for a working surface
 
