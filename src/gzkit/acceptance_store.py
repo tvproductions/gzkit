@@ -23,7 +23,7 @@ from gzkit.acceptance import (
     assess_readiness,
     validate_review_record,
 )
-from gzkit.acceptance_execution import canonical_obligations, input_digest
+from gzkit.acceptance_execution import canonical_obligations, digest_components, input_digest
 from gzkit.config import GzkitConfig
 from gzkit.ledger import Ledger
 from gzkit.ledger_events import acceptance_recorded_event
@@ -213,6 +213,28 @@ def review_from_receipt(receipt: dict[str, Any]) -> Review:
     return Review(id=digest, receipt_id=run_id, **payload)
 
 
+def _stale_review_message(root: Path, brief: Path, reviewed: str) -> str:
+    """Refuse without claiming a cause this function cannot establish (GHI #989).
+
+    The digest composes two terms -- the audited file roster and the contract --
+    and a review record carries only their composite. Which term moved is
+    therefore NOT derivable here, so the message does not guess: it says the
+    inputs are superseded, names the two terms that compose them, and prints
+    both digests so the reader can compare. The prior wording asserted "stale
+    file contents" whichever term differed, sending readers hunting for a file
+    change that need not exist -- twice in one session, against a tree that
+    `git status` reported clean.
+    """
+    components = digest_components(root, brief)
+    return (
+        "Review describes superseded acceptance inputs; re-review the current proof. "
+        f"Reviewed digest {reviewed[:12]}..., current {input_digest(root, brief)[:12]}.... "
+        f"The digest composes the audited files roster ({components['files'][:12]}...) "
+        f"and the contract ({components['contract'][:12]}...); compare both to see "
+        "which moved."
+    )
+
+
 def _validate_new_review(root: Path, obpi_id: str, review: Review) -> bool:
     """Validate a forward judgment; return false for an identical already-recorded run."""
     history = load_history(root, obpi_id)
@@ -222,7 +244,7 @@ def _validate_new_review(root: Path, obpi_id: str, review: Review) -> bool:
         return False
     brief = resolve_brief(root, obpi_id)
     if review.input_digest != input_digest(root, brief):
-        raise ValueError("Review describes stale file contents; re-review the current proof")
+        raise ValueError(_stale_review_message(root, brief, review.input_digest))
     # Reduction validates finding/closure referential integrity. Open findings
     # are legitimate outcomes and must be recorded, including a refuted round.
     errors = validate_review_record(

@@ -6,7 +6,12 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from gzkit.acceptance_execution import canonical_obligations, input_digest, prove
+from gzkit.acceptance_execution import (
+    canonical_obligations,
+    digest_components,
+    input_digest,
+    prove,
+)
 from gzkit.mutation_witness import Mutation
 
 REQ = "REQ-0.1.0-01-01"
@@ -117,11 +122,49 @@ class AcceptanceInputTests(ExecutionFixture):
         self.write("application/engine.py", "VALUE = 2\n")
         self.assertNotEqual(input_digest(self.root, self.brief), before)
 
-    def test_environment_changes_invalidate(self):
+    def test_unrelated_environment_does_not_invalidate_the_reviewed_inputs(self):
+        """An ambient variable is not a reviewed input (GHI #989).
+
+        The digest answers "were these the reviewed INPUTS" -- the file roster
+        and the contract. A reviewer's own process environment is provenance of
+        its execution, never identity of what it read. Hashing it made a review
+        executed in another process (the mandated tier-1 cross-vendor adversary,
+        CI, a second terminal) structurally unimportable: it copies the digest it
+        was handed, and the importing process recomputes a different one from an
+        unchanged tree.
+        """
         with patch.dict("os.environ", {"ACCEPTANCE_TEST_FEATURE": "one"}):
             before = input_digest(self.root, self.brief)
         with patch.dict("os.environ", {"ACCEPTANCE_TEST_FEATURE": "two"}):
+            self.assertEqual(input_digest(self.root, self.brief), before)
+        with patch.dict("os.environ", {"CI": "true"}):
+            self.assertEqual(input_digest(self.root, self.brief), before)
+
+    def test_a_reviewed_input_still_invalidates_under_a_changed_environment(self):
+        """Negative control: the guard still bites when an actual input changes.
+
+        Stability under ambient variables must not be bought by making the digest
+        insensitive. A real edit inside the audited population still moves it,
+        even while an unrelated variable is also changing.
+        """
+        with patch.dict("os.environ", {"ACCEPTANCE_TEST_FEATURE": "one"}):
+            before = input_digest(self.root, self.brief)
+        self.write("src/engine.py", "def double(value):\n    return value * 4\n")
+        with patch.dict("os.environ", {"ACCEPTANCE_TEST_FEATURE": "two"}):
             self.assertNotEqual(input_digest(self.root, self.brief), before)
+
+    def test_digest_components_name_the_two_reviewed_terms(self):
+        """`digest_components` exposes which term moved, so a refusal can say so.
+
+        The refusal previously read "stale file contents" whichever term differed,
+        sending a reader to look for a file change that need not exist (GHI #989).
+        """
+        components = digest_components(self.root, self.brief)
+        self.assertEqual(set(components), {"files", "contract"})
+        self.write("src/engine.py", "def double(value):\n    return value * 5\n")
+        moved = digest_components(self.root, self.brief)
+        self.assertNotEqual(moved["files"], components["files"])
+        self.assertEqual(moved["contract"], components["contract"])
 
     def test_missing_requirement_declaration_cannot_shrink_obligations(self):
         self.brief.write_text(

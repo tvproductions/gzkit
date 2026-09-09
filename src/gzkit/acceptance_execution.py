@@ -11,10 +11,8 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-import platform
 import re
 import subprocess
-import sys
 import tempfile
 import uuid
 from pathlib import Path
@@ -199,15 +197,13 @@ def _input_paths(root: Path) -> tuple[set[Path], Path, Path]:
     return paths, source, tests
 
 
-def input_digest(root: Path, brief_path: Path) -> str:
-    """Hash conservative executable inputs and contract, including added/deleted files.
+def _file_roster(root: Path) -> dict[str, str]:
+    """Hash every file in the audited input population, by content.
 
-    Ledger/receipts are excluded because proof execution appends to them. SUPPORT
-    resolvers must be re-run when readiness is evaluated. Environment values are
-    hashed, never published; volatile shell bookkeeping is excluded.
+    Added and deleted files change the roster because absent members are
+    recorded as ``missing`` and present ones by content digest -- git is never
+    consulted.
     """
-    root = root.resolve()
-    contract, _ = _brief_contract(root, brief_path)
     paths, _, _ = _input_paths(root)
     roster: dict[str, str] = {}
     for path in sorted(paths):
@@ -221,22 +217,43 @@ def input_digest(root: Path, brief_path: Path) -> str:
             if member.is_file():
                 _inside(root, member)
                 roster[member.relative_to(root).as_posix()] = _sha(member.read_bytes())
-    environment = {
-        key: value
-        for key, value in os.environ.items()
-        if key not in {"_", "PWD", "OLDPWD", "SHLVL", "PYTHONPYCACHEPREFIX"}
+    return roster
+
+
+def digest_components(root: Path, brief_path: Path) -> dict[str, str]:
+    """Return the two terms :func:`input_digest` composes, separately digested.
+
+    Callers refusing a stale record use this to name WHICH term moved. The
+    previous single opaque digest forced every refusal to say "stale file
+    contents", which sent a reader looking for a file change that need not
+    exist (GHI #989).
+    """
+    root = root.resolve()
+    contract, _ = _brief_contract(root, brief_path)
+    return {
+        "files": _sha(_json(_file_roster(root)).encode()),
+        "contract": _sha(_json(contract).encode()),
     }
-    return _sha(
-        _json(
-            {
-                "files": roster,
-                "contract": contract,
-                "environment": environment,
-                "python": sys.version,
-                "platform": platform.platform(),
-            }
-        ).encode()
-    )
+
+
+def input_digest(root: Path, brief_path: Path) -> str:
+    """Hash the reviewed INPUTS: the audited file population and the contract.
+
+    Ledger/receipts are excluded because proof execution appends to them. SUPPORT
+    resolvers must be re-run when readiness is evaluated.
+
+    The executing process's environment is deliberately NOT hashed (GHI #989).
+    This digest answers "were these the reviewed inputs", and a reviewer's own
+    ``os.environ``, interpreter build, and platform string are provenance of its
+    execution, never identity of what it read. Hashing them made an
+    independently-executed review structurally unimportable: the mandated tier-1
+    cross-vendor adversary, a CI runner, and a second terminal each recompute a
+    different digest from a byte-identical tree, so the record they produce is
+    refused for a reason unrelated to whether anything changed. Execution
+    context stays recorded in each proof's own evidence payload, where it is
+    provenance rather than a gate.
+    """
+    return _sha(_json(digest_components(root, brief_path)).encode())
 
 
 def _covering_selectors(root: Path, req_id: str, tests: Path) -> set[str]:

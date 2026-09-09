@@ -88,6 +88,39 @@ class AcceptanceStoreTests(ExecutionFixture):
         self.assertFalse(status.ready)
         self.assertTrue(any("stale inputs" in blocker for blocker in status.blockers))
 
+    def test_stale_review_refusal_stops_blaming_file_contents(self):
+        """The refusal names what it can establish, and nothing more (GHI #989).
+
+        A review record carries only the composite digest, so WHICH term moved is
+        not derivable at the refusal site. The message must therefore stop
+        asserting "stale file contents" -- it was said whichever term differed,
+        and sent readers hunting a file change that need not exist. It names both
+        composing terms and prints the digests instead. Both branches below are
+        genuinely stale for different reasons and get the same honest message.
+        """
+        proof = self.prove_and_record()
+        receipt = self.receipt(proof)
+
+        self.write("src/engine.py", "def double(value):\n    return value * 7\n")
+        with self.assertRaises(ValueError) as ctx:
+            record_review(self.root, OBPI, receipt)
+        roster_message = str(ctx.exception)
+
+        self.write("src/engine.py", "def double(value):\n    return value * 2\n")
+        self.brief.write_text(
+            BRIEF.replace("Double two to four.", "Triple two to six."), encoding="utf-8"
+        )
+        with self.assertRaises(ValueError) as ctx:
+            record_review(self.root, OBPI, receipt)
+        contract_message = str(ctx.exception)
+
+        for message in (roster_message, contract_message):
+            self.assertNotIn("stale file contents", message)
+            self.assertIn("superseded acceptance inputs", message)
+            self.assertIn("files roster", message)
+            self.assertIn("contract", message)
+            self.assertIn(proof.input_digest[:12], message)
+
     def test_findings_survive_auxiliary_deletion_and_require_explicit_closure(self):
         proof = self.prove_and_record()
         finding = {
