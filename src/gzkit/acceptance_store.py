@@ -20,10 +20,17 @@ from gzkit.acceptance import (
     Proof,
     Readiness,
     Review,
+    ReviewResponse,
     assess_readiness,
+    proof_aliases,
     validate_review_record,
 )
-from gzkit.acceptance_execution import canonical_obligations, digest_components, input_digest
+from gzkit.acceptance_execution import (
+    canonical_obligations,
+    digest_components,
+    execution_conditions_digest,
+    input_digest,
+)
 from gzkit.config import GzkitConfig
 from gzkit.ledger import Ledger
 from gzkit.ledger_events import acceptance_recorded_event
@@ -50,6 +57,12 @@ class AcceptanceHistory(BaseModel):
     contract: Contract | None = Field(None, description="Initial obligation population")
     proofs: list[Proof] = Field(default_factory=list, description="Execution history")
     reviews: list[Review] = Field(default_factory=list, description="Independent review history")
+
+
+class CompletionReview(Review):
+    """Derived primary judgment plus its supporting set; never a new reviewer record."""
+
+    supporting_reviews: tuple[Review, ...] = Field(description="Required approvals and closures")
 
 
 def acceptance_ledger(root: Path) -> Ledger:
@@ -100,12 +113,20 @@ def load_history(root: Path, obpi_id: str) -> AcceptanceHistory:
         elif kind == "review":
             # Re-derive the same judgment from the captured executed output. A
             # second agent-authored interpretation cannot replace the receipt.
-            history.reviews.append(review_from_receipt(payload))
+            history.reviews.append(
+                _at_ledger_position(review_from_receipt(payload), history.proofs)
+            )
         elif kind == "human-review":
-            history.reviews.append(_human_review(payload))
+            history.reviews.append(_at_ledger_position(_human_review(payload), history.proofs))
         else:
             raise ValueError(f"Unknown acceptance record type: {kind}")
     return history
+
+
+def _at_ledger_position(review: Review, proofs: list[Proof]) -> Review:
+    """Bind observation chronology without modifying a captured reviewer receipt."""
+    current = {proof.obligation_id: proof.id for proof in proofs}
+    return review.model_copy(update={"recorded_current_ids": tuple(current.values())})
 
 
 def initialize(root: Path, obpi_id: str, author_id: str) -> Contract:
@@ -206,11 +227,16 @@ def review_from_receipt(receipt: dict[str, Any]) -> Review:
         )
     if "tier" in payload:
         raise ValueError("Review tier is derived from the execution transport")
-    payload["tier"] = 1 if cross_vendor else 2
     if "id" in payload or "receipt_id" in payload:
         raise ValueError("Review IDs are assigned from the executed receipt, never caller supplied")
+    judgment = ReviewResponse.model_validate({"schema": REVIEW_SCHEMA, **payload})
     digest = hashlib.sha256(json.dumps(receipt, sort_keys=True).encode()).hexdigest()
-    return Review(id=digest, receipt_id=run_id, **payload)
+    return Review(
+        id=digest,
+        receipt_id=run_id,
+        tier=1 if cross_vendor else 2,
+        **judgment.model_dump(exclude={"schema_name"}),
+    )
 
 
 def _stale_review_message(root: Path, brief: Path, reviewed: str) -> str:
@@ -243,7 +269,12 @@ def _validate_new_review(root: Path, obpi_id: str, review: Review) -> bool:
     if any(item.id == review.id for item in history.reviews):
         return False
     brief = resolve_brief(root, obpi_id)
-    if review.input_digest != input_digest(root, brief):
+    known_subjects = {proof.input_digest for proof in history.proofs}
+    known_subjects.update(item.input_digest for item in history.reviews)
+    if (
+        review.input_digest != input_digest(root, brief)
+        and review.input_digest not in known_subjects
+    ):
         raise ValueError(_stale_review_message(root, brief, review.input_digest))
     # Reduction validates finding/closure referential integrity. Open findings
     # are legitimate outcomes and must be recorded, including a refuted round.
@@ -260,10 +291,11 @@ def _validate_new_review(root: Path, obpi_id: str, review: Review) -> bool:
 
 
 def record_review(root: Path, obpi_id: str, receipt: dict[str, Any]) -> Review:
-    """Bind executed judgment to current proof and preserve its complete findings."""
-    review = review_from_receipt(receipt)
+    """Retain authenticated observations; readiness separately checks applicability."""
+    history = load_history(root, obpi_id)
+    review = _at_ledger_position(review_from_receipt(receipt), history.proofs)
     if not _validate_new_review(root, obpi_id, review):
-        return review
+        return next(item for item in history.reviews if item.id == review.id)
     _append(root, obpi_id, "review", receipt)
     return review
 
@@ -322,7 +354,7 @@ def record_human_review(root: Path, obpi_id: str, *, attestor: str, ruling: str)
             "closures": closures,
         },
     }
-    review = _human_review(payload)
+    review = _at_ledger_position(_human_review(payload), history.proofs)
     if _validate_new_review(root, obpi_id, review):
         _append(root, obpi_id, "human-review", payload)
     return review
@@ -362,20 +394,7 @@ def acceptance_status(
             obligation_ids=obligation_ids,
             required_review_stages=required_stages,
         )
-        live_blockers = []
-        for obligation in current:
-            if obligation_ids is not None and obligation.id not in obligation_ids:
-                continue
-            if obligation.kind == "SUPPORT":
-                result = resolve_support_proof(obligation.statement, root, req_id=obligation.id)
-            elif obligation.kind == "STRUCTURAL-FENCE":
-                result = resolve_fence_proof(obligation.id, root, obligation.statement)
-            else:
-                continue
-            if result != "pass":
-                live_blockers.append(
-                    f"{obligation.id}: current canonical proof resolver returned {result}"
-                )
+        live_blockers = _live_proof_blockers(root, current, history.proofs, obligation_ids)
         return Readiness(
             ready=status.ready and not live_blockers,
             blockers=(*status.blockers, *live_blockers),
@@ -383,6 +402,37 @@ def acceptance_status(
         )
     except (OSError, ValueError, KeyError) as exc:
         return Readiness(ready=False, blockers=(str(exc),), open_findings=())
+
+
+def _live_proof_blockers(
+    root: Path,
+    current: list[Obligation],
+    proofs: list[Proof],
+    obligation_ids: tuple[str, ...] | None,
+) -> list[str]:
+    """Recheck explicitly declared conditions and the two live canonical resolvers."""
+    live_blockers = []
+    for proof in {item.obligation_id: item for item in proofs}.values():
+        if obligation_ids is not None and proof.obligation_id not in obligation_ids:
+            continue
+        if proof.environment_keys and proof.conditions_digest != execution_conditions_digest(
+            proof.environment_keys
+        ):
+            live_blockers.append(f"{proof.obligation_id}: declared execution conditions changed")
+    for obligation in current:
+        if obligation_ids is not None and obligation.id not in obligation_ids:
+            continue
+        if obligation.kind == "SUPPORT":
+            result = resolve_support_proof(obligation.statement, root, req_id=obligation.id)
+        elif obligation.kind == "STRUCTURAL-FENCE":
+            result = resolve_fence_proof(obligation.id, root, obligation.statement)
+        else:
+            continue
+        if result != "pass":
+            live_blockers.append(
+                f"{obligation.id}: current canonical proof resolver returned {result}"
+            )
+    return live_blockers
 
 
 def acceptance_blockers(
@@ -400,16 +450,46 @@ def acceptance_blockers(
     ]
 
 
-def completion_review(root: Path, obpi_id: str) -> Review:
-    """Return current receipted judgment only after the entire obligation set clears."""
+def completion_review(root: Path, obpi_id: str) -> CompletionReview:
+    """Retain all required approval/closure provenance and the actual degraded floor."""
     blockers = acceptance_blockers(root, obpi_id)
     if blockers:
         raise ValueError("; ".join(blockers))
     history = load_history(root, obpi_id)
     current = {proof.obligation_id: proof for proof in history.proofs}
-    current_ids = {proof.id for proof in current.values()}
-    return next(
-        review
-        for review in reversed(history.reviews)
-        if review.stage == "adversarial" and current_ids.intersection(review.accepted_proof_ids)
+    aliases = proof_aliases(history.proofs)
+    from gzkit.obpi_dispatch_channel import single_driver_declaration  # noqa: PLC0415
+
+    channels = (
+        ("adversarial",)
+        if single_driver_declaration(root, obpi_id)
+        else (
+            "spec",
+            "quality",
+            "adversarial",
+        )
     )
+    needed = {(stage, aliases[proof.id]) for stage in channels for proof in current.values()}
+    selected: dict[str, Review] = {}
+    for review in history.reviews:
+        covered = {(review.stage, aliases[key]) for key in review.accepted_proof_ids}
+        if needed.intersection(covered):
+            selected[review.id] = review
+            needed.difference_update(covered)
+    # Explicit closures are evidence independently of the approval set.
+    closed: set[str] = set()
+    for review in reversed(history.reviews):
+        for closure in review.closures:
+            proof = current.get(closure.obligation_id)
+            if (
+                proof is not None
+                and closure.finding_id not in closed
+                and aliases[closure.proof_id] == aliases[proof.id]
+            ):
+                selected[review.id] = review
+                closed.add(closure.finding_id)
+    primary = max(
+        (review for review in selected.values() if review.stage == "adversarial"),
+        key=lambda review: review.tier,
+    )
+    return CompletionReview(**primary.model_dump(), supporting_reviews=tuple(selected.values()))

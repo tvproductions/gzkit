@@ -1036,6 +1036,10 @@ class AdversarialValidationEvent(_EventBase):
             "Unlike job_id, the gate resolves this before admitting the completion"
         ),
     )
+    acceptance_review_ids: list[str] | None = Field(
+        default=None,
+        description="Required review IDs resolving receipt/tier provenance in acceptance history",
+    )
 
 
 class RedReceiptEmittedEvent(_EventBase):

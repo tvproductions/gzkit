@@ -8,9 +8,9 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from gzkit.acceptance_execution import canonical_obligations, input_digest, prove
+from gzkit.acceptance_context import build_review_context
+from gzkit.acceptance_execution import prove
 from gzkit.acceptance_store import (
-    acceptance_status,
     initialize,
     load_history,
     record_human_review,
@@ -33,6 +33,9 @@ class ProofRequest(BaseModel):
     source: str | None = Field(None, description="Production source to mutate")
     selectors: list[str] = Field(default_factory=list, description="Full covering unittest IDs")
     mutations: list[Mutation] = Field(default_factory=list, description="Exact behavioral controls")
+    environment_keys: list[str] = Field(
+        default_factory=list, description="Environment dependencies necessary to this proof claim"
+    )
 
 
 def obpi_acceptance_cmd(
@@ -120,6 +123,7 @@ def _execute_proof(root: Path, obpi_id: str, specification: str | None) -> tuple
         source=Path(request.source) if request.source else None,
         mutations=request.mutations,
         selectors=request.selectors,
+        environment_keys=tuple(request.environment_keys),
     )
     record_proof(root, obpi_id, proof)
     return proof.model_dump(mode="json"), proof.valid
@@ -152,21 +156,7 @@ def _status_report(
     root: Path, obpi_id: str, stage: Literal["stage2", "stage4"], req_ids: list[str] | None
 ) -> tuple[dict, bool]:
     """Assemble the current contract and retained evidence alongside readiness."""
-    status = acceptance_status(
+    context = build_review_context(
         root, obpi_id, stage=stage, obligation_ids=tuple(req_ids) if req_ids else None
     )
-    history = load_history(root, obpi_id)
-    brief = resolve_brief(root, obpi_id)
-    result = {
-        **status.model_dump(mode="json"),
-        "input_digest": input_digest(root, brief),
-        "contract": {
-            "author_id": history.contract.author_id if history.contract else None,
-            "obligations": [
-                item.model_dump(mode="json") for item in canonical_obligations(root, brief)
-            ],
-        },
-        "proofs": [item.model_dump(mode="json") for item in history.proofs],
-        "reviews": [item.model_dump(mode="json") for item in history.reviews],
-    }
-    return result, status.ready
+    return context.model_dump(mode="json"), context.ready

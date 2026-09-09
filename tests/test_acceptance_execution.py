@@ -86,6 +86,43 @@ class ExecutionFixture(unittest.TestCase):
 
 
 class AcceptanceInputTests(ExecutionFixture):
+    def test_declared_execution_condition_changes_claim_without_changing_artifact(self):
+        """AS-5: only explicitly nominated conditions affect this proof claim."""
+        with patch(
+            "gzkit.acceptance_execution._behavior_evidence",
+            return_value=({"control": "killed"}, True),
+        ):
+            with patch.dict("os.environ", {"ENGINE_MODE": "one"}):
+                first = prove(self.root, self.brief, REQ, environment_keys=("ENGINE_MODE",))
+            with patch.dict("os.environ", {"ENGINE_MODE": "two"}):
+                changed = prove(self.root, self.brief, REQ, environment_keys=("ENGINE_MODE",))
+        self.assertEqual(first.input_digest, changed.input_digest)
+        self.assertNotEqual(first.claim_digest, changed.claim_digest)
+        self.assertEqual(first.environment_keys, ("ENGINE_MODE",))
+
+    def test_producer_claim_ignores_run_timing_but_retains_actual_results(self):
+        """AS-4/AS-5: only execution occurrence noise is outside claim identity."""
+        from gzkit.acceptance_execution import proof_claim_digest
+
+        payload = {"command": ["uv", "run"], "output": "Ran 1 test in 0.100s\n4 != 6"}
+        digest = proof_claim_digest(self.root, payload)
+        self.assertEqual(
+            digest,
+            proof_claim_digest(
+                self.root,
+                {
+                    **payload,
+                    "output": "Ran 1 test in 0.999s\n4 != 6",
+                },
+            ),
+        )
+        for changed in (
+            {**payload, "output": "Ran 1 test in 0.100s\n2 != 9"},
+            {**payload, "command": ["another-runner"]},
+            {**payload, "conditions": {"FEATURE": "on"}},
+        ):
+            self.assertNotEqual(digest, proof_claim_digest(self.root, changed))
+
     def test_obligation_comes_from_contract_not_historical_analysis(self):
         (obligation,) = canonical_obligations(self.root, self.brief)
         self.assertEqual(

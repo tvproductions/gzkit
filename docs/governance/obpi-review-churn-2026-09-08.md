@@ -172,3 +172,107 @@ failures. Formatting was corrected; the successful rerun had approved access to
 uv's tool directory. The checkout also contained the separate active OBPI's
 changes. Because those changes were unstaged, the check did not record a reusable
 commit-tree verification fingerprint. No completion attestation is asserted here.
+
+## GHI #985 reopened repair, September 9
+
+The reopened [work order](https://github.com/tvproductions/gzkit/issues/985)
+was executed on `main`, starting from clean commit
+`417154bd4210c020fe194bc0c25fb551f1d68311`. The work preserves the existing
+acceptance ledger and reducer. Disposable fixtures supply the process evidence;
+this correction does not execute or complete the live content OBPI.
+
+### Acceptance and proof cases
+
+| Case / failure mechanism | Decisive witness | Disposition |
+|---|---|---|
+| AS-1: stale-subject rejection discards a delayed finding | `test_delayed_mapped_finding_is_retained_without_current_approval` | Store retains a known historical subject; its approval cannot satisfy newer proof |
+| AS-2: repeated historical finding erases a newer closure | `test_repeated_historical_finding_preserves_newer_independent_closure` | Identical older observation preserves closure; the current observation still reopens |
+| AS-3: a later equivalent proof retroactively hides a current counterexample | `test_future_equivalent_proof_cannot_erase_a_recorded_current_counterexample` | Review position in immutable ledger determines then-current proofs; replay preserves the reopening |
+| AS-4: UUID-only replacement invalidates unchanged proof claims | `test_equivalent_successful_execution_preserves_approval_and_closure` plus real BDD reexecution | Consecutive successful explicit claim equivalence preserves applicable approval and closure |
+| AS-5: changed evidence or intervening invalid execution reuses approval | `test_changed_claim_or_failed_execution_cannot_reuse_prior_approval`, producer claim controls, declared-condition consumer test | Controls/results/specification/contract/input/declared conditions stay bound; legacy and invalid runs break equivalence |
+| AS-6: one intersecting review loses scoped approvals and fallback provenance | `test_scoped_reviews_preserve_complete_completion_provenance` | Completion event retains every necessary review ID and actual receipt/tier provenance |
+| AS-7: rejection has no demonstrated route back to acceptance | `features/acceptance_recovery.feature`, first scenario | Real proof, finding, repair, explicit synthetic independent closure, ledger reload, equivalent rerun, and real ceremony reach human-attestation request |
+
+The AS-3 regression came from independent review of the first correction: a
+review already recorded as current could become historical when a later
+equivalent proof was appended. The test failed before ledger-position binding
+and passed afterward. The reviewer reproduced the repaired behavior and checked
+legacy receipt replay, repeated historical observations, and duplicate imports.
+Neither raw receipts nor earlier ledger rows are rewritten. This independent
+review passed 63 focused tests with no remaining findings in that population.
+
+| Finite proof case | Witness and limit |
+|---|---|
+| TQ-G01: runtime, setup, import, skip, absent/ambiguous nomination | Existing `test_mutation_witness.py` controls plus BDD module-import failure; none earns valid behavioral credit |
+| TQ-G02: unrelated or masking assertion | Existing unrelated-test control plus BDD same-test diagnostic masking; actual failure traces distinguish diagnostic from required assertion |
+| TQ-C01: documented unittest output | Existing documented-result and documented-skip tests retain the parser correction |
+| TQ-C02: actual process exit | Existing CLI process tests reject blocked state; BDD accepts ready state through both console and module entrypoints at Stage 2 and Stage 4 |
+| TQ-C03: coherent shared oracle | BDD shared-helper expectation survives the identical production defect that an independent literal expectation kills |
+| TQ-R01: interrupted active mutation | BDD inspects activated LF/CRLF bytes, injects a timeout during the active compilation command, verifies exact restoration and no proof append, then executes successful recovery |
+| TQ-R02: source residue despite a real kill | Existing producer test creates extra production source during the mutant run and requires invalidation independently of the assertion kill |
+
+This finite population does not prove arbitrary semantic oracle adequacy. The
+same-test masking case deliberately demonstrates why a generic assertion
+classification cannot replace independent review of the actual cause. The new
+process demonstrations live in BDD. The older process tests' placement under
+`tests/` is recorded separately through `gz insights remember`; no whole-suite
+migration is required for this repair.
+
+### Reviewer handoff through the real consumer
+
+The acceptance response model now owns both the imported schema and the generated
+reviewer example. Current context carries canonical obligations, input components,
+proof history and findings. Missing or contradictory local context fails before
+dispatch, including a changed initialized obligation roster. The latter was a
+second independent-review finding, observed red and then closed with its focused
+regression. Examples grant no approval and contain the actual closure shape;
+reviewer-owned fields remain distinct from receipt-derived provenance and the
+legacy result envelope. Formatting repair uses a new invocation with original
+subject, judgment and receipt reference; it never edits a captured receipt.
+Final independent review requested a connected formatting-repair witness.
+`test_format_only_recapture_preserves_original_refutation_and_subject` now starts
+with a malformed substantive refutation, preserves its raw receipt, imports a
+separate disclosed synthetic recapture referencing it, and verifies the same
+subject, finding, verdict and approval fields through reload. It remains blocked
+despite earlier approvals; source bytes and proof history remain unchanged.
+
+The [actual handoff receipt](../evals/obpi-review-985-actual-handoff.json)
+and [delivered prompt](../evals/obpi-review-985-handoff-prompt.txt) preserve a native
+Claude spec-review invocation, requested model `claude-opus-5`, effort `xhigh`,
+through `gz arb step --name specreview`. Receipt
+`arb-step-specreview-7a90f0ac89884e83a4bcce30293fb6a7` exited zero. The actual
+unedited model output imported as review
+`e10ccf08134f14dc4716e3444500e0ca235681156d5a53ee58a77e44cfe74507` at tier 2,
+explicitly closing the fixture's `F-negative-boundary` finding against current
+proof. Reload retained the closure. Readiness remained false because quality and
+adversarial approval were still absent, and the actual precompletion consumer
+refused advancement. The historical finding was a disclosed synthetic seed;
+current proof execution and this model response were real.
+
+The reviewer disclosed that the single mutant failed at the positive literal
+assertion before reaching the negative case. It judged the shared multiplication
+expression and negative literal baseline sufficient for that bounded fixture;
+the artifact does not establish an independent kill for every assertion. The
+native spec-review route does not demonstrate tier-1 adversarial plugin delivery.
+
+Two failed prompt invocations exposed an independent ARB argument issue:
+`parser_arb.py` removes every `--`, including child separators. The successful
+invocation placed the prompt first, avoiding variadic option consumption. The
+defect is recorded through `gz insights remember`, separately from acceptance.
+
+### Instruction authoring disposition remains pending
+
+The read-only source-to-delivery audit confirmed a contradiction that requires
+the operator's ruling before the disputed canonical source is changed:
+
+- Substrate doctrine calls `.gzkit/skills/**/SKILL.md` derived output and prescribes
+  corpus authoring for every surface.
+- `skill-surface-sync.md` declares `.gzkit/skills/` the canonical authoring source
+  and prescribes editing it before surface sync.
+
+The proposed bounded disposition retains corpus authoring for enrolled surfaces
+and canonical-file authoring for the currently unenrolled pipeline skill until
+its governed migration. Package/vendor copies remain derived. No Rule-family
+onboarding, root-contract rendition, or live OBPI is initiated. Instruction
+evaluation results are recorded separately from source-authoring approval; an
+evaluated proposal does not make an unapplied correction complete.

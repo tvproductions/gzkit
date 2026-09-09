@@ -1,0 +1,26 @@
+Proposed authoring disposition for operator review (GHI #985; not applied):
+
+Authority to retain: substrate fidelity invariants; corpus authorship for enrolled
+surfaces; one root AgentContract; current skill-surface-sync delivery contract.
+The current pipeline skill is not corpus-enrolled. Until its governed migration,
+its canonical source remains .gzkit/skills/gz-obpi-pipeline/SKILL.md, followed by
+gz agent sync control-surfaces. Vendor and package copies remain derived.
+
+In docs/governance/agent-control-surface-rendering-substrate.md:
+
+- Anti-pattern currently: "AGENTS.md, .claude/rules/<rule>.md,
+  .gzkit/skills/**/SKILL.md are derived outputs; edits land in the canonical model"
++ For corpus-enrolled surfaces, edit the canonical corpus and render. Vendor
+  mirrors and package copies are derived. Unenrolled canonical skills retain
+  the hand-authored source and sync procedure in skill-surface-sync.md until
+  their governed migration; the current pipeline skill is one such surface.
+
+- Authoring paragraph currently requires corpus authoring for every surface.
++ Authoring follows the surface's current enrollment: corpus entry and
+  composition for enrolled surfaces; canonical file plus surface sync for
+  unenrolled skills. Neither path permits editing a vendor mirror directly.
+  This era-specific disposition preserves the substrate's fidelity invariant;
+  it does not initiate Rule-family onboarding or any live OBPI.
+
+The exact bounded pipeline wording proposal is in candidate.diff alongside this
+file. No root-contract invariant is removed or re-renditioned.

@@ -1,0 +1,11 @@
+{
+  "base_commit": "417154bd4210c020fe194bc0c25fb551f1d68311",
+  "sources": {
+    "src/gzkit/acceptance.py": "08f4d61dcd93b030c5c795ffedca0f72463ddbe0abe6de030ed1de3dfb854648",
+    "src/gzkit/acceptance_store.py": "c6891c2447558e3dac19d043dce73e1262af911c362e042c6e8a2ef5013d7b8e",
+    "src/gzkit/acceptance_context.py": "b3828facdb794c09753af95e9fb478ed47f7228f176359465eb77df53adf7e17",
+    "src/gzkit/acceptance_execution.py": "a9f006b3024538217e0ec933245c97d3020164701dd40284caeff9dee6e0e74e",
+    "src/gzkit/mutation_witness.py": "64209540214c01c1c21898c8353f97db75518fff17b09e2cbb1ffd82200fc4d8"
+  },
+  "scope": "Shared acceptance runtime unchanged during the sixteen trials; scenario source/test/contract bytes are retained in fixtures.json."
+}

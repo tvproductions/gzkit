@@ -37,6 +37,7 @@ from gzkit.roles import (
     ReviewVerdict,
 )
 from gzkit.traceability import covers  # noqa: F401
+from tests.acceptance_fixtures import ACCEPTANCE_CONTEXT
 
 # Dispatch mechanics consume readiness derived and tested by the acceptance store.
 _READY = Readiness(ready=True, blockers=(), open_findings=())
@@ -186,6 +187,7 @@ class TestComposeSpecReviewPrompt(unittest.TestCase):
             files_changed or [],
             why="Structural test of the spec-review prompt shape",
             project_root=_NO_PERSONA_ROOT,
+            acceptance_context=ACCEPTANCE_CONTEXT,
         )
 
     def test_contains_task_description(self):
@@ -225,6 +227,8 @@ class TestComposeSpecReviewPrompt(unittest.TestCase):
         self.assertIn("major", prompt)
         self.assertIn("minor", prompt)
         self.assertIn("info", prompt)
+        self.assertNotIn("small issue, noted but non-blocking", prompt)
+        self.assertIn("obligation mapping determines acceptance blocking", prompt)
 
     def test_works_with_empty_brief_requirements(self):
         prompt = self._prompt(brief_requirements=[])
@@ -260,6 +264,7 @@ class TestComposeQualityReviewPrompt(unittest.TestCase):
             test_files if test_files is not None else ["tests/test_widget.py"],
             why="Structural test of the quality-review prompt shape",
             project_root=_NO_PERSONA_ROOT,
+            acceptance_context=ACCEPTANCE_CONTEXT,
         )
 
     def test_contains_files_changed(self):
@@ -334,12 +339,14 @@ class TestReviewEvidenceInstructionsOutputContract(unittest.TestCase):
                 ["src/a.py"],
                 why="GHI #984 evidence review",
                 project_root=_NO_PERSONA_ROOT,
+                acceptance_context=ACCEPTANCE_CONTEXT,
             ),
             "quality": compose_quality_review_prompt(
                 ["src/a.py"],
                 ["tests/test_a.py"],
                 why="GHI #984 evidence review",
                 project_root=_NO_PERSONA_ROOT,
+                acceptance_context=ACCEPTANCE_CONTEXT,
             ),
         }
         for role, prompt in prompts.items():
@@ -836,7 +843,7 @@ class TestAcceptancePromptOutputContract(unittest.TestCase):
         from gzkit.acceptance import Review
         from gzkit.acceptance_store import REVIEW_SCHEMA
 
-        context = json.dumps({"input_digest": "observed-bytes", "proofs": [{"id": "proof-7"}]})
+        context = ACCEPTANCE_CONTEXT
         prompts = {
             "spec": compose_spec_review_prompt(
                 _make_task(),
@@ -856,7 +863,7 @@ class TestAcceptancePromptOutputContract(unittest.TestCase):
         }
         for stage, prompt in prompts.items():
             with self.subTest(stage=stage):
-                self.assertIn(context, prompt)
+                self.assertIn(json.loads(context)["input_digest"], prompt)
                 blocks = re.findall(r"```json\s*(\{.*?\})\s*```", prompt, re.DOTALL)
                 payloads = [json.loads(block) for block in blocks]
                 acceptance = [
@@ -868,9 +875,10 @@ class TestAcceptancePromptOutputContract(unittest.TestCase):
                 review = Review(id="receipt-derived", receipt_id="executed-receipt", **payload)
                 self.assertEqual(review.stage, stage)
                 self.assertEqual(len(review.proof_ids), len(review.obligation_ids))
-                self.assertEqual(review.accepted_proof_ids, review.proof_ids)
-                self.assertIn("Auxiliary observations alone cannot", prompt)
-                self.assertIn("finding_id, obligation_id", prompt)
+                self.assertEqual(review.proof_ids, ("proof-a",))
+                self.assertEqual(review.accepted_proof_ids, ())
+                self.assertIn("Auxiliary observations are non-blocking", prompt)
+                self.assertIn("description is a finding field, never a closure field", prompt)
 
 
 if __name__ == "__main__":

@@ -38,6 +38,7 @@ from gzkit.roles import (
     HandoffStatus,
 )
 from gzkit.traceability import covers
+from tests.acceptance_fixtures import ACCEPTANCE_CONTEXT as _ACCEPTANCE_CONTEXT
 
 # Dispatch mechanics consume readiness derived and tested by the acceptance store.
 _READY = Readiness(ready=True, blockers=(), open_findings=())
@@ -49,6 +50,7 @@ _READY = Readiness(ready=True, blockers=(), open_findings=())
 
 # A project root with no personas: keeps these structural assertions focused on
 # the task fields rather than on injected persona text (GHI #861).
+
 _NO_PERSONA_ROOT = Path("/nonexistent-project-root")
 
 
@@ -654,6 +656,7 @@ class TestStage2ReviewDispatchContract(unittest.TestCase):
             files_changed,
             why="Structural test of the dispatch prompt shape",
             project_root=_NO_PERSONA_ROOT,
+            acceptance_context=_ACCEPTANCE_CONTEXT,
         )
         self.assertIn("Add validation", prompt)
         self.assertIn("src/a.py", prompt)
@@ -674,6 +677,7 @@ class TestStage2ReviewDispatchContract(unittest.TestCase):
             test_files,
             why="Structural test of the dispatch prompt shape",
             project_root=_NO_PERSONA_ROOT,
+            acceptance_context=_ACCEPTANCE_CONTEXT,
         )
         self.assertIn("src/config.py", prompt)
         self.assertIn("tests/test_config.py", prompt)
@@ -807,12 +811,14 @@ class TestStage2ReviewDispatchContract(unittest.TestCase):
                 impl_result.files_changed,
                 why="Structural test of the dispatch prompt shape",
                 project_root=_NO_PERSONA_ROOT,
+                acceptance_context=_ACCEPTANCE_CONTEXT,
             )
             quality_prompt = compose_quality_review_prompt(
                 impl_result.files_changed,
                 impl_result.tests_added,
                 why="Structural test of the dispatch prompt shape",
                 project_root=_NO_PERSONA_ROOT,
+                acceptance_context=_ACCEPTANCE_CONTEXT,
             )
             self.assertIn("Add model" if i == 0 else "Add tests", spec_prompt)
             self.assertIn("src/m.py", quality_prompt)
@@ -1190,10 +1196,19 @@ class TestDispatchPromptsCarryTheContract(unittest.TestCase):
         agent that wrote the code; a shared or absent frame collapses that.
         """
         spec = compose_spec_review_prompt(
-            self._task(), [], ["src/gzkit/example.py"], why="Verify REQ-01", project_root=self.root
+            self._task(),
+            [],
+            ["src/gzkit/example.py"],
+            why="Verify REQ-01",
+            project_root=self.root,
+            acceptance_context=_ACCEPTANCE_CONTEXT,
         )
         quality = compose_quality_review_prompt(
-            ["src/gzkit/example.py"], [], why="Judge structure", project_root=self.root
+            ["src/gzkit/example.py"],
+            [],
+            why="Judge structure",
+            project_root=self.root,
+            acceptance_context=_ACCEPTANCE_CONTEXT,
         )
         self.assertIn("I assume nothing the implementer claims", spec)
         self.assertIn("I judge structure against", quality)
@@ -1210,8 +1225,21 @@ class TestDispatchPromptsCarryTheContract(unittest.TestCase):
         why = "Task 3 of 5; the caller needs the parser split before it can land"
         for prompt in (
             compose_implementer_prompt(self._task(), [], why=why, project_root=self.root),
-            compose_spec_review_prompt(self._task(), [], ["a.py"], why=why, project_root=self.root),
-            compose_quality_review_prompt(["a.py"], [], why=why, project_root=self.root),
+            compose_spec_review_prompt(
+                self._task(),
+                [],
+                ["a.py"],
+                why=why,
+                project_root=self.root,
+                acceptance_context=_ACCEPTANCE_CONTEXT,
+            ),
+            compose_quality_review_prompt(
+                ["a.py"],
+                [],
+                why=why,
+                project_root=self.root,
+                acceptance_context=_ACCEPTANCE_CONTEXT,
+            ),
         ):
             self.assertIn(why, prompt)
 
@@ -1249,7 +1277,11 @@ class TestDispatchPromptsCarryTheContract(unittest.TestCase):
         -- never from prose. ... Cite the authority, not the value."
         """
         prompt = compose_quality_review_prompt(
-            ["src/gzkit/example.py"], [], why="Judge structure", project_root=self.root
+            ["src/gzkit/example.py"],
+            [],
+            why="Judge structure",
+            project_root=self.root,
+            acceptance_context=_ACCEPTANCE_CONTEXT,
         )
         self.assertIn(".gzkit/rules/complexity-thresholds.json", prompt)
 
@@ -1267,7 +1299,11 @@ class TestDispatchPromptsCarryTheContract(unittest.TestCase):
         table.write_text(json.dumps(payload), encoding="utf-8")
 
         prompt = compose_quality_review_prompt(
-            ["src/gzkit/example.py"], [], why="Judge structure", project_root=self.root
+            ["src/gzkit/example.py"],
+            [],
+            why="Judge structure",
+            project_root=self.root,
+            acceptance_context=_ACCEPTANCE_CONTEXT,
         )
         self.assertIn("4242", prompt)
 
@@ -1279,7 +1315,11 @@ class TestDispatchPromptsCarryTheContract(unittest.TestCase):
         and modules at radon_raw_nloc 1031.9, and has no class metric at all.
         """
         prompt = compose_quality_review_prompt(
-            ["src/gzkit/example.py"], [], why="Judge structure", project_root=self.root
+            ["src/gzkit/example.py"],
+            [],
+            why="Judge structure",
+            project_root=self.root,
+            acceptance_context=_ACCEPTANCE_CONTEXT,
         )
         self.assertNotIn("modules <=600", prompt)
         self.assertNotIn("classes <=300", prompt)
@@ -1293,7 +1333,11 @@ class TestDispatchPromptsCarryTheContract(unittest.TestCase):
         observations, or it keeps escalating until it has something to report.
         """
         prompt = compose_quality_review_prompt(
-            ["src/gzkit/example.py"], [], why="Judge structure", project_root=self.root
+            ["src/gzkit/example.py"],
+            [],
+            why="Judge structure",
+            project_root=self.root,
+            acceptance_context=_ACCEPTANCE_CONTEXT,
         )
         self.assertNotIn("Flag any violations", prompt)
         self.assertIn("non-blocking", prompt)

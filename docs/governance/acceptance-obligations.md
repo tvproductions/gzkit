@@ -101,15 +101,38 @@ review requires the operator's explicit verbatim judgment of current proof and
 findings. General implementation permission authorizes neither a human review
 nor completion attestation.
 
-Freshness is conservative: source, test, configuration, contract, and environment
-changes can invalidate the complete proof population. Source bytes distinguish
+Freshness is conservative: source, test, configuration, and contract changes can
+invalidate the complete proof population. Source bytes distinguish
 different dirty trees at the same HEAD. Appending evidence records or editing
 recognized history sections alone does not invalidate executable proof. Unknown
 contract sections remain included, and live non-BEHAVIOR resolvers run again.
 
-New proof identity invalidates previous review approvals and closures even if its
-input digest matches. Thus a repaired artifact cannot inherit an earlier review
-silently. Schema validity proves neither oracle independence nor comprehensive
+Consecutive successful executions of an explicitly equivalent claim preserve
+applicable approvals and closure. The producer's versioned claim fingerprint
+retains controls, selectors, invocation, and actual observations, excluding only
+execution timing and isolated cache paths. Artifact, contract, and explicitly
+declared execution conditions must also agree. Failed or legacy executions break
+equivalence; opaque legacy records gain no retrospective approval. Ambient process
+environment never enters artifact identity. A proof can declare necessary
+environment keys whose hashed values are rechecked separately at readiness.
+
+Valid delayed observations against known historical subjects remain recordable.
+Repeating an identical finding against an older proof cannot erase newer closure;
+a current counterexample still blocks. The ledger position of each review fixes
+its then-current proof population; later equivalent execution cannot reinterpret
+a recorded current counterexample as an older observation. Replay reconstructs
+that population without adding reviewer-controlled fields or changing raw receipts.
+Completion retains every necessary scoped
+review and closure reference, including actual transport tiers, through the
+`acceptance_review_ids` provenance set on its adversarial-validation event.
+
+The reviewer handoff is captured from current records, checked for a stable input
+subject, and rendered using the importer's response model. The generated example
+grants no approval. Reviewers independently choose approval and closure fields;
+legacy review output remains a separate envelope. A formatting correction retains
+the original receipt reference, subject, and substantive judgment in a new invocation.
+
+Schema validity proves neither oracle independence nor comprehensive
 requirement fulfillment; those judgments remain explicit independent review work.
 
 ## Existing work and recovery

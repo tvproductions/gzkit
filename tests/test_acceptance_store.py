@@ -3,8 +3,14 @@
 import json
 import unittest
 import uuid
+from unittest.mock import patch
 
-from gzkit.acceptance_execution import input_digest
+from gzkit.acceptance import Proof
+from gzkit.acceptance_execution import (
+    canonical_obligations,
+    execution_conditions_digest,
+    input_digest,
+)
 from gzkit.acceptance_store import (
     REVIEW_SCHEMA,
     acceptance_ledger,
@@ -67,6 +73,161 @@ class AcceptanceStoreTests(ExecutionFixture):
         for stage in ("spec", "quality", "adversarial"):
             record_review(self.root, OBPI, self.receipt(proof, stage))
 
+    def synthetic_proof(self):
+        """Isolate persistence from execution, which has separate process controls."""
+        obligation = canonical_obligations(self.root, self.brief)[0]
+        proof = Proof(
+            id=f"proof-{uuid.uuid4().hex}",
+            obligation_id=REQ,
+            contract_digest=obligation.contract_digest,
+            input_digest=input_digest(self.root, self.brief),
+            selectors=("tests.test_engine.Case.test_double",),
+            evidence='{"fixture":"synthetic executed proof for store tests"}',
+            valid=True,
+        )
+        record_proof(self.root, OBPI, proof)
+        return proof
+
+    def test_delayed_mapped_finding_is_retained_without_current_approval(self):
+        """AS-1: a historical observation survives a real subject change and reload."""
+        old = self.synthetic_proof()
+        self.write("src/engine.py", "def double(value):\n    return value + value\n")
+        current = self.synthetic_proof()
+        finding = {
+            "id": "delayed-boundary",
+            "obligation_id": REQ,
+            "kind": "missing-proof",
+            "description": "The required negative input boundary was never exercised.",
+        }
+        observed = record_review(self.root, OBPI, self.receipt(old, findings=[finding]))
+        history = load_history(self.root, OBPI)
+        self.assertEqual(history.reviews, [observed])
+        self.assertEqual(history.reviews[0].input_digest, old.input_digest)
+        status = acceptance_status(self.root, OBPI)
+        self.assertFalse(status.ready)
+        self.assertEqual(status.open_findings, (finding["id"],))
+        self.assertTrue(any(current.id in blocker for blocker in status.blockers))
+
+    def test_repeated_historical_finding_preserves_newer_independent_closure(self):
+        """AS-2/AS-3: repetition is history; a current counterexample still blocks."""
+        old = self.synthetic_proof()
+        finding = {
+            "id": "F-repair",
+            "obligation_id": REQ,
+            "kind": "counterexample",
+            "description": "Negative inputs violate the required result.",
+        }
+        record_review(self.root, OBPI, self.receipt(old, findings=[finding], verdict="refuted"))
+        self.write("src/engine.py", "def double(value):\n    return value + value\n")
+        current = self.synthetic_proof()
+        self.accept(current)
+        closure = {"finding_id": finding["id"], "obligation_id": REQ, "proof_id": current.id}
+        record_review(self.root, OBPI, self.receipt(current, closures=[closure]))
+        self.assertTrue(acceptance_status(self.root, OBPI).ready)
+        record_review(self.root, OBPI, self.receipt(old, findings=[finding], verdict="refuted"))
+        self.assertTrue(acceptance_status(self.root, OBPI).ready)
+        self.assertEqual(load_history(self.root, OBPI).reviews[-1].findings[0].id, finding["id"])
+        record_review(self.root, OBPI, self.receipt(current, findings=[finding], verdict="refuted"))
+        self.assertEqual(acceptance_status(self.root, OBPI).open_findings, (finding["id"],))
+
+    def test_scoped_reviews_preserve_complete_completion_provenance(self):
+        """AS-6: no single intersecting review represents two required approvals."""
+        from gzkit.commands.obpi_complete import _current_adversarial_event
+
+        # A second obligation is canon before initialization in this independent fixture.
+        other = "REQ-0.1.0-01-02"
+        self.brief.write_text(
+            BRIEF.replace(
+                "reqs:\n- " + REQ,
+                "reqs:\n- " + other + "\n- " + REQ,
+            ).replace(
+                "## Evidence", f"- [ ] {other} [BEHAVIOR]: Double three to six.\n## Evidence"
+            ),
+            encoding="utf-8",
+        )
+        # Existing initialization is deliberately replaced only in a new empty temp ledger.
+        self.write(
+            ".gzkit.json",
+            json.dumps(
+                {
+                    "paths": {
+                        "design_root": "design",
+                        "ledger": ".gzkit/scoped-ledger.jsonl",
+                    }
+                }
+            ),
+        )
+        initialize(self.root, OBPI, "implementer-session")
+        first = self.synthetic_proof()
+        second = first.model_copy(update={"id": "second-proof", "obligation_id": other})
+        record_proof(self.root, OBPI, second)
+        self.accept(first)
+        self.assertFalse(acceptance_status(self.root, OBPI).ready)
+        expected = [review.id for review in load_history(self.root, OBPI).reviews]
+        for stage in ("spec", "quality", "adversarial"):
+            receipt = self.receipt(second, stage)
+            payload = json.loads(
+                receipt["stdout_tail"].removeprefix("```json\n").removesuffix("\n```")
+            )
+            payload["obligation_ids"] = [other]
+            if stage == "adversarial":
+                receipt["step"]["command"] = ["claude", "-p", "review"]
+                payload["fallback_reason"] = "Synthetic unavailable cross-vendor transport"
+            receipt["stdout_tail"] = json.dumps(payload)
+            expected.append(record_review(self.root, OBPI, receipt).id)
+        status = acceptance_status(self.root, OBPI)
+        self.assertTrue(status.ready, status.blockers)
+        event = _current_adversarial_event(self.root, OBPI, False, None, None, None)
+        self.assertEqual(set(event.extra["acceptance_review_ids"]), set(expected))
+        self.assertEqual(event.extra["adversary_tier"], 2)
+        parse_typed_event(event.model_dump())
+
+    def test_declared_conditions_are_checked_at_the_readiness_consumer(self):
+        """AS-5: an unrelated shell variable stays irrelevant to approval."""
+        with patch.dict("os.environ", {"ENGINE_MODE": "required"}):
+            original = self.synthetic_proof()
+            proof = original.model_copy(
+                update={
+                    "id": "conditioned-proof",
+                    "environment_keys": ("ENGINE_MODE",),
+                    "conditions_digest": execution_conditions_digest(("ENGINE_MODE",)),
+                }
+            )
+            record_proof(self.root, OBPI, proof)
+            self.accept(proof)
+            with patch.dict("os.environ", {"COLUMNS": "999"}):
+                self.assertTrue(acceptance_status(self.root, OBPI).ready)
+            with patch.dict("os.environ", {"ENGINE_MODE": "changed"}):
+                status = acceptance_status(self.root, OBPI)
+                self.assertFalse(status.ready)
+                self.assertTrue(
+                    any("declared execution conditions" in item for item in status.blockers)
+                )
+
+    def test_future_equivalent_proof_cannot_erase_a_recorded_current_counterexample(self):
+        """AS-3 review finding: replay must preserve observation-time meaning."""
+        original = self.synthetic_proof()
+        proof = original.model_copy(update={"id": "explicit-claim", "claim_digest": "same-claim"})
+        record_proof(self.root, OBPI, proof)
+        finding = {
+            "id": "F-current",
+            "obligation_id": REQ,
+            "kind": "counterexample",
+            "description": "A required boundary still violates the contract.",
+        }
+        record_review(self.root, OBPI, self.receipt(proof, findings=[finding], verdict="refuted"))
+        self.accept(proof)
+        closure = {"finding_id": finding["id"], "obligation_id": REQ, "proof_id": proof.id}
+        record_review(self.root, OBPI, self.receipt(proof, closures=[closure]))
+        self.assertTrue(acceptance_status(self.root, OBPI).ready)
+        record_review(self.root, OBPI, self.receipt(proof, findings=[finding], verdict="refuted"))
+        self.assertEqual(acceptance_status(self.root, OBPI).open_findings, (finding["id"],))
+        repeated = proof.model_copy(update={"id": "later-equivalent-execution"})
+        record_proof(self.root, OBPI, repeated)
+        status = acceptance_status(self.root, OBPI)
+        self.assertFalse(status.ready)
+        self.assertEqual(status.open_findings, (finding["id"],))
+
     def test_actual_semantic_proof_and_independent_reviews_reach_readiness(self):
         proof = self.prove_and_record()
         self.assertFalse(acceptance_status(self.root, OBPI).ready)
@@ -100,6 +261,9 @@ class AcceptanceStoreTests(ExecutionFixture):
         """
         proof = self.prove_and_record()
         receipt = self.receipt(proof)
+        payload = json.loads(receipt["stdout_tail"].removeprefix("```json\n").removesuffix("\n```"))
+        payload["input_digest"] = "unrecognized-subject"
+        receipt["stdout_tail"] = json.dumps(payload)
 
         self.write("src/engine.py", "def double(value):\n    return value * 7\n")
         with self.assertRaises(ValueError) as ctx:
@@ -119,7 +283,7 @@ class AcceptanceStoreTests(ExecutionFixture):
             self.assertIn("superseded acceptance inputs", message)
             self.assertIn("files roster", message)
             self.assertIn("contract", message)
-            self.assertIn(proof.input_digest[:12], message)
+            self.assertIn("unrecognized", message)
 
     def test_findings_survive_auxiliary_deletion_and_require_explicit_closure(self):
         proof = self.prove_and_record()

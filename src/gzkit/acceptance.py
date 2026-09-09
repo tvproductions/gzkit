@@ -40,6 +40,39 @@ class Proof(AcceptanceModel):
     selectors: tuple[str, ...] = Field(default=(), description="Fully qualified executed test IDs")
     evidence: str = Field(description="Exact serialized execution evidence payload")
     valid: bool = Field(description="Validity derived by the producer from observed execution")
+    claim_digest: str | None = Field(
+        default=None,
+        min_length=1,
+        description="Versioned specification/result fingerprint; absent for legacy execution",
+    )
+    environment_keys: tuple[str, ...] = Field(
+        default=(), description="Explicit environment dependencies of this proof claim"
+    )
+    conditions_digest: str | None = Field(
+        default=None,
+        description="Hash of declared execution conditions; values are never persisted",
+    )
+
+
+def proof_aliases(proofs: Sequence[Proof]) -> dict[str, str]:
+    """Alias consecutive witnessed successes only; legacy/failed runs break reuse."""
+    aliases: dict[str, str] = {}
+    previous: dict[str, tuple[tuple | None, str]] = {}
+    for proof in proofs:
+        key = None
+        if proof.valid and proof.claim_digest is not None:
+            key = (
+                proof.claim_digest,
+                proof.contract_digest,
+                proof.input_digest,
+                proof.selectors,
+                proof.environment_keys,
+                proof.conditions_digest,
+            )
+        old_key, old_id = previous.get(proof.obligation_id, (None, ""))
+        aliases[proof.id] = aliases[old_id] if key is not None and key == old_key else proof.id
+        previous[proof.obligation_id] = (key, proof.id)
+    return aliases
 
 
 class Finding(AcceptanceModel):
@@ -61,10 +94,9 @@ class Closure(AcceptanceModel):
     proof_id: str = Field(min_length=1, description="Exact proof independently judged to close it")
 
 
-class Review(AcceptanceModel):
-    """A receipt-bound judgment of explicitly named obligations and proofs."""
+class ReviewJudgment(AcceptanceModel):
+    """Reviewer-owned judgment fields, shared by transport and persisted records."""
 
-    id: str = Field(min_length=1, description="Unique immutable review identity")
     stage: Literal["spec", "quality", "adversarial"] = Field(description="Review responsibility")
     input_digest: str = Field(min_length=1, description="Actual input snapshot reviewed")
     obligation_ids: tuple[str, ...] = Field(description="Explicit acceptance subject of the review")
@@ -74,15 +106,33 @@ class Review(AcceptanceModel):
     )
     findings: tuple[Finding, ...] = Field(default=(), description="New or reaffirmed findings")
     closures: tuple[Closure, ...] = Field(default=(), description="Independently verified repairs")
-    receipt_id: str = Field(min_length=1, description="Execution receipt containing this review")
     reviewer_id: str = Field(min_length=1, description="Named reviewer bound to receipt provenance")
     verdict: Literal["accepted", "refuted"] = Field(
         default="accepted",
         description="Preserved overall review token; never grants proof approval",
     )
-    tier: Literal[1, 2, 3] = Field(default=1, description="Recorded review transport tier")
     fallback_reason: str = Field(
         default="", description="Recorded reason for a degraded review tier"
+    )
+
+
+class Review(ReviewJudgment):
+    """A receipt-bound judgment of explicitly named obligations and proofs."""
+
+    id: str = Field(min_length=1, description="Unique immutable review identity")
+    receipt_id: str = Field(min_length=1, description="Execution receipt containing this review")
+    tier: Literal[1, 2, 3] = Field(default=1, description="Recorded review transport tier")
+    recorded_current_ids: tuple[str, ...] | None = Field(
+        default=None,
+        description="Current proof IDs at this review's ledger position; reconstructed by replay",
+    )
+
+
+class ReviewResponse(ReviewJudgment):
+    """Exact reviewer transport envelope; persistence identity belongs to the importer."""
+
+    schema_name: Literal["gzkit.acceptance.review.v1"] = Field(
+        alias="schema", description="Acceptance review envelope discriminator"
     )
 
 
@@ -202,14 +252,38 @@ def _review_proof_scope_errors(review: Review, proofs: dict[str, Proof]) -> list
     return errors
 
 
-def _record_findings(review: Review, state: _ReviewState) -> None:
+def _record_findings(review: Review, proofs: dict[str, Proof], state: _ReviewState) -> None:
+    positions = {proof_id: index for index, proof_id in enumerate(proofs)}
+    aliases = proof_aliases(tuple(proofs.values()))
+    snapshot = (
+        review.recorded_current_ids if review.recorded_current_ids is not None else review.proof_ids
+    )
+    latest = {aliases[key]: positions[key] for key in snapshot if key in aliases}
     for finding in review.findings:
         previous = state.findings.get(finding.id)
         if previous is not None and previous != finding:
             state.errors.append(f"Finding {finding.id}: identity was rewritten")
             continue
         state.findings[finding.id] = finding
-        state.closures.pop(finding.id, None)
+        closed_by = state.closures.get(finding.id)
+        observed = [
+            positions[proof_id]
+            for proof_id in review.proof_ids
+            if proof_id in proofs and proofs[proof_id].obligation_id == finding.obligation_id
+        ]
+        # A repeated historical observation supplies no counterexample against
+        # a later repair. A report on that repair (or later proof) reopens it.
+        current_missing = (
+            not observed
+            and closed_by is not None
+            and review.input_digest == proofs[closed_by].input_digest
+        )
+        if (
+            closed_by is None
+            or current_missing
+            or max(observed, default=-1) >= latest.get(aliases[closed_by], positions[closed_by])
+        ):
+            state.closures.pop(finding.id, None)
         if finding.obligation_id is not None and finding.obligation_id not in review.obligation_ids:
             state.errors.append(f"Finding {finding.id}: obligation outside review scope")
 
@@ -229,7 +303,10 @@ def _record_closures(review: Review, proofs: dict[str, Proof], state: _ReviewSta
                 f"Closure {closure.finding_id}: original finding/proof scope mismatch"
             )
             continue
-        state.closures[closure.finding_id] = closure.proof_id
+        previous = state.closures.get(closure.finding_id)
+        positions = {proof_id: index for index, proof_id in enumerate(proofs)}
+        if previous is None or positions[closure.proof_id] >= positions[previous]:
+            state.closures[closure.finding_id] = closure.proof_id
 
 
 def _closure_retains_subject(closure: Closure, finding: Finding | None, review: Review) -> bool:
@@ -257,7 +334,7 @@ def _reduce_reviews(
         if review.receipt_id in receipts:
             scope_errors.append(f"Review {review.id}: receipt identity was reused")
         receipts.add(review.receipt_id)
-        _record_findings(review, state)
+        _record_findings(review, proofs, state)
         state.errors.extend(scope_errors)
         if scope_errors:
             continue
@@ -268,7 +345,11 @@ def _reduce_reviews(
 
 
 def _open_findings(
-    state: _ReviewState, current: dict[str, Proof], errors: list[str], selected: set[str] | None
+    state: _ReviewState,
+    current: dict[str, Proof],
+    errors: list[str],
+    selected: set[str] | None,
+    aliases: dict[str, str],
 ) -> tuple[str, ...]:
     outstanding = []
     for finding in state.findings.values():
@@ -277,7 +358,7 @@ def _open_findings(
         ):
             continue
         proof = current.get(finding.obligation_id)
-        if proof is None or state.closures.get(finding.id) != proof.id:
+        if proof is None or aliases.get(state.closures.get(finding.id, "")) != aliases[proof.id]:
             outstanding.append(finding.id)
             errors.append(
                 f"Finding {finding.id}: {finding.obligation_id} requires verified closure"
@@ -298,9 +379,10 @@ def assess_readiness(
 ) -> Readiness:
     """Derive readiness from current proof and every historical finding.
 
-    The last appended proof per obligation is current. A new proof therefore
-    invalidates prior judgments and closures even when its input digest is the
-    same. Historical artifact changes outside the digested acceptance subject
+    The last appended proof per obligation is current. Consecutive successful
+    executions with explicit equal claim evidence preserve applicable judgment;
+    legacy or failed executions never gain equivalence retrospectively.
+    Historical artifact changes outside the digested acceptance subject
     have no effect. Receipt authentication and execution validity belong to the
     producer; semantic adequacy belongs to the named independent reviews.
     An explicit Stage 2 obligation subset supports one task's review; canonical
@@ -318,7 +400,11 @@ def assess_readiness(
     selected = _selected_obligations(obligation_index, obligation_ids, stage, errors)
     proof_index = _index_records(proofs, "proof", errors)
     current = _current_proofs(obligation_index, proofs, errors)
+    aliases = proof_aliases(proofs)
     state = _reduce_reviews(reviews, obligation_index, proof_index, author_id)
+    state.judgments = {
+        (channel, aliases[key]): value for (channel, key), value in state.judgments.items()
+    }
     errors.extend(state.errors)
     required_stages = _required_review_channels(stage, required_review_stages, errors)
     for obligation in obligations:
@@ -326,10 +412,12 @@ def assess_readiness(
             continue
         proof = current.get(obligation.id)
         errors.extend(
-            _reviewed_proof_blockers(obligation, proof, input_digest, required_stages, state)
+            _reviewed_proof_blockers(
+                obligation, proof, input_digest, required_stages, state, aliases
+            )
         )
     outstanding = _open_findings(
-        state, current, errors, selected if obligation_ids is not None else None
+        state, current, errors, selected if obligation_ids is not None else None, aliases
     )
     return Readiness(ready=not errors, blockers=tuple(errors), open_findings=outstanding)
 
@@ -352,11 +440,12 @@ def _reviewed_proof_blockers(
     input_digest: str,
     stages: tuple[str, ...],
     state: _ReviewState,
+    aliases: dict[str, str],
 ) -> list[str]:
     errors = _proof_blockers(obligation, proof, input_digest)
     if proof is not None:
         for stage in stages:
-            if state.judgments.get((stage, proof.id)) != "accepted":
+            if state.judgments.get((stage, aliases[proof.id])) != "accepted":
                 errors.append(f"{obligation.id}: proof {proof.id} lacks accepted {stage} review")
     return errors
 

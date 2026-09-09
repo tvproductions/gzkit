@@ -185,6 +185,44 @@ class TestAcceptance(unittest.TestCase):
         self.assertFalse(result.ready)
         self.assertEqual(result.open_findings, ("F7",))
 
+    def test_equivalent_successful_execution_preserves_approval_and_closure(self) -> None:
+        """AS-4: execution occurrence is distinct from an explicitly witnessed claim."""
+        original = self.proof.model_copy(update={"claim_digest": "witnessed-claim"})
+        repeated = original.model_copy(update={"id": "proof-b"})
+        result = self.assess(proofs=(original, repeated), reviews=self.closure_reviews())
+        self.assertTrue(result.ready, result.blockers)
+        self.assertEqual(result.open_findings, ())
+        historical = self.finding_review().model_copy(
+            update={
+                "id": "delayed-repeat",
+                "receipt_id": "receipt-delayed-repeat",
+                "recorded_current_ids": ("proof-b",),
+            }
+        )
+        self.assertTrue(
+            self.assess(
+                proofs=(original, repeated), reviews=(*self.closure_reviews(), historical)
+            ).ready
+        )
+
+    def test_changed_claim_or_failed_execution_cannot_reuse_prior_approval(self) -> None:
+        """AS-5: equal artifact bytes alone never establish proof equivalence."""
+        original = self.proof.model_copy(update={"claim_digest": "claim-a"})
+        for changes in (
+            {"claim_digest": "different-specification-or-result"},
+            {"selectors": ("tests.other.Case.test_other",)},
+            {"contract_digest": "different-contract"},
+            {"input_digest": "different-artifact"},
+            {"valid": False},
+            {"claim_digest": None},
+        ):
+            with self.subTest(changes=changes):
+                new = original.model_copy(update={"id": "proof-b", **changes})
+                self.assertFalse(self.assess(proofs=(original, new)).ready)
+        failed = original.model_copy(update={"id": "contradiction", "valid": False})
+        repeated = original.model_copy(update={"id": "later-success"})
+        self.assertFalse(self.assess(proofs=(original, failed, repeated)).ready)
+
     def test_new_proof_and_independent_repair_closure_reach_readiness(self) -> None:
         replacement = self.proof.model_copy(update={"id": "proof-b", "input_digest": "bytes-b"})
         reviewed = [self.finding_review()]

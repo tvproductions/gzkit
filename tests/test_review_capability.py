@@ -35,6 +35,7 @@ from gzkit.pipeline_dispatch import (
     reviewer_capability,
 )
 from gzkit.roles import ReviewFinding, ReviewFindingSeverity, ReviewResult, ReviewVerdict
+from tests.acceptance_fixtures import ACCEPTANCE_CONTEXT
 
 # Dispatch mechanics consume readiness derived and tested by the acceptance store.
 _READY = Readiness(ready=True, blockers=(), open_findings=())
@@ -87,7 +88,11 @@ class TestPromptDisclosesCapabilityOutputContract(unittest.TestCase):
             root = _agents(Path(td), tools, agent)
             if agent == "quality-reviewer":
                 return compose_quality_review_prompt(
-                    ["src/x.py"], ["tests/test_x.py"], why="because", project_root=root
+                    ["src/x.py"],
+                    ["tests/test_x.py"],
+                    why="because",
+                    project_root=root,
+                    acceptance_context=ACCEPTANCE_CONTEXT,
                 )
             return compose_spec_review_prompt(
                 _task(),
@@ -95,6 +100,7 @@ class TestPromptDisclosesCapabilityOutputContract(unittest.TestCase):
                 ["src/x.py"],
                 why="because",
                 project_root=root,
+                acceptance_context=ACCEPTANCE_CONTEXT,
             )
 
     def test_a_read_only_reviewer_is_told_not_to_verify_by_running(self) -> None:

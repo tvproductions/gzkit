@@ -1,0 +1,58 @@
+--- a/.gzkit/skills/gz-obpi-pipeline/SKILL.md
++++ b/.gzkit/skills/gz-obpi-pipeline/SKILL.md
+@@ -8 +8 @@
+-last_reviewed: 2026-09-08
++last_reviewed: 2026-09-09
+@@ -74 +74 @@
+-| "My Step 4a evidence is green — tests pass, REQs covered — so I can present it and await attestation" | STOP. Green-on-your-own-evidence is the EXACT state Step 4b exists to distrust. You authored that evidence; you are the GHI #643 fabrication surface. You may NOT print "Awaiting attestation" until the independent adversary's verdict is in this same turn. Confidence from the authoring agent is worth zero at this gate. |
++| "My Step 4a evidence is green — tests pass, REQs covered — so I can present it and await attestation" | STOP. Green-on-your-own-evidence is the EXACT state Step 4b exists to distrust. You authored that evidence; you are the GHI #643 fabrication surface. You may NOT solicit attestation until applicable independent approval and closure have been imported for the current proof claims. Confidence from the authoring agent is worth zero at this gate. |
+@@ -76 +76 @@
+-| "I'll present Step 4a now and run the adversary after the operator responds / in the next turn" | Sequence violation. The adversary runs BEFORE attestation, not after — the operator attests holding the adversary's verdict. Presenting 4a as the terminal step of the turn, with 4b deferred, is the skip this gate forbids. Dispatch 4b in the same turn as 4a. |
++| "I'll present Step 4a now and run the adversary after the operator responds / in the next turn" | Sequence violation. The adversary runs BEFORE attestation, not after — the operator attests holding the adversary's verdict. Presenting 4a as the terminal step of the turn, with 4b deferred, is the skip this gate forbids. Dispatch any missing required review before soliciting attestation; retain already applicable imported review. |
+@@ -83 +83 @@
+-| "The round refuted, but I fixed everything it found — I'll complete with `--adversary-verdict refuted` and explain the fixes in the resolution" | **Refused, and a resolution string does not change that (GHI #960).** *"refuted is an outcome, but it is an input into if(4a && 4b) pass; else: loop"* (operator, 2026-09-04). If your fixes are real, a re-run returns `not-refuted` — go get that verdict. Completing on the refuted one records the completion against a tree that no longer exists. |
++| "The round refuted, but I fixed everything it found — I'll complete with `--adversary-verdict refuted` and explain the fixes in the resolution" | **Refused, and a resolution string does not change that (GHI #960).** *"refuted is an outcome, but it is an input into if(4a && 4b) pass; else: loop"* (operator, 2026-09-04). Execute proof for the repaired obligation and import explicit independent closure. The current acceptance records determine readiness; preserve the original refutation as history. |
+@@ -846,7 +846,5 @@
+-> Printing the Step 4a packet and the line **"Awaiting attestation"** is NOT a
+-> valid stopping point. Between authoring Step 4a and soliciting attestation,
+-> Step 4b (the independent adversary) MUST run **in this same turn**. If you are
+-> about to end your turn with a 4a evidence table and no adversary verdict, you
+-> are committing the GHI #643 skip — the exact failure this gate exists to
+-> prevent. The sequence is non-negotiable and admits no size/lane/kind/"obviously
+-> correct" exception:
++> Before soliciting attestation, verify that Step 4b supplied applicable imported
++> independent approval and explicit closure for every required finding. Dispatch
++> missing required review now. An earlier turn or equivalent successful execution
++> does not invalidate review by itself; the acceptance consumer decides applicability.
++> The sequence admits no size, lane, or kind exception:
+@@ -923,3 +921,3 @@
+-verdict produced in the same turn as Step 4a. This is a fail-closed gate, not a
+-best-effort nicety: a Stage 4 that presents 4a and stops, deferring or omitting
+-4b, is a process violation of the same class as bypassing Gate 5. There is no
++review applicable to its current proof claims, with explicit closure of required
++findings. A Stage 4 that solicits attestation while required Step 4b approval or
++closure is missing violates the gate. A turn boundary alone requires no repeat. There is no
+@@ -1214 +1212 @@
+-**Clean means no unresolved in-scope findings, not absence of all limitations.** Accepted residual risks and future ADR-wide obligations remain disclosed separately; they are not failed present-tense OBPI requirements. Filing a GHI alone does not discharge an unmet requirement. A newly proposed boundary change requires operator ruling and independent revalidation; the implementing agent cannot move a finding outside scope to clear the gate. The latest independent review must explicitly confirm closure on the corrected artifacts and return `not-refuted` before soliciting attestation. Scope-boundary disclosures may remain, provided the adversary distinguishes them from unresolved findings.
++**Clean means no unresolved in-scope findings, not absence of all limitations.** Accepted residual risks and future ADR-wide obligations remain disclosed separately; they are not failed present-tense OBPI requirements. Filing a GHI alone does not discharge an unmet requirement. A newly proposed boundary change requires operator ruling and independent revalidation; the implementing agent cannot move a finding outside scope to clear the gate. Before soliciting attestation, the retained independent review set must supply applicable approval and explicit closure on the corrected proof claims. Raw verdict wording alone neither grants approval nor reopens a closed obligation. Scope-boundary disclosures may remain, provided the adversary distinguishes them from unresolved findings.
+@@ -1224 +1222,6 @@
+-**Act on the verdict before attestation.** `REFUTED` → return to Stage 2. `REFUTED-WITH-CAVEATS` naming a real gap (e.g. a missing regression test, an injected-only test that wouldn't catch a production regression) → FIX it now, then re-validate. Never hand the operator an unresolved finding dressed as clean. Apply the independent-closure rule above to fixes after ANY verdict, including `not-refuted` with caveats; present the latest independent verdict and closure evidence alongside Step 4a.
++**Act on mapped findings before attestation.** A current counterexample or missing
++required proof returns its obligation to repair, regardless of verdict or severity.
++After repair, execute proof and import independent closure. Historical refutations
++and auxiliary commentary with no unmet obligation do not require another repair or
++review. Retain their provenance and present the applicable review set alongside
++Step 4a; never relabel a required gap as auxiliary to clear acceptance.
+@@ -1532,6 +1535,6 @@
+-Multiple independent OBPIs within the same ADR can run this pipeline concurrently
+-in separate agent sessions. Requirements:
+-
+-1. OBPIs have non-overlapping allowed paths
+-2. Each session claims its OBPI via `uv run gz obpi lock claim`
+-3. Sync operations (Stage 5) are atomic per-brief
++Use one writer per governed checkout. Read-only investigation may run independently.
++Only the operator initiates OBPI work; separate sessions do not grant initiation.
++Capture the contract and input components before review and verify applicability
++before consuming it. Sequence shared acceptance/schema writes outside review windows.
++If another run changes the subject, identify affected evidence before continuing.
++Never stash, pop, reset, revert, or sync another active run's work to clean the tree.

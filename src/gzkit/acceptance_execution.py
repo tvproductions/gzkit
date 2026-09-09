@@ -70,6 +70,33 @@ def _sha(value: bytes) -> str:
     return hashlib.sha256(value).hexdigest()
 
 
+def proof_claim_digest(root: Path, payload: dict) -> str:
+    """Fingerprint specification and results, excluding only occurrence noise.
+
+    Keep control outcomes, actual assertion output, selectors and invocation.
+    Unittest elapsed time and isolated cache paths do not change the claim.
+    Versioned fingerprints are produced afresh, never inferred for legacy rows.
+    """
+
+    def stable(value: object) -> object:
+        if isinstance(value, dict):
+            return {key: stable(item) for key, item in value.items() if key != "pycache_prefix"}
+        if isinstance(value, list):
+            return [stable(item) for item in value]
+        if isinstance(value, str):
+            return re.sub(r"(Ran \d+ tests? in )\d+(?:\.\d+)?s", r"\1<elapsed>s", value).replace(
+                str(root.resolve()), "<project>"
+            )
+        return value
+
+    return "v1:" + _sha(_json(stable(payload)).encode())
+
+
+def execution_conditions_digest(keys: tuple[str, ...]) -> str:
+    """Hash only explicitly declared environment dependencies, without exposing values."""
+    return _sha(_json({key: os.environ.get(key) for key in keys}).encode())
+
+
 def _inside(root: Path, path: Path) -> Path:
     resolved = (root / path).resolve()
     if not resolved.is_relative_to(root.resolve()):
@@ -361,6 +388,7 @@ def prove(
     source: Path | None = None,
     mutations: list[Mutation] | None = None,
     selectors: list[str] | None = None,
+    environment_keys: tuple[str, ...] = (),
 ) -> Proof:
     """Execute the required proof channel, returning observed valid or invalid evidence."""
     root = root.resolve()
@@ -368,9 +396,14 @@ def prove(
     if req_id not in obligations:
         raise ValueError("Requirement is not a canonical acceptance obligation")
     obligation = obligations[req_id]
+    if any(not key.strip() or "=" in key for key in environment_keys):
+        raise ValueError("Execution condition keys must be nonempty environment names")
+    environment_keys = tuple(sorted(set(environment_keys)))
+    conditions = execution_conditions_digest(environment_keys)
     before = input_digest(root, brief_path)
     selectors = selectors or []
     mutations = mutations or []
+    payload: dict[str, object]
     if obligation.kind == "BEHAVIOR":
         payload, valid = _behavior_evidence(root, req_id, source, mutations, selectors)
     else:
@@ -382,9 +415,20 @@ def prove(
         else:
             result = resolve_fence_proof(req_id, root, obligation.statement)
             resolver = "gzkit.req_kind_fence.resolve_fence_proof"
-        payload, valid = {"resolver": resolver, "result": result}, result == "pass"
+        payload = {"resolver": resolver, "result": result}
+        valid = result == "pass"
     after = input_digest(root, brief_path)
-    payload.update({"input_before": before, "input_after": after})
+    valid = (
+        valid and before == after and conditions == execution_conditions_digest(environment_keys)
+    )
+    payload.update(
+        {
+            "input_before": before,
+            "input_after": after,
+            "environment_keys": environment_keys,
+            "conditions_digest": conditions,
+        }
+    )
     return Proof(
         id=f"proof-{uuid.uuid4().hex}",
         obligation_id=req_id,
@@ -393,4 +437,7 @@ def prove(
         selectors=tuple(selectors),
         evidence=_json(payload),
         valid=valid and before == after,
+        claim_digest=proof_claim_digest(root, payload) if valid and before == after else None,
+        environment_keys=environment_keys,
+        conditions_digest=conditions,
     )

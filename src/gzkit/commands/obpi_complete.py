@@ -18,7 +18,7 @@ from typing import Any, NoReturn, cast
 
 from rich.markup import escape
 
-from gzkit.acceptance_store import completion_review
+from gzkit.acceptance_store import CompletionReview, completion_review
 from gzkit.arb.paths import receipts_root
 from gzkit.canonical_steps import CANONICAL_STEP_COMMANDS
 from gzkit.commands.adr_audit import (
@@ -1025,7 +1025,7 @@ def _current_adversarial_event(
         review = completion_review(project_root, obpi_id)
     except ValueError as exc:
         _fail(str(exc), exit_code=3, as_json=as_json, obpi_id=obpi_id)
-    return _build_adversarial_event(
+    event = _build_adversarial_event(
         obpi_id=obpi_id,
         verdict="degraded-human-only" if review.tier == 3 else "not-refuted",
         adversary=review.reviewer_id,
@@ -1035,6 +1035,9 @@ def _current_adversarial_event(
         tier=review.tier,
         receipt=review.receipt_id,
     )
+    if event is not None and isinstance(review, CompletionReview):
+        event.extra["acceptance_review_ids"] = [item.id for item in review.supporting_reviews]
+    return event
 
 
 def obpi_complete_cmd(

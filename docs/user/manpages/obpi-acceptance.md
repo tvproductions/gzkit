@@ -49,9 +49,22 @@ advancement and Stage 4 require the complete canonical population.
 
 Mapped findings remain blocking until an independent review explicitly closes
 their original identity against current proof. A new proof supersedes previous
-approvals and closure even when its input digest is unchanged. Removing auxiliary
+approvals and closure unless it is a consecutive successful execution with the
+same explicitly witnessed claim. Claim identity includes the specification,
+controls, observed results, declared execution conditions, contract, and artifact
+identity. A new UUID alone does not invalidate approval. Legacy proofs without
+claim identity retain exact-ID behavior. A failed execution breaks reuse, including
+when followed by another successful execution. Removing auxiliary
 commentary cannot remove a mapped finding. Historical verdict prose cannot
 substitute for current readiness.
+
+Well-formed delayed reviews of a known historical subject are retained, including
+mapped findings, but their approvals apply only to their reviewed proof claim.
+An identical finding repeated against an older proof preserves a newer verified
+closure. A counterexample against the current proof still reopens acceptance.
+Each review's position in the ledger fixes which proofs were current when it was
+recorded. A later equivalent execution cannot erase that counterexample. This
+position is reconstructed on replay; reviewer receipts remain unchanged.
 
 ## Proof Specification
 
@@ -78,7 +91,12 @@ production source for the work being reviewed:
 All selectors must be fully qualified covering unittest IDs for the nominated
 requirement. Each mutation must nominate selected test IDs. Its source must be a
 Python production file inside the configured source root. A non-BEHAVIOR request
-contains only its `req_id`.
+requires only its `req_id`.
+
+An optional `environment_keys` array names environment variables necessary to a
+particular proof claim. Their values are hashed, never printed or persisted.
+Execution and readiness both check these explicitly declared conditions. Ambient
+variables outside this list do not change artifact identity or approval.
 
 ## Review Output Contract
 
@@ -106,6 +124,16 @@ claim that a review ran:
 readiness; the `accepted`/`refuted` verdict remains review history and does not
 author the approved set. A reviewer must not emit `id` or `receipt_id`: ingestion
 derives both from the executed receipt.
+
+The pipeline composers validate the supplied status context before dispatch and
+generate the response schema from the same `ReviewResponse` model used by the
+importer. Context includes the captured input components, requested obligation
+scope, proof history, and open finding IDs. Missing or contradictory context is a
+local error. The reviewer owns approvals and closure judgments; a generated
+example supplies neither. The legacy `ReviewResult` is a separate envelope:
+`verification_gaps` belongs there, and `description` belongs to findings, never
+closures. Formatting repair uses a fresh invocation that references the original
+receipt and preserves its subject and substantive judgment; receipts are not edited.
 
 Each finding contains `id`, `obligation_id`, `kind` (`counterexample` or
 `missing-proof`), and `description`. Auxiliary observations use a null obligation;
@@ -146,8 +174,9 @@ remain mandatory. A pipeline marker or an unrecorded claim cannot grant this mod
 
 The input digest conservatively covers the canonical contract, configured source
 and tests, features, data, scripts, rules, schemas, workflow configuration, selected
-project configuration files, Python/platform, and environment values. Environment
-values are hashed rather than printed; volatile shell bookkeeping is excluded.
+project configuration files. It excludes process environment, interpreter, and
+platform provenance. Explicitly declared execution dependencies belong to the
+proof claim and are checked separately.
 An unrelated change within this broad population can require fresh proof and
 review. This is not dependency-minimal invalidation.
 
@@ -160,6 +189,12 @@ Mechanical validity does not establish that a test oracle or mutation expresses
 the requirement. Independent reviewers must assess that meaning and legitimate
 positive behavior against the observed records. No mutation count or receipt
 presence check supplies that judgment.
+
+Completion retains the necessary scoped approvals and explicit closure reviews
+through `acceptance_review_ids` on the completion's adversarial-validation event.
+Each ID resolves to immutable acceptance history with its actual receipt and tier.
+The summary tier reflects the most degraded necessary adversarial review; a later
+unrelated review cannot replace the required provenance set.
 
 ## Example
 

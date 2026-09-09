@@ -533,50 +533,10 @@ def _test_evidence_frame() -> list[str]:
 
 
 def _acceptance_review_frame(stage: str, acceptance_context: str) -> list[str]:
-    """Request the receipt-bound record consumed by acceptance ingestion."""
-    payload = {
-        "schema": "gzkit.acceptance.review.v1",
-        "stage": stage,
-        "input_digest": "digest from the current acceptance proof records",
-        "obligation_ids": ["reviewed canonical requirement or invariant ID"],
-        "proof_ids": ["corresponding executed proof ID"],
-        "accepted_proof_ids": ["corresponding executed proof ID"],
-        "findings": [],
-        "closures": [],
-        "reviewer_id": "your independent reviewer identity",
-        "verdict": "accepted",
-    }
-    return [
-        "### Durable Acceptance Result",
-        "",
-        acceptance_context,
-        "If acceptance records were not supplied, obtain the named OBPI's acceptance",
-        "status JSON using `uv run gz obpi acceptance <OBPI-ID> status --stage stage2`.",
-        "Ask the controller for that output if your tool grant does not permit execution.",
-        "After the legacy ReviewResult block, return one additional JSON object with",
-        "the schema below. Use the supplied current acceptance contract and executed",
-        "proof records for identities and digests; never invent an artifact reference.",
-        "If these records are missing, report the evidence gap and do not claim acceptance.",
-        "Preserve the overall verdict as accepted or refuted; that token is historical.",
-        "List only explicitly approved examined proofs in accepted_proof_ids. That list",
-        "supplies proof approval; the raw verdict grants or revokes no approval.",
-        "Auxiliary observations alone cannot revoke acceptance. A mapped counterexample",
-        "or missing-proof finding blocks its obligation until independently verified closure.",
-        "Each finding needs a stable id, obligation_id, kind (counterexample or",
-        "missing-proof), and description of the counterexample or required evidence gap.",
-        "Auxiliary observations use obligation_id null; retain any real requirement",
-        "finding they expose. Do not replace or rename an outstanding finding on repair.",
-        "Each independently verified closure names finding_id, obligation_id, and the",
-        "current proof_id that demonstrates the original obligation after repair.",
-        "The receipt assigns id and receipt_id; do not supply either in this object.",
-        "Persist the executed reviewer output through acceptance review ingestion.",
-        "Acceptance readiness derives from those records, not a hand-authored standing verdict.",
-        "",
-        "```json",
-        json.dumps(payload, indent=2),
-        "```",
-        "",
-    ]
+    """Compose the locally validated handoff from the importer-owned response model."""
+    from gzkit.acceptance_context import acceptance_review_frame
+
+    return acceptance_review_frame(stage, acceptance_context)
 
 
 def compose_spec_review_prompt(
@@ -649,7 +609,7 @@ def compose_spec_review_prompt(
             "Severity guide:",
             "- critical: requirement not met, blocks advancement",
             "- major: significant gap, should be addressed",
-            "- minor: small issue, noted but non-blocking",
+            "- minor: small issue; obligation mapping determines acceptance blocking",
             "- info: observation only",
             "",
         ]
