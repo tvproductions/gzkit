@@ -5,9 +5,9 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-08
+last_reviewed: 2026-09-09
 metadata:
-  skill-version: "6.53.0"
+  skill-version: "6.54.0"
 model: sonnet
 ---
 
@@ -71,16 +71,16 @@ These thoughts mean STOP — you are about to break the pipeline:
 | "The hook blocked me, I'll work around it" | Hook blocks are signals. Diagnose the cause. NEVER create marker files manually to bypass. |
 | "`gz obpi complete` needs a TTY, so I'll ask the operator to run it themselves" | No. There is no TTY gate. A plain non-TTY `uv run gz obpi complete ... --attestation-text "<operator's verbatim attestation>"` call completes the brief for every lane / kind / sensitivity. The operator already attested in Stage 4 — relay that phrase, never hand the invocation back. |
 | "The operator said `attest completed` — maybe they want me to explain what to do next" | No. `attest completed` IS the attestation. Run `gz obpi complete` immediately with that phrase (enriched per § Attestation) in `--attestation-text`. Do not produce runbook-style instructions for the operator to execute. |
-| "My Step 4a evidence is green — tests pass, REQs covered — so I can present it and await attestation" | STOP. Green-on-your-own-evidence is the EXACT state Step 4b exists to distrust. You authored that evidence; you are the GHI #643 fabrication surface. You may NOT print "Awaiting attestation" until the independent adversary's verdict is in this same turn. Confidence from the authoring agent is worth zero at this gate. |
+| "My Step 4a evidence is green — tests pass, REQs covered — so I can present it and await attestation" | STOP. Green-on-your-own-evidence is the EXACT state Step 4b exists to distrust. You authored that evidence; you are the GHI #643 fabrication surface. You may NOT solicit attestation until applicable independent approval and closure have been imported for the current proof claims. Confidence from the authoring agent is worth zero at this gate. |
 | "Step 4b is probably overkill for this small/authoring-only/obviously-correct OBPI" | There is no size, lane, or kind exception to Step 4b. "Obviously correct" is the precise feeling that precedes a hollow-test or fabricated-evidence skip. Dispatch the adversary. You are not the exception. |
-| "I'll present Step 4a now and run the adversary after the operator responds / in the next turn" | Sequence violation. The adversary runs BEFORE attestation, not after — the operator attests holding the adversary's verdict. Presenting 4a as the terminal step of the turn, with 4b deferred, is the skip this gate forbids. Dispatch 4b in the same turn as 4a. |
+| "I'll present Step 4a now and run the adversary after the operator responds / in the next turn" | Sequence violation. The adversary runs BEFORE attestation, not after — the operator attests holding the adversary's verdict. Presenting 4a as the terminal step of the turn, with 4b deferred, is the skip this gate forbids. Dispatch any missing required review before soliciting attestation; retain already applicable imported review. |
 | "An independent Claude subagent is fine for 4b — I don't need Codex" | Tier-order bypass (GHI #678). A Claude validating Claude shares this agent's blind spots — the exact failure Step 4b exists to break. Codex (tier 1) is REQUIRED first; tier 2 is permitted ONLY after a checked `ready: false`. Run `codex:setup`; if `ready: true`, the Claude subagent is forbidden. "It was convenient" is not a fallback reason. |
 | "The adversary is there to find problems, so a round that confirms the feature works is a soft round" | Inverted. A second model CONFIRMING the first model's implementation is correct is the entire point of Step 4b; probing is how that confirmation is earned. A round that only lists what it broke, and never demonstrates the feature doing its job, has not done the job. |
 | "The adversary refuted again, so I'll fix these findings and re-run" | Check its `Weakest point` against the previous round FIRST. If it names the same root, another fix cycle surfaces it one layer deeper — that is three rounds and ~9 hours in the measured case. Stop and put the design to the operator. |
 | "I'll tell the adversary to REFUTE the claim — that's what adversarial means" | It is not, and this exact wording cost OBPI-0.35.0-04 six rounds. A model told "your job is to REFUTE this, not to confirm it" will escalate until something falls, and its best available outcome is "I could not refute it" — absence of evidence, never confirmation. Prompt for independent confirmation, with probing as the method. |
 | "This is a security property, so the claim should be absolute" | An absolute claim cannot be refuted in bounded time: the adversary escalates the attacker until something falls. Declare the threat model in the brief FIRST, state it in the prompt, and forbid out-of-scope findings — otherwise the gate never converges. |
 | "The adversary found something, so the OBPI cannot pass" | Apply the September 5 independent-closure rule below: every finding against the agreed requirements or their required proof needs a disposition and independent closure. Severity alone does not clear it. Track independent discoveries without silently making them acceptance prerequisites; never dismiss a relevant finding merely because it arose in an auxiliary audit. |
-| "The round refuted, but I fixed everything it found — I'll complete with `--adversary-verdict refuted` and explain the fixes in the resolution" | **Refused, and a resolution string does not change that (GHI #960).** *"refuted is an outcome, but it is an input into if(4a && 4b) pass; else: loop"* (operator, 2026-09-04). If your fixes are real, a re-run returns `not-refuted` — go get that verdict. Completing on the refuted one records the completion against a tree that no longer exists. |
+| "The round refuted, but I fixed everything it found — I'll complete with `--adversary-verdict refuted` and explain the fixes in the resolution" | **Refused, and a resolution string does not change that (GHI #960).** *"refuted is an outcome, but it is an input into if(4a && 4b) pass; else: loop"* (operator, 2026-09-04). Execute proof for the repaired obligation and import explicit independent closure. The current acceptance records determine readiness; preserve the original refutation as history. |
 | "The block says refuted can't complete, so I'll pass `not-refuted` since the findings are fixed anyway" | A caller-supplied word cannot close a finding. Import the independent review's actual executed output with its original finding IDs and current proof IDs. `gz obpi acceptance ... status --stage stage4` derives readiness; historical verdicts remain unchanged. |
 
 ### The Plan-Mode Gate
@@ -841,15 +841,13 @@ The **Proof location** column is proof-channel specific, not always `@covers`. F
 
 **Every field above MUST be populated.** Do not skip the evidence table. Do not skip REQ coverage. Do not skip files created/modified. The human needs all of this to make an attestation decision. **This template is Step 4a — the agent's presentation. It is necessary but not sufficient: an agent authoring its own evidence is the GHI #643 fabrication surface. Step 4b is mandatory before attestation.**
 
-> ### 🛑 HARD BARRIER — Step 4a does NOT end the turn
+> ### Required independent approval before attestation
 >
-> Printing the Step 4a packet and the line **"Awaiting attestation"** is NOT a
-> valid stopping point. Between authoring Step 4a and soliciting attestation,
-> Step 4b (the independent adversary) MUST run **in this same turn**. If you are
-> about to end your turn with a 4a evidence table and no adversary verdict, you
-> are committing the GHI #643 skip — the exact failure this gate exists to
-> prevent. The sequence is non-negotiable and admits no size/lane/kind/"obviously
-> correct" exception:
+> Before soliciting attestation, verify that Step 4b supplied applicable imported
+> independent approval and explicit closure for every required finding. Dispatch
+> missing required review now. An earlier turn or equivalent successful execution
+> does not invalidate review by itself; the acceptance consumer decides applicability.
+> The sequence admits no size, lane, or kind exception:
 >
 > ```
 > Step 4a (author evidence)  →  Step 4b (dispatch adversary, get verdict)  →  present BOTH  →  await attestation
@@ -920,9 +918,9 @@ command piped without `pipefail`. Those judgments stay with Step 4b and the oper
 #### Step 4b — Independent Adversarial Validation (GHI #643) — MANDATORY, NON-SKIPPABLE
 
 **Binding rule:** No OBPI reaches attestation without an independent adversary
-verdict produced in the same turn as Step 4a. This is a fail-closed gate, not a
-best-effort nicety: a Stage 4 that presents 4a and stops, deferring or omitting
-4b, is a process violation of the same class as bypassing Gate 5. There is no
+review applicable to its current proof claims, with explicit closure of required
+findings. A Stage 4 that solicits attestation while required Step 4b approval or
+closure is missing violates the gate. A turn boundary alone requires no repeat. There is no
 OBPI too small, too authoring-only, or too obviously-correct to exempt — those
 are the precise descriptors that precede a skipped check.
 
@@ -1211,7 +1209,7 @@ The earlier GHI #964 standing-line convention is superseded as a gate: preserve
 existing historical words, but never edit a Markdown verdict to change readiness.
 `gz obpi precomplete` and completion consume the durable records.
 
-**Clean means no unresolved in-scope findings, not absence of all limitations.** Accepted residual risks and future ADR-wide obligations remain disclosed separately; they are not failed present-tense OBPI requirements. Filing a GHI alone does not discharge an unmet requirement. A newly proposed boundary change requires operator ruling and independent revalidation; the implementing agent cannot move a finding outside scope to clear the gate. The latest independent review must explicitly confirm closure on the corrected artifacts and return `not-refuted` before soliciting attestation. Scope-boundary disclosures may remain, provided the adversary distinguishes them from unresolved findings.
+**Clean means no unresolved in-scope findings, not absence of all limitations.** Accepted residual risks and future ADR-wide obligations remain disclosed separately; they are not failed present-tense OBPI requirements. Filing a GHI alone does not discharge an unmet requirement. A newly proposed boundary change requires operator ruling and independent revalidation; the implementing agent cannot move a finding outside scope to clear the gate. Before soliciting attestation, the retained independent review set must supply applicable approval and explicit closure on the corrected proof claims. Raw verdict wording alone neither grants approval nor reopens a closed obligation. Scope-boundary disclosures may remain, provided the adversary distinguishes them from unresolved findings.
 
 Do not redispatch merely to remove harmless caveat wording after independent
 closure is established. If a follow-up exposes the same root cause again, use
@@ -1221,7 +1219,12 @@ the requirement remains the independent reviewer's judgment.
 
 **When a round repeats the prior round's ROOT, stop dispatching and escalate the DESIGN (operator ruling 2026-09-03).** Compare each round's `Weakest point` against the last. If it names the same root cause at a different surface, another fix cycle will surface it again one layer deeper: stop, and put the design decision to the operator (§ Behavior Rules — Always #9). Measured: rounds 2, 3 and 4 each patched a different surfacing of one root cause — provenance inferred from a witness's self-consistent claims rather than chained to prior ledger state — at roughly 3h per cycle; the operator ruled the design in a single exchange and it closed in one pass. Round 4's fix also INTRODUCED round 5's critical, which is the signature of patching a surfacing rather than the design.
 
-**Act on the verdict before attestation.** `REFUTED` → return to Stage 2. `REFUTED-WITH-CAVEATS` naming a real gap (e.g. a missing regression test, an injected-only test that wouldn't catch a production regression) → FIX it now, then re-validate. Never hand the operator an unresolved finding dressed as clean. Apply the independent-closure rule above to fixes after ANY verdict, including `not-refuted` with caveats; present the latest independent verdict and closure evidence alongside Step 4a.
+**Act on mapped findings before attestation.** A current counterexample or missing
+required proof returns its obligation to repair, regardless of verdict or severity.
+After repair, execute proof and import independent closure. Historical refutations
+and auxiliary commentary with no unmet obligation do not require another repair or
+review. Retain their provenance and present the applicable review set alongside
+Step 4a; never relabel a required gap as auxiliary to clear acceptance.
 
 **The gate consumes current closure (GHI #985).** A resolution string or new
 caller-supplied verdict cannot discharge an open finding. Repair its obligation,
@@ -1529,12 +1532,12 @@ needed; none could record it, so each kept working the surrounding surface.
 
 ## Parallel Execution
 
-Multiple independent OBPIs within the same ADR can run this pipeline concurrently
-in separate agent sessions. Requirements:
-
-1. OBPIs have non-overlapping allowed paths
-2. Each session claims its OBPI via `uv run gz obpi lock claim`
-3. Sync operations (Stage 5) are atomic per-brief
+Use one writer per governed checkout. Read-only investigation may run independently.
+Only the operator initiates OBPI work; separate sessions do not grant initiation.
+Capture the contract and input components before review and verify applicability
+before consuming it. Sequence shared acceptance/schema writes outside review windows.
+If another run changes the subject, identify affected evidence before continuing.
+Never stash, pop, reset, revert, or sync another active run's work to clean the tree.
 
 All OBPIs require per-OBPI human attestation (universal per ADR-0.0.36).
 

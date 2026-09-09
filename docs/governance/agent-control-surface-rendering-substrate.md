@@ -6,9 +6,14 @@
 
 ## Binding claim
 
-> **Every file in the per-turn agent control surface is rendered from a canonical Pydantic content model via a Jinja2 template, deterministically, byte-stably, vendor-aware. Nothing in the per-turn surface is hand-authored at the rendered location. Vendor mirrors (`.claude/`, `.codex/`, `.github/`) are derived outputs. The fidelity validators (ADR-0.0.33) check the rendered output against the canonical models. The substrate is the harness's own integrity layer.**
+> **Corpus construction applies to the agents/claude and rules surfaces. Skills are authored as canonical files under `.gzkit/skills/` and synchronized to their vendor and package copies; they are not corpus constructed. Vendor mirrors (`.claude/`, `.codex/`, `.github/`) are derived outputs, never authoring locations. The fidelity validators (ADR-0.0.33) check delivery against each surface's canonical source. The substrate is the harness's own integrity layer.**
 
-This is gzkit's headless-CMS doctrine. It is the long-forecast generalization of ADR-0.0.19's `gz justify` Pydantic+Jinja2 rendering pattern, applied to the entire agent control surface. It supersedes ADR-0.16.0's aspirational naming with an authored substrate doctrine and a deliberate delivery sequence.
+Operator ruling (2026-09-09, verbatim): "skills are not corpus constructed. only agents/claude and rules."
+This corrects the earlier blanket claim that every control surface is corpus
+authored. Skills are not awaiting corpus migration. Content-type schemas,
+registries, validation and mirror delivery do not imply corpus construction.
+The broader content-model forecasts below remain distinct from that authoring
+boundary; they do not authorize expanding the corpus population.
 
 ## Invariant Tier — 0-Kelvin Floor
 
@@ -24,9 +29,10 @@ DO IT RIGHT, NEVER PYTEST — MUST survive verbatim at the leanest setpoint (`li
 
 ## Mechanism — corpus → setpoint-compression → committed-rendition → deterministic-playback
 
-The binding composition mechanism is a four-stage pipeline:
+For agents/claude and rules, the binding corpus composition mechanism is a
+four-stage pipeline. Skills instead use canonical-file authoring and surface sync.
 
-1. **Corpus** (`gz content remember`) — every control-surface entry is appended to an
+1. **Corpus** (`gz content remember`) — every entry in these corpus surfaces is appended to an
    addressed, append-only corpus. The surface is never hand-edited at the rendered
    location; the corpus is the source of truth, analogous to how a harness stores user
    memories rather than rewriting the system prompt in place.
@@ -80,7 +86,7 @@ By the invariance test (foundation = "without it, we wouldn't be doing the proje
 
 - gzkit's purpose is to make stochastic LLM vibing structurally inert at the agent control surface.
 - The control surface is presently a mix of hand-authored static files and partially-templated mirrors. Hand-authored surfaces accrete vibe-coded drift; the failure pattern recorded in ADR-0.14.0's and ADR-0.16.0's closeout audits is the empirical evidence.
-- Without a canonical content-model substrate that the surface is *rendered from*, every authoring action is a vibing surface — the operator (or agent) edits markdown directly, drift is invisible until validation runs, and the validators themselves have to grep static files instead of diffing canonical models.
+- Corpus-built surfaces require a canonical corpus and committed rendition; skills require a canonical authored file and verified mirror fidelity. Editing a delivered mirror bypasses either source and makes drift invisible until validation runs.
 - A substrate that authors against Pydantic models + Jinja2 templates + vendor-aware rendering is the structural backstop the fidelity doctrine (ADR-0.0.33) rests on. Without it, the fidelity doctrine's validators are weaker and the per-turn surface's drift is harder to catch.
 
 This is the foundation/feature distinction applied: the substrate is the invariant; specific implementation features (TUI, LSP integration, retrieval-time disclosure, CMS-styled web admin) are feature-tier work that may or may not happen, but the substrate's invariant binds regardless.
@@ -90,7 +96,7 @@ This is the foundation/feature distinction applied: the substrate is the invaria
 This doctrine derives from existing canon, not adjacent to it:
 
 - **PRIME DIRECTIVE #5 (FLAG DEFECTS, NEVER EXCUSE THEM):** drift in the rendered control surface is a defect; the substrate makes drift detectable at compile time rather than at audit time.
-- **DO IT RIGHT #1 (fix the class of failure, not the instance):** hand-edited surfaces are a class of failure; this substrate closes the class.
+- **DO IT RIGHT #1 (fix the class of failure, not the instance):** hand-editing derived outputs bypasses their canonical source; source-aware delivery closes that failure class.
 - **MAKE LLM STOCHASTIC VIBES INERT operative claim 2 ("lighter ceremony is not a tradeoff axis"):** the substrate is heavier than direct hand-authoring; that weight is the product, not overhead.
 - **OPERATOR ECONOMY OF EFFORT operative claim 1 ("agent drafts; operator reviews"):** the substrate is the form constraint the agent drafts against; the operator reviews the rendered output and the canonical model interchangeably; both are valid review surfaces, but the rendered output is human-readable prose (the canonical model is agent-input only per OPERATOR ECONOMY anti-patterns).
 - **STDLIB-FIRST DOCTRINE:** Pydantic is the explicit named departure from stdlib (validation semantics stdlib does not supply); Jinja2 is a named departure for template-engine semantics; both inherit the named-rationale-required rule.
@@ -99,7 +105,10 @@ The doctrine does not introduce a new philosophical claim. It names what the ups
 
 ## Scope — the headless-Django mapping
 
-The "CLI/TUI Django for these files" framing (operator's verbatim) commits the substrate to deliver the full Django-shape over time, not just templating. The mapping:
+The "CLI/TUI Django for these files" framing (operator's verbatim) describes
+content modeling, validation and delivery. The mapping does not make every
+registered content type corpus constructed; the binding authoring boundary above
+governs that distinction.
 
 | Django concept | gzkit-substrate equivalent | Binding commitment |
 |---|---|---|
@@ -117,8 +126,8 @@ The "CLI/TUI Django for these files" framing (operator's verbatim) commits the s
 **The eight-component delivery scope:**
 
 1. **Content model registry generalization.** Extend ADR-0.16.0 OBPI-01 (rules-only registry) to all per-turn surface artifacts. Every artifact type has a registered Pydantic model with lifecycle, schema, and rendering rules.
-2. **Rendering pipeline.** Replace the file-copy logic in `gz agent sync` with a Jinja2-templated render-from-canonical pipeline per content type × vendor. Outputs at the canonical mirror locations.
-3. **Reverse-parse migration tooling.** `gz content import <file> --as <type>` reads existing hand-authored markdown back into a canonical Pydantic model so existing surfaces migrate without loss.
+2. **Rendering pipeline.** Compose and play back corpus-built agents/claude and rules surfaces from their canonical records. Preserve canonical-file copy and fidelity checks for skills; corpus composition does not replace that delivery path.
+3. **Reverse-parse migration tooling.** `gz content import <file> --as <type>` reads existing markdown into a canonical Pydantic model. Parsing a content type is not enrollment in corpus construction.
 4. **Authoring CLI.** `gz content edit / render / list / show` — operator-direct invocation; output is human-readable prose summary, never raw JSON.
 5. **Light TUI affordances.** Claude-Code-style status lines, chore-runner-style result tables, plan-mode-style panels — native CLI affordances. **No Textual form editor, no dedicated authoring app.**
 6. **Validation hooks.** Every render and every save fires the ADR-0.0.33 fidelity validators. Output that fails validation does not land.
@@ -129,7 +138,11 @@ The doctrine commits to all eight as the binding scope. OBPIs deliver them in pr
 
 ## The authoring surface — agent-mediated dialogical tuning
 
-The canonical authoring mode in gzkit is **agent-mediated dialogical tuning against a structured Pydantic+Jinja2 scaffold**, with operator-correctional authority preserved through the OPERATOR ECONOMY pillar. This is canonical because:
+The canonical authoring mode is **agent-mediated dialogical tuning**, with
+operator-correctional authority preserved through the OPERATOR ECONOMY pillar.
+Corpus surfaces use their structured content workflow; skills use their canonical
+files and sync procedure. Structured scaffolds support that dialogue without
+changing which surfaces are corpus constructed. This is canonical because:
 
 - ADR-0.0.19 (`gz justify`) is the precedent: an 8-section Walkthrough scaffold the operator and agent fill dialogically; operator fills `_[To be filled]_` blocks via normal interaction; agent drafts substantively; operator corrects verbatim; ceremony attests.
 - The 2026-04-25 complexity-doctrine handoff records the binding decision: *"Distillation is agent-driven, human-reviewed and attested/corrected (not 'joint authoring')."*
@@ -211,7 +224,10 @@ A change to AGENTS.md is then expressed as:
 4. `gz content render agent_contract --vendor=root` renders to `AGENTS.md` deterministically
 5. ADR-0.0.33 fidelity validators confirm: every Mechanical/Promotable bullet from the canonical model lands in the rendered output; line-count regression is within tolerance; pointer anchors resolve
 
-The same pattern applies to every other surface artifact (`Rule`, `Skill`, `Chore`, `Persona`, `Handoff`, …). The Pydantic shape and the Jinja2 template are different per content type; the substrate's contract is the same.
+The corpus-authoring pattern also applies to `Rule`. Other content types can
+have Pydantic schemas and templates without sharing this construction path.
+In particular, author `Skill` content in `.gzkit/skills/` and deliver it with
+`gz agent sync control-surfaces`; never route a skill edit through corpus composition.
 
 ## Round-trip fidelity contract
 
@@ -223,7 +239,11 @@ content_model = parse(render(content_model))
 
 For any canonical Pydantic model instance, render-then-parse must reconstruct an equivalent instance. ADR-0.0.19's `gz justify validate` is the reference implementation. The contract is binding: a content type that cannot round-trip is not substrate-compliant.
 
-This is what enables existing hand-authored surfaces to migrate without loss: parse the existing markdown, get a canonical model, store it, render-from-model going forward. Any drift between the parsed-then-rendered output and the original input is itself a fidelity finding the validators surface.
+This enables lossless parsing and rendering where a content type uses that
+workflow. Any drift between parsed-then-rendered output and its canonical input
+is a fidelity finding. For copied skills, fidelity compares the authored
+canonical file with its delivered copies; parsing does not require replacing
+the authoring source with a corpus.
 
 ## Levers and constraints (what gzkit controls vs. influences vs. cannot govern)
 
@@ -246,18 +266,18 @@ The doctrine governs the *output's fidelity to its declared invariants*, not the
 | Era | Composition method | What changes | What does not change |
 |---|---|---|---|
 | **Era 1 — today** | Hand-authored static files (mostly) + partial templating (`src/gzkit/templates/agents.md` → AGENTS.md via naive substitution) | — | Validators check rendered output against canonical models (where models exist) |
-| **Era 2 — substrate landed** | Pydantic + Jinja2 deterministic rendering for all content types; vendor-aware sync | Composition method becomes principled; canonical models exist for all surfaces | Validators are stronger (diff against canonical models, not grep static files); rendered output shape is unchanged |
-| **Era 3 — progressive disclosure** | Scenario-aware retrieval composes per-turn surface from canonical models on demand | Loading scenarios become first-class; surface size becomes per-scenario; per-turn weight is amortized | Validators still check rendered output; the per-scenario render is what gets validated |
+| **Era 2 — substrate landed** | Corpus composition/playback for agents/claude and rules; canonical-file sync for skills | Composition becomes principled within its declared population | Validators check each delivered surface against its own canonical source |
+| **Era 3 — progressive disclosure** | Scenario-aware retrieval selects applicable canonical content | Loading scenarios become first-class; surface size becomes per-scenario | Retrieval does not expand corpus construction to skills; source and delivery fidelity still bind |
 
 In every era, the agent reads a static document. What changes is *how the document is composed*. **Errors of what is printed become feedback for the CMS process (the composition pipeline) regardless of which era's pipeline is active.** The doctrine's invariants survive the transitions; the validators evolve to test the active composition method.
 
 ## Anti-patterns
 
-- **Editing rendered output directly.** `AGENTS.md`, `.claude/rules/<rule>.md`, `.gzkit/skills/**/SKILL.md` are derived outputs; edits land in the canonical model, then propagate via render.
+- **Editing derived output directly.** Author agents/claude and rules through their corpus workflow. Author skills under `.gzkit/skills/`, then sync. Vendor and package skill copies are derived outputs; the canonical skill file is not.
 - **Building a heavy TUI editor.** The agent is the authoring UI; light CLI affordances suffice; LSP-style protocol contracts are the path for editor integration.
 - **Asking the operator to read raw Pydantic-model JSON.** Per OPERATOR ECONOMY: rendered markdown is the review surface; the canonical model is agent-input only.
 - **Bypassing round-trip fidelity.** A content type that cannot parse-then-render-then-parse to identity is not substrate-compliant.
-- **Skipping the migration layer.** Existing hand-authored surfaces migrate via `gz content import`, not via "we'll re-author from scratch."
+- **Conflating content models with corpus construction.** A schema or parser for `Skill` does not make skills corpus-authored or pending corpus migration. Corpus migration applies only within the declared agents/claude and rules population.
 - **Injecting volatile context before the stable prefix.** It weakens prompt-cache behavior and hides drift in the bytes that should be invariant.
 - **Treating ADR-0.16.0's deliverable as the substrate.** ADR-0.16.0 delivered a partial prior — Pydantic content-type registry, vendor-aware sync (file-copy), lifecycle state machine. It did NOT deliver Jinja2-templated rendering for the full surface. The substrate doctrine generalizes ADR-0.16.0's scope to deliver what its prose promised.
 - **Letting "lighter ceremony" become a tradeoff axis.** The substrate adds composition steps the operator may experience as friction. That friction is the product. Per the anti-vibing mantra.
@@ -275,17 +295,18 @@ In every era, the agent reads a static document. What changes is *how the docume
 |---|---|---|---|
 | `AGENTS.md`, `CLAUDE.md` | `AgentContract` (`src/gzkit/content/models/agent_contract.py`) | this doctrine; ADR-0.0.37 | `gz agent sync control-surfaces` (playback of `.gzkit/renditions/AGENTS.md/root.md`) |
 | `.claude/rules/**`, `.github/instructions/**` | `Rule` | `.gzkit/rules/skill-surface-sync.md` | `gz agent sync control-surfaces` |
-| `.claude/skills/**/SKILL.md` | `Skill` | `.gzkit/rules/skill-surface-sync.md` | `gz skill list`; `gz agent sync control-surfaces` |
+| `.claude/skills/**/SKILL.md` | Authored `.gzkit/skills/**/SKILL.md`; `Skill` schema validates structure | `.gzkit/rules/skill-surface-sync.md` | `gz skill list`; `gz agent sync control-surfaces` |
 | persona files | `Persona` | ADR-0.0.11, ADR-0.0.12 | `gz personas list` |
 | chore registry | `Chore` | `.gzkit/rules/skill-surface-sync.md` § class-classifier | `gz agent sync control-surfaces` |
 | handoffs | `Handoff` | `gz-session-handoff` skill | `gz context <ADR-ID>` |
 | BDD scenarios | `Scenario` | `.gzkit/rules/tests.md` | `behave` |
 
-**Authoring vs orientation — two distinct verbs.** To *change* a surface, author the
-corpus entry (`gz content remember`) and recompose (`gz content compose`) — never edit the
-rendered location. To *orient* (understand which model + doctrine + command governs a
-surface), read this index. The index is the single load-bearing map; the rendering
-architecture is not to be re-derived from `src/` each session.
+**Authoring vs orientation — two distinct verbs.** To change agents/claude or
+rules, author the corpus entry (`gz content remember`) and recompose
+(`gz content compose`). To change a skill, edit its canonical `.gzkit/skills/`
+file, update its version/date, and run `gz agent sync control-surfaces`.
+Never edit a delivered mirror. To orient, read this index for the governing
+source and delivery command.
 
 ## Related canon
 

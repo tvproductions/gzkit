@@ -76,7 +76,8 @@ The [sampled delta](obpi-review-985/candidate.diff) removes contradictory
 same-turn freshness and raw-verdict repair commands, and states one writer per
 checkout. Independent inspection found that its barrier heading still repeated
 the old turn command. The [final proposal](obpi-review-985/proposed-final.diff)
-also corrects that heading and bumps the skill version. Those final heading and
+also corrects that heading and bumps the skill version. It is now applied to the
+canonical pipeline skill following the operator's source-authoring ruling. Those final heading and
 metadata edits were not part of this sixteen-trial sample. The runtime and
 sampled substantive repair instructions were unchanged by that inspection.
 The final proposal adds 317 characters to the complete skill: explicit current
@@ -85,12 +86,20 @@ turn and parallel-session commands. That increase carries required distinctions;
 it adds no stage, proof census, or mandatory extra review.
 
 The [source-authoring proposal](obpi-review-985/source-authoring-proposal.txt)
-requires an operator disposition of contradictory canon before application.
-The current runtime copies canonical skill files to vendor mirrors and package
-copies, while substrate prose calls every skill a derived corpus output. The
-proposal distinguishes current enrollment without initiating the separately
-owned migration. No disputed canonical instruction or mirror has been edited,
-and this evaluation does not claim completed delivery of the proposed correction.
+was accepted with the operator's September 9 correction, verbatim:
+"skills are not corpus constructed. only agents/claude and rules."
+Skills are not awaiting corpus migration. The owning substrate documentation now
+distinguishes content models from corpus construction; canonical skill files
+remain the authoring source for vendor and package copies. The original proposal
+is preserved beneath its disposition; its enrollment/migration premise is
+superseded, while the remaining provisions are accepted.
+
+Actual synchronization delivered version 6.54.0 to canonical, Claude, Codex and
+packaged skill files. All four share SHA-256
+`595f983479eb6c178ca1c6d61837c83872474ef7ec78f651f76096320e9c8d16`.
+`uv run gz validate --surfaces --distribution` passed both scopes. Delivery is
+verified separately from the behavioral sample; final source-authoring wording
+was not part of those sixteen trials.
 
 ## Result and limits
 

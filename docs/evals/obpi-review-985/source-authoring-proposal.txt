@@ -1,4 +1,16 @@
-Proposed authoring disposition for operator review (GHI #985; not applied):
+Operator disposition, September 9, 2026 (GHI #985; applied):
+
+"skills are not corpus constructed. only agents/claude and rules."
+"otherwise, this is fine: /Users/jeff/Documents/Code/gzkit/docs/evals/obpi-review-985/source-authoring-proposal.txt"
+
+The proposal below is accepted with that correction: skills use canonical files
+and synchronization, with no pending corpus migration. Its fidelity, canonical
+source, derived-copy and bounded pipeline provisions remain. The owning doctrine
+and canonical pipeline skill now carry that disposition; synchronization delivers
+the vendor and packaged copies. The original proposal is preserved below as
+history, including the superseded enrollment/migration premise.
+
+Original proposal (before operator correction):
 
 Authority to retain: substrate fidelity invariants; corpus authorship for enrolled
 surfaces; one root AgentContract; current skill-surface-sync delivery contract.

@@ -260,19 +260,30 @@ Two failed prompt invocations exposed an independent ARB argument issue:
 invocation placed the prompt first, avoiding variadic option consumption. The
 defect is recorded through `gz insights remember`, separately from acceptance.
 
-### Instruction authoring disposition remains pending
+### Instruction authoring disposition
 
-The read-only source-to-delivery audit confirmed a contradiction that requires
-the operator's ruling before the disputed canonical source is changed:
+The read-only source-to-delivery audit confirmed a contradiction, resolved by
+the operator on September 9:
 
 - Substrate doctrine calls `.gzkit/skills/**/SKILL.md` derived output and prescribes
   corpus authoring for every surface.
 - `skill-surface-sync.md` declares `.gzkit/skills/` the canonical authoring source
   and prescribes editing it before surface sync.
 
-The proposed bounded disposition retains corpus authoring for enrolled surfaces
-and canonical-file authoring for the currently unenrolled pipeline skill until
-its governed migration. Package/vendor copies remain derived. No Rule-family
-onboarding, root-contract rendition, or live OBPI is initiated. Instruction
-evaluation results are recorded separately from source-authoring approval; an
-evaluated proposal does not make an unapplied correction complete.
+Operator verbatim: "skills are not corpus constructed. only agents/claude and rules."
+The operator accepted the rest of the source-authoring proposal. This correction
+rejects its assumption that skills were awaiting corpus migration. The owning
+substrate doctrine now distinguishes corpus construction
+from content-model registration and canonical-file skill authoring. Skills are
+authored under `.gzkit/skills/`; package/vendor copies remain derived through sync.
+The ruling is also captured through `gz insights remember` as an improvement,
+timestamp `2026-09-09T11:58:02.085947+00:00`.
+
+The pipeline correction replaces contradictory same-turn freshness and raw-verdict
+repair commands with current proof applicability and mapped finding closure. It
+also requires one writer per governed checkout. Required review channels, tier
+order, operator initiation and human completion attestation remain binding. The
+sixteen actual instruction trials are recorded in the
+[evaluation](../evals/obpi-review-985-evaluation.md); they demonstrate the selected
+actions under both contexts, without an improvement claim. No Rule-family
+onboarding, root-contract rendition, or live OBPI was initiated.
