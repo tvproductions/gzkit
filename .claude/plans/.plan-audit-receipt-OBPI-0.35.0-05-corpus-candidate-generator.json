@@ -1,6 +1,6 @@
 {
   "obpi_id": "OBPI-0.35.0-05-corpus-candidate-generator",
-  "timestamp": "2026-09-07T21:46:54.285875+00:00",
+  "timestamp": "2026-09-09T00:07:52.781262+00:00",
   "verdict": "PASS",
   "plan_file": "glittery-kindling-dongarra.md",
   "gaps_found": 0,
@@ -84,6 +84,7 @@
       "sibling_adr": "ADR-0.0.37",
       "sibling_obpi": "OBPI-0.0.37-19-corpus-capture-tool-skill",
       "contested_paths": [
+        "src/gzkit/content/corpus_store.py",
         "src/gzkit/commands/content/__init__.py",
         "docs/user/manpages/content.md"
       ]

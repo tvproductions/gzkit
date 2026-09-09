@@ -1,0 +1,212 @@
+# OBPI-0.35.0-05 assertion audit -- generated artifact
+# revision: 1cef5d80252f81f9d89e0c63a6d5c36fe8291f6f  dirty: True
+# base: c9e62790   population rule and classification rule: see module docstring
+# columns: file:line <TAB> method <TAB> enclosing_test <TAB> class <TAB> source
+
+## tests/content/test_composer.py  (64)
+tests/content/test_composer.py:217	assertEqual	test_candidate_with_no_compressible_text_reports_zero_after	ANCHORED	self.assertEqual(result.byte_evidence.compressible_bytes_after, 0)
+tests/content/test_composer.py:224	assertEqual	test_candidate_with_one_compressible_entry_attributes_its_bytes	ANCHORED	self.assertEqual(result.byte_evidence.compressible_bytes_after, len(_COMPRESSIBLE_TEXT.encode('utf-8')))
+tests/content/test_composer.py:235	assertLessEqual	test_after_never_exceeds_before_for_a_realistic_candidate	CODE-VS-CODE	self.assertLessEqual(result.byte_evidence.compressible_bytes_after, result.byte_evidence.compressible_bytes_before)
+tests/content/test_composer.py:277	assertEqual	test_retired_compressible_entry_contributes_to_neither_before_nor_after	ANCHORED	self.assertEqual(result.byte_evidence.compressible_bytes_before, len(_COMPRESSIBLE_TEXT.encode('utf-8')))
+tests/content/test_composer.py:281	assertEqual	test_retired_compressible_entry_contributes_to_neither_before_nor_after	ANCHORED	self.assertEqual(result.byte_evidence.compressible_bytes_after, 0)
+tests/content/test_composer.py:313	assertRaises	test_byte_evidence_raises_when_attributed_exceeds_before	LITERAL-ONLY	self.assertRaises(ValueError)
+tests/content/test_composer.py:322	assertIn	test_byte_evidence_raises_when_attributed_exceeds_before	ANCHORED	self.assertIn('compressible_bytes_after', message)
+tests/content/test_composer.py:323	assertIn	test_byte_evidence_raises_when_attributed_exceeds_before	ANCHORED	self.assertIn('compressible_bytes_before', message)
+tests/content/test_composer.py:360	assertEqual	test_emission_attribution_counts_only_attributed_entries	ANCHORED	self.assertEqual(evidence.compressible_bytes_after, len(b'Entry A text.'))
+tests/content/test_composer.py:482	assertIn	test_owned_section_body_is_derived_from_corpus_not_prior_text	ANCHORED	self.assertIn('Fresh corpus-authored wording.', result.rendition.candidate_text)
+tests/content/test_composer.py:483	assertNotIn	test_owned_section_body_is_derived_from_corpus_not_prior_text	ANCHORED	self.assertNotIn('old body text to be replaced', result.rendition.candidate_text)
+tests/content/test_composer.py:516	assertEqual	test_unowned_section_bytes_are_byte_verbatim	CODE-VS-CODE	self.assertEqual(actual, expected)
+tests/content/test_composer.py:586	assertNotIn	test_retired_entry_contributes_nothing_while_verbatim_span_is_unaffected	ANCHORED	self.assertNotIn('Duplicate wording appears here too.', owned_text)
+tests/content/test_composer.py:587	assertIn	test_retired_entry_contributes_nothing_while_verbatim_span_is_unaffected	ANCHORED	self.assertIn('Live wording stays.', owned_text)
+tests/content/test_composer.py:588	assertNotIn	test_retired_entry_contributes_nothing_while_verbatim_span_is_unaffected	ANCHORED	self.assertNotIn('e-retired', result.lineage.sections['owned-section'].entry_ids)
+tests/content/test_composer.py:589	assertIn	test_retired_entry_contributes_nothing_while_verbatim_span_is_unaffected	ANCHORED	self.assertIn('Duplicate wording appears here too.', unowned_text)
+tests/content/test_composer.py:613	assertEqual	test_lineage_carries_owned_entry_ids_and_byte_span_for_every_section	ANCHORED	self.assertEqual(set(result.lineage.sections), {'owned-section', 'unowned-section'})
+tests/content/test_composer.py:616	assertTrue	test_lineage_carries_owned_entry_ids_and_byte_span_for_every_section	ANCHORED	self.assertTrue(owned.owned)
+tests/content/test_composer.py:617	assertEqual	test_lineage_carries_owned_entry_ids_and_byte_span_for_every_section	ANCHORED	self.assertEqual(owned.entry_ids, ('e-owned',))
+tests/content/test_composer.py:618	assertFalse	test_lineage_carries_owned_entry_ids_and_byte_span_for_every_section	ANCHORED	self.assertFalse(unowned.owned)
+tests/content/test_composer.py:619	assertEqual	test_lineage_carries_owned_entry_ids_and_byte_span_for_every_section	ANCHORED	self.assertEqual(unowned.entry_ids, ())
+tests/content/test_composer.py:621	assertIsInstance	test_lineage_carries_owned_entry_ids_and_byte_span_for_every_section	LITERAL-ONLY	self.assertIsInstance(lineage.byte_span, tuple)
+tests/content/test_composer.py:622	assertEqual	test_lineage_carries_owned_entry_ids_and_byte_span_for_every_section	LITERAL-ONLY	self.assertEqual(len(lineage.byte_span), 2)
+tests/content/test_composer.py:681	assertNotEqual	test_two_routed_consumers_get_different_offsets_and_off_route_is_refused	CODE-VS-CODE	self.assertNotEqual(result_a.lineage.sections['shared-section'].byte_span, result_b.lineage.sections['shared-section'].byte_span)
+tests/content/test_composer.py:686	assertRaises	test_two_routed_consumers_get_different_offsets_and_off_route_is_refused	LITERAL-ONLY	self.assertRaises(ValueError)
+tests/content/test_composer.py:690	assertIn	test_two_routed_consumers_get_different_offsets_and_off_route_is_refused	ANCHORED	self.assertIn(_GEN_SURFACE, message)
+tests/content/test_composer.py:691	assertIn	test_two_routed_consumers_get_different_offsets_and_off_route_is_refused	ANCHORED	self.assertIn('vendorC', message)
+tests/content/test_composer.py:716	assertEqual	test_two_runs_produce_byte_identical_candidate_and_lineage	CODE-VS-CODE	self.assertEqual(result1.rendition.candidate_text, result2.rendition.candidate_text)
+tests/content/test_composer.py:717	assertEqual	test_two_runs_produce_byte_identical_candidate_and_lineage	CODE-VS-CODE	self.assertEqual(result1.lineage, result2.lineage)
+tests/content/test_composer.py:753	assertRaises	test_invariant_entry_addressed_to_unowned_section_is_enforced	LITERAL-ONLY	self.assertRaises(ValueError)
+tests/content/test_composer.py:756	assertIn	test_invariant_entry_addressed_to_unowned_section_is_enforced	LITERAL-ONLY	self.assertIn('Invariant-floor violation', str(ctx.exception))
+tests/content/test_composer.py:793	assertRaises	test_two_live_byte_identical_invariant_entries_are_refused	LITERAL-ONLY	self.assertRaises(ValueError)
+tests/content/test_composer.py:797	assertIn	test_two_live_byte_identical_invariant_entries_are_refused	ANCHORED	self.assertIn('e-inv-1', message)
+tests/content/test_composer.py:798	assertIn	test_two_live_byte_identical_invariant_entries_are_refused	ANCHORED	self.assertIn('e-inv-2', message)
+tests/content/test_composer.py:799	assertIn	test_two_live_byte_identical_invariant_entries_are_refused	ANCHORED	self.assertIn('owned-section', message)
+tests/content/test_composer.py:800	assertIn	test_two_live_byte_identical_invariant_entries_are_refused	ANCHORED	self.assertIn('unowned-section', message)
+tests/content/test_composer.py:801	assertIn	test_two_live_byte_identical_invariant_entries_are_refused	ANCHORED	self.assertIn('gz content retire', message)
+tests/content/test_composer.py:848	assertRaises	test_same_roster_heading_injection_that_moves_boundaries_is_refused	LITERAL-ONLY	self.assertRaises(ValueError)
+tests/content/test_composer.py:852	assertIn	test_same_roster_heading_injection_that_moves_boundaries_is_refused	ANCHORED	self.assertIn('moved spans', message)
+tests/content/test_composer.py:853	assertIn	test_same_roster_heading_injection_that_moves_boundaries_is_refused	ANCHORED	self.assertIn('EXACT UTF-8 section bytes', message)
+tests/content/test_composer.py:878	assertEqual	test_ordinary_generation_is_still_accepted	ANCHORED	self.assertEqual(tuple(result.lineage.sections[boundary.section_id].byte_span), (boundary.start, boundary.end), "every lineage span must equal the candidate's actual boundary")
+tests/content/test_composer.py:883	assertEqual	test_ordinary_generation_is_still_accepted	CODE-VS-CODE	self.assertEqual(max((s.byte_span[1] for s in result.lineage.sections.values())), len(candidate_bytes))
+tests/content/test_composer.py:939	assertEqual	test_a_compressible_entry_in_an_unowned_section_is_never_attributed	ANCHORED	self.assertEqual(evidence.compressible_bytes_after, len(b'Emitted body.'))
+tests/content/test_composer.py:940	assertGreater	test_a_compressible_entry_in_an_unowned_section_is_never_attributed	CODE-VS-CODE	self.assertGreater(evidence.compressible_bytes_before, evidence.compressible_bytes_after)
+tests/content/test_composer.py:993	assertIn	test_empty_owned_section_retains_its_heading	CODE-VS-CODE	self.assertIn(expected_heading.decode('utf-8'), result.rendition.candidate_text)
+tests/content/test_composer.py:996	assertTrue	test_empty_owned_section_retains_its_heading	ANCHORED	self.assertTrue(lineage.owned)
+tests/content/test_composer.py:997	assertEqual	test_empty_owned_section_retains_its_heading	ANCHORED	self.assertEqual(lineage.entry_ids, ())
+tests/content/test_composer.py:1000	assertEqual	test_empty_owned_section_retains_its_heading	CODE-VS-CODE	self.assertEqual(actual_span_bytes, expected_heading)
+tests/content/test_composer.py:1040	assertEqual	test_fenced_heading_in_prior_rendition_does_not_create_spurious_section	ANCHORED	self.assertEqual(set(result.lineage.sections), {'owned-section', 'unowned-section'})
+tests/content/test_composer.py:1051	assertIn	test_fenced_heading_in_prior_rendition_does_not_create_spurious_section	ANCHORED	self.assertIn(b'```\n## Fake Heading Inside Fence\n```\n', expected)
+tests/content/test_composer.py:1055	assertEqual	test_fenced_heading_in_prior_rendition_does_not_create_spurious_section	CODE-VS-CODE	self.assertEqual(actual, expected)
+tests/content/test_composer.py:1104	assertNotEqual	test_multibyte_content_produces_byte_offsets_not_character_offsets	CODE-VS-CODE	self.assertNotEqual(expected_owned_end, char_based_end)
+tests/content/test_composer.py:1108	assertEqual	test_multibyte_content_produces_byte_offsets_not_character_offsets	CODE-VS-CODE	self.assertEqual(owned_span[1], expected_owned_end)
+tests/content/test_composer.py:1109	assertEqual	test_multibyte_content_produces_byte_offsets_not_character_offsets	CODE-VS-CODE	self.assertEqual(unowned_span[0], expected_owned_end)
+tests/content/test_composer.py:1134	assertRaises	test_missing_prior_text_for_unowned_section_is_named_refusal	LITERAL-ONLY	self.assertRaises(ValueError)
+tests/content/test_composer.py:1137	assertIn	test_missing_prior_text_for_unowned_section_is_named_refusal	LITERAL-ONLY	self.assertIn('unowned-section', str(ctx.exception))
+tests/content/test_composer.py:1179	assertIn	test_leading_indentation_survives_into_the_candidate_verbatim	ANCHORED	self.assertIn(b'    code_line()', owned_bytes)
+tests/content/test_composer.py:1201	assertIn	test_trailing_hard_break_spaces_survive_into_the_candidate_verbatim	ANCHORED	self.assertIn('Line with a hard break.  \n', result.rendition.candidate_text)
+tests/content/test_composer.py:1229	assertIn	test_invariant_entry_with_leading_whitespace_is_never_falsely_refused	ANCHORED	self.assertIn('    invariant wording with leading indentation', result.rendition.candidate_text)
+tests/content/test_composer.py:1268	assertRaises	test_entry_addressed_to_undeclared_section_id_is_refused	LITERAL-ONLY	self.assertRaises(ValueError)
+tests/content/test_composer.py:1272	assertIn	test_entry_addressed_to_undeclared_section_id_is_refused	ANCHORED	self.assertIn('e-orphan', message)
+tests/content/test_composer.py:1273	assertIn	test_entry_addressed_to_undeclared_section_id_is_refused	ANCHORED	self.assertIn('no-such-section', message)
+tests/content/test_composer.py:1304	assertRaises	test_entry_text_containing_a_heading_line_is_refused	LITERAL-ONLY	self.assertRaises(ValueError)
+tests/content/test_composer.py:1308	assertIn	test_entry_text_containing_a_heading_line_is_refused	ANCHORED	self.assertIn('unexpected-new-section', message)
+
+## tests/content/test_lineage.py  (13)
+tests/content/test_lineage.py:32	assertRaises	test_rejects_reversed_span	LITERAL-ONLY	self.assertRaises(ValidationError)
+tests/content/test_lineage.py:37	assertRaises	test_rejects_negative_span	LITERAL-ONLY	self.assertRaises(ValidationError)
+tests/content/test_lineage.py:43	assertEqual	test_accepts_valid_span	ANCHORED	self.assertEqual(section.byte_span, (0, 10))
+tests/content/test_lineage.py:44	assertEqual	test_accepts_valid_span	ANCHORED	self.assertEqual(section.entry_ids, ('e-1', 'e-2'))
+tests/content/test_lineage.py:82	assertEqual	test_writes_bare_adr_decision_5_shape	ANCHORED	self.assertEqual(on_disk, expected)
+tests/content/test_lineage.py:92	assertNotEqual	test_candidate_and_committed_paths_differ	CODE-VS-CODE	self.assertNotEqual(committed, staged)
+tests/content/test_lineage.py:93	assertTrue	test_candidate_and_committed_paths_differ	ANCHORED	self.assertTrue(staged.name.endswith('.candidate.lineage.json'))
+tests/content/test_lineage.py:94	assertEqual	test_candidate_and_committed_paths_differ	ANCHORED	self.assertEqual(committed.name, 'root.lineage.json')
+tests/content/test_lineage.py:118	assertEqual	test_round_trip_returns_equal_model	CODE-VS-CODE	self.assertEqual(loaded, lineage)
+tests/content/test_lineage.py:123	assertIsNone	test_absent_file_returns_none	ANCHORED	self.assertIsNone(result)
+tests/content/test_lineage.py:149	assertRaises	test_gap_fails_closed	LITERAL-ONLY	self.assertRaises(ValueError)
+tests/content/test_lineage.py:162	assertRaises	test_overlap_fails_closed	LITERAL-ONLY	self.assertRaises(ValueError)
+tests/content/test_lineage.py:174	assertRaises	test_incomplete_coverage_fails_closed	LITERAL-ONLY	self.assertRaises(ValueError)
+
+## tests/content/test_ownership.py  (33)
+tests/content/test_ownership.py:241	assertEqual	test_finds_ordinary_unfenced_boundaries_with_correct_byte_offsets	CODE-VS-CODE	self.assertEqual(boundaries, [SectionBoundary(section_id=section_id('café — Ünïcödé'), title='café — Ünïcödé', level=1, start=0, end=second_start), SectionBoundary(section_id='second', title='Second', level=2, start=second_start, end=total)])
+tests/content/test_ownership.py:273	assertEqual	test_heading_shaped_line_inside_a_fence_is_not_a_boundary	ANCHORED	self.assertEqual([b.section_id for b in boundaries], ['real-title'])
+tests/content/test_ownership.py:274	assertEqual	test_heading_shaped_line_inside_a_fence_is_not_a_boundary	ANCHORED	self.assertEqual(boundaries[0].end, len(surface_text.encode('utf-8')))
+tests/content/test_ownership.py:289	assertEqual	test_fence_toggling_works_across_multiple_fenced_blocks	ANCHORED	self.assertEqual([b.section_id for b in boundaries], ['title', 'real-section'])
+tests/content/test_ownership.py:293	assertRaises	test_two_headings_colliding_on_the_same_id_fail_closed	ANCHORED	self.assertRaises(OwnershipLoadError)
+tests/content/test_ownership.py:296	assertIn	test_two_headings_colliding_on_the_same_id_fail_closed	ANCHORED	self.assertIn('Alpha Beta', message)
+tests/content/test_ownership.py:297	assertIn	test_two_headings_colliding_on_the_same_id_fail_closed	ANCHORED	self.assertIn('Alpha, Beta!', message)
+tests/content/test_ownership.py:298	assertIn	test_two_headings_colliding_on_the_same_id_fail_closed	ANCHORED	self.assertIn('alpha-beta', message)
+tests/content/test_ownership.py:299	assertIn	test_two_headings_colliding_on_the_same_id_fail_closed	ANCHORED	self.assertIn('REQ-0.35.0-04-01', message)
+tests/content/test_ownership.py:306	assertEqual	test_empty_and_heading_free_documents_return_no_boundaries	ANCHORED	self.assertEqual(iter_section_boundaries(''), [])
+tests/content/test_ownership.py:307	assertEqual	test_empty_and_heading_free_documents_return_no_boundaries	ANCHORED	self.assertEqual(iter_section_boundaries('just prose\nno headings here\n'), [])
+tests/content/test_ownership.py:369	assertEqual	test_fixture_byte_length_matches_the_hand_derived_total	LITERAL-ONLY	self.assertEqual(len(self.SURFACE.encode('utf-8')), self.EXPECTED_TOTAL)
+tests/content/test_ownership.py:375	assertEqual	test_parser_reproduces_the_contract_derived_identities_and_offsets	ANCHORED	self.assertEqual([b.section_id for b in boundaries], self.EXPECTED_IDS)
+tests/content/test_ownership.py:376	assertEqual	test_parser_reproduces_the_contract_derived_identities_and_offsets	ANCHORED	self.assertEqual({b.section_id: (b.start, b.end) for b in boundaries}, self.EXPECTED_SPANS)
+tests/content/test_ownership.py:382	assertEqual	test_measured_spans_match_the_contract_derived_widths	ANCHORED	self.assertEqual(measure_section_spans(self.SURFACE), expected)
+tests/content/test_ownership.py:408	assertNotEqual	test_contract_literals_reject_a_roster_a_fence_blind_parser_would_produce	LITERAL-ONLY	self.assertNotEqual(broken_ids, self.EXPECTED_IDS)
+tests/content/test_ownership.py:409	assertIn	test_contract_literals_reject_a_roster_a_fence_blind_parser_would_produce	LITERAL-ONLY	self.assertIn('fake', broken_ids)
+tests/content/test_ownership.py:419	assertEqual	test_ordinary_three_backtick_fence_still_yields_the_control_boundaries	ANCHORED	self.assertEqual([b.title for b in boundaries], ['a', 'b'])
+tests/content/test_ownership.py:420	assertEqual	test_ordinary_three_backtick_fence_still_yields_the_control_boundaries	ANCHORED	self.assertEqual(set(measure_section_spans(surface_text)), {'a', 'b'})
+tests/content/test_ownership.py:433	assertEqual	test_four_backtick_fence_is_not_closed_by_an_embedded_three_backtick_pair	ANCHORED	self.assertEqual([b.title for b in boundaries], ['a', 'b'])
+tests/content/test_ownership.py:434	assertEqual	test_four_backtick_fence_is_not_closed_by_an_embedded_three_backtick_pair	ANCHORED	self.assertEqual(set(measure_section_spans(surface_text)), {'a', 'b'})
+tests/content/test_ownership.py:442	assertEqual	test_tilde_fences_are_recognized_and_hide_embedded_headings	ANCHORED	self.assertEqual([b.title for b in boundaries], ['a', 'b'])
+tests/content/test_ownership.py:443	assertEqual	test_tilde_fences_are_recognized_and_hide_embedded_headings	ANCHORED	self.assertEqual(set(measure_section_spans(surface_text)), {'a', 'b'})
+tests/content/test_ownership.py:451	assertEqual	test_a_shorter_tilde_run_does_not_close_a_longer_tilde_fence	ANCHORED	self.assertEqual([b.title for b in boundaries], ['a', 'b'])
+tests/content/test_ownership.py:466	assertEqual	test_four_space_indented_backtick_run_is_an_indented_code_block_not_a_fence	ANCHORED	self.assertEqual([b.title for b in boundaries], ['a', 'b'])
+tests/content/test_ownership.py:467	assertEqual	test_four_space_indented_backtick_run_is_an_indented_code_block_not_a_fence	ANCHORED	self.assertEqual(set(measure_section_spans(surface_text)), {'a', 'b'})
+tests/content/test_ownership.py:475	assertEqual	test_three_space_indented_fence_is_still_a_real_fence	ANCHORED	self.assertEqual([b.title for b in boundaries], ['a', 'b'])
+tests/content/test_ownership.py:488	assertEqual	test_inline_code_span_is_not_a_backtick_fence_opener	ANCHORED	self.assertEqual([b.title for b in boundaries], ['a', 'b'])
+tests/content/test_ownership.py:489	assertEqual	test_inline_code_span_is_not_a_backtick_fence_opener	ANCHORED	self.assertEqual(set(measure_section_spans(surface_text)), {'a', 'b'})
+tests/content/test_ownership.py:497	assertEqual	test_tilde_fence_info_string_may_contain_tildes	ANCHORED	self.assertEqual([b.title for b in boundaries], ['a', 'b'])
+tests/content/test_ownership.py:505	assertEqual	test_backtick_fence_with_an_ordinary_info_string_still_opens	ANCHORED	self.assertEqual([b.title for b in boundaries], ['a', 'b'])
+tests/content/test_ownership.py:513	assertEqual	test_unterminated_fence_swallows_every_subsequent_heading	ANCHORED	self.assertEqual([b.title for b in boundaries], ['a'])
+tests/content/test_ownership.py:514	assertEqual	test_unterminated_fence_swallows_every_subsequent_heading	ANCHORED	self.assertEqual(set(measure_section_spans(surface_text)), {'a'})
+
+## tests/commands/test_content_compose.py  (35)
+tests/commands/test_content_compose.py:258	assertEqual	test_compose_reads_piped_stdin_when_not_a_tty	ANCHORED	self.assertEqual(result.exit_code, 0, msg=result.output)
+tests/commands/test_content_compose.py:260	assertTrue	test_compose_reads_piped_stdin_when_not_a_tty	ANCHORED	self.assertTrue(candidate_out.exists())
+tests/commands/test_content_compose.py:261	assertEqual	test_compose_reads_piped_stdin_when_not_a_tty	ANCHORED	self.assertEqual(candidate_out.read_text(encoding='utf-8'), candidate_text)
+tests/commands/test_content_compose.py:281	assertEqual	test_compose_generates_candidate_and_lineage_on_tty_stdin	ANCHORED	self.assertEqual(result.exit_code, 0, msg=result.output)
+tests/commands/test_content_compose.py:285	assertTrue	test_compose_generates_candidate_and_lineage_on_tty_stdin	ANCHORED	self.assertTrue(lineage_out.exists(), 'Candidate lineage artifact should be written')
+tests/commands/test_content_compose.py:287	assertEqual	test_compose_generates_candidate_and_lineage_on_tty_stdin	ANCHORED	self.assertEqual(set(document), {'owned-section', 'unowned-section'})
+tests/commands/test_content_compose.py:289	assertIn	test_compose_generates_candidate_and_lineage_on_tty_stdin	LITERAL-ONLY	self.assertIn('owned', section)
+tests/commands/test_content_compose.py:290	assertIn	test_compose_generates_candidate_and_lineage_on_tty_stdin	LITERAL-ONLY	self.assertIn('entry_ids', section)
+tests/commands/test_content_compose.py:291	assertIn	test_compose_generates_candidate_and_lineage_on_tty_stdin	LITERAL-ONLY	self.assertIn('byte_span', section)
+tests/commands/test_content_compose.py:294	assertTrue	test_compose_generates_candidate_and_lineage_on_tty_stdin	ANCHORED	self.assertTrue(candidate_out.exists())
+tests/commands/test_content_compose.py:295	assertIn	test_compose_generates_candidate_and_lineage_on_tty_stdin	ANCHORED	self.assertIn(_OWNED_CORPUS_TEXT, candidate_out.read_text(encoding='utf-8'))
+tests/commands/test_content_compose.py:313	assertEqual	test_compose_generates_candidate_when_stdin_is_empty_and_not_a_tty	ANCHORED	self.assertEqual(result.exit_code, 0, msg=result.output)
+tests/commands/test_content_compose.py:315	assertTrue	test_compose_generates_candidate_when_stdin_is_empty_and_not_a_tty	ANCHORED	self.assertTrue(lineage_out.exists(), 'Candidate lineage artifact should be written')
+tests/commands/test_content_compose.py:326	assertEqual	test_compose_generates_candidate_when_stdin_is_whitespace_only	ANCHORED	self.assertEqual(result.exit_code, 0, msg=result.output)
+tests/commands/test_content_compose.py:328	assertTrue	test_compose_generates_candidate_when_stdin_is_whitespace_only	ANCHORED	self.assertTrue(lineage_out.exists(), 'Candidate lineage artifact should be written')
+tests/commands/test_content_compose.py:355	assertNotEqual	test_compose_generated_path_refuses_off_route_consumer	ANCHORED	self.assertNotEqual(result.exit_code, 0, msg=result.output)
+tests/commands/test_content_compose.py:357	assertFalse	test_compose_generated_path_refuses_off_route_consumer	ANCHORED	self.assertFalse(candidate_out.exists(), 'No candidate should be written on refusal')
+tests/commands/test_content_compose.py:359	assertFalse	test_compose_generated_path_refuses_off_route_consumer	ANCHORED	self.assertFalse(lineage_out.exists(), 'No lineage should be written on refusal')
+tests/commands/test_content_compose.py:404	assertEqual	test_compose_persists_candidate_via_write_bytes_never_write_text	ANCHORED	self.assertEqual(result.exit_code, 0, msg=result.output)
+tests/commands/test_content_compose.py:405	assertEqual	test_compose_persists_candidate_via_write_bytes_never_write_text	ANCHORED	self.assertEqual(candidate_out.read_bytes(), candidate_text.encode('utf-8'))
+tests/commands/test_content_compose.py:433	assertEqual	test_generated_lineage_spans_index_the_PERSISTED_candidate_bytes	ANCHORED	self.assertEqual(result.exit_code, 0, msg=result.output)
+tests/commands/test_content_compose.py:446	assertIn	test_generated_lineage_spans_index_the_PERSISTED_candidate_bytes	ANCHORED	self.assertIn(_OWNED_CORPUS_TEXT.encode('utf-8'), persisted[owned_start:owned_end], "owned section's span must slice its corpus body out of the persisted file")
+tests/commands/test_content_compose.py:457	assertEqual	test_generated_lineage_spans_index_the_PERSISTED_candidate_bytes	LITERAL-ONLY	self.assertEqual(start, cursor, f'span {(start, end)} does not resume at byte {cursor}')
+tests/commands/test_content_compose.py:461	assertEqual	test_generated_lineage_spans_index_the_PERSISTED_candidate_bytes	ANCHORED	self.assertEqual(cursor, len(persisted), "lineage partition must end at the PERSISTED candidate's byte length -- a newline-translating write would slide every offset")
+tests/commands/test_content_compose.py:478	assertEqual	test_generated_lineage_spans_index_the_PERSISTED_candidate_bytes	CODE-VS-CODE	self.assertEqual(actual, claimed, "every PERSISTED section's identity and exact half-open offsets must equal the staged lineage -- the same bar `_refuse_generated_lineage_drift` holds the in-memory candidate to, applied to the bytes on disk")
+tests/commands/test_content_compose.py:520	assertEqual	test_persisted_lineage_matches_contract_derived_offsets_not_just_the_parser	LITERAL-ONLY	self.assertEqual(len(surface_text.encode('utf-8')), expected_total, "the oracle's literals must describe this fixture")
+tests/commands/test_content_compose.py:552	assertEqual	test_persisted_lineage_matches_contract_derived_offsets_not_just_the_parser	ANCHORED	self.assertEqual(result.exit_code, 0, msg=result.output)
+tests/commands/test_content_compose.py:561	assertEqual	test_persisted_lineage_matches_contract_derived_offsets_not_just_the_parser	ANCHORED	self.assertEqual(persisted, surface_text.encode('utf-8'))
+tests/commands/test_content_compose.py:562	assertEqual	test_persisted_lineage_matches_contract_derived_offsets_not_just_the_parser	ANCHORED	self.assertEqual(len(persisted), expected_total)
+tests/commands/test_content_compose.py:563	assertEqual	test_persisted_lineage_matches_contract_derived_offsets_not_just_the_parser	ANCHORED	self.assertEqual({sid: s['byte_span'] for sid, s in document.items()}, expected_spans, 'persisted lineage must match the CONTRACT-derived offsets, not merely agree with another run of the same parser')
+tests/commands/test_content_compose.py:570	assertNotIn	test_persisted_lineage_matches_contract_derived_offsets_not_just_the_parser	ANCHORED	self.assertNotIn('fake', document)
+tests/commands/test_content_compose.py:590	assertEqual	test_explicit_candidate_removes_a_stale_generated_lineage	ANCHORED	self.assertEqual(result.exit_code, 0, msg=result.output)
+tests/commands/test_content_compose.py:592	assertTrue	test_explicit_candidate_removes_a_stale_generated_lineage	ANCHORED	self.assertTrue(lineage_out.exists(), 'Generated path should stage a lineage')
+tests/commands/test_content_compose.py:607	assertEqual	test_explicit_candidate_removes_a_stale_generated_lineage	ANCHORED	self.assertEqual(result.exit_code, 0, msg=result.output)
+tests/commands/test_content_compose.py:608	assertFalse	test_explicit_candidate_removes_a_stale_generated_lineage	ANCHORED	self.assertFalse(lineage_out.exists(), 'A stale generated-path lineage must not survive an explicit overwrite')
+
+## CENSUS
+tests/content/test_composer.py	64
+tests/content/test_lineage.py	13
+tests/content/test_ownership.py	33
+tests/commands/test_content_compose.py	35
+TOTAL	145
+
+## CLASSIFICATION TOTALS (heuristic -- see caveat)
+ANCHORED	103
+CODE-VS-CODE	17
+LITERAL-ONLY	25
+SUM	145
+
+## TAUTOLOGY SCAN (syntactic self-comparison)
+syntactic_self_comparisons	[]
+
+## CAVEAT -- what these classes DO and DO NOT mean
+# Corrected 2026-09-08 after round 13
+# (arb-step-codexadversary-e6e7f2f6b4ab44dd960f94e1c87806e7) found the previous
+# caveat contradicted this program's own output. The claim that
+# `assertIn('token', message)` lands LITERAL-ONLY 'when the token is the first
+# operand' was FALSE: operands are checked SYMMETRICALLY, so test_composer.py:322
+# -- exactly that shape -- classifies ANCHORED. 18 refusal-message rows are ANCHORED.
+#
+# ACTUAL composition of LITERAL-ONLY (25), row-backed:
+#   13  assertRaises(...) -- ONE operand, an exception CLASS. Not a value
+#       comparison at all. Their class is an artifact of this taxonomy, NOT a
+#       judgement that the assertion is weak.
+#    2  inline `str(ctx.exception)` (test_composer.py:756, :1137). KNOWN OMISSION:
+#       the taint rule follows an ASSIGNED `message = str(ctx.exception)` but not
+#       the inline expression, so these two are misclassified by this program.
+#    6  PRODUCTION-DERIVED, MISCLASSIFIED HERE through a LOOP-BINDING GAP:
+#       test_composer.py:621/:622 (`for lineage in result.lineage.sections.values()`)
+#       test_content_compose.py:289/:290/:291 (`for section in document.values()`)
+#       test_content_compose.py:457 (`for start, end in spans`).
+#       The taint rule below walks ast.Assign only, never ast.For, so a for-target
+#       bound from production output is not tainted. Found by round 14.
+#    4  genuinely literal or self-fixture: test_ownership.py:369/:408/:409 and
+#       test_content_compose.py:520. (:408/:409 compare against `broken_ids`, a
+#       TEST-LOCAL fence-blind re-derivation, not production output.)
+#
+# SO: 8 of the 25 LITERAL-ONLY rows are known misclassifications (2 inline
+# exception + 6 loop-binding). This is stated, not corrected: the totals below
+# are the classifier's actual output and are published WITH their known errors
+# rather than silently adjusted.
+#
+# A prior packet revision asserted 'the 25 LITERAL-ONLY rows are in fact
+# production-derived refusal messages'. That is FALSE on both halves and this
+# agent adopted it from round 11 WITHOUT CHECKING IT against this output.
+#
+# Round 11 traced operands with different semantic categories and obtained
+# ANCHORED=121 CODE_OR_MIXED=20 FIXTURE_ONLY=4. The two readings DISAGREE; this
+# program does not claim to be the correct one. The per-row source above is what
+# both were read from, and is the reviewable artifact.

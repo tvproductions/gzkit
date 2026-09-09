@@ -1,0 +1,261 @@
+{
+  "agents-md": {
+    "owned": false,
+    "entry_ids": [],
+    "byte_span": [
+      0,
+      50
+    ]
+  },
+  "project-identity": {
+    "owned": false,
+    "entry_ids": [],
+    "byte_span": [
+      50,
+      173
+    ]
+  },
+  "persona": {
+    "owned": false,
+    "entry_ids": [],
+    "byte_span": [
+      173,
+      1353
+    ]
+  },
+  "prime-directive-ownership": {
+    "owned": true,
+    "entry_ids": [
+      "corpus-prime-directive-ownership-2026-06-19T22:55:06.046462+00:00",
+      "corpus-prime-directive-ownership-2026-06-19T22:55:06.455317+00:00",
+      "corpus-prime-directive-ownership-2026-06-19T22:55:06.883462+00:00",
+      "corpus-prime-directive-ownership-2026-06-19T22:55:07.312327+00:00",
+      "corpus-prime-directive-ownership-2026-06-19T22:55:07.757945+00:00",
+      "corpus-prime-directive-ownership-2026-06-19T22:55:08.171186+00:00",
+      "corpus-prime-directive-ownership-2026-06-30T12:38:53.561243+00:00"
+    ],
+    "byte_span": [
+      1353,
+      2314
+    ]
+  },
+  "do-it-right-craftsmanship-maxim": {
+    "owned": true,
+    "entry_ids": [
+      "corpus-do-it-right-craftsmanship-maxim-2026-06-19T22:55:26.682831+00:00",
+      "corpus-do-it-right-craftsmanship-maxim-2026-06-19T22:55:27.188330+00:00",
+      "corpus-do-it-right-craftsmanship-maxim-2026-06-19T22:55:27.609055+00:00",
+      "corpus-do-it-right-craftsmanship-maxim-2026-06-19T22:55:28.036264+00:00",
+      "corpus-do-it-right-craftsmanship-maxim-2026-06-19T22:55:28.454308+00:00",
+      "corpus-do-it-right-craftsmanship-maxim-2026-06-19T22:55:28.844664+00:00",
+      "corpus-do-it-right-craftsmanship-maxim-2026-06-19T22:55:29.301066+00:00",
+      "corpus-do-it-right-craftsmanship-maxim-2026-06-19T22:55:29.704727+00:00",
+      "corpus-do-it-right-craftsmanship-maxim-2026-06-19T22:55:30.118260+00:00",
+      "corpus-do-it-right-craftsmanship-maxim-2026-06-19T22:55:30.529211+00:00",
+      "corpus-do-it-right-craftsmanship-maxim-2026-08-21T09:33:59.523053+00:00"
+    ],
+    "byte_span": [
+      2314,
+      4142
+    ]
+  },
+  "skills-first-execution-routing": {
+    "owned": false,
+    "entry_ids": [],
+    "byte_span": [
+      4142,
+      4489
+    ]
+  },
+  "make-llm-stochastic-vibes-inert-anti-vibing-mantra": {
+    "owned": true,
+    "entry_ids": [
+      "corpus-make-llm-stochastic-vibes-inert-anti-vibing-mantra-2026-09-07T10:51:26.249770+00:00",
+      "corpus-make-llm-stochastic-vibes-inert-anti-vibing-mantra-2026-09-07T10:51:26.374237+00:00",
+      "corpus-make-llm-stochastic-vibes-inert-anti-vibing-mantra-2026-09-07T10:51:26.497113+00:00",
+      "corpus-make-llm-stochastic-vibes-inert-anti-vibing-mantra-2026-09-07T10:51:26.620716+00:00",
+      "corpus-make-llm-stochastic-vibes-inert-anti-vibing-mantra-2026-09-07T10:51:26.744030+00:00",
+      "corpus-make-llm-stochastic-vibes-inert-anti-vibing-mantra-2026-09-07T10:51:26.867265+00:00"
+    ],
+    "byte_span": [
+      4489,
+      6192
+    ]
+  },
+  "stdlib-first-doctrine-dependency-posture": {
+    "owned": true,
+    "entry_ids": [
+      "corpus-stdlib-first-doctrine-dependency-posture-2026-09-07T10:51:26.990597+00:00",
+      "corpus-stdlib-first-doctrine-dependency-posture-2026-09-07T10:51:27.114752+00:00",
+      "corpus-stdlib-first-doctrine-dependency-posture-2026-09-07T10:51:27.238703+00:00",
+      "corpus-stdlib-first-doctrine-dependency-posture-2026-09-07T10:51:27.361841+00:00",
+      "corpus-stdlib-first-doctrine-dependency-posture-2026-09-07T10:51:27.487766+00:00",
+      "corpus-stdlib-first-doctrine-dependency-posture-2026-09-07T10:51:27.617161+00:00",
+      "corpus-stdlib-first-doctrine-dependency-posture-2026-09-07T10:51:27.748592+00:00",
+      "corpus-stdlib-first-doctrine-dependency-posture-2026-09-07T10:51:27.873240+00:00",
+      "corpus-stdlib-first-doctrine-dependency-posture-2026-09-07T10:51:27.998284+00:00",
+      "corpus-stdlib-first-doctrine-dependency-posture-2026-09-07T10:51:28.123612+00:00"
+    ],
+    "byte_span": [
+      6192,
+      7759
+    ]
+  },
+  "operator-economy-of-effort-design-dialogue-mode": {
+    "owned": true,
+    "entry_ids": [
+      "corpus-operator-economy-of-effort-design-dialogue-mode-2026-08-23T14:19:20.810114+00:00"
+    ],
+    "byte_span": [
+      7759,
+      9176
+    ]
+  },
+  "behavior-rules": {
+    "owned": true,
+    "entry_ids": [
+      "corpus-behavior-rules-2026-06-10T07:53:55.264205+00:00",
+      "corpus-behavior-rules-2026-06-10T08:12:41.048588+00:00",
+      "corpus-behavior-rules-2026-06-19T22:55:45.355339+00:00",
+      "corpus-behavior-rules-2026-06-19T22:55:45.745394+00:00",
+      "corpus-behavior-rules-2026-06-19T22:55:46.132725+00:00",
+      "corpus-behavior-rules-2026-06-19T22:55:46.543773+00:00",
+      "corpus-behavior-rules-2026-06-19T22:55:46.955976+00:00",
+      "corpus-behavior-rules-2026-06-19T22:55:47.362048+00:00",
+      "corpus-behavior-rules-2026-06-19T22:55:47.778837+00:00",
+      "corpus-behavior-rules-2026-06-19T22:55:48.182115+00:00",
+      "corpus-behavior-rules-2026-06-19T22:55:48.569025+00:00",
+      "corpus-behavior-rules-2026-06-19T22:55:48.985015+00:00",
+      "corpus-behavior-rules-2026-06-19T22:55:49.386645+00:00",
+      "corpus-behavior-rules-2026-06-19T22:55:49.771599+00:00",
+      "corpus-behavior-rules-2026-06-30T12:33:05.706111+00:00",
+      "corpus-behavior-rules-2026-06-30T12:35:16.628537+00:00",
+      "corpus-behavior-rules-2026-06-30T12:38:53.450254+00:00",
+      "corpus-behavior-rules-2026-06-30T12:38:53.671739+00:00"
+    ],
+    "byte_span": [
+      9176,
+      11189
+    ]
+  },
+  "pattern-discovery": {
+    "owned": false,
+    "entry_ids": [],
+    "byte_span": [
+      11189,
+      11572
+    ]
+  },
+  "skills": {
+    "owned": false,
+    "entry_ids": [],
+    "byte_span": [
+      11572,
+      12260
+    ]
+  },
+  "gate-covenant": {
+    "owned": true,
+    "entry_ids": [
+      "corpus-gate-covenant-2026-08-20T00:31:11.884248+00:00"
+    ],
+    "byte_span": [
+      12260,
+      13328
+    ]
+  },
+  "obpi-acceptance-protocol": {
+    "owned": true,
+    "entry_ids": [
+      "corpus-obpi-acceptance-protocol-2026-06-11T10:50:22.318951+00:00"
+    ],
+    "byte_span": [
+      13328,
+      13622
+    ]
+  },
+  "execution-rules": {
+    "owned": false,
+    "entry_ids": [],
+    "byte_span": [
+      13622,
+      14312
+    ]
+  },
+  "attestation": {
+    "owned": true,
+    "entry_ids": [
+      "corpus-attestation-2026-06-06T06:20:27.327411+00:00",
+      "corpus-attestation-2026-06-10T23:22:11.236941+00:00"
+    ],
+    "byte_span": [
+      14312,
+      15245
+    ]
+  },
+  "defect-fix-routing": {
+    "owned": true,
+    "entry_ids": [
+      "corpus-defect-fix-routing-2026-06-11T11:12:06.972640+00:00",
+      "corpus-defect-fix-routing-2026-08-23T07:15:30.869803+00:00"
+    ],
+    "byte_span": [
+      15245,
+      16753
+    ]
+  },
+  "control-surfaces": {
+    "owned": false,
+    "entry_ids": [],
+    "byte_span": [
+      16753,
+      16944
+    ]
+  },
+  "local-agent-rules": {
+    "owned": false,
+    "entry_ids": [],
+    "byte_span": [
+      16944,
+      18702
+    ]
+  },
+  "operator-doctrine-verbatim-canon": {
+    "owned": true,
+    "entry_ids": [
+      "corpus-operator-doctrine-verbatim-canon-2026-06-16T11:52:39.917448+00:00",
+      "corpus-operator-doctrine-verbatim-canon-2026-06-19T22:54:45.960384+00:00",
+      "corpus-operator-doctrine-verbatim-canon-2026-08-17T11:20:29.341500+00:00",
+      "corpus-operator-doctrine-verbatim-canon-2026-08-17T11:20:36.600648+00:00",
+      "corpus-operator-doctrine-verbatim-canon-2026-08-17T11:55:49.945606+00:00",
+      "corpus-operator-doctrine-verbatim-canon-2026-08-17T21:46:58.710673+00:00",
+      "corpus-operator-doctrine-verbatim-canon-2026-08-17T21:47:07.702856+00:00",
+      "corpus-operator-doctrine-verbatim-canon-2026-08-17T23:33:27.295964+00:00",
+      "corpus-operator-doctrine-verbatim-canon-2026-08-21T00:12:37.962499+00:00",
+      "corpus-operator-doctrine-verbatim-canon-2026-08-21T09:33:42.074142+00:00",
+      "corpus-operator-doctrine-verbatim-canon-2026-08-23T14:33:19.685636+00:00"
+    ],
+    "byte_span": [
+      18702,
+      30261
+    ]
+  },
+  "governance-doctrine-surfaces": {
+    "owned": true,
+    "entry_ids": [
+      "corpus-governance-doctrine-surfaces-2026-06-10T10:51:47.310995+00:00"
+    ],
+    "byte_span": [
+      30261,
+      30649
+    ]
+  },
+  "architectural-boundaries": {
+    "owned": false,
+    "entry_ids": [],
+    "byte_span": [
+      30649,
+      31244
+    ]
+  }
+}
