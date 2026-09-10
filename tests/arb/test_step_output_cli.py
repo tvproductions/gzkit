@@ -145,6 +145,11 @@ class TestLongReviewReceiptImport(unittest.TestCase):
             "codex-fixture.py",
             (
                 "import json, sys\nfrom pathlib import Path\n"
+                # ARB captures this child with encoding="utf-8"; a plain child
+                # python emits stdout in the locale encoding, which on Windows
+                # is cp1252 and cannot encode the CJK payload below. Without
+                # this the child dies of UnicodeEncodeError and --quiet hides it.
+                "sys.stdout.reconfigure(encoding='utf-8')\n"
                 "from gzkit.acceptance_execution import input_digest\n"
                 f"review = {review!r}\n"
                 f"review['input_digest'] = input_digest(Path.cwd(), Path({str(fixture.brief)!r}))\n"
