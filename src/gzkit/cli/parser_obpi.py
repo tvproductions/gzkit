@@ -396,6 +396,33 @@ def register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         func=lambda a: _lazy("obpi_verify_packet_cmd")(packet=a.packet, as_json=a.as_json)
     )
 
+    p_obpi_adversary_workspace = obpi_commands.add_parser(
+        "adversary-workspace",
+        help="Materialize the Step-4b adversary's disposable writable checkout (GHI #961)",
+        description=(
+            "Copy the reviewed source -- tracked content at HEAD plus uncommitted "
+            "modifications -- into a throwaway writable tree, and print the mandated "
+            "tier-1 dispatch pointed at it. The reviewer replays proofs there; the "
+            "active checkout stays protected by the sandbox boundary."
+        ),
+        epilog=build_epilog(
+            [
+                "gz obpi adversary-workspace OBPI-0.1.0-01",
+                "gz obpi adversary-workspace OBPI-0.1.0-01 --json",
+            ]
+        ),
+    )
+    p_obpi_adversary_workspace.add_argument("obpi", help="OBPI identifier under review")
+    p_obpi_adversary_workspace.add_argument(
+        "--destination", help="Where to materialize the checkout (default: a temp directory)"
+    )
+    add_json_flag(p_obpi_adversary_workspace)
+    p_obpi_adversary_workspace.set_defaults(
+        func=lambda a: _lazy("obpi_adversary_workspace_cmd")(
+            obpi_id=a.obpi, destination=a.destination, as_json=a.as_json
+        )
+    )
+
     p_obpi_withdraw = obpi_commands.add_parser(
         "withdraw",
         help="Withdraw a phantom or erroneous OBPI from the ledger",

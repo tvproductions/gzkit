@@ -972,17 +972,50 @@ Refutation remains essential, but as a METHOD:
 That gives the operator EVIDENCE FOR AN ATTESTATION DECISION, instead of an
 unbounded argument.
 
-**ONE TECHNIQUE IS UNAVAILABLE TO THE ADVERSARY, AND THE BAR IS UNCHANGED (measured
-2026-09-04).** `codex-companion.mjs:414` hardcodes `sandbox: "read-only"` on the
-`adversarial-review` path. That restricts the FILESYSTEM, not the shell: measured under
-`codex sandbox`, `python3 -c "print(2+2)"` returns `4` and
-`./.venv/bin/python -m unittest tests.content.test_ownership` **ran 69 tests**. So the adversary
-CAN run greps, `git log`, the brief's `## Demo`, and the suite — use the venv interpreter, because
-`uv run` dies initializing its cache. It CANNOT write, so the mutation sweep (which must edit a
-guard and restore it) and any negative control that mutates the tree are Step 4a's burden; Step 4b
-audits that record rather than reproducing it. Tests needing a writable temp dir error under the
-barrier (47 of 69 in the measured module) — name that signature in the prompt so the adversary
-reports it as a coverage limit, never as a defect. Tracked at **GHI #961**.
+**THE REVIEWER REPLAYS IN A DISPOSABLE WRITABLE CHECKOUT (operator instruction 2026-09-10,
+GHI #961).** Step 4b judges executed proof, and judging it by reading is weaker than judging it
+by running it. `codex-companion.mjs:414` still pins `sandbox: "read-only"` on the
+`adversarial-review` path, so that subcommand can never replay a mutation. **It is no longer the
+Step-4b dispatch.** The `task` path honours `--write` (`codex-companion.mjs:491`,
+`sandbox: request.write ? "workspace-write" : "read-only"`), takes `--cwd`, and accepts
+`--prompt-file`.
+
+Point that writable sandbox at a THROWAWAY COPY of the reviewed source, never at the operator's
+tree. Build it first:
+
+```bash
+uv run gz obpi adversary-workspace <OBPI-ID>
+```
+
+It copies tracked content at `HEAD` plus uncommitted modifications, prints a `source_digest` over
+the materialized file set, and prints the dispatch below already pointed at the checkout. Measured
+2026-09-10 under `task --write --cwd <checkout>`: `tempfile.mkdtemp()` returns a real path, a write
+inside the checkout succeeds, and a write to the active repository is **refused**
+(`operation not permitted`). The active checkout is protected by the sandbox boundary itself, not
+by asking the reviewer nicely.
+
+Dispatch, ARB-wrapped as always:
+
+```bash
+uv run gz arb step --name codexadversary --max-output-chars -1 -- \
+  node "$HOME/.claude/plugins/cache/openai-codex/codex/<ver>/scripts/codex-companion.mjs" \
+  task --write --cwd <checkout> --prompt-file <prompt.md>
+```
+
+Tier 1 is unaffected: the argv is still `node .../codex-companion.mjs`, `receipt_proves_cross_vendor`
+walks past `node`, and `data/mandated_tier1_dispatch.json` declares this surface alongside the
+read-only one. The plugin remains the only tier-1 dispatch surface — this changes which of its
+subcommands Step 4b uses, never the vendor boundary, and `codex exec` stays FORBIDDEN.
+
+**Ask for the replay, and take nothing on faith.** Instruct the reviewer to run the baseline, apply
+the recorded substitution, observe the named test fail on its OWN ASSERTION, restore the source
+byte-identically, and re-run. It reports those observations in a `replay` array on its
+`gzkit.acceptance.review.v1` object — obligation, proof id, workspace digest, selectors, mutation
+label, three runs, and the source digest before and after. Ingestion REFUSES a claim the record
+does not support: a baseline that was not green, a failure whose class is `error` rather than
+`assertion`, a selector that executed zero tests, a record with no substitution, a source not
+restored, or a digest naming some other tree. Absence of the block claims nothing and is left
+alone — silence is honest, only a claim is checked. Delete the checkout when the round ends.
 
 **This constrains a technique. It does not lower the pass condition.** GHI #643's fabricated
 evidence was entirely plausible ON READING — that is what made it fabricable, and running the
@@ -1149,7 +1182,7 @@ author `id` or `receipt_id`; ingestion derives them from the executed receipt.
 Record the review through `gz obpi acceptance ... review --receipt ...`, including
 truthful refutations, so the next round receives the same outstanding obligations.
 
-**Two transport facts that decide what actually reaches it (measured 2026-09-04, GHI #961).** The suite runs under `./.venv/bin/python -m unittest`, never `uv run` — uv cannot initialize its cache in the sandbox. And the diff you assume was delivered usually was not: `collectReviewContext` injects `git status` + `git diff` as `REVIEW_INPUT` only while the target is within `DEFAULT_INLINE_DIFF_MAX_FILES = 2` files and 256 KB, then drops to `inputMode: "self-collect"` and sends file NAMES only — which is every multi-file OBPI. Your focus text is a shell positional (`positionals.join(" ")`), not a document channel: there is no `--prompt-file` and no stdin on this path, so name the artifacts BY PATH and let the adversary open them itself.
+**Two transport facts that decide what actually reaches it (measured 2026-09-04, re-measured 2026-09-10 on the writable path, GHI #961).** The suite runs under the venv interpreter, never `uv run` — uv cannot initialize its cache in the sandbox. Inside the disposable checkout, run it as `PYTHONPATH=<checkout>/src <repo>/.venv/bin/python -m unittest <selector>`; the editable install points at the ORIGINAL `src`, so without that `PYTHONPATH` the reviewer would mutate the copy and import the original — a replay that proves nothing. `gz obpi adversary-workspace` prints the exact invocation. Second: the `task` path DOES take `--prompt-file` and stdin, so the positional-only limitation belongs to `adversarial-review` alone and no longer applies; still name large artifacts BY PATH and let the reviewer open them. And where `renderReviewResult` collapses a review to a rendered summary, `renderTaskResult` (`lib/render.mjs:315`) emits the reviewer's `rawOutput` **verbatim** — which is why the review object now reaches the ARB receipt the importer reads. Observed 2026-09-10: a complete, correct review object authored through `adversarial-review` was lost in transport and the import refused it (`exit 3`).
 
 > **`not-refuted` IS the corroborated state — it is phrased passively, not missing.** Operator
 > ruling 2026-09-04, verbatim: *"NOT-REFUTED is arguably a passive way of saying CORROBORATED"*.

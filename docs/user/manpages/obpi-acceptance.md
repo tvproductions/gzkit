@@ -120,6 +120,22 @@ claim that a review ran:
 }
 ```
 
+An adversarial review that replayed the proof rather than only reading it adds a
+`replay` array. Each record names `obligation_id`, `proof_id`, the
+`workspace_digest` of the disposable checkout it ran in (see
+[adversary workspace](obpi-adversary-workspace.md)), the executed `selectors`, the
+`mutation_label` applied, three runs (`baseline`, `mutated`, `restored`, each with
+`exit_status`, `tests_run` and `output_tail`), and `source_digest_before` /
+`source_digest_after` around the edit.
+
+Ingestion refuses a replay claim the record does not support: a baseline that was
+not green, a mutated run whose failure class is `error` rather than `assertion`, a
+selector that executed zero tests, a record carrying no substitution, a source not
+restored byte-identically, or a digest naming a tree other than the one under
+review. An execution error, a skipped check, and a merely inspected record are
+never independent replay. Omitting the block claims nothing and is accepted; only
+a claim is checked (GHI #961).
+
 `stage` is `spec`, `quality`, or `adversarial`. Explicit proof approvals govern
 readiness; the `accepted`/`refuted` verdict remains review history and does not
 author the approved set. A reviewer must not emit `id` or `receipt_id`: ingestion

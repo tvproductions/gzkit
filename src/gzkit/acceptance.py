@@ -11,6 +11,8 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit.adversary_workspace import ReplayRecord
+
 
 class AcceptanceModel(BaseModel):
     """Immutable records, with tuples to prevent nested collection mutation."""
@@ -113,6 +115,10 @@ class ReviewJudgment(AcceptanceModel):
     )
     fallback_reason: str = Field(
         default="", description="Recorded reason for a degraded review tier"
+    )
+    replay: tuple[ReplayRecord, ...] = Field(
+        default=(),
+        description="Proof executions the reviewer independently reproduced (GHI #961)",
     )
 
 

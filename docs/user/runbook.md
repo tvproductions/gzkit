@@ -153,6 +153,13 @@ reports current proof and unresolved findings; historical verdict prose does
 not own readiness. See [acceptance commands](manpages/obpi-acceptance.md).
 Step 4a can prepare evidence while Step 4b is pending; completion requires both.
 
+Step 4b's independent adversary replays proof rather than only reading it.
+`gz obpi adversary-workspace` materializes a disposable writable checkout of the
+reviewed source and prints the mandated tier-1 dispatch pointed at it, so the
+reviewer can run a baseline, apply a substitution, observe the assertion failure
+and restore — while the active checkout stays protected by the sandbox boundary
+(GHI #961). See [adversary workspace](manpages/obpi-adversary-workspace.md).
+
 Stage 2 dispatches an implementer and then a two-stage spec-reviewer +
 quality-reviewer review. Record each dispatch so `gz obpi precomplete` can
 attest it at Stage 5 — credit is never inferred from the presence of code:

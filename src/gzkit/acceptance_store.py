@@ -31,6 +31,7 @@ from gzkit.acceptance_execution import (
     execution_conditions_digest,
     input_digest,
 )
+from gzkit.adversary_workspace import validate_replay_records
 from gzkit.config import GzkitConfig
 from gzkit.ledger import Ledger
 from gzkit.ledger_events import acceptance_recorded_event
@@ -180,6 +181,33 @@ def _review_objects(text: str) -> list[dict[str, Any]]:
     return objects
 
 
+def _refuse_inadequate_replay(judgment: ReviewResponse) -> None:
+    """Refuse a replay claim the reviewer's own record does not support (GHI #961).
+
+    A ``replay`` block is a claim that the reviewer REPRODUCED the proof inside
+    its disposable checkout. Absence claims nothing and is left alone; presence
+    is checked, because an execution error, a skipped selector, or an inspected
+    record must never be counted as independent replay. Every record is judged
+    against the workspace it names, so this refuses the internally-inconsistent
+    claim without asserting which checkout the importer "should" have seen.
+    """
+    if not judgment.replay:
+        return
+    reasons: list[str] = []
+    for digest in {record.workspace_digest for record in judgment.replay}:
+        reasons.extend(
+            validate_replay_records(
+                [r for r in judgment.replay if r.workspace_digest == digest],
+                workspace_digest=digest,
+            )
+        )
+    if reasons:
+        raise ValueError(
+            "Review claims independent replay its own record does not establish: "
+            + "; ".join(reasons)
+        )
+
+
 def review_from_receipt(receipt: dict[str, Any]) -> Review:
     """Extract exactly one review from a successful ARB execution's output.
 
@@ -230,6 +258,7 @@ def review_from_receipt(receipt: dict[str, Any]) -> Review:
     if "id" in payload or "receipt_id" in payload:
         raise ValueError("Review IDs are assigned from the executed receipt, never caller supplied")
     judgment = ReviewResponse.model_validate({"schema": REVIEW_SCHEMA, **payload})
+    _refuse_inadequate_replay(judgment)
     digest = hashlib.sha256(json.dumps(receipt, sort_keys=True).encode()).hexdigest()
     return Review(
         id=digest,

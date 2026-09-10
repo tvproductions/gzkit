@@ -526,6 +526,12 @@ attestation is requested. Historical narrative alone cannot reopen acceptance.
 See [acceptance obligations](acceptance-obligations.md) and the
 [command reference](../user/manpages/obpi-acceptance.md).
 
+Step 4b replays the proof it judges. `gz obpi adversary-workspace` builds the
+disposable writable checkout the independent reviewer executes in; its
+`source_digest` binds each replay record to the exact reviewed bytes, and a claim
+the record does not support is refused at import (GHI #961). See the
+[adversary workspace reference](../user/manpages/obpi-adversary-workspace.md).
+
 Skill shortcuts for OBPI execution:
 
 - [`/gz-obpi-pipeline`](../user/skills/gz-obpi-pipeline.md) — post-plan execution pipeline (implement, verify, present, sync)

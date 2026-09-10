@@ -16,6 +16,23 @@
         "working-tree",
         "<focus text>"
       ]
+    },
+    {
+      "surface": "OpenAI Codex plugin for Claude Code (openai/codex-plugin-cc), writable replay path",
+      "directive": "gz-obpi-pipeline SKILL.md, section 'THE REVIEWER REPLAYS IN A DISPOSABLE WRITABLE CHECKOUT' (operator instruction, 2026-09-10, GHI #961)",
+      "directive_path": ".gzkit/skills/gz-obpi-pipeline/SKILL.md",
+      "runtime": "node",
+      "binary": "codex-companion.mjs",
+      "argv": [
+        "node",
+        "$HOME/.claude/plugins/cache/openai-codex/codex/<ver>/scripts/codex-companion.mjs",
+        "task",
+        "--write",
+        "--cwd",
+        "<disposable checkout>",
+        "--prompt-file",
+        "<prompt.md>"
+      ]
     }
   ]
 }
