@@ -62,9 +62,13 @@ class ExecutionFixture(unittest.TestCase):
         self.write("tests/test_engine.py", TEST)
 
     def write(self, name, content):
+        # newline="\n": these files are mutation targets whose EXACT bytes are
+        # digested and searched. Default text-mode translation would write CRLF
+        # on Windows, so a multi-line `Mutation.find` built from an LF literal
+        # would miss and the witness would read "invalid" instead of "killed".
         path = self.root / name
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(content, encoding="utf-8")
+        path.write_text(content, encoding="utf-8", newline="\n")
         return path
 
     def run_proof(self):

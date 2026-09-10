@@ -49,8 +49,8 @@ class TestGuard(unittest.TestCase):
 
 
 def _fixture(root: Path) -> Path:
-    (root / "subject.py").write_text(_MODULE, encoding="utf-8")
-    (root / "test_subject.py").write_text(_TESTS, encoding="utf-8")
+    (root / "subject.py").write_text(_MODULE, encoding="utf-8", newline="\n")
+    (root / "test_subject.py").write_text(_TESTS, encoding="utf-8", newline="\n")
     return root / "subject.py"
 
 
@@ -68,6 +68,7 @@ class TestBaseline(unittest.TestCase):
                 "import unittest\n\n\nclass T(unittest.TestCase):\n"
                 "    def test_broken(self):\n        self.fail('red baseline')\n",
                 encoding="utf-8",
+                newline="\n",
             )
             sweep = run_mutation_sweep(
                 root,
@@ -327,7 +328,7 @@ class TestBehavioralFailure(unittest.TestCase):
             with self.subTest(program=program), TemporaryDirectory() as td:
                 root = Path(td)
                 source = _fixture(root)
-                (root / "test_subject.py").write_text(program, encoding="utf-8")
+                (root / "test_subject.py").write_text(program, encoding="utf-8", newline="\n")
                 sweep = run_mutation_sweep(
                     root,
                     source,
@@ -397,6 +398,7 @@ class TestBehavioralFailure(unittest.TestCase):
                     "    def test_rejects_zero",
                 ),
                 encoding="utf-8",
+                newline="\n",
             )
             sweep = run_mutation_sweep(
                 root,
@@ -419,7 +421,9 @@ class TestBehavioralFailure(unittest.TestCase):
                 root = Path(td)
                 source = _fixture(root)
                 (root / "test_subject.py").write_text(
-                    _TESTS + "\nclass OtherGuard(TestGuard):\n    pass\n", encoding="utf-8"
+                    _TESTS + "\nclass OtherGuard(TestGuard):\n    pass\n",
+                    encoding="utf-8",
+                    newline="\n",
                 )
                 sweep = run_mutation_sweep(
                     root,
@@ -452,7 +456,7 @@ class TestBehavioralFailure(unittest.TestCase):
             with self.subTest(replacement=replacement), TemporaryDirectory() as td:
                 root = Path(td)
                 source = _fixture(root)
-                (root / "test_subject.py").write_text(tests, encoding="utf-8")
+                (root / "test_subject.py").write_text(tests, encoding="utf-8", newline="\n")
                 sweep = run_mutation_sweep(
                     root,
                     source,
@@ -521,8 +525,8 @@ class TestGuard(unittest.TestCase):
 
 def _documented_fixture(root: Path) -> Path:
     """Same subject as `_fixture`, but every test method carries a docstring."""
-    (root / "subject.py").write_text(_MODULE, encoding="utf-8")
-    (root / "test_subject.py").write_text(_DOCUMENTED_TESTS, encoding="utf-8")
+    (root / "subject.py").write_text(_MODULE, encoding="utf-8", newline="\n")
+    (root / "test_subject.py").write_text(_DOCUMENTED_TESTS, encoding="utf-8", newline="\n")
     return root / "subject.py"
 
 
@@ -570,8 +574,8 @@ class TestDocumentedTestsAreObservable(unittest.TestCase):
         )
         with TemporaryDirectory() as td:
             root = Path(td)
-            (root / "subject.py").write_text(_MODULE, encoding="utf-8")
-            (root / "test_subject.py").write_text(skipped, encoding="utf-8")
+            (root / "subject.py").write_text(_MODULE, encoding="utf-8", newline="\n")
+            (root / "test_subject.py").write_text(skipped, encoding="utf-8", newline="\n")
             sweep = run_mutation_sweep(
                 root,
                 root / "subject.py",
