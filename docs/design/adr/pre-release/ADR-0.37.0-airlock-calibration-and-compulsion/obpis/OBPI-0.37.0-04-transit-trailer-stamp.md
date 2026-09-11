@@ -7,6 +7,7 @@ status: Draft
 allowlist:
   - docs/design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/obpis/OBPI-0.37.0-04-transit-trailer-stamp.md
   - .gzkit/hooks/prepare-commit-msg-task-trailers
+  - .pre-commit-config.yaml
   - src/gzkit/tasks.py
   - src/gzkit/commands/validate_commit_trailers.py
   - tests/test_transit_trailer.py
@@ -15,6 +16,7 @@ reqs:
   - REQ-0.37.0-04-02
   - REQ-0.37.0-04-03
   - REQ-0.37.0-04-04
+  - REQ-0.37.0-04-05
 verification:
   - uv run -m unittest tests.test_transit_trailer -q
 ---
@@ -48,6 +50,8 @@ OBPI-0.37.0-04 transit-trailer-stamp -- door stamps the Transit: trailer; gz val
 - `.gzkit/hooks/prepare-commit-msg-task-trailers` — the producer that already stamps `Task:`; gains the `Transit:` stamp
 - `src/gzkit/tasks.py` — trailer parsing and the `src/`+`tests/` scope roots the `Task:` floor already uses
 - `src/gzkit/commands/validate_commit_trailers.py` — the validator surface that warns on a missing trailer
+- `.pre-commit-config.yaml` — declares the producer's `entry:` and hook types; the interpreter
+  the stamper runs under is set here, not in the script (amended 2026-09-11, see Change Log)
 - `tests/test_transit_trailer.py` — new covering tests (flat convention) **CREATE**
 ## Denied Paths
 
@@ -57,6 +61,7 @@ OBPI-0.37.0-04 transit-trailer-stamp -- door stamps the Transit: trailer; gz val
 - Flipping the trailer gate fail-closed — OBPI-06 owns that, gated on § Flip Criteria gate 2, whose (b) conjunct is this OBPI's recovery path.
 - `gz git-sync` — exempt unconditionally (parent ADR § Boundary Invariants #5, standing operator ruling).
 - Widening or altering the existing `Task:` trailer invariant — `Transit:` is a separate key alongside it, never a replacement.
+  - **STILL DENIED, and now with a named instance (2026-09-11).** `validate_commit_trailers.py:65` scans **HEAD only** ("preventing new trailer omissions, not retroactively") and runs at pre-push, so in a push of N commits the N−1 beneath the tip are examined by nothing — one of the two mechanisms behind the 24.9% measured at REQ-0.37.0-04-03. Widening that scan is *altering the existing `Task:` trailer invariant* and so remains outside this brief. Recorded here rather than filed so it is trackable (`AGENTS.md` § PRIME DIRECTIVE #6); lifting this denial, or homing the finding elsewhere, is a separate operator ruling this amendment does not take.
 - Paths not listed in Allowed Paths
 - New dependencies
 - CI files, lockfiles
@@ -101,6 +106,7 @@ OBPI-0.37.0-04 transit-trailer-stamp -- door stamps the Transit: trailer; gz val
 - [ ] Allowed Path resolves on disk before implementation begins: `.gzkit/hooks/prepare-commit-msg-task-trailers`
 - [ ] Allowed Path resolves on disk before implementation begins: `src/gzkit/tasks.py`
 - [ ] Allowed Path resolves on disk before implementation begins: `src/gzkit/commands/validate_commit_trailers.py`
+- [ ] Allowed Path resolves on disk before implementation begins: `.pre-commit-config.yaml`
 - [ ] Parent ADR § Boundary Invariants parses and each invariant carries an `(OBPI-NN)` binding token
 - [ ] Parent ADR § Flip Criteria baselines re-measured rather than transcribed from this brief
 **Existing Code (understand current state):**
@@ -194,8 +200,9 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 - [ ] REQ-0.37.0-04-01 [BEHAVIOR]: Given a commit touching `src/**` or `tests/**` and a transit recorded for the working session, when the commit message is prepared, then a `Transit:` trailer is stamped by the producer — never asked of the author. Scope matches the existing `Task:` floor exactly; an authored `Transit:` trailer of any form suppresses the stamp, as `Task:` does.
 - [ ] REQ-0.37.0-04-02 [BEHAVIOR]: Given a `src/**` or `tests/**` commit carrying no `Transit:` trailer, when `gz validate --commit-trailers` runs, then it WARNS and exits 0. Fail-closed is OBPI-06's, not this increment's.
-- [ ] REQ-0.37.0-04-03 [BEHAVIOR]: Given a stamping failure, when the operator inspects the result, then the failure is visible and recoverable WITHOUT the operator needing to know a transit id. Derived from the parent ADR § Negative #5: the producer's every failure path is a silent no-op — correct for an advisory trailer, and stranding under a fail-closed consumer. This REQ is the (b) conjunct § Flip Criteria gate 2 will not flip without.
+- [ ] REQ-0.37.0-04-03 [BEHAVIOR]: Given a stamping failure, when the operator inspects the result, then the failure is visible and recoverable WITHOUT the operator needing to know a transit id. Derived from the parent ADR § Negative #5: the producer's every failure path is a silent no-op. **AMENDED 2026-09-11 — the premise that this is "correct for an advisory trailer, and stranding under a fail-closed consumer" is false as measured.** The same producer also stamps `Task:`, whose consumer is ALREADY fail-closed, so the stranding is present-tense, not a future risk this brief anticipates: 265 of 1,063 `src/**`/`tests/**` commits over 120 days (24.9%) carry no `Task:` trailer while the hook reports "Passed". This REQ is the (b) conjunct § Flip Criteria gate 2 will not flip without.
 - [ ] REQ-0.37.0-04-04 [STRUCTURAL-FENCE]: `gz git-sync` is never gated, warned, or refused by the trailer mechanism. Proof channel is the parent ADR's `## Boundary Invariants` #5, which names OBPI-04; audited at ADR closeout.
+- [ ] REQ-0.37.0-04-05 [BEHAVIOR]: Given the producer runs under an interpreter that cannot import `gzkit.tasks`, when a `src/**` or `tests/**` commit is prepared, then the stamp outcome is identical to a run under the project interpreter — the producer never depends on ambient `PATH` for whether it fires. Added 2026-09-11 by operator direction (see Change Log). Measured mechanism: `.pre-commit-config.yaml` runs the hook `language: system` under `#!/usr/bin/env python3`; `.venv/bin/python3` imports `pydantic` and the system framework `python3` does not, so the stamper fires or silently no-ops according to which shell committed. Distinct from REQ-0.37.0-04-03: that criterion makes a failure VISIBLE once it happens; this one removes the environment-dependence that decides whether it happens at all.
 ## Completion Checklist
 
 <!-- Verify all gates before marking OBPI accepted. -->
@@ -213,6 +220,55 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 
 <!-- Record observations during/after implementation.
      Command outputs, file:line references, dates. -->
+
+### Change Log
+
+**2026-09-11 — amended by operator direction.** Operator instruction, verbatim: *"give a debrief
+statement and amend OBPI-0.37.0-04"*, following a session in which this brief was surfaced as the
+live owner of a defect found while syncing unrelated work.
+
+What changed, and why:
+
+1. **REQ-0.37.0-04-03's rationale corrected.** It held that the producer's silent no-op is *"correct for an
+   advisory trailer, and stranding under a fail-closed consumer"* — i.e. harmless until `Transit:`
+   becomes mandatory. That is false as measured. The same script also stamps `Task:`, whose consumer
+   (`gz validate --commit-trailers`) is already fail-closed, so the stranding is present-tense. The
+   REQ's assertion is unchanged; only the premise under it was wrong.
+2. **REQ-0.37.0-04-05 added** for producer determinism. The measured mechanism is environment-dependence, not
+   breakage: `.venv/bin/python3` imports `pydantic`, system `python3` does not, and the hook runs
+   `language: system`. It therefore fires or silently no-ops according to which shell committed,
+   printing `Passed` either way. REQ-0.37.0-04-03 makes a failure visible; REQ-0.37.0-04-05 removes the coin-flip.
+3. **`.pre-commit-config.yaml` added to Allowed Paths** — the interpreter is declared there, not in
+   the script, so REQ-0.37.0-04-05 is unreachable without it. Affected-surfaces list and the discovery
+   prerequisite checklist updated to match.
+4. **Denied Paths annotated** with the HEAD-only scan finding, which stays denied here.
+
+Measured evidence (2026-09-11, this repository):
+
+```
+src/tests commits in 120d      : 1063
+  lacking a Task: trailer      :  265  (24.9%)
+
+split at d8be6cfa2 "fix(tasks): stamp Task: trailers from the active TASK set (GHI #731)"
+  BEFORE stamper : 215 commits,   5 missing ( 2.3%)
+  AFTER  stamper : 472 commits, 120 missing (25.4%)
+
+$ .venv/bin/python3 -c "import pydantic"   -> OK
+$ python3 -c "import pydantic"             -> ModuleNotFoundError: No module named 'pydantic'
+```
+
+Read the before/after split carefully: adherence is ~10x worse after the tool built to improve it
+landed. That is a correlation with a plausible mechanism (hand-authoring relaxed once a stamper
+existed, and the stamper then fired only in some shells), **not** a demonstrated causal claim. It is
+recorded as the reason REQ-0.37.0-04-05 exists, not as a finding this brief asserts.
+
+Related, not owned here: GHI #851 (delivery witness reads 1 of 4 declared hook types) received a
+confirming instance the same day — a clone with `prepare-commit-msg` and `post-commit` absent while
+every gate read green, which is a third, independent route to the same trailer loss.
+
+**Sequencing note.** ADR-0.37.0 sits behind ADR-0.35.0 (TOPMOST) and ADR-0.36.0 under ascending-semver
+canon, so this amendment records scope; it does not start work. No REQ is checked, no TASK minted, no
+lock claimed.
 
 ### Gate 1 (ADR)
 
