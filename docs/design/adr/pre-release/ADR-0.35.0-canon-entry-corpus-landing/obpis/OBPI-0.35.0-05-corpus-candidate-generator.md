@@ -3,7 +3,7 @@ id: OBPI-0.35.0-05-corpus-candidate-generator
 parent: ADR-0.35.0-canon-entry-corpus-landing
 item: 5
 lane: Heavy
-status: Active
+status: Completed
 allowlist:
 - src/gzkit/content/composer.py
 - src/gzkit/content/rendition.py
@@ -65,7 +65,7 @@ tasks:
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/ADR-0.35.0-canon-entry-corpus-landing.md`
 - **Checklist Item:** #5 - "corpus->candidate generator (owned materialize / unowned carry-forward) + `<consumer>.lineage.json` emission + `ByteEvidence` accounting correction"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -1390,6 +1390,49 @@ round scoped to include that thread, or the operator's ruling that the thread do
 on the verdict.
 
 
+**Round 17 — `CORROBORATED | not-refuted`** (receipt
+`arb-step-codexadversary-147e7e87ebe8439ebbb5026c74bb8a2f`, `exit_status: 0`), tier 1
+(cross-vendor, Codex via the `codex-companion.mjs` plugin), dispatched on the **writable
+disposable-checkout path** (`task --write --cwd`, GHI #961) rather than the read-only
+`adversarial-review` subcommand, so the reviewer could REPLAY the proofs instead of reading
+them.
+
+**Why the round was needed.** No production code changed. The acceptance ledger recomputes
+`input_digest` over the contract plus the source/test population, and `2c32d6de` ("measure the
+rendered byte partition instead of deriving it", 2026-09-09) landed AFTER the then-current
+proofs and reviews were recorded — so all ten proofs went stale and their approvals correctly
+did not carry forward. Each REQ's existing mutation-witness specification was re-executed
+unchanged (same source, same selectors, same exact `find`/`replace`, every anchor verified to
+still match current source byte-for-byte first), yielding ten fresh proofs at
+`input_digest 580c457aeb7ea9639638e248f6b0703f21351d4cc690cd384a4c3262a9d17851`. Spec and
+quality re-reviewed and closed all ten open findings; the adversarial channel was the only one
+left.
+
+**What it actually did.** Replayed all **eleven** mutation controls itself inside the
+disposable checkout (`source_digest 23889d508fe0f9d71253250c2db91b20c0a57c32b250de105bb9dae1963c2cf8`),
+each recording a green baseline, an `assertion`-class kill on the nominated test, and a
+byte-identical restore — verbatim: *"All eleven substitutions matched the recorded
+specifications exactly and failed on every nominated test's own assertion. Source files were
+restored byte-identically. Closure spot-checks confirmed the literal oracles, real parser
+invocation, removed type tautologies, and `write_bytes` persistence."* It approved all ten
+proofs explicitly and raised **zero findings**.
+
+**What it could NOT confirm, recorded unmodified:** *"Native Windows execution. The
+byte-writer regression control passed locally."*
+
+**Its Weakest point, recorded unmodified:** *"Equal-length mutations can collide with Python's
+timestamp-based bytecode cache. One initial restore reused mutant bytecode; repeating with
+distinct modification timestamps produced all required green restores. This is a replay-harness
+observation, separate from requirement findings."*
+
+**The standing declaration above is again NOT changed by this round.** Its subject remains the
+evidence record's commentary on the auxiliary assertion classifier, which the 2026-09-08 SCOPE
+RULING placed outside the acceptance argument and which this round's declared boundary
+excluded. Per GHI #985 the durable ledger acceptance records — not an authored Markdown verdict
+line — are the acceptance authority: `gz obpi acceptance … status --stage stage4` reports
+`ready: true` with zero open findings and zero blockers.
+
+
 ### Value Narrative
 
 Before this OBPI the corpus materialized nothing. `composer.py` accepted `candidate_text`
@@ -1406,27 +1449,41 @@ emitted and refuses rather than prints an inflated figure.
 
 ### Key Proof
 
+
 ```text
-$ uv run gz content compose AGENTS.md --consumer root < /dev/null
-Candidate: <project-root>/.gzkit/renditions/AGENTS.md/root.candidate.md
-Lineage: <project-root>/.gzkit/renditions/AGENTS.md/root.candidate.lineage.json
+$ uv run gz content compose AGENTS.md --consumer root
+Candidate: /Users/jeff/Documents/Code/gzkit/.gzkit/renditions/AGENTS.md/root.candidate.md
+Lineage: /Users/jeff/Documents/Code/gzkit/.gzkit/renditions/AGENTS.md/root.candidate.lineage.json
 Byte evidence (population): invariant=24350B compressible=354B→354B total=31244B setpoint=lite
 Rendered bytes (assembled): emitted=24704B structural=535B carried=6005B total=31244B
-                                                                        REAL EXIT: 0
-
-$ uv run gz content compose AGENTS.md --consumer claude                 REAL EXIT: 1
-Error: Surface 'AGENTS.md' (content type 'AgentContract') declares no route to consumer
-'claude'; declared routes are ['root']. ...
 ```
 
-Measured against the two persisted files, 2026-09-08: 22 sections, 12 owned / 10 unowned;
-the lineage partition is contiguous from 0 with no gap or overlap and ends at exactly 31,244
-bytes; all 10 unowned slices occur byte-verbatim in the committed prior rendition; all 71
-live corpus entries are cited and **none of the 24 retired entries is cited anywhere**; two
-consecutive runs produce byte-identical candidate and lineage. Full observed output:
-`.gzkit/evidence/OBPI-0.35.0-05-corpus-candidate-generator.stage4a.md` § 6.
+Observed 2026-09-10, exit 0. The rendered partition reconciles exactly:
+24704 + 535 + 6005 = 31244 = `total_bytes`. The command measures 0.28s real.
+
+Measured against the two persisted files: 22 sections, 12 owned / 10 unowned; the lineage
+partition is contiguous from 0 with no gap or overlap and ends at exactly 31,244 bytes; all 10
+unowned slices occur byte-verbatim in the committed prior rendition; all 71 live corpus entries
+are cited and **none of the 24 retired entries is cited anywhere**; two consecutive runs produce
+byte-identical candidate and lineage.
+
+The tier-1 cross-vendor adversary independently reproduced this generation and exercised the
+guards in BOTH directions in receipt
+`arb-step-codexadversary-147e7e87ebe8439ebbb5026c74bb8a2f` (`exit_status: 0`) — refusals firing
+(`DUPLICATE REFUSED` naming both entry ids; off-route consumers `claude`/`codex` exit 1) and
+legitimate operations still accepted (`LEGITIMATE RETIRED PAIR ACCEPTED`,
+`LEGITIMATE OVERLAP ACCEPTED: population=79 total=64 rendered=0+9+55`, `root EXIT 0`).
+
+Baseline gates against this unchanged src/tests tree:
+`arb-step-unittest-66a9f379412c430988897cadfd632961` (10117/10117, skipped=4),
+`arb-ruff-98aaaecdab42457a85cdf860ec553f81`, `arb-step-typecheck-7c0f7eedea944469a79c50e3ef392d7d`,
+`arb-step-mkdocs-6cbdaa6724ec46c5a35a894a821160c8`,
+`arb-step-behave-4485a9c0d6774009b14eb024610449dc` (5/5 scoped scenarios). The Stage-4a packet
+replays VERIFIED (exit 0) via `gz obpi verify-packet`; full observed output in
+`.gzkit/evidence/OBPI-0.35.0-05-corpus-candidate-generator.stage4a.md`.
 
 ### Implementation Summary
+
 
 - Files created/modified: `src/gzkit/content/composer.py` (generator + `ByteEvidence`
   correction), `src/gzkit/content/lineage.py` **created**, `src/gzkit/content/ownership.py`
@@ -1435,23 +1492,80 @@ consecutive runs produce byte-identical candidate and lineage. Full observed out
   `features/content_compose.feature` + steps.
 - Tests added: `tests/content/test_composer.py`, `tests/content/test_lineage.py`,
   `tests/commands/test_content_compose.py` **created**; `tests/content/test_ownership.py`
-  extended. Scoped suite observed 2026-09-08: `Ran 191 tests — OK (skipped=4)`, exit 0.
-  Nine BEHAVIOR REQs carry `@covers`; `REQ-0.35.0-05-10` is STRUCTURAL-FENCE and correctly
-  carries none. `gz validate --req-kind-discipline` exits 0.
-- Date completed: **not completed** — Stage 5 not entered.
-- Attestation status: **none solicited.** No completion receipt exists; the brief stays
-  `Draft`/Active.
-- Defects noted: GHI #983 (below) plus four items carried in the Stage 4a packet § 7 —
-  10 of 18 mutation rows non-reproducible from the record; a stale illustrative figure in
-  REQ-05-06 / Requirement 7 (22,378 cited, 6,894 measured today — binding clause unaffected);
-  `.gitignore` asymmetry on the staged lineage sidecar; and two open classifier
-  misclassification families that affect no requirement.
+  extended. Nine BEHAVIOR REQs carry `@covers`; `REQ-0.35.0-05-10` is STRUCTURAL-FENCE and
+  correctly carries none. `gz covers` reports `behavior_uncovered_reqs: 0`.
+- Acceptance proof: all ten REQ obligations hold current, executed proof at
+  `input_digest 580c457aeb7ea9639638e248f6b0703f21351d4cc690cd384a4c3262a9d17851`. The ten
+  proofs were re-executed on 2026-09-10 from their own unchanged mutation-witness
+  specifications after commit `2c32d6de` shifted the digest; every mutation anchor was first
+  verified to still match current source byte-for-byte, and the working tree was verified
+  clean afterwards.
+- Independent review: spec (`arb-step-specreview-7eeca36954054e799c07486cfac733f8`) and
+  quality (`arb-step-qualityreview-21166ae7c7f74212a09ad001d0e4bfab`) each accepted 10/10
+  proofs and closed all ten previously-open findings (F3, F7, F10, F11, F12, F13, F14, Q1,
+  Q2, F15). Step 4b Round 17, tier 1 cross-vendor
+  (`arb-step-codexadversary-147e7e87ebe8439ebbb5026c74bb8a2f`) returned
+  `CORROBORATED / not-refuted` with zero findings, having itself replayed all eleven mutation
+  controls in a disposable writable checkout. `open_findings` is empty; Stage-4 acceptance
+  reports `ready: true`.
+- Date completed: **2026-09-10**.
+- Attestation status: operator verbatim attestation recorded at Stage 4 and relayed to
+  `gz obpi complete`; Gate 5 satisfied per ADR-0.0.36.
+- Defects carried, not resolved here: GHI #983 (10 of 12 corpus-owned sections carry no
+  covering corpus content — operator-routed outside this OBPI's scope, 2026-09-07); the
+  tier-1 adversary could not confirm native Windows execution; auxiliary finding
+  `SPEC-REFRESH-01` records that the ledger's finding-to-REQ mapping for F11/F13 disagrees
+  with those tests' `@covers` decorators (non-blocking); and the brief's
+  `Standing verdict: refuted` line is deliberately unchanged, its subject being the auxiliary
+  assertion-classifier thread rather than this generator (2026-09-08 SCOPE RULING).
 
 ### Change Log
 
 Substantive corrections and decisions taken inside this operator-initiated OBPI.
 Finding identities are reused, never re-minted; the ledger records remain the
 authority for proof, review, closure and readiness.
+
+#### 2026-09-10 — acceptance proof refreshed after input-digest drift; ten findings closed
+
+**No production, test, or feature change.** `git diff --numstat -- src tests features`
+returns empty for this pass; the corrections are to the acceptance record only.
+
+**What drifted.** `gz obpi pipeline … --from ceremony` refused to advance: all ten REQ
+proofs reported `has stale inputs`. Cause: the ledger's `input_digest` covers the contract
+plus the source/test population, and `2c32d6de` landed after the then-current proofs and
+reviews were recorded. A stale-input proof cannot carry its prior approval forward, which is
+the gate working as designed, not a defect in the deliverable.
+
+**Repair.** Each REQ's existing mutation-witness specification was recovered from its own
+recorded proof evidence and re-executed unchanged — same `source`, same `selectors`, same
+exact `find`/`replace` text, with every anchor first verified to still match current source
+byte-for-byte (11/11 matched uniquely). Ten fresh proofs resulted, all `valid: true` at
+`input_digest 580c457aeb7ea9639638e248f6b0703f21351d4cc690cd384a4c3262a9d17851`. Working tree
+verified clean afterwards: every mutation restored byte-identically.
+
+**Findings closed, identities reused.** `F3`, `F7`, `F10`, `F11`, `F12`, `F13`, `F14` closed by
+the spec reviewer (receipt **`arb-step-specreview-7eeca36954054e799c07486cfac733f8`**);
+`Q1`, `Q2`, `F15` closed by the quality reviewer (receipt
+**`arb-step-qualityreview-21166ae7c7f74212a09ad001d0e4bfab`**). Each closure names its original
+ledger obligation and the current proof for that obligation. `open_findings` is now empty.
+
+**One recorded disagreement, preserved rather than resolved.** The spec reviewer found that the
+ledger's recorded finding-to-REQ mapping disagrees with the `@covers` decorators on the
+covering tests — `F11` is recorded against REQ-01 while its repair's covering test
+(`test_ordinary_generation_is_still_accepted`) carries `@covers("REQ-0.35.0-05-04")`, and `F13`
+is recorded against REQ-04 while its test (`test_unowned_section_bytes_are_byte_verbatim`)
+carries `@covers("REQ-0.35.0-05-02")`. Its first submission "corrected" the closures to the
+`@covers`-derived attribution; that submission was refused, because `_closure_retains_subject`
+(`src/gzkit/acceptance.py:318`) matches a closure on the finding's ORIGINAL recorded obligation
+— a re-attributed closure silently fails to close. A formatting-repair re-invocation referencing
+the original receipt (`arb-step-specreview-a8ce785436934ec19f0356f65d56f21f`) re-emitted the
+closures under the ledger identities and preserved the observation as auxiliary finding
+`SPEC-REFRESH-01` (null obligation, non-blocking). The attribution disagreement is therefore
+recorded, not silently adopted and not silently dropped.
+
+**Independent corroboration.** Round 17 (tier 1, cross-vendor) replayed all eleven mutation
+controls in a disposable writable checkout and approved all ten proofs with zero findings —
+see § Step 4b Round 17.
 
 #### 2026-09-09 — rendered-byte accounting separated from corpus population totals
 
@@ -1545,12 +1659,12 @@ Tracked in `.gzkit/insights/agent-insights.jsonl`, scope
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completedf — operator verbatim at Stage 4, holding both the agent's Step-4a packet (VERIFIED by gz obpi verify-packet, exit 0) and the independent Step-4b Round 17 tier-1 cross-vendor verdict CORROBORATED / not-refuted with zero findings (receipt arb-step-codexadversary-147e7e87ebe8439ebbb5026c74bb8a2f, exit_status 0), in which the adversary itself replayed all eleven mutation controls in a disposable writable checkout (source_digest 23889d508fe0f9d71253250c2db91b20c0a57c32b250de105bb9dae1963c2cf8), each a green baseline then an assertion-class kill then a byte-identical restore. All ten REQ obligations hold current executed proof at input_digest 580c457aeb7ea9639638e248f6b0703f21351d4cc690cd384a4c3262a9d17851; all ten prior findings (F3, F7, F10, F11, F12, F13, F14, Q1, Q2, F15) carry receipt-bound independent closure from spec review arb-step-specreview-7eeca36954054e799c07486cfac733f8 and quality review arb-step-qualityreview-21166ae7c7f74212a09ad001d0e4bfab; open_findings empty and gz obpi acceptance status --stage stage4 reports ready true with zero blockers. gz obpi precomplete READY on all 11 preconditions with Stage-2 dispatch 3 of 3 DISPATCHED. Baseline gates against this unchanged src/tests tree: arb-step-unittest-66a9f379412c430988897cadfd632961 (10117/10117 pass, skipped 4), arb-ruff-98aaaecdab42457a85cdf860ec553f81, arb-step-typecheck-7c0f7eedea944469a79c50e3ef392d7d, arb-step-mkdocs-6cbdaa6724ec46c5a35a894a821160c8, arb-step-behave-4485a9c0d6774009b14eb024610449dc (5 of 5 scoped scenarios). Disclosed and not resolved by this attestation: native Windows execution unconfirmed by the adversary; GHI #983 operator-routed outside scope; auxiliary finding SPEC-REFRESH-01 non-blocking.
+- Date: 2026-09-11
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-09-11
 
 **Evidence Hash:** -

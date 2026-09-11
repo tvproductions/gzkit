@@ -21,30 +21,61 @@ and never blended.
 
 ## 2. Key Proof
 
-The independent tier-1 adversary ran the generator against the real AGENTS.md corpus — un-mocked, reading the
-live corpus, prior rendition and ownership declaration — and observed the feature doing its job:
+The delivered command, run here against the live corpus — this transcript is re-executed by
+`gz obpi verify-packet`, so it is replayed rather than relayed:
 
 ```text
-LIVE GENERATION ACCEPTED
-{"invariant_bytes":24350,"compressible_bytes_before":354,"compressible_bytes_after":354,"emitted_entry_bytes":24704,"generated_structural_bytes":535,"carried_forward_bytes":6005,"total_bytes":31244,"setpoint":"lite"}
-sections 22 owned 12 unowned_verbatim 10 emitted_ids 71 retired_ids_emitted 0
-candidate_sha256 08fb1752b7945f373af0f30686ab4f9d53ed841ba273da6fa31277a99537bb49
-two_runs_equal True partition_total 31244
+$ uv run gz content compose AGENTS.md --consumer root
+Candidate: /Users/jeff/Documents/Code/gzkit/.gzkit/renditions/AGENTS.md/root.candidate.md
+Lineage: /Users/jeff/Documents/Code/gzkit/.gzkit/renditions/AGENTS.md/root.candidate.lineage.json
+Byte evidence (population): invariant=24350B compressible=354B→354B total=31244B setpoint=lite
+Rendered bytes (assembled): emitted=24704B structural=535B carried=6005B total=31244B
 ```
 
-The rendered partition reconciles exactly (24704 + 535 + 6005 = 31244 = `total_bytes`), zero retired entries were
-emitted, and two runs were byte-identical. Recorded in receipt `arb-step-codexadversary-bfdaa9930e3840248b845b13ceaf926e`.
+The rendered partition reconciles exactly: 24704 + 535 + 6005 = 31244 = `total_bytes`.
 
-The same round exercised the refusal direction, so the guards are witnessed firing as well as staying silent:
+The independent tier-1 adversary (Round 17) replayed every proof and ran the generator against the real
+AGENTS.md corpus inside a disposable writable checkout — un-mocked, reading the live corpus, prior rendition
+and ownership declaration. Observed output, recorded in receipt
+`arb-step-codexadversary-147e7e87ebe8439ebbb5026c74bb8a2f` (`exit_status: 0`):
 
 ```text
-OVERLAP ACCEPTED {"invariant_bytes":79,...,"generated_structural_bytes":9,"carried_forward_bytes":55,"total_bytes":64,"setpoint":"lite"}
-INFLATION REFUSED compressible_bytes_after (6) exceeds compressible_bytes_before (3).
-OFF_ROUTE claude Surface 'AGENTS.md' (content type 'AgentContract') declares no route to consumer 'claude'; declared routes are ['root'].
+Scoped suites:
+Ran 72 tests in 0.106s
+OK
+
+Byte evidence (population): invariant=24350B compressible=354B→354B total=31244B setpoint=lite
+Rendered bytes (assembled): emitted=24704B structural=535B carried=6005B total=31244B
+
+LIVE PERSISTED: bytes 31244 sections 22 owned 12 unowned_verbatim 10 emitted_ids 71 retired_ids_emitted 0
+SECOND LIVE CLI RUN: candidate and lineage byte-identical
 ```
 
-The overlapping-invariant case is the ADV-OVERLAPPING-BYTE-ACCOUNTING regression (a 79-byte population against a
-64-byte candidate): it is ACCEPTED rather than refused, which is the repair landed in `2c32d6de8`.
+The rendered partition reconciles exactly (24704 + 535 + 6005 = 31244 = `total_bytes`), zero retired entries
+were emitted, and two runs were byte-identical.
+
+**Both directions were exercised — the guards are witnessed firing AND staying silent on legitimate input**,
+which is what distinguishes an earned corroboration from "I looked and found nothing":
+
+```text
+CLI CONSUMER claude EXIT 1
+CLI CONSUMER codex EXIT 1
+CLI CONSUMER root EXIT 0
+
+DUPLICATE REFUSED: What failed: surface 'TestSurface.md' carries 2 LIVE invariant-tier corpus entries with byte-identical text -- entries 'r17-inv-a', 'r17-inv-b' (sections 'owned-section', 'unowned-section').
+LEGITIMATE RETIRED PAIR ACCEPTED: one live rule, entry_ids ('r17-inv-a',)
+
+LEGITIMATE ACCOUNTING ACCEPTED: before 3 after 3
+LEGITIMATE ACCOUNTING ACCEPTED: before 3 after 0
+LEGITIMATE OVERLAP ACCEPTED: population=79 total=64 rendered=0+9+55
+
+CANONICAL STRUCTURAL-FENCE RESOLVER: pass
+```
+
+Every one of the eleven recorded mutation controls was replayed by the adversary itself: green baseline →
+`assertion`-class kill on the nominated test → byte-identical restore. Its own words: *"All eleven
+substitutions matched the recorded specifications exactly and failed on every nominated test's own assertion.
+Source files were restored byte-identically."*
 
 ## 3. Evidence
 
@@ -57,7 +88,9 @@ The overlapping-invariant case is the ADV-OVERLAPPING-BYTE-ACCOUNTING regression
 | Typecheck | `arb:typecheck` (see below) | clean — receipt `arb-step-typecheck-7c0f7eedea944469a79c50e3ef392d7d` |
 | Docs (Heavy) | `arb:mkdocs` (see below) | strict build clean — receipt `arb-step-mkdocs-6cbdaa6724ec46c5a35a894a821160c8` |
 | BDD (Heavy) | `arb:behave` (see below) | 5/5 scoped scenarios, 47 steps — receipt `arb-step-behave-4485a9c0d6774009b14eb024610449dc` |
-| Step 4b adversary | `arb:codexadversary` (see below) | CORROBORATED-WITH-CAVEATS, tier 1 — receipt `arb-step-codexadversary-bfdaa9930e3840248b845b13ceaf926e` |
+| Spec review (Stage 2) | `arb:specreview` (see below) | PASS, 10/10 proofs accepted — receipt `arb-step-specreview-7eeca36954054e799c07486cfac733f8` |
+| Quality review (Stage 2) | `arb:qualityreview` (see below) | PASS, 10/10 proofs accepted — receipt `arb-step-qualityreview-21166ae7c7f74212a09ad001d0e4bfab` |
+| Step 4b adversary (Round 17) | `arb:codexadversary` (see below) | CORROBORATED / not-refuted, tier 1, zero findings — receipt `arb-step-codexadversary-147e7e87ebe8439ebbb5026c74bb8a2f` |
 
 ```bash
 # arb:unittest — full unittest sweep
@@ -75,8 +108,14 @@ uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
 # arb:behave — Heavy-lane scoped BDD
 uv run gz arb step --name behave -- uv run -m behave --tags=@REQ-0.35.0-05-01,@REQ-0.35.0-05-02,@REQ-0.35.0-05-04,@REQ-0.35.0-05-05,@REQ-0.35.0-05-08 features/
 
-# arb:codexadversary — Step 4b tier-1 cross-vendor adversarial review
-uv run gz arb step --name codexadversary --max-output-chars -1 -- node .../codex-companion.mjs adversarial-review --wait --scope working-tree '<focus text>'
+# arb:specreview — Stage-2 independent spec review
+uv run gz arb step --name specreview --max-output-chars -1 -- claude --agent spec-reviewer --model sonnet --print '<prompt>'
+
+# arb:qualityreview — Stage-2 independent quality review
+uv run gz arb step --name qualityreview --max-output-chars -1 -- claude --agent quality-reviewer --model sonnet --print '<prompt>'
+
+# arb:codexadversary — Step 4b tier-1 cross-vendor adversarial review, writable disposable checkout (GHI #961)
+uv run gz arb step --name codexadversary --max-output-chars -1 -- node .../codex-companion.mjs task --write --cwd <checkout> --prompt-file <prompt.md>
 ```
 
 Governance validators, re-run here:
@@ -123,16 +162,16 @@ kill-and-restore against live production source, all ten independently approved 
 
 | REQ | Kind | Mechanism | Proof location | Proof | Result |
 |-----|------|-----------|----------------|-------|--------|
-| REQ-0.35.0-05-01 | BEHAVIOR | owned body from effective corpus | `req-01:covers` | `proof-20cfad5cc9fb…` kill+restore | Pass |
-| REQ-0.35.0-05-02 | BEHAVIOR | unowned carry-forward byte-verbatim | `req-02:covers` | `proof-d66ae3cdd5cb…` kill+restore | Pass |
-| REQ-0.35.0-05-03 | BEHAVIOR | effective-corpus liveness fold | `req-03:covers` | `proof-863de2c94aa2…` kill+restore | Pass |
-| REQ-0.35.0-05-04 | BEHAVIOR | lineage entry_ids + byte_span partition | `req-04:covers` | `proof-475a8dd6d3da…` kill+restore | Pass |
-| REQ-0.35.0-05-05 | BEHAVIOR | per-consumer spans; off-route refusal | `req-05:covers` | `proof-2369b5596543…` kill+restore | Pass |
-| REQ-0.35.0-05-06 | BEHAVIOR | emission attribution, not subtraction | `req-06:covers` | `proof-f216cde38c56…` kill+restore (3 mutations) | Pass |
-| REQ-0.35.0-05-07 | BEHAVIOR | inflation refusal fails closed | `req-07:covers` | `proof-b473618a391b…` kill+restore | Pass |
-| REQ-0.35.0-05-08 | BEHAVIOR | deterministic generation | `req-08:covers` | `proof-7ea0fb505dbc…` kill+restore | Pass |
-| REQ-0.35.0-05-09 | BEHAVIOR | duplicate live invariant refused | `req-09:covers` | `proof-84d5214f1ea5…` kill+restore | Pass |
-| REQ-0.35.0-05-10 | STRUCTURAL-FENCE | lineage never inside RenditionProvenance | parent-ADR `## Boundary Invariants` BI-03 | `proof-c38b859d9c6a…` fence resolver | Pass |
+| REQ-0.35.0-05-01 | BEHAVIOR | owned body from effective corpus | `req-01:covers` | `proof-3776f51240af…` kill+restore | Pass |
+| REQ-0.35.0-05-02 | BEHAVIOR | unowned carry-forward byte-verbatim | `req-02:covers` | `proof-798d627fd0cd…` kill+restore | Pass |
+| REQ-0.35.0-05-03 | BEHAVIOR | effective-corpus liveness fold | `req-03:covers` | `proof-6856fac2e246…` kill+restore | Pass |
+| REQ-0.35.0-05-04 | BEHAVIOR | lineage entry_ids + byte_span partition | `req-04:covers` | `proof-9a296879fc2c…` kill+restore | Pass |
+| REQ-0.35.0-05-05 | BEHAVIOR | per-consumer spans; off-route refusal | `req-05:covers` | `proof-e2c17deda413…` kill+restore | Pass |
+| REQ-0.35.0-05-06 | BEHAVIOR | emission attribution, not subtraction | `req-06:covers` | `proof-8346c5049773…` kill+restore (3 mutations) | Pass |
+| REQ-0.35.0-05-07 | BEHAVIOR | inflation refusal fails closed | `req-07:covers` | `proof-38f39923a667…` kill+restore | Pass |
+| REQ-0.35.0-05-08 | BEHAVIOR | deterministic generation | `req-08:covers` | `proof-181232c0eb90…` kill+restore | Pass |
+| REQ-0.35.0-05-09 | BEHAVIOR | duplicate live invariant refused | `req-09:covers` | `proof-1a6267968246…` kill+restore | Pass |
+| REQ-0.35.0-05-10 | STRUCTURAL-FENCE | lineage never inside RenditionProvenance | parent-ADR `## Boundary Invariants` BI-03 | `proof-d81fd93e0d6b…` fence resolver | Pass |
 
 ```text
 # req-01:covers — tests.content.test_composer.TestOwnedSectionBodyFromCorpus.test_owned_section_body_is_derived_from_corpus_not_prior_text
