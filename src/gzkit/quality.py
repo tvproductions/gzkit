@@ -969,6 +969,21 @@ def run_rendition_floor_coherence_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --rendition-floor-coherence", cwd=project_root)
 
 
+def run_rendition_lineage_audit(project_root: Path) -> QualityResult:
+    """Run the owned-section corpus-derivation gate (ADR-0.35.0 § Decision item 4).
+
+    Fails closed (exit 3) when a committed rendition's `corpus-owned` section
+    carries bytes the effective corpus does not materialize for it — drift the
+    sibling `--rendition-floor-coherence` (a whole-file substring presence test)
+    cannot see, because the invariant text it looks for is still present
+    somewhere. Unowned bytes, and owned sections no committed lineage witnesses,
+    are reported as measured debt and never fail.
+    Recovery: land the wording in canon, then
+    `uv run gz content compose <surface> --consumer <consumer>` and recommit.
+    """
+    return run_command("uv run gz validate --rendition-lineage", cwd=project_root)
+
+
 def run_brief_structure_audit(project_root: Path) -> QualityResult:
     """Run the OBPI brief structural-schema gate (GHI #615 cut 3).
 

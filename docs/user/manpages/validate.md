@@ -16,7 +16,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
             [--advisor-proof-binding] [--lock-exchange-coupling] [--qc-binding] [--fidelity-presence] [--waiver-ratchet] [--config-registry] [--gate-callers] [--exemption-controls] [--vendor-manifest]
             [--setpoint-coherence] [--rendition-freshness]
-            [--rendition-floor-coherence]
+            [--rendition-floor-coherence] [--rendition-lineage]
             [--corpus-retirement-witness]
             [--invariant-coherence] [--invariant-witness] [--brief-reconcile] [--brief-structure]
             [--router-tables]
@@ -1730,6 +1730,68 @@ genuinely derives canon's invariants rather than passing a timestamp-only freshn
 
 **Related:** ADR-0.0.37 (CMS pipeline), GHI #623 (corrective gate), `--rendition-freshness`,
 `--invariant-coherence`.
+
+### `--rendition-lineage`
+
+Fail-closed when a committed rendition's `corpus-owned` sections no longer derive from the
+effective corpus. For every `.gzkit/renditions/<surface>/<consumer>.md` artifact whose
+surface carries both a corpus store and an ownership declaration, this gate re-derives each
+section the declaration marks `corpus-owned` by calling the composer's `generate_candidate`
+against the *current* effective corpus and the *current* declaration, then byte-compares the
+regeneration against the committed section text. This is a **derivation** check, distinct
+from `--rendition-floor-coherence`'s **presence** check: floor coherence asks whether an
+invariant entry's text appears *somewhere* in the rendition (a substring test), while this
+gate asks whether an owned *section's* text equals what the corpus materializes for that
+section (a per-section equality test) — hand-authored prose pasted into an owned section can
+leave floor coherence green while this gate fires. Sections the declaration marks `unowned`
+are never compared; their bytes are measured and reported as debt, never a violation.
+
+**Never fails on unowned sections; never lowers a section's ownership to clear a finding.**
+Un-owning a section is not a repair this gate ever prescribes — the declaration's scope
+changes only through the ownership raise-path (OBPI-0.35.0-04), as a deliberate governed
+move.
+
+**Ungraded disclosure, not failure (operator ruling 2026-09-11).** A surface that declares
+one or more `corpus-owned` sections but carries no committed `<consumer>.lineage.json`
+sidecar has nothing this gate can grade those sections against — counting them as proven
+coverage would claim a witness that does not exist, and failing on them would hold the gate
+red for an artifact OBPI-0.35.0-07 has not published yet. Both are refused: those sections are
+counted UNGRADED, disclosed on the advisory channel with their own three-part recovery prose,
+and excluded from the owned-coverage numerator. Owned-section drift wherever a committed
+lineage sidecar *does* exist stays fail-closed at full strength regardless.
+
+**Coverage is declared every run, never implied.** Every invocation emits one advisory line
+carrying sections owned/total, bytes owned/total, the resulting percentage, and any
+ungraded section/byte counts — computed at run time from the declaration and the committed
+text, never stored. This is how the gate's necessarily partial reach stays legible rather
+than a scope nobody stated.
+
+**Severity resolves through the shared MX checkpoint** (OBPI-0.0.74-09): advisory inside the
+MX maintenance hangar (`.gzkit/mx.json` present), fail-closed at full strength outside it —
+the same honor-the-marker behavior every `gz check`/`gz validate` scope inherits by default.
+Runs in the default `gz check` build (`data/check_scope_membership.json` `in_check`).
+
+**Usage:**
+
+```bash
+gz validate --rendition-lineage
+```
+
+**Exit codes:**
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Every graded owned section derives from the effective corpus (or no surface declares ownership yet, or every declared section is disclosed UNGRADED for want of a committed lineage sidecar) | — |
+| 3 | A committed owned section's bytes differ from the corpus regeneration, or the corpus refuses to materialize a candidate for a declared surface | Land the wording in canon (`gz content remember <surface> ...`), then regenerate and recommit: `gz content compose <surface> --consumer <consumer>`, then `gz content commit <surface> --consumer <consumer>` |
+
+**When to use:** After editing corpus entries for a surface that declares `corpus-owned`
+sections, before attesting an ADR-0.35.0 closeout, or to diagnose a `gz check` Rendition
+lineage warning.
+
+**Related:** ADR-0.35.0 § Decision item 4 (this gate), OBPI-0.35.0-06 (this gate's OBPI),
+OBPI-0.35.0-04 (ownership declaration and raise-path), OBPI-0.35.0-07 (the publication path
+this gate's committed-lineage requirement anticipates), `--rendition-floor-coherence`,
+`--rendition-freshness`, `.gzkit/rules/mx-mode.md` (MX checkpoint honor-the-marker behavior).
 
 ### `--corpus-retirement-witness`
 

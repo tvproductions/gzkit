@@ -113,6 +113,30 @@ Fails closed when any `obpi_receipt_emitted` event dated on or after the ADR-0.0
 Pre-cutoff receipts: warn-only when `data/historical_self_close_waivers.json` is absent;
 fail-closed on unwaivers when the waiver list is present (authored under OBPI-0.0.36-04).
 
+### Rendition lineage and coherence (ADR-0.0.37 / ADR-0.35.0 cluster)
+
+```bash
+uv run gz validate --rendition-freshness         # Corpus-vs-rendition fingerprint drift
+uv run gz validate --rendition-floor-coherence   # Invariant-tier PRESENCE in the rendition
+uv run gz validate --rendition-lineage           # Owned-section DERIVATION from the corpus
+```
+
+Three complementary content witnesses over `.gzkit/renditions/<surface>/<consumer>.md`, each
+asking a different question about the same seam: freshness asks whether the committed
+rendition's frozen corpus fingerprint still matches the corpus as a whole; floor coherence
+asks whether every `tier: invariant` corpus entry's text is present *somewhere* in the
+rendition (a substring test); lineage asks whether each section the surface's ownership
+declaration marks `corpus-owned` *equals* what the corpus currently materializes for that
+section (a per-section derivation test). Prose hand-authored straight into an owned section
+can leave floor coherence green while lineage fires, because the invariant text it was
+looking for is present elsewhere in the file even though the owned section itself no longer
+derives from canon. All three run in the default `gz check` build and resolve severity
+through the shared MX checkpoint (advisory inside an open `.gzkit/mx.json` hangar,
+fail-closed outside it). `--rendition-lineage` additionally discloses — never fails — any
+`corpus-owned` section with no committed `<consumer>.lineage.json` sidecar as UNGRADED
+(operator ruling 2026-09-11), since OBPI-0.35.0-07 has not yet published the sidecar-writing
+path. Full per-flag contracts in [`gz validate`](../user/manpages/validate.md).
+
 ### Complexity doctrine surfaces (ADR-0.0.27 cluster)
 
 ```bash

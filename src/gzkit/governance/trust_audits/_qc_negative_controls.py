@@ -858,6 +858,101 @@ def _build_rendition_floor_coherence() -> Path:
     return root
 
 
+def _build_rendition_lineage() -> Path:
+    """Plant a committed rendition whose OWNED section drifted from the corpus.
+
+    Mirrors `tests/governance/test_rendition_lineage.py`'s drift fixture: a
+    genuine two-section surface with a manifest route, a corpus entry, an
+    ownership declaration, and a VALID committed lineage sidecar -- but the
+    committed owned section holds hand-authored prose the corpus never said.
+    A fixture lacking the lineage sidecar would prove nothing: a missing
+    committed lineage is disclosed (exit 0, operator ruling 2026-09-11), never
+    failed, so the control's only reachable fail-closed path is drift inside a
+    WITNESSED owned section.
+    """
+    from gzkit.content.corpus_store import append_entry  # noqa: PLC0415
+    from gzkit.content.lineage import lineage_path  # noqa: PLC0415
+    from gzkit.content.models import CorpusEntry  # noqa: PLC0415
+    from gzkit.content.ownership import declaration_path, sections_digest  # noqa: PLC0415
+    from gzkit.content.rendition_store import rendition_path  # noqa: PLC0415
+    from gzkit.governance.events import emit_section_ownership_genesis  # noqa: PLC0415
+
+    root = _mkroot("rendition-lineage")
+    surface = "NCSurface.md"
+    consumer = "root"
+    canon_text = "Canon body line the corpus owns."
+    drift_chunk = "## Owned Section\n\nHand-authored prose the corpus never said.\n"
+    unowned_chunk = "## Unowned Section\nHand-authored prose nobody claims.\n"
+    committed_text = drift_chunk + unowned_chunk
+
+    _write(
+        root / "data" / "vendor-manifest.json",
+        json.dumps(
+            {
+                "content_type_routes": {"NCType": [consumer]},
+                "content_type_temperatures": {"NCType": {consumer: "lite"}},
+                "surface_content_types": {surface: "NCType"},
+            }
+        ),
+    )
+
+    append_entry(
+        root,
+        surface,
+        CorpusEntry(
+            id="e-canon",
+            surface=surface,
+            section="owned-section",
+            tier="compressible",
+            classification="Ambiguous",
+            text=canon_text,
+            origin="negative-control",
+            ts="2026-01-01T00:00:00+00:00",
+        ),
+    )
+
+    _write(rendition_path(root, surface, consumer), committed_text)
+
+    sections = {"owned-section": "corpus-owned", "unowned-section": "unowned"}
+    digest = sections_digest(sections)
+    unowned_floor = len(unowned_chunk.encode("utf-8"))
+    event_id = f"section-ownership-genesis-{surface}-{digest[:12]}"
+    emit_section_ownership_genesis(root, event_id, surface, digest, unowned_floor)
+    _write(
+        declaration_path(root, surface),
+        json.dumps(
+            {
+                "surface": surface,
+                "sections": sections,
+                "unowned_byte_floor": unowned_floor,
+                "measured_at": "2026-01-01T00:00:00Z",
+                "floor_event_id": event_id,
+            }
+        ),
+    )
+
+    owned_span = len(drift_chunk.encode("utf-8"))
+    unowned_span = len(unowned_chunk.encode("utf-8"))
+    _write(
+        lineage_path(root, surface, consumer),
+        json.dumps(
+            {
+                "owned-section": {
+                    "owned": True,
+                    "entry_ids": ["e-canon"],
+                    "byte_span": [0, owned_span],
+                },
+                "unowned-section": {
+                    "owned": False,
+                    "entry_ids": [],
+                    "byte_span": [owned_span, owned_span + unowned_span],
+                },
+            }
+        ),
+    )
+    return root
+
+
 def _build_wheel_path_literals() -> Path:
     """Plant a wheel-shipped skill doc naming a path rooted in one user's home.
 
@@ -1432,6 +1527,7 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         _build_rendition_floor_coherence,
         _ep._ep_rendition_floor_coherence,
     ),
+    ("rendition-lineage", _build_rendition_lineage, _ep._ep_rendition_lineage),
     ("invariant-coherence", _build_invariant_coherence, _ep._ep_invariant_coherence),
     ("corpus-retirement-witness", _cr.build_retirement_witness, _ep._ep_corpus_retirement_witness),
     ("brief-structure", _build_brief_structure, _ep._ep_brief_structure),

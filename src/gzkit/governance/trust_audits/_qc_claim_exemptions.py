@@ -165,4 +165,38 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     # `question.required` and the per-question validator set are fixed in
     # ADR_QUESTIONS, the single authority the CLI loader also reads.
     "pool-interview-schema": EXEMPTS_NONE,
+    # --- OBPI-0.35.0-06 (2026-09-11) ----------------------------------------
+    # Grades every committed rendition's `corpus-owned` sections against a
+    # regeneration from the effective corpus; drift is always a finding
+    # (`_owned_drift`) and `verify_candidate_against_declaration`'s partition /
+    # entry-liveness checks are likewise unconditional. Three things read at
+    # first glance like admit paths and are not:
+    #
+    # 1. MX-checkpoint severity resolution (`_checkpoint.resolve` /
+    #    `_disposition.grounds`, advisory inside the hangar, fail-closed
+    #    outside). This is the platform's UNIFORM honor-the-marker behaviour,
+    #    not a path this gate's own code opens: every claim in this map that
+    #    runs through `gz check` (`commands/quality.py::_apply_mx_seam`) or
+    #    `gz validate --<scope>` (`validate_cmd.py`'s `checkpoint.blocks` at
+    #    line ~887) is demoted by the identical marker at the identical
+    #    `_mx_levels.ERROR` unless pinned CRITICAL/`GATE5_INVARIANTS` — that
+    #    includes `wheel-path-literals`, `kind-invariance`, `line-endings`,
+    #    and every other `EXEMPTS_NONE` claim above. If honoring the shared
+    #    hangar marker counted as a per-claim admit path, no claim in this
+    #    file could ever be `EXEMPTS_NONE`. This gate calling
+    #    `_checkpoint.resolve` INSIDE its own function body (rather than
+    #    relying solely on the CLI wrapper) only makes the same platform-wide
+    #    behaviour reach OBPI-0.35.0-07's direct `generate_candidate`/publish
+    #    callers too — it introduces no admit path beyond the floor every
+    #    claim already carries. Contrast `skill-audit`'s `--strict`: that flag
+    #    changes what its OWN validator counts as a violation, independent of
+    #    MX entirely — a genuine gate-specific exemption, unlike this one.
+    # 2. A declared-but-uncommitted lineage sidecar is reported UNGRADED, never
+    #    failed (operator ruling 2026-09-11) — an artifact-absent return
+    #    ("no committed lineage to compare against"), the same shape
+    #    `invariant-coherence` above is declared `none` for.
+    # 3. Sections the ownership declaration marks `unowned` are never even
+    #    compared — a scope predicate (which sections this gate examines),
+    #    not an admission of a violation it found.
+    "rendition-lineage": EXEMPTS_NONE,
 }

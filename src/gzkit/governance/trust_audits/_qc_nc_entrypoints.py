@@ -418,6 +418,14 @@ def _ep_rendition_floor_coherence(root: Path) -> list[ValidationError]:
     return validate_rendition_floor_coherence(root)
 
 
+def _ep_rendition_lineage(root: Path) -> list[ValidationError]:
+    from gzkit.governance.trust_audits.rendition_lineage import (  # noqa: PLC0415
+        validate_rendition_lineage,
+    )
+
+    return validate_rendition_lineage(root)
+
+
 def _ep_corpus_retirement_witness(root: Path) -> list[ValidationError]:
     from gzkit.governance.trust_audits.corpus_retirement_witness import (  # noqa: PLC0415
         validate_corpus_retirement_witness,

@@ -143,6 +143,7 @@ _POST_SNAPSHOT_EXPLICIT_ADDITIONS: frozenset[str] = frozenset(
         # invisible on a clean tree, so a gate that runs only when an operator
         # remembers the flag would never fire on the commit that introduced it.
         "python_version_pins",
+        "rendition_lineage",
     }
 )
 

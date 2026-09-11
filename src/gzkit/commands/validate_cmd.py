@@ -404,6 +404,12 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
         lambda r, _f: _rendition_floor_coherence_runner(r),
     ),
     _ScopeEntry(
+        "rendition_lineage",
+        "explicit",
+        True,
+        lambda r, _f: _rendition_lineage_runner(r),
+    ),
+    _ScopeEntry(
         "corpus_retirement_witness",
         "default",
         True,
@@ -515,6 +521,13 @@ def _rendition_floor_coherence_runner(project_root: Path) -> list[ValidationErro
     from gzkit.governance import trust_audits  # noqa: PLC0415
 
     return trust_audits.validate_rendition_floor_coherence(project_root)
+
+
+def _rendition_lineage_runner(project_root: Path) -> list[ValidationError]:
+    """Owned-section corpus-derivation gate (OBPI-0.35.0-06, ADR-0.35.0 Decision item 4)."""
+    from gzkit.governance import trust_audits  # noqa: PLC0415
+
+    return trust_audits.validate_rendition_lineage(project_root)
 
 
 def _explicit_scope_runners(
@@ -1086,6 +1099,7 @@ _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
         "setpoint_coherence",
         "rendition_freshness",
         "rendition_floor_coherence",
+        "rendition_lineage",
         "corpus_retirement_witness",
         "invariant_coherence",
         "invariant_witness",
@@ -1473,6 +1487,7 @@ def validate(
     check_setpoint_coherence: bool = False,
     check_rendition_freshness: bool = False,
     check_rendition_floor_coherence: bool = False,
+    check_rendition_lineage: bool = False,
     check_corpus_retirement_witness: bool = False,
     check_task_envelope_coherence: bool = False,
     check_closeout_proof: bool = False,
@@ -1591,6 +1606,7 @@ def validate(
         "setpoint_coherence": check_setpoint_coherence,
         "rendition_freshness": check_rendition_freshness,
         "rendition_floor_coherence": check_rendition_floor_coherence,
+        "rendition_lineage": check_rendition_lineage,
         "corpus_retirement_witness": check_corpus_retirement_witness,
         "kind_invariance": check_kind_invariance,
         "persona_witness": check_persona_witness,

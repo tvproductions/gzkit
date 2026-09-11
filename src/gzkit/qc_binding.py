@@ -116,6 +116,13 @@ _STEP_CLASSIFICATION: dict[str, _StepMeta] = {
     "Producer field parity": ("audit", "all", "bound", "python_function"),
     "Rendition freshness": ("audit", "docs/", "bound", "python_function"),
     "Rendition floor coherence": ("audit", "docs/", "bound", "python_function"),
+    # Same shape as its sibling above: exits 3 on owned-section drift and gates
+    # `gz check`'s exit code, with a negative control ("rendition-lineage" in
+    # `_qc_negative_controls.py`) planting a genuine owned-section drift and
+    # asserting the audit catches it. Subject is `docs/` matching its sibling
+    # gates above -- the population is the governed control-surface documents
+    # (AGENTS.md and its renditions) these three gates jointly audit, not `src/`.
+    "Rendition lineage": ("audit", "docs/", "bound", "python_function"),
     "Invariant coherence": ("audit", "docs/", "bound", "python_function"),
     "Corpus retirement witness": ("audit", ".gzkit/", "bound", "python_function"),
     # Enrolled in the same commit it joined `gz check`, per the precedent above.

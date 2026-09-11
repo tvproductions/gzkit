@@ -879,6 +879,13 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Rendition omits a corpus invariant-tier entry; fail-closed (GHI #623).",
     )
     p_validate.add_argument(
+        "--rendition-lineage",
+        dest="check_rendition_lineage",
+        action="store_true",
+        default=False,
+        help="Owned rendition section drifted from the corpus; fail-closed (ADR-0.35.0).",
+    )
+    p_validate.add_argument(
         "--corpus-retirement-witness",
         dest="check_corpus_retirement_witness",
         action="store_true",
@@ -1072,6 +1079,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_setpoint_coherence=a.check_setpoint_coherence,
             check_rendition_freshness=a.check_rendition_freshness,
             check_rendition_floor_coherence=a.check_rendition_floor_coherence,
+            check_rendition_lineage=a.check_rendition_lineage,
             check_corpus_retirement_witness=a.check_corpus_retirement_witness,
             check_kind_invariance=a.check_kind_invariance,
             check_persona_witness=a.check_persona_witness,

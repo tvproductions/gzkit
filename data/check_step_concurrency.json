@@ -193,6 +193,10 @@
       "class": "read_only",
       "measured_seconds": 0.21
     },
+    "Rendition lineage": {
+      "class": "read_only",
+      "measured_seconds": 0.21
+    },
     "Rendition freshness": {
       "class": "read_only",
       "measured_seconds": 0.21
