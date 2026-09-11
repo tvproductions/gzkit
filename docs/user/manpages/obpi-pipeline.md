@@ -40,7 +40,8 @@ the generated Claude pipeline hooks.
 Current command contract:
 
 - full launch creates the active pipeline markers, reads the plan-audit receipt
-  when present, and prints the implementation handoff with the follow-up
+  when present, advances the brief's frontmatter `status:` out of `Draft` to
+  `Active`, and prints the implementation handoff with the follow-up
   `--from=verify` command
 - `--from=verify` reruns Stage 1, executes verification commands from the OBPI
   brief, adds Heavy-lane docs/BDD checks, clears active markers on success, and

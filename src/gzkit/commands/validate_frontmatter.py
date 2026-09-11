@@ -100,7 +100,10 @@ def _field_error(rel_path: str, field: str, ledger_value: str, fm_value: str) ->
         artifact=rel_path,
         field=field,
         message=(
-            f"Frontmatter {field} '{fm_value}' does not match ledger {field} '{ledger_value}'"
+            f"Frontmatter {field} '{fm_value}' does not match ledger {field} "
+            f"'{ledger_value}'. Recover with `uv run gz frontmatter reconcile` "
+            f"(preview via --dry-run); a refused rewrite means the transition "
+            f"monitor blocked it and an explicit lifecycle verb is required."
         ),
         ledger_value=ledger_value,
         frontmatter_value=fm_value,

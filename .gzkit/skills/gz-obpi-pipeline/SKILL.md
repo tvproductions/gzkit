@@ -5,9 +5,9 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-09
+last_reviewed: 2026-09-11
 metadata:
-  skill-version: "6.54.0"
+  skill-version: "6.55.0"
 model: sonnet
 ---
 
@@ -233,15 +233,28 @@ Stage 4 = HUMAN GATE (wait for attestation) — universal per ADR-0.0.36
     the canonical brief and parent ADR; it cannot erase history or silently
     replace the obligation roster. `--from` does not waive current proof or review.
 
-> **Derived in-flight status (GHI #646).** Launching the pipeline emits
-> `pipeline_launched`, which IS the `in_progress` transition. The brief's
-> lifecycle status is **derived from ledger truth, never written by this
-> pipeline** — `_derive_obpi_runtime_state` now resolves a launched OBPI to
-> `in_progress`, and `status_vocab` maps that to frontmatter `Active`. Running
-> `uv run gz frontmatter reconcile` renders and keeps `Active` for the in-flight
-> window (it no longer reverts to Draft). Do not hand-write the lifecycle field
-> here — the ledger-derivation reconcile owns it (mirrors how completion is
-> surfaced, not authored, by the pipeline).
+> **In-flight status is advanced AT LAUNCH (GHI #646, corrected by GHI #992).**
+> Launching the pipeline emits `pipeline_launched`, which IS the `in_progress`
+> transition — `_derive_obpi_runtime_state` resolves a launched OBPI to
+> `in_progress`, and `status_vocab` maps that to frontmatter `Active`. Layer-1
+> mirrors that truth **inside the launch transaction**: `obpi_pipeline_cmd`
+> calls `_advance_brief_status_on_launch` immediately after appending the
+> event.
+>
+> **Derived never meant deferred.** Operator ruling 2026-09-11, verbatim: *"if
+> we start work on a obpi with draft status, its not draft."* Until #992 the
+> flip waited on a human typing `uv run gz frontmatter reconcile`, so a
+> launched brief asserted `Draft` for the entire in-flight window and the
+> pre-push `gz check` blocked every push on a frontmatter mismatch. The only
+> mandatory catch was `gz obpi precomplete`'s `_check_reconcile_idempotent` —
+> self-described *"Reactive triage at Stage 5"*, the far end of the pipeline
+> from where the drift is created.
+>
+> Do not hand-write the lifecycle field here. The advance routes through
+> `guarded_obpi_status_write`, so the terminal-clobber verdict stays in the one
+> monitor ADR-0.31.0 Decision item 4 declares — a terminal brief is refused,
+> and a re-launch is a no-op (mirrors how completion is surfaced, not authored,
+> by the pipeline).
 
 **Abort if:** brief not found, brief already `Completed`, or plan receipt verdict is `FAIL`.
 

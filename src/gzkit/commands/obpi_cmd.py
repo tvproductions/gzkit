@@ -650,6 +650,44 @@ def obpi_emit_receipt_cmd(
     console.print(f"  Attestor: {attestor}")
 
 
+def _advance_brief_status_on_launch(obpi_file: Path) -> bool:
+    """Advance a launched OBPI's brief out of ``Draft`` (GHI #992).
+
+    Layer-1 is DERIVED from Layer-2, not authored here — but derived does not
+    mean deferred. ``pipeline_launched`` has just been appended, so the brief
+    asserting ``Draft`` is now asserting something false about itself, and it
+    would keep doing so for the whole in-flight window. Operator ruling
+    2026-09-11: *"if we start work on a obpi with draft status, its not
+    draft."* The flip is part of the launch transaction for that reason.
+
+    The only mandatory catch before this was ``gz obpi precomplete``'s
+    ``_check_reconcile_idempotent`` — self-described "Reactive triage at
+    Stage 5", the far end of the pipeline from where the drift is created. In
+    between, `gz validate --frontmatter` (default ``gz check`` scope, hence the
+    pre-push gate) fail-closed on every push with no remediation prose.
+
+    Scope is deliberately ONE brief, not a repo-wide reconcile: the full
+    ``reconcile_frontmatter`` walk is a multi-second sweep that would also
+    rewrite briefs this launch knows nothing about — a launch may correct only
+    the row it just made wrong.
+
+    Routes through :func:`guarded_obpi_status_write` rather than writing the
+    key directly, so the terminal-clobber verdict stays in the one monitor
+    ADR-0.31.0 Decision item 4 declares (and which
+    ``gz validate --status-writer-coverage`` fails closed on bypassing).
+    Returns True iff a write landed; a no-op re-launch and a refused terminal
+    both return False.
+    """
+    from gzkit.commands.closeout_form import guarded_obpi_status_write  # noqa: PLC0415
+    from gzkit.governance.status_vocab import frontmatter_status_for_ledger  # noqa: PLC0415
+
+    target = frontmatter_status_for_ledger("in_progress", "obpi")
+    wrote = guarded_obpi_status_write(obpi_file, target)
+    if wrote:
+        console.print(f"  Brief status advanced to {target}: {obpi_file.name}")
+    return wrote
+
+
 def _run_pipeline_full_launch_task_start(
     ledger: Any,
     *,
@@ -821,6 +859,7 @@ def obpi_pipeline_cmd(
             entry=str(marker_payload.get("entry") or "full"),
         )
     )
+    _advance_brief_status_on_launch(obpi_file)
     stage_labels = pipeline_stage_labels(start_from)
 
     _print_pipeline_header(
