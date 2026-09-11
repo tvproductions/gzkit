@@ -16181,3 +16181,5 @@
 {"schema":"gzkit.ledger.v1","event":"obpi_lock_released","id":"OBPI-0.35.0-05-corpus-candidate-generator","ts":"2026-09-11T00:07:23.691161+00:00","agent":"claude-code-50fd14ae","force":false,"handoff_path":".gzkit/locks/exchange/20260911T000723Z-OBPI-0.35.0-05-corpus-candidate-generator-complete.md"}
 {"schema":"gzkit.ledger.v1","event":"airlock_in","id":"permitted-entry:tests/arb/test_step_output_cli.py","ts":"2026-09-11T00:40:27.173448+00:00","decision":"proceed","unaccounted":[]}
 {"schema":"gzkit.ledger.v1","event":"airlock_out","id":"permitted-entry:tests/arb/test_step_output_cli.py","ts":"2026-09-11T00:40:27.176143+00:00","verdict":"clean","drift":[],"routing":[],"bodies":1}
+{"schema":"gzkit.ledger.v1","event":"airlock_in","id":"permitted-entry:src/gzkit/commands/obpi_complete_adversarial.py","ts":"2026-09-11T01:01:59.652551+00:00","decision":"proceed","unaccounted":[]}
+{"schema":"gzkit.ledger.v1","event":"airlock_out","id":"permitted-entry:src/gzkit/commands/obpi_complete_adversarial.py","ts":"2026-09-11T01:01:59.664244+00:00","verdict":"clean","drift":[],"routing":[],"bodies":1}

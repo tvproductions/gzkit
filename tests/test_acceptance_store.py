@@ -73,6 +73,19 @@ class AcceptanceStoreTests(ExecutionFixture):
         for stage in ("spec", "quality", "adversarial"):
             record_review(self.root, OBPI, self.receipt(proof, stage))
 
+    def test_windows_interpreter_receipt_imports_the_captured_review(self):
+        """The importer consumes the same executed wrapper argv Windows emits."""
+        proof = self.synthetic_proof()
+        receipt = self.receipt(proof, "spec")
+        receipt["step"]["command"] = [
+            r"C:\project\.venv\Scripts\python.exe",
+            r"C:\fixture\codex-fixture.py",
+        ]
+        review = review_from_receipt(receipt)
+        self.assertEqual(review.receipt_id, receipt["run_id"])
+        self.assertEqual(review.accepted_proof_ids, (proof.id,))
+        self.assertEqual(review.tier, 1)
+
     def synthetic_proof(self):
         """Isolate persistence from execution, which has separate process controls."""
         obligation = canonical_obligations(self.root, self.brief)[0]

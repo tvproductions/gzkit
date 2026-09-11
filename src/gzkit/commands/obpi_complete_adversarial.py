@@ -182,7 +182,7 @@ def receipt_proves_cross_vendor(receipt: dict[str, Any]) -> bool:
     # prompt.
     for arg in command:
         name = _receipt_binary_name(str(arg))
-        if name.lower() in _RUNTIME_WRAPPERS:
+        if name.lower().removesuffix(".exe") in _RUNTIME_WRAPPERS:
             continue
         return _is_cross_vendor_adversary(name)
     return False

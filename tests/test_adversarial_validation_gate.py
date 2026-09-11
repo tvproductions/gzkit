@@ -572,6 +572,28 @@ class TestReceiptProvesCrossVendorFromArgv(unittest.TestCase):
     def test_an_argv_of_only_wrappers_does_not_prove_cross_vendor(self) -> None:
         self.assertFalse(_receipt_proves_cross_vendor(self._receipt(["node", "uv"])))
 
+    def test_windows_runtime_wrappers_reach_the_executed_vendor(self) -> None:
+        """Windows interpreter spellings must preserve the same dispatch proof."""
+        for command in (
+            [r"C:\project\.venv\Scripts\python.exe", "codex-fixture.py"],
+            ["python3.exe", "codex-fixture.py"],
+            [r"C:\Program Files\nodejs\NODE.EXE", "codex-companion.mjs"],
+            ["uv.exe", "python.exe", "codex-fixture.py"],
+        ):
+            with self.subTest(command=command):
+                self.assertTrue(_receipt_proves_cross_vendor(self._receipt(command)))
+
+    def test_windows_wrapper_normalization_does_not_skip_non_wrappers(self) -> None:
+        """A suffix must not turn prompt text or an unknown executable into proof."""
+        for command in (
+            ["node.exe", "claude-helper.mjs", "codex"],
+            ["unknown.exe", "codex"],
+            ["uv.exe", "python.exe"],
+            ["node.exe.exe", "codex-companion.mjs"],
+        ):
+            with self.subTest(command=command):
+                self.assertFalse(_receipt_proves_cross_vendor(self._receipt(command)))
+
     def test_absolute_binary_path_still_proves_cross_vendor(self) -> None:
         # The recorded argv may carry a resolved path; the binary name is the claim.
         self.assertTrue(
