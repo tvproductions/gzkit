@@ -172,7 +172,7 @@ class TestLongReviewReceiptImport(unittest.TestCase):
                 "--max-output-chars",
                 "-1",
                 "--",
-                "python",
+                sys.executable,
                 str(script),
             ],
             cwd=fixture.root,
@@ -183,9 +183,15 @@ class TestLongReviewReceiptImport(unittest.TestCase):
             check=False,
             timeout=60,
         )
-        self.assertEqual(wrapped.returncode, 0, wrapped.stdout + wrapped.stderr)
-        (receipt_path,) = receipts.glob("arb-step-reviewfixture-*.json")
+        receipt_paths = list(receipts.glob("arb-step-reviewfixture-*.json"))
+        self.assertEqual(len(receipt_paths), 1, wrapped.stdout + wrapped.stderr)
+        receipt_path = receipt_paths[0]
         receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+        self.assertEqual(
+            wrapped.returncode,
+            0,
+            wrapped.stdout + wrapped.stderr + receipt["stderr_tail"],
+        )
         self.assertFalse(receipt["stdout_truncated"])
         self.assertFalse(receipt["stderr_truncated"])
         self.assertGreater(len(receipt["stdout_tail"]), 8000)
