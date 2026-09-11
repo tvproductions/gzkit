@@ -3,7 +3,7 @@ id: OBPI-0.35.0-06-validate-rendition-lineage
 parent: ADR-0.35.0-canon-entry-corpus-landing
 item: 6
 lane: Heavy
-status: Draft
+status: Active
 allowlist:
 - src/gzkit/governance/trust_audits/rendition_lineage.py
 - src/gzkit/governance/trust_audits/__init__.py
