@@ -1,0 +1,17 @@
+{
+  "req_id": "REQ-0.35.0-06-05",
+  "source": "src/gzkit/governance/trust_audits/rendition_lineage.py",
+  "selectors": [
+    "tests.governance.test_rendition_lineage.RetiredEntryLeftInAnOwnedSectionIsDriftTest.test_retired_invariant_text_still_committed_fails_closed"
+  ],
+  "mutations": [
+    {
+      "label": "read-the-raw-append-log-instead-of-the-effective-corpus",
+      "find": "    live_ids = {entry.id for entry in effective_corpus(corpus).entries}",
+      "replace": "    live_ids = {entry.id for entry in corpus.entries}",
+      "expected_tests": [
+        "tests.governance.test_rendition_lineage.RetiredEntryLeftInAnOwnedSectionIsDriftTest.test_retired_invariant_text_still_committed_fails_closed"
+      ]
+    }
+  ]
+}

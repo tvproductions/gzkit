@@ -1,0 +1,28 @@
+{
+  "req_id": "REQ-0.35.0-06-03",
+  "source": "src/gzkit/governance/trust_audits/rendition_lineage.py",
+  "selectors": [
+    "tests.governance.test_rendition_lineage.UnownedSectionNeverFailsTheGateTest.test_arbitrary_prose_in_an_unowned_section_yields_no_findings",
+    "tests.governance.test_rendition_lineage.UnownedSectionNeverFailsTheGateTest.test_fully_unowned_surface_without_a_lineage_yields_no_findings",
+    "tests.governance.test_rendition_lineage.MissingCommittedLineageIsDisclosedTest.test_declared_ownership_without_a_lineage_is_ungraded_not_failed",
+    "tests.governance.test_rendition_lineage.UnownedSectionNeverFailsTheGateTest.test_unowned_section_citing_a_dead_entry_id_yields_no_findings"
+  ],
+  "mutations": [
+    {
+      "label": "fail-the-gate-on-a-never-published-lineage-instead-of-disclosing-it",
+      "find": "        return _Graded(\n            [],\n            coverage.as_ungraded(),\n            [\n                _missing_lineage_message(\n                    surface, consumer, owned_count, lineage_path(root, surface, consumer)\n                )\n            ],\n        )",
+      "replace": "        return _Graded(\n            [\n                _missing_lineage_message(\n                    surface, consumer, owned_count, lineage_path(root, surface, consumer)\n                )\n            ],\n            coverage.as_ungraded(),\n            [],\n        )",
+      "expected_tests": [
+        "tests.governance.test_rendition_lineage.MissingCommittedLineageIsDisclosedTest.test_declared_ownership_without_a_lineage_is_ungraded_not_failed"
+      ]
+    },
+    {
+      "label": "liveness-check-unowned-sections-too",
+      "find": "        if declared != _OWNED:\n            continue",
+      "replace": "        if False and declared != _OWNED:\n            continue",
+      "expected_tests": [
+        "tests.governance.test_rendition_lineage.UnownedSectionNeverFailsTheGateTest.test_unowned_section_citing_a_dead_entry_id_yields_no_findings"
+      ]
+    }
+  ]
+}

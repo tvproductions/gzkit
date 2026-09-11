@@ -1,0 +1,57 @@
+{
+  "obpi_id": "OBPI-0.35.0-06-validate-rendition-lineage",
+  "parent_adr": "ADR-0.35.0-canon-entry-corpus-landing",
+  "lane": "heavy",
+  "entry": "full",
+  "execution_mode": "normal",
+  "current_stage": "implement",
+  "started_at": "2026-09-11T05:27:54Z",
+  "updated_at": "2026-09-11T05:27:54Z",
+  "receipt_state": "pass",
+  "nonce": "e2b5254828ff9d899be97735890b25fc",
+  "blockers": [],
+  "required_human_action": null,
+  "next_command": "uv run gz obpi pipeline OBPI-0.35.0-06-validate-rendition-lineage --from=verify",
+  "resume_point": "verify",
+  "dispatch_state": [
+    {
+      "task_id": 1,
+      "role": "Implementer",
+      "agent_file": ".claude/agents/implementer.md",
+      "model": "opus",
+      "isolation": "inline",
+      "background": false,
+      "dispatched_at": "2026-09-11T06:22:05.000240+00:00",
+      "completed_at": null,
+      "status": "in_progress",
+      "result": null,
+      "persona_loaded": null
+    },
+    {
+      "task_id": 2,
+      "role": "Implementer",
+      "agent_file": ".claude/agents/implementer.md",
+      "model": "sonnet",
+      "isolation": "inline",
+      "background": false,
+      "dispatched_at": "2026-09-11T06:22:05.314754+00:00",
+      "completed_at": null,
+      "status": "in_progress",
+      "result": null,
+      "persona_loaded": null
+    },
+    {
+      "task_id": 3,
+      "role": "Implementer",
+      "agent_file": ".claude/agents/implementer.md",
+      "model": "sonnet",
+      "isolation": "inline",
+      "background": false,
+      "dispatched_at": "2026-09-11T06:22:05.609729+00:00",
+      "completed_at": null,
+      "status": "in_progress",
+      "result": null,
+      "persona_loaded": null
+    }
+  ]
+}

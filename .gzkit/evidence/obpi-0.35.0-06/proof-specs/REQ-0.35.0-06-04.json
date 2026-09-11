@@ -1,0 +1,30 @@
+{
+  "req_id": "REQ-0.35.0-06-04",
+  "source": "src/gzkit/governance/trust_audits/rendition_lineage.py",
+  "selectors": [
+    "tests.governance.test_rendition_lineage.CoverageIsComputedAtRunTimeTest.test_flipping_a_section_to_owned_changes_the_computed_coverage",
+    "tests.governance.test_rendition_lineage.CoverageIsComputedAtRunTimeTest.test_coverage_counts_utf8_bytes_not_characters",
+    "tests.governance.test_rendition_lineage.CoverageIsComputedAtRunTimeTest.test_scope_surfaces_the_computed_figure_on_the_clean_path",
+    "tests.governance.test_rendition_lineage.CoverageIsComputedAtRunTimeTest.test_merge_accumulates_all_six_fields_across_two_non_zero_renditions"
+  ],
+  "mutations": [
+    {
+      "label": "coverage-ignores-the-ownership-declaration",
+      "find": "    owned = {sid: span for sid, span in spans.items() if sections.get(sid) == _OWNED}",
+      "replace": "    owned = {}",
+      "expected_tests": [
+        "tests.governance.test_rendition_lineage.CoverageIsComputedAtRunTimeTest.test_flipping_a_section_to_owned_changes_the_computed_coverage",
+        "tests.governance.test_rendition_lineage.CoverageIsComputedAtRunTimeTest.test_coverage_counts_utf8_bytes_not_characters",
+        "tests.governance.test_rendition_lineage.CoverageIsComputedAtRunTimeTest.test_scope_surfaces_the_computed_figure_on_the_clean_path"
+      ]
+    },
+    {
+      "label": "merge-self-sums-total-bytes-instead-of-adding-the-other-operand",
+      "find": "            self.total_bytes + other.total_bytes,",
+      "replace": "            self.total_bytes + self.total_bytes,",
+      "expected_tests": [
+        "tests.governance.test_rendition_lineage.CoverageIsComputedAtRunTimeTest.test_merge_accumulates_all_six_fields_across_two_non_zero_renditions"
+      ]
+    }
+  ]
+}
