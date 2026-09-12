@@ -64,6 +64,10 @@ Operator rulings this session, verbatim where quoted:
 - One orchestrator skill, or an orchestrator plus a namespace of disciplines?
 - **Genuine unresolved tension:** the operator wants the skill "sensing but also direct executable." Sensing implies model-invocation; the MPAS invocation-class invariant reserves model-invocation for **disciplines** and requires every **orchestrator** to be user-invoked, because "the model may just choose not to follow it." Reconcile before authoring.
 
+**Open, eligible, unselected — filed after this handoff was authored:**
+
+- **[GHI #998](https://github.com/tvproductions/gzkit/issues/998)** — `waiver-ratchet: honesty mechanisms gate debt volume, never coverage` (`defect`, `runtime`). ADR-0.0.73 Boundary Invariant #8's three honesty mechanisms (closed-set lock, dated cutover, shrink-ratchet) all quantify a waiver list over time; none asks what coverage a waived entry provided. A waiver can therefore silence the last witness over a surface while `gz validate --waiver-ratchet` reports green. Measured near-miss this session: the sole coherence check over the two hand-authored copies of the subagent role bodies was one waiver from being switched off, and the ratchet refused it on volume, not coverage. Two candidate arms named in the issue and neither prescribed — a required `surviving_witness` field per entry, or a sole-witness detector one question over from `control-surface-validator-reachability`'s Pass D. **No blocker; open because the arm choice is a design conversation.** Related: #948 (sibling cut — the scanner over-flags), #969 (adjacent — aggregate status over a red verifier; cross-linked both ways).
+
 **Unratified proposals:**
 
 - Campaign Workflow-fronts R&D description — capture gap named, amendment not drafted, operator ratification required.
@@ -97,6 +101,7 @@ Expected at authoring time: 40 chores, 19 audit-only, 7 freshness-wired, 393 PLC
 - `docs/governance/mpas-appropriation-analysis.md` — full MPAS anatomy read from the clone, the invocation-class invariant, the context-boundary table, the two collisions with gzkit (attestation inversion; spec-driven rejection), the hole gzkit must close, five independent convergences, and a proposed appropriate/adapt/reject disposition.
 - `scripts/check_proof_freshness.py` — the existing two-arm staleness mechanism to generalise.
 - `.gzkit/chores/registry.json` — the schema to extend.
+- [GHI #998](https://github.com/tvproductions/gzkit/issues/998) and the `discovery` record dated 2026-09-12 in `.gzkit/insights/agent-insights.jsonl` (scope `.gzkit/agents + .claude/agents role bodies`) — the coverage-blindness finding and the duplicated role bodies it came from. The latter is already owned by `ADR-pool.vendor-alignment-codex` child `codex-skills-personas-subagents`; the pool does not gate 1.0.
 - `docs/governance/build-to-1.0-campaign-2026-08-16.md` — Movement C in section 6, and the Workflow fronts section (the R&D capture gap).
 
 ## Settled Rulings
