@@ -198,6 +198,12 @@ def _build_orientation_freshness() -> Path:
     Everything the audit checks except the heading set is satisfied, so the single
     finding is the heading regression (GHI #338) rather than three missing-file
     findings that never reach the heading or collector-wiring checks.
+
+    The Codex config MUST use the native matcher-group shape — ``matcher`` plus a
+    ``hooks`` list of ``type: command`` handlers — whose matchers cover every entry
+    in ``_CODEX_START_SOURCES``. ``_codex_session_start_command_strings`` discards
+    obsolete flat command arrays wholesale, so the older shape plants a second
+    "does not invoke" finding and the fixture stops being minimal-valid.
     """
     root = _mkroot("orientation")
     _write(
@@ -226,10 +232,16 @@ def _build_orientation_freshness() -> Path:
                 "hooks": {
                     "SessionStart": [
                         {
-                            "command": (
-                                'uv run --cache-dir "$(git rev-parse --show-toplevel)'
-                                '/.gzkit/cache/uv" python scripts/session_orientation.py'
-                            )
+                            "matcher": "*",
+                            "hooks": [
+                                {
+                                    "type": "command",
+                                    "command": (
+                                        'uv run --cache-dir "$(git rev-parse --show-toplevel)'
+                                        '/.gzkit/cache/uv" python scripts/session_orientation.py'
+                                    ),
+                                }
+                            ],
                         }
                     ]
                 }
