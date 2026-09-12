@@ -61,6 +61,8 @@ SURFACE_ROOTS: tuple[str, ...] = (
     ".agents/skills",
     ".agents/personas",
     ".claude/personas",
+    ".codex/hooks.json",
+    ".codex/agents",
 )
 
 
@@ -200,8 +202,8 @@ def _is_tracked(path: Path, tracked: set[Path]) -> bool:
 def plan_sync_all(project_root: Path, config: GzkitConfig | None = None) -> list[str]:
     """Return the exact list of paths ``sync_all()`` would write, without mutating disk.
 
-    Runs the real ``sync_all()`` orchestrator inside a snapshot-restore envelope
-    so the complete write set is derived from the same code path as apply mode.
+    Runs the real ``sync_all()`` orchestrator inside the surface capture sink
+    so the complete write set is derived without applying or restoring writes.
     Used by ``gz agent sync control-surfaces --dry-run`` to preview an exact
     deterministic plan instead of a hand-maintained subset.
     """

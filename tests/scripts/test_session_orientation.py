@@ -531,6 +531,24 @@ class TestCollectCampaign(unittest.TestCase):
     def setUp(self):
         self.mod = _load_orientation_module()
 
+    def test_fronts_reach_session_digest_and_follow_campaign_edits(self):
+        """Boot context must consume the same narrative that status exposes."""
+        with tempfile.TemporaryDirectory() as tmp:
+            fronts = "handoff system; ghi triage; adr/obpi campaign; new R&D"
+            root = self._repo_with_campaign(
+                tmp, f"## Workflow fronts\n\n{fronts}\n\n## Other\nDo not copy this tail\n"
+            )
+            for expected in (fronts, "Changed front guidance"):
+                if expected != fronts:
+                    (root / self._PLAN).write_text(
+                        f"## Workflow fronts\n\n{expected}\n", encoding="utf-8"
+                    )
+                campaign = self.mod.collect_campaign(root)
+                rendered = self.mod.render({"campaign": campaign}, datetime.now(UTC))
+                self.assertIn(expected, rendered)
+                self.assertIn(f"{self._PLAN}#workflow-fronts", rendered)
+                self.assertNotIn("Do not copy this tail", rendered)
+
     _PLAN = "docs/governance/build-to-1.0-campaign-2026-06-10.md"
 
     def _repo_with_campaign(self, tmp: str, text: str | None, *, declare: bool = True) -> Path:
@@ -555,6 +573,28 @@ class TestCollectCampaign(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = self._repo_with_campaign(tmp, None)
             self.assertIsNone(self.mod.collect_campaign(root))
+
+    def test_malformed_registry_cannot_crash_session_boot(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo_with_campaign(tmp, CAMPAIGN_FIXTURE)
+            for declared in ([], None, 0, "", "../outside.md"):
+                with self.subTest(declared=declared):
+                    (root / "data/active_campaign.json").write_text(
+                        json.dumps({"active": declared}), encoding="utf-8"
+                    )
+                    self.assertIsNone(self.mod.collect_campaign(root))
+
+    def test_front_map_does_not_swallow_other_campaign_sections(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._repo_with_campaign(tmp, "")
+            for heading in ("## Later", "##\tLater", "##", "  ## Later", "# Appendix"):
+                with self.subTest(heading=heading):
+                    (root / self._PLAN).write_text(
+                        f"## Workflow fronts\n\nThe front map\n\n{heading}\nPRIVATE TAIL\n",
+                        encoding="utf-8",
+                    )
+                    campaign = self.mod.collect_campaign(root)
+                    self.assertEqual(campaign["workflow_fronts"], "The front map")
 
     def test_returns_none_when_no_registry_declares_a_plan(self):
         """Undeclared is not surfaced, however current the plan looks.

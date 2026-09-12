@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import ast
 import json
+import re
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -22,6 +23,19 @@ _ORIENTATION_COLLECTOR = "collect_remote_state"
 _ORIENTATION_AGGREGATOR = "collect_state"
 _CODEX_PROJECT_CACHE = ".gzkit/cache/uv"
 _GIT_TOPLEVEL_ANCHOR = "$(git rev-parse --show-toplevel)"
+_CODEX_START_SOURCES = {"startup", "resume", "clear", "compact"}
+
+
+def _codex_matched_sources(matcher: Any) -> set[str]:
+    if matcher is None or matcher in ("", "*"):
+        return _CODEX_START_SOURCES
+    if not isinstance(matcher, str):
+        return set()
+    try:
+        pattern: re.Pattern[str] = re.compile(matcher)
+    except re.error:
+        return set()
+    return {source for source in _CODEX_START_SOURCES if pattern.search(source)}
 
 
 def _read_session_start_blocks(path: Path) -> list[Any]:
@@ -59,15 +73,24 @@ def _settings_session_start_command_strings(settings_path: Path) -> list[str]:
 
 
 def _codex_session_start_command_strings(hooks_path: Path) -> list[str]:
-    """Return concatenated ``SessionStart`` command strings from .codex/hooks.json."""
+    """Read native Codex matcher groups, never obsolete command-array entries."""
     out: list[str] = []
-    for entry in _read_session_start_blocks(hooks_path):
-        if not isinstance(entry, dict):
+    covered: set[str] = set()
+    for group in _read_session_start_blocks(hooks_path):
+        if not isinstance(group, dict):
             continue
-        formatted = _format_command(entry.get("command"))
-        if formatted is not None:
-            out.append(formatted)
-    return out
+        handlers = group.get("hooks", [])
+        if not isinstance(handlers, list):
+            continue
+        for handler in handlers:
+            if not isinstance(handler, dict) or handler.get("type") != "command":
+                continue
+            command = handler.get("command")
+            if isinstance(command, str):
+                out.append(command)
+                if _ORIENTATION_SCRIPT in command:
+                    covered.update(_codex_matched_sources(group.get("matcher")))
+    return out if covered == _CODEX_START_SOURCES else []
 
 
 def _section_headings_assignment(

@@ -431,8 +431,8 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
 
     p_status = commands.add_parser(
         "status",
-        help="Show OBPI progress and ADR lifecycle status",
-        description="Display OBPI completion progress and ADR lifecycle state.",
+        help="Show workflow fronts, OBPI progress and ADR lifecycle status",
+        description="Display declared campaign fronts, OBPI progress and ADR lifecycle state.",
         epilog=build_epilog(
             [
                 "gz status --table",

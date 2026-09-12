@@ -5,9 +5,9 @@ description: Route agents to the correct skill for a given task type. Use when s
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-26
+last_reviewed: 2026-09-12
 metadata:
-  skill-version: "6.3.0"
+  skill-version: "6.3.1"
   govzero-framework-version: "v6"
 model: haiku
 ---
@@ -71,7 +71,7 @@ Task arrives
     │   ├── Gate 2 implementation verification ─────→ gz-implement
     │   ├── Validate governance artifacts ──────────→ gz-validate
     │   ├── Query artifact relationships ───────────→ gz-state
-    │   ├── Report gate/lifecycle status ───────────→ gz-status
+    │   ├── Report project fronts/gate status ─────→ gz-status
     │   └── Audit CLI doc coverage ─────────────────→ gz-cli-audit
     │
     ├── Governance infrastructure?
@@ -113,7 +113,7 @@ Task arrives
 | patch release, cut release | `gz-patch-release` |
 | check, lint, test, quality | `gz-check` |
 | gates, gate compliance | `gz-check` |
-| status, blockers, next actions | `gz-status` |
+| status, where are we, fronts, blockers, next actions | `gz-status` |
 | state, artifact graph, lineage | `gz-state` |
 | validate, schema, surfaces | `gz-validate` |
 | sync, mirrors, control surfaces | `gz-agent-sync` |

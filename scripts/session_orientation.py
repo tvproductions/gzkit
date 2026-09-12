@@ -107,9 +107,12 @@ def collect_campaign(repo_root: Path) -> dict | None:
         # a bare encoding="utf-8" raises UnicodeDecodeError -- a ValueError, so
         # `except OSError` misses it and the boot hook dies (GHI #688).
         declared = json.loads(registry.read_text(encoding="utf-8", errors="replace"))["active"]
+        if not isinstance(declared, str) or not declared.strip():
+            return None
+        path = (repo_root / declared).resolve()
+        path.relative_to(repo_root.resolve())
     except (OSError, ValueError, KeyError, TypeError):
         return None
-    path = repo_root / declared
     if path.is_file():
         try:
             text = path.read_text(encoding="utf-8", errors="replace")
@@ -124,12 +127,22 @@ def collect_campaign(repo_root: Path) -> dict | None:
         # the renderer falls back to document order with an honest caveat.
         topmost = re.search(r"^>?\s*\*\*Topmost \(sequenced\):\*\*\s*(.+?)\s*$", text, re.MULTILINE)
         topmost_text = topmost.group(1).strip() if topmost else None
+        # Narrative only: the registry chooses the campaign; ledger/GitHub
+        # reads still establish progress. Keep this bounded projection aligned
+        # with gzkit.commands.status._read_workflow_fronts without importing
+        # gzkit into the boot hook.
+        fronts = re.search(
+            r"^## Workflow fronts[ \t]*\r?\n(.*?)(?=^ {0,3}#{1,2}(?:[ \t]|\r?$)|\Z)",
+            text,
+            re.M | re.S,
+        )
         return {
-            "path": str(path.relative_to(repo_root)).replace(os.sep, "/"),
+            "path": str(path.relative_to(repo_root.resolve())).replace(os.sep, "/"),
             "done": done,
             "total": done + len(unchecked),
             "next_items": [item.strip() for item in unchecked[:3]],
             "topmost": topmost_text,
+            "workflow_fronts": fronts.group(1).strip() if fronts else None,
             # Refs only — resolution is a subprocess and belongs in
             # `collect_state`, so this parser stays filesystem-only and cheap.
             "adr_refs": _campaign_adr_refs(topmost_text),
@@ -1004,6 +1017,10 @@ def render(state: dict, now: datetime) -> str:
             for item in next_items:
                 lines.append(f"- Next (document order; prose sequencing governs): {item}")
         lines.append(f"- {CAMPAIGN_AUTHORITY_NOTE}")
+        lines.append("")
+        lines.append("### Workflow fronts — declared campaign context")
+        lines.append(f"Source: `{campaign.get('path', '?')}#workflow-fronts`")
+        lines.append(campaign.get("workflow_fronts") or "(Workflow fronts unavailable in campaign)")
     else:
         lines.append(
             "- (no ACTIVE campaign found — flag this to the operator; "

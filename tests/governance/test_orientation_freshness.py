@@ -47,12 +47,10 @@ _CODEX_OK = {
     "hooks": {
         "SessionStart": [
             {
-                "command": [
-                    "sh",
-                    "-c",
-                    _CODEX_PROJECT_UV_HOOK,
+                "matcher": "startup|resume|clear|compact",
+                "hooks": [
+                    {"type": "command", "command": _CODEX_PROJECT_UV_HOOK},
                 ],
-                "inject": "additionalContext",
             }
         ]
     }
@@ -100,6 +98,36 @@ class TestOrientationFreshnessBaseline(unittest.TestCase):
 
 class TestOrientationFreshnessFailClose(unittest.TestCase):
     """Each broken fixture must produce at least one orientation_freshness error."""
+
+    def test_codex_matcher_must_cover_start_resume_clear_and_compaction(self):
+        for matcher in ("never-a-native-start-source", "startup", "[", 42):
+            with self.subTest(matcher=matcher), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                _seed_baseline(root)
+                path = root / ".codex" / "hooks.json"
+                payload = json.loads(path.read_text(encoding="utf-8"))
+                payload["hooks"]["SessionStart"][0]["matcher"] = matcher
+                path.write_text(json.dumps(payload), encoding="utf-8")
+                errors = audit_orientation_freshness(root)
+                self.assertTrue(any(e.artifact == ".codex/hooks.json" for e in errors))
+
+    def test_obsolete_codex_registration_is_not_evidence_of_wiring(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _seed_baseline(root)
+            legacy = {
+                "hooks": {
+                    "SessionStart": [
+                        {
+                            "command": ["sh", "-c", _CODEX_PROJECT_UV_HOOK],
+                            "inject": "additionalContext",
+                        }
+                    ]
+                }
+            }
+            (root / ".codex" / "hooks.json").write_text(json.dumps(legacy), encoding="utf-8")
+            errors = audit_orientation_freshness(root)
+            self.assertTrue(any(e.artifact == ".codex/hooks.json" for e in errors))
 
     def test_claude_settings_missing_fails_close(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -168,12 +196,9 @@ class TestOrientationFreshnessFailClose(unittest.TestCase):
                 "hooks": {
                     "SessionStart": [
                         {
-                            "command": [
-                                "sh",
-                                "-c",
-                                _CODEX_USER_CACHE_HOOK,
+                            "hooks": [
+                                {"type": "command", "command": _CODEX_USER_CACHE_HOOK},
                             ],
-                            "inject": "additionalContext",
                         }
                     ]
                 }

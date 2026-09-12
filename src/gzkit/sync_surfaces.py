@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from gzkit.content.models.base import BaseContentModel
 
+from gzkit.codex_roles import sync_codex_roles
 from gzkit.config import (
     CODEX_CONFIG_DEFAULT_PATH,
     CODEX_CONFIG_MARKER,
@@ -25,6 +26,7 @@ from gzkit.config import (
 )
 from gzkit.content.render import render as render_content_model
 from gzkit.hooks.claude import generate_claude_settings, merge_settings, setup_claude_hooks
+from gzkit.hooks.codex import sync_codex_hooks
 from gzkit.ledger import Ledger
 from gzkit.ledger_events import agent_sync_completed_event
 from gzkit.rules import load_rules, render_rules_to_dir
@@ -1043,6 +1045,9 @@ def sync_all(
     updated.append(".gzkit/manifest.json")
 
     updated.append(sync_codex_config(project_root, config))
+    if not vendor_aware or config.vendors.codex.enabled:
+        updated.extend(sync_codex_hooks(project_root))
+        updated.extend(sync_codex_roles(project_root))
 
     # Migrate legacy skill layouts into canonical path when needed.
     updated.extend(bootstrap_canonical_skills(project_root, config))

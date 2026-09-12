@@ -8,6 +8,7 @@ from pathlib import Path
 
 from gzkit.config import GzkitConfig
 from gzkit.rules import NESTED_SURFACE_NAMES
+from gzkit.surface_write import ensure_dir, write_if_changed
 
 # ---------------------------------------------------------------------------
 # Skill constants
@@ -344,14 +345,8 @@ def sync_skill_mirror(
             continue
 
         target_file = target_root / relative_path
-        target_file.parent.mkdir(parents=True, exist_ok=True)
-
-        source_bytes = source_file.read_bytes()
-        if target_file.exists() and target_file.read_bytes() == source_bytes:
-            continue
-
-        target_file.write_bytes(source_bytes)
-        updated.append(target_file.relative_to(project_root).as_posix())
+        if write_if_changed(target_file, source_file.read_bytes()):
+            updated.append(target_file.relative_to(project_root).as_posix())
 
     return updated
 
@@ -436,7 +431,7 @@ def bootstrap_canonical_skills(project_root: Path, config: GzkitConfig) -> list[
     if _has_skill_files(canonical_root):
         return []
 
-    canonical_root.mkdir(parents=True, exist_ok=True)
+    ensure_dir(canonical_root)
 
     seen: set[str] = set()
     for candidate in _legacy_skill_candidate_paths(config):

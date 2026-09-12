@@ -34,6 +34,76 @@ from tests.commands.common import (
 class TestStatusCommand(unittest.TestCase):
     """Tests for gz status command."""
 
+    def test_workflow_fronts_follow_registered_campaign_without_changing_ledger_status(self):
+        """Status carries the declared fronts, not stale editions or invented progress."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            before = json.loads(runner.invoke(main, ["status", "--json"]).output)
+            self.assertNotIn("workflow_fronts", before)
+            Path("data").mkdir(exist_ok=True)
+            registry = Path("data/active_campaign.json")
+            registry.write_text(json.dumps({"active": "campaign.md"}), encoding="utf-8")
+            fronts = "\n".join(
+                f"- {name}"
+                for name in ("handoff system", "ghi triage", "adr/obpi campaign", "new R&D")
+            )
+            Path("campaign.md").write_text(
+                f"# Campaign\n\n## Workflow fronts\n\n{fronts}\n\n## Later\nPRIVATE TAIL\n",
+                encoding="utf-8",
+            )
+            for args in (["status"], ["status", "--table"], ["status", "--epic", "absent"]):
+                with self.subTest(args=args):
+                    result = runner.invoke(main, args)
+                    self.assertEqual(result.exit_code, 0, result.output)
+                    self.assertIn("campaign.md#workflow-fronts", result.output)
+                    for name in ("handoff system", "ghi triage", "adr/obpi campaign", "new R&D"):
+                        self.assertIn(name, result.output)
+                    self.assertNotIn("PRIVATE TAIL", result.output)
+            after = json.loads(runner.invoke(main, ["status", "--json"]).output)
+            context = after.pop("workflow_fronts")
+            self.assertEqual(after, before, "Narrative must not manufacture ledger progress")
+            self.assertEqual(context["text"], fronts)
+            self.assertEqual(context["source"], "campaign.md#workflow-fronts")
+            Path("replacement.md").write_text(
+                "## Workflow fronts\n\nRevised operator direction\n", encoding="utf-8"
+            )
+            registry.write_text(json.dumps({"active": "replacement.md"}), encoding="utf-8")
+            updated = json.loads(runner.invoke(main, ["status", "--json"]).output)
+            self.assertEqual(updated["workflow_fronts"]["text"], "Revised operator direction")
+
+    def test_unavailable_declared_workflow_context_is_visible(self):
+        """A damaged declared source is unknown, never an empty healthy frontier."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            Path("data").mkdir(exist_ok=True)
+            registry = Path("data/active_campaign.json")
+            for contents in ("{", '{"active": []}', '{"active": "missing.md"}'):
+                with self.subTest(contents=contents):
+                    registry.write_text(contents, encoding="utf-8")
+                    result = runner.invoke(main, ["status", "--json"])
+                    self.assertEqual(result.exit_code, 0, result.output)
+                    self.assertTrue(json.loads(result.output)["workflow_fronts"]["error"])
+                    self.assertIn("unavailable", runner.invoke(main, ["status"]).output)
+
+    def test_workflow_fronts_stop_before_other_campaign_sections(self):
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            Path("data").mkdir(exist_ok=True)
+            Path("data/active_campaign.json").write_text(
+                '{"active": "campaign.md"}', encoding="utf-8"
+            )
+            for heading in ("## Later", "##\tLater", "##", "  ## Later", "# Appendix"):
+                with self.subTest(heading=heading):
+                    Path("campaign.md").write_text(
+                        f"## Workflow fronts\n\nThe front map\n\n{heading}\nPRIVATE TAIL\n",
+                        encoding="utf-8",
+                    )
+                    payload = json.loads(runner.invoke(main, ["status", "--json"]).output)
+                    self.assertEqual(payload["workflow_fronts"]["text"], "The front map")
+
     def test_status_shows_no_adrs(self) -> None:
         """status shows message when no ADRs."""
         runner = CliRunner()

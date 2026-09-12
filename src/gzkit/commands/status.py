@@ -332,6 +332,36 @@ def _filter_adrs_by_epic(
 # ---------------------------------------------------------------------------
 
 
+def _read_workflow_fronts(project_root: Path) -> dict[str, str] | None:
+    """Project campaign intent, never infer live progress from its narrative.
+
+    The optional registry selects the source. The bounded Markdown section is
+    also read by the stdlib-only session orientation script; neither reader
+    maintains a second front inventory. Projects without a registry opt out.
+    """
+    registry = project_root / "data/active_campaign.json"
+    if not registry.exists():
+        return None
+    source = "data/active_campaign.json"
+    try:
+        declared = json.loads(registry.read_text(encoding="utf-8"))["active"]
+        if not isinstance(declared, str) or not declared.strip():
+            raise ValueError("active must name a campaign path")
+        path = (project_root / declared).resolve()
+        source = path.relative_to(project_root.resolve()).as_posix() + "#workflow-fronts"
+        content = path.read_text(encoding="utf-8")
+        section = re.search(
+            r"^## Workflow fronts[ \t]*\r?\n(.*?)(?=^ {0,3}#{1,2}(?:[ \t]|\r?$)|\Z)",
+            content,
+            re.M | re.S,
+        )
+        if section is None or not section.group(1).strip():
+            raise ValueError("campaign has no nonempty Workflow fronts section")
+        return {"source": source, "text": section.group(1).strip()}
+    except (OSError, ValueError, KeyError, TypeError) as exc:
+        return {"source": source, "error": f"Workflow fronts unavailable: {exc}"}
+
+
 def status(
     as_json: bool,
     show_gates: bool,
@@ -354,6 +384,7 @@ def status(
     adrs = _collect_adr_statuses(project_root, config, ledger, graph)
     adrs, epic_warnings = _filter_adrs_by_epic(project_root, config, adrs, epic)
     adrs = dict(sorted(adrs.items(), key=lambda item: _adr_status_sort_key(item[0])))
+    workflow_fronts = _read_workflow_fronts(project_root)
 
     if as_json:
         result: dict[str, Any] = {
@@ -363,6 +394,8 @@ def status(
         }
         if epic is not None:
             result["warnings"] = epic_warnings
+        if workflow_fronts is not None:
+            result["workflow_fronts"] = workflow_fronts
         print(json.dumps(result, indent=2))  # noqa: T201
         return
 
@@ -370,6 +403,11 @@ def status(
         console.print(f"[yellow]warning: {escape(warning)}[/yellow]")
 
     console.print(f"[bold]Lane: {config.mode}[/bold]\n")
+    if workflow_fronts is not None:
+        console.print("[bold]Workflow fronts — declared campaign context[/bold]")
+        console.print(f"Source: {workflow_fronts['source']}", markup=False, soft_wrap=True)
+        console.print(workflow_fronts.get("error") or workflow_fronts["text"], markup=False)
+        console.print()
 
     if not adrs:
         if epic is not None:

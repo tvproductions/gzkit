@@ -542,8 +542,9 @@ class TestRepoCodexHooksAnchorScripts(unittest.TestCase):
         commands: list[list[str] | str] = []
         for entries in hooks_payload.get("hooks", {}).values():
             for entry in entries:
-                if "command" in entry:
-                    commands.append(entry["command"])
+                for handler in entry.get("hooks", []):
+                    if "command" in handler:
+                        commands.append(handler["command"])
 
         self.assertTrue(commands, ".codex/hooks.json declares no hook commands")
         for command in commands:
