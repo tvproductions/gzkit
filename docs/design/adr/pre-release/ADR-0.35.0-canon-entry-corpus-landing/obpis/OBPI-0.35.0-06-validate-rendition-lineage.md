@@ -567,11 +567,84 @@ no other Allowed Paths entries changed, no scope widened beyond these two couple
 # Paste behave output here when Gate 4 applies
 ```
 
+### Step 4b — Independent Adversarial Validation
+
+**Adversary identity and tier.** Tier 1, cross-vendor: OpenAI Codex dispatched through the
+`openai-codex` Claude Code plugin (`codex-companion.mjs task --write --cwd <disposable checkout>`),
+ARB-wrapped on every round. Codex reported `ready: true` throughout, so tiers 2 and 3 were
+forbidden. Each round ran in a throwaway writable copy of the reviewed tree so the adversary could
+REPLAY recorded proofs rather than judge them by reading.
+
+**The adversary REFUTED this OBPI three times before corroborating.** Two Claude Stage-2 reviewers
+had passed the pre-repair state 8/8 twice; the cross-vendor tier is what caught the defects.
+
+| Round | Receipt | Verdict | Claims broken |
+|---|---|---|---|
+| 1 | `arb-step-codexadversary-8eaeb01d5ff44b29bcd08416ec80f67b` | **NOT-CORROBORATED / refuted** | 4 findings (REQ-01, REQ-02, REQ-06, REQ-07) |
+| 2 | `arb-step-codexadversary-4329ae96fc6f45799e069e8d255f2567` | **NOT-CORROBORATED / refuted** | confirmed all 4 prior dispositions; raised 2 new (JSON exit bypass, missing-citation recovery) |
+| 3 | `arb-step-codexadversary-61d07ad4157a45ff9cd20a672ac42a8e` | CORROBORATED-WITH-CAVEATS / not-refuted | — |
+| 4 | `arb-step-codexadversary-81439f474a3d4f39b375ed6e22eeef32` | **refuted by design** | record-correction round: replayed the 8 outstanding controls, raised the historical finding into Layer-2 |
+| 5 | `arb-step-codexadversary-07dfb35f0aaf4af482c86feb724c750b` | CORROBORATED / not-refuted | closed the raised finding after verifying the repair by execution |
+
+Round 2's review record was **REFUSED at import** (it closed findings on obligations whose current
+proofs it had not accepted, which `_closure_retains_subject` forbids), so it carries no
+acceptance-ledger entry. Its ARB receipt is durable and both of its findings were subsequently
+recorded by other means. Disclosed here rather than smoothed over.
+
+**What the adversary broke, and how each was resolved.**
+
+- **REQ-02 — `verify_candidate_against_declaration` accepted owned drift.** It checked headings,
+  spans, ownership agreement and entry-id liveness but never compared owned section TEXT to its
+  materialization; an equal-length `X` substitution returned `[]`. RESOLVED by moving the
+  derivation comparison into the pure core as the single owned-drift reporter and removing
+  `_owned_drift`.
+- **REQ-01 — missing owned entry ids passed.** Liveness is vacuous over OMITTED ids, so an owned
+  section citing `entry_ids=[]` passed with no recorded provenance. RESOLVED by
+  `_uncited_materialized_entries`, grounded in the derivation so a legitimately dropped
+  `compressible` entry is never falsely flagged.
+- **REQ-06 — recovery prose reached stdout, not stderr.** The REQ names the channel; the covering
+  test asserted on `ValidationError.message`, proving composition and never delivery. RESOLVED by
+  emitting the three parts to stderr on the fail-closed path.
+- **REQ-07 — the declared `artifact_edited` witness does not exist.** Independently re-raised by a
+  spec reviewer. `is_governance_artifact()` returns `False` for `docs/user/manpages/validate.md`, so
+  the post-commit emitter can never produce that row. The implementing agent contested this reading
+  first and was OVERRULED by independent review; the operator then ruled the REQ TEXT the defect and
+  directed the amendment now recorded in § Acceptance Criteria. Round 5 judged the amendment
+  "honestly describes its proof channel."
+- **JSON exit bypass (`req-02-json-cli-owned-drift-exits-zero`).** `gz validate --json` exits 0 on a
+  failing scope while its payload reports `valid: false`. Independently reproduced before filing;
+  PRE-EXISTING (`b27f42c92`, 2026-05-02) and REPO-WIDE. Operator-ruled OUT of this OBPI and routed
+  to **GHI #995**; retained as an auxiliary observation with a null obligation.
+- **`req-06-missing-citation-recovery-incomplete`.** A regression introduced by this OBPI's OWN
+  REQ-01 repair — its new exit-3 path emitted a bare diagnostic while REQ-06 scopes to "the exit-3
+  path" as a whole. RESOLVED by `_missing_citation_message`.
+
+**Design escalation.** Rounds 1 and 2 named the same ROOT at different surfaces, and one new finding
+had been introduced by a prior repair — the signature of patching a surfacing rather than a design.
+Under the design-escalation rule dispatching STOPPED and the scope question went to the operator,
+who ruled the boundary (repair the regression here, route the shared-CLI defect to GHI #995).
+
+**Replay coverage.** All 11 recorded mutation controls were independently replayed by the tier-1
+adversary at the completion digest `90807b7e…` — 8 in round 4, 2 in round 3, and
+`strip-recovery-from-the-missing-citation-finding` in rounds 3 and 5.
+
+**Accepted residual.** `req-03-unowned-content-mutation-gap` is DISCLOSED, not proven: its
+cross-module half is structurally unwitnessable from inside this OBPI because `composer.py` is a
+Denied Path of the landed OBPI-0.35.0-05. Operator-ruled an accepted residual after two independent
+rounds named the same root.
+
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+attest completed
 ```
+
+Operator `g0`, 2026-09-12, against the replay-VERIFIED Stage-4a packet at
+`.gzkit/evidence/OBPI-0.35.0-06-validate-rendition-lineage.stage4a.md`, explicitly accepting the
+bounded result including the disclosed REQ-03 residual and the separately routed defects.
+Completion carried an operator-approved `--accept-security-floor` override (independent evaluator
+determination NOT-SECURITY-RELEVANT) because the canonical security-scan slot cannot run until the
+toolchain ADR promoting `pool.agentic-security-review` lands.
 
 ### Value Narrative
 
