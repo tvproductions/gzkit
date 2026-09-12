@@ -1,0 +1,49 @@
+{
+  "obpi_id": "OBPI-0.35.0-06-validate-rendition-lineage",
+  "generated_at": "2026-09-12T05:31:33.925104+00:00",
+  "demos": [
+    {
+      "command": "uv run gz validate --rendition-lineage",
+      "ran": true,
+      "exit_status": 0,
+      "stdout_tail": "Validated: rendition_lineage\n\n✓ All validations passed (1 scopes).\n[advisory] rendition-lineage: What is ungraded: committed rendition 'AGENTS.md/root' declares 12 corpus-owned sections but carries no committed lineage artifact (/Users/jeff/Documents/Code/gzkit/.gzkit/renditions/AGENTS.md/root.lineage.json is absent), so those sections have no provenance baseline to grade against and are reported UNGRADED.\nWhy it matters: ADR-0.35.0 § Decision item 4 grades owned sections against a committed lineage artifact; counting these as owned coverage would claim proof this gate does not have. Lowering a section's declared ownership is never the repair for this finding: the declaration's scope changes only through OBPI-0.35.0-04's attested raise-path, as a deliberate governed move, never to clear a gate.\nNext step: publish the rendition and its lineage together — `gz content compose AGENTS.md --consumer root`, then `gz content commit AGENTS.md --consumer root`.\n[advisory] rendition-lineage: 1 committed rendition(s) graded; 0/22 sections owned, 0/47851 bytes owned (0.0%); 12 section(s) / 41846 byte(s) UNGRADED (declared corpus-owned with no committed lineage). Unowned and ungraded bytes are measured debt and never change this scope's exit code (ADR-0.35.0 § Decision item 4)."
+    },
+    {
+      "command": "uv run gz validate --rendition-lineage --json",
+      "ran": true,
+      "exit_status": 0,
+      "stdout_tail": "{\n  \"valid\": true,\n  \"errors\": []\n}\n[advisory] rendition-lineage: What is ungraded: committed rendition 'AGENTS.md/root' declares 12 corpus-owned sections but carries no committed lineage artifact (/Users/jeff/Documents/Code/gzkit/.gzkit/renditions/AGENTS.md/root.lineage.json is absent), so those sections have no provenance baseline to grade against and are reported UNGRADED.\nWhy it matters: ADR-0.35.0 § Decision item 4 grades owned sections against a committed lineage artifact; counting these as owned coverage would claim proof this gate does not have. Lowering a section's declared ownership is never the repair for this finding: the declaration's scope changes only through OBPI-0.35.0-04's attested raise-path, as a deliberate governed move, never to clear a gate.\nNext step: publish the rendition and its lineage together — `gz content compose AGENTS.md --consumer root`, then `gz content commit AGENTS.md --consumer root`.\n[advisory] rendition-lineage: 1 committed rendition(s) graded; 0/22 sections owned, 0/47851 bytes owned (0.0%); 12 section(s) / 41846 byte(s) UNGRADED (declared corpus-owned with no committed lineage). Unowned and ungraded bytes are measured debt and never change this scope's exit code (ADR-0.35.0 § Decision item 4)."
+    },
+    {
+      "command": "uv run -m behave features/rendition_lineage.feature",
+      "ran": true,
+      "exit_status": 0,
+      "stdout_tail": "  The rendition-lineage gate re-derives every section a surface's ownership\n  declaration marks \"corpus-owned\" from the effective corpus and compares it\n  against the committed rendition. Owned-section drift is fail-closed and\n  names the offending section; unowned bytes are measured debt and never\n  change the exit code (ADR-0.35.0 § Decision item 4).\n  Feature: gz validate --rendition-lineage — owned-section derivation from the corpus  # features/rendition_lineage.feature:1\n\n  @REQ-0.35.0-06-01\n  Scenario: Owned section matching the corpus exits 0                           # features/rendition_lineage.feature:14\n    Given I have initialized a gzkit project with a rendition surface           # features/steps/rendition_lineage_steps.py:51\n    And the corpus for the surface contains a canon entry for the owned section # features/steps/rendition_lineage_steps.py:62\n    Given a committed rendition whose owned section matches the corpus          # features/steps/rendition_lineage_steps.py:89\n    And a valid ownership declaration and committed lineage exist for it        # features/steps/rendition_lineage_steps.py:101\n    When I run \"gz validate --rendition-lineage\"                                # features/steps/obpi_lock_steps.py:67\n    Then the command exits 0                                                    # features/steps/content_compose_steps.py:232\n\n  @REQ-0.35.0-06-02\n  Scenario: Owned section carrying non-derivable prose exits 3 naming the section                     # features/rendition_lineage.feature:21\n    Given I have initialized a gzkit project with a rendition surface                                 # features/steps/rendition_lineage_steps.py:51\n    And the corpus for the surface contains a canon entry for the owned section                       # features/steps/rendition_lineage_steps.py:62\n    Given a committed rendition whose owned section carries hand-authored prose the corpus never said # features/steps/rendition_lineage_steps.py:94\n    And a valid ownership declaration and committed lineage exist for it                              # features/steps/rendition_lineage_steps.py:101\n    When I run \"gz validate --rendition-lineage\"                                                      # features/steps/obpi_lock_steps.py:67\n    Then the command exits non-zero                                                                   # features/steps/gz_steps.py:244\n    And the output names the section \"owned-section\"                                                  # features/steps/rendition_lineage_steps.py:148\n\n  @REQ-0.35.0-06-03\n  Scenario: Unowned section with arbitrary prose exits 0 and is reported as measured debt  # features/rendition_lineage.feature:29\n    Given I have initialized a gzkit project with a rendition surface                      # features/steps/rendition_lineage_steps.py:51\n    And the corpus for the surface contains a canon entry for the owned section            # features/steps/rendition_lineage_steps.py:62\n    Given a committed rendition whose owned section matches the corpus                     # features/steps/rendition_lineage_steps.py:89\n    And a valid ownership declaration and committed lineage exist for it                   # features/steps/rendition_lineage_steps.py:101\n    When I run \"gz validate --rendition-lineage\"                                           # features/steps/obpi_lock_steps.py:67\n    Then the command exits 0                                                               # features/steps/content_compose_steps.py:232\n    And the output includes \"measured debt\"                                                # features/steps/content_compose_steps.py:244\n\n1 feature passed, 0 failed, 0 skipped\n3 scenarios passed, 0 failed, 0 skipped\n20 steps passed, 0 failed, 0 skipped\nTook 0min 0.035s"
+    }
+  ],
+  "receipts": [
+    {
+      "step": "ruff",
+      "found": true,
+      "receipt_id": "arb-ruff-ab86ee6b0199483b8eb85f82e0394ec0.json",
+      "exit_status": 0
+    },
+    {
+      "step": "typecheck",
+      "found": true,
+      "receipt_id": "arb-step-typecheck-1c706bdc42bf4db4bc86c02edaa1cbaf.json",
+      "exit_status": 0
+    },
+    {
+      "step": "unittest",
+      "found": true,
+      "receipt_id": "arb-step-unittest-b1a805a8b6b04d44abecba040eec88e0.json",
+      "exit_status": 0
+    }
+  ],
+  "covers_total": 8,
+  "covers_uncovered": 0,
+  "attestable": true,
+  "blockers": [],
+  "review_blockers": []
+}

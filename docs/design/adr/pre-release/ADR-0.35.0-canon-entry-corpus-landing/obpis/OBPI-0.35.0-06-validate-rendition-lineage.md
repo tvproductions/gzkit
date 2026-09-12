@@ -3,7 +3,7 @@ id: OBPI-0.35.0-06-validate-rendition-lineage
 parent: ADR-0.35.0-canon-entry-corpus-landing
 item: 6
 lane: Heavy
-status: Active
+status: Completed
 allowlist:
 - src/gzkit/governance/trust_audits/rendition_lineage.py
 - src/gzkit/governance/trust_audits/__init__.py
@@ -53,6 +53,13 @@ tasks:
   - TASK-0.35.0-06-06-01
   - TASK-0.35.0-06-07-01
   - TASK-0.35.0-06-08-01
+  - TASK-0.35.0-06-01-02
+  - TASK-0.35.0-06-02-02
+  - TASK-0.35.0-06-03-02
+  - TASK-0.35.0-06-04-02
+  - TASK-0.35.0-06-05-02
+  - TASK-0.35.0-06-06-02
+  - TASK-0.35.0-06-07-02
 ---
 
 # OBPI-0.35.0-06-validate-rendition-lineage: Validate Rendition Lineage
@@ -62,7 +69,7 @@ tasks:
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/ADR-0.35.0-canon-entry-corpus-landing.md`
 - **Checklist Item:** #6 - "gz validate --rendition-lineage -- fail-closed over owned sections, coverage % surfaced to Fidelity Assertions"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -88,7 +95,7 @@ Ship gz validate --rendition-lineage: exit 0 when every owned section in a commi
 - `src/gzkit/commands/validate_cmd.py` — handler/default-scope wiring
 - `src/gzkit/quality.py`, `src/gzkit/commands/quality.py` — the `gz check` step runner and its `_STEP_GUARD_META` MX-severity entry, i.e. the AUTOMATIC CALLER GHI #785 requires for a newly authored gate (allowlist amended 2026-09-11 as a direct consequence of the operator's wire-the-caller ruling; see Change Log)
 - `data/check_scope_membership.json` — declare `rendition_lineage` `in_check` (GHI #744's `gz validate --gate-callers`, in the default `gz check` bundle, fails closed on any registered `_ScopeEntry` absent from this file's `in_check`/`out_of_check` split; allowlist amended pre-implementation, see Change Log)
-- `src/gzkit/qc_binding.py`, `data/check_step_concurrency.json`, `tests/cli/test_validate_registry_parity.py`, `src/gzkit/governance/trust_audits/_qc_claim_exemptions.py` — the remaining documented obligations of registering a `gz check` step (`src/gzkit/commands/quality.py:444` carries the list): a `_STEP_CLASSIFICATION` entry, a concurrency declaration, and the explicit-tier parity frozenset. Allowlist amended 2026-09-11, consequent on the same wire-the-caller ruling; see Change Log
+- `src/gzkit/qc_binding.py`, `data/check_step_concurrency.json`, `tests/cli/test_validate_registry_parity.py`, `src/gzkit/governance/trust_audits/_qc_claim_exemptions.py` — the remaining documented obligations of registering a `gz check` step (`src/gzkit/commands/quality.py:418` carries the list): a `_STEP_CLASSIFICATION` entry, a concurrency declaration, and the explicit-tier parity frozenset. Allowlist amended 2026-09-11, consequent on the same wire-the-caller ruling; see Change Log
 - `tests/governance/test_rendition_lineage.py` — covering tests **CREATE**
 - `features/rendition_lineage.feature`, `features/steps/rendition_lineage_steps.py` — **CREATE**, Gate 4 scenarios
 - `docs/user/manpages/validate.md`, `docs/governance/governance_runbook.md` — the new scope
@@ -111,7 +118,7 @@ Ship gz validate --rendition-lineage: exit 0 when every owned section in a commi
 4. ALWAYS read the EFFECTIVE corpus (OBPI-0.35.0-01), never `load_corpus`'s raw return. A consumer left on the raw log is a one-line omission whose symptom is a GREEN gate over a rendition that omits canon — pre-mortem #3, the worst detection latency in this ADR.
 5. ALWAYS emit three-part recovery prose on the exit-3 path per `.claude/rules/guardrail-feedback-prose.md`: which owned section drifted, that owned sections are corpus-derived by ADR-0.35.0 § Decision item 4, and the runnable next step.
 6. NEVER present marking a section `unowned` as the recovery for a lineage failure. Pre-mortem #2 is that owned-section fail-closed becomes the thing agents route around, and the cheapest route is un-owning; the recovery prose must name the corpus round-trip, with the attested raise-path (OBPI-0.35.0-04) as a deliberate, attested move and never as the suggested escape.
-7. ALWAYS resolve severity through the shared MX checkpoint the way `rendition_floor_coherence.py:47-51` does, so hangar behavior is consistent across the two content gates.
+7. ALWAYS resolve severity through the shared MX checkpoint the way `rendition_floor_coherence.py:78` does, so hangar behavior is consistent across the two content gates.
 8. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
@@ -271,7 +278,7 @@ Each checkbox carries a deterministic REQ ID and exactly one kind tag
 - [ ] REQ-0.35.0-06-04 [behavior]: Given the day-one ownership declaration and corpus, when the scope runs, then its output carries the coverage figure computed at run time — owned sections of total, owned bytes of total, and the percentage — and changing the ownership declaration changes the reported figure.
 - [ ] REQ-0.35.0-06-05 [behavior]: Given a corpus in which an invariant entry has been retired by a tombstone and a rendition that still carries its text inside an owned section, when the scope runs, then it exits 3 — the scope reads the effective corpus, so a retired entry left in an owned section is drift, not a pass.
 - [ ] REQ-0.35.0-06-06 [behavior]: Given the exit-3 path, when stderr is read, then it carries all three recovery parts — the drifted owned section, the cited ADR-0.35.0 § Decision item 4, and a runnable corpus round-trip next step — and it does NOT name un-owning the section as the recovery.
-- [ ] REQ-0.35.0-06-07 [support]: gz validate --rendition-lineage is registered in the validator scope registry and documented in `docs/user/manpages/validate.md` and `docs/governance/governance_runbook.md` — witnessed by an `artifact_edited` ledger event citing `docs/user/manpages/validate.md` — and `gz validate --cli-alignment` resolves every reference those docs prescribe.
+- [ ] REQ-0.35.0-06-07 [support]: gz validate --rendition-lineage is registered in the validator scope registry and documented in `docs/user/manpages/validate.md` and `docs/governance/governance_runbook.md` — witnessed by the `artifact_edited` SUPPORT citation naming `docs/user/manpages/validate.md`, whose declared proof is arm 2 of `_support_path_arm_ok` (GHI #647): the cited artifact EXISTS on disk, paired with the structural-validator arm — and `gz validate --cli-alignment` resolves every reference those docs prescribe. **AMENDED 2026-09-11 (operator-ruled): the original text asserted a ledger row the governed emitter cannot produce for this path; see § Evidence → Change Log.**
 - [ ] REQ-0.35.0-06-08 [structural-fence]: The fail-closed reach of `--rendition-lineage` is owned sections only, and no ADR-0.35.0 OBPI extends it over unowned bytes. The gate's partial scope is a declared property of the whole decomposition — OBPI-0.35.0-04 sets the scope, 05 supplies the comparison artifact, 07 consumes the result — so it is audited at ADR closeout, not per-OBPI.
 
 ## Completion Checklist
@@ -295,6 +302,166 @@ Each checkbox carries a deterministic REQ ID and exactly one kind tag
 ### Change Log
 
 Substantive corrections and decisions taken inside this operator-initiated OBPI.
+
+#### 2026-09-11 — Step-4b follow-up: design escalation, one repair, one finding routed out
+
+The tier-1 follow-up (`arb-step-codexadversary-4329ae96fc6f45799e069e8d255f2567`) confirmed all
+four prior dispositions — the three repairs work and, in its words, "the REQ-07 amendment
+honestly describes its proof channel" — and refuted on two NEW counterexamples.
+
+**The design-escalation rule fired (operator ruling 2026-09-03) and dispatching STOPPED.** Both
+rounds named the same root at different surfaces:
+
+- Round 1 weakest point: *"equating successful mutation controls with fulfillment of the whole
+  requirement ... the mutation evidence is real, but its assertions cover narrower claims than
+  the acceptance contract."*
+- Round 2 weakest point: *"The proof suite primarily witnesses returned findings ... does not
+  establish the complete CLI contract across output modes and integrity failures. Consequently,
+  all recorded mutations can be killed while JSON failures exit successfully."*
+
+One of the two new findings was INTRODUCED by this OBPI's own round-1 repair, which the rule
+names as the signature of patching a surfacing rather than the design. The design question — the
+proof model witnesses the audit function's RETURN VALUES while the REQs are written as CLI-level
+claims ("exits 3") — went to the operator rather than into another fix cycle.
+
+- **`req-06-missing-citation-recovery-incomplete`** (REQ-0.35.0-06-06) — REPAIRED here, because
+  it is this OBPI's own regression. The `_uncited_materialized_entries` finding added for REQ-01
+  was an exit-3 path emitting a bare diagnostic; REQ-06 scopes its obligation to "the exit-3
+  path", not to one message producer. Added `_missing_citation_message` with the same three-part
+  shape (`What failed` / `Why forbidden` + ADR-0.35.0 § Decision item 4 / runnable `Next step`,
+  never the un-owning escape). Observed RED before the fix: `AssertionError: 'Why forbidden:' not
+  found in "lineage section 'owned-section' is corpus-owned and materializes corpus entry
+  'e-canon', but cites no lineage entry for it..."`. Witnessed by
+  `strip-recovery-from-the-missing-citation-finding`, killed assertion-class.
+- **`req-02-json-cli-owned-drift-exits-zero`** (REQ-02/REQ-05) — ROUTED OUT as **GHI #995**
+  (operator ruling 2026-09-11). `gz validate --<scope> --json` exits 0 on a failing scope while
+  its payload reports `"valid": false`: the `as_json` branch at
+  `src/gzkit/commands/validate_cmd.py:1661-1678` returns before the
+  `SystemExit(1)`/`SystemExit(3)` classification. Independently reproduced before filing rather
+  than taken on the reviewer's report — identical fixture, `exit=3` plain vs `exit=0` with
+  `--json`. It is PRE-EXISTING and REPO-WIDE: the branch dates to `b27f42c92` (2026-05-02), four
+  months before this OBPI, and affects every scope routed through the main handler; three
+  sibling `as_json` branches in the same file correctly `raise SystemExit(3 if errors else 0)`.
+  Repairing it changes exit-code behavior for every validator scope, so it is not this gate's
+  obligation.
+
+**Transport note.** That follow-up review could not be imported (`exit 3`, "original
+finding/proof scope mismatch"): it closed prior findings on obligations whose current proofs it
+had not accepted, and `_closure_retains_subject` requires a closed finding's proof to appear in
+`accepted_proof_ids`. Its ARB receipt is durable and its findings were acted on; the acceptance
+ledger carries no review record for that round.
+
+#### 2026-09-11 — stale source-line citations corrected in normative text
+
+Round-3 spec review (`arb-step-specreview-2b5c43b76b0e4011875b6ac582661fe3`, info severity)
+observed that § Requirements #7 cited `rendition_floor_coherence.py:47-51` for MX checkpoint
+parity, but lines 47-51 of that module are `from __future__`/`pathlib`/`gzkit.advisory` import
+statements; the `_disposition.grounds(_checkpoint.resolve(...))` call it means is at line 78.
+The parity itself was independently confirmed correct — only the anchor was wrong.
+
+Corrected to `rendition_floor_coherence.py:78`. Auditing every source-line citation in this
+brief while the correction was in hand (fix the class, not the instance) surfaced a second
+imprecise anchor: `src/gzkit/commands/quality.py:444` was cited twice as "carries the list" of
+`gz check` step-registration obligations, but 444 lands inside family A item 6; the obligation
+statement begins at line 418 (`_build_check_steps`' docstring, "ADDING A STEP HERE IS NOT ONE
+EDIT"). Corrected to `:418` in both places. The two Discovery Checklist ranges
+(`rendition_floor_coherence.py:32-105` and `:1-9`) were verified accurate as read-guidance spans
+and left unchanged.
+
+These edits are in normative sections, so they moved the acceptance input digest and required a
+full re-proof and both Stage-2 reviews to be re-run. Operator directed the correction rather
+than deferring it (2026-09-11), with that cost stated in advance.
+
+#### 2026-09-11 — operator ruling: REQ-07 names the witness the channel actually produces
+
+**Contract amendment, not a defect repair.** The normative text is the amended REQ-0.35.0-06-07
+line in § Acceptance Criteria; this entry is its provenance.
+
+**As authored, REQ-07 asserted a witness nothing can emit.** Its text required "an
+`artifact_edited` ledger event citing `docs/user/manpages/validate.md`". Measured 2026-09-11:
+zero such rows exist across `path`/`id`/`artifact`/`artifact_path`, and
+`is_governance_artifact('docs/user/manpages/validate.md')` returns **False**
+(`src/gzkit/hooks/core.py`), so the only governed emitter — the post-commit recorder in
+`src/gzkit/hooks/commit_ledger.py`, which appends `artifact_edited` for
+`governance_paths_in_commit` — can never produce that row for this path. The two remaining
+routes were a hand-appended ledger row (forbidden, AGENTS.md § Behavior Rules — Never #2) and
+widening `GOVERNANCE_PATTERNS` (outside this brief's Allowed Paths, and it would make every
+manpage edit emit the event repo-wide).
+
+**What actually proves it, and why that is not a weakening.** `_support_path_arm_ok`
+(`src/gzkit/req_kind_support.py`, GHI #647) declares three genuine SUPPORT proofs, and arm 2 is
+the one that governs an `artifact_edited` citation: the cited artifact EXISTS on disk, paired
+with the structural-validator arm checking its shape. Its own rationale is explicit that this is
+the designed path precisely because *"`artifact_edited` is not emitted for most artifacts"*, and
+that the pairing is *"at least as strong as a historical edit-event"*. The REQ now names that
+arm instead of a row the machinery does not write, so the text and the proof channel assert the
+same thing.
+
+**How it was adjudicated.** The finding `req-07-declared-artifact-edit-witness-missing` was
+raised by the tier-1 cross-vendor adversary
+(`arb-step-codexadversary-8eaeb01d5ff44b29bcd08416ec80f67b`) and independently re-raised as
+`major` by the round-2 spec reviewer (`arb-step-specreview-34084af1fe814da4adf8cd55e4a19ff6`,
+refused at import for reusing the finding identity). The implementing agent first contested it on
+the arm-2 reading under an operator ruling; two of three independent reviewers rejected that
+reading, so the contest was abandoned rather than pressed. The operator then ruled the REQ TEXT
+the defect and directed this amendment. The agent did not self-close the finding at any point.
+
+#### 2026-09-11 — Step-4b tier-1 refutation: three repairs, one contested finding
+
+Receipt `arb-step-codexadversary-8eaeb01d5ff44b29bcd08416ec80f67b` (tier 1, cross-vendor,
+replayed in a disposable writable checkout) returned **NOT-CORROBORATED / refuted** with four
+mapped findings. Recorded in the acceptance ledger as history; three were repaired, one is
+contested with source evidence rather than repaired. Repairs were re-proved and re-reviewed.
+
+- **`req-02-pure-verifier-accepts-owned-drift`** (REQ-0.35.0-06-02) — REPAIRED. The Audit
+  Contract requires the audit core to return findings independently of presentation severity
+  "so 07 can reject any owned drift even in MX mode", and `verify_candidate_against_declaration`'s
+  own docstring claimed it and `validate_rendition_lineage` "can never disagree about what a
+  sound lineage is". They disagreed: the pure verifier checked headings, spans, ownership
+  agreement and id liveness but never compared owned section TEXT to its materialization, so an
+  equal-length substitution returned `[]`. The derivation comparison now lives in the pure core
+  (the single owned-drift reporter, carrying the full three-part prose); `_owned_drift` is
+  removed and `_grade_rendition` computes one regeneration and feeds it in. Witnessed by
+  `never-detect-owned-section-drift`, killed assertion-class against both the committed-path and
+  pure-core tests.
+- **`req-01-missing-owned-entry-ids-pass`** (REQ-0.35.0-06-01) — REPAIRED. Liveness is vacuous
+  over the ids a lineage OMITS, so an owned section citing `entry_ids=[]` passed while recording
+  no provenance at all. `_uncited_materialized_entries` now requires an owned section to cite
+  every live entry whose text actually appears in its regenerated materialization — grounded in
+  the derivation, so a `compressible` entry the setpoint dial legitimately dropped is not
+  reported as a missing citation. Witnessed by `never-report-an-uncited-materialized-entry`,
+  killed assertion-class.
+- **`req-06-recovery-emitted-to-stdout`** (REQ-0.35.0-06-06) — REPAIRED. The REQ names the
+  channel ("when stderr is read"); the fail-closed path returned a `ValidationError` that the
+  shared CLI renders to stdout, and the covering test asserted on `.message`, proving the prose
+  was composed but never that it reached the channel. The gate now emits the three-part prose to
+  stderr on the fail-closed path, as it already did in warn mode. Witnessed by
+  `withhold-the-recovery-prose-from-stderr`, killed assertion-class.
+- **`req-07-declared-artifact-edit-witness-missing`** (REQ-0.35.0-06-07) — CONTESTED, not
+  repaired (operator ruling 2026-09-11, presented with the mechanism). The finding reads the REQ
+  text literally and calls the file-existence path a "fallback". It is not: `_support_path_arm_ok`
+  arm 2 (`src/gzkit/req_kind_support.py:255-258`, GHI #647) is gzkit's declared SUPPORT proof
+  semantics for an `artifact_edited` citation, written because *"`artifact_edited` is not emitted
+  for most artifacts"*, and the arm is documented as "at least as strong as a historical
+  edit-event". Measured: `is_governance_artifact('docs/user/manpages/validate.md')` returns
+  **False**, so the post-commit emitter (`hooks/commit_ledger.py`) can never produce the row the
+  finding asks for. Satisfying it literally would require a hand-appended ledger row (forbidden,
+  AGENTS.md § Behavior Rules — Never #2) or widening `GOVERNANCE_PATTERNS` in `hooks/core.py`
+  (outside this brief's Allowed Paths, and it would make every manpage edit emit the event
+  repo-wide). Carried to the Step-4b follow-up with this evidence for independent adjudication;
+  the implementing agent does not self-close it.
+
+**Also this session, before the adversary ran:** all 8 proofs were re-executed because an
+unrelated commit (`5139681f5`, the GHI #992 pipeline fix, touching `src/gzkit/commands/obpi_cmd.py`
+and `validate_frontmatter.py`) moved the global acceptance input digest and staled the prior
+round — the documented non-dependency-minimal invalidation in
+`docs/user/manpages/obpi-acceptance.md` § Freshness and Limits, not a defect in this OBPI. Both
+Stage-2 reviews were re-run and re-imported against the fresh proof identities.
+
+**Tracked separately:** GHI #993 — `gz obpi acceptance human-review` has no obligation scope and
+hardcodes `stage="adversarial"`, so using it to close a single Stage-2 finding would also stamp
+tier-3 adversarial approval across every obligation. Found while re-binding the REQ-03 residual
+closure; the operator routed that closure away from `human-review` for exactly this reason.
 
 #### 2026-09-11 — operator ruling: never-published lineage is DISCLOSED, not fail-closed; caller wired
 
@@ -333,7 +500,7 @@ the rule rather than re-eliciting it).
 
 **The caller wiring then cascaded further than the ruling's presentation anticipated, and that
 is disclosed rather than absorbed silently.** Registering a `gz check` step carries a documented
-obligation list (`src/gzkit/commands/quality.py:444`), and binding the step without discharging
+obligation list (`src/gzkit/commands/quality.py:418`), and binding the step without discharging
 it took the full suite to 28 failures (11 failures, 17 errors) while all three named gates read
 exit 0 — the precise shape of a green-gate-over-red-suite. Measured and confirmed independently
 by the orchestrator: `build_qc_registry()` raises
@@ -412,15 +579,30 @@ no other Allowed Paths entries changed, no scope widened beyond these two couple
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+The gate run live against the repository, exit 0, disclosing rather than failing on the never-yet-published `AGENTS.md` lineage that OBPI-0.35.0-07 will publish:
+
+```
+$ uv run gz validate --rendition-lineage
+Validated: rendition_lineage
+
+✓ All validations passed (1 scopes).
+[advisory] rendition-lineage: 1 committed rendition(s) graded; 0/22 sections owned, 0/47851 bytes owned (0.0%); 12 section(s) / 41846 byte(s) UNGRADED (declared corpus-owned with no committed lineage). Unowned and ungraded bytes are measured debt and never change this scope's exit code (ADR-0.35.0 § Decision item 4).
+```
+
+That single run demonstrates REQ-04 (coverage computed at run time, not stored) and the operator-ruled bootstrap disclosure together. Fail-closed behaviour is witnessed by 11 assertion-class mutation kills, every one independently replayed at this digest by the tier-1 cross-vendor adversary — 8 in receipt `arb-step-codexadversary-81439f474a3d4f39b375ed6e22eeef32`, 2 in `arb-step-codexadversary-61d07ad4157a45ff9cd20a672ac42a8e`, and `strip-recovery-from-the-missing-citation-finding` in both that receipt and `arb-step-codexadversary-07dfb35f0aaf4af482c86feb724c750b`.
+
+Stage-3 gates re-run fresh at the completion digest, all `exit_status 0`: `arb-ruff-ab86ee6b0199483b8eb85f82e0394ec0`, `arb-step-typecheck-1c706bdc42bf4db4bc86c02edaa1cbaf`, `arb-step-unittest-b1a805a8b6b04d44abecba040eec88e0` (10159 tests, 4 skipped), `arb-step-mkdocs-acab19b488a343b48c4b934fa2451663`, `arb-step-behave-eaae5376ad8548c989eff61c9aed166e` (3 scenarios, 20 steps). `gz covers`: `behavior_uncovered_reqs 0`.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created: `src/gzkit/governance/trust_audits/rendition_lineage.py` (535 lines — the `gz validate --rendition-lineage` owned-section derivation gate: `measure_coverage`, `verify_candidate_against_declaration`, `_uncited_materialized_entries`, `_drift_message`/`_missing_citation_message`, `validate_rendition_lineage`); `tests/governance/test_rendition_lineage.py` (636 lines, 16 covering tests); `features/rendition_lineage.feature` + `features/steps/rendition_lineage_steps.py` (3 Gate-4 scenarios, 20 steps)
+- Files modified: scope registration and CLI wiring (`trust_audits/__init__.py`, `cli/parser_maintenance.py`, `commands/validate_cmd.py`); the GHI #785 automatic-caller chain (`quality.py`, `commands/quality.py`, `qc_binding.py`, `data/check_scope_membership.json`, `data/check_step_concurrency.json`, `tests/cli/test_validate_registry_parity.py`); negative-control surfaces (`_qc_negative_controls.py`, `_qc_nc_entrypoints.py`, `_qc_claim_exemptions.py`); docs (`docs/user/manpages/validate.md`, `docs/governance/governance_runbook.md`); this brief
+- Tests added: 16 unit tests across the 6 BEHAVIOR REQs plus 3 BDD scenarios; 11 recorded mutation controls, all 11 killed assertion-class and all 11 independently replayed by the tier-1 cross-vendor adversary at the completion digest
+- Date completed: 2026-09-12
+- Attestation status: operator `g0` attested "attest completed" at acceptance digest `90807b7ef6ec9ae9f6df25e05c08bcc723d984ed0f40d4d5feb7f21de3507931`, against the replay-VERIFIED Stage-4a packet at `.gzkit/evidence/OBPI-0.35.0-06-validate-rendition-lineage.stage4a.md`, explicitly accepting the bounded result including the disclosed REQ-03 residual and the separately routed defects
+- Defects noted: 8 findings raised across the OBPI, all dispositioned — 5 repaired and independently closed, 1 (`req-07-declared-artifact-edit-witness-missing`) resolved by an operator-ruled REQ-07 amendment naming arm 2 of `_support_path_arm_ok` (GHI #647), 1 (`req-03-unowned-content-mutation-gap`) accepted as a DISCLOSED residual rather than proven, 1 (`req-02-json-cli-owned-drift-exits-zero`) routed out as pre-existing and repo-wide to GHI #995. Also filed: GHI #993 (acceptance `human-review` has no obligation scope), GHI #994 (a non-executing reviewer recorded a confirmation it could not have made). The tier-1 adversary refuted three times before corroborating; one finding was a regression introduced by this OBPI's own earlier repair
 
 ## Tracked Defects
 
@@ -431,12 +613,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.35.0-06-validate-rendition-lineage at acceptance digest 90807b7ef6ec9ae9f6df25e05c08bcc723d984ed0f40d4d5feb7f21de3507931, attested by operator g0 against the replay-VERIFIED Stage-4a packet (.gzkit/evidence/OBPI-0.35.0-06-validate-rendition-lineage.stage4a.md, gz obpi verify-packet exit 0). Operator explicitly accepted the bounded result including the disclosed REQ-03 residual and the separately routed defects. Evidence: 8/8 acceptance proofs valid at that digest with 11 assertion-class mutation kills, all 11 independently replayed there by the tier-1 cross-vendor adversary; Stage-3 gates re-run fresh, all exit_status 0 — arb-ruff-ab86ee6b0199483b8eb85f82e0394ec0, arb-step-typecheck-1c706bdc42bf4db4bc86c02edaa1cbaf, arb-step-unittest-b1a805a8b6b04d44abecba040eec88e0 (10159 tests, 4 skipped), arb-step-mkdocs-acab19b488a343b48c4b934fa2451663, arb-step-behave-eaae5376ad8548c989eff61c9aed166e (3 scenarios, 20 steps); gz covers behavior_uncovered_reqs 0. Stage-4 review set on that digest: spec arb-step-specreview-42ad26da08b74a2bb78758680e976caf, quality arb-step-qualityreview-b9fd1be9156b4e61b21c171c548cf499, tier-1 adversarial arb-step-codexadversary-61d07ad4157a45ff9cd20a672ac42a8e (CORROBORATED-WITH-CAVEATS / not-refuted), plus record-correction arb-step-codexadversary-81439f474a3d4f39b375ed6e22eeef32 and closing arb-step-codexadversary-07dfb35f0aaf4af482c86feb724c750b. All 8 findings dispositioned, zero open, zero blockers.
+- Date: 2026-09-12
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-09-12
 
 **Evidence Hash:** -

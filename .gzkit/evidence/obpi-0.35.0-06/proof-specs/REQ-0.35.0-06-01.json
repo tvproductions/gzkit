@@ -2,15 +2,24 @@
   "req_id": "REQ-0.35.0-06-01",
   "source": "src/gzkit/governance/trust_audits/rendition_lineage.py",
   "selectors": [
-    "tests.governance.test_rendition_lineage.OwnedSectionMatchingCorpusPassesTest.test_owned_section_matching_its_materialization_yields_no_findings"
+    "tests.governance.test_rendition_lineage.OwnedSectionMatchingCorpusPassesTest.test_owned_section_matching_its_materialization_yields_no_findings",
+    "tests.governance.test_rendition_lineage.OwnedSectionEntryIdCompletenessTest.test_owned_section_citing_no_entry_ids_fails_closed"
   ],
   "mutations": [
     {
       "label": "report-drift-on-every-owned-section",
-      "find": "        if state == _OWNED and committed_by_id.get(section_id) != regenerated_by_id.get(section_id)",
-      "replace": "        if state == _OWNED",
+      "find": "            if state == _OWNED and committed_by_id.get(section_id) != derived.get(section_id)",
+      "replace": "            if state == _OWNED",
       "expected_tests": [
         "tests.governance.test_rendition_lineage.OwnedSectionMatchingCorpusPassesTest.test_owned_section_matching_its_materialization_yields_no_findings"
+      ]
+    },
+    {
+      "label": "never-report-an-uncited-materialized-entry",
+      "find": "        if entry.section == section_id and entry.id not in cited and entry.text in materialized",
+      "replace": "        if False and entry.section == section_id and entry.id not in cited",
+      "expected_tests": [
+        "tests.governance.test_rendition_lineage.OwnedSectionEntryIdCompletenessTest.test_owned_section_citing_no_entry_ids_fails_closed"
       ]
     }
   ]

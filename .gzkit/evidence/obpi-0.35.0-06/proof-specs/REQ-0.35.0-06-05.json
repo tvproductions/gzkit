@@ -7,8 +7,8 @@
   "mutations": [
     {
       "label": "read-the-raw-append-log-instead-of-the-effective-corpus",
-      "find": "    live_ids = {entry.id for entry in effective_corpus(corpus).entries}",
-      "replace": "    live_ids = {entry.id for entry in corpus.entries}",
+      "find": "    effective = effective_corpus(corpus)",
+      "replace": "    effective = corpus",
       "expected_tests": [
         "tests.governance.test_rendition_lineage.RetiredEntryLeftInAnOwnedSectionIsDriftTest.test_retired_invariant_text_still_committed_fails_closed"
       ]

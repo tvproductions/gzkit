@@ -2,7 +2,9 @@
   "req_id": "REQ-0.35.0-06-06",
   "source": "src/gzkit/governance/trust_audits/rendition_lineage.py",
   "selectors": [
-    "tests.governance.test_rendition_lineage.RecoveryProseCarriesThreePartsTest.test_drift_message_names_section_cites_the_adr_and_prescribes_the_round_trip"
+    "tests.governance.test_rendition_lineage.RecoveryProseCarriesThreePartsTest.test_drift_message_names_section_cites_the_adr_and_prescribes_the_round_trip",
+    "tests.governance.test_rendition_lineage.RecoveryProseReachesStderrTest.test_fail_closed_path_writes_the_three_parts_to_stderr",
+    "tests.governance.test_rendition_lineage.UncitedEntryFindingCarriesRecoveryTest.test_missing_citation_finding_carries_the_three_parts"
   ],
   "mutations": [
     {
@@ -11,6 +13,22 @@
       "replace": "        \"gate observes. Mark the section unowned to clear this finding.\\n\"",
       "expected_tests": [
         "tests.governance.test_rendition_lineage.RecoveryProseCarriesThreePartsTest.test_drift_message_names_section_cites_the_adr_and_prescribes_the_round_trip"
+      ]
+    },
+    {
+      "label": "withhold-the-recovery-prose-from-stderr",
+      "find": "                emit_advisory(f\"{_SCOPE}: {message}\")",
+      "replace": "                pass",
+      "expected_tests": [
+        "tests.governance.test_rendition_lineage.RecoveryProseReachesStderrTest.test_fail_closed_path_writes_the_three_parts_to_stderr"
+      ]
+    },
+    {
+      "label": "strip-recovery-from-the-missing-citation-finding",
+      "find": "        _missing_citation_message(surface, consumer, section_id, entry.id)",
+      "replace": "        f\"section {section_id!r} cites no entry for {entry.id!r}\"",
+      "expected_tests": [
+        "tests.governance.test_rendition_lineage.UncitedEntryFindingCarriesRecoveryTest.test_missing_citation_finding_carries_the_three_parts"
       ]
     }
   ]
