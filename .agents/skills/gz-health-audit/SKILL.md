@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-09-12
 metadata:
-  skill-version: "1.1.0"
+  skill-version: "1.2.0"
 model: sonnet
 ---
 
@@ -82,12 +82,86 @@ The four were reduced from six bodies of work the conversation listed:
 modularity and information hiding plus DDD bounded contexts; change impact
 analysis; design by contract and invariants; least privilege and
 capability-based security; Feathers' seams and safe change; cognitive load and
-ownership boundaries. Only the jurisdiction constellation was elaborated in the
-conversation — Parnas inside a modularity cluster with Dijkstra (separation of
+ownership boundaries. The conversation elaborated one constellation, the
+jurisdiction cluster around Parnas; the other three were mapped by the agent on
+operator direction on 2026-09-12 and are marked so below.
+
+### The four constellations
+
+Each dimension is anchored by the sources the conversation named, marked
+*(conv.)*. Every other name is the agent's proposal from the canonical
+literature, made on operator direction 2026-09-12; it stands until the operator
+ratifies or strikes it, and it is a map of where the thinking lives, not a
+literature review. Titles and years are as commonly cited; verify before citing
+them outside this repo. Each cluster ends by naming the boundary it crosses into
+the next, per the conversation: *"Map that terrain rather than just adding
+names."*
+
+**Jurisdiction — the modularity cluster** *(conv., elaborated in the
+conversation)*. Parnas 1972 *(conv.)*: a module hides a design decision, so the
+boundary that matters is a decision, not a file. Dijkstra (separation of
 concerns), Wirth (stepwise refinement), Myers and Constantine (cohesion and
-coupling), Brooks (conceptual integrity). The other three dimensions carry
-their named anchors; their constellations are not yet mapped, and mapping them
-is part of the pass, not a prerequisite for it. Naur, "Programming as Theory
+coupling), Brooks (conceptual integrity). With Evans *(conv.)* for the bounded
+context and Skelton and Pais *(conv.)* for ownership and cognitive load. The
+cluster decides what may be disturbed. It crosses into contracts: once the
+boundary is drawn, what must hold across it is the invariant lens's question.
+
+**Change point — the seams cluster**. Feathers *(conv.)*, *Working Effectively
+with Legacy Code* (2004): the seam, the effect sketch, the pinch point and the
+characterization test are the vocabulary of finding where behavior can be
+altered without editing in that place; "change point" is his term. Fowler
+*(conv.)*, *Refactoring* (1999; 2nd ed. 2018): change that preserves observable
+behavior, and the strangler fig for replacing a surface incrementally. Hunt and
+Thomas *(conv.)*, tracer bullets: a thin end-to-end slice through the real
+system. Beck, *Test-Driven Development: By Example* (2002): the smallest step
+that can fail, then pass, then be cleaned. Lehman, "Programs, Life Cycles, and
+Laws of Software Evolution" (1980): continuing change and increasing complexity
+are laws, which is why the legitimate seam narrows as a system ages. The cluster
+decides where change is safe. It crosses into impact: a seam whose effect sketch
+leaves the authorized surface is the escalation lens's question.
+
+**Invariant — the contracts cluster**. Meyer *(conv.)*, *Object-Oriented
+Software Construction* and "Applying 'Design by Contract'" (1992): preconditions,
+postconditions and class invariants as obligations, not comments. Brooks
+*(conv.)*, conceptual integrity: one coherent design story. Floyd (1967) and
+Hoare (1969): assertions and the axiomatic basis, where pre and postconditions
+come from. Hoare, "Proof of Correctness of Data Representations" (1972): the
+representation invariant and the abstraction function, which is exactly the
+relation a rendition must bear to its corpus. Gries, *The Science of
+Programming* (1981): the loop invariant as the thing that stays true while the
+work moves. Liskov and Wing, "A Behavioral Notion of Subtyping" (1994):
+contracts survive substitution, or the substitution is wrong. Ford, Parsons and
+Kua, *Building Evolutionary Architectures* (2017): the architectural fitness
+function, an invariant that runs, which is what a validator scope is. Nygard,
+"Documenting Architecture Decisions" (2011): the ADR as the artifact whose
+agreement with the code is the coherence this lens tests. The cluster decides
+what must hold. It crosses into cognition and maintenance: an invariant nobody
+carries in their head has to be carried by artifacts, which is Naur's frame and
+the handoff half of escalation.
+
+**Escalation — the impact-and-control cluster**. Arnold and Bohner *(conv.)*,
+*Software Change Impact Analysis* (1996): the discipline of estimating what a
+change will touch before making it. Yau, Collofello and MacGregor, "Ripple
+Effect Analysis of Software Maintenance" (1978): the earliest form of the same
+question. Weiser, "Program Slicing" (1984): the mechanical reach of a change,
+the shape `gz ontology reach` approximates. Letovsky and Soloway, "Delocalized
+Plans and Program Comprehension" (1986): why impact escapes the seam, because a
+plan is spread across places that do not name each other. Rasmussen, "Risk
+management in a dynamic society" (1997): systems migrate toward the boundary of
+acceptable performance under pressure, which is what drift is. Leveson,
+*Engineering a Safer World* (2011): safety as a control problem, constraints
+enforced by a control structure, the frame in which the airlock is a controller
+rather than a gate. Ohno, *Toyota Production System* (1988): jidoka and the
+andon cord, stop the line and make the problem visible, the practitioner root
+of stop-and-report. Hutchins, *Cognition in the Wild* (1995): cognition
+distributed across people and artifacts, which is what a controlled handoff
+carries. The cluster decides when to stop and what the stop must say. It
+crosses back into jurisdiction: an impact argument ends by naming the boundary
+that should have been drawn.
+
+The conversation's caution binds every cluster: mix in control theory, safety
+engineering and socio-technical systems to test whether the older frames still
+hold, and never force a new agentic control problem into a 1970s module frame. Naur, "Programming as Theory
 Building", frames the whole: the operator holds the intentional theory; the
 implementation theory is distributed across thousands of agent decisions and is
 partially reconstructed each session, which is why contracts, invariants and
