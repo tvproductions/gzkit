@@ -1,0 +1,1000 @@
+{
+  "prompt_probes": [
+    {
+      "cwd": ".",
+      "exit_code": 1,
+      "stderr": "WARNING: proceeding, even though we could not create PATH aliases: Operation not permitted (os error 1)\nError: Operation not permitted (os error 1)\n"
+    },
+    {
+      "cwd": "src/gzkit/commands",
+      "exit_code": 1,
+      "stderr": "WARNING: proceeding, even though we could not create PATH aliases: Operation not permitted (os error 1)\nError: Operation not permitted (os error 1)\n"
+    },
+    {
+      "cwd": "tests",
+      "exit_code": 1,
+      "stderr": "WARNING: proceeding, even though we could not create PATH aliases: Operation not permitted (os error 1)\nError: Operation not permitted (os error 1)\n"
+    },
+    {
+      "cwd": "docs/governance",
+      "exit_code": 1,
+      "stderr": "WARNING: proceeding, even though we could not create PATH aliases: Operation not permitted (os error 1)\nError: Operation not permitted (os error 1)\n"
+    }
+  ],
+  "prompt_probes_unsandboxed": [
+    {
+      "cwd": ".",
+      "exit_code": 0,
+      "stderr": "",
+      "text_blocks": [
+        {
+          "prefix": "<skills_instructions>\n## Skills\nA skill is a set of local instructions to follow that",
+          "bytes": 22179,
+          "chars": 22129,
+          "sha256": "1cc8e534d57200181bed32fd9ac6b7ed80cbbc381a061262e3d948f71d542d5c"
+        },
+        {
+          "prefix": "<permissions instructions>\nFilesystem sandboxing defines which files can be read or w",
+          "bytes": 938,
+          "chars": 938,
+          "sha256": "ebf5e7a8a97da4f5dbb4a893aafc8d6aab94acb9db2e189b52a12ae9f73543de"
+        },
+        {
+          "prefix": "<collaboration_mode># Collaboration Mode: Default\n\nYou are now in Default mode. Any p",
+          "bytes": 1328,
+          "chars": 1328,
+          "sha256": "d4a43ed616564dc0173826b5cdc0b92261da2e33fd5b5ceeeefb9d7aa6fc3350"
+        },
+        {
+          "prefix": "<multi_agent_role>You are `/root`, the primary agent in a team of agents collaboratin",
+          "bytes": 2429,
+          "chars": 2429,
+          "sha256": "47091490938505958b0c22ff42db6fd79b272a2af6923166f4c2cc53c4fe0df4"
+        },
+        {
+          "prefix": "<multi_agent_mode>Any earlier instruction enabling proactive multi-agent delegation n",
+          "bytes": 271,
+          "chars": 271,
+          "sha256": "6ded806e3cdbb35599ecaf8742574bc5274908472b1729090010c404c2151e8e"
+        },
+        {
+          "prefix": "<recommended_plugins>\nHere is a list of plugins that are available but not installed.",
+          "bytes": 3371,
+          "chars": 3371,
+          "sha256": "e68a4397f098fdf10b66a54d525a5e49a65d065c29863ba81820977051db1315"
+        },
+        {
+          "prefix": "# AGENTS.md instructions for /Users/jeff/Documents/Code/gzkit\n\n<INSTRUCTIONS>\n# AGENT",
+          "bytes": 48605,
+          "chars": 48323,
+          "sha256": "b4e1eb3685e8de04c3e1b39f3bc064158d19758e45beb3fd7aecf0c555e45268"
+        },
+        {
+          "prefix": "<environment_context>\n  <cwd>/Users/jeff/Documents/Code/gzkit</cwd>\n  <shell>zsh</she",
+          "bytes": 886,
+          "chars": 886,
+          "sha256": "b8663182edab9be6be3d7f67d79bf825ee67652ab06f178fc89f7f1537117377"
+        }
+      ],
+      "skill_catalog_count": 91,
+      "skill_example_catalog": "- gz-obpi-pipeline: Post-plan OBPI execution pipeline \u2014 implement, verify, present evidence, and sync after a plan is approved. Use after exiting plan mode for an OBPI, when the user says \"execute OBPI-X.Y.Z-NN\", or to enforce governance on already (file: r7/gz-obpi-pipeline/SKILL.md)",
+      "project_doc_sha256": "b4e1eb3685e8de04c3e1b39f3bc064158d19758e45beb3fd7aecf0c555e45268"
+    },
+    {
+      "cwd": "src/gzkit/commands",
+      "exit_code": 0,
+      "stderr": "",
+      "text_blocks": [
+        {
+          "prefix": "<skills_instructions>\n## Skills\nA skill is a set of local instructions to follow that",
+          "bytes": 22179,
+          "chars": 22129,
+          "sha256": "1cc8e534d57200181bed32fd9ac6b7ed80cbbc381a061262e3d948f71d542d5c"
+        },
+        {
+          "prefix": "<permissions instructions>\nFilesystem sandboxing defines which files can be read or w",
+          "bytes": 957,
+          "chars": 957,
+          "sha256": "849305aa66406034038336aa8201a991e1e0719e2e5875ea6a377abeee0a1812"
+        },
+        {
+          "prefix": "<collaboration_mode># Collaboration Mode: Default\n\nYou are now in Default mode. Any p",
+          "bytes": 1328,
+          "chars": 1328,
+          "sha256": "d4a43ed616564dc0173826b5cdc0b92261da2e33fd5b5ceeeefb9d7aa6fc3350"
+        },
+        {
+          "prefix": "<multi_agent_role>You are `/root`, the primary agent in a team of agents collaboratin",
+          "bytes": 2429,
+          "chars": 2429,
+          "sha256": "47091490938505958b0c22ff42db6fd79b272a2af6923166f4c2cc53c4fe0df4"
+        },
+        {
+          "prefix": "<multi_agent_mode>Any earlier instruction enabling proactive multi-agent delegation n",
+          "bytes": 271,
+          "chars": 271,
+          "sha256": "6ded806e3cdbb35599ecaf8742574bc5274908472b1729090010c404c2151e8e"
+        },
+        {
+          "prefix": "<recommended_plugins>\nHere is a list of plugins that are available but not installed.",
+          "bytes": 3371,
+          "chars": 3371,
+          "sha256": "e68a4397f098fdf10b66a54d525a5e49a65d065c29863ba81820977051db1315"
+        },
+        {
+          "prefix": "# AGENTS.md instructions for /Users/jeff/Documents/Code/gzkit/src/gzkit/commands\n\n<IN",
+          "bytes": 65653,
+          "chars": 65291,
+          "sha256": "ab40b6d216d3aa34f6e9f71f3c840a6d50167136282482899c680a5c58d9f47d"
+        },
+        {
+          "prefix": "<environment_context>\n  <cwd>/Users/jeff/Documents/Code/gzkit/src/gzkit/commands</cwd",
+          "bytes": 1000,
+          "chars": 1000,
+          "sha256": "addf3a383d7aa47fee6681a367fe1744cf5c3b1c4931d22f76deeeda680b3e60"
+        }
+      ],
+      "skill_catalog_count": 91,
+      "skill_example_catalog": "- gz-obpi-pipeline: Post-plan OBPI execution pipeline \u2014 implement, verify, present evidence, and sync after a plan is approved. Use after exiting plan mode for an OBPI, when the user says \"execute OBPI-X.Y.Z-NN\", or to enforce governance on already (file: r7/gz-obpi-pipeline/SKILL.md)",
+      "project_doc_sha256": "ab40b6d216d3aa34f6e9f71f3c840a6d50167136282482899c680a5c58d9f47d"
+    },
+    {
+      "cwd": "tests",
+      "exit_code": 0,
+      "stderr": "",
+      "text_blocks": [
+        {
+          "prefix": "<skills_instructions>\n## Skills\nA skill is a set of local instructions to follow that",
+          "bytes": 22179,
+          "chars": 22129,
+          "sha256": "1cc8e534d57200181bed32fd9ac6b7ed80cbbc381a061262e3d948f71d542d5c"
+        },
+        {
+          "prefix": "<permissions instructions>\nFilesystem sandboxing defines which files can be read or w",
+          "bytes": 944,
+          "chars": 944,
+          "sha256": "804501a8ece054f067e8425e5ec33184d4ffa668c26fcaba611a67b50c98284d"
+        },
+        {
+          "prefix": "<collaboration_mode># Collaboration Mode: Default\n\nYou are now in Default mode. Any p",
+          "bytes": 1328,
+          "chars": 1328,
+          "sha256": "d4a43ed616564dc0173826b5cdc0b92261da2e33fd5b5ceeeefb9d7aa6fc3350"
+        },
+        {
+          "prefix": "<multi_agent_role>You are `/root`, the primary agent in a team of agents collaboratin",
+          "bytes": 2429,
+          "chars": 2429,
+          "sha256": "47091490938505958b0c22ff42db6fd79b272a2af6923166f4c2cc53c4fe0df4"
+        },
+        {
+          "prefix": "<multi_agent_mode>Any earlier instruction enabling proactive multi-agent delegation n",
+          "bytes": 271,
+          "chars": 271,
+          "sha256": "6ded806e3cdbb35599ecaf8742574bc5274908472b1729090010c404c2151e8e"
+        },
+        {
+          "prefix": "<recommended_plugins>\nHere is a list of plugins that are available but not installed.",
+          "bytes": 3371,
+          "chars": 3371,
+          "sha256": "e68a4397f098fdf10b66a54d525a5e49a65d065c29863ba81820977051db1315"
+        },
+        {
+          "prefix": "# AGENTS.md instructions for /Users/jeff/Documents/Code/gzkit/tests\n\n<INSTRUCTIONS>\n#",
+          "bytes": 65638,
+          "chars": 65260,
+          "sha256": "b805b8cd137565d1a6b73e5e4c958805c97594da47bd81d6ee8d1e8e06442571"
+        },
+        {
+          "prefix": "<environment_context>\n  <cwd>/Users/jeff/Documents/Code/gzkit/tests</cwd>\n  <shell>zs",
+          "bytes": 922,
+          "chars": 922,
+          "sha256": "a87bf6e0f791e9b67ea8808317f27d0510ac8665bf98822974e836426dca77c3"
+        }
+      ],
+      "skill_catalog_count": 91,
+      "skill_example_catalog": "- gz-obpi-pipeline: Post-plan OBPI execution pipeline \u2014 implement, verify, present evidence, and sync after a plan is approved. Use after exiting plan mode for an OBPI, when the user says \"execute OBPI-X.Y.Z-NN\", or to enforce governance on already (file: r7/gz-obpi-pipeline/SKILL.md)",
+      "project_doc_sha256": "b805b8cd137565d1a6b73e5e4c958805c97594da47bd81d6ee8d1e8e06442571"
+    },
+    {
+      "cwd": "docs/governance",
+      "exit_code": 0,
+      "stderr": "",
+      "text_blocks": [
+        {
+          "prefix": "<skills_instructions>\n## Skills\nA skill is a set of local instructions to follow that",
+          "bytes": 22179,
+          "chars": 22129,
+          "sha256": "1cc8e534d57200181bed32fd9ac6b7ed80cbbc381a061262e3d948f71d542d5c"
+        },
+        {
+          "prefix": "<permissions instructions>\nFilesystem sandboxing defines which files can be read or w",
+          "bytes": 954,
+          "chars": 954,
+          "sha256": "8a6175b1c3063666b492abc65974ed112074f7ea38a29504dcac95a6377db0f1"
+        },
+        {
+          "prefix": "<collaboration_mode># Collaboration Mode: Default\n\nYou are now in Default mode. Any p",
+          "bytes": 1328,
+          "chars": 1328,
+          "sha256": "d4a43ed616564dc0173826b5cdc0b92261da2e33fd5b5ceeeefb9d7aa6fc3350"
+        },
+        {
+          "prefix": "<multi_agent_role>You are `/root`, the primary agent in a team of agents collaboratin",
+          "bytes": 2429,
+          "chars": 2429,
+          "sha256": "47091490938505958b0c22ff42db6fd79b272a2af6923166f4c2cc53c4fe0df4"
+        },
+        {
+          "prefix": "<multi_agent_mode>Any earlier instruction enabling proactive multi-agent delegation n",
+          "bytes": 271,
+          "chars": 271,
+          "sha256": "6ded806e3cdbb35599ecaf8742574bc5274908472b1729090010c404c2151e8e"
+        },
+        {
+          "prefix": "<recommended_plugins>\nHere is a list of plugins that are available but not installed.",
+          "bytes": 3371,
+          "chars": 3371,
+          "sha256": "e68a4397f098fdf10b66a54d525a5e49a65d065c29863ba81820977051db1315"
+        },
+        {
+          "prefix": "# AGENTS.md instructions for /Users/jeff/Documents/Code/gzkit/docs/governance\n\n<INSTR",
+          "bytes": 55955,
+          "chars": 55611,
+          "sha256": "3abc0127ba1be5683a4b3a4665704149f42b4d77376dda5749f43376579cb004"
+        },
+        {
+          "prefix": "<environment_context>\n  <cwd>/Users/jeff/Documents/Code/gzkit/docs/governance</cwd>\n ",
+          "bytes": 982,
+          "chars": 982,
+          "sha256": "2938092933c97ec3029a49580d24343f10d7ebc0b5ac9f7f049be42c099d6550"
+        }
+      ],
+      "skill_catalog_count": 91,
+      "skill_example_catalog": "- gz-obpi-pipeline: Post-plan OBPI execution pipeline \u2014 implement, verify, present evidence, and sync after a plan is approved. Use after exiting plan mode for an OBPI, when the user says \"execute OBPI-X.Y.Z-NN\", or to enforce governance on already (file: r7/gz-obpi-pipeline/SKILL.md)",
+      "project_doc_sha256": "3abc0127ba1be5683a4b3a4665704149f42b4d77376dda5749f43376579cb004"
+    }
+  ],
+  "hooks_probe": {
+    "id": 3,
+    "result": {
+      "data": [
+        {
+          "cwd": "/Users/jeff/Documents/Code/gzkit",
+          "hooks": [
+            {
+              "key": "/Users/jeff/Documents/Code/gzkit/.codex/hooks.json:pre_tool_use:0:0",
+              "eventName": "preToolUse",
+              "handlerType": "command",
+              "command": "uv run --project \"$(git rev-parse --show-toplevel)\" --cache-dir \"$(git rev-parse --show-toplevel)/.gzkit/cache/uv\" python -m gzkit.hooks.codex",
+              "async": false,
+              "matcher": "Bash",
+              "timeoutSec": 10,
+              "statusMessage": "Checking verification exit-code integrity",
+              "additionalContextLimit": null,
+              "sourcePath": "/Users/jeff/Documents/Code/gzkit/.codex/hooks.json",
+              "source": "project",
+              "pluginId": null,
+              "displayOrder": 1,
+              "enabled": true,
+              "isManaged": false,
+              "currentHash": "sha256:98af9c0b02b88d162fcf727ed8387b0627022590e2883c742b7b4e513fd6cfe4",
+              "trustStatus": "untrusted"
+            },
+            {
+              "key": "/Users/jeff/Documents/Code/gzkit/.codex/hooks.json:session_start:0:0",
+              "eventName": "sessionStart",
+              "handlerType": "command",
+              "command": "uv run --cache-dir \"$(git rev-parse --show-toplevel)/.gzkit/cache/uv\" python \"$(git rev-parse --show-toplevel)/scripts/session_orientation.py\"",
+              "async": false,
+              "matcher": "startup|resume|clear|compact",
+              "timeoutSec": 30,
+              "statusMessage": "Loading gzkit project orientation",
+              "additionalContextLimit": 6000,
+              "sourcePath": "/Users/jeff/Documents/Code/gzkit/.codex/hooks.json",
+              "source": "project",
+              "pluginId": null,
+              "displayOrder": 2,
+              "enabled": true,
+              "isManaged": false,
+              "currentHash": "sha256:a3ea644b158745422a877fb7b120f3f898b64afd8edb062b14ba3b7a8221ec3d",
+              "trustStatus": "untrusted"
+            },
+            {
+              "key": "/Users/jeff/Documents/Code/gzkit/.codex/hooks.json:session_start:1:0",
+              "eventName": "sessionStart",
+              "handlerType": "command",
+              "command": "uv run --project \"$(git rev-parse --show-toplevel)\" --cache-dir \"$(git rev-parse --show-toplevel)/.gzkit/cache/uv\" python -m gzkit.hooks.codex",
+              "async": false,
+              "matcher": "startup|resume|clear|compact",
+              "timeoutSec": 10,
+              "statusMessage": "Loading gzkit handoff advisement",
+              "additionalContextLimit": null,
+              "sourcePath": "/Users/jeff/Documents/Code/gzkit/.codex/hooks.json",
+              "source": "project",
+              "pluginId": null,
+              "displayOrder": 3,
+              "enabled": true,
+              "isManaged": false,
+              "currentHash": "sha256:25d5c4ee12d2bf6988de3853a6d6b8f00c5bbd8b95f4da5402bf28470bdee9fb",
+              "trustStatus": "untrusted"
+            }
+          ],
+          "warnings": [
+            "clamping SessionEnd hook timeout to 3s in /Users/jeff/.codex/plugins/cache/openai-codex/codex/1.0.6/hooks/hooks.json"
+          ],
+          "errors": []
+        }
+      ]
+    }
+  },
+  "config_layers": [
+    {
+      "name": {
+        "type": "sessionFlags"
+      },
+      "version": "sha256:82d98672e841b9c22b89c41d2ed18f1df14dfae3e08a96fca24d9ae888b6896a"
+    },
+    {
+      "name": {
+        "type": "project",
+        "dotCodexFolder": "/Users/jeff/Documents/Code/gzkit/.codex"
+      },
+      "version": "sha256:966171a07bcd3759c1c212667356c77698e6072634d3c27bb6bfcb1cfa64a513"
+    },
+    {
+      "name": {
+        "type": "user",
+        "file": "/Users/jeff/.codex/config.toml",
+        "profile": null
+      },
+      "version": "sha256:ec9055b0e2f207dea78609e54db57cfff4d673bcd6a2083805dd737b65d2f02c"
+    },
+    {
+      "name": {
+        "type": "system",
+        "file": "/etc/codex/config.toml"
+      },
+      "version": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    }
+  ],
+  "effective_config_selection": {
+    "model": "gpt-6-astra",
+    "model_context_window": null,
+    "instructions": null,
+    "developer_instructions": null,
+    "features": {
+      "network_proxy": null,
+      "hooks": true,
+      "js_repl": false,
+      "auth_elicitation": true,
+      "background_paginated_rollout_migration": false,
+      "mcp_2026_07_28": false,
+      "memories": false,
+      "mentions_v2": true,
+      "remote_control": false,
+      "remote_plugin": true,
+      "tool_suggest": true,
+      "windows_sandbox_service": false
+    },
+    "model_instructions_file": null,
+    "project_doc_fallback_filenames": [],
+    "project_doc_max_bytes": 65536
+  },
+  "file_inventory": [
+    {
+      "path": ".agents/skills/AGENTS.md",
+      "bytes": 22081,
+      "chars": 21955,
+      "sha256": "7121ce77324e00c1f4b740a94667ef33d058b1bf956c5b327d12778856e6643e"
+    },
+    {
+      "path": ".agents/skills/gz-mx/AGENTS.md",
+      "bytes": 5184,
+      "chars": 5149,
+      "sha256": "75835224c3b9c3f49024047543a0f3e632f533488631cd717b7fc21487697c11"
+    },
+    {
+      "path": ".claude/skills/AGENTS.md",
+      "bytes": 22081,
+      "chars": 21955,
+      "sha256": "7121ce77324e00c1f4b740a94667ef33d058b1bf956c5b327d12778856e6643e"
+    },
+    {
+      "path": ".claude/skills/gz-mx/AGENTS.md",
+      "bytes": 5184,
+      "chars": 5149,
+      "sha256": "75835224c3b9c3f49024047543a0f3e632f533488631cd717b7fc21487697c11"
+    },
+    {
+      "path": ".github/AGENTS.md",
+      "bytes": 4929,
+      "chars": 4894,
+      "sha256": "daade5abeab87bfef0a6957033aa49b77962c4cdad9db92ca280ef3db27e50ae"
+    },
+    {
+      "path": ".gzkit/AGENTS.md",
+      "bytes": 13974,
+      "chars": 13883,
+      "sha256": "140c1e8a053db1ab2458f5f229cf9c4cad28c39963e0e3b79ef7c4a4d25098de"
+    },
+    {
+      "path": ".gzkit/chores/AGENTS.md",
+      "bytes": 5601,
+      "chars": 5564,
+      "sha256": "1a9f657c8abba724d0a47435d1b2455c33c1da272272f30b2a4ce8169689892d"
+    },
+    {
+      "path": ".gzkit/handoffs/AGENTS.md",
+      "bytes": 13954,
+      "chars": 13890,
+      "sha256": "7e21ec660f884d0e43f61b1458ad1eb01722a62713390a9e6f6fbe01bf887378"
+    },
+    {
+      "path": ".gzkit/locks/exchange/AGENTS.md",
+      "bytes": 13960,
+      "chars": 13896,
+      "sha256": "4dd6867298bc99bb8a3c51cbbe2a823d646192590b7ca271863e4b20fb6489ec"
+    },
+    {
+      "path": ".gzkit/rules/AGENTS.md",
+      "bytes": 15441,
+      "chars": 15355,
+      "sha256": "5237d928bc1522023ff9f7e4b2428cac4d2d56bc0cf4b277655932bbb96a1483"
+    },
+    {
+      "path": ".gzkit/skills/AGENTS.md",
+      "bytes": 22081,
+      "chars": 21955,
+      "sha256": "7121ce77324e00c1f4b740a94667ef33d058b1bf956c5b327d12778856e6643e"
+    },
+    {
+      "path": ".gzkit/skills/gz-mx/AGENTS.md",
+      "bytes": 5184,
+      "chars": 5149,
+      "sha256": "75835224c3b9c3f49024047543a0f3e632f533488631cd717b7fc21487697c11"
+    },
+    {
+      "path": "AGENTS.md",
+      "bytes": 48511,
+      "chars": 48229,
+      "sha256": "f53831450e7f0a5457966e83a16f8be7b6fdb016b255e58946211109cdffc1ac"
+    },
+    {
+      "path": "docs/AGENTS.md",
+      "bytes": 3463,
+      "chars": 3438,
+      "sha256": "ff1ab1515a41637579e7ae7a9e0991cfd9a6da967d234d102fce0f0f889fd3df"
+    },
+    {
+      "path": "docs/design/adr/AGENTS.md",
+      "bytes": 31672,
+      "chars": 31476,
+      "sha256": "e3e98b03c97821828880cd31a66540858825fc10cd49a71344f49c683a26a0cd"
+    },
+    {
+      "path": "docs/governance/AGENTS.md",
+      "bytes": 3867,
+      "chars": 3830,
+      "sha256": "7dcd98e7f56bc04ebaf58067caa64f60cbc722f3c01804eb9a0692d04272fab7"
+    },
+    {
+      "path": "docs/governance/complexity/AGENTS.md",
+      "bytes": 11664,
+      "chars": 11633,
+      "sha256": "3649a0059e270241d272249fee40dd69015d06bda271715a68acfa311f600b66"
+    },
+    {
+      "path": "src/AGENTS.md",
+      "bytes": 7458,
+      "chars": 7430,
+      "sha256": "960e0a92d03b14dc5d7ee7fb1de96980b5c478d9e0c8d0440ba26379d944db0b"
+    },
+    {
+      "path": "src/gzkit/AGENTS.md",
+      "bytes": 22651,
+      "chars": 22517,
+      "sha256": "79bd21c1e1f23c3f7eb96178255a69438b727cc906fa300c7ec485b550d97294"
+    },
+    {
+      "path": "src/gzkit/chores/AGENTS.md",
+      "bytes": 5604,
+      "chars": 5567,
+      "sha256": "e7e947263f3cb3a4f024e9e774a3962eca01ffd0a1252a8d83f9a0d094457c6a"
+    },
+    {
+      "path": "src/gzkit/cli/AGENTS.md",
+      "bytes": 5905,
+      "chars": 5858,
+      "sha256": "5a310baeb483221aa66948991eaa7f8d37a4768f6aa2e73b2721401a1e0c5ae5"
+    },
+    {
+      "path": "src/gzkit/commands/AGENTS.md",
+      "bytes": 17505,
+      "chars": 17358,
+      "sha256": "91959bfb66aab8b6f1c6aad64bbab9ffbf4955005eaf8905bc07d8aaa0c412a0"
+    },
+    {
+      "path": "src/gzkit/complexity/AGENTS.md",
+      "bytes": 6442,
+      "chars": 6425,
+      "sha256": "41b84a117692cf39dcabf38741cff018e70166acb6122e65f29e86a4078c472f"
+    },
+    {
+      "path": "src/gzkit/governance/AGENTS.md",
+      "bytes": 4589,
+      "chars": 4561,
+      "sha256": "c68a7b50c2fb448e67889e73e1a1c19d001dd7f1b44858f86f77495df89e7307"
+    },
+    {
+      "path": "src/gzkit/hooks/AGENTS.md",
+      "bytes": 4584,
+      "chars": 4556,
+      "sha256": "99aee419d06ef6c07b4cf8e1ea7e7ecdf9ec5ba7fb308454059f711b86faf878"
+    },
+    {
+      "path": "src/gzkit/mx/AGENTS.md",
+      "bytes": 5177,
+      "chars": 5142,
+      "sha256": "5e5fb6540b55100d1d954654f6163c455827ae73cb50b4fea3bc90f68493921f"
+    },
+    {
+      "path": "tests/AGENTS.md",
+      "bytes": 30284,
+      "chars": 30083,
+      "sha256": "ac8fa5e373b877c7a67e0746017386734a37dc905dbe2fbeb9c339a86c7eac46"
+    }
+  ],
+  "prompt_summary": [
+    {
+      "cwd": ".",
+      "inner_bytes": 48511,
+      "inner_chars": 48229,
+      "chain": [
+        {
+          "path": "AGENTS.md",
+          "bytes": 48511,
+          "chars": 48229,
+          "complete": true,
+          "delivered_bytes": 48511,
+          "delivered_chars": 48229,
+          "last_delivered_text": "rived views silently become source-of-truth \u2014 `gz status`, pipeline markers, and reconciliation caches are Layer 3; every fact traces to Layer 1 canon or Layer 2 ledger.\n\n<!-- END agents.local.md -->\n"
+        }
+      ],
+      "tail": "parity become perpetual catch-up.\n6. Do not let derived views silently become source-of-truth \u2014 `gz status`, pipeline markers, and reconciliation caches are Layer 3; every fact traces to Layer 1 canon or Layer 2 ledger.\n\n<!-- END agents.local.md -->\n",
+      "skills_catalog_bytes": 22179
+    },
+    {
+      "cwd": "src/gzkit/commands",
+      "inner_bytes": 65540,
+      "inner_chars": 65178,
+      "chain": [
+        {
+          "path": "AGENTS.md",
+          "bytes": 48511,
+          "chars": 48229,
+          "complete": true,
+          "delivered_bytes": 48511,
+          "delivered_chars": 48229,
+          "last_delivered_text": "rived views silently become source-of-truth \u2014 `gz status`, pipeline markers, and reconciliation caches are Layer 3; every fact traces to Layer 1 canon or Layer 2 ledger.\n\n<!-- END agents.local.md -->\n"
+        },
+        {
+          "path": "src/AGENTS.md",
+          "bytes": 7458,
+          "chars": 7430,
+          "complete": true,
+          "delivered_bytes": 7458,
+          "delivered_chars": 7430,
+          "last_delivered_text": "instead of `| None` and `list[]`\n\n## Verify\n\n- All models extend `BaseModel` (not `@dataclass`)\n- All models have `model_config` with at least `extra=\"forbid\"`\n- Immutable snapshots use `frozen=True`\n"
+        },
+        {
+          "path": "src/gzkit/AGENTS.md",
+          "bytes": 22651,
+          "chars": 22517,
+          "complete": false,
+          "delivered_bytes": 9567,
+          "delivered_chars": 9515,
+          "last_delivered_text": "-history.md#task-discoverymd). Scoped `src/gzkit/**`, this rule loads on every source edit, so narrative is the most expensive thing it can carry.\n\n## Invariant\n\n**Every unit of labor traceable to a T"
+        },
+        {
+          "path": "src/gzkit/commands/AGENTS.md",
+          "bytes": 17505,
+          "chars": 17358,
+          "complete": false,
+          "delivered_bytes": 0,
+          "delivered_chars": 0,
+          "last_delivered_text": ""
+        }
+      ],
+      "tail": "ersion History](../../docs/governance/rule-version-history.md#task-discoverymd). Scoped `src/gzkit/**`, this rule loads on every source edit, so narrative is the most expensive thing it can carry.\n\n## Invariant\n\n**Every unit of labor traceable to a T",
+      "skills_catalog_bytes": 22179
+    },
+    {
+      "cwd": "tests",
+      "inner_bytes": 65538,
+      "inner_chars": 65160,
+      "chain": [
+        {
+          "path": "AGENTS.md",
+          "bytes": 48511,
+          "chars": 48229,
+          "complete": true,
+          "delivered_bytes": 48511,
+          "delivered_chars": 48229,
+          "last_delivered_text": "rived views silently become source-of-truth \u2014 `gz status`, pipeline markers, and reconciliation caches are Layer 3; every fact traces to Layer 1 canon or Layer 2 ledger.\n\n<!-- END agents.local.md -->\n"
+        },
+        {
+          "path": "tests/AGENTS.md",
+          "bytes": 30284,
+          "chars": 30083,
+          "complete": false,
+          "delivered_bytes": 17025,
+          "delivered_chars": 16929,
+          "last_delivered_text": "re quoted as governance evidence, so the sweep must be at least as trustworthy as the tests it grades. **A failing mutant run is NOT a kill.** An absent target, a no-op edit, a mutant that does not im"
+        }
+      ],
+      "tail": "d observing whether a test notices. Its verdicts are quoted as governance evidence, so the sweep must be at least as trustworthy as the tests it grades. **A failing mutant run is NOT a kill.** An absent target, a no-op edit, a mutant that does not im",
+      "skills_catalog_bytes": 22179
+    },
+    {
+      "cwd": "docs/governance",
+      "inner_bytes": 55845,
+      "inner_chars": 55501,
+      "chain": [
+        {
+          "path": "AGENTS.md",
+          "bytes": 48511,
+          "chars": 48229,
+          "complete": true,
+          "delivered_bytes": 48511,
+          "delivered_chars": 48229,
+          "last_delivered_text": "rived views silently become source-of-truth \u2014 `gz status`, pipeline markers, and reconciliation caches are Layer 3; every fact traces to Layer 1 canon or Layer 2 ledger.\n\n<!-- END agents.local.md -->\n"
+        },
+        {
+          "path": "docs/AGENTS.md",
+          "bytes": 3463,
+          "chars": 3438,
+          "complete": true,
+          "delivered_bytes": 3463,
+          "delivered_chars": 3438,
+          "last_delivered_text": "\" qualifier described branching collapsed at ADR-0.0.36 and is retired.\n- Do not cite bare `uv run gz lint` / `uv run mkdocs build --strict` as attestation evidence \u2014 they produce no `arb-*` receipt.\n"
+        },
+        {
+          "path": "docs/governance/AGENTS.md",
+          "bytes": 3867,
+          "chars": 3830,
+          "complete": true,
+          "delivered_bytes": 3867,
+          "delivered_chars": 3830,
+          "last_delivered_text": "rationale.md#failure-mode-worked-examples) for worked examples, invocation patterns, the pattern-7 distinction from patterns 1/3, the Opus 5 provenance caveat, and promotion roadmap (GHIs #308\u2013#312).\n"
+        }
+      ],
+      "tail": "ed examples](../../docs/governance/agent-contract-rationale.md#failure-mode-worked-examples) for worked examples, invocation patterns, the pattern-7 distinction from patterns 1/3, the Opus 5 provenance caveat, and promotion roadmap (GHIs #308\u2013#312).\n",
+      "skills_catalog_bytes": 22179
+    }
+  ],
+  "ancestors": [
+    {
+      "path": "/AGENTS.override.md",
+      "exists": false,
+      "bytes": null
+    },
+    {
+      "path": "/AGENTS.md",
+      "exists": false,
+      "bytes": null
+    },
+    {
+      "path": "/Users/AGENTS.override.md",
+      "exists": false,
+      "bytes": null
+    },
+    {
+      "path": "/Users/AGENTS.md",
+      "exists": false,
+      "bytes": null
+    },
+    {
+      "path": "/Users/jeff/AGENTS.override.md",
+      "exists": false,
+      "bytes": null
+    },
+    {
+      "path": "/Users/jeff/AGENTS.md",
+      "exists": false,
+      "bytes": null
+    },
+    {
+      "path": "/Users/jeff/Documents/AGENTS.override.md",
+      "exists": false,
+      "bytes": null
+    },
+    {
+      "path": "/Users/jeff/Documents/AGENTS.md",
+      "exists": false,
+      "bytes": null
+    },
+    {
+      "path": "/Users/jeff/Documents/Code/AGENTS.override.md",
+      "exists": false,
+      "bytes": null
+    },
+    {
+      "path": "/Users/jeff/Documents/Code/AGENTS.md",
+      "exists": false,
+      "bytes": null
+    },
+    {
+      "path": "/Users/jeff/.codex/AGENTS.override.md",
+      "exists": false,
+      "bytes": null
+    },
+    {
+      "path": "/Users/jeff/.codex/AGENTS.md",
+      "exists": true,
+      "bytes": 0
+    }
+  ],
+  "rule_routing": [
+    {
+      "filename": "adr_audit.instructions.md",
+      "global": false,
+      "paths": "docs/design/adr/**",
+      "subtrees": [
+        "docs/design/adr"
+      ],
+      "body_bytes": 5238
+    },
+    {
+      "filename": "agent_failure_modes.instructions.md",
+      "global": false,
+      "paths": "AGENTS.md, .gzkit/rules/**, docs/governance/**",
+      "subtrees": [
+        ".gzkit/rules",
+        "docs/governance"
+      ],
+      "body_bytes": 3700
+    },
+    {
+      "filename": "agents_md_map_doctrine.instructions.md",
+      "global": false,
+      "paths": "AGENTS.md, CLAUDE.md, .claude/rules/*.md",
+      "subtrees": [],
+      "body_bytes": 10516
+    },
+    {
+      "filename": "brief_heading_conventions.instructions.md",
+      "global": false,
+      "paths": "docs/design/adr/**/obpis/**",
+      "subtrees": [
+        "docs/design/adr"
+      ],
+      "body_bytes": 2323
+    },
+    {
+      "filename": "changelog_release_notes.instructions.md",
+      "global": false,
+      "paths": "CHANGELOG.md, RELEASE_NOTES.md",
+      "subtrees": [],
+      "body_bytes": 3706
+    },
+    {
+      "filename": "chores.instructions.md",
+      "global": false,
+      "paths": "src/gzkit/chores/**, .gzkit/chores/**",
+      "subtrees": [
+        "src/gzkit/chores",
+        ".gzkit/chores"
+      ],
+      "body_bytes": 5436
+    },
+    {
+      "filename": "cli.instructions.md",
+      "global": false,
+      "paths": "src/gzkit/commands/**",
+      "subtrees": [
+        "src/gzkit/commands"
+      ],
+      "body_bytes": 11593
+    },
+    {
+      "filename": "complexity_doctrine.instructions.md",
+      "global": false,
+      "paths": "docs/governance/complexity/**, data/exemplar_corpus.json, src/gzkit/complexity/**, .gzkit/rules/complexity-doctrine.md",
+      "subtrees": [
+        "docs/governance/complexity",
+        "src/gzkit/complexity"
+      ],
+      "body_bytes": 6270
+    },
+    {
+      "filename": "complexity_thresholds.instructions.md",
+      "global": false,
+      "paths": ".gzkit/rules/complexity-thresholds.md, .gzkit/rules/complexity-thresholds.json, src/gzkit/complexity/thresholds.py, src/gzkit/schemas/complexity_thresholds.json, docs/governance/complexity/**",
+      "subtrees": [
+        "docs/governance/complexity"
+      ],
+      "body_bytes": 5214
+    },
+    {
+      "filename": "cross_platform.instructions.md",
+      "global": false,
+      "paths": "src/**/*.py, src/gzkit/**/*.md, tests/**/*.py",
+      "subtrees": [
+        "src",
+        "src/gzkit",
+        "tests"
+      ],
+      "body_bytes": 5363
+    },
+    {
+      "filename": "gate5_runbook_code_covenant.instructions.md",
+      "global": false,
+      "paths": "docs/**, src/gzkit/**",
+      "subtrees": [
+        "docs",
+        "src/gzkit"
+      ],
+      "body_bytes": 3307
+    },
+    {
+      "filename": "gh_cli.instructions.md",
+      "global": false,
+      "paths": ".github/**, docs/design/adr/**, src/gzkit/commands/issue_cmd.py",
+      "subtrees": [
+        ".github",
+        "docs/design/adr"
+      ],
+      "body_bytes": 4770
+    },
+    {
+      "filename": "governance_core.instructions.md",
+      "global": true,
+      "paths": "**/*",
+      "subtrees": [],
+      "body_bytes": 8329
+    },
+    {
+      "filename": "guardrail_feedback_prose.instructions.md",
+      "global": false,
+      "paths": "src/gzkit/hooks/**, src/gzkit/governance/**, .claude/hooks/**",
+      "subtrees": [
+        "src/gzkit/hooks",
+        "src/gzkit/governance"
+      ],
+      "body_bytes": 4417
+    },
+    {
+      "filename": "hexagonal_architecture.instructions.md",
+      "global": true,
+      "paths": "**/*.py",
+      "subtrees": [],
+      "body_bytes": 6769
+    },
+    {
+      "filename": "model_selection.instructions.md",
+      "global": false,
+      "paths": "src/gzkit/pipeline_runtime.py, .gzkit/skills/**/SKILL.md, .claude/agents/**",
+      "subtrees": [
+        ".gzkit/skills"
+      ],
+      "body_bytes": 4597
+    },
+    {
+      "filename": "models.instructions.md",
+      "global": false,
+      "paths": "src/**/*.py",
+      "subtrees": [
+        "src"
+      ],
+      "body_bytes": 1938
+    },
+    {
+      "filename": "mx_mode.instructions.md",
+      "global": false,
+      "paths": "src/gzkit/mx/**, .gzkit/skills/gz-mx/**, .claude/hooks/mx-awareness.py, src/gzkit/mx/awareness.py, src/gzkit/hooks/guards.py",
+      "subtrees": [
+        "src/gzkit/mx",
+        ".gzkit/skills/gz-mx"
+      ],
+      "body_bytes": 5013
+    },
+    {
+      "filename": "pythonic.instructions.md",
+      "global": true,
+      "paths": "**/*.py",
+      "subtrees": [],
+      "body_bytes": 7908
+    },
+    {
+      "filename": "security_sensitivity.instructions.md",
+      "global": false,
+      "paths": "docs/design/adr/**/obpis/**, data/security_surfaces.json",
+      "subtrees": [
+        "docs/design/adr"
+      ],
+      "body_bytes": 5350
+    },
+    {
+      "filename": "skill_surface_sync.instructions.md",
+      "global": false,
+      "paths": ".claude/**, .agents/**, .gzkit/skills/**, .gzkit/rules/**",
+      "subtrees": [
+        ".gzkit/skills",
+        ".gzkit/rules"
+      ],
+      "body_bytes": 11575
+    },
+    {
+      "filename": "task_discovery.instructions.md",
+      "global": false,
+      "paths": "src/gzkit/**, docs/design/adr/**, .gzkit/**",
+      "subtrees": [
+        "src/gzkit",
+        "docs/design/adr",
+        ".gzkit"
+      ],
+      "body_bytes": 13816
+    },
+    {
+      "filename": "tests.instructions.md",
+      "global": false,
+      "paths": "tests/**",
+      "subtrees": [
+        "tests"
+      ],
+      "body_bytes": 24762
+    },
+    {
+      "filename": "token_block_discipline.instructions.md",
+      "global": false,
+      "paths": "src/gzkit/lock_manager.py, src/gzkit/commands/obpi_lock.py, src/gzkit/commands/obpi_complete.py, src/gzkit/exchange_records.py, .gzkit/locks/exchange/**, .gzkit/handoffs/**, scripts/session_orientation.py",
+      "subtrees": [
+        ".gzkit/locks/exchange",
+        ".gzkit/handoffs"
+      ],
+      "body_bytes": 13787
+    },
+    {
+      "filename": "tool_skill_runbook_alignment.instructions.md",
+      "global": false,
+      "paths": "src/gzkit/commands/**, src/gzkit/cli/**, .gzkit/skills/**",
+      "subtrees": [
+        "src/gzkit/commands",
+        "src/gzkit/cli",
+        ".gzkit/skills"
+      ],
+      "body_bytes": 5740
+    }
+  ],
+  "tokenizer_available": false,
+  "handoff_advisement": {
+    "present": true,
+    "bytes": 1098,
+    "chars": 1092,
+    "truncated": false,
+    "budget_chars": 4000,
+    "mode": "direct read-only renderer; not lifecycle dispatch"
+  },
+  "orientation_prior_output": {
+    "path": "/tmp/gz-codex-orientation-output.txt",
+    "bytes": 19505,
+    "chars": 19383,
+    "sha256": "cc9c9af46dacc2657d44c04f65119d8aa38f5f510ff9dbbfbbcfcec7c4efd173",
+    "status": "prior direct-handler output; not re-executed because collect_obpi_locks invokes reaper"
+  },
+  "snapshot_sha": "464dd4ff8fa2ee12d98afe99a867280e1b82b431",
+  "unknowns": [
+    "Not a measurement of this running desktop task total context or token usage.",
+    "No tokenizer installed in project environment; no token counts estimated.",
+    "No trusted hook lifecycle execution observed.",
+    "Starting-directory instruction assembly tested; later file reads or tool working-directory changes not assumed to refresh native chain.",
+    "Full skill bodies, scripts, references and model-card corpus not automatically included just because discoverable.",
+    "No independent Claude prompt dump or comparable complete-context measurement; quarter-context claim unverified."
+  ],
+  "official_sources": [
+    "https://learn.chatgpt.com/docs/agent-configuration/agents-md",
+    "https://learn.chatgpt.com/docs/build-skills",
+    "https://learn.chatgpt.com/docs/hooks"
+  ]
+}

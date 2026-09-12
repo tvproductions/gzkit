@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "captured_from": ".claude/agents/*.md bodies",
+  "captured_at_commit": "464dd4ff8fa2ee12d98afe99a867280e1b82b431",
+  "roles": {
+    "git-sync-repo": {
+      "description": "Use this agent for guarded repository sync operations in gzkit. Trigger phrases: 'git sync repo', 'sync changes', 'commit and push', 'sync the repo'. Goal: clean tree, synced branch, and passing gz quality gates.",
+      "legacy_codex_body_sha256": "52001d69386f22882d105ffb521f3c240a8b632c811ee0399ab89295207ab682"
+    },
+    "implementer": {
+      "description": "Implements plan tasks with TDD discipline. Dispatched per-task by the pipeline controller.",
+      "legacy_codex_body_sha256": "f410126a89e4dc7d256dc94a0103b3057969debc6dc8b94e2fa6a29640248fe3"
+    },
+    "narrator": {
+      "description": "Presents evidence for ceremony and documentation sync. Reads implementation and verification outputs.",
+      "legacy_codex_body_sha256": "37983da1224ad2c4100b8fbbe16d7b10e5e0f2cad96c9d99b7fccde1d5ff68c1"
+    },
+    "quality-reviewer": {
+      "description": "Evaluates code architecture, SOLID, test coverage, maintainability. Read-only independent review.",
+      "legacy_codex_body_sha256": "48e1d56e9737b45d1ff03900a409db1c2a01dc9c65320141967f2c884d627416"
+    },
+    "spec-reviewer": {
+      "description": "Verifies implementation matches plan/brief requirements. Read-only independent review.",
+      "legacy_codex_body_sha256": "f3c9bf2487906e5360c258f396d0f41bb1525c1aec0d84ca4a6f7efbfab80b3e"
+    }
+  }
+}

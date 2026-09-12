@@ -3071,3 +3071,11 @@ escape it needed no longer has anything to except. `gz validate
 items applied" is met and no unruled item was touched. The next § 3 for this arm
 would have to rank new material — the version-chain family is discharged across
 all 25 canonical rules.
+
+## 2026-09-12 — special mission, specific-item approval
+
+Operator g0, verbatim: **Approve D09, D10 and D14**.
+
+Exact original/replacement packet: `docs/governance/context-audit-2026-09-12/first-batch-review.md`. Supersede the six named invariant entries with three approved invariant replacements using retire/remember; preserve append-only history. Route: GHI #921.
+
+Audit root was 48,511 bytes; current root changed independently to 47,851 bytes before publication. Every selected original still matches exactly. Apply to the current complete rendition: 47,851 → 42,442 bytes, 5,409 bytes saved. No other editorial proposal is selected.

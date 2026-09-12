@@ -1,6 +1,6 @@
 # gz status
 
-Display OBPI progress, lifecycle status, and gate readiness across ADRs.
+Display declared workflow fronts, OBPI progress, lifecycle status, and gate readiness.
 
 ---
 
@@ -18,6 +18,19 @@ gz status [--json] [--table] [--show-gates] [--epic SLUG] [--full]
 
 `gz status` derives ADR lifecycle from ledger events and treats OBPI completion as the primary progress unit.
 For single-OBPI drilldown, use `gz obpi status` or `gz obpi sync`.
+
+If `data/active_campaign.json` selects an active campaign, the command also
+projects that document's `## Workflow fronts` section, with its source path.
+This is declared campaign context, not a live health assessment: the command
+does not refresh the GHI queue, inspect handoff lineage, or run R&D experiments.
+Use the `gz-status` skill for a project-wide interpretation with each front's
+current evidence. Projects without this registry retain their existing output.
+
+The front map precedes ADR rows in ordinary and table output, including when
+there are no ADRs or an `--epic` filter matches none. The filter scopes ADRs;
+the front map remains project-wide. A malformed registry, missing campaign,
+or missing/empty section produces an explicit unavailable-context message,
+while preserving the ledger-derived status and successful command exit.
 
 Per ADR it reports:
 
@@ -71,6 +84,13 @@ excluded when `--epic` is set. An epic with no members exits 0 with an empty `ad
 
 ## JSON Output
 
+For projects with a campaign registry, the optional top-level `workflow_fronts`
+object contains `source` (campaign path plus `#workflow-fronts`) and `text`
+(the section body). If the declared source cannot be read, `error` replaces
+`text`; `source` identifies the registry or campaign that needs attention.
+Paths must resolve within the project. This object supplies narrative context
+and does not alter `adrs`, gates, readiness, or `pending_attestations`.
+
 `--json` includes the existing top-level shape plus enriched per-ADR data:
 - `obpis`
 - `obpi_summary`
@@ -118,6 +138,25 @@ uv run gz status --json
 uv run gz status --epic auth
 uv run gz status --epic vendor-alignment --json
 ```
+
+Workflow context excerpt from `uv run gz status --table` in gzkit
+(captured 2026-09-12; ADR rows follow the complete front map):
+
+```text
+Lane: lite
+
+Workflow fronts — declared campaign context
+Source: docs/governance/build-to-1.0-campaign-2026-08-16.md#workflow-fronts
+Operator-directed 2026-09-12: consider all four fronts in project status,
+ordinary status inquiries, and session continuity. This is the standing work
+map; current progress requires live evidence. Front order here is an inventory;
+the campaign sequence, ascending feature ADR order, and operator initiation of
+OBPI work continue to govern execution.
+```
+
+The four front labels in that campaign are **handoff system**, **ghi triage**,
+**adr/obpi campaign**, and **new R&D**. The command reads their descriptions
+from the selected campaign on each invocation.
 
 When tasks exist for active OBPIs, a task summary row appears showing counts
 by status (done, active, pending, blocked, escalated) and whether task tracing

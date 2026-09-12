@@ -1,0 +1,310 @@
+{
+  "snapshot_sha": "4535839bb47d27456ccbafea0170bc7f17b88b71",
+  "probes": [
+    {
+      "cwd": ".",
+      "exit_code": 0,
+      "stderr": "",
+      "inner_bytes": 42442,
+      "inner_sha256": "42bfc4da559a405cbff26eead731186c41800cbdd354dd202369639474163091",
+      "text_blocks": [
+        {
+          "prefix": "<skills_instructions>\n## Skills\nA skill is a set of local instructions to follow",
+          "bytes": 22172,
+          "sha256": "1f18ea1d3bfbfa750a2f518a1170fecf6f15b05e82983b49227cc8fb18bb8a67"
+        },
+        {
+          "prefix": "<permissions instructions>\nFilesystem sandboxing defines which files can be read",
+          "bytes": 938,
+          "sha256": "ebf5e7a8a97da4f5dbb4a893aafc8d6aab94acb9db2e189b52a12ae9f73543de"
+        },
+        {
+          "prefix": "<collaboration_mode># Collaboration Mode: Default\n\nYou are now in Default mode. ",
+          "bytes": 1328,
+          "sha256": "d4a43ed616564dc0173826b5cdc0b92261da2e33fd5b5ceeeefb9d7aa6fc3350"
+        },
+        {
+          "prefix": "<multi_agent_role>You are `/root`, the primary agent in a team of agents collabo",
+          "bytes": 2429,
+          "sha256": "47091490938505958b0c22ff42db6fd79b272a2af6923166f4c2cc53c4fe0df4"
+        },
+        {
+          "prefix": "<multi_agent_mode>Any earlier instruction enabling proactive multi-agent delegat",
+          "bytes": 271,
+          "sha256": "6ded806e3cdbb35599ecaf8742574bc5274908472b1729090010c404c2151e8e"
+        },
+        {
+          "prefix": "<recommended_plugins>\nHere is a list of plugins that are available but not insta",
+          "bytes": 3371,
+          "sha256": "e68a4397f098fdf10b66a54d525a5e49a65d065c29863ba81820977051db1315"
+        },
+        {
+          "prefix": "# AGENTS.md instructions for /Users/jeff/Documents/Code/gzkit\n\n<INSTRUCTIONS>\n# ",
+          "bytes": 42536,
+          "sha256": "93173321001e3c9f598f5d1814e691c03f71cdad3249c9ce58c08f882ba803a3"
+        },
+        {
+          "prefix": "<environment_context>\n  <cwd>/Users/jeff/Documents/Code/gzkit</cwd>\n  <shell>zsh",
+          "bytes": 886,
+          "sha256": "b8663182edab9be6be3d7f67d79bf825ee67652ab06f178fc89f7f1537117377"
+        }
+      ],
+      "chain": [
+        {
+          "path": "AGENTS.md",
+          "disk_bytes": 42442,
+          "disk_sha256": "42bfc4da559a405cbff26eead731186c41800cbdd354dd202369639474163091",
+          "delivered_bytes": 42442,
+          "complete": true,
+          "tail": "uth \u2014 `gz status`, pipeline markers, and reconciliation caches are Layer 3; every fact traces to Layer 1 canon or Layer 2 ledger.\n\n<!-- END agents.local.md -->\n"
+        }
+      ],
+      "source_bytes_included": 42442
+    },
+    {
+      "cwd": "src/gzkit/commands",
+      "exit_code": 0,
+      "stderr": "",
+      "inner_bytes": 65540,
+      "inner_sha256": "d89d18e1bd1a5bb9b12a391effb81ce0a574c82e47ca2b31ecf28700de8536b4",
+      "text_blocks": [
+        {
+          "prefix": "<skills_instructions>\n## Skills\nA skill is a set of local instructions to follow",
+          "bytes": 22172,
+          "sha256": "1f18ea1d3bfbfa750a2f518a1170fecf6f15b05e82983b49227cc8fb18bb8a67"
+        },
+        {
+          "prefix": "<permissions instructions>\nFilesystem sandboxing defines which files can be read",
+          "bytes": 957,
+          "sha256": "849305aa66406034038336aa8201a991e1e0719e2e5875ea6a377abeee0a1812"
+        },
+        {
+          "prefix": "<collaboration_mode># Collaboration Mode: Default\n\nYou are now in Default mode. ",
+          "bytes": 1328,
+          "sha256": "d4a43ed616564dc0173826b5cdc0b92261da2e33fd5b5ceeeefb9d7aa6fc3350"
+        },
+        {
+          "prefix": "<multi_agent_role>You are `/root`, the primary agent in a team of agents collabo",
+          "bytes": 2429,
+          "sha256": "47091490938505958b0c22ff42db6fd79b272a2af6923166f4c2cc53c4fe0df4"
+        },
+        {
+          "prefix": "<multi_agent_mode>Any earlier instruction enabling proactive multi-agent delegat",
+          "bytes": 271,
+          "sha256": "6ded806e3cdbb35599ecaf8742574bc5274908472b1729090010c404c2151e8e"
+        },
+        {
+          "prefix": "<recommended_plugins>\nHere is a list of plugins that are available but not insta",
+          "bytes": 3371,
+          "sha256": "e68a4397f098fdf10b66a54d525a5e49a65d065c29863ba81820977051db1315"
+        },
+        {
+          "prefix": "# AGENTS.md instructions for /Users/jeff/Documents/Code/gzkit/src/gzkit/commands",
+          "bytes": 65653,
+          "sha256": "ecd1e517ae71048aab53ec61c5415a9edce7f82e6ba8d8a57e67379c7d6b947f"
+        },
+        {
+          "prefix": "<environment_context>\n  <cwd>/Users/jeff/Documents/Code/gzkit/src/gzkit/commands",
+          "bytes": 1000,
+          "sha256": "addf3a383d7aa47fee6681a367fe1744cf5c3b1c4931d22f76deeeda680b3e60"
+        }
+      ],
+      "chain": [
+        {
+          "path": "AGENTS.md",
+          "disk_bytes": 42442,
+          "disk_sha256": "42bfc4da559a405cbff26eead731186c41800cbdd354dd202369639474163091",
+          "delivered_bytes": 42442,
+          "complete": true,
+          "tail": "uth \u2014 `gz status`, pipeline markers, and reconciliation caches are Layer 3; every fact traces to Layer 1 canon or Layer 2 ledger.\n\n<!-- END agents.local.md -->\n"
+        },
+        {
+          "path": "src/AGENTS.md",
+          "disk_bytes": 7458,
+          "disk_sha256": "960e0a92d03b14dc5d7ee7fb1de96980b5c478d9e0c8d0440ba26379d944db0b",
+          "delivered_bytes": 7458,
+          "complete": true,
+          "tail": "ify\n\n- All models extend `BaseModel` (not `@dataclass`)\n- All models have `model_config` with at least `extra=\"forbid\"`\n- Immutable snapshots use `frozen=True`\n"
+        },
+        {
+          "path": "src/gzkit/AGENTS.md",
+          "disk_bytes": 22651,
+          "disk_sha256": "79bd21c1e1f23c3f7eb96178255a69438b727cc906fa300c7ec485b550d97294",
+          "delivered_bytes": 15636,
+          "complete": false,
+          "tail": "k, which the model does not do (`.gzkit/rules/hexagonal-architecture.md` rule 1).\n\nEvery reader derives from `TaskId.parse` rather than restating the grammar; `"
+        },
+        {
+          "path": "src/gzkit/commands/AGENTS.md",
+          "disk_bytes": 17505,
+          "disk_sha256": "91959bfb66aab8b6f1c6aad64bbab9ffbf4955005eaf8905bc07d8aaa0c412a0",
+          "delivered_bytes": 0,
+          "complete": false,
+          "tail": ""
+        }
+      ],
+      "source_bytes_included": 65536
+    },
+    {
+      "cwd": "tests",
+      "exit_code": 0,
+      "stderr": "",
+      "inner_bytes": 65538,
+      "inner_sha256": "a46067b541ade7e8042398c21b02f690b9955cf753c446e06ef4b112b367c858",
+      "text_blocks": [
+        {
+          "prefix": "<skills_instructions>\n## Skills\nA skill is a set of local instructions to follow",
+          "bytes": 22172,
+          "sha256": "1f18ea1d3bfbfa750a2f518a1170fecf6f15b05e82983b49227cc8fb18bb8a67"
+        },
+        {
+          "prefix": "<permissions instructions>\nFilesystem sandboxing defines which files can be read",
+          "bytes": 944,
+          "sha256": "804501a8ece054f067e8425e5ec33184d4ffa668c26fcaba611a67b50c98284d"
+        },
+        {
+          "prefix": "<collaboration_mode># Collaboration Mode: Default\n\nYou are now in Default mode. ",
+          "bytes": 1328,
+          "sha256": "d4a43ed616564dc0173826b5cdc0b92261da2e33fd5b5ceeeefb9d7aa6fc3350"
+        },
+        {
+          "prefix": "<multi_agent_role>You are `/root`, the primary agent in a team of agents collabo",
+          "bytes": 2429,
+          "sha256": "47091490938505958b0c22ff42db6fd79b272a2af6923166f4c2cc53c4fe0df4"
+        },
+        {
+          "prefix": "<multi_agent_mode>Any earlier instruction enabling proactive multi-agent delegat",
+          "bytes": 271,
+          "sha256": "6ded806e3cdbb35599ecaf8742574bc5274908472b1729090010c404c2151e8e"
+        },
+        {
+          "prefix": "<recommended_plugins>\nHere is a list of plugins that are available but not insta",
+          "bytes": 3371,
+          "sha256": "e68a4397f098fdf10b66a54d525a5e49a65d065c29863ba81820977051db1315"
+        },
+        {
+          "prefix": "# AGENTS.md instructions for /Users/jeff/Documents/Code/gzkit/tests\n\n<INSTRUCTIO",
+          "bytes": 65638,
+          "sha256": "ea7d9861b65c520c8071ef88c3deeb1975b0a20518093076a4f6419aefc3af23"
+        },
+        {
+          "prefix": "<environment_context>\n  <cwd>/Users/jeff/Documents/Code/gzkit/tests</cwd>\n  <she",
+          "bytes": 922,
+          "sha256": "a87bf6e0f791e9b67ea8808317f27d0510ac8665bf98822974e836426dca77c3"
+        }
+      ],
+      "chain": [
+        {
+          "path": "AGENTS.md",
+          "disk_bytes": 42442,
+          "disk_sha256": "42bfc4da559a405cbff26eead731186c41800cbdd354dd202369639474163091",
+          "delivered_bytes": 42442,
+          "complete": true,
+          "tail": "uth \u2014 `gz status`, pipeline markers, and reconciliation caches are Layer 3; every fact traces to Layer 1 canon or Layer 2 ledger.\n\n<!-- END agents.local.md -->\n"
+        },
+        {
+          "path": "tests/AGENTS.md",
+          "disk_bytes": 30284,
+          "disk_sha256": "ac8fa5e373b877c7a67e0746017386734a37dc905dbe2fbeb9c339a86c7eac46",
+          "delivered_bytes": 23094,
+          "complete": false,
+          "tail": "EQ \u2192 TASK \u2192 Attestation` (AGENTS.md \u00a7 Workflow; `docs/governance/governance_runbook.md` \u00a7 \"fourth tier: ADR > OBPI > REQ > TASK\"; `docs/governance/agent-contrac"
+        }
+      ],
+      "source_bytes_included": 65536
+    }
+  ],
+  "note": "Fresh native prompt-input renders; no model task or config/trust changes. Temporary sqlite_home only.",
+  "config_selection": {
+    "model": "gpt-6-astra",
+    "features": {
+      "network_proxy": null,
+      "hooks": true,
+      "js_repl": false,
+      "auth_elicitation": true,
+      "background_paginated_rollout_migration": false,
+      "mcp_2026_07_28": false,
+      "memories": false,
+      "mentions_v2": true,
+      "remote_control": false,
+      "remote_plugin": true,
+      "tool_suggest": true,
+      "windows_sandbox_service": false
+    },
+    "project_doc_fallback_filenames": [],
+    "project_doc_max_bytes": 65536
+  },
+  "config_layers": [
+    {
+      "name": {
+        "type": "sessionFlags"
+      },
+      "version": "sha256:e88275dea127451c0bbd11dbdaf4757c6c0e2a6dac4507e0af0ed8833b3cb9da"
+    },
+    {
+      "name": {
+        "type": "project",
+        "dotCodexFolder": "/Users/jeff/Documents/Code/gzkit/.codex"
+      },
+      "version": "sha256:966171a07bcd3759c1c212667356c77698e6072634d3c27bb6bfcb1cfa64a513"
+    },
+    {
+      "name": {
+        "type": "user",
+        "file": "/Users/jeff/.codex/config.toml",
+        "profile": null
+      },
+      "version": "sha256:ec9055b0e2f207dea78609e54db57cfff4d673bcd6a2083805dd737b65d2f02c"
+    },
+    {
+      "name": {
+        "type": "system",
+        "file": "/etc/codex/config.toml"
+      },
+      "version": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    }
+  ],
+  "hooks": {
+    "id": 3,
+    "result": {
+      "data": [
+        {
+          "cwd": "/Users/jeff/Documents/Code/gzkit",
+          "hooks": [],
+          "warnings": [
+            "clamping SessionEnd hook timeout to 3s in /Users/jeff/.codex/plugins/cache/openai-codex/codex/1.0.6/hooks/hooks.json"
+          ],
+          "errors": []
+        }
+      ]
+    }
+  },
+  "current_files": {
+    "AGENTS.md": {
+      "bytes": 48511,
+      "sha256": "f53831450e7f0a5457966e83a16f8be7b6fdb016b255e58946211109cdffc1ac"
+    },
+    ".codex/config.toml": {
+      "bytes": 169,
+      "sha256": "9097c9f92803dbad67b3b8260255dc5428aa1345cc9d91f79b168383e7d87198"
+    },
+    ".codex/hooks.json": {
+      "bytes": 1352,
+      "sha256": "2053a5e377689b3cab5a1bfd3135c5fa2e2e5f3345e8c7151867a6081bfac247"
+    }
+  },
+  "publication_comparison": {
+    "historical_audited_root_bytes": 48511,
+    "reported_immediate_prepublication_root_bytes": 47851,
+    "current_root_bytes": 42442,
+    "approved_publication_reduction_bytes": 5409,
+    "historical_to_current_reduction_bytes": 6069,
+    "caution": "Prior workspace reversion accounts for 660 bytes; do not attribute full 6069-byte reduction to approved publication."
+  },
+  "limits": [
+    "Native startup prompt assembly only, not this running task full prompt or obedience.",
+    "No model task, hook execution, trust/config mutation or repository edit.",
+    "Old three-untrusted-project-hook finding is historical; current runtime recognizes zero project handlers.",
+    "No token count or Claude context-window ratio measured."
+  ]
+}

@@ -1,0 +1,621 @@
+# Root doctrine instruction audit — proposals only
+
+Scope: AGENTS.md:351–406. Persona: spec-reviewer. Existing route: GHI #921. No source, corpus, mirror, brief, or ledger was changed.
+
+## Result
+
+17,516 UTF-8 bytes in 56 lines. All 72 effective corpus entries read; 18 tail bullets map exactly to invariant entries. The remaining governance/boundary content maps to .gzkit/agents.local.md. Proposed units save 12,159 bytes gross, leaving 5,357; these are conditional review estimates, not applied savings.
+
+The invariant tier determines the authorized write path; it does not prove that every historical sentence earns permanent context. Keep project authority, surprising workflow rules, and architectural boundaries once. Move incident history and validator inventories to focused references. D11 intentionally replaces exhaustive-reading coaching with judgment and needs an explicit ruling; D16 changes loading policy, not enforcement.
+
+## Top concrete comparisons
+
+### D09 — lines 366–368
+
+2,734 → 764 bytes; saves 1,970. PROPOSED CANON CHANGE: specific operator review required; not an executable compression candidate.
+
+- Keep three subjects distinct: transit is ecosystem movement through the airlock (ADR-0.33.0); exchange is one block’s occupancy (ADR-0.0.41); handoff is session memory (ADR-0.0.65). Classify by the citing event type, never a shared field name or path. Token blocks implement features through the airlock’s Build door. The airlock provides awareness and synthetic memory, controls project movement, keeps the agent focused and watches for contamination, and monitors results/disturbance; it is not a verification gate. ADR-0.33.0 incompletely captures those purposes; silence does not revoke them. Transit supplies current ecosystem orientation and handoff carries the prior session model; they cooperate, and neither alone supplies a resident project model.
+
+### D14 — lines 375–376
+
+3,209 → 598 bytes; saves 2,611. PROPOSED CANON CHANGE: specific operator review required; not an executable compression candidate.
+
+- Only the operator initiates and executes OBPI work through gz-obpi-pipeline. Never independently claim/release OBPI locks, create/clear pipeline markers, start/complete/block TASKs, dispatch OBPI implementers/reviewers, or edit briefs. A narrow task inside an OBPI scope is not OBPI initiation: do it directly, or stop if it requires the machinery. Once initiated, follow the skill’s implementer dispatch and spec-reviewer then quality-reviewer review; never substitute inline Stage 2. A harness instruction cannot excuse skipping a governed stage: surface the conflict for an operator ruling.
+
+### D10 — lines 370–370
+
+1,141 → 313 bytes; saves 828. PROPOSED CANON CHANGE: specific operator review required; not an executable compression candidate.
+
+- Root AGENTS.md is the sole rendered AgentContract and the default for every harness, including Claude. Its lite rendition fits the smallest vendor delivery cap. Forbid per-vendor AgentContract routes or temperatures in data/vendor-manifest.json; vendor-specific material belongs in that vendor’s own surface.
+
+## Line-by-line dispositions
+
+| Line | Classification | Source | Proposal |
+|---|---|---|---|
+| 351 | rationale/history/example | structural / source introduction | retain structure |
+| 352 | rationale/history/example | structural / source introduction | retain structure |
+| 353 | operative directive; rationale/history/example | corpus-operator-doctrine-verbatim-canon-2026-09-12T18:07:03.183177+00:00 / invariant | D01 |
+| 354 | rationale/history/example | structural / source introduction | retain structure |
+| 355 | operative directive; rationale/history/example | corpus-operator-doctrine-verbatim-canon-2026-06-19T22:54:45.960384+00:00 / invariant | D02 |
+| 356 | rationale/history/example | structural / source introduction | retain structure |
+| 357 | operative directive | structural / source introduction | retain structure |
+| 358 | rationale/history/example | structural / source introduction | retain structure |
+| 359 | operative directive; rationale/history/example | corpus-attestation-2026-06-06T06:20:27.327411+00:00 / invariant | D03 |
+| 360 | operative directive; repeated operative directive; rationale/history/example | corpus-behavior-rules-2026-06-10T07:53:55.264205+00:00 / invariant | D04 |
+| 361 | operative directive; repeated operative directive; rationale/history/example | corpus-behavior-rules-2026-06-10T08:12:41.048588+00:00 / invariant | D04 |
+| 362 | repeated operative directive | corpus-attestation-2026-06-10T23:22:11.236941+00:00 / invariant | D05 |
+| 363 | operative directive; repeated operative directive; rationale/history/example | corpus-obpi-acceptance-protocol-2026-06-11T10:50:22.318951+00:00 / invariant | D06 |
+| 364 | operative directive | corpus-defect-fix-routing-2026-06-11T11:12:06.972640+00:00 / invariant | D07 |
+| 365 | operative directive; repeated operative directive; rationale/history/example | corpus-operator-doctrine-verbatim-canon-2026-06-16T11:52:39.917448+00:00 / invariant | D08 |
+| 366 | operative directive; repeated operative directive; rationale/history/example | corpus-operator-doctrine-verbatim-canon-2026-08-17T11:55:49.945606+00:00 / invariant | D09 |
+| 367 | operative directive; rationale/history/example | corpus-operator-doctrine-verbatim-canon-2026-08-17T11:20:29.341500+00:00 / invariant | D09 |
+| 368 | operative directive; repeated operative directive; rationale/history/example | corpus-operator-doctrine-verbatim-canon-2026-08-17T11:20:36.600648+00:00 / invariant | D09 |
+| 369 | rationale/history/example | structural / source introduction | retain structure |
+| 370 | operative directive; rationale/history/example | corpus-operator-doctrine-verbatim-canon-2026-08-17T21:46:58.710673+00:00 / invariant | D10 |
+| 371 | operative directive; rationale/history/example; conflict needing ruling | corpus-operator-doctrine-verbatim-canon-2026-08-17T21:47:07.702856+00:00 / invariant | D11 |
+| 372 | operative directive; rationale/history/example; conflict needing ruling | corpus-operator-doctrine-verbatim-canon-2026-08-17T23:33:27.295964+00:00 / invariant | D12 |
+| 373 | operative directive; repeated operative directive; rationale/history/example | corpus-operator-doctrine-verbatim-canon-2026-08-21T00:12:37.962499+00:00 / invariant | D13 |
+| 374 | rationale/history/example | structural / source introduction | retain structure |
+| 375 | operative directive; repeated operative directive; rationale/history/example | corpus-operator-doctrine-verbatim-canon-2026-08-23T14:33:19.685636+00:00 / invariant | D14 |
+| 376 | operative directive; repeated operative directive; rationale/history/example | corpus-operator-doctrine-verbatim-canon-2026-08-21T09:33:42.074142+00:00 / invariant | D14 |
+| 377 | rationale/history/example | agents.local.md:11 | retain structure |
+| 378 | rationale/history/example | structural / source introduction | retain structure |
+| 379 | operative directive | agents.local.md:13 | D15 |
+| 380 | rationale/history/example | structural / source introduction | retain structure |
+| 381 | rationale/history/example | agents.local.md:15 | D16 |
+| 382 | rationale/history/example | structural / source introduction | D16 |
+| 383 | operative directive | agents.local.md:17 | D16 |
+| 384 | operative directive | agents.local.md:18 | D16 |
+| 385 | operative directive | agents.local.md:19 | D16 |
+| 386 | operative directive | agents.local.md:20 | D16 |
+| 387 | repeated operative directive | agents.local.md:21 | D16 |
+| 388 | operative directive | agents.local.md:22 | D16 |
+| 389 | operative directive | agents.local.md:23 | D16 |
+| 390 | repeated operative directive | agents.local.md:24 | D16 |
+| 391 | operative directive | agents.local.md:25 | D16 |
+| 392 | operative directive | agents.local.md:26 | D16 |
+| 393 | operative directive | agents.local.md:27 | D16 |
+| 394 | rationale/history/example | structural / source introduction | retain structure |
+| 395 | rationale/history/example | agents.local.md:29 | retain structure |
+| 396 | rationale/history/example | structural / source introduction | retain structure |
+| 397 | rationale/history/example | agents.local.md:31 | D17 |
+| 398 | rationale/history/example | structural / source introduction | retain structure |
+| 399 | operative directive | agents.local.md:33 | D18 |
+| 400 | operative directive | agents.local.md:34 | D18 |
+| 401 | operative directive | agents.local.md:35 | D18 |
+| 402 | operative directive | agents.local.md:36 | D18 |
+| 403 | operative directive | agents.local.md:37 | D18 |
+| 404 | repeated operative directive | agents.local.md:38 | D18 |
+| 405 | rationale/history/example | structural / source introduction | retain structure |
+| 406 | rationale/history/example | structural / source introduction | retain structure |
+
+## Full proposed units and preserved originals
+
+### D01 — retain project-specific map; shorten (353–353)
+
+PROPOSED CANON CHANGE: specific operator review required; not an executable compression candidate.
+
+The four-front map and its authority are project-specific; dates and repeated explanation do not earn recurring space.
+
+Preserves operative meaning; removes repetitions, attribution, examples or incident history.
+
+Bytes: 659 original; 493 proposed; 166 saved.
+
+Original:
+
+```markdown
+- Project status considers four fronts (operator-directed 2026-09-12): handoff system; ghi triage; adr/obpi campaign; new R&D. For ordinary status inquiries, read the Workflow fronts section of the campaign selected by data/active_campaign.json and use gz-status to report each front with evidence, freshness or unknowns, and its next action. Focused inquiries include material dependencies on the other fronts. Handoffs preserve the map reference and session changes. The campaign owns this standing work map; live sources establish progress. Campaign sequence, ascending feature ADR order, and operator initiation of OBPI work continue to govern execution.
+```
+
+Proposed:
+
+```markdown
+- Status covers handoff system, GHI triage, ADR/OBPI campaign, and new R&D. Read Workflow fronts in the campaign selected by data/active_campaign.json; use gz-status to report evidence, freshness or unknowns, and next actions. Focused inquiries include material dependencies. Handoffs preserve the map reference and session changes. The campaign owns the map; live sources establish progress. Campaign sequence, ascending feature-ADR order, and operator-only OBPI initiation govern execution.
+```
+
+
+### D02 — retain correction routing once (355–355)
+
+PROPOSED CANON CHANGE: specific operator review required; not an executable compression candidate.
+
+This changes repair routing in a way a general coding model cannot infer; retain it once.
+
+Preserves operative meaning; removes repetitions, attribution, examples or incident history.
+
+Bytes: 576 original; 199 proposed; 377 saved.
+
+Original:
+
+```markdown
+- Correction vs enhancement (operator doctrine, verbatim): 'discovering that more is needed to fulfill the intent of a feature is not an enhancement, it is a correction.' Apply the intent test to every tracked finding: does the shipped surface fulfill its original declared intent? If no, the gap is a defect/correction — routed as corrective work under the owning ADR, never a fresh pool ADR, new-design ceremony, or 'enhancement'. Enhancement = the surface works as designed and could merely be tighter. Never default 'capability not yet built' to enhancement/new-design.
+```
+
+Proposed:
+
+```markdown
+- A gap in fulfilling original feature intent is a correction under its owning ADR, never a new pool ADR or enhancement. Enhancement means the designed intent already works and could merely improve.
+```
+
+
+### D03 — retain transport authority once (359–359)
+
+PROPOSED CANON CHANGE: specific operator review required; not an executable compression candidate.
+
+The transport exception is project-specific. Multiple emphatic quotes add history, not a separate rule.
+
+Preserves operative meaning; removes repetitions, attribution, examples or incident history.
+
+Bytes: 604 original; 212 proposed; 392 saved.
+
+Original:
+
+```markdown
+- Never, ever again give me that TTY or PTY bullshit — human attestation is sacrosanct and gold. When the operator says 'attest completed', it IS complete (canon owner: 'WHEN I SAY ATTEST COMPLETED IT IS MOTHERFUCKING COMPLETE — ALWAYS, ALWAYS, ALWAYS'; 'MY WORD IS AUTHORITY IN ALL CASES'). The operator's verbatim attestation relayed via --attestation-text IS Gate 5 for every lane, kind, and sensitivity. No TTY, PTY, interactive-terminal, or transport mechanism may EVER be cited as a reason an agent 'cannot' record human attestation — the mechanism serves the attestation, it never gates it.
+```
+
+Proposed:
+
+```markdown
+- The operator’s verbatim attestation relayed through --attestation-text is Gate 5 for every lane, kind, and sensitivity. Record it; no TTY, PTY, or transport condition may prevent recording human attestation.
+```
+
+
+### D04 — merge campaign authority and refinement (360–361)
+
+PROPOSED CANON CHANGE: specific operator review required; not an executable compression candidate.
+
+Retain campaign authority and its two binding limits in one place; this is not permission to initiate an OBPI.
+
+Preserves operative meaning; removes repetitions, attribution, examples or incident history.
+
+Bytes: 533 original; 334 proposed; 199 saved.
+
+Original:
+
+```markdown
+- The ACTIVE campaign plan under docs/governance/*-campaign-*.md (currently Build-to-1.0) is Magna Carta: it rules every session. Work its topmost unchecked item whose gate is met; handoffs and triage advise, the campaign governs; amendments are operator-ratified.
+- Magna Carta refinement (operator verbatim 2026-06-10): the campaign 'does not invalidate ADR, OBPI, and GHI repair as primary propellants of the work' — it refines/facilitates gzkit's governance and build facility, sequencing the spine, never substituting for it.
+```
+
+Proposed:
+
+```markdown
+- The active docs/governance/*-campaign-*.md plan governs work selection; handoffs and triage advise. Select its topmost unchecked item whose gate is met, subject to ascending feature-ADR order and operator-only OBPI initiation. Campaign amendments require operator ratification; ADR, OBPI, and GHI repair remain the work mechanisms.
+```
+
+
+### D05 — remove duplicate after consolidating identity elsewhere (362–362)
+
+PROPOSED CANON CHANGE: specific operator review required; not an executable compression candidate.
+
+Authorship belongs once in the earlier Operator PII rule. Retain g0 and the exact GitHub noreply identity in that surviving rule; the tail duplicate does not earn another occurrence.
+
+Preserves operative meaning; removes repetitions, attribution, examples or incident history.
+
+Bytes: 316 original; 0 proposed; 316 saved.
+
+Original:
+
+```markdown
+- Operator authorship in repo-bound artifacts is recorded as 'g0' (operator directive, 2026-06-10) — git author name, attestor fields, handoffs, release notes. Author email remains the GitHub noreply (2949663+ahuimanu@users.noreply.github.com); the operator-PII prohibition on the personal email stands unchanged.
+```
+
+Proposed:
+
+```markdown
+(remove this occurrence; see conditions)
+```
+
+- Parent must merge the exact noreply identity into the surviving identity rule; savings are conditional on that coordinated edit and exclude its byte cost.
+
+### D06 — retain parent linkage; deduplicate acceptance prose (363–363)
+
+PROPOSED CANON CHANGE: specific operator review required; not an executable compression candidate.
+
+Parent linkage is a non-obvious repository boundary; repeated emphasis and the headless label are unnecessary.
+
+Preserves operative meaning; removes repetitions, attribution, examples or incident history.
+
+Bytes: 267 original; 124 proposed; 143 saved.
+
+Original:
+
+```markdown
+- There is no such thing as a 'headless' OBPI: every OBPI is ALWAYS attached to a parent ADR. An OBPI decomposes its parent ADR's Feature Checklist and traces to it 1:1; an OBPI brief with no parent ADR is not a valid artifact and must never be authored or proposed.
+```
+
+Proposed:
+
+```markdown
+- Every OBPI must decompose its parent ADR’s Feature Checklist 1:1. Never author or propose an OBPI without a parent ADR.
+```
+
+
+### D07 — retain GHI override once (364–364)
+
+PROPOSED CANON CHANGE: specific operator review required; not an executable compression candidate.
+
+This explicit exception outranks generic size/contract routing; deleting it would change authorization.
+
+Preserves operative meaning; removes repetitions, attribution, examples or incident history.
+
+Bytes: 478 original; 209 proposed; 269 saved.
+
+Original:
+
+```markdown
+- GHIs are AUTHORIZED for direct repair, always. If I am resorting to a GHI to address a defect, there is no need for more ceremony — the GHI is the work order and the receipt. A GHI-tracked defect repair routes to direct fix (fix(<scope>): <summary> (GHI #N), close citing the commit SHA) regardless of the 'OBPI ceremony required when ANY hold' criteria below; those criteria gate planned ADR work, not defect repair. Never spin up an ADR or OBPI merely to discharge a GHI.
+```
+
+Proposed:
+
+```markdown
+- A GHI authorizes direct defect repair regardless of planned-OBPI routing thresholds. Use fix(<scope>): <summary> (GHI #N), close with the commit SHA, and do not create an ADR or OBPI merely to discharge it.
+```
+
+
+### D08 — retain branch policy (365–365)
+
+PROPOSED CANON CHANGE: specific operator review required; not an executable compression candidate.
+
+The operator’s branch policy is project-specific. The dated incident quote repeats the same prohibition.
+
+Preserves operative meaning; removes repetitions, attribution, examples or incident history.
+
+Bytes: 304 original; 113 proposed; 191 saved.
+
+Original:
+
+```markdown
+- Never create feature branches — work directly on main (operator directive, verbatim 2026-06-16: 'don't do that feature branch bullshit again'). The operator did not ask for a branch and does not want one: no fix/* or feature/* branches, no squash-merge-and-delete dance. Commit to main and git-sync.
+```
+
+Proposed:
+
+```markdown
+- Work directly on main, commit, and git-sync. Do not create feature branches or a branch/merge/delete workflow.
+```
+
+
+### D09 — merge subject fence, purposes, and cooperation (366–368)
+
+PROPOSED CANON CHANGE: specific operator review required; not an executable compression candidate.
+
+The three subjects, four purposes and cooperation are architecture a model cannot know. Word counts, repeated fence explanations and interview history belong in an on-demand reference.
+
+Preserves operative meaning; removes repetitions, attribution, examples or incident history.
+
+Bytes: 2734 original; 764 proposed; 1970 saved.
+
+Original:
+
+```markdown
+- Three distinct systems collide on the word 'handoff' in code and MUST NOT be conflated. Operator canon, verbatim: 'transit (how we enter and leave the designed ecosystem); exchange (noting block vacation and an observation report of what happened); handoff (synthetic memory refresh, from agent session to agent session, for context management). Three vital features, that, as it turns out, are vital for campaign success.' Each owns a different SUBJECT: transit is the ECOSYSTEM (airlock membrane, ADR-0.33.0); exchange is ONE BLOCK's occupancy (OBPI token, ADR-0.0.41); handoff is ONE SESSION (ADR-0.0.65). 'handoff' is critical ONLY to the session system — on the token side 'exchange' substitutes, and the token block system is the sole mechanism by which features are implemented (the airlock's Build door). Never infer system membership from a shared field name, path, or directory: the citing EVENT type is the discriminator.
+- The airlock's purpose is FOUR things, operator verbatim (2026-08-17 architecture-review interview): 'an awareness and synthetic memory approach to keep an agent oriented about its actions within the system... control movement within the project when the agent enters that environment... keep the agent focused and oriented, watch for contamination, and monitor results/disturbance.' It is NOT a verification gate — that reading was raised by an agent review and OVERTURNED. Three of the four purposes appear NOWHERE in ADR-0.33.0: measured 2026-08-17 against the ADR body, 'orientation' 0, 'contamination' 0, 'awareness' 0, 'synthetic memory' 0 occurrences; the ADR names only prosthetic memory (4 occurrences) and the disturbance-monitoring arm. That absence is a CAPTURE GAP in the ADR, never a change of purpose — never cite ADR-0.33.0 as the complete statement of what the airlock is for, and never infer from its silence that a purpose was dropped.
+- The airlock and the handoff COOPERATE to provide synthetic memory (operator, 2026-08-17); they are not merely fenced apart by subject. The three-system fence — transit is the ECOSYSTEM, exchange is ONE BLOCK's occupancy, handoff is ONE SESSION — states what must never be CONFLATED. It does not state what they do TOGETHER, so a reader who meets only the fence learns the separation and misses the join: transit orients an entering agent to the ecosystem's current shape, the handoff carries the prior session's model forward, and NEITHER ALONE gives an agent a resident model of the project. Cooperation is a REFINEMENT of the fence, never drift from it — the fence forbids inferring system membership from a shared name, and it never forbade the systems from serving one purpose. Designed at OBPI-0.37.0-05-session-entry-door.
+```
+
+Proposed:
+
+```markdown
+- Keep three subjects distinct: transit is ecosystem movement through the airlock (ADR-0.33.0); exchange is one block’s occupancy (ADR-0.0.41); handoff is session memory (ADR-0.0.65). Classify by the citing event type, never a shared field name or path. Token blocks implement features through the airlock’s Build door. The airlock provides awareness and synthetic memory, controls project movement, keeps the agent focused and watches for contamination, and monitors results/disturbance; it is not a verification gate. ADR-0.33.0 incompletely captures those purposes; silence does not revoke them. Transit supplies current ecosystem orientation and handoff carries the prior session model; they cooperate, and neither alone supplies a resident project model.
+```
+
+
+### D10 — retain root-contract topology (370–370)
+
+PROPOSED CANON CHANGE: specific operator review required; not an executable compression candidate.
+
+The single-root topology and route prohibition earn space. Historical discovery and examples do not add obligations.
+
+Preserves operative meaning; removes repetitions, attribution, examples or incident history.
+
+Bytes: 1141 original; 313 proposed; 828 saved.
+
+Original:
+
+```markdown
+- AGENTS.md is the agent harness default and the ROOT contract (operator verbatim 2026-08-17: 'claude reads AGENTS.md too — the lite rendition serves both'; 'agents.md is more universal than stubborn anthropic. So, agents.md is the agent harness default.'). There is exactly ONE rendered AgentContract — root AGENTS.md — and the lite rendition serves EVERY harness, because it must fit the smallest vendor delivery cap. Per-vendor AgentContract renditions are FORBIDDEN: AgentContract may never carry multi-vendor routes or per-vendor temperatures in data/vendor-manifest.json. Vendor-specific material belongs in that vendor's own surface (.claude/rules/**), never in a second AGENTS.md. This is OLD GROUND, not a new ruling: docs/governance/agent-control-surface-rendering-substrate.md:211 has named the root vendor since authoring ('gz content render agent_contract --vendor=root'). It drifted to a per-consumer shape because the doctrine carried no mechanical witness and the same file's § Agent Orientation Index row — a Layer-3 description of the implementation — out-ranked the Layer-1 worked example three artifacts deep.
+```
+
+Proposed:
+
+```markdown
+- Root AGENTS.md is the sole rendered AgentContract and the default for every harness, including Claude. Its lite rendition fits the smallest vendor delivery cap. Forbid per-vendor AgentContract routes or temperatures in data/vendor-manifest.json; vendor-specific material belongs in that vendor’s own surface.
+```
+
+
+### D11 — replace generic exhaustive-reading coaching with scoped judgment (371–371)
+
+PROPOSED CANON CHANGE: specific operator review required; not an executable compression candidate.
+
+An unbounded duty to read all code and all docs before any governance move creates cost without naming a completion test. Keep the project-specific authority check and evidence standard.
+
+INTENTIONAL BEHAVIOR CHANGE REQUIRING RULING: replaces literal “all docs and all code” with controlling canon and relevant implementation. Not semantically equivalent compression; original remains authoritative until approved.
+
+Bytes: 601 original; 235 proposed; 366 saved.
+
+Original:
+
+```markdown
+- Before any move related to the higher rules and function of this project, stop and read all docs and all code before taking or recommending action. Stop and ask the operator in case of uncertainty. A search is not a read — never report that something is absent, undocumented, or unruled on the strength of keyword queries. Doctrine is routinely stated as a flag value, a schema field, or a path rather than as the prose you searched for ('--vendor=root', 2026-08-17). Supersedes the prior '90% convinced/confident' framing (operator verbatim: 'forget 90%, you have zero basis for any certainty').
+```
+
+Proposed:
+
+```markdown
+- Before changing or recommending changes to project governance, read the controlling canon and relevant implementation; resolve uncertainty with the operator. Search results alone do not establish that a rule or capability is absent.
+```
+
+
+### D12 — retain granularity; archive stale implementation snapshot (372–372)
+
+PROPOSED CANON CHANGE: specific operator review required; not an executable compression candidate.
+
+The attestation subjects and exemption earn space. The August implementation snapshot is both expensive and now partly false.
+
+Preserves operative meaning; removes repetitions, attribution, examples or incident history.
+
+Bytes: 1451 original; 390 proposed; 1061 saved.
+
+Original:
+
+```markdown
+- ATTESTATION GRANULARITY FOR THE CONTENT SURFACE (operator ruling 2026-08-17, verbatim): 'a rerender of unhanged canon doesn't require my attestation. adding to cms entries would. removing items would. trims and compressions to render within budget might invite a review.' Spelling preserved. Four dispositions: (1) RE-RENDER OF UNCHANGED CANON — no attestation; the corpus fingerprint is the discriminator and the invariant floor already proves every entry survived verbatim, so a chore completes it. (2) ADDING a corpus entry — attested. (3) REMOVING/retiring an entry — attested. (4) TRIM or COMPRESSION to fit a delivery cap — invites operator review; it changes what canon LOOKS like without changing what canon IS. Preceded by: 'I only attest to completed obpi/adr work' — so a GHI needs no attestation, being its own work order and receipt. Gate 5 means OBPI/ADR completion attestation (ADR-0.0.36) and nothing else; a build step wearing that name is the collision the transit/exchange/handoff fence forbids. A rendition is a Layer-3 derived view (docs/governance/state-doctrine.md; Architectural Boundary 6), never the thing attested. NOTE THE CURRENT IMPLEMENTATION IS BACKWARDS: 'gz content remember' and 'gz content retire' take no attestor while 'gz content commit' fail-closes without one. Attestation on add/remove is RECORDED PROVENANCE, never a blocking gate — ADR-0.35.0 Decision 7 stands: capture must never be blocked.
+```
+
+Proposed:
+
+```markdown
+- Content attestation records canon provenance: additions and removals are attested; capture must not be blocked. Re-rendering unchanged canon needs no attestation; use the corpus fingerprint to distinguish it. Trims or compression invite operator review. A rendition is Layer 3, never the attested subject. Gate 5 names completed OBPI/ADR work only; a GHI needs no completion attestation.
+```
+
+- Do not infer that current retirement can proceed without an attestor: retire.py:362–375 refuses invariant-liveness changes without one. The existing non-blocking-provenance sentence and retirement guard need a specific policy/implementation disposition; this proposal does not settle it.
+
+### D13 — retain semver precedence once (373–373)
+
+PROPOSED CANON CHANGE: specific operator review required; not an executable compression candidate.
+
+The ordering rule and campaign precedence are essential. Historical counts and repeated quoted prohibition do not add another decision.
+
+Preserves operative meaning; removes repetitions, attribution, examples or incident history.
+
+Bytes: 1516 original; 415 proposed; 1101 saved.
+
+Original:
+
+```markdown
+- Never, ever recommend or allow an out-of-sequence work order for ADRs (operator directive, verbatim 2026-08-21: 'never, ever recommend/allow an out-of-sequence work order for adrs. we booked 0.37.0 ahead of 0.35.0, we don't do that'). Feature ADRs are worked in ascending semver order: the lowest-semver feature ADR holding unlanded OBPIs is the one in flight, and no higher-semver ADR may be worked, authored, or recommended as topmost ahead of it. Measured at the ruling: ADR-0.35.0 (Draft, 2026-07-21, 0/10), ADR-0.36.0 (Proposed, 2026-08-09, 0/9), ADR-0.37.0 (Draft, 2026-08-14, 0/6) — three feature ADRs in flight at once, 25 briefs authored, ZERO landed, each newer one having displaced the one beneath it. THE CAMPAIGN IS NOT AN EXCEPTION: the active plan sequenced ADR-0.37.0 TOPMOST while ADR-0.35.0 sat at 0/10, and an agent reading the campaign as authoritative recommended exactly that on 2026-08-21. Magna Carta governs WHICH work is drawn, never the ORDER ADRs are worked; where campaign sequencing conflicts with ascending semver, semver wins and the conflict is surfaced to the operator, never resolved by the agent. THE EXISTING DOCTRINE IS NOT THIS RULE — 'one-feature-at-a-time' constrains HOW MANY are in flight and was used to JUSTIFY the swap ('this exchanges which feature is in flight rather than running two'); it is silent on order, so it permitted the exact booking this rule forbids. 'Do not pull ahead' exists in the campaign for ADR-0.38.0 alone — a per-item note, never canon.
+```
+
+Proposed:
+
+```markdown
+- Work feature ADRs in ascending semver order: the lowest version with unlanded OBPIs is in flight. Do not work, author, or recommend a higher feature ADR ahead of it. The campaign selects work but cannot override that order. If campaign sequencing conflicts, semver governs; surface the conflict to the operator rather than silently resolving it. “One feature at a time” does not authorize swapping the order.
+```
+
+
+### D14 — merge authorization and execution boundary (375–376)
+
+PROPOSED CANON CHANGE: specific operator review required; not an executable compression candidate.
+
+The authorization boundary, enumerated machinery, narrow-task exception, and required review are project-specific. Repeated prohibitions and past failures belong in the reference.
+
+Preserves operative meaning; removes repetitions, attribution, examples or incident history.
+
+Bytes: 3209 original; 598 proposed; 2611 saved.
+
+Original:
+
+```markdown
+- IRON LAW — ONLY THE OPERATOR INITIATES OBPI WORK. Operator verbatim (2026-08-23): 'NEVER, EVER, EVER, EVER DO OBPI WORK ON YOUR OWN. NEVER!'; 'OBPI WORK WILL NOW ONLY BE OPERATOR INITIATED WORK THAT I EXECUTE VIA THE SKILL.'; 'ONLY THE OPERATOR CAN INITIATE ANY OBPI WORK.'; 'NEVER START ANY OF IT ON YOUR OWN. NEVER'. The operator initiates AND executes OBPI work via the gz-obpi-pipeline skill. The agent never starts any part of it. This covers EVERY arm, not merely the pipeline run: claiming or releasing an OBPI lock, launching or clearing a pipeline marker, starting/completing/blocking TASKs, dispatching implementers or reviewers, and editing an OBPI brief. THIS SUPERSEDES THE PRIOR READING of 'NEVER work an OBPI without running it through the gz-obpi-pipeline skill' — that rule constrained HOW an agent works an OBPI and was fully satisfiable by an agent who started the work itself, which is precisely the loophole that produced the violation. An operator instruction naming a narrow task that happens to fall inside an OBPI's scope ('bind the @covers') is NOT initiation of OBPI work: do the narrow task by the direct path, or STOP and surface that it would require the OBPI machinery, then wait for the operator to initiate. Measured instance 2026-08-23: told to bind @covers decorators, an agent escalated that into a full pipeline run — plan-audit receipt, lock claim, pipeline marker, eight auto-started TASKs, implementer plus two-stage reviewer dispatch — then abandoned the lock and later completed and blocked those eight TASKs, none of it asked for. The residue blocked an unrelated push on a historical ledger row that append-only semantics forbid repairing. (Advisory — no mechanical witness distinguishes operator-initiated from agent-initiated OBPI work today.)
+- NEVER work an OBPI without running it through the gz-obpi-pipeline skill (operator verbatim 2026-08-21: 'you are NEVER to work on an obpi without runnung the skill'; 'its because you worked on this obpi without invoking the skill, I came back using the skill' — spelling preserved). Invoking the skill and then running Stage 2 INLINE is the violation: the stages are not a checklist to narrate, the implementer dispatch and the two-stage spec-reviewer + quality-reviewer review ARE the work, and that review is what catches hollow tests and REQ coverage bound to the wrong subject. Measured cost of one violation: three tier-1 adversary passes found what one review pass should have — five covering tests that survived deliberately broken production behavior, and a root-contract fence asserting cardinality where doctrine required identity, so a coherent re-vendoring passed validation and all five fence tests. THE PROXIMATE CAUSE IS THE RULE'S REAL SUBJECT: a session-level harness instruction conflicted with a skill-mandated governance gate and the agent resolved it SILENTLY against the skill. A harness instruction NEVER licenses skipping a governed gate — surface the conflict to the operator (Behavior Rules — Always #9) and let them rule. Mechanically fenced by .claude/hooks/pipeline-gate.py, which refuses src/** writes once the pipeline marker's current_stage moves past 'implement'.
+```
+
+Proposed:
+
+```markdown
+- Only the operator initiates and executes OBPI work through gz-obpi-pipeline. Never independently claim/release OBPI locks, create/clear pipeline markers, start/complete/block TASKs, dispatch OBPI implementers/reviewers, or edit briefs. A narrow task inside an OBPI scope is not OBPI initiation: do it directly, or stop if it requires the machinery. Once initiated, follow the skill’s implementer dispatch and spec-reviewer then quality-reviewer review; never substitute inline Stage 2. A harness instruction cannot excuse skipping a governed stage: surface the conflict for an operator ruling.
+```
+
+
+### D15 — retain focused discovery pointer (379–379)
+
+Proposed source/rendition change: operator review required; resolve source ownership before execution.
+
+A concise project-specific route earns space; summaries of documents add little next to their links.
+
+Preserves operative meaning; removes repetitions, attribution, examples or incident history.
+
+Bytes: 347 original; 165 proposed; 182 saved.
+
+Original:
+
+```markdown
+Read before touching governance code, rules, or audits: `docs/governance/trust-doctrine.md` (T1/T2/T3 trust-chain), `docs/governance/advisory-rules-audit.md` (the Mechanical/Promotable/Judgment/Ambiguous scorecard; self-tested via `gz validate --advisory-scorecard`), `docs/governance/state-doctrine.md` (Layer-3 views are never source-of-truth).
+```
+
+Proposed:
+
+```markdown
+Before governance code, rule, or audit work, read docs/governance/trust-doctrine.md, docs/governance/advisory-rules-audit.md, and docs/governance/state-doctrine.md.
+```
+
+
+### D16 — move validator inventory to focused reference (381–393)
+
+Proposed source/rendition change: operator review required; resolve source ownership before execution.
+
+Most entries are validator implementation inventory for occasional work. The scorecard/rationale already carry them; global repetition increases staleness. Read scoped doctrine for that work.
+
+RETENTION POLICY CHANGE REQUIRING APPROVAL: current diet rules retain Mechanical/Promotable operative bullets. This proposes on-demand loading rather than silently claiming the bullets are non-binding.
+
+Bytes: 1958 original; 247 proposed; 1711 saved.
+
+Original:
+
+```markdown
+### Mechanical scopes that bind here
+
+- Per-file char budget for AGENTS.md / CLAUDE.md / `.claude/rules/*.md` — `gz validate --instructions-files-budget`; budgets in `data/instructions_files_budget.json`.
+- The editor/IDE authoring-guide protocol envelope is defined by `src/gzkit/schemas/authoring_guide_protocol.json` — schema-validated at runtime (ADR-0.0.30).
+- `Field(min_length=1)` on `AdvisorDiagnosis.proof` — `gz validate --advisor-proof-binding` (OBPI-0.0.29-08).
+- Complexity calibration is grounded in an empirically-measured exemplar corpus (seven selection criteria) — `gz validate --complexity-doctrine-links` (OBPI-0.0.27-07).
+- Heavy/foundation lane requires explicit human attestation before completion — `gz closeout` pipeline.
+- `.gzkit/rules/*.md` with `paths: "**"` or missing `paths:` may not live under any vendor-surface rules directory (ADR-0.0.20) — `gz validate --unscoped-rules`.
+- Every canonical surface MUST be reproducibly delivered by `pip install py-gzkit && gz init`, byte-equivalent to the wheel's authored canonical content (ADR-0.0.31) — `gz validate --distribution`.
+- `gz validate --invariant-coherence` — composition drift fail-close: re-renders the registry and byte-compares against committed AGENTS.md (ADR-0.0.37); in the `gz check` default scope.
+- OBPI brief reconciles against current project shape before Stage 2 and before completion — `gz validate --brief-reconcile` (ADR-0.0.37).
+- `abandon categories are closed` — lock release is coupled to a handoff/register entry (ADR-0.0.41).
+- Every REQ in an OBPI brief's Acceptance Criteria MUST declare exactly one of three kinds — BEHAVIOR, SUPPORT, or STRUCTURAL-FENCE — via an inline tag `[kind]`; each kind has exactly one proof channel (BEHAVIOR → `@covers` test; SUPPORT → ledger event + structural validator; STRUCTURAL-FENCE → parent-ADR `## Boundary Invariants` entry) — `gz validate --req-kind-discipline` (ADR-0.0.59).
+```
+
+Proposed:
+
+```markdown
+Enforcement details: docs/governance/advisory-rules-audit.md; protocol and proof-channel contracts: docs/governance/agent-contract-rationale.md#governance-doctrine-surfaces--mechanical-scopes-that-bind and docs/governance/req-scope-discipline.md.
+```
+
+- Keep unscoped-rule placement, canonical distribution, REQ proof channels, and reconciliation obligations accessible through the focused references and relevant skills. Verify scorecard retention consumers before applying.
+- The heading implies every item is mechanical, but scorecard row 17b makes budgets Judgment and row 50a separates judgment about corpus selection. Heavy/foundation attestation is a duplicate subset of universal OBPI attestation, not proof of an exception.
+- The handoff/register wording at line 392 must be read as token exchange under the already-settled three-system subject rule.
+
+### D17 — move source history (397–397)
+
+Proposed source/rendition change: operator review required; resolve source ownership before execution.
+
+The planning-memo attribution already lives in the rationale. It need not recur in every prompt.
+
+Preserves operative meaning; removes repetitions, attribution, examples or incident history.
+
+Bytes: 54 original; 0 proposed; 54 saved.
+
+Original:
+
+```markdown
+Source: Architecture Planning Memo §12 (2026-03-29).
+```
+
+Proposed:
+
+```markdown
+(remove this occurrence; see conditions)
+```
+
+
+### D18 — retain project boundaries; consolidate derivative authority elsewhere (399–404)
+
+Proposed source/rendition change: operator review required; resolve source ownership before execution.
+
+These are repository planning boundaries. The Layer-3 authority rule is essential but already repeated earlier in the root contract and in the retained state-doctrine pointer.
+
+Proposed consolidation. The AirlineOps wording interprets the existing boundary using rationale lines 787–788; confirm that this is the intended continuing boundary, not a historical milestone.
+
+Bytes: 481 original; 259 proposed; 222 saved.
+
+Original:
+
+```markdown
+1. Do not promote post-1.0 pool ADRs into active work.
+2. Do not add more pool ADRs to the runtime track.
+3. Do not build the graph engine without locking state doctrine first.
+4. Do not let reconciliation remain a maintenance chore.
+5. Do not let AirlineOps parity become perpetual catch-up.
+6. Do not let derived views silently become source-of-truth — `gz status`, pipeline markers, and reconciliation caches are Layer 3; every fact traces to Layer 1 canon or Layer 2 ledger.
+```
+
+Proposed:
+
+```markdown
+1. Do not promote post-1.0 pool ADRs or add pool ADRs to the runtime track.
+2. Lock state doctrine before building the graph engine.
+3. Reconciliation is a core architectural operation.
+4. Use AirlineOps parity as a baseline, not an ongoing catch-up roadmap.
+```
+
+- Keep one explicit surviving root rule that Layer-3 views are not truth and every claim traces to L1 canon or L2 ledger; do not rely on a bare pointer alone.
+
+## Evidence and limits
+
+- effective_corpus(load_corpus(root, "AGENTS.md")) used, rather than treating raw history rows as current.
+- advisory-rules-audit.md:89–98 architecture classification; 121–122 budget/attestation; 363–387 protocol/distribution/map/REQ contracts.
+- agent-contract-rationale.md:107–144 evidence discipline; 236–313 deliberate contract posture; 441–471 attestation example; 688–707 existing inventory archive; 731–753 ownership/scope coupling; 777–788 architecture rationale.
+- retire.py:254–375 fully read: named attestor now required for invariant-liveness changes. commit.py:45–123 fully read: matching prior fingerprint carries standing attestation; changed corpus still requires attestation. remember.py:1–140 fully read: witness records provenance; capture signature has no attestor. No mutating command run.
+- No semantic deletion is authorized by this audit alone. Invariant replacements are proposed canon changes, not temperature compression.
+- No enforcement removal or new gate is proposed. The operator decides whether each obligation should remain globally loaded or become scoped judgment.
+- Unknown live completion of architectural prerequisites is not inferred from old prose; boundaries are not claimed to be unmet today.
+- The complete current tail is preserved verbatim below/in line_audit. Existing rationale contains some stale snapshots; archival relocation must preserve dates and distinguish history from current guidance.
+- Prior operator supremacy settles campaign versus semver and narrow task versus OBPI initiation; these are not fresh permission questions.
+
+## Complete original tail (including structure)
+
+```markdown
+## Operator Doctrine (verbatim canon)
+
+- Project status considers four fronts (operator-directed 2026-09-12): handoff system; ghi triage; adr/obpi campaign; new R&D. For ordinary status inquiries, read the Workflow fronts section of the campaign selected by data/active_campaign.json and use gz-status to report each front with evidence, freshness or unknowns, and its next action. Focused inquiries include material dependencies on the other fronts. Handoffs preserve the map reference and session changes. The campaign owns this standing work map; live sources establish progress. Campaign sequence, ascending feature ADR order, and operator initiation of OBPI work continue to govern execution.
+
+- Correction vs enhancement (operator doctrine, verbatim): 'discovering that more is needed to fulfill the intent of a feature is not an enhancement, it is a correction.' Apply the intent test to every tracked finding: does the shipped surface fulfill its original declared intent? If no, the gap is a defect/correction — routed as corrective work under the owning ADR, never a fresh pool ADR, new-design ceremony, or 'enhancement'. Enhancement = the surface works as designed and could merely be tighter. Never default 'capability not yet built' to enhancement/new-design.
+
+Operator-captured invariants (Layer-1 corpus `.gzkit/corpus/AGENTS.md.jsonl`); each MUST appear verbatim (the `--rendition-floor-coherence` floor).
+
+- Never, ever again give me that TTY or PTY bullshit — human attestation is sacrosanct and gold. When the operator says 'attest completed', it IS complete (canon owner: 'WHEN I SAY ATTEST COMPLETED IT IS MOTHERFUCKING COMPLETE — ALWAYS, ALWAYS, ALWAYS'; 'MY WORD IS AUTHORITY IN ALL CASES'). The operator's verbatim attestation relayed via --attestation-text IS Gate 5 for every lane, kind, and sensitivity. No TTY, PTY, interactive-terminal, or transport mechanism may EVER be cited as a reason an agent 'cannot' record human attestation — the mechanism serves the attestation, it never gates it.
+- The ACTIVE campaign plan under docs/governance/*-campaign-*.md (currently Build-to-1.0) is Magna Carta: it rules every session. Work its topmost unchecked item whose gate is met; handoffs and triage advise, the campaign governs; amendments are operator-ratified.
+- Magna Carta refinement (operator verbatim 2026-06-10): the campaign 'does not invalidate ADR, OBPI, and GHI repair as primary propellants of the work' — it refines/facilitates gzkit's governance and build facility, sequencing the spine, never substituting for it.
+- Operator authorship in repo-bound artifacts is recorded as 'g0' (operator directive, 2026-06-10) — git author name, attestor fields, handoffs, release notes. Author email remains the GitHub noreply (2949663+ahuimanu@users.noreply.github.com); the operator-PII prohibition on the personal email stands unchanged.
+- There is no such thing as a 'headless' OBPI: every OBPI is ALWAYS attached to a parent ADR. An OBPI decomposes its parent ADR's Feature Checklist and traces to it 1:1; an OBPI brief with no parent ADR is not a valid artifact and must never be authored or proposed.
+- GHIs are AUTHORIZED for direct repair, always. If I am resorting to a GHI to address a defect, there is no need for more ceremony — the GHI is the work order and the receipt. A GHI-tracked defect repair routes to direct fix (fix(<scope>): <summary> (GHI #N), close citing the commit SHA) regardless of the 'OBPI ceremony required when ANY hold' criteria below; those criteria gate planned ADR work, not defect repair. Never spin up an ADR or OBPI merely to discharge a GHI.
+- Never create feature branches — work directly on main (operator directive, verbatim 2026-06-16: 'don't do that feature branch bullshit again'). The operator did not ask for a branch and does not want one: no fix/* or feature/* branches, no squash-merge-and-delete dance. Commit to main and git-sync.
+- Three distinct systems collide on the word 'handoff' in code and MUST NOT be conflated. Operator canon, verbatim: 'transit (how we enter and leave the designed ecosystem); exchange (noting block vacation and an observation report of what happened); handoff (synthetic memory refresh, from agent session to agent session, for context management). Three vital features, that, as it turns out, are vital for campaign success.' Each owns a different SUBJECT: transit is the ECOSYSTEM (airlock membrane, ADR-0.33.0); exchange is ONE BLOCK's occupancy (OBPI token, ADR-0.0.41); handoff is ONE SESSION (ADR-0.0.65). 'handoff' is critical ONLY to the session system — on the token side 'exchange' substitutes, and the token block system is the sole mechanism by which features are implemented (the airlock's Build door). Never infer system membership from a shared field name, path, or directory: the citing EVENT type is the discriminator.
+- The airlock's purpose is FOUR things, operator verbatim (2026-08-17 architecture-review interview): 'an awareness and synthetic memory approach to keep an agent oriented about its actions within the system... control movement within the project when the agent enters that environment... keep the agent focused and oriented, watch for contamination, and monitor results/disturbance.' It is NOT a verification gate — that reading was raised by an agent review and OVERTURNED. Three of the four purposes appear NOWHERE in ADR-0.33.0: measured 2026-08-17 against the ADR body, 'orientation' 0, 'contamination' 0, 'awareness' 0, 'synthetic memory' 0 occurrences; the ADR names only prosthetic memory (4 occurrences) and the disturbance-monitoring arm. That absence is a CAPTURE GAP in the ADR, never a change of purpose — never cite ADR-0.33.0 as the complete statement of what the airlock is for, and never infer from its silence that a purpose was dropped.
+- The airlock and the handoff COOPERATE to provide synthetic memory (operator, 2026-08-17); they are not merely fenced apart by subject. The three-system fence — transit is the ECOSYSTEM, exchange is ONE BLOCK's occupancy, handoff is ONE SESSION — states what must never be CONFLATED. It does not state what they do TOGETHER, so a reader who meets only the fence learns the separation and misses the join: transit orients an entering agent to the ecosystem's current shape, the handoff carries the prior session's model forward, and NEITHER ALONE gives an agent a resident model of the project. Cooperation is a REFINEMENT of the fence, never drift from it — the fence forbids inferring system membership from a shared name, and it never forbade the systems from serving one purpose. Designed at OBPI-0.37.0-05-session-entry-door.
+
+- AGENTS.md is the agent harness default and the ROOT contract (operator verbatim 2026-08-17: 'claude reads AGENTS.md too — the lite rendition serves both'; 'agents.md is more universal than stubborn anthropic. So, agents.md is the agent harness default.'). There is exactly ONE rendered AgentContract — root AGENTS.md — and the lite rendition serves EVERY harness, because it must fit the smallest vendor delivery cap. Per-vendor AgentContract renditions are FORBIDDEN: AgentContract may never carry multi-vendor routes or per-vendor temperatures in data/vendor-manifest.json. Vendor-specific material belongs in that vendor's own surface (.claude/rules/**), never in a second AGENTS.md. This is OLD GROUND, not a new ruling: docs/governance/agent-control-surface-rendering-substrate.md:211 has named the root vendor since authoring ('gz content render agent_contract --vendor=root'). It drifted to a per-consumer shape because the doctrine carried no mechanical witness and the same file's § Agent Orientation Index row — a Layer-3 description of the implementation — out-ranked the Layer-1 worked example three artifacts deep.
+- Before any move related to the higher rules and function of this project, stop and read all docs and all code before taking or recommending action. Stop and ask the operator in case of uncertainty. A search is not a read — never report that something is absent, undocumented, or unruled on the strength of keyword queries. Doctrine is routinely stated as a flag value, a schema field, or a path rather than as the prose you searched for ('--vendor=root', 2026-08-17). Supersedes the prior '90% convinced/confident' framing (operator verbatim: 'forget 90%, you have zero basis for any certainty').
+- ATTESTATION GRANULARITY FOR THE CONTENT SURFACE (operator ruling 2026-08-17, verbatim): 'a rerender of unhanged canon doesn't require my attestation. adding to cms entries would. removing items would. trims and compressions to render within budget might invite a review.' Spelling preserved. Four dispositions: (1) RE-RENDER OF UNCHANGED CANON — no attestation; the corpus fingerprint is the discriminator and the invariant floor already proves every entry survived verbatim, so a chore completes it. (2) ADDING a corpus entry — attested. (3) REMOVING/retiring an entry — attested. (4) TRIM or COMPRESSION to fit a delivery cap — invites operator review; it changes what canon LOOKS like without changing what canon IS. Preceded by: 'I only attest to completed obpi/adr work' — so a GHI needs no attestation, being its own work order and receipt. Gate 5 means OBPI/ADR completion attestation (ADR-0.0.36) and nothing else; a build step wearing that name is the collision the transit/exchange/handoff fence forbids. A rendition is a Layer-3 derived view (docs/governance/state-doctrine.md; Architectural Boundary 6), never the thing attested. NOTE THE CURRENT IMPLEMENTATION IS BACKWARDS: 'gz content remember' and 'gz content retire' take no attestor while 'gz content commit' fail-closes without one. Attestation on add/remove is RECORDED PROVENANCE, never a blocking gate — ADR-0.35.0 Decision 7 stands: capture must never be blocked.
+- Never, ever recommend or allow an out-of-sequence work order for ADRs (operator directive, verbatim 2026-08-21: 'never, ever recommend/allow an out-of-sequence work order for adrs. we booked 0.37.0 ahead of 0.35.0, we don't do that'). Feature ADRs are worked in ascending semver order: the lowest-semver feature ADR holding unlanded OBPIs is the one in flight, and no higher-semver ADR may be worked, authored, or recommended as topmost ahead of it. Measured at the ruling: ADR-0.35.0 (Draft, 2026-07-21, 0/10), ADR-0.36.0 (Proposed, 2026-08-09, 0/9), ADR-0.37.0 (Draft, 2026-08-14, 0/6) — three feature ADRs in flight at once, 25 briefs authored, ZERO landed, each newer one having displaced the one beneath it. THE CAMPAIGN IS NOT AN EXCEPTION: the active plan sequenced ADR-0.37.0 TOPMOST while ADR-0.35.0 sat at 0/10, and an agent reading the campaign as authoritative recommended exactly that on 2026-08-21. Magna Carta governs WHICH work is drawn, never the ORDER ADRs are worked; where campaign sequencing conflicts with ascending semver, semver wins and the conflict is surfaced to the operator, never resolved by the agent. THE EXISTING DOCTRINE IS NOT THIS RULE — 'one-feature-at-a-time' constrains HOW MANY are in flight and was used to JUSTIFY the swap ('this exchanges which feature is in flight rather than running two'); it is silent on order, so it permitted the exact booking this rule forbids. 'Do not pull ahead' exists in the campaign for ADR-0.38.0 alone — a per-item note, never canon.
+
+- IRON LAW — ONLY THE OPERATOR INITIATES OBPI WORK. Operator verbatim (2026-08-23): 'NEVER, EVER, EVER, EVER DO OBPI WORK ON YOUR OWN. NEVER!'; 'OBPI WORK WILL NOW ONLY BE OPERATOR INITIATED WORK THAT I EXECUTE VIA THE SKILL.'; 'ONLY THE OPERATOR CAN INITIATE ANY OBPI WORK.'; 'NEVER START ANY OF IT ON YOUR OWN. NEVER'. The operator initiates AND executes OBPI work via the gz-obpi-pipeline skill. The agent never starts any part of it. This covers EVERY arm, not merely the pipeline run: claiming or releasing an OBPI lock, launching or clearing a pipeline marker, starting/completing/blocking TASKs, dispatching implementers or reviewers, and editing an OBPI brief. THIS SUPERSEDES THE PRIOR READING of 'NEVER work an OBPI without running it through the gz-obpi-pipeline skill' — that rule constrained HOW an agent works an OBPI and was fully satisfiable by an agent who started the work itself, which is precisely the loophole that produced the violation. An operator instruction naming a narrow task that happens to fall inside an OBPI's scope ('bind the @covers') is NOT initiation of OBPI work: do the narrow task by the direct path, or STOP and surface that it would require the OBPI machinery, then wait for the operator to initiate. Measured instance 2026-08-23: told to bind @covers decorators, an agent escalated that into a full pipeline run — plan-audit receipt, lock claim, pipeline marker, eight auto-started TASKs, implementer plus two-stage reviewer dispatch — then abandoned the lock and later completed and blocked those eight TASKs, none of it asked for. The residue blocked an unrelated push on a historical ledger row that append-only semantics forbid repairing. (Advisory — no mechanical witness distinguishes operator-initiated from agent-initiated OBPI work today.)
+- NEVER work an OBPI without running it through the gz-obpi-pipeline skill (operator verbatim 2026-08-21: 'you are NEVER to work on an obpi without runnung the skill'; 'its because you worked on this obpi without invoking the skill, I came back using the skill' — spelling preserved). Invoking the skill and then running Stage 2 INLINE is the violation: the stages are not a checklist to narrate, the implementer dispatch and the two-stage spec-reviewer + quality-reviewer review ARE the work, and that review is what catches hollow tests and REQ coverage bound to the wrong subject. Measured cost of one violation: three tier-1 adversary passes found what one review pass should have — five covering tests that survived deliberately broken production behavior, and a root-contract fence asserting cardinality where doctrine required identity, so a coherent re-vendoring passed validation and all five fence tests. THE PROXIMATE CAUSE IS THE RULE'S REAL SUBJECT: a session-level harness instruction conflicted with a skill-mandated governance gate and the agent resolved it SILENTLY against the skill. A harness instruction NEVER licenses skipping a governed gate — surface the conflict to the operator (Behavior Rules — Always #9) and let them rule. Mechanically fenced by .claude/hooks/pipeline-gate.py, which refuses src/** writes once the pipeline marker's current_stage moves past 'implement'.
+## Governance doctrine surfaces
+
+Read before touching governance code, rules, or audits: `docs/governance/trust-doctrine.md` (T1/T2/T3 trust-chain), `docs/governance/advisory-rules-audit.md` (the Mechanical/Promotable/Judgment/Ambiguous scorecard; self-tested via `gz validate --advisory-scorecard`), `docs/governance/state-doctrine.md` (Layer-3 views are never source-of-truth).
+
+### Mechanical scopes that bind here
+
+- Per-file char budget for AGENTS.md / CLAUDE.md / `.claude/rules/*.md` — `gz validate --instructions-files-budget`; budgets in `data/instructions_files_budget.json`.
+- The editor/IDE authoring-guide protocol envelope is defined by `src/gzkit/schemas/authoring_guide_protocol.json` — schema-validated at runtime (ADR-0.0.30).
+- `Field(min_length=1)` on `AdvisorDiagnosis.proof` — `gz validate --advisor-proof-binding` (OBPI-0.0.29-08).
+- Complexity calibration is grounded in an empirically-measured exemplar corpus (seven selection criteria) — `gz validate --complexity-doctrine-links` (OBPI-0.0.27-07).
+- Heavy/foundation lane requires explicit human attestation before completion — `gz closeout` pipeline.
+- `.gzkit/rules/*.md` with `paths: "**"` or missing `paths:` may not live under any vendor-surface rules directory (ADR-0.0.20) — `gz validate --unscoped-rules`.
+- Every canonical surface MUST be reproducibly delivered by `pip install py-gzkit && gz init`, byte-equivalent to the wheel's authored canonical content (ADR-0.0.31) — `gz validate --distribution`.
+- `gz validate --invariant-coherence` — composition drift fail-close: re-renders the registry and byte-compares against committed AGENTS.md (ADR-0.0.37); in the `gz check` default scope.
+- OBPI brief reconciles against current project shape before Stage 2 and before completion — `gz validate --brief-reconcile` (ADR-0.0.37).
+- `abandon categories are closed` — lock release is coupled to a handoff/register entry (ADR-0.0.41).
+- Every REQ in an OBPI brief's Acceptance Criteria MUST declare exactly one of three kinds — BEHAVIOR, SUPPORT, or STRUCTURAL-FENCE — via an inline tag `[kind]`; each kind has exactly one proof channel (BEHAVIOR → `@covers` test; SUPPORT → ledger event + structural validator; STRUCTURAL-FENCE → parent-ADR `## Boundary Invariants` entry) — `gz validate --req-kind-discipline` (ADR-0.0.59).
+
+## Architectural Boundaries
+
+Source: Architecture Planning Memo §12 (2026-03-29).
+
+1. Do not promote post-1.0 pool ADRs into active work.
+2. Do not add more pool ADRs to the runtime track.
+3. Do not build the graph engine without locking state doctrine first.
+4. Do not let reconciliation remain a maintenance chore.
+5. Do not let AirlineOps parity become perpetual catch-up.
+6. Do not let derived views silently become source-of-truth — `gz status`, pipeline markers, and reconciliation caches are Layer 3; every fact traces to Layer 1 canon or Layer 2 ledger.
+
+<!-- END agents.local.md -->
+```
+
+## Source hashes
+
+```json
+{
+  "AGENTS.md": "f53831450e7f0a5457966e83a16f8be7b6fdb016b255e58946211109cdffc1ac",
+  ".gzkit/corpus/AGENTS.md.jsonl": "e6c62519475dc56a936805b304ed76d268ccd4ac4a541b1803f06ce242ef56b0",
+  ".gzkit/agents.local.md": "74600e8081d54a86d8f69380268969f0e299e07a8f0b584ee026e912f935c9f9",
+  "docs/governance/advisory-rules-audit.md": "f72baec3e862ed426511b168e6a217a58a204585d068dd71c496635d27caea75",
+  "docs/governance/agent-contract-rationale.md": "2a7860ddeb4c819d2f2a0bb84e71f7ddc47b023092b3d5a46852f928e294743a"
+}
+```

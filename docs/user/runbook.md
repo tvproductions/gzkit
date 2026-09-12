@@ -1310,6 +1310,13 @@ surface directly.
 
 ## Rules Surface
 
+For Codex, `gz agent sync control-surfaces` also restores native orientation and
+shared handoff/verification hooks where the repository orientation script exists,
+and renders registered canonical role bodies. Review new hook definitions with
+Codex's `/hooks` before relying on automatic execution. See
+[Codex interim parity](../governance/codex-interim-parity-2026-09-12.md) for the
+measured boundary and the owning pool ADR.
+
 Canonical rules live at `.gzkit/rules/<slug>.md` (authored source-of-truth).
 `gz init` scaffolds all canonical rules from the wheel's package surface
 (`importlib.resources.files("gzkit.rules")`) into `.gzkit/rules/`. Once

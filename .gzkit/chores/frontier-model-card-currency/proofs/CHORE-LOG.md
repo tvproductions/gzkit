@@ -84,3 +84,26 @@ Validated: documents
 
 ✓ All validations passed (1 scopes).
 ```
+## 2026-09-12T14:33:23-05:00
+- Status: PASS
+- Chore: frontier-model-card-currency
+- Title: Frontier Model Card Currency (System-Card Doctrine Refresh)
+- Lane: lite
+- Version: 1.0.0
+- Criteria Results:
+  - [PASS] `uv run python scripts/check_proof_freshness.py frontier-model-card-currency` => rc=0 (0.03s) -- exit 0 == 0
+  - [PASS] `python3 -c "import json; cards=json.load(open('data/frontier_model_cards.json'))['cards']; assert cards, 'registry empty'; missing=[c for c in cards if not all(c.get(k) for k in ('vendor','model_family','card_date','url','status'))]; assert not missing, f'incomplete entries: {missing}'; assert all(c['status'] in ('current','unconsumed','superseded') for c in cards), 'bad status'"` => rc=0 (0.02s) -- exit 0 == 0
+  - [PASS] `uv run gz validate --documents` => rc=0 (0.28s) -- exit 0 == 0
+
+```text
+[uv run python scripts/check_proof_freshness.py frontier-model-card-currency] stdout:
+scan-interval gate — frontier-model-card-currency
+  maximum age:  30d
+  last run:     2026-09-02 (10d ago)
+
+PASS: the last recorded run is within the scan interval.
+[uv run gz validate --documents] stdout:
+Validated: documents
+
+✓ All validations passed (1 scopes).
+```

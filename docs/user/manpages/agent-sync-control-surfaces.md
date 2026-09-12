@@ -35,8 +35,30 @@ marker, run sync once (closes GHI #449).
 | `.gzkit/personas/<slug>.md` | `src/gzkit/personas/<slug>.md` | `.claude/personas/`, `.agents/personas/`, `.github/personas/` (transformed) |
 | `.gzkit/templates/<name>.md` | `src/gzkit/templates/<name>.md` | (none) |
 | `.gzkit/chores/<slug>/` (canonical class) | `src/gzkit/chores/<slug>/` (canonical only) | (none) |
+| `.gzkit/agents/roles.json` + registered Markdown bodies | (project-local opt-in) | `.codex/agents/*.toml` (body transformed; native metadata preserved) |
+| `src/gzkit/hooks/codex.py` + repository orientation script | Python producer | `.codex/hooks.json` (native matcher groups) |
 
 Re-running on freshly-synced state produces zero writes (idempotent).
+
+### Codex interim delivery
+
+For enabled Codex projects carrying `scripts/session_orientation.py`, sync
+registers orientation and shared handoff advisement on startup, resume, clear,
+and compaction, plus the shared verification exit-code guard on shell calls.
+It migrates the old command-array hook format and preserves unrelated handlers.
+The generated `statusMessage` labels identify the owned handlers for subsequent
+repair. Projects without the orientation script receive no dangling registration.
+
+Registered role bodies come from `.gzkit/agents/`; captured legacy fingerprints
+permit the initial migration. Generated bodies track canonical changes while
+existing TOML metadata and customized unmarked roles remain intact. No registry
+means no role writes. Existing nonempty Codex configuration remains preserved,
+including model, sandbox, and document-budget settings.
+
+Native Codex hook review remains necessary after generation: `/hooks` lists each
+definition and its trust status. A coherent file is not evidence of automatic
+execution. See the [interim parity record](../../governance/codex-interim-parity-2026-09-12.md)
+for measured support and the work still owned by the pool ADR.
 
 ## Determinism Contract
 
@@ -118,3 +140,17 @@ uv run gz agent sync control-surfaces --dry-run
 # Apply sync and view recovery warnings (if any)
 uv run gz agent sync control-surfaces
 ```
+
+Codex paths from the observed 2026-09-12 sync output (excerpt):
+
+```text
+  Updated .codex/agents/git-sync-repo.toml
+  Updated .codex/agents/implementer.toml
+  Updated .codex/agents/narrator.toml
+  Updated .codex/agents/quality-reviewer.toml
+  Updated .codex/agents/spec-reviewer.toml
+  Updated .codex/config.toml
+  Updated .codex/hooks.json
+```
+
+`Updated` names managed delivery paths; unchanged bytes are not rewritten.

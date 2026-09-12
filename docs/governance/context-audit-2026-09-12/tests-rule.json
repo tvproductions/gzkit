@@ -1,0 +1,1278 @@
+{
+  "scope": ".gzkit/rules/tests.md only",
+  "persona": "main-session — craftsperson",
+  "status": "read-only audit; proposals unselected",
+  "source_path": "/Users/jeff/Documents/Code/gzkit/.gzkit/rules/tests.md",
+  "sha256": "91d2ef4c843123f1b4b64d22d3085064d79e16a97a3f9157a43fd65176f9b142",
+  "lines": 197,
+  "nonblank_lines": 133,
+  "source_bytes": 24802,
+  "disposition_counts": {
+    "KEEP binding": 51,
+    "LIFT rationale-history": 8,
+    "VERIFY conflict": 19,
+    "DELETE": 2,
+    "ON-DEMAND": 42,
+    "DUPLICATE": 11
+  },
+  "delivery": [
+    {
+      "path": "/Users/jeff/Documents/Code/gzkit/tests/AGENTS.md",
+      "bytes": 30284,
+      "exact_canonical_body_present": true,
+      "body_start_line": 90,
+      "body_end_line": 279
+    },
+    {
+      "path": "/Users/jeff/Documents/Code/gzkit/.claude/rules/tests.md",
+      "bytes": 24793,
+      "exact_canonical_body_present": true,
+      "body_start_line": 7,
+      "body_end_line": 196
+    },
+    {
+      "path": "/Users/jeff/Documents/Code/gzkit/src/gzkit/rules/tests.md",
+      "bytes": 24802,
+      "exact_canonical_body_present": true,
+      "body_start_line": 8,
+      "body_end_line": 197
+    }
+  ],
+  "delivery_prior_probe": {
+    "source": "/tmp/gz-context-audit-delivery.md",
+    "root_bytes": 48511,
+    "tests_agents_bytes": 30284,
+    "tests_agents_bytes_delivered": 17025,
+    "cut": "mutation-sweep paragraph; a mutant that does not im",
+    "limitation": "Prior runtime snapshot, not a post-publication re-probe. Current root is being edited by another agent; no current truncation point inferred."
+  },
+  "source_ownership": "Canonical .gzkit/rules/tests.md; exact packaged copy src/gzkit/rules/tests.md and generated tests/AGENTS.md and .claude/rules/tests.md observed. No tests corpus stream exists in current .gzkit/corpus inventory; do not invent CMS entry ownership. Main session owns publication/onboarding choice.",
+  "ranges": [
+    {
+      "start_line": 1,
+      "end_line": 10,
+      "disposition": "KEEP binding",
+      "reason": "Delivery metadata, version marker and title; paths tests/** selects this rule."
+    },
+    {
+      "start_line": 12,
+      "end_line": 12,
+      "disposition": "LIFT rationale-history",
+      "reason": "Version and incident history belongs in the existing version-history document. Isolation and verifier/mutation rules are separately stated below."
+    },
+    {
+      "start_line": 14,
+      "end_line": 16,
+      "disposition": "KEEP binding",
+      "reason": "Project-specific unittest-only boundary; scorecard row 36 Mechanical."
+    },
+    {
+      "start_line": 17,
+      "end_line": 17,
+      "disposition": "VERIFY conflict",
+      "reason": "No-network boundary is specific; table-driven preference is optional coaching and can be removed independently."
+    },
+    {
+      "start_line": 18,
+      "end_line": 18,
+      "disposition": "KEEP binding",
+      "reason": "Smoke subset, 60s and empty-tier behavior are specific; row 87 Mechanical."
+    },
+    {
+      "start_line": 19,
+      "end_line": 19,
+      "disposition": "LIFT rationale-history",
+      "reason": "Keep absence of full-tier ceiling and parallel permission; lift ratchet explanation and dated benchmark."
+    },
+    {
+      "start_line": 20,
+      "end_line": 20,
+      "disposition": "DELETE",
+      "reason": "Generic fixture-size coaching; local reproducible isolation is covered concretely at 21-23 and 140-142."
+    },
+    {
+      "start_line": 21,
+      "end_line": 23,
+      "disposition": "KEEP binding",
+      "reason": "Concrete temp-DB, Git environment chokepoint and cleanup boundaries; preserve Git helper/path facts, lift incident narrative in a later selected edit. Row 90 Mechanical."
+    },
+    {
+      "start_line": 25,
+      "end_line": 28,
+      "disposition": "KEEP binding",
+      "reason": "Coverage floor and nonregression are policy facts; floor is row 38 Mechanical."
+    },
+    {
+      "start_line": 30,
+      "end_line": 35,
+      "disposition": "ON-DEMAND",
+      "reason": "Task-specific command recipe; route actual gate claims through current verification/ARB skill rather than another competing command roster."
+    },
+    {
+      "start_line": 37,
+      "end_line": 37,
+      "disposition": "DELETE",
+      "reason": "All tests PASS is generic success coaching, not a project-specific discriminator."
+    },
+    {
+      "start_line": 38,
+      "end_line": 39,
+      "disposition": "DUPLICATE",
+      "reason": "Smoke outcome duplicates 18; 40% floor duplicates 27. Exact row 38 Mechanical text needs retained-wording/scorecard review if removed."
+    },
+    {
+      "start_line": 41,
+      "end_line": 46,
+      "disposition": "KEEP binding",
+      "reason": "Specific @smoke marker, import and prohibition on a third test directory."
+    },
+    {
+      "start_line": 48,
+      "end_line": 51,
+      "disposition": "ON-DEMAND",
+      "reason": "Live-source enumeration is useful test-design judgment; four-line persuasion belongs in test-design rationale."
+    },
+    {
+      "start_line": 53,
+      "end_line": 54,
+      "disposition": "KEEP binding",
+      "reason": "No subprocess work in smoke is a concrete membership restriction; remove explanatory last sentence only after selection."
+    },
+    {
+      "start_line": 56,
+      "end_line": 64,
+      "disposition": "VERIFY conflict",
+      "reason": "TDD sequence includes generic coaching; retain requirement derivation once. Line 64 requires every outside-pipeline test to locate an OBPI, which needs reconciliation with operator-authorized GHI/direct fixes rather than implying new OBPI work."
+    },
+    {
+      "start_line": 66,
+      "end_line": 66,
+      "disposition": "KEEP binding",
+      "reason": "Retain one explicit semantic-proof criterion; scorecard 70/72 Judgment, not mechanically guaranteed."
+    },
+    {
+      "start_line": 68,
+      "end_line": 68,
+      "disposition": "DUPLICATE",
+      "reason": "Unit-test purpose reiterates 16,17,66,70,72 and the rendering carve-out76; delete generic explanatory definition once unique contract requirements remain."
+    },
+    {
+      "start_line": 70,
+      "end_line": 70,
+      "disposition": "KEEP binding",
+      "reason": "Project BEHAVIOR versus SUPPORT proof discrimination; shorten rhetorical question and repetition only while retaining proof-channel distinction."
+    },
+    {
+      "start_line": 72,
+      "end_line": 72,
+      "disposition": "ON-DEMAND",
+      "reason": "Generic assertion-target preference; rendering exception is covered at76. Row70 Judgment."
+    },
+    {
+      "start_line": 74,
+      "end_line": 74,
+      "disposition": "ON-DEMAND",
+      "reason": "Audit-helper naming coaching and promotion history already have an on-demand rationale section; no justified need for every test task. Row71 Judgment; deletion from binding context requires selected canon disposition."
+    },
+    {
+      "start_line": 76,
+      "end_line": 76,
+      "disposition": "KEEP binding",
+      "reason": "Keep output-contract marker syntax, class suffixes, separate fixture classes, BEHAVIOR classification and settled advisory status. Lift promotion-history rationale, not those project facts. Row69 Judgment."
+    },
+    {
+      "start_line": 78,
+      "end_line": 78,
+      "disposition": "DUPLICATE",
+      "reason": "The per-behavior cycle is already stated at58 and60-62; this repeats it with speculative causal coaching. Keep that cycle and remove the repeated paragraph. Rows72/75 Judgment."
+    },
+    {
+      "start_line": 80,
+      "end_line": 80,
+      "disposition": "KEEP binding",
+      "reason": "RED receipt schema/verb versus GREEN ARB step distinction is not generic testing knowledge. Row67 Mechanical; detailed invocation may be on-demand only with deliberate retention decision."
+    },
+    {
+      "start_line": 82,
+      "end_line": 86,
+      "disposition": "ON-DEMAND",
+      "reason": "Mutation-sweep procedure is conditional on performing a sweep. Retain a discovery pointer and method identity; move four outcomes, cache isolation and evidence obligations together, preserving them in the selected on-demand workflow. Row89 Judgment."
+    },
+    {
+      "start_line": 88,
+      "end_line": 97,
+      "disposition": "ON-DEMAND",
+      "reason": "Executable mutation example belongs beside the mutation procedure, not every testing session."
+    },
+    {
+      "start_line": 99,
+      "end_line": 99,
+      "disposition": "ON-DEMAND",
+      "reason": "Conclusive-sweep evidence rule must travel with mutation procedure, not be deleted as generic coaching."
+    },
+    {
+      "start_line": 101,
+      "end_line": 109,
+      "disposition": "ON-DEMAND",
+      "reason": "Verifier exit-status semantics and known shell/hook limits belong in verification/ARB workflow. Keep concise current result-channel boundary in always-loaded context if needed; row66 Mechanical prevents calling ordinary relocation retention-safe. Preserve receipt truth and do not treat echoed status as aggregate success."
+    },
+    {
+      "start_line": 111,
+      "end_line": 113,
+      "disposition": "DUPLICATE",
+      "reason": "Governance-spine explanation already in root contract; retaining TASK trailer fact below does not need anatomical metaphor/history."
+    },
+    {
+      "start_line": 115,
+      "end_line": 115,
+      "disposition": "KEEP binding",
+      "reason": "Concrete mandatory Task trailer and non-substitution boundary; row68 Mechanical."
+    },
+    {
+      "start_line": 117,
+      "end_line": 124,
+      "disposition": "ON-DEMAND",
+      "reason": "Keep availability of direct-fix slug/no mandatory GHI filing discoverable; detailed form table belongs in git-sync/task instructions. Do not move to stale tests-rationale TASK section without reconciliation."
+    },
+    {
+      "start_line": 125,
+      "end_line": 127,
+      "disposition": "VERIFY conflict",
+      "reason": "Inline lifecycle recipe risks initiating operator-owned OBPI machinery, puts @covers after completion, and imports superseded direct-fix thresholds. Replace with current skill routing only after authority reconciliation; do not execute it."
+    },
+    {
+      "start_line": 129,
+      "end_line": 136,
+      "disposition": "KEEP binding",
+      "reason": "Project-specific unittest/tests versus behave/features map and both-runner check contract; row37 Mechanical."
+    },
+    {
+      "start_line": 138,
+      "end_line": 142,
+      "disposition": "VERIFY conflict",
+      "reason": "Keep helper identities and E2E destination. Blanket mock-every-subprocess/<200ms claim requires reconciliation with rule22/row90 explicitly witnessed real-Git isolation test; not safe to flatten into an absolute without a documented exception."
+    },
+    {
+      "start_line": 144,
+      "end_line": 148,
+      "disposition": "KEEP binding",
+      "reason": "REQ tag spelling, lifecycle scope, waiver path and kind-aware exemption are project facts. Compress prose only while preserving these distinctions; row39 Mechanical is narrower/older than paragraph148, so row text alone cannot be treated as whole intent."
+    },
+    {
+      "start_line": 150,
+      "end_line": 161,
+      "disposition": "KEEP binding",
+      "reason": "Keep three-kind taxonomy once, case-insensitive reader/uppercase-new/no rewrite rule, exact proof channels and SUPPORT path-specific artifact_edited exception. Row59 Mechanical and59a Judgment."
+    },
+    {
+      "start_line": 163,
+      "end_line": 169,
+      "disposition": "ON-DEMAND",
+      "reason": "Three authoring examples belong in brief-authoring skill/reference; syntax already stated153."
+    },
+    {
+      "start_line": 171,
+      "end_line": 177,
+      "disposition": "VERIFY conflict",
+      "reason": "Duplicate proof matrix also overstates SUPPORT event requirement compared with artifact_edited disk-existence alternative at160; preserve the precise taxonomy, not both simplified and qualified versions."
+    },
+    {
+      "start_line": 179,
+      "end_line": 185,
+      "disposition": "LIFT rationale-history",
+      "reason": "Historical pre-ADR figures and repeated SUPPORT explanation already have an explicit canonical expansion at193-195."
+    },
+    {
+      "start_line": 187,
+      "end_line": 191,
+      "disposition": "DUPLICATE",
+      "reason": "Non-BEHAVIOR proof-channel prohibition follows exact one-channel taxonomy above; retain once in condensed taxonomy instead of another explanation."
+    },
+    {
+      "start_line": 193,
+      "end_line": 197,
+      "disposition": "KEEP binding",
+      "reason": "On-demand discovery references; existing tests-rationale TASK workflow is stale and must not silently become authoritative merely because detail is moved there."
+    }
+  ],
+  "line_dispositions": [
+    {
+      "line": 1,
+      "text": "---",
+      "disposition": "KEEP binding",
+      "reason": "Delivery metadata, version marker and title; paths tests/** selects this rule.",
+      "bytes": 4
+    },
+    {
+      "line": 2,
+      "text": "id: tests",
+      "disposition": "KEEP binding",
+      "reason": "Delivery metadata, version marker and title; paths tests/** selects this rule.",
+      "bytes": 10
+    },
+    {
+      "line": 3,
+      "text": "paths:",
+      "disposition": "KEEP binding",
+      "reason": "Delivery metadata, version marker and title; paths tests/** selects this rule.",
+      "bytes": 7
+    },
+    {
+      "line": 4,
+      "text": "  - \"tests/**\"",
+      "disposition": "KEEP binding",
+      "reason": "Delivery metadata, version marker and title; paths tests/** selects this rule.",
+      "bytes": 15
+    },
+    {
+      "line": 5,
+      "text": "description: Test policy and coverage requirements",
+      "disposition": "KEEP binding",
+      "reason": "Delivery metadata, version marker and title; paths tests/** selects this rule.",
+      "bytes": 51
+    },
+    {
+      "line": 6,
+      "text": "---",
+      "disposition": "KEEP binding",
+      "reason": "Delivery metadata, version marker and title; paths tests/** selects this rule.",
+      "bytes": 4
+    },
+    {
+      "line": 8,
+      "text": "<!-- rule-version: 0.23.0 -->",
+      "disposition": "KEEP binding",
+      "reason": "Delivery metadata, version marker and title; paths tests/** selects this rule.",
+      "bytes": 30
+    },
+    {
+      "line": 10,
+      "text": "# Test Policy (canonical)",
+      "disposition": "KEEP binding",
+      "reason": "Delivery metadata, version marker and title; paths tests/** selects this rule.",
+      "bytes": 26
+    },
+    {
+      "line": 12,
+      "text": "> **Rule version:** `0.23.0` — GHI #977 adds § Isolation *Git fixture isolation*: every `git` a test spawns passes `env=_isolated_git_env()`, git's own repo-local variable set (`local_repo_env`) scrubbed at the fixture boundary. Measured 2026-09-07: a push from a linked worktree ran the pre-push `gz check`, the fixtures inherited the hook's absolute `GIT_DIR`, and `git init` in a temp dir re-initialised the hosting repository as bare while `git config` wrote the fixture identity into its shared config. MECHANICAL from the first landing — `tests/commands/test_common_fixtures.py::TestEveryGitSpawnIsInsideTheBoundary` fences every literal `git` argv under `tests/**`. Prior `0.22.0` — GHI #970 extends § Verification exit-code integrity to the `||` BRANCH: the branch announces a failure in output and replaces it in status, and the gate had honoured the announcement as if it were the report. Names the branch-local remedy (`set -e` is suppressed left of `||`), and tracks the two limits it declares rather than closes — the aggregate status (GHI #969) and the caught `&&` chain (GHI #971). Prior `0.21.0` — GHI #940 extends § Verification exit-code integrity to the SEQUENCE form: the clause was scoped to the pipe character while the shell reports the last *statement* just as it reports the last *stage*, so `verifier > log; tail log` read as compliant. Names the two non-interchangeable remedies (`pipefail` for a pipe, `set -e` for a sequence), the immediacy requirement on a `$?` read, and — declared rather than hidden — that the aggregate status is a floor a shell-level rule cannot lift. Prior `0.20.0` — adds § Mutation-sweep integrity (GHI #963): a failing mutant run is not a kill, sweeps report four outcomes, and every mutant runs with its own bytecode cache. Prior `0.19.0` diet pass under GHI #921 (operator ruling 2026-08-29, *\"we are compressing everything and anything that the agent can consume\"*). Version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#testsmd). Binding rules unchanged.",
+      "disposition": "LIFT rationale-history",
+      "reason": "Version and incident history belongs in the existing version-history document. Isolation and verifier/mutation rules are separately stated below.",
+      "bytes": 2075
+    },
+    {
+      "line": 14,
+      "text": "## General Rules (binding)",
+      "disposition": "KEEP binding",
+      "reason": "Project-specific unittest-only boundary; scorecard row 36 Mechanical.",
+      "bytes": 27
+    },
+    {
+      "line": 16,
+      "text": "- Use **stdlib `unittest`**; no pytest. That means no pytest syntax, fixtures, parametrization, plugins, or bare pytest-style assertions. Use `unittest`, `unittest.mock`, and stdlib fixtures such as `tempfile.TemporaryDirectory()`.",
+      "disposition": "KEEP binding",
+      "reason": "Project-specific unittest-only boundary; scorecard row 36 Mechanical.",
+      "bytes": 232
+    },
+    {
+      "line": 17,
+      "text": "- Prefer **table-driven** tests with deterministic seeds; no network/external services.",
+      "disposition": "VERIFY conflict",
+      "reason": "No-network boundary is specific; table-driven preference is optional coaching and can be removed independently.",
+      "bytes": 88
+    },
+    {
+      "line": 18,
+      "text": "- **Smoke/BVT <=60s** — binds the `@smoke`-marked subset run by `uv run gz smoke`, NOT the full unit tier. Enforced by that verb (exit 3 on breach or on an empty tier) and run as the `Smoke tier` step of `gz check` (GHI #724).",
+      "disposition": "KEEP binding",
+      "reason": "Smoke subset, 60s and empty-tier behavior are specific; row 87 Mechanical.",
+      "bytes": 229
+    },
+    {
+      "line": 19,
+      "text": "- **Full unit tier: no fixed ceiling.** Its runtime grows with the REQ set by design — every BEHAVIOR REQ owes a covering test and § Coverage Floor requires it — so a constant ceiling over a ratcheting workload can only be breached, never held. That is why the 60s budget belongs to the `@smoke` subset, and the reason is the ratchet, NOT a ruling against parallel execution: the canonical \"Tests pass\" invocation runs `unittest-parallel` (GHI #856). Dated record, 2026-08-27 at `2c81cb7d`, 10-core host, 8,912 tests, both exit 0: **144.23s serial, 41.34s parallel** — illustrative of the gap, never a threshold; the enforced budget is whatever `uv run gz smoke` fails closed on.",
+      "disposition": "LIFT rationale-history",
+      "reason": "Keep absence of full-tier ceiling and parallel permission; lift ratchet explanation and dated benchmark.",
+      "bytes": 687
+    },
+    {
+      "line": 20,
+      "text": "- Fixtures: local, small, reproducible; avoid huge goldens.",
+      "disposition": "DELETE",
+      "reason": "Generic fixture-size coaching; local reproducible isolation is covered concretely at 21-23 and 140-142.",
+      "bytes": 60
+    },
+    {
+      "line": 21,
+      "text": "- **Database isolation:** unit tests MUST use `tempfile` temp DBs; NEVER use live/production databases.",
+      "disposition": "KEEP binding",
+      "reason": "Concrete temp-DB, Git environment chokepoint and cleanup boundaries; preserve Git helper/path facts, lift incident narrative in a later selected edit. Row 90 Mechanical.",
+      "bytes": 104
+    },
+    {
+      "line": 22,
+      "text": "- **Git fixture isolation:** every `git` a test spawns passes `env=_isolated_git_env()` from `tests/commands/common.py`, and `tests/__init__.py` drops the same repo-local variables from the process environment once, so a fixture — or production code a test drives — targeting a temp repository operates on that repository regardless of the repo-selection state the process inherited. A hook exports an absolute `GIT_DIR`, and from a linked worktree an unguarded `git init` re-initialises the hosting repo as bare (GHI #977). Variable set and rationale: `gzkit.git_spawn_boundary`. Fenced by `tests/commands/test_common_fixtures.py::TestEveryGitSpawnIsInsideTheBoundary`.",
+      "disposition": "KEEP binding",
+      "reason": "Concrete temp-DB, Git environment chokepoint and cleanup boundaries; preserve Git helper/path facts, lift incident narrative in a later selected edit. Row 90 Mechanical.",
+      "bytes": 675
+    },
+    {
+      "line": 23,
+      "text": "- **Cleanup:** NEVER use raw `shutil.rmtree()` in tearDown. Use `tempfile.TemporaryDirectory()` context manager.",
+      "disposition": "KEEP binding",
+      "reason": "Concrete temp-DB, Git environment chokepoint and cleanup boundaries; preserve Git helper/path facts, lift incident narrative in a later selected edit. Row 90 Mechanical.",
+      "bytes": 113
+    },
+    {
+      "line": 25,
+      "text": "## Coverage Floor (binding)",
+      "disposition": "KEEP binding",
+      "reason": "Coverage floor and nonregression are policy facts; floor is row 38 Mechanical.",
+      "bytes": 28
+    },
+    {
+      "line": 27,
+      "text": "- **Minimum line coverage: 40.00%**",
+      "disposition": "KEEP binding",
+      "reason": "Coverage floor and nonregression are policy facts; floor is row 38 Mechanical.",
+      "bytes": 36
+    },
+    {
+      "line": 28,
+      "text": "- Before closing any brief, verify coverage has not regressed.",
+      "disposition": "KEEP binding",
+      "reason": "Coverage floor and nonregression are policy facts; floor is row 38 Mechanical.",
+      "bytes": 63
+    },
+    {
+      "line": 30,
+      "text": "## Run / Verify",
+      "disposition": "ON-DEMAND",
+      "reason": "Task-specific command recipe; route actual gate claims through current verification/ARB skill rather than another competing command roster.",
+      "bytes": 16
+    },
+    {
+      "line": 32,
+      "text": "```bash",
+      "disposition": "ON-DEMAND",
+      "reason": "Task-specific command recipe; route actual gate claims through current verification/ARB skill rather than another competing command roster.",
+      "bytes": 8
+    },
+    {
+      "line": 33,
+      "text": "uv run ruff check . --fix && uv run ruff format .",
+      "disposition": "ON-DEMAND",
+      "reason": "Task-specific command recipe; route actual gate claims through current verification/ARB skill rather than another competing command roster.",
+      "bytes": 50
+    },
+    {
+      "line": 34,
+      "text": "uv run -m unittest -v",
+      "disposition": "ON-DEMAND",
+      "reason": "Task-specific command recipe; route actual gate claims through current verification/ARB skill rather than another competing command roster.",
+      "bytes": 22
+    },
+    {
+      "line": 35,
+      "text": "```",
+      "disposition": "ON-DEMAND",
+      "reason": "Task-specific command recipe; route actual gate claims through current verification/ARB skill rather than another competing command roster.",
+      "bytes": 4
+    },
+    {
+      "line": 37,
+      "text": "- All tests PASS.",
+      "disposition": "DELETE",
+      "reason": "All tests PASS is generic success coaching, not a project-specific discriminator.",
+      "bytes": 18
+    },
+    {
+      "line": 38,
+      "text": "- Smoke tier within budget: `uv run gz smoke` exits 0.",
+      "disposition": "DUPLICATE",
+      "reason": "Smoke outcome duplicates 18; 40% floor duplicates 27. Exact row 38 Mechanical text needs retained-wording/scorecard review if removed.",
+      "bytes": 55
+    },
+    {
+      "line": 39,
+      "text": "- Coverage >=40.00%.",
+      "disposition": "DUPLICATE",
+      "reason": "Smoke outcome duplicates 18; 40% floor duplicates 27. Exact row 38 Mechanical text needs retained-wording/scorecard review if removed.",
+      "bytes": 21
+    },
+    {
+      "line": 41,
+      "text": "### Smoke tier membership (binding)",
+      "disposition": "KEEP binding",
+      "reason": "Specific @smoke marker, import and prohibition on a third test directory.",
+      "bytes": 36
+    },
+    {
+      "line": 43,
+      "text": "A smoke test proves a surface **answers at all** — build verification, not",
+      "disposition": "KEEP binding",
+      "reason": "Specific @smoke marker, import and prohibition on a third test directory.",
+      "bytes": 77
+    },
+    {
+      "line": 44,
+      "text": "correctness. Mark it with `@smoke` from `gzkit.smoke`; there is no smoke",
+      "disposition": "KEEP binding",
+      "reason": "Specific @smoke marker, import and prohibition on a third test directory.",
+      "bytes": 73
+    },
+    {
+      "line": 45,
+      "text": "directory, because `gz validate --test-tiers` forbids a third tier under",
+      "disposition": "KEEP binding",
+      "reason": "Specific @smoke marker, import and prohibition on a third test directory.",
+      "bytes": 73
+    },
+    {
+      "line": 46,
+      "text": "`tests/` and the runner boundary is the tier boundary.",
+      "disposition": "KEEP binding",
+      "reason": "Specific @smoke marker, import and prohibition on a third test directory.",
+      "bytes": 55
+    },
+    {
+      "line": 48,
+      "text": "Prefer members that enumerate their coverage from a **live** source (the CLI",
+      "disposition": "ON-DEMAND",
+      "reason": "Live-source enumeration is useful test-design judgment; four-line persuasion belongs in test-design rationale.",
+      "bytes": 77
+    },
+    {
+      "line": 49,
+      "text": "parser, the registry) over members that hard-code a list. A hand-maintained",
+      "disposition": "ON-DEMAND",
+      "reason": "Live-source enumeration is useful test-design judgment; four-line persuasion belongs in test-design rationale.",
+      "bytes": 76
+    },
+    {
+      "line": 50,
+      "text": "roster is the thing that rots; a sweep over the live parser covers a new verb",
+      "disposition": "ON-DEMAND",
+      "reason": "Live-source enumeration is useful test-design judgment; four-line persuasion belongs in test-design rationale.",
+      "bytes": 78
+    },
+    {
+      "line": 51,
+      "text": "the moment it is registered and needs no upkeep.",
+      "disposition": "ON-DEMAND",
+      "reason": "Live-source enumeration is useful test-design judgment; four-line persuasion belongs in test-design rationale.",
+      "bytes": 49
+    },
+    {
+      "line": 53,
+      "text": "Members must stay fast and free of subprocess work. The tier's entire value is",
+      "disposition": "KEEP binding",
+      "reason": "No subprocess work in smoke is a concrete membership restriction; remove explanatory last sentence only after selection.",
+      "bytes": 79
+    },
+    {
+      "line": 54,
+      "text": "that it fits a budget the full suite structurally cannot.",
+      "disposition": "KEEP binding",
+      "reason": "No subprocess work in smoke is a concrete membership restriction; remove explanatory last sentence only after selection.",
+      "bytes": 58
+    },
+    {
+      "line": 56,
+      "text": "## Red-Green-Refactor (TDD Discipline — binding)",
+      "disposition": "VERIFY conflict",
+      "reason": "TDD sequence includes generic coaching; retain requirement derivation once. Line 64 requires every outside-pipeline test to locate an OBPI, which needs reconciliation with operator-authorized GHI/direct fixes rather than implying new OBPI work.",
+      "bytes": 51
+    },
+    {
+      "line": 58,
+      "text": "Gate 2 is named TDD. Red-Green-Refactor is a repeating cycle per behavior increment:",
+      "disposition": "VERIFY conflict",
+      "reason": "TDD sequence includes generic coaching; retain requirement derivation once. Line 64 requires every outside-pipeline test to locate an OBPI, which needs reconciliation with operator-authorized GHI/direct fixes rather than implying new OBPI work.",
+      "bytes": 85
+    },
+    {
+      "line": 60,
+      "text": "- **Red:** Write a test for a behavior required by the OBPI brief (`REQ-*` identifier). Run it. Watch it fail for the right reason. A test that passes on first run is not Red.",
+      "disposition": "VERIFY conflict",
+      "reason": "TDD sequence includes generic coaching; retain requirement derivation once. Line 64 requires every outside-pipeline test to locate an OBPI, which needs reconciliation with operator-authorized GHI/direct fixes rather than implying new OBPI work.",
+      "bytes": 176
+    },
+    {
+      "line": 61,
+      "text": "- **Green:** Write the **simplest code** that makes the test pass.",
+      "disposition": "VERIFY conflict",
+      "reason": "TDD sequence includes generic coaching; retain requirement derivation once. Line 64 requires every outside-pipeline test to locate an OBPI, which needs reconciliation with operator-authorized GHI/direct fixes rather than implying new OBPI work.",
+      "bytes": 67
+    },
+    {
+      "line": 62,
+      "text": "- **Refactor:** Improve the code's structure without changing its behavior. Adding new behavior is not refactoring — that starts a new Red.",
+      "disposition": "VERIFY conflict",
+      "reason": "TDD sequence includes generic coaching; retain requirement derivation once. Line 64 requires every outside-pipeline test to locate an OBPI, which needs reconciliation with operator-authorized GHI/direct fixes rather than implying new OBPI work.",
+      "bytes": 142
+    },
+    {
+      "line": 64,
+      "text": "**Derivation rule:** Test cases derive from OBPI brief acceptance criteria, not from the implementation. When adding tests outside a pipeline run, locate the governing OBPI brief and derive from its requirements.",
+      "disposition": "VERIFY conflict",
+      "reason": "TDD sequence includes generic coaching; retain requirement derivation once. Line 64 requires every outside-pipeline test to locate an OBPI, which needs reconciliation with operator-authorized GHI/direct fixes rather than implying new OBPI work.",
+      "bytes": 213
+    },
+    {
+      "line": 66,
+      "text": "**Tests assert semantics, not strings (invariant 6f).** Assertions derive from the REQ or skill contract, not from a run of the code.",
+      "disposition": "KEEP binding",
+      "reason": "Retain one explicit semantic-proof criterion; scorecard 70/72 Judgment, not mechanically guaranteed.",
+      "bytes": 134
+    },
+    {
+      "line": 68,
+      "text": "**Unit-test purpose.** A gzkit unit test is a stdlib `unittest.TestCase` check of one required code behavior. It is fast, isolated, deterministic, and fails when the behavior contract breaks. It does not preserve current implementation structure, current prose, or current rendered output — unless that exact output form is the named behavior contract.",
+      "disposition": "DUPLICATE",
+      "reason": "Unit-test purpose reiterates 16,17,66,70,72 and the rendering carve-out76; delete generic explanatory definition once unique contract requirements remain.",
+      "bytes": 355
+    },
+    {
+      "line": 70,
+      "text": "**The discriminator (apply this, do not recite § 6f).** Ask: *if the production code's behavior changed but its text did not, would this test fail?* If no, it is not a BEHAVIOR proof. A test that `grep`s a production doc for a substring, or asserts that a file exists, proves content — not behavior. Route it to the SUPPORT channel (ledger event + structural validator) or delete it. § 6f states the rule; this question is how you apply it.",
+      "disposition": "KEEP binding",
+      "reason": "Project BEHAVIOR versus SUPPORT proof discrimination; shorten rhetorical question and repetition only while retaining proof-channel distinction.",
+      "bytes": 445
+    },
+    {
+      "line": 72,
+      "text": "**Prefer structured assertion targets.** Assert on structured fields, domain objects, state transitions, exception types, ledger event fields, and parsed values. Assert exact strings or table markers only when rendering behavior is the named contract (see § Output-form fixture carve-out).",
+      "disposition": "ON-DEMAND",
+      "reason": "Generic assertion-target preference; rendering exception is covered at76. Row70 Judgment.",
+      "bytes": 291
+    },
+    {
+      "line": 74,
+      "text": "**Eval-awareness corollary (advisory — no mechanical witness, and none is planned).** Audit-helper names SHOULD NOT pattern-match as audit-step names — name them by behavior, not audit role (e.g. `assert_receipt_id_resolves` not `assert_audit_passes`). This clause binds at authoring and review time only. A name-shape scan over `tests/**` is tractable and was scored as a promotion candidate for months without being built; under the § Recommended promotion order freeze in `docs/governance/advisory-rules-audit.md` (2026-06-08, opt-in-with-justification), a check nobody has observed catching anything is mechanism this codebase should not add. Reclassify only on a named, observed instance of the confusion this clause names.",
+      "disposition": "ON-DEMAND",
+      "reason": "Audit-helper naming coaching and promotion history already have an on-demand rationale section; no justified need for every test task. Row71 Judgment; deletion from binding context requires selected canon disposition.",
+      "bytes": 734
+    },
+    {
+      "line": 76,
+      "text": "**Output-form fixture carve-out.** Output-form assertions are permitted in dedicated fixture tests per `.gzkit/rules/tool-skill-runbook-alignment.md` § Invariant 3. Keep them in separate test classes from REQ-derived unit tests. **Declare the carve-out** with an `# output-contract: <reason>` comment inside the test function, or by placing the test in a class whose name ends `OutputForm`, `OutputContract`, or `Rendering`. `gz test-shape` reads those markers; an undeclared assertion on `result.output` / `.getvalue()` / `assertRegex` is reported as advisory, never fail-closed (GHI #571) — **and advisory is the settled disposition, not a waypoint.** The scorecard carried this row as a promotion candidate whose stated path was \"flip that arm closed once the declared-marker backlog drains\"; draining a backlog is not observed drift, and the § Recommended promotion order freeze (2026-06-08) admits a new fail-closed check only on named, observed evidence. Flipping the arm closed would also fail-close the whole legacy corpus at once, which is the reason it was left open in the first place. *(GHI #270 reconciliation: output-form fixture tests are **BEHAVIOR** REQ proofs under the REQ Scope Discipline taxonomy — they test CLI render-code behavior, not file content. The apparent contradiction between § 6f's prose-content prohibition and Invariant 3's render-form requirement dissolves once REQ kind is named.)*",
+      "disposition": "KEEP binding",
+      "reason": "Keep output-contract marker syntax, class suffixes, separate fixture classes, BEHAVIOR classification and settled advisory status. Lift promotion-history rationale, not those project facts. Row69 Judgment.",
+      "bytes": 1427
+    },
+    {
+      "line": 78,
+      "text": "**Per-increment rhythm:** One test → one observed RED → minimum code to GREEN → next increment. **Do not slice horizontally** — authoring every test for a brief and then every implementation is not TDD with a long cycle, it is a different activity that produces tests insensitive to change. Written against an implementation you are *about to* write, assertions record the shape you already intend rather than the behavior the REQ demands, and none is ever observed failing for the right reason: the RED that arrives with ten other REDs is noise, not a signal about any one of them. Slice vertically — one REQ carried from failing test to passing code before the next begins. This is § The discriminator applied at authoring time rather than review time: a test batch-written alongside its implementation is the shape most likely to answer \"no\" to *if behavior changed but text did not, would this test fail?*",
+      "disposition": "DUPLICATE",
+      "reason": "The per-behavior cycle is already stated at58 and60-62; this repeats it with speculative causal coaching. Keep that cycle and remove the repeated paragraph. Rows72/75 Judgment.",
+      "bytes": 921
+    },
+    {
+      "line": 80,
+      "text": "**RED evidence:** Do not author ARB *step* receipts with `exit_status=1` as \"RED receipts\". Gate 2 TDD claims cite only GREEN-side step receipts (`arb-step-unittest-*`). The RED witness is a distinct artifact with its own schema: `uv run gz arb red --req <REQ-ID>` runs the covering test against the base tree with the production hunks withheld and emits an `arb-red-<REQ>` receipt (`gzkit.arb.red_receipt.v1`) plus a `red_receipt_emitted` ledger event carrying `failure_class` (`assertion` | `error` | `none`). A `none` verdict means the test passed without its implementation and therefore cannot fail — the § 6f defect (GHI #642).",
+      "disposition": "KEEP binding",
+      "reason": "RED receipt schema/verb versus GREEN ARB step distinction is not generic testing knowledge. Row67 Mechanical; detailed invocation may be on-demand only with deliberate retention decision.",
+      "bytes": 637
+    },
+    {
+      "line": 82,
+      "text": "**Mutation-sweep integrity (binding, GHI #963).** A mutation sweep grades a guard by deleting it and observing whether a test notices. Its verdicts are quoted as governance evidence, so the sweep must be at least as trustworthy as the tests it grades. **A failing mutant run is NOT a kill.** An absent target, a no-op edit, a mutant that does not import, an unrelated failure, or a red baseline each produce a non-zero exit indistinguishable from a real one; a surviving run can equally conceal a mutation that never activated. Report **four** outcomes, never two — `killed` and `survived` are claims about the GUARD, `invalid` and `inconclusive` are claims about the RUN, and a sweep that lumps them reports coverage it never observed.",
+      "disposition": "ON-DEMAND",
+      "reason": "Mutation-sweep procedure is conditional on performing a sweep. Retain a discovery pointer and method identity; move four outcomes, cache isolation and evidence obligations together, preserving them in the selected on-demand workflow. Row89 Judgment.",
+      "bytes": 739
+    },
+    {
+      "line": 84,
+      "text": "Every mutant MUST run in a subprocess with its own `PYTHONPYCACHEPREFIX`. CPython validates a cached `.pyc` on `(mtime-seconds, size)`, so two mutations of equal length landing in the same clock second let the second subprocess import the first mutant's bytecode — measured on an OBPI-0.35.0-04 sweep, where a guard reported PASSED in-sweep and FAILED correctly in isolation.",
+      "disposition": "ON-DEMAND",
+      "reason": "Mutation-sweep procedure is conditional on performing a sweep. Retain a discovery pointer and method identity; move four outcomes, cache isolation and evidence obligations together, preserving them in the selected on-demand workflow. Row89 Judgment.",
+      "bytes": 378
+    },
+    {
+      "line": 86,
+      "text": "Use `gzkit.mutation_witness.run_mutation_sweep`, which verifies baseline, activation, isolation and failure cause and returns the four-way verdict; do not hand-roll a shell loop, which is the shape that produced the collision. A kill may be required to name a covering test via `Mutation.expected_tests` — without it, a failure elsewhere in the suite counts as coverage this guard does not have.",
+      "disposition": "ON-DEMAND",
+      "reason": "Mutation-sweep procedure is conditional on performing a sweep. Retain a discovery pointer and method identity; move four outcomes, cache isolation and evidence obligations together, preserving them in the selected on-demand workflow. Row89 Judgment.",
+      "bytes": 398
+    },
+    {
+      "line": 88,
+      "text": "```bash",
+      "disposition": "ON-DEMAND",
+      "reason": "Executable mutation example belongs beside the mutation procedure, not every testing session.",
+      "bytes": 8
+    },
+    {
+      "line": 89,
+      "text": "uv run python -c '",
+      "disposition": "ON-DEMAND",
+      "reason": "Executable mutation example belongs beside the mutation procedure, not every testing session.",
+      "bytes": 19
+    },
+    {
+      "line": 90,
+      "text": "from pathlib import Path",
+      "disposition": "ON-DEMAND",
+      "reason": "Executable mutation example belongs beside the mutation procedure, not every testing session.",
+      "bytes": 25
+    },
+    {
+      "line": 91,
+      "text": "from gzkit.mutation_witness import Mutation, run_mutation_sweep",
+      "disposition": "ON-DEMAND",
+      "reason": "Executable mutation example belongs beside the mutation procedure, not every testing session.",
+      "bytes": 64
+    },
+    {
+      "line": 92,
+      "text": "s = run_mutation_sweep(Path(\".\"), Path(\"src/gzkit/<module>.py\"),",
+      "disposition": "ON-DEMAND",
+      "reason": "Executable mutation example belongs beside the mutation procedure, not every testing session.",
+      "bytes": 65
+    },
+    {
+      "line": 93,
+      "text": "    [Mutation(find=\"<guard>\", replace=\"<broken>\", label=\"<name>\",",
+      "disposition": "ON-DEMAND",
+      "reason": "Executable mutation example belongs beside the mutation procedure, not every testing session.",
+      "bytes": 66
+    },
+    {
+      "line": 94,
+      "text": "              expected_tests=[\"<covering test>\"])],",
+      "disposition": "ON-DEMAND",
+      "reason": "Executable mutation example belongs beside the mutation procedure, not every testing session.",
+      "bytes": 52
+    },
+    {
+      "line": 95,
+      "text": "    [\"uv\", \"run\", \"-m\", \"unittest\", \"tests.<module>\", \"-v\"])",
+      "disposition": "ON-DEMAND",
+      "reason": "Executable mutation example belongs beside the mutation procedure, not every testing session.",
+      "bytes": 61
+    },
+    {
+      "line": 96,
+      "text": "print(s.killed, s.survived, s.invalid, s.inconclusive, s.is_conclusive)'",
+      "disposition": "ON-DEMAND",
+      "reason": "Executable mutation example belongs beside the mutation procedure, not every testing session.",
+      "bytes": 73
+    },
+    {
+      "line": 97,
+      "text": "```",
+      "disposition": "ON-DEMAND",
+      "reason": "Executable mutation example belongs beside the mutation procedure, not every testing session.",
+      "bytes": 4
+    },
+    {
+      "line": 99,
+      "text": "Only a sweep whose `is_conclusive` is true may be cited as evidence about coverage; a sweep carrying `invalid` or `inconclusive` rows reports what it could not grade, and those rows are disclosed rather than dropped.",
+      "disposition": "ON-DEMAND",
+      "reason": "Conclusive-sweep evidence rule must travel with mutation procedure, not be deleted as generic coaching.",
+      "bytes": 217
+    },
+    {
+      "line": 101,
+      "text": "**Verification exit-code integrity (binding, GHI #589).** A verifier's truth is its own exit code, never a downstream filter's. NEVER pipe `unittest`/`behave`/`mkdocs --strict` (or any ARB-wrapped verifier) through `tail`/`head`/`grep`/`Select-Object`: the shell reports the *last* process's exit (the filter's — always 0), masking a failing suite as a green run. Capture to a file (`> out.log 2>&1`) and read the ARB receipt's `exit_status` (GHI #317). A harness \"exit code 0\" notification on a piped command attests the filter, not the verifier.",
+      "disposition": "ON-DEMAND",
+      "reason": "Verifier exit-status semantics and known shell/hook limits belong in verification/ARB workflow. Keep concise current result-channel boundary in always-loaded context if needed; row66 Mechanical prevents calling ordinary relocation retention-safe. Preserve receipt truth and do not treat echoed status as aggregate success.",
+      "bytes": 550
+    },
+    {
+      "line": 103,
+      "text": "**The sequence form masks identically (GHI #940).** The rule is about the LAST thing the shell runs, not about the pipe character. `verifier > log; tail log` discards the verifier's status exactly as `verifier | tail` does — the shell reports the last *statement* just as it reports the last *stage*. Fixing this by naming `tail`/`head`/`grep` would repeat the enumerate-the-examples miss the clause already made once: `verifier > log; echo done` masks just as completely. Two remedies, and they are **not interchangeable** — `set -o pipefail` fixes a pipe and does nothing for a sequence; `set -e` aborts a sequence and does nothing for a pipe. Reading `$?` in the statement *immediately* after the verifier is the third route, and immediacy is load-bearing: `$?` reports whatever ran last, so a read placed after an intervening statement reports that statement instead and only looks like evidence. `&&` is not masking *while the chain runs to the end of the command* — it short-circuits, so the failure becomes the aggregate. Once something catches the chain it does not: `verifier && ok; ls` and `verifier && ok || echo x` both exit 0, and `set -e` does not rescue either (POSIX suppresses errexit for a non-final command in an AND-OR list). Declared, not closed — GHI #971.",
+      "disposition": "ON-DEMAND",
+      "reason": "Verifier exit-status semantics and known shell/hook limits belong in verification/ARB workflow. Keep concise current result-channel boundary in always-loaded context if needed; row66 Mechanical prevents calling ordinary relocation retention-safe. Preserve receipt truth and do not treat echoed status as aggregate success.",
+      "bytes": 1287
+    },
+    {
+      "line": 105,
+      "text": "**The `||` branch announces, it does not report (GHI #970).** `verifier || echo failed` exits 0 *exactly when* the verifier failed: the branch runs on failure and then replaces the failing status with its own. Announcing and reporting are different claims — anything reading the status rather than the transcript sees green, and a Step-4a packet is a CURATED excerpt, so the announcement can simply not be pasted (measured 2026-09-06: such a packet verified with zero blockers). The remedy is neither `pipefail` nor `set -e` — the shell suppresses errexit for a command left of `||` — but the branch itself: `verifier || echo \"REAL EXIT: $?\"`. The verdict idiom stays permitted, and the arm's canonical scope is what saves it: `test -f x && echo DEFECT || echo OK` exits non-zero when the assertion HOLDS and runs no verifier.",
+      "disposition": "ON-DEMAND",
+      "reason": "Verifier exit-status semantics and known shell/hook limits belong in verification/ARB workflow. Keep concise current result-channel boundary in always-loaded context if needed; row66 Mechanical prevents calling ordinary relocation retention-safe. Preserve receipt truth and do not treat echoed status as aggregate success.",
+      "bytes": 833
+    },
+    {
+      "line": 107,
+      "text": "**The aggregate status is a floor, not a proof.** Even a correctly-written `verifier > out.log 2>&1; echo \"REAL EXIT: $?\"` still *exits* with the last statement's code, so a harness summary that reports only the aggregate can still announce success over a red suite. The shell-level rule makes the truth visible in the output; it cannot make a notification line carry it. For attestation, cite the ARB receipt's `exit_status` — the only channel that carries the verifier's own result out of the shell. Tracked at GHI #969 — a declared limit with no open destination is an untrackable defect (AGENTS.md § PRIME DIRECTIVE #6).",
+      "disposition": "ON-DEMAND",
+      "reason": "Verifier exit-status semantics and known shell/hook limits belong in verification/ARB workflow. Keep concise current result-channel boundary in always-loaded context if needed; row66 Mechanical prevents calling ordinary relocation retention-safe. Preserve receipt truth and do not treat echoed status as aggregate success.",
+      "bytes": 630
+    },
+    {
+      "line": 109,
+      "text": "**Mechanized** by the `verifier-pipe-gate.py` PreToolUse hook over `Bash` (decision: `gzkit.verifier_pipe_gate.decide`; live negative control `verifier-exit-status-masked`). The gate refuses a verifier in any *non-final* pipeline stage — the masking is the pipe, not the filter's identity, so `gz check | cat` is the same defect as `gz check | tail` and both are refused. Two escapes are permitted because they genuinely preserve the status: `set -o pipefail` and reading `${PIPESTATUS[0]}`. The verifier set is READ from `CANONICAL_STEP_COMMANDS` (AGENTS.md § Attestation), so a canonical step added there is covered without a second edit.",
+      "disposition": "ON-DEMAND",
+      "reason": "Verifier exit-status semantics and known shell/hook limits belong in verification/ARB workflow. Keep concise current result-channel boundary in always-loaded context if needed; row66 Mechanical prevents calling ordinary relocation retention-safe. Preserve receipt truth and do not treat echoed status as aggregate success.",
+      "bytes": 644
+    },
+    {
+      "line": 111,
+      "text": "## TASK-Driven Workflow (binding)",
+      "disposition": "DUPLICATE",
+      "reason": "Governance-spine explanation already in root contract; retaining TASK trailer fact below does not need anatomical metaphor/history.",
+      "bytes": 34
+    },
+    {
+      "line": 113,
+      "text": "TASK is the leaf vertebra of the governance spine `PRD → Constitution → ADR → OBPI → REQ → TASK → Attestation` (AGENTS.md § Workflow; `docs/governance/governance_runbook.md` § \"fourth tier: ADR > OBPI > REQ > TASK\"; `docs/governance/agent-contract-rationale.md` § TASK-driven workflow).",
+      "disposition": "DUPLICATE",
+      "reason": "Governance-spine explanation already in root contract; retaining TASK trailer fact below does not need anatomical metaphor/history.",
+      "bytes": 302
+    },
+    {
+      "line": 115,
+      "text": "**src/tests commits MUST carry a `Task:` trailer.** Enforced by `gz validate --commit-trailers`. `Ceremony:` and `Eval-feedback-source:` no longer substitute for `Task:` on src/tests scope — they remain valid for non-src/tests commits (sync artifacts under `.claude/`, roadmap notes, ledger reconciles, rule-edit metadata).",
+      "disposition": "KEEP binding",
+      "reason": "Concrete mandatory Task trailer and non-substitution boundary; row68 Mechanical.",
+      "bytes": 326
+    },
+    {
+      "line": 117,
+      "text": "**Task: trailer forms (all accepted):**",
+      "disposition": "ON-DEMAND",
+      "reason": "Keep availability of direct-fix slug/no mandatory GHI filing discoverable; detailed form table belongs in git-sync/task instructions. Do not move to stale tests-rationale TASK section without reconciliation.",
+      "bytes": 40
+    },
+    {
+      "line": 119,
+      "text": "| Form | Use when | Example |",
+      "disposition": "ON-DEMAND",
+      "reason": "Keep availability of direct-fix slug/no mandatory GHI filing discoverable; detailed form table belongs in git-sync/task instructions. Do not move to stale tests-rationale TASK section without reconciliation.",
+      "bytes": 30
+    },
+    {
+      "line": 120,
+      "text": "|------|----------|---------|",
+      "disposition": "ON-DEMAND",
+      "reason": "Keep availability of direct-fix slug/no mandatory GHI filing discoverable; detailed form table belongs in git-sync/task instructions. Do not move to stale tests-rationale TASK section without reconciliation.",
+      "bytes": 30
+    },
+    {
+      "line": 121,
+      "text": "| Formal `TASK-X.Y.Z-NN-MM-PP` | OBPI-scoped work; minted via `gz task start` against an active brief + REQ | `Task: TASK-0.22.0-01-01-01` |",
+      "disposition": "ON-DEMAND",
+      "reason": "Keep availability of direct-fix slug/no mandatory GHI filing discoverable; detailed form table belongs in git-sync/task instructions. Do not move to stale tests-rationale TASK section without reconciliation.",
+      "bytes": 141
+    },
+    {
+      "line": 122,
+      "text": "| Slug `TASK-<kebab-slug>` (optional `-#<ghi>`) | Direct-fix work outside OBPI scope (per AGENTS.md § Defect-fix routing). The `-#<ghi>` anchor is OPTIONAL — append it only when a GHI already exists; filing a GHI *to satisfy the trailer* is a moratorium violation (operator directive 2026-06-01) | `Task: TASK-fix-git-log-encoding` or `Task: TASK-task-spine-restoration-#552` |",
+      "disposition": "ON-DEMAND",
+      "reason": "Keep availability of direct-fix slug/no mandatory GHI filing discoverable; detailed form table belongs in git-sync/task instructions. Do not move to stale tests-rationale TASK section without reconciliation.",
+      "bytes": 381
+    },
+    {
+      "line": 123,
+      "text": "| Ceremony `TASK-gz-git-sync` | Auto-stamped by `gz git-sync` on every sync commit; attributes bundled surface-sync to the git-sync ceremony rather than a synthetic per-REQ id | `Task: TASK-gz-git-sync` |",
+      "disposition": "ON-DEMAND",
+      "reason": "Keep availability of direct-fix slug/no mandatory GHI filing discoverable; detailed form table belongs in git-sync/task instructions. Do not move to stale tests-rationale TASK section without reconciliation.",
+      "bytes": 205
+    },
+    {
+      "line": 125,
+      "text": "**OBPI-scoped steps:** `gz covers` → `gz task start TASK-X.Y.Z-NN-MM-PP` → TDD cycle → commit with `Task:` trailer → `gz task complete TASK-X.Y.Z-NN-MM-PP` → `@covers(REQ-...)` decorator.",
+      "disposition": "VERIFY conflict",
+      "reason": "Inline lifecycle recipe risks initiating operator-owned OBPI machinery, puts @covers after completion, and imports superseded direct-fix thresholds. Replace with current skill routing only after authority reconciliation; do not execute it.",
+      "bytes": 198
+    },
+    {
+      "line": 127,
+      "text": "**Direct-fix steps:** `git log --since='60 days ago' --oneline --grep='^fix('` (precedent check per AGENTS.md § Defect-fix routing) → TDD cycle → commit with `Task: TASK-<slug>` trailer (append `-#<ghi>` only when a GHI already exists; do not file one to satisfy the trailer — operator moratorium).",
+      "disposition": "VERIFY conflict",
+      "reason": "Inline lifecycle recipe risks initiating operator-owned OBPI machinery, puts @covers after completion, and imports superseded direct-fix thresholds. Replace with current skill routing only after authority reconciliation; do not execute it.",
+      "bytes": 306
+    },
+    {
+      "line": 129,
+      "text": "## Two runners, one test surface",
+      "disposition": "KEEP binding",
+      "reason": "Project-specific unittest/tests versus behave/features map and both-runner check contract; row37 Mechanical.",
+      "bytes": 33
+    },
+    {
+      "line": 131,
+      "text": "| Runner | Location | Purpose | Contract |",
+      "disposition": "KEEP binding",
+      "reason": "Project-specific unittest/tests versus behave/features map and both-runner check contract; row37 Mechanical.",
+      "bytes": 43
+    },
+    {
+      "line": 132,
+      "text": "|--------|----------|---------|----------|",
+      "disposition": "KEEP binding",
+      "reason": "Project-specific unittest/tests versus behave/features map and both-runner check contract; row37 Mechanical.",
+      "bytes": 43
+    },
+    {
+      "line": 133,
+      "text": "| `unittest` | `tests/` | Pure Python behavior, command contracts | Mocked subprocess boundaries; deterministic; fast |",
+      "disposition": "KEEP binding",
+      "reason": "Project-specific unittest/tests versus behave/features map and both-runner check contract; row37 Mechanical.",
+      "bytes": 120
+    },
+    {
+      "line": 134,
+      "text": "| `behave` | `features/` | End-to-end CLI and governance scenarios | Real operator flows, Gherkin-readable |",
+      "disposition": "KEEP binding",
+      "reason": "Project-specific unittest/tests versus behave/features map and both-runner check contract; row37 Mechanical.",
+      "bytes": 109
+    },
+    {
+      "line": 136,
+      "text": "`gz test` runs `unittest` over `tests/` then `behave` over `features/`. Both gates must pass for `gz check`.",
+      "disposition": "KEEP binding",
+      "reason": "Project-specific unittest/tests versus behave/features map and both-runner check contract; row37 Mechanical.",
+      "bytes": 109
+    },
+    {
+      "line": 138,
+      "text": "### Unit-tier contract (binding)",
+      "disposition": "VERIFY conflict",
+      "reason": "Keep helper identities and E2E destination. Blanket mock-every-subprocess/<200ms claim requires reconciliation with rule22/row90 explicitly witnessed real-Git isolation test; not safe to flatten into an absolute without a documented exception.",
+      "bytes": 33
+    },
+    {
+      "line": 140,
+      "text": "- Mock every subprocess boundary (`_uv_sync_patcher`, `_git_subprocess_patcher`, `_quick_init` in `tests/commands/common.py`)",
+      "disposition": "VERIFY conflict",
+      "reason": "Keep helper identities and E2E destination. Blanket mock-every-subprocess/<200ms claim requires reconciliation with rule22/row90 explicitly witnessed real-Git isolation test; not safe to flatten into an absolute without a documented exception.",
+      "bytes": 126
+    },
+    {
+      "line": 141,
+      "text": "- Complete in < 200ms; deterministic; `tempfile` temp DBs only",
+      "disposition": "VERIFY conflict",
+      "reason": "Keep helper identities and E2E destination. Blanket mock-every-subprocess/<200ms claim requires reconciliation with rule22/row90 explicitly witnessed real-Git isolation test; not safe to flatten into an absolute without a documented exception.",
+      "bytes": 63
+    },
+    {
+      "line": 142,
+      "text": "- E2E scenarios requiring real subprocess → `features/*.feature`",
+      "disposition": "VERIFY conflict",
+      "reason": "Keep helper identities and E2E destination. Blanket mock-every-subprocess/<200ms claim requires reconciliation with rule22/row90 explicitly witnessed real-Git isolation test; not safe to flatten into an absolute without a documented exception.",
+      "bytes": 67
+    },
+    {
+      "line": 144,
+      "text": "### Behave scenario tagging",
+      "disposition": "KEEP binding",
+      "reason": "REQ tag spelling, lifecycle scope, waiver path and kind-aware exemption are project facts. Compress prose only while preserving these distinctions; row39 Mechanical is narrower/older than paragraph148, so row text alone cannot be treated as whole intent.",
+      "bytes": 28
+    },
+    {
+      "line": 146,
+      "text": "Behave scenarios covering a REQ carry `@REQ-X.Y.Z-NN-MM` as a scenario tag. Enforced by `gz validate --behave-req-tags` (fires on `Completed`/`Validated` briefs only, GHI #276/#323). Waivers in `data/behave_coverage_waivers.json`.",
+      "disposition": "KEEP binding",
+      "reason": "REQ tag spelling, lifecycle scope, waiver path and kind-aware exemption are project facts. Compress prose only while preserving these distinctions; row39 Mechanical is narrower/older than paragraph148, so row text alone cannot be treated as whole intent.",
+      "bytes": 231
+    },
+    {
+      "line": 148,
+      "text": "**REQ-kind-aware proof channels (GHI #636).** The gate is aware of the ADR-0.0.59 three-kind taxonomy: a behave scenario is the proof channel for *no* kind, so the gate only requires behave-or-equivalent for **BEHAVIOR** REQs, and treats an `@covers` unit test under `tests/**` as satisfying a BEHAVIOR REQ's channel (its canonical channel per the proof-channel matrix). **SUPPORT** REQs (ledger + structural validator) and **STRUCTURAL-FENCE** REQs (parent-ADR `## Boundary Invariants`) are exempt by kind — no scenario, no `@covers`, no waiver needed. A BEHAVIOR REQ with neither a scenario tag nor an `@covers` test still fails closed; a missing `[kind]` tag defaults to BEHAVIOR. This means a unit-only / no-CLI-surface OBPI passes without a `behave_coverage_waivers.json` entry — the entry the shrink-only waiver-ratchet (ADR-0.0.73 BI#8) would otherwise forbid adding.",
+      "disposition": "KEEP binding",
+      "reason": "REQ tag spelling, lifecycle scope, waiver path and kind-aware exemption are project facts. Compress prose only while preserving these distinctions; row39 Mechanical is narrower/older than paragraph148, so row text alone cannot be treated as whole intent.",
+      "bytes": 879
+    },
+    {
+      "line": 150,
+      "text": "## REQ Scope Discipline (binding)",
+      "disposition": "KEEP binding",
+      "reason": "Keep three-kind taxonomy once, case-insensitive reader/uppercase-new/no rewrite rule, exact proof channels and SUPPORT path-specific artifact_edited exception. Row59 Mechanical and59a Judgment.",
+      "bytes": 34
+    },
+    {
+      "line": 152,
+      "text": "Every REQ in an OBPI brief's `## Acceptance Criteria` carries exactly one of three kinds,",
+      "disposition": "KEEP binding",
+      "reason": "Keep three-kind taxonomy once, case-insensitive reader/uppercase-new/no rewrite rule, exact proof channels and SUPPORT path-specific artifact_edited exception. Row59 Mechanical and59a Judgment.",
+      "bytes": 90
+    },
+    {
+      "line": 153,
+      "text": "declared as a bracketed inline tag: `REQ-X.Y.Z-NN-NN [kind]: claim text`. **Tag case carries no meaning (both readers are `re.IGNORECASE`); author UPPERCASE, and do NOT rewrite existing lowercase tags** — operator ruling 2026-08-11, rationale and measured split in [`req-scope-discipline.md`](../../docs/governance/req-scope-discipline.md) § The invariant.",
+      "disposition": "KEEP binding",
+      "reason": "Keep three-kind taxonomy once, case-insensitive reader/uppercase-new/no rewrite rule, exact proof channels and SUPPORT path-specific artifact_edited exception. Row59 Mechanical and59a Judgment.",
+      "bytes": 360
+    },
+    {
+      "line": 155,
+      "text": "### Three-kind taxonomy",
+      "disposition": "KEEP binding",
+      "reason": "Keep three-kind taxonomy once, case-insensitive reader/uppercase-new/no rewrite rule, exact proof channels and SUPPORT path-specific artifact_edited exception. Row59 Mechanical and59a Judgment.",
+      "bytes": 24
+    },
+    {
+      "line": 157,
+      "text": "| Kind | What it covers | Proof channel |",
+      "disposition": "KEEP binding",
+      "reason": "Keep three-kind taxonomy once, case-insensitive reader/uppercase-new/no rewrite rule, exact proof channels and SUPPORT path-specific artifact_edited exception. Row59 Mechanical and59a Judgment.",
+      "bytes": 42
+    },
+    {
+      "line": 158,
+      "text": "|------|---------------|---------------|",
+      "disposition": "KEEP binding",
+      "reason": "Keep three-kind taxonomy once, case-insensitive reader/uppercase-new/no rewrite rule, exact proof channels and SUPPORT path-specific artifact_edited exception. Row59 Mechanical and59a Judgment.",
+      "bytes": 41
+    },
+    {
+      "line": 159,
+      "text": "| **BEHAVIOR** | Code behavior — functions, commands, CLI outputs, state transitions | `@covers`-decorated test in `tests/**` (existing pattern, unchanged) |",
+      "disposition": "KEEP binding",
+      "reason": "Keep three-kind taxonomy once, case-insensitive reader/uppercase-new/no rewrite rule, exact proof channels and SUPPORT path-specific artifact_edited exception. Row59 Mechanical and59a Judgment.",
+      "bytes": 160
+    },
+    {
+      "line": 160,
+      "text": "| **SUPPORT** | Governance artifacts, doctrine docs, rule files, data files that *support* behavior but are not behavior themselves | The cited artifact is genuinely present **AND** its structural validator scope (e.g. `gz validate --documents`) admits its shape. \"Present\" is path-specific (GHI #647): a ledger event of the cited type **citing that path**, OR — for `artifact_edited` (content authorship, which is not emitted for source `.py` files) — the cited artifact **exists on disk**. A bare event of the type that does not cite the path does NOT prove (the closed hollow gate). |",
+      "disposition": "KEEP binding",
+      "reason": "Keep three-kind taxonomy once, case-insensitive reader/uppercase-new/no rewrite rule, exact proof channels and SUPPORT path-specific artifact_edited exception. Row59 Mechanical and59a Judgment.",
+      "bytes": 592
+    },
+    {
+      "line": 161,
+      "text": "| **STRUCTURAL-FENCE** | Integration-state properties scoped to the parent ADR's boundary — cross-OBPI invariants that audit at ADR closeout, not per-OBPI | Parent-ADR `## Boundary Invariants` entry carrying the OBPI-combination anchor token `(OBPI-NN[, OBPI-MM, …])` that names this REQ's OBPI (GHI #538; syntax in `docs/governance/req-scope-discipline.md` § STRUCTURAL-FENCE), audited at ADR closeout layer |",
+      "disposition": "KEEP binding",
+      "reason": "Keep three-kind taxonomy once, case-insensitive reader/uppercase-new/no rewrite rule, exact proof channels and SUPPORT path-specific artifact_edited exception. Row59 Mechanical and59a Judgment.",
+      "bytes": 416
+    },
+    {
+      "line": 163,
+      "text": "### Brief-authoring tag syntax",
+      "disposition": "ON-DEMAND",
+      "reason": "Three authoring examples belong in brief-authoring skill/reference; syntax already stated153.",
+      "bytes": 31
+    },
+    {
+      "line": 165,
+      "text": "```text",
+      "disposition": "ON-DEMAND",
+      "reason": "Three authoring examples belong in brief-authoring skill/reference; syntax already stated153.",
+      "bytes": 8
+    },
+    {
+      "line": 166,
+      "text": "REQ-X.Y.Z-NN-01 [BEHAVIOR]: the system does X when Y",
+      "disposition": "ON-DEMAND",
+      "reason": "Three authoring examples belong in brief-authoring skill/reference; syntax already stated153.",
+      "bytes": 53
+    },
+    {
+      "line": 167,
+      "text": "REQ-X.Y.Z-NN-02 [SUPPORT]: the rule file carries subsection Z",
+      "disposition": "ON-DEMAND",
+      "reason": "Three authoring examples belong in brief-authoring skill/reference; syntax already stated153.",
+      "bytes": 62
+    },
+    {
+      "line": 168,
+      "text": "REQ-X.Y.Z-NN-03 [STRUCTURAL-FENCE]: cross-OBPI boundary invariant P holds",
+      "disposition": "ON-DEMAND",
+      "reason": "Three authoring examples belong in brief-authoring skill/reference; syntax already stated153.",
+      "bytes": 74
+    },
+    {
+      "line": 169,
+      "text": "```",
+      "disposition": "ON-DEMAND",
+      "reason": "Three authoring examples belong in brief-authoring skill/reference; syntax already stated153.",
+      "bytes": 4
+    },
+    {
+      "line": 171,
+      "text": "### Proof-channel matrix",
+      "disposition": "VERIFY conflict",
+      "reason": "Duplicate proof matrix also overstates SUPPORT event requirement compared with artifact_edited disk-existence alternative at160; preserve the precise taxonomy, not both simplified and qualified versions.",
+      "bytes": 25
+    },
+    {
+      "line": 173,
+      "text": "| Kind | Test `@covers`? | Ledger event? | Structural validator? | Parent-ADR invariant? |",
+      "disposition": "VERIFY conflict",
+      "reason": "Duplicate proof matrix also overstates SUPPORT event requirement compared with artifact_edited disk-existence alternative at160; preserve the precise taxonomy, not both simplified and qualified versions.",
+      "bytes": 91
+    },
+    {
+      "line": 174,
+      "text": "|------|:--------------:|:------------:|:--------------------:|:--------------------:|",
+      "disposition": "VERIFY conflict",
+      "reason": "Duplicate proof matrix also overstates SUPPORT event requirement compared with artifact_edited disk-existence alternative at160; preserve the precise taxonomy, not both simplified and qualified versions.",
+      "bytes": 87
+    },
+    {
+      "line": 175,
+      "text": "| BEHAVIOR | **required** | — | — | — |",
+      "disposition": "VERIFY conflict",
+      "reason": "Duplicate proof matrix also overstates SUPPORT event requirement compared with artifact_edited disk-existence alternative at160; preserve the precise taxonomy, not both simplified and qualified versions.",
+      "bytes": 46
+    },
+    {
+      "line": 176,
+      "text": "| SUPPORT | — | **required** | **required** | — |",
+      "disposition": "VERIFY conflict",
+      "reason": "Duplicate proof matrix also overstates SUPPORT event requirement compared with artifact_edited disk-existence alternative at160; preserve the precise taxonomy, not both simplified and qualified versions.",
+      "bytes": 54
+    },
+    {
+      "line": 177,
+      "text": "| STRUCTURAL-FENCE | — | — | — | **required** |",
+      "disposition": "VERIFY conflict",
+      "reason": "Duplicate proof matrix also overstates SUPPORT event requirement compared with artifact_edited disk-existence alternative at160; preserve the precise taxonomy, not both simplified and qualified versions.",
+      "bytes": 54
+    },
+    {
+      "line": 179,
+      "text": "### What this replaces",
+      "disposition": "LIFT rationale-history",
+      "reason": "Historical pre-ADR figures and repeated SUPPORT explanation already have an explicit canonical expansion at193-195.",
+      "bytes": 23
+    },
+    {
+      "line": 181,
+      "text": "Before ADR-0.0.59: every REQ used the BEHAVIOR proof channel uniformly, producing",
+      "disposition": "LIFT rationale-history",
+      "reason": "Historical pre-ADR figures and repeated SUPPORT explanation already have an explicit canonical expansion at193-195.",
+      "bytes": 82
+    },
+    {
+      "line": 182,
+      "text": "tautological filesystem-grep tests for content REQs (32% project-wide / 42% governance).",
+      "disposition": "LIFT rationale-history",
+      "reason": "Historical pre-ADR figures and repeated SUPPORT explanation already have an explicit canonical expansion at193-195.",
+      "bytes": 89
+    },
+    {
+      "line": 183,
+      "text": "SUPPORT-kind REQs are now witnessed by the ledger + structural validator; no `@covers`",
+      "disposition": "LIFT rationale-history",
+      "reason": "Historical pre-ADR figures and repeated SUPPORT explanation already have an explicit canonical expansion at193-195.",
+      "bytes": 87
+    },
+    {
+      "line": 184,
+      "text": "test is required or appropriate for them — authoring one is the anti-pattern this rule",
+      "disposition": "LIFT rationale-history",
+      "reason": "Historical pre-ADR figures and repeated SUPPORT explanation already have an explicit canonical expansion at193-195.",
+      "bytes": 89
+    },
+    {
+      "line": 185,
+      "text": "names.",
+      "disposition": "LIFT rationale-history",
+      "reason": "Historical pre-ADR figures and repeated SUPPORT explanation already have an explicit canonical expansion at193-195.",
+      "bytes": 7
+    },
+    {
+      "line": 187,
+      "text": "**Do not add a unit test merely to make a SUPPORT or STRUCTURAL-FENCE REQ appear",
+      "disposition": "DUPLICATE",
+      "reason": "Non-BEHAVIOR proof-channel prohibition follows exact one-channel taxonomy above; retain once in condensed taxonomy instead of another explanation.",
+      "bytes": 81
+    },
+    {
+      "line": 188,
+      "text": "covered.** The prohibition binds both non-BEHAVIOR kinds, not SUPPORT alone. A",
+      "disposition": "DUPLICATE",
+      "reason": "Non-BEHAVIOR proof-channel prohibition follows exact one-channel taxonomy above; retain once in condensed taxonomy instead of another explanation.",
+      "bytes": 79
+    },
+    {
+      "line": 189,
+      "text": "STRUCTURAL-FENCE REQ is proven by its parent-ADR `## Boundary Invariants` entry, audited",
+      "disposition": "DUPLICATE",
+      "reason": "Non-BEHAVIOR proof-channel prohibition follows exact one-channel taxonomy above; retain once in condensed taxonomy instead of another explanation.",
+      "bytes": 89
+    },
+    {
+      "line": 190,
+      "text": "at ADR closeout; a `@covers` test authored to fill an evidence cell for one is the same",
+      "disposition": "DUPLICATE",
+      "reason": "Non-BEHAVIOR proof-channel prohibition follows exact one-channel taxonomy above; retain once in condensed taxonomy instead of another explanation.",
+      "bytes": 88
+    },
+    {
+      "line": 191,
+      "text": "category error, wearing a different kind tag (GHI #571).",
+      "disposition": "DUPLICATE",
+      "reason": "Non-BEHAVIOR proof-channel prohibition follows exact one-channel taxonomy above; retain once in condensed taxonomy instead of another explanation.",
+      "bytes": 57
+    },
+    {
+      "line": 193,
+      "text": "> See [`docs/governance/req-scope-discipline.md`](../../docs/governance/req-scope-discipline.md)",
+      "disposition": "KEEP binding",
+      "reason": "On-demand discovery references; existing tests-rationale TASK workflow is stale and must not silently become authoritative merely because detail is moved there.",
+      "bytes": 97
+    },
+    {
+      "line": 194,
+      "text": "> for canonical expansion: problem framing, proof-channel detail, GHI #270 reconciliation,",
+      "disposition": "KEEP binding",
+      "reason": "On-demand discovery references; existing tests-rationale TASK workflow is stale and must not silently become authoritative merely because detail is moved there.",
+      "bytes": 91
+    },
+    {
+      "line": 195,
+      "text": "> quantification, and consequences.",
+      "disposition": "KEEP binding",
+      "reason": "On-demand discovery references; existing tests-rationale TASK workflow is stale and must not silently become authoritative merely because detail is moved there.",
+      "bytes": 36
+    },
+    {
+      "line": 197,
+      "text": "> See [`docs/governance/tests-rationale.md`](../../docs/governance/tests-rationale.md) for TDD anti-patterns, eval-awareness corollary details, behave enforcement direction, runner anti-patterns, TASK workflow details, and code patterns.",
+      "disposition": "KEEP binding",
+      "reason": "On-demand discovery references; existing tests-rationale TASK workflow is stale and must not silently become authoritative merely because detail is moved there.",
+      "bytes": 238
+    }
+  ],
+  "candidates": [
+    {
+      "name": "Lift version and incident history",
+      "start_line": 12,
+      "end_line": 12,
+      "exact_before": "> **Rule version:** `0.23.0` — GHI #977 adds § Isolation *Git fixture isolation*: every `git` a test spawns passes `env=_isolated_git_env()`, git's own repo-local variable set (`local_repo_env`) scrubbed at the fixture boundary. Measured 2026-09-07: a push from a linked worktree ran the pre-push `gz check`, the fixtures inherited the hook's absolute `GIT_DIR`, and `git init` in a temp dir re-initialised the hosting repository as bare while `git config` wrote the fixture identity into its shared config. MECHANICAL from the first landing — `tests/commands/test_common_fixtures.py::TestEveryGitSpawnIsInsideTheBoundary` fences every literal `git` argv under `tests/**`. Prior `0.22.0` — GHI #970 extends § Verification exit-code integrity to the `||` BRANCH: the branch announces a failure in output and replaces it in status, and the gate had honoured the announcement as if it were the report. Names the branch-local remedy (`set -e` is suppressed left of `||`), and tracks the two limits it declares rather than closes — the aggregate status (GHI #969) and the caught `&&` chain (GHI #971). Prior `0.21.0` — GHI #940 extends § Verification exit-code integrity to the SEQUENCE form: the clause was scoped to the pipe character while the shell reports the last *statement* just as it reports the last *stage*, so `verifier > log; tail log` read as compliant. Names the two non-interchangeable remedies (`pipefail` for a pipe, `set -e` for a sequence), the immediacy requirement on a `$?` read, and — declared rather than hidden — that the aggregate status is a floor a shell-level rule cannot lift. Prior `0.20.0` — adds § Mutation-sweep integrity (GHI #963): a failing mutant run is not a kill, sweeps report four outcomes, and every mutant runs with its own bytecode cache. Prior `0.19.0` diet pass under GHI #921 (operator ruling 2026-08-29, *\"we are compressing everything and anything that the agent can consume\"*). Version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#testsmd). Binding rules unchanged.\n",
+      "proposed_after": "> **Rule version:** `0.23.0`. History: [Rule Version History](../../docs/governance/rule-version-history.md#testsmd).\n",
+      "before_bytes": 2075,
+      "after_bytes": 118,
+      "saving_bytes": 1957,
+      "reason": "No unique operational rule is lost:22 carries Git boundary;82-109 carry mutation/verifier obligations. Archive displaced text in existing tests history section.",
+      "constraint": "Row90 Mechanical isolation clause remains unchanged at22. This exact proposal changes no rule version; actual publication must apply the governing version/scorecard workflow."
+    },
+    {
+      "name": "Keep full-tier facts; lift dated benchmark",
+      "start_line": 19,
+      "end_line": 19,
+      "exact_before": "- **Full unit tier: no fixed ceiling.** Its runtime grows with the REQ set by design — every BEHAVIOR REQ owes a covering test and § Coverage Floor requires it — so a constant ceiling over a ratcheting workload can only be breached, never held. That is why the 60s budget belongs to the `@smoke` subset, and the reason is the ratchet, NOT a ruling against parallel execution: the canonical \"Tests pass\" invocation runs `unittest-parallel` (GHI #856). Dated record, 2026-08-27 at `2c81cb7d`, 10-core host, 8,912 tests, both exit 0: **144.23s serial, 41.34s parallel** — illustrative of the gap, never a threshold; the enforced budget is whatever `uv run gz smoke` fails closed on.\n",
+      "proposed_after": "- **Full unit tier: no fixed ceiling.** The 60s budget applies only to `@smoke`; parallel execution is permitted.\n",
+      "before_bytes": 687,
+      "after_bytes": 114,
+      "saving_bytes": 573,
+      "reason": "The fixed budget belongs to smoke, while full-unit ceiling absence and parallel permission are the enduring facts. Benchmark and ratchet explanation do not need repeated delivery.",
+      "constraint": "Row87 Mechanical smoke rule remains unchanged at18. Preserve historical measurements in on-demand history/rationale; proposal introduces no new performance threshold."
+    },
+    {
+      "name": "Delete repeated TDD rhythm paragraph",
+      "start_line": 78,
+      "end_line": 78,
+      "exact_before": "**Per-increment rhythm:** One test → one observed RED → minimum code to GREEN → next increment. **Do not slice horizontally** — authoring every test for a brief and then every implementation is not TDD with a long cycle, it is a different activity that produces tests insensitive to change. Written against an implementation you are *about to* write, assertions record the shape you already intend rather than the behavior the REQ demands, and none is ever observed failing for the right reason: the RED that arrives with ten other REDs is noise, not a signal about any one of them. Slice vertically — one REQ carried from failing test to passing code before the next begins. This is § The discriminator applied at authoring time rather than review time: a test batch-written alongside its implementation is the shape most likely to answer \"no\" to *if behavior changed but text did not, would this test fail?*\n",
+      "proposed_after": "",
+      "before_bytes": 921,
+      "after_bytes": 0,
+      "saving_bytes": 921,
+      "reason": "The repeating per-behavior cycle remains at58 and60-62; no second admonition or causal essay is necessary.",
+      "constraint": "Rows72 and75 are Judgment. Operator selects deleting this repetition; record that horizontal-batch discussion remains in tests-rationale33-41, while the standing per-behavior cycle remains binding. This does not authorize dropping RED evidence at80."
+    }
+  ],
+  "candidate_total_savings_bytes": 3451,
+  "limits": [
+    "No repository edits, issue filing, locks, TASKs, corpus onboarding, OBPI work or validators run.",
+    "No assertion that modern-model quality improves by the measured byte count; this is editorial and delivery analysis.",
+    "Mechanical/Promotable scorecard retention constraints govern ordinary diet path; operator may explicitly revise canon.",
+    "Only the canonical tests rule was read end-to-end; adjacent delivery audit and directly relevant scorecard/rationale passages were consulted. Runtime implementations were not re-audited.",
+    "Selected version-history lift must preserve the displaced current history; existing history section predates versions0.20-0.23.",
+    "Do not move workflow instructions verbatim into docs/governance/tests-rationale.md: its TASK section says every GHI decomposes through gz task, conflicting with direct-fix slug and operator-only OBPI initiation."
+  ]
+}

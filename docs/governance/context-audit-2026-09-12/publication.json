@@ -1,0 +1,27 @@
+{
+  "operator": "g0",
+  "approval": "Approve D09, D10 and D14",
+  "ids": [
+    "D09",
+    "D10",
+    "D14"
+  ],
+  "before_bytes": 47851,
+  "candidate_bytes": 42442,
+  "saved_bytes": 5409,
+  "before_sha256": "57588a57e6fcb5eab42fc2a9ed5fc6940ec40a42d29add2fe4b1686865093311",
+  "candidate_sha256": "42bfc4da559a405cbff26eead731186c41800cbdd354dd202369639474163091",
+  "audit_snapshot_changed": true,
+  "status": "publication verified, then overwritten by concurrent checkout restore; republishing awaits writer coordination",
+  "advisor_receipt": "arb-step-judge-6892ad23e5f8420cb20b375fa17022b5",
+  "validators_passed": [
+    "invariant-coherence",
+    "rendition-freshness",
+    "rendition-floor-coherence",
+    "advisory-scorecard",
+    "documents",
+    "surfaces"
+  ],
+  "observed_after_restore_bytes": 48511,
+  "observed_after_restore_sha256": "f53831450e7f0a5457966e83a16f8be7b6fdb016b255e58946211109cdffc1ac"
+}

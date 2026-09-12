@@ -5,9 +5,9 @@ description: Synchronize generated control surfaces and skill mirrors. Use after
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-12
+last_reviewed: 2026-09-12
 metadata:
-  skill-version: "1.1.1"
+  skill-version: "1.2.0"
 model: haiku
 ---
 
@@ -33,6 +33,21 @@ Operate the gz agent sync control-surfaces command surface as a reusable governa
 
 - Verify command output reflects the requested scope.
 - If governance state changed, confirm with uv run gz status or uv run gz state.
+
+## Codex delivery
+
+When Codex is enabled, sync recovers native `.codex/hooks.json` registrations in
+projects carrying `scripts/session_orientation.py`, and renders registered
+`.gzkit/agents/roles.json` role bodies into `.codex/agents/*.toml`. Edit the
+canonical role body or `src/gzkit/hooks/codex.py` producer, then preview and sync.
+Preserve operator-owned hooks and native role metadata. The generated hook status
+labels identify owned handlers; customized unmarked role bodies remain user-owned.
+
+Verify `uv run gz validate --surfaces --orientation-freshness`. This proves
+delivery coherence, not native dispatch: Codex requires review of each new or
+changed hook through `/hooks` before it runs. Report registration, trust, and
+observed execution separately. The full parity design remains
+`ADR-pool.vendor-alignment-codex`; syncing does not initiate its parked OBPIs.
 
 ## Common Rationalizations
 

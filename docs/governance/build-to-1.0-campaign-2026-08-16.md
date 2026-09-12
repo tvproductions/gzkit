@@ -1806,3 +1806,34 @@ composition engine's *shipped* half — `rendition_store.py`, `rendition_freshne
 load-bearing. What is genuinely absent is the attributable corpus→candidate generator and
 the `rendition ⊆ corpus` lineage gate. The feature ADR re-homing this should scope to the
 absent half, not re-declare the shipped half as new work.
+
+## Workflow fronts
+
+Operator-directed 2026-09-12: consider all four fronts in project status,
+ordinary status inquiries, and session continuity. This is the standing work
+map; current progress requires live evidence. Front order here is an inventory;
+the campaign sequence, ascending feature ADR order, and operator initiation of
+OBPI work continue to govern execution.
+
+- **handoff system** — Preserve the session's model, decisions, and open loops.
+  Read the authored handoff, its lineage and rulings, then verify what resume
+  actually consumes. The reported GHI #870 chain-consumption gap belongs here;
+  check its current work order and runtime evidence before prescribing a fix.
+- **ghi triage** — Read the live issue queue through `ghi-triage`; distinguish
+  selected repair, eligible unselected work, and actual blockers. Existing GHIs
+  are work orders for direct repair. A queue count alone is not a health verdict.
+- **adr/obpi campaign** — Read this campaign's sequencing and ledger-backed ADR
+  and OBPI status. Honor the lowest feature ADR with unlanded work and the
+  operator's initiation boundary. Airlock calibration already has its successor
+  in ADR-0.37.0; its place in the sequence is unchanged.
+- **new R&D** — Carry open hypotheses and experiments from
+  `docs/governance/capability-control-review-2026-09-12.md` and its conversation
+  source. Name the question, evidence needed, and next experiment. A gap against
+  existing declared intent remains corrective work under its owner; research
+  does not automatically authorize a new ADR or implementation.
+
+For a general status answer, report each front's observed state, evidence date
+or unresolved verification, and next action. For a focused inquiry, answer its
+scope and mention material dependencies on the other fronts. Handoffs carry
+this map's source plus session-specific changes; the map does not certify that
+all four fronts were freshly inspected by `gz status`.

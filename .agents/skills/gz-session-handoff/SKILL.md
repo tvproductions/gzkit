@@ -5,22 +5,29 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "7.1.0"
+  skill-version: "7.2.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
   govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-08-22
+last_reviewed: 2026-09-12
 model: sonnet
 ---
 
-# gz-session-handoff (v6.21.0)
+# gz-session-handoff (v7.2.0)
 
 ## Purpose
 
 Create and resume session handoff documents that preserve agent context across engineering sessions. When an agent pauses work on an ADR or OBPI, a handoff document captures the full state — what was done, what decisions were made, and what comes next — so that a resuming agent (or the same agent in a new session) can continue without losing context.
+
+When the project declares `## Workflow fronts` in its registered active campaign,
+read that map on CREATE and RESUME. Carry its source and each front's relevant
+session delta in Important Context / Pending Work, identifying what was observed
+and what still needs verification. Use `gz-status` for a general project-status
+answer. The campaign owns the standing map; a handoff preserves continuity and
+does not replace campaign sequencing or authorize work on another front.
 
 ---
 

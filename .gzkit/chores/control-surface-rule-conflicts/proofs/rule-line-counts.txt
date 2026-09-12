@@ -1,29 +1,29 @@
-      70 .gzkit/rules/adr-audit.md
-      30 .gzkit/rules/agent-failure-modes.md
-      52 .gzkit/rules/agents-md-map-doctrine.md
-     174 .gzkit/rules/AGENTS.md
-      59 .gzkit/rules/brief-heading-conventions.md
-      55 .gzkit/rules/changelog-release-notes.md
-     135 .gzkit/rules/chores.md
-      98 .gzkit/rules/cli.md
-     123 .gzkit/rules/complexity-doctrine.md
-      99 .gzkit/rules/complexity-thresholds.md
-      51 .gzkit/rules/cross-platform.md
-      46 .gzkit/rules/gate5-runbook-code-covenant.md
-      49 .gzkit/rules/gh-cli.md
-      97 .gzkit/rules/governance-core.md
-      92 .gzkit/rules/guardrail-feedback-prose.md
-     125 .gzkit/rules/hexagonal-architecture.md
-      75 .gzkit/rules/model-selection.md
-      50 .gzkit/rules/models.md
-      75 .gzkit/rules/mx-mode.md
-      97 .gzkit/rules/pythonic.md
-      46 .gzkit/rules/security-sensitivity.md
-     154 .gzkit/rules/skill-surface-sync.md
-     155 .gzkit/rules/task-discovery.md
-     171 .gzkit/rules/tests.md
-     146 .gzkit/rules/token-block-discipline.md
-      74 .gzkit/rules/tool-skill-runbook-alignment.md
-     376 AGENTS.md
-      27 CLAUDE.md
-    2801 total
+174 .gzkit/rules/AGENTS.md
+8 .gzkit/rules/CLAUDE.md
+70 .gzkit/rules/adr-audit.md
+30 .gzkit/rules/agent-failure-modes.md
+71 .gzkit/rules/agents-md-map-doctrine.md
+56 .gzkit/rules/brief-heading-conventions.md
+55 .gzkit/rules/changelog-release-notes.md
+135 .gzkit/rules/chores.md
+133 .gzkit/rules/cli.md
+123 .gzkit/rules/complexity-doctrine.md
+99 .gzkit/rules/complexity-thresholds.md
+88 .gzkit/rules/cross-platform.md
+46 .gzkit/rules/gate5-runbook-code-covenant.md
+59 .gzkit/rules/gh-cli.md
+76 .gzkit/rules/governance-core.md
+79 .gzkit/rules/guardrail-feedback-prose.md
+125 .gzkit/rules/hexagonal-architecture.md
+75 .gzkit/rules/model-selection.md
+50 .gzkit/rules/models.md
+89 .gzkit/rules/mx-mode.md
+98 .gzkit/rules/pythonic.md
+46 .gzkit/rules/security-sensitivity.md
+153 .gzkit/rules/skill-surface-sync.md
+163 .gzkit/rules/task-discovery.md
+197 .gzkit/rules/tests.md
+146 .gzkit/rules/token-block-discipline.md
+74 .gzkit/rules/tool-skill-runbook-alignment.md
+404 AGENTS.md
+27 CLAUDE.md

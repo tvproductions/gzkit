@@ -1,9 +1,9 @@
 {
   "algorithm": "sha256",
-  "corpus_fingerprint": "e446b4c956fb7f3d0a9448fd5e5ce12925b53be7adc096fe3a7b4c098cc54883",
-  "corpus_entry_count": 95,
-  "rendition_fingerprint": "57588a57e6fcb5eab42fc2a9ed5fc6940ec40a42d29add2fe4b1686865093311",
-  "committed_ts": "2026-09-07T10:52:03.334789+00:00",
+  "corpus_fingerprint": "0a6de86c31b15883ea6221ad4d0b09ada5f42f73d4ce2f8aef2fc301f4c9806f",
+  "corpus_entry_count": 96,
+  "rendition_fingerprint": "f53831450e7f0a5457966e83a16f8be7b6fdb016b255e58946211109cdffc1ac",
+  "committed_ts": "2026-09-12T18:07:19.189504+00:00",
   "attestor": "g0",
-  "attestation_text": "I approve revision 2 of the #933 migration packet: the 16 invariant captures with classifications 1 Mechanical, 6 Promotable, 9 Judgment, both ownership transitions, and the drafted ownership reasons. Use this approval as my corpus attestation, recorded as g0. — corpus attestation, not ADR/OBPI completion: 16 corpus_entry_appended rows (corpus 79→95), 2 unowned_ratchet_updated rows (unowned-byte floor 8637→7663→6005; coverage 6/6 and 10/10 content lines), rendered text unmoved; unchanged-canon re-render carrying the three restored Invariant 3 lift pointers (GHI #933)"
+  "attestation_text": "get that into our known workflow zeitgeist so that something like `gz status` and any corresponding skill, or my simple inquiry about status all consider these frontiers"
 }

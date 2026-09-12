@@ -1,0 +1,62 @@
+[
+  {
+    "step": "retire",
+    "proposal": "D09",
+    "entry": "corpus-operator-doctrine-verbatim-canon-2026-08-17T11:20:29.341500+00:00",
+    "rc": 0,
+    "output": "Retired corpus entry corpus-operator-doctrine-verbatim-canon-2026-08-17T11:20:29.341500+00:00 in AGENTS.md (retraction corpus-retraction-corpus-operator-doctrine-verbatim-canon-2026-08-17T11:20:29.341500+00:00-2026-09-12T19:46:06.812924+00:00). The invariant floor shrank, so every committed rendition still SATISFIES it. This row moved the corpus fingerprint, so every committed rendition's derivation proof no longer holds.\n\nWarning: this retirement drifted 1 committed rendition(s) of 'AGENTS.md'\n  (root). They no longer derive from the current corpus,\n  so `gz check` will now fail on:\n    - Rendition freshness\n\n  Recover by recomposing and re-attesting each consumer:\n    uv run gz content compose AGENTS.md --consumer root \\\n        --candidate <file>\n    uv run gz content commit AGENTS.md --consumer root \\\n        --attestor <you> --attestation-text <words>\n"
+  },
+  {
+    "step": "retire",
+    "proposal": "D09",
+    "entry": "corpus-operator-doctrine-verbatim-canon-2026-08-17T11:20:36.600648+00:00",
+    "rc": 0,
+    "output": "Retired corpus entry corpus-operator-doctrine-verbatim-canon-2026-08-17T11:20:36.600648+00:00 in AGENTS.md (retraction corpus-retraction-corpus-operator-doctrine-verbatim-canon-2026-08-17T11:20:36.600648+00:00-2026-09-12T19:46:07.139603+00:00). The invariant floor shrank, so every committed rendition still SATISFIES it. This row moved the corpus fingerprint, so every committed rendition's derivation proof no longer holds.\n\nWarning: this retirement drifted 1 committed rendition(s) of 'AGENTS.md'\n  (root). They no longer derive from the current corpus,\n  so `gz check` will now fail on:\n    - Rendition freshness\n\n  Recover by recomposing and re-attesting each consumer:\n    uv run gz content compose AGENTS.md --consumer root \\\n        --candidate <file>\n    uv run gz content commit AGENTS.md --consumer root \\\n        --attestor <you> --attestation-text <words>\n"
+  },
+  {
+    "step": "retire",
+    "proposal": "D09",
+    "entry": "corpus-operator-doctrine-verbatim-canon-2026-08-17T11:55:49.945606+00:00",
+    "rc": 0,
+    "output": "Retired corpus entry corpus-operator-doctrine-verbatim-canon-2026-08-17T11:55:49.945606+00:00 in AGENTS.md (retraction corpus-retraction-corpus-operator-doctrine-verbatim-canon-2026-08-17T11:55:49.945606+00:00-2026-09-12T19:46:07.485625+00:00). The invariant floor shrank, so every committed rendition still SATISFIES it. This row moved the corpus fingerprint, so every committed rendition's derivation proof no longer holds.\n\nWarning: this retirement drifted 1 committed rendition(s) of 'AGENTS.md'\n  (root). They no longer derive from the current corpus,\n  so `gz check` will now fail on:\n    - Rendition freshness\n\n  Recover by recomposing and re-attesting each consumer:\n    uv run gz content compose AGENTS.md --consumer root \\\n        --candidate <file>\n    uv run gz content commit AGENTS.md --consumer root \\\n        --attestor <you> --attestation-text <words>\n"
+  },
+  {
+    "step": "remember",
+    "proposal": "D09",
+    "rc": 0,
+    "output": "Appended corpus entry corpus-operator-doctrine-verbatim-canon-2026-09-12T19:46:07.834174+00:00 to AGENTS.md [operator-doctrine-verbatim-canon].\n\nWarning: this append drifted 1 committed rendition(s) of 'AGENTS.md'\n  (root). They no longer derive from the current corpus,\n  so `gz check` will now fail on:\n    - Rendition freshness\n    - Rendition floor coherence (invariant-tier entry)\n\n  Recover by recomposing and re-attesting each consumer:\n    uv run gz content compose AGENTS.md --consumer root \\\n        --candidate <file>\n    uv run gz content commit AGENTS.md --consumer root \\\n        --attestor <you> --attestation-text <words>\n\n  The invariant-tier text must appear VERBATIM in every rendition;\n  omitting it fails the floor gate even after a recompose.\n"
+  },
+  {
+    "step": "retire",
+    "proposal": "D10",
+    "entry": "corpus-operator-doctrine-verbatim-canon-2026-08-17T21:46:58.710673+00:00",
+    "rc": 0,
+    "output": "Retired corpus entry corpus-operator-doctrine-verbatim-canon-2026-08-17T21:46:58.710673+00:00 in AGENTS.md (retraction corpus-retraction-corpus-operator-doctrine-verbatim-canon-2026-08-17T21:46:58.710673+00:00-2026-09-12T19:46:08.195845+00:00). The invariant floor shrank, so every committed rendition still SATISFIES it. This row moved the corpus fingerprint, so every committed rendition's derivation proof no longer holds.\n\nWarning: this retirement drifted 1 committed rendition(s) of 'AGENTS.md'\n  (root). They no longer derive from the current corpus,\n  so `gz check` will now fail on:\n    - Rendition freshness\n\n  Recover by recomposing and re-attesting each consumer:\n    uv run gz content compose AGENTS.md --consumer root \\\n        --candidate <file>\n    uv run gz content commit AGENTS.md --consumer root \\\n        --attestor <you> --attestation-text <words>\n"
+  },
+  {
+    "step": "remember",
+    "proposal": "D10",
+    "rc": 0,
+    "output": "Appended corpus entry corpus-operator-doctrine-verbatim-canon-2026-09-12T19:46:08.560946+00:00 to AGENTS.md [operator-doctrine-verbatim-canon].\n\nWarning: this append drifted 1 committed rendition(s) of 'AGENTS.md'\n  (root). They no longer derive from the current corpus,\n  so `gz check` will now fail on:\n    - Rendition freshness\n    - Rendition floor coherence (invariant-tier entry)\n\n  Recover by recomposing and re-attesting each consumer:\n    uv run gz content compose AGENTS.md --consumer root \\\n        --candidate <file>\n    uv run gz content commit AGENTS.md --consumer root \\\n        --attestor <you> --attestation-text <words>\n\n  The invariant-tier text must appear VERBATIM in every rendition;\n  omitting it fails the floor gate even after a recompose.\n"
+  },
+  {
+    "step": "retire",
+    "proposal": "D14",
+    "entry": "corpus-operator-doctrine-verbatim-canon-2026-08-21T09:33:42.074142+00:00",
+    "rc": 0,
+    "output": "Retired corpus entry corpus-operator-doctrine-verbatim-canon-2026-08-21T09:33:42.074142+00:00 in AGENTS.md (retraction corpus-retraction-corpus-operator-doctrine-verbatim-canon-2026-08-21T09:33:42.074142+00:00-2026-09-12T19:46:08.885588+00:00). The invariant floor shrank, so every committed rendition still SATISFIES it. This row moved the corpus fingerprint, so every committed rendition's derivation proof no longer holds.\n\nWarning: this retirement drifted 1 committed rendition(s) of 'AGENTS.md'\n  (root). They no longer derive from the current corpus,\n  so `gz check` will now fail on:\n    - Rendition freshness\n\n  Recover by recomposing and re-attesting each consumer:\n    uv run gz content compose AGENTS.md --consumer root \\\n        --candidate <file>\n    uv run gz content commit AGENTS.md --consumer root \\\n        --attestor <you> --attestation-text <words>\n"
+  },
+  {
+    "step": "retire",
+    "proposal": "D14",
+    "entry": "corpus-operator-doctrine-verbatim-canon-2026-08-23T14:33:19.685636+00:00",
+    "rc": 0,
+    "output": "Retired corpus entry corpus-operator-doctrine-verbatim-canon-2026-08-23T14:33:19.685636+00:00 in AGENTS.md (retraction corpus-retraction-corpus-operator-doctrine-verbatim-canon-2026-08-23T14:33:19.685636+00:00-2026-09-12T19:46:09.185052+00:00). The invariant floor shrank, so every committed rendition still SATISFIES it. This row moved the corpus fingerprint, so every committed rendition's derivation proof no longer holds.\n\nWarning: this retirement drifted 1 committed rendition(s) of 'AGENTS.md'\n  (root). They no longer derive from the current corpus,\n  so `gz check` will now fail on:\n    - Rendition freshness\n\n  Recover by recomposing and re-attesting each consumer:\n    uv run gz content compose AGENTS.md --consumer root \\\n        --candidate <file>\n    uv run gz content commit AGENTS.md --consumer root \\\n        --attestor <you> --attestation-text <words>\n"
+  },
+  {
+    "step": "remember",
+    "proposal": "D14",
+    "rc": 0,
+    "output": "Appended corpus entry corpus-operator-doctrine-verbatim-canon-2026-09-12T19:46:09.483819+00:00 to AGENTS.md [operator-doctrine-verbatim-canon].\n\nWarning: this append drifted 1 committed rendition(s) of 'AGENTS.md'\n  (root). They no longer derive from the current corpus,\n  so `gz check` will now fail on:\n    - Rendition freshness\n    - Rendition floor coherence (invariant-tier entry)\n\n  Recover by recomposing and re-attesting each consumer:\n    uv run gz content compose AGENTS.md --consumer root \\\n        --candidate <file>\n    uv run gz content commit AGENTS.md --consumer root \\\n        --attestor <you> --attestation-text <words>\n\n  The invariant-tier text must appear VERBATIM in every rendition;\n  omitting it fails the floor gate even after a recompose.\n"
+  }
+]

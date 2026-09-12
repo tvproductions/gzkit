@@ -879,6 +879,11 @@ Compatibility note:
 
 ## Workflow: Skill Maintenance and Deprecation Operations
 
+Codex delivery repairs follow the same canonical-source and sync path. The
+[interim parity record](codex-interim-parity-2026-09-12.md) distinguishes rendered
+files, native registration, hook trust, and observed execution. Full lifecycle
+and pipeline parity remains owned by `ADR-pool.vendor-alignment-codex`.
+
 **When:** Weekly hygiene cadence, before ADR closeout touching skills, or when deprecating/retiring any skill.
 
 Skill shortcuts for agent and skill infrastructure:
