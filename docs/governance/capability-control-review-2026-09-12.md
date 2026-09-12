@@ -14,6 +14,53 @@
 > recorded in `.gzkit/insights/agent-insights.jsonl` (2026-09-12T14:20:32Z,
 > `improvement`, scope this file).
 
+**Source-fidelity correction, 2026-09-12.** The operator supplied a fuller
+[conversation transcript](capability-control-conversation-2026-09-11.md).
+It is preserved byte-for-byte as supplied, including its editorial omissions;
+it is not represented as an independently verified transcription of the audio.
+The earlier re-cut already restored the four names. This correction restores
+the argument leading to them and separates operator directions, assistant
+hypotheses, and dated repository findings. The transcript supplies conversational
+provenance, not proof of its external historical or bibliographic claims.
+
+## The question behind the four constructs
+
+The conversation begins with a system that passes structural inspections yet
+becomes harder to carry forward. Longer OBPI completion is the experienced
+symptom. The broader concern is whether successive agent sessions can maintain
+a coherent understanding of gzkit while the operator remains responsible for
+its direction. A smaller task, stronger model, different language, or additional
+check is a possible intervention, not an established answer.
+
+The operator explicitly retains authorship of the system's purpose:
+
+> Every design facet of GZKit is driven by my prompting, inquiry, curiosity,
+> design needs and goals. Nothing was truly shaped without me directing it.
+
+The distinction drawn next is between that intentional understanding and the
+implementation understanding earned through sustained work. The operator also
+notes that human teams distribute understanding rather than giving everyone
+complete knowledge. The review therefore asks how decisions, contracts, and
+rationale remain available across contributors and sessions. It does not assume
+that the operator lacks a theory or must personally know every implementation
+detail.
+
+Naur's theory-building discussion and the operator's flight-command analogy
+motivate that question. Kuhn and the epicycle analogy express concern that local
+repairs may accumulate without restoring coherence. Those are frames raised in
+the conversation, not evidence that gzkit has undergone a paradigm failure.
+Likewise, the dark-factory account, conference recollections, and comparisons
+with human teams are conversation context; they were not researched in this
+document correction.
+
+The pivot is **task size versus jurisdiction**. Task size describes the work
+requested. Jurisdiction describes the decisions and artifacts the agent is
+authorized to alter. Understanding describes what it needs to read and reason
+about. These need not have the same extent: a small change may require broad
+understanding while granting narrow mutation authority. Whether jurisdiction
+needs to shrink as gzkit ages is a hypothesis to investigate, not a policy
+ratified by repeating the question.
+
 ## The four constructs
 
 Operator, voice conversation 2026-09-11, verbatim: *"Pull the four as-is. Keep
@@ -40,32 +87,77 @@ Naur, "Programming as Theory Building", frames the whole: the operator holds the
 intentional theory of gzkit; the implementation theory is distributed across
 thousands of agent decisions and is partially reconstructed each session.
 
-### Rulings from the conversation that bind this review
+The source associations above are the conversation's proposed intellectual
+lineage. They are not a literature review or verified claims about what each
+author would prescribe for agents. The constellations help distinguish concerns:
+safe-change work identifies an intervention point; modularity, authority, and
+ownership concern what may be disturbed; contracts concern what must hold;
+impact analysis concerns what a boundary crossing would affect. None alone
+establishes the design of a gzkit mechanism.
 
-- *"How small does its jurisdiction have to become, as the system ages?"* Task
-  size and jurisdiction are not the same thing; a tiny task can carry a large
-  blast radius. The missing boundary sits below the existing hierarchy:
-  **OBPI → requirement → task → authorized change surface.**
-- Jurisdiction applies to ADRs, validators, workflows, rules and prompts, not
-  only code. Operator: *"Why do the answers keep pouring into straight
-  code-oriented thinking?"*
-- The invariant is coherence across artifacts. Operator: *"we do make sure that
-  they continue to align and resonate."* When ADRs, validators, workflows and
-  code do not tell the same story, that is an escalation, not a clever fix.
-- Jurisdiction constrains mutation, not understanding: read broadly, write
-  narrowly.
-- *"Don't add mechanisms first."* Operator: *"maybe not make anything new, but
-  see how we can beef up what we have."*
-- Per construct, one skeleton: **concern, governing question, intellectual
-  lineage, current gzkit mechanisms, evidence to inspect, failure signatures,
-  boundaries.**
-- The pass: **inventory → map evidence to lenses → mark gaps and overlaps → test
-  against failure patterns → decide.**
-- Cross-cutting question, asked every time: *"Is this explicit enough that a
-  fresh agent can reconstruct it without relying on tacit memory?"*
-- Per construct, five checks: **health, opportunity, strategic fit, tactical
-  tweak, retirement** — *"Has something outlived its assumptions?"* No reflex to
-  add; see what to strengthen or retire.
+### Operator directions and proposed analytical method
+
+The operator's directions establish the review's scope:
+
+- *"Pull the four as-is. Keep them bare deliverables."* Preserve the four
+  constructs rather than substituting completion-cost categories.
+- *"Why do the answers keep pouring into straight code-oriented thinking?"*
+  Apply the lenses across the designed ecosystem, including ADRs, validators,
+  workflows, rules, and prompts.
+- *"we do make sure that they continue to align and resonate."* Examine
+  coherence across those artifacts, beyond whether individual tests pass.
+- *"maybe not make anything new, but see how we can beef up what we have."*
+  Begin with existing affordances and evidence of how they work.
+- *"What I hope to get is refinement of existing GZKit affordances. It would be
+  a health check, opportunity check, analytic check, strategic/tactical check,
+  etc."* Produce an analytical basis for decisions.
+
+The assistant proposed the following method in response. It is the organizing
+method of this review, not new project canon:
+
+- For each construct: **concern, governing question, intellectual lineage,
+  current gzkit mechanisms, evidence to inspect, failure signatures, boundaries**.
+- **Inventory → map evidence to lenses → mark gaps and overlaps → test against
+  failure patterns → decide.**
+- Ask across all four: *"Is this explicit enough that a fresh agent can
+  reconstruct it without relying on tacit memory?"*
+- Evaluate **health, opportunity, strategic fit, tactical tweak, retirement**.
+  The last asks whether assumptions still hold; it sets no removal quota.
+
+The assistant's proposed **OBPI → requirement → task → authorized change
+surface**, a per-task change budget, and the prediction that narrower
+jurisdiction might reduce the repair tail remain hypotheses. The transcript
+does not establish that an authorization boundary is missing, that current
+allowlists are inadequate, or that a new hierarchy level should be built.
+Those questions require reading existing mechanisms and observing their use.
+
+**Seated in canon, 2026-09-12.** In the session that re-cut this record the
+operator ruled, verbatim: *"then do we want to bolster the health-audit with
+this material and perspective? what I like about the conversation is that it
+identified those four primary dimensions to keep an agent's movement into the
+codespace focused."* On that direction the four dimensions, their focal
+anchors, the per-dimension skeleton, the pass, the cross-cutting question and
+the five checks were added to the `gz-health-audit` skill as its reading frame
+(`metadata.skill-version` `1.1.0`), which is where the method now binds. The
+proposed authorized-change-surface layer was not seated as canon; the skill
+carries it as the conversation's proposal and a question for the lenses.
+
+### How the four work together
+
+For one proposed change, identify **where** an intervention could occur (change
+point), **what decisions may be altered** under the existing authorization
+(jurisdiction), **what must remain true** across affected artifacts (invariant),
+and **what impact argument and decision are needed** if that authority is
+insufficient (escalation). This is a way to inspect a change, not four new stages
+in the execution pipeline.
+
+For example, a proposed clarification to a workflow rule may have an edit point
+in its authored source. That location alone grants no authority to change the
+rule's meaning or a validator's threshold. The reviewer checks the intended
+meaning, ownership, delivered instructions, and consumer behavior together. If
+the clarification requires a different policy, the report names that decision
+and its effects rather than silently making it. This is an illustrative use of
+the lenses, not a measured defect or work order.
 
 ## Purpose and authority
 
@@ -95,6 +187,16 @@ scorecard](advisory-rules-audit.md#recommended-promotion-order-highest-leverage-
 Every figure below is dated and commit-anchored; it is a record, never an
 authority (`.claude/rules/governance-core.md`, first non-negotiable rule).
 
+**Historical audit boundary.** The four lens sections retain the preceding
+session's evidence and interpretations at `b33a18ea1`. This source-fidelity
+correction did not rerun that audit. Their health judgments, gap claims, and
+tactical suggestions must be assessed against the cited evidence and current
+state before action; they are not operator rulings. In particular, more proof
+rows do not measure active labor, fewer adversary receipts do not by themselves
+mean less defect detection, and an empty unaccounted-seam list does not establish
+an empty complete seam-map. Claims that a rule or model is absent require a
+complete scoped reading, not a keyword search or this document's assertion.
+
 ---
 
 ## Lens 1 — Change point
@@ -119,6 +221,11 @@ Hunt and Thomas (tracer bullets).
   because *"production reach yields an empty seam-map, so a fail-closed gate
   would be vacuous."* Calibration is re-homed at
   [ADR-0.37.0](../design/adr/pre-release/ADR-0.37.0-airlock-calibration-and-compulsion/ADR-0.37.0-airlock-calibration-and-compulsion.md).
+  Its role here is read alongside the root contract's four purposes:
+  awareness and synthetic memory, movement control, focus and contamination
+  monitoring, and results/disturbance monitoring. The conversation's boundary
+  crossing analogy does not reduce the airlock to a verification gate or prove
+  that its desired blocking behavior already operates.
 - `gz ontology reach` (downstream blast-radius) and `gz ontology trace`
   (lineage) — the impact instruments the seam-map reads from.
 - REQ-level proof specs and mutation controls: `gz arb red`, the replayable
@@ -131,13 +238,17 @@ Hunt and Thomas (tracer bullets).
 **Evidence inspected.**
 
 - Ledger, 61 `airlock_in` rows to date: 43 `proceed`, every one with an empty
-  unaccounted list; 18 `hold`, every one with unaccounted seams. The gate has
-  never issued `proceed` on a computed non-empty seam-map. This matches the
-  campaign's 2026-08-14 measurement (20 of 23 transits empty) one month on.
+  unaccounted list; 18 `hold`, every one with unaccounted seams. The ledger row
+  carries the unaccounted list, not the seam-map itself; that every `proceed`
+  rests on an empty seam-map is stated by the verb's own `--help` (*"production
+  reach yields an empty seam-map"*) and by the campaign's 2026-08-14 live
+  measurement (20 of 23 transits empty), not by these rows alone.
 - Acceptance store, OBPI-0.35.0-05 and -06 (ledger, 2026-09-12): 84 and 104
   `acceptance_recorded` rows, 74 and 83 of them proofs, across 32 and 91
-  distinct digest values, against 27 and 5 tier-1 adversary receipts. Detection
-  fell while re-proving rose. The OBPI-06 completion handoff names the mechanism:
+  distinct digest values, against 27 and 5 tier-1 adversary receipts. These
+  counts describe different recorded activities; they do not establish that
+  defect detection fell or quantify avoidable re-proving. The OBPI-06
+  completion handoff names the proposed explanation:
   *"every production or normative-section edit moves the acceptance input digest
   and supersedes all closures"* — five times in one brief.
 - OBPI-0.35.0-06 Step 4b: one new finding was a regression introduced by the
@@ -456,7 +567,7 @@ inertness report read 76 / 66 / 10.
 **Re-verified at `b33a18ea1`** (2026-09-12, clean tree, OBPI-0.35.0-06
 complete):
 
-| Instrument | First cut | Now |
+| Instrument | First cut | Re-verification at b33a18ea1 |
 |---|---|---|
 | `gz validate --sensitivity` | exit 3, active OBPI-06 brief lacked a declaration | exit 0: the brief is terminal and the audit skips terminal briefs; completion carried an operator-approved security-floor override |
 | `gz validate --audits` | exit 3, propagating the above | exit 0 |
@@ -465,7 +576,7 @@ complete):
 | Proof freshness, both chores | exit 3 | exit 3, unchanged |
 | Reachability census, inertness report | as above | identical |
 
-**Ledger measurements, 2026-09-12** (this session, read-only): airlock
+**Ledger measurements, 2026-09-12** (the preceding audit session, read-only): airlock
 decisions by seam-map emptiness; `acceptance_recorded` rows, proof rows and
 distinct digests per landed ADR-0.35.0 brief; tier-1 adversary receipts per
 brief; Feature Checklist score distribution across the latest `adr-evaluation`
@@ -481,7 +592,8 @@ event per ADR. Figures are quoted in the lenses above.
 3. **Mark gaps and overlaps.** A control can serve two lenses (the allowlist
    serves 1 and 2); name which lens a finding belongs to before routing it.
 4. **Test against failure signatures.** A finding that matches none of the
-   signatures above is either a new signature or not a finding.
+   signatures above still requires examination on its own evidence; the
+   signatures guide investigation and do not define all possible failures.
 5. **Decide**, using the five checks. Dispositions: retain, clarify, reconnect
    an existing control, repair an observed failure, investigate, or retire with
    steering-failure evidence.
@@ -524,7 +636,12 @@ with its own exit status read immediately after, plus read-only Python over
 direct call of `_score_feature_checklist` against the ADR-0.35.0 body.
 
 Provenance of the four constructs: the operator's voice conversation of
-2026-09-11, supplied in full to the 2026-09-12 session; the Codex paste that
-seeded the first cut is `~/.codex/attachments/eaeeda2d-48cc-4129-99e3-1d26b0e743fd/pasted-text.txt`
-and the authoring rollout is `rollout-2026-09-11T19-14-42-01a092f7-673b-7cf1-ac27-fa631234f286.jsonl`.
-The full transcript is held by the operator and is not checked in.
+2026-09-11. The initial excerpt is attachment
+`eaeeda2d-48cc-4129-99e3-1d26b0e743fd/pasted-text.txt`; its authoring rollout is
+`rollout-2026-09-11T19-14-42-01a092f7-673b-7cf1-ac27-fa631234f286.jsonl`.
+The fuller source supplied for this correction is attachment
+`778b1ae4-fb60-42cb-84bc-9c4cdf918e24/pasted-text.txt`, preserved without edits
+as [the companion transcript](capability-control-conversation-2026-09-11.md).
+The conversational assistant's assertions about authors, books, models, and
+industry events remain attributed source material, not independently verified
+research. The unresolved book-title question remains unresolved.

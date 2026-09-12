@@ -1,13 +1,13 @@
 ---
 name: gz-health-audit
 persona: spec-reviewer
-description: Namespace router → the four-axis health and integrity audit. Use when the operator reports that gzkit feels "wobbly", misaligned, or that governance is not holding — or before a release, to check that declared mechanisms still fire. Routes to the concrete axis surfaces in a fixed cheapest-first order; owns the ordering rationale and the budget rule, not the analyses themselves.
+description: Namespace router → the four-axis health and integrity audit, read through four dimensions of agent movement (change point, jurisdiction, invariant, escalation). Use when the operator reports that gzkit feels "wobbly", misaligned, or that governance is not holding — or before a release, to check that declared mechanisms still fire. Routes to the concrete axis surfaces in a fixed cheapest-first order; owns the ordering rationale, the reading frame and the budget rule, not the analyses themselves.
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-08-15
+last_reviewed: 2026-09-12
 metadata:
-  skill-version: "1.0.0"
+  skill-version: "1.1.0"
 model: sonnet
 ---
 
@@ -54,6 +54,75 @@ Every added rule multiplies the pairwise contradiction surface. There is already
 a documented instance: `.claude/rules/governance-core.md` `0.9.0` exists because
 two binding rules mandated opposite actions for the two most common session
 decisions in the repo.
+
+## The reading frame — four dimensions of an agent's movement into the codespace
+
+The axes above produce **inventory**. This frame is how the inventory is
+**read** and how axis 2's sample is **chosen**. It was ratified by the operator
+on 2026-09-12 from a 2026-09-11 conversation on why bounded OBPIs had grown from
+under an hour to multiple days; the operator's instruction was verbatim *"Pull
+the four as-is. Keep them bare deliverables."* The worked example is
+`docs/governance/capability-control-review-2026-09-12.md`.
+
+The four are lenses, not features. Task size and jurisdiction are not the same
+thing: a tiny task can carry a large blast radius. The conversation proposed a
+boundary below the existing hierarchy — **OBPI → requirement → task →
+authorized change surface** — and whether that boundary is missing is a
+question the lenses investigate, not a settled fact. The lenses apply to ADRs,
+validators, workflows, rules and prompts, not only code.
+
+| Dimension | Governing question | Concept behind it | Focal anchors |
+|---|---|---|---|
+| **Change point** | For this change, what is the narrowest seam where behavior may legitimately change, and can the change be localized behind the existing contract? | seams and safe change | Feathers, *Working Effectively with Legacy Code*; Fowler, refactoring; Hunt and Thomas, *The Pragmatic Programmer* (tracer bullets) — practitioner |
+| **Jurisdiction** | Which design decisions and artifacts may this agent disturb, and what must remain invariant? Did it cross an information-hiding boundary, not merely a file count? | information hiding and least privilege | Parnas, "On the Criteria to be Used in Decomposing Systems into Modules" (1972) — scholarly; least privilege and capability-based security; Evans, *Domain-Driven Design* (bounded contexts); Skelton and Pais, *Team Topologies* (cognitive load, ownership boundaries) — practitioner |
+| **Invariant** | Which contracts must this change preserve, and do ADRs, validators, workflows, rules and code still tell the same story afterwards? | design by contract | Meyer, *Object-Oriented Software Construction* — scholarly; Brooks, conceptual integrity |
+| **Escalation** | When the task must cross its authorized surface, does the agent stop with an impact argument — *"I was authorized here; here's why that isn't enough; here's the dependency and likely surface"* — and does the stop land on Layer-2? | change-impact analysis and controlled handoffs | Arnold and Bohner, *Software Change Impact Analysis* — scholarly |
+
+The four were reduced from six bodies of work the conversation listed:
+modularity and information hiding plus DDD bounded contexts; change impact
+analysis; design by contract and invariants; least privilege and
+capability-based security; Feathers' seams and safe change; cognitive load and
+ownership boundaries. Only the jurisdiction constellation was elaborated in the
+conversation — Parnas inside a modularity cluster with Dijkstra (separation of
+concerns), Wirth (stepwise refinement), Myers and Constantine (cohesion and
+coupling), Brooks (conceptual integrity). The other three dimensions carry
+their named anchors; their constellations are not yet mapped, and mapping them
+is part of the pass, not a prerequisite for it. Naur, "Programming as Theory
+Building", frames the whole: the operator holds the intentional theory; the
+implementation theory is distributed across thousands of agent decisions and is
+partially reconstructed each session, which is why contracts, invariants and
+jurisdiction boundaries matter more as the system ages. The conversation also
+warned against forcing a new agentic control problem into a 1970s module frame:
+test the old frames against control theory, safety engineering and
+socio-technical systems before trusting them.
+
+**Per dimension, one skeleton, no field skipped:** concern, governing question,
+intellectual lineage, current gzkit mechanisms, evidence to inspect, failure
+signatures, boundaries.
+
+**The pass:** inventory → map evidence to lenses → mark gaps and overlaps → test
+against failure patterns → decide. A finding that matches no recorded failure
+signature is either a new signature or not a finding.
+
+**Cross-cutting question, asked of every dimension:** *"Is this explicit enough
+that a fresh agent can reconstruct it without relying on tacit memory?"*
+
+**Five checks per dimension, before any disposition:** health, opportunity,
+strategic fit, tactical tweak, retirement — *"Has something outlived its
+assumptions?"* Dispositions are the budget rule's: retain, clarify, reconnect an
+existing control, repair an observed failure, investigate, or retire with
+steering-failure evidence. Jurisdiction constrains mutation, not understanding:
+read broadly, write narrowly. Don't add mechanisms first.
+
+**Evidence discipline for the frame:** every lens's evidence names an
+instrument — a chore script or a `gz` verb — and an ad-hoc measurement is
+disclosed as ad hoc, is never a finding's sole witness, and is a candidate for
+an instrument, not a result. The 2026-09-12 worked example carries three such
+ad-hoc measurements (airlock decisions by seam-map emptiness, acceptance records
+and distinct digests per brief, Feature Checklist score distribution) and says
+so; the calibration signals the decomposition matrix names — rework rate, failed
+gates, attestation churn, delivery predictability — have no instrument today,
+which is itself a doctrine-declared-without-mechanism finding.
 
 ## Why cheapest-first is load-bearing
 
@@ -113,3 +182,4 @@ before recommending an incantation.*
 - `gz-foundation-triage` — ranks the foundation backlog; complementary, different question
 - `docs/governance/state-doctrine.md` — Layer-3 views are never source-of-truth
 - `docs/governance/advisory-rules-audit.md` — the Mechanical/Promotable/Judgment scorecard axis 3 feeds
+- `docs/governance/capability-control-review-2026-09-12.md` — the reading frame's worked example and the provenance of the four dimensions
