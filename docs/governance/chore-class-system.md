@@ -353,6 +353,7 @@ An undeclared chore does not run.
 ## Implementation order
 
 1. **Registry schema** — the fields above, plus a `paused` state.
+<!-- gz-validate-skip: command-shape -->
 2. **`gz chores status`** — the indicator surface. Reads proof commit dates, renders
    current / due / overdue / paused. Announces; never gates.
 3. **Class-conformance validator** — the ESLint/Ansible move. A chore whose `CHORE.md`
