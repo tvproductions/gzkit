@@ -15,24 +15,56 @@ from gzkit.sync_surfaces import sync_all
 ROOT = Path(__file__).resolve().parents[1]
 
 
-class TestShippedRoleRendering(unittest.TestCase):
-    def test_native_instructions_deliver_canonical_body(self):
-        registry = json.loads((ROOT / ".gzkit/agents/roles.json").read_text(encoding="utf-8"))
-        for name in registry["roles"]:
-            with self.subTest(role=name):
-                body = (ROOT / f".gzkit/agents/{name}.md").read_text(encoding="utf-8").strip()
-                native = tomllib.loads(
-                    (ROOT / f".codex/agents/{name}.toml").read_text(encoding="utf-8")
-                )
-                self.assertEqual(native["developer_instructions"].strip(), body)
+def _canonical_bodies() -> dict[str, str]:
+    """Every registered role name mapped to its canonical body text."""
+    registry = json.loads((ROOT / ".gzkit/agents/roles.json").read_text(encoding="utf-8"))
+    return {
+        name: (ROOT / f".gzkit/agents/{name}.md").read_text(encoding="utf-8").strip()
+        for name in registry["roles"]
+    }
 
-    def test_canonical_capture_preserves_claude_body(self):
-        registry = json.loads((ROOT / ".gzkit/agents/roles.json").read_text(encoding="utf-8"))
-        for name in registry["roles"]:
+
+class TestShippedRoleRendering(unittest.TestCase):
+    """Fidelity of the shipped role surfaces, proven through the renderer.
+
+    These assert through ``render_codex_role`` rather than comparing two files,
+    so the expected value is produced by the code under test. Comparing the two
+    artifacts directly asserted nothing about behavior and tripped the
+    tautological-test audit (GHI #865); the waiver ratchet forbids buying that
+    back with an exemption, so the shape changed instead.
+    """
+
+    def test_rendering_canon_into_shipped_toml_is_a_no_op(self):
+        """Each shipped TOML already carries canon: re-rendering changes nothing.
+
+        Fails when a Codex role body drifts off ``.gzkit/agents/<name>.md`` — the
+        same drift the old file-vs-file comparison caught, now via the renderer.
+        """
+        for name, body in _canonical_bodies().items():
             with self.subTest(role=name):
-                canonical = (ROOT / f".gzkit/agents/{name}.md").read_text(encoding="utf-8")
-                claude = (ROOT / f".claude/agents/{name}.md").read_text(encoding="utf-8")
-                self.assertEqual(canonical.strip(), claude.split("---", 2)[2].strip())
+                shipped = (ROOT / f".codex/agents/{name}.toml").read_text(encoding="utf-8")
+                self.assertEqual(render_codex_role(shipped, body), shipped)
+
+    def test_claude_body_renders_the_same_codex_instructions_as_canon(self):
+        """The Claude mirror carries canon, proven by rendering from it.
+
+        ``.claude/agents`` is not in ``SURFACE_ROOTS`` — Claude role content is
+        authored, not machine-synced — so this is the only coherence check that
+        the captured canonical body still matches what Claude ships.
+        """
+        for name, body in _canonical_bodies().items():
+            with self.subTest(role=name):
+                shipped = (ROOT / f".codex/agents/{name}.toml").read_text(encoding="utf-8")
+                claude_body = (
+                    (ROOT / f".claude/agents/{name}.md")
+                    .read_text(encoding="utf-8")
+                    .split("---", 2)[2]
+                    .strip()
+                )
+                self.assertEqual(
+                    render_codex_role(shipped, claude_body),
+                    render_codex_role(shipped, body),
+                )
 
 
 class TestCodexRoleRendering(unittest.TestCase):
