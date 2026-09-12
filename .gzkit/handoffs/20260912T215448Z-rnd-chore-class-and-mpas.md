@@ -101,7 +101,7 @@ Expected at authoring time: 40 chores, 19 audit-only, 7 freshness-wired, 393 PLC
 - `docs/governance/mpas-appropriation-analysis.md` — full MPAS anatomy read from the clone, the invocation-class invariant, the context-boundary table, the two collisions with gzkit (attestation inversion; spec-driven rejection), the hole gzkit must close, five independent convergences, and a proposed appropriate/adapt/reject disposition.
 - `scripts/check_proof_freshness.py` — the existing two-arm staleness mechanism to generalise.
 - `.gzkit/chores/registry.json` — the schema to extend.
-- [GHI #998](https://github.com/tvproductions/gzkit/issues/998) and the `discovery` record dated 2026-09-12 in `.gzkit/insights/agent-insights.jsonl` (scope `.gzkit/agents + .claude/agents role bodies`) — the coverage-blindness finding and the duplicated role bodies it came from. The latter is already owned by `ADR-pool.vendor-alignment-codex` child `codex-skills-personas-subagents`; the pool does not gate 1.0.
+- [GHI #998](https://github.com/tvproductions/gzkit/issues/998) and the `discovery` record dated 2026-09-12 in `.gzkit/insights/agent-insights.jsonl` (scope: the .gzkit/agents and .claude/agents role bodies) — the coverage-blindness finding and the duplicated role bodies it came from. The latter is already owned by [ADR-pool.vendor-alignment-codex](../../docs/design/adr/pool/ADR-pool.vendor-alignment-codex.md) child `codex-skills-personas-subagents`; the pool does not gate 1.0.
 - `docs/governance/build-to-1.0-campaign-2026-08-16.md` — Movement C in section 6, and the Workflow fronts section (the R&D capture gap).
 
 ## Settled Rulings
