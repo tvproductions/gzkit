@@ -257,6 +257,27 @@ def _missing_lineage_message(surface: str, consumer: str, owned_count: int, path
     )
 
 
+def _missing_citation_message(surface: str, consumer: str, section_id: str, entry_id: str) -> str:
+    """Three-part recovery prose for an owned section that cites no entry (REQ-0.35.0-06-06).
+
+    REQ-0.35.0-06-06 scopes the obligation to "the exit-3 path", not to one
+    message producer, so a finding that refuses without a runnable next step
+    leaves an operator exactly where the guardrail-feedback shape forbids.
+    """
+    return (
+        f"What failed: committed rendition '{surface}/{consumer}' declares section "
+        f"{section_id!r} corpus-owned and materializes corpus entry {entry_id!r} into it, "
+        "but the committed lineage cites no entry for that section, so the section's "
+        "provenance is unrecorded.\n"
+        "Why forbidden: ADR-0.35.0 § Decision item 4 — an owned section's bytes are DERIVED "
+        "from canon, and the lineage is the record of WHICH canon entries derived them; a "
+        "section whose citations are missing cannot be graded against the entries it was "
+        f"built from. {_NEVER_UNOWN}\n"
+        f"Next step: regenerate so the lineage is rewritten from canon alongside the "
+        f"rendition — {_round_trip(surface, consumer)}."
+    )
+
+
 def _regeneration_refused_message(surface: str, consumer: str, reason: str) -> str:
     """Three-part recovery prose when the corpus cannot materialize the surface at all."""
     return (
@@ -274,6 +295,7 @@ def _regeneration_refused_message(surface: str, consumer: str, reason: str) -> s
 
 def verify_candidate_against_declaration(
     candidate_text: str,
+    regenerated_text: str | None,
     lineage: ConsumerLineage | None,
     corpus: Corpus,
     declaration: OwnershipDeclaration,
@@ -296,6 +318,14 @@ def verify_candidate_against_declaration(
         return []
 
     problems: list[str] = []
+    derived = _section_text_by_id(regenerated_text) if regenerated_text is not None else {}
+    if regenerated_text is not None:
+        committed_by_id = _section_text_by_id(candidate_text)
+        problems.extend(
+            _drift_message(lineage.surface, lineage.consumer, section_id)
+            for section_id, state in sorted(declaration.sections.items())
+            if state == _OWNED and committed_by_id.get(section_id) != derived.get(section_id)
+        )
     present = {boundary.section_id for boundary in iter_section_boundaries(candidate_text)}
     mapped = set(lineage.sections)
     problems.extend(
@@ -313,7 +343,8 @@ def verify_candidate_against_declaration(
     except ValueError as exc:
         problems.append(str(exc))
 
-    live_ids = {entry.id for entry in effective_corpus(corpus).entries}
+    effective = effective_corpus(corpus)
+    live_ids = {entry.id for entry in effective.entries}
     for section_id, section in sorted(lineage.sections.items()):
         declared = declaration.sections.get(section_id)
         if declared is None:
@@ -335,34 +366,43 @@ def verify_candidate_against_declaration(
             for entry_id in section.entry_ids
             if entry_id not in live_ids
         )
+        problems.extend(
+            _uncited_materialized_entries(
+                lineage.surface, lineage.consumer, section_id, section, effective, derived
+            )
+        )
     return problems
 
 
-def _owned_drift(
-    root: Path,
+def _uncited_materialized_entries(
     surface: str,
     consumer: str,
-    committed_text: str,
-    declaration_sections: Mapping[str, str],
+    section_id: str,
+    section: SectionLineage,
+    effective: Corpus,
+    derived_by_id: Mapping[str, str],
 ) -> list[str]:
-    """Regenerate from canon and return one problem per owned section that drifted.
+    """Return a problem per live entry materialized into *section_id* that it fails to cite.
 
-    Never trusts a self-reported flag or fingerprint: the expected text is
-    re-derived by :func:`generate_candidate`, which reads the CURRENT effective
-    corpus and the CURRENT declaration and uses the committed rendition only as
-    the carry-forward source for unowned bytes.
+    Liveness asks whether the ids a lineage DOES cite still exist; it is
+    vacuous over the ids it OMITS, so a lineage citing nothing at all passed
+    while recording no provenance whatsoever (the Audit Contract puts
+    missing/extra entry ids among REQ-0.35.0-06-01/02's integrity controls).
+
+    Grounded in the DERIVATION, never in a count: an entry is required to be
+    cited only when its text actually appears in the regenerated section. That
+    is what keeps a `compressible` entry the setpoint dial legitimately dropped
+    from being reported as a missing citation — it is absent from the text, so
+    nothing claims it was materialized.
     """
-    try:
-        regenerated = generate_candidate(root, surface, consumer)
-    except ValueError as exc:
-        return [_regeneration_refused_message(surface, consumer, str(exc))]
-
-    committed_by_id = _section_text_by_id(committed_text)
-    regenerated_by_id = _section_text_by_id(regenerated.rendition.candidate_text)
+    materialized = derived_by_id.get(section_id)
+    if materialized is None:
+        return []
+    cited = set(section.entry_ids)
     return [
-        _drift_message(surface, consumer, section_id)
-        for section_id, state in sorted(declaration_sections.items())
-        if state == _OWNED and committed_by_id.get(section_id) != regenerated_by_id.get(section_id)
+        _missing_citation_message(surface, consumer, section_id, entry.id)
+        for entry in effective.entries
+        if entry.section == section_id and entry.id not in cited and entry.text in materialized
     ]
 
 
@@ -407,11 +447,13 @@ def _grade_rendition(root: Path, surface: str, rendition_file: Path) -> _Graded:
             ],
         )
 
-    problems = _owned_drift(root, surface, consumer, committed_text, declaration.sections)
-    problems.extend(
-        verify_candidate_against_declaration(
-            committed_text, lineage, load_corpus(root, surface), declaration
-        )
+    try:
+        regenerated_text = generate_candidate(root, surface, consumer).rendition.candidate_text
+    except ValueError as exc:
+        return _Graded([_regeneration_refused_message(surface, consumer, str(exc))], coverage)
+
+    problems = verify_candidate_against_declaration(
+        committed_text, regenerated_text, lineage, load_corpus(root, surface), declaration
     )
     return _Graded(problems, coverage)
 
@@ -472,6 +514,11 @@ def validate_rendition_lineage(
                 if not closed:
                     emit_advisory(f"WARNING [{_SCOPE}, staged warn]: {message}")
                     continue
+                # REQ-0.35.0-06-06 names the CHANNEL: "when stderr is read, then it
+                # carries all three recovery parts". The shared CLI error path renders
+                # a finding to stdout, so returning the ValidationError alone composes
+                # the prose without delivering it where the REQ says an operator reads.
+                emit_advisory(f"{_SCOPE}: {message}")
                 errors.append(ValidationError(type=_ERROR_TYPE, artifact=target, message=message))
 
     emit_advisory(

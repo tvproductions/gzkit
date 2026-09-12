@@ -167,8 +167,8 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     "pool-interview-schema": EXEMPTS_NONE,
     # --- OBPI-0.35.0-06 (2026-09-11) ----------------------------------------
     # Grades every committed rendition's `corpus-owned` sections against a
-    # regeneration from the effective corpus; drift is always a finding
-    # (`_owned_drift`) and `verify_candidate_against_declaration`'s partition /
+    # regeneration from the effective corpus; drift is always a finding, and
+    # `verify_candidate_against_declaration`'s owned-drift, partition and
     # entry-liveness checks are likewise unconditional. Three things read at
     # first glance like admit paths and are not:
     #

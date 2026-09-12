@@ -19,16 +19,18 @@ import unittest
 from contextlib import redirect_stderr
 from pathlib import Path
 
-from gzkit.content.corpus_store import append_entry
+from gzkit.content.corpus_store import append_entry, load_corpus
 from gzkit.content.lineage import lineage_path
 from gzkit.content.models import CorpusEntry
-from gzkit.content.ownership import declaration_path, sections_digest
+from gzkit.content.ownership import declaration_path, load_declaration, sections_digest
 from gzkit.content.rendition_store import rendition_path
 from gzkit.governance.events import emit_section_ownership_genesis
 from gzkit.governance.trust_audits.rendition_lineage import (
     LineageCoverage,
+    _load_committed_lineage,
     measure_coverage,
     validate_rendition_lineage,
+    verify_candidate_against_declaration,
 )
 from gzkit.traceability import covers
 
@@ -502,3 +504,133 @@ class MissingCommittedLineageIsDisclosedTest(_LineageFixtureMixin, unittest.Test
         self.assertIn(f"1 section(s) / {_span_of(_OWNED_CHUNK)} byte(s) UNGRADED", emitted)
         self.assertIn("0/105 bytes owned", emitted.replace(str(_span_of(_CLEAN_TEXT)), "105"))
         self.assertIn("no committed lineage", emitted)
+
+
+class OwnedSectionEntryIdCompletenessTest(_LineageFixtureMixin, unittest.TestCase):
+    """REQ-0.35.0-06-01: an owned section must cite the entries that materialize it.
+
+    The Audit Contract puts missing/extra entry ids among REQ-01/02's
+    artifact-integrity controls. Liveness of the ids a lineage DOES cite is not
+    that check: a lineage citing no ids at all has nothing to be live, so a
+    liveness-only loop passes it vacuously while the section's provenance is
+    entirely unrecorded.
+    """
+
+    @covers("REQ-0.35.0-06-01")
+    def test_owned_section_citing_no_entry_ids_fails_closed(self) -> None:
+        self._seed(
+            lineage_chunks=[
+                ("owned-section", True, (), _OWNED_CHUNK),
+                ("unowned-section", False, (), _UNOWNED_CHUNK),
+            ]
+        )
+
+        errors = self._validate(fail_closed=True)
+
+        self.assertEqual(
+            len(errors),
+            1,
+            f"owned section citing no entry ids must fail closed, got {errors!r}",
+        )
+        self.assertIn("e-canon", errors[0].message)
+
+
+class PureVerifierRejectsOwnedDriftTest(_LineageFixtureMixin, unittest.TestCase):
+    """REQ-0.35.0-06-02: the pure core must reject owned drift, not just the committed path.
+
+    The Audit Contract requires the audit core to return findings independently
+    of presentation severity "so 07 can reject any owned drift even in MX mode".
+    A pure verifier that checks only headings, spans, ownership agreement and id
+    liveness accepts a candidate whose owned body was replaced wholesale, so
+    OBPI-0.35.0-07 calling it before publication would publish the drift.
+    """
+
+    @covers("REQ-0.35.0-06-02")
+    def test_pure_verifier_rejects_an_owned_body_replaced_wholesale(self) -> None:
+        self._seed()
+        declaration = load_declaration(
+            declaration_path(self._root, _SURFACE), _CLEAN_TEXT, self._root
+        )
+        lineage = _load_committed_lineage(self._root, _SURFACE, _CONSUMER)
+        corpus = load_corpus(self._root, _SURFACE)
+        # Equal-length substitution: headings and byte spans stay valid, so every
+        # structural check still passes and only a derivation test can catch it.
+        drifted = _CLEAN_TEXT.replace(_CANON_TEXT, "X" * len(_CANON_TEXT))
+        self.assertEqual(len(drifted.encode("utf-8")), len(_CLEAN_TEXT.encode("utf-8")))
+
+        clean_problems = verify_candidate_against_declaration(
+            _CLEAN_TEXT, _CLEAN_TEXT, lineage, corpus, declaration
+        )
+        drift_problems = verify_candidate_against_declaration(
+            drifted, _CLEAN_TEXT, lineage, corpus, declaration
+        )
+
+        self.assertEqual(clean_problems, [], "clean candidate must be accepted")
+        self.assertTrue(drift_problems, "pure verifier must reject owned drift")
+
+
+class RecoveryProseReachesStderrTest(_LineageFixtureMixin, unittest.TestCase):
+    """REQ-0.35.0-06-06: the three recovery parts must be READABLE ON STDERR.
+
+    The REQ names the channel: "when stderr is read, then it carries all three
+    recovery parts". Asserting on `ValidationError.message` proves the prose was
+    composed, never that an operator running the gate can see it — the finding
+    is rendered to stdout by the shared CLI error path.
+    """
+
+    @covers("REQ-0.35.0-06-06")
+    def test_fail_closed_path_writes_the_three_parts_to_stderr(self) -> None:
+        self._seed(committed_text=_DRIFT_TEXT)
+
+        captured = io.StringIO()
+        with redirect_stderr(captured):
+            errors = validate_rendition_lineage(self._root, fail_closed=True)
+        stderr_text = captured.getvalue()
+
+        self.assertEqual(len(errors), 1, f"expected exactly one finding, got {errors!r}")
+        # Part 1 — WHAT failed, named on the channel the REQ specifies.
+        self.assertIn("owned-section", stderr_text)
+        # Part 2 — WHY forbidden.
+        self.assertIn("ADR-0.35.0", stderr_text)
+        self.assertIn("Decision item 4", stderr_text)
+        # Part 3 — NEXT step, runnable.
+        self.assertIn("gz content compose", stderr_text)
+        self.assertIn("gz content commit", stderr_text)
+
+
+class UncitedEntryFindingCarriesRecoveryTest(_LineageFixtureMixin, unittest.TestCase):
+    """REQ-0.35.0-06-06: EVERY exit-3 path carries the three recovery parts.
+
+    The REQ scopes the obligation to "the exit-3 path", not to one message
+    producer. The missing-citation finding added for REQ-0.35.0-06-01 is an
+    exit-3 path, so a bare diagnostic there leaves an operator with a refusal
+    and no runnable next step — the guardrail-feedback shape the REQ exists to
+    guarantee.
+    """
+
+    @covers("REQ-0.35.0-06-06")
+    def test_missing_citation_finding_carries_the_three_parts(self) -> None:
+        self._seed(
+            lineage_chunks=[
+                ("owned-section", True, (), _OWNED_CHUNK),
+                ("unowned-section", False, (), _UNOWNED_CHUNK),
+            ]
+        )
+
+        errors = self._validate(fail_closed=True)
+
+        self.assertEqual(len(errors), 1, f"expected exactly one finding, got {errors!r}")
+        message = errors[0].message
+        # Part 1 — WHAT failed.
+        self.assertIn("owned-section", message)
+        # Part 2 — WHY forbidden.
+        self.assertIn("Why forbidden:", message)
+        self.assertIn("ADR-0.35.0", message)
+        # Part 3 — NEXT step, runnable, and never the un-owning escape.
+        parts = message.split("Next step:", 1)
+        self.assertEqual(len(parts), 2, f"message carries no 'Next step:' part: {message!r}")
+        self.assertIn("gz content compose", parts[1])
+        self.assertIn("gz content commit", parts[1])
+        lowered = message.lower()
+        for escape in _UNOWNING_ESCAPES:
+            self.assertNotIn(escape, lowered, f"recovery prose offers the escape {escape!r}")
