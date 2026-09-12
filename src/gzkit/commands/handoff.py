@@ -143,8 +143,46 @@ def _render_resume(result: ResumeResult, divergence: RemoteDivergence | None = N
                 f"  {flagged} step(s) cite a settled reference — confirm whether it is a "
                 "precondition (step is void) or context (step still stands)."
             )
+    _render_chain(result)
     _render_decisions(result)
     _render_settled(result)
+
+
+def _render_chain(result: ResumeResult) -> None:
+    """Render the lineage `resume_handoff` already walked (GHI #870).
+
+    `continues_from` was never the unbuilt half: `load_handoff_chain` has run on
+    every resume since `af6bba3ed` (2026-07-13), filling `ResumeResult.chain`
+    with a bounded, cycle-safe, multi-parent walk. Nothing read the field. A
+    20-document lineage was resolved and discarded inside one function call
+    while the reader saw a single path — so a CHECKPOINT sitting newest above a
+    CREATE advised from the narrow document and never named the broad one.
+
+    Oldest-first, head excluded: the head is already rendered as `resume — `,
+    and repeating it as its own ancestor would misstate the depth.
+
+    A chain of one prints nothing. Announcing a lineage a root does not have
+    manufactures the continuity `create_handoff` refuses to fabricate at
+    authoring time; the renderer must not reintroduce it downstream.
+    """
+    ancestors = result.chain[:-1]
+    if not ancestors:
+        return
+    # Filenames, not paths: the directory is constant across every entry, so
+    # repeating it 19 times spends the line budget on the one part that
+    # identifies nothing — and pushes the timestamped name past the console
+    # width, where rich soft-wraps it mid-token and the list stops scanning.
+    # `soft_wrap` then holds even a long name on one line.
+    console.print(f"  lineage ({len(ancestors)} ancestor(s) in .gzkit/handoffs/, oldest first):")
+    for path in ancestors:
+        console.print(f"    - {Path(path).name}", soft_wrap=True)
+    if result.chain_truncated:
+        # The walk truncates silently. Printing the truncated list without this
+        # asserts a completeness it never established — and the bound only
+        # becomes load-bearing once something reads the chain, which is now.
+        console.print(
+            "  lineage hit the walk's depth bound — older ancestors exist and are NOT listed above."
+        )
 
 
 def _render_decisions(result: ResumeResult) -> None:

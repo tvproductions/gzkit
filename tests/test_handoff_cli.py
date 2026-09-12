@@ -22,6 +22,7 @@ from pathlib import Path
 from typing import Any
 from unittest import mock
 
+from gzkit import handoff_api
 from gzkit.cli.main import _build_parser
 from gzkit.commands.handoff import (
     SECTION_PARAMS,
@@ -41,6 +42,9 @@ from gzkit.traceability import covers
 from tests.commands.common import SilencedConsoleTestCase
 
 _NEXT_STEPS = "## Immediate Next Steps\n\n1. Land the adapter and its unit tests.\n"
+# Seeded past the walk's ceiling to force saturation. Read from the owning
+# module rather than transcribed, so the fixture follows the bound if it moves.
+_CHAIN_DEPTH_BOUND = handoff_api._MAX_CHAIN_DEPTH
 
 
 class _HandoffCliCase(unittest.TestCase):
@@ -272,6 +276,68 @@ class TestHandoffResumeReferenceRendering(_HandoffCliCase):
 
         self.assertIn("unknown", out)
         self.assertNotIn("CITES SETTLED", out)
+
+
+class TestHandoffResumeChainRendering(_HandoffCliCase):
+    """`gz handoff resume` must render the lineage it already walked (GHI #870).
+
+    `resume_handoff` fills `ResumeResult.chain` on every call and this renderer
+    dropped it, so a 20-document lineage was computed and discarded inside one
+    function call while the operator read a single path. Output-form assertions
+    are the named contract: the rendering is the only channel the chain reaches.
+
+    Saturation is asserted separately because a truncated lineage printed as if
+    whole is a worse failure than printing none — the bound is inert while
+    nothing reads the chain, and load-bearing the moment something does.
+    """
+
+    def _capture_console(self, fn) -> str:
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            fn()
+        return buf.getvalue()
+
+    def _resume(self) -> str:
+        return self._capture_console(
+            lambda: handoff_resume_cmd(
+                adr="ADR-0.0.65", now="2026-07-14T11:00:00Z", base_path=self.base
+            )
+        )
+
+    def test_resume_renders_the_ancestors_it_walked(self) -> None:
+        # output-contract: an ancestor the walk resolved must reach the reader.
+        ancestor = self._seed(
+            adr_id="ADR-0.0.65", slug="ancestor", timestamp="2026-07-14T08:00:00Z"
+        )
+        self._seed(adr_id="ADR-0.0.65", slug="successor", timestamp="2026-07-14T09:00:00Z")
+
+        out = self._resume()
+
+        self.assertIn("lineage", out)
+        self.assertIn(ancestor.name, out)
+
+    def test_a_single_document_renders_no_lineage_section(self) -> None:
+        # A chain of one is not a lineage; announcing one would manufacture
+        # continuity the corpus does not carry.
+        self._seed(adr_id="ADR-0.0.65", slug="only", timestamp="2026-07-14T08:00:00Z")
+
+        out = self._resume()
+
+        self.assertNotIn("lineage", out)
+
+    def test_a_saturated_walk_says_so_rather_than_implying_completeness(self) -> None:
+        # `_MAX_CHAIN_DEPTH` truncates silently. Printing the truncated list
+        # without the caveat asserts a completeness the walk never established.
+        for index in range(_CHAIN_DEPTH_BOUND + 2):
+            self._seed(
+                adr_id="ADR-0.0.65",
+                slug=f"link{index:02d}",
+                timestamp=f"2026-07-14T{index + 1:02d}:00:00Z",
+            )
+
+        out = self._resume()
+
+        self.assertIn("depth bound", out)
 
 
 class TestHandoffResumeDecisionRendering(_HandoffCliCase):

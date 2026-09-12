@@ -163,6 +163,29 @@ def _render_count_warning(findings: list[tuple[int, str]]) -> str:
     )
 
 
+def _chain_line(result: object) -> str | None:
+    """Name the predecessor this handoff chains from, or None for a root.
+
+    One line, not the whole lineage: this body is budgeted
+    (``ADVISEMENT_CHAR_BUDGET``) and truncation clips the tail, so spending
+    twenty paths here would push the advised steps out of the delivery. The
+    measured instance in GHI #870 needed exactly one fact the renderer already
+    held and dropped — that a predecessor exists, and which one.
+    """
+    chain = list(getattr(result, "chain", []) or [])
+    if len(chain) < 2:
+        return None
+    predecessor = Path(chain[-2]).name
+    line = f"- Chained from: `{predecessor}`"
+    if len(chain) > 2:
+        # "at least" when the walk stopped at its ceiling: an exact count there
+        # would be the same false-completeness claim the lineage rendering
+        # exists to prevent.
+        qualifier = "at least " if getattr(result, "chain_truncated", False) else ""
+        line += f" ({qualifier}{len(chain) - 1} ancestors in the lineage — read them before acting)"
+    return line
+
+
 def _render(
     result: object,
     findings: list[tuple[int, str]] | None = None,
@@ -195,6 +218,11 @@ def _render(
     ]
     if divergence is not None and divergence.is_behind:
         lines.append(f"- {behind_origin_caveat(divergence.behind)}")
+    # Identity block: a handoff with ancestors is a fragment of a longer record,
+    # and that qualifies WHICH document this is — so it sits with path,
+    # freshness and the divergence caveat, ahead of the budgeted tail.
+    if (chain_line := _chain_line(result)) is not None:
+        lines.append(chain_line)
     if findings:
         lines += ["", _render_count_warning(findings)]
     lines += [

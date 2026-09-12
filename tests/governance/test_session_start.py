@@ -109,6 +109,63 @@ if __name__ == "__main__":
     unittest.main()
 
 
+class ChainLineageAdvisementTests(unittest.TestCase):
+    """The advisement must name the predecessor it was chained from (GHI #870).
+
+    `continues_from` IS traversed — `resume_handoff` fills `ResumeResult.chain`
+    via `load_handoff_chain`. The defect this class pins is on the CONSUMPTION
+    side: `_render` received the full result and dropped `.chain`, so a
+    CHECKPOINT sitting newest above a CREATE advised from the narrow document
+    and said nothing about the broad one beneath it. The issue's measured
+    instance needed exactly one fact the renderer already held — that a
+    predecessor exists, and which one.
+
+    Asserted on the rendered text because the rendering IS the delivery: this
+    body lands as SessionStart `additionalContext` and is the only channel the
+    entering agent reads.
+    """
+
+    def _seed(self, root: Path, *, slug: str, timestamp: str) -> Path:
+        sections: dict[str, str] = {section: f"Seeded {section}." for section in REQUIRED_SECTIONS}
+        sections["Decisions Made"] = "- [operator-ruled] Seated the lineage fixture."
+        sections["Immediate Next Steps"] = f"1. Work the {slug} queue."
+        return create_handoff(
+            adr_id="ADR-0.0.65",
+            branch="main",
+            agent="g0",
+            slug=slug,
+            sections=sections,
+            base_path=root,
+            timestamp=timestamp,
+        )
+
+    def _root(self) -> Path:
+        root = Path(self.enterContext(tempfile.TemporaryDirectory()))
+        (root / ".gzkit" / "handoffs").mkdir(parents=True)
+        return root
+
+    def test_advisement_names_the_predecessor_it_chains_from(self) -> None:
+        # The GHI's whole complaint: "Nothing mechanical surfaced the predecessor."
+        root = self._root()
+        ancestor = self._seed(root, slug="ancestor", timestamp="2026-08-05T09:00:00Z")
+        self._seed(root, slug="successor", timestamp="2026-08-05T10:00:00Z")
+
+        advisement = build_advisement(root, now="2026-08-05T11:00:00Z")
+
+        self.assertIn(ancestor.name, advisement.text)
+
+    def test_a_chain_root_claims_no_predecessor(self) -> None:
+        # A genuine root must not be decorated with a lineage it does not have —
+        # inventing continuity is the failure mode `create_handoff` guards at
+        # authoring time, and the renderer must not reintroduce it.
+        root = self._root()
+        self._seed(root, slug="only", timestamp="2026-08-05T09:00:00Z")
+
+        advisement = build_advisement(root, now="2026-08-05T11:00:00Z")
+
+        self.assertNotIn("Chained from", advisement.text)
+
+
 class TranscribedCountAdvisementTests(unittest.TestCase):
     """The advisement warns when the document it injects carries a live count.
 

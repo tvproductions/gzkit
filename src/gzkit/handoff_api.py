@@ -243,6 +243,7 @@ class ResumeResult(BaseModel):
     requires_human_verification: bool
     steps: list[NextStep]
     chain: list[str]
+    chain_truncated: bool = False
     decisions: list[Decision] = []
     settled: list[str] = []
 
@@ -1156,6 +1157,7 @@ def resume_handoff(
         requires_human_verification=requires,
         steps=_build_steps(content, reference_checker),
         chain=chain,
+        chain_truncated=len(chain) >= _MAX_CHAIN_DEPTH,
         decisions=parse_decisions(content),
         # Store FIRST, then the document's own prose (GHI #838). A post-cutover
         # handoff carries a pointer and yields nothing here; a legacy one carries
