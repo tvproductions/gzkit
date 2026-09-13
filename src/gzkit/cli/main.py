@@ -143,6 +143,8 @@ def main(argv: list[str] | None = None) -> int:
     try:
         handler(args)
     except GzkitError as exc:
+        from rich.markup import escape  # noqa: PLC0415
+
         from gzkit.commands.common import console  # noqa: PLC0415
 
         if getattr(args, "debug", False):
@@ -150,7 +152,8 @@ def main(argv: list[str] | None = None) -> int:
             import traceback  # noqa: PLC0415
 
             traceback.print_exc(file=sys.stderr)
-        console.print(f"[red]{exc}[/red]")
+        # The message is text: unescaped, Rich consumes bracketed spans as tags.
+        console.print(f"[red]{escape(str(exc))}[/red]")
         return exit_code_for(exc)
     except SystemExit as exc:
         return int(exc.code) if isinstance(exc.code, int) else 1
