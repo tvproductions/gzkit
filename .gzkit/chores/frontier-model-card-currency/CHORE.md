@@ -1,6 +1,5 @@
 # CHORE: Frontier Model Card Currency (System-Card Doctrine Refresh)
 
-**Version:** 1.1.0
 **Lane:** Lite
 **Slug:** `frontier-model-card-currency`
 
@@ -136,11 +135,14 @@ Append the run's findings (or a clean no-drift line) to
 
 ## Acceptance Criteria
 
-| # | Criterion | Verification |
-|---|-----------|--------------|
-| 1 | Registry parses and every entry carries vendor, card_date, url, status | `acceptance.json` python check exit 0 |
-| 2 | Documents validate after any refresh | `uv run gz validate --documents` exit 0 |
-| 3 | Every drifted item is routed (GHI or registry note), never left untracked | manual — recorded in `proofs/CHORE-LOG.md` |
+Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan frontier-model-card-currency`. This section explains them and does not restate them (GHI #1002).
+
+## Manual completion checks
+
+`gz chores run` does not check these; a run is incomplete until each is recorded
+in `proofs/CHORE-LOG.md`.
+
+- Every drifted item is routed (GHI or registry note), never left untracked.
 
 ## Anti-patterns
 

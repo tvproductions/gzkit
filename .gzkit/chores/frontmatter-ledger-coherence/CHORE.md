@@ -1,6 +1,5 @@
 # CHORE: Frontmatter-Ledger Reconciliation
 
-**Version:** 2.0.0
 **Lane:** Heavy
 **Slug:** `frontmatter-ledger-coherence`
 **ADR:** ADR-0.0.16 (OBPI-03)
@@ -80,9 +79,7 @@ The chore passes when `gz frontmatter reconcile --dry-run` exits 0 — i.e.
 there is no drift to rewrite. If drift exists, run the non-dry-run variant to
 resolve, then re-run the dry-run to confirm.
 
-| Type | Command | Expected |
-|------|---------|----------|
-| exitCodeEquals | `uv run gz frontmatter reconcile --dry-run` | 0 |
+Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan frontmatter-ledger-coherence`. This section explains them and does not restate them (GHI #1002).
 
 ## Exit Codes
 

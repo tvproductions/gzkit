@@ -1,6 +1,5 @@
 # CHORE: Pythonic Design Pattern Detection
 
-**Version:** 1.0.1
 **Lane:** Lite
 **Slug:** `pythonic-design-pattern-detection`
 
@@ -168,10 +167,7 @@ uv run python src/gzkit/chores/pythonic-design-pattern-detection/scan.py --self-
 
 ## Acceptance Criteria
 
-| Type | Command | Expected |
-|------|---------|----------|
-| exitCodeEquals | `uv run -m unittest -q` | 0 |
-| exitCodeEquals | `uv run python src/gzkit/chores/pythonic-design-pattern-detection/scan.py --self-test` | 0 |
+Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan pythonic-design-pattern-detection`. This section explains them and does not restate them (GHI #1002).
 
 ## Anti-patterns (do not do)
 

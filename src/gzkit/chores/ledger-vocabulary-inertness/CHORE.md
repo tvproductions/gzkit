@@ -1,6 +1,5 @@
 # CHORE: Ledger Vocabulary Inertness
 
-**Version:** 1.1.0
 **Lane:** Lite
 **Slug:** `ledger-vocabulary-inertness`
 
@@ -107,6 +106,8 @@ Live counts and `--report --write` retain their original meaning; an isolated
 execution does not drain the live never-fired baseline or change paired ratios.
 
 ## Acceptance Criteria
+
+Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan ledger-vocabulary-inertness`. This section explains them and does not restate them (GHI #1002).
 
 - `check_ledger_inertness.py --self-test` exits 0
 - `check_ledger_inertness.py` exits 0 (every undisclosed never-fired type has a

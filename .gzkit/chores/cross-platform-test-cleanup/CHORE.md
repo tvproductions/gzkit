@@ -1,6 +1,5 @@
 # CHORE: Cross-Platform Test Cleanup (Windows-Safe Patterns)
 
-**Version:** 1.0.0
 **Lane:** Lite
 **Slug:** `cross-platform-test-cleanup`
 
@@ -57,9 +56,7 @@ uv run coverage report --fail-under=40
 
 ## Acceptance Criteria
 
-| Type | Command | Expected |
-|------|---------|----------|
-| exitCodeEquals | `uv run -m unittest -q` | 0 |
+Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan cross-platform-test-cleanup`. This section explains them and does not restate them (GHI #1002).
 
 ## Evidence Commands
 

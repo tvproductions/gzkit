@@ -1,6 +1,5 @@
 # CHORE: Complexity Reduction (Xenon C/C/C Enforcement)
 
-**Version:** 2.0.0
 **Lane:** Lite
 **Slug:** `complexity-reduction-xenon`
 
@@ -84,12 +83,16 @@ uv run -m unittest -q
 
 ## Acceptance Criteria
 
-| Type | Command (post-cluster) | Command (pre-cluster bootstrap) | Expected |
-|------|------------------------|----------------------------------|----------|
-| exitCodeEquals | `uv run -m unittest -q` | `uv run -m unittest -q` | 0 |
-| exitCodeEquals | `uv run gz complexity-advise src/` | `uvx xenon --max-absolute C --max-modules C --max-average C src/` | 0 (no block-band crossings) |
-| exitCodeEquals | `uv run gz validate --complexity-thresholds` | _n/a (cluster not landed)_ | 0 |
-| fileExists | `.gzkit/chores/complexity-reduction-xenon/proofs/diagnosis-acceptance-{date}.md` | _n/a_ | true (when crossings were addressed) |
+Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan complexity-reduction-xenon`. This section explains them and does not restate them (GHI #1002).
+
+The gate is the pre-cluster bootstrap: the xenon C/C/C ceiling and the unit suite.
+The post-cluster criteria this section used to list were never adopted into
+`acceptance.json`. Adopting them would move the gate from xenon's C ceiling to the
+threshold table's block band — a conflict `.gzkit/rules/pythonic.md` § Size Limits
+& Refactoring records as unreconciled and routed for operator decision — so until
+that is ruled the operator-witnessed diagnosis-acceptance record (§ 2 Plan) is a
+workflow obligation, not a criterion. The advisor verb this chore names is tracked
+under GHI #1006.
 
 ## Evidence Commands
 

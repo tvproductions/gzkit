@@ -1,6 +1,5 @@
 # CHORE: Control Surface — Validator Reachability & Ungated Ratchet (Pass D)
 
-**Version:** 1.0.0
 **Lane:** Lite
 **Slug:** `control-surface-validator-reachability`
 
@@ -130,6 +129,8 @@ a disposition list, not a report. Where a scope's routing needs a decision the
 chore cannot make, file it per `AGENTS.md` § Behavior Rules — Always #13.
 
 ## Acceptance Criteria
+
+Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan control-surface-validator-reachability`. This section explains them and does not restate them (GHI #1002).
 
 - `check_reachability.py --self-test` exits 0 (tiering assertions, deterministic)
 - `check_reachability.py` exits 0 (the ungated set has not grown)

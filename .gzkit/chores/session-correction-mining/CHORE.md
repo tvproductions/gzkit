@@ -1,6 +1,5 @@
 # CHORE: session-correction-mining — Ground-Truth Correction Mining
 
-**Version:** 1.0.0
 **Lane:** Lite
 **Slug:** `session-correction-mining`
 
@@ -106,10 +105,7 @@ uv run gz validate --chores-layout
 
 ## Acceptance Criteria
 
-| Type | Command | Expected |
-|------|---------|----------|
-| exitCodeEquals | `uv run -m unittest tests/chores/test_session_correction_mining.py -q` | 0 |
-| exitCodeEquals | `uv run gz validate --chores-layout` | 0 |
+Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan session-correction-mining`. This section explains them and does not restate them (GHI #1002).
 
 ## Evidence Commands
 

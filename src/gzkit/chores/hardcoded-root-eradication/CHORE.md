@@ -1,6 +1,5 @@
 # CHORE: Config-First Enforcement (Anti-Vibe-Code)
 
-**Version:** 1.0.0
 **Lane:** Lite
 **Slug:** `hardcoded-root-eradication`
 
@@ -161,17 +160,13 @@ uv run gz check-config-paths
 
 ## Acceptance Criteria
 
-| Type | Command | Expected |
-|------|---------|----------|
-| exitCodeEquals | `uv run gz lint` | 0 (includes parents-pattern lint) |
-| exitCodeEquals | `uv run gz check-config-paths` | 0 (includes source path literal scan) |
-| exitCodeEquals | `uv run -m unittest -q` | 0 |
+Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan hardcoded-root-eradication`. This section explains them and does not restate them (GHI #1002).
 
 > **Do not re-add any `grep` for `Path(__file__).*parents` (GHI #782).** All three
 > are gone — the repo-wide one and the two per-directory ones over
 > `src/gzkit/eval/` and `src/gzkit/hooks/`.
 >
-> `gz lint` — the first criterion above — asserts the property, and asserts it
+> `gz lint` — the first criterion in `acceptance.json` — asserts the property, and asserts it
 > better: `gzkit.quality._find_parents_access_lines` walks the AST over
 > `src/gzkit/**/*.py`, a scope that strictly contains every directory the greps
 > covered, so it matches the *expression* and never the text. Its docstring states

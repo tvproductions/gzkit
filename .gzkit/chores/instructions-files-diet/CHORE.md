@@ -1,6 +1,5 @@
 # CHORE: Instructions & Memory Files Diet (Progressive Disclosure)
 
-**Version:** 3.2.0
 **Lane:** Lite
 **Slug:** `instructions-files-diet`
 
@@ -489,14 +488,14 @@ Two consequences bind this chore:
 
 ## Acceptance Criteria
 
+Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan instructions-files-diet`. This section explains them and does not restate them (GHI #1002). They were rows 0–5 of the table that stood here; the rows below keep their original numbers so the version history above still resolves.
+
+## Manual completion checks
+
+`gz chores run` does not check these; a run is incomplete until each holds.
+
 | # | Criterion | Verification |
 |---|-----------|--------------|
-| 0 | No rendered surface drifted from its rendition | `uv run gz validate --invariant-coherence` exit 0 |
-| 1 | Advisory scorecard audit passes | `uv run gz validate --advisory-scorecard` exit 0 |
-| 2 | Documents and surfaces validate | `uv run gz validate --documents --surfaces` exit 0 |
-| 3 | Lint clean | `uv run gz lint` exit 0 |
-| 4 | Docs build strict | `uv run mkdocs build --strict` exit 0 |
-| 5 | Tests pass | `uv run -m unittest -q` exit 0 |
 | 6 | Control-surface sync clean | `uv run gz agent sync control-surfaces` reports no stale or divergent mirrors |
 | 7 | Per-turn contract weight reduction recorded | `proofs/baseline-*.txt` and `proofs/post-trim-*.txt` exist with a measurable line-count delta |
 | 8 | Every binding bullet retained | Each Mechanical / Promotable scorecard entry resolves to a bullet still present in the per-turn contract (manual cross-check recorded in `proofs/bullet-retention-audit.md`) |

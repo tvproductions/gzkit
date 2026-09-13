@@ -1,6 +1,5 @@
 # CHORE: Control Surface — Rule Prose vs. Promoted Check Drift (Pass C)
 
-**Version:** 1.0.0
 **Lane:** Lite
 **Slug:** `control-surface-rule-vs-check-drift`
 
@@ -49,13 +48,7 @@ For each promoted rule, one row in `proofs/parity-diff.md`:
 
 ## Acceptance Criteria
 
-| Type | Command | Expected |
-|------|---------|----------|
-| exitCodeEquals | `test -f .gzkit/chores/control-surface-rule-vs-check-drift/proofs/promoted-inventory.md` | 0 |
-| exitCodeEquals | `test -f .gzkit/chores/control-surface-rule-vs-check-drift/proofs/prose-assertions.md` | 0 |
-| exitCodeEquals | `test -f .gzkit/chores/control-surface-rule-vs-check-drift/proofs/check-behaviors.md` | 0 |
-| exitCodeEquals | `test -f .gzkit/chores/control-surface-rule-vs-check-drift/proofs/parity-diff.md` | 0 |
-| exitCodeEquals | `test -f .gzkit/chores/control-surface-rule-vs-check-drift/proofs/summary.md` | 0 |
+Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan control-surface-rule-vs-check-drift`. This section explains them and does not restate them (GHI #1002).
 
 ## Evidence Commands
 

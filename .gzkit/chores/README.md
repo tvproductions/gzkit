@@ -127,8 +127,23 @@ are not permitted.
 1. **DO NOT skip the CHORE.md** — It contains the authoritative procedure.
 2. **DO NOT put proofs in `artifacts/` or any path outside the slug overlay.**
    Proofs go in `.gzkit/chores/<slug>/proofs/`.
-3. **DO NOT modify acceptance criteria** without updating both `CHORE.md` and
-   `acceptance.json` in the canonical package.
+3. **DO NOT write a second copy of a chore's criteria or version in `CHORE.md`.**
+   `gz chores run` executes `acceptance.json` and reads `registry.json`; those are
+   the authorities. In `CHORE.md`:
+   - the criteria section cites `acceptance.json`, carries no table, and may quote
+     only commands the JSON runs — it explains the criteria, never restates them;
+   - there is no `**Version:**` field, and the newest change note (`**X.Y.Z (…)**`)
+     names the version the registry carries — bump both together;
+   - `**Lane:**`, `**Slug:**`, `**Vendor:**` and `**Timeout:**` may stay beside
+     their rationale, but must equal the registry;
+   - obligations the runner cannot check go under `## Manual completion checks`,
+     labelled as not run by `gz chores run`.
+
+   Authored twice with nothing holding them equal, 17 of 40 chores' criteria and 7
+   versions drifted (GHI #1002). `tests/governance/test_chore_metadata_authority.py`
+   holds these on the project surface; its limits (commands under runners other than
+   `uv`/`uvx`/`python`/`gz`/`test`, required files named only in prose) are stated in
+   `audit_chore_metadata_authority`'s docstring.
 4. **DO NOT create a chore without all required files** (`CHORE.md`,
    `acceptance.json`, `README.md`, plus a `proofs/` directory in the project
    overlay).

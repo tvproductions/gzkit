@@ -1,6 +1,5 @@
 # Memory Hygiene
 
-- **Version:** 1.1.0
 - **Lane:** Lite
 - **Slug:** `memory-hygiene`
 - **Vendor:** `claude` (Claude Code only)
@@ -79,19 +78,16 @@ instead of its source, so it runs first.
 
 ## Acceptance Criteria
 
-| # | Criterion | Command |
-|---|-----------|---------|
-| 1 | No memory postdates the last hygiene pass | `uv run python .gzkit/chores/memory-hygiene/check_memory_drift.py` |
-| 2 | Tests pass (precondition, not this chore's discriminator) | `uv run -m unittest -q` |
+Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan memory-hygiene`. This section explains them and does not restate them (GHI #1002).
 
-Criterion 1 is the chore's own witness: it resolves the memory directory from the
+`check_memory_drift.py` is the chore's own witness: it resolves the memory directory from the
 checkout path, then fails when any memory file is newer than `proofs/CHORE-LOG.md`.
 A memory written after the last pass is the shadow-persistence this chore exists to
 catch. An absent memory directory passes — the surface is vendor-specific and
 machine-local, so its absence is not a finding.
 
 Two earlier shapes were green by construction and are retired (GHI #743):
-`test -f .../MEMORY.md` witnessed that an index was written once, never that it still
+an existence check on `MEMORY.md` witnessed that an index was written once, never that it still
 described the surface — and it hardcoded one maintainer's absolute path, so every
 adopter's copy checked a file on a machine they do not own. The criterion that
 replaced it observed the instructions-files budget, a different surface entirely.

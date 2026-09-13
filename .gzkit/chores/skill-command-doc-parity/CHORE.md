@@ -1,6 +1,5 @@
 # CHORE: Skill & Command Documentation Parity
 
-**Version:** 1.0.0
 **Lane:** Heavy
 **Slug:** `skill-command-doc-parity`
 
@@ -77,11 +76,7 @@ uv run -m unittest -q
 
 ## Acceptance Criteria
 
-| Type | Command | Expected |
-|------|---------|----------|
-| exitCodeEquals | `uv run gz cli audit` | 0 |
-| exitCodeEquals | `uv run gz validate --documents --surfaces` | 0 |
-| exitCodeEquals | `uv run -m unittest -q` | 0 |
+Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan skill-command-doc-parity`. This section explains them and does not restate them (GHI #1002).
 
 ## Evidence Commands
 

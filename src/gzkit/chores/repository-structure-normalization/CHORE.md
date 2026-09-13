@@ -1,6 +1,5 @@
 # CHORE: Repository Structure Normalization
 
-**Version:** 1.0.0
 **Lane:** Lite
 **Slug:** `repository-structure-normalization`
 
@@ -41,10 +40,7 @@ uv run -m unittest -q
 
 ## Acceptance Criteria
 
-| Type | Command | Expected |
-|------|---------|----------|
-| exitCodeEquals | `uv run -m unittest -q` | 0 |
-| exitCodeEquals | `uv run gz validate --documents --surfaces` | 0 |
+Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan repository-structure-normalization`. This section explains them and does not restate them (GHI #1002).
 
 ## Evidence Commands
 

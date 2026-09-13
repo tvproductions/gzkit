@@ -1,6 +1,5 @@
 # Pool Triage
 
-- **Version:** 0.1.0
 - **Lane:** Lite
 - **Slug:** `pool-triage`
 - **Parent ADR:** `ADR-pool.pool-management`
@@ -82,11 +81,7 @@ Output a structured drift report to stdout and to `proofs/pool-triage-report-YYY
 
 ## Acceptance Criteria
 
-| # | Criterion | Command |
-|---|-----------|---------|
-| 1 | All tests pass | `uv run -m unittest -q` |
-| 2 | Pool directory exists | `test -d docs/design/adr/pool` |
-| 3 | Pool archive directory exists | `test -d docs/design/adr/pool/archive` |
+Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan pool-triage`. This section explains them and does not restate them (GHI #1002).
 
 ## Evidence Commands
 

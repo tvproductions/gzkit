@@ -1,6 +1,5 @@
 # CHORE: Dependency Currency (Tooling Stack Drift Scan)
 
-**Version:** 1.0.0
 **Lane:** Lite
 **Slug:** `dependency-currency`
 
@@ -89,10 +88,7 @@ The operator reviews the drift report and decides bump-by-bump:
 
 ## Acceptance Criteria
 
-| Type | Command | Expected |
-|------|---------|----------|
-| exitCodeEquals | `uv run gz lint` | 0 |
-| exitCodeEquals | `uv run gz typecheck` | 0 |
+Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan dependency-currency`. This section explains them and does not restate them (GHI #1002).
 
 The chore itself does not gate on the drift report's content — drift is
 informational. The acceptance criteria pin that the chore did not

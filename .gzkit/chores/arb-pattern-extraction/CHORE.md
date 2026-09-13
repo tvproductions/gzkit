@@ -1,6 +1,5 @@
 # CHORE: ARB Pattern Extraction (Code Style Feedback Loop)
 
-**Version:** 1.0.0
 **Lane:** Lite
 **Slug:** `arb-pattern-extraction`
 
@@ -41,9 +40,7 @@ uv run -m unittest -q
 
 ## Acceptance Criteria
 
-| Type | Command | Expected |
-|------|---------|----------|
-| exitCodeEquals | `uv run -m unittest -q` | 0 |
+Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan arb-pattern-extraction`. This section explains them and does not restate them (GHI #1002).
 
 ## Evidence Commands
 

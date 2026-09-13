@@ -1,6 +1,5 @@
 # CHORE: Run Full Quality Gates
 
-**Version:** 2.1.0
 **Lane:** Heavy
 **Timeout:** 300s
 **Slug:** `quality-check`
@@ -31,9 +30,7 @@ All gates must pass with exit code 0.
 
 ## Acceptance Criteria
 
-| Type | Command | Expected |
-|------|---------|----------|
-| exitCodeEquals | `uv run gz check` | 0 |
+Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan quality-check`. This section explains them and does not restate them (GHI #1002).
 
 ## Evidence Commands
 

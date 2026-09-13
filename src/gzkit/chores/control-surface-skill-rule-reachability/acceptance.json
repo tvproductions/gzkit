@@ -5,6 +5,26 @@
       "command": "uv run python scripts/check_proof_freshness.py control-surface-skill-rule-reachability",
       "expected": 0,
       "description": "proof artifacts postdate the surfaces they audit (supersedes `test -f`)"
+    },
+    {
+      "type": "fileExists",
+      "path": ".gzkit/chores/control-surface-skill-rule-reachability/proofs/skill-inventory.md",
+      "description": "required artifact present; freshness alone passes while a named artifact is missing (GHI #690, #1002)"
+    },
+    {
+      "type": "fileExists",
+      "path": ".gzkit/chores/control-surface-skill-rule-reachability/proofs/reachability-matrix.md",
+      "description": "required artifact present; freshness alone passes while a named artifact is missing (GHI #690, #1002)"
+    },
+    {
+      "type": "fileExists",
+      "path": ".gzkit/chores/control-surface-skill-rule-reachability/proofs/ghi-cross-reference.md",
+      "description": "required artifact present; freshness alone passes while a named artifact is missing (GHI #690, #1002)"
+    },
+    {
+      "type": "fileExists",
+      "path": ".gzkit/chores/control-surface-skill-rule-reachability/proofs/summary.md",
+      "description": "required artifact present; freshness alone passes while a named artifact is missing (GHI #690, #1002)"
     }
   ]
 }

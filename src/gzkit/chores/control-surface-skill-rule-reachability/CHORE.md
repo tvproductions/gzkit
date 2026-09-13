@@ -1,6 +1,5 @@
 # CHORE: Control Surface — Skill ↔ Rule Reachability Audit (Pass B)
 
-**Version:** 1.0.0
 **Lane:** Lite
 **Slug:** `control-surface-skill-rule-reachability`
 
@@ -45,12 +44,7 @@ For each "no" row, scan recent GHIs (#141–current) for a defect that matches t
 
 ## Acceptance Criteria
 
-| Type | Command | Expected |
-|------|---------|----------|
-| exitCodeEquals | `test -f .gzkit/chores/control-surface-skill-rule-reachability/proofs/skill-inventory.md` | 0 |
-| exitCodeEquals | `test -f .gzkit/chores/control-surface-skill-rule-reachability/proofs/reachability-matrix.md` | 0 |
-| exitCodeEquals | `test -f .gzkit/chores/control-surface-skill-rule-reachability/proofs/ghi-cross-reference.md` | 0 |
-| exitCodeEquals | `test -f .gzkit/chores/control-surface-skill-rule-reachability/proofs/summary.md` | 0 |
+Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan control-surface-skill-rule-reachability`. This section explains them and does not restate them (GHI #1002).
 
 ## Evidence Commands
 

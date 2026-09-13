@@ -17,6 +17,21 @@
       "command": "uv run python src/gzkit/chores/control-surface-rule-conflicts/check_evidence.py --offline",
       "expected": 0,
       "description": "Conflict matrix conforms to ADR-pool.control-surface-rule-pair-conflict-audit \u00a7 Audit-row schema (evidence column resolves)"
+    },
+    {
+      "type": "fileExists",
+      "path": ".gzkit/chores/control-surface-rule-conflicts/proofs/rule-inventory.md",
+      "description": "required artifact present; freshness alone passes while a named artifact is missing (GHI #690, #1002)"
+    },
+    {
+      "type": "fileExists",
+      "path": ".gzkit/chores/control-surface-rule-conflicts/proofs/conflict-matrix.md",
+      "description": "required artifact present; freshness alone passes while a named artifact is missing (GHI #690, #1002)"
+    },
+    {
+      "type": "fileExists",
+      "path": ".gzkit/chores/control-surface-rule-conflicts/proofs/summary.md",
+      "description": "required artifact present; freshness alone passes while a named artifact is missing (GHI #690, #1002)"
     }
   ]
 }

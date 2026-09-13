@@ -1,6 +1,5 @@
 # CHORE: Config Paths Remediation
 
-**Version:** 1.0.0
 **Lane:** Lite
 **Slug:** `config-paths-remediation`
 
@@ -48,10 +47,7 @@ uv run -m unittest -q
 
 ## Acceptance Criteria
 
-| Type | Command | Expected |
-|------|---------|----------|
-| exitCodeEquals | `uv run -m unittest -q` | 0 |
-| exitCodeEquals | `uv run gz check-config-paths` | 0 |
+Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan config-paths-remediation`. This section explains them and does not restate them (GHI #1002).
 
 ## Evidence Commands
 

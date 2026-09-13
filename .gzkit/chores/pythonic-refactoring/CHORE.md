@@ -1,6 +1,5 @@
 # CHORE: Pythonic Refactoring
 
-**Version:** 1.0.0
 **Lane:** Lite
 **Slug:** `pythonic-refactoring`
 
@@ -98,11 +97,7 @@ uvx ruff check . --fix
 
 ## Acceptance Criteria
 
-| Type | Command | Expected |
-|------|---------|----------|
-| exitCodeEquals | `uvx ruff check .` | 0 |
-| exitCodeEquals | `uvx ty check . --exclude 'features/**'` | 0 |
-| exitCodeEquals | `uv run -m unittest -q` | 0 |
+Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan pythonic-refactoring`. This section explains them and does not restate them (GHI #1002).
 
 ## Evidence Commands
 

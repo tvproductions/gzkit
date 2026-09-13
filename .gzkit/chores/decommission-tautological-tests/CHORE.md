@@ -1,6 +1,5 @@
 # CHORE: decommission-tautological-tests — Decommission Tautological Tests
 
-**Version:** 1.0.0
 **Lane:** Heavy
 **Slug:** `decommission-tautological-tests`
 
@@ -89,11 +88,7 @@ print(f'Baseline updated: {len(ops)} operations')
 
 ## Acceptance Criteria
 
-| Type | Command | Expected |
-|------|---------|----------|
-| exitCodeEquals | `uv run gz validate --tautological-test-audit` | 0 |
-| exitCodeEquals | `uv run gz validate --chores-layout` | 0 |
-| exitCodeEquals | `uv run -m unittest tests/governance/test_tautological_tests.py -q` | 0 |
+Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan decommission-tautological-tests`. This section explains them and does not restate them (GHI #1002).
 
 ## Evidence Commands
 

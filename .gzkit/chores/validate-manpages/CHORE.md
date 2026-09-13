@@ -1,6 +1,5 @@
 # CHORE: Validate Manpages (Call Stack Alignment)
 
-**Version:** 1.0.0
 **Lane:** Lite
 **Slug:** `validate-manpages`
 
@@ -37,9 +36,7 @@ uv run -m unittest -q
 
 ## Acceptance Criteria
 
-| Type | Command | Expected |
-|------|---------|----------|
-| exitCodeEquals | `uv run gz cli audit` | 0 |
+Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan validate-manpages`. This section explains them and does not restate them (GHI #1002).
 
 ## Evidence Commands
 

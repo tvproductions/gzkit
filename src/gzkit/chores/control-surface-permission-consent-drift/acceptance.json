@@ -5,6 +5,31 @@
       "command": "uv run python scripts/check_proof_freshness.py control-surface-permission-consent-drift",
       "expected": 0,
       "description": "proof artifacts postdate the surfaces they audit (supersedes `test -f`)"
+    },
+    {
+      "type": "fileExists",
+      "path": ".gzkit/chores/control-surface-permission-consent-drift/proofs/doctrine-map.md",
+      "description": "required artifact present; freshness alone passes while a named artifact is missing (GHI #690, #1002)"
+    },
+    {
+      "type": "fileExists",
+      "path": ".gzkit/chores/control-surface-permission-consent-drift/proofs/permission-inventory.md",
+      "description": "required artifact present; freshness alone passes while a named artifact is missing (GHI #690, #1002)"
+    },
+    {
+      "type": "fileExists",
+      "path": ".gzkit/chores/control-surface-permission-consent-drift/proofs/consent-drift.md",
+      "description": "required artifact present; freshness alone passes while a named artifact is missing (GHI #690, #1002)"
+    },
+    {
+      "type": "fileExists",
+      "path": ".gzkit/chores/control-surface-permission-consent-drift/proofs/unwitnessable.md",
+      "description": "required artifact present; freshness alone passes while a named artifact is missing (GHI #690, #1002)"
+    },
+    {
+      "type": "fileExists",
+      "path": ".gzkit/chores/control-surface-permission-consent-drift/proofs/summary.md",
+      "description": "required artifact present; freshness alone passes while a named artifact is missing (GHI #690, #1002)"
     }
   ]
 }

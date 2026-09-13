@@ -1,6 +1,5 @@
 # CHORE: Coverage >=40% Baseline
 
-**Version:** 1.1.0
 **Lane:** Lite
 **Timeout:** 300s
 **Slug:** `coverage-40pct`
@@ -51,11 +50,7 @@ uv run coverage report --fail-under=40
 
 ## Acceptance Criteria
 
-| Type | Command | Expected |
-|------|---------|----------|
-| exitCodeEquals | `uv run -m unittest -q` | 0 |
-| exitCodeEquals | `uv run coverage run -m unittest discover -s tests -t . -q` | 0 |
-| exitCodeEquals | `uv run coverage report --fail-under=40` | 0 |
+Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan coverage-40pct`. This section explains them and does not restate them (GHI #1002).
 
 ## Evidence Commands
 

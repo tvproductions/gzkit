@@ -1,6 +1,5 @@
 # CHORE: PEP 257 Docstring Compliance (Style + Coverage)
 
-**Version:** 1.0.0
 **Lane:** Lite
 **Slug:** `pep257-docstring-compliance`
 
@@ -48,10 +47,7 @@ uvx ruff check src/gzkit --select D
 
 ## Acceptance Criteria
 
-| Type | Command | Expected |
-|------|---------|----------|
-| exitCodeEquals | `uvx interrogate -v -f 85 -c pyproject.toml src/gzkit` | 0 |
-| exitCodeEquals | `uvx ruff check src/gzkit --select D` | 0 |
+Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan pep257-docstring-compliance`. This section explains them and does not restate them (GHI #1002).
 
 ## Evidence Commands
 

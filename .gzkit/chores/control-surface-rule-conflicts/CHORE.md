@@ -1,6 +1,5 @@
 # CHORE: Control Surface — Rule-Pair Conflict Matrix (Pass A)
 
-**Version:** 1.0.0
 **Lane:** Lite
 **Slug:** `control-surface-rule-conflicts`
 
@@ -45,15 +44,9 @@ Write `proofs/summary.md` with counts by severity, top 5 blocking rows, and a pr
 
 ## Acceptance Criteria
 
-| Type | Command | Expected |
-|------|---------|----------|
-| exitCodeEquals | `test -f .gzkit/chores/control-surface-rule-conflicts/proofs/rule-inventory.md` | 0 |
-| exitCodeEquals | `test -f .gzkit/chores/control-surface-rule-conflicts/proofs/conflict-matrix.md` | 0 |
-| exitCodeEquals | `test -f .gzkit/chores/control-surface-rule-conflicts/proofs/summary.md` | 0 |
-| exitCodeEquals | `uv run python src/gzkit/chores/control-surface-rule-conflicts/check_evidence.py --self-test` | 0 |
-| exitCodeEquals | `uv run python src/gzkit/chores/control-surface-rule-conflicts/check_evidence.py --offline` | 0 |
+Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan control-surface-rule-conflicts`. This section explains them and does not restate them (GHI #1002).
 
-The last two predicates enforce `ADR-pool.control-surface-rule-pair-conflict-audit` § Audit-row schema (GHI #448). `--self-test` validates the parser against embedded fixtures (deterministic, no I/O). `--offline` validates `proofs/conflict-matrix.md` directly: header carries the seven required columns (Rule A, Rule B, Worked example, Evidence, Mechanical winner, Suggested resolution, Severity); each row's Evidence cell carries at least one reference resolving via `git log -1 <SHA>`, `grep <id> .gzkit/insights/agent-insights.jsonl`, or a well-formed `GHI #N` (best-effort `gh issue view` when authenticated, shape-only fallback otherwise to honor chores-lite no-network doctrine).
+Beside the freshness gate and the three required artifacts, the two `check_evidence.py` criteria enforce `ADR-pool.control-surface-rule-pair-conflict-audit` § Audit-row schema (GHI #448). `--self-test` validates the parser against embedded fixtures (deterministic, no I/O). `--offline` validates `proofs/conflict-matrix.md` directly: header carries the seven required columns (Rule A, Rule B, Worked example, Evidence, Mechanical winner, Suggested resolution, Severity); each row's Evidence cell carries at least one reference resolving via `git log -1 <SHA>`, `grep <id> .gzkit/insights/agent-insights.jsonl`, or a well-formed `GHI #N` (best-effort `gh issue view` when authenticated, shape-only fallback otherwise to honor chores-lite no-network doctrine).
 
 ## Evidence Commands
 

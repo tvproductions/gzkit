@@ -120,16 +120,24 @@ a validator scope. Record the routing; do not re-derive the chain next quarter.
 
 ## Acceptance Criteria
 
-- [ ] `uv run -m unittest tests.chores.test_failure_class_index` exits 0.
-- [ ] A run over a snapshot containing a known chain reports that chain at its
-      authored depth — the chore's own subject, not merely that it executed.
-      Reference case: `#505` cites `#279 -> #305 -> #344`, so a snapshot holding
-      the `279/305/344/468/494/505` set must report **depth 6**.
-- [ ] A statement declaring no recurrence contributes no edge, and a passing
-      citation does not merge two chains.
-- [ ] An absent or malformed snapshot yields a zero-finding report at exit 0.
-- [ ] The report names every chain member and marks which members declared the
-      recurrence themselves.
+Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan failure-class-index`. This section explains them and does not restate them (GHI #1002).
+
+The test criteria exercise the chore's own subject, not merely that it executed:
+
+- A statement declaring no recurrence contributes no edge, and a passing
+  citation does not merge two chains (`TestChains`, `TestRecurrenceDetection`).
+- An absent or malformed snapshot yields a zero-finding report (`TestFailSoft`).
+- The report names every chain member and marks which members declared the
+  recurrence themselves (`TestReport`).
+
+## Manual completion checks
+
+`gz chores run` does not check these; a run is incomplete until each is recorded
+in `proofs/CHORE-LOG.md`.
+
+- A run over a snapshot containing a known chain reports that chain at its
+  authored depth. Reference case: `#505` cites `#279 -> #305 -> #344`, so a
+  snapshot holding the `279/305/344/468/494/505` set must report **depth 6**.
 
 ## Evidence Commands
 

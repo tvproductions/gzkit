@@ -5,6 +5,31 @@
       "command": "uv run python scripts/check_proof_freshness.py control-surface-rule-vs-check-drift",
       "expected": 0,
       "description": "proof artifacts postdate the surfaces they audit (supersedes `test -f`)"
+    },
+    {
+      "type": "fileExists",
+      "path": ".gzkit/chores/control-surface-rule-vs-check-drift/proofs/promoted-inventory.md",
+      "description": "required artifact present; freshness alone passes while a named artifact is missing (GHI #690, #1002)"
+    },
+    {
+      "type": "fileExists",
+      "path": ".gzkit/chores/control-surface-rule-vs-check-drift/proofs/prose-assertions.md",
+      "description": "required artifact present; freshness alone passes while a named artifact is missing (GHI #690, #1002)"
+    },
+    {
+      "type": "fileExists",
+      "path": ".gzkit/chores/control-surface-rule-vs-check-drift/proofs/check-behaviors.md",
+      "description": "required artifact present; freshness alone passes while a named artifact is missing (GHI #690, #1002)"
+    },
+    {
+      "type": "fileExists",
+      "path": ".gzkit/chores/control-surface-rule-vs-check-drift/proofs/parity-diff.md",
+      "description": "required artifact present; freshness alone passes while a named artifact is missing (GHI #690, #1002)"
+    },
+    {
+      "type": "fileExists",
+      "path": ".gzkit/chores/control-surface-rule-vs-check-drift/proofs/summary.md",
+      "description": "required artifact present; freshness alone passes while a named artifact is missing (GHI #690, #1002)"
     }
   ]
 }

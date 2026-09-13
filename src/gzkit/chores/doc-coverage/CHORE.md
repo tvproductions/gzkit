@@ -1,6 +1,5 @@
 # CHORE: Documentation Cross-Coverage Enforcement
 
-**Version:** 1.0.0
 **Lane:** Heavy
 **Slug:** `doc-coverage`
 **Frequency:** per-release
@@ -61,9 +60,7 @@ uv run -m unittest -q
 
 ## Acceptance Criteria
 
-| Type | Command | Expected |
-|------|---------|----------|
-| exitCodeEquals | `uv run -m gzkit.doc_coverage.runner` | 0 |
+Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan doc-coverage`. This section explains them and does not restate them (GHI #1002).
 
 ## Evidence Commands
 

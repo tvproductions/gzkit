@@ -1,6 +1,5 @@
 # CHORE: Test Isolation & Health Compliance
 
-**Version:** 2.0.0
 **Lane:** Lite
 **Slug:** `test-isolation-compliance`
 
@@ -81,10 +80,7 @@ uv run -m unittest -q
 
 ## Acceptance Criteria
 
-| Type | Command | Expected |
-|------|---------|----------|
-| exitCodeEquals | `uv run python tests/tools/test_health_profiler.py` | 0 |
-| exitCodeEquals | `uv run -m unittest -q` | 0 |
+Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan test-isolation-compliance`. This section explains them and does not restate them (GHI #1002).
 
 ## Evidence Commands
 

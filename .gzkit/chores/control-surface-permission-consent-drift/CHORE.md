@@ -1,6 +1,5 @@
 # CHORE: Control Surface — Rule Prose vs. Permission Standing Consent (Pass D)
 
-**Version:** 1.0.0
 **Lane:** Lite
 **Slug:** `control-surface-permission-consent-drift`
 
@@ -69,15 +68,9 @@ Write `proofs/summary.md` with: counts by severity; the § Known coverage limits
 
 ## Acceptance Criteria
 
-| Type | Command | Expected |
-|------|---------|----------|
-| exitCodeEquals | `test -f .gzkit/chores/control-surface-permission-consent-drift/proofs/doctrine-map.md` | 0 |
-| exitCodeEquals | `test -f .gzkit/chores/control-surface-permission-consent-drift/proofs/permission-inventory.md` | 0 |
-| exitCodeEquals | `test -f .gzkit/chores/control-surface-permission-consent-drift/proofs/consent-drift.md` | 0 |
-| exitCodeEquals | `test -f .gzkit/chores/control-surface-permission-consent-drift/proofs/unwitnessable.md` | 0 |
-| exitCodeEquals | `test -f .gzkit/chores/control-surface-permission-consent-drift/proofs/summary.md` | 0 |
+Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan control-surface-permission-consent-drift`. This section explains them and does not restate them (GHI #1002).
 
-`unwitnessable.md` is a required artifact, not an optional one. A run that produces a drift ledger without the coverage-limits ledger has advertised a coverage it does not have — the precise failure GHI #690 named.
+`unwitnessable.md` is a required artifact, not an optional one. A run that produces a drift ledger without the coverage-limits ledger has advertised a coverage it does not have — the precise failure GHI #690 named. The freshness gate alone cannot see that: it judges whichever proofs exist, so each of the five artifacts carries its own `fileExists` criterion.
 
 ## Evidence Commands
 

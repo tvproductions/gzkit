@@ -1,6 +1,5 @@
 # CHORE: Pythonic Design Pattern Application
 
-**Version:** 1.0.1
 **Lane:** Lite
 **Slug:** `pythonic-design-pattern-application`
 
@@ -177,10 +176,7 @@ uvx xenon --max-absolute C --max-modules C --max-average C src/
 
 ## Acceptance Criteria
 
-| Type | Command | Expected |
-|------|---------|----------|
-| exitCodeEquals | `uv run -m unittest -q` | 0 |
-| exitCodeEquals | `uvx xenon --max-absolute C --max-modules C --max-average C src/` | 0 |
+Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan pythonic-design-pattern-application`. This section explains them and does not restate them (GHI #1002).
 
 The chore intentionally does **not** mechanically gate on "evidence file exists this period" — operators apply opportunistically; the gate is per-evidence-file faithfulness, not per-period activity. Period rhythm is owned by the detection chore via its candidate-disposition triage.
 
