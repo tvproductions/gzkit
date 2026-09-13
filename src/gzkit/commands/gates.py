@@ -108,7 +108,7 @@ def _run_gate_1(
         adr_file, _ = resolve_adr_file(project_root, config, adr_id)
     except GzCliError as exc:
         _record_gate_result(ledger, adr_id, 1, "fail", "ADR exists", 1, str(exc))
-        console.print(f"  [red]❌[/red] Gate 1 (ADR): [red]FAIL[/red] ({exc})")
+        console.print(f"  [red]❌[/red] Gate 1 (ADR): [red]FAIL[/red] ({escape(str(exc))})")
         return "fail"
 
     evidence = adr_file.relative_to(project_root).as_posix()
@@ -293,7 +293,7 @@ def _run_eval_delta(
     try:
         current = run_eval_suite(data_dir=data_dir)
     except (OSError, ValueError, KeyError, json.JSONDecodeError) as exc:
-        console.print(f"  [red]❌[/red] Eval delta: ERROR ({exc})")
+        console.print(f"  [red]❌[/red] Eval delta: ERROR ({escape(str(exc))})")
         _record_gate_result(ledger, adr_id, 2, "fail", "eval-delta", 1, str(exc))
         return False
 

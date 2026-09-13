@@ -55,8 +55,17 @@ FREE_TEXT_NAMES = frozenset(
         "description",
         "detail",
         "details",
+        # Rulings and release-note entries are operator verbatim or generated
+        # Markdown, both of which carry brackets (`[operator-ruled]`, `[#944]`).
+        "entries",
+        "entry",
         "err",
         "error",
+        # A caught exception's str() is a message written anywhere in the call
+        # tree. Absent from this roster, the CLI error boundary — the one line
+        # that prints EVERY gz error — ate bracketed text unseen (2026-09-13).
+        "exc",
+        "exception",
         "finding",
         "issue",
         "line",
@@ -66,6 +75,8 @@ FREE_TEXT_NAMES = frozenset(
         "output",
         "prose",
         "reason",
+        "ruling",
+        "rulings",
         "stderr",
         "stdout",
         "summary",
@@ -421,6 +432,8 @@ class TestRichMarkupEscaping(unittest.TestCase):
         cases = [
             ('console.print(f"  {issue.message}")', ["issue.message"]),
             ('console.print(f"  {escape(issue.message)}")', []),
+            ('console.print(f"[red]{exc}[/red]")', ["exc"]),
+            ('console.print(f"[red]{escape(str(exc))}[/red]")', []),
             ('console.print(f"  {len(errors)} found")', []),
         ]
 

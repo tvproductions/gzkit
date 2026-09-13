@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import sys
 
+from rich.markup import escape
+
 from gzkit.commands.common import (
     GzCliError,
     console,
@@ -28,13 +30,13 @@ def adr_fidelity_cmd(adr: str, check_only: bool = False) -> None:
     try:
         adr_path, _ = resolve_adr_file(project_root, config, adr)
     except (GzCliError, FileNotFoundError) as exc:
-        console.print(f"[red]Error:[/red] {exc}")
+        console.print(f"[red]Error:[/red] {escape(str(exc))}")
         sys.exit(2)
 
     try:
         assertions = parse_fidelity_assertions(adr_path)
     except ValueError as exc:
-        console.print(f"[red]Error:[/red] {exc}")
+        console.print(f"[red]Error:[/red] {escape(str(exc))}")
         sys.exit(3)
 
     if check_only:

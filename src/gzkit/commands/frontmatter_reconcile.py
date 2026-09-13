@@ -49,7 +49,7 @@ def frontmatter_reconcile_cmd(*, dry_run: bool = False, as_json: bool = False) -
         console.print(f"[red]{escape(str(blocker))}[/red]")
         raise SystemExit(EXIT_POLICY_BREACH) from blocker
     except (OSError, ValueError) as exc:
-        console.print(f"[red]reconcile_frontmatter failed: {exc}[/red]")
+        console.print(f"[red]reconcile_frontmatter failed: {escape(str(exc))}[/red]")
         raise SystemExit(EXIT_SYSTEM_ERROR) from exc
 
     if as_json:

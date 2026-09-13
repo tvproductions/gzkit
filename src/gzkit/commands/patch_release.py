@@ -1005,7 +1005,8 @@ def patch_release_cmd(*, dry_run: bool, as_json: bool, full: bool = False) -> No
     entry = _author_release_notes(
         project_root, proposed_version, qualifications, foundation_closeouts
     )
-    console.print(entry)
+    # Release notes are Markdown, never console markup: `[#944]` would be eaten.
+    console.print(entry, markup=False)
 
     if not _confirm("Proceed with commit, push, and GitHub release?"):
         console.print("[yellow]Aborted. Version bumped but not released.[/yellow]")

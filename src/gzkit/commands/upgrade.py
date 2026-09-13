@@ -16,6 +16,8 @@ import sys
 from pathlib import Path
 from typing import Literal, Protocol
 
+from rich.markup import escape
+
 from gzkit.commands.common import console, get_project_root
 
 # Re-export so tests can patch them at gzkit.commands.upgrade.*
@@ -125,7 +127,7 @@ def upgrade_cmd(args: argparse.Namespace) -> None:
         try:
             pairs = list(_iter_canonical_surface_files(pkg))
         except (ModuleNotFoundError, FileNotFoundError, AttributeError) as exc:
-            console.print(f"Note: skipping surface {surface!r} ({exc})")
+            console.print(f"Note: skipping surface {surface!r} ({escape(str(exc))})")
             continue
 
         classifier = _SURFACE_CLASSIFIERS.get(surface)

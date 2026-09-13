@@ -163,6 +163,8 @@ def main(argv: list[str] | None = None) -> int:
         console.print("[yellow]Interrupted.[/yellow]")
         return 130
     except Exception as exc:  # noqa: BLE001 -- CLI main entry point
+        from rich.markup import escape  # noqa: PLC0415
+
         from gzkit.commands.common import console  # noqa: PLC0415
 
         if getattr(args, "debug", False):
@@ -170,7 +172,7 @@ def main(argv: list[str] | None = None) -> int:
             import traceback  # noqa: PLC0415
 
             traceback.print_exc(file=sys.stderr)
-        console.print(f"[red]Unexpected error: {exc}[/red]")
+        console.print(f"[red]Unexpected error: {escape(str(exc))}[/red]")
         return exit_code_for(exc)
     else:
         return 0

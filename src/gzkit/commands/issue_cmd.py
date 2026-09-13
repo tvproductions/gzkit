@@ -138,7 +138,7 @@ def issue_file_cmd(
     try:
         validate_gzkit_surface_reference(body)
     except IssueValidationError as exc:
-        console.print(f"[red]error:[/red] {exc}")
+        console.print(f"[red]error:[/red] {escape(str(exc))}")
         raise SystemExit(1) from exc
 
     if dry_run:

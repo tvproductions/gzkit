@@ -5,6 +5,8 @@ import sys
 from datetime import date
 from pathlib import Path
 
+from rich.markup import escape
+
 from gzkit.commands.common import console, ensure_initialized, get_project_root
 from gzkit.commands.register import (
     grandfathered_foundation_ids,
@@ -345,7 +347,8 @@ def register_adr_in_ledger(
         ledger.append(adr_created_event(canonical_id, canonical_parent, lane))
     except OSError as exc:
         console.print(
-            f"[red]ERROR:[/red] ADR file created at {adr_file} but ledger write failed: {exc}"
+            f"[red]ERROR:[/red] ADR file created at {adr_file} "
+            f"but ledger write failed: {escape(str(exc))}"
         )
         console.print("Run [bold]gz register-adrs --all[/bold] to recover.")
         sys.exit(2)

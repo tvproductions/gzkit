@@ -18,6 +18,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from rich.markup import escape
+
 from gzkit.commands.common import console
 
 
@@ -42,7 +44,7 @@ def run_surface_weight_recalibrate(
     try:
         outcome = recalibrate_surface_weight(project_root, attestor=attestor, reason=reason)
     except ValueError as exc:
-        console.print(f"[red]❌ {exc}[/red]")
+        console.print(f"[red]❌ {escape(str(exc))}[/red]")
         raise SystemExit(1) from exc
 
     if as_json:

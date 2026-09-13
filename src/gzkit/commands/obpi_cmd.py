@@ -236,7 +236,7 @@ def obpi_unblock_cmd(obpi: str, ruling: str, operator: str, dry_run: bool) -> No
 
     ledger.append(event)
     console.print(f"[green]Unblocked:[/green] {canonical_id}")
-    console.print(f"  Ruling: {ruling}")
+    console.print(f"  Ruling: {escape(ruling)}")
     console.print(f"  Operator: {operator}")
 
 
