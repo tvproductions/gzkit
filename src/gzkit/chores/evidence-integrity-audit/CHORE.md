@@ -18,21 +18,27 @@ Cross-reference OBPI brief evidence claims against actual state. Verify that evi
 
 ## Workflow
 
-### 1. Run Audit
+### 1. Run Audit — observe
 
 ```bash
 uv run gz adr audit-check ADR-<X.Y.Z>
 ```
 
-### 2. Save Evidence
+### 2. Save Evidence — observe
 
 Record findings in proofs directory.
 
-### 3. Assess
+### 3. Assess and recommend — propose
 
-Review findings for consistency and completeness.
+Review findings for consistency and completeness, and recommend a disposition per finding:
 
-### 4. Validate
+- **Evidence proved invalid** — the operator considers `gz obpi repudiate --cause verification-invalid`
+- **Receipt missing or stale** — the operator re-emits it (`gz adr emit-receipt`)
+- **Cosmetic** — none
+
+Briefs are sealed records and OBPI briefs are operator-only; this chore recommends and never acts.
+
+### 4. Validate — observe
 
 ```bash
 uv run -m unittest -q

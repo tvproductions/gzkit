@@ -3,6 +3,9 @@
 **Lane:** Lite
 **Slug:** `complexity-reduction-xenon`
 
+> **Version 2.1.0 (2026-09-13, GHI #999):** The chore carries a class declaration
+> in `registry.json` and each Workflow step declares its stage.
+>
 > **Version 2.0.0 (2026-04-25):** Strengthened to integrate with the
 > complexity-doctrine cluster (ADR-0.0.27 / 0.0.28 / 0.0.29 / 0.0.30).
 > Once ADR-0.0.29's `gz complexity advise` lands, this chore consumes
@@ -28,7 +31,7 @@ Reduce cyclomatic complexity across `src/` to meet the canonical complexity-doct
 
 ## Workflow
 
-### 1. Baseline
+### 1. Baseline — observe
 
 **Post-cluster mode (preferred when ADR-0.0.28 + ADR-0.0.29 landed):**
 
@@ -43,20 +46,20 @@ uv run gz complexity advise --json src/ > .gzkit/chores/complexity-reduction-xen
 uvx xenon --max-absolute C --max-modules C --max-average C src/ > .gzkit/chores/complexity-reduction-xenon/proofs/xenon-baseline.txt
 ```
 
-### 2. Plan
+### 2. Plan — propose
 
 - Read the JSON diagnosis (post-cluster) or xenon report (bootstrap) to identify highest-severity crossings
 - Tackle `block` band crossings first, then `warn` band, then `advise` band per the threshold-table severity order
 - Small batch (3-5 functions) per PR; record operator-witnessed diagnosis acceptance in `.gzkit/chores/complexity-reduction-xenon/proofs/diagnosis-acceptance-{date}.md`
 - Closes pre-mortem #6 from the design dialogue: advisor recommendation unbinding is prevented by recording the operator's acceptance of each diagnosis before refactor work begins
 
-### 3. Implement
+### 3. Implement — repair
 
 - Extract helpers per the advisor-recommended refactor archetype (`Long Parameter List → Parameter Object`, `Arrowhead → Guard Clauses`, etc.)
 - Pre-attest functions whose complexity is irreducibly algorithmic via the `@intrinsic_complexity` decorator (ADR-0.0.29 OBPI-07) rather than refactoring them artificially
 - Run `gz complexity advise <file>` after each batch to verify the crossing is resolved
 
-### 4. Validate
+### 4. Validate — observe
 
 **Post-cluster mode:**
 

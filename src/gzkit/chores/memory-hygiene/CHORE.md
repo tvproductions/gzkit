@@ -38,13 +38,13 @@ carry — the same defect GHI #817 found in `instructions-files-diet`.
 
 ## Workflow
 
-### 1. Scan
+### 1. Scan — observe
 
 ```bash
 ls ~/.claude/projects/-Users-*/memory/*.md
 ```
 
-### 2. Classify
+### 2. Classify — propose
 
 Read each memory file and classify by frontmatter `type`:
 
@@ -55,7 +55,7 @@ Read each memory file and classify by frontmatter `type`:
 | `feedback` | Review — if it encodes process, migrate per § Migration targets |
 | `project` | Review — if outdated or encoded in code, remove |
 
-### 3. Migrate or Remove
+### 3. Migrate or Remove — operator-only-repair
 
 For each migration candidate:
 
@@ -65,7 +65,7 @@ For each migration candidate:
 4. Remove the memory file
 5. Update MEMORY.md index
 
-### 4. Validate
+### 4. Validate — observe
 
 ```bash
 uv run gz validate --invariant-coherence

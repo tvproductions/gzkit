@@ -80,13 +80,38 @@ conclusions.
 
 ## Workflow
 
+### 1. Refresh the plan and advise — observe
+
 ```bash
 uv run gz chores plan test-consolidation-subtest-sweep --replace
 uv run gz chores advise test-consolidation-subtest-sweep
-# re-measure the baseline table above before editing anything
-uv run gz test                    # green before
-# ... surgical consolidation edits ...
-uv run gz test                    # green after; test COUNT must not drop
+```
+
+### 2. Re-measure the baseline — observe
+
+Re-run the commands in the baseline table above before editing anything.
+
+### 3. Green before — observe
+
+```bash
+uv run gz test
+```
+
+### 4. Consolidate — repair
+
+Surgical consolidation edits within § Scope.
+
+### 5. Green after — observe
+
+```bash
+uv run gz test
+```
+
+The test COUNT must not drop.
+
+### 6. Record the run — observe
+
+```bash
 uv run gz chores run test-consolidation-subtest-sweep
 ```
 

@@ -11,8 +11,8 @@ Scan gzkit's external tooling stack — uv, ruff, ty, pre-commit hook pins,
 runtime/dev dependencies in `pyproject.toml`, GitHub Actions runner pins —
 against upstream latest releases and surface drift as a markdown report.
 
-**Mode: scan-only.** This chore prints a drift report; the operator
-applies bumps. Auto-bump is intentionally not in this chore's scope —
+**Mode: scan and recommend.** This chore prints a drift report with a
+recommendation per surface; the operator applies bumps. Auto-bump is intentionally not in this chore's scope —
 dependency bumps deserve case-by-case judgment (changelogs, breaking
 changes, security advisories) before landing on `main`.
 
@@ -37,7 +37,7 @@ runs to trust the scanner.
 
 ## Workflow
 
-### 1. Inventory installed versions
+### 1. Inventory installed versions — observe
 
 ```bash
 uv self version
@@ -52,7 +52,7 @@ grep -rE 'runs-on:' .github/workflows/
 grep '^requires-python' pyproject.toml
 ```
 
-### 2. Query upstream latest
+### 2. Query upstream latest — observe
 
 ```bash
 gh api repos/astral-sh/uv/releases/latest --jq .tag_name
@@ -65,7 +65,7 @@ gh api repos/behave/behave/releases/latest --jq .tag_name
 # GHA runners: compare `runs-on: ubuntu-XX.YY` against GitHub Actions documented current default
 ```
 
-### 3. Build drift report
+### 3. Build drift report — observe
 
 Markdown table written to
 `.gzkit/chores/dependency-currency/proofs/drift-report-YYYY-MM-DD.md`:
@@ -76,9 +76,12 @@ Markdown table written to
 | ruff | … | … | … | … |
 | (etc.) | | | | |
 
-### 4. Operator action (out-of-chore)
+### 4. Recommend per surface — propose
 
-The operator reviews the drift report and decides bump-by-bump:
+Add a recommendation to each drift row: **bump now** (patch or minor, no
+breaking note in the changelog), **read the changelog first** (major, or a
+breaking note), or **hold** (with the reason). The operator applies bumps
+through the `gz-deps-upgrade` skill, bump by bump:
 
 - Read upstream changelog before bumping
 - Bump one tool per commit (`chore(deps): bump <tool> <old>→<new>`)

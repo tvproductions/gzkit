@@ -13,28 +13,37 @@ Maintain alignment between CLI doctrine and actual CLI behavior, help text, and 
 
 - **Lane:** Heavy — external CLI contract changes require full gates
 - Config-First; no undocumented contract changes
-- Audit only; classify findings as cosmetic/ergonomic/breaking
+- Classify every finding as cosmetic, ergonomic or breaking before any change
+- Cosmetic and ergonomic drift is repaired in place; a breaking change lands only in an operator-initiated run
 
 ## Workflow
 
-### 1. Capture
+### 1. Capture — observe
 
 ```bash
 uv run gz cli audit
 ```
 
-### 2. Analyze
+### 2. Analyze — observe
 
 Diff against baselines. Classify findings:
 - **Cosmetic:** Formatting, whitespace, ordering
-- **Ergonomic:** Help text clarity, flag naming
-- **Breaking:** Exit code changes, removed flags, changed behavior
+- **Ergonomic:** Help text clarity
+- **Breaking:** Exit code changes, removed or renamed flags, changed behavior
 
-### 3. Report
+### 3. Report — propose
 
-Document findings in proofs.
+Document findings in proofs, each with its classification and the repair it needs.
 
-### 4. Validate
+### 4. Repair cosmetic and ergonomic drift — repair
+
+Fix formatting, ordering and help-text clarity so runtime matches `.gzkit/rules/cli.md`. Never change a flag name, exit code or behavior in this step.
+
+### 5. Breaking changes (operator-initiated) — operator-only-repair
+
+Only in a run the operator started: land each breaking change the report names, updating manpages and runbooks in the same change (Heavy lane, all gates).
+
+### 6. Validate — observe
 
 ```bash
 uv run gz cli audit

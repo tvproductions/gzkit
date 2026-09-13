@@ -175,6 +175,19 @@ class TestCriteria(unittest.TestCase):
         self.assertEqual(len(errors), 1, errors)
         self.assertIn("uv run gz validate --documents", errors[0].message)
 
+    def test_a_heading_inside_a_fence_does_not_end_the_criteria_section(self) -> None:
+        # A fenced example heading is text; the criteria section runs past it.
+        body = (
+            _CITING_SECTION
+            + "\n```markdown\n## Example\n```\n\n- `test -f proofs/summary.md` exits 0\n"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _tree(root, "# Demo\n\n" + body)
+            errors = audit_chore_metadata_authority(root)
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("test -f proofs/summary.md", errors[0].message)
+
     def test_naming_a_command_the_json_runs_passes(self) -> None:
         # Rationale may quote a criterion, exactly or as its bare `gz` form.
         rationale = "\n`uv run gz lint` holds the baseline; `gz lint` is the same check.\n"

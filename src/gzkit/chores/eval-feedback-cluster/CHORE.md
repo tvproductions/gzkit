@@ -22,13 +22,13 @@ distinct artifacts (ADR-0.0.26 Decision §3).
 
 ## Workflow
 
-### 1. Run clustering
+### 1. Run clustering — observe
 
 ```bash
 uv run -m unittest tests/chores/test_eval_feedback_cluster.py -q
 ```
 
-### 2. Review proposals
+### 2. Review proposals — propose
 
 ```bash
 ls .gzkit/chores/eval-feedback-cluster/proofs/
@@ -38,7 +38,7 @@ Proposals are JSON files: `proposal-<timestamp>.json` with schema:
 `cluster_key`, `recurrence_count`, `source_artifact_ids`, `source_artifact_paths`,
 `summary`, `proposed_rule_target`.
 
-### 3. Validate layout
+### 3. Validate layout — observe
 
 ```bash
 uv run gz validate --chores-layout

@@ -1,4 +1,4 @@
-# Control Surface — Validator Reachability & Ungated Ratchet (Pass D)
+# Control Surface — Validator Reachability & Ungated Ratchet (Pass E)
 
 Tiers every runnable `gz validate --<scope>` by **what invokes it**, sweeps each
 scope individually to capture its own exit code, and holds the ungated set to a

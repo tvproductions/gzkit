@@ -39,19 +39,19 @@ self-reporting (Behavior Rule 11) cannot reach.
 
 ## Workflow
 
-### 1. Preview (read-only)
+### 1. Preview (read-only) — observe
 
 ```bash
 uv run python -m gzkit.insights.correction_mining --dry-run
 ```
 
-### 2. Write proposal records
+### 2. Write proposal records — propose
 
 ```bash
 uv run python -m gzkit.insights.correction_mining
 ```
 
-### 3. Review proposals
+### 3. Review proposals — propose
 
 ```bash
 ls .gzkit/chores/session-correction-mining/proofs/
@@ -61,7 +61,7 @@ Proposals are JSON files `proposal-<id>.json` with schema: `proposal_id`,
 `cluster_key`, `marker`, `recurrence_count`, `session_ids`, `quote`
 (scrubbed, <=1 line), `mined_at`, `proposed_action`.
 
-### 3a. Read the run telemetry when a run finds nothing (GHI #614)
+### 3a. Read the run telemetry when a run finds nothing (GHI #614) — observe
 
 A zero-proposal run is not self-explanatory: a stale `CORRECTIVE_MARKERS`
 lexicon that no longer matches how the operator phrases corrections reports
@@ -91,13 +91,13 @@ Read it as follows:
 `--dry-run` reports the same counts on stdout but writes **nothing**, including
 no run log — REQ-0.0.70-02-08 fences it read-only.
 
-### 4. Route accepted candidates
+### 4. Route accepted candidates — propose
 
 Accepted candidates enter the advisory scorecard
 (`docs/governance/advisory-rules-audit.md`) as Promotable rows, then promote
 to mechanical checks per the promotion discipline.
 
-### 5. Validate layout
+### 5. Validate layout — observe
 
 ```bash
 uv run gz validate --chores-layout

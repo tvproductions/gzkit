@@ -17,22 +17,22 @@ Enforce PEP 257 docstring compliance across `src/gzkit/` using interrogate (>=85
 
 ## Workflow
 
-### 1. Baseline
+### 1. Baseline — observe
 
 ```bash
 uvx interrogate -v -c pyproject.toml src/gzkit
 uvx ruff check src/gzkit --select D
 ```
 
-### 2. Plan
+### 2. Plan — propose
 
 Prioritize public API docstrings, then internal modules.
 
-### 3. Implement
+### 3. Implement — repair
 
 Add missing docstrings, fix style violations.
 
-### 4. Validate
+### 4. Validate — observe
 
 ```bash
 uvx interrogate -v -f 85 -c pyproject.toml src/gzkit

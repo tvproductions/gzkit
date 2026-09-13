@@ -7,7 +7,7 @@
 
 ## Overview
 
-Audit-only pass. For every prohibition declared in `AGENTS.md` and `.gzkit/rules/**`, check whether the agent permission surfaces (`.claude/settings.json`, `.claude/settings.local.json`) grant standing consent for the prohibited action. Output is a drift ledger naming each contradiction, its doctrine citation, and — critically — whether the contradiction is *mechanically witnessable at all*.
+Audit pass with an operator-initiated repair step. For every prohibition declared in `AGENTS.md` and `.gzkit/rules/**`, check whether the agent permission surfaces (`.claude/settings.json`, `.claude/settings.local.json`) grant standing consent for the prohibited action. Output is a drift ledger naming each contradiction, its doctrine citation, and — critically — whether the contradiction is *mechanically witnessable at all*.
 
 Background: on 2026-07-16 the local permission surface was found carrying `Bash(python3:*)`, granting standing consent for a command `AGENTS.md` § Execution Rules forbids ("Always use `uv run` for Python commands"). The rule had been in the file long enough that its origin was unrecoverable — each entry is an auto-append from a past "always allow" click. It surfaced only because an operator noticed an agent using bare `python3` in-session and asked why it had not prompted. Nothing re-reads permission surfaces against the agent contract.
 
@@ -17,8 +17,8 @@ The harm is **not** agent comprehension — permission rules never enter agent c
 
 ## Policy and Guardrails
 
-- **Lane:** Lite — audit-only; zero file edits outside `.gzkit/chores/control-surface-permission-consent-drift/proofs/`.
-- **Read-only on permission surfaces.** This chore does NOT edit `.claude/settings.json`, `.claude/settings.local.json`, `AGENTS.md`, or any rule. It reads and reports. Remediation routes to a direct-fix GHI.
+- **Lane:** Lite — steps 1–5 write nothing outside `.gzkit/chores/control-surface-permission-consent-drift/proofs/`.
+- **Permission surfaces are edited only in an operator-initiated run.** Step 5 drafts a settings patch; step 6 applies it only when the operator starts that run, because the surface records what the operator consented to. This chore never edits `AGENTS.md` or any rule. A GHI is filed only for a `live` row the patch cannot express.
 - **Advisory, never gating.** This chore has no `gz validate` scope and must never acquire one without operator ruling. `gz validate` already carries 90 flags against an open campaign checkbox to collapse that surface (#618 residual); a Pass D scope would be #91. Advisory-sweep framing is also the honest one — see § Known coverage limits.
 - **No speculation.** A drift row requires a concrete doctrine citation (file + § section or line) AND the verbatim allow rule. No "this rule looks risky" entries.
 - **Local surface may be absent.** `.claude/settings.local.json` is gitignored (`.gitignore:54`). On a fresh clone it does not exist. Absence is a **skip with a recorded note**, never a pass — see § Known coverage limits.
@@ -34,7 +34,7 @@ This chore's coverage is structurally partial. A summary that does not restate t
 
 ## Workflow
 
-### 1. Re-derive the doctrine map (never trust the prior run)
+### 1. Re-derive the doctrine map (never trust the prior run) — observe
 
 Enumerate prohibitions from `AGENTS.md` (§ Execution Rules, § Behavior Rules — Never, § Behavior Rules — Always, § Operator Doctrine) and `.gzkit/rules/**`. For each, record in `proofs/doctrine-map.md`:
 
@@ -44,11 +44,11 @@ Enumerate prohibitions from `AGENTS.md` (§ Execution Rules, § Behavior Rules �
 
 Context-dependent entries go straight to `proofs/unwitnessable.md` with the reason. Do not attempt to pattern-match them.
 
-### 2. Enumerate the permission surfaces
+### 2. Enumerate the permission surfaces — observe
 
 Read `.claude/settings.json` and (if present) `.claude/settings.local.json`. Record every `allow` and `deny` rule verbatim in `proofs/permission-inventory.md`, tagged by source file. If the local file is absent, record the skip and its cause — do not report a clean pass.
 
-### 3. Drift walk (context-free prohibitions only)
+### 3. Drift walk (context-free prohibitions only) — observe
 
 For each context-free doctrine entry × each allow rule, ask: does this rule grant standing consent for the prohibited command? One row per hit in `proofs/consent-drift.md`:
 
@@ -58,19 +58,23 @@ For each context-free doctrine entry × each allow rule, ask: does this rule gra
 - Whether a `deny` rule already neutralizes it (deny takes precedence over allow)
 - Severity: `live` (no deny covers it) / `neutralized` (a deny rule already wins) / `historical` (rule is dead-in-practice)
 
-### 4. Unwitnessable ledger
+### 4. Unwitnessable ledger — observe
 
 Write `proofs/unwitnessable.md`: every context-dependent prohibition and every known-broad allow rule this pass structurally cannot audit, each with the reason. **This artifact is the point of the chore as much as the drift ledger** — it is the honest record of what was not checked, and it is what stops a future reader from mistaking a short drift ledger for a clean surface.
 
-### 5. Summary + routing list
+### 5. Summary + settings patch — propose
 
-Write `proofs/summary.md` with: counts by severity; the § Known coverage limits restated verbatim; and a routing list where each `live` row is sized for a direct-fix GHI (`fix(<scope>): … (GHI #N)`). Per operator canon, a GHI-tracked defect repair routes to direct fix — never spin up an ADR or OBPI to discharge one.
+Write `proofs/summary.md` with: counts by severity and the § Known coverage limits restated verbatim. Write `proofs/settings-patch.md` with one change per `live` row — the allow rule to remove, or the deny rule to add — and the source file it applies to. A context-dependent prohibition or a broad allow rule never enters the patch; it stays in `proofs/unwitnessable.md`.
+
+### 6. Apply the patch (operator-initiated) — operator-only-repair
+
+Only in a run the operator started: apply `proofs/settings-patch.md` to its source files, then repeat step 3 and record that every patched row now reads `neutralized` or is gone. A `live` row the patch cannot express routes to a direct-fix GHI (`fix(<scope>): … (GHI #N)`); per operator canon, a GHI-tracked defect repair routes to direct fix — never an ADR or OBPI.
 
 ## Acceptance Criteria
 
 Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan control-surface-permission-consent-drift`. This section explains them and does not restate them (GHI #1002).
 
-`unwitnessable.md` is a required artifact, not an optional one. A run that produces a drift ledger without the coverage-limits ledger has advertised a coverage it does not have — the precise failure GHI #690 named. The freshness gate alone cannot see that: it judges whichever proofs exist, so each of the five artifacts carries its own `fileExists` criterion.
+`unwitnessable.md` is a required artifact, not an optional one. A run that produces a drift ledger without the coverage-limits ledger has advertised a coverage it does not have — the precise failure GHI #690 named. The freshness gate cannot see that — it reads only when the last passing run was — so each of the six artifacts carries its own `fileExists` criterion. When no row is `live`, `proofs/settings-patch.md` says so; an absent patch means the run stopped at data.
 
 ## Evidence Commands
 

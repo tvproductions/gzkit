@@ -20,11 +20,11 @@ Background: ADR-0.0.16 through 0.0.18 surfaced acute control-surface instability
 
 ## Workflow
 
-### 1. Enumerate the rule surface
+### 1. Enumerate the rule surface — observe
 
 List every file in scope and its canonical section headings. Record in `proofs/rule-inventory.md`.
 
-### 2. Pairwise walk
+### 2. Pairwise walk — propose
 
 For each unordered pair (rule_a, rule_b), ask: can these two files disagree on a concrete case? For each yes, produce one row in `proofs/conflict-matrix.md` with:
 
@@ -34,11 +34,11 @@ For each unordered pair (rule_a, rule_b), ask: can these two files disagree on a
 - Which rule "wins" today (mechanical enforcement, if any), or "unresolved"
 - Suggested resolution: reconcile in one rule / split scopes / promote mechanical check
 
-### 3. Severity classification
+### 3. Severity classification — observe
 
 Each row: `blocking` (an agent hits this monthly+), `episodic` (hit during a specific ADR class), `theoretical` (no observed hit in GHI trail). Cross-reference each blocking/episodic row to the GHI(s) it explains.
 
-### 4. Summary + recommendation list
+### 4. Summary + recommendation list — propose
 
 Write `proofs/summary.md` with counts by severity, top 5 blocking rows, and a prioritized follow-up list (each entry sized for a direct-fix GHI or a mechanical-promotion GHI).
 

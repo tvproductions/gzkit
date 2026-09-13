@@ -40,7 +40,7 @@ the existing `status:` term.
 
 ## Workflow
 
-### 1. Dry-run
+### 1. Dry-run — observe
 
 ```bash
 uv run gz frontmatter reconcile --dry-run
@@ -49,7 +49,7 @@ uv run gz frontmatter reconcile --dry-run
 Prints planned rewrites and emits a receipt with `dry_run=true`. No files
 touched. Recommended before every real run.
 
-### 2. Apply
+### 2. Apply — repair
 
 ```bash
 uv run gz frontmatter reconcile
@@ -59,7 +59,7 @@ Rewrites frontmatter and emits a receipt with `dry_run=false`. Idempotent:
 a second invocation with no intervening ledger change yields an empty
 `files_rewritten` array.
 
-### 3. Machine-readable output
+### 3. Machine-readable output — observe
 
 ```bash
 uv run gz frontmatter reconcile --json
@@ -67,7 +67,7 @@ uv run gz frontmatter reconcile --json
 
 Emits the receipt JSON to stdout (in addition to writing it to disk).
 
-### 4. Inspect receipts
+### 4. Inspect receipts — observe
 
 ```bash
 ls -lt artifacts/receipts/frontmatter-coherence/ | head -5

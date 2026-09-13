@@ -20,11 +20,11 @@ Background: `gz-adr-audit` Step 2 ("If audit-check fails, fix brief evidence fir
 
 ## Workflow
 
-### 1. Enumerate skills + rules
+### 1. Enumerate skills + rules — observe
 
 List every skill with its declared `gz_command`, allowed paths, and body-cited rules. Record in `proofs/skill-inventory.md`.
 
-### 2. Build reachability matrix
+### 2. Build reachability matrix — propose
 
 For each (skill, applicable-rule) pair, one row in `proofs/reachability-matrix.md`:
 
@@ -33,14 +33,15 @@ For each (skill, applicable-rule) pair, one row in `proofs/reachability-matrix.m
 - Applicability basis (path overlap / CLI verb / file modification)
 - Honored: yes (cite) / yes (mechanical) / no
 - If no: concrete worked example of the skill procedure violating the rule
+- If no: recommendation — reconcile skill / reconcile rule / promote mechanical check / accept gap
 
-### 3. Cross-reference with GHI trail
+### 3. Cross-reference with GHI trail — observe
 
 For each "no" row, scan recent GHIs (#141–current) for a defect that matches the violation pattern. Record hits in `proofs/ghi-cross-reference.md`. A "no" row with a historical GHI hit is a known-blocking gap; a "no" row without one is latent.
 
-### 4. Summary
+### 4. Summary — propose
 
-`proofs/summary.md`: counts of honored / gap-latent / gap-known-blocking; top 5 known-blocking with a one-line recommendation per (reconcile skill / reconcile rule / promote mechanical check / accept gap).
+`proofs/summary.md`: counts of honored / gap-latent / gap-known-blocking, and the top 5 known-blocking gaps ranked with their recommendations. Every gap row already carries one (step 2); the summary ranks them, it does not supply them.
 
 ## Acceptance Criteria
 

@@ -158,15 +158,17 @@ class TestMalformedDeclarationIsRefused(unittest.TestCase):
             self.assertEqual(result.exit_code, 0, result.output)
 
 
-class TestUndeclaredChoreIsAnnouncedNotRefused(unittest.TestCase):
-    """Until the per-chore declarations land, absence warns and the chore still runs.
+class TestUndeclaredChoreIsRefused(unittest.TestCase):
+    """An undeclared chore does not run; absence defaults to the safe reading.
 
-    Operator ruling 2026-09-13 ("Warn, flip at step 5"): refusing undeclared
-    chores before any chore is declared would stop the whole estate, so the
-    runner discloses the gap instead of silently running an unchecked chore.
+    Operator ruling 2026-09-13 ("Warn, flip at step 5"): absence warned while no
+    chore was declared, and flips to refusal once every registered chore carries
+    a declaration. A chore with no declared rung has no writing license a run
+    could be held to (``docs/governance/chore-class-system.md`` § The
+    declaration, and the fence).
     """
 
-    def test_run_executes_an_undeclared_chore_and_names_the_gap(self) -> None:
+    def test_run_refuses_an_undeclared_chore_before_executing_anything(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
@@ -174,11 +176,11 @@ class TestUndeclaredChoreIsAnnouncedNotRefused(unittest.TestCase):
 
             result = runner.invoke(main, ["chores", "run", "undeclared-chore"])
 
-            self.assertEqual(result.exit_code, 0, result.output)
+            self.assertEqual(result.exit_code, 1, result.output)
             self.assertIn("undeclared-chore", result.output)
             self.assertIn("no class declaration", result.output)
             log = Path(".gzkit/chores/undeclared-chore/proofs/CHORE-LOG.md")
-            self.assertTrue(log.is_file(), "the chore must still run and log")
+            self.assertFalse(log.exists(), "a refused chore must not run or log")
 
     def test_run_of_a_declared_chore_makes_no_announcement(self) -> None:
         runner = CliRunner()
@@ -217,6 +219,7 @@ class TestUndeclaredChoreIsAnnouncedNotRefused(unittest.TestCase):
 
             self.assertEqual(result.exit_code, 0, result.output)
             self.assertIn("1 of 2 chores carry no class declaration", result.output)
+            self.assertIn("refuses", result.output)
 
 
 if __name__ == "__main__":

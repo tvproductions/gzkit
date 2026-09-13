@@ -63,7 +63,7 @@ shape with a concrete reason.
 
 ## Workflow
 
-### 1. Pick a candidate from the detection report
+### 1. Pick a candidate from the detection report — observe
 
 ```bash
 ls .gzkit/chores/pythonic-design-pattern-detection/proofs/candidates-*.md
@@ -71,7 +71,7 @@ ls .gzkit/chores/pythonic-design-pattern-detection/proofs/candidates-*.md
 
 Open the most recent report; pick a row marked `_[applied | deferred | not-pythonic-rewrite]_` and decide *applied*.
 
-### 2. Read the Python example witness
+### 2. Read the Python example witness — observe
 
 Open the candidate's `Python/src/<Pattern>/Conceptual/main.py` and `Output.txt`
 from `design-patterns-en.zip`. Record the example path and role map before
@@ -79,14 +79,14 @@ editing code. If the detection report does not name the archive path, look it
 up in `pythonic-design-pattern-detection/CHORE.md` and update the report row
 before continuing.
 
-### 3. Capture before-state metrics
+### 3. Capture before-state metrics — observe
 
 ```bash
 uvx xenon --max-absolute C --max-modules C --max-average C src/ > /tmp/xenon-before.txt 2>&1 || true
 uvx radon raw src/ -s > /tmp/radon-before.txt 2>&1 || true
 ```
 
-### 4. Apply the rewrite under TDD
+### 4. Apply the rewrite under TDD — repair
 
 Per `.gzkit/rules/tests.md` Red-Green-Refactor:
 
@@ -98,7 +98,7 @@ Per `.gzkit/rules/tests.md` Red-Green-Refactor:
 
 The semantics test is the load-bearing artifact. A pattern rewrite that is semantically equivalent must pass the same test — which means the test must be written against the *purpose*, not the *shape*.
 
-### 5. Capture after-state metrics + GREEN receipt
+### 5. Capture after-state metrics + GREEN receipt — observe
 
 ```bash
 uvx xenon --max-absolute C --max-modules C --max-average C src/ > /tmp/xenon-after.txt 2>&1
@@ -108,7 +108,7 @@ uv run gz arb step --name unittest -- uv run -m unittest -q
 
 The ARB step run produces the GREEN receipt cited in the evidence file.
 
-### 6. Author the evidence file
+### 6. Author the evidence file — observe
 
 Path: `.gzkit/chores/pythonic-design-pattern-application/proofs/application-YYYY-MM-DD-HHMMSS-<short-slug>.md`
 
@@ -163,11 +163,11 @@ Template (copy and fill):
 Pythonic target faithful: yes / no (with rationale)
 ```
 
-### 7. Update the detection report row
+### 7. Update the detection report row — observe
 
 Mark the candidate's `Disposition:` from `_[applied | deferred | not-pythonic-rewrite]_` to `applied: <evidence-file-path>` so the detection report becomes self-referential.
 
-### 8. Validate
+### 8. Validate — observe
 
 ```bash
 uv run -m unittest -q

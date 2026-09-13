@@ -28,7 +28,7 @@ Guard test suite isolation, performance, and output cleanliness. Catches:
 
 ## Workflow
 
-### 1. Profile
+### 1. Profile — observe
 
 Run the health profiler to check all thresholds at once:
 
@@ -38,7 +38,7 @@ uv run python tests/tools/test_health_profiler.py
 
 This produces a JSON report at `.gzkit/chores/test-isolation-compliance/proofs/health-report.json`.
 
-### 2. Diagnose
+### 2. Diagnose — propose
 
 For each violation, identify the root cause category:
 
@@ -52,7 +52,7 @@ For each violation, identify the root cause category:
 | Real file mutation | `get_project_root()` returns CWD | Mock project root to temp dir |
 | No temp dir isolation | Direct file writes | `tempfile.TemporaryDirectory()` context manager |
 
-### 3. Fix
+### 3. Fix — repair
 
 Apply the lightest fix that addresses the root cause. Prefer:
 1. `setUpClass` sharing over per-test setup
@@ -61,7 +61,7 @@ Apply the lightest fix that addresses the root cause. Prefer:
 4. `commit=False` / skipping git where Draft-only validation doesn't need it
 5. Context managers for all temp resources (Windows-safe cleanup)
 
-### 4. Validate
+### 4. Validate — observe
 
 ```bash
 uv run python tests/tools/test_health_profiler.py

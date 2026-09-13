@@ -19,19 +19,19 @@ Background: `docs/governance/advisory-rules-audit.md` tracks *whether* a rule is
 
 ## Workflow
 
-### 1. Enumerate promoted rules
+### 1. Enumerate promoted rules — observe
 
 Cross-reference the scorecard with `uv run gz validate --help` output. Record every (rule_file, promoted_scope_flag) pair in `proofs/promoted-inventory.md`.
 
-### 2. Prose extraction
+### 2. Prose extraction — observe
 
 For each promoted rule, extract the prose assertions (typically in a § "Mechanical check" or § "Invariants" section). Record normalized assertion list per rule in `proofs/prose-assertions.md`.
 
-### 3. Check-behavior extraction
+### 3. Check-behavior extraction — observe
 
 For each promoted scope flag, trace into the validator implementation and record what the check actually asserts (file enumeration, regex match, frontmatter field check, etc.) in `proofs/check-behaviors.md`. This is the only step that reads source — read only, do not edit.
 
-### 4. Parity diff
+### 4. Parity diff — propose
 
 For each promoted rule, one row in `proofs/parity-diff.md`:
 
@@ -41,10 +41,15 @@ For each promoted rule, one row in `proofs/parity-diff.md`:
 - Gap: prose-only assertions (rule says, check doesn't enforce)
 - Gap: check-only assertions (check enforces, rule doesn't document)
 - Parity verdict: `parity` / `prose-wider` / `check-wider` / `divergent`
+- Recommendation, by verdict:
+  - `prose-wider` — widen the check to the prose, or mark the uncovered clause Advisory in the rule
+  - `check-wider` — state the enforced behavior in the rule
+  - `divergent` — operator ruling, with both repairs named
+  - `parity` — none
 
-### 5. Summary
+### 5. Summary — propose
 
-`proofs/summary.md`: counts by verdict; top 5 `prose-wider` cases (the high-value promotion targets); top 5 `divergent` cases (the highest-risk drift).
+`proofs/summary.md`: counts by verdict; top 5 `prose-wider` cases (the high-value promotion targets) and top 5 `divergent` cases (the highest-risk drift), each ranked with its recommendation from step 4.
 
 ## Acceptance Criteria
 

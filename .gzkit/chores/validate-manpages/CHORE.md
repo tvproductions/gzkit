@@ -17,17 +17,17 @@ Validate that manpage IMPLEMENTATION TRACE references match actual functions in 
 
 ## Workflow
 
-### 1. Validate
+### 1. Validate — observe
 
 ```bash
 uv run gz cli audit
 ```
 
-### 2. Fix
+### 2. Fix — repair
 
 Update manpage traces to match current code structure.
 
-### 3. Re-validate
+### 3. Re-validate — observe
 
 ```bash
 uv run gz cli audit

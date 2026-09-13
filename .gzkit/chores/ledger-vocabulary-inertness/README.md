@@ -1,6 +1,6 @@
 # Ledger Vocabulary Inertness
 
-Asks of the **ledger** what Pass D asks of validators: does a declared thing
+Asks of the **ledger** what Pass E asks of validators: does a declared thing
 actually happen? An event type declared in `src/gzkit/schemas/ledger.json` that
 never appears in `.gzkit/ledger.jsonl` requires either disclosure or freshly
 verified execution of its registered real producer in a disposable project.

@@ -118,7 +118,7 @@ Plus one Python-idiom signal not on the GoF list:
 
 ## Workflow
 
-### 1. Run the scanner
+### 1. Run the scanner — observe
 
 ```bash
 uv run python src/gzkit/chores/pythonic-design-pattern-detection/scan.py \
@@ -126,7 +126,7 @@ uv run python src/gzkit/chores/pythonic-design-pattern-detection/scan.py \
     --out .gzkit/chores/pythonic-design-pattern-detection/proofs/candidates-$(date +%Y-%m-%d).md
 ```
 
-### 2. Cross-reference complexity hotspots
+### 2. Cross-reference complexity hotspots — observe
 
 ```bash
 uvx xenon --max-absolute B src/ > .gzkit/chores/pythonic-design-pattern-detection/proofs/xenon-hotspots-$(date +%Y-%m-%d).txt 2>&1 || true
@@ -134,11 +134,11 @@ uvx xenon --max-absolute B src/ > .gzkit/chores/pythonic-design-pattern-detectio
 
 A scanner candidate that *also* shows up in xenon's B-band hotspot list jumps to the top of the apply queue: structural rewrite has both a structural and a metric reason to land.
 
-### 3. Reference-mode eye-review
+### 3. Reference-mode eye-review — observe
 
 For Bridge, Flyweight, and Factory Method (example-only patterns), open the matching `Python/src/<Pattern>/Conceptual/main.py` from the archive side-by-side with any module ranked B-or-worse by xenon. Note candidates inline in the same report under a `## Reference-mode candidates` section.
 
-### 4. Triage and disposition
+### 4. Triage and disposition — propose
 
 For each candidate (AST or reference-mode), mark one of:
 
@@ -158,7 +158,7 @@ Disposition rows must include the Python example evidence:
 - Disposition: applied -> `.gzkit/chores/pythonic-design-pattern-application/proofs/application-...md`
 ```
 
-### 5. Validate
+### 5. Validate — observe
 
 ```bash
 uv run -m unittest -q

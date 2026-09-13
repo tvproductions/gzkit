@@ -26,8 +26,10 @@ gz chores list [--explain]
   `staleness`, `remediation`, `nonAuthority`, `governingRule`; see
   `src/gzkit/chores/README.md`). A partial or malformed declaration fails
   closed with a `chores[<slug>].<field>` blocker; an absent one does not.
-- After the table, announces how many chores carry no class declaration
-  (GHI #999), e.g. `40 of 40 chores carry no class declaration (GHI #999).`
+- After the table, announces how many chores carry no class declaration and
+  that `gz chores run` refuses them (GHI #999), e.g.
+  ``1 of 40 chores carry no class declaration; `gz chores run` refuses them (GHI #999).``
+  Nothing is printed when every chore is declared.
 
 ---
 

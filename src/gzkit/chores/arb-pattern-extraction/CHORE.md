@@ -18,20 +18,20 @@ Extract recurring anti-patterns from ARB receipts and output candidates for code
 
 ## Workflow
 
-### 1. Extract Patterns
+### 1. Extract Patterns — observe
 
 ```bash
 uv run -m gzkit arb advise
 ```
 
-### 2. Review
+### 2. Review — propose
 
 Assess patterns for actionability. Distinguish:
 - **Auto-fixable:** Can be addressed with ruff --fix
 - **Manual:** Require human judgment
 - **Structural:** Need architecture discussion
 
-### 3. Validate
+### 3. Validate — observe
 
 ```bash
 uv run -m gzkit arb validate

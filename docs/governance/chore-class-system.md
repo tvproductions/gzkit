@@ -67,7 +67,8 @@ audit-only, we'll need to examine - they are not all uniform. Most should be sug
 fixes and solutions even if they stop at audit. even when they stop with results the
 intention is almost always a subsequent fix phase … the control-surface five *might* be
 exceptions, but they also may not. We need big picture calibration here."* The class
-system is that calibration. **Agent reading, not yet operator-confirmed:** the
+system is that calibration. **Agent reading, operator-confirmed 2026-09-13** (step 5, calibration 1, verbatim
+*"As drafted (Recommended)"*): the
 conversion is read through the class system, so a chore's terminal stage comes from its
 class and declared rung, and "stay diagnostic" lands at the **propose** rung, which
 still owes a recommendation. § The control-surface five are not uniform records why
@@ -131,8 +132,8 @@ gzkit's needs govern the appropriation, never the reverse.
 Registry fields at the 2026-09-12 measurement: `frequency`, `lane`, `path`,
 `projectLocal`, `slug`, `timeoutSeconds`, `title`, `vendor`, `version` — no field in
 which a chore could declare its class, its governing rule, or what it refuses to touch.
-The declaration schema has since landed (GHI #999, `f1c9b0e59`); every chore is still
-undeclared until § Implementation order step 5.
+The declaration schema has since landed (GHI #999, `f1c9b0e59`), and every registered
+chore was declared at § Implementation order step 5 (2026-09-13).
 
 **Correction, 2026-09-13.** The first version of this section derived its lists from
 a keyword grep over `CHORE.md` (§ Reproduction record) and reported nine stop-at-data
@@ -179,7 +180,7 @@ behave as one:
 | Chore | Terminal stage today | Class reading |
 |---|---|---|
 | `control-surface-rule-conflicts` | a prioritized follow-up list | Coherence — conformant |
-| `control-surface-skill-rule-reachability` | a recommendation per row | Coherence — conformant |
+| `control-surface-skill-rule-reachability` | a recommendation for the top 5 known-blocking gaps only (this row first read "a recommendation per row"; corrected at step 5) | Coherence — latent gaps stopped at data |
 | `control-surface-validator-reachability` | recommendations, plus a shrink-only baseline | Coherence **carrying a ratchet** |
 | `control-surface-rule-vs-check-drift` | **a parity table, no recommendation** | Coherence — **violates the class contract**; borderline stop-at-data |
 | `control-surface-permission-consent-drift` | a routing list, each live row sized for a direct-fix GHI | Coherence — conformant; to calibrate, since GHI-shaped exits are meant to be sparing |
@@ -193,6 +194,16 @@ Coherence.
 So the set the operator was ready to exempt contains a class violation. Calibrating
 all five against the class contract is part of § Implementation order, step 5, and they
 are not declared as a block.
+
+**Calibrated 2026-09-13, one at a time** (operator selections recorded verbatim on GHI #999):
+
+| Chore | Declared | What changed |
+|---|---|---|
+| `control-surface-rule-conflicts` | coherence · propose | stage labels only |
+| `control-surface-skill-rule-reachability` | coherence · propose | every gap row carries a recommendation; the summary ranks them |
+| `control-surface-rule-vs-check-drift` | coherence · propose | a recommendation column by verdict removes the stop-at-data shape |
+| `control-surface-permission-consent-drift` | **conformance** · operator-only-repair | a settings patch replaces a GHI per live row; applied only in an operator-initiated run; class corrected from coherence because AGENTS.md is the declared authority; staleness elapsed-time, because `.claude/settings.local.json` is gitignored and grows with no commit, so a surface date cannot see it |
+| `control-surface-validator-reachability` | coherence · propose | stage labels only; retitled **Pass E** |
 
 ---
 
@@ -280,8 +291,10 @@ before it enters the record.
 **Currency is the only class where staleness makes the chore lie.** Measured instance:
 `frontier-model-card-currency` passed both criteria on 2026-09-02 while its `current`
 entry had been superseded since 2026-09-01, found only because an operator supplied the
-new card URL. That is why it is the sole member of `_SCAN_INTERVALS` today — the
-existing mechanism found the seam one chore at a time.
+new card URL. That is why it was the sole member of `_SCAN_INTERVALS` — the
+existing mechanism found the seam one chore at a time. Since step 5 the gate holds no
+interval of its own: a chore declaring `staleness.signal: elapsed-time` takes the
+wall-clock arm at its declared `periodDays`.
 
 **Mining stays separate from Coherence** even though both stop at the same rung: their
 staleness has different physics (content delta vs. elapsed time), so collapsing them
@@ -1075,10 +1088,12 @@ Required per-chore fields:
 spelling throughout. The binding surfaces are `ChoreDeclaration` in
 `src/gzkit/commands/chores_declaration.py` and the field reference in
 `src/gzkit/chores/README.md` — where this table and those disagree, they are right.
-Declaring any key commits a chore to all of them. **Absence is announced, not yet
-refused** — operator ruling 2026-09-13, verbatim *"Warn, flip at step 5
-(Recommended)"*: refusal would stop every chore before any is declared, so the flip to
-Ansible's absence-defaults-safe direction lands with § Implementation order step 5.
+Declaring any key commits a chore to all of them. **Absence is refused** — operator
+ruling 2026-09-13, verbatim *"Warn, flip at step 5 (Recommended)"*: refusal would have
+stopped every chore before any was declared, so absence warned until § Implementation
+order step 5 declared the estate, and then flipped to Ansible's absence-defaults-safe
+direction. `gz chores run` refuses an undeclared chore and `audit_chore_rung_conformance`
+fails on one.
 
 Ansible's failure direction is the one to copy: **absence defaults to the safe reading.**
 An undeclared chore does not run. Verbatim: *"Modules that support check mode report the
@@ -1314,7 +1329,23 @@ generalizes, already returns 3 on stale evidence.
    [`rules-tools-audits-refactors-alignment.md`](rules-tools-audits-refactors-alignment.md).
    GHI #997 (`eval-feedback-cluster` runs fixtures, not live clustering) and GHI #808
    (`decommission-tautological-tests` criteria gate the ratchet, not the debt) are open
-   against the chores they name; read both before declaring those chores.
+   against the chores they name; read both before declaring those chores. **As landed
+   (2026-09-13):** all 40 registered chores carry a declaration and every Workflow step a
+   stage; the five control-surface chores were calibrated with the operator one at a
+   time (§ The control-surface five are not uniform). The stop-at-data chores gained a
+   recommendation or repair step (`cli-contract-governance`, `evidence-integrity-audit`,
+   `skill-trigger-testing`, `dependency-currency`, `control-surface-rule-vs-check-drift`,
+   plus `quality-check` and `test-manpage-examples`, which the reading had not listed),
+   the self-contradictory chores were made consistent (`repository-structure-normalization`,
+   `skill-command-doc-parity`, `ledger-vocabulary-inertness`), and the later Pass D became
+   Pass E. A repair that touches operator-authored canon — a skill, a rule, the corpus,
+   model-sourced doctrine, a permission grant — is declared `operator-only-repair`.
+   `frontmatter-ledger-coherence` is `conformance`: the ledger is its declared authority.
+   `decommission-tautological-tests` declares `accumulated-work`, not its class's usual
+   content-delta, because its subject is a population to drive down (GHI #808).
+   Absence now refuses: `gz chores run` will not run an undeclared chore, and
+   `audit_chore_rung_conformance` fails on one. GHI #997 and GHI #808 stay open; a
+   declaration states what each chore is, and neither defect is a declaration defect.
 6. **The suppression prohibition in a rule file** — § Suppression, stated as binding
    rule text where chore authors and runners load it, with its witness designed
    alongside so it does not land as a new Promotable row.

@@ -3,6 +3,11 @@
 **Lane:** Lite
 **Slug:** `instructions-files-diet`
 
+> **3.3.0 (2026-09-13, GHI #999) — the chore carries a class declaration.** Its
+> `registry.json` entry declares it `curation` at the `operator-only-repair` rung, and
+> each Workflow step declares its stage: steps 1–4 observe and propose, the § 5 arms
+> are operator-only repair.
+>
 > **3.2.0 (operator ruling 2026-08-18, GHI #822) — the content-surface attestation
 > is named CORPUS ATTESTATION, never "Gate 5."** `3.1.0` established that citing
 > ADR-0.0.36 for a rendition promotion was the wrong authority, but it corrected only
@@ -156,7 +161,7 @@ compare a run's output to this table; re-derive the baseline from
 mutate nothing. The first write of any kind happens in § 5, and only against
 items the operator ruled in § 4.
 
-### 1. Render
+### 1. Render — observe
 
 Compose a **baseline** candidate per consumer from the corpus as it stands, with
 no edits. This is the artifact the rest of the chore reasons about; every figure
@@ -172,7 +177,7 @@ validates empty input.
 Record the baseline in `proofs/baseline-YYYY-MM-DD.txt` — **bytes per consumer**,
 not `wc -l`. Line counts are not the constraint and cannot be compared to a cap.
 
-### 2. Check
+### 2. Check — observe
 
 Measure the baseline against what actually binds. Three questions, in order.
 
@@ -221,7 +226,7 @@ compressible by any amount of editorial judgment. **Measure the remainder; never
 assume it.** If required delta approaches or exceeds the compressible budget, the
 gap is not closable here — go to § When to stop and ask.
 
-### 3. Recommend
+### 3. Recommend — propose
 
 Produce a **ranked recommendation, not an edit.** For each candidate item record:
 
@@ -241,7 +246,7 @@ to `proofs/recommendation-YYYY-MM-DD.md`.
 bullet scoring Mechanical or Promotable — those are the load-bearing per-turn
 payload and their retention is gated on the scorecard, not author judgment.
 
-### 3a. Score
+### 3a. Score — observe
 
 Class each candidate bullet against the advisory scorecard so the
 recommendation's Scorecard column is grounded:
@@ -255,7 +260,7 @@ Promotable are retained verbatim; Judgment-class bullets that duplicate a
 Mechanical neighbour are fold candidates; standalone Judgment bullets carrying
 unique signal stay.
 
-### 4. Consult the operator — BEFORE any edit
+### 4. Consult the operator — BEFORE any edit — propose
 
 **Binding gate. Nothing has been written yet and nothing may be until the
 operator rules on the specific items.**
@@ -275,7 +280,7 @@ unchanged. Recommending is this chore's job; deciding is not.
 Record the ruling verbatim in `proofs/CHORE-LOG.md` before proceeding, and carry
 declined items forward as declined rather than silently dropping them.
 
-### 5. Act — trim and compress the ruled items only
+### 5. Act — trim and compress the ruled items only — operator-only-repair
 
 Move Judgment-class narrative paragraphs and "Why this is canon" /
 "Relationship to the rest of the contract" codas to:
@@ -296,7 +301,7 @@ The rules row restates `.gzkit/rules/skill-surface-sync.md` § Non-negotiable ru
 have always said. Through `1.0.0` this table contradicted both by naming the
 mirror as the origin to edit.
 
-### 5a. The `AGENTS.md` arm goes through the corpus, and stops at the corpus attestation
+### 5a. The `AGENTS.md` arm goes through the corpus, and stops at the corpus attestation — operator-only-repair
 
 `AGENTS.md` is **not** a hand-authored file. It is played back from a committed
 rendition under `.gzkit/renditions/AGENTS.md/<consumer>.md`, composed from the
@@ -351,7 +356,7 @@ Each lifted block leaves a one-line pointer at the origin in the shape:
 > examples, and citations underlying the bullets above.
 ```
 
-### 5b. Compress
+### 5b. Compress — operator-only-repair
 
 After lifting, walk each ruled pillar and:
 
@@ -364,7 +369,7 @@ Act only on items the operator ruled in § 4. An item that looks compressible bu
 was not ruled is out of scope for this run; carry it into the next run's § 3
 recommendation rather than taking it now.
 
-### 5c. Re-render and re-check
+### 5c. Re-render and re-check — observe
 
 Repeat § 1 and § 2 against the edited corpus. The loop terminates on evidence,
 never on the sense that enough was cut:
@@ -378,7 +383,7 @@ never on the sense that enough was cut:
 Record each iteration's bytes-per-consumer in `proofs/CHORE-LOG.md` so the run
 shows its own convergence rather than asserting it.
 
-### 6. Sync mirrors
+### 6. Sync mirrors — operator-only-repair
 
 ```bash
 uv run gz agent sync control-surfaces
@@ -388,7 +393,7 @@ uv run gz agent sync control-surfaces
 `.claude/rules/skill-surface-sync.md`. Edit the canonical surface; let sync
 propagate.
 
-### 7. Validate
+### 7. Validate — observe
 
 ```bash
 uv run gz validate --invariant-coherence
@@ -407,7 +412,7 @@ chore's own gate was blind to the exact failure its § 5 procedure invited.
 `--instructions-files-budget` is second because it is the only one that knows
 what a vendor cap is; through `2.0.0` it was not in this list at all.
 
-### 8. Measure
+### 8. Measure — observe
 
 Re-run § 1 and record the post-trim baseline in
 `proofs/post-trim-YYYY-MM-DD.txt` — **bytes per consumer**. Compute the delta

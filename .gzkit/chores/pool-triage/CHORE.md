@@ -31,7 +31,7 @@ Each heuristic is derivable from frontmatter, file-system mtime, ledger events, 
 
 ## Workflow
 
-### 1. Scan pool directory
+### 1. Scan pool directory — observe
 
 ```bash
 ls docs/design/adr/pool/ADR-pool.*.md | wc -l
@@ -39,7 +39,7 @@ ls docs/design/adr/pool/ADR-pool.*.md | wc -l
 
 Establish the population. Capture count in proofs.
 
-### 2. Detect stale items
+### 2. Detect stale items — observe
 
 ```bash
 for f in docs/design/adr/pool/ADR-pool.*.md; do
@@ -52,7 +52,7 @@ for f in docs/design/adr/pool/ADR-pool.*.md; do
 done
 ```
 
-### 3. Detect unarchived-superseded items
+### 3. Detect unarchived-superseded items — observe
 
 ```bash
 rg -l '^status: Superseded' docs/design/adr/pool/ADR-pool.*.md
@@ -60,17 +60,17 @@ rg -l '^status: Superseded' docs/design/adr/pool/ADR-pool.*.md
 
 Every match is a candidate: the file is in `pool/` but the frontmatter says it should be archived.
 
-### 4. Detect newly-unblocked items
+### 4. Detect newly-unblocked items — observe
 
 Read each pool ADR's `## Dependencies` section (or equivalent). For every referenced ADR slug, check whether that ADR is now `Completed` via `uv run gz adr report --json` (or the equivalent state surface). A pool ADR whose dependencies are all completed is promotion-ready.
 
-### 5. Detect duplicate-scope candidates
+### 5. Detect duplicate-scope candidates — observe
 
 Compute a simple token-overlap score between every pair of pool ADRs (titles + first-line descriptions). Flag pairs with >0.4 Jaccard similarity. **This heuristic is deliberately coarse** — the parent ADR's cluster-identification is where the precise work lives.
 
-### 6. Surface results
+### 6. Surface results with a recommended action — propose
 
-Output a structured drift report to stdout and to `proofs/pool-triage-report-YYYY-MM-DD.md` with one section per heuristic. No file mutations to the pool itself — the operator reads the report and decides whether to act.
+Output a structured drift report to stdout and to `proofs/pool-triage-report-YYYY-MM-DD.md` with one section per heuristic, each finding carrying its recommended action: **stale** → refresh or retire; **unarchived-superseded** → `git mv` to `archive/`; **newly-unblocked** → a promotion candidate for the `gz adr promote` ceremony; **duplicate-scope** → merge or state the distinction. No file mutations to the pool itself — the operator reads the report and decides whether to act.
 
 ## Policy
 

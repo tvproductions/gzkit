@@ -322,10 +322,12 @@ A declared chore with a stageless step, an unknown stage, or a step past its run
 fails `tests/governance/test_chore_rung_conformance.py`. The check compares the two
 declarations and never reads posture from prose, so a mislabelled step is its limit.
 
-**An undeclared chore is announced, not yet refused.** `gz chores run` warns
-before running it and `gz chores list` counts the undeclared estate. When the
-per-chore declarations land, absence flips to refusal (operator ruling
-2026-09-13). Authorization does not expire.
+**An undeclared chore does not run.** `gz chores run` refuses it, `gz chores
+list` counts the undeclared estate, and `gz check` fails on it through
+`tests/governance/test_chore_rung_conformance.py`. Absence warned while no chore
+was declared and flipped to refusal once every registered chore carried a
+declaration (operator ruling 2026-09-13, *"Warn, flip at step 5"*).
+Authorization does not expire.
 
 ---
 

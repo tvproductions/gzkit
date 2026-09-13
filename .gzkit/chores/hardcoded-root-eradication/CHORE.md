@@ -119,7 +119,7 @@ grep -rn "40\.0\|0\.5" src/gzkit/ --include="*.py" | grep -v test | grep -v "#"
 
 ## Workflow
 
-### 1. Scan
+### 1. Scan — observe
 
 Run all scan commands above. Categorize findings as:
 - **Root derivation** — `Path(__file__).parents[N]`
@@ -127,21 +127,21 @@ Run all scan commands above. Categorize findings as:
 - **Magic value** — thresholds, limits, defaults embedded in logic
 - **Structural assumption** — directory layouts assumed without config
 
-### 2. Plan
+### 2. Plan — propose
 
 For each finding:
 1. Identify the config source (manifest, `.gzkit.json`, `config/*.json`)
 2. Determine if the config key already exists or must be added
 3. Plan parameter threading from entry point to usage
 
-### 3. Implement
+### 3. Implement — repair
 
 - Remove module-level constants
 - Add function parameters with `None` defaults
 - Resolve from config at the call site (CLI handler / command function)
 - Update tests to pass explicit values
 
-### 4. Validate
+### 4. Validate — observe
 
 ```bash
 grep -rn "Path(__file__).*parents" src/

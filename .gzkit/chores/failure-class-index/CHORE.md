@@ -50,7 +50,7 @@ section part of filing rather than a convention to remember.
 
 ## Workflow
 
-### 1. Snapshot the corpus (the adapter step)
+### 1. Snapshot the corpus (the adapter step) — observe
 
 ```bash
 gh issue list --state closed --limit 800 --search 'closed:>=YYYY-MM-DD' \
@@ -88,7 +88,7 @@ never been scanned against the operator-PII prohibition
 (`AGENTS.md` § Local Agent Rules). Only the emitted report and run telemetry belong
 under `proofs/`.
 
-### 2. Preview (read-only)
+### 2. Preview (read-only) — observe
 
 ```bash
 uv run python -m gzkit.insights.failure_classes \
@@ -98,21 +98,21 @@ uv run python -m gzkit.insights.failure_classes \
 Prints the scan counts and every chain at or above `--min-depth` (default 3),
 writing nothing.
 
-### 3. Write the report and run telemetry
+### 3. Write the report and run telemetry — observe
 
 ```bash
 uv run python -m gzkit.insights.failure_classes \
   --snapshot .gzkit/chores/failure-class-index/proofs/snapshot.json --stamp YYYY-MM-DD
 ```
 
-### 4. Read the counts even when a run finds nothing
+### 4. Read the counts even when a run finds nothing — observe
 
 The scan line always reports records read, statements indexed, and the declaring
 count — so *"read 333, indexed 288, 0 chains"* is legible as a real result and
 distinguishable from *"read an empty snapshot"* (the negative-signal shape
 GHI #614 established for `session-correction-mining`).
 
-### 5. Route what the report surfaces
+### 5. Route what the report surfaces — propose
 
 A chain of depth >= 3 whose members are still producing instances is a **family**,
 not a set of incidents. Route it to the owning surface — a campaign box, a rule, or

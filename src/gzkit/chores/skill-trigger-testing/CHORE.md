@@ -14,11 +14,11 @@ Measure whether skills trigger correctly on agent goal statements and produce ou
 - **Lane:** Lite — read-only analysis, no skill modifications
 - Tests use synthetic goal statements, not live agent runs
 - Results are tracked per-skill per-version for regression detection
-- This chore does NOT modify skills — it produces a diagnostic report
+- This chore does NOT modify skills — it produces a diagnostic report with proposed fixes
 
 ## Workflow
 
-### 1. Build Goal Basket
+### 1. Build Goal Basket — observe
 
 For each skill, create 3-5 synthetic goal statements that represent:
 
@@ -32,7 +32,7 @@ Source goal language from:
 - OBPI brief objectives
 - User-facing runbook workflows
 
-### 2. Description-Goal Alignment Scoring
+### 2. Description-Goal Alignment Scoring — observe
 
 For each skill, assess whether the description text contains enough signal to match its true-positive goals:
 
@@ -44,7 +44,7 @@ For each skill, assess whether the description text contains enough signal to ma
 
 Flag skills scoring Weak or Miss — these undertrigger in agent contexts.
 
-### 3. Output Contract Verification
+### 3. Output Contract Verification — observe
 
 For skills that declare an output format:
 
@@ -56,7 +56,7 @@ For skills that don't declare an output format:
 
 - Flag as **contract-missing** if the skill produces artifacts
 
-### 4. Regression Tracking
+### 4. Regression Tracking — observe
 
 Save results to `.gzkit/chores/skill-trigger-testing/proofs/trigger-report-{date}.md` with:
 
@@ -67,7 +67,11 @@ Save results to `.gzkit/chores/skill-trigger-testing/proofs/trigger-report-{date
 
 Compare against previous report to detect regressions (skill description changed but alignment score dropped).
 
-### 5. Validate
+### 5. Recommend fixes — propose
+
+For each skill scored **Weak** or **Miss**, propose replacement description text that carries its true-positive goal language. For each **contract-missing** skill, propose the output-contract text it lacks. Record both in the trigger report; skills are operator-authored canon, so the operator applies them.
+
+### 6. Validate — observe
 
 ```bash
 uv run -m unittest -q

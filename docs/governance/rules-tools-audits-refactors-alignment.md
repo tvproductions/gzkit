@@ -66,7 +66,7 @@ skill vs rule (B), rule prose vs check semantics (C)."*
 
 ### Existing label collision
 
-Two chores title themselves **Pass D**: `control-surface-validator-reachability`
+Two chores titled themselves **Pass D**: `control-surface-validator-reachability`
 (*"Validator Reachability & Ungated Ratchet (Pass D)"*) and
 `control-surface-permission-consent-drift` (*"Rule Prose vs. Permission Standing
 Consent (Pass D)"*). `ledger-vocabulary-inertness/CHORE.md` cites the first as "Pass
@@ -74,6 +74,9 @@ D". Found 2026-09-13 while naming the rule ↔ chore pass. It is a Coherence fin
 inside the family that exists to find Coherence findings, and it resolves with the
 per-chore declarations in [`chore-class-system.md`](chore-class-system.md) §
 Implementation order, step 5.
+**Resolved 2026-09-13** (operator ruling, verbatim *"Later one becomes Pass E
+(Recommended)"*): `control-surface-validator-reachability`, authored 2026-08-15, is now Pass E;
+`control-surface-permission-consent-drift`, authored 2026-07-16, keeps Pass D.
 
 ### Edges that do not
 

@@ -14,6 +14,19 @@ from tests.commands.common import CliRunner, _quick_init
 _PYTHON = '"' + sys.executable.replace("\\", "/") + '"'
 
 
+#: A complete class declaration. `gz chores run` refuses an undeclared chore
+#: (GHI #999), so fixture chores that are run carry one.
+_FIXTURE_DECLARATION: dict[str, object] = {
+    "class": "conformance",
+    "rung": "observe",
+    "idempotent": True,
+    "staleness": {"signal": "content-delta", "graceDays": 7},
+    "remediation": {"category": "no_fix_planned", "details": "A test fixture repairs nothing."},
+    "nonAuthority": "Never edits anything.",
+    "governingRule": "none",
+}
+
+
 def _project_chores_root() -> Path:
     """Return the project chores root under the current working directory."""
     return Path.cwd() / ".gzkit" / "chores"
@@ -70,6 +83,7 @@ def _setup_demo_chore(
         "path": chore_path,
         "lane": lane,
         "timeoutSeconds": timeout_seconds,
+        **_FIXTURE_DECLARATION,
     }
     if vendor is not None:
         pointer["vendor"] = vendor
@@ -427,6 +441,7 @@ class TestChoresFileExistsCriterion(unittest.TestCase):
                     "path": chore_path,
                     "lane": "lite",
                     "timeoutSeconds": 120,
+                    **_FIXTURE_DECLARATION,
                 }
             ]
         )

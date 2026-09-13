@@ -124,12 +124,23 @@ _HEADER_FIELD_RE = re.compile(r"\*\*(Lane|Slug|Vendor|Timeout):\*\*\s*`?([A-Za-z
 _COMMAND_RUNNERS: frozenset[str] = frozenset({"uv", "uvx", "python", "python3", "gz", "test"})
 
 
+def _mask_fences(chore_md: str) -> str:
+    """Blank fenced code blocks, keeping offsets and line breaks.
+
+    A heading inside a fence is example text. Searching the masked copy and
+    slicing the original keeps a fenced ``## Before`` from ending a section, or a
+    fenced ``### Heading`` from reading as a step (GHI #999).
+    """
+    return _FENCE_RE.sub(lambda m: re.sub(r"[^\n]", " ", m.group(0)), chore_md)
+
+
 def _criteria_section(chore_md: str) -> str | None:
     """Return the body of the ``## Acceptance Criteria`` (or ``## Acceptance``) section."""
-    heading = _CRITERIA_HEADING_RE.search(chore_md)
+    masked = _mask_fences(chore_md)
+    heading = _CRITERIA_HEADING_RE.search(masked)
     if heading is None:
         return None
-    following = _NEXT_HEADING_RE.search(chore_md, heading.end())
+    following = _NEXT_HEADING_RE.search(masked, heading.end())
     return chore_md[heading.end() : following.start() if following else len(chore_md)]
 
 
@@ -295,12 +306,13 @@ _STAGE_SUFFIX_RE = re.compile(r"^(?P<title>.+?)\s+—\s+(?P<stage>[A-Za-z-]+)$")
 
 
 def _workflow_steps(chore_md: str) -> list[str]:
-    """Return the ``###`` step headings under ``## Workflow``, in order."""
-    heading = _WORKFLOW_HEADING_RE.search(chore_md)
+    """Return the ``###`` step headings under ``## Workflow``, in order; fences are text."""
+    masked = _mask_fences(chore_md)
+    heading = _WORKFLOW_HEADING_RE.search(masked)
     if heading is None:
         return []
-    following = _NEXT_HEADING_RE.search(chore_md, heading.end())
-    section = chore_md[heading.end() : following.start() if following else len(chore_md)]
+    following = _NEXT_HEADING_RE.search(masked, heading.end())
+    section = masked[heading.end() : following.start() if following else len(masked)]
     return _STEP_HEADING_RE.findall(section)
 
 
@@ -348,9 +360,11 @@ def audit_chore_rung_conformance(project_root: Path) -> list[ValidationError]:
     never inferred from prose, which the design record measured misfiling four
     chores. Stated limit: a step can be mislabelled.
 
-    Undeclared chores are skipped — absence is announced by ``gz chores`` until
-    GHI #999 step 5 flips it to refusal. A malformed declaration is the
-    registry loader's finding, not this audit's, so it is skipped here too.
+    An undeclared chore fails: GHI #999 step 5 declared every registered chore
+    and flipped absence from announcement to refusal, so a chore registered
+    without a declaration has no rung to hold its steps to. A malformed
+    declaration is the registry loader's finding, not this audit's, so it is
+    skipped here.
     """
     from gzkit.commands.chores_declaration import parse_chore_declaration  # noqa: PLC0415
     from gzkit.config import GzkitConfig  # noqa: PLC0415
@@ -365,10 +379,24 @@ def audit_chore_rung_conformance(project_root: Path) -> list[ValidationError]:
     for entry in entries:
         if not isinstance(entry, dict) or not entry.get("path"):
             continue
-        declaration = parse_chore_declaration(entry, str(entry.get("slug", "")), [])
-        if declaration is None:
-            continue
+        blockers: list[str] = []
+        declaration = parse_chore_declaration(entry, str(entry.get("slug", "")), blockers)
         chore_md_path = project_root / str(entry["path"]) / "CHORE.md"
+        if declaration is None:
+            if not blockers:
+                errors.append(
+                    ValidationError(
+                        type="chore_rung_conformance",
+                        artifact=chore_md_path.relative_to(project_root).as_posix(),
+                        message=(
+                            f"chore `{entry.get('slug')}` carries no class declaration, so "
+                            "`gz chores run` refuses it and its steps have no rung to be held "
+                            "to; declare it on its registry.json entry "
+                            "(src/gzkit/chores/README.md § Class Declaration, GHI #999)."
+                        ),
+                    )
+                )
+            continue
         try:
             chore_md = chore_md_path.read_text(encoding="utf-8")
         except OSError:

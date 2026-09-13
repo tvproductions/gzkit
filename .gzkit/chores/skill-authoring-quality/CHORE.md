@@ -11,7 +11,7 @@ Audit SKILL.md files against agent-first skill authoring best practices. Skills 
 
 ## Policy and Guardrails
 
-- **Lane:** Lite — audit and analysis, fixes are behavior-preserving
+- **Lane:** Lite — audit and analysis; a recommended fix must preserve behavior, and skills are edited only by the operator
 - Only `name` + `description` are loaded at startup; SKILL.md body is on-demand
 - Descriptions are **routing signals** — they determine whether agents select the skill
 - Skills that only wrap a CLI command with no added reasoning should be classified as **aliases**, not skills
@@ -19,11 +19,11 @@ Audit SKILL.md files against agent-first skill authoring best practices. Skills 
 
 ## Workflow
 
-### 1. Frontmatter Compliance
+### 1. Frontmatter Compliance — observe
 
 Check required fields (`name`, `description`) and flag non-standard fields.
 
-### 2. Description Quality (Routing Signal Assessment)
+### 2. Description Quality (Routing Signal Assessment) — observe
 
 Descriptions are 80% of skill quality — they determine agent selection accuracy.
 
@@ -47,7 +47,7 @@ Descriptions are 80% of skill quality — they determine agent selection accurac
 | Has triggers but no output/outcome declaration | **Partial** (needs output contract) |
 | Names only the tool/command with no triggers | **Label** (needs rewrite) |
 
-### 3. Body Quality (Domain Reasoning Assessment)
+### 3. Body Quality (Domain Reasoning Assessment) — observe
 
 **Size thresholds:**
 
@@ -73,7 +73,7 @@ Descriptions are 80% of skill quality — they determine agent selection accurac
 | Has some reasoning but missing edge cases or output | **Moderate** (needs enrichment) |
 | Only has numbered steps or CLI commands | **Procedure-only** (needs reasoning) |
 
-### 4. Stub Detection
+### 4. Stub Detection — observe
 
 Flag skills containing placeholder patterns:
 
@@ -85,11 +85,11 @@ Flag skills containing placeholder patterns:
 
 Any stub detection is a **fail** — stubs fire in production with incomplete instructions.
 
-### 5. Content Duplication
+### 5. Content Duplication — observe
 
 Identify skills re-embedding governance doctrine from AGENTS.md.
 
-### 6. Imperative Over-trigger Audit
+### 6. Imperative Over-trigger Audit — observe
 
 Flag `MUST`, `CRITICAL`, and `NEVER` language in `SKILL.md` bodies when the
 binding force belongs to an external rule or `AGENTS.md` section rather than
@@ -102,11 +102,15 @@ the skill itself. The preferred shape is:
 This closes the over-trigger class where mirrored doctrine makes an agent
 apply high-ceremony behavior outside the intended surface.
 
-### 7. Mirror Sync
+### 7. Mirror Sync — observe
 
-Verify `.github/skills/` and `.claude/skills/` are in sync.
+Verify every enabled vendor's skill mirror is in sync with `.gzkit/skills/` — read the roster from `.gzkit.json` § `vendors`, never from a list written here.
 
-### 8. Validate
+### 8. Scoring summary — propose
+
+Produce the § Scoring Summary table, with the action each skill needs.
+
+### 9. Validate — observe
 
 ```bash
 uv run -m unittest -q

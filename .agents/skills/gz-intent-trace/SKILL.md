@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-08-15
 metadata:
-  skill-version: "1.0.0"
+  skill-version: "1.0.1"
 model: sonnet
 ---
 
@@ -58,7 +58,7 @@ open. **Sample by risk signal**, drawn from the mechanical axes:
 | Signal | Source | Why it predicts intent drift |
 |---|---|---|
 | Parked / withdrawn / repudiated / uncovered-accepted OBPIs | `uv run gz adr status <ADR-ID>` | a decomposition that did not complete is where declared intent most often outran delivery |
-| A declared mechanism measured inert | Pass D and the ledger-inertness chore | the ADR shipped a surface; nothing exercises it |
+| A declared mechanism measured inert | Pass E and the ledger-inertness chore | the ADR shipped a surface; nothing exercises it |
 | Heavily cited foundation ADRs | `rg` across `.gzkit/rules/**`, `docs/governance/**` | drift here propagates to everything citing it |
 | Failing `gz validate --evaluation-justify-binding` | that scope | the ADR's own scorecard already says a dimension is below threshold |
 
@@ -92,7 +92,7 @@ behaviour, not assumed behaviour; paste real output.
 
 The most common false pass at this step is reading a *test* and concluding the
 behaviour exists. A test that runs against a fixture proves the fixture, not the
-repository — a failure mode this repo has already shipped (see Pass D's
+repository — a failure mode this repo has already shipped (see Pass E's
 § Background, where three validators failed the live tree while their tests were
 green).
 

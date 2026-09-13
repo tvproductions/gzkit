@@ -71,24 +71,24 @@ Invariant #8 forbids.
 
 ## Workflow
 
-### 1. Baseline
+### 1. Baseline — observe
 
 ```bash
 uvx radon raw src/ -s -j > .gzkit/chores/module-sloc-cap-radon/proofs/radon-baseline.json
 ```
 
-### 2. Plan
+### 2. Plan — propose
 
 - Identify modules in the table's `warn` or `block` band for `radon_raw_nloc`
   (`uv run python .gzkit/chores/module-sloc-cap-radon/check_module_size.py`) —
   the bands live in `.gzkit/rules/complexity-thresholds.json`, never in this file
 - Plan cohesive splits preserving public API
 
-### 3. Implement
+### 3. Implement — repair
 
 Split modules by responsibility. Maintain backwards-compatible imports.
 
-### 4. Validate
+### 4. Validate — observe
 
 ```bash
 uv run -m unittest -q

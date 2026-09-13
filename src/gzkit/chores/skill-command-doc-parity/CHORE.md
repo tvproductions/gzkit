@@ -12,7 +12,7 @@ Audit every `gz-*` skill and `gz` CLI command for documentation coverage parity.
 ## Policy and Guardrails
 
 - **Lane:** Heavy — documentation is an external contract (Gate 5 Runbook-Code Covenant)
-- Audit only; classify findings before remediation
+- Classify findings before remediating; aligning a skill's purpose lands only in an operator-initiated run
 - Every `gz` CLI subcommand must have a `docs/user/manpages/<name>.md` page
 - Every `gz-*` skill must have a SKILL.md with a clear, non-overlapping purpose
 - Skills that wrap the same command must cross-reference, not duplicate
@@ -20,7 +20,7 @@ Audit every `gz-*` skill and `gz` CLI command for documentation coverage parity.
 
 ## Workflow
 
-### 1. Inventory
+### 1. Inventory — observe
 
 Enumerate all surfaces:
 
@@ -35,7 +35,7 @@ Cross-reference:
 - `docs/user/manpages/*.md` — all command docs
 - `docs/user/manpages/index.md` — command index entries
 
-### 2. Gap Analysis
+### 2. Gap Analysis — observe
 
 For each command from `gz --help`, check:
 - [ ] `docs/user/manpages/<name>.md` exists
@@ -47,7 +47,7 @@ For each `gz-*` skill, check:
 - [ ] If the skill wraps a CLI command, the command doc exists
 - [ ] No two skills describe the same purpose without explicit alias/compatibility note
 
-### 3. Classify Findings
+### 3. Classify Findings — propose
 
 | Severity | Description |
 |----------|-------------|
@@ -58,15 +58,18 @@ For each `gz-*` skill, check:
 | **Index gap** | Command documented but missing from index.md |
 | **Runbook gap** | Command undocumented in either operator or governance runbook |
 
-### 4. Remediate
+### 4. Remediate documentation — repair
 
 - Create missing command docs following the existing template (Usage, Options, What It Does, Examples)
 - Update index.md with new entries
-- Resolve drift by aligning skill SKILL.md with command doc
 - Remove orphaned docs or mark as deprecated
 - Add runbook references for commands used in workflows
 
-### 5. Validate
+### 5. Align skill purpose (operator-initiated) — operator-only-repair
+
+Only in a run the operator started: resolve **Drift** and **Overlap** findings by aligning the skill's SKILL.md with its command doc in `.gzkit/skills/`, then run `uv run gz agent sync control-surfaces`. Skills are operator-authored canon.
+
+### 6. Validate — observe
 
 ```bash
 uv run gz cli audit

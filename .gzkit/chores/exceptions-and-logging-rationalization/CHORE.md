@@ -18,21 +18,21 @@ Rationalize exceptions and logging. Replace bare `except:` with specific excepti
 
 ## Workflow
 
-### 1. Baseline
+### 1. Baseline — observe
 
 ```bash
 uvx ruff check src/gzkit --select E722 --output-format text
 ```
 
-### 2. Plan
+### 2. Plan — propose
 
 Prioritize: bare except > print() > logging inconsistencies.
 
-### 3. Implement
+### 3. Implement — repair
 
 Replace bare excepts with specific types. Add structured logging.
 
-### 4. Validate
+### 4. Validate — observe
 
 ```bash
 uvx ruff check src/gzkit --select E722 --output-format text

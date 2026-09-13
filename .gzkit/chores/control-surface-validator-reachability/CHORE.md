@@ -1,4 +1,4 @@
-# CHORE: Control Surface — Validator Reachability & Ungated Ratchet (Pass D)
+# CHORE: Control Surface — Validator Reachability & Ungated Ratchet (Pass E)
 
 **Lane:** Lite
 **Slug:** `control-surface-validator-reachability`
@@ -70,7 +70,7 @@ this repository. The test passes, the repo is dirty, and nobody is told.
 
 ## Workflow
 
-### 1. Tier census
+### 1. Tier census — observe
 
 ```bash
 uv run python src/gzkit/chores/control-surface-validator-reachability/check_reachability.py --report
@@ -85,7 +85,7 @@ Record the tier table and the orphan list in `proofs/reachability-matrix.md`.
 | **C** | Named in docs or skills, invoked by nothing | wire into a gate **or retire** |
 | **D** | No caller anywhere | delete — an orphan validator is dead code wearing a gate's clothes |
 
-### 2. Conformance sweep (absorbed Axis 0)
+### 2. Conformance sweep (absorbed Axis 0) — observe
 
 Run every scope **individually** and read its own exit code. Individually
 matters: solo-only scopes refuse combination outright (GHI #704), and `--audits`
@@ -113,7 +113,7 @@ Record the exit-code table in `proofs/conformance-sweep.md`. **A non-zero exit o
 a Tier B/C/D scope is the headline finding**, not the failure itself: it is a
 gate that was already broken and had no way to tell anyone.
 
-### 3. Ratchet enforcement
+### 3. Ratchet enforcement — observe
 
 ```bash
 uv run python src/gzkit/chores/control-surface-validator-reachability/check_reachability.py
@@ -122,7 +122,7 @@ uv run python src/gzkit/chores/control-surface-validator-reachability/check_reac
 Exit 3 when a scope entered the ungated set. Recovery is to wire it into a gate
 or retire it — never to re-baseline upward.
 
-### 4. Route findings
+### 4. Route findings — propose
 
 Findings route as **retirement or promotion, per scope**. This chore's output is
 a disposition list, not a report. Where a scope's routing needs a decision the

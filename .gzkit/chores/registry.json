@@ -21,325 +21,852 @@
     {
       "slug": "arb-pattern-extraction",
       "title": "ARB Pattern Extraction (Code Style Feedback Loop)",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "path": ".gzkit/chores/arb-pattern-extraction",
       "lane": "lite",
-      "timeoutSeconds": 120
+      "timeoutSeconds": 120,
+      "class": "mining",
+      "rung": "propose",
+      "idempotent": true,
+      "staleness": {
+        "signal": "elapsed-time",
+        "periodDays": 30,
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "no_fix_planned",
+        "details": "A recurring pattern is a candidate; the chore classifies each as auto-fixable, manual or structural and the operator decides whether it earns a work order."
+      },
+      "nonAuthority": "Never edits source, lint configuration or a rule.",
+      "governingRule": "none"
     },
     {
       "slug": "cli-contract-governance",
       "title": "CLI Contract Governance (Drift & Evolution)",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "path": ".gzkit/chores/cli-contract-governance",
       "lane": "heavy",
-      "timeoutSeconds": 900
+      "timeoutSeconds": 900,
+      "class": "conformance",
+      "rung": "operator-only-repair",
+      "idempotent": true,
+      "staleness": {
+        "signal": "content-delta",
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "vendor_fix",
+        "details": "Cosmetic and ergonomic drift (formatting, help-text clarity) is repaired in place; a breaking change (exit code, removed or renamed flag, changed behavior) lands only in an operator-initiated run."
+      },
+      "nonAuthority": "Never changes an exit code, flag name or command behavior outside an operator-initiated run; never edits .gzkit/rules/cli.md to match drift.",
+      "governingRule": ".gzkit/rules/cli.md"
     },
     {
       "slug": "complexity-reduction-xenon",
       "title": "Complexity Reduction (Xenon C/C/C)",
-      "version": "2.0.0",
+      "version": "2.1.0",
       "path": ".gzkit/chores/complexity-reduction-xenon",
       "lane": "lite",
-      "timeoutSeconds": 120
+      "timeoutSeconds": 120,
+      "class": "conformance",
+      "rung": "repair",
+      "idempotent": true,
+      "staleness": {
+        "signal": "content-delta",
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "vendor_fix",
+        "details": "Refactor the functions over the xenon ceiling by extracting helpers and flattening nesting, keeping behavior and tests unchanged."
+      },
+      "nonAuthority": "Never changes behavior, a public import, a CLI contract or a test's semantics; never suppresses a finding with noqa or an ignore comment. Never moves the gate from xenon C to the threshold table's block band; that conflict awaits an operator ruling.",
+      "governingRule": ".gzkit/rules/pythonic.md \u00a7 Size Limits & Refactoring"
     },
     {
       "slug": "config-paths-remediation",
       "title": "Config Paths Remediation",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "path": ".gzkit/chores/config-paths-remediation",
       "lane": "lite",
-      "timeoutSeconds": 120
+      "timeoutSeconds": 120,
+      "class": "conformance",
+      "rung": "repair",
+      "idempotent": true,
+      "staleness": {
+        "signal": "content-delta",
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "vendor_fix",
+        "details": "Replace hard-coded path literals with config-driven resolution until gz check-config-paths is clean."
+      },
+      "nonAuthority": "Never changes behavior, a public import, a CLI contract or a test's semantics; never suppresses a finding with noqa or an ignore comment. Never exempts a literal it resolves by declaring it an audit subject.",
+      "governingRule": "none"
     },
     {
       "slug": "control-surface-permission-consent-drift",
       "title": "Control Surface Audit \u2014 Rule Prose vs. Permission Standing Consent (Pass D)",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "path": ".gzkit/chores/control-surface-permission-consent-drift",
       "lane": "lite",
-      "timeoutSeconds": 120
+      "timeoutSeconds": 120,
+      "class": "conformance",
+      "rung": "operator-only-repair",
+      "idempotent": true,
+      "staleness": {
+        "signal": "elapsed-time",
+        "periodDays": 30,
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "vendor_fix",
+        "details": "A live context-free row has a derivable fix: remove the allow rule or add a deny. Applied only in an operator-initiated run."
+      },
+      "nonAuthority": "Never edits AGENTS.md or any rule; never touches a context-dependent or broad allow rule (Bash(gh issue:*) is load-bearing for /ghi-author); never applies the patch in an automatic run; never acquires a gz validate scope.",
+      "governingRule": "none"
     },
     {
       "slug": "control-surface-rule-conflicts",
       "title": "Control Surface Audit \u2014 Rule-Pair Conflict Matrix (Pass A)",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "path": ".gzkit/chores/control-surface-rule-conflicts",
       "lane": "lite",
-      "timeoutSeconds": 120
+      "timeoutSeconds": 120,
+      "class": "coherence",
+      "rung": "propose",
+      "idempotent": true,
+      "staleness": {
+        "signal": "content-delta",
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "no_fix_planned",
+        "details": "A rule conflict is a ruling. The chore recommends a resolution per row and stops; the operator rules, and the repair lands as a direct fix."
+      },
+      "nonAuthority": "Never edits .gzkit/rules/**, AGENTS.md, CLAUDE.md, a skill or source; resolving a conflict is the operator's ruling.",
+      "governingRule": "none"
     },
     {
       "slug": "control-surface-rule-vs-check-drift",
       "title": "Control Surface Audit \u2014 Rule Prose vs Promoted Check Parity (Pass C)",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "path": ".gzkit/chores/control-surface-rule-vs-check-drift",
       "lane": "lite",
-      "timeoutSeconds": 120
+      "timeoutSeconds": 120,
+      "class": "coherence",
+      "rung": "propose",
+      "idempotent": true,
+      "staleness": {
+        "signal": "content-delta",
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "no_fix_planned",
+        "details": "Whether to widen a check or narrow its prose is a ruling. The chore recommends one per non-parity row and stops."
+      },
+      "nonAuthority": "Never edits .gzkit/rules/**, src/gzkit/commands/validate*, any check implementation or the advisory scorecard; closing a gap is an operator ruling landed as a direct fix.",
+      "governingRule": "none"
     },
     {
       "slug": "control-surface-skill-rule-reachability",
       "title": "Control Surface Audit \u2014 Skill/Rule Reachability Matrix (Pass B)",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "path": ".gzkit/chores/control-surface-skill-rule-reachability",
       "lane": "lite",
-      "timeoutSeconds": 120
+      "timeoutSeconds": 120,
+      "class": "coherence",
+      "rung": "propose",
+      "idempotent": true,
+      "staleness": {
+        "signal": "content-delta",
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "no_fix_planned",
+        "details": "Which of a skill or a rule still states intent is a ruling. The chore recommends reconcile skill, reconcile rule, promote check or accept gap per gap and stops."
+      },
+      "nonAuthority": "Never edits .gzkit/skills/**, .gzkit/rules/**, vendor mirrors or source; the reconciliation direction is the operator's ruling.",
+      "governingRule": "none"
     },
     {
       "slug": "control-surface-validator-reachability",
-      "title": "Control Surface Audit \u2014 Validator Reachability & Ungated Ratchet (Pass D)",
-      "version": "1.0.0",
+      "title": "Control Surface Audit \u2014 Validator Reachability & Ungated Ratchet (Pass E)",
+      "version": "1.1.0",
       "path": ".gzkit/chores/control-surface-validator-reachability",
       "lane": "lite",
-      "timeoutSeconds": 300
+      "timeoutSeconds": 300,
+      "class": "coherence",
+      "rung": "propose",
+      "idempotent": true,
+      "staleness": {
+        "signal": "content-delta",
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "no_fix_planned",
+        "details": "Promote or retire is a ruling per scope. The chore emits a disposition per ungated scope and stops; the ratchet refuses growth."
+      },
+      "nonAuthority": "Never edits src/gzkit/commands/validate* or any check; never wires a scope into a gate or deletes one itself; never re-baselines the ratchet upward.",
+      "governingRule": "none"
     },
     {
       "slug": "coverage-40pct",
       "title": "Coverage >=40% Baseline",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "path": ".gzkit/chores/coverage-40pct",
       "lane": "lite",
-      "timeoutSeconds": 300
+      "timeoutSeconds": 300,
+      "class": "conformance",
+      "rung": "repair",
+      "idempotent": true,
+      "staleness": {
+        "signal": "content-delta",
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "vendor_fix",
+        "details": "Add table-driven behavior tests to low-coverage public modules until the floor holds."
+      },
+      "nonAuthority": "Never lowers the floor, excludes a module from measurement, or adds a test that asserts a string rather than behavior.",
+      "governingRule": ".gzkit/rules/tests.md \u00a7 Coverage Floor (binding)"
     },
     {
       "slug": "cross-platform-test-cleanup",
       "title": "Cross-Platform Test Cleanup (Windows-Safe Patterns)",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "path": ".gzkit/chores/cross-platform-test-cleanup",
       "lane": "lite",
-      "timeoutSeconds": 300
+      "timeoutSeconds": 300,
+      "class": "conformance",
+      "rung": "repair",
+      "idempotent": true,
+      "staleness": {
+        "signal": "content-delta",
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "vendor_fix",
+        "details": "Replace raw shutil.rmtree teardown with TemporaryDirectory context managers."
+      },
+      "nonAuthority": "Never changes what a test asserts; never skips a test on a platform to make it pass.",
+      "governingRule": ".gzkit/rules/cross-platform.md \u00a7 Quick Reference"
     },
     {
       "slug": "decommission-tautological-tests",
       "title": "Decommission Tautological Tests (ADR-0.0.59-04)",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "path": ".gzkit/chores/decommission-tautological-tests",
       "lane": "heavy",
-      "timeoutSeconds": 900
+      "timeoutSeconds": 900,
+      "class": "conformance",
+      "rung": "repair",
+      "idempotent": true,
+      "staleness": {
+        "signal": "accumulated-work",
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "vendor_fix",
+        "details": "Apply each file's proposed disposition (convert, replace-with-ledger, fold-to-validator) and shrink the baseline to the new count."
+      },
+      "nonAuthority": "Never re-baselines upward or adds a waiver to absorb a new operation; never deletes a test to reduce the count.",
+      "governingRule": ".gzkit/rules/tests.md \u00a7 Red-Green-Refactor (TDD Discipline \u2014 binding)"
     },
     {
       "slug": "dependency-currency",
       "title": "Dependency Currency (Tooling Stack Drift Scan)",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "path": ".gzkit/chores/dependency-currency",
       "lane": "lite",
-      "timeoutSeconds": 120
+      "timeoutSeconds": 120,
+      "class": "currency",
+      "rung": "propose",
+      "idempotent": true,
+      "staleness": {
+        "signal": "elapsed-time",
+        "periodDays": 30,
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "no_fix_planned",
+        "details": "A bump deserves case-by-case judgment, so the chore recommends bump or hold per surface and the operator applies bumps through the gz-deps-upgrade skill."
+      },
+      "nonAuthority": "Never bumps a dependency; never touches gzkit's own version surfaces or the requires-python floor.",
+      "governingRule": "none"
     },
     {
       "slug": "doc-coverage",
       "title": "Documentation Cross-Coverage Enforcement",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "path": ".gzkit/chores/doc-coverage",
       "lane": "heavy",
       "frequency": "per-release",
-      "timeoutSeconds": 900
+      "timeoutSeconds": 900,
+      "class": "conformance",
+      "rung": "repair",
+      "idempotent": true,
+      "staleness": {
+        "signal": "content-delta",
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "vendor_fix",
+        "details": "Create each missing documentation surface the manifest requires (manpage, index entry, runbook reference, docstring)."
+      },
+      "nonAuthority": "Never removes a manifest requirement to close a gap; never documents a command's behavior without running it.",
+      "governingRule": ".gzkit/rules/gate5-runbook-code-covenant.md"
     },
     {
       "slug": "eval-feedback-cluster",
       "title": "Evaluation Feedback Clustering (ADR-0.0.26)",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "path": ".gzkit/chores/eval-feedback-cluster",
       "lane": "lite",
-      "timeoutSeconds": 300
+      "timeoutSeconds": 300,
+      "class": "mining",
+      "rung": "propose",
+      "idempotent": true,
+      "staleness": {
+        "signal": "elapsed-time",
+        "periodDays": 30,
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "no_fix_planned",
+        "details": "Proposal records name a rule target; the operator decides, and a rule edit lands with its Eval-feedback-source trailer."
+      },
+      "nonAuthority": "Never edits a rule, the ledger or docs/design/adr/**; never publishes a GHI.",
+      "governingRule": "none"
     },
     {
       "slug": "evidence-integrity-audit",
       "title": "OBPI Evidence Integrity Audit",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "path": ".gzkit/chores/evidence-integrity-audit",
       "lane": "lite",
-      "timeoutSeconds": 120
+      "timeoutSeconds": 120,
+      "class": "conformance",
+      "rung": "propose",
+      "idempotent": true,
+      "staleness": {
+        "signal": "content-delta",
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "no_fix_planned",
+        "details": "Evidence in a completed brief is a sealed record and OBPI briefs are operator-only, so the chore recommends a disposition per finding (repudiation, receipt re-emission, none) and stops."
+      },
+      "nonAuthority": "Never edits an OBPI brief, ADR or the ledger; never repudiates or re-attests; those are operator-gated.",
+      "governingRule": ".gzkit/rules/adr-audit.md \u00a7 Rules"
     },
     {
       "slug": "exceptions-and-logging-rationalization",
       "title": "Exceptions & Logging Rationalization",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "path": ".gzkit/chores/exceptions-and-logging-rationalization",
       "lane": "lite",
-      "timeoutSeconds": 120
+      "timeoutSeconds": 120,
+      "class": "conformance",
+      "rung": "repair",
+      "idempotent": true,
+      "staleness": {
+        "signal": "content-delta",
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "vendor_fix",
+        "details": "Replace bare and broad excepts with specific exception types, and operational print calls with logging."
+      },
+      "nonAuthority": "Never changes behavior, a public import, a CLI contract or a test's semantics; never suppresses a finding with noqa or an ignore comment. Never widens an except at a non-boundary site.",
+      "governingRule": ".gzkit/rules/pythonic.md \u00a7 Error Handling"
     },
     {
       "slug": "failure-class-index",
       "title": "Failure-Class Index (GHI recurrence chains)",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "path": ".gzkit/chores/failure-class-index",
       "lane": "lite",
-      "timeoutSeconds": 120
+      "timeoutSeconds": 120,
+      "class": "mining",
+      "rung": "propose",
+      "idempotent": true,
+      "staleness": {
+        "signal": "elapsed-time",
+        "periodDays": 30,
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "no_fix_planned",
+        "details": "A chain is evidence a family recurs; the chore routes each live family to its owning surface and the operator decides the work order."
+      },
+      "nonAuthority": "Never edits, files or closes a GHI; never commits the corpus snapshot.",
+      "governingRule": "none"
     },
     {
       "slug": "frontier-model-card-currency",
       "title": "Frontier Model Card Currency (System-Card Doctrine Refresh)",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "path": ".gzkit/chores/frontier-model-card-currency",
       "lane": "lite",
-      "timeoutSeconds": 120
+      "timeoutSeconds": 120,
+      "class": "currency",
+      "rung": "operator-only-repair",
+      "idempotent": true,
+      "staleness": {
+        "signal": "elapsed-time",
+        "periodDays": 30,
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "vendor_fix",
+        "details": "Re-source or retire doctrine pinned to a superseded card and rotate the registry, as a GHI-tracked direct doc fix in an operator-initiated run."
+      },
+      "nonAuthority": "Never rewrites doctrine in an automatic run; never consumes a card from secondary reporting; never keeps a superseded card for reference.",
+      "governingRule": ".gzkit/rules/agent-failure-modes.md"
     },
     {
       "slug": "frontmatter-ledger-coherence",
       "title": "Frontmatter-Ledger Reconciliation (ADR-0.0.16 OBPI-03)",
-      "version": "2.0.0",
+      "version": "2.1.0",
       "path": ".gzkit/chores/frontmatter-ledger-coherence",
       "lane": "heavy",
-      "timeoutSeconds": 900
+      "timeoutSeconds": 900,
+      "class": "conformance",
+      "rung": "repair",
+      "idempotent": true,
+      "staleness": {
+        "signal": "content-delta",
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "vendor_fix",
+        "details": "Rewrite drifted id/parent/lane/status frontmatter to the ledger value; the ledger is Layer-2 truth."
+      },
+      "nonAuthority": "Never edits the ledger, an ungoverned frontmatter key, or a pool ADR; stops with zero files mutated on an unmapped status term.",
+      "governingRule": "none"
     },
     {
       "slug": "hardcoded-root-eradication",
       "title": "Config-First Enforcement (Anti-Vibe-Code)",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "path": ".gzkit/chores/hardcoded-root-eradication",
       "lane": "lite",
-      "timeoutSeconds": 120
+      "timeoutSeconds": 120,
+      "class": "conformance",
+      "rung": "repair",
+      "idempotent": true,
+      "staleness": {
+        "signal": "content-delta",
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "vendor_fix",
+        "details": "Thread config-resolved paths and thresholds through parameters in place of module constants and parents walks."
+      },
+      "nonAuthority": "Never changes behavior, a public import, a CLI contract or a test's semantics; never suppresses a finding with noqa or an ignore comment. Never declares a resolved literal an audit subject to silence the check.",
+      "governingRule": "none"
     },
     {
       "slug": "instructions-files-diet",
       "title": "Instructions & Memory Files Diet (Progressive Disclosure)",
-      "version": "3.2.0",
+      "version": "3.3.0",
       "path": ".gzkit/chores/instructions-files-diet",
       "lane": "lite",
-      "timeoutSeconds": 120
+      "timeoutSeconds": 120,
+      "class": "curation",
+      "rung": "operator-only-repair",
+      "idempotent": true,
+      "staleness": {
+        "signal": "accumulated-work",
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "vendor_fix",
+        "details": "Lift and compress the items the operator ruled, through the corpus and canonical rule sources, until the rendered surface fits its cap."
+      },
+      "nonAuthority": "Never edits a rendered surface or vendor mirror; never trims a tier: invariant entry or a Mechanical or Promotable bullet; never acts on an item the operator did not rule.",
+      "governingRule": ".gzkit/rules/agents-md-map-doctrine.md \u00a7 Budget"
     },
     {
       "slug": "ledger-vocabulary-inertness",
       "title": "Ledger Vocabulary Inertness \u2014 never-fired types and paired-event ratios",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "path": ".gzkit/chores/ledger-vocabulary-inertness",
       "lane": "lite",
-      "timeoutSeconds": 120
+      "timeoutSeconds": 120,
+      "class": "coherence",
+      "rung": "propose",
+      "idempotent": true,
+      "staleness": {
+        "signal": "content-delta",
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "no_fix_planned",
+        "details": "Whether a never-fired type is wired, retired or disclosed is a ruling; the chore recommends one per type, reads each lopsided pair to its producer, and stops."
+      },
+      "nonAuthority": "Never edits the schema, the ledger or any producer; never re-baselines disclosure upward; never interprets a ratio.",
+      "governingRule": "none"
     },
     {
       "slug": "memory-hygiene",
       "title": "Audit auto-memory for process drift into governed artifacts",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "path": ".gzkit/chores/memory-hygiene",
       "lane": "lite",
       "vendor": "claude",
-      "timeoutSeconds": 120
+      "timeoutSeconds": 120,
+      "class": "curation",
+      "rung": "operator-only-repair",
+      "idempotent": true,
+      "staleness": {
+        "signal": "content-delta",
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "vendor_fix",
+        "details": "Migrate process-encoding memories into their governed source (corpus, rule or skill) and remove stale memory files, in an operator-initiated run."
+      },
+      "nonAuthority": "Never edits a rendered surface (AGENTS.md, CLAUDE.md, .claude/**); never removes user or reference memories.",
+      "governingRule": "none"
     },
     {
       "slug": "module-sloc-cap-radon",
       "title": "Module SLOC Cap (Radon)",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "path": ".gzkit/chores/module-sloc-cap-radon",
       "lane": "lite",
-      "timeoutSeconds": 120
+      "timeoutSeconds": 120,
+      "class": "conformance",
+      "rung": "repair",
+      "idempotent": true,
+      "staleness": {
+        "signal": "content-delta",
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "vendor_fix",
+        "details": "Split over-band modules by cohesion, keeping public imports stable, and surrender grandfather entries that fall under the band."
+      },
+      "nonAuthority": "Never adds a grandfather entry to absorb a new violation or raises a listed ceiling; never states a threshold outside complexity-thresholds.json.",
+      "governingRule": ".gzkit/rules/complexity-thresholds.md \u00a7 Invariant"
     },
     {
       "slug": "pep257-docstring-compliance",
       "title": "PEP 257 Docstring Compliance (Style + Coverage)",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "path": ".gzkit/chores/pep257-docstring-compliance",
       "lane": "lite",
-      "timeoutSeconds": 120
+      "timeoutSeconds": 120,
+      "class": "conformance",
+      "rung": "repair",
+      "idempotent": true,
+      "staleness": {
+        "signal": "content-delta",
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "vendor_fix",
+        "details": "Add missing docstrings and fix ruff D-series violations."
+      },
+      "nonAuthority": "Never lowers the interrogate threshold or ignores a D rule to pass.",
+      "governingRule": "none"
     },
     {
       "slug": "pool-triage",
       "title": "Pool ADR Drift Triage (read-only; stopgap for ADR-pool.pool-management)",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "path": ".gzkit/chores/pool-triage",
       "lane": "lite",
-      "timeoutSeconds": 120
+      "timeoutSeconds": 120,
+      "class": "curation",
+      "rung": "propose",
+      "idempotent": true,
+      "staleness": {
+        "signal": "accumulated-work",
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "no_fix_planned",
+        "details": "Archival and promotion are operator acts (git mv; the gz adr promote ceremony), so the chore recommends an action per finding and stops."
+      },
+      "nonAuthority": "Never writes to docs/design/adr/pool/, the ledger or any governance artifact; never ranks pool items.",
+      "governingRule": "none"
     },
     {
       "slug": "pythonic-design-pattern-application",
       "title": "Pythonic Design Pattern Application (Before/After Evidence Capture)",
-      "version": "1.0.1",
+      "version": "1.1.0",
       "path": ".gzkit/chores/pythonic-design-pattern-application",
       "lane": "lite",
-      "timeoutSeconds": 120
+      "timeoutSeconds": 120,
+      "class": "conformance",
+      "rung": "repair",
+      "idempotent": true,
+      "staleness": {
+        "signal": "content-delta",
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "vendor_fix",
+        "details": "Apply a detected Pythonic rewrite under TDD with before/after complexity and SLOC evidence."
+      },
+      "nonAuthority": "Never applies a rewrite with no detection row, regresses xenon, or bundles two rewrites in one evidence file.",
+      "governingRule": ".gzkit/rules/pythonic.md \u00a7 Core Principles"
     },
     {
       "slug": "pythonic-design-pattern-detection",
       "title": "Pythonic Design Pattern Detection (AST Scanner + refactoring.guru Catalogue)",
-      "version": "1.0.1",
+      "version": "1.1.0",
       "path": ".gzkit/chores/pythonic-design-pattern-detection",
       "lane": "lite",
-      "timeoutSeconds": 120
+      "timeoutSeconds": 120,
+      "class": "conformance",
+      "rung": "propose",
+      "idempotent": true,
+      "staleness": {
+        "signal": "content-delta",
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "vendor_fix",
+        "details": "The repair is the paired pythonic-design-pattern-application chore; detection records a disposition per candidate and stops."
+      },
+      "nonAuthority": "Never edits source; never marks a candidate not-pythonic-rewrite without reading the example and naming the reason.",
+      "governingRule": ".gzkit/rules/pythonic.md \u00a7 Core Principles"
     },
     {
       "slug": "pythonic-refactoring",
       "title": "Pythonic Refactoring (ruff + ty)",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "path": ".gzkit/chores/pythonic-refactoring",
       "lane": "lite",
-      "timeoutSeconds": 120
+      "timeoutSeconds": 120,
+      "class": "conformance",
+      "rung": "repair",
+      "idempotent": true,
+      "staleness": {
+        "signal": "content-delta",
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "vendor_fix",
+        "details": "Apply ruff safe fixes and hand Pythonic rewrites until ruff and ty are clean."
+      },
+      "nonAuthority": "Never changes behavior, a public import, a CLI contract or a test's semantics; never suppresses a finding with noqa or an ignore comment. Never uses --unsafe-fixes.",
+      "governingRule": ".gzkit/rules/pythonic.md \u00a7 Core Principles"
     },
     {
       "slug": "quality-check",
       "title": "Run full quality gates",
-      "version": "2.1.0",
+      "version": "2.2.0",
       "path": ".gzkit/chores/quality-check",
       "lane": "heavy",
-      "timeoutSeconds": 300
+      "timeoutSeconds": 300,
+      "class": "conformance",
+      "rung": "propose",
+      "idempotent": true,
+      "staleness": {
+        "signal": "content-delta",
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "no_fix_planned",
+        "details": "A gate failure has no single repair; the chore names the chore or direct fix that owns each failing gate and stops."
+      },
+      "nonAuthority": "Never skips a gate, adds a waiver or suppression, or re-runs a failing step until it passes by chance.",
+      "governingRule": "none"
     },
     {
       "slug": "repository-structure-normalization",
       "title": "Repository Structure Normalization",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "path": ".gzkit/chores/repository-structure-normalization",
       "lane": "lite",
-      "timeoutSeconds": 120
+      "timeoutSeconds": 120,
+      "class": "conformance",
+      "rung": "repair",
+      "idempotent": true,
+      "staleness": {
+        "signal": "content-delta",
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "vendor_fix",
+        "details": "Create missing directories and move misplaced files to the layout gz validate --documents --surfaces expects."
+      },
+      "nonAuthority": "Never changes behavior or file content while moving it; never edits a validator to accept a deviation.",
+      "governingRule": "none"
     },
     {
       "slug": "session-correction-mining",
       "title": "Ground-Truth Correction Mining (ADR-0.0.70)",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "path": ".gzkit/chores/session-correction-mining",
       "lane": "lite",
-      "timeoutSeconds": 300
+      "timeoutSeconds": 300,
+      "class": "mining",
+      "rung": "propose",
+      "idempotent": true,
+      "staleness": {
+        "signal": "elapsed-time",
+        "periodDays": 30,
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "no_fix_planned",
+        "details": "Proposals are candidates for the advisory scorecard; nothing auto-promotes."
+      },
+      "nonAuthority": "Never writes outside its proofs directory; never quotes more than one scrubbed line.",
+      "governingRule": "none"
     },
     {
       "slug": "skill-authoring-quality",
       "title": "Skill Authoring Quality (Agent-First Best Practices)",
-      "version": "2.0.0",
+      "version": "2.1.0",
       "path": ".gzkit/chores/skill-authoring-quality",
       "lane": "lite",
-      "timeoutSeconds": 120
+      "timeoutSeconds": 120,
+      "class": "conformance",
+      "rung": "propose",
+      "idempotent": true,
+      "staleness": {
+        "signal": "content-delta",
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "no_fix_planned",
+        "details": "Skills are operator-authored canon, so the chore records the action each skill needs and stops; any fix it recommends must preserve behavior."
+      },
+      "nonAuthority": "Never edits .gzkit/skills/** or a vendor mirror.",
+      "governingRule": "none"
     },
     {
       "slug": "skill-command-doc-parity",
       "title": "Skill & Command Documentation Parity",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "path": ".gzkit/chores/skill-command-doc-parity",
       "lane": "heavy",
-      "timeoutSeconds": 900
+      "timeoutSeconds": 900,
+      "class": "conformance",
+      "rung": "operator-only-repair",
+      "idempotent": true,
+      "staleness": {
+        "signal": "content-delta",
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "vendor_fix",
+        "details": "Missing, orphaned and index or runbook gaps are repaired in documentation; aligning a skill's purpose statement lands only in an operator-initiated run, because skills are operator-authored canon."
+      },
+      "nonAuthority": "Never edits .gzkit/skills/** outside an operator-initiated run; never edits vendor mirrors; never removes a command to close a doc gap.",
+      "governingRule": ".gzkit/rules/gate5-runbook-code-covenant.md"
     },
     {
       "slug": "skill-trigger-testing",
       "title": "Skill Trigger & Output Testing",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "path": ".gzkit/chores/skill-trigger-testing",
       "lane": "lite",
-      "timeoutSeconds": 120
+      "timeoutSeconds": 120,
+      "class": "conformance",
+      "rung": "propose",
+      "idempotent": true,
+      "staleness": {
+        "signal": "content-delta",
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "no_fix_planned",
+        "details": "Skills are operator-authored canon, so the chore proposes replacement description and output-contract text per flagged skill and stops."
+      },
+      "nonAuthority": "Never edits .gzkit/skills/** or a vendor mirror.",
+      "governingRule": "none"
     },
     {
       "slug": "test-consolidation-subtest-sweep",
       "title": "Test Consolidation \u2014 subTest Sweep & Slow-Tier Quarantine (GHI #644)",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "path": ".gzkit/chores/test-consolidation-subtest-sweep",
       "lane": "lite",
       "timeoutSeconds": 900,
-      "projectLocal": true
+      "projectLocal": true,
+      "class": "conformance",
+      "rung": "repair",
+      "idempotent": true,
+      "staleness": {
+        "signal": "content-delta",
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "vendor_fix",
+        "details": "Convert looping table-driven tests to subTest and route duplicated setUp bodies through the shared fakes, keeping the test count."
+      },
+      "nonAuthority": "Never deletes a test or reduces the test count; never changes CANONICAL_STEP_COMMANDS or re-pins unittest-parallel.",
+      "governingRule": ".gzkit/rules/tests.md \u00a7 General Rules (binding)"
     },
     {
       "slug": "test-isolation-compliance",
       "title": "Test Isolation & Health Compliance",
-      "version": "2.0.0",
+      "version": "2.1.0",
       "path": ".gzkit/chores/test-isolation-compliance",
       "lane": "lite",
-      "timeoutSeconds": 120
+      "timeoutSeconds": 120,
+      "class": "conformance",
+      "rung": "repair",
+      "idempotent": true,
+      "staleness": {
+        "signal": "content-delta",
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "vendor_fix",
+        "details": "Fix each isolation, speed or stdout-noise violation at its root cause (shared setup, mocked roots, patched console)."
+      },
+      "nonAuthority": "Never masks a slow test with sleep or clock hacks, or loosens a profiler threshold to pass.",
+      "governingRule": ".gzkit/rules/tests.md \u00a7 General Rules (binding)"
     },
     {
       "slug": "test-manpage-examples",
       "title": "Test Manpage Examples (Executable Verification)",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "path": ".gzkit/chores/test-manpage-examples",
       "lane": "heavy",
-      "timeoutSeconds": 900
+      "timeoutSeconds": 900,
+      "class": "conformance",
+      "rung": "repair",
+      "idempotent": true,
+      "staleness": {
+        "signal": "content-delta",
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "vendor_fix",
+        "details": "Replace each manpage example whose output no longer matches with output captured from a real run."
+      },
+      "nonAuthority": "Never edits the CLI to match a stale example; a behavior change the example expected is an operator ruling.",
+      "governingRule": ".gzkit/rules/gate5-runbook-code-covenant.md"
     },
     {
       "slug": "validate-manpages",
       "title": "Validate Manpages (Call Stack Alignment)",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "path": ".gzkit/chores/validate-manpages",
       "lane": "lite",
-      "timeoutSeconds": 120
+      "timeoutSeconds": 120,
+      "class": "conformance",
+      "rung": "repair",
+      "idempotent": true,
+      "staleness": {
+        "signal": "content-delta",
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "vendor_fix",
+        "details": "Update manpage implementation traces to the functions that exist."
+      },
+      "nonAuthority": "Never renames or restores source to match a stale trace.",
+      "governingRule": ".gzkit/rules/gate5-runbook-code-covenant.md"
     }
   ]
 }

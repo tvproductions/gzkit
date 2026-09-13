@@ -17,7 +17,7 @@ Verify that examples in manpage EXAMPLES sections are executable with correct re
 
 ## Workflow
 
-### 1. Test
+### 1. Test — observe
 
 Run CLI audit to verify manpage coverage and structure.
 
@@ -25,11 +25,15 @@ Run CLI audit to verify manpage coverage and structure.
 uv run gz cli audit
 ```
 
-### 2. Manual Verification
+### 2. Manual Verification — observe
 
 Execute example commands from manpages and verify output matches.
 
-### 3. Validate
+### 3. Fix examples — repair
+
+Replace each example whose output no longer matches with output captured from a real run. A mismatch that means the CLI changed behavior the example still expects is an operator ruling, not an example fix.
+
+### 4. Validate — observe
 
 ```bash
 uv run gz cli audit

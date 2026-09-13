@@ -46,14 +46,14 @@ All ~120 ty rules at default severity, including:
 
 ## Workflow
 
-### 1. Baseline
+### 1. Baseline — observe
 
 ```bash
 uvx ruff check . > .gzkit/chores/pythonic-refactoring/proofs/ruff-baseline.txt
 uvx ty check . --exclude 'features/**' > .gzkit/chores/pythonic-refactoring/proofs/ty-baseline.txt
 ```
 
-### 2. Plan
+### 2. Plan — propose
 
 Prioritize fixes by:
 
@@ -61,7 +61,7 @@ Prioritize fixes by:
 2. **High-value** — `PTH` (pathlib), `RET` (early returns) improve readability
 3. **Type safety** — ty's `possibly-missing-attribute` prevents runtime errors
 
-### 3. Implement
+### 3. Implement — repair
 
 Apply Pythonic idioms. Most common patterns:
 
@@ -79,7 +79,7 @@ if condition:
 return y
 ```
 
-### 4. Validate
+### 4. Validate — observe
 
 ```bash
 uvx ruff check .

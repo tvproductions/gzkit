@@ -19,15 +19,15 @@ Enforce Windows-safe test cleanup patterns. Eliminate raw `shutil.rmtree()` in t
 
 ## Workflow
 
-### 1. Baseline
+### 1. Baseline — observe
 
 Scan for `shutil.rmtree` usage in test tearDown methods.
 
-### 2. Plan
+### 2. Plan — propose
 
 Replace each violation with context manager pattern.
 
-### 3. Implement
+### 3. Implement — repair
 
 ```python
 # Before (unsafe on Windows):
@@ -40,7 +40,7 @@ def test_something(self):
         # test logic here
 ```
 
-### 4. Validate
+### 4. Validate — observe
 
 ```bash
 uv run -m unittest -q

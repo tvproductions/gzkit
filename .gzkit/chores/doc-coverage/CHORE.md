@@ -23,13 +23,13 @@ documentation surface is missing for a CLI command.
 
 ## Workflow
 
-### 1. Run the chore
+### 1. Run the chore — observe
 
 ```bash
 uv run gz chores run doc-coverage
 ```
 
-### 2. Review gaps
+### 2. Review gaps — observe
 
 If the chore fails, review the gap report. Each gap lists the command,
 missing surface, and expected path.
@@ -46,12 +46,12 @@ For machine-readable JSON:
 uv run -m gzkit.doc_coverage.runner --json
 ```
 
-### 3. Fix gaps
+### 3. Fix gaps — repair
 
 Create the missing documentation surfaces (manpages, index entries,
 runbook references, docstrings, COMMAND_DOCS mappings).
 
-### 4. Re-validate
+### 4. Re-validate — observe
 
 ```bash
 uv run gz chores run doc-coverage

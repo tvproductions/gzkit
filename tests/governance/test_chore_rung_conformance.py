@@ -110,9 +110,31 @@ class TestUndeclaredStages(unittest.TestCase):
         self.assertEqual(len(errors), 1, errors)
         self.assertIn("Workflow", errors[0].message)
 
-    def test_an_undeclared_chore_is_not_judged(self) -> None:
-        # Rollout ruling "Warn, flip at step 5": absence is announced elsewhere.
-        self.assertEqual(_audit("### 1. Remediate\n", rung=None), [])
+    def test_an_undeclared_chore_fails(self) -> None:
+        # Rollout ruling "Warn, flip at step 5": with every chore declared, a
+        # registered chore without a declaration has no rung to hold its steps to.
+        errors = _audit("### 1. Remediate — repair\n", rung=None)
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("no class declaration", errors[0].message)
+
+
+class TestFencedMarkdownIsNotStructure(unittest.TestCase):
+    """A heading inside a code fence is example text, never a section or a step.
+
+    `pythonic-design-pattern-application` step 6 carries a fenced evidence
+    template with `## Before` and `## After`, and the audit ended its Workflow
+    there: steps 7 and 8 were never held to the rung.
+    """
+
+    def test_a_heading_inside_a_fence_does_not_end_the_workflow(self) -> None:
+        workflow = "### 1. Scan — observe\n\n```markdown\n## Before\n```\n\n### 2. Remediate\n"
+        errors = _audit(workflow, rung="observe")
+        self.assertEqual(len(errors), 1, errors)
+        self.assertIn("2. Remediate", errors[0].message)
+
+    def test_a_step_heading_inside_a_fence_is_not_a_step(self) -> None:
+        workflow = "### 1. Scan — observe\n\n```markdown\n### Template heading\n```\n"
+        self.assertEqual(_audit(workflow, rung="observe"), [])
 
 
 if __name__ == "__main__":

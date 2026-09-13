@@ -60,16 +60,16 @@ for superseded models."
 
 ## Cadence
 
-**Mechanically gated.** The maximum age of a recorded run is the
-`frontier-model-card-currency` entry in `_SCAN_INTERVALS`
-(`scripts/check_proof_freshness.py`), enforced as criterion 1 of
-`acceptance.json`. The interval is not restated here: a value written in a
+**Mechanically gated.** The maximum age of a recorded run is this chore's
+declared `staleness.periodDays` in `registry.json`, which
+`scripts/check_proof_freshness.py` reads and criterion 1 of `acceptance.json`
+enforces (GHI #999). The interval is not restated here: a value written in a
 Markdown doc is illustrative, never authoritative
 (`.claude/rules/governance-core.md`), and a cadence this file merely *declared*
 would be the doctrine-declared-without-mechanism shape `AGENTS.md` forbids.
-Read the constant; its comment carries the measured publication intervals the
-number was derived from, and says to re-derive rather than transcribe it when
-the observed vendor cadence moves.
+Read the declaration; the gate's comment records the measured publication
+intervals the number was derived from, and says to re-derive rather than
+transcribe it when the observed vendor cadence moves.
 
 The gate reads the timestamped blocks `gz chores run` appends to
 `proofs/CHORE-LOG.md` — never the hand-authored findings headings beside them.
@@ -92,32 +92,32 @@ the Mythos-class `current` entry had been superseded since 2026-09-01 (GHI
 
 ## Workflow
 
-### 1. Inventory the registry
+### 1. Inventory the registry — observe
 
 ```bash
 python3 -c "import json; [print(c['vendor'], c['model_family'], c['card_date'], c['status']) for c in json.load(open('data/frontier_model_cards.json'))['cards']]"
 ```
 
-### 2. Query vendor hubs for newer cards
+### 2. Query vendor hubs for newer cards — observe
 
 Check each hub in the registry's `vendor_hubs` (WebSearch/WebFetch):
 Anthropic news/system-card announcements; OpenAI
 `deploymentsafety.openai.com`. A card newer than the registry's `current`
 entry for that vendor/tier, or any tier with no registry entry, is drift.
 
-### 3. Sweep live doctrine for superseded-model references
+### 3. Sweep live doctrine for superseded-model references — observe
 
 ```bash
 grep -rlE "Opus 4\.7|GPT-5\.5" .gzkit/rules/ docs/governance/ CLAUDE.md
 ```
 
-**Every hit in live doctrine is drift** — re-source the citation to the
-current card or retire the rule (operator ruling 2026-08-02). The only
+**Every hit in live doctrine is drift** — step 4 re-sources the citation to
+the current card or retires the rule (operator ruling 2026-08-02). The only
 legitimate homes for superseded-model text are
 `docs/governance/rule-version-history.md`, the ledger, and commit history
 (audit trail). Extend the grep pattern as models supersede.
 
-### 4. Route drift
+### 4. Route drift — operator-only-repair
 
 For each drifted item: file one GHI via `/ghi-author` (class ancestor:
 GHI #750), evaluate the primary card PDF against the doctrine surfaces the
@@ -128,7 +128,7 @@ and cite the commit when closing. New failure-mode patterns extend
 pre-authorization — check surface-weight headroom first
 (`uv run gz validate --surface-weight`).
 
-### 5. Record
+### 5. Record — observe
 
 Append the run's findings (or a clean no-drift line) to
 `proofs/CHORE-LOG.md` with the date and registry state.

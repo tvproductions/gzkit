@@ -4,7 +4,7 @@
       "type": "exitCodeEquals",
       "command": "uv run python scripts/check_proof_freshness.py control-surface-permission-consent-drift",
       "expected": 0,
-      "description": "proof artifacts postdate the surfaces they audit (supersedes `test -f`)"
+      "description": "the last passing run is within the chore's declared staleness.periodDays (settings.local.json changes with no commit, so a surface date cannot see it)"
     },
     {
       "type": "fileExists",
@@ -30,6 +30,11 @@
       "type": "fileExists",
       "path": ".gzkit/chores/control-surface-permission-consent-drift/proofs/summary.md",
       "description": "required artifact present; freshness alone passes while a named artifact is missing (GHI #690, #1002)"
+    },
+    {
+      "type": "fileExists",
+      "path": ".gzkit/chores/control-surface-permission-consent-drift/proofs/settings-patch.md",
+      "description": "required artifact present; a run that drafts no patch has stopped at data (GHI #999)"
     }
   ]
 }

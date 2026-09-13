@@ -7,31 +7,31 @@
 
 ## Overview
 
-Maintain consistent repository structure against the canonical layout. Structural audit with no functional changes.
+Maintain consistent repository structure against the canonical layout. Structural repair with no functional changes.
 
 ## Policy and Guardrails
 
 - **Lane:** Lite — structural verification, no behavioral changes
-- Audit only; document deviations before making changes
+- Document deviations before remediating; remediation moves and creates, never rewrites content
 - Validate against project config and governance surfaces
 
 ## Workflow
 
-### 1. Baseline
+### 1. Baseline — observe
 
 ```bash
 uv run gz validate --documents --surfaces
 ```
 
-### 2. Analyze
+### 2. Analyze — propose
 
 Document deviations from expected structure.
 
-### 3. Remediate
+### 3. Remediate — repair
 
 Fix structural issues (missing directories, misplaced files).
 
-### 4. Validate
+### 4. Validate — observe
 
 ```bash
 uv run gz validate --documents --surfaces

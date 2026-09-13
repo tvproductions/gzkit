@@ -18,21 +18,21 @@ Remediate hard-coded paths in favor of config-driven resolution. All file paths 
 
 ## Workflow
 
-### 1. Scan
+### 1. Scan — observe
 
 ```bash
 uv run gz check-config-paths
 ```
 
-### 2. Plan
+### 2. Plan — propose
 
 Identify hard-coded paths and plan migration to config-driven resolution.
 
-### 3. Implement
+### 3. Implement — repair
 
 Replace string literals with config-driven path construction.
 
-### 4. Validate
+### 4. Validate — observe
 
 ```bash
 uv run gz check-config-paths

@@ -19,22 +19,22 @@ Periodic coverage audit to maintain >=40% line coverage floor.
 
 ## Workflow
 
-### 1. Measure
+### 1. Measure — observe
 
 ```bash
 uv run coverage run -m unittest discover -s tests -t . -q
 uv run coverage report --fail-under=40
 ```
 
-### 2. Identify High-ROI Targets
+### 2. Identify High-ROI Targets — propose
 
 Focus on modules with low coverage that have high public API surface.
 
-### 3. Write Tests
+### 3. Write Tests — repair
 
 Table-driven, deterministic, no external dependencies.
 
-### 4. Validate
+### 4. Validate — observe
 
 ```bash
 uv run -m unittest -q

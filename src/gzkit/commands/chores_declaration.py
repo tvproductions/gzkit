@@ -7,8 +7,8 @@ models are the declaration the runner and validators read instead.
 Design authority: ``docs/governance/chore-class-system.md`` § The declaration,
 and the fence. Operator rulings at the schema step (2026-09-13): ``rung``
 carries the writing license and ``idempotent`` the scheduling license;
-authorization does not expire; an undeclared chore is announced and still runs
-until the per-chore declarations land, when absence flips to refusal.
+authorization does not expire; an undeclared chore was announced until the
+per-chore declarations landed, and is now refused.
 """
 
 from __future__ import annotations

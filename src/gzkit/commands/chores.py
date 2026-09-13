@@ -327,8 +327,8 @@ def chores_list(*, explain: bool = False) -> None:
     undeclared = sum(1 for chore in registry.values() if chore.declaration is None)
     if undeclared:
         console.print(
-            f"[yellow]{undeclared} of {len(registry)} chores carry no class declaration "
-            "(GHI #999).[/yellow]"
+            f"[yellow]{undeclared} of {len(registry)} chores carry no class declaration; "
+            "`gz chores run` refuses them (GHI #999).[/yellow]"
         )
 
 
@@ -430,12 +430,17 @@ def chores_run(slug: str) -> None:
     project_root = get_project_root()
     _registry_path, chore = _resolve_chore(slug)
     if chore.declaration is None:
-        # Announced, not refused, until per-chore declarations land (GHI #999).
-        console.print(
-            f"[yellow]Warning:[/yellow] chore '{escape(chore.slug)}' carries no class "
-            "declaration (GHI #999); undeclared chores will be refused once "
-            "declarations land."
+        # Absence defaults to the safe reading: an undeclared chore does not run
+        # (operator ruling 2026-09-13, "Warn, flip at step 5"; GHI #999).
+        msg = (
+            f"BLOCKERS:\n- Chore '{chore.slug}' carries no class declaration, so it is "
+            "refused: an undeclared chore has no rung to hold a run to "
+            "(src/gzkit/chores/README.md § Class Declaration, GHI #999).\n"
+            f"- Declare class, rung, idempotent, staleness, remediation, nonAuthority and "
+            f"governingRule on its registry.json entry, stage every Workflow step, then "
+            f"confirm with `uv run gz chores list`."
         )
+        raise GzCliError(msg)
     results: list[CriterionResult] = []
 
     for criterion in chore.criteria:

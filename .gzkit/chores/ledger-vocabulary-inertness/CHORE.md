@@ -16,14 +16,14 @@ Audit-plus-disclosure pass over the **ledger's vocabulary**. Two dimensions:
 2. **Paired-event ratios (reported, never judged).** For event types that open
    and close a state, the ratio of one half to the other.
 
-The sibling chore `control-surface-validator-reachability` (Pass D) asks whether
+The sibling chore `control-surface-validator-reachability` (Pass E) asks whether
 a *validator* runs. This one asks the same question of the *ledger*: a declared
 event type that nothing emits is vocabulary with no producer — it reads as a
 modelled fact and records nothing.
 
 ## Background
 
-Surfaced 2026-08-15 alongside Pass D. Two clusters made the case:
+Surfaced 2026-08-15 alongside Pass E. Two clusters made the case:
 
 - The **MX Maintenance Hangar** ships a CLI (`gz mx`), a skill, and a hook
   (`mx-awareness.py`), and has recorded **zero sessions** — both halves of its
@@ -68,7 +68,7 @@ that every *emitted* type has a schema entry; nothing checks the converse.
 
 ## Workflow
 
-### 1. Report both dimensions
+### 1. Report both dimensions — observe
 
 ```bash
 uv run python src/gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py --report
@@ -76,9 +76,11 @@ uv run python src/gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertnes
 
 Record the output in `proofs/vocabulary-inertness.md`.
 
-### 2. Dispose of each never-fired type
+### 2. Recommend a disposition for each never-fired type — propose
 
-Each one owes exactly one of:
+Each one owes exactly one recommended disposition. This chore never wires,
+retires or discloses anything itself: each recommendation lands as an
+operator-ruled direct fix.
 
 | Disposition | When |
 |---|---|
@@ -90,13 +92,13 @@ Each one owes exactly one of:
 Disclosure is the honest holding state, never the default. A type that has been
 disclosed across several runs is a retirement candidate, not a fixture.
 
-### 3. Read each lopsided pair to its producer
+### 3. Read each lopsided pair to its producer — propose
 
 For any pair whose halves diverge, **find what emits each half before saying
 what it means.** The ratio names a question; the producer answers it. Route the
 answer to the operator — this chore does not rule.
 
-### 4. Enforcement
+### 4. Enforcement — observe
 
 ```bash
 uv run python src/gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py
@@ -124,7 +126,7 @@ producer fails the chore whenever it next runs.
 
 ## Related
 
-- `control-surface-validator-reachability` (Pass D) — the same question asked of validators
+- `control-surface-validator-reachability` (Pass E) — the same question asked of validators
 - `gz validate --event-schemas` — every *emitted* type has a schema entry (the converse check)
 - `gz validate --event-handlers` — every ledger event type is claimed by a graph handler
 - `data/waiver_ratchet_registry.json` — where this chore's baseline is registered

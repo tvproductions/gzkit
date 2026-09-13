@@ -25,7 +25,7 @@ fail-closes on growth above baseline + waivers (ADR-0.0.59-04).
 
 ## Workflow
 
-### 1. Scan the test tree
+### 1. Scan the test tree — observe
 
 ```bash
 uv run python -c "
@@ -39,7 +39,7 @@ for op in ops[:10]:
 "
 ```
 
-### 2. Review and process files
+### 2. Review and process files — repair
 
 For each file in the scan results, apply the proposed disposition:
 
@@ -48,7 +48,7 @@ For each file in the scan results, apply the proposed disposition:
 - **fold-to-validator** — delegate the structural check to `gz validate --<scope>` and assert exit code
 - **keep-as-fixture** — no change needed (legitimate fixture pattern in setUp/tearDown)
 
-### 3. Validate drift gate
+### 3. Validate drift gate — observe
 
 ```bash
 uv run gz validate --tautological-test-audit
@@ -56,7 +56,7 @@ uv run gz validate --tautological-test-audit
 
 Should exit 0 on clean state. Exit 3 means current count exceeds baseline + waivers.
 
-### 4. Update baseline after sweep
+### 4. Update baseline after sweep — repair
 
 After each sweep wave, regenerate the baseline:
 

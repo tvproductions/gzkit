@@ -18,15 +18,19 @@ Run the full gz quality gate set and capture deterministic evidence.
 
 ## Workflow
 
-### 1. Run
+### 1. Run — observe
 
 ```bash
 uv run gz check
 ```
 
-### 2. Validate
+### 2. Validate — observe
 
 All gates must pass with exit code 0.
+
+### 3. Route failures — propose
+
+For each failing gate, name what owns the repair: the chore whose subject it is (lint and idioms → `pythonic-refactoring`, complexity → `complexity-reduction-xenon`, module size → `module-sloc-cap-radon`, docstrings → `pep257-docstring-compliance`), or a direct fix when the failure is a defect with no chore. Never waive or suppress a gate to pass.
 
 ## Acceptance Criteria
 
