@@ -1284,7 +1284,17 @@ generalizes, already returns 3 on stale evidence.
 3. **Class-conformance validator** — the ESLint/Ansible move. A chore whose `CHORE.md`
    contradicts its declared rung fails. This is what makes "internally consistent"
    mechanical rather than aspirational, and it retires the self-contradictory and
-   stop-at-data shapes (§ The measured state) in one pass.
+   stop-at-data shapes (§ The measured state) in one pass. **As landed:** operator
+   ruling 2026-09-13, verbatim *"Declared step stages (Recommended)"* — every `###`
+   step under `## Workflow` ends `— <stage>` from the rung vocabulary, and a declared
+   chore fails when a step has no stage or a stage ranks above its rung
+   (`audit_chore_rung_conformance`, run in `gz check` through
+   `tests/governance/test_chore_rung_conformance.py`). It compares a declaration with
+   a declaration rather than reading posture from prose, which this record measured
+   misfiling four chores; its stated limit is a mislabelled step. It binds each chore
+   from the moment step 5 declares it. Rejected at the ruling: a keyword heuristic, and
+   a worktree diff around `gz chores run` alone, which executes only acceptance
+   criteria and so cannot see an agent-performed remediation.
 4. **`src/gzkit/chores/README.md`** — today a packaging contract that never says what a
    chore *is*. It gains the class definitions, the ladder, the admission criterion, and
    the declaration requirement.

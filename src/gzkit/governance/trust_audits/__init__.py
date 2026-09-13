@@ -62,6 +62,7 @@ from gzkit.governance.trust_audits.briefs import (
 from gzkit.governance.trust_audits.bullet_retention import validate_bullet_retention
 from gzkit.governance.trust_audits.chores import (
     audit_chore_metadata_authority,
+    audit_chore_rung_conformance,
     audit_chores_layout,
 )
 from gzkit.governance.trust_audits.cli import (
@@ -226,6 +227,7 @@ __all__ = [
     "audit_brief_headings",
     "audit_agents_md_map_conformance",
     "audit_chore_metadata_authority",
+    "audit_chore_rung_conformance",
     "audit_chores_layout",
     "audit_class_size",
     "audit_distribution",

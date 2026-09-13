@@ -218,6 +218,19 @@ rationale are in `docs/governance/chore-class-system.md`.
 **Declaring any key commits the chore to all of them.** A partial or malformed
 declaration fails closed with a `chores[<slug>].<key>` blocker.
 
+**Declaring a rung commits the workflow to stages.** Every `###` step under the
+chore's `## Workflow` ends `— <stage>`, where the stage is one of the rungs, and no
+step's stage may rank above the chore's `rung` (operator ruling 2026-09-13):
+
+```markdown
+### 1. Scan — observe
+### 2. Draft the fix list — propose
+```
+
+A declared chore with a stageless step, an unknown stage, or a step past its rung
+fails `tests/governance/test_chore_rung_conformance.py`. The check compares the two
+declarations and never reads posture from prose, so a mislabelled step is its limit.
+
 **An undeclared chore is announced, not yet refused.** `gz chores run` warns
 before running it and `gz chores list` counts the undeclared estate. When the
 per-chore declarations land, absence flips to refusal (operator ruling

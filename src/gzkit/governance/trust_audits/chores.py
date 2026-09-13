@@ -287,6 +287,100 @@ def audit_chore_metadata_authority(project_root: Path) -> list[ValidationError]:
     return errors
 
 
+#: The rung ladder in order; a workflow step's stage may not rank above the rung.
+_RUNG_ORDER: tuple[str, ...] = ("observe", "propose", "repair", "operator-only-repair")
+_WORKFLOW_HEADING_RE = re.compile(r"^##\s+Workflow\s*$", re.MULTILINE)
+_STEP_HEADING_RE = re.compile(r"^###\s+(.+?)\s*$", re.MULTILINE)
+_STAGE_SUFFIX_RE = re.compile(r"^(?P<title>.+?)\s+—\s+(?P<stage>[A-Za-z-]+)$")
+
+
+def _workflow_steps(chore_md: str) -> list[str]:
+    """Return the ``###`` step headings under ``## Workflow``, in order."""
+    heading = _WORKFLOW_HEADING_RE.search(chore_md)
+    if heading is None:
+        return []
+    following = _NEXT_HEADING_RE.search(chore_md, heading.end())
+    section = chore_md[heading.end() : following.start() if following else len(chore_md)]
+    return _STEP_HEADING_RE.findall(section)
+
+
+def _stage_violations(steps: list[str], rung: str) -> list[str]:
+    """Return a message per step with no stage, an unknown stage, or one above ``rung``."""
+    if not steps:
+        return [
+            f"declares rung `{rung}` but its ## Workflow has no ### steps; each step must "
+            "declare a stage so the rung can be held (GHI #999)."
+        ]
+    ceiling = _RUNG_ORDER.index(rung)
+    messages: list[str] = []
+    for step in steps:
+        match = _STAGE_SUFFIX_RE.match(step)
+        if match is None:
+            messages.append(
+                f"workflow step `{step}` declares no stage; end the heading with "
+                f"` — <stage>`, one of {', '.join(_RUNG_ORDER)}."
+            )
+            continue
+        stage = match.group("stage")
+        if stage not in _RUNG_ORDER:
+            messages.append(
+                f"workflow step `{step}` declares stage `{stage}`, which is not one of "
+                f"{', '.join(_RUNG_ORDER)}."
+            )
+        elif _RUNG_ORDER.index(stage) > ceiling:
+            messages.append(
+                f"workflow step `{match.group('title')}` is a `{stage}` step, past the "
+                f"chore's declared rung `{rung}`; lower the step or raise the rung by "
+                "operator ruling, never both silently."
+            )
+    return messages
+
+
+def audit_chore_rung_conformance(project_root: Path) -> list[ValidationError]:
+    """Flag a declared chore whose workflow steps reach past its declared rung.
+
+    ``rung`` is a chore's writing license (``docs/governance/chore-class-system.md``
+    § The four rungs). ``repository-structure-normalization`` declared itself audit
+    only and then remediated, and nothing caught it. Operator ruling 2026-09-13,
+    verbatim *"Declared step stages (Recommended)"*: every ``###`` step under
+    ``## Workflow`` ends ``— <stage>`` from the rung vocabulary, and no stage may
+    rank above the rung. A declaration is compared with a declaration; posture is
+    never inferred from prose, which the design record measured misfiling four
+    chores. Stated limit: a step can be mislabelled.
+
+    Undeclared chores are skipped — absence is announced by ``gz chores`` until
+    GHI #999 step 5 flips it to refusal. A malformed declaration is the
+    registry loader's finding, not this audit's, so it is skipped here too.
+    """
+    from gzkit.commands.chores_declaration import parse_chore_declaration  # noqa: PLC0415
+    from gzkit.config import GzkitConfig  # noqa: PLC0415
+
+    config = GzkitConfig.load(project_root / ".gzkit.json")
+    registry_path = project_root / config.paths.chores / "registry.json"
+    try:
+        entries = json.loads(registry_path.read_text(encoding="utf-8")).get("chores", [])
+    except (OSError, json.JSONDecodeError, AttributeError):
+        return []
+    errors: list[ValidationError] = []
+    for entry in entries:
+        if not isinstance(entry, dict) or not entry.get("path"):
+            continue
+        declaration = parse_chore_declaration(entry, str(entry.get("slug", "")), [])
+        if declaration is None:
+            continue
+        chore_md_path = project_root / str(entry["path"]) / "CHORE.md"
+        try:
+            chore_md = chore_md_path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        artifact = chore_md_path.relative_to(project_root).as_posix()
+        errors.extend(
+            ValidationError(type="chore_rung_conformance", artifact=artifact, message=message)
+            for message in _stage_violations(_workflow_steps(chore_md), declaration.rung)
+        )
+    return errors
+
+
 def _load_chores_layout_waivers(project_root: Path) -> frozenset[str]:
     """Load waiver paths from ``data/chores_layout_waivers.json``.
 
