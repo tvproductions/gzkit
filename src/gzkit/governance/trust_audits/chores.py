@@ -228,8 +228,8 @@ def audit_chore_metadata_authority(project_root: Path) -> list[ValidationError]:
     (``## Checklist``, ``## Manual completion checks``) are not detected.
 
     Sync holds each slug's ``CHORE.md`` and ``acceptance.json`` byte-equal at
-    ``src/gzkit/chores/``, so those copies are not re-read here. The surface-level
-    ``registry.json`` and ``README.md`` reach the package only once GHI #1005 lands.
+    ``src/gzkit/chores/``, ``README.md`` likewise, and ships ``registry.json``
+    filtered (GHI #728, #1005), so the package copies are not re-read here.
     """
     from gzkit.config import GzkitConfig  # noqa: PLC0415
 

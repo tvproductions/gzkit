@@ -24,6 +24,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.commands.common import _confirm, console
 from gzkit.config import GzkitConfig
+from gzkit.rules import NESTED_SURFACE_NAMES
 
 _CANONICAL_RESOURCE = "gzkit.chores"
 _PER_SLUG_FILES = ("CHORE.md", "acceptance.json", "README.md")
@@ -38,10 +39,15 @@ def _chore_slug_of(path: Path) -> str | None:
     distribution audit pass ``src/gzkit/chores/<slug>/...``. Both must resolve to
     the same slug or a withheld chore stays invisible to the audit that should
     catch it leaking.
+
+    A file directly under the surface (``registry.json``, ``README.md``) names no
+    slug: a slug is a directory, so it needs a component beneath it. Treating the
+    file as its own slug let the orphan guard withhold the registry from the
+    wheel (GHI #1005).
     """
     parts = path.parts
     for index, part in enumerate(parts):
-        if part == "chores" and index + 1 < len(parts):
+        if part == "chores" and index + 2 < len(parts):
             return parts[index + 1]
     return None
 
@@ -127,6 +133,12 @@ def _classify_chore_file(
     # list` cannot resolve it, so claiming its files as canonical would assert a
     # delivery that no code path performs (`owasp-top10-2025-scan`, 2026-08-09).
     if slug is not None and project_root is not None and not _slug_has_chore_md(project_root, slug):
+        return "package_only"
+
+    # The nested AGENTS.md / CLAUDE.md are generated in place at each surface root
+    # and differ by title line, so neither is a copy of the other. Copying one over
+    # the other would fight the generator (GHI #1005).
+    if name in NESTED_SURFACE_NAMES:
         return "package_only"
 
     # runtime_state: proofs/ contents, .gitkeep, CHORE-LOG.md

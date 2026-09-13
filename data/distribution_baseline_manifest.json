@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "gzkit_version": "0.34.5",
+  "gzkit_version": "0.34.7",
   "surfaces": {
     "personas": [
       "flight-test-engineer.md",
@@ -124,6 +124,7 @@
       "release_notes.md"
     ],
     "chores": [
+      "README.md",
       "arb-pattern-extraction/CHORE.md",
       "arb-pattern-extraction/README.md",
       "arb-pattern-extraction/acceptance.json",
@@ -170,6 +171,7 @@
       "eval-feedback-cluster/CHORE.md",
       "eval-feedback-cluster/README.md",
       "eval-feedback-cluster/acceptance.json",
+      "eval_feedback_cluster_lib.py",
       "evidence-integrity-audit/CHORE.md",
       "evidence-integrity-audit/README.md",
       "evidence-integrity-audit/acceptance.json",
@@ -222,6 +224,7 @@
       "quality-check/CHORE.md",
       "quality-check/README.md",
       "quality-check/acceptance.json",
+      "registry.json",
       "repository-structure-normalization/CHORE.md",
       "repository-structure-normalization/README.md",
       "repository-structure-normalization/acceptance.json",

@@ -32,11 +32,12 @@ def _skill_slug_of(path: Path) -> str | None:
     Sync passes ``<root>/.gzkit/skills/<slug>/...``; the prune and the
     distribution audit pass ``src/gzkit/skills/<slug>/...``. Both must resolve to
     the same slug or a withheld skill stays invisible to the audit that should
-    catch it leaking. Mirrors :func:`gzkit.chores._chore_slug_of`.
+    catch it leaking. Mirrors :func:`gzkit.chores._chore_slug_of`, including that
+    a file directly under the surface names no slug (GHI #1005).
     """
     parts = path.parts
     for index, part in enumerate(parts):
-        if part == "skills" and index + 1 < len(parts):
+        if part == "skills" and index + 2 < len(parts):
             return parts[index + 1]
     return None
 
