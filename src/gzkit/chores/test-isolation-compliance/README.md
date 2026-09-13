@@ -1,6 +1,6 @@
 # Test Isolation & Health Compliance
 
-Guards test suite isolation (temp dirs, no live DBs), performance (<60s suite, <3s per test),
+Guards test suite isolation (temp dirs, no live DBs), performance (smoke tier within budget, <3s per test),
 and output cleanliness (zero stdout noise).
 
 ## Quick Start

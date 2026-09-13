@@ -808,10 +808,10 @@
     {
       "slug": "test-isolation-compliance",
       "title": "Test Isolation & Health Compliance",
-      "version": "2.1.0",
+      "version": "2.2.0",
       "path": ".gzkit/chores/test-isolation-compliance",
       "lane": "lite",
-      "timeoutSeconds": 120,
+      "timeoutSeconds": 900,
       "class": "conformance",
       "rung": "repair",
       "idempotent": true,

@@ -1,17 +1,20 @@
 """Test health profiler for the test-health-audit chore.
 
-Profiles the suite and enforces three thresholds:
-- Suite wall clock <60s
+Profiles the suite and enforces two thresholds:
 - No single test >3s
 - No stdout noise (non-dot, non-framework output)
 
-These thresholds want *different execution modes*, so the profiler runs the
-suite twice:
+The suite wall clock is REPORTED, never gated. ``.gzkit/rules/tests.md``
+§ General Rules: the full unit tier has no fixed ceiling, because its runtime
+grows with the REQ set; the 60s budget binds the ``@smoke`` subset, enforced by
+``uv run gz smoke``. The chore's ``acceptance.json`` runs that verb.
+
+The profiler runs the suite twice, because the measurements want *different
+execution modes*:
 
 - **Wall clock** is measured in **parallel** (``unittest-parallel`` — the same
   accelerator the pre-commit hook uses, GHI #512). That is how the dev loop
-  actually runs the suite; gating a serial wall clock nobody waits for was the
-  defect this profiler carried as the suite grew past ~6k tests.
+  actually runs the suite.
 - **Per-test timing and stdout noise** are measured in a **serial, in-process**
   pass. A >3s test is a design smell only in isolation — under parallel
   contention a clean 3.8s test reads as 10s+, so the per-test gate must be
@@ -31,7 +34,6 @@ import unittest
 from collections import defaultdict
 from pathlib import Path
 
-SUITE_MAX_SECONDS = 60
 TEST_MAX_SECONDS = 3.0
 # Canonical project-scoped chores root (ADR-0.0.21 Decision #9). The legacy
 # `ops/chores/` root is forbidden and fail-closed by `gz validate --chores-layout`.
@@ -164,8 +166,6 @@ def _run_profiled() -> dict:
             f"Suite did not pass serially ({len(result.failures)} failures, "
             f"{len(result.errors)} errors)"
         )
-    if wall_elapsed > SUITE_MAX_SECONDS:
-        violations.append(f"Suite took {wall_elapsed:.1f}s (threshold: {SUITE_MAX_SECONDS}s)")
     for elapsed, name in slow_tests:
         violations.append(f"Slow test ({elapsed:.2f}s): {name}")
     if noise_lines:

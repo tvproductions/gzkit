@@ -9,7 +9,7 @@
 
 Guard test suite isolation, performance, and output cleanliness. Catches:
 - Tests leaking to real files instead of temp dirs
-- Slow tests (>3s) and suite bloat (>60s)
+- Slow tests (>3s) and a smoke tier over its budget
 - Noisy stdout leaks (Rich console, CLI output)
 
 ## Policy and Guardrails
@@ -22,7 +22,7 @@ Guard test suite isolation, performance, and output cleanliness. Catches:
 
 | Metric | Threshold | Rationale |
 |--------|-----------|-----------|
-| Suite wall clock | <60s | BVT policy (AGENTS.md) |
+| Smoke tier | within the budget `uv run gz smoke` enforces | `.gzkit/rules/tests.md` § General Rules: the budget binds the `@smoke` subset; the full unit tier has no fixed ceiling, so the profiler reports its wall clock and never gates it |
 | Slowest single test | <3s | Any test >3s has a design problem |
 | Stdout noise lines | 0 | Tests should produce dots only |
 
@@ -65,6 +65,7 @@ Apply the lightest fix that addresses the root cause. Prefer:
 
 ```bash
 uv run python tests/tools/test_health_profiler.py
+uv run gz smoke
 uv run -m unittest -q
 ```
 
@@ -74,7 +75,7 @@ uv run -m unittest -q
 - [ ] No tests touch production databases
 - [ ] All temp resources cleaned via context managers
 - [ ] No single test >3s
-- [ ] Suite <60s wall clock
+- [ ] Smoke tier within budget (`uv run gz smoke` exits 0)
 - [ ] Zero stdout noise lines
 - [ ] Tests pass
 

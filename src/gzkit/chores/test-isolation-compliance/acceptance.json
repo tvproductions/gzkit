@@ -7,6 +7,11 @@
     },
     {
       "type": "exitCodeEquals",
+      "command": "uv run gz smoke",
+      "expected": 0
+    },
+    {
+      "type": "exitCodeEquals",
       "command": "uv run -m unittest -q",
       "expected": 0
     }
