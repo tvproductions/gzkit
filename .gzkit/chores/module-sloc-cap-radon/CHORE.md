@@ -80,7 +80,9 @@ uvx radon raw src/ -s -j > .gzkit/chores/module-sloc-cap-radon/proofs/radon-base
 
 ### 2. Plan
 
-- Identify modules exceeding 600 SLOC soft cap
+- Identify modules in the table's `warn` or `block` band for `radon_raw_nloc`
+  (`uv run python .gzkit/chores/module-sloc-cap-radon/check_module_size.py`) —
+  the bands live in `.gzkit/rules/complexity-thresholds.json`, never in this file
 - Plan cohesive splits preserving public API
 
 ### 3. Implement
@@ -96,8 +98,8 @@ uvx radon raw src/ -s -j
 
 ## Checklist
 
-- [ ] No modules exceed 1000 SLOC hard cap
-- [ ] Modules approaching 600 SLOC documented
+- [ ] No module over the canonical `block` band unless listed in the shrink-only ratchet
+- [ ] Modules in the `warn` band documented
 - [ ] Tests pass unchanged
 
 ## Acceptance Criteria

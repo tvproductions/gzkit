@@ -26,9 +26,10 @@ as needed … A chore is authorized to find, analyze, solve and fix. I don't nee
 debate cleaning and taking out the trash from the house on a regular basis, I need to
 organize that tidying."*
 
-**Nothing enforces any of it.** 19 of 40 chores declare themselves audit-only. Three
-declare audit-only and contain a remediation step. Nine stop at data with no
-recommendation to act on. Nothing schedules any chore, and nothing surfaces that a
+**Nothing enforces any of it.** 18 of 40 chores declare themselves audit-only. Two
+declare audit-only and contain a remediation step. Five stop at data with no
+recommendation to act on. (Counts from reading every `CHORE.md`, 2026-09-13; see
+§ The measured state for method and ambiguous cases.) Nothing schedules any chore, and nothing surfaces that a
 chore has gone unrun.
 
 That is the `doctrine-declared-without-mechanism` shape exactly — *"Layer X declares a
@@ -74,7 +75,7 @@ the five cannot be declared as a block.
 
 **Internal consistency** (20:41Z): *"I'd like for chores to be proactive and most are
 there to help me fix/tidy, but, as you see, some are diagnostic/audit - each should be
-internally-consistent and clear about this."* On the three contradictory chores: *"so
+internally-consistent and clear about this."* On the self-contradictory chores: *"so
 with 1. please fix/make consistent."*
 
 **The split stays** (20:41Z): *"that split is fine, it makes room for pause and
@@ -118,29 +119,57 @@ gzkit's needs govern the appropriation, never the reverse.
 | Measurement | Value |
 |---|---|
 | Chores in the registry | 40 |
-| Declare audit-only / read-only / "does NOT fix" | 19 |
-| Carry no recommendation of any kind | 26 |
-| **Declare audit-only AND carry no recommendation** | **9** |
-| **Declare audit-only AND contain a remediation step** | **3** |
+| Declare audit-only / read-only / "does NOT fix" as their current posture | 18 |
+| **Declare audit-only, no remediation step, no recommendation** | **5** (3 firm, 2 borderline) |
+| **Declare audit-only AND contain a remediation step** | **2** (+1 ambiguous) |
 | Acceptance criteria that gate only on file existence | **0** — already swept |
 | Wired to `scripts/check_proof_freshness.py` | 7 |
 | Declare a `frequency` in the registry | **1 of 40** |
 | Invoked by CI, pre-commit, or any hook | **0** |
 | Last ran 2026-07-31 (one manual sweep) | 23 of 39 |
 
-Registry fields available today: `frequency`, `lane`, `path`, `projectLocal`, `slug`,
-`timeoutSeconds`, `title`, `vendor`, `version`. **There is no field in which a chore
-can declare its class, its governing rule, or what it refuses to touch.**
+Registry fields at the 2026-09-12 measurement: `frequency`, `lane`, `path`,
+`projectLocal`, `slug`, `timeoutSeconds`, `title`, `vendor`, `version` — no field in
+which a chore could declare its class, its governing rule, or what it refuses to touch.
+The declaration schema has since landed (GHI #999, `f1c9b0e59`); every chore is still
+undeclared until § Implementation order step 5.
 
-The nine that stop at data:
+**Correction, 2026-09-13.** The first version of this section derived its lists from
+a keyword grep over `CHORE.md` (§ Reproduction record) and reported nine stop-at-data
+chores and three self-contradictory ones. Re-measured by reading all 40 `CHORE.md` and
+`acceptance.json` in full, judging what each document currently *instructs*, the grep
+was wrong in four places:
 
-`cli-contract-governance` · `control-surface-rule-vs-check-drift` · `dependency-currency` ·
-`eval-feedback-cluster` · `evidence-integrity-audit` · `frontmatter-ledger-coherence` ·
-`repository-structure-normalization` · `skill-command-doc-parity` · `skill-trigger-testing`
+- `frontmatter-ledger-coherence` sat in both lists. It declares no audit-only posture —
+  its only hit is history (*"This replaces the prior read-only audit chore (v1.0.0)"*) —
+  and it repairs (`gz frontmatter reconcile` rewrites frontmatter). Conformant.
+- `eval-feedback-cluster` does not stop at data: every proposal record carries
+  `proposed_rule_target`.
+- `repository-structure-normalization` and `skill-command-doc-parity` do not stop at
+  data — each has a Remediate step. They are self-contradictory, not stop-at-data; the
+  grep test ("audit-only and no recommendation") never excluded remediation.
+- The posture count is 18, not 19: `frontier-model-card-currency` scopes its read-only
+  claim to the scan and declares *"scan + route"*; `arb-pattern-extraction` declares
+  *"analysis only, no code changes"* in words the grep did not search for.
 
-The three that contradict themselves:
+A "no recommendation of any kind: 26" row was also grep-derived and is withdrawn; the
+reading did not re-measure it across repair chores, where it does not decide either list.
 
-`frontmatter-ledger-coherence` · `repository-structure-normalization` · `skill-command-doc-parity`
+Stop at data — declares audit-only, no remediation step, no recommendation:
+
+- firm: `cli-contract-governance` · `evidence-integrity-audit` · `skill-trigger-testing`
+- borderline: `dependency-currency` (its operator hand-off is generic and marked
+  out-of-chore) · `control-surface-rule-vs-check-drift` (a top-5 ranking, no action per row)
+- ambiguous, excluded: `pool-triage` and `arb-pattern-extraction` — their findings are
+  already named by the action they call for (archive/promote candidates; fix route)
+
+Self-contradictory — declares audit-only and carries a remediation step:
+
+- firm: `repository-structure-normalization` · `skill-command-doc-parity` — each says
+  *"Audit only; … before making changes/remediation"*, then remediates
+- ambiguous: `ledger-vocabulary-inertness` — *"audit-only; this chore never edits the
+  schema, the ledger, or any producer"*, yet step 2 prescribes *"Wire the producer"* and
+  *"Retire the declaration"* without saying those dispositions are output only
 
 ### The control-surface five are not uniform
 
@@ -152,7 +181,7 @@ behave as one:
 | `control-surface-rule-conflicts` | a prioritized follow-up list | Coherence — conformant |
 | `control-surface-skill-rule-reachability` | a recommendation per row | Coherence — conformant |
 | `control-surface-validator-reachability` | recommendations, plus a shrink-only baseline | Coherence **carrying a ratchet** |
-| `control-surface-rule-vs-check-drift` | **a parity table, no recommendation** | Coherence — **violates the class contract**; one of the nine |
+| `control-surface-rule-vs-check-drift` | **a parity table, no recommendation** | Coherence — **violates the class contract**; borderline stop-at-data |
 | `control-surface-permission-consent-drift` | a routing list, each live row sized for a direct-fix GHI | Coherence — conformant; to calibrate, since GHI-shaped exits are meant to be sparing |
 
 `control-surface-validator-reachability` describes itself as "audit-plus-ratchet", and
@@ -980,8 +1009,8 @@ diagnosis-only) and `none_available` (repair not yet built) are first-class memb
 the schema requires `["category", "details"]` so a bare category cannot be emitted.
 Empty is indistinguishable from unfinished.
 
-**This is the remedy for the nine.** They are not nine hand-edits; they are nine
-violations of one class contract: *Coherence and Mining must carry a remediation field,
+**This is the remedy for the stop-at-data chores.** They are not five hand-edits; they
+are five violations of one class contract: *Coherence and Mining must carry a remediation field,
 whose value may be `no_fix_planned` — but never nothing.*
 
 Three systems independently require remediation prose on a finding that stops short of
@@ -1075,7 +1104,9 @@ but five modifying hooks carry no marker at all (`trailing-whitespace`,
 partition.** pre-commit itself has no linter/formatter vocabulary — no hook field, config
 key or schema enum encodes the difference; its distinction is behavioral and discovered
 at runtime. A gzkit chore named `*-audit` or `*-coherence` has declared nothing, and the
-three contradictory chores are the local proof.
+self-contradictory chores are the local proof — as is this record's own first
+measurement, which read the names and headings and misfiled four chores (§ The measured
+state).
 
 **What happens when nothing is declared** is on record too. Rails/rake has no
 convention distinguishing read-only from mutating tasks — only `desc`-gated visibility
@@ -1252,19 +1283,21 @@ generalizes, already returns 3 on stale evidence.
    site.
 3. **Class-conformance validator** — the ESLint/Ansible move. A chore whose `CHORE.md`
    contradicts its declared rung fails. This is what makes "internally consistent"
-   mechanical rather than aspirational, and it retires the three contradictory chores and
-   the nine stop-at-data chores in one pass.
+   mechanical rather than aspirational, and it retires the self-contradictory and
+   stop-at-data shapes (§ The measured state) in one pass.
 4. **`src/gzkit/chores/README.md`** — today a packaging contract that never says what a
    chore *is*. It gains the class definitions, the ladder, the admission criterion, and
    the declaration requirement.
 5. **Per-chore declarations** — by this point data entry against a validator, not 40
-   judgment calls. This step applies § Operator directives: it fixes the three
-   contradictory chores, remedies the nine that stop at data, calibrates the
+   judgment calls. This step applies § Operator directives: it fixes the
+   self-contradictory chores, remedies those that stop at data (both lists, and their
+   ambiguous cases, in § The measured state), calibrates the
    control-surface five individually rather than as a block, and resolves the Pass D
    label collision recorded in
    [`rules-tools-audits-refactors-alignment.md`](rules-tools-audits-refactors-alignment.md).
    GHI #997 (`eval-feedback-cluster` runs fixtures, not live clustering) and GHI #808
-   overlap members of the nine; read both before declaring those chores.
+   (`decommission-tautological-tests` criteria gate the ratchet, not the debt) are open
+   against the chores they name; read both before declaring those chores.
 6. **The suppression prohibition in a rule file** — § Suppression, stated as binding
    rule text where chore authors and runners load it, with its witness designed
    alongside so it does not land as a new Promotable row.
@@ -1390,8 +1423,11 @@ the findings.
 # registry, src/gzkit/chores/registry.json, holds 37.
 python -c "import json,pathlib;print(len(json.loads(pathlib.Path('.gzkit/chores/registry.json').read_text())['chores']))"
 
-# declared posture, recommendations, remediation steps
-grep -rlniE 'audit-only|audit only|zero edits|does NOT fix|diagnosis only|read-only' \
+# declared posture — CANDIDATES ONLY. This grep produced the first, wrong lists
+# (§ The measured state, Correction 2026-09-13): it matches history lines and scoped
+# claims, and misses other phrasings. Posture, remediation and recommendation are
+# decided by reading each CHORE.md for what it currently instructs.
+grep -rlniE 'audit-only|audit only|zero edits|does NOT fix|diagnosis only|read-only|analysis only' \
   .gzkit/chores/*/CHORE.md | wc -l
 
 # acceptance-criteria shape (presence-gated vs state-gated)

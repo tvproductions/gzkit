@@ -93,7 +93,6 @@ ls .gzkit/chores/skill-trigger-testing/proofs/trigger-report-*.md
 |-------|---------------|---------------------|
 | `skill-authoring-quality` | Structural quality (frontmatter, size, stubs) | Functional quality (does it trigger? does it produce?) |
 | `skill-command-doc-parity` | Documentation coverage | Runtime accuracy |
-| `skill-manifest-sync` | Directory sync | N/A (orthogonal) |
 
 ---
 
