@@ -235,7 +235,7 @@ def _render_settled(result: ResumeResult) -> None:
     total = len(result.settled)
     console.print(f"  settled — do NOT re-open ({total}):")
     for entry in result.settled[-_SETTLED_PREVIEW:]:
-        console.print(f"    - {entry}")
+        console.print(f"    - {escape(entry)}")
     if total > _SETTLED_PREVIEW:
         console.print(
             f"    ({total - _SETTLED_PREVIEW} older rulings not shown — "
@@ -258,7 +258,8 @@ def handoff_rulings_cmd(
     by a hand edit here.
     """
     root = base_path if base_path is not None else get_project_root()
-    entries = read_rulings(root)
+    corpus = read_rulings(root)
+    entries = corpus
     if search:
         needle = search.casefold()
         entries = [entry for entry in entries if needle in entry.casefold()]
@@ -268,11 +269,18 @@ def handoff_rulings_cmd(
         console.print_json(json.dumps(entries))
         return 0
     if not entries:
-        console.print("No settled rulings booked.")
+        # A search miss is not an empty store: saying "none booked" to a reader
+        # checking whether a question is settled misreports the whole corpus.
+        if corpus:
+            console.print(
+                f'No settled ruling matches "{escape(search or "")}" ({len(corpus)} booked).'
+            )
+        else:
+            console.print("No settled rulings booked.")
         return 0
     console.print(f"settled rulings — do NOT re-open ({len(entries)}):")
     for entry in entries:
-        console.print(f"  - {entry}")
+        console.print(f"  - {escape(entry)}")
     return 0
 
 
@@ -397,7 +405,7 @@ def handoff_create_cmd(
             reference_checker=live_reference_checker(base_path),
         )
     except HandoffValidationError as exc:
-        console.print(f"[red]Refusing to write handoff:[/red] {exc}", style="red")
+        console.print(f"[red]Refusing to write handoff:[/red] {escape(str(exc))}", style="red")
         raise SystemExit(1) from exc
 
     if as_json:

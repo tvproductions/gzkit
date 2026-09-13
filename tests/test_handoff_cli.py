@@ -278,6 +278,104 @@ class TestHandoffResumeReferenceRendering(_HandoffCliCase):
         self.assertNotIn("CITES SETTLED", out)
 
 
+class TestHandoffRulingsSearchMissRendering(_HandoffCliCase):
+    """A search that matches nothing must not report an empty corpus.
+
+    `gz handoff rulings --search` is the prescribed check for "is this already
+    settled?" before re-arguing it. Answering a miss with "No settled rulings
+    booked." tells that reader the store is empty, which is false and invites
+    reading the whole channel as broken or nothing as settled. Output-form
+    assertions are the named contract: the rendering is the only answer the
+    reader gets.
+    """
+
+    def _capture_console(self, fn) -> str:
+        buf = io.StringIO()
+        with redirect_stdout(buf):
+            fn()
+        return buf.getvalue()
+
+    def _seed_store(self) -> None:
+        from gzkit.handoff_rulings import record_rulings  # noqa: PLC0415 — local to this fixture
+
+        record_rulings(
+            ["Ship the adapter first.", "Keep the store append-only."],
+            base_path=self.base,
+            source="seed.md",
+        )
+
+    def test_search_miss_names_the_search_and_the_corpus_size(self) -> None:
+        from gzkit.commands.handoff import handoff_rulings_cmd  # noqa: PLC0415
+
+        self._seed_store()
+        output = self._capture_console(
+            lambda: handoff_rulings_cmd(search="no-such-phrase", base_path=self.base)
+        )
+        self.assertNotIn("No settled rulings booked", output)
+        self.assertIn("no-such-phrase", output)
+        self.assertIn("2 booked", output)
+
+    def test_a_ruling_with_bracketed_text_prints_verbatim(self) -> None:
+        """Rulings are operator verbatim; a bracketed span must not be eaten as markup."""
+        from gzkit.commands.handoff import handoff_rulings_cmd  # noqa: PLC0415
+        from gzkit.handoff_rulings import record_rulings  # noqa: PLC0415
+
+        ruling = "Refuse chores[demo-chore] until it declares a rung."
+        record_rulings([ruling], base_path=self.base, source="seed.md")
+        output = self._capture_console(lambda: handoff_rulings_cmd(base_path=self.base))
+        self.assertIn("chores[demo-chore]", output)
+
+    def test_create_refusal_keeps_the_attribution_markers_it_explains(self) -> None:
+        """The GHI #722 refusal names `[operator-ruled]`; eaten as markup it explains nothing."""
+        output = io.StringIO()
+        with redirect_stdout(output), self.assertRaises(SystemExit):
+            handoff_create_cmd(
+                adr="ADR-0.0.65",
+                slug="unbulleted",
+                agent="g0",
+                decisions='[operator-ruled] Ship it (verbatim: "ship it").',
+                summary="Seeded summary.",
+                context="Seeded context.",
+                next_steps="1. Continue.",
+                pending="Seeded pending.",
+                verification="- [ ] Tests pass.",
+                evidence="Seeded evidence.",
+                branch="main",
+                base_path=self.base,
+            )
+        self.assertIn("[operator-ruled]", output.getvalue())
+
+    def test_resume_settled_preview_prints_rulings_verbatim(self) -> None:
+        from gzkit.handoff_rulings import record_rulings  # noqa: PLC0415
+
+        ruling = "[operator-ruled] Take GHI #887 next."
+        record_rulings([ruling], base_path=self.base, source="seed.md")
+        self._seed(adr_id="ADR-0.0.65", slug="first", timestamp="2026-07-14T09:00:00Z")
+        handoffs = sorted((self.base / ".gzkit" / "handoffs").glob("*first.md"))
+        create_handoff(
+            adr_id="ADR-0.0.65",
+            branch="main",
+            agent="g0",
+            slug="second",
+            sections={section: f"Seeded {section}." for section in REQUIRED_SECTIONS},
+            continues_from=handoffs[0].relative_to(self.base).as_posix(),
+            base_path=self.base,
+            timestamp="2026-07-14T10:00:00Z",
+        )
+        output = self._capture_console(
+            lambda: handoff_resume_cmd(
+                adr="ADR-0.0.65", now="2026-07-14T11:00:00Z", base_path=self.base
+            )
+        )
+        self.assertIn(ruling, output)
+
+    def test_an_empty_store_still_says_nothing_is_booked(self) -> None:
+        from gzkit.commands.handoff import handoff_rulings_cmd  # noqa: PLC0415
+
+        output = self._capture_console(lambda: handoff_rulings_cmd(base_path=self.base))
+        self.assertIn("No settled rulings booked.", output)
+
+
 class TestHandoffResumeChainRendering(_HandoffCliCase):
     """`gz handoff resume` must render the lineage it already walked (GHI #870).
 
