@@ -169,8 +169,9 @@ are not permitted.
 
 ## Adding a New Chore (Canonical)
 
-Use an existing canonical chore as a template. Required structure for a
-canonical addition:
+A new chore meets § Admission criterion first, and the operator directs its
+creation. Use an existing canonical chore as a template. Required structure for
+a canonical addition:
 
 ```text
 src/gzkit/chores/<slug>/
@@ -179,16 +180,106 @@ src/gzkit/chores/<slug>/
 └── README.md         # Brief human summary
 ```
 
-After creating, register the slug in `src/gzkit/chores/registry.json`. Project
+After creating, register the slug in `src/gzkit/chores/registry.json` with its
+class declaration (§ Class Declaration). Project
 overlays (`.gzkit/chores/<slug>/`) are scaffolded by `gz init` or `gz chores
 doctor` from the canonical surface.
 
 ---
 
+## What a Chore Is
+
+A chore is authorized, recurring maintenance labor. It finds a problem,
+analyzes it, recommends an approach and fixes what it is licensed to fix,
+consulting the operator where the judgment is the operator's. Operator
+statement (2026-09-12, verbatim): *"A chore is authorized to find, analyze,
+solve and fix."* A chore is upkeep run at intervals, not a work order: it files
+a GHI sparingly, and in consultation with the operator.
+
+### Admission criterion
+
+Not every refactoring is a chore — operator, verbatim: *"not all refactorings
+are chores, but most chores can lead to refactorings."* Work is admitted to the
+registry only when it is **toil** in the Google SRE sense (*Site Reliability
+Engineering* ch. 5), and two characteristics decide:
+
+- **Repetitive, on evidence.** It has already recurred. *"If you're performing
+  a task for the first time ever, or even the second time, this work is not
+  toil."*
+- **No enduring value.** The surface drifts back and the work comes due again.
+  A one-time system-wide refactoring leaves a permanent improvement; that is
+  engineering work, it can never be *due* again, and registering it corrupts
+  every staleness reading.
+
+**The operator directs creation.** A chore run or an R&D pass may advise that a
+new chore is warranted, citing the recurrence evidence. The registry never
+self-populates, and an agent never registers a chore on its own reading.
+
+---
+
+## The Five Classes
+
+`class` answers why the chore exists, what makes it stale, and what staleness
+costs. Chores in one class are handled uniformly. The model's `ChoreClass` is
+the authority for the values; this table is checked against it.
+
+| Class | The finding is | Staleness signal | What staleness costs | The operator is there to |
+|-------|----------------|------------------|----------------------|--------------------------|
+| `conformance` | code deviates from a standard gzkit declares | content delta | gradual decay; high where no commit-path gate exists | nothing at write time; canon repair is `operator-only-repair` |
+| `coherence` | two authored surfaces disagree and neither is the declared authority | content delta | an agent meets the contradiction mid-work and rules on it silently | supply the ruling, which only the operator holds |
+| `curation` | a corpus has accumulated past usefulness | accumulated work | bloat, per-turn context weight, signal decay | judge what is still useful; the likeliest rubber-stamp site |
+| `mining` | history holds a recurring pattern worth acting on | elapsed time | the feedback loop is lost and the same failure keeps recurring | decide whether a pattern is worth a work order |
+| `currency` | the outside world moved | elapsed time | **assertions become false**, not merely stale | nothing at write time; canon repair is `operator-only-repair` |
+
+The class predicts a chore's staleness signal and rung; it does not set them.
+Each chore declares both.
+
+**Staleness announces; it does not gate.** Operator ruling (2026-09-12,
+verbatim): *"indicators, chores shouldn't have a bunch of gates like the
+adr/obpi system."* `currency` is the one exception the design allows, because a
+stale `currency` chore asserts something false.
+
+---
+
+## The Four Rungs
+
+`rung` answers where the chore stops, and it is the chore's **writing
+license**. It is independent of class. The ladder is ordered, lowest first;
+`audit_chore_rung_conformance` enforces that order, and this table is checked
+against it.
+
+| Rung | Writes | Ends with |
+|------|--------|-----------|
+| `observe` | nothing | a finding, and a recommendation or a declared reason there is none |
+| `propose` | a plan artifact, never the subject | a recommendation the operator, or a paired repair chore, applies |
+| `repair` | the subject; safe changes by default | the subject clean, and a result that says whether it already was |
+| `operator-only-repair` | the subject, never in an automatic run | an operator-initiated repair; any repair that touches canon lives here |
+
+**Pick the rung by asking whether one side is the declared authority** — not
+whether the chore audits or repairs. When the correct output is derivable, the
+chore can repair: `frontmatter-ledger-coherence` rewrites frontmatter because
+the ledger is Layer-2 truth. When neither side is presumptively right,
+resolving it is a ruling, so the chore proposes and stops:
+`control-surface-rule-conflicts`. Set the rung by the repair's consequences,
+never by the finding's severity, and never by how capable the agent is.
+
+**Stopping at data is a defect.** A chore that stops below `repair` still hands
+the operator something to act on. One that deliberately never repairs declares
+`remediation.category: no_fix_planned` with its reason — "no repair" is a
+declared value, never an absence. A detection chore that stops at a plan
+artifact for a paired repair chore is a legitimate shape (operator, verbatim:
+*"that split is fine, it makes room for pause and operator consultation"*).
+
+`idempotent` is a separate license — **scheduling**: whether the chore may run
+on a cadence. A chore can be safe to schedule and unsafe to write.
+
+---
+
 ## Class Declaration (registry fields, GHI #999)
 
-A chore's nature is declared as metadata on its registry entry, never left to
-its name or its prose. The model is `ChoreDeclaration` in
+**Every registered chore carries a class declaration.** A chore's nature is
+declared as metadata on its registry entry, never left to its name or its prose.
+The model is `ChoreDeclaration` in
 `src/gzkit/commands/chores_declaration.py`; the design, its sources and its
 rationale are in `docs/governance/chore-class-system.md`.
 

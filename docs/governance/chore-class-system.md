@@ -1297,7 +1297,14 @@ generalizes, already returns 3 on stale evidence.
    criteria and so cannot see an agent-performed remediation.
 4. **`src/gzkit/chores/README.md`** — today a packaging contract that never says what a
    chore *is*. It gains the class definitions, the ladder, the admission criterion, and
-   the declaration requirement.
+   the declaration requirement. **As landed:** § What a Chore Is (with § Admission
+   criterion), § The Five Classes (finding, staleness signal and cost, and the
+   operator's role per class), § The Four Rungs (the ladder, the declared-authority
+   discriminator, and stopping at data as a defect), and a declaration requirement
+   leading § Class Declaration. The README states the classes and rungs in tables,
+   and `tests/governance/test_chore_readme_class_contract.py` holds them to
+   `ChoreClass` and to the order `audit_chore_rung_conformance` ranks, so the
+   contract cannot drift from the code the way GHI #1002's copied criteria did.
 5. **Per-chore declarations** — by this point data entry against a validator, not 40
    judgment calls. This step applies § Operator directives: it fixes the
    self-contradictory chores, remedies those that stop at data (both lists, and their
