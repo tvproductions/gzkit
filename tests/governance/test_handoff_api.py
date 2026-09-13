@@ -7,6 +7,7 @@ run of the implementation. Fixtures are deterministic and hermetic: a
 
 from __future__ import annotations
 
+import json
 import tempfile
 import unittest
 from datetime import UTC, datetime, timedelta
@@ -33,7 +34,7 @@ from gzkit.handoff_api import (
     scaffold_handoff,
 )
 from gzkit.handoff_api import _mark_settled as mark_settled
-from gzkit.handoff_rulings import read_rulings
+from gzkit.handoff_rulings import read_rulings, rulings_store_path
 from gzkit.handoff_validation import (
     PROSPECTIVE_SECTIONS,
     REQUIRED_SECTIONS,
@@ -84,6 +85,18 @@ def _write_frontmatter_handoff(
     path = directory / name
     path.write_text(body, encoding="utf-8", newline="\n")
     return path
+
+
+def _booked_by(base: Path) -> set[str]:
+    """Return the handoff filenames that booked at least one ruling in the store."""
+    store = rulings_store_path(base)
+    if not store.exists():
+        return set()
+    return {
+        json.loads(line)["source"]
+        for line in store.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    }
 
 
 class TestCreateHandoff(unittest.TestCase):
@@ -980,7 +993,10 @@ class TestSettledRulingsCarryForward(unittest.TestCase):
             )
 
             content = adr_less.read_text(encoding="utf-8")
-            self.assertEqual(read_rulings(base), [])
+            # The store holds the ADR-scoped handoff's own ruling, booked by that
+            # handoff (GHI #1000); the ADR-less one inherits nothing from it.
+            self.assertNotIn(adr_less.name, _booked_by(base))
+            self.assertNotIn("booked and carried forward", content)
             self.assertNotIn(
                 "continues_from",
                 content,
@@ -1098,19 +1114,24 @@ class TestAdrlessChainCarriesRulings(unittest.TestCase):
         # for one.
         with tempfile.TemporaryDirectory() as tmp:
             base = Path(tmp)
-            self._create(
+            unrelated = self._create(
                 base,
                 "unrelated",
                 "- [operator-ruled] A ruling from unrelated work.",
                 timestamp="2026-07-25T01:00:00Z",
             )
-            self._create(
+            second = self._create(
                 base,
                 "second",
                 "- [agent-chose] Did something else.",
                 timestamp="2026-07-25T06:00:00Z",
             )
-            self.assertEqual([], read_rulings(base))
+            # Since GHI #1000 a handoff books its OWN operator rulings, so the store
+            # is no longer empty and cannot stand in for "inherited nothing". The
+            # guarantee is measured on the unlinked handoff itself: it carries no
+            # inherited pointer, and nothing is booked under its name.
+            self.assertEqual(_booked_by(base), {unrelated.name})
+            self.assertNotIn("booked and carried forward", second.read_text(encoding="utf-8"))
 
 
 class TestChainLinkIsCorrectByConstruction(unittest.TestCase):

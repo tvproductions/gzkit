@@ -323,6 +323,51 @@ class HandoffCarriesPointerNotCorpusTests(unittest.TestCase):
         self.assertEqual(settled_rulings(legacy), ["One.", "Two."])
 
 
+class OwnRulingsBookedAtAuthoringTests(unittest.TestCase):
+    """A handoff's own operator rulings are searchable from the moment it is written.
+
+    Before GHI #1000 they reached the store only when a SUCCESSOR linked to the
+    document, so the newest rulings — the likeliest to be re-argued — were the
+    ones ``gz handoff rulings --search`` could not return, and an unlinked or
+    never-succeeded handoff stranded them for good (measured: 20 of 20 absent).
+    Operator ruling 2026-09-13: *"Book at authoring (Recommended)"*.
+
+    @covers GHI #1000
+    """
+
+    def test_chain_root_books_its_own_operator_rulings(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            base = _project(Path(tmp))
+            root = create_handoff(
+                branch="main",
+                agent="claude-code",
+                slug="root",
+                sections=_sections(),
+                base_path=base,
+            )
+            ruling = "Ship the transport fix (verbatim: 'do the 838 transport fix')."
+            self.assertIn(ruling, read_rulings(base))
+            line = json.loads(rulings_store_path(base).read_text(encoding="utf-8").strip())
+            self.assertEqual(line["source"], root.name, "provenance names the booking handoff")
+
+    def test_agent_choices_and_unattributed_entries_are_not_booked(self) -> None:
+        """Only an operator ruling is settled; an agent's choice stays re-arguable."""
+        with tempfile.TemporaryDirectory() as tmp:
+            base = _project(Path(tmp))
+            decisions = (
+                "- [agent-chose] Used a temp dir for the fixture.\n"
+                "- An unmarked entry with no attribution."
+            )
+            create_handoff(
+                branch="main",
+                agent="claude-code",
+                slug="agent-only",
+                sections=_sections(**{"Decisions Made": decisions}),
+                base_path=base,
+            )
+            self.assertEqual(read_rulings(base), [])
+
+
 class RefusedCreateBooksNothingTests(unittest.TestCase):
     """A create the gate refuses must leave the store exactly as it found it (GHI #859).
 
@@ -341,13 +386,21 @@ class RefusedCreateBooksNothingTests(unittest.TestCase):
     """
 
     def _refuse(self, base: Path, predecessor: str) -> None:
-        """Attempt a create the placeholder rule must reject."""
+        """Attempt a create the placeholder rule must reject.
+
+        The refused document carries an operator ruling of its OWN, distinct from
+        the chain root's, so "books nothing" cannot pass merely because the ruling
+        was already in the store (GHI #1000 books a handoff's own rulings).
+        """
+        decisions = "- [operator-ruled] A ruling only the refused document states."
         with self.assertRaises(HandoffValidationError):
             create_handoff(
                 branch="main",
                 agent="claude-code",
                 slug="refused",
-                sections=_sections(**{"Important Context": "TODO write this up."}),
+                sections=_sections(
+                    **{"Important Context": "TODO write this up.", "Decisions Made": decisions}
+                ),
                 continues_from=predecessor,
                 base_path=base,
             )
@@ -362,16 +415,14 @@ class RefusedCreateBooksNothingTests(unittest.TestCase):
                 sections=_sections(),
                 base_path=base,
             )
-            self.assertEqual(
-                read_rulings(base),
-                [],
-                "fixture precondition: the chain root inherits nothing, so nothing "
-                "is booked before the refusal",
-            )
+            # Fixture precondition amended for GHI #1000 (operator ruling 2026-09-13,
+            # "Book at authoring"): the chain root now books its own ruling, so the
+            # store is snapshotted rather than asserted empty.
+            before = read_rulings(base)
             self._refuse(base, root.name)
             self.assertEqual(
                 read_rulings(base),
-                [],
+                before,
                 "a refused create writes no document, so it must book no ruling",
             )
 

@@ -167,7 +167,10 @@ The attribution drives a self-populating channel. `create_handoff` composes the
 optional `## Settled Rulings` section by construction from the newest predecessor:
 its carried entries plus its `[operator-ruled]` decisions, de-duplicated. A ruling
 booked once keeps arriving, so it is never re-filed as an open loop and
-re-adjudicated. **In the normal case you do not touch this section at all.**
+re-adjudicated. The document's own `[operator-ruled]` decisions are booked into
+`.gzkit/handoffs/rulings.jsonl` when it is written (GHI #1000), so they are
+searchable with `gz handoff rulings --search` before any successor exists.
+**In the normal case you do not touch this section at all.**
 
 ```bash
 uv run gz handoff create --adr ADR-0.0.65 --slug tier-close --agent g0 \

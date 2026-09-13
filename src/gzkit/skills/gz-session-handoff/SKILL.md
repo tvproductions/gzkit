@@ -5,14 +5,14 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "7.2.0"
+  skill-version: "7.3.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
   govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-12
+last_reviewed: 2026-09-13
 model: sonnet
 ---
 
@@ -208,7 +208,10 @@ The CREATE workflow scaffolds a new handoff document when an agent is pausing wo
    carries the predecessor's settled entries forward and promotes its
    `[operator-ruled]` decisions into it, de-duplicated (GHI #696 defect 3). A
    ruling booked once keeps arriving, so it is never re-filed as an open loop and
-   re-adjudicated. It is deliberately NOT a required section — the
+   re-adjudicated. A handoff's OWN `[operator-ruled]` decisions are booked into
+   the store the moment it is written (GHI #1000, operator ruling 2026-09-13), so
+   `gz handoff rulings --search` returns them before any successor exists; only
+   INHERITANCE still waits for a `continues_from` link. It is deliberately NOT a required section — the
    `handoff-documents` gate validates the whole post-cutover corpus, and a
    required section would fail all of it.
 
@@ -226,7 +229,7 @@ The CREATE workflow scaffolds a new handoff document when an agent is pausing wo
    booked operator ruling silently.
 
    **Never hand-edit `rulings.jsonl`.** It is written by `create_handoff`
-   composing from the predecessor. Editing it directly is the same class of defect
+   composing from the predecessor and booking the document's own rulings. Editing it directly is the same class of defect
    as editing `.gzkit/ledger.jsonl` by hand.
 
    **A ruling that arrives AFTER the handoff is committed must be seated in the

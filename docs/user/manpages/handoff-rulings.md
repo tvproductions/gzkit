@@ -9,8 +9,10 @@ Read the append-only settled-ruling corpus (GHI #838).
 `gz handoff rulings` is a read-only projection over
 `.gzkit/handoffs/rulings.jsonl`, the append-only store that holds every operator
 ruling booked across sessions. It never writes: rulings are booked by
-`gz handoff create`, which composes them from the predecessor's carried corpus
-and the `[operator-ruled]` decisions that predecessor booked.
+`gz handoff create`, which books the new document's own `[operator-ruled]`
+decisions the moment it is written (GHI #1000) together with what it inherits:
+the predecessor's carried corpus and the `[operator-ruled]` decisions that
+predecessor booked.
 
 **Why the corpus is not in the handoff any more.** Rulings used to be
 transported by *copying prose*: each session read them out of the predecessor's

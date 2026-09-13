@@ -156,7 +156,8 @@ def register_handoff_parsers(commands: argparse._SubParsersAction) -> None:
             "corpus. Rulings moved out of the handoff documents when they reached "
             "91.4% of them (GHI #838); a handoff now carries a count and a pointer, "
             "and this is the verb that reads what it points at. Read-only — rulings "
-            "are booked by `gz handoff create` composing them from the predecessor."
+            "are booked by `gz handoff create`: its own operator rulings when it is "
+            "written, and those it inherits from the predecessor."
         ),
         epilog=build_epilog(
             [

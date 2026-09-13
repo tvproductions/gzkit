@@ -952,8 +952,15 @@ def create_handoff(
     # Store BEFORE document, unchanged: a document may never promise a corpus the
     # store did not receive. Only the refusal above — which writes neither — now
     # books neither.
-    if composed_settled:
-        record_rulings(composed_settled, base_path=base_path, source=filename)
+    #
+    # The document's OWN operator rulings are booked here too (GHI #1000, operator
+    # ruling 2026-09-13 "Book at authoring"). Waiting for a successor to promote
+    # them left the newest rulings unsearchable, and stranded them whenever no
+    # linked successor was ever written. `composed_settled` stays the inherited
+    # set, so an unlinked handoff still inherits nothing (GHI #709).
+    own_rulings = [decision.text for decision in parse_decisions(document) if decision.is_settled]
+    if composed_settled or own_rulings:
+        record_rulings([*composed_settled, *own_rulings], base_path=base_path, source=filename)
 
     handoff_dir = _handoffs_dir(base_path)
     handoff_dir.mkdir(parents=True, exist_ok=True)

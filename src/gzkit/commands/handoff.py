@@ -254,7 +254,8 @@ def handoff_rulings_cmd(
 
     The corpus left the handoff documents when it reached 91.4% of them; this is
     the verb that replaced opening one and scrolling. Read-only: rulings are
-    booked by ``gz handoff create`` composing them from the predecessor, never
+    booked by ``gz handoff create`` (the document's own rulings plus those it
+    inherits from the predecessor, GHI #1000), never
     by a hand edit here.
     """
     root = base_path if base_path is not None else get_project_root()
