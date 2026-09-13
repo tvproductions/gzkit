@@ -47,6 +47,18 @@ class ManpageAlignmentBehavior(unittest.TestCase):
         self.assertIn("gz-validate.md", errors[0].message)
         self.assertIn("manpages/validate.md", errors[0].message)  # recovery names the fix
 
+    def test_chore_doc_shares_the_verb_resolution_scope(self) -> None:
+        """One rule scope binds both checks; widening one widens both (GHI #1006)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            chore = root / ".gzkit" / "chores" / "demo" / "CHORE.md"
+            chore.parent.mkdir(parents=True)
+            chore.write_text("See `docs/user/manpages/gz-validate.md`.\n", encoding="utf-8")
+            errors = audit_manpage_alignment(root)
+
+        self.assertEqual([e.type for e in errors], ["manpage_alignment"])
+        self.assertIn("CHORE.md", errors[0].artifact)
+
     def test_correct_convention_reference_is_not_flagged(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

@@ -115,6 +115,36 @@ class TestDeclaredDocsScopeIsRead(_Tree):
         self.assertEqual(len(audit_cli_alignment(self.root)), 1)
 
 
+class TestAgentInstructionSurfacesAreInScope(_Tree):
+    """Surfaces an agent executes from are read, not only operator docs (GHI #1006).
+
+    `gz-chore-runner` Step 5 tells an agent to follow a chore's CHORE.md, and
+    rules and the root contract are loaded into every session. None of them
+    was in the scan, so `complexity-reduction-xenon` prescribed
+    `gz complexity-advise` for months after the verb landed as
+    `gz complexity advise`.
+    """
+
+    def test_a_chore_doc_is_scanned(self) -> None:
+        self.write(".gzkit/chores/demo/CHORE.md", "```bash\nuv run gz nosuchverb --json\n```\n")
+        errors = audit_cli_alignment(self.root)
+        self.assertEqual(len(errors), 1, f"expected one finding, got {errors}")
+        self.assertIn("CHORE.md", errors[0].artifact)
+
+    def test_chore_proofs_are_not_scanned(self) -> None:
+        """Proofs and CHORE-LOG are run records: they quote what was true at the run."""
+        self.write(".gzkit/chores/demo/proofs/CHORE-LOG.md", "Ran `gz nosuchverb`.\n")
+        self.assertEqual(audit_cli_alignment(self.root), [])
+
+    def test_a_rule_file_is_scanned(self) -> None:
+        self.write(".gzkit/rules/demo.md", "Verify with `gz nosuchverb --check`.\n")
+        self.assertEqual(len(audit_cli_alignment(self.root)), 1)
+
+    def test_the_root_agent_contract_is_scanned(self) -> None:
+        self.write("AGENTS.md", "Run `gz nosuchverb` before implementation.\n")
+        self.assertEqual(len(audit_cli_alignment(self.root)), 1)
+
+
 class TestStructuralExemptions(_Tree):
     """Sealed records are exempted, never rewritten.
 

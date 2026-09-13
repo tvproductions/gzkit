@@ -90,6 +90,7 @@ uv run gz validate --documents --surfaces > .gzkit/chores/skill-command-doc-pari
 
 Commands missing `docs/user/manpages/` pages:
 - `gz lint`, `gz format`, `gz test`, `gz typecheck`, `gz check`
+<!-- gz-validate-skip: command-shape -->
 - `gz validate`, `gz tidy`, `gz superbook`, `gz interview`
 - `gz chores show`, `gz chores advise`
 - `gz skill new`, `gz skill list`

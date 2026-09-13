@@ -129,6 +129,10 @@ def _cli_alignment_sources(project_root: Path) -> list[Path]:
     :func:`_manpage_alignment_sources`: ``gz patch release`` renders one manifest
     row per discovered GHI from that issue's title, so an issue *about* a dead
     verb carries the string as quoted evidence rather than as a pointer.
+
+    The surfaces an agent executes from are read too: chore docs (``gz-chore-runner``
+    Step 5 follows a CHORE.md), rules, and the root ``AGENTS.md`` (GHI #1006).
+    A chore's ``proofs/`` are run records and stay out, like ``docs/releases/``.
     """
     sources: list[Path] = []
     docs_root = project_root / "docs"
@@ -143,6 +147,19 @@ def _cli_alignment_sources(project_root: Path) -> list[Path]:
     skills_root = project_root / ".gzkit" / "skills"
     if skills_root.is_dir():
         sources.extend(sorted(skills_root.rglob("SKILL.md")))
+    chores_root = project_root / ".gzkit" / "chores"
+    if chores_root.is_dir():
+        sources.extend(
+            path
+            for path in sorted(chores_root.rglob("*.md"))
+            if "proofs" not in path.relative_to(chores_root).parts
+        )
+    rules_root = project_root / ".gzkit" / "rules"
+    if rules_root.is_dir():
+        sources.extend(sorted(rules_root.rglob("*.md")))
+    agent_contract = project_root / "AGENTS.md"
+    if agent_contract.is_file():
+        sources.append(agent_contract)
     return sources
 
 
@@ -249,33 +266,14 @@ def audit_cli_alignment(project_root: Path) -> list[ValidationError]:
 def _manpage_alignment_sources(project_root: Path) -> list[Path]:
     """Operator-doc surfaces that may carry ``manpages/<verb>.md`` references.
 
-    Matches ``.gzkit/rules/governance-core.md`` § Operator-doc verb resolution
-    scope: every ``docs/**/*.md`` (user docs AND ADR/OBPI briefs), every
-    ``features/**/*.feature``, and every ``.gzkit/skills/**/SKILL.md``. Briefs
-    are included here (unlike :func:`_cli_alignment_sources`, which predates the
-    manpage-reference check) because that is where the gz-<verb>.md convention
-    drift accumulated; terminal briefs are filtered by the caller.
-
-    ``docs/releases/`` is excluded: ``gz patch release`` renders one manifest row
-    per discovered GHI from that issue's title, so a GHI *about* the gz- prefix
-    drift carries the forbidden string as quoted evidence rather than as a
-    pointer. Rewriting it would falsify what the issue was called — the sealed-
-    record doctrine that exempts terminal briefs, applied to generated manifests.
+    ``.gzkit/rules/governance-core.md`` § Operator-doc verb resolution declares
+    one scope for both bindings, so this reads the enumeration
+    :func:`_cli_alignment_sources` owns — ADR/OBPI briefs included, where the
+    gz-<verb>.md convention drift accumulated; terminal briefs are filtered by
+    the caller. It used to be a copy of that enumeration, which is how the two
+    would drift the moment one widened (GHI #1006).
     """
-    sources: list[Path] = []
-    docs_root = project_root / "docs"
-    if docs_root.is_dir():
-        releases_root = docs_root / "releases"
-        sources.extend(
-            path for path in sorted(docs_root.rglob("*.md")) if releases_root not in path.parents
-        )
-    features_root = project_root / "features"
-    if features_root.is_dir():
-        sources.extend(sorted(features_root.rglob("*.feature")))
-    skills_root = project_root / ".gzkit" / "skills"
-    if skills_root.is_dir():
-        sources.extend(sorted(skills_root.rglob("SKILL.md")))
-    return sources
+    return _cli_alignment_sources(project_root)
 
 
 def audit_manpage_alignment(project_root: Path) -> list[ValidationError]:

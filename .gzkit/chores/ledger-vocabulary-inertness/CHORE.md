@@ -54,6 +54,7 @@ that every *emitted* type has a schema entry; nothing checks the converse.
   absence, it does not justify one.
 - **Ratios are reported and NOT interpreted, and this is binding.** The
   2026-08-15 audit read `obpi_parked`/`obpi_unparked` as an operator
+  <!-- gz-validate-skip: command-shape -->
   "abandonment channel" and named a `gz obpi park` verb **that does not exist**.
   The counts were right; the story was invented. Parking is emitted by
   `src/gzkit/foundation/sunset_migrate.py` when an ADR is demoted to pool, and

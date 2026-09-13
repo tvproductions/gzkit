@@ -7,6 +7,7 @@
 ## Scope Boundary (read first)
 
 This chore is a **near-term implementation stopgap** subordinate to
+<!-- gz-validate-skip: command-shape -->
 `docs/design/adr/pool/ADR-pool.pool-management.md` § 8 "Near-Term Implementation: `pool-triage` Chore". The chore surfaces drift signals for operator triage — it is **read-only** and takes **no automated actions**. Its entire lifetime is bounded by `ADR-pool.pool-management`'s promotion cycle. When the parent ADR promotes and ships the full `gz pool rank` / `gz pool triage` / `gz pool override` CLI surface, this chore is either retired or absorbed per the parent ADR's promotion-outcome clause.
 
 The chore is a **gzkit-internal maintenance item** (targets gzkit's own pool, runs in gzkit's own chore suite). It is not a framework deliverable or a template for downstream projects. Downstream projects that adopt gzkit may author their own triage chores using gzkit's chore framework, but this specific chore is not packaged for inheritance.
@@ -76,6 +77,7 @@ Output a structured drift report to stdout and to `proofs/pool-triage-report-YYY
 - **Read-only.** The chore never writes to `docs/design/adr/pool/`, `.gzkit/ledger.jsonl`, or any governance artifact.
 - **No automated archival.** Unarchived-superseded items are flagged, not moved. The operator moves them via `git mv` during triage.
 - **No automated promotion.** Newly-unblocked items are flagged, not promoted. Promotion requires human judgment and the full `gz adr promote` ceremony.
+<!-- gz-validate-skip: command-shape -->
 - **No ranking.** The four heuristics are unranked findings, not prioritized. Priority ranking belongs to the parent ADR's `gz pool rank` surface.
 - **Heuristic coarseness is intentional.** The duplicate-scope detector uses simple token overlap because the precise cluster-identification work is deferred to the parent ADR. The chore's job is surfacing, not semantic analysis.
 
@@ -93,4 +95,5 @@ rg -l '^status: Superseded' docs/design/adr/pool/ADR-pool.*.md
 
 ## Retirement Condition
 
+<!-- gz-validate-skip: command-shape -->
 This chore retires (or gets absorbed) when `ADR-pool.pool-management` promotes and ships `gz pool rank` / `gz pool triage` / `gz pool override`. The decision — retire vs absorb — belongs to the parent ADR's promotion review. See `ADR-pool.pool-management.md` § 8 "Promotion outcome — retire-or-absorb decision" for the governing clause.

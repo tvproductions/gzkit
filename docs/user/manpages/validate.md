@@ -2449,7 +2449,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--unscoped-rules` | opt-in | Flag agent rules with `paths: "**"` or missing `paths:` outside `AGENTS.md` (ADR-0.0.20) |
 | `--version` | opt-in | Validate version consistency across all version-bearing locations (`pyproject.toml`, `__init__.py`, README badge) |
 | `--type-ignores` | opt-in | Fail on `# type: ignore[<code>]` under `src/` (ty does not honor the bracketed-code form — see GHI #197) |
-| `--cli-alignment` | opt-in | Every `gz <verb>` reference in operator docs / features / skills must resolve to a registered parser verb |
+| `--cli-alignment` | opt-in | Every `gz <verb>` reference in operator docs / features / skills / chore docs / rules / root `AGENTS.md` must resolve to a registered parser verb |
 | `--event-handlers` | opt-in | Every ledger event type must be claimed by a graph handler |
 | `--event-schemas` | opt-in | Every event type emitted by a `ledger_events.py` factory or an `events.py` typed model must have a paired `src/gzkit/schemas/ledger.json` entry, and no schema entry may be stale (GHI #581) |
 | `--producer-fields` | opt-in | Every field a ledger producer writes must be declared by BOTH `schemas/ledger.json` and the typed union. Complements the committed-row parity fence, which is green while a producer that has never fired writes undeclared keys — the shape that let `_book_aborted_exit` write `aborted`/`error` undeclared (GHI #877) |

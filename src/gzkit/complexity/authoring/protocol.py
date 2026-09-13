@@ -1,7 +1,7 @@
 r"""JSON-over-stdio protocol server for editor/IDE integration (OBPI-0.0.30-04).
 
 Implements a Content-Length-framed JSON-RPC-like protocol over binary stdio.
-Invoked by ``gz complexity-guide --server``. Three message types:
+Invoked by ``gz complexity guide --server``. Three message types:
 ``initialize``, ``analyze``, ``shutdown``.
 
 Framing follows the Language Server Protocol envelope:
