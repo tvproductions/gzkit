@@ -19,7 +19,7 @@ dependency.
 **Advises, never authorizes.** GHI #574's obligation survives untouched: a
 handoff must never become self-authorizing. Seeding the turn makes the review
 happen; it does not make the work approved. The advisement text says so, and
-points at ``gz handoff decide`` as the only surface that lifts the gate.
+points at ``gz handoff decide`` as the surface that records the ruling.
 
 **Guards the document it injects (GHI #850).**
 ``gz validate --transcribed-adr-counts`` names its subject as "the handoff a

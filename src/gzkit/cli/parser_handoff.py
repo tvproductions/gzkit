@@ -77,13 +77,13 @@ def _add_handoff_decide_arguments(p: argparse.ArgumentParser) -> None:
         "--session-id",
         dest="session_id",
         required=True,
-        help="Harness session the ruling binds to (the gate's block message interpolates it)",
+        help="Harness session the ruling binds to",
     )
     p.add_argument(
         "--decision",
         choices=("proceed", "pause", "hold", "revert"),
         default="proceed",
-        help="Transit decision; only proceed lifts the gate (default: proceed)",
+        help="Transit decision to record; none gates anything (default: proceed)",
     )
     p.add_argument(
         "--set-aside",

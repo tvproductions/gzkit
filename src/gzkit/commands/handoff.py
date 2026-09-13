@@ -477,9 +477,10 @@ def handoff_authorize_cmd(
     rejects the conflation by name — completion-attestation is reserved for
     claims about completed planned work, and spending that register on an
     every-transit gate cheapens the sacred word. ``decision`` borrows the
-    airlock's ``Decision`` grammar (PROCEED / PAUSE / HOLD / REVERT); only
-    PROCEED lifts. The predecessor shape was a bare consent boolean, so an
-    operator who looked and said *not yet* left no record at all.
+    airlock's ``Decision`` grammar (PROCEED / PAUSE / HOLD / REVERT); all four
+    are equally bookable records and none gates anything. The predecessor shape
+    was a bare consent boolean, so an operator who looked and said *not yet*
+    left no record at all.
 
     ``set_aside`` names advised steps the ruling declines — the clearance
     AMENDMENT record (*"ATC keeps a record of all clearances issued and all
@@ -493,8 +494,8 @@ def handoff_authorize_cmd(
 
     ``session_id`` is passed explicitly rather than read from a harness env var:
     `commands/` is fenced to a two-entry env allowlist (NO_COLOR / FORCE_COLOR)
-    precisely so vendor coupling cannot leak into the command layer. The gate's
-    block prose interpolates the id, so the caller never has to discover it.
+    precisely so vendor coupling cannot leak into the command layer. The caller
+    passes the id of the harness session the ruling was given in.
     """
     from gzkit.airlock.model import Decision  # noqa: PLC0415
     from gzkit.commands.common import ensure_initialized  # noqa: PLC0415
@@ -514,9 +515,9 @@ def handoff_authorize_cmd(
         allowed = ", ".join(d.value for d in Decision)
         console.print(
             f"[red]Refusing to book:[/red] unknown decision {decision!r}.\n"
-            f"WHY: the gate compares the token exactly and fails closed on anything "
-            f"it does not recognize, so an unknown token would book a record that "
-            f"reads as a ruling but authorizes nothing (GHI #757).\n"
+            f"WHY: the decision grammar is closed, so an unknown token would book a "
+            f"record that reads as a ruling but names no decision anyone can read "
+            f"back (GHI #757).\n"
             f"NEXT STEP: re-run with one of: {allowed}.",
             style="red",
         )
@@ -525,12 +526,12 @@ def handoff_authorize_cmd(
     resolved_session = session_id.strip()
     if not resolved_session:
         console.print(
-            "[red]Refusing to authorize:[/red] empty --session-id.\n"
-            "WHY: authorization is session-scoped so a prior session's ruling cannot "
-            "silently license this one (GHI #574). An empty id would authorize nothing "
-            "and read as consent.\n"
-            "NEXT STEP: copy the command from the resume gate's block message — it "
-            "interpolates the session id the harness reported.",
+            "[red]Refusing to book:[/red] empty --session-id.\n"
+            "WHY: a ruling is session-scoped so a prior session's ruling cannot be "
+            "read as this one's (GHI #574). An empty id would record a ruling that "
+            "belongs to no session.\n"
+            "NEXT STEP: re-run with the id of the harness session the operator "
+            "ruled in.",
             style="red",
         )
         raise SystemExit(1)
@@ -540,10 +541,10 @@ def handoff_authorize_cmd(
     resolved = handoff_path if handoff_path.is_absolute() else root / handoff
     if not resolved.is_file():
         console.print(
-            f"[red]Refusing to authorize:[/red] no handoff at {handoff}.\n"
-            "WHY: an authorization must name the handoff it rules on, or the audit "
-            "trail records consent to nothing.\n"
-            "NEXT STEP: run `uv run gz handoff list` and authorize a real path.",
+            f"[red]Refusing to book:[/red] no handoff at {handoff}.\n"
+            "WHY: a ruling must name the handoff it rules on, or the audit trail "
+            "records a ruling on nothing.\n"
+            "NEXT STEP: run `uv run gz handoff list` and book against a real path.",
             style="red",
         )
         raise SystemExit(1)
@@ -551,11 +552,12 @@ def handoff_authorize_cmd(
     rel = resolved.relative_to(root).as_posix() if resolved.is_relative_to(root) else handoff
 
     # The coupling `handoff_path` asserts, enforced where the record is created
-    # (GHI #795). Booking is the only place it CAN be enforced: the gate lifts on
-    # `session_id` alone by design, because comparing paths at lift time re-arms
-    # an already-cleared session the moment any new handoff lands (GHI #619,
-    # #755). Refusing here means the wrong consent record is never written to an
-    # append-only ledger, rather than written and later disbelieved.
+    # (GHI #795). Booking time is where the operator's reading is verifiable,
+    # because that is when they read it; the placement predates the resume gate's
+    # retirement, when comparing paths at lift time re-armed an already-cleared
+    # session the moment any new handoff landed (GHI #619, #755). Refusing here
+    # means the wrong record is never written to an append-only ledger, rather
+    # than written and later disbelieved.
     if not booking_targets_the_armed_handoff(root, resolved):
         armed = newest_handoff(root)
         armed_rel = (
@@ -598,5 +600,6 @@ def handoff_authorize_cmd(
     if as_json:
         print(json.dumps(payload))  # noqa: T201
         return
-    lifted = " (gate lifted)" if resolved_decision == Decision.PROCEED else " (gate stays armed)"
-    console.print(f"{resolved_decision} — {rel} (session {resolved_session}){lifted}")
+    # Every decision is an equally bookable record and none gates anything (resume
+    # gate retired 2026-08-15), so the line names the decision and nothing more.
+    console.print(f"{resolved_decision} — {rel} (session {resolved_session}) recorded")

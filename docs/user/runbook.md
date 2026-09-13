@@ -796,9 +796,9 @@ uv run gz handoff decide --handoff .gzkit/handoffs/<file>.md \
   --session-id <id> --decision proceed --operator-text "<your exact words>"
 ```
 
-Only `proceed` lifts the gate. `pause`, `hold`, and `revert` are equally
-bookable rulings that leave it armed — so "I looked, not yet" is a recordable
-answer rather than silence. Add `--set-aside "<step>"` for any advised step you
+`proceed`, `pause`, `hold`, and `revert` are equally bookable rulings, and none
+gates anything — the record is Layer-2 provenance of what you decided, so "I
+looked, not yet" is a recordable answer rather than silence. Add `--set-aside "<step>"` for any advised step you
 decline; that is the clearance-amendment record. (`gz handoff authorize` is a
 deprecated alias for `decide`.)
 

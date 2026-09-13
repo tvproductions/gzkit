@@ -448,6 +448,15 @@ class RetiredGateProseTests(unittest.TestCase):
     GHI #758 defect in terms of what the gate did at the time, and
     `handoff_resume_gate.py` is the retirement record itself. A dated account of
     what was true on its date is not drift.
+
+    It reproduced a second time (GHI #1004, 2026-09-13), because the phrase set
+    enumerated the four spellings #805 happened to find and the scan read only
+    `src/`. `gz handoff decide` went on printing "(gate lifted)", its help said
+    "only proceed lifts the gate", and two manpages and the operator runbook said
+    the same — none of them a spelling on the list, and the docs never scanned.
+    The set now carries every spelling that surfaced, and the scan covers the
+    operator docs that describe the verb. The limit stays stated: a phrase list
+    catches the spellings it names, never a new one.
     """
 
     #: Phrases that only parse as a live claim of enforcement.
@@ -456,24 +465,36 @@ class RetiredGateProseTests(unittest.TestCase):
         "resume gate refuses",
         "leave the gate armed",
         "refuses every mutating tool call",
+        "lifts the gate",
+        "gate lifted",
+        "gate stays armed",
+        "leave it armed",
+        "cannot re-arm the gate",
+        "gate's block message",
+        "stays permitted while unauthorized",
     )
 
     #: The module whose documented SUBJECT is the retirement.
     NARRATES_THE_RETIREMENT = "handoff_resume_gate.py"
 
+    def _offenders(self, paths: list[Path], repo: Path) -> list[str]:
+        offenders: list[str] = []
+        for path in paths:
+            text = path.read_text(encoding="utf-8").splitlines()
+            for lineno, line in enumerate(text, start=1):
+                for claim in self.RETIRED_CLAIMS:
+                    if claim in line.lower():
+                        rel = path.relative_to(repo).as_posix()
+                        offenders.append(f"{rel}:{lineno}: {claim!r} in {line.strip()!r}")
+        return offenders
+
     def test_no_production_module_asserts_the_retired_gate(self) -> None:
-        src = Path(__file__).resolve().parents[2] / "src" / "gzkit"
+        repo = Path(__file__).resolve().parents[2]
+        src = repo / "src" / "gzkit"
         self.assertTrue(src.is_dir(), f"source tree not found at {src}")
 
-        offenders: list[str] = []
-        for path in sorted(src.rglob("*.py")):
-            if path.name == self.NARRATES_THE_RETIREMENT:
-                continue
-            for lineno, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
-                for claim in self.RETIRED_CLAIMS:
-                    if claim in line:
-                        rel = path.relative_to(src.parents[1])
-                        offenders.append(f"{rel}:{lineno}: {claim!r} in {line.strip()!r}")
+        paths = [p for p in sorted(src.rglob("*.py")) if p.name != self.NARRATES_THE_RETIREMENT]
+        offenders = self._offenders(paths, repo)
 
         self.assertEqual(
             offenders,
@@ -481,5 +502,25 @@ class RetiredGateProseTests(unittest.TestCase):
             "Production prose asserts a resume gate retired 2026-08-15 "
             "(operator: 'the handoff should be an advisor, not a gate-keeping "
             "nanny'). Reword to describe the advisory record, never a refusal:\n"
+            + "\n".join(offenders),
+        )
+
+    def test_no_operator_doc_asserts_the_retired_gate(self) -> None:
+        # The docs are where an operator meets the verb; release notes are
+        # dated records of what shipped then, and live outside docs/user.
+        repo = Path(__file__).resolve().parents[2]
+        docs = repo / "docs" / "user"
+        paths = sorted(docs.rglob("*.md"))
+        # Non-vacuity: a scan that never reads the verb's own manpage passes
+        # over nothing, which is how the docs half went unwitnessed before.
+        self.assertIn(docs / "manpages" / "handoff-decide.md", paths)
+
+        offenders = self._offenders(paths, repo)
+
+        self.assertEqual(
+            offenders,
+            [],
+            "An operator doc describes the resume gate retired 2026-08-15 as live. "
+            "Describe `gz handoff decide` as a Layer-2 record that gates nothing:\n"
             + "\n".join(offenders),
         )

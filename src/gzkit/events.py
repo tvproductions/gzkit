@@ -1200,17 +1200,17 @@ class SessionExitBookmarkSkippedEvent(_EventBase):
 class HandoffResumeAuthorizedEvent(_EventBase):
     """handoff_resume_authorized event — the operator ruled on a resumed handoff.
 
-    The Layer-2 record that discharges the Operator Authorization Gate
-    (`gz-session-handoff` SKILL.md § RESUME): a resuming agent presents the
-    handoff's advised steps and may not mutate anything until the operator rules
-    and that ruling is booked here (GHI #574).
+    HISTORICAL — superseded by :class:`HandoffResumeDecidedEvent` (GHI #757); it
+    stays parseable because the ledger is append-only. It was the Layer-2 record
+    that discharged the Operator Authorization Gate (`gz-session-handoff`
+    SKILL.md § RESUME), retired 2026-08-15: a resuming agent presented the
+    handoff's advised steps and could not mutate anything until the operator
+    ruled and that ruling was booked here (GHI #574).
 
     ``operator_text`` is the operator's VERBATIM words, passed through unchanged
-    per AGENTS.md § Attestation — the same relay model as Gate 5, where the
-    mechanism serves the attestation and never gates it. Session-scoped:
-    authorization is per ``session_id``, so it cannot leak across sessions and a
-    mechanically-written completion handoff (GHI #619) cannot re-arm the gate
-    mid-session.
+    per AGENTS.md § Attestation. Session-scoped: authorization was per
+    ``session_id``, so it could not leak across sessions and a mechanically
+    written completion handoff (GHI #619) could not re-arm the gate mid-session.
     """
 
     event: Literal["handoff_resume_authorized"]
@@ -1236,7 +1236,7 @@ class HandoffResumeDecidedEvent(_EventBase):
     "the same relay model as Gate 5" — that conflation, written down.
 
     ``decision`` borrows the airlock's ``Decision`` grammar while the records
-    stay the handoff layer's own; only ``proceed`` lifts the gate. ``set_aside``
+    stay the handoff layer's own; no decision gates anything. ``set_aside``
     names advised steps the ruling declines — the clearance-amendment record.
     ``operator_text`` remains VERBATIM by operator ruling (2026-08-05): the word
     is still recorded, only the drawer it is filed in changed.

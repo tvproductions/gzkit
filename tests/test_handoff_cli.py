@@ -31,6 +31,7 @@ from gzkit.commands.handoff import (
     handoff_list_cmd,
     handoff_resume_cmd,
 )
+from gzkit.config import GzkitConfig
 from gzkit.handoff_api import (
     ReferenceState,
     create_handoff,
@@ -562,6 +563,62 @@ class TestHandoffDecideRefusalRendering(_HandoffCliCase):
         # output-contract: an operator who cannot read the armed path off the
         # refusal has no way to comply with it.
         self.assertIn(armed.name, buf.getvalue())
+
+
+class TestHandoffDecideRendering(_HandoffCliCase):
+    """A booked ruling reports a record, never a gate state (GHI #1004).
+
+    The resume gate was retired 2026-08-15 (operator: "the handoff should be an
+    advisor, not a gate-keeping nanny"), yet the success line went on printing
+    "(gate lifted)" for `proceed` and "(gate stays armed)" for the other three.
+    That told an operator one decision licensed work and three withheld it, when
+    no decision gates anything. The four decisions are equally bookable records,
+    so the line may differ between them only in the token it names.
+    """
+
+    DECISIONS = ("proceed", "pause", "hold", "revert")
+
+    def _book(self, decision: str) -> tuple[str, dict[str, Any]]:
+        handoff = self._seed(adr_id="ADR-0.0.65", slug="armed", timestamp="2026-08-12T00:00:00Z")
+        buf = io.StringIO()
+        with (
+            redirect_stdout(buf),
+            mock.patch(
+                "gzkit.commands.common.ensure_initialized",
+                return_value=GzkitConfig(project_name="test-project"),
+            ),
+        ):
+            handoff_authorize_cmd(
+                handoff=str(handoff),
+                operator_text="go ahead",
+                session_id="session-xyz",
+                decision=decision,
+                base_path=self.base,
+            )
+        ledger = self.base / ".gzkit" / "ledger.jsonl"
+        event = json.loads(ledger.read_text(encoding="utf-8").splitlines()[-1])
+        # The console wraps at its width, and the tokens differ in length, so
+        # the wrap point moves between decisions; compare the words, not the wrap.
+        return " ".join(buf.getvalue().split()), event
+
+    def test_no_decision_reports_a_gate_state(self) -> None:
+        lines: dict[str, str] = {}
+        for decision in self.DECISIONS:
+            with self.subTest(decision=decision):
+                self.base = Path(self.enterContext(tempfile.TemporaryDirectory()))
+                line, event = self._book(decision)
+                # The success path ran: the ruling reached the ledger as booked.
+                self.assertEqual(event["decision"], decision)
+                # output-contract: the rendered line is the claim under test.
+                self.assertNotIn("gate", line.lower())
+                lines[decision] = line.replace(decision, "<decision>", 1)
+
+        self.assertEqual(
+            len(set(lines.values())),
+            1,
+            "every decision is an equally bookable record, so the success line may "
+            f"differ only in the decision it names: {lines}",
+        )
 
 
 class TestHandoffCreateSeatsLateRulings(_HandoffCliCase, SilencedConsoleTestCase):
