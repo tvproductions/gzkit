@@ -22,13 +22,89 @@ active campaign. Operator characterization, 2026-09-12:
 > comprehensive or potentially new usually emerges from this newly-designated R&D class
 > of work."*
 
-An R&D run fans out to any or all of five destinations:
+Earlier in the same session, 21:10Z: *"I commonly do this sort of work and the documentation and
+ledger will bear this out. In fact MOST future ADRs come form work exactly like this
+work."*
 
-1. ADR / OBPI · 2. GHI / direct fix · 3. chores · 4. control surface, rules, docs,
-skills, structures, hooks · 5. broad one-shot refactorings and recalibrations, often
-system-wide
+### The vector
 
-Plus a sixth outcome the operator names as common: **take no action.**
+Operator, 2026-09-12 21:29Z (verbatim): *"I suspect these Matt Pocock appropriations
+will become a new vector for how things enter into gzkit moving forward. not to replace
+gzkit workflow direction items and artifacts, but to have better structure to the
+exploratory and discursive sessions that usually predicate how new things, or
+refinements, enter into gzkit. This is an overarching pattern that is now fairly clear
+to me. I see the value of appropriating from Matt Pocock only after having used his
+method earlier this summer."*
+
+**R&D governs the pre-artifact phase.** It is not a fifth artifact type beside ADR,
+OBPI and GHI. It is the governed shape of the exploratory session that precedes them.
+Today that session is productive and ungoverned: whatever structure it has comes from
+whoever is driving it.
+
+### The trigger
+
+Operator, 2026-09-12 21:40Z (verbatim): *"Often I will drop in a large copy and paste
+and say 'let's consider this for gzkit' (I've done this VERY OFTEN), that is almost
+always an occasion for R&D EVEN IF the outcome is 'take no action,' which is also
+common. We can agree to not engage after a design session. I will commonly say 'is
+there something in here that gzkit is missing or could improve on/from?'"*
+
+### The fan-out, and who initiates each outcome
+
+Operator, 2026-09-12 21:29Z (verbatim): *"R&D leads to: ==> 1)adr/opbi || 2)ghi/direct
+fix || 3)chores || 4)control surface/rules/docs/skills/structures/hooks || 5)broad
+one-shot refactorings/recalibations that are often system wide. Any of 1-5 could be
+impacted by an R&D run. So, I wouldn't trivialize the use of an R&D run."*
+
+**Any or all, from one run** — not one of these per run.
+
+| # | Outcome | Route | Who initiates |
+|---|---|---|---|
+| 1 | ADR / OBPI | design ceremony | **operator only** — the IRON LAW |
+| 2 | GHI / direct fix | `/ghi-author`; a GHI is authorized direct repair | agent may file |
+| 3 | chore | registry admission on recurrence evidence | **operator directs**; R&D may advise |
+| 4 | control surface, rule, doc, skill, structure, hook | direct authoring | agent may draft |
+| 5 | broad one-shot refactoring or recalibration, often system-wide | direct engineering work, **not a chore** | per its own route |
+| — | **take no action** | recorded, not silent | — |
+
+Outcome 5 is not a chore. Operator, 2026-09-12: *"not all refactorings are chores, but
+most chores cab lead to refactorings."* A one-time refactoring fails the admission
+criterion in [`chore-class-system.md`](chore-class-system.md): it is not repetitive
+and it leaves enduring value. So **R&D produces refactoring programs; chores produce
+refactoring candidates.** R&D reaches the chore registry only indirectly, by advising a
+new chore on demonstrated recurrence.
+
+### Where R&D sits on the ladder
+
+At the **propose** rung of the chore class system's ladder: observe, analyze, plan, then
+stop and route outward. The campaign's § Workflow fronts already encodes the stop for
+the R&D front: *"research does not automatically authorize a new ADR or
+implementation."* Only the operator converts an R&D proposal into an ADR, and the skill
+must carry that stop mechanically (§ Where gzkit is stronger).
+
+### Worked exemplar: session `5f61ae2b`, 2026-09-12
+
+The run that produced this record is itself a representative R&D run. It opened on an
+externally motivated paste — *Python Codebase Architecture Guidelines*, offered against
+the pythonic chores — and the operator widened it to the rules / tools / audits /
+refactors alignment question.
+
+| Outcome class | What the run produced |
+|---|---|
+| 1 ADR / OBPI | **none** — ruled out twice: the chore class system discharges under a Movement C box, and the R&D skill stands alone |
+| 2 GHI | **advised, not filed** from the R&D itself: one GHI-shaped work order for the chore class system. GHI #936 already covered part of it. GHI #998, filed the same session, came from later unrelated repair and is **not** an outcome of this run |
+| 3 chore | the **chore class system** — a redesign of the chore estate rather than a new chore, plus two retracted chore proposals |
+| 4 control surface / doc | three design records: [`chore-class-system.md`](chore-class-system.md), this record, and [`rules-tools-audits-refactors-alignment.md`](rules-tools-audits-refactors-alignment.md) |
+| 5 one-shot refactoring | **in prospect** — the missing middle scale (package API declaration, catch-all modules) and the 393 `PLC0415` suppressions |
+| take no action | the pasted document's domain-folder and "screaming architecture" sections, ruled against by `hexagonal-architecture.md` #7 |
+
+Two lessons from the exemplar belong in the skill. **First, the capture failure:** the
+run's first handoff recorded the destinations and lost the reasoning, and the operator
+rejected it as one that *"misses the major chore and R&D work."* A chargé d'affaires
+that retains outcomes but not the reasoning behind them has failed at its job. **Second,
+the retraction is an outcome:** the run proposed two chores and then withdrew them on
+canon grounds. With no durable home, a retracted proposal is re-proposed by the next
+session.
 
 That class is ungoverned today. The operator has ruled it *"MUST be governed by an
 overarching new AGENT SKILL"* that *"stands alone and now assumes a great deal of power
@@ -91,6 +167,25 @@ is an unwritable shared model; documents are downstream and secondary.
 | **`triage`** | gather + **two mandatory checks** → recommend and wait → **verify the claim** → grill if needed → apply outcome | an agent brief comment, triage notes, or an `.out-of-scope/` file |
 | **`implement`** / **`implement-spec`** | implement → tdd at pre-agreed seams → code-review → commit / subagent-per-ticket in own worktree, merger subagent, PR | commit / one PR |
 | **`handoff`** | compact conversation → write doc | markdown **in the OS temp dir, not the workspace** |
+
+### What the set does not contain
+
+**There is no `/plan` skill and no `/refactor` skill.** The source says so itself:
+*"There is no dedicated `/refactor` skill for that case yet."* Planning is `to-tickets`
+for a single session and `wayfinder` across many. The session's reading found
+refactoring guidance in three places but did not record which three; the table above
+shows `improve-codebase-architecture` and the `to-tickets` prefactoring step as
+candidates. Re-read the source at `3cca18b` before citing the set. `grill-me` is a
+one-line wrapper; the mechanism is `grilling`. The operator's
+first framing — *"grill me, plans, specs, refacotring"* — names shapes the source
+distributes differently, and the appropriation follows the source's anatomy, not the
+names.
+
+**`domain-modeling` gates ADR authoring on three conditions, all required:** the
+decision is hard to reverse, it would be surprising without context, and it is the
+result of a real trade-off. *"If any of the three is missing, skip the ADR."* Worth
+comparing against gzkit's own ADR admission when the R&D skill decides what to propose
+under outcome 1.
 
 ### `wayfinder` in full — the R&D-shaped one
 
@@ -157,6 +252,15 @@ also matches gzkit's IRON LAW, reached independently.
 
 A single skill that merely *names* its phases buys none of this — *"an inline call leaves
 the later steps in context and clears nothing."*
+
+**What this rule does and does not require — a correction made in session.** Hiding the
+downstream step is a matter of **separate skills**, not **separate context windows**.
+The session first read it as demanding a context break between every phase, then
+corrected itself against § 4: MPAS keeps grill → spec → tickets **inline**, in one
+unbroken context (*"Keep steps 1–3 in one unbroken context window"*). Each step is a
+separately invoked skill, so the agent sees only the step it is on. The hard breaks come
+later — at implementation, and between `wayfinder` tickets. The rule argues against one
+skill that *enumerates* its phases, not against one session that runs several skills.
 
 ### 3. Frontier batching defeats passive assent
 
@@ -269,12 +373,61 @@ all five destinations. His map is a tracker issue; gzkit's may not be.
 template · handoffs written to the OS temp dir (gzkit's are Layer-2 provenance, in-repo) ·
 the soft `Notes` override on "plan, don't do".
 
-**Undecided, for the R&D skill design session:** whether the R&D artifact is a document or
-a first-class registered artifact (operator: *"VERY LIKELY first class … but it can fan
-out"*, and *"premature at this stage"*) · whether the discipline is one orchestrator or an
-orchestrator plus a namespace · how "sensing" is reconciled with the invocation-class
-invariant, since sensing implies model-invocation and the invariant reserves that for
-disciplines.
+**Scope of appropriation.** Asked which MPAS shapes to take, the operator answered
+(2026-09-12 21:40Z, verbatim): *"the whole system, but let's not get ahead of the
+subagents findings."* The lists above are proposals against the whole system, and
+nothing on them is ratified.
+
+**Carry into the R&D shape from gzkit's own practice:** a required `## What this record
+does not license` section. `docs/governance/capability-control-review-2026-09-12.md`
+invented it independently. It is the declared-non-authority convention that every
+surveyed fixer publishes (see [`chore-class-system.md`](chore-class-system.md) §
+Declared non-authority), and an R&D run, which fans out to five destinations, needs it
+more than a chore does.
+
+**Proposed, not ratified: `.out-of-scope/`.** MPAS `triage` writes rejected enhancements
+to `.out-of-scope/<concept>.md` and checks that directory before triaging anything new,
+so a rejected idea is not re-argued. Take-no-action is a common R&D outcome with no
+durable home today. The directory's name, location and relation to the settled-rulings
+store (`gz handoff rulings`) are the operator's to rule on.
+
+### Resolved in session — tentatively, awaiting operator confirmation
+
+**Sensing and direct execution.** The operator's instruction (21:40Z, verbatim): *"the
+R&D skill stands alone and now assumes a great deal of power and responsibility - it is
+a chargé d'affaires for retaining and organizing possible outcomes from an R&D designing
+session. I expect outcomes, but need to understand possibilities for outcomes throughout
+and as a result of an R&D session. this skill should be sensing but also direct
+executable."* This read at first as colliding with the invocation-class invariant,
+because sensing implies model invocation and the invariant reserves that for
+disciplines. The session resolved it through the invariant rather than against it:
+**sensing lives in model-invoked disciplines; direct execution lives in one
+user-invoked orchestrator that reaches only disciplines** (§ The mechanical rules worth
+taking wholesale, rule 1). From where the operator sits, that is still one overarching
+skill.
+
+**One overarching skill versus hiding the downstream step.** The session briefly flagged
+the operator's "one overarching AGENT SKILL" as the shape § 2 predicts will produce a
+shallow grill. It withdrew the objection after reading the anatomy: the objection
+applies to one skill that enumerates its phases inline, not to an orchestrator that
+dispatches to separate discipline skills. See the correction in § 2.
+
+### Undecided, for the R&D skill design session
+
+- **Artifact form.** Document or first-class registered artifact. Operator (21:40Z,
+  verbatim): *"it is a document and maybe an artifact, it is premature at this stage. It
+  will VERY LIKELY be first class (or the ledger will miss it, but don't forget out it
+  can fan out."*
+- **One orchestrator, or an orchestrator plus a namespace router** over the discipline
+  skills.
+- **Confirmation or overturn** of the two tentative resolutions above.
+- **`.out-of-scope/`** — adopt, adapt or reject.
+- **The campaign amendment.** Draft text for the § Workflow fronts R&D entry, for the
+  operator to ratify or redraft in one pass. The session promised this and did not
+  deliver it.
+- **`docs/governance/rnd-discipline.md`.** Promised in session as the R&D shape's design
+  record and never written. Whether it is a separate record or grows out of this one is
+  part of the design session.
 
 ---
 
