@@ -94,6 +94,12 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     # offender; the literal-argv scope is a scope predicate, disclosed in the
     # module docstring, not an exemption. GHI #977.
     "git-fixture-isolation": EXEMPTS_NONE,
+    # Reads each registered chore's criteria and CHORE.md command spans for a shell
+    # interpreter, an exit-forcing flag or a suppression writer. No waiver table,
+    # allowlist or marker admits an offender. Registration is a scope predicate: an
+    # unregistered chore is never run by `gz chores run`, so it discharges nothing.
+    # GHI #999.
+    "chore-suppression": EXEMPTS_NONE,
     # Requires a substantive `## Why foundation tier?` on every foundation ADR.
     # The sidecar filter selects WHICH files are ADRs; it admits no failing ADR.
     "kind-invariance": EXEMPTS_NONE,

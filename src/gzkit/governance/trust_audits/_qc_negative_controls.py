@@ -1255,6 +1255,33 @@ def _build_git_fixture_isolation() -> Path:
     return root
 
 
+def _build_chore_suppression() -> Path:
+    """Plant a chore whose criterion forces a passing exit (GHI #999 step 6).
+
+    The chore also carries an honest criterion and a workflow report capture
+    ending ``|| true``, so the control fails for the planted reason — the
+    exit-forcing flag — and not for any command or ``||`` in the chore.
+    """
+    root = _mkroot("chore-suppression")
+    chore = root / ".gzkit" / "chores" / "demo"
+    _write(root / ".gzkit.json", "{}")
+    _write(
+        root / ".gzkit" / "chores" / "registry.json",
+        json.dumps({"chores": [{"slug": "demo", "path": ".gzkit/chores/demo"}]}),
+    )
+    _write(
+        chore / "CHORE.md",
+        "# Demo\n\n## Workflow\n\n### 1. Scan — observe\n\n"
+        "```bash\nuvx xenon src/ > proofs/xenon.txt 2>&1 || true\n```\n",
+    )
+    criteria = [
+        {"type": "exitCodeEquals", "command": "uv run ruff check .", "expected": 0},
+        {"type": "exitCodeEquals", "command": "uv run ruff check --exit-zero .", "expected": 0},
+    ]
+    _write(chore / "acceptance.json", json.dumps({"criteria": criteria}))
+    return root
+
+
 def _build_task_envelope_coherence() -> Path:
     root = _mkroot("task-envelope")
     _write_jsonl(
@@ -1585,6 +1612,7 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
     ("req-kind-discipline", _build_req_kind_discipline, _ep._ep_req_kind_discipline),
     ("tautological-test-audit", _build_tautological_test_audit, _ep._ep_tautological_test_audit),
     ("git-fixture-isolation", _build_git_fixture_isolation, _ep._ep_git_fixture_isolation),
+    ("chore-suppression", _build_chore_suppression, _ep._ep_chore_suppression),
     ("task-envelope-coherence", _build_task_envelope_coherence, _ep._ep_task_envelope_coherence),
     ("lock-exchange-coupling", _build_lock_exchange_coupling, _ep._ep_lock_exchange_coupling),
     ("handoff-documents", _build_handoff_documents, _ep._ep_handoff_documents),

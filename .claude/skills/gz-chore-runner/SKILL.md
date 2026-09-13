@@ -5,9 +5,9 @@ description: Run a gzkit chore end-to-end (show, plan, advise, execute, validate
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-21
+last_reviewed: 2026-09-13
 metadata:
-  skill-version: "1.3.0"
+  skill-version: "1.4.0"
 model: sonnet
 ---
 
@@ -118,6 +118,7 @@ These thoughts mean STOP — you are about to ship a chore that broke its own di
 | "advise passed, no need to run audit" | `gz chores audit` is what records the proof. Skipping it leaves the chore unverified in the registry. |
 | "The diff is bigger than the chore says — that's fine, I'm fixing adjacent rot" | Adjacent rot is its own chore. Large diffs in a small chore mean two chores are colliding; split them. |
 | "Validation failed but the change is minor — ship it" | Lane validation is the chore's stop-light. Failed lint/typecheck/tests means the chore violated its acceptance rule. Fix or revert. |
+| "A `# noqa` gets this criterion green" | Suppression turns the exit code green and repairs nothing (`.gzkit/rules/chores.md` § Suppression is not a repair). Fix the cause, or report the finding open with its recommended repair. |
 
 ## Red Flags
 
@@ -128,3 +129,4 @@ These thoughts mean STOP — you are about to ship a chore that broke its own di
 - No proof file written to `.gzkit/chores/{slug}/proofs/`
 - Mixing two chores in one execution (collision)
 - Ad-hoc command variants instead of `uv run gz chores ...`
+- Suppression markers added by the run (`# noqa`, `# type: ignore`, `# nosec`) — no check sees these, so review the diff

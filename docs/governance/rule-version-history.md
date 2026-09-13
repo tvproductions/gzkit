@@ -132,6 +132,12 @@ Lifted at version `0.3.2` (rule now at `0.3.3`).
 > `--explain` / `doctor` / `--chores-layout` surfaces. Prior unversioned
 > content treated as `0.1.0`.
 
+### Lifted 2026-09-13 at version `0.3.3` (rule now at `0.4.0`)
+
+> **Rule version:** `0.3.3` — diet pass under GHI #921 (operator ruling 2026-08-30, *"do 3, 4, and 5"*): the superseded `0.3.2`–`0.3.1` version chain is lifted to [Rule Version History](../../docs/governance/rule-version-history.md#choresmd), restoring the one-sentence shape `skill-surface-sync.md` § Non-negotiable rules #2 requires. Binding rules unchanged; scoped `src/gzkit/chores/**`, this rule loads on every chore-module edit, so narrative is the most expensive thing it can carry.
+
+`0.4.0` adds § Suppression is not a repair, GHI #999 step 6 (`docs/governance/chore-class-system.md` § Implementation order). It lands with its witness, per operator ruling 2026-09-13 (verbatim *"Static chore check (Recommended)"*): `audit_chore_suppression` reads each registered chore's criteria and CHORE.md command spans, with `tests/governance/test_chore_suppression.py` running it over the live tree in `gz check` and `NC:chore-suppression` proving it catches. The loader's `SHELL_OPERATORS_RE` already refused `&&`, `||`, `|`, `<` and `>` in a criterion, so the audit holds the routes that refusal leaves open: a shell interpreter, whose script can end `; exit 0`, and an exit-forcing flag. A marker hand-written during a run stays advisory, stated in the clause itself.
+
 ## `adr-audit.md`
 
 Lifted at version `0.2.0` (rule now at `0.2.1`).

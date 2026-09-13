@@ -64,7 +64,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `model-selection.md` | `0.6.0` |
 | `security-sensitivity.md` | `0.6.0` |
 | `skill-surface-sync.md` | `0.12.0` |
-| `chores.md` | `0.3.3` |
+| `chores.md` | `0.4.0` |
 | `cli.md` | `0.7.0` |
 | `cross-platform.md` | `0.7.0` |
 | `gate5-runbook-code-covenant.md` | `0.3.1` |
@@ -198,6 +198,8 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | 54 | Plan-first chore discipline | **Judgment** | Procedural; enforced by `gz chores plan/advise` ordering in the skill. No artifact records whether a plan preceded a run — `gz chores run` writes to `proofs/` either way — so "plan-first" has no queryable witness. |
 | 55 | **Lite by default** | **Judgment** | **Re-scored 2026-08-15 (rule `0.3.2`); was Mechanical, and the claim was false.** The row read *"Lane config enforced by `gz chores plan`"*. What is actually mechanical is narrower and different: `_parse_chore` validates `lane` against `ALLOWED_LANES = {"lite", "heavy"}` (`src/gzkit/commands/chores.py:25`, `chores_exec.py:197-203`) — an enum check on a string. The clause's real content is *"`uv run -m unittest -q` (unit tier only); no `behave`, no network, no external services"*, and nothing enforces any of those three. `src/gzkit/commands/chores.py:244` says so in its own words: *"The lanes block carries gate-rigor metadata only (lite=Gates 1,2; heavy=all)."* A validated enum was being reported as an enforced discipline. Reclassify on a check that actually inspects a chore's executed commands for the forbidden tiers. |
 | 56 | CLI-only evidence (no raw SQL attestation) | **Judgment** | Anti-pattern prevention; cultural. A regex for SQL keywords in attestation text would grade shape, not substance (the `shape-graded-not-substance` signature ADR-0.0.73 refuses). |
+| 56a | **A chore never discharges a finding by suppression.** | **Mechanical** | Arms: no criterion runs through a shell interpreter or passes an exit-forcing flag, and no criterion or CHORE.md command writes suppression markers. **Added 2026-09-13 (rule `0.4.0`), GHI #999 step 6**, landed with its witness so the clause never stood unwitnessed (operator ruling 2026-09-13, verbatim *"Static chore check (Recommended)"*). Witness `NC:chore-suppression`, which plants a chore carrying an exit-forcing criterion beside an honest criterion and a workflow report capture ending `\|\| true`, so the control fails for the planted reason. Enforced arm: `tests/governance/test_chore_suppression.py` runs `audit_chore_suppression` over the live registry in the unit suite, with planted cases for each route; a mutation sweep over its six guards killed all six, conclusive. The registry loader's `SHELL_OPERATORS_RE` already refused `&&`, `\|\|`, `\|`, `<` and `>` in a criterion; this row covers the routes that refusal leaves open. Scope limits, declared: an interpreter that is not a shell (`python -c`) can still exit 0 by construction, and a writer quoted with its command inside prose code reads as an instruction. |
+| 56b | A suppression marker hand-written during a chore run | **Judgment** | **Added 2026-09-13 (rule `0.4.0`), GHI #999 step 6; advisory in the rule's own text.** gzkit models no binding from a chore run to the diff it leaves, so attributing a new `# noqa` to a run is a reading of the diff. A repo-wide suppression ratchet was considered and not chosen at the same ruling: it would gate every commit rather than chore runs. Reclassify on a named run that discharged a finding by a hand-written marker and was caught late. |
 
 ### ADR Audit (`.gzkit/rules/adr-audit.md`)
 
@@ -489,9 +491,9 @@ decays in whichever direction the next reader's grep happens to point.
 
 | Score | Rows | % of scored rows |
 |-------|-------|---|
-| **Mechanical** | 69 | 42% |
+| **Mechanical** | 70 | 42% |
 | **Promotable** | 31 | 19% |
-| **Judgment** | 65 | 39% |
+| **Judgment** | 66 | 40% |
 | **Ambiguous** | 0 | 0% |
 
 <!-- The Rows column is machine-checked by `gz validate --advisory-scorecard`;
@@ -508,7 +510,7 @@ decays in whichever direction the next reader's grep happens to point.
      158 as of row 58c (GHI #962, 2026-09-05), and 159 as of row 88 (the CLI
      lane-is-not-route carve-out, 2026-09-06), and 160 as of row 89 (mutation-sweep
      integrity, GHI #963), and 161 as of row 51c (census-query completeness,
-     GHI #972), and 163 as of rows 91-92 (the exit-code-2 relabel, GHI #1001); the entries between 131 and 158 were
+     GHI #972), and 163 as of rows 91-92 (the exit-code-2 relabel, GHI #1001), and 167 as of rows 56a-56b (suppression is not a repair, GHI #999); the entries between 131 and 158 were
      not recorded here as they landed, so this list names the endpoints it can
      evidence rather than reconstructing a history it cannot. -->
 

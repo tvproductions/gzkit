@@ -1348,7 +1348,16 @@ generalizes, already returns 3 on stale evidence.
    declaration states what each chore is, and neither defect is a declaration defect.
 6. **The suppression prohibition in a rule file** — § Suppression, stated as binding
    rule text where chore authors and runners load it, with its witness designed
-   alongside so it does not land as a new Promotable row.
+   alongside so it does not land as a new Promotable row. **As landed (2026-09-13):**
+   `.gzkit/rules/chores.md` § Suppression is not a repair (rule `0.4.0`), with the
+   witness the operator chose (verbatim *"Static chore check (Recommended)"*):
+   `audit_chore_suppression` fails a registered chore whose criterion runs through a
+   shell interpreter or passes an exit-forcing flag, or whose criterion or CHORE.md
+   command writes suppression markers. It covers the routes the loader's
+   `SHELL_OPERATORS_RE` refusal leaves open, since `;` passes that refusal. It passed
+   on the live tree at landing. Scorecard row 56a is Mechanical (`NC:chore-suppression`).
+   Row 56b scores a marker hand-written during a run as Judgment, advisory in the
+   rule's own text, because nothing binds a chore run to its diff.
 
 Cadence precedes content: adding classes to a registry nothing surfaces multiplies
 dormant surface that *reads as coverage*.

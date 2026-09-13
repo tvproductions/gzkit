@@ -152,6 +152,11 @@ are not permitted.
 6. **DO NOT introduce a `CHORE.md` or `acceptance.json` outside the two canonical
    roots.** `gz validate --chores-layout` will fail closed; layout drift is the
    re-emergence pattern ADR-0.0.21 exists to prevent.
+7. **DO NOT discharge a finding by suppression.** No criterion runs through a shell
+   or passes an exit-forcing flag, and no step writes suppression markers.
+   `.gzkit/rules/chores.md` § Suppression is not a repair is the rule;
+   `audit_chore_suppression` holds criteria and CHORE.md commands, and a marker
+   hand-written during a run is the arm it cannot see.
 
 ---
 

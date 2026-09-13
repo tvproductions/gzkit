@@ -567,6 +567,12 @@ def _ep_git_fixture_isolation(root: Path) -> int:
     return int(bool(git_spawns_outside_boundary(root / "tests")))
 
 
+def _ep_chore_suppression(root: Path) -> list[ValidationError]:
+    from gzkit.governance.trust_audits.chores import audit_chore_suppression  # noqa: PLC0415
+
+    return audit_chore_suppression(root)
+
+
 def _ep_task_envelope_coherence(root: Path) -> list[ValidationError]:
     from gzkit.commands.validate_task_envelope import (  # noqa: PLC0415
         _validate_task_envelope_coherence,

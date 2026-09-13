@@ -6,11 +6,11 @@ paths:
 description: Chores workflow command sequences, two-surface layout, and evidence patterns
 ---
 
-<!-- rule-version: 0.3.3 -->
+<!-- rule-version: 0.4.0 -->
 
 # Chores Workflow (gzkit)
 
-> **Rule version:** `0.3.3` — diet pass under GHI #921 (operator ruling 2026-08-30, *"do 3, 4, and 5"*): the superseded `0.3.2`–`0.3.1` version chain is lifted to [Rule Version History](../../docs/governance/rule-version-history.md#choresmd), restoring the one-sentence shape `skill-surface-sync.md` § Non-negotiable rules #2 requires. Binding rules unchanged; scoped `src/gzkit/chores/**`, this rule loads on every chore-module edit, so narrative is the most expensive thing it can carry.
+> **Rule version:** `0.4.0` — adds § Suppression is not a repair (GHI #999 step 6), landed with its witness `audit_chore_suppression` so it never stood as unwitnessed doctrine; prior `0.3.3` lifted to [Rule Version History](../../docs/governance/rule-version-history.md#choresmd).
 
 > **Purpose:** Enable agents to run repository chores effectively with clear,
 > repeatable command sequences, aligned to gzkit guardrails and the two-surface
@@ -45,6 +45,15 @@ templates do not ship `proofs/` content.
 | **Small diffs**     | Touch only files in scope for the chore         |
 | **CLI evidence**    | Never use raw SQL for attestation               |
 | **Layout discipline** | Stray `CHORE.md` or `acceptance.json` outside the two canonical roots is a defect — `gz validate --chores-layout` enforces it (REQ-0.0.21-08-04). |
+
+## Suppression is not a repair (binding)
+
+**A chore never discharges a finding by suppression.** Writing a suppression marker (`# noqa`, `# type: ignore`, `# ty: ignore`, `# nosec`, `# pragma: no cover`), widening a tool's ignore or exclude list, or hiding a criterion's exit status turns the exit code green and changes nothing about correctness. gzkit's attestation evidence is exit codes, so that is manufactured evidence, never a lesser repair. A finding the chore cannot fix is reported open with its recommended repair, or routed to the operator.
+
+- **Mechanical arm.** The registry loader refuses `&&`, `||`, `|`, `<` and `>` in a criterion (`SHELL_OPERATORS_RE`), and `audit_chore_suppression` fails a registered chore whose criterion runs through a shell interpreter or passes an exit-forcing flag, or whose criterion or CHORE.md command writes markers (`ruff --add-noqa`, `ty --add-ignore`, `pyrefly suppress`). A workflow report capture ending `|| true` gates nothing and stays permitted.
+- **(Advisory — a marker hand-written during a run is not detected.)** Nothing binds a chore run to the diff it leaves, so this arm has no witness; review the run's diff for suppression growth.
+
+Rationale and the measured suppression inventory: `docs/governance/chore-class-system.md` § Suppression — the fifth posture, prohibited.
 
 ## Command Sequences
 

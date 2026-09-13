@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import os
 import re
+import shlex
 from pathlib import Path
 
 from gzkit.validate import ValidationError
@@ -405,6 +406,120 @@ def audit_chore_rung_conformance(project_root: Path) -> list[ValidationError]:
         errors.extend(
             ValidationError(type="chore_rung_conformance", artifact=artifact, message=message)
             for message in _stage_violations(_workflow_steps(chore_md), declaration.rung)
+        )
+    return errors
+
+
+#: A command that writes suppression markers into source: the exit code goes
+#: green and nothing about correctness changes (chore-class-system.md § Suppression).
+_SUPPRESSION_WRITER_RE = re.compile(r"--add-noqa\b|--add-ignore\b|\bpyrefly\s+suppress\b")
+#: A flag that forces a tool's exit to 0 whatever it found.
+_EXIT_FORCING_FLAGS: frozenset[str] = frozenset({"--exit-zero"})
+#: Interpreters that run a criterion's body as a script. ``SHELL_OPERATORS_RE``
+#: refuses ``&&``, ``||``, ``|``, ``<`` and ``>`` at registry load, but not ``;``,
+#: so ``sh -c "check ; exit 0"`` reaches the runner and passes whatever it found.
+_SHELL_INTERPRETERS: frozenset[str] = frozenset(
+    {"sh", "bash", "zsh", "dash", "ksh", "fish", "cmd", "cmd.exe", "pwsh", "powershell"}
+)
+
+
+def _criterion_hides_exit(command: str) -> str | None:
+    """Return why ``command`` cannot report a failure honestly, or None."""
+    try:
+        argv = shlex.split(command)
+    except ValueError:
+        argv = command.split()
+    if argv and Path(argv[0]).name in _SHELL_INTERPRETERS:
+        return "runs through a shell, whose script can end `; exit 0` past the operator refusal"
+    forcing = sorted(_EXIT_FORCING_FLAGS.intersection(argv))
+    if forcing:
+        return f"passes {', '.join(forcing)}, which forces a passing exit whatever it found"
+    if _SUPPRESSION_WRITER_RE.search(command):
+        return "writes suppression markers, which turns the exit green without a repair"
+    return None
+
+
+def _instructed_writers(chore_md: str) -> list[str]:
+    """Return every command span in ``chore_md`` that writes suppression markers.
+
+    A span is an inline code span or a fenced line with at least two tokens, so a
+    flag named alone in prose (`--add-noqa`) is a mention, never an instruction.
+    """
+    fenced = [line for block in _FENCE_RE.findall(chore_md) for line in block.splitlines()]
+    spans = [*_INLINE_CODE_RE.findall(_FENCE_RE.sub("", chore_md)), *fenced]
+    return [
+        " ".join(span.split())
+        for span in spans
+        if len(span.split()) >= 2 and _SUPPRESSION_WRITER_RE.search(span)
+    ]
+
+
+def _suppression_error(artifact: str, what: str) -> ValidationError:
+    return ValidationError(
+        type="chore_suppression",
+        artifact=artifact,
+        message=(
+            f"{what}. A chore never discharges a finding by suppression "
+            "(.gzkit/rules/chores.md § Suppression is not a repair): gzkit's attestation "
+            "evidence is exit codes, so a green exit that changed nothing about "
+            "correctness is manufactured evidence. Fix the finding at its cause, or leave "
+            "it reported open and recommend the repair; a criterion runs one command with "
+            "no shell and no exit-forcing flag."
+        ),
+    )
+
+
+def audit_chore_suppression(project_root: Path) -> list[ValidationError]:
+    """Flag a registered chore that instructs or runs a suppression (GHI #999 step 6).
+
+    Arms, per registered chore on the project surface:
+
+    1. An ``acceptance.json`` criterion runs through a shell interpreter, passes an
+       exit-forcing flag, or writes suppression markers. Criteria are what
+       ``gz chores run`` gates, so this is the channel a finding is discharged by.
+    2. A ``CHORE.md`` command span writes suppression markers (``ruff --add-noqa``,
+       ``ty --add-ignore``, ``pyrefly suppress``).
+
+    Stated limits: a marker an agent hand-writes during a run is not detected,
+    because nothing binds a chore run to a diff; an interpreter that is not a shell
+    (``python -c``) can still exit 0 by construction; and a writer named with its
+    command inside prose code (`ruff check --add-noqa`) reads as an instruction.
+    Workflow report captures (``> proofs/x.txt || true``) are deliberately not
+    flagged: their exit status gates nothing.
+    """
+    from gzkit.config import GzkitConfig  # noqa: PLC0415
+
+    config = GzkitConfig.load(project_root / ".gzkit.json")
+    registry_path = project_root / config.paths.chores / "registry.json"
+    try:
+        entries = json.loads(registry_path.read_text(encoding="utf-8")).get("chores", [])
+    except (OSError, json.JSONDecodeError, AttributeError):
+        return []
+    errors: list[ValidationError] = []
+    for entry in entries:
+        if not isinstance(entry, dict) or not entry.get("path"):
+            continue
+        slug_dir = project_root / str(entry["path"])
+        acceptance = slug_dir / "acceptance.json"
+        try:
+            criteria = json.loads(acceptance.read_text(encoding="utf-8")).get("criteria", [])
+        except (OSError, json.JSONDecodeError, AttributeError):
+            criteria = []
+        for criterion in criteria:
+            command = " ".join(str(criterion.get("command", "")).split())
+            reason = _criterion_hides_exit(command) if command else None
+            if reason:
+                artifact = acceptance.relative_to(project_root).as_posix()
+                errors.append(_suppression_error(artifact, f"criterion `{command}` {reason}"))
+        chore_md_path = slug_dir / "CHORE.md"
+        try:
+            chore_md = chore_md_path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        artifact = chore_md_path.relative_to(project_root).as_posix()
+        errors.extend(
+            _suppression_error(artifact, f"CHORE.md instructs `{span}`, a suppression writer")
+            for span in _instructed_writers(chore_md)
         )
     return errors
 
