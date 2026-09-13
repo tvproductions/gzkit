@@ -350,6 +350,40 @@ class OwnRulingsBookedAtAuthoringTests(unittest.TestCase):
             line = json.loads(rulings_store_path(base).read_text(encoding="utf-8").strip())
             self.assertEqual(line["source"], root.name, "provenance names the booking handoff")
 
+    def test_linked_handoff_books_its_own_new_ruling_not_only_inherited_ones(self) -> None:
+        """A successor's OWN ruling is booked at authoring, beside what it inherits.
+
+        Without this case a fix that booked own rulings only for chain roots would
+        pass: every other linked-chain test reuses the predecessor's ruling text.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            base = _project(Path(tmp))
+            root = create_handoff(
+                branch="main",
+                agent="claude-code",
+                slug="root",
+                sections=_sections(),
+                base_path=base,
+            )
+            own = "Keep 2 and fix the labels (verbatim: 'Keep 2; fix the labels')."
+            successor = create_handoff(
+                branch="main",
+                agent="claude-code",
+                slug="successor",
+                sections=_sections(**{"Decisions Made": f"- [operator-ruled] {own}"}),
+                continues_from=root.name,
+                base_path=base,
+            )
+            rows = [
+                json.loads(line)
+                for line in rulings_store_path(base).read_text(encoding="utf-8").splitlines()
+                if line.strip()
+            ]
+            self.assertIn(
+                {"source": successor.name, "text": own},
+                [{"source": r["source"], "text": r["text"]} for r in rows],
+            )
+
     def test_agent_choices_and_unattributed_entries_are_not_booked(self) -> None:
         """Only an operator ruling is settled; an agent's choice stays re-arguable."""
         with tempfile.TemporaryDirectory() as tmp:
