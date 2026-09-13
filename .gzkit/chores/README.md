@@ -170,6 +170,46 @@ doctor` from the canonical surface.
 
 ---
 
+## Class Declaration (registry fields, GHI #999)
+
+A chore's nature is declared as metadata on its registry entry, never left to
+its name or its prose. The model is `ChoreDeclaration` in
+`src/gzkit/commands/chores_declaration.py`; the design, its sources and its
+rationale are in `docs/governance/chore-class-system.md`.
+
+| Key | Values | Answers |
+|-----|--------|---------|
+| `class` | `conformance` · `coherence` · `curation` · `mining` · `currency` | Why the chore exists, and what its staleness costs |
+| `rung` | `observe` · `propose` · `repair` · `operator-only-repair` | Where it stops — the **writing** license |
+| `idempotent` | `true` · `false` | Safe to re-run on a cadence — the **scheduling** license |
+| `staleness` | `{signal, periodDays, graceDays, paused}`; `signal` is `accumulated-work` · `content-delta` · `elapsed-time`; `periodDays` required for `elapsed-time` | What makes it due |
+| `remediation` | `{category, details}`; `category` is `vendor_fix` · `workaround` · `no_fix_planned` · `none_available`; `details` non-empty | What repair means — "no repair" is a declared value, never an absence |
+| `nonAuthority` | non-empty text | What it refuses to touch, and why |
+| `governingRule` | `.gzkit/rules/<file>.md` (optionally ` § <clause>`) or `none` | The rule it serves |
+
+```json
+{
+    "slug": "example-rule-conflicts",
+    "class": "coherence",
+    "rung": "propose",
+    "idempotent": true,
+    "staleness": {"signal": "content-delta", "graceDays": 7},
+    "remediation": {"category": "no_fix_planned", "details": "A rule conflict is a ruling; the chore recommends and stops."},
+    "nonAuthority": "Never edits either conflicting rule; resolving the conflict is the operator's.",
+    "governingRule": "none"
+}
+```
+
+**Declaring any key commits the chore to all of them.** A partial or malformed
+declaration fails closed with a `chores[<slug>].<key>` blocker.
+
+**An undeclared chore is announced, not yet refused.** `gz chores run` warns
+before running it and `gz chores list` counts the undeclared estate. When the
+per-chore declarations land, absence flips to refusal (operator ruling
+2026-09-13). Authorization does not expire.
+
+---
+
 ## Acceptance Criteria Format
 
 The `acceptance.json` file uses this schema:
@@ -220,5 +260,5 @@ Split compound commands into separate criteria.
 
 - ADR-0.0.21 — `docs/design/adr/foundation/ADR-0.0.21-chores-as-gzkit-surface/`
 - Rule — `.gzkit/rules/chores.md`
-- Manpage — `docs/user/manpages/gz-chores.md`
+- Manpage — `docs/user/manpages/chores.md`
 - Runbook — `docs/user/runbook.md` § Chores Commands

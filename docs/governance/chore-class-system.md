@@ -440,13 +440,14 @@ Devin's five persistence scopes — once, session, project, project-local, globa
 the shipping analogue. The ratified field list carries no expiry. Whether a chore's rung
 lapses is a question for the schema step, alongside the two licenses above.
 
-**Unreconciled against the ratified fields.** § The declaration, and the fence lists the
-ratified per-chore fields. `rung` carries most of the writing license and `staleness`
-carries cadence, but **neither license is an explicit declaration.** The session
-proposed that each chore declare both, then ratified a field list without them. Whether
-`rung` fully discharges reversibility, and whether idempotence needs its own field, is
-open. It is settled in the schema step, with the operator — never by adding a field on
-the strength of this note.
+**Reconciled at the schema step (operator ruling 2026-09-13, GHI #999).** The ratified
+field list carried neither license explicitly. Put to the operator, verbatim selection
+*"rung + idempotent (Recommended)"*: **`rung` carries the writing license** — observe and
+propose cannot write, and operator-only-repair is where irreversible, canon-touching
+repair lives — and **one required boolean, `idempotent`, carries the scheduling license**,
+because nothing else declared it and a chore can be safe to schedule and unsafe to write.
+On expiry, verbatim *"Not now (Recommended)"*: authorization does not lapse; the idea
+stays recorded, not adopted.
 
 ---
 
@@ -1032,12 +1033,23 @@ Required per-chore fields:
 |---|---|
 | `class` | `conformance` · `coherence` · `curation` · `mining` · `currency` |
 | `rung` | `observe` · `propose` · `repair` · `operator-only-repair` |
+| `idempotent` | the scheduling license (added at the schema step, see § Two licenses) |
 | `staleness.signal` | `accumulated-work` · `content-delta` · `elapsed-time` |
-| `staleness.period` / `.grace` | the two declared numbers |
+| `staleness.periodDays` / `.graceDays` | the two declared numbers; the period is required for `elapsed-time` |
 | `staleness.paused` | intentional dormancy, distinguishable from neglect |
-| `remediation` | `vendor-fix` · `workaround` · `no_fix_planned` · `none_available` — plus required details |
-| `non_authority` | what this chore refuses to touch, and why |
-| `governing_rule` | the `.gzkit/rules/**` clause it serves, or an explicit `none` |
+| `remediation` | `vendor_fix` · `workaround` · `no_fix_planned` · `none_available` — plus required details |
+| `nonAuthority` | what this chore refuses to touch, and why |
+| `governingRule` | the `.gzkit/rules/**` clause it serves, or an explicit `none` |
+
+**As landed (GHI #999).** Keys follow the registry's existing camelCase
+(`timeoutSeconds`, `projectLocal`); remediation categories take CSAF's own underscore
+spelling throughout. The binding surfaces are `ChoreDeclaration` in
+`src/gzkit/commands/chores_declaration.py` and the field reference in
+`src/gzkit/chores/README.md` — where this table and those disagree, they are right.
+Declaring any key commits a chore to all of them. **Absence is announced, not yet
+refused** — operator ruling 2026-09-13, verbatim *"Warn, flip at step 5
+(Recommended)"*: refusal would stop every chore before any is declared, so the flip to
+Ansible's absence-defaults-safe direction lands with § Implementation order step 5.
 
 Ansible's failure direction is the one to copy: **absence defaults to the safe reading.**
 An undeclared chore does not run. Verbatim: *"Modules that support check mode report the
@@ -1260,9 +1272,10 @@ generalizes, already returns 3 on stale evidence.
 Cadence precedes content: adding classes to a registry nothing surfaces multiplies
 dormant surface that *reads as coverage*.
 
-**Work orders.** GHI #936 covers step 2. Steps 1 and 3–6 have no GHI. The Movement C
-box discharges through *"GHI-shaped direct repair"*, so one issue filed through
-`/ghi-author` is the natural carrier. That filing is advised and not yet ruled on.
+**Work orders.** GHI #936 covers step 2. Steps 1 and 3–6 are GHI #999, filed through
+`/ghi-author` on operator ruling 2026-09-13 (verbatim *"Step 2 via one GHI
+(Recommended)"*). Step 5 also carries the flip from announcing to refusing an undeclared
+chore.
 
 **Follow-on, once `governing_rule` exists:** the rule ↔ chore pass and the middle-scale
 rule clauses in

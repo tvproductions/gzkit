@@ -17,6 +17,7 @@ from pydantic import BaseModel, ConfigDict
 from rich.markup import escape
 from rich.table import Table
 
+from gzkit.commands.chores_declaration import ChoreDeclaration
 from gzkit.commands.common import GzCliError, console, get_project_root
 from gzkit.config import load_config
 
@@ -56,6 +57,7 @@ class ChoreDefinition(BaseModel):
     timeout_seconds: int
     vendor: str | None = None
     resolution_source: Literal["project", "package"] | None = None
+    declaration: ChoreDeclaration | None = None
 
 
 class ResolvedPath(BaseModel):
@@ -322,6 +324,12 @@ def chores_list(*, explain: bool = False) -> None:
         table.add_row(*row)
 
     console.print(table)
+    undeclared = sum(1 for chore in registry.values() if chore.declaration is None)
+    if undeclared:
+        console.print(
+            f"[yellow]{undeclared} of {len(registry)} chores carry no class declaration "
+            "(GHI #999).[/yellow]"
+        )
 
 
 def chores_plan(slug: str) -> None:
@@ -421,6 +429,13 @@ def chores_run(slug: str) -> None:
     """Execute one chore's acceptance criteria and log results."""
     project_root = get_project_root()
     _registry_path, chore = _resolve_chore(slug)
+    if chore.declaration is None:
+        # Announced, not refused, until per-chore declarations land (GHI #999).
+        console.print(
+            f"[yellow]Warning:[/yellow] chore '{escape(chore.slug)}' carries no class "
+            "declaration (GHI #999); undeclared chores will be refused once "
+            "declarations land."
+        )
     results: list[CriterionResult] = []
 
     for criterion in chore.criteria:

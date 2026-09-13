@@ -23,6 +23,7 @@ from gzkit.commands.chores import (
     ChoreDefinition,
     CriterionResult,
 )
+from gzkit.commands.chores_declaration import parse_chore_declaration
 from gzkit.commands.common import GzCliError
 
 
@@ -238,6 +239,11 @@ def _parse_chore_pointer(
     vendor_raw = data.get("vendor")
     vendor = vendor_raw.strip() if isinstance(vendor_raw, str) else None
 
+    blocker_count = len(blockers)
+    declaration = parse_chore_declaration(data, slug, blockers)
+    if len(blockers) > blocker_count:
+        return None
+
     return ChoreDefinition(
         slug=slug,
         title=title,
@@ -248,6 +254,7 @@ def _parse_chore_pointer(
         timeout_seconds=timeout,
         vendor=vendor,
         resolution_source=resolved.source,
+        declaration=declaration,
     )
 
 

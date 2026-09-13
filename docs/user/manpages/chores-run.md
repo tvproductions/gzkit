@@ -24,6 +24,9 @@ gz chores run <slug>
   `.gzkit/chores/<slug>/proofs/CHORE-LOG.md` (project-local execution
   evidence is never canonical).
 - Returns non-zero on command failure, timeout, or missing executable.
+- A chore with no class declaration still runs, preceded by a warning naming
+  it (GHI #999). Once per-chore declarations land, an undeclared chore will be
+  refused instead.
 
 ---
 
