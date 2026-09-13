@@ -5,7 +5,7 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "7.3.0"
+  skill-version: "7.4.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
@@ -16,7 +16,7 @@ last_reviewed: 2026-09-13
 model: sonnet
 ---
 
-# gz-session-handoff (v7.2.0)
+# gz-session-handoff (v7.4.0)
 
 ## Purpose
 
@@ -241,6 +241,20 @@ The CREATE workflow scaffolds a new handoff document when an agent is pausing wo
    trailing rulings before authoring: if one is not already carried, seat it.
    Routine use of the flag is a signal that rulings are arriving outside the
    handoff cycle and belong in a durable ruling store (campaign Movement D box 3).
+
+   **Never restate an inherited ruling in `Decisions Made` (GHI #1003).** A
+   successor already carries every ruling its `continues_from` lineage booked.
+   Writing one out again as its own `[operator-ruled]` entry books it a SECOND
+   time the moment the handoff is written (GHI #1000), and any rewording makes it
+   a new corpus entry: `ruling_key` folds only quote glyphs, whitespace and case,
+   and widening it is the fix GHI #838 rejects. Measured 2026-09-13 — a
+   whole-session handoff restating its partial predecessors' rulings booked two
+   of them twice, with divergent text (`rulings.jsonl` rows 825/832, 829/834).
+   `Decisions Made` holds only the rulings THIS traversal received; a ruling that
+   arrived after the predecessor was written goes in via `--settled`. Check with
+   `gz handoff rulings --search` before writing an `[operator-ruled]` entry.
+   **(Advisory — telling a reworded restatement from a distinct ruling needs
+   ruling identity, which is Movement D's `ruling_issued` event.)**
 
 8. **Validate** the completed document:
    - Parse frontmatter and validate with `HandoffFrontmatter` model
