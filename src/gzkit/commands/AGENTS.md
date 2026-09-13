@@ -7,11 +7,9 @@
 
 # CLI Contract Doctrine
 
-<!-- rule-version: 0.6.0 -->
+<!-- rule-version: 0.7.0 -->
 
-> **Rule version:** `0.6.0` — operator ruling 2026-09-06 carves the GHI direct-repair exception into § Adding CLI Features, which had read as though every contract-bearing CLI change requires OBPI ceremony and so contradicted `AGENTS.md` § Operator Doctrine; `0.5.1` and the superseded `0.5.0`–`0.3.1` chain are lifted to [Rule Version History](../../docs/governance/rule-version-history.md#climd). Scoped `src/gzkit/commands/**`, this rule loads on every CLI-command edit, so narrative is the most expensive thing it can carry.
->
-> _Prior `0.5.1`:_ diet pass under GHI #921 (operator ruling 2026-08-30, *"do 3, 4, and 5"*): the superseded `0.5.0`–`0.3.1` version chain is lifted to [Rule Version History](../../docs/governance/rule-version-history.md#climd), restoring the one-sentence shape `skill-surface-sync.md` § Non-negotiable rules #2 requires. Binding rules unchanged; scoped `src/gzkit/commands/**`, this rule loads on every CLI-command edit, so narrative is the most expensive thing it can carry.
+> **Rule version:** `0.7.0` — GHI #1001 (operator ruling 2026-09-13, *"Keep 2; fix the labels"*): code 2 in § Exit Codes is relabelled Usage or System/IO, because every parse error exits 2 by attested REQ-0.0.4-02-03 while this table and the shared epilog called 2 System/IO alone; `0.6.0` and prior are lifted to [Rule Version History](../../docs/governance/rule-version-history.md#climd).
 
 **Baseline:** [clig.dev](https://clig.dev/) — Human-first CLI design principles.
 **Canonical specification:** [`docs/design/cli-standards-v3.md`](../../docs/design/cli-standards-v3.md) — named canonical by [`ADR-0.0.4`](../../docs/design/adr/foundation/ADR-0.0.4-cli-standards-presentation-foundation/ADR-0.0.4-cli-standards-presentation-foundation.md). **Read its § Document status before citing any section:** parts are live-and-met, parts are live-but-UNMET, parts are RETIRED or superseded.
@@ -55,10 +53,13 @@ Two further specification rules are scored **Judgment** and are deliberately abs
 |------|---------|----------|
 | **0** | Success | N/A |
 | **1** | User/Config Error | Fix invocation or config |
-| **2** | System/IO Error | Check network/disk; retry |
+| **2** | Usage or System/IO Error | Usage: fix the invocation. System/IO: check network/disk; retry |
 | **3** | Policy Breach | Review logs; partial success needs review |
 
 Use `sys.exit(code)`. Document codes 2/3 in help text.
+
+- Code 2 means Usage or System/IO error; every parse error exits 2 — `StableArgumentParser.error`, attested REQ-0.0.4-02-03.
+- Never key a retry on exit 2 without the `BLOCKERS:` usage prefix on stderr — a caller cannot read 2 as an I/O fault alone.
 
 ---
 

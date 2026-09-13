@@ -3,7 +3,7 @@
 Exit code mapping follows the ADR Standard 4-Code Map:
   0 = Success
   1 = User/Config Error (ValidationError, ResourceNotFoundError, OperatorError, PermanentError)
-  2 = System/IO Error (TransientError)
+  2 = Usage or System/IO Error (TransientError; parse errors also exit 2)
   3 = Policy Breach (PolicyBreachError)
 
 The canonical base is ``GzkitError``.  ``GzError`` is retained as a

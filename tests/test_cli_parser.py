@@ -45,6 +45,17 @@ class TestExitCodeConstants(unittest.TestCase):
             with self.subTest(code=code):
                 self.assertIn(code, STANDARD_EXIT_CODES_EPILOG)
 
+    def test_epilog_code_two_names_usage_errors(self) -> None:
+        """Every parse error exits 2 (REQ-0.0.4-02-03), so the help must say so.
+
+        Labelling 2 as System/IO alone told an operator a typo was a disk fault
+        and a retry policy keyed on it would retry a typo (GHI #1001).
+        """
+        lines = [line.strip() for line in STANDARD_EXIT_CODES_EPILOG.splitlines()]
+        code_two = next(line for line in lines if line.startswith("2 "))
+        self.assertIn("usage", code_two.lower())
+        self.assertIn("system/io", code_two.lower())
+
     @covers("REQ-0.0.4-02-06")
     def test_standard_epilog_contains_labels(self) -> None:
         for label in ("Success", "User/config error", "System/IO error", "Policy breach"):

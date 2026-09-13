@@ -30,7 +30,7 @@ states, measured 2026-08-16 against `main`. Cite the state, not just the section
 |---|---|---|
 | § Command Structure — Explicit Registration | **Live, met** | 150 `set_defaults(func=…)`, zero conditional dispatch chains, one dispatch site |
 | § Command Structure — Custom ArgumentParser | **Live, met** | `StableArgumentParser` ships in `src/gzkit/cli/parser.py` |
-| § Error Handling — Exit Codes | **Live, met** | `src/gzkit/cli/helpers/exit_codes.py`; 4-code map + shared epilog |
+| § Error Handling — Exit Codes | **Live, met** | `src/gzkit/cli/helpers/exit_codes.py`; 4-code map + shared epilog. Until 2026-09-13 this row read "met" while § Exit Codes called 2 usage-only, `cli.md` called 2 System/IO-only, and the parser exited 2 on usage; reconciled under GHI #1001 |
 | § Type Annotations, § Linting, § Build | **Live, met** | ruff / ty / uv / unittest all in force |
 | § Domain Models | **Live, met** | Pydantic `BaseModel` per `.gzkit/rules/models.md` |
 | § Output Modes — `--json` | **Live, UNMET** | 73 of 136 leaf commands declare it |
@@ -813,9 +813,15 @@ def handle_command(args: argparse.Namespace, formatter: OutputFormatter) -> int:
 ### Exit Codes
 
 - **0** — Success
-- **1** — General / unexpected error
-- **2** — Validation / usage error (argparse default)
-- **3+** — Domain-specific (documented per exception class or in `exit_codes.py`)
+- **1** — User / configuration error
+- **2** — Usage error (argparse default; every parse error) **or** system / I/O error
+- **3** — Policy breach
+
+gzkit's binding map is `.gzkit/rules/cli.md` § Exit Codes and `src/gzkit/cli/helpers/exit_codes.py`.
+Code 2 carries both meanings on purpose: attested REQ-0.0.4-02-03 fixes parse errors at 2, and the
+4-code map fixes I/O faults at 2, so neither the help text nor a caller may read 2 as one of them
+alone — the `BLOCKERS:` stderr prefix distinguishes a usage error (GHI #1001, operator ruling
+2026-09-13).
 
 Raw tracebacks never reach the user unless `--debug` is active.
 

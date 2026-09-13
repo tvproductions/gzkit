@@ -816,8 +816,8 @@ def _unwitnessed_mechanical_row_errors(
                     "fail-closed check already enforces THAT row; a scope-level negative "
                     "control proves the gate is alive, never that this property is "
                     "covered. Cite one as `NC:<claim-id>` from the enforcement registry "
-                    "(`gz validate --enforcement-floor` runs them), or — if this is "
-                    "pre-ruling debt — add its key to "
+                    "(the `Enforcement floor` step of `uv run gz check` runs them), "
+                    "or — if this is pre-ruling debt — add its key to "
                     f"`{_MECH_WITNESS_REL.as_posix()}`, which may only shrink."
                 ),
             )

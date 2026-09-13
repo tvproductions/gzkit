@@ -173,6 +173,18 @@ def set_known_claims(claims: frozenset[str]) -> None:
     _KNOWN_CLAIMS = claims
 
 
+def extend_known_claims(claims: frozenset[str]) -> None:
+    """Add claim identifiers to the known set without discarding what is already known.
+
+    The public way for a claim source to declare its ids. ``set_known_claims``
+    REPLACES the set, so a source using it must import every other source's ids
+    to avoid un-knowing them — which is how private cross-package imports of
+    ``_KNOWN_QC_CLAIM_IDS`` spread.
+    """
+    global _KNOWN_CLAIMS
+    _KNOWN_CLAIMS = _load_known_claims() | claims
+
+
 def enforces(
     claim: str,
     fixture: Callable[[], Any],
@@ -528,6 +540,9 @@ def _ensure_production_claims_registered() -> None:
         claim because the clause declares one rule; its NC asserts the
         differential (refuse piped, permit redirected) so an always-block
         implementation cannot discharge it (GHI #589).
+      * ``cli.helpers.exit_code_claims`` — ``cli-usage-error-exit-two``, the witness
+        for `.gzkit/rules/cli.md` § Exit Codes code 2: a parse error exits 2 and the
+        help epilog labels 2 Usage or System/IO (GHI #1001).
 
     The gate5 + grader-gaming sources were authored Completed but left un-wired here (the
     docstring formerly named them "future work" that never landed); GHI tracks the
@@ -535,6 +550,9 @@ def _ensure_production_claims_registered() -> None:
     ``mx`` package, which imports this module.
     """
     from gzkit.airlock.enter import _ensure_airlock_claims_registered  # noqa: PLC0415
+    from gzkit.cli.helpers.exit_code_claims import (  # noqa: PLC0415
+        ensure_cli_exit_code_claims_registered,
+    )
     from gzkit.governance.trust_audits import qc_binding  # noqa: PLC0415
     from gzkit.handoff_resume_gate import _ensure_resume_gate_claims_registered  # noqa: PLC0415
     from gzkit.mx.invariants import _ensure_gate5_claims_registered  # noqa: PLC0415
@@ -549,6 +567,7 @@ def _ensure_production_claims_registered() -> None:
     _ensure_airlock_claims_registered()
     _ensure_resume_gate_claims_registered()
     _ensure_verifier_pipe_claims_registered()
+    ensure_cli_exit_code_claims_registered()
 
 
 def _gate5_enrollment_results(records: list[EnforcementClaimRecord]) -> list[ClaimRunResult]:

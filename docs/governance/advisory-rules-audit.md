@@ -33,7 +33,7 @@ This audit scores every rule by:
 
 Scoring a row **Mechanical** asserts that a fail-closed check already covers *that row*. Nothing witnessed the assertion, and five Mechanical rows were found false in the two days before this ruling.
 
-The enforcement-floor negative controls (`gz validate --enforcement-floor`) are the repo's mutation witness, but they are **scope**-granular while these rows are **property**-granular: 64 Mechanical rows cite 46 distinct validator flags, six flags carry two or three rows each, and one scope routinely enforces several properties. A scope passes its single control while any of its other properties is broken — observed 2026-08-10 on `--instructions-files-budget`, whose control plants a per-file char-budget violation and stayed green throughout a broken must-survive delivery predicate in the same scope. **Counting scope-level coverage would have scored that row witnessed.**
+The enforcement-floor negative controls (the `Enforcement floor` step of `uv run gz check`; there is no `gz validate` flag for it) are the repo's mutation witness, but they are **scope**-granular while these rows are **property**-granular: 64 Mechanical rows cite 46 distinct validator flags, six flags carry two or three rows each, and one scope routinely enforces several properties. A scope passes its single control while any of its other properties is broken — observed 2026-08-10 on `--instructions-files-budget`, whose control plants a per-file char-budget violation and stayed green throughout a broken must-survive delivery predicate in the same scope. **Counting scope-level coverage would have scored that row witnessed.**
 
 So a new or re-scored **Mechanical** row discharges the claim by citing a registered negative control inline as `NC:<claim-id>`. Rows predating the ruling are frozen in [`data/mechanical_witness_grandfather.json`](../../data/mechanical_witness_grandfather.json) — shrink-only under the waiver ratchet, so the debt drains as rows are touched and can never grow. Enforced by `gz validate --advisory-scorecard`, exit 3.
 
@@ -65,7 +65,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `security-sensitivity.md` | `0.6.0` |
 | `skill-surface-sync.md` | `0.12.0` |
 | `chores.md` | `0.3.3` |
-| `cli.md` | `0.6.0` |
+| `cli.md` | `0.7.0` |
 | `cross-platform.md` | `0.7.0` |
 | `gate5-runbook-code-covenant.md` | `0.3.1` |
 | `governance-core.md` | `0.14.0` |
@@ -465,6 +465,8 @@ that was declared and never witnessed.
 | 84 | A noun group wraps more than one verb | **Judgment** | Detection is trivial (**11** groups of one: `gz cli audit`, `gz flag explain`, `gz issue file`, `gz patch release`, …). The verdict is not: a group of one may be a deliberate namespace reservation for verbs not yet written, and **no surface models intent-to-extend**. A gate forces either premature flattening or a waiver per group — bookkeeping without signal. Honest form is an advisory line in an existing report, never a fail-close. |
 | 85 | User-facing output passes through the formatter, never console.print directly | **Promotable** | Ratchet form; it cannot land as a gate. The scan is mechanical (`console.print(` outside the formatter module, the shape `audit_utf8_prefix` and `audit_subprocess_errors` already use) but measures **1,230** live sites against **1** `OutputFormatter`, so a fail-close would block every commit. Seed at 1,230, shrink-only. Severity is understated by calling this a doc rule: ADR-0.0.4 declares the presentation surface "a port … that every command handler must honor", so these are bypasses of a Validated heavy-lane foundation ADR's port contract. **Precondition for row 80.** |
 | 88 | Lane is not route — a GHI-tracked defect repair routes direct even when it adds a CLI surface | **Judgment** | **Added 2026-09-06 (rule `0.6.0`), operator ruling — never scored.** § Adding CLI Features had read *"contract-bearing CLI work runs `gz obpi pipeline`, not a freeform direct fix"* with no carve-out, contradicting `AGENTS.md` § Operator Doctrine (*"GHIs are AUTHORIZED for direct repair, always… those criteria gate planned ADR work, not defect repair"*). Judgment, on the same unmodelled-caller ground as rows 29/30: **whether a change is defect repair or planned work is a reading of intent, and gzkit models neither.** The nearest machine-readable proxy is the `Task: TASK-<slug>-#<ghi>` trailer, and it is not the property — the `-#<ghi>` anchor is explicitly OPTIONAL (`task-discovery.md`, and filing a GHI to satisfy a trailer is a named moratorium violation), so its absence proves nothing and its presence proves only that a GHI exists, never that this commit is that GHI's repair. Scoring it Mechanical would cite the trailer validator as if it covered route selection. Measured instance 2026-09-06: the uncarved sentence sent an agent to surface a rule-versus-canon contradiction mid-fix; under the IRON LAW (only the operator initiates OBPI work) an agent reading it literally could proceed by neither route, so the drift was a deadlock, not a preference. Reclassify if a surface ever records why a change was routed as it was. |
+| 91 | Code 2 means Usage or System/IO error; every parse error exits 2 | **Mechanical** | **Added 2026-09-13 (rule `0.7.0`), GHI #1001, operator ruling *"Keep 2; fix the labels"*.** The table and the shared epilog had called 2 System/IO alone while attested REQ-0.0.4-02-03 fixes every parse error at 2, so a typo read as a disk fault. Witness `NC:cli-usage-error-exit-two` (`src/gzkit/cli/helpers/exit_code_claims.py`, wired into `_ensure_production_claims_registered`) asserts three poles — an undeclared flag exits 2 with the `BLOCKERS:` prefix, a declared flag parses, and the epilog's code-2 line names usage and system/IO — so an always-exit parser or a relabel back to System/IO alone reads FACADE. Unit tests back it: `tests/test_cli_parser.py::test_parse_error_exits_with_code_2` (`@covers REQ-0.0.4-02-03`) pins the parser's exit, and `test_epilog_code_two_names_usage_errors` pins that `STANDARD_EXIT_CODES_EPILOG` names both meanings on the code-2 line — the help text every command prints. The two in-repo readers of `exit_code == 2` (`validate_cmd.py` unscoped-rules) read an in-process validator result, never a CLI parse, so their I/O reading stands. |
+| 92 | Never key a retry on exit 2 without the `BLOCKERS:` usage prefix on stderr | **Judgment** | **Added 2026-09-13 (rule `0.7.0`), GHI #1001.** The clause binds CALLERS of `gz` — scripts, CI, harnesses — and gzkit models no caller's retry policy; no in-repo code retries a `gz` invocation on its exit code. What is mechanical is the signal the caller needs: the `BLOCKERS:` prefix is pinned by `test_error_writes_blockers_prefix_to_stderr` (REQ-0.0.4-02-02). Reclassify on an observed caller that retried a usage error. |
 
 **Consolidation (binding on whoever builds these).** Rows 76, 77, 78, 79, 80 and
 81 are six predicates over one walk of the parser tree. They land as **one**
@@ -487,9 +489,9 @@ decays in whichever direction the next reader's grep happens to point.
 
 | Score | Rows | % of scored rows |
 |-------|-------|---|
-| **Mechanical** | 68 | 42% |
+| **Mechanical** | 69 | 42% |
 | **Promotable** | 31 | 19% |
-| **Judgment** | 64 | 40% |
+| **Judgment** | 65 | 39% |
 | **Ambiguous** | 0 | 0% |
 
 <!-- The Rows column is machine-checked by `gz validate --advisory-scorecard`;
@@ -506,7 +508,7 @@ decays in whichever direction the next reader's grep happens to point.
      158 as of row 58c (GHI #962, 2026-09-05), and 159 as of row 88 (the CLI
      lane-is-not-route carve-out, 2026-09-06), and 160 as of row 89 (mutation-sweep
      integrity, GHI #963), and 161 as of row 51c (census-query completeness,
-     GHI #972); the entries between 131 and 158 were
+     GHI #972), and 163 as of rows 91-92 (the exit-code-2 relabel, GHI #1001); the entries between 131 and 158 were
      not recorded here as they landed, so this list names the endpoints it can
      evidence rather than reconstructing a history it cannot. -->
 
