@@ -143,6 +143,7 @@ from gzkit.governance.trust_audits.persona_witness import audit_persona_witness
 from gzkit.governance.trust_audits.pointer_integrity import (
     validate_pointer_integrity,
 )
+from gzkit.governance.trust_audits.population_controls import audit_population_controls
 from gzkit.governance.trust_audits.python_version_pins import (
     audit_python_version_pins,
     evaluate_python_version_pins,
@@ -254,6 +255,7 @@ __all__ = [
     "audit_qc_binding",
     "audit_fidelity_presence",
     "audit_exemption_controls",
+    "audit_population_controls",
     "audit_gate_callers",
     "audit_config_registry",
     "audit_waiver_ratchet",

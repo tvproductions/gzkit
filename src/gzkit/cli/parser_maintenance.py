@@ -739,6 +739,13 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Exemption-control inventory (GHI #797). Exit 0: declared; 3: undeclared.",
     )
     p_validate.add_argument(
+        "--population-controls",
+        dest="check_population_controls",
+        action="store_true",
+        default=False,
+        help="Population-declaration inventory (GHI #1007). Exit 0: declared; 3: undeclared.",
+    )
+    p_validate.add_argument(
         "--closeout-proof",
         dest="check_closeout_proof",
         action="store_true",
@@ -1048,6 +1055,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_config_registry=a.check_config_registry,
             check_gate_callers=a.check_gate_callers,
             check_exemption_controls=a.check_exemption_controls,
+            check_population_controls=a.check_population_controls,
             check_audits=a.check_audits,
             check_invariant_coherence=a.check_invariant_coherence,
             check_invariant_witness=a.check_invariant_witness,

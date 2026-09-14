@@ -1346,6 +1346,20 @@ def run_exemption_controls_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --exemption-controls", cwd=project_root)
 
 
+def run_population_controls_audit(project_root: Path) -> QualityResult:
+    """Run the population-declaration inventory (GHI #1007).
+
+    Fails closed (exit 3) when an enforcement claim has not declared whether it
+    ranges over a set declared on another surface and is not recorded in
+    data/population_control_grandfather.json, or when an acceptance has gone
+    stale. A control plants one violation, so a witness reading a literal subset
+    of a declared set passes it; the session-green gate checked one hook type of
+    four (GHI #851).
+    Recovery: uv run gz validate --population-controls to see the claims.
+    """
+    return run_command("uv run gz validate --population-controls", cwd=project_root)
+
+
 # Handoff-document enforcement cutover (OBPI-0.0.72-02). Register entries
 # authored on or after this instant MUST pass validate_handoff_document; the
 # pre-existing legacy entries under .gzkit/handoffs/ that predate this gate are

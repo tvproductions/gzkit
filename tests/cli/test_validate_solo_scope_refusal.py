@@ -34,6 +34,7 @@ SOLO_ONLY_KWARGS: dict[str, object] = {
     "check_waiver_ratchet": True,
     "check_gate_callers": True,
     "check_exemption_controls": True,
+    "check_population_controls": True,
 }
 
 _DISPATCH_DEFAULTS: dict[str, object] = {
@@ -53,6 +54,7 @@ _DISPATCH_DEFAULTS: dict[str, object] = {
     "check_config_registry": False,
     "check_gate_callers": False,
     "check_exemption_controls": False,
+    "check_population_controls": False,
     "check_audits": False,
     "as_json": False,
 }

@@ -573,6 +573,32 @@ def _ep_chore_suppression(root: Path) -> list[ValidationError]:
     return audit_chore_suppression(root)
 
 
+def _ep_session_green_gate_delivery(root: Path) -> list[ValidationError]:
+    """Run the delivery arm and return its blocking AND advisory findings.
+
+    A missing recording hook is advisory by fixed code property, reported on the
+    advisory channel rather than returned (GHI #851). Advisory is a severity, never
+    silence, so the control reads that channel too: a witness that drops the report
+    for a recording hook must fail at that member.
+    """
+    import contextlib  # noqa: PLC0415
+    import io  # noqa: PLC0415
+
+    from gzkit.advisory import advisory_lines  # noqa: PLC0415
+    from gzkit.governance.trust_audits.session_green_gate import (  # noqa: PLC0415
+        audit_session_green_gate,
+    )
+
+    stream = io.StringIO()
+    with contextlib.redirect_stderr(stream):
+        errors = audit_session_green_gate(root, check_delivery=True)
+    advisories = [
+        ValidationError(type="session_green_gate_advisory", artifact="advisory", message=line)
+        for line in advisory_lines(stream.getvalue())
+    ]
+    return [*errors, *advisories]
+
+
 def _ep_task_envelope_coherence(root: Path) -> list[ValidationError]:
     from gzkit.commands.validate_task_envelope import (  # noqa: PLC0415
         _validate_task_envelope_coherence,
@@ -684,6 +710,38 @@ def _ep_exemption_controls(root: Path) -> list[ValidationError]:
     )
 
     return audit_exemption_controls(root, declarations={"nc-undeclared-claim": None})
+
+
+def _ep_population_controls(root: Path) -> list[ValidationError]:
+    """Drive the production population inventory against the fixture's disclosed list.
+
+    ``declarations`` is the registry the floor run already populated, on the
+    ``_ep_exemption_controls`` precedent: the audit's decision logic is the real one,
+    and discovery is not re-run once per member.
+    """
+    from gzkit.enforcement import get_enforcement_registry  # noqa: PLC0415
+    from gzkit.governance.trust_audits.population_controls import (  # noqa: PLC0415
+        audit_population_controls,
+    )
+
+    declared = {r.claim_id: r.population for r in get_enforcement_registry()}
+    return audit_population_controls(root, declarations=declared)
+
+
+def _ep_population_controls_admits_disclosed(root: Path) -> int:
+    """Truthy only when the inventory ADMITS a fully disclosed registry.
+
+    The admit half of the gate (GHI #797 precedent). An audit that refused a
+    disclosed claim would turn the shrink-only list into an unsatisfiable gate;
+    the refuse half is proven at every member by ``population-controls``.
+    """
+    from gzkit.enforcement import get_enforcement_registry  # noqa: PLC0415
+    from gzkit.governance.trust_audits.population_controls import (  # noqa: PLC0415
+        audit_population_controls,
+    )
+
+    declared = {r.claim_id: r.population for r in get_enforcement_registry()}
+    return 0 if audit_population_controls(root, declarations=declared) else 1
 
 
 def _ep_gate_callers(root: Path) -> list[ValidationError]:

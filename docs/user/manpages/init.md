@@ -37,8 +37,9 @@ gz init [OPTIONS]
 8. Scans for existing PRDs/ADRs and offers to register them
 9. Writes `.pre-commit-config.yaml` declaring the pre-push `gz check` gate
    (ADR-0.0.68), preserving any config already present
-10. Runs `pre-commit install` so that gate is actually delivered into
-    `.git/hooks/`, not merely declared
+10. Runs `pre-commit install` for every hook type the config declares
+    (`default_install_hook_types`, plus `pre-push`), so the gate is actually
+    delivered into `.git/hooks/`, not merely declared
 
 Steps 9 and 10 are separate on purpose. A declared-but-uninstalled gate
 enforces nothing while every surface reports green, so `gz check` verifies the

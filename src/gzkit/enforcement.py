@@ -18,8 +18,9 @@ import dis
 import re
 import tempfile
 import types
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from contextvars import ContextVar
+from functools import partial
 from pathlib import Path
 from typing import Any, Literal, TypeVar
 
@@ -38,6 +39,13 @@ _CLAIM_ID_RE = re.compile(r"^[a-z][a-z0-9-]*$")
 #: point for chores — the property must be DECLARED, not inferred, because
 #: inference reads a state some other surface is free to overwrite.
 EXEMPTS_NONE = "none"
+
+#: The declared-not-set-shaped token (GHI #1007). A claim's control plants ONE
+#: violation, authored at the same narrowness as the witness it proves, so a
+#: witness scanning a literal subset of a set declared elsewhere passes its own
+#: control. "This claim ranges over no declared set" and "nobody has looked" are
+#: different facts, for the reason ``EXEMPTS_NONE`` is a real value.
+POPULATION_NONE = "none"
 
 #: Package prefix identifying an import as a gzkit gate rather than a stdlib
 #: helper. A subprocess-backed entrypoint imports ``sys``/``pathlib`` to build its
@@ -60,8 +68,12 @@ class EnforcementClaimRecord(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid", arbitrary_types_allowed=True)
 
     claim_id: str = Field(..., description="Enforcement claim identifier slug")
-    fixture: Callable[[], Any] = Field(
-        ..., description="Violation-builder callable; runner calls fixture()"
+    fixture: Callable[..., Any] = Field(
+        ...,
+        description=(
+            "Violation-builder callable; runner calls fixture(), or fixture(member) "
+            "once per member when `population` is declared"
+        ),
     )
     entrypoint: Callable[..., Any] = Field(
         ..., description="Production callable; runner calls entrypoint(fixture())"
@@ -98,6 +110,17 @@ class EnforcementClaimRecord(BaseModel):
             "Empty when the entrypoint IS the gate (read `source_fn`) or delegates to a "
             "subprocess. Producer-stamped because the delegation is a runtime fact, "
             "unlike `exempts`, which is an authoring judgment."
+        ),
+    )
+    population: Callable[[], Sequence[str]] | str | None = Field(
+        None,
+        description=(
+            "Three-state population declaration (GHI #1007). None = UNDECLARED, and the "
+            "claim is disclosed by `gz validate --population-controls`. "
+            f"{POPULATION_NONE!r} = the claim ranges over no set declared elsewhere. "
+            "A callable = reads the members from the surface that DECLARES the set; the "
+            "runner plants the violation at every member and requires each finding to "
+            "name its member."
         ),
     )
 
@@ -191,6 +214,7 @@ def enforces(
     entrypoint: Callable[..., Any],
     expect: str | None = None,
     exempts: str | None = None,
+    population: Callable[[], Sequence[str]] | str | None = None,
 ) -> Callable[[_EF], _EF]:
     """Declare that a production callable enforces an enforcement claim.
 
@@ -214,9 +238,16 @@ def enforces(
     register after the rule claim, and ordering is not a property worth
     constraining.
 
+    ``population`` declares the set a claim ranges over (GHI #1007): ``None`` is
+    undeclared, :data:`POPULATION_NONE` states there is no such set, and a
+    callable returns the members from the surface that declares them. It must not
+    reuse the witness's own reader — a population derived from the code under
+    test narrows whenever the witness does, and proves nothing.
+
     Raises:
         ValueError: If ``claim`` has an invalid format or is not in the
-            registered known-claims set.
+            registered known-claims set, or ``population`` is neither ``None``,
+            :data:`POPULATION_NONE`, nor a callable.
 
     """
     if not _CLAIM_ID_RE.match(claim):
@@ -229,6 +260,14 @@ def enforces(
     known = _load_known_claims()
     if claim not in known:
         msg = f"Unknown enforcement claim id: {claim!r} — not in the registered known-claims set"
+        raise ValueError(msg)
+
+    if not (population is None or population == POPULATION_NONE or callable(population)):
+        msg = (
+            f"Enforcement claim {claim!r} declares population={population!r} — must be None "
+            f"(undeclared), {POPULATION_NONE!r} (ranges over no declared set), or a callable "
+            "returning the members from the surface that declares them (GHI #1007)"
+        )
         raise ValueError(msg)
 
     source_file: str | None = None
@@ -252,6 +291,7 @@ def enforces(
             expect=expect,
             exempts=exempts,
             gate_targets=gate_targets,
+            population=population,
         )
         _ENFORCEMENT_REGISTRY.append(record)
         return fn
@@ -363,10 +403,82 @@ def _run_single_claim(record: EnforcementClaimRecord) -> ClaimRunResult:
     falsy = entrypoint did not catch (FACADE). Either side raising = TEST_BUG.
     The runner creates and cleans one private workspace; a fixture-returned path
     is data passed to the entrypoint, never authority to choose the cleanup target.
+
+    A claim declaring a callable ``population`` is proven at every member instead
+    (GHI #1007) — see :func:`_run_population_claim`.
+    """
+    population = record.population
+    if population is not None and not isinstance(population, str):
+        return _run_population_claim(record, population)
+    return _run_claim_once(record)
+
+
+def _test_bug(record: EnforcementClaimRecord, message: str) -> ClaimRunResult:
+    return ClaimRunResult(
+        claim_id=record.claim_id, outcome="TEST_BUG", source_fn=record.source_fn, message=message
+    )
+
+
+def _run_population_claim(
+    record: EnforcementClaimRecord, population: Callable[[], Sequence[str]]
+) -> ClaimRunResult:
+    """Plant the violation at every declared member; each finding must name its member.
+
+    One control planted at one member proves only that member, which is how a
+    witness pinned to a literal subset of a growing set passed its own control
+    (GHI #851: one hook type of four). Requiring the member's name in the finding
+    closes the loud version of the same facade — a witness that fails for any
+    input would otherwise pass every member without ever reading one.
     """
     try:
+        members = list(population())
+    # `population` is an arbitrary registered callable reading another surface;
+    # its raisable set is open, and an unreadable declaration is a broken control.
+    except Exception as exc:  # noqa: BLE001
+        return _test_bug(
+            record,
+            f"TEST_BUG: population() raised for claim {record.claim_id!r}: {exc!r}. The "
+            "declared set could not be read, so no member was proven. Repair the "
+            "declaring surface or the population reader (GHI #1007).",
+        )
+    if not members:
+        return _test_bug(
+            record,
+            f"TEST_BUG: claim {record.claim_id!r} declares a population that is empty, so no "
+            "member was proven and a PASS would assert something never measured. Repair "
+            "the declaring surface, or declare population='none' if the claim ranges over "
+            "no set (GHI #1007).",
+        )
+    for member in members:
+        single = record.model_copy(
+            update={"fixture": partial(record.fixture, member), "population": POPULATION_NONE}
+        )
+        result = _run_claim_once(single, member=member)
+        if result.outcome != "PASS":
+            return result.model_copy(
+                update={
+                    "message": (
+                        f"At declared member {member!r} ({members.index(member) + 1} of "
+                        f"{len(members)}): {result.message}"
+                    )
+                }
+            )
+    return ClaimRunResult(
+        claim_id=record.claim_id,
+        outcome="PASS",
+        source_fn=record.source_fn,
+        message=(
+            f"PASS: claim {record.claim_id!r} entrypoint caught the violation at every "
+            f"declared member ({len(members)}): {', '.join(members)}."
+        ),
+    )
+
+
+def _run_claim_once(record: EnforcementClaimRecord, *, member: str | None = None) -> ClaimRunResult:
+    """Run one control in its own runner-owned workspace."""
+    try:
         with tempfile.TemporaryDirectory(prefix=f"gzkit-nc-{record.claim_id}-") as tmp:
-            return _run_claim_in_workspace(record, Path(tmp))
+            return _run_claim_in_workspace(record, Path(tmp), member=member)
     except OSError as exc:
         return ClaimRunResult(
             claim_id=record.claim_id,
@@ -379,8 +491,14 @@ def _run_single_claim(record: EnforcementClaimRecord) -> ClaimRunResult:
         )
 
 
-def _run_claim_in_workspace(record: EnforcementClaimRecord, fixture_parent: Path) -> ClaimRunResult:
-    """Build and execute one claim inside ``fixture_parent``, which the runner owns."""
+def _run_claim_in_workspace(
+    record: EnforcementClaimRecord, fixture_parent: Path, *, member: str | None = None
+) -> ClaimRunResult:
+    """Build and execute one claim inside ``fixture_parent``, which the runner owns.
+
+    ``member`` is set when this run proves one member of a declared population;
+    the caught finding must then name it (GHI #1007).
+    """
     try:
         token = _FIXTURE_PARENT.set(fixture_parent)
         try:
@@ -455,6 +573,20 @@ def _run_claim_in_workspace(record: EnforcementClaimRecord, fixture_parent: Path
                     f"Repro: call {record.source_fn!r}(fixture()) and read the finding."
                 ),
             )
+
+    if caught and member is not None and member not in _render_findings(ep_result):
+        return ClaimRunResult(
+            claim_id=record.claim_id,
+            outcome="FACADE",
+            source_fn=record.source_fn,
+            message=(
+                f"FACADE: claim {record.claim_id!r} entrypoint failed, but no finding names "
+                f"the member {member!r} the violation was planted at; got: "
+                f"{_render_findings(ep_result)[:400]!r}. A witness that fails for any input "
+                "passes every member without reading one (GHI #1007). Name the member in "
+                f"the finding. Repro: call {record.source_fn!r}(fixture({member!r}))."
+            ),
+        )
 
     if caught:
         return ClaimRunResult(
@@ -568,6 +700,17 @@ def _ensure_production_claims_registered() -> None:
     _ensure_resume_gate_claims_registered()
     _ensure_verifier_pipe_claims_registered()
     ensure_cli_exit_code_claims_registered()
+
+
+def production_enforcement_registry() -> list[EnforcementClaimRecord]:
+    """Return every production enforcement claim, registering the sources first.
+
+    The public route for an inventory reading the registry from another package,
+    so it neither reaches the private registration seam nor reads a registry a
+    test reset left empty.
+    """
+    _ensure_production_claims_registered()
+    return get_enforcement_registry()
 
 
 def _gate5_enrollment_results(records: list[EnforcementClaimRecord]) -> list[ClaimRunResult]:

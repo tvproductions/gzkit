@@ -30,7 +30,11 @@ from gzkit.commands.register import (
     warn_unreadable_refused,
 )
 from gzkit.config import GzkitConfig, PathConfig
-from gzkit.governance.trust_audits.session_green_gate import configured_hooks_path
+from gzkit.governance.trust_audits.session_green_gate import (
+    configured_hooks_path,
+    declared_hook_types,
+    install_command,
+)
 from gzkit.hooks.claude import setup_claude_hooks
 from gzkit.ledger import (
     Ledger,
@@ -448,8 +452,6 @@ repos:
         stages: [pre-push]
 """
 
-_HOOK_TYPES = ("pre-commit", "pre-push")
-
 # Ordered by how the project is most likely to reach a pre-commit: the project
 # venv first, then an ephemeral uvx download. pre-commit is deliberately NOT a
 # gzkit dependency (STDLIB-FIRST: adding a runtime dep needs foundation
@@ -498,7 +500,9 @@ def _install_pre_commit_hooks(project_root: Path, *, dry_run: bool = False) -> s
     if not (project_root / ".pre-commit-config.yaml").is_file():
         return None
     if dry_run:
-        return "Would run pre-commit install (pre-commit + pre-push hooks)"
+        return (
+            f"Would run pre-commit install ({', '.join(declared_hook_types(project_root))} hooks)"
+        )
 
     redirect = configured_hooks_path(project_root)
     if redirect is not None:
@@ -510,10 +514,12 @@ def _install_pre_commit_hooks(project_root: Path, *, dry_run: bool = False) -> s
             "and pre-commit refuses to install hooks while it is. Commits and pushes "
             "will run unenforced until this is resolved. Recovery: "
             "`git config --local --unset-all core.hooksPath` then "
-            "`uv run pre-commit install --hook-type pre-commit --hook-type pre-push`."
+            f"`{install_command(declared_hook_types(project_root))}`."
         )
 
-    hook_args = [arg for hook_type in _HOOK_TYPES for arg in ("--hook-type", hook_type)]
+    hook_args = [
+        arg for hook_type in declared_hook_types(project_root) for arg in ("--hook-type", hook_type)
+    ]
     for installer in _INSTALLERS:
         try:
             result = subprocess.run(
@@ -527,12 +533,15 @@ def _install_pre_commit_hooks(project_root: Path, *, dry_run: bool = False) -> s
         except (OSError, subprocess.SubprocessError):
             continue
         if result.returncode == 0:
-            return "Installed pre-commit + pre-push hooks (session-green gate active)"
+            return (
+                f"Installed {', '.join(declared_hook_types(project_root))} hooks "
+                "(session-green gate active)"
+            )
     return (
         "Pre-push gate NOT installed: could not run `pre-commit install`. Commits and "
         "pushes will run unenforced until this is resolved. Recovery: install pre-commit "
         "(`uv tool install pre-commit`), then "
-        "`uv run pre-commit install --hook-type pre-commit --hook-type pre-push`."
+        f"`{install_command(declared_hook_types(project_root))}`."
     )
 
 

@@ -100,9 +100,14 @@ class InstallPreCommitHooks(unittest.TestCase):
 
         def run(cmd, **kwargs):  # noqa: ANN001, ANN003
             if "install" in cmd:
-                (root / ".git" / "hooks" / "pre-push").write_text(
-                    _PRE_COMMIT_SHIM, encoding="utf-8"
-                )
+                # Real `pre-commit install` writes one shim per `--hook-type` it is
+                # given, so the double does too — an installer handed the wrong
+                # list must leave the gate undelivered here as it would on disk.
+                for i, arg in enumerate(cmd):
+                    if arg == "--hook-type":
+                        (root / ".git" / "hooks" / cmd[i + 1]).write_text(
+                            _PRE_COMMIT_SHIM, encoding="utf-8"
+                        )
                 return subprocess.CompletedProcess(cmd, 0, "", "")
             return subprocess.CompletedProcess(cmd, 1, "", "unexpected")
 

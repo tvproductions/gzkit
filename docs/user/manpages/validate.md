@@ -14,7 +14,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--bullet-retention] [--surface-weight] [--pointer-anchors]
             [--surface-fidelity]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
-            [--advisor-proof-binding] [--lock-exchange-coupling] [--qc-binding] [--fidelity-presence] [--waiver-ratchet] [--config-registry] [--gate-callers] [--exemption-controls] [--vendor-manifest]
+            [--advisor-proof-binding] [--lock-exchange-coupling] [--qc-binding] [--fidelity-presence] [--waiver-ratchet] [--config-registry] [--gate-callers] [--exemption-controls] [--population-controls] [--vendor-manifest]
             [--setpoint-coherence] [--rendition-freshness]
             [--rendition-floor-coherence] [--rendition-lineage]
             [--corpus-retirement-witness]
@@ -1527,6 +1527,34 @@ uv run gz validate --exemption-controls --json
 | 0 | Every claim declares its exemption half, or is disclosed | — |
 | 3 | A claim is undeclared and undisclosed, a declaration names an unregistered control, or an acceptance is stale | Declare it — `exempts="none"`, or the claim id of a control that exercises the exemption. Only if the ruling is genuinely owed, add the claim to `data/exemption_control_grandfather.json` with a reason and raise `baseline_count` in `data/waiver_ratchet_registry.json`; re-run `uv run gz validate --exemption-controls` |
 
+**The population half (GHI #1007)** is `--population-controls` below. A control plants one
+violation, so a witness that scans a literal subset of a set declared on another
+surface passes it — the session-green gate checked one hook type while
+`.pre-commit-config.yaml` declared four (GHI #851). `@enforces` also carries a
+three-state `population` declaration:
+
+| Value | Meaning |
+|---|---|
+| *(omitted)* | UNDECLARED — disclosed in `data/population_control_grandfather.json` |
+| `"none"` | The claim ranges over no set declared on another surface |
+| *callable* | Returns the members from the declaring surface; the runner plants the violation at every member and requires each finding to name its member |
+
+### `--population-controls`
+
+Population-declaration inventory (GHI #1007), the counterpart of
+`--exemption-controls` above. Inventory and disclosure, not enrollment: the
+accepted list is shrink-only.
+
+```console
+uv run gz validate --population-controls
+uv run gz validate --population-controls --json
+```
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Every claim declares its population, or is disclosed | — |
+| 3 | A claim is undeclared and undisclosed, or an acceptance is stale | Declare it — `population="none"`, or a callable reading the members from the declaring surface. Surrender a stale entry from `data/population_control_grandfather.json` and lower `baseline_count` in `data/waiver_ratchet_registry.json`; re-run `uv run gz validate --population-controls` |
+
 ### `--closeout-proof`
 
 Derived closeout-proof view (ADR-0.0.69 / OBPI-0.0.69-03). Recomputes per-REQ
@@ -2477,7 +2505,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--obpi-lifecycle-coherence` | yes | every `obpi_created` must be terminal, parked, completed, or hold a resolvable parent ADR (GHI #584) |
 | `--red-parity` | yes | Every BEHAVIOR REQ in a heavy-lane brief completed at or after the `2026-07-09T12:00:00Z` cutover must carry a `red_receipt_emitted` witness whose `failure_class` is not `none`. `@covers` parity proves a REQ has a covering test; it never proves that test can fail. A `failure_class` of `none` means the covering test passed against the base tree with the production hunks withheld — it cannot fail, which is the `AGENTS.md` § DO IT RIGHT Rule 6 defect. Recovery: `uv run gz arb red --req <REQ> --obpi <OBPI>` (GHI #642) |
 | `--adversarial-validation` | yes | Step-4b adversary verdicts must be durably captured. Two invariants: every heavy-lane completion receipt emitted at or after the `2026-07-09T09:00:00Z` cutover carries a paired `adversarial_validation` ledger event (and a `refuted` verdict carries a resolution); and every terminal heavy-lane brief carries a `### Step 4b — Independent Adversarial Validation` section, unless named in the closed `data/adversarial_validation_grandfather.json` snapshot. Pre-cutover receipts are out of scope — the gate did not exist, and back-dating a verdict is the fabrication this gate prevents (GHI #643 / #676) |
-| `--session-green-gate` | opt-in | `.pre-commit-config.yaml` must declare a `stages: [pre-push]` hook running `gz check`; exits 3 when absent, unparseable, or missing — fail-closed floor (ADR-0.0.68 / OBPI-0.0.68-02) |
+| `--session-green-gate` | opt-in | `.pre-commit-config.yaml` must declare a `stages: [pre-push]` hook running `gz check`; exits 3 when absent, unparseable, or missing — fail-closed floor (ADR-0.0.68 / OBPI-0.0.68-02). Outside CI it also checks that every hook type in `default_install_hook_types` (plus `pre-push`) is installed: a missing `prepare-commit-msg` or `post-commit` hook is advisory, and any other missing type exits 3 (GHI #851) |
 | `--orientation-freshness` | opt-in | The SessionStart orientation hook + script must remain wired (GHI #341) |
 | `--brief-headings` | opt-in | OBPI brief evidence sections must be H3, not H2 (GHI #238) |
 | `--brief-cross-references` | opt-in | Bare `OBPI-X.Y.Z-NN` / `ADR-X.Y.Z` identifiers in briefs must resolve to on-disk artifacts (GHI #436) |

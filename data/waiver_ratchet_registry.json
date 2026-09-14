@@ -143,6 +143,13 @@
       "baseline_count": 55
     },
     {
+      "data_file": "data/population_control_grandfather.json",
+      "gates_step": "Population controls (gz validate --population-controls)",
+      "mechanism": "shrink-ratchet",
+      "entries_path": "accepted_claims",
+      "baseline_count": 83
+    },
+    {
       "data_file": "data/validator_reachability_grandfather.json",
       "gates_step": "validator reachability (chore: control-surface-validator-reachability)",
       "mechanism": "shrink-ratchet",

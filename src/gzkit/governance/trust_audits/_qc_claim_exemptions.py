@@ -205,4 +205,16 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     #    compared — a scope predicate (which sections this gate examines),
     #    not an admission of a violation it found.
     "rendition-lineage": EXEMPTS_NONE,
+    # Delivery arm of the session-green gate (GHI #851). Every declared hook type
+    # not installed is a finding; which types exist is read from the config, a scope
+    # predicate. A recording hook's absence is advisory by a FIXED code property
+    # (`_RECORDING_HOOK_TYPES`), outside the judged set, not an admission. The CI
+    # opt-out lives at the CLI adapter (`_delivery_arm_enabled`), never in this gate.
+    "session-green-gate-delivery": EXEMPTS_NONE,
+    # --- GHI #1007 ------------------------------------------------------------
+    # The population inventory ADMITS every claim on its disclosed list, which is an
+    # exemption by the bar above; the control that exercises it is registered.
+    "population-controls": "population-controls-disclosed",
+    # The admit control itself: a membership test with no further admit path.
+    "population-controls-disclosed": EXEMPTS_NONE,
 }

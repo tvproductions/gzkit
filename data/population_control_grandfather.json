@@ -1,0 +1,254 @@
+{
+  "_doc": "Shrink-only disclosed list of enforcement claims that have NOT declared whether they range over a set declared on another surface (GHI #1007). Seeded 2026-09-14 at the population measured on main. An entry records a DISCLOSED absence of a declaration, never a justified one: acceptance means the count is visible and the per-claim reading is still owed, not that the claim is fine undeclared. NEVER add an entry to silence a newly-authored claim -- declare it instead (population='none', or a callable reading the members from the declaring surface); that is the laundering ADR-0.0.73 Boundary Invariant #8 forbids. An entry MUST be surrendered the moment its claim declares (gz validate --population-controls fails closed on a stale acceptance).",
+  "accepted_claims": [
+    {
+      "claim": "adr-status-freshness"
+    },
+    {
+      "claim": "adr-taxonomy"
+    },
+    {
+      "claim": "adversarial-validation"
+    },
+    {
+      "claim": "advisory-scorecard-coverage"
+    },
+    {
+      "claim": "advisory-scorecard-ruff-reachability"
+    },
+    {
+      "claim": "advisory-scorecard-summary-drift"
+    },
+    {
+      "claim": "agents-md-map-conformance"
+    },
+    {
+      "claim": "airlock-in-unaccounted-seam"
+    },
+    {
+      "claim": "authorship-policy"
+    },
+    {
+      "claim": "behave"
+    },
+    {
+      "claim": "brief-structure"
+    },
+    {
+      "claim": "chore-suppression"
+    },
+    {
+      "claim": "cli-audit"
+    },
+    {
+      "claim": "cli-usage-error-exit-two"
+    },
+    {
+      "claim": "closeout-proof"
+    },
+    {
+      "claim": "complexity-doctrine-links"
+    },
+    {
+      "claim": "complexity-thresholds"
+    },
+    {
+      "claim": "config-registry"
+    },
+    {
+      "claim": "corpus-retirement-witness"
+    },
+    {
+      "claim": "dispatch-absorption-marker"
+    },
+    {
+      "claim": "docs-build"
+    },
+    {
+      "claim": "enforcement-floor"
+    },
+    {
+      "claim": "exemption-controls"
+    },
+    {
+      "claim": "fidelity-presence"
+    },
+    {
+      "claim": "format"
+    },
+    {
+      "claim": "gate-callers"
+    },
+    {
+      "claim": "gate5-attestation-absence"
+    },
+    {
+      "claim": "gate5-ledger"
+    },
+    {
+      "claim": "git-fixture-isolation"
+    },
+    {
+      "claim": "grader-gaming"
+    },
+    {
+      "claim": "handoff-documents"
+    },
+    {
+      "claim": "handoff-documents-populated-sections"
+    },
+    {
+      "claim": "handoff-resume-booking-coupling"
+    },
+    {
+      "claim": "insights-shape"
+    },
+    {
+      "claim": "instructions-files-budget"
+    },
+    {
+      "claim": "interview-transcripts"
+    },
+    {
+      "claim": "invariant-coherence"
+    },
+    {
+      "claim": "kind-invariance"
+    },
+    {
+      "claim": "line-endings"
+    },
+    {
+      "claim": "lint"
+    },
+    {
+      "claim": "lock-exchange-coupling"
+    },
+    {
+      "claim": "module-size"
+    },
+    {
+      "claim": "obpi-lifecycle-coherence"
+    },
+    {
+      "claim": "orientation-freshness"
+    },
+    {
+      "claim": "parity-check"
+    },
+    {
+      "claim": "persona-witness"
+    },
+    {
+      "claim": "pool-interview-schema"
+    },
+    {
+      "claim": "preflight"
+    },
+    {
+      "claim": "producer-field-parity"
+    },
+    {
+      "claim": "python-version-pins"
+    },
+    {
+      "claim": "qc-binding"
+    },
+    {
+      "claim": "readiness-audit"
+    },
+    {
+      "claim": "receipt-shape"
+    },
+    {
+      "claim": "red-parity"
+    },
+    {
+      "claim": "rendition-floor-coherence"
+    },
+    {
+      "claim": "rendition-freshness"
+    },
+    {
+      "claim": "rendition-lineage"
+    },
+    {
+      "claim": "req-kind-discipline"
+    },
+    {
+      "claim": "session-green-gate"
+    },
+    {
+      "claim": "skill-audit"
+    },
+    {
+      "claim": "smoke-tier"
+    },
+    {
+      "claim": "status-writer-coverage"
+    },
+    {
+      "claim": "surface-fidelity"
+    },
+    {
+      "claim": "surface-fidelity-bullet-retention"
+    },
+    {
+      "claim": "surface-fidelity-surface-weight"
+    },
+    {
+      "claim": "task-envelope-coherence"
+    },
+    {
+      "claim": "task-envelope-layer-drift"
+    },
+    {
+      "claim": "task-envelope-obpi-divergence"
+    },
+    {
+      "claim": "task-envelope-subdivision"
+    },
+    {
+      "claim": "tautological-test-audit"
+    },
+    {
+      "claim": "test"
+    },
+    {
+      "claim": "theater-signature-scan"
+    },
+    {
+      "claim": "transcribed-adr-counts"
+    },
+    {
+      "claim": "typecheck"
+    },
+    {
+      "claim": "unscoped-rules"
+    },
+    {
+      "claim": "validate-default-scopes"
+    },
+    {
+      "claim": "verifier-escape-must-be-used"
+    },
+    {
+      "claim": "verifier-exit-status-masked"
+    },
+    {
+      "claim": "waiver-ratchet"
+    },
+    {
+      "claim": "waiver-ratchet-closed-set-lock"
+    },
+    {
+      "claim": "waiver-ratchet-dated-cutover"
+    },
+    {
+      "claim": "waiver-ratchet-silent-bypass"
+    },
+    {
+      "claim": "wheel-path-literals"
+    }
+  ]
+}

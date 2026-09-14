@@ -32,7 +32,10 @@ from gzkit.enforcement import create_fixture_tempdir, enforces, get_enforcement_
 from . import _qc_nc_composite as _cx
 from . import _qc_nc_corpus as _cr
 from . import _qc_nc_entrypoints as _ep
+from . import _qc_nc_hooks as _hk
+from . import _qc_nc_population as _pc
 from ._qc_claim_exemptions import QC_CLAIM_EXEMPTS
+from ._qc_claim_populations import QC_CLAIM_POPULATIONS
 
 # ---------------------------------------------------------------------------
 # Fixture helpers
@@ -1576,6 +1579,14 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         _ep._ep_session_green_gate,
         "No stages: [pre-push] hook running 'gz check' declared",
     ),
+    # The delivery arm's own control, proven at every declared hook type (GHI #851,
+    # GHI #1007); the claim above plants a declaration defect and never reaches it.
+    (
+        "session-green-gate-delivery",
+        _hk.build_undelivered_hook,
+        _ep._ep_session_green_gate_delivery,
+        "is not delivered",
+    ),
     ("closeout-proof", _build_closeout_proof, _ep._ep_closeout_proof),
     ("kind-invariance", _build_kind_invariance, _ep._ep_kind_invariance),
     ("persona-witness", _build_persona_witness, _ep._ep_persona_witness),
@@ -1641,6 +1652,18 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
     ("config-registry", _build_config_registry, _ep._ep_config_registry),
     ("gate-callers", _build_gate_callers, _ep._ep_gate_callers),
     ("exemption-controls", _build_exemption_controls, _ep._ep_exemption_controls),
+    # Refuse half proven at every undeclared claim; admit half as its own claim (GHI #1007).
+    (
+        "population-controls",
+        _pc.build_undisclosed_claim,
+        _ep._ep_population_controls,
+        "has not declared whether it ranges over",
+    ),
+    (
+        "population-controls-disclosed",
+        _pc.build_fully_disclosed,
+        _ep._ep_population_controls_admits_disclosed,
+    ),
     ("enforcement-floor", _build_enforcement_floor, _ep._ep_enforcement_floor),
     (
         "theater-signature-scan",
@@ -1733,9 +1756,14 @@ def register_qc_negative_controls() -> None:
         expect = entry[3] if len(entry) > 3 else None
         if claim_id in existing:
             continue
-        enforces(claim_id, fixture, entrypoint, expect, exempts=QC_CLAIM_EXEMPTS.get(claim_id))(
-            _register_marker
-        )
+        enforces(
+            claim_id,
+            fixture,
+            entrypoint,
+            expect,
+            exempts=QC_CLAIM_EXEMPTS.get(claim_id),
+            population=QC_CLAIM_POPULATIONS.get(claim_id),
+        )(_register_marker)
 
 
 register_qc_negative_controls()

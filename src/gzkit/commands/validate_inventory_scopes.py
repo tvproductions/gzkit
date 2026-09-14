@@ -54,6 +54,38 @@ def run_exemption_controls_scope(project_root: Path, *, as_json: bool) -> None:
     raise SystemExit(3)
 
 
+def run_population_controls_scope(project_root: Path, *, as_json: bool) -> None:
+    """Dedicated handler for ``gz validate --population-controls`` (exit 0/3).
+
+    Reports the COUNTS on a green run, on the ``--exemption-controls`` precedent: the
+    point of GHI #1007 is that "nobody has stated what set this claim ranges over"
+    becomes a visible, counted fact.
+    """
+    from gzkit.governance.trust_audits.population_controls import (  # noqa: PLC0415
+        audit_population_controls,
+        registry_declarations,
+    )
+
+    errors = audit_population_controls(project_root)
+    if as_json:
+        print(json.dumps([e.model_dump(exclude_none=True) for e in errors], indent=2))  # noqa: T201
+        raise SystemExit(3 if errors else 0)
+    console.print("[bold]Validated:[/bold] population-controls\n")
+    if not errors:
+        declared = registry_declarations()
+        undeclared = sum(1 for v in declared.values() if v is None)
+        console.print(
+            f"[green]✓ {len(declared)} enforcement claims inventoried; "
+            f"{len(declared) - undeclared} declare their population, "
+            f"{undeclared} disclosed as undeclared.[/green]"
+        )
+        raise SystemExit(0)
+    console.print(f"[red]❌ {len(errors)} population-control finding(s):[/red]\n")
+    for e in errors:
+        console.print(f"   [red]→[/red] {escape(e.artifact)}: {escape(e.message)}")
+    raise SystemExit(3)
+
+
 def run_gate_callers_scope(project_root: Path, *, as_json: bool) -> None:
     """Dedicated handler for `gz validate --gate-callers` (exit 0/3).
 

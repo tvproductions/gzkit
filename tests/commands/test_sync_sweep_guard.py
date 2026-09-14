@@ -241,6 +241,11 @@ class SyncPrechecksVerifyGateDelivery(unittest.TestCase):
             )
             hooks = root / ".git" / "hooks"
             hooks.mkdir(parents=True)
+            # No `default_install_hook_types`: pre-commit's own `pre-commit` hook is
+            # owed alongside the gate's `pre-push` (GHI #851).
+            (hooks / "pre-commit").write_text(
+                "exec pre-commit hook-impl --hook-type=pre-commit\n", encoding="utf-8"
+            )
             (hooks / "pre-push").write_text(
                 "exec pre-commit hook-impl --hook-type=pre-push\n", encoding="utf-8"
             )
