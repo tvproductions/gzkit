@@ -31,4 +31,9 @@ QC_CLAIM_POPULATIONS: dict[str, Callable[[], Sequence[str]] | str] = {
     # Admission is one membership test applied uniformly over the list; the refuse
     # claim above carries the per-member proof, so this control ranges over no set.
     "population-controls-disclosed": POPULATION_NONE,
+    # One evaluation, answered or not, by whatever sits under artifacts/justify/. The
+    # forms of false evidence are the gate's own cases, not a set another surface
+    # declares; the refuse control plants all of them at once (GHI #996).
+    "evaluation-justify-binding": POPULATION_NONE,
+    "evaluation-justify-binding-qualified": POPULATION_NONE,
 }

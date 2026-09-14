@@ -20,6 +20,8 @@ from gzkit.chores.eval_feedback_cluster_lib import (
 )
 from gzkit.commands.common import get_project_root
 from gzkit.governance.trust_audits.chores import audit_chores_layout
+from gzkit.justify.models import AnchorRef, EvidenceBundle
+from gzkit.justify.walkthrough import render_markdown, render_scaffold
 from gzkit.traceability import covers
 
 # ---------------------------------------------------------------------------
@@ -161,6 +163,68 @@ class TestEvalFeedbackCluster(unittest.TestCase):
             # Proposal file written to proofs_dir
             written = list(proofs_dir.glob("proposal-*.json"))
             self.assertEqual(len(written), 1)
+
+    def _run_over_walkthroughs(
+        self, reasoning: str, hints_md: str | None = None
+    ) -> list[ProposalRecord]:
+        """Three complete walkthroughs from the real producer, reasoning text supplied."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            ledger_path = root / ".gzkit" / "ledger.jsonl"
+            ledger_path.parent.mkdir(parents=True, exist_ok=True)
+            _write_ledger(ledger_path, [])
+            justify_root = root / "artifacts" / "justify"
+            for slug in ("adr-0-1-0", "adr-0-2-0", "adr-0-3-0"):
+                anchor = AnchorRef(kind="draft", draft_slug=slug, draft_text="d", body="d")
+                evidence = EvidenceBundle(anchor=anchor, taxonomy_reference="taxonomy.md")
+                walkthrough = render_scaffold(anchor, evidence, complexity_hints_md=hints_md)
+                sections = [
+                    s.model_copy(update={"reasoning": reasoning}) for s in walkthrough.sections
+                ]
+                _write_justify(
+                    justify_root,
+                    slug,
+                    render_markdown(walkthrough.model_copy(update={"sections": sections})),
+                )
+            return run_cluster(
+                root,
+                ledger_path=ledger_path,
+                justify_root=justify_root,
+                proofs_dir=root / ".gzkit" / "chores" / "eval-feedback-cluster" / "proofs",
+                cluster_min_recurrence=3,
+            )
+
+    @covers("REQ-0.0.26-03-02")
+    def test_walkthrough_template_text_is_not_confusion(self) -> None:
+        """The template's own prompts and headings are not an author's confusion (GHI #996).
+
+        Every producer-written walkthrough carries "not sure" (section 8's prompt) and
+        "uncertain" ("Residual uncertainty"). Counting them made any three walkthroughs
+        a confusion cluster whatever their authors wrote.
+        """
+        result = self._run_over_walkthroughs("The boundary follows the brief; evidence is cited.")
+
+        self.assertEqual([p.cluster_key for p in result], [])
+
+    @covers("REQ-0.0.26-03-02")
+    def test_generated_complexity_hints_are_not_confusion(self) -> None:
+        """The producer's complexity-hints block renders after section 8; it is tool text.
+
+        The walkthrough parser breaks sections only at ``## ``, so the ``###`` hints
+        block lands inside section 8's reasoning. Guidance an analyzer generated is
+        not an author's confusion.
+        """
+        hints = "- **src/x.py:1-9** — Strategy (advise)\n  Guidance: an unclear seam\n  Move: split"
+        result = self._run_over_walkthroughs("Neutral grounded reasoning.", hints_md=hints)
+
+        self.assertEqual([p.cluster_key for p in result], [])
+
+    @covers("REQ-0.0.26-03-03")
+    def test_confusion_in_authored_reasoning_still_clusters(self) -> None:
+        """Reading only authored reasoning must not blind the chore to real confusion."""
+        result = self._run_over_walkthroughs("The ownership seam is unclear to me.")
+
+        self.assertEqual([p.cluster_key for p in result], ["jk:unclear"])
 
     @covers("REQ-0.0.26-03-03")
     def test_multiple_clusters_multiple_proposals(self) -> None:

@@ -21,6 +21,8 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit.justify.parser import WalkthroughParseError, parse_walkthrough
+
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
@@ -41,6 +43,9 @@ _CONFUSION_VOCABULARY: frozenset[str] = frozenset(
         "conflicting",
     }
 )
+
+#: Heading ``walkthrough.md.j2`` renders above the generated complexity hints.
+_HINTS_HEADING = "### Authoring-time complexity hints"
 
 _DEFAULT_CLUSTER_MIN_RECURRENCE = 3
 _DEFAULT_SCORE_THRESHOLD = 3.0
@@ -154,7 +159,7 @@ def _parse_frontmatter(text: str) -> dict[str, str]:
 def _walk_justify_artifacts(justify_root: Path) -> list[dict]:
     """Walk justify_root recursively for *.md files and parse frontmatter.
 
-    Returns list of dicts: ``{"path": Path, "anchor_id": str, "raw": str}``.
+    Returns list of dicts: ``{"path": Path, "anchor_id": str, "authored": str}``.
     Non-existent root returns empty list.
     """
     if not justify_root.exists():
@@ -169,8 +174,26 @@ def _walk_justify_artifacts(justify_root: Path) -> list[dict]:
             continue
         fm = _parse_frontmatter(raw)
         anchor_id = fm.get("anchor_id", md_file.stem)
-        artifacts.append({"path": md_file, "anchor_id": anchor_id, "raw": raw})
+        artifacts.append({"path": md_file, "anchor_id": anchor_id, "authored": _authored_text(raw)})
     return artifacts
+
+
+def _authored_text(raw: str) -> str:
+    """Return the text an author wrote: a walkthrough's reasoning, else the whole file.
+
+    Every walkthrough the producer writes carries template prompts and headings that
+    contain confusion vocabulary ("not sure", "Residual uncertainty"); reading them as
+    the author's words clustered any three walkthroughs by construction (GHI #996).
+    The generated complexity-hints block renders after section 8 and parses into its
+    reasoning, so it is cut off there too.
+    """
+    try:
+        walkthrough = parse_walkthrough(raw)
+    except WalkthroughParseError:
+        return raw
+    return "\n".join(
+        section.reasoning.split(_HINTS_HEADING, 1)[0] for section in walkthrough.sections
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -231,7 +254,7 @@ def _build_buckets(
     for artifact in justify_artifacts:
         anchor_id = artifact["anchor_id"]
         artifact_path = str(artifact["path"])
-        keywords = _extract_confusion_keywords(artifact["raw"])
+        keywords = _extract_confusion_keywords(artifact["authored"])
         for kw in keywords:
             key = f"jk:{kw}"
             buckets.setdefault(key, []).append(

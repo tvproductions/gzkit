@@ -5,10 +5,10 @@ description: Pre-execution reasoning walkthrough for GHIs, OBPIs, and drafts. In
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: "2026-08-08"
+last_reviewed: "2026-09-14"
 gz_command: justify
 metadata:
-  skill-version: "6.1.2"
+  skill-version: "6.2.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero_layer: "Layer 1 - Evidence Gathering"
@@ -104,12 +104,14 @@ uv run -m gzkit justify validate artifacts/justify/obpi-04-pre-exec.md --json
 
 The CLI rejects ADR anchors (`ADR-X.Y.Z`) by design — ADRs are governance packages, not change instances. Invoke on the tracking GHI or an OBPI under the ADR.
 
+**Answering an ADR evaluation is narrower (ADR-0.0.26 Decision 2, GHI #996).** When `gz validate --evaluation-justify-binding` refuses an ADR, only a walkthrough whose own frontmatter names that ADR discharges it: an OBPI under the ADR (`justify OBPI-X.Y.Z-NN --save`), or — when the ADR has no OBPI yet — a draft slug of the ADR id with dots as dashes (`justify --draft "<what the evaluation found>" --draft-slug adr-x-y-z --save`). A tracking-GHI walkthrough does not, because the GHI's link to the ADR lives on GitHub (operator ruling 2026-09-14). The walkthrough must also be complete and generated after the evaluation; the filename carries no weight.
+
 ## When to Use
 
 Invoke `gz justify` at any of the following moments. The upstream skills surface these automatically so you don't have to remember.
 
 - **OBPI pipeline Stage 1→2**, when your self-reported confidence in the planned implementation is <90% (Prime Directive invariant 11). The `gz-obpi-pipeline` skill's Stage 1→2 Confidence Gate routes here.
-- **After a gz-adr-evaluate run lands below 3.0** on an ADR with a tracking GHI or at least one OBPI. The `gz-adr-evaluate` skill appends a footer pointing to `uv run -m gzkit justify <parent-GHI-or-first-OBPI>`.
+- **After a gz-adr-evaluate run triggers the evaluation-justify binding** — any dimension below threshold or enough red-team challenges fired. The `gz-adr-evaluate` skill appends a footer pointing to an OBPI under the ADR, or the ADR's draft slug when it has no OBPI.
 - **Before promoting a pool ADR** into active work — run justify on the tracking GHI to surface hidden ambiguity before you commit the lane/kind.
 - **Mid-pipeline, when scope feels ambiguous** — if you are about to guess at whether a change crosses brief boundaries (see AGENTS.md § Defect-fix routing), run justify on the in-flight OBPI and fill the scope boundary section before continuing.
 - **At your own discretion**, when a task description contains hedging language ("probably", "should be able to", "I think") or when an operator request is ambiguous. The walkthrough is cheap; the wrong-direction pass is expensive.
@@ -139,7 +141,7 @@ The skill's own completion contract — the state in which a walkthrough can be 
 
 ## Related Skills
 
-- **`gz-adr-evaluate`** — sources the low-score suggestion that routes to `uv run -m gzkit justify <parent-GHI-or-first-OBPI>` when weighted score < 3.0.
+- **`gz-adr-evaluate`** — sources the triggered-evaluation footer that routes to `uv run -m gzkit justify OBPI-<X.Y.Z>-<NN> --save`, or the ADR's draft slug.
 - **`gz-obpi-pipeline`** — Stage 1→2 Confidence Gate routes here when self-reported confidence is <90%.
 - **`gz-plan-audit`** — downstream consumer; filled walkthrough artifacts are acceptable evidence in plan receipts.
 - **`gz-design`** — upstream; if the anchor is a draft concept, run `gz-design` first to book the artifact, then `gz-justify` on the booked identifier.

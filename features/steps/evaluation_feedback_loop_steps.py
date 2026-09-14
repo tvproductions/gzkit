@@ -23,12 +23,15 @@ import shutil
 import subprocess
 import sys
 from contextlib import redirect_stderr, redirect_stdout
+from datetime import UTC, datetime
 from pathlib import Path
 from unittest import mock
 
 from behave import given, then, when
 
 from gzkit.chores.eval_feedback_cluster_lib import ProposalRecord, run_cluster
+from gzkit.justify.models import AnchorRef, EvidenceBundle
+from gzkit.justify.walkthrough import render_markdown, render_scaffold
 from gzkit.ledger import Ledger
 from gzkit.ledger_events import adr_evaluation_event
 
@@ -361,13 +364,27 @@ def step_ledger_event_count(context, count: int, event_name: str, artifact_id: s
 
 @given('a complete justify scaffold exists for "{artifact_id}"')
 def step_justify_scaffold(context, artifact_id: str) -> None:
-    src = _FIXTURES_DIR / "justify-scaffold.md"
+    """Write the walkthrough ``gz justify --draft --draft-slug <dashed id> --save`` produces.
+
+    Rendered by the real producer with every section filled, after the evaluation it
+    answers. A hand-written stand-in passed the binding gate only by its filename
+    (GHI #996); the gate now reads what the walkthrough says.
+    """
+    slug = artifact_id.replace(".", "-").lower()
+    anchor = AnchorRef(kind="draft", draft_slug=slug, draft_text="fixture", body="fixture")
+    evidence = EvidenceBundle(
+        anchor=anchor, taxonomy_reference="docs/governance/model-regression-taxonomy.md"
+    )
+    walkthrough = render_scaffold(anchor, evidence, now=datetime.now(UTC))
+    sections = [
+        section.model_copy(update={"reasoning": f"Fixture reasoning for {artifact_id}."})
+        for section in walkthrough.sections
+    ]
     dst_dir = Path("artifacts") / "justify"
     dst_dir.mkdir(parents=True, exist_ok=True)
-    slug = artifact_id.replace(".", "-").lower()
-    body = src.read_text(encoding="utf-8")
-    body = body.replace("ADR-0.99.0-fixture", artifact_id)
-    (dst_dir / f"{slug}-2026-05-03T22-00-00.md").write_text(body, encoding="utf-8")
+    (dst_dir / f"{slug}.md").write_text(
+        render_markdown(walkthrough.model_copy(update={"sections": sections})), encoding="utf-8"
+    )
 
 
 @given('the eval-feedback threshold "{key}" is set to {value:f}')

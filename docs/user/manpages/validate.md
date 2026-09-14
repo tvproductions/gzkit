@@ -1193,9 +1193,22 @@ Enforces the ADR-0.0.26 evaluation feedback-loop doctrine (§ Decision #2). Read
 recent `adr-evaluation` ledger event for the specified artifact (or all artifacts when no ID
 is given). If any dimension score is below `low_score_threshold` **or** the number of
 red-team challenges fired is at or above `red_team_count_threshold` (both configured in
-`data/eval_feedback_thresholds.json`, defaults 3.0 / 3), a qualifying `gz-justify` artifact
-must exist at `artifacts/justify/`. The gate is also called automatically before any artifact
+`data/eval_feedback_thresholds.json`), a qualifying `gz-justify` walkthrough
+must exist under `artifacts/justify/`. The gate is also called automatically before any artifact
 advances past `Pending` lifecycle state.
+
+A walkthrough qualifies only when **all** of these hold (GHI #996). A file merely present under
+the subject's name, including an empty one, does not qualify:
+
+1. It parses as a walkthrough, the same read `gz justify validate` performs.
+2. Every section is filled. This is a structural check, not a judgment of reasoning quality.
+3. Its own frontmatter names the evaluated subject. The filename carries no weight.
+   - **ADR evaluation:** an OBPI under that ADR, or a draft slug of the ADR ID with dots as dashes.
+     A short and a full ID of the same ADR both match. A tracking-GHI walkthrough never does.
+   - **OBPI evaluation:** that OBPI's own anchor.
+4. It was generated at or after the evaluation it answers (the event's `timestamp`, else `ts`).
+
+The finding names each walkthrough it refused and why.
 
 ```bash
 # Check a specific artifact
@@ -1207,8 +1220,8 @@ gz validate --evaluation-justify-binding
 
 | Code | Meaning | Recovery |
 |------|---------|----------|
-| 0 | No violations — gate not triggered, or trigger + justify artifact present | — |
-| 3 | Gate triggered (low score or high red-team count) with no qualifying `gz-justify` artifact | Run `uv run -m gzkit justify <artifact-id> --save` then commit the filled artifact |
+| 0 | No violations — gate not triggered, or trigger + a qualifying walkthrough | — |
+| 3 | Gate triggered (low score or high red-team count) with no qualifying walkthrough | For an ADR: `uv run gz justify OBPI-<X.Y.Z>-<NN> --save` for an OBPI under it, or `uv run gz justify --draft "<what the evaluation found>" --draft-slug adr-<x>-<y>-<z> --save`. For an OBPI: `uv run gz justify OBPI-<X.Y.Z>-<NN> --save`. Fill every section, confirm with `uv run gz justify validate <file>`, and commit it. `gz justify` refuses ADR anchors, so never `justify ADR-…` |
 
 ### `--intrinsic-attestation`
 

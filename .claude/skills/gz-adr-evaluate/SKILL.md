@@ -5,14 +5,14 @@ description: Post-authoring quality evaluation for ADRs and OBPIs. Scores ADRs o
 category: adr-lifecycle
 compatibility: GovZero v6 framework; adapted from AirlineOps for gzkit ADR package layouts
 metadata:
-  skill-version: "6.7.0"
+  skill-version: "6.8.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "lifecycle (pre-proposal QC), quality rubric, OBPI decomposition"
   govzero_layer: "Layer 1 - Evidence Gathering"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-08-21
+last_reviewed: 2026-09-14
 model: sonnet
 ---
 
@@ -239,25 +239,47 @@ finding. Include:
 
 #### Low-Score Footer Guidance
 
-When the ADR's weighted total is `< 3.0` AND the ADR has at least one tracking
-anchor — a `GHI-<N>` parent, a tracking GHI referenced in frontmatter, or at
-least one existing OBPI brief under the ADR — append a footer line to the
-emitted scorecard:
+Append the footer under the condition `gz validate --evaluation-justify-binding`
+fails closed on (ADR-0.0.26 Decision 2): any dimension scores below
+`low_score_threshold` (it ships as `< 3.0`; the file below, never this line, is
+authoritative), or at least `red_team_count_threshold` red-team challenges
+fired — both read from `data/eval_feedback_thresholds.json`. The weighted total
+is not the trigger: a single dimension below threshold fails the gate while the
+total stays healthy. The footer requires an OBPI brief under the evaluated ADR
+to exist, and names it:
 
 ```text
-> Consider: uv run -m gzkit justify <parent-GHI-or-first-OBPI>
+> Consider: uv run -m gzkit justify OBPI-<X.Y.Z>-<NN> --save
 ```
 
-Substitute the concrete identifier. If both a tracking GHI and an OBPI exist,
-prefer the GHI (the tracking conversation is broader than any single OBPI's
-scope). If neither exists, do not append — the walkthrough requires a change
-instance to resolve evidence against.
+When the ADR has no OBPI brief yet there is no footer to append; the evaluation
+is answered instead on the ADR itself as a draft slug — its id with dots as
+dashes:
 
-A weighted total below 3.0 is an invariant-11 trigger: the ADR's structural
-weakness means implementing agents will land at <90% confidence on at least one
-OBPI. The pre-execution walkthrough (`gz-justify` skill) surfaces the hidden
-ambiguity before promotion. Skipping this footer on a `< 3.0` ADR is the
-adjacent rationalization pattern the walkthrough exists to close.
+```text
+> Consider: uv run -m gzkit justify --draft "<what the evaluation found>" --draft-slug adr-<x>-<y>-<z> --save
+```
+
+Only these two forms discharge the gate: the walkthrough's own frontmatter must
+name the evaluated ADR, an OBPI under it, or its draft slug (operator ruling
+2026-09-14, GHI #996). A walkthrough on a tracking GHI does NOT — the GHI's link
+to the ADR lives on GitHub, which the gate does not consult — so never route the
+footer to one.
+
+**Amendment record (REQ-0.0.19-04-05, 2026-09-14, GHI #996).** That attested REQ
+asserts this block cites the `< 3.0` threshold, requires a tracking GHI or OBPI
+to exist, and suggests `uv run -m gzkit justify`. All three still hold. What the
+operator's ruling retired is the weighted total as the trigger and the
+tracking-GHI route: the footer now fires on the gate's own condition and names
+only an OBPI, because a GHI walkthrough never discharged the gate it answers.
+
+A trigger is an invariant-11 signal: the ADR's structural weakness means
+implementing agents will land at <90% confidence on at least one OBPI. The
+pre-execution walkthrough (`gz-justify` skill) surfaces the hidden ambiguity
+before promotion, and the lifecycle refuses to advance the ADR past `Pending`
+until a qualifying walkthrough exists. Skipping this footer on a triggered
+evaluation is the adjacent rationalization pattern the walkthrough exists to
+close.
 
 ### Step 8: Gate Decision
 
@@ -334,6 +356,6 @@ For adversarial review by a separate model:
 ## Related ADRs
 
 - **ADR-0.0.19** — Pre-execution reasoning walkthrough. The Low-Score Footer
-  Guidance section routes operators from a sub-3.0 evaluation into the
+  Guidance section routes operators from a triggered evaluation into the
   `gz-justify` walkthrough so invariant 11 (<90% confidence → ask/justify) is
   surfaced before the ADR is promoted into active work.

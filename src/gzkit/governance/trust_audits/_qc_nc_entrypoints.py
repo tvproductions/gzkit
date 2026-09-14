@@ -744,6 +744,30 @@ def _ep_population_controls_admits_disclosed(root: Path) -> int:
     return 0 if audit_population_controls(root, declarations=declared) else 1
 
 
+def _ep_evaluation_justify_binding(root: Path) -> list[ValidationError]:
+    """Drive the production justify-binding gate at the fixture's planted subject."""
+    from gzkit.governance.trust_audits._qc_nc_evaluation import SUBJECT  # noqa: PLC0415
+    from gzkit.governance.trust_audits.evaluation_justify_binding import (  # noqa: PLC0415
+        validate_evaluation_justify_binding,
+    )
+
+    return validate_evaluation_justify_binding(SUBJECT, root)
+
+
+def _ep_evaluation_justify_binding_admits_qualified(root: Path) -> int:
+    """Truthy only when the gate ADMITS a walkthrough that answers the evaluation.
+
+    The admit half (GHI #797 precedent). A gate refusing what `gz justify` can
+    produce would be unsatisfiable; the refuse half is `evaluation-justify-binding`.
+    """
+    from gzkit.governance.trust_audits._qc_nc_evaluation import SUBJECT  # noqa: PLC0415
+    from gzkit.governance.trust_audits.evaluation_justify_binding import (  # noqa: PLC0415
+        validate_evaluation_justify_binding,
+    )
+
+    return 0 if validate_evaluation_justify_binding(SUBJECT, root) else 1
+
+
 def _ep_gate_callers(root: Path) -> list[ValidationError]:
     """Drive the production uncalled-gate audit against the fixture root.
 

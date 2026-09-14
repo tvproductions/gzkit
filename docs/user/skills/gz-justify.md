@@ -10,7 +10,7 @@ Pre-execution reasoning walkthrough for GHIs, OBPIs, and drafts. Invoke before i
 
 ## When to Use
 
-Invoke this skill when your self-reported confidence in a planned implementation is <90%, after a `gz-adr-evaluate` run scores below 3.0 on an ADR with a tracking GHI or OBPI, before promoting a pool ADR into active work, or mid-pipeline when scope feels ambiguous. The `gz-adr-evaluate` skill's Low-Score Footer Guidance and the `gz-obpi-pipeline` skill's Stage 1→2 Confidence Gate both route operators here automatically.
+Invoke this skill when your self-reported confidence in a planned implementation is <90%, after a `gz-adr-evaluate` run triggers the evaluation-justify binding (answer it on an OBPI under the ADR, or on the ADR's draft slug — a tracking-GHI walkthrough does not discharge it), before promoting a pool ADR into active work, or mid-pipeline when scope feels ambiguous. The `gz-adr-evaluate` skill's Low-Score Footer Guidance and the `gz-obpi-pipeline` skill's Stage 1→2 Confidence Gate both route operators here automatically.
 
 ## What to Expect
 

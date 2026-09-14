@@ -32,6 +32,7 @@ from gzkit.enforcement import create_fixture_tempdir, enforces, get_enforcement_
 from . import _qc_nc_composite as _cx
 from . import _qc_nc_corpus as _cr
 from . import _qc_nc_entrypoints as _ep
+from . import _qc_nc_evaluation as _ev
 from . import _qc_nc_hooks as _hk
 from . import _qc_nc_population as _pc
 from ._qc_claim_exemptions import QC_CLAIM_EXEMPTS
@@ -1663,6 +1664,19 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         "population-controls-disclosed",
         _pc.build_fully_disclosed,
         _ep._ep_population_controls_admits_disclosed,
+    ),
+    # Refuse half plants every present-but-false form of evidence; admit half plants
+    # a walkthrough the real producer writes (GHI #996).
+    (
+        "evaluation-justify-binding",
+        _ev.build_present_but_false_evidence,
+        _ep._ep_evaluation_justify_binding,
+        "; refused: ",
+    ),
+    (
+        "evaluation-justify-binding-qualified",
+        _ev.build_qualifying_walkthrough,
+        _ep._ep_evaluation_justify_binding_admits_qualified,
     ),
     ("enforcement-floor", _build_enforcement_floor, _ep._ep_enforcement_floor),
     (

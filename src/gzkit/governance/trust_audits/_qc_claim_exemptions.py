@@ -217,4 +217,12 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     "population-controls": "population-controls-disclosed",
     # The admit control itself: a membership test with no further admit path.
     "population-controls-disclosed": EXEMPTS_NONE,
+    # --- GHI #996 -------------------------------------------------------------
+    # A qualifying walkthrough under artifacts/justify/ ADMITS a triggered evaluation
+    # the gate would otherwise fail: a project-controllable file, an exemption by the
+    # bar above. Its admit path was exactly where the gate once took a filename as
+    # reasoning. Thresholds and the no-evaluation return are scope and absence.
+    "evaluation-justify-binding": "evaluation-justify-binding-qualified",
+    # The admit control itself: the qualifier is one predicate with no further admit path.
+    "evaluation-justify-binding-qualified": EXEMPTS_NONE,
 }
