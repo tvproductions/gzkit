@@ -1,0 +1,89 @@
+---
+mode: CREATE
+adr_id: null
+branch: main
+timestamp: '2026-09-14T08:49:20Z'
+agent: claude-code
+session_id: d0cc0aad-a04e-46d3-8aea-f9563ab23621
+continues_from: .gzkit/handoffs/20260914T083129Z-exit-status-shape-995-971-889.md
+---
+
+## Current State Summary
+
+Fresh handoff at operator request, re-authored at `368833cce` after the session's work landed. No code changed after predecessor `20260914T083129Z-exit-status-shape-995-971-889.md`. That handoff, the insight and the rulings store were synced in `368833cce`.
+
+Session d0cc0aad resumed `20260914T025515Z-family-a-inventory-and-population-controls.md` and worked family-A shape A, exit status. Each item below is pushed, and each closed issue carries a cause-to-test table:
+- GHI #995 fixed in `9cc334ee4`. `gz validate --json` returned before exit classification, so every aggregate scope exited 0 whatever it found. A shared `_exit_for_errors` now serves both modes, and a solo-scope parity table is derived from `_dispatch_early_return_scopes`.
+- GHI #971 fixed in `6b3e71a7c`. The verifier-pipe gate now reads the separator ending the verifier's AND-OR list. It stops honoring `$?` after `&`, gives `chain` and `background` their own arms and messages, and reads every stage under `pipefail`. `tests.md` is now 0.24.0.
+- GHI #889 fixed in `c9e296d8e`. The precomplete `arb_receipts` check requires the newest lint/typecheck/unittest receipt since the lock claim to record exit 0.
+- Filed GHI #1008 (grouped verifier not recognized), left open. Added live-instance evidence to GHI #969.
+
+At authoring: working tree clean, origin/main level (`0 0`), no OBPI locks, 44 open GHIs.
+
+## Important Context
+
+### Campaign workflow fronts (source: `docs/governance/build-to-1.0-campaign-2026-08-16.md` § Workflow fronts, active per `data/active_campaign.json`)
+- **handoff system:** no change. GHI #1003, #870 untouched.
+- **ghi triage:** family-A exit-status shape worked. #995, #971, #889 closed; #1008 filed; #969 kept open by ruling. Queue at 44 open (measured at authoring).
+- **adr/obpi campaign:** no OBPI work, no locks. ADR-0.35.0 TOPMOST, unchanged this session.
+- **new R&D:** not worked.
+
+### Family-A shapes remaining
+- Presence (4 open): #996 #994 #983 #894. #994's and #983's owning briefs (OBPI-0.35.0-06, OBPI-0.35.0-05) are ATTESTED COMPLETED and route them out, so both are ordinary GHIs.
+- Exit status: only #969 remains (the harness notification reader), open by ruling.
+- Channel, neighbouring domain: #907 #815 #803 #997.
+- Cap not reduction: #808 #998. Verdict: #919 #936.
+- Population: the 83-entry list in `data/population_control_grandfather.json`.
+
+### Gotchas learned
+- The background-task notification reports the command's aggregate status. It said "exit code 0" twice while the output file showed `gz check REAL EXIT: 1` (recorded on #969). Read the output file, never the summary line.
+- A `$?` read immediately after an `&&` chain IS the verifier's status when the chain short-circuits (measured in bash and `/bin/sh`). After `&`, `$?` is the background launch's status (0).
+- Changing a rule's version requires moving its Coverage Ledger row in `docs/governance/advisory-rules-audit.md` in the same commit, or the scorecard step and two tests fail.
+- A mutant that crashes (KeyError) grades `inconclusive`, not killed; choose one that stays well-formed.
+
+## Decisions Made
+
+- [agent-chose] Re-authored as a fresh CREATE chained to `20260914T083129Z`, with state re-verified at `368833cce`. The three operator rulings from this session (resume "A (Recommended)", #889 "Newest per step, since lock", #969 "Fix #889, keep #969 open") are carried by the rulings store through that link and deliberately not restated (GHI #1003).
+
+## Immediate Next Steps
+
+1. Put the next family-A shape to the operator: presence (#996 #994 #983 #894), cap-not-reduction (#808 #998), or draining the 83-entry population list one gate at a time.
+2. If presence: read the four bodies in full and check brief ownership before proposing the present-but-false control.
+3. Offer GHI #1008 (grouped verifier recognition) and the `obpi_stages.py` BASELINE_VERIFICATION insight as small direct repairs if the operator wants a short item.
+
+## Pending Work / Open Loops
+
+- GHI #969 open by ruling (harness notification reader); GHI #1008 open, unselected.
+- Insight: `src/gzkit/commands/obpi_stages.py` BASELINE_VERIFICATION prescribes `uv run -m unittest -q` rather than the canonical unittest step.
+- 83 enforcement claims disclosed population-undeclared.
+- GHI #936, #997, #808 open; test-isolation-compliance still set aside.
+- ADR-0.35.0-owned members #921 #922 #939 #799 wait on operator-initiated OBPI work.
+
+## Verification Checklist
+
+```bash
+git rev-list --left-right --count origin/main...HEAD
+gh issue view 995 --json state
+gh issue view 971 --json state
+gh issue view 889 --json state
+gh issue view 969 --json state
+gh issue view 1008 --json state
+uv run gz obpi lock list
+uv run -m unittest tests.commands.test_validate_json_exit tests.hooks.test_verifier_pipe_gate tests.commands.test_obpi_precomplete
+```
+Expected at authoring: `0 0` apart from this handoff's sync commit; #995, #971, #889 CLOSED; #969 and #1008 OPEN; no active locks; tests green. Re-run rather than trust.
+
+## Evidence / Artifacts
+
+- `src/gzkit/commands/validate_cmd.py` — `_exit_for_errors`; `tests/commands/test_validate_json_exit.py`; `docs/user/manpages/validate.md`.
+- `src/gzkit/verifier_pipe_gate.py` — `_status_carrier`, `_replacement_arm` list-end walk, `chain`/`background` prose; `tests/hooks/test_verifier_pipe_gate.py`.
+- `.gzkit/rules/tests.md` (0.24.0), `docs/governance/rule-version-history.md`, `docs/governance/advisory-rules-audit.md` (row 66, Coverage Ledger).
+- `src/gzkit/commands/obpi_precomplete.py` — `_check_arb_receipts_passed`, `_held_lock_files`; `tests/commands/test_obpi_precomplete.py`; `.gzkit/skills/gz-obpi-pipeline/SKILL.md` (6.55.1).
+- `.gzkit/handoffs/20260914T083129Z-exit-status-shape-995-971-889.md` (predecessor).
+- Commits `9cc334ee4`, `6b3e71a7c`, `c9e296d8e`, `368833cce`; GHI #995, #971, #889 close comments; GHI #1008.
+
+## Settled Rulings
+
+857 rulings booked and carried forward. The corpus lives in `.gzkit/handoffs/rulings.jsonl` — read it with `gz handoff rulings`.
+
+Do NOT re-open these. A ruling booked once keeps arriving; it is carried by reference from the append-only store, not by copying the whole corpus into every successor document (GHI #838).
