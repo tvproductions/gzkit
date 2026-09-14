@@ -96,6 +96,17 @@ class Closure(AcceptanceModel):
     proof_id: str = Field(min_length=1, description="Exact proof independently judged to close it")
 
 
+class Ground(AcceptanceModel):
+    """What a reviewer read that grounds one approval; the importer confirms it (GHI #994)."""
+
+    proof_id: str = Field(min_length=1, description="Examined proof whose approval this grounds")
+    path: str | None = Field(
+        default=None,
+        description="Repository-relative file read; absent means the proof's recorded evidence",
+    )
+    excerpt: str = Field(min_length=1, description="Text copied verbatim from that source")
+
+
 class ReviewJudgment(AcceptanceModel):
     """Reviewer-owned judgment fields, shared by transport and persisted records."""
 
@@ -119,6 +130,10 @@ class ReviewJudgment(AcceptanceModel):
     replay: tuple[ReplayRecord, ...] = Field(
         default=(),
         description="Proof executions the reviewer independently reproduced (GHI #961)",
+    )
+    grounds: tuple[Ground, ...] = Field(
+        default=(),
+        description="Excerpts the reviewer read that ground its approvals (GHI #994)",
     )
 
 

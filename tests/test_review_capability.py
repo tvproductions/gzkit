@@ -71,6 +71,19 @@ class TestReviewerCapability(unittest.TestCase):
             cap = reviewer_capability(root, "spec-reviewer")
         self.assertTrue(cap.can_execute)
 
+    def test_only_the_frontmatter_declares_the_grant(self) -> None:
+        # GHI #994 makes this reader load-bearing for a refusal: a body line that
+        # merely mentions a shell must never widen a read-only persona's grant.
+        with TemporaryDirectory() as td:
+            d = Path(td) / ".claude" / "agents"
+            d.mkdir(parents=True)
+            (d / "spec-reviewer.md").write_text(
+                "---\nname: spec-reviewer\n---\n\ntools: Bash\n", encoding="utf-8"
+            )
+            cap = reviewer_capability(Path(td), "spec-reviewer")
+        self.assertFalse(cap.can_execute)
+        self.assertEqual(cap.tools, [])
+
     def test_an_unreadable_definition_reports_no_execution(self) -> None:
         # Fail safe toward the restrictive claim: promising execution the agent
         # may not have is the direction that produces the unrunnable ask.
@@ -113,6 +126,16 @@ class TestPromptDisclosesCapabilityOutputContract(unittest.TestCase):
         # the code, and what the reviewer could not check goes elsewhere.
         prompt = self._prompt("Read, Glob, Grep")
         self.assertIn("verification_gaps", prompt)
+
+    def test_a_read_only_reviewer_is_told_to_ground_its_approvals(self) -> None:
+        # GHI #994: the importer refuses an uncited approval from this reviewer, so
+        # the prompt must say so before the dispatch, not after the refusal.
+        for agent in ("spec-reviewer", "quality-reviewer"):
+            with self.subTest(agent=agent):
+                prompt = self._prompt("Read, Glob, Grep", agent)
+                self.assertIn("Ground every proof you approve", prompt)
+                self.assertIn('"grounds"', prompt)
+        self.assertNotIn("Ground every proof you approve", self._prompt("Read, Bash"))
 
     def test_an_executing_reviewer_is_not_told_it_cannot_execute(self) -> None:
         prompt = self._prompt("Read, Glob, Grep, Bash")

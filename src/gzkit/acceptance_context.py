@@ -9,6 +9,7 @@ from pydantic import Field
 from gzkit.acceptance import (
     AcceptanceModel,
     Closure,
+    Ground,
     Obligation,
     Proof,
     Review,
@@ -16,6 +17,7 @@ from gzkit.acceptance import (
     validate_review_record,
 )
 from gzkit.acceptance_execution import canonical_obligations, digest_components, input_digest
+from gzkit.acceptance_grounds import MIN_EXCERPT_CHARS
 from gzkit.acceptance_store import Contract, acceptance_status, load_history, resolve_brief
 
 
@@ -144,6 +146,7 @@ def acceptance_review_frame(stage: str, serialized: str) -> list[str]:
         obligation_id=proof.obligation_id,
         proof_id=proof.id,
     )
+    ground = Ground(proof_id=proof.id, path=None, excerpt="replace with the exact text you read")
     return [
         "### Durable Acceptance Result",
         "",
@@ -174,6 +177,14 @@ def acceptance_review_frame(stage: str, serialized: str) -> list[str]:
         "description is a finding field, never a closure field.",
         "```json",
         closure.model_dump_json(indent=2),
+        "```",
+        "Ground shape: name an examined proof, the repository-relative path you read (null",
+        "for that proof's recorded evidence), and an excerpt copied verbatim from that source,",
+        f"at least {MIN_EXCERPT_CHARS} characters. The importer refuses an excerpt that does not",
+        "occur where it says. A reviewer whose tool grant has no shell grounds every approved",
+        "proof; a check you did not perform is a verification gap, never a basis for approval.",
+        "```json",
+        ground.model_dump_json(indent=2),
         "```",
         "Import actual executed reviewer output; never edit its receipt.",
         "For formatting repair, use a fresh invocation retaining the original receipt reference,",

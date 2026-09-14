@@ -116,9 +116,34 @@ claim that a review ran:
   "findings": [],
   "closures": [],
   "reviewer_id": "<independent reviewing session>",
-  "verdict": "accepted"
+  "verdict": "accepted",
+  "grounds": [
+    {
+      "proof_id": "<independently approved proof ID>",
+      "path": "<repository-relative file the reviewer read, or null>",
+      "excerpt": "<text copied verbatim from that file or the proof's evidence>"
+    }
+  ]
 }
 ```
+
+`grounds` records what the reviewer read to reach each approval. A ground with a
+null `path` cites the named proof's recorded evidence. Ingestion checks every
+ground: its proof must be one the review examined, its excerpt must be at least 20
+characters, and the excerpt must occur, ignoring whitespace, in a file inside the
+repository or in that proof's evidence. A citation that fails any of these is
+refused, whatever the reviewer's transport. A reviewer that cannot execute must
+also ground every proof it approves. That includes a native Claude invocation whose
+`--agent` persona declares no shell in the frontmatter of
+`.claude/agents/<persona>.md`. It also includes one whose grant cannot be resolved:
+no persona, more than one, a name that is not a plain persona name, or a flag such
+as `--disallowedTools` or `--agents` that overrides the persona's tools. An
+uncited approval from such a reviewer is refused, and nothing is appended. Put a
+check the reviewer could not perform in
+`verification_gaps`; never approve on it. Findings need no citation, because a
+finding blocks. Cross-vendor reviews carry their execution claims as `replay`
+records instead. The check applies to new imports only: replaying the ledger never
+reinterprets a review recorded before it existed (GHI #994).
 
 An adversarial review that replayed the proof rather than only reading it adds a
 `replay` array. Each record names `obligation_id`, `proof_id`, the

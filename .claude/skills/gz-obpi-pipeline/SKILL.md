@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-09-14
 metadata:
-  skill-version: "6.55.1"
+  skill-version: "6.56.0"
 model: sonnet
 ---
 
@@ -428,6 +428,12 @@ assertions. Do not build an all-assertions classifier or count mutations as cove
          that context and explicitly lists `accepted_proof_ids`; the importer
          assigns the review and receipt IDs. Missing proof is recorded as a
          mapped `missing-proof` finding with no invented proof or approval ID.
+         Each approved proof carries a `grounds` citation: the file the reviewer
+         read (or the proof's recorded evidence) and an excerpt copied from it.
+         The importer refuses an uncited approval from a reviewer whose grant has
+         no shell or cannot be resolved (no single plain `--agent` persona, or a
+         tool-override flag), and any excerpt that is not where it says (GHI #994). A check
+         the reviewer could not perform stays in `verification_gaps`.
 
       iv. **Dispatch both reviewers concurrently through receipted agent execution.**
          Preserve the selected model, the `spec-reviewer` and `quality-reviewer`

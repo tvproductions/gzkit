@@ -186,6 +186,8 @@ class AcceptanceStoreTests(ExecutionFixture):
             if stage == "adversarial":
                 receipt["step"]["command"] = ["claude", "-p", "review"]
                 payload["fallback_reason"] = "Synthetic unavailable cross-vendor transport"
+                # No resolvable tool grant: the approval cites what it read (GHI #994).
+                payload["grounds"] = [{"proof_id": second.id, "excerpt": second.evidence}]
             receipt["stdout_tail"] = json.dumps(payload)
             expected.append(record_review(self.root, OBPI, receipt).id)
         status = acceptance_status(self.root, OBPI)
@@ -384,6 +386,8 @@ class AcceptanceStoreTests(ExecutionFixture):
         payload = json.loads(receipt["stdout_tail"].removeprefix("```json\n").removesuffix("\n```"))
         reason = "Synthetic transport fixture: codex setup returned ready=false, executable absent"
         payload["fallback_reason"] = reason
+        # No resolvable tool grant: the approval cites what it read (GHI #994).
+        payload["grounds"] = [{"proof_id": proof.id, "excerpt": proof.evidence[:80]}]
         receipt["stdout_tail"] = json.dumps(payload)
         review = record_review(self.root, OBPI, receipt)
         self.assertEqual(review.tier, 2)

@@ -31,6 +31,7 @@ from gzkit.acceptance_execution import (
     execution_conditions_digest,
     input_digest,
 )
+from gzkit.acceptance_grounds import refuse_uncited_approval
 from gzkit.adversary_workspace import validate_replay_records
 from gzkit.config import GzkitConfig
 from gzkit.ledger import Ledger
@@ -325,6 +326,8 @@ def record_review(root: Path, obpi_id: str, receipt: dict[str, Any]) -> Review:
     review = _at_ledger_position(review_from_receipt(receipt), history.proofs)
     if not _validate_new_review(root, obpi_id, review):
         return next(item for item in history.reviews if item.id == review.id)
+    # New imports only: replaying history must never reinterpret a recorded review.
+    refuse_uncited_approval(root, review, history.proofs, receipt)
     _append(root, obpi_id, "review", receipt)
     return review
 

@@ -467,7 +467,12 @@ def reviewer_capability(project_root: Path, agent: str) -> ReviewerCapability:
         lines = definition.read_text(encoding="utf-8").splitlines()
     except OSError:
         return ReviewerCapability(agent=agent)
-    for line in lines:
+    # Only the frontmatter declares the grant; a body line mentioning a shell must
+    # never widen it, because the acceptance importer refuses on this reading (GHI #994).
+    if not lines or lines[0].strip() != "---":
+        return ReviewerCapability(agent=agent)
+    frontmatter = next((lines[1:i] for i in range(1, len(lines)) if lines[i].strip() == "---"), [])
+    for line in frontmatter:
         if line.lower().startswith("tools:"):
             tools = [t.strip() for t in line.split(":", 1)[1].split(",") if t.strip()]
             return ReviewerCapability(
@@ -492,6 +497,9 @@ def _capability_frame(project_root: Path, agent: str) -> list[str]:
                 "You **cannot execute** commands. Verify by reading the code, never by",
                 "running it. If a check in this prompt requires execution, do not attempt",
                 "it. Inspect supplied execution artifacts and disclose what you did not run.",
+                "Ground every proof you approve in the acceptance result's `grounds` with an",
+                "excerpt from a file you read or a supplied proof's evidence; a confirmation you",
+                "cannot anchor that way is a verification gap, never a basis for approval.",
             ]
         )
     lines.extend(
