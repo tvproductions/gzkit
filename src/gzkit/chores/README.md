@@ -244,6 +244,15 @@ verbatim): *"indicators, chores shouldn't have a bunch of gates like the
 adr/obpi system."* `currency` is the one exception the design allows, because a
 stale `currency` chore asserts something false.
 
+**Staleness is read without running the chore.** `gz chores status` renders each
+chore's band — `overdue`, `due`, `unmeasured`, `paused` or `current` — from its
+declaration and the PASS blocks `gz chores run` appends to `CHORE-LOG.md`, and
+session orientation announces the due and overdue ones (GHI #936). An
+`elapsed-time` chore is due `periodDays` after its last passing run; a
+`content-delta` chore is due from the first commit touching a declared
+`staleness.surfaces` path after it. Declare the surfaces the chore actually
+inspects: too broad and it is always due, too narrow and its decay is hidden.
+
 ---
 
 ## The Four Rungs
@@ -293,7 +302,7 @@ rationale are in `docs/governance/chore-class-system.md`.
 | `class` | `conformance` · `coherence` · `curation` · `mining` · `currency` | Why the chore exists, and what its staleness costs |
 | `rung` | `observe` · `propose` · `repair` · `operator-only-repair` | Where it stops — the **writing** license |
 | `idempotent` | `true` · `false` | Safe to re-run on a cadence — the **scheduling** license |
-| `staleness` | `{signal, periodDays, graceDays, paused}`; `signal` is `accumulated-work` · `content-delta` · `elapsed-time`; `periodDays` required for `elapsed-time` | What makes it due |
+| `staleness` | `{signal, periodDays, surfaces, graceDays, paused}`; `signal` is `accumulated-work` · `content-delta` · `elapsed-time`; `periodDays` required for `elapsed-time`; `surfaces` (repo-relative POSIX paths, never `.`) required for `content-delta` and refused on any other signal | What makes it due |
 | `remediation` | `{category, details}`; `category` is `vendor_fix` · `workaround` · `no_fix_planned` · `none_available`; `details` non-empty | What repair means — "no repair" is a declared value, never an absence |
 | `nonAuthority` | non-empty text | What it refuses to touch, and why |
 | `governingRule` | `.gzkit/rules/<file>.md` (optionally ` § <clause>`) or `none` | The rule it serves |
@@ -304,7 +313,7 @@ rationale are in `docs/governance/chore-class-system.md`.
     "class": "coherence",
     "rung": "propose",
     "idempotent": true,
-    "staleness": {"signal": "content-delta", "graceDays": 7},
+    "staleness": {"signal": "content-delta", "surfaces": [".gzkit/rules"], "graceDays": 7},
     "remediation": {"category": "no_fix_planned", "details": "A rule conflict is a ruling; the chore recommends and stops."},
     "nonAuthority": "Never edits either conflicting rule; resolving the conflict is the operator's.",
     "governingRule": "none"

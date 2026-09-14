@@ -1295,7 +1295,25 @@ generalizes, already returns 3 on stale evidence.
    puts the overdue announcement in `scripts/session_orientation.py`. GHI #936 —
    *"chore currency gates are only readable by running the chore they gate"* — is the
    existing work order for this step, and its Expected section names that announcement
-   site.
+   site. **As landed (2026-09-14):** `gz chores status [--json]` renders every
+   registered chore as `overdue`, `due`, `unmeasured`, `paused` or `current` and exits 0
+   in every band, which answers § The indicator surface's open exit-status question by
+   this step's own "never gates". The run witness is the PASS block in `CHORE-LOG.md`
+   for both signals, not a proof file's commit date: 25 of the 30 content-delta chores
+   keep no proof but that log, and its commit date moves on a FAIL run too, which is the
+   run-twice bypass GHI #935 closed. A content-delta chore is due from the first commit
+   touching a declared surface after its last passing run. Before this step only 5 chores
+   had surfaces, and those lived in the gate script's own map. Operator ruling
+   2026-09-14, verbatim *"Declare content-delta (Recommended)"*, added
+   `staleness.surfaces` to the declaration, required for content-delta and refused
+   elsewhere, and declared it for all 30 by reading each chore's `CHORE.md` and the
+   commands its criteria run. `scripts/check_proof_freshness.py` now reads those same
+   declared surfaces. The 3 accumulated-work chores declare no counter and read
+   `unmeasured`, a declared value and never `current`. Orientation announces due and
+   overdue chores out-of-process via `--json`, naming at most `CHORE_ANNOUNCE_LIMIT`,
+   and adds nothing when none are due. At landing the board read 35 overdue, 1 due,
+   3 unmeasured, 1 current. That is the full-red board § Graded bands predicted, and
+   `staleness.paused` is the operator's lever for it.
 3. **Class-conformance validator** — the ESLint/Ansible move. A chore whose `CHORE.md`
    contradicts its declared rung fails. This is what makes "internally consistent"
    mechanical rather than aspirational, and it retires the self-contradictory and

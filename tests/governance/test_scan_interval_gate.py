@@ -61,11 +61,14 @@ class ScanIntervalRegistrationTests(unittest.TestCase):
     def test_interval_chores_are_not_also_surface_gated(self) -> None:
         """The two arms answer different questions; a slug picks one.
 
-        A chore declaring elapsed-time takes the interval arm, so a surface entry
-        for it would be dead code describing a gate that never runs.
+        A chore declaring elapsed-time takes the interval arm, so surfaces on it
+        would describe a gate that never runs — the arm reads them only for
+        content-delta, whatever the registry carries.
         """
-        overlap = {s for s in _GATE._AUDITED_SURFACES if _GATE._declared_period(s) is not None}
-        self.assertEqual(overlap, set())
+        staleness = {"signal": "elapsed-time", "periodDays": 30, "surfaces": ["src"]}
+        with patch.object(_GATE, "_declared_staleness", return_value=staleness):
+            self.assertIsNone(_GATE._declared_surfaces(_SLUG))
+            self.assertEqual(_GATE._declared_period(_SLUG), 30)
 
 
 class NewestScanTimestampTests(unittest.TestCase):
@@ -174,6 +177,51 @@ class ScanIntervalGateTests(unittest.TestCase):
     def test_missing_log_fails_closed(self) -> None:
         """No record of a run is not evidence of a recent run."""
         self.assertEqual(self._run_against(None), 3)
+
+
+class DeclaredSurfaceArmTests(unittest.TestCase):
+    """The proof arm reads the chore's declared surfaces, never a map of its own (GHI #936).
+
+    ``gz chores status`` and this gate must judge a content-delta chore against the
+    same inputs; two surface authorities is how one reports a chore fresh while the
+    other reports it stale.
+    """
+
+    _PROOF = ".gzkit/chores/demo-coherence/proofs/report.md"
+
+    def _run(self, surfaces: list[str] | None, epochs: dict[str, int]) -> int:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            proofs = root / ".gzkit" / "chores" / "demo-coherence" / "proofs"
+            proofs.mkdir(parents=True)
+            (proofs / "report.md").write_text("findings\n", encoding="utf-8")
+            staleness: dict[str, object] = {"signal": "content-delta", "graceDays": 7}
+            if surfaces is not None:
+                staleness["surfaces"] = surfaces
+            registry = {"chores": [{"slug": "demo-coherence", "staleness": staleness}]}
+            (root / ".gzkit" / "chores" / "registry.json").write_text(
+                json.dumps(registry), encoding="utf-8"
+            )
+            with (
+                patch.object(_GATE, "_PROJECT_ROOT", root),
+                patch.object(_GATE, "_last_commit_epoch", side_effect=epochs.get),
+            ):
+                return _GATE.main(["demo-coherence"])
+
+    def test_proof_older_than_a_declared_surface_is_a_breach(self) -> None:
+        self.assertEqual(self._run(["watched"], {"watched": 200, self._PROOF: 100}), 3)
+
+    def test_proof_newer_than_every_declared_surface_passes(self) -> None:
+        self.assertEqual(self._run(["watched"], {"watched": 100, self._PROOF: 200}), 0)
+
+    def test_an_undeclared_surface_never_makes_the_proof_stale(self) -> None:
+        """Only declared inputs count: movement elsewhere is not this chore's staleness."""
+        self.assertEqual(
+            self._run(["watched"], {"watched": 100, "elsewhere": 900, self._PROOF: 200}), 0
+        )
+
+    def test_content_delta_chore_declaring_no_surfaces_has_no_gate(self) -> None:
+        self.assertEqual(self._run(None, {self._PROOF: 200}), 1)
 
 
 if __name__ == "__main__":

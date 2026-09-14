@@ -1357,6 +1357,8 @@ uv run gz chores show <slug>         # Display CHORE.md for one chore
 uv run gz chores advise <slug>       # Dry-run criteria and report status
 uv run gz chores plan <slug>         # Show plan details for one chore
 uv run gz chores run <slug>          # Execute and log one chore
+uv run gz chores status              # Staleness band per chore (overdue/due/unmeasured/paused/current); never gates
+uv run gz chores status --json       # Same board as JSON, the form session orientation reads
 uv run gz chores audit --all         # Audit log presence for all chores
 uv run gz chores doctor              # Repair missing canonical scaffold under .gzkit/chores/
 uv run gz chores doctor --dry-run    # Report-only; no file changes

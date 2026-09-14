@@ -69,6 +69,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz chores list`](chores-list.md) | List declared chores from the config registry |
 | [`gz chores plan`](chores-plan.md) | Show deterministic plan details for one chore |
 | [`gz chores run`](chores-run.md) | Execute one chore and append a dated log |
+| [`gz chores status`](chores-status.md) | Report every chore's staleness band without running it; announces, never gates |
 | [`gz chores audit`](chores-audit.md) | Audit chore log presence for one/all chores |
 | [`gz chores doctor`](chores-doctor.md) | Re-scaffold missing or damaged canonical chores; preserve `proofs/` |
 | [`gz chores propose-ghi`](chores-propose-ghi.md) | File GitHub issues for unfiled cluster proposal records in a chore's `proofs/` |

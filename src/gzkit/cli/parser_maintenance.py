@@ -1428,6 +1428,24 @@ def _register_chores_parsers(commands: argparse._SubParsersAction) -> None:
     p_chores_run.add_argument("slug", help="Chore slug identifier")
     p_chores_run.set_defaults(func=lambda a: _lazy("chores_run")(slug=a.slug))
 
+    p_chores_status = chores_commands.add_parser(
+        "status",
+        help="Report every chore's staleness band without running it",
+        description=(
+            "Read each registered chore's class declaration and run record and report "
+            "its staleness band: overdue, due, unmeasured, paused or current. Nothing "
+            "is run. Staleness announces and never gates: every band exits 0."
+        ),
+        epilog=build_epilog(["gz chores status", "gz chores status --json"]),
+    )
+    p_chores_status.add_argument(
+        "--json",
+        dest="as_json",
+        action="store_true",
+        help="Emit {chores: [...], counts: {...}} as JSON to stdout.",
+    )
+    p_chores_status.set_defaults(func=lambda a: _lazy("chores_status")(as_json=a.as_json))
+
     p_chores_audit = chores_commands.add_parser(
         "audit",
         help="Audit chore log presence",

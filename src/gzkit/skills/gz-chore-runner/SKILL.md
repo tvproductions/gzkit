@@ -5,9 +5,9 @@ description: Run a gzkit chore end-to-end (show, plan, advise, execute, validate
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-13
+last_reviewed: 2026-09-14
 metadata:
-  skill-version: "1.4.0"
+  skill-version: "1.5.0"
 model: sonnet
 ---
 
@@ -30,9 +30,11 @@ Execute a repository chore using the canonical `gz chores` workflow.
 
 ## Procedure
 
-1. Discover chores and choose a slug:
+1. Discover chores and choose a slug. `gz chores status` shows which chores are
+   due or overdue without running any, loudest band first (GHI #936):
 
    ```bash
+   uv run gz chores status
    uv run gz chores list
    ```
 
@@ -85,7 +87,7 @@ Execute a repository chore using the canonical `gz chores` workflow.
    uv run gz chores propose-ghi <chore_slug>
    ```
 
-8. Audit the logged result:
+9. Audit the logged result:
 
    ```bash
    uv run gz chores audit --slug <chore_slug>

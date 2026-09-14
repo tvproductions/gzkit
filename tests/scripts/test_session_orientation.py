@@ -1050,6 +1050,89 @@ class TestLiveAdrCountsOverrideCampaignProse(unittest.TestCase):
         self.assertEqual(campaign["adr_refs"], ["ADR-0.0.73"])
 
 
+class TestChoreStalenessAnnouncement(unittest.TestCase):
+    """Overdue chores reach session start without anyone running a chore (GHI #936).
+
+    A chore's currency gate was readable only by running the chore it gates, so
+    nothing a session reads before choosing work ever said a chore was overdue.
+    The section is conditional: absent when nothing is due or overdue, so a clean
+    registry costs no orientation budget; the band itself is read from
+    ``gz chores status --json``, never recomputed here.
+    """
+
+    def setUp(self):
+        self.mod = _load_orientation_module()
+        self.now = datetime(2026, 9, 14, 12, 0, 0, tzinfo=UTC)
+
+    @staticmethod
+    def _payload(bands: dict[str, str]) -> dict:
+        order = ("overdue", "due", "unmeasured", "paused", "current")
+        return {
+            "chores": [{"slug": slug, "band": band} for slug, band in bands.items()],
+            "counts": {band: sum(1 for b in bands.values() if b == band) for band in order},
+        }
+
+    def _render(self, payload) -> str:
+        return self.mod.render({"chore_staleness": payload}, self.now)
+
+    def test_due_and_overdue_chores_are_announced_by_name(self):
+        out = self._render(
+            self._payload({"late-one": "overdue", "soon-one": "due", "fine-one": "current"})
+        )
+        self.assertIn("## Chores due or overdue", out)
+        self.assertIn("late-one", out)
+        self.assertIn("soon-one", out)
+        self.assertNotIn("fine-one", out)
+        self.assertIn("gz chores status", out)
+
+    def test_nothing_due_renders_no_section(self):
+        for label, payload in (
+            ("all current", self._payload({"a": "current", "b": "paused", "c": "unmeasured"})),
+            ("status unavailable", None),
+        ):
+            with self.subTest(label):
+                self.assertNotIn("Chores due or overdue", self._render(payload))
+
+    def test_long_overdue_list_names_a_bounded_set_and_states_the_rest(self):
+        """The count is always the true total; overflow is stated, never dropped."""
+        bands = {f"chore-{i:02d}": "overdue" for i in range(self.mod.CHORE_ANNOUNCE_LIMIT + 5)}
+        out = self._render(self._payload(bands))
+        self.assertIn(f"{self.mod.CHORE_ANNOUNCE_LIMIT + 5} overdue", out)
+        self.assertIn("chore-00", out)
+        self.assertNotIn(f"chore-{self.mod.CHORE_ANNOUNCE_LIMIT + 4:02d}", out)
+        self.assertIn("+5 more", out)
+
+    def test_collection_reads_the_governed_verb_out_of_process(self):
+        payload = self._payload({"late-one": "overdue"})
+        completed = subprocess_completed(stdout=json.dumps(payload))
+        with mock.patch.object(self.mod.subprocess, "run", return_value=completed) as run:
+            self.assertEqual(self.mod.collect_chore_staleness(), payload)
+        self.assertEqual(run.call_args.args[0][-3:], ["chores", "status", "--json"])
+
+    def test_every_collection_failure_degrades_to_silence(self):
+        import subprocess as _sp
+
+        for label, effect in (
+            ("missing binary", FileNotFoundError()),
+            ("timeout", _sp.TimeoutExpired("gz", 1)),
+        ):
+            with (
+                self.subTest(label),
+                mock.patch.object(self.mod.subprocess, "run", side_effect=effect),
+            ):
+                self.assertIsNone(self.mod.collect_chore_staleness())
+        for label, completed in (
+            ("non-zero exit", subprocess_completed(stdout="{}", returncode=1)),
+            ("unparseable", subprocess_completed(stdout="not json")),
+            ("unexpected shape", subprocess_completed(stdout=json.dumps({"chores": "x"}))),
+        ):
+            with (
+                self.subTest(label),
+                mock.patch.object(self.mod.subprocess, "run", return_value=completed),
+            ):
+                self.assertIsNone(self.mod.collect_chore_staleness())
+
+
 def subprocess_completed(stdout: str = "", returncode: int = 0):
     """Tiny stand-in for subprocess.CompletedProcess covering the fields we use."""
     import subprocess as _sp

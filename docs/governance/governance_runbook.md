@@ -743,6 +743,7 @@ uv run gz chores show <slug>               # Display CHORE.md for one chore
 uv run gz chores advise <slug>             # Dry-run criteria and report status
 uv run gz chores plan <slug>               # Show plan details for one chore
 uv run gz chores run <slug>                # Execute and log one chore
+uv run gz chores status                    # Which chores are due or overdue, without running any
 uv run gz chores audit --all               # Audit log presence for all chores
 uv run gz chores propose-ghi <slug>        # File GHIs for unfiled cluster proposals in proofs/
 ```

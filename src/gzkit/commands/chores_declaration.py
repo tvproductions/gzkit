@@ -15,7 +15,14 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    ValidationError,
+    field_validator,
+    model_validator,
+)
 
 ChoreClass = Literal["conformance", "coherence", "curation", "mining", "currency"]
 ChoreRung = Literal["observe", "propose", "repair", "operator-only-repair"]
@@ -39,15 +46,44 @@ class ChoreStaleness(BaseModel):
     period_days: int | None = Field(
         None, alias="periodDays", gt=0, description="Expected days between runs"
     )
+    surfaces: tuple[str, ...] | None = Field(
+        None, description="Repo-relative paths whose commits make a content-delta chore due"
+    )
     grace_days: int = Field(
         ..., alias="graceDays", ge=0, description="Days past due before overdue"
     )
     paused: bool = Field(False, description="Intentional dormancy, distinct from neglect")
 
+    @field_validator("surfaces")
+    @classmethod
+    def _surfaces_are_repo_relative(cls, value: tuple[str, ...] | None) -> tuple[str, ...] | None:
+        # A surface names part of THIS repository in the POSIX form git reports.
+        # "." is refused with the empty list: a scope that means "everything" is
+        # the Diskerase failure (docs/governance/chore-class-system.md § Two licenses).
+        for path in value or ():
+            parts = path.split("/")
+            if (
+                not path
+                or path.startswith("/")
+                or "\\" in path
+                or (len(path) > 1 and path[1] == ":")
+                or ".." in parts
+                or path.strip("/") in ("", ".")
+            ):
+                msg = f"surface {path!r} must be a repo-relative POSIX path inside the repository"
+                raise ValueError(msg)
+        return value
+
     @model_validator(mode="after")
-    def _elapsed_time_needs_a_period(self) -> ChoreStaleness:
+    def _signal_declares_its_inputs(self) -> ChoreStaleness:
         if self.signal == "elapsed-time" and self.period_days is None:
             msg = "periodDays is required when signal is elapsed-time"
+            raise ValueError(msg)
+        if self.signal == "content-delta" and not self.surfaces:
+            msg = "surfaces is required when signal is content-delta (GHI #936)"
+            raise ValueError(msg)
+        if self.signal != "content-delta" and self.surfaces is not None:
+            msg = "surfaces is read only for signal content-delta"
             raise ValueError(msg)
         return self
 

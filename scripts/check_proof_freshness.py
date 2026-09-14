@@ -19,7 +19,10 @@ whatever the checkout did last rather than what the repository knows.
 
 A proof is stale when any file in the surface it audits has a newer last-commit
 date than the proof itself. Uncommitted proofs are treated as fresh — they are
-being written right now.
+being written right now. The audited surfaces are the chore's declared
+``staleness.surfaces`` in ``.gzkit/chores/registry.json``; this gate holds no
+surface map of its own, so ``gz chores status`` and this gate read one
+declaration (GHI #936).
 
 That comparison cannot express a chore whose staleness is driven from *outside*
 the repository. ``frontier-model-card-currency`` scans vendor publication hubs;
@@ -43,42 +46,16 @@ Exit codes: 0 fresh, 1 usage/IO error, 3 policy breach (stale evidence).
 from __future__ import annotations
 
 import json
-import re
 import subprocess
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
+from gzkit.commands.chores_staleness import newest_pass_stamp as _newest_scan_timestamp
+
 _PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 sys.stdout.reconfigure(encoding="utf-8")  # ty: ignore[unresolved-attribute]
-
-# Each chore's proofs are only as good as the surfaces they were derived from.
-_AUDITED_SURFACES: dict[str, tuple[str, ...]] = {
-    "control-surface-rule-conflicts": (".gzkit/rules",),
-    "control-surface-skill-rule-reachability": (".gzkit/rules", ".gzkit/skills"),
-    "control-surface-rule-vs-check-drift": (
-        ".gzkit/rules",
-        "src/gzkit/governance/trust_audits",
-    ),
-    # Vocabulary evidence goes stale when the schema that declares types moves,
-    # or when a producer lands that could drain a never-fired entry.
-    "ledger-vocabulary-inertness": (
-        "src/gzkit/schemas/ledger.json",
-        "src/gzkit/ledger_events.py",
-        "src/gzkit/events.py",
-    ),
-    # Pass E audits what *invokes* a validator, so its evidence goes stale when a
-    # caller surface moves — the CLI parser (which scopes exist), the `gz check`
-    # step registry, or any of the three gating surfaces.
-    "control-surface-validator-reachability": (
-        "src/gzkit/cli",
-        "src/gzkit/commands/quality.py",
-        ".pre-commit-config.yaml",
-        ".github/workflows",
-        ".claude/hooks",
-    ),
-}
 
 # Chores whose staleness is externally driven have no in-repo signal to key on,
 # so they gate on elapsed time instead of on a surface's commit date. The maximum
@@ -94,31 +71,36 @@ _AUDITED_SURFACES: dict[str, tuple[str, ...]] = {
 # `.claude/settings.local.json` is gitignored and grows with no commit.
 
 
-def _declared_period(slug: str) -> int | None:
-    """Return *slug*'s declared elapsed-time ``periodDays``, or None if it declares none."""
+def _declared_staleness(slug: str) -> dict | None:
+    """Return *slug*'s declared ``staleness`` object, or None if it declares none."""
     registry = _PROJECT_ROOT / ".gzkit" / "chores" / "registry.json"
     try:
         entries = json.loads(registry.read_text(encoding="utf-8")).get("chores", [])
     except (OSError, json.JSONDecodeError, AttributeError):
         return None
     for entry in entries:
-        if not isinstance(entry, dict) or entry.get("slug") != slug:
-            continue
-        staleness = entry.get("staleness")
-        if not isinstance(staleness, dict) or staleness.get("signal") != "elapsed-time":
-            return None
-        period = staleness.get("periodDays")
-        return period if isinstance(period, int) and period > 0 else None
+        if isinstance(entry, dict) and entry.get("slug") == slug:
+            staleness = entry.get("staleness")
+            return staleness if isinstance(staleness, dict) else None
     return None
 
 
-# ``gz chores run`` appends "## <ISO timestamp>" followed by "- Status: PASS|FAIL";
-# findings sections are written by hand as "## <date> — <prose>". Only a PASS
-# block witnesses a completed governed run: FAIL runs are stamped the same way,
-# and counting them let an overdue chore clear itself by running twice.
-_RUN_HEADING = re.compile(
-    r"^##[ \t]+(\d{4}-\d{2}-\d{2}T[0-9:.+\-]+)[ \t]*\n- Status: PASS[ \t]*$", re.MULTILINE
-)
+def _declared_period(slug: str) -> int | None:
+    """Return *slug*'s declared elapsed-time ``periodDays``, or None if it declares none."""
+    staleness = _declared_staleness(slug) or {}
+    if staleness.get("signal") != "elapsed-time":
+        return None
+    period = staleness.get("periodDays")
+    return period if isinstance(period, int) and period > 0 else None
+
+
+def _declared_surfaces(slug: str) -> tuple[str, ...] | None:
+    """Return *slug*'s declared content-delta ``surfaces``, or None if it declares none."""
+    staleness = _declared_staleness(slug) or {}
+    surfaces = staleness.get("surfaces")
+    if staleness.get("signal") != "content-delta" or not isinstance(surfaces, list) or not surfaces:
+        return None
+    return tuple(str(surface) for surface in surfaces)
 
 
 def _last_commit_epoch(path: str) -> int | None:
@@ -152,29 +134,6 @@ def _iso(epoch: int) -> str:
     code was always sound.
     """
     return datetime.fromtimestamp(epoch, UTC).date().isoformat()
-
-
-def _newest_scan_timestamp(log_text: str) -> datetime | None:
-    """Return the newest recorded run stamp in *log_text*, or None.
-
-    Reads only the passing timestamped blocks ``gz chores run`` appends; a FAIL
-    block is a record that the verb ran, never that the audit was done. Narrative
-    headings a human wrote (``## 2026-09-02 — findings``) are deliberately not
-    matched: keying on them would make appending prose enough to mark the chore
-    fresh, rebuilding the gate whose only witness is that an artifact exists
-    (``AGENTS.md`` § DO IT RIGHT). File order is not trusted either — the newest
-    stamp wins wherever it sits.
-    """
-    stamps: list[datetime] = []
-    for raw in _RUN_HEADING.findall(log_text):
-        try:
-            when = datetime.fromisoformat(raw)
-        except ValueError:
-            continue
-        # A stamp written without an offset is read as UTC rather than skipped;
-        # dropping it would silently age the log toward a false breach.
-        stamps.append(when if when.tzinfo else when.replace(tzinfo=UTC))
-    return max(stamps, default=None)
 
 
 def _check_scan_interval(slug: str, interval_days: int) -> int:
@@ -221,16 +180,15 @@ def main(argv: list[str]) -> int:
     period = _declared_period(argv[0]) if len(argv) == 1 else None
     if period is not None:
         return _check_scan_interval(argv[0], period)
-    known = sorted(_AUDITED_SURFACES)
-    if len(argv) != 1 or argv[0] not in known:
+    surfaces = _declared_surfaces(argv[0]) if len(argv) == 1 else None
+    if surfaces is None:
         print(
-            f"usage: check_proof_freshness.py <{' | '.join(known)} | a chore declaring "
-            "staleness.signal elapsed-time>",
+            "usage: check_proof_freshness.py <slug of a chore declaring staleness.signal "
+            "elapsed-time, or content-delta with surfaces>",
             file=sys.stderr,
         )
         return 1
     slug = argv[0]
-    surfaces = _AUDITED_SURFACES[slug]
     proofs_dir = _PROJECT_ROOT / ".gzkit" / "chores" / slug / "proofs"
     proofs = sorted(p for p in proofs_dir.glob("*.md") if p.name != "CHORE-LOG.md")
 

@@ -25,7 +25,7 @@ def _declaration(**overrides: object) -> dict[str, object]:
         "class": "coherence",
         "rung": "propose",
         "idempotent": True,
-        "staleness": {"signal": "content-delta", "graceDays": 7},
+        "staleness": {"signal": "content-delta", "surfaces": [".gzkit/rules"], "graceDays": 7},
         "remediation": {
             "category": "no_fix_planned",
             "details": "Conflicts are rulings; the chore recommends and stops.",
@@ -78,6 +78,7 @@ class TestDeclaredChoreLoads(unittest.TestCase):
             self.assertEqual(declaration.rung, "propose")
             self.assertTrue(declaration.idempotent)
             self.assertEqual(declaration.staleness.signal, "content-delta")
+            self.assertEqual(declaration.staleness.surfaces, (".gzkit/rules",))
             self.assertEqual(declaration.remediation.category, "no_fix_planned")
             self.assertEqual(declaration.governing_rule, ".gzkit/rules/governance-core.md")
 
@@ -119,6 +120,57 @@ class TestMalformedDeclarationIsRefused(unittest.TestCase):
             "elapsed-time staleness with no period",
             _declaration(staleness={"signal": "elapsed-time", "graceDays": 3}),
             "staleness",
+        ),
+        (
+            # A content-delta chore is due when its inputs move; with no declared
+            # inputs nothing can ever move, so the chore would read current forever.
+            "content-delta staleness with no surfaces",
+            _declaration(staleness={"signal": "content-delta", "graceDays": 7}),
+            "staleness",
+        ),
+        (
+            # An empty scope must never be read as "everything" (SRE ch. 7, Diskerase).
+            "content-delta staleness with an empty surface list",
+            _declaration(staleness={"signal": "content-delta", "surfaces": [], "graceDays": 7}),
+            "staleness",
+        ),
+        (
+            "surfaces declared on a signal that never reads them",
+            _declaration(
+                staleness={
+                    "signal": "elapsed-time",
+                    "periodDays": 30,
+                    "surfaces": ["src/gzkit"],
+                    "graceDays": 7,
+                }
+            ),
+            "staleness",
+        ),
+        (
+            "absolute surface path",
+            _declaration(
+                staleness={"signal": "content-delta", "surfaces": ["/etc"], "graceDays": 7}
+            ),
+            "staleness.surfaces",
+        ),
+        (
+            "surface path escaping the repository",
+            _declaration(
+                staleness={"signal": "content-delta", "surfaces": ["../other"], "graceDays": 7}
+            ),
+            "staleness.surfaces",
+        ),
+        (
+            "surface path naming the whole repository",
+            _declaration(staleness={"signal": "content-delta", "surfaces": ["."], "graceDays": 7}),
+            "staleness.surfaces",
+        ),
+        (
+            "backslash-separated surface path",
+            _declaration(
+                staleness={"signal": "content-delta", "surfaces": ["src\\gzkit"], "graceDays": 7}
+            ),
+            "staleness.surfaces",
         ),
         (
             "empty non-authority",

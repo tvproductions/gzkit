@@ -20,7 +20,7 @@ _FIXTURE_DECLARATION: dict[str, object] = {
     "class": "conformance",
     "rung": "observe",
     "idempotent": True,
-    "staleness": {"signal": "content-delta", "graceDays": 7},
+    "staleness": {"signal": "content-delta", "surfaces": ["src"], "graceDays": 7},
     "remediation": {"category": "no_fix_planned", "details": "A test fixture repairs nothing."},
     "nonAuthority": "Never edits anything.",
     "governingRule": "none",

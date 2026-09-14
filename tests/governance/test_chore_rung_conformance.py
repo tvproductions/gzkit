@@ -25,7 +25,7 @@ from gzkit.governance.trust_audits import audit_chore_rung_conformance
 _DECLARATION = {
     "class": "conformance",
     "idempotent": True,
-    "staleness": {"signal": "content-delta", "graceDays": 7},
+    "staleness": {"signal": "content-delta", "surfaces": ["src"], "graceDays": 7},
     "remediation": {"category": "vendor_fix", "details": "The chore repairs the subject."},
     "nonAuthority": "Never edits canon.",
     "governingRule": "none",

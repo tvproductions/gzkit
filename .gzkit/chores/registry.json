@@ -52,6 +52,16 @@
       "idempotent": true,
       "staleness": {
         "signal": "content-delta",
+        "surfaces": [
+          "src/gzkit/cli",
+          "src/gzkit/commands",
+          "docs/user/manpages",
+          "config/doc-coverage.json",
+          "README.md",
+          "docs/user/runbook.md",
+          "docs/governance/governance_runbook.md",
+          ".gzkit/rules/cli.md"
+        ],
         "graceDays": 7
       },
       "remediation": {
@@ -73,6 +83,9 @@
       "idempotent": true,
       "staleness": {
         "signal": "content-delta",
+        "surfaces": [
+          "src/gzkit"
+        ],
         "graceDays": 7
       },
       "remediation": {
@@ -94,6 +107,11 @@
       "idempotent": true,
       "staleness": {
         "signal": "content-delta",
+        "surfaces": [
+          "src/gzkit",
+          ".gzkit.json",
+          ".gzkit/manifest.json"
+        ],
         "graceDays": 7
       },
       "remediation": {
@@ -137,6 +155,9 @@
       "idempotent": true,
       "staleness": {
         "signal": "content-delta",
+        "surfaces": [
+          ".gzkit/rules"
+        ],
         "graceDays": 7
       },
       "remediation": {
@@ -158,6 +179,10 @@
       "idempotent": true,
       "staleness": {
         "signal": "content-delta",
+        "surfaces": [
+          ".gzkit/rules",
+          "src/gzkit/governance/trust_audits"
+        ],
         "graceDays": 7
       },
       "remediation": {
@@ -179,6 +204,10 @@
       "idempotent": true,
       "staleness": {
         "signal": "content-delta",
+        "surfaces": [
+          ".gzkit/rules",
+          ".gzkit/skills"
+        ],
         "graceDays": 7
       },
       "remediation": {
@@ -200,6 +229,13 @@
       "idempotent": true,
       "staleness": {
         "signal": "content-delta",
+        "surfaces": [
+          "src/gzkit/cli",
+          "src/gzkit/commands/quality.py",
+          ".pre-commit-config.yaml",
+          ".github/workflows",
+          ".claude/hooks"
+        ],
         "graceDays": 7
       },
       "remediation": {
@@ -221,6 +257,11 @@
       "idempotent": true,
       "staleness": {
         "signal": "content-delta",
+        "surfaces": [
+          "src/gzkit",
+          "tests",
+          "pyproject.toml"
+        ],
         "graceDays": 7
       },
       "remediation": {
@@ -242,6 +283,17 @@
       "idempotent": true,
       "staleness": {
         "signal": "content-delta",
+        "surfaces": [
+          "tests",
+          ".gitattributes",
+          "docs",
+          ".gzkit/skills",
+          ".claude/skills",
+          "features",
+          "src/gzkit",
+          "scripts",
+          ".claude/hooks"
+        ],
         "graceDays": 7
       },
       "remediation": {
@@ -307,6 +359,14 @@
       "idempotent": true,
       "staleness": {
         "signal": "content-delta",
+        "surfaces": [
+          "config/doc-coverage.json",
+          "src/gzkit/cli",
+          "src/gzkit/commands",
+          "docs/user/manpages",
+          "docs/user/runbook.md",
+          "docs/governance/governance_runbook.md"
+        ],
         "graceDays": 7
       },
       "remediation": {
@@ -350,6 +410,13 @@
       "idempotent": true,
       "staleness": {
         "signal": "content-delta",
+        "surfaces": [
+          ".gzkit/ledger.jsonl",
+          "docs/design/adr",
+          ".gzkit/ceremonies",
+          "data/historical_self_close_waivers.json",
+          "data/behave_coverage_waivers.json"
+        ],
         "graceDays": 7
       },
       "remediation": {
@@ -371,6 +438,9 @@
       "idempotent": true,
       "staleness": {
         "signal": "content-delta",
+        "surfaces": [
+          "src/gzkit"
+        ],
         "graceDays": 7
       },
       "remediation": {
@@ -436,6 +506,10 @@
       "idempotent": true,
       "staleness": {
         "signal": "content-delta",
+        "surfaces": [
+          "docs/design/adr",
+          ".gzkit/ledger.jsonl"
+        ],
         "graceDays": 7
       },
       "remediation": {
@@ -457,6 +531,11 @@
       "idempotent": true,
       "staleness": {
         "signal": "content-delta",
+        "surfaces": [
+          "src/gzkit",
+          ".gzkit.json",
+          ".gzkit/manifest.json"
+        ],
         "graceDays": 7
       },
       "remediation": {
@@ -499,6 +578,11 @@
       "idempotent": true,
       "staleness": {
         "signal": "content-delta",
+        "surfaces": [
+          "src/gzkit/schemas/ledger.json",
+          "src/gzkit/ledger_events.py",
+          "src/gzkit/events.py"
+        ],
         "graceDays": 7
       },
       "remediation": {
@@ -521,6 +605,10 @@
       "idempotent": true,
       "staleness": {
         "signal": "content-delta",
+        "surfaces": [
+          "AGENTS.md",
+          ".gzkit/renditions/AGENTS.md"
+        ],
         "graceDays": 7
       },
       "remediation": {
@@ -542,6 +630,11 @@
       "idempotent": true,
       "staleness": {
         "signal": "content-delta",
+        "surfaces": [
+          "src/gzkit",
+          ".gzkit/rules/complexity-thresholds.json",
+          "data/module_size_grandfather.json"
+        ],
         "graceDays": 7
       },
       "remediation": {
@@ -563,6 +656,10 @@
       "idempotent": true,
       "staleness": {
         "signal": "content-delta",
+        "surfaces": [
+          "src/gzkit",
+          "pyproject.toml"
+        ],
         "graceDays": 7
       },
       "remediation": {
@@ -605,6 +702,9 @@
       "idempotent": true,
       "staleness": {
         "signal": "content-delta",
+        "surfaces": [
+          "src/gzkit"
+        ],
         "graceDays": 7
       },
       "remediation": {
@@ -626,6 +726,9 @@
       "idempotent": true,
       "staleness": {
         "signal": "content-delta",
+        "surfaces": [
+          "src/gzkit"
+        ],
         "graceDays": 7
       },
       "remediation": {
@@ -647,6 +750,22 @@
       "idempotent": true,
       "staleness": {
         "signal": "content-delta",
+        "surfaces": [
+          "src/gzkit",
+          "tests",
+          "features",
+          "scripts",
+          ".gzkit/skills",
+          ".gzkit/evidence",
+          ".gzkit/chores/eval_feedback_cluster_lib.py",
+          ".gzkit/chores/control-surface-validator-reachability/check_reachability.py",
+          ".gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py",
+          ".gzkit/chores/memory-hygiene/check_memory_drift.py",
+          ".gzkit/chores/module-sloc-cap-radon/check_module_size.py",
+          ".gzkit/chores/pythonic-design-pattern-detection/scan.py",
+          "pyproject.toml",
+          "ty.toml"
+        ],
         "graceDays": 7
       },
       "remediation": {
@@ -668,6 +787,21 @@
       "idempotent": true,
       "staleness": {
         "signal": "content-delta",
+        "surfaces": [
+          "src",
+          "tests",
+          "features",
+          "docs",
+          ".gzkit",
+          "scripts",
+          "pyproject.toml",
+          "uv.lock",
+          "mkdocs.yml",
+          "AGENTS.md",
+          "CLAUDE.md",
+          ".claude",
+          ".agents"
+        ],
         "graceDays": 7
       },
       "remediation": {
@@ -689,6 +823,32 @@
       "idempotent": true,
       "staleness": {
         "signal": "content-delta",
+        "surfaces": [
+          ".gzkit/manifest.json",
+          ".gzkit.json",
+          "docs/design/prd",
+          "docs/design/constitutions",
+          "docs/design/adr",
+          "data/exemplar_corpus.json",
+          ".gzkit/ownership",
+          "AGENTS.md",
+          "CLAUDE.md",
+          ".gzkit/renditions",
+          ".gzkit/rules",
+          ".gzkit/skills",
+          ".gzkit/personas",
+          ".claude/settings.json",
+          ".claude/hooks",
+          ".claude/rules",
+          ".claude/skills",
+          ".claude/personas",
+          ".agents/skills",
+          ".agents/personas",
+          ".codex/hooks.json",
+          ".codex/agents",
+          ".codex/config.toml",
+          ".github/discovery-index.json"
+        ],
         "graceDays": 7
       },
       "remediation": {
@@ -732,6 +892,16 @@
       "idempotent": true,
       "staleness": {
         "signal": "content-delta",
+        "surfaces": [
+          ".gzkit/skills",
+          ".claude/skills",
+          ".agents/skills",
+          "docs/user/skills",
+          ".gzkit.json",
+          "AGENTS.md",
+          "src/gzkit/cli",
+          "src/gzkit/governance/trust_audits/cli.py"
+        ],
         "graceDays": 7
       },
       "remediation": {
@@ -753,6 +923,19 @@
       "idempotent": true,
       "staleness": {
         "signal": "content-delta",
+        "surfaces": [
+          "docs/user/manpages",
+          "docs/user/runbook.md",
+          "docs/governance/governance_runbook.md",
+          "config/doc-coverage.json",
+          "README.md",
+          "src/gzkit/cli",
+          "src/gzkit/commands",
+          ".gzkit/skills",
+          ".claude/skills",
+          ".agents/skills",
+          "docs/user/skills"
+        ],
         "graceDays": 7
       },
       "remediation": {
@@ -774,6 +957,10 @@
       "idempotent": true,
       "staleness": {
         "signal": "content-delta",
+        "surfaces": [
+          ".gzkit/skills",
+          "src/gzkit/cli"
+        ],
         "graceDays": 7
       },
       "remediation": {
@@ -796,6 +983,10 @@
       "idempotent": true,
       "staleness": {
         "signal": "content-delta",
+        "surfaces": [
+          "tests",
+          "scripts/profile_unittest_modules.py"
+        ],
         "graceDays": 7
       },
       "remediation": {
@@ -817,6 +1008,10 @@
       "idempotent": true,
       "staleness": {
         "signal": "content-delta",
+        "surfaces": [
+          "tests",
+          "src/gzkit/smoke.py"
+        ],
         "graceDays": 7
       },
       "remediation": {
@@ -838,6 +1033,15 @@
       "idempotent": true,
       "staleness": {
         "signal": "content-delta",
+        "surfaces": [
+          "docs/user/manpages",
+          "config/doc-coverage.json",
+          "src/gzkit/cli",
+          "src/gzkit/commands",
+          "README.md",
+          "docs/user/runbook.md",
+          "docs/governance/governance_runbook.md"
+        ],
         "graceDays": 7
       },
       "remediation": {
@@ -859,6 +1063,15 @@
       "idempotent": true,
       "staleness": {
         "signal": "content-delta",
+        "surfaces": [
+          "docs/user/manpages",
+          "config/doc-coverage.json",
+          "src/gzkit/cli",
+          "src/gzkit/commands",
+          "README.md",
+          "docs/user/runbook.md",
+          "docs/governance/governance_runbook.md"
+        ],
         "graceDays": 7
       },
       "remediation": {

@@ -30,7 +30,7 @@ canonical templates do not ship execution evidence.
 Enumerate declared chores from the registry.
 
 ```bash
-gz chores list [--explain] [--json]
+gz chores list [--explain]
 ```
 
 `--explain` prints one row per chore with its resolution source: `project`,
@@ -49,7 +49,7 @@ gz chores show <slug>
 Show plan details for one chore.
 
 ```bash
-gz chores plan <slug> [--replace]
+gz chores plan <slug>
 ```
 
 ### advise
@@ -67,6 +67,17 @@ log to `.gzkit/chores/<slug>/proofs/CHORE-LOG.md`.
 
 ```bash
 gz chores run <slug>
+```
+
+### status
+
+Report every registered chore's staleness band — `overdue`, `due`,
+`unmeasured`, `paused` or `current` — from its class declaration and its
+passing run blocks, without running any chore. Staleness announces and never
+gates: every band exits 0. See [`gz chores status`](chores-status.md).
+
+```bash
+gz chores status [--json]
 ```
 
 ### audit
@@ -123,9 +134,8 @@ uv run gz chores propose-ghi eval-feedback-cluster
 | Flag | Applies To | Description |
 |------|-----------|-------------|
 | `--explain` | list | Label each row with resolution source (project/package/missing) |
-| `--json` | list, doctor | Output as JSON to stdout |
+| `--json` | status, doctor | Output as JSON to stdout |
 | `--dry-run` | doctor | Report-only; no file changes |
-| `--replace` | plan | Replace any cached plan file |
 | `--all` | audit | Audit every registered chore |
 | `--quiet`, `-q` | global | Suppress non-error output |
 | `--verbose`, `-v` | global | Enable verbose output |
@@ -155,6 +165,9 @@ uv run gz chores advise coverage-40pct
 
 # Execute the chore (writes evidence to .gzkit/chores/coverage-40pct/proofs/)
 uv run gz chores run coverage-40pct
+
+# Which chores are due or overdue, without running any
+uv run gz chores status
 
 # Audit log presence across the registry
 uv run gz chores audit --all

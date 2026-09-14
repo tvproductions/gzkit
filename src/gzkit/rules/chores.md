@@ -6,11 +6,11 @@ paths:
 description: Chores workflow command sequences, two-surface layout, and evidence patterns
 ---
 
-<!-- rule-version: 0.4.0 -->
+<!-- rule-version: 0.5.0 -->
 
 # Chores Workflow (gzkit)
 
-> **Rule version:** `0.4.0` — adds § Suppression is not a repair (GHI #999 step 6), landed with its witness `audit_chore_suppression` so it never stood as unwitnessed doctrine; prior `0.3.3` lifted to [Rule Version History](../../docs/governance/rule-version-history.md#choresmd).
+> **Rule version:** `0.5.0` — § Discover Chores adds `gz chores status`, the staleness board that reads every chore's band without running one (GHI #936), and § Plan & Advise drops a `--replace` flag `gz chores plan` never had; prior `0.4.0` lifted to [Rule Version History](../../docs/governance/rule-version-history.md#choresmd).
 
 > **Purpose:** Enable agents to run repository chores effectively with clear,
 > repeatable command sequences, aligned to gzkit guardrails and the two-surface
@@ -60,6 +60,7 @@ Rationale and the measured suppression inventory: `docs/governance/chore-class-s
 ### 1. Discover Chores
 
 ```bash
+uv run gz chores status                # Staleness band per chore, without running any; never gates
 uv run gz chores list                  # List declared chores
 uv run gz chores list --explain        # Show resolution source per chore (project/package/missing)
 uv run gz chores show <chore_slug>     # Display CHORE.md for one chore
@@ -68,7 +69,7 @@ uv run gz chores show <chore_slug>     # Display CHORE.md for one chore
 ### 2. Plan & Advise
 
 ```bash
-uv run gz chores plan <chore_slug> --replace
+uv run gz chores plan <chore_slug>
 uv run gz chores advise <chore_slug>
 ```
 

@@ -59,9 +59,18 @@ SECTION_HEADINGS: tuple[str, ...] = (
     "Active OBPI claims",
     "Active ADR pipeline state",
     "Recent ledger events (last 24h)",
+    # CONDITIONAL — emitted only when a chore is due or overdue (GHI #936).
+    "Chores due or overdue",
     "Open blockers",
     "Skill-awareness re-injection",
 )
+
+# `gz chores status --json` reads every chore's band in about a second; the band
+# is computed there and only rendered here. Chores named individually in the
+# announcement before it summarizes the remainder — the count is always the true
+# total and the overflow is stated, as with ACCOUNT_COMMIT_LIMIT.
+CHORE_STATUS_TIMEOUT_SEC = 15
+CHORE_ANNOUNCE_LIMIT = 10
 
 REMOTE_FETCH_TIMEOUT_SEC = 8
 REMOTE_QUERY_TIMEOUT_SEC = 4
@@ -960,6 +969,70 @@ def collect_obpi_locks(repo_root: Path) -> list[dict]:
         return []
 
 
+def collect_chore_staleness() -> dict | None:
+    """Read every chore's staleness band from the governed verb (GHI #936).
+
+    A chore's currency gate was readable only by running the chore it gates, so
+    no session was told a chore had gone overdue. The bands are resolved by
+    ``gz chores status --json`` and never recomputed here: one authority, read
+    out-of-process, degrading to silence when unavailable.
+    """
+    try:
+        proc = subprocess.run(
+            ["uv", "run", "gz", "chores", "status", "--json"],
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            timeout=CHORE_STATUS_TIMEOUT_SEC,
+            check=False,
+        )
+    except (FileNotFoundError, subprocess.SubprocessError):
+        return None
+    if proc.returncode != 0:
+        return None
+    try:
+        payload = json.loads(proc.stdout)
+    except ValueError:
+        return None
+    if not isinstance(payload, dict):
+        return None
+    if not isinstance(payload.get("chores"), list) or not isinstance(payload.get("counts"), dict):
+        return None
+    return payload
+
+
+def _render_chore_staleness(lines: list[str], payload: object) -> None:
+    """Announce due and overdue chores; render nothing when none are."""
+    if not isinstance(payload, dict):
+        return
+    counts = payload.get("counts") or {}
+    chores = payload.get("chores") or []
+    if not isinstance(counts, dict) or not isinstance(chores, list):
+        return
+    if not counts.get("overdue") and not counts.get("due"):
+        return
+    lines.append("## Chores due or overdue")
+    lines.append(
+        f"- {counts.get('overdue', 0)} overdue, {counts.get('due', 0)} due "
+        f"({counts.get('unmeasured', 0)} unmeasured, {counts.get('paused', 0)} paused). "
+        "Staleness announces a chore run; it gates nothing. Board: `uv run gz chores status`."
+    )
+    for band in ("overdue", "due"):
+        slugs = [
+            str(chore.get("slug"))
+            for chore in chores
+            if isinstance(chore, dict) and chore.get("band") == band
+        ]
+        if not slugs:
+            continue
+        named = ", ".join(slugs[:CHORE_ANNOUNCE_LIMIT])
+        overflow = len(slugs) - CHORE_ANNOUNCE_LIMIT
+        suffix = f" (+{overflow} more)" if overflow > 0 else ""
+        lines.append(f"- {band.capitalize()}: {named}{suffix}")
+    lines.append("")
+
+
 def collect_state(repo_root: Path, now: datetime) -> dict:
     """Aggregate authoritative state. Best-effort; never raises."""
     campaign = collect_campaign(repo_root)
@@ -977,6 +1050,7 @@ def collect_state(repo_root: Path, now: datetime) -> dict:
         "obpi_locks": collect_obpi_locks(repo_root),
         "adr_pipeline": [],
         "recent_events": collect_recent_events(repo_root / ".gzkit" / "ledger.jsonl", now),
+        "chore_staleness": collect_chore_staleness(),
         "blockers": [],
     }
 
@@ -1140,6 +1214,8 @@ def render(state: dict, now: datetime) -> str:
     else:
         lines.append("- (no events in window)")
     lines.append("")
+
+    _render_chore_staleness(lines, state.get("chore_staleness"))
 
     lines.append("## Open blockers")
     blockers = state.get("blockers") or []

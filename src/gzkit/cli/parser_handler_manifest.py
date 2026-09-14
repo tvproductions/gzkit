@@ -73,6 +73,7 @@ _LAZY_HANDLERS: dict[str, str] = {
     "chores_propose_ghi": "gzkit.commands.chores",
     "chores_run": "gzkit.commands.chores",
     "chores_show": "gzkit.commands.chores",
+    "chores_status": "gzkit.commands.chores_status_cmd",
     "cli_audit_cmd": "gzkit.commands.cli_audit",
     "check_config_paths_cmd": "gzkit.commands.config_paths",
     "covers_cmd": "gzkit.commands.covers",
