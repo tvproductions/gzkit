@@ -5,9 +5,9 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-11
+last_reviewed: 2026-09-14
 metadata:
-  skill-version: "6.55.0"
+  skill-version: "6.55.1"
 model: sonnet
 ---
 
@@ -1301,7 +1301,9 @@ the reconcile output and ADR status refresh.
 0. **Pre-flight checklist (MANDATORY, GHI #196)** — `uv run gz obpi precomplete {OBPI-SLUG}`
    Mechanical verification of all Stage 5 preconditions, each with a named
    remediation: brief authored readiness, reconcile idempotence (catches GHI
-   #193 drift before it bites), lock ownership, ARB receipts present, plan-audit
+   #193 drift before it bites), lock ownership, ARB receipts passed (the newest
+   lint/typecheck/unittest receipt since the lock claim each records exit 0 —
+   GHI #889), plan-audit
    receipt PASS, brief-heading shape, scoped behave REQ coverage, and
    **task-envelope coherence** (GHI #590 — early warning that the OBPI would
    close with residue on any of the three signatures: Sig (a) a worklog event

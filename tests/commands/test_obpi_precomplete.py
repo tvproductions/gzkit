@@ -9,10 +9,11 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from gzkit.canonical_steps import CANONICAL_STEP_COMMANDS
 from gzkit.cli import main
 from gzkit.commands.obpi_precomplete import (
     _check_adversarial_validation,
-    _check_arb_receipts_present,
+    _check_arb_receipts_passed,
     _check_behave_req_coverage_scoped,
     _check_brief_headings_scoped,
     _check_brief_readiness,
@@ -296,28 +297,162 @@ class TestPrecompleteLockCheck(unittest.TestCase):
             self.assertTrue(result.ok, msg=result.message)
 
 
+_CLAIM = "2026-09-10T12:00:00+00:00"
+_BEFORE = "2026-09-09T12:00:00Z"
+_AFTER = "2026-09-11T12:00:00Z"
+_LATER = "2026-09-12T12:00:00Z"
+
+
+def _seed_lock(root: Path, obpi_id: str, claimed_at: str | None = _CLAIM) -> None:
+    locks_dir = root / ".gzkit" / "locks" / "obpi"
+    locks_dir.mkdir(parents=True, exist_ok=True)
+    payload: dict[str, object] = {"obpi_id": obpi_id, "agent": "test-agent"}
+    if claimed_at is not None:
+        payload["claimed_at"] = claimed_at
+    (locks_dir / f"{obpi_id}.lock.json").write_text(json.dumps(payload), encoding="utf-8")
+
+
+def _seed_receipt(root: Path, step: str, timestamp: str, exit_status: int, tag: str) -> str:
+    """Write a receipt in the real ARB shape: lint receipts for ruff, step receipts otherwise."""
+    receipts_dir = root / "artifacts" / "receipts"
+    receipts_dir.mkdir(parents=True, exist_ok=True)
+    hex_id = tag.encode("utf-8").hex().ljust(32, "0")[:32]
+    if step == "lint":
+        run_id = f"arb-ruff-{hex_id}"
+        payload = {
+            "schema": "gzkit.arb.lint_receipt.v1",
+            "tool": {"name": "ruff"},
+            "run_id": run_id,
+            "timestamp_utc": timestamp,
+            "exit_status": exit_status,
+        }
+    else:
+        run_id = f"arb-step-{step}-{hex_id}"
+        payload = {
+            "schema": "gzkit.arb.step_receipt.v1",
+            "step": {"name": step, "command": ["true"]},
+            "run_id": run_id,
+            "timestamp_utc": timestamp,
+            "exit_status": exit_status,
+        }
+    (receipts_dir / f"{run_id}.json").write_text(json.dumps(payload), encoding="utf-8")
+    return run_id
+
+
+def _seed_green_traversal(root: Path) -> None:
+    for step in ("lint", "typecheck", "unittest"):
+        _seed_receipt(root, step, _AFTER, 0, f"{step}-green")
+
+
 class TestPrecompleteArbReceiptsCheck(unittest.TestCase):
-    """ARB receipts SHOULD be present for Heavy-lane attestation."""
+    """The receipts precondition reads what the evidence SAYS, scoped to this traversal (GHI #889).
 
-    def test_fails_when_no_receipts_dir(self) -> None:
-        runner = CliRunner()
-        with runner.isolated_filesystem():
+    `AGENTS.md` § PRIME DIRECTIVE: a presence check answers "is something
+    armed", never "did the governed procedure run". Measured on this repository
+    before the fix: `ok=True` over 3718 receipts, 577 of them recording a failed
+    run. Operator ruling 2026-09-14: "Newest per step, since lock" — for each
+    required step, the newest receipt written after this OBPI's lock claim must
+    exist and record exit_status 0.
+    """
+
+    OBPI = "OBPI-0.1.0-01"
+
+    def _check(self, seed) -> object:
+        with CliRunner().isolated_filesystem():
             _quick_init()
             root = Path.cwd()
-            result = _check_arb_receipts_present(root)
-            self.assertFalse(result.ok, msg=result.message)
-            self.assertIn("artifacts/receipts", result.message.lower())
+            seed(root)
+            return _check_arb_receipts_passed(root, self.OBPI)
 
-    def test_passes_when_arb_receipt_present(self) -> None:
-        runner = CliRunner()
-        with runner.isolated_filesystem():
-            _quick_init()
-            root = Path.cwd()
-            receipts_dir = root / "artifacts" / "receipts"
-            receipts_dir.mkdir(parents=True, exist_ok=True)
-            (receipts_dir / "arb-ruff-test.json").write_text("{}", encoding="utf-8")
-            result = _check_arb_receipts_present(root)
-            self.assertTrue(result.ok, msg=result.message)
+    def test_passes_when_every_required_step_is_green_since_the_claim(self) -> None:
+        def seed(root: Path) -> None:
+            _seed_lock(root, self.OBPI)
+            _seed_green_traversal(root)
+
+        result = self._check(seed)
+        self.assertTrue(result.ok, msg=result.message)
+
+    def test_fails_when_no_receipts_exist(self) -> None:
+        result = self._check(lambda root: _seed_lock(root, self.OBPI))
+        self.assertFalse(result.ok, msg=result.message)
+
+    def test_a_red_newest_receipt_fails_even_with_an_older_green_one(self) -> None:
+        red: dict[str, str] = {}
+
+        def seed(root: Path) -> None:
+            _seed_lock(root, self.OBPI)
+            _seed_green_traversal(root)
+            red["id"] = _seed_receipt(root, "unittest", _LATER, 1, "unittest-red")
+
+        result = self._check(seed)
+        self.assertFalse(result.ok, msg=result.message)
+        self.assertIn("unittest", result.message)
+        self.assertIn(red["id"], result.message)
+
+    def test_a_pre_claim_receipt_is_not_this_traversals_evidence(self) -> None:
+        # Green or not, a receipt from before the claim proves nothing about this
+        # OBPI's work — it is the history the unscoped glob counted.
+        def seed(root: Path) -> None:
+            _seed_lock(root, self.OBPI)
+            _seed_receipt(root, "lint", _AFTER, 0, "lint-green")
+            _seed_receipt(root, "unittest", _AFTER, 0, "unittest-green")
+            _seed_receipt(root, "typecheck", _BEFORE, 0, "typecheck-old-green")
+
+        result = self._check(seed)
+        self.assertFalse(result.ok, msg=result.message)
+        self.assertIn("typecheck", result.message)
+
+    def test_red_history_before_the_claim_is_not_a_finding(self) -> None:
+        def seed(root: Path) -> None:
+            _seed_lock(root, self.OBPI)
+            for step in ("lint", "typecheck", "unittest"):
+                _seed_receipt(root, step, _BEFORE, 1, f"{step}-old-red")
+            _seed_green_traversal(root)
+
+        result = self._check(seed)
+        self.assertTrue(result.ok, msg=result.message)
+
+    def test_a_non_canonical_step_name_does_not_satisfy_the_canonical_step(self) -> None:
+        def seed(root: Path) -> None:
+            _seed_lock(root, self.OBPI)
+            _seed_receipt(root, "lint", _AFTER, 0, "lint-green")
+            _seed_receipt(root, "typecheck", _AFTER, 0, "typecheck-green")
+            _seed_receipt(root, "unittest-scoped", _AFTER, 0, "scoped-green")
+
+        result = self._check(seed)
+        self.assertFalse(result.ok, msg=result.message)
+        self.assertIn("unittest", result.message)
+
+    def test_every_missing_or_red_step_is_named_not_just_the_first(self) -> None:
+        def seed(root: Path) -> None:
+            _seed_lock(root, self.OBPI)
+            _seed_receipt(root, "lint", _AFTER, 2, "lint-red")
+
+        result = self._check(seed)
+        self.assertFalse(result.ok, msg=result.message)
+        for step in ("lint", "typecheck", "unittest"):
+            self.assertIn(step, result.message)
+
+    def test_fails_when_the_claim_cannot_be_read(self) -> None:
+        # Without a claim time there is no traversal to scope receipts to.
+        for label, seed in (
+            ("no lock file", _seed_green_traversal),
+            (
+                "lock without claimed_at",
+                lambda root: (_seed_lock(root, self.OBPI, None), _seed_green_traversal(root)),
+            ),
+        ):
+            with self.subTest(label):
+                result = self._check(seed)
+                self.assertFalse(result.ok, msg=result.message)
+                self.assertIn("lock claim", (result.remediation or "").lower())
+
+    def test_remediation_names_the_canonical_invocations(self) -> None:
+        result = self._check(lambda root: _seed_lock(root, self.OBPI))
+        remediation = result.remediation or ""
+        self.assertIn("uv run gz arb ruff", remediation)
+        self.assertIn("uv run gz arb typecheck", remediation)
+        self.assertIn(" ".join(CANONICAL_STEP_COMMANDS["unittest"]), remediation)
 
 
 class TestPrecompletePlanAuditReceiptCheck(unittest.TestCase):
@@ -406,16 +541,8 @@ class TestPrecompleteCliEndToEnd(unittest.TestCase):
             ledger.append(adr_created_event("ADR-0.1.0", "PRD-TEST-1.0.0", "lite"))
             ledger.append(obpi_created_event("OBPI-0.1.0-01", "ADR-0.1.0"))
             _scaffold_authored_brief(root, "ADR-0.1.0", "OBPI-0.1.0-01")
-            # Seed lock
-            (root / ".gzkit" / "locks" / "obpi").mkdir(parents=True, exist_ok=True)
-            (root / ".gzkit" / "locks" / "obpi" / "OBPI-0.1.0-01.json").write_text(
-                json.dumps({"agent": "test-agent"}), encoding="utf-8"
-            )
-            # Seed ARB receipt
-            (root / "artifacts" / "receipts").mkdir(parents=True, exist_ok=True)
-            (root / "artifacts" / "receipts" / "arb-ruff-test.json").write_text(
-                "{}", encoding="utf-8"
-            )
+            _seed_lock(root, "OBPI-0.1.0-01")
+            _seed_green_traversal(root)
             # Seed plan-audit receipt
             (root / ".claude" / "plans").mkdir(parents=True, exist_ok=True)
             (root / ".claude" / "plans" / ".plan-audit-receipt-OBPI-0.1.0-01.json").write_text(

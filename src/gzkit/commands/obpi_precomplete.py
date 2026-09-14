@@ -19,12 +19,14 @@ from __future__ import annotations
 
 import json
 import re
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 from pydantic import BaseModel, ConfigDict, Field
 from rich.markup import escape
 
+from gzkit.canonical_steps import CANONICAL_STEP_COMMANDS
 from gzkit.cli.helpers.exit_codes import (
     EXIT_POLICY_BREACH,
     EXIT_SUCCESS,
@@ -127,7 +129,7 @@ def _run_all_checks(project_root: Path, brief_path: Path, obpi_id: str) -> Itera
     yield _check_brief_readiness(project_root, brief_path)
     yield _check_reconcile_idempotent(project_root)
     yield _check_lock_held(project_root, obpi_id)
-    yield _check_arb_receipts_present(project_root)
+    yield _check_arb_receipts_passed(project_root, obpi_id)
     yield _check_plan_audit_receipt(project_root, obpi_id)
     yield _check_brief_headings_scoped(project_root, brief_path)
     yield _check_behave_req_coverage_scoped(project_root, brief_path, obpi_id)
@@ -272,19 +274,24 @@ def _check_reconcile_idempotent(project_root: Path) -> CheckResult:
     )
 
 
+def _held_lock_files(project_root: Path, obpi_id: str) -> list[Path]:
+    """Lock files for ``obpi_id``, sorted; shared by every check that reads the claim."""
+    locks_dir = project_root / ".gzkit" / "locks" / "obpi"
+    # The supplied id only: a lock claimed for a prefix sibling is a different
+    # OBPI's claim, and honoring it hands two agents the same green light (#826).
+    return sorted(locks_dir.glob(f"{obpi_id}*.json")) if locks_dir.is_dir() else []
+
+
 def _check_lock_held(project_root: Path, obpi_id: str) -> CheckResult:
     """OBPI lock MUST exist before `gz obpi complete` runs."""
-    locks_dir = project_root / ".gzkit" / "locks" / "obpi"
-    if not locks_dir.is_dir():
+    if not (project_root / ".gzkit" / "locks" / "obpi").is_dir():
         return CheckResult(
             name="lock_held",
             ok=False,
             message="No .gzkit/locks/obpi/ directory",
             remediation=f"Run `uv run gz obpi lock claim {obpi_id}`.",
         )
-    # The supplied id only: a lock claimed for a prefix sibling is a different
-    # OBPI's claim, and honoring it hands two agents the same green light (#826).
-    candidates = sorted(locks_dir.glob(f"{obpi_id}*.json"))
+    candidates = _held_lock_files(project_root, obpi_id)
     if not candidates:
         return CheckResult(
             name="lock_held",
@@ -299,41 +306,103 @@ def _check_lock_held(project_root: Path, obpi_id: str) -> CheckResult:
     )
 
 
-def _check_arb_receipts_present(project_root: Path) -> CheckResult:
-    """ARB receipts (lint/typecheck/unittest) SHOULD be present for Heavy-lane attestation.
+#: The steps whose passing run attestation evidence needs, keyed by the step
+#: identity a receipt records. `lint` is the ruff lint receipt's category.
+_REQUIRED_RECEIPT_STEPS: tuple[str, ...] = ("lint", "typecheck", "unittest")
 
-    Per AGENTS.md § Attestation, Heavy-lane attestation without inline
-    receipt IDs is rejected. This check surfaces missing receipts before
-    the operator drafts attestation text.
+
+def _utc(raw: object) -> datetime | None:
+    """Parse an ISO-8601 timestamp as an aware datetime; None when undatable."""
+    if not isinstance(raw, str) or not raw.strip():
+        return None
+    try:
+        parsed = datetime.fromisoformat(raw.strip().replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return parsed if parsed.tzinfo is not None else parsed.replace(tzinfo=UTC)
+
+
+def _lock_claimed_at(project_root: Path, obpi_id: str) -> datetime | None:
+    for path in _held_lock_files(project_root, obpi_id):
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+            continue
+        if isinstance(payload, dict) and (claimed := _utc(payload.get("claimed_at"))):
+            return claimed
+    return None
+
+
+def _receipt_step(payload: dict) -> str | None:
+    """Return the step a receipt records: `lint` for a lint receipt, else `step.name`."""
+    if str(payload.get("schema", "")).startswith("gzkit.arb.lint_receipt"):
+        return "lint"
+    step = payload.get("step")
+    return step.get("name") if isinstance(step, dict) else None
+
+
+def _newest_receipts_since(receipts_dir: Path, claimed: datetime) -> dict[str, dict]:
+    """Newest receipt per step whose run began at or after the lock claim."""
+    newest: dict[str, tuple[datetime, dict]] = {}
+    for path in receipts_dir.glob("arb-*.json") if receipts_dir.is_dir() else []:
+        try:
+            payload = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+            continue
+        if not isinstance(payload, dict):
+            continue
+        stamp, step = _utc(payload.get("timestamp_utc")), _receipt_step(payload)
+        if stamp is None or step is None or stamp < claimed:
+            continue
+        if step not in newest or stamp > newest[step][0]:
+            newest[step] = (stamp, payload)
+    return {step: payload for step, (_stamp, payload) in newest.items()}
+
+
+def _check_arb_receipts_passed(project_root: Path, obpi_id: str) -> CheckResult:
+    """Require the newest lint/typecheck/unittest receipt since the lock claim to pass.
+
+    A presence check answered "is something armed" and passed over 577 failed runs
+    among 3718 receipts (GHI #889). The receipts that count are this OBPI's:
+    written after its lock claim, newest per step (operator ruling 2026-09-14,
+    "Newest per step, since lock"), and each must record ``exit_status`` 0. Red
+    history before the claim is not a finding; green history before it is not
+    evidence.
     """
-    receipts_dir = project_root / "artifacts" / "receipts"
-    if not receipts_dir.is_dir():
+    unittest_cmd = " ".join(CANONICAL_STEP_COMMANDS["unittest"])
+    remediation = (
+        "Run `uv run gz arb ruff`, `uv run gz arb typecheck`, and "
+        f"`uv run gz arb step --name unittest -- {unittest_cmd}` until each passes, "
+        "then re-run precomplete."
+    )
+    claimed = _lock_claimed_at(project_root, obpi_id)
+    if claimed is None:
         return CheckResult(
             name="arb_receipts",
             ok=False,
-            message="No artifacts/receipts/ directory",
-            remediation=(
-                "Run `uv run gz arb ruff` and "
-                "`uv run gz arb step --name unittest -- uv run -m unittest -q` "
-                "before drafting attestation."
-            ),
+            message=f"No readable lock claim for {obpi_id}, so no receipt can be scoped to it",
+            remediation=f"Run `uv run gz obpi lock claim {obpi_id}` first. {remediation}",
         )
-    arb_receipts = sorted(receipts_dir.glob("arb-*.json"), key=lambda p: p.stat().st_mtime)
-    if not arb_receipts:
+    newest = _newest_receipts_since(project_root / "artifacts" / "receipts", claimed)
+    problems: list[str] = []
+    for step in _REQUIRED_RECEIPT_STEPS:
+        payload = newest.get(step)
+        if payload is None:
+            problems.append(f"{step}: no receipt since the lock claim")
+        elif payload.get("exit_status") != 0:
+            problems.append(
+                f"{step}: newest receipt {payload.get('run_id')} records "
+                f"exit_status={payload.get('exit_status')!r}"
+            )
+    if problems:
         return CheckResult(
-            name="arb_receipts",
-            ok=False,
-            message="No ARB receipts found in artifacts/receipts/",
-            remediation=(
-                "Run `uv run gz arb ruff`, "
-                "`uv run gz arb step --name unittest -- uv run -m unittest -q`, "
-                "and `uv run gz arb step --name typecheck -- uv run gz typecheck`."
-            ),
+            name="arb_receipts", ok=False, message="; ".join(problems), remediation=remediation
         )
     return CheckResult(
         name="arb_receipts",
         ok=True,
-        message=f"{len(arb_receipts)} ARB receipt(s) present (newest: {arb_receipts[-1].name})",
+        message="newest since lock claim passed: "
+        + ", ".join(f"{step} {newest[step].get('run_id')}" for step in _REQUIRED_RECEIPT_STEPS),
     )
 
 
