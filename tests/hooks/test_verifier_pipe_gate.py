@@ -645,3 +645,160 @@ class TestOrElseRecovery(unittest.TestCase):
         reason = self._reason("uv run gz check || echo failed")
         for part in ("BLOCKED:", "WHY:", "NEXT STEP:"):
             self.assertIn(part, reason)
+
+
+class TestAndOrListMasking(unittest.TestCase):
+    """What reports the status is the separator ending the verifier's LIST (GHI #971).
+
+    Every earlier arm read the separator ending the verifier's own STATEMENT.
+    `&&` propagates a failure through an AND-OR list, so its terminator is not the
+    one that decides: the list's end is. Measured 2026-09-14 in bash and `/bin/sh`:
+
+        false && echo ok                         -> exit 1
+        false && echo ok; ls                     -> exit 0
+        false && echo ok || echo caught          -> exit 0
+        set -e; false && echo ok; ls             -> exit 0
+        false && echo ok; echo "REAL EXIT: $?"   -> REAL EXIT: 1
+        false & echo "REAL EXIT: $?"             -> REAL EXIT: 0
+        set -o pipefail; false | cat; ls         -> exit 0
+
+    The same question — does the verifier's failure reach the separator that ends
+    its list — also covers a pipeline under `pipefail` and a `$?` read after `&`.
+    """
+
+    def test_a_chain_that_runs_to_the_end_of_the_command_is_permitted(self) -> None:
+        # The case the old exclusion reasoned about, which stays true.
+        self.assertIsNone(masked_verifier("uv run gz check && echo ok"))
+        self.assertIsNone(masked_verifier("uv run gz check && echo ok && ls"))
+
+    def test_a_chain_caught_by_a_later_statement_is_masked(self) -> None:
+        for command in (
+            "uv run gz check && echo ok; ls",
+            "uv run gz check && echo ok\nls",
+            "uv run gz check && echo ok || echo caught",
+            "uv run gz check && echo ok && echo more; ls",
+            "cd src && uv run gz check && echo ok; ls",
+        ):
+            with self.subTest(command=command):
+                self.assertEqual(masked_verifier(command), "gz check")
+
+    def test_errexit_does_not_rescue_a_chain(self) -> None:
+        # POSIX suppresses errexit for a command that is not the last in an
+        # AND-OR list, so `set -e` aborts nothing and the list's end still masks.
+        self.assertEqual(masked_verifier("set -e; uv run gz check && echo ok; ls"), "gz check")
+
+    def test_errexit_still_protects_a_verifier_that_ends_its_chain(self) -> None:
+        # The other direction: the verifier IS the list's last command, so
+        # errexit fires on it. Unchanged sequence-arm behavior.
+        self.assertIsNone(masked_verifier("set -e; cd src && uv run gz check; ls"))
+
+    def test_reading_the_status_right_after_the_chain_is_preserved(self) -> None:
+        # When the chain short-circuits, the list's status IS the verifier's, so
+        # the immediate `$?` read reports the real failure in either shape.
+        self.assertIsNone(masked_verifier('uv run gz check && echo ok; echo "REAL EXIT: $?"'))
+        self.assertIsNone(masked_verifier('uv run gz check && echo ok || echo "REAL EXIT: $?"'))
+
+    def test_a_status_read_inside_the_chain_does_not_protect_the_list_end(self) -> None:
+        # `$?` read by a chain member runs only on success; the list end still masks.
+        self.assertEqual(
+            masked_verifier('uv run gz check && echo "exit $?"; ls'),
+            "gz check",
+        )
+
+    def test_a_status_read_after_a_background_separator_does_not_protect(self) -> None:
+        # After `&`, `$?` is the background LAUNCH's status — 0 — not the
+        # verifier's. The read looks like evidence and reports success.
+        for command in (
+            'uv run gz check & echo "REAL EXIT: $?"',
+            'uv run gz check && echo ok & echo "REAL EXIT: $?"',
+        ):
+            with self.subTest(command=command):
+                self.assertEqual(masked_verifier(command), "gz check")
+
+    def test_a_pipeline_under_pipefail_carries_the_status_to_its_terminator(self) -> None:
+        # pipefail makes an upstream verifier's failure the pipeline's status, so
+        # a later statement replaces the VERIFIER's status, not the filter's.
+        self.assertEqual(
+            masked_verifier("set -o pipefail; uv run gz check | tail -3; ls"), "gz check"
+        )
+
+    def test_a_pipeline_under_pipefail_keeps_both_escapes(self) -> None:
+        for command in (
+            'set -o pipefail; uv run gz check | tail -3; echo "REAL EXIT: $?"',
+            "set -eo pipefail; uv run gz check | tail -3; ls",
+            "set -o pipefail; uv run gz check | tail -3",
+        ):
+            with self.subTest(command=command):
+                self.assertIsNone(masked_verifier(command))
+
+    def test_without_pipefail_an_upstream_verifier_is_still_the_pipe_arm(self) -> None:
+        self.assertEqual(
+            masked_verifier_reason("uv run gz check | tail -3; ls"), ("gz check", "pipe")
+        )
+
+
+class TestEveryArmsCorrectionIsAdmitted(unittest.TestCase):
+    """A correction the gate refuses again is a loop, not a recovery (GHI #971).
+
+    `.claude/rules/guardrail-feedback-prose.md` requires a runnable next step. For
+    `gz check & ls` the prose handed back `set -e; <command>`, which this gate
+    refused again — errexit is not honored for `&` — and which exits 0 when run.
+    Each arm's named correction is fed back through `decide` here.
+    """
+
+    def _reason(self, command: str) -> tuple[str, str]:
+        found = masked_verifier_reason(command)
+        self.assertIsNotNone(found, command)
+        verdict = decide("Bash", {"command": command})
+        self.assertTrue(verdict.blocked, command)
+        return (found or ("", ""))[1], verdict.reason
+
+    def test_a_backgrounded_verifier_gets_its_own_arm(self) -> None:
+        arm, reason = self._reason("uv run gz check & tail -6 log")
+        self.assertEqual(arm, "background")
+        self.assertNotIn("set -e; uv run gz check & tail -6 log", reason)
+        self.assertIn("`set -e` does NOT help here", reason)
+
+    def test_the_background_correction_is_admitted(self) -> None:
+        _arm, reason = self._reason("uv run gz check & tail -6 log")
+        correction = '<verifier> > out.log 2>&1; echo "REAL EXIT: $?"'
+        self.assertIn(correction, reason)
+        self.assertIsNone(masked_verifier(correction.replace("<verifier>", "uv run gz check")))
+
+    def test_a_caught_chain_gets_its_own_arm(self) -> None:
+        for command in ("uv run gz check && echo ok; ls", "uv run gz check && echo ok || echo x"):
+            with self.subTest(command=command):
+                arm, reason = self._reason(command)
+                self.assertEqual(arm, "chain")
+                self.assertIn("`set -e` does NOT help here", reason)
+                self.assertNotIn(f"set -e; {command}", reason)
+
+    def test_the_chain_corrections_are_admitted(self) -> None:
+        _arm, reason = self._reason("uv run gz check && echo ok; ls")
+        for correction in (
+            '<your chain>; echo "REAL EXIT: $?"',
+            '<your chain> || echo "REAL EXIT: $?"',
+        ):
+            with self.subTest(correction=correction):
+                self.assertIn(correction, reason)
+                concrete = correction.replace("<your chain>", "uv run gz check && echo ok")
+                self.assertIsNone(masked_verifier(concrete))
+
+    def test_every_pasteable_prefix_correction_is_admitted(self) -> None:
+        # The pipe and sequence arms hand back the caller's whole command with a
+        # prefix. That pasted line must pass the gate that proposed it.
+        for command, prefix in (
+            ("uv run gz check | tail -1", "set -o pipefail; "),
+            ("uv run gz check > log 2>&1; tail -6 log", "set -e; "),
+        ):
+            with self.subTest(command=command):
+                _arm, reason = self._reason(command)
+                self.assertIn(prefix + command, reason)
+                self.assertIsNone(masked_verifier(prefix + command))
+
+    def test_the_new_arms_carry_all_three_guardrail_parts(self) -> None:
+        for command in ("uv run gz check & tail -6 log", "uv run gz check && echo ok; ls"):
+            with self.subTest(command=command):
+                _arm, reason = self._reason(command)
+                for part in ("BLOCKED:", "WHY:", "NEXT STEP:"):
+                    self.assertIn(part, reason)
