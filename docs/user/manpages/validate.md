@@ -38,6 +38,10 @@ personas scopes all run. The `--interviews`, `--decomposition`,
 `--requirements`, and `--commit-trailers` scopes are opt-in and only run when
 explicitly requested.
 
+`--json` changes how findings are rendered, never the exit status: a scope that
+fails exits with the same code in `--json` mode as in plain mode, so a caller
+may read `$?` in either mode (GHI #995).
+
 ### `--attestation-receipts`
 
 Validate ARB receipt citations in an attestation string. Argument is either

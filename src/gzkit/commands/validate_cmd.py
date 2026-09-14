@@ -1150,9 +1150,6 @@ def _print_validation_result(
     When ``frontmatter_only`` and no drift is found, suppresses the success
     prose (REQ-01: empty-input / fully-coherent output is empty).
     """
-    policy_errors = [e for e in errors if e.type in _POLICY_BREACH_ERROR_TYPES]
-    other_errors = [e for e in errors if e.type not in _POLICY_BREACH_ERROR_TYPES]
-
     if not errors:
         if frontmatter_only:
             return
@@ -1169,9 +1166,20 @@ def _print_validation_result(
             console.print(f"    Field: {escape(error.field)}")
         console.print()
 
-    if other_errors:
+    _exit_for_errors(errors)
+
+
+def _exit_for_errors(errors: list[ValidationError]) -> None:
+    """Raise the 4-code-map exit for ``errors``; return only when there are none.
+
+    Shared by every output mode of the aggregate path. ``--json`` changes how
+    findings are rendered, never how they are classified: its branch once
+    returned before this classification, so every aggregate scope exited 0 in
+    JSON mode whatever it found (GHI #995).
+    """
+    if any(e.type not in _POLICY_BREACH_ERROR_TYPES for e in errors):
         raise SystemExit(1)
-    if policy_errors:
+    if errors:
         raise SystemExit(3)
 
 
@@ -1683,6 +1691,7 @@ def validate(
                 if e.type == "frontmatter"
             ]
         print(json.dumps(payload, indent=2))  # noqa: T201
+        _exit_for_errors(errors)
         return
 
     scopes = _resolve_scopes(checks)

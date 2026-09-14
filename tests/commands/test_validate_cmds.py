@@ -756,7 +756,7 @@ class TestFrontmatterCoherence(unittest.TestCase):
                 "---\nid: ADR-0.1.0\nparent: PRD-TEST-1.0.0\nlane: heavy\n---\n# ADR\n",
             )
             result = runner.invoke(main, ["validate", "--frontmatter", "--json"])
-            self.assertEqual(result.exit_code, 0)  # --json doesn't raise SystemExit
+            self.assertEqual(result.exit_code, 3)  # drift is a policy breach in every mode (#995)
             payload = json.loads(result.output)
             self.assertFalse(payload["valid"])
             self.assertEqual(len(payload["errors"]), 1)
