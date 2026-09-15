@@ -36,7 +36,7 @@ states, measured 2026-08-16 against `main`. Cite the state, not just the section
 | § Output Modes — `--json` | **Live, UNMET** | 73 of 136 leaf commands declare it |
 | § Output Modes — `--plain`, `--log-file` | **Live, UNMET** | 13 call sites; `--log-file` does not exist (0 occurrences) |
 | § Output Rules — formatter is sole chokepoint | **Live, UNMET** | **1,230 `console.print(` sites** vs 1 `OutputFormatter` |
-| § Logging — structlog, correlation IDs | **Live, UNMET** | 2 imports, 1 `get_logger`; `configure_logging` is never called — `cli/main.py` uses `logging.basicConfig` |
+| § Logging — structlog, correlation IDs | **Live, UNMET** | Re-measured 2026-09-14 (GHI #1010): `cli/main.py` now applies `configure_logging` for every command, logging to stderr; `--log-file` does not exist, and the default and `--verbose` levels differ from § Verbosity Levels (banner below) |
 | § Architecture — Port Interfaces, DI, Layer Dependencies | **RETIRED** | facade retired 2026-07-06 (banner below) |
 | § Project Structure — `ports/`, `adapters/`, `tests/fakes/` tree | **RETIRED** | layout does not exist; **adding it is now forbidden** by `.claude/rules/hexagonal-architecture.md` rule 7 |
 | § Testing — Test Fakes (`tests/fakes/`) | **RETIRED** | same ruling |
@@ -599,15 +599,19 @@ human-readable mode. Use `rich.progress` for this. Progress indicators must:
 
 ## Logging
 
-> **State: LIVE but UNMET — built and unwired** (see § Document status).
-> `src/gzkit/cli/logging.py` implements this section in 156 lines. Measured
-> 2026-08-16: `configure_logging` appears in exactly one place outside its own
-> module — the lazy-export map in `src/gzkit/cli/__init__.py` — and **`cli/main.py`
-> never calls it**; `_apply_debug_mode` uses stdlib `logging.basicConfig` instead.
-> `structlog` is a declared runtime dependency serving one real consumer
-> (`src/gzkit/commands/chores.py`). This is the same "wired into zero production
-> code" shape the facade banner above records for ports/adapters — it recurred in
-> this document's other half and nothing caught it.
+> **State: LIVE but UNMET — wired, not yet conformant** (see § Document status).
+> `src/gzkit/cli/logging.py` implements this section. Measured 2026-08-16 it was
+> built and unwired: **`cli/main.py` never called `configure_logging`**, so
+> structlog kept its default logger, which prints to **stdout**. That default
+> corrupted `--json` output. Its only consumer, `src/gzkit/commands/chores.py`,
+> emits an INFO event on the package fallback. It was the same "wired into zero
+> production code" shape the facade banner above records for ports/adapters.
+> Since GHI #1010 (2026-09-14) the entrypoint applies it for every command, at
+> the verbosity the common flags select (`--debug` over `--verbose` over
+> `--quiet`), and logs reach stderr. Two divergences from this section remain:
+> `--log-file` does not exist, and `VERBOSITY_TO_LEVEL` maps the default to INFO
+> and `--verbose` to DEBUG — as `.gzkit/rules/cli.md` § Flag Conventions and
+> OBPI-0.0.3-07's tests do — where § Verbosity Levels below says WARNING and INFO.
 
 Logging and user-facing output are **two separate systems** and must never be conflated.
 User output flows through the `OutputFormatter` to stdout. Logging flows through

@@ -106,11 +106,23 @@ def _get_parser() -> argparse.ArgumentParser:
     return _cached_parser
 
 
-def _apply_debug_mode() -> None:
-    """Enable DEBUG-level logging and full tracebacks."""
-    import logging
+def _configure_logging_from_flags(args: argparse.Namespace) -> None:
+    """Apply the CLI logging adapter at the verbosity the common flags select.
 
-    logging.basicConfig(level=logging.DEBUG, format="%(levelname)s: %(name)s: %(message)s")
+    Unconfigured, structlog prints to stdout, which corrupts ``--json`` output;
+    ``.gzkit/rules/cli.md`` § Output Contracts sends logs to stderr (GHI #1010).
+    Imported here, after parsing, so ``gz --help`` never loads structlog.
+    """
+    from gzkit.cli.logging import Verbosity, configure_logging  # noqa: PLC0415
+
+    verbosity: Verbosity = "normal"
+    if getattr(args, "debug", False):
+        verbosity = "debug"
+    elif getattr(args, "verbose", False):
+        verbosity = "verbose"
+    elif getattr(args, "quiet", False):
+        verbosity = "quiet"
+    configure_logging(verbosity)
 
 
 def _ensure_utf8_console() -> None:
@@ -132,8 +144,7 @@ def main(argv: list[str] | None = None) -> int:
     except SystemExit as exc:
         return int(exc.code) if isinstance(exc.code, int) else 1
 
-    if getattr(args, "debug", False):
-        _apply_debug_mode()
+    _configure_logging_from_flags(args)
 
     handler = getattr(args, "func", None)
     if handler is None:

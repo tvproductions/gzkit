@@ -146,7 +146,7 @@ def ledger_corrections_cmd(*, as_json: bool = False) -> None:
     state = correction_state(ledger.read_history())
 
     if as_json:
-        console.print(
+        print(  # noqa: T201
             json.dumps(
                 [
                     {

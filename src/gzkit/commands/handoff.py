@@ -267,7 +267,7 @@ def handoff_rulings_cmd(
     if limit is not None and limit > 0:
         entries = entries[-limit:]
     if as_json:
-        console.print_json(json.dumps(entries))
+        print(json.dumps(entries, indent=2, ensure_ascii=False))  # noqa: T201
         return 0
     if not entries:
         # A search miss is not an empty store: saying "none booked" to a reader

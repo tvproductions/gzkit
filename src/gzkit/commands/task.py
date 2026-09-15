@@ -268,14 +268,14 @@ def task_list_cmd(obpi: str, *, as_json: bool = False) -> None:
 
     if not tasks:
         if as_json:
-            console.print(json.dumps({"obpi": canonical, "tasks": []}, indent=2))
+            print(json.dumps({"obpi": canonical, "tasks": []}, indent=2))  # noqa: T201
         else:
             console.print(f"No tasks found for {canonical}.")
         return
 
     if as_json:
         rows = [{"task_id": tid, **info} for tid, info in sorted(tasks.items())]
-        console.print(json.dumps({"obpi": canonical, "tasks": rows}, indent=2))
+        print(json.dumps({"obpi": canonical, "tasks": rows}, indent=2))  # noqa: T201
         return
 
     console.print(f"[bold]Tasks for {canonical}[/bold]\n")
@@ -313,7 +313,7 @@ def task_start_cmd(task_id_str: str, *, as_json: bool = False) -> None:
     _stamp_brief_task_declaration(project_root, obpi_id, str(task_id))
 
     if as_json:
-        console.print(
+        print(  # noqa: T201
             json.dumps(
                 {
                     "task_id": str(task_id),
@@ -354,7 +354,7 @@ def task_complete_cmd(task_id_str: str, *, as_json: bool = False) -> None:
     _emit_task_event(ledger, event)
 
     if as_json:
-        console.print(
+        print(  # noqa: T201
             json.dumps(
                 {
                     "task_id": str(task_id),
@@ -395,7 +395,7 @@ def task_block_cmd(task_id_str: str, reason: str, *, as_json: bool = False) -> N
     _emit_task_event(ledger, event)
 
     if as_json:
-        console.print(
+        print(  # noqa: T201
             json.dumps(
                 {
                     "task_id": str(task_id),
@@ -437,7 +437,7 @@ def task_escalate_cmd(task_id_str: str, reason: str, *, as_json: bool = False) -
     _emit_task_event(ledger, event)
 
     if as_json:
-        console.print(
+        print(  # noqa: T201
             json.dumps(
                 {
                     "task_id": str(task_id),
@@ -508,7 +508,7 @@ def task_start_by_req_cmd(req_id: str, seq_arg: str, *, as_json: bool = False) -
     _stamp_brief_task_declaration(project_root, obpi_id, task_id_str)
 
     if as_json:
-        console.print(
+        print(  # noqa: T201
             json.dumps(
                 {
                     "task_id": task_id_str,
@@ -771,7 +771,7 @@ def task_fanout_cmd(req_id: str, *, detail: bool = False, as_json: bool = False)
         return
 
     if as_json:
-        console.print(json.dumps(rows, indent=2))
+        print(json.dumps(rows, indent=2))  # noqa: T201
         return
 
     if detail:

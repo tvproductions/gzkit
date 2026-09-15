@@ -5,7 +5,7 @@ from pathlib import Path
 
 from gzkit.cli import main
 from gzkit.pipeline_markers import STALE_MARKER_HOURS
-from tests.commands.common import CliRunner, _quick_init
+from tests.commands.common import CliRunner, _quick_init, hostile_console, parse_json_document
 
 
 class TestPreflightCommand(unittest.TestCase):
@@ -196,6 +196,17 @@ class TestPreflightCommand(unittest.TestCase):
             self.assertIn("stale_markers", data)
             self.assertIn("orphan_receipts", data)
             self.assertIn("expired_locks", data)
+
+    def test_json_output_survives_a_hostile_console(self) -> None:
+        """GHI #1010: `--json` stdout is the document, never console-rendered text."""
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init("lite")
+            with hostile_console():
+                result = runner.invoke(main, ["preflight", "--json"])
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            data = parse_json_document(self, result.output)
+            self.assertEqual(data["stale_markers"], [])
 
     def test_no_issues_with_apply_exits_zero(self) -> None:
         runner = CliRunner()

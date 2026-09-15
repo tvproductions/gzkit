@@ -220,7 +220,7 @@ def preflight_cmd(*, apply: bool = False, as_json: bool = False) -> None:
                 for p, oid, age in expired_locks
             ],
         }
-        console.print(json.dumps(data, indent=2))
+        print(json.dumps(data, indent=2))  # noqa: T201
         if apply:
             _apply_cleanup(project_root, ledger, stale_markers, orphan_receipts)
         return

@@ -56,7 +56,7 @@ def obpi_adversary_workspace_cmd(
     if as_json:
         payload = workspace.model_dump()
         payload["dispatch_command"] = _dispatch_command(workspace.path)
-        console.print_json(json.dumps(payload))
+        print(json.dumps(payload, indent=2, ensure_ascii=False))  # noqa: T201
         return EXIT_SUCCESS
 
     console.print(f"Adversary workspace: {workspace.path}")

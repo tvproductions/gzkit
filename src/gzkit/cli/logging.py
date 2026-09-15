@@ -20,6 +20,8 @@ from typing import Any, Literal, TextIO
 
 import structlog
 
+from gzkit.color_env import should_disable_color, should_force_terminal
+
 Verbosity = Literal["quiet", "normal", "verbose", "debug"]
 
 VERBOSITY_TO_LEVEL: dict[str, int] = {
@@ -63,6 +65,16 @@ def bind_correlation_id(correlation_id: str | None = None) -> str:
     global _correlation_id  # noqa: PLW0603
     _correlation_id = correlation_id or uuid.uuid4().hex[:12]
     return _correlation_id
+
+
+def _stream_wants_color(stream: TextIO | None) -> bool:
+    """Return True when log output to *stream* should be coloured.
+
+    *stream* is None when the process has no stderr (pythonw, a detached launch).
+    """
+    if stream is None or should_disable_color():
+        return False
+    return should_force_terminal() or stream.isatty()
 
 
 def configure_logging(
@@ -121,11 +133,20 @@ def configure_logging(
         cache_logger_on_first_use=False,
     )
 
-    # Console formatter — human-readable
+    # Console formatter — human-readable. Colour only a terminal, honouring
+    # NO_COLOR / FORCE_COLOR as the CLI console does, so captured stderr stays
+    # plain. Where colour is wanted, take structlog's own default: forcing
+    # colors=True raises SystemError on Windows without colorama, which is not a
+    # runtime dependency (GHI #1010).
+    renderer = (
+        structlog.dev.ConsoleRenderer()
+        if verbosity != "quiet" and _stream_wants_color(console_stream or sys.stderr)
+        else structlog.dev.ConsoleRenderer(colors=False)
+    )
     console_formatter = structlog.stdlib.ProcessorFormatter(
         processors=[
             structlog.stdlib.ProcessorFormatter.remove_processors_meta,
-            structlog.dev.ConsoleRenderer(colors=verbosity != "quiet"),
+            renderer,
         ],
     )
 

@@ -612,7 +612,7 @@ def chores_doctor(*, dry_run: bool = False, json_output: bool = False) -> None:
         rows.append({"slug": slug, "before_status": before, "after_status": after})
 
     if json_output:
-        console.print(json.dumps(rows))
+        print(json.dumps(rows))  # noqa: T201
         return
     _render_doctor_table(rows)
 

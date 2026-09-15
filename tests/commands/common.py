@@ -1,4 +1,5 @@
 import io
+import json
 import os
 import subprocess
 import tempfile
@@ -7,7 +8,10 @@ from collections.abc import Iterator, Mapping
 from contextlib import contextmanager, redirect_stderr, redirect_stdout
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 from unittest.mock import patch
+
+from rich.color import ColorSystem
 
 from gzkit.commands.common import console as _cli_console
 from gzkit.git_spawn_boundary import isolated_git_env
@@ -77,6 +81,39 @@ class CliRunner:
             exit_code=0 if exit_code is None else int(exit_code),
             output=output.getvalue(),
         )
+
+
+@contextmanager
+def hostile_console() -> Iterator[None]:
+    """Make the shared CLI console a narrow colour terminal (GHI #1010).
+
+    A `--json` document must reach stdout byte-exact whatever the console is
+    attached to. Rich edits text it renders in three ways: it folds a line wider
+    than the console (a 12-column console folds inside JSON strings), it adds
+    ANSI styling on a terminal or under ``FORCE_COLOR``, and it consumes ``[...]``
+    spans as markup. Inside this context all three are armed, so a document
+    rendered through the console fails to parse or loses data, while a printed
+    one is untouched.
+    """
+    with (
+        patch.object(_cli_console, "_width", 12),
+        patch.object(_cli_console, "_force_terminal", True),
+        patch.object(_cli_console, "_color_system", ColorSystem.TRUECOLOR),
+        patch.object(_cli_console, "no_color", False),
+    ):
+        yield
+
+
+def parse_json_document(testcase: unittest.TestCase, stdout: str) -> Any:
+    """Return the `--json` document on *stdout*, failing the test when it is not one.
+
+    Not parsing IS the defect under test (GHI #1010), so it is reported as an
+    assertion failure naming what reached stdout, never as an incidental error.
+    """
+    try:
+        return json.loads(stdout)
+    except json.JSONDecodeError as exc:
+        testcase.fail(f"--json stdout is not a JSON document ({exc}): {stdout[:160]!r}")
 
 
 @contextmanager

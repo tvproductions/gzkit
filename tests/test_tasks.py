@@ -12,6 +12,7 @@ import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
+from typing import Any
 
 from gzkit.cli import main as cli_main
 from gzkit.events import (
@@ -857,6 +858,8 @@ def _invoke(args: list[str]) -> tuple[int, str]:
 
 
 from tests.commands.common import (  # noqa: E402
+    hostile_console,
+    parse_json_document,
     start_init_subprocess_patches,
     stop_init_subprocess_patches,
 )
@@ -1002,6 +1005,64 @@ class TestTaskList(_TaskCliBase):
         self.assertIsInstance(data["tasks"], list)
         self.assertEqual(len(data["tasks"]), 1)
         self.assertEqual(data["tasks"][0]["task_id"], "TASK-0.1.0-01-01-01")
+
+
+class TestTaskJsonIsTheDocument(_TaskCliBase):
+    """GHI #1010: every `gz task ... --json` document reaches stdout byte-exact.
+
+    Each verb runs under `hostile_console()`, where a document rendered through
+    the Rich console is folded mid-string, coloured, or stripped of `[...]` spans.
+    A reason is operator-typed text, so it carries brackets and must come back
+    verbatim; human mode already escapes it for the console.
+    """
+
+    _TASK = "TASK-0.1.0-01-01-01"
+    _REASON = "waiting on the [operator-ruled] call in [bold]GHI[/bold] #1010"
+
+    def _document(self, *argv: str) -> Any:
+        with hostile_console():
+            code, out = _invoke(list(argv))
+        self.assertEqual(code, 0, out)
+        return parse_json_document(self, out)
+
+    def test_start(self) -> None:
+        data = self._document("task", "start", self._TASK, "--json")
+        self.assertEqual((data["task_id"], data["to_status"]), (self._TASK, "in_progress"))
+
+    def test_start_by_req_and_seq(self) -> None:
+        argv = ("task", "start", "--req", "REQ-0.1.0-01-01", "--seq", "next", "--json")
+        data = self._document(*argv)
+        self.assertEqual((data["task_id"], data["to_status"]), (self._TASK, "in_progress"))
+
+    def test_complete(self) -> None:
+        self._seed_task_started(self._TASK)
+        data = self._document("task", "complete", self._TASK, "--json")
+        self.assertEqual(data["to_status"], "completed")
+
+    def test_block_carries_its_reason_verbatim(self) -> None:
+        self._seed_task_started(self._TASK)
+        data = self._document("task", "block", self._TASK, "--reason", self._REASON, "--json")
+        self.assertEqual(data["reason"], self._REASON)
+
+    def test_escalate_carries_its_reason_verbatim(self) -> None:
+        self._seed_task_started(self._TASK)
+        argv = ("task", "escalate", self._TASK, "--reason", self._REASON, "--json")
+        self.assertEqual(self._document(*argv)["reason"], self._REASON)
+
+    def test_list_without_tasks(self) -> None:
+        data = self._document("task", "list", "OBPI-0.1.0-01", "--json")
+        self.assertEqual(data, {"obpi": "OBPI-0.1.0-01", "tasks": []})
+
+    def test_list_carries_a_blocked_reason_verbatim(self) -> None:
+        self._seed_task_started(self._TASK)
+        _invoke(["task", "block", self._TASK, "--reason", self._REASON])
+        data = self._document("task", "list", "OBPI-0.1.0-01", "--json")
+        self.assertEqual(data["tasks"][0]["reason"], self._REASON)
+
+    def test_fanout(self) -> None:
+        self._seed_task_started(self._TASK)
+        data = self._document("task", "fanout", "REQ-0.1.0-01-01", "--json")
+        self.assertEqual(data[0]["task_id"], self._TASK)
 
 
 class TestTaskStart(_TaskCliBase):

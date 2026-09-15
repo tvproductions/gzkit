@@ -6,9 +6,12 @@
 import io
 import json
 import logging
+import os
+import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import structlog
 
@@ -338,6 +341,84 @@ class TestExportFromCliPackage(unittest.TestCase):
         from gzkit.cli import bind_correlation_id as bci
 
         self.assertTrue(callable(bci))
+
+
+class TestConsoleColorsFollowThePlatformDefault(unittest.TestCase):
+    """GHI #1010: the entrypoint runs `configure_logging` for every `gz` command.
+
+    structlog raises `SystemError` for `ConsoleRenderer(colors=True)` on Windows
+    without colorama, and colorama is not a gzkit runtime dependency. Forcing
+    colors on would therefore crash every command there, so no verbosity may
+    request them; structlog's own default already enables them where they work.
+
+    Wiring the adapter also routes gzkit's stdlib warnings through the renderer.
+    Before it they reached stderr plain, so captured or piped stderr must stay
+    free of ANSI styling, and `NO_COLOR` must hold even on a terminal.
+    """
+
+    class _Terminal(io.StringIO):
+        def isatty(self) -> bool:
+            return True
+
+    def _render_warning(self, stream: io.StringIO, env: dict[str, str]) -> str:
+        with patch.dict(os.environ, env, clear=True):
+            configure_logging("normal", console_stream=stream)
+        logging.getLogger("gzkit.triangle").warning("Malformed REQ line (skipped): %s", "x")
+        structlog.get_logger().info("chore.resolver.fallback", slug="demo")
+        return stream.getvalue()
+
+    def _environment_without_color_settings(self) -> dict[str, str]:
+        return {k: v for k, v in os.environ.items() if k not in {"NO_COLOR", "FORCE_COLOR"}}
+
+    def test_a_piped_stream_receives_no_styling(self) -> None:
+        output = self._render_warning(io.StringIO(), self._environment_without_color_settings())
+        self.assertIn("Malformed REQ line (skipped): x", output)
+        self.assertIn("chore.resolver.fallback", output)
+        self.assertNotIn("\x1b[", output)
+
+    def test_no_color_keeps_a_terminal_plain(self) -> None:
+        env = {**self._environment_without_color_settings(), "NO_COLOR": "1"}
+        output = self._render_warning(self._Terminal(), env)
+        self.assertIn("Malformed REQ line (skipped): x", output)
+        self.assertNotIn("\x1b[", output)
+
+    def test_a_detached_stderr_does_not_stop_the_command(self) -> None:
+        """Under pythonw or a detached launch `sys.stderr` is None.
+
+        Every command configures logging before its handler runs, so the colour
+        decision must not assume a stream to ask; there is no terminal to colour.
+        """
+        with patch.object(sys, "stderr", None):
+            try:
+                configure_logging("normal")
+            except Exception as exc:
+                self.fail(f"configuring logging with no stderr raised {exc!r}")
+        self.assertIsInstance(logging.getLogger().handlers[0].formatter, logging.Formatter)
+
+    def setUp(self) -> None:
+        structlog.reset_defaults()
+
+    def tearDown(self) -> None:
+        structlog.reset_defaults()
+        root = logging.getLogger()
+        for handler in root.handlers:
+            handler.close()
+        root.handlers.clear()
+
+    def test_no_verbosity_forces_console_colors_on(self) -> None:
+        """Even on a terminal, where colour is wanted, it is never forced."""
+        for verbosity in VERBOSITY_TO_LEVEL:
+            with (
+                self.subTest(verbosity=verbosity),
+                patch.dict(os.environ, self._environment_without_color_settings(), clear=True),
+                patch.object(
+                    structlog.dev, "ConsoleRenderer", wraps=structlog.dev.ConsoleRenderer
+                ) as renderer,
+            ):
+                configure_logging(verbosity, console_stream=self._Terminal())
+                self.assertTrue(renderer.called)
+                for call in renderer.call_args_list:
+                    self.assertIsNot(call.kwargs.get("colors"), True)
 
 
 if __name__ == "__main__":
