@@ -802,3 +802,274 @@ class TestEveryArmsCorrectionIsAdmitted(unittest.TestCase):
                 _arm, reason = self._reason(command)
                 for part in ("BLOCKED:", "WHY:", "NEXT STEP:"):
                     self.assertIn(part, reason)
+
+
+class TestGroupedVerifierRecognition(unittest.TestCase):
+    """A verifier inside `( … )` or `{ …; }` is refused on the same terms (GHI #1008).
+
+    Resolution is by command head, and the head of a group is the grouping token, so
+    every arm saw no verifier at all. A group is ONE command of its list, reporting
+    its own last statement. Measured 2026-09-15 in bash and `/bin/sh`, `false`
+    standing in for the verifier:
+
+        (false); ls                     -> 0     (false)                        -> 1
+        { false; }; ls                  -> 0     (cd . && false)                -> 1
+        (false; ls)                     -> 0     (false); echo "REAL EXIT: $?"  -> 1
+        (false) || echo x               -> 0     set -e; (false); ls            -> 1
+        (set -e); false; ls             -> 0     { set -e; }; false; ls         -> 1
+        { set -e; } | cat; false; ls    -> 0     set -o pipefail; (false) | cat -> 1
+        set -e; (false; ls) || echo x   -> 0     set -e; (false; ls)            -> 1
+    """
+
+    def test_a_group_followed_by_a_replacing_statement_is_masked_by_that_arm(self) -> None:
+        for command, arm in (
+            ("(uv run gz check); ls", "sequence"),
+            ("{ uv run gz check; }; ls", "sequence"),
+            ("(uv run gz check) > log 2>&1; tail -6 log", "sequence"),
+            ("(uv run gz check) || echo failed", "or-else"),
+            ("(uv run gz check) && echo ok; ls", "chain"),
+            ("(uv run gz check) & tail -6 log", "background"),
+            ("(uv run gz check) | tail -3", "pipe"),
+        ):
+            with self.subTest(command=command):
+                self.assertEqual(masked_verifier_reason(command), ("gz check", arm))
+
+    def test_a_group_written_against_an_operator_is_still_read(self) -> None:
+        # The lexer merges adjacent punctuation: `(x);ls` yields `);` and `ls;(x)`
+        # yields `;(`, so the separator hides inside the same token as the paren.
+        for command in (
+            "(uv run gz check);ls",
+            "ls;(uv run gz check);ls",
+            "(uv run gz check)|tail -3",
+            "(uv run gz check)&&echo ok;ls",
+            "(uv run gz check)\nls",
+        ):
+            with self.subTest(command=command):
+                self.assertEqual(masked_verifier(command), "gz check")
+
+    def test_a_statement_after_the_verifier_inside_the_group_masks_it(self) -> None:
+        # The group reports its LAST statement, exactly as a command does.
+        for command in (
+            "(uv run gz check; ls)",
+            "{ uv run gz check; ls; }",
+            "(cd src && uv run gz check && echo ok; ls)",
+            "( (uv run gz check) ); ls",
+            "{ (uv run gz check); }; ls",
+        ):
+            with self.subTest(command=command):
+                self.assertEqual(masked_verifier(command), "gz check")
+
+    def test_a_group_whose_status_is_the_verifiers_is_permitted(self) -> None:
+        for command in (
+            "(uv run gz check)",
+            "{ uv run gz check; }",
+            "(cd src && uv run gz check)",
+            "(uv run gz check) > log 2>&1",
+            "ls; (uv run gz check)",
+            "( (uv run gz check) )",
+        ):
+            with self.subTest(command=command):
+                self.assertIsNone(masked_verifier(command))
+
+    def test_reading_the_status_right_after_the_group_or_inside_it_is_preserved(self) -> None:
+        for command in (
+            '(uv run gz check); echo "REAL EXIT: $?"',
+            # The committed transcript corpus's one grouped verifier.
+            '(cd /tmp/layout-drift && uv run gz validate --chores-layout); echo "exit:$?"',
+            '(uv run gz check; echo "REAL EXIT: $?")',
+            '(uv run gz check) && echo ok; echo "REAL EXIT: $?"',
+        ):
+            with self.subTest(command=command):
+                self.assertIsNone(masked_verifier(command))
+
+    def test_a_status_read_by_the_first_statement_of_a_following_group_is_preserved(
+        self,
+    ) -> None:
+        # A subshell inherits `$?`: `(false); (echo "$?")` prints 1, and
+        # `(false); (ls; echo "$?")` prints ls's 0. Immediacy holds inside the group.
+        self.assertIsNone(masked_verifier('(uv run gz check); (echo "REAL EXIT: $?")'))
+        self.assertEqual(masked_verifier('(uv run gz check); (ls; echo "S: $?")'), "gz check")
+
+    def test_a_pipestatus_read_inside_a_later_group_is_preserved(self) -> None:
+        # Measured: `false | cat; (echo "${PIPESTATUS[0]}")` prints 1.
+        self.assertIsNone(masked_verifier('uv run gz check | tail -3; (echo "${PIPESTATUS[0]}")'))
+
+    def test_a_status_read_after_a_backgrounded_group_does_not_protect(self) -> None:
+        self.assertEqual(masked_verifier('(uv run gz check) & echo "REAL EXIT: $?"'), "gz check")
+
+    def test_a_verifier_backgrounded_at_the_end_of_a_group_is_masked_by_what_follows(
+        self,
+    ) -> None:
+        # The group reports the background LAUNCH: `(false &); ls` exits 0 and
+        # `(false &); echo "$?"` prints 0, so no read after the group recovers it.
+        for command in (
+            "(uv run gz check &); ls",
+            "( (uv run gz check &) ); ls",
+            "(uv run gz check &) && ls",
+            '(uv run gz check &); echo "REAL EXIT: $?"',
+        ):
+            with self.subTest(command=command):
+                self.assertEqual(masked_verifier_reason(command), ("gz check", "background"))
+        # Nothing after it: the same terms as an ungrouped trailing `verifier &`.
+        self.assertIsNone(masked_verifier("(uv run gz check &)"))
+        self.assertIsNone(masked_verifier("uv run gz check &"))
+
+    def test_errexit_reaches_into_a_group_that_ends_its_list(self) -> None:
+        for command in (
+            "set -e; (uv run gz check); ls",
+            "set -e; { uv run gz check; }; ls",
+            "set -e; (uv run gz check; ls)",
+            "set -e; { uv run gz check; ls; }",
+            "set -e; (cd src && uv run gz check; ls)",
+        ):
+            with self.subTest(command=command):
+                self.assertIsNone(masked_verifier(command))
+
+    def test_a_verifier_errexit_aborts_on_is_still_the_groups_status_outside(self) -> None:
+        # errexit makes the group exit with the verifier's status — which an outer
+        # pipe then replaces: `set -e; (false; ls) | cat` exits 0.
+        self.assertEqual(
+            masked_verifier_reason("set -e; (uv run gz check; ls) | tail -3"), ("gz check", "pipe")
+        )
+
+    def test_errexit_does_not_reach_into_a_group_inside_an_and_or_list(self) -> None:
+        # POSIX suppresses errexit for EVERY command inside a group that is not last
+        # in its AND-OR list, so the statement after the verifier still reports.
+        for command in (
+            "set -e; (uv run gz check; ls) || echo x",
+            "set -e; (uv run gz check; ls) && echo ok",
+            "set -e; { uv run gz check; ls; } || echo x",
+            "set -e; ( (uv run gz check; ls) ) || echo x",
+        ):
+            with self.subTest(command=command):
+                self.assertEqual(masked_verifier(command), "gz check")
+
+    def test_errexit_does_not_rescue_a_grouped_verifier_in_a_chain(self) -> None:
+        self.assertEqual(masked_verifier("set -e; (uv run gz check) && echo ok; ls"), "gz check")
+
+    def test_shell_state_set_in_a_subshell_does_not_leak_out(self) -> None:
+        for command, name in (
+            ("(set -e); uv run gz check; ls", "gz check"),
+            ("(set -o pipefail); uv run gz check | tail -3", "gz check"),
+            ("{ set -e; } | cat; uv run gz check; ls", "gz check"),
+            ("{ set -e; } & wait; uv run gz check; ls", "gz check"),
+        ):
+            with self.subTest(command=command):
+                self.assertEqual(masked_verifier(command), name)
+
+    def test_shell_state_set_in_a_brace_group_statement_does_leak_out(self) -> None:
+        for command in (
+            "{ set -e; }; uv run gz check; ls",
+            "{ set -o pipefail; }; uv run gz check | tail -3",
+        ):
+            with self.subTest(command=command):
+                self.assertIsNone(masked_verifier(command))
+
+    def test_pipefail_reaches_a_grouped_pipeline_stage(self) -> None:
+        self.assertIsNone(masked_verifier("set -o pipefail; (uv run gz check) | tail -3"))
+        self.assertIsNone(masked_verifier("set -o pipefail; (uv run gz check | tail -3)"))
+        self.assertEqual(
+            masked_verifier("set -o pipefail; (uv run gz check | tail -3); ls"), "gz check"
+        )
+
+    def test_a_group_that_runs_no_verifier_is_not_this_gates_business(self) -> None:
+        for command in ("(cd src && ls); ls", "{ ls; }; tail -6 log", "(ls) || echo x"):
+            with self.subTest(command=command):
+                self.assertIsNone(masked_verifier(command))
+
+    def test_parentheses_that_are_not_a_grouping_are_not_read_as_one(self) -> None:
+        # An array assignment, a process substitution and a function definition
+        # all carry parens outside command position.
+        for command in (
+            "a=(1 2); uv run gz check",
+            "diff <(ls) x; uv run gz check",
+            "f() { ls; }; uv run gz check",
+        ):
+            with self.subTest(command=command):
+                self.assertIsNone(masked_verifier(command))
+
+    def test_a_substitution_closed_against_a_separator_no_longer_hides_the_next_verifier(
+        self,
+    ) -> None:
+        # The same merged-punctuation cause, observed in session history: `$(…);`
+        # lexed as one `);` token, so the verifier after it shared a statement with
+        # the assignment and its head was never read. The later statement replaces
+        # the verifier's status.
+        for command, verifier in (
+            (
+                'S=$(date +%s); uv run gz validate --documents > /dev/null 2>&1; echo "took"',
+                "gz validate",
+            ),
+            ("S=$(date +%s)\nuv run gz check > log 2>&1\nE=$(date +%s)", "gz check"),
+        ):
+            with self.subTest(command=command):
+                self.assertEqual(masked_verifier_reason(command), (verifier, "sequence"))
+
+    def test_prose_parens_in_a_heredoc_body_keep_their_lexing(self) -> None:
+        # A `(` after a plain word is not shell syntax. Splitting its `);` turned
+        # attestation prose into commands and refused writing the file; measured on
+        # two session commands that the gate had admitted before groups were read.
+        command = (
+            "cat > attest.txt <<'EOF'\n"
+            "lint clean (arb-ruff-1); mkdocs --strict clean (arb-step-mkdocs-2); behave 7/7\n"
+            "EOF"
+        )
+        self.assertIsNone(masked_verifier(command))
+
+    def test_non_grouping_parens_do_not_stop_a_later_group_being_read(self) -> None:
+        # Both kinds of non-grouping paren must still balance, or the whole command
+        # would fall back to the ungrouped reading and hide the grouped verifier.
+        # A `}` outside command position is a word, not a closer.
+        for command in (
+            "a=(1 2); (uv run gz check); ls",
+            "cat > f <<'EOF'\nnote (x); more\nEOF\n(uv run gz check); ls",
+            "echo }; (uv run gz check); ls",
+        ):
+            with self.subTest(command=command):
+                self.assertEqual(masked_verifier(command), "gz check")
+
+    def test_unbalanced_parens_keep_the_ungrouped_reading(self) -> None:
+        # A quoted lone paren lexes exactly like an operator, so the command is read
+        # without groups, in both directions.
+        self.assertEqual(masked_verifier('grep ")" f; uv run gz check | tail -3'), "gz check")
+        self.assertIsNone(masked_verifier('grep "(" f; uv run gz check'))
+
+
+class TestGroupedVerifierRecovery(unittest.TestCase):
+    """Each grouped refusal's named correction must pass the gate (GHI #1008, #971)."""
+
+    def _reason(self, command: str) -> tuple[str, str]:
+        found = masked_verifier_reason(command)
+        self.assertIsNotNone(found, command)
+        verdict = decide("Bash", {"command": command})
+        self.assertTrue(verdict.blocked, command)
+        return (found or ("", ""))[1], verdict.reason
+
+    def test_the_sequence_prefix_correction_is_admitted_for_a_group(self) -> None:
+        for command in ("(uv run gz check); ls", "{ uv run gz check; ls; }"):
+            with self.subTest(command=command):
+                arm, reason = self._reason(command)
+                self.assertEqual(arm, "sequence")
+                self.assertIn(f"set -e; {command}", reason)
+                self.assertIsNone(masked_verifier(f"set -e; {command}"))
+
+    def test_a_sequence_errexit_cannot_reach_gets_its_own_arm(self) -> None:
+        # `set -e;` would be refused again here, and the shell exits 0 with it.
+        for command in (
+            "(uv run gz check; ls) || echo x",
+            "set -e; (uv run gz check; ls) && echo ok",
+        ):
+            with self.subTest(command=command):
+                arm, reason = self._reason(command)
+                self.assertEqual(arm, "errexit-suppressed")
+                self.assertNotIn(f"set -e; {command}", reason)
+                self.assertIn("`set -e` does NOT help here", reason)
+                for part in ("BLOCKED:", "WHY:", "NEXT STEP:"):
+                    self.assertIn(part, reason)
+
+    def test_the_errexit_suppressed_correction_is_admitted(self) -> None:
+        _arm, reason = self._reason("(uv run gz check; ls) || echo x")
+        correction = '( <verifier> > out.log 2>&1; echo "REAL EXIT: $?"; <rest> )'
+        self.assertIn(correction, reason)
+        concrete = correction.replace("<verifier>", "uv run gz check").replace("<rest>", "ls")
+        self.assertIsNone(masked_verifier(f"{concrete} || echo x"))

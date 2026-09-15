@@ -136,15 +136,16 @@ def strip_uv_run(tokens: Iterable[str]) -> list[str]:
     return parts
 
 
-def split_on(tokens: Iterable[str], separators: frozenset[str]) -> list[list[str]]:
+def split_on[ItemT](tokens: Iterable[ItemT], separators: frozenset[str]) -> list[list[ItemT]]:
     """Split a token stream into segments on exact separator tokens.
 
     Exact-match, never substring: ``punctuation_chars`` emits ``||`` as one token,
     so splitting on ``{"|"}`` correctly leaves a logical-or intact rather than
-    reading it as two empty pipelines.
+    reading it as two empty pipelines. Items need not be strings: a reader that has
+    nested a group into one item (GHI #1008) splits around it, never inside it.
     """
-    segments: list[list[str]] = []
-    current: list[str] = []
+    segments: list[list[ItemT]] = []
+    current: list[ItemT] = []
     for token in tokens:
         if token in separators:
             segments.append(current)

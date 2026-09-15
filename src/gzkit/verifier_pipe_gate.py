@@ -58,6 +58,7 @@ Coverage limits are declared, not hidden — see :data:`UNWITNESSABLE`.
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -217,10 +218,55 @@ UNWITNESSABLE: tuple[str, ...] = (
     "gate does not widen past its canonical scope to read it. A generic command "
     "silenced by `||` is therefore unseen, exactly as a generic command piped "
     "without `pipefail` is.",
-    "A verifier inside a grouping — `(verifier); ls`, `{ verifier; }; ls` — is "
-    "not recognized as a verifier at all: resolution is by command head, and the "
-    "head is the grouping token. Tracked at GHI #1008.",
+    "A verifier inside command substitution — `$( … )` or backticks — or behind a "
+    "reserved word (`time`, `!`, an `if`/`while` condition, a `then`/`do`/`else` "
+    "body) is not recognized: resolution is by command head, and the head is the "
+    "reserved word, or the substitution sits inside a word. Groups `( … )` and "
+    "`{ …; }` ARE read (GHI #1008). Tracked at GHI #1012.",
+    "A heredoc body is read as shell statements, though it is data the shell never "
+    "runs: body prose can be refused, and an apostrophe in it leaves the command "
+    "unparseable, so a masked verifier after it is admitted. Tracked at GHI #1013.",
+    "A quoted lone `(` or `)` lexes exactly like an operator, so a command whose "
+    "parens do not balance — that, or a `case` pattern — keeps the ungrouped "
+    "reading this gate gave before groups were read (GHI #1008).",
 )
+
+#: Characters the shared lexer emits as punctuation (``shlex`` ``punctuation_chars``).
+_PUNCTUATION: frozenset[str] = frozenset("();<>|&")
+
+#: A grouping opener in command position, mapped to the token that closes it.
+_GROUP_CLOSERS: dict[str, str] = {"(": ")", "{": "}"}
+
+_SUBSHELL_OPENER = "("
+_SUBSHELL_CLOSER = ")"
+
+
+class _Group(BaseModel):
+    """A ``( … )`` subshell or ``{ …; }`` brace group: ONE command of its list (GHI #1008).
+
+    The shell reports a group's status as its last statement's, exactly as it
+    reports a command's, so the group is read as a command whose verifier is
+    whichever one its own list carries to that end.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    subshell: bool = Field(..., description="True for `( … )`, whose shell state stays inside")
+    body: tuple[str | _Group, ...] = Field(..., description="The group's own list, groups nested")
+
+
+class _ListReading(BaseModel):
+    """What one statement list does to a verifier's status (GHI #1008)."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    masked: tuple[str, str] | None = Field(None, description="(verifier, arm) whose status is lost")
+    carried: str | None = Field(None, description="Verifier whose failure the list reports")
+    backgrounded: str | None = Field(
+        None, description="Verifier the list's last command launched in the background"
+    )
+    pipefail: bool = Field(..., description="pipefail state after the list ran")
+    errexit: bool = Field(..., description="errexit state after the list ran")
 
 
 def _canonical_program_names() -> frozenset[str]:
@@ -320,7 +366,7 @@ def _reads_exit_status(statement: list[str]) -> bool:
     return any(ref in token for token in statement for ref in _EXIT_STATUS_REFERENCES)
 
 
-def _statement_terminators(tokens: list[str]) -> list[str | None]:
+def _statement_terminators(items: list[str | _Group]) -> list[str | None]:
     """Separator ending each statement, aligned 1:1 with :func:`split_on`'s output.
 
     ``split_on`` emits one segment per separator plus a final one, so the
@@ -328,7 +374,7 @@ def _statement_terminators(tokens: list[str]) -> list[str | None]:
     separator matters because ``&&`` propagates a failure and ``;`` discards it —
     a splitter that forgets which one was used cannot tell those apart.
     """
-    return [*(token for token in tokens if token in _STATEMENT_SEPARATORS), None]
+    return [*(token for token in _plain(items) if token in _STATEMENT_SEPARATORS), None]
 
 
 def _module_verifier(rest: list[str]) -> str | None:
@@ -394,45 +440,148 @@ def masked_verifier(command: str) -> str | None:
     return reason[0] if reason else None
 
 
+def _is_paren_run(token: str) -> bool:
+    return set(token) <= _PUNCTUATION and ("(" in token or ")" in token)
+
+
+def _split_paren_runs(tokens: list[str]) -> list[str]:
+    """Split a merged punctuation token at its parens (GHI #1008).
+
+    ``shlex`` joins ADJACENT punctuation into one token, so ``(x);ls`` lexes as
+    ``);`` and ``ls;(x)`` as ``;(`` — the separator hides inside the token that
+    closes or opens the group. Only runs carrying a paren are split, so a
+    paren-free command lexes exactly as it did.
+
+    A ``(`` straight after a plain word is not shell syntax this gate reads —
+    it is prose in a heredoc body, a quoted lone paren, or a function name — so
+    the run that CLOSES it keeps its lexing. Splitting there turned heredoc prose
+    like ``clean (receipt); mkdocs --strict clean`` into a refused command.
+    """
+    split: list[str] = []
+    opened_after_word: list[bool] = []
+    previous: str | None = None
+    for token in tokens:
+        if not _is_paren_run(token):
+            split.append(token)
+            previous = token
+            continue
+        parts = [part for part in re.split(r"([()])", token) if part]
+        closes_prose = False
+        for part in parts:
+            if part == _SUBSHELL_OPENER:
+                # `$(`, `a=(`, `{ (` and an operator-led `(` are shell syntax; a
+                # word-led one is not.
+                opened_after_word.append(
+                    previous is not None
+                    and previous not in _GROUP_CLOSERS
+                    and not set(previous) <= _PUNCTUATION
+                    and not previous.endswith(("$", "="))
+                )
+            elif part == _SUBSHELL_CLOSER and opened_after_word:
+                closes_prose = opened_after_word.pop() or closes_prose
+            previous = part
+        split.extend([token] if closes_prose and len(parts) > 1 else parts)
+        previous = token
+    return split
+
+
+def _read_groups(tokens: list[str]) -> list[str | _Group] | None:
+    """Nest every command-position ``( … )`` and ``{ …; }``; None when they do not balance.
+
+    A paren outside command position — ``$(``, ``<(``, ``a=(``, ``f()`` — opens no
+    group. It stays a plain token but is still balanced, so its ``)`` closes
+    nothing. ``}`` closes a brace group only in command position, which is the
+    only place the shell reads it as a closer.
+    """
+    # (opener, items, is_group). A non-group paren shares its parent's items.
+    frames: list[tuple[str | None, list[str | _Group], bool]] = [(None, [], False)]
+    at_head = True
+    for token in tokens:
+        opener, items, is_group = frames[-1]
+        if at_head and token in _GROUP_CLOSERS:
+            frames.append((token, [], True))
+            continue
+        if token != _SUBSHELL_CLOSER and token.startswith(_SUBSHELL_CLOSER) and not is_group:
+            # An unsplit closing run (see `_split_paren_runs`) still closes its paren.
+            if opener is None:
+                return None
+            frames.pop()
+            items.append(token)
+            at_head = False
+            continue
+        if token == _SUBSHELL_CLOSER or (at_head and token in _GROUP_CLOSERS.values()):
+            if opener is None or token != _GROUP_CLOSERS[opener]:
+                return None
+            frames.pop()
+            if is_group:
+                frames[-1][1].append(_Group(subshell=opener == _SUBSHELL_OPENER, body=tuple(items)))
+            else:
+                items.append(token)
+            at_head = False
+            continue
+        if token == _SUBSHELL_OPENER:
+            frames.append((token, items, False))
+        items.append(token)
+        at_head = token in _STATEMENT_SEPARATORS or token == _PIPE
+    return frames[0][1] if len(frames) == 1 else None
+
+
+def _plain(items: list[str | _Group]) -> list[str]:
+    """Return the items' own tokens; nothing inside a nested group is the caller's."""
+    return [item for item in items if isinstance(item, str)]
+
+
+def _words_run_first(statement: list[str | _Group]) -> list[str]:
+    """Tokens of what runs FIRST: a statement headed by a group runs its first statement."""
+    while statement and isinstance(statement[0], _Group):
+        statement = split_on(list(statement[0].body), _STATEMENT_SEPARATORS)[0]
+    return _plain(statement)
+
+
+def _all_words(items: list[str | _Group]) -> list[str]:
+    """Every token, nested groups included."""
+    words: list[str] = []
+    for item in items:
+        words.extend(_all_words(list(item.body)) if isinstance(item, _Group) else [item])
+    return words
+
+
 def _pipe_arm(
-    stages: list[list[str]], rest: list[list[str]], *, pipefail_active: bool
+    names: list[str | None], rest: list[list[str | _Group]], *, pipefail_active: bool
 ) -> str | None:
-    """ARM 1 — the pipe. A verifier upstream of any pipe loses its status to the last stage."""
-    if pipefail_active or len(stages) < 2:
+    """ARM 1 — the pipe. A verifier upstream of any pipe loses its status to the last stage.
+
+    ``names`` holds the verifier each stage runs, resolved by the caller so a
+    grouped stage names the verifier its group carries (GHI #1008).
+    """
+    if pipefail_active or len(names) < 2:
         return None
-    if any(_reads_pipestatus(later) for later in rest):
+    if any(_reads_pipestatus(_all_words(later)) for later in rest):
         return None
-    for upstream in stages[:-1]:
-        name = _verifier_name(upstream)
-        if name is not None:
-            return name
-    return None
+    return next((name for name in names[:-1] if name is not None), None)
 
 
-def _status_carrier(stages: list[list[str]], *, pipefail_active: bool) -> str | None:
+def _status_carrier(names: list[str | None], *, pipefail_active: bool) -> str | None:
     """Return the verifier whose status this statement REPORTS, or None.
 
     Without ``pipefail`` a pipeline reports its last stage. With it, a failing
     verifier in ANY stage becomes the pipeline's status, so a later statement
     that overwrites the pipeline overwrites the verifier (GHI #971).
     """
-    candidates = stages if pipefail_active else stages[-1:]
-    for stage in candidates:
-        name = _verifier_name(stage)
-        if name is not None:
-            return name
-    return None
+    candidates = names if pipefail_active else names[-1:]
+    return next((name for name in candidates if name is not None), None)
 
 
 def _replacement_arm(
-    stages: list[list[str]],
-    rest: list[list[str]],
+    names: list[str | None],
+    rest: list[list[str | _Group]],
     terminators: list[str | None],
     *,
     pipefail_active: bool,
     errexit_active: bool,
+    errexit_reaches: bool,
 ) -> tuple[str, str] | None:
-    """ARMS 2 to 5 — a later statement REPLACES the verifier's status.
+    """ARMS 2 to 6 — a later statement REPLACES the verifier's status.
 
     The shell reports the last statement exactly as it reports the last stage
     (GHI #940), and a ``||`` branch reports the branch (GHI #970). ``pipefail``
@@ -442,48 +591,205 @@ def _replacement_arm(
     ``terminators`` starts at the verifier's own terminator. The separator that
     decides is the one ENDING the verifier's AND-OR list: ``&&`` carries the
     failure onward, so ``verifier && ok; ls`` is masked by the ``;`` (GHI #971).
+
+    Returns ``(verifier, "carried")`` when the verifier's failure reaches the end
+    of this list as the list's own status — what a GROUP around the list then
+    reports (GHI #1008). ``errexit_reaches`` is False inside a group that is not
+    last in its AND-OR list, where the shell suppresses errexit for every command.
     """
+    name = _status_carrier(names, pipefail_active=pipefail_active)
+    if name is None:
+        return None
     end = 0
     while terminators[end] == _AND_THEN:
         end += 1
     list_end = terminators[end]
     if list_end not in _MASKING_SEPARATORS:
-        return None
+        return name, "carried"
     chained = end > 0
+    protected = not chained and list_end in _ERREXIT_PROTECTED_SEPARATORS
     # POSIX suppresses errexit for a command that is not the last in an AND-OR
     # list, so `set -e` cannot abort on a verifier inside a chain.
-    if errexit_active and not chained and list_end in _ERREXIT_PROTECTED_SEPARATORS:
-        return None
+    if errexit_active and errexit_reaches and protected:
+        return name, "carried"
     later = [statement for statement in rest[end:] if statement]
     if not later:
         # A trailing separator (`gz check;`) leaves an empty tail. Nothing runs
-        # after the verifier, so nothing overwrites its status.
-        return None
-    name = _status_carrier(stages, pipefail_active=pipefail_active)
-    if name is None:
-        return None
+        # after the verifier, so nothing overwrites its status — unless it was
+        # backgrounded, which reports the launch to whatever follows the list.
+        return name, ("backgrounded" if list_end == _BACKGROUND else "carried")
     # `$?` reads the status of the list that JUST ran. A read placed after an
     # intervening statement reports that statement's exit instead — it looks like
     # evidence and is not, so only the next statement counts. After `&` it reads
     # the background launch, never the verifier.
-    if list_end != _BACKGROUND and _reads_exit_status(later[0]):
+    if list_end != _BACKGROUND and _reads_exit_status(_words_run_first(later[0])):
         return None
     if list_end == _BACKGROUND:
         return name, "background"
     if chained:
         return name, "chain"
-    return name, ("or-else" if list_end == _OR_ELSE else "sequence")
+    if list_end == _OR_ELSE:
+        return name, "or-else"
+    return name, ("sequence" if errexit_reaches else "errexit-suppressed")
+
+
+def _read_stages(
+    stages: list[list[str | _Group]],
+    *,
+    pipefail_active: bool,
+    errexit_active: bool,
+    errexit_reaches: bool,
+) -> list[str | _ListReading | None]:
+    """Resolve each stage: the verifier it runs by name, or a grouped stage's reading."""
+    resolved: list[str | _ListReading | None] = []
+    for stage in stages:
+        head = stage[0] if stage else None
+        if not isinstance(head, _Group):
+            resolved.append(_verifier_name(_plain(stage)))
+            continue
+        resolved.append(
+            _read_list(
+                list(head.body),
+                pipefail_active=pipefail_active,
+                errexit_active=errexit_active,
+                errexit_reaches=errexit_reaches,
+            )
+        )
+    return resolved
+
+
+def _leaves_state_behind(stages: list[list[str | _Group]], terminator: str | None) -> bool:
+    """Return True when the statement is a brace group running in THIS shell.
+
+    What a brace group sets outlives it; a subshell, a pipeline stage or a
+    background job runs elsewhere and does not (measured: `{ set -e; }; false; ls`
+    exits 1, `{ set -e; } | cat; false; ls` exits 0).
+    """
+    head = stages[0][0] if stages[0] else None
+    return (
+        isinstance(head, _Group)
+        and not head.subshell
+        and len(stages) == 1
+        and terminator != _BACKGROUND
+    )
+
+
+def _read_statement(
+    statement: list[str | _Group],
+    rest: list[list[str | _Group]],
+    terminators: list[str | None],
+    *,
+    pipefail_active: bool,
+    errexit_active: bool,
+    errexit_reaches: bool,
+) -> _ListReading:
+    """Read one statement that sets no shell option; ``terminators`` starts at its own."""
+    stages = split_on(statement, frozenset({_PIPE}))
+    # errexit is suppressed for every command inside a group that is not last in
+    # its AND-OR list — measured: `set -e; (false; ls) || echo x` exits 0.
+    resolved = _read_stages(
+        stages,
+        pipefail_active=pipefail_active,
+        errexit_active=errexit_active,
+        errexit_reaches=errexit_reaches and terminators[0] not in (_AND_THEN, _OR_ELSE),
+    )
+    readings = [stage for stage in resolved if isinstance(stage, _ListReading)]
+    masked_inside = next((reading for reading in readings if reading.masked is not None), None)
+    if masked_inside is not None:
+        return masked_inside
+    if _leaves_state_behind(stages, terminators[0]):
+        pipefail_active, errexit_active = readings[0].pipefail, readings[0].errexit
+    # A group that ended by backgrounding a verifier reports the launch, so ANY
+    # later statement replaces a status no read can recover (`(false &); echo "$?"`
+    # prints 0).
+    launched = next((reading.backgrounded for reading in readings if reading.backgrounded), None)
+    if launched is not None and any(rest):
+        return _ListReading(
+            masked=(launched, "background"), pipefail=pipefail_active, errexit=errexit_active
+        )
+    names = [stage.carried if isinstance(stage, _ListReading) else stage for stage in resolved]
+
+    name = _pipe_arm(names, rest, pipefail_active=pipefail_active)
+    found = (
+        (name, "pipe")
+        if name is not None
+        else _replacement_arm(
+            names,
+            rest,
+            terminators,
+            pipefail_active=pipefail_active,
+            errexit_active=errexit_active,
+            errexit_reaches=errexit_reaches,
+        )
+    )
+    return _statement_reading(
+        found, launched, pipefail_active=pipefail_active, errexit_active=errexit_active
+    )
+
+
+def _statement_reading(
+    found: tuple[str, str] | None,
+    launched: str | None,
+    *,
+    pipefail_active: bool,
+    errexit_active: bool,
+) -> _ListReading:
+    """Sort an arm's outcome into a masking, a carried status, or a background launch."""
+    name, outcome = found if found is not None else (None, None)
+    return _ListReading(
+        masked=found if outcome not in (None, "carried", "backgrounded") else None,
+        carried=name if outcome == "carried" else None,
+        backgrounded=name if outcome == "backgrounded" else launched,
+        pipefail=pipefail_active,
+        errexit=errexit_active,
+    )
+
+
+def _read_list(
+    items: list[str | _Group], *, pipefail_active: bool, errexit_active: bool, errexit_reaches: bool
+) -> _ListReading:
+    """Read one statement list — the whole command, or a group's body (GHI #1008)."""
+    statements = split_on(items, _STATEMENT_SEPARATORS)
+    terminators = _statement_terminators(items)
+    carried: str | None = None
+    backgrounded: str | None = None
+    for index, statement in enumerate(statements):
+        plain = [] if statement and isinstance(statement[0], _Group) else _plain(statement)
+        if _sets_pipefail(plain) or _sets_errexit(plain):
+            pipefail_active = pipefail_active or _sets_pipefail(plain)
+            errexit_active = errexit_active or _sets_errexit(plain)
+            continue
+        reading = _read_statement(
+            statement,
+            statements[index + 1 :],
+            terminators[index:],
+            pipefail_active=pipefail_active,
+            errexit_active=errexit_active,
+            errexit_reaches=errexit_reaches,
+        )
+        if reading.masked is not None:
+            return reading
+        pipefail_active, errexit_active = reading.pipefail, reading.errexit
+        carried = carried or reading.carried
+        backgrounded = backgrounded or reading.backgrounded
+    return _ListReading(
+        carried=carried,
+        backgrounded=backgrounded,
+        pipefail=pipefail_active,
+        errexit=errexit_active,
+    )
 
 
 def masked_verifier_reason(command: str) -> tuple[str, str] | None:
     """Return ``(verifier, arm)`` for a masked verifier, or None.
 
-    ``arm`` is ``"pipe"``, ``"sequence"``, ``"or-else"``, ``"chain"`` or
-    ``"background"``. The caller needs it because they have DIFFERENT remedies:
-    ``pipefail`` makes a pipeline report its first failing stage and does nothing
-    for a later statement overwriting the status; ``set -e`` aborts the sequence
-    and does nothing about a pipe; and NEITHER reaches ``||``, a non-final ``&&``
-    member, or ``&``, where the shell suppresses or cannot apply errexit. Prose
+    ``arm`` is ``"pipe"``, ``"sequence"``, ``"or-else"``, ``"chain"``,
+    ``"background"`` or ``"errexit-suppressed"``. The caller needs it because they
+    have DIFFERENT remedies: ``pipefail`` makes a pipeline report its first failing
+    stage and does nothing for a later statement overwriting the status; ``set -e``
+    aborts the sequence and does nothing about a pipe; and NEITHER reaches ``||``,
+    a non-final ``&&`` member, ``&``, or a sequence inside a group that is not last
+    in its AND-OR list, where the shell suppresses or cannot apply errexit. Prose
     that named one remedy for all would hand the caller a correction that leaves
     the command exactly as masked as it was
     (`.claude/rules/guardrail-feedback-prose.md`).
@@ -496,30 +802,14 @@ def masked_verifier_reason(command: str) -> tuple[str, str] | None:
         # Unbalanced quotes. The shell will reject this too; a gate that guesses
         # at unparseable input refuses commands nobody could have run anyway.
         return None
-    statements = split_on(tokens, _STATEMENT_SEPARATORS)
-    terminators = _statement_terminators(tokens)
-    pipefail_active = False
-    errexit_active = False
-    for index, statement in enumerate(statements):
-        if _sets_pipefail(statement) or _sets_errexit(statement):
-            pipefail_active = pipefail_active or _sets_pipefail(statement)
-            errexit_active = errexit_active or _sets_errexit(statement)
-            continue
-
-        stages = split_on(statement, frozenset({_PIPE}))
-        name = _pipe_arm(stages, statements[index + 1 :], pipefail_active=pipefail_active)
-        if name is not None:
-            return name, "pipe"
-        found = _replacement_arm(
-            stages,
-            statements[index + 1 :],
-            terminators[index:],
-            pipefail_active=pipefail_active,
-            errexit_active=errexit_active,
-        )
-        if found is not None:
-            return found
-    return None
+    # Groups read as one command each (GHI #1008). Parens that do not balance keep
+    # the reading of the unsplit tokens, exactly as before groups were read: that
+    # fallback is where heredoc prose lands, and re-lexing it changes verdicts on
+    # text the shell never runs.
+    items: list[str | _Group] = _read_groups(_split_paren_runs(tokens)) or list(tokens)
+    return _read_list(
+        items, pipefail_active=False, errexit_active=False, errexit_reaches=True
+    ).masked
 
 
 def _block_prose(verifier: str, command: str, arm: str = "pipe") -> str:
@@ -602,6 +892,23 @@ def _block_prose(verifier: str, command: str, arm: str = "pipe") -> str:
             "job (`sh -c 'set -e; false & ls'` exits 0). For attestation evidence, "
             "cite the ARB receipt's `exit_status` (`uv run gz arb step ...`), never "
             "an aggregate status."
+        )
+    if arm == "errexit-suppressed":
+        return (
+            f"BLOCKED: Bash refused — `{verifier}` is not the last statement of a "
+            "`( … )` or `{ …; }` group that sits in an `&&`/`||` list, so the "
+            f"status the group reports is a later statement's, not `{verifier}`'s.\n\n"
+            "WHY: `.gzkit/rules/tests.md` § Verification exit-code integrity "
+            "(binding, GHI #589, extended GHI #1008) — a group reports its last "
+            "statement exactly as a command does, and the shell suppresses errexit "
+            "for every command inside a group that is not last in its AND-OR list "
+            "(`sh -c 'set -e; (false; ls) || echo x'` exits 0).\n\n"
+            "NEXT STEP: read `$?` inside the group, immediately after the verifier:\n"
+            '  ( <verifier> > out.log 2>&1; echo "REAL EXIT: $?"; <rest> )\n\n'
+            "`set -e` does NOT help here — errexit never fires inside that group, so "
+            "prefixing it changes nothing. For attestation evidence, cite the ARB "
+            "receipt's `exit_status` (`uv run gz arb step ...`), never an aggregate "
+            "status."
         )
     if arm == "sequence":
         return (
