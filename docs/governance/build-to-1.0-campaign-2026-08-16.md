@@ -499,8 +499,8 @@ filed as a GHI. That conflicts with canon a campaign amendment cannot override �
 § PRIME DIRECTIVE #6: *"Priority order for out-of-scope: file a GHI via `/ghi-author` …,
 append to `.gzkit/insights/agent-insights.jsonl`, or note in the brief's evidence section"* —
 and with this plan's own 2026-09-02 finding that *"filing is working exactly as Prime
-Directive 6 requires."* Any change there is a corpus change through `gz content remember`,
-put to the operator separately.
+Directive 6 requires."* **Ruled the same day, verbatim: *"don't change anything about the
+PD"*.** Item 4 is withdrawn; Prime Directive #6 stands unchanged, and this question is closed.
 
 **What this does NOT license.** No ADR is authored, and no OBPI is drawn, started or authored;
 the IRON LAW is untouched. TOPMOST `ADR-0.35.0` and ascending ADR order are unchanged. No GHI
