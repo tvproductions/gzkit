@@ -5,9 +5,9 @@ description: Author a GitHub Issue (GHI) when a finding needs an independent wor
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-07
+last_reviewed: 2026-09-15
 metadata:
-  skill-version: "1.6.0"
+  skill-version: "1.7.0"
 model: sonnet
 ---
 
@@ -138,6 +138,9 @@ routing matrix will consume.
    # Does an authored OBPI brief already OWN this work? (GHI #864)
    # Search on the SURFACE — a path, an id, a symbol — not on narrative words.
    grep -rln "<surface path / entry id / symbol>" docs/design/adr/*/*/obpis/*.md
+
+   # Did an R&D run already decline or route this? (rnd-discipline.md ruling 4, 2026-09-15)
+   grep -rln "<keywords>" docs/governance/rnd/ 2>/dev/null
    ```
 
    Read every title in both result sets (titles are cheap; read bodies only on candidate hits). Decide which branch you are on:
@@ -149,6 +152,7 @@ routing matrix will consume.
    | A recently-closed GHI (≤30 days) addressed this exact finding | Re-open it (`gh issue reopen <N>`) with a comment citing the regression evidence — never file a fresh GHI for the same root cause |
    | The active, operator-initiated OBPI owns this correction under its approved obligations | **Do not file unless the operator explicitly requested an issue.** Keep the correction and evidence in that OBPI's change log and continue its pipeline; an explicitly requested issue links back to that work. |
    | Another live OBPI owns the work, or the correction requires an unapproved amendment | Read the brief's `status:`, parent ADR, and matching requirement lines; surface the actual ownership or amendment decision to the operator. Do not initiate that OBPI or file a duplicate work order. |
+   | An R&D record under `docs/governance/rnd/` lists this finding under **Not pursued** or in its **Outcomes** table | **Do not file on your own judgment.** Quote the record's reason and the row to the operator; a rejected idea is re-opened only by the operator. |
    | No prior or adjacent GHI exists | Proceed to Step 1 |
 
    **Canonical sibling-cut regression:** GHIs #459 and #460 (2026-05-12) shared the T1→T2 doctrine-drift root cause (skill prose declares an agent action with no mechanical fail-close) but shared no title keywords — #459 named the per-skill Stage 2 dispatch gap, #460 named the catalog-wide skill-body-as-procedural-script surface. #460 was filed ~17 minutes after #459 without cross-link at authoring time; the relationship was only recorded in a follow-up comment after the operator noticed the overlap. The recent-by-date skim catches this class even when keywords disagree.

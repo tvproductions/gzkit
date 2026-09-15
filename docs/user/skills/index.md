@@ -36,6 +36,7 @@ First-stage intent routers. Pick the namespace that matches your intent, then in
 | [`/gz-attest`](gz-attest.md) | Record human attestation with prerequisite enforcement |
 | [`/gz-closeout`](gz-closeout.md) | Initiate ADR closeout with evidence context |
 | [`/gz-design`](gz-design.md) | Collaborative design dialogue that produces GovZero ADR artifacts |
+| [`/gz-rnd`](gz-rnd.md) | Governed R&D session that retains and routes exploratory design outcomes |
 | [`/gz-plan`](gz-plan.md) | Create ADR artifacts for planned change |
 
 ---

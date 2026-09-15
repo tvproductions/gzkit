@@ -48,6 +48,8 @@ shut, inside the window where that Movement was supposedly being worked.
 
 > **Topmost (sequenced):** **`ADR-0.35.0-canon-entry-corpus-landing` is TOPMOST (2026-09-01, operator-ratified, UNCHANGED). AMENDED 2026-09-02 (operator-ratified) — Movement C's `Close the doctrine-declared-without-mechanism family` box is pulled forward to NEXT-IN-PRIORITY, immediately behind TOPMOST and ahead of both Movement B and every other Movement C box; Movement B steps down one place; Movement A remains HELD as a Movement.** The box outranks its own Movement, on the precedent the 2026-09-01 amendment set when Movement A's `ADR-0.35.0` box became TOPMOST inside a HELD Movement. It is placed high because it is drawable without the operator: under the IRON LAW only the operator initiates OBPI work, while this box discharges through rule-text amendment, scorecard scoring and GHI-shaped direct repair. Measured 2026-09-02: 19 of 32 open GHIs are members of this family, and the open queue climbed 9 → 32 in four weeks while 179 issues closed at a median age of 0.15 days — instances close same-session, the class keeps producing. Run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` for its lifecycle and landed count rather than trusting a figure transcribed here. See § Amendments 2026-09-02. From 2026-08-14 to this amendment the plan declared TOPMOST a Movement that ADR order forbade working, while the work drawn every session sat as a box inside a HELD Movement — two amendments (2026-08-16, 2026-08-23) were spent explaining that split rather than removing it. This removes it. Run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` for its lifecycle and landed count rather than trusting a figure transcribed here. See § Amendments 2026-09-01.
 >
+> **DRAWN-WORK ORDER — AMENDED 2026-09-15 (operator-ratified).** Work a session draws without the operator, at the NEXT-IN-PRIORITY position, is taken in this order: **(a) the R&D front** — the `gz-rnd` skill and the design in `docs/governance/rnd-discipline.md`; **(b) the chore estate** — the conversion directive and the overdue board, the family-closure box's agent-side arm; **(c) GHI direct repair, only** when the GHI closes a named arm of that box, blocks (a) or (b), or is an emergency. TOPMOST and ADR order are unchanged. See § Amendments 2026-09-15.
+>
 > **NEXT-IN-PRIORITY — Movement B — put the membrane on the real doors.** The airlock is BUILT and installed on ONE door — run `uv run gz adr status ADR-0.33.0-airlock-membrane` for its lifecycle and landed count rather than trusting a figure transcribed here. Measured live 2026-08-14: **524 `fix` commits in 90 days across zero transits**; **23 `airlock_in` vs 5 `airlock_out`** (18 unaccounted exits — worse than the 23/10 this file recorded); and **20 of 23 transits computed an EMPTY seam-map and auto-proceeded**, only 3 biting (3/4/7 seams → `hold`). **RE-MEASURED 2026-08-16: `airlock_in` 23, `airlock_out` 5 — both UNCHANGED, so zero transits occurred in the two days since Movement B became TOPMOST, while `fix` commits over 90 days moved 524 → 528. The ungoverned door widened by four while the governed one stayed shut.** That is the item-150 gap (`GHI : MX :: OBPI : Build`) reproducing in miniature, and it is the strongest available argument that item 0's calibration is the right first move rather than the widening beneath it. Sequence within B is **calibrate before widening** — a new item 0, ahead of the five checkboxes below, because widening an uncalibrated gate installs three more inert gates (`ADR-0.33.0` § Negative #1, the load-bearing pre-mortem: *"seam-maps rubber-stamped, GO always reached"*). **The feature ADR that carries this Movement is AUTHORED — `ADR-0.37.0-airlock-calibration-and-compulsion` (2026-08-14), which re-homes `ADR-0.33.0`'s disclosed residuals rather than reopening it; run `uv run gz adr status ADR-0.37.0-airlock-calibration-and-compulsion` for its lifecycle and landed count.** (This sentence read *"none is authored yet"* until 2026-08-16 — see the § Amendments record of that date.) **GATED BY ADR ORDER, which is absolute (operator ruling 2026-08-16, verbatim: *"i will NOT go out of adr order, whatsoever."*): `ADR-0.37.0` is the THIRD of three open feature ADRs, so Movement B is TOPMOST in priority and NOT pullable until `ADR-0.35.0` and `ADR-0.36.0` land. `ADR-0.35.0-canon-entry-corpus-landing` is the next work. TOPMOST is not a licence to jump the ADR queue.** See § Amendments 2026-08-14, § Amendments 2026-08-16 (latest), and § Movement B.
 >
 > **HELD — Movement A — close the Foundation Sunset.** ~~`ADR-0.0.37` audit~~ **done 2026-07-18 (`b40a8026`)** → ~~`ADR-0.34.0` capstone~~ **`Validated` 2026-07-31, released v0.34.0** → **NEXT: re-home the composition engine as a feature (`ADR-0.35.0-canon-entry-corpus-landing`, `Draft`, IN FLIGHT; run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` for the landed count — ten authored briefs, `gz obpi validate --authored` 10/10; **the lifecycle step is RULED 2026-08-12 — `Draft` HOLDS through implementation and OBPI work is UNBLOCKED**; *not* GHI #623, closed 2026-07-19; see § Movement A item 3)** → **THEN: install the cross-family critic at the convergence moment (`ADR-0.36.0-convergence-moment-cross-family-critic`, `Proposed`, NEXT-DRAWN after `ADR-0.35.0` lands; run `uv run gz adr status ADR-0.36.0-convergence-moment-cross-family-critic` for the landed count — promoted 2026-08-09 (`dc5fe4d39`) from the pool ADR; the promotion debt is discharged and the remaining work is the build — work the governed path, do NOT hand-wire a hook; delivery is STAGED and OBPI-09 lands dark; see § Movement A item 2)**. The one-line `foundation-adr-registers-invariant` disposition (item 4) is **RULED and checked off 2026-08-02** — it is no longer pending work. Then Movement B (airlock on the real doors), C (reduce), D (rulings). Pool backlog is post-1.0 (§7).
@@ -218,7 +220,7 @@ gzkit is 1.0 when ALL hold. Each gate is bounded; none is a standing obligation.
 - [ ] Oversized modules — census-driven, with working proof. **RE-MEASURED 2026-08-16: 51 modules over 600 lines, up from the 33 this box carried — a 55% increase, and the largest measured regression on the board.** Method, so the next reader re-runs rather than transcribes: `find src/gzkit -name '*.py' -exec wc -l {} + | awk '$1>600 && $2!="total"'`. The box is not merely unstarted; its subject grew faster than anything shrank it. Note the threshold itself is contested — `.gzkit/rules/pythonic.md` § Size Limits records that 600 is authoring-time guidance with **no enforcing gate**, and that it disagrees with the canonical `complexity-thresholds.md` table (which warns at 733.2 and blocks at 1031.9), so a census against 600 counts modules that no gate rejects. Settle which number governs as part of the census, or the proof will be measured against an authority the codebase does not enforce.
 - [ ] **The Firewall** *(recovered orphan, § 9a)* — classify every delivered surface by destiny: **wheel-borne / authored-into-battlefield / lab-only-jig**, enforced at scaffold-time and validate-time. Operator, 2026-06-14: *"the rigging and jigs do not remain attached to the fuselage once we open the factory hangar doors for final delivery — we haven't been careful about this."* Booked 06-14, never built. Load-bearing for §1's public-product trajectory: today an adopter inherits gzkit's lab jigs. Genuinely reductive — it defines what does **not** ship.
 - [ ] **Render the stability-gradient spine** *(recovered orphan, § 9a)* — the 06-14 ruling ordered the tree `Constitution → PRD → ADR → OBPI` by rate of change and declared the legacy `PRD → Constitution` spine backwards. AGENTS.md § Workflow still carries the old order across ~12 surfaces. Booked and never rendered.
-- [ ] **Close the doctrine-declared-without-mechanism family** *(added 2026-08-07)* — the family's own name, from GHI #537: *"Layer X declares a discipline that Layer X does not mechanically enforce."* Measured by the `failure-class-index` chore over the 333 GHIs closed since 2026-05-09: the **two deepest recurrence chains in the corpus** (depth 12 and depth 7) are both this family, ~19 members, and it holds the two most-cited ancestors on record (#537 cited 3×, #538 cited 4×). Both arms are in scope — **validator-side** (a check whose subject is narrower than its name: #692 *checks section presence, not population*; #693 *verifies a flag is mentioned, never that its description is true*; #770 *an audit named for dispatch attestation whose entire subject is a frontmatter string*) and **agent-side** (a skill mandate with no receipt: #459, #574, #620). **Completion criterion:** a declared discipline either carries a mechanical witness or is demoted to advisory in its own text — no third state. This is the reductive move that stops the `validate()` surface producing scope #95: it closes the family rather than the instance. **Re-scoped 2026-08-08 (operator-ratified) — the six named issues all closed and the box did NOT discharge; see the amendment for why, and the measurable criterion below.** **PULLED FORWARD TO NEXT-IN-PRIORITY 2026-09-02 (operator-ratified) — directly beneath TOPMOST `ADR-0.35.0`, ahead of Movement B and of every other Movement C box. 19 of 32 open GHIs are members of this family and the open queue climbed 9 → 32 in four weeks while instances closed at a median age of 0.15 days; the criterion, the three arms and the doctrine-side residual are UNCHANGED. See § Amendments 2026-09-02.**
+- [ ] **Close the doctrine-declared-without-mechanism family** *(added 2026-08-07)* — the family's own name, from GHI #537: *"Layer X declares a discipline that Layer X does not mechanically enforce."* Measured by the `failure-class-index` chore over the 333 GHIs closed since 2026-05-09: the **two deepest recurrence chains in the corpus** (depth 12 and depth 7) are both this family, ~19 members, and it holds the two most-cited ancestors on record (#537 cited 3×, #538 cited 4×). Both arms are in scope — **validator-side** (a check whose subject is narrower than its name: #692 *checks section presence, not population*; #693 *verifies a flag is mentioned, never that its description is true*; #770 *an audit named for dispatch attestation whose entire subject is a frontmatter string*) and **agent-side** (a skill mandate with no receipt: #459, #574, #620). **Completion criterion:** a declared discipline either carries a mechanical witness or is demoted to advisory in its own text — no third state. This is the reductive move that stops the `validate()` surface producing scope #95: it closes the family rather than the instance. **Re-scoped 2026-08-08 (operator-ratified) — the six named issues all closed and the box did NOT discharge; see the amendment for why, and the measurable criterion below.** **PULLED FORWARD TO NEXT-IN-PRIORITY 2026-09-02 (operator-ratified) — directly beneath TOPMOST `ADR-0.35.0`, ahead of Movement B and of every other Movement C box. 19 of 32 open GHIs are members of this family and the open queue climbed 9 → 32 in four weeks while instances closed at a median age of 0.15 days; the criterion, the three arms and the doctrine-side residual are UNCHANGED. See § Amendments 2026-09-02.** **DRAWN-WORK ORDER 2026-09-15 (operator-ratified): GHI direct repair under this box is drawn only after the R&D front and the chore estate, and only when the GHI closes a named arm, blocks those two, or is an emergency. See § Amendments 2026-09-15.**
 
   **All six exemplars are CLOSED** — validator-side `#692`, `#693`, `#770`; agent-side `#459`, `#574`, `#620` (verified 2026-08-08 via `gh issue view`). They are **evidence the class exists, not a checklist**: the box's own text says *"it closes the family rather than the instance."* Six closed instances do not discharge a class-level criterion, and checking the box on their strength is the enumerate-the-exemplars habit the criterion was written to resist.
 
@@ -460,7 +462,52 @@ had been repeating. All are dispositioned below — none left undefined.
 
 ## Amendments
 
-### 2026-09-02 (latest) — the doctrine-declared-without-mechanism box is pulled forward to NEXT-IN-PRIORITY (operator-ratified)
+### 2026-09-15 (latest) — drawn work rebalanced: R&D and the chore estate ahead of issue-by-issue repair (operator-ratified)
+
+**Operator, verbatim:** *"the rate at which new GHIs grow in gzkit far outstretches getting
+any feature work done. this is dismaying."* Ruling on the options put to them: *"A and C
+together"*. Ruling on this amendment's draft: *"Ratify 1–3, rule 4 apart (Recommended)"*.
+
+**The measurement, dated 2026-09-15 — a record, not a threshold.** Over 30 days, 207 issues
+were opened and 176 closed; 44 are open. Over 14 days, 142 `fix` commits landed against 3
+`feat`. One session that day closed one GHI and opened two. Re-derive with the GitHub search
+API and `git log --since='14 days ago' --format='%s'` rather than trusting these figures.
+
+**Why the 2026-09-02 placement produced this.** That amendment raised the family-closure box
+because it is *"drawable without the operator"*. Every session could draw it, and GHI repair
+was the cheapest arm to draw. The same amendment observed that *"instances close
+same-session, the class keeps producing."* Without an order among drawable work, the
+producing class out-ran the R&D and chore work that the 2026-09-12 sessions designed.
+
+**What changed.**
+
+1. **Drawn-work order.** At the NEXT-IN-PRIORITY position, work drawn without the operator
+   is taken as: (a) the R&D front; (b) the chore estate — the conversion directive and the
+   overdue board, which is the box's agent-side arm; (c) GHI direct repair, only when the GHI
+   closes a named arm of the box, blocks (a) or (b), or is an emergency. The banner and the
+   box carry this order.
+2. **Handoff menus.** A multi-session thread is carried as its own named line with a pointer
+   to its design record. It is never compressed into one option listed beside short GHI
+   fixes — the compression that reduced the 2026-09-12 R&D thread to *"(d) R&D skill
+   design"* across nineteen handoffs.
+3. **§ Workflow fronts, R&D entry.** Rewritten to name R&D as the headwater of most gzkit
+   design and to point at its governing skill and records.
+
+**Item 4 is ruled apart and NOT enacted here.** The draft proposed that a mid-session finding
+which does not block the current work be recorded with `gz insights remember` rather than
+filed as a GHI. That conflicts with canon a campaign amendment cannot override — AGENTS.md
+§ PRIME DIRECTIVE #6: *"Priority order for out-of-scope: file a GHI via `/ghi-author` …,
+append to `.gzkit/insights/agent-insights.jsonl`, or note in the brief's evidence section"* —
+and with this plan's own 2026-09-02 finding that *"filing is working exactly as Prime
+Directive 6 requires."* Any change there is a corpus change through `gz content remember`,
+put to the operator separately.
+
+**What this does NOT license.** No ADR is authored, and no OBPI is drawn, started or authored;
+the IRON LAW is untouched. TOPMOST `ADR-0.35.0` and ascending ADR order are unchanged. No GHI
+is closed or deprioritized by label: an open GHI remains an authorized work order, and this
+amendment orders only what a session draws on its own.
+
+### 2026-09-02 — the doctrine-declared-without-mechanism box is pulled forward to NEXT-IN-PRIORITY (operator-ratified)
 
 **Operator ruling, verbatim:** *"pull the family-closure box forward, amend the
 campaign"* — corrected in the same session to *"forward in the queue, closer to
@@ -1826,14 +1873,20 @@ OBPI work continue to govern execution.
   and OBPI status. Honor the lowest feature ADR with unlanded work and the
   operator's initiation boundary. Airlock calibration already has its successor
   in ADR-0.37.0; its place in the sequence is unchanged.
-- **new R&D** — Carry open hypotheses and experiments from
-  `docs/governance/capability-control-review-2026-09-12.md` and its conversation
-  source. Name the question, evidence needed, and next experiment. A gap against
-  existing declared intent remains corrective work under its owner; research
-  does not automatically authorize a new ADR or implementation.
+- **new R&D** — The headwater of most gzkit design (operator, 2026-09-12: *"MOST
+  future ADRs come form work exactly like this work"*). An R&D run is governed by
+  the operator-invoked `gz-rnd` skill and writes a record under
+  `docs/governance/rnd/`. Design and rulings: `docs/governance/rnd-discipline.md`;
+  evidence: `docs/governance/mpas-appropriation-analysis.md`. Carry the open threads
+  in `docs/governance/rules-tools-audits-refactors-alignment.md` and
+  `docs/governance/capability-control-review-2026-09-12.md`. A gap against existing
+  declared intent remains corrective work under its owner; research does not
+  automatically authorize a new ADR or implementation. Amended 2026-09-15.
 
 For a general status answer, report each front's observed state, evidence date
 or unresolved verification, and next action. For a focused inquiry, answer its
 scope and mention material dependencies on the other fronts. Handoffs carry
 this map's source plus session-specific changes; the map does not certify that
-all four fronts were freshly inspected by `gz status`.
+all four fronts were freshly inspected by `gz status`. A multi-session thread is
+carried as its own named line with a pointer to its design record, never
+compressed into one option beside short GHI fixes (§ Amendments 2026-09-15).

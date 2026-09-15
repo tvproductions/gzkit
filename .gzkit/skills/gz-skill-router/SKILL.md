@@ -5,9 +5,9 @@ description: Route agents to the correct skill for a given task type. Use when s
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-12
+last_reviewed: 2026-09-15
 metadata:
-  skill-version: "6.3.1"
+  skill-version: "6.4.0"
   govzero-framework-version: "v6"
 model: haiku
 ---
@@ -38,6 +38,7 @@ aid, not an orchestrator — it maps intent to the right workflow entry point.
 Task arrives
     │
     ├── Exploring a new idea or feature?
+    │   ├── Pasted material, "consider this for gzkit" → gz-rnd (operator-invoked)
     │   ├── Vague idea, needs design dialogue ──────→ gz-design
     │   ├── Ready to define product requirements ───→ gz-prd
     │   └── Ready to record an architecture decision → gz-plan
@@ -97,6 +98,7 @@ Task arrives
 
 | Intent / Keyword | Skill |
 |------------------|-------|
+| R&D, "consider this for gzkit", "is gzkit missing something here" | `gz-rnd` (operator-invoked) |
 | design, brainstorm, explore, "let's build" | `gz-design` |
 | create ADR, new ADR, book ADR | `gz-adr-create` |
 | promote pool ADR | `gz-adr-promote` |

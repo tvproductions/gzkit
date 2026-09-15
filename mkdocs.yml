@@ -79,6 +79,7 @@ nav:
       - /gz-prd: user/skills/gz-prd.md
       - /gz-constitute: user/skills/gz-constitute.md
       - /gz-design: user/skills/gz-design.md
+      - /gz-rnd: user/skills/gz-rnd.md
     - Planning:
       - /gz-plan: user/skills/gz-plan.md
       - /gz-adr-create: user/skills/gz-adr-create.md

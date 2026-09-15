@@ -4,9 +4,9 @@ description: Namespace router → end-to-end workflow skills (design through rel
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-25
+last_reviewed: 2026-09-15
 metadata:
-  skill-version: "0.2.1"
+  skill-version: "0.3.0"
 model: haiku
 ---
 
@@ -14,6 +14,7 @@ model: haiku
 
 | Intent | Skill |
 |---|---|
+| R&D run — "consider this for gzkit" (operator-invoked) | `gz-rnd` |
 | design | `gz-design` |
 | plan | `gz-plan` |
 | implement | `gz-obpi-pipeline` |
