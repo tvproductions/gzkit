@@ -65,6 +65,10 @@ Prior `0.12.0` — the MD-values bullet's remaining carve-out is **measured rath
 
 ## `cli.md`
 
+Lifted at version `0.7.0` (rule now at `0.8.0`).
+
+> **Rule version:** `0.7.0` — GHI #1001 (operator ruling 2026-09-13, *"Keep 2; fix the labels"*): code 2 in § Exit Codes is relabelled Usage or System/IO, because every parse error exits 2 by attested REQ-0.0.4-02-03 while this table and the shared epilog called 2 System/IO alone; `0.6.0` and prior are lifted to [Rule Version History](../../docs/governance/rule-version-history.md#climd).
+
 Lifted at version `0.6.0` (rule now at `0.7.0`).
 
 > **Rule version:** `0.6.0` — operator ruling 2026-09-06 carves the GHI direct-repair exception into § Adding CLI Features, which had read as though every contract-bearing CLI change requires OBPI ceremony and so contradicted `AGENTS.md` § Operator Doctrine; `0.5.1` and the superseded `0.5.0`–`0.3.1` chain are lifted to [Rule Version History](../../docs/governance/rule-version-history.md#climd). Scoped `src/gzkit/commands/**`, this rule loads on every CLI-command edit, so narrative is the most expensive thing it can carry.

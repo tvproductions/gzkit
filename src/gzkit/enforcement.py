@@ -675,6 +675,9 @@ def _ensure_production_claims_registered() -> None:
       * ``cli.helpers.exit_code_claims`` — ``cli-usage-error-exit-two``, the witness
         for `.gzkit/rules/cli.md` § Exit Codes code 2: a parse error exits 2 and the
         help epilog labels 2 Usage or System/IO (GHI #1001).
+      * ``cli.helpers.log_level_claims`` — ``cli-log-levels-follow-spec``, the witness
+        for `.gzkit/rules/cli.md` § Flag Conventions verbosity rows: the entrypoint
+        logs at cli-standards-v3.md § Verbosity Levels, and only to stderr.
 
     The gate5 + grader-gaming sources were authored Completed but left un-wired here (the
     docstring formerly named them "future work" that never landed); GHI tracks the
@@ -684,6 +687,9 @@ def _ensure_production_claims_registered() -> None:
     from gzkit.airlock.enter import _ensure_airlock_claims_registered  # noqa: PLC0415
     from gzkit.cli.helpers.exit_code_claims import (  # noqa: PLC0415
         ensure_cli_exit_code_claims_registered,
+    )
+    from gzkit.cli.helpers.log_level_claims import (  # noqa: PLC0415
+        ensure_cli_log_level_claims_registered,
     )
     from gzkit.governance.trust_audits import qc_binding  # noqa: PLC0415
     from gzkit.handoff_resume_gate import _ensure_resume_gate_claims_registered  # noqa: PLC0415
@@ -700,6 +706,7 @@ def _ensure_production_claims_registered() -> None:
     _ensure_resume_gate_claims_registered()
     _ensure_verifier_pipe_claims_registered()
     ensure_cli_exit_code_claims_registered()
+    ensure_cli_log_level_claims_registered()
 
 
 def production_enforcement_registry() -> list[EnforcementClaimRecord]:

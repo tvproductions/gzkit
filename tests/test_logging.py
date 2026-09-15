@@ -58,7 +58,12 @@ class TestConfigureLogging(unittest.TestCase):
 
 
 class TestVerbosityLevels(unittest.TestCase):
-    """Test 4 verbosity levels map correctly."""
+    """The 4 verbosity levels follow `docs/design/cli-standards-v3.md` § Verbosity Levels.
+
+    The canonical specification (ADR-0.0.4): the default logs warnings and errors
+    only, `--verbose` adds INFO, `--debug` adds DEBUG, and `--quiet` suppresses
+    everything but errors (§ Output Modes).
+    """
 
     def setUp(self) -> None:
         structlog.reset_defaults()
@@ -73,8 +78,8 @@ class TestVerbosityLevels(unittest.TestCase):
 
     def test_verbosity_to_level_mapping(self) -> None:
         self.assertEqual(VERBOSITY_TO_LEVEL["quiet"], logging.ERROR)
-        self.assertEqual(VERBOSITY_TO_LEVEL["normal"], logging.INFO)
-        self.assertEqual(VERBOSITY_TO_LEVEL["verbose"], logging.DEBUG)
+        self.assertEqual(VERBOSITY_TO_LEVEL["normal"], logging.WARNING)
+        self.assertEqual(VERBOSITY_TO_LEVEL["verbose"], logging.INFO)
         self.assertEqual(VERBOSITY_TO_LEVEL["debug"], logging.DEBUG)
 
     def test_quiet_suppresses_info(self) -> None:
@@ -91,26 +96,33 @@ class TestVerbosityLevels(unittest.TestCase):
         log.error("critical problem")
         self.assertIn("critical problem", buf.getvalue())
 
-    def test_normal_shows_info(self) -> None:
+    def test_normal_shows_warnings(self) -> None:
+        buf = io.StringIO()
+        configure_logging("normal", console_stream=buf)
+        log = structlog.get_logger()
+        log.warning("disk nearly full")
+        self.assertIn("disk nearly full", buf.getvalue())
+
+    def test_normal_suppresses_info(self) -> None:
         buf = io.StringIO()
         configure_logging("normal", console_stream=buf)
         log = structlog.get_logger()
         log.info("status update")
-        self.assertIn("status update", buf.getvalue())
-
-    def test_normal_suppresses_debug(self) -> None:
-        buf = io.StringIO()
-        configure_logging("normal", console_stream=buf)
-        log = structlog.get_logger()
-        log.debug("debug detail")
         self.assertEqual(buf.getvalue(), "")
 
-    def test_verbose_shows_debug(self) -> None:
+    def test_verbose_shows_info(self) -> None:
+        buf = io.StringIO()
+        configure_logging("verbose", console_stream=buf)
+        log = structlog.get_logger()
+        log.info("status update")
+        self.assertIn("status update", buf.getvalue())
+
+    def test_verbose_suppresses_debug(self) -> None:
         buf = io.StringIO()
         configure_logging("verbose", console_stream=buf)
         log = structlog.get_logger()
         log.debug("verbose detail")
-        self.assertIn("verbose detail", buf.getvalue())
+        self.assertEqual(buf.getvalue(), "")
 
     def test_debug_shows_debug(self) -> None:
         buf = io.StringIO()
@@ -216,7 +228,7 @@ class TestConsoleOutput(unittest.TestCase):
         buf = io.StringIO()
         configure_logging("normal", console_stream=buf)
         log = structlog.get_logger()
-        log.info("hello world")
+        log.warning("hello world")
         output = buf.getvalue()
         self.assertIn("hello world", output)
         # Console output should NOT be JSON
@@ -230,7 +242,7 @@ class TestConsoleOutput(unittest.TestCase):
         buf = io.StringIO()
         configure_logging("normal", console_stream=buf)
         log = structlog.get_logger()
-        log.info("test message")
+        log.warning("test message")
         self.assertIn("test message", buf.getvalue())
 
 
@@ -364,7 +376,7 @@ class TestConsoleColorsFollowThePlatformDefault(unittest.TestCase):
         with patch.dict(os.environ, env, clear=True):
             configure_logging("normal", console_stream=stream)
         logging.getLogger("gzkit.triangle").warning("Malformed REQ line (skipped): %s", "x")
-        structlog.get_logger().info("chore.resolver.fallback", slug="demo")
+        structlog.get_logger().warning("chore.resolver.fallback", slug="demo")
         return stream.getvalue()
 
     def _environment_without_color_settings(self) -> dict[str, str]:

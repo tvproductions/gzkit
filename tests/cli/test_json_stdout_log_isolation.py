@@ -52,7 +52,7 @@ class TestJsonStdoutCarriesOnlyJson(unittest.TestCase):
         return code, stdout.getvalue(), stderr.getvalue()
 
     def test_chores_status_json_parses_while_the_fallback_log_reaches_stderr(self) -> None:
-        code, stdout, stderr = self._run("chores", "status", "--json")
+        code, stdout, stderr = self._run("chores", "status", "--json", "--verbose")
 
         self.assertEqual(code, 0, msg=stderr)
         payload = parse_json_document(self, stdout)
@@ -60,8 +60,16 @@ class TestJsonStdoutCarriesOnlyJson(unittest.TestCase):
         # The log is relocated, never swallowed: the fallback stays observable.
         self.assertIn(_FALLBACK_EVENT, stderr)
 
+    def test_default_verbosity_keeps_an_info_event_off_both_streams(self) -> None:
+        """cli-standards-v3.md § Verbosity Levels: the default logs warnings and errors only."""
+        code, stdout, stderr = self._run("chores", "status", "--json")
+
+        self.assertEqual(code, 0, msg=stderr)
+        parse_json_document(self, stdout)
+        self.assertNotIn(_FALLBACK_EVENT, stderr)
+
     def test_human_mode_moves_the_log_line_off_stdout(self) -> None:
-        code, stdout, stderr = self._run("chores", "status")
+        code, stdout, stderr = self._run("chores", "status", "--verbose")
 
         self.assertEqual(code, 0, msg=stderr)
         self.assertNotIn(_FALLBACK_EVENT, stdout)

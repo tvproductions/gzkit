@@ -7,9 +7,9 @@ description: CLI contract doctrine and design principles
 
 # CLI Contract Doctrine
 
-<!-- rule-version: 0.7.0 -->
+<!-- rule-version: 0.8.0 -->
 
-> **Rule version:** `0.7.0` — GHI #1001 (operator ruling 2026-09-13, *"Keep 2; fix the labels"*): code 2 in § Exit Codes is relabelled Usage or System/IO, because every parse error exits 2 by attested REQ-0.0.4-02-03 while this table and the shared epilog called 2 System/IO alone; `0.6.0` and prior are lifted to [Rule Version History](../../docs/governance/rule-version-history.md#climd).
+> **Rule version:** `0.8.0` — § Flag Conventions realigned to the canonical specification's § Output Modes and § Verbosity Levels: `--verbose` enables INFO-level logging (this row said "Debug output", the drift the adapter's level map had copied) and `--debug` is listed, and errors reach stderr in every mode; `0.7.0` and prior are lifted to [Rule Version History](../../docs/governance/rule-version-history.md#climd).
 
 **Baseline:** [clig.dev](https://clig.dev/) — Human-first CLI design principles.
 **Canonical specification:** [`docs/design/cli-standards-v3.md`](../../docs/design/cli-standards-v3.md) — named canonical by [`ADR-0.0.4`](../../docs/design/adr/foundation/ADR-0.0.4-cli-standards-presentation-foundation/ADR-0.0.4-cli-standards-presentation-foundation.md). **Read its § Document status before citing any section:** parts are live-and-met, parts are live-but-UNMET, parts are RETIRED or superseded.
@@ -68,10 +68,13 @@ Use `sys.exit(code)`. Document codes 2/3 in help text.
 | Flag | Behavior |
 |------|----------|
 | `--quiet` | Errors only |
-| `--verbose` | Debug output |
+| `--verbose` | INFO-level logging to stderr (the default logs warnings and errors) |
+| `--debug` | DEBUG-level logging to stderr; full tracebacks on error |
 | `--dry-run` | Show plan, don't execute |
 | `--json` | Machine-readable to stdout |
 | `--help` / `-h` | Always works |
+
+- Verbosity flags: the default logs warnings and errors, `--quiet` errors only, `--verbose` INFO, `--debug` DEBUG, all to stderr — `docs/design/cli-standards-v3.md` § Verbosity Levels, witnessed by `NC:cli-log-levels-follow-spec`.
 
 ---
 

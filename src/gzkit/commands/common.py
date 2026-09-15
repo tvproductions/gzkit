@@ -42,6 +42,14 @@ console = Console(
     force_terminal=should_force_terminal(),
 )
 
+# Errors and diagnostics go to stderr, always (docs/design/cli-standards-v3.md
+# § Output Rules), so a failure never lands where a command's output is parsed.
+err_console = Console(
+    stderr=True,
+    no_color=should_disable_color(),
+    force_terminal=should_force_terminal(),
+)
+
 
 ADR_SEMVER_ID_RE = re.compile(r"^ADR-\d+\.\d+\.\d+(?:[.-][A-Za-z0-9][A-Za-z0-9.-]*)?$")
 ADR_POOL_ID_RE = re.compile(r"^ADR-pool\.[A-Za-z0-9][A-Za-z0-9.-]*$")

@@ -106,7 +106,7 @@ def _get_parser() -> argparse.ArgumentParser:
     return _cached_parser
 
 
-def _configure_logging_from_flags(args: argparse.Namespace) -> None:
+def configure_logging_from_flags(args: argparse.Namespace) -> None:
     """Apply the CLI logging adapter at the verbosity the common flags select.
 
     Unconfigured, structlog prints to stdout, which corrupts ``--json`` output;
@@ -144,7 +144,7 @@ def main(argv: list[str] | None = None) -> int:
     except SystemExit as exc:
         return int(exc.code) if isinstance(exc.code, int) else 1
 
-    _configure_logging_from_flags(args)
+    configure_logging_from_flags(args)
 
     handler = getattr(args, "func", None)
     if handler is None:
@@ -153,10 +153,12 @@ def main(argv: list[str] | None = None) -> int:
 
     try:
         handler(args)
+    # Every branch reports on stderr: errors and diagnostics never reach stdout,
+    # where a command's output is read (cli-standards-v3.md § Output Rules).
     except GzkitError as exc:
         from rich.markup import escape  # noqa: PLC0415
 
-        from gzkit.commands.common import console  # noqa: PLC0415
+        from gzkit.commands.common import err_console  # noqa: PLC0415
 
         if getattr(args, "debug", False):
             import sys  # noqa: PLC0415
@@ -164,26 +166,26 @@ def main(argv: list[str] | None = None) -> int:
 
             traceback.print_exc(file=sys.stderr)
         # The message is text: unescaped, Rich consumes bracketed spans as tags.
-        console.print(f"[red]{escape(str(exc))}[/red]")
+        err_console.print(f"[red]{escape(str(exc))}[/red]")
         return exit_code_for(exc)
     except SystemExit as exc:
         return int(exc.code) if isinstance(exc.code, int) else 1
     except KeyboardInterrupt:
-        from gzkit.commands.common import console  # noqa: PLC0415
+        from gzkit.commands.common import err_console  # noqa: PLC0415
 
-        console.print("[yellow]Interrupted.[/yellow]")
+        err_console.print("[yellow]Interrupted.[/yellow]")
         return 130
     except Exception as exc:  # noqa: BLE001 -- CLI main entry point
         from rich.markup import escape  # noqa: PLC0415
 
-        from gzkit.commands.common import console  # noqa: PLC0415
+        from gzkit.commands.common import err_console  # noqa: PLC0415
 
         if getattr(args, "debug", False):
             import sys  # noqa: PLC0415
             import traceback  # noqa: PLC0415
 
             traceback.print_exc(file=sys.stderr)
-        console.print(f"[red]Unexpected error: {escape(str(exc))}[/red]")
+        err_console.print(f"[red]Unexpected error: {escape(str(exc))}[/red]")
         return exit_code_for(exc)
     else:
         return 0

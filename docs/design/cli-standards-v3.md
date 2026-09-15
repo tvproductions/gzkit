@@ -35,8 +35,8 @@ states, measured 2026-08-16 against `main`. Cite the state, not just the section
 | § Domain Models | **Live, met** | Pydantic `BaseModel` per `.gzkit/rules/models.md` |
 | § Output Modes — `--json` | **Live, UNMET** | 73 of 136 leaf commands declare it |
 | § Output Modes — `--plain`, `--log-file` | **Live, UNMET** | 13 call sites; `--log-file` does not exist (0 occurrences) |
-| § Output Rules — formatter is sole chokepoint | **Live, UNMET** | **1,230 `console.print(` sites** vs 1 `OutputFormatter` |
-| § Logging — structlog, correlation IDs | **Live, UNMET** | Re-measured 2026-09-14 (GHI #1010): `cli/main.py` now applies `configure_logging` for every command, logging to stderr; `--log-file` does not exist, and the default and `--verbose` levels differ from § Verbosity Levels (banner below) |
+| § Output Rules — formatter is sole chokepoint | **Live, UNMET** | **1,230 `console.print(` sites** vs 1 `OutputFormatter`. Errors to stderr, re-measured 2026-09-14: the shared error boundary in `cli/main.py` conforms, but 127 red `console.print` error lines in 42 command modules still print to stdout (GHI #810) |
+| § Logging — structlog, correlation IDs | **Live, UNMET** | Re-measured 2026-09-14 (GHI #1010): `cli/main.py` applies `configure_logging` for every command at § Verbosity Levels, logging to stderr; `--log-file` does not exist |
 | § Architecture — Port Interfaces, DI, Layer Dependencies | **RETIRED** | facade retired 2026-07-06 (banner below) |
 | § Project Structure — `ports/`, `adapters/`, `tests/fakes/` tree | **RETIRED** | layout does not exist; **adding it is now forbidden** by `.claude/rules/hexagonal-architecture.md` rule 7 |
 | § Testing — Test Fakes (`tests/fakes/`) | **RETIRED** | same ruling |
@@ -608,10 +608,10 @@ human-readable mode. Use `rich.progress` for this. Progress indicators must:
 > production code" shape the facade banner above records for ports/adapters.
 > Since GHI #1010 (2026-09-14) the entrypoint applies it for every command, at
 > the verbosity the common flags select (`--debug` over `--verbose` over
-> `--quiet`), and logs reach stderr. Two divergences from this section remain:
-> `--log-file` does not exist, and `VERBOSITY_TO_LEVEL` maps the default to INFO
-> and `--verbose` to DEBUG — as `.gzkit/rules/cli.md` § Flag Conventions and
-> OBPI-0.0.3-07's tests do — where § Verbosity Levels below says WARNING and INFO.
+> `--quiet`), and logs reach stderr. The level map follows § Verbosity Levels
+> below; it briefly mapped the default to INFO and `--verbose` to DEBUG, copied
+> from a drifted `.gzkit/rules/cli.md` row that has been corrected with it. One
+> divergence remains: `--log-file` does not exist.
 
 Logging and user-facing output are **two separate systems** and must never be conflated.
 User output flows through the `OutputFormatter` to stdout. Logging flows through
