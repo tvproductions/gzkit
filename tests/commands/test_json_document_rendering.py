@@ -13,6 +13,7 @@ and `gz preflight` in `tests/commands/test_preflight.py`.
 from __future__ import annotations
 
 import io
+import json
 import unittest
 from contextlib import redirect_stdout
 from pathlib import Path
@@ -107,8 +108,9 @@ class TestJsonDocumentSurvivesAHostileConsole(unittest.TestCase):
         payload = parse_json_document(self, stdout.getvalue())
         self.assertEqual(payload["source_digest"], workspace.source_digest)
         self.assertIn(workspace.path, payload["dispatch_command"])
-        # output-contract: a non-ASCII checkout path prints unescaped, as before
-        self.assertIn(workspace.path, stdout.getvalue())
+        # output-contract: a non-ASCII checkout path prints unescaped, as before.
+        # Compare the JSON-encoded form: JSON doubles a Windows path's backslashes.
+        self.assertIn(json.dumps(workspace.path, ensure_ascii=False), stdout.getvalue())
 
 
 if __name__ == "__main__":
