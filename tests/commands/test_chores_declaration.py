@@ -82,6 +82,20 @@ class TestDeclaredChoreLoads(unittest.TestCase):
             self.assertEqual(declaration.remediation.category, "no_fix_planned")
             self.assertEqual(declaration.governing_rule, ".gzkit/rules/governance-core.md")
 
+    def test_an_elapsed_time_scan_record_reaches_the_chore_definition(self) -> None:
+        record = ".gzkit/chores/declared-chore/proofs/scan-record.md"
+        staleness = {"signal": "elapsed-time", "periodDays": 30, "artifacts": [record]}
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            _write_chore(_declaration(staleness={**staleness, "graceDays": 7}))
+
+            _path, registry = _load_chores_registry()
+
+            declaration = registry["declared-chore"].declaration
+            assert declaration is not None
+            self.assertEqual(declaration.staleness.artifacts, (record,))
+
 
 class TestMalformedDeclarationIsRefused(unittest.TestCase):
     """Attempting a declaration commits the chore to a complete, valid one.
@@ -171,6 +185,82 @@ class TestMalformedDeclarationIsRefused(unittest.TestCase):
                 staleness={"signal": "content-delta", "surfaces": ["src\\gzkit"], "graceDays": 7}
             ),
             "staleness.surfaces",
+        ),
+        (
+            # An empty scan record must never be read as "no record needed" (GHI #935).
+            "elapsed-time staleness with an empty artifact list",
+            _declaration(
+                staleness={
+                    "signal": "elapsed-time",
+                    "periodDays": 30,
+                    "artifacts": [],
+                    "graceDays": 7,
+                }
+            ),
+            "staleness",
+        ),
+        (
+            "artifacts declared on a signal that never reads them",
+            _declaration(
+                staleness={
+                    "signal": "content-delta",
+                    "surfaces": [".gzkit/rules"],
+                    "artifacts": [".gzkit/chores/declared-chore/proofs/report.md"],
+                    "graceDays": 7,
+                }
+            ),
+            "staleness",
+        ),
+        (
+            "absolute artifact path",
+            _declaration(
+                staleness={
+                    "signal": "elapsed-time",
+                    "periodDays": 30,
+                    "artifacts": ["/tmp/scan.md"],
+                    "graceDays": 7,
+                }
+            ),
+            "staleness.artifacts",
+        ),
+        (
+            # The run log's newest commit moves on a FAIL run, so declaring it would
+            # reopen the run-twice bypass the scan record exists to close (GHI #935).
+            "the run log declared as the scan record",
+            _declaration(
+                staleness={
+                    "signal": "elapsed-time",
+                    "periodDays": 30,
+                    "artifacts": [".gzkit/chores/declared-chore/proofs/CHORE-LOG.md"],
+                    "graceDays": 7,
+                }
+            ),
+            "staleness.artifacts",
+        ),
+        (
+            # A pattern matches the run log too; git dates it by the log's commits.
+            "glob declared as the scan record",
+            _declaration(
+                staleness={
+                    "signal": "elapsed-time",
+                    "periodDays": 30,
+                    "artifacts": [".gzkit/chores/declared-chore/proofs/*.md"],
+                    "graceDays": 7,
+                }
+            ),
+            "staleness.artifacts",
+        ),
+        (
+            "directory declared as the scan record",
+            _declaration(
+                staleness={
+                    "signal": "elapsed-time",
+                    "periodDays": 30,
+                    "artifacts": [".gzkit/chores/declared-chore/proofs/"],
+                    "graceDays": 7,
+                }
+            ),
+            "staleness.artifacts",
         ),
         (
             "empty non-authority",

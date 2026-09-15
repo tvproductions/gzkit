@@ -253,6 +253,16 @@ session orientation announces the due and overdue ones (GHI #936). An
 `staleness.surfaces` path after it. Declare the surfaces the chore actually
 inspects: too broad and it is always due, too narrow and its decay is hidden.
 
+**A chore whose criteria gate on elapsed time declares its scan record.**
+`scripts/check_proof_freshness.py` dates such a chore by the last change to its
+declared `staleness.artifacts`, the file its procedure writes, and never by
+`CHORE-LOG.md`. The gate is itself a criterion of `gz chores run`, and a PASS
+block is written only when every criterion passes, so a gate reading PASS blocks
+left an overdue chore that no run could clear. A bare run inside the period also
+wrote a fresh block and pushed the clock back without a scan. `gz chores status`
+dates a chore that declares a record the same way (GHI #935). An uncommitted edit
+to the record counts as now, so recovery is: do the scan, run the chore, commit both.
+
 ---
 
 ## The Four Rungs
@@ -302,7 +312,7 @@ rationale are in `docs/governance/chore-class-system.md`.
 | `class` | `conformance` · `coherence` · `curation` · `mining` · `currency` | Why the chore exists, and what its staleness costs |
 | `rung` | `observe` · `propose` · `repair` · `operator-only-repair` | Where it stops — the **writing** license |
 | `idempotent` | `true` · `false` | Safe to re-run on a cadence — the **scheduling** license |
-| `staleness` | `{signal, periodDays, surfaces, graceDays, paused}`; `signal` is `accumulated-work` · `content-delta` · `elapsed-time`; `periodDays` required for `elapsed-time`; `surfaces` (repo-relative POSIX paths, never `.`) required for `content-delta` and refused on any other signal | What makes it due |
+| `staleness` | `{signal, periodDays, surfaces, artifacts, graceDays, paused}`; `signal` is `accumulated-work` · `content-delta` · `elapsed-time`; `periodDays` required for `elapsed-time`; `surfaces` (repo-relative POSIX paths, never `.`) required for `content-delta` and refused on any other signal; `artifacts` (repo-relative POSIX paths, never a `CHORE-LOG.md`) is the scan record an `elapsed-time` chore's procedure writes, required by `scripts/check_proof_freshness.py` for a chore its criteria gate and refused on any other signal | What makes it due |
 | `remediation` | `{category, details}`; `category` is `vendor_fix` · `workaround` · `no_fix_planned` · `none_available`; `details` non-empty | What repair means — "no repair" is a declared value, never an absence |
 | `nonAuthority` | non-empty text | What it refuses to touch, and why |
 | `governingRule` | `.gzkit/rules/<file>.md` (optionally ` § <clause>`) or `none` | The rule it serves |

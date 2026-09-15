@@ -64,7 +64,7 @@ Write `proofs/unwitnessable.md`: every context-dependent prohibition and every k
 
 ### 5. Summary + settings patch — propose
 
-Write `proofs/summary.md` with: counts by severity and the § Known coverage limits restated verbatim. Write `proofs/settings-patch.md` with one change per `live` row — the allow rule to remove, or the deny rule to add — and the source file it applies to. A context-dependent prohibition or a broad allow rule never enters the patch; it stays in `proofs/unwitnessable.md`.
+Write `proofs/summary.md` with: the run date, counts by severity and the § Known coverage limits restated verbatim. `summary.md` is this chore's declared scan record (`staleness.artifacts`), and the freshness gate dates the last run by its last change, so always write the date; an unchanged summary does not move the clock (GHI #935). Write `proofs/settings-patch.md` with one change per `live` row — the allow rule to remove, or the deny rule to add — and the source file it applies to. A context-dependent prohibition or a broad allow rule never enters the patch; it stays in `proofs/unwitnessable.md`.
 
 ### 6. Apply the patch (operator-initiated) — operator-only-repair
 
@@ -74,7 +74,7 @@ Only in a run the operator started: apply `proofs/settings-patch.md` to its sour
 
 Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan control-surface-permission-consent-drift`. This section explains them and does not restate them (GHI #1002).
 
-`unwitnessable.md` is a required artifact, not an optional one. A run that produces a drift ledger without the coverage-limits ledger has advertised a coverage it does not have — the precise failure GHI #690 named. The freshness gate cannot see that — it reads only when the last passing run was — so each of the six artifacts carries its own `fileExists` criterion. When no row is `live`, `proofs/settings-patch.md` says so; an absent patch means the run stopped at data.
+`unwitnessable.md` is a required artifact, not an optional one. A run that produces a drift ledger without the coverage-limits ledger has advertised a coverage it does not have — the precise failure GHI #690 named. The freshness gate cannot see that — it reads only when `proofs/summary.md` last changed — so each of the six artifacts carries its own `fileExists` criterion. When no row is `live`, `proofs/settings-patch.md` says so; an absent patch means the run stopped at data.
 
 ## Evidence Commands
 

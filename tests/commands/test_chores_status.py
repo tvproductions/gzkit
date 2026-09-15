@@ -22,7 +22,11 @@ from unittest.mock import patch
 
 from gzkit.cli import main
 from gzkit.commands import chores, chores_exec
-from gzkit.commands.chores_staleness import git_first_commit_after, git_newest_commit
+from gzkit.commands.chores_staleness import (
+    git_artifact_changed,
+    git_first_commit_after,
+    git_newest_commit,
+)
 from tests.commands.common import CliRunner, _isolated_git_env, _quick_init
 from tests.commands.test_chores import _project_chores_root, _write_acceptance, _write_v2_registry
 
@@ -175,6 +179,58 @@ class TestGitSurfaceHistory(unittest.TestCase):
             self.assertEqual(first_after(("watched",), base), base + timedelta(days=5))
             self.assertIsNone(first_after(("watched",), base + timedelta(days=9)))
             self.assertEqual(first_after(("other",), base), base + timedelta(days=2))
+
+    def test_scan_record_change_reads_its_commit_or_its_uncommitted_edit(self) -> None:
+        """A record being written reads as now; a removed one never does (GHI #935).
+
+        The gate's recovery is: write the scan record, then run. Requiring a commit
+        in between would make that a two-step dance, so an uncommitted edit counts.
+        Deleting the record must not, or removing it would pass for writing it.
+        """
+        base = datetime(2026, 8, 1, tzinfo=UTC)
+        now = datetime(2026, 9, 14, tzinfo=UTC)
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            env = _isolated_git_env()
+            subprocess.run(["git", "init", "-q"], cwd=root, env=env, check=True)
+            for key, value in (("user.name", "fixture"), ("user.email", "fixture@example.invalid")):
+                subprocess.run(["git", "config", key, value], cwd=root, env=env, check=True)
+            self._commit(root, "proofs/scan-record.md", base)
+            self._commit(root, "proofs/removed.md", base + timedelta(days=3))
+            changed = git_artifact_changed(root, now)
+
+            self.assertEqual(changed(("proofs/scan-record.md",)), base)
+            self.assertIsNone(changed(("proofs/never-written.md",)))
+
+            (root / "proofs" / "removed.md").unlink()
+            self.assertEqual(changed(("proofs/removed.md",)), base + timedelta(days=3))
+
+            (root / "proofs" / "scan-record.md").write_text("rescanned\n", encoding="utf-8")
+            self.assertEqual(changed(("proofs/scan-record.md",)), now)
+
+            (root / "proofs" / "fresh.md").write_text("first scan\n", encoding="utf-8")
+            self.assertEqual(changed(("proofs/fresh.md",)), now)
+
+    def test_a_directory_or_pattern_never_dates_a_scan(self) -> None:
+        """Only the named file is the record; its neighbours include the run log.
+
+        A directory or glob would be dated by whatever else lives beside the record,
+        so a committed FAIL block in CHORE-LOG.md would move the clock (GHI #935).
+        """
+        base = datetime(2026, 8, 1, tzinfo=UTC)
+        now = datetime(2026, 9, 14, tzinfo=UTC)
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            env = _isolated_git_env()
+            subprocess.run(["git", "init", "-q"], cwd=root, env=env, check=True)
+            for key, value in (("user.name", "fixture"), ("user.email", "fixture@example.invalid")):
+                subprocess.run(["git", "config", key, value], cwd=root, env=env, check=True)
+            self._commit(root, "proofs/CHORE-LOG.md", base)
+            (root / "proofs" / "CHORE-LOG.md").write_text("FAIL run\n", encoding="utf-8")
+            changed = git_artifact_changed(root, now)
+
+            self.assertIsNone(changed(("proofs",)))
+            self.assertIsNone(changed(("proofs/*.md",)))
 
 
 if __name__ == "__main__":

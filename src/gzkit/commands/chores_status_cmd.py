@@ -20,6 +20,7 @@ from gzkit.commands.chores_exec import _log_path
 from gzkit.commands.chores_staleness import (
     ChoreStalenessReading,
     StalenessBand,
+    git_artifact_changed,
     git_first_commit_after,
     git_newest_commit,
     read_chore_staleness,
@@ -45,6 +46,7 @@ def collect_chore_staleness(now: datetime | None = None) -> list[ChoreStalenessR
     newest = git_newest_commit(project_root)
     first_after = git_first_commit_after(project_root)
     moment = now or datetime.now(UTC)
+    artifact_changed = git_artifact_changed(project_root, moment)
     readings: list[ChoreStalenessReading] = []
     for chore in _filter_registry(registry).values():
         log = _log_path(project_root, chore)
@@ -56,6 +58,7 @@ def collect_chore_staleness(now: datetime | None = None) -> list[ChoreStalenessR
                 now=moment,
                 newest_commit=newest,
                 first_commit_after=first_after,
+                artifact_changed=artifact_changed,
             )
         )
     return sorted(readings, key=lambda r: (BAND_ORDER.index(r.band), r.slug))

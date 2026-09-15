@@ -36,9 +36,15 @@ Such chores are gated on the second arm below: wall-clock elapsed time since
 the procedure last ran. A chore takes this arm when its class declaration in
 ``.gzkit/chores/registry.json`` says ``staleness.signal: elapsed-time``, and its
 ``periodDays`` is the maximum age — the declaration is the one authority, so the
-gate holds no interval of its own (GHI #999). The witness is the
-timestamped block ``gz chores run`` appends to ``CHORE-LOG.md``, never a
-hand-authored narrative heading — see ``_newest_scan_timestamp``.
+gate holds no interval of its own (GHI #999).
+
+The witness is the chore's declared ``staleness.artifacts``: the record its
+procedure writes. It is never ``CHORE-LOG.md``. The run blocks there are written
+by ``gz chores run`` only when every criterion passes, and this gate IS a
+criterion, so reading them left an overdue chore with no run that could clear
+it; a bare run inside the period also wrote a fresh block and extended the clock
+with no scan (GHI #935, reopened). Operator ruling 2026-09-14, verbatim
+*"Declare it (Recommended)"*.
 
 Exit codes: 0 fresh, 1 usage/IO error, 3 policy breach (stale evidence).
 """
@@ -51,7 +57,7 @@ import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
-from gzkit.commands.chores_staleness import newest_pass_stamp as _newest_scan_timestamp
+from gzkit.commands.chores_staleness import git_artifact_changed
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -136,42 +142,65 @@ def _iso(epoch: int) -> str:
     return datetime.fromtimestamp(epoch, UTC).date().isoformat()
 
 
+def _declared_artifacts(slug: str) -> tuple[str, ...]:
+    """Return *slug*'s declared elapsed-time scan ``artifacts``, empty if it declares none."""
+    staleness = _declared_staleness(slug) or {}
+    artifacts = staleness.get("artifacts")
+    if staleness.get("signal") != "elapsed-time" or not isinstance(artifacts, list):
+        return ()
+    return tuple(str(artifact) for artifact in artifacts)
+
+
 def _check_scan_interval(slug: str, interval_days: int) -> int:
-    """Report whether *slug*'s last recorded run is within *interval_days*."""
-    log = _PROJECT_ROOT / ".gzkit" / "chores" / slug / "proofs" / "CHORE-LOG.md"
+    """Report whether *slug*'s declared scan artifact changed within *interval_days*."""
     print(f"scan-interval gate — {slug}")
     print(f"  maximum age:  {interval_days}d")
-
-    newest = _newest_scan_timestamp(log.read_text(encoding="utf-8")) if log.is_file() else None
-    if newest is None:
-        reason = "no CHORE-LOG.md" if not log.is_file() else "no passing run block in CHORE-LOG.md"
-        print("  last run:     never", file=sys.stderr)
+    artifacts = _declared_artifacts(slug)
+    if not artifacts:
         print(
-            f"\nPOLICY BREACH:\n  {slug} has no run on record ({reason}).\n"
-            f"    Why: absence of a record is not evidence of a recent run, and this "
+            f"\n{slug} declares no staleness.artifacts, so this gate has no scan record to "
+            f"read.\n"
+            f"    Why: the only record left is the PASS block `gz chores run` writes, and "
+            f"only a run that passes this gate writes one, so an overdue chore could "
+            f"never clear (GHI #935).\n"
+            f"    Fix: declare the file its procedure writes as staleness.artifacts in "
+            f".gzkit/chores/registry.json.",
+            file=sys.stderr,
+        )
+        return 1
+    print(f"  scan record:  {', '.join(artifacts)}")
+
+    now = datetime.now(UTC)
+    newest = git_artifact_changed(_PROJECT_ROOT, now)(artifacts)
+    if newest is None:
+        print("  last scan:    never", file=sys.stderr)
+        print(
+            f"\nPOLICY BREACH:\n  {slug} has no scan on record.\n"
+            f"    Why: absence of a record is not evidence of a recent scan, and this "
             f"chore's subject changes outside the repository — nothing else will "
             f"signal that it is stale.\n"
-            f"    Fix: run `uv run gz chores run {slug}` and commit the log.",
+            f"    Fix: perform the scan its CHORE.md describes, writing its scan record, "
+            f"then run `uv run gz chores run {slug}` and commit both.",
             file=sys.stderr,
         )
         return 3
 
-    age = (datetime.now(UTC) - newest).days
-    print(f"  last run:     {newest.date().isoformat()} ({age}d ago)")
+    age = (now - newest).days
+    print(f"  last scan:    {newest.date().isoformat()} ({age}d ago)")
     if age > interval_days:
         print(
-            f"\nPOLICY BREACH:\n  {slug} last ran {newest.date().isoformat()}, "
+            f"\nPOLICY BREACH:\n  {slug} last scanned {newest.date().isoformat()}, "
             f"{age}d ago, exceeding its {interval_days}d interval.\n"
-            f"    Why: this chore's criteria check the shape of what was already "
-            f"consumed, never whether anything newer has published. They report "
-            f"green for as long as nobody looks.\n"
-            f"    Fix: run `uv run gz chores run {slug}`, route any drift it "
-            f"finds, and commit the log.",
+            f"    Why: this chore's subject moves where no commit records it, so only "
+            f"its scan observes that; its other criteria report green for as long as "
+            f"nobody looks, and re-running them is not looking.\n"
+            f"    Fix: perform the scan its CHORE.md describes, writing its scan record, "
+            f"then run `uv run gz chores run {slug}` and commit both.",
             file=sys.stderr,
         )
         return 3
 
-    print("\nPASS: the last recorded run is within the scan interval.")
+    print("\nPASS: the scan record changed within the scan interval.")
     return 0
 
 

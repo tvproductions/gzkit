@@ -4,7 +4,7 @@
       "type": "exitCodeEquals",
       "command": "uv run python scripts/check_proof_freshness.py control-surface-permission-consent-drift",
       "expected": 0,
-      "description": "the last passing run is within the chore's declared staleness.periodDays (settings.local.json changes with no commit, so a surface date cannot see it)"
+      "description": "the declared scan record (proofs/summary.md) changed within the chore's staleness.periodDays; settings.local.json changes with no commit, so a surface date cannot see it (GHI #935)"
     },
     {
       "type": "fileExists",

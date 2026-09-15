@@ -294,7 +294,12 @@ entry had been superseded since 2026-09-01, found only because an operator suppl
 new card URL. That is why it was the sole member of `_SCAN_INTERVALS` — the
 existing mechanism found the seam one chore at a time. Since step 5 the gate holds no
 interval of its own: a chore declaring `staleness.signal: elapsed-time` takes the
-wall-clock arm at its declared `periodDays`.
+wall-clock arm at its declared `periodDays`, dated by the scan record it declares
+as `staleness.artifacts`. Until 2026-09-14 the arm read the PASS blocks of the run
+it gates. That was circular: an overdue chore could never clear, and a bare run
+inside the period pushed the clock back without a scan (GHI #935, reopened;
+operator ruling, verbatim *"Declare it (Recommended)"*). § Derive last-run from
+the artifact had already named the witness.
 
 **Mining stays separate from Coherence** even though both stop at the same rung: their
 staleness has different physics (content delta vs. elapsed time), so collapsing them
@@ -1078,6 +1083,7 @@ Required per-chore fields:
 | `idempotent` | the scheduling license (added at the schema step, see § Two licenses) |
 | `staleness.signal` | `accumulated-work` · `content-delta` · `elapsed-time` |
 | `staleness.periodDays` / `.graceDays` | the two declared numbers; the period is required for `elapsed-time` |
+| `staleness.artifacts` | the scan record an `elapsed-time` chore's procedure writes; the clock its gate reads (GHI #935) |
 | `staleness.paused` | intentional dormancy, distinguishable from neglect |
 | `remediation` | `vendor_fix` · `workaround` · `no_fix_planned` · `none_available` — plus required details |
 | `nonAuthority` | what this chore refuses to touch, and why |
@@ -1301,7 +1307,9 @@ generalizes, already returns 3 on stale evidence.
    this step's own "never gates". The run witness is the PASS block in `CHORE-LOG.md`
    for both signals, not a proof file's commit date: 25 of the 30 content-delta chores
    keep no proof but that log, and its commit date moves on a FAIL run too, which is the
-   run-twice bypass GHI #935 closed. A content-delta chore is due from the first commit
+   run-twice bypass GHI #935 closed. The exception is an elapsed-time chore that declares
+   `staleness.artifacts`: it is dated by that scan record, the same clock its gate reads,
+   since the reopened GHI #935 found the PASS block circular for a gated chore. A content-delta chore is due from the first commit
    touching a declared surface after its last passing run. Before this step only 5 chores
    had surfaces, and those lived in the gate script's own map. Operator ruling
    2026-09-14, verbatim *"Declare content-delta (Recommended)"*, added

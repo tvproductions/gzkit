@@ -18,7 +18,7 @@ gz chores status --json
 ## Runtime Behavior
 
 - Reads each registered chore's class declaration (`staleness.signal`,
-  `periodDays`, `graceDays`, `paused`, `surfaces`) from `registry.json`, plus
+  `periodDays`, `graceDays`, `paused`, `surfaces`, `artifacts`) from `registry.json`, plus
   the passing run blocks `gz chores run` appends to
   `.gzkit/chores/<slug>/proofs/CHORE-LOG.md`.
 - Only a `- Status: PASS` run block counts as a run. A FAIL block and a
@@ -34,7 +34,13 @@ gz chores status --json
 | `current` | Not yet due |
 
 - `elapsed-time`: due once `periodDays` have passed since the last passing
-  run, overdue after `graceDays` more.
+  run, overdue after `graceDays` more. A chore that declares
+  `staleness.artifacts` is dated by the last change to that scan record
+  instead, and its run blocks are not read. That is how its gate,
+  `scripts/check_proof_freshness.py`, dates it, and it is what lets an overdue
+  chore clear by doing its scan while a bare re-run cannot (GHI #935). An
+  uncommitted edit to the record counts as a change today; a deleted record
+  never does.
 - `content-delta`: due from the oldest commit that touches a declared
   `staleness.surfaces` path after the last passing run, and overdue after
   `graceDays` more. Git committer dates are compared, never file mtimes, and

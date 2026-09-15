@@ -40,10 +40,14 @@ def _log(*blocks: tuple[datetime, str]) -> str:
 
 
 class _History:
-    """Surface history fake: the commit dates each declared surface set carries."""
+    """Git fake: surface commit dates, and when the declared scan record last changed."""
 
-    def __init__(self, commits: list[datetime]) -> None:
+    def __init__(self, commits: list[datetime], scanned: datetime | None = None) -> None:
         self.commits = sorted(commits)
+        self.scanned = scanned
+
+    def artifact_changed(self, _artifacts: tuple[str, ...]) -> datetime | None:
+        return self.scanned
 
     def newest(self, _surfaces: tuple[str, ...]) -> datetime | None:
         return self.commits[-1] if self.commits else None
@@ -52,8 +56,13 @@ class _History:
         return next((when for when in self.commits if when > since), None)
 
 
-def _read(declaration: ChoreDeclaration | None, log: str | None, commits: list[datetime]):
-    history = _History(commits)
+def _read(
+    declaration: ChoreDeclaration | None,
+    log: str | None,
+    commits: list[datetime],
+    scanned: datetime | None = None,
+):
+    history = _History(commits, scanned)
     return read_chore_staleness(
         "demo",
         declaration,
@@ -61,10 +70,12 @@ def _read(declaration: ChoreDeclaration | None, log: str | None, commits: list[d
         now=_NOW,
         newest_commit=history.newest,
         first_commit_after=history.first_after,
+        artifact_changed=history.artifact_changed,
     )
 
 
 _ELAPSED = {"signal": "elapsed-time", "periodDays": 30, "graceDays": 7}
+_RECORDED = {**_ELAPSED, "artifacts": [".gzkit/chores/demo/proofs/scan-record.md"]}
 _DELTA = {"signal": "content-delta", "surfaces": ["src"], "graceDays": 7}
 
 
@@ -97,6 +108,42 @@ class TestElapsedTimeBands(unittest.TestCase):
                 reading = _read(_declaration(_ELAPSED), log, [])
                 self.assertEqual(reading.band, "overdue")
                 self.assertIsNone(reading.last_run)
+
+
+class TestDeclaredScanRecordDatesAnElapsedTimeChore(unittest.TestCase):
+    """A chore declaring a scan record is read as its gate reads it (GHI #935, reopened).
+
+    ``scripts/check_proof_freshness.py`` dates such a chore by the record's last
+    change and never by a run block, because the gated run writes those blocks. The
+    board must agree, or it reports current a chore whose next run the gate refuses.
+    """
+
+    def test_the_record_decides_the_band_whatever_the_run_blocks_say(self) -> None:
+        cases = (
+            ("scan done, last PASS long overdue", 10, 60, "current"),
+            ("bare run today, scan past period and grace", 40, 0, "overdue"),
+            ("bare run today, scan within grace", 33, 0, "due"),
+        )
+        for label, scanned_days, pass_days, band in cases:
+            with self.subTest(label):
+                scanned = _NOW - timedelta(days=scanned_days)
+                log = _log((_NOW - timedelta(days=pass_days), "PASS"))
+                reading = _read(_declaration(_RECORDED), log, [], scanned)
+                self.assertEqual(reading.band, band)
+                self.assertEqual(reading.last_run, scanned)
+
+    def test_a_record_that_never_changed_is_overdue_despite_a_passing_run(self) -> None:
+        log = _log((_NOW - timedelta(days=1), "PASS"))
+        reading = _read(_declaration(_RECORDED), log, [], None)
+        self.assertEqual(reading.band, "overdue")
+        self.assertIsNone(reading.last_run)
+
+    def test_a_chore_declaring_no_record_keeps_reading_its_passing_runs(self) -> None:
+        """Ungated elapsed-time chores keep the run block; only the record is new."""
+        last = _NOW - timedelta(days=10)
+        reading = _read(_declaration(_ELAPSED), _log((last, "PASS")), [], _NOW)
+        self.assertEqual(reading.band, "current")
+        self.assertEqual(reading.last_run, last)
 
 
 class TestContentDeltaBands(unittest.TestCase):

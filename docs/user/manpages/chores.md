@@ -73,7 +73,7 @@ gz chores run <slug>
 
 Report every registered chore's staleness band — `overdue`, `due`,
 `unmeasured`, `paused` or `current` — from its class declaration and its
-passing run blocks, without running any chore. Staleness announces and never
+passing run blocks (or its declared scan record), without running any chore. Staleness announces and never
 gates: every band exits 0. See [`gz chores status`](chores-status.md).
 
 ```bash

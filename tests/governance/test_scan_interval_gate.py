@@ -9,13 +9,17 @@ looks. Measured 2026-09-02 under GHI #935: both criteria passed while the
 Mythos-class ``current`` entry had been superseded since 2026-09-01 (GHI #934).
 
 The variable such a chore depends on is elapsed time, so the gate reads a
-clock. What it reads the clock *against* is the load-bearing choice:
-``CHORE-LOG.md`` carries both hand-authored narrative headings (``## 2026-09-02
-— findings``) and the timestamped blocks ``gz chores run`` appends
-(``## 2026-09-02T02:11:01-04:00``). Only the latter witnesses that the governed
-procedure actually ran. Keying on narrative headings would rebuild exactly the
-gate ``AGENTS.md`` forbids — one whose witness is that somebody wrote
-something, not that anything ran.
+clock. What it reads the clock *against* is the load-bearing choice, and the
+first answer was wrong. Reading the PASS blocks ``gz chores run`` appends was
+circular: the gate is a criterion of that run and a PASS block is written only
+when every criterion passes, so once a chore went overdue no run could ever
+clear it (GHI #935, reopened 2026-09-14). It was also bypassable: a bare run
+inside the period wrote a fresh PASS block and extended the clock with no scan.
+
+The witness is the chore's declared ``staleness.artifacts`` — the record its
+procedure writes — never ``CHORE-LOG.md``, whose narrative headings are
+authorship and whose run blocks are written by the gated run itself. Operator
+ruling 2026-09-14, verbatim *"Declare it (Recommended)"*.
 
 The interval is the chore's declared ``staleness.periodDays`` (GHI #999), so
 the gate tests inject a registry with a fixture period rather than transcribing
@@ -25,9 +29,11 @@ the live one. Only the *semantics* are pinned.
 from __future__ import annotations
 
 import importlib.util
+import io
 import json
 import sys
 import unittest
+from contextlib import redirect_stderr, redirect_stdout
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -71,112 +77,120 @@ class ScanIntervalRegistrationTests(unittest.TestCase):
             self.assertEqual(_GATE._declared_period(_SLUG), 30)
 
 
-class NewestScanTimestampTests(unittest.TestCase):
-    """Which heading counts as evidence the procedure ran."""
-
-    def test_narrative_heading_never_resets_the_clock(self) -> None:
-        """A hand-written date is authorship, not a run receipt.
-
-        This is the defect the gate exists to avoid re-introducing: if prose
-        headings counted, appending a findings section would mark the chore
-        fresh without any scan having happened.
-        """
-        log = (
-            "## 2026-09-02 — findings written by hand\n\n"
-            "## 2026-08-02T10:59:02-06:00\n- Status: PASS\n"
-        )
-        newest = _GATE._newest_scan_timestamp(log)
-        assert newest is not None
-        self.assertEqual(newest.date().isoformat(), "2026-08-02")
-
-    def test_newest_mechanical_stamp_wins_regardless_of_file_order(self) -> None:
-        """Blocks are appended, but order in the file is not the authority."""
-        log = (
-            "## 2026-09-01T00:00:00+00:00\n- Status: PASS\n\n"
-            "## 2026-06-01T00:00:00+00:00\n- Status: PASS\n"
-        )
-        newest = _GATE._newest_scan_timestamp(log)
-        assert newest is not None
-        self.assertEqual(newest.date().isoformat(), "2026-09-01")
-
-    def test_log_with_no_mechanical_stamp_reads_as_never_run(self) -> None:
-        """Narrative-only log means no governed run is on record."""
-        self.assertIsNone(_GATE._newest_scan_timestamp("## 2026-09-02 — prose only\n"))
-
-    def test_a_failed_run_never_resets_the_clock(self) -> None:
-        """A FAIL block records that the verb ran, not that the audit was done.
-
-        ``gz chores run`` stamps FAIL runs exactly like PASS runs. Counting them let
-        an overdue chore clear its own staleness by running twice: the first run
-        fails the gate and writes a stamp, the second passes on that stamp.
-        """
-        log = (
-            "## 2026-08-01T00:00:00+00:00\n- Status: PASS\n\n"
-            "## 2026-09-01T00:00:00+00:00\n- Status: FAIL\n"
-        )
-        newest = _GATE._newest_scan_timestamp(log)
-        assert newest is not None
-        self.assertEqual(newest.date().isoformat(), "2026-08-01")
-
-
 _PERIOD = 10
+_ARTIFACT = f".gzkit/chores/{_SLUG}/proofs/scan-record.md"
 
 
-class ScanIntervalGateTests(unittest.TestCase):
-    """Exit-code contract: 0 fresh, 3 policy breach, 1 no gate for the slug."""
+class _GateFixture(unittest.TestCase):
+    """Runs the gate against a fixture chore whose scan-artifact history is injected."""
 
     def _run_against(
-        self, log_body: str | None, *, period: int = _PERIOD, signal: str = "elapsed-time"
+        self,
+        artifact_days_ago: int | None,
+        *,
+        log: str = "",
+        period: int = _PERIOD,
+        signal: str = "elapsed-time",
+        artifacts: list[str] | None = None,
     ) -> int:
+        """Return the gate's exit code.
+
+        *artifact_days_ago* is when the declared scan artifact last changed (None:
+        never). *log* is the ``CHORE-LOG.md`` body — the record the gate must never
+        read, so every case that sets it asserts the verdict ignores it.
+        """
+        declared = [_ARTIFACT] if artifacts is None else artifacts
+        changed = None
+        if artifact_days_ago is not None:
+            changed = datetime.now(UTC) - timedelta(days=artifact_days_ago)
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
             proofs = root / ".gzkit" / "chores" / _SLUG / "proofs"
             proofs.mkdir(parents=True)
-            staleness = {"signal": signal, "periodDays": period, "graceDays": 7}
+            staleness: dict[str, object] = {"signal": signal, "periodDays": period, "graceDays": 7}
+            if declared:
+                staleness["artifacts"] = declared
             registry = {"chores": [{"slug": _SLUG, "staleness": staleness}]}
             (root / ".gzkit" / "chores" / "registry.json").write_text(
                 json.dumps(registry), encoding="utf-8"
             )
-            if log_body is not None:
-                (proofs / "CHORE-LOG.md").write_text(log_body, encoding="utf-8")
-            with patch.object(_GATE, "_PROJECT_ROOT", root):
+            if log:
+                (proofs / "CHORE-LOG.md").write_text(log, encoding="utf-8")
+
+            def reader(project_root: Path, _now: datetime) -> Any:
+                self.assertEqual(project_root, root)
+                return lambda paths: changed if list(paths) == declared else None
+
+            with (
+                patch.object(_GATE, "_PROJECT_ROOT", root),
+                patch.object(_GATE, "git_artifact_changed", side_effect=reader),
+                redirect_stdout(io.StringIO()),
+                redirect_stderr(io.StringIO()),
+            ):
                 return _GATE.main([_SLUG])
 
-    def _stamp(self, days_ago: int) -> str:
-        when = datetime.now(UTC) - timedelta(days=days_ago)
-        return f"## {when.isoformat()}\n- Status: PASS\n"
+
+def _block(days_ago: int, status: str) -> str:
+    when = datetime.now(UTC) - timedelta(days=days_ago)
+    return f"## {when.isoformat()}\n- Status: {status}\n\n"
+
+
+class ScanIntervalGateTests(_GateFixture):
+    """Exit-code contract: 0 fresh, 3 policy breach, 1 no gate for the slug."""
 
     def test_scan_within_interval_passes(self) -> None:
-        self.assertEqual(self._run_against(self._stamp(1)), 0)
+        self.assertEqual(self._run_against(1), 0)
 
     def test_scan_older_than_interval_is_a_policy_breach(self) -> None:
-        self.assertEqual(self._run_against(self._stamp(_PERIOD + 1)), 3)
+        self.assertEqual(self._run_against(_PERIOD + 1), 3)
 
     def test_the_declared_period_is_the_limit(self) -> None:
-        """The same run is overdue under one declaration and current under a longer one."""
-        stamp = self._stamp(_PERIOD + 1)
-        self.assertEqual(self._run_against(stamp, period=_PERIOD), 3)
-        self.assertEqual(self._run_against(stamp, period=_PERIOD * 2), 0)
+        """The same scan is overdue under one declaration and current under a longer one."""
+        self.assertEqual(self._run_against(_PERIOD + 1, period=_PERIOD), 3)
+        self.assertEqual(self._run_against(_PERIOD + 1, period=_PERIOD * 2), 0)
 
     def test_a_chore_declaring_no_elapsed_time_has_no_interval_gate(self) -> None:
         """Without the declaration the slug is neither interval- nor surface-gated."""
-        self.assertEqual(self._run_against(self._stamp(1), signal="content-delta"), 1)
+        self.assertEqual(self._run_against(1, signal="content-delta"), 1)
 
-    def test_narrative_heading_cannot_rescue_an_overdue_scan(self) -> None:
-        """The semantic in NewestScanTimestampTests, enforced at the exit code."""
-        today = datetime.now(UTC).date().isoformat()
-        log = f"## {today} — findings appended by hand\n\n{self._stamp(_PERIOD + 1)}"
-        self.assertEqual(self._run_against(log), 3)
-
-    def test_a_newer_failed_run_cannot_rescue_an_overdue_scan(self) -> None:
-        """The run-twice bypass, enforced at the exit code."""
-        failed = (datetime.now(UTC) - timedelta(days=1)).isoformat()
-        log = f"{self._stamp(_PERIOD + 1)}\n## {failed}\n- Status: FAIL\n"
-        self.assertEqual(self._run_against(log), 3)
-
-    def test_missing_log_fails_closed(self) -> None:
-        """No record of a run is not evidence of a recent run."""
+    def test_no_scan_artifact_on_record_fails_closed(self) -> None:
+        """A declared artifact that never changed is not evidence of a recent scan."""
         self.assertEqual(self._run_against(None), 3)
+
+    def test_an_elapsed_time_chore_declaring_no_artifact_is_refused(self) -> None:
+        """With no declared artifact the only record left is the run's own PASS block.
+
+        That record is circular — reading it is the deadlock this gate had — so the
+        slug is refused as a declaration error rather than read.
+        """
+        self.assertEqual(self._run_against(1, artifacts=[]), 1)
+
+
+class OverdueChoreRecoveryTests(_GateFixture):
+    """GHI #935 reopened: an overdue chore returns to passing only by doing its scan.
+
+    Each case puts the run log in a state that used to decide the verdict and
+    shows the verdict now follows the scan artifact alone.
+    """
+
+    def test_a_performed_scan_clears_a_chore_whose_last_pass_is_overdue(self) -> None:
+        """The deadlock: the newest PASS block is past its period, yet the scan is done."""
+        self.assertEqual(self._run_against(0, log=_block(_PERIOD + 26, "PASS")), 0)
+
+    def test_a_bare_rerun_after_a_failed_run_stays_blocked(self) -> None:
+        """A FAIL block records that the verb ran, never that the scan was done."""
+        log = _block(_PERIOD + 26, "PASS") + _block(0, "FAIL")
+        self.assertEqual(self._run_against(_PERIOD + 26, log=log), 3)
+
+    def test_a_fresh_pass_block_without_a_scan_cannot_extend_the_clock(self) -> None:
+        """The in-period bypass: a bare run's PASS block is not a scan."""
+        self.assertEqual(self._run_against(_PERIOD + 1, log=_block(0, "PASS")), 3)
+
+    def test_a_hand_written_heading_resets_nothing(self) -> None:
+        """A narrative heading dated today is authorship, not a scan."""
+        today = datetime.now(UTC).date().isoformat()
+        log = f"## {today} — findings appended by hand\n\n"
+        self.assertEqual(self._run_against(_PERIOD + 1, log=log), 3)
 
 
 class DeclaredSurfaceArmTests(unittest.TestCase):

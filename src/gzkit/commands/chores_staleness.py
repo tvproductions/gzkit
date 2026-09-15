@@ -10,7 +10,11 @@ signals, graded bands, "indicator, not gate") and § Implementation order step 2
 The run witness is the timestamped PASS block ``gz chores run`` appends to
 ``CHORE-LOG.md``. A FAIL block records that the verb ran, never that the chore
 was done, and a hand-written heading records authorship, never a run (GHI #935).
-Git is taken as two parameters so the band logic runs without a repository.
+An elapsed-time chore that declares ``staleness.artifacts`` is dated by that
+scan record instead, as its gate dates it: the gated run writes the PASS block,
+so reading it let an overdue chore never clear and a bare run extend the clock
+(GHI #935, reopened). Git is taken as parameters so the band logic runs without
+a repository.
 """
 
 from __future__ import annotations
@@ -42,7 +46,9 @@ class ChoreStalenessReading(BaseModel):
     slug: str = Field(..., description="Chore slug")
     signal: StalenessSignal | None = Field(None, description="Declared signal, if declared")
     band: StalenessBand = Field(..., description="current, due, overdue, paused or unmeasured")
-    last_run: datetime | None = Field(None, description="Newest passing governed run")
+    last_run: datetime | None = Field(
+        None, description="Newest passing run, or the declared scan record's last change"
+    )
     due_since: datetime | None = Field(None, description="When the chore came due, if known")
     reason: str = Field(..., min_length=1, description="Why the chore reads this band")
 
@@ -87,6 +93,7 @@ def read_chore_staleness(
     now: datetime,
     newest_commit: Callable[[tuple[str, ...]], datetime | None],
     first_commit_after: Callable[[tuple[str, ...], datetime], datetime | None],
+    artifact_changed: Callable[[tuple[str, ...]], datetime | None],
 ) -> ChoreStalenessReading:
     """Read *slug*'s band from its declaration and its ``CHORE-LOG.md`` text."""
     if declaration is None:
@@ -112,9 +119,13 @@ def read_chore_staleness(
 
     if signal == "elapsed-time":
         period = timedelta(days=staleness.period_days or 0)
+        witness = "passing run"
+        if staleness.artifacts:
+            last_run = artifact_changed(staleness.artifacts)
+            witness = "scan record change"
         if last_run is None:
             return ChoreStalenessReading(
-                slug=slug, signal=signal, band="overdue", reason="no passing run on record"
+                slug=slug, signal=signal, band="overdue", reason=f"no {witness} on record"
             )
         due_at = last_run + period
         if now <= due_at:
@@ -123,9 +134,9 @@ def read_chore_staleness(
                 signal=signal,
                 band="current",
                 last_run=last_run,
-                reason=f"last passing run within its {period.days}d period",
+                reason=f"last {witness} within its {period.days}d period",
             )
-        cause = f"{period.days}d period elapsed since the last passing run"
+        cause = f"{period.days}d period elapsed since the last {witness}"
         return _by_grace(slug, signal, last_run, due_at, grace, now, cause)
 
     surfaces = staleness.surfaces or ()
@@ -181,6 +192,45 @@ def git_newest_commit(project_root: Path) -> Callable[[tuple[str, ...]], datetim
         return times[0] if times else None
 
     return newest
+
+
+def git_artifact_changed(
+    project_root: Path, now: datetime
+) -> Callable[[tuple[str, ...]], datetime | None]:
+    """Return a reader for when any of the given scan artifacts last changed.
+
+    An artifact present on disk with uncommitted changes reads as *now*: the
+    procedure is writing it, and requiring a commit before ``gz chores run``
+    would make the gate's own recovery a two-step dance. Otherwise the newest
+    committer date wins. A deleted artifact never reads as now, so removing the
+    record cannot pass for writing it; one git has never seen reads None.
+    """
+
+    def changed(artifacts: tuple[str, ...]) -> datetime | None:
+        # Literal pathspecs, and never a directory: a record is one file, and a
+        # pattern or directory would be dated by its neighbours, the run log among
+        # them, whose commits move on a FAIL run (GHI #935).
+        files = [path for path in artifacts if not (project_root / path).is_dir()]
+        if not files:
+            return None
+        present = [f":(literal){path}" for path in files if (project_root / path).is_file()]
+        if present:
+            status = subprocess.run(
+                ["git", "status", "--porcelain", "--", *present],
+                cwd=project_root,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                check=False,
+            )
+            if status.returncode == 0 and status.stdout.strip():
+                return now
+        literal = [f":(literal){path}" for path in files]
+        times = _git_commit_times(project_root, ["-1", "--", *literal])
+        return times[0] if times else None
+
+    return changed
 
 
 def git_first_commit_after(

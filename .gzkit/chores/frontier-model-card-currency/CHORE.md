@@ -60,7 +60,7 @@ for superseded models."
 
 ## Cadence
 
-**Mechanically gated.** The maximum age of a recorded run is this chore's
+**Mechanically gated.** The maximum age of this chore's last scan is its
 declared `staleness.periodDays` in `registry.json`, which
 `scripts/check_proof_freshness.py` reads and criterion 1 of `acceptance.json`
 enforces (GHI #999). The interval is not restated here: a value written in a
@@ -71,9 +71,14 @@ Read the declaration; the gate's comment records the measured publication
 intervals the number was derived from, and says to re-derive rather than
 transcribe it when the observed vendor cadence moves.
 
-The gate reads the timestamped blocks `gz chores run` appends to
-`proofs/CHORE-LOG.md` — never the hand-authored findings headings beside them.
-Appending prose is authorship, not a run.
+The gate dates the last scan by the last change to the scan record step 5
+writes, declared as `staleness.artifacts`. It never reads `proofs/CHORE-LOG.md`.
+The run blocks there are written by the run this gate is a criterion of, so
+reading them left an overdue chore that no run could clear, and let a bare run
+push the clock back without a scan (GHI #935). Re-running the criteria is not
+scanning. To recover an overdue chore: do steps 1–5, run
+`uv run gz chores run frontier-model-card-currency`, and commit the record with
+the log.
 
 **Event triggers (run regardless of the interval):**
 
@@ -130,8 +135,12 @@ pre-authorization — check surface-weight headroom first
 
 ### 5. Record — observe
 
-Append the run's findings (or a clean no-drift line) to
-`proofs/CHORE-LOG.md` with the date and registry state.
+Rewrite `proofs/scan-record.md` for this scan: the scan date, each vendor hub
+checked, the registry state read in step 1, and the findings with their routing,
+or a clean no-drift line. Always write the date, because an unchanged record
+does not move the gate's clock. This file is the scan's witness, and the
+freshness gate reads nothing else. Append the same findings line to
+`proofs/CHORE-LOG.md` for history if you like; the gate never reads it.
 
 ## Acceptance Criteria
 

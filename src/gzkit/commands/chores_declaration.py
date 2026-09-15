@@ -20,6 +20,7 @@ from pydantic import (
     ConfigDict,
     Field,
     ValidationError,
+    ValidationInfo,
     field_validator,
     model_validator,
 )
@@ -49,17 +50,23 @@ class ChoreStaleness(BaseModel):
     surfaces: tuple[str, ...] | None = Field(
         None, description="Repo-relative paths whose commits make a content-delta chore due"
     )
+    artifacts: tuple[str, ...] | None = Field(
+        None,
+        description="Repo-relative scan records whose last change dates an elapsed-time chore",
+    )
     grace_days: int = Field(
         ..., alias="graceDays", ge=0, description="Days past due before overdue"
     )
     paused: bool = Field(False, description="Intentional dormancy, distinct from neglect")
 
-    @field_validator("surfaces")
+    @field_validator("surfaces", "artifacts")
     @classmethod
-    def _surfaces_are_repo_relative(cls, value: tuple[str, ...] | None) -> tuple[str, ...] | None:
-        # A surface names part of THIS repository in the POSIX form git reports.
-        # "." is refused with the empty list: a scope that means "everything" is
-        # the Diskerase failure (docs/governance/chore-class-system.md § Two licenses).
+    def _paths_are_repo_relative(
+        cls, value: tuple[str, ...] | None, info: ValidationInfo
+    ) -> tuple[str, ...] | None:
+        # A surface or scan record names part of THIS repository in the POSIX form
+        # git reports. "." is refused with the empty list: a scope that means
+        # "everything" is the Diskerase failure (chore-class-system.md § Two licenses).
         for path in value or ():
             parts = path.split("/")
             if (
@@ -70,7 +77,18 @@ class ChoreStaleness(BaseModel):
                 or ".." in parts
                 or path.strip("/") in ("", ".")
             ):
-                msg = f"surface {path!r} must be a repo-relative POSIX path inside the repository"
+                msg = f"path {path!r} must be a repo-relative POSIX path inside the repository"
+                raise ValueError(msg)
+            names_many = path.endswith("/") or any(char in path for char in "*?[")
+            if info.field_name == "artifacts" and names_many:
+                # A scan record is one file. A pattern or directory also names its
+                # neighbours, the run log among them, so git would date it by those.
+                msg = f"path {path!r} must name one scan record file, never a directory or pattern"
+                raise ValueError(msg)
+            if parts[-1] == "CHORE-LOG.md":
+                # Its newest commit moves on a FAIL run, so as a scan record it would
+                # let a failed run date a scan that never happened (GHI #935).
+                msg = f"path {path!r} is the run log, which records runs, never scans"
                 raise ValueError(msg)
         return value
 
@@ -84,6 +102,9 @@ class ChoreStaleness(BaseModel):
             raise ValueError(msg)
         if self.signal != "content-delta" and self.surfaces is not None:
             msg = "surfaces is read only for signal content-delta"
+            raise ValueError(msg)
+        if self.artifacts is not None and (self.signal != "elapsed-time" or not self.artifacts):
+            msg = "artifacts is read only for signal elapsed-time and must name a scan record"
             raise ValueError(msg)
         return self
 
