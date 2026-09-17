@@ -3278,3 +3278,10 @@ attested REQs (ADR-0.0.25, 0.0.36, 0.0.54, 0.34.0) by asserting wording of the o
 "yes, edit the test, git sync, then compact" (for `test_import_populates_a_pillar_for_every_section`) and, offered
 (A) re-derive the tests from the ruled canon vs (B) restore the pinned content: **"A"**. Also directed, verbatim:
 "claude.md should be a pointer/include of AGENTS.md" — taken up after the sync.
+
+**Synced 2026-09-17T12:07:20Z.** Third full `uv run gz check` passed on the staged tree ("All checks passed"); commit `8ecb176f0`
+(`Task: TASK-instructions-files-diet-#921`) on main; `uv run gz git-sync --apply` exit 0, main level with
+origin/main. Final root AGENTS.md: 19,112 B (48,511 B at open). Handoff:
+`.gzkit/handoffs/20260917T120705Z-agents-md-corpus-landing-and-diet-remaining.md`. The chore run is NOT closed:
+`gz chores run` / `audit` and the post-trim proof wait on the remaining surfaces (CLAUDE.md, governance-core,
+path-scoped rules, skill catalog, budget diary) and Phase C (GHI #934, #943).
