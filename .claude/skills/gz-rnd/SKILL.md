@@ -1,14 +1,14 @@
 ---
 name: gz-rnd
 persona: main-session
-description: Run a governed R&D session — the chargé d'affaires that retains and routes the outcomes of exploratory design work. Use when the operator pastes external material and says "consider this for gzkit", asks "is there something here gzkit is missing or could improve on", or opens an exploratory design discussion whose outcome is not yet known. Routes every finding to an ADR/OBPI proposal, a GHI, chore advice, a doc or rule draft, a one-shot refactoring program, or take-no-action, and writes a durable R&D record. Operator-invoked only.
+description: Run a governed R&D session — diamond 1 of the double diamond, which defines the problem and names which fan-out artifacts are warranted. Use when the operator pastes external material and says "consider this for gzkit", asks "is there something here gzkit is missing or could improve on", or opens an exploratory design discussion whose outcome is not yet known. Ends at a six-row disposition map and operator sign-off; produces no fan-out artifact itself. Operator-invoked only.
 category: agent-operations
 lifecycle_state: active
 disable-model-invocation: true
 owner: gzkit-governance
-last_reviewed: 2026-09-15
+last_reviewed: 2026-09-17
 metadata:
-  skill-version: "0.1.0"
+  skill-version: "0.2.0"
 model: opus
 ---
 
@@ -16,96 +16,147 @@ model: opus
 
 ## Purpose and authority
 
-R&D is the governed shape of the exploratory session that precedes gzkit's artifacts, and
-the headwater of most gzkit design. Operator, 2026-09-12, verbatim: *"an R&D run now MUST
-be governed by an overarching new AGENT SKILL"* and *"it is a chargé d'affaires for
+An R&D run is **diamond 1 of the double diamond — Discover and Define**. It ends with the
+problem defined and a plan naming which fan-out artifacts are warranted, closed by operator
+sign-off: kill or fund. **Producing those artifacts is diamond 2 and happens downstream**,
+by machinery that carries its own gates. This run never enters it.
+
+R&D is the headwater of most gzkit design. Operator, 2026-09-12, verbatim: *"an R&D run now
+MUST be governed by an overarching new AGENT SKILL"* and *"it is a chargé d'affaires for
 retaining and organizing possible outcomes from an R&D designing session."*
 
-Design and rulings: [`docs/governance/rnd-discipline.md`](../../../docs/governance/rnd-discipline.md)
-(six recommendations accepted 2026-09-15, verbatim *"Accept all six (Recommended)"*).
+Doctrine and the full ruling history:
+[`docs/governance/rnd-discipline.md`](../../../docs/governance/rnd-discipline.md).
 Evidence: `docs/governance/mpas-appropriation-analysis.md`.
 
 **Invocation class.** `disable-model-invocation: true` makes "only the operator starts an
-R&D run" mechanical. This skill reaches model-invoked disciplines; it never starts
-another user-invoked skill on its own.
+R&D run" mechanical. This skill reaches model-invoked disciplines; it never starts another
+user-invoked skill on its own.
 
-## Phases
+## Open the record first
 
-Run them in order. Phases 1 and 3 are conditional. Specification, decomposition and
-execution are NOT R&D phases: they belong to the destination an outcome routes to.
+Create `docs/rnd/<slug>.md` from
+[`assets/rnd-record-template.md`](assets/rnd-record-template.md) **before the first
+question**, and write into it throughout. Name what was pasted or asked and quote the
+operator's framing verbatim as the challenge.
 
-### 0. Route
+**The record accretes entries as they resolve. It is never composed at the end.** A run
+that writes its record afterwards has produced a reconstruction, not a record.
 
-Name what was pasted or asked, quote the operator's framing verbatim, and list which of
-the six outcome classes are plausible. Create the record from
-[`assets/rnd-record-template.md`](assets/rnd-record-template.md) at
-`docs/governance/rnd/<YYYY-MM-DD>-<slug>.md`.
+## The two entry kinds
 
-### 1. Chart — only when the run will span sessions
+Only two. Append each at the moment it resolves.
 
-Add a map to the record: **Destination · Decisions so far · Not yet specified · Out of
-scope.** Write the destination before any question unit. A null result is a legal exit.
+| Kind | Carries |
+|---|---|
+| `source` | a primary source — **cited, never summarized**, with its verbatim quotation and when it was read |
+| `decision` | something crystallized in session, the reasoning behind it, and the operator's verbatim words where they ruled it |
 
-### 2. Interrogate
+A `decision` may carry **`commissions:`** naming the disposition it warrants. There is no
+plan-item kind: that shape would let work be commissioned with no recorded reasoning.
+
+**Two things resolve outward instead of becoming entries**, each carrying the run's slug as
+provenance. The record never holds a copy.
+
+- a **term** → append to `GLOSSARY.md` at the repo root
+- an **insight** → `Call the Skill tool with "gz-insights-remember"`
+
+## The MPAS surfaces you may reach for
+
+Three disciplines are appropriated, each with a departure that gzkit canon forces. **Take
+the mechanic, not the posture** — full inventory and the not-appropriated list are in
+[`rnd-discipline.md`](../../../docs/governance/rnd-discipline.md) § The MPAS surfaces, named.
+
+| Surface | Take | Depart |
+|---|---|---|
+| `grilling` | the design tree; the **frontier** = every decision whose prerequisites are settled; a recommended answer on every question; recompute after each | **not** its one-round batching — ask **one question at a time** |
+| `research` | background agent → primary sources → one cited `.md` | land it **verbatim** under `docs/rnd/<slug>/sources/` |
+| `prototype` | the throwaway probe, closing on a **one-line verdict** | **no branch** — gzkit forbids them; build outside the mainline and discard |
+| `domain-modeling` *(technique only)* | its glossary behaviours and *"capture them as they happen"*; the `_Avoid_` convention | **never its inline ADR emission** — disposition 1 is proposed, never initiated |
+
+`grill-with-docs` is the shape of the whole run: it emits inline as decisions land, which is
+the record accreting and the disposition map kept live. `grill-me` is stateless and is not
+the model here.
+
+## Interrogate
 
 - **Facts are your job; decisions are the operator's.** Search canon and the codebase
-  before asking. Dispatch research subagents for facts and do not block the round on them.
-- **Batch by dependency, not count.** Ask every question whose prerequisites are settled,
-  together, each with a recommended answer (`AskUserQuestion`, up to four per round).
-  Never batch two questions where one gates the other.
-- **Research reports are primary sources.** Save each subagent report verbatim under
-  `docs/governance/rnd/<YYYY-MM-DD>-<slug>/sources/`. Never replace one with a summary.
+  before asking. Dispatch research subagents for facts and do not block a round on them.
+- **Ask one question at a time** (operator, verbatim: *"ask me the questions one at a
+  time"*), each with a recommended answer and its tradeoffs.
+- **Never ask what canon already answers** (AGENTS.md § Operator Economy #7). Search canon
+  first; where canon rules, act and name the rule that governed.
+- **Research reports are primary sources.** Save each verbatim under
+  `docs/rnd/<slug>/sources/`. Never replace one with a summary.
+- **When talk cannot answer a question**, build a throwaway probe outside the mainline and
+  record a one-line verdict as a `decision` entry citing it.
 
-Exit when no question remains whose answer changes an outcome **and** the operator
-confirms the findings are right.
+## The disposition map
 
-### 3. Concretise — optional
+Maintain it live, as decisions land — not at the close. All six rows are always present; an
+absent row is an unfinished run.
 
-When talk cannot answer a question, build a throwaway probe outside the mainline and
-record a one-line verdict under Findings.
-
-### 7. Precipitate
-
-Fill the record's **Outcomes** table: one row per finding, using the classes and
-consultation points below. Record everything not taken under **Not pursued**, including
-proposals you raised and withdrew.
-
-## Outcomes and consultation points
-
-Each consultation point is declared here, before the run. It is never computed from your
-confidence.
-
-| # | Outcome | You may | Consultation point |
+| # | Disposition | You may | Consultation point |
 |---|---|---|---|
 | 1 | ADR / OBPI | **propose only** | the operator initiates, or not (IRON LAW) |
 | 2 | GHI / direct fix | file via `Call the Skill tool with "ghi-author"` | the operator's go on that row |
 | 3 | chore | **advise only** | the operator directs admission |
 | 4 | control surface, rule, doc, skill, hook | draft | the operator's go on that row |
 | 5 | one-shot refactoring | propose a program | the operator selects its route |
-| — | take no action | record it | none |
+| 6 | no action | record it, with the reason | none |
 
-**Before proposing outcome 1, ask the admission question:** is the decision hard to
+**State is `commissioned` or `not pursued`. There is no third state.** Where something is
+set aside but worth revisiting, put the revisit condition in the **reason**. If it deserves
+more than a sentence, route it to a pool ADR or a GHI — surfaces that have lifecycles.
+
+**Before proposing disposition 1, ask the admission question:** is the decision hard to
 reverse, surprising without context, **and** the result of a real trade-off? If any is
-false, route to outcome 2 or 4.
+false, route to disposition 2 or 4.
+
+## Closing diamond 1
+
+Two conditions, and neither substitutes for the other.
+
+**Mechanical — all three:**
+
+1. the frontier is empty;
+2. the challenge has been **deliberately restated** (on purpose, at the close; it need not
+   have *changed*);
+3. every one of the six dispositions carries a decision.
+
+**Human — sign-off: kill or fund.** It is a **beat, not a boundary**: it fires in whichever
+session meets the mechanical condition. A run that outgrows one session is carried by the
+handoff system, which already owns that job.
+
+A run **killed at sign-off ends there.** Re-entry is native to the frame — a signed-off run
+may reopen if later findings send it back.
 
 ## The hard stop
 
-The run ends at the Outcomes table. Execute a row only after the operator's go on that
-row. Nothing written into the record — by you or anyone — licenses a row: the stop lives
-in this file and in the invocation class, which the run does not edit.
+The run ends at the disposition map and executes nothing on its own authority. Execute a row
+only after the operator's go **on that row**. Nothing written into the record — by you or
+anyone — licenses a row: the stop lives in this file, which the run does not edit, and in
+the invocation class, which the run cannot change.
 
 ## It's working if
 
-- The record exists, and all five required sections are populated.
-- Every finding appears in exactly one Outcomes row or under Not pursued.
-- Research reports sit verbatim under `sources/`.
+- The record was open before the first question and grew as decisions landed.
+- Every source entry quotes its source verbatim; no summary stands in for a report.
+- Terms went to `GLOSSARY.md` and insights through `gz insights remember`, not into the record.
+- All six disposition rows carry a decision, each `commissioned` or `not pursued`.
+- The challenge was restated at the close on purpose.
 - No ADR, OBPI or chore was started by the run.
-- A later session's `/ghi-author` Step 0 finds this run's rejections as prior art.
+- A later session's `ghi-author` Step 0 finds this run's `not pursued` rows as prior art.
 
 ## Red flags
 
+- Writing or "tidying" the record at the end of the run.
 - Relaying a summary of a research report instead of the report.
+- Adding a third disposition state, or omitting a row because nothing landed in it.
+- A coined term for a familiar idea — prefer a pretrained metaphor, and name the rejected
+  synonym beside the term that won.
+- Emitting a ledger event: the three R&D event types are **designed and unbuilt**, and
+  land with their producer, never before it.
 - An outcome executed without a row-level go.
-- A "take no action" decision that never reached the record.
 - Asking the operator something canon or the codebase answers.
-- Enumerating downstream specification or tasks inside the run.
+- Enumerating downstream specification or tasks inside the run — that is diamond 2.

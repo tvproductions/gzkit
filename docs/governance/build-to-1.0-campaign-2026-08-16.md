@@ -1876,7 +1876,7 @@ OBPI work continue to govern execution.
 - **new R&D** — The headwater of most gzkit design (operator, 2026-09-12: *"MOST
   future ADRs come form work exactly like this work"*). An R&D run is governed by
   the operator-invoked `gz-rnd` skill and writes a record under
-  `docs/governance/rnd/`. Design and rulings: `docs/governance/rnd-discipline.md`;
+  `docs/rnd/`. Design and rulings: `docs/governance/rnd-discipline.md`;
   evidence: `docs/governance/mpas-appropriation-analysis.md`. Carry the open threads
   in `docs/governance/rules-tools-audits-refactors-alignment.md` and
   `docs/governance/capability-control-review-2026-09-12.md`. A gap against existing

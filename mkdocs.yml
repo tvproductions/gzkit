@@ -217,6 +217,7 @@ exclude_docs: |
   proposals/**
   lodestar/**
   developer/**
+  rnd/**
 
 validation:
   nav:

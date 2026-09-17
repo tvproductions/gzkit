@@ -25,11 +25,13 @@ a run by itself.
 
 ## What to Expect
 
-- **A record** at `docs/governance/rnd/<YYYY-MM-DD>-<slug>.md` with five sections:
-  Question, Findings, Outcomes, Not pursued, and What this record does not license.
+- **A record** at `docs/rnd/<slug>.md`, written throughout the run rather than composed
+  at the end. It accretes two kinds of entry — a `source` (cited and quoted verbatim) and a
+  `decision` (what was settled, and why). A decision may carry `commissions:` naming the
+  disposition it warrants.
 - **Research sources** saved verbatim under a `sources/` directory beside the record.
 - **Question rounds** batched by dependency, each question with a recommended answer.
-- **An Outcomes table** where the run stops. Nothing is executed until you give a go on a
+- **A six-row disposition map** where the run stops. Nothing is executed until you give a go on a
   row. ADRs and OBPIs are only ever proposed; chores are only ever advised.
 
 A successful run ends with every finding routed or recorded as not pursued, and with no
@@ -52,7 +54,7 @@ ADR, OBPI or chore started by the run itself.
 |------|------|------------|
 | `.gzkit/skills/gz-rnd/SKILL.md` | Canonical skill contract | Read |
 | `.gzkit/skills/gz-rnd/assets/rnd-record-template.md` | Record template | Read |
-| `docs/governance/rnd/` | R&D records and their sources | Write |
+| `docs/rnd/` | R&D records and their sources | Write |
 | `docs/governance/rnd-discipline.md` | Design and operator rulings | Read |
 
 ## Related Skills and Commands

@@ -1,30 +1,73 @@
-# R&D run — <slug> — <YYYY-MM-DD>
+# R&D run — <slug>
 
-> Produced by `/gz-rnd`. A durable record: the Outcomes table routes work; it authorizes
-> none of it by itself.
+> Diamond 1 of the double diamond. This record defines the problem and names what is
+> warranted; it produces no fan-out artifact and authorizes none. Opened <YYYY-MM-DDTHH:MMZ>.
 
-## Question
+**Challenge.** <What was pasted or asked. Quote the operator's framing verbatim.>
 
-<!-- What was pasted or asked. Quote the operator's framing verbatim, with the time. -->
+<!--
+HOW TO USE THIS FILE
 
-## Findings
+Append entries as they resolve, in the middle of the conversation. Do not save them up
+and write this file at the end — a record composed afterwards is a reconstruction.
 
-<!-- One entry per finding, each citing its evidence: a command and its output, a
-file:line, or a research report under ./<YYYY-MM-DD>-<slug>/sources/ saved verbatim. -->
+Two entry kinds, and only two:
+  ## source · <name>     a primary source, cited and quoted verbatim, never summarized
+  ## decision · <what>    something settled in session, with the reasoning behind it
 
-## Outcomes
+A decision may carry `commissions:` naming the disposition it warrants. There is no
+plan-item kind — work is never commissioned without recorded reasoning.
 
-| Finding | Class (1–5) | Destination | Who initiates | State |
+Two things do NOT become entries here. They resolve outward, carrying this run's slug:
+  a term    -> GLOSSARY.md at the repo root
+  an insight -> gz insights remember
+
+Keep the disposition map below current as decisions land, not at the close.
+-->
+
+---
+
+## source · <short name>
+
+<URL or repo path> · read <YYYY-MM-DD>
+
+> <verbatim quotation — never a summary>
+
+<Why it bears on the challenge.>
+
+## decision · <what was decided>
+
+<The reasoning that produced it. Where the operator ruled it, their verbatim words.>
+
+**commissions:** <disposition # and one line> <!-- omit when nothing is warranted -->
+
+---
+
+## Disposition map
+
+<!-- All six rows always present. An absent row is an unfinished run, not a tidy one.
+     State is `commissioned` or `not pursued` — there is no third state. Where something
+     is set aside but worth revisiting, the reason carries the revisit condition. -->
+
+| # | Disposition | State | What | Reason |
 |---|---|---|---|---|
+| 1 | ADR / OBPI | | | |
+| 2 | GHI / direct fix | | | |
+| 3 | chore | | | |
+| 4 | control surface, rule, doc, skill, hook | | | |
+| 5 | one-shot refactoring | | | |
+| 6 | no action | | | |
 
-<!-- State is one of: routed (with its id) / proposed-awaiting-operator. -->
+## Close
 
-## Not pursued
+**Challenge restated.** <Deliberately restated at the close. It need not have changed.>
 
-<!-- Take-no-action decisions and proposals withdrawn during the run, each with its
-reason. Operator-ruled rejections also go through the handoff rulings store. -->
+**Frontier.** <Empty, or what remains — a run does not close with questions outstanding
+whose answers would move a disposition.>
+
+**Sign-off.** <Operator's verbatim words> — <kill | fund>
 
 ## What this record does not license
 
-<!-- Name what a reader must not infer: no ADR, OBPI or chore started; which proposals
-still await the operator. -->
+<!-- Name what a reader must not infer: no ADR, OBPI or chore started by this run; which
+     rows still await the operator's go. -->
