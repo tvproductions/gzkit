@@ -3079,3 +3079,202 @@ Operator g0, verbatim: **Approve D09, D10 and D14**.
 Exact original/replacement packet: `docs/governance/context-audit-2026-09-12/first-batch-review.md`. Supersede the six named invariant entries with three approved invariant replacements using retire/remember; preserve append-only history. Route: GHI #921.
 
 Audit root was 48,511 bytes; current root changed independently to 47,851 bytes before publication. Every selected original still matches exactly. Apply to the current complete rendition: 47,851 → 42,442 bytes, 5,409 bytes saved. No other editorial proposal is selected.
+
+
+## Run 2026-09-17 — operator-on-demand, root arm (GHI #921)
+
+Opened 2026-09-17T09:48:36Z. HEAD `096e6bda3`. No corpus, rule, rendition or doc edit has been made at this entry.
+
+**§ 1–2 measurement:** `proofs/baseline-2026-09-17.txt`. Root 48,511 B; invariant floor 25,006 B over 71
+effective entries; no vendor cap binds (17,025 B headroom; Codex delivers the whole surface).
+
+**Starting state this run failed to read first:** the 2026-09-12 entry directly above and
+`docs/governance/context-audit-2026-09-12/`. That audit's source hashes for `AGENTS.md`,
+`.gzkit/corpus/AGENTS.md.jsonl` and `.gzkit/agents.local.md` still equal today's files, so its 37
+proposal units are byte-valid against the current tree. D09/D10/D14 remain approved and unpublished
+(publication overwritten by a concurrent checkout restore; `publication.json`). The approved candidate's
+bytes survive in this session's scratchpad (sha256 `42bfc4da…3091`, matching `publication.json`);
+the gitignored `root.candidate.md` it occupied was overwritten by this run's § 1 baseline compose.
+It predates the four-fronts entry and cannot be republished as-is.
+
+**§ 4 consult — operator g0, verbatim, in order:**
+
+1. On the floor decision (keep verbatim floor / amend the floor validator / re-tier by split):
+   **"we will never, ever, ever run a lone/orphan obpi"** — the floor-amendment option was offered as an
+   OBPI with no Feature Checklist item behind it; withdrawn.
+2. On the 17-row recommendation table: **"i don't understand the proposals sufficiently"** — no row is
+   ruled; none is applied.
+3. On scorecard row-text coupling against live brief OBPI-0.35.0-10: **no preference** — the recommended
+   route stands (row-text coupling proceeds when a ruled trim needs it; the brief and its
+   narrowed-authority statement are untouched).
+4. Redirect: **"i want to review these, part by part, as rendered, to backport changes to canon entries"**.
+
+**Correction to `recommendation-2026-09-17.md`:** its ~6,400 B estimate for the 17 non-corpus rows was
+wrong. Drafted and measured (scratch candidate, invariant floor asserted): **3,630 B**, 48,511 → 44,881.
+
+**Part 1 ruled 2026-09-17T09:50:07Z (operator g0; sections unowned, no corpus entry — lands via explicit candidate):**
+header → audit proposal ("Project instructions for gzkit."); Project Identity → agent variant
+("Python 3.13+ with uv, ruff, ty; always `uv run` for Python commands."); Persona → audit proposal (287 B).
+
+**Part 2 consult 2026-09-17T10:05:54Z — not ruled; method corrected (operator g0, verbatim):**
+on Prime Directive: **"I am confused. with new evidence, I thought the "NEVERs" were not as needed and that
+straight and terse instructions we adequate. If we redirect all the time, the effect of AGENTS.md seems like
+it would certainly be diluted?"**; on Do It Right: **"you need to SHOW me your edits, not give me these brief
+clips that give me no bearing on what you want to do. this is not a good method"**.
+Response: complete proposed document written to `proofs/proposed-root-2026-09-17.md` (48,511 B → 15,806 B;
+audit proposals under unchanged headings, Part 1 rulings applied, GHI #943 wording, no pointer standing in
+for a rule) and delivered as a 22-part rendered redline. Nothing applied; every part awaits a ruling.
+
+**P3 re-ruled 2026-09-17T10:23:47Z (operator g0, verbatim): "P3 stands, add flight-test-engineer to personas; next part".**
+The persona file, `gz personas list` and both mirrors already carried `flight-test-engineer`; the one roster
+missing it was `docs/governance/personas-catalog.md` (the lift home of the table P3 removes). Row added there.
+First edit of this run; it follows the ruling above.
+
+**P4 ruled 2026-09-17T10:24:33Z (operator g0): "Proposed, as shown"** — PRIME DIRECTIVE body becomes the three rules in
+`proofs/proposed-root-2026-09-17.md` (589 B); retire 7 invariant entries, capture 3. Routed, not fixed: the
+stop-turn hook's block prose cites an AGENTS.md rule number this rewrite removes (hook text lives under src/).
+
+**Operator direction 2026-09-17T10:33:44Z (g0, verbatim): "use the advise from pocock and read the whole thing, onboard some or
+all if useful."** Read in full: `SKILL.md`, `SKILL-MECHANICS.md`, `agents/openai.yaml` of
+`github.com/mattpocock/skills` § writing-for-agents (MIT). Onboarded as `agents-md-map-doctrine.md` `0.12.0`
+§ Writing levers (restated in gzkit's terms; lineage in rule-version-history; scorecard row 58d Judgment, roll-up
+67; ledger `0.12.0`). After sync: `--advisory-scorecard`, `--bullet-retention`, `--unscoped-rules`,
+`--instructions-files-budget`, `--cli-alignment` each exit 0. Rule `paths:` left unchanged — widening to
+`.gzkit/rules/*.md` / `.gzkit/skills/**` fans the rule into those subtrees' generated AGENTS.md.
+Applied to the draft (`proposed-root-2026-09-17.md`, now 16,202 B): cache test removed the vendor-mirror roster
+from § Skills; pointer wording sharpened in § Attestation; co-location moved D03+D12 to § Attestation and
+D06+D14 to § OBPI Acceptance (the corpus already addresses them there); D06 rephrased to the positive target;
+P5 keeps its item numbers (≈30 citations). Approved wording (D09, D10, D14) not altered. Earlier the operator
+dismissed the evidence question (incident-replay A/B vs staged vs witnessed-only) without ruling; it stays open.
+
+**Evidence question ruled 2026-09-17T10:35:54Z (operator g0, verbatim): "we won't have evidence other than considering the
+mechanical part you mention, let's go section by section".** No A/B probe. Each part is presented with which
+of its rules carry a mechanical witness and which do not.
+
+**P5 ruled 2026-09-17T10:42:17Z (operator g0): "Proposed, minus no-ops 2, 5, 10".** Items 2, 5 and 10 are deleted; the surviving
+items keep their original numbers (1, 1a, 3, 4, 6, 7, 8, 9, 11, 12) so the ~28 numbered citations elsewhere still
+resolve. Coupled in the landing commit: re-point the `#5` citation in `agent-contract-rationale.md`, the `#3`
+gloss in `ghi-close/SKILL.md`, and the already-dangling `6a` in `agent-failure-modes.md`.
+
+**P5 ruling WITHDRAWN 2026-09-17T10:42:33Z.** Immediately after the entry above the operator sent, verbatim: "no", "no",
+"show again". The P5 entry above is not a standing ruling; the draft is restored to all twelve items and P5 is
+re-presented. Nothing had landed.
+
+**P5 ruled 2026-09-17T10:42:40Z (operator g0, verbatim): "i want the recommended for p5".** DO IT RIGHT body becomes the
+twelve-item text in `proofs/proposed-root-2026-09-17.md` (1,607 B), numbering unchanged. Retire 11 invariant
+entries, capture 13. Coupled in the landing commit: the `#3` gloss in `ghi-close/SKILL.md` and the already-dangling
+`6a` citation in `agent-failure-modes.md`.
+
+**P6 and P7 ruled 2026-09-17T10:44:19Z (operator g0): "Proposed, as shown" for both.** P6 SKILLS FIRST → one paragraph (unowned;
+absorbs the narrow-skill rule, whose invariant entry is re-addressed here). P7 anti-vibing → two rules; retire 6
+invariant entries, capture 2.
+
+**P8 and P9 ruled 2026-09-17T10:46:52Z (operator g0): "Proposed, as shown" for both.** P8 STDLIB-FIRST → one paragraph (the
+five-year aging test is dropped — ruled with the policy change named). P9 OPERATOR ECONOMY → five rules; claim 7's
+incident narrative leaves the rendition.
+
+**P10 ruled 2026-09-17T10:59:58Z (operator g0): "Proposed, as shown".** Behavior Rules → twelve plain rules (1,665 B), no
+Always/Never split; Never 5 and 9 live in `gz-obpi-pipeline/SKILL.md` and D14. Every "Always #N"/"Never #N"
+citation is re-pointed in the landing commit; the stop-turn hook's prose (under src/) is routed, not edited.
+
+**P11 and P12 presented 2026-09-17T11:00:32Z; operator dismissed both questions without ruling.** Neither is ruled. Landing note
+booked for P10: numbered citations in live rules and skills are re-pointed; `docs/governance/behavior-rules.md`
+gains an old-number → new-rule legend so citations in dated records and in `src/` (out of this run's fence,
+~16 sites) still resolve. Waiting for the operator's next instruction.
+
+**Landing architecture ruled 2026-09-17T11:02:48Z (operator g0, verbatim): "every section should be corpus sourced and rendered
+from corpus".** Every rendered line becomes a corpus entry; every section becomes `corpus-owned`; the rendition is
+generated from the corpus, not hand-assembled.
+
+**P11 and P12 ruled 2026-09-17T11:04:24Z (operator g0): "Proposed, as shown" for both.**
+
+**P13 presented 2026-09-17T11:05:59Z; operator dismissed the question without ruling.** Not ruled. Pre-landing simulation of
+`--bullet-retention` against the draft found 18 Mechanical rows bound to reworded or moved text; the draft now
+keeps the bound wording in P13, P16, P19 and P22 (P22 keeps all six boundary lines, dropping only its Source line).
+Open: the Gate 5 row's scorecard text re-point, and the nine mechanical-scope rows (P21). Waiting for the
+operator's next instruction.
+
+**Defect found 2026-09-17T11:10:19Z on the operator's question (verbatim: "this seems to be a gap? 4 BDD verified Manual check";
+"why no gz command correspondent").** The Gate table is wrong in two rows against `src/gzkit/commands/gates.py`
+and `.gzkit/manifest.json` § verification: Gate 4 runs `uv run -m behave features/` via `gz gates --gate 4` (not
+"Manual check"); Gate 3 runs `uv run mkdocs build --strict` plus the skill audit (not `gz lint`); Gate 1 checks ADR
+existence and frontmatter-ledger coherence. Draft table corrected. The same stale rows ship in
+`.gzkit/templates/agents.md` and its `src/` twin (adopter scaffolds) — to be routed via `/ghi-author`.
+P13 re-presented with the corrected table; operator dismissed the question without ruling. Not ruled.
+
+**P13 ruled 2026-09-17T11:11:37Z (operator g0, verbatim): "P13 A".** Gate Covenant → corrected gate table (real command per gate),
+the `gz gates`/manifest sentence, and four bullets (lanes; Gate 5 once; kinds; 1:1). 1,532 B. Also recorded as an
+insight, not filed: operator verbatim "working with bdd deserves its own gz command but we'll file that for later".
+
+**P14 ruled 2026-09-17T11:13:25Z (operator g0, verbatim): "P14 A".** OBPI Acceptance Protocol → five bullets: REQ-coverage gate;
+security axis; D14 (approved wording, moved here from Operator Doctrine); parent-ADR rule (D06, positive form,
+"1:1" removed to avoid repeating Gate Covenant); defect repair pointer. The "contract-bearing OBPI only" pipeline
+wording is replaced by the operator-only initiation ruling.
+
+**P15 and P16 ruled 2026-09-17T11:18:02Z (operator g0, verbatim): "P15 A, P16 A".** P15 Execution Rules → one paragraph. P16
+Attestation → pattern sentence + `gz-arb` pointer + lane behavior, with D03 (transport) and D12 (content-attestation
+granularity) moved in from Operator Doctrine; the canonical-invocations table leaves the per-turn surface. Coupled:
+`gz-arb/SKILL.md` gains the mkdocs invocation (version + last_reviewed bump, sync).
+
+**P17 and P18 ruled 2026-09-17T11:21:30Z (operator g0, verbatim): "P17 A, P18 A".** P17 Defect-fix routing → four bullets (D07
+moved in first; ownership precondition; size/surface/trigger/coverage route with OBPI work operator-initiated;
+unclear route → routing facts). The precedent criterion (`git log … ≥3 fix commits`) is dropped — ruled with the
+policy change named. P18 Control Surfaces → audit wording (real source chain; stale date and wrong Source gone).
+Landing fix: scorecard § Defect Fix Routing heading names a rule file that does not exist.
+
+**P19 PII bullet ruled 2026-09-17T11:23:57Z (operator g0, verbatim): "this needs to be retained:" followed by the full current
+Operator PII bullet.** The PII bullet stays byte-for-byte. Consequence: the g0-authorship ruling (D05) is NOT merged
+away — the verbatim PII bullet does not carry the exact noreply identity, so the g0 entry stays verbatim in Operator
+Doctrine. The rest of P19 is not yet ruled.
+
+**P19–P22 ruled 2026-09-17T11:34:12Z (operator g0, verbatim): "accept P19–P22 as recommended, keep D11 verbatim, delete
+agents.local.md"**, with the Operator PII bullet restated in full as "key and needs retention". P19: PII bullet
+verbatim; g0 ruling stays verbatim; `.gitignore` and enrichment bullets dropped. P20: audit wording for D01, D02,
+D04, D08, D13; approved wording for D09, D10; **D11 verbatim**. P21: conservative (scope bullets keep bound wording;
+Heavy/foundation attestation duplicate dropped; two stale facts corrected). P22: six boundaries verbatim, Source line
+dropped. `.gzkit/agents.local.md` is deleted in the landing commit. **All 22 parts of root AGENTS.md are ruled.**
+
+**Landing rehearsed 2026-09-17T11:37:13Z on an isolated copy (scratchpad; real corpus, rendition, ownership and ledger untouched).**
+Manifest: `proofs/corpus-operations-2026-09-17.json` — retire all 72 live entries, capture 97 in render order.
+Result on the copy: explicit compose exit 0 (invariant 16,928 B; total 18,981 B) → advise → attested commit →
+`gz content own` on 8 of the 10 unowned sections → generated compose **byte-identical** to the committed rendition →
+re-commit with standing attestation; `--rendition-floor-coherence`, `--rendition-freshness`, `--rendition-lineage`
+exit 0. Unowned floor 6,005 → 1,313 B.
+Two findings. (1) `gz content remember` validates the section against AgentContract pillars, which are H2 only, so
+the two H1 sections (`agents-md`, `local-agent-rules`) cannot hold corpus entries, while `gz content own`'s
+recovery prose for those same sections prescribes exactly that `remember` call — the two verbs contradict each
+other. (2) `gz content commit` does not promote `root.candidate.lineage.json`, so `--rendition-lineage` reports the
+20 owned sections as UNGRADED; committed lineage is OBPI-0.35.0-07's subject (Draft) and is not hand-made here.
+
+**Landing directed 2026-09-17T11:38:19Z (operator g0, verbatim): "make sure that will all be rendered. then we can git sync. I
+think the same audit needs to be applied to other control surfaces that are rendered."** and, on the H1 limit:
+**"this is a serious and bullshit defect of the system" … "clearly we need `gz content heading` or similar"**.
+Read as the recommended option A, the one that renders the rules from the corpus: the five Local Agent Rules
+bullets move word for word under `## Execution Rules` as invariant entries (the PII rule gains a floor);
+`# Local Agent Rules` stays as a bare heading; the 46 B title tagline is the only text the verbs cannot source.
+The H1 defect is filed through `/ghi-author` after landing.
+
+**Real landing begun 2026-09-17T11:40:15Z: 72 retired, 96 captured (corpus 96 → 264 rows).** Mid-run the operator ruled, verbatim:
+**"nothing should be hand carried... utter nonsense."** The last hand-carried content line — the title tagline
+"Project instructions for gzkit." — moves into `## Project Identity` as its first corpus entry (three more corpus
+operations: capture tagline, retire and recapture the identity line so the order renders tagline-first). Both H1
+sections are then bare headings, which the generator treats as structure exactly as it treats every other heading.
+
+**Landed 2026-09-17T11:44:48Z.** Root AGENTS.md 48,511 B → 18,981 B. Corpus 96 → 267 rows (73 retired, 98 captured). Attested
+commit under the operator's words "every section should be corpus sourced and rendered from corpus"; advisor receipt
+`arb-step-judge-e8a5747ec9064bfab82e28805c64cd98` (0.88). `gz content own` on 8 sections; generated-mode compose
+byte-identical to the committed rendition (emitted 18,197 B, structural 752 B, carried 32 B = the two bare H1
+headings); unowned floor 6,005 → 32. Green after landing: `--invariant-coherence`, `--rendition-floor-coherence`,
+`--rendition-freshness`, `--rendition-lineage` (ungraded: no committed lineage until OBPI-0.35.0-07),
+`--instructions-files-budget`, `--bullet-retention` (after re-pointing scorecard rows 15 and 59),
+`--advisory-scorecard`, `--cli-alignment`, `--unscoped-rules`. Coupled: behavior-rules.md legend; gz-arb skill is
+the home of the canonical invocations (1.3.0); ghi-close #3 gloss (2.8.1); arb-middleware pointer; scorecard dead
+file reference; `.gzkit/agents.local.md` deleted. Filed: GHI #1018 (H1 sections unaddressable; cross-linked on #978).
+Deferred to the Phase C edit of the same file: the dangling `DO IT RIGHT 6a` citation in agent-failure-modes.md.
+**Open:** two tests assert strings of the old rendering (see next entry); full `gz check` running.
+
+**Test collision ruled 2026-09-17T11:50:50Z.** Full `gz check` after landing exited 1: ten unit tests and one behave scenario cover
+attested REQs (ADR-0.0.25, 0.0.36, 0.0.54, 0.34.0) by asserting wording of the old AGENTS.md. Operator g0, verbatim:
+"yes, edit the test, git sync, then compact" (for `test_import_populates_a_pillar_for_every_section`) and, offered
+(A) re-derive the tests from the ruled canon vs (B) restore the pinned content: **"A"**. Also directed, verbatim:
+"claude.md should be a pointer/include of AGENTS.md" — taken up after the sync.

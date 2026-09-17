@@ -99,24 +99,34 @@ class TestAgentContractFold(unittest.TestCase):
         """
         agents_text = (REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8")
 
+        # Re-derived 2026-09-17 (GHI #921) from the operator-ruled rewrite: each
+        # invariant is located by its stable label or by the decision it states,
+        # never by the sentence that used to carry it. The pipeline-stage rule was
+        # ruled out of the per-turn contract and is checked at its home, the
+        # pipeline skill.
+        pipeline_skill = (
+            REPO_ROOT / ".gzkit" / "skills" / "gz-obpi-pipeline" / "SKILL.md"
+        ).read_text(encoding="utf-8")
+        lowered = agents_text.lower()
         expected_markers: dict[str, tuple[str, ...]] = {
-            "craftsmanship 6c (defect-fix-routing)": ("6c", "defect-fix-routing"),
-            "craftsmanship 6g (runtime surface)": ("6g", "runtime surface"),
-            "craftsmanship 6h (quote rule verbatim)": ("6h", "verbatim"),
-            "judgment 12 (surface assumptions)": ("Surface assumptions",),
-            "judgment 13 (STOP on inconsistencies)": ("STOP", "name confusion"),
-            "judgment 14 (push back)": ("Push back",),
-            "pipeline lifecycle don't (summarize/stop)": ("Do not summarize after Stage 2 or 3",),
-            "state doctrine don't (frontmatter not proof)": (
-                "Do not read",
-                "status: Completed",
+            "craftsmanship 6c (defect-fix-routing)": ("(6c)", "defect-fix routing"),
+            "craftsmanship 6g (run before recommending)": ("(6g)", "before recommending"),
+            "craftsmanship 6h (quote rule verbatim)": ("(6h)", "verbatim"),
+            "judgment 12 (state assumptions)": ("state assumptions",),
+            "judgment 13 (stop on disagreement)": ("stop and name the disagreement",),
+            "judgment 14 (push back)": ("push back",),
+            "state doctrine (frontmatter is not completion)": (
+                "completion evidence is the ledger",
+                "status: completed",
             ),
         }
 
         missing: list[str] = []
         for label, markers in expected_markers.items():
-            if not all(marker in agents_text for marker in markers):
+            if not all(marker in lowered for marker in markers):
                 missing.append(f"{label}: markers={markers!r}")
+        if "STAGE 5" not in pipeline_skill.upper():
+            missing.append("pipeline lifecycle (runs to Stage 5): gz-obpi-pipeline/SKILL.md")
 
         self.assertFalse(
             missing,

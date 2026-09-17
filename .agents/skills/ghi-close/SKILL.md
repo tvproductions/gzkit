@@ -5,9 +5,9 @@ description: Do the work described in a GHI, then close it with verifiable evide
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-07
+last_reviewed: 2026-09-17
 metadata:
-  skill-version: "2.8.0"
+  skill-version: "2.8.1"
 model: opus
 ---
 
@@ -520,7 +520,7 @@ These thoughts mean STOP — you are about to either leave a corrupted audit tra
 ## Related Rules
 
 - `AGENTS.md` § Prime Directive #1, #4, #6 (own the work; scope expansion is not scope creep; trackable defects reach terminal state)
-- `AGENTS.md` § DO IT RIGHT #1, #3, 6h (fix the class; prefer the more thorough fix; no narrative reporting)
+- `AGENTS.md` § DO IT RIGHT #1, #3, 6h (fix the class; remove the cause inside the requested scope; quote conflicts verbatim)
 - `AGENTS.md` § Attestation (ARB receipt discipline for heavy-lane closures)
 - `.claude/rules/gh-cli.md` (allowed `gh` commands)
 - `.claude/rules/tool-skill-runbook-alignment.md` § Commit-message discipline (observed-output evidence)

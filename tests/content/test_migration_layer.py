@@ -172,7 +172,14 @@ class TestReverseParseFullContract(unittest.TestCase):
         titles = {p.title for p in model.pillars}
         self.assertIn("Behavior Rules", titles)
         behavior = next(p for p in model.pillars if p.title == "Behavior Rules")
-        self.assertIn("AGENTS.md", "\n".join(behavior.lines))
+        # The expectation is read from the surface itself: whatever the section's
+        # first bullet says today must survive the import verbatim.
+        from pathlib import Path  # noqa: PLC0415
+
+        source = (Path(__file__).resolve().parents[2] / "AGENTS.md").read_text(encoding="utf-8")
+        section = source.split("## Behavior Rules", 1)[1].split("\n## ", 1)[0]
+        first_bullet = next(ln for ln in section.splitlines() if ln.startswith("- "))
+        self.assertIn(first_bullet, "\n".join(behavior.lines))
         self.assertTrue(behavior.bullets, "Behavior Rules must yield rule bullets")
 
     @covers("REQ-0.0.37-13-01")

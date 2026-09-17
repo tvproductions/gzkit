@@ -53,7 +53,6 @@ NARRATION_GRANTS = (
     "docs/design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant/",
     "docs/design/adr/pool/ADR-pool.tdd-receipt-stream.md",
     "RELEASE_NOTES.md",
-    "docs/governance/advisory-rules-audit.md",
     # The pedagogy doc for this fold holds the rule name in its "When this rule
     # was authored" and "Related" sections.
     "docs/governance/defect-fix-routing.md",
@@ -112,40 +111,40 @@ class TestDefectFixRoutingFold(unittest.TestCase):
         next_h2 = remainder.find("\n## ", 1)
         section = remainder if next_h2 == -1 else remainder[:next_h2]
 
-        expected_markers: dict[str, tuple[str, ...]] = {
-            "(a) direct-fix table with 5 criterion rows": (
-                "Direct fix is the right route",
-                "Diff size",
-                "Scope",
-                "Precedent",
-                "Trigger",
-                "Coverage",
+        # Operator ruling 2026-09-17 (GHI #921): the contract states the route in
+        # plain rules; the threshold tables and the five-step protocol it replaced
+        # are kept as a dated record in docs/governance/defect-fix-routing.md. The
+        # REQ semantic is that the routing decision survives the fold -- the
+        # contract carries every decision an agent must make, and the detail is
+        # reachable -- so the decisions are checked in the contract and the
+        # tables at their home.
+        catalog = (REPO_ROOT / "docs" / "governance" / "defect-fix-routing.md").read_text(
+            encoding="utf-8"
+        )
+        lowered = section.lower()
+        checks: dict[str, bool] = {
+            "(a) direct-fix criteria: size, single surface, in flight, unit-test coverage": all(
+                marker in lowered
+                for marker in ("source lines", "one surface", "in flight", "unit test")
             ),
-            "(b) ceremony-required table with 5 trigger rows": (
-                "OBPI ceremony is required",
-                "brief boundaries",
-                "CLI surface",
-                "Operator explicitly directs",
-                "new feature work",
-                "exceeds the direct-fix thresholds",
+            "(b) OBPI triggers: crosses briefs, contract change, new feature work": all(
+                marker in lowered
+                for marker in ("crosses briefs", "runtime contract", "new feature work")
             ),
-            "(c) 5-step decision protocol": (
-                "Decision protocol",
-                "Compute the routing facts",
-                "Apply the criteria",
-                "direct fix",
-                "OBPI ceremony",
-                "ambiguous",
+            "(c) ownership check before routing, and the unclear-route rule": all(
+                marker in lowered for marker in ("who owns the work", "routing facts")
             ),
-            "(d) pointer to docs/governance/defect-fix-routing.md": (
-                "docs/governance/defect-fix-routing.md",
+            "(d) the replaced tables and protocol are reachable in the catalog": all(
+                marker in catalog
+                for marker in (
+                    "Diff size",
+                    "Precedent",
+                    "Crosses brief boundaries",
+                    "Decision protocol",
+                )
             ),
         }
-
-        missing: list[str] = []
-        for label, markers in expected_markers.items():
-            if not all(marker in section for marker in markers):
-                missing.append(f"{label}: markers={markers!r}")
+        missing = [label for label, ok in checks.items() if not ok]
 
         self.assertFalse(
             missing,

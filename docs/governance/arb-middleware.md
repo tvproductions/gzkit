@@ -18,8 +18,8 @@ file (deep-dive).
 
 ARB (Agent Self-Reporting) is a QA middleware layer that wraps real
 verification steps (lint, type check, tests, coverage, docs build) and
-emits structured JSON receipts. Every claim in the Canonical invocations
-table in `AGENTS.md` § Attestation is a thin wrapper over a real tool;
+emits structured JSON receipts. Every claim in the canonical invocations
+list (home: the `gz-arb` skill; `AGENTS.md` § Attestation points to it) is a thin wrapper over a real tool;
 the receipt is the deterministic evidence artifact.
 
 ARB intercepts QA command execution and records:

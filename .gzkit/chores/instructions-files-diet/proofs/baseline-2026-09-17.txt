@@ -1,0 +1,47 @@
+instructions-files-diet baseline — 2026-09-17 (operator-on-demand run; HEAD 096e6bda3)
+A dated record. Re-derive; never cite these figures as authority.
+
+§ 1 Render — bytes per consumer (baseline candidate composed from the committed rendition, no edits)
+  gz content compose AGENTS.md --consumer root --candidate <copy of root.md>   exit 0
+  root: total=48511 B  invariant=25006 B  compressible=354 B -> 0 B (presence attribution)  setpoint=lite
+  baseline candidate byte-identical to AGENTS.md and to .gzkit/renditions/AGENTS.md/root.md
+
+§ 2(a) Delivery — gz validate --instructions-files-budget   exit 0
+  [surface-delivery-witness] AGENTS.md: 48511 B rendered against the codex delivery cap 65536 B — 17025 B of headroom
+  [codex-delivery-witness]   AGENTS.md: 48511 B of 48511 B delivered by Codex — the whole surface reaches the agent
+  Required delta against a vendor cap: 0 B. This run is driven by the operator's per-turn-load directive, not an overage.
+
+§ 2(b) Delivery routing — AGENTS.md == root.md (cmp clean); no routing defect.
+
+§ 2(c) Corpus budget (effective_corpus fold; 96 rows, 72 effective)
+  tier invariant:     71 entries  25006 B   (verbatim floor, --rendition-floor-coherence)
+  tier compressible:   1 entry      354 B   (governance-doctrine-surfaces; already absent verbatim from the rendition)
+  generate_candidate (pure, nothing written): 31902 B
+    = emitted entries 25360 + generated structure 537 + unowned carried forward 6005
+    drops 16609 B of rendered text that no live corpus entry carries, inside sections declared corpus-owned
+  non-corpus rendered text today: 48511 - 25360 - structure ~= 22.6 KB (unowned sections 6005 B of it; ratchet floor 6005)
+
+Per-turn load, Claude Code (scratch script measure_load.py, read-only)
+  48511  AGENTS.md
+   2554  CLAUDE.md
+   8550  .claude/rules/governance-core.md (no paths: frontmatter — loads always)
+  17561  71 project skill descriptions (.claude/skills/*/SKILL.md name + description)
+  77176  total repo-controlled per-turn
+  (The operator's 34317 B figure for skill descriptions was not reproducible from repo files; the remainder is
+   harness/plugin skills outside this repository.)
+
+Session start
+  21622  scripts/session_orientation.py stdout
+
+On first edit under a path (nested AGENTS.md chain + path-scoped .claude/rules mirrors; same rule text delivered by both)
+   73681  tests/**.py                 nested 29497 + mirrors 44184
+  104623  src/gzkit/commands/**.py    nested 47686 + mirrors 56937
+   78607  src/gzkit/governance/**.py  nested 34698 + mirrors 43909
+   70335  docs/design/adr/**/obpis/*  nested 35135 + mirrors 35200
+   72152  .gzkit/skills/**            nested 36055 + mirrors 36097
+   58756  .gzkit/rules/**             nested 29415 + mirrors 29341
+   41506  .gzkit/chores/**            nested 20844 + mirrors 20662
+   14465  docs/governance/**          nested  7330 + mirrors  7135
+
+chores advise (2026-09-17): criteria 1-5 PASS; criterion 6 `uv run -m unittest -q` reported FAIL = "Timed out after 120s"
+  (the advise runner's ceiling, not a test failure; the suite's own result was not observed in that run).

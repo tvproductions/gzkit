@@ -90,3 +90,36 @@ The rule originally lived at `.gzkit/rules/defect-fix-routing.md` with a univers
 - [AGENTS.md § DO IT RIGHT, item 7 (6c)](../../AGENTS.md#do-it-right-craftsmanship-maxim) — "choose fix scope per thresholds, not intuition." Ceremony is not always more thorough.
 - [`gz-obpi-pipeline` SKILL](../../.gzkit/skills/gz-obpi-pipeline/SKILL.md) — the ceremony this rule modulates; its "When NOT to Use" section cites the direct-fix thresholds.
 - [`gz-obpi-specify` SKILL](../../.gzkit/skills/gz-obpi-specify/SKILL.md) — the brief-authoring skill this rule modulates.
+
+## Routing matrix as it stood in AGENTS.md until 2026-09-17 (a dated record)
+
+`AGENTS.md` § Defect-fix routing now states the route in four plain rules. The tables and the
+five-step protocol below are the text it replaced, kept here so the detail stays reachable. The
+**Precedent** criterion was dropped from the per-turn rule by operator ruling on 2026-09-17: the
+later ruling that a GHI always authorizes direct repair made it moot for tracked defects.
+
+**Direct fix is the right route when ALL hold**
+
+| Criterion | Threshold |
+|---|---|
+| Diff size | ≤10 source lines OR ≤2 source files |
+| Scope | Single named module or surface |
+| Precedent | `git log --since='60 days ago' --oneline --grep='^fix('` ≥3 commits |
+| Trigger | Defect surfaced in flight, not new feature work |
+| Coverage | Unit test validates without new BDD scenario |
+
+**OBPI ceremony is required when ANY hold**
+
+- Crosses brief boundaries
+- Adds/changes CLI surface, schema, or runtime contract
+- Operator explicitly directs OBPI route
+- Fix is new feature work
+- Diff size or scope exceeds the direct-fix thresholds above
+
+**Decision protocol**
+
+1. Compute the routing facts (diff size, scope, precedent, trigger, coverage).
+2. Apply the criteria mechanically.
+3. If direct fix: `fix(<scope>): <summary> (GHI #N)` with TDD evidence.
+4. If OBPI ceremony: the operator initiates it through `gz-obpi-pipeline`.
+5. If ambiguous: surface routing facts to the operator; do NOT default to ceremony.

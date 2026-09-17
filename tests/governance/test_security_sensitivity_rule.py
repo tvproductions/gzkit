@@ -137,10 +137,12 @@ class SecuritySensitivityCrossSurfaceBindings(unittest.TestCase):
         # security-sensitivity axis and cites the rule file. This is satisfied
         # by the new universal attestation section.
         agents_md = (_PROJECT_ROOT / "AGENTS.md").read_text(encoding="utf-8")
+        # 2026-09-17 (GHI #921): the universal rule is one Gate Covenant bullet,
+        # not a section heading; assert the rule, not its typography.
         self.assertIn(
-            "Universal OBPI Attestation",
+            "Gate 5 is universal",
             agents_md,
-            "AGENTS.md must carry the universal attestation section (ADR-0.0.36)",
+            "AGENTS.md must state the universal attestation rule (ADR-0.0.36)",
         )
         self.assertIn(
             ".gzkit/rules/security-sensitivity.md",

@@ -1,0 +1,1015 @@
+{
+ "_doc": "Corpus operations for the 2026-09-17 root AGENTS.md landing (GHI #921). Every live entry is retired and the ruled document is captured fresh, in render order, one entry per bullet/table/paragraph, each addressed to the section it renders under, so generated mode reproduces the rendition byte for byte.",
+ "retire": [
+  {
+   "entry": "corpus-attestation-2026-06-06T06:20:27.327411+00:00",
+   "tier": "invariant",
+   "section": "attestation",
+   "bytes": 601
+  },
+  {
+   "entry": "corpus-behavior-rules-2026-06-10T07:53:55.264205+00:00",
+   "tier": "invariant",
+   "section": "behavior-rules",
+   "bytes": 262
+  },
+  {
+   "entry": "corpus-behavior-rules-2026-06-10T08:12:41.048588+00:00",
+   "tier": "invariant",
+   "section": "behavior-rules",
+   "bytes": 265
+  },
+  {
+   "entry": "corpus-governance-doctrine-surfaces-2026-06-10T10:51:47.310995+00:00",
+   "tier": "compressible",
+   "section": "governance-doctrine-surfaces",
+   "bytes": 354
+  },
+  {
+   "entry": "corpus-attestation-2026-06-10T23:22:11.236941+00:00",
+   "tier": "invariant",
+   "section": "attestation",
+   "bytes": 313
+  },
+  {
+   "entry": "corpus-obpi-acceptance-protocol-2026-06-11T10:50:22.318951+00:00",
+   "tier": "invariant",
+   "section": "obpi-acceptance-protocol",
+   "bytes": 264
+  },
+  {
+   "entry": "corpus-defect-fix-routing-2026-06-11T11:12:06.972640+00:00",
+   "tier": "invariant",
+   "section": "defect-fix-routing",
+   "bytes": 475
+  },
+  {
+   "entry": "corpus-operator-doctrine-verbatim-canon-2026-06-16T11:52:39.917448+00:00",
+   "tier": "invariant",
+   "section": "operator-doctrine-verbatim-canon",
+   "bytes": 301
+  },
+  {
+   "entry": "corpus-operator-doctrine-verbatim-canon-2026-06-19T22:54:45.960384+00:00",
+   "tier": "invariant",
+   "section": "operator-doctrine-verbatim-canon",
+   "bytes": 573
+  },
+  {
+   "entry": "corpus-prime-directive-ownership-2026-06-19T22:55:06.046462+00:00",
+   "tier": "invariant",
+   "section": "prime-directive-ownership",
+   "bytes": 73
+  },
+  {
+   "entry": "corpus-prime-directive-ownership-2026-06-19T22:55:06.455317+00:00",
+   "tier": "invariant",
+   "section": "prime-directive-ownership",
+   "bytes": 66
+  },
+  {
+   "entry": "corpus-prime-directive-ownership-2026-06-19T22:55:06.883462+00:00",
+   "tier": "invariant",
+   "section": "prime-directive-ownership",
+   "bytes": 84
+  },
+  {
+   "entry": "corpus-prime-directive-ownership-2026-06-19T22:55:07.312327+00:00",
+   "tier": "invariant",
+   "section": "prime-directive-ownership",
+   "bytes": 78
+  },
+  {
+   "entry": "corpus-prime-directive-ownership-2026-06-19T22:55:07.757945+00:00",
+   "tier": "invariant",
+   "section": "prime-directive-ownership",
+   "bytes": 260
+  },
+  {
+   "entry": "corpus-prime-directive-ownership-2026-06-19T22:55:08.171186+00:00",
+   "tier": "invariant",
+   "section": "prime-directive-ownership",
+   "bytes": 176
+  },
+  {
+   "entry": "corpus-do-it-right-craftsmanship-maxim-2026-06-19T22:55:26.682831+00:00",
+   "tier": "invariant",
+   "section": "do-it-right-craftsmanship-maxim",
+   "bytes": 60
+  },
+  {
+   "entry": "corpus-do-it-right-craftsmanship-maxim-2026-06-19T22:55:27.188330+00:00",
+   "tier": "invariant",
+   "section": "do-it-right-craftsmanship-maxim",
+   "bytes": 90
+  },
+  {
+   "entry": "corpus-do-it-right-craftsmanship-maxim-2026-06-19T22:55:27.609055+00:00",
+   "tier": "invariant",
+   "section": "do-it-right-craftsmanship-maxim",
+   "bytes": 139
+  },
+  {
+   "entry": "corpus-do-it-right-craftsmanship-maxim-2026-06-19T22:55:28.036264+00:00",
+   "tier": "invariant",
+   "section": "do-it-right-craftsmanship-maxim",
+   "bytes": 133
+  },
+  {
+   "entry": "corpus-do-it-right-craftsmanship-maxim-2026-06-19T22:55:28.454308+00:00",
+   "tier": "invariant",
+   "section": "do-it-right-craftsmanship-maxim",
+   "bytes": 91
+  },
+  {
+   "entry": "corpus-do-it-right-craftsmanship-maxim-2026-06-19T22:55:28.844664+00:00",
+   "tier": "invariant",
+   "section": "do-it-right-craftsmanship-maxim",
+   "bytes": 85
+  },
+  {
+   "entry": "corpus-do-it-right-craftsmanship-maxim-2026-06-19T22:55:29.301066+00:00",
+   "tier": "invariant",
+   "section": "do-it-right-craftsmanship-maxim",
+   "bytes": 86
+  },
+  {
+   "entry": "corpus-do-it-right-craftsmanship-maxim-2026-06-19T22:55:29.704727+00:00",
+   "tier": "invariant",
+   "section": "do-it-right-craftsmanship-maxim",
+   "bytes": 96
+  },
+  {
+   "entry": "corpus-do-it-right-craftsmanship-maxim-2026-06-19T22:55:30.118260+00:00",
+   "tier": "invariant",
+   "section": "do-it-right-craftsmanship-maxim",
+   "bytes": 66
+  },
+  {
+   "entry": "corpus-do-it-right-craftsmanship-maxim-2026-06-19T22:55:30.529211+00:00",
+   "tier": "invariant",
+   "section": "do-it-right-craftsmanship-maxim",
+   "bytes": 94
+  },
+  {
+   "entry": "corpus-behavior-rules-2026-06-19T22:55:45.355339+00:00",
+   "tier": "invariant",
+   "section": "behavior-rules",
+   "bytes": 117
+  },
+  {
+   "entry": "corpus-behavior-rules-2026-06-19T22:55:45.745394+00:00",
+   "tier": "invariant",
+   "section": "behavior-rules",
+   "bytes": 41
+  },
+  {
+   "entry": "corpus-behavior-rules-2026-06-19T22:55:46.132725+00:00",
+   "tier": "invariant",
+   "section": "behavior-rules",
+   "bytes": 39
+  },
+  {
+   "entry": "corpus-behavior-rules-2026-06-19T22:55:46.543773+00:00",
+   "tier": "invariant",
+   "section": "behavior-rules",
+   "bytes": 48
+  },
+  {
+   "entry": "corpus-behavior-rules-2026-06-19T22:55:46.955976+00:00",
+   "tier": "invariant",
+   "section": "behavior-rules",
+   "bytes": 106
+  },
+  {
+   "entry": "corpus-behavior-rules-2026-06-19T22:55:47.362048+00:00",
+   "tier": "invariant",
+   "section": "behavior-rules",
+   "bytes": 119
+  },
+  {
+   "entry": "corpus-behavior-rules-2026-06-19T22:55:47.778837+00:00",
+   "tier": "invariant",
+   "section": "behavior-rules",
+   "bytes": 93
+  },
+  {
+   "entry": "corpus-behavior-rules-2026-06-19T22:55:48.182115+00:00",
+   "tier": "invariant",
+   "section": "behavior-rules",
+   "bytes": 106
+  },
+  {
+   "entry": "corpus-behavior-rules-2026-06-19T22:55:48.569025+00:00",
+   "tier": "invariant",
+   "section": "behavior-rules",
+   "bytes": 41
+  },
+  {
+   "entry": "corpus-behavior-rules-2026-06-19T22:55:48.985015+00:00",
+   "tier": "invariant",
+   "section": "behavior-rules",
+   "bytes": 55
+  },
+  {
+   "entry": "corpus-behavior-rules-2026-06-19T22:55:49.386645+00:00",
+   "tier": "invariant",
+   "section": "behavior-rules",
+   "bytes": 58
+  },
+  {
+   "entry": "corpus-behavior-rules-2026-06-19T22:55:49.771599+00:00",
+   "tier": "invariant",
+   "section": "behavior-rules",
+   "bytes": 68
+  },
+  {
+   "entry": "corpus-behavior-rules-2026-06-30T12:33:05.706111+00:00",
+   "tier": "invariant",
+   "section": "behavior-rules",
+   "bytes": 172
+  },
+  {
+   "entry": "corpus-behavior-rules-2026-06-30T12:35:16.628537+00:00",
+   "tier": "invariant",
+   "section": "behavior-rules",
+   "bytes": 110
+  },
+  {
+   "entry": "corpus-behavior-rules-2026-06-30T12:38:53.450254+00:00",
+   "tier": "invariant",
+   "section": "behavior-rules",
+   "bytes": 172
+  },
+  {
+   "entry": "corpus-prime-directive-ownership-2026-06-30T12:38:53.561243+00:00",
+   "tier": "invariant",
+   "section": "prime-directive-ownership",
+   "bytes": 179
+  },
+  {
+   "entry": "corpus-behavior-rules-2026-06-30T12:38:53.671739+00:00",
+   "tier": "invariant",
+   "section": "behavior-rules",
+   "bytes": 87
+  },
+  {
+   "entry": "corpus-operator-doctrine-verbatim-canon-2026-08-17T11:20:29.341500+00:00",
+   "tier": "invariant",
+   "section": "operator-doctrine-verbatim-canon",
+   "bytes": 957
+  },
+  {
+   "entry": "corpus-operator-doctrine-verbatim-canon-2026-08-17T11:20:36.600648+00:00",
+   "tier": "invariant",
+   "section": "operator-doctrine-verbatim-canon",
+   "bytes": 834
+  },
+  {
+   "entry": "corpus-operator-doctrine-verbatim-canon-2026-08-17T11:55:49.945606+00:00",
+   "tier": "invariant",
+   "section": "operator-doctrine-verbatim-canon",
+   "bytes": 934
+  },
+  {
+   "entry": "corpus-operator-doctrine-verbatim-canon-2026-08-17T21:46:58.710673+00:00",
+   "tier": "invariant",
+   "section": "operator-doctrine-verbatim-canon",
+   "bytes": 1138
+  },
+  {
+   "entry": "corpus-operator-doctrine-verbatim-canon-2026-08-17T21:47:07.702856+00:00",
+   "tier": "invariant",
+   "section": "operator-doctrine-verbatim-canon",
+   "bytes": 598
+  },
+  {
+   "entry": "corpus-operator-doctrine-verbatim-canon-2026-08-17T23:33:27.295964+00:00",
+   "tier": "invariant",
+   "section": "operator-doctrine-verbatim-canon",
+   "bytes": 1448
+  },
+  {
+   "entry": "corpus-gate-covenant-2026-08-20T00:31:11.884248+00:00",
+   "tier": "invariant",
+   "section": "gate-covenant",
+   "bytes": 1049
+  },
+  {
+   "entry": "corpus-operator-doctrine-verbatim-canon-2026-08-21T00:12:37.962499+00:00",
+   "tier": "invariant",
+   "section": "operator-doctrine-verbatim-canon",
+   "bytes": 1513
+  },
+  {
+   "entry": "corpus-operator-doctrine-verbatim-canon-2026-08-21T09:33:42.074142+00:00",
+   "tier": "invariant",
+   "section": "operator-doctrine-verbatim-canon",
+   "bytes": 1404
+  },
+  {
+   "entry": "corpus-do-it-right-craftsmanship-maxim-2026-08-21T09:33:59.523053+00:00",
+   "tier": "invariant",
+   "section": "do-it-right-craftsmanship-maxim",
+   "bytes": 829
+  },
+  {
+   "entry": "corpus-defect-fix-routing-2026-08-23T07:15:30.869803+00:00",
+   "tier": "invariant",
+   "section": "defect-fix-routing",
+   "bytes": 1007
+  },
+  {
+   "entry": "corpus-operator-economy-of-effort-design-dialogue-mode-2026-08-23T14:19:20.810114+00:00",
+   "tier": "invariant",
+   "section": "operator-economy-of-effort-design-dialogue-mode",
+   "bytes": 1362
+  },
+  {
+   "entry": "corpus-operator-doctrine-verbatim-canon-2026-08-23T14:33:19.685636+00:00",
+   "tier": "invariant",
+   "section": "operator-doctrine-verbatim-canon",
+   "bytes": 1799
+  },
+  {
+   "entry": "corpus-make-llm-stochastic-vibes-inert-anti-vibing-mantra-2026-09-07T10:51:26.249770+00:00",
+   "tier": "invariant",
+   "section": "make-llm-stochastic-vibes-inert-anti-vibing-mantra",
+   "bytes": 394
+  },
+  {
+   "entry": "corpus-make-llm-stochastic-vibes-inert-anti-vibing-mantra-2026-09-07T10:51:26.374237+00:00",
+   "tier": "invariant",
+   "section": "make-llm-stochastic-vibes-inert-anti-vibing-mantra",
+   "bytes": 506
+  },
+  {
+   "entry": "corpus-make-llm-stochastic-vibes-inert-anti-vibing-mantra-2026-09-07T10:51:26.497113+00:00",
+   "tier": "invariant",
+   "section": "make-llm-stochastic-vibes-inert-anti-vibing-mantra",
+   "bytes": 278
+  },
+  {
+   "entry": "corpus-make-llm-stochastic-vibes-inert-anti-vibing-mantra-2026-09-07T10:51:26.620716+00:00",
+   "tier": "invariant",
+   "section": "make-llm-stochastic-vibes-inert-anti-vibing-mantra",
+   "bytes": 88
+  },
+  {
+   "entry": "corpus-make-llm-stochastic-vibes-inert-anti-vibing-mantra-2026-09-07T10:51:26.744030+00:00",
+   "tier": "invariant",
+   "section": "make-llm-stochastic-vibes-inert-anti-vibing-mantra",
+   "bytes": 108
+  },
+  {
+   "entry": "corpus-make-llm-stochastic-vibes-inert-anti-vibing-mantra-2026-09-07T10:51:26.867265+00:00",
+   "tier": "invariant",
+   "section": "make-llm-stochastic-vibes-inert-anti-vibing-mantra",
+   "bytes": 261
+  },
+  {
+   "entry": "corpus-stdlib-first-doctrine-dependency-posture-2026-09-07T10:51:26.990597+00:00",
+   "tier": "invariant",
+   "section": "stdlib-first-doctrine-dependency-posture",
+   "bytes": 69
+  },
+  {
+   "entry": "corpus-stdlib-first-doctrine-dependency-posture-2026-09-07T10:51:27.114752+00:00",
+   "tier": "invariant",
+   "section": "stdlib-first-doctrine-dependency-posture",
+   "bytes": 265
+  },
+  {
+   "entry": "corpus-stdlib-first-doctrine-dependency-posture-2026-09-07T10:51:27.238703+00:00",
+   "tier": "invariant",
+   "section": "stdlib-first-doctrine-dependency-posture",
+   "bytes": 116
+  },
+  {
+   "entry": "corpus-stdlib-first-doctrine-dependency-posture-2026-09-07T10:51:27.361841+00:00",
+   "tier": "invariant",
+   "section": "stdlib-first-doctrine-dependency-posture",
+   "bytes": 171
+  },
+  {
+   "entry": "corpus-stdlib-first-doctrine-dependency-posture-2026-09-07T10:51:27.487766+00:00",
+   "tier": "invariant",
+   "section": "stdlib-first-doctrine-dependency-posture",
+   "bytes": 209
+  },
+  {
+   "entry": "corpus-stdlib-first-doctrine-dependency-posture-2026-09-07T10:51:27.617161+00:00",
+   "tier": "invariant",
+   "section": "stdlib-first-doctrine-dependency-posture",
+   "bytes": 178
+  },
+  {
+   "entry": "corpus-stdlib-first-doctrine-dependency-posture-2026-09-07T10:51:27.748592+00:00",
+   "tier": "invariant",
+   "section": "stdlib-first-doctrine-dependency-posture",
+   "bytes": 163
+  },
+  {
+   "entry": "corpus-stdlib-first-doctrine-dependency-posture-2026-09-07T10:51:27.873240+00:00",
+   "tier": "invariant",
+   "section": "stdlib-first-doctrine-dependency-posture",
+   "bytes": 109
+  },
+  {
+   "entry": "corpus-stdlib-first-doctrine-dependency-posture-2026-09-07T10:51:27.998284+00:00",
+   "tier": "invariant",
+   "section": "stdlib-first-doctrine-dependency-posture",
+   "bytes": 60
+  },
+  {
+   "entry": "corpus-stdlib-first-doctrine-dependency-posture-2026-09-07T10:51:28.123612+00:00",
+   "tier": "invariant",
+   "section": "stdlib-first-doctrine-dependency-posture",
+   "bytes": 161
+  },
+  {
+   "entry": "corpus-operator-doctrine-verbatim-canon-2026-09-12T18:07:03.183177+00:00",
+   "tier": "invariant",
+   "section": "operator-doctrine-verbatim-canon",
+   "bytes": 656
+  }
+ ],
+ "remember": [
+  {
+   "section": "project-identity",
+   "text": "Python 3.13+ with uv, ruff, ty; always `uv run` for Python commands.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "persona",
+   "text": "Every agent frame MUST include a Persona. Default: `main-session` — craftsperson, governance-aware, whole-file-reasoning, direct. Read the applicable definition in [`.gzkit/personas/`](.gzkit/personas/) when assigning a role; compose traits, not generic expertise claims.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "prime-directive-ownership",
+   "text": "- Complete the requested behavior and every coupled correctness surface; route unrelated defects rather than silently expanding the change.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "prime-directive-ownership",
+   "text": "- Track every defect. Fix it when it is in scope; otherwise file a GHI through `ghi-author`, record it with `gz insights remember`, or note it in the brief's evidence. \"Pre-existing\" and \"not in scope\" decide where a defect goes, not whether it is recorded.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "prime-directive-ownership",
+   "text": "- Repair a failing, circular or tautological test at its cause. Before saying work was deferred elsewhere, confirm the destination accepted and completed it.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "do-it-right-craftsmanship-maxim",
+   "text": "Fix root causes inside the requested scope and its coupled surfaces.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "do-it-right-craftsmanship-maxim",
+   "text": "1. Fix the class of failure, not the instance.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "do-it-right-craftsmanship-maxim",
+   "text": "1a. When a change touches a surface another surface reads or validates — a validator, a doc example, a mirror — update and verify that consumer in the same commit.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "do-it-right-craftsmanship-maxim",
+   "text": "2. Before trusting plausible-looking code: read the surface, write the failing test first, trace the data flow, check observed output.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "do-it-right-craftsmanship-maxim",
+   "text": "3. Choose the fix that removes the cause, inside the requested scope; diff size alone is not a reason either way.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "do-it-right-craftsmanship-maxim",
+   "text": "4. Verify observed behavior, not assumed behavior: run the command and paste its actual output.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "do-it-right-craftsmanship-maxim",
+   "text": "5. Read the code before changing it — exports, immediate callers, shared utilities. If the existing structure is unclear, ask.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "do-it-right-craftsmanship-maxim",
+   "text": "6. Tests assert semantics derived from the REQ, not strings from a run of the code; a test that cannot fail when the logic changes is wrong.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "do-it-right-craftsmanship-maxim",
+   "text": "7. (6c) Choose the fix route from § Defect-fix routing, not from intuition.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "do-it-right-craftsmanship-maxim",
+   "text": "8. (6g) Before recommending a command, run it, observe it and paste what it printed.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "do-it-right-craftsmanship-maxim",
+   "text": "9. (6h) When a rule and a directive conflict, quote both verbatim.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "do-it-right-craftsmanship-maxim",
+   "text": "10. Simplicity first: minimum code that solves the problem, nothing speculative, no abstraction for single-use code.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "do-it-right-craftsmanship-maxim",
+   "text": "11. Surgical changes: touch only what you must, match existing style, leave adjacent code alone. Expansion under 1a is for coupled correctness only.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "do-it-right-craftsmanship-maxim",
+   "text": "12. A gate's evidence must witness the required state or action — a stage, a dispatch record, a receipt. A file or marker being present shows only that something is armed.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "skills-first-execution-routing",
+   "text": "When a skill matches the task, read its `SKILL.md` before edits, shell, ledger or governance claims, and follow its order. Report tool evidence before prose. If blocked, name and track the blocker, then use the closest governed fallback. When a skill's scope is narrow (git-sync, for example), do only that task.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "make-llm-stochastic-vibes-inert-anti-vibing-mantra",
+   "text": "- Governance is how agent-driven work is steered and held accountable. Choose between options by which leaves the smallest surface for unverified pattern-matching to leak through; maintenance burden, velocity and lighter ceremony do not decide it.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "make-llm-stochastic-vibes-inert-anti-vibing-mantra",
+   "text": "- A silent change to a rule or threshold is doctrine drift. Change doctrine only with a recorded witness.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "stdlib-first-doctrine-dependency-posture",
+   "text": "Use stdlib by default. A runtime dependency, new or existing, needs ADR or OBPI rationale naming the capability stdlib cannot supply; popularity or recency is not rationale. Standing choices: `unittest` (pytest is blocked by the `forbid-pytest` hook), `argparse` (ADR-0.0.2), and Pydantic as the one named departure, for validation (`.gzkit/rules/models.md`).",
+   "tier": "invariant",
+   "classification": "Mechanical"
+  },
+  {
+   "section": "operator-economy-of-effort-design-dialogue-mode",
+   "text": "- Draft substantive content — prose, justifications, alternatives, forcing-function answers — so the operator reviews and rules instead of typing.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "operator-economy-of-effort-design-dialogue-mode",
+   "text": "- When the answer space is bounded, offer A/B/C with tradeoffs and a recommendation, one decision per question.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "operator-economy-of-effort-design-dialogue-mode",
+   "text": "- Pass operator-supplied wording through unchanged into canon, attestations and commit messages.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "operator-economy-of-effort-design-dialogue-mode",
+   "text": "- Carry booked decisions forward; the operator does not restate them.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "operator-economy-of-effort-design-dialogue-mode",
+   "text": "- Consult canon before asking. Where canon already rules, act and name the rule: presenting a settled matter as a choice invites a re-ruling that can drift from canon.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "behavior-rules",
+   "text": "- Ask when unsure of direction — architecture, scope reading, file targeting — and state assumptions before implementing so the operator can ratify or replace them.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "behavior-rules",
+   "text": "- When brief, ADR, runbook and code disagree, stop and name the disagreement with its tradeoff. If the operator is absent and a pick is forced, take the more recent or more tested one, say why, and flag the other for cleanup; do not blend them.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "behavior-rules",
+   "text": "- Push back when an approach has a clear problem: say what it breaks and cite the rule.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "behavior-rules",
+   "text": "- When the operator course-corrects in flight, record an `improvement` via `gz insights remember` before completing the corrected work.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "behavior-rules",
+   "text": "- Author GHIs through `ghi-author`, whose prior-art lookup prevents duplicates; from another repository use `gz issue file`.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "behavior-rules",
+   "text": "- Write the ledger only through `gz` commands. A blocking hook means evidence or pipeline state is missing: diagnose it rather than hand-writing markers or ledger rows.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "behavior-rules",
+   "text": "- Completion evidence is the ledger. A brief's `status: Completed` and `gz status` output are derived views.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "behavior-rules",
+   "text": "- Commit and push through the configured hooks; `--no-verify` is not used.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "behavior-rules",
+   "text": "- A commit landing a rule edit under an `eval-feedback` GHI carries an `Eval-feedback-source: <event-id-or-artifact-path>` trailer (`gz validate --commit-trailers`).",
+   "tier": "invariant",
+   "classification": "Mechanical"
+  },
+  {
+   "section": "behavior-rules",
+   "text": "- Use subagents for research or exploration that splits into independent tracks or needs context isolation, and give each one a 'Why'. Do single-surface checks and result-dependent steps yourself.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "behavior-rules",
+   "text": "- Surface a blocking failure early instead of debugging silently at length.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "behavior-rules",
+   "text": "- Match the codebase's conventions; if one looks harmful, raise it rather than forking it.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "pattern-discovery",
+   "text": "`PRD → Constitution → ADR → OBPI → REQ → TASK → Attestation`",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "pattern-discovery",
+   "text": "`gz state` shows artifact relationships; `gz status` shows workflow fronts and gates. The active brief defines allowed and denied paths, and every artifact links to a parent.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "skills",
+   "text": "`uv run gz skill list` lists the active catalog. Edit skills in `.gzkit/skills`; `uv run gz agent sync control-surfaces` regenerates every vendor mirror.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "gate-covenant",
+   "text": "| Gate | Purpose | Verified by |\n|------|---------|-------------|\n| 1 | ADR recorded | the ADR exists and its frontmatter agrees with the ledger |\n| 2 | Tests pass | `uv run gz test` |\n| 3 | Docs updated | `uv run mkdocs build --strict`, plus the skill audit |\n| 4 | BDD verified | `uv run -m behave features/` |\n| 5 | Human attests | the operator's attestation |",
+   "tier": "invariant",
+   "classification": "Mechanical"
+  },
+  {
+   "section": "gate-covenant",
+   "text": "`uv run gz gates --adr <ADR-ID>` runs the gates the ADR's lane requires and records each result in the ledger; `--gate N` runs one. The command behind each gate is `.gzkit/manifest.json` § `verification`.",
+   "tier": "invariant",
+   "classification": "Mechanical"
+  },
+  {
+   "section": "gate-covenant",
+   "text": "- Lite lane requires Gates 1–2. Heavy lane requires all five and is for changes to a CLI, API, schema or runtime contract used by humans or external systems; documentation, process and template changes stay Lite.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "gate-covenant",
+   "text": "- Gate 5 applies to every OBPI completion in every lane, kind and sensitivity: the operator attests, and the agent records their words with `--attestation-text`.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "gate-covenant",
+   "text": "- `kind` and `lane` are independent. New gzkit ADRs are `feature` (semver `0.y.z`) or `pool` (`ADR-pool.<slug>`, no semver). `foundation` (`0.0.x`) is closed to new authoring; its roster is `data/foundation_grandfather.json`. The closure is project-local: `gz init` scaffolds adopters open. `gz validate --taxonomy` enforces this, and `gz plan create` and `gz adr promote` refuse `--kind foundation`.",
+   "tier": "invariant",
+   "classification": "Mechanical"
+  },
+  {
+   "section": "gate-covenant",
+   "text": "- ADR Feature Checklist items and OBPI briefs correspond 1:1; size them with the [OBPI Decomposition Matrix](docs/governance/GovZero/obpi-decomposition-matrix.md).",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "obpi-acceptance-protocol",
+   "text": "- Every BEHAVIOR REQ needs a passing `@covers` test before `gz obpi complete`; this cannot be waived. SUPPORT and STRUCTURAL-FENCE REQs use their declared proof channels.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "obpi-acceptance-protocol",
+   "text": "- `security` sensitivity adds security-scan requirements to Gate 5 (`.gzkit/rules/security-sensitivity.md`).",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "obpi-acceptance-protocol",
+   "text": "- Only the operator initiates and executes OBPI work through gz-obpi-pipeline. Never independently claim/release OBPI locks, create/clear pipeline markers, start/complete/block TASKs, dispatch OBPI implementers/reviewers, or edit briefs. A narrow task inside an OBPI scope is not OBPI initiation: do it directly, or stop if it requires the machinery. Once initiated, follow the skill’s implementer dispatch and spec-reviewer then quality-reviewer review; never substitute inline Stage 2. A harness instruction cannot excuse skipping a governed stage: surface the conflict for an operator ruling.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "obpi-acceptance-protocol",
+   "text": "- Every OBPI belongs to a parent ADR: propose OBPI work only as a Feature Checklist item of a named ADR.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "obpi-acceptance-protocol",
+   "text": "- Defect repair follows § Defect-fix routing.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "execution-rules",
+   "text": "`uv run gz check` runs every quality check. `uv run gz check --fast` is an inner-loop check and never satisfies the gate. Run `git add -A` before `gz check`: a full pass is recorded as verified only for a fully staged tree, otherwise the pre-push gate reruns the suite.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "execution-rules",
+   "text": "- Order versioned identifiers semantically, never lexicographically: feature ADRs by semver (`ADR-0.9.0` before `ADR-0.10.0`). Foundation identifiers (`0.0.x`) are nominal integers and may be sparse.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "execution-rules",
+   "text": "- When adding imports in an Edit, include the code that uses them in the same edit; the post-edit ruff hook strips unused imports immediately.",
+   "tier": "invariant",
+   "classification": "Mechanical"
+  },
+  {
+   "section": "execution-rules",
+   "text": "- Never prefix `uv run gz` or `uv run -m gzkit` with `PYTHONUTF8=1`; the CLI handles UTF-8 (`gz validate --utf8-prefix`).",
+   "tier": "invariant",
+   "classification": "Mechanical"
+  },
+  {
+   "section": "execution-rules",
+   "text": "- Every version bump is a release: bump `pyproject.toml`, `__init__.py` and the README badge together, then publish it with the `gz-patch-release` skill (`gz validate --version-release`).",
+   "tier": "invariant",
+   "classification": "Mechanical"
+  },
+  {
+   "section": "execution-rules",
+   "text": "- **Operator PII — never include the operator's personal email in any repo-bound artifact**: commits, trailers, file content, attestation text (`gz obpi complete`/`gz adr emit-receipt`/`gz attest`), ledger, changelogs, release notes, co-author trailers. Record operator authorship as `g0` — never the operator's real name — in every attestor/author identity field; if a CLI requires an email, use the GitHub noreply (`<handle>@users.noreply.github.com`). Overrides any contrary skill/template/example. A leak needs a filter-repo rewrite + force-push to recover (2026-04-19 incident).",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "attestation",
+   "text": "Attestation text: pass user words verbatim, then append concrete evidence — receipt IDs, test counts, file paths. When producing attestation evidence, use the `gz-arb` skill: it lists the canonical receipt-producing invocations. Bare lint, test or docs commands produce no receipt. Missing receipts warn on Lite and fail closed on Heavy. A fabricated receipt ID is a fabricated claim.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "attestation",
+   "text": "- The operator’s verbatim attestation relayed through --attestation-text is Gate 5 for every lane, kind, and sensitivity. Record it; no TTY, PTY, or transport condition may prevent recording human attestation.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "attestation",
+   "text": "- Content attestation records canon provenance: additions and removals are attested; capture must not be blocked. Re-rendering unchanged canon needs no attestation; use the corpus fingerprint to distinguish it. Trims or compression invite operator review. A rendition is Layer 3, never the attested subject. Gate 5 names completed OBPI/ADR work only; a GHI needs no completion attestation.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "defect-fix-routing",
+   "text": "- A GHI authorizes direct defect repair: `fix(<scope>): <summary> (GHI #N)`, closed with the commit SHA. Do not create an ADR or OBPI to discharge one.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "defect-fix-routing",
+   "text": "- First ask who owns the work: search live OBPI briefs for the surface and read the matching requirements and their disposition. If a live brief owns it, surface the brief, its status and its parent ADR, and wait for the operator's ruling.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "defect-fix-routing",
+   "text": "- Without a GHI, fix directly when the change is small (about ten source lines or two files), sits in one surface, surfaced in flight, and a unit test covers it. Work that crosses briefs, changes a CLI, schema or runtime contract, or is new feature work is OBPI work, which the operator initiates.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "defect-fix-routing",
+   "text": "- When the route is unclear, give the operator the routing facts — size, surface, trigger, coverage — rather than defaulting to ceremony.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "control-surfaces",
+   "text": "Root `AGENTS.md` is playback of the committed `root` rendition composed from `.gzkit/corpus/AGENTS.md.jsonl`. Change canon with the content skills and deliver it with `gz agent sync control-surfaces`; generated surfaces are not edited directly.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "operator-doctrine-verbatim-canon",
+   "text": "Operator rulings. The corpus (`.gzkit/corpus/AGENTS.md.jsonl`) keeps each ruling's original wording and history.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "operator-doctrine-verbatim-canon",
+   "text": "- Status covers handoff system, GHI triage, ADR/OBPI campaign, and new R&D. Read Workflow fronts in the campaign selected by data/active_campaign.json; use gz-status to report evidence, freshness or unknowns, and next actions. Focused inquiries include material dependencies. Handoffs preserve the map reference and session changes. The campaign owns the map; live sources establish progress. Campaign sequence, ascending feature-ADR order, and operator-only OBPI initiation govern execution.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "operator-doctrine-verbatim-canon",
+   "text": "- A gap in fulfilling original feature intent is a correction under its owning ADR, never a new pool ADR or enhancement. Enhancement means the designed intent already works and could merely improve.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "operator-doctrine-verbatim-canon",
+   "text": "- The active docs/governance/*-campaign-*.md plan governs work selection; handoffs and triage advise. Select its topmost unchecked item whose gate is met, subject to ascending feature-ADR order and operator-only OBPI initiation. Campaign amendments require operator ratification; ADR, OBPI, and GHI repair remain the work mechanisms.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "operator-doctrine-verbatim-canon",
+   "text": "- Operator authorship in repo-bound artifacts is recorded as 'g0' (operator directive, 2026-06-10) — git author name, attestor fields, handoffs, release notes. Author email remains the GitHub noreply (2949663+ahuimanu@users.noreply.github.com); the operator-PII prohibition on the personal email stands unchanged.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "operator-doctrine-verbatim-canon",
+   "text": "- Work directly on main, commit, and git-sync. Do not create feature branches or a branch/merge/delete workflow.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "operator-doctrine-verbatim-canon",
+   "text": "- Keep three subjects distinct: transit is ecosystem movement through the airlock (ADR-0.33.0); exchange is one block’s occupancy (ADR-0.0.41); handoff is session memory (ADR-0.0.65). Classify by the citing event type, never a shared field name or path. Token blocks implement features through the airlock’s Build door. The airlock provides awareness and synthetic memory, controls project movement, keeps the agent focused and watches for contamination, and monitors results/disturbance; it is not a verification gate. ADR-0.33.0 incompletely captures those purposes; silence does not revoke them. Transit supplies current ecosystem orientation and handoff carries the prior session model; they cooperate, and neither alone supplies a resident project model.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "operator-doctrine-verbatim-canon",
+   "text": "- Root AGENTS.md is the sole rendered AgentContract and the default for every harness, including Claude. Its lite rendition fits the smallest vendor delivery cap. Forbid per-vendor AgentContract routes or temperatures in data/vendor-manifest.json; vendor-specific material belongs in that vendor’s own surface.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "operator-doctrine-verbatim-canon",
+   "text": "- Before any move related to the higher rules and function of this project, stop and read all docs and all code before taking or recommending action. Stop and ask the operator in case of uncertainty. A search is not a read — never report that something is absent, undocumented, or unruled on the strength of keyword queries. Doctrine is routinely stated as a flag value, a schema field, or a path rather than as the prose you searched for ('--vendor=root', 2026-08-17). Supersedes the prior '90% convinced/confident' framing (operator verbatim: 'forget 90%, you have zero basis for any certainty').",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "operator-doctrine-verbatim-canon",
+   "text": "- Work feature ADRs in ascending semver order: the lowest version with unlanded OBPIs is in flight. Do not work, author, or recommend a higher feature ADR ahead of it. The campaign selects work but cannot override that order. If campaign sequencing conflicts, semver governs; surface the conflict to the operator rather than silently resolving it. “One feature at a time” does not authorize swapping the order.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "governance-doctrine-surfaces",
+   "text": "Before governance code, rule, or audit work, read docs/governance/trust-doctrine.md, docs/governance/advisory-rules-audit.md, and docs/governance/state-doctrine.md.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "governance-doctrine-surfaces",
+   "text": "Mechanical scopes that bind here:",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "governance-doctrine-surfaces",
+   "text": "- Per-file char budget for AGENTS.md / CLAUDE.md / `.claude/rules/*.md` — `gz validate --instructions-files-budget`; budgets in `data/instructions_files_budget.json`.",
+   "tier": "invariant",
+   "classification": "Mechanical"
+  },
+  {
+   "section": "governance-doctrine-surfaces",
+   "text": "- The editor/IDE authoring-guide protocol envelope is defined by `src/gzkit/schemas/authoring_guide_protocol.json` — schema-validated at runtime (ADR-0.0.30).",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "governance-doctrine-surfaces",
+   "text": "- `Field(min_length=1)` on `AdvisorDiagnosis.proof` — `gz validate --advisor-proof-binding` (OBPI-0.0.29-08).",
+   "tier": "invariant",
+   "classification": "Mechanical"
+  },
+  {
+   "section": "governance-doctrine-surfaces",
+   "text": "- Complexity calibration is grounded in an empirically-measured exemplar corpus (seven selection criteria) — `gz validate --complexity-doctrine-links` (OBPI-0.0.27-07).",
+   "tier": "invariant",
+   "classification": "Mechanical"
+  },
+  {
+   "section": "governance-doctrine-surfaces",
+   "text": "- `.gzkit/rules/*.md` with `paths: \"**\"` or missing `paths:` may not live under any vendor-surface rules directory (ADR-0.0.20) — `gz validate --unscoped-rules`.",
+   "tier": "invariant",
+   "classification": "Mechanical"
+  },
+  {
+   "section": "governance-doctrine-surfaces",
+   "text": "- Every canonical surface MUST be reproducibly delivered by `pip install py-gzkit && gz init`, byte-equivalent to the wheel's authored canonical content (ADR-0.0.31) — `gz validate --distribution`.",
+   "tier": "invariant",
+   "classification": "Mechanical"
+  },
+  {
+   "section": "governance-doctrine-surfaces",
+   "text": "- `gz validate --invariant-coherence` — composition drift fail-close: byte-compares committed AGENTS.md against rendition playback (ADR-0.0.37); in the `gz check` default scope.",
+   "tier": "invariant",
+   "classification": "Mechanical"
+  },
+  {
+   "section": "governance-doctrine-surfaces",
+   "text": "- OBPI brief reconciles against current project shape before Stage 2 and before completion — `gz validate --brief-reconcile` (ADR-0.0.37).",
+   "tier": "invariant",
+   "classification": "Mechanical"
+  },
+  {
+   "section": "governance-doctrine-surfaces",
+   "text": "- `abandon categories are closed` — lock release is coupled to an exchange/register entry (ADR-0.0.41).",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "governance-doctrine-surfaces",
+   "text": "- Every REQ in an OBPI brief's Acceptance Criteria MUST declare exactly one of three kinds — BEHAVIOR, SUPPORT, or STRUCTURAL-FENCE — via an inline tag `[kind]`, each with exactly one proof channel — `gz validate --req-kind-discipline` (ADR-0.0.59).",
+   "tier": "invariant",
+   "classification": "Mechanical"
+  },
+  {
+   "section": "architectural-boundaries",
+   "text": "1. Do not promote post-1.0 pool ADRs into active work.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "architectural-boundaries",
+   "text": "2. Do not add more pool ADRs to the runtime track.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "architectural-boundaries",
+   "text": "3. Do not build the graph engine without locking state doctrine first.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "architectural-boundaries",
+   "text": "4. Do not let reconciliation remain a maintenance chore.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "architectural-boundaries",
+   "text": "5. Do not let AirlineOps parity become perpetual catch-up.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  },
+  {
+   "section": "architectural-boundaries",
+   "text": "6. Do not let derived views silently become source-of-truth — `gz status`, pipeline markers, and reconciliation caches are Layer 3; every fact traces to Layer 1 canon or Layer 2 ledger.",
+   "tier": "invariant",
+   "classification": "Judgment"
+  }
+ ]
+}

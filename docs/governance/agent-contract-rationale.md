@@ -386,7 +386,7 @@ OpenAI's piece as a high-status published artifact — do not misread
 the Gate 5 covenant as failing to keep up. The covenant is the product
 of choosing a different threat model, and the choice is on record.
 
-<!-- lifted-from: AGENTS.md#anti-vibing-mantra--relationship-to-the-rest-of-the-contract -->
+<!-- Lifted from AGENTS.md. The lift declaration was retired 2026-09-17 (GHI #921): the rewritten contract carries no forward pointer to this section, by operator ruling that a pointer never stands in for a rule. -->
 ## Anti-vibing mantra — relationship to the rest of the contract
 
 *Lifted from `AGENTS.md` § MAKE LLM STOCHASTIC VIBES INERT § Relationship
@@ -404,7 +404,7 @@ back on flawed approaches), § Attestation (ARB receipts as observed
 evidence) — are this mantra rendered as mechanical checks. When those
 checks are silent, the mantra is the conscience.
 
-<!-- lifted-from: AGENTS.md#operator-economy--why-this-is-canon -->
+<!-- Lifted from AGENTS.md. The lift declaration was retired 2026-09-17 (GHI #921): the rewritten contract carries no forward pointer to this section, by operator ruling that a pointer never stands in for a rule. -->
 ## Operator economy — why this is canon
 
 *Lifted from `AGENTS.md` § OPERATOR ECONOMY OF EFFORT § Why this is
@@ -468,7 +468,7 @@ OBPI-0.0.54-02.*
 missing receipt IDs are fail-closed. Fabricating a receipt ID is the
 same failure as fabricating the claim.
 
-<!-- lifted-from: AGENTS.md#stdlib-first-doctrine--rationale -->
+<!-- Lifted from AGENTS.md. The lift declaration was retired 2026-09-17 (GHI #921): the rewritten contract carries no forward pointer to this section, by operator ruling that a pointer never stands in for a rule. -->
 ## Stdlib-First doctrine — rationale
 
 *Lifted from `AGENTS.md` § STDLIB-FIRST DOCTRINE under GHI #327 follow-up.*

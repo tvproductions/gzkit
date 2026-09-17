@@ -178,7 +178,11 @@ class TestRunnerIsPinnedLikeEveryOtherVerifier(unittest.TestCase):
 
 
 class TestAgentContractMatchesCanon(unittest.TestCase):
-    """`AGENTS.md` § Attestation is the surface agents actually read.
+    """The `gz-arb` skill's invocation list is the surface agents actually read.
+
+    Until 2026-09-17 that list was a table in `AGENTS.md` § Attestation; the
+    operator ruled it out of the per-turn contract (GHI #921) and the contract now
+    points at the skill, so the lockstep witness follows the list to its home.
 
     This is the cause that had NO test. `gz validate --cli-alignment` resolves
     the `gz` verbs in a documented command but not the argv after `--`, so the
@@ -191,16 +195,17 @@ class TestAgentContractMatchesCanon(unittest.TestCase):
     """
 
     def _attestation_row_command(self) -> list[str]:
-        """Return the argv of the `Tests pass` row in § Attestation."""
-        for line in (_REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8").splitlines():
-            if line.startswith("| Tests pass |"):
-                cell = line.split("|")[2].strip()
-                return shlex.split(cell.strip("`"))
+        """Return the argv of the documented tests-pass invocation."""
+        skill = _REPO_ROOT / ".gzkit" / "skills" / "gz-arb" / "SKILL.md"
+        for line in skill.read_text(encoding="utf-8").splitlines():
+            stripped = line.strip().lstrip("- ").strip()
+            if stripped.startswith("`uv run gz arb step --name unittest --"):
+                return shlex.split(stripped.split("`")[1])
         return []
 
     def test_attestation_table_row_equals_the_canonical_command(self) -> None:
         argv = self._attestation_row_command()
-        self.assertNotEqual(argv, [], msg="No `Tests pass` row found in AGENTS.md § Attestation")
+        self.assertNotEqual(argv, [], msg="No tests-pass invocation found in gz-arb/SKILL.md")
 
         prefix = ["uv", "run", "gz", "arb", "step", "--name", "unittest", "--"]
         self.assertEqual(

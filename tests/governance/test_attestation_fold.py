@@ -121,46 +121,43 @@ class TestAttestationFold(unittest.TestCase):
         next_h2 = remainder.find("\n## ", 1)
         section = remainder if next_h2 == -1 else remainder[:next_h2]
 
-        expected_markers: dict[str, tuple[str, ...]] = {
-            "(a) em-dash pattern with provenance": (
-                "verbatim",
-                "concrete characterization",
+        # Operator ruling 2026-09-17 (GHI #921): the contract keeps the pattern,
+        # the lane behavior and a pointer; the canonical invocations, their
+        # applies-to list and the worked example are homed in the `gz-arb` skill,
+        # which loads when attestation evidence is being produced. The REQ
+        # semantic is that all five elements survive the fold and are reachable
+        # from the contract -- so (b), (c) and (e) are checked at their home,
+        # and the invocations are derived from CANONICAL_STEP_COMMANDS rather
+        # than restated here.
+        from gzkit.arb.validator import CANONICAL_STEP_COMMANDS  # noqa: PLC0415
+
+        skill = (REPO_ROOT / ".gzkit" / "skills" / "gz-arb" / "SKILL.md").read_text(
+            encoding="utf-8"
+        )
+        collapsed_skill = " ".join(skill.split())
+        lowered = section.lower()
+        checks: dict[str, bool] = {
+            "(a) operator words verbatim, then concrete evidence": (
+                "verbatim" in lowered and "evidence" in lowered
             ),
-            "(b) canonical invocations table (5 rows)": (
-                "Lint clean",
-                "Type check clean",
-                "Tests pass",
-                "Coverage floor",
-                "Docs build clean",
-                "arb-ruff-",
-                "arb-step-unittest-",
+            "(b) every canonical step command is listed at the list's home": all(
+                " ".join(argv) in collapsed_skill or f"gz arb {name}" in collapsed_skill
+                for name, argv in CANONICAL_STEP_COMMANDS.items()
+                if argv
             ),
-            "(c) applies-to list": (
-                "obpi complete",
-                "adr emit-receipt",
-                "git commit",
+            "(b') the contract points at that home": "gz-arb" in section,
+            "(c) applies-to list": all(
+                marker in collapsed_skill
+                for marker in ("obpi complete", "adr emit-receipt", "git commit")
             ),
-            "(d) lane behavior (Lite warn / Heavy fail-closed)": (
-                "Lite lane",
-                "warning",
-                "Heavy lane",
-                "fail-closed",
+            "(d) lane behavior (Lite warn / Heavy fail closed)": all(
+                marker in lowered for marker in ("lite", "warn", "heavy", "fail closed")
             ),
-            "(e) worked example": (
-                # OBPI-0.0.54-03 lifted the "### Worked example" heading and
-                # its inline content into docs/governance/agent-contract-rationale.md
-                # (map-not-encyclopedia doctrine — prohibited heading title).
-                # AGENTS.md now surfaces the guidance via the one-line pointer
-                # only. REQ semantic preserved: AGENTS.md surfaces worked-example
-                # guidance to the operator, now through the anchored link.
-                "agent-contract-rationale.md#attestation--worked-example",
+            "(e) worked example reachable": (
+                "agent-contract-rationale.md#attestation--worked-example" in skill
             ),
         }
-
-        missing: list[str] = []
-        for label, markers in expected_markers.items():
-            if not all(marker in section for marker in markers):
-                missing.append(f"{label}: markers={markers!r}")
+        missing = [label for label, ok in checks.items() if not ok]
 
         self.assertFalse(
             missing,

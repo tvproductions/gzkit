@@ -8,13 +8,36 @@ doctrine (ADR-0.0.54).*
 
 ## Anchor in AGENTS.md
 
-The Behavior Rules section in `AGENTS.md` has two subsections:
+Since the 2026-09-17 rewrite (GHI #921) `AGENTS.md` § Behavior Rules is one
+unnumbered list of plain rules; the Always/Never split and its numbers are
+gone from the rendered contract. The numbers live on in citations across
+rules, skills, dated records and code comments, so this legend is where an
+"Always #N" or "Never #N" citation resolves. The headings below keep the old
+numbers for the same reason.
 
-- **Always** — 15 numbered rules every agent must follow
-- **Never** — 7 numbered prohibitions every agent must respect
+| Old citation | Where the rule lives now |
+|---|---|
+| Always #1 (read AGENTS.md first) | Removed; the SessionStart hook loads orientation mechanically |
+| Always #2, #3, #4, #14; Never #4 | Removed as instructions that named no checkable action |
+| Always #5, #6 (subagents, 'Why') | § Behavior Rules — the subagent rule |
+| Always #7, #8 (ask when unsure; state assumptions) | § Behavior Rules — first rule |
+| Always #9 (inconsistencies) | § Behavior Rules — the disagreement rule |
+| Always #10 (push back) | § Behavior Rules — the push-back rule |
+| Always #11 (course-correction → insight) | § Behavior Rules — the `gz insights remember` rule |
+| Always #12 (`Eval-feedback-source:` trailer) | § Behavior Rules — the trailer rule |
+| Always #13 (`ghi-author`) | § Behavior Rules — the GHI-authoring rule |
+| Always #15 (match conventions) | § Behavior Rules — last rule |
+| Always #16, #17 (skills first; narrow skill scope) | § SKILLS FIRST |
+| Always #18 (surface blocking failures) | § Behavior Rules |
+| Never #1, #8 (Gate 5) | § Gate Covenant, second bullet; `governance-core.md` "Do not bypass Gate 5" |
+| Never #2 (ledger), #6 (hook blocks) | § Behavior Rules — the ledger-and-hooks rule |
+| Never #3 (artifact linkage) | § Pattern Discovery |
+| Never #5, #9 (pipeline stages, Step 4b) | `gz-obpi-pipeline/SKILL.md`; § OBPI Acceptance Protocol, the operator-only rule |
+| Never #7 (frontmatter is not completion) | § Behavior Rules — the completion-evidence rule |
+| Never #10 (`--no-verify`) | § Behavior Rules — the commit-through-hooks rule |
 
-The bindings are the bullets. This document is the rationale and the
-prose-narrative expansion the bullets used to carry inline.
+This document remains the rationale and the prose-narrative expansion the
+bullets used to carry inline.
 
 ## Always — prose expansions
 

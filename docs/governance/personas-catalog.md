@@ -1,6 +1,6 @@
 # Personas Catalog
 
-*Lifted from `AGENTS.md` § Persona under OBPI-0.0.54-02. The binding rule ("Every agent frame MUST include a Persona") remains canonical in AGENTS.md; the role-and-trait table is preserved here verbatim. Canonical source-of-truth is `.gzkit/personas/` (ADR-0.0.11, ADR-0.0.12); the table below is a navigational mirror.*
+*Lifted from `AGENTS.md` § Persona under OBPI-0.0.54-02. The binding rule ("Every agent frame MUST include a Persona") remains canonical in AGENTS.md; the role-and-trait table is preserved here as lifted, plus `flight-test-engineer` (added 2026-09-17; it had a persona file and no row). Canonical source-of-truth is `.gzkit/personas/` (ADR-0.0.11, ADR-0.0.12); the table below is a navigational mirror.*
 
 ## Discovery
 
@@ -16,6 +16,7 @@ Run `uv run gz personas list` to enumerate the active catalog from canon. Each p
 | `pipeline-orchestrator` | Pipeline coordination | ceremony-completion, stage-discipline, governance-fidelity |
 | `quality-reviewer` | Code quality review subagent | architectural-rigor, solid-principles, maintainability-assessment |
 | `spec-reviewer` | Spec compliance review subagent | independent-judgment, skepticism, evidence-based-assessment |
+| `flight-test-engineer` | Flight-test sortie pilot (`gz-flighttest`) | falsifier-precommitment, black-box-evidence, envelope-discipline, governed-path-fidelity, chase-deference |
 
 ## Related
 

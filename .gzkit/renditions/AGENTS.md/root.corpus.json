@@ -1,9 +1,9 @@
 {
   "algorithm": "sha256",
-  "corpus_fingerprint": "0a6de86c31b15883ea6221ad4d0b09ada5f42f73d4ce2f8aef2fc301f4c9806f",
-  "corpus_entry_count": 96,
-  "rendition_fingerprint": "f53831450e7f0a5457966e83a16f8be7b6fdb016b255e58946211109cdffc1ac",
-  "committed_ts": "2026-09-12T18:07:19.189504+00:00",
+  "corpus_fingerprint": "98f6583cdb229d1ef31d17476997c3881fa53a7b09cb030bb2db3a47a644f89c",
+  "corpus_entry_count": 285,
+  "rendition_fingerprint": "8ef75f32ffc2e512c187359aa90b7e3834903b5118a32ad45124ed157d1c6943",
+  "committed_ts": "2026-09-17T11:53:22.751660+00:00",
   "attestor": "g0",
-  "attestation_text": "get that into our known workflow zeitgeist so that something like `gz status` and any corresponding skill, or my simple inquiry about status all consider these frontiers"
+  "attestation_text": "every section should be corpus sourced and rendered from corpus — completion of the 2026-09-17 landing (GHI #921): nine bullets recaptured so the contract names the witness, source ADR/GHI and lane/kind axes that attested REQs require; generated rendition 19,112 B, 18,328 B invariant corpus text, 32 B of bare H1 headings; advisor receipt arb-step-judge-678a7249ccf84278a324b58906695821"
 }

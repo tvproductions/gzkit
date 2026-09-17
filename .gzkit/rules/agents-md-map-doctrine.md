@@ -7,11 +7,11 @@ paths:
 description: Map-not-encyclopedia shape invariant for per-turn agent instruction files (ADR-0.0.54)
 ---
 
-<!-- rule-version: 0.11.0 -->
+<!-- rule-version: 0.12.0 -->
 
 # Map-Not-Encyclopedia Doctrine (gzkit)
 
-> **Rule version:** `0.11.0` — § Budget's `0.10.0` claim that `project_doc_max_bytes` is a cap gzkit **cannot deliver** was FALSE and is withdrawn (GHI #962, reopened 2026-09-05): Codex loads a project-local `.codex/config.toml` in any trusted directory, gzkit sets the cap there, and delivery is now observed rather than inferred. Prior `0.10.0` inferred non-delivery from `codex doctor` naming only the global config source, and the resulting commit lowered the cap to Codex's default, re-creating the truncation GHI #815 had fixed. Prior `0.9.0` was the dead-pointer sweep under GHI #533 (2026-09-01) — the § Budget destination no longer routes through a closed tracker. Prior 0.8.0 was the diet pass under GHI #921 (operator ruling 2026-08-29, *"we are compressing everything and anything that the agent can consume"*). Version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#agents-md-map-doctrinemd). Binding rules unchanged.
+> **Rule version:** `0.12.0` — adds § Writing levers, the authoring tests for every per-turn surface, distilled from Matt Pocock's `writing-for-agents` skill and Anthropic's current prompting guidance (operator direction 2026-09-17). Prior versions lifted to [Rule Version History](../../docs/governance/rule-version-history.md#agents-md-map-doctrinemd). Binding rules unchanged.
 
 ## Invariant
 
@@ -61,6 +61,20 @@ Operator ruling 2026-08-17. **The discriminator is whether CANON changed — nev
 - **The transport never gates the attestation.** An operator ruling given in session and relayed verbatim via `--attestation-text` IS the attestation (AGENTS.md § Operator Doctrine, the TTY/PTY prohibition). "The operator is not at a terminal" is never a reason a chore cannot complete.
 
 **(Advisory — the implementation is inverted and no witness holds it.)** Measured 2026-08-17: `gz content remember` and `gz content retire` accept no `--attestor`; `gz content commit` requires one and fail-closes on empty. So the two acts this rule makes attested are ungated, and the one it exempts is gated. Reclassify when the verbs carry the granularity.
+
+## Writing levers
+
+Apply these when writing or trimming an `AGENTS.md` corpus entry, `CLAUDE.md`, a rule or a skill description. **(Advisory — no mechanical witness. Whether a sentence steers is settled by running the surface, not by reading it.)**
+
+- **Two loads.** Always-loaded text costs context on every turn; material behind a pointer costs the operator the memory that it exists. Spend context on what every task needs.
+- **Branch test.** Inline what every task needs. Put what only some tasks reach behind a pointer: a path-scoped rule, a skill, a doc. A rule that must steer every turn stays inline in full.
+- **Pointer wording.** A pointer says what the material is and when to reach it: "when producing attestation evidence, use the `gz-arb` skill". When a needed target is being missed, sharpen the pointer before inlining the material.
+- **Positive target.** State the behavior wanted. Keep a prohibition only as a hard guardrail with no positive phrasing, and pair it with the target.
+- **No-op hunt.** A sentence the model already obeys by default pays load to say nothing; delete the whole sentence. The default is model-relative, so a disagreement is settled by a run.
+- **Single source, and the environment counts.** One home per meaning. Restating what a config file, `--help` or the directory layout already says is a cache that goes stale; keep what cannot be found by looking: the convention, the reason, the gotcha.
+- **Co-location.** A concept's rule, its caveats and its witness sit under one heading.
+- **Leading words.** Reuse gzkit's established terms (witness, canon, derived view, coupled surface, direct fix) as tokens; do not re-explain them.
+- **A skill description is a pointer that never unloads.** A skill the agent need not reach on its own is user-invoked (`disable-model-invocation: true`) and costs no context. A router over model-invoked skills pays load for nothing.
 
 ## Related
 

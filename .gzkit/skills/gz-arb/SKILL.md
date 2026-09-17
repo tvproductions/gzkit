@@ -5,11 +5,11 @@ description: Wrap QA commands in ARB receipts for attestation evidence. Use when
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-08-08
+last_reviewed: 2026-09-17
 model: haiku
 gz_command: arb advise
 metadata:
-  skill-version: "1.2.1"
+  skill-version: "1.3.0"
 revived_on: "2026-04-14"
 revived_under: OBPI-0.25.0-33
 revival_note: "ARB surface absorbed from airlineops/opsdev/arb under OBPI-0.25.0-33. The earlier retirement (2026-04-03, 'consolidated into gz-check') was itself drift — gz check never implemented ARB receipt emission, so the rule contract in .gzkit/rules/arb.md was referencing a nonexistent surface. Revival restores parity with the rule."
@@ -31,7 +31,7 @@ Agent Self-Reporting middleware: wrap QA commands (ruff, ty, unittest, coverage)
 ## Workflow
 
 1. **Wrap the QA step via ARB** — pick the appropriate verb. For any claim
-   category named in `AGENTS.md` § Attestation § Canonical invocations,
+   category in the canonical list below (the list's home since 2026-09-17),
    use the canonical invocation from that table; those commands are locked
    by `CANONICAL_STEP_COMMANDS` and divergence is flagged by
    `gz arb validate` as non-canonical provenance (GHI #199).
@@ -45,6 +45,13 @@ Agent Self-Reporting middleware: wrap QA commands (ruff, ty, unittest, coverage)
      canonical for tests-pass claims
    - `uv run gz arb coverage run -m unittest discover -s tests -t .` —
      canonical for coverage-floor claims
+   - `uv run gz arb step --name mkdocs -- uv run mkdocs build --strict` —
+     canonical for docs-build-clean claims
+
+   The canonical invocations apply to `uv run gz obpi complete`,
+   `uv run gz adr emit-receipt`, any `gz` CLI attestation string, and
+   `git commit -m` messages. Worked example of an enriched attestation:
+   `docs/governance/agent-contract-rationale.md#attestation--worked-example`.
    - `uv run gz arb step --name <name> -- <command>` — any step not named
      in the canonical table (diagnostic or bespoke QA only; not valid
      attestation provenance)
@@ -68,12 +75,15 @@ Agent Self-Reporting middleware: wrap QA commands (ruff, ty, unittest, coverage)
 
 ```bash
 # Produce full attestation evidence for Heavy-lane closeout.
-# Each invocation below is the canonical form per
-# AGENTS.md § Attestation § Canonical invocations.
+# Each invocation below is the canonical form. This skill is the home of the
+# list since 2026-09-17; AGENTS.md § Attestation points here. Receipt name
+# prefixes: arb-ruff-, arb-step-typecheck-, arb-step-unittest-,
+# arb-step-coverage-, arb-step-mkdocs-.
 uv run gz arb ruff src tests
 uv run gz arb typecheck
 uv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer
 uv run gz arb coverage run -m unittest discover -s tests -t .
+uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
 uv run gz arb validate --limit 10
 uv run gz arb advise --limit 10
 ```

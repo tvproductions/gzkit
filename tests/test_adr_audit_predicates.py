@@ -154,7 +154,8 @@ class TestAgentsMatrixThirdAxis(unittest.TestCase):
         agents_md = (repo_root / "AGENTS.md").read_text(encoding="utf-8")
 
         # Heading is now the Universal OBPI Attestation section (ADR-0.0.36).
-        self.assertIn("Universal OBPI Attestation", agents_md)
+        # 2026-09-17 (GHI #921): the rule is a Gate Covenant bullet, not a heading.
+        self.assertIn("Gate 5 is universal", agents_md)
         # Sensitivity axis still named for gate-firing scope.
         self.assertIn("sensitivity", agents_md)
         # Source-of-truth citation present.

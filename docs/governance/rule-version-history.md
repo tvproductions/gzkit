@@ -318,6 +318,14 @@ verbatim:
 
 ## `agents-md-map-doctrine.md`
 
+### 0.12.0 — 2026-09-17
+
+**Adds § Writing levers.** Operator direction, verbatim: *"use the advise from pocock and read the whole thing, onboard some or all if useful."* The source is Matt Pocock's `writing-for-agents` skill (`github.com/mattpocock/skills`, MIT), read in full on 2026-09-17: `SKILL.md`, `SKILL-MECHANICS.md` and `agents/openai.yaml`. The section is a restatement in gzkit's terms, not a copy, and it keeps only the levers that bear on surfaces gzkit renders: the two loads, the branch test for inline versus disclosed material, pointer wording, positive phrasing, the no-op hunt, single source of truth including the environment, co-location, leading words, and the context cost of a model-invoked skill description. Its guidance on steps, completion criteria and splitting by sequence is skill-authoring procedure and was not onboarded here.
+
+It agrees with the Anthropic pages read the same day: *Prompting best practices* (§ Tool usage, § Add context to improve performance, § Migration considerations), *Prompting Claude Opus 5* (§ Task scope and over-verification) and the Claude Code memory page (§ Write effective instructions). The clause is advisory and says so: the source itself holds that whether a sentence is a no-op is settled by running the document, and gzkit has no behavioral witness for instruction text (GHI #943).
+
+The rule's `paths:` scope is unchanged. Widening it to the canonical authoring surfaces (`.gzkit/rules/*.md`, `.gzkit/skills/**`) would fan the whole rule into the generated nested `AGENTS.md` for those subtrees; measured with `_extract_subtree_prefix`, both patterns resolve to a subtree prefix.
+
 ### 0.11.0 — 2026-09-05
 
 **Withdraws `0.10.0` entirely. Its finding was false and the commit it justified was a regression.**
