@@ -225,9 +225,6 @@
         "codex": {
           "$ref": "#/$defs/vendorConfig"
         },
-        "gemini": {
-          "$ref": "#/$defs/vendorConfig"
-        },
         "opencode": {
           "$ref": "#/$defs/vendorConfig"
         }

@@ -229,7 +229,6 @@ class TestVendorsConfig(unittest.TestCase):
 
         config = VendorsConfig()
         self.assertFalse(config.codex.enabled)
-        self.assertFalse(config.gemini.enabled)
         self.assertFalse(config.opencode.enabled)
 
     def test_vendor_surface_roots(self) -> None:
@@ -238,8 +237,28 @@ class TestVendorsConfig(unittest.TestCase):
 
         config = VendorsConfig()
         self.assertEqual(config.codex.surface_root, ".agents")
-        self.assertEqual(config.gemini.surface_root, ".gemini")
         self.assertEqual(config.opencode.surface_root, ".opencode")
+
+    def test_retired_vendor__gemini__rejected_not_tolerated(self) -> None:
+        """A retired vendor key fails closed; gzkit ships no tolerating shim.
+
+        Gemini support was withdrawn 2026-09-16 and the operator ruled hard
+        removal over a DeprecationWarning shim (GHI #1016). ``extra="forbid"``
+        is the mechanism that makes the withdrawal observable instead of
+        silently ignoring a key the operator believes is still honored.
+        """
+        from pydantic import ValidationError
+
+        from gzkit.config import VendorsConfig
+
+        self.assertNotIn("gemini", VendorsConfig.model_fields)
+
+        with self.assertRaises(ValidationError) as caught:
+            VendorsConfig.model_validate({"gemini": {"enabled": True}})
+
+        errors = caught.exception.errors()
+        self.assertEqual(errors[0]["type"], "extra_forbidden")
+        self.assertEqual(errors[0]["loc"], ("gemini",))
 
 
 class TestGzkitConfigVendors(unittest.TestCase):
@@ -274,9 +293,9 @@ class TestGzkitConfigVendors(unittest.TestCase):
                     "surface_root": ".claude",
                     "instruction_format": "claude-rules",
                 },
-                "gemini": {
+                "codex": {
                     "enabled": True,
-                    "surface_root": ".gemini",
+                    "surface_root": ".agents",
                     "instruction_format": "generic",
                 },
             },
@@ -287,10 +306,9 @@ class TestGzkitConfigVendors(unittest.TestCase):
 
             config = GzkitConfig.load(Path(f.name))
             self.assertTrue(config.vendors.claude.enabled)
-            self.assertTrue(config.vendors.gemini.enabled)
-            self.assertFalse(config.codex.enabled) if hasattr(config, "codex") else None
+            self.assertTrue(config.vendors.codex.enabled)
             # Unspecified vendors get defaults
-            self.assertFalse(config.vendors.codex.enabled)
+            self.assertFalse(config.vendors.opencode.enabled)
 
     def test_canonical_check__config_vendors_claude_enabled(self) -> None:
         """config.vendors.claude.enabled is the canonical vendor check."""

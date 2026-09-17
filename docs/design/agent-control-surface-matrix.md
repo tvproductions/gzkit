@@ -57,7 +57,6 @@ Used for gzkit sync parity planning and vendor-alignment ADR scoping.
 - `ADR-pool.vendor-alignment-claude-code` — Claude Code surface alignment
 - `ADR-pool.vendor-alignment-codex` — Codex CLI surface alignment
 - `ADR-pool.vendor-alignment-copilot` — Copilot surface alignment
-- `ADR-pool.vendor-alignment-gemini-cli` — Gemini CLI surface alignment
 - `ADR-pool.vendor-alignment-opencode` — OpenCode surface alignment
 <!-- gz-validate-skip: command-shape -->
 - `ADR-pool.universal-agent-onboarding` — Vendor-neutral `gz onboard` command

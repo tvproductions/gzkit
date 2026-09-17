@@ -46,7 +46,7 @@ This is not a metaphor. gzkit satisfies every property of a headless CMS:
 | Event store | `.gzkit/ledger.jsonl` (append-only JSONL, or DB) |
 | Content API | `gz state`, `gz status`, `gz validate` (read); `gz plan`, `gz attest` (write) |
 | Template engine | `gz agent sync control-surfaces` |
-| Rendered outputs | `.claude/`, `.github/`, `.agents/`, `GEMINI.md`, `opencode.json` |
+| Rendered outputs | `.claude/`, `.github/`, `.agents/` |
 | Admin interface | `gz status --table`, `gz state --json` |
 | Configuration | `.gzkit/manifest.json` (Pydantic-validated) |
 

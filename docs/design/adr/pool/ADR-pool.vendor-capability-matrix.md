@@ -248,8 +248,8 @@ those ADRs consume.
 - **Related**: ADR-0.0.8-feature-toggle-system,
   ADR-pool.vendor-alignment-codex, ADR-0.44.0-vendor-alignment-codex,
   ADR-pool.vendor-alignment-claude-code, ADR-pool.vendor-alignment-copilot,
-  ADR-pool.vendor-alignment-gemini-cli, ADR-pool.vendor-alignment-opencode,
-  ADR-pool.universal-agent-onboarding, ADR-pool.harness-aware-execution-modes.
+  ADR-pool.vendor-alignment-opencode, ADR-pool.universal-agent-onboarding,
+  ADR-pool.harness-aware-execution-modes.
 
 ---
 

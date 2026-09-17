@@ -52,12 +52,6 @@ class VendorsConfig(BaseModel):
         ),
         description="OpenAI Codex agent surface",
     )
-    gemini: VendorConfig = Field(
-        default_factory=lambda: VendorConfig(
-            enabled=False, surface_root=".gemini", instruction_format="generic"
-        ),
-        description="Google Gemini CLI agent surface",
-    )
     opencode: VendorConfig = Field(
         default_factory=lambda: VendorConfig(
             enabled=False, surface_root=".opencode", instruction_format="generic"

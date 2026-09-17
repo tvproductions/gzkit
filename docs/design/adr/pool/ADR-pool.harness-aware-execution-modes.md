@@ -330,7 +330,6 @@ forcing premature meta-layer abstraction.
   - ADR-pool.vendor-alignment-claude-code (Mode 2 specifics)
   - ADR-pool.vendor-alignment-codex (Mode 1 adaptation for Codex)
   - ADR-pool.vendor-alignment-copilot (Mode 1 adaptation for Copilot)
-  - ADR-pool.vendor-alignment-gemini-cli (Mode 1 adaptation for Gemini)
   - ADR-pool.vendor-alignment-opencode (Mode 1 adaptation for OpenCode)
 - **Related**:
   - ADR-pool.universal-agent-onboarding (`gz onboard` is a Mode 1 entry
