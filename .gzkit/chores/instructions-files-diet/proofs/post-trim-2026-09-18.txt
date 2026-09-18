@@ -1,0 +1,38 @@
+instructions-files-diet post-trim — 2026-09-18 (operator-on-demand run opened 2026-09-17; HEAD a139a198a)
+A dated record. Re-derive; never cite these figures as authority. Baseline: proofs/baseline-2026-09-17.txt.
+
+§ 1 Render — bytes per consumer
+  root: AGENTS.md 19872 B (baseline 48511 B; -28639 B, -59.0 %), generated from the corpus
+  (emitted 19084 + structure 756 + carried 32 = two bare H1 lines, GHI #1018); playback byte-identical to
+  .gzkit/renditions/AGENTS.md/root.md; gz validate --invariant-coherence, --rendition-freshness,
+  --rendition-floor-coherence exit 0.
+
+Per-turn load, Claude Code (scratch script measure_load2.py, read-only; user-invoked skills excluded)
+                                          baseline   post-trim
+  AGENTS.md                                  48511      19872
+  CLAUDE.md                                   2554       2014
+  .claude/rules/governance-core.md            8550          0   (folded into AGENTS.md, rule deleted)
+  project skill descriptions                 17561      13304   (71 -> 60 listed; 9 routers + 2 prior user-invoked)
+  total repo-controlled per-turn             77176      35190   (-41986 B, -54.4 %)
+
+Session start
+  scripts/session_orientation.py stdout      21622      22571   (not in this run's scope; grows with the campaign text)
+
+On first edit under a path (nested AGENTS.md chain + path-scoped .claude/rules mirrors)
+                                          baseline   post-trim
+  tests/**.py                                73681      46753
+  src/gzkit/commands/**.py                  104623      80434
+  src/gzkit/governance/**.py                 78607      63748
+  docs/design/adr/**/obpis/*                 70335      55476
+  .gzkit/skills/**                           72152      32746
+  .gzkit/rules/**                            58756      19280
+  .gzkit/chores/**                           41506      13640
+  docs/governance/**                         14465      14723   (agent-failure-modes 0.8.0 grew 28 B x2; re-sourced, not trimmed)
+  The nested/mirror pairs still deliver each rule twice to Claude (GHI #1021, filed this run).
+
+Surfaces landed (each ruled by the operator on a full before/after; rulings verbatim in CHORE-LOG.md)
+  AGENTS.md 48511 -> 19872 (corpus-sourced, generated); CLAUDE.md 2554 -> 2014; governance-core.md 8598 -> folded;
+  tests.md 24015 -> 10551; token-block-discipline.md 14118 -> 7049; task-discovery.md 13949 -> 6527 (+ scope
+  narrowed); agents-md-map-doctrine.md 11982 -> 7083; cli.md 11949 -> 6893; skill-surface-sync.md 11719 -> 5785;
+  .gzkit/rules/*.md total 224645 -> 145252 B. Not reached: the 15000 destination for AGENTS.md (bullet-retention
+  pins ten mechanical-scope rows, GHI #1020; five operator rulings held verbatim by instruction).

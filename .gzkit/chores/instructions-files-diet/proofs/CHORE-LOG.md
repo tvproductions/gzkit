@@ -3402,3 +3402,507 @@ as user-invoked). `gz-obpi-pipeline` stays model-invoked (not recommended to cha
 Defect recorded via `gz insights remember`: gz-justify's body and gz-obpi-pipeline's Confidence Gate still use
 the retired "<90%" framing and cite a Prime Directive invariant 11 that no longer exists — body rewrite not
 in this ruling.
+## 2026-09-18T04:06:00-05:00
+- Status: FAIL
+- Chore: instructions-files-diet
+- Title: Instructions & Memory Files Diet (Progressive Disclosure)
+- Lane: lite
+- Version: 3.3.0
+- Criteria Results:
+  - [PASS] `uv run gz validate --invariant-coherence` => rc=0 (0.24s) -- exit 0 == 0
+  - [PASS] `uv run gz validate --advisory-scorecard` => rc=0 (0.25s) -- exit 0 == 0
+  - [PASS] `uv run gz validate --documents --surfaces` => rc=0 (0.74s) -- exit 0 == 0
+  - [PASS] `uv run gz lint` => rc=0 (0.78s) -- exit 0 == 0
+  - [PASS] `uv run mkdocs build --strict` => rc=0 (4.41s) -- exit 0 == 0
+  - [FAIL] `uv run -m unittest -q` => rc=124 (120.00s) -- Timed out after 120s
+
+```text
+[uv run gz validate --invariant-coherence] stdout:
+Validated: invariant_coherence
+
+✓ All validations passed (1 scopes).
+[uv run gz validate --advisory-scorecard] stdout:
+Validated: advisory_scorecard
+
+✓ All validations passed (1 scopes).
+[uv run gz validate --documents --surfaces] stdout:
+Validated: surfaces, documents
+
+✓ All validations passed (2 scopes).
+[uv run gz lint] stdout:
+Running linters...
+All checks passed!
+
+ADR path contract check passed.
+No Path(__file__).parents[N] violations found.
+Lint passed.
+[uv run mkdocs build --strict] stderr:
+[31m │  ⚠  Warning from the Material for MkDocs team[0m
+[31m │[0m
+[31m │[0m  MkDocs 2.0, the underlying framework of Material for MkDocs,
+[31m │[0m  will introduce backward-incompatible changes, including:
+[31m │[0m
+[31m │  × [0mAll plugins will stop working – the plugin system has been removed
+[31m │  × [0mAll theme overrides will break – the theming system has been rewritten
+[31m │  × [0mNo migration path exists – existing projects cannot be upgraded
+[31m │  × [0mClosed contribution model – community members can't report bugs
+[31m │  × [0mCurrently unlicensed – unsuitable for production use
+[31m │[0m
+[31m │[0m  Our full analysis:
+[31m │[0m
+[31m │[0m  [4mhttps://squidfunk.github.io/mkdocs-material/blog/2026/02/18/mkdocs-2.0/[0m
+[0m
+INFO    -  Cleaning site directory
+INFO    -  Building documentation to directory: /Users/jeff/Documents/Code/gzkit/site
+INFO    -  The following pages exist in the docs directory, but are not included in the "nav" configuration:
+  - AGENTS.md
+  - CLAUDE.md
+  - config/gz-cookiecutter-python-stack.md
+  - drafts/claude-code-inventory.md
+  - drafts/claude-code-vs-codex-control-surface-parity.md
+  - drafts/ddd-palantir-ontology-design-note.md
+  - evals/ghi-closure-980-evaluation.md
+  - evals/gzkit-campaign-architecture-review-2026-08-17.md
+  - evals/gzkit-hexagonal-architecture-review-2026-08-17.md
+  - evals/gzkit_campaign_architecture_eval_prompt.md
+  - evals/gzkit_hexagonal_architecture_eval_prompt.md
+  - evals/obpi-review-984-evaluation.md
+  - evals/obpi-review-985-evaluation.md
+  - examples/presentations/index.md
+  - examples/presentations/complete-series-script.md
+  - examples/presentations/part1-script.md
+  - examples/presentations/part2-script.md
+  - examples/presentations/part3-script.md
+  - examples/presentations/part4-script.md
+  - examples/presentations/part5-script.md
+  - examples/presentations/part6-script.md
+  - examples/templates/req-template.md
+  - flighttest/README.md
+  - flighttest/flight-card-template.md
+  - flighttest/manifest.md
+  - flighttest/templates/campaign-instance.md
+  - flighttest/templates/flight-log.md
+  - governance/AGENTS.md
+  - governance/CLAUDE.md
+  - governance/acceptance-obligations.md
+  - governance/advisory-rules-audit.md
+  - governance/agent-contract-rationale.md
+  - governance/agent-control-surface-fidelity-doctrine.md
+  - governance/agent-control-surface-rendering-substrate.md
+  - governance/agents-md-doctrine.md
+  - governance/ai-governance-brief.md
+  - governance/ai-governance-research-gaps.md
+  - governance/ai-governance-research-literature.md
+  - governance/ai-governance-research-practice.md
+  - governance/ai-governance-research-regulation.md
+  - governance/ai-governance-verification.md
+  - governance/ai-governance.md
+  - governance/ai-governance.provenance.md
+  - governance/airlock-in-constellation-2026-06-30.md
+  - governance/airlock-in-hatch-2026-07-07.md
+  - governance/arb-middleware.md
+  - governance/attested-req-subject-retirement.md
+  - governance/behavior-rules.md
+  - governance/build-to-1.0-campaign-2026-06-10.md
+  - governance/build-to-1.0-campaign-2026-06-20.md
+  - governance/build-to-1.0-campaign-2026-06-30.md
+  - governance/build-to-1.0-campaign-2026-07-18.md
+  - governance/build-to-1.0-campaign-2026-08-16.md
+  - governance/capability-control-conversation-2026-09-11.md
+  - governance/capability-control-review-2026-09-12.md
+  - governance/chore-class-system.md
+  - governance/codex-interim-parity-2026-09-12.md
+  - governance/cross-platform-rationale.md
+  - governance/defect-fix-routing.md
+  - governance/distribution_baseline.md
+  - governance/distribution_invariant_catalog.md
+  - governance/enforcement-claim-nc-audit-2026-07-18.md
+  - governance/evidence-record-contract.md
+  - governance/exemption-control-triage.md
+  - governance/external-proving-ground-note-2026-06-24.md
+  - governance/externalized-metacognition-architecture-note-2026-06-24.md
+  - governance/foundation-triage-rubric.md
+  - governance/four-phases-of-work.md
+  - governance/ghi-triage-2026-07-21.md
+  - governance/governance-core-rationale.md
+  - governance/gpt-tuning.md
+  - governance/harness-engineering-appraisal.md
+  - governance/harness-loop-engineering-strategy-note-2026-06-23.md
+  - governance/health-audit-2026-09-12.md
+  - governance/hexagonal-architecture.md
+  - governance/historical-self-close-waivers.md
+  - governance/instructions-files-budget-history.md
+  - governance/layer-three-derived-views.md
+  - governance/ledger-correction-consumers.md
+  - governance/maintenance-guide.md
+  - governance/model-regression-taxonomy.md
+  - governance/model-selection-rationale.md
+  - governance/mpas-appropriation-analysis.md
+  - governance/obpi-attestation.md
+  - governance/obpi-review-churn-2026-09-08.md
+  - governance/okf-cms-knowledge-structure-note-2026-06-23.md
+  - governance/okf-rag-hybrid-design-note-2026-06-27.md
+  - governance/ontology-ownership-plane-doctrine.md
+  - governance/operator-economy.md
+  - governance/opus-tuning.md
+  - governance/personas-catalog.md
+  - governance/prime-directive.md
+  - governance/prior-art-scaffold-firewall-2026-06-14.md
+  - governance/req-scope-discipline.md
+  - governance/return-to-health-plan-2026-05-30.md
+  - governance/rnd-discipline.md
+  - governance/rule-version-history.md
+  - governance/rules-tools-audits-refactors-alignment.md
+  - governance/security-sensitivity-rationale.md
+  - governance/skill-surface-sync-rationale.md
+  - governance/skills-catalog.md
+  - governance/state-of-gzkit-2026-06-20.md
+  - governance/tests-rationale.md
+  - governance/token-block-doctrine.md
+  - governance/tool-skill-runbook-rationale.md
+  - governance/trust-doctrine.md
+  - governance/ultraplan-brief.md
+  - governance/uncovered-req-inventory-2026-08-22.md
+  - governance/untrusted-content.md
+  - governance/vocabulary-config-first-exorcism-GHI-615.md
+  - governance/work-phases-and-airlock.md
+  - governance/GovZero/obpi-pipeline-runbook.md
+  - governance/complexity/AGENTS.md
+  - governance/complexity/CLAUDE.md
+  - governance/complexity/authoring-guide-protocol.md
+  - governance/complexity/complexity-doctrine-rationale.md
+  - governance/complexity/complexity-thresholds-rationale.md
+  - governance/complexity/distilled-characteristics-2026-05-04.md
+  - governance/complexity/baselines/2026-05-04/baseline.summary.md
+  - governance/context-audit-2026-09-12/README.md
+  - governance/context-audit-2026-09-12/delivery-after-transient-publication.md
+  - governance/context-audit-2026-09-12/delivery.md
+  - governance/context-audit-2026-09-12/first-batch-review.md
+  - governance/context-audit-2026-09-12/root-doctrine.md
+  - governance/context-audit-2026-09-12/root-first.md
+  - governance/context-audit-2026-09-12/system-card-review.md
+  - governance/context-audit-2026-09-12/tests-rule.md
+  - governance/health-audit-2026-09-12-evidence/intent-0026.md
+  - governance/health-audit-2026-09-12-evidence/intent-033.md
+  - governance/health-audit-2026-09-12-evidence/intent-035.md
+  - governance/research_sources/0900001680afb122.md
+  - governance/research_sources/1-introduction-the-imperative-of-public-values-in-ai.md
+  - governance/research_sources/1680afaeba.md
+  - governance/research_sources/a-closer-look-at-the-existing-risks-of-generative-ai-mapping-the-who-what-and-how-of-real-world-inci.md
+  - governance/research_sources/advancing-accountability-in-ai-en.md
+  - governance/research_sources/ai-risk-management-framework-japanese-translation.md
+  - governance/research_sources/anthropics-responsible-scaling-policy-version-30.md
+  - governance/research_sources/artificial-intelligence-risk-management-framework-ai-rmf-10.md
+  - governance/research_sources/artificial-intelligence-risk-management-framework-generative-artificial-intelligence-profile.md
+  - governance/research_sources/arxiv-240614713.md
+  - governance/research_sources/arxiv-240714981.md
+  - governance/research_sources/asd-ste100-issue-9.md
+  - governance/research_sources/auditing-work-exploring-the-new-york-city-algorithmic-bias-audit-regime.md
+  - governance/research_sources/claude-4-system-card.md
+  - governance/research_sources/hai-ai-index-report-2025-chapter3-final.md
+  - governance/research_sources/hls20white20paper20final-v3.md
+  - governance/research_sources/introducing-the-oecd-ai-capability-indicators-en.md
+  - governance/research_sources/m-24-10-advancing-governance-innovation-and-risk-management-for-agency-use-of-artificial-intelligenc.md
+  - governance/research_sources/m-25-21-accelerating-federal-use-of-ai-through-innovation-governance-and-public-trust.md
+  - governance/research_sources/m-25-22-driving-efficient-acquisition-of-artificial-intelligence-in-government.md
+  - governance/research_sources/microsoft-word-ai-governance-tiimalasipaperi-arxivdocx.md
+  - governance/research_sources/nistai600-1genai-profileipd.md
+  - governance/research_sources/okf-rag-hybrid-knowledge-stack-cloud-code-transcript.md
+  - governance/research_sources/operator-system-card.md
+  - governance/research_sources/preparedness-framework-v2.md
+  - governance/research_sources/quantifying-detection-rates.md
+  - governance/research_sources/responsible-ai-governance-a-systematic-literature-review.md
+  - governance/research_sources/responsible-ai-governance-in-the-public-sector-explaining-contextual-dynamics-through-a-realist-synt.md
+  - governance/research_sources/responsible-use-guide.md
+  - governance/research_sources/steering-ais-future-en.md
+  - governance/research_sources/the-bureaucratic-challenge-to-ai-governance-an-empirical-assessment-of-implementation-at-us-federal.md
+  - governance/research_sources/the-governance-of-ai-companies-reconciling-purpose-with-profits.md
+  - harness-docs/GZK-GOV-007-ultrareview-and-gate-5.md
+  - harness-docs/expanding-the-bitter-lesson-for-agentic-software-development.md
+  - harness-docs/xhigh-measurement-protocol.md
+  - releases/PATCH-v0.24.3.md
+  - releases/PATCH-v0.25.10.md
+  - releases/PATCH-v0.25.11.md
+  - releases/PATCH-v0.25.12.md
+  - releases/PATCH-v0.25.13.md
+  - releases/PATCH-v0.25.14.md
+  - releases/PATCH-v0.25.15.md
+  - releases/PATCH-v0.25.16.md
+  - releases/PATCH-v0.25.17.md
+  - releases/PATCH-v0.25.18.md
+  - releases/PATCH-v0.25.19.md
+  - releases/PATCH-v0.25.7.md
+  - releases/PATCH-v0.25.8.md
+  - releases/PATCH-v0.25.9.md
+  - releases/PATCH-v0.26.0.md
+  - releases/PATCH-v0.26.1.md
+  - releases/PATCH-v0.26.2.md
+  - releases/PATCH-v0.26.3.md
+  - releases/PATCH-v0.26.4.md
+  - releases/PATCH-v0.26.5.md
+  - releases/PATCH-v0.26.6.md
+  - releases/PATCH-v0.27.0.md
+  - releases/PATCH-v0.27.1.md
+  - releases/PATCH-v0.28.1.md
+  - releases/PATCH-v0.30.0.md
+  - releases/PATCH-v0.30.1.md
+  - releases/PATCH-v0.30.2.md
+  - releases/PATCH-v0.33.1.md
+  - releases/PATCH-v0.33.2.md
+  - releases/PATCH-v0.33.3.md
+  - releases/PATCH-v0.34.0.md
+  - releases/PATCH-v0.34.1.md
+  - releases/PATCH-v0.34.2.md
+  - releases/PATCH-v0.34.3.md
+  - releases/PATCH-v0.34.4.md
+  - releases/PATCH-v0.34.5.md
+  - releases/PATCH-v0.34.6.md
+  - releases/PATCH-v0.34.7.md
+  - user/concepts/okf-navigation.md
+  - user/concepts/reporter-architecture.md
+  - user/concepts/subagent-pipeline.md
+  - user/concepts/task-overview.md
+  - user/manpages/adr-demote.md
+  - user/manpages/adr-evaluate.md
+  - user/manpages/adr-report.md
+  - user/manpages/airlock-in.md
+  - user/manpages/airlock-out.md
+  - user/manpages/airlock.md
+  - user/manpages/arb-advise.md
+  - user/manpages/arb-archive.md
+  - user/manpages/arb-coverage.md
+  - user/manpages/arb-patterns.md
+  - user/manpages/arb-red.md
+  - user/manpages/arb-ruff.md
+  - user/manpages/arb-step.md
+  - user/manpages/arb-ty.md
+  - user/manpages/arb-typecheck.md
+  - user/manpages/arb-validate.md
+  - user/manpages/arb.md
+  - user/manpages/check.md
+  - user/manpages/chores-advise.md
+  - user/manpages/chores-doctor.md
+  - user/manpages/chores-propose-ghi.md
+  - user/manpages/chores-show.md
+  - user/manpages/chores-status.md
+  - user/manpages/chores.md
+  - user/manpages/complexity-advise.md
+  - user/manpages/complexity-distill.md
+  - user/manpages/complexity-guide.md
+  - user/manpages/content.md
+  - user/manpages/context.md
+  - user/manpages/drift.md
+  - user/manpages/format.md
+  - user/manpages/frontmatter-reconcile.md
+  - user/manpages/governance-render.md
+  - user/manpages/handoff-archive.md
+  - user/manpages/handoff-authorize.md
+  - user/manpages/handoff-create.md
+  - user/manpages/handoff-decide.md
+  - user/manpages/handoff-list.md
+  - user/manpages/handoff-resume.md
+  - user/manpages/handoff-rulings.md
+  - user/manpages/handoff.md
+  - user/manpages/interview.md
+  - user/manpages/issue-file.md
+  - user/manpages/issue.md
+  - user/manpages/justify.md
+  - user/manpages/knowledge-generate.md
+  - user/manpages/knowledge-refresh.md
+  - user/manpages/knowledge.md
+  - user/manpages/ledger-correct.md
+  - user/manpages/ledger-corrections.md
+  - user/manpages/ledger-merge-driver.md
+  - user/manpages/lint.md
+  - user/manpages/mx-enter.md
+  - user/manpages/mx-exit.md
+  - user/manpages/mx.md
+  - user/manpages/obpi-adversary-workspace.md
+  - user/manpages/obpi-audit.md
+  - user/manpages/obpi-block.md
+  - user/manpages/obpi-complete.md
+  - user/manpages/obpi-dispatch.md
+  - user/manpages/obpi-lock-check.md
+  - user/manpages/obpi-lock-claim.md
+  - user/manpages/obpi-lock-list.md
+  - user/manpages/obpi-lock-release.md
+  - user/manpages/obpi-repudiate.md
+  - user/manpages/obpi-supersede.md
+  - user/manpages/obpi-unblock.md
+  - user/manpages/obpi-withdraw.md
+  - user/manpages/ontology-reach.md
+  - user/manpages/ontology-resense.md
+  - user/manpages/ontology-seams.md
+  - user/manpages/ontology-sense.md
+  - user/manpages/ontology-trace.md
+  - user/manpages/ontology.md
+  - user/manpages/permitted-entry.md
+  - user/manpages/personas-drift.md
+  - user/manpages/personas.md
+  - user/manpages/plan.md
+  - user/manpages/preflight.md
+  - user/manpages/readiness-evaluate.md
+  - user/manpages/roles.md
+  - user/manpages/skill-list.md
+  - user/manpages/skill-new.md
+  - user/manpages/smoke.md
+  - user/manpages/task-envelope-diagnose.md
+  - user/manpages/task-fanout.md
+  - user/manpages/test-shape.md
+  - user/manpages/test.md
+  - user/manpages/tidy.md
+  - user/manpages/typecheck.md
+  - user/manpages/upgrade.md
+  - user/manpages/validate.md
+  - user/skills/_TEMPLATE.md
+  - user/skills/airlineops-parity-scan.md
+  - user/skills/ghi-author.md
+  - user/skills/ghi-close.md
+  - user/skills/ghi-triage.md
+  - user/skills/gz-adr-autolink.md
+  - user/skills/gz-adr-promote.md
+  - user/skills/gz-adr-recon.md
+  - user/skills/gz-adr-sync.md
+  - user/skills/gz-advisor-qc.md
+  - user/skills/gz-agent-sync.md
+  - user/skills/gz-airlock.md
+  - user/skills/gz-check-config-paths.md
+  - user/skills/gz-chores.md
+  - user/skills/gz-competitor-radar.md
+  - user/skills/gz-complexity-distill.md
+  - user/skills/gz-complexity-guide.md
+  - user/skills/gz-content-compose.md
+  - user/skills/gz-content-remember.md
+  - user/skills/gz-context-diet.md
+  - user/skills/gz-context.md
+  - user/skills/gz-deps-upgrade.md
+  - user/skills/gz-flighttest.md
+  - user/skills/gz-foundation-triage.md
+  - user/skills/gz-governance.md
+  - user/skills/gz-health-audit.md
+  - user/skills/gz-insights-remember.md
+  - user/skills/gz-intent-trace.md
+  - user/skills/gz-issue-file.md
+  - user/skills/gz-justify.md
+  - user/skills/gz-manage.md
+  - user/skills/gz-migrate-semver.md
+  - user/skills/gz-mx.md
+  - user/skills/gz-obpi-brief-drift.md
+  - user/skills/gz-ontology.md
+  - user/skills/gz-project.md
+  - user/skills/gz-pythonic-pattern-apply.md
+  - user/skills/gz-pythonic-pattern-detect.md
+  - user/skills/gz-quality.md
+  - user/skills/gz-skill-router.md
+  - user/skills/gz-tech-debt-review.md
+  - user/skills/gz-tidy.md
+  - user/skills/gz-workflow.md
+  - user/storybook/from-init-to-first-attested-release.md
+INFO    -  Documentation built in 4.28 seconds
+[uv run -m unittest -q] stdout:
+declared event types: 2
+fired at least once:  1
+never fired:          1
+    b
+
+paired-event ratios (reported, not judged):
+    obpi_lock_claimed / obpi_lock_released: neither has ever fired
+    obpi_parked / obpi_unparked: neither has ever fired
+    airlock_in / airlock_out: neither has ever fired
+    mx_session_opened / mx_session_closed: neither has ever fired
+
+  A ratio is evidence for an operator ruling, never a verdict. What a
+  lopsided pair MEANS depends on which surface emits it — read the
+  producer before drawing a conclusion.
+
+re-baselined: 1 never-fired type(s)
+never-fired: 2 (baseline 2) — disclosure holds
+declared event types: 3
+fired at least once:  0
+never fired:          3
+    a
+    b
+    c
+
+paired-event ratios (reported, not judged):
+    obpi_lock_claimed / obpi_lock_released: neither has ever fired
+    obpi_parked / obpi_unparked: neither has ever fired
+    airlock_in / airlock_out: neither has ever fired
+    mx_session_opened / mx_session_closed: neither has ever fired
+
+  A ratio is evidence for an operator ruling, never a verdict. What a
+  lopsided pair MEANS depends on which surface emits it — read the
+  producer before drawing a conclusion.
+{"isolated_producer_execution": {"event_type": "c", "producer": "", "status": "unsupported", "ledger_sha256": "", "record_count": 0, "subject": "", "author_id": "", "obligation_ids": [], "error": ""}}
+{"isolated_producer_execution": {"event_type": "acceptance_recorded", "producer": "gzkit.acceptance_store.initialize", "status": "failed", "ledger_sha256": "", "record_count": 0, "subject": "", "author_id": "", "obligation_ids": [], "error": "FileNotFoundError: [Errno 2] No such file or directory: '/var/folders/7y/cvcpqqnj2_52yy4wl780kmqc0000gn/T/gzkit-ledger-producer-mkix_5z9/.gzkit/ledger.jsonl'"}}
+never-fired: 0 (baseline 0) — disclosure holds
+never-fired: 1 (baseline 1) — disclosure holds
+{"isolated_producer_execution": {"event_type": "acceptance_recorded", "producer": "gzkit.acceptance_store.initialize", "status": "verified", "ledger_sha256": "38beb71c02b4c9375b3f2f0f0555de7b3907f796570b93b95265952e550718b8", "record_count": 1, "subject": "OBPI-0.1.0-01-producer-probe", "author_id": "isolated-producer-probe", "obligation_ids": ["REQ-0.1.0-01-01"], "error": ""}}
+never-fired in live ledger: 1; isolated producers verified: 1
+declared event types: 1
+fired at least once:  0
+never fired:          1
+    acceptance_recorded
+
+paired-event ratios (reported, not judged):
+    obpi_lock_claimed / obpi_lock_released: neither has ever fired
+    obpi_parked / obpi_unparked: neither has ever fired
+    airlock_in / airlock_out: neither has ever fired
+    mx_session_opened / mx_session_closed: neither has ever fired
+
+  A ratio is evidence for an operator ruling, never a verdict. What a
+  lopsided pair MEANS depends on which surface emits it — read the
+  producer before drawing a conclusion.
+{"isolated_producer_execution": {"event_type": "acceptance_recorded", "producer": "gzkit.acceptance_store.initialize", "status": "verified", "ledger_sha256": "8f1b15810f0028063c10a4fc044b8001ab44bb6838ea4f20955b3c32ce3fca98", "record_count": 1, "subject": "OBPI-0.1.0-01-producer-probe", "author_id": "isolated-producer-probe", "obligation_ids": ["REQ-0.1.0-01-01"], "error": ""}}
+{"isolated_producer_execution": {"event_type": "unregistered_event", "producer": "", "status": "unsupported", "ledger_sha256": "", "record_count": 0, "subject": "", "author_id": "", "obligation_ids": [], "error": ""}}
+Owned section 'alpha-section' of 'Doc.md'. Unowned-byte floor fell from 83 to 26 (-57 B). Coverage: 2 live entries carry 2/2 content lines. Attested by g0: own
+Un-owned section 'doc-title' of 'Doc.md'. Unowned-byte floor rose from 26 to 65 (+39 B). Attested by g0: unown
+Un-owned section 'doc-title' of 'Doc.md'. Unowned-byte floor rose from 26 to 65 (+39 B). Attested by g0: concurrent probe for doc-title
+Un-owned section 'alpha-section' of 'Doc.md'. Unowned-byte floor rose from 65 to 122 (+57 B). Attested by g0: concurrent probe for alpha-section
+Refused: ADR-0.0.99-hand-placed-foundation declares `kind: foundation` but is
+absent from data/foundation_grandfather.json.
+  Why: the foundation kind is CLOSED (ADR-0.34.0 Foundation Sunset); only the
+grandfathered roster may enter Layer-2.
+  Fix: author this ADR as `kind: feature`, or promote it via `gz adr promote`.
+[uv run -m unittest -q] stderr:
+Refusing to re-baseline: the never-fired set grew. Disclose the new type deliberately rather than letting a re-run absorb it.
+POLICY BREACH: 1 declared event type(s) have no live occurrence, disclosure, or verified isolated producer: c
+  Why: a declared type with no producer is vocabulary that records nothing while reading as a modelled fact. Growth is allowed but must be visible — an undisclosed one is indistinguishable from a wired producer.
+  Next step: WIRE THE PRODUCER and verify actual production use or register a fresh isolated execution, or retire the declaration. ADR-0.0.73 BI #8 registers this surface as a shrink-ratchet -- 'a committed baseline the list can only decrease against' -- so raising 'baseline_count' is not a recovery step and is never an agent's move to make: it is the laundering the ratchet exists to refuse. Draining a type that now fires updates data/ledger_vocabulary_grandfather.json and 'baseline_count' in data/waiver_ratchet_registry.json DOWNWARD together; run this script with --report --write to compute the drained set, which refuses to write when the never-fired set has grown. If a newly declared type genuinely cannot be wired yet, that is an operator ruling on the ratchet, not a line an agent edits to clear its own gate (GHI #611 review, 2026-09-06).
+POLICY BREACH: 1 declared event type(s) have no live occurrence, disclosure, or verified isolated producer: acceptance_recorded
+  Why: a declared type with no producer is vocabulary that records nothing while reading as a modelled fact. Growth is allowed but must be visible — an undisclosed one is indistinguishable from a wired producer.
+  Next step: WIRE THE PRODUCER and verify actual production use or register a fresh isolated execution, or retire the declaration. ADR-0.0.73 BI #8 registers this surface as a shrink-ratchet -- 'a committed baseline the list can only decrease against' -- so raising 'baseline_count' is not a recovery step and is never an agent's move to make: it is the laundering the ratchet exists to refuse. Draining a type that now fires updates data/ledger_vocabulary_grandfather.json and 'baseline_count' in data/waiver_ratchet_registry.json DOWNWARD together; run this script with --report --write to compute the drained set, which refuses to write when the never-fired set has grown. If a newly declared type genuinely cannot be wired yet, that is an operator ruling on the ratchet, not a line an agent edits to clear its own gate (GHI #611 review, 2026-09-06).
+Refusing to re-baseline: the never-fired set grew. Disclose the new type deliberately rather than letting a re-run absorb it.
+POLICY BREACH: 1 declared event type(s) have no live occurrence, disclosure, or verified isolated producer: unregistered_event
+  Why: a declared type with no producer is vocabulary that records nothing while reading as a modelled fact. Growth is allowed but must be visible — an undisclosed one is indistinguishable from a wired producer.
+  Next step: WIRE THE PRODUCER and verify actual production use or register a fresh isolated execution, or retire the declaration. ADR-0.0.73 BI #8 registers this surface as a shrink-ratchet -- 'a committed baseline the list can only decrease against' -- so raising 'baseline_count' is not a recovery step and is never an agent's move to make: it is the laundering the ratchet exists to refuse. Draining a type that now fires updates data/ledger_vocabulary_grandfather.json and 'baseline_count' in data/waiver_ratchet_registry.json DOWNWARD together; run this script with --report --write to compute the drained set, which refuses to write when the never-fired set has grown. If a newly declared type genuinely cannot be wired yet, that is an operator ruling on the ratchet, not a line an agent edits to clear its own gate (GHI #611 review, 2026-09-06).
+[1/1] Test
+Error: the pending-transition journal '.gzkit/ownership/Doc.md.json.journal' is unreadable or malformed: the declaration at '.gzkit/ownership/Doc.md.json' is not the transition this witness would describe (unowned_byte_floor 125 != 26) -- a witness is derived from the state that landed, never from one that was hoped for.
+Why forbidden: an un-owning is completed from its journal, so a journal that cannot be proven to continue the live on-disk predecessor makes an interrupted raise unrecoverable and no further un-owning of this surface may proceed on top of it (REQ-0.35.0-04-02). No ledger witness was written by this run, and the journal is RETAINED.
+  Do NOT delete the journal and do NOT hand-edit the ownership declaration. Identify the interruption state from BOTH signals together -- the `floor_event_id` in '.gzkit/ownership/Doc.md.json' and whether `.gzkit/ledger.jsonl` carries the journal's `event_id` (`gz validate --ledger`):
+    - state A, floor_event_id equals the journal's `parent_event_id` and the ledger has no such row: nothing landed. Move the journal aside for the record, then re-run to start a fresh transition from the declaration on disk.
+    - state B or state C -- INDISTINGUISHABLE from disk, and the retry handles both the same way -- floor_event_id equals the journal's `event_id` and the ledger has no such row: the declaration ALREADY carries this transition, and what is outstanding is its durability barrier, its witness, or both. Re-run the same command; it re-establishes the barrier and appends the missing witness. This is the pair the retired advice treated as proof that nothing landed.
+    - state D, the ledger carries the journal's `event_id`: the transition completed and is witnessed. Re-run the same command. If the surface still carries the bytes the floor was measured against it clears the recovery material; if an editor has since changed them, it refuses naming state D AND state E and hands you the measured bytes -- the SOURCE axis is orthogonal to states A-D, so a witness settles the transition and says nothing about the source.
+  If the journal cannot be parsed at all its `event_id` is unreadable, so `floor_event_id` alone cannot separate state A from state B or state C: capture both files and ask the operator to rule.
+Error: the witness source declaration declares identity 'Other.md', but this transaction's target is 'Doc.md' ('.gzkit/ownership/Doc.md.json').
+Why forbidden: the target fixes ONE identity and its surface, declaration and journal paths for the whole transaction, and every snapshot consumed under its lock must agree with it. Adopting a second identity here would write and witness through paths chosen from different values, and `load_declaration` fails closed when a floor's witness names a surface its declaration does not (REQ-0.35.0-04-02). The journal is RETAINED at '.gzkit/ownership/Doc.md.json.journal', so the transition stays completable.
+  Re-run the same command. The identity is resolved at entry, so a retry either proceeds against the declaration as it now stands or refuses naming the conflict.
+/Users/jeff/Documents/Code/gzkit/src/gzkit/pipeline_runtime.py:388: DeprecationWarning: Brief 'brief.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+/Users/jeff/Documents/Code/gzkit/src/gzkit/pipeline_runtime.py:388: DeprecationWarning: Brief 'brief.md' lacks structured frontmatter fields (allowlist, reqs, verification); loading as LegacyBriefShape. Migrate to structured frontmatter per OBPI-0.0.37-04.
+  parsed = parse_brief(brief_path)
+Fidelity validation failed [surface-weight]: Surface weight limit exceeded
+File not written.
+```
+
+## 2026-09-18 — run closed out: criteria 1–5 PASS, criterion 6 TIMED OUT (recorded, not waived)
+
+`uv run gz chores run instructions-files-diet`: criteria 1–5 PASS; criterion 6 `uv run -m unittest -q` rc=124,
+"Timed out after 120s" — the runner's declared ceiling (`registry.json` `timeoutSeconds: 120`), not a test
+failure. The same suite ran green inside `uv run gz check` on the identical tree (`✓ All checks passed.`,
+10,456 tests, 99.4 s parallel) immediately before commit `a139a198a`. The serial run measured 84.92 s on
+2026-08-30 and now exceeds the ceiling: a fixed ceiling over a ratcheting workload, the shape `tests.md`
+§ General Rules names for the unit tier. 26 chores declare `timeoutSeconds: 120` and 22 carry the serial
+`unittest -q` criterion, so this is a class, routed to the operator rather than fixed by moving one number.
+`uv run gz chores audit --slug instructions-files-diet`: exit 0, log present. Post-trim proof:
+`proofs/post-trim-2026-09-18.txt` (per-turn 77,176 B → 35,190 B).
