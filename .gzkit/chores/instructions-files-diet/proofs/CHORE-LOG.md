@@ -3349,3 +3349,14 @@ retired rows included, so retiring an invariant entry cannot demote it to compre
 therefore compressed around their anchors (≈700 B saved) instead of removed (≈2,400 B). Reaching 15,000 needs
 an operator ruling on ADR-0.0.33 Invariant 1's verbatim clause, and the validator's retired-entry lookup is a
 defect to route (`src/**`).
+
+## 2026-09-17 — GHI #934 closed; six GHIs filed on the operator's word
+
+Operator: "Close GHI #934, then, File through ghi-author: (a) … (f) … then tests.md". #934 closed `fixed`
+citing `5adb751ee` with a per-surface cause→check table. Filed after the Step-0 prior-art lookup:
+#1019 GPT-6 Astra supersedes the GPT-5.6 entry; #1020 bullet-retention resolves a row's tier against retired
+rows first (owned by OBPI-0.35.0-10 Draft — routing recorded, close `superseded` awaits the operator);
+#1021 Claude double delivery (307,139 B of 361,504 B nested bytes also delivered via .claude/rules; siblings
+#921/#922 cross-linked); #1022 adopter template Gate 3/4 rows; #1023 a gz verb for BDD (enhancement,
+operator-ruled "file that for later"); #1024 12 src modules cite governance-core.md, one in a user-facing
+error message. None implemented (authoring-only invocation).
