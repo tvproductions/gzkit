@@ -3,10 +3,11 @@ name: gz-governance
 description: Namespace router → ADR/OBPI/ledger governance skills. Use to pick the governance intent before invoking the matched skill directly.
 category: agent-operations
 lifecycle_state: active
+disable-model-invocation: true
 owner: gzkit-governance
-last_reviewed: 2026-07-26
+last_reviewed: 2026-09-18
 metadata:
-  skill-version: "0.7.0"
+  skill-version: "0.8.0"
 model: haiku
 ---
 

@@ -1,13 +1,13 @@
 ---
 name: gz-flighttest
 persona: flight-test-engineer
-description: Drive one flight-test sortie against a target substrate to prove a gzkit workflow end-to-end. Use when running the flight-test program, when the user says "fly sortie S<N>", "run a flight test", "prove gzkit against <target>", or to advance a flight-test campaign. Executes one sortie per run — author card, obtain human Go/No-Go, fly the governed-path chain, collect black-box evidence, dispatch an independent Chase, debrief, and route squawks.
+description: Fly one flight-test sortie that proves a gzkit workflow end-to-end against a target substrate. Use when the operator says "fly sortie S<N>", "run a flight test" or "prove gzkit against <target>". One sortie per run, with a human Go/No-Go.
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-05
+last_reviewed: 2026-09-18
 metadata:
-  skill-version: "0.1.0"
+  skill-version: "0.1.1"
 model: sonnet
 ---
 

@@ -3,10 +3,11 @@ name: gz-quality
 description: Namespace router → quality and complexity skills. Use to pick the quality-check intent before invoking the matched concrete skill directly.
 category: agent-operations
 lifecycle_state: active
+disable-model-invocation: true
 owner: gzkit-governance
-last_reviewed: 2026-07-25
+last_reviewed: 2026-09-18
 metadata:
-  skill-version: "0.3.1"
+  skill-version: "0.4.0"
 model: haiku
 ---
 

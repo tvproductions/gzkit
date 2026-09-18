@@ -4,10 +4,11 @@ persona: spec-reviewer
 description: Namespace router → the four-axis health and integrity audit, read through four dimensions of agent movement (change point, jurisdiction, invariant, escalation). Use when the operator reports that gzkit feels "wobbly", misaligned, or that governance is not holding — or before a release, to check that declared mechanisms still fire. Routes to the concrete axis surfaces in a fixed cheapest-first order; owns the ordering rationale, the reading frame and the budget rule, not the analyses themselves.
 category: governance-infrastructure
 lifecycle_state: active
+disable-model-invocation: true
 owner: gzkit-governance
-last_reviewed: 2026-09-17
+last_reviewed: 2026-09-18
 metadata:
-  skill-version: "1.2.2"
+  skill-version: "1.3.0"
 model: sonnet
 ---
 

@@ -3,10 +3,11 @@ name: gz-manage
 description: Namespace router → repo and release management skills (git-sync, issues, releases, tidy, mx hangar). Use to pick the management intent before invoking the matched concrete skill directly.
 category: agent-operations
 lifecycle_state: active
+disable-model-invocation: true
 owner: gzkit-governance
-last_reviewed: 2026-07-12
+last_reviewed: 2026-09-18
 metadata:
-  skill-version: "0.5.0"
+  skill-version: "0.6.0"
 model: haiku
 ---
 

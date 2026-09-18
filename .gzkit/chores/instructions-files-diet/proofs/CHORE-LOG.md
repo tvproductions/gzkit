@@ -3390,3 +3390,15 @@ Full after presented (11,949 B → 6,893 B; anchors 76–82/85/86/91/93 verbatim
 ## 2026-09-17 — skill-surface-sync.md (ruled)
 
 Full after presented (11,719 B → 5,785 B; anchors 31/32/33/33a/33b/33c verbatim). Operator: "A".
+
+## 2026-09-18 — skill catalog (ruled)
+
+Measured: 71 skills, 15,434 B of description text loaded per Claude session, 2 already user-invoked.
+Operator "A" to (1) nine routers → `disable-model-invocation: true` (gz-chores, gz-governance, gz-quality,
+gz-manage, gz-project, gz-workflow, gz-context, gz-health-audit, gz-skill-router; 2,000 B) and (2) trim the
+long descriptions; then "A" to the six rewrites shown in full (gz-context-diet, gz-deps-upgrade, gz-issue-file,
+gz-justify, gz-flighttest, gz-intent-trace; 1,552 B saved; gz-rnd and gz-health-audit dropped from the list
+as user-invoked). `gz-obpi-pipeline` stays model-invoked (not recommended to change; operator did not ask).
+Defect recorded via `gz insights remember`: gz-justify's body and gz-obpi-pipeline's Confidence Gate still use
+the retired "<90%" framing and cite a Prime Directive invariant 11 that no longer exists — body rewrite not
+in this ruling.

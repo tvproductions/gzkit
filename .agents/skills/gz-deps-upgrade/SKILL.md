@@ -1,14 +1,14 @@
 ---
 name: gz-deps-upgrade
 persona: main-session
-description: Refresh the uv binary itself, global uv tools, Python 3.13.x runtime, pyproject.toml pins/floors, and uv.lock to current PyPI latest in one disciplined pass. Use this skill whenever the operator asks to "update deps", "upgrade dependencies", "refresh uv.lock", "bump python", "update python 3.13", "deps to latest", "update pyproject", "update uv", or any phrasing that asks for the project's dependency surface or toolchain to move forward to current upstream — even if they don't name uv or pyproject explicitly. Default tool when "update" / "upgrade" lands on Python tooling for this repo.
+description: Move the toolchain and dependencies to current upstream in one pass: uv itself, global uv tools, the Python 3.13.x runtime, `pyproject.toml` pins and `uv.lock`. Use when the operator asks to update or upgrade deps, Python, uv, pyproject or the lockfile.
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-06-22
+last_reviewed: 2026-09-18
 model: haiku
 metadata:
-  skill-version: "1.1.0"
+  skill-version: "1.1.1"
 ---
 
 # gz deps-upgrade

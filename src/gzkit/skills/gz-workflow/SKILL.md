@@ -3,10 +3,11 @@ name: gz-workflow
 description: Namespace router → end-to-end workflow skills (design through release). Use to pick the next workflow stage before invoking the matched concrete skill directly.
 category: agent-operations
 lifecycle_state: active
+disable-model-invocation: true
 owner: gzkit-governance
-last_reviewed: 2026-09-15
+last_reviewed: 2026-09-18
 metadata:
-  skill-version: "0.3.0"
+  skill-version: "0.4.0"
 model: haiku
 ---
 

@@ -1,13 +1,13 @@
 ---
 name: gz-issue-file
 persona: main-session
-description: Cross-repo defect/enhancement filing wrapper for gzkit-owned surfaces. Use from inside any consuming repository when surfacing a defect or enhancement against the `gz` CLI, schemas under `src/gzkit/schemas/`, validator scopes, ledger event semantics, files under `.gzkit/**` or `src/gzkit/**`, or rules under `.gzkit/rules/**`. Routes the issue at `tvproductions/gzkit` regardless of the consuming repo's `git remote`, auto-stamps a provenance trailer naming the consumer slug and gz version, and hard-rejects bodies that reference no gzkit-owned surface.
+description: File a defect or enhancement against gzkit from inside a consuming repository. Use when the finding is about the `gz` CLI, its schemas, validators, ledger events, or files under `.gzkit/**` or `src/gzkit/**`. Files at `tvproductions/gzkit` with a provenance trailer.
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-25
+last_reviewed: 2026-09-18
 metadata:
-  skill-version: "1.0.1"
+  skill-version: "1.0.2"
   govzero-framework-version: "v6"
 model: sonnet
 ---

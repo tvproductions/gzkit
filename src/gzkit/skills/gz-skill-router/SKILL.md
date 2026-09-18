@@ -4,10 +4,11 @@ persona: main-session
 description: Route agents to the correct skill for a given task type. Use when starting a session, when unsure which skill applies, or when an agent needs to discover the right workflow for a task.
 category: agent-operations
 lifecycle_state: active
+disable-model-invocation: true
 owner: gzkit-governance
-last_reviewed: 2026-09-15
+last_reviewed: 2026-09-18
 metadata:
-  skill-version: "6.4.0"
+  skill-version: "6.5.0"
   govzero-framework-version: "v6"
 model: haiku
 ---

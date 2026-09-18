@@ -3,10 +3,11 @@ name: gz-context
 description: Namespace router → context preservation and orientation skills, plus the focused-context loader `gz context <ADR-ID>`. Use to pick the context/handoff intent or to load one ADR's full context bundle (body + OBPI briefs + covering tests + governance rules) before invoking the matched concrete skill or piping payload to an agent harness.
 category: agent-operations
 lifecycle_state: active
+disable-model-invocation: true
 owner: gzkit-governance
-last_reviewed: 2026-07-13
+last_reviewed: 2026-09-18
 metadata:
-  skill-version: "0.5.0"
+  skill-version: "0.6.0"
 model: haiku
 ---
 

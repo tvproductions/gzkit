@@ -1,14 +1,14 @@
 ---
 name: gz-context-diet
 persona: main-session
-description: Trim per-turn agent context weight by lifting pedagogical narrative from AGENTS.md, CLAUDE.md, and .claude/rules/** to docs/governance/, leaving binding bullets and one-line pointers behind. Use when the per-turn contract surface has accreted multi-paragraph rationale and "Why this is canon" codas, when an operator asks for a "diet" or "progressive disclosure" pass on the agent contract, or when the advisory scorecard surfaces Judgment-class duplicates that can be folded into Mechanical neighbors. Thin trigger-discovery wrapper for the `instructions-files-diet` chore — the chore's `CHORE.md` carries the procedure.
+description: Trim per-turn instruction load (AGENTS.md, CLAUDE.md, `.claude/rules/**`) by lifting narrative to `docs/governance/`. Use when the operator asks for a "diet" or "progressive disclosure" pass, or a per-turn surface has accreted rationale prose. Wraps the `instructions-files-diet` chore.
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-25
+last_reviewed: 2026-09-18
 gz_command: chores show instructions-files-diet
 metadata:
-  skill-version: "1.1.1"
+  skill-version: "1.1.2"
 model: sonnet
 ---
 
