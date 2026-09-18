@@ -128,10 +128,16 @@ class MapDoctrineRuleAuthorship(unittest.TestCase):
             "rule-version markers disagree between HTML comment and block quote",
         )
 
+        # The semantic is that the rule NAMES each prohibited shape, wherever it
+        # states them — the five appear inside § Invariant's (i)-(v) list since
+        # rule 0.13.0 folded the "Five prohibited shapes" restatement into it
+        # (2026-09-17, GHI #921), so the match is case-insensitive rather than
+        # pinned to a heading's capitalization.
+        lowered = body.lower()
         for shape in _PROHIBITED_SHAPES:
             self.assertIn(
-                shape,
-                body,
+                shape.lower(),
+                lowered,
                 f"rule body MUST name prohibited shape: {shape}",
             )
 
