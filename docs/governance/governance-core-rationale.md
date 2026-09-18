@@ -1,6 +1,6 @@
 # Governance Core — Rationale
 
-Worked examples and measured instances lifted out of `.gzkit/rules/governance-core.md`
+Worked examples and measured instances lifted out of the former `.gzkit/rules/governance-core.md`, whose binding clauses were folded into root `AGENTS.md` on 2026-09-17 (GHI #921; operator ruling, verbatim: "it all seems pretty ad hoc, do option A") — see [Rule Version History](rule-version-history.md#governance-coremd) for the retirement record. Text below is unchanged from before the fold and reads `governance-core.md` as the rule's former home.
 by the `instructions-files-diet` chore on 2026-08-29 under GHI #921.
 
 `governance-core.md` is the only rule scoped `paths: "**/*"` — it loads on every edit in

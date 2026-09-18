@@ -91,7 +91,7 @@ Seed of the Article 10 coherence audit. Each row traces an article to the gzkit 
 
 | Article | Implementing gzkit surface | Status |
 |---|---|---|
-| 1 — Accountability is non-transferable | Universal OBPI attestation (ADR-0.0.36; `AGENTS.md` § Universal OBPI Attestation); canon-owner attestation directive (`.claude/rules/governance-core.md`); Charter § Authority Boundary | Implemented |
+| 1 — Accountability is non-transferable | Universal OBPI attestation (ADR-0.0.36; `AGENTS.md` § Universal OBPI Attestation); canon-owner attestation directive (`AGENTS.md` § Attestation); Charter § Authority Boundary | Implemented |
 | 2 — Authority must be instrumented, not asserted | Validator scopes (`gz validate`), pre-commit hooks, ARB middleware ([arb-middleware](../arb-middleware.md)), pipeline runtime; appraised in [harness-engineering-appraisal](../harness-engineering-appraisal.md) | Implemented — the operating thesis |
 | 3 — The model is a crew resource, not a crew member | Personas (`.gzkit/personas/`); push-back rule (`AGENTS.md` § Behavior Rules — Always #10); subagent doctrine (Always #5, #6) | Largely implemented |
 | 4 — Uncommanded change is an annunciation failure | OBPI brief Allowed Paths; `gz validate --brief-reconcile`; surgical-changes rule (`AGENTS.md` § DO IT RIGHT #11) | Partial — no post-run delivered-vs-commanded scope-conformance gate |

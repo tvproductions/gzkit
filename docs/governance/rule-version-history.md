@@ -17,6 +17,13 @@ anti-pattern guard, *"lighter ceremony is not a tradeoff axis."*
 
 ## `governance-core.md`
 
+### Retired 2026-09-17 at version `0.15.0` — folded into root `AGENTS.md`
+
+Operator ruling (verbatim): *"i am not sure why we have this as an additional file? why not just place this in AGENTS.md?"* … *"it all seems pretty ad hoc, do option A"* (GHI #921, `instructions-files-diet`). The rule was global (`paths: "**/*"`): Claude loaded it at launch every session, and Codex never received it because global rules are excluded from the nested `AGENTS.md` fan-out. Operator Doctrine names root `AGENTS.md` the sole rendered AgentContract for every harness, so a universal rule belongs there. Landed as corpus entries under attestation (`gz content remember` → `compose` → `commit`, attestation text the ruling above): illustrative values, verb resolution and `adr-status` regeneration in § Governance doctrine surfaces; externally-authored output in § Behavior Rules; attested-REQ retirement in § OBPI Acceptance Protocol; withdraw/repudiate in § Gate Covenant. Duplicates of `AGENTS.md` left with the rule (read AGENTS.md first; `uv run`; Gate 5; sacrosanct attestation; manual ledger edits; defects tracked). The six-step OBPI workflow order stays in `governance_runbook.md`. Rationale remains at [Governance Core — Rationale](governance-core-rationale.md). The rule's own stray corpus row (`.gzkit/corpus/.gzkit/rules/governance-core.md.jsonl`) was retired the same day. Final version note, verbatim:
+
+> **Rule version:** `0.15.0` — § Operator-doc verb resolution scope widened to the surfaces an agent executes from: chore docs (`.gzkit/chores/**/*.md`, `proofs/` excluded), `.gzkit/rules/**/*.md` and root `AGENTS.md` (GHI #1006). Version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#governance-coremd); worked examples and measured instances lifted to [Governance Core — Rationale](../../docs/governance/governance-core-rationale.md). This rule is scoped `**/*` and loads on every edit, so narrative is the most expensive thing it can carry.
+
+
 Lifted at version `0.8.0` (rule now at `0.8.1`).
 
 > **Rule version:** `0.8.0` — adds the instruction-source boundary to
@@ -64,6 +71,10 @@ Prior `0.12.0` — the MD-values bullet's remaining carve-out is **measured rath
 `0.15.0` widens § Operator-doc verb resolution to chore docs, rules and root `AGENTS.md` (GHI #1006). `gz-chore-runner` Step 5 has an agent follow a CHORE.md, and rules and the root contract load into every session, yet none was scanned: measured 2026-09-13, 8 unresolvable `gz` chains stood in 4 chores (`complexity-reduction-xenon` still named `gz complexity-advise` after the verb landed as `gz complexity advise`); rules and `AGENTS.md` carried 0. `audit_manpage_alignment` now reads the same enumeration rather than a copy of it.
 
 ## `cli.md`
+
+### Lifted 2026-09-17 at version `0.8.0` (rule now at `0.8.1`)
+
+Patch: the pointer to `governance-core.md` § Operator-doc verb resolution now names `AGENTS.md` § Governance doctrine surfaces, the clause's home since the rule was folded into the root contract (GHI #921). No other change.
 
 Lifted at version `0.7.0` (rule now at `0.8.0`).
 
@@ -312,6 +323,22 @@ verbatim:
 > AGENTS.md § Never #1 (operator-verbatim attestation + audit), per the
 > canon-owner attestation declaration.
 
+### Lifted 2026-09-17 at version `0.7.0` (rule now at `0.8.0`)
+
+> **Rule version:** `0.7.0` — scored for real under GHI #921 (2026-08-30). This rule sat in `data/advisory_scorecard_grandfather.json`, pinned at `0.6.2` against a version nobody recorded; the pin is stripped by any edit, so its clauses were re-read and its Coverage Ledger rows added or corrected in the same commit. Prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#agent-failure-modesmd). Binding rules unchanged.
+
+Card lineage at the `0.8.0` rotation (GHI #934): the Mythos-tier source moved
+from the Claude Fable 5 / Mythos 5 System Card (2026-06-09; §§ 2.3.3 real-usage
+failure tags with cluster counts, 6.1.2, 6.3.5 diligence evaluations, 6.4.1
+white-box vignettes) to the Claude Fable 5.1 & Claude Mythos 5.1 System Card
+(2026-09-01; §§ 2.3.3 qualitative shortcomings, 6.2.1 deployment monitoring,
+6.4.2–6.4.5 audit dimensions, 6.6.1 white-box clusters). The 5.1 card carries no
+cluster counts and no diligence-evaluation rates; those figures left live
+doctrine with the card. Backstop citations repointed from `Always/Never #N` and
+`DO IT RIGHT 6a` (the pre-2026-09-17 numbering) to the rule names in the
+rewritten `AGENTS.md`; `6a` resolves to DO IT RIGHT #1 ("Fix the class of
+failure, not the instance"), per the 2026-04-30 text that first cited it.
+
 ### Lifted 2026-08-30 at version `0.6.2` (rule now at `0.7.0`)
 
 > **Rule version:** `0.6.2` — Fable/Mythos 5 card consumed (GHI #751): patterns 1–6 now carry direct current-generation observations — the card's own § 2.3.3 failure tags use this taxonomy's vocabulary (`Safeguard circumvention` / `Fabrication` / `Skipped cheap verification` / `Reckless action` / `Correction fails`) with real-usage cluster frequencies — and pattern 9 gains Anthropic-side corroboration (§§ 6.1.2, 6.4.1.2: grader-satisfying reasoning, almost never verbalized). Prior `0.6.1` — re-sourced to current-card-only citations; origin lineage lifted to [Rule Version History](../../docs/governance/rule-version-history.md#agent-failure-modesmd). Patterns and backstops unchanged since `0.6.0` (nine patterns).
@@ -446,6 +473,10 @@ Lifted 2026-08-29 at version `0.6.0` (rule now at `0.7.0`).
 > **Rule version:** `0.6.0` — GHI #764: adds § Binding Sub-Invariant 7 (the exchange record carries an observation report). The record is two things by operator canon — the fact of block vacation AND an observation report of what happened during possession — and only the first half was implemented: the completion writer had three content inlets for seven sections, so four sections emitted boilerplate byte-identical across all 33 records on disk, and those four are the observation report's own subject matter. The implementation summary was also filed under `## Pending Work / Open Loops`, a prospective heading for retrospective content. Inlets are OPTIONAL and sourced from the brief, so GHI #619's input-free floor is unchanged. Prior `0.5.0` — GHI #763: the token block's register entry is an **exchange record**, named and stored as one. It lived in `.gzkit/handoffs/` under session-handoff identifiers, so system membership had to be *inferred* from a shared word, path, and directory rather than read from a discriminator — and was inferred wrongly twice in one session. Records now live in `.gzkit/locks/exchange/` (location types membership), the writers/finder are `exchange`-named in `gzkit.exchange_records`, and `--lock-handoff-coupling` survives as a deprecated alias of `--lock-exchange-coupling`. § Sub-Invariant 5's predicate is now **default-deny**: it admits only the shape an exchange writer emits, so a document kind nobody admitted is refused without having to be enumerated first. The ledger payload key `handoff_path` is FROZEN on the wire — 204 append-only events carry it. Prior `0.4.0` — GHI #756: § Binding Sub-Invariant 5 now names `mode: CHECKPOINT` as a third disqualifier alongside `abandoned: true`. `mode` was `Literal["CREATE", "RESUME"]` and `find_exchange_for_release` never read it, so once the mid-flight bookmark mode existed, a bookmark postdating the claim would have satisfied the release precondition — a token surrendered on the evidence of a session that never departed. The predicate now skips checkpoints at the live gate and `gz validate --lock-exchange-coupling` backstops it on ledger replay. Prior `0.3.1` — diet pass (operator ruling 2026-08-02): lifted § Vocabulary, § Cross-Links, and § Audit Path to `docs/governance/token-block-doctrine.md` (correcting the retired "5:1 governance ratio" citation in transit); binding sub-invariants unchanged. Prior `0.3.0` — added § Binding Sub-Invariant 6 (completion surrender is mechanical): `gz obpi complete` (and the `gz obpi pipeline` sync stage that invokes it) writes the register-entry handoff and releases any held lock automatically (GHI #619), so the token's exit edge no longer requires an operator-authored handoff or a manual `gz obpi lock release`. This does NOT relax Sub-Invariant 5 — completion produces the register entry mechanically rather than demanding the operator author one; the fail-closed manual release path is unchanged for mid-traversal surrender. Prior `0.2.0` — Sub-Invariant 2 minimum-information channels are now named per-field: items 1/2/4 are frontmatter keys, item 3 is the `## Decisions Made` body section. Resolves the rule↔validator↔producer drift where the prose said "frontmatter or body" but both `gz validate --lock-exchange-coupling` and the machine-generated reaping handoff already use frontmatter. Prior `0.1.1` — trimmed railway-history pedagogy while preserving all lock-release and handoff invariants.
 
 ## `tool-skill-runbook-alignment.md`
+
+### Lifted 2026-09-17 at version `0.5.0` (rule now at `0.5.1`)
+
+Patch: the pointer to `governance-core.md` § Operator-doc verb resolution now names `AGENTS.md` § Governance doctrine surfaces, the clause's home since the rule was folded into the root contract (GHI #921). No other change.
 
 Lifted 2026-08-29 at version `0.4.0` (rule now at `0.5.0`).
 

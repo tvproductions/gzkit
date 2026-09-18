@@ -29,7 +29,7 @@ numbers for the same reason.
 | Always #15 (match conventions) | § Behavior Rules — last rule |
 | Always #16, #17 (skills first; narrow skill scope) | § SKILLS FIRST |
 | Always #18 (surface blocking failures) | § Behavior Rules |
-| Never #1, #8 (Gate 5) | § Gate Covenant, second bullet; `governance-core.md` "Do not bypass Gate 5" |
+| Never #1, #8 (Gate 5) | § Gate Covenant, second bullet ("Gate 5 is universal") |
 | Never #2 (ledger), #6 (hook blocks) | § Behavior Rules — the ledger-and-hooks rule |
 | Never #3 (artifact linkage) | § Pattern Discovery |
 | Never #5, #9 (pipeline stages, Step 4b) | `gz-obpi-pipeline/SKILL.md`; § OBPI Acceptance Protocol, the operator-only rule |

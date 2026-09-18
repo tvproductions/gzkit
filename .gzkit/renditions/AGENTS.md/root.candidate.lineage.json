@@ -122,11 +122,12 @@
       "corpus-behavior-rules-2026-09-17T11:39:32.196977+00:00",
       "corpus-behavior-rules-2026-09-17T11:39:32.349047+00:00",
       "corpus-behavior-rules-2026-09-17T11:39:32.504623+00:00",
-      "corpus-behavior-rules-2026-09-17T11:39:32.658167+00:00"
+      "corpus-behavior-rules-2026-09-17T11:39:32.658167+00:00",
+      "corpus-behavior-rules-2026-09-18T01:34:15.392875+00:00"
     ],
     "byte_span": [
       4455,
-      6131
+      6633
     ]
   },
   "pattern-discovery": {
@@ -136,8 +137,8 @@
       "corpus-pattern-discovery-2026-09-17T11:39:32.963957+00:00"
     ],
     "byte_span": [
-      6131,
-      6402
+      6633,
+      6904
     ]
   },
   "skills": {
@@ -146,8 +147,8 @@
       "corpus-skills-2026-09-17T11:39:33.116462+00:00"
     ],
     "byte_span": [
-      6402,
-      6567
+      6904,
+      7069
     ]
   },
   "gate-covenant": {
@@ -158,11 +159,12 @@
       "corpus-gate-covenant-2026-09-17T11:53:08.884773+00:00",
       "corpus-gate-covenant-2026-09-17T11:53:09.031527+00:00",
       "corpus-gate-covenant-2026-09-17T11:53:09.178513+00:00",
-      "corpus-gate-covenant-2026-09-17T11:53:09.330270+00:00"
+      "corpus-gate-covenant-2026-09-17T11:53:09.330270+00:00",
+      "corpus-gate-covenant-2026-09-18T01:34:15.687159+00:00"
     ],
     "byte_span": [
-      6567,
-      8214
+      7069,
+      9240
     ]
   },
   "obpi-acceptance-protocol": {
@@ -172,11 +174,12 @@
       "corpus-obpi-acceptance-protocol-2026-09-17T11:53:09.620341+00:00",
       "corpus-obpi-acceptance-protocol-2026-09-17T11:53:09.765681+00:00",
       "corpus-obpi-acceptance-protocol-2026-09-17T11:53:09.913095+00:00",
-      "corpus-obpi-acceptance-protocol-2026-09-17T11:53:10.057206+00:00"
+      "corpus-obpi-acceptance-protocol-2026-09-17T11:53:10.057206+00:00",
+      "corpus-obpi-acceptance-protocol-2026-09-18T01:34:15.540676+00:00"
     ],
     "byte_span": [
-      8214,
-      9296
+      9240,
+      10762
     ]
   },
   "execution-rules": {
@@ -190,8 +193,8 @@
       "corpus-execution-rules-2026-09-17T11:39:35.836579+00:00"
     ],
     "byte_span": [
-      9296,
-      10834
+      10762,
+      12300
     ]
   },
   "attestation": {
@@ -202,8 +205,8 @@
       "corpus-attestation-2026-09-17T11:39:36.310597+00:00"
     ],
     "byte_span": [
-      10834,
-      11841
+      12300,
+      13307
     ]
   },
   "defect-fix-routing": {
@@ -215,8 +218,8 @@
       "corpus-defect-fix-routing-2026-09-17T11:39:36.944710+00:00"
     ],
     "byte_span": [
-      11841,
-      12699
+      13307,
+      14165
     ]
   },
   "control-surfaces": {
@@ -225,16 +228,16 @@
       "corpus-control-surfaces-2026-09-17T11:39:37.113322+00:00"
     ],
     "byte_span": [
-      12699,
-      12965
+      14165,
+      14431
     ]
   },
   "local-agent-rules": {
     "owned": false,
     "entry_ids": [],
     "byte_span": [
-      12965,
-      12985
+      14431,
+      14451
     ]
   },
   "operator-doctrine-verbatim-canon": {
@@ -252,29 +255,32 @@
       "corpus-operator-doctrine-verbatim-canon-2026-09-17T11:39:38.647120+00:00"
     ],
     "byte_span": [
-      12985,
-      16694
+      14451,
+      18160
     ]
   },
   "governance-doctrine-surfaces": {
     "owned": true,
     "entry_ids": [
-      "corpus-governance-doctrine-surfaces-2026-09-17T11:39:38.798736+00:00",
-      "corpus-governance-doctrine-surfaces-2026-09-17T11:39:38.953427+00:00",
-      "corpus-governance-doctrine-surfaces-2026-09-17T11:39:39.105055+00:00",
-      "corpus-governance-doctrine-surfaces-2026-09-17T11:39:39.256424+00:00",
-      "corpus-governance-doctrine-surfaces-2026-09-17T11:39:39.408298+00:00",
-      "corpus-governance-doctrine-surfaces-2026-09-17T11:39:39.561372+00:00",
-      "corpus-governance-doctrine-surfaces-2026-09-17T11:39:39.715592+00:00",
-      "corpus-governance-doctrine-surfaces-2026-09-17T11:39:39.870664+00:00",
-      "corpus-governance-doctrine-surfaces-2026-09-17T11:39:40.024160+00:00",
-      "corpus-governance-doctrine-surfaces-2026-09-17T11:39:40.178196+00:00",
-      "corpus-governance-doctrine-surfaces-2026-09-17T11:39:40.333008+00:00",
-      "corpus-governance-doctrine-surfaces-2026-09-17T11:39:40.486797+00:00"
+      "corpus-governance-doctrine-surfaces-2026-09-18T01:34:13.164903+00:00",
+      "corpus-governance-doctrine-surfaces-2026-09-18T01:34:13.311374+00:00",
+      "corpus-governance-doctrine-surfaces-2026-09-18T01:34:13.457516+00:00",
+      "corpus-governance-doctrine-surfaces-2026-09-18T01:34:13.604766+00:00",
+      "corpus-governance-doctrine-surfaces-2026-09-18T01:34:13.751969+00:00",
+      "corpus-governance-doctrine-surfaces-2026-09-18T01:34:13.900115+00:00",
+      "corpus-governance-doctrine-surfaces-2026-09-18T01:34:14.049571+00:00",
+      "corpus-governance-doctrine-surfaces-2026-09-18T01:34:14.198703+00:00",
+      "corpus-governance-doctrine-surfaces-2026-09-18T01:34:14.354619+00:00",
+      "corpus-governance-doctrine-surfaces-2026-09-18T01:34:14.504544+00:00",
+      "corpus-governance-doctrine-surfaces-2026-09-18T01:34:14.652252+00:00",
+      "corpus-governance-doctrine-surfaces-2026-09-18T01:34:14.801455+00:00",
+      "corpus-governance-doctrine-surfaces-2026-09-18T01:34:14.949186+00:00",
+      "corpus-governance-doctrine-surfaces-2026-09-18T01:34:15.096869+00:00",
+      "corpus-governance-doctrine-surfaces-2026-09-18T01:34:15.245151+00:00"
     ],
     "byte_span": [
-      16694,
-      18597
+      18160,
+      21420
     ]
   },
   "architectural-boundaries": {
@@ -288,8 +294,8 @@
       "corpus-architectural-boundaries-2026-09-17T11:39:41.407562+00:00"
     ],
     "byte_span": [
-      18597,
-      19112
+      21420,
+      21935
     ]
   }
 }

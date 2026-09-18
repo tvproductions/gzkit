@@ -65,7 +65,7 @@ declared `staleness.periodDays` in `registry.json`, which
 `scripts/check_proof_freshness.py` reads and criterion 1 of `acceptance.json`
 enforces (GHI #999). The interval is not restated here: a value written in a
 Markdown doc is illustrative, never authoritative
-(`.claude/rules/governance-core.md`), and a cadence this file merely *declared*
+(`AGENTS.md` § Governance doctrine surfaces), and a cadence this file merely *declared*
 would be the doctrine-declared-without-mechanism shape `AGENTS.md` forbids.
 Read the declaration; the gate's comment records the measured publication
 intervals the number was derived from, and says to re-derive rather than

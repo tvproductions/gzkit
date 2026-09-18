@@ -1,11 +1,11 @@
 # Attested REQ Whose Subject a Later Ruling Retired
 
 *Canonical expansion for the binding bullet in
-[`.gzkit/rules/governance-core.md`](../../.gzkit/rules/governance-core.md)
-§ Non-negotiable rules. Authored under GHI #823 after the transition had been
+`AGENTS.md` § OBPI Acceptance Protocol (in `governance-core.md` § Non-negotiable
+rules until that rule was folded into the root contract, 2026-09-17). Authored under GHI #823 after the transition had been
 resolved correctly twice from first principles and recorded nowhere an agent
 would find it. Home ruled by the operator 2026-08-18: the binding bullet lives
-in `governance-core.md` because it is the only rule whose `paths:` scope
+in `governance-core.md` (then) because it was the only rule whose `paths:` scope
 (`**/*`) loads for both known instances — one edited `tests/**`, the other
 edited a JSON data file, and a `tests/**`-scoped rule would have missed the
 second by construction.*
@@ -125,7 +125,7 @@ step 1 performed explicitly, and it is the sentence to imitate.
   subject. Nothing needs undoing. Same neighbourhood — append-only
   corrections to attested canon — different premise.
 - **Not `gz obpi repudiate` or `gz obpi withdraw`.** Per
-  `.gzkit/rules/governance-core.md` § Withdraw vs Repudiate, repudiate is for
+  `AGENTS.md` § Gate Covenant (withdraw vs repudiate), repudiate is for
   a fraudulent or invalid completion and withdraw is for an OBPI that is no
   longer needed. This completion was neither.
 - **Not an ADR amendment.** The ADR is terminal. That is the premise, not an

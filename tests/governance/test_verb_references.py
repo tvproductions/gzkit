@@ -32,7 +32,7 @@ def _chains(content: str, **kwargs) -> list[tuple[str, ...]]:
 class MultiWordChainTests(unittest.TestCase):
     """A chain is the unit of resolution, not its first token.
 
-    `.gzkit/rules/governance-core.md` § Operator-doc verb resolution binds it:
+    `AGENTS.md` § Governance doctrine surfaces (verb resolution) binds it:
     "Multi-word subcommands count (`gz adr status`, `gz obpi complete`), not
     just top-level verbs." The weak extractor captured `group(1)` — one word —
     so `gz adr bogus` resolved as `adr` and passed (GHI #588).
@@ -82,7 +82,7 @@ class FencedBlockTests(unittest.TestCase):
 
 
 class SpeculativeMarkerTests(unittest.TestCase):
-    """The escape hatch `governance-core.md` promises must actually exist here.
+    """The escape hatch the verb-resolution rule promises must actually exist here.
 
     The rule's recovery instruction — "mark the reference as speculative so the
     check skips it" — was unfollowable on the operator-doc surface, because the

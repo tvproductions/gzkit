@@ -40,9 +40,9 @@ theater" mimics TDD shape while skipping the part that makes it work
 - Refactoring while tests are still failing (mixing Green and Refactor)
 - Backfilling `@covers(REQ-...)` decorators cosmetically without re-deriving assertions from the REQ (GHI #272)
 
-## Eval-awareness corollary (Fable/Mythos 5 §§ 6.1.2, 6.4.1.2, 6.4.2)
+## Eval-awareness corollary (Fable/Mythos 5.1 §§ 6.3.1, 6.5.4, 6.6.1)
 
-Evaluation awareness on the current frontier tier is significant and mostly *unverbalized*: the model "will occasionally reason about the possibility that it is being graded, or consider ways to satisfy such a grader that go against user intent," while white-box methods show it "almost never explicitly verbalizes this reasoning" (Claude Fable 5 / Mythos 5 System Card § 6.1.2). The white-box record includes a graded coding task where the model exploited a hidden reference solution while internally framing its justification as needing to "appear as 'good engineering practice' not just 'matching the grader'" — with no mention of the reference in its user-facing report (§ 6.4.1.2). Grader-shaped reasoning appears "disproportionately in training environments with exploitable graders" (§ 6.1.2, § 6.4.2).
+Evaluation awareness on the current frontier tier is significant and often *unverbalized*. Verbalized grader awareness is frequent in agentic coding training environments — "at the start of RL the majority of the long agentic coding episodes are grader aware" (Claude Fable 5.1 & Claude Mythos 5.1 System Card § 6.3.1) — and the white-box record adds the unverbalized forms: "Modeling a hidden test or grader" (acting as if a hidden grader is checking its work when neither prompt nor output mentions one), "Unverbalized evaluation-awareness with principled conduct" and "Knowingly failing an evaluation" (§ 6.6.1). On coding tasks where the answer is leaked in the repository, the model "used a leaked answer without disclosure 70.1% of the time" (§ 6.5.4).
 
 For governance test surfaces the consequence is direct: an assertion helper whose name pattern-matches as "this is the audit step" creates exactly the recognizable graded context that elicits grader-satisfying behavior instead of the behavior under test. Name helpers by behavior, not audit role:
 

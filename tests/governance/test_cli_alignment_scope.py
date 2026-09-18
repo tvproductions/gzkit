@@ -6,8 +6,8 @@ verb that has never existed, while `gz validate --cli-alignment` exited 0:
 1. **Source blindness.** ``_cli_alignment_sources`` read only
    ``features/**``, ``docs/user/runbook.md``, ``docs/user/commands/**`` and
    ``docs/user/manpages/**`` — 198 files. ``.gzkit/skills/**/SKILL.md`` is named
-   explicitly in `.claude/rules/governance-core.md` § Operator-doc verb
-   resolution and was never read at all, so the reproduction in GHI #745 would
+   explicitly in `AGENTS.md` § Governance doctrine surfaces (verb
+   resolution) and was never read at all, so the reproduction in GHI #745 would
    have passed even with backticks.
 2. **Markup blindness.** All three recognizers require backticks or quotes, so a
    verb inside a ```` ```bash ```` fence matched none of them — the inverse of
@@ -212,7 +212,7 @@ class TestStructuralExemptions(_Tree):
 
 
 class TestSpeculativeMarkerIsHonored(_Tree):
-    """The escape hatch `governance-core.md` promises, now real on this surface.
+    """The escape hatch the verb-resolution rule promises, now real on this surface.
 
     The rule told operators to "mark the reference as speculative so the check
     skips it"; `audit_cli_alignment` was the one governed verb-checker that had

@@ -107,7 +107,7 @@ systems/exemplars and hope to maximally benefit from then."*
 
 Every count below was measured on 2026-09-12 against the working tree, by command.
 Commands are recorded in § Reproduction record so a later reader re-runs rather than
-trusts a transcription (`.claude/rules/governance-core.md` — a value written in a
+trusts a transcription (`AGENTS.md` § Governance doctrine surfaces — a value written in a
 Markdown doc is illustrative, never authoritative).
 
 External patterns are cited to primary sources. They are **exemplars, not authority**:

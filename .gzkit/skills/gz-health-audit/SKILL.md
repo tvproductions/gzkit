@@ -5,9 +5,9 @@ description: Namespace router → the four-axis health and integrity audit, read
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-12
+last_reviewed: 2026-09-17
 metadata:
-  skill-version: "1.2.1"
+  skill-version: "1.2.2"
 model: sonnet
 ---
 
@@ -45,7 +45,7 @@ nor a reason to retire a control. Use the routed chores' current measurements;
 the historical result is a sampling lead, not evidence of today's state.
 
 Added rules introduce possible interactions to inspect. A documented historical
-instance: `.claude/rules/governance-core.md` `0.9.0` exists because
+instance: `governance-core.md` `0.9.0` (a rule since folded into root `AGENTS.md`) exists because
 two binding rules mandated opposite actions for the two most common session
 decisions in the repo.
 

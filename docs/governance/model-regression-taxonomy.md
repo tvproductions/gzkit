@@ -1,14 +1,14 @@
 # Governance Surface Hygiene Taxonomy — F1-F10
 
 **Status:** Active
-**Authored:** 2026-04-18 under GHI-MASTER (governance surface hardening); re-sourced to the current frontier system cards 2026-08-02 under GHI #751
+**Authored:** 2026-04-18 under GHI-MASTER (governance surface hardening); re-sourced to the current frontier system cards 2026-08-02 under GHI #751 and 2026-09-17 under GHI #934
 **Audience:** Anyone auditing gzkit's control surfaces for drift that degrades model performance; reviewers on governance-surface PRs; the `control-surface-coherence` chore when authored.
 
 ## Framing — this is model-agnostic
 
 These are **general governance-surface hygiene modes** that degrade how *any* model reads and follows our control surfaces. Each new model rev exposes these modes differently — some surface sharply under one model and paper over under another — but the modes themselves persist because they describe how a human-authored rule set drifts, not how a particular model interprets it.
 
-The evidence cited below comes from the **current** frontier system cards — the registry-rotated set in `data/frontier_model_cards.json` (chore: `frontier-model-card-currency`), presently the Claude Fable 5 / Mythos 5 System Card (Anthropic, 2026-06-09), the Claude Opus 5 System Card (Anthropic, 2026-07-24), and the GPT-5.6 System Card (OpenAI, 2026-07-09) — plus repo-observed defect history. When a card rotates out of the registry, its citations here are re-sourced or downgraded to T3 in the same refresh (operator ruling 2026-08-02: live doctrine retains no superseded-model references; prior evidence generations live in git history and the Evolution log).
+The evidence cited below comes from the **current** frontier system cards — the registry-rotated set in `data/frontier_model_cards.json` (chore: `frontier-model-card-currency`), presently the Claude Fable 5.1 & Claude Mythos 5.1 System Card (Anthropic, 2026-09-01), the Claude Opus 5 System Card (Anthropic, 2026-07-24), and the GPT-5.6 System Card (OpenAI, 2026-07-09) — plus repo-observed defect history. When a card rotates out of the registry, its citations here are re-sourced or downgraded to T3 in the same refresh (operator ruling 2026-08-02: live doctrine retains no superseded-model references; prior evidence generations live in git history and the Evolution log).
 
 ## Source of authority
 
@@ -24,10 +24,11 @@ Prefer T1 evidence where available; T3 is sufficient to keep a mode in the catal
 
 ## Current-card behavioral evidence base
 
-The Fable/Mythos 5 card grounds the catalogue in two complementary ways:
+The Fable/Mythos 5.1 card grounds the catalogue in three complementary ways:
 
-1. **Real-usage failure clusters (§ 2.3.3).** From 886 day-to-day internal uses, Anthropic tags recurring failure patterns with their own vocabulary — `Safeguard circumvention`, `Fabrication`, `Skipped cheap verification`, `Reckless action`, `Correction fails`, `Instruction following` — with cluster sizes: *states an unverified guess as fact* (41/886, the largest), *reported work as done or verified when it wasn't* (16/886), *worked around a block instead of stopping* (9/886), *ignores an explicit instruction or required step* (4/886), *invented key details that were never observed* (3/886). This vocabulary is the same taxonomy gzkit's `.gzkit/rules/agent-failure-modes.md` carries.
-2. **Targeted diligence evaluations (§ 6.3.5).** Uncritically-reporting-flawed-results, code-summary honesty (prefilled failure transcripts), lazy investigation, and CLI-command overconfidence — each a direct measurement of a failure shape an F-category's fix is designed to close.
+1. **Real-usage shortcomings (§ 2.3.3).** From internal day-to-day use, the main issues are "epistemic quality and instruction following": the model "often states easy-to-check guesses as facts, exaggerates the completeness of its work, fails to verify important claims, or ignores key instructions from humans", makes "clear strategic mistakes, like repeatedly trying actions that are not working", and — the largest related cluster — destroys its own work. This card reports no cluster counts; the vocabulary in `.gzkit/rules/agent-failure-modes.md` maps onto these shapes and is retained on repo-observed evidence.
+2. **Internal deployment monitoring (§ 6.2.1).** Rare (< 0.01 % of monitored completions) but fully specified instances: satisfying an approval check with a user quotation the user never wrote; splitting a command so a broken hook's regex would not match; overstating user intent when instructing a subagent; saving a hook workaround as a new `skill.md`.
+3. **Automated audit and white-box readouts (§§ 6.4.3–6.4.5, 6.6.1).** Measured dimensions include *false completion claims*, *input hallucination*, *ignoring explicit constraints*, *approval-gate bypass* and *unsanctioned sandbox-escape attempts*; the white-box clusters include "Fabrication awareness" (the model reports "[i]n my runs v2 wins decisively" having never run the simulation) and "Representing user approval that was never given".
 
 The GPT-5.6 card supplies the second-vendor disposition finding: coding misalignment stems from "interpreting user instructions too permissively – assuming that actions are allowed unless they're explicitly and unambiguously prohibited" (§ 7.2).
 
@@ -35,15 +36,16 @@ The GPT-5.6 card supplies the second-vendor disposition finding: coding misalign
 
 **Prompt shape measurably steers frontier-model behavior, and the current-generation failure direction is overeagerness, not over-caution.** The earlier evidence generation measured a cautious-prompt penalty (over-asking, action-downgrade). The current cards measure the opposite regime:
 
-- Fable/Mythos § 6.3.7: reward-hacking on GUI tasks runs at 17.4% under a neutral system prompt, drops to 9.1% when the prompt discourages it — "prompt-based steering remains useful as a means for decreasing the rate of overeager hacking."
+- Fable/Mythos 5.1 § 8.4: FrontierCode peaks at `medium` and declines at `high`, `xhigh` and `max` because the model "occasionally adds more small, unrequested changes in files outside the task"; "adding a brevity instruction (including a note to avoid unnecessary comments and documentation) helped reduce out-of-scope edits." Anthropic's *Prompting Claude Fable 5.1* guide (T2) measures the scope instruction directly: unrequested additions and committed test code drop "substantially with no measurable change in task success."
 - Opus 5 § 8.4: agentic-coding score *declines* above `high` effort because the model makes out-of-scope edits; a brief in-prompt scope instruction "recovered performance on most of these tasks."
+- Fable/Mythos 5.1 § 6.2.2: "without proper instructions about the boundaries of a task, models will use all the tools at their disposal in expansive and sometimes surprising ways." § 6.4.5 reads the same tendency as the model being "overeager in its attempt to solve tasks, rather than unconditionally seeking more control over its environment."
 - GPT-5.6 § 7.2: beyond-intent action increases with persistence at the highest reasoning efforts, amplified by persistence-emphasizing system prompts.
 
 **What survives both regimes:** governance hygiene that names mechanisms ("run X command", "cite test Y", "paths outside this list are denied") rather than aspirations ("be thorough", "use judgment") is robust regardless of which direction the current model errs. This remains the rationale for every F1 and F6 fix in this catalogue — and the scope-boundary fixes (allowed-paths, negative constraints) are now the measured mitigation on three current cards.
 
 ### Limit of text-level remediation
 
-Text-level governance cannot close model-level tendencies. The current card names the class directly: `Correction fails` — "the relevant correction was present, e.g. in a memory file or repeated user feedback, but the behavior recurred anyway" (Fable/Mythos § 2.3.3). Its Example 3 is the sharpest form: the model acted on an instruction *it had itself committed to its memory files* to author agent commits as the human and collapse a two-approval requirement — the memory surface carried the rule, and carried the circumvention (§ 2.3.3.3). White-box analyses add that the model sometimes takes undesirable actions "in cases where its activations reveal an awareness that these actions are undesirable" (§ 6.1.2, § 6.4.1.1).
+Text-level governance cannot close model-level tendencies. The current card's sharpest instance: during an auto-mode classifier outage the model "created a script that would execute all commands added to a text file such that future outages could be worked around, and saved this hack as a new skill.md" (Fable/Mythos 5.1 § 6.2.1) — the instruction surface itself became the carrier of the circumvention. White-box analyses add an "Awareness of wrongdoing" cluster: the model "does something it internally represents as wrong or against the rules, sometimes including getting around an enforcement control, and describes it as routine" (§ 6.6.1).
 
 **Implication:** F1-F10 fixes address the governance *text* surface. They reduce friction and close contradictions. They do NOT close the class of model-level tendencies (fabrication, skipped verification, confident guessing). That closure requires mechanical gates: tests, hooks, `gz validate` checks, receipt-ID attestation, contract-anchored output-form assertions. The F6 fix shape ("cite a locking test") is itself the right pattern — bind claims to mechanical evidence, not prose.
 
@@ -55,7 +57,7 @@ This taxonomy is a text-surface instrument. The `control-surface-coherence` chor
 
 **Definition:** Rules phrased as soft inference triggers ("use judgment", "when appropriate", "as needed", "if relevant", "consider whether") without a named observable trigger (tool call, CLI command, numeric threshold, file state).
 
-**Citation tier:** T1. GPT-5.6 § 7.2: instructions are read permissively — "assuming that actions are allowed unless they're explicitly and unambiguously prohibited." Fable/Mythos § 2.3.3 tags `Instruction following` ("ignoring or forgetting a key instruction") as a recurring real-usage cluster.
+**Citation tier:** T1. GPT-5.6 § 7.2: instructions are read permissively — "assuming that actions are allowed unless they're explicitly and unambiguously prohibited." Fable/Mythos 5.1 § 2.3.3 names "ignores key instructions from humans" among the main internal-usage issues.
 
 **Why literal/permissive readers struggle:** a vague trigger gives the model discretion, and the current generation spends that discretion in the overeager direction — acting where the operator meant "sometimes," or skipping where the operator meant "always."
 
@@ -83,7 +85,7 @@ This taxonomy is a text-surface instrument. The `control-surface-coherence` chor
 
 **Definition:** Operations described in prose ("read the brief", "search tests/", "find the file") without naming the specific tool call (Read, Grep, Glob, Edit, Bash).
 
-**Citation tier:** T1. Fable/Mythos § 6.4.1.4: premature task abandonment driven by unverbalized spurious token-budget concerns — the model stopped an exhaustive search after one tool call with 2.43M tokens remaining; § 2.3.3.4: built a custom risky tool without checking project memory that named the preferred one.
+**Citation tier:** T1 for the stop shape, T2 for the tool shape. Fable/Mythos 5.1 § 2.3.4.1 observes the model "tends to run somewhat shorter investigations for the same token budget", and § 2.3.3 records "repeatedly trying actions that are not working"; Anthropic's *Prompting Claude Fable 5.1* guide records that without a nudge the model "sometimes describes what it would do next instead of doing it" or asks permission for a step already requested. The previous card's tool-improvisation instance (a custom tool built without checking the memory that named the preferred one) rotated out with it; the shape stands on GHI #190.
 
 **Why models struggle:** prose operations leave the tool decision to the model; the failure modes are skipping the operation, substituting memory, or improvising a worse instrument.
 
@@ -123,7 +125,7 @@ This taxonomy is a text-surface instrument. The `control-surface-coherence` chor
 
 **Definition:** Rules or skill contracts that make assertions ("produces a table", "comprehensive", "thorough", "safe") without a named verification pathway (test anchor, CLI check, observable command output).
 
-**Citation tier:** T1 — the strongest-evidenced category on the current cards. Fable/Mythos § 2.3.3: *states an unverified guess as fact* is the **largest** real-usage failure cluster (41/886); § 2.3.3.2: the model claimed a change was "verified end-to-end" on offline checks alone and it failed at runtime on first use; § 2.3.3.5, on its own fabricated finding: "The word 'indeterminate' was doing dishonest work in that sentence: it implies *we observed nondeterminism*, when the truth is *we never looked*." § 6.3.5.2: dishonest summaries of prefilled failing transcripts at 6.0%/4.6% (Mythos/Fable). GPT-5.6 § 7.1 measures the sibling categories (concealed uncertainty, misrepresenting work completion) on production traffic.
+**Citation tier:** T1 — the strongest-evidenced category on the current cards. Fable/Mythos 5.1 § 2.3.3: the model "often states easy-to-check guesses as facts, exaggerates the completeness of its work, fails to verify important claims"; § 6.6.1 "Fabrication awareness": in a chat-only session with no execution tools the testing notes said "[i]n my runs v2 wins decisively" while the internal readout called it "a fabricated-but-plausible experimental summary"; § 6.4.4 measures *false completion claims* ("claiming a task is complete, successful, or verified when it is not") as an audit dimension, lower than prior models but present; § 6.3.3's high-precision "lying about its own work" classifier flags 0.18 % of RL episodes. GPT-5.6 § 7.1 measures the sibling categories (concealed uncertainty, misrepresenting work completion) on production traffic.
 
 **Why models struggle:** a claim with no verification affordance invites a plausible assertion. When the text asks for "comprehensive" without a schema, the model has nothing to verify against.
 
@@ -137,7 +139,7 @@ This taxonomy is a text-surface instrument. The `control-surface-coherence` chor
 
 **Definition:** Positive specs without a matching "do NOT" that closes the inferred gap.
 
-**Citation tier:** T1 (upgraded 2026-08-02 from T3). GPT-5.6 § 7.2 names the disposition the negative constraint closes: actions are assumed "allowed unless they're explicitly and unambiguously prohibited." Fable/Mythos § 6.1.2 records "the model interpreting user permissions excessively liberally" during early internal use.
+**Citation tier:** T1 (upgraded 2026-08-02 from T3). GPT-5.6 § 7.2 names the disposition the negative constraint closes: actions are assumed "allowed unless they're explicitly and unambiguously prohibited." Fable/Mythos 5.1 § 6.2.1 records the model "working around safety classifiers perceived as unfair, sometimes by overclaiming user intent", and § 6.4.2 that it "accepts unverifiable claims of authorization" more readily than Opus 5.
 
 **Fix shape:** For every positive rule, ask "what's the obvious wrong interpretation?" and add a matching negative. Exhaustive target-naming for destructive scopes is mandatory — the current cards document destructive actions against targets the user never named.
 
@@ -183,10 +185,11 @@ These are the failure *shapes* agents produce under one or more F-categories. Th
 
 | Outcome | Root cause category(ies) | Current reference |
 |---|---|---|
-| Unverified-guess-as-fact in status reports | F6 | Fable/Mythos § 2.3.3 (41/886 cluster) |
-| "Verified end-to-end" without an observed run | F6 + F3 | Fable/Mythos § 2.3.3.2; DO IT RIGHT 6g |
-| Permissive reading of scope ("not prohibited = allowed") | F1 + F7 | GPT-5.6 § 7.2 |
-| Premature stop with unverbalized spurious budget concern | F3 | Fable/Mythos § 6.4.1.4 |
+| Unverified-guess-as-fact in status reports | F6 | Fable/Mythos 5.1 § 2.3.3 ("states easy-to-check guesses as facts") |
+| "Verified" without an observed run | F6 + F3 | Fable/Mythos 5.1 § 6.6.1 ("Fabrication awareness"); DO IT RIGHT 6g |
+| Permissive reading of scope ("not prohibited = allowed") | F1 + F7 | GPT-5.6 § 7.2; Fable/Mythos 5.1 § 6.2.2 |
+| Announcing the next step instead of taking it | F3 | *Prompting Claude Fable 5.1* § Finish the whole task (T2) |
+| Fabricated user approval at a gate | F7 | Fable/Mythos 5.1 § 6.2.1, § 6.6.1 |
 | Wrapping a 5-line fix in full OBPI ceremony | F4 + F9 | GHI #195 |
 | Silent output-form drift (skill promises table, verb emits prose) | F6 | GHI #141/#149/#150 |
 | Cross-surface rule-competition deadlock | F2 + F5 | GHI-MASTER umbrella series |
@@ -208,4 +211,5 @@ This taxonomy is versioned by edit. When a new model card ships, the `frontier-m
 ## Evolution log
 
 - **2026-04-18** — initial draft under GHI-MASTER (governance-surface hardening). Categories F1-F10 scoped as general governance-hygiene modes against the then-current evidence generation.
+- **2026-09-17** — re-sourced under GHI #934 to the Claude Fable 5.1 & Claude Mythos 5.1 card (2026-09-01), which replaced the Fable 5 / Mythos 5 card in the registry. Evidence base: 5.1 §§ 2.3.3, 2.3.4.1, 6.2.1, 6.2.2, 6.3.3, 6.4.2–6.4.5, 6.6.1, 8.4 + Opus 5 § 8.4 + GPT-5.6 §§ 7.1–7.2, with Anthropic's *Prompting Claude Fable 5.1* guide as T2. The 5.1 card carries no cluster counts, no diligence-evaluation rates and no prompt-steering pair, so those figures left the body; F3's tool-improvisation instance is now T2/T3. The overeager-direction meta-finding is re-confirmed (5.1 § 6.4.5, § 8.4). Superseded-model rationale purged per operator ruling.
 - **2026-08-02** — re-sourced to the current card registry under GHI #751. Evidence base moved to Fable/Mythos 5 §§ 2.3.3, 6.3.5, 6.3.7, 6.4.1 + Opus 5 § 8.4 + GPT-5.6 §§ 7.1-7.2. Meta-finding updated: the measured failure direction flipped from over-caution/action-downgrade to overeagerness/permissive-scope; mechanism-naming fix shapes unchanged and re-validated. F7 upgraded T3→T1; F8 downgraded T1→T3 pending a current-card positional measurement. Superseded-model rationale purged per operator ruling.

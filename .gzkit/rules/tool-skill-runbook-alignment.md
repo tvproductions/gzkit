@@ -6,11 +6,11 @@ paths:
   - ".gzkit/skills/**"
 description: Authoring invariants that keep CLI tools, skills, and runbooks aligned — drift between layers is a defect signal.
 ---
-<!-- rule-version: 0.5.0 -->
+<!-- rule-version: 0.5.1 -->
 
 # Tool / Skill / Runbook Alignment
 
-> **Rule version:** `0.5.0` — diet pass under GHI #921 (operator ruling 2026-08-29, *"we are compressing everything and anything that the agent can consume"*). Version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#tool-skill-runbook-alignmentmd). Binding rules unchanged.
+> **Rule version:** `0.5.1` — the verb-resolution pointer now names `AGENTS.md` § Governance doctrine surfaces (`governance-core.md` folded into the root contract 2026-09-17, GHI #921). `0.5.0` — diet pass under GHI #921 (operator ruling 2026-08-29, *"we are compressing everything and anything that the agent can consume"*). Version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#tool-skill-runbook-alignmentmd). Binding rules unchanged.
 
 gzkit's operator surface is a three-layer hierarchy: **tools** (CLI verbs), **skills** (operator-facing value chains composing tools toward an intent), and **runbooks** (documentation preserving operator intent across iteration). These three invariants are the mechanical test for layer alignment; apply them whenever you author or modify any of the three surfaces.
 
@@ -50,7 +50,7 @@ observed by running it, and the Output Contract that must match is prose too.
 What *is* mechanical nearby, and is the honest witness for the layer: every
 `gz <verb>` string in an operator-facing doc must resolve to a registered parser
 verb (`gz validate --cli-alignment`, fail-closed, per
-`.gzkit/rules/governance-core.md` § Operator-doc verb resolution). That catches
+`AGENTS.md` § Governance doctrine surfaces, verb resolution). That catches
 the renamed-verb half of Invariant 2 — a reference pointing at a verb that does
 not exist — leaving only the same-moment judgment unenforced.
 

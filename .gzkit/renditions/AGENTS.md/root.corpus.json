@@ -1,9 +1,9 @@
 {
   "algorithm": "sha256",
-  "corpus_fingerprint": "98f6583cdb229d1ef31d17476997c3881fa53a7b09cb030bb2db3a47a644f89c",
-  "corpus_entry_count": 285,
-  "rendition_fingerprint": "8ef75f32ffc2e512c187359aa90b7e3834903b5118a32ad45124ed157d1c6943",
-  "committed_ts": "2026-09-17T11:53:22.751660+00:00",
+  "corpus_fingerprint": "586ee1fc4f1f5a6f05db59e257688d94016c48827fa75cc221ff5e5a95dd01f5",
+  "corpus_entry_count": 315,
+  "rendition_fingerprint": "168b96495a7ac225604fe7d35995af51f3bcb87bebb44ea63e841bd806b74992",
+  "committed_ts": "2026-09-18T01:34:23.463774+00:00",
   "attestor": "g0",
-  "attestation_text": "every section should be corpus sourced and rendered from corpus — completion of the 2026-09-17 landing (GHI #921): nine bullets recaptured so the contract names the witness, source ADR/GHI and lane/kind axes that attested REQs require; generated rendition 19,112 B, 18,328 B invariant corpus text, 32 B of bare H1 headings; advisor receipt arb-step-judge-678a7249ccf84278a324b58906695821"
+  "attestation_text": "it all seems pretty ad hoc, do option A"
 }

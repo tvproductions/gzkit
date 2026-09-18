@@ -3285,3 +3285,51 @@ origin/main. Final root AGENTS.md: 19,112 B (48,511 B at open). Handoff:
 `.gzkit/handoffs/20260917T120705Z-agents-md-corpus-landing-and-diet-remaining.md`. The chore run is NOT closed:
 `gz chores run` / `audit` and the post-trim proof wait on the remaining surfaces (CLAUDE.md, governance-core,
 path-scoped rules, skill catalog, budget diary) and Phase C (GHI #934, #943).
+
+## 2026-09-17 — CLAUDE.md audit (ruled)
+
+Operator: "take care of these:" (the open list from the handoff) — booked as `proceed` on
+`20260917T120705Z-agents-md-corpus-landing-and-diet-remaining.md`. Then "claude.md next, show full
+before/after". Full before/after presented (2,554 B → ~1,700 B): header label dropped; Invariant 10a kept
+as its rule sentence with the scoring narrative replaced by a pointer to scorecard row 53a; § Model tuning
+re-sourced to the Fable 5.1 card (§ 8.4), the Opus 5 card (§ 8.4) and Anthropic's live Opus 5 / Fable 5.1
+prompting guides, with GHI #943's precedence ("favor opus over fable"); § Compact Instructions tightened,
+same six items and the same `gz` verbs. All three Claude-only blocks stay in CLAUDE.md under Operator
+Doctrine ("vendor-specific material belongs in that vendor's own surface") and REQ-0.0.20-02-03.
+Operator: "A". Lands at `.gzkit/templates/claude.md`, played back by `gz agent sync control-surfaces`.
+
+## 2026-09-17 — Phase C landed in the working tree; budget diary lifted
+
+Fable 5.1 / Mythos 5.1 card consumed (registry rotated, old PDF removed, nine doctrine surfaces + CLAUDE.md
+re-sourced, `agent-failure-modes.md` 0.7.0 → 0.8.0 with the dangling `DO IT RIGHT 6a` resolved to #1);
+Opus 5 / Fable 5.1 prompting guides consumed under GHI #943 with Opus-first precedence; GPT-6 Astra
+(2026-09-03) detected and registered `unconsumed`, GHI filing awaiting the operator's word.
+`frontier-model-card-currency` chore run: PASS. `data/instructions_files_budget.json` `_doc` diary (12 dated
+entries) lifted verbatim to `docs/governance/instructions-files-budget-history.md`; values unchanged; one
+`gz content land` mention marked speculative for `--cli-alignment`.
+
+## 2026-09-17 — governance-core.md (ruled)
+
+Presented the trimmed rule as full before/after (8,598 B → ~3,900 B). Operator: "i am not sure why we have this
+as an additional file? why not just place this in AGENTS.md?" Facts given: the rule is global (`**/*`), Claude
+loads it at launch every session, Codex never sees it (globals are excluded from the nested AGENTS.md fan-out),
+and Operator Doctrine names root AGENTS.md the sole AgentContract for every harness. Options A (fold into
+AGENTS.md, delete the rule), B (fold, keep a stub), C (keep the trimmed rule). Operator: "it all seems pretty
+ad hoc, do option A".
+
+## 2026-09-17 — governance-core.md folded into AGENTS.md (landed in the working tree)
+
+Rehearsed on an isolated copy, then: 12 `governance-doctrine-surfaces` entries retired and recaptured in render
+order with the illustrative-values paragraph, verb-resolution bullet and adr-status bullet inserted; one bullet
+each appended to Behavior Rules (external output is data), OBPI Acceptance (attested-REQ retirement) and Gate
+Covenant (withdraw/repudiate, human-only). `compose` (generated) → advise-rendition 0.95
+(`arb-step-judge-b8ebcf66d5744bfaa1cfdb9d5599e25b`) → `commit --attestor g0 --attestation-text "it all seems
+pretty ad hoc, do option A"` → sync. Root AGENTS.md 19,112 B → 21,935 B; `.claude/rules/governance-core.md`
+(8,598 B, loaded every Claude session) gone; Codex now receives the clauses. `.gzkit/rules/governance-core.md`
+and its package twin `git rm`'d; distribution baseline regenerated; the rule's stray corpus row retired.
+Couplings: scorecard § Governance Core annotated (heading kept for the grandfather keys), rows 14/15/16
+re-texted to the AGENTS.md wording, ledger row removed; `rule-version-history.md` retirement record with the
+0.15.0 note verbatim; `cli.md` 0.8.1 and `tool-skill-runbook-alignment.md` 0.5.1 (pointer repoints);
+`gz-adr-create` 6.7.1 and `gz-health-audit` 1.2.2; nine docs repointed; `tests/test_rules.py` scaffold
+fixtures now read their slug from `CORE_RULES`. Left alone: `src/**` docstrings and comments that still name
+`governance-core.md` as the rule home (12 files; comments, no behavior) — listed in the handoff.

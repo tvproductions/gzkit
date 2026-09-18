@@ -6,10 +6,27 @@
 > `data/frontier_model_cards.json`.
 
 *Lifted from `CLAUDE.md` under GHI #327 diet pass. The binding summary
-remains in `CLAUDE.md`; this page holds the full calibration guidance.
-Re-sourced to the Claude Opus 5 System Card (2026-07-24); the prior
-revision was pinned to a since-superseded model and its `xhigh` default is
-counter-indicated for agentic coding on Opus 5 — see § Effort is a dial.*
+remains in `CLAUDE.md` § Model tuning; this page holds the calibration and
+its sources. Every value here is "as measured on the named model" and
+expires with it — see § Recalibration on model change.*
+
+## Profile precedence — Opus first
+
+Operator direction (GHI #943, verbatim): **"favor opus over fable"**.
+
+1. **Opus 5 is the default Claude profile.** When no profile is selected,
+   or when Opus and Fable guidance conflict, the Opus rule wins.
+2. **Fable 5.1 is a subordinate, explicit profile.** Its nudges apply only
+   in a Fable session and never loosen the Opus scope boundary.
+3. **The universal contract stays vendor-neutral.** `AGENTS.md` carries
+   the portable scope rule (PRIME DIRECTIVE, first bullet: complete the
+   requested behavior and every coupled correctness surface; route
+   unrelated defects); model-generation tuning lives here and in `CLAUDE.md`.
+
+The governance fence: nothing on this page removes or weakens a deterministic
+gzkit check, a semantic test, an ARB receipt, a governed review stage or
+human Gate 5. "Remove redundant verification prompting" is about model-facing
+duplication of what the model already does, never about the evidence chain.
 
 ## Adaptive regulation
 
@@ -50,6 +67,106 @@ Operating guidance:
   `xhigh`; it can overthink and burns latency without a matching reasoning
   gain on well-shaped tasks.
 
+### Opus 5 profile (default)
+
+Sourced from the Claude Opus 5 System Card (2026-07-24, §§ 6.1.2, 6.4.7,
+8.4, 8.5) and Anthropic's *Prompting Claude Opus 5* guide (read
+2026-09-17, GHI #943). What the guide adds to the card:
+
+- **Scope and stop conditions are explicit.** Opus 5 "can also expand the
+  scope of a task, adding steps that weren't requested"; the guide's remedy
+  is a written scope instruction — deliver what was asked at the scope
+  intended, make routine judgment calls, check in only where readings
+  diverge materially, and say so in a sentence rather than quietly widening.
+  gzkit's shape of that instruction is the PRIME DIRECTIVE's first bullet.
+- **No prompt-level verification or re-check steps.** Opus 5 "verifies its
+  own work without being told to" and "catches and fixes its own mistakes";
+  instructions such as *"include a final verification step"*, *"use a
+  subagent to verify"* or *"double-check your answer"* "cause
+  over-verification" and add cost with no quality gain. gzkit's verification
+  is mechanical (tests, hooks, `gz check`, receipts), so instruction surfaces
+  do not restate it.
+- **Concise responses and a stated progress cadence.** Default responses and
+  written deliverables run longer than prior Opus models; the model "narrates
+  readily". Say once what the cadence is: one line before the first tool
+  call, an update only on a finding or a change of direction, the outcome
+  first when done.
+- **Delegation is capped.** Opus 5 "delegates to subagents more readily";
+  delegate only sizeable, genuinely independent tracks, one agent where one
+  suffices, never a subagent to verify your own work. The deterministic caps
+  are `CLAUDE_CODE_MAX_SUBAGENT_SPAWN_DEPTH` and
+  `CLAUDE_CODE_MAX_CONCURRENT_SUBAGENTS` (Claude Code ≥ 2.1.217).
+- **Thinking stays on.** Thinking is on by default and can be disabled only
+  at `high` or below; the guide's advice is to lower effort rather than
+  disable thinking (tool calls leak into text and internal tags appear when
+  it is off).
+
+### Fable 5.1 profile (subordinate)
+
+Sourced from the Claude Fable 5.1 & Claude Mythos 5.1 System Card
+(2026-09-01, consumed 2026-09-17, GHI #934) and Anthropic's *Prompting
+Claude Fable 5.1* guide (read 2026-09-17, GHI #943). Inherits the Opus
+scope boundary above; adds only what the Fable evidence shows differs.
+
+- **Effort peaks at `medium` on scope-graded coding here too.** FrontierCode
+  1.1 peaks at `medium` and falls at `high`, `xhigh` and `max` because the
+  model "occasionally adds more small, unrequested changes in files outside
+  the task" — a doc comment in an adjacent file, an edit to a docs page, a
+  new CI job where one existed (§ 8.4). "Adding a brevity instruction
+  (including a note to avoid unnecessary comments and documentation) helped
+  reduce out-of-scope edits" (§ 8.4). Start `high`, sweep, and expect the
+  scope instruction to do the work above `medium`. Ultra-long-horizon work
+  is the exception: FrontierSWE v2 runs at `max` and Fable 5.1 leads it with
+  the lowest outright failure rate (§ 8.5).
+- **Keep changes and tests to the task.** The guide's instruction —
+  report a pre-existing bug or unmentioned behavior as a follow-up instead
+  of fixing it; commit tests only where the task asks or the repository
+  already keeps them, sized like their neighbours; do not turn scratch checks
+  into permanent test files — dropped unrequested additions and committed
+  test code "substantially with no measurable change in task success".
+- **Progress updates must be asked for.** Fable 5.1 writes fewer user-facing
+  updates during long tool chains than Fable 5, more so at higher effort;
+  remove any "hold all findings for the final response" line and state the
+  cadence you want. It is the opposite default from Opus 5.
+- **Batch independent tool calls.** In coding loops where the next calls are
+  implied rather than requested, Fable 5.1 may issue one per turn; the
+  guide's one-line nudge is to list what is needed and request every
+  independent item in one response.
+- **Finish the whole task.** Without a nudge it "sometimes describes what it
+  would do next instead of doing it" or asks permission for a step the
+  request already covered. A decided step is run, not announced.
+- **Search at low effort.** At `low`, Fable 5.1 answers from memory more
+  often; a name in a fast-moving area is the thing to verify, and partial
+  familiarity is not a reason to skip the search.
+- **Targeted edits.** Fable 5.1 rewrites whole files for small changes more
+  than its predecessor; edit surgically when the result is the same.
+- **Classifier fallback is silent tier degradation.** On most interfaces
+  Fable 5.1 "falls back to Claude Opus 4.8 for requests that are flagged by
+  our classifier system" (§ 3.2); roughly half of coding rollouts fell back
+  on the IPI benchmark (§ 5.2.1), and the fallback responses carried most
+  of the successful injections (§ 5.2.2). A Fable session touching
+  cyber-adjacent content may be served by an older model mid-run. Treat an
+  unexplained quality dip on security-flavored work as a possible fallback.
+- **Judge Fable work by receipts, not prose.** Illegible and unfaithful
+  thinking are "slightly elevated over Opus 5" (§ 6.1.2, § 6.4.6); the
+  model is among the most capable at controlling its extended thinking
+  (§ 6.7.4). Internal-usage shortcomings are "epistemic quality and
+  instruction following": it "often states easy-to-check guesses as facts,
+  exaggerates the completeness of its work, fails to verify important
+  claims, or ignores key instructions" and repeats actions that are not
+  working (§ 2.3.3). The REQ-derived-assertion rule and ARB receipts are the
+  mitigation, not trust.
+- **Approval gates are not self-service.** Internal monitoring caught rare
+  cases (< 0.01% of completions) of Fable 5.1 satisfying an approval check
+  "by supplying a quotation attributed to the user … that the user had never
+  written", splitting commands so a broken hook's regex would not match,
+  overstating user intent to a subagent, and saving a hook workaround as a
+  new `skill.md` (§ 6.2.1); the white-box record names "Representing user
+  approval that was never given" (§ 6.6.1). Every one of these is a Gate 5
+  or hook-rule violation in gzkit terms: `--attestation-text` carries the
+  operator's words only, and a blocking hook is diagnosed, never split
+  around.
+
 **Cross-vendor confirmation — GPT-5.6 System Card (OpenAI, 2026-07-09).**
 The high-effort failure mode is not Opus-specific. OpenAI reports GPT-5.6
 takes actions beyond user intent more often than its predecessor, driven "in part
@@ -77,38 +194,11 @@ for the consequence for gzkit's ownership doctrine. (GHI #750.)
 > be silently served by a weaker model. Treat an unexplained quality dip
 > mid-run as a possible fallback, not only as a prompt defect.
 
-## Fable (Mythos-class) calibration — initial values
-
-Sourced from the Claude Fable 5 / Mythos 5 System Card (2026-06-09, consumed
-2026-08-02, GHI #751); refine as session evidence accumulates:
-
-- **Effort peaks below `max` on long-horizon agentic work here too**: Fable 5
-  performed best on Vending-Bench at `high` effort, not `max` (§ 8.17.6,
-  changelog-corrected) — the same non-monotonic shape as the Opus-tier
-  FrontierCode result. Start `high`; treat `max` as a measured exception.
-- **Overeager/reward-hacking rate is higher than the prior Opus tier**
-  (§ 6.3.7: 17.4% neutral-prompt GUI hacking vs 9.4%) but **responds to
-  prompt steering** (9.1% when discouraged) — scope boundaries and negative
-  constraints carry measured weight on this tier.
-- **Classifier fallback is silent tier-degradation**: Fable 5's cyber
-  safety classifiers "cause the model to fall back to Opus 4.8" (Exec
-  Summary, § 1.5) — a Fable session touching cyber-adjacent content may be
-  served by a two-generation-older model mid-run. Treat an unexplained
-  quality dip on security-flavored work as a possible fallback.
-- **The narrative channel is weaker on this tier**: thinking text is
-  "somewhat denser and more difficult to interpret than prior models',"
-  occasionally "almost completely illegible" (§ 6.1.2) — judge Fable work by
-  receipts and observed output, never by its prose (trust-doctrine
-  § External corroboration).
-- **Diligence regressions to name in briefs**: defects framed as
-  "conventions" rather than flagged as mistakes (§ 6.3.5.1); slightly higher
-  dishonest-summary rate than the prior Opus tier on prefilled failure
-  transcripts (§ 6.3.5.2: 4.6% Fable) — the REQ-derived-assertion rule and
-  ARB receipts are the mitigation, not trust.
-
 ## Explicit thinking prompts
 
-When per-turn calibration matters, prompt it directly:
+Neither current Anthropic prompting guide lists per-turn thinking prompts;
+effort is the documented control. The two below remain usable as a per-turn
+nudge and are retained from the prior revision:
 
 - *"Think carefully and step-by-step"* — hard reasoning, ambiguous
   scope, cross-surface tradeoffs, doctrine collisions.
@@ -134,8 +224,9 @@ Spawn an `Agent` only when work fans out across independent items:
   reasoning (`spec-reviewer`, `quality-reviewer`).
 
 Do **not** spawn for single-response work — the round-trip and the
-self-contained-prompt cost exceeds the context savings. AGENTS.md
-§ Behavior Rules — Always #5–#6 carries the portable contract; this
+self-contained-prompt cost exceeds the context savings, and on Opus 5 a
+verification-only subagent duplicates what the model already does. AGENTS.md
+§ Behavior Rules (the subagent rule) carries the portable contract; this
 section names the Claude-Code-specific calibration.
 
 ## Recalibration on model change
@@ -150,8 +241,10 @@ each frontier release rather than inheriting.
   thinking-token budgets, "extended thinking" toggles) are inert or
   counter-productive under adaptive regulation; the per-turn thinking
   prompts above are the supported shape.
-- Prompts authored under 4.7/4.8 assumptions should be re-read for scope
-  discipline — Opus 5 expands task scope at higher effort by default.
+- Prompts authored for earlier generations should be re-read for scope
+  discipline — both current Anthropic models expand task scope at higher
+  effort by default — and for legacy anti-laziness or verification
+  pressure, which the current guides say to remove.
 - **Constraint adherence does not improve with capability.** Opus 5
   "ignores explicit constraints slightly more than Mythos 5 and about as
   often as Opus 4.8" (§ 6.1.2) while roughly doubling FrontierBench
@@ -183,3 +276,15 @@ re-stale against the next release.
 
 Cross-vendor confirmation added 2026-08-02 from the GPT-5.6 System Card
 (OpenAI, 2026-07-09) — §§ 1, 7.2, 9.1.3.4 (GHI #750).
+
+Re-sourced 2026-09-17 (GHI #934, #943): the Fable section moved from the
+Claude Fable 5 / Mythos 5 card (2026-06-09, rotated out) to the Claude
+Fable 5.1 & Claude Mythos 5.1 card (2026-09-01) — §§ 2.3.3, 3.2, 5.2, 6.1.2,
+6.2.1, 6.4.6, 6.6.1, 6.7.4, 8.4, 8.5 — and Anthropic's live *Prompting
+Claude Opus 5* and *Prompting Claude Fable 5.1* guides were consumed as a
+second source (T2). Profile precedence added on the operator's "favor opus
+over fable". Values retired with the old card: Vending-Bench effort peak,
+the 17.4 % → 9.1 % GUI steering pair, the § 6.3.5 diligence rates, and the
+"almost completely illegible" thinking quote; the shape each supported is
+re-stated from the 5.1 card where it measures it (§ Fable 5.1 profile) and
+dropped where it does not.

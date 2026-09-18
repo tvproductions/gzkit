@@ -636,7 +636,6 @@ class TestLoadRules(unittest.TestCase):
 
         self.assertGreaterEqual(len(rules), 11)
         ids = {r.frontmatter.id for r in rules}
-        self.assertIn("governance-core", ids)
         self.assertIn("tests", ids)
         self.assertIn("models", ids)
         self.assertIn("pythonic", ids)
@@ -879,7 +878,7 @@ class TestCoreRulesRegistry(unittest.TestCase):
         from gzkit.rules import CORE_RULES  # noqa: PLC0415
 
         # Check a representative set of known rules
-        for expected in ("governance-core", "tests", "models", "pythonic"):
+        for expected in ("cli", "tests", "models", "pythonic"):
             self.assertIn(expected, CORE_RULES, f"{expected!r} missing from CORE_RULES")
 
     @covers("REQ-0.0.32-04-02")
@@ -944,38 +943,42 @@ class TestCoreRulesRegistry(unittest.TestCase):
     @covers("REQ-0.0.32-04-06")
     def test_scaffold_core_rules_skip_existing_preserves_operator_edits(self) -> None:
         from gzkit.config import GzkitConfig, PathConfig  # noqa: PLC0415
-        from gzkit.rules import scaffold_core_rules  # noqa: PLC0415
+        from gzkit.rules import CORE_RULES, scaffold_core_rules  # noqa: PLC0415
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             config = GzkitConfig(paths=PathConfig())
             rules_dir = root / ".gzkit" / "rules"
             rules_dir.mkdir(parents=True)
-            # Pre-create an operator-edited file
-            (rules_dir / "governance-core.md").write_text("# My custom edit\n", encoding="utf-8")
+            # Pre-create an operator-edited file. The slug is read from the
+            # shipped roster so the fixture cannot silently stop being a core
+            # rule (it did, when governance-core.md was folded into AGENTS.md).
+            slug = f"{CORE_RULES[0]}.md"
+            (rules_dir / slug).write_text("# My custom edit\n", encoding="utf-8")
 
             scaffold_core_rules(root, config, skip_existing=True)
 
             # Operator edit must be preserved
-            content = (rules_dir / "governance-core.md").read_text(encoding="utf-8")
+            content = (rules_dir / slug).read_text(encoding="utf-8")
             self.assertEqual(content, "# My custom edit\n")
 
     @covers("REQ-0.0.32-04-06")
     def test_scaffold_core_rules_skip_existing_false_overwrites(self) -> None:
         from gzkit.config import GzkitConfig, PathConfig  # noqa: PLC0415
-        from gzkit.rules import scaffold_core_rules  # noqa: PLC0415
+        from gzkit.rules import CORE_RULES, scaffold_core_rules  # noqa: PLC0415
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             config = GzkitConfig(paths=PathConfig())
             rules_dir = root / ".gzkit" / "rules"
             rules_dir.mkdir(parents=True)
-            (rules_dir / "governance-core.md").write_text("# Old content\n", encoding="utf-8")
+            slug = f"{CORE_RULES[0]}.md"
+            (rules_dir / slug).write_text("# Old content\n", encoding="utf-8")
 
             scaffold_core_rules(root, config, skip_existing=False)
 
             # Should have been overwritten — old placeholder content is gone
-            content = (rules_dir / "governance-core.md").read_text(encoding="utf-8")
+            content = (rules_dir / slug).read_text(encoding="utf-8")
             self.assertNotEqual(content, "# Old content\n")
 
 

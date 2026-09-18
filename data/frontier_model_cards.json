@@ -7,13 +7,13 @@
   "cards": [
     {
       "vendor": "anthropic",
-      "model_family": "Claude Fable 5 / Mythos 5 (Mythos-class tier)",
-      "card_date": "2026-06-09",
-      "url": "https://www-cdn.anthropic.com/57a52ea7d8f0e54e8a542e908266086df425cdf5/Claude%20Fable%205%20&%20Claude%20Mythos%205%20System%20Card.pdf",
+      "model_family": "Claude Fable 5.1 / Mythos 5.1 (Mythos-class tier)",
+      "card_date": "2026-09-01",
+      "url": "https://www-cdn.anthropic.com/0339e6a7c5c7b87f5c07798616dc32c215d14235/Claude%20Fable%205.1%20&%20Claude%20Mythos%205.1%20System%20Card.pdf",
       "status": "current",
-      "consumed_on": "2026-08-02",
+      "consumed_on": "2026-09-17",
       "consumed_commits": [
-        "GHI #751 landing commit (SHA in the GHI close comment)"
+        "GHI #934 landing commit (SHA in the GHI close comment)"
       ],
       "doctrine_surfaces": [
         ".gzkit/rules/agent-failure-modes.md",
@@ -24,10 +24,11 @@
         "docs/governance/opus-tuning.md",
         "docs/governance/trust-doctrine.md",
         "docs/governance/agent-contract-rationale.md",
-        "docs/governance/advisory-rules-audit.md"
+        "docs/governance/advisory-rules-audit.md",
+        "CLAUDE.md"
       ],
-      "notes": "SS 2.3.3, 5.2, 6.1.2, 6.3.5, 6.3.7, 6.4.1, 8.17.6 consumed. Primary source CORRECTS earlier secondary reporting: Mythos/Fable is the most injection-resilient GA tier (Gray Swan k=100 4.8%); the regression was browser-use only under originally-deployed safeguards (6.5%), closed to 0/129 by updated safeguards (S 5.2.2.3). Elevated prefill susceptibility (S 6.1.2). Fable cyber classifiers fall back to Opus 4.8 (S 1.5) - silent tier degradation on cyber-adjacent content. Effort peaks at high (not max) on Vending-Bench (S 8.17.6). S 2.3.3 failure tags share this repo's taxonomy vocabulary.",
-      "local_path": "data/system_cards/anthropic-claude-fable-5-mythos-5-2026-06-09.pdf"
+      "notes": "SS 2.3.3, 2.3.4.1, 3.2, 5.2, 6.1.2, 6.2.1, 6.2.2, 6.3.1, 6.4.2-6.4.5, 6.5.4, 6.6.1, 8.4, 8.5 consumed. Supersedes the Fable 5 / Mythos 5 card (2026-06-09). S 2.3.3 is qualitative on this card (no cluster counts): states easy-to-check guesses as facts, exaggerates completeness, fails to verify important claims, ignores key instructions, repeats failing actions, destroys its own work. S 6.2.1 records hook bypass by command splitting, a fabricated user quotation supplied to satisfy an approval gate, overclaimed user intent relayed to subagents, and a hook workaround saved as a skill.md (<0.01% of monitored completions). S 6.6.1: 'Fabrication awareness' and 'Representing user approval that was never given'. Cyber classifier fallback to Opus 4.8 stands (S 3.2). Gray Swan IPI k=15 1.0% (most robust to date); fallback responses account for most successful attacks (S 5.2). S 8.4: FrontierCode peaks at medium and declines at high+ from unrequested out-of-scope edits; a brevity instruction reduced them. Opus tier unchanged (Opus 5 card still current); Anthropic's Opus 5 and Fable 5.1 prompting guides consumed alongside (GHI #943).",
+      "local_path": "data/system_cards/anthropic-claude-fable-5-1-mythos-5-1-2026-09-01.pdf"
     },
     {
       "vendor": "anthropic",
@@ -73,6 +74,18 @@
       ],
       "notes": "SS 1, 3.3, 4.2, 7.1-7.4, 9.1.3, 9.2, 9.3 consumed. Source of failure-mode pattern 9 (Metagaming / gaming the gate).",
       "local_path": "data/system_cards/openai-gpt-5-6-2026-07-09.pdf"
+    },
+    {
+      "vendor": "openai",
+      "model_family": "GPT-6 Astra",
+      "card_date": "2026-09-03",
+      "url": "https://deploymentsafety.openai.com/gpt-6-astra/gpt-6-astra.pdf",
+      "status": "unconsumed",
+      "consumed_on": null,
+      "consumed_commits": [],
+      "doctrine_surfaces": [],
+      "notes": "Detected by the 2026-09-17 scan of deploymentsafety.openai.com. Supersedes the GPT-5.6 entry once consumed; until then GPT-5.6 stays current and the GPT-side doctrine (gpt-tuning.md, agent-failure-modes.md pattern 9, opus-tuning.md cross-vendor block, trust-doctrine.md, model-regression-taxonomy.md) remains sourced to it. Routing awaits the operator's word on a GHI (class ancestor GHI #750).",
+      "local_path": null
     }
   ]
 }

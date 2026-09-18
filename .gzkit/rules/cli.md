@@ -7,9 +7,9 @@ description: CLI contract doctrine and design principles
 
 # CLI Contract Doctrine
 
-<!-- rule-version: 0.8.0 -->
+<!-- rule-version: 0.8.1 -->
 
-> **Rule version:** `0.8.0` — § Flag Conventions realigned to the canonical specification's § Output Modes and § Verbosity Levels: `--verbose` enables INFO-level logging (this row said "Debug output", the drift the adapter's level map had copied) and `--debug` is listed, and errors reach stderr in every mode; `0.7.0` and prior are lifted to [Rule Version History](../../docs/governance/rule-version-history.md#climd).
+> **Rule version:** `0.8.1` — the manpage-filename pointer now names `AGENTS.md` § Governance doctrine surfaces, where the verb-resolution rule lives since `governance-core.md` was folded into the root contract (2026-09-17, GHI #921). `0.8.0` — § Flag Conventions realigned to the canonical specification's § Output Modes and § Verbosity Levels: `--verbose` enables INFO-level logging (this row said "Debug output", the drift the adapter's level map had copied) and `--debug` is listed, and errors reach stderr in every mode; `0.7.0` and prior are lifted to [Rule Version History](../../docs/governance/rule-version-history.md#climd).
 
 **Baseline:** [clig.dev](https://clig.dev/) — Human-first CLI design principles.
 **Canonical specification:** [`docs/design/cli-standards-v3.md`](../../docs/design/cli-standards-v3.md) — named canonical by [`ADR-0.0.4`](../../docs/design/adr/foundation/ADR-0.0.4-cli-standards-presentation-foundation/ADR-0.0.4-cli-standards-presentation-foundation.md). **Read its § Document status before citing any section:** parts are live-and-met, parts are live-but-UNMET, parts are RETIRED or superseded.
@@ -123,7 +123,7 @@ Every command must:
 **The authority is the code, never this list.** The enumeration lives in `_SURFACE_NAMES` and `check_surfaces` (`src/gzkit/doc_coverage/scanner.py`), `find_undeclared_commands` (`src/gzkit/doc_coverage/manifest.py`), and `audit_skill_alignment` (`src/gzkit/governance/trust_audits/cli.py`). If this list and those disagree, they are right.
 
 1. **Manifest entry** — `config/doc-coverage.json`. An undeclared command has no declared obligation, so it fails before any surface is examined.
-2. **Manpage** — `docs/user/manpages/<slug>.md`, `<slug>` being the command with spaces hyphenated (`gz adr audit-check` → `adr-audit-check.md`). **Never a `gz-` prefix** (`governance-core.md` § Manpage filename references, GHI #532).
+2. **Manpage** — `docs/user/manpages/<slug>.md`, `<slug>` being the command with spaces hyphenated (`gz adr audit-check` → `adr-audit-check.md`). **Never a `gz-` prefix** (`AGENTS.md` § Governance doctrine surfaces, verb resolution; GHI #532).
 3. **Index entry** — the `<slug>.md` filename must appear in `docs/user/manpages/index.md`.
 4. **Operator runbook** — a reference in `docs/user/runbook.md`.
 5. **Governance runbook** — a reference in `docs/governance/governance_runbook.md`.

@@ -107,3 +107,33 @@ Validated: documents
 
 ✓ All validations passed (1 scopes).
 ```
+
+## 2026-09-17 — Fable/Mythos 5.1 consumed (GHI #934); GPT-6 Astra detected
+
+- **CONSUMED (Anthropic, Mythos-class tier).** Fable 5.1 & Mythos 5.1 card (2026-09-01) rotated in; Fable 5 / Mythos 5 PDF and entry removed; nine doctrine surfaces + `CLAUDE.md` re-sourced; Opus 5 / Fable 5.1 prompting guides consumed as T2 under GHI #943 ("favor opus over fable"). Details in `proofs/scan-record.md`.
+- **DRIFT (OpenAI).** GPT-6 Astra System Card (2026-09-03) registered `unconsumed`; GHI filing awaits the operator's word.
+- **Manual completion check:** every drifted item is routed — #934 landed (commit SHA in its close comment); GPT-6 Astra carried as an `unconsumed` registry entry pending the GHI.
+## 2026-09-17T20:23:02-05:00
+- Status: PASS
+- Chore: frontier-model-card-currency
+- Title: Frontier Model Card Currency (System-Card Doctrine Refresh)
+- Lane: lite
+- Version: 1.3.0
+- Criteria Results:
+  - [PASS] `uv run python scripts/check_proof_freshness.py frontier-model-card-currency` => rc=0 (0.08s) -- exit 0 == 0
+  - [PASS] `python3 -c "import json; cards=json.load(open('data/frontier_model_cards.json'))['cards']; assert cards, 'registry empty'; missing=[c for c in cards if not all(c.get(k) for k in ('vendor','model_family','card_date','url','status'))]; assert not missing, f'incomplete entries: {missing}'; assert all(c['status'] in ('current','unconsumed','superseded') for c in cards), 'bad status'"` => rc=0 (0.01s) -- exit 0 == 0
+  - [PASS] `uv run gz validate --documents` => rc=0 (0.35s) -- exit 0 == 0
+
+```text
+[uv run python scripts/check_proof_freshness.py frontier-model-card-currency] stdout:
+scan-interval gate — frontier-model-card-currency
+  maximum age:  30d
+  scan record:  .gzkit/chores/frontier-model-card-currency/proofs/scan-record.md
+  last scan:    2026-09-18 (0d ago)
+
+PASS: the scan record changed within the scan interval.
+[uv run gz validate --documents] stdout:
+Validated: documents
+
+✓ All validations passed (1 scopes).
+```

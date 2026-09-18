@@ -992,7 +992,7 @@ truth. Always combine with `--distribution`.
 The regenerator is the canonical one-command recovery for `ON_DISK_NOT_BASELINE`
 drift — new canonical surface files added after the baseline was frozen.
 Symmetric to `gz register-adrs` for the ADR status index (per
-`.gzkit/rules/governance-core.md` § ADR status index regeneration).
+`AGENTS.md` § Governance doctrine surfaces, ADR status index regeneration).
 
 The regenerator:
 1. Walks each surface root tracked by the manifest (`src/gzkit/skills/`, `rules/`, etc.)
@@ -1629,7 +1629,7 @@ moment. Nothing checked the **inverse** — that neither still prescribes a verb
 the CLI has retired. This scope is that inverse.
 
 The motivating instance: `gz gates` printed *"will be removed in a future
-release. Use `gz closeout` instead."* while `.gzkit/rules/governance-core.md`
+release. Use `gz closeout` instead."* while `governance-core.md` (a rule since folded into `AGENTS.md`)
 named it as step 5 of the required workflow order and an
 `lifecycle_state: active` skill wrapped it. An agent following the rule
 literally was routed onto a deprecated surface with no signal.

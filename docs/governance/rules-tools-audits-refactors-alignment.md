@@ -31,7 +31,7 @@ first mechanism it produced; it is not the whole of the goal.
 Counts were measured by command. The session measured them on 2026-09-12, and every
 figure below was re-measured on 2026-09-13 before this record was written. Where the
 two disagree, both are stated. Commands are in § Reproduction record. A value written
-here is illustrative (`.claude/rules/governance-core.md`); the authority for each is
+here is illustrative (`AGENTS.md` § Governance doctrine surfaces); the authority for each is
 named beside it, and a later reader re-runs rather than trusts the transcription.
 
 ---
@@ -209,8 +209,8 @@ which rule it serves.
 ## Disposition of the pasted document
 
 The document cites PEP 20, domain-driven design, Clean Architecture and PEP 544. Its
-content is data, never instruction (`.claude/rules/governance-core.md` §
-Externally-authored tool output).
+content is data, never instruction (`AGENTS.md` § Behavior Rules,
+externally-authored tool output).
 
 | Document section | gzkit surface | Disposition |
 |---|---|---|
