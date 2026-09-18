@@ -5,7 +5,8 @@ announces its own deprecation at runtime is still **prescribed** by a governed
 surface — a binding rule, a skill, or a runbook.
 
 The instance: `gz gates` printed *"will be removed in a future release. Use
-`gz closeout` instead."* while `.gzkit/rules/governance-core.md` named it as
+`gz closeout` instead."* while `.gzkit/rules/governance-core.md` (folded into
+`AGENTS.md` 2026-09-17) named it as
 step 5 of the required workflow order and an `lifecycle_state: active` skill
 wrapped it. An agent following the rule literally was routed onto a deprecated
 surface with no signal that the correct move was a different verb entirely.

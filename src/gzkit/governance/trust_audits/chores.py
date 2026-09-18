@@ -223,7 +223,7 @@ def audit_chore_metadata_authority(project_root: Path) -> list[ValidationError]:
     ``gz chores`` executes ``acceptance.json`` and reads ``registry.json``; a
     ``CHORE.md`` is the procedure an agent reads. Authored twice with nothing
     holding them equal, 17 of 40 chores' criteria and 7 versions drifted
-    (GHI #1002). ``.gzkit/rules/governance-core.md``: *"Cite the authority, not
+    (GHI #1002). ``AGENTS.md`` § Governance doctrine surfaces: *"Cite the authority, not
     the value."* Arms, per registered chore on the project surface:
 
     1. No ``**Version:**`` field, and the newest change note (``**X.Y.Z (``)

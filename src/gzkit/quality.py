@@ -1001,9 +1001,10 @@ def run_invariant_coherence_audit(project_root: Path) -> QualityResult:
     """Run the composition-drift gate: AGENTS.md vs committed rendition playback.
 
     Fails closed when a rendered surface (AGENTS.md) has drifted from the
-    committed rendition it is played back from (ADR-0.0.37). governance-core
-    declares this gate "in the gz check default scope"; its omission from the
-    curated pipeline let committed AGENTS.md<->rendition drift sail through the
+    committed rendition it is played back from (ADR-0.0.37). The rule (then
+    `governance-core.md`, since folded into `AGENTS.md`) declared this gate "in
+    the gz check default scope"; its omission from the curated pipeline let
+    committed AGENTS.md<->rendition drift sail through the
     pre-push gate silently. The validator is clean-run-pure (no ledger write on
     match), so it is gate-safe like its rendition siblings. Recovery on drift:
     `uv run gz agent sync control-surfaces` to re-render, then commit.

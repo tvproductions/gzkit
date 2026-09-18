@@ -11,8 +11,8 @@ Keeping both readers on one registry is the coupled-surface-coherence rule
 notice lived as a bare string literal in `gates_cmd`, so the CLI could announce
 a retirement that no governed surface ever heard about. That gap is exactly what
 GHI #705 recorded — `gz gates` announced its own removal while
-`.gzkit/rules/governance-core.md` still named it as step 5 of the required
-workflow order.
+`.gzkit/rules/governance-core.md` (folded into `AGENTS.md` 2026-09-17) still
+named it as step 5 of the required workflow order.
 
 **Scope discipline.** Register a verb here only when the deprecation is
 unconditional. `gz attest` is deprecated *during closeout* but remains valid

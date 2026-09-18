@@ -66,7 +66,7 @@ def _why_frame(why: str) -> list[str]:
 def _threshold_criterion(project_root: Path) -> str:
     """Render the size/complexity criterion from the declared authority.
 
-    Per `.gzkit/rules/governance-core.md` Non-negotiable rules, thresholds are
+    Per `AGENTS.md` § Governance doctrine surfaces, thresholds are
     read from JSON, never restated in prose. The band values are rendered from
     the table so that editing the table moves the prompt.
     """

@@ -25,7 +25,7 @@
     },
     "measured_at": {
       "type": "string",
-      "description": "ISO 8601 timestamp the declaration's byte spans were measured. Illustrative provenance only -- coverage and spans are re-derived at run time, never trusted from this field (governance-core.md)."
+      "description": "ISO 8601 timestamp the declaration's byte spans were measured. Illustrative provenance only -- coverage and spans are re-derived at run time, never trusted from this field (AGENTS.md § Governance doctrine surfaces)."
     },
     "floor_event_id": {
       "type": "string",

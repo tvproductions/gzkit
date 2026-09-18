@@ -7,8 +7,8 @@ different interpreter than the one the operator tested locally — silently, and
 with a green tree either side of the gap.
 
 Measured at authoring (2026-08-19): five declarations across four files, all
-hand-maintained. That is the shape ``.claude/rules/governance-core.md``
-§ Non-negotiable rules names — a value that binds, restated in prose, with no
+hand-maintained. That is the shape ``AGENTS.md``
+§ Governance doctrine surfaces names — a value that binds, restated in prose, with no
 witness holding the restatements together.
 
 **``.python-version`` is the authority.** uv reads it to resolve the project

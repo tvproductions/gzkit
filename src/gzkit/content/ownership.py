@@ -2398,7 +2398,7 @@ class OwnershipBaseline(BaseModel):
 
     Every field is computed fresh from a surface's text and corpus at call
     time -- nothing here is read from a stored constant
-    (`.claude/rules/governance-core.md`: a value written in a Markdown doc is
+    (`AGENTS.md` § Governance doctrine surfaces: a value written in a Markdown doc is
     illustrative, never authoritative). `entry_count_by_section` is
     REQ-0.35.0-04-08's honesty companion to `coverage_pct`: the span-based
     coverage figure counts an owned section's FULL byte span even where a

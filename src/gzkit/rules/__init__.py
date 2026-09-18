@@ -748,7 +748,7 @@ class RuleFrontmatter(BaseModel):
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
-    id: str = Field(..., description="Rule identifier (kebab-case, e.g., 'governance-core')")
+    id: str = Field(..., description="Rule identifier (kebab-case, e.g., 'cross-platform')")
     paths: list[str] = Field(
         ..., description="Glob patterns for files this rule applies to", min_length=1
     )

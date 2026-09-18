@@ -776,7 +776,7 @@ def _enforce_uncovered_acceptance_confirmation(
        ``--accept-uncovered-reason`` IS the authorization. Returns
        :data:`ATTESTATION_TYPE_OPERATOR_VERBATIM`, matching the shape Gate-5
        already uses for ``--attestation-text``. Per
-       ``.claude/rules/governance-core.md`` v0.3.0: no TTY, PTY, interactive
+       ``AGENTS.md`` § Attestation: no TTY, PTY, interactive
        terminal, or transport mechanism may EVER be cited as a reason an
        agent "cannot" record human attestation — the same rule applies to
        operator-passed waiver authorizations carried on the CLI.

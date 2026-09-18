@@ -107,7 +107,7 @@ def _band_label() -> str:
     number was read from the table. When the block band moved to p99 on operator
     amendment (2026-08-26), the gate began printing the new number beside the old
     percentile -- a value in prose drifting from the authority it cites, which
-    `.claude/rules/governance-core.md` names non-negotiable. Deriving both from
+    `AGENTS.md` § Governance doctrine surfaces rules out. Deriving both from
     one read makes that state unrepresentable.
     """
     row = _block_row()

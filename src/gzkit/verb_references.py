@@ -4,7 +4,7 @@ gzkit carried two of these. ``hooks/obpi.py`` (GHI #194 / #432) read fenced
 blocks, multi-word chains, and a speculative-skip marker; the operator-doc
 checker in ``governance/trust_audits/cli.py`` read none of the three — and it
 guarded the wider surface, the whole operator-doc corpus that
-``.gzkit/rules/governance-core.md`` § Operator-doc verb resolution declares.
+root ``AGENTS.md`` § Governance doctrine surfaces declares.
 
 Each of the weaker copy's three gaps had already been filed separately (#745
 fenced blocks, #588 multi-word, #748 the marker). That is the signature of **a
@@ -58,7 +58,7 @@ GZ_CHAIN_PATTERN = re.compile(
 #: Speculative-skip marker. ONE marker across every governed verb-checker: the
 #: suppression means the same thing everywhere ("this names a planned surface
 #: that cannot resolve yet"), and a per-checker token would make the recovery
-#: `governance-core.md` promises depend on which validator happened to fire.
+#: `AGENTS.md` § Governance doctrine surfaces promises depend on which validator happened to fire.
 #: Mirrors the shape in ``complexity_doctrine_links.py`` (GHI #432).
 SPECULATIVE_MARKER = "<!-- gz-validate-skip: command-shape -->"
 

@@ -117,7 +117,7 @@ _NO_SKILL_VERBS: dict[str, str] = {
 def _cli_alignment_sources(project_root: Path) -> list[Path]:
     """Enumerate every operator-facing surface that may carry ``gz <verb>`` strings.
 
-    Tracks `.gzkit/rules/governance-core.md` § Operator-doc verb resolution,
+    Tracks `AGENTS.md` § Governance doctrine surfaces (operator-doc verb resolution),
     which declares ``docs/**/*.md``, ``features/**/*.feature`` and
     ``.gzkit/skills/**/SKILL.md``. This function used to enumerate four
     directories under ``docs/user`` instead, so the rest of the declared field
@@ -222,7 +222,7 @@ def _collect_verb_references(
 
 
 def audit_cli_alignment(project_root: Path) -> list[ValidationError]:
-    """Enforce `.gzkit/rules/governance-core.md` § Operator-doc verb resolution (GHI #198).
+    """Enforce `AGENTS.md` § Governance doctrine surfaces, verb resolution (GHI #198).
 
     Resolution walks the live parser tree via
     :func:`gzkit.verb_references.verify_gz_chain`, so a multi-word reference is
@@ -266,7 +266,7 @@ def audit_cli_alignment(project_root: Path) -> list[ValidationError]:
 def _manpage_alignment_sources(project_root: Path) -> list[Path]:
     """Operator-doc surfaces that may carry ``manpages/<verb>.md`` references.
 
-    ``.gzkit/rules/governance-core.md`` § Operator-doc verb resolution declares
+    ``AGENTS.md`` § Governance doctrine surfaces declares
     one scope for both bindings, so this reads the enumeration
     :func:`_cli_alignment_sources` owns — ADR/OBPI briefs included, where the
     gz-<verb>.md convention drift accumulated; terminal briefs are filtered by
@@ -282,7 +282,7 @@ def audit_manpage_alignment(project_root: Path) -> list[ValidationError]:
     Manpages live at ``docs/user/manpages/<verb>.md``; no manpage file uses a
     ``gz-`` prefix. A ``manpages/gz-<verb>.md`` reference is therefore always a
     dead pointer — the same class of defect as an unresolvable ``gz <verb>``
-    reference (``.gzkit/rules/governance-core.md`` § Operator-doc verb
+    reference (``AGENTS.md`` § Governance doctrine surfaces, verb
     resolution). The recovery is unconditional: drop the ``gz-`` prefix (a
     planned-but-unlanded manpage still uses ``<verb>.md``), so the check needs no
     speculative-marker escape. Terminal OBPI briefs are exempt — their
@@ -311,7 +311,7 @@ def audit_manpage_alignment(project_root: Path) -> list[ValidationError]:
                             f"`manpages/{bad}` uses the non-existent gz- prefixed manpage "
                             f"convention; manpages live at {MANPAGE_DIR.as_posix()}/<verb>.md. "
                             f"Drop the gz- prefix (-> manpages/{bad[3:]}). "
-                            f"(governance-core § Operator-doc verb resolution; GHI #532.)"
+                            f"(AGENTS.md § Governance doctrine surfaces; GHI #532.)"
                         ),
                     )
                 )
