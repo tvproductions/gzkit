@@ -74,6 +74,16 @@ uv run gz arb patterns --json
   (`$id: gzkit.arb.lint_receipt.schema.json`)
 - **Step receipt schema:** `data/schemas/arb_step_receipt.schema.json`
   (`$id: gzkit.arb.step_receipt.schema.json`)
+- **Red-witness receipt schema:** `data/schemas/arb_red_receipt.schema.json`
+  (`$id: gzkit.arb.red_receipt.schema.json`)
+- **Advisor-QC verdict schema:** `data/schemas/arb_advisor_verdict.schema.json`
+  (`$id: gzkit.arb.advisor_verdict.schema.json`) — the `arb-step-judge-*` receipts
+  `gz content advise-rendition` records
+- **`exit_status`** on lint and step receipts is any integer: a negative value means the
+  child was terminated by that signal number, recorded as it happened.
+- **Every writer is held to its schema** by `tests/arb/test_writer_validator_lockstep.py`,
+  which builds a receipt through each writer and runs it through `gz arb validate`
+  (GHI #1026).
 - **Storage:** `artifacts/receipts/` (configurable via `arb.receipts_root` in `.gzkit.json`)
 
 ## Receipt-binding gate

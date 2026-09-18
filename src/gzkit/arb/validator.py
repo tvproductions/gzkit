@@ -7,6 +7,7 @@ code and schema, and surfaces unknown schema IDs early.
 from __future__ import annotations
 
 import json
+import shlex
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -21,6 +22,7 @@ from gzkit.arb.ruff_reporter import SCHEMA_ID as LINT_SCHEMA_ID
 from gzkit.arb.step_reporter import SCHEMA_ID as STEP_SCHEMA_ID
 from gzkit.canonical_steps import CANONICAL_STEP_COMMANDS
 from gzkit.commands.common import get_project_root
+from gzkit.content.advisor_qc import SCHEMA_ID as ADVISOR_VERDICT_SCHEMA_ID
 
 
 class ArbReceiptValidationResult(BaseModel):
@@ -105,6 +107,12 @@ def _schema_path_for_id(schema_id: str) -> Path | None:
         return root / "data" / "schemas" / "arb_step_receipt.schema.json"
     if schema_id == RED_SCHEMA_ID:
         return root / "data" / "schemas" / "arb_red_receipt.schema.json"
+    # The advisor-QC engine writes into the same receipts root under an
+    # `arb-step-judge-` id, so this validator scans it; without an entry here
+    # every verdict cited at a content attestation read as "unknown schema"
+    # (GHI #1026).
+    if schema_id == ADVISOR_VERDICT_SCHEMA_ID:
+        return root / "data" / "schemas" / "arb_advisor_verdict.schema.json"
     return None
 
 
@@ -264,8 +272,8 @@ def _provenance_error(payload: dict[str, Any]) -> str | None:
     return (
         f"non-canonical provenance: step.name='{name}' requires "
         f"step.command={expected!r} but got {observed!r}. "
-        "Regenerate the receipt via `gz arb " + name + "` (or the canonical "
-        "invocation listed in AGENTS.md § Attestation)."
+        f"Regenerate the receipt with `uv run gz arb step --name {name} -- "
+        f"{shlex.join(expected)}`."
     )
 
 

@@ -117,8 +117,7 @@
         },
         "exit_status": {
             "type": "integer",
-            "minimum": 0,
-            "description": "Process exit status from the lint run."
+            "description": "Process exit status from the lint run. Negative means the child was terminated by that signal number (POSIX); the receipt records what ran rather than clamping it."
         }
     }
 }

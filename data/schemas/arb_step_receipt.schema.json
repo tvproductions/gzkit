@@ -73,8 +73,7 @@
         },
         "exit_status": {
             "type": "integer",
-            "minimum": 0,
-            "description": "Process exit status from the step run."
+            "description": "Process exit status from the step run. Negative means the child was terminated by that signal number (POSIX); the receipt records what ran rather than clamping it."
         },
         "duration_ms": {
             "type": "integer",

@@ -1,0 +1,92 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "gzkit.arb.advisor_verdict.schema.json",
+    "title": "ARB advisor-QC verdict receipt",
+    "description": "Verdict recorded by gzkit.content.advisor_qc.record_verdict (ADR-0.0.37 OBPI-24). Advisory, never gating: any score is recordable; only a missing explanation is malformed (ADR-0.0.39 explanation-before-verdict).",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "schema",
+        "run_id",
+        "step",
+        "surface",
+        "consumer",
+        "explanation",
+        "verdict",
+        "timestamp_utc",
+        "exit_status"
+    ],
+    "properties": {
+        "schema": {
+            "type": "string",
+            "const": "gzkit.arb.advisor_verdict.v1",
+            "description": "Schema identifier for this receipt."
+        },
+        "run_id": {
+            "type": "string",
+            "pattern": "^arb-step-judge-[a-f0-9]{32}$",
+            "description": "Receipt id; `judge` is the step segment (a hyphen is illegal there)."
+        },
+        "step": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "name",
+                "metric"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "const": "judge"
+                },
+                "metric": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            }
+        },
+        "surface": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Control surface scored, e.g. AGENTS.md."
+        },
+        "consumer": {
+            "type": [
+                "string",
+                "null"
+            ],
+            "description": "Target consumer, or null."
+        },
+        "explanation": {
+            "type": "string",
+            "pattern": "\\S",
+            "description": "The advisor's reasoning; serialized before the verdict."
+        },
+        "verdict": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+                "metric",
+                "score"
+            ],
+            "properties": {
+                "metric": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "score": {
+                    "type": "number"
+                }
+            }
+        },
+        "timestamp_utc": {
+            "type": "string",
+            "description": "ISO-8601 UTC timestamp."
+        },
+        "exit_status": {
+            "type": "integer",
+            "const": 0,
+            "description": "Always 0: recording a verdict is not a process run."
+        }
+    }
+}

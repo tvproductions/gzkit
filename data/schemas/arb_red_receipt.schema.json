@@ -63,6 +63,11 @@
             "minLength": 7,
             "description": "The commit the test ran against, with production hunks withheld."
         },
+        "base_provenance": {
+            "type": "string",
+            "enum": ["working-tree", "reconstructed"],
+            "description": "Which base the test ran against: the working tree at HEAD, or a reconstructed pre-test parent (GHI #849). Optional: receipts written before 2026-09-06 predate the field."
+        },
         "exit_status": {
             "type": "integer",
             "description": "Exit code of the base-tree test run. Zero means NO RED."
