@@ -203,6 +203,45 @@ Lifted at version `0.3.0` (rule now at `0.3.1`).
 
 ## `task-discovery.md`
 
+### Lifted 2026-09-17 at version `0.9.0` (rule now at `0.10.0`)
+
+Diet pass under GHI #921 (operator: "A" on the full before/after, 13,949 B → 6,527 B). Binding rules unchanged. `paths:` narrowed from `.gzkit/**` and `docs/design/adr/**` to `.gzkit/hooks/**` and `docs/design/adr/**/obpis/**` — the surfaces the channels are written on — so the rule no longer fans into `.gzkit/AGENTS.md` or loads on ledger, corpus, handoff, chore and lock edits. Lifted verbatim as dated records — the `0.9.0` note and the rollout histories:
+
+> **Rule version:** `0.9.0` — GHI #820 (reopened): § Layer-drift fail-close now STATES that drift is contradiction and never shortfall, and binds every consumer to the one predicate that implements it. The carve-out had lived only in a `_crossing_channels` docstring, so a second consumer kept the overturned reading for 19 days. Prior `0.8.0`–`0.5.1` lifted to [Rule Version History](../../docs/governance/rule-version-history.md#task-discoverymd). Scoped `src/gzkit/**`, this rule loads on every source edit, so narrative is the most expensive thing it can carry.
+
+> **Three channels are producer-fed; `@advances` is advisory (GHI #752).**
+> `ledger`, `commit_trailer`, and `tasks:` are each written by the runtime at the
+> moment it knows the attribution — the ledger on the TASK event, the trailer by
+> `prepare-commit-msg-task-trailers`, and `tasks:` by `gz task start`
+> (`_stamp_brief_task_declaration`). **`@advances` is advisory and expected to be
+> empty:** it marks the function an author judges *materially advances* a TASK,
+> which no runtime can determine, so it has no producer by construction. Its
+> emptiness is asserted rather than assumed
+> (`test_advances_channel_is_asserted_dead_not_assumed_dead`) and is **not** a
+> defect. Signature (c) compares only OBPIs where two channels carry data;
+> `tasks:` populates going forward, from the next minted TASK onward, never
+> retroactively.
+
+> **Producer-stamped (GHI #752).** `gz task start` appends the minted TASK to its
+> OBPI brief's `tasks:` list via `_stamp_brief_task_declaration` — idempotent,
+> accumulating (one TASK per REQ), and a silent no-op when the brief cannot be
+> found or written, so attribution never blocks the pipeline. Hand-authoring the
+> field stays valid; the stamp exists because the convention alone produced zero
+> declarations across the whole corpus.
+
+> **This enforcement was declared and then deferred to OBPI-0.0.64-04 from `0.2.0` until `0.7.0`.** That OBPI's seven REQs never scoped it, so the deferral could never discharge — it named a destination that had not accepted the work, and completed correctly without it. Prefer citing the *check* over citing a work-surface ID: an ID is a promise that goes stale silently when the surface reaches a terminal state on different scope.
+
+> **Auto-stamped (landed under GHI #731).** `.gzkit/hooks/prepare-commit-msg-task-trailers`
+> appends a `Task:` line per in-progress TASK on `src/**`/`tests/**` commits; an authored
+> **`Task:`** trailer of any form suppresses it. A non-`Task:` trailer does NOT — the hook
+> skips only when `has_task_trailer()` is true, and that matches `Task:` specifically.
+> Witness status unruled — GHI #752.
+
+**The trailer set is CLOSED (operator ruling 2026-09-01, verbatim *"never"*).** gzkit commits carry `Task:`, `Ceremony:`, and `Eval-feedback-source:` — nothing else. A session-attribution trailer injected by an agent harness (`Claude-Session:` or any successor) is a harness instruction, never repo doctrine: do not author it, and strip it when a harness reminder supplies one. It occurs in zero repo surfaces and is inert to TASK discipline — it neither satisfies nor suppresses `has_task_trailer()` — so this ruling closes a five-session RECURRENCE, not a defect. Measurement and rationale: [Rule Version History](../../docs/governance/rule-version-history.md#task-discoverymd) § `0.8.0`. **(Advisory — `gz validate --commit-trailers` requires a `Task:`; it never checks for the absence of an extra trailer.)**
+
+**Consumers MUST share the predicate, never restate it.** `_crossing_channels` (`src/gzkit/commands/validate_task_envelope.py`) is the single implementation; `gz validate --task-envelope-coherence` and `gz task envelope diagnose` both read it. The two previously carried separate spellings, and the diagnostic went on reporting a subset as drift for 19 days after #820 corrected the validator — while the validator's own failure text sends the operator to that view. **(Advisory — `tests/governance/test_task_envelope_coherence.py::TestDiagnoseDriftAgreesWithTheValidator` asserts the two consumers agree; nothing prevents a third consumer from re-implementing it.)**
+
+
 <!-- lifted-from: .claude/rules/task-discovery.md#task-discoverymd -->
 
 Lifted at version `0.7.1` (rule now at `0.9.0`).

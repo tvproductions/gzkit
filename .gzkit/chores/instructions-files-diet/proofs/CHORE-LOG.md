@@ -3372,3 +3372,8 @@ Every binding rule kept; measured instances, histories and the mutation-sweep ex
 Full after presented (14,118 B → 7,049 B; anchors 53/73/74 verbatim). Operator asked "what does token block
 discipline do?" — answered from the ledger (394 claims / 374 releases / 32 TTL warnings; 22 exchange records:
 6 complete, 6 external_blocker, 6 reaping) and the code that enforces it. Operator: "A".
+
+## 2026-09-17 — task-discovery.md (ruled)
+
+Full after presented (13,949 B → 6,527 B; anchors 60/60b/60c verbatim); `paths:` narrowed from `.gzkit/**` and
+`docs/design/adr/**` to `.gzkit/hooks/**` and `docs/design/adr/**/obpis/**` (`src/gzkit/**` kept). Operator: "A".

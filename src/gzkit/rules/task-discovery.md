@@ -2,162 +2,59 @@
 id: task-discovery
 paths:
   - "src/gzkit/**"
-  - "docs/design/adr/**"
-  - ".gzkit/**"
+  - "docs/design/adr/**/obpis/**"
+  - ".gzkit/hooks/**"
 description: Four-channel TASK attribution discovery taxonomy for governance traceability
 ---
 
-<!-- rule-version: 0.9.0 -->
+<!-- rule-version: 0.10.0 -->
 
 # TASK Discovery (gzkit)
 
-> **Rule version:** `0.9.0` — GHI #820 (reopened): § Layer-drift fail-close now STATES that drift is contradiction and never shortfall, and binds every consumer to the one predicate that implements it. The carve-out had lived only in a `_crossing_channels` docstring, so a second consumer kept the overturned reading for 19 days. Prior `0.8.0`–`0.5.1` lifted to [Rule Version History](../../docs/governance/rule-version-history.md#task-discoverymd). Scoped `src/gzkit/**`, this rule loads on every source edit, so narrative is the most expensive thing it can carry.
+> **Rule version:** `0.10.0` — diet pass under GHI #921: rollout histories (GHI #752/#753 deferrals, the 19-day `_crossing_channels` split, the trailer-set recurrence measurement) lifted to [Rule Version History](../../docs/governance/rule-version-history.md#task-discoverymd); `paths:` narrowed from `.gzkit/**` and `docs/design/adr/**` to the surfaces the four channels are written on (`.gzkit/hooks/**`, the OBPI briefs), since the old scope fanned this rule into every `.gzkit` and ADR subtree contract. Binding rules unchanged.
 
 ## Invariant
 
 **Every unit of labor traceable to a TASK MUST surface that attribution through at least one of four discovery channels — with a floor: any commit touching `src/**` or `tests/**` MUST additionally carry a `Task:` trailer.**
 
-The channels are **cumulative-with-a-floor, not a free choice.** An `@advances` decorator on a `src/gzkit/**` function does *not* discharge the trailer obligation for the commit that lands it: `gz validate --commit-trailers` fails closed on src/ and tests/ scope regardless of decoration (`has_task_trailer()` in `src/gzkit/tasks.py`; GHI #552). `@advances` registration has no commit-time consequence. See `.gzkit/rules/tests.md` § TASK-Driven Workflow. Layer-drift across the channels (different TASK IDs for the same logical unit) is itself a fail-close signature, not a tolerable inconsistency. The four-channel design ensures no single channel can become the silent bypass surface that GHI #553 named.
+The channels are cumulative with that floor, not a free choice: an `@advances` decorator does not discharge the trailer obligation for the commit that lands it — `gz validate --commit-trailers` fails closed on src/ and tests/ scope regardless (`has_task_trailer()` in `src/gzkit/tasks.py`; GHI #552). Trailer forms are the table in `.gzkit/rules/tests.md` § TASK-Driven Workflow.
 
 ## The Four Channels
 
-| Channel | Surface | Authoring contract | Discovery mechanism |
-|---------|---------|--------------------|--------------------|
-| Python `@advances` | Source functions in `src/gzkit/**` | `@advances("TASK-X.Y.Z-NN-MM-PP")` decorator on functions that materially advance the named TASK | Import-time decoration registers `TaskAttributionRecord`; module-level registry queried via `get_task_registry()` (ADR-0.0.64 / OBPI-02) |
-| Frontmatter `tasks:` | Structured artifacts (OBPI briefs, ADR packages where applicable) | `tasks: list[str]` YAML frontmatter field listing TASK IDs this artifact advances | YAML parser walks frontmatter; schema-enforced on both readers — `BriefStructure._validate_tasks` on the model path, signature (e) of `gz validate --task-envelope-coherence` on the corpus path (GHI #753) |
-| Commit trailer | Git commit messages | `Task: TASK-X.Y.Z-NN-MM-PP` trailer in the final paragraph | `parse_task_trailers()` in `gzkit.tasks`; validated by `gz validate --commit-trailers` |
-| Ledger `task_id` | Worklog event types in `.gzkit/ledger.jsonl` | Optional `task_id: str | None` field on the eight validator-enforced worklog event types (OBPI-0.0.64-01; additively present on further event types) | JSON deserialization via `gzkit.events`; validator scope per OBPI-04 |
+| Channel | Surface | Contract | Producer / discovery |
+|---|---|---|---|
+| Python `@advances` | functions in `src/gzkit/**` | `@advances("TASK-X.Y.Z-NN-MM-PP")` on a function that materially advances the TASK | author only; import-time registry via `get_task_registry()` |
+| Frontmatter `tasks:` | OBPI briefs (ADR packages where applicable) | `tasks: list[str]` of TASK IDs the artifact advances | stamped by `gz task start` (`_stamp_brief_task_declaration`); read by `BriefStructure._validate_tasks` and signature (e) of `gz validate --task-envelope-coherence` |
+| Commit trailer | commit messages | `Task: TASK-…` in the final paragraph | stamped by `.gzkit/hooks/prepare-commit-msg-task-trailers` on `src/**`/`tests/**` commits unless a `Task:` trailer is authored; read by `parse_task_trailers()`, enforced by `gz validate --commit-trailers` |
+| Ledger `task_id` | worklog events in `.gzkit/ledger.jsonl` | optional `task_id` on the eight coherence-enforced event types (`artifact_edited`, `gate_checked`, `evidence_emitted`, `policy_breach`, `validator_run`, `tool_invoked`, `agent_message`, `lint_run`) | written by the runtime on the TASK event; signature (a) of `--task-envelope-coherence` |
 
-> **Three channels are producer-fed; `@advances` is advisory (GHI #752).**
-> `ledger`, `commit_trailer`, and `tasks:` are each written by the runtime at the
-> moment it knows the attribution — the ledger on the TASK event, the trailer by
-> `prepare-commit-msg-task-trailers`, and `tasks:` by `gz task start`
-> (`_stamp_brief_task_declaration`). **`@advances` is advisory and expected to be
-> empty:** it marks the function an author judges *materially advances* a TASK,
-> which no runtime can determine, so it has no producer by construction. Its
-> emptiness is asserted rather than assumed
-> (`test_advances_channel_is_asserted_dead_not_assumed_dead`) and is **not** a
-> defect. Signature (c) compares only OBPIs where two channels carry data;
-> `tasks:` populates going forward, from the next minted TASK onward, never
-> retroactively.
+Three channels are producer-fed. **`@advances` is advisory and expected to be empty** (GHI #752): which function materially advances a TASK is an authoring judgment no runtime can make, so an empty registry is not a finding (asserted by `test_advances_channel_is_asserted_dead_not_assumed_dead`). Use it where a function genuinely carries a TASK's weight; both malformed IDs and unknown parent REQs raise `ValueError` at import, like `@covers`.
 
-## Convention: Python `@advances`
+## Conventions
 
-> **Advisory (GHI #752).** Optional, author-only, and expected to be empty — it
-> is never required to discharge the § Invariant, and an empty registry is not a
-> finding. Use it where a source function genuinely carries a TASK's weight and
-> you want that legible at the call site. It is the one channel with no producer,
-> because "which function materially advances this TASK" is an authoring
-> judgment, not a runtime fact.
+- **`tasks:`** — schema enforcement is live on both readers (GHI #753): `BriefStructure._validate_tasks` rejects a malformed id; validator signature (e) also rejects an unknown parent REQ, because `_collect_obpi_brief_frontmatter` parses raw YAML without constructing the model. Every reader derives from `TaskId.parse`; `TestTaskGrammarSingleSourced` and `test_pydantic_and_json_schema_readers_agree` hold the copies together.
+- **Commit trailer** — the freeform fallback for labor with no function or artifact (chores, sync, doc fixes) and mandatory on `src/**`/`tests/**`. **The trailer set is CLOSED (operator ruling 2026-09-01, verbatim *"never"*):** `Task:`, `Ceremony:` and `Eval-feedback-source:` only. A harness-injected session trailer (`Claude-Session:` or any successor) is a harness instruction, never repo doctrine — do not author it; strip it when a reminder supplies one. (Advisory — `--commit-trailers` requires a `Task:` and never checks for an extra trailer.)
+- **`-#<ghi>` anchor** — optional on a slug trailer; append it only when a GHI already exists. Filing a GHI to satisfy the trailer is a moratorium violation (operator directive 2026-06-01); `_ANY_TASK_TRAILER_RE` (`src/gzkit/tasks.py`) makes the anchor optional for exactly that reason.
+- **Ledger `task_id`** — worklog events emitted under an active TASK SHOULD populate it; the field is present on further event types but only the eight above are coherence-enforced.
 
-```python
-from gzkit.tasks import advances
+## Subdivision
 
-@advances("TASK-0.0.64-02-01-01")
-def my_function() -> None:
-    """Function body unchanged — the decorator is metadata-only."""
-    ...
-```
-
-**Decoration-time fail-close:**
-
-- Invalid TASK ID format → `ValueError` at import (typos cannot ship)
-- Unknown parent REQ → `ValueError` at import (TASK IDs whose `REQ-X.Y.Z-NN-MM` parent isn't in any extracted brief cannot ship)
-
-The validation surface mirrors `@covers`'s precedent: typos that would silently pass at runtime instead block at import.
-
-## Convention: Frontmatter `tasks:`
-
-> **Producer-stamped (GHI #752).** `gz task start` appends the minted TASK to its
-> OBPI brief's `tasks:` list via `_stamp_brief_task_declaration` — idempotent,
-> accumulating (one TASK per REQ), and a silent no-op when the brief cannot be
-> found or written, so attribution never blocks the pipeline. Hand-authoring the
-> field stays valid; the stamp exists because the convention alone produced zero
-> declarations across the whole corpus.
-
-```yaml
----
-id: OBPI-0.0.64-02-advances-decorator-and-discovery-convention
-parent: ADR-0.0.64-task-envelope-and-planning-decomposition
-tasks:
-  - TASK-0.0.64-02-01-01
-  - TASK-0.0.64-02-02-01
----
-```
-
-The `tasks:` channel is the structured-artifact equivalent of the `@advances` decorator — it declares which TASKs an artifact advances when the artifact itself is the deliverable (vs. when source functions are). Use this channel on briefs and ADR-package frontmatter when the work is documentation-shaped rather than code-shaped.
-
-Schema enforcement for `tasks:` — rejecting malformed TASK IDs and unknown parents — **is live on both readers** (GHI #753):
-
-| Reader | Check | Arm |
-|---|---|---|
-| `BriefStructure._validate_tasks` | `TaskId.parse` per entry | malformed id |
-| `gz validate --task-envelope-coherence` signature (e) | `TaskId.parse`, then derived `REQ-<semver>-<obpi_item>-<req_index>` against every brief's `reqs:` | malformed id **and** unknown parent |
-
-Both arms are needed because they sit on different paths: `_collect_obpi_brief_frontmatter` parses raw YAML and never constructs `BriefStructure`, so a malformed id on disk would otherwise reach signature (c)'s channel comparison as a legitimate declaration. The parent-REQ arm is validator-side rather than model-side because resolving it means scanning the brief corpus off disk, which the model does not do (`.gzkit/rules/hexagonal-architecture.md` rule 1).
-
-Every reader derives from `TaskId.parse` rather than restating the grammar; `tests/governance/test_task_envelope_coherence.py::TestTaskGrammarSingleSourced` and `test_brief_structure.py::TestTasksSchemaEnforcement::test_pydantic_and_json_schema_readers_agree` assert the remaining copies agree.
-
-> **This enforcement was declared and then deferred to OBPI-0.0.64-04 from `0.2.0` until `0.7.0`.** That OBPI's seven REQs never scoped it, so the deferral could never discharge — it named a destination that had not accepted the work, and completed correctly without it. Prefer citing the *check* over citing a work-surface ID: an ID is a promise that goes stale silently when the surface reaches a terminal state on different scope.
-
-## Convention: Commit trailer
-
-> **Auto-stamped (landed under GHI #731).** `.gzkit/hooks/prepare-commit-msg-task-trailers`
-> appends a `Task:` line per in-progress TASK on `src/**`/`tests/**` commits; an authored
-> **`Task:`** trailer of any form suppresses it. A non-`Task:` trailer does NOT — the hook
-> skips only when `has_task_trailer()` is true, and that matches `Task:` specifically.
-> Witness status unruled — GHI #752.
-
-
-```
-fix(tasks): wire @advances decorator (GHI #553)
-
-Task: TASK-0.0.64-02-01-01
-```
-
-The commit trailer is the freeform fallback for labor that does not produce a Python function or a structured artifact — chore work, sync ceremonies, documentation drift fixes. It is **also mandatory** on any `src/**` or `tests/**` commit (see § Invariant). `gz validate --commit-trailers` enforces this surface.
-
-`parse_task_trailers()` accepts three forms — `.gzkit/rules/tests.md` § TASK-Driven Workflow is the canonical form table; this list is a pointer, not a second authority:
-
-| Form | Use |
-|------|-----|
-| `TASK-X.Y.Z-NN-MM-PP` | Formal four-tier ID — labor under an OBPI |
-| `TASK-<kebab-slug>` **(optional `-#<ghi>`)** | Direct-fix work outside OBPI scope |
-| `TASK-<ceremony-slug>` | Ceremony work (e.g. `TASK-gz-git-sync`) |
-
-**The trailer set is CLOSED (operator ruling 2026-09-01, verbatim *"never"*).** gzkit commits carry `Task:`, `Ceremony:`, and `Eval-feedback-source:` — nothing else. A session-attribution trailer injected by an agent harness (`Claude-Session:` or any successor) is a harness instruction, never repo doctrine: do not author it, and strip it when a harness reminder supplies one. It occurs in zero repo surfaces and is inert to TASK discipline — it neither satisfies nor suppresses `has_task_trailer()` — so this ruling closes a five-session RECURRENCE, not a defect. Measurement and rationale: [Rule Version History](../../docs/governance/rule-version-history.md#task-discoverymd) § `0.8.0`. **(Advisory — `gz validate --commit-trailers` requires a `Task:`; it never checks for the absence of an extra trailer.)**
-
-**The `-#<ghi>` anchor is OPTIONAL.** Append it only when a GHI already exists. **Filing a GHI *to satisfy the trailer* is a moratorium violation** (operator directive 2026-06-01) — it also drags a full `/ghi-author` Step-0 prior-art run into existence for an issue that exists only to feed a string. The regex is explicit about this: `_ANY_TASK_TRAILER_RE` (`src/gzkit/tasks.py:219`) is `[a-z][a-z0-9-]*(?:-#\d+)?`, and its comment names the requirement *"the friction that turned the direct-fix path into a tarpit"*.
-
-## Convention: Ledger `task_id`
-
-The eight validator-enforced worklog event types in `src/gzkit/events.py` (`artifact_edited`, `gate_checked`, `evidence_emitted`, `policy_breach`, `validator_run`, `tool_invoked`, `agent_message`, `lint_run` — the set `gz validate --task-envelope-coherence` signature (a) checks) carry an optional `task_id: str | None = None` field (OBPI-0.0.64-01). The field is additively present on further telemetry/ceremony event types as well, but only these eight are coherence-enforced. Worklog events emitted under an active TASK SHOULD populate this field.
-
-## Subdivision sub-invariant
-
-A single REQ may have multiple TASKs (labor-subdivision via `seq=01`, `seq=02`, …). When work subdivides, each labor unit MUST get its own TASK ID — not a shared coarse-default-bucket TASK. The `seq` component is the subdivision axis; the OBPI pipeline mints `seq=01` per REQ as the coarse-default bucket, and operators/agents must `gz task start --seq next` to subdivide further.
-
-Default-bucket-only OBPIs (every REQ has only `seq=01`) without a `req_atomic: list[str]` exemption in brief frontmatter are themselves a fail-close signature (OBPI-04 validator scope).
+One REQ may have several TASKs (`seq=01`, `seq=02`, …). Each unit of labor gets its own TASK ID: the pipeline mints `seq=01` per REQ as the coarse bucket, and `gz task start --seq next` subdivides. An OBPI whose REQs all stop at `seq=01` without a `req_atomic: list[str]` exemption in brief frontmatter is a fail-close signature (OBPI-04 validator scope).
 
 ## Layer-drift fail-close
 
-When a single logical unit of labor surfaces across multiple channels with different TASK IDs — `@advances` decorator names TASK-A, frontmatter `tasks:` names TASK-B, commit trailer names TASK-C — the divergence IS the signal. The OBPI-04 validator will fail Heavy lane closeouts on layer-drift; Lite lane warns.
+When one unit of labor surfaces across channels with different TASK IDs, the divergence is the signal. The OBPI-04 validator will fail Heavy lane closeouts on layer-drift; Lite lane warns.
 
-**Drift is contradiction, never shortfall — nested channels do not drift, and consumers share `_crossing_channels` rather than restating it** (GHI #820). Channels whose declarations are *nested* — one a subset of another — do not drift; the smaller is merely further behind, which is the normal state of a channel that accretes. Two channels drift only when each holds a TASK ID the other lacks. Reporting a subset as drift makes the gate satisfiable only by stamping trailers onto commits that did not do that work — the act § Do Not forbids by name.
-
-**Consumers MUST share the predicate, never restate it.** `_crossing_channels` (`src/gzkit/commands/validate_task_envelope.py`) is the single implementation; `gz validate --task-envelope-coherence` and `gz task envelope diagnose` both read it. The two previously carried separate spellings, and the diagnostic went on reporting a subset as drift for 19 days after #820 corrected the validator — while the validator's own failure text sends the operator to that view. **(Advisory — `tests/governance/test_task_envelope_coherence.py::TestDiagnoseDriftAgreesWithTheValidator` asserts the two consumers agree; nothing prevents a third consumer from re-implementing it.)**
+**Drift is contradiction, never shortfall — nested channels do not drift, and consumers share `_crossing_channels` rather than restating it** (GHI #820). Two channels drift only when each holds a TASK ID the other lacks; a channel whose declarations are a subset of another's is merely behind, the normal state of a channel that accretes. `_crossing_channels` (`src/gzkit/commands/validate_task_envelope.py`) is the single implementation, read by both `gz validate --task-envelope-coherence` and `gz task envelope diagnose` (`TestDiagnoseDriftAgreesWithTheValidator` asserts they agree; nothing prevents a third consumer from re-implementing it).
 
 ## Do Not
 
-- Do not use `@advances` as a comment marker (`# @advances: TASK-...`) — the decorator is the contract; comments have no AST node, no decoration-time validation, no typo defense
-- Do not pre-register full TASK IDs in a closed set — TASKs are minted by the pipeline at runtime; validation is via the parent REQ
-- Do not coarse-bucket subdivisible labor under a single `seq=01` TASK — subdivision via `seq=02`, `seq=03`, … is the mechanism, not an option
-- Do not silently rewrite TASK IDs across channels to "make the validator happy" — layer-drift is the signal, not the defect to suppress
+- Do not use `@advances` as a comment marker — the decorator is the contract; a comment has no decoration-time validation.
+- Do not pre-register TASK IDs in a closed set — TASKs are minted at runtime; validation is via the parent REQ.
+- Do not coarse-bucket subdivisible labor under one `seq=01` TASK.
+- Do not rewrite TASK IDs across channels to satisfy the validator — layer-drift is the signal, not the defect.
 
 ## Related
 
-- ADR-0.0.64-task-envelope-and-planning-decomposition (parent)
-- OBPI-0.0.64-01-task-id-worklog-schema-additive (Ledger `task_id` channel)
-- OBPI-0.0.64-04-gz-validate-task-envelope-coherence (validator)
-- `.gzkit/rules/skill-surface-sync.md` (rule version-discipline convention)
-- `src/gzkit/tasks.py` (`@advances`, `TaskAttributionRecord`, registry)
+- ADR-0.0.64-task-envelope-and-planning-decomposition (parent); OBPI-0.0.64-01 (ledger `task_id`); OBPI-0.0.64-04 (validator)
+- `src/gzkit/tasks.py` (`@advances`, `TaskAttributionRecord`, `TaskId`, registry); `.gzkit/rules/tests.md` § TASK-Driven Workflow (trailer forms)
