@@ -3386,3 +3386,7 @@ retention validator never reads it — noted). Operator: "A".
 ## 2026-09-17 — cli.md (ruled)
 
 Full after presented (11,949 B → 6,893 B; anchors 76–82/85/86/91/93 verbatim). Operator: "A".
+
+## 2026-09-17 — skill-surface-sync.md (ruled)
+
+Full after presented (11,719 B → 5,785 B; anchors 31/32/33/33a/33b/33c verbatim). Operator: "A".

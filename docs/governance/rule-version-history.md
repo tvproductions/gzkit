@@ -535,6 +535,94 @@ Lifted 2026-08-29 at version `0.5.1` (rule now at `0.6.0`).
 
 ## `skill-surface-sync.md`
 
+### Lifted 2026-09-17 at version `0.12.0` (rule now at `0.13.0`)
+
+Diet pass under GHI #921 (operator: "A" on the full before/after, 11,719 B → 5,785 B). Binding rules unchanged. Lifted verbatim as dated records — the `0.12.0` note, rule 2's GHI #307/2026-07-21 history, § Procedure, § Version discipline, § Conflict resolution, § Do Not, and the class-classifier declaration narrative:
+
+> **Rule version:** `0.12.0` — diet pass under GHI #921 (operator ruling 2026-08-29, *"we are compressing everything and anything that the agent can consume"*). Version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#skill-surface-syncmd). Binding rules unchanged.
+
+2. **Bump the version on every edit.** Increment the version marker before saving. The marker differs by surface:
+   - **Skills** carry the marker **nested under `metadata:`** as `metadata.skill-version`, a quoted `X.Y.Z` string. That exact key is what `skills_audit.py` and `sync_skill_validation.py` read; a top-level `skill-version:` sibling of `name:`/`owner:` is invisible to both and was silently unvalidated on 11 skills until GHI-less direct fix 2026-07-21. Presence is enforced (`SKA-METADATA-SKILL-VERSION-MISSING`, blocking) alongside the pre-existing format check.
+
+     ```yaml
+     metadata:
+       skill-version: "0.3.0"
+     ```
+   - **Rules** carry a body-level `<!-- rule-version: X.Y.Z -->` HTML comment immediately after the frontmatter, plus a visible `> **Rule version:** \`X.Y.Z\`` block quote with a one-sentence rationale. The rule frontmatter schema (`RuleFrontmatter` in `src/gzkit/rules/__init__.py`) is `extra="forbid"` and rejects a `skill-version:` key on rule files — that is intentional. The "skill-version" name on a non-skill artifact was a doctrine smell; the body-level marker resolves it.
+
+## Procedure
+
+1. Edit the canonical file under `.gzkit/skills/` or `.gzkit/rules/`
+2. Bump the version marker for the surface:
+   - Skill: increment `skill-version:` in frontmatter
+   - Rule: increment both the `<!-- rule-version: X.Y.Z -->` HTML comment and the visible `> **Rule version:** \`X.Y.Z\`` block quote
+3. **Skills only:** update `last_reviewed:` to today's date (YYYY-MM-DD) in the same edit as the `skill-version` bump (non-negotiable rule #6)
+4. Run `uv run gz agent sync control-surfaces`
+5. Verify sync output shows no stale or divergent mirrors
+6. If sync reports stale mirror-only paths, follow the recovery in `/gz-agent-sync` skill documentation
+
+## Version discipline
+
+| Change type | Bump | Example |
+|-------------|------|---------|
+| GovZero framework major release | Major | 6.0.0 -> 7.0.0 |
+| Governance rule or procedure change | Minor | 6.0.0 -> 6.1.0 |
+| Tooling, template, or wording fix | Patch | 6.0.0 -> 6.0.1 |
+
+The same bump table applies to both skills (frontmatter version) and rules (body-level version). The marker location differs; the semver semantics do not.
+
+## Conflict resolution
+
+When sync detects a version mismatch between canonical and a mirror, resolve via:
+
+| Signal | What it tells you | How to check |
+|--------|-------------------|--------------|
+| Version marker (semver) | Intentional edit sequence | Skill: parse frontmatter `skill-version`. Rule: parse body `<!-- rule-version: ... -->` |
+| Git commit hash / timestamp | Physical edit recency | `git log -1 --format=%H -- <path>` |
+
+**Resolution rules:**
+
+- **Mirror version > canonical version:** An agent edited the mirror directly. Promote the mirror content to canonical, then sync. The higher version wins.
+- **Mirror version == canonical version, content differs:** An agent edited the mirror without bumping the version. Use git commit timestamp to determine recency; flag for human review.
+- **Canonical version > mirror version:** Normal state — sync propagates canonical to mirrors.
+
+Version is the primary signal (intentional semantic ordering). Commit hash is the tiebreaker (physical recency when versions match but content diverges).
+
+## Do Not
+
+- Do not edit a skill without bumping its `skill-version` frontmatter
+- Do not edit a rule without bumping its body-level `<!-- rule-version: ... -->` marker (and the visible block quote)
+- Do not add `skill-version:` to rule frontmatter — the schema rejects it (GHI #307); use the body-level marker instead
+- Do not edit `.claude/rules/` directly — sync overwrites it from `.gzkit/rules/`
+- Do not edit `.claude/skills/` directly — edit `.gzkit/skills/` and sync
+- Do not manually copy skill files between surfaces — use the sync command
+- Do not skip sync because "both files look the same" — sync also updates manifests, registrations, and vendor-specific rendering
+
+## Do Not
+
+- Do not edit a skill without bumping its `skill-version` frontmatter
+- Do not edit a rule without bumping its body-level `<!-- rule-version: ... -->` marker (and the visible block quote)
+- Do not add `skill-version:` to rule frontmatter — the schema rejects it (GHI #307); use the body-level marker instead
+- Do not edit `.claude/rules/` directly — sync overwrites it from `.gzkit/rules/`
+- Do not edit `.claude/skills/` directly — edit `.gzkit/skills/` and sync
+- Do not manually copy skill files between surfaces — use the sync command
+- Do not skip sync because "both files look the same" — sync also updates manifests, registrations, and vendor-specific rendering
+
+**Declaring a chore project-local (GHI #728).** Add `"projectLocal": true` to its
+entry in `.gzkit/chores/registry.json`. All three consumers read the one
+declaration through `_classify_chore_file`, and the shipped `registry.json` is
+**filtered** on export — the wheel must never advertise a chore whose files it
+does not carry, or `gz init` registers a slug an adopter cannot resolve and
+`gz chores doctor` reports it MISSING. The property must be DECLARED, not
+inferred: `_classify_doctor_slug` derives its PROJECT-LOCAL label from absence
+from the wheel, which is the state sync itself overwrites.
+
+The `gz validate --distribution` validator consults the per-surface
+classifiers (`_classify_<surface>_file` helpers) to exempt `package_only`
+files from `ON_DISK_NOT_INCLUDED` errors; `sync_pkg_surfaces` consults them
+to skip non-canonical files when propagating `.gzkit/ → src/gzkit/`.
+
+
 Lifted 2026-08-29 at version `0.11.0` (rule now at `0.12.0`).
 
 > **Rule version:** `0.11.0` — GHI #728: adds the chores-only `project_local` content class and the declaration protocol. `.gzkit/chores/AGENTS.md` declared project-local-only slugs as a real category (REQ-0.0.21-09-06) but nothing implemented it, so a chore authored only under `.gzkit/chores/` was copied into the wheel by sync and scaffolded into every adopter by `gz init`. The property is now DECLARED in `registry.json` rather than inferred from absence — the inference `gz chores doctor` used is the exact state sync overwrites. Prior `0.10.1` — diet pass (operator ruling 2026-08-02): lifted bootstrap-semantics narrative, retirement-policy rationale, and the class-classifier reference tables to `docs/governance/skill-surface-sync-rationale.md`; every non-negotiable rule and binding core retained verbatim. Prior `0.10.0` — names `metadata.skill-version` as the canonical spelling and records that presence is now enforced. Rule #2 said only "`skill-version:` in YAML frontmatter (validated by the skill schema)", which was true of neither half: no skill schema exists, the audit checked *format when present* and never presence, and the unstated nesting let two spellings coexist — 57 skills nested under `metadata:`, 11 at top level, where both validators were blind to them. The rule's own conflict-resolution procedure names the version as "the primary signal", so the drift disarmed the procedure the same rule prescribes. Prior `0.9.0` — renamed prohibited headings; lifted Rationale to expansion doc (OBPI-0.0.54-04 shape conformance pass).
