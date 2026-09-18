@@ -88,7 +88,7 @@ Criteria live in `acceptance.json`, which `gz chores run` executes; render them 
 ## Evidence Commands
 
 ```bash
-uv run -m unittest -q
+uv run gz test
 ls docs/design/adr/pool/ADR-pool.*.md | wc -l
 rg -l '^status: Superseded' docs/design/adr/pool/ADR-pool.*.md
 ```

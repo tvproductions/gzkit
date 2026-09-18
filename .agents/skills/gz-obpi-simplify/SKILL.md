@@ -5,9 +5,9 @@ description: OBPI-scoped code review for reuse, quality, and efficiency. Resolve
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-26
+last_reviewed: 2026-09-18
 metadata:
-  skill-version: "6.1.0"
+  skill-version: "6.1.1"
 model: sonnet
 ---
 
@@ -167,7 +167,7 @@ After all reviews complete:
 1. Run quality checks on changed files:
    ```bash
    uv run ruff check . --fix && uv run ruff format .
-   uv run -m unittest -q
+   uv run gz test
    ```
 2. Report a concise summary:
    - Number of issues found per dimension

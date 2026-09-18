@@ -46,7 +46,7 @@ commands below are the practical surface for producing and consuming receipts.
 ```bash
 uv run gz arb ruff
 uv run gz arb ruff --fix
-uv run gz arb step --name unittest -- uv run -m unittest -q
+uv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer
 uv run gz arb typecheck
 uv run gz arb coverage run -m unittest discover -s tests -t .
 ```

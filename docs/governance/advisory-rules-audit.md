@@ -52,7 +52,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | Rule file | Scored at rule-version |
 |---|---|
 | `agents-md-map-doctrine.md` | `0.13.0` |
-| `adr-audit.md` | `0.3.0` |
+| `adr-audit.md` | `0.3.1` |
 | `agent-failure-modes.md` | `0.8.0` |
 | `brief-heading-conventions.md` | `0.2.0` |
 | `changelog-release-notes.md` | `1.2.0` |
@@ -64,15 +64,15 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `model-selection.md` | `0.6.0` |
 | `security-sensitivity.md` | `0.6.0` |
 | `skill-surface-sync.md` | `0.13.0` |
-| `chores.md` | `0.5.0` |
+| `chores.md` | `0.5.1` |
 | `cli.md` | `0.9.0` |
 | `cross-platform.md` | `0.7.0` |
 | `gate5-runbook-code-covenant.md` | `0.3.1` |
 | `guardrail-feedback-prose.md` | `0.3.0` |
 | `mx-mode.md` | `1.4.0` |
-| `pythonic.md` | `0.5.1` |
+| `pythonic.md` | `0.5.2` |
 | `tool-skill-runbook-alignment.md` | `0.5.1` |
-| `tests.md` | `0.26.0` |
+| `tests.md` | `0.26.1` |
 | `task-discovery.md` | `0.10.0` |
 | `token-block-discipline.md` | `0.8.0` |
 

@@ -5,7 +5,7 @@ Eliminate raw shutil.rmtree() in tearDown; use context managers for Windows safe
 ## Quick Start
 
 ```bash
-uv run -m unittest -q
+uv run gz test
 ```
 
 ## Lane

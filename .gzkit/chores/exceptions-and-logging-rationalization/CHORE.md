@@ -36,7 +36,7 @@ Replace bare excepts with specific types. Add structured logging.
 
 ```bash
 uvx ruff check src/gzkit --select E722 --output-format text
-uv run -m unittest -q
+uv run gz test
 ```
 
 ## Checklist

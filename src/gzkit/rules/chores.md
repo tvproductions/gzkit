@@ -6,11 +6,11 @@ paths:
 description: Chores workflow command sequences, two-surface layout, and evidence patterns
 ---
 
-<!-- rule-version: 0.5.0 -->
+<!-- rule-version: 0.5.1 -->
 
 # Chores Workflow (gzkit)
 
-> **Rule version:** `0.5.0` — § Discover Chores adds `gz chores status`, the staleness board that reads every chore's band without running one (GHI #936), and § Plan & Advise drops a `--replace` flag `gz chores plan` never had; prior `0.4.0` lifted to [Rule Version History](../../docs/governance/rule-version-history.md#choresmd).
+> **Rule version:** `0.5.1` — the full-suite test invocation is `uv run gz test`, the parallel canonical runner; the serial `-m unittest` form is retired (operator ruling 2026-09-18, under GHI #921). Prior `0.5.0`: § Discover Chores adds `gz chores status`, the staleness board that reads every chore's band without running one (GHI #936), and § Plan & Advise drops a `--replace` flag `gz chores plan` never had; prior `0.4.0` lifted to [Rule Version History](../../docs/governance/rule-version-history.md#choresmd).
 
 > **Purpose:** Enable agents to run repository chores effectively with clear,
 > repeatable command sequences, aligned to gzkit guardrails and the two-surface
@@ -41,7 +41,7 @@ templates do not ship `proofs/` content.
 | Principle           | Description                                     |
 | ------------------- | ----------------------------------------------- |
 | **Plan-first**      | Generate or refresh a chore plan before any run |
-| **Lite by default** | Run `uv run -m unittest -q` (unit tier only); no `behave`, no network, no external services. Duration ceilings are a test-infra contract (see `.gzkit/rules/tests.md` § Smoke/BVT) — not an agent-introspected clock. |
+| **Lite by default** | Run `uv run gz test` (unit tier only); no `behave`, no network, no external services. Duration ceilings are a test-infra contract (see `.gzkit/rules/tests.md` § Smoke/BVT) — not an agent-introspected clock. |
 | **Small diffs**     | Touch only files in scope for the chore         |
 | **CLI evidence**    | Never use raw SQL for attestation               |
 | **Layout discipline** | Stray `CHORE.md` or `acceptance.json` outside the two canonical roots is a defect — `gz validate --chores-layout` enforces it (REQ-0.0.21-08-04). |
@@ -84,7 +84,7 @@ uv run gz chores advise <chore_slug>
 ```bash
 uv run ruff check . --fix && uv run ruff format .
 uvx ty check . --exclude 'features/**'
-uv run -m unittest -q
+uv run gz test
 ```
 
 ### 4. Execute and Audit

@@ -7,9 +7,9 @@ description: Pythonic standards and idiomatic code contract
 
 # Pythonic Standards (Idiomatic Code Contract)
 
-<!-- rule-version: 0.5.1 -->
+<!-- rule-version: 0.5.2 -->
 
-> **Rule version:** `0.5.1` — diet pass under GHI #921 (operator ruling 2026-08-30, *"do 1 and 2"*): the superseded `0.5.0`–`0.2.1` version chain is lifted to [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd), restoring the one-sentence shape `skill-surface-sync.md` § Non-negotiable rules #2 requires. Binding rules unchanged; scoped `**/*.py`, this rule loads on every Python edit, so narrative is the most expensive thing it can carry.
+> **Rule version:** `0.5.2` — the full-suite test invocation is `uv run gz test`, the parallel canonical runner; the serial `-m unittest` form is retired (operator ruling 2026-09-18, under GHI #921). Prior `0.5.1`: diet pass under GHI #921 (operator ruling 2026-08-30, *"do 1 and 2"*): the superseded `0.5.0`–`0.2.1` version chain is lifted to [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd), restoring the one-sentence shape `skill-surface-sync.md` § Non-negotiable rules #2 requires. Binding rules unchanged; scoped `**/*.py`, this rule loads on every Python edit, so narrative is the most expensive thing it can carry.
 
 ## Core Principles
 
@@ -76,7 +76,7 @@ Scope is the shipped package. The `per-file-ignores` exclusions are boundary sur
 | **uv**       | Environment/execution | `uv run` / `uvx`        |
 | **ruff**     | Linting/formatting    | `uv run ruff check .`   |
 | **ty**       | Static typing         | `uvx ty check .`        |
-| **unittest** | Testing               | `uv run -m unittest -q` |
+| **unittest** | Testing               | `uv run gz test` |
 
 ## Type-check suppression syntax (ty — binding)
 

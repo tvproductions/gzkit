@@ -74,7 +74,7 @@ For each skill scored **Weak** or **Miss**, propose replacement description text
 ### 6. Validate — observe
 
 ```bash
-uv run -m unittest -q
+uv run gz test
 ```
 
 ## Acceptance Criteria

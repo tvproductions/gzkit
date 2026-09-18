@@ -113,7 +113,7 @@ Produce the § Scoring Summary table, with the action each skill needs.
 ### 9. Validate — observe
 
 ```bash
-uv run -m unittest -q
+uv run gz test
 ```
 
 ## Acceptance Criteria

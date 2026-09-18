@@ -84,7 +84,7 @@ return y
 ```bash
 uvx ruff check .
 uvx ty check . --exclude 'features/**'
-uv run -m unittest -q
+uv run gz test
 ```
 
 ## Quick Fix Commands

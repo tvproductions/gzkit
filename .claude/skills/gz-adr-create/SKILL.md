@@ -5,14 +5,14 @@ description: Create and book a GovZero ADR with its OBPI briefs. Enforces next-f
 category: adr-lifecycle
 compatibility: Requires GovZero v6 framework; provides governance rules internally for portable use across repositories
 metadata:
-  skill-version: "6.7.1"
+  skill-version: "6.7.2"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), linkage (ADR/OBPI/GHI), foundation-nominal-allocation (next-free-integer)"
   govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-17
+last_reviewed: 2026-09-18
 model: opus
 ---
 
@@ -298,7 +298,7 @@ the decision before any artifacts exist, preventing scope ambiguity at the sourc
 10. Validate:
 
 ```bash
-uv run -m unittest -q
+uv run gz test
 uv run mkdocs build --strict
 ```
 

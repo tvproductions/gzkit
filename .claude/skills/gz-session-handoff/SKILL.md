@@ -5,18 +5,18 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "7.5.0"
+  skill-version: "7.5.1"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
   govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-17
+last_reviewed: 2026-09-18
 model: sonnet
 ---
 
-# gz-session-handoff (v7.5.0)
+# gz-session-handoff (v7.5.1)
 
 ## Purpose
 

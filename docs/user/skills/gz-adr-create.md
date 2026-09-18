@@ -44,7 +44,7 @@ The skill performs these operations:
 6. **Updates three registries**: `adr_index.md`, `adr_status.md`, and the
    governance copy at `docs/governance/GovZero/adr-status.md`.
 7. **Runs post-authoring QC** via `/gz-adr-evaluate` to score the ADR and OBPIs.
-8. **Validates** with `uv run -m unittest -q` and `uv run mkdocs build --strict`.
+8. **Validates** with `uv run gz test` and `uv run mkdocs build --strict`.
 
 Typical runtime is 1-3 minutes depending on the number of checklist items.
 The ADR starts in `Proposed` status.

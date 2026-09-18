@@ -161,7 +161,7 @@ Disposition rows must include the Python example evidence:
 ### 5. Validate — observe
 
 ```bash
-uv run -m unittest -q
+uv run gz test
 uv run python src/gzkit/chores/pythonic-design-pattern-detection/scan.py --self-test
 ```
 

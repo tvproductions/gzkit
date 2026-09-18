@@ -31,7 +31,7 @@ Update manpage traces to match current code structure.
 
 ```bash
 uv run gz cli audit
-uv run -m unittest -q
+uv run gz test
 ```
 
 ## Acceptance Criteria

@@ -55,7 +55,7 @@ gz arb step --name NAME [--soft-fail] -- COMMAND [ARGS...]
 **Example:**
 
 ```bash
-gz arb step --name unittest -- uv run -m unittest
+gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer
 ```
 
 ### ty, coverage

@@ -402,7 +402,7 @@ uv run gz validate --advisory-scorecard
 uv run gz validate --documents --surfaces
 uv run gz lint
 uv run mkdocs build --strict
-uv run -m unittest -q
+uv run gz test
 ```
 
 `--invariant-coherence` leads because it is the only one of these that can see
@@ -523,7 +523,7 @@ uv run gz validate --advisory-scorecard
 uv run gz validate --documents --surfaces
 uv run gz lint
 uv run mkdocs build --strict
-uv run -m unittest -q
+uv run gz test
 uv run gz agent sync control-surfaces
 ```
 

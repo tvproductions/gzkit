@@ -5,7 +5,7 @@ Measure functional skill quality: do descriptions trigger on real agent goals? D
 ## Quick Start
 
 ```bash
-uv run -m unittest -q
+uv run gz test
 ```
 
 ## Lane

@@ -35,7 +35,7 @@ Assess patterns for actionability. Distinguish:
 
 ```bash
 uv run -m gzkit arb validate
-uv run -m unittest -q
+uv run gz test
 ```
 
 ## Acceptance Criteria

@@ -146,7 +146,7 @@ For each finding:
 ```bash
 grep -rn "Path(__file__).*parents" src/
 uv run ruff check .
-uv run -m unittest -q
+uv run gz test
 uv run gz check-config-paths
 ```
 

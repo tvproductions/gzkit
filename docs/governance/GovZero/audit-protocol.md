@@ -61,7 +61,7 @@ The human MUST provide one of the following explicit attestations:
 ## Agent Behavior: MUST NOT
 
 1. Agent **MUST NOT** summarize, interpret, or editorialize evidence outcomes during closeout mode.
-   - Correct: "Run `uv run -m unittest -v` to see test results"
+   - Correct: "Run `uv run gz test` to see test results"
    - Forbidden: "All tests pass"
 
 2. Agent **MUST NOT** infer attestation from silence, continuation, or implicit approval. Attestation must be explicit.
@@ -110,7 +110,7 @@ This creates an epistemic gap where the agent's errors, biases, or hallucination
 The closeout ceremony eliminates mediated observation by **inverting the information flow**:
 
 - The agent presents **paths**, not **conclusions** ("see `artifacts/reports/coverage.html`" not "coverage is 87%")
-- The agent presents **commands**, not **outcomes** ("run `uv run -m unittest -v`" not "all 42 tests pass")
+- The agent presents **commands**, not **outcomes** ("run `uv run gz test`" not "all 42 tests pass")
 - The human **executes and observes directly**, with the agent as a silent index
 
 This ensures the human's attestation is grounded in direct observation of artifacts, not in trust
@@ -138,7 +138,7 @@ Summary (paths/commands only; no outcomes):
 - Evidence commands listed below
 
 Artifacts for your direct observation:
-- Tests: Run `uv run -m unittest -v`
+- Tests: Run `uv run gz test`
 - Coverage: Run `uv run coverage report` or view `artifacts/reports/coverage.html`
 - Docs build: Run `uv run mkdocs build -q`
 - BDD (if Heavy): Run `uv run behave features/{feature}.feature`

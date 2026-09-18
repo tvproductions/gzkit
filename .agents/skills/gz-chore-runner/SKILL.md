@@ -5,9 +5,9 @@ description: Run a gzkit chore end-to-end (show, plan, advise, execute, validate
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-14
+last_reviewed: 2026-09-18
 metadata:
-  skill-version: "1.5.0"
+  skill-version: "1.5.1"
 model: sonnet
 ---
 
@@ -68,7 +68,7 @@ Execute a repository chore using the canonical `gz chores` workflow.
    # Lite lane (default)
    uv run ruff check . --fix && uv run ruff format .
    uvx ty check . --exclude 'features/**'
-   uv run -m unittest -q
+   uv run gz test
 
    # Heavy lane (adds gates)
    uv run gz check

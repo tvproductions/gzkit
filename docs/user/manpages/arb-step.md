@@ -30,7 +30,7 @@ dedicated wrapper (ruff / ty / typecheck / coverage) exists for your QA step.
 ## Examples
 
 ```bash
-gz arb step --name unittest -- uv run -m unittest -q
+gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer
 gz arb step --name mkdocs -- uv run mkdocs build --strict
 gz arb step --name review --max-output-chars -1 -- claude --print "Review the supplied acceptance evidence."
 ```

@@ -43,7 +43,7 @@ def test_something(self):
 ### 4. Validate — observe
 
 ```bash
-uv run -m unittest -q
+uv run gz test
 uv run coverage report --fail-under=40
 ```
 

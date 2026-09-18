@@ -96,7 +96,7 @@ ignition.
 <!-- Commands and checks the resuming agent should run to verify the handoff state
      is accurate and the environment is ready for continued work.
 
-     - [ ] `uv run -m unittest -q` passes
+     - [ ] `uv run gz test` passes
      - [ ] Branch matches: `git branch --show-current`
      - [ ] No uncommitted changes conflict with handoff state -->
 

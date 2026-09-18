@@ -7,9 +7,9 @@ description: ADR audit verification procedures
 
 # ADR Audit (gzkit)
 
-<!-- rule-version: 0.3.0 -->
+<!-- rule-version: 0.3.1 -->
 
-> **Rule version:** `0.3.0` — scored for real under GHI #921 (2026-08-30). This rule sat in `data/advisory_scorecard_grandfather.json`, pinned at `0.2.1` against a version nobody recorded; the pin is stripped by any edit, so its clauses were re-read and its Coverage Ledger rows added or corrected in the same commit. Prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#adr-auditmd). Binding rules unchanged.
+> **Rule version:** `0.3.1` — the `unittest` ARB step names the canonical parallel command (`CANONICAL_STEP_COMMANDS["unittest"]`); the serial form it carried is no longer the canonical one and `gz arb validate` flags it. Prior `0.3.0`: scored for real under GHI #921 (2026-08-30). This rule sat in `data/advisory_scorecard_grandfather.json`, pinned at `0.2.1` against a version nobody recorded; the pin is stripped by any edit, so its clauses were re-read and its Coverage Ledger rows added or corrected in the same commit. Prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#adr-auditmd). Binding rules unchanged.
 
 Purpose: verify ADR completion claims using reproducible evidence.
 
@@ -26,7 +26,7 @@ uv run gz adr audit-check ADR-<X.Y.Z>
 ```bash
 uv run gz arb ruff
 uv run gz arb typecheck
-uv run gz arb step --name unittest -- uv run -m unittest -q
+uv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer
 uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
 ```
 

@@ -277,7 +277,7 @@ uv run gz lint
 #     work (fail-closed; ADR-0.0.24).
 uv run gz arb ruff src tests
 uv run gz arb typecheck
-uv run gz arb step --name unittest -- uv run -m unittest -q
+uv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer
 uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
 
 # Witness that a BEHAVIOR REQ's test can actually fail (GHI #642).

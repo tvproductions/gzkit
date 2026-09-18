@@ -14,7 +14,7 @@
     },
     {
       "type": "exitCodeEquals",
-      "command": "uv run -m unittest -q",
+      "command": "uv run gz test",
       "expected": 0,
       "description": "unit suite green (precondition, not the chore's discriminator)"
     }

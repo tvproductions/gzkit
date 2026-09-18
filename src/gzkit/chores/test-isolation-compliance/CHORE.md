@@ -66,7 +66,7 @@ Apply the lightest fix that addresses the root cause. Prefer:
 ```bash
 uv run python tests/tools/test_health_profiler.py
 uv run gz smoke
-uv run -m unittest -q
+uv run gz test
 ```
 
 ## Checklist

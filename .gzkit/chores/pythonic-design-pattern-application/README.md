@@ -8,7 +8,7 @@ Every evidence file names the local Python example witness from `design-patterns
 
 ```bash
 uvx xenon --max-absolute C --max-modules C --max-average C src/
-uv run gz arb step --name unittest -- uv run -m unittest -q
+uv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer
 ```
 
 Author an evidence file under `.gzkit/chores/pythonic-design-pattern-application/proofs/application-YYYY-MM-DD-HHMMSS-<short-slug>.md` per the CHORE.md template.

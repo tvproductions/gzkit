@@ -41,7 +41,7 @@ Briefs are sealed records and OBPI briefs are operator-only; this chore recommen
 ### 4. Validate — observe
 
 ```bash
-uv run -m unittest -q
+uv run gz test
 ```
 
 ## Acceptance Criteria

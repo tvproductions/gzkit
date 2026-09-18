@@ -103,7 +103,7 @@ The semantics test is the load-bearing artifact. A pattern rewrite that is seman
 ```bash
 uvx xenon --max-absolute C --max-modules C --max-average C src/ > /tmp/xenon-after.txt 2>&1
 uvx radon raw src/ -s > /tmp/radon-after.txt 2>&1
-uv run gz arb step --name unittest -- uv run -m unittest -q
+uv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer
 ```
 
 The ARB step run produces the GREEN receipt cited in the evidence file.
@@ -170,7 +170,7 @@ Mark the candidate's `Disposition:` from `_[applied | deferred | not-pythonic-re
 ### 8. Validate — observe
 
 ```bash
-uv run -m unittest -q
+uv run gz test
 uvx xenon --max-absolute C --max-modules C --max-average C src/
 ```
 

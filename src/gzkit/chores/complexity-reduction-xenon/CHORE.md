@@ -66,14 +66,14 @@ uvx xenon --max-absolute C --max-modules C --max-average C src/ > .gzkit/chores/
 ```bash
 uv run gz complexity advise src/  # exit 0 = no warn or block crossings; exit 3 = block remains
 uv run gz validate --complexity-thresholds
-uv run -m unittest -q
+uv run gz test
 ```
 
 **Pre-cluster bootstrap mode:**
 
 ```bash
 uvx xenon --max-absolute C --max-modules C --max-average C src/
-uv run -m unittest -q
+uv run gz test
 ```
 
 ## Checklist

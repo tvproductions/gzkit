@@ -5,7 +5,7 @@ description: Gate-5 audit templates and procedure for ADR verification. GovZero 
 category: adr-audit
 compatibility: GovZero v6 framework; provides audit procedure for COMPLETED→VALIDATED ADR transition
 metadata:
-  skill-version: "6.14.0"
+  skill-version: "6.14.1"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -16,7 +16,7 @@ gz_command: audit
 invocation: uv run gz audit <adr-id>
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-08-21
+last_reviewed: 2026-09-18
 model: opus
 ---
 
@@ -331,7 +331,7 @@ report success to the operator until the report command confirms the change.
 | **Ledger check** | `uv run gz adr audit-check <adr-id>` | L2 |
 | **Ledger check (JSON)** | `uv run gz adr audit-check <adr-id> --json` | L2 |
 | ADR lifecycle summary | `uv run gz adr status <adr-id> --json` | L1 |
-| Unit tests | `uv run -m unittest -q` | L1 |
+| Unit tests | `uv run gz test` | L1 |
 | Docs build | `uv run mkdocs build -q` | L1 |
 | Governance | `uv run gz cli audit` | L1 |
 | Config paths | `uv run gz check-config-paths` | L1 |

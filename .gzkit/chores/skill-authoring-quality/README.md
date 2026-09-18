@@ -5,7 +5,7 @@ Audit SKILL.md files against agent-first best practices: descriptions as routing
 ## Quick Start
 
 ```bash
-uv run -m unittest -q
+uv run gz test
 ```
 
 ## Lane

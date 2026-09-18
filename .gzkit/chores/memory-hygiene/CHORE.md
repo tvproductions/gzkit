@@ -69,7 +69,7 @@ For each migration candidate:
 
 ```bash
 uv run gz validate --invariant-coherence
-uv run -m unittest -q
+uv run gz test
 ```
 
 `--invariant-coherence` re-renders and byte-compares against the committed surfaces
@@ -96,5 +96,5 @@ replaced it observed the instructions-files budget, a different surface entirely
 
 ```bash
 uv run python .gzkit/chores/memory-hygiene/check_memory_drift.py
-uv run -m unittest -q
+uv run gz test
 ```

@@ -35,7 +35,7 @@ Fix structural issues (missing directories, misplaced files).
 
 ```bash
 uv run gz validate --documents --surfaces
-uv run -m unittest -q
+uv run gz test
 ```
 
 ## Acceptance Criteria

@@ -74,7 +74,7 @@ Only in a run the operator started: resolve **Drift** and **Overlap** findings b
 ```bash
 uv run gz cli audit
 uv run gz validate --documents --surfaces
-uv run -m unittest -q
+uv run gz test
 ```
 
 ## Acceptance Criteria

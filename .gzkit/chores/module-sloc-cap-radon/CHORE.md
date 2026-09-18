@@ -91,7 +91,7 @@ Split modules by responsibility. Maintain backwards-compatible imports.
 ### 4. Validate — observe
 
 ```bash
-uv run -m unittest -q
+uv run gz test
 uvx radon raw src/ -s -j
 ```
 

@@ -55,7 +55,7 @@ runbook references, docstrings, COMMAND_DOCS mappings).
 
 ```bash
 uv run gz chores run doc-coverage
-uv run -m unittest -q
+uv run gz test
 ```
 
 ## Acceptance Criteria

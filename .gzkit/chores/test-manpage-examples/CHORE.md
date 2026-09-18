@@ -37,7 +37,7 @@ Replace each example whose output no longer matches with output captured from a 
 
 ```bash
 uv run gz cli audit
-uv run -m unittest -q
+uv run gz test
 ```
 
 ## Acceptance Criteria

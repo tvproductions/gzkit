@@ -32,7 +32,7 @@
     },
     {
       "type": "exitCodeEquals",
-      "command": "uv run -m unittest -q",
+      "command": "uv run gz test",
       "expected": 0,
       "description": "Tests pass after the lift"
     }

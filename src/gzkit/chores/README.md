@@ -364,7 +364,7 @@ The `acceptance.json` file uses this schema:
   "criteria": [
     {
       "type": "exitCodeEquals",
-      "command": "uv run -m unittest -q",
+      "command": "uv run gz test",
       "expected": 0
     },
     {

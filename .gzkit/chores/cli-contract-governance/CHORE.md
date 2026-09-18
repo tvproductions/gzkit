@@ -47,7 +47,7 @@ Only in a run the operator started: land each breaking change the report names, 
 
 ```bash
 uv run gz cli audit
-uv run -m unittest -q
+uv run gz test
 ```
 
 ## Acceptance Criteria

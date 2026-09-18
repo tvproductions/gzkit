@@ -5,9 +5,9 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-17
+last_reviewed: 2026-09-18
 metadata:
-  skill-version: "6.57.0"
+  skill-version: "6.57.1"
 model: sonnet
 ---
 
@@ -537,7 +537,7 @@ When `--no-subagents` is set, Stage 2 runs entirely in the main session (no Agen
    import error) → simplest code to pass → refactor green. Use `unittest`,
    `TempDBMixin` for DB, coverage >= 40%. Do not batch all tests then implement.
 5. Run `uv run ruff check . --fix && uv run ruff format .` after code changes
-6. Run `uv run -m unittest -q` after implementation
+6. Run `uv run gz test` after implementation
 
 Record the existing single-driver declaration in the ledger via
 `gz obpi dispatch ... --single-driver --reason ...`. That declaration preserves

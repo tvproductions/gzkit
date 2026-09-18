@@ -36,7 +36,7 @@ Replace string literals with config-driven path construction.
 
 ```bash
 uv run gz check-config-paths
-uv run -m unittest -q
+uv run gz test
 ```
 
 ## Checklist
