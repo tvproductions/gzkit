@@ -188,13 +188,15 @@ Run `uv run gz skill list` for the authoritative active catalog. For details on 
 
 ## Gate Covenant
 
-| Gate | Purpose | Verification |
-|------|---------|--------------|
-| 1 | ADR recorded | `gz validate --documents` |
-| 2 | Tests pass | `gz test` |
-| 3 | Docs updated | `gz lint` |
-| 4 | BDD verified | Manual check |
-| 5 | Human attests | `gz attest` |
+| Gate | Purpose | Verified by |
+|------|---------|-------------|
+| 1 | ADR recorded | the ADR exists and its frontmatter agrees with the ledger |
+| 2 | Tests pass | `uv run gz test` |
+| 3 | Docs updated | `uv run mkdocs build --strict`, plus the skill audit |
+| 4 | BDD verified | `uv run -m behave features/` |
+| 5 | Human attests | the operator's attestation |
+
+`uv run gz gates --adr <ADR-ID>` runs the gates the ADR's lane requires and records each result in the ledger; `--gate N` runs one. The command behind each gate is `.gzkit/manifest.json` § `verification`.
 
 ### Lane Rules
 
