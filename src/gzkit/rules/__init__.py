@@ -477,16 +477,6 @@ def _shared_subtree_rules(project_root: Path) -> dict[str, list[ClassifiedRule]]
     return subtree_rules
 
 
-_CLAUDE_REDIRECT_BODY = (
-    f"{_GENERATED_MARKER}\n"
-    "# {subtree} Agent Instructions (Claude)\n\n"
-    "> Claude discovers nested instruction files as `CLAUDE.md`; the shared\n"
-    "> subtree rules live in the sibling `AGENTS.md`. This file imports them so\n"
-    "> either harness reads the same governance surface (GHI #923).\n\n"
-    "@AGENTS.md\n"
-)
-
-
 def _subtree_sections(rules_for_subtree: list[ClassifiedRule]) -> list[str]:
     """Rule bodies that will render into a subtree's ``AGENTS.md``.
 
@@ -542,24 +532,19 @@ def _nested_subtrees(project_root: Path) -> list[tuple[str, Path, list[str]]]:
 def nested_agents_md_paths(project_root: Path, config: GzkitConfig | None = None) -> set[Path]:
     """Every nested path :func:`sync_nested_agents_md` may write.
 
-    Covers both surfaces it emits: the subtree ``AGENTS.md`` and the sibling
-    ``CLAUDE.md`` redirect (GHI #923). Derived from the same walk the writer
-    uses, so a caller that must know the write set cannot fall out of step with
+    The subtree ``AGENTS.md`` files and nothing else: the sibling ``CLAUDE.md``
+    importer GHI #923 added is no longer emitted (GHI #1021). Derived from the
+    same walk the writer uses, so a caller that must know the write set cannot fall out of step with
     it. Callers that snapshot before a sync (``validate_pkg.sync_parity``) need
     exactly this set: a hand-maintained list is what let ``gz validate
     --surfaces`` leave 16 files modified after a read-only run — the tuple named
     3 paths while the writer touched ~19, so restore could only put back the 3
     it knew about.
     """
-    if config is None:
-        config = GzkitConfig.load(project_root / ".gzkit.json")
-    foreign = _foreign_vendor_roots(project_root, config)
-    paths: set[Path] = set()
-    for _subtree, subtree_dir, sections in _nested_subtrees(project_root):
-        paths.add(subtree_dir / "AGENTS.md")
-        if sections and not _within_any(subtree_dir, foreign):
-            paths.add(subtree_dir / "CLAUDE.md")
-    return paths
+    del config  # kept for callers; the write set no longer has a vendor dimension
+    return {
+        subtree_dir / "AGENTS.md" for _subtree, subtree_dir, _ in _nested_subtrees(project_root)
+    }
 
 
 def sync_nested_agents_md(project_root: Path, config: GzkitConfig | None = None) -> list[str]:
@@ -576,11 +561,8 @@ def sync_nested_agents_md(project_root: Path, config: GzkitConfig | None = None)
     if config is None:
         config = GzkitConfig.load(project_root / ".gzkit.json")
 
-    foreign = _foreign_vendor_roots(project_root, config)
-
     updated: list[str] = []
     expected_paths: set[Path] = set()
-    expected_redirects: set[Path] = set()
 
     # `_nested_subtrees` carries the `dir_exists` guard that `nested_agents_md_paths`
     # also reads. The two MUST ask the same question: the helper exists so a caller
@@ -606,23 +588,17 @@ def sync_nested_agents_md(project_root: Path, config: GzkitConfig | None = None)
         write_text_if_changed(agents_path, content)
         updated.append(agents_path.relative_to(project_root).as_posix())
 
-        # Claude discovers nested instruction files as CLAUDE.md, so the subtree
-        # rules above reach Codex alone without this redirect (GHI #923). An
-        # import rather than a copy: two renderings of one rule set can disagree
-        # after a later sync, and the root surface already establishes the
-        # pattern (`CLAUDE.md` -> `@AGENTS.md`, GHI #525).
-        if _within_any(subtree_dir, foreign):
-            continue
-        redirect_path = subtree_dir / "CLAUDE.md"
-        expected_redirects.add(redirect_path)
-        write_text_if_changed(redirect_path, _CLAUDE_REDIRECT_BODY.format(subtree=subtree))
-        updated.append(redirect_path.relative_to(project_root).as_posix())
-
+    # No `CLAUDE.md` importer beside these files (GHI #1021, reversing GHI #923).
+    # This fan-out is the channel for a harness with no rules directory (Codex).
+    # Claude already receives every one of these rules from `.claude/rules/*.md`,
+    # which each sync path that writes Claude surfaces renders from the same
+    # source, so an importer made Claude load each subtree rule twice on exactly
+    # the edits the rule is scoped to (307,139 B duplicated, 2026-09-17). The
+    # sweep below expects NO generated nested `CLAUDE.md`, which is what reaps the
+    # importers earlier syncs wrote -- beside live subtrees as well as dead ones.
     mirror_roots = _mirror_owned_roots(project_root, config)
     _cleanup_stale_nested_agents(project_root, expected_paths, mirror_roots)
-    _cleanup_stale_nested_agents(
-        project_root, expected_redirects, mirror_roots, filename="CLAUDE.md"
-    )
+    _cleanup_stale_nested_agents(project_root, set(), mirror_roots, filename="CLAUDE.md")
 
     return updated
 
@@ -671,8 +647,9 @@ def _cleanup_stale_nested_agents(
     """Remove nested *filename* files not in the expected set.
 
     ``filename`` selects the surface swept -- ``AGENTS.md`` for the subtree
-    rules themselves, ``CLAUDE.md`` for the Claude redirects beside them
-    (GHI #923). One sweep serves both because the mirror-exclusion policy below
+    rules themselves, ``CLAUDE.md`` for the Claude importers earlier syncs wrote
+    beside them (GHI #923; no longer emitted, so every generated one is stale --
+    GHI #1021). One sweep serves both because the mirror-exclusion policy below
     is a property of the TREE, not of the name: a redirect copied into
     ``.claude/skills/`` by the mirror pass is exactly as marker-bearing and
     exactly as absent from ``expected_paths`` as a copied ``AGENTS.md``, so a

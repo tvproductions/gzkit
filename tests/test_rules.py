@@ -110,10 +110,10 @@ class TestSyncNestedAgentsMd(unittest.TestCase):
 
             updated = sync_nested_agents_md(root)
 
-            # Both surfaces are reported: the subtree rules and the Claude
-            # redirect beside them (GHI #923). Named rather than counted so the
-            # assertion says which files the sync owes the ledger.
-            self.assertEqual(sorted(updated), ["tests/AGENTS.md", "tests/CLAUDE.md"])
+            # Named rather than counted so the assertion says which files the sync
+            # owes the ledger. No Claude importer: `.claude/rules` is Claude's
+            # channel for these rules (GHI #1021).
+            self.assertEqual(sorted(updated), ["tests/AGENTS.md"])
             agents = root / "tests" / "AGENTS.md"
             self.assertTrue(agents.exists())
             content = agents.read_text(encoding="utf-8")
@@ -1124,119 +1124,66 @@ class TestSyncClassifierIntegration(unittest.TestCase):
         )
 
 
-class TestNestedClaudeRedirect(unittest.TestCase):
-    """Nested subtree rules must reach Claude, not Codex alone (GHI #923).
+class TestNestedRulesReachClaudeOnce(unittest.TestCase):
+    """Each subtree rule reaches a harness through ONE channel (GHI #1021).
 
-    ``sync_nested_agents_md`` emits ``AGENTS.md`` in each rule-bearing subtree.
-    That filename is Codex's discovery convention; Claude discovers nested
-    instruction files as ``CLAUDE.md``. Without a sibling redirect every shared
-    subtree rule is delivered to one vendor and withheld from the other, which
-    is the vendor-parity intent these tests pin.
+    GHI #923 put a generated ``CLAUDE.md`` -> ``@AGENTS.md`` importer beside every
+    nested ``AGENTS.md`` on the premise that Claude never saw subtree rules. It
+    already did: every sync that writes Claude surfaces renders the same rules
+    into ``.claude/rules/*.md`` with ``paths:`` frontmatter, so the importer made
+    Claude load each rule twice on exactly the edits it is scoped to -- 307,139 B
+    duplicated, measured 2026-09-17. The nested ``AGENTS.md`` fan-out is Codex's
+    channel (it has no rules directory); Claude's is its rules directory.
     """
 
-    def test_redirect_is_written_beside_each_nested_agents_md(self) -> None:
+    def _project_with_tests_rule(self, root: Path) -> None:
+        inst = root / ".github" / "instructions"
+        inst.mkdir(parents=True)
+        (inst / "tests.instructions.md").write_text(
+            _instruction_file("tests/**", "# Test Policy\n\nUse unittest."), encoding="utf-8"
+        )
+        (root / "tests").mkdir()
+
+    def test_no_claude_importer_is_written_beside_a_nested_agents_md(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            inst = root / ".github" / "instructions"
-            inst.mkdir(parents=True)
-            (inst / "tests.instructions.md").write_text(
-                _instruction_file("tests/**", "# Test Policy\n\nUse unittest."), encoding="utf-8"
-            )
-            (root / "tests").mkdir()
+            self._project_with_tests_rule(root)
 
-            sync_nested_agents_md(root)
+            updated = sync_nested_agents_md(root)
 
-            redirect = root / "tests" / "CLAUDE.md"
-            self.assertTrue(redirect.exists(), "no nested CLAUDE.md beside the nested AGENTS.md")
-            content = redirect.read_text(encoding="utf-8")
-            self.assertIn(_GENERATED_MARKER, content)
-            # The import, not a copy: the redirect must not duplicate the body,
-            # or the two surfaces can disagree after a later sync.
-            self.assertIn("@AGENTS.md", content)
-            self.assertNotIn("Use unittest.", content)
-
-    def test_redirect_is_reported_in_the_write_set(self) -> None:
-        """``sync_parity`` snapshots from the helper, so it must name every write.
-
-        A helper that under-reports its writer is the drift GHI #890 closed:
-        restore could only put back the paths it knew about.
-        """
-        from gzkit.rules import nested_agents_md_paths
-
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            inst = root / ".github" / "instructions"
-            inst.mkdir(parents=True)
-            (inst / "tests.instructions.md").write_text(
-                _instruction_file("tests/**", "# Test Policy"), encoding="utf-8"
-            )
-            (root / "tests").mkdir()
-
-            declared = nested_agents_md_paths(root)
-            sync_nested_agents_md(root)
-
-            self.assertIn(root / "tests" / "CLAUDE.md", declared)
-            self.assertIn(root / "tests" / "AGENTS.md", declared)
-
-    def test_no_redirect_inside_another_vendors_surface_root(self) -> None:
-        """Another vendor's own tree keeps its own discovery convention.
-
-        ``.opencode`` is OpenCode's declared ``surface_root``. The subtree
-        rules still render there, because that tree is OpenCode's to read;
-        seeding it with ``CLAUDE.md`` would claim a surface gzkit does not own.
-
-        The example was ``.github`` until the Copilot vendor was retired
-        (GHI #924). The exclusion derives from the DECLARED vendor set, so the
-        subject had to move to a root that is still declared -- which is the
-        property that makes this a rule rather than a literal list. It is
-        ``.opencode`` and not ``.agents`` because ``.agents`` is also a vendor
-        MIRROR root, filtered by ``_is_vendor_mirror_prefix`` before the writer
-        ever sees it -- so it could never exercise this exclusion.
-        """
-        with tempfile.TemporaryDirectory() as tmp:
-            root = Path(tmp)
-            inst = root / ".github" / "instructions"
-            inst.mkdir(parents=True)
-            (inst / "opencode.instructions.md").write_text(
-                _instruction_file(".opencode/**", "# OpenCode policy"), encoding="utf-8"
-            )
-            (root / ".opencode").mkdir()
-
-            sync_nested_agents_md(root)
-
-            self.assertTrue((root / ".opencode" / "AGENTS.md").exists())
+            self.assertEqual(updated, ["tests/AGENTS.md"])
+            self.assertTrue((root / "tests" / "AGENTS.md").exists(), "Codex lost its channel")
             self.assertFalse(
-                (root / ".opencode" / "CLAUDE.md").exists(),
-                "wrote a Claude redirect into another vendor's surface root",
+                (root / "tests" / "CLAUDE.md").exists(),
+                "a nested CLAUDE.md importer delivers to Claude what .claude/rules already does",
             )
 
-    def test_redirect_lands_in_github_now_that_no_vendor_claims_it(self) -> None:
-        """A tree no declared vendor owns takes the redirect like any subtree.
-
-        The counterpart to the exclusion above. ``.github`` was excluded only
-        because Copilot declared it as a ``surface_root``; with that vendor
-        retired (GHI #924) the tree carries GitHub's own convention, not an
-        agent vendor's, so the exclusion's stated ground no longer applies and
-        ``.github`` is an ordinary rule-scoped subtree. Asserting this pins the
-        outcome as INTENDED rather than letting it appear as a side effect of
-        the vendor removal.
-        """
+    def test_write_set_names_only_what_the_writer_writes(self) -> None:
+        """``sync_parity`` snapshots from the helper (GHI #890): no phantom paths."""
         from gzkit.rules import nested_agents_md_paths
 
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
-            inst = root / ".github" / "instructions"
-            inst.mkdir(parents=True)
-            (inst / "workflows.instructions.md").write_text(
-                _instruction_file(".github/**", "# Workflow policy"), encoding="utf-8"
-            )
+            self._project_with_tests_rule(root)
 
-            declared = nested_agents_md_paths(root)
+            self.assertEqual(nested_agents_md_paths(root), {root / "tests" / "AGENTS.md"})
+
+    def test_an_importer_from_an_earlier_sync_is_reaped_beside_a_live_agents_md(self) -> None:
+        """The upgrade path: the 26 importers GHI #923 generated must not linger.
+
+        The subtree is LIVE here -- its ``AGENTS.md`` is rewritten by this very
+        sync -- which is the case a sweep keyed on dead subtrees alone would miss.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._project_with_tests_rule(root)
+            importer = root / "tests" / "CLAUDE.md"
+            importer.write_text(f"{_GENERATED_MARKER}\n# tests (Claude)\n\n@AGENTS.md\n", "utf-8")
+
             sync_nested_agents_md(root)
 
-            self.assertTrue((root / ".github" / "AGENTS.md").exists())
-            self.assertTrue((root / ".github" / "CLAUDE.md").exists())
-            self.assertIn(root / ".github" / "CLAUDE.md", declared)
+            self.assertFalse(importer.exists(), "generated importer survived beside a live subtree")
+            self.assertTrue((root / "tests" / "AGENTS.md").exists())
 
     def test_stale_redirect_is_cleaned_up(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
