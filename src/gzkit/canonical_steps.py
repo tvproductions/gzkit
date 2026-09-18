@@ -108,7 +108,29 @@ CANONICAL_STEP_COMMANDS: dict[str, list[str]] = {
     # emitted receipts against it and `RETIRED_STEP_COMMANDS` carries the
     # supersession. Do not change it without re-ruling the argument above.
     "unittest": ["uv", "run", "unittest-parallel", "-t", ".", "-s", "tests", "--buffer"],
-    "coverage": ["coverage", "run", "-m", "unittest", "discover", "-s", "tests", "-t", "."],
+    # Same runner and same suite as ``unittest`` above, plus coverage.py tracing
+    # (GHI #1027; operator ruling 2026-09-18, "parallel everywhere"). Measured on
+    # one tree, 10,467 tests, both exit 0: serial `coverage run -m unittest
+    # discover` 493 s, this form 307 s, IDENTICAL totals (53840 statements, 6359
+    # missed). The runner combines its workers' data into one file that
+    # ``coverage report --fail-under`` reads unchanged. ``--coverage-source`` is
+    # spelled rather than left to ``[tool.coverage.run]`` because that is the
+    # form the equal totals were measured with. Its prefix equals the ``unittest``
+    # entry, pinned by `tests/arb/test_coverage_runner_lockstep.py`, so the two
+    # cannot measure different populations.
+    "coverage": [
+        "uv",
+        "run",
+        "unittest-parallel",
+        "-t",
+        ".",
+        "-s",
+        "tests",
+        "--buffer",
+        "--coverage",
+        "--coverage-source",
+        "src/gzkit",
+    ],
     "mkdocs": ["uv", "run", "mkdocs", "build", "--strict"],
     # Reserved by ADR-0.0.22 (security-sensitivity-doctrine), OBPI-05.
     # The receipt-name prefix is ``arb-step-security-``; the canonical command

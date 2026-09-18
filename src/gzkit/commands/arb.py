@@ -206,7 +206,19 @@ def arb_typecheck_cmd(*, quiet: bool = False) -> int:
 
 
 def arb_coverage_cmd(*, argv: list[str], quiet: bool = False) -> int:
-    """Run coverage via ARB step wrapper."""
+    """Run coverage via ARB step wrapper.
+
+    With no arguments this is the canonical full-suite coverage run, READ from
+    ``CANONICAL_STEP_COMMANDS`` exactly as ``arb_typecheck_cmd`` reads its entry
+    (GHI #1027): the canonical argv is the parallel runner, which ``coverage
+    <args>`` cannot spell, so without this form the verb named ``coverage`` could
+    only emit receipts ``gz arb validate`` rejects. With arguments it forwards to
+    coverage.py as before (``gz arb coverage report --fail-under=40``).
+    """
+    if not argv:
+        return arb_step_cmd(
+            name="coverage", argv=list(CANONICAL_STEP_COMMANDS["coverage"]), quiet=quiet
+        )
     return arb_step_cmd(name="coverage", argv=["coverage", *argv], quiet=quiet)
 
 

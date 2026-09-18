@@ -288,7 +288,7 @@ uv run gz arb red --req REQ-0.33.0-01-01 --obpi OBPI-0.33.0-01-airlock-data-mode
 # output/render assertions whose carve-out is undeclared. Never gates (GHI #571).
 uv run gz test-shape
 uv run gz test-shape --kind output --undeclared-only
-uv run gz arb coverage run -m unittest discover -s tests -t .
+uv run gz arb coverage
 uv run gz arb validate --limit 20
 uv run gz arb advise --limit 10       # optional: review frequent-rule advice
 uv run gz arb patterns --compact      # optional: scan for recurring anti-patterns

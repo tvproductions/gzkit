@@ -254,7 +254,7 @@
       "version": "1.2.0",
       "path": ".gzkit/chores/coverage-40pct",
       "lane": "lite",
-      "timeoutSeconds": 300,
+      "timeoutSeconds": 600,
       "class": "conformance",
       "rung": "repair",
       "idempotent": true,

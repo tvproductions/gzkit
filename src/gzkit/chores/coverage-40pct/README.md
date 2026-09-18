@@ -5,7 +5,7 @@ Maintain >=40% line coverage floor through periodic audits.
 ## Quick Start
 
 ```bash
-uv run coverage run -m unittest discover -s tests -t . -q
+uv run unittest-parallel -t . -s tests --buffer --coverage --coverage-source src/gzkit
 uv run coverage report --fail-under=40
 ```
 

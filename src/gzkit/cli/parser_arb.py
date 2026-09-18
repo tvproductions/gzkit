@@ -236,8 +236,12 @@ def _register_coverage(arb_commands: argparse._SubParsersAction) -> None:
     p = arb_commands.add_parser(
         "coverage",
         help="Run `coverage` via ARB and emit a step receipt",
-        description="Run coverage via ARB step wrapper.",
-        epilog=build_epilog(["gz arb coverage run -m unittest discover -s tests -t ."]),
+        description=(
+            "Run coverage via ARB step wrapper. With no arguments, runs the canonical "
+            "full-suite coverage measurement (the parallel runner); with arguments, "
+            "forwards them to coverage.py."
+        ),
+        epilog=build_epilog(["gz arb coverage", "gz arb coverage report --fail-under=40"]),
     )
     p.add_argument("argv", nargs=argparse.REMAINDER, help="Arguments to forward to coverage.")
     p.set_defaults(

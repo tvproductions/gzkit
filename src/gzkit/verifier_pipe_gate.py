@@ -186,7 +186,15 @@ GZ_VERIFIER_VERBS: frozenset[str] = frozenset(
 #: is still how a scoped run is spelled at ~3,100 call sites in this repo, every
 #: one of which must keep failing closed when piped. Membership here is what
 #: `_module_verifier` reads for the `-m <module>` form.
-_DECLARED_BEYOND_ARB: frozenset[str] = frozenset({"behave", "ruff", "pytest", "unittest"})
+#:
+#: `coverage` joined for the same reason when its canonical step followed onto
+#: the parallel runner (GHI #1027): the table no longer names the `coverage`
+#: program, while `coverage run ...` and `coverage report --fail-under` are still
+#: typed by hand and by the `coverage-40pct` chore, and a piped floor check that
+#: reads green is the exact masked verifier this gate exists to refuse.
+_DECLARED_BEYOND_ARB: frozenset[str] = frozenset(
+    {"behave", "ruff", "pytest", "unittest", "coverage"}
+)
 
 #: Coverage this gate structurally cannot provide. Stated so a green is never
 #: read as total (the `unwitnessable.md` precedent the resume gate follows).

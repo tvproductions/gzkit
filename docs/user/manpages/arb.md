@@ -64,7 +64,7 @@ Dedicated wrappers for common step invocations.
 
 ```bash
 gz arb ty check .
-gz arb coverage run -m unittest discover
+gz arb coverage
 ```
 
 ### typecheck

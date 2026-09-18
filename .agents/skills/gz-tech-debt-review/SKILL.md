@@ -5,9 +5,9 @@ description: Survey scoped technical debt across existing gzkit probes and rende
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-09
+last_reviewed: 2026-09-18
 metadata:
-  skill-version: "1.3.0"
+  skill-version: "1.3.1"
 model: sonnet
 ---
 
@@ -151,7 +151,7 @@ For each class, the canonical probe:
 | `lint` | `uv run ruff check <files> --output-format=json` | JSON for grouping. |
 | `types` | `uvx ty check <files>` | Capture stdout; cross-reference `tests/governance/test_type_ignore_syntax.py` for the suppression class. |
 | `pythonic` | `uv run gz chores run pythonic-design-pattern-detection` (only on `--scope all` or paths overlap; expensive) | Skip if scope is small and last run is <7 days old. |
-| `tests` | `uv run coverage run -m unittest discover -s tests -t .` then `uv run coverage report --include=<scope-glob>` plus `uv run gz validate --requirements` and `uv run gz validate --behave-req-tags` | Coverage delta + REQ gaps. **Do not wrap with `gz arb step`** — debt review is diagnostic, not attestation. ARB receipts with `exit_status=1` (the default coverage-report exit when no target met) pollute the corpus per AGENTS.md § Attestation anti-patterns. ARB wrapping is reserved for the `--draft-ghis` path where receipt IDs go into GHI bodies. |
+| `tests` | `uv run unittest-parallel -t . -s tests --buffer --coverage --coverage-source src/gzkit` then `uv run coverage report --include=<scope-glob>` plus `uv run gz validate --requirements` and `uv run gz validate --behave-req-tags` | Coverage delta + REQ gaps. **Do not wrap with `gz arb step`** — debt review is diagnostic, not attestation. ARB receipts with `exit_status=1` (the default coverage-report exit when no target met) pollute the corpus per AGENTS.md § Attestation anti-patterns. ARB wrapping is reserved for the `--draft-ghis` path where receipt IDs go into GHI bodies. |
 | `dead-code` | `uv run ruff check --select F401,F811,F841 <files>` plus a `vulture` pass if installed | Vulture is best-effort; ruff's the hard floor. |
 | `cli-drift` | `uv run gz cli audit` and `uv run gz validate --cli-alignment` | Both must exit 0 to clear the class. |
 | `doc-drift` | `uv run gz chores run doc-coverage` and `uv run mkdocs build --strict` | Strict build catches link rot. |

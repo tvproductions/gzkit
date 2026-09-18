@@ -96,6 +96,18 @@ RETIRED_STEP_COMMANDS: dict[str, list[tuple[str, list[str]]]] = {
         # point of the check.
         ("2026-08-27T00:00:00Z", ["uv", "run", "-m", "unittest", "-q"]),
     ],
+    "coverage": [
+        # The coverage run followed ``unittest`` onto the parallel runner (GHI
+        # #1027, operator ruling 2026-09-18). Scope is unchanged -- the whole
+        # discovered suite over ``src/gzkit`` -- and the two runners were measured
+        # to report identical totals, so every serial receipt stays a truthful
+        # record as of its own timestamp. Boundary is the landing time; the newest
+        # serial coverage receipt in the store is 2026-09-11T01:17:34Z.
+        (
+            "2026-09-18T10:57:40Z",
+            ["coverage", "run", "-m", "unittest", "discover", "-s", "tests", "-t", "."],
+        ),
+    ],
 }
 
 

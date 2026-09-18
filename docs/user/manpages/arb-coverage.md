@@ -10,8 +10,11 @@ Run `coverage` via ARB and emit a step receipt.
 gz arb coverage [ARGS...]
 ```
 
-Runs coverage.py under the ARB step wrapper. Forwards every argument directly
-to coverage.
+With no arguments, runs the canonical full-suite coverage measurement — the
+parallel runner with coverage tracing, read from `CANONICAL_STEP_COMMANDS["coverage"]`
+— and emits the `coverage` receipt `gz arb validate` accepts. With arguments, forwards
+them to coverage.py under the ARB step wrapper (for example `report --fail-under=40`
+against the data file the canonical run wrote).
 
 ---
 
@@ -19,14 +22,14 @@ to coverage.
 
 | Option | Description |
 |--------|-------------|
-| `argv` | Arguments to forward to coverage |
+| `argv` | Arguments to forward to coverage; omit for the canonical run |
 
 ---
 
 ## Examples
 
 ```bash
-gz arb coverage run -m unittest discover -s tests -t .
+gz arb coverage
 gz arb coverage report --fail-under=40
 ```
 

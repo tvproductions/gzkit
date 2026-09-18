@@ -273,7 +273,7 @@ uv run gz agent sync control-surfaces  # Regenerate surfaces
 | Lint clean | `uv run gz arb ruff` | `arb-ruff-` |
 | Type check clean | `uv run gz arb typecheck` | `arb-step-typecheck-` |
 | Tests pass | `uv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer` | `arb-step-unittest-` |
-| Coverage floor | `uv run gz arb coverage run -m unittest discover -s tests -t .` | `arb-step-coverage-` |
+| Coverage floor | `uv run gz arb coverage` | `arb-step-coverage-` |
 | Docs build clean | `uv run gz arb step --name mkdocs -- uv run mkdocs build --strict` | `arb-step-mkdocs-` |
 
 Locked by `CANONICAL_STEP_COMMANDS`; `gz arb validate` flags drift. Applies to `uv run gz obpi complete`, `uv run gz adr emit-receipt`, any `gz` CLI attestation string, and `git commit -m` messages.

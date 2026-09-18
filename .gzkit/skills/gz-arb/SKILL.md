@@ -5,11 +5,11 @@ description: Wrap QA commands in ARB receipts for attestation evidence. Use when
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-17
+last_reviewed: 2026-09-18
 model: haiku
 gz_command: arb advise
 metadata:
-  skill-version: "1.3.0"
+  skill-version: "1.4.0"
 revived_on: "2026-04-14"
 revived_under: OBPI-0.25.0-33
 revival_note: "ARB surface absorbed from airlineops/opsdev/arb under OBPI-0.25.0-33. The earlier retirement (2026-04-03, 'consolidated into gz-check') was itself drift — gz check never implemented ARB receipt emission, so the rule contract in .gzkit/rules/arb.md was referencing a nonexistent surface. Revival restores parity with the rule."
@@ -43,7 +43,7 @@ Agent Self-Reporting middleware: wrap QA commands (ruff, ty, unittest, coverage)
      the table is the answer whenever this line disagrees with it.
    - `uv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer` —
      canonical for tests-pass claims
-   - `uv run gz arb coverage run -m unittest discover -s tests -t .` —
+   - `uv run gz arb coverage` —
      canonical for coverage-floor claims
    - `uv run gz arb step --name mkdocs -- uv run mkdocs build --strict` —
      canonical for docs-build-clean claims
@@ -82,7 +82,7 @@ Agent Self-Reporting middleware: wrap QA commands (ruff, ty, unittest, coverage)
 uv run gz arb ruff src tests
 uv run gz arb typecheck
 uv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer
-uv run gz arb coverage run -m unittest discover -s tests -t .
+uv run gz arb coverage
 uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
 uv run gz arb validate --limit 10
 uv run gz arb advise --limit 10
