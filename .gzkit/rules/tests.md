@@ -5,27 +5,24 @@ paths:
 description: Test policy and coverage requirements
 ---
 
-<!-- rule-version: 0.25.0 -->
+<!-- rule-version: 0.26.0 -->
 
 # Test Policy (canonical)
 
-> **Rule version:** `0.25.0` — GHI #1008 reads a `( … )` or `{ …; }` group as ONE command in § Verification exit-code integrity: a grouped verifier is masked or escaped on the same terms as a bare one, with shell state and errexit scoped the way the shell scopes them. Prior versions lifted to [Rule Version History](../../docs/governance/rule-version-history.md#testsmd). Binding rules unchanged except as stated.
+> **Rule version:** `0.26.0` — diet pass under GHI #921: measured instances, worked examples and history lifted to [Tests — Rationale](../../docs/governance/tests-rationale.md); prior versions in [Rule Version History](../../docs/governance/rule-version-history.md#testsmd). Binding rules unchanged.
 
 ## General Rules (binding)
 
-- Use **stdlib `unittest`**; no pytest. That means no pytest syntax, fixtures, parametrization, plugins, or bare pytest-style assertions. Use `unittest`, `unittest.mock`, and stdlib fixtures such as `tempfile.TemporaryDirectory()`.
-- Prefer **table-driven** tests with deterministic seeds; no network/external services.
-- **Smoke/BVT <=60s** — binds the `@smoke`-marked subset run by `uv run gz smoke`, NOT the full unit tier. Enforced by that verb (exit 3 on breach or on an empty tier) and run as the `Smoke tier` step of `gz check` (GHI #724).
-- **Full unit tier: no fixed ceiling.** Its runtime grows with the REQ set by design — every BEHAVIOR REQ owes a covering test and § Coverage Floor requires it — so a constant ceiling over a ratcheting workload can only be breached, never held. That is why the 60s budget belongs to the `@smoke` subset, and the reason is the ratchet, NOT a ruling against parallel execution: the canonical "Tests pass" invocation runs `unittest-parallel` (GHI #856). Dated record, 2026-08-27 at `2c81cb7d`, 10-core host, 8,912 tests, both exit 0: **144.23s serial, 41.34s parallel** — illustrative of the gap, never a threshold; the enforced budget is whatever `uv run gz smoke` fails closed on.
-- Fixtures: local, small, reproducible; avoid huge goldens.
-- **Database isolation:** unit tests MUST use `tempfile` temp DBs; NEVER use live/production databases.
-- **Git fixture isolation:** every `git` a test spawns passes `env=_isolated_git_env()` from `tests/commands/common.py`, and `tests/__init__.py` drops the same repo-local variables from the process environment once, so a fixture — or production code a test drives — targeting a temp repository operates on that repository regardless of the repo-selection state the process inherited. A hook exports an absolute `GIT_DIR`, and from a linked worktree an unguarded `git init` re-initialises the hosting repo as bare (GHI #977). Variable set and rationale: `gzkit.git_spawn_boundary`. Fenced by `tests/commands/test_common_fixtures.py::TestEveryGitSpawnIsInsideTheBoundary`.
-- **Cleanup:** NEVER use raw `shutil.rmtree()` in tearDown. Use `tempfile.TemporaryDirectory()` context manager.
+- Use **stdlib `unittest`**; no pytest — no pytest syntax, fixtures, parametrization or plugins. `unittest.mock` and `tempfile.TemporaryDirectory()` are the fixtures.
+- Table-driven tests with deterministic seeds; no network or external services; fixtures local, small and reproducible.
+- **Smoke/BVT <=60s** — binds the `@smoke`-marked subset run by `uv run gz smoke`, NOT the full unit tier. That verb fails closed (exit 3) on breach or an empty tier and runs as the `Smoke tier` step of `gz check`. The full unit tier has no ceiling: it grows with the REQ set, and the canonical "Tests pass" invocation runs it with `unittest-parallel`.
+- Unit tests use `tempfile` temp DBs; never a live database.
+- **Git fixture isolation:** every `git` a test spawns passes `env=_isolated_git_env()` from `tests/commands/common.py`, and `tests/__init__.py` drops the same repo-local variables once, so a fixture targeting a temp repository operates on that repository whatever the process inherited — from a linked worktree an unguarded `git init` re-initialises the hosting repo as bare (GHI #977). Fenced by `tests/commands/test_common_fixtures.py::TestEveryGitSpawnIsInsideTheBoundary`.
+- Cleanup through `tempfile.TemporaryDirectory()`; never raw `shutil.rmtree()` in tearDown.
 
 ## Coverage Floor (binding)
 
-- **Minimum line coverage: 40.00%**
-- Before closing any brief, verify coverage has not regressed.
+- Coverage >=40.00% (the `coverage-40pct` chore holds the enforced value); verify it has not regressed before closing a brief.
 
 ## Run / Verify
 
@@ -34,166 +31,71 @@ uv run ruff check . --fix && uv run ruff format .
 uv run -m unittest -v
 ```
 
-- All tests PASS.
-- Smoke tier within budget: `uv run gz smoke` exits 0.
-- Coverage >=40.00%.
+All tests pass; `uv run gz smoke` exits 0; coverage at or above the floor.
 
 ### Smoke tier membership (binding)
 
-A smoke test proves a surface **answers at all** — build verification, not
-correctness. Mark it with `@smoke` from `gzkit.smoke`; there is no smoke
-directory, because `gz validate --test-tiers` forbids a third tier under
-`tests/` and the runner boundary is the tier boundary.
-
-Prefer members that enumerate their coverage from a **live** source (the CLI
-parser, the registry) over members that hard-code a list. A hand-maintained
-roster is the thing that rots; a sweep over the live parser covers a new verb
-the moment it is registered and needs no upkeep.
-
-Members must stay fast and free of subprocess work. The tier's entire value is
-that it fits a budget the full suite structurally cannot.
+A smoke test proves a surface answers at all — build verification, not correctness. Mark it `@smoke` from `gzkit.smoke`; there is no smoke directory (`gz validate --test-tiers` forbids a third tier). Prefer members that enumerate coverage from a live source (the CLI parser, the registry) over a hand-maintained list, and keep them fast and free of subprocess work.
 
 ## Red-Green-Refactor (TDD Discipline — binding)
 
-Gate 2 is named TDD. Red-Green-Refactor is a repeating cycle per behavior increment:
+Gate 2 is named TDD. Per behavior increment:
 
-- **Red:** Write a test for a behavior required by the OBPI brief (`REQ-*` identifier). Run it. Watch it fail for the right reason. A test that passes on first run is not Red.
-- **Green:** Write the **simplest code** that makes the test pass.
-- **Refactor:** Improve the code's structure without changing its behavior. Adding new behavior is not refactoring — that starts a new Red.
+- **Red:** write a test for a behavior the OBPI brief requires (`REQ-*`), run it, and watch it fail for the right reason. A test that passes on first run is not Red.
+- **Green:** the simplest code that makes it pass.
+- **Refactor:** improve structure without changing behavior; new behavior starts a new Red.
 
-**Derivation rule:** Test cases derive from OBPI brief acceptance criteria, not from the implementation. When adding tests outside a pipeline run, locate the governing OBPI brief and derive from its requirements.
+**Derivation rule:** test cases derive from the brief's acceptance criteria, not from the implementation; outside a pipeline run, locate the governing brief first.
 
-**Tests assert semantics, not strings (invariant 6f).** Assertions derive from the REQ or skill contract, not from a run of the code.
+**Tests assert semantics, not strings (invariant 6f).** Assertions derive from the REQ or skill contract, not from a run of the code. A unit test is a `unittest.TestCase` check of one required behavior — fast, isolated, deterministic — that fails when the contract breaks; it does not preserve implementation structure, prose or rendered output unless that output form is the named contract.
 
-**Unit-test purpose.** A gzkit unit test is a stdlib `unittest.TestCase` check of one required code behavior. It is fast, isolated, deterministic, and fails when the behavior contract breaks. It does not preserve current implementation structure, current prose, or current rendered output — unless that exact output form is the named behavior contract.
+**The discriminator:** *if the production code's behavior changed but its text did not, would this test fail?* If not, it is not a BEHAVIOR proof — a test that greps a doc or asserts a file exists proves content; route it to the SUPPORT channel or delete it. **Prefer structured assertion targets** — fields, domain objects, state transitions, exception types, ledger event fields, parsed values — and assert exact strings only where rendering is the named contract.
 
-**The discriminator (apply this, do not recite § 6f).** Ask: *if the production code's behavior changed but its text did not, would this test fail?* If no, it is not a BEHAVIOR proof. A test that `grep`s a production doc for a substring, or asserts that a file exists, proves content — not behavior. Route it to the SUPPORT channel (ledger event + structural validator) or delete it. § 6f states the rule; this question is how you apply it.
+**Eval-awareness corollary (advisory).** Audit-helper names SHOULD NOT pattern-match as audit-step names; name them by behavior (`assert_receipt_id_resolves`, not `assert_audit_passes`).
 
-**Prefer structured assertion targets.** Assert on structured fields, domain objects, state transitions, exception types, ledger event fields, and parsed values. Assert exact strings or table markers only when rendering behavior is the named contract (see § Output-form fixture carve-out).
+**Output-form fixture carve-out.** Output-form assertions are permitted in dedicated fixture tests per `.gzkit/rules/tool-skill-runbook-alignment.md` § Invariant 3, in classes separate from REQ-derived tests. Declare the carve-out with an `# output-contract: <reason>` comment in the test or a class name ending `OutputForm`, `OutputContract` or `Rendering`; `gz test-shape` reads the markers and reports an undeclared `result.output` / `.getvalue()` / `assertRegex` assertion as advisory (GHI #571) — advisory is the settled disposition. Output-form fixture tests are BEHAVIOR proofs under § REQ Scope Discipline: they test render code, not file content.
 
-**Eval-awareness corollary (advisory — no mechanical witness, and none is planned).** Audit-helper names SHOULD NOT pattern-match as audit-step names — name them by behavior, not audit role (e.g. `assert_receipt_id_resolves` not `assert_audit_passes`). This clause binds at authoring and review time only. A name-shape scan over `tests/**` is tractable and was scored as a promotion candidate for months without being built; under the § Recommended promotion order freeze in `docs/governance/advisory-rules-audit.md` (2026-06-08, opt-in-with-justification), a check nobody has observed catching anything is mechanism this codebase should not add. Reclassify only on a named, observed instance of the confusion this clause names.
+**Per-increment rhythm:** one test → one observed RED → minimum code to GREEN → next increment. **Do not slice horizontally.** Authoring every test for a brief and then every implementation is not TDD with a long cycle — it produces tests insensitive to change, none of which was observed failing for the right reason.
 
-**Output-form fixture carve-out.** Output-form assertions are permitted in dedicated fixture tests per `.gzkit/rules/tool-skill-runbook-alignment.md` § Invariant 3. Keep them in separate test classes from REQ-derived unit tests. **Declare the carve-out** with an `# output-contract: <reason>` comment inside the test function, or by placing the test in a class whose name ends `OutputForm`, `OutputContract`, or `Rendering`. `gz test-shape` reads those markers; an undeclared assertion on `result.output` / `.getvalue()` / `assertRegex` is reported as advisory, never fail-closed (GHI #571) — **and advisory is the settled disposition, not a waypoint.** The scorecard carried this row as a promotion candidate whose stated path was "flip that arm closed once the declared-marker backlog drains"; draining a backlog is not observed drift, and the § Recommended promotion order freeze (2026-06-08) admits a new fail-closed check only on named, observed evidence. Flipping the arm closed would also fail-close the whole legacy corpus at once, which is the reason it was left open in the first place. *(GHI #270 reconciliation: output-form fixture tests are **BEHAVIOR** REQ proofs under the REQ Scope Discipline taxonomy — they test CLI render-code behavior, not file content. The apparent contradiction between § 6f's prose-content prohibition and Invariant 3's render-form requirement dissolves once REQ kind is named.)*
+**RED evidence:** Do not author ARB *step* receipts with `exit_status=1` as "RED receipts". Gate 2 claims cite GREEN-side step receipts; the RED witness is `uv run gz arb red --req <REQ-ID>`, which runs the covering test with the production hunks withheld and emits an `arb-red-<REQ>` receipt whose `failure_class` `none` means the test cannot fail (GHI #642).
 
-**Per-increment rhythm:** One test → one observed RED → minimum code to GREEN → next increment. **Do not slice horizontally** — authoring every test for a brief and then every implementation is not TDD with a long cycle, it is a different activity that produces tests insensitive to change. Written against an implementation you are *about to* write, assertions record the shape you already intend rather than the behavior the REQ demands, and none is ever observed failing for the right reason: the RED that arrives with ten other REDs is noise, not a signal about any one of them. Slice vertically — one REQ carried from failing test to passing code before the next begins. This is § The discriminator applied at authoring time rather than review time: a test batch-written alongside its implementation is the shape most likely to answer "no" to *if behavior changed but text did not, would this test fail?*
+**Mutation-sweep integrity (binding, GHI #963).** A failing mutant run is NOT a kill. Report four outcomes: `killed` and `survived` are claims about the guard, `invalid` and `inconclusive` about the run. Every mutant runs in a subprocess with its own `PYTHONPYCACHEPREFIX` (CPython validates a cached `.pyc` on mtime-seconds and size, so two equal-length mutants in one second share bytecode). Use `gzkit.mutation_witness.run_mutation_sweep`, name the covering test via `Mutation.expected_tests`, and cite a sweep only when `is_conclusive` is true, disclosing `invalid` and `inconclusive` rows.
 
-**RED evidence:** Do not author ARB *step* receipts with `exit_status=1` as "RED receipts". Gate 2 TDD claims cite only GREEN-side step receipts (`arb-step-unittest-*`). The RED witness is a distinct artifact with its own schema: `uv run gz arb red --req <REQ-ID>` runs the covering test against the base tree with the production hunks withheld and emits an `arb-red-<REQ>` receipt (`gzkit.arb.red_receipt.v1`) plus a `red_receipt_emitted` ledger event carrying `failure_class` (`assertion` | `error` | `none`). A `none` verdict means the test passed without its implementation and therefore cannot fail — the § 6f defect (GHI #642).
-
-**Mutation-sweep integrity (binding, GHI #963).** A mutation sweep grades a guard by deleting it and observing whether a test notices. Its verdicts are quoted as governance evidence, so the sweep must be at least as trustworthy as the tests it grades. **A failing mutant run is NOT a kill.** An absent target, a no-op edit, a mutant that does not import, an unrelated failure, or a red baseline each produce a non-zero exit indistinguishable from a real one; a surviving run can equally conceal a mutation that never activated. Report **four** outcomes, never two — `killed` and `survived` are claims about the GUARD, `invalid` and `inconclusive` are claims about the RUN, and a sweep that lumps them reports coverage it never observed.
-
-Every mutant MUST run in a subprocess with its own `PYTHONPYCACHEPREFIX`. CPython validates a cached `.pyc` on `(mtime-seconds, size)`, so two mutations of equal length landing in the same clock second let the second subprocess import the first mutant's bytecode — measured on an OBPI-0.35.0-04 sweep, where a guard reported PASSED in-sweep and FAILED correctly in isolation.
-
-Use `gzkit.mutation_witness.run_mutation_sweep`, which verifies baseline, activation, isolation and failure cause and returns the four-way verdict; do not hand-roll a shell loop, which is the shape that produced the collision. A kill may be required to name a covering test via `Mutation.expected_tests` — without it, a failure elsewhere in the suite counts as coverage this guard does not have.
-
-```bash
-uv run python -c '
-from pathlib import Path
-from gzkit.mutation_witness import Mutation, run_mutation_sweep
-s = run_mutation_sweep(Path("."), Path("src/gzkit/<module>.py"),
-    [Mutation(find="<guard>", replace="<broken>", label="<name>",
-              expected_tests=["<covering test>"])],
-    ["uv", "run", "-m", "unittest", "tests.<module>", "-v"])
-print(s.killed, s.survived, s.invalid, s.inconclusive, s.is_conclusive)'
-```
-
-Only a sweep whose `is_conclusive` is true may be cited as evidence about coverage; a sweep carrying `invalid` or `inconclusive` rows reports what it could not grade, and those rows are disclosed rather than dropped.
-
-**Verification exit-code integrity (binding, GHI #589).** A verifier's truth is its own exit code, never a downstream filter's. NEVER pipe `unittest`/`behave`/`mkdocs --strict` (or any ARB-wrapped verifier) through `tail`/`head`/`grep`/`Select-Object`: the shell reports the *last* process's exit (the filter's — always 0), masking a failing suite as a green run. Capture to a file (`> out.log 2>&1`) and read the ARB receipt's `exit_status` (GHI #317). A harness "exit code 0" notification on a piped command attests the filter, not the verifier.
-
-**The sequence form masks identically (GHI #940).** The rule is about the LAST thing the shell runs, not about the pipe character. `verifier > log; tail log` discards the verifier's status exactly as `verifier | tail` does — the shell reports the last *statement* just as it reports the last *stage*. Fixing this by naming `tail`/`head`/`grep` would repeat the enumerate-the-examples miss the clause already made once: `verifier > log; echo done` masks just as completely. Two remedies, and they are **not interchangeable** — `set -o pipefail` fixes a pipe and does nothing for a sequence; `set -e` aborts a sequence and does nothing for a pipe. Reading `$?` in the statement *immediately* after the verifier is the third route, and immediacy is load-bearing: `$?` reports whatever ran last, so a read placed after an intervening statement reports that statement instead and only looks like evidence. `&&` carries a failure to the END of its chain, so the separator that decides is the one ending the chain, not the verifier's own (GHI #971): `verifier && ok` reports the failure, but `verifier && ok; ls` and `verifier && ok || echo x` both exit 0, and `set -e` rescues neither (POSIX suppresses errexit for a non-final command in an AND-OR list). Read `$?` immediately after the chain — when it short-circuits, `$?` IS the verifier's status. Under `pipefail` a verifier in any pipeline stage carries its status to the statement's end the same way. After `&`, `$?` reads the background LAUNCH (0), never the verifier: run a verifier in the foreground.
-
-**A group is one command (GHI #1008).** `( … )` and `{ …; }` report their last statement, so a grouped verifier is read exactly as a bare one: `(verifier); ls` and `(verifier; ls)` both exit 0 over a failure, while `(cd x && verifier)` reports it. `set -e` or `pipefail` set inside `( … )` does not outlive it. errexit is suppressed for every command inside a group that is not last in its AND-OR list — `set -e; (verifier; ls) || echo x` exits 0 — so read `$?` inside the group instead. A heredoc body, a reserved-word prefix and `$( … )` stay declared limits (GHI #1013, #1012).
-
-**The `||` branch announces, it does not report (GHI #970).** `verifier || echo failed` exits 0 *exactly when* the verifier failed: the branch runs on failure and then replaces the failing status with its own. Announcing and reporting are different claims — anything reading the status rather than the transcript sees green, and a Step-4a packet is a CURATED excerpt, so the announcement can simply not be pasted (measured 2026-09-06: such a packet verified with zero blockers). The remedy is neither `pipefail` nor `set -e` — the shell suppresses errexit for a command left of `||` — but the branch itself: `verifier || echo "REAL EXIT: $?"`. The verdict idiom stays permitted, and the arm's canonical scope is what saves it: `test -f x && echo DEFECT || echo OK` exits non-zero when the assertion HOLDS and runs no verifier.
-
-**The aggregate status is a floor, not a proof.** Even a correctly-written `verifier > out.log 2>&1; echo "REAL EXIT: $?"` still *exits* with the last statement's code, so a harness summary that reports only the aggregate can still announce success over a red suite. The shell-level rule makes the truth visible in the output; it cannot make a notification line carry it. For attestation, cite the ARB receipt's `exit_status` — the only channel that carries the verifier's own result out of the shell. Tracked at GHI #969 — a declared limit with no open destination is an untrackable defect (AGENTS.md § PRIME DIRECTIVE #6).
-
-**Mechanized** by the `verifier-pipe-gate.py` PreToolUse hook over `Bash` (decision: `gzkit.verifier_pipe_gate.decide`; live negative control `verifier-exit-status-masked`). The gate refuses a verifier in any *non-final* pipeline stage — the masking is the pipe, not the filter's identity, so `gz check | cat` is the same defect as `gz check | tail` and both are refused. Two escapes are permitted because they genuinely preserve the status: `set -o pipefail` and reading `${PIPESTATUS[0]}`. The verifier set is READ from `CANONICAL_STEP_COMMANDS` (AGENTS.md § Attestation), so a canonical step added there is covered without a second edit.
+**Verification exit-code integrity (binding, GHI #589).** A verifier's truth is its own exit code, never a downstream filter's. Capture to a file (`verifier > out.log 2>&1`) and read `$?` in the statement immediately after; for attestation cite the ARB receipt's `exit_status`. The shell reports the last thing it ran, so each of these masks a failure: a pipe (`verifier | tail`; only `set -o pipefail` or `${PIPESTATUS[0]}` preserves it), a following statement (`verifier > log; tail log`; only `set -e` or an immediate `$?` read), an `||` branch (`verifier || echo failed` exits 0 exactly when the verifier failed — write `verifier || echo "REAL EXIT: $?"`), a group (`( … )` and `{ …; }` report their last statement), a chain whose final separator is not the verifier's, and `&` (reports the launch). The aggregate status is a floor, not a proof (GHI #969). Mechanized by the `verifier-pipe-gate.py` PreToolUse hook over `Bash`, whose verifier set is read from `CANONICAL_STEP_COMMANDS`.
 
 ## TASK-Driven Workflow (binding)
 
-TASK is the leaf vertebra of the governance spine `PRD → Constitution → ADR → OBPI → REQ → TASK → Attestation` (AGENTS.md § Workflow; `docs/governance/governance_runbook.md` § "fourth tier: ADR > OBPI > REQ > TASK"; `docs/governance/agent-contract-rationale.md` § TASK-driven workflow).
+TASK is the leaf of `PRD → Constitution → ADR → OBPI → REQ → TASK → Attestation`. **src/tests commits MUST carry a `Task:` trailer.** Enforced by `gz validate --commit-trailers`. `Ceremony:` and `Eval-feedback-source:` do not substitute on src/tests scope.
 
-**src/tests commits MUST carry a `Task:` trailer.** Enforced by `gz validate --commit-trailers`. `Ceremony:` and `Eval-feedback-source:` no longer substitute for `Task:` on src/tests scope — they remain valid for non-src/tests commits (sync artifacts under `.claude/`, roadmap notes, ledger reconciles, rule-edit metadata).
+| Form | Use | Example |
+|------|-----|---------|
+| `TASK-X.Y.Z-NN-MM-PP` | OBPI-scoped work, minted by `gz task start` | `Task: TASK-0.22.0-01-01-01` |
+| `TASK-<kebab-slug>` (optional `-#<ghi>`) | Direct-fix work; append the GHI only when one already exists — never file one to satisfy the trailer (operator directive 2026-06-01) | `Task: TASK-fix-git-log-encoding` |
+| `TASK-gz-git-sync` | Auto-stamped by `gz git-sync` | `Task: TASK-gz-git-sync` |
 
-**Task: trailer forms (all accepted):**
-
-| Form | Use when | Example |
-|------|----------|---------|
-| Formal `TASK-X.Y.Z-NN-MM-PP` | OBPI-scoped work; minted via `gz task start` against an active brief + REQ | `Task: TASK-0.22.0-01-01-01` |
-| Slug `TASK-<kebab-slug>` (optional `-#<ghi>`) | Direct-fix work outside OBPI scope (per AGENTS.md § Defect-fix routing). The `-#<ghi>` anchor is OPTIONAL — append it only when a GHI already exists; filing a GHI *to satisfy the trailer* is a moratorium violation (operator directive 2026-06-01) | `Task: TASK-fix-git-log-encoding` or `Task: TASK-task-spine-restoration-#552` |
-| Ceremony `TASK-gz-git-sync` | Auto-stamped by `gz git-sync` on every sync commit; attributes bundled surface-sync to the git-sync ceremony rather than a synthetic per-REQ id | `Task: TASK-gz-git-sync` |
-
-**OBPI-scoped steps:** `gz covers` → `gz task start TASK-X.Y.Z-NN-MM-PP` → TDD cycle → commit with `Task:` trailer → `gz task complete TASK-X.Y.Z-NN-MM-PP` → `@covers(REQ-...)` decorator.
-
-**Direct-fix steps:** `git log --since='60 days ago' --oneline --grep='^fix('` (precedent check per AGENTS.md § Defect-fix routing) → TDD cycle → commit with `Task: TASK-<slug>` trailer (append `-#<ghi>` only when a GHI already exists; do not file one to satisfy the trailer — operator moratorium).
+OBPI-scoped: `gz covers` → `gz task start` → TDD cycle → commit with `Task:` → `gz task complete` → `@covers(REQ-...)`. Direct-fix: precedent check (`git log --since='60 days ago' --oneline --grep='^fix('`) → TDD cycle → commit with `Task: TASK-<slug>`.
 
 ## Two runners, one test surface
 
 | Runner | Location | Purpose | Contract |
 |--------|----------|---------|----------|
-| `unittest` | `tests/` | Pure Python behavior, command contracts | Mocked subprocess boundaries; deterministic; fast |
-| `behave` | `features/` | End-to-end CLI and governance scenarios | Real operator flows, Gherkin-readable |
+| `unittest` | `tests/` | Pure Python behavior, command contracts | Mocked subprocess boundaries (`_uv_sync_patcher`, `_git_subprocess_patcher`, `_quick_init` in `tests/commands/common.py`); deterministic; < 200ms; `tempfile` DBs |
+| `behave` | `features/` | End-to-end CLI and governance scenarios | Real operator flows; anything needing a real subprocess lives here |
 
-`gz test` runs `unittest` over `tests/` then `behave` over `features/`. Both gates must pass for `gz check`.
+`gz test` runs `unittest` then `behave`; both must pass for `gz check`.
 
-### Unit-tier contract (binding)
-
-- Mock every subprocess boundary (`_uv_sync_patcher`, `_git_subprocess_patcher`, `_quick_init` in `tests/commands/common.py`)
-- Complete in < 200ms; deterministic; `tempfile` temp DBs only
-- E2E scenarios requiring real subprocess → `features/*.feature`
-
-### Behave scenario tagging
-
-Behave scenarios covering a REQ carry `@REQ-X.Y.Z-NN-MM` as a scenario tag. Enforced by `gz validate --behave-req-tags` (fires on `Completed`/`Validated` briefs only, GHI #276/#323). Waivers in `data/behave_coverage_waivers.json`.
-
-**REQ-kind-aware proof channels (GHI #636).** The gate is aware of the ADR-0.0.59 three-kind taxonomy: a behave scenario is the proof channel for *no* kind, so the gate only requires behave-or-equivalent for **BEHAVIOR** REQs, and treats an `@covers` unit test under `tests/**` as satisfying a BEHAVIOR REQ's channel (its canonical channel per the proof-channel matrix). **SUPPORT** REQs (ledger + structural validator) and **STRUCTURAL-FENCE** REQs (parent-ADR `## Boundary Invariants`) are exempt by kind — no scenario, no `@covers`, no waiver needed. A BEHAVIOR REQ with neither a scenario tag nor an `@covers` test still fails closed; a missing `[kind]` tag defaults to BEHAVIOR. This means a unit-only / no-CLI-surface OBPI passes without a `behave_coverage_waivers.json` entry — the entry the shrink-only waiver-ratchet (ADR-0.0.73 BI#8) would otherwise forbid adding.
+**Behave scenarios covering a REQ carry `@REQ-X.Y.Z-NN-MM`** as a scenario tag — `gz validate --behave-req-tags` (fires on `Completed`/`Validated` briefs; waivers in `data/behave_coverage_waivers.json`). The gate is REQ-kind-aware (GHI #636): a BEHAVIOR REQ is satisfied by a tagged scenario or an `@covers` unit test; SUPPORT and STRUCTURAL-FENCE REQs are exempt by kind; a missing `[kind]` tag defaults to BEHAVIOR.
 
 ## REQ Scope Discipline (binding)
 
-Every REQ in an OBPI brief's `## Acceptance Criteria` carries exactly one of three kinds,
-declared as a bracketed inline tag: `REQ-X.Y.Z-NN-NN [kind]: claim text`. **Tag case carries no meaning (both readers are `re.IGNORECASE`); author UPPERCASE, and do NOT rewrite existing lowercase tags** — operator ruling 2026-08-11, rationale and measured split in [`req-scope-discipline.md`](../../docs/governance/req-scope-discipline.md) § The invariant.
+Every REQ in an OBPI brief's `## Acceptance Criteria` carries exactly one kind as an inline tag — `REQ-X.Y.Z-NN-NN [kind]: claim` — author UPPERCASE, do not rewrite existing lowercase tags (operator ruling 2026-08-11). `gz validate --req-kind-discipline` enforces it (ADR-0.0.59).
 
-### Three-kind taxonomy
+| Kind | Covers | Proof channel |
+|------|--------|---------------|
+| **BEHAVIOR** | Code behavior — functions, commands, CLI output, state transitions | `@covers` test in `tests/**` |
+| **SUPPORT** | Artifacts that support behavior — docs, rules, data files | The cited artifact present (a ledger event citing the path, or on disk for `artifact_edited`) AND its structural validator scope admits it |
+| **STRUCTURAL-FENCE** | Cross-OBPI invariants scoped to the parent ADR | Parent-ADR `## Boundary Invariants` entry naming this OBPI (`(OBPI-NN[, …])`), audited at ADR closeout |
 
-| Kind | What it covers | Proof channel |
-|------|---------------|---------------|
-| **BEHAVIOR** | Code behavior — functions, commands, CLI outputs, state transitions | `@covers`-decorated test in `tests/**` (existing pattern, unchanged) |
-| **SUPPORT** | Governance artifacts, doctrine docs, rule files, data files that *support* behavior but are not behavior themselves | The cited artifact is genuinely present **AND** its structural validator scope (e.g. `gz validate --documents`) admits its shape. "Present" is path-specific (GHI #647): a ledger event of the cited type **citing that path**, OR — for `artifact_edited` (content authorship, which is not emitted for source `.py` files) — the cited artifact **exists on disk**. A bare event of the type that does not cite the path does NOT prove (the closed hollow gate). |
-| **STRUCTURAL-FENCE** | Integration-state properties scoped to the parent ADR's boundary — cross-OBPI invariants that audit at ADR closeout, not per-OBPI | Parent-ADR `## Boundary Invariants` entry carrying the OBPI-combination anchor token `(OBPI-NN[, OBPI-MM, …])` that names this REQ's OBPI (GHI #538; syntax in `docs/governance/req-scope-discipline.md` § STRUCTURAL-FENCE), audited at ADR closeout layer |
+**Do not add a unit test to make a SUPPORT or STRUCTURAL-FENCE REQ appear covered** — that is the tautological content test this taxonomy exists to remove (GHI #571).
 
-### Brief-authoring tag syntax
-
-```text
-REQ-X.Y.Z-NN-01 [BEHAVIOR]: the system does X when Y
-REQ-X.Y.Z-NN-02 [SUPPORT]: the rule file carries subsection Z
-REQ-X.Y.Z-NN-03 [STRUCTURAL-FENCE]: cross-OBPI boundary invariant P holds
-```
-
-### Proof-channel matrix
-
-| Kind | Test `@covers`? | Ledger event? | Structural validator? | Parent-ADR invariant? |
-|------|:--------------:|:------------:|:--------------------:|:--------------------:|
-| BEHAVIOR | **required** | — | — | — |
-| SUPPORT | — | **required** | **required** | — |
-| STRUCTURAL-FENCE | — | — | — | **required** |
-
-### What this replaces
-
-Before ADR-0.0.59: every REQ used the BEHAVIOR proof channel uniformly, producing
-tautological filesystem-grep tests for content REQs (32% project-wide / 42% governance).
-SUPPORT-kind REQs are now witnessed by the ledger + structural validator; no `@covers`
-test is required or appropriate for them — authoring one is the anti-pattern this rule
-names.
-
-**Do not add a unit test merely to make a SUPPORT or STRUCTURAL-FENCE REQ appear
-covered.** The prohibition binds both non-BEHAVIOR kinds, not SUPPORT alone. A
-STRUCTURAL-FENCE REQ is proven by its parent-ADR `## Boundary Invariants` entry, audited
-at ADR closeout; a `@covers` test authored to fill an evidence cell for one is the same
-category error, wearing a different kind tag (GHI #571).
-
-> See [`docs/governance/req-scope-discipline.md`](../../docs/governance/req-scope-discipline.md)
-> for canonical expansion: problem framing, proof-channel detail, GHI #270 reconciliation,
-> quantification, and consequences.
-
-> See [`docs/governance/tests-rationale.md`](../../docs/governance/tests-rationale.md) for TDD anti-patterns, eval-awareness corollary details, behave enforcement direction, runner anti-patterns, TASK workflow details, and code patterns.
+> Canonical expansion, quantification and the GHI #270 reconciliation: [`docs/governance/req-scope-discipline.md`](../../docs/governance/req-scope-discipline.md). TDD anti-patterns, the two-runner history, the exit-code measured instances, the mutation-sweep example and the TASK workflow details: [`docs/governance/tests-rationale.md`](../../docs/governance/tests-rationale.md).

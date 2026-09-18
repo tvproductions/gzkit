@@ -3360,3 +3360,9 @@ rows first (owned by OBPI-0.35.0-10 Draft — routing recorded, close `supersede
 #921/#922 cross-linked); #1022 adopter template Gate 3/4 rows; #1023 a gz verb for BDD (enhancement,
 operator-ruled "file that for later"); #1024 12 src modules cite governance-core.md, one in a user-facing
 error message. None implemented (authoring-only invocation).
+
+## 2026-09-17 — tests.md (ruled)
+
+Full after presented (24,015 B → 10,551 B; all ten Mechanical scorecard anchors verbatim, checked by script).
+Every binding rule kept; measured instances, histories and the mutation-sweep example lifted to
+`tests-rationale.md`. Operator: "A".

@@ -72,7 +72,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `mx-mode.md` | `1.4.0` |
 | `pythonic.md` | `0.5.1` |
 | `tool-skill-runbook-alignment.md` | `0.5.1` |
-| `tests.md` | `0.25.0` |
+| `tests.md` | `0.26.0` |
 | `task-discovery.md` | `0.9.0` |
 | `token-block-discipline.md` | `0.7.0` |
 
