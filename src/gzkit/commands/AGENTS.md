@@ -7,61 +7,48 @@
 
 # CLI Contract Doctrine
 
-<!-- rule-version: 0.8.1 -->
+<!-- rule-version: 0.9.0 -->
 
-> **Rule version:** `0.8.1` — the manpage-filename pointer now names `AGENTS.md` § Governance doctrine surfaces, where the verb-resolution rule lives since `governance-core.md` was folded into the root contract (2026-09-17, GHI #921). `0.8.0` — § Flag Conventions realigned to the canonical specification's § Output Modes and § Verbosity Levels: `--verbose` enables INFO-level logging (this row said "Debug output", the drift the adapter's level map had copied) and `--debug` is listed, and errors reach stderr in every mode; `0.7.0` and prior are lifted to [Rule Version History](../../docs/governance/rule-version-history.md#climd).
+> **Rule version:** `0.9.0` — diet pass under GHI #921: the 2026-08-22 shape measurements, the lane-vs-route quotations and the `8d9e09a4` worked example lifted to [Rule Version History](../../docs/governance/rule-version-history.md#climd) and [`docs/design/cli-architecture-analysis.md`](../../docs/design/cli-architecture-analysis.md). Binding rules unchanged.
 
-**Baseline:** [clig.dev](https://clig.dev/) — Human-first CLI design principles.
-**Canonical specification:** [`docs/design/cli-standards-v3.md`](../../docs/design/cli-standards-v3.md) — named canonical by [`ADR-0.0.4`](../../docs/design/adr/foundation/ADR-0.0.4-cli-standards-presentation-foundation/ADR-0.0.4-cli-standards-presentation-foundation.md). **Read its § Document status before citing any section:** parts are live-and-met, parts are live-but-UNMET, parts are RETIRED or superseded.
-**Mechanical check:** `uv run gz cli audit` (see § Core Principles — Consistency).
-**Heavy Lane Trigger:** Any CLI contract change (subcommands, flags, exit codes, output schemas).
-
----
+**Baseline:** [clig.dev](https://clig.dev/). **Canonical specification:** [`docs/design/cli-standards-v3.md`](../../docs/design/cli-standards-v3.md) (ADR-0.0.4) — read its § Document status before citing a section; parts are live-and-met, live-but-unmet, or retired. **Mechanical check:** `uv run gz cli audit`. **Heavy lane trigger:** any CLI contract change — subcommands, flags, exit codes, output schemas.
 
 ## Command shape (binding)
 
-Mirrored from the canonical specification's § Command Structure and § Output Rules so the per-turn contract carries them. Scored at `docs/governance/advisory-rules-audit.md` § CLI Contract Doctrine; measurements and per-rule justification in [`docs/design/cli-architecture-analysis.md`](../../docs/design/cli-architecture-analysis.md).
+Mirrored from the specification's § Command Structure and § Output Rules; scored at `docs/governance/advisory-rules-audit.md` § CLI Contract Doctrine, measured in `docs/design/cli-architecture-analysis.md`.
 
-- The count of depth-1 leaf commands may not increase — the specification prescribes `<group> <command>`; 35 of 136 leaves are bare root verbs, so the existing set is waived shrink-only and new commands take a noun.
-- No subcommand may share its verb with a bare root command — 13 shadow today (`gz adr status` vs `gz status`, `gz cli audit` vs `gz audit`). Repetition itself is correct: `list` recurs 7× under different nouns and collides with nothing.
-- A noun may not be registered in both singular and plural form — exactly one pair today (`gz flag` group vs `gz flags` leaf).
-- New root commands may not hyphenate a noun-verb pair — 6 exist (`register-adrs`, `check-config-paths`, `permitted-entry`, `migrate-semver`, `test-shape`, `git-sync`); subcommands are the mechanism the hyphen is standing in for.
-- Every leaf command declares --json or carries a waiver with rationale — 63 of 136 lack it, and nine groups disagree with themselves: `gz adr emit-receipt` has none while `gz obpi audit` does, though both emit structured governance evidence.
-- A parser node is a leaf or a group, never both — exactly one node violates this (`gz mx` carries a handler and subcommands), so the state is either a deliberate default-subcommand or an accident, and nothing records which.
-- Building the gz parser tree may not import handler-only dependencies — every `gz --help` pays what the parser tree imports (GHI #180). Guarded by `tests/cli/test_help_path_imports.py`.
-- A new subcommand satisfies all seven coupled obligations in the authoring patch — the set is enumerated at § Adding CLI Features — New Subcommand, and the validators named there win any disagreement with the list. Measured 2026-08-22: three surfaces described the set as 3, 4 and 1 obligations against 7 that fail closed (GHI #854).
-- User-facing output passes through the formatter, never console.print directly — 1,230 sites bypass it against one `OutputFormatter`. This is the precondition for the `--json` rule above, not a sibling of it: a `--json` flag on a command whose body prints human text is green while blind.
-
-Two further specification rules are scored **Judgment** and are deliberately absent from this list — mandatory-target-as-positional (no surface models "target"; the available proxy grades by shape) and one-verb noun groups (no surface models intent-to-extend). They live in the canonical specification; see the scorecard for why neither is mechanizable.
-
----
+- The count of depth-1 leaf commands may not increase — the specification prescribes `<group> <command>`; the existing bare root verbs are waived shrink-only, and new commands take a noun.
+- No subcommand may share its verb with a bare root command (`gz adr status` vs `gz status`); repetition under different nouns (`list`) collides with nothing.
+- A noun may not be registered in both singular and plural form.
+- New root commands may not hyphenate a noun-verb pair; a subcommand is what the hyphen stands in for.
+- Every leaf command declares --json or carries a waiver with rationale.
+- A parser node is a leaf or a group, never both.
+- Building the gz parser tree may not import handler-only dependencies — every `gz --help` pays what the tree imports (GHI #180); guarded by `tests/cli/test_help_path_imports.py`.
+- A new subcommand satisfies all seven coupled obligations in the authoring patch (§ New Subcommand); the validators named there win any disagreement with the list.
+- User-facing output passes through the formatter, never console.print directly — the precondition for the `--json` rule: a `--json` flag on a command whose body prints human text is green while blind.
 
 ## Core Principles
 
 | Principle | Rule |
 |-----------|------|
 | Human-first | Optimize for humans; add `--json`/`--plain` for machines |
-| Consistency | Before landing a new flag or subcommand, run `uv run gz cli audit`; it must exit 0, **and the new flag's usage line must agree with its parser** (required-ness and value-taking; GHI #693). For a new subcommand the full obligation set is § Adding CLI Features — New Subcommand; this row does not restate it, because a second partial list is how the two fell out of agreement (GHI #787's class). If coverage is missing, author the missing artifacts in the same patch — the audit is the mechanical check, not operator taste. |
+| Consistency | Before landing a flag or subcommand, `uv run gz cli audit` exits 0 and a new flag's usage line agrees with its parser (required-ness and value-taking; GHI #693). Missing coverage is authored in the same patch. |
 | Discovery | Comprehensive help with examples; no web docs needed |
-| Robustness | Validate early; fail fast; provide progress indicators |
+| Robustness | Validate early; fail fast; show progress |
 
----
-
-## Exit Codes (Standard 4-Code Map)
+## Exit Codes
 
 | Code | Meaning | Recovery |
 |------|---------|----------|
-| **0** | Success | N/A |
+| **0** | Success | — |
 | **1** | User/Config Error | Fix invocation or config |
 | **2** | Usage or System/IO Error | Usage: fix the invocation. System/IO: check network/disk; retry |
 | **3** | Policy Breach | Review logs; partial success needs review |
 
-Use `sys.exit(code)`. Document codes 2/3 in help text.
+Use `sys.exit(code)`; document codes 2/3 in help text.
 
 - Code 2 means Usage or System/IO error; every parse error exits 2 — `StableArgumentParser.error`, attested REQ-0.0.4-02-03.
 - Never key a retry on exit 2 without the `BLOCKERS:` usage prefix on stderr — a caller cannot read 2 as an I/O fault alone.
-
----
 
 ## Flag Conventions
 
@@ -71,70 +58,39 @@ Use `sys.exit(code)`. Document codes 2/3 in help text.
 | `--verbose` | INFO-level logging to stderr (the default logs warnings and errors) |
 | `--debug` | DEBUG-level logging to stderr; full tracebacks on error |
 | `--dry-run` | Show plan, don't execute |
-| `--json` | Machine-readable to stdout |
-| `--help` / `-h` | Always works |
+| `--json` | Machine-readable to stdout; logs to stderr |
+| `--plain` | One record per line (grep-friendly) |
+| `--help` / `-h` | Always works, exit 0 |
 
 - Verbosity flags: the default logs warnings and errors, `--quiet` errors only, `--verbose` INFO, `--debug` DEBUG, all to stderr — `docs/design/cli-standards-v3.md` § Verbosity Levels, witnessed by `NC:cli-log-levels-follow-spec`.
 
----
-
-## Output Contracts
-
-| Mode | Output |
-|------|--------|
-| Default | Human-readable (tables, colors, progress) |
-| `--json` | Valid JSON to stdout; logs to stderr |
-| `--plain` | One record per line (grep-friendly) |
-
----
-
 ## Help Text Requirements
 
-Every command must:
-
-1. Respond to `-h`/`--help` (exit 0)
-2. Include description (1-2 sentences)
-3. Include usage line
-4. List all options
-5. Include at least one example
-6. Keep lines <=80 chars
-
----
+Every command responds to `-h`/`--help` (exit 0) with a one-or-two-sentence description, a usage line, every option, at least one example, and lines ≤ 80 chars.
 
 ## Adding CLI Features
 
-**Lane authority is `AGENTS.md` § Gate Covenant — Lane Rules, not this file.** Both a new flag and a new subcommand are CLI-contract changes used by humans, so both are **Heavy**, consistent with this rule's own § Heavy Lane Trigger above (*"Any CLI contract change (subcommands, flags, exit codes, output schemas)"*). `AGENTS.md` § Defect-fix routing adds: *"Adds/changes CLI surface … OBPI ceremony is required"* — so **planned** contract-bearing CLI work runs `gz obpi pipeline`, not a freeform direct fix.
-
-**Lane is not route. A GHI-tracked defect repair routes DIRECT even when it adds a CLI surface** — `AGENTS.md` § Operator Doctrine, verbatim: *"GHIs are AUTHORIZED for direct repair, always… A GHI-tracked defect repair routes to direct fix (`fix(<scope>): <summary> (GHI #N)`, close citing the commit SHA) regardless of the 'OBPI ceremony required when ANY hold' criteria below; those criteria gate planned ADR work, not defect repair. Never spin up an ADR or OBPI merely to discharge a GHI."* Reaffirmed 2026-09-06: *"'may add a CLI surface' alone does not require new ADR/OBPI ceremony: GHI-tracked corrections are authorized for direct repair."* The IRON LAW makes this more than a preference — only the operator initiates OBPI work, so an agent that read the un-carved sentence literally could not proceed by either route. Heavy lane still binds the **gates** the repair must clear (§ New Subcommand's seven obligations, `gz cli audit` exit 0); it never converts the repair into OBPI ceremony.
-
-> `gz cli audit` does **not** adjudicate this. It audits a flag's *documentation* — that the flag is named in its manpage (GHI #350) and that the usage line's required/value-taking claims match the parser (GHI #693) — and exits 0 with full cross-coverage regardless of a new flag's **lane**. Its green is evidence about docs, never about lane assignment. Its green is not evidence of correct lane assignment.
+Lane authority is `AGENTS.md` § Gate Covenant: a new flag or subcommand is a contract change used by humans, so it is **Heavy**, and planned contract work is OBPI work the operator initiates. **Lane is not route — a GHI-tracked defect repair routes direct even when it adds a CLI surface** (`AGENTS.md` § Defect-fix routing; operator reaffirmed 2026-09-06). Heavy lane still binds the gates the repair must clear; it never converts the repair into OBPI ceremony. `gz cli audit` audits a flag's documentation (manpage row, GHI #350; usage-line agreement, GHI #693) and says nothing about lane.
 
 ### New Flag (Heavy Lane)
 
-1. Follow naming conventions
-2. Check for equivalent in other CLI
-3. Update help text with example
-4. Manpage flag row in `docs/user/manpages/`
+1. Follow naming conventions and check for an equivalent in other CLIs.
+2. Update help text with an example.
+3. Add the flag row to the manpage in `docs/user/manpages/`.
 
 ### New Subcommand (Heavy Lane)
 
-**Seven obligations fire for a new verb, and every one is already mechanically checked.** Satisfy them in the authoring patch — they are knowable up front, so discovering them reactively across repeated full-suite runs is a self-inflicted cost, not a property of the gates.
+Seven obligations fire for a new verb, each mechanically checked; satisfy them in the authoring patch. The authority is the code — `_SURFACE_NAMES` and `check_surfaces` (`src/gzkit/doc_coverage/scanner.py`), `find_undeclared_commands` (`src/gzkit/doc_coverage/manifest.py`), `audit_skill_alignment` (`src/gzkit/governance/trust_audits/cli.py`) — never this list.
 
-**The authority is the code, never this list.** The enumeration lives in `_SURFACE_NAMES` and `check_surfaces` (`src/gzkit/doc_coverage/scanner.py`), `find_undeclared_commands` (`src/gzkit/doc_coverage/manifest.py`), and `audit_skill_alignment` (`src/gzkit/governance/trust_audits/cli.py`). If this list and those disagree, they are right.
-
-1. **Manifest entry** — `config/doc-coverage.json`. An undeclared command has no declared obligation, so it fails before any surface is examined.
-2. **Manpage** — `docs/user/manpages/<slug>.md`, `<slug>` being the command with spaces hyphenated (`gz adr audit-check` → `adr-audit-check.md`). **Never a `gz-` prefix** (`AGENTS.md` § Governance doctrine surfaces, verb resolution; GHI #532).
-3. **Index entry** — the `<slug>.md` filename must appear in `docs/user/manpages/index.md`.
+1. **Manifest entry** — `config/doc-coverage.json`.
+2. **Manpage** — `docs/user/manpages/<slug>.md`, spaces hyphenated (`gz adr audit-check` → `adr-audit-check.md`), never a `gz-` prefix (GHI #532).
+3. **Index entry** — the filename in `docs/user/manpages/index.md`.
 4. **Operator runbook** — a reference in `docs/user/runbook.md`.
 5. **Governance runbook** — a reference in `docs/governance/governance_runbook.md`.
-6. **Handler docstring** — the resolved handler needs a non-empty docstring. Most often missed, because it is the one obligation that is code rather than a doc file.
-7. **Wielding skill** — a `.gzkit/skills/**/SKILL.md` naming the full verb path, or an `_NO_SKILL_VERBS` waiver carrying rationale (tool-skill-runbook Invariant 1).
+6. **Handler docstring** — non-empty; the one obligation that is code rather than a doc file, and the one most often missed.
+7. **Wielding skill** — a `.gzkit/skills/**/SKILL.md` naming the full verb path, or an `_NO_SKILL_VERBS` waiver with rationale.
 
-Alongside these, unchanged: an ADR or brief documenting purpose, help text with examples, a behave smoke test, and the GHI cited in the commit — **do not hand-write release notes.** `RELEASE_NOTES.md` and `CHANGELOG.md` are authored at release time by the `gz-patch-release` ceremony, never by hand (`.gzkit/rules/changelog-release-notes.md` § Release-notes rules).
-
-**A deprecated verb INVERTS obligations 4, 5 and 7:** absence is the passing state, because a runbook that prescribes a retired verb — or a skill that wraps one — routes agents back onto it (GHI #705).
-
-**What this list cannot cover.** These seven are enumerable because they are fixed per verb. They are not the coupled surface of a change that also alters a *format* — a consumer reading a document body, a test asserting against prose, a fixture keyed on a schema shape. `8d9e09a4` is the worked example: relocating the settled-ruling corpus updated every per-verb surface in one commit and still left `test_settled_ruling_integrity` reading a section that had become a pointer, caught by the suite at push time. Front-loading this checklist collapses the reactive loop for **verb registration**; it does not make a **format** change safe, and treating it as though it does would build a false floor.
+Alongside these: an ADR or brief documenting purpose, help text with examples, a behave smoke test, and the GHI cited in the commit. Release notes are never hand-written — `RELEASE_NOTES.md` and `CHANGELOG.md` are authored by the `gz-patch-release` ceremony (`.gzkit/rules/changelog-release-notes.md`). A deprecated verb inverts obligations 4, 5 and 7: absence is the passing state, because a runbook or skill that prescribes a retired verb routes agents back onto it (GHI #705). The seven cover verb registration only; a change that also alters a *format* has consumers this list cannot enumerate.
 
 <!-- Generated by gz agent sync — do not edit -->
 

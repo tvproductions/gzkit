@@ -3382,3 +3382,7 @@ Full after presented (13,949 B → 6,527 B; anchors 60/60b/60c verbatim); `paths
 
 Full after presented (11,982 B → 7,083 B; row 58b verbatim; row 58's classification cell is malformed so the
 retention validator never reads it — noted). Operator: "A".
+
+## 2026-09-17 — cli.md (ruled)
+
+Full after presented (11,949 B → 6,893 B; anchors 76–82/85/86/91/93 verbatim). Operator: "A".

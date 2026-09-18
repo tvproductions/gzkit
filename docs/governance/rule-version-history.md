@@ -72,6 +72,31 @@ Prior `0.12.0` — the MD-values bullet's remaining carve-out is **measured rath
 
 ## `cli.md`
 
+### Lifted 2026-09-17 at version `0.8.1` (rule now at `0.9.0`)
+
+Diet pass under GHI #921 (operator: "A" on the full before/after, 11,949 B → 6,893 B). Binding rules unchanged. Lifted verbatim as dated records — the `0.8.1` note, the 2026-08-22 shape measurements, the lane-vs-route quotations and the `8d9e09a4` worked example:
+
+> **Rule version:** `0.8.1` — the manpage-filename pointer now names `AGENTS.md` § Governance doctrine surfaces, where the verb-resolution rule lives since `governance-core.md` was folded into the root contract (2026-09-17, GHI #921). `0.8.0` — § Flag Conventions realigned to the canonical specification's § Output Modes and § Verbosity Levels: `--verbose` enables INFO-level logging (this row said "Debug output", the drift the adapter's level map had copied) and `--debug` is listed, and errors reach stderr in every mode; `0.7.0` and prior are lifted to [Rule Version History](../../docs/governance/rule-version-history.md#climd).
+
+- The count of depth-1 leaf commands may not increase — the specification prescribes `<group> <command>`; 35 of 136 leaves are bare root verbs, so the existing set is waived shrink-only and new commands take a noun.
+- No subcommand may share its verb with a bare root command — 13 shadow today (`gz adr status` vs `gz status`, `gz cli audit` vs `gz audit`). Repetition itself is correct: `list` recurs 7× under different nouns and collides with nothing.
+- A noun may not be registered in both singular and plural form — exactly one pair today (`gz flag` group vs `gz flags` leaf).
+- New root commands may not hyphenate a noun-verb pair — 6 exist (`register-adrs`, `check-config-paths`, `permitted-entry`, `migrate-semver`, `test-shape`, `git-sync`); subcommands are the mechanism the hyphen is standing in for.
+- Every leaf command declares --json or carries a waiver with rationale — 63 of 136 lack it, and nine groups disagree with themselves: `gz adr emit-receipt` has none while `gz obpi audit` does, though both emit structured governance evidence.
+- A parser node is a leaf or a group, never both — exactly one node violates this (`gz mx` carries a handler and subcommands), so the state is either a deliberate default-subcommand or an accident, and nothing records which.
+- Building the gz parser tree may not import handler-only dependencies — every `gz --help` pays what the parser tree imports (GHI #180). Guarded by `tests/cli/test_help_path_imports.py`.
+- A new subcommand satisfies all seven coupled obligations in the authoring patch — the set is enumerated at § Adding CLI Features — New Subcommand, and the validators named there win any disagreement with the list. Measured 2026-08-22: three surfaces described the set as 3, 4 and 1 obligations against 7 that fail closed (GHI #854).
+- User-facing output passes through the formatter, never console.print directly — 1,230 sites bypass it against one `OutputFormatter`. This is the precondition for the `--json` rule above, not a sibling of it: a `--json` flag on a command whose body prints human text is green while blind.
+
+Two further specification rules are scored **Judgment** and are deliberately absent from this list — mandatory-target-as-positional (no surface models "target"; the available proxy grades by shape) and one-verb noun groups (no surface models intent-to-extend). They live in the canonical specification; see the scorecard for why neither is mechanizable.
+
+**Lane is not route. A GHI-tracked defect repair routes DIRECT even when it adds a CLI surface** — `AGENTS.md` § Operator Doctrine, verbatim: *"GHIs are AUTHORIZED for direct repair, always… A GHI-tracked defect repair routes to direct fix (`fix(<scope>): <summary> (GHI #N)`, close citing the commit SHA) regardless of the 'OBPI ceremony required when ANY hold' criteria below; those criteria gate planned ADR work, not defect repair. Never spin up an ADR or OBPI merely to discharge a GHI."* Reaffirmed 2026-09-06: *"'may add a CLI surface' alone does not require new ADR/OBPI ceremony: GHI-tracked corrections are authorized for direct repair."* The IRON LAW makes this more than a preference — only the operator initiates OBPI work, so an agent that read the un-carved sentence literally could not proceed by either route. Heavy lane still binds the **gates** the repair must clear (§ New Subcommand's seven obligations, `gz cli audit` exit 0); it never converts the repair into OBPI ceremony.
+
+> `gz cli audit` does **not** adjudicate this. It audits a flag's *documentation* — that the flag is named in its manpage (GHI #350) and that the usage line's required/value-taking claims match the parser (GHI #693) — and exits 0 with full cross-coverage regardless of a new flag's **lane**. Its green is evidence about docs, never about lane assignment. Its green is not evidence of correct lane assignment.
+
+**What this list cannot cover.** These seven are enumerable because they are fixed per verb. They are not the coupled surface of a change that also alters a *format* — a consumer reading a document body, a test asserting against prose, a fixture keyed on a schema shape. `8d9e09a4` is the worked example: relocating the settled-ruling corpus updated every per-verb surface in one commit and still left `test_settled_ruling_integrity` reading a section that had become a pointer, caught by the suite at push time. Front-loading this checklist collapses the reactive loop for **verb registration**; it does not make a **format** change safe, and treating it as though it does would build a false floor.
+
+
 ### Lifted 2026-09-17 at version `0.8.0` (rule now at `0.8.1`)
 
 Patch: the pointer to `governance-core.md` § Operator-doc verb resolution now names `AGENTS.md` § Governance doctrine surfaces, the clause's home since the rule was folded into the root contract (GHI #921). No other change.
