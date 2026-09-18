@@ -294,7 +294,7 @@ def compose_implementer_prompt(
             "   Report the assertion-level failure message you observed, not merely",
             "   that you wrote tests.",
             "4. Run `uv run ruff check . --fix && uv run ruff format .` after code changes.",
-            "5. Run `uv run -m unittest -q` to verify tests pass.",
+            "5. Run `uv run gz test` to verify tests pass.",
             "6. Return a JSON result block with status, files_changed, tests_added, concerns.",
             "",
         ]

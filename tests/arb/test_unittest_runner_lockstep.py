@@ -36,6 +36,10 @@ from unittest import mock
 import yaml
 
 from gzkit.arb.validator import CANONICAL_STEP_COMMANDS
+from gzkit.cli.main import _build_parser
+from gzkit.commands.obpi_stages import BASELINE_VERIFICATION
+from gzkit.pipeline_dispatch import DispatchTask, TaskComplexity, compose_implementer_prompt
+from gzkit.pipeline_verification import compose_verification_prompt
 from gzkit.quality import run_tests
 
 _SENTINEL_COMMAND = ["uv", "run", "sentinel-runner", "-s", "sentinel-tests"]
@@ -239,6 +243,86 @@ class TestPreCommitHookMatchesCanon(unittest.TestCase):
                 "relocated to the hook that runs most often."
             ),
         )
+
+
+_SERIAL_FULL_SUITE = "-m unittest -q"
+
+
+def _unittest_step_argv(commands: list[str]) -> list[str]:
+    """Return the argv after ``--`` of the ``unittest``-labelled ARB step."""
+    for command in commands:
+        if command.startswith("uv run gz arb step --name unittest -- "):
+            return shlex.split(command.split(" -- ", 1)[1])
+    return []
+
+
+class TestPipelineBaselineMatchesCanon(unittest.TestCase):
+    """Stage 3 emits its `unittest` receipt through the canonical command.
+
+    The 2026-08-27 close of GHI #856 called its enumeration exhaustive over
+    receipt-bearing spellings and missed this one: the pipeline baseline kept the
+    serial argv, which `arb/validator.py` retires at the swap boundary -- receipt
+    `arb-step-unittest-7161a74d...` (2026-09-08) is that rejection, observed.
+    """
+
+    def test_stage3_unittest_step_runs_the_canonical_argv(self) -> None:
+        self.assertEqual(
+            _unittest_step_argv(BASELINE_VERIFICATION),
+            CANONICAL_STEP_COMMANDS["unittest"],
+            msg=(
+                "The pipeline's Stage 3 baseline wraps a different suite invocation "
+                "than the one `gz arb validate` accepts under the `unittest` label, "
+                "so the governed pipeline emits a receipt its own validator refuses."
+            ),
+        )
+
+
+class TestArbHelpShowsTheCanonicalStep(unittest.TestCase):
+    """`gz arb` help examples under the `unittest` label are the accepted argv."""
+
+    def _epilogs(self) -> list[str]:
+        parser = _build_parser()
+        arb = parser._subparsers._group_actions[0].choices["arb"]  # noqa: SLF001
+        step = arb._subparsers._group_actions[0].choices["step"]  # noqa: SLF001
+        return [arb.epilog or "", step.epilog or ""]
+
+    def test_unittest_examples_carry_the_canonical_argv(self) -> None:
+        canonical = shlex.join(CANONICAL_STEP_COMMANDS["unittest"])
+        for epilog in self._epilogs():
+            examples = [ln.strip() for ln in epilog.splitlines() if "--name unittest" in ln]
+            self.assertTrue(examples, msg="No `--name unittest` example found in the epilog")
+            for example in examples:
+                self.assertEqual(example.split(" -- ", 1)[1], canonical)
+
+
+class TestSubagentPromptsPrescribeTheParallelSuite(unittest.TestCase):
+    """Dispatch prompts name `gz test`, never the serial full-suite spelling.
+
+    Operator ruling 2026-09-18: "We want parallel everywhere unless you can give
+    me a good reason why we can't." A scoped single-module run has nothing to
+    parallelize and stays as it is; the FULL-suite fallback is what moves.
+    """
+
+    def test_implementer_prompt_verifies_with_gz_test(self) -> None:
+        task = DispatchTask(
+            task_id=1,
+            description="Add feature X",
+            allowed_paths=["src/gzkit/example.py"],
+            test_expectations=["test_feature_x passes"],
+            complexity=TaskComplexity.SIMPLE,
+            model="haiku",
+        )
+        with tempfile.TemporaryDirectory() as tmpdir:
+            prompt = compose_implementer_prompt(
+                task, ["REQ text"], why="lockstep", project_root=Path(tmpdir)
+            )
+        self.assertNotIn(_SERIAL_FULL_SUITE, prompt)
+        self.assertIn("`uv run gz test`", prompt)
+
+    def test_verifier_prompt_falls_back_to_gz_test(self) -> None:
+        prompt = compose_verification_prompt([])
+        self.assertNotIn(_SERIAL_FULL_SUITE, prompt)
+        self.assertIn("`uv run gz test`", prompt)
 
 
 if __name__ == "__main__":

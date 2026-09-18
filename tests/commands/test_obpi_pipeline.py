@@ -1,9 +1,11 @@
 import json
+import shlex
 import threading
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from gzkit.canonical_steps import CANONICAL_STEP_COMMANDS
 from gzkit.cli import main
 from gzkit.config import GzkitConfig
 from gzkit.ledger import (
@@ -16,6 +18,12 @@ from gzkit.ledger_events import brief_reconciled_event
 from gzkit.quality import QualityResult
 from gzkit.traceability import covers  # noqa: F401
 from tests.commands.common import CliRunner, _quick_init
+
+# Derived from the canonical table, never re-spelled (GHI #856): these tests pinned
+# the serial argv for three weeks after the runner swap and kept Stage 3 on it.
+_UNITTEST_STEP = (
+    f"uv run gz arb step --name unittest -- {shlex.join(CANONICAL_STEP_COMMANDS['unittest'])}"
+)
 
 
 class TestObpiPipelineCommand(unittest.TestCase):
@@ -239,7 +247,7 @@ class TestObpiPipelineCommand(unittest.TestCase):
                     [
                         "uv run gz arb ruff",
                         "uv run gz arb typecheck",
-                        "uv run gz arb step --name unittest -- uv run -m unittest -q",
+                        _UNITTEST_STEP,
                     ]
                 ),
             )
@@ -279,7 +287,7 @@ class TestObpiPipelineCommand(unittest.TestCase):
             baseline_commands = {
                 "uv run gz arb ruff",
                 "uv run gz arb typecheck",
-                "uv run gz arb step --name unittest -- uv run -m unittest -q",
+                _UNITTEST_STEP,
             }
             barrier = threading.Barrier(len(baseline_commands), timeout=3.0)
 

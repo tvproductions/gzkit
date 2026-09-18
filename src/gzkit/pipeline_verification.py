@@ -226,7 +226,7 @@ def compose_verification_prompt(
             "",
             "For each requirement above:",
             "1. Read the relevant source and test files.",
-            "2. Run the specified test commands (or `uv run -m unittest -q` if none specified).",
+            "2. Run the specified test commands (or `uv run gz test` if none specified).",
             "3. Verify the implementation satisfies the requirement text.",
             "",
             "Return results as a JSON code block with this structure:",

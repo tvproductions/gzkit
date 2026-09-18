@@ -11,9 +11,15 @@ See `AGENTS.md` § Attestation for the binding rule contract
 from __future__ import annotations
 
 import argparse
+import shlex
 from typing import Any
 
+from gzkit.canonical_steps import CANONICAL_STEP_COMMANDS
 from gzkit.cli.helpers import add_json_flag, build_epilog
+
+# The help examples READ the canonical argv (GHI #856): a re-spelled example
+# under the ``unittest`` label teaches an invocation ``gz arb validate`` rejects.
+_UNITTEST_ARGV = shlex.join(CANONICAL_STEP_COMMANDS["unittest"])
 
 # Lazy handler manifest used by doc-coverage scanner to resolve docstrings.
 # Map each arb_*_cmd handler to its source module.
@@ -69,7 +75,7 @@ def register_arb_parsers(commands: argparse._SubParsersAction) -> None:
         epilog=build_epilog(
             [
                 "gz arb ruff src/gzkit",
-                "gz arb step --name unittest -- uv run -m unittest",
+                f"gz arb step --name unittest -- {_UNITTEST_ARGV}",
                 "gz arb validate",
                 "gz arb advise --limit 10",
                 "gz arb patterns",
@@ -160,7 +166,7 @@ def _register_step(arb_commands: argparse._SubParsersAction) -> None:
         ),
         epilog=build_epilog(
             [
-                "gz arb step --name unittest -- uv run -m unittest",
+                f"gz arb step --name unittest -- {_UNITTEST_ARGV}",
                 "gz arb step --name mkdocs -- uv run mkdocs build --strict",
             ]
         ),

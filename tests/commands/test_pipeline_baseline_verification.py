@@ -1,8 +1,16 @@
+import shlex
 import unittest
 
+from gzkit.canonical_steps import CANONICAL_STEP_COMMANDS
 from gzkit.commands.common import GzCliError
 from gzkit.commands.obpi_cmd import _pipeline_verification_commands
 from gzkit.commands.obpi_stages import _build_sync_stage_steps
+
+# Derived from the canonical table, never re-spelled (GHI #856): these tests pinned
+# the serial argv for three weeks after the runner swap and kept Stage 3 on it.
+_UNITTEST_STEP = (
+    f"uv run gz arb step --name unittest -- {shlex.join(CANONICAL_STEP_COMMANDS['unittest'])}"
+)
 
 
 class TestPipelineBaselineVerification(unittest.TestCase):
@@ -11,7 +19,7 @@ class TestPipelineBaselineVerification(unittest.TestCase):
     _CANONICAL_BASELINE = (
         "uv run gz arb ruff",
         "uv run gz arb typecheck",
-        "uv run gz arb step --name unittest -- uv run -m unittest -q",
+        _UNITTEST_STEP,
     )
 
     def test_baseline_commands_present_when_brief_is_empty(self) -> None:
@@ -37,7 +45,7 @@ class TestPipelineBaselineVerification(unittest.TestCase):
             "```bash\n"
             "uv run gz arb ruff\n"
             "uv run gz arb typecheck\n"
-            "uv run gz arb step --name unittest -- uv run -m unittest -q\n"
+            f"{_UNITTEST_STEP}\n"
             "uv run gz validate --documents\n"
             "```\n"
         )

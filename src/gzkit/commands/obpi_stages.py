@@ -18,6 +18,7 @@ from rich.markup import escape
 
 from gzkit.acceptance_store import acceptance_blockers
 from gzkit.brief_commands import extract_fenced_commands, is_shell_less_executable
+from gzkit.canonical_steps import CANONICAL_STEP_COMMANDS
 from gzkit.commands.common import GzCliError, _cli_main, console
 from gzkit.decomposition import extract_markdown_section
 from gzkit.pipeline_markers import find_obpi_brief
@@ -35,10 +36,14 @@ from gzkit.quality import QualityResult
 # canonical attestation invocations enumerated in AGENTS.md § Attestation, so a
 # green Stage 3 result entitles the agent to cite ARB receipt IDs in the
 # Stage 4 evidence package without re-running the same checks under ARB.
+#
+# The ``unittest`` argv is READ from the canonical table, never re-spelled
+# (GHI #856): a re-spelled serial copy survived the 2026-08-27 runner swap here,
+# so Stage 3 emitted receipts ``gz arb validate`` rejects as non-canonical.
 BASELINE_VERIFICATION = [
     "uv run gz arb ruff",
     "uv run gz arb typecheck",
-    "uv run gz arb step --name unittest -- uv run -m unittest -q",
+    f"uv run gz arb step --name unittest -- {shlex.join(CANONICAL_STEP_COMMANDS['unittest'])}",
 ]
 
 
