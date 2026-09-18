@@ -249,10 +249,22 @@ class GzJustifyGovernanceRunbookContract(unittest.TestCase):
 
     @covers("REQ-0.0.19-05-04")
     def test_governance_runbook_cites_invariant_11(self) -> None:
+        """AMENDED 2026-09-18 (GHI #1025, operator ruling "A").
+
+        The REQ's literal assertion -- the note cites Prime Directive invariant 11
+        and names both upstream skills -- stays true: the note now cites it as the
+        self-reported "<90% sure" trigger the operator retired on 2026-08-17. What
+        may not return is that figure as the LIVE routing condition.
+        """
         self.assertRegex(
             self._runbook,
             r"invariant\s*11",
             "governance runbook must cite Prime Directive invariant 11",
+        )
+        self.assertNotRegex(
+            self._runbook,
+            r"(?is)self-reported confidence[^.]{0,80}below 90%",
+            "the runbook must not route on a self-reported confidence figure",
         )
 
     @covers("REQ-0.0.19-05-04")

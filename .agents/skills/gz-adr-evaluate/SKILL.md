@@ -5,14 +5,14 @@ description: Post-authoring quality evaluation for ADRs and OBPIs. Scores ADRs o
 category: adr-lifecycle
 compatibility: GovZero v6 framework; adapted from AirlineOps for gzkit ADR package layouts
 metadata:
-  skill-version: "6.8.0"
+  skill-version: "6.8.1"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "lifecycle (pre-proposal QC), quality rubric, OBPI decomposition"
   govzero_layer: "Layer 1 - Evidence Gathering"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-14
+last_reviewed: 2026-09-18
 model: sonnet
 ---
 
@@ -273,8 +273,8 @@ operator's ruling retired is the weighted total as the trigger and the
 tracking-GHI route: the footer now fires on the gate's own condition and names
 only an OBPI, because a GHI walkthrough never discharged the gate it answers.
 
-A trigger is an invariant-11 signal: the ADR's structural weakness means
-implementing agents will land at <90% confidence on at least one OBPI. The
+A trigger means the ADR's structural weakness will leave implementing agents
+guessing on at least one OBPI. The
 pre-execution walkthrough (`gz-justify` skill) surfaces the hidden ambiguity
 before promotion, and the lifecycle refuses to advance the ADR past `Pending`
 until a qualifying walkthrough exists. Skipping this footer on a triggered
@@ -357,5 +357,5 @@ For adversarial review by a separate model:
 
 - **ADR-0.0.19** — Pre-execution reasoning walkthrough. The Low-Score Footer
   Guidance section routes operators from a triggered evaluation into the
-  `gz-justify` walkthrough so invariant 11 (<90% confidence → ask/justify) is
-  surfaced before the ADR is promoted into active work.
+  `gz-justify` walkthrough so hidden ambiguity is surfaced before the ADR is
+  promoted into active work.

@@ -276,7 +276,7 @@ The `Do` section (Invariants #1–17) is primarily **judgment** rules aimed at a
 - "Own the work completely" / "Complete all work fully" / "Never say out of scope" — judgment
 - "Fix class of failure, not instance" — judgment (but this audit itself is an instance of applying it)
 - "Read AGENTS.md before starting work" — judgment
-- "If <90% sure, ask the human" — judgment
+- "Ask when unsure of direction" (was "If <90% sure, ask the human"; the figure was retired 2026-08-17) — judgment
 - "On inconsistencies, STOP, name confusion, present tradeoff, wait" — judgment
 - "When the operator course-corrects in flight, record an `improvement` via `gz insights remember` before completing the corrected work" (Behavior Rules — Always #11, GHI #357) — **judgment** at authoring time (recognizing a correction); the schema-lock side is now mechanical via `gz validate --insights-shape` (GHI #358; see scorecard row 17a), and the governed author verb `gz insights remember` (GHI #575) constructs the record so it cannot drift from the schema
 

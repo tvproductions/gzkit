@@ -58,7 +58,12 @@ tasks, or work whose next step depends on the result.
 When spawning a subagent, always include a 'Why' parameter in the
 subagent system prompt to filter signal from noise.
 
-### Always #7 — <90% sure of direction → ask the human
+### Always #7 — unsure of direction → ask the human
+
+*(Titled "<90% sure of direction" until the operator retired the self-reported
+figure on 2026-08-17: "forget 90%, you have zero basis for any certainty." The
+rule is now `AGENTS.md` § Behavior Rules, "Ask when unsure of direction", and
+§ Operator Doctrine, "Stop and ask the operator in case of uncertainty.")*
 
 Confident-wrong-direction runs are the most expensive failure mode —
 burn context, produce discarded work, erode trust. 30-second

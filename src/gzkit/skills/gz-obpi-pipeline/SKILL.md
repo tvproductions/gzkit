@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-09-18
 metadata:
-  skill-version: "6.57.1"
+  skill-version: "6.58.0"
 model: sonnet
 ---
 
@@ -268,11 +268,15 @@ Stage 4 = HUMAN GATE (wait for attestation) — universal per ADR-0.0.36
 
 **On any abort:** Release lock via `uv run gz obpi lock release {OBPI-SLUG} --force`, then run `/gz-session-handoff` to preserve context.
 
-#### Stage 1→2 Confidence Gate
+#### Stage 1→2 Justification Gate
 
-Before Stage 2 begins, self-report confidence in the planned implementation. Prime Directive **Invariant 11** (`AGENTS.md` § Behavior Rules — Always, item 7) states: *"If you are less than 90% sure of the direction, ask the human before proceeding."*
+Before Stage 2 begins, check the approved plan against the brief for three conditions. Do not rate your confidence: a self-reported figure has no basis. This block supersedes the trigger it was authored with — Prime Directive invariant 11's "less than 90% sure" — which the operator retired on 2026-08-17 (`AGENTS.md` § Operator Doctrine: "Stop and ask the operator in case of uncertainty… Supersedes the prior '90% convinced/confident' framing").
 
-When your self-reported confidence in the approved plan is `< 90%` — because the OBPI brief has ambiguous scope boundaries, the plan leaves integration points unresolved, or the anchor evidence feels insufficient — pause Stage 2 and run the pre-execution reasoning walkthrough:
+Run the walkthrough when any of these holds:
+
+1. The brief's scope boundary is ambiguous: an allowed or denied path the plan touches is unclear, or the plan reaches a surface the brief does not name.
+2. The plan leaves an integration point unresolved: a caller, consumer, validator or mirror it has not named.
+3. The plan relies on a surface you have not read, only searched or inferred.
 
 ```bash
 uv run -m gzkit justify <current-OBPI-id> --save
@@ -280,9 +284,9 @@ uv run -m gzkit justify <current-OBPI-id> --save
 
 The walkthrough renders an 8-section scaffold grounded in gathered evidence (matching rules, ledger events, recent commits, related anchors, regression taxonomy). Fill each `_[To be filled]_` block per the `gz-justify` skill's Procedure — no fabrication, every citation grounded in the gathered evidence. Then validate the filled artifact via `uv run -m gzkit justify validate <file>` and cite the artifact path in the subsequent implementer prompts (Stage 2) and in the Key Proof evidence (Stage 4).
 
-This gate mechanizes what was previously a subjective judgment. If an agent is honest about confidence at this boundary, invariant-11 drift is the single biggest source of wrong-direction work and this is the one moment the pipeline can surface it before implementation begins. Do not rationalize past the gate; the walkthrough takes 3-10 minutes on a clear anchor and 15-30 minutes on an ambiguous one — both costs are order-of-magnitude cheaper than a discarded Stage 2 pass.
+The walkthrough takes 3-10 minutes on a clear anchor and 15-30 minutes on an ambiguous one; both are an order of magnitude cheaper than a discarded Stage 2 pass.
 
-At `>= 90%` confidence, skip the walkthrough and proceed directly to Stage 2. The gate is not a ceremony; it is a conditional step that fires only when self-reported confidence falls below the invariant-11 threshold.
+When none of the three holds, proceed to Stage 2 and say so in one line naming what you read. When one holds and the walkthrough does not resolve it, stop and ask the operator.
 
 ### Stage 2: Implement (skipped by `--from=verify` or `--from=ceremony`)
 
@@ -1662,6 +1666,6 @@ If a pipeline hook blocks a write, that means the pipeline is not active or evid
 ## Related ADRs
 
 - **ADR-0.0.19** — Pre-execution reasoning walkthrough. The Stage 1→2
-  Confidence Gate routes operators from a low-confidence Stage 1 into the
-  `gz-justify` walkthrough so invariant 11 is surfaced mechanically instead
-  of relying on subjective judgment at the implementation boundary.
+  Justification Gate routes a plan with an ambiguous scope boundary, an
+  unresolved integration point or an unread surface into the `gz-justify`
+  walkthrough before implementation begins.

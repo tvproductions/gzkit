@@ -101,7 +101,24 @@ class TestGzAdrEvaluateLowScoreFooter(unittest.TestCase):
 
 
 class TestGzObpiPipelineConfidenceBlock(unittest.TestCase):
-    """REQ-0.0.19-04-06 — obpi-pipeline gains Stage 1→2 confidence block + version bump."""
+    """REQ-0.0.19-04-06 — obpi-pipeline gains Stage 1→2 guidance block + version bump.
+
+    AMENDED 2026-09-18 (GHI #1025, operator ruling "A"). The REQ is a dated
+    before/after assertion on a Completed foundation ADR: at OBPI-0.0.19-04's
+    landing the block cited Prime Directive invariant 11 and fired "when the
+    agent's self-reported confidence is <90%". That was true on its date and
+    stays true as a record. The operator retired the self-reported trigger on
+    2026-08-17 ("forget 90%, you have zero basis for any certainty"), and this is
+    the first recorded instance of `docs/governance/attested-req-subject-
+    retirement.md` § The discriminator -- a REQ that literally asserts the
+    retired doctrine -- so the disposition was the operator's, not an edit.
+
+    What is asserted now is what survives the ruling: the Stage 1→2 block
+    exists, still cites invariant 11 (as the trigger it supersedes), fires on
+    observable conditions rather than a confidence figure, and still routes to
+    `justify <id> --save`. The `@covers` binding stays; deleting the test would
+    orphan an attested REQ.
+    """
 
     @covers("REQ-0.0.19-04-06")
     def test_obpi_pipeline_has_low_confidence_block(self) -> None:
@@ -115,16 +132,20 @@ class TestGzObpiPipelineConfidenceBlock(unittest.TestCase):
             f"gz-obpi-pipeline skill-version must be >= 6.9.0 after REQ-06 (got {version})",
         )
 
+        block = body.split("#### Stage 1→2", 1)[-1].split("### Stage 2", 1)[0]
+        self.assertNotEqual(block, body, "Stage 1→2 guidance block is missing")
         self.assertRegex(
-            body,
-            r"(?is)<\s*90\s*%",
-            "confidence block must cite the <90% threshold (Prime Directive invariant 11)",
-        )
-        self.assertRegex(
-            body,
+            block,
             r"(?i)invariant\s*11",
-            "confidence block must cite Invariant 11 explicitly",
+            "the block must still cite invariant 11 -- as the trigger it supersedes",
         )
+        self.assertNotRegex(
+            block,
+            r"(?i)self-reported confidence (in|is|falls)",
+            "the block must not fire on a self-reported confidence figure (retired 2026-08-17)",
+        )
+        for condition in ("scope boundary", "integration point", "not read"):
+            self.assertIn(condition, block, f"observable trigger missing: {condition}")
         self.assertRegex(
             body,
             r"uv run -m gzkit justify.*--save",

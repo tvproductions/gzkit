@@ -8,7 +8,7 @@ owner: gzkit-governance
 last_reviewed: "2026-09-18"
 gz_command: justify
 metadata:
-  skill-version: "6.2.1"
+  skill-version: "6.3.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero_layer: "Layer 1 - Evidence Gathering"
@@ -17,14 +17,14 @@ model: opus
 
 # gz-justify
 
-Pre-execution reasoning walkthrough. Run it when confidence is low, when scope is unclear, or when a prior evaluation (gz-adr-evaluate) flagged structural weakness. The verb renders a grounded scaffold from anchor evidence; the skill instructs you to fill it honestly, not to invent.
+Pre-execution reasoning walkthrough. Run it when scope is unclear, when an integration point is unresolved, when you are relying on a surface you have not read, or when a prior evaluation (gz-adr-evaluate) flagged structural weakness. The verb renders a grounded scaffold from anchor evidence; the skill instructs you to fill it honestly, not to invent.
 
 
 > **Self-Escalation (opus-tier).** Spawn an `Agent` with `model="opus"` to execute this skill. Pass the operator's request verbatim, any relevant context (ADR IDs, OBPI IDs, design topic, prior decisions), and instruct the subagent to read `.gzkit/skills/gz-justify/SKILL.md` for the full workflow. Relay the subagent's output to the operator.
 
 ## Purpose
 
-Claude Code agents rationalize their way past Prime Directive invariant 11 ("if <90% sure, ask the human") more than any other behavioral rule. The cost is confident-wrong-direction work — implementations that burn context and get discarded because an unstated assumption was wrong.
+Agents proceed on unstated assumptions instead of reading or asking more than they break any other behavioral rule (`AGENTS.md` § Operator Doctrine: a search is not a read; stop and ask the operator in case of uncertainty). The cost is confident-wrong-direction work — implementations that burn context and get discarded because an unstated assumption was wrong.
 
 `gz justify <anchor>` closes the loop mechanically. It:
 
@@ -42,7 +42,6 @@ Each row pairs the rationalization with the honest rebuttal.
 |---|---|
 | "I already understand the brief — writing a walkthrough is busywork." | If you understood the brief you could fill all eight sections in under three minutes. Do so, and you have evidence. Skip, and you have a story. |
 | "The anchor is obvious; I'll justify later." | Later means after a wrong-direction pass has already been committed. The walkthrough's value is pre-execution; post-hoc it is narrative. |
-| "The confidence threshold is subjective — I can always claim 90%." | The threshold is self-reported. Lying to the threshold is worse than failing it — the invariant exists precisely because agents confidently mis-estimate their own confidence. |
 | "My previous anchor is similar enough." | Similar is not the same. Rerun justify on this anchor; let the evidence tell you what's different. |
 | "I'll fill it in if the operator asks." | Then the walkthrough is theater for the operator, not evidence for you. Fill it for your own execution. |
 
@@ -56,7 +55,7 @@ Stop if any of the following apply. Each is a defect, not a judgment call.
 | You are copy-pasting reasoning from a previous walkthrough and retargeting it to this anchor. | Cross-anchor reuse is the adjacent rationalization the CLI was built to prevent. If two anchors really do share reasoning, cite the first walkthrough's artifact path — don't restate the reasoning. |
 | You are filling blocks before reading the anchor body the CLI embedded in Section 1. | Section 1 pre-populates anchor-body citations specifically so your reasoning can ground in them. Skipping the read step is the defining move of vibe coding (see `AGENTS.md` § DO IT RIGHT, items 2 (6b) and 5 (6e)). |
 | You are declaring the walkthrough complete without running `gz justify validate <file>`. | The validator checks structural completeness (no unfilled ordinals). Skipping it means the artifact can silently ship with `_[To be filled]_` still in the body. |
-| Your weighted confidence in "I know what I'm doing here" is >=90% — but you cannot point to a specific filled reasoning block that would convince a skeptical reader. | Subjective confidence without evidence is the rationalization the walkthrough exists to neutralize. Run the CLI anyway; if the walkthrough genuinely takes 90 seconds because the anchor is that clear, you've spent 90 seconds and have a cite-able artifact. |
+| You feel sure, but cannot point to a specific surface you read that supports the plan. | Subjective confidence without evidence is the rationalization the walkthrough exists to neutralize. Run the CLI anyway; if the walkthrough genuinely takes 90 seconds because the anchor is that clear, you've spent 90 seconds and have a cite-able artifact. |
 
 ## Persona
 
@@ -110,7 +109,7 @@ The CLI rejects ADR anchors (`ADR-X.Y.Z`) by design — ADRs are governance pack
 
 Invoke `gz justify` at any of the following moments. The upstream skills surface these automatically so you don't have to remember.
 
-- **OBPI pipeline Stage 1→2**, when your self-reported confidence in the planned implementation is <90% (Prime Directive invariant 11). The `gz-obpi-pipeline` skill's Stage 1→2 Confidence Gate routes here.
+- **OBPI pipeline Stage 1→2**, when the `gz-obpi-pipeline` skill's Justification Gate finds an ambiguous scope boundary, an unresolved integration point, or a surface the plan relies on that you have not read.
 - **After a gz-adr-evaluate run triggers the evaluation-justify binding** — any dimension below threshold or enough red-team challenges fired. The `gz-adr-evaluate` skill appends a footer pointing to an OBPI under the ADR, or the ADR's draft slug when it has no OBPI.
 - **Before promoting a pool ADR** into active work — run justify on the tracking GHI to surface hidden ambiguity before you commit the lane/kind.
 - **Mid-pipeline, when scope feels ambiguous** — if you are about to guess at whether a change crosses brief boundaries (see AGENTS.md § Defect-fix routing), run justify on the in-flight OBPI and fill the scope boundary section before continuing.
@@ -142,7 +141,7 @@ The skill's own completion contract — the state in which a walkthrough can be 
 ## Related Skills
 
 - **`gz-adr-evaluate`** — sources the triggered-evaluation footer that routes to `uv run -m gzkit justify OBPI-<X.Y.Z>-<NN> --save`, or the ADR's draft slug.
-- **`gz-obpi-pipeline`** — Stage 1→2 Confidence Gate routes here when self-reported confidence is <90%.
+- **`gz-obpi-pipeline`** — Stage 1→2 Justification Gate routes here on an ambiguous scope boundary, an unresolved integration point, or an unread surface.
 - **`gz-plan-audit`** — downstream consumer; filled walkthrough artifacts are acceptable evidence in plan receipts.
 - **`gz-design`** — upstream; if the anchor is a draft concept, run `gz-design` first to book the artifact, then `gz-justify` on the booked identifier.
 

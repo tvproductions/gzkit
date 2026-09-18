@@ -485,13 +485,14 @@ Two upstream skills route operators here:
   Decision Justification, Architectural Alignment, etc.) in its
   output and recommends `gz justify` so the missing reasoning is
   authored before the ADR is taken to defense.
-- **`gz-obpi-pipeline`** at the Stage 1→2 Confidence Gate routes the
-  agent to `gz justify` when self-reported confidence in the planned
-  implementation is below 90%. This gate mechanizes Prime Directive
-  invariant 11 (`AGENTS.md` § Behavior Rules — Always, item 7):
-  *"If you are less than 90% sure of the direction, ask the human
-  before proceeding."* The walkthrough is the structured form of
-  that ask.
+- **`gz-obpi-pipeline`** at the Stage 1→2 Justification Gate routes the
+  agent to `gz justify` when the approved plan has an ambiguous scope
+  boundary, an unresolved integration point, or relies on a surface the
+  agent has not read. The gate was authored to mechanize Prime Directive
+  invariant 11 ("less than 90% sure… ask the human"); the operator retired
+  that self-reported trigger on 2026-08-17 (`AGENTS.md` § Operator
+  Doctrine: "Stop and ask the operator in case of uncertainty"), and the
+  walkthrough remains the structured form of that ask.
 
 ```bash
 # Anchor on a GHI, an OBPI, or a free-text draft

@@ -1,16 +1,16 @@
 # /gz-justify
 
-Pre-execution reasoning walkthrough for GHIs, OBPIs, and drafts. Invoke before implementation when confidence is <90%, when a gz-adr-evaluate score lands below 3.0, or when scope boundaries feel ambiguous. The CLI renders an 8-section markdown scaffold pre-populated with anchor evidence; you fill each `_[To be filled]_` block with grounded reasoning cited from the gathered evidence, then commit or attach the filled artifact to downstream governance.
+Pre-execution reasoning walkthrough for GHIs, OBPIs, and drafts. Invoke before implementation when direction is unsure, when a gz-adr-evaluate score lands below 3.0, or when scope boundaries feel ambiguous. The CLI renders an 8-section markdown scaffold pre-populated with anchor evidence; you fill each `_[To be filled]_` block with grounded reasoning cited from the gathered evidence, then commit or attach the filled artifact to downstream governance.
 
 ---
 
 ## Purpose
 
-`/gz-justify` exposes the canonical gz-justify workflow for operator invocation. It is the operator-facing ritual for Prime Directive invariant 11: when self-reported confidence in a planned change is below 90%, the walkthrough turns "I should think about this more" into an artifact that can be cited, reviewed, and validated.
+`/gz-justify` exposes the canonical gz-justify workflow for operator invocation. It is the operator-facing ritual for stopping to read or ask rather than proceeding on an assumption: the walkthrough turns "I should think about this more" into an artifact that can be cited, reviewed, and validated.
 
 ## When to Use
 
-Invoke this skill when your self-reported confidence in a planned implementation is <90%, after a `gz-adr-evaluate` run triggers the evaluation-justify binding (answer it on an OBPI under the ADR, or on the ADR's draft slug — a tracking-GHI walkthrough does not discharge it), before promoting a pool ADR into active work, or mid-pipeline when scope feels ambiguous. The `gz-adr-evaluate` skill's Low-Score Footer Guidance and the `gz-obpi-pipeline` skill's Stage 1→2 Confidence Gate both route operators here automatically.
+Invoke this skill when a plan has an ambiguous scope boundary, an unresolved integration point or an unread surface, after a `gz-adr-evaluate` run triggers the evaluation-justify binding (answer it on an OBPI under the ADR, or on the ADR's draft slug — a tracking-GHI walkthrough does not discharge it), before promoting a pool ADR into active work, or mid-pipeline when scope feels ambiguous. The `gz-adr-evaluate` skill's Low-Score Footer Guidance and the `gz-obpi-pipeline` skill's Stage 1→2 Confidence Gate both route operators here automatically.
 
 ## What to Expect
 
@@ -43,7 +43,7 @@ The skill reads its canonical execution contract from `.gzkit/skills/gz-justify/
 | Related | Relationship |
 |---------|-------------|
 | [`/gz-adr-evaluate`](gz-adr-evaluate.md) | Low-score footer routes to `gz-justify` |
-| [`/gz-obpi-pipeline`](gz-obpi-pipeline.md) | Stage 1→2 Confidence Gate routes to `gz-justify` |
+| [`/gz-obpi-pipeline`](gz-obpi-pipeline.md) | Stage 1→2 Justification Gate routes to `gz-justify` |
 | [`/gz-plan-audit`](gz-plan-audit.md) | Downstream consumer — filled walkthrough is plan-receipt evidence |
 | [skills index](index.md) | Browse the full skill catalog |
 | [governance runbook](../../governance/governance_runbook.md) | Workflow context |

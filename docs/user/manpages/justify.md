@@ -106,6 +106,6 @@ gz justify validate path/to/walkthrough.md --json
 - [`gz-adr-evaluate`](../skills/gz-adr-evaluate.md) — low-score output
   suggests this command for low-confidence anchors
 - [`gz-obpi-pipeline`](../skills/gz-obpi-pipeline.md) — Stage 1→2
-  confidence gate routes operators here when self-reported confidence
-  is below the Prime Directive invariant 11 threshold
+  Justification Gate routes here on an ambiguous scope boundary, an
+  unresolved integration point, or an unread surface
 - ADR-0.0.19 — pre-execution reasoning walkthrough doctrine
