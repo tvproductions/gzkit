@@ -3366,3 +3366,9 @@ error message. None implemented (authoring-only invocation).
 Full after presented (24,015 B → 10,551 B; all ten Mechanical scorecard anchors verbatim, checked by script).
 Every binding rule kept; measured instances, histories and the mutation-sweep example lifted to
 `tests-rationale.md`. Operator: "A".
+
+## 2026-09-17 — token-block-discipline.md (ruled)
+
+Full after presented (14,118 B → 7,049 B; anchors 53/73/74 verbatim). Operator asked "what does token block
+discipline do?" — answered from the ledger (394 claims / 374 releases / 32 TTL warnings; 22 exchange records:
+6 complete, 6 external_blocker, 6 reaping) and the code that enforces it. Operator: "A".
