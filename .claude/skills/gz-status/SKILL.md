@@ -4,9 +4,9 @@ description: Report project workflow fronts alongside ADR lifecycle and gate sta
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-12
+last_reviewed: 2026-09-17
 metadata:
-  skill-version: "1.2.0"
+  skill-version: "1.3.0"
 model: haiku
 ---
 
@@ -15,6 +15,12 @@ model: haiku
 ## Overview
 
 Operate the gz status command surface as a reusable governance workflow.
+
+## Operator ruling (verbatim canon)
+
+Status covers handoff system, GHI triage, ADR/OBPI campaign, and new R&D. Read Workflow fronts in the campaign selected by data/active_campaign.json; use gz-status to report evidence, freshness or unknowns, and next actions. Focused inquiries include material dependencies. Handoffs preserve the map reference and session changes. The campaign owns the map; live sources establish progress. Campaign sequence, ascending feature-ADR order, and operator-only OBPI initiation govern execution.
+
+> Carried verbatim from root `AGENTS.md` § Operator Doctrine on 2026-09-17 (GHI #921); the corpus `.gzkit/corpus/AGENTS.md.jsonl` keeps the ruling's history.
 
 ## Workflow
 

@@ -1,9 +1,9 @@
 {
   "algorithm": "sha256",
-  "corpus_fingerprint": "586ee1fc4f1f5a6f05db59e257688d94016c48827fa75cc221ff5e5a95dd01f5",
-  "corpus_entry_count": 315,
-  "rendition_fingerprint": "168b96495a7ac225604fe7d35995af51f3bcb87bebb44ea63e841bd806b74992",
-  "committed_ts": "2026-09-18T01:34:23.463774+00:00",
+  "corpus_fingerprint": "afdf1c50961660db1fb6b926593c7200bf4634c098c9d34c3ca22c236d8b748d",
+  "corpus_entry_count": 367,
+  "rendition_fingerprint": "d7f8a4041c5bd6afceceb97a33413a5dd14c54c1fdafc23e6d2ab3817226f276",
+  "committed_ts": "2026-09-18T01:52:40.015952+00:00",
   "attestor": "g0",
-  "attestation_text": "it all seems pretty ad hoc, do option A"
+  "attestation_text": "B"
 }

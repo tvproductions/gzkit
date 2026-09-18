@@ -3333,3 +3333,19 @@ re-texted to the AGENTS.md wording, ledger row removed; `rule-version-history.md
 `gz-adr-create` 6.7.1 and `gz-health-audit` 1.2.2; nine docs repointed; `tests/test_rules.py` scaffold
 fixtures now read their slug from `CORE_RULES`. Left alone: `src/**` docstrings and comments that still name
 `governance-core.md` as the rule home (12 files; comments, no behavior) — listed in the handoff.
+
+## 2026-09-17 — "isn't this still too large?" → option B (landed in the working tree)
+
+AGENTS.md measured 21,935 B / 234 lines after the governance-core fold. Presented three levers; operator: "B".
+Landed: four Operator Doctrine rulings (status fronts; campaign work selection; transit/exchange/handoff;
+ascending feature-ADR order) carried verbatim to `gz-status` 1.3.0, `gz-obpi-pipeline` 6.57.0 and
+`gz-session-handoff` 7.5.0, with a pointer sentence left in § Operator Doctrine; Gate Covenant kind/lane and
+withdraw/repudiate bullets shortened; Governance doctrine surfaces compressed. Attested commit
+(`--attestation-text "B"`), advisor verdict 0.93. Result: **19,872 B / 218 lines — not the ≈15.5 KB I estimated.**
+The shortfall is lever 1: `gz validate --bullet-retention` (ADR-0.0.33 Invariant 1) requires every Mechanical or
+Promotable scorecard row's text verbatim in AGENTS.md/CLAUDE.md/.claude/rules, and ten rows anchor in the
+"mechanical scopes" bullets; the validator resolves a row's tier against the FIRST corpus entry containing it,
+retired rows included, so retiring an invariant entry cannot demote it to compressible. The bullets were
+therefore compressed around their anchors (≈700 B saved) instead of removed (≈2,400 B). Reaching 15,000 needs
+an operator ruling on ADR-0.0.33 Invariant 1's verbatim clause, and the validator's retired-entry lookup is a
+defect to route (`src/**`).

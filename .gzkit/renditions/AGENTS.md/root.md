@@ -116,11 +116,11 @@ Use stdlib by default. A runtime dependency, new or existing, needs ADR or OBPI 
 
 - Gate 5 is universal: it applies to every OBPI completion in every lane, kind and sensitivity (ADR-0.0.36, GHI #342; enforced by `_requires_human_obpi_attestation`). The operator attests, and the agent records their words with `--attestation-text`.
 
-- `kind` and `lane` are independent. New gzkit ADRs are `feature` (semver `0.y.z`) or `pool` (`ADR-pool.<slug>`, no semver). `foundation` (`0.0.x`) is CLOSED to new authoring; its roster is `data/foundation_grandfather.json`. The closure is project-local: `gz init` scaffolds adopters open. `gz validate --taxonomy` enforces this, and `gz plan create` and `gz adr promote` refuse `--kind foundation`.
+- `kind` and `lane` are independent. New gzkit ADRs are `feature` (semver `0.y.z`) or `pool` (`ADR-pool.<slug>`); `foundation` (`0.0.x`) is CLOSED to new authoring here (roster `data/foundation_grandfather.json`; adopters scaffold open). `gz validate --taxonomy` enforces this.
 
 - ADR Feature Checklist items and OBPI briefs correspond 1:1; size them with the [OBPI Decomposition Matrix](docs/governance/GovZero/obpi-decomposition-matrix.md).
 
-- Two verbs undo a completion (ADR-0.0.71): `gz obpi withdraw` retires an OBPI permanently (superseded, phantom, duplicate; hidden from `gz state`, not re-completable); `gz obpi repudiate` reverses a completion whose attestation or evidence was invalid while the work intent stands (visible, re-completable by genuine re-attestation). Only a human may repudiate a Gate-5: `--attestor` and `--reason` are required and fail closed when empty; `--cause` is `model-induced-fabrication | operator-error | verification-invalid`.
+- Two verbs undo a completion (ADR-0.0.71): `gz obpi withdraw` retires an OBPI permanently (superseded, phantom, duplicate; not re-completable); `gz obpi repudiate` reverses a completion whose attestation or evidence was invalid while the work intent stands (re-completable by genuine re-attestation). Only a human may repudiate a Gate-5: `--attestor` and `--reason` are required and fail closed when empty.
 ## OBPI Acceptance Protocol
 
 - REQ-coverage gate: every BEHAVIOR REQ needs a passing `@covers` test before `gz obpi complete`; this cannot be waived. SUPPORT and STRUCTURAL-FENCE REQs use their declared proof channels.
@@ -169,46 +169,38 @@ Root `AGENTS.md` is playback of the committed `root` rendition composed from `.g
 # Local Agent Rules
 ## Operator Doctrine (verbatim canon)
 
-Operator rulings. The corpus (`.gzkit/corpus/AGENTS.md.jsonl`) keeps each ruling's original wording and history.
-
-- Status covers handoff system, GHI triage, ADR/OBPI campaign, and new R&D. Read Workflow fronts in the campaign selected by data/active_campaign.json; use gz-status to report evidence, freshness or unknowns, and next actions. Focused inquiries include material dependencies. Handoffs preserve the map reference and session changes. The campaign owns the map; live sources establish progress. Campaign sequence, ascending feature-ADR order, and operator-only OBPI initiation govern execution.
+Operator rulings. The corpus (`.gzkit/corpus/AGENTS.md.jsonl`) keeps each ruling's original wording and history. Four rulings that bind only status, work selection and session transit are carried verbatim by the skill that runs when they apply: status fronts in `gz-status`; campaign work selection and ascending feature-ADR order in `gz-obpi-pipeline`; the transit/exchange/handoff distinction in `gz-session-handoff`.
 
 - A gap in fulfilling original feature intent is a correction under its owning ADR, never a new pool ADR or enhancement. Enhancement means the designed intent already works and could merely improve.
-
-- The active docs/governance/*-campaign-*.md plan governs work selection; handoffs and triage advise. Select its topmost unchecked item whose gate is met, subject to ascending feature-ADR order and operator-only OBPI initiation. Campaign amendments require operator ratification; ADR, OBPI, and GHI repair remain the work mechanisms.
 
 - Operator authorship in repo-bound artifacts is recorded as 'g0' (operator directive, 2026-06-10) — git author name, attestor fields, handoffs, release notes. Author email remains the GitHub noreply (2949663+ahuimanu@users.noreply.github.com); the operator-PII prohibition on the personal email stands unchanged.
 
 - Work directly on main, commit, and git-sync. Do not create feature branches or a branch/merge/delete workflow.
 
-- Keep three subjects distinct: transit is ecosystem movement through the airlock (ADR-0.33.0); exchange is one block’s occupancy (ADR-0.0.41); handoff is session memory (ADR-0.0.65). Classify by the citing event type, never a shared field name or path. Token blocks implement features through the airlock’s Build door. The airlock provides awareness and synthetic memory, controls project movement, keeps the agent focused and watches for contamination, and monitors results/disturbance; it is not a verification gate. ADR-0.33.0 incompletely captures those purposes; silence does not revoke them. Transit supplies current ecosystem orientation and handoff carries the prior session model; they cooperate, and neither alone supplies a resident project model.
-
 - Root AGENTS.md is the sole rendered AgentContract and the default for every harness, including Claude. Its lite rendition fits the smallest vendor delivery cap. Forbid per-vendor AgentContract routes or temperatures in data/vendor-manifest.json; vendor-specific material belongs in that vendor’s own surface.
 
 - Before any move related to the higher rules and function of this project, stop and read all docs and all code before taking or recommending action. Stop and ask the operator in case of uncertainty. A search is not a read — never report that something is absent, undocumented, or unruled on the strength of keyword queries. Doctrine is routinely stated as a flag value, a schema field, or a path rather than as the prose you searched for ('--vendor=root', 2026-08-17). Supersedes the prior '90% convinced/confident' framing (operator verbatim: 'forget 90%, you have zero basis for any certainty').
-
-- Work feature ADRs in ascending semver order: the lowest version with unlanded OBPIs is in flight. Do not work, author, or recommend a higher feature ADR ahead of it. The campaign selects work but cannot override that order. If campaign sequencing conflicts, semver governs; surface the conflict to the operator rather than silently resolving it. “One feature at a time” does not authorize swapping the order.
 ## Governance doctrine surfaces
 
 Before governance code, rule, or audit work, read docs/governance/trust-doctrine.md, docs/governance/advisory-rules-audit.md, and docs/governance/state-doctrine.md.
 
 A value written in a Markdown doc is ILLUSTRATIVE, never authoritative. Execution reads thresholds, budgets, rosters and state from JSON or code. Cite the authority, not the value: "the threshold table in `.gzkit/rules/complexity-thresholds.json`", not the number it holds. A dated record states its date and that it is a record. Where prose is unavoidably the state, measure the instance before relying on it (`docs/governance/governance-core-rationale.md`).
 
-Mechanical scopes that bind here:
+`uv run gz check` runs every registered validator; a failing validator's message names the rule and its recovery, and the Coverage Ledger in `docs/governance/advisory-rules-audit.md` maps each rule to its witness. Mechanical scopes that bind here:
 
-- Per-file char budget for AGENTS.md / CLAUDE.md / `.claude/rules/*.md` — `gz validate --instructions-files-budget`; budgets in `data/instructions_files_budget.json`.
+- Per-file char budget for AGENTS.md / CLAUDE.md / `.claude/rules/*.md` — `gz validate --instructions-files-budget`; budgets in `data/instructions_files_budget.json` (advisory until 1.0).
 
-- The editor/IDE authoring-guide protocol envelope is defined by `src/gzkit/schemas/authoring_guide_protocol.json` — schema-validated at runtime (ADR-0.0.30).
+- `src/gzkit/schemas/authoring_guide_protocol.json` defines the editor/IDE authoring-guide protocol envelope, schema-validated at runtime (ADR-0.0.30).
 
-- `Field(min_length=1)` on `AdvisorDiagnosis.proof` — `gz validate --advisor-proof-binding` (OBPI-0.0.29-08).
+- `Field(min_length=1)` on `AdvisorDiagnosis.proof` — `gz validate --advisor-proof-binding`.
 
-- Complexity calibration is grounded in an empirically-measured exemplar corpus (seven selection criteria) — `gz validate --complexity-doctrine-links` (OBPI-0.0.27-07).
+- Complexity calibration is grounded in an empirically-measured exemplar corpus — `gz validate --complexity-doctrine-links` (ADR-0.0.27).
 
 - `.gzkit/rules/*.md` with `paths: "**"` or missing `paths:` may not live under any vendor-surface rules directory (ADR-0.0.20) — `gz validate --unscoped-rules`.
 
-- Every canonical surface MUST be reproducibly delivered by `pip install py-gzkit && gz init`, byte-equivalent to the wheel's authored canonical content (ADR-0.0.31) — `gz validate --distribution`.
+- Every canonical surface is delivered by `pip install py-gzkit && gz init`, byte-equivalent to the wheel's authored canonical content — `gz validate --distribution` (ADR-0.0.31).
 
-- `gz validate --invariant-coherence` — composition drift fail-close: byte-compares committed AGENTS.md against rendition playback (ADR-0.0.37); in the `gz check` default scope.
+- `gz validate --invariant-coherence` — composition drift fail-close: byte-compares committed AGENTS.md against rendition playback (ADR-0.0.37).
 
 - OBPI brief reconciles against current project shape before Stage 2 and before completion — `gz validate --brief-reconcile` (ADR-0.0.37).
 
@@ -216,7 +208,7 @@ Mechanical scopes that bind here:
 
 - Every REQ in an OBPI brief's Acceptance Criteria MUST declare exactly one of three kinds — BEHAVIOR, SUPPORT, or STRUCTURAL-FENCE — via an inline tag `[kind]`, each with exactly one proof channel — `gz validate --req-kind-discipline` (ADR-0.0.59).
 
-- Every `gz <verb>` string appearing in an operator-facing doc must resolve to a registered parser verb, multi-word subcommands included — `gz validate --cli-alignment`, exit 1 (GHI #198, #1006). Scope: `docs/**/*.md`, `docs/**/*.feature`, `features/**/*.feature`, `.gzkit/skills/**/SKILL.md`, `.gzkit/chores/**/*.md` (`proofs/` excluded), `.gzkit/rules/**/*.md` and root `AGENTS.md`. Manpages are `docs/user/manpages/<verb>.md`, never `gz-<verb>.md` (GHI #532); terminal OBPI briefs are exempt. Recovery: register the verb, rename the reference, or for a planned surface put `<!-- gz-validate-skip: command-shape -->` on the preceding line.
+- Every `gz <verb>` string appearing in an operator-facing doc must resolve to a registered parser verb, multi-word subcommands included — `gz validate --cli-alignment` over docs, features, skills, chores, rules and root `AGENTS.md`; manpages are `docs/user/manpages/<verb>.md`, never `gz-<verb>.md`. For a planned surface put `<!-- gz-validate-skip: command-shape -->` on the preceding line.
 
 - `docs/governance/GovZero/adr-status.md` is a Layer 3 derived view per `docs/governance/state-doctrine.md`, never hand-maintained; regenerate with `uv run gz register-adrs` — `gz validate --adr-status-fresh`, in the default `gz check` (GHI #322).
 ## Architectural Boundaries
