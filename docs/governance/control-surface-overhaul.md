@@ -48,7 +48,7 @@ are re-derived from the ruled canon, not restored.
 
 | Surface | Authoring model (target) | Authored today | Owner of what remains |
 |---|---|---|---|
-| Root `AGENTS.md` | corpus-rendered | **corpus-rendered**: `.gzkit/corpus/AGENTS.md.jsonl` → `.gzkit/renditions/AGENTS.md/root.md` → playback | none for size: the 20,000 destination is met (2026-09-19). GHI #1018 (two bare H1 lines no verb can own) stays open |
+| Root `AGENTS.md` | corpus-rendered | **corpus-rendered**: `.gzkit/corpus/AGENTS.md.jsonl` → `.gzkit/renditions/AGENTS.md/root.md` → playback | under the 20,000 ceiling, above the 15,000 ideal (2026-09-19): OBPI-0.35.0-10 for the pinned rows, the operator for § Operator Doctrine and § Gate Covenant wording. GHI #1018 stays open |
 | `CLAUDE.md` | pointer to `AGENTS.md` plus Claude-only addenda | rendered from `.gzkit/templates/claude.md`; a pointer plus three addenda | none known |
 | Rules, `.gzkit/rules/*.md` | corpus-rendered | **hand-edited canonical files**, copied to mirrors by `gz agent sync control-surfaces` | **OBPI-0.35.0-12 rules-corpus-onboarding** (ADR-0.35.0 Feature Checklist; GHI #921's subject) |
 | Nested `AGENTS.md` (Codex subtree delivery) | rendered from the rules corpus | generated from the uncorpused rule text | OBPI-0.35.0-12, same item |
@@ -86,12 +86,15 @@ Ordered by what the target implies, not by ease.
 
 1. **Rules and nested `AGENTS.md` into the corpus.** Owner: OBPI-0.35.0-12, behind
    OBPI-0.35.0-05 and -07. Operator-initiated. This is the item that discharges GHI #921.
-2. **Root `AGENTS.md` — destination met; hold it there.** Operator ruling 2026-09-19,
-   verbatim: "make target 20k". The destination lives in `agents-md-doctrine.md`
-   § Budget targets and its history in `instructions-files-budget-history.md`; the
-   enforced budget in `data/instructions_files_budget.json` is unchanged and advisory
-   until 1.0. What is owed now is keeping the file under the destination as canon is
-   added. OBPI-0.35.0-10 stands on its own merits and is no longer owed for size.
+2. **Root `AGENTS.md` — under the ceiling, above the ideal.** Operator rulings
+   2026-09-19, verbatim: "make target 20k", then "state a range: 15K is ideal, 20K a
+   ceiling". The range lives in `agents-md-doctrine.md` § Budget targets and its history
+   in `instructions-files-budget-history.md`; the enforced budget in
+   `data/instructions_files_budget.json` is unchanged and advisory until 1.0. Owed: hold
+   the ceiling as canon is added (headroom is small, so an addition needs a removal), and
+   work toward the ideal through OBPI-0.35.0-10 (the rows `bullet-retention` pins) and
+   the operator's wording of § Operator Doctrine and § Gate Covenant. Nothing mechanical
+   reads the range yet; the budget file carries one number per file.
 3. **The skill-body size pass that pass two did not do.** The 2026-09-18 plan was to lift
    dated incident narrative out of skill bodies to rationale docs, as the rule pass did,
    starting with `gz-obpi-pipeline`. Pass two found contradictions instead and fixed
