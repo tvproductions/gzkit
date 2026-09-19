@@ -1214,10 +1214,10 @@ class TestDispatchPromptsCarryTheContract(unittest.TestCase):
         self.assertIn("I judge structure against", quality)
         self.assertNotIn("I work test-first", spec)
 
-    # -- Why: AGENTS.md § Behavior Rules — Always #6 ----------------------
+    # -- Why: AGENTS.md § Behavior Rules (give each subagent a 'Why') ------
 
     def test_every_composer_requires_and_emits_a_why(self):
-        """AGENTS.md Always #6 makes Why unconditional, so it is not optional here.
+        """AGENTS.md § Behavior Rules makes Why unconditional, so it is not optional here.
 
         Omitting it must be a TypeError, not a silently thinner prompt --
         an optional Why is a rule declared without a mechanism.

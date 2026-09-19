@@ -371,7 +371,7 @@ class TestMxCheckpointSeam(unittest.TestCase):
         self.assertEqual(code, 1, "the ledger floor member must keep blocking in the hangar")
 
     def test_gate5_attestation_guard_pins_inside_the_hangar(self) -> None:
-        """An unattested OBPI completion is faked Gate-5 — never advisory (AGENTS.md Never #1)."""
+        """An unattested OBPI completion is faked Gate-5 — never advisory (§ Gate Covenant)."""
         with tempfile.TemporaryDirectory() as td:
             code, _ = self._sweep(self._hangar(td), "forbid_unattested_obpi_completion_commits")
         self.assertEqual(code, 1, "the gate5-attestation floor member must keep blocking")

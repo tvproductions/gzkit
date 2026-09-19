@@ -327,7 +327,8 @@ def correction_state(events: Iterable[Any]) -> dict[SubjectKey, str]:
     Last correction wins, the same netting rule
     :func:`gzkit.obpi_lifecycle.park_state` already uses: the ledger is
     append-only, so current state is the net of the sequence and never an edit
-    (``AGENTS.md`` Never #2). ``reinstated`` removes the entry, which is what
+    (``AGENTS.md`` § Behavior Rules: write the ledger only through ``gz``). ``reinstated``
+    removes the entry, which is what
     makes ``void -> reinstate -> void`` resolve to ``void`` rather than to an
     order-dependent answer.
 

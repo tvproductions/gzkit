@@ -1,7 +1,8 @@
 """agent-insights.jsonl record-shape trust audit (GHI #358).
 
 The file is a Layer-2 trust surface — it witnesses course-correction lessons
-(AGENTS.md § Behavior Rules — Always #11) and observed defects. The schema
+(AGENTS.md § Behavior Rules: a course-correction is recorded
+as an `improvement`) and observed defects. The schema
 lock (GHI #358) closes the silent-shape-drift vector: any agent appending a
 record with a bad timestamp, an unknown ``type``, an unknown extra field, or
 a nested-object ``evidence`` payload now fails closed.

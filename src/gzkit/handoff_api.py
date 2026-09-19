@@ -657,8 +657,9 @@ def _bullet_items(text: str) -> list[str]:
 
 
 #: Words that number a RULE or SECTION rather than a GitHub issue. This repo's own
-#: contract surfaces are numbered and cited that way — ``AGENTS.md`` § Behavior
-#: Rules reads ``Always #13`` — so an unbounded bare-``#N`` match claims them too.
+#: contract surfaces were numbered and cited that way — ``AGENTS.md`` § Behavior
+#: Rules was numbered until 2026-09, and the handoff corpus still cites it as
+#: ``Always #13`` — so an unbounded bare-``#N`` match claims them too.
 #: Measured across ``.gzkit/handoffs/**`` on 2026-08-18, the corpus this annotator
 #: actually scans: Always 73, Never 27, Invariant 20, item 14, rule/Rule 15,
 #: Negative 9, Decision 7, Positive 2, Step 1 — 168 occurrences, so this is the

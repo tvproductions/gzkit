@@ -171,7 +171,7 @@ def _stop_turn_feedback_script() -> str:
                within CLAIM_PROXIMITY_CHARS. This gates FORM (citation presence),
                not TRUTH — a citation does not itself prove the claim, but its
                absence means the claim was never checked against Layer-1/Layer-2
-               truth (AGENTS.md Behavior Rules — Never #7; GHI #620).
+               truth (AGENTS.md § Behavior Rules: completion evidence is the ledger; GHI #620).
 
             Either check blocks the stop with agent-actionable prose — what failed,
             why it is forbidden, the governed next step
@@ -280,8 +280,7 @@ def _stop_turn_feedback_script() -> str:
                     f"{file_count} dirty Python file(s).\\n\\n"
                     "What failed:\\n" + "\\n".join(lines) + "\\n\\n"
                     "Why this is forbidden: gzkit forbids ending a turn while the cheap "
-                    "deterministic tier is red (AGENTS.md Behavior Rules — Never #5; "
-                    "ADR-0.0.70 turn-end feedback; "
+                    "deterministic tier is red (ADR-0.0.70 turn-end feedback; "
                     ".gzkit/rules/guardrail-feedback-prose.md).\\n\\n"
                     "Governed next step: fix the findings above, verify with "
                     "`uv run ruff check <files>`, then end the turn. One block per turn — "
@@ -384,9 +383,8 @@ def _stop_turn_feedback_script() -> str:
                     "What failed:\\n" + listed + "\\n\\n"
                     "Why this is forbidden: gzkit forbids ending a turn on an "
                     "unbacked governance state-claim (AGENTS.md § MAKE LLM "
-                    "STOCHASTIC VIBES INERT; AGENTS.md Behavior Rules — Never #7 "
-                    '"Do not read YAML frontmatter status: Completed as proof of '
-                    'completion — read the ledger"; GHI #620).\\n\\n'
+                    "STOCHASTIC VIBES INERT; AGENTS.md § Behavior Rules: "
+                    '"Completion evidence is the ledger."; GHI #620).\\n\\n'
                     "Governed next step: re-state the claim with a citation — a "
                     "`gz` command and its observed output, a commit SHA, a "
                     "`.gzkit/ledger.jsonl` reference, or a file:line — then end "

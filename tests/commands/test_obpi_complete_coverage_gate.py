@@ -724,7 +724,7 @@ class TestObpiCompleteHeadlessHeavyOverrideAcceptedOperatorVerbatim(_OverrideGat
     Prior contract: headless heavy override refused (no TTY, no marker → exit 3).
     Current contract: headless heavy override accepted as operator-verbatim when
     --accept-uncovered-reason is non-empty. Per `.claude/rules/governance-core.md`
-    v0.3.0 and AGENTS.md § Never #1: no TTY, PTY, or transport mechanism may EVER
+    v0.3.0 and AGENTS.md § Attestation: no TTY, PTY, or transport mechanism may EVER
     be cited as a reason an agent "cannot" record human attestation — the same
     rule applies to operator-passed waiver authorizations carried on the CLI.
 

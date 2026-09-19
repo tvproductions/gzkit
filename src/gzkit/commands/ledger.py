@@ -5,7 +5,8 @@ Git invokes this, not an operator. It is registered as a merge driver in
 conflict; the merged result must be written back over the "ours" path.
 
 Its reason to exist is that resolving a ledger conflict by hand is the action
-`AGENTS.md` § Never #2 prohibits, and no `gz` verb could do it instead. The
+`AGENTS.md` § Behavior Rules prohibits ("Write the ledger only through `gz`
+commands"), and no `gz` verb could do it instead. The
 merge itself lives in `gzkit.ledger_merge`; this module is the git-facing
 adapter — file IO and exit status, no ordering logic.
 """

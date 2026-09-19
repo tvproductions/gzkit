@@ -7,7 +7,8 @@ longer resolves — Layer-2 asserting artifacts Layer-1 cannot show.
 
 This module replays that cohort forward: for every ``pool_demotion`` rename, it
 emits the ``obpi_parked`` event the demotion should have emitted at the time.
-The ledger stays append-only (``AGENTS.md`` Never #2) — nothing is rewritten;
+The ledger stays append-only (``AGENTS.md`` § Behavior Rules: write the ledger only through ``gz``)
+— nothing is rewritten;
 the correction is composed from new forward events.
 
 Not a ``gz`` verb: a one-shot migration, invoked as
@@ -150,7 +151,8 @@ def plan_release(ledger: Ledger, project_root: Path | None = None) -> list[tuple
 
     This plans the corrective events reconciling park state to where each parent
     ADR actually lives. Append-only throughout: nothing is rewritten
-    (``AGENTS.md`` Never #2). ``parked_from`` is read off the park event being
+    (``AGENTS.md`` § Behavior Rules: write the ledger only through ``gz``).
+    ``parked_from`` is read off the park event being
     released rather than reconstructed, so the pair reads as a matched
     park/unpark on replay.
     """
@@ -204,7 +206,8 @@ def _run_release(ledger: Ledger, *, apply_release_mode: bool, attestor: str) -> 
             "\nRelease refused: --attestor is required with --apply-release.\n"
             "  Why: this appends governance events reversing a recorded disposition;\n"
             "  an unattested bulk ledger write is the unwitnessed-mutation failure\n"
-            "  AGENTS.md Never #2 guards against.\n"
+            "  AGENTS.md § Behavior Rules guards against (the ledger is written\n"
+            "  only through gz commands).\n"
             "  Next step: uv run python -m gzkit.governance.obpi_park_backfill "
             "--release --apply-release --attestor <name>",
             file=sys.stderr,
@@ -274,7 +277,8 @@ def main(argv: list[str] | None = None) -> int:
             "\nBackfill refused: --attestor is required with --apply.\n"
             "  Why: this appends 237 governance events asserting a disposition on\n"
             "  historical work; an unattested bulk ledger write is exactly the\n"
-            "  unwitnessed-mutation failure AGENTS.md Never #2 guards against.\n"
+            "  unwitnessed-mutation failure AGENTS.md § Behavior Rules guards against\n"
+            "  (the ledger is written only through gz commands).\n"
             "  Next step: uv run python -m gzkit.governance.obpi_park_backfill "
             "--apply --attestor <name>",
             file=sys.stderr,

@@ -76,7 +76,7 @@ def park_state(events: Iterable[Mapping[str, Any]]) -> dict[str, bool]:
 
     Park and unpark compose as forward corrective events — the ledger is
     append-only, so current state is the net of the sequence, never an edit
-    (``AGENTS.md`` Never #2).
+    (``AGENTS.md`` § Behavior Rules: write the ledger only through ``gz``).
     """
     state: dict[str, bool] = {}
     for event in events:
@@ -97,7 +97,8 @@ def operator_block_state(
     Block and unblock compose as forward corrective events by
     last-event-wins, the same way :func:`park_state` composes — the ledger is
     append-only, so current state is the net of the sequence, never an edit
-    (``AGENTS.md`` Never #2). An unblock for an OBPI that was never blocked is
+    (``AGENTS.md`` § Behavior Rules: write the ledger only through ``gz``). An unblock
+    for an OBPI that was never blocked is
     inert rather than synthesizing a record.
 
     **Why this lives in Layer 2 rather than the pipeline marker (GHI #887).**

@@ -135,7 +135,8 @@ def recalibrate_surface_weight(
     green gate and a re-runnable command, while an appended event with a failed
     floor write strands a RED gate that no operator action short of hand-editing
     the ledger could clear — and hand-editing is forbidden (``AGENTS.md``
-    Never #2). Fail-safe therefore means floor-first.
+    § Behavior Rules: write the ledger only through ``gz``). Fail-safe therefore
+    means floor-first.
 
     Attestation is fail-closed on both fields, mirroring ``gz obpi repudiate``:
     an unattested band change is the silent recalibration the anti-pattern names,

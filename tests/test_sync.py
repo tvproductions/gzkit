@@ -1399,8 +1399,8 @@ class TestSyncClaudeSettingsPreservesUserPhases(unittest.TestCase):
     `gzkit.sync.sync_claude_settings` (called by `gz agent sync
     control-surfaces`) bypassed the merge and overwrote the file with the
     bare gzkit-owned subset. That stripped any user-defined phases — most
-    importantly `SessionStart` and `PreCompact`, which AGENTS.md § Behavior
-    Rules — Always #1 names as the mechanical orientation backstop
+    importantly `SessionStart` and `PreCompact`, which `docs/governance/behavior-rules.md`
+    § Always #1 names as the mechanical orientation backstop
     (CAP-13; GHI #326). These tests pin the contract on the sync writer:
     user phases survive, user top-level keys survive, and gzkit-owned
     phases are still refreshed.

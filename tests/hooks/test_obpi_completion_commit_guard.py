@@ -144,7 +144,7 @@ class TestCompletionFlipIsGatedAtTheCommit(unittest.TestCase):
             forbid_unattested_obpi_completion_commits(root),
             1,
             "a brief that READS attested is Layer-1 authorship; the audit ledger is "
-            "what records that the completion happened (AGENTS.md Never #7)",
+            "what records that the completion happened (AGENTS.md § Behavior Rules)",
         )
 
 

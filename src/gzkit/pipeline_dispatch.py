@@ -55,7 +55,7 @@ def _persona_frame(project_root: Path, role: str) -> list[str]:
 
 
 def _why_frame(why: str) -> list[str]:
-    """Return the Why block required by AGENTS.md Behavior Rules - Always #6.
+    """Return the Why block AGENTS.md § Behavior Rules requires for every subagent.
 
     The subagent cannot see why this task exists; without it, it cannot tell
     signal from noise in the surface it is handed.

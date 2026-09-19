@@ -242,7 +242,8 @@ def _validate_checklist_ticks(body: str, artifact_path: str) -> list[ValidationE
                 message=(
                     f"Checklist row asserts completion state: '{row[:70]}'. An ADR "
                     "body is Layer-1 canon and cannot witness completion -- the "
-                    "ledger is the authority (AGENTS.md § Never #7); read it with "
+                    "ledger is the authority (AGENTS.md § Behavior Rules: completion "
+                    "evidence is the ledger); read it with "
                     "`uv run gz adr status`. Write `- [ ]`: the empty box is a row "
                     "marker, never a status claim (GHI #928)."
                 ),

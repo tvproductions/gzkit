@@ -114,7 +114,8 @@ def post_authoring_message(obpi_id: str, stage: str, rel_path: str) -> str:
         "in-flight repair Stage 3 allows after a failed check, move the "
         "marker back to `implement` through the runtime so the re-entry is "
         "recorded, then repair. Do NOT hand-edit the marker to satisfy this "
-        "gate (AGENTS.md Never #6).\n\n`tests/**` writes stay permitted "
+        "gate (AGENTS.md § Behavior Rules: a blocking hook is diagnosed, never "
+        "worked around).\n\n`tests/**` writes stay permitted "
         "at every stage: Phase 1b @covers parity and the Phase 1c RED "
         "witness are verify-stage work by design."
     )
@@ -138,6 +139,7 @@ def post_authoring_commit_message(obpi_id: str, stage: str, rel_paths: list[str]
         f"through the runtime - `uv run gz obpi pipeline {obpi_id}` - so the "
         "dispatch is recorded, then commit. If the pipeline is ready to commit "
         "work already authored at Stage 2, advance it to `sync` through the "
-        "runtime rather than editing the marker by hand (AGENTS.md Never #6).\n\n"
+        "runtime rather than editing the marker by hand (AGENTS.md § Behavior "
+        "Rules: a blocking hook is diagnosed, never worked around).\n\n"
         "`tests/**` stays committable at every stage."
     )

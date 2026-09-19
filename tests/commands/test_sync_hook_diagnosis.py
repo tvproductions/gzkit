@@ -14,7 +14,7 @@ step" -- not from the shape of the current output. A blocker that reports the
 transport failed while discarding the gate's own recovery prose satisfies none of
 the three parts, and it misdirects: `failed to push some refs` is git's
 non-fast-forward phrasing, so it steers a reader toward `git pull --rebase` and
-then toward `--no-verify`, which `AGENTS.md` Never #10 forbids outright.
+then toward `--no-verify`, which `AGENTS.md` § Behavior Rules forbids outright.
 
 Both call sites are exercised because both were blind; a fix applied only to the
 push arm leaves a pre-commit refusal equally undiagnosable.

@@ -68,7 +68,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `cli.md` | `0.9.0` |
 | `cross-platform.md` | `0.7.0` |
 | `gate5-runbook-code-covenant.md` | `0.3.1` |
-| `guardrail-feedback-prose.md` | `0.3.0` |
+| `guardrail-feedback-prose.md` | `0.3.1` |
 | `mx-mode.md` | `1.4.0` |
 | `pythonic.md` | `0.5.3` |
 | `tool-skill-runbook-alignment.md` | `0.5.1` |

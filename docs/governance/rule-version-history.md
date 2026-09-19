@@ -507,6 +507,10 @@ Lifted 2026-08-29 at version `0.2.0` (rule now at `0.3.0`).
 > adoption): the feedback text IS the prompt a human would otherwise have
 > typed; engineer it as one.
 
+### Lifted 2026-09-19 at version `0.3.0` (rule now at `0.3.1`)
+
+> **Rule version:** `0.3.0` — diet pass under GHI #921 (operator ruling 2026-08-29, *"we are compressing everything and anything that the agent can consume"*). Version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#guardrail-feedback-prosemd). Binding rules unchanged.
+
 ## `model-selection.md`
 
 Lifted 2026-08-29 at version `0.5.1` (rule now at `0.6.0`).

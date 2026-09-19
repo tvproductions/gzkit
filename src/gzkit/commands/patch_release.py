@@ -528,7 +528,8 @@ def _discover_foundation_closeouts(
 
     Discovery anchors on the ledger receipt, not ADR frontmatter: the ledger
     is the Layer-2 system-of-record and frontmatter ``status:`` is Layer-1
-    authorship (AGENTS.md § Never #7). Foundation closeouts are release-worthy
+    authorship (AGENTS.md § Behavior Rules: completion evidence is the ledger).
+    Foundation closeouts are release-worthy
     code surfaces equal to behavior-level GHIs per the hexagonal port/adapter
     doctrine (GHI #490; completes the GHI #330 residual TODO).
     """

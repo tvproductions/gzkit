@@ -264,7 +264,8 @@ def single_driver_declaration(project_root: Path, obpi_id: str) -> dict | None:
     """Return the ledger-recorded single-driver declaration, or None.
 
     Last declaration wins. Re-declaring is an ordinary forward correction over an
-    append-only store (``AGENTS.md`` Never #2) — a session whose reason changed
+    append-only store (``AGENTS.md`` § Behavior Rules: write the ledger only through ``gz``)
+    — a session whose reason changed
     states the new one rather than editing the old.
     """
     declarations = _obpi_events(project_root, obpi_id, _DECLARATION_EVENT)

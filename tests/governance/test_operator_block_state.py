@@ -14,7 +14,7 @@ parent is a live ADR and the brief is fine.
 
 These tests pin the projection. `block` and `unblock` compose as forward
 corrective events over an append-only ledger — current state is the net of the
-sequence, never an edit (`AGENTS.md` Never #2), exactly as `park_state` composes.
+sequence, never an edit (`AGENTS.md` § Behavior Rules), exactly as `park_state` composes.
 """
 
 from __future__ import annotations

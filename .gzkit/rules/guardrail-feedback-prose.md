@@ -7,11 +7,11 @@ paths:
 description: Fail-closed guardrail output must be agent-actionable three-part prose
 ---
 
-<!-- rule-version: 0.3.0 -->
+<!-- rule-version: 0.3.1 -->
 
 # Guardrail Feedback Prose (gzkit)
 
-> **Rule version:** `0.3.0` — diet pass under GHI #921 (operator ruling 2026-08-29, *"we are compressing everything and anything that the agent can consume"*). Version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#guardrail-feedback-prosemd). Binding rules unchanged.
+> **Rule version:** `0.3.1` — the worked GOOD example cites ADR-0.0.70, the authority the stop-turn hook actually rests on, instead of an `AGENTS.md` rule number that never governed it (GHI #1035); prior `0.3.0` lifted to [Rule Version History](../../docs/governance/rule-version-history.md#guardrail-feedback-prosemd).
 
 ## Invariant
 
@@ -24,7 +24,7 @@ feedback encodes the prompt that you would write as a human.")
 | Part | Content | Bad example | Good example |
 |------|---------|-------------|--------------|
 | **What failed** | The concrete finding: file, line, check name, observed value | `exit 3` | `F401 src/x.py:1 unused import` |
-| **Why it is forbidden** | The binding rule, invariant, or ADR the failure violates — cited, not paraphrased | "lint error" | "gzkit forbids ending a turn while the cheap deterministic tier is red (AGENTS.md Never #5)" |
+| **Why it is forbidden** | The binding rule, invariant, or ADR the failure violates — cited, not paraphrased | "lint error" | "gzkit forbids ending a turn while the cheap deterministic tier is red (ADR-0.0.70 turn-end feedback)" |
 | **Governed next step** | A runnable command or named ceremony that recovers — never "see docs" | "fix it" | "fix the findings, verify with `uv run ruff check <files>`, then end the turn" |
 
 ## Scope

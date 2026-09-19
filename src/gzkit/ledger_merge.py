@@ -3,7 +3,8 @@
 `.gzkit/ledger.jsonl` and its siblings are written by the runtime during every
 session and tracked in git, so two clones in flight collide by construction:
 each appends to the tail, and git reports a conflict over disjoint additions.
-Resolving that by hand is the action `AGENTS.md` § Never #2 prohibits, and until
+Resolving that by hand is the action `AGENTS.md` § Behavior Rules prohibits
+("Write the ledger only through `gz` commands"), and until
 this module there was no `gz` verb that could do it instead.
 
 Git's built-in `union` driver is the obvious answer and the wrong one. It

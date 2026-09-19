@@ -89,7 +89,7 @@ class TestBlockOnFindings(unittest.TestCase):
         # forbidden (citing the binding rule), the governed next step.
         self.assertIn("F401", prose)
         self.assertIn("Why this is forbidden", prose)
-        self.assertIn("Never #5", prose)
+        self.assertIn("ADR-0.0.70", prose)
         self.assertIn("Governed next step", prose)
         self.assertIn("uv run ruff check", prose)
 

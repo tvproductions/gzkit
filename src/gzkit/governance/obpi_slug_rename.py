@@ -4,7 +4,8 @@ An OBPI's slug can stop describing its brief — a design is revised, the work i
 repurposed rather than withdrawn, and the id keeps the name of the thing that was
 withdrawn. Correcting the name on disk moves Layer-1 without moving Layer-2, and
 ``obpi_created`` then asserts a brief at an id nothing on disk carries. The
-ledger is append-only (``AGENTS.md`` Never #2), so the correction is composed
+ledger is append-only (``AGENTS.md`` § Behavior Rules: write the ledger only through ``gz``),
+so the correction is composed
 from a new forward event, never an edit.
 
 **Why this is not ``gz migrate-semver``.** That verb's disk-drift detector is
