@@ -5,7 +5,7 @@ description: Execute the ADR closeout ceremony protocol for human attestation. G
 category: adr-audit
 compatibility: GovZero v6 framework; provides runbook walkthrough for human ADR attestation
 metadata:
-  skill-version: "7.18.0"
+  skill-version: "7.19.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -13,7 +13,7 @@ metadata:
   govzero_layer: "Layer 2 - Ledger Consumption"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-08-21
+last_reviewed: 2026-09-18
 model: opus
 ---
 
@@ -67,7 +67,7 @@ Closeout is read-only ceremony work — the driver synthesizes attestation evide
 
 Personas not dispatched: `implementer` (no code written — closeout reads completed work; if it surfaces a defect, file a GHI via `/ghi-author`).
 
-The mechanical attestation that these dispatches occurred was scoped by `ADR-pool.obpi-pipeline-dispatch-attestation` Target Scopes #5/#6. That ADR is **Superseded** (`absorbed_into: ADR-0.0.73`, itself Validated 9/9), so there is no promotion pending and nothing arrives from one — the absorption delivered an absorption-marker audit, and that ADR's own § Notes place the receipt machinery (ledger events, bail-to-inline gates, validator scopes) in "a future feature-kind ADR work surface" that is not yet authored (GHI #846). This skill body declares the T1 contract and **this ceremony has no artifact channel** — its dispatches remain unattested and undisclosed (GHI #770's named residual). Treat the mandate as binding on you, not as something a gate will catch.
+**This ceremony has no artifact channel for these dispatches** — they are unattested and undisclosed (GHI #770's named residual), and the receipt machinery that would record them is not yet authored (GHI #846; `ADR-pool.obpi-pipeline-dispatch-attestation` is Superseded into ADR-0.0.73, which delivered no receipts). Treat the mandate as binding on you, not as something a gate will catch.
 
 Persona doctrine reference: ADR-0.0.11-persona-driven-agent-identity-frames (Validated).
 
@@ -98,7 +98,7 @@ Persona doctrine reference: ADR-0.0.11-persona-driven-agent-identity-frames (Val
 
 ## Architecture
 
-The ceremony is driven by `src/gzkit/commands/closeout_ceremony.py`, which provides:
+The ceremony is driven by `src/gzkit/commands/closeout_ceremony.py` (state model in `src/gzkit/commands/ceremony_state.py`), which provides:
 
 - **Step sequencing** — deterministic step ordering via `CeremonyStep` enum
 - **Foundation skip** — `FOUNDATION_SKIP_STEPS` automatically skips RELEASE_NOTES and RELEASE steps for 0.0.x ADRs
@@ -169,9 +169,9 @@ When the CLI presents walkthrough commands (CLI Steps 4-5), run them one at a ti
 - Advance with `--next` after the human acknowledges — the CLI then presents the next demo
 - The ceremony only moves to Step 6 ATTESTATION after the final demo has been presented and acknowledged
 
-**Auto-mode override.** Auto mode's "prefer action over planning, minimize interruptions" framing does NOT apply inside the walkthrough. Step 5 is an operator-paced observation surface — do not batch demo commands into parallel tool calls to save turns. Rule #5 in § Ceremony Rules below overrides the auto-mode batching default.
+**Auto-mode override.** Auto mode's "prefer action over planning, minimize interruptions" framing does NOT apply inside the walkthrough. Step 5 is an operator-paced observation surface — do not batch demo commands into parallel tool calls to save turns.
 
-**Evidence-gathering ARB checks are separate from the demos.** The Evidence Summary Template (§ below) lists the canonical ARB-wrapped invocations (`uv run gz arb ruff`, `uv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer`, `uv run gz arb typecheck`, `uv run gz arb step --name mkdocs -- uv run mkdocs build --strict`) as evidence-template population — these are not discovered demo commands and must NOT be interleaved with the per-demo `--next` loop. Run them when gathering evidence for the Step 6 attestation prompt (either right before the prompt or during pre-ceremony preparation), never mixed into the Step 5 one-at-a-time sequence. Heavy-lane ceremony fail-closes on missing receipt IDs per `AGENTS.md` § Attestation § Lane behavior, so bare (non-ARB) invocations do not satisfy the evidence requirement.
+**Evidence-gathering ARB checks are separate from the demos.** The Evidence Summary Template (§ below) lists the canonical ARB-wrapped invocations (`uv run gz arb ruff`, `uv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer`, `uv run gz arb typecheck`, `uv run gz arb step --name mkdocs -- uv run mkdocs build --strict`) as evidence-template population — these are not discovered demo commands and must NOT be interleaved with the per-demo `--next` loop. Run them when gathering evidence for the Step 6 attestation prompt (either right before the prompt or during pre-ceremony preparation), never mixed into the Step 5 one-at-a-time sequence. Heavy-lane ceremony fail-closes on missing receipt IDs per `AGENTS.md` § Attestation, so bare (non-ARB) invocations do not satisfy the evidence requirement.
 
 **Bound fidelity gate at the EXECUTE→ATTESTATION edge (ADR-0.0.73, OBPI-0.0.73-04).** When the final demo is acknowledged and `--next` advances from Step 5 EXECUTE to Step 6 ATTESTATION, the CLI automatically runs the **bound fidelity gate** — the SAME standalone gate the audit ceremony invokes (one gate, two consumers — `assert_fidelity_for_ceremony`). It parses the ADR Decision's `## Fidelity Assertions` block and RUNS each assertion against the running system. This is the bound replacement for the old prose 'Demonstrate Value' step — you do not narrate value; the gate exercises the ADR's thesis. A failed assertion **blocks the transition** (PolicyBreachError). An ADR with no `## Fidelity Assertions` block is **flagged with a warning** but does not hard-block in-flight (graceful migration, OBPI-0.0.73-04); author a block before closeout, since presence is enforced at ADR closeout per ADR-0.0.73 Boundary Invariant #4.
 
@@ -209,12 +209,21 @@ uv run gz closeout ADR-X.Y.Z --ceremony --next
 
 ### Step 7: GitHub Issues
 
-When the CLI presents CLI Step 8, close related issues:
+When the CLI presents CLI Step 8, review the ADR's open issues and close each one that the closeout resolves:
 
 ```bash
 gh issue list --search "ADR-X.Y.Z" --state open
-gh issue close <number> --comment "Resolved by ADR-X.Y.Z closeout."
 ```
+
+**GHI closure discipline (cross-reference):** Close each issue through
+`ghi-close`, one GHI, one disposition, one comment. Its dead-letter doctrine
+binds here: every GHI close MUST cite a real, registered destination
+(commit SHA, ADR ID in `gz adr report`, OBPI brief ID, or higher-numbered open
+GHI). A close comment pointing to an unregistered ADR draft or a vague
+"route to the team" is a dead-letter and is forbidden. If no destination exists
+at closeout time, leave the GHI open with a blocker comment and note it in
+the closeout summary. See `.gzkit/skills/ghi-close/SKILL.md` § Doctrine —
+NEVER, EVER, EVER dead-letter a GHI for the binding rule.
 
 Then advance via `--next`.
 
@@ -236,42 +245,16 @@ gh release create vX.Y.Z --title "vX.Y.Z" --notes-file RELEASE_NOTES.md
 
 After each step, advance via `--next`.
 
-**The sync-before-release order is only executable because the bump files its own
-evidence (GHI #739).** `audit_version_release` fails a declared version with no
-matching `vX.Y.Z` tag, and it runs inside `gz test` — which `gz git-sync --apply
---lint --test` runs *before* `gh release create` makes that tag. `gz closeout`
-therefore writes `docs/releases/RELEASE-v{version}.md` at bump time, the same way
-`gz patch release` writes `PATCH-v{version}.md`; both prefixes are accepted
-in-flight evidence. If that manifest is missing, the sync will refuse on a
-`version_release` violation — write it rather than reordering the ceremony (a
-tag created before the bump commit points at a tree lacking the bump).
+**The sync-before-release order depends on the bump filing its own evidence (GHI #739).** `audit_version_release` runs inside the sync and fails a declared version with no matching `vX.Y.Z` tag, so `gz closeout` writes `docs/releases/RELEASE-v{version}.md` at bump time as accepted in-flight evidence. If that manifest is missing, the sync refuses on a `version_release` violation — write it rather than reordering the ceremony (a tag created before the bump commit points at a tree lacking the bump).
 
 ### Step 9: Completion (Two-Sync Pattern)
 
 When the CLI outputs the ceremony completion summary (CLI Step 11), present it to the human, then run the **two-sync pattern** to commit the closeout cleanly. This mirrors `gz-obpi-pipeline`'s Stage 5 — every governance artifact must land in two reviewable commits.
 
 ```bash
-# Sync 1 — closeout artifacts: ceremony state, attestation receipt, ADR audit
-# updates, GHI close comments, release notes (if applicable).
-uv run gz git-sync --apply
-
-# Sync 2 — capture any residual artifacts from post-closeout hooks or
-# per-OBPI reconciliation sweeps. The closeout pipeline emits derived-state
-# reconciliation atomically with the attestation ledger event, so sync 2 is
-# commonly a no-op. Run it anyway — it is the mechanical check that the
-# working tree is truly clean after closeout.
-uv run gz git-sync --apply
+uv run gz git-sync --apply   # Sync 1 — closeout artifacts
+uv run gz git-sync --apply   # Sync 2 — residue check; commonly a no-op
 ```
-
-**GHI closure discipline (cross-reference):** When GHI close comments are
-committed as part of closeout (sync 1 above), apply `ghi-close` v2.4.0's
-dead-letter doctrine: every GHI close MUST cite a real, registered destination
-(commit SHA, ADR ID in `gz adr report`, OBPI brief ID, or higher-numbered open
-GHI). A close comment pointing to an unregistered ADR draft or a vague
-"route to the team" is a dead-letter and is forbidden. If no destination exists
-at closeout time, leave the GHI open with a blocker comment and note it in
-the closeout summary. See `.gzkit/skills/ghi-close/SKILL.md` § Doctrine —
-NEVER, EVER, EVER dead-letter a GHI for the binding rule.
 
 **Why two syncs:**
 
@@ -324,7 +307,7 @@ The ADR's outcome, demonstrated. Every row is a concrete invocation that exercis
 
 **3b. Quality Evidence — construction housekeeping**
 
-Cite canonical ARB-wrapped invocations with receipt IDs. These prove the codebase is healthy; they are not the ADR's product. Heavy-lane attestation fail-closes on missing receipt IDs per `AGENTS.md` § Attestation § Lane behavior; bare (non-ARB) commands do not satisfy this requirement. The canonical invocations are locked by `CANONICAL_STEP_COMMANDS` in `src/gzkit/arb/validator.py`.
+Cite canonical ARB-wrapped invocations with receipt IDs. These prove the codebase is healthy; they are not the ADR's product. Heavy-lane attestation fail-closes on missing receipt IDs per `AGENTS.md` § Attestation; bare (non-ARB) commands do not satisfy this requirement. The canonical invocations are locked by `CANONICAL_STEP_COMMANDS` in `src/gzkit/canonical_steps.py`.
 
 | Command | Result | Receipt ID | REQ Bindings | Notes |
 |---------|--------|------------|--------------|-------|
@@ -387,17 +370,7 @@ When the human requests corrections instead of attesting:
 
 ## Ceremony State
 
-State is persisted at `.gzkit/ceremonies/<ADR-ID>.json` by the CLI. Structure:
-
-| Field | Purpose |
-|-------|---------|
-| `adr_id` | ADR being closed out |
-| `current_step` | CeremonyStep enum value |
-| `completed_steps` | List of steps already finished |
-| `started_at` | Ceremony initialization timestamp |
-| `updated_at` | Last step advancement timestamp |
-| `attestation` | Human's attestation text (null until Step 5) |
-| `walkthrough_results` | Command → exit code + output summary |
+State is persisted at `.gzkit/ceremonies/<ADR-ID>.json` by the CLI. The `CeremonyState` model in `src/gzkit/commands/ceremony_state.py` is the authority for its fields; read the current step with `--ceremony-status` rather than from the file.
 
 **Resumption:** `gz closeout ADR-X.Y.Z --ceremony` checks for existing state and resumes from the last completed step. The agent does not need to re-run completed steps.
 
@@ -413,42 +386,18 @@ State is persisted at `.gzkit/ceremonies/<ADR-ID>.json` by the CLI. Structure:
 
 ## Ceremony Rules
 
-One-sided directives. Each row states the required behavior and names the failure shape it prevents (GHI #227: halved from 20 mirror-pair rows).
+One-sided directives. Each row states the required behavior and names the failure shape it prevents.
 
 1. **Drive the ceremony through CLI commands** (`--ceremony`, `--next`, `--attest`). The CLI state machine is authoritative — never reimplement step logic in prose, ad-hoc Python, raw SQL, or heredoc code, and never manually skip or add steps (the CLI handles Foundation skips and ordering).
 2. **Present CLI output without interpreting or concluding.** Evidence is presented; outcomes are not claimed. Passing checks are evidence, not a verdict.
 3. **Use the Evidence Summary Template** before requesting attestation. Every field populated; no freeform substitution.
 4. **Use only runbook/manpage-documented gzkit commands** for the walkthrough — no undocumented flags, no improvised invocations.
-5. **Run walkthrough commands one at a time and wait for acknowledgment** between each. The CLI enforces this at Step 5 EXECUTE by rendering exactly one demo per `--next` via `walkthrough_index` (GHI #260) — do not batch demos into parallel tool calls even in auto mode, and do not interleave the evidence-gathering ARB checks (lint/typecheck/tests/mkdocs) with the per-demo sequence; those belong to the Step 6 Evidence Summary and must be run separately from the demos.
+5. **Run walkthrough commands one at a time and wait for acknowledgment** between each — even in auto mode — and keep the evidence-gathering ARB checks out of the per-demo sequence (Step 4).
 6. **Wait for explicit human attestation.** Silence, "ok", or "looks good" is not attestation; ask "Completed, Completed-Partial, or Dropped?" and never auto-close based on passing checks.
 7. **Record attestation only through `uv run gz closeout ADR-X.Y.Z`.** Never hand-edit the ledger, never substitute "Completed - Partial" for what the human intended as a rejection (follow the Rejection Loop-Back procedure).
 8. **Stop on any failed walkthrough command.** Fix the root cause or escalate; do not advance, and do not work around CLI errors by reimplementing the step in prose.
-9. **Review and close related GitHub Issues after attestation.** Unlinked closure leaves evidence orphaned.
+9. **Review and close related GitHub Issues after attestation, each through `ghi-close`.** Unlinked closure leaves evidence orphaned.
 10. **Run `uv run gz git-sync --apply` before `gh release create` (non-Foundation) and after ceremony completion.** An unsynced attestation is a dangling ceremony.
-
----
-
-## Anti-Patterns
-
-### The Premature Close
-
-The agent runs walkthrough commands, they all pass, and the agent says "ADR-X.Y.Z is complete." No — the agent does not decide completion. The human attests. Passing checks are evidence, not a verdict.
-
-### The Silent Attestation
-
-The human says "ok" or "looks good" after reviewing walkthrough output. The agent records `--attest "Completed"`. No — vague acknowledgment is not attestation. Ask explicitly: "What attestation would you like to record? Completed, Completed-Partial, or Dropped?"
-
-### The Skipped Walkthrough
-
-OBPIs all passed their pipelines, so the agent skips the walkthrough to "save time." No — the walkthrough is the human's ADR-level verification surface. Individual OBPI attestations do not substitute for ADR-level review.
-
-### The Workaround
-
-A CLI command errors and the agent reimplements the step in prose or with ad-hoc code. No — CLI errors are diagnostic signals. Fix the root cause or escalate. The ceremony state is persisted and can resume after fixes.
-
-### The Dangling Ceremony
-
-The agent completes attestation but does not sync the repo. The attestation exists in local state but is not committed. This is the closeout equivalent of the pipeline's "Premature Summary" — the governance action happened but was never persisted.
 
 ---
 
@@ -461,6 +410,7 @@ The agent completes attestation but does not sync the repo. The attestation exis
 ## References
 
 - Ceremony code: `src/gzkit/commands/closeout_ceremony.py`
+- Ceremony state model: `src/gzkit/commands/ceremony_state.py`
 - Step renderers: `src/gzkit/commands/ceremony_steps.py`
 - Audit protocol: `docs/governance/GovZero/audit-protocol.md`
 - Gate definitions: `docs/governance/GovZero/charter.md`
