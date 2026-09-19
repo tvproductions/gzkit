@@ -21,8 +21,14 @@ gz cli audit [--json]
 
 ### Cross-Coverage (AST-driven)
 
-Discovers all CLI commands by parsing `cli/main.py` and verifies five documentation
-surfaces per command:
+Source discovery reads the `gzkit` package beneath `.gzkit.json`'s
+`paths.source_root` (default `src`), including split parser modules and
+command-package registrars. The configured root replaces the default for both
+command and flag discovery. This remains an audit of gzkit's own CLI, rather
+than discovery of an arbitrary adopter CLI.
+
+Discovers CLI commands by parsing those source modules and verifies five
+documentation surfaces per command:
 
 | Surface | Verification |
 |---------|-------------|

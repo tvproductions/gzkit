@@ -207,8 +207,8 @@ def _flatten_config_paths(config: GzkitConfig) -> set[str]:
 def _is_path_covered_by_manifest(literal: str, manifest_paths: set[str]) -> bool:
     """Check if a path literal is covered by any manifest entry.
 
-    A literal is covered if it exactly matches, is a prefix of, or is a
-    suffix of a known manifest path.
+    A literal is covered if it exactly matches, is a component-aligned ancestor
+    of, or is a descendant of a known manifest path.
     """
     normalized = literal.strip("/").replace("\\", "/")
     for mp in manifest_paths:
@@ -243,8 +243,9 @@ _EXEMPT_PATH_LITERALS: frozenset[str] = frozenset(
 #: The exact module-level constant name a module uses to declare which of its
 #: path literals are audit SUBJECTS rather than resource paths (GHI #938).
 #:
-#: The name is EXACT so that ``grep -rn _AUDIT_SUBJECT_LITERALS src/`` is a
-#: COMPLETE exemption census. Crediting any tuple of path-shaped strings would
+#: The name is EXACT so scanning the configured source population for
+#: ``_AUDIT_SUBJECT_LITERALS`` gives the declaration census. Crediting any
+#: tuple of path-shaped strings would
 #: make the census unbounded and let ordinary constants silently weaken the
 #: audit; pinned by
 #: ``TestModuleDeclaredAuditSubjects.test_a_differently_named_constant_grants_nothing``.
@@ -321,13 +322,14 @@ def _collect_source_path_literal_issues(
     path_prefix_re = __import__("re").compile(_PATH_SEGMENT_RE)
 
     for py_file in sorted(src_dir.rglob("*.py")):
+        rel_path = py_file.relative_to(project_root).as_posix()
         try:
             source = py_file.read_text(encoding="utf-8")
             tree = ast.parse(source, filename=str(py_file))
-        except (OSError, SyntaxError):
+        except (OSError, SyntaxError, UnicodeError) as exc:
+            _append_path_issue(issues, rel_path, f"source path audit could not inspect file: {exc}")
             continue
 
-        rel_path = py_file.relative_to(project_root).as_posix()
         declared_subjects = _collect_declared_audit_subjects(tree)
 
         for node in ast.walk(tree):

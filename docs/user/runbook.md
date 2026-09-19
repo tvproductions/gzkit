@@ -1322,8 +1322,10 @@ Canonical rules live at `.gzkit/rules/<slug>.md` (authored source-of-truth).
 (`importlib.resources.files("gzkit.rules")`) into `.gzkit/rules/`. Once
 written, `.gzkit/rules/` is the project canonical surface — edit files there.
 
-Run `gz agent sync control-surfaces` to propagate edits to vendor mirrors
-(`.claude/rules/`, `.github/instructions/`). Re-running `gz init` on an existing
+Run `gz agent sync control-surfaces` to propagate rule edits to the configured
+Claude rules mirror (`paths.claude_rules`, default `.claude/rules/`). See the
+[delivery table](manpages/agent-sync-control-surfaces.md) for other surface routes.
+Re-running `gz init` on an existing
 project adds new canonical rules without overwriting operator-edited files
 (`skip_existing=True`).
 

@@ -1561,9 +1561,9 @@ def run_line_endings_audit(project_root: Path) -> QualityResult:
 def run_smoke_tier(project_root: Path) -> QualityResult:
     """Run the smoke/BVT tier against its declared budget (GHI #724).
 
-    Fails closed when the tier is empty or exceeds the ceiling in
-    `.gzkit/rules/tests.md`. Cheap by construction — the tier exists precisely
-    so the build-verification loop fits a budget the full suite cannot.
+    Fails on discovery/test errors, budget breach, or an empty required tier;
+    an empty optional tier passes with an advisory. The tier exists so the
+    build-verification loop fits a budget the full suite cannot.
     """
     return run_command("uv run gz smoke", cwd=project_root)
 

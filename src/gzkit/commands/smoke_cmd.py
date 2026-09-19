@@ -11,7 +11,7 @@ from pathlib import Path
 
 from gzkit.commands.common import console
 from gzkit.config import GzkitConfig
-from gzkit.smoke import SMOKE_BUDGET_SECONDS, run_smoke, smoke_marked_files
+from gzkit.smoke import SMOKE_BUDGET_SECONDS, SmokeDiscoveryError, run_smoke
 
 _EXIT_OK = 0
 _EXIT_TEST_FAILURE = 1
@@ -34,10 +34,17 @@ def smoke_gate(project_root: Path | None = None, budget: float | None = None) ->
     root = project_root or Path.cwd()
     budget = SMOKE_BUDGET_SECONDS if budget is None else budget
 
-    if not smoke_marked_files(root):
+    try:
+        result, elapsed = run_smoke(root)
+    except (SmokeDiscoveryError, ImportError) as exc:
+        console.print("[red]Smoke discovery FAILED[/red]: the build does not verify.")
+        console.print(str(exc), markup=False)
+        console.print("Next step: fix test discovery/import errors, then re-run `uv run gz smoke`.")
+        return _EXIT_TEST_FAILURE
+    if result.wasSuccessful() and result.testsRun == 0:
         if not GzkitConfig.load(root / ".gzkit.json").smoke.required:
             console.print(
-                "[yellow]Smoke tier is empty[/yellow] — no test under `tests/` carries "
+                "[yellow]Smoke tier is empty[/yellow] — no discovered test under `tests/` carries "
                 "`@smoke`, and this project has not declared `smoke.required`.\n"
                 "Passing advisory: a freshly scaffolded project has no tier yet, and "
                 "gzkit does not impose one on adopters.\n"
@@ -47,7 +54,7 @@ def smoke_gate(project_root: Path | None = None, budget: float | None = None) ->
             )
             return _EXIT_OK
         console.print(
-            "[red]Smoke tier is empty[/red] — no test under `tests/` carries `@smoke`, "
+            "[red]Smoke tier is empty[/red] — no discovered test under `tests/` carries `@smoke`, "
             "but this project declares `smoke.required`.\n"
             "An empty tier satisfies any budget trivially, which is the green-by-emptiness "
             "shape `gz validate --qc-binding` refuses (ADR-0.0.74 Boundary Invariant #6).\n"
@@ -56,7 +63,6 @@ def smoke_gate(project_root: Path | None = None, budget: float | None = None) ->
         )
         return _EXIT_POLICY_BREACH
 
-    result, elapsed = run_smoke(root)
     ran = result.testsRun
     console.print(f"\nRan {ran} smoke test(s) in {elapsed:.2f}s (budget {budget:.0f}s)")
 
@@ -73,9 +79,11 @@ def smoke_gate(project_root: Path | None = None, budget: float | None = None) ->
             f"[red]Smoke budget breached[/red]: {elapsed:.2f}s over a {budget:.0f}s ceiling.\n"
             "`.gzkit/rules/tests.md` § General Rules binds this tier to the ceiling so the "
             "build-verification loop stays cheap enough to actually run. The full unit tier "
-            "has its own, larger budget precisely so this one can stay small.\n"
+            "has no fixed time ceiling.\n"
             "Next step: move the slow member out of the smoke tier (drop its `@smoke`), or "
-            "amend the ceiling in `.gzkit/rules/tests.md` with rationale."
+            "use `--budget SECONDS` for an explicit override. A permanent ceiling amendment "
+            "must update `SMOKE_BUDGET_SECONDS` in `src/gzkit/smoke.py` and the "
+            "policy documentation together, with rationale."
         )
         return _EXIT_POLICY_BREACH
 

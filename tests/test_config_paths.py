@@ -455,7 +455,10 @@ class TestModuleDeclaredAuditSubjects(unittest.TestCase):
         from gzkit.commands.config_paths import load_manifest
 
         project_root = Path(__file__).resolve().parent.parent
+        config = GzkitConfig.load(project_root / ".gzkit.json")
+        source_package = project_root / config.paths.source_root / "gzkit"
+        self.assertTrue(any(source_package.rglob("*.py")), "configured source population is empty")
         issues = _collect_source_path_literal_issues(
-            project_root, load_manifest(project_root), GzkitConfig()
+            project_root, load_manifest(project_root), config
         )
         self.assertEqual(issues, [], f"unmapped path literals: {issues}")

@@ -24,6 +24,8 @@ gz check-config-paths [--json]
   source tree; manifest mappings and configured paths determine literal coverage.
   A module's declared audit-subject exemptions apply only to that module.
   The default source root is `src`; a configured replacement is scanned instead.
+  A discovered source file that cannot be read, decoded or parsed is reported as
+  an issue and makes the audit fail; other readable files are still checked.
 
 ---
 

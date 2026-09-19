@@ -124,10 +124,11 @@ def ensure_initialized() -> GzkitConfig:
 
 
 def load_manifest(project_root: Path) -> dict[str, Any]:
-    """Load the gzkit manifest."""
-    manifest_file = project_root / ".gzkit" / "manifest.json"
+    """Load the manifest at the project's configured location without fallback."""
+    config = GzkitConfig.load(project_root / ".gzkit.json")
+    manifest_file = project_root / config.paths.manifest
     if not manifest_file.is_file():
-        msg = "Missing .gzkit/manifest.json"
+        msg = f"Missing {Path(config.paths.manifest).as_posix()}"
         raise GzCliError(msg)  # noqa: TRY003
     return json.loads(manifest_file.read_text(encoding="utf-8"))
 

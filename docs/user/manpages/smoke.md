@@ -32,18 +32,24 @@ any budget trivially, which is the green-by-emptiness shape
 an empty tier passes with an advisory: adopters opt into the non-emptiness policy.
 Populated tiers still run and enforce their budget regardless of that setting.
 
+Membership and emptiness come from discovered test methods carrying the runtime
+marker, including when the decorator is imported under an alias. A marker on a
+helper or in source text does not populate the tier. Discovery/import failures
+exit 1 instead of being filtered into a passing empty or partial suite.
+The reported budget duration measures test execution; discovery is not timed.
+
 ## Options
 
 | Option | Description |
 |--------|-------------|
-| `--budget SECONDS` | Override the rule-declared ceiling (default: 60). Useful for probing headroom; the committed gate uses the rule's value |
+| `--budget SECONDS` | Override the execution ceiling. The default is `SMOKE_BUDGET_SECONDS` in `src/gzkit/smoke.py`; the rule documents the policy, rather than supplying a runtime value |
 
 ## Exit Codes
 
 | Code | Meaning |
 |------|---------|
 | 0 | Smoke tier passed within budget, or an empty non-required tier passed with an advisory |
-| 1 | One or more smoke tests failed — the build does not verify |
+| 1 | Test discovery/import failed, or one or more smoke tests failed — the build does not verify |
 | 3 | Policy breach: a required tier is empty, or the run exceeded its budget |
 
 ## Adding a smoke test

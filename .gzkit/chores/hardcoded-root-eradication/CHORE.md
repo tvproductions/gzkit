@@ -44,9 +44,11 @@ _AUDIT_SUBJECT_LITERALS: tuple[str, ...] = (".github/workflows/",)
 
 `gz check-config-paths` credits a literal that its own module declares this
 way. The scoping is the safety property — a declaration never reaches another
-module — and the constant name is exact, so
-`grep -rn _AUDIT_SUBJECT_LITERALS src/` is a COMPLETE exemption census with
-every entry sitting beside its justification. The match is exact, never a
+module — and the constant name is exact. Search the configured
+`paths.source_root` population for `_AUDIT_SUBJECT_LITERALS` to enumerate
+declarations beside their justifications. The `src/` scan examples below assume
+the default layout; substitute the configured source root after relocation.
+The match is exact, never a
 prefix: declaring `.github` buys no blanket exemption for `.github/**`.
 
 This is a carve-out in the doctrine's SCOPE, not a waiver of it. A literal that
@@ -101,6 +103,9 @@ def load_datasets(*, data_dir: Path | None = None) -> list[Dataset]:
 Resolution order: explicit parameter > config file > manifest > sensible default.
 
 ## Scan Commands
+
+These examples use the default `paths.source_root=src`. Read `.gzkit.json`
+first and substitute its configured source root throughout when different.
 
 ```bash
 # Module-level root derivations

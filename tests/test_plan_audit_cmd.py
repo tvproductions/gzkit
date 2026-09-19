@@ -502,9 +502,8 @@ class TestPathWithinAllowed(unittest.TestCase):
     def test_subpath_match(self) -> None:
         self.assertTrue(_path_within_allowed("src/gzkit/commands/foo.py", ["src/gzkit/"]))
 
-    def test_no_match_returns_true(self) -> None:
-        # Current implementation returns True when path doesn't match (permissive)
-        self.assertTrue(_path_within_allowed("other/path.py", ["src/gzkit/"]))
+    def test_no_match_is_outside_scope(self) -> None:
+        self.assertFalse(_path_within_allowed("other/path.py", ["src/gzkit/"]))
 
 
 class TestPlanAuditCmdPass(SilencedConsoleTestCase):

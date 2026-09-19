@@ -109,7 +109,7 @@ def generate_manifest(
     Args:
         project_root: Project root directory.
         config: Project configuration.
-        structure: Optional override for detected structure.
+        structure: Optional explicit override; otherwise configured roots override discovery.
 
     Returns:
         Manifest dictionary.
@@ -119,6 +119,13 @@ def generate_manifest(
 
     if structure is None:
         structure = detect_project_structure(project_root)
+        structure.update(
+            {
+                name: getattr(config.paths, name)
+                for name in structure
+                if name in config.paths.model_fields_set
+            }
+        )
 
     manifest: dict[str, Any] = {
         "schema": "gzkit.manifest.v2",
@@ -189,7 +196,7 @@ def generate_manifest(
 
     # Preserve authored blocks not represented in the template — currently
     # just `rules.unscoped_allowlist` (ADR-0.0.20). Read-only merge.
-    existing_path = project_root / ".gzkit" / "manifest.json"
+    existing_path = project_root / config.paths.manifest
     if existing_path.exists():
         try:
             existing = json.loads(existing_path.read_text(encoding="utf-8"))
@@ -203,15 +210,19 @@ def generate_manifest(
     return manifest
 
 
-def write_manifest(project_root: Path, manifest: dict[str, Any]) -> None:
-    """Write manifest to .gzkit/manifest.json.
+def write_manifest(
+    project_root: Path, manifest: dict[str, Any], config: GzkitConfig | None = None
+) -> None:
+    """Write the manifest to its configured project location.
 
     Args:
         project_root: Project root directory.
         manifest: Manifest dictionary.
+        config: Effective config; otherwise load it from the project root.
 
     """
-    manifest_path = project_root / ".gzkit" / "manifest.json"
+    config = config if config is not None else GzkitConfig.load(project_root / ".gzkit.json")
+    manifest_path = project_root / config.paths.manifest
     ensure_dir(manifest_path.parent)
 
     write_text_if_changed(manifest_path, json.dumps(manifest, indent=2) + "\n")
@@ -1041,8 +1052,8 @@ def sync_all(
 
     # Generate manifest
     manifest = generate_manifest(project_root, config)
-    write_manifest(project_root, manifest)
-    updated.append(".gzkit/manifest.json")
+    write_manifest(project_root, manifest, config)
+    updated.append(config.paths.manifest)
 
     updated.append(sync_codex_config(project_root, config))
     if not vendor_aware or config.vendors.codex.enabled:

@@ -32,44 +32,32 @@ verification:
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.36.0-convergence-moment-cross-family-critic/ADR-0.36.0-convergence-moment-cross-family-critic.md`
-- **Checklist Item:** #7 - "OBPI-0.36.0-07: **verdict-resolution-transition** — Step 4b's resolution shape generalized without touching 4b — a refuted verdict with no recorded resolution blocks, and the resolution names what was fixed and how the critic's check was re-run"
+- **Checklist Item:** #7 - "OBPI-0.36.0-07: **verdict-resolution-transition** — Step 4b's resolution shape generalized without touching 4b — refuting verdicts block until an independent re-review of the current decision returns a non-refuting verdict; the resolution records what was fixed and how the check was re-run"
 
 **Status:** Draft
 
 ## Objective
 
-Answer the question Step 4b already answers, for decisions Step 4b never sees:
-**what happens after a critic says no.** § Target Scope states the unit
-definition: *"Step 4b's resolution shape generalized without touching 4b: a
-`refuted` verdict with no recorded resolution blocks, and the resolution must
-state both what was fixed and how the critic's own check was re-run, durable in
-the ledger rather than in a transcript."*
+Answer what happens after a critic refutes a decision. Generalize the current
+Step-4b rule without changing Step 4b: resolution prose records remediation;
+it does not clear a refutation. A subsequent independent re-review of the
+current decision must produce a non-refuting verdict before it can proceed.
 
-Every word of that is already implemented once, forty lines of one file away, and
-that file is the one this brief may not touch. Read it and generalize from it:
+Read `src/gzkit/commands/obpi_complete_adversarial.py` as the existing model:
 
-- The verdict vocabulary is `ADVERSARY_VERDICTS` at
-  `src/gzkit/commands/obpi_complete_adversarial.py:47` —
-  `refuted | not-refuted | refuted-with-caveats | degraded-human-only`.
-- The blocking rule is `_enforce_adversarial_validation` at line 282:
-  `if verdict == "refuted" and not resolution:` → fail, with the message
-  *"A known refutation must never be handed to the operator dressed as clean."*
-- The durability channel is `_build_adversarial_event` at line 137, which writes
-  `resolution` onto an `adversarial_validation` ledger event rather than leaving
-  it in a transcript. The docstring for the enforcement names why: without it,
-  *"one that skipped 4b and one that was refuted and attested anyway left
-  indistinguishable durable records — the verdict lived only in a transcript or
-  a vendor cache."*
+- `ADVERSARY_VERDICTS` supplies the shared verdict vocabulary.
+- `REFUTATION_VERDICTS` includes `refuted` and `refuted-with-caveats`.
+  `_enforce_adversarial_validation` blocks both even when resolution prose is
+  supplied; the original verdict must not be relabeled as clean.
+- `_build_adversarial_event` preserves the review and resolution in the ledger.
+  The new decision transition must likewise retain the original refutation and
+  bind the subsequent independent review to the current OBPI-05 envelope.
 
-**One thing is deliberately not copied.** 4b takes the resolution as a single
-free-text string whose placeholder demands two facts at once:
-`--adversary-resolution '<what was fixed and how the adversary's check was
-re-run>'`. A single string asked for two facts is answered with one — the
-cheaper one, the fix, with the re-run silently unaccounted. The ADR's Target
-Scope says the resolution *"must state **both** what was fixed **and** how the
-critic's own check was re-run"*; this brief makes that structural by taking two
-required fields instead of one. That is generalization in the direction the ADR
-points, and it is the difference between a rule and a rule that holds.
+The resolution retains **two distinct non-empty fields**: what was fixed and
+how the critic's own check was re-run. These fields document the repair and
+review; neither field, nor a caller's claim that a review passed, substitutes
+for independently recorded review evidence. Missing, stale, or differently
+bound review evidence cannot clear the transition.
 
 **The boundary is the point of the unit, not an aside.** Boundary Invariant #1
 fences this brief by name. Operator canon, verbatim: *"we will NOT alter the OBPI
@@ -124,11 +112,11 @@ the heightened walkthrough, including the `arb-step-security-scan-*` receipt.
 ## Requirements (FAIL-CLOSED)
 
 1. NEVER: Edit `src/gzkit/commands/obpi_complete_adversarial.py`, the `gz obpi` parser surface, or any Step-4b gate. Boundary Invariant #1. If a claim in this brief can only be made true by editing 4b, the claim is wrong, not 4b.
-2. ALWAYS: Block on a `refuted` verdict with no recorded resolution. This is 4b's rule at `obpi_complete_adversarial.py:282` generalized to any decision, and it carries 4b's reason unchanged: *"A known refutation must never be handed to the operator dressed as clean."*
-3. ALWAYS: Require the resolution as **two distinct non-empty fields** — what was fixed, and how the critic's own check was re-run. NEVER accept one free-text blob for both. A single field asked for two facts is answered with the cheaper one.
-4. ALWAYS: Write the resolution to the ledger as a typed event before the decision proceeds. NEVER let a transcript, a chat message, or an in-memory object stand as the record. § The operator predicted this exact loss is the standing evidence: *"multiple audio tape recordings of audio tape recordings."*
+2. ALWAYS: Block `refuted` and `refuted-with-caveats` regardless of resolution prose. Clearing a prior refutation requires a subsequent independent re-review returning a non-refuting verdict for the current decision envelope. Preserve the original verdict; never relabel it or treat caller-supplied resolution text as review evidence.
+3. ALWAYS: When resolving a prior refutation, require the resolution as **two distinct non-empty fields** — what was fixed, and how the critic's own check was re-run. NEVER accept one free-text blob for both. A single field asked for two facts is answered with the cheaper one.
+4. ALWAYS: When resolving a prior refutation, write the resolution and its independently recorded re-review evidence binding to the ledger as a typed event before the decision proceeds, preserving the original refutation. NEVER let a transcript, a chat message, or an in-memory object stand as the record. § The operator predicted this exact loss is the standing evidence: *"multiple audio tape recordings of audio tape recordings."*
 5. ALWAYS: Source the verdict vocabulary from the single existing definition (`ADVERSARY_VERDICTS`) rather than restating the four tokens. A second, differently-spelled vocabulary for the same concept is the failure OBPI-01's REQ-0.36.0-01-04 already fences on the schema side.
-6. ALWAYS: Bind the resolution to the OBPI-05 envelope id of the decision it resolves. A resolution that names no subject cannot be checked against the decision the operator actually saw.
+6. ALWAYS: Bind the resolution and the independent re-review evidence to the current OBPI-05 envelope of the decision it resolves. Reject absent, stale, or other-envelope review evidence. A resolution that names no subject cannot be checked against the decision the operator actually saw.
 7. ALWAYS: Land the event on all four coupled surfaces in the same change — typed model, factory, `schemas/ledger.json` entry, and either a graph handler or a written `_NO_GRAPH_IMPACT` rationale (`AGENTS.md` § DO IT RIGHT 1a, coupled-surface coherence). Landing three of four leaves `gz validate --ledger` failing on the first real event.
 8. NEVER: Add a `gz` verb, wire a hook, or edit a generated mirror.
 
@@ -177,7 +165,7 @@ the heightened walkthrough, including the `arb-step-security-scan-*` receipt.
 **Existing Code (understand current state):**
 
 - [ ] `src/gzkit/commands/obpi_complete_adversarial.py:47-52` — `ADVERSARY_VERDICTS`. Read the four tokens and import them; do not retype them (requirement #5).
-- [ ] `src/gzkit/commands/obpi_complete_adversarial.py:238-292` — `_enforce_adversarial_validation`, including the docstring's account of why an unrecorded verdict is indistinguishable from a skipped one, and the `verdict == "refuted" and not resolution` block at line 282 with its exact operator-facing message.
+- [ ] `src/gzkit/commands/obpi_complete_adversarial.py::_enforce_adversarial_validation` — read the unconditional `REFUTATION_VERDICTS` block, the independent re-review recovery, and the requirement to preserve the original verdict.
 - [ ] `src/gzkit/commands/obpi_complete_adversarial.py:137-176` — `_build_adversarial_event`. Note the optional-field pattern (`if value:` — omitted rather than emitted as null, *"matching `_EventBase._serialize`"*); the new event follows it.
 - [ ] `src/gzkit/ledger_events.py::obpi_withdrawn_event` — read one factory end to end for the house shape before adding another.
 - [ ] `src/gzkit/events.py::_EventBase` — the frozen, `extra="forbid"` base and the `schema`/`schema_` mapping every typed event inherits.
@@ -251,35 +239,23 @@ uv run gz covers
 
 ## Demo
 
-<!-- THE YIELDED PRODUCT, not housekeeping. Concrete, runnable invocations
-     that demonstrate the capability this OBPI delivers — e.g. an actual
-     diagnosis run against a real file, the `--json` form, an auto-chain
-     trigger. The closeout ceremony walkthrough harvests this section
-     (parser-validated; unregistered verbs are dropped). Prefer real paths
-     and arguments over `<placeholder>` syntax. `--help` is not a demo. -->
+This capability remains unbuilt. The future implementation must demonstrate
+these cases against recorded review evidence; the examples below specify
+outcomes, not a currently available module or command:
 
-```bash
-# A refuted verdict with no resolution is blocked. Non-zero exit, and the
-# message names both missing halves.
-uv run python -m gzkit.second_opinion_resolution close --envelope-id 3f2b91c07d4e5a68 --verdict refuted
+| Current evidence | Resolution fields | Required outcome |
+| --- | --- | --- |
+| `refuted` | Neither, one, or both supplied | Blocked |
+| `refuted-with-caveats` | Both supplied | Blocked |
+| Prior refutation plus only prose claiming a clean re-run | Both supplied | Blocked |
+| Prior refutation plus stale or other-envelope independent review | Both supplied | Blocked |
+| Prior refutation plus independent non-refuting re-review of the current envelope | Missing either field | Blocked, naming the missing field |
+| Prior refutation plus independent non-refuting re-review of the current envelope | Both supplied | Clears only after durable resolution and review binding; original refutation retained |
+| Initial independent `not-refuted` review of the current envelope | No resolution needed | Clears |
 
-# Half a resolution is still blocked: what was fixed, with no account of the
-# re-run, is the cheaper answer requirement #3 refuses.
-uv run python -m gzkit.second_opinion_resolution close --envelope-id 3f2b91c07d4e5a68 --verdict refuted --fixed "Narrowed the envelope store root to the configured receipts pattern."
-
-# Both halves supplied: the transition clears and the resolution is written to
-# the ledger, not to this terminal.
-uv run python -m gzkit.second_opinion_resolution close --envelope-id 3f2b91c07d4e5a68 --verdict refuted --fixed "Narrowed the envelope store root to the configured receipts pattern." --recheck "Re-ran the critic's own check: codex exec --sandbox read-only against src/gzkit/arb/paths.py; it returned not-refuted."
-
-# The record survives the process. Read it back from the system-of-record.
-uv run gz state --json
-
-# The ledger still validates with the new event type present.
-uv run gz validate --ledger
-
-# The 4b path this brief generalized from is byte-unchanged (Boundary Invariant #1).
-uv run git diff --stat HEAD -- src/gzkit/commands/obpi_complete_adversarial.py
-```
+The implementation demonstration must read back the typed ledger event and its
+review binding after process exit, and show that the Step-4b surfaces remain
+unchanged. No runnable second-opinion module is claimed by this draft correction.
 
 ## Acceptance Criteria
 
@@ -289,9 +265,9 @@ Each checkbox MUST carry a deterministic REQ ID:
 REQ-<semver>-<obpi_item>-<criterion_index>
 -->
 
-- [ ] REQ-0.36.0-07-01 [BEHAVIOR]: Given a `refuted` verdict with no recorded resolution, when the transition is attempted, then it is blocked and nothing is written — and given the same verdict with a complete resolution, then it clears. A `not-refuted` verdict clears without a resolution.
-- [ ] REQ-0.36.0-07-02 [BEHAVIOR]: Given a resolution supplying only what was fixed, or only how the critic's check was re-run, when the transition is attempted, then it is blocked naming the missing half — a single combined free-text string does not satisfy the contract.
-- [ ] REQ-0.36.0-07-03 [BEHAVIOR]: Given a cleared refuted verdict, when the process has exited, then the ledger carries a typed resolution event holding both fields and the OBPI-05 envelope id, parseable through the `TypedLedgerEvent` union — an in-memory or transcript-only record fails this criterion.
+- [ ] REQ-0.36.0-07-01 [BEHAVIOR]: Given `refuted` or `refuted-with-caveats`, the transition remains blocked regardless of resolution prose. A prior refutation clears only after a subsequent independent non-refuting re-review of the current decision envelope, with its original verdict retained. Missing, stale, or other-envelope review evidence blocks. An initial independent `not-refuted` review bound to the current envelope clears without a resolution.
+- [ ] REQ-0.36.0-07-02 [BEHAVIOR]: Given a prior refutation and a resolution supplying only what was fixed, or only how the critic's check was re-run, the transition is blocked naming the missing half, even with a subsequent independent non-refuting re-review. A single combined free-text string does not satisfy the contract; two fields alone cannot clear the refutation.
+- [ ] REQ-0.36.0-07-03 [BEHAVIOR]: Given a transition cleared after an independent non-refuting re-review, after process exit the ledger retains the original refutation and a typed resolution event holding both fields, the current OBPI-05 envelope id, and the independent re-review evidence binding, parseable through the `TypedLedgerEvent` union. An in-memory or transcript-only record fails this criterion.
 - [ ] REQ-0.36.0-07-04 [SUPPORT]: `src/gzkit/schemas/ledger.json` carries the resolution event entry paired with its factory in `src/gzkit/ledger_events.py`, so the ledger validator admits the event rather than rejecting it as unknown. Witnessed by `artifact_edited` citing `src/gzkit/schemas/ledger.json` + `gz validate --event-schemas`.
 - [ ] REQ-0.36.0-07-05 [STRUCTURAL-FENCE]: Across the delivered set, `src/gzkit/commands/obpi_complete_adversarial.py`, the `gz obpi` parser surface, and every Step-4b gate are unchanged — this unit reads 4b's resolution shape and generalizes it without editing 4b — parent ADR § Boundary Invariants #1 (OBPI-07, OBPI-09).
 
@@ -368,7 +344,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
 <!-- Record GitHub defect linkage when defects are discovered during this OBPI.
      Use one bullet per issue so status surfaces can preserve traceability. -->
 
-_No defects tracked._
+- GHI #960 — 2026-09-19 draft-only reconciliation of the retired prose-clears-refutation rule with current independent re-review enforcement. Operator (`g0`) explicitly authorized “Draft reconciliation: correct OBPI-0.36.0-07’s requirements and examples without implementing or activating that ADR.” Requirements, examples, and coupled parent text corrected; this records no implementation, completion, or Gate-5 attestation. Status remains Draft.
 
 ## Human Attestation
 

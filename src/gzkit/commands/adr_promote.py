@@ -423,39 +423,50 @@ def adr_promote_cmd(
     _print_adr_promotion_applied(project_root, promotion_plan)
 
     obpi_plans = cast(list[dict[str, Any]], promotion_plan["obpi_plans"])
+    target_adr_id = cast(str, promotion_plan["target_adr_id"])
     scaffold_count, structure_errors = _check_scaffold_obpis(project_root, promotion_plan)
     if structure_errors and not force:
         console.print(
-            f"\n[red]Promotion blocked:[/red] {len(structure_errors)} structural error(s):"
+            "\n[red]Promotion applied; quality checks failed:[/red] "
+            f"{len(structure_errors)} structural error(s):"
         )
         for err in structure_errors:
             console.print(f"  - {escape(err)}")
-        console.print("  Pass --force to override.")
+        _print_promotion_quality_recovery(target_adr_id)
         raise SystemExit(1)
     if scaffold_count and not force:
         console.print(
-            f"\n[red]Promotion blocked:[/red] {scaffold_count}/{len(obpi_plans)} OBPI briefs "
+            "\n[red]Promotion applied; quality checks failed:[/red] "
+            f"{scaffold_count}/{len(obpi_plans)} OBPI briefs "
             f"contain template scaffold -- author briefs before implementation."
         )
-        console.print("  Pass --force to override.")
+        _print_promotion_quality_recovery(target_adr_id)
         raise SystemExit(1)
 
     # Quality gate: deterministic ADR/OBPI evaluation
     if not force:
         from gzkit.adr_eval import EvalVerdict, evaluate_adr  # noqa: PLC0415
 
-        target_adr_id = cast(str, promotion_plan["target_adr_id"])
         eval_result = evaluate_adr(project_root, target_adr_id)
         if eval_result.verdict != EvalVerdict.GO:
             console.print(
-                f"\n[red]Promotion blocked:[/red] eval verdict "
+                "\n[red]Promotion applied; quality checks failed:[/red] eval verdict "
                 f"{eval_result.verdict.replace('_', ' ')}"
             )
             console.print(f"  Weighted total: {eval_result.adr_weighted_total:.2f}/4.0")
             for item in eval_result.action_items[:5]:
                 console.print(f"  - {item}")
-            console.print(f"  Run: gz adr eval {target_adr_id}")
+            _print_promotion_quality_recovery(target_adr_id)
             raise SystemExit(3)
+
+
+def _print_promotion_quality_recovery(target_adr_id: str) -> None:
+    """Recover the retained package rather than repeat its recorded promotion."""
+    console.print("  Created files, the Superseded pool source and ledger events are retained.")
+    console.print("  Author the promoted package, then recheck it:")
+    console.print(f"    uv run gz obpi validate --adr {target_adr_id} --authored")
+    console.print(f"    uv run gz adr evaluate {target_adr_id}")
+    console.print("  Do not repeat promotion: the source is already promoted, even with --force.")
 
 
 def adr_eval_cmd(adr_id: str, as_json: bool, write_scorecard: bool) -> None:

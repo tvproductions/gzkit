@@ -82,6 +82,15 @@ mirrors, including paths beginning with `./`, with canonical edit advice for
 mirrors. Brief CREATE declarations exempt missing paths only. These checks
 run after promotion writes; the existing `--force` quality override still applies.
 
+If those checks fail, the promotion **has already been applied**: the target
+ADR and briefs, the Superseded pool source, and promotion ledger events remain.
+Structural/path/scaffold failures exit `1`; a non-GO evaluation exits `3`.
+Author the created package and run `gz obpi validate --adr <TARGET-ADR> --authored`
+and `gz adr evaluate <TARGET-ADR>` against that target. These commands recheck
+the existing artifacts; they do not repeat promotion. Do not retry promotion
+with `--force`: the recorded source rename refuses another promotion. `--force`
+only overrides the checks when supplied on the initial application.
+
 ---
 
 ## Examples

@@ -9,6 +9,7 @@ from types import MappingProxyType
 from typing import NamedTuple
 
 from gzkit.commands.common import get_project_root
+from gzkit.config import GzkitConfig
 from gzkit.doc_coverage.manifest import MANPAGE_DIR
 from gzkit.doc_coverage.models import CommandCoverage, CoverageReport, OrphanedDoc, SurfaceResult
 from gzkit.governance.deprecations import find_deprecated_verb
@@ -474,8 +475,10 @@ def find_orphaned_docs(
 
 
 def _read_cli_sources(project_root: Path) -> str:
-    """Read cli/main.py, all parser modules, and command-package registrars."""
-    cli_dir = project_root / "src" / "gzkit" / "cli"
+    """Read gzkit parser and registrar sources beneath the configured source root."""
+    config = GzkitConfig.load(project_root / ".gzkit.json")
+    package_dir = project_root / config.paths.source_root / "gzkit"
+    cli_dir = package_dir / "cli"
     main_source = (cli_dir / "main.py").read_text(encoding="utf-8")
     parts = [main_source]
     for parser_file in sorted(cli_dir.glob("parser_*.py")):
@@ -483,7 +486,7 @@ def _read_cli_sources(project_root: Path) -> str:
     # Some command groups register parsers from their package __init__.py
     # (e.g. commands/content/__init__.py owns register_content_parsers).
     # Include those so the AST scanner discovers their leaf subcommands.
-    commands_dir = project_root / "src" / "gzkit" / "commands"
+    commands_dir = package_dir / "commands"
     for cmd_init in sorted(commands_dir.glob("*/__init__.py")):
         text = cmd_init.read_text(encoding="utf-8")
         if "register_" in text and "add_parser" in text:

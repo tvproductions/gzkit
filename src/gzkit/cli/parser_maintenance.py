@@ -120,9 +120,11 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Run the smoke/BVT tier against its declared time budget",
         description=(
             "Run only tests marked with the @smoke decorator and fail closed if the "
-            "run exceeds the budget in .gzkit/rules/tests.md, or if the tier is empty. "
+            "run exceeds the budget, or if the discovered tier is empty and "
+            "smoke.required is true. An optional empty tier passes with an advisory. "
+            "Discovery/import failures fail build verification. "
             "This is the bounded subset the 60s ceiling was written for; the full "
-            "unittest tier carries its own, larger budget (GHI #724)."
+            "unittest tier has no fixed time ceiling (GHI #724)."
         ),
         epilog=build_epilog(["gz smoke", "gz smoke --budget 30"]),
     )
@@ -130,7 +132,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         "--budget",
         type=float,
         default=None,
-        help="Override the ceiling in seconds (default: the rule-declared budget)",
+        help="Override the ceiling in seconds (default: SMOKE_BUDGET_SECONDS in gzkit.smoke)",
     )
     p_smoke.set_defaults(func=lambda a: _lazy("smoke_cmd")(budget=a.budget))
     commands.add_parser(

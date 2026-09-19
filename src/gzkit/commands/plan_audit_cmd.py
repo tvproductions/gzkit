@@ -1,10 +1,11 @@
 """Plan-audit CLI: structural prerequisite checks for OBPI plan alignment."""
 
 import json
+import posixpath
 import re
 import sys
 from datetime import UTC, datetime
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 from gzkit.commands.common import console
 from gzkit.governance.brief_path_validity import (
@@ -369,26 +370,36 @@ def _scan_sibling_adr_collisions(
 
 
 def _extract_plan_paths(plan_file: Path) -> list[str]:
-    """Extract file paths mentioned in plan (lines with src/ or tests/ or docs/)."""
+    """Read explicit code-token paths plus legacy unquoted src/tests/docs paths."""
     content = plan_file.read_text(encoding="utf-8")
-    paths: list[str] = []
-    for line in content.splitlines():
-        for prefix in ("src/", "tests/", "docs/"):
-            if prefix in line:
-                for token in line.split():
-                    token = token.strip("`").strip("*").strip(",").strip(")")
-                    if token.startswith(prefix) or token.startswith(f"./{prefix}"):
-                        paths.append(token.lstrip("./"))
-    return list(set(paths))
+    code_token = r"`([^`\n]+)`"
+    tokens = re.findall(code_token, content)
+    for word in re.sub(code_token, "", content).split():
+        token = word.strip("`*,)").rstrip(".")
+        if token.removeprefix("./").startswith(("src/", "tests/", "docs/")):
+            tokens.append(token)
+    paths: set[str] = set()
+    for token in tokens:
+        if any(char.isspace() for char in token) or "://" in token:
+            continue
+        token = re.sub(r":\d+(?::\d+|-\d+)?$", "", token)
+        if "/" in token or re.fullmatch(r"[.\w-]+\.[A-Za-z][\w-]*", token):
+            paths.add(posixpath.normpath(token))
+    return sorted(paths)
 
 
 def _path_within_allowed(path: str, allowed: list[str]) -> bool:
-    """Check if a path falls within any allowed path."""
+    """Match project-relative paths against literal subtrees or declared globs."""
+    candidate = PurePosixPath(posixpath.normpath(path))
+    if candidate.is_absolute() or ".." in candidate.parts:
+        return False
     for allowed_path in allowed:
-        allowed_clean = allowed_path.rstrip("/")
-        if path == allowed_clean or path.startswith(allowed_clean + "/"):
+        allowed_clean = posixpath.normpath(allowed_path)
+        if candidate.full_match(allowed_clean, case_sensitive=True):
             return True
-    return True  # If we can't determine, don't block
+        if candidate.is_relative_to(PurePosixPath(allowed_clean)):
+            return True
+    return False
 
 
 def _gather_brief_path_gaps(

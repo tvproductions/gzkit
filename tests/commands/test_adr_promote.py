@@ -1,6 +1,8 @@
 import json
 import unittest
 from pathlib import Path
+from typing import Any
+from unittest.mock import patch
 
 from gzkit.cli import main
 from gzkit.commands.adr_promote_utils import (
@@ -8,6 +10,7 @@ from gzkit.commands.adr_promote_utils import (
     _parse_top_level_markdown_bullets,
     _promoted_checklist_from_pool,
 )
+from gzkit.commands.specify_cmd import _build_obpi_plan
 from gzkit.config import GzkitConfig
 from gzkit.ledger import (
     Ledger,
@@ -207,8 +210,8 @@ class TestAdrPromoteCommand(unittest.TestCase):
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("not a pool entry", result.output)
 
-    def test_adr_promote_blocks_on_non_go_eval(self) -> None:
-        """Promotion fails closed when generated package does not reach GO."""
+    def test_adr_promote_reports_non_go_eval_after_applying(self) -> None:
+        """A non-GO package retains the existing post-apply failure exit."""
         runner = CliRunner()
         with runner.isolated_filesystem():
             _quick_init()
@@ -230,8 +233,99 @@ class TestAdrPromoteCommand(unittest.TestCase):
                 ],
             )
             self.assertEqual(result.exit_code, 3, msg=result.output)
-            self.assertIn("Promotion blocked", result.output)
+            self.assertIn("Promotion applied; quality checks failed", result.output)
             self.assertIn("eval verdict CONDITIONAL GO", result.output)
+
+
+class TestAdrPromoteQualityRecovery(unittest.TestCase):
+    """GHI #1058: a post-write failure must recover against the applied package."""
+
+    def test_quality_failures_report_retained_state_and_working_recovery(self) -> None:
+        target_id = "ADR-0.6.0-sample-work"
+        for fault in ("structure", "scaffold", "path", "evaluation"):
+            with self.subTest(fault=fault):
+                runner = CliRunner()
+                with runner.isolated_filesystem():
+                    _quick_init()
+                    config = GzkitConfig.load(Path(".gzkit.json"))
+                    pool = TestAdrPromoteCommand._seed_pool_adr(config)
+                    ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+                    ledger.append(adr_created_event("ADR-pool.sample-work", "", "heavy"))
+                    clean_briefs: dict[Path, str] = {}
+
+                    def build_fixture(
+                        fault: str = fault,
+                        clean_briefs: dict[Path, str] = clean_briefs,
+                        **kwargs: Any,
+                    ) -> dict[str, Any]:
+                        plan = _build_obpi_plan(**kwargs)
+                        content = plan["content"].replace(
+                            '<!-- One-sentence concrete outcome. What does "done" look like? -->',
+                            "",
+                        )
+                        clean_briefs[plan["obpi_file"]] = content
+                        if fault == "structure":
+                            content = content.replace("## Objective", "## Missing Objective")
+                        elif fault == "scaffold":
+                            content = content.replace(
+                                "## Requirements (FAIL-CLOSED)",
+                                "## Requirements (FAIL-CLOSED)\n\n1. First constraint",
+                            )
+                        elif fault == "path":
+                            content = content.replace(
+                                "## Allowed Paths", "## Allowed Paths\n\n- `missing.py`"
+                            )
+                        plan["content"] = content
+                        return plan
+
+                    with patch(
+                        "gzkit.commands.adr_promote._build_obpi_plan",
+                        side_effect=build_fixture,
+                    ):
+                        result = runner.invoke(
+                            main,
+                            [
+                                "adr",
+                                "promote",
+                                "ADR-pool.sample-work",
+                                "--semver",
+                                "0.6.0",
+                                "--kind",
+                                "feature",
+                            ],
+                        )
+                    self.assertEqual(result.exit_code, 3 if fault == "evaluation" else 1)
+                    self.assertIn("status: Superseded", pool.read_text(encoding="utf-8"))
+                    target = Path(config.paths.adrs) / "pre-release" / target_id
+                    self.assertTrue((target / f"{target_id}.md").exists())
+                    self.assertEqual(len(clean_briefs), 3)
+                    self.assertTrue(all(path.exists() for path in clean_briefs))
+                    events = [event.event for event in ledger.read_all()]
+                    self.assertEqual(events.count("artifact_renamed"), 1)
+                    self.assertEqual(events.count("obpi_created"), 3)
+                    output = " ".join(result.output.split())
+                    # output-contract: describe retained state and runnable recovery.
+                    self.assertIn("Promotion applied; quality checks failed", output)
+                    self.assertNotIn("Promotion blocked", output)
+                    self.assertNotIn("Pass --force to override", output)
+                    command = (
+                        ["adr", "evaluate", target_id]
+                        if fault == "evaluation"
+                        else ["obpi", "validate", "--adr", target_id, "--authored"]
+                    )
+                    self.assertIn("uv run gz " + " ".join(command), output)
+                    recovery = runner.invoke(main, command)
+                    self.assertEqual(recovery.exit_code, 3 if fault == "evaluation" else 1)
+                    self.assertNotIn("invalid choice", recovery.output)
+                    for path, content in clean_briefs.items():
+                        path.write_text(content, encoding="utf-8")
+                    validated = runner.invoke(
+                        main, ["obpi", "validate", "--adr", target_id, "--authored"]
+                    )
+                    self.assertEqual(validated.exit_code, 0, validated.output)
+                    events = [event.event for event in ledger.read_all()]
+                    self.assertEqual(events.count("artifact_renamed"), 1)
+                    self.assertEqual(events.count("obpi_created"), 3)
 
 
 class TestAdrPromoteKindFlag(unittest.TestCase):

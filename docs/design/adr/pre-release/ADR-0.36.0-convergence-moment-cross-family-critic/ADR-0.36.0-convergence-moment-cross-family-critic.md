@@ -366,7 +366,7 @@ The operator named the cost of this explicitly, and it is larger than this ADR:
 - [ ] OBPI-0.36.0-04: **agent-door** — The agent-invoked door, fired on the A4 tier rules and never on the agent's own unvalidated confidence
 - [ ] OBPI-0.36.0-05: **decision-envelope** — A3 narrowed to one decision-scoped envelope carrying prompt hash, scope manifest and primary-output hash — the strong subject binding both adversary passes recorded as unbuilt
 - [ ] OBPI-0.36.0-06: **risk-tiering** — A4 narrowed — mandatory for the enumerated consequential categories and explicit operator requests, sampling the routine
-- [ ] OBPI-0.36.0-07: **verdict-resolution-transition** — Step 4b's resolution shape generalized without touching 4b — a refuted verdict with no recorded resolution blocks, and the resolution names what was fixed and how the critic's check was re-run
+- [ ] OBPI-0.36.0-07: **verdict-resolution-transition** — Step 4b's resolution shape generalized without touching 4b — refuting verdicts block until an independent re-review of the current decision returns a non-refuting verdict; the resolution records what was fixed and how the check was re-run
 - [ ] OBPI-0.36.0-08: **pilot-instrumentation** — The calibrated pilot measuring false blocks, latency, operator reading time, and decisions changed
 - [ ] OBPI-0.36.0-09: **asked-question-gate-dark** — The `PreToolUse` adapter on `AskUserQuestion` — wired, tested, and off by default, lit only by OBPI-08's measured result
 
@@ -409,9 +409,15 @@ transport end to end rather than asserting it (GHI #786).
 - **agent-door** — The agent-invoked door, fired on the A4 tier rules rather than on the agent's own unvalidated confidence.
 - **decision-envelope** — A3 narrowed to one decision-scoped envelope carrying prompt hash, scope manifest and primary-output hash — the strong subject binding both adversary passes recorded as explicitly unbuilt.
 - **risk-tiering** — A4 narrowed: mandatory for the enumerated consequential categories and for explicit operator requests, sampling the routine, with the primary agent's own confidence barred from setting the tier.
-- **verdict-resolution-transition** — Step 4b's resolution shape generalized without touching 4b: a `refuted` verdict with no recorded resolution blocks, and the resolution must state both what was fixed and how the critic's own check was re-run, durable in the ledger rather than in a transcript.
+- **verdict-resolution-transition** — Step 4b's resolution shape generalized without touching 4b: both `refuted` and `refuted-with-caveats` block regardless of resolution prose. A subsequent independent non-refuting re-review must bind to the current decision envelope; retain the original refutation and durably record both what was fixed and how the check was re-run, with the review evidence binding.
 - **pilot-instrumentation** — The four measurements that alone can light the dark door: false blocks, latency, operator reading time, and decisions changed.
 - **asked-question-gate-dark** — The `PreToolUse` adapter on `AskUserQuestion`, wired and tested but **off by default**, lit only by a measured pilot result and never by a promotion narrative.
+
+**Draft reconciliation record, 2026-09-19 (GHI #960):** The operator (`g0`)
+authorized correcting OBPI-07's requirements and examples without implementing
+or activating this ADR. The checklist and scope above now reflect the current
+independent re-review rule. Historical ruling transcripts remain unchanged;
+this amendment records no implementation or completion.
 
 ### Why nine, and where the Matrix of Four forced a split
 

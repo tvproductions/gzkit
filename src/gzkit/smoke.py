@@ -79,6 +79,10 @@ def is_smoke(case: unittest.TestCase) -> bool:
     return bool(getattr(method, SMOKE_ATTRIBUTE, False))
 
 
+class SmokeDiscoveryError(Exception):
+    """The discovered suite is incomplete, so build verification cannot pass."""
+
+
 def collect_smoke_suite(project_root: Path) -> unittest.TestSuite:
     """Discover the full tier, then keep only its marked members.
 
@@ -86,10 +90,14 @@ def collect_smoke_suite(project_root: Path) -> unittest.TestSuite:
     so selection is a filter over the real suite rather than a second, separately
     drifting inventory of test names.
     """
+    tests_root = project_root / "tests"
+    if not tests_root.is_dir():
+        return unittest.TestSuite()
+    top_level = project_root if (tests_root / "__init__.py").is_file() else tests_root
     loader = unittest.TestLoader()
-    discovered = loader.discover(
-        start_dir=str(project_root / "tests"), top_level_dir=str(project_root)
-    )
+    discovered = loader.discover(start_dir=str(tests_root), top_level_dir=str(top_level))
+    if loader.errors:
+        raise SmokeDiscoveryError("\n".join(str(error) for error in loader.errors))
     selected = unittest.TestSuite()
     for case in _walk(discovered):
         if is_smoke(case):
@@ -100,8 +108,8 @@ def collect_smoke_suite(project_root: Path) -> unittest.TestSuite:
 def smoke_marked_files(project_root: Path) -> set[Path]:
     """Return the test files declaring at least one smoke member.
 
-    Static scan rather than import, so a caller can answer "is the tier
-    populated?" without paying full discovery.
+    Advisory source inventory only: spelling can miss aliases and include
+    helpers or inert text. Gate membership comes from runtime discovery.
     """
     tests_root = project_root / "tests"
     if not tests_root.is_dir():
@@ -119,13 +127,15 @@ class SmokeOutcome(unittest.TestResult):
 
 
 def run_smoke(project_root: Path, *, verbosity: int = 1) -> tuple[unittest.TestResult, float]:
-    """Run the smoke tier and return its result alongside the elapsed seconds.
+    """Run the smoke tier and return its result and execution-only elapsed seconds.
 
     Buffered: a passing member must not print, so the tier's output stays
     readable and a real failure is not lost in noise (the GHI #723 lesson,
     applied at authoring time rather than after it bites).
     """
     suite = collect_smoke_suite(project_root)
+    if suite.countTestCases() == 0:
+        return unittest.TestResult(), 0.0
     runner = unittest.TextTestRunner(verbosity=verbosity, buffer=True)
     started = time.perf_counter()
     result = runner.run(suite)

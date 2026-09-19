@@ -769,7 +769,6 @@ def _repair_missing_artifacts(
     Runs the idempotent portions of init without requiring --force.
     """
     project_name = config.project_name or detect_project_name(project_root)
-    structure = detect_project_structure(project_root)
     repaired: list[str] = []
 
     console.print(f"Repairing [bold]{project_name}[/bold]...")
@@ -835,11 +834,11 @@ def _repair_missing_artifacts(
     manifest_path = project_root / config.paths.manifest
     if not manifest_path.exists():
         if dry_run:
-            repaired.append("Would regenerate .gzkit/manifest.json")
+            repaired.append(f"Would regenerate {config.paths.manifest}")
         else:
-            manifest = generate_manifest(project_root, config, structure)
-            write_manifest(project_root, manifest)
-            repaired.append("Regenerated .gzkit/manifest.json")
+            manifest = generate_manifest(project_root, config)
+            write_manifest(project_root, manifest, config)
+            repaired.append(f"Regenerated {config.paths.manifest}")
 
     # Always re-sync control surfaces (idempotent, not counted as repairs)
     if not dry_run:
@@ -1036,7 +1035,7 @@ def init(
 
     # Generate manifest
     manifest = generate_manifest(project_root, config, structure)
-    write_manifest(project_root, manifest)
+    write_manifest(project_root, manifest, config)
 
     # Create governance directories (only if they don't exist)
     for dir_name in ["prd", "constitutions", "adr"]:

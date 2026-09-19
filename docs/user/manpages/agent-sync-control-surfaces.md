@@ -19,9 +19,11 @@ invocation:
    class only). Active only in gzkit's own dev repo where
    `src/gzkit/<surface>/__init__.py` exists.
 
-2. **Vendor mirrors** — `.[vendor]/<surface>/` (`.claude/skills/`, `.claude/rules/`,
-   `.github/skills/`, `.github/instructions/`, `.claude/personas/`,
-   `.agents/personas/`, `.github/personas/`).
+2. **Vendor mirrors** — configured delivery paths for skills, rules and personas.
+   Read `.gzkit.json` for enabled vendors and paths. Skills use `claude_skills`
+   and `codex_skills`; Claude rules use `claude_rules`; personas use each
+   supported vendor's `surface_root`. Retired vendor directories are not current
+   delivery targets.
 
 No separate `cp` step is needed. Edit `.gzkit/<surface>/`, bump the version
 marker, run sync once (closes GHI #449).
@@ -30,9 +32,9 @@ marker, run sync once (closes GHI #449).
 
 | Canonical source | Pkg copy (wheel) | Vendor mirrors |
 |-----------------|------------------|----------------|
-| `.gzkit/skills/<slug>/SKILL.md` | `src/gzkit/skills/<slug>/SKILL.md` | `.claude/skills/`, `.github/skills/` |
-| `.gzkit/rules/<slug>.md` | `src/gzkit/rules/<slug>.md` | `.claude/rules/`, `.github/instructions/` |
-| `.gzkit/personas/<slug>.md` | `src/gzkit/personas/<slug>.md` | `.claude/personas/`, `.agents/personas/`, `.github/personas/` (transformed) |
+| `.gzkit/skills/<slug>/SKILL.md` | `src/gzkit/skills/<slug>/SKILL.md` | Configured `claude_skills` / `codex_skills` (defaults `.claude/skills/` / `.agents/skills/`) |
+| `.gzkit/rules/<slug>.md` | `src/gzkit/rules/<slug>.md` | Configured `claude_rules` (default `.claude/rules/`) |
+| `.gzkit/personas/<slug>.md` | `src/gzkit/personas/<slug>.md` | Supported vendors' configured `<surface_root>/personas/` (transformed) |
 | `.gzkit/templates/<name>.md` | `src/gzkit/templates/<name>.md` | (none) |
 | `.gzkit/chores/<slug>/` (canonical class) | `src/gzkit/chores/<slug>/` (canonical only) | (none) |
 | `.gzkit/agents/roles.json` + registered Markdown bodies | (project-local opt-in) | `.codex/agents/*.toml` (body transformed; native metadata preserved) |
@@ -67,9 +69,18 @@ For unchanged inputs, sync emits a deterministic updated-path list and stable op
 ## Persona Mirroring
 
 Sync mirrors persona files from `.gzkit/personas/` to vendor surfaces
-(`.claude/personas/`, `.agents/personas/`, `.github/personas/`), respecting
+(Claude and Codex `surface_root` plus `/personas/`), respecting
 vendor enablement configuration. Persona mirroring is automatic when the
 canonical persona directory exists — no additional flags are needed.
+
+## Manifest Paths
+
+Sync writes the manifest at `paths.manifest` (default `.gzkit/manifest.json`)
+and preserves authored manifest rule settings from that same file. Its reported
+write list names the configured location. Explicitly configured source, test,
+documentation and design roots override structure discovery; unspecified roots
+retain discovery. A stale manifest at the default location is not a fallback
+for a missing configured manifest.
 
 ## Fail-Closed Canonical Preflight
 
