@@ -16955,3 +16955,4 @@
 {"schema":"gzkit.ledger.v1","event":"airlock_in","id":"permitted-entry:src/gzkit/arb/validator.py","ts":"2026-09-19T20:31:28.759286+00:00","decision":"proceed","unaccounted":[]}
 {"schema":"gzkit.ledger.v1","event":"airlock_out","id":"permitted-entry:src/gzkit/arb/validator.py","ts":"2026-09-19T20:31:28.762081+00:00","verdict":"clean","drift":[],"routing":[],"bodies":1}
 {"schema":"gzkit.ledger.v1","event":"adr_created","id":"ADR-pool.bounded-advisory-impact","ts":"2026-09-19T22:14:19.099107+00:00","parent":"PRD-GZKIT-1.0.0","lane":"heavy"}
+{"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/pool/ADR-pool.bounded-advisory-impact.md","ts":"2026-09-19T22:22:06.813832+00:00","path":"docs/design/adr/pool/ADR-pool.bounded-advisory-impact.md","commit":"42e0da555bfd62bcd322897656d8331dfb7ad283"}
