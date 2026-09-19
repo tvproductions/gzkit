@@ -22,6 +22,7 @@ import json
 import os
 import shlex
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -74,6 +75,38 @@ class TestRedReceiptsValidate(unittest.TestCase):
 
 
 class TestAdvisorVerdictReceiptsValidate(unittest.TestCase):
+    def test_fresh_import_orders_can_record_and_validate(self) -> None:
+        for first in ("gzkit.content.advisor_qc", "gzkit.arb"):
+            with self.subTest(first=first):
+                code = f"""
+import {first}
+import json
+import tempfile
+from pathlib import Path
+from gzkit.content.advisor_qc import record_verdict
+from gzkit.arb import validate_receipts
+with tempfile.TemporaryDirectory() as tmp:
+    path = record_verdict(root=Path(tmp), surface="AGENTS.md", consumer=None,
+                          explanation="All entries retained.", score=0.9)
+    result = validate_receipts(root=path.parent)
+    print(json.dumps([result.scanned, result.valid, result.invalid, result.unknown_schema]))
+"""
+                result = subprocess.run(
+                    [sys.executable, "-c", code],
+                    capture_output=True,
+                    text=True,
+                    errors="replace",
+                    timeout=30,
+                    check=False,
+                    env={
+                        key: value
+                        for key, value in os.environ.items()
+                        if key != "GZKIT_ARB_RECEIPTS_ROOT"
+                    },
+                )
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(json.loads(result.stdout), [1, 1, 0, 0])
+
     def _record(self, root: Path) -> Path:
         with mock.patch.dict(os.environ, {"GZKIT_ARB_RECEIPTS_ROOT": str(root)}):
             return record_verdict(

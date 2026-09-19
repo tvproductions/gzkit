@@ -11,11 +11,72 @@ from typing import Any
 
 from gzkit.commands.adr_promote import _check_scaffold_obpis
 from gzkit.commands.obpi_cmd import _validate_brief_path_existence
+from gzkit.commands.plan_audit_cmd import _gather_brief_path_gaps
 
 
 def _write(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
+
+
+class TestRelativeMirrorPaths(unittest.TestCase):
+    """Equivalent spellings cannot bypass the shared refusal (GHI #1049)."""
+
+    def test_brief_and_plan_creates_cannot_exempt_relative_mirrors(self) -> None:
+        mirrors = (
+            (".claude/rules", ".gzkit/rules"),
+            (".claude/skills", ".gzkit/skills"),
+            (".github/skills", ".gzkit/skills"),
+            (".github/instructions", ".gzkit/rules"),
+            (".agents/skills", ".gzkit/skills"),
+        )
+        for mirror, canonical in mirrors:
+            for state in ("existing", "missing", "brief-create", "plan-create"):
+                with self.subTest(mirror=mirror, state=state), tempfile.TemporaryDirectory() as td:
+                    root = Path(td)
+                    path = f"./{mirror}/example.md"
+                    brief = root / "OBPI-test.md"
+                    plan = root / "plan.md"
+                    content = f"## Allowed Paths\n\n- `{path}`\n"
+                    if state == "existing":
+                        _write(root / path, "generated\n")
+                    if state == "brief-create":
+                        content += f"\n## Creates these files\n\n- `{path}`\n"
+                    _write(brief, content)
+                    _write(
+                        plan,
+                        f"## Creates these files\n\n- `{path}`\n"
+                        if state == "plan-create"
+                        else "# Plan\n",
+                    )
+                    plan_gaps, _ = _gather_brief_path_gaps(root, brief, plan)
+                    _, promotion_gaps = _check_scaffold_obpis(
+                        root, {"obpi_plans": [{"obpi_file": brief}]}
+                    )
+                    for consumer, gaps in (
+                        ("authored validation", _validate_brief_path_existence(root, brief)),
+                        ("plan audit", plan_gaps),
+                        ("promotion", promotion_gaps),
+                    ):
+                        with self.subTest(consumer=consumer):
+                            mirror_gaps = [gap for gap in gaps if "vendor mirror" in gap]
+                            self.assertEqual(len(mirror_gaps), 1, gaps)
+                            self.assertIn(f"{path} -> {canonical}/example.md", mirror_gaps[0])
+
+    def test_relative_canonical_creates_remain_valid(self) -> None:
+        for canonical in (".gzkit/rules", ".gzkit/skills"):
+            with self.subTest(canonical=canonical), tempfile.TemporaryDirectory() as td:
+                root = Path(td)
+                brief = root / "OBPI-test.md"
+                plan = root / "plan.md"
+                path = f"./{canonical}/example.md"
+                _write(brief, f"## Allowed Paths\n\n- `{path}`\n")
+                creates = f"## Creates these files\n\n- `{path}`\n"
+                _write(plan, creates)
+                self.assertEqual(_gather_brief_path_gaps(root, brief, plan)[0], [])
+                _write(brief, brief.read_text(encoding="utf-8") + "\n" + creates)
+                self.assertEqual(_validate_brief_path_existence(root, brief), [])
+                self.assertEqual(_gather_brief_path_gaps(root, brief, None)[0], [])
 
 
 class TestObpiValidateBriefPathExistence(unittest.TestCase):

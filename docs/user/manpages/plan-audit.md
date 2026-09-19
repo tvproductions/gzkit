@@ -15,6 +15,11 @@ Runs deterministic structural checks:
 - OBPI brief file exists
 - Plan file exists in `.claude/plans/`
 - Plan file paths stay within brief allowed paths
+- Brief allowed paths exist (or are declared as created by the brief or plan)
+- Generated vendor mirrors are refused, with the canonical edit path reported
+
+A leading `./` does not exempt a generated mirror from refusal. CREATE
+declarations exempt missing paths only; they cannot authorize editing a mirror.
 
 Writes a receipt to `.claude/plans/.plan-audit-receipt-{OBPI-ID}.json`.
 

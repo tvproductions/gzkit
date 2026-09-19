@@ -3,14 +3,19 @@
 @covers OBPI-0.0.7-05-lint-rule-and-check-expansion
 """
 
+import contextlib
+import io
+import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from gzkit.commands.config_paths import (
     _collect_source_path_literal_issues,
     _flatten_manifest_paths,
     _is_path_covered_by_manifest,
+    check_config_paths_cmd,
 )
 from gzkit.config import GzkitConfig
 
@@ -153,6 +158,89 @@ class TestSourcePathLiteralScan(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             issues = _collect_source_path_literal_issues(Path(tmp), SAMPLE_MANIFEST, GzkitConfig())
             self.assertEqual(issues, [])
+
+
+class TestConfiguredSourceRoot(unittest.TestCase):
+    """Source selection follows loaded configuration (GHI #1050)."""
+
+    @covers("REQ-0.0.7-05-02")
+    def test_configured_root_replaces_default_and_scans_nested_modules(self):
+        """A stale default tree cannot substitute for configured source."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / ".gzkit.json").write_text(
+                json.dumps({"paths": {"source_root": "lib"}}), encoding="utf-8"
+            )
+            config = GzkitConfig.load(root / ".gzkit.json")
+            for relative, literal in (
+                ("lib/gzkit/nested/bad.py", "artifacts/relocated-missing"),
+                ("src/gzkit/stale.py", "artifacts/stale-default-missing"),
+            ):
+                source = root / relative
+                source.parent.mkdir(parents=True, exist_ok=True)
+                source.write_text(f'path = "{literal}"\n', encoding="utf-8")
+
+            issues = _collect_source_path_literal_issues(root, SAMPLE_MANIFEST, config)
+
+            self.assertEqual(
+                issues,
+                [
+                    {
+                        "path": "lib/gzkit/nested/bad.py",
+                        "issue": 'unmapped path literal: "artifacts/relocated-missing"',
+                    }
+                ],
+            )
+
+    @covers("REQ-0.0.7-05-02")
+    def test_command_rejects_unmapped_literal_in_configured_source(self):
+        """The real collectors propagate relocated violations to JSON and exit."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            config = GzkitConfig.model_validate({"paths": {"source_root": "lib"}})
+            for key in (
+                "prd",
+                "constitutions",
+                "obpis",
+                "adrs",
+                "source_root",
+                "tests_root",
+                "docs_root",
+                "skills",
+                "claude_skills",
+                "codex_skills",
+            ):
+                (root / getattr(config.paths, key)).mkdir(parents=True, exist_ok=True)
+            for key in ("ledger", "manifest", "agents_md", "claude_md", "discovery_index"):
+                path = root / getattr(config.paths, key)
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text("{}", encoding="utf-8")
+            source = root / "lib/gzkit/nested/bad.py"
+            source.parent.mkdir(parents=True)
+            source.write_text('path = "artifacts/relocated-missing"\n', encoding="utf-8")
+            output = io.StringIO()
+            with (
+                patch("gzkit.commands.config_paths.ensure_initialized", return_value=config),
+                patch("gzkit.commands.config_paths.get_project_root", return_value=root),
+                patch("gzkit.commands.config_paths.load_manifest", return_value={}),
+                contextlib.redirect_stdout(output),
+                self.assertRaises(SystemExit) as raised,
+            ):
+                check_config_paths_cmd(as_json=True)
+
+            self.assertEqual(raised.exception.code, 1)
+            self.assertEqual(
+                json.loads(output.getvalue()),
+                {
+                    "valid": False,
+                    "issues": [
+                        {
+                            "path": "lib/gzkit/nested/bad.py",
+                            "issue": 'unmapped path literal: "artifacts/relocated-missing"',
+                        }
+                    ],
+                },
+            )
 
 
 if __name__ == "__main__":

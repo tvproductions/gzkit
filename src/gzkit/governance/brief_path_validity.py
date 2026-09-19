@@ -93,6 +93,7 @@ def glob_root(path: str) -> str:
 
 def vendor_mirror_canonical(path: str) -> str | None:
     """Return the canonical edit surface for a vendor-mirror path, else None."""
+    path = path.removeprefix("./")
     normalized = path.rstrip("/") + "/"
     for prefix, canonical in _VENDOR_MIRROR_TO_CANONICAL:
         if normalized.startswith(prefix):

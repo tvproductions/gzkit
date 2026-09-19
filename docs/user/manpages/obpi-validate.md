@@ -46,6 +46,11 @@ that are too thin to serve as execution contracts. This checks for substantive:
 
 Use this mode after `gz specify` and before `gz obpi pipeline`.
 
+This mode also checks allowed-path existence and refuses generated vendor
+mirrors, reporting the canonical edit path. A leading `./` has the same
+meaning as an unprefixed path. Brief CREATE declarations exempt missing
+paths only; they cannot authorize editing a mirror.
+
 ### Completion Readiness (status: Completed)
 
 For completed briefs the validator additionally fails closed on:

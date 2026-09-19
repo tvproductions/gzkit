@@ -297,8 +297,9 @@ def _collect_source_path_literal_issues(
 ) -> list[dict[str, str]]:
     """Scan source for path literals not governed by config.
 
-    Uses AST to find string constants in src/gzkit/ that look like
-    filesystem paths (contain a ``/`` and start with a known directory
+    Uses AST to find string constants in the ``gzkit`` package beneath
+    ``config.paths.source_root`` that look like filesystem paths (contain
+    a ``/`` and start with a known directory
     prefix). A literal is governed when the manifest maps it OR when
     ``GzkitConfig.paths`` declares it as a default -- both are config
     surfaces, and checking only the manifest reported a declared
@@ -312,7 +313,7 @@ def _collect_source_path_literal_issues(
     never reaches another module (GHI #938).
     """
     issues: list[dict[str, str]] = []
-    src_dir = project_root / "src" / "gzkit"
+    src_dir = project_root / config.paths.source_root / "gzkit"
     if not src_dir.exists():
         return issues
 

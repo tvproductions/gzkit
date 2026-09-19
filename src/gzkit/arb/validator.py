@@ -22,7 +22,6 @@ from gzkit.arb.ruff_reporter import SCHEMA_ID as LINT_SCHEMA_ID
 from gzkit.arb.step_reporter import SCHEMA_ID as STEP_SCHEMA_ID
 from gzkit.canonical_steps import CANONICAL_STEP_COMMANDS
 from gzkit.commands.common import get_project_root
-from gzkit.content.advisor_qc import SCHEMA_ID as ADVISOR_VERDICT_SCHEMA_ID
 
 
 class ArbReceiptValidationResult(BaseModel):
@@ -112,6 +111,10 @@ RETIRED_STEP_COMMANDS: dict[str, list[tuple[str, list[str]]]] = {
 
 
 def _schema_path_for_id(schema_id: str) -> Path | None:
+    # The writer imports arb.paths, which initializes this package. Resolve its
+    # schema at validation time so writer-first imports cannot close that cycle.
+    from gzkit.content.advisor_qc import SCHEMA_ID as ADVISOR_VERDICT_SCHEMA_ID  # noqa: PLC0415
+
     root = get_project_root()
     if schema_id == LINT_SCHEMA_ID:
         return root / "data" / "schemas" / "arb_lint_receipt.schema.json"

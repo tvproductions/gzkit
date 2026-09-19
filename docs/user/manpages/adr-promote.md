@@ -77,6 +77,11 @@ Validation runs before pool resolution, so a rejected promotion leaves the pool 
    - `artifact_renamed` with `reason: pool_promotion`, `kind: <value>`, `semver: <value>`
 9. One `obpi_created` ledger event is written per generated brief.
 
+Post-promotion brief checks report missing allowed paths and generated vendor
+mirrors, including paths beginning with `./`, with canonical edit advice for
+mirrors. Brief CREATE declarations exempt missing paths only. These checks
+run after promotion writes; the existing `--force` quality override still applies.
+
 ---
 
 ## Examples

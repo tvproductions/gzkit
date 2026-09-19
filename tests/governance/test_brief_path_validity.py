@@ -53,6 +53,23 @@ class TestGlobRoot(unittest.TestCase):
 
 
 class TestVendorMirrorCanonical(unittest.TestCase):
+    def test_relative_prefix_preserves_canonical_advice_for_every_mirror(self) -> None:
+        mirrors = (
+            (".claude/rules", ".gzkit/rules"),
+            (".claude/skills", ".gzkit/skills"),
+            (".github/skills", ".gzkit/skills"),
+            (".github/instructions", ".gzkit/rules"),
+            (".agents/skills", ".gzkit/skills"),
+        )
+        for mirror, canonical in mirrors:
+            for suffix in ("", "/", "/example.md", "/nested/", "/**/*.md"):
+                for relative in ("", "./"):
+                    path = relative + mirror + suffix
+                    with self.subTest(path=path):
+                        self.assertEqual(
+                            vendor_mirror_canonical(path), (canonical + suffix).rstrip("/")
+                        )
+
     def test_claude_rules_mirror(self) -> None:
         self.assertEqual(
             vendor_mirror_canonical(".claude/rules/tests.md"),
