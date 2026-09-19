@@ -1,0 +1,21 @@
+{
+  "id": "ADR-pool.bounded-advisory-impact",
+  "title": "Bounded advisory change-impact report",
+  "semver": "pool",
+  "lane": "heavy",
+  "parent": "PRD-GZKIT-1.0.0",
+  "intent": "Expose evidenced source, CLI-registry and test consumers that import-only retrieval misses, without treating an incomplete dependency view as acceptance authority. Source: three-pillars assessment and GHI #1052 measurement.",
+  "decision": "Operator g0: \"pool, not feature.\" Preserve the reviewed GHI #1053 design as an unimplemented backlog proposal. Operator selected \"A\" for GHI #1029: retain broad proof currency.\n\nAgent-authored synthesis of the reviewed GHI #1053 design. Operator words are quoted explicitly; other text is design analysis, not fabricated verbatim answers.\n\nThe agent requested a feature ADR. Operator g0: \"pool, not feature.\" The agent redundantly asked about downstream boundaries. Operator g0: \"you are creating a pool ADR, what about that is confusing to you?\" The agent proceeded with the explicit pool instruction. Earlier, g0 selected \"A\" for retaining broad proof currency under #1029.",
+  "alternatives": "Import-only view omits measured registry and subprocess consumers. A general semantic graph lacks bounded independent authority. Narrowing proof currency with this report is rejected by its advisory scope and the separate #1029 ruling.",
+  "positive_consequences": "Preserves measured findings, reviewed contract, semantic controls and unknowns in a registered destination without prematurely scheduling a capability.",
+  "negative_consequences": "No impact capability ships; current discovery limitations and review costs remain. The stored design can age and must be reassessed before promotion.",
+  "checklist": "Pool scope only: snapshot and coverage accounting; source imports; registry witness chains; test import/subprocess witnesses; complete text/JSON population; independent real-case validation. These are candidate scope components, not OBPI checklist commitments.",
+  "pre_mortem": "An apparently short report is mistaken for proof that omitted consumers cannot exist; unsupported relationship types and stale capture remain hidden. Preserve per-type evidence and gaps; never confer completion authority.",
+  "wwhtbt": "Typed sections must recover measured omissions while remaining reviewable in real cases. Import-only would be preferable only if those missing relationships ceased to matter or were reliably supplied elsewhere; the existing measurement contradicts that condition for its sampled cases.",
+  "constraint_archaeology": "ADR-0.37.0 Alternative 2 requires a measured reviewable bound. Human timing is a proposed evaluation method, not an immutable upstream requirement. Existing campaign sequence and independent acceptance authority remain in force.",
+  "assumption_surfacing": "Assumes witnessed consumers reduce omissions enough to justify review effort. Counts are proxies, not human benefit. If typed output only adds noise, revise or decline promotion rather than hide a tail.",
+  "operator_2am": "Need the exact selected paths, scanned roster, producer identity, source locations, failures and unsupported relationships so an empty or misleading result can be diagnosed.",
+  "reversibility": "Pooling commits no runtime contract. A later advisory query can be removed without rewriting proof identity or completion history; retaining this boundary makes reversal local.",
+  "scope_minimization": "Minimum useful proposal includes source imports, complete known-registry chains and test consumers together, with capture and gap accounting. Import-only repeats the measured false-empty case.",
+  "downstream_adrs": "Pool status carries no implementation commitment. Any later promotion and implementation follow normal campaign and feature/OBPI governance, retaining the documented reviewability condition. Proof currency remains broad under the separately recorded #1029 ruling."
+}

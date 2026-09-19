@@ -5,6 +5,16 @@ Persona: main-session — craftsperson, governance-aware, whole-file reasoning,
 direct. Parent: [implementation plan](three-pillars-implementation-plan-2026-09-19.md).
 This is an advisory feature proposal, not an initiated ADR or a changed gate.
 
+## Pool disposition — 2026-09-19
+
+Operator g0: **"pool, not feature."** The registered destination is
+[ADR-pool.bounded-advisory-impact](../design/adr/pool/ADR-pool.bounded-advisory-impact.md),
+under GHI #1053. The design below remains an unimplemented proposal; its
+measurements and review are evidence for the proposal, not shipped behavior.
+Earlier routing statements below are the dated pre-ruling record. Promotion
+and implementation are not initiated by this disposition. Broad proof currency
+was separately retained under GHI #1029.
+
 ## Proposed product
 
 Given explicitly selected changed source paths, show separately attributed

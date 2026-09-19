@@ -9,8 +9,8 @@ not new repository doctrine, an ADR, or OBPI initiation.
 
 ## Overall completion: INCOMPLETE
 
-Checked against the linked GitHub issues on 2026-09-19. **Three of the five plan
-rows are resolved; two remain open.** This is a row count, not a percentage
+Checked against the linked GitHub issues on 2026-09-19. **Four of the five plan
+rows are resolved; production validation remains open.** This is a row count, not a percentage
 of engineering effort. The assessment and several measurements are complete;
 the overall remedy plan is not. Status clarification is recorded under #1053.
 
@@ -19,7 +19,7 @@ the overall remedy plan is not. Status clarification is recorded under #1053.
 | 1 — mirror-path repair | **YES** | #1049 closed with shipped commit `08655b31b854e2f016b53bd638e3423e71936c13`, behavioral regression evidence and review. |
 | 2 — configured-source repair | **YES** | #1050 closed with the same shipped commit, configured-root regression evidence and review. |
 | 3 — proof-currency decision | **YES — disposition** | Operator g0 selected "A" on 2026-09-19: retain broad invalidation for now. [Recorded ruling](three-pillars-proof-currency-design-2026-09-19.md), #1029. The repeated-work cost remains; no runtime narrowing was delivered. |
-| 4 — advisory impact remedy | **NO** | #1053 is open. #1052 completed only the measurement. The proposed capability is unbuilt; design disposition, review-cost evidence and any adopted implementation/validation remain outstanding. |
+| 4 — advisory impact remedy | **YES — pool disposition** | Operator g0 ruled "pool, not feature." [ADR-pool.bounded-advisory-impact](../design/adr/pool/ADR-pool.bounded-advisory-impact.md) carries the unbuilt design and its validation obligations; #1053 routes there. No implementation or review-cost benefit is claimed. |
 | 5 — Stage-4 production validation | **NO** | #1028 is open. The dated census contains no qualifying post-treatment production run; the required launch/proof/review/round/exit comparison is missing. |
 
 **How to decide whether the whole plan is done:** follow each row's linked GHI
@@ -52,6 +52,14 @@ three pillars. Equal scores for an added tracing instruction reject that
 instruction as an adopted remedy; they do not reject runtime improvements.
 Conversely, a local validator repair is useful without establishing that general
 obligation discovery has been solved.
+
+## Pool routing update — 2026-09-19
+
+Operator g0 ruled **"pool, not feature."** GHI #1053 is discharged by the
+registered pool destination linked in row 4. This explicitly defers implementation;
+it does not make the proposed impact report operational. The earlier execution
+account below remains dated history; its pending design ruling is now settled
+by this pool disposition. GHI #1028 remains the separate production observation.
 
 ## Execution status — 2026-09-19 follow-through
 
