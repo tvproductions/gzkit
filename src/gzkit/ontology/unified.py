@@ -138,7 +138,8 @@ def _default_ledger() -> Ledger:
 
 
 def _default_source_root() -> Path:
-    return (_find_project_root() or Path.cwd()) / "src"
+    root = _find_project_root() or Path.cwd()
+    return root / load_config(path=root / ".gzkit.json").paths.source_root
 
 
 def _default_okf_bundle() -> Path:
@@ -243,12 +244,13 @@ def _compose_source(graph: OntologyGraph, src_root: Path) -> DomainFidelity:
         detail = f"source root {src_root.as_posix()} not discoverable — parse coverage unknown"
     elif failures:
         detail = (
-            f"parsed {unit_count} discoverable src unit(s); {anchor_count} source->REQ anchor(s); "
+            f"parsed {unit_count} discoverable source unit(s); "
+            f"{anchor_count} source->REQ anchor(s); "
             f"{len(failures)} unit(s) failed to parse: {', '.join(failures)}"
         )
     else:
         detail = (
-            f"parsed {unit_count} discoverable src unit(s); {anchor_count} source->REQ anchor(s)"
+            f"parsed {unit_count} discoverable source unit(s); {anchor_count} source->REQ anchor(s)"
         )
     # BI#1: a present root is not enough — an unparseable unit drops its anchors,
     # so parse failures must pull the domain's fidelity to complete=False (GHI #675).

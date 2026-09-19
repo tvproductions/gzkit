@@ -281,7 +281,13 @@ def render_dot(graph: OntologyGraph) -> str:
 
 
 def _last_sweep_path() -> Path:
-    return get_project_root() / _LAST_SWEEP_REL
+    # Match source discovery: a nested invocation must not create a nearer
+    # .gzkit marker that changes the project selected by the next sweep.
+    current = get_project_root()
+    for root in (current, *current.parents):
+        if (root / ".gzkit").is_dir():
+            return root / _LAST_SWEEP_REL
+    return current / _LAST_SWEEP_REL
 
 
 def _persist_last_sweep(graph: OntologyGraph) -> None:

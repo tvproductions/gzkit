@@ -37,6 +37,7 @@ from typing import Any, Protocol
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit.config import load_config
 from gzkit.ontology.model import LinkType, OntologyEdge, Provenance
 from gzkit.triangle import EdgeType, LinkageRecord, ReqId, scan_briefs
 
@@ -539,7 +540,7 @@ def _find_project_root() -> Path | None:
 
 def _default_source_root() -> Path:
     root = _find_project_root() or Path.cwd()
-    return root / "src"
+    return root / load_config(path=root / ".gzkit.json").paths.source_root
 
 
 def _default_index_path() -> Path:
