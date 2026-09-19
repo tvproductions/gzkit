@@ -4454,3 +4454,12 @@ Correction to the prior entry: 22 chores carry the full-suite criterion, of whic
 
 Landed: all 22 `acceptance.json` criteria and their `CHORE.md`/`README.md` prose → `uv run gz test`; the 16 ceilings 120 → 180 in `registry.json`; rules `chores.md` 0.5.1, `adr-audit.md` 0.3.1, `pythonic.md` 0.5.2, `tests.md` 0.26.1; six skills patch-bumped; ARB examples (rule, adopter template, runbook, manpages, `arb-middleware.md`) → the canonical parallel command the `unittest` label already required. Dated records (ADR briefs, campaign plans, prior proofs, `arb-middleware.md` § 8 non-canonical receipts) left as written.
 Re-run above (2026-09-18T04:37:01-05:00): Status PASS, criterion 6 `Ran 10456 tests in 92.021s — OK`.
+
+## 2026-09-19 — program record opened; skill bodies ruled into this chore's scope
+
+The overhaul this chore has been driving under GHI #921 now has one record:
+`docs/governance/control-surface-overhaul.md` — target, surfaces, what landed, what is owed and who owns it. Read it before running this chore.
+
+Operator, verbatim: "all agents.md and rules must eventually be cms rendered. skills should be reviewed as a part of a chore (new or existing), where parsimony and new model alignment are part of the review." On skill review: "its both an authoring AND chore scope". On where skill-body parsimony lives, by selection: "Widen instructions-files-diet (Recommended)".
+
+Not yet done: the declaration itself (`registry.json` `governingRule`, `remediation.details`, `nonAuthority`, and CHORE.md) still names only the instruction files. Amending it is its own before/after for the operator. No `gz chores run` has been logged since pass two landed; the last PASS block above is 2026-09-18.

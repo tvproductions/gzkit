@@ -48,13 +48,13 @@ The operator selected "Moderate" (halve current weight; preserve binding-bullet 
 
 | File | Old budget | Target budget (destination — not the live enforced value) | Rationale |
 |------|-----------|-----------|-----------|
-| `AGENTS.md` | 40,000 chars | 15,000 chars | Halves per-turn injection; preserves ~200 lines of binding bullets |
+| `AGENTS.md` | 40,000 chars | 20,000 chars | Halves per-turn injection; preserves ~200 lines of binding bullets. Raised from 15,000 by operator ruling 2026-09-19, verbatim: "make target 20k" — see [budget history](instructions-files-budget-history.md) |
 | `CLAUDE.md` | 40,000 chars | 4,000 chars | Already 1,378 chars; 4k provides 2.6k headroom for model-specific addenda |
 | `.claude/rules/*.md` | 16,000 chars/file | 16,000 chars/file | Unchanged; per-file shape audit deferred to OBPI-0.0.54-04 |
 
 Budget is enforced by `gz validate --instructions-files-budget` reading `data/instructions_files_budget.json` — the single source of truth. The **live enforced** values are whatever that JSON carries (currently higher than these targets); the column above records the doctrine *destination*, deferred to `ADR-0.35.0-canon-entry-corpus-landing` § Decision 3, not a currently-enforced number. (The intermediate hop through GHI #533 is retired — that issue closed 2026-09-01 `superseded` into this ADR.)
 
-> The 15,000-char figure above is the doctrine *destination*. During the
+> The 20,000-char figure above is the doctrine *destination*. During the
 > `ADR-0.35.0` CMS work the enforced interim budget is higher (GHI #533, closed 2026-09-01). The live
 > enforced value is always whatever `data/instructions_files_budget.json` carries —
 > the single source of truth — never a number duplicated into prose or tests.
@@ -90,7 +90,7 @@ Summary action: each section's rationale prose lifts to a named target under `do
 
 ### What changes (OBPI-02 outcome)
 
-- AGENTS.md shrinks from ~31k chars to ~15k chars — halving per-turn context injection
+- AGENTS.md shrinks from ~31k chars toward the destination above — cutting per-turn context injection
 - Every binding rule, operative claim, and behavior-rule item **survives verbatim** — at a stable URL under `docs/governance/` rather than inline
 - The path of least resistance for rationale becomes the lift, not the in-place expansion
 - `gz validate --agents-md-map-conformance` (OBPI-03) surfaces any re-accretion at CI time
