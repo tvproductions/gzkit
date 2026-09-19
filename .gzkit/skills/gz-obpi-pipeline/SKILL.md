@@ -5,9 +5,9 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-18
+last_reviewed: 2026-09-19
 metadata:
-  skill-version: "6.59.0"
+  skill-version: "6.59.1"
 model: sonnet
 ---
 
@@ -192,7 +192,7 @@ Stage 4 = HUMAN GATE (wait for attestation) — universal per ADR-0.0.36
 
 ### Stage 1: Load Context
 
-1. Read `.claude/plans/.plan-audit-receipt.json` to find the approved plan
+1. Read this OBPI's plan-audit receipt, `.claude/plans/.plan-audit-receipt-<OBPI-ID>.json`, to find the approved plan (the bare `.plan-audit-receipt.json` is the legacy name, accepted only as a fallback)
    - If receipt exists and OBPI matches: load the plan file from `.claude/plans/`, extract implementation steps
    - If receipt verdict is `FAIL`: **abort** — plan did not pass audit
    - If no receipt found AND `--from` flag is NOT set: **STOP — invoke `/gz-plan-audit <OBPI-ID>` in this same turn** (see § The Plan-Mode Gate for why this comes before native plan mode — GHI #288). The skill authors a canonical-name plan in `.claude/plans/` and writes the receipt directly. Only resume the pipeline after the plan-audit receipt is written. Do NOT "derive tasks informally" or "proceed without a plan." The plan-audit handoff is a governance checkpoint, not an optimization.
@@ -209,7 +209,7 @@ Stage 4 = HUMAN GATE (wait for attestation) — universal per ADR-0.0.36
 6. Identify the parent ADR and inherit its lane and execution constraints.
 7. All OBPIs require human attestation — universal per ADR-0.0.36.
 8. Check for existing handoffs and resume context when present:
-   - `docs/design/adr/**/handoffs/*.md`
+   - `uv run gz handoff resume --adr <ADR-ID>` — handoffs live in `.gzkit/handoffs/`; the per-ADR `handoffs/` folders were retired (ADR-0.0.65)
 9. Claim OBPI lock: `uv run gz obpi lock claim {OBPI-SLUG}` (use the full slug from step 3)
 10. Create pipeline markers. **Preferred path: invoke the runtime to author the marker.**
     The runtime writes the canonical marker shape (including a ledger-witnessed

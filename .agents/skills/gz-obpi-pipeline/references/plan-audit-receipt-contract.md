@@ -1,6 +1,6 @@
 # Plan-Audit-Receipt Contract
 
-The plan-audit-receipt (`.claude/plans/.plan-audit-receipt.json`) is the handoff artifact linking plan mode to this pipeline:
+The plan-audit-receipt (`.claude/plans/.plan-audit-receipt-<OBPI-ID>.json`; the bare `.plan-audit-receipt.json` is the legacy name, read only as a fallback) is the handoff artifact linking plan mode to this pipeline:
 
 ```json
 {
@@ -12,7 +12,7 @@ The plan-audit-receipt (`.claude/plans/.plan-audit-receipt.json`) is the handoff
 }
 ```
 
-- Written by the `plan-audit-gate.py` hook when exiting plan mode
+- Written by `uv run gz plan audit <OBPI-ID>`; the `plan-audit-gate.py` hook reads it and blocks plan exit without a valid one
 - Read by Stage 1 to locate the approved plan
 - **verdict = PASS**: plan is aligned with OBPI brief -- proceed
 - **verdict = FAIL**: plan has alignment gaps -- abort and resolve
