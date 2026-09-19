@@ -23,6 +23,14 @@ obligation discovery has been solved.
 
 ## Execution status — 2026-09-19 follow-through
 
+Operator direction: "all of this work needs to be conducted under a GHI".
+The remaining advisory-impact design, boundedness validation and implementation
+disposition are conducted under [GHI #1053](https://github.com/tvproductions/gzkit/issues/1053).
+Proof currency remains under #1029; production validation remains under #1028.
+Completed repairs and measurements retain the GHI/commit links below. Each next
+work unit names its issue before execution and records decisions and evidence
+there; a closed measurement issue does not discharge an unbuilt feature.
+
 | Plan row | Observed status | Evidence / remaining action |
 |---|---|---|
 | 1: mirror-path equivalence | Shipped and synced; #1049 closed | Commit `08655b31b854e2f016b53bd638e3423e71936c13`; shared repair, behavioral regressions and independent review in [repair evidence](three-pillars-remedies-2026-09-19.md). |
