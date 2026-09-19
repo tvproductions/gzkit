@@ -1,6 +1,6 @@
 # gz skill audit
 
-Audit skill lifecycle metadata and canonical mirror parity.
+Audit skill lifecycle metadata, countable body requirements, and canonical mirror parity.
 
 ## Usage
 
@@ -47,6 +47,24 @@ Known nested `metadata` keys are validated when present:
 - `metadata.govzero-framework-version` (`vN` or `vN.N.N`)
 - `metadata.govzero-author` (non-empty)
 - `metadata.govzero_layer` (`Layer 1 — Evidence Gathering`, `Layer 2 — Ledger Consumption`, or `Layer 3 — File Sync`)
+
+## Canonical Body Checks
+
+`SKA-BODY-UNFINISHED` identifies standalone scaffold markers: empty numbered
+steps, example/constraint/skill labels, and TODO/TBD/FIXME instruction markers.
+Quoted and fenced examples are excluded, as are substantive numbered steps.
+Active and deprecated unfinished skills block; draft findings warn; retired
+bodies are excluded. This is a syntactic check, not a semantic quality verdict.
+
+`SKA-BODY-OVERSIZED` counts body lines after YAML frontmatter. The authoritative
+ceiling is `SKILL_BODY_MAX_LINES` in `gzkit.skill_contract`. Existing oversized
+skills have fixed cutover ceilings in packaged `skill_body_grandfather.json`:
+within those ceilings they warn, above them they block. New oversized skills
+block. The packaged list may only lose entries or lower ceilings; projects
+cannot add local exemptions. Shrinking a delivered skill requires no package edit.
+
+All findings include their code, path, and reason in text and JSON output,
+including non-blocking findings on successful audits. `--strict` fails on warnings.
 
 ## Lifecycle Transition Contract (Fail-Closed)
 

@@ -1,0 +1,17 @@
+{
+  "source_commit": "65436e910590cec6314bc3cd19ea17d94f6a8afe",
+  "source_sha256": "1b37d8f24056adcff80a5341de15c8b47d6d033805a8e23a9cb83945aca3038c",
+  "candidate_sha256": "93d4cf4d8fe1cdd3635baaaa599df2c55021b0fb91abe2c7cbf76ff74510018a",
+  "before_bytes": 125891,
+  "after_bytes": 124041,
+  "bytes_removed_from_body": 1850,
+  "before_lines": 1722,
+  "after_lines": 1702,
+  "lifts": 6,
+  "history_bytes": 3125,
+  "headings_preserved": true,
+  "fenced_blocks_preserved": true,
+  "removed_text_preserved_in_history": true,
+  "new_link_anchors_resolve": true,
+  "source_unchanged": true
+}

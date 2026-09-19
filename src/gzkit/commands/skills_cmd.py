@@ -124,6 +124,19 @@ def _print_skill_audit_success(
     if counts["non_blocking_warning_count"]:
         warning_message = f"{counts['non_blocking_warning_count']} warning(s) found (non-blocking)."
         console.print(f"[yellow]{warning_message}[/yellow]")
+        _print_skill_audit_issues(report)
+
+
+def _print_skill_audit_issues(report: Any) -> None:
+    """Show actionable detail for every finding, including successful audits."""
+    for issue in report.issues:
+        style = "red" if issue.severity == "error" else "yellow"
+        scope = "BLOCKING" if issue.blocking else "NON-BLOCKING"
+        console.print(
+            f"  [{style}]{issue.severity.upper()}[/{style}] "
+            f"\\[{escape(issue.code)}] \\[{scope}] "
+            f"{escape(issue.path)}: {escape(issue.message)}"
+        )
 
 
 def _print_skill_audit_failure(
@@ -138,14 +151,7 @@ def _print_skill_audit_failure(
     )
     console.print(f"Errors: {counts['error_count']}  Warnings: {counts['warning_count']}")
     console.print(f"Max review age: {max_review_age_days} days")
-    for issue in report.issues:
-        style = "red" if issue.severity == "error" else "yellow"
-        scope = "BLOCKING" if issue.blocking else "NON-BLOCKING"
-        console.print(
-            f"  [{style}]{issue.severity.upper()}[/{style}] "
-            f"\\[{escape(issue.code)}] \\[{scope}] "
-            f"{escape(issue.path)}: {escape(issue.message)}"
-        )
+    _print_skill_audit_issues(report)
 
 
 def skill_audit_cmd(as_json: bool, strict: bool, max_review_age_days: int) -> None:

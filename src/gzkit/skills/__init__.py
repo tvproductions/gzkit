@@ -402,14 +402,11 @@ def _validate_scaffold_description(description: str) -> None:
 
 
 def _render_inline_skill_stub(dir_name: str, **kwargs: str) -> str:
-    """Return a minimal valid SKILL.md body for custom-skill scaffolding.
+    """Return an unfinished scaffold requiring authoring before audit can pass.
 
-    The stub satisfies every required frontmatter field enforced by
-    ``gzkit.skills_audit`` (name, description, lifecycle_state, owner,
-    last_reviewed) plus the capability fields (compatibility, invocation,
-    gz_command) so a freshly-scaffolded skill passes ``gz skill audit``
-    on first run. The body is intentionally minimal — operators are
-    expected to flesh it out per the skill-authoring conventions.
+    Frontmatter satisfies the metadata contract; the explicit placeholder
+    steps remain blocking findings until authored according to
+    ``.gzkit/rules/skill-authoring.md``. A scaffold is not a finished procedure.
     """
     skill_name = kwargs.get("skill_name", dir_name.replace("-", " ").title())
     skill_description = kwargs.get("skill_description", "A custom skill for this project.")

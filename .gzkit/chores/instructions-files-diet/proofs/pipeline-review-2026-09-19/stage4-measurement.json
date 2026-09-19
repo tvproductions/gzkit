@@ -1,0 +1,13 @@
+{
+  "cutoff_commit": "6b440453e",
+  "cutoff_timestamp": "2026-09-18T19:30:58-05:00",
+  "ledger_sha256": "3c3923e4bbcc440462530e759b75ee4c135db13e85b0655d23db80a8949093f1",
+  "ledger_rows": 16945,
+  "postchange_relevant_records": [],
+  "last_pipeline_launch": {
+    "event": "pipeline_launched",
+    "id": "OBPI-0.35.0-06-validate-rendition-lineage",
+    "ts": "2026-09-11T05:27:54.602849+00:00"
+  },
+  "conclusion": "No postchange ledger-recorded pipeline launch or acceptance activity; no Stage 4 effectiveness measurement available."
+}

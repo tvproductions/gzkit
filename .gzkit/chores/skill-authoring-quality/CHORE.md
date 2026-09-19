@@ -53,12 +53,22 @@ Descriptions are 80% of skill quality — they determine agent selection accurac
 
 **Size thresholds:**
 
-| Lines | Classification | Action |
-|-------|---------------|--------|
-| <30 | **Alias** — too thin to encode reasoning | Flag: evaluate whether this should be a skill or just a CLI help alias |
-| 30–200 | **Normal** — expected range | Pass |
-| 201–300 | **Heavy** — acceptable for orchestrators | Flag for review |
-| >300 | **Oversized** — must decompose | Fail: extract reference material into companion files, or lift history to `references/` |
+Read the body ceiling from `SKILL_BODY_MAX_LINES` in `gzkit.skill_contract`;
+`gz skill audit` measures body lines after frontmatter and reports
+`SKA-BODY-OVERSIZED`. Decompose bodies above that ceiling. Packaged cutover
+ceilings in `skill_body_grandfather.json` keep existing oversized bodies
+non-blocking until they grow; new oversized bodies block. The list may only
+shrink. The other authoring bands are also declared in `gzkit.skill_contract`:
+
+| Body line range | Classification | Action |
+|---|---|---|
+| Below `SKILL_BODY_ALIAS_MIN_LINES` | Alias candidate | Evaluate whether a skill adds reasoning beyond CLI help |
+| Through `SKILL_BODY_NORMAL_MAX_LINES` | Normal | Pass the size review |
+| Above normal through `SKILL_BODY_MAX_LINES` | Heavy | Review whether orchestration requires this size |
+| Above `SKILL_BODY_MAX_LINES` | Oversized | Decompose or lift reference/history material |
+
+Alias classification and the amount of reasoning remain judgments, not
+additional numeric gates.
 
 **Reasoning checks:**
 
@@ -85,7 +95,7 @@ Flag skills containing placeholder patterns:
 - `Skill 1` / `Skill 2`
 - `TODO` / `TBD` / `FIXME` in body
 
-Any stub detection is a **fail** — stubs fire in production with incomplete instructions.
+Any unfinished active procedure is a **fail** — stubs fire in production with incomplete instructions. `gz skill audit` mechanically detects standalone markers outside quoted/fenced examples as `SKA-BODY-UNFINISHED`; substantive instructions and discussion of markers are not stubs. Draft bodies warn, active/deprecated bodies block, and retired bodies are excluded.
 
 ### 5. Content Duplication — observe
 

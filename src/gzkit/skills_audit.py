@@ -8,7 +8,12 @@ from datetime import date, timedelta
 from pathlib import Path
 
 from gzkit.config import GzkitConfig
-from gzkit.skill_contract import SKILL_DESCRIPTION_MAX_CHARS, SUPPORTED_SKILL_HARNESSES
+from gzkit.skill_contract import (
+    SKILL_BODY_GRANDFATHER,
+    SKILL_BODY_MAX_LINES,
+    SKILL_DESCRIPTION_MAX_CHARS,
+    SUPPORTED_SKILL_HARNESSES,
+)
 from gzkit.skills import SkillAuditIssue, SkillAuditReport, _parse_frontmatter
 
 KEBAB_CASE_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
@@ -595,6 +600,71 @@ def _validate_skill_manpage(
         )
 
 
+def _unfinished_body_lines(body: str) -> list[int]:
+    """Find standalone scaffold markers, excluding quoted/fenced examples."""
+    found = []
+    fence = ""
+    for number, line in enumerate(body.splitlines(), 1):
+        stripped = line.strip()
+        marker_match = re.fullmatch(r"(`{3,}|~{3,})(.*)", stripped)
+        if marker_match:
+            marker, suffix = marker_match.groups()
+            if fence:
+                if marker[0] == fence[0] and len(marker) >= len(fence) and not suffix.strip():
+                    fence = ""
+            elif marker[0] != "`" or "`" not in suffix:
+                fence = marker
+            continue
+        if fence or stripped.startswith(">"):
+            continue
+        text = re.sub(r"^(?:\d+[.)]|[-*+])\s+", "", stripped)
+        if re.fullmatch(
+            r"(?:Step [123]|Example (?:input|output)|Constraint [12]|Skill [12])", text
+        ) or re.match(r"^(?:TODO|TBD|FIXME)(?:$|:|\s)", text):
+            found.append(number)
+    return found
+
+
+def _validate_skill_body(
+    project_root: Path,
+    issues: list[SkillAuditIssue],
+    skill_file: Path,
+    frontmatter: dict[str, str],
+) -> None:
+    """Report mechanically recognizable unfinished canonical procedures."""
+    if frontmatter.get("lifecycle_state") == "retired":
+        return
+    _, body = _parse_frontmatter(skill_file.read_text(encoding="utf-8"))
+    line_count = len(body.splitlines())
+    if line_count > SKILL_BODY_MAX_LINES:
+        ceiling = SKILL_BODY_GRANDFATHER.get(frontmatter.get("name", ""), SKILL_BODY_MAX_LINES)
+        disposition = (
+            f"Within the fixed grandfather ceiling {ceiling}; decompose before adding lines."
+            if line_count <= ceiling
+            else f"Exceeds the allowed ceiling {ceiling}; extract reference material."
+        )
+        _append_audit_issue(
+            issues,
+            project_root,
+            "SKA-BODY-OVERSIZED",
+            skill_file,
+            f"Body has {line_count} lines (frontmatter excluded), above "
+            f"SKILL_BODY_MAX_LINES={SKILL_BODY_MAX_LINES} in gzkit.skill_contract. {disposition}",
+            blocking=line_count > ceiling,
+        )
+    unfinished = _unfinished_body_lines(body)
+    if unfinished:
+        _append_audit_issue(
+            issues,
+            project_root,
+            "SKA-BODY-UNFINISHED",
+            skill_file,
+            f"Unfinished instruction markers at body lines {unfinished}; author the procedure "
+            "per .gzkit/rules/skill-authoring.md before activation.",
+            blocking=frontmatter.get("lifecycle_state") != "draft",
+        )
+
+
 def _validate_canonical_skill(
     project_root: Path,
     issues: list[SkillAuditIssue],
@@ -634,6 +704,7 @@ def _validate_canonical_skill(
         )
         return
 
+    _validate_skill_body(project_root, issues, skill_file, frontmatter)
     _validate_skill_identity(project_root, issues, skill_name, skill_file, frontmatter)
     _validate_skill_metadata_fields(
         project_root, issues, skill_file, frontmatter, max_review_age_days

@@ -1,0 +1,25 @@
+"""Read-only Stage 4 activity census; run from the repository root."""
+from collections import Counter
+from datetime import datetime
+import hashlib
+import json
+from pathlib import Path
+import subprocess
+
+cutoff = datetime.fromisoformat(subprocess.check_output(
+    ['git', 'show', '-s', '--format=%cI', '6b440453e'], text=True).strip())
+path = Path('.gzkit/ledger.jsonl')
+rows = [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+relevant = {'pipeline_launched', 'acceptance_recorded',
+            'adversarial_validation', 'obpi_receipt_emitted'}
+counts = Counter()
+for row in rows:
+    if row.get('event') not in relevant:
+        continue
+    if datetime.fromisoformat(row['ts'].replace('Z', '+00:00')) > cutoff:
+        counts[(row['id'], row['event'], row.get('record_type', ''))] += 1
+print(json.dumps({'cutoff': cutoff.isoformat(),
+    'ledger_sha256': hashlib.sha256(path.read_bytes()).hexdigest(),
+    'ledger_rows': len(rows),
+    'counts': [dict(obpi_id=k[0], event=k[1], record_type=k[2], count=v)
+               for k, v in sorted(counts.items())]}, indent=2))

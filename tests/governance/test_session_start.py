@@ -165,6 +165,21 @@ class ChainLineageAdvisementTests(unittest.TestCase):
 
         self.assertNotIn("Chained from", advisement.text)
 
+    def test_ancestor_count_is_qualified_only_when_lineage_is_incomplete(self) -> None:
+        """GHI #870: SessionStart must distinguish exact from lower-bound counts."""
+        for count in (20, 21):
+            with self.subTest(count=count):
+                root = self._root()
+                for index in range(count):
+                    self._seed(
+                        root,
+                        slug=f"link{index:02d}",
+                        timestamp=f"2026-09-19T09:{index:02d}:00Z",
+                    )
+                text = build_advisement(root, now="2026-09-19T10:00:00Z").text
+                self.assertIn("19 ancestors", text)
+                self.assertEqual("at least 19 ancestors" in text, count > 20)
+
 
 class TranscribedCountAdvisementTests(unittest.TestCase):
     """The advisement warns when the document it injects carries a live count.

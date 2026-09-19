@@ -26,7 +26,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from gzkit.handoff_api import _carried_settled, load_handoff_chain
+from gzkit.handoff_api import _carried_settled, load_handoff_chain, resume_handoff
 from gzkit.handoff_validation import HandoffFrontmatter, continues_from_refs
 
 
@@ -183,6 +183,88 @@ class TestChainWalkReachesEveryAncestor(unittest.TestCase):
                 {"x.md", "y.md"},
                 "The visited-set guard must still terminate a multi-parent cycle",
             )
+
+    def test_shortcut_parent_never_follows_its_descendant(self) -> None:
+        """GHI #1038: distance from the head is not an ancestry order."""
+        for parents in (["a.md", "b.md"], ["b.md", "a.md"]):
+            with self.subTest(parents=parents), tempfile.TemporaryDirectory() as tmp:
+                base = Path(tmp)
+                _write(base, name="a.md", timestamp="2026-09-19T09:00:00Z")
+                _write(base, name="b.md", timestamp="2026-09-19T10:00:00Z", continues_from="a.md")
+                head = _write(
+                    base, name="m.md", timestamp="2026-09-19T11:00:00Z", continues_from=parents
+                )
+                self.assertEqual(
+                    [p.name for p in load_handoff_chain(head, base_path=base)],
+                    ["a.md", "b.md", "m.md"],
+                )
+
+    def test_shared_ancestor_precedes_both_branches_once(self) -> None:
+        """A diamond preserves both parent relations without duplicating the root."""
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            _write(base, name="root.md", timestamp="2026-09-19T08:00:00Z")
+            for name in ("left.md", "right.md"):
+                _write(base, name=name, timestamp="2026-09-19T09:00:00Z", continues_from="root.md")
+            head = _write(
+                base,
+                name="merge.md",
+                timestamp="2026-09-19T10:00:00Z",
+                continues_from=["left.md", "right.md"],
+            )
+            names = [p.name for p in load_handoff_chain(head, base_path=base)]
+            self.assertEqual(len(names), 4)
+            self.assertEqual(names.count("root.md"), 1)
+            for parent, child in (
+                ("root.md", "left.md"),
+                ("root.md", "right.md"),
+                ("left.md", "merge.md"),
+                ("right.md", "merge.md"),
+            ):
+                self.assertLess(names.index(parent), names.index(child))
+
+    def test_limit_with_only_repeated_references_remaining_is_complete(self) -> None:
+        """GHI #870: queued cycle/duplicate edges do not imply omitted documents."""
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            directory = base / ".gzkit" / "handoffs"
+            directory.mkdir(parents=True)
+            for index in range(20):
+                _write(
+                    directory,
+                    name=f"n{index:02d}.md",
+                    timestamp=f"2026-09-19T09:{index:02d}:00Z",
+                    continues_from=(
+                        ["n00.md", "n19.md"]
+                        if index == 0
+                        else [f"n{index - 1:02d}.md", f"n{index - 1:02d}.md"]
+                    ),
+                )
+            result = resume_handoff(base_path=base, now="2026-09-19T10:00:00Z")
+            self.assertEqual(len(result.chain), 20)
+            self.assertEqual(len(set(result.chain)), 20)
+            self.assertTrue(result.chain[-1].endswith("n19.md"))
+            self.assertFalse(result.chain_truncated)
+
+    def test_wide_merge_preserves_nearest_unique_population_at_limit(self) -> None:
+        """Ordering must not replace breadth-first selection with a deep branch walk."""
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            directory = base / ".gzkit" / "handoffs"
+            directory.mkdir(parents=True)
+            names = [f"n{index:02d}.md" for index in range(25)]
+            for index, name in enumerate(names):
+                _write(directory, name=name, timestamp=f"2026-09-19T09:{index:02d}:00Z")
+            _write(
+                directory,
+                name="head.md",
+                timestamp="2026-09-19T10:00:00Z",
+                continues_from=[names[0], *names],
+            )
+            result = resume_handoff(base_path=base, now="2026-09-19T11:00:00Z")
+            self.assertEqual({Path(p).name for p in result.chain}, {*names[:19], "head.md"})
+            self.assertTrue(result.chain[-1].endswith("head.md"))
+            self.assertTrue(result.chain_truncated)
 
 
 class TestArchiveGuardProtectsEveryAncestor(unittest.TestCase):

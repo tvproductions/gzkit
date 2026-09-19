@@ -169,6 +169,13 @@
       "mechanism": "shrink-ratchet",
       "entries_path": "accepted_unreachable_versions",
       "baseline_count": 34
+    },
+    {
+      "data_file": "src/gzkit/skill_body_grandfather.json",
+      "gates_step": "Skill audit (gz skill audit)",
+      "mechanism": "shrink-ratchet",
+      "entries_path": "",
+      "baseline_count": 12
     }
   ],
   "excluded": [

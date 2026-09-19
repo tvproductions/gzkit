@@ -1,0 +1,14 @@
+import unittest
+from pathlib import Path
+from unittest.mock import patch
+from tests import test_obpi_skill_migration as migration
+from tests.skills.test_skill_surface_sync_justify import TestGzObpiPipelineConfidenceBlock
+candidate=Path('.gzkit/chores/instructions-files-diet/proofs/pipeline-review-2026-09-19/candidate-SKILL.md.txt').read_text()
+original=Path.read_text
+def candidate_read(path,*args,**kwargs):
+ if path.name=='SKILL.md' and path.parent.name=='gz-obpi-pipeline': return candidate
+ return original(path,*args,**kwargs)
+suite=unittest.TestSuite([unittest.defaultTestLoader.loadTestsFromModule(migration),unittest.defaultTestLoader.loadTestsFromTestCase(TestGzObpiPipelineConfidenceBlock)])
+with patch.object(Path,'read_text',candidate_read):
+ result=unittest.TextTestRunner(verbosity=1).run(suite)
+raise SystemExit(not result.wasSuccessful())

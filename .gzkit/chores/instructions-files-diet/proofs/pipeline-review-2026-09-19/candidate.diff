@@ -1,0 +1,43 @@
+--- a/.gzkit/skills/gz-obpi-pipeline/SKILL.md
++++ b/.gzkit/skills/gz-obpi-pipeline/SKILL.md
+@@ -10 +10 @@
+-  skill-version: "6.59.1"
++  skill-version: "6.59.2"
+@@ -500,4 +500 @@
+-         Measured 2026-09-02 on OBPI-0.35.0-04: a reviewer asked to re-derive a byte span and
+-         re-run a behave selection could do neither, reported both honestly as `info` findings,
+-         and returned **CONCERNS** — every finding about its own coverage, none about the code.
+-         Re-derived by the orchestrator, both checks passed.
++         Incident record: [reviewer execution gaps](references/history.md#reviewer-execution-gaps).
+@@ -878 +875 @@
+-**When a round repeats the prior round's ROOT, stop dispatching and escalate the DESIGN (operator ruling 2026-09-03).** Compare each round's `Weakest point` against the last. If it names the same root cause at a different surface, another fix cycle will surface it again one layer deeper: stop, and put the design decision to the operator (§ Behavior Rules — Always #9). Measured: rounds 2, 3 and 4 each patched a different surfacing of one root cause — provenance inferred from a witness's self-consistent claims rather than chained to prior ledger state — at roughly 3h per cycle; the operator ruled the design in a single exchange and it closed in one pass. Round 4's fix also INTRODUCED round 5's critical, which is the signature of patching a surfacing rather than the design.
++**When a round repeats the prior round's ROOT, stop dispatching and escalate the DESIGN (operator ruling 2026-09-03).** Compare each round's `Weakest point` against the last. If it names the same root cause at a different surface, another fix cycle will surface it again one layer deeper: stop, and put the design decision to the operator (§ Behavior Rules — Always #9). Incident record: [repeated root](references/history.md#repeated-root).
+@@ -1025,7 +1022 @@
+-**Why replay is separate from Step 4b.** 4b re-derives the *claim* from the REQs and
+-the repository; historically it was not handed the *packet*, so a fabricated transcript passed an
+-adversary that never looks at it. Observed 2026-09-02 on OBPI-0.35.0-04: a `$` block
+-rendered `gz covers --json` output with keys the command does not emit (`obpi_id`,
+-`coverage_pct`) around figures that were themselves correct — the numbers came from
+-the dispatch prompt and the *evidence was constructed around them*. It was caught only
+-because a human happened to re-run the commands.
++**Why replay is separate from Step 4b.** Replay checks whether the displayed packet reproduces; Step 4b judges the claim against requirements and the repository. Correct figures do not establish an authentic transcript. Incident record: [packet replay](references/history.md#packet-replay).
+@@ -1231,8 +1222 @@
+-> **Measured cost of one hand-rolled run (2026-08-25, OBPI-0.35.0-02):** ~15 minutes
+-> wedged at 0.07s CPU because `codex exec` blocked on an unredirected stdin — a state
+-> `codex:setup` reports as `ready: true`; then a 500KB undifferentiated blob that had to
+-> be `sed`-sliced to find the verdict; then a re-run **refused outright** by an upstream
+-> cyber filter (*"This content was flagged for possible cybersecurity risk"*) because a
+-> hand-written refute prompt named Unicode bypass techniques. The plugin path, launched
+-> against the identical work, streamed structured findings with severity and confidence
+-> and surfaced a **high**-severity defect the hand-rolled run had missed entirely.
++> The hand-rolled dispatch previously hung, lost structure, and missed a defect the plugin found against identical work. Incident record: [plugin dispatch](references/history.md#plugin-dispatch).
+@@ -1348 +1332 @@
+-**Bound the claim BEFORE the first round, or the gate cannot converge (operator ruling 2026-09-03).** An adversary instructed to REFUTE will escalate the attacker one notch each round, so an ABSOLUTE claim ("no X can occur without Y") is unrefutable-in-bounded-time by construction. For any OBPI whose subject is a trust chain, provenance, or a tamper-evidence property, the brief MUST carry a `## Threat Model` section BEFORE Step 4b is first dispatched, naming what an attacker may do and what is an accepted residual — and the dispatch prompt MUST state that boundary and forbid the adversary from reporting an out-of-scope attack as a finding. Measured on OBPI-0.35.0-04: five rounds, 53 minutes of adversary compute across a 12.5-hour wall clock (7%); the rest was fix cycles. Rounds 4 and 5 spent ~9 hours hardening attacks whose reproduction required appending arbitrary rows to `.gzkit/ledger.jsonl` — strictly inside a residual the operator had already accepted for `.gzkit/ownership/`, the same directory and the same access. `docs/governance/trust-doctrine.md` covers AGENT trust-chain poisoning and declares no filesystem threat model, so nothing bounded the adversary and the agent never asked whether the attacker was in scope.
++**Bound the claim BEFORE the first round, or the gate cannot converge (operator ruling 2026-09-03).** An adversary instructed to REFUTE will escalate the attacker one notch each round, so an ABSOLUTE claim ("no X can occur without Y") is unrefutable-in-bounded-time by construction. For any OBPI whose subject is a trust chain, provenance, or a tamper-evidence property, the brief MUST carry a `## Threat Model` section BEFORE Step 4b is first dispatched, naming what an attacker may do and what is an accepted residual — and the dispatch prompt MUST state that boundary and forbid the adversary from reporting an out-of-scope attack as a finding. Incident record: [unbounded threat model](references/history.md#unbounded-threat-model). `docs/governance/trust-doctrine.md` covers AGENT trust-chain poisoning and declares no filesystem threat model, so nothing bounded the adversary and the agent never asked whether the attacker was in scope.
+@@ -1630,5 +1614 @@
+-**Measured cost of not having this** (`OBPI-0.35.0-02`, 2026-08-25/26): 21
+-`red_receipt_emitted`, 10 `task_started`, **zero** `task_completed`, four
+-`pipeline_launched` and three adversary rounds in the 24 hours after the brief
+-became structurally uncompletable. Four agents each re-derived that a human was
+-needed; none could record it, so each kept working the surrounding surface.
++**Why the blocked state matters.** Without a durable decision-needed state, successive sessions repeated work around an uncompletable brief. Incident record: [blocked state](references/history.md#blocked-state).

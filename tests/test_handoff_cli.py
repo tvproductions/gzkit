@@ -438,6 +438,18 @@ class TestHandoffResumeChainRendering(_HandoffCliCase):
 
         self.assertIn("depth bound", out)
 
+    def test_complete_chain_at_limit_does_not_claim_omitted_ancestors(self) -> None:
+        """GHI #870: reaching the limit does not prove more ancestors exist."""
+        for index in range(_CHAIN_DEPTH_BOUND):
+            self._seed(
+                adr_id="ADR-0.0.65",
+                slug=f"link{index:02d}",
+                timestamp=f"2026-07-14T{index + 1:02d}:00:00Z",
+            )
+        out = self._resume()
+        self.assertIn("lineage", out)
+        self.assertNotIn("depth bound", out)
+
 
 class TestHandoffResumeDecisionRendering(_HandoffCliCase):
     """An operator ruling must not arrive looking like an agent preference.

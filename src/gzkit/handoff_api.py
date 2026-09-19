@@ -1075,37 +1075,63 @@ def list_handoffs(*, adr_id: str | None = None, base_path: Path = Path()) -> lis
     return infos
 
 
-def load_handoff_chain(handoff_path: Path, *, base_path: Path = Path()) -> list[Path]:
-    """Follow ``continues_from`` links, returning the chain oldest-first.
+def _order_handoff_chain(paths: dict[Path, Path], parents: dict[Path, list[Path]]) -> list[Path]:
+    """Order discovered ancestors before descendants, visiting shared nodes once.
 
-    Traversal is bounded (``≤20`` nodes) and cycle-safe: a visited set means a
-    self- or loop-reference terminates rather than looping forever. The start
-    handoff is included; the returned list is ordered oldest-to-newest.
-
-    Lineage is a DAG, not a list (GHI #790): a collapsed fork has two genuine
-    parents, so this walks EVERY ``continues_from`` ref breadth-first rather than
-    following the first. Discovery order is start-then-parents-then-grandparents,
-    reversed on return — which reproduces the previous ordering exactly for the
-    linear case that had been the only expressible one, while a merged node now
-    lists both ancestors instead of silently omitting one side.
+    Cyclic input has no ancestry order; marking before descent preserves the
+    existing deterministic termination contract and keeps the selected head last.
     """
-    chain: list[Path] = []
+    ordered: list[Path] = []
     visited: set[Path] = set()
+
+    def visit(node: Path) -> None:
+        if node in visited or node not in paths:
+            return
+        visited.add(node)
+        for parent in parents.get(node, []):
+            visit(parent)
+        ordered.append(paths[node])
+
+    for node in paths:
+        visit(node)
+    return ordered
+
+
+def _walk_handoff_chain(handoff_path: Path, base_path: Path) -> tuple[list[Path], bool]:
+    """Discover the nearest bounded population, then order it by ancestry.
+
+    Breadth-first selection preserves both branches at the limit. Reversing that
+    discovery order was not a topological sort for shortcut DAG edges (GHI #1038).
+    Only unvisited references remaining at the limit mean truncation (GHI #870).
+    """
+    paths: dict[Path, Path] = {}
+    parents: dict[Path, list[Path]] = {}
     queue: list[Path] = [handoff_path]
-    while queue and len(chain) < _MAX_CHAIN_DEPTH:
+    while queue and len(paths) < _MAX_CHAIN_DEPTH:
         current = queue.pop(0)
         resolved = current.resolve()
-        if resolved in visited:
+        if resolved in paths:
             continue
-        visited.add(resolved)
-        chain.append(current)
+        paths[resolved] = current
         try:
             fm = parse_frontmatter(current.read_text(encoding="utf-8"))
         except (OSError, UnicodeDecodeError, HandoffValidationError):
             continue
         refs = continues_from_refs(fm.get("continues_from") if isinstance(fm, dict) else None)
-        queue.extend(resolve_continues_from(ref, current, base_path) for ref in refs)
-    chain.reverse()
+        ancestors = [resolve_continues_from(ref, current, base_path) for ref in refs]
+        parents[resolved] = [path.resolve() for path in ancestors]
+        queue.extend(ancestors)
+    truncated = any(path.resolve() not in paths for path in queue)
+    return _order_handoff_chain(paths, parents), truncated
+
+
+def load_handoff_chain(handoff_path: Path, *, base_path: Path = Path()) -> list[Path]:
+    """Return up to 20 unique lineage documents, ancestors before descendants.
+
+    The selected head remains last. Multi-parent discovery is breadth-first;
+    ordering respects every discovered DAG edge. Cycles terminate deterministically.
+    """
+    chain, _ = _walk_handoff_chain(handoff_path, base_path)
     return chain
 
 
@@ -1158,14 +1184,15 @@ def resume_handoff(
     content = path.read_text(encoding="utf-8")
     staleness = _classify_staleness(now, newest.timestamp)
     requires = staleness in (StalenessLevel.STALE, StalenessLevel.VERY_STALE)
-    chain = [p.as_posix() for p in load_handoff_chain(path, base_path=base_path)]
+    chain_paths, chain_truncated = _walk_handoff_chain(path, base_path)
+    chain = [p.as_posix() for p in chain_paths]
     return ResumeResult(
         path=path.as_posix(),
         staleness=staleness,
         requires_human_verification=requires,
         steps=_build_steps(content, reference_checker),
         chain=chain,
-        chain_truncated=len(chain) >= _MAX_CHAIN_DEPTH,
+        chain_truncated=chain_truncated,
         decisions=parse_decisions(content),
         # Store FIRST, then the document's own prose (GHI #838). A post-cutover
         # handoff carries a pointer and yields nothing here; a legacy one carries

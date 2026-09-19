@@ -38,6 +38,15 @@ closed questions that are still relevant — do not re-open them.
 A handoff advises; it does not authorize. The reported steps are advised
 actions for the operator to ratify — resuming is not a Gate-5 attestation.
 
+The lineage includes up to 20 unique documents, selecting the nearest ancestors
+breadth-first and listing discovered ancestors before their descendants. Shared
+ancestors appear once; the selected handoff is last. Cyclic references terminate
+deterministically, though a cycle cannot have an ancestor-before-descendant order.
+`chain_truncated` is true only when additional references remain unvisited after
+the limit. A complete lineage of exactly 20 documents is not truncated. Unvisited
+references have not been checked for file existence. CLI output names this limit;
+SessionStart qualifies the ancestor count with “at least” only when truncated.
+
 ---
 
 ## Usage

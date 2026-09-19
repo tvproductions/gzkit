@@ -181,7 +181,8 @@ def _render_chain(result: ResumeResult) -> None:
         # asserts a completeness it never established — and the bound only
         # becomes load-bearing once something reads the chain, which is now.
         console.print(
-            "  lineage hit the walk's depth bound — older ancestors exist and are NOT listed above."
+            "  lineage hit the walk's depth bound — additional ancestor references "
+            "remain unvisited and are NOT listed above."
         )
 
 
