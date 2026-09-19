@@ -2697,7 +2697,7 @@ class TestContentUnownRound9(unittest.TestCase):
             self.assertEqual(
                 result.output.rstrip("\n").splitlines()[-1],
                 "  Retry with `gz content unown Doc.md --section alpha-section "
-                '--attestor "<your name>" --reason "<why>"`.',
+                '--attestor "<attestor-handle>" --reason "<why>"`.',
                 "the next step is the canonical retry and nothing else",
             )
 

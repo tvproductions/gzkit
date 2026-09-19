@@ -115,7 +115,7 @@ def _refuse_blank_attestation(
         "named attestor and a reason, fail-closed, with no unchanged-canon exemption "
         "(REQ-0.35.0-04-04; AGENTS.md § Operator Doctrine). Nothing written.\n"
         f"  Retry with `gz content {verb} {surface} --section {section} "
-        '--attestor "<your name>" --reason "<why>"`.',
+        '--attestor "<attestor-handle>" --reason "<why>"`.',
         file=sys.stderr,
     )
     sys.exit(1)
@@ -322,7 +322,7 @@ def _refuse_surface_identity(
     if declared is not None:
         retry = (
             f"  Retry with `gz content {verb} {declared} --section {section} "
-            '--attestor "<your name>" --reason "<why>"`.'
+            '--attestor "<attestor-handle>" --reason "<why>"`.'
         )
     else:
         retry = (

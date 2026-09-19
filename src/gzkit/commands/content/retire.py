@@ -280,7 +280,7 @@ def content_retire_cmd(
             "GHI #635); nothing written.\n"
             f"{_live_id_hint(corpus, surface)}\n"
             f"  Retry with `gz content retire {surface} --entry <id> "
-            '--reason "<why>" --attestor "<your name>"`.',
+            '--reason "<why>" --attestor "<attestor-handle>"`.',
             file=sys.stderr,
         )
         sys.exit(1)
@@ -292,7 +292,7 @@ def content_retire_cmd(
             "(GHI #635); nothing written.\n"
             f"{_live_id_hint(corpus, surface)}\n"
             f"  Retry with `gz content retire {surface} --entry <id> "
-            '--reason "<why>" --attestor "<your name>"`.',
+            '--reason "<why>" --attestor "<attestor-handle>"`.',
             file=sys.stderr,
         )
         sys.exit(1)
@@ -317,7 +317,7 @@ def content_retire_cmd(
             "retirement (AGENTS.md § Operator Doctrine; the ATTESTATION GRANULARITY "
             "FOR THE CONTENT SURFACE ruling); nothing written.\n"
             f"  Retry with `gz content retire {surface} --entry {entry_id} "
-            '--reason "<why>" --attestor "<your name>"`.',
+            '--reason "<why>" --attestor "<attestor-handle>"`.',
             file=sys.stderr,
         )
         sys.exit(1)
@@ -337,7 +337,7 @@ def content_retire_cmd(
             "both reject an empty one (.claude/rules/guardrail-feedback-prose.md); "
             "nothing written.\n"
             f"  Retry with `gz content retire {surface} --entry {entry_id} "
-            '--reason "<why>" --attestor "<your name>"`.',
+            '--reason "<why>" --attestor "<attestor-handle>"`.',
             file=sys.stderr,
         )
         sys.exit(1)
@@ -369,7 +369,7 @@ def content_retire_cmd(
             "named --attestor (AGENTS.md § Operator Doctrine; the ATTESTATION "
             "GRANULARITY FOR THE CONTENT SURFACE ruling); nothing written.\n"
             f"  Retry with `gz content retire {surface} --entry {entry_id} "
-            '--reason "<why>" --attestor "<your name>"`.',
+            '--reason "<why>" --attestor "<attestor-handle>"`.',
             file=sys.stderr,
         )
         sys.exit(1)

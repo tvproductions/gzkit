@@ -716,7 +716,7 @@ uv run gz attest ADR-<X.Y.Z> --status completed
 uv run gz audit ADR-<X.Y.Z>
 
 # 5) Receipt/accounting at ADR scope
-uv run gz adr emit-receipt ADR-<X.Y.Z> --event validated --attestor "<Human Name>" --evidence-json '{"scope":"ADR-<X.Y.Z>","date":"YYYY-MM-DD"}'
+uv run gz adr emit-receipt ADR-<X.Y.Z> --event validated --attestor "<attestor-handle>" --evidence-json '{"scope":"ADR-<X.Y.Z>","date":"YYYY-MM-DD"}'
 ```
 
 ---

@@ -102,13 +102,13 @@ uv run gz audit ADR-0.1.0
 ## 7. Receipt Accounting
 
 ```bash
-uv run gz adr emit-receipt ADR-0.1.0 --event validated --attestor "<Human Name>" --evidence-json '{"scope":"ADR-0.1.0","date":"YYYY-MM-DD"}'
+uv run gz adr emit-receipt ADR-0.1.0 --event validated --attestor "<attestor-handle>" --evidence-json '{"scope":"ADR-0.1.0","date":"YYYY-MM-DD"}'
 ```
 
 For OBPI-scope receipts during daily increments, use:
 
 ```bash
-uv run gz obpi emit-receipt OBPI-0.1.0-01-<slug> --event completed --attestor "<Human Name>" --evidence-json '{"attestation":"observed","date":"YYYY-MM-DD"}'
+uv run gz obpi emit-receipt OBPI-0.1.0-01-<slug> --event completed --attestor "<attestor-handle>" --evidence-json '{"attestation":"observed","date":"YYYY-MM-DD"}'
 ```
 
 ---

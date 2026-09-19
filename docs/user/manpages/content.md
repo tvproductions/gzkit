@@ -194,7 +194,7 @@ closed, writing nothing:
 ```console
 $ gz content retire AGENTS.md --entry corpus-attestation-2026-06-06T06:20:27.327411+00:00 --reason "probe"
 Error: retiring 'corpus-attestation-2026-06-06T06:20:27.327411+00:00' moves the liveness of invariant-tier entry corpus-attestation-2026-06-06T06:20:27.327411+00:00 — the 0-Kelvin floor every rendition must carry verbatim — un-binding floor canon is a canon change, so it requires a named --attestor (AGENTS.md § Operator Doctrine; the ATTESTATION GRANULARITY FOR THE CONTENT SURFACE ruling); nothing written.
-  Retry with `gz content retire AGENTS.md --entry corpus-attestation-2026-06-06T06:20:27.327411+00:00 --reason "<why>" --attestor "<your name>"`.
+  Retry with `gz content retire AGENTS.md --entry corpus-attestation-2026-06-06T06:20:27.327411+00:00 --reason "<why>" --attestor "<attestor-handle>"`.
 $ echo $?
 1
 ```
@@ -215,7 +215,7 @@ surface, the command answers that question itself rather than naming one:
 $ gz content retire AGENTS.md --entry does-not-exist --reason "probe"
 Error: no corpus entry 'does-not-exist' in surface 'AGENTS.md'. Retirement targets an existing entry (append-only corpus store, GHI #635); nothing written.
   Live entry ids include: 'corpus-attestation-2026-06-06T06:20:27.327411+00:00', 'corpus-behavior-rules-2026-06-10T07:53:55.264205+00:00', 'corpus-behavior-rules-2026-06-10T08:12:41.048588+00:00' (+52 more).
-  Retry with `gz content retire AGENTS.md --entry <id> --reason "<why>" --attestor "<your name>"`.
+  Retry with `gz content retire AGENTS.md --entry <id> --reason "<why>" --attestor "<attestor-handle>"`.
 $ echo $?
 1
 ```
@@ -271,7 +271,7 @@ writing nothing — the declaration on disk stays byte-unchanged and no
 $ gz content unown AGENTS.md --section attestation --attestor "" --reason "probe"
 Error: --attestor is empty or whitespace-only.
 Why forbidden: un-owning a section is a canon change with the same corpus-attestation shape as `gz content retire` -- it always requires a named attestor and a reason, fail-closed, with no unchanged-canon exemption (REQ-0.35.0-04-04; AGENTS.md § Operator Doctrine). Nothing written.
-  Retry with `gz content unown AGENTS.md --section attestation --attestor "<your name>" --reason "<why>"`.
+  Retry with `gz content unown AGENTS.md --section attestation --attestor "<attestor-handle>" --reason "<why>"`.
 $ echo $?
 1
 ```

@@ -656,7 +656,7 @@ class TestContentRetireAttestation(unittest.TestCase):
         self.assertTrue(commands, msg=f"recovery prose named no runnable command: {output}")
         for cmd in commands:
             argv = shlex.split(cmd)[1:]
-            # Placeholder operands (`<your name>`) are the operator's to fill. SUBSTITUTE
+            # Placeholder operands (`<attestor-handle>`) are the operator's to fill. SUBSTITUTE
             # rather than strip: stripping leaves a required-value flag with no value, so
             # argparse errors on THAT before it ever reaches the rest of the command, and
             # a later flag's rename would slip past the checks below unseen. Substituting
@@ -1244,7 +1244,8 @@ class TestContentRetireAttestation(unittest.TestCase):
             retry = commands[-1]
             argv = shlex.split(retry)[1:]
             filled = [
-                "g0" if a == "<your name>" else "superseded" if a == "<why>" else a for a in argv
+                "g0" if a == "<attestor-handle>" else "superseded" if a == "<why>" else a
+                for a in argv
             ]
             self.assertNotIn("<", "".join(filled), f"unfilled placeholder in {retry}")
 
@@ -1832,7 +1833,7 @@ class TestContentRetireManpageOutputForm(unittest.TestCase):
         self.assertNotIn("requires BOTH a named --attestor and a --reason", manpage)
 
         # The real retry line orders --reason before --attestor.
-        self.assertIn('--reason "<why>" --attestor "<your name>"', manpage)
+        self.assertIn('--reason "<why>" --attestor "<attestor-handle>"', manpage)
 
     def test_manpage_unknown_entry_transcript_matches_real_cli_output(self) -> None:
         """Finding 2: the fail-closed-paths retry must carry --attestor.
@@ -1864,7 +1865,7 @@ class TestContentRetireManpageOutputForm(unittest.TestCase):
         for phrase in (
             "no corpus entry 'does-not-exist' in surface 'AGENTS.md'",
             "Live entry ids include:",
-            '--entry <id> --reason "<why>" --attestor "<your name>"',
+            '--entry <id> --reason "<why>" --attestor "<attestor-handle>"',
         ):
             self.assertIn(
                 phrase,
@@ -1877,7 +1878,7 @@ class TestContentRetireManpageOutputForm(unittest.TestCase):
         for phrase in (
             "no corpus entry 'does-not-exist' in surface 'AGENTS.md'",
             "Live entry ids include:",
-            '--entry <id> --reason "<why>" --attestor "<your name>"',
+            '--entry <id> --reason "<why>" --attestor "<attestor-handle>"',
         ):
             self.assertIn(
                 phrase,

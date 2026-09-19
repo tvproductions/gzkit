@@ -800,7 +800,7 @@ Summarize the OBPI's delivery in three parts:
 ## Gate 5 Attestation
 
 **Date:** YYYY-MM-DD
-**Attestor:** [human name/handle]
+**Attestor:** [attestor handle — never a real name]
 **Response:** [Completed | Completed — Partial | Dropped]
 **CLI Commands Executed:**
 - `uv run gz [verb] [target]` — [observed behavior]
