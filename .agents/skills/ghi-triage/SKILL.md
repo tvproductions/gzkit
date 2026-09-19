@@ -5,9 +5,9 @@ description: Triage every open GHI — read each body, classify severity, and pr
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-25
+last_reviewed: 2026-09-19
 metadata:
-  skill-version: "5.2.0"
+  skill-version: "5.2.1"
 model: sonnet
 ---
 
@@ -42,7 +42,7 @@ routing, detect duplicates, and emit one record per issue with the full
 body inline:
 
 ```bash
-uv run python .claude/skills/ghi-triage/scripts/triage.py [args] --format json
+uv run python .gzkit/skills/ghi-triage/scripts/triage.py [args] --format json
 ```
 
 Each record contains: `number`, `title`, `labels`, `klass` (one of
@@ -89,16 +89,11 @@ round 3):**
 | `severity` | one of `blocking` (current work fails), `degrading` (succeeds but produces drift), `latent` (deferrable) |
 | any other field | **rejected** — the script returns exit 1 if a `rankings[*]` entry contains keys other than `number` and `severity` |
 
-The schema is structural-only by design. Earlier versions (≤4.3.x) accepted
-agent-supplied `action` and `why` prose, which then duplicated the
-renderer's output in the operator's chat surface — the rank-input JSON
-visible in the Bash command (or Write/heredoc) showed the same severity +
-action + why content the rendered deliverable then printed back. GHI #424
-was reopened twice while chat-silence rules tried to suppress that
-duplication; only removing the prose fields from the schema makes
-recurrence mechanically impossible. The agent's cognitive contribution is
-**selection + ordering + severity**; the renderer owns all prose, derived
-from the fetched issue set.
+The schema is structural-only by design: prose fields in the rank input
+duplicated the renderer's output in the operator's chat surface, and only
+removing them from the schema made that impossible (GHI #424). The agent's
+cognitive contribution is **selection + ordering + severity**; the renderer owns
+all prose, derived from the fetched issue set.
 
 ### Step 3 — Render the deliverable
 
@@ -107,8 +102,7 @@ then pass that path to the script with `--format rank`:
 
 ```bash
 # Write tool: .gzkit/cache/triage/rank.json  ← {"rankings":[…]}
-uv run python .claude/skills/ghi-triage/scripts/triage.py \
-    --format rank --rank-input .gzkit/cache/triage/rank.json
+uv run python .gzkit/skills/ghi-triage/scripts/triage.py --format rank --rank-input .gzkit/cache/triage/rank.json
 ```
 
 `--rank-input` rejects stdin (`-`) and any path outside
@@ -147,8 +141,8 @@ uv run gz obpi lock list
 ```
 
 Use the result to set severity to `blocking` (overlap creates a hard
-ordering dependency) or to add an explicit precondition to the WHY field
-(e.g. "must precede #N because they share `src/foo.py`"). Do **not** run
+ordering dependency) and to order the dependent GHI after the one it waits on —
+the rank input carries no prose field to say why. Do **not** run
 this cross-check unconditionally — `gz state --json` is a 1.5 MB output
 that takes 10–30 s to compute; running it on every triage burns operator
 time for no signal. The default state of this step is *skipped*.
@@ -183,7 +177,7 @@ neither is part of the agent's binding output.
    - **ambiguous** when precedent is missing (operator decides direction)
    - **Escalation rule (one-way only):** if a GHI's shape warrants architectural work, the operator authors a *new ADR* via `gz plan` / `gz-design`, and OBPI decomposition follows from that ADR. The path is GHI → ADR → OBPI; it is never GHI → OBPI. An OBPI without an ADR home is a definitional defect, not a destination. Triage cannot manufacture either escalation step — schema/contract/scope-expansion signals in a GHI body are surfaced through the rationale field as escalation hints for operator judgment, not as a routing flip, and the script will never emit an OBPI route.
 5. Scores urgency: `now` (blocking signal), `soon` (defect default), `later` (chore)
-6. Validates rank input (severity enum, action ≤80 chars, why ≤120 chars, no newlines, no markdown control chars) and renders the deterministic deliverable
+6. Validates rank input (each entry is exactly `number` + `severity`; the severity enum; the number is in the fetched set; any other key exits 1) and renders the deterministic deliverable
 
 The mechanical pre-pass is necessary but not sufficient. It cannot read
 the body for intent, weigh against in-flight ADR work, or sequence work
@@ -191,26 +185,13 @@ by dependency — that is what the agent does in Step 2.
 
 ## Why script + agent, not script alone
 
-The v2 redesign collapsed triage to "run a script, present output." That
-produced **routing classification, not triage** — the script can compute
-`precedent ≥3 AND ≤3 files` but cannot answer "is this issue blocking the
-current ADR?" or "should #319 land before #318?"
-
-The v3 rewrite over-corrected: it bound the agent to render Rich panels +
-recommended-order tables + rank lists *inline*, producing three views of
-the same eight rows and routing the deliverable rendering through agent
-prose where determinism leaked turn-to-turn. Three concrete defects
-landed that v3 addressed with new ceremony rather than fixing the
-fundamental: **the script should render the deliverable; the agent
-should provide judgment as structured input** (GHI #324).
-
-v4 keeps the script as both the mechanical pre-pass AND the deterministic
-renderer, with the agent contributing exactly one structured artifact
-(the rank input). Cognitive freedom on the input; determinism on the
-render. This matches `AGENTS.md` § Behavior Rules — Always #5 (offload
-deterministic work to scripts) and § OPERATOR ECONOMY OF EFFORT
-(operator never reads raw output without a human-readable summary —
-markdown is human-readable; Rich-in-chat is not).
+A script alone produces **routing classification, not triage** — it can compute a
+precedent count but cannot answer "is this issue blocking the current ADR?" or
+"should #319 land before #318?". An agent alone rendering the deliverable leaks
+determinism turn to turn. So the script is both the mechanical pre-pass and the
+deterministic renderer, and the agent contributes exactly one structured
+artifact, the rank input (GHI #324). Cognitive freedom on the input; determinism
+on the render.
 
 ## Anti-patterns
 
@@ -248,13 +229,8 @@ markdown is human-readable; Rich-in-chat is not).
 
 ## Related
 
-- `AGENTS.md` § Defect-fix routing — the routing thresholds the script encodes
-- `AGENTS.md` § Behavior Rules — Always (offload + judgment invariants)
-- `AGENTS.md` § OPERATOR ECONOMY OF EFFORT — chat-renderable summary doctrine
+- `AGENTS.md` § Defect-fix routing — the routing the script encodes
 - `.gzkit/skills/ghi-author/SKILL.md` — authors the GHIs this skill triages
 - `.gzkit/skills/ghi-close/SKILL.md` — closes GHIs after the routed work lands
-- `.claude/rules/gh-cli.md` — allowed `gh` commands
-- GHI #324 — the v3 → v4 rewrite that produced this contract
-- GHI #424 — the chat-silence enforcement series; round 4 added the
-  cache-path `--rank-input` requirement and the PreToolUse Bash hook
-  that pin both surfaces of the duplicate-render shape
+- `.gzkit/rules/gh-cli.md` — allowed `gh` commands
+- GHI #324 (script renders, agent supplies structured judgment) and GHI #424 (chat-silence: cache-path `--rank-input` plus the PreToolUse Bash hook)
