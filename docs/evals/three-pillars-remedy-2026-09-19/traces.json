@@ -1,0 +1,984 @@
+[
+  {
+    "id": "T01",
+    "thread": "01a0bb35-c098-7170-a714-032ffa0fc793",
+    "commands": [
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-remedy-inputs/T01.md'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"ls -a /tmp/gzkit-remedy-snapshot; rg -n 'source_root|check.config.paths' /tmp/gzkit-remedy-snapshot/src /tmp/gzkit-remedy-snapshot/tests /tmp/gzkit-remedy-snapshot/.gzkit /tmp/gzkit-remedy-snapshot/docs /tmp/gzkit-remedy-snapshot/pyproject.toml\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-remedy-snapshot/src/gzkit/commands/config_paths.py /tmp/gzkit-remedy-snapshot/tests/test_config_paths.py'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"cat /tmp/gzkit-remedy-snapshot/src/gzkit/config.py /tmp/gzkit-remedy-snapshot/.gzkit/skills/gz-check-config-paths/SKILL.md /tmp/gzkit-remedy-snapshot/docs/user/manpages/check-config-paths.md /tmp/gzkit-remedy-snapshot/src/gzkit/chores/hardcoded-root-eradication/CHORE.md; rg -n 'src/gzkit|source_root|_AUDIT_SUBJECT_LITERALS|config.paths|config-path' /tmp/gzkit-remedy-snapshot/.gzkit/rules\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"cat /tmp/gzkit-remedy-snapshot/.gzkit/rules/tool-skill-runbook-alignment.md /tmp/gzkit-remedy-snapshot/.gzkit/rules/gate5-runbook-code-covenant.md /tmp/gzkit-remedy-snapshot/.gzkit/rules/cli.md /tmp/gzkit-remedy-snapshot/.gzkit/rules/skill-surface-sync.md /tmp/gzkit-remedy-snapshot/docs/user/skills/gz-check-config-paths.md; sed -n '250,345p' /tmp/gzkit-remedy-snapshot/tests/commands/test_audit.py; sed -n '925,985p' /tmp/gzkit-remedy-snapshot/docs/user/runbook.md; rg -n 'def ensure_initialized|def get_project_root|def load_manifest' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/common.py\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"cat /tmp/gzkit-remedy-snapshot/.gzkit/rules/skill-authoring.md; sed -n '100,155p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/common.py; sed -n '1098,1117p' /tmp/gzkit-remedy-snapshot/src/gzkit/cli/parser_maintenance.py; cat /tmp/gzkit-remedy-snapshot/.gzkit.json\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-remedy-snapshot/AGENTS.md'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "[write designated response; raw answer retained separately]",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      }
+    ]
+  },
+  {
+    "id": "T02",
+    "thread": "01a0bb35-d2f8-7023-9606-ba4fb01b0bf7",
+    "commands": [
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-remedy-inputs/T02.md'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"ls -a /tmp/gzkit-remedy-snapshot; rg -n 'generated.vendor|canonical.path|Allowed Paths|allow_create' /tmp/gzkit-remedy-snapshot/src /tmp/gzkit-remedy-snapshot/tests | head -160\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"cat /tmp/gzkit-remedy-snapshot/src/gzkit/governance/brief_path_validity.py; rg -n 'brief_path_validity|check_path|vendor_mirror|declared_new' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/plan_audit_cmd.py /tmp/gzkit-remedy-snapshot/src/gzkit/governance/brief_reconcile.py /tmp/gzkit-remedy-snapshot/src/gzkit/commands/obpi_cmd.py /tmp/gzkit-remedy-snapshot/tests/test_plan_audit_cmd.py; cat /tmp/gzkit-remedy-snapshot/.gzkit/skills/gz-obpi-specify/SKILL.md\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'check_brief_path_validity|_collect_path_validity|path_validity|vendor_mirror' /tmp/gzkit-remedy-snapshot/src /tmp/gzkit-remedy-snapshot/tests /tmp/gzkit-remedy-snapshot/docs/user /tmp/gzkit-remedy-snapshot/.gzkit/rules; sed -n '350,470p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/plan_audit_cmd.py; sed -n '930,1090p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/obpi_cmd.py; cat /tmp/gzkit-remedy-snapshot/data/vendor-manifest.json\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"cat /tmp/gzkit-remedy-snapshot/tests/governance/test_brief_path_validity.py /tmp/gzkit-remedy-snapshot/tests/governance/test_brief_path_validity_wiring.py; sed -n '310,395p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/adr_promote.py; sed -n '1,180p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/plan_audit_cmd.py; cat /tmp/gzkit-remedy-snapshot/docs/user/manpages/plan-audit.md\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"cat /tmp/gzkit-remedy-snapshot/docs/governance/trust-doctrine.md /tmp/gzkit-remedy-snapshot/docs/governance/state-doctrine.md; sed -n '1,120p' /tmp/gzkit-remedy-snapshot/docs/governance/advisory-rules-audit.md; cat /tmp/gzkit-remedy-snapshot/.gzkit.json; sed -n '395,480p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/adr_promote.py; rg -n 'mirror|canonical|rule.*dir|skill.*dir' /tmp/gzkit-remedy-snapshot/src/gzkit/sync_skills.py /tmp/gzkit-remedy-snapshot/src/gzkit/sync_surfaces.py | tail -70; rg -n 'plan.audit|gaps_found|verdict' /tmp/gzkit-remedy-snapshot/src/gzkit/hooks/scripts/pipeline-gate.py /tmp/gzkit-remedy-snapshot/src/gzkit/pipeline_runtime.py\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "failed",
+        "exitCode": 2,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '295,353p' /tmp/gzkit-remedy-snapshot/src/gzkit/sync_skills.py; sed -n '581,620p' /tmp/gzkit-remedy-snapshot/src/gzkit/sync_skills.py; rg -n 'sync.*rule|rules.*sync' /tmp/gzkit-remedy-snapshot/src/gzkit/sync_surfaces.py; rg -n 'def load_plan_audit_receipt|gaps_found|receipt.*verdict' /tmp/gzkit-remedy-snapshot/src/gzkit/pipeline* /tmp/gzkit-remedy-snapshot/src/gzkit/hooks; sed -n '620,685p' /tmp/gzkit-remedy-snapshot/tests/test_plan_audit_cmd.py; sed -n '782,828p' /tmp/gzkit-remedy-snapshot/tests/test_plan_audit_cmd.py; sed -n '830,1025p' /tmp/gzkit-remedy-snapshot/tests/test_plan_audit_cmd.py; cat /tmp/gzkit-remedy-snapshot/docs/user/manpages/obpi-validate.md; sed -n '1,115p' /tmp/gzkit-remedy-snapshot/.gzkit/skills/gz-plan-audit/SKILL.md\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '225,320p' /tmp/gzkit-remedy-snapshot/src/gzkit/governance/brief_reconcile.py; sed -n '660,750p' /tmp/gzkit-remedy-snapshot/src/gzkit/governance/brief_reconcile.py; sed -n '480,525p' /tmp/gzkit-remedy-snapshot/src/gzkit/pipeline_markers.py; sed -n '370,415p' /tmp/gzkit-remedy-snapshot/src/gzkit/hooks/scripts/pipeline.py; sed -n '390,465p' /tmp/gzkit-remedy-snapshot/src/gzkit/rules/__init__.py; sed -n '410,448p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/specify_cmd.py; rg -n 'skills:|claude_skills:|codex_skills:|rules:' /tmp/gzkit-remedy-snapshot/src/gzkit/config.py; cat /tmp/gzkit-remedy-snapshot/AGENTS.md\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '332,395p' /tmp/gzkit-remedy-snapshot/src/gzkit/rules/__init__.py; rg -n 'skills:|claude_skills:|codex_skills:|rules:' /tmp/gzkit-remedy-snapshot/src/gzkit/config.py; sed -n '330,400p' /tmp/gzkit-remedy-snapshot/src/gzkit/governance/brief_reconcile.py; sed -n '1,35p' /tmp/gzkit-remedy-snapshot/AGENTS.md; sed -n '225,265p' /tmp/gzkit-remedy-snapshot/src/gzkit/hooks/scripts/routing.py\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "[write designated response; raw answer retained separately]",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'wc -w /tmp/gzkit-remedy-responses/T02.md'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -i '' 's/Actual calls: 10 including this output write./Actual calls: 12 including output writing and word-count verification./' /tmp/gzkit-remedy-responses/T02.md\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      }
+    ]
+  },
+  {
+    "id": "T03",
+    "thread": "01a0bb37-c582-7073-8681-775a09f75f7c",
+    "commands": [
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-remedy-inputs/T03.md'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'rg --files /tmp/gzkit-remedy-snapshot | head -65'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n --hidden 'source_root|def .*config_paths|src/gzkit' /tmp/gzkit-remedy-snapshot/src/gzkit/config_paths.py /tmp/gzkit-remedy-snapshot/src/gzkit/config.py /tmp/gzkit-remedy-snapshot/.gzkit/skills/gz-check-config-paths/SKILL.md /tmp/gzkit-remedy-snapshot/docs/user/manpages/check-config-paths.md\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "failed",
+        "exitCode": 2,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n --hidden 'def .*config_paths|check-config-paths|source_root' /tmp/gzkit-remedy-snapshot/src/gzkit /tmp/gzkit-remedy-snapshot/docs/user /tmp/gzkit-remedy-snapshot/.gzkit/rules /tmp/gzkit-remedy-snapshot/.gzkit/skills/gz-check-config-paths\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-remedy-snapshot/src/gzkit/commands/config_paths.py'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-remedy-snapshot/src/gzkit/config.py /tmp/gzkit-remedy-snapshot/docs/user/manpages/check-config-paths.md /tmp/gzkit-remedy-snapshot/.gzkit/skills/gz-check-config-paths/SKILL.md /tmp/gzkit-remedy-snapshot/src/gzkit/chores/hardcoded-root-eradication/CHORE.md'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n --hidden '_collect_source_path_literal_issues|_AUDIT_SUBJECT_LITERALS|config-first|config first' /tmp/gzkit-remedy-snapshot/.gzkit/rules /tmp/gzkit-remedy-snapshot/.gzkit/chores/hardcoded-root-eradication /tmp/gzkit-remedy-snapshot/src/gzkit/commands/common.py /tmp/gzkit-remedy-snapshot/src/gzkit/cli; rg -n 'def ensure_initialized|def get_project_root|def load_manifest' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/common.py; rg --files --hidden /tmp/gzkit-remedy-snapshot | rg '(test.*config.path|trust-doctrine|state-doctrine|advisory-rules|gzkit.json\"'$|hardcoded-root-eradication|config-paths-remediation)'\"'\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-remedy-snapshot/tests/test_config_paths.py'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '1,150p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/common.py; sed -n '90,145p' /tmp/gzkit-remedy-snapshot/src/gzkit/sync_surfaces.py; sed -n '260,305p' /tmp/gzkit-remedy-snapshot/src/gzkit/sync_surfaces.py; sed -n '1095,1120p' /tmp/gzkit-remedy-snapshot/src/gzkit/cli/parser_maintenance.py; cat /tmp/gzkit-remedy-snapshot/.gzkit.json /tmp/gzkit-remedy-snapshot/src/gzkit/chores/hardcoded-root-eradication/acceptance.json; rg -n --hidden 'check-config-paths|_AUDIT_SUBJECT|config-first' /tmp/gzkit-remedy-snapshot/.gzkit/rules\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "failed",
+        "exitCode": 1,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg --files --hidden /tmp/gzkit-remedy-snapshot/.gzkit/rules; rg -n '_collect_source_path_literal_issues|check_config_paths_cmd|check.config.paths' /tmp/gzkit-remedy-snapshot/tests /tmp/gzkit-remedy-snapshot/src/gzkit/cli/__init__.py; cat /tmp/gzkit-remedy-snapshot/src/gzkit/chores/config-paths-remediation/CHORE.md /tmp/gzkit-remedy-snapshot/src/gzkit/chores/config-paths-remediation/acceptance.json\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"cat /tmp/gzkit-remedy-snapshot/.gzkit/rules/tool-skill-runbook-alignment.md /tmp/gzkit-remedy-snapshot/.gzkit/rules/tests.md /tmp/gzkit-remedy-snapshot/.gzkit/rules/chores.md; sed -n '1,180p' /tmp/gzkit-remedy-snapshot/tests/commands/test_audit.py; sed -n '265,335p' /tmp/gzkit-remedy-snapshot/tests/commands/test_audit.py; sed -n '150,200p' /tmp/gzkit-remedy-snapshot/src/gzkit/sync.py; sed -n '945,980p' /tmp/gzkit-remedy-snapshot/docs/user/runbook.md\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-remedy-snapshot/.gzkit/rules/cli.md /tmp/gzkit-remedy-snapshot/.gzkit/rules/cross-platform.md'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "[write designated response; raw answer retained separately]",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      }
+    ]
+  },
+  {
+    "id": "T04",
+    "thread": "01a0bb38-b2e8-7861-9f65-f0731a3fa7c5",
+    "commands": [
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-remedy-inputs/T04.md'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'rg --files /tmp/gzkit-remedy-snapshot | head -60'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'generated.*mirror|canonical.*path|Allowed Paths|will be created' /tmp/gzkit-remedy-snapshot/src/gzkit/brief* /tmp/gzkit-remedy-snapshot/src/gzkit/*recon* /tmp/gzkit-remedy-snapshot/src/gzkit/*valid*\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "failed",
+        "exitCode": 1,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'generated.*mirror|will be created|def .*path|canonical.*path' /tmp/gzkit-remedy-snapshot/src/gzkit/brief* /tmp/gzkit-remedy-snapshot/src/gzkit/validate*\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'generated.vendor|generated mirror|Allowed Paths' /tmp/gzkit-remedy-snapshot/src/gzkit --glob '*.py'\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"cat /tmp/gzkit-remedy-snapshot/src/gzkit/governance/brief_path_validity.py\nrg -n 'brief_path_validity|canonical_target|generated_mirror|_path_exists|validate_allowed_path' /tmp/gzkit-remedy-snapshot/src /tmp/gzkit-remedy-snapshot/.gzkit /tmp/gzkit-remedy-snapshot/docs/user /tmp/gzkit-remedy-snapshot/data\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"cat /tmp/gzkit-remedy-snapshot/src/gzkit/commands/plan_audit_cmd.py\nsed -n '925,1050p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/obpi_cmd.py\nsed -n '320,395p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/adr_promote.py\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'vendor.mirror|generated.mirror|canonical.*surface|\\\\./' /tmp/gzkit-remedy-snapshot/docs/user/manpages/plan* /tmp/gzkit-remedy-snapshot/docs/user/manpages/obpi* /tmp/gzkit-remedy-snapshot/.gzkit/skills/gz-plan-audit/SKILL.md /tmp/gzkit-remedy-snapshot/.gzkit/skills/gz-obpi-specify/SKILL.md\ncat /tmp/gzkit-remedy-snapshot/.gzkit/skills/gz-obpi-specify/SKILL.md\ncat /tmp/gzkit-remedy-snapshot/.gzkit/skills/gz-plan-audit/SKILL.md\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"cat /tmp/gzkit-remedy-snapshot/docs/user/manpages/obpi-validate.md\ncat /tmp/gzkit-remedy-snapshot/docs/user/manpages/plan-audit.md\nrg -n 'brief_path|vendor_mirror|path_exists|allowed_path' /tmp/gzkit-remedy-snapshot/src/gzkit/governance/brief_reconcile.py /tmp/gzkit-remedy-snapshot/src/gzkit/commands/specify_cmd.py /tmp/gzkit-remedy-snapshot/src/gzkit/governance/trust_audits/orphaned_implementation.py\nrg -n 'canonical|mirror|sync|distribution' /tmp/gzkit-remedy-snapshot/.gzkit/skills/gz-agent-sync/SKILL.md /tmp/gzkit-remedy-snapshot/.gzkit/rules/*sync* /tmp/gzkit-remedy-snapshot/pyproject.toml\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"cat /tmp/gzkit-remedy-snapshot/.gzkit/personas/main-session.md\ncat /tmp/gzkit-remedy-snapshot/.gzkit/rules/skill-surface-sync.md\nsed -n '205,315p' /tmp/gzkit-remedy-snapshot/src/gzkit/governance/brief_reconcile.py\nrg -n 'def .*path|mirror|allowlist' /tmp/gzkit-remedy-snapshot/src/gzkit/governance/brief_reconcile.py\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '609,641p' /tmp/gzkit-remedy-snapshot/src/gzkit/governance/brief_reconcile.py\nrg -n 'authored|validate' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/specify_cmd.py\ncat /tmp/gzkit-remedy-snapshot/.gzkit/skills/gz-agent-sync/SKILL.md\ncat /tmp/gzkit-remedy-snapshot/.gzkit.json\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "[write designated response; raw answer retained separately]",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      }
+    ]
+  },
+  {
+    "id": "T05",
+    "thread": "01a0bb3a-5642-7df1-90d5-eced66a25ef2",
+    "commands": [
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-remedy-inputs/T05.md'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'ls -a /tmp/gzkit-remedy-snapshot'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'source_root|check.config.paths|src/gzkit' /tmp/gzkit-remedy-snapshot/src/gzkit/config* /tmp/gzkit-remedy-snapshot/src/gzkit/*config* /tmp/gzkit-remedy-snapshot/.gzkit/skills/gz-check-config-paths /tmp/gzkit-remedy-snapshot/tests/*config* /tmp/gzkit-remedy-snapshot/.gzkit.json\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'def .*config_paths|def .*literal|source_root|check-config-paths' /tmp/gzkit-remedy-snapshot/src/gzkit /tmp/gzkit-remedy-snapshot/docs/user /tmp/gzkit-remedy-snapshot/.gzkit/rules /tmp/gzkit-remedy-snapshot/data\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-remedy-snapshot/src/gzkit/commands/config_paths.py /tmp/gzkit-remedy-snapshot/tests/test_config_paths.py'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-remedy-snapshot/src/gzkit/config.py /tmp/gzkit-remedy-snapshot/src/gzkit/commands/common.py /tmp/gzkit-remedy-snapshot/docs/user/manpages/check-config-paths.md /tmp/gzkit-remedy-snapshot/.gzkit/skills/gz-check-config-paths/SKILL.md'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'manifest|hard.cod|config.paths|source|audit.subject' /tmp/gzkit-remedy-snapshot/.gzkit/rules/governance-core.md /tmp/gzkit-remedy-snapshot/.gzkit/rules/*path* /tmp/gzkit-remedy-snapshot/src/gzkit/chores/hardcoded-root-eradication/CHORE.md /tmp/gzkit-remedy-snapshot/tests/test_cli*.py /tmp/gzkit-remedy-snapshot/src/gzkit/cli/main.py\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "failed",
+        "exitCode": 1,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-remedy-snapshot/.gzkit/rules/governance-core.md /tmp/gzkit-remedy-snapshot/src/gzkit/chores/hardcoded-root-eradication/CHORE.md /tmp/gzkit-remedy-snapshot/docs/governance/trust-doctrine.md /tmp/gzkit-remedy-snapshot/docs/governance/state-doctrine.md'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "failed",
+        "exitCode": 1,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'check_config_paths|check-config-paths' /tmp/gzkit-remedy-snapshot/tests /tmp/gzkit-remedy-snapshot/src/gzkit/cli /tmp/gzkit-remedy-snapshot/.gzkit/rules; rg --files /tmp/gzkit-remedy-snapshot/.gzkit/rules /tmp/gzkit-remedy-snapshot/.gzkit/chores\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "failed",
+        "exitCode": 2,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '1,110p;260,335p' /tmp/gzkit-remedy-snapshot/tests/commands/test_audit.py\nsed -n '1095,1118p' /tmp/gzkit-remedy-snapshot/src/gzkit/cli/parser_maintenance.py\nsed -n '1,110p' /tmp/gzkit-remedy-snapshot/src/gzkit/cli/parser_handler_manifest.py\ncat /tmp/gzkit-remedy-snapshot/.gzkit/rules/tool-skill-runbook-alignment.md /tmp/gzkit-remedy-snapshot/.gzkit/rules/tests.md\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '100,145p;260,325p' /tmp/gzkit-remedy-snapshot/src/gzkit/sync_surfaces.py\nsed -n '150,200p' /tmp/gzkit-remedy-snapshot/src/gzkit/sync.py\ncat /tmp/gzkit-remedy-snapshot/tests/test_config.py /tmp/gzkit-remedy-snapshot/.gzkit/rules/tool-skill-runbook-alignment.md /tmp/gzkit-remedy-snapshot/docs/user/skills/gz-check-config-paths.md\nsed -n '960,974p' /tmp/gzkit-remedy-snapshot/docs/user/runbook.md\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"cat /tmp/gzkit-remedy-snapshot/.gzkit/rules/cli.md\nsed -n '125,180p' /tmp/gzkit-remedy-snapshot/src/gzkit/cli/parser_handler_manifest.py\ncat /tmp/gzkit-remedy-snapshot/.gzkit.json\nsed -n '1,40p' /tmp/gzkit-remedy-snapshot/src/gzkit/schemas/manifest.json\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "[write designated response; raw answer retained separately]",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      }
+    ]
+  },
+  {
+    "id": "T06",
+    "thread": "01a0bb3b-3ff9-71f1-aa65-61a48d37d33a",
+    "commands": [
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-remedy-inputs/T06.md'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'rg --files /tmp/gzkit-remedy-snapshot'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'generated.vendor|canonical.path|def .*path|creat' /tmp/gzkit-remedy-snapshot/src/gzkit/brief* /tmp/gzkit-remedy-snapshot/src/gzkit/plan_audit* /tmp/gzkit-remedy-snapshot/src/gzkit/governance/trust_audits/brief_reconcile.py\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "failed",
+        "exitCode": 1,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'generated.vendor.mirror|canonical.path|def .*path|created_paths' /tmp/gzkit-remedy-snapshot/src/gzkit/brief* /tmp/gzkit-remedy-snapshot/src/gzkit/governance /tmp/gzkit-remedy-snapshot/src/gzkit/commands/plan_audit_cmd.py\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"cat /tmp/gzkit-remedy-snapshot/src/gzkit/governance/brief_path_validity.py\nrg -n 'vendor_mirror_canonical|check_brief_path_validity|allowed_path_resolves' /tmp/gzkit-remedy-snapshot/src /tmp/gzkit-remedy-snapshot/tests /tmp/gzkit-remedy-snapshot/docs/user /tmp/gzkit-remedy-snapshot/.gzkit/skills /tmp/gzkit-remedy-snapshot/.gzkit/rules\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-remedy-snapshot/src/gzkit/governance/brief_reconcile.py'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '1,65p;370,455p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/plan_audit_cmd.py\nsed -n '935,1030p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/obpi_cmd.py\nsed -n '325,390p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/adr_promote.py\ncat /tmp/gzkit-remedy-snapshot/tests/governance/test_brief_path_validity.py\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'vendor.mirror|Allowed.path|allowed.path|GHI #419|GHI #393' /tmp/gzkit-remedy-snapshot/docs/user/manpages/obpi.md /tmp/gzkit-remedy-snapshot/docs/user/manpages/plan.md /tmp/gzkit-remedy-snapshot/docs/user/manpages/adr-promote.md /tmp/gzkit-remedy-snapshot/.gzkit/skills/gz-plan-audit/SKILL.md /tmp/gzkit-remedy-snapshot/.gzkit/skills/gz-obpi-specify/SKILL.md /tmp/gzkit-remedy-snapshot/tests/test_obpi_cmd.py /tmp/gzkit-remedy-snapshot/tests/test_adr_promote.py /tmp/gzkit-remedy-snapshot/tests/test_plan_audit_cmd.py\nsed -n '1030,1085p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/obpi_cmd.py\nrg -n '_check_scaffold_obpis|structure_errors|path_gaps|_gather_brief_path_gaps' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/adr_promote.py /tmp/gzkit-remedy-snapshot/src/gzkit/commands/plan_audit_cmd.py\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"cat /tmp/gzkit-remedy-snapshot/docs/user/manpages/obpi-validate.md /tmp/gzkit-remedy-snapshot/docs/user/manpages/plan-audit.md /tmp/gzkit-remedy-snapshot/docs/user/manpages/adr-promote.md\nsed -n '85,115p' /tmp/gzkit-remedy-snapshot/.gzkit/skills/gz-obpi-specify/SKILL.md\nrg -l 'vendor.mirror|_check_scaffold_obpis|_validate_brief_path_existence' /tmp/gzkit-remedy-snapshot/tests --glob '*obpi*' --glob '*promot*'\nsed -n '75,130p;415,449p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/adr_promote.py\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '740,835p;950,1045p' /tmp/gzkit-remedy-snapshot/tests/test_plan_audit_cmd.py\nrg -n 'path_existence|vendor.mirror|Creates|authored' /tmp/gzkit-remedy-snapshot/tests/test_obpi_template.py\nsed -n '65,130p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/plan_audit_cmd.py\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "[write designated response; raw answer retained separately]",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      }
+    ]
+  },
+  {
+    "id": "T07",
+    "thread": "01a0bb3c-ba26-7522-9128-199990e3516f",
+    "commands": [
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-remedy-inputs/T07.md'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"ls /tmp/gzkit-remedy-snapshot; rg -n 'source_root|check.config.paths' /tmp/gzkit-remedy-snapshot/src/gzkit | head -100\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-remedy-snapshot/src/gzkit/commands/config_paths.py'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'TestPathConfigDeclaredDefaults|TestModuleDeclaredAuditSubjects|collect_source_path_literal|src/gzkit|source_root' /tmp/gzkit-remedy-snapshot/tests/test_config_paths.py; rg --files --hidden /tmp/gzkit-remedy-snapshot | rg '(config.paths|hardcoded.root|path.*\\\\.md|personas/main)'\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-remedy-snapshot/tests/test_config_paths.py /tmp/gzkit-remedy-snapshot/docs/user/manpages/check-config-paths.md /tmp/gzkit-remedy-snapshot/.gzkit/skills/gz-check-config-paths/SKILL.md /tmp/gzkit-remedy-snapshot/src/gzkit/personas/main-session.md'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"cat /tmp/gzkit-remedy-snapshot/src/gzkit/config.py /tmp/gzkit-remedy-snapshot/src/gzkit/chores/hardcoded-root-eradication/CHORE.md /tmp/gzkit-remedy-snapshot/docs/user/skills/gz-check-config-paths.md; rg -n 'config.paths|source_root|AUDIT_SUBJECT|hardcoded' /tmp/gzkit-remedy-snapshot/.gzkit/rules /tmp/gzkit-remedy-snapshot/tests/test_cli.py /tmp/gzkit-remedy-snapshot/src/gzkit/commands/common.py\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "failed",
+        "exitCode": 2,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'check_config_paths|check-config-paths' /tmp/gzkit-remedy-snapshot/tests; sed -n '1,180p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/common.py; cat /tmp/gzkit-remedy-snapshot/.gzkit.json /tmp/gzkit-remedy-snapshot/src/gzkit/schemas/manifest.json\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '65,105p' /tmp/gzkit-remedy-snapshot/tests/commands/test_audit.py; sed -n '270,335p' /tmp/gzkit-remedy-snapshot/tests/commands/test_audit.py; sed -n '1098,1114p' /tmp/gzkit-remedy-snapshot/src/gzkit/cli/parser_maintenance.py; cat /tmp/gzkit-remedy-snapshot/src/gzkit/skills/gz-check-config-paths/SKILL.md\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "[write designated response; raw answer retained separately]",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      }
+    ]
+  },
+  {
+    "id": "T08",
+    "thread": "01a0bb3d-80a7-7c52-b414-d64318d32996",
+    "commands": [
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-remedy-inputs/T08.md'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'ls -a /tmp/gzkit-remedy-snapshot'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'generated.vendor|canonical.path|Allowed Paths|will be created' /tmp/gzkit-remedy-snapshot/src /tmp/gzkit-remedy-snapshot/.gzkit /tmp/gzkit-remedy-snapshot/tests\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-remedy-snapshot/src/gzkit/governance/brief_path_validity.py /tmp/gzkit-remedy-snapshot/tests/governance/test_brief_path_validity_wiring.py'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'brief_path_validity|vendor_mirror_canonical|_check_scaffold_obpis|_validate_brief_path_existence' /tmp/gzkit-remedy-snapshot/src/gzkit /tmp/gzkit-remedy-snapshot/docs /tmp/gzkit-remedy-snapshot/.gzkit/skills /tmp/gzkit-remedy-snapshot/.gzkit/rules\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-remedy-snapshot/.gzkit/skills/gz-obpi-specify/SKILL.md /tmp/gzkit-remedy-snapshot/docs/governance/trust-doctrine.md /tmp/gzkit-remedy-snapshot/docs/governance/state-doctrine.md /tmp/gzkit-remedy-snapshot/docs/governance/advisory-rules-audit.md'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "failed",
+        "exitCode": 1,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '1,70p;315,470p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/plan_audit_cmd.py\nsed -n '950,1075p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/obpi_cmd.py\nsed -n '330,380p;400,455p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/adr_promote.py\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"cat /tmp/gzkit-remedy-snapshot/tests/governance/test_brief_path_validity.py\nsed -n '620,820p;940,1020p' /tmp/gzkit-remedy-snapshot/tests/test_plan_audit_cmd.py\nrg -n 'mirror|canonical|CREATE|path.validity' /tmp/gzkit-remedy-snapshot/docs/user /tmp/gzkit-remedy-snapshot/data/vendor-manifest.json /tmp/gzkit-remedy-snapshot/src/gzkit/sync_surfaces.py /tmp/gzkit-remedy-snapshot/.gzkit/rules\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"cat /tmp/gzkit-remedy-snapshot/data/vendor-manifest.json /tmp/gzkit-remedy-snapshot/docs/user/manpages/obpi-validate.md /tmp/gzkit-remedy-snapshot/docs/user/manpages/plan-audit.md\nrg -n 'def .*|instructions|rules_dir|skills_dir' /tmp/gzkit-remedy-snapshot/src/gzkit/sync_surfaces.py\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '1014,1135p' /tmp/gzkit-remedy-snapshot/src/gzkit/sync_surfaces.py\nrg -n 'def .*|instructions|mirror' /tmp/gzkit-remedy-snapshot/src/gzkit/rules.py\nsed -n '410,442p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/specify_cmd.py\nsed -n '65,155p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/plan_audit_cmd.py\ncat /tmp/gzkit-remedy-snapshot/docs/user/manpages/agent-sync-control-surfaces.md\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '1,55p;803,905p' /tmp/gzkit-remedy-snapshot/src/gzkit/sync_surfaces.py\nrg -n 'def sync_skill_mirrors|def render_rules_to_dir' /tmp/gzkit-remedy-snapshot/src\nsed -n '150,170p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/plan_audit_cmd.py\ncat /tmp/gzkit-remedy-snapshot/.gzkit/personas/main-session.md\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "failed",
+        "exitCode": 1,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '510,665p' /tmp/gzkit-remedy-snapshot/src/gzkit/sync_skills.py\nsed -n '941,1025p' /tmp/gzkit-remedy-snapshot/src/gzkit/rules/__init__.py\nsed -n '170,175p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/plan_audit_cmd.py\nsed -n '770,830p;940,1010p' /tmp/gzkit-remedy-snapshot/tests/test_plan_audit_cmd.py\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "[write designated response; raw answer retained separately]",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      }
+    ]
+  },
+  {
+    "id": "T09",
+    "thread": "01a0bb3e-a13e-7b33-9233-09c769c42300",
+    "commands": [
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-remedy-inputs/T09.md'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"ls -a /tmp/gzkit-remedy-snapshot; rg -n 'check.config.paths|source_root' /tmp/gzkit-remedy-snapshot --glob '*.py' --glob '*.json' --glob '*config*' --glob 'SKILL.md'\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-remedy-snapshot/src/gzkit/commands/config_paths.py /tmp/gzkit-remedy-snapshot/tests/test_config_paths.py'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"cat /tmp/gzkit-remedy-snapshot/src/gzkit/config.py /tmp/gzkit-remedy-snapshot/docs/user/manpages/check-config-paths.md /tmp/gzkit-remedy-snapshot/.gzkit/skills/gz-check-config-paths/SKILL.md /tmp/gzkit-remedy-snapshot/.gzkit/rules/config-paths.md; rg -n 'src/gzkit|_AUDIT_SUBJECT_LITERALS|source_root|check-config-paths' /tmp/gzkit-remedy-snapshot/.gzkit/rules /tmp/gzkit-remedy-snapshot/docs/user\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -l 'check-config-paths|_AUDIT_SUBJECT_LITERALS' /tmp/gzkit-remedy-snapshot/.gzkit/rules; sed -n '1,110p' /tmp/gzkit-remedy-snapshot/tests/commands/test_audit.py; sed -n '260,340p' /tmp/gzkit-remedy-snapshot/tests/commands/test_audit.py; rg -n 'def ensure_initialized|def get_project_root|def load_manifest' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/common.py; cat /tmp/gzkit-remedy-snapshot/.gzkit.json\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '100,145p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/common.py; sed -n '1095,1115p' /tmp/gzkit-remedy-snapshot/src/gzkit/cli/parser_maintenance.py; sed -n '950,975p' /tmp/gzkit-remedy-snapshot/docs/user/runbook.md; cat /tmp/gzkit-remedy-snapshot/docs/user/skills/gz-check-config-paths.md /tmp/gzkit-remedy-snapshot/.gzkit/rules/AGENTS.md\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "[write designated response; raw answer retained separately]",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      }
+    ]
+  },
+  {
+    "id": "T10",
+    "thread": "01a0bb3f-d41c-7872-a74d-daac9f9da6da",
+    "commands": [
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-remedy-inputs/T10.md'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"ls /tmp/gzkit-remedy-snapshot && rg -n 'generated.vendor|vendor.mirror|Allowed Paths|allowed_paths' /tmp/gzkit-remedy-snapshot/src/gzkit | head -100\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-remedy-snapshot/src/gzkit/governance/brief_path_validity.py'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'brief_path_validity|vendor_mirror_canonical|check_brief_path' /tmp/gzkit-remedy-snapshot/{src,tests,docs,.gzkit,data} \"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-remedy-snapshot/.gzkit/skills/gz-obpi-specify/SKILL.md /tmp/gzkit-remedy-snapshot/.gzkit/skills/gz-agent-sync/SKILL.md /tmp/gzkit-remedy-snapshot/docs/governance/trust-doctrine.md /tmp/gzkit-remedy-snapshot/docs/governance/state-doctrine.md /tmp/gzkit-remedy-snapshot/docs/governance/advisory-rules-audit.md'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "failed",
+        "exitCode": 1,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"cat /tmp/gzkit-remedy-snapshot/src/gzkit/commands/plan_audit_cmd.py; sed -n '940,1040p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/obpi_cmd.py; sed -n '315,400p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/adr_promote.py; rg -n '_path_validity|path_validity|_validate.*brief|validate_obpi' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/{obpi_cmd,specify_cmd,adr_promote}.py\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"cat /tmp/gzkit-remedy-snapshot/tests/governance/test_brief_path_validity.py; sed -n '590,860p' /tmp/gzkit-remedy-snapshot/tests/test_plan_audit_cmd.py; sed -n '400,480p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/adr_promote.py; rg -n 'mirror|path.*exist|CREATE' /tmp/gzkit-remedy-snapshot/tests/test_{obpi,adr}* /tmp/gzkit-remedy-snapshot/docs/user/manpages/{plan,obpi,adr}.md\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "failed",
+        "exitCode": 2,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg --files /tmp/gzkit-remedy-snapshot/docs/user/manpages | rg 'plan|obpi.*valid|promot'; rg -n 'vendor|canonical|mirror' /tmp/gzkit-remedy-snapshot/.gzkit.json /tmp/gzkit-remedy-snapshot/data/vendor-manifest.json /tmp/gzkit-remedy-snapshot/src/gzkit/sync.py; rg -n '_validate_brief_path_existence|_check_scaffold_obpis' /tmp/gzkit-remedy-snapshot/tests; cat /tmp/gzkit-remedy-snapshot/.gzkit/rules/canonical-source.md\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "failed",
+        "exitCode": 1,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"cat /tmp/gzkit-remedy-snapshot/tests/governance/test_brief_path_validity_wiring.py /tmp/gzkit-remedy-snapshot/docs/user/manpages/{plan-audit,obpi-validate,adr-promote}.md /tmp/gzkit-remedy-snapshot/.gzkit.json /tmp/gzkit-remedy-snapshot/data/vendor-manifest.json; rg -n 'def sync_skill_mirror|def sync_skill_mirrors|rules|instructions' /tmp/gzkit-remedy-snapshot/src/gzkit/{sync_skills,sync_control_surfaces}.py; rg --files /tmp/gzkit-remedy-snapshot/.gzkit/rules | head -30\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"cat /tmp/gzkit-remedy-snapshot/.gzkit/rules/{skill-surface-sync,tool-skill-runbook-alignment}.md; sed -n '295,345p;581,650p' /tmp/gzkit-remedy-snapshot/src/gzkit/sync_skills.py; sed -n '390,450p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/specify_cmd.py; sed -n '1038,1085p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/obpi_cmd.py; rg -n 'verdict|plan.audit' /tmp/gzkit-remedy-snapshot/src/gzkit/pipeline_runtime.py; cat /tmp/gzkit-remedy-snapshot/AGENTS.md\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"cat /tmp/gzkit-remedy-snapshot/.gzkit/rules/cli.md; sed -n '340,360p' /tmp/gzkit-remedy-snapshot/src/gzkit/sync_skills.py; rg -n 'def .*receipt|verdict|load_plan_audit_receipt' /tmp/gzkit-remedy-snapshot/src/gzkit/pipeline*.py\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '456,525p' /tmp/gzkit-remedy-snapshot/src/gzkit/pipeline_markers.py; cat /tmp/gzkit-remedy-snapshot/.gzkit/personas/main-session.md\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "failed",
+        "exitCode": 1,
+        "durationMs": 0
+      },
+      {
+        "command": "[write designated response; raw answer retained separately]",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      }
+    ]
+  },
+  {
+    "id": "T11",
+    "thread": "01a0bb40-9184-7192-b34b-c12e64823b8d",
+    "commands": [
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-remedy-inputs/T11.md'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"ls -a /tmp/gzkit-remedy-snapshot; rg -n 'source_root|check.config.paths|check_config_paths' /tmp/gzkit-remedy-snapshot --glob '*.py' --glob '*.json' --glob '*.md'\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-remedy-snapshot/src/gzkit/commands/config_paths.py /tmp/gzkit-remedy-snapshot/tests/test_config_paths.py'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"cat /tmp/gzkit-remedy-snapshot/src/gzkit/config.py /tmp/gzkit-remedy-snapshot/.gzkit/skills/gz-check-config-paths/SKILL.md /tmp/gzkit-remedy-snapshot/docs/user/manpages/check-config-paths.md; rg -n 'def (ensure_initialized|get_project_root|load_manifest)|config.paths|GzkitConfig.load' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/common.py; rg -n 'config|path|proof' /tmp/gzkit-remedy-snapshot/.gzkit/rules/governance-core.md\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "failed",
+        "exitCode": 2,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg --files --hidden /tmp/gzkit-remedy-snapshot/.gzkit /tmp/gzkit-remedy-snapshot/docs | sort; sed -n '100,150p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/common.py; cat /tmp/gzkit-remedy-snapshot/src/gzkit/chores/hardcoded-root-eradication/CHORE.md /tmp/gzkit-remedy-snapshot/src/gzkit/chores/config-paths-remediation/CHORE.md; sed -n '250,345p' /tmp/gzkit-remedy-snapshot/tests/commands/test_audit.py\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"cat /tmp/gzkit-remedy-snapshot/.gzkit/rules/tool-skill-runbook-alignment.md /tmp/gzkit-remedy-snapshot/.gzkit/rules/tests.md /tmp/gzkit-remedy-snapshot/docs/AGENTS.md /tmp/gzkit-remedy-snapshot/.gzkit.json; sed -n '1095,1115p' /tmp/gzkit-remedy-snapshot/src/gzkit/cli/parser_maintenance.py; sed -n '950,985p' /tmp/gzkit-remedy-snapshot/docs/user/runbook.md; cat /tmp/gzkit-remedy-snapshot/src/gzkit/chores/hardcoded-root-eradication/acceptance.json /tmp/gzkit-remedy-snapshot/src/gzkit/chores/config-paths-remediation/acceptance.json; sed -n '95,140p' /tmp/gzkit-remedy-snapshot/src/gzkit/sync_surfaces.py; sed -n '970,1045p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/init_cmd.py\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"cat /tmp/gzkit-remedy-snapshot/.gzkit/rules/cli.md /tmp/gzkit-remedy-snapshot/docs/user/skills/gz-check-config-paths.md; sed -n '155,205p' /tmp/gzkit-remedy-snapshot/src/gzkit/sync.py; sed -n '1,110p' /tmp/gzkit-remedy-snapshot/tests/commands/test_audit.py; rg -n 'config|coupl|same|skill|read|scope' /tmp/gzkit-remedy-snapshot/AGENTS.md; rg -n '_collect_source_path_literal_issues' /tmp/gzkit-remedy-snapshot/src /tmp/gzkit-remedy-snapshot/tests; rg -n 'source_root|structure' /tmp/gzkit-remedy-snapshot/.gzkit/manifest.json\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"cat /tmp/gzkit-remedy-snapshot/src/gzkit/doc_coverage/scanner.py; rg -n 'def audit_skill_alignment|def.*cli_alignment' /tmp/gzkit-remedy-snapshot/src/gzkit/governance/trust_audits/cli.py; sed -n '1,100p' /tmp/gzkit-remedy-snapshot/src/gzkit/schemas/manifest.json\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "[write designated response; raw answer retained separately]",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      }
+    ]
+  },
+  {
+    "id": "T12",
+    "thread": "01a0bb42-6fa4-7cc1-9c73-70d69fc9cf4f",
+    "commands": [
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-remedy-inputs/T12.md'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'generated.vendor|generated_vendor|Allowed Paths|will be created' /tmp/gzkit-remedy-snapshot/src /tmp/gzkit-remedy-snapshot/tests /tmp/gzkit-remedy-snapshot/.gzkit /tmp/gzkit-remedy-snapshot/docs\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-remedy-snapshot/src/gzkit/governance/brief_path_validity.py'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'brief_path_validity|vendor_mirror_canonical|check_brief_path_validity|extract_plan_creates_paths' /tmp/gzkit-remedy-snapshot/src /tmp/gzkit-remedy-snapshot/tests /tmp/gzkit-remedy-snapshot/docs/user /tmp/gzkit-remedy-snapshot/.gzkit/skills\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-remedy-snapshot/tests/governance/test_brief_path_validity.py'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '320,465p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/plan_audit_cmd.py\nsed -n '940,1070p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/obpi_cmd.py\nsed -n '315,410p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/adr_promote.py\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '410,490p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/adr_promote.py\nsed -n '1,170p' /tmp/gzkit-remedy-snapshot/src/gzkit/commands/plan_audit_cmd.py\ncat /tmp/gzkit-remedy-snapshot/docs/user/manpages/obpi-validate.md\ncat /tmp/gzkit-remedy-snapshot/docs/user/manpages/plan-audit.md\nsed -n '35,115p' /tmp/gzkit-remedy-snapshot/.gzkit/skills/gz-obpi-specify/SKILL.md\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'path|mirror|authored|scaffold' /tmp/gzkit-remedy-snapshot/tests/commands/test_obpi_validate_cmd.py /tmp/gzkit-remedy-snapshot/tests/commands/test_adr_promote.py\nsed -n '620,830p' /tmp/gzkit-remedy-snapshot/tests/test_plan_audit_cmd.py\ncat /tmp/gzkit-remedy-snapshot/docs/user/manpages/adr-promote.md\ncat /tmp/gzkit-remedy-snapshot/.gzkit/skills/gz-agent-sync/SKILL.md\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '1,120p' /tmp/gzkit-remedy-snapshot/src/gzkit/governance/brief_reconcile.py\nsed -n '360,430p' /tmp/gzkit-remedy-snapshot/src/gzkit/governance/brief_reconcile.py\nsed -n '170,250p' /tmp/gzkit-remedy-snapshot/tests/commands/test_obpi_validate_cmd.py\nsed -n '970,1025p' /tmp/gzkit-remedy-snapshot/tests/test_plan_audit_cmd.py\ncat /tmp/gzkit-remedy-snapshot/.gzkit/skills/gz-plan-audit/SKILL.md\"",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      },
+      {
+        "command": "[write designated response; raw answer retained separately]",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0,
+        "durationMs": 0
+      }
+    ]
+  }
+]

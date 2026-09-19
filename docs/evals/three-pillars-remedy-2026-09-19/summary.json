@@ -1,0 +1,131 @@
+{
+  "runs": [
+    {
+      "id": "T01",
+      "case": "configured-source-scan",
+      "condition": "baseline",
+      "complete": 5,
+      "criteria": 5,
+      "calls": 8,
+      "words": 650
+    },
+    {
+      "id": "T02",
+      "case": "relative-mirror-identity",
+      "condition": "candidate",
+      "complete": 4,
+      "criteria": 5,
+      "calls": 12,
+      "words": 679
+    },
+    {
+      "id": "T03",
+      "case": "configured-source-scan",
+      "condition": "candidate",
+      "complete": 5,
+      "criteria": 5,
+      "calls": 13,
+      "words": 687
+    },
+    {
+      "id": "T04",
+      "case": "relative-mirror-identity",
+      "condition": "baseline",
+      "complete": 4,
+      "criteria": 5,
+      "calls": 12,
+      "words": 618
+    },
+    {
+      "id": "T05",
+      "case": "configured-source-scan",
+      "condition": "candidate",
+      "complete": 5,
+      "criteria": 5,
+      "calls": 13,
+      "words": 661
+    },
+    {
+      "id": "T06",
+      "case": "relative-mirror-identity",
+      "condition": "baseline",
+      "complete": 4,
+      "criteria": 5,
+      "calls": 11,
+      "words": 612
+    },
+    {
+      "id": "T07",
+      "case": "configured-source-scan",
+      "condition": "baseline",
+      "complete": 5,
+      "criteria": 5,
+      "calls": 9,
+      "words": 627
+    },
+    {
+      "id": "T08",
+      "case": "relative-mirror-identity",
+      "condition": "candidate",
+      "complete": 5,
+      "criteria": 5,
+      "calls": 13,
+      "words": 644
+    },
+    {
+      "id": "T09",
+      "case": "configured-source-scan",
+      "condition": "baseline",
+      "complete": 5,
+      "criteria": 5,
+      "calls": 7,
+      "words": 675
+    },
+    {
+      "id": "T10",
+      "case": "relative-mirror-identity",
+      "condition": "candidate",
+      "complete": 4,
+      "criteria": 5,
+      "calls": 13,
+      "words": 649
+    },
+    {
+      "id": "T11",
+      "case": "configured-source-scan",
+      "condition": "candidate",
+      "complete": 5,
+      "criteria": 5,
+      "calls": 9,
+      "words": 648
+    },
+    {
+      "id": "T12",
+      "case": "relative-mirror-identity",
+      "condition": "baseline",
+      "complete": 5,
+      "criteria": 5,
+      "calls": 10,
+      "words": 646
+    }
+  ],
+  "conditions": {
+    "baseline": {
+      "complete": 28,
+      "criteria": 30,
+      "calls_total": 57,
+      "calls_median": 9.5,
+      "words_total": 3828,
+      "words_median": 636.5
+    },
+    "candidate": {
+      "complete": 28,
+      "criteria": 30,
+      "calls_total": 73,
+      "calls_median": 13.0,
+      "words_total": 3968,
+      "words_median": 655.0
+    }
+  },
+  "decision": "Do not adopt: no improvement on either task; candidate uses more calls."
+}

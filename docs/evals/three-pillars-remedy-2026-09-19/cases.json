@@ -1,0 +1,136 @@
+{
+  "persona": "main-session \u2014 craftsperson, governance-aware, whole-file reasoning, direct",
+  "selection": "Independently selected prospective assessment stimuli; no prior raw subject answers inspected. No tests or governance commands executed. These are desired-behavior assessments, not reproduced production defect claims.",
+  "cases": [
+    {
+      "id": "configured-source-scan",
+      "prompt": "Assess the change needed so check-config-paths still audits gzkit's Python source path literals when a project relocates its source directory using the existing source_root configuration. The gzkit package remains directly beneath that directory. The configured directory should replace the default scan location, and the audit's existing meaning of a governed or exempt literal should stay intact. Explain the implementation and verification needed, including coupled surfaces; do not implement or execute checks.",
+      "criteria": [
+        {
+          "id": "S1",
+          "obligation": "Resolve the source scan location from the loaded GzkitConfig.paths.source_root relative to the project root, retaining the gzkit package component; distinguish this from manifest entries used to classify literal coverage.",
+          "why": "Changing the classifier's manifest mappings cannot cause the scanner to visit relocated source; reading a competing manifest source_root would contradict the requested existing config authority.",
+          "witnesses": [
+            "src/gzkit/config.py: PathConfig.source_root and GzkitConfig.load",
+            "src/gzkit/commands/config_paths.py: check_config_paths_cmd and _collect_source_path_literal_issues"
+          ]
+        },
+        {
+          "id": "S2",
+          "obligation": "Make relocation replace the default scan root rather than adding a second default scan, and retain recursive Python enumeration beneath the configured gzkit package.",
+          "why": "Otherwise stale src/gzkit content can still change a relocated project's outcome, or nested modules silently disappear from audit scope.",
+          "witnesses": [
+            "src/gzkit/commands/config_paths.py: src_dir assignment and sorted(src_dir.rglob('*.py'))",
+            "tests/test_config_paths.py: TestSourcePathLiteralScan"
+          ]
+        },
+        {
+          "id": "S3",
+          "obligation": "Preserve the relationship between the visited file and each emitted issue: project-relative file path plus unmapped literal, propagated into the command's valid/issues result and nonzero failure.",
+          "why": "Visiting the right tree is insufficient if reporting assumes src or the enclosing command reports success despite discovered violations.",
+          "witnesses": [
+            "src/gzkit/commands/config_paths.py: rel_path, _append_path_issue, check_config_paths_cmd",
+            "tests/test_config_paths.py: test_unmapped_literal_flagged and test_a_declaration_does_not_reach_another_module"
+          ]
+        },
+        {
+          "id": "S4",
+          "obligation": "Keep configured/manifest literal coverage and per-module audit-subject exemptions conceptually separate from source-tree selection; no blanket exemption of the relocated source or leaking one module's declarations into another.",
+          "why": "The request relocates traversal without weakening what a violation means. The existing scanner intentionally computes ordinary coverage globally but audit-subject declarations per file.",
+          "witnesses": [
+            "src/gzkit/commands/config_paths.py: _flatten_config_paths, _flatten_manifest_paths, _collect_declared_audit_subjects",
+            "tests/test_config_paths.py: TestPathConfigDeclaredDefaults and TestModuleDeclaredAuditSubjects"
+          ]
+        },
+        {
+          "id": "S5",
+          "obligation": "Propose a behavioral relocation witness asserting an unmapped literal from configured-root/gzkit is reported and a distinguishable stale default-tree violation is absent, plus update scanner scope documentation to match selection. Manpage coverage is useful but not independently required.",
+          "why": "A default-layout test cannot detect continued hardcoding. Existing internal scanner docs explicitly name src/gzkit, while the operator manpage currently documents path existence but not source scanning.",
+          "witnesses": [
+            "tests/test_config_paths.py: fixtures always create src/gzkit",
+            "src/gzkit/commands/config_paths.py: _collect_source_path_literal_issues docstring",
+            "docs/user/manpages/check-config-paths.md: What It Checks"
+          ]
+        }
+      ],
+      "uncertainties": [
+        "No requirement for arbitrary package names: prompt fixes the gzkit subdirectory deliberately.",
+        "No new path-containment, symlink, absolute-path, or malformed-config policy is part of this task.",
+        "Missing package directory currently returns no source issues; configured required-directory existence is separately checked. Do not require changing that policy.",
+        "Manpage absence of scanner detail is observed by reading the whole page; it is not authority to remove scanning."
+      ]
+    },
+    {
+      "id": "relative-mirror-identity",
+      "prompt": "Assess the change needed so a brief Allowed Paths entry written with a leading ./ obeys the same generated-vendor-mirror refusal and canonical-path advice as the equivalent unprefixed entry. This should work wherever brief path validity is checked, including when a brief or plan declares the path will be created. Explain the implementation and verification needed, including coupled surfaces; do not implement or execute checks.",
+      "criteria": [
+        {
+          "id": "M1",
+          "obligation": "Identify that Allowed Paths extraction preserves ./ while mirror detection compares unnormalized text, and normalize the relative prefix without stripping dotfile-root dots; preserve the canonical tail correctly.",
+          "why": "The same filesystem path reaches two identity interpretations. Broad lstrip('./') would destroy .claude/.github/.agents identity, and slicing the original input at an unprefixed length would corrupt canonical advice.",
+          "witnesses": [
+            "src/gzkit/governance/brief_path_validity.py: extract_allowed_paths, vendor_mirror_canonical, _normalize_for_creates",
+            "tests/governance/test_brief_path_validity.py: TestVendorMirrorCanonical and test_dotfile_rooted_paths_preserve_leading_dot"
+          ]
+        },
+        {
+          "id": "M2",
+          "obligation": "Retain mirror refusal ahead of both existence success and creates exemptions for prefixed entries; existing on-disk mirrors and net-new declared mirrors both remain invalid.",
+          "why": "These are independent ways the current path checker can accept a token once mirror identity is missed. A normalization fix only in missing-file handling would leave the existing-file route open.",
+          "witnesses": [
+            "src/gzkit/governance/brief_path_validity.py: check_brief_path_validity",
+            "tests/governance/test_brief_path_validity.py: test_vendor_mirror_path_produces_mirror_gap_even_if_exists and test_vendor_mirror_not_exempt_via_creates_paths"
+          ]
+        },
+        {
+          "id": "M3",
+          "obligation": "Place the correction in the shared path-validity/mirror helper flow and trace its use by plan audit, OBPI validation, and ADR promotion, rather than patching one command independently. Credit equivalent corrections anywhere in the shared flow; no particular helper edit or per-command edit is required.",
+          "why": "The prompt requires equivalent behavior wherever validity is checked; all three consumers already share primitives and a command-local fix would leave conflicting judgments.",
+          "witnesses": [
+            "src/gzkit/governance/brief_path_validity.py: check_brief_path_validity_for_brief",
+            "src/gzkit/commands/plan_audit_cmd.py: _gather_brief_path_gaps",
+            "src/gzkit/commands/obpi_cmd.py: _validate_brief_path_existence",
+            "src/gzkit/commands/adr_promote.py: _check_scaffold_obpis"
+          ]
+        },
+        {
+          "id": "M4",
+          "obligation": "Keep creation declarations as exemptions only from nonexistence for legitimate canonical paths, including ./-prefixed dotfile-root paths; account for plan audit combining brief and plan create declarations.",
+          "why": "Treating all ./ paths as invalid or disabling creates would meet mirror refusal superficially while rejecting legitimate new canonical work. The two producers feed the same exception set.",
+          "witnesses": [
+            "src/gzkit/governance/brief_path_validity.py: _extract_creates_paths_from_text and _normalize_for_creates",
+            "src/gzkit/commands/plan_audit_cmd.py: _gather_brief_path_gaps union of brief/plan creates",
+            "tests/governance/test_brief_path_validity.py: TestExtractPlanCreatesPaths and TestCheckBriefPathValidityForBrief"
+          ]
+        },
+        {
+          "id": "M5",
+          "obligation": "Propose semantic paired-path verification: prefixed and unprefixed mirror paths produce the same refusal and canonical target through a brief-consuming path, while a prefixed canonical CREATE path is admitted. Do not rely only on testing a normalization string helper. Same refusal means classification and canonical target, not byte-identical diagnostics, which echo the original token.",
+          "why": "A helper can return the right string yet the extraction/checking pipeline can still pass the original token or apply exemptions first; the observable brief judgment is the requested behavior.",
+          "witnesses": [
+            "tests/governance/test_brief_path_validity.py: TestCheckBriefPathValidityForBrief",
+            "src/gzkit/governance/brief_path_validity.py: extract_allowed_paths -> check_brief_path_validity_for_brief -> check_brief_path_validity"
+          ]
+        }
+      ],
+      "uncertainties": [
+        "No new traversal, symlink, Windows-separator, or repeated-prefix policy is implied; leading ./ equivalence is the bounded stimulus.",
+        "Do not require edits to every consumer when a shared helper fix suffices; discovery of their dependency is the obligation.",
+        "Existing manpages describe broad validation behavior without this normalization detail; mentioning an appropriate documentation adjustment is useful but not a separate mandatory scored item."
+      ]
+    }
+  ],
+  "read_limits": "Whole selected narrow implementation modules, their dedicated tests, configuration module and cited manpages were read. Large consumer modules were inspected at relevant complete functions rather than whole-file reads. Initial batched doctrine output was truncated; trust-doctrine was reread whole, state-doctrine was visible whole, advisory-rules-audit was only partly recovered. Do not claim a complete governance audit.",
+  "additional_primary_sources_required": [],
+  "incidental_unverified_observation": "During the scoped consumer read, plan_audit_cmd._path_within_allowed ends with unconditional True. This is excluded from both tasks and is recorded here for the parent to route if necessary; no reproduction or prior-art/ownership search performed.",
+  "pre_dispatch_review": {
+    "disposition": "accepted with clarifications incorporated",
+    "clarifications": [
+      "S5 requires stale default violation absent, not mere fixture presence",
+      "M5 compares semantic refusal and canonical target, not echoed diagnostic bytes",
+      "M3 accepts equivalent shared-flow correction",
+      "S5 manpage coverage not an independent failure"
+    ],
+    "limits": "Reviewer read source, config, dedicated tests, manpage and consumer functions; small combined test output truncated; candidate not inspected."
+  }
+}

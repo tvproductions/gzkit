@@ -88,6 +88,13 @@ it is not a post-treatment model trial or evidence of improved discovery rates.
 
 ## Completion boundary
 
+Follow-up dated 2026-09-19: the authorized
+[obligation-tracing remedy comparison](../three-pillars-remedy-2026-09-19/results.md)
+is complete under GHI #1048. Twelve fresh assessments produced equal 28/30
+totals in baseline and candidate conditions; the candidate used more calls.
+The predeclared adoption condition failed, so the procedure was not added to
+canon. These were different tasks, not an improvement comparison with this study.
+
 This study supplies current delivery evidence, repeated discovery observations,
 an independently reviewed concrete repair and explicit limits. It neither claims
 that all three pillars are solved nor adds a general agent-comprehension gate.
