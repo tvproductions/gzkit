@@ -7,6 +7,38 @@ three-pillars assessment and subsequent authorization to implement warranted
 repairs. This is an implementation recommendation and dated evidence account,
 not new repository doctrine, an ADR, or OBPI initiation.
 
+## Overall completion: INCOMPLETE
+
+Checked against the linked GitHub issues on 2026-09-19. **Two of the five plan
+rows are complete; three remain open.** This is a row count, not a percentage
+of engineering effort. The assessment and several measurements are complete;
+the overall remedy plan is not. Status clarification is recorded under #1053.
+
+| Row | Done? | What proves completion / what is still missing |
+|---|---|---|
+| 1 — mirror-path repair | **YES** | #1049 closed with shipped commit `08655b31b854e2f016b53bd638e3423e71936c13`, behavioral regression evidence and review. |
+| 2 — configured-source repair | **YES** | #1050 closed with the same shipped commit, configured-root regression evidence and review. |
+| 3 — proof-currency decision | **NO** | #1029 is open. A reviewed draft exists; its required operator design ruling is not recorded. Retaining broad currency is a recommendation, not a booked decision. |
+| 4 — advisory impact remedy | **NO** | #1053 is open. #1052 completed only the measurement. The proposed capability is unbuilt; design disposition, review-cost evidence and any adopted implementation/validation remain outstanding. |
+| 5 — Stage-4 production validation | **NO** | #1028 is open. The dated census contains no qualifying post-treatment production run; the required launch/proof/review/round/exit comparison is missing. |
+
+**How to decide whether the whole plan is done:** follow each row's linked GHI
+to its actual exit evidence. For a shipped repair, require its commit and
+validation; for a design decision, require the recorded operator ruling; for
+production validation, require the observed run and comparison. If a GHI closes
+by routing an adopted feature to an ADR, follow that destination through its
+implementation and validation: issue closure alone does not make the feature
+built. An explicit operator decision not to pursue a proposal is a disposition,
+not an implementation claim. Until every row has that evidence or an explicit
+operator disposition, this overall verdict remains INCOMPLETE.
+
+Passing repository checks validates the changes that exist. It does not prove
+that the unbuilt capability exists or that a production outcome was observed.
+A plan, design draft, measurement report, filed GHI or clean working tree is not
+by itself evidence of whole-plan completion. The detailed tables below preserve
+the supporting work and boundaries; this verdict is a dated evidence summary,
+not a new gate or a substitute for issue, commit and ledger evidence.
+
 ## Decision
 
 Execute the bounded repairs that make existing discovery and validation respect
