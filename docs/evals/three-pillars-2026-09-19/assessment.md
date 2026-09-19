@@ -28,6 +28,19 @@ justify presenting it as a remedy for context reliability.
 
 ## Recovery and plan actually followed
 
+### Historical discovery follow-up, 2026-09-19
+
+The operator-authorized follow-up under GHI #1045 is now recorded in the
+[historical discovery pilot](../three-pillars-discovery-2026-09-19/results.md).
+Six fresh investigations used three pre-fix snapshots and withheld patch/file
+lists. Independent scoring found 16/18 complete criteria for baseline and 17/18
+for the impact-account candidate, with the difference resting on one borderline
+documentation-discovery judgment. Both conditions proposed unsupported policy
+expansion; one candidate listed an out-of-scope directory. **Do not adopt a new
+canonical instruction.** The raw answers, frozen inputs, criterion-level scores
+and deviations are retained. This adds discovery evidence without claiming a
+general solution or initiating unrelated audits, runtime work or OBPIs.
+
 ### Scope reconciliation after operator correction, 2026-09-19
 
 Rechecked at `7b6b48378`. The operator rejected the later substitution of a

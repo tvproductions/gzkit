@@ -1,0 +1,630 @@
+{
+  "persona": "quality-reviewer",
+  "independence": "Read frozen cases, six raw responses, and only cited historical snapshot witnesses. Did not read inputs, condition mapping, parent conclusions, or other evaluation artifacts.",
+  "method": "D discovery of specific surface/symbol, R correct relationship, A consistent application; each 0/1. Complete requires all three. Semantic alternatives credited; scope additions kept separate except direct criterion violations. Assessment proposals are not implementation evidence.",
+  "records": [
+    {
+      "run": "R01",
+      "case": "H",
+      "criteria": [
+        {
+          "id": "H1",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "complete": true,
+          "evidence": {
+            "D": "`load_handoff_chain`, follows every normalized `continues_from` reference",
+            "R": "returns only ancestor path strings in `ResumeResult.chain`",
+            "A": "project bounded predecessor context from the existing resolver/walker"
+          },
+          "notes": ""
+        },
+        {
+          "id": "H2",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "complete": true,
+          "evidence": {
+            "D": "`src/gzkit/commands/handoff.py::_render_resume`",
+            "R": "`src/gzkit/session_start.py::_render` reads only path, staleness and next steps",
+            "A": "Render that context in the human resume, JSON, session-start advisement"
+          },
+          "notes": ""
+        },
+        {
+          "id": "H3",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "complete": true,
+          "evidence": {
+            "D": "with a visited set and bounded traversal",
+            "R": "Include a clear indication when context is unreadable or traversal is incomplete",
+            "A": "Test absent lineage, scalar and multiple parents, a shared ancestor, cycles, unreadable/missing predecessors and traversal limits."
+          },
+          "notes": ""
+        },
+        {
+          "id": "H4",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "complete": true,
+          "evidence": {
+            "D": "The canonical handoff skill’s RESUME steps 5 and 9",
+            "R": "do not merge ancestor actions into current executable advice",
+            "A": "This is an advisory repair, not a new gate or automatic work authorization."
+          },
+          "notes": ""
+        },
+        {
+          "id": "H5",
+          "D": 1,
+          "R": 1,
+          "A": 0,
+          "complete": false,
+          "evidence": {
+            "D": "`build_advisement` truncates its body to `ADVISEMENT_CHAR_BUDGET`",
+            "R": "adding ancestry at the tail would leave it vulnerable to another silent loss",
+            "A": "ancestry notice, usable source references, advisory language and explicit truncation survive"
+          },
+          "notes": "Explicitly protects advisory text and lineage, but neither proposal nor overflow verification protects freshness/behind-origin/count warnings against the added content. Partial credit for correct budget relationship; A=0 is omission, not demonstrated weakening."
+        },
+        {
+          "id": "H6",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "complete": true,
+          "evidence": {
+            "D": "`tests/test_handoff_cli.py`; `tests/governance/test_{handoff_api,handoff_multi_parent_lineage,session_start}.py`",
+            "R": "visibility assertion must fail even though `chain` still contains the predecessor path",
+            "A": "Test absent lineage, scalar and multiple parents"
+          },
+          "notes": ""
+        }
+      ],
+      "scope_flags": [
+        {
+          "type": "material_scope_addition",
+          "supported": "partially",
+          "quote": "source path, timestamp, summary and Pending Work / Open Loops",
+          "note": "Richer ancestor projection and orientation consumer are not required by oracle. They plausibly meet actual broader-context complaint; not scored down merely for exceeding path disclosure."
+        }
+      ],
+      "oracle_limitations": [
+        "H5 does not establish actual warning loss. Putting notice before steps could leave existing warning prefix intact; explicit protection/verification is missing.",
+        "Additional truncation metadata and ancestor body projection are not mandatory; no penalty for design choice alone."
+      ],
+      "totals": {
+        "D": 6,
+        "R": 6,
+        "A": 5,
+        "complete": 5
+      },
+      "false_completeness": []
+    },
+    {
+      "run": "R02",
+      "case": "C",
+      "criteria": [
+        {
+          "id": "C1",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "complete": true,
+          "evidence": {
+            "D": "`src/gzkit/acceptance_execution.py::input_digest`",
+            "R": "Session variables such as `CLAUDE_CODE_SESSION_ID` therefore affect acceptance identity",
+            "A": "make its execution-environment selection explicit and deterministic"
+          },
+          "notes": ""
+        },
+        {
+          "id": "C2",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "complete": true,
+          "evidence": {
+            "D": "`_brief_contract` and `canonical_obligations` derive canon",
+            "R": "Do not discard the environment wholesale",
+            "A": "Change a semantic feature variable, Python/runtime identity, source/test bytes, source membership, configuration, brief requirement, or parent contract individually. Require stale rejection or blocked readiness"
+          },
+          "notes": ""
+        },
+        {
+          "id": "C3",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "complete": true,
+          "evidence": {
+            "D": "`acceptance.py::_review_proof_scope_errors` checks review-to-proof identity; `_proof_blockers` checks current proof freshness",
+            "R": "Fixing only the import check would leave these other consumers falsely blocked",
+            "A": "Run proof/status, receipt import, and later status in separate processes"
+          },
+          "notes": ""
+        },
+        {
+          "id": "C4",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "complete": true,
+          "evidence": {
+            "D": "`acceptance_store.py::_validate_new_review`",
+            "R": "reports every mismatch as “stale file contents.”",
+            "A": "Improve the error to distinguish input-identity mismatch from proven file changes without printing environment values."
+          },
+          "notes": ""
+        },
+        {
+          "id": "C5",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "complete": true,
+          "evidence": {
+            "D": "`test_environment_changes_invalidate` currently requires an arbitrary feature-variable change to invalidate proof",
+            "R": "This narrows an intentional guarantee",
+            "A": "Update the freshness explanation in the acceptance manpage and governance document alongside the producer and tests."
+          },
+          "notes": "Narrow credit: explicit test found; governance document identified as acceptance-obligations.md in obligations discussion/read audit, with freshness explanation specifically targeted. No exact prose quote, but not merely generic update-docs. Preserving semantic feature-variable test is consistent with narrowed incidental-variable policy."
+        },
+        {
+          "id": "C6",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "complete": true,
+          "evidence": {
+            "D": "`review_from_receipt` extracts their actual captured output",
+            "R": "never reinterpret historical receipts as newly executed evidence",
+            "A": "Both spec and adversarial imports must succeed; readiness must still require quality approval and explicit finding closure."
+          },
+          "notes": ""
+        }
+      ],
+      "scope_flags": [],
+      "oracle_limitations": [
+        "Explicitly selected incidental/session-variable policy is a defensible alternative to removing the environment wholesale; exact incident delta remains unknown. Do not penalize preservation of behavior-affecting environment invalidation.",
+        "C5 is borderline discovery evidence: targeted prose update plus named document earns credit, but explicit existing sentence was not reproduced."
+      ],
+      "totals": {
+        "D": 6,
+        "R": 6,
+        "A": 6,
+        "complete": 6
+      },
+      "false_completeness": []
+    },
+    {
+      "run": "R03",
+      "case": "S",
+      "criteria": [
+        {
+          "id": "S1",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "complete": true,
+          "evidence": {
+            "D": "`_staged_governed_paths` ... `git diff --cached --name-only`",
+            "R": "With ordinary unstaged edits or untracked source/tests, it returns nothing",
+            "A": "one pending-change inspection covering staged, unstaged and untracked paths"
+          },
+          "notes": ""
+        },
+        {
+          "id": "S2",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "complete": true,
+          "evidence": {
+            "D": "`git add -A` stages them, and `_commit_staged_changes` commits them",
+            "R": "Refuse the entire mixed batch before staging",
+            "A": "preserve the index and working files"
+          },
+          "notes": ""
+        },
+        {
+          "id": "S3",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "complete": true,
+          "evidence": {
+            "D": "The established guard boundary is `src/**` and `tests/**`",
+            "R": "do not broaden it into a blanket refusal of every dirty tree",
+            "A": "Permit only demonstrably generated outputs using their existing source/classifier rules and expected content"
+          },
+          "notes": "Generated-output exception is a defensible bounded design: snapshot tests.md explicitly describes ceremony Task as attributing bundled surface-sync. Requires exact producer verification, keeps substantive src/tests blocked, and does not exempt directories. Not patch mimicry."
+        },
+        {
+          "id": "S4",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "complete": true,
+          "evidence": {
+            "D": "`has_task_trailer`, whose slug regex in `tasks.py` accepts `TASK-gz-git-sync`",
+            "R": "This establishes trailer presence, not that the ceremony owns the change",
+            "A": "keeping the existing trailer syntax"
+          },
+          "notes": ""
+        },
+        {
+          "id": "S5",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "complete": true,
+          "evidence": {
+            "D": "`_detect_stranded_commit_message` cannot protect work for which nobody attempted a commit",
+            "R": "Remove the unsupported claim that staged work proves an aborted commit",
+            "A": "Report the paths and recovery: commit the work with its own message and genuine Task attribution, then rerun sync."
+          },
+          "notes": ""
+        },
+        {
+          "id": "S6",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "complete": true,
+          "evidence": {
+            "D": "`TestSweepGuard.test_empty_index_still_sweeps` treats an empty index as safe without modeling unstaged content",
+            "R": "first reproduce ordinary unstaged source edits and untracked tests with no COMMIT_EDITMSG",
+            "A": "Cover staged and partially staged work ... mixed ceremony/source batches ... Add positive controls for ledger/docs/vendor mirrors"
+          },
+          "notes": ""
+        }
+      ],
+      "scope_flags": [
+        {
+          "type": "unsupported_material_scope_addition",
+          "quote": "Inspection failure must block auto-commit rather than imply safety.",
+          "note": "Changes explicit documented fail-open policy; flagged as discovered behavior but no operator ruling or necessity for requested dirty+auto_add repair established."
+        },
+        {
+          "type": "unsupported_material_scope_addition",
+          "quote": "recheck immediately before automatic commit, including `--no-auto-add`",
+          "note": "Additional no-auto-add/concurrency policy outside frozen scope; not deducted from S2."
+        },
+        {
+          "type": "material_scope_addition",
+          "supported": "defensible",
+          "quote": "Permit only demonstrably generated outputs using their existing source/classifier rules and expected content",
+          "note": "More mechanism than minimum frozen repair, but bounded to verified generated output and consistent with documented bundled surface-sync ceremony attribution."
+        }
+      ],
+      "oracle_limitations": [
+        "Snapshot tests.md ceremony row explicitly permits bundled surface-sync attribution. Therefore verified-generated-source allowance is a defensible alternative, not scored as unsafe weakening, although classification/deletion cases need design.",
+        "Fail-closed policy is not required by oracle; tracked separately, no automatic score deduction for that addition."
+      ],
+      "totals": {
+        "D": 6,
+        "R": 6,
+        "A": 6,
+        "complete": 6
+      },
+      "false_completeness": []
+    },
+    {
+      "run": "R04",
+      "case": "H",
+      "criteria": [
+        {
+          "id": "H1",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "complete": true,
+          "evidence": {
+            "D": "`load_handoff_chain` follows predecessor links with a visited set and `_MAX_CHAIN_DEPTH`",
+            "R": "`ResumeResult.chain` contains paths, not predecessor content",
+            "A": "Use the existing resolver/normalizer and bounded traversal"
+          },
+          "notes": ""
+        },
+        {
+          "id": "H2",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "complete": true,
+          "evidence": {
+            "D": "`commands/handoff.py::_render_resume` ... `session_start._render`",
+            "R": "again without lineage",
+            "A": "Render that projection in human resume output and JSON. Session-start should put a compact predecessor-context notice"
+          },
+          "notes": ""
+        },
+        {
+          "id": "H3",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "complete": true,
+          "evidence": {
+            "D": "visited set and `_MAX_CHAIN_DEPTH`",
+            "R": "Do not infer which inherited tasks remain open",
+            "A": "Include multiple parents, shared ancestors, no-parent, dangling/unreadable links, cycles, and traversal limits."
+          },
+          "notes": ""
+        },
+        {
+          "id": "H4",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "complete": true,
+          "evidence": {
+            "D": "The handoff skill requires reading the chain, verification of claims, and advisory—not authorizing—resume behavior",
+            "R": "It must not become “all ancestor tasks are live instructions.”",
+            "A": "assert inherited steps remain separate from selected next steps"
+          },
+          "notes": ""
+        },
+        {
+          "id": "H5",
+          "D": 1,
+          "R": 1,
+          "A": 0,
+          "complete": false,
+          "evidence": {
+            "D": "`build_advisement` applies `ADVISEMENT_CHAR_BUDGET`",
+            "R": "before the potentially long step list",
+            "A": "Force output truncation and assert the lineage notice and recovery path survive."
+          },
+          "notes": "A=0: overflow test protects lineage notice/recovery only; freshness/behind-origin/count and authorization warnings are not expressly protected under overflow. Advisory semantics separately preserved, but coverage of load-bearing warnings is incomplete."
+        },
+        {
+          "id": "H6",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "complete": true,
+          "evidence": {
+            "D": "`tests/governance/{test_handoff_api.py,test_session_start.py,test_handoff_multi_parent_lineage.py}`; `tests/test_handoff_cli.py`",
+            "R": "those are insufficient witnesses of delivered predecessor context",
+            "A": "Assert exact parent text and provenance arrive through API, JSON, human CLI, and session-start ... Include multiple parents, shared ancestors, no-parent"
+          },
+          "notes": ""
+        }
+      ],
+      "scope_flags": [
+        {
+          "type": "material_scope_addition",
+          "supported": "partially",
+          "quote": "summary, important context, pending work, and advised steps, with attribution retained for decisions",
+          "note": "Richer context projection and orientation integration go beyond oracle minimum but plausibly address complaint; not penalized for patch divergence."
+        }
+      ],
+      "oracle_limitations": [
+        "H5 is an omitted explicit assurance, not evidence the suggested insertion necessarily displaces existing warning prefix."
+      ],
+      "totals": {
+        "D": 6,
+        "R": 6,
+        "A": 5,
+        "complete": 5
+      },
+      "false_completeness": []
+    },
+    {
+      "run": "R05",
+      "case": "C",
+      "criteria": [
+        {
+          "id": "C1",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "complete": true,
+          "evidence": {
+            "D": "`src/gzkit/acceptance_execution.py::input_digest`",
+            "R": "changing an agent-session identifier alone changes the digest",
+            "A": "explicitly separate non-semantic session/transport bookkeeping from execution-affecting inputs"
+          },
+          "notes": ""
+        },
+        {
+          "id": "C2",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "complete": true,
+          "evidence": {
+            "D": "hash includes file bytes, the normative brief/parent contract",
+            "R": "Source/test/configuration additions, edits, and deletions remain detectable without Git",
+            "A": "Independently vary production bytes, test oracle, configuration, parent decision, requirement statement/roster ... Old reviews must fail import or readiness"
+          },
+          "notes": ""
+        },
+        {
+          "id": "C3",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "complete": true,
+          "evidence": {
+            "D": "`acceptance_store.py::_validate_new_review` ... `acceptance_status` independently recomputes the same hash",
+            "R": "fixing import alone would leave proof readiness falsely stale",
+            "A": "Exercise CLI producer → receipt ingestion → precompletion/completion consumers"
+          },
+          "notes": ""
+        },
+        {
+          "id": "C4",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "complete": true,
+          "evidence": {
+            "D": "emits “Review describes stale file contents” on any difference",
+            "R": "That wording misidentifies environment differences as file changes",
+            "A": "If using component diagnostics, reveal changed categories or names, never raw environment values."
+          },
+          "notes": "A credit for diagnostic repair intent read with explicit false-blame diagnosis; optional component diagnostics do not require guessing a component. Less explicit than prescribing neutral mismatch wording."
+        },
+        {
+          "id": "C5",
+          "D": 0,
+          "R": 1,
+          "A": 0,
+          "complete": false,
+          "evidence": {
+            "D": "The existing environment-invalidation test expresses conservative intent",
+            "R": "explicitly separate non-semantic session/transport bookkeeping from execution-affecting inputs",
+            "A": "Coupled surfaces are ... freshness documentation."
+          },
+          "notes": "D=0/A=0: existing test only described, no symbol; more importantly no explicit governance freshness claim identified/reconciled. acceptance-obligations.md appears in read inventory, which alone is not discovery. R=1 credits correct semantic policy relationship, not proof of both required consumers."
+        },
+        {
+          "id": "C6",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "complete": true,
+          "evidence": {
+            "D": "Receipt provenance, independent reviewer identity, exact proof IDs, and original finding/closure relationships remain enforced",
+            "R": "A fresh proof ID cannot inherit earlier approvals",
+            "A": "malformed provenance or unresolved mapped findings still blocks advancement"
+          },
+          "notes": ""
+        }
+      ],
+      "scope_flags": [],
+      "oracle_limitations": [
+        "Keeping semantic environment invalidation is a defensible policy alternative, not failure to remove ambient identity. Exact incident variable remains unknown.",
+        "C4 proposed diagnostic wording is implicit; credit does not establish a fully specified component-diff implementation."
+      ],
+      "totals": {
+        "D": 5,
+        "R": 6,
+        "A": 5,
+        "complete": 5
+      },
+      "false_completeness": []
+    },
+    {
+      "run": "R06",
+      "case": "S",
+      "criteria": [
+        {
+          "id": "S1",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "complete": true,
+          "evidence": {
+            "D": "`_staged_governed_paths` reads only `git diff --cached --name-only`",
+            "R": "Unstaged modifications and untracked files are invisible",
+            "A": "staged changes, unstaged tracked changes, and nonignored untracked files"
+          },
+          "notes": ""
+        },
+        {
+          "id": "S2",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "complete": true,
+          "evidence": {
+            "D": "`_execute_git_sync` stages them with `git add -A`; `_commit_staged_changes` writes a generated chore message",
+            "R": "Inspect the entire candidate set before staging",
+            "A": "Assert no add/commit/pull/push occurs on rejection"
+          },
+          "notes": "Preservation is supplied by pre-staging refusal and no-mutating-command assertions; explicit byte comparison would strengthen verification but is not required for credit."
+        },
+        {
+          "id": "S3",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "complete": true,
+          "evidence": {
+            "D": "retaining its documented `src/` and `tests/` attribution scope",
+            "R": "blocking every dirty `src/` path would regress normal synchronization",
+            "A": "Admit only outputs verified against the existing producer’s classification/rendering rules"
+          },
+          "notes": "Verified generated outputs are a defensible alternative under documented bundled surface-sync attribution, not a blanket src directory exemption."
+        },
+        {
+          "id": "S4",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "complete": true,
+          "evidence": {
+            "D": "`tasks.py::has_task_trailer` accepts this ceremony slug",
+            "R": "syntactic compliance can coexist with lost TASK-to-work linkage",
+            "A": "Keep valid ceremony trailers and existing stranded-message protection."
+          },
+          "notes": ""
+        },
+        {
+          "id": "S5",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "complete": true,
+          "evidence": {
+            "D": "`_detect_stranded_commit_message` protects a different condition",
+            "R": "Do not diagnose a failed hook merely from pending work",
+            "A": "naming paths, the attribution obligation, and recovery: commit the work under its own authored message/trailers, then sync"
+          },
+          "notes": ""
+        },
+        {
+          "id": "S6",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "complete": true,
+          "evidence": {
+            "D": "`test_sync_sweep_guard.py::test_empty_index_still_sweeps` explicitly accepts an empty index, but models no working-tree content",
+            "R": "does not distinguish harmless pending synchronization from ordinary unstaged source work",
+            "A": "add failing cases for ordinary unstaged source edits, new tests, staged/unstaged mixtures ... Positive controls should actually reach generated commit construction for ledger/vendor-only changes"
+          },
+          "notes": ""
+        }
+      ],
+      "scope_flags": [
+        {
+          "type": "unsupported_material_scope_addition",
+          "quote": "Fail closed with the inspection error when the candidate set cannot be established.",
+          "note": "Changes documented fail-open inspection policy. Identifies old policy but does not flag change as a separate ruling; tracked separately, no criterion automatically failed."
+        },
+        {
+          "type": "unsupported_material_scope_addition",
+          "quote": "a final staged-content check before generating the commit, regardless of `--auto-add`",
+          "note": "Additional no-auto-add/recheck policy beyond dirty+auto_add scope."
+        },
+        {
+          "type": "material_scope_addition",
+          "supported": "defensible",
+          "quote": "Admit only outputs verified against the existing producer’s classification/rendering rules",
+          "note": "Added eligibility mechanism, with documented bundled surface-sync attribution support; oracle does not require it."
+        }
+      ],
+      "oracle_limitations": [
+        "Guard literal prefix and bundled surface ceremony purpose are in tension; exact-output verification is a defensible attempt to satisfy both. No generated-output exception is mandatory for scoring.",
+        "Fail-closed/no-auto-add additions are separate policy scope flags, not failures of discovery about pre-add candidate population."
+      ],
+      "totals": {
+        "D": 6,
+        "R": 6,
+        "A": 6,
+        "complete": 6
+      },
+      "false_completeness": []
+    }
+  ]
+}

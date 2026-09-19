@@ -1,0 +1,163 @@
+[
+  {
+    "id": "H",
+    "snapshot": "464dd4ff8fa2ee12d98afe99a867280e1b82b431",
+    "source_issue": 870,
+    "historical_fix": "4535839bb",
+    "task": "A session was continued from a narrow checkpoint, but the resumed context did not expose the broader work carried by its predecessor. The predecessor link is present in the handoff. Investigate the cause in this snapshot and propose the smallest complete repair with verification. Do not implement changes.",
+    "criteria": [
+      [
+        "H1",
+        "Recognize existing traversal and populated ResumeResult.chain; diagnose missing consumption rather than assert traversal does not exist.",
+        "src/gzkit/handoff_api.py:1069-1165"
+      ],
+      [
+        "H2",
+        "Find both human CLI and session-start rendering consumers and cover lineage visibility in each.",
+        "src/gzkit/commands/handoff.py:102-150; src/gzkit/session_start.py:165-223"
+      ],
+      [
+        "H3",
+        "Preserve declared multi-parent lineage, duplicate/cycle safety and bounded traversal; distinguish missing or truncated evidence from complete coverage. Explicit bounded/unknown coverage is sufficient; new truncation metadata, API redesign and ordering repair are not required.",
+        "src/gzkit/handoff_api.py:1069-1100; src/gzkit/handoff_validation.py:continues_from_refs"
+      ],
+      [
+        "H4",
+        "Preserve advisory versus authorization boundary; visible predecessor steps do not automatically authorize execution.",
+        "src/gzkit/session_start.py:199-215; .gzkit/skills/gz-session-handoff/SKILL.md:RESUME Procedure"
+      ],
+      [
+        "H5",
+        "Preserve session-start output budgeting and load-bearing warnings; require meaningful lineage disclosure without silently crowding out authorization/freshness warnings.",
+        "src/gzkit/session_start.py:80-117,165-187"
+      ],
+      [
+        "H6",
+        "Specify cross-consumer behavior tests with a linked checkpoint and a no-predecessor control; check observable rendering, not merely chain construction.",
+        "tests/test_handoff_cli.py; tests/governance/test_session_start.py; src/gzkit/handoff_api.py:resume_handoff"
+      ]
+    ],
+    "limits": "Rendering-discovery case; pre-fix repository already contains the producer and pointers. Does not require automatically loading every ancestor body or fixing all ordering defects. Complaint paraphrased because issue body incorrectly calls traversal absent.",
+    "omitted_unsafe_links": [
+      {
+        "path": ".codex/tmp/arg0/codex-arg088aA51/apply_patch",
+        "reason": "AbsoluteLinkError"
+      },
+      {
+        "path": ".codex/tmp/arg0/codex-arg088aA51/applypatch",
+        "reason": "AbsoluteLinkError"
+      },
+      {
+        "path": ".codex/tmp/arg0/codex-arg088aA51/codex-execve-wrapper",
+        "reason": "AbsoluteLinkError"
+      }
+    ],
+    "snapshot_path": "/tmp/gzkit-three-pillars-discovery/H",
+    "tree": "6af88c329d0f4135d85c34f01e0fbe7d2dbef4bd",
+    "archive_sha256": "2b79c0b549879802b0bc140beb3e29ab397935799939824f5f2aaa80473d1131",
+    "archive_members": 8649
+  },
+  {
+    "id": "C",
+    "snapshot": "649f0628161267343b1ebaad14963d88acf95368",
+    "source_issue": 989,
+    "historical_fix": "4c98885219bfe6660f2bc23c4cdfd0e402df8c11",
+    "task": "An independently executed acceptance review is rejected as stale even though the working tree and accepted requirements have not changed. This occurred for both an adversarial review and a specification review. Investigate the cause, identify the obligations and coupled surfaces a correct repair must cover, and propose verification that distinguishes this false rejection from legitimately stale evidence. Do not implement changes.",
+    "criteria": [
+      [
+        "C1",
+        "Trace ambient environment as accidental reviewed-input identity and propose environment-only stability controls, rather than hard-code removal of one observed variable.",
+        "src/gzkit/acceptance_execution.py:202-239"
+      ],
+      [
+        "C2",
+        "Preserve real audited-file and normative-contract invalidation with a negative stale-evidence control; do not replace identity with HEAD or an agent-chosen narrow file list.",
+        "src/gzkit/acceptance_execution.py:139-161,184-223; tests/test_acceptance_execution.py:91-118"
+      ],
+      [
+        "C3",
+        "Trace both review admission and proof/readiness consumers and verify stability through those consumers.",
+        "src/gzkit/acceptance_store.py:216-245,309-342; src/gzkit/acceptance.py:136-149; src/gzkit/acceptance_execution.py:354-378"
+      ],
+      [
+        "C4",
+        "Find diagnostic falsely blaming file contents and propose honest mismatch wording without inventing which component changed.",
+        "src/gzkit/acceptance_store.py:224-225"
+      ],
+      [
+        "C5",
+        "Find and reconcile BOTH contrary existing environment-change test and explicit governance prose; generic add-tests/update-docs is insufficient.",
+        "tests/test_acceptance_execution.py:120-124; docs/governance/acceptance-obligations.md:82-86"
+      ],
+      [
+        "C6",
+        "Preserve independently executed review/provenance checks; positive control is otherwise valid evidence, not arbitrary JSON or bypassed currency.",
+        "src/gzkit/acceptance_store.py:162-213; src/gzkit/acceptance.py:160-162"
+      ]
+    ],
+    "limits": "Original issue reveals solution; complaint-only paraphrase disclosed. Interpreter/platform policy not mandatory oracle. Historical patch omitted the C5 prose consumer; current defect must be re-derived separately.",
+    "omitted_unsafe_links": [
+      {
+        "path": ".codex/tmp/arg0/codex-arg088aA51/apply_patch",
+        "reason": "AbsoluteLinkError"
+      },
+      {
+        "path": ".codex/tmp/arg0/codex-arg088aA51/applypatch",
+        "reason": "AbsoluteLinkError"
+      },
+      {
+        "path": ".codex/tmp/arg0/codex-arg088aA51/codex-execve-wrapper",
+        "reason": "AbsoluteLinkError"
+      }
+    ],
+    "snapshot_path": "/tmp/gzkit-three-pillars-discovery/C",
+    "tree": "0333cdbae65d6e22e14c763df833b7a0dbf1ace4",
+    "archive_sha256": "c9b4a4023b14cc740f31cb3d37d8215328d436b0665221921c3db603ab55ac09",
+    "archive_members": 8531
+  },
+  {
+    "id": "S",
+    "snapshot": "da4470b8d70ff3dd85308ce3aff800e655231f8c",
+    "source_issue": 771,
+    "historical_fix": "45b4a51a19e809003212ff1c363549f63d81e057",
+    "task": "I ran the sync ceremony with ordinary local work still pending, and substantive changes ended up in its generated chore commit. Nobody had attempted a commit or encountered a hook failure first. This loses the work's own attribution even though the commit checks accept it. Investigate the cause in this snapshot and propose the smallest complete repair, with evidence that the normal sync workflow still works. Assessment only; do not modify files.",
+    "criteria": [
+      [
+        "S1",
+        "Distinguish cached index from prospective add -A population: staged, tracked-unstaged, untracked and mixed states.",
+        "src/gzkit/commands/sync.py:524-534,579-584"
+      ],
+      [
+        "S2",
+        "Protect before staging; preserve pending bytes/index on refusal; connect staging to later auto-commit.",
+        "src/gzkit/commands/sync.py:557-596; _commit_staged_changes"
+      ],
+      [
+        "S3",
+        "Keep governed src/tests boundary and valid ceremony-only sweep; do not forbid every dirty tree.",
+        "src/gzkit/commands/sync.py:508-520; .gzkit/rules/tests.md:87-99"
+      ],
+      [
+        "S4",
+        "Trace generated Task trailer to syntactic validator; explain why passing validation cannot establish semantic work ownership, while ceremony trailer remains valid for ceremony work.",
+        "src/gzkit/commands/sync.py:175-181; src/gzkit/tasks.py:327-347; .gzkit/rules/tests.md:97"
+      ],
+      [
+        "S5",
+        "Correct staged/aborted-commit-only diagnostic and recovery to describe dirty unstaged cases truthfully.",
+        "src/gzkit/commands/sync.py:537-553; .gzkit/rules/guardrail-feedback-prose.md"
+      ],
+      [
+        "S6",
+        "Identify cached-diff-only fixture gap and propose independently represented index/worktree states including empty-index dirty/untracked and valid ceremony control.",
+        "tests/commands/test_sync_sweep_guard.py:TestSweepGuard._run; test_empty_index_still_sweeps"
+      ]
+    ],
+    "limits": "Calibration case for temporal state and semantic attribution, weaker hidden-discovery case. Preserve documented fail-open inspection-error policy or flag it, do not require fail-closed. Scope dirty+auto_add, not new concurrency or no-auto-add policy. Initial fingerprint attribution was corrected before dispatch.",
+    "omitted_unsafe_links": [],
+    "snapshot_path": "/tmp/gzkit-three-pillars-discovery/S",
+    "tree": "05325c8c027c1e9424fdc964714f96b4796c32c5",
+    "archive_sha256": "1e1c9568b7f02862bbffdaa4e66fb87f29faf49b7ee1f1957741355d41c72176",
+    "archive_members": 8092
+  }
+]

@@ -1,0 +1,93 @@
+{
+  "oracle_unchanged": true,
+  "protocol_unchanged": true,
+  "word_count_method": "Python str.split(), entire final answer including read account",
+  "trace_source": "Codex read_thread commandExecution entries; output writes abbreviated in trace artifact",
+  "runs": [
+    {
+      "run": "R01",
+      "prompt_unchanged": true,
+      "response_sha256": "2c0a19e95c05849031b8002180c78f4f714d1982e398544dd94993f3b9f8d5c3",
+      "words": 733,
+      "bytes": 5980,
+      "response_matches_returned_final": true,
+      "observed_shell_calls": 12,
+      "self_reported_shell_calls": 12,
+      "deviations": []
+    },
+    {
+      "run": "R02",
+      "prompt_unchanged": true,
+      "response_sha256": "320ac63cf0da9423c2b07dcbc44edae3eea42a7a76d9bf2c4b000c7ce98b6b55",
+      "words": 703,
+      "bytes": 6474,
+      "response_matches_returned_final": true,
+      "observed_shell_calls": 12,
+      "self_reported_shell_calls": 12,
+      "deviations": []
+    },
+    {
+      "run": "R03",
+      "prompt_unchanged": true,
+      "response_sha256": "f11c5280d21ba831136eefc7bb8dd64a4794fb68e45bae2ee5c2077d5f4455fc",
+      "words": 654,
+      "bytes": 5640,
+      "response_matches_returned_final": true,
+      "observed_shell_calls": 8,
+      "self_reported_shell_calls": 8,
+      "deviations": []
+    },
+    {
+      "run": "R04",
+      "prompt_unchanged": true,
+      "response_sha256": "1d8700aa3d8defcbef19caac9712828e3423d9d697f1de11ed4750ea4205ed52",
+      "words": 673,
+      "bytes": 6227,
+      "response_matches_returned_final": true,
+      "observed_shell_calls": 15,
+      "self_reported_shell_calls": 15,
+      "deviations": [
+        "Listed current checkout .gzkit/personas directory; no current file body read."
+      ]
+    },
+    {
+      "run": "R05",
+      "prompt_unchanged": true,
+      "response_sha256": "3534deb8e4946ebe2055f38e35eb006b8a8edd9010461a3766258f79f162cfd9",
+      "words": 650,
+      "bytes": 6044,
+      "response_matches_returned_final": true,
+      "observed_shell_calls": 10,
+      "self_reported_shell_calls": 10,
+      "deviations": []
+    },
+    {
+      "run": "R06",
+      "prompt_unchanged": true,
+      "response_sha256": "e503801e20f8f55c856cf71121818f7166e79217683bd340e0f7d5fc24db8d7c",
+      "words": 667,
+      "bytes": 6058,
+      "response_matches_returned_final": true,
+      "observed_shell_calls": 10,
+      "self_reported_shell_calls": 10,
+      "deviations": []
+    }
+  ],
+  "snapshot_verification": [
+    {
+      "case": "H",
+      "regular_files_checked": 7516,
+      "content_differences": []
+    },
+    {
+      "case": "C",
+      "regular_files_checked": 7401,
+      "content_differences": []
+    },
+    {
+      "case": "S",
+      "regular_files_checked": 6860,
+      "content_differences": []
+    }
+  ]
+}
