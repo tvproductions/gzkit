@@ -50,6 +50,8 @@ shut, inside the window where that Movement was supposedly being worked.
 >
 > **DRAWN-WORK ORDER — AMENDED 2026-09-15 (operator-ratified).** Work a session draws without the operator, at the NEXT-IN-PRIORITY position, is taken in this order: **(a) the R&D front** — the `gz-rnd` skill and the design in `docs/governance/rnd-discipline.md`; **(b) the chore estate** — the conversion directive and the overdue board, the family-closure box's agent-side arm; **(c) GHI direct repair, only** when the GHI closes a named arm of that box, blocks (a) or (b), or is an emergency. TOPMOST and ADR order are unchanged. See § Amendments 2026-09-15.
 >
+> **THREE-PILLARS FOLLOW-UP — HELD 2026-09-19 (operator-ratified):** the selected repairs are delivered; GHI #1028 remains open but its production observation is held until the operator explicitly resumes it. See § Amendments 2026-09-19.
+>
 > **NEXT-IN-PRIORITY — Movement B — put the membrane on the real doors.** The airlock is BUILT and installed on ONE door — run `uv run gz adr status ADR-0.33.0-airlock-membrane` for its lifecycle and landed count rather than trusting a figure transcribed here. Measured live 2026-08-14: **524 `fix` commits in 90 days across zero transits**; **23 `airlock_in` vs 5 `airlock_out`** (18 unaccounted exits — worse than the 23/10 this file recorded); and **20 of 23 transits computed an EMPTY seam-map and auto-proceeded**, only 3 biting (3/4/7 seams → `hold`). **RE-MEASURED 2026-08-16: `airlock_in` 23, `airlock_out` 5 — both UNCHANGED, so zero transits occurred in the two days since Movement B became TOPMOST, while `fix` commits over 90 days moved 524 → 528. The ungoverned door widened by four while the governed one stayed shut.** That is the item-150 gap (`GHI : MX :: OBPI : Build`) reproducing in miniature, and it is the strongest available argument that item 0's calibration is the right first move rather than the widening beneath it. Sequence within B is **calibrate before widening** — a new item 0, ahead of the five checkboxes below, because widening an uncalibrated gate installs three more inert gates (`ADR-0.33.0` § Negative #1, the load-bearing pre-mortem: *"seam-maps rubber-stamped, GO always reached"*). **The feature ADR that carries this Movement is AUTHORED — `ADR-0.37.0-airlock-calibration-and-compulsion` (2026-08-14), which re-homes `ADR-0.33.0`'s disclosed residuals rather than reopening it; run `uv run gz adr status ADR-0.37.0-airlock-calibration-and-compulsion` for its lifecycle and landed count.** (This sentence read *"none is authored yet"* until 2026-08-16 — see the § Amendments record of that date.) **GATED BY ADR ORDER, which is absolute (operator ruling 2026-08-16, verbatim: *"i will NOT go out of adr order, whatsoever."*): `ADR-0.37.0` is the THIRD of three open feature ADRs, so Movement B is TOPMOST in priority and NOT pullable until `ADR-0.35.0` and `ADR-0.36.0` land. `ADR-0.35.0-canon-entry-corpus-landing` is the next work. TOPMOST is not a licence to jump the ADR queue.** See § Amendments 2026-08-14, § Amendments 2026-08-16 (latest), and § Movement B.
 >
 > **HELD — Movement A — close the Foundation Sunset.** ~~`ADR-0.0.37` audit~~ **done 2026-07-18 (`b40a8026`)** → ~~`ADR-0.34.0` capstone~~ **`Validated` 2026-07-31, released v0.34.0** → **NEXT: re-home the composition engine as a feature (`ADR-0.35.0-canon-entry-corpus-landing`, `Draft`, IN FLIGHT; run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` for the landed count — ten authored briefs, `gz obpi validate --authored` 10/10; **the lifecycle step is RULED 2026-08-12 — `Draft` HOLDS through implementation and OBPI work is UNBLOCKED**; *not* GHI #623, closed 2026-07-19; see § Movement A item 3)** → **THEN: install the cross-family critic at the convergence moment (`ADR-0.36.0-convergence-moment-cross-family-critic`, `Proposed`, NEXT-DRAWN after `ADR-0.35.0` lands; run `uv run gz adr status ADR-0.36.0-convergence-moment-cross-family-critic` for the landed count — promoted 2026-08-09 (`dc5fe4d39`) from the pool ADR; the promotion debt is discharged and the remaining work is the build — work the governed path, do NOT hand-wire a hook; delivery is STAGED and OBPI-09 lands dark; see § Movement A item 2)**. The one-line `foundation-adr-registers-invariant` disposition (item 4) is **RULED and checked off 2026-08-02** — it is no longer pending work. Then Movement B (airlock on the real doors), C (reduce), D (rulings). Pool backlog is post-1.0 (§7).
@@ -462,7 +464,27 @@ had been repeating. All are dispositioned below — none left undefined.
 
 ## Amendments
 
-### 2026-09-15 (latest) — drawn work rebalanced: R&D and the chore estate ahead of issue-by-issue repair (operator-ratified)
+### 2026-09-19 (latest) — three-pillars repairs delivered; #1028 held (operator-ratified)
+
+**Operator (`g0`), verbatim:** *"ok, we need to hold off on 1028. update handoff, update campaign."*
+
+The selected three-pillars corrective work is delivered in `cc5ed5bfa` and
+`59c4af622`; the ten repair GHIs closed with individual evidence. The
+[corrective delivery account](../evals/three-pillars-corrective-delivery-2026-09-19.md)
+carries the repair inventory and verification. That delivery is separate from
+GHI #1028's still-unobserved production comparison.
+
+**GHI #1028 is HELD at the operator's direction.** Keep the issue open, but do
+not draw its observation work, request a new OBPI to discharge it, or treat a
+future qualifying run as permission to resume it. Resume only when the operator
+lifts this hold. The hold preserves the issue's evidence and exit requirements;
+it records neither completion nor cancellation.
+
+The campaign's TOPMOST ADR-0.35.0, feature order, and operator initiation boundary
+remain in force. ADR-0.36.0 received draft reconciliation only; bounded advisory
+impact remains pooled and unbuilt. This amendment authorizes no feature execution.
+
+### 2026-09-15 — drawn work rebalanced: R&D and the chore estate ahead of issue-by-issue repair (operator-ratified)
 
 **Operator, verbatim:** *"the rate at which new GHIs grow in gzkit far outstretches getting
 any feature work done. this is dismaying."* Ruling on the options put to them: *"A and C
@@ -1890,3 +1912,12 @@ this map's source plus session-specific changes; the map does not certify that
 all four fronts were freshly inspected by `gz status`. A multi-session thread is
 carried as its own named line with a pointer to its design record, never
 compressed into one option beside short GHI fixes (§ Amendments 2026-09-15).
+
+### Three-pillars continuity — 2026-09-19
+
+**Repairs delivered; production observation HELD.** The
+[delivery account](../evals/three-pillars-corrective-delivery-2026-09-19.md) records
+the completed corrective scope. GHI #1028 remains open under the explicit hold
+in § Amendments 2026-09-19; it is not a next action until the operator resumes it.
+Carry this named thread and hold through handoffs without changing the four
+workflow fronts or campaign sequence.
