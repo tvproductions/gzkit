@@ -5,9 +5,9 @@ description: Create and semantically author OBPI briefs linked to parent ADR ite
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-08-15
+last_reviewed: 2026-09-19
 metadata:
-  skill-version: "1.8.2"
+  skill-version: "1.9.0"
 model: opus
 ---
 
@@ -45,15 +45,12 @@ stop you.
 
 Before saving a brief, every path in the `Allowed Paths` and `Denied Paths`
 sections MUST be verified against on-disk reality. LLM authoring routinely
-imports model priors from adjacent projects (airlineops, half-remembered
-TOML-based chore patterns) and writes them as if they were gzkit conventions.
-The OBPI-0.0.16-03 brief shipped with fabricated framework paths
-(`config/chores/<slug>.toml`-style layouts and TOML-keyed registries) — none
-of those conventions exist; the gzkit chore framework (post-ADR-0.0.21) uses
-canonical packages under `src/gzkit/chores/<slug>/` with project overlays at
-`.gzkit/chores/<slug>/` and a JSON registry at `.gzkit/chores/registry.json`.
-The implementer had to rewrite Allowed Paths as a scope amendment before
-proceeding.
+imports model priors from adjacent projects and writes them as if they were
+gzkit conventions. The OBPI-0.0.16-03 brief shipped with fabricated framework
+paths (`config/chores/<slug>.toml`-style layouts); the gzkit chore framework
+uses canonical packages under `src/gzkit/chores/<slug>/` with project overlays
+at `.gzkit/chores/<slug>/` and a JSON registry at `.gzkit/chores/registry.json`,
+and the implementer had to rewrite Allowed Paths as a scope amendment.
 
 ### Per-path verification — apply to every Allowed Paths and Denied Paths entry
 
@@ -71,8 +68,10 @@ For each path:
      the convention is different (verify by reading a sibling file) or the
      proposed path is fabricated. Do not save.
 3. **If neither the path nor the parent exists** — the path is green-field.
-   Verify the convention by:
-   - Reading the parent ADR's Interfaces / Evidence sections for the
+   Mark it `**CREATE**` (or list it under a `Creates these files` heading):
+   `gz obpi validate --authored` fails any other Allowed Path that does not
+   exist on disk. Then verify the convention by:
+   - Reading the parent ADR's Decision / Evidence sections for the
      intended layout, OR
    - Searching for adjacent precedents (`Grep`, `Glob`) that establish the
      intended convention, OR
@@ -96,15 +95,17 @@ Do NOT save a brief if any of the following is true:
 | Thought | Reality |
 |---------|---------|
 | "The framework probably uses TOML for chores like airlineops does" | Verify it. `Glob("config/**/*.toml")` and `Glob("config/**/*.json")` will tell you in one call which convention this repo uses. |
-| "I'll let the implementer correct the paths if they're wrong" | The OBPI-0.0.16-03 implementer paid the cost of a scope amendment + context-burning rewrite because the brief author skipped this check. The cost of one Glob call before saving is far lower than the cost of an in-flight scope amendment. |
+| "I'll let the implementer correct the paths if they're wrong" | One Glob call before saving costs far less than an in-flight scope amendment and a context-burning rewrite (OBPI-0.0.16-03). |
 | "The Allowed Paths look architecturally correct — that's enough" | Architectural plausibility is not ground truth. Run the Glob. Read a sibling file. Then save. |
 
-### Future mechanical enforcement
+### What is mechanical today
 
-A future iteration adds `gz validate --briefs --ground-truth` — a fail-closed
-CLI pass that checks every Allowed Path in every Draft brief against on-disk
-reality. Until then, this section governs authoring discipline by hand.
-Tracked as a follow-up to GHI #190.
+`gz obpi validate --authored` and `gz plan audit` fail closed on an Allowed Path
+that does not exist on disk unless it carries a `**CREATE**` marker or sits under
+a `Creates these files` heading; a vendor-mirror path fails regardless (GHI #393,
+#403, #419; `src/gzkit/governance/brief_path_validity.py`). The convention check
+for a green-field path — extension, sibling precedent — is still by hand, and
+this section governs it.
 
 ---
 
@@ -119,15 +120,12 @@ Implementation Summary, with a STOP guard below the pin: *"If you cannot
 quote the parent ADR § Decision item that this OBPI implements, STOP and
 re-read."*
 
-This is Anthropic Prompt Engineering 101's order-matters discipline applied
-to brief authoring. The failure pattern it closes: an agent grepping
-backward from a keyword to a code path rather than tracing forward from the
-parent ADR's Decision (failure-mode taxonomy ADR-0.0.23 *Skipped cheap
-verification*; current-card provenance is owned by
-`.gzkit/rules/agent-failure-modes.md`). When the first authoring step is
-"quote the Decision item," drift between the ADR's Feature Checklist line
-and the OBPI brief is structurally harder to introduce — which secondary-
-benefits the OBPI Decomposition Mandate's 1:1 ADR↔brief sync.
+The failure pattern it closes: an agent grepping backward from a keyword to a
+code path rather than tracing forward from the parent ADR's Decision
+(failure-mode taxonomy ADR-0.0.23 *Skipped cheap verification*; current-card
+provenance is owned by `.gzkit/rules/agent-failure-modes.md`). When the first
+authoring step is "quote the Decision item," drift between the ADR's Feature
+Checklist line and the OBPI brief is structurally harder to introduce.
 
 The pin lives in the rendered template (`src/gzkit/templates/obpi.md`).
 A brief that drifts the pinned items out of order, deletes the STOP guard,
@@ -155,7 +153,8 @@ execution.
 # Create one OBPI brief (lane and objective from WBS table)
 uv run gz specify my-feature-slug --parent ADR-0.0.11 --item 3
 
-# Create and author one OBPI brief in one pass
+# One-shot fast path: fail-closed, and writes NO file if the authored pass fails
+# (§ Skill Responsibility step 1). Not the standard route.
 uv run gz specify my-feature-slug --parent ADR-0.0.11 --item 3 --author
 
 # Override lane explicitly
@@ -279,7 +278,7 @@ The intended workflow is:
    Treat `--author` as an optional one-shot fast path for an ADR rich enough to emit a
    compliant brief directly; it is fail-closed, not the standard route.
 2. Read the parent ADR sections that govern the item: Feature Checklist, WBS row,
-   Intent, Decision, Interfaces, Evidence, and adjacent OBPIs when needed.
+   Intent, Decision, Boundary Invariants, Evidence, and adjacent OBPIs when needed.
 3. Author the brief semantically:
    - narrow Allowed Paths and Denied Paths to the real execution boundary
    - rewrite Requirements into OBPI-specific fail-closed rules
@@ -333,11 +332,12 @@ uv run gz register-adrs ADR-0.0.11 --all
 When a brief's lane is Heavy (from WBS or CLI override):
 
 1. **Read `assets/HEAVY_LANE_PLAN_TEMPLATE.md`** before authoring — this is mandatory
-2. Gate 5 attestation is required before OBPI closure
-3. Human must execute CLI commands and provide explicit attestation
-4. BDD scenarios + docs/manpage updates are additional acceptance criteria
+2. Heavy adds Gate 3 (docs) and Gate 4 (BDD) to Gates 1–2: BDD scenarios and
+   docs/manpage updates are additional acceptance criteria
+3. Gate 5 attestation is **universal** — required before closure of every OBPI
+   in every lane (ADR-0.0.36), not a Heavy-lane extra
 
-**Heavy lane failure modes:**
+**Closure failure modes (every lane):**
 - Marking OBPI closed before human attestation
 - Skipping Gate 5 attestation step
 - Not presenting CLI commands for human verification
@@ -355,7 +355,7 @@ These thoughts mean STOP — you are about to ship a thin or pseudo-authored bri
 | "I can leave Discovery Checklist generic — the implementer will figure it out" | Generic checklists produce generic implementations. The checklist is where you record the prerequisite reads that prevent re-discovery on every pipeline run. |
 | "REQ IDs are bookkeeping — I'll add them after the brief is approved" | Tests derive from REQ IDs. No REQ IDs means tests cannot be traced to acceptance criteria, which collapses the TDD discipline at Gate 2. |
 | "Verification commands can be the same across all OBPIs in this ADR" | The point of OBPI-specific verification is that each brief proves *this* increment. Shared verification means you can't tell which brief broke. |
-| "The WBS lane says lite but this is heavier than I thought — I'll just proceed lite" | The WBS lane is the canonical contract. If the work is heavier, fix the WBS first, then re-run specify. Silently proceeding lite skips Gate 5 attestation. |
+| "The WBS lane says lite but this is heavier than I thought — I'll just proceed lite" | The WBS lane is the canonical contract. If the work is heavier, fix the WBS first, then re-run specify. Silently proceeding lite skips Gates 3–4 (docs and BDD); Gate 5 applies either way. |
 | "`gz obpi validate --authored` is failing on minor things — I'll dismiss them" | The authored gate is fail-closed for a reason. Each warning is a brief that won't survive pipeline execution. Fix every one. |
 
 ## Red Flags
