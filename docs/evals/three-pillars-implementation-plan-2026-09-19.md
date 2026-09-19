@@ -96,6 +96,22 @@ ownership checks; their assessment prompts alone were not defect authority.
 | 4 | 3, supporting 2: bounded change-impact assistance | Repeated current assessments missed relationships despite finding related code. ADR-0.37.0 explicitly leaves file-coupling discovery unresolved. Benefit: expose affected consumers and uncertain boundaries before a local repair is declared complete. | Feature design, with ADR-0.37.0 § Alternatives Considered item 2 as the existing residual destination rule. First price a bounded advisory result from existing coupling evidence. A successor ADR must answer boundedness; this plan creates none. | Show distinct results for distinct changes, trace each reported relationship to evidence, preserve omitted/unsupported relationship classes, and demonstrate reviewable output on real changes. Do not use the result to authorize closure or narrow proof currency. |
 | 5 | 1/2: verify the landed Stage-4 mitigation in production | [GHI #1028](https://github.com/tvproductions/gzkit/issues/1028) remains open when read for this plan. The prior assessment records a landed mitigation and no relevant post-treatment events at its dated census. | Production observation during the next normally initiated OBPI. Do not launch a synthetic OBPI or rewrite the procedure again to discharge the observation. | Record launches, proofs, reviews, rounds, exits and reasons for repeated work against the issue's historical observations. Separate concurrency, model and task effects; a smaller count alone does not prove safer convergence. |
 
+## Follow-through under GHIs #1053 and #1054
+
+The #1053 draft now contains the proposed interface, typed producer/witness
+contract, shared source/test resolution, failure/coverage states, display
+accounting, semantic acceptance cases and validation protocol. Independent
+review corrected the default-depth ambiguity: import depth is separate from the
+registry section's complete mapping/invocation chain. This is a concrete reviewed
+design, not a runtime implementation or recorded operator approval.
+
+The source-root lead from that design became the reproduced direct repair
+[GHI #1054](https://github.com/tvproductions/gzkit/issues/1054). It covers default
+source indexing, orphan detection and unified projection, including repeated
+nested command use. It is separate from #1050's auditor repair and from #1053's
+new relationship types. Its issue owns implementation, regression/review evidence
+and closure; an in-flight patch is not yet shipped evidence.
+
 ## Concrete design deliverables
 
 Concrete drafts: [proof currency](three-pillars-proof-currency-design-2026-09-19.md)

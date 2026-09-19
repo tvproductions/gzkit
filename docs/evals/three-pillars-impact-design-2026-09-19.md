@@ -106,11 +106,12 @@ current repair GHIs close only their two demonstrated defects. This draft
 supplies a concrete design and acceptance population for the next authorized
 analysis; it does not claim the successor exists or that the feature is built.
 
-The explicit `src` default in the source-index builder is a recorded follow-up
-lead. Whether default invocation violates its owner contract requires reading
-its callers and original requirements; this draft avoids assuming a new defect
-and passes configuration explicitly in its proposed evaluation. It is not
-silently folded into the config-path audit repair.
+The recorded explicit-`src` default lead has now been reproduced and routed to
+[GHI #1054](https://github.com/tvproductions/gzkit/issues/1054). Default source
+indexing, orphan detection and unified projection ignore configured `lib` source;
+an empty decoy `src` even receives complete/fresh fidelity. The earlier measurement
+passed its root explicitly and remains valid. #1054 is the bounded correction
+to default population selection, separate from #1053's new relationship types.
 
 ## Measured revision — 2026-09-19
 
@@ -140,3 +141,184 @@ Recommended ruling: approve this revised advisory design direction, retain broad
 proof currency, and preserve campaign sequencing. No ADR is booked and no OBPI
 is initiated by this draft or its measurement. #1029's design decision and the
 #1028 production observation remain separately tracked.
+
+## Concrete product contract — GHI #1053
+
+This section is the proposed design for decision and implementation routing,
+not a claim that the command or adapters already exist. It replaces the earlier
+three-section sketch with explicit behavior and acceptance boundaries.
+
+### Interface and user workflow
+
+The proposed interface accepts one or more explicit project-relative changed
+Python paths. The first release does not infer a Git range or an OBPI allowlist:
+those are different selection authorities and would obscure which inputs the
+operator actually asked to inspect. Normalize one optional leading `./`, reject
+paths escaping the project and identify paths outside the configured scan roots.
+
+Proposed command shape (unbuilt):
+
+<!-- gz-validate-skip: command-shape -->
+```text
+gz impact <path> [<path> ...] [--depth 1|2] [--json]
+```
+
+Depth applies to incoming source/test import expansion: the default is one
+import hop, with two import hops explicitly requested and their chain retained.
+The known-registry section always includes the mapping plus recognized direct
+invocation witnesses, because both are necessary to explain the observed dispatch
+relationship. It preserves their two distinct edges; it neither flattens them
+into a direct import nor changes import-depth accounting. Text output lists all selected seeds, section
+counts, package groups and full consumer-file detail. JSON is the same complete
+record, not a different scan or a lossy subset. Ordinary quiet/verbose/debug
+handling and exit-code behavior must follow the existing CLI contract when the
+feature is authored; this draft does not introduce a second convention.
+
+The operator selects a changed file, inspects found consumers and gaps, then
+chooses which surfaces to read or test. The report neither selects proof scope
+nor says a change is safe. A command that completed its scan with known gaps
+reports those gaps explicitly; a failed or unstable capture cannot emit a
+successful report for that seed. Missing/deleted seeds are coverage gaps in the
+first release, not claims that deleted code had no consumers. Historical import
+resolution would require a separately specified baseline mode.
+
+### Producers and relationship meaning
+
+Build from current bytes rather than a persisted index. Read the configured
+source and test roots once, enumerate both populations, hash every input and
+verify their membership and bytes again after capture. Include the registry and
+producer implementation identities in that snapshot. Discard mixed captures.
+Neither filesystem timestamps nor Git HEAD alone identify an uncommitted tree.
+Do not import project modules or execute test code merely to discover a link.
+
+| Section | Producer and evidence | Meaning and limit |
+|---|---|---|
+| Source imports | Existing source parser/coupling assembler, with exact importer location and resolved target | Importer may depend on imported unit. File membership is not proof that every change affects it. Relative/unresolved/dynamic imports remain explicit gaps unless supported and tested. |
+| Known CLI registration | Parse the explicit handler-to-module mapping and literal handler uses in CLI parser source | Registry entry → handler module, and invocation site → registered handler. Preserve both witnesses in the chain. Arbitrary strings are not edges; unknown registration shapes are reported. |
+| Test consumers | Parse configured test files for resolvable imports and literal subprocess module invocations | Test imports a target or invokes its module entry point. Indirect import chains are depth-labeled. A string appearing in an assertion or fixture alone is not a subprocess invocation. Unknown command construction is a gap. |
+| Declared links | Existing explicitly bound requirement anchors or reviewed links with their own provenance | Traceability, not execution dependency. Do not infer document obligations from keyword proximity. Non-code links from the study oracle remain reference evidence until a producer is actually specified. |
+
+Test imports resolve against the same source-module identity map as production
+imports. Parsing the test root as an isolated module universe would classify
+`gzkit` imports as external and reproduce the omission. Source/test module-name
+collisions are reported, not resolved by silently preferring one. Record each
+witness's original file-relative location: concatenated CLI source offsets are
+not valid locations in an original file.
+
+Subprocess recognition initially accepts only a statically resolved subprocess
+call with a determinate interpreter / `-m` / module prefix. Respect imported
+aliases and shadowing; unknown working-directory or Python-path changes leave
+target resolution uncertain. Recognize actual invocation nodes, never a matching
+argument list in fixture data. Parse/read failure in any potential consumer file
+is a coverage gap even when the selected source file parses successfully.
+
+Direction is always consumer → consumed subject. The impact query starts at a
+changed subject and follows incoming links. A registry mapping and its caller
+must remain separate edges, even when rendered together. A caller reached via
+an import route does not prove the distinct semantic registry relation was
+resolved. The same rule applies to re-exports and subprocess invocation.
+
+### Record model
+
+Use immutable Pydantic models under the standing models rule. No new runtime
+dependency is proposed: reuse Pydantic and the existing parser; use stdlib for
+hashing, paths, static AST inspection and deterministic serialization.
+
+| Object | Required fields and semantics |
+|---|---|
+| Capture | Schema/producer version, root configuration, exact seed roster, complete input roster and hashes, capture outcome, parser identities and per-file parse failures |
+| Relationship | Consumer path, consumed subject, typed relation, one or more source locations and witness hashes, producer identity; no free-standing claim without a witness |
+| Reach result | Seed identity, scan state, direct relationships, optional two-hop chains, unique consumer-file and package counts, complete file list |
+| Coverage gap | Population/seed, unsupported or failed relationship class, reason, affected path when known; never silently coerce unknown to an empty success |
+| Declared link | Separate origin and kind, artifact identity, source location and freshness basis; never silently mixed into import closure |
+
+Unknown fields are rejected. Relation names and scan outcomes have a closed
+vocabulary tied to implemented producers; a future producer versions the
+contract when needed. Hashes establish what was read, not whether discovery is
+complete. There is no `safe`, `complete_dependencies`, acceptance key or gate
+result in this record.
+
+### Display example and boundedness
+
+Design preview for the measured config-path case, not observed runtime output:
+
+```text
+Selected: src/gzkit/commands/config_paths.py
+Source imports: 0 found within configured production-source population
+CLI registration: handler mapping and parser invocation chain witnessed
+Tests: direct test-module import witnessed
+Other obligations: reviewed manpage/skill/chore links retained separately
+Coverage gaps: arbitrary dynamic loading, computed subprocess arguments,
+               semantic configuration/data dependencies, external consumers
+```
+
+Each positive line expands to the actual paths, locations and relation types.
+The first line cannot be reduced to “0 consumers”: other sections contain real
+consumers, and unknown classes remain unknown. High-fanout results retain every
+file. Package counts summarize navigation; they are not a guarantee of cheap
+review and do not hide a truncated tail.
+
+### Semantic acceptance matrix
+
+The following are implementation obligations, not test results from this draft.
+Use isolated fixtures whose expected relationships are specified independently
+of the discovery implementation, then retain the four real repository cases as
+integration evidence.
+
+| Input/change | Required observed result | Negative control |
+|---|---|---|
+| Literal absolute import, including function-local import | Correct incoming file and exact witness; duplicate symbol edges do not inflate file count | Unrelated module and look-alike string produce no import edge |
+| Explicit handler mapping plus literal invocation | Both registry and call-site witnesses lead to the actual target | Unregistered handler name and arbitrary module-looking string produce no verified chain |
+| Direct test import | Consumer is found under configured test root | Stale default test tree is outside the configured population |
+| Literal subprocess module invocation | Entry-point consumer and invocation witness are reported | Module name occurring only in expected-output text is not an invocation |
+| Unsupported relative/import/command construction | Coverage gap remains visible; no completeness claim | Failed parse cannot become a successful empty scan |
+| Add, rename or delete a consumer | Roster and resulting relationships change accordingly | Reusing old cached bytes cannot satisfy snapshot identity |
+| Producer/config/source/test changes during capture | Mixed capture is discarded or refused | Stable capture returns the same full semantic result |
+| High-fanout shared helper | All files retained; package and file counts independently reconstruct | Removing a tail member fails display-accounting verification |
+| Multiple distinct selected seeds | Distinct results remain attributed to their seeds | A constant artifact ancestor chain cannot satisfy the query |
+| JSON versus text rendering | Same seeds, relationships, gaps and full populations | Renderer omission is caught independently of producer tests |
+
+### Alternatives and forced decisions
+
+1. **Import-only view:** rejected as the whole product because the actual
+   config-path dispatch case is absent. Retain it as one evidence section.
+2. **All-purpose semantic graph:** rejected for this increment. Arbitrary dynamic
+   loading, runtime data and cross-tool relationships have no complete independent
+   discovery authority here; claiming one would recreate the blind spot.
+3. **Typed bounded report:** recommended. Explicit registry and test witnesses
+   repair demonstrated omissions in the proposed report while preserving limits.
+4. **Narrow acceptance currency with this report:** rejected. Advisory relationship
+   evidence cannot certify inputs safe to exclude from a proof or review subject.
+
+The main failure risk is treating a short report as a safety certificate. The
+countermeasure is typed evidence and visible missing coverage, not an extra
+approval gate. Reversing this feature removes an advisory query; no completion
+history or proof identity must be rewritten. The minimum useful release contains
+source, registry and test sections plus snapshot/gap accounting together; shipping
+only imports would reproduce the already measured false-empty case.
+
+Implementation authoring must decide the registered parent, release placement
+and decomposition without bypassing campaign order. Future generic dynamic/data
+adapters and any proof-currency authority are separate decisions. No new pool
+ADR, orphan OBPI or pipeline stage is created by this design document.
+
+### Review of the validation constraint
+
+Independent review under #1053 distinguished two obligations. ADR-0.37.0
+Alternative 2 requires a measured reviewable bound; it does not prescribe a
+human timing pilot, participant count or timing threshold. This draft and #1053
+subsequently proposed human review-effort measurement as an acceptance criterion.
+It is not an immutable ADR requirement and must not be cited as a reason to halt
+concrete design or repair work. It also cannot be claimed complete using only
+file counts. Its actual observation or explicit disposition remains visible in
+the validation work; no timing benefit has been measured.
+
+The validation protocol presents the same four changed-source cases with the
+complete import-only and typed reports. Preserve the independent oracle before
+review. Record found/missed witnessed consumers, unsupported links identified,
+files opened, review elapsed time and the reviewer's final scope decision.
+Compare on the same captured bytes, disclose ordering/learning effects, and
+report each case separately instead of hiding a missed dispatch chain in an
+aggregate score. The high-fanout case must retain every file, so a smaller first
+screen cannot manufacture a smaller review population. This is a protocol ready
+for observation, not an experiment that has already run.
