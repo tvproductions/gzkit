@@ -140,6 +140,33 @@ class TestHookGating(unittest.TestCase):
         self.assertIn("GHI #424", err)
         self.assertIn("chat-silence", err)
 
+    def test_triage_rank_across_line_continuation_blocks(self) -> None:
+        """The backstop must not depend on how the command is wrapped (GHI #1033)."""
+        transcript = _write_transcript(
+            self.tmp,
+            "- #419 (brief path drift): degrading.\n- #418 (manpages split): degrading.\n",
+        )
+        rc, err = _run_hook(
+            {
+                "command": (
+                    "uv run python .gzkit/skills/ghi-triage/scripts/triage.py \\\n"
+                    "    --format rank --rank-input .gzkit/cache/triage/rank.json"
+                )
+            },
+            transcript,
+        )
+        self.assertEqual(rc, 2)
+        self.assertIn("chat-silence", err)
+
+    def test_format_rank_on_a_separate_command_line_passes(self) -> None:
+        """A bare newline ends the command: another line's flag is not this call's."""
+        transcript = _write_transcript(self.tmp, "#419 blocking. #418 degrading.")
+        rc, _err = _run_hook(
+            {"command": "cat triage.py\necho --format rank"},
+            transcript,
+        )
+        self.assertEqual(rc, 0)
+
     def test_triage_rank_without_violation_passes(self) -> None:
         transcript = _write_transcript(
             self.tmp,

@@ -66,7 +66,10 @@ def _ghi_triage_chat_silence_script() -> str:
             GHI_RE = re.compile(r"#(\\d+)\\b")
             PROSE_PROXIMITY_CHARS = 200
             MIN_DISTINCT_PAIRS = 2
-            TRIAGE_INVOCATION_RE = re.compile(r"triage\\.py[^\\n]*--format\\s+rank", re.DOTALL)
+            # A backslash-newline continues the same command; a bare newline ends it (GHI #1033).
+            TRIAGE_INVOCATION_RE = re.compile(
+                r"triage\\.py(?:\\\\\\n|[^\\n])*--format\\s+rank", re.DOTALL
+            )
 
 
             def _load_input() -> dict | None:
