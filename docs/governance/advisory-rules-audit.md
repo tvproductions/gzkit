@@ -55,27 +55,29 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `adr-audit.md` | `0.3.2` |
 | `agent-failure-modes.md` | `0.8.0` |
 | `brief-heading-conventions.md` | `0.2.0` |
-| `changelog-release-notes.md` | `1.2.0` |
+| `changelog-release-notes.md` | `1.2.1` |
 | `complexity-doctrine.md` | `0.4.0` |
 | `complexity-thresholds.md` | `0.5.0` |
 | `gh-cli.md` | `0.5.2` |
 | `hexagonal-architecture.md` | `0.3.0` |
 | `models.md` | `0.2.0` |
-| `model-selection.md` | `0.6.0` |
+| `model-selection.md` | `0.6.1` |
 | `security-sensitivity.md` | `0.6.0` |
 | `skill-surface-sync.md` | `0.13.0` |
 | `skill-authoring.md` | `0.1.1` |
-| `chores.md` | `0.5.2` |
-| `cli.md` | `0.9.0` |
+| `chores.md` | `0.5.3` |
+| `cli.md` | `0.9.1` |
 | `cross-platform.md` | `0.7.0` |
 | `gate5-runbook-code-covenant.md` | `0.3.1` |
 | `guardrail-feedback-prose.md` | `0.3.1` |
 | `mx-mode.md` | `1.4.0` |
 | `pythonic.md` | `0.5.3` |
-| `tool-skill-runbook-alignment.md` | `0.5.1` |
-| `tests.md` | `0.26.1` |
+| `tool-skill-runbook-alignment.md` | `0.5.2` |
+| `tests.md` | `0.26.2` |
 | `task-discovery.md` | `0.10.0` |
 | `token-block-discipline.md` | `0.8.0` |
+
+**Re-read 2026-09-19 (GHIs #1040–#1043).** Model selection, release notes, tests, chores, CLI and tool/skill alignment were read against their existing authorities. Corrections concern nested version metadata, release approval terminology, test-tier selectors and same-patch/direct-repair routing. Their binding obligations and scores are unchanged; the release-note curation note below now uses the correct approval subject. No mechanical promotion or new witness is claimed.
 
 **Pre-ledger debt is frozen, not laundered.** The rules still enumerated in [`data/advisory_scorecard_grandfather.json`](../../data/advisory_scorecard_grandfather.json) carry rows written before this ledger existed, against versions nobody recorded. They are enumerated in [`data/advisory_scorecard_grandfather.json`](../../data/advisory_scorecard_grandfather.json), pinned at their current versions and registered shrink-only in `data/waiver_ratchet_registry.json` (ADR-0.0.73 Boundary Invariant #8). The pin is the honesty mechanism: a grandfathered rule that is *edited* leaves its pinned version behind and must be scored for real before `gz check` goes green. Debt can only shrink, and it cannot follow a rule forward in silence.
 
@@ -447,7 +449,7 @@ The Claude-specific invariant 10a is scored as a row rather than in prose:
 
 | # | Rule | Score | Notes |
 |---|------|-------|-------|
-| 65 | `CHANGELOG.md` and `RELEASE_NOTES.md` follow the Good Docs Project templates adapted to gzkit — changelog is the exhaustive developer-facing projection of closed GHIs (SemVer/ISO version headers, closed category set, one `GHI #N` citation per entry); release notes are the curated reader-facing narrative retaining the `### Gate Evidence` provenance section | **Mechanical** (changelog structure) / **Judgment** (release-notes curation) | Changelog structure enforced by `gz validate --changelog` (GHI #685, `src/gzkit/validate_pkg/changelog.py`) — hermetic, fail-closed on a non-SemVer/non-ISO version header, a disallowed category, or an entry missing its `GHI #N` citation; validated by `tests/test_validate_changelog.py`. The closed-GHI *coverage* half (every closed-since-tag GHI appears) is networked and runs release-time in `gz-patch-release`, not in `gz check` (hermeticity split). Release-notes tone and curation stay Judgment — attested at Gate 5; no mechanical release-notes validator exists (the curated narrative is not machine-checkable). Rule at `.gzkit/rules/changelog-release-notes.md`; canonical shapes at `.gzkit/templates/{changelog,release_notes}.md`. |
+| 65 | `CHANGELOG.md` and `RELEASE_NOTES.md` follow the Good Docs Project templates adapted to gzkit — changelog is the exhaustive developer-facing projection of closed GHIs (SemVer/ISO version headers, closed category set, one `GHI #N` citation per entry); release notes are the curated reader-facing narrative retaining the `### Gate Evidence` provenance section | **Mechanical** (changelog structure) / **Judgment** (release-notes curation) | Changelog structure enforced by `gz validate --changelog` (GHI #685, `src/gzkit/validate_pkg/changelog.py`) — hermetic, fail-closed on a non-SemVer/non-ISO version header, a disallowed category, or an entry missing its `GHI #N` citation; validated by `tests/test_validate_changelog.py`. The closed-GHI *coverage* half (every closed-since-tag GHI appears) is networked and runs release-time in `gz-patch-release`, not in `gz check` (hermeticity split). Release-notes tone and curation stay Judgment — approved by the operator through the release skill, distinct from OBPI/ADR Gate 5 completion; no mechanical release-notes validator exists (the curated narrative is not machine-checkable). Rule at `.gzkit/rules/changelog-release-notes.md`; canonical shapes at `.gzkit/templates/{changelog,release_notes}.md`. |
 | 65a | `RELEASE_NOTES.md` is authored and updated through the `gz-patch-release` skill, not by hand | **Judgment** | **Scored 2026-08-30 (rule `1.2.0`), GHI #921 — never scored.** The same caller-attribution limit as row 51a: a skill-authored file and a hand-authored one are indistinguishable on disk, and gzkit models no artifact recording which produced it. Not idle doctrine — `cli.md` `0.2.0` records a live instance where a rule's own procedure *"prescribed hand-authoring release notes, the one artifact `changelog-release-notes.md` forbids hand-editing"*, and the conflict shipped. Backstop is the release ceremony itself: `gz-patch-release` rewrites the file, so a hand edit is overwritten rather than caught. |
 
 ### CLI Contract Doctrine (`.gzkit/rules/cli.md`)

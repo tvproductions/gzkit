@@ -1,0 +1,1318 @@
+{
+  "persona": "quality-reviewer",
+  "partition": 2,
+  "modulus": 3,
+  "snapshot": "3dc6f613042117838f4f4cad55abe0b2e3044d35",
+  "scope": "sorted AGENTS.md, CLAUDE.md and recursively every .gzkit/rules/**/*.md; itertools.combinations index starts at zero",
+  "full_read_coverage": [
+    {
+      "path": ".gzkit/rules/AGENTS.md",
+      "sha256": "1c7328018480d34d3ced4226d35308d291f6186d0a0d569274e276fd83467c77",
+      "lines": 78,
+      "read": "entire file; initial truncated combined output reread in smaller batches"
+    },
+    {
+      "path": ".gzkit/rules/adr-audit.md",
+      "sha256": "f793628f1cee660f7512d69eedeb4d249b9cbeafa6372eca77e8ab8d26301c6c",
+      "lines": 70,
+      "read": "entire file; initial truncated combined output reread in smaller batches"
+    },
+    {
+      "path": ".gzkit/rules/agent-failure-modes.md",
+      "sha256": "d821600c7960441a9584a25fc11c76f88ff98b9366c2b355b14390f0c9536335",
+      "lines": 30,
+      "read": "entire file; initial truncated combined output reread in smaller batches"
+    },
+    {
+      "path": ".gzkit/rules/agents-md-map-doctrine.md",
+      "sha256": "36b17c4ec088fa48e799ab288a1743cbd8a7dc65be1836662f1b7768de104e17",
+      "lines": 68,
+      "read": "entire file; initial truncated combined output reread in smaller batches"
+    },
+    {
+      "path": ".gzkit/rules/brief-heading-conventions.md",
+      "sha256": "6baffe4cc324012004e7b458594b4ac531260ca644db5bafb1c443714324205e",
+      "lines": 56,
+      "read": "entire file; initial truncated combined output reread in smaller batches"
+    },
+    {
+      "path": ".gzkit/rules/changelog-release-notes.md",
+      "sha256": "bd72114fa2c767cf81b6c1f614c6e4590628155218c160d78a5f68974c36f196",
+      "lines": 55,
+      "read": "entire file; initial truncated combined output reread in smaller batches"
+    },
+    {
+      "path": ".gzkit/rules/chores.md",
+      "sha256": "01b979b0365bfc8aca7a864c7f823a69da0042d0809201973db58f37cf9572b5",
+      "lines": 145,
+      "read": "entire file; initial truncated combined output reread in smaller batches"
+    },
+    {
+      "path": ".gzkit/rules/cli.md",
+      "sha256": "241cfee11c70604acdd445867e672c3e77cc9686adc532951cf02b48b00b8a03",
+      "lines": 93,
+      "read": "entire file; initial truncated combined output reread in smaller batches"
+    },
+    {
+      "path": ".gzkit/rules/complexity-doctrine.md",
+      "sha256": "ab02eeb4911968ae60021da993aefec9ed14c3779c09283010035154625046ce",
+      "lines": 123,
+      "read": "entire file; initial truncated combined output reread in smaller batches"
+    },
+    {
+      "path": ".gzkit/rules/complexity-thresholds.md",
+      "sha256": "45237ef09b9cf639a4684bfcd82d44e98a46386942635e9a454875e877119ecf",
+      "lines": 99,
+      "read": "entire file; initial truncated combined output reread in smaller batches"
+    },
+    {
+      "path": ".gzkit/rules/cross-platform.md",
+      "sha256": "87c24bb3d26293277f7794d029a0dd3cff46326c4051e1348be3c1b9c59c170e",
+      "lines": 88,
+      "read": "entire file; initial truncated combined output reread in smaller batches"
+    },
+    {
+      "path": ".gzkit/rules/gate5-runbook-code-covenant.md",
+      "sha256": "db2687e835b54f60d3cf65c26bbe1e7afabdddea0277ca741ff7a80418144412",
+      "lines": 46,
+      "read": "entire file; initial truncated combined output reread in smaller batches"
+    },
+    {
+      "path": ".gzkit/rules/gh-cli.md",
+      "sha256": "ef75d01666102ea7897b4a5240d003d65adcc231bc64e2421238b8612fa385d7",
+      "lines": 59,
+      "read": "entire file; initial truncated combined output reread in smaller batches"
+    },
+    {
+      "path": ".gzkit/rules/guardrail-feedback-prose.md",
+      "sha256": "935f06c9ff67a5b0b9b7384c42df7245e798d121c61aa0a8000d4531aa736736",
+      "lines": 79,
+      "read": "entire file; initial truncated combined output reread in smaller batches"
+    },
+    {
+      "path": ".gzkit/rules/hexagonal-architecture.md",
+      "sha256": "7d3046c96b9ada5f2c0b3bca17bdf598ef9e3f51f7d6459f6a6693b737fb2b23",
+      "lines": 125,
+      "read": "entire file; initial truncated combined output reread in smaller batches"
+    },
+    {
+      "path": ".gzkit/rules/model-selection.md",
+      "sha256": "1ec223d7e139913810cc7fb230b95e40220d25d8c580b87b80509e391cf20c72",
+      "lines": 75,
+      "read": "entire file; initial truncated combined output reread in smaller batches"
+    },
+    {
+      "path": ".gzkit/rules/models.md",
+      "sha256": "0fbe189f91942f8d1bab058d16efd80c9448c28b4272095e20f3b712cf03e128",
+      "lines": 50,
+      "read": "entire file; initial truncated combined output reread in smaller batches"
+    },
+    {
+      "path": ".gzkit/rules/mx-mode.md",
+      "sha256": "44a1b63c72655c70b3f6ca6cd1c7de0a73ca6b49aa4d202621f0a8c9c974c494",
+      "lines": 89,
+      "read": "entire file; initial truncated combined output reread in smaller batches"
+    },
+    {
+      "path": ".gzkit/rules/pythonic.md",
+      "sha256": "508bfc3a3a54d7af3646eaaee3541994e251b3fe730b64acf5a3fde969163372",
+      "lines": 98,
+      "read": "entire file; initial truncated combined output reread in smaller batches"
+    },
+    {
+      "path": ".gzkit/rules/security-sensitivity.md",
+      "sha256": "8b8f3584c7c32c05afb4dae347a46caa6ff77c9ae83b9b84569f4bc8cfa7dc48",
+      "lines": 46,
+      "read": "entire file; initial truncated combined output reread in smaller batches"
+    },
+    {
+      "path": ".gzkit/rules/skill-authoring.md",
+      "sha256": "788634b9e317ea216dcab494337d3136ee8e2be159f9150e055fab24435f0b35",
+      "lines": 53,
+      "read": "entire file; initial truncated combined output reread in smaller batches"
+    },
+    {
+      "path": ".gzkit/rules/skill-surface-sync.md",
+      "sha256": "f46eed667cb0ae87dfe325ba393530fb5e3d6fd573706e8980a6e3dd05535a72",
+      "lines": 57,
+      "read": "entire file; initial truncated combined output reread in smaller batches"
+    },
+    {
+      "path": ".gzkit/rules/task-discovery.md",
+      "sha256": "07957ea67f85c44a31e1d7f2fe89ce78fe1d56c6d18765856fdd23577ce9d284",
+      "lines": 60,
+      "read": "entire file; initial truncated combined output reread in smaller batches"
+    },
+    {
+      "path": ".gzkit/rules/tests.md",
+      "sha256": "5d8bae247a2c7e0e0503e17e292878e2871bbbad977b876f915e56aae78f04b3",
+      "lines": 101,
+      "read": "entire file; initial truncated combined output reread in smaller batches"
+    },
+    {
+      "path": ".gzkit/rules/token-block-discipline.md",
+      "sha256": "0bdb89ff2eac18b3bdff23da96f4b003398208b6e461c84e772fe9473d5445cd",
+      "lines": 75,
+      "read": "entire file; initial truncated combined output reread in smaller batches"
+    },
+    {
+      "path": ".gzkit/rules/tool-skill-runbook-alignment.md",
+      "sha256": "b499c2cf796301d6b6d644847cafb02a271246b9aa485f1034ddff6a1f2f5944",
+      "lines": 74,
+      "read": "entire file; initial truncated combined output reread in smaller batches"
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "d7f8a4041c5bd6afceceb97a33413a5dd14c54c1fdafc23e6d2ab3817226f276",
+      "lines": 226,
+      "read": "entire file; initial truncated combined output reread in smaller batches"
+    },
+    {
+      "path": "CLAUDE.md",
+      "sha256": "e0e245d369df70646cff6f1aaea9c3bcdeecace4128ecc07c4e7091ed16702ca",
+      "lines": 26,
+      "read": "entire file; initial truncated combined output reread in smaller batches"
+    }
+  ],
+  "limitations": [
+    "Semantic review is not proof of absence. Hypothetical worked cases establish opposing text, not encounter frequency.",
+    "Named implementation functions read; no destructive doctor, lock, pipeline, or GitHub mutation run.",
+    "Advisory scorecard initial read truncated; not counted in full-read scope or relied upon to establish any fresh mechanical claim."
+  ],
+  "pairs": [
+    {
+      "index": 2,
+      "paths": [
+        ".gzkit/rules/AGENTS.md",
+        ".gzkit/rules/agents-md-map-doctrine.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Map shape governs root contract; generated subtree bundles sync and taxonomy without prescribing another root shape."
+    },
+    {
+      "index": 5,
+      "paths": [
+        ".gzkit/rules/AGENTS.md",
+        ".gzkit/rules/chores.md"
+      ],
+      "result": "conflict",
+      "reason": "R01: generated sync table says edit project chore while chores calls package authoritative; same directional conflict as pair161."
+    },
+    {
+      "index": 8,
+      "paths": [
+        ".gzkit/rules/AGENTS.md",
+        ".gzkit/rules/complexity-thresholds.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Sync transports threshold data; threshold rule alone assigns numeric meaning."
+    },
+    {
+      "index": 11,
+      "paths": [
+        ".gzkit/rules/AGENTS.md",
+        ".gzkit/rules/gh-cli.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Canonical edit/sync discipline and skill-routed GitHub operations are cumulative."
+    },
+    {
+      "index": 14,
+      "paths": [
+        ".gzkit/rules/AGENTS.md",
+        ".gzkit/rules/model-selection.md"
+      ],
+      "result": "resolved-authority",
+      "reason": "R21: generated sync mandates nested metadata.skill-version; model-selection example uses top-level key."
+    },
+    {
+      "index": 17,
+      "paths": [
+        ".gzkit/rules/AGENTS.md",
+        ".gzkit/rules/pythonic.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Sync governs placement/version; Pythonic guidance governs code and explicitly distinguishes numeric authorities."
+    },
+    {
+      "index": 20,
+      "paths": [
+        ".gzkit/rules/AGENTS.md",
+        ".gzkit/rules/skill-surface-sync.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Generated subtree repeats the same sync rule; identical obligations, not competing authority."
+    },
+    {
+      "index": 23,
+      "paths": [
+        ".gzkit/rules/AGENTS.md",
+        ".gzkit/rules/token-block-discipline.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Sync and failure taxonomy do not grant lock operations; token rule concerns surrender evidence."
+    },
+    {
+      "index": 26,
+      "paths": [
+        ".gzkit/rules/AGENTS.md",
+        "CLAUDE.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Claude extends root while subtree supplies shared sync/taxonomy; neither replaces root authority."
+    },
+    {
+      "index": 29,
+      "paths": [
+        ".gzkit/rules/adr-audit.md",
+        ".gzkit/rules/brief-heading-conventions.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Audit requires kind-appropriate evidence; H3 heading discipline makes that evidence readable."
+    },
+    {
+      "index": 32,
+      "paths": [
+        ".gzkit/rules/adr-audit.md",
+        ".gzkit/rules/cli.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Audit receipts and CLI authoring obligations apply at different lifecycle steps and can both hold."
+    },
+    {
+      "index": 35,
+      "paths": [
+        ".gzkit/rules/adr-audit.md",
+        ".gzkit/rules/cross-platform.md"
+      ],
+      "result": "no-conflict",
+      "reason": "ARB command execution can use portable paths and UTF-8 capture; no contrary platform prescription."
+    },
+    {
+      "index": 38,
+      "paths": [
+        ".gzkit/rules/adr-audit.md",
+        ".gzkit/rules/guardrail-feedback-prose.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Audit failure recovery and actionable guard diagnostics support the same evidence-first response."
+    },
+    {
+      "index": 41,
+      "paths": [
+        ".gzkit/rules/adr-audit.md",
+        ".gzkit/rules/models.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Audit proof channels impose no alternative data-model implementation."
+    },
+    {
+      "index": 44,
+      "paths": [
+        ".gzkit/rules/adr-audit.md",
+        ".gzkit/rules/security-sensitivity.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Universal attestation is shared; security adds scanner requirements rather than replacing ordinary audit evidence."
+    },
+    {
+      "index": 47,
+      "paths": [
+        ".gzkit/rules/adr-audit.md",
+        ".gzkit/rules/task-discovery.md"
+      ],
+      "result": "no-conflict",
+      "reason": "REQ proof audit and TASK attribution measure different claims; valid Task trailers do not excuse uncovered REQs."
+    },
+    {
+      "index": 50,
+      "paths": [
+        ".gzkit/rules/adr-audit.md",
+        ".gzkit/rules/tool-skill-runbook-alignment.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Audit runbooks must match runtime, consistent with tool-skill-runbook alignment."
+    },
+    {
+      "index": 53,
+      "paths": [
+        ".gzkit/rules/agent-failure-modes.md",
+        ".gzkit/rules/agents-md-map-doctrine.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Advisory failure vocabulary and compact rule shape are compatible; taxonomy does not require inlining examples."
+    },
+    {
+      "index": 56,
+      "paths": [
+        ".gzkit/rules/agent-failure-modes.md",
+        ".gzkit/rules/chores.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Avoiding safeguard circumvention reinforces the chore prohibition on suppression-as-repair."
+    },
+    {
+      "index": 59,
+      "paths": [
+        ".gzkit/rules/agent-failure-modes.md",
+        ".gzkit/rules/complexity-thresholds.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Threshold doctrine supplies operator-witnessed authority; taxonomy forbids inventing that witness."
+    },
+    {
+      "index": 62,
+      "paths": [
+        ".gzkit/rules/agent-failure-modes.md",
+        ".gzkit/rules/gh-cli.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Issue prior-art and census completeness implement the taxonomy avoidance of fabricated/skipped verification."
+    },
+    {
+      "index": 65,
+      "paths": [
+        ".gzkit/rules/agent-failure-modes.md",
+        ".gzkit/rules/model-selection.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Routing effort cannot turn a subagent assertion into evidence; both explicitly require observed provenance."
+    },
+    {
+      "index": 68,
+      "paths": [
+        ".gzkit/rules/agent-failure-modes.md",
+        ".gzkit/rules/pythonic.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Pythonic boundaries and exception specifics do not authorize safeguard circumvention."
+    },
+    {
+      "index": 71,
+      "paths": [
+        ".gzkit/rules/agent-failure-modes.md",
+        ".gzkit/rules/skill-surface-sync.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Sync/version evidence reinforces traceable correction rather than contradicting taxonomy."
+    },
+    {
+      "index": 74,
+      "paths": [
+        ".gzkit/rules/agent-failure-modes.md",
+        ".gzkit/rules/token-block-discipline.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Token exchange witnesses surrender; taxonomy rejects unwitnessed authorization but does not define reaper ownership."
+    },
+    {
+      "index": 77,
+      "paths": [
+        ".gzkit/rules/agent-failure-modes.md",
+        "CLAUDE.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Claude scope discipline and verification calibration do not authorize fabricating or skipping required evidence."
+    },
+    {
+      "index": 80,
+      "paths": [
+        ".gzkit/rules/agents-md-map-doctrine.md",
+        ".gzkit/rules/chores.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Diet chore may render unchanged canon without attestation; general chore evidence rules impose no opposite corpus-attestation requirement."
+    },
+    {
+      "index": 83,
+      "paths": [
+        ".gzkit/rules/agents-md-map-doctrine.md",
+        ".gzkit/rules/complexity-thresholds.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Both put runtime budgets/thresholds in data, with narrative pointers; distinct metrics are not competing gates."
+    },
+    {
+      "index": 86,
+      "paths": [
+        ".gzkit/rules/agents-md-map-doctrine.md",
+        ".gzkit/rules/gh-cli.md"
+      ],
+      "result": "no-conflict",
+      "reason": "GHI work has no Gate5; gh-cli routes issues/releases but does not itself introduce a completion attestation."
+    },
+    {
+      "index": 89,
+      "paths": [
+        ".gzkit/rules/agents-md-map-doctrine.md",
+        ".gzkit/rules/model-selection.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Map requires concise skill pointers; model-selection requires frontmatter routing, not inlined model pedagogy."
+    },
+    {
+      "index": 92,
+      "paths": [
+        ".gzkit/rules/agents-md-map-doctrine.md",
+        ".gzkit/rules/pythonic.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Instruction-file budgets and Python source line guidance apply to different subjects."
+    },
+    {
+      "index": 95,
+      "paths": [
+        ".gzkit/rules/agents-md-map-doctrine.md",
+        ".gzkit/rules/skill-surface-sync.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Generated root is changed via corpus while canonical rules are edited then synced; map rule does not direct mirror editing."
+    },
+    {
+      "index": 98,
+      "paths": [
+        ".gzkit/rules/agents-md-map-doctrine.md",
+        ".gzkit/rules/token-block-discipline.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Content provenance and lock exchange register are different events; neither can substitute for the other."
+    },
+    {
+      "index": 101,
+      "paths": [
+        ".gzkit/rules/agents-md-map-doctrine.md",
+        "CLAUDE.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Claude is short extension with references; map shape permits links and binding prose, no opposing instruction located."
+    },
+    {
+      "index": 104,
+      "paths": [
+        ".gzkit/rules/brief-heading-conventions.md",
+        ".gzkit/rules/cli.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Brief H3 evidence headings and command manpage shape concern different artifacts."
+    },
+    {
+      "index": 107,
+      "paths": [
+        ".gzkit/rules/brief-heading-conventions.md",
+        ".gzkit/rules/cross-platform.md"
+      ],
+      "result": "no-conflict",
+      "reason": "H3 heading parser contract is independent of portable encoding/path requirements."
+    },
+    {
+      "index": 110,
+      "paths": [
+        ".gzkit/rules/brief-heading-conventions.md",
+        ".gzkit/rules/guardrail-feedback-prose.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Invalid evidence heading can be diagnosed with runnable recovery and cited rule; both apply."
+    },
+    {
+      "index": 113,
+      "paths": [
+        ".gzkit/rules/brief-heading-conventions.md",
+        ".gzkit/rules/models.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Brief heading syntax does not constrain Pydantic data classes."
+    },
+    {
+      "index": 116,
+      "paths": [
+        ".gzkit/rules/brief-heading-conventions.md",
+        ".gzkit/rules/security-sensitivity.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Security adds review evidence without changing H3 evidence heading syntax."
+    },
+    {
+      "index": 119,
+      "paths": [
+        ".gzkit/rules/brief-heading-conventions.md",
+        ".gzkit/rules/task-discovery.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Frontmatter TASK attribution is distinct from H3 evidence extraction; neither permits the other channel to substitute."
+    },
+    {
+      "index": 122,
+      "paths": [
+        ".gzkit/rules/brief-heading-conventions.md",
+        ".gzkit/rules/tool-skill-runbook-alignment.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Brief evidence headings and CLI output contracts both preserve their named reader contracts."
+    },
+    {
+      "index": 125,
+      "paths": [
+        ".gzkit/rules/changelog-release-notes.md",
+        ".gzkit/rules/chores.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Release publishing is networked ceremony; default Lite chores are offline. Distinct workflows, not contradictory network directions."
+    },
+    {
+      "index": 128,
+      "paths": [
+        ".gzkit/rules/changelog-release-notes.md",
+        ".gzkit/rules/complexity-thresholds.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Release shape and threshold calibration govern different data."
+    },
+    {
+      "index": 131,
+      "paths": [
+        ".gzkit/rules/changelog-release-notes.md",
+        ".gzkit/rules/gh-cli.md"
+      ],
+      "result": "no-conflict",
+      "reason": "gh-cli newest-version release payload and release-notes canonical ceremony agree."
+    },
+    {
+      "index": 134,
+      "paths": [
+        ".gzkit/rules/changelog-release-notes.md",
+        ".gzkit/rules/model-selection.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Narrative synthesis routes to judgment tier; release prose review can follow that routing."
+    },
+    {
+      "index": 137,
+      "paths": [
+        ".gzkit/rules/changelog-release-notes.md",
+        ".gzkit/rules/pythonic.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Release prose conventions do not compete with Python source conventions."
+    },
+    {
+      "index": 140,
+      "paths": [
+        ".gzkit/rules/changelog-release-notes.md",
+        ".gzkit/rules/skill-surface-sync.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Release templates sync from canonical; changelog/release artifacts authored through release skill, not template mirrors."
+    },
+    {
+      "index": 143,
+      "paths": [
+        ".gzkit/rules/changelog-release-notes.md",
+        ".gzkit/rules/token-block-discipline.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Release Gate5 wording is stale against root but token surrender rule only discusses OBPI completion, not a prohibition on release terminology."
+    },
+    {
+      "index": 146,
+      "paths": [
+        ".gzkit/rules/changelog-release-notes.md",
+        "CLAUDE.md"
+      ],
+      "result": "resolved-authority",
+      "reason": "Claude inherits root Gate5 restriction; release rule Gate5 wording is stale as R23, root authority resolves it."
+    },
+    {
+      "index": 149,
+      "paths": [
+        ".gzkit/rules/chores.md",
+        ".gzkit/rules/complexity-thresholds.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Threshold table governs complexity findings; chore may repair without silently editing thresholds."
+    },
+    {
+      "index": 152,
+      "paths": [
+        ".gzkit/rules/chores.md",
+        ".gzkit/rules/gh-cli.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Chore default offline evidence does not prohibit separately routed issue filing; issue filing is not an offline acceptance criterion."
+    },
+    {
+      "index": 155,
+      "paths": [
+        ".gzkit/rules/chores.md",
+        ".gzkit/rules/model-selection.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Mechanical chore checks use bounded model routing; advice requiring judgment is a distinct decision class."
+    },
+    {
+      "index": 158,
+      "paths": [
+        ".gzkit/rules/chores.md",
+        ".gzkit/rules/pythonic.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Chore-specific ban on suppression-as-repair narrows general Python syntax guidance; valid syntax is not permission to use suppression in a chore."
+    },
+    {
+      "index": 161,
+      "paths": [
+        ".gzkit/rules/chores.md",
+        ".gzkit/rules/skill-surface-sync.md"
+      ],
+      "result": "conflict",
+      "reason": "R01: opposite canonical chore authoring paths persist, and DAMAGED doctor repair can overwrite project edits from package while sync goes opposite direction."
+    },
+    {
+      "index": 164,
+      "paths": [
+        ".gzkit/rules/chores.md",
+        ".gzkit/rules/token-block-discipline.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Chore proof logs do not purport to satisfy lock-exchange entry; workflows remain distinct."
+    },
+    {
+      "index": 167,
+      "paths": [
+        ".gzkit/rules/chores.md",
+        "CLAUDE.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Chore scope says small scoped diffs, consistent with Claude scope discipline; commands remain required verification not unsolicited rechecks."
+    },
+    {
+      "index": 170,
+      "paths": [
+        ".gzkit/rules/cli.md",
+        ".gzkit/rules/cross-platform.md"
+      ],
+      "result": "no-conflict",
+      "reason": "CLI formatter and JSON path output can both use portable relative POSIX paths and UTF-8."
+    },
+    {
+      "index": 173,
+      "paths": [
+        ".gzkit/rules/cli.md",
+        ".gzkit/rules/guardrail-feedback-prose.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Human stdout/JSON plus actionable stderr diagnostics are complementary output channels, not contradictory formats."
+    },
+    {
+      "index": 176,
+      "paths": [
+        ".gzkit/rules/cli.md",
+        ".gzkit/rules/models.md"
+      ],
+      "result": "no-conflict",
+      "reason": "CLI early validation can use Pydantic models; exit-code handling does not dictate another model system."
+    },
+    {
+      "index": 179,
+      "paths": [
+        ".gzkit/rules/cli.md",
+        ".gzkit/rules/security-sensitivity.md"
+      ],
+      "result": "no-conflict",
+      "reason": "CLI explicitly preserves direct GHI defect repair; security rule supplies direct-fix declaration discipline without forcing a brief."
+    },
+    {
+      "index": 182,
+      "paths": [
+        ".gzkit/rules/cli.md",
+        ".gzkit/rules/task-discovery.md"
+      ],
+      "result": "no-conflict",
+      "reason": "GHI direct CLI repair still carries Task trailer; TASK attribution is not OBPI initiation."
+    },
+    {
+      "index": 185,
+      "paths": [
+        ".gzkit/rules/cli.md",
+        ".gzkit/rules/tool-skill-runbook-alignment.md"
+      ],
+      "result": "resolved-authority",
+      "reason": "Stale follow-up-only alternative: cli requires skill/waiver in authoring patch; alignment permits follow-up GHI but explicitly defers to cli authority."
+    },
+    {
+      "index": 188,
+      "paths": [
+        ".gzkit/rules/complexity-doctrine.md",
+        ".gzkit/rules/complexity-thresholds.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Threshold rule declares specific one-shot bootstrap carve-outs; general corpus-derived invariant is explicitly scoped by those exceptions."
+    },
+    {
+      "index": 191,
+      "paths": [
+        ".gzkit/rules/complexity-doctrine.md",
+        ".gzkit/rules/gh-cli.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Operator-witnessed corpus selection and GHI authoring/completeness concern different approval/evidence subjects."
+    },
+    {
+      "index": 194,
+      "paths": [
+        ".gzkit/rules/complexity-doctrine.md",
+        ".gzkit/rules/model-selection.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Model routing may nominate corpus candidates; corpus still requires operator witness, so cheap lookup is not approval."
+    },
+    {
+      "index": 197,
+      "paths": [
+        ".gzkit/rules/complexity-doctrine.md",
+        ".gzkit/rules/pythonic.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Learning relationship to corpus does not authorize adopting exemplar dependencies; Pythonic table precedence remains explicit."
+    },
+    {
+      "index": 200,
+      "paths": [
+        ".gzkit/rules/complexity-doctrine.md",
+        ".gzkit/rules/skill-surface-sync.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Corpus/threshold amendments require their witness plus version/sync when rule content changes."
+    },
+    {
+      "index": 203,
+      "paths": [
+        ".gzkit/rules/complexity-doctrine.md",
+        ".gzkit/rules/token-block-discipline.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Corpus amendment chronology and lock-surrender chronology are separate evidence obligations."
+    },
+    {
+      "index": 206,
+      "paths": [
+        ".gzkit/rules/complexity-doctrine.md",
+        "CLAUDE.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Claude effort/scope tuning does not override operator witness required for corpus changes."
+    },
+    {
+      "index": 209,
+      "paths": [
+        ".gzkit/rules/complexity-thresholds.md",
+        ".gzkit/rules/gh-cli.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Threshold amendment ceremony and GitHub guardrails can both be followed."
+    },
+    {
+      "index": 212,
+      "paths": [
+        ".gzkit/rules/complexity-thresholds.md",
+        ".gzkit/rules/model-selection.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Model tier cannot replace threshold authority; neither rule says it can."
+    },
+    {
+      "index": 215,
+      "paths": [
+        ".gzkit/rules/complexity-thresholds.md",
+        ".gzkit/rules/pythonic.md"
+      ],
+      "result": "resolved-authority",
+      "reason": "R07 resolved by Pythonic explicit final precedence: function/module counts guidance, table governs claims; stale numeric paraphrase remains documentation debt."
+    },
+    {
+      "index": 218,
+      "paths": [
+        ".gzkit/rules/complexity-thresholds.md",
+        ".gzkit/rules/skill-surface-sync.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Sync preserves threshold bytes; operator-amendment protocol still required before synchronizing a data change."
+    },
+    {
+      "index": 221,
+      "paths": [
+        ".gzkit/rules/complexity-thresholds.md",
+        ".gzkit/rules/token-block-discipline.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Complexity thresholds do not define token TTL; separate metrics and subjects."
+    },
+    {
+      "index": 224,
+      "paths": [
+        ".gzkit/rules/complexity-thresholds.md",
+        "CLAUDE.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Claude scope discipline and data-owned thresholds both forbid opportunistic threshold edits."
+    },
+    {
+      "index": 227,
+      "paths": [
+        ".gzkit/rules/cross-platform.md",
+        ".gzkit/rules/guardrail-feedback-prose.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Portable subprocess error decoding supports useful stderr recovery; no required machine-local paths."
+    },
+    {
+      "index": 230,
+      "paths": [
+        ".gzkit/rules/cross-platform.md",
+        ".gzkit/rules/models.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Pydantic models can hold portable Path/domain values with explicit UTF-8 I/O."
+    },
+    {
+      "index": 233,
+      "paths": [
+        ".gzkit/rules/cross-platform.md",
+        ".gzkit/rules/security-sensitivity.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Portable scanner invocation does not excuse missing security receipt; unavailability remains declared failure."
+    },
+    {
+      "index": 236,
+      "paths": [
+        ".gzkit/rules/cross-platform.md",
+        ".gzkit/rules/task-discovery.md"
+      ],
+      "result": "no-conflict",
+      "reason": "TASK IDs stored in ledger can use portable POSIX paths; attribution and path encoding align."
+    },
+    {
+      "index": 239,
+      "paths": [
+        ".gzkit/rules/cross-platform.md",
+        ".gzkit/rules/tool-skill-runbook-alignment.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Wheel instruction paths can be portable while live verb and output contracts stay aligned."
+    },
+    {
+      "index": 242,
+      "paths": [
+        ".gzkit/rules/gate5-runbook-code-covenant.md",
+        ".gzkit/rules/gh-cli.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Universal OBPI Gate5 in covenant does not forbid direct GHI closure; its completion sentence explicitly scopes to OBPIs."
+    },
+    {
+      "index": 245,
+      "paths": [
+        ".gzkit/rules/gate5-runbook-code-covenant.md",
+        ".gzkit/rules/model-selection.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Model choice does not supply attestation; covenant still requires operator evidence."
+    },
+    {
+      "index": 248,
+      "paths": [
+        ".gzkit/rules/gate5-runbook-code-covenant.md",
+        ".gzkit/rules/pythonic.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Bare Pythonic lint/type commands verify code; covenant prohibits using bare commands as attestation receipts, a different claim."
+    },
+    {
+      "index": 251,
+      "paths": [
+        ".gzkit/rules/gate5-runbook-code-covenant.md",
+        ".gzkit/rules/skill-surface-sync.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Runtime docs and canonical rule mirrors are coupled surfaces and can be updated/synced together."
+    },
+    {
+      "index": 254,
+      "paths": [
+        ".gzkit/rules/gate5-runbook-code-covenant.md",
+        ".gzkit/rules/token-block-discipline.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Human attestation precedes completion; automatic surrender after successful completion is consistent."
+    },
+    {
+      "index": 257,
+      "paths": [
+        ".gzkit/rules/gate5-runbook-code-covenant.md",
+        "CLAUDE.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Claude scope discipline retains coupled documentation obligation; no required covenant check is waived."
+    },
+    {
+      "index": 260,
+      "paths": [
+        ".gzkit/rules/gh-cli.md",
+        ".gzkit/rules/model-selection.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Model guidance cannot replace prior-art lookup or authorize direct gh issue create outside skill."
+    },
+    {
+      "index": 263,
+      "paths": [
+        ".gzkit/rules/gh-cli.md",
+        ".gzkit/rules/pythonic.md"
+      ],
+      "result": "no-conflict",
+      "reason": "GitHub mutations and Python exception/suppression policy concern separate operations."
+    },
+    {
+      "index": 266,
+      "paths": [
+        ".gzkit/rules/gh-cli.md",
+        ".gzkit/rules/skill-surface-sync.md"
+      ],
+      "result": "no-conflict",
+      "reason": "GitHub issue authority and canonical source-edit routing can both apply to rule fixes."
+    },
+    {
+      "index": 269,
+      "paths": [
+        ".gzkit/rules/gh-cli.md",
+        ".gzkit/rules/token-block-discipline.md"
+      ],
+      "result": "no-conflict",
+      "reason": "gh-cli permission does not grant OBPI lock authority; distinct state mutations."
+    },
+    {
+      "index": 272,
+      "paths": [
+        ".gzkit/rules/gh-cli.md",
+        "CLAUDE.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Explicit authorized GitHub work fits Claude requested-scope discipline."
+    },
+    {
+      "index": 275,
+      "paths": [
+        ".gzkit/rules/guardrail-feedback-prose.md",
+        ".gzkit/rules/models.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Structured validation errors can be rendered as three-part actionable prose; internal models versus output channel."
+    },
+    {
+      "index": 278,
+      "paths": [
+        ".gzkit/rules/guardrail-feedback-prose.md",
+        ".gzkit/rules/security-sensitivity.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Fail-closed scanner absence can carry actionable prose; inability to scan does not become a pass."
+    },
+    {
+      "index": 281,
+      "paths": [
+        ".gzkit/rules/guardrail-feedback-prose.md",
+        ".gzkit/rules/task-discovery.md"
+      ],
+      "result": "no-conflict",
+      "reason": "TASK provenance validator failures can name their recovery without creating TASKs outside operator initiation."
+    },
+    {
+      "index": 284,
+      "paths": [
+        ".gzkit/rules/guardrail-feedback-prose.md",
+        ".gzkit/rules/tool-skill-runbook-alignment.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Both reject generic global prose grading and favor actual consumer observations; no contrary enforcement demand."
+    },
+    {
+      "index": 287,
+      "paths": [
+        ".gzkit/rules/hexagonal-architecture.md",
+        ".gzkit/rules/model-selection.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Decision complexity selects model; it does not change port boundary architecture."
+    },
+    {
+      "index": 290,
+      "paths": [
+        ".gzkit/rules/hexagonal-architecture.md",
+        ".gzkit/rules/pythonic.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Both prefer composition/Protocol, with hexagonal formal-port second-adapter exception matching simplicity guidance."
+    },
+    {
+      "index": 293,
+      "paths": [
+        ".gzkit/rules/hexagonal-architecture.md",
+        ".gzkit/rules/skill-surface-sync.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Architecture rule source edited in .gzkit then sync; dependency code is not a generated rule mirror."
+    },
+    {
+      "index": 296,
+      "paths": [
+        ".gzkit/rules/hexagonal-architecture.md",
+        ".gzkit/rules/token-block-discipline.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Port seams and lock exchange seams are different domains; neither authorizes releasing locks."
+    },
+    {
+      "index": 299,
+      "paths": [
+        ".gzkit/rules/hexagonal-architecture.md",
+        "CLAUDE.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Claude scope discipline matches no speculative one-adapter formal port and no folder restructure."
+    },
+    {
+      "index": 302,
+      "paths": [
+        ".gzkit/rules/model-selection.md",
+        ".gzkit/rules/pythonic.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Pythonic code practices do not specify model tier; design complexity can select a higher tier."
+    },
+    {
+      "index": 305,
+      "paths": [
+        ".gzkit/rules/model-selection.md",
+        ".gzkit/rules/skill-surface-sync.md"
+      ],
+      "result": "resolved-authority",
+      "reason": "R21: required model-selection example puts version at top level; skill sync explicitly requires nested metadata key."
+    },
+    {
+      "index": 308,
+      "paths": [
+        ".gzkit/rules/model-selection.md",
+        ".gzkit/rules/token-block-discipline.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Subagent effort selection grants no independent permission to claim or surrender OBPI work."
+    },
+    {
+      "index": 311,
+      "paths": [
+        ".gzkit/rules/model-selection.md",
+        "CLAUDE.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Claude high default is main-session tuning; model-selection subagent effort mapping is separately scoped. No identical decision with opposite required tier proven."
+    },
+    {
+      "index": 314,
+      "paths": [
+        ".gzkit/rules/models.md",
+        ".gzkit/rules/security-sensitivity.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Security sensitivity is frontmatter policy; Pydantic model rule does not relax it."
+    },
+    {
+      "index": 317,
+      "paths": [
+        ".gzkit/rules/models.md",
+        ".gzkit/rules/task-discovery.md"
+      ],
+      "result": "no-conflict",
+      "reason": "TaskAttributionRecord can be Pydantic and TASK IDs validated without creating dataclasses."
+    },
+    {
+      "index": 320,
+      "paths": [
+        ".gzkit/rules/models.md",
+        ".gzkit/rules/tool-skill-runbook-alignment.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Pydantic is internal model policy; output form contract can render those models for operator use."
+    },
+    {
+      "index": 323,
+      "paths": [
+        ".gzkit/rules/mx-mode.md",
+        ".gzkit/rules/pythonic.md"
+      ],
+      "result": "no-conflict",
+      "reason": "MX may demote numeric/style guards but does not erase repair duty; explicit MX exception is compatible with normal Pythonic gates."
+    },
+    {
+      "index": 326,
+      "paths": [
+        ".gzkit/rules/mx-mode.md",
+        ".gzkit/rules/skill-surface-sync.md"
+      ],
+      "result": "no-conflict",
+      "reason": "MX repairs still edit canonical and sync; advisory guard does not authorize mirror edits."
+    },
+    {
+      "index": 329,
+      "paths": [
+        ".gzkit/rules/mx-mode.md",
+        ".gzkit/rules/token-block-discipline.md"
+      ],
+      "result": "no-conflict",
+      "reason": "MX explicitly preserves ledger integrity; token exchange must remain through governed commands, not hand-edited ledger."
+    },
+    {
+      "index": 332,
+      "paths": [
+        ".gzkit/rules/mx-mode.md",
+        "CLAUDE.md"
+      ],
+      "result": "resolved-authority",
+      "reason": "MX repair-all wording opposes Claude scope containment. Claude inherits root scoped ownership, so root governs; stale MX text needs reconciliation, no runtime breadth claim."
+    },
+    {
+      "index": 335,
+      "paths": [
+        ".gzkit/rules/pythonic.md",
+        ".gzkit/rules/skill-surface-sync.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Pythonic guidance applies source code; sync rules apply generated governance surfaces, compatible."
+    },
+    {
+      "index": 338,
+      "paths": [
+        ".gzkit/rules/pythonic.md",
+        ".gzkit/rules/token-block-discipline.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Pythonic explicit state and token ledger provenance reinforce one another."
+    },
+    {
+      "index": 341,
+      "paths": [
+        ".gzkit/rules/pythonic.md",
+        "CLAUDE.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Claude discourages extra unneeded checks, not canonical lint/type verification; no contrary command obligation."
+    },
+    {
+      "index": 344,
+      "paths": [
+        ".gzkit/rules/security-sensitivity.md",
+        ".gzkit/rules/task-discovery.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Security direct-fix commit-body declaration is not proposed Sensitivity trailer; closed Task trailer set remains satisfied."
+    },
+    {
+      "index": 347,
+      "paths": [
+        ".gzkit/rules/security-sensitivity.md",
+        ".gzkit/rules/tool-skill-runbook-alignment.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Security extra walkthrough can be composed by a wielding skill; no competing output or route requirement."
+    },
+    {
+      "index": 350,
+      "paths": [
+        ".gzkit/rules/skill-authoring.md",
+        ".gzkit/rules/skill-surface-sync.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Skill parsimony and version/sync are complementary; removal of history still needs version bump."
+    },
+    {
+      "index": 353,
+      "paths": [
+        ".gzkit/rules/skill-authoring.md",
+        ".gzkit/rules/token-block-discipline.md"
+      ],
+      "result": "resolved-authority",
+      "reason": "Skill authority line forbids independent lock action; token reaper authorization is governed by root operator boundary, not a skill exception."
+    },
+    {
+      "index": 356,
+      "paths": [
+        ".gzkit/rules/skill-authoring.md",
+        "CLAUDE.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Both avoid redundant verification and retain explicit constraints; no inconsistent skill-writing advice."
+    },
+    {
+      "index": 359,
+      "paths": [
+        ".gzkit/rules/skill-surface-sync.md",
+        ".gzkit/rules/token-block-discipline.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Token exchange evidence is runtime state and excluded from canonical surface syncing; no instruction to copy it to wheel."
+    },
+    {
+      "index": 362,
+      "paths": [
+        ".gzkit/rules/skill-surface-sync.md",
+        "CLAUDE.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Claude-only file extends root; shared canonical rule mirrors remain synced, no independent root route."
+    },
+    {
+      "index": 365,
+      "paths": [
+        ".gzkit/rules/task-discovery.md",
+        ".gzkit/rules/tool-skill-runbook-alignment.md"
+      ],
+      "result": "no-conflict",
+      "reason": "TASK attribution supports tool work but does not satisfy skill coverage; separate channels."
+    },
+    {
+      "index": 368,
+      "paths": [
+        ".gzkit/rules/tests.md",
+        ".gzkit/rules/token-block-discipline.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Task completion and lock surrender are distinct events within initiated workflow; direct-fix Task trailer creates no lock."
+    },
+    {
+      "index": 371,
+      "paths": [
+        ".gzkit/rules/tests.md",
+        "CLAUDE.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Tests require meaningful required verification; Claude rejects unsolicited repetition, not TDD or gates."
+    },
+    {
+      "index": 374,
+      "paths": [
+        ".gzkit/rules/token-block-discipline.md",
+        "CLAUDE.md"
+      ],
+      "result": "resolved-authority",
+      "reason": "Claude inherits root operator initiation; token reaper blanket authorization remains subordinate as prior observation, no runtime action run."
+    },
+    {
+      "index": 377,
+      "paths": [
+        "AGENTS.md",
+        "CLAUDE.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Claude explicitly extends root and directs GPT sessions elsewhere; no replacement authority. Mandatory skill calls still require actual tool availability."
+    }
+  ]
+}

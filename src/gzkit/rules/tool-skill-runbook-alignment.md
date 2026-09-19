@@ -6,11 +6,11 @@ paths:
   - ".gzkit/skills/**"
 description: Authoring invariants that keep CLI tools, skills, and runbooks aligned — drift between layers is a defect signal.
 ---
-<!-- rule-version: 0.5.1 -->
+<!-- rule-version: 0.5.2 -->
 
 # Tool / Skill / Runbook Alignment
 
-> **Rule version:** `0.5.1` — the verb-resolution pointer now names `AGENTS.md` § Governance doctrine surfaces (`governance-core.md` folded into the root contract 2026-09-17, GHI #921). `0.5.0` — diet pass under GHI #921 (operator ruling 2026-08-29, *"we are compressing everything and anything that the agent can consume"*). Version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#tool-skill-runbook-alignmentmd). Binding rules unchanged.
+> **Rule version:** `0.5.2` — remove the follow-up-issue alternative that contradicted the governing same-patch skill obligation (GHI #1043). Prior history: [Rule Version History](../../docs/governance/rule-version-history.md#tool-skill-runbook-alignmentmd).
 
 gzkit's operator surface is a three-layer hierarchy: **tools** (CLI verbs), **skills** (operator-facing value chains composing tools toward an intent), and **runbooks** (documentation preserving operator intent across iteration). These three invariants are the mechanical test for layer alignment; apply them whenever you author or modify any of the three surfaces.
 
@@ -63,7 +63,7 @@ build the checker.
 
 ## When to apply
 
-- **Authoring a new CLI verb** — the wielding skill is **one of seven** obligations that fire together; `.gzkit/rules/cli.md` § Adding CLI Features — New Subcommand is the authority and this list deliberately does not restate it. Confirm at least one skill will wield the verb before merging; author the skill in the same patch or file a follow-up GHI
+- **Authoring a new CLI verb** — the wielding skill is **one of seven** obligations that fire together; `.gzkit/rules/cli.md` § Adding CLI Features — New Subcommand is the authority and this list deliberately does not restate it. Ensure a skill wields the verb in the authoring patch, or use the existing explicit waiver route with rationale. Filing a follow-up GHI does not satisfy this obligation.
 - **Renaming a CLI verb** — audit every referencing skill (frontmatter `gz_command:` + body invocations); update in same patch
 - **Authoring a new skill** — confirm `gz_command:` target matches the runbook-prescribed verb for that operator moment, and run the target once to verify output form matches Output Contract
 - **Renaming a skill** — confirm `gz_command:` still aligns with the new name's implied operator moment

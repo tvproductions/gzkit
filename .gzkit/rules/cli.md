@@ -7,9 +7,9 @@ description: CLI contract doctrine and design principles
 
 # CLI Contract Doctrine
 
-<!-- rule-version: 0.9.0 -->
+<!-- rule-version: 0.9.1 -->
 
-> **Rule version:** `0.9.0` — diet pass under GHI #921: the 2026-08-22 shape measurements, the lane-vs-route quotations and the `8d9e09a4` worked example lifted to [Rule Version History](../../docs/governance/rule-version-history.md#climd) and [`docs/design/cli-architecture-analysis.md`](../../docs/design/cli-architecture-analysis.md). Binding rules unchanged.
+> **Rule version:** `0.9.1` — purpose documentation follows the already-settled planned-work versus direct-GHI route (GHI #1043). Prior history: [Rule Version History](../../docs/governance/rule-version-history.md#climd); analysis: [CLI architecture](../../docs/design/cli-architecture-analysis.md).
 
 **Baseline:** [clig.dev](https://clig.dev/). **Canonical specification:** [`docs/design/cli-standards-v3.md`](../../docs/design/cli-standards-v3.md) (ADR-0.0.4) — read its § Document status before citing a section; parts are live-and-met, live-but-unmet, or retired. **Mechanical check:** `uv run gz cli audit`. **Heavy lane trigger:** any CLI contract change — subcommands, flags, exit codes, output schemas.
 
@@ -90,4 +90,4 @@ Seven obligations fire for a new verb, each mechanically checked; satisfy them i
 6. **Handler docstring** — non-empty; the one obligation that is code rather than a doc file, and the one most often missed.
 7. **Wielding skill** — a `.gzkit/skills/**/SKILL.md` naming the full verb path, or an `_NO_SKILL_VERBS` waiver with rationale.
 
-Alongside these: an ADR or brief documenting purpose, help text with examples, a behave smoke test, and the GHI cited in the commit. Release notes are never hand-written — `RELEASE_NOTES.md` and `CHANGELOG.md` are authored by the `gz-patch-release` ceremony (`.gzkit/rules/changelog-release-notes.md`). A deprecated verb inverts obligations 4, 5 and 7: absence is the passing state, because a runbook or skill that prescribes a retired verb routes agents back onto it (GHI #705). The seven cover verb registration only; a change that also alters a *format* has consumers this list cannot enumerate.
+Alongside these: document purpose in the owning ADR/brief for operator-initiated planned work, or in the GHI for direct defect repair; retain help text with examples, a behave smoke test, and the GHI cited in a direct-repair commit. Do not create an ADR or brief to discharge a GHI. Release notes are never hand-written — `RELEASE_NOTES.md` and `CHANGELOG.md` are authored by the `gz-patch-release` ceremony (`.gzkit/rules/changelog-release-notes.md`). A deprecated verb inverts obligations 4, 5 and 7: absence is the passing state, because a runbook or skill that prescribes a retired verb routes agents back onto it (GHI #705). The seven cover verb registration only; a change that also alters a *format* has consumers this list cannot enumerate.

@@ -9,9 +9,9 @@ description: Token-efficient model routing across skills, subagents, and work su
 
 # Model Selection (gzkit)
 
-<!-- rule-version: 0.6.0 -->
+<!-- rule-version: 0.6.1 -->
 
-> **Rule version:** `0.6.0` — diet pass under GHI #921 (operator ruling 2026-08-29, *"we are compressing everything and anything that the agent can consume"*). Version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#model-selectionmd). Binding rules unchanged.
+> **Rule version:** `0.6.1` — the skill example uses the existing nested version contract (GHI #1040); routing policy is unchanged. Prior history: [Rule Version History](../../docs/governance/rule-version-history.md#model-selectionmd).
 
 ## Operative claims (binding)
 
@@ -41,7 +41,8 @@ Every skill SKILL.md MUST declare the model tier used when invoking the skill ru
 
 ```yaml
 ---
-skill-version: 0.1.0
+metadata:
+  skill-version: "0.1.0"
 model: haiku  # or: sonnet, opus
 ---
 # Skill Name

@@ -1,0 +1,1119 @@
+{
+  "date": "2026-09-19",
+  "persona": "quality-reviewer",
+  "source_head": "3dc6f613042117838f4f4cad55abe0b2e3044d35",
+  "partition": 0,
+  "partition_rule": "sorted full relative paths; combinations index modulo 3 equals 0",
+  "files": [
+    {
+      "path": ".gzkit/rules/AGENTS.md",
+      "sha256": "1c7328018480d34d3ced4226d35308d291f6186d0a0d569274e276fd83467c77",
+      "lines": 78,
+      "fully_read": true
+    },
+    {
+      "path": ".gzkit/rules/adr-audit.md",
+      "sha256": "f793628f1cee660f7512d69eedeb4d249b9cbeafa6372eca77e8ab8d26301c6c",
+      "lines": 70,
+      "fully_read": true
+    },
+    {
+      "path": ".gzkit/rules/agent-failure-modes.md",
+      "sha256": "d821600c7960441a9584a25fc11c76f88ff98b9366c2b355b14390f0c9536335",
+      "lines": 30,
+      "fully_read": true
+    },
+    {
+      "path": ".gzkit/rules/agents-md-map-doctrine.md",
+      "sha256": "36b17c4ec088fa48e799ab288a1743cbd8a7dc65be1836662f1b7768de104e17",
+      "lines": 68,
+      "fully_read": true
+    },
+    {
+      "path": ".gzkit/rules/brief-heading-conventions.md",
+      "sha256": "6baffe4cc324012004e7b458594b4ac531260ca644db5bafb1c443714324205e",
+      "lines": 56,
+      "fully_read": true
+    },
+    {
+      "path": ".gzkit/rules/changelog-release-notes.md",
+      "sha256": "bd72114fa2c767cf81b6c1f614c6e4590628155218c160d78a5f68974c36f196",
+      "lines": 55,
+      "fully_read": true
+    },
+    {
+      "path": ".gzkit/rules/chores.md",
+      "sha256": "01b979b0365bfc8aca7a864c7f823a69da0042d0809201973db58f37cf9572b5",
+      "lines": 145,
+      "fully_read": true
+    },
+    {
+      "path": ".gzkit/rules/cli.md",
+      "sha256": "241cfee11c70604acdd445867e672c3e77cc9686adc532951cf02b48b00b8a03",
+      "lines": 93,
+      "fully_read": true
+    },
+    {
+      "path": ".gzkit/rules/complexity-doctrine.md",
+      "sha256": "ab02eeb4911968ae60021da993aefec9ed14c3779c09283010035154625046ce",
+      "lines": 123,
+      "fully_read": true
+    },
+    {
+      "path": ".gzkit/rules/complexity-thresholds.md",
+      "sha256": "45237ef09b9cf639a4684bfcd82d44e98a46386942635e9a454875e877119ecf",
+      "lines": 99,
+      "fully_read": true
+    },
+    {
+      "path": ".gzkit/rules/cross-platform.md",
+      "sha256": "87c24bb3d26293277f7794d029a0dd3cff46326c4051e1348be3c1b9c59c170e",
+      "lines": 88,
+      "fully_read": true
+    },
+    {
+      "path": ".gzkit/rules/gate5-runbook-code-covenant.md",
+      "sha256": "db2687e835b54f60d3cf65c26bbe1e7afabdddea0277ca741ff7a80418144412",
+      "lines": 46,
+      "fully_read": true
+    },
+    {
+      "path": ".gzkit/rules/gh-cli.md",
+      "sha256": "ef75d01666102ea7897b4a5240d003d65adcc231bc64e2421238b8612fa385d7",
+      "lines": 59,
+      "fully_read": true
+    },
+    {
+      "path": ".gzkit/rules/guardrail-feedback-prose.md",
+      "sha256": "935f06c9ff67a5b0b9b7384c42df7245e798d121c61aa0a8000d4531aa736736",
+      "lines": 79,
+      "fully_read": true
+    },
+    {
+      "path": ".gzkit/rules/hexagonal-architecture.md",
+      "sha256": "7d3046c96b9ada5f2c0b3bca17bdf598ef9e3f51f7d6459f6a6693b737fb2b23",
+      "lines": 125,
+      "fully_read": true
+    },
+    {
+      "path": ".gzkit/rules/model-selection.md",
+      "sha256": "1ec223d7e139913810cc7fb230b95e40220d25d8c580b87b80509e391cf20c72",
+      "lines": 75,
+      "fully_read": true
+    },
+    {
+      "path": ".gzkit/rules/models.md",
+      "sha256": "0fbe189f91942f8d1bab058d16efd80c9448c28b4272095e20f3b712cf03e128",
+      "lines": 50,
+      "fully_read": true
+    },
+    {
+      "path": ".gzkit/rules/mx-mode.md",
+      "sha256": "44a1b63c72655c70b3f6ca6cd1c7de0a73ca6b49aa4d202621f0a8c9c974c494",
+      "lines": 89,
+      "fully_read": true
+    },
+    {
+      "path": ".gzkit/rules/pythonic.md",
+      "sha256": "508bfc3a3a54d7af3646eaaee3541994e251b3fe730b64acf5a3fde969163372",
+      "lines": 98,
+      "fully_read": true
+    },
+    {
+      "path": ".gzkit/rules/security-sensitivity.md",
+      "sha256": "8b8f3584c7c32c05afb4dae347a46caa6ff77c9ae83b9b84569f4bc8cfa7dc48",
+      "lines": 46,
+      "fully_read": true
+    },
+    {
+      "path": ".gzkit/rules/skill-authoring.md",
+      "sha256": "788634b9e317ea216dcab494337d3136ee8e2be159f9150e055fab24435f0b35",
+      "lines": 53,
+      "fully_read": true
+    },
+    {
+      "path": ".gzkit/rules/skill-surface-sync.md",
+      "sha256": "f46eed667cb0ae87dfe325ba393530fb5e3d6fd573706e8980a6e3dd05535a72",
+      "lines": 57,
+      "fully_read": true
+    },
+    {
+      "path": ".gzkit/rules/task-discovery.md",
+      "sha256": "07957ea67f85c44a31e1d7f2fe89ce78fe1d56c6d18765856fdd23577ce9d284",
+      "lines": 60,
+      "fully_read": true
+    },
+    {
+      "path": ".gzkit/rules/tests.md",
+      "sha256": "5d8bae247a2c7e0e0503e17e292878e2871bbbad977b876f915e56aae78f04b3",
+      "lines": 101,
+      "fully_read": true
+    },
+    {
+      "path": ".gzkit/rules/token-block-discipline.md",
+      "sha256": "0bdb89ff2eac18b3bdff23da96f4b003398208b6e461c84e772fe9473d5445cd",
+      "lines": 75,
+      "fully_read": true
+    },
+    {
+      "path": ".gzkit/rules/tool-skill-runbook-alignment.md",
+      "sha256": "b499c2cf796301d6b6d644847cafb02a271246b9aa485f1034ddff6a1f2f5944",
+      "lines": 74,
+      "fully_read": true
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "d7f8a4041c5bd6afceceb97a33413a5dd14c54c1fdafc23e6d2ab3817226f276",
+      "lines": 226,
+      "fully_read": true
+    },
+    {
+      "path": "CLAUDE.md",
+      "sha256": "e0e245d369df70646cff6f1aaea9c3bcdeecace4128ecc07c4e7091ed16702ca",
+      "lines": 26,
+      "fully_read": true
+    }
+  ],
+  "pairs": [
+    {
+      "index": 0,
+      "rule_a": ".gzkit/rules/AGENTS.md",
+      "rule_b": ".gzkit/rules/adr-audit.md",
+      "result": "no-conflict",
+      "reason": "Sync discipline and evidence auditing govern different acts; audit does not authorize editing a generated copy."
+    },
+    {
+      "index": 3,
+      "rule_a": ".gzkit/rules/AGENTS.md",
+      "rule_b": ".gzkit/rules/brief-heading-conventions.md",
+      "result": "no-conflict",
+      "reason": "Brief H3 repair targets authored briefs; generated-rule prohibition concerns the rendered subtree contract."
+    },
+    {
+      "index": 6,
+      "rule_a": ".gzkit/rules/AGENTS.md",
+      "rule_b": ".gzkit/rules/cli.md",
+      "result": "no-conflict",
+      "reason": "The new CLI surface is authored in its own implementation and documentation; sync supplies rule/package copies without selecting CLI route."
+    },
+    {
+      "index": 9,
+      "rule_a": ".gzkit/rules/AGENTS.md",
+      "rule_b": ".gzkit/rules/cross-platform.md",
+      "result": "no-conflict",
+      "reason": "Generated copies still need portable text; canonical editing plus sync and portable literals can both hold."
+    },
+    {
+      "index": 12,
+      "rule_a": ".gzkit/rules/AGENTS.md",
+      "rule_b": ".gzkit/rules/guardrail-feedback-prose.md",
+      "result": "no-conflict",
+      "reason": "Taxonomy names fabricated evidence and feedback requires actionable refusal; neither permits bypassing sync."
+    },
+    {
+      "index": 15,
+      "rule_a": ".gzkit/rules/AGENTS.md",
+      "rule_b": ".gzkit/rules/models.md",
+      "result": "no-conflict",
+      "reason": "Pydantic models are implementation artifacts; generated-rule writing constraints do not prescribe model representation."
+    },
+    {
+      "index": 18,
+      "rule_a": ".gzkit/rules/AGENTS.md",
+      "rule_b": ".gzkit/rules/security-sensitivity.md",
+      "result": "no-conflict",
+      "reason": "Security declaration and scan obligations coexist with canonical-first synchronization; direct-fix sensitivity is explicitly briefless."
+    },
+    {
+      "index": 21,
+      "rule_a": ".gzkit/rules/AGENTS.md",
+      "rule_b": ".gzkit/rules/task-discovery.md",
+      "result": "no-conflict",
+      "reason": "TASK trailers attribute source changes while sync controls copies; a generated package change can carry a slug trailer."
+    },
+    {
+      "index": 24,
+      "rule_a": ".gzkit/rules/AGENTS.md",
+      "rule_b": ".gzkit/rules/tool-skill-runbook-alignment.md",
+      "result": "no-conflict",
+      "reason": "A new skill follows canonical-first/version/sync discipline; alignment does not require direct mirror editing."
+    },
+    {
+      "index": 27,
+      "rule_a": ".gzkit/rules/adr-audit.md",
+      "rule_b": ".gzkit/rules/agent-failure-modes.md",
+      "result": "no-conflict",
+      "reason": "The failure taxonomy rejects fabricated receipts and the audit requires real receipt IDs; aligned evidence direction."
+    },
+    {
+      "index": 30,
+      "rule_a": ".gzkit/rules/adr-audit.md",
+      "rule_b": ".gzkit/rules/changelog-release-notes.md",
+      "result": "no-conflict",
+      "reason": "ADR completion auditing and release narrative curation are different moments; this pair alone does not exclude release Gate-5 terminology."
+    },
+    {
+      "index": 33,
+      "rule_a": ".gzkit/rules/adr-audit.md",
+      "rule_b": ".gzkit/rules/complexity-doctrine.md",
+      "result": "no-conflict",
+      "reason": "Complexity citation provenance and ADR proof auditing reinforce evidence lineage; neither replaces the other's channel."
+    },
+    {
+      "index": 36,
+      "rule_a": ".gzkit/rules/adr-audit.md",
+      "rule_b": ".gzkit/rules/gate5-runbook-code-covenant.md",
+      "result": "no-conflict",
+      "reason": "Both require ARB canonical invocation evidence and attestation before declaring OBPI completion."
+    },
+    {
+      "index": 39,
+      "rule_a": ".gzkit/rules/adr-audit.md",
+      "rule_b": ".gzkit/rules/hexagonal-architecture.md",
+      "result": "no-conflict",
+      "reason": "Architecture constrains implementation dependencies; auditing proves behavior and does not prescribe an opposite dependency boundary."
+    },
+    {
+      "index": 42,
+      "rule_a": ".gzkit/rules/adr-audit.md",
+      "rule_b": ".gzkit/rules/mx-mode.md",
+      "result": "no-conflict",
+      "reason": "MX keeps Gate-5 integrity closed while demoting ordinary guards; ADR attestation therefore remains required."
+    },
+    {
+      "index": 45,
+      "rule_a": ".gzkit/rules/adr-audit.md",
+      "rule_b": ".gzkit/rules/skill-authoring.md",
+      "result": "no-conflict",
+      "reason": "A skill should name the audit verb and receipt process rather than reimplement it; existing witnesses do not prohibit their canonical invocation."
+    },
+    {
+      "index": 48,
+      "rule_a": ".gzkit/rules/adr-audit.md",
+      "rule_b": ".gzkit/rules/tests.md",
+      "result": "no-conflict",
+      "reason": "Both distinguish BEHAVIOR coverage from SUPPORT/STRUCTURAL-FENCE channels and reject cosmetic backfills; serial command R22 is repaired."
+    },
+    {
+      "index": 51,
+      "rule_a": ".gzkit/rules/adr-audit.md",
+      "rule_b": "AGENTS.md",
+      "result": "unproven",
+      "reason": "Root requires universal human completion attestation and ARB evidence; audit's unconditional zero-citation sentence overstates Lite behavior (same-file qualification says Heavy/foundation). Treat receipt-policy wording as unproven here, not permission to invent citations."
+    },
+    {
+      "index": 54,
+      "rule_a": ".gzkit/rules/agent-failure-modes.md",
+      "rule_b": ".gzkit/rules/brief-heading-conventions.md",
+      "result": "no-conflict",
+      "reason": "Heading shape is an explicit contract; checking H3 is not the fabrication or metagaming the taxonomy rejects."
+    },
+    {
+      "index": 57,
+      "rule_a": ".gzkit/rules/agent-failure-modes.md",
+      "rule_b": ".gzkit/rules/cli.md",
+      "result": "no-conflict",
+      "reason": "CLI contract consumers need observed evidence, which supports the taxonomy's cheap-verification and anti-fabrication backstops."
+    },
+    {
+      "index": 60,
+      "rule_a": ".gzkit/rules/agent-failure-modes.md",
+      "rule_b": ".gzkit/rules/cross-platform.md",
+      "result": "no-conflict",
+      "reason": "Portable encodings and subprocess capture prevent operational failures; taxonomy does not prescribe a competing encoding."
+    },
+    {
+      "index": 63,
+      "rule_a": ".gzkit/rules/agent-failure-modes.md",
+      "rule_b": ".gzkit/rules/guardrail-feedback-prose.md",
+      "result": "no-conflict",
+      "reason": "Three-part refusal prose helps avoid safeguard circumvention; taxonomy supplies vocabulary rather than a rival gate."
+    },
+    {
+      "index": 66,
+      "rule_a": ".gzkit/rules/agent-failure-modes.md",
+      "rule_b": ".gzkit/rules/models.md",
+      "result": "no-conflict",
+      "reason": "Data-model validation and failure taxonomy are compatible; neither asks to weaken a model to satisfy a test."
+    },
+    {
+      "index": 69,
+      "rule_a": ".gzkit/rules/agent-failure-modes.md",
+      "rule_b": ".gzkit/rules/security-sensitivity.md",
+      "result": "no-conflict",
+      "reason": "Security shortcut and fabricated-receipt patterns are explicitly opposed; heightened security review supplies the backstop."
+    },
+    {
+      "index": 72,
+      "rule_a": ".gzkit/rules/agent-failure-modes.md",
+      "rule_b": ".gzkit/rules/task-discovery.md",
+      "result": "no-conflict",
+      "reason": "TASK attribution supplies traceability; taxonomy's prohibition on fabricated claims forbids invented attribution rather than TASKs themselves."
+    },
+    {
+      "index": 75,
+      "rule_a": ".gzkit/rules/agent-failure-modes.md",
+      "rule_b": ".gzkit/rules/tool-skill-runbook-alignment.md",
+      "result": "no-conflict",
+      "reason": "Skill/verb/runbook agreement protects against coherent but wrong routing; taxonomy imposes no alternative routing mechanism."
+    },
+    {
+      "index": 78,
+      "rule_a": ".gzkit/rules/agents-md-map-doctrine.md",
+      "rule_b": ".gzkit/rules/brief-heading-conventions.md",
+      "result": "no-conflict",
+      "reason": "Agent-contract shape and brief evidence H3 operate on different file subjects; no forced heading change crosses between them."
+    },
+    {
+      "index": 81,
+      "rule_a": ".gzkit/rules/agents-md-map-doctrine.md",
+      "rule_b": ".gzkit/rules/cli.md",
+      "result": "no-conflict",
+      "reason": "Map doctrine requires concise pointers and CLI rule points to deeper specification; completeness of command help does not require expanding AGENTS."
+    },
+    {
+      "index": 84,
+      "rule_a": ".gzkit/rules/agents-md-map-doctrine.md",
+      "rule_b": ".gzkit/rules/cross-platform.md",
+      "result": "no-conflict",
+      "reason": "Stable repository-relative doctrine links are portable; map budget and portable literal scope can both hold."
+    },
+    {
+      "index": 87,
+      "rule_a": ".gzkit/rules/agents-md-map-doctrine.md",
+      "rule_b": ".gzkit/rules/guardrail-feedback-prose.md",
+      "result": "no-conflict",
+      "reason": "Instruction brevity does not cap command refusal content; feedback prose has its own bounded stderr guidance."
+    },
+    {
+      "index": 90,
+      "rule_a": ".gzkit/rules/agents-md-map-doctrine.md",
+      "rule_b": ".gzkit/rules/models.md",
+      "result": "no-conflict",
+      "reason": "Instruction shape and Pydantic data-model shape apply to different subjects."
+    },
+    {
+      "index": 93,
+      "rule_a": ".gzkit/rules/agents-md-map-doctrine.md",
+      "rule_b": ".gzkit/rules/security-sensitivity.md",
+      "result": "no-conflict",
+      "reason": "Map doctrine reserves Gate 5 to completion; security's Gate-5 walkthrough is exactly that completion subject."
+    },
+    {
+      "index": 96,
+      "rule_a": ".gzkit/rules/agents-md-map-doctrine.md",
+      "rule_b": ".gzkit/rules/task-discovery.md",
+      "result": "no-conflict",
+      "reason": "TASK identifiers in commit/ledger are not additional agent-contract prose; map shape imposes no conflicting attribution syntax."
+    },
+    {
+      "index": 99,
+      "rule_a": ".gzkit/rules/agents-md-map-doctrine.md",
+      "rule_b": ".gzkit/rules/tool-skill-runbook-alignment.md",
+      "result": "no-conflict",
+      "reason": "Map pointers and tool alignment can both hold: load the relevant skill, then validate its actual destination."
+    },
+    {
+      "index": 102,
+      "rule_a": ".gzkit/rules/brief-heading-conventions.md",
+      "rule_b": ".gzkit/rules/changelog-release-notes.md",
+      "result": "no-conflict",
+      "reason": "Brief H3 evidence and release-note Gate Evidence headings name different artifacts, so their heading contracts do not collide."
+    },
+    {
+      "index": 105,
+      "rule_a": ".gzkit/rules/brief-heading-conventions.md",
+      "rule_b": ".gzkit/rules/complexity-doctrine.md",
+      "result": "no-conflict",
+      "reason": "Brief evidence headings impose no alternate citation tuple or corpus selection criteria."
+    },
+    {
+      "index": 108,
+      "rule_a": ".gzkit/rules/brief-heading-conventions.md",
+      "rule_b": ".gzkit/rules/gate5-runbook-code-covenant.md",
+      "result": "no-conflict",
+      "reason": "H3 repair preserves the evidence extraction needed by the documentation covenant; both demand coupled correction."
+    },
+    {
+      "index": 111,
+      "rule_a": ".gzkit/rules/brief-heading-conventions.md",
+      "rule_b": ".gzkit/rules/hexagonal-architecture.md",
+      "result": "no-conflict",
+      "reason": "Brief headings and domain dependency boundaries govern distinct artifacts and can be satisfied together."
+    },
+    {
+      "index": 114,
+      "rule_a": ".gzkit/rules/brief-heading-conventions.md",
+      "rule_b": ".gzkit/rules/mx-mode.md",
+      "result": "no-conflict",
+      "reason": "MX can demote a heading validator but does not authorize claiming completion without Gate 5; no contradictory repair target."
+    },
+    {
+      "index": 117,
+      "rule_a": ".gzkit/rules/brief-heading-conventions.md",
+      "rule_b": ".gzkit/rules/skill-authoring.md",
+      "result": "no-conflict",
+      "reason": "A skill names the brief repair verb; heading rule states the target shape without authorizing autonomous OBPI edits."
+    },
+    {
+      "index": 120,
+      "rule_a": ".gzkit/rules/brief-heading-conventions.md",
+      "rule_b": ".gzkit/rules/tests.md",
+      "result": "no-conflict",
+      "reason": "Named heading structure is SUPPORT proof; tests rule excludes tautological unit tests, not the structural validator heading rule names."
+    },
+    {
+      "index": 123,
+      "rule_a": ".gzkit/rules/brief-heading-conventions.md",
+      "rule_b": "AGENTS.md",
+      "result": "no-conflict",
+      "reason": "Root reserves OBPI machinery to operator initiation; heading repair can be requested narrowly and otherwise must wait, so repair instruction is not blanket initiation."
+    },
+    {
+      "index": 126,
+      "rule_a": ".gzkit/rules/changelog-release-notes.md",
+      "rule_b": ".gzkit/rules/cli.md",
+      "result": "no-conflict",
+      "reason": "Both require release documents through patch-release; CLI adding-surface list no longer prescribes hand-written notes."
+    },
+    {
+      "index": 129,
+      "rule_a": ".gzkit/rules/changelog-release-notes.md",
+      "rule_b": ".gzkit/rules/cross-platform.md",
+      "result": "no-conflict",
+      "reason": "Wheel-delivered templates use portable paths; release narrative categories do not require author-local paths."
+    },
+    {
+      "index": 132,
+      "rule_a": ".gzkit/rules/changelog-release-notes.md",
+      "rule_b": ".gzkit/rules/guardrail-feedback-prose.md",
+      "result": "no-conflict",
+      "reason": "Release curation and three-part guardrail failures are distinct outputs, not competing rendering contracts."
+    },
+    {
+      "index": 135,
+      "rule_a": ".gzkit/rules/changelog-release-notes.md",
+      "rule_b": ".gzkit/rules/models.md",
+      "result": "no-conflict",
+      "reason": "Release prose need not become a BaseModel; models policy applies implementation data models."
+    },
+    {
+      "index": 138,
+      "rule_a": ".gzkit/rules/changelog-release-notes.md",
+      "rule_b": ".gzkit/rules/security-sensitivity.md",
+      "result": "no-conflict",
+      "reason": "Release narrative approval and security completion proof have separate subjects; shared word attestation alone proves no contrary action."
+    },
+    {
+      "index": 141,
+      "rule_a": ".gzkit/rules/changelog-release-notes.md",
+      "rule_b": ".gzkit/rules/task-discovery.md",
+      "result": "no-conflict",
+      "reason": "Every changelog entry cites an existing GHI, while source commit Task slug may omit GHI; these are separate artifacts and release inclusion criteria."
+    },
+    {
+      "index": 144,
+      "rule_a": ".gzkit/rules/changelog-release-notes.md",
+      "rule_b": ".gzkit/rules/tool-skill-runbook-alignment.md",
+      "result": "no-conflict",
+      "reason": "Alignment explicitly routes release work to ceremony through CLI rule; no new release writing path."
+    },
+    {
+      "index": 147,
+      "rule_a": ".gzkit/rules/chores.md",
+      "rule_b": ".gzkit/rules/cli.md",
+      "result": "no-conflict",
+      "reason": "Chore commands respect CLI help/output conventions; Heavy classification of changed contract is not the default Lite chore execution lane."
+    },
+    {
+      "index": 150,
+      "rule_a": ".gzkit/rules/chores.md",
+      "rule_b": ".gzkit/rules/cross-platform.md",
+      "result": "no-conflict",
+      "reason": "Chore subprocess/list evidence and cross-platform file practices coexist; code-fence shell examples do not require shell=True implementation."
+    },
+    {
+      "index": 153,
+      "rule_a": ".gzkit/rules/chores.md",
+      "rule_b": ".gzkit/rules/guardrail-feedback-prose.md",
+      "result": "no-conflict",
+      "reason": "A criterion should fail honestly and describe recovery; report-capture exceptions do not authorize hiding a criterion result."
+    },
+    {
+      "index": 156,
+      "rule_a": ".gzkit/rules/chores.md",
+      "rule_b": ".gzkit/rules/models.md",
+      "result": "no-conflict",
+      "reason": "Chore registry models can use Pydantic; project/package layout does not prescribe a competing model type."
+    },
+    {
+      "index": 159,
+      "rule_a": ".gzkit/rules/chores.md",
+      "rule_b": ".gzkit/rules/security-sensitivity.md",
+      "result": "no-conflict",
+      "reason": "Security direct-fix discipline can apply to chore repairs; default Lite is not a waiver of security sensitivity or attestation integrity."
+    },
+    {
+      "index": 162,
+      "rule_a": ".gzkit/rules/chores.md",
+      "rule_b": ".gzkit/rules/task-discovery.md",
+      "result": "no-conflict",
+      "reason": "Chore work uses freeform Task slug; task-discovery specifically supports labor without a new OBPI."
+    },
+    {
+      "index": 165,
+      "rule_a": ".gzkit/rules/chores.md",
+      "rule_b": ".gzkit/rules/tool-skill-runbook-alignment.md",
+      "result": "no-conflict",
+      "reason": "Chore CLI must have skill/runbook coverage; running the chore does not authorize adding a bare CLI verb without those consumers."
+    },
+    {
+      "index": 168,
+      "rule_a": ".gzkit/rules/cli.md",
+      "rule_b": ".gzkit/rules/complexity-doctrine.md",
+      "result": "no-conflict",
+      "reason": "CLI uses argparse while complexity learns from exemplar projects; corpus membership is not a runtime dependency mandate."
+    },
+    {
+      "index": 171,
+      "rule_a": ".gzkit/rules/cli.md",
+      "rule_b": ".gzkit/rules/gate5-runbook-code-covenant.md",
+      "result": "no-conflict",
+      "reason": "CLI docs/help and runbook-code covenant agree on same-patch behavior documentation."
+    },
+    {
+      "index": 174,
+      "rule_a": ".gzkit/rules/cli.md",
+      "rule_b": ".gzkit/rules/hexagonal-architecture.md",
+      "result": "no-conflict",
+      "reason": "CLI is an adapter boundary; formatting and argparse obligations do not require importing UI dependencies into the domain core."
+    },
+    {
+      "index": 177,
+      "rule_a": ".gzkit/rules/cli.md",
+      "rule_b": ".gzkit/rules/mx-mode.md",
+      "result": "no-conflict",
+      "reason": "MX declares validator demotion as intended runtime behavior; CLI exit taxonomy describes returned outcomes, not an obligation to bypass MX."
+    },
+    {
+      "index": 180,
+      "rule_a": ".gzkit/rules/cli.md",
+      "rule_b": ".gzkit/rules/skill-authoring.md",
+      "result": "no-conflict",
+      "reason": "New CLI commands may need a wielding skill, but skill authoring review remains operator-only; code authorization does not manufacture skill authorization."
+    },
+    {
+      "index": 183,
+      "rule_a": ".gzkit/rules/cli.md",
+      "rule_b": ".gzkit/rules/tests.md",
+      "result": "no-conflict",
+      "reason": "BDD smoke proof of a CLI contract is distinct from @smoke unit build-verification tier; rule's phrase behave smoke test does not create a forbidden third tier."
+    },
+    {
+      "index": 186,
+      "rule_a": ".gzkit/rules/cli.md",
+      "rule_b": "AGENTS.md",
+      "result": "resolved-authority",
+      "reason": "Root direct-GHI route and cli.md:73 resolve the stale unconditional ADR-or-brief demand at cli.md:93; scope purpose documentation to existing owner/GHI for direct repairs."
+    },
+    {
+      "index": 189,
+      "rule_a": ".gzkit/rules/complexity-doctrine.md",
+      "rule_b": ".gzkit/rules/cross-platform.md",
+      "result": "no-conflict",
+      "reason": "Corpus pinned SHAs and portable file paths are compatible provenance and portability requirements."
+    },
+    {
+      "index": 192,
+      "rule_a": ".gzkit/rules/complexity-doctrine.md",
+      "rule_b": ".gzkit/rules/guardrail-feedback-prose.md",
+      "result": "no-conflict",
+      "reason": "Corpus judgments and actionable guardrail prose do not prescribe conflicting failure semantics."
+    },
+    {
+      "index": 195,
+      "rule_a": ".gzkit/rules/complexity-doctrine.md",
+      "rule_b": ".gzkit/rules/models.md",
+      "result": "no-conflict",
+      "reason": "Citation model Pydantic/frozen/extra-forbid is consistent with global model policy."
+    },
+    {
+      "index": 198,
+      "rule_a": ".gzkit/rules/complexity-doctrine.md",
+      "rule_b": ".gzkit/rules/security-sensitivity.md",
+      "result": "no-conflict",
+      "reason": "Corpus doctrinal fitness and security registry discipline operate on different selection/declaration subjects."
+    },
+    {
+      "index": 201,
+      "rule_a": ".gzkit/rules/complexity-doctrine.md",
+      "rule_b": ".gzkit/rules/task-discovery.md",
+      "result": "no-conflict",
+      "reason": "Corpus updates may carry source or chore slug attribution; task channels impose no different citation tuple."
+    },
+    {
+      "index": 204,
+      "rule_a": ".gzkit/rules/complexity-doctrine.md",
+      "rule_b": ".gzkit/rules/tool-skill-runbook-alignment.md",
+      "result": "no-conflict",
+      "reason": "Complexity CLI consumers must have wielding skills; corpus doctrine does not waive alignment."
+    },
+    {
+      "index": 207,
+      "rule_a": ".gzkit/rules/complexity-thresholds.md",
+      "rule_b": ".gzkit/rules/cross-platform.md",
+      "result": "no-conflict",
+      "reason": "Threshold JSON paths can be repository-relative; cross-platform path normalization preserves table authority."
+    },
+    {
+      "index": 210,
+      "rule_a": ".gzkit/rules/complexity-thresholds.md",
+      "rule_b": ".gzkit/rules/guardrail-feedback-prose.md",
+      "result": "no-conflict",
+      "reason": "Threshold breach action and guardrail recovery prose are complementary; actionable explanation does not demote the breach."
+    },
+    {
+      "index": 213,
+      "rule_a": ".gzkit/rules/complexity-thresholds.md",
+      "rule_b": ".gzkit/rules/models.md",
+      "result": "no-conflict",
+      "reason": "Threshold loader is Pydantic; schema tuple and model extra-forbid requirements agree."
+    },
+    {
+      "index": 216,
+      "rule_a": ".gzkit/rules/complexity-thresholds.md",
+      "rule_b": ".gzkit/rules/security-sensitivity.md",
+      "result": "no-conflict",
+      "reason": "Complexity bands and security sensitivity are independent rigor axes; neither waives the other's required checks."
+    },
+    {
+      "index": 219,
+      "rule_a": ".gzkit/rules/complexity-thresholds.md",
+      "rule_b": ".gzkit/rules/task-discovery.md",
+      "result": "no-conflict",
+      "reason": "Threshold amendments need provenance and TASK attribution; a Task trailer does not itself authorize changing doctrine."
+    },
+    {
+      "index": 222,
+      "rule_a": ".gzkit/rules/complexity-thresholds.md",
+      "rule_b": ".gzkit/rules/tool-skill-runbook-alignment.md",
+      "result": "no-conflict",
+      "reason": "Threshold consumers follow table while skills follow verbs; same source-of-truth direction across different layers."
+    },
+    {
+      "index": 225,
+      "rule_a": ".gzkit/rules/cross-platform.md",
+      "rule_b": ".gzkit/rules/gate5-runbook-code-covenant.md",
+      "result": "no-conflict",
+      "reason": "Documentation covenant can update portable examples and wrappers; no machine-local literal is required."
+    },
+    {
+      "index": 228,
+      "rule_a": ".gzkit/rules/cross-platform.md",
+      "rule_b": ".gzkit/rules/hexagonal-architecture.md",
+      "result": "no-conflict",
+      "reason": "Adapter injection does not require platform-specific paths; stdlib core and portability complement each other."
+    },
+    {
+      "index": 231,
+      "rule_a": ".gzkit/rules/cross-platform.md",
+      "rule_b": ".gzkit/rules/mx-mode.md",
+      "result": "no-conflict",
+      "reason": "MX advisory behavior does not mandate nonportable code or authorize PII literals."
+    },
+    {
+      "index": 234,
+      "rule_a": ".gzkit/rules/cross-platform.md",
+      "rule_b": ".gzkit/rules/skill-authoring.md",
+      "result": "no-conflict",
+      "reason": "Portable skill instructions may state an unavailable review limitation; skill authoring also requires stop conditions, so provisional output is compatible."
+    },
+    {
+      "index": 237,
+      "rule_a": ".gzkit/rules/cross-platform.md",
+      "rule_b": ".gzkit/rules/tests.md",
+      "result": "no-conflict",
+      "reason": "Both require tempfile cleanup and reproducible local fixtures; cross-platform subprocess errors handling applies wherever a capture exists."
+    },
+    {
+      "index": 240,
+      "rule_a": ".gzkit/rules/cross-platform.md",
+      "rule_b": "AGENTS.md",
+      "result": "no-conflict",
+      "reason": "Root requires uv execution and canonical UTF-8 handling; both prohibit PYTHONUTF8 prefixes and preserve portable repository literals."
+    },
+    {
+      "index": 243,
+      "rule_a": ".gzkit/rules/gate5-runbook-code-covenant.md",
+      "rule_b": ".gzkit/rules/guardrail-feedback-prose.md",
+      "result": "no-conflict",
+      "reason": "Runbook evidence and failure prose are separate outputs; explicit attestation conditions may be named in recovery prose."
+    },
+    {
+      "index": 246,
+      "rule_a": ".gzkit/rules/gate5-runbook-code-covenant.md",
+      "rule_b": ".gzkit/rules/models.md",
+      "result": "no-conflict",
+      "reason": "Documentation updates and Pydantic implementation models can be satisfied in the same patch."
+    },
+    {
+      "index": 249,
+      "rule_a": ".gzkit/rules/gate5-runbook-code-covenant.md",
+      "rule_b": ".gzkit/rules/security-sensitivity.md",
+      "result": "no-conflict",
+      "reason": "Both require universal OBPI human attestation; security adds scan proof without changing documentation's role."
+    },
+    {
+      "index": 252,
+      "rule_a": ".gzkit/rules/gate5-runbook-code-covenant.md",
+      "rule_b": ".gzkit/rules/task-discovery.md",
+      "result": "no-conflict",
+      "reason": "Required documentation updates may carry Task provenance in same commit; neither requires unsupported Task creation for a GHI."
+    },
+    {
+      "index": 255,
+      "rule_a": ".gzkit/rules/gate5-runbook-code-covenant.md",
+      "rule_b": ".gzkit/rules/tool-skill-runbook-alignment.md",
+      "result": "resolved-authority",
+      "reason": "Both require consumers to update with behavior; tool alignment's follow-up-GHI escape conflicts with same-patch covenant for a new verb without existing skill coverage."
+    },
+    {
+      "index": 258,
+      "rule_a": ".gzkit/rules/gh-cli.md",
+      "rule_b": ".gzkit/rules/guardrail-feedback-prose.md",
+      "result": "no-conflict",
+      "reason": "Issue tracking via skills and actionable guardrail recovery are compatible; named ceremony is an allowed recovery form."
+    },
+    {
+      "index": 261,
+      "rule_a": ".gzkit/rules/gh-cli.md",
+      "rule_b": ".gzkit/rules/models.md",
+      "result": "no-conflict",
+      "reason": "GitHub wrapper may validate with Pydantic without changing authorized gh callers or issue ownership."
+    },
+    {
+      "index": 264,
+      "rule_a": ".gzkit/rules/gh-cli.md",
+      "rule_b": ".gzkit/rules/security-sensitivity.md",
+      "result": "no-conflict",
+      "reason": "A security GHI is filed through ghi-author; security's candidate Sensitivity trailer is explicitly future design, not permission to add one now."
+    },
+    {
+      "index": 267,
+      "rule_a": ".gzkit/rules/gh-cli.md",
+      "rule_b": ".gzkit/rules/task-discovery.md",
+      "result": "no-conflict",
+      "reason": "An optional GHI anchor on a Task slug does not authorize creating issues outside ghi-author; both prohibit issue creation solely for trailer ceremony."
+    },
+    {
+      "index": 270,
+      "rule_a": ".gzkit/rules/gh-cli.md",
+      "rule_b": ".gzkit/rules/tool-skill-runbook-alignment.md",
+      "result": "no-conflict",
+      "reason": "gh-cli permits issue work through skills; tool alignment requires gz verb skill coverage and does not sanction bare gh issue creation."
+    },
+    {
+      "index": 273,
+      "rule_a": ".gzkit/rules/guardrail-feedback-prose.md",
+      "rule_b": ".gzkit/rules/hexagonal-architecture.md",
+      "result": "no-conflict",
+      "reason": "Core adapters may raise typed failures which CLI boundary translates into actionable prose; no UI dependency is required in core."
+    },
+    {
+      "index": 276,
+      "rule_a": ".gzkit/rules/guardrail-feedback-prose.md",
+      "rule_b": ".gzkit/rules/mx-mode.md",
+      "result": "no-conflict",
+      "reason": "MX-demoted failures may remain advisory prose; global fail-closed prose rule applies when the surface actually blocks, preserving the distinction."
+    },
+    {
+      "index": 279,
+      "rule_a": ".gzkit/rules/guardrail-feedback-prose.md",
+      "rule_b": ".gzkit/rules/skill-authoring.md",
+      "result": "no-conflict",
+      "reason": "Skill wording need not duplicate a witnessed guard; new guard covering tests are consumer verification, not redundant skill re-check steps."
+    },
+    {
+      "index": 282,
+      "rule_a": ".gzkit/rules/guardrail-feedback-prose.md",
+      "rule_b": ".gzkit/rules/tests.md",
+      "result": "no-conflict",
+      "reason": "Output-contract fixtures can assert recovery prose semantics; tests explicitly allow named rendering contracts."
+    },
+    {
+      "index": 285,
+      "rule_a": ".gzkit/rules/guardrail-feedback-prose.md",
+      "rule_b": "AGENTS.md",
+      "result": "no-conflict",
+      "reason": "Root demands observed failures and correct recovery; three-part prose supplies cause and next step without authorizing a bypass."
+    },
+    {
+      "index": 288,
+      "rule_a": ".gzkit/rules/hexagonal-architecture.md",
+      "rule_b": ".gzkit/rules/models.md",
+      "result": "no-conflict",
+      "reason": "Both explicitly admit Pydantic domain models and prohibit replacing them with dataclasses."
+    },
+    {
+      "index": 291,
+      "rule_a": ".gzkit/rules/hexagonal-architecture.md",
+      "rule_b": ".gzkit/rules/security-sensitivity.md",
+      "result": "no-conflict",
+      "reason": "Security scanners can remain external adapters while their domain results are Pydantic/stdlib types."
+    },
+    {
+      "index": 294,
+      "rule_a": ".gzkit/rules/hexagonal-architecture.md",
+      "rule_b": ".gzkit/rules/task-discovery.md",
+      "result": "no-conflict",
+      "reason": "TASK attribution names governance domain objects and is compatible with ontology vocabulary; no folder restructure implied."
+    },
+    {
+      "index": 297,
+      "rule_a": ".gzkit/rules/hexagonal-architecture.md",
+      "rule_b": ".gzkit/rules/tool-skill-runbook-alignment.md",
+      "result": "no-conflict",
+      "reason": "Ports/adapters protect domain while skill/runbook alignment protects operator surfaces; neither requires a second parallel domain model."
+    },
+    {
+      "index": 300,
+      "rule_a": ".gzkit/rules/model-selection.md",
+      "rule_b": ".gzkit/rules/models.md",
+      "result": "no-conflict",
+      "reason": "Skill model-tier metadata and Pydantic data models use model in different senses; no mutually exclusive schema choice."
+    },
+    {
+      "index": 303,
+      "rule_a": ".gzkit/rules/model-selection.md",
+      "rule_b": ".gzkit/rules/security-sensitivity.md",
+      "result": "no-conflict",
+      "reason": "Heightened security rigor does not mandate a conflicting tier; model selection depends on decision complexity within the security task."
+    },
+    {
+      "index": 306,
+      "rule_a": ".gzkit/rules/model-selection.md",
+      "rule_b": ".gzkit/rules/task-discovery.md",
+      "result": "no-conflict",
+      "reason": "Effort selection does not alter TASK attribution; both reject unsupported factual claims."
+    },
+    {
+      "index": 309,
+      "rule_a": ".gzkit/rules/model-selection.md",
+      "rule_b": ".gzkit/rules/tool-skill-runbook-alignment.md",
+      "result": "no-conflict",
+      "reason": "Read-only search is bounded but cross-surface coherence is explicitly architectural in routing matrix; alignment review is not automatically Haiku-only search."
+    },
+    {
+      "index": 312,
+      "rule_a": ".gzkit/rules/models.md",
+      "rule_b": ".gzkit/rules/mx-mode.md",
+      "result": "no-conflict",
+      "reason": "MX validator demotion does not authorize a different data-model representation; integrity and model design are different claims."
+    },
+    {
+      "index": 315,
+      "rule_a": ".gzkit/rules/models.md",
+      "rule_b": ".gzkit/rules/skill-authoring.md",
+      "result": "no-conflict",
+      "reason": "Skill model field and BaseModel implementation contracts apply to separate artifacts."
+    },
+    {
+      "index": 318,
+      "rule_a": ".gzkit/rules/models.md",
+      "rule_b": ".gzkit/rules/tests.md",
+      "result": "no-conflict",
+      "reason": "Tests may use local fixtures while production data models remain Pydantic; assertions should target structured model semantics."
+    },
+    {
+      "index": 321,
+      "rule_a": ".gzkit/rules/models.md",
+      "rule_b": "AGENTS.md",
+      "result": "no-conflict",
+      "reason": "Root's named Pydantic departure exactly matches models policy; stdlib-first is not a dataclass mandate."
+    },
+    {
+      "index": 324,
+      "rule_a": ".gzkit/rules/mx-mode.md",
+      "rule_b": ".gzkit/rules/security-sensitivity.md",
+      "result": "no-conflict",
+      "reason": "Security rule explicitly discloses MX demotion and preserves Gate 5; its exception resolves the apparent unconditional fail-close wording."
+    },
+    {
+      "index": 327,
+      "rule_a": ".gzkit/rules/mx-mode.md",
+      "rule_b": ".gzkit/rules/task-discovery.md",
+      "result": "no-conflict",
+      "reason": "MX's ownership stance does not prescribe alternate Task grammar; TASK attribution survives advisory guard state."
+    },
+    {
+      "index": 330,
+      "rule_a": ".gzkit/rules/mx-mode.md",
+      "rule_b": ".gzkit/rules/tool-skill-runbook-alignment.md",
+      "result": "no-conflict",
+      "reason": "MX uses its skill, as alignment requires; advisory guards do not create a different operator moment."
+    },
+    {
+      "index": 333,
+      "rule_a": ".gzkit/rules/pythonic.md",
+      "rule_b": ".gzkit/rules/security-sensitivity.md",
+      "result": "no-conflict",
+      "reason": "Typed exception/suppression guidance and security heightened review are distinct; security does not authorize blanket silencing."
+    },
+    {
+      "index": 336,
+      "rule_a": ".gzkit/rules/pythonic.md",
+      "rule_b": ".gzkit/rules/task-discovery.md",
+      "result": "no-conflict",
+      "reason": "Direct-fix Task slug is compatible with Pythonic implementation discipline; it does not create a source-level global state requirement."
+    },
+    {
+      "index": 339,
+      "rule_a": ".gzkit/rules/pythonic.md",
+      "rule_b": ".gzkit/rules/tool-skill-runbook-alignment.md",
+      "result": "no-conflict",
+      "reason": "Port/data idioms and skill routing can both hold; exact output comparisons remain allowed only for a rendering contract."
+    },
+    {
+      "index": 342,
+      "rule_a": ".gzkit/rules/security-sensitivity.md",
+      "rule_b": ".gzkit/rules/skill-authoring.md",
+      "result": "no-conflict",
+      "reason": "Security scan receipt and operator-only skill repair are complementary authorization requirements, not alternate completion gates."
+    },
+    {
+      "index": 345,
+      "rule_a": ".gzkit/rules/security-sensitivity.md",
+      "rule_b": ".gzkit/rules/tests.md",
+      "result": "no-conflict",
+      "reason": "Security direct-fix body declaration fits the allowed Task trailer forms; tests proof channel does not replace scan receipt."
+    },
+    {
+      "index": 348,
+      "rule_a": ".gzkit/rules/security-sensitivity.md",
+      "rule_b": "AGENTS.md",
+      "result": "no-conflict",
+      "reason": "Root universal Gate 5 and named security additions agree; briefless registry fixes remain direct, with declared limitation."
+    },
+    {
+      "index": 351,
+      "rule_a": ".gzkit/rules/skill-authoring.md",
+      "rule_b": ".gzkit/rules/task-discovery.md",
+      "result": "no-conflict",
+      "reason": "Task-discovery defines attribution; skill authoring forbids inventing OBPI initiation and can cite the existing Task mechanism."
+    },
+    {
+      "index": 354,
+      "rule_a": ".gzkit/rules/skill-authoring.md",
+      "rule_b": ".gzkit/rules/tool-skill-runbook-alignment.md",
+      "result": "no-conflict",
+      "reason": "Alignment's observed rendering check is not globally mechanized; skill author's no redundant recheck clause does not remove this judgment witness."
+    },
+    {
+      "index": 357,
+      "rule_a": ".gzkit/rules/skill-surface-sync.md",
+      "rule_b": ".gzkit/rules/task-discovery.md",
+      "result": "no-conflict",
+      "reason": "Canonical edits synchronize copies and source-touching commits carry Task slug; generated package copies remain attributable."
+    },
+    {
+      "index": 360,
+      "rule_a": ".gzkit/rules/skill-surface-sync.md",
+      "rule_b": ".gzkit/rules/tool-skill-runbook-alignment.md",
+      "result": "no-conflict",
+      "reason": "Renaming a skill or verb requires current canonical references plus synced mirrors; follow-up issue does not permit direct mirror edits."
+    },
+    {
+      "index": 363,
+      "rule_a": ".gzkit/rules/task-discovery.md",
+      "rule_b": ".gzkit/rules/tests.md",
+      "result": "no-conflict",
+      "reason": "Same four-channel floor and closed Task trailer syntax; direct repairs use slug rather than invented REQ parent."
+    },
+    {
+      "index": 366,
+      "rule_a": ".gzkit/rules/task-discovery.md",
+      "rule_b": "AGENTS.md",
+      "result": "no-conflict",
+      "reason": "Root forbids autonomous Task lifecycle operations while discovery describes them within initiated work; commit slug channel remains available outside pipeline."
+    },
+    {
+      "index": 369,
+      "rule_a": ".gzkit/rules/tests.md",
+      "rule_b": ".gzkit/rules/tool-skill-runbook-alignment.md",
+      "result": "no-conflict",
+      "reason": "Tests explicitly allow named output-form contracts; alignment asks observed output, not arbitrary doc-grep tests. Prior output-form conflict remains refuted."
+    },
+    {
+      "index": 372,
+      "rule_a": ".gzkit/rules/token-block-discipline.md",
+      "rule_b": ".gzkit/rules/tool-skill-runbook-alignment.md",
+      "result": "no-conflict",
+      "reason": "Token completion exchange is runtime output; alignment preserves the surrender semantics and does not authorize independent release."
+    },
+    {
+      "index": 375,
+      "rule_a": ".gzkit/rules/tool-skill-runbook-alignment.md",
+      "rule_b": "AGENTS.md",
+      "result": "resolved-authority",
+      "reason": "Root same-commit coupled-consumer rule settles alignment's stale follow-up-GHI escape for an uncovered new verb; no change to operator initiation is needed."
+    }
+  ],
+  "limitations": [
+    "Full reads and pair coverage are reviewer work coverage, not proof of semantic absence.",
+    "Two rule-read batches were truncated; CLAUDE.md, rules/AGENTS.md, adr-audit.md, tests.md and root tail were reread untruncated to restore coverage.",
+    "No claim of full repository implementation audit; named consumer bodies were opened.",
+    "Supporting advisory scorecard was read in scoped portions; it is not part of the rule-pair population."
+  ],
+  "findings": [
+    {
+      "id": "candidate-cli-purpose-route",
+      "pair_indices": [
+        186
+      ],
+      "result": "resolved-authority",
+      "rule_a": ".gzkit/rules/cli.md:93",
+      "quote_a": "Alongside these: an ADR or brief documenting purpose, help text with examples, a behave smoke test, and the GHI cited in the commit.",
+      "rule_b": "AGENTS.md:159",
+      "quote_b": "A GHI authorizes direct defect repair: `fix(<scope>): <summary> (GHI #N)`, closed with the commit SHA. Do not create an ADR or OBPI to discharge one.",
+      "worked_example": "A GHI repairs existing declared behavior by adding a recovery subcommand; no live brief owns the repair. Following the unconditional alongside list asks for ADR/brief authorship, whereas root and cli.md:73 direct a GHI repair without OBPI ceremony.",
+      "winner": "Root operator canon and cli.md:73 already settle direct-GHI routing. No runtime ceremony enforcement claimed.",
+      "mechanics_read": [
+        "src/gzkit/doc_coverage/scanner.py (complete): five surface checks, no ADR/brief consumer",
+        "src/gzkit/doc_coverage/manifest.py (complete): manifest declaration set only",
+        "src/gzkit/governance/trust_audits/cli.py:465-531 (complete audit_skill_alignment): skill reference or waiver, not ADR authorship"
+      ],
+      "suggested_resolution": "Scope the purpose-documentation clause to the existing ADR/brief when applicable and the GHI on direct repair; preserve all coupled CLI documentation/testing obligations.",
+      "severity": "theoretical",
+      "frequency_basis": "Concrete textual case; encounter frequency not measured."
+    },
+    {
+      "id": "candidate-followup-skill-escape",
+      "pair_indices": [
+        255,
+        375
+      ],
+      "result": "resolved-authority",
+      "rule_a": ".gzkit/rules/tool-skill-runbook-alignment.md:66",
+      "quote_a": "Confirm at least one skill will wield the verb before merging; author the skill in the same patch or file a follow-up GHI",
+      "rule_b": "AGENTS.md:23",
+      "quote_b": "1a. When a change touches a surface another surface reads or validates \u2014 a validator, a doc example, a mirror \u2014 update and verify that consumer in the same commit.",
+      "worked_example": "A new nonwaived CLI verb has no existing wielding skill. The final alternative permits filing an issue instead of landing the skill, leaving a coupled consumer absent.",
+      "winner": "Root same-commit rule and cli.md:83,91 settle authoring; audit_skill_alignment:507-519 reports nonwaived uncovered verbs. Filing a GHI is not a validator waiver.",
+      "suggested_resolution": "Remove follow-up-GHI as substitute for the required wielding skill; preserve explicit existing waiver mechanism, never silently add a waiver.",
+      "severity": "theoretical",
+      "frequency_basis": "Concrete contrary action, not measured monthly incident."
+    }
+  ],
+  "prior_rows": [
+    {
+      "id": "R22",
+      "disposition": "retired",
+      "evidence": "adr-audit.md:28 now uses unittest-parallel -t . -s tests --buffer; tests.md current general invocation is gz test."
+    },
+    {
+      "id": "R09",
+      "disposition": "unproven",
+      "evidence": "Tool alignment human-readable default wording does not by itself prohibit JSON; no named actual routing mismatch established."
+    }
+  ]
+}

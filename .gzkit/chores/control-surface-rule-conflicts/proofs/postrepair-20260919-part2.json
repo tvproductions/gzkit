@@ -1,0 +1,774 @@
+{
+  "persona": "quality-reviewer",
+  "partition": 2,
+  "baseline_commit": "3dc6f613042117838f4f4cad55abe0b2e3044d35",
+  "subject": "working-tree postrepair, not committed completion evidence",
+  "changed_paths_reviewed": [
+    ".gzkit/rules/AGENTS.md",
+    ".gzkit/rules/changelog-release-notes.md",
+    ".gzkit/rules/chores.md",
+    ".gzkit/rules/cli.md",
+    ".gzkit/rules/model-selection.md",
+    ".gzkit/rules/tests.md",
+    ".gzkit/rules/tool-skill-runbook-alignment.md"
+  ],
+  "read_scope": "Full diff and all six changed rules, generated rules/AGENTS and complete release skill; unchanged counterparts fully read in baseline and hashes rechecked.",
+  "input_hashes": [
+    {
+      "path": ".gzkit/rules/AGENTS.md",
+      "sha256": "1c7328018480d34d3ced4226d35308d291f6186d0a0d569274e276fd83467c77",
+      "lines": 78,
+      "changed_from_baseline": false
+    },
+    {
+      "path": ".gzkit/rules/adr-audit.md",
+      "sha256": "f793628f1cee660f7512d69eedeb4d249b9cbeafa6372eca77e8ab8d26301c6c",
+      "lines": 70,
+      "changed_from_baseline": false
+    },
+    {
+      "path": ".gzkit/rules/agent-failure-modes.md",
+      "sha256": "d821600c7960441a9584a25fc11c76f88ff98b9366c2b355b14390f0c9536335",
+      "lines": 30,
+      "changed_from_baseline": false
+    },
+    {
+      "path": ".gzkit/rules/agents-md-map-doctrine.md",
+      "sha256": "36b17c4ec088fa48e799ab288a1743cbd8a7dc65be1836662f1b7768de104e17",
+      "lines": 68,
+      "changed_from_baseline": false
+    },
+    {
+      "path": ".gzkit/rules/brief-heading-conventions.md",
+      "sha256": "6baffe4cc324012004e7b458594b4ac531260ca644db5bafb1c443714324205e",
+      "lines": 56,
+      "changed_from_baseline": false
+    },
+    {
+      "path": ".gzkit/rules/changelog-release-notes.md",
+      "sha256": "74b21e39d9b5e57f36d69ad03e969943ecff272b12a5eed0e6e837645f85ef7d",
+      "lines": 55,
+      "changed_from_baseline": true
+    },
+    {
+      "path": ".gzkit/rules/chores.md",
+      "sha256": "9882c5333de44ace962937a0573143270e12ae8ba23e3a71257b2c8d4218b8c3",
+      "lines": 150,
+      "changed_from_baseline": true
+    },
+    {
+      "path": ".gzkit/rules/cli.md",
+      "sha256": "63c5df9be3e7d439f921ee205371e978e3c9a754159da84af57b981cd64b4feb",
+      "lines": 93,
+      "changed_from_baseline": true
+    },
+    {
+      "path": ".gzkit/rules/complexity-doctrine.md",
+      "sha256": "ab02eeb4911968ae60021da993aefec9ed14c3779c09283010035154625046ce",
+      "lines": 123,
+      "changed_from_baseline": false
+    },
+    {
+      "path": ".gzkit/rules/complexity-thresholds.md",
+      "sha256": "45237ef09b9cf639a4684bfcd82d44e98a46386942635e9a454875e877119ecf",
+      "lines": 99,
+      "changed_from_baseline": false
+    },
+    {
+      "path": ".gzkit/rules/cross-platform.md",
+      "sha256": "87c24bb3d26293277f7794d029a0dd3cff46326c4051e1348be3c1b9c59c170e",
+      "lines": 88,
+      "changed_from_baseline": false
+    },
+    {
+      "path": ".gzkit/rules/gate5-runbook-code-covenant.md",
+      "sha256": "db2687e835b54f60d3cf65c26bbe1e7afabdddea0277ca741ff7a80418144412",
+      "lines": 46,
+      "changed_from_baseline": false
+    },
+    {
+      "path": ".gzkit/rules/gh-cli.md",
+      "sha256": "ef75d01666102ea7897b4a5240d003d65adcc231bc64e2421238b8612fa385d7",
+      "lines": 59,
+      "changed_from_baseline": false
+    },
+    {
+      "path": ".gzkit/rules/guardrail-feedback-prose.md",
+      "sha256": "935f06c9ff67a5b0b9b7384c42df7245e798d121c61aa0a8000d4531aa736736",
+      "lines": 79,
+      "changed_from_baseline": false
+    },
+    {
+      "path": ".gzkit/rules/hexagonal-architecture.md",
+      "sha256": "7d3046c96b9ada5f2c0b3bca17bdf598ef9e3f51f7d6459f6a6693b737fb2b23",
+      "lines": 125,
+      "changed_from_baseline": false
+    },
+    {
+      "path": ".gzkit/rules/model-selection.md",
+      "sha256": "55229f6a121377f5c257f3addfb1d3f05b2ea7384cac2c8b7f7e8e0ff6a7f825",
+      "lines": 76,
+      "changed_from_baseline": true
+    },
+    {
+      "path": ".gzkit/rules/models.md",
+      "sha256": "0fbe189f91942f8d1bab058d16efd80c9448c28b4272095e20f3b712cf03e128",
+      "lines": 50,
+      "changed_from_baseline": false
+    },
+    {
+      "path": ".gzkit/rules/mx-mode.md",
+      "sha256": "44a1b63c72655c70b3f6ca6cd1c7de0a73ca6b49aa4d202621f0a8c9c974c494",
+      "lines": 89,
+      "changed_from_baseline": false
+    },
+    {
+      "path": ".gzkit/rules/pythonic.md",
+      "sha256": "508bfc3a3a54d7af3646eaaee3541994e251b3fe730b64acf5a3fde969163372",
+      "lines": 98,
+      "changed_from_baseline": false
+    },
+    {
+      "path": ".gzkit/rules/security-sensitivity.md",
+      "sha256": "8b8f3584c7c32c05afb4dae347a46caa6ff77c9ae83b9b84569f4bc8cfa7dc48",
+      "lines": 46,
+      "changed_from_baseline": false
+    },
+    {
+      "path": ".gzkit/rules/skill-authoring.md",
+      "sha256": "788634b9e317ea216dcab494337d3136ee8e2be159f9150e055fab24435f0b35",
+      "lines": 53,
+      "changed_from_baseline": false
+    },
+    {
+      "path": ".gzkit/rules/skill-surface-sync.md",
+      "sha256": "f46eed667cb0ae87dfe325ba393530fb5e3d6fd573706e8980a6e3dd05535a72",
+      "lines": 57,
+      "changed_from_baseline": false
+    },
+    {
+      "path": ".gzkit/rules/task-discovery.md",
+      "sha256": "07957ea67f85c44a31e1d7f2fe89ce78fe1d56c6d18765856fdd23577ce9d284",
+      "lines": 60,
+      "changed_from_baseline": false
+    },
+    {
+      "path": ".gzkit/rules/tests.md",
+      "sha256": "7a6099e67eea43c94f5f1eaa6c9c2bd4bd3a335bd2609a04cb1e300c723519c6",
+      "lines": 101,
+      "changed_from_baseline": true
+    },
+    {
+      "path": ".gzkit/rules/token-block-discipline.md",
+      "sha256": "0bdb89ff2eac18b3bdff23da96f4b003398208b6e461c84e772fe9473d5445cd",
+      "lines": 75,
+      "changed_from_baseline": false
+    },
+    {
+      "path": ".gzkit/rules/tool-skill-runbook-alignment.md",
+      "sha256": "50a145e6f5371c257b67ace7198376531b1149d24cf18e21c084f71ddd0dddef",
+      "lines": 74,
+      "changed_from_baseline": true
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "d7f8a4041c5bd6afceceb97a33413a5dd14c54c1fdafc23e6d2ab3817226f276",
+      "lines": 226,
+      "changed_from_baseline": false
+    },
+    {
+      "path": "CLAUDE.md",
+      "sha256": "e0e245d369df70646cff6f1aaea9c3bcdeecace4128ecc07c4e7091ed16702ca",
+      "lines": 26,
+      "changed_from_baseline": false
+    }
+  ],
+  "supplemental_read": {
+    "path": ".gzkit/skills/gz-patch-release/SKILL.md",
+    "sha256": "7a9bcf302a6884374768f37e95686b733d94cc85ad94c8ddbf84fcb4b47db590",
+    "lines": 456,
+    "finding": "Approval remains required. Gate metadata consumes existing Gate5 rather than naming release approval Gate5. last_reviewed already2026-09-19."
+  },
+  "mechanics_read": [
+    "src/gzkit/commands/quality.py:test lines344-390 default bdd=False returns before behave; earlier baseline code paths unchanged for R01/R21/skill alignment."
+  ],
+  "pairs": [
+    {
+      "index": 2,
+      "paths": [
+        ".gzkit/rules/AGENTS.md",
+        ".gzkit/rules/agents-md-map-doctrine.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Map shape governs root contract; generated subtree bundles sync and taxonomy without prescribing another root shape.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 5,
+      "paths": [
+        ".gzkit/rules/AGENTS.md",
+        ".gzkit/rules/chores.md"
+      ],
+      "result": "conflict",
+      "reason": "R01 remains: unchanged generated sync table names project chore canonical; chores still names package authoritative. Added BDD clarification does not address source or damaged-file recovery.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 8,
+      "paths": [
+        ".gzkit/rules/AGENTS.md",
+        ".gzkit/rules/complexity-thresholds.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Sync transports threshold data; threshold rule alone assigns numeric meaning.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 11,
+      "paths": [
+        ".gzkit/rules/AGENTS.md",
+        ".gzkit/rules/gh-cli.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Canonical edit/sync discipline and skill-routed GitHub operations are cumulative.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 14,
+      "paths": [
+        ".gzkit/rules/AGENTS.md",
+        ".gzkit/rules/model-selection.md"
+      ],
+      "result": "no-conflict",
+      "reason": "R21 repaired: model-selection:44-45 now metadata containing quoted skill-version, agreeing with generated sync metadata.skill-version contract.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 17,
+      "paths": [
+        ".gzkit/rules/AGENTS.md",
+        ".gzkit/rules/pythonic.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Sync governs placement/version; Pythonic guidance governs code and explicitly distinguishes numeric authorities.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 20,
+      "paths": [
+        ".gzkit/rules/AGENTS.md",
+        ".gzkit/rules/skill-surface-sync.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Generated subtree repeats the same sync rule; identical obligations, not competing authority.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 23,
+      "paths": [
+        ".gzkit/rules/AGENTS.md",
+        ".gzkit/rules/token-block-discipline.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Sync and failure taxonomy do not grant lock operations; token rule concerns surrender evidence.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 26,
+      "paths": [
+        ".gzkit/rules/AGENTS.md",
+        "CLAUDE.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Claude extends root while subtree supplies shared sync/taxonomy; neither replaces root authority.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 32,
+      "paths": [
+        ".gzkit/rules/adr-audit.md",
+        ".gzkit/rules/cli.md"
+      ],
+      "result": "no-conflict",
+      "reason": "ADR audit evidence remains independent of CLI route; cli now explicitly distinguishes purpose in owning ADR/brief versus GHI, preserving Heavy verification.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 50,
+      "paths": [
+        ".gzkit/rules/adr-audit.md",
+        ".gzkit/rules/tool-skill-runbook-alignment.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Audit runbooks must match runtime, consistent with tool-skill-runbook alignment.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 56,
+      "paths": [
+        ".gzkit/rules/agent-failure-modes.md",
+        ".gzkit/rules/chores.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Avoiding safeguard circumvention reinforces the chore prohibition on suppression-as-repair.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 65,
+      "paths": [
+        ".gzkit/rules/agent-failure-modes.md",
+        ".gzkit/rules/model-selection.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Routing effort cannot turn a subagent assertion into evidence; both explicitly require observed provenance.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 80,
+      "paths": [
+        ".gzkit/rules/agents-md-map-doctrine.md",
+        ".gzkit/rules/chores.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Diet chore may render unchanged canon without attestation; general chore evidence rules impose no opposite corpus-attestation requirement.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 89,
+      "paths": [
+        ".gzkit/rules/agents-md-map-doctrine.md",
+        ".gzkit/rules/model-selection.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Map requires concise skill pointers; model-selection requires frontmatter routing, not inlined model pedagogy.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 104,
+      "paths": [
+        ".gzkit/rules/brief-heading-conventions.md",
+        ".gzkit/rules/cli.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Brief H3 evidence headings and command manpage shape concern different artifacts.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 122,
+      "paths": [
+        ".gzkit/rules/brief-heading-conventions.md",
+        ".gzkit/rules/tool-skill-runbook-alignment.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Brief evidence headings and CLI output contracts both preserve their named reader contracts.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 125,
+      "paths": [
+        ".gzkit/rules/changelog-release-notes.md",
+        ".gzkit/rules/chores.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Release approval and network publishing remain a separate ceremony; chore now explicitly distinguishes offline Lite work from required full-repository verification.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 128,
+      "paths": [
+        ".gzkit/rules/changelog-release-notes.md",
+        ".gzkit/rules/complexity-thresholds.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Release shape and threshold calibration govern different data.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 131,
+      "paths": [
+        ".gzkit/rules/changelog-release-notes.md",
+        ".gzkit/rules/gh-cli.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Release rule retains operator approval through release skill and existing evidence; gh-cli release-body and issue routing remain unchanged.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 134,
+      "paths": [
+        ".gzkit/rules/changelog-release-notes.md",
+        ".gzkit/rules/model-selection.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Judgment model routing still applies to narrative synthesis; release approval is not renamed into an OBPI completion gate.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 137,
+      "paths": [
+        ".gzkit/rules/changelog-release-notes.md",
+        ".gzkit/rules/pythonic.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Release prose conventions do not compete with Python source conventions.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 140,
+      "paths": [
+        ".gzkit/rules/changelog-release-notes.md",
+        ".gzkit/rules/skill-surface-sync.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Release templates sync from canonical; changelog/release artifacts authored through release skill, not template mirrors.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 143,
+      "paths": [
+        ".gzkit/rules/changelog-release-notes.md",
+        ".gzkit/rules/token-block-discipline.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Release rule now explicitly says approval is not Gate5; token surrender continues to require successful OBPI completion evidence.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 146,
+      "paths": [
+        ".gzkit/rules/changelog-release-notes.md",
+        "CLAUDE.md"
+      ],
+      "result": "no-conflict",
+      "reason": "R23 repaired: changelog-release-notes:50 reserves Gate5 for completed OBPI/ADR work and requires release approval; agrees with root inherited by Claude.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 149,
+      "paths": [
+        ".gzkit/rules/chores.md",
+        ".gzkit/rules/complexity-thresholds.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Threshold table governs complexity findings; chore may repair without silently editing thresholds.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 152,
+      "paths": [
+        ".gzkit/rules/chores.md",
+        ".gzkit/rules/gh-cli.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Lite chore work remains offline; separate issue routing still uses gh-cli. Explicit full-repository verification boundary does not add network to chore criteria.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 155,
+      "paths": [
+        ".gzkit/rules/chores.md",
+        ".gzkit/rules/model-selection.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Mechanical chore checks use bounded model routing; advice requiring judgment is a distinct decision class.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 158,
+      "paths": [
+        ".gzkit/rules/chores.md",
+        ".gzkit/rules/pythonic.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Chore-specific ban on suppression-as-repair narrows general Python syntax guidance; valid syntax is not permission to use suppression in a chore.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 161,
+      "paths": [
+        ".gzkit/rules/chores.md",
+        ".gzkit/rules/skill-surface-sync.md"
+      ],
+      "result": "conflict",
+      "reason": "R01 remains: chores:25 and131-132 retain package canonical wording; sync:29-35 retains project edit authority. Full-check clarification changes no authoring or recovery direction.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 164,
+      "paths": [
+        ".gzkit/rules/chores.md",
+        ".gzkit/rules/token-block-discipline.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Chore proof logs do not purport to satisfy lock-exchange entry; workflows remain distinct.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 167,
+      "paths": [
+        ".gzkit/rules/chores.md",
+        "CLAUDE.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Chore scope remains surgical and Claude scope-limited. Required pre-sync repository check is distinguished from optional repeated verification, not waived.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 170,
+      "paths": [
+        ".gzkit/rules/cli.md",
+        ".gzkit/rules/cross-platform.md"
+      ],
+      "result": "no-conflict",
+      "reason": "CLI formatter and JSON path output can both use portable relative POSIX paths and UTF-8.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 173,
+      "paths": [
+        ".gzkit/rules/cli.md",
+        ".gzkit/rules/guardrail-feedback-prose.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Human stdout/JSON plus actionable stderr diagnostics are complementary output channels, not contradictory formats.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 176,
+      "paths": [
+        ".gzkit/rules/cli.md",
+        ".gzkit/rules/models.md"
+      ],
+      "result": "no-conflict",
+      "reason": "CLI early validation can use Pydantic models; exit-code handling does not dictate another model system.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 179,
+      "paths": [
+        ".gzkit/rules/cli.md",
+        ".gzkit/rules/security-sensitivity.md"
+      ],
+      "result": "no-conflict",
+      "reason": "CLI purpose documentation now explicitly permits GHI direct repair without brief, agreeing with security direct-fix declaration path; security review floor unchanged.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 182,
+      "paths": [
+        ".gzkit/rules/cli.md",
+        ".gzkit/rules/task-discovery.md"
+      ],
+      "result": "no-conflict",
+      "reason": "CLI direct repair documents purpose in GHI and cites it; mandatory Task trailer on src/tests still applies without OBPI initiation.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 185,
+      "paths": [
+        ".gzkit/rules/cli.md",
+        ".gzkit/rules/tool-skill-runbook-alignment.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Follow-up-only alternative removed. Both cli:83,91 and alignment:66 require skill in authoring patch or existing explicit waiver with rationale; GHI alone explicitly insufficient.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 194,
+      "paths": [
+        ".gzkit/rules/complexity-doctrine.md",
+        ".gzkit/rules/model-selection.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Model routing may nominate corpus candidates; corpus still requires operator witness, so cheap lookup is not approval.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 212,
+      "paths": [
+        ".gzkit/rules/complexity-thresholds.md",
+        ".gzkit/rules/model-selection.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Model tier cannot replace threshold authority; neither rule says it can.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 239,
+      "paths": [
+        ".gzkit/rules/cross-platform.md",
+        ".gzkit/rules/tool-skill-runbook-alignment.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Alignment preserves live output/verb contract observations and same-patch coupling; portable delivery paths remain required.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 245,
+      "paths": [
+        ".gzkit/rules/gate5-runbook-code-covenant.md",
+        ".gzkit/rules/model-selection.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Model choice does not supply attestation; covenant still requires operator evidence.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 260,
+      "paths": [
+        ".gzkit/rules/gh-cli.md",
+        ".gzkit/rules/model-selection.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Model guidance cannot replace prior-art lookup or authorize direct gh issue create outside skill.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 284,
+      "paths": [
+        ".gzkit/rules/guardrail-feedback-prose.md",
+        ".gzkit/rules/tool-skill-runbook-alignment.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Alignment fix changes authoring admission wording, not advisory output-moment judgment; per-surface guard prose witness remains compatible.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 287,
+      "paths": [
+        ".gzkit/rules/hexagonal-architecture.md",
+        ".gzkit/rules/model-selection.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Decision complexity selects model; it does not change port boundary architecture.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 302,
+      "paths": [
+        ".gzkit/rules/model-selection.md",
+        ".gzkit/rules/pythonic.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Pythonic code practices do not specify model tier; design complexity can select a higher tier.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 305,
+      "paths": [
+        ".gzkit/rules/model-selection.md",
+        ".gzkit/rules/skill-surface-sync.md"
+      ],
+      "result": "no-conflict",
+      "reason": "R21 repaired: model-selection:44-45 uses metadata.skill-version quoted as required by skill-surface-sync:20; routing policy unchanged.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 308,
+      "paths": [
+        ".gzkit/rules/model-selection.md",
+        ".gzkit/rules/token-block-discipline.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Subagent effort selection grants no independent permission to claim or surrender OBPI work.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 311,
+      "paths": [
+        ".gzkit/rules/model-selection.md",
+        "CLAUDE.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Claude high default is main-session tuning; model-selection subagent effort mapping is separately scoped. No identical decision with opposite required tier proven.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 320,
+      "paths": [
+        ".gzkit/rules/models.md",
+        ".gzkit/rules/tool-skill-runbook-alignment.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Pydantic is internal model policy; output form contract can render those models for operator use.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 347,
+      "paths": [
+        ".gzkit/rules/security-sensitivity.md",
+        ".gzkit/rules/tool-skill-runbook-alignment.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Security walkthrough remains additive; same-patch wielding skill/waiver obligation does not bypass security receipts or require briefless work to initiate OBPI.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 365,
+      "paths": [
+        ".gzkit/rules/task-discovery.md",
+        ".gzkit/rules/tool-skill-runbook-alignment.md"
+      ],
+      "result": "no-conflict",
+      "reason": "TASK provenance remains a separate obligation from new-verb skill coverage; neither GHI nor Task trailer substitutes for skill or waiver.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 368,
+      "paths": [
+        ".gzkit/rules/tests.md",
+        ".gzkit/rules/token-block-discipline.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Corrected gz test selector does not change TASK or lock lifecycle; token surrender still follows completion and proof requirements stay intact.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    },
+    {
+      "index": 371,
+      "paths": [
+        ".gzkit/rules/tests.md",
+        "CLAUDE.md"
+      ],
+      "result": "no-conflict",
+      "reason": "Unit-only default and explicit --bdd agree with handler test(bdd=False); both tiers still required for gz check. Claude optional-recheck tuning does not remove required TDD/gates.",
+      "review": "reevaluated against complete current changed files and baseline counterpart full reads"
+    }
+  ],
+  "remaining_conflicts": [
+    {
+      "id": "R01",
+      "indices": [
+        5,
+        161
+      ],
+      "disposition": "retained; unrelated BDD wording does not resolve source-authority/recovery ambiguity"
+    }
+  ],
+  "resolved_findings": [
+    {
+      "id": "R21",
+      "indices": [
+        14,
+        305
+      ]
+    },
+    {
+      "id": "R23",
+      "indices": [
+        146
+      ]
+    },
+    {
+      "id": "same-patch follow-up alternative",
+      "indices": [
+        185
+      ]
+    }
+  ],
+  "new_conflicts": [],
+  "limitations": [
+    "Pair review establishes no observed encounter frequency.",
+    "No rule/source edits or runtime/governance mutations executed by reviewer.",
+    "No new-conflict conclusion is limited to these affected pairs; unchanged baseline observations remain retained in baseline artifact."
+  ]
+}
