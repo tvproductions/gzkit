@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-09-18
 metadata:
-  skill-version: "1.3.1"
+  skill-version: "1.4.0"
 model: sonnet
 ---
 
@@ -21,8 +21,8 @@ This skill is a **synthesizer**, not a new analyzer. The gzkit surface
 already runs the analyses (chores, validators, ruff, ty, xenon, radon).
 The skill's job is to wield those tools, normalize their outputs, rank
 by impact, and produce one operator-facing report — so debt findings
-end up in GHIs, OBPI briefs, or chore runs instead of dying on a
-terminal scrollback.
+end up in chore runs, in-flight fixes, or at most one GHI instead of dying
+on a terminal scrollback.
 
 ## Position in the gzkit surface
 
@@ -43,13 +43,14 @@ terminal scrollback.
 /gz-tech-debt-review --scope adr ADR-0.1.0    # ADR-scoped paths
 /gz-tech-debt-review --scope obpi OBPI-0.1.0-01  # brief Allowed Paths
 /gz-tech-debt-review --scope path src/gzkit/commands  # explicit subtree
-/gz-tech-debt-review --draft-ghis             # also draft GHI bodies for High/Critical
+/gz-tech-debt-review --draft-ghis             # also draft the body for the one GHI candidate
 ```
 
 The first positional token after `--scope` selects scope mode. The
 `--draft-ghis` flag is opt-in: by default the skill diagnoses only.
-With the flag it drafts `gh issue create --label tech-debt` bodies for
-Critical and High findings the operator can route as a follow-up.
+With the flag it drafts the issue body for the single GHI candidate
+(§ GHI budget), which the operator routes through `/ghi-author` — never a
+direct `gh issue create`.
 
 ---
 
@@ -86,7 +87,7 @@ read.
 | `size-cap` | radon raw / `module-sloc-cap-radon` chore | Functions >50 LOC, modules >600 LOC, classes >300 LOC |
 | `complexity` | xenon / `complexity-reduction-xenon` chore | Cyclomatic complexity hot-spots above the configured band |
 | `lint` | `uv run ruff check .` | Unfixed ruff diagnostics (excluding cosmetic) |
-| `types` | `uvx ty check .` | Unresolved type errors, suppressed-but-still-firing `# type: ignore[code]` (the GHI #197 class) |
+| `types` | `uv run ty check .` | Unresolved type errors, suppressed-but-still-firing `# type: ignore[code]` (the GHI #197 class) |
 | `pythonic` | `gz-pythonic-pattern-detect` candidates report | Java-shaped Python (Strategy classes, Singletons, Visitor ladders) |
 | `tests` | coverage report + `gz validate --requirements` + `gz validate --behave-req-tags` | <40% coverage, **BEHAVIOR** REQs without `@covers`, heavy OBPIs without `@REQ-*` BDD tags. SUPPORT and STRUCTURAL-FENCE REQs carry no `@covers` test by proof channel (ADR-0.0.59) — never report their absence as debt |
 | `test-shape` | `uv run gz test-shape --json` | Tautological content-echo operations with proposed disposition; output/render assertions whose `# output-contract:` carve-out is undeclared. Advisory — the fail-closed growth gate is `gz validate --tautological-test-audit` (GHI #571) |
@@ -147,11 +148,11 @@ For each class, the canonical probe:
 | Class | Canonical command | Notes |
 |-------|-------------------|-------|
 | `size-cap` | `uv run radon raw -s <files>` | Filter to functions >50, modules >600, classes >300. |
-| `complexity` | `uv run xenon --max-absolute B --max-modules B --max-average A <subtree>` | Capture stderr; non-zero exit IS the signal. |
+| `complexity` | `uv run xenon --max-absolute C --max-modules C --max-average C <subtree>` | The band the pre-commit gate and the `complexity-reduction-xenon` chore enforce; a stricter band reports code the gate passes. Capture stderr; non-zero exit IS the signal. |
 | `lint` | `uv run ruff check <files> --output-format=json` | JSON for grouping. |
-| `types` | `uvx ty check <files>` | Capture stdout; cross-reference `tests/governance/test_type_ignore_syntax.py` for the suppression class. |
+| `types` | `uv run ty check <files>` | Capture stdout; cross-reference `tests/governance/test_type_ignore_syntax.py` for the suppression class. |
 | `pythonic` | `uv run gz chores run pythonic-design-pattern-detection` (only on `--scope all` or paths overlap; expensive) | Skip if scope is small and last run is <7 days old. |
-| `tests` | `uv run unittest-parallel -t . -s tests --buffer --coverage --coverage-source src/gzkit` then `uv run coverage report --include=<scope-glob>` plus `uv run gz validate --requirements` and `uv run gz validate --behave-req-tags` | Coverage delta + REQ gaps. **Do not wrap with `gz arb step`** — debt review is diagnostic, not attestation. ARB receipts with `exit_status=1` (the default coverage-report exit when no target met) pollute the corpus per AGENTS.md § Attestation anti-patterns. ARB wrapping is reserved for the `--draft-ghis` path where receipt IDs go into GHI bodies. |
+| `tests` | `uv run unittest-parallel -t . -s tests --buffer --coverage --coverage-source src/gzkit` then `uv run coverage report --include=<scope-glob>` plus `uv run gz validate --requirements` and `uv run gz validate --behave-req-tags` | Coverage delta + REQ gaps. **Do not wrap with `gz arb step`** — debt review is diagnostic, not attestation. ARB receipts with `exit_status=1` (the default coverage-report exit when no target met) pollute the receipt corpus. ARB wrapping is reserved for the `--draft-ghis` path, where receipt IDs go into the GHI body. |
 | `dead-code` | `uv run ruff check --select F401,F811,F841 <files>` plus a `vulture` pass if installed | Vulture is best-effort; ruff's the hard floor. |
 | `cli-drift` | `uv run gz cli audit` and `uv run gz validate --cli-alignment` | Both must exit 0 to clear the class. |
 | `doc-drift` | `uv run gz chores run doc-coverage` and `uv run mkdocs build --strict` | Strict build catches link rot. |
@@ -161,9 +162,9 @@ For each class, the canonical probe:
 | `governance` | `uv run gz validate --advisory-scorecard` | Promotable rules are flagged High. |
 | `evidence-integrity` | `uv run gz chores run evidence-integrity-audit` | |
 
-**Wrap probes that produce attestable output under ARB** so the report
-can cite receipts: `uv run gz arb step --name <class> -- <command>`.
-This is required when `--draft-ghis` is set, optional otherwise.
+**Wrap a probe under ARB only when `--draft-ghis` is set**, and only the probe
+behind the GHI candidate, so its body can cite a receipt:
+`uv run gz arb step --name <class> -- <command>`. Otherwise run probes bare.
 
 If a probe errors (tool not installed, scope empty, etc.), record
 "probe-error: <reason>" as a Medium finding under a `probe-health`
@@ -182,7 +183,7 @@ severity: <Critical|High|Medium|Low>
 location: <file>:<line> (or <file> for whole-file findings)
 evidence: <one or two lines of probe output, verbatim>
 recommendation: <fix shape — see § Recommendation discipline>
-route: <one of: in-flight | GHI | OBPI | chore | discard>
+route: <one of: in-flight | GHI | chore | discard>
 ```
 
 Save the full finding list to
@@ -194,7 +195,7 @@ The recommendation field names the **fix shape**, not the code.
 Diagnose, don't write the patch. Phrase as imperative:
 
 - *"Split `_render_table` (87 LOC) into `_format_rows` and `_emit_table`."*
-- *"Replace `# type: ignore[union-attr]` at status.py:412 with `# ty: ignore[unresolved-attribute]` per `.claude/rules/pythonic.md`."*
+- *"Replace `# type: ignore[union-attr]` at status.py:412 with `# ty: ignore[unresolved-attribute]` per `.gzkit/rules/pythonic.md`."*
 - *"Drop the `Strategy` class in `cli/parser_artifacts.py:64` to a module-level dispatch dict."*
 - *"Doc example at `docs/user/runbook.md:148` shows `gz status` output that drifted from current rendering — paste fresh output."*
 
@@ -222,15 +223,11 @@ A debt-review run produces at most **one** GHI recommendation, regardless
 of how many High/Critical findings surface. This is binding, not a
 heuristic.
 
-**Why.** A debt skill that emits 9 GHIs from one scan turns the skill
-into a GHI-spammer: the operator's queue floods with debt items the
-skill graded itself, the triage signal-to-noise ratio collapses, and
-the operator's tracking surface stops reflecting work-they-decided-to-do
-and starts reflecting work-the-skill-decided-was-important. That's the
-exact governance inversion the *MAKE LLM STOCHASTIC VIBES INERT* mantra
-defends against — the operator's typing budget and queue attention are
-the scarce resources, and a skill that converts them at 9× per run is
-exfiltrating attention, not preserving it.
+**Why.** A debt skill that emits 9 GHIs from one scan floods the operator's
+queue with items the skill graded itself: triage signal-to-noise collapses, and
+the tracking surface stops reflecting work-they-decided-to-do and starts
+reflecting work-the-skill-decided-was-important. The operator's queue attention
+is the scarce resource (*MAKE LLM STOCHASTIC VIBES INERT*).
 
 **How to pick the one GHI.** From the full finding set, choose the
 finding that:
@@ -300,9 +297,9 @@ the chore's CHORE.md>
 **Route:** `<route>` — <one-line rationale>
 ```
 
-If `--draft-ghis` is set, append a § *Draft GHI bodies* section with
-ready-to-paste `gh issue create --label tech-debt` bodies for every
-Critical and High finding routed to GHI.
+If `--draft-ghis` is set, append a § *Draft GHI body* section with the
+ready-to-file body for the single GHI candidate, shaped to the `ghi-author`
+template.
 
 ---
 
@@ -327,8 +324,7 @@ operator routes.
 
 ## Constraints
 
-- **Diagnose, do not patch.** Per the user's choice (option A on
-  recommendation style): name the fix shape, do not write the code.
+- **Diagnose, do not patch.** Name the fix shape, do not write the code.
   `gz-obpi-simplify` is the patching skill; this one is the surveying
   skill. The boundary is intentional.
 - **Wield existing tools.** Do not re-implement complexity scoring,
@@ -364,8 +360,7 @@ These thoughts mean STOP — you are about to ship a hollow review:
 ## Red flags
 
 - Report rendered without any line:column references — synthesis without evidence
-- More than one finding routed to `GHI` in a single run — the skill became a GHI-spammer; the one-per-run budget is binding (§ GHI budget)
-- Multiple findings routed to `GHI` because they "feel important" rather than because they meet all four selection criteria
+- More than one finding routed to `GHI` in a single run, or one routed there because it "feels important" rather than because it meets all four selection criteria (§ GHI budget)
 - No Critical findings ever surface — severity grade-up rule is not being applied
 - Report rendered before all probes completed — partial audits are not audits
 - Recommendations that read "review this" or "consider X" — diagnostic discipline broken
@@ -379,6 +374,6 @@ These thoughts mean STOP — you are about to ship a hollow review:
 | `gz-obpi-simplify` | Patching counterpart; runs after this skill identifies a cluster. |
 | `gz-pythonic-pattern-detect` | One probe source for the `pythonic` class. |
 | `gz-chore-runner` | Wields individual chores; this skill consumes their output. |
-| `ghi-author` | Drafts the GHI bodies when `--draft-ghis` is set. |
+| `ghi-author` | Files the one GHI candidate; `--draft-ghis` drafts its body to that skill's template. |
 | `gz-check` | Pre-merge gate; does not produce the cross-class debt report. |
-| `gz-plan` / `gz-design` | Where High/Critical clusters route when they need an ADR. |
+| `gz-plan` / `gz-design` | Where the operator opens an ADR if a debt cluster merits one; this skill never routes there. |
