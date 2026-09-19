@@ -6,7 +6,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-09-19
 metadata:
-  skill-version: "0.3.1"
+  skill-version: "0.3.2"
   govzero-framework-version: "v6"
   govzero_layer: "Layer 3 - File Sync"
 gz_command: complexity distill
@@ -34,7 +34,7 @@ Three triggers, any of which fires a distillation pass:
    biennial risks doctrine staleness.
 2. **Drift signal — advisor verdict-frequency drift > 25% from the
    baseline of the last distillation.** Minimum re-distillation interval
-   of 6-month to prevent thrashing. The drift comparison is against the
+   of six months to prevent thrashing. The drift comparison is against the
    distilled-characteristics baseline, not the raw measurement
    distributions.
 3. **Operator judgment.** The operator may also trigger ad-hoc when a
