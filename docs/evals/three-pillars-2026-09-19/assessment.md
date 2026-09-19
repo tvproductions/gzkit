@@ -28,6 +28,50 @@ justify presenting it as a remedy for context reliability.
 
 ## Recovery and plan actually followed
 
+### Scope reconciliation after operator correction, 2026-09-19
+
+Rechecked at `7b6b48378`. The operator rejected the later substitution of a
+general rule audit for this assignment: "are you focused on the work or just
+doing random work in gzkit now?" The original conversation was reread, including
+the four-step execution proposal and the subsequent authorization to write GHIs
+and do the work. That agreement, rather than the resumed overhaul handoff,
+defines this work's completion boundary.
+
+| Original commissioned outcome | Pillar and diagnosis | Implementation / disposition | Direct validation and remaining limit |
+|---|---|---|---|
+| Repair lineage accuracy | 2: ordering relationships; 3: incomplete discovery reported as complete | `5c777c965`, GHIs #870/#1038: ancestry ordering and actual truncation; keep the repair | Shortcut/merge/boundary/cycle tests and CLI/session-start consumers. Only declared lineage is covered; no claim that the agent reads it or discovers undeclared obligations. |
+| Complete bounded skill-body auditing | 1: instruction load and unfinished procedures; supporting 3: audit success masking unfinished material | `5c777c965`, GHI #1037: marker detection, fixed body ceilings and actionable output; keep the repair | Scaffold, completed-body, fence and threshold controls. This is a supporting authoring check, not a remedy for semantic dependency discovery. |
+| Compare a reduced pipeline against the existing instructions | 1: usable context; 2: retaining decision-critical relationships | Comparison completed at `3dc6f6130`; both conditions passed 6/6; candidate deliberately not adopted | Raw answers and independent scoring retained. One prompted sample per condition establishes no comparative benefit. Neither pipeline shortening nor general comprehension improvement is demonstrated. |
+| Observe the already-landed Stage 4 change during a normal run | 1/2: procedural burden and repeated invalidation; relevant to 3 because narrowing depends on discovered inputs | Existing change `6b440453e`; GHI #1028 remains open for production observation, #1029 for the dependency-sensitive currency design | Fresh census: 16,949 ledger rows; zero relevant events after the treatment cutoff. No observed production outcome exists. A synthetic OBPI cannot fulfill this condition. |
+
+Current independent code review found these repaired production paths unchanged
+since `5c777c965` and no concrete unmet requirement within the bounded repairs.
+The six existing test modules listed in `code-review.md` were rerun together:
+**84 tests passed in 2.647s**. This is fresh focused regression evidence, not a
+new full-suite run and not a model-behavior result.
+
+The rule-pair audit at `7757851b6`/`7b6b48378` is adjacent instruction-consistency
+work. It is not an additional runtime remedy for the three pillars and must not
+be used to claim closure of this assignment's discovery question. Further
+general audits are not the next action selected by this assessment.
+
+**The central pillar-three gap remains:** no evaluated mechanism establishes
+complete discovery of semantically affected consumers. The six-case exercise
+explicitly cues the indirect-consumer problem; it cannot measure unsuspected
+dependency discovery. This is a limit of that experiment, not evidence that a
+particular unimplemented retrieval mechanism would solve it. The production
+scope-discovery residual already belongs to ADR-0.37.0. Proof currency must stay
+conservative under #1029 until a ruled design demonstrates its dependency
+boundary and fallback. Neither ownership reference is implementation, and neither
+authorizes initiating those OBPIs from this assessment.
+
+The defensible outcome is therefore **completed bounded repairs and appraisal,
+with general discovery reliability unresolved**, not "the three pillars are
+fixed." No additional runtime patch is justified by the current reviewed
+counterexamples. New implementation must name the failing obligation and its
+specific acceptance evidence before it is selected; another green audit or a
+larger instruction set cannot stand in for that evidence.
+
 The initiating request was assessment only. The operator subsequently authorized
 GHIs and implementation. Recovery used the original task's recorded exchanges,
 the supplied transcript, committed review packet, issues, current producer and
@@ -58,6 +102,16 @@ corrections are recorded in the insight stream.
 | 1: usable context | Having tokens available does not establish successful use of their evidence. Retrieval, retention and integration are different operations. | File bytes do not measure comprehension; a larger window or shorter prompt does not guarantee correctness. | Measure decisions against known obligations; preserve authority and conditions when reducing instruction load. |
 | 2: relationships | A model can have the right facts and still miss their ordering, conditions or relationships. | Sparse attention has not been identified as the cause in the models used here. | Encode important relationships in shared authority and test their consumers; evaluate conflicting and inherited obligations. |
 | 3: discovery and currency | Relevant retrieval is not evidence of complete applicable scope; stale but plausible examples can mislead. | A search result, graph reach, or green local test does not certify all affected consumers were found. | Trace writers through storage/contracts to readers, preserve declared lineage, bind proof to current inputs, and state the limits of discovery. |
+
+The transcript overstates pillar three when it says there is "nothing to search
+for" without a direct code reference. Its database example still supplies table
+and column identities, SQL, migrations and change history as discovery routes.
+The difficult claim is sufficient impact coverage across those representations,
+not the impossibility of searching. A passing writer test can coexist with a
+wrong report because the two checks concern different meanings of the same
+stored field. gzkit has the analogous boundary between canon, skills, runtime,
+tests and evidence; declared identifiers help traverse it but cannot certify
+that every semantic relationship has been represented.
 
 Dense attention has quadratic interactions in sequence length, but that is not a
 claim that every generated token recomputes the entire prefix: caching changes
