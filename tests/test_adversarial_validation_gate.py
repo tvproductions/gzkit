@@ -771,7 +771,12 @@ class TestAdversaryRecoveryOutputContract(_ReceiptFixture):
                 error = json.loads(output.getvalue())["error"]
                 self.assertIn("operator ruling", error)
                 self.assertIn("independent revalidation", error)
-                self.assertIn("adversarial-review", error)
+                # The Step-4b dispatch is the plugin's writable task path (operator
+                # ruling 2026-09-18, GHI #1028): `adversarial-review` is read-only
+                # and loses the review object in transport, so a recovery message
+                # that prescribes it routes the agent onto a refused import.
+                self.assertIn("task --write", error)
+                self.assertNotIn("adversarial-review", error)
                 self.assertIn("Do NOT relabel", error)
 
     def test_missing_and_failed_evidence_prescribe_the_plugin_review(self) -> None:
@@ -795,7 +800,8 @@ class TestAdversaryRecoveryOutputContract(_ReceiptFixture):
                 error = json.loads(output.getvalue())["error"]
                 self.assertIn(cause, error)
                 self.assertIn("gz-obpi-pipeline", error)
-                self.assertIn("adversarial-review", error)
+                self.assertIn("task --write", error)
+                self.assertNotIn("adversarial-review", error)
                 self.assertIn("gz arb step", error)
                 self.assertIn("--adversary-receipt", error)
                 self.assertNotIn("codex exec", error)

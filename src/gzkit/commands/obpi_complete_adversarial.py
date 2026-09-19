@@ -82,7 +82,8 @@ REFUTATION_VERDICTS: frozenset[str] = frozenset({"refuted", "refuted-with-caveat
 # portable CLI configuration, and raw `codex exec` is not the permitted route.
 _REVIEW_RECOVERY = (
     "Follow gz-obpi-pipeline Step 4b: independently review the bounded acceptance "
-    "claim through the installed Codex plugin's adversarial-review command. "
+    "claim through the installed Codex plugin's writable task path "
+    "(codex-companion.mjs task --write, in a disposable checkout). "
     "Wrap that plugin invocation with uv run gz arb step --name codexadversary -- "
     "and cite the successful run_id with --adversary-receipt. "
 )

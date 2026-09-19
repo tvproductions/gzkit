@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-09-18
 metadata:
-  skill-version: "6.58.0"
+  skill-version: "6.59.0"
 model: sonnet
 ---
 
@@ -58,7 +58,7 @@ Persona doctrine reference: ADR-0.0.11-persona-driven-agent-identity-frames (Val
 THE PIPELINE IS NOT COMPLETE UNTIL STAGE 5 FINISHES.
 ```
 
-Every stage flows into the next. No "stop and summarize" between stages. No pause except the Stage 4 human attestation in Normal mode — and that pause comes only **after** Step 4b (the independent adversary) has run and its verdict is on the table. Soliciting attestation with Step 4b skipped is not a valid pause; it is a gate bypass. If you have not reached the end of Stage 5, you are not done — and violating the spirit of this rule is violating the rule.
+Every stage flows into the next. No "stop and summarize" between stages. No pause except the Stage 4 human attestation in Normal mode — and that pause comes only **after** Step 4b (the independent adversary) has run and its verdict is on the table. Soliciting attestation with Step 4b skipped is not a valid pause; it is a gate bypass. If you have not reached the end of Stage 5, you are not done — and violating the spirit of this rule is violating the rule. One other stop is legitimate: when Stage 4's round bound is reached or a round repeats the prior round's root, record `gz obpi block` and put the decision to the operator (§ Stage 4 — The review window, the bound, and the exit). That is the pipeline working, not a premature summary.
 
 ### Rationalization Prevention
 
@@ -738,13 +738,150 @@ No subagent dispatch, no worktree isolation, no parallel execution.
 
 ### Stage 4: Present Evidence
 
-**Mode determines behavior at this stage.**
+Stage 4 is three steps and one bounded loop:
+
+```
+4a author the packet → 4a-v replay the packet → 4b independent review → pass condition met?
+   ├─ yes → present 4a + 4a-v + 4b together → await attestation
+   └─ no  → ONE repair round (§ The review window) → re-enter at 4a
+```
+
+You do not get to skip 4b because your own evidence looks green. Your evidence
+looking green is *why* 4b exists. You are not the exception. The sequence admits
+no size, lane, or kind exception. An earlier turn or equivalent successful execution
+does not invalidate review by itself; the acceptance consumer decides applicability.
+
+#### The pass condition — stated once
+
+**One authority.** Stage 4 passes when this command reports ready, and only then may
+attestation be solicited:
+
+```bash
+uv run gz obpi acceptance {OBPI-SLUG} status --stage stage4 --json
+```
+
+Everything under this heading explains that verdict. None of it is a second test to
+satisfy separately, and the rest of Stage 4 does not restate it. If this prose and the
+command disagree, the command governs and the disagreement is a defect to report.
+
+**Binding rule:** No OBPI reaches attestation without an independent adversary
+review applicable to its current proof claims, with explicit closure of required
+findings. A Stage 4 that solicits attestation while required Step 4b approval or
+closure is missing violates the gate. A turn boundary alone requires no repeat. There is no
+OBPI too small, too authoring-only, or too obviously-correct to exempt — those
+are the precise descriptors that precede a skipped check.
+
+**Step 4b closes on independent confirmation of the corrected state (operator ruling 2026-09-05).** Operator verbatim: "I think we want that as a matter of course moving forward. I don't want 12 iterations like with OBPI-0.35.0-04, but I don't think we should attest without the fixes creating a clean adversarial (4b) review."
+
+The prior 2026-09-03 rule said: "A round returning no critical and no high IN-SCOPE findings converges the gate." This ruling supersedes that severity-only stopping condition: do not solicit completion attestation while any finding against the agreed OBPI requirements remains unresolved, or while a claimed fix has only the implementing agent's confirmation. A non-refuting verdict on the earlier state does not independently verify later repairs, including repairs to evidence or missing witnesses.
+
+**Readiness is derived; historical verdicts are immutable (GHI #985).** Run:
+
+```bash
+uv run gz obpi acceptance {OBPI-SLUG} status --stage stage4 --json
+```
+
+Readiness requires current valid proof, accepted spec/quality/adversarial reviews
+for every obligation, and independently verified closure of all mapped findings.
+The ledger-backed single-driver declaration retains its documented Stage-2
+spec/quality exception; proof and Step-4b closure remain mandatory.
+An unchanged obligation cannot lose its finding because an auxiliary audit was
+removed. An edit confined to recognized history sections does not invalidate executable proof.
+The earlier GHI #964 standing-line convention is superseded as a gate: preserve
+existing historical words, but never edit a Markdown verdict to change readiness.
+`gz obpi precomplete` and completion consume the durable records.
+
+**Clean means no unresolved in-scope findings, not absence of all limitations.** Accepted residual risks and future ADR-wide obligations remain disclosed separately; they are not failed present-tense OBPI requirements. Filing a GHI alone does not discharge an unmet requirement. A newly proposed boundary change requires operator ruling and independent revalidation; the implementing agent cannot move a finding outside scope to clear the gate. Before soliciting attestation, the retained independent review set must supply applicable approval and explicit closure on the corrected proof claims. Raw verdict wording alone neither grants approval nor reopens a closed obligation. Scope-boundary disclosures may remain, provided the adversary distinguishes them from unresolved findings.
+
+Do not redispatch merely to remove harmless caveat wording after independent
+closure is established. If a follow-up exposes the same root cause again, use
+the design-escalation rule below. The runtime checks proof identities, current
+input digests, and explicit closure links. Whether an oracle or control fulfills
+the requirement remains the independent reviewer's judgment.
+
+**Act on mapped findings before attestation.** A current counterexample or missing
+required proof returns its obligation to repair, regardless of verdict or severity.
+After repair, execute proof and import independent closure. Historical refutations
+and auxiliary commentary with no unmet obligation do not require another repair or
+review. Retain their provenance and present the applicable review set alongside
+Step 4a; never relabel a required gap as auxiliary to clear acceptance.
+
+**The gate consumes current closure (GHI #985).** A resolution string or new
+caller-supplied verdict cannot discharge an open finding. Repair its obligation,
+execute current proof, and import independent closure before soliciting
+attestation. Historical refutations do not block a correctly closed current
+state merely because their original words remain in the brief.
+
+#### The review window, the bound, and the exit
+
+**Know what stales a review before you touch anything.** Proof and review currency is
+ONE digest over the whole audited population — `src/`, `tests/`, `features/`, `data/`,
+`scripts/`, the canonical rules and schemas, the workflows and config files — plus the
+brief's contract (`acceptance_execution.input_digest`). It is not per-obligation. Any
+edit under those paths, however small and however unrelated, stales EVERY proof and
+EVERY imported review for this OBPI at once. Edits confined to the brief's recognized
+history sections and its Change Log do not move it. This is why an unplanned edit
+between 4a and 4b costs a full round, and why the order below is binding.
+
+**A round reviews a frozen subject.** Before dispatching 4b — first round or follow-up:
+
+1. Finish every edit. Nothing is left to tidy afterwards.
+2. Run `acceptance prove` for every obligation (a repair stales them all; see above).
+3. Refresh the packet (`gz obpi present-evidence`) and replay it (Step 4a-v).
+4. Record `git status --short` and the reviewed revision in the dispatch prompt.
+5. Dispatch. From dispatch until the review is imported, edit nothing under the
+   audited population: not the source, not a test, not a data file, not a rule, and
+   do not `gz git-sync` in other work. An edit inside the window spends the round.
+
+**When a round returns findings, run ONE repair round.** Collect all of them first.
+Repair them as one batch (§ Repair the whole obligation, below). Then repeat steps 1–5
+once, dispatching the focused follow-up described below — never one dispatch per
+finding, and never a fresh unrestricted review.
+
+After fixing a finding, obtain a focused independent Step 4b follow-up. Supply the prior findings, the changed artifacts and evidence, and the unchanged scope/threat-model boundary. The adversary must verify each claimed closure and check the affected requirements for regressions; it must not restart an unrestricted search for stronger guarantees. Record the actual new verdict and receipt, with each prior finding's disposition and demonstrated evidence. Preserve earlier rounds as history. Never request a preferred verdict or relabel `CORROBORATED-WITH-CAVEATS` as clean yourself.
+
+**Repair the whole obligation before redispatch (GHI #984).** Carry the accepted
+finding back through the existing implementation and verification stages. Trace
+the relevant producers, consumers, fresh/retry paths, early returns and cleanup;
+use the states needed by the requirement, not an unlimited neighboring audit.
+A retry retaining its journal does not prove it restores durability before
+witnessing. A rejection does not prove which guard caused it. Recheck affected
+controls when a repair adds another guard that could mask them. Preserve the
+complete finding and the execution record beside its closure, rather than
+replacing it with a new explanatory claim.
+
+For an operator-initiated OBPI, authorized corrections continue within its
+approved scope; the initiation rule is not a new permission checkpoint for
+each finding. A real requirement/allowlist/threat-model amendment still needs
+the existing operator ruling. Repeated roots trigger the design escalation
+below, not a round cap or a waived defect. Auxiliary diagnostic errors may be
+removed from the acceptance argument when no requirement depends on them;
+retain their history and every still-relevant finding. If required proof does
+depend on the diagnostic, repair and verify it before using its result.
+
+**The loop is bounded, and it has an exit.** Two focused follow-up rounds after the
+first Step 4b round is the limit — three rounds in all (operator ruling 2026-09-18,
+verbatim: "N=2"). When the limit is reached with a mapped finding still open, or when a round repeats the
+prior round's root (next paragraph), stop dispatching:
+
+```bash
+uv run gz obpi block {OBPI-SLUG} \
+  --reason "<which findings remain open, and after how many rounds>" \
+  --next-action "<the design or scope decision the operator owes>"
+```
+
+Then present the open findings, what each round changed, and one recommendation. This
+is the second legitimate stop in the pipeline (§ The Iron Law), not a premature summary:
+another round without a decision is the failure, and recording that a human is needed
+is the honest act (§ Blocked on the Operator).
+
+**When a round repeats the prior round's ROOT, stop dispatching and escalate the DESIGN (operator ruling 2026-09-03).** Compare each round's `Weakest point` against the last. If it names the same root cause at a different surface, another fix cycle will surface it again one layer deeper: stop, and put the design decision to the operator (§ Behavior Rules — Always #9). Measured: rounds 2, 3 and 4 each patched a different surfacing of one root cause — provenance inferred from a witness's self-consistent claims rather than chained to prior ledger state — at roughly 3h per cycle; the operator ruled the design in a single exchange and it closed in one pass. Round 4's fix also INTRODUCED round 5's critical, which is the signature of patching a surfacing rather than the design.
 
 #### Normal Mode — HUMAN GATE
 
 **Trigger:** "Present OBPI Acceptance Ceremony" task becomes next pending. Mark `in_progress`.
 
-**Narrator dispatch** (per § Persona Dispatch). Stage 4 evidence composition is the narrator's function — "evidence-to-decision," "operator-value-framing," "every word load-bearing." Dispatch a `narrator` subagent with the populated template fields (Value Narrative input, REQ coverage table from Stage 3, ARB receipts from quality gates) and instruct it to render the final attestation surface per the template below. Record the dispatch via `SubagentDispatchRecord` (`role="Narrator"`) so the eventual `gz validate --pipeline-review-receipts` (ADR-pool.obpi-pipeline-dispatch-attestation T5) can attest the surface was produced by the named persona, not by the orchestrator inhabiting a register it isn't framed for.
+**Narrator dispatch** (per § Persona Dispatch). Stage 4 evidence composition is the narrator's function — "evidence-to-decision," "operator-value-framing," "every word load-bearing." Dispatch a `narrator` subagent with the populated template fields (Value Narrative input, REQ coverage table from Stage 3, ARB receipts from quality gates) and instruct it to render the final attestation surface per the template below. The narrator dispatch has no recording channel yet (§ Persona Dispatch, GHI #846); do not improvise one through `SubagentDispatchRecord`, which accepts Stage-2 roles only.
 
 **Compose from inspected evidence (GHI #984).** Give the narrator the actual
 artifact paths and observed results, including limits, not only a success
@@ -872,21 +1009,6 @@ The **Proof location** column is proof-channel specific, not always `@covers`. F
 
 **Every field above MUST be populated.** Do not skip the evidence table. Do not skip REQ coverage. Do not skip files created/modified. The human needs all of this to make an attestation decision. **This template is Step 4a — the agent's presentation. It is necessary but not sufficient: an agent authoring its own evidence is the GHI #643 fabrication surface. Step 4b is mandatory before attestation.**
 
-> ### Required independent approval before attestation
->
-> Before soliciting attestation, verify that Step 4b supplied applicable imported
-> independent approval and explicit closure for every required finding. Dispatch
-> missing required review now. An earlier turn or equivalent successful execution
-> does not invalidate review by itself; the acceptance consumer decides applicability.
-> The sequence admits no size, lane, or kind exception:
->
-> ```
-> Step 4a (author evidence)  →  Step 4b (dispatch adversary, get verdict)  →  present BOTH  →  await attestation
-> ```
->
-> You do not get to skip 4b because your own evidence looks green. Your evidence
-> looking green is *why* 4b exists. You are not the exception.
-
 #### Step 4a-v — Re-run the packet's own transcripts (GHI #942)
 
 Write the composed packet to `.gzkit/evidence/<OBPI-ID>.stage4a.md`, then run it back
@@ -948,13 +1070,6 @@ command piped without `pipefail`. Those judgments stay with Step 4b and the oper
 
 #### Step 4b — Independent Adversarial Validation (GHI #643) — MANDATORY, NON-SKIPPABLE
 
-**Binding rule:** No OBPI reaches attestation without an independent adversary
-review applicable to its current proof claims, with explicit closure of required
-findings. A Stage 4 that solicits attestation while required Step 4b approval or
-closure is missing violates the gate. A turn boundary alone requires no repeat. There is no
-OBPI too small, too authoring-only, or too obviously-correct to exempt — those
-are the precise descriptors that precede a skipped check.
-
 **WHY THIS GATE EXISTS AT ALL — and why the second model is CODEX specifically.**
 
 GHI #643: an agent presented Stage-4 evidence claiming the OBPI's central deliverable was
@@ -998,7 +1113,7 @@ Refutation remains essential, but as a METHOD:
 > **Method:** adversarially attempt to falsify it.
 > **Boundary:** the brief, requirements, and threat model.
 > **Pass condition:** positive behavior demonstrated and independent closure of findings
-> against the agreed requirements and their required proof, per the September 5 rule below.
+> against the agreed requirements and their required proof, per § The pass condition above.
 
 That gives the operator EVIDENCE FOR AN ATTESTATION DECISION, instead of an
 unbounded argument.
@@ -1078,7 +1193,7 @@ feature still worked.
 
 **Tier order (binding). You MUST attempt tier 1 and may only drop a tier after establishing its precondition:**
 
-1. **Codex** — REQUIRED FIRST: a different-vendor model shares none of this agent's blind spots. **Dispatch through the purpose-built `/codex:adversarial-review` command**, not the general rescue agent — it carries the canned adversarial (challenge-the-approach) prompt and manages dispatch + result retrieval for you. Pass `--wait` to run it in the **foreground** (a single blocking call that returns Codex's verdict inline — no polling; use `timeout: 600000`, reviews run ~7–8 min), or `--background` to detach and then read progress via the **`/codex:status <task-id>`** slash command. Do NOT hand-roll a `node codex-companion.mjs status` poll loop — that is the low-level plumbing, not the published surface (operator-flagged, 2026-07-15). The general `codex:rescue` / `codex:codex-rescue` agent is an acceptable fallback dispatch path when you need a bespoke confirmation prompt. Before dropping to tier 2, you MUST check availability — run `codex:setup` (or the companion `setup --json`) and read `ready`. If `ready: true`, Codex is available and tier 2/3 are **forbidden**.
+1. **Codex** — REQUIRED FIRST: a different-vendor model shares none of this agent's blind spots. **Dispatch through the Codex plugin's writable `task` path, exactly as shown in § THE REVIEWER REPLAYS IN A DISPOSABLE WRITABLE CHECKOUT above** — it is the only plugin subcommand that can replay a mutation, and the only one that returns the reviewer's output verbatim, which the acceptance importer requires. `/codex:adversarial-review` remains a mandated tier-1 surface (`data/mandated_tier1_dispatch.json`) and its receipt proves the tier, but it is read-only and renders a summary, so a review object authored through it does not survive transport (observed 2026-09-10: import refused, `exit 3`). Do not use it for Step 4b. Run the dispatch in the **foreground** (a single blocking call — no polling; use `timeout: 600000`, reviews run ~7–8 min); if you detach it, read progress via the **`/codex:status <task-id>`** slash command. Do NOT hand-roll a `node codex-companion.mjs status` poll loop — that is the low-level plumbing, not the published surface (operator-flagged, 2026-07-15). The general `codex:rescue` / `codex:codex-rescue` agent is an acceptable fallback dispatch path when you need a bespoke confirmation prompt. Before dropping to tier 2, you MUST check availability — run `codex:setup` (or the companion `setup --json`) and read `ready`. If `ready: true`, Codex is available and tier 2/3 are **forbidden**.
 2. **Independent Claude subagent** — permitted ONLY when the tier-1 availability check returned `ready: false` (Codex not installed / not authenticated / unreachable). Dispatch a fresh `general-purpose` agent (separate context) with the same confirmation-framed prompt. Using this tier without a checked, genuine tier-1 unavailability is a Step 4b bypass of the same class as skipping 4b entirely (GHI #678).
 3. **Human-as-adversary** — degraded floor: if neither fires, say so explicitly ("adversarial validation ran in degraded human-only mode") so the operator knows the independent check did not run.
 
@@ -1108,8 +1223,8 @@ legacy tier flags cannot override the imported judgment.
 > ### 🛑 THE PLUGIN IS THE ONLY TIER-1 DISPATCH SURFACE (operator directive, 2026-08-25)
 >
 > **`codex exec` is FORBIDDEN as a tier-1 invocation.** Dispatch through OpenAI's Codex
-> plugin for Claude Code — `/codex:adversarial-review`, or its runtime
-> `codex-companion.mjs adversarial-review` — and nothing else. Wrapping the raw binary in
+> plugin for Claude Code — its runtime `codex-companion.mjs`, on the `task --write` path
+> shown above for Step 4b — and nothing else. Wrapping the raw binary in
 > `gz arb step` is NOT an acceptable substitute, and this section used to show exactly
 > that, which is how the violation happened.
 >
@@ -1134,7 +1249,7 @@ resolves**. Wrap the PLUGIN invocation in ARB and cite the receipt:
 ```bash
 uv run gz arb step --name codexadversary --max-output-chars -1 -- \
   node "$HOME/.claude/plugins/cache/openai-codex/codex/<ver>/scripts/codex-companion.mjs" \
-  adversarial-review --wait --scope working-tree '<focus text>'
+  task --write --cwd <checkout> --prompt-file <prompt.md>
 # → arb step name=codexadversary exit_status=0 receipt=.../arb-step-codexadversary-<hash>.json
 uv run gz obpi complete <OBPI> ... --adversary-tier 1 \
   --adversary-receipt arb-step-codexadversary-<hash>
@@ -1231,70 +1346,6 @@ truthful refutations, so the next round receives the same outstanding obligation
 > pasted evidence is what tells them apart. Record the outcome through `gz obpi complete`'s adversary flags (`--adversary-verdict`, `--adversary`, `--adversary-tier`, `--adversary-receipt` when the run was ARB-wrapped, and `--adversary-job-id` when the runtime supplies one) — the ledger event is the durable record, not a dispatch marker.
 
 **Bound the claim BEFORE the first round, or the gate cannot converge (operator ruling 2026-09-03).** An adversary instructed to REFUTE will escalate the attacker one notch each round, so an ABSOLUTE claim ("no X can occur without Y") is unrefutable-in-bounded-time by construction. For any OBPI whose subject is a trust chain, provenance, or a tamper-evidence property, the brief MUST carry a `## Threat Model` section BEFORE Step 4b is first dispatched, naming what an attacker may do and what is an accepted residual — and the dispatch prompt MUST state that boundary and forbid the adversary from reporting an out-of-scope attack as a finding. Measured on OBPI-0.35.0-04: five rounds, 53 minutes of adversary compute across a 12.5-hour wall clock (7%); the rest was fix cycles. Rounds 4 and 5 spent ~9 hours hardening attacks whose reproduction required appending arbitrary rows to `.gzkit/ledger.jsonl` — strictly inside a residual the operator had already accepted for `.gzkit/ownership/`, the same directory and the same access. `docs/governance/trust-doctrine.md` covers AGENT trust-chain poisoning and declares no filesystem threat model, so nothing bounded the adversary and the agent never asked whether the attacker was in scope.
-
-**Step 4b closes on independent confirmation of the corrected state (operator ruling 2026-09-05).** Operator verbatim: "I think we want that as a matter of course moving forward. I don't want 12 iterations like with OBPI-0.35.0-04, but I don't think we should attest without the fixes creating a clean adversarial (4b) review."
-
-The prior 2026-09-03 rule said: "A round returning no critical and no high IN-SCOPE findings converges the gate." This ruling supersedes that severity-only stopping condition: do not solicit completion attestation while any finding against the agreed OBPI requirements remains unresolved, or while a claimed fix has only the implementing agent's confirmation. A non-refuting verdict on the earlier state does not independently verify later repairs, including repairs to evidence or missing witnesses.
-
-After fixing a finding, obtain a focused independent Step 4b follow-up. Supply the prior findings, the changed artifacts and evidence, and the unchanged scope/threat-model boundary. The adversary must verify each claimed closure and check the affected requirements for regressions; it must not restart an unrestricted search for stronger guarantees. Record the actual new verdict and receipt, with each prior finding's disposition and demonstrated evidence. Preserve earlier rounds as history. Never request a preferred verdict or relabel `CORROBORATED-WITH-CAVEATS` as clean yourself.
-
-**Repair the whole obligation before redispatch (GHI #984).** Carry the accepted
-finding back through the existing implementation and verification stages. Trace
-the relevant producers, consumers, fresh/retry paths, early returns and cleanup;
-use the states needed by the requirement, not an unlimited neighboring audit.
-A retry retaining its journal does not prove it restores durability before
-witnessing. A rejection does not prove which guard caused it. Recheck affected
-controls when a repair adds another guard that could mask them. Preserve the
-complete finding and the execution record beside its closure, rather than
-replacing it with a new explanatory claim.
-
-For an operator-initiated OBPI, authorized corrections continue within its
-approved scope; the initiation rule is not a new permission checkpoint for
-each finding. A real requirement/allowlist/threat-model amendment still needs
-the existing operator ruling. Repeated roots trigger the design escalation
-below, not a round cap or a waived defect. Auxiliary diagnostic errors may be
-removed from the acceptance argument when no requirement depends on them;
-retain their history and every still-relevant finding. If required proof does
-depend on the diagnostic, repair and verify it before using its result.
-
-**Readiness is derived; historical verdicts are immutable (GHI #985).** Run:
-
-```bash
-uv run gz obpi acceptance {OBPI-SLUG} status --stage stage4 --json
-```
-
-Readiness requires current valid proof, accepted spec/quality/adversarial reviews
-for every obligation, and independently verified closure of all mapped findings.
-The ledger-backed single-driver declaration retains its documented Stage-2
-spec/quality exception; proof and Step-4b closure remain mandatory.
-An unchanged obligation cannot lose its finding because an auxiliary audit was
-removed. An edit confined to recognized history sections does not invalidate executable proof.
-The earlier GHI #964 standing-line convention is superseded as a gate: preserve
-existing historical words, but never edit a Markdown verdict to change readiness.
-`gz obpi precomplete` and completion consume the durable records.
-
-**Clean means no unresolved in-scope findings, not absence of all limitations.** Accepted residual risks and future ADR-wide obligations remain disclosed separately; they are not failed present-tense OBPI requirements. Filing a GHI alone does not discharge an unmet requirement. A newly proposed boundary change requires operator ruling and independent revalidation; the implementing agent cannot move a finding outside scope to clear the gate. Before soliciting attestation, the retained independent review set must supply applicable approval and explicit closure on the corrected proof claims. Raw verdict wording alone neither grants approval nor reopens a closed obligation. Scope-boundary disclosures may remain, provided the adversary distinguishes them from unresolved findings.
-
-Do not redispatch merely to remove harmless caveat wording after independent
-closure is established. If a follow-up exposes the same root cause again, use
-the design-escalation rule below. The runtime checks proof identities, current
-input digests, and explicit closure links. Whether an oracle or control fulfills
-the requirement remains the independent reviewer's judgment.
-
-**When a round repeats the prior round's ROOT, stop dispatching and escalate the DESIGN (operator ruling 2026-09-03).** Compare each round's `Weakest point` against the last. If it names the same root cause at a different surface, another fix cycle will surface it again one layer deeper: stop, and put the design decision to the operator (§ Behavior Rules — Always #9). Measured: rounds 2, 3 and 4 each patched a different surfacing of one root cause — provenance inferred from a witness's self-consistent claims rather than chained to prior ledger state — at roughly 3h per cycle; the operator ruled the design in a single exchange and it closed in one pass. Round 4's fix also INTRODUCED round 5's critical, which is the signature of patching a surfacing rather than the design.
-
-**Act on mapped findings before attestation.** A current counterexample or missing
-required proof returns its obligation to repair, regardless of verdict or severity.
-After repair, execute proof and import independent closure. Historical refutations
-and auxiliary commentary with no unmet obligation do not require another repair or
-review. Retain their provenance and present the applicable review set alongside
-Step 4a; never relabel a required gap as auxiliary to clear acceptance.
-
-**The gate consumes current closure (GHI #985).** A resolution string or new
-caller-supplied verdict cannot discharge an open finding. Repair its obligation,
-execute current proof, and import independent closure before soliciting
-attestation. Historical refutations do not block a correctly closed current
-state merely because their original words remain in the brief.
 
 Wait for the human to respond "Accepted", "Completed", "attest completed", or equivalent. Do NOT proceed until attestation is received.
 
