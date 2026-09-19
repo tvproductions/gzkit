@@ -5,7 +5,7 @@ description: Gate-5 audit templates and procedure for ADR verification. GovZero 
 category: adr-audit
 compatibility: GovZero v6 framework; provides audit procedure for COMPLETED→VALIDATED ADR transition
 metadata:
-  skill-version: "6.14.1"
+  skill-version: "6.15.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -26,7 +26,7 @@ Execute reproducible ADR verification to move from COMPLETED → VALIDATED.
 
 ## Persona
 
-**Active driver:** `pipeline-orchestrator` — read `.gzkit/personas/pipeline-orchestrator.md` and adopt its behavioral identity before executing this skill. The audit is a sequenced ceremony (verify proof → reproduce → demonstrate value); step-discipline and ceremony-completion are not rules to follow — they are who you are while running it.
+**Active driver:** `pipeline-orchestrator` — read `.gzkit/personas/pipeline-orchestrator.md` and adopt its behavioral identity before executing this skill. The audit is a sequenced ceremony (verify proof → reproduce → run the fidelity gate); step-discipline and ceremony-completion are not rules to follow — they are who you are while running it.
 
 ## Persona Dispatch
 
@@ -40,7 +40,7 @@ The audit is read-only judgment work — a single driver scoring its own finding
 
 Personas not dispatched: `implementer` (no code written in this ceremony — if audit reveals a defect requiring code, file a GHI via `/ghi-author` and route to a fresh OBPI brief, never spawn an implementer inside the audit).
 
-The mechanical attestation that these dispatches occurred was scoped by `ADR-pool.obpi-pipeline-dispatch-attestation` Target Scopes #5/#6. That ADR is **Superseded** (`absorbed_into: ADR-0.0.73`, itself Validated 9/9), so there is no promotion pending and nothing arrives from one — the absorption delivered an absorption-marker audit, and that ADR's own § Notes place the receipt machinery (ledger events, bail-to-inline gates, validator scopes) in "a future feature-kind ADR work surface" that is not yet authored (GHI #846). This skill body declares the T1 contract and **this ceremony has no artifact channel** — its dispatches remain unattested and undisclosed (GHI #770's named residual). Treat the mandate as binding on you, not as something a gate will catch.
+**This ceremony has no artifact channel for these dispatches** — they are unattested and undisclosed (GHI #770's named residual), and the receipt machinery that would record them is not yet authored (GHI #846; `ADR-pool.obpi-pipeline-dispatch-attestation` is Superseded into ADR-0.0.73, which delivered no receipts). Treat the mandate as binding on you, not as something a gate will catch.
 
 Persona doctrine reference: ADR-0.0.11-persona-driven-agent-identity-frames (Validated).
 
@@ -52,17 +52,15 @@ Persona doctrine reference: ADR-0.0.11-persona-driven-agent-identity-frames (Val
 | "Tests pass and coverage is met, the audit is done" | That's verification, not fidelity. Step 3 (Fidelity Gate) runs the ADR's thesis against the running system, not just its tests. |
 | "The closeout ceremony already covered this" | Audit and closeout invoke the same bound fidelity gate; running one satisfies the other's fidelity step. Mechanical checks (Step 1-2) are still independent. |
 | "Ledger entries exist from a previous audit, I can skip re-verification" | Check staleness. Entries older than 7 days or predating code changes require fresh verification. |
-| "This is a Foundation ADR, the audit can be lighter" | Foundation ADRs still require value demonstration. The feature must be shown working. |
+| "This is a Foundation ADR, the audit can be lighter" | Foundation ADRs run the same fidelity gate. The thesis is held against the running system. |
 
 ### Red Flags
 
-- AUDIT.md contains only mechanical checkmarks without a Feature Demonstration section
+- AUDIT.md contains only mechanical checkmarks without a Fidelity Gate section
 - Agent marks ADR as VALIDATED without running `uv run gz adr report` to confirm lifecycle change
 - Audit proofs directory is empty or contains only pass/fail text without actual command output
-- Value demonstration uses generic language that could apply to any ADR
+- Fidelity assertions so generic they could apply to any ADR
 - Validation receipt emitted before all shortfalls are resolved
-
-**Two-phase workflow:** See [AGENTS.md](../../../AGENTS.md) § Two-Phase ADR Workflow
 
 ---
 
@@ -72,9 +70,9 @@ This is a **Layer 2** tool — it consumes proof from the ledger rather than re-
 
 **Trust Chain:**
 
-1. **Layer 1 tools** (`gz-obpi-sync`, `gz adr audit-check`) run tests, check coverage, validate evidence
-2. **Layer 1 writes proof** to `logs/obpi-audit.jsonl` with status entries
-3. **This tool reads proof** — if all briefs show PASS/Completed, skip re-verification
+1. **Layer 1 tools** (`gz-obpi-sync`, the OBPI pipeline) run tests, check coverage, validate evidence
+2. **Layer 1 writes proof** to the ledger as OBPI completion and receipt events
+3. **This tool reads proof** (`gz adr audit-check`) — if all briefs show PASS/Completed, skip re-verification
 4. **Gate 5 attests** to the presence of proof, not re-execution
 
 **Why trust the ledger?**
@@ -109,11 +107,11 @@ In these cases, run `uv run gz audit <adr-id>` first to regenerate ledger proof.
 Each Bash invocation starts a fresh shell, so do NOT export shell
 variables across calls. Inline the full ADR directory path in every
 command so each Bash call is self-contained. Substitute the real ADR
-directory (e.g. `docs/design/adr/adr-0.0.x/ADR-0.0.16-foo-slug`) for the
+directory (e.g. `docs/design/adr/foundation/ADR-0.0.16-foo-slug`) for the
 placeholder below.
 
 ```bash
-mkdir -p docs/design/adr/adr-x.y.x/ADR-x.y.z-slug/audit/proofs
+mkdir -p docs/design/adr/<kind>/ADR-x.y.z-slug/audit/proofs
 ```
 
 - Read ADR prose, extract all claims
@@ -132,7 +130,7 @@ uv run gz adr audit-check <adr-id>
 **If ledger is complete (all briefs PASS):**
 
 - Skip to Step 3 (Fidelity Gate) — no re-verification needed
-- Trust Layer 1 proof from obpi-audit
+- Trust the Layer 1 proof the ledger carries
 - Record "Ledger proof verified" in audit notes
 
 **If ledger is incomplete or missing:**
@@ -148,7 +146,7 @@ opposite remediation. Diagnose before editing:
 - **(b) Coverage-shape drift** — a test exists but pins an obsolete output
   string or asserts a shape the REQ did not mandate. Remediation: re-derive the
   assertion from the OBPI brief's REQ semantics per `.gzkit/rules/tests.md`
-  § "Tests assert semantics, not strings" (Invariant 6f, canonical home).
+  § Red-Green-Refactor (**Tests assert semantics, not strings**).
   **Backfilling a cosmetic `@covers` decorator without re-deriving the
   assertion is the forbidden anti-pattern** — it silences `gz adr audit-check`
   while leaving the semantic gap intact.
@@ -160,14 +158,12 @@ entries, then return to Step 2.
 
 If you need to regenerate proof (staleness, suspicion, etc.), run the validation commands:
 
-Each Bash invocation starts a fresh shell — inline the full ADR
-directory path in every command (substitute the real path for the
-placeholder below):
+Inline the full ADR directory path, as in Step 1:
 
 ```bash
-uv run -m unittest -q > docs/design/adr/adr-x.y.x/ADR-x.y.z-slug/audit/proofs/unittest.txt 2>&1
-uv run mkdocs build -q > docs/design/adr/adr-x.y.x/ADR-x.y.z-slug/audit/proofs/mkdocs.txt 2>&1
-uv run gz closeout <adr-id> --dry-run > docs/design/adr/adr-x.y.x/ADR-x.y.z-slug/audit/proofs/gates.txt 2>&1
+uv run gz test > docs/design/adr/<kind>/ADR-x.y.z-slug/audit/proofs/unittest.txt 2>&1
+uv run mkdocs build --strict > docs/design/adr/<kind>/ADR-x.y.z-slug/audit/proofs/mkdocs.txt 2>&1
+uv run gz closeout <adr-id> --dry-run > docs/design/adr/<kind>/ADR-x.y.z-slug/audit/proofs/gates.txt 2>&1
 ```
 
 Record ✓/✗/⚠ outcomes for each check.
@@ -176,7 +172,7 @@ Record ✓/✗/⚠ outcomes for each check.
 
 **An audit that only verifies mechanical checks (tests pass, coverage met) without holding the ADR's thesis against the running system is incomplete.**
 
-Before ADR-0.0.73 this step was prose ("Demonstrate Value") — agent-written narrative graded by nothing, the exact theater the verification-layer audit exists to kill. It is now a **bound, runnable gate**: the audit ceremony invokes the SAME standalone fidelity gate the closeout ceremony invokes (one gate, two consumers — `gzkit.fidelity.assert_fidelity_for_ceremony`). `gz audit` runs it automatically; you do not narrate it.
+This step is a **bound, runnable gate**, not prose: the audit ceremony invokes the SAME standalone fidelity gate the closeout ceremony invokes (one gate, two consumers — `gzkit.fidelity.assert_fidelity_for_ceremony`). `gz audit` runs it automatically; you do not narrate it.
 
 **What the gate does:**
 
@@ -207,7 +203,7 @@ Review for:
 
 - Incomplete implementations (claimed features not shipped)
 - Misalignments (code ≠ docs ≠ tests)
-- Missing value demonstration (feature never shown working)
+- Missing or failing fidelity assertions (the thesis never held against the running system)
 - Unexplained anomalies
 
 ### 6. Remediate
@@ -224,8 +220,8 @@ Implement fixes, re-validate, update `AUDIT.md`.
 
 When all shortfalls resolved:
 
-- Sign attestation in `AUDIT.md`: agent signs (human already attested at OBPI completion)
-- Update ADR: `Status: Validated`
+- Complete `AUDIT.md`; the operator's acceptance in Step 8 is the attestation — the agent does not sign for them
+- The ADR's lifecycle moves through the Step 8 receipt, never by hand-editing its status
 
 ### 8. Emit Validation Receipt (agent-relayed via audit-begin/audit-end)
 
@@ -249,7 +245,7 @@ the audit ceremony as a distinct operator moment. Steps:
    runs, every linked OBPI is `attested_completed` in the ledger).
    The audit ceremony is a distinct operator moment — accepting the
    audit's verification of the integrated ADR (ledger proof complete,
-   value demonstration ran, no shortfalls remain) — and wants its
+   fidelity gate ran, no shortfalls remain) — and wants its
    own phrasing so the ledger's `attestation_text` field is
    self-documenting. The verbal ack IS the Gate-5 human-attestation
    event; the agent relays it into the ledger receipt.
@@ -257,7 +253,7 @@ the audit ceremony as a distinct operator moment. Steps:
 
    ```bash
    uv run gz adr emit-receipt <adr-id> --event validated \
-     --attestor "<Operator Name>" \
+     --attestor "g0" \
      --evidence-json '{"gate":5,"tests_passed":true,"tests_count":...,
                        "scope":"<adr-id>","date":"<YYYY-MM-DD>",
                        "attestation_text":"<operator verbatim ack> — <agent enrichment>"}'
@@ -272,16 +268,13 @@ the audit ceremony as a distinct operator moment. Steps:
    would let a second emit succeed without a fresh operator
    invocation, defeating the co-presence proof.
 
-5. **Verify lifecycle.** `uv run gz adr report <adr-id>` — confirm
-   the `Lifecycle` column shows `Validated` before declaring success.
-
 **Rules:**
 
 - **Audit fails → no receipt.** Only emit after all shortfalls are
   resolved.
-- **Attestor field is the operator's name** (per the operator-PII
-  rule in `CLAUDE.md` § Local Agent Rules — never their personal
-  email). Do not use `agent:<model-id>` — `validated`/`attested`/
+- **Attestor field is `g0`** — never the operator's real name and never
+  their personal email (`AGENTS.md` § Execution Rules, Operator PII). Do
+  not use `agent:<model-id>` — `validated`/`attested`/
   `accepted` are human-attestation events and the ledger receipt
   records the operator on whose behalf the agent is relaying.
 - **Marker hygiene.** Always pair `audit-begin` with `audit-end`.
@@ -292,12 +285,6 @@ the audit ceremony as a distinct operator moment. Steps:
   entry-point.
 - **Idempotent:** Running twice produces two ledger entries (audit
   trail preserved).
-- **Forward note (GHI #354):** the taxonomy split between an
-  agent-emittable `audit-passed` receipt (the derived audit-pass fact,
-  headless-safe) and the operator-typed `validated` Gate-5 receipt is
-  tracked in GHI #354. The audit-begin/audit-end pair is the
-  closed sub-scope of #354 that unblocks `/gz-adr-audit`; the
-  per-event taxonomy split remains open for that GHI to resolve.
 
 ### 9. Verify Lifecycle Update
 
@@ -332,14 +319,14 @@ report success to the operator until the report command confirms the change.
 | **Ledger check (JSON)** | `uv run gz adr audit-check <adr-id> --json` | L2 |
 | ADR lifecycle summary | `uv run gz adr status <adr-id> --json` | L1 |
 | Unit tests | `uv run gz test` | L1 |
-| Docs build | `uv run mkdocs build -q` | L1 |
+| Docs build | `uv run mkdocs build --strict` | L1 |
 | Governance | `uv run gz cli audit` | L1 |
 | Config paths | `uv run gz check-config-paths` | L1 |
 | Heavy gates | `uv run gz closeout <adr-id> --dry-run` | L1 |
 | OBPI reconcile | `uv run gz audit <adr-id>` | L1+L2 |
 | Coverage discovery | `uv run gz covers <adr-id>` | L1 |
 | **Open audit ceremony** | `uv run gz adr audit-begin <adr-id>` — writes per-ADR co-presence marker. | L1 |
-| **Emit receipt** | `uv run gz adr emit-receipt <adr-id> --event validated --attestor "<Operator Name>" --evidence-json '{...,"attestation_text":"<operator verbatim ack>"}'` after operator's verbal `accept audit` / `verify audit` (NOT OBPI-closeout `attest completed`). | L2 |
+| **Emit receipt** | `uv run gz adr emit-receipt <adr-id> --event validated --attestor "g0" --evidence-json '{...,"attestation_text":"<operator verbatim ack>"}'` after operator's verbal `accept audit` / `verify audit` (NOT OBPI-closeout `attest completed`). | L2 |
 | **Close audit ceremony** | `uv run gz adr audit-end <adr-id>` — removes marker. | L1 |
 
 **Layer key:** L1 = runs verification, L2 = reads ledger proof
@@ -366,19 +353,19 @@ report success to the operator until the report command confirms the change.
 
 - [ ] Audit plan created
 - [ ] All checks executed with proofs
-- [ ] **Value demonstrated** — ADR capabilities shown working with live output
+- [ ] **Fidelity gate passed** — the ADR's assertions ran against the running system
 - [ ] No unresolved ✗ failures
 - [ ] Code matches documentation
 - [ ] Examples are executable
 - [ ] Validation receipt emitted to ledger
-- [ ] Attestation signed (agent signs audit; human attested at OBPI completion)
+- [ ] Operator's audit acceptance relayed verbatim in the receipt
 - [ ] **Lifecycle verified** — `uv run gz adr report <adr-id>` shows Validated
 
 ---
 
 ## Failure Modes
 
-- **Mechanical-only audit** — tests pass and coverage met but the feature is never demonstrated working. The human cannot assess value from a checklist of green checkmarks alone.
+- **Mechanical-only audit** — tests pass and coverage met but the ADR's thesis is never held against the running system. The human cannot assess value from a checklist of green checkmarks alone.
 - Audits drift from template structure
 - No proof artifacts captured
 - Shortfalls not remediated before marking VALIDATED

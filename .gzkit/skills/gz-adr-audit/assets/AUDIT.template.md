@@ -8,31 +8,13 @@
 | Audit Date | {{AUDIT_DATE}} |
 | Auditor(s) | {{AUDITORS}} |
 
-## Feature Demonstration (Step 3 — MANDATORY)
+## Fidelity Gate (Step 3 — MANDATORY)
 
-**What does this ADR deliver?** Summarize the capabilities in 3-5 bullets, then demonstrate each.
+`uv run gz adr fidelity {{ADR_ID}}` — one row per assertion in the ADR's `## Fidelity Assertions` block.
 
-### Capability 1: (name)
-
-```bash
-$ (command that demonstrates this capability)
-(actual output)
-```
-
-**Why it matters:** (1-2 sentences on the value delivered)
-
-### Capability 2: (name)
-
-```bash
-$ (command)
-(output)
-```
-
-**Why it matters:** (explanation)
-
-### Value Summary
-
-(2-3 sentences: what the operator can do now that they couldn't before)
+| Claim | Command | Expected exit | Observed exit | Result |
+|-------|---------|---------------|---------------|--------|
+| (claim) | `(command)` | (n) | (n) | ✓/✗ |
 
 ---
 
@@ -89,4 +71,4 @@ Document any shortcomings or misimplementations found:
 
 I/we attest that ADR {{ADR_ID}} is implemented as intended, evidence is reproducible, and no blocking discrepancies remain.
 
-Signed: _<human names & date>_
+Accepted: _g0 (operator's verbatim acceptance is in the `validated` receipt), <date>_
