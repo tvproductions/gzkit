@@ -109,3 +109,36 @@ proof-freshness gate — control-surface-skill-rule-reachability
 
 PASS: every proof postdates the surfaces it audits.
 ```
+## 2026-09-19T06:15:19-05:00
+- Status: FAIL
+- Chore: control-surface-skill-rule-reachability
+- Title: Control Surface Audit — Skill/Rule Reachability Matrix (Pass B)
+- Lane: lite
+- Version: 1.1.0
+- Criteria Results:
+  - [FAIL] `uv run python scripts/check_proof_freshness.py control-surface-skill-rule-reachability` => rc=3 (0.16s) -- exit 3 != 0
+
+```text
+[uv run python scripts/check_proof_freshness.py control-surface-skill-rule-reachability] stdout:
+proof-freshness gate — control-surface-skill-rule-reachability
+  audited surfaces:  .gzkit/rules, .gzkit/skills
+  surface last moved: 2026-09-19
+  ghi-cross-reference.md       2026-08-09  STALE
+  reachability-matrix.md       2026-08-09  STALE
+  skill-inventory.md           2026-08-09  STALE
+  summary.md                   2026-08-09  STALE
+[uv run python scripts/check_proof_freshness.py control-surface-skill-rule-reachability] stderr:
+POLICY BREACH:
+  .gzkit/chores/control-surface-skill-rule-reachability/proofs/ghi-cross-reference.md was last committed 2026-08-09, before its audited surface last moved (2026-09-19).
+    Why: this chore's acceptance previously gated on `test -f`, which passes forever once a report exists and cannot see that the evidence now describes a surface that has changed.
+    Fix: re-run the control-surface-skill-rule-reachability audit and commit refreshed proofs. Touching the file without redoing the analysis restores the green-by-construction gate this replaced.
+  .gzkit/chores/control-surface-skill-rule-reachability/proofs/reachability-matrix.md was last committed 2026-08-09, before its audited surface last moved (2026-09-19).
+    Why: this chore's acceptance previously gated on `test -f`, which passes forever once a report exists and cannot see that the evidence now describes a surface that has changed.
+    Fix: re-run the control-surface-skill-rule-reachability audit and commit refreshed proofs. Touching the file without redoing the analysis restores the green-by-construction gate this replaced.
+  .gzkit/chores/control-surface-skill-rule-reachability/proofs/skill-inventory.md was last committed 2026-08-09, before its audited surface last moved (2026-09-19).
+    Why: this chore's acceptance previously gated on `test -f`, which passes forever once a report exists and cannot see that the evidence now describes a surface that has changed.
+    Fix: re-run the control-surface-skill-rule-reachability audit and commit refreshed proofs. Touching the file without redoing the analysis restores the green-by-construction gate this replaced.
+  .gzkit/chores/control-surface-skill-rule-reachability/proofs/summary.md was last committed 2026-08-09, before its audited surface last moved (2026-09-19).
+    Why: this chore's acceptance previously gated on `test -f`, which passes forever once a report exists and cannot see that the evidence now describes a surface that has changed.
+    Fix: re-run the control-surface-skill-rule-reachability audit and commit refreshed proofs. Touching the file without redoing the analysis restores the green-by-construction gate this replaced.
+```

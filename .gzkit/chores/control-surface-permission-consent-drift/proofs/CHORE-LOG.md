@@ -74,3 +74,24 @@ proof-freshness gate — control-surface-permission-consent-drift
 
 PASS: every proof postdates the surfaces it audits.
 ```
+## 2026-09-19T06:15:19-05:00
+- Status: FAIL
+- Chore: control-surface-permission-consent-drift
+- Title: Control Surface Audit — Rule Prose vs. Permission Standing Consent (Pass D)
+- Lane: lite
+- Version: 1.1.0
+- Criteria Results:
+  - [FAIL] `uv run python scripts/check_proof_freshness.py control-surface-permission-consent-drift` => rc=3 (0.11s) -- exit 3 != 0
+
+```text
+[uv run python scripts/check_proof_freshness.py control-surface-permission-consent-drift] stdout:
+scan-interval gate — control-surface-permission-consent-drift
+  maximum age:  30d
+  scan record:  .gzkit/chores/control-surface-permission-consent-drift/proofs/summary.md
+  last scan:    2026-08-09 (40d ago)
+[uv run python scripts/check_proof_freshness.py control-surface-permission-consent-drift] stderr:
+POLICY BREACH:
+  control-surface-permission-consent-drift last scanned 2026-08-09, 40d ago, exceeding its 30d interval.
+    Why: this chore's subject moves where no commit records it, so only its scan observes that; its other criteria report green for as long as nobody looks, and re-running them is not looking.
+    Fix: perform the scan its CHORE.md describes, writing its scan record, then run `uv run gz chores run control-surface-permission-consent-drift` and commit both.
+```

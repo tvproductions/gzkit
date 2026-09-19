@@ -78,6 +78,8 @@ Each row names its proof. Commits are on `main`.
 | Delivery defects, 2026-09-18 | Claude double delivery of nested files removed (#1021); adopter template gate rows (#1022); `src` citations of the deleted rule (#1024); serial unittest retired everywhere (#856) | handoff `20260918T112540Z` |
 | Per-turn load proof, 2026-09-18 | Claude per-turn load measured before and after | `proofs/baseline-2026-09-17.txt`, `proofs/post-trim-2026-09-18.txt` |
 | Skills and small rules, pass two, 2026-09-19 | 22 skills read end to end (21 changed); 50 skills and the rules swept mechanically for known defect classes and dead paths (8 skills, 4 rules changed). **A correctness pass, not a size pass**: contradictions, stale pointers, retired commands, steps that initiated OBPI work | handoffs `20260919T073719Z`, `20260919T085029Z`, `20260919T100023Z` |
+| Program record, range and skill standard, 2026-09-19 | this record; root `AGENTS.md` destination stated as a range; rule `skill-authoring.md` 0.1.0 (scorecard rows 94–97); `instructions-files-diet` 3.4.0 widened to skill bodies, `skill-authoring-quality` 2.2.0 governed by the rule, `frontier-model-card-currency` 1.4.0 reaching skill wording | `945db8431`, `626bd1e97`, `d279d7ebf`, `a8c1ed428` |
+| Load re-measured, 2026-09-19 | per-turn flat since 2026-09-18; on-edit split by consumer now that Claude no longer imports nested files | `.gzkit/chores/instructions-files-diet/proofs/load-2026-09-19.txt` |
 | `src` remainders of pass two, 2026-09-19 | runtime citations of retired rule numbers (#1035); attestor fill-in tokens (#1031); chat-silence hook trigger (#1033) | `4b576497d`, `e4f9e4dc5`, `c1201c766` |
 
 ## What is owed
@@ -103,13 +105,20 @@ Ordered by what the target implies, not by ease.
    current skill version, after the next operator-initiated OBPI is measured against
    GHI #1028.
 4. **Skill review, as authoring standard and as chores** — § Skill review below.
-5. **Two unproduced measurements.** Per-turn and on-edit loads re-measured after #1021
-   (the 2026-09-18 on-edit figures still include the double delivery); and a logged
-   `uv run gz chores run instructions-files-diet` after pass two (its last logged run is
-   2026-09-18).
-6. **The five `control-surface-*` audit chores** (rule conflicts, skill/rule reachability,
-   rule-vs-check drift, permission-consent drift, validator reachability) were not run
-   during the overhaul. They are the standing coherence check on exactly these surfaces.
+5. **Measurements — produced 2026-09-19.** Loads re-measured
+   (`proofs/load-2026-09-19.txt`); `uv run gz chores run instructions-files-diet` logged
+   PASS after pass two. One cost recorded there: the new skill-authoring rule adds about
+   4.5 KB to what each consumer loads on a skill edit.
+6. **The five `control-surface-*` audits are stale, and running them is reading work.**
+   `uv run gz chores run` on each of the five exited 1 on 2026-09-19, all on the same
+   criterion: `scripts/check_proof_freshness.py` exit 3 — their audit proofs date from
+   2026-09-12, before the overhaul rewrote the surfaces they audit. The verb only checks
+   criteria; the chore is performed by doing its workflow (the rule-pair conflict matrix,
+   the skill/rule reachability matrix, rule-vs-check parity, permission-consent drift,
+   validator reachability) and writing fresh proofs. All five are propose-rung: each
+   ends in recommendations for the operator, not edits. They are the standing coherence
+   check on exactly these surfaces and have not been performed against the rewritten
+   ones.
 7. **Fifty skills swept and not read.** Mechanical sweeps cannot find an internal
    contradiction; 21 of the 22 skills read in full had at least one.
 8. **Carried and unruled:** whether `patch-release.md` carries the Foundation-skip rule;
@@ -119,7 +128,7 @@ Ordered by what the target implies, not by ease.
    REQ-0.0.27-04-10.
 
 Open GHIs from this effort: read them live with
-`gh issue list --state open --search "921 OR 943 OR 1019 OR 1023 OR 1028 OR 1029 OR 1030 OR 1032 OR 1034 OR 1036"`.
+`gh issue list --state open --search "921 OR 943 OR 1019 OR 1023 OR 1028 OR 1029 OR 1030 OR 1032 OR 1034 OR 1036 OR 1037"`.
 
 ## Skill review
 
@@ -143,6 +152,10 @@ propose-rule-land mode above.
 
 **Owed, in dependency order:**
 
+*Items 1 to 3 landed 2026-09-19 (`d279d7ebf`, `a8c1ed428`), and item 4 with them by
+operator ruling; the tooling gap they expose is GHI #1037. What follows is kept as the
+record of what was owed and why.*
+
 1. **An authoring standard, as a rule** loading on `.gzkit/skills/**`. It states how a
    skill is written: procedure stays and dated incident narrative goes to a rationale
    doc (parsimony); wording follows `opus-tuning.md` / `gpt-tuning.md` and cites them
@@ -157,7 +170,12 @@ propose-rule-land mode above.
    `governingRule`, `remediation.details` and `nonAuthority` are amended to say so. No new
    chore is admitted.
 4. **`frontier-model-card-currency`** brings model-tuned skill wording into its declared
-   reach, so a card rotation puts that wording up for re-sourcing. Not yet ruled.
+   reach, so a card rotation puts that wording up for re-sourcing.
+
+**Tooling does not yet serve the standard (GHI #1037).** `gz skill new` scaffolds
+"1. Step 1 / 2. Step 2 / 3. Step 3", the stub the conformance chore fails, and
+`gz skill audit`, the only skill check inside `gz check`, reads no body. Until that is
+repaired the standard is held only by the chores, which run when the operator draws them.
 
 Thirteen skill bodies exceed the existing chore's own "Oversized — must decompose"
 threshold; `gz-obpi-pipeline` is the largest by a wide margin and loads in full on every

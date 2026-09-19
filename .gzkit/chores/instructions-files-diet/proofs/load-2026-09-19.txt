@@ -1,0 +1,30 @@
+instructions-files-diet load re-measurement — 2026-09-19 (HEAD a8c1ed428; after GHI #1021, diet pass two and rule skill-authoring.md 0.1.0)
+A dated record. Re-derive; never cite these figures as authority. Compare: proofs/post-trim-2026-09-18.txt.
+Method: the same read-only scratch script as 2026-09-18 (measure_load2.py). One change in how it is READ: since GHI #1021
+(1c2dac56a) Claude no longer imports nested AGENTS.md, so the 2026-09-18 on-edit figures, which add the nested chain and the
+.claude/rules mirrors together, describe no consumer. Below they are split: Claude loads the mirrors, Codex the nested chain.
+
+Per-turn load, Claude Code (user-invoked skills excluded)
+                                          2026-09-18   2026-09-19
+  AGENTS.md                                  19872        19872    (range: 15000 ideal, 20000 ceiling; 128 B under the ceiling)
+  CLAUDE.md                                   2014         2014
+  project skill descriptions (60 listed)     13304        13342    (+38 B from pass-two description edits)
+  total repo-controlled per-turn             35190        35228
+
+Session start
+  scripts/session_orientation.py stdout      22571        20539
+
+On first edit under a path                   Claude (.claude/rules mirrors)   Codex (nested AGENTS.md chain)
+  tests/**.py                                       30682                           16212
+  src/gzkit/commands/**.py                          44633                           35584
+  src/gzkit/governance/**.py                        36291                           27282
+  docs/design/adr/**/obpis/*                        27379                           27299
+  .gzkit/skills/**                                  20969                           20808
+  .gzkit/rules/**                                    9644                            9636
+  .gzkit/chores/**                                   6688                            6788
+  docs/governance/**                                 7264                            7459
+
+Reading: per-turn load is flat since 2026-09-18. The .gzkit/skills/** on-edit load ROSE by about 4.5 KB per consumer today:
+the new rule skill-authoring.md (4534 B mirror) loads on every skill edit. That is the cost of declaring the standard.
+The heaviest on-edit path is src/gzkit/commands/** for both consumers; pythonic.md, cli.md and hexagonal-architecture.md
+are its largest members.

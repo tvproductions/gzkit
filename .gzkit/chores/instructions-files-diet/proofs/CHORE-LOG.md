@@ -4463,3 +4463,539 @@ The overhaul this chore has been driving under GHI #921 now has one record:
 Operator, verbatim: "all agents.md and rules must eventually be cms rendered. skills should be reviewed as a part of a chore (new or existing), where parsimony and new model alignment are part of the review." On skill review: "its both an authoring AND chore scope". On where skill-body parsimony lives, by selection: "Widen instructions-files-diet (Recommended)".
 
 Not yet done: the declaration itself (`registry.json` `governingRule`, `remediation.details`, `nonAuthority`, and CHORE.md) still names only the instruction files. Amending it is its own before/after for the operator. No `gz chores run` has been logged since pass two landed; the last PASS block above is 2026-09-18.
+## 2026-09-19T06:15:18-05:00
+- Status: PASS
+- Chore: instructions-files-diet
+- Title: Instructions, Memory Files & Skill Bodies Diet (Progressive Disclosure)
+- Lane: lite
+- Version: 3.4.0
+- Criteria Results:
+  - [PASS] `uv run gz validate --invariant-coherence` => rc=0 (0.24s) -- exit 0 == 0
+  - [PASS] `uv run gz validate --advisory-scorecard` => rc=0 (0.24s) -- exit 0 == 0
+  - [PASS] `uv run gz validate --documents --surfaces` => rc=0 (0.76s) -- exit 0 == 0
+  - [PASS] `uv run gz lint` => rc=0 (0.78s) -- exit 0 == 0
+  - [PASS] `uv run mkdocs build --strict` => rc=0 (4.43s) -- exit 0 == 0
+  - [PASS] `uv run gz test` => rc=0 (96.45s) -- exit 0 == 0
+
+```text
+[uv run gz validate --invariant-coherence] stdout:
+Validated: invariant_coherence
+
+✓ All validations passed (1 scopes).
+[uv run gz validate --advisory-scorecard] stdout:
+Validated: advisory_scorecard
+
+✓ All validations passed (1 scopes).
+[uv run gz validate --documents --surfaces] stdout:
+Validated: surfaces, documents
+
+✓ All validations passed (2 scopes).
+[uv run gz lint] stdout:
+Running linters...
+All checks passed!
+
+ADR path contract check passed.
+No Path(__file__).parents[N] violations found.
+Lint passed.
+[uv run mkdocs build --strict] stderr:
+[31m │  ⚠  Warning from the Material for MkDocs team[0m
+[31m │[0m
+[31m │[0m  MkDocs 2.0, the underlying framework of Material for MkDocs,
+[31m │[0m  will introduce backward-incompatible changes, including:
+[31m │[0m
+[31m │  × [0mAll plugins will stop working – the plugin system has been removed
+[31m │  × [0mAll theme overrides will break – the theming system has been rewritten
+[31m │  × [0mNo migration path exists – existing projects cannot be upgraded
+[31m │  × [0mClosed contribution model – community members can't report bugs
+[31m │  × [0mCurrently unlicensed – unsuitable for production use
+[31m │[0m
+[31m │[0m  Our full analysis:
+[31m │[0m
+[31m │[0m  [4mhttps://squidfunk.github.io/mkdocs-material/blog/2026/02/18/mkdocs-2.0/[0m
+[0m
+INFO    -  Cleaning site directory
+INFO    -  Building documentation to directory: /Users/jeff/Documents/Code/gzkit/site
+INFO    -  The following pages exist in the docs directory, but are not included in the "nav" configuration:
+  - AGENTS.md
+  - config/gz-cookiecutter-python-stack.md
+  - drafts/claude-code-inventory.md
+  - drafts/claude-code-vs-codex-control-surface-parity.md
+  - drafts/ddd-palantir-ontology-design-note.md
+  - evals/ghi-closure-980-evaluation.md
+  - evals/gzkit-campaign-architecture-review-2026-08-17.md
+  - evals/gzkit-hexagonal-architecture-review-2026-08-17.md
+  - evals/gzkit_campaign_architecture_eval_prompt.md
+  - evals/gzkit_hexagonal_architecture_eval_prompt.md
+  - evals/obpi-review-984-evaluation.md
+  - evals/obpi-review-985-evaluation.md
+  - examples/presentations/index.md
+  - examples/presentations/complete-series-script.md
+  - examples/presentations/part1-script.md
+  - examples/presentations/part2-script.md
+  - examples/presentations/part3-script.md
+  - examples/presentations/part4-script.md
+  - examples/presentations/part5-script.md
+  - examples/presentations/part6-script.md
+  - examples/templates/req-template.md
+  - flighttest/README.md
+  - flighttest/flight-card-template.md
+  - flighttest/manifest.md
+  - flighttest/templates/campaign-instance.md
+  - flighttest/templates/flight-log.md
+  - governance/AGENTS.md
+  - governance/acceptance-obligations.md
+  - governance/advisory-rules-audit.md
+  - governance/agent-contract-rationale.md
+  - governance/agent-control-surface-fidelity-doctrine.md
+  - governance/agent-control-surface-rendering-substrate.md
+  - governance/agents-md-doctrine.md
+  - governance/ai-governance-brief.md
+  - governance/ai-governance-research-gaps.md
+  - governance/ai-governance-research-literature.md
+  - governance/ai-governance-research-practice.md
+  - governance/ai-governance-research-regulation.md
+  - governance/ai-governance-verification.md
+  - governance/ai-governance.md
+  - governance/ai-governance.provenance.md
+  - governance/airlock-in-constellation-2026-06-30.md
+  - governance/airlock-in-hatch-2026-07-07.md
+  - governance/arb-middleware.md
+  - governance/attested-req-subject-retirement.md
+  - governance/behavior-rules.md
+  - governance/build-to-1.0-campaign-2026-06-10.md
+  - governance/build-to-1.0-campaign-2026-06-20.md
+  - governance/build-to-1.0-campaign-2026-06-30.md
+  - governance/build-to-1.0-campaign-2026-07-18.md
+  - governance/build-to-1.0-campaign-2026-08-16.md
+  - governance/capability-control-conversation-2026-09-11.md
+  - governance/capability-control-review-2026-09-12.md
+  - governance/chore-class-system.md
+  - governance/codex-interim-parity-2026-09-12.md
+  - governance/control-surface-overhaul.md
+  - governance/cross-platform-rationale.md
+  - governance/defect-fix-routing.md
+  - governance/distribution_baseline.md
+  - governance/distribution_invariant_catalog.md
+  - governance/enforcement-claim-nc-audit-2026-07-18.md
+  - governance/evidence-record-contract.md
+  - governance/exemption-control-triage.md
+  - governance/external-proving-ground-note-2026-06-24.md
+  - governance/externalized-metacognition-architecture-note-2026-06-24.md
+  - governance/foundation-triage-rubric.md
+  - governance/four-phases-of-work.md
+  - governance/ghi-triage-2026-07-21.md
+  - governance/governance-core-rationale.md
+  - governance/gpt-tuning.md
+  - governance/harness-engineering-appraisal.md
+  - governance/harness-loop-engineering-strategy-note-2026-06-23.md
+  - governance/health-audit-2026-09-12.md
+  - governance/hexagonal-architecture.md
+  - governance/historical-self-close-waivers.md
+  - governance/instructions-files-budget-history.md
+  - governance/layer-three-derived-views.md
+  - governance/ledger-correction-consumers.md
+  - governance/maintenance-guide.md
+  - governance/model-regression-taxonomy.md
+  - governance/model-selection-rationale.md
+  - governance/mpas-appropriation-analysis.md
+  - governance/obpi-attestation.md
+  - governance/obpi-review-churn-2026-09-08.md
+  - governance/okf-cms-knowledge-structure-note-2026-06-23.md
+  - governance/okf-rag-hybrid-design-note-2026-06-27.md
+  - governance/ontology-ownership-plane-doctrine.md
+  - governance/operator-economy.md
+  - governance/opus-tuning.md
+  - governance/personas-catalog.md
+  - governance/prime-directive.md
+  - governance/prior-art-scaffold-firewall-2026-06-14.md
+  - governance/req-scope-discipline.md
+  - governance/return-to-health-plan-2026-05-30.md
+  - governance/rnd-discipline.md
+  - governance/rule-version-history.md
+  - governance/rules-tools-audits-refactors-alignment.md
+  - governance/security-sensitivity-rationale.md
+  - governance/skill-surface-sync-rationale.md
+  - governance/skills-catalog.md
+  - governance/state-of-gzkit-2026-06-20.md
+  - governance/tests-rationale.md
+  - governance/token-block-doctrine.md
+  - governance/tool-skill-runbook-rationale.md
+  - governance/trust-doctrine.md
+  - governance/ultraplan-brief.md
+  - governance/uncovered-req-inventory-2026-08-22.md
+  - governance/untrusted-content.md
+  - governance/vocabulary-config-first-exorcism-GHI-615.md
+  - governance/work-phases-and-airlock.md
+  - governance/GovZero/obpi-pipeline-runbook.md
+  - governance/complexity/AGENTS.md
+  - governance/complexity/authoring-guide-protocol.md
+  - governance/complexity/complexity-doctrine-rationale.md
+  - governance/complexity/complexity-thresholds-rationale.md
+  - governance/complexity/distilled-characteristics-2026-05-04.md
+  - governance/complexity/baselines/2026-05-04/baseline.summary.md
+  - governance/context-audit-2026-09-12/README.md
+  - governance/context-audit-2026-09-12/delivery-after-transient-publication.md
+  - governance/context-audit-2026-09-12/delivery.md
+  - governance/context-audit-2026-09-12/first-batch-review.md
+  - governance/context-audit-2026-09-12/root-doctrine.md
+  - governance/context-audit-2026-09-12/root-first.md
+  - governance/context-audit-2026-09-12/system-card-review.md
+  - governance/context-audit-2026-09-12/tests-rule.md
+  - governance/health-audit-2026-09-12-evidence/intent-0026.md
+  - governance/health-audit-2026-09-12-evidence/intent-033.md
+  - governance/health-audit-2026-09-12-evidence/intent-035.md
+  - governance/research_sources/0900001680afb122.md
+  - governance/research_sources/1-introduction-the-imperative-of-public-values-in-ai.md
+  - governance/research_sources/1680afaeba.md
+  - governance/research_sources/a-closer-look-at-the-existing-risks-of-generative-ai-mapping-the-who-what-and-how-of-real-world-inci.md
+  - governance/research_sources/advancing-accountability-in-ai-en.md
+  - governance/research_sources/ai-risk-management-framework-japanese-translation.md
+  - governance/research_sources/anthropics-responsible-scaling-policy-version-30.md
+  - governance/research_sources/artificial-intelligence-risk-management-framework-ai-rmf-10.md
+  - governance/research_sources/artificial-intelligence-risk-management-framework-generative-artificial-intelligence-profile.md
+  - governance/research_sources/arxiv-240614713.md
+  - governance/research_sources/arxiv-240714981.md
+  - governance/research_sources/asd-ste100-issue-9.md
+  - governance/research_sources/auditing-work-exploring-the-new-york-city-algorithmic-bias-audit-regime.md
+  - governance/research_sources/claude-4-system-card.md
+  - governance/research_sources/hai-ai-index-report-2025-chapter3-final.md
+  - governance/research_sources/hls20white20paper20final-v3.md
+  - governance/research_sources/introducing-the-oecd-ai-capability-indicators-en.md
+  - governance/research_sources/m-24-10-advancing-governance-innovation-and-risk-management-for-agency-use-of-artificial-intelligenc.md
+  - governance/research_sources/m-25-21-accelerating-federal-use-of-ai-through-innovation-governance-and-public-trust.md
+  - governance/research_sources/m-25-22-driving-efficient-acquisition-of-artificial-intelligence-in-government.md
+  - governance/research_sources/microsoft-word-ai-governance-tiimalasipaperi-arxivdocx.md
+  - governance/research_sources/nistai600-1genai-profileipd.md
+  - governance/research_sources/okf-rag-hybrid-knowledge-stack-cloud-code-transcript.md
+  - governance/research_sources/operator-system-card.md
+  - governance/research_sources/preparedness-framework-v2.md
+  - governance/research_sources/quantifying-detection-rates.md
+  - governance/research_sources/responsible-ai-governance-a-systematic-literature-review.md
+  - governance/research_sources/responsible-ai-governance-in-the-public-sector-explaining-contextual-dynamics-through-a-realist-synt.md
+  - governance/research_sources/responsible-use-guide.md
+  - governance/research_sources/steering-ais-future-en.md
+  - governance/research_sources/the-bureaucratic-challenge-to-ai-governance-an-empirical-assessment-of-implementation-at-us-federal.md
+  - governance/research_sources/the-governance-of-ai-companies-reconciling-purpose-with-profits.md
+  - harness-docs/GZK-GOV-007-ultrareview-and-gate-5.md
+  - harness-docs/expanding-the-bitter-lesson-for-agentic-software-development.md
+  - harness-docs/xhigh-measurement-protocol.md
+  - releases/PATCH-v0.24.3.md
+  - releases/PATCH-v0.25.10.md
+  - releases/PATCH-v0.25.11.md
+  - releases/PATCH-v0.25.12.md
+  - releases/PATCH-v0.25.13.md
+  - releases/PATCH-v0.25.14.md
+  - releases/PATCH-v0.25.15.md
+  - releases/PATCH-v0.25.16.md
+  - releases/PATCH-v0.25.17.md
+  - releases/PATCH-v0.25.18.md
+  - releases/PATCH-v0.25.19.md
+  - releases/PATCH-v0.25.7.md
+  - releases/PATCH-v0.25.8.md
+  - releases/PATCH-v0.25.9.md
+  - releases/PATCH-v0.26.0.md
+  - releases/PATCH-v0.26.1.md
+  - releases/PATCH-v0.26.2.md
+  - releases/PATCH-v0.26.3.md
+  - releases/PATCH-v0.26.4.md
+  - releases/PATCH-v0.26.5.md
+  - releases/PATCH-v0.26.6.md
+  - releases/PATCH-v0.27.0.md
+  - releases/PATCH-v0.27.1.md
+  - releases/PATCH-v0.28.1.md
+  - releases/PATCH-v0.30.0.md
+  - releases/PATCH-v0.30.1.md
+  - releases/PATCH-v0.30.2.md
+  - releases/PATCH-v0.33.1.md
+  - releases/PATCH-v0.33.2.md
+  - releases/PATCH-v0.33.3.md
+  - releases/PATCH-v0.34.0.md
+  - releases/PATCH-v0.34.1.md
+  - releases/PATCH-v0.34.2.md
+  - releases/PATCH-v0.34.3.md
+  - releases/PATCH-v0.34.4.md
+  - releases/PATCH-v0.34.5.md
+  - releases/PATCH-v0.34.6.md
+  - releases/PATCH-v0.34.7.md
+  - user/concepts/okf-navigation.md
+  - user/concepts/reporter-architecture.md
+  - user/concepts/subagent-pipeline.md
+  - user/concepts/task-overview.md
+  - user/manpages/adr-demote.md
+  - user/manpages/adr-evaluate.md
+  - user/manpages/adr-report.md
+  - user/manpages/airlock-in.md
+  - user/manpages/airlock-out.md
+  - user/manpages/airlock.md
+  - user/manpages/arb-advise.md
+  - user/manpages/arb-archive.md
+  - user/manpages/arb-coverage.md
+  - user/manpages/arb-patterns.md
+  - user/manpages/arb-red.md
+  - user/manpages/arb-ruff.md
+  - user/manpages/arb-step.md
+  - user/manpages/arb-ty.md
+  - user/manpages/arb-typecheck.md
+  - user/manpages/arb-validate.md
+  - user/manpages/arb.md
+  - user/manpages/check.md
+  - user/manpages/chores-advise.md
+  - user/manpages/chores-doctor.md
+  - user/manpages/chores-propose-ghi.md
+  - user/manpages/chores-show.md
+  - user/manpages/chores-status.md
+  - user/manpages/chores.md
+  - user/manpages/complexity-advise.md
+  - user/manpages/complexity-distill.md
+  - user/manpages/complexity-guide.md
+  - user/manpages/content.md
+  - user/manpages/context.md
+  - user/manpages/drift.md
+  - user/manpages/format.md
+  - user/manpages/frontmatter-reconcile.md
+  - user/manpages/governance-render.md
+  - user/manpages/handoff-archive.md
+  - user/manpages/handoff-authorize.md
+  - user/manpages/handoff-create.md
+  - user/manpages/handoff-decide.md
+  - user/manpages/handoff-list.md
+  - user/manpages/handoff-resume.md
+  - user/manpages/handoff-rulings.md
+  - user/manpages/handoff.md
+  - user/manpages/interview.md
+  - user/manpages/issue-file.md
+  - user/manpages/issue.md
+  - user/manpages/justify.md
+  - user/manpages/knowledge-generate.md
+  - user/manpages/knowledge-refresh.md
+  - user/manpages/knowledge.md
+  - user/manpages/ledger-correct.md
+  - user/manpages/ledger-corrections.md
+  - user/manpages/ledger-merge-driver.md
+  - user/manpages/lint.md
+  - user/manpages/mx-enter.md
+  - user/manpages/mx-exit.md
+  - user/manpages/mx.md
+  - user/manpages/obpi-adversary-workspace.md
+  - user/manpages/obpi-audit.md
+  - user/manpages/obpi-block.md
+  - user/manpages/obpi-complete.md
+  - user/manpages/obpi-dispatch.md
+  - user/manpages/obpi-lock-check.md
+  - user/manpages/obpi-lock-claim.md
+  - user/manpages/obpi-lock-list.md
+  - user/manpages/obpi-lock-release.md
+  - user/manpages/obpi-repudiate.md
+  - user/manpages/obpi-supersede.md
+  - user/manpages/obpi-unblock.md
+  - user/manpages/obpi-withdraw.md
+  - user/manpages/ontology-reach.md
+  - user/manpages/ontology-resense.md
+  - user/manpages/ontology-seams.md
+  - user/manpages/ontology-sense.md
+  - user/manpages/ontology-trace.md
+  - user/manpages/ontology.md
+  - user/manpages/permitted-entry.md
+  - user/manpages/personas-drift.md
+  - user/manpages/personas.md
+  - user/manpages/plan.md
+  - user/manpages/preflight.md
+  - user/manpages/readiness-evaluate.md
+  - user/manpages/roles.md
+  - user/manpages/skill-list.md
+  - user/manpages/skill-new.md
+  - user/manpages/smoke.md
+  - user/manpages/task-envelope-diagnose.md
+  - user/manpages/task-fanout.md
+  - user/manpages/test-shape.md
+  - user/manpages/test.md
+  - user/manpages/tidy.md
+  - user/manpages/typecheck.md
+  - user/manpages/upgrade.md
+  - user/manpages/validate.md
+  - user/skills/_TEMPLATE.md
+  - user/skills/airlineops-parity-scan.md
+  - user/skills/ghi-author.md
+  - user/skills/ghi-close.md
+  - user/skills/ghi-triage.md
+  - user/skills/gz-adr-autolink.md
+  - user/skills/gz-adr-promote.md
+  - user/skills/gz-adr-recon.md
+  - user/skills/gz-adr-sync.md
+  - user/skills/gz-advisor-qc.md
+  - user/skills/gz-agent-sync.md
+  - user/skills/gz-airlock.md
+  - user/skills/gz-check-config-paths.md
+  - user/skills/gz-chores.md
+  - user/skills/gz-competitor-radar.md
+  - user/skills/gz-complexity-distill.md
+  - user/skills/gz-complexity-guide.md
+  - user/skills/gz-content-compose.md
+  - user/skills/gz-content-remember.md
+  - user/skills/gz-context-diet.md
+  - user/skills/gz-context.md
+  - user/skills/gz-deps-upgrade.md
+  - user/skills/gz-flighttest.md
+  - user/skills/gz-foundation-triage.md
+  - user/skills/gz-governance.md
+  - user/skills/gz-health-audit.md
+  - user/skills/gz-insights-remember.md
+  - user/skills/gz-intent-trace.md
+  - user/skills/gz-issue-file.md
+  - user/skills/gz-justify.md
+  - user/skills/gz-manage.md
+  - user/skills/gz-migrate-semver.md
+  - user/skills/gz-mx.md
+  - user/skills/gz-obpi-brief-drift.md
+  - user/skills/gz-ontology.md
+  - user/skills/gz-project.md
+  - user/skills/gz-pythonic-pattern-apply.md
+  - user/skills/gz-pythonic-pattern-detect.md
+  - user/skills/gz-quality.md
+  - user/skills/gz-skill-router.md
+  - user/skills/gz-tech-debt-review.md
+  - user/skills/gz-tidy.md
+  - user/skills/gz-workflow.md
+  - user/storybook/from-init-to-first-attested-release.md
+INFO    -  Documentation built in 4.31 seconds
+[uv run gz test] stdout:
+Running unit tests...
+Running 653 test suites (10477 total tests) across 10 workers
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+..............................................................ssss..............
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+................................................................................
+.............................................................................
+----------------------------------------------------------------------
+Ran 10477 tests in 95.299s
+
+OK (skipped=4)
+
+Unit tests passed.
+```

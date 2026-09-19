@@ -265,3 +265,40 @@ POLICY BREACH:
     Why: this chore's acceptance previously gated on `test -f`, which passes forever once a report exists and cannot see that the evidence now describes a surface that has changed.
     Fix: re-run the control-surface-rule-conflicts audit and commit refreshed proofs. Touching the file without redoing the analysis restores the green-by-construction gate this replaced.
 ```
+## 2026-09-19T06:15:18-05:00
+- Status: FAIL
+- Chore: control-surface-rule-conflicts
+- Title: Control Surface Audit — Rule-Pair Conflict Matrix (Pass A)
+- Lane: lite
+- Version: 1.1.0
+- Criteria Results:
+  - [FAIL] `uv run python scripts/check_proof_freshness.py control-surface-rule-conflicts` => rc=3 (0.15s) -- exit 3 != 0
+
+```text
+[uv run python scripts/check_proof_freshness.py control-surface-rule-conflicts] stdout:
+proof-freshness gate — control-surface-rule-conflicts
+  audited surfaces:  .gzkit/rules
+  surface last moved: 2026-09-19
+  conflict-matrix.md           2026-09-12  STALE
+  pair-review-part0.md         2026-09-12  STALE
+  pair-review-part1.md         2026-09-12  STALE
+  rule-inventory.md            2026-09-12  STALE
+  summary.md                   2026-09-12  STALE
+[uv run python scripts/check_proof_freshness.py control-surface-rule-conflicts] stderr:
+POLICY BREACH:
+  .gzkit/chores/control-surface-rule-conflicts/proofs/conflict-matrix.md was last committed 2026-09-12, before its audited surface last moved (2026-09-19).
+    Why: this chore's acceptance previously gated on `test -f`, which passes forever once a report exists and cannot see that the evidence now describes a surface that has changed.
+    Fix: re-run the control-surface-rule-conflicts audit and commit refreshed proofs. Touching the file without redoing the analysis restores the green-by-construction gate this replaced.
+  .gzkit/chores/control-surface-rule-conflicts/proofs/pair-review-part0.md was last committed 2026-09-12, before its audited surface last moved (2026-09-19).
+    Why: this chore's acceptance previously gated on `test -f`, which passes forever once a report exists and cannot see that the evidence now describes a surface that has changed.
+    Fix: re-run the control-surface-rule-conflicts audit and commit refreshed proofs. Touching the file without redoing the analysis restores the green-by-construction gate this replaced.
+  .gzkit/chores/control-surface-rule-conflicts/proofs/pair-review-part1.md was last committed 2026-09-12, before its audited surface last moved (2026-09-19).
+    Why: this chore's acceptance previously gated on `test -f`, which passes forever once a report exists and cannot see that the evidence now describes a surface that has changed.
+    Fix: re-run the control-surface-rule-conflicts audit and commit refreshed proofs. Touching the file without redoing the analysis restores the green-by-construction gate this replaced.
+  .gzkit/chores/control-surface-rule-conflicts/proofs/rule-inventory.md was last committed 2026-09-12, before its audited surface last moved (2026-09-19).
+    Why: this chore's acceptance previously gated on `test -f`, which passes forever once a report exists and cannot see that the evidence now describes a surface that has changed.
+    Fix: re-run the control-surface-rule-conflicts audit and commit refreshed proofs. Touching the file without redoing the analysis restores the green-by-construction gate this replaced.
+  .gzkit/chores/control-surface-rule-conflicts/proofs/summary.md was last committed 2026-09-12, before its audited surface last moved (2026-09-19).
+    Why: this chore's acceptance previously gated on `test -f`, which passes forever once a report exists and cannot see that the evidence now describes a surface that has changed.
+    Fix: re-run the control-surface-rule-conflicts audit and commit refreshed proofs. Touching the file without redoing the analysis restores the green-by-construction gate this replaced.
+```
