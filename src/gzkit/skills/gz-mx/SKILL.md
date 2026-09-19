@@ -9,11 +9,11 @@ description: >
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-24
+last_reviewed: 2026-09-19
 model: haiku
 gz_command: mx
 metadata:
-  skill-version: "1.1.0"
+  skill-version: "1.1.1"
 ---
 
 # gz mx
@@ -73,7 +73,7 @@ uv run gz mx exit
 ## Repairing a ledger row
 
 The ledger is the one governance surface hangar mode can never make writable:
-`AGENTS.md` § Never #2 forbids modifying it, and that prohibition is what makes
+`AGENTS.md` § Behavior Rules forbids hand-writing it, and that prohibition is what makes
 it trustworthy. A row recorded in error is therefore repaired *forward*, and
 the repair is available inside or outside the hangar.
 

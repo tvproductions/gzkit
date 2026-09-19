@@ -6,7 +6,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-09-19
 metadata:
-  skill-version: "0.3.0"
+  skill-version: "0.3.1"
   govzero-framework-version: "v6"
   govzero_layer: "Layer 3 - File Sync"
 gz_command: complexity distill
@@ -152,8 +152,8 @@ The verb closed the OBPI-0.0.27-06 waiver path tracked by GHI #400.
 - **Doctrine rule:** `.gzkit/rules/complexity-doctrine.md` — selection
   methodology, cadence, citation contract
 - **Vendor mirror sync:** `.gzkit/rules/skill-surface-sync.md` — edit
-  this canonical file; vendor mirrors at `.claude/skills/`,
-  `.agents/skills/`, `.github/skills/` are emitted by
+  this canonical file; the vendor mirrors (roster: `.gzkit.json` § `vendors`)
+  are emitted by
   `gz agent sync control-surfaces`
 - **Output Contract invariant:** `.gzkit/rules/tool-skill-runbook-alignment.md`
   Invariant 3 — destination verb's default form must honor this skill's

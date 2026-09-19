@@ -5,9 +5,9 @@ description: Claim or release OBPI-level work locks for multi-agent coordination
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-26
+last_reviewed: 2026-09-19
 metadata:
-  skill-version: "6.2.0"
+  skill-version: "6.2.1"
 model: haiku
 ---
 
@@ -155,7 +155,7 @@ Files known to cause multi-agent conflicts:
 
 | File Pattern | Conflict Type | Mitigation |
 |-------------|---------------|------------|
-| `docs/design/adr/*/adr_status.md` | ADR status table | Regenerate via `/gz-adr-sync` |
+| `docs/governance/GovZero/adr-status.md` | Derived ADR status index | Never hand-edit; regenerate via `uv run gz register-adrs` |
 | `**/logs/obpi-audit.jsonl` | Append-only ledger | JSONL merge driver (see below) |
 | `docs/design/adr/**/*.md` (status field) | Brief status | Lock prevents concurrent edits |
 | `.gzkit/insights/agent-insights.jsonl` | Append-only log | JSONL merge driver |

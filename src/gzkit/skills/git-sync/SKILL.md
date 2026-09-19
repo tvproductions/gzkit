@@ -6,9 +6,9 @@ category: agent-operations
 lifecycle_state: active
 disable-model-invocation: true
 owner: gzkit-governance
-last_reviewed: 2026-08-16
+last_reviewed: 2026-09-19
 metadata:
-  skill-version: "1.3.0"
+  skill-version: "1.3.1"
 model: haiku
 ---
 
@@ -73,7 +73,7 @@ driver — `uv run gz ledger merge-driver` — that reconciles them as a
 git reads a driver command from local config, which cannot be committed.
 
 **Never hand-edit `.gzkit/ledger.jsonl` to clear a conflict.** That is the
-action `AGENTS.md` § Never #2 prohibits, and the driver exists so you do not
+action `AGENTS.md` § Behavior Rules prohibits (the ledger is written only through `gz` commands), and the driver exists so you do not
 have to. If the driver exits 1, the sides were not plain appends — a row was
 edited, removed, or carries no sortable `ts` — and it left the conflict for you
 deliberately. Resolve as a timestamp-ordered union; never append one side to

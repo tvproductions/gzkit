@@ -4,7 +4,7 @@ description: Show the ADR table for summary requests, or show focused lifecycle 
 category: adr-lifecycle
 compatibility: GovZero v6 framework; uses gz CLI status surfaces
 metadata:
-  skill-version: "1.13.0"
+  skill-version: "1.13.1"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero_layer: "Layer 1 - Evidence Gathering"
@@ -12,7 +12,7 @@ gz_command: adr status
 invocation: uv run gz adr report | uv run gz adr status ADR-0.3.0
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-06
+last_reviewed: 2026-09-19
 model: haiku
 ---
 
@@ -77,7 +77,7 @@ Locked by: `tests/commands/test_status.py::TestLifecycleStatusSemantics::test_ad
 
 Both verbs render a **Layer 3 derived view** (`docs/governance/state-doctrine.md`). It is
 never source-of-truth: every fact traces to Layer 1 canon or the Layer 2 ledger, and
-`AGENTS.md` § Never #7 binds that distinction. Relay the table; do not promote it to
+`AGENTS.md` § Behavior Rules (completion evidence is the ledger) binds that distinction. Relay the table; do not promote it to
 evidence for a gate decision.
 
 The `tracked defects:` annotation on a closeout blocker is resolved against live

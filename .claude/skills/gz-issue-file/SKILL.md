@@ -5,9 +5,9 @@ description: File a defect or enhancement against gzkit from inside a consuming 
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-18
+last_reviewed: 2026-09-19
 metadata:
-  skill-version: "1.0.2"
+  skill-version: "1.0.3"
   govzero-framework-version: "v6"
 model: sonnet
 ---
@@ -81,7 +81,7 @@ For enhancements to any of the above, file with `--enhancement` instead of
   surface this skill operationalizes.
 - `.gzkit/rules/agent-failure-modes.md` § Safeguard circumvention — the
   failure shape this wrapper closes structurally.
-- `AGENTS.md` § Local Agent Rules (Operator PII) — the auto-stamped trailer
+- `AGENTS.md` § Execution Rules (Operator PII) — the auto-stamped trailer
   composes only the repo slug and gz version; no email is ever derived.
 
 ## Output Contract
