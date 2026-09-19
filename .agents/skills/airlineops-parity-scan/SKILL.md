@@ -8,9 +8,9 @@ category: cross-repository
 project_local: true
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-12
+last_reviewed: 2026-09-19
 metadata:
-  skill-version: "1.1.3"
+  skill-version: "1.2.0"
 model: haiku
 ---
 
@@ -64,8 +64,9 @@ GovZero mining rule:
    `docs/design/lodestar/govzero-doctrine.md`, `docs/design/lodestar/README.md`, `AGENTS.md`.
 4. Build a behavior/procedure source matrix from canonical and extraction surfaces:
    - Canonical behavior sources (AirlineOps):
-     - `.github/skills/gz-*`
-     - `.github/instructions/*.instructions.md`
+     - `.claude/skills/gz-*`
+     - `.github/skills/gz-*` (where present)
+     - `.github/instructions/*.instructions.md` (where present)
      - `.claude/**`
      - `.codex/**`
      - `.gzkit/**`
@@ -73,7 +74,7 @@ GovZero mining rule:
      - `docs/governance/GovZero/**/*.md`
      - operator runbook/proof docs where rituals are declared
    - gzkit extraction surfaces:
-     - `.github/skills/*`
+     - `.gzkit/skills/*` (canonical) and the vendor mirrors named in `.gzkit.json` § `vendors`
      - `.claude/**`
      - `.codex/**` (if present)
      - `.gzkit/**`
@@ -110,8 +111,9 @@ GovZero mining rule:
    `docs/proposals/REPORT-airlineops-govzero-mining-YYYY-MM-DD.md`
    Use `docs/proposals/REPORT-TEMPLATE-airlineops-govzero-mining.md`.
 11. For every `Missing`, `Divergent`, or high-impact `Partial` finding:
-   - Propose target SemVer minor
-   - Identify parent ADR and OBPI linkage
+   - Route it by `AGENTS.md` § Defect-fix routing: name the owning ADR when the gap
+     falls under existing intent, a GHI when it is a defect, and propose a new ADR
+     only for a new capability
    - Add an explicit next action
 12. Summarize risk:
    - What blocks 1.0 readiness
@@ -119,9 +121,11 @@ GovZero mining rule:
    - What must be done next cycle
 13. Enforce action closure for this scan cycle:
    - For each `Import Now` finding, execute at least one concrete tranche in the
-     same cycle (code/docs/settings change) and record file-level evidence.
-   - If execution cannot happen in-cycle, open a trackable defect (`gh issue create --label defect`)
-     and link it in the report.
+     same cycle (code/docs/settings change) and record file-level evidence. A
+     `src/**` change needs a GHI; OBPI-shaped work is proposed to the operator,
+     not started.
+   - If execution cannot happen in-cycle, file a defect through `/ghi-author`, whose
+     prior-art lookup runs first, and link it in the report.
    - A scan with findings but no execution artifact or defect artifact is `INCOMPLETE`.
 
 ## Examples
@@ -138,7 +142,7 @@ GovZero mining rule:
 - Do not claim parity without path-level evidence.
 - Do not claim procedure parity without executable ritual evidence from gzkit runtime/docs surfaces.
 - Do not use patch versions for new feature sequencing.
-- Keep findings actionable: each gap must map to ADR/OBPI follow-up.
+- Keep findings actionable: each gap names its route (owning ADR, GHI, or proposed ADR).
 - Do not close a scan cycle with only passive tracking; require execution or a filed defect.
 
 ## Common Rationalizations
