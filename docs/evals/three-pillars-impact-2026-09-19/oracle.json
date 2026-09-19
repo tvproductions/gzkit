@@ -1,0 +1,452 @@
+{
+  "persona": "main-session — craftsperson, governance-aware, whole-file reasoning, direct",
+  "purpose": "Independent bounded source-consumer oracle for impact-index design. No root measurement output inspected. No experiments executed.",
+  "direction": "Each edge names a seed and relevant consumer; input producers are explicitly marked upstream semantic coupling rather than reverse-import consumers.",
+  "exhaustiveness": "Positive witnessed edges only. No list is asserted exhaustive, especially commands/common.py. An omitted file is not an irrelevant file.",
+  "seeds": [
+    {
+      "seed": "src/gzkit/governance/brief_path_validity.py",
+      "edges": [
+        {
+          "consumer": "src/gzkit/commands/plan_audit_cmd.py",
+          "kind": "direct_static_import",
+          "evidence": [
+            {
+              "path": "src/gzkit/commands/plan_audit_cmd.py",
+              "line": 14
+            },
+            {
+              "path": "src/gzkit/commands/plan_audit_cmd.py",
+              "line": 420
+            }
+          ],
+          "relation": "Aliases shared checker and uses it after extracting Allowed Paths and unioning brief/plan CREATE declarations."
+        },
+        {
+          "consumer": "src/gzkit/commands/obpi_cmd.py",
+          "kind": "direct_function_local_import",
+          "evidence": [
+            {
+              "path": "src/gzkit/commands/obpi_cmd.py",
+              "line": 973
+            },
+            {
+              "path": "src/gzkit/commands/obpi_cmd.py",
+              "line": 977
+            }
+          ],
+          "relation": "Authored validation wrapper imports and calls shared brief validity; local imports remain real dependency edges."
+        },
+        {
+          "consumer": "src/gzkit/commands/adr_promote.py",
+          "kind": "direct_function_local_import",
+          "evidence": [
+            {
+              "path": "src/gzkit/commands/adr_promote.py",
+              "line": 347
+            },
+            {
+              "path": "src/gzkit/commands/adr_promote.py",
+              "line": 364
+            }
+          ],
+          "relation": "Post-promotion scaffold checking includes shared path errors."
+        },
+        {
+          "consumer": "tests/governance/test_brief_path_validity.py",
+          "kind": "direct_test_import",
+          "evidence": [
+            {
+              "path": "tests/governance/test_brief_path_validity.py",
+              "line": 12
+            },
+            {
+              "path": "tests/governance/test_brief_path_validity.py",
+              "line": 306
+            }
+          ],
+          "relation": "Exercises extraction, mapping, existence, creation and complete brief helper."
+        },
+        {
+          "consumer": "tests/governance/test_brief_path_validity_wiring.py",
+          "kind": "indirect_test_consumer",
+          "via": [
+            "src/gzkit/commands/plan_audit_cmd.py",
+            "src/gzkit/commands/obpi_cmd.py",
+            "src/gzkit/commands/adr_promote.py"
+          ],
+          "evidence": [
+            {
+              "path": "tests/governance/test_brief_path_validity_wiring.py",
+              "line": 12
+            },
+            {
+              "path": "tests/governance/test_brief_path_validity_wiring.py",
+              "line": 52
+            }
+          ],
+          "relation": "Imports command wrappers rather than seed and asserts shared behavior through actual briefs."
+        },
+        {
+          "consumer": "tests/test_plan_audit_cmd.py",
+          "kind": "indirect_test_consumer",
+          "via": [
+            "src/gzkit/commands/plan_audit_cmd.py"
+          ],
+          "evidence": [
+            {
+              "path": "tests/test_plan_audit_cmd.py",
+              "line": 832
+            },
+            {
+              "path": "tests/test_plan_audit_cmd.py",
+              "line": 846
+            }
+          ],
+          "relation": "Imports re-exported CREATE extractor from command module; seed owns extractor implementation."
+        },
+        {
+          "consumer": "docs/user/manpages/plan-audit.md",
+          "kind": "non_code_contract",
+          "evidence": [
+            {
+              "path": "docs/user/manpages/plan-audit.md",
+              "line": 18
+            }
+          ],
+          "relation": "Documents shared existence, CREATE and mirror refusal semantics."
+        },
+        {
+          "consumer": "docs/user/manpages/obpi-validate.md",
+          "kind": "non_code_contract",
+          "evidence": [
+            {
+              "path": "docs/user/manpages/obpi-validate.md",
+              "line": 49
+            }
+          ],
+          "relation": "Documents authored-mode mirror and CREATE behavior."
+        },
+        {
+          "consumer": "docs/user/manpages/adr-promote.md",
+          "kind": "non_code_contract",
+          "evidence": [
+            {
+              "path": "docs/user/manpages/adr-promote.md",
+              "line": 80
+            }
+          ],
+          "relation": "Documents post-promotion path checks and existing force behavior."
+        },
+        {
+          "consumer": "src/gzkit/commands/specify_cmd.py",
+          "kind": "upstream_semantic_producer",
+          "evidence": [
+            {
+              "path": "src/gzkit/commands/specify_cmd.py",
+              "line": 420
+            },
+            {
+              "path": "src/gzkit/governance/brief_path_validity.py",
+              "line": 155
+            }
+          ],
+          "relation": "Scaffold producer emits intentionally-created marker parsed by seed. Relevant co-change relation with no import required; not a reverse-import consumer."
+        }
+      ],
+      "limits": "Narrow seed and dedicated tests read whole during prior assigned reviews; current import/call locations refreshed. Large command callers examined at relevant functions, not whole modules."
+    },
+    {
+      "seed": "src/gzkit/commands/config_paths.py",
+      "edges": [
+        {
+          "consumer": "tests/test_config_paths.py",
+          "kind": "direct_test_import",
+          "evidence": [
+            {
+              "path": "tests/test_config_paths.py",
+              "line": 14
+            },
+            {
+              "path": "tests/test_config_paths.py",
+              "line": 229
+            }
+          ],
+          "relation": "Imports scanner and command, tests classification and command JSON/exit propagation."
+        },
+        {
+          "consumer": "src/gzkit/cli/parser_handler_manifest.py",
+          "kind": "dynamic_string_dispatch",
+          "evidence": [
+            {
+              "path": "src/gzkit/cli/parser_handler_manifest.py",
+              "line": 78
+            },
+            {
+              "path": "src/gzkit/cli/parser_handler_manifest.py",
+              "line": 162
+            },
+            {
+              "path": "src/gzkit/cli/parser_handler_manifest.py",
+              "line": 167
+            }
+          ],
+          "relation": "Maps handler name to seed module string and resolves via import_module; ordinary Import/ImportFrom scan misses seed edge."
+        },
+        {
+          "consumer": "src/gzkit/cli/parser_maintenance.py",
+          "kind": "indirect_dynamic_dispatch",
+          "via": [
+            "src/gzkit/cli/parser_handler_manifest.py"
+          ],
+          "evidence": [
+            {
+              "path": "src/gzkit/cli/parser_maintenance.py",
+              "line": 22
+            },
+            {
+              "path": "src/gzkit/cli/parser_maintenance.py",
+              "line": 1111
+            }
+          ],
+          "relation": "check-config-paths parser callback invokes _lazy('check_config_paths_cmd')."
+        },
+        {
+          "consumer": "docs/user/manpages/check-config-paths.md",
+          "kind": "non_code_contract",
+          "evidence": [
+            {
+              "path": "docs/user/manpages/check-config-paths.md",
+              "line": 22
+            }
+          ],
+          "relation": "Documents configured package population, recursive scan, coverage and module-local exemptions."
+        },
+        {
+          "consumer": ".gzkit/skills/gz-check-config-paths/SKILL.md",
+          "kind": "non_code_invocation",
+          "evidence": [
+            {
+              "path": ".gzkit/skills/gz-check-config-paths/SKILL.md",
+              "line": 22
+            }
+          ],
+          "relation": "Workflow invokes command and interprets scope/output."
+        },
+        {
+          "consumer": ".gzkit/chores/hardcoded-root-eradication/acceptance.json",
+          "kind": "non_code_executable_consumer",
+          "evidence": [
+            {
+              "path": ".gzkit/chores/hardcoded-root-eradication/acceptance.json",
+              "line": 11
+            }
+          ],
+          "relation": "Machine-readable acceptance criterion consumes check-config-paths exit status."
+        },
+        {
+          "consumer": "src/gzkit/config.py",
+          "kind": "upstream_configuration_authority",
+          "evidence": [
+            {
+              "path": "src/gzkit/config.py",
+              "line": 75
+            },
+            {
+              "path": "src/gzkit/commands/config_paths.py",
+              "line": 316
+            },
+            {
+              "path": "src/gzkit/commands/config_paths.py",
+              "line": 320
+            }
+          ],
+          "relation": "PathConfig.source_root selects population; configured values participate in literal coverage. Seed imports authority rather than authority importing seed."
+        }
+      ],
+      "limits": "Whole scanner, tests and manpage previously read; changed content refreshed. CLI is represented by concrete dispatcher witnesses, not an asserted exhaustive caller inventory."
+    },
+    {
+      "seed": "src/gzkit/commands/common.py",
+      "edges": [
+        {
+          "consumer": "src/gzkit/commands/config_paths.py",
+          "kind": "direct_static_import",
+          "evidence": [
+            {
+              "path": "src/gzkit/commands/config_paths.py",
+              "line": 13
+            },
+            {
+              "path": "src/gzkit/commands/config_paths.py",
+              "line": 370
+            }
+          ],
+          "relation": "Consumes root/config/manifest acquisition and console."
+        },
+        {
+          "consumer": "src/gzkit/commands/plan_audit_cmd.py",
+          "kind": "direct_static_and_local_import",
+          "evidence": [
+            {
+              "path": "src/gzkit/commands/plan_audit_cmd.py",
+              "line": 9
+            },
+            {
+              "path": "src/gzkit/commands/plan_audit_cmd.py",
+              "line": 51
+            },
+            {
+              "path": "src/gzkit/commands/plan_audit_cmd.py",
+              "line": 68
+            }
+          ],
+          "relation": "Consumes console, resolver/error types and initialized project context."
+        },
+        {
+          "consumer": "src/gzkit/commands/obpi_cmd.py",
+          "kind": "direct_static_import",
+          "evidence": [
+            {
+              "path": "src/gzkit/commands/obpi_cmd.py",
+              "line": 15
+            }
+          ],
+          "relation": "Command uses shared utilities; module edge does not imply every common symbol affects every OBPI behavior."
+        },
+        {
+          "consumer": "src/gzkit/commands/adr_promote.py",
+          "kind": "direct_static_import",
+          "evidence": [
+            {
+              "path": "src/gzkit/commands/adr_promote.py",
+              "line": 21
+            }
+          ],
+          "relation": "Promotion command imports shared utilities."
+        },
+        {
+          "consumer": "src/gzkit/cli/__init__.py",
+          "kind": "dynamic_string_reexport",
+          "evidence": [
+            {
+              "path": "src/gzkit/cli/__init__.py",
+              "line": 44
+            },
+            {
+              "path": "src/gzkit/cli/__init__.py",
+              "line": 57
+            }
+          ],
+          "relation": "Lazy compatibility exports resolve common symbols through import_module and getattr."
+        },
+        {
+          "consumer": "src/gzkit/cli/main.py",
+          "kind": "direct_local_import_and_dynamic_reexport",
+          "evidence": [
+            {
+              "path": "src/gzkit/cli/main.py",
+              "line": 29
+            },
+            {
+              "path": "src/gzkit/cli/main.py",
+              "line": 161
+            }
+          ],
+          "relation": "Lazy common compatibility exports plus runtime exception rendering through err_console."
+        },
+        {
+          "consumer": "tests/test_manifest_resolution.py",
+          "kind": "direct_test_import",
+          "evidence": [
+            {
+              "path": "tests/test_manifest_resolution.py",
+              "line": 6
+            },
+            {
+              "path": "tests/test_manifest_resolution.py",
+              "line": 40
+            }
+          ],
+          "relation": "Verifies common.manifest_path v2 and legacy fallback semantics."
+        },
+        {
+          "consumer": "tests/test_config_paths.py",
+          "kind": "indirect_test_consumer",
+          "via": [
+            "src/gzkit/commands/config_paths.py"
+          ],
+          "evidence": [
+            {
+              "path": "tests/test_config_paths.py",
+              "line": 223
+            }
+          ],
+          "relation": "Patch-at-use tests depend on common-sourced acquisition functions exposed in consumer namespace; import graph alone does not show patch behavior."
+        }
+      ],
+      "limits": "Explicitly bounded high-fanout sample. Read common.py initial utilities through manifest_path and witnessed callers; remaining common functions not manually audited. Do not compute recall against this list as if exhaustive."
+    },
+    {
+      "seed": "src/gzkit/__main__.py",
+      "edges": [
+        {
+          "consumer": "tests/commands/test_justify_validate.py",
+          "kind": "subprocess_module_entrypoint",
+          "evidence": [
+            {
+              "path": "tests/commands/test_justify_validate.py",
+              "line": 152
+            },
+            {
+              "path": "src/gzkit/__main__.py",
+              "line": 9
+            },
+            {
+              "path": "src/gzkit/__main__.py",
+              "line": 11
+            }
+          ],
+          "relation": "Runs python -m gzkit and asserts help output/exit, consuming module entrypoint without importing it in test process."
+        },
+        {
+          "consumer": "tests/governance/test_qc_binding_self_check.py",
+          "kind": "subprocess_module_entrypoint",
+          "evidence": [
+            {
+              "path": "tests/governance/test_qc_binding_self_check.py",
+              "line": 53
+            }
+          ],
+          "relation": "Runs python -m gzkit adr fidelity and checks output/exit; external interpreter selects __main__."
+        },
+        {
+          "consumer": "src/gzkit/cli/__init__.py",
+          "kind": "upstream_delegate_not_consumer",
+          "evidence": [
+            {
+              "path": "src/gzkit/__main__.py",
+              "line": 9
+            },
+            {
+              "path": "src/gzkit/cli/__init__.py",
+              "line": 17
+            }
+          ],
+          "relation": "Entrypoint imports cli.main. This is an outgoing dependency, not evidence cli imports __main__."
+        }
+      ],
+      "limits": "Whole tiny entrypoint read. Two execution consumers read at complete invoking methods. No assertion that ordinary incoming imports are absent; no exhaustive subprocess census."
+    }
+  ],
+  "semantic_gaps": [
+    "Import reachability cannot tell which symbol or behavior is affected by a change inside high-fanout common.py.",
+    "String dispatch registries, PEP562 lazy reexports and subprocess module invocation are real consumers outside plain Import/ImportFrom edges.",
+    "Docs, skills, JSON acceptance commands and their output/exit expectations require explicit relation extraction or manual context.",
+    "Scaffold prose and its parser can drift without a Python import between producer and consumer.",
+    "Configuration and manifest values determine scanned populations; import existence does not prove correct source-root selection or exemption scope.",
+    "Graph path existence is not behavioral proof; tests must exercise specific triggering inputs and observe outputs.",
+    "File-name/path literals inside tests can be fixture data rather than dependency witnesses; e.g. brief_path_validity.py appears in test document content.",
+    "Empty incoming-static-import results for an entrypoint cannot establish no impact."
+  ]
+}

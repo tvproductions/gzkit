@@ -1,0 +1,226 @@
+[
+  {
+    "seed": "src/gzkit/governance/brief_path_validity.py",
+    "consumer": "src/gzkit/commands/plan_audit_cmd.py",
+    "kind": "direct_static_import",
+    "direct": true,
+    "two_hop": true,
+    "upstream": false
+  },
+  {
+    "seed": "src/gzkit/governance/brief_path_validity.py",
+    "consumer": "src/gzkit/commands/obpi_cmd.py",
+    "kind": "direct_function_local_import",
+    "direct": true,
+    "two_hop": true,
+    "upstream": false
+  },
+  {
+    "seed": "src/gzkit/governance/brief_path_validity.py",
+    "consumer": "src/gzkit/commands/adr_promote.py",
+    "kind": "direct_function_local_import",
+    "direct": true,
+    "two_hop": true,
+    "upstream": false
+  },
+  {
+    "seed": "src/gzkit/governance/brief_path_validity.py",
+    "consumer": "tests/governance/test_brief_path_validity.py",
+    "kind": "direct_test_import",
+    "direct": false,
+    "two_hop": false,
+    "upstream": false
+  },
+  {
+    "seed": "src/gzkit/governance/brief_path_validity.py",
+    "consumer": "tests/governance/test_brief_path_validity_wiring.py",
+    "kind": "indirect_test_consumer",
+    "direct": false,
+    "two_hop": false,
+    "upstream": false
+  },
+  {
+    "seed": "src/gzkit/governance/brief_path_validity.py",
+    "consumer": "tests/test_plan_audit_cmd.py",
+    "kind": "indirect_test_consumer",
+    "direct": false,
+    "two_hop": false,
+    "upstream": false
+  },
+  {
+    "seed": "src/gzkit/governance/brief_path_validity.py",
+    "consumer": "docs/user/manpages/plan-audit.md",
+    "kind": "non_code_contract",
+    "direct": false,
+    "two_hop": false,
+    "upstream": false
+  },
+  {
+    "seed": "src/gzkit/governance/brief_path_validity.py",
+    "consumer": "docs/user/manpages/obpi-validate.md",
+    "kind": "non_code_contract",
+    "direct": false,
+    "two_hop": false,
+    "upstream": false
+  },
+  {
+    "seed": "src/gzkit/governance/brief_path_validity.py",
+    "consumer": "docs/user/manpages/adr-promote.md",
+    "kind": "non_code_contract",
+    "direct": false,
+    "two_hop": false,
+    "upstream": false
+  },
+  {
+    "seed": "src/gzkit/governance/brief_path_validity.py",
+    "consumer": "src/gzkit/commands/specify_cmd.py",
+    "kind": "upstream_semantic_producer",
+    "direct": false,
+    "two_hop": false,
+    "upstream": true
+  },
+  {
+    "seed": "src/gzkit/commands/config_paths.py",
+    "consumer": "tests/test_config_paths.py",
+    "kind": "direct_test_import",
+    "direct": false,
+    "two_hop": false,
+    "upstream": false
+  },
+  {
+    "seed": "src/gzkit/commands/config_paths.py",
+    "consumer": "src/gzkit/cli/parser_handler_manifest.py",
+    "kind": "dynamic_string_dispatch",
+    "direct": false,
+    "two_hop": false,
+    "upstream": false
+  },
+  {
+    "seed": "src/gzkit/commands/config_paths.py",
+    "consumer": "src/gzkit/cli/parser_maintenance.py",
+    "kind": "indirect_dynamic_dispatch",
+    "direct": false,
+    "two_hop": false,
+    "upstream": false
+  },
+  {
+    "seed": "src/gzkit/commands/config_paths.py",
+    "consumer": "docs/user/manpages/check-config-paths.md",
+    "kind": "non_code_contract",
+    "direct": false,
+    "two_hop": false,
+    "upstream": false
+  },
+  {
+    "seed": "src/gzkit/commands/config_paths.py",
+    "consumer": ".gzkit/skills/gz-check-config-paths/SKILL.md",
+    "kind": "non_code_invocation",
+    "direct": false,
+    "two_hop": false,
+    "upstream": false
+  },
+  {
+    "seed": "src/gzkit/commands/config_paths.py",
+    "consumer": ".gzkit/chores/hardcoded-root-eradication/acceptance.json",
+    "kind": "non_code_executable_consumer",
+    "direct": false,
+    "two_hop": false,
+    "upstream": false
+  },
+  {
+    "seed": "src/gzkit/commands/config_paths.py",
+    "consumer": "src/gzkit/config.py",
+    "kind": "upstream_configuration_authority",
+    "direct": false,
+    "two_hop": false,
+    "upstream": true
+  },
+  {
+    "seed": "src/gzkit/commands/common.py",
+    "consumer": "src/gzkit/commands/config_paths.py",
+    "kind": "direct_static_import",
+    "direct": true,
+    "two_hop": true,
+    "upstream": false
+  },
+  {
+    "seed": "src/gzkit/commands/common.py",
+    "consumer": "src/gzkit/commands/plan_audit_cmd.py",
+    "kind": "direct_static_and_local_import",
+    "direct": true,
+    "two_hop": true,
+    "upstream": false
+  },
+  {
+    "seed": "src/gzkit/commands/common.py",
+    "consumer": "src/gzkit/commands/obpi_cmd.py",
+    "kind": "direct_static_import",
+    "direct": true,
+    "two_hop": true,
+    "upstream": false
+  },
+  {
+    "seed": "src/gzkit/commands/common.py",
+    "consumer": "src/gzkit/commands/adr_promote.py",
+    "kind": "direct_static_import",
+    "direct": true,
+    "two_hop": true,
+    "upstream": false
+  },
+  {
+    "seed": "src/gzkit/commands/common.py",
+    "consumer": "src/gzkit/cli/__init__.py",
+    "kind": "dynamic_string_reexport",
+    "direct": false,
+    "two_hop": true,
+    "upstream": false
+  },
+  {
+    "seed": "src/gzkit/commands/common.py",
+    "consumer": "src/gzkit/cli/main.py",
+    "kind": "direct_local_import_and_dynamic_reexport",
+    "direct": true,
+    "two_hop": true,
+    "upstream": false
+  },
+  {
+    "seed": "src/gzkit/commands/common.py",
+    "consumer": "tests/test_manifest_resolution.py",
+    "kind": "direct_test_import",
+    "direct": false,
+    "two_hop": false,
+    "upstream": false
+  },
+  {
+    "seed": "src/gzkit/commands/common.py",
+    "consumer": "tests/test_config_paths.py",
+    "kind": "indirect_test_consumer",
+    "direct": false,
+    "two_hop": false,
+    "upstream": false
+  },
+  {
+    "seed": "src/gzkit/__main__.py",
+    "consumer": "tests/commands/test_justify_validate.py",
+    "kind": "subprocess_module_entrypoint",
+    "direct": false,
+    "two_hop": false,
+    "upstream": false
+  },
+  {
+    "seed": "src/gzkit/__main__.py",
+    "consumer": "tests/governance/test_qc_binding_self_check.py",
+    "kind": "subprocess_module_entrypoint",
+    "direct": false,
+    "two_hop": false,
+    "upstream": false
+  },
+  {
+    "seed": "src/gzkit/__main__.py",
+    "consumer": "src/gzkit/cli/__init__.py",
+    "kind": "upstream_delegate_not_consumer",
+    "direct": false,
+    "two_hop": false,
+    "upstream": true
+  }
+]

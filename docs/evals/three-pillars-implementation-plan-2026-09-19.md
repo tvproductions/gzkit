@@ -21,6 +21,26 @@ instruction as an adopted remedy; they do not reject runtime improvements.
 Conversely, a local validator repair is useful without establishing that general
 obligation discovery has been solved.
 
+## Execution status — 2026-09-19 follow-through
+
+| Plan row | Observed status | Evidence / remaining action |
+|---|---|---|
+| 1: mirror-path equivalence | Shipped and synced; #1049 closed | Commit `08655b31b854e2f016b53bd638e3423e71936c13`; shared repair, behavioral regressions and independent review in [repair evidence](three-pillars-remedies-2026-09-19.md). |
+| 2: configured source audit | Shipped and synced; #1050 closed | Same commit; configured-root false-pass reproduction and coupled scope documentation repaired. Gate blocker #1051 also repaired and closed there. |
+| 3: proof currency | Design complete; ruling outstanding | [Concrete draft](three-pillars-proof-currency-design-2026-09-19.md). Recommend retaining the broad digest: this measurement adds evidence that import closure cannot safely narrow it. #1029 remains open for its explicit design ruling. |
+| 4: bounded impact assistance | Code-derived measurement complete; runtime feature unbuilt | [Report and reproducible artifacts](three-pillars-impact-2026-09-19/report.md), #1052. Import-only output misses live CLI registration; revise the proposal to typed import, registry and test evidence. Human review cost remains unmeasured; successor condition is not yet fully satisfied. |
+| 5: Stage-4 production outcome | Waiting for a real run | [Dated ledger census](three-pillars-impact-2026-09-19/production-status.md): zero post-treatment launches/proofs/reviews/OBPI receipts. #1028 remains open. Do not initiate an artificial OBPI to manufacture evidence. |
+
+The shipped repair commit passed all 62 full staged checks, 10,498 unit tests
+(four skipped), 432 BDD scenarios and 88.21% coverage. Those are evidence for
+that commit, not a prediction about future changes or proof of general discovery.
+
+The next decision is concrete: retain broad proof currency and approve the
+revised advisory report design for subsequent governed feature authoring, while
+keeping its runtime implementation in campaign order. Approval of a design does
+not itself initiate an OBPI. The remaining production observation depends on the
+next normal operator-initiated run; no additional prompt experiment is selected.
+
 ## Ranked remaining work
 
 The order below ranks this assessment's opportunities by demonstrated failure,

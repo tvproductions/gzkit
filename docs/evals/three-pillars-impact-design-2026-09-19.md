@@ -7,9 +7,10 @@ This is an advisory feature proposal, not an initiated ADR or a changed gate.
 
 ## Proposed product
 
-Given explicitly selected changed source paths, show the direct importing files
-that a reviewer should inspect, grouped by package, with the complete underlying
-edge list available. Show declared requirement links separately. State what was
+Given explicitly selected changed source paths, show separately attributed
+static importing files, known CLI handler registrations and test consumers. Group
+importing files by package with the complete underlying edge list available.
+Show declared requirement and document links separately. State what was
 scanned, what failed to parse, and which relationship types are unsupported.
 The result answers “which relationships were found for these changes?” It cannot
 certify that every affected consumer was found.
@@ -92,10 +93,9 @@ prompt trial.
 | Large fanout | Preserve full count/list and compare grouping effort; a hidden truncated tail does not satisfy boundedness. |
 | Data/config/test consumer not represented by imports | Retain it in the independent oracle and score the omission; do not quietly redefine impact to exclude it. |
 
-Recommendation: evaluate package-grouped direct consumers first, with full file
-detail retained. It has a concrete review workflow and preserves the existing
-index's limited meaning. It is a hypothesis about presentation, not a measured
-winner. Do not wire it into airlock accounting or use it to preserve proof
+Original recommendation: evaluate package-grouped direct consumers first, with
+full file detail retained. The dated measurement below now replaces that next
+action; do not repeat the experiment as though it were unperformed. Do not wire it into airlock accounting or use it to preserve proof
 currency. Those grant authority that this advisory view cannot establish.
 
 ## Routing and recorded residuals
@@ -111,3 +111,32 @@ lead. Whether default invocation violates its owner contract requires reading
 its callers and original requirements; this draft avoids assuming a new defect
 and passes configuration explicitly in its proposed evaluation. It is not
 silently folded into the config-path audit repair.
+
+## Measured revision — 2026-09-19
+
+[GHI #1052 measurement](three-pillars-impact-2026-09-19/report.md), on source
+baseline `08655b31b854e2f016b53bd638e3423e71936c13`, found direct file counts
+9 / 0 / 95 / 0 for the four selected units, reduced to 5 / 0 / 11 / 0 package
+groups. Two-hop counts were 27 / 0 / 127 / 0. Full lists are retained. Both
+adapters missed the config-path command's live dynamic registry chain; the
+source-root scan also excludes test consumers. Package grouping alone therefore
+does not meet the intended omission-reduction benefit.
+
+Revise the proposed first product to three typed advisory sections: static
+imports, known handler-registry relationships and test consumers. Reuse
+`cli/parser_handler_manifest.py`'s explicit module mapping for the second;
+resolve actual witnesses rather than assuming arbitrary strings are imports.
+For tests, distinguish direct imports from subprocess entry-point witnesses;
+retain uncertain semantic/data relationships explicitly. This is a proposed
+capability, not an implemented adapter or an assertion of complete coverage.
+
+Acceptance must recover the measured config-path dispatch chain and module-entry
+subprocess test witnesses, preserve full high-fanout detail, and expose unsupported
+relations. File and package counts are review-burden proxies only. An operator
+pilot must still measure review time and actual omissions avoided before the
+successor's boundedness claim is accepted. No display cap supplies that proof.
+
+Recommended ruling: approve this revised advisory design direction, retain broad
+proof currency, and preserve campaign sequencing. No ADR is booked and no OBPI
+is initiated by this draft or its measurement. #1029's design decision and the
+#1028 production observation remain separately tracked.
