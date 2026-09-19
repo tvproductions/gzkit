@@ -5,7 +5,7 @@ description: Create and book a GovZero ADR with its OBPI briefs. Enforces next-f
 category: adr-lifecycle
 compatibility: Requires GovZero v6 framework; provides governance rules internally for portable use across repositories
 metadata:
-  skill-version: "6.8.0"
+  skill-version: "6.8.1"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), linkage (ADR/OBPI/GHI), foundation-nominal-allocation (next-free-integer)"
@@ -79,7 +79,7 @@ ADRs propel MINOR versions only -- each ADR increments the minor odometer (human
 
 ## Assets
 
-- **ADR Template:** `src/gzkit/templates/adr.md` (canonical in-repo shape; the gold standard recent foundation ADRs use). The legacy `assets/ADR_TEMPLATE_SEMVER.md` is airlineops-flavored and superseded — do not use it.
+- **ADR Template:** `src/gzkit/templates/adr.md` (canonical in-repo shape; the gold standard recent foundation ADRs use).
 - **OBPI Brief Template:** `src/gzkit/templates/obpi.md` (canonical; `.gzkit/skills/gz-obpi-specify/assets/OBPI_BRIEF-template.md` is the authoring guide)
 
 ## Outputs
@@ -240,7 +240,7 @@ the decision before any artifacts exist, preventing scope ambiguity at the sourc
 
 ---
 
-1. **Read the canonical template** at `src/gzkit/templates/adr.md` (the in-repo shape recent foundation ADRs use; the legacy `assets/ADR_TEMPLATE_SEMVER.md` is superseded).
+1. **Read the canonical template** at `src/gzkit/templates/adr.md` (the in-repo shape recent foundation ADRs use).
 2. **Verify GovZero compliance:** ADR ID follows 0.y.z format; status uses canonical lifecycle states.
 3. **Scaffold through the CLI, not by hand.** Step 0's `gz interview adr --from` (non-pool) or `gz plan create --kind pool` writes the ADR folder and file from the template.
 4. Populate every section the scaffold left as a placeholder (§ Template Sections).

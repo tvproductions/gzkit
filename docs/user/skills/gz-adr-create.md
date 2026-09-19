@@ -1,17 +1,16 @@
 # /gz-adr-create
 
-Create and book a GovZero ADR with its OBPI briefs, enforcing SemVer odometer
-discipline and five-gate compliance.
+Create and book a GovZero ADR with its OBPI briefs, through a structured
+interview and the governed scaffolders.
 
 ---
 
 ## Purpose
 
 `/gz-adr-create` is the entry point for recording a new architectural decision.
-It scaffolds the full ADR package — the decision document, closeout form, OBPI
-briefs (one per checklist item), and registry entries — in a single invocation.
-The skill enforces GovZero v6 compliance: SemVer minor-version odometer, canonical
-lifecycle states, OBPI co-creation, and the ADR-contained directory layout.
+It interviews you, scaffolds the ADR from the canonical template, co-creates one
+OBPI brief per checklist item, confirms the ADR is booked in the ledger, and
+runs post-authoring QC.
 
 ## When to Use
 
@@ -25,68 +24,71 @@ design decision that needs formal governance tracking. Typical trigger points:
 - **When recording a retrospective decision** — if a decision was made informally
   and needs governance backing.
 
-This skill sits at the beginning of the ADR lifecycle. After creation, OBPIs
-are executed via `/gz-obpi-pipeline` and the ADR is closed via `/gz-closeout`.
+This skill sits at the beginning of the ADR lifecycle. After creation, the
+operator initiates each OBPI through `/gz-obpi-pipeline`, and the ADR is closed
+through `/gz-adr-closeout-ceremony`.
 See [Runbook: ADR Creation](../runbook.md) for the full workflow.
 
 ## What to Expect
 
-The skill performs these operations:
+1. **An interview, one question at a time.** The agent drafts each answer from
+   what it already knows and you correct it: the ADR pro-forma (kind, problem,
+   decision, alternatives, consequences, checklist) and seven design forcing
+   functions. `--kind` is always asked, never defaulted. In gzkit itself
+   `foundation` is closed to new authoring, so the choice is `feature` or `pool`.
+2. **The answers are recorded** to a JSON file kept alongside the ADR.
+3. **The ADR is scaffolded by the CLI** from `src/gzkit/templates/adr.md` —
+   `uv run gz interview adr --from <answers>.json` for a feature ADR,
+   `uv run gz plan create <slug> --kind pool --lane <lite|heavy>` for a pool ADR.
+   The scaffolder chooses the directory under `docs/design/adr/`.
+4. **OBPI briefs are co-created** — one per checklist item — with
+   `uv run gz specify`, then validated with
+   `uv run gz obpi validate --adr ADR-X.Y.Z --authored`. Pool ADRs carry no
+   briefs until they are promoted.
+5. **The ADR is confirmed in the ledger.** Feature scaffolding books it;
+   `uv run gz register-adrs` books a pool ADR and regenerates the derived status
+   index `docs/governance/GovZero/adr-status.md`, which is never hand-edited.
+6. **Post-authoring QC** runs through `/gz-adr-evaluate` (not for pool ADRs).
+7. **Validation:** `uv run gz test` and `uv run mkdocs build --strict`.
 
-1. **Reads the canonical ADR template** from its co-located assets.
-2. **Creates the ADR directory** under `docs/design/adr/{series}/ADR-{id}-{slug}/`.
-3. **Generates the ADR document** with all required sections populated from your
-   inputs (intent, decision, checklist items, interfaces, rationale, consequences).
-4. **Creates the OBPI briefs** — one per checklist item — in the `obpis/`
-   subfolder. Each brief has YAML frontmatter linking it to its parent ADR and
-   checklist item.
-5. **Creates the closeout form** (`ADR-CLOSEOUT-FORM.md`).
-6. **Updates three registries**: `adr_index.md`, `adr_status.md`, and the
-   governance copy at `docs/governance/GovZero/adr-status.md`.
-7. **Runs post-authoring QC** via `/gz-adr-evaluate` to score the ADR and OBPIs.
-8. **Validates** with `uv run gz test` and `uv run mkdocs build --strict`.
+No closeout form is written at authoring; `gz closeout` writes
+`ADR-CLOSEOUT-FORM.md` when the ADR is closed out.
 
-Typical runtime is 1-3 minutes depending on the number of checklist items.
-The ADR starts in `Proposed` status.
+**Success** looks like: an ADR document with every template section populated,
+the interview answers beside it, one brief per checklist item, and the ADR
+visible in `uv run gz adr report`.
 
-**Success** looks like: ADR directory with document, closeout form, and OBPI
-briefs; all three registries updated; mkdocs build passes.
-
-**Failure** looks like: duplicate ADR ID, template not found, or registry
-validation errors.
+**Failure** looks like: a duplicate ADR ID, an ADR on disk that the ledger does
+not know, or more checklist items than briefs.
 
 ## Invocation
 
 ```text
-/gz-adr-create ADR-0.25.0 --title agent-capability-uplift
-/gz-adr-create ADR-0.25.0 --title agent-capability-uplift --series adr-0.25.x
+/gz-adr-create
+/gz-adr-create ADR-0.36.0 --title convergence-moment-cross-family-critic
 ```
 
-| Argument / Flag | Required | Description |
-|-----------------|----------|-------------|
-| `ADR-X.Y.Z` | yes | The ADR identifier (SemVer format) |
-| `--title` | yes | Kebab-case slug for the ADR directory name |
-| `--series` | no | Series folder (e.g., `adr-0.25.x`); inferred from version if omitted |
-| `--brief-count` | no | Number of OBPI briefs; inferred from checklist if omitted |
+| Argument | Required | Description |
+|----------|----------|-------------|
+| `ADR-X.Y.Z` | no | The ADR identifier; confirmed during the interview if omitted |
+| `--title` | no | Kebab-case slug for the ADR directory name |
 
 ## Supporting Files
 
 | File | Role | Read/Write |
 |------|------|------------|
 | `.claude/skills/gz-adr-create/SKILL.md` | Agent execution instructions | Read |
-| `.claude/skills/gz-adr-create/assets/ADR_TEMPLATE_SEMVER.md` | Canonical ADR template with all required sections | Read |
+| `src/gzkit/templates/adr.md` | Canonical ADR template | Read |
 | `src/gzkit/templates/obpi.md` | OBPI brief template for generated briefs | Read |
-| `docs/design/adr/adr_index.md` | ADR index registry | Read/Write |
-| `docs/design/adr/adr_status.md` | ADR status table | Read/Write |
-| `docs/governance/GovZero/adr-status.md` | Governance copy of ADR status | Read/Write |
+| `docs/governance/GovZero/adr-status.md` | Derived ADR status index, regenerated by `gz register-adrs` | Generated |
 
 ## Related Skills and Commands
 
 | Related | Relationship |
 |---------|-------------|
 | [`/gz-design`](gz-design.md) | Typically precedes ADR creation — produces the design decision |
-| [`/gz-specify`](gz-specify.md) | Alternative for creating individual OBPI briefs after ADR exists |
+| [`/gz-obpi-specify`](gz-obpi-specify.md) | Creates and authors individual OBPI briefs after the ADR exists |
 | [`/gz-adr-evaluate`](gz-adr-evaluate.md) | Post-authoring QC evaluation run during creation |
-| [`/gz-obpi-pipeline`](gz-obpi-pipeline.md) | Executes the OBPIs created by this skill |
-| [`/gz-closeout`](gz-closeout.md) | Closes the ADR after all OBPIs complete |
-| [`gz register-adrs`](../commands/register-adrs.md) | Registers ADR ledger events after creation |
+| [`/gz-obpi-pipeline`](gz-obpi-pipeline.md) | Executes the OBPIs created by this skill, when the operator initiates them |
+| [`/gz-adr-closeout-ceremony`](gz-adr-closeout-ceremony.md) | Closes the ADR after all OBPIs complete |
+| [`gz register-adrs`](../manpages/register-adrs.md) | Books ADRs missing from the ledger and regenerates the status index |
