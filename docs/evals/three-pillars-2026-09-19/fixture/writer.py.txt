@@ -1,0 +1,2 @@
+def store(db, gross, discount):
+    db.execute("INSERT INTO orders(total, discount) VALUES (?, ?)", (gross, discount))

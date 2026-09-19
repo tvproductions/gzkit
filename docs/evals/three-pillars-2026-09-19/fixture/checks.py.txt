@@ -1,0 +1,2 @@
+def test_write_shape():
+    assert len((100, 10)) == 2

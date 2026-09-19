@@ -1,0 +1,12 @@
+{
+  "A": {
+    "pipeline_sha256": "1b37d8f24056adcff80a5341de15c8b47d6d033805a8e23a9cb83945aca3038c",
+    "pipeline_bytes": 125891,
+    "handoff_sha256": "713d37ee60141865852aefd21d030124ee0bbadc58907f02332c2ee5d545570d"
+  },
+  "B": {
+    "pipeline_sha256": "93d4cf4d8fe1cdd3635baaaa599df2c55021b0fb91abe2c7cbf76ff74510018a",
+    "pipeline_bytes": 124041,
+    "handoff_sha256": "713d37ee60141865852aefd21d030124ee0bbadc58907f02332c2ee5d545570d"
+  }
+}

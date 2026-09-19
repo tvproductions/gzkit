@@ -1,0 +1,18 @@
+{
+  "gross_contract": {
+    "stored_total": 100,
+    "discount": 10,
+    "recognized_revenue": 90,
+    "contract_expected": 90,
+    "shape_check_passed": true,
+    "semantic_assertion_passed": true
+  },
+  "writer_only_net_mutation": {
+    "stored_total": 90,
+    "discount": 10,
+    "recognized_revenue": 80,
+    "contract_expected": 90,
+    "shape_check_passed": true,
+    "semantic_assertion_passed": false
+  }
+}
