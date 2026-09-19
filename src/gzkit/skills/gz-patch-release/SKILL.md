@@ -5,7 +5,7 @@ description: "Orchestrate the GHI-driven patch release ceremony: draft narrative
 category: adr-audit
 compatibility: GovZero v6 framework; provides ceremony walkthrough for GHI-driven patch releases
 metadata:
-  skill-version: "1.10.0"
+  skill-version: "1.11.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/releases/patch-release.md, docs/design/adr/foundation/ADR-0.0.15-ghi-driven-patch-release-ceremony/ADR-0.0.15-ghi-driven-patch-release-ceremony.md"
@@ -13,7 +13,7 @@ metadata:
   govzero_layer: "Layer 2 - Ledger Consumption"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-08-12
+last_reviewed: 2026-09-19
 model: sonnet
 ---
 
@@ -121,8 +121,8 @@ Present the output to the operator. This shows:
   diff_only, open_upstream, excluded)
 - Warnings for label/diff disagreements and for still-open GHIs
 
-If no GHIs qualify (all excluded), inform the operator and stop. There is no
-release to make.
+If neither qualifier fires — no GHI qualifies and no foundation closeout is
+enumerated — inform the operator and stop. There is no release to make.
 
 #### Step 1a: Labeling-recovery (binding when `diff_only` GHIs surface)
 
@@ -191,7 +191,7 @@ The operator adjudicates, per GHI:
 
    | Case | Signal | Action |
    |------|--------|--------|
-   | Fix landed; close pending push | The range contains the complete remedy; nothing is held back | Close the GHI (`gh issue close <N> --comment "…"` citing the commit SHA), re-run discovery, and it reports `qualified` |
+   | Fix landed; close pending push | The range contains the complete remedy; nothing is held back | Close the GHI through `ghi-close` (it verifies the commit and writes the citation comment), re-run discovery, and it reports `qualified` |
    | Work under a still-open tracker | Part of the scope landed; the GHI intentionally remains open | Leave open. Describe **only what actually landed** in Step 2 — never the GHI's full scope — and do not count it in the `Stats` line |
 
 3. Re-run `uv run gz patch release --dry-run` after any closures.
@@ -372,9 +372,7 @@ closeout ceremony.
 
 #### 4d. GitHub Release (non-Foundation only)
 
-**Foundation ADRs (0.0.x) skip this step.** The Foundation skip policy applies
-to patch releases the same way it applies to minor releases in the closeout
-ceremony.
+**A Foundation (`0.0.x`) release skips this step.** The skip keys on the **release's own version**: it applies only when the project version being released is itself `0.0.x`. A foundation-ADR closeout *qualifier* does not trigger it (§ Qualifier Doctrine: the release flow is identical regardless of which qualifier fired).
 
 For non-Foundation releases, publish ONLY the newest version block as the
 release body — `RELEASE_NOTES.md` is cumulative, so `--notes-file` on the whole
@@ -404,6 +402,7 @@ Patch release vX.Y.Z complete.
   Version synced: pyproject.toml, __init__.py, README badge
   Manifest: docs/releases/PATCH-vX.Y.Z.md
   RELEASE_NOTES.md: updated
+  CHANGELOG.md: [Unreleased] stamped vX.Y.Z
   Git-sync: committed and pushed
   GitHub release: created / skipped (Foundation)
 ```
@@ -412,38 +411,25 @@ Patch release vX.Y.Z complete.
 
 ## Foundation Policy
 
-Foundation ADRs (version 0.0.x) follow a restricted release path:
-
-- Version sync: **yes** (pyproject.toml, `__init__.py`, README badge)
-- Manifest: **yes** (markdown + JSONL)
-- RELEASE_NOTES.md: **yes**
-- Git-sync: **yes**
-- GitHub release: **no** — skipped per existing Foundation policy
-
-This mirrors the `FOUNDATION_SKIP_STEPS` behavior in the closeout ceremony.
+A release whose own version is `0.0.x` does everything except Step 4d: version
+sync, manifest, RELEASE_NOTES.md, CHANGELOG.md and git-sync all run; the GitHub
+release is skipped. This mirrors `FOUNDATION_SKIP_STEPS` in the closeout
+ceremony. A foundation-ADR closeout qualifying an ordinary patch release is
+not a Foundation release.
 
 ---
 
-## MUST Rules
+## Rules
 
-1. **MUST** draft narrative release notes from GHI content — never use raw titles
-2. **MUST** wait for explicit operator approval before any publish action
-3. **MUST** run `uv run gz git-sync --apply` immediately before
-   `gh release create`
-4. **MUST** skip GitHub release creation for Foundation (0.0.x) ADRs
-5. **MUST** use `sync_project_version` via `gz patch release` — never manually
-   edit version files
-6. **MUST** execute Steps 4a-4e without pauses after operator approval
-
-## MUST NOT Rules
-
-1. **MUST NOT** use raw GHI titles as release notes
-2. **MUST NOT** proceed past Step 3 without explicit operator approval
-3. **MUST NOT** create a GitHub release for Foundation (0.0.x) versions
-4. **MUST NOT** pause between Step 4 sub-steps for confirmation or summaries
-5. **MUST NOT** manually edit pyproject.toml, `__init__.py`, or README badge —
-   version sync is `gz patch release`'s responsibility
-6. **MUST NOT** skip the git-sync step or reorder it after `gh release create`
+1. **Draft narrative release notes from GHI content** — never use raw titles.
+2. **Wait for explicit operator approval** (Step 3) before any publish action.
+3. **Run `uv run gz git-sync --apply` immediately before `gh release create`** —
+   never skip it, never reorder it after.
+4. **Skip GitHub release creation only when the release's own version is `0.0.x`.**
+5. **Let `gz patch release` sync versions** (`sync_project_version`) — never
+   manually edit pyproject.toml, `__init__.py` or the README badge.
+6. **Execute Steps 4a–4e without pauses** for confirmation or summaries once
+   the operator has approved.
 
 ---
 
