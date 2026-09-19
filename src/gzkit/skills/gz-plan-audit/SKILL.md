@@ -5,17 +5,17 @@ description: Pre-flight alignment audit — verify ADR intent, OBPI brief scope,
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-08-08
+last_reviewed: 2026-09-19
 compatibility: Works with GovZero-compliant repositories; in gzkit the receipt is written under .claude/plans/, consumed by gz-obpi-pipeline, and enforced by the registered plan-exit hooks tracked by ADR-0.12.0.
 metadata:
-  skill-version: "6.4.1"
+  skill-version: "6.5.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero_layer: "Layer 1 - Evidence Gathering"
 model: sonnet
 ---
 
-# gz-plan-audit (v6.0.0)
+# gz-plan-audit
 
 ## Purpose
 
@@ -41,14 +41,14 @@ Typical workflow:
 4. Operator runs `/gz-plan-audit OBPI-X.Y.Z-NN` again after planning.
 5. If the plan aligns, proceed into `gz-obpi-pipeline`.
 
-Current gzkit compatibility rule:
+The receipt and its consumers:
 
-- The `gz-plan-audit` skill is ported and may write
-  `.claude/plans/.plan-audit-receipt.json`.
-- `gz-obpi-pipeline` already consumes that receipt when it exists.
-- The registered Claude hook chain now consumes that receipt mechanically:
-  `plan-audit-gate.py` blocks `ExitPlanMode` without a valid receipt and
-  `pipeline-router.py` routes PASS receipts into `gz-obpi-pipeline`.
+- `uv run gz plan audit` writes the receipt, one per OBPI: `.claude/plans/.plan-audit-receipt-{OBPI-ID}.json`
+  (`pipeline_receipt_path`). The bare `.plan-audit-receipt.json` is the legacy
+  name; readers still accept it as a fallback, nothing writes it.
+- `plan-audit-gate.py` blocks `ExitPlanMode` without a valid receipt;
+  `pipeline-router.py` routes a PASS receipt into `gz-obpi-pipeline`, which reads
+  it at Stage 1.
 
 ## Persona
 
@@ -69,7 +69,7 @@ These thoughts mean STOP — you are about to skip a critical alignment check:
 
 ### Red Flags
 
-- Implementation starts without a `.plan-audit-receipt.json` in `.claude/plans/`
+- Implementation starts without this OBPI's plan-audit receipt in `.claude/plans/`
 - Plan audit receipt shows PASS but gaps were hand-waved as "minor"
 - Agent proceeds directly from brief reading to implementation without structured comparison
 - ADR intent mentions capabilities not reflected in the OBPI brief requirements
@@ -109,7 +109,7 @@ Layer 1 - Evidence Gathering. See
   - Plan <-> OBPI alignment status
   - Specific gaps and mismatches with citations
   - Recommendations to update the brief, update the plan, or flag an ADR defect
-- Receipt file written to `.claude/plans/.plan-audit-receipt.json`
+- Receipt file at `.claude/plans/.plan-audit-receipt-{OBPI-ID}.json`, written by the CLI in Step 1
 
 ## Procedure
 
@@ -161,7 +161,7 @@ Compare the brief against its parent ADR checklist item:
 | Scope match | Are the brief allowed paths consistent with the ADR integration points? |
 | Requirements coverage | Do the brief requirements cover what the ADR checklist item implies? |
 | Lane consistency | Does the brief lane match the parent ADR lane? |
-| Attestation rule | Does the brief inherit the parent ADR attestation requirement correctly? |
+| Attestation rule | Gate 5 attestation is universal (ADR-0.0.36) — does the brief avoid claiming an exemption from it? |
 | No scope creep | Does the brief avoid adding requirements not present in the ADR? |
 | No scope gap | Does the brief avoid omitting requirements present in the ADR? |
 
@@ -174,7 +174,7 @@ Auto-discover the plan file from `.claude/plans/`:
 1. Search `.claude/plans/*.md` for files referencing this OBPI ID.
 2. If multiple matches exist, use the newest by modification time.
 3. If `plan_path` was provided explicitly, use that instead.
-4. If no plan exists, report `No plan found` and skip Step 5.
+4. If no plan exists, report `No plan found` and skip Steps 6 and 6a.
 
 Extract:
 
@@ -260,7 +260,8 @@ PASS - All checks aligned, safe to proceed with implementation.
 FAIL - N gaps found. Fix alignment before implementing.
 ```
 
-Write the receipt file on completion:
+The receipt already exists: Step 1's `gz plan audit` wrote it, with these fields
+(plus `gaps` and `scope_collisions` when present):
 
 ```json
 {
@@ -271,6 +272,10 @@ Write the receipt file on completion:
   "gaps_found": 0
 }
 ```
+
+If Steps 2–6 found gaps the CLI's structural checks did not, rewrite that same
+file with `verdict: FAIL` and the true `gaps_found` — the CLI has no flag for a
+semantic verdict, and a PASS receipt over a failed audit routes the pipeline.
 
 Receipt contract:
 
@@ -285,7 +290,7 @@ Return control to the caller:
 
 - If invoked standalone by an operator: end the turn after presenting the report.
 - If invoked from `gz-obpi-pipeline` as a sub-step: control returns to Stage 1
-  step 6 (lock claim) and Stage 2 (implementation) begins immediately in the
+  (which goes on to the lock claim) and Stage 2 (implementation) begins in the
   same turn. Do NOT end the turn — that violates the pipeline's Iron Law.
 
 ## Enforcement
@@ -295,29 +300,13 @@ Active enforcement contract for gzkit:
 - Registered hook: `.claude/hooks/plan-audit-gate.py`
 - Registered router consumer: `.claude/hooks/pipeline-router.py`
 - Active registration surface: `.claude/settings.json`
-- Current consumer already present: `.gzkit/skills/gz-obpi-pipeline/SKILL.md`
+- Consumer: `.gzkit/skills/gz-obpi-pipeline/SKILL.md` (Stage 1)
 
-Current state:
-
-- The operator still invokes `/gz-plan-audit` manually.
-- `gz-obpi-pipeline` consumes `.claude/plans/.plan-audit-receipt.json` when it
-  exists.
-- Missing or stale receipts are now a mechanical `ExitPlanMode` block through
-  `plan-audit-gate.py`.
-- PASS receipts now trigger the registered `pipeline-router.py` surface after
-  plan exit, directing operators into `gz-obpi-pipeline`.
-
-Future gate logic to preserve:
-
-1. Find the most recently modified plan in `.claude/plans/`
-2. Extract OBPI IDs from the plan content
-3. If no OBPI reference exists, allow
-4. Check `.claude/plans/.plan-audit-receipt.json`:
-   - receipt must exist
-   - receipt OBPI must match plan OBPI
-   - receipt must be newer than the plan file
-   - receipt must contain a `PASS` or `FAIL` verdict
-5. Invalid or missing receipt blocks plan exit in the registered hook chain
+The operator still invokes `/gz-plan-audit` manually. The gate's logic lives in
+`plan-audit-gate.py`, not here: it finds the newest plan, extracts its OBPI ids,
+and blocks plan exit unless a receipt exists for that OBPI, is newer than the
+plan file, and carries a `PASS` or `FAIL` verdict. A plan that references no
+OBPI is allowed through.
 
 ## Failure Modes
 
