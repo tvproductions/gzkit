@@ -1,10 +1,25 @@
-# Proof currency: decision draft for GHI #1029
+# Proof currency: ruled decision for GHI #1029
 
 Dated 2026-09-19; code baseline `d6bc23d0ebef83a1b3391c521e35931f5f8013b6`.
 Persona: main-session — craftsperson, governance-aware, whole-file reasoning,
 direct. Parent: [three-pillars implementation plan](three-pillars-implementation-plan-2026-09-19.md),
 [GHI #1029](https://github.com/tvproductions/gzkit/issues/1029).
-This is a design proposal for review, not a ruled change to acceptance authority.
+## Operator ruling — 2026-09-19
+
+Operator: g0. Verbatim response: **"A"**.
+
+The selected option was: **"Keep the broad invalidation rule for now
+(recommended)."** Its stated tradeoff was preserving the existing protection
+while leaving the repeated-work problem unresolved. The alternative was to
+pursue an independently enforced narrower mechanism; that was not selected.
+
+Disposition under GHI #1029: **won't-fix for now, operator-approved**. Retain
+current broad proof and review currency. No runtime, schema, acceptance rule,
+ADR or OBPI is changed or initiated by this ruling. The design-decision exit
+is satisfied; the repeated-work cost remains. The candidate acceptance cases
+below remain requirements for any future narrowing, not delivered behavior.
+Advisory impact work has its separate work order in GHI #1053; production
+observation remains in GHI #1028. This choice does not decide either issue.
 
 ## Recommendation
 
@@ -81,11 +96,10 @@ carry the producer's authority provenance, preserve old ledger records unchanged
 and exercise status, context, review import and completion against the same cases.
 No automatic schema migration should turn an old digest into new authority.
 
-## Decision still required
+## Decision resolved
 
-The concrete choice is whether the expected reduction in repeated proof and
-review warrants designing an independently enforced execution boundary. The
-current recommendation is to retain broad currency and develop advisory impact
-assistance first; it delivers useful relationship evidence without granting stale
-proof credit. #1029 remains open for the operator's design ruling. This draft
-does not close it or initiate an OBPI.
+The operator selected retention of broad currency as recorded above. This
+discharges #1029's design-ruling exit without claiming narrower currency or
+reduced repetition has been implemented. Future narrowing requires a new
+explicit decision and evidence for independent dependency authority. The
+separate advisory proposal does not acquire acceptance authority from this ruling.

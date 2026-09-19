@@ -9,8 +9,8 @@ not new repository doctrine, an ADR, or OBPI initiation.
 
 ## Overall completion: INCOMPLETE
 
-Checked against the linked GitHub issues on 2026-09-19. **Two of the five plan
-rows are complete; three remain open.** This is a row count, not a percentage
+Checked against the linked GitHub issues on 2026-09-19. **Three of the five plan
+rows are resolved; two remain open.** This is a row count, not a percentage
 of engineering effort. The assessment and several measurements are complete;
 the overall remedy plan is not. Status clarification is recorded under #1053.
 
@@ -18,7 +18,7 @@ the overall remedy plan is not. Status clarification is recorded under #1053.
 |---|---|---|
 | 1 — mirror-path repair | **YES** | #1049 closed with shipped commit `08655b31b854e2f016b53bd638e3423e71936c13`, behavioral regression evidence and review. |
 | 2 — configured-source repair | **YES** | #1050 closed with the same shipped commit, configured-root regression evidence and review. |
-| 3 — proof-currency decision | **NO** | #1029 is open. A reviewed draft exists; its required operator design ruling is not recorded. Retaining broad currency is a recommendation, not a booked decision. |
+| 3 — proof-currency decision | **YES — disposition** | Operator g0 selected "A" on 2026-09-19: retain broad invalidation for now. [Recorded ruling](three-pillars-proof-currency-design-2026-09-19.md), #1029. The repeated-work cost remains; no runtime narrowing was delivered. |
 | 4 — advisory impact remedy | **NO** | #1053 is open. #1052 completed only the measurement. The proposed capability is unbuilt; design disposition, review-cost evidence and any adopted implementation/validation remain outstanding. |
 | 5 — Stage-4 production validation | **NO** | #1028 is open. The dated census contains no qualifying post-treatment production run; the required launch/proof/review/round/exit comparison is missing. |
 
@@ -58,7 +58,7 @@ obligation discovery has been solved.
 Operator direction: "all of this work needs to be conducted under a GHI".
 The remaining advisory-impact design, boundedness validation and implementation
 disposition are conducted under [GHI #1053](https://github.com/tvproductions/gzkit/issues/1053).
-Proof currency remains under #1029; production validation remains under #1028.
+The proof-currency ruling is recorded under #1029; production validation remains under #1028.
 Completed repairs and measurements retain the GHI/commit links below. Each next
 work unit names its issue before execution and records decisions and evidence
 there; a closed measurement issue does not discharge an unbuilt feature.
@@ -67,7 +67,7 @@ there; a closed measurement issue does not discharge an unbuilt feature.
 |---|---|---|
 | 1: mirror-path equivalence | Shipped and synced; #1049 closed | Commit `08655b31b854e2f016b53bd638e3423e71936c13`; shared repair, behavioral regressions and independent review in [repair evidence](three-pillars-remedies-2026-09-19.md). |
 | 2: configured source audit | Shipped and synced; #1050 closed | Same commit; configured-root false-pass reproduction and coupled scope documentation repaired. Gate blocker #1051 also repaired and closed there. |
-| 3: proof currency | Design complete; ruling outstanding | [Concrete draft](three-pillars-proof-currency-design-2026-09-19.md). Recommend retaining the broad digest: this measurement adds evidence that import closure cannot safely narrow it. #1029 remains open for its explicit design ruling. |
+| 3: proof currency | Operator disposition recorded | [Ruled decision](three-pillars-proof-currency-design-2026-09-19.md): g0 selected "A", retaining broad currency for now. #1029 closes as operator-approved won't-fix, not an implemented reduction in repetition. |
 | 4: bounded impact assistance | Code-derived measurement complete; runtime feature unbuilt | [Report and reproducible artifacts](three-pillars-impact-2026-09-19/report.md), #1052. Import-only output misses live CLI registration; revise the proposal to typed import, registry and test evidence. Human review cost remains unmeasured; successor condition is not yet fully satisfied. |
 | 5: Stage-4 production outcome | Waiting for a real run | [Dated ledger census](three-pillars-impact-2026-09-19/production-status.md): zero post-treatment launches/proofs/reviews/OBPI receipts. #1028 remains open. Do not initiate an artificial OBPI to manufacture evidence. |
 
@@ -75,8 +75,9 @@ The shipped repair commit passed all 62 full staged checks, 10,498 unit tests
 (four skipped), 432 BDD scenarios and 88.21% coverage. Those are evidence for
 that commit, not a prediction about future changes or proof of general discovery.
 
-The next decision is concrete: retain broad proof currency and approve the
-revised advisory report design for subsequent governed feature authoring, while
+The proof-currency decision is recorded: retain the broad key for now. The
+remaining design decision concerns the revised advisory report and its
+subsequent governed feature authoring, while
 keeping its runtime implementation in campaign order. Approval of a design does
 not itself initiate an OBPI. The remaining production observation depends on the
 next normal operator-initiated run; no additional prompt experiment is selected.
@@ -116,8 +117,9 @@ and closure; an in-flight patch is not yet shipped evidence.
 
 Concrete drafts: [proof currency](three-pillars-proof-currency-design-2026-09-19.md)
 and [bounded impact assistance](three-pillars-impact-design-2026-09-19.md).
-They contain source maps, alternatives and acceptance cases; neither is a ruled
-change or an initiated feature.
+They contain source maps, alternatives and acceptance cases. The proof-currency
+draft now records the operator ruling to retain current behavior; advisory
+impact remains a proposal. Neither initiates a feature.
 
 ### Proof currency: decide what can safely remain current
 
@@ -200,9 +202,9 @@ checks, and close with the landed commit and observed evidence. This plan is
 not itself proof that either candidate is repaired. The repair issues and their
 commits supply that evidence.
 
-The two concrete design drafts above now exist with source-backed alternatives
-and acceptance cases. After the bounded repairs, evaluate and rule their
-recommendations; do not repeat the drafting step. Do not stop merely to ask whether to continue
+The two concrete designs above exist with source-backed alternatives and
+acceptance cases. The operator has ruled proof currency; advisory impact still
+needs its disposition. Do not repeat the drafting step. Do not stop merely to ask whether to continue
 authorized analysis. Do not treat a design proposal as operator initiation of an
 OBPI or as permission to change what completion trusts.
 
