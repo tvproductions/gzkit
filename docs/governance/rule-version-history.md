@@ -649,6 +649,14 @@ Lifted 2026-08-29 at version `0.11.0` (rule now at `0.12.0`).
 
 ## `tests.md`
 
+### Clarified 2026-09-19 at version `0.26.3` (GHI #1047)
+
+The empty smoke-tier claim now states the opt-in boundary established by GHI
+#724 and `ce234a0fb`: absent/false `smoke.required` gives advisory success; true
+gives a policy breach. No runtime policy or budget changed. Version `0.26.2`
+had clarified the default unit-only behavior and explicit BDD selector under
+GHI #1042; those obligations remain unchanged.
+
 ### Lifted 2026-09-17 at version `0.25.0` (rule now at `0.26.0`)
 
 Diet pass under GHI #921 (operator: "A" on the full before/after, 24,015 B → 10,551 B). Binding rules unchanged; measured instances, histories and the mutation-sweep example moved to [Tests — Rationale](tests-rationale.md#lifted-2026-09-17-from-testsmd-0250-diet-pass-ghi-921). The `0.25.0` note, verbatim:

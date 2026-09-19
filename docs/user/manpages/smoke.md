@@ -12,7 +12,7 @@ gz smoke [OPTIONS]
 
 Runs only the tests marked with the `@smoke` decorator, then fails closed if the
 run exceeds the budget declared in `.gzkit/rules/tests.md`, or if the tier is
-empty.
+empty and `.gzkit.json` declares `"smoke": {"required": true}`.
 
 This is the bounded subset the 60-second ceiling was written for. The rule bound
 that ceiling to a "Smoke/BVT" suite covering "current-scope surfaces only" —
@@ -26,9 +26,11 @@ constant budget over a ratcheting workload can only be breached, never held.
 Parallelism does not change that — the same suite measures 71.4s across 32
 processes, still over.
 
-An **empty** tier is treated as a policy breach, not a pass. A subset with no
-members satisfies any budget trivially, which is the green-by-emptiness shape
-`gz validate --qc-binding` refuses.
+An **empty required** tier is a policy breach. A subset with no members satisfies
+any budget trivially, which is the green-by-emptiness shape
+`gz validate --qc-binding` refuses. When `smoke.required` is absent or false,
+an empty tier passes with an advisory: adopters opt into the non-emptiness policy.
+Populated tiers still run and enforce their budget regardless of that setting.
 
 ## Options
 
@@ -40,9 +42,9 @@ members satisfies any budget trivially, which is the green-by-emptiness shape
 
 | Code | Meaning |
 |------|---------|
-| 0 | Smoke tier passed within budget |
+| 0 | Smoke tier passed within budget, or an empty non-required tier passed with an advisory |
 | 1 | One or more smoke tests failed — the build does not verify |
-| 3 | Policy breach: the tier is empty, or the run exceeded its budget |
+| 3 | Policy breach: a required tier is empty, or the run exceeded its budget |
 
 ## Adding a smoke test
 

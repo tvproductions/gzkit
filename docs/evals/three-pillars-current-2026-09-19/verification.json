@@ -1,0 +1,62 @@
+{
+  "oracle_unchanged": true,
+  "snapshot_regular_files_checked": 7687,
+  "snapshot_changed_files": [],
+  "runs": [
+    {
+      "run": "C01",
+      "bytes": 5468,
+      "words": 669,
+      "sha256": "42dc363ab4bdd2c50510d1e4671b234f57708ffb8a88afb9fe93ece877f0565a",
+      "prompt_unchanged": true,
+      "returned_matches_saved": true,
+      "observed_commands": 8
+    },
+    {
+      "run": "C02",
+      "bytes": 5561,
+      "words": 695,
+      "sha256": "e9d2d537aa079332c16305083ac904aae688225ac4fae60332900f679068e136",
+      "prompt_unchanged": true,
+      "returned_matches_saved": true,
+      "observed_commands": 8
+    },
+    {
+      "run": "C03",
+      "bytes": 5537,
+      "words": 668,
+      "sha256": "9c6769cca6cc50e696ea6ba3a86ff3695c882f585f7343d547a7b4c50fc4faa4",
+      "prompt_unchanged": true,
+      "returned_matches_saved": true,
+      "observed_commands": 9
+    },
+    {
+      "run": "C04",
+      "bytes": 5908,
+      "words": 730,
+      "sha256": "2f8e0f1ea72f555db910b46aa39c664a8f845869b713c4c10cc2ba22a75d3baa",
+      "prompt_unchanged": true,
+      "returned_matches_saved": true,
+      "observed_commands": 8
+    },
+    {
+      "run": "C05",
+      "bytes": 5717,
+      "words": 675,
+      "sha256": "5717f0ab68a71f5cf69d3fb7bd4c5878f222a517bc9b9cbc716af21ad4649be3",
+      "prompt_unchanged": true,
+      "returned_matches_saved": true,
+      "observed_commands": 8
+    },
+    {
+      "run": "C06",
+      "bytes": 5686,
+      "words": 713,
+      "sha256": "68e395408d6e010b1860fbb381b908f9222ee26d8a891c5360ff73e6b058751c",
+      "prompt_unchanged": true,
+      "returned_matches_saved": true,
+      "observed_commands": 9
+    }
+  ],
+  "limitations": "Search-exclusion exposures in C02/C04/C06 retained; no inference of zero contamination."
+}

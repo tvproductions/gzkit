@@ -5,10 +5,10 @@ description: Run full quality checks in one pass. Use for pre-merge or pre-attes
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-27
+last_reviewed: 2026-09-19
 model: haiku
 metadata:
-  skill-version: "1.5.1"
+  skill-version: "1.5.2"
 ---
 
 # gz check
@@ -32,8 +32,9 @@ Unified quality gate for all code verification. Replaces the individual
 | `uv run gz check` | All of the above in one pass |
 
 `gz smoke` is the cheapest useful signal: it runs only `@smoke`-marked tests and
-fails closed if they exceed the budget in `.gzkit/rules/tests.md`, or if the tier
-is empty. It proves the build *answers*; it never substitutes for `gz test`,
+fails closed if they exceed the budget in `.gzkit/rules/tests.md`. An empty tier
+fails only when `.gzkit.json` declares `smoke.required: true`; otherwise it passes
+with an advisory. It proves the build *answers*; it never substitutes for `gz test`,
 which proves it is correct.
 
 ## When to Use

@@ -28,8 +28,8 @@ def smoke_gate(project_root: Path | None = None, budget: float | None = None) ->
     outcomes and only one of them means broken code.
 
     Exit codes follow `.claude/rules/cli.md`: 1 for a test failure the author
-    can fix in code, 3 for a policy breach — an empty tier or an over-budget run
-    are both contract violations rather than broken code.
+    can fix in code, 3 for a policy breach — a required empty tier or an
+    over-budget run. An empty tier without opt-in is advisory success (0).
     """
     root = project_root or Path.cwd()
     budget = SMOKE_BUDGET_SECONDS if budget is None else budget

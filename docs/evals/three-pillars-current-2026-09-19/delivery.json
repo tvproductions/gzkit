@@ -1,0 +1,155 @@
+{
+  "baseline": "da741ef0d6c924c4b6b62bd75f8c1431faddcae2",
+  "cli_version": "codex-cli 0.155.1",
+  "method": "codex debug prompt-input; original config and trust retained; temporary sqlite_home only; no model task",
+  "probes": [
+    {
+      "start": "root",
+      "prompt_sha256": "9e94327292d960f068f38baa756a3a9d3cb6ea1f7fba037abf7d2879aba156fd",
+      "inner_bytes": 19872,
+      "expected_bytes_with_separators": 19872,
+      "exact_chain_match": true,
+      "files": [
+        {
+          "path": "AGENTS.md",
+          "disk_bytes": 19872,
+          "sha256": "d7f8a4041c5bd6afceceb97a33413a5dd14c54c1fdafc23e6d2ab3817226f276",
+          "full_source_present_in_order": true,
+          "start_offset": 0,
+          "delivered_source_bytes": 19872
+        }
+      ],
+      "skills_blocks": [
+        {
+          "bytes": 22187,
+          "sha256": "76eb93f6129d614de1b5017d2a4f88fa6dd55a80660e8da52857bfa23f0d7d2a"
+        }
+      ]
+    },
+    {
+      "start": "commands",
+      "prompt_sha256": "ec30e86b399628a252672e4fae05c6bbc201270b09047b1ce4a9fa8449c59e99",
+      "inner_bytes": 55374,
+      "expected_bytes_with_separators": 55374,
+      "exact_chain_match": true,
+      "files": [
+        {
+          "path": "AGENTS.md",
+          "disk_bytes": 19872,
+          "sha256": "d7f8a4041c5bd6afceceb97a33413a5dd14c54c1fdafc23e6d2ab3817226f276",
+          "full_source_present_in_order": true,
+          "start_offset": 0,
+          "delivered_source_bytes": 19872
+        },
+        {
+          "path": "src/AGENTS.md",
+          "disk_bytes": 7458,
+          "sha256": "960e0a92d03b14dc5d7ee7fb1de96980b5c478d9e0c8d0440ba26379d944db0b",
+          "full_source_present_in_order": true,
+          "start_offset": 19874,
+          "delivered_source_bytes": 7458
+        },
+        {
+          "path": "src/gzkit/AGENTS.md",
+          "disk_bytes": 15214,
+          "sha256": "e3e099988def737c6edba1566fb231762473a177e06e1d0b08c519ddef5d035f",
+          "full_source_present_in_order": true,
+          "start_offset": 27334,
+          "delivered_source_bytes": 15214
+        },
+        {
+          "path": "src/gzkit/commands/AGENTS.md",
+          "disk_bytes": 12824,
+          "sha256": "b0e81ba8cd1375ec72a1d257ea409d1c73011a9bafe639b4bec658470817b033",
+          "full_source_present_in_order": true,
+          "start_offset": 42550,
+          "delivered_source_bytes": 12824
+        }
+      ],
+      "skills_blocks": [
+        {
+          "bytes": 22187,
+          "sha256": "76eb93f6129d614de1b5017d2a4f88fa6dd55a80660e8da52857bfa23f0d7d2a"
+        }
+      ]
+    },
+    {
+      "start": "tests",
+      "prompt_sha256": "0fddc0bc766012889a799f88959d927e4ea64645e10140560554605adc8f21d8",
+      "inner_bytes": 35961,
+      "expected_bytes_with_separators": 35961,
+      "exact_chain_match": true,
+      "files": [
+        {
+          "path": "AGENTS.md",
+          "disk_bytes": 19872,
+          "sha256": "d7f8a4041c5bd6afceceb97a33413a5dd14c54c1fdafc23e6d2ab3817226f276",
+          "full_source_present_in_order": true,
+          "start_offset": 0,
+          "delivered_source_bytes": 19872
+        },
+        {
+          "path": "tests/AGENTS.md",
+          "disk_bytes": 16087,
+          "sha256": "66a698e7a1ead8dfea1413b3e93698298d91c0f4a887b4faedb8ef3db1c3f418",
+          "full_source_present_in_order": true,
+          "start_offset": 19874,
+          "delivered_source_bytes": 16087
+        }
+      ],
+      "skills_blocks": [
+        {
+          "bytes": 22187,
+          "sha256": "76eb93f6129d614de1b5017d2a4f88fa6dd55a80660e8da52857bfa23f0d7d2a"
+        }
+      ]
+    },
+    {
+      "start": "docs",
+      "prompt_sha256": "b9660c069793649507cc6fdc8bc040c02bb1b193383f10ebd1b970e9848b0ca5",
+      "inner_bytes": 27335,
+      "expected_bytes_with_separators": 27335,
+      "exact_chain_match": true,
+      "files": [
+        {
+          "path": "AGENTS.md",
+          "disk_bytes": 19872,
+          "sha256": "d7f8a4041c5bd6afceceb97a33413a5dd14c54c1fdafc23e6d2ab3817226f276",
+          "full_source_present_in_order": true,
+          "start_offset": 0,
+          "delivered_source_bytes": 19872
+        },
+        {
+          "path": "docs/AGENTS.md",
+          "disk_bytes": 3463,
+          "sha256": "ff1ab1515a41637579e7ae7a9e0991cfd9a6da967d234d102fce0f0f889fd3df",
+          "full_source_present_in_order": true,
+          "start_offset": 19874,
+          "delivered_source_bytes": 3463
+        },
+        {
+          "path": "docs/governance/AGENTS.md",
+          "disk_bytes": 3996,
+          "sha256": "5c5977d2cc4f210cbd3248708585e00fbcd29996f49a1c2a0976bb3862bac22a",
+          "full_source_present_in_order": true,
+          "start_offset": 23339,
+          "delivered_source_bytes": 3996
+        }
+      ],
+      "skills_blocks": [
+        {
+          "bytes": 22187,
+          "sha256": "76eb93f6129d614de1b5017d2a4f88fa6dd55a80660e8da52857bfa23f0d7d2a"
+        }
+      ]
+    }
+  ],
+  "negative_control": {
+    "override": "project_doc_max_bytes=12000, command-line only",
+    "delivered_bytes": 12000,
+    "disk_bytes": 19872,
+    "matches_source_prefix": true,
+    "whole_source_match": false,
+    "exit_code": 0
+  }
+}

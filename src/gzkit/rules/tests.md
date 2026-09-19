@@ -5,17 +5,17 @@ paths:
 description: Test policy and coverage requirements
 ---
 
-<!-- rule-version: 0.26.2 -->
+<!-- rule-version: 0.26.3 -->
 
 # Test Policy (canonical)
 
-> **Rule version:** `0.26.2` — state the existing default unit-only behavior and explicit BDD selector (GHI #1042); full-check obligations are unchanged. Rationale: [Tests — Rationale](../../docs/governance/tests-rationale.md); history: [Rule Version History](../../docs/governance/rule-version-history.md#testsmd).
+> **Rule version:** `0.26.3` — state the existing smoke empty-tier opt-in boundary (GHI #1047); budget and full-check obligations are unchanged. Rationale: [Tests — Rationale](../../docs/governance/tests-rationale.md); history: [Rule Version History](../../docs/governance/rule-version-history.md#testsmd).
 
 ## General Rules (binding)
 
 - Use **stdlib `unittest`**; no pytest — no pytest syntax, fixtures, parametrization or plugins. `unittest.mock` and `tempfile.TemporaryDirectory()` are the fixtures.
 - Table-driven tests with deterministic seeds; no network or external services; fixtures local, small and reproducible.
-- **Smoke/BVT <=60s** — binds the `@smoke`-marked subset run by `uv run gz smoke`, NOT the full unit tier. That verb fails closed (exit 3) on breach or an empty tier and runs as the `Smoke tier` step of `gz check`. The full unit tier has no ceiling: it grows with the REQ set, and the canonical "Tests pass" invocation runs it with `unittest-parallel`.
+- **Smoke/BVT <=60s** — binds the `@smoke`-marked subset run by `uv run gz smoke`, NOT the full unit tier. That verb fails closed (exit 3) on budget breach, or on an empty tier when `.gzkit.json` declares `smoke.required: true`; an empty tier with that setting absent or false passes with an advisory. It runs as the `Smoke tier` step of `gz check`. The full unit tier has no ceiling: it grows with the REQ set, and the canonical "Tests pass" invocation runs it with `unittest-parallel`.
 - Unit tests use `tempfile` temp DBs; never a live database.
 - **Git fixture isolation:** every `git` a test spawns passes `env=_isolated_git_env()` from `tests/commands/common.py`, and `tests/__init__.py` drops the same repo-local variables once, so a fixture targeting a temp repository operates on that repository whatever the process inherited — from a linked worktree an unguarded `git init` re-initialises the hosting repo as bare (GHI #977). Fenced by `tests/commands/test_common_fixtures.py::TestEveryGitSpawnIsInsideTheBoundary`.
 - Cleanup through `tempfile.TemporaryDirectory()`; never raw `shutil.rmtree()` in tearDown.

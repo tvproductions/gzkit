@@ -1,0 +1,456 @@
+{
+  "schema_version": 1,
+  "persona": "quality-reviewer",
+  "independent": true,
+  "source_protocol": "docs/evals/three-pillars-current-2026-09-19/protocol.md",
+  "source_oracle": "docs/evals/three-pillars-current-2026-09-19/cases.json",
+  "snapshot": "/tmp/gzkit-current-snapshot",
+  "scoring_notes": [
+    "D=specific discovery; R=causal relationship; A=consistent proposed application; complete requires all three.",
+    "Exact short quotes are raw-answer excerpts; notes identify missing evidence and semantic-equivalence decisions.",
+    "Optional unchanged regressions are not required. Preservation of existing contracts can establish application without a prescribed test inventory.",
+    "S3 credits explicit exit/quality propagation as semantic evidence; child returncode retention is implicit across smoke responses, retained as ambiguity for primary adjudication.",
+    "C04 S6 credits an end-after-execution timer plus subsequent gate comparison as semantic post-run enforcement; explicit timeout wording is absent.",
+    "No other evaluations, working-tree repair, or current code outside the snapshot were inspected. Snapshot was used only for smoke consumer/prose witness clarification."
+  ],
+  "runs": [
+    {
+      "id": "C01",
+      "task": "current_flag_mention_boundary",
+      "criteria": [
+        {
+          "id": "F1",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "quote": "checks `if flag in content`. Thus a manpage containing only `--output-format` satisfies `--output`",
+          "note": "Distinguishes truth matching; proposes exact mention and delimiter positive tests.",
+          "complete": true
+        },
+        {
+          "id": "F2",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "quote": "A newly detected presence gap therefore affects the command and quality outcome, even though the command-level cross-coverage report can remain green.",
+          "note": "Canonical paths, JSON failure, issue and CLI nonzero test covered.",
+          "complete": true
+        },
+        {
+          "id": "F3",
+          "D": 1,
+          "R": 0,
+          "A": 1,
+          "quote": "No parser-discovery or manifest-schema change is needed for the stated example.",
+          "note": "Discovers existing stream and preserves exact waivers; does not demonstrate that manifest governs command obligations rather than serving as a flag filter. No active authority violation.",
+          "complete": false
+        },
+        {
+          "id": "F4",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "quote": "It checks requiredness and value-taking only in fenced Usage/Synopsis blocks. Presence and truth deliberately answer different questions.",
+          "note": "Preserves whole-document presence, usage-only truth, and missing-page delegation.",
+          "complete": true
+        },
+        {
+          "id": "F5",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "quote": "Update the coverage docstring’s explicit substring promise and clarify the presence assertion",
+          "note": "Uses one spec scan and proposes real-manpage audit without claiming census results.",
+          "complete": true
+        }
+      ],
+      "flags": {
+        "unsupported_scope": [],
+        "unsafe_policy_changes": [],
+        "false_execution_claims": []
+      },
+      "total": {
+        "D": 5,
+        "R": 4,
+        "A": 5,
+        "complete": 4,
+        "criteria": 5
+      }
+    },
+    {
+      "id": "C02",
+      "task": "current_smoke_elapsed_scope",
+      "criteria": [
+        {
+          "id": "S1",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "quote": "phase-driven advancement must distinguish that mutation.",
+          "note": "Timer before collect; fake clock advanced independently in collection/selection and execution.",
+          "complete": true
+        },
+        {
+          "id": "S2",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "quote": "A test failure takes precedence (1); successful runs exceeding the budget return 3; equality passes.",
+          "note": "Same elapsed for print and comparison; code default/override retained. Does not explicitly discuss rounding; preservation of unchanged comparison supplies semantic consistency.",
+          "complete": true
+        },
+        {
+          "id": "S3",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "quote": "The wrapper raises `SystemExit` for nonzero results.",
+          "note": "Also identifies subprocess full-check consumer, corrected verdict inheritance, and mocked subprocess propagation verification. QualityResult field spelling and retained code assertion are implicit; semantic credit with ambiguity.",
+          "complete": true
+        },
+        {
+          "id": "S4",
+          "D": 1,
+          "R": 0,
+          "A": 1,
+          "quote": "With no marked files, it returns advisory success unless `smoke.required` is true, when it returns 3.",
+          "note": "Identifies observed opt-in behavior and preserves it, but does not identify contradictory unconditional empty-tier prose. Other prose conflict (full-tier budget) does not establish this criterion.",
+          "complete": false
+        },
+        {
+          "id": "S5",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "quote": "Preserve ... live discovery and marker filtering",
+          "note": "Preserves membership; proposes nested marked/unmarked verification. Optional unchanged decorator details not required.",
+          "complete": true
+        },
+        {
+          "id": "S6",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "quote": "This is post-run enforcement, not a timeout that interrupts discovery or execution.",
+          "note": "Runner/help/manpage/rule timing wording and unchanged ceiling covered.",
+          "complete": true
+        }
+      ],
+      "flags": {
+        "unsupported_scope": [
+          {
+            "quote": "reconcile this touched explanatory surface",
+            "note": "Proposes reconciling full-unit larger-budget prose beyond pure timing scope. Coupled recovery guidance is plausibly justified; retain as scope ambiguity, not unsafe ceiling rewrite."
+          }
+        ],
+        "unsafe_policy_changes": [],
+        "false_execution_claims": [],
+        "protocol_exposure": [
+          {
+            "quote": "broad chores search incidentally exposed proof/audit snippets, including pair-review material",
+            "note": "Self-reported exposure, explicitly not used; independent score does not certify clean boundary."
+          }
+        ]
+      },
+      "total": {
+        "D": 6,
+        "R": 5,
+        "A": 6,
+        "complete": 5,
+        "criteria": 6
+      }
+    },
+    {
+      "id": "C03",
+      "task": "current_flag_mention_boundary",
+      "criteria": [
+        {
+          "id": "F1",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "quote": "checks `if flag in content`. Therefore a manpage containing only `--output-format` satisfies coverage for `--output`.",
+          "note": "Distinguishes truth; tests exact positive and delimiters.",
+          "complete": true
+        },
+        {
+          "id": "F2",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "quote": "A flag finding can therefore coexist with passing command-level coverage without requiring a schema change.",
+          "note": "Canonical issue path and CLI JSON/exit collision verification covered.",
+          "complete": true
+        },
+        {
+          "id": "F3",
+          "D": 1,
+          "R": 0,
+          "A": 1,
+          "quote": "Preserve ... the shared AST discovery.",
+          "note": "Discovers correct flag stream and protects waivers, but does not demonstrate manifest command-obligation authority versus per-flag discovery/filter distinction.",
+          "complete": false
+        },
+        {
+          "id": "F4",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "quote": "borrowing the truth check’s Usage-only scope would reject currently valid prose/example documentation.",
+          "note": "Both scopes, historical prose truth regression, missing-page delegation preserved.",
+          "complete": true
+        },
+        {
+          "id": "F5",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "quote": "their identity/count needs a later census",
+          "note": "Docstring/manpage update, single discovery, real census proposed without current gap claims.",
+          "complete": true
+        }
+      ],
+      "flags": {
+        "unsupported_scope": [],
+        "unsafe_policy_changes": [],
+        "false_execution_claims": []
+      },
+      "total": {
+        "D": 5,
+        "R": 4,
+        "A": 5,
+        "complete": 4,
+        "criteria": 5
+      }
+    },
+    {
+      "id": "C04",
+      "task": "current_smoke_elapsed_scope",
+      "criteria": [
+        {
+          "id": "S1",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "quote": "fake monotonic clock advanced by discovery, selection, and execution",
+          "note": "True measurement boundary and phase-sensitive test explicit.",
+          "complete": true
+        },
+        {
+          "id": "S2",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "quote": "Keep the CLI summary and enforcement bound to that same total, with rounding confined to display.",
+          "note": "Default/override, strict comparison, failure precedence, boundary verification explicit.",
+          "complete": true
+        },
+        {
+          "id": "S3",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "quote": "They consume the same CLI exit rather than independently timing smoke",
+          "note": "Full-check adapter identified; shell/quality-wrapper propagation proposed. SystemExit and QualityResult field spellings absent; semantic exit transport credit, with retained-child-code verification implicit and therefore ambiguous.",
+          "complete": true
+        },
+        {
+          "id": "S4",
+          "D": 1,
+          "R": 0,
+          "A": 1,
+          "quote": "Empty static selection returns advisory success unless `SmokeConfig.required` is true",
+          "note": "Observed opt-in behavior and preserving tests present; never identifies unconditional empty-tier prose conflict.",
+          "complete": false
+        },
+        {
+          "id": "S5",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "quote": "Unmarked tests are imported but not executed.",
+          "note": "Preserves marker selection and verifies marked/unmarked nested cases.",
+          "complete": true
+        },
+        {
+          "id": "S6",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "quote": "Start the monotonic measurement before collection and end it after execution.",
+          "note": "Docstring/manpage/help, unchanged ceiling and factual timing. Post-run nature follows proposed end-after-execution comparison; no explicit timeout distinction, semantic credit.",
+          "complete": true
+        }
+      ],
+      "flags": {
+        "unsupported_scope": [
+          {
+            "quote": "correct that coupled operator guidance when editing it",
+            "note": "Full-unit budget prose reconciliation proposed. Plausibly coupled recovery guidance, retain ambiguity separately."
+          }
+        ],
+        "unsafe_policy_changes": [],
+        "false_execution_claims": [],
+        "protocol_exposure": [
+          {
+            "quote": "One broad design search inadvertently returned evaluation-scorecard snippets",
+            "note": "Self-reported non-use; prevents clean exclusion-boundary certification."
+          }
+        ]
+      },
+      "total": {
+        "D": 6,
+        "R": 5,
+        "A": 6,
+        "complete": 5,
+        "criteria": 6
+      }
+    },
+    {
+      "id": "C05",
+      "task": "current_flag_mention_boundary",
+      "criteria": [
+        {
+          "id": "F1",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "quote": "uses `if flag in content`. Consequently, a document containing only `--output-format` satisfies `--output`.",
+          "note": "Existing truth matcher distinguished, exact positive/delimiter verification explicit.",
+          "complete": true
+        },
+        {
+          "id": "F2",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "quote": "Command-level cross-coverage may still pass when flag coverage fails; its counters are not flag counters.",
+          "note": "Canonical issue paths, combined JSON failure/CLI exit, otherwise-valid fixture explicit.",
+          "complete": true
+        },
+        {
+          "id": "F3",
+          "D": 1,
+          "R": 0,
+          "A": 1,
+          "quote": "Preserve AST discovery, name/spec projections",
+          "note": "Discovery and explicit waiver boundaries preserved. Does not demonstrate manifest's command-obligation authority versus flag discovery/per-flag filtering.",
+          "complete": false
+        },
+        {
+          "id": "F4",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "quote": "Neither check should acquire the other's scope.",
+          "note": "Whole-page presence, fenced-usage truth, missing-page delegation explicit.",
+          "complete": true
+        },
+        {
+          "id": "F5",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "quote": "Audit newly exposed real-document gaps and repair genuine missing mentions rather than silently adding waivers.",
+          "note": "Coupled docstring/manpage, existing population census test and discovery stream identified.",
+          "complete": true
+        }
+      ],
+      "flags": {
+        "unsupported_scope": [],
+        "unsafe_policy_changes": [],
+        "false_execution_claims": []
+      },
+      "total": {
+        "D": 5,
+        "R": 4,
+        "A": 5,
+        "complete": 4,
+        "criteria": 5
+      }
+    },
+    {
+      "id": "C06",
+      "task": "current_smoke_elapsed_scope",
+      "criteria": [
+        {
+          "id": "S1",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "quote": "A runner-only measurement must fail the assertion",
+          "note": "Timer boundary, discovery/selection causal exclusion, phase-sensitive clock verification explicit.",
+          "complete": true
+        },
+        {
+          "id": "S2",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "quote": "compares that same unrounded value with the budget",
+          "note": "Default/override and precise comparison/precedence supported by boundary tests.",
+          "complete": true
+        },
+        {
+          "id": "S3",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "quote": "`smoke_cmd` translates nonzero results into `SystemExit`; `cli.main` preserves those codes.",
+          "note": "Quality adapter/full-check registry identified and quality-result propagation verified prospectively; exact child returncode assertion implicit, retain ambiguity.",
+          "complete": true
+        },
+        {
+          "id": "S4",
+          "D": 1,
+          "R": 0,
+          "A": 1,
+          "quote": "An empty scan passes advisorially unless `smoke.required` is true",
+          "note": "Observed opt-in and preservation identified, but contradictory unconditional empty-tier prose not named. Full-unit larger-budget conflict is a distinct finding.",
+          "complete": false
+        },
+        {
+          "id": "S5",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "quote": "Preserve discovery’s actual marked/unmarked selection semantics",
+          "note": "Membership retained, expensive unmarked import effects explained. Unchanged metadata-only details optional.",
+          "complete": true
+        },
+        {
+          "id": "S6",
+          "D": 1,
+          "R": 1,
+          "A": 1,
+          "quote": "This remains post-run enforcement, not an interrupting timeout.",
+          "note": "Coupled timing docs and fixed ceiling authority preserved.",
+          "complete": true
+        }
+      ],
+      "flags": {
+        "unsupported_scope": [
+          {
+            "quote": "Reconcile touched explanations.",
+            "note": "Full-unit larger-budget prose reconciliation proposed; plausibly coupled recovery guidance, retain scope ambiguity separately."
+          }
+        ],
+        "unsafe_policy_changes": [],
+        "false_execution_claims": [],
+        "protocol_exposure": [
+          {
+            "quote": "Broad search accidentally returned an `EVALUATION_SCORECARD.md` match",
+            "note": "Self-reported exclusion-boundary slip; non-use claimed, independently unverified."
+          }
+        ]
+      },
+      "total": {
+        "D": 6,
+        "R": 5,
+        "A": 6,
+        "complete": 5,
+        "criteria": 6
+      }
+    }
+  ]
+}

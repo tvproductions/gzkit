@@ -28,6 +28,17 @@ justify presenting it as a remedy for context reliability.
 
 ## Recovery and plan actually followed
 
+### Current-baseline follow-up, 2026-09-19
+
+The [current reassessment](../three-pillars-current-2026-09-19/results.md)
+adds native prompt-assembly measurements and six repeated prospective
+discovery assessments at `da741ef0d`. All four sampled native instruction
+chains arrived whole. Each task's three answers omitted the same relationship;
+the documented scores and search-exposure deviations bound that result.
+One independently verified stale smoke-policy explanation is repaired under
+GHI #1047. This supersedes old load/truncation assumptions for the measured
+paths without claiming general discovery improvement.
+
 ### Historical discovery follow-up, 2026-09-19
 
 The operator-authorized follow-up under GHI #1045 is now recorded in the

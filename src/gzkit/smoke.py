@@ -20,7 +20,8 @@ enough:
 * **Budget** — the run must finish inside :data:`SMOKE_BUDGET_SECONDS`.
 * **Non-emptiness** — a tier with no members passes any budget trivially. That
   is the green-by-emptiness shape `gz validate --qc-binding` exists to refuse,
-  so `gz smoke` fails closed on an empty selection.
+  so `gz smoke` fails closed on an empty tier when the project opts in with
+  `smoke.required`. An absent/false setting leaves an empty tier advisory.
 
 Membership deliberately avoids a hand-maintained roster. The seed member
 enumerates verbs from the *live* parser, so a newly registered command is

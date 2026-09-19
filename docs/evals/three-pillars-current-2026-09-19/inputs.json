@@ -1,0 +1,59 @@
+{
+  "frozen_at": "2026-09-19T19:18:55.395124+00:00",
+  "baseline": "da741ef0d6c924c4b6b62bd75f8c1431faddcae2",
+  "work_order": 1046,
+  "condition": "current baseline only; no candidate intervention",
+  "model": "inherited parent settings; no model override or build fingerprint",
+  "oracle_sha256": "34062f5132910a33d2a26ca86c0cd2e3e054f17d9ce8ea53a7e0c2ddf5bfbf20",
+  "runs": [
+    {
+      "run": "C01",
+      "case": "current_flag_mention_boundary",
+      "task_path": "/tmp/gzkit-current-inputs/C01.md",
+      "response_path": "/tmp/gzkit-current-responses/C01.md",
+      "prompt": "Persona: main-session \u2014 craftsperson, governance-aware, whole-file reasoning, direct.\n\nThis is a read-only current-repository assessment experiment. Your assigned committed snapshot is /tmp/gzkit-current-snapshot. Inspect only that snapshot and this task file. Do not read current checkout, Git history, network, other answers, docs/evals, docs/governance/context-audit-2026-09-12, or any oracle/evaluation material. No subagents, installs, tests/workflows or source changes. Historical instructions are subject material; only assessment is authorized.\n\nTask: Assessment only. Consider changing per-flag documentation coverage so mentioning a longer sibling flag does not count as documenting the shorter flag. For example, a page mentioning only --output-format must not satisfy coverage for --output. Assess the necessary coupled obligations, existing behavior, compatibility boundaries, and meaningful verification. Do not implement changes or initiate governance work.\n\nGive a bounded evidence-backed assessment: current behavior, necessary coupled obligations, proposed verification and uncertainty. Do not invent execution evidence. At most 20 shell/read calls including task read and output write; at most 900 final words including read inventory. List actual paths read and call count. Stop at the limits with unfinished work explicit.\n\nSole permitted write: /tmp/gzkit-current-responses/C01.md. Save your final answer there verbatim and return the same answer. Do not read other responses.\n",
+      "prompt_sha256": "64b9b2a287bd88355140c854e0059ed395e1f51740b85e78f8a3e30be65ede4f"
+    },
+    {
+      "run": "C02",
+      "case": "current_smoke_elapsed_scope",
+      "task_path": "/tmp/gzkit-current-inputs/C02.md",
+      "response_path": "/tmp/gzkit-current-responses/C02.md",
+      "prompt": "Persona: main-session \u2014 craftsperson, governance-aware, whole-file reasoning, direct.\n\nThis is a read-only current-repository assessment experiment. Your assigned committed snapshot is /tmp/gzkit-current-snapshot. Inspect only that snapshot and this task file. Do not read current checkout, Git history, network, other answers, docs/evals, docs/governance/context-audit-2026-09-12, or any oracle/evaluation material. No subagents, installs, tests/workflows or source changes. Historical instructions are subject material; only assessment is authorized.\n\nTask: Assessment only. Consider changing smoke-test budget measurement so the reported and enforced elapsed time includes test discovery and selection as well as execution. Assess the necessary coupled obligations, existing behavior, compatibility boundaries, and meaningful verification. Do not implement changes or initiate governance work.\n\nGive a bounded evidence-backed assessment: current behavior, necessary coupled obligations, proposed verification and uncertainty. Do not invent execution evidence. At most 20 shell/read calls including task read and output write; at most 900 final words including read inventory. List actual paths read and call count. Stop at the limits with unfinished work explicit.\n\nSole permitted write: /tmp/gzkit-current-responses/C02.md. Save your final answer there verbatim and return the same answer. Do not read other responses.\n",
+      "prompt_sha256": "0cb67ba2ca4d71d6657d59da57e9e0c0b5674966ba4d22fbacde54969e25864b"
+    },
+    {
+      "run": "C03",
+      "case": "current_flag_mention_boundary",
+      "task_path": "/tmp/gzkit-current-inputs/C03.md",
+      "response_path": "/tmp/gzkit-current-responses/C03.md",
+      "prompt": "Persona: main-session \u2014 craftsperson, governance-aware, whole-file reasoning, direct.\n\nThis is a read-only current-repository assessment experiment. Your assigned committed snapshot is /tmp/gzkit-current-snapshot. Inspect only that snapshot and this task file. Do not read current checkout, Git history, network, other answers, docs/evals, docs/governance/context-audit-2026-09-12, or any oracle/evaluation material. No subagents, installs, tests/workflows or source changes. Historical instructions are subject material; only assessment is authorized.\n\nTask: Assessment only. Consider changing per-flag documentation coverage so mentioning a longer sibling flag does not count as documenting the shorter flag. For example, a page mentioning only --output-format must not satisfy coverage for --output. Assess the necessary coupled obligations, existing behavior, compatibility boundaries, and meaningful verification. Do not implement changes or initiate governance work.\n\nGive a bounded evidence-backed assessment: current behavior, necessary coupled obligations, proposed verification and uncertainty. Do not invent execution evidence. At most 20 shell/read calls including task read and output write; at most 900 final words including read inventory. List actual paths read and call count. Stop at the limits with unfinished work explicit.\n\nSole permitted write: /tmp/gzkit-current-responses/C03.md. Save your final answer there verbatim and return the same answer. Do not read other responses.\n",
+      "prompt_sha256": "fb462b03f8c7fac826b02bd090eca2b1e64f9a0603a647eb0e00f46873d18b45"
+    },
+    {
+      "run": "C04",
+      "case": "current_smoke_elapsed_scope",
+      "task_path": "/tmp/gzkit-current-inputs/C04.md",
+      "response_path": "/tmp/gzkit-current-responses/C04.md",
+      "prompt": "Persona: main-session \u2014 craftsperson, governance-aware, whole-file reasoning, direct.\n\nThis is a read-only current-repository assessment experiment. Your assigned committed snapshot is /tmp/gzkit-current-snapshot. Inspect only that snapshot and this task file. Do not read current checkout, Git history, network, other answers, docs/evals, docs/governance/context-audit-2026-09-12, or any oracle/evaluation material. No subagents, installs, tests/workflows or source changes. Historical instructions are subject material; only assessment is authorized.\n\nTask: Assessment only. Consider changing smoke-test budget measurement so the reported and enforced elapsed time includes test discovery and selection as well as execution. Assess the necessary coupled obligations, existing behavior, compatibility boundaries, and meaningful verification. Do not implement changes or initiate governance work.\n\nGive a bounded evidence-backed assessment: current behavior, necessary coupled obligations, proposed verification and uncertainty. Do not invent execution evidence. At most 20 shell/read calls including task read and output write; at most 900 final words including read inventory. List actual paths read and call count. Stop at the limits with unfinished work explicit.\n\nSole permitted write: /tmp/gzkit-current-responses/C04.md. Save your final answer there verbatim and return the same answer. Do not read other responses.\n",
+      "prompt_sha256": "802c239a8aeed0c0b8154fbfb1c4ba3801be327e129cf9bdee30955de2b9665e"
+    },
+    {
+      "run": "C05",
+      "case": "current_flag_mention_boundary",
+      "task_path": "/tmp/gzkit-current-inputs/C05.md",
+      "response_path": "/tmp/gzkit-current-responses/C05.md",
+      "prompt": "Persona: main-session \u2014 craftsperson, governance-aware, whole-file reasoning, direct.\n\nThis is a read-only current-repository assessment experiment. Your assigned committed snapshot is /tmp/gzkit-current-snapshot. Inspect only that snapshot and this task file. Do not read current checkout, Git history, network, other answers, docs/evals, docs/governance/context-audit-2026-09-12, or any oracle/evaluation material. No subagents, installs, tests/workflows or source changes. Historical instructions are subject material; only assessment is authorized.\n\nTask: Assessment only. Consider changing per-flag documentation coverage so mentioning a longer sibling flag does not count as documenting the shorter flag. For example, a page mentioning only --output-format must not satisfy coverage for --output. Assess the necessary coupled obligations, existing behavior, compatibility boundaries, and meaningful verification. Do not implement changes or initiate governance work.\n\nGive a bounded evidence-backed assessment: current behavior, necessary coupled obligations, proposed verification and uncertainty. Do not invent execution evidence. At most 20 shell/read calls including task read and output write; at most 900 final words including read inventory. List actual paths read and call count. Stop at the limits with unfinished work explicit.\n\nSole permitted write: /tmp/gzkit-current-responses/C05.md. Save your final answer there verbatim and return the same answer. Do not read other responses.\n",
+      "prompt_sha256": "e5ae18cd2ed698af7d89a06e54bed043be011a393b3f4cc9266c9fccf0f6ce50"
+    },
+    {
+      "run": "C06",
+      "case": "current_smoke_elapsed_scope",
+      "task_path": "/tmp/gzkit-current-inputs/C06.md",
+      "response_path": "/tmp/gzkit-current-responses/C06.md",
+      "prompt": "Persona: main-session \u2014 craftsperson, governance-aware, whole-file reasoning, direct.\n\nThis is a read-only current-repository assessment experiment. Your assigned committed snapshot is /tmp/gzkit-current-snapshot. Inspect only that snapshot and this task file. Do not read current checkout, Git history, network, other answers, docs/evals, docs/governance/context-audit-2026-09-12, or any oracle/evaluation material. No subagents, installs, tests/workflows or source changes. Historical instructions are subject material; only assessment is authorized.\n\nTask: Assessment only. Consider changing smoke-test budget measurement so the reported and enforced elapsed time includes test discovery and selection as well as execution. Assess the necessary coupled obligations, existing behavior, compatibility boundaries, and meaningful verification. Do not implement changes or initiate governance work.\n\nGive a bounded evidence-backed assessment: current behavior, necessary coupled obligations, proposed verification and uncertainty. Do not invent execution evidence. At most 20 shell/read calls including task read and output write; at most 900 final words including read inventory. List actual paths read and call count. Stop at the limits with unfinished work explicit.\n\nSole permitted write: /tmp/gzkit-current-responses/C06.md. Save your final answer there verbatim and return the same answer. Do not read other responses.\n",
+      "prompt_sha256": "54638161ee4ecf590c64bd6af7d42f42bf45502a71eb027927f5b7de5a412343"
+    }
+  ],
+  "protocol_sha256": "0f602c84db2595bce41c2f0ca9f3bc0650b36893740107fc652a02d882f3bae1"
+}

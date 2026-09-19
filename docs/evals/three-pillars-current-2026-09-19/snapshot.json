@@ -1,0 +1,22 @@
+{
+  "commit": "da741ef0d6c924c4b6b62bd75f8c1431faddcae2",
+  "tree": "745fd58abf9a5753e2eb14bd93674d0e95e55d8a",
+  "archive_sha256": "9e640907230b32a7a0b34d3ed2b40f8f5fe8041cd1081f7edeb12760f48786df",
+  "omitted_links": [
+    {
+      "path": ".codex/tmp/arg0/codex-arg088aA51/apply_patch",
+      "reason": "AbsoluteLinkError"
+    },
+    {
+      "path": ".codex/tmp/arg0/codex-arg088aA51/applypatch",
+      "reason": "AbsoluteLinkError"
+    },
+    {
+      "path": ".codex/tmp/arg0/codex-arg088aA51/codex-execve-wrapper",
+      "reason": "AbsoluteLinkError"
+    }
+  ],
+  "regular_file_count": 7687,
+  "verified_unchanged": true,
+  "snapshot_path": "/tmp/gzkit-current-snapshot"
+}

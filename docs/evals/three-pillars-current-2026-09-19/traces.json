@@ -1,0 +1,332 @@
+[
+  {
+    "run": "C01",
+    "commands": [
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-current-inputs/C01.md'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'flag.coverage|per.flag|flag_coverage|--output-format' src tests docs/user .gzkit/personas\"",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'cat src/gzkit/doc_coverage/flag_scanner.py tests/commands/test_cli_audit.py docs/user/manpages/cli-audit.md'",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'check_flag_doc_coverage|scan_command_flags|check_flag_doc_truth|_mentions|cli_audit_cmd' src tests --glob '*.py'; rg --files .gzkit/personas; rg -n 'per.flag|flag.scanner|flag documentation' docs/governance/adr --glob '*.md'\"",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "failed",
+        "exitCode": 2
+      },
+      {
+        "command": "/bin/zsh -lc 'cat .gzkit/personas/main-session.md src/gzkit/commands/cli_audit.py tests/commands/test_audit.py'",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '1,125p' tests/commands/test_cli_audit.py; cat src/gzkit/doc_coverage/manifest.py; rg -n 'cli.audit|cli_audit' src/gzkit/commands/check.py src/gzkit/quality* .gzkit/manifest.json; rg --files docs/design | head -25\"",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '650,746p' src/gzkit/quality.py; sed -n '798,806p' src/gzkit/quality.py; sed -n '1,180p' src/gzkit/doc_coverage/scanner.py; rg -n 'flag_scanner|per-flag|per.flag documentation' docs/design/adr --glob '*.md' --glob '\"'!**/*eval*'\"'\"",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "[write designated response; complete raw answer retained separately]",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0
+      }
+    ]
+  },
+  {
+    "run": "C02",
+    "commands": [
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-current-inputs/C02.md'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'smoke|perf_counter' src/gzkit tests --glob '*smoke*' --glob '*test*'\"",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'cat src/gzkit/smoke.py src/gzkit/commands/smoke_cmd.py tests/test_smoke_gate.py tests/cli/test_smoke_tier.py'",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'run_smoke|smoke_gate|SMOKE_BUDGET_SECONDS|Smoke tier|smoke budget|smoke.required|60.second|60s' src/gzkit/cli src/gzkit/commands/check* src/gzkit/config.py docs/user .gzkit/rules/tests.md .gzkit/chores tests/test_smoke_gate.py --glob '\"'!**/evals/**'\"'\"",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "failed",
+        "exitCode": 1
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'run_smoke|smoke_gate|SMOKE_BUDGET_SECONDS|Smoke tier|smoke budget|smoke.required|60.second|60s' src/gzkit/cli src/gzkit/commands src/gzkit/config.py docs/user .gzkit/rules/tests.md .gzkit/chores tests/test_smoke_gate.py --glob '\"'!**/evals/**'\"'\"",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'def run_smoke_tier|run_smoke|smoke_cmd|\\\"smoke\\\"|SmokeConfig' src/gzkit/quality.py src/gzkit/config.py src/gzkit/cli/handler_registry.py src/gzkit/cli/parser_maintenance.py tests/test_quality.py\"",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "failed",
+        "exitCode": 2
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '137,171p' src/gzkit/config.py\nsed -n '110,140p' src/gzkit/cli/parser_maintenance.py\nsed -n '1530,1600p' src/gzkit/quality.py\nsed -n '550,660p' src/gzkit/commands/quality.py\ncat docs/user/manpages/smoke.md .gzkit/rules/tests.md src/gzkit/rules/tests.md .gzkit/chores/test-isolation-compliance/acceptance.json\"",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "[write designated response; complete raw answer retained separately]",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "completed",
+        "exitCode": 0
+      }
+    ]
+  },
+  {
+    "run": "C03",
+    "commands": [
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-current-inputs/C03.md'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'per.flag|flag.coverage|output-format|flag_coverage' src tests docs/user .gzkit/skills --glob '*.py' --glob '*.md'\"",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'cat src/gzkit/doc_coverage/flag_scanner.py tests/commands/test_cli_audit.py docs/user/manpages/cli-audit.md'",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'check_flag_doc_coverage|_mentions\\\\(|_FLAG_END|cli_audit_cmd|cli.audit|per.flag' src/gzkit/commands src/gzkit/doc_coverage tests/commands/test_cli_audit.py features .gzkit/skills/gz-cli-audit .gzkit/manifest.json pyproject.toml\"",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'cat src/gzkit/commands/cli_audit.py src/gzkit/doc_coverage/__init__.py src/gzkit/doc_coverage/manifest.py'",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'def run_cli_audit|cli_audit|flag_scanner|_mentions' src tests --glob '*.py'\"",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '1,115p' tests/commands/test_audit.py\nsed -n '315,410p' tests/commands/test_audit.py\nsed -n '780,820p' src/gzkit/quality.py\nsed -n '90,190p' tests/commands/test_cli_audit.py\ncat src/gzkit/doc_coverage/scanner.py\"",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"cat docs/user/manpages/adr-emit-receipt.md\nsed -n '295,405p' tests/test_quality.py\nsed -n '575,610p' src/gzkit/commands/quality.py\nsed -n '680,730p' src/gzkit/quality.py\ncat src/gzkit/doc_coverage/runner.py\"",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "[write designated response; complete raw answer retained separately]",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "completed",
+        "exitCode": 0
+      }
+    ]
+  },
+  {
+    "run": "C04",
+    "commands": [
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-current-inputs/C04.md'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'smoke.*budget|budget.*smoke|elapsed' src/gzkit tests | head -180\"",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'cat src/gzkit/smoke.py src/gzkit/commands/smoke_cmd.py tests/test_smoke_gate.py'",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'run_smoke|collect_smoke_suite|smoke_gate|run_smoke_check|SMOKE_BUDGET|gz smoke|smoke.required' src/gzkit/quality.py src/gzkit/cli tests/test_smoke* .github .gzkit/rules/tests.md docs/user features pyproject.toml .gzkit/manifest.json .gzkit.json\"",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"cat docs/user/manpages/smoke.md .gzkit/rules/tests.md tests/tools/test_health_profiler.py\nsed -n '1535,1580p' src/gzkit/quality.py\nsed -n '110,140p' src/gzkit/cli/parser_maintenance.py\nrg -n 'run_smoke_tier|Smoke tier|collect_smoke_suite|run_smoke' src tests --glob '*.py'\"",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'smoke|Smoke' docs/design --glob '*.md' --glob '\"'!**/evals/**'\"'\nrg -n 'smoke|Smoke' tests/test_quality.py tests/commands/test_quality.py src/gzkit/config.py .gzkit.json src/gzkit/chores/test-isolation-compliance/acceptance.json\nsed -n '620,655p' src/gzkit/commands/quality.py\nrg -n 'def run_command|returncode|result.success|result.passed' src/gzkit/quality.py src/gzkit/commands/quality.py | head -55\"",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '1,138p' src/gzkit/quality.py\nsed -n '100,157p' src/gzkit/commands/quality.py\nsed -n '132,157p' src/gzkit/config.py\ncat src/gzkit/chores/test-isolation-compliance/acceptance.json .gzkit.json\nrg -l 'src/gzkit/smoke.py|tests/test_smoke_gate.py|collect_smoke_suite|run_smoke' docs/design/adr --glob 'OBPI-*.md'\"",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "failed",
+        "exitCode": 1
+      },
+      {
+        "command": "[write designated response; complete raw answer retained separately]",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0
+      }
+    ]
+  },
+  {
+    "run": "C05",
+    "commands": [
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-current-inputs/C05.md'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'flag.*coverage|coverage.*flag|per.flag|documented_flags|missing_flags' src tests docs/user .gzkit/skills\"",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'cat src/gzkit/doc_coverage/flag_scanner.py src/gzkit/commands/cli_audit.py tests/commands/test_cli_audit.py'",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'cat src/gzkit/commands/cli_audit.py docs/user/manpages/cli-audit.md .gzkit/skills/gz-cli-audit/SKILL.md src/gzkit/doc_coverage/manifest.py'",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n -- '_mentions\\\\(|_FLAG_END|check_flag_doc_coverage|cli_audit_cmd|cli audit|--output-format|\\\"--output\\\"' src/gzkit/doc_coverage src/gzkit/cli tests/commands/test_cli_audit.py tests/commands/test_audit.py src/gzkit/quality.py src/gzkit/commands/check.py docs/user/manpages\"",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "failed",
+        "exitCode": 2
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '1,105p' tests/commands/test_cli_audit.py\nsed -n '1,230p' tests/commands/test_audit.py\nsed -n '770,820p' src/gzkit/quality.py\nsed -n '435,485p' src/gzkit/cli/parser_artifacts.py\ncat docs/user/manpages/adr-eval-record.md\"",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "failed",
+        "exitCode": 1
+      },
+      {
+        "command": "/bin/zsh -lc 'cat src/gzkit/doc_coverage/scanner.py src/gzkit/doc_coverage/runner.py docs/user/manpages/justify.md'",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "[write designated response; complete raw answer retained separately]",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0
+      }
+    ]
+  },
+  {
+    "run": "C06",
+    "commands": [
+      {
+        "command": "/bin/zsh -lc 'cat /tmp/gzkit-current-inputs/C06.md'",
+        "cwd": "/Users/jeff/Documents/Code/gzkit",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'smoke.*budget|budget.*smoke|elapsed' src/gzkit tests docs/user .gzkit/manifest.json | head -180\"",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "/bin/zsh -lc 'cat src/gzkit/smoke.py src/gzkit/commands/smoke_cmd.py tests/test_smoke_gate.py docs/user/manpages/smoke.md'",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'run_smoke|smoke_gate|smoke_tier|Smoke tier|collect_smoke_suite|SMOKE_BUDGET_SECONDS' src tests .gzkit .github docs --glob '\"'!docs/evals/**'\"' --glob '\"'!docs/governance/context-audit-2026-09-12/**'\"' --glob '\"'!**/ledger.jsonl'\"' --glob '\"'!**/corpus/**'\"' --glob '\"'!**/skills/**'\"' --glob '\"'!**/plans/**'\"'\"",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '1530,1605p' src/gzkit/quality.py\nsed -n '105,138p' src/gzkit/cli/parser_maintenance.py\ncat tests/cli/test_smoke_tier.py\nsed -n '1,62p' .gzkit/rules/tests.md\nsed -n '310,343p' src/gzkit/governance/trust_audits/_qc_negative_controls.py\nsed -n '645,670p' src/gzkit/governance/trust_audits/_qc_nc_entrypoints.py\"",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"rg -n 'class Smoke|smoke:|def run_command|def main|args.func|\\\\.func\\\\(' src/gzkit/config.py src/gzkit/quality.py src/gzkit/cli/main.py\nsed -n '550,585p' src/gzkit/commands/quality.py\nsed -n '628,658p' src/gzkit/commands/quality.py\nrg -n 'smoke|discovery|selection' docs/design/adr --glob '*OBPI*' --glob '*.md' --glob '\"'!**/appendices/**'\"' --glob '\"'!**/audit/**'\"' --glob '\"'!**/logs/**'\"'\"",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '130,154p' src/gzkit/config.py\nsed -n '1,108p' src/gzkit/quality.py\nsed -n '138,233p' src/gzkit/cli/main.py\nrg -n 'smoke' .gzkit.json data/check_step_scopes.json data/check_step_classes.json\nrg -l 'src/gzkit/smoke.py|commands/smoke_cmd.py|test_smoke_gate.py' docs/design/adr -g 'OBPI-*.md'\"",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "failed",
+        "exitCode": 1
+      },
+      {
+        "command": "/bin/zsh -lc \"sed -n '108,149p' src/gzkit/quality.py\nsed -n '11,22p' .gzkit.json\nrg -n 'Smoke tier|smoke' data/check_step_scopes.json\nsed -n '1,78p' docs/user/manpages/check.md\"",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "completed",
+        "exitCode": 0
+      },
+      {
+        "command": "[write designated response; complete raw answer retained separately]",
+        "cwd": "/tmp/gzkit-current-snapshot",
+        "status": "completed",
+        "exitCode": 0
+      }
+    ]
+  }
+]

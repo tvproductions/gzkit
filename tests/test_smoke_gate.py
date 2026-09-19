@@ -2,8 +2,8 @@
 
 The 60s ceiling sat in `.gzkit/rules/tests.md` as prose with no consumer, so a
 4.5x breach was invisible to everything but a stopwatch. These tests pin the
-consumer's three outcomes — and specifically that an EMPTY tier is a breach
-rather than a pass, since a subset with no members satisfies any budget.
+consumer's three outcomes — an EMPTY tier is a breach when the project opts in,
+and advisory success otherwise. A required subset cannot pass by having no members.
 """
 
 from __future__ import annotations
