@@ -4,11 +4,11 @@ persona: main-session
 description: Collaborative design dialogue that produces GovZero ADR artifacts. Use when exploring a new feature, capability, or architectural change before implementation — replaces superpowers brainstorming for this project. Triggers on "design X", "let's design", "brainstorm X", "I want to build X", "gz-design".
 category: adr-lifecycle
 metadata:
-  skill-version: "1.4.0"
+  skill-version: "1.5.0"
   govzero-framework-version: "v6"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-28
+last_reviewed: 2026-09-19
 model: opus
 ---
 
@@ -17,7 +17,7 @@ model: opus
 Collaborative design dialogue that exits into GovZero artifacts — not superpowers specs, not flat plans.
 
 
-> **Self-Escalation (opus-tier).** Spawn an `Agent` with `model="opus"` to execute this skill. Pass the operator's request verbatim, any relevant context (ADR IDs, OBPI IDs, design topic, prior decisions), and instruct the subagent to read `.gzkit/skills/gz-design/SKILL.md` for the full workflow. Relay the subagent's output to the operator.
+> **Self-Escalation (opus-tier).** The dialogue with the operator stays in the main session: a subagent cannot ask the operator a question or hear the answer, and what the operator adds is this skill's primary input. When the session model is below opus-tier, you may spawn an `Agent` with `model="opus"` for a bounded drafting or QC track that needs no operator input — pass the operator's words verbatim and the relevant context (ADR IDs, OBPI IDs, prior decisions), and treat what it returns as a draft you verify, not as the operator-facing result.
 
 ### Common Rationalizations
 

@@ -4,9 +4,9 @@ description: Create product requirement artifacts. Use when defining or revising
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-25
+last_reviewed: 2026-09-19
 metadata:
-  skill-version: "0.1.1"
+  skill-version: "0.2.0"
 model: opus
 ---
 
@@ -15,7 +15,7 @@ model: opus
 ## Overview
 
 
-> **Self-Escalation (opus-tier).** Spawn an `Agent` with `model="opus"` to execute this skill. Pass the operator's request verbatim, any relevant context (ADR IDs, OBPI IDs, design topic, prior decisions), and instruct the subagent to read `.gzkit/skills/gz-prd/SKILL.md` for the full workflow. Relay the subagent's output to the operator.
+> **Self-Escalation (opus-tier).** The dialogue with the operator stays in the main session: a subagent cannot ask the operator a question or hear the answer, and what the operator adds is this skill's primary input. When the session model is below opus-tier, you may spawn an `Agent` with `model="opus"` for a bounded drafting or QC track that needs no operator input — pass the operator's words verbatim and the relevant context (ADR IDs, OBPI IDs, prior decisions), and treat what it returns as a draft you verify, not as the operator-facing result.
 
 Operate the gz prd command surface as a reusable governance workflow.
 
