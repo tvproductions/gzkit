@@ -113,7 +113,7 @@ entry for that vendor/tier, or any tier with no registry entry, is drift.
 ### 3. Sweep live doctrine for superseded-model references — observe
 
 ```bash
-grep -rlE "Opus 4\.7|GPT-5\.5" .gzkit/rules/ docs/governance/ CLAUDE.md
+grep -rlE "Opus 4\.7|GPT-5\.5" .gzkit/rules/ .gzkit/skills/ docs/governance/ CLAUDE.md
 ```
 
 **Every hit in live doctrine is drift** — step 4 re-sources the citation to
@@ -121,6 +121,10 @@ the current card or retires the rule (operator ruling 2026-08-02). The only
 legitimate homes for superseded-model text are
 `docs/governance/rule-version-history.md`, the ledger, and commit history
 (audit trail). Extend the grep pattern as models supersede.
+
+Skill wording tuned to a model is in reach: `.gzkit/rules/skill-authoring.md`
+§ Model alignment requires it to cite a tuning doc, so a rotation that changes
+that doc puts the citing skills up for review.
 
 ### 4. Route drift — operator-only-repair
 

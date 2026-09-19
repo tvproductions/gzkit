@@ -478,7 +478,7 @@
     {
       "slug": "frontier-model-card-currency",
       "title": "Frontier Model Card Currency (System-Card Doctrine Refresh)",
-      "version": "1.3.0",
+      "version": "1.4.0",
       "path": ".gzkit/chores/frontier-model-card-currency",
       "lane": "lite",
       "timeoutSeconds": 120,
@@ -495,7 +495,7 @@
       },
       "remediation": {
         "category": "vendor_fix",
-        "details": "Re-source or retire doctrine pinned to a superseded card and rotate the registry, as a GHI-tracked direct doc fix in an operator-initiated run."
+        "details": "Re-source or retire doctrine and skill wording pinned to a superseded card and rotate the registry, as a GHI-tracked direct doc fix in an operator-initiated run."
       },
       "nonAuthority": "Never rewrites doctrine in an automatic run; never consumes a card from secondary reporting; never keeps a superseded card for reference.",
       "governingRule": ".gzkit/rules/agent-failure-modes.md"
@@ -553,8 +553,8 @@
     },
     {
       "slug": "instructions-files-diet",
-      "title": "Instructions & Memory Files Diet (Progressive Disclosure)",
-      "version": "3.3.0",
+      "title": "Instructions, Memory Files & Skill Bodies Diet (Progressive Disclosure)",
+      "version": "3.4.0",
       "path": ".gzkit/chores/instructions-files-diet",
       "lane": "lite",
       "timeoutSeconds": 180,
@@ -567,9 +567,9 @@
       },
       "remediation": {
         "category": "vendor_fix",
-        "details": "Lift and compress the items the operator ruled, through the corpus and canonical rule sources, until the rendered surface fits its cap."
+        "details": "Lift and compress the items the operator ruled, through the corpus, the canonical rule sources and the canonical skill files, until each rendered surface sits inside its range and each skill body meets skill-authoring.md § Parsimony."
       },
-      "nonAuthority": "Never edits a rendered surface or vendor mirror; never trims a tier: invariant entry or a Mechanical or Promotable bullet; never acts on an item the operator did not rule.",
+      "nonAuthority": "Never edits a rendered surface or vendor mirror; never trims a tier: invariant entry or a Mechanical or Promotable bullet; never acts on an item the operator did not rule; never removes a step, a stop condition or an authority line from a skill; never runs a skill it is trimming.",
       "governingRule": ".gzkit/rules/agents-md-map-doctrine.md \u00a7 Budget"
     },
     {
@@ -889,7 +889,7 @@
     {
       "slug": "skill-authoring-quality",
       "title": "Skill Authoring Quality (Agent-First Best Practices)",
-      "version": "2.1.0",
+      "version": "2.2.0",
       "path": ".gzkit/chores/skill-authoring-quality",
       "lane": "lite",
       "timeoutSeconds": 180,
@@ -900,6 +900,7 @@
         "signal": "content-delta",
         "surfaces": [
           ".gzkit/skills",
+          ".gzkit/rules/skill-authoring.md",
           ".claude/skills",
           ".agents/skills",
           "docs/user/skills",
@@ -915,7 +916,7 @@
         "details": "Skills are operator-authored canon, so the chore records the action each skill needs and stops; any fix it recommends must preserve behavior."
       },
       "nonAuthority": "Never edits .gzkit/skills/** or a vendor mirror.",
-      "governingRule": "none"
+      "governingRule": ".gzkit/rules/skill-authoring.md"
     },
     {
       "slug": "skill-command-doc-parity",

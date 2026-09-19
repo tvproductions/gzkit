@@ -9,6 +9,8 @@
 
 Audit SKILL.md files against agent-first skill authoring best practices. Skills are now primarily agent-called infrastructure — descriptions are routing signals, bodies encode domain reasoning, and outputs are contracts. This chore detects structural, semantic, and functional quality gaps.
 
+The standard is `.gzkit/rules/skill-authoring.md`; this chore checks conformance to it and restates none of it.
+
 ## Policy and Guardrails
 
 - **Lane:** Lite — audit and analysis; a recommended fix must preserve behavior, and skills are edited only by the operator
@@ -56,21 +58,21 @@ Descriptions are 80% of skill quality — they determine agent selection accurac
 | <30 | **Alias** — too thin to encode reasoning | Flag: evaluate whether this should be a skill or just a CLI help alias |
 | 30–200 | **Normal** — expected range | Pass |
 | 201–300 | **Heavy** — acceptable for orchestrators | Flag for review |
-| >300 | **Oversized** — must decompose | Fail: extract reference material into companion files |
+| >300 | **Oversized** — must decompose | Fail: extract reference material into companion files, or lift history to `references/` |
 
 **Reasoning checks:**
 
-- Has a reasoning/principles section (not just numbered steps)
-- Has edge cases or failure modes documented
+- Each step carries the judgment it needs: which verb, what stops the run, what the operator decides
+- States where the skill ends and what it does not do
 - Has output format specification for artifact-producing skills
-- Has anti-patterns or "when NOT to use" section
+- Any rationalization or red-flag row names a failure observed in this repository for this skill; the presence of such a section is not a check (standard § Parsimony clause 5)
 
 **Classification:**
 
 | Pattern | Classification |
 |---------|---------------|
-| Has reasoning + edge cases + output contract | **Domain-rich** (good) |
-| Has some reasoning but missing edge cases or output | **Moderate** (needs enrichment) |
+| Steps carry their judgment + terminal state stated + output contract | **Domain-rich** (good) |
+| Some steps carry judgment but the terminal state or output is missing | **Moderate** (needs enrichment) |
 | Only has numbered steps or CLI commands | **Procedure-only** (needs reasoning) |
 
 ### 4. Stub Detection — observe
@@ -87,7 +89,7 @@ Any stub detection is a **fail** — stubs fire in production with incomplete in
 
 ### 5. Content Duplication — observe
 
-Identify skills re-embedding governance doctrine from AGENTS.md.
+Identify skills restating or quoting `AGENTS.md`, a rule or `--help` (standard § Parsimony clause 2). A quotation attributed to `AGENTS.md` that the current file does not contain is a defect, not a duplication.
 
 ### 6. Imperative Over-trigger Audit — observe
 

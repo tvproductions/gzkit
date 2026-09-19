@@ -1,8 +1,16 @@
-# CHORE: Instructions & Memory Files Diet (Progressive Disclosure)
+# CHORE: Instructions, Memory Files & Skill Bodies Diet (Progressive Disclosure)
 
 **Lane:** Lite
 **Slug:** `instructions-files-diet`
 
+> **3.4.0 (operator rulings 2026-09-19, GHI #921) — skill bodies are in scope.** Verbatim:
+> *"skills should be reviewed as a part of a chore (new or existing), where parsimony and
+> new model alignment are part of the review"*, and by selection *"Widen
+> instructions-files-diet (Recommended)"*. Skills are canonical files, not corpus
+> constructed, so their arm is § 5d and their standard is
+> `.gzkit/rules/skill-authoring.md` § Parsimony. Three § Overview and § Source pointers to
+> `AGENTS.md` locations the 2026-09-17 rewrite removed are repointed in the same edit.
+>
 > **3.3.0 (2026-09-13, GHI #999) — the chore carries a class declaration.** Its
 > `registry.json` entry declares it `curation` at the `operator-only-repair` rung, and
 > each Workflow step declares its stage: steps 1–4 observe and propose, the § 5 arms
@@ -104,22 +112,26 @@ under `docs/governance/`. The contract retains binding bullets and one-line
 pointers to the lifted rationale — pedagogy becomes reachable on demand,
 not loaded per-turn.
 
+Skill bodies are in scope: they are canonical files, not corpus constructed, so
+the lift for a skill goes to a `references/` file or a rationale doc, and the
+standard is `.gzkit/rules/skill-authoring.md` § Parsimony (§ 5d). Root `AGENTS.md`
+works toward the range declared in `docs/governance/agents-md-doctrine.md`
+§ Budget targets.
+
 This is a **narrative trim**, never an invariant relaxation. The doctrine
-is explicit at `AGENTS.md` § Anti-vibing mantra operative claim 2:
-*"lighter ceremony is not a tradeoff axis."* The same binding invariants
+is explicit at `AGENTS.md` § MAKE LLM STOCHASTIC VIBES INERT: *"maintenance
+burden, velocity and lighter ceremony do not decide it."* The same binding invariants
 remain in-contract; only the in-place rationale moves.
 
 ## Source
 
 GHI #327 — *AGENTS.md: trim per-turn contract weight, lift pedagogy to
-docs/governance*. The meta-tension is already named at
-`AGENTS.md:13-22` (§ Why this contract is not minimal); this chore acts on
-that articulated cost.
+docs/governance*. The cost it acts on is set out in
+`docs/governance/agents-md-doctrine.md`.
 
-Precedent: `AGENTS.md` § Extracted pedagogy (line 99) already lifted the
-anti-pattern canon and TASK-driven workflow binding to
-`docs/governance/agent-contract-rationale.md`, leaving a one-line pointer
-behind. This chore generalizes that pattern across the remaining pillars.
+Precedent: the anti-pattern canon and the TASK-driven workflow binding were
+lifted to `docs/governance/agent-contract-rationale.md`, leaving a one-line
+pointer behind. This chore generalizes that pattern across the remaining pillars.
 
 ## Baseline (2026-04-26 — a dated record, not a target)
 
@@ -382,6 +394,20 @@ never on the sense that enough was cut:
 
 Record each iteration's bytes-per-consumer in `proofs/CHORE-LOG.md` so the run
 shows its own convergence rather than asserting it.
+
+### 5d. The skill-body arm — operator-only-repair
+
+A skill-body pass is not a rule pass: a skill carries procedure a run executes.
+
+- Before proposing a trim, search `tests/` for the skill's name and read every
+  `@covers` REQ literally. A REQ that asserts text being removed is an operator
+  escalation (`docs/governance/attested-req-subject-retirement.md`), not an edit.
+- Propose a full before and after. Keep every step, dispatch, review stage, stop
+  condition and authority line; lift dated narrative to `references/` or a
+  rationale doc and leave one sentence of reason and the pointer.
+- Bump `metadata.skill-version` and `last_reviewed` together, preserving existing
+  quoting (`.gzkit/rules/skill-surface-sync.md`).
+- `gz-obpi-pipeline` is edited, never run: only the operator initiates OBPI work.
 
 ### 6. Sync mirrors — operator-only-repair
 
