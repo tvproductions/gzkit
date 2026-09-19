@@ -5,7 +5,7 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "7.5.1"
+  skill-version: "7.6.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
@@ -16,7 +16,7 @@ last_reviewed: 2026-09-18
 model: sonnet
 ---
 
-# gz-session-handoff (v7.5.1)
+# gz-session-handoff (v7.6.0)
 
 ## Purpose
 
@@ -92,16 +92,15 @@ than evidence of a closed issue.
 
 ## Trust Model
 
-**Layer 3 — File Sync:** This tool creates files without verification.
+**Layer 3 — File Sync:** this skill writes files; a handoff proves nothing about the state it describes (§ Claim Verification Gate).
 
 - **Reads:** User input, handoff template, canonical handoff directory `.gzkit/handoffs/`
 - **Reads (CREATE):** GHI state via `gh issue view` for every issue cited in a **prospective** section, to annotate settled citations at authoring time (§ Settled-citation annotation). Unreachable `gh` resolves `unknown` and annotates nothing.
-- **Writes:** Handoff markdown files under `.gzkit/handoffs/` (canonical storage per ADR-0.0.41 / OBPI-0.0.41-03)
+- **Writes:** Handoff markdown files under `.gzkit/handoffs/` (canonical storage per ADR-0.0.41 / OBPI-0.0.41-03); the settled-ruling store `.gzkit/handoffs/rulings.jsonl`; and, through `gz handoff decide`, one Layer-2 `handoff_resume_decided` event
 - **Validates:** No placeholders, no secrets, all sections present **and populated**, referenced files exist
-- **Blocks (RESUME): NOTHING. There is no gate.** The resume gate is fully retired — the `Bash` arm 2026-08-14, the `Write` / `Edit` / `NotebookEdit` arm 2026-08-15 (operator ruling, verbatim: *"the handoff should be an advisor, not a gate-keeping nanny"*). No PreToolUse hook is registered on any matcher; `.claude/hooks/handoff-resume-gate.py` and its generator template are deleted. A handoff ADVISES, and that is now the whole mechanism.
-- **Give-up, stated:** every mutating tool call — `Write`, `Edit`, `NotebookEdit`, `gz obpi complete`, `gz attest`, commits — runs on an unruled handoff. **Gate 5 human attestation, the pre-commit hook (ruff/ty/unittest/xenon) and the pre-push `gz check` are untouched**; only the unruled-handoff precondition is gone. Its whole measured lifetime was 9 lifts to 1 block over one day (refusal recording landed 2026-08-14), against 13 admission-breadth corrections in 29 days.
+- **Blocks (RESUME): NOTHING. There is no gate.** A handoff ADVISES, and that is the whole mechanism; § Operator Authorization carries the retirement ruling. Every mutating tool call — `Write`, `Edit`, `NotebookEdit`, `gz obpi complete`, `gz attest`, commits — runs on an unruled handoff. **Gate 5 human attestation, the pre-commit hook (ruff/ty/unittest/xenon) and the pre-push `gz check` are untouched.**
 - **Still records:** `gz handoff decide` books the operator's verbatim ruling to Layer 2 (`handoff_resume_decided`, `proceed` | `pause` | `hold` | `revert`). That record is provenance an operator and an auditor read; nothing gates on its absence. The booking-coupling control (GHI #795/#797) still fails `gz check` if a ruling is recorded against a document other than the one advised.
-- **Does NOT write:** Ledger files, ADR status, OBPI brief status
+- **Does NOT write:** ADR status, OBPI brief status
 
 ---
 
@@ -111,7 +110,7 @@ than evidence of a closed issue.
 |-----------|----------|-------------|
 | `adr_id` | No | ADR identifier (e.g. `ADR-0.0.25`). Omit for work with no parent ADR — a handoff carries continuity for **any** work, not only ADR-scoped work (GHI #709). `mode`, not `adr_id`, is the is-this-a-handoff discriminator. |
 | `branch` | Yes | Current git branch (or use `git branch --show-current`) |
-| `agent` | Yes | Agent identifier (e.g. `claude-code`, `codex`, `copilot`) |
+| `agent` | Yes | Agent identifier (e.g. `claude-code`, `codex`) |
 | `slug` | Yes | Short descriptor for filename (e.g. `create-workflow`) |
 | `obpi_id` | No | OBPI identifier if handoff is scoped to a specific brief |
 | `last_lock_event_timestamp` | When concluding a held lock | Frontmatter key — ts of the matching `obpi_lock_claimed` event (Sub-Invariant 2; read by `gz validate --lock-exchange-coupling`) |
@@ -123,36 +122,29 @@ than evidence of a closed issue.
 
 - Handoff markdown file at `.gzkit/handoffs/{timestamp}-{slug}.md`
 - Validation result (pass/fail with error details)
-- First next action from "Immediate Next Steps" section, surfaced as an **advisory** for operator review on resume (not a license to execute — see the RESUME Resume contract)
+- First next action from "Immediate Next Steps" section, surfaced as an **advisory** for operator review on resume (not a license to execute — see § RESUME Procedure, Resume contract)
 
 ## Assets
 
 - **Handoff Template:** `assets/handoff-template.md` (co-located with this skill)
+- **Staleness rules:** `assets/staleness-rules.md` (the multi-factor classification thresholds)
 
 ---
 
 ## CREATE Procedure
 
-The CREATE workflow scaffolds a new handoff document when an agent is pausing work.
+The CREATE workflow writes a new handoff document when an agent is pausing work. `gz handoff create` is the only authoring path (§ Settled-citation annotation): it stamps the timestamp, branch and frontmatter, writes `.gzkit/handoffs/{timestamp}-{slug}.md`, and writes nothing when validation fails.
 
 ### Steps
 
-1. **Read the template** from `assets/handoff-template.md` (co-located with this skill).
+1. **Read the template** `assets/handoff-template.md` (co-located with this skill) for what each section must carry.
 
-2. **Generate timestamp** in ISO 8601 UTC format (e.g. `2026-02-01T10:00:00Z`).
-
-3. **Get current branch** via `git branch --show-current`.
-
-4. **Fill frontmatter fields:**
+2. **Choose the mode** (`--mode`):
    - `mode: CREATE` — or `mode: CHECKPOINT` when the session is **bookmarking, not departing** (GHI #756). Both write a full seven-section handoff; they differ in what they mean. A `CHECKPOINT` records a pause mid-flight — before a long verification run, at a `/clear` boundary inside a multi-task session — and does **not** satisfy token-block § Sub-Invariant 5, so it can never discharge a lock release. Use `CREATE` when the session is concluding.
-   - `adr_id`, `branch`, `timestamp`, `agent` — from inputs
-   - `obpi_id`, `session_id`, `continues_from` — from optional inputs (leave empty if not provided)
 
-5. **Ensure the canonical handoff directory** `.gzkit/handoffs/` exists at the project root. Create if missing (the directory is doctrine-canonical per ADR-0.0.41 / OBPI-0.0.41-03; `gz init` provisions it on bootstrap but defensive creation is acceptable on a stale clone).
+3. **Set the optional links:** `--adr` and `--obpi` when the work has them, `--session-id`, and `--continues-from <path>` for a chained session (repeatable).
 
-6. **Write the scaffold** to `.gzkit/handoffs/{timestamp}-{slug}.md` where the timestamp is filesystem-safe (e.g. `20260201T100000Z-create-workflow.md`).
-
-7. **Populate each required section** with session-specific content. The agent must replace the HTML comment guidance in each section with actual content describing the session state:
+4. **Draft each required section** with session-specific content; each is passed by its own flag:
 
    | Section | Content |
    |---------|---------|
@@ -179,35 +171,9 @@ The CREATE workflow scaffolds a new handoff document when an agent is pausing wo
    - [agent-chose] Used a temp dir for the fixture.
    ```
 
-   **The list marker is load-bearing, not styling (GHI #722).** `_section_items`
-   only treats a line as an entry when it carries one, so
-   `[operator-ruled] ...` with no `- ` parses to NOTHING — `parse_decisions`
-   returns an empty list and the successor's `Settled Rulings` promotes zero
-   rulings. Ten operator rulings left the chain that way across two handoffs
-   before it was caught. This paragraph exists because the contract previously
-   said only "lead each entry with `[operator-ruled]`", and an author following
-   that literally produced a section the promoter could not read. Now fail-closed:
-   `validate_decision_markers` refuses the shape at authoring, so the gate catches
-   it instead of the next session discovering a ruling it has to re-argue.
+   **The list marker is load-bearing, not styling (GHI #722).** `[operator-ruled] ...` with no `- ` parses to NOTHING, and the successor's `Settled Rulings` promotes zero rulings; ten operator rulings left the chain that way before it was caught. `validate_decision_markers` now refuses the shape at authoring.
 
-   **The mechanical completion handoff attributes its own decision.**
-   `write_completion_handoff` (the token-block exit edge, GHI #619) marks its entry
-   `[operator-ruled]` unconditionally — Gate 5 is universal (ADR-0.0.36), so a
-   completion handoff's decision is *always* a human attestation. It wrote the
-   entry bare until 2026-07-29, which parsed UNATTRIBUTED, so every mechanically
-   written completion handoff dropped its Gate-5 attestation from the successor's
-   `Settled Rulings`. `validate_decision_markers` could not catch it: the check is
-   asymmetric by design and this was the mirror shape (list marker present,
-   attribution absent). The abandon-path writer stays unattributed on purpose — its
-   entry is a mechanical lock-surrender record, not a ruling.
-
-   **Embedded evidence is truncated at 600 chars, visibly.** Attestation text,
-   implementation summary, and key proof are collapsed and cut on a word boundary
-   with a trailing `…`. A bare slice severed tokens mid-word (`AGENTS.md` → `AGE`),
-   which reads as prose that trails off rather than as elision — and on the
-   attestation field it dropped operator verbatim words silently. The full
-   attestation always remains in the ledger receipt; the handoff carries a marked
-   excerpt.
+   **The mechanical completion handoff attributes its own decision.** `write_completion_handoff` (the token-block exit edge, GHI #619) marks its entry `[operator-ruled]` unconditionally — Gate 5 is universal (ADR-0.0.36), so a completion handoff's decision is *always* a human attestation. The abandon-path writer stays unattributed on purpose — its entry is a mechanical lock-surrender record, not a ruling. In these mechanically written handoffs, embedded evidence (attestation text, implementation summary, key proof) is cut at 600 chars on a word boundary with a trailing `…`; the full attestation always remains in the ledger receipt.
 
    **`Settled Rulings` is written for you — do NOT hand-fill it.** The optional
    `## Settled Rulings` section is composed by construction: `create_handoff`
@@ -226,13 +192,7 @@ The CREATE workflow scaffolds a new handoff document when an agent is pausing wo
    `ruling_key` — and the rendered section carries a count and a pointer rather
    than the entries. Read them with `uv run gz handoff rulings` (`--search TEXT`
    to check whether a question is already settled before re-arguing it; `--limit
-   N` for the newest few). Before this cutover the corpus was transported by
-   COPYING PROSE from each predecessor's rendered body, which is why it reached
-   **98,247 of 107,480 bytes — 91.4% of the document** on `20260822T132232Z`.
-   Nothing retires: the retention question is answered NO, and only the transport
-   changed. `ruling_key` is untouched — widening it to shrink the corpus is the
-   fix GHI #838 rejects, because collapsing two genuinely distinct rulings drops a
-   booked operator ruling silently.
+   N` for the newest few). Nothing retires: the retention question is answered NO, and only the transport changed (the section once copied every predecessor's prose and reached 91.4% of a document). `ruling_key` is untouched — widening it to shrink the corpus is the fix GHI #838 rejects, because collapsing two genuinely distinct rulings drops a booked operator ruling silently.
 
    **Never hand-edit `rulings.jsonl`.** It is written by `create_handoff`
    composing from the predecessor and booking the document's own rulings. Editing it directly is the same class of defect
@@ -253,54 +213,28 @@ The CREATE workflow scaffolds a new handoff document when an agent is pausing wo
    Writing one out again as its own `[operator-ruled]` entry books it a SECOND
    time the moment the handoff is written (GHI #1000), and any rewording makes it
    a new corpus entry: `ruling_key` folds only quote glyphs, whitespace and case,
-   and widening it is the fix GHI #838 rejects. Measured 2026-09-13 — a
-   whole-session handoff restating its partial predecessors' rulings booked two
-   of them twice, with divergent text (`rulings.jsonl` rows 825/832, 829/834).
+   and widening it is the fix GHI #838 rejects.
    `Decisions Made` holds only the rulings THIS traversal received; a ruling that
    arrived after the predecessor was written goes in via `--settled`. Check with
    `gz handoff rulings --search` before writing an `[operator-ruled]` entry.
    **(Advisory — telling a reworded restatement from a distinct ruling needs
    ruling identity, which is Movement D's `ruling_issued` event.)**
 
-8. **Validate** the completed document:
+5. **Run `gz handoff create`** with all seven section flags (§ CLI surface). It validates before writing:
    - Parse frontmatter and validate with `HandoffFrontmatter` model
    - No placeholder markers (TBD, TODO, FIXME, ...) in the body
    - No secrets (passwords, API keys, tokens, private keys)
-   - All 7 required sections present
+   - All 7 required sections present and populated
    - All file paths referenced in Evidence / Artifacts exist on disk
 
-9. **Report** the result:
+6. **Report** the result:
    - File path where the handoff was written
    - Validation result (pass or list of errors)
    - First item from "Immediate Next Steps" (for quick resumption context)
 
 ### Programmatic API (`gzkit.handoff_api`)
 
-The handoff authoring/resume API is a real runtime module (OBPI-0.0.65-02):
-`create_handoff`, `scaffold_handoff`, `list_handoffs`, `load_handoff_chain`, and
-`resume_handoff`. Every authoring path routes the produced document through
-`gzkit.handoff_validation.validate_handoff_document`, so a handoff that fails the
-gate is **never written** (fail-closed — `create_handoff` raises
-`HandoffValidationError` carrying the violation list). `scaffold_handoff`
-deterministically pre-fills the factual sections (Current State Summary, Evidence /
-Artifacts, Verification Checklist) from injected observed state with **no LLM or
-network call**; only the judgment sections (Decisions Made, Important Context) are
-author-supplied.
-
-```python
-from pathlib import Path
-from gzkit.handoff_api import create_handoff
-
-path = create_handoff(
-    adr_id="ADR-0.0.65",
-    branch="main",
-    agent="claude-code",
-    slug="session-end",
-    sections={"Current State Summary": "All tests passing.", ...},
-    obpi_id="OBPI-0.0.65-02-programmatic-api-implementation",
-    base_path=Path("."),
-)  # HandoffValidationError (nothing written) if the document fails the gate
-```
+The CLI wraps `gzkit.handoff_api` (OBPI-0.0.65-02): `create_handoff`, `scaffold_handoff`, `list_handoffs`, `load_handoff_chain` and `resume_handoff`. Every authoring path routes the produced document through `gzkit.handoff_validation.validate_handoff_document`, so a handoff that fails the gate is **never written** (`create_handoff` raises `HandoffValidationError` carrying the violation list). `scaffold_handoff` pre-fills the factual sections from injected observed state with **no LLM or network call**; the judgment sections (Decisions Made, Important Context) are author-supplied. `resume_handoff` derives staleness from an injected `now`, so classification is deterministic. Signatures live in the module docstrings.
 
 ---
 
@@ -317,7 +251,7 @@ its first response without operator prompting.
 
 The hook is the mechanical floor; this skill's RESUME workflow remains the
 canonical path when an operator wants the full chain traversal, branch
-verification, or staleness gate. Operators who do not want orientation
+verification, or staleness classification. Operators who do not want orientation
 injection can disable the hook in their local settings.
 
 ## RESUME Procedure
@@ -339,7 +273,7 @@ The RESUME workflow discovers, loads, validates, and reports on existing handoff
 
 ### Steps
 
-1. **List available handoffs** for the ADR using `list_handoffs(adr_id)`. This scans `.gzkit/handoffs/` for `.md` files whose `adr_id:` frontmatter matches, parses each frontmatter, and returns them sorted newest-first.
+1. **List available handoffs** using `list_handoffs(adr_id)` (`uv run gz handoff list`; `adr_id` is optional — GHI #709). This scans `.gzkit/handoffs/` for `.md` files, matches the `adr_id:` frontmatter when one is given, parses each frontmatter, and returns them sorted newest-first.
 
 2. **Select a handoff** — either the newest (default) or a specific file if `handoff_path` is provided.
 
@@ -457,32 +391,18 @@ The words stay VERBATIM (operator ruling 2026-08-05); only the register changed.
 
 `gz handoff authorize` remains as a deprecated alias and behaves identically.
 
-**Nothing is refused while unruled.** This section formerly enumerated a read
-allowlist — `gz` read verbs, `gh` read verbs, a `git` family, `grep`/`cat`/`jq` —
-because the gate refused everything else and the § Claim Verification Gate below
-MANDATES verifying claims before presenting. That allowlist enumerated permitted
-reads over an unbounded domain and needed 13 corrections in 29 days, every one a
-false refusal of a mandated verification. With the gate retired the list has no
-subject: run whatever verification the § Claim Verification Gate obliges.
+**Nothing is refused while unruled.** The read allowlist this section once carried has no subject with the gate retired — it needed 13 corrections in 29 days, every one a false refusal of a mandated verification. Run whatever verification the § Claim Verification Gate obliges.
 
 One prohibition is unaffected because it never came from this gate: `gh issue
-create` is forbidden by AGENTS.md § Behavior Rules — Always #13 (author GHIs
+create` is forbidden by `AGENTS.md` § Behavior Rules (author GHIs
 through `/ghi-author`).
-
-Staleness escalates *re-verification depth*: when staleness is **Stale** or
-**Very Stale**, the `requires_human_verification` flag is additionally set to
-`True`, signaling that the agent must deeply re-verify the handoff's assumptions
-(branch, evidence paths, world-state drift) *before* presenting. A **Fresh**
-handoff still does not authorize anything — freshness shortens the verification;
-it never converts an advisory into a license.
 
 ### Claim Verification Gate (universal)
 
 **A handoff is Layer-1 narrative authorship. Every assertion it makes about
 completion, lock state, gate status, or "now unblocked / now satisfiable" is
 UNVERIFIED until checked against Layer-2 truth (the ledger and `gz` state).**
-This is AGENTS.md § Behavior Rules — Never #7 applied to resume: *do not read a
-status claim as proof of the status — read the ledger.* This gate governs whether
+This is `AGENTS.md` § Behavior Rules (completion evidence is the ledger; rationale in `docs/governance/behavior-rules.md` § Never #7) applied to resume: do not read a status claim as proof of the status — read the ledger. This gate governs whether
 you may **believe or relay** what the handoff says. It is now the only gate in
 this skill — the execution gate is retired — and it fires at every freshness
 level, Fresh included.
@@ -503,16 +423,7 @@ holds:
 | "PR #N merged" / "released vX.Y.Z" | `gh pr view <N>` / `gh release view vX.Y.Z` | GitHub |
 | "origin/main in sync" / "pushed" / any ahead-behind claim | `git rev-list --left-right --count origin/<branch>...HEAD` | git refs |
 
-**This table is the instrument index for verification, and it is now advice
-rather than a permission boundary.** While the gate existed, the permitted-read
-set was DERIVED from these claim shapes, so a shape missing from the table became
-a claim the gate structurally forbade you to verify — which happened three times
-(GHI-state rows absent until 2026-07-17; no branch-sync row until 2026-08-02,
-which refused a handoff prescribing `git rev-list` in its own Verification
-Checklist). With the gate retired that failure mode is gone: nothing refuses a
-verification command any more. Keep adding claim shapes and their instruments
-here anyway — the table's remaining job is to tell you HOW to check a claim, and
-an unlisted shape is now merely unhelpful rather than uncheckable.
+**This table is the instrument index for verification — advice, not a permission boundary.** Nothing refuses a verification command. Keep adding claim shapes and their instruments here: the table's job is to tell you HOW to check a claim, and an unlisted shape is unhelpful, not uncheckable.
 
 **Tag every claim you present** as **VERIFIED**, **STALE**, or **UNVERIFIABLE**.
 A STALE claim voids any advised step that depends on it: surface the variance and
@@ -523,24 +434,6 @@ session. Relaying "release the lock" as the next action would have acted on a
 claim that was false at read-time. The completion claim in the same handoff
 verified TRUE (`gz obpi status` → `ATTESTED COMPLETED`); claims are verified
 **individually**, never trusted as a block.
-
-### Programmatic RESUME API (`gzkit.handoff_api`)
-
-`resume_handoff`, `list_handoffs`, `load_handoff_chain`, and the `HandoffInfo` /
-`ResumeResult` / `StalenessLevel` models are real (OBPI-0.0.65-02). `resume_handoff`
-selects the newest handoff for an ADR, classifies staleness
-(Fresh / Slightly-Stale / Stale / Very-Stale), flags `requires_human_verification`
-for Stale / Very-Stale, and extracts the first next step. Staleness is derived from
-an injected `now` timestamp so the classification is deterministic and testable.
-
-```python
-from pathlib import Path
-from gzkit.handoff_api import resume_handoff
-
-result = resume_handoff(adr_id="ADR-0.0.65", base_path=Path("."), now="2026-07-13T00:00:00Z")
-# → result.staleness, result.requires_human_verification,
-#   result.first_next_step, result.chain (oldest-first paths)
-```
 
 ---
 
@@ -555,7 +448,7 @@ result = resume_handoff(adr_id="ADR-0.0.65", base_path=Path("."), now="2026-07-1
 | Validation: missing sections | One or more of the 7 required sections not present | Add all required section headings |
 | Validation: missing files | Evidence section references files that don't exist on disk | Verify file paths or remove stale references |
 | No handoffs found | `list_handoffs()` returns empty for the ADR | Create a handoff first using the CREATE workflow |
-| Stale handoff | Handoff age exceeds 72 hours | Present to human for verification before resuming |
+| Stale handoff | Handoff age exceeds 72 hours | Deep re-verification before presenting; every handoff is presented to the operator, whatever its age |
 | Branch mismatch | Handoff branch differs from current branch | Verify with human whether branch change is intentional |
 | Broken chain | `continues_from` points to a non-existent file | Treat current handoff as chain start; note missing predecessor |
 
@@ -565,7 +458,7 @@ result = resume_handoff(adr_id="ADR-0.0.65", base_path=Path("."), now="2026-07-1
 
 ### CREATE
 - All 7 required sections **populated** with session-specific content — **mechanized** by `validate_sections_populated` since GHI #692; an empty required section is a refusal, not a warning
-- **"No HTML comments remaining" is NOT mechanized — do not read the population gate as enforcing it.** `validate_sections_populated` and `validate_no_placeholders` both *strip* comments (`re.sub(r"<!--.*?-->", "", …)`) before scanning. Stripping is the opposite of rejecting: a section containing only a scaffold comment is correctly flagged empty, but a comment sitting above real content passes untouched. That gap let the OBPI-0.34.0-03 brief's `<!-- One concrete usage example… -->` prompt ride into a required section of its completion handoff under a clean validation pass (found 2026-07-29). The producer side is now closed — `_sanitize_handoff_text` drops comments from embedded evidence — but an **author-written** handoff must still be read by a human for leftover scaffold prompts. A wider validator was rejected deliberately: it would fail the whole legacy corpus, the same reason `validate_decision_markers` is asymmetric
+- **"No HTML comments remaining" is NOT mechanized — do not read the population gate as enforcing it.** `validate_sections_populated` and `validate_no_placeholders` both *strip* comments before scanning, so a section containing only a scaffold comment is flagged empty, but a comment sitting above real content passes untouched. `_sanitize_handoff_text` drops comments from mechanically embedded evidence; an **author-written** handoff must still be read by a human for leftover scaffold prompts. A wider validator was rejected deliberately: it would fail the whole legacy corpus, the same reason `validate_decision_markers` is asymmetric
 - Frontmatter validates against `HandoffFrontmatter` Pydantic model
 - Full validation pipeline passes (no placeholders, no secrets, sections present **and populated**, references exist)
 - File written to correct path: `.gzkit/handoffs/{timestamp}-{slug}.md`
@@ -587,11 +480,11 @@ These thoughts mean STOP — you are about to lose context across the session bo
 
 | Thought | Reality |
 |---------|---------|
-| "The handoff says the OBPI is complete, so it's done" | The handoff is Layer-1 narrative; completion is a Layer-2 fact. Run `gz obpi status <OBPI-ID>` and read `Completion` before you say "done." AGENTS.md § Never #7. |
+| "The handoff says the OBPI is complete, so it's done" | The handoff is Layer-1 narrative; completion is a Layer-2 fact. Run `gz obpi status <OBPI-ID>` and read `Completion` before you say "done." `AGENTS.md` § Behavior Rules (completion evidence is the ledger). |
 | "The handoff says the lock is held — I'll release it (step 1)" | The lock-held claim is unverified until `gz obpi lock list` confirms it. If the lock was already released in a later session, "release the lock" is a void step acting on a stale precondition. Check before relaying. |
 | "I'll just relay the handoff's next steps to the operator as the plan" | Relaying a claim is asserting it. An advised step whose precondition is STALE is not a plan, it's misinformation. Tag each claim VERIFIED / STALE / UNVERIFIABLE first. |
 | "The handoff is Fresh, so I can just start on its next steps" | Freshness shortens re-verification; it never authorizes execution. Nothing mechanically stops you since 2026-08-15 — which is exactly why this is on you. Present the advised steps, then wait for the operator to rule. |
-| "The handoff is slightly stale but I remember the work" | Stale handoffs trigger the human verification gate for a reason. Memory is not a substitute for explicit verification. Present to the human and wait. |
+| "The handoff is slightly stale but I remember the work" | Staleness deepens re-verification for a reason. Memory is not a substitute for explicit verification. Re-verify, present to the human, and wait. |
 | "Branch mismatch is fine, I know what I'm doing" | The branch field exists because branch state is part of session context. Mismatch means the world changed under the handoff. Verify with the human. |
 | "I'll fill the placeholders in later — let me write the scaffold first" | The validation gate rejects placeholders. "Later" means the next agent inherits TBD/TODO markers. Populate every section now. |
 | "All 7 sections are overkill for a 30-minute session" | The 7 sections are the minimum for context preservation. Skipping any one strands the resuming agent in exactly the place that section would have explained. |
@@ -605,7 +498,7 @@ These thoughts mean STOP — you are about to lose context across the session bo
 - Relaying a handoff's completion / lock / gate claim as fact without a Layer-2 check (`gz obpi status`, `gz obpi lock list`, `gz status`, `gz state`)
 - Suggesting an advised step whose precondition you have not re-verified at read-time (the lock-already-released trap)
 - Executing a handoff's next steps without explicit operator authorization — at any freshness level. No hook refuses this any more (gate retired 2026-08-15); the contract is unchanged and is now held by the agent, not the harness.
-- Resuming a Stale or Very Stale handoff without presenting it to the human first
+- Resuming a Stale or Very Stale handoff without the deep re-verification its age requires
 - Resuming with a branch mismatch and "I'll fix it as I go"
 - Creating a handoff that references files via prose instead of backtick-quoted paths
 - Skipping the Decisions Made section because "nothing important was decided"
