@@ -74,7 +74,7 @@ Open the most recent report; pick a row marked `_[applied | deferred | not-pytho
 ### 2. Read the Python example witness — observe
 
 Open the candidate's `Python/src/<Pattern>/Conceptual/main.py` and `Output.txt`
-from `design-patterns-en.zip`. Record the example path and role map before
+from the archive at `$DESIGN_PATTERNS_ARCHIVE`, when set (§ Python example corpus requirement). Record the example path and role map before
 editing code. If the detection report does not name the archive path, look it
 up in `pythonic-design-pattern-detection/CHORE.md` and update the report row
 before continuing.
@@ -82,8 +82,8 @@ before continuing.
 ### 3. Capture before-state metrics — observe
 
 ```bash
-uvx xenon --max-absolute C --max-modules C --max-average C src/ > /tmp/xenon-before.txt 2>&1 || true
-uvx radon raw src/ -s > /tmp/radon-before.txt 2>&1 || true
+uv run xenon --max-absolute C --max-modules C --max-average C src/ > /tmp/xenon-before.txt 2>&1 || true
+uv run radon raw src/ -s > /tmp/radon-before.txt 2>&1 || true
 ```
 
 ### 4. Apply the rewrite under TDD — repair
@@ -91,7 +91,7 @@ uvx radon raw src/ -s > /tmp/radon-before.txt 2>&1 || true
 Per `.gzkit/rules/tests.md` Red-Green-Refactor:
 
 - Write a test that pins the **operator-facing semantics** of the code, not the class shape
-- Run it; observe RED if any
+- Run it before the rewrite: it must pass against the class form. A RED here means the test does not describe current behavior (fix the test) or it found a defect (stop and route it per `AGENTS.md` § Defect-fix routing). The same test, unchanged, must pass after the rewrite.
 - Apply the Pythonic rewrite
 - Run the test; observe GREEN
 - Refactor for clarity if needed; tests stay GREEN
@@ -101,8 +101,8 @@ The semantics test is the load-bearing artifact. A pattern rewrite that is seman
 ### 5. Capture after-state metrics + GREEN receipt — observe
 
 ```bash
-uvx xenon --max-absolute C --max-modules C --max-average C src/ > /tmp/xenon-after.txt 2>&1
-uvx radon raw src/ -s > /tmp/radon-after.txt 2>&1
+uv run xenon --max-absolute C --max-modules C --max-average C src/ > /tmp/xenon-after.txt 2>&1
+uv run radon raw src/ -s > /tmp/radon-after.txt 2>&1
 uv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer
 ```
 
@@ -171,7 +171,7 @@ Mark the candidate's `Disposition:` from `_[applied | deferred | not-pythonic-re
 
 ```bash
 uv run gz test
-uvx xenon --max-absolute C --max-modules C --max-average C src/
+uv run xenon --max-absolute C --max-modules C --max-average C src/
 ```
 
 ## Acceptance Criteria

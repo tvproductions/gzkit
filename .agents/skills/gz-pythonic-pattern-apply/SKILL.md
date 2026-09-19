@@ -5,9 +5,9 @@ description: Capture before/after evidence with mechanical-delta proof when a Py
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-25
+last_reviewed: 2026-09-19
 metadata:
-  skill-version: "1.0.1"
+  skill-version: "1.1.0"
 gz_command: chores run pythonic-design-pattern-application
 model: sonnet
 ---
@@ -22,7 +22,7 @@ Apply a Pythonic-pattern rewrite to a single candidate flagged by `gz-pythonic-p
 
 - `candidate`: a row from the most recent `pythonic-design-pattern-detection` candidates report (file:line + class name)
 - `pattern_target`: the Pythonic refactor target named in the report (e.g. *"first-class function"*, *"`@functools.singledispatch`"*)
-- `python_example`: the local archive path (`Python/src/<Pattern>/Conceptual/main.py`) used as the role-map witness
+- `python_example` (when `DESIGN_PATTERNS_ARCHIVE` is set): the archive path (`Python/src/<Pattern>/Conceptual/main.py`) used as the role-map witness. The archive is a third-party asset gzkit does not ship.
 
 ## Outputs
 
@@ -35,16 +35,16 @@ Apply a Pythonic-pattern rewrite to a single candidate flagged by `gz-pythonic-p
 
 1. Open the chosen candidate's row in the most recent detection report. Note the local archive example path (`Python/src/<Pattern>/Conceptual/main.py`) used as the absorption reference for the rewrite shape.
 
-2. Read the local Python example and matching `Output.txt` from `design-patterns-en.zip`. Record the example's role map before editing: roles observed, roles preserved, roles collapsed, and the Python construct that will carry the behavior.
+2. When `DESIGN_PATTERNS_ARCHIVE` is set, read the example and its `Output.txt` from that archive and record the role map before editing: roles observed, roles preserved, roles collapsed, and the Python construct that will carry the behavior. When it is unset, record the absence in the evidence file and mark the role map unwitnessed (chore § Python example corpus requirement).
 
 3. Capture before-state metrics:
 
    ```bash
-   uvx xenon --max-absolute C --max-modules C --max-average C src/ > /tmp/xenon-before.txt 2>&1 || true
-   uvx radon raw src/ -s > /tmp/radon-before.txt 2>&1 || true
+   uv run xenon --max-absolute C --max-modules C --max-average C src/ > /tmp/xenon-before.txt 2>&1 || true
+   uv run radon raw src/ -s > /tmp/radon-before.txt 2>&1 || true
    ```
 
-4. Write a **semantics-pinning test** for the candidate's behavior — *not* its shape. The test must derive from the operator-facing purpose the code serves, per `.gzkit/rules/tests.md` § Tests assert semantics, not strings (invariant 6f). Run it; observe RED for any genuinely new behavior coverage, GREEN for behavior that was already covered.
+4. Write a **semantics-pinning test** for the candidate's behavior — *not* its shape. The test must derive from the operator-facing purpose the code serves, per `.gzkit/rules/tests.md` § Red-Green-Refactor (tests assert semantics, not strings — invariant 6f). Run it before the rewrite: it must pass against the class form. A RED here means the test does not describe current behavior (fix the test) or it found a defect (stop and route it per `AGENTS.md` § Defect-fix routing). The same test, unchanged, must pass after the rewrite.
 
 5. Apply the Pythonic rewrite. Match the target named in the candidate row. If the example-derived target turns out to be wrong for this case, do NOT settle for "close enough" — either pick a different Pythonic target with an explicit rationale, or escalate to operator review.
 
@@ -59,13 +59,13 @@ Apply a Pythonic-pattern rewrite to a single candidate flagged by `gz-pythonic-p
 7. Capture after-state metrics:
 
    ```bash
-   uvx xenon --max-absolute C --max-modules C --max-average C src/ > /tmp/xenon-after.txt 2>&1
-   uvx radon raw src/ -s > /tmp/radon-after.txt 2>&1
+   uv run xenon --max-absolute C --max-modules C --max-average C src/ > /tmp/xenon-after.txt 2>&1
+   uv run radon raw src/ -s > /tmp/radon-after.txt 2>&1
    ```
 
    Confirm xenon did not regress (still C/C/C). If it did, the rewrite has compounded complexity rather than reduced it — revert and re-design.
 
-8. Author the evidence file at `.gzkit/chores/pythonic-design-pattern-application/proofs/application-YYYY-MM-DD-HHMMSS-<short-slug>.md` per the template in `src/gzkit/chores/pythonic-design-pattern-application/CHORE.md`. Include:
+8. Author the evidence file at `.gzkit/chores/pythonic-design-pattern-application/proofs/application-YYYY-MM-DD-HHMMSS-<short-slug>.md` per the template in `.gzkit/chores/pythonic-design-pattern-application/CHORE.md`. Include:
 
    - Pattern named (Pythonic form chosen)
    - Source candidate file:line + class
@@ -93,7 +93,7 @@ Apply a Pythonic-pattern rewrite to a single candidate flagged by `gz-pythonic-p
 - **GREEN receipt missing:** ran `unittest` directly instead of through `gz arb step`. The corpus needs the receipt ID, not a narrative claim. Re-run under ARB.
 - **Detection report row not updated:** orphan evidence file. Run an audit grep for the evidence-file path inside `candidates-*.md` files and back-link manually.
 - **Bundled refactors (multiple patterns in one evidence file):** split into one file per applied candidate. The corpus loses signal on bundles.
-- **Python example witness missing:** evidence was authored from memory. Read the archive example, add the role map, and update the detection row before continuing.
+- **Witness missing with the archive available:** evidence was authored from memory. Read the example, add the role map, and update the detection row before continuing. With the archive unset, the recorded absence is the correct state.
 
 ## Acceptance Rules
 
@@ -101,7 +101,7 @@ Apply a Pythonic-pattern rewrite to a single candidate flagged by `gz-pythonic-p
 - Semantics test is behavior-pinning (per invariant 6f), not string-shape
 - xenon C/C/C non-regression confirmed before authoring evidence
 - GREEN receipt ID is real (not fabricated) and corresponds to a passing run
-- Local Python example witness and role map are present
+- Python example witness and role map are present, or the archive's absence is recorded and the role map is marked unwitnessed
 - Detection report row back-linked to the evidence file path
 - Pythonic-target faithfulness is named explicitly: "yes" or "no with rationale"
 
@@ -124,16 +124,16 @@ These thoughts mean STOP — you are about to ship an evidence file that broke i
 - Evidence file path outside `.gzkit/chores/pythonic-design-pattern-application/proofs/`
 - xenon delta showing rank regression
 - Test cited that has no `assert` body matching operator-facing purpose
-- GREEN receipt ID with `exit_status=1` (an authored RED receipt is itself a defect — see AGENTS.md § Attestation anti-patterns)
+- GREEN receipt ID with `exit_status=1` (an authored RED receipt is itself a defect — see `AGENTS.md` § Attestation: "A fabricated receipt ID is a fabricated claim")
 - Candidate row in detection report not updated
-- Missing `Python/src/<Pattern>/Conceptual/main.py` witness in the evidence file
+- Evidence file with neither a witness path nor a recorded archive absence
 - *"Pythonic-target faithful: yes"* without naming which target was met
 - *"Pythonic-target faithful: no"* without naming why the target was wrong here
 
 ## Reference
 
-- Chore canon: `src/gzkit/chores/pythonic-design-pattern-application/CHORE.md`
+- Chore canon: `.gzkit/chores/pythonic-design-pattern-application/CHORE.md`
 - Pair skill: `gz-pythonic-pattern-detect` (candidate surfacing)
-- Local example corpus: `design-patterns-en.zip` `Python/src/<Pattern>/Conceptual/main.py`
-- Doctrine: AGENTS.md § Attestation (receipt-vs-narrative discipline applied to refactors), `.gzkit/rules/tests.md` § Tests assert semantics, not strings (invariant 6f), `.gzkit/rules/tests.md` § Red-Green-Refactor TDD
+- Example corpus: `$DESIGN_PATTERNS_ARCHIVE` (your own copy; not shipped), `Python/src/<Pattern>/Conceptual/main.py`
+- Doctrine: AGENTS.md § Attestation (receipt-vs-narrative discipline applied to refactors), `.gzkit/rules/tests.md` § Red-Green-Refactor (TDD discipline; tests assert semantics, not strings — invariant 6f)
 - Related: `complexity-reduction-xenon` (the non-regression check this skill cites), `gz-arb` (the receipt-emitting wrapper)
