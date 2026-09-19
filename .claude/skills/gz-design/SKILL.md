@@ -4,7 +4,7 @@ persona: main-session
 description: Collaborative design dialogue that produces GovZero ADR artifacts. Use when exploring a new feature, capability, or architectural change before implementation — replaces superpowers brainstorming for this project. Triggers on "design X", "let's design", "brainstorm X", "I want to build X", "gz-design".
 category: adr-lifecycle
 metadata:
-  skill-version: "1.5.0"
+  skill-version: "1.6.0"
   govzero-framework-version: "v6"
 lifecycle_state: active
 owner: gzkit-governance
@@ -63,7 +63,7 @@ Present design → User approves → Book artifact → gz-adr-evaluate → Hand 
 
 ### Step 1: Explore Context
 
-**Pre-flight — defect-fix routing.** If this is an in-flight defect fix per AGENTS.md § Defect-fix routing thresholds (≤10 source lines, ≤2 source files, in-flight trigger, ≥3 recent `fix(...)` precedents in the 60-day window, unit-test coverage viable), route to a direct `fix(<scope>): … (GHI #N)` commit instead of scaffolding an ADR. Default-to-ceremony for small in-flight defects is the exact over-application pattern GHI #195 authored the routing rule to prevent.
+**Pre-flight — defect-fix routing.** Apply `AGENTS.md` § Defect-fix routing before scaffolding anything: a GHI authorizes direct repair outright, and without one a small in-flight fix (about ten source lines or two files, one surface, a unit test covers it) is a direct `fix(<scope>): …` commit, not an ADR. Default-to-ceremony for small in-flight defects is the exact over-application pattern GHI #195 authored the routing rule to prevent.
 
 Before asking anything, read the current state:
 
@@ -103,7 +103,7 @@ that only writes its chosen word is not distinguishable from a model that
 picked it first and wrote the line backward.
 
 The ADR authoring step must carry the rejected alternatives into the ADR's
-Rationale or Consequences section. Empty or cosmetic rejected-alternatives
+Alternatives Considered section. Empty or cosmetic rejected-alternatives
 lists (e.g., "no other options considered") are themselves a failure
 signal and should prompt a redesign pass.
 
@@ -133,11 +133,11 @@ After design approval, ask:
 
 **Canonical ADR** (ready to implement):
 - Confirm: next available ADR semver (check `uv run gz status --table`)
-- Confirm: lane (Lite = gates 1–2 only; Heavy = gates 1–5)
+- Confirm: lane (Lite = Gates 1–2; Heavy adds Gate 3 docs and Gate 4 BDD; Gate 5 attestation is universal — every lane, ADR-0.0.36)
 - **Confirm: kind (feature/pool).** Feature = release-carrying capability (`0.y.z` and up). Pool = backlog awaiting promotion. **`foundation` is CLOSED for gzkit authoring (ADR-0.34.0 Foundation Sunset)** — `gz plan create --kind foundation` and `gz adr promote --kind foundation` are rejected at the command layer, so do not offer it. The kind remains open for **adopter projects**, whose `gz init` scaffolds it available; when running this skill in an adopter repo, use the invariance test to resolve the edge cases: *"Foundation = without it, we wouldn't be doing the project."* The hexagonal-ports lens clarifies: **ports point to invariance; adapters are features**. See `docs/user/concepts/foundation-feature-invariance-test.md` for worked examples and anti-patterns, and `docs/governance/hexagonal-architecture.md` for Cockburn's source and gzkit's port/adapter mapping.
 - Invoke `gz-adr-create` with semver, slug, lane, and OBPI count
 - OBPIs are co-created with the ADR — never deferred
-- Design content from this conversation populates the ADR's Intent, Decision, Rationale, and Consequences sections
+- Design content from this conversation populates the ADR's Intent, Decision, Alternatives Considered, and Consequences sections
 
 ### Step 6: Quality Check
 
@@ -159,16 +159,19 @@ the package), not at pool authoring. Skip this step for pool ADRs.
 
 Ask the user to review the booked ADR file before proceeding:
 
-> "ADR booked at `docs/design/adr/{series}/ADR-{id}-{slug}/`. Please review it and confirm before we scope OBPIs."
+> "ADR booked at `docs/design/adr/<kind-dir>/ADR-{id}-{slug}/`. Please review it and its briefs and confirm before we close the design."
 
 ### Step 8: Hand Off
 
 Once the user approves:
 
 - **Pool ADR**: done. No further action. Pool entries are promoted via `gz-adr-promote` later.
-- **Canonical ADR**: invoke `gz-obpi-specify` to scope OBPIs, then `gz-plan` for the first OBPI.
+- **Canonical ADR**: done. Its OBPI briefs were co-created in Step 5; use
+  `gz-obpi-specify` only to finish authoring a brief that is still thin. The
+  operator initiates each OBPI through `gz-obpi-pipeline` — this skill does not.
 
-Do NOT invoke any implementation skill. `gz-obpi-specify` and `gz-plan` are the terminal state.
+Do NOT invoke any implementation skill. A booked, evaluated, reviewed ADR is the
+terminal state.
 
 ---
 
