@@ -5,14 +5,14 @@ description: Post-authoring quality evaluation for ADRs and OBPIs. Scores ADRs o
 category: adr-lifecycle
 compatibility: GovZero v6 framework; adapted from AirlineOps for gzkit ADR package layouts
 metadata:
-  skill-version: "6.8.1"
+  skill-version: "6.8.2"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "lifecycle (pre-proposal QC), quality rubric, OBPI decomposition"
   govzero_layer: "Layer 1 - Evidence Gathering"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-18
+last_reviewed: 2026-09-19
 model: sonnet
 ---
 
@@ -43,7 +43,7 @@ existing ADR package.
 - EVALUATION_SUBSTANCE.md written without reading the actual ADR document
 - A judged scorecard hand-written into `EVALUATION_SCORECARD.md`, which
   `gz adr evaluate` regenerates and will destroy (GHI #769)
-- CLI pre-screen score accepted without manual verification (Step 2 skipped)
+- CLI pre-screen score accepted without manual verification (Steps 3–4 skipped)
 - Manual score differs from CLI score but no explanation of the heuristic mismatch
 - Red-team challenges marked N/A instead of engaged
 - ADR proceeds to proposal/defense with a NO GO or CONDITIONAL GO verdict
@@ -60,13 +60,13 @@ Evaluation is the highest-risk read-only judgment ceremony — the rubric's 8 di
 
 | Persona | Function in this ceremony | Invoked at |
 |---|---|---|
-| `spec-reviewer` | Scores spec/requirement dimensions of the rubric: requirement clarity, target-scope falsifiability, OBPI decomposition coverage, REQ-trace integrity — anything that asks "is the spec honest, falsifiable, traceable?" | Step 2 (manual rubric scoring) |
-| `quality-reviewer` | Scores architectural dimensions: decision justification, alternatives considered, SOLID-analogues for ADR design, single-responsibility per ADR, decision boundaries, maintainability of the proposed surface | Step 2 (manual rubric scoring) |
-| `narrator` | Composes the operator-facing scorecard and frames red-team challenge findings — each challenge's finding rendered as evidence-to-decision, not as raw analysis | Step 3 (red-team challenges, if invoked) and final scorecard render |
+| `spec-reviewer` | Scores spec/requirement dimensions of the rubric: requirement clarity, target-scope falsifiability, OBPI decomposition coverage, REQ-trace integrity — anything that asks "is the spec honest, falsifiable, traceable?" | Steps 3–4 (manual rubric scoring) |
+| `quality-reviewer` | Scores architectural dimensions: decision justification, alternatives considered, SOLID-analogues for ADR design, single-responsibility per ADR, decision boundaries, maintainability of the proposed surface | Steps 3–4 (manual rubric scoring) |
+| `narrator` | Composes the operator-facing scorecard and frames red-team challenge findings — each challenge's finding rendered as evidence-to-decision, not as raw analysis | Step 5 (red-team challenges, if invoked) and final scorecard render |
 
 Personas not dispatched: `implementer` (evaluation is pre-implementation review — no code exists to write or evaluate).
 
-The mechanical attestation that these dispatches occurred was scoped by `ADR-pool.obpi-pipeline-dispatch-attestation` Target Scopes #5/#6. That ADR is **Superseded** (`absorbed_into: ADR-0.0.73`, itself Validated 9/9), so there is no promotion pending and nothing arrives from one — the absorption delivered an absorption-marker audit, and that ADR's own § Notes place the receipt machinery (ledger events, bail-to-inline gates, validator scopes) in "a future feature-kind ADR work surface" that is not yet authored (GHI #846). This ceremony **does** have a dispatch channel: `gzkit.adr_eval_dispatch` reports `NOT DISPATCHED` absent a receipt and never infers dispatch from the presence of scores (GHI #770). See § Degraded mode.
+The receipt machinery that would attest these dispatches is not yet authored (GHI #846; `ADR-pool.obpi-pipeline-dispatch-attestation` is Superseded into ADR-0.0.73, which delivered no receipts). This ceremony **does** have a dispatch channel: `gzkit.adr_eval_dispatch` reports `NOT DISPATCHED` absent a receipt and never infers dispatch from the presence of scores (GHI #770). See § Degraded mode.
 
 ### Degraded mode — when dispatch cannot run (binding, GHI #770)
 
@@ -78,7 +78,7 @@ The degraded mode is therefore **declared and legitimate, never silent**:
 2. **The scorecard states it mechanically.** `render_scorecard_markdown` always emits a `--- Persona Dispatch ---` channel: one row per mandated persona, `NOT DISPATCHED / no dispatch receipt recorded` absent a receipt, plus a `DISPATCH MODE: SINGLE-DRIVER` verdict. This is not something you remember to write — the renderer emits it unconditionally, and `tests/test_adr_eval_dispatch.py` fails closed if a dispatched and an undispatched scorecard could ever render identically.
 3. **A single-driver scorecard is not an independent review.** Say so when relaying the verdict; do not present it as one.
 
-A dispatch is credited **only** from a recorded receipt (`gzkit.adr_eval_dispatch`), never inferred from the presence of scores — the same discipline the substance channel applies to judge verdicts (GHI #624). Nothing emits that receipt yet, so every scorecard truthfully reads SINGLE-DRIVER until the pool ADR's Target Scopes #5/#6 land; the channel populates then with no change here.
+A dispatch is credited **only** from a recorded receipt (`gzkit.adr_eval_dispatch`), never inferred from the presence of scores — the same discipline the substance channel applies to judge verdicts (GHI #624). Nothing emits that receipt yet, so every scorecard truthfully reads SINGLE-DRIVER until that machinery is authored (GHI #846); the channel populates then with no change here.
 
 Persona doctrine reference: ADR-0.0.11-persona-driven-agent-identity-frames (Validated).
 
@@ -90,7 +90,8 @@ evaluation scorecards. It does not modify ADR or brief content.
 - **Reads:** ADR document, OBPI briefs, evaluation framework template
 - **Writes:** `EVALUATION_SUBSTANCE.md` in the ADR directory (the judge's file;
   `EVALUATION_SCORECARD.md` is machine-owned and regenerated by the CLI)
-- **Does NOT modify:** ADR content, brief content, registries, or ledgers
+- **Books:** one `adr-evaluation` ledger event per successful `gz adr evaluate` run (ADR-0.0.26, OBPI-0.0.26-01)
+- **Does NOT modify:** ADR content, brief content, or registries
 
 ---
 
@@ -113,7 +114,7 @@ evaluation scorecards. It does not modify ADR or brief content.
 ## When to Use
 
 - After drafting a new ADR and its OBPIs
-- Before moving a Draft ADR to Proposed / human defense review
+- Before a Draft ADR goes to human proposal/defense review
 - When benchmarking the quality of an existing ADR package
 - When you want a structured red-team pass against scope, evidence, and decomposition
 
@@ -204,7 +205,7 @@ Apply the framework thresholds:
 | ADR Weighted Total | Verdict |
 |--------------------|---------|
 | >= 3.0 | **GO** - Ready for proposal/defense review |
-| 2.5 - 3.0 | **CONDITIONAL GO** - Address weaknesses, then re-evaluate |
+| 2.5 to < 3.0 | **CONDITIONAL GO** - Address weaknesses, then re-evaluate |
 | < 2.5 | **NO GO** - Structural revision required |
 
 **OBPI threshold:** Average >= 3.0 per OBPI. Any OBPI scoring 1 on any
@@ -349,7 +350,7 @@ For adversarial review by a separate model:
 - Evaluation framework: `assets/ADR_EVALUATION_FRAMEWORK.md`
 - ADR lifecycle: `docs/governance/GovZero/adr-lifecycle.md`
 - GovZero charter: `docs/governance/GovZero/charter.md`
-- Parity origin: `../airlineops/.github/skills/gz-adr-evaluate/SKILL.md`
+- Parity origin: the AirlineOps `gz-adr-evaluate` skill (sibling repository; not resolvable from this one)
 
 ---
 
