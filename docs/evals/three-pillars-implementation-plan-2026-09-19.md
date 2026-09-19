@@ -15,7 +15,7 @@ including experimental leads outside the original five rows. The current
 names each work order, verification and disposition. The five-row completion
 count below is historical and does not certify that expanded repair scope.
 GHIs #1047, #1050 and #960 were reopened for omitted coupled consumers; new
-repair contracts are #1055–#1060. The broad-currency and pool rulings remain
+repair contracts are #1055–#1061. The broad-currency and pool rulings remain
 settled, and #1028 still requires a normal production observation.
 
 ## Overall completion: INCOMPLETE

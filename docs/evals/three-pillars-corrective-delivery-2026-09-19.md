@@ -57,5 +57,26 @@ confirmed and repaired under #1061.
 
 ## Verification and delivery
 
-Pending final integration checks and guarded delivery. Issue closure comments
-will cite the actual landed commit and verified receipts, individually.
+Repair commit: `cc5ed5bfa40a559f6f847f11cc961e7974309b7f`.
+All 62 staged repository checks passed. The canonical unit run passed 10,525
+tests (four skipped); BDD passed 432 scenarios. Strict docs, lint, type checks,
+control-surface coherence and independent reviews passed.
+
+Verified ARB receipts:
+
+- Lint: `arb-ruff-8fa63c3e27f6407286c3cffdcd9c14ee`.
+- Type check: `arb-step-typecheck-aca57ff339b342aaa2a6289538d5b42d`.
+- Unit tests: `arb-step-unittest-cc5ce465c5d84a459ddb1ba3113d7c38`.
+- Strict docs: `arb-step-mkdocs-17a2e39f667d4a00b2b7a6c1a634123f`.
+- Coverage: `arb-step-coverage-47ae9866da0b4848842cf22be6168784`.
+
+The first unit invocation failed five enforcement checks because radon's uv tool
+cache was unwritable in the sandbox. Using writable tool/cache directories made
+the same negative control detect its violation; the unchanged suite then passed.
+No runtime workaround or waived check was used. The initial coverage invocation
+was stopped and rerun with the corrected environment.
+
+This record and the successor handoff travel with the final guarded sync.
+Individual GHI closure comments cite the repair commit and receipts after
+verification; live issue state and remote refs establish delivery, rather than
+this prose predicting those side effects.
