@@ -6,15 +6,15 @@ paths:
 
 # Pythonic Standards (Idiomatic Code Contract)
 
-<!-- rule-version: 0.5.2 -->
+<!-- rule-version: 0.5.3 -->
 
-> **Rule version:** `0.5.2` — the full-suite test invocation is `uv run gz test`, the parallel canonical runner; the serial `-m unittest` form is retired (operator ruling 2026-09-18, under GHI #921). Prior `0.5.1`: diet pass under GHI #921 (operator ruling 2026-08-30, *"do 1 and 2"*): the superseded `0.5.0`–`0.2.1` version chain is lifted to [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd), restoring the one-sentence shape `skill-surface-sync.md` § Non-negotiable rules #2 requires. Binding rules unchanged; scoped `**/*.py`, this rule loads on every Python edit, so narrative is the most expensive thing it can carry.
+> **Rule version:** `0.5.3` — `ty` and `xenon` are spelled as the gates run them, `uv run`, not `uvx` (GHI #921). Prior `0.5.2` and earlier lifted to [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd). Binding rules unchanged.
 
 ## Core Principles
 
 1. **Clarity over cleverness** — explicit, readable, consistent code
 2. **Separation of concerns** — isolate IO, transforms, QC, persistence
-3. **Typed interfaces** — enforce with `uvx ty check .`
+3. **Typed interfaces** — enforce with `uv run ty check .`
 4. **EAFP for IO, LBYL for contracts** — clear error boundaries
 5. **Context managers** — for files, DBs, sessions, progress phases
 6. **No mutable defaults** — use `None` + factory
@@ -42,7 +42,7 @@ paths:
 > | Classes <=300 | `gz validate --class-size` (`code_quality.py`, `limit = 300` hardcoded, waivers in `_CLASS_SIZE_WAIVERS`) | **live gate** — the table carries no class-size metric, so this rule is the only authority |
 > | Functions <=50 | nothing | authoring-time guidance only |
 > | Modules <=600 | nothing | authoring-time guidance only |
-> | *(cyclomatic)* | `.pre-commit-config.yaml` `uvx xenon --max-absolute C` (CC 11–20) | **live gate** — a *third* ceiling, matching neither authority: the table's `radon_cc` blocks at 11.0, so a CC-15 function passes xenon while `block` per the table |
+> | *(cyclomatic)* | `.pre-commit-config.yaml` `uv run xenon --max-absolute C` (CC 11–20) | **live gate** — a *third* ceiling, matching neither authority: the table's `radon_cc` blocks at 11.0, so a CC-15 function passes xenon while `block` per the table |
 >
 > The table's function/module bands have **no consumer**: `complexity_advise.py` is
 > `METRIC_KEY = "radon_cc"` with `metrics_checked = 1  # currently only radon_cc`.
@@ -74,7 +74,7 @@ Scope is the shipped package. The `per-file-ignores` exclusions are boundary sur
 | ------------ | --------------------- | ----------------------- |
 | **uv**       | Environment/execution | `uv run` / `uvx`        |
 | **ruff**     | Linting/formatting    | `uv run ruff check .`   |
-| **ty**       | Static typing         | `uvx ty check .`        |
+| **ty**       | Static typing         | `uv run ty check .`     |
 | **unittest** | Testing               | `uv run gz test` |
 
 ## Type-check suppression syntax (ty — binding)

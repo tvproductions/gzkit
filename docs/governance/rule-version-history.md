@@ -182,6 +182,10 @@ Lifted at version `0.3.2` (rule now at `0.3.3`).
 
 > **Rule version:** `0.4.0` — adds § Suppression is not a repair (GHI #999 step 6), landed with its witness `audit_chore_suppression` so it never stood as unwitnessed doctrine; prior `0.3.3` lifted to [Rule Version History](../../docs/governance/rule-version-history.md#choresmd).
 
+### Lifted 2026-09-19 at version `0.5.1` (rule now at `0.5.2`)
+
+> **Rule version:** `0.5.1` — the full-suite test invocation is `uv run gz test`, the parallel canonical runner; the serial `-m unittest` form is retired (operator ruling 2026-09-18, under GHI #921). Prior `0.5.0`: § Discover Chores adds `gz chores status`, the staleness board that reads every chore's band without running one (GHI #936), and § Plan & Advise drops a `--replace` flag `gz chores plan` never had; prior `0.4.0` lifted to [Rule Version History](../../docs/governance/rule-version-history.md#choresmd).
+
 ## `adr-audit.md`
 
 Lifted at version `0.2.0` (rule now at `0.2.1`).
@@ -199,6 +203,10 @@ Lifted at version `0.2.0` (rule now at `0.2.1`).
 ### Lifted 2026-08-30 at version `0.2.1` (rule now at `0.3.0`)
 
 > **Rule version:** `0.2.1` — reconciled to ADR-0.0.24/ADR-0.0.59 — ARB-wrapped audit commands and per-REQ-kind diagnosis branches (`0.2.0`); prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#adr-auditmd). Binding rules unchanged.
+
+### Lifted 2026-09-19 at version `0.3.1` (rule now at `0.3.2`)
+
+> **Rule version:** `0.3.1` — the `unittest` ARB step names the canonical parallel command (`CANONICAL_STEP_COMMANDS["unittest"]`); the serial form it carried is no longer the canonical one and `gz arb validate` flags it. Prior `0.3.0`: scored for real under GHI #921 (2026-08-30). This rule sat in `data/advisory_scorecard_grandfather.json`, pinned at `0.2.1` against a version nobody recorded; the pin is stripped by any edit, so its clauses were re-read and its Coverage Ledger rows added or corrected in the same commit. Prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#adr-auditmd). Binding rules unchanged.
 
 ## `gh-cli.md`
 
@@ -225,6 +233,10 @@ Lifted at version `0.3.0` (rule now at `0.3.1`).
 ### Lifted 2026-09-07 at version `0.5.0` (rule now at `0.5.1`)
 
 > **Rule version:** `0.5.0` — GHI #972 (2026-09-07): adds § Census queries. § Allowed commands sanctioned `gh issue list` by *verb* while the hazard is scoped by *result-set size* — every `gh <noun> list` returns a 30-row page with no truncation marker and exit 0, and the handoff chain's own "re-derive the count" step was that capped command, so a session that noticed a wrong count re-derived `30` with fresh confidence. Scored **Judgment** at row 51c. Prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#gh-climd).
+
+### Lifted 2026-09-19 at version `0.5.1` (rule now at `0.5.2`)
+
+> **Rule version:** `0.5.1` — GHI #972 reopened (2026-09-07): two statements in `0.5.0` corrected. The count form printed only `.total_count`, hiding the `incomplete_results` field the same clause required checking — the command now refuses to print a number on an incomplete search. And *"a result whose length equals its `--limit` is a truncated page"* overstated: equality proves nothing either way (`--limit 40` returned 40 against a 40-issue queue, complete), so completeness is UNPROVEN until pagination or an authoritative total establishes it. `0.5.0` added § Census queries under the same GHI; scored **Judgment** at row 51c. Prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#gh-climd).
 
 ## `task-discovery.md`
 
@@ -337,6 +349,10 @@ Lifted at version `0.5.0` (rule now at `0.5.1`).
 > explicit prohibition on exactly that. No number changed — resolution needs a
 > class-size corpus band that does not exist yet, and is routed for operator
 > decision rather than guessed. Prior: unversioned since authoring.
+
+### Lifted 2026-09-19 at version `0.5.2` (rule now at `0.5.3`)
+
+> **Rule version:** `0.5.2` — the full-suite test invocation is `uv run gz test`, the parallel canonical runner; the serial `-m unittest` form is retired (operator ruling 2026-09-18, under GHI #921). Prior `0.5.1`: diet pass under GHI #921 (operator ruling 2026-08-30, *"do 1 and 2"*): the superseded `0.5.0`–`0.2.1` version chain is lifted to [Rule Version History](../../docs/governance/rule-version-history.md#pythonicmd), restoring the one-sentence shape `skill-surface-sync.md` § Non-negotiable rules #2 requires. Binding rules unchanged; scoped `**/*.py`, this rule loads on every Python edit, so narrative is the most expensive thing it can carry.
 
 ## `hexagonal-architecture.md`
 

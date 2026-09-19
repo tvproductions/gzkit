@@ -6,11 +6,11 @@ paths:
 description: Chores workflow command sequences, two-surface layout, and evidence patterns
 ---
 
-<!-- rule-version: 0.5.1 -->
+<!-- rule-version: 0.5.2 -->
 
 # Chores Workflow (gzkit)
 
-> **Rule version:** `0.5.1` — the full-suite test invocation is `uv run gz test`, the parallel canonical runner; the serial `-m unittest` form is retired (operator ruling 2026-09-18, under GHI #921). Prior `0.5.0`: § Discover Chores adds `gz chores status`, the staleness board that reads every chore's band without running one (GHI #936), and § Plan & Advise drops a `--replace` flag `gz chores plan` never had; prior `0.4.0` lifted to [Rule Version History](../../docs/governance/rule-version-history.md#choresmd).
+> **Rule version:** `0.5.2` — the Lite-lane typecheck line is the canonical `uv run ty check . --exclude features` (GHI #921). Prior `0.5.1` and earlier lifted to [Rule Version History](../../docs/governance/rule-version-history.md#choresmd). Binding rules unchanged.
 
 > **Purpose:** Enable agents to run repository chores effectively with clear,
 > repeatable command sequences, aligned to gzkit guardrails and the two-surface
@@ -83,7 +83,7 @@ uv run gz chores advise <chore_slug>
 
 ```bash
 uv run ruff check . --fix && uv run ruff format .
-uvx ty check . --exclude 'features/**'
+uv run ty check . --exclude features
 uv run gz test
 ```
 
