@@ -1442,6 +1442,18 @@ class SectionOwnershipReanchoredEvent(_EventBase):
     reason: str
 
 
+class ReportPublishedEvent(_EventBase):
+    """An immutable assessment was saved; its interpretation is not attested."""
+
+    event: Literal["report_published"]
+    series: Literal["big-picture"]
+    path: str = Field(min_length=1)
+    sha256: str = Field(pattern=r"^[a-f0-9]{64}$")
+    period: str
+    evidence_cutoff: str
+    predecessor: str | None
+
+
 TypedLedgerEvent = Annotated[
     ProjectInitEvent
     | PrdCreatedEvent
@@ -1518,7 +1530,8 @@ TypedLedgerEvent = Annotated[
     | SectionOwnershipUnownedEvent
     | SectionOwnershipReanchoredEvent
     | SessionExitBookmarkSkippedEvent
-    | SurfaceWeightRecalibratedEvent,
+    | SurfaceWeightRecalibratedEvent
+    | ReportPublishedEvent,
     Field(discriminator="event"),
 ]
 

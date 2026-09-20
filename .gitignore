@@ -116,6 +116,9 @@ site/
 # included, so a stale sidecar is an empty file and never a held lock.
 .gzkit/ledger.jsonl.lock
 
+# Report publication uses an OS-lock sidecar; retained reports remain tracked.
+**/reports/big-picture/publication.lock
+
 # Section-ownership write-discipline sidecars (OBPI-0.35.0-04). Same shape as the corpus
 # store above: `gz content unown` takes an OS lock on `<surface>.json.lock` and stages the
 # new declaration beside the target before one atomic `os.replace`. `.gzkit/ownership/` IS

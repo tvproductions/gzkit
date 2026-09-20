@@ -131,6 +131,7 @@ First-stage intent routers. Pick the namespace that matches your intent, then in
 
 | Skill | Description |
 |-------|-------------|
+| [`/gz-big-picture`](gz-big-picture.md) | Explain project value, trajectory and architecture in a retained, ledger-recorded report |
 | [`/ghi-author`](ghi-author.md) | Author a GitHub Issue for a defect, enhancement, or investigation surfaced in flight |
 | [`/gz-issue-file`](gz-issue-file.md) | Cross-repo defect/enhancement filing wrapper for gzkit-owned surfaces (routes to `tvproductions/gzkit`) |
 | [`/ghi-close`](ghi-close.md) | Do the work described in a GHI, verify artifacts, and close with evidence |

@@ -145,6 +145,10 @@ _NO_GRAPH_IMPACT: dict[str, str] = {
         "src/gzkit/ledger_events.py:300). Consumed by gz patch release, "
         "not artifact graph."
     ),
+    "report_published": (
+        "Consumed by gzkit.reports for retained history and current/index views; "
+        "no artifact lifecycle transition."
+    ),
     "audit_generated": "Heavy-lane audit trail; consumed by gz adr audit tooling, not graph.",
     "adr_eval_completed": "Evaluation scorecard; consumed by gz adr evaluate, not graph.",
     "adr-evaluation": (

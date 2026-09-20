@@ -187,3 +187,5 @@ All commands support:
 
 - `--help`
 - `--version`
+
+- [gz report publish](report-publish.md) — retain a big-picture assessment and ledger provenance.

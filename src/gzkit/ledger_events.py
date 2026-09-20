@@ -1424,3 +1424,27 @@ def handoff_resume_decided_event(
             "set_aside": list(set_aside or []),
         },
     )
+
+
+def report_published_event(
+    report_id: str,
+    *,
+    path: str,
+    sha256: str,
+    period: str,
+    evidence_cutoff: str,
+    predecessor: str | None,
+) -> LedgerEvent:
+    """Witness preserved assessment bytes; does not attest interpretation."""
+    return LedgerEvent(
+        event="report_published",
+        id=report_id,
+        extra={
+            "series": "big-picture",
+            "path": path,
+            "sha256": sha256,
+            "period": period,
+            "evidence_cutoff": evidence_cutoff,
+            "predecessor": predecessor,
+        },
+    )

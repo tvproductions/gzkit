@@ -5,9 +5,9 @@ category: agent-operations
 lifecycle_state: active
 disable-model-invocation: true
 owner: gzkit-governance
-last_reviewed: 2026-09-18
+last_reviewed: 2026-09-19
 metadata:
-  skill-version: "0.4.0"
+  skill-version: "0.5.1"
 model: haiku
 ---
 
@@ -19,6 +19,7 @@ model: haiku
 | prd | `gz-prd` |
 | constitution | `gz-constitute` |
 | status | `gz-status` |
+| big-picture perspective | `gz-big-picture` |
 | competitor radar | `gz-competitor-radar` |
 | flight test | `gz-flighttest` |
 

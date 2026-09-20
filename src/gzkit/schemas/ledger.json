@@ -7,6 +7,44 @@
     "ts"
   ],
   "events": {
+    "report_published": {
+      "required": [
+        "series",
+        "path",
+        "sha256",
+        "period",
+        "evidence_cutoff",
+        "predecessor"
+      ],
+      "properties": {
+        "series": {
+          "type": "string",
+          "enum": [
+            "big-picture"
+          ]
+        },
+        "path": {
+          "type": "string",
+          "min_length": 1
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "period": {
+          "type": "string"
+        },
+        "evidence_cutoff": {
+          "type": "string"
+        },
+        "predecessor": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
     "acceptance_recorded": {
       "required": ["record_type", "payload"],
       "properties": {

@@ -14,8 +14,9 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from gzkit import acceptance_store
-from gzkit.events import AcceptanceRecordedEvent, parse_typed_event
+from gzkit import acceptance_store, reports
+from gzkit.config import GzkitConfig, PathConfig
+from gzkit.events import AcceptanceRecordedEvent, ReportPublishedEvent, parse_typed_event
 
 _OBPI = "OBPI-0.1.0-01-producer-probe"
 _AUTHOR = "isolated-producer-probe"
@@ -94,20 +95,78 @@ def _observe_acceptance_contract(root: Path) -> ProducerObservation:
     )
 
 
+def _probe_report(root: Path) -> ProducerObservation:
+    """Publish fixture bytes and independently inspect durable source, event and views."""
+    content = b"# Isolated producer probe\r\n\r\nNot a live project assessment.\r\n"
+    report_id = "isolated-report-probe"
+    path = f"manual/reports/big-picture/{report_id}.md"
+    source = root / "draft.md"
+    source.write_bytes(content)
+    config = GzkitConfig(paths=PathConfig(docs_root="manual", ledger="state/events.jsonl"))
+    reports.publish_report(
+        root, config, source, report_id, period="isolated fixture", evidence_cutoff="fixture"
+    )
+    persisted = (root / "state/events.jsonl").read_bytes()
+    rows = [json.loads(line) for line in persisted.decode("utf-8").splitlines() if line.strip()]
+    if len(rows) != 1:
+        raise ValueError("Report producer must persist exactly one publication record")
+    event = parse_typed_event(rows[0])
+    if not isinstance(event, ReportPublishedEvent):
+        raise ValueError("Report producer persisted the wrong event type")
+    observed = (
+        event.id,
+        event.path,
+        event.sha256,
+        event.period,
+        event.evidence_cutoff,
+        event.predecessor,
+    )
+    expected = (
+        report_id,
+        path,
+        hashlib.sha256(content).hexdigest(),
+        "isolated fixture",
+        "fixture",
+        None,
+    )
+    if observed != expected:
+        raise ValueError("Publication witness disagrees with the authored fixture")
+    directory = (root / path).parent
+    if (root / path).read_bytes() != content or (directory / "current.md").read_bytes() != content:
+        raise ValueError("Published assessment or current view differs from exact source bytes")
+    index = (directory / "index.md").read_text(encoding="utf-8")
+    if f"[{report_id}]({report_id}.md)" not in index:
+        raise ValueError("Archive index does not link the retained assessment")
+    return ProducerObservation(
+        event_type="report_published",
+        producer="gzkit.reports.publish_report",
+        status="verified",
+        ledger_sha256=hashlib.sha256(persisted).hexdigest(),
+        record_count=1,
+        subject=event.id,
+    )
+
+
 def probe_producer(event_type: str) -> ProducerObservation:
     """Run the registered producer now; unsupported and failed probes grant no credit."""
-    if event_type != "acceptance_recorded":
+    if event_type not in {"acceptance_recorded", "report_published"}:
         return ProducerObservation(event_type=event_type, status="unsupported")
     try:
         with tempfile.TemporaryDirectory(prefix="gzkit-ledger-producer-") as directory:
             root = Path(directory)
+            if event_type == "report_published":
+                return _probe_report(root)
             _prepare_acceptance_project(root)
             acceptance_store.initialize(root, _OBPI, _AUTHOR)
             return _observe_acceptance_contract(root)
     except Exception as exc:  # noqa: BLE001 - a broken producer must fail this observation closed
         return ProducerObservation(
             event_type=event_type,
-            producer="gzkit.acceptance_store.initialize",
+            producer=(
+                "gzkit.reports.publish_report"
+                if event_type == "report_published"
+                else "gzkit.acceptance_store.initialize"
+            ),
             status="failed",
             error=f"{type(exc).__name__}: {exc}",
         )

@@ -93,6 +93,7 @@ nav:
       - /gz-arb: user/skills/gz-arb.md
       - /gz-complexity-advisor: user/skills/gz-complexity-advisor.md
     - Status & Review:
+      - /gz-big-picture: user/skills/gz-big-picture.md
       - /gz-status: user/skills/gz-status.md
       - /gz-adr-status: user/skills/gz-adr-status.md
       - /gz-state: user/skills/gz-state.md

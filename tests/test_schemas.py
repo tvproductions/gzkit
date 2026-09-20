@@ -73,6 +73,7 @@ from gzkit.events import (
     RedReceiptEmittedEvent,
     RenditionAdvisorVerdictEvent,
     RenditionCommittedEvent,
+    ReportPublishedEvent,
     SectionOwnershipGenesisEvent,
     SectionOwnershipReanchoredEvent,
     SectionOwnershipUnownedEvent,
@@ -347,6 +348,7 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     "session_exit_bookmark_skipped": SessionExitBookmarkSkippedEvent,
     # Surface-weight band/floor recalibration witness (ADR-0.0.33 AP#3, GHI #791)
     "surface_weight_recalibrated": SurfaceWeightRecalibratedEvent,
+    "report_published": ReportPublishedEvent,
     # Reversible retirement of OBPIs whose parent ADR demoted to pool (GHI #584)
     "obpi_parked": ObpiParkedEvent,
     "obpi_blocked_on_operator": ObpiBlockedOnOperatorEvent,

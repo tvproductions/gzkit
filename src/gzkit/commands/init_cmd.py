@@ -425,6 +425,9 @@ venv/
 # Claude Code user settings (machine-specific)
 .claude/settings.local.json
 
+# Report publication OS-lock sidecar (retain the reports themselves)
+**/reports/big-picture/publication.lock
+
 # OS
 .DS_Store
 Thumbs.db

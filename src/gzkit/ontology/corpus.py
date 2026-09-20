@@ -84,6 +84,7 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         "airlock_out",
         "artifact_edited",
         "audit_generated",
+        "report_published",  # Retained assessment provenance, not governance artifact lineage.
         # Work-domain L2 edge events (ADR-0.32.0, OBPI-06) — imaged by the work
         # subgraph (gzkit.ontology.work), consciously NOT by the corpus projection.
         "blocked_by",

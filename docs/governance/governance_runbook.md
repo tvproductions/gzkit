@@ -1141,3 +1141,9 @@ Prohibited shapes in any instruction file:
 - [Layered Trust](GovZero/layered-trust.md)
 - [Session Handoff Obligations](GovZero/session-handoff-obligations.md)
 - [Staleness Classification](GovZero/staleness-classification.md)
+
+## Big-picture report publication
+
+After an operator initiates `gz-big-picture`, `gz report publish` preserves the
+assessment and records its fingerprint in the configured ledger. Consult the
+[publication manpage](../user/manpages/report-publish.md) for retry and retained-history behavior.

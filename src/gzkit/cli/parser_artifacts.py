@@ -39,6 +39,7 @@ def register_artifact_parsers(commands: argparse._SubParsersAction) -> None:
     Covers adr, obpi, task, justify, knowledge, issue, complexity, governance,
     and context groups.
     """
+    _register_report_parsers(commands)
     _register_adr_parsers(commands)
     register_obpi_parsers(commands)
     _register_task_parsers(commands)
@@ -1202,4 +1203,40 @@ def _register_issue_parsers(commands: argparse._SubParsersAction) -> None:
             label=a.label,
             dry_run=a.dry_run,
         ),
+    )
+
+
+def _register_report_parsers(commands: argparse._SubParsersAction) -> None:
+    """Register retained narrative publication without importing runtime IO."""
+    group = commands.add_parser(
+        "report",
+        help="Retained project assessments",
+        description="Publish and retain project assessments with ledger provenance.",
+        epilog=build_epilog(["gz report publish --source report.md --id 2026-09-19"]),
+    )
+    verbs = group.add_subparsers(dest="report_command", required=True)
+    p = verbs.add_parser(
+        "publish",
+        help="Publish a retained big-picture assessment",
+        description="Save exact report bytes and ledger provenance; retain every report. "
+        "Exit 1: invalid inputs; exit 2: usage or IO failure. "
+        "Retry the same inputs after IO failure.",
+        epilog=build_epilog(["gz report publish --source report.md --id 2026-09-19 --json"]),
+    )
+    p.add_argument("--source", required=True, help="Authored UTF-8 Markdown file")
+    p.add_argument(
+        "--id", dest="report_id", required=True, help="Stable report identity for retries"
+    )
+    p.add_argument("--period", default="", help="Reporting period description")
+    p.add_argument("--evidence-cutoff", default="", help="Evidence cutoff description")
+    add_json_flag(p)
+    p.set_defaults(
+        func=lambda a: _lazy("report_publish_cmd")(
+            source=a.source,
+            report_id=a.report_id,
+            period=a.period,
+            evidence_cutoff=a.evidence_cutoff,
+            as_json=a.as_json,
+            quiet=a.quiet,
+        )
     )

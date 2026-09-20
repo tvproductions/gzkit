@@ -8,6 +8,7 @@ from unittest.mock import patch
 from gzkit.acceptance_store import initialize
 from gzkit.events import parse_typed_event
 from gzkit.ledger_producer_probe import probe_producer
+from gzkit.reports import publish_report
 
 
 class ProducerProbeTests(unittest.TestCase):
@@ -128,6 +129,52 @@ class ProducerProbeTests(unittest.TestCase):
             current = probe_producer("acceptance_recorded")
         self.assertEqual(current.status, "failed")
         self.assertEqual(current.record_count, 0)
+
+
+class ReportProducerProbeTests(unittest.TestCase):
+    def test_real_publication_is_observed_and_disposable(self):
+        roots = []
+
+        def produce(root, *args, **kwargs):
+            roots.append(root)
+            self.assertFalse((root / "state/events.jsonl").exists())
+            return publish_report(root, *args, **kwargs)
+
+        with patch("gzkit.reports.publish_report", side_effect=produce):
+            observation = probe_producer("report_published")
+        self.assertEqual(observation.status, "verified", observation.error)
+        self.assertEqual(observation.record_count, 1)
+        self.assertEqual(observation.subject, "isolated-report-probe")
+        self.assertEqual(len(observation.ledger_sha256), 64)
+        self.assertEqual(len(roots), 1)
+        self.assertFalse(roots[0].exists())
+
+    def test_noop_publication_gets_no_credit(self):
+        with patch("gzkit.reports.publish_report", return_value={"published": True}):
+            observation = probe_producer("report_published")
+        self.assertEqual(observation.status, "failed")
+        self.assertEqual(observation.record_count, 0)
+
+    def test_corrupt_report_event_or_projection_gets_no_credit(self):
+        for target in ("report", "current", "event", "index"):
+            with self.subTest(target=target):
+
+                def produce(root, *args, target=target, **kwargs):
+                    result = publish_report(root, *args, **kwargs)
+                    directory = root / "manual/reports/big-picture"
+                    path = {
+                        "report": directory / "isolated-report-probe.md",
+                        "current": directory / "current.md",
+                        "index": directory / "index.md",
+                        "event": root / "state/events.jsonl",
+                    }[target]
+                    path.write_text("wrong content", encoding="utf-8")
+                    return result
+
+                with patch("gzkit.reports.publish_report", side_effect=produce):
+                    observation = probe_producer("report_published")
+                self.assertEqual(observation.status, "failed")
+                self.assertEqual(observation.record_count, 0)
 
 
 if __name__ == "__main__":
