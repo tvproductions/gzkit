@@ -176,6 +176,13 @@
       "mechanism": "shrink-ratchet",
       "entries_path": "",
       "baseline_count": 12
+    },
+    {
+      "data_file": "data/ghi_cross_reference_baseline.json",
+      "gates_step": "GHI cross-reference staleness (chore: ghi-cross-reference-staleness)",
+      "mechanism": "shrink-ratchet",
+      "entries_path": "disclosed",
+      "baseline_count": 5
     }
   ],
   "excluded": [

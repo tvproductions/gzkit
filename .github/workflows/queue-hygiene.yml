@@ -1,0 +1,45 @@
+name: Queue hygiene
+
+# The automatic caller for `ghi-cross-reference-staleness` (GHI #785 —
+# a gate with no automatic caller can be red indefinitely while every other
+# gate reports green).
+#
+# It lives here and NOT in `gz check` or `.pre-commit-config.yaml` for one
+# reason: the chore reads GitHub's issue state, so wiring it into the local
+# gate would make `gz check` fail on a plane. The chore's declared cadence is
+# elapsed-time/30d, and a monthly schedule is what makes that declaration true
+# rather than aspirational.
+on:
+  schedule:
+    - cron: "0 7 1 * *" # 07:00 UTC on the 1st — monthly, matching staleness.periodDays
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: read
+
+jobs:
+  cross-reference-staleness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13.15"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Sync dependencies
+        run: uv sync --frozen --all-extras
+
+      # Exit 1 when a decayed sibling-state annotation is not disclosed in the
+      # shrink-only baseline. The body is never rewritten — the annotation was
+      # true when authored; see the chore's CHORE.md § Policy and Guardrails.
+      - name: ghi-cross-reference-staleness
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: uv run gz chores advise ghi-cross-reference-staleness

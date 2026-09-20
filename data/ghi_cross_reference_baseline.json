@@ -1,0 +1,35 @@
+{
+  "_doc": "Shrink-only disclosure of transcribed sibling-state annotations already decayed when the ghi-cross-reference-staleness chore landed (2026-09-20, R&D disposition row 3). Read by .gzkit/chores/ghi-cross-reference-staleness/check_cross_reference_staleness.py. An entry RECORDS an absence, it does not justify one -- the same posture as data/uncalled_gate_grandfather.json. THE BODIES ARE NOT REWRITTEN: each annotation was TRUE when authored, and editing it to agree with today's state falsifies a dated record, which is what AGENTS.md forbids for every other archive. The remedy is subtractive and lives at authoring time -- stop writing the second copy, because GitHub renders issue state live. Removing an entry from this list is correct when its issue closes; ADDING one requires an operator ruling, because a new entry means the authoring convention produced fresh debt after the subtraction was known.",
+  "disclosed": [
+    {
+      "issue": 799,
+      "cites": 533,
+      "closed": "2026-09-01",
+      "note": "Cited in a Related list as context for a scope question recorded and not acted on. Annotation only; the argument does not rest on it."
+    },
+    {
+      "issue": 894,
+      "cites": 883,
+      "closed": "2026-08-28",
+      "note": "Named as a sibling cut of the same family. Annotation only."
+    },
+    {
+      "issue": 894,
+      "cites": 877,
+      "closed": "2026-09-06",
+      "note": "Named as the third member of a contrast (typed union vs JSON schema). Annotation only."
+    },
+    {
+      "issue": 930,
+      "cites": 929,
+      "closed": "2026-09-02",
+      "note": "Filed same day, explicitly flagged unrelated subject. Annotation only."
+    },
+    {
+      "issue": 969,
+      "cites": 889,
+      "closed": "2026-09-14",
+      "note": "LOAD-BEARING, unlike the four above: #969 argues its named remedy is compromised BECAUSE #889 reports a defect in it, and #889 is now closed. Re-reading #969's argument against #889's landed fix is judgment work this chore surfaces and does not perform."
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "criteria": [
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run python .gzkit/chores/ghi-cross-reference-staleness/check_cross_reference_staleness.py --self-test",
+      "expected": 0,
+      "description": "Detector semantics (deterministic, no network, no repo state) — an annotation binds to the reference it follows, a neighbouring (closed) list lends nothing, an unknown sibling is uncounted"
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run python .gzkit/chores/ghi-cross-reference-staleness/check_cross_reference_staleness.py",
+      "expected": 0,
+      "description": "Every decayed sibling-state annotation is disclosed in the shrink-only baseline"
+    }
+  ]
+}

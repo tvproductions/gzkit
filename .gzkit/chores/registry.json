@@ -93,7 +93,7 @@
         "details": "Refactor the functions over the xenon ceiling by extracting helpers and flattening nesting, keeping behavior and tests unchanged."
       },
       "nonAuthority": "Never changes behavior, a public import, a CLI contract or a test's semantics; never suppresses a finding with noqa or an ignore comment. Never moves the gate from xenon C to the threshold table's block band; that conflict awaits an operator ruling.",
-      "governingRule": ".gzkit/rules/pythonic.md \u00a7 Size Limits & Refactoring"
+      "governingRule": ".gzkit/rules/pythonic.md § Size Limits & Refactoring"
     },
     {
       "slug": "config-paths-remediation",
@@ -123,7 +123,7 @@
     },
     {
       "slug": "control-surface-permission-consent-drift",
-      "title": "Control Surface Audit \u2014 Rule Prose vs. Permission Standing Consent (Pass D)",
+      "title": "Control Surface Audit — Rule Prose vs. Permission Standing Consent (Pass D)",
       "version": "1.1.0",
       "path": ".gzkit/chores/control-surface-permission-consent-drift",
       "lane": "lite",
@@ -148,7 +148,7 @@
     },
     {
       "slug": "control-surface-rule-conflicts",
-      "title": "Control Surface Audit \u2014 Rule-Pair Conflict Matrix (Pass A)",
+      "title": "Control Surface Audit — Rule-Pair Conflict Matrix (Pass A)",
       "version": "1.1.0",
       "path": ".gzkit/chores/control-surface-rule-conflicts",
       "lane": "lite",
@@ -172,7 +172,7 @@
     },
     {
       "slug": "control-surface-rule-vs-check-drift",
-      "title": "Control Surface Audit \u2014 Rule Prose vs Promoted Check Parity (Pass C)",
+      "title": "Control Surface Audit — Rule Prose vs Promoted Check Parity (Pass C)",
       "version": "1.1.0",
       "path": ".gzkit/chores/control-surface-rule-vs-check-drift",
       "lane": "lite",
@@ -197,7 +197,7 @@
     },
     {
       "slug": "control-surface-skill-rule-reachability",
-      "title": "Control Surface Audit \u2014 Skill/Rule Reachability Matrix (Pass B)",
+      "title": "Control Surface Audit — Skill/Rule Reachability Matrix (Pass B)",
       "version": "1.1.0",
       "path": ".gzkit/chores/control-surface-skill-rule-reachability",
       "lane": "lite",
@@ -222,7 +222,7 @@
     },
     {
       "slug": "control-surface-validator-reachability",
-      "title": "Control Surface Audit \u2014 Validator Reachability & Ungated Ratchet (Pass E)",
+      "title": "Control Surface Audit — Validator Reachability & Ungated Ratchet (Pass E)",
       "version": "1.1.0",
       "path": ".gzkit/chores/control-surface-validator-reachability",
       "lane": "lite",
@@ -272,7 +272,7 @@
         "details": "Add table-driven behavior tests to low-coverage public modules until the floor holds."
       },
       "nonAuthority": "Never lowers the floor, excludes a module from measurement, or adds a test that asserts a string rather than behavior.",
-      "governingRule": ".gzkit/rules/tests.md \u00a7 Coverage Floor (binding)"
+      "governingRule": ".gzkit/rules/tests.md § Coverage Floor (binding)"
     },
     {
       "slug": "cross-platform-test-cleanup",
@@ -304,7 +304,7 @@
         "details": "Replace raw shutil.rmtree teardown with TemporaryDirectory context managers."
       },
       "nonAuthority": "Never changes what a test asserts; never skips a test on a platform to make it pass.",
-      "governingRule": ".gzkit/rules/cross-platform.md \u00a7 Quick Reference"
+      "governingRule": ".gzkit/rules/cross-platform.md § Quick Reference"
     },
     {
       "slug": "decommission-tautological-tests",
@@ -325,7 +325,7 @@
         "details": "Apply each file's proposed disposition (convert, replace-with-ledger, fold-to-validator) and shrink the baseline to the new count."
       },
       "nonAuthority": "Never re-baselines upward or adds a waiver to absorb a new operation; never deletes a test to reduce the count.",
-      "governingRule": ".gzkit/rules/tests.md \u00a7 Red-Green-Refactor (TDD Discipline \u2014 binding)"
+      "governingRule": ".gzkit/rules/tests.md § Red-Green-Refactor (TDD Discipline — binding)"
     },
     {
       "slug": "dependency-currency",
@@ -427,7 +427,7 @@
         "details": "Evidence in a completed brief is a sealed record and OBPI briefs are operator-only, so the chore recommends a disposition per finding (repudiation, receipt re-emission, none) and stops."
       },
       "nonAuthority": "Never edits an OBPI brief, ADR or the ledger; never repudiates or re-attests; those are operator-gated.",
-      "governingRule": ".gzkit/rules/adr-audit.md \u00a7 Rules"
+      "governingRule": ".gzkit/rules/adr-audit.md § Rules"
     },
     {
       "slug": "exceptions-and-logging-rationalization",
@@ -451,7 +451,7 @@
         "details": "Replace bare and broad excepts with specific exception types, and operational print calls with logging."
       },
       "nonAuthority": "Never changes behavior, a public import, a CLI contract or a test's semantics; never suppresses a finding with noqa or an ignore comment. Never widens an except at a non-boundary site.",
-      "governingRule": ".gzkit/rules/pythonic.md \u00a7 Error Handling"
+      "governingRule": ".gzkit/rules/pythonic.md § Error Handling"
     },
     {
       "slug": "failure-class-index",
@@ -526,6 +526,29 @@
       "governingRule": "none"
     },
     {
+      "slug": "ghi-cross-reference-staleness",
+      "title": "GHI Cross-Reference Staleness — decayed sibling-state annotations",
+      "version": "1.0.0",
+      "path": ".gzkit/chores/ghi-cross-reference-staleness",
+      "lane": "lite",
+      "timeoutSeconds": 120,
+      "projectLocal": true,
+      "class": "coherence",
+      "rung": "propose",
+      "idempotent": true,
+      "staleness": {
+        "signal": "elapsed-time",
+        "periodDays": 30,
+        "graceDays": 7
+      },
+      "remediation": {
+        "category": "no_fix_planned",
+        "details": "The chore never rewrites a body: the annotation was true when authored. It discloses decoration, surfaces load-bearing instances to the operator, and recommends the subtraction at authoring time (ghi-author stops transcribing sibling state, per GHI #768's ruling for ADR counts)."
+      },
+      "nonAuthority": "Never edits an issue body, never closes or comments on an issue, never grows its own baseline, never judges whether a later landing falsified a premise.",
+      "governingRule": "none"
+    },
+    {
       "slug": "hardcoded-root-eradication",
       "title": "Config-First Enforcement (Anti-Vibe-Code)",
       "version": "1.1.0",
@@ -570,11 +593,11 @@
         "details": "Lift and compress the items the operator ruled, through the corpus, the canonical rule sources and the canonical skill files, until each rendered surface sits inside its range and each skill body meets skill-authoring.md § Parsimony."
       },
       "nonAuthority": "Never edits a rendered surface or vendor mirror; never trims a tier: invariant entry or a Mechanical or Promotable bullet; never acts on an item the operator did not rule; never removes a step, a stop condition or an authority line from a skill; never runs a skill it is trimming.",
-      "governingRule": ".gzkit/rules/agents-md-map-doctrine.md \u00a7 Budget"
+      "governingRule": ".gzkit/rules/agents-md-map-doctrine.md § Budget"
     },
     {
       "slug": "ledger-vocabulary-inertness",
-      "title": "Ledger Vocabulary Inertness \u2014 never-fired types and paired-event ratios",
+      "title": "Ledger Vocabulary Inertness — never-fired types and paired-event ratios",
       "version": "1.2.0",
       "path": ".gzkit/chores/ledger-vocabulary-inertness",
       "lane": "lite",
@@ -648,7 +671,7 @@
         "details": "Split over-band modules by cohesion, keeping public imports stable, and surrender grandfather entries that fall under the band."
       },
       "nonAuthority": "Never adds a grandfather entry to absorb a new violation or raises a listed ceiling; never states a threshold outside complexity-thresholds.json.",
-      "governingRule": ".gzkit/rules/complexity-thresholds.md \u00a7 Invariant"
+      "governingRule": ".gzkit/rules/complexity-thresholds.md § Invariant"
     },
     {
       "slug": "pep257-docstring-compliance",
@@ -718,7 +741,7 @@
         "details": "Apply a detected Pythonic rewrite under TDD with before/after complexity and SLOC evidence."
       },
       "nonAuthority": "Never applies a rewrite with no detection row, regresses xenon, or bundles two rewrites in one evidence file.",
-      "governingRule": ".gzkit/rules/pythonic.md \u00a7 Core Principles"
+      "governingRule": ".gzkit/rules/pythonic.md § Core Principles"
     },
     {
       "slug": "pythonic-design-pattern-detection",
@@ -742,7 +765,7 @@
         "details": "The repair is the paired pythonic-design-pattern-application chore; detection records a disposition per candidate and stops."
       },
       "nonAuthority": "Never edits source; never marks a candidate not-pythonic-rewrite without reading the example and naming the reason.",
-      "governingRule": ".gzkit/rules/pythonic.md \u00a7 Core Principles"
+      "governingRule": ".gzkit/rules/pythonic.md § Core Principles"
     },
     {
       "slug": "pythonic-refactoring",
@@ -779,7 +802,7 @@
         "details": "Apply ruff safe fixes and hand Pythonic rewrites until ruff and ty are clean."
       },
       "nonAuthority": "Never changes behavior, a public import, a CLI contract or a test's semantics; never suppresses a finding with noqa or an ignore comment. Never uses --unsafe-fixes.",
-      "governingRule": ".gzkit/rules/pythonic.md \u00a7 Core Principles"
+      "governingRule": ".gzkit/rules/pythonic.md § Core Principles"
     },
     {
       "slug": "quality-check",
@@ -979,7 +1002,7 @@
     },
     {
       "slug": "test-consolidation-subtest-sweep",
-      "title": "Test Consolidation \u2014 subTest Sweep & Slow-Tier Quarantine (GHI #644)",
+      "title": "Test Consolidation — subTest Sweep & Slow-Tier Quarantine (GHI #644)",
       "version": "1.1.0",
       "path": ".gzkit/chores/test-consolidation-subtest-sweep",
       "lane": "lite",
@@ -1001,7 +1024,7 @@
         "details": "Convert looping table-driven tests to subTest and route duplicated setUp bodies through the shared fakes, keeping the test count."
       },
       "nonAuthority": "Never deletes a test or reduces the test count; never changes CANONICAL_STEP_COMMANDS or re-pins unittest-parallel.",
-      "governingRule": ".gzkit/rules/tests.md \u00a7 General Rules (binding)"
+      "governingRule": ".gzkit/rules/tests.md § General Rules (binding)"
     },
     {
       "slug": "test-isolation-compliance",
@@ -1026,7 +1049,7 @@
         "details": "Fix each isolation, speed or stdout-noise violation at its root cause (shared setup, mocked roots, patched console)."
       },
       "nonAuthority": "Never masks a slow test with sleep or clock hacks, or loosens a profiler threshold to pass.",
-      "governingRule": ".gzkit/rules/tests.md \u00a7 General Rules (binding)"
+      "governingRule": ".gzkit/rules/tests.md § General Rules (binding)"
     },
     {
       "slug": "test-manpage-examples",
