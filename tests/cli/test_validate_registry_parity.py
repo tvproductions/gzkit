@@ -58,6 +58,19 @@ _GOLDEN_DEFAULT_ORDER: tuple[str, ...] = (
 #   real command. The validator existed from GHI #623 with no CLI wiring at all; its
 #   only caller was its own fence test until GHI #746 registered it here.
 _POST_SNAPSHOT_DEFAULT_ADDITIONS: tuple[str, ...] = (
+    # commit_trailers — RE-TIERED explicit -> default 2026-09-20, operator-ruled
+    # under GHI #1017. Declared as a delta rather than by editing the golden sets,
+    # which stay pristine as migration evidence; `_RETIERED_TO_DEFAULT` below is
+    # the matching subtraction on the explicit side. Same reasoning as the two
+    # entries at the end of this tuple: three surfaces name
+    # `gz validate --commit-trailers` as the enforcement for the Task: trailer
+    # obligation, and the stamping hook is a deliberate silent no-op BECAUSE it
+    # trusts that catch. Flag-gated, nothing ran it, and two non-compliant commits
+    # reached origin with every gate green (2026-09-17; `84ea8e435` on
+    # 2026-09-20). A flag-gated check nobody runs is inert exactly where the
+    # inertness caused the defect. Pre-commit cannot host it either — the
+    # validator scans HEAD, still the previous commit at that point.
+    "commit_trailers",
     "rule_version_markers",
     "invariant_witness",
     # wheel_path_literals — environment-rooted path literals in wheel-shipped
@@ -147,6 +160,17 @@ _POST_SNAPSHOT_EXPLICIT_ADDITIONS: frozenset[str] = frozenset(
         "rendition_lineage",
     }
 )
+
+# Scopes that WERE explicit in the pre-collapse snapshot and have since been
+# deliberately moved to the default tier.
+#
+# Declared as a subtraction so the golden sets stay pristine. The golden's value
+# is that it is measured evidence of the pre-collapse dispatch; editing it to
+# absorb a later decision would erase the boundary between "what the collapse had
+# to reproduce" and "what we changed on purpose afterwards" — the same reasoning
+# `_POST_SNAPSHOT_DEFAULT_ADDITIONS` records for growth. A re-tier that appears
+# here is a ruling; one that does not is drift, and the assertion still says so.
+_RETIERED_TO_DEFAULT: frozenset[str] = frozenset({"commit_trailers"})
 
 _GOLDEN_EXPLICIT_SET: frozenset[str] = frozenset(
     {
@@ -308,9 +332,11 @@ class TestValidatorRegistryParity(unittest.TestCase):
         got = frozenset(e.stem for e in self._registry() if e.tier == "explicit")
         self.assertEqual(
             got - _POST_SNAPSHOT_EXPLICIT_ADDITIONS,
-            _GOLDEN_EXPLICIT_SET,
+            _GOLDEN_EXPLICIT_SET - _RETIERED_TO_DEFAULT,
             "explicit-tier stem set must match the pre-collapse "
-            "`_explicit_scope_runners` exactly (no scope dropped or re-tiered)",
+            "`_explicit_scope_runners` exactly, less any scope deliberately "
+            "re-tiered through `_RETIERED_TO_DEFAULT` (an undeclared drop or "
+            "re-tier is drift)",
         )
         self.assertEqual(
             got & _POST_SNAPSHOT_EXPLICIT_ADDITIONS,

@@ -119,7 +119,7 @@
       "gates_step": "uncalled-gate inventory (gz validate --gate-callers)",
       "mechanism": "shrink-ratchet",
       "entries_path": "accepted_gates",
-      "baseline_count": 40
+      "baseline_count": 39
     },
     {
       "data_file": "data/advisory_scorecard_grandfather.json",

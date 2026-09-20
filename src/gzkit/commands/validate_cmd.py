@@ -179,8 +179,15 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
     _ScopeEntry("decomposition", "explicit", True, lambda r, _f: validate_decomposition(r)),
     _ScopeEntry("requirements", "explicit", True, lambda r, _f: _validate_requirements(r)),
     _ScopeEntry(
+        # Default tier, not explicit (GHI #1017). Three surfaces name this scope
+        # as the enforcement for the Task: trailer obligation, and the stamping
+        # hook is deliberately a silent no-op BECAUSE it trusts this catch. While
+        # it was flag-gated nothing ran it, and two non-compliant commits reached
+        # origin with every gate green. Pre-commit cannot host it — the validator
+        # scans HEAD, still the previous commit at that point — so the no-flag
+        # gz check at pre-push is where the obligation can actually bind.
         "commit_trailers",
-        "explicit",
+        "default",
         True,
         lambda r, _f: _validate_commit_trailers(r) + _validate_eval_feedback_trailer(r),
     ),
