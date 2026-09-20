@@ -1,10 +1,9 @@
 <!-- markdownlint-configure-file { "MD013": { "line_length": 9999 } } -->
 
-# Build-to-1.0 Campaign — 2026-08-16 (Magna Carta)
+# Build-to-1.0 Campaign — 2026-09-20 (Magna Carta)
 
-Status: **SUPERSEDED — was ACTIVE** (operator-directed 2026-08-16; superseded 2026-09-20).
-Superseded by [`build-to-1.0-campaign-2026-09-20.md`](build-to-1.0-campaign-2026-09-20.md), which carries this edition forward in full and re-measures the reckoning.
-Supersedes [`build-to-1.0-campaign-2026-07-18.md`](build-to-1.0-campaign-2026-07-18.md);
+Status: **ACTIVE — the one canonical plan** (operator-directed 2026-09-20).
+Supersedes [`build-to-1.0-campaign-2026-08-16.md`](build-to-1.0-campaign-2026-08-16.md);
 priors are retained for audit and no longer steer.
 
 > **This line is a restatement, not the authority.** Which plan governs is declared in
@@ -17,35 +16,76 @@ priors are retained for audit and no longer steer.
 > fails closed on a campaign edition the registry does not declare.
 
 **This edition is a FULL carry-forward, not a rewrite.** Every box, movement,
-amendment, and register entry from the 2026-07-18 edition is retained inline and
-in place — no box removed, nothing resequenced, no ruling dropped. Movement B
-remained TOPMOST at this edition's creation, Movement A remains HELD, the post-1.0 pool ruling stands. (The TOPMOST half of that sentence was true on 2026-08-16 and was superseded on 2026-09-01 — see § Amendments of that date. It is annotated rather than rewritten because this paragraph records what the edition DID at creation, which does not change.) The
-edition exists because the plan was re-evaluated against the live tree on
-2026-08-16 rather than re-read, and a re-evaluation of that scope earns its own
-dated identity (operator-directed: *"update that campaign document with today's
-date - re-evaluate it thoroughly"* / *"did you update a fresh document with today's
-date and sunset the prior?"*). Because the carry-forward is total, no § Rulings
-Register disposition pass was owed — the 07-18 amendments travel with the text.
+amendment, and register entry from the 2026-08-16 edition is retained inline and
+in place — no box removed, nothing resequenced, no ruling dropped. Sequencing is
+unchanged at creation: `ADR-0.35.0-canon-entry-corpus-landing` remains TOPMOST,
+Movement C's family-closure box remains NEXT-IN-PRIORITY, Movement B remains
+behind them, Movement A remains HELD. Because the carry-forward is total, no
+§ Rulings Register disposition pass is owed — the 08-16 and 07-18 amendments
+travel with the text (§ 8, the 2026-07-18 rule).
 
-**What the 2026-08-16 re-evaluation measured** (each finding recorded at its own
-box; § Amendments 2026-08-16 carries the full table and method notes):
+The edition exists because **the plan's measurements went stale while its rulings
+stayed live**, and a re-evaluation against the live tree earns its own dated
+identity (the 2026-08-16 precedent, operator-directed: *"update that campaign
+document with today's date - re-evaluate it thoroughly"*). Five operator-ratified
+amendments landed between 2026-08-16 and this edition; none of them re-measured
+the figures that justify the sequencing.
 
-| Claim | 07-18 edition | Re-measured 2026-08-16 |
-|---|---|---|
-| Oversized modules (>600 lines) | 33 | **51** — largest regression on the board |
-| `fix` commits, 90 days | 524 | 528 |
-| `airlock_in` / `airlock_out` | 23 / 5 | **23 / 5 — unchanged; zero transits** |
-| Scorecard Promotable rows | 0 | **8** (GHI #810) |
-| Pool ADRs | — | ~199 `.md` under `docs/design/adr/pool/` |
+**The measurements are now a pointer, not a table.** Run
+[`reckoning-2026-09-20-evidence/reckon.py`](reckoning-2026-09-20-evidence/reckon.py)
+— read-only, carrying no literals from its authoring date, so it reports whatever
+tree it is run against. This applies the operator's 2026-09-20 ruling (*"Pointer,
+not value"*) to the reckoning itself, which is the surface that produced the
+`19 of 32` defect in the first place. The figures quoted below are a **dated
+observation of the 2026-09-20 tree**, retained so a reader can see movement, and
+are ILLUSTRATIVE per `AGENTS.md` § Governance doctrine surfaces.
 
-**Held on re-measurement:** `ADR-0.35.0` `Draft`, `ADR-0.36.0` `Proposed`,
-`ADR-0.33.0` `Validated`, GHI #766 and #611 open, surface-mirroring ratio ~49%
-over a stated 90-day window.
+**What the 2026-09-20 re-evaluation measured** (dated observation of the
+2026-09-20 tree; the authority is the script, not this table):
 
-**The sharpest finding is the number that did not move.** The airlock counters are
-identical two days into Movement B holding TOPMOST — zero transits — while `fix`
-commits rose by four. The ungoverned door widened while the governed one stayed
-shut, inside the window where that Movement was supposedly being worked.
+| Claim | 07-18 | 08-16 | **Re-measured 2026-09-20** |
+|---|---|---|---|
+| `airlock_in` / `airlock_out` | 23 / 5 | 23 / 5 | **71 / 29 — 42 unaccounted exits** |
+| `fix` commits, 90 days | 470 | 528 | **705 (40.1% of all commits)** |
+| `feat` commits, 90 days | 43 (2.9%) | — | **45 (2.6%)** |
+| Total commits, 90 days | 1,508 | — | **1,760** |
+| `gz git-sync` share | 703 (47%) | — | **534 (30.3%)** |
+| Oversized modules (>600 lines) | 33 | 51 | **66** |
+| src / test LOC | 107k / 146k | — | **156k / 227k** |
+| Ledger events | 13,488 | — | **16,995** |
+
+**THE SHARPEST FINDING OF THE 08-16 EDITION IS NOW FALSE, and that is why this
+edition exists.** That edition's strongest argument was *"the number that did not
+move"* — `airlock_in` 23 / `airlock_out` 5, identical across two days, zero
+transits, the ungoverned door widening while the governed one stayed shut. The
+counters have since moved to **71 / 29**: roughly 48 transits and 24 accounted
+exits. The membrane is being crossed.
+
+**What that does and does not overturn.** It retires the *zero-transits* premise,
+so Movement B's rationale may no longer be argued from it. It does **not** retire
+the Movement: the accounting gap grew from 18 unaccounted exits to **42**, and
+`fix` commits still run at 40% of all traffic against 2.6% `feat`. The
+calibrate-before-widening sequence inside B stands on `ADR-0.33.0` § Negative #1,
+never on the counters. Re-argue B from the accounting gap and the ratio, not from
+a number that has moved.
+
+**The `feat` ratio has not improved, and that is the 1.0 question.** 2.9% at
+07-18, **2.6%** today, across 252 more commits. The 07-18 diagnosis — *gzkit has
+no external forcing function, and its only consumer is its own construction* —
+survives this re-measurement intact. `gz git-sync`'s share did fall, 47% → 30.3%,
+which is the one structural improvement on the board.
+
+**Held on re-measurement:** `ADR-0.35.0` `Pending`/`pre_closeout` at 7/13 with
+closeout BLOCKED on six briefs missing ledger proof of completion; no active OBPI
+locks; open GHI queue 57. Run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing`
+and `uv run gz obpi lock list` rather than trusting these.
+
+**Method matters and is now stated.** The brief count reads 545 under the glob
+`**/obpis/OBPI-*.md` where 08-16 recorded 659; neither prior edition recorded the
+glob it used, so that is a method difference rather than 114 deleted briefs. See
+[`reckoning-2026-09-20-evidence/README.md`](reckoning-2026-09-20-evidence/README.md)
+for every counting rule, and for why the scorecard tallies are deliberately not
+computed there.
 
 > **Topmost (sequenced):** **`ADR-0.35.0-canon-entry-corpus-landing` is TOPMOST (2026-09-01, operator-ratified, UNCHANGED). AMENDED 2026-09-02 (operator-ratified) — Movement C's `Close the doctrine-declared-without-mechanism family` box is pulled forward to NEXT-IN-PRIORITY, immediately behind TOPMOST and ahead of both Movement B and every other Movement C box; Movement B steps down one place; Movement A remains HELD as a Movement.** The box outranks its own Movement, on the precedent the 2026-09-01 amendment set when Movement A's `ADR-0.35.0` box became TOPMOST inside a HELD Movement. It is placed high because it is drawable without the operator: under the IRON LAW only the operator initiates OBPI work, while this box discharges through rule-text amendment, scorecard scoring and GHI-shaped direct repair. The family's share of the open queue and its production rate are measured in [`f1-family-share-measurement-2026-09-20.md`](f1-family-share-measurement-2026-09-20.md) — re-run its evidence script rather than trusting a figure transcribed here. Instances close same-session while the class keeps producing: that premise was re-measured 2026-09-20 under a shared criterion and VERIFIED, not revised. See § Amendments 2026-09-20. Run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` for its lifecycle and landed count rather than trusting a figure transcribed here. See § Amendments 2026-09-02. From 2026-08-14 to this amendment the plan declared TOPMOST a Movement that ADR order forbade working, while the work drawn every session sat as a box inside a HELD Movement — two amendments (2026-08-16, 2026-08-23) were spent explaining that split rather than removing it. This removes it. Run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` for its lifecycle and landed count rather than trusting a figure transcribed here. See § Amendments 2026-09-01.
 >
@@ -115,6 +155,18 @@ or a `permitted-entry`; **zero** are GHI direct-fix or session entry, which toge
 ~97% of commits. Last transit: 2026-07-15. The 2026-07-18 session — corpus survey, two
 GHIs, three source files, a Magna Carta amendment — crossed **no** airlock. Movement B is
 the correction. (Accounting gap also open: **23 `airlock_in` vs 10 `airlock_out`.**)
+
+> **Re-measured 2026-09-20 — two of these figures have moved and one claim is
+> retired.** The counters now read **71 `airlock_in` / 29 `airlock_out`**, so the
+> *zero transits* claim above is a dated record of 2026-07-18 and is **no longer
+> true of the tree**. It is retained unedited because it records what that pass
+> observed; it may not be cited as current. **The accounting gap did not close —
+> it grew, from 13 unaccounted exits to 42.** Run
+> [`reckoning-2026-09-20-evidence/reckon.py`](reckoning-2026-09-20-evidence/reckon.py)
+> rather than either figure on this page. The diagnosis in the paragraphs above —
+> no external forcing function, the system as its own only consumer — was
+> re-tested at this edition and **holds**: `feat` ran 2.9% of commits at 07-18 and
+> **2.6%** at 09-20.
 
 ## 3. Doctrine (carried — see § Rulings Register for provenance)
 
@@ -465,7 +517,60 @@ had been repeating. All are dispositioned below — none left undefined.
 
 ## Amendments
 
-### 2026-09-20 (latest) — the family-share premise is re-measured and VERIFIED; the transcribed figure becomes a pointer (operator-ratified)
+### 2026-09-20 (latest) — THIS EDITION: the reckoning is re-measured and becomes a pointer; the zero-transits premise is retired (operator-ratified)
+
+**Operator ruling**, selected from a four-option picker over how to repair the
+stale measurements: **"New edition — full re-evaluation."** The alternatives —
+amend with pointers, amend Movement B only, or hold and measure first — were
+declined in favour of a dated edition, following the 2026-08-16 precedent that a
+re-evaluation against the live tree earns its own identity.
+
+**What prompted it.** The operator observed that the campaign was *"a month
+old"*. The content was not: five operator-ratified amendments had landed since
+2026-08-16, the most recent the same day. What HAD gone stale was the
+**evidence** — the plan's rulings were current while the measurements justifying
+its sequencing were 35 to 64 days old and had never been re-taken.
+
+**The finding that forced the edition.** The 08-16 edition's sharpest argument
+was *"the sharpest finding is the number that did not move"*: `airlock_in` 23 /
+`airlock_out` 5, zero transits, the ungoverned door widening while the governed
+one stayed shut. Re-measured at this edition: **71 / 29**. That premise is
+**retired**. Movement B is NOT retired with it — the accounting gap grew from 18
+unaccounted exits to **42**, and `fix` still runs 40.1% of commits against 2.6%
+`feat` — but B must be re-argued from the gap and the ratio, never again from the
+counters.
+
+**What was re-tested and HELD.** The 07-18 root-cause diagnosis — *gzkit has no
+external forcing function, and its only consumer is its own construction* —
+survives: `feat` was 2.9% of commits at 07-18 and is **2.6%** now, across 252 more
+commits. `gz git-sync`'s share fell 47% → 30.3%, the one structural improvement on
+the board. Oversized modules went 33 → 51 → **66**, still the largest regression.
+
+**Sequencing is UNCHANGED at creation.** `ADR-0.35.0-canon-entry-corpus-landing`
+remains TOPMOST, Movement C's family-closure box remains NEXT-IN-PRIORITY,
+Movement B remains behind them, Movement A remains HELD. A re-measurement is not a
+re-sequencing, and no box moved on the strength of these numbers.
+
+**The reckoning is now a pointer.** Its figures live in
+[`reckoning-2026-09-20-evidence/reckon.py`](reckoning-2026-09-20-evidence/reckon.py),
+which carries no literals from its authoring date and reports whatever tree it is
+run against. This applies the *"Pointer, not value"* ruling of 2026-09-20 to the
+reckoning itself — the surface whose transcribed `19 of 32` survived 18 days
+earlier the same week. Counting methods are stated in that directory's README,
+including the glob that explains why the brief count reads 545 here and 659 at
+08-16.
+
+**Supersession performed.** `data/active_campaign.json` moves 2026-08-16 to
+`superseded` and names this edition `active`; that list move IS the supersession,
+never the banner. `data/transcribed_count_surfaces.json` is repointed in the same
+commit — the coupling test added under GHI #1064 the same day fails closed if it
+is not, which is the mechanism working on its first real supersession.
+
+**Carry-forward is total.** Every box, movement, amendment and register entry from
+2026-08-16 travels inline and in place. No § Rulings Register disposition pass is
+owed (§ 8, the 2026-07-18 rule).
+
+### 2026-09-20 — the family-share premise is re-measured and VERIFIED; the transcribed figure becomes a pointer (operator-ratified)
 
 **Operator (`g0`), ruling on the options put to them:** *"Pointer, not value"* — selected
 over correcting `32` to `37` in place and over an amendment that left both live sites as
