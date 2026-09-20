@@ -5,6 +5,7 @@ from rich.markup import escape
 from gzkit.commands.common import console, ensure_initialized, get_project_root
 from gzkit.config import GzkitConfig
 from gzkit.ledger import Ledger
+from gzkit.settings_vault import vault_status
 from gzkit.skills import audit_skills
 from gzkit.sync import collect_canonical_sync_blockers, find_stale_mirror_paths, sync_all
 from gzkit.validate import validate_all
@@ -122,6 +123,14 @@ def tidy(check_only: bool, fix: bool, dry_run: bool) -> None:
         console.print("\n  ⚠ [yellow]Orphaned OBPIs (no ADRs):[/yellow]")
         for obpi_id in orphan_obpis:
             console.print(f"    → {obpi_id}")
+
+    # Settings vault. The backup hook writes it and, until GHI #1072, nothing read
+    # it back. An empty vault and an unchecked vault look identical from outside,
+    # which is how the Windows path defect at GHI #1071 ran undetected.
+    vault = vault_status(project_root)
+    if vault.is_actionable:
+        console.print("\n  ⚠ [yellow]Settings vault:[/yellow]")
+        console.print(f"    → {escape(vault.message)}")
 
     # Find ADRs without attestation
     pending = ledger.get_pending_attestations()
