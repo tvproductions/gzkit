@@ -41,6 +41,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 REGISTRY = REPO_ROOT / "data" / "active_campaign.json"
 GOVERNANCE = REPO_ROOT / "docs" / "governance"
 CAMPAIGN_GLOB = "*-campaign-*.md"
+TRANSCRIBED_SURFACES = REPO_ROOT / "data" / "transcribed_count_surfaces.json"
 
 #: Audits the human-facing banner. NOT an execution authority -- production
 #: reads the registry. See this module's docstring.
@@ -125,6 +126,42 @@ class ProseAgreesWithTheRegistry(CampaignRegistryCoherence):
             [k for k, line in self.status_lines.items() if not line.startswith("Status:")],
             [],
         )
+
+
+class ScannersFollowTheGoverningEdition(CampaignRegistryCoherence):
+    """A registry that names a campaign must name the one that governs (GHI #1064).
+
+    `data/transcribed_count_surfaces.json` lists the surfaces where a
+    transcribed ADR OBPI count is refused, and its own comment states that a
+    file absent from the list is not scanned at all. It named the 2026-07-18
+    edition while this registry declared 2026-08-16 governing, so
+    `gz validate --transcribed-adr-counts` reported green over an archive for
+    35 days while the live plan went unscanned.
+
+    Nothing failed, which is the point: the check passed the whole time. A
+    second registry pointing at a retired edition is undetectable from either
+    file alone, so the coupling is asserted here, where the governing edition
+    is already the authority.
+    """
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+        surfaces = json.loads(TRANSCRIBED_SURFACES.read_text(encoding="utf-8"))["surfaces"]
+        cls.scanned_campaigns: list[str] = sorted(
+            entry["path"] for entry in surfaces if "-campaign-" in entry["path"]
+        )
+
+    def test_the_scanned_campaign_is_the_governing_one(self) -> None:
+        self.assertEqual(self.scanned_campaigns, [self.active])
+
+    def test_no_superseded_campaign_is_scanned(self) -> None:
+        """Stated separately: scanning an archive is its own defect.
+
+        The assertion above would also fail if the live plan were simply
+        missing, which is a different repair.
+        """
+        self.assertEqual([p for p in self.scanned_campaigns if p in self.superseded], [])
 
 
 if __name__ == "__main__":

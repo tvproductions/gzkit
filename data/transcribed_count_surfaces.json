@@ -2,13 +2,13 @@
   "$comment": "Live surfaces where a transcribed ADR OBPI count is REFUSED (GHI #768). Read by gz validate --transcribed-adr-counts. A surface is listed here because it makes LIVE claims about ADR progress; a file absent from this list is not scanned at all, which is how the 135-file corpus of dated records stays untouched. `historical_sections` names H2/H3 headings inside a listed surface whose content is a dated record rather than a live claim -- a count under one of those is correct as history and must never be rewritten.",
   "surfaces": [
     {
-      "path": "docs/governance/build-to-1.0-campaign-2026-07-18.md",
+      "path": "docs/governance/build-to-1.0-campaign-2026-08-16.md",
       "historical_sections": [
         "Amendments",
         "Archive",
         "Rulings Register"
       ],
-      "note": "The campaign is both live (the Queue) and archival (Amendments). Section granularity is required, not optional: a whole-file rule would either falsify the amendment record or exempt the banner that started GHI #768."
+      "note": "The campaign is both live (the Queue) and archival (Amendments). Section granularity is required, not optional: a whole-file rule would either falsify the amendment record or exempt the banner that started GHI #768. THE PATH IS THE GOVERNING EDITION, not a fixed file: this entry named the 2026-07-18 edition while data/active_campaign.json declared 2026-08-16 governing, so the live plan went unscanned for 35 days while the check reported green over an archive (GHI #1064). Repoint this path whenever active_campaign.json's `active` value moves; tests/governance/test_active_campaign_registry.py (ScannersFollowTheGoverningEdition) holds the two in agreement."
     },
     {
       "path": "docs/design/adr/pool/ADR-pool.primary-source-corroboration.md",
