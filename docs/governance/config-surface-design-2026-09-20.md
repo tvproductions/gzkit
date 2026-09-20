@@ -1,8 +1,8 @@
 # gzkit-internal config surface — design record
 
-> **Status: PROPOSAL. Nothing here is built.** This record exists so
-> `ADR-0.39.0` is a transcription rather than a fresh design when ADR order
-> permits it. It is not an ADR, initiates no OBPI, and moves no file. Operator
+> **Status: PROPOSAL, now feeding `ADR-0.39.0`.** Nothing here is built. The
+> operator excepted ADR order on 2026-09-20 so the ADR could be authored from
+> this record rather than waiting behind four unlanded feature ADRs. It is not an ADR, initiates no OBPI, and moves no file. Operator
 > ruling required before any of it lands.
 >
 > Figures are a dated observation of the 2026-09-20 tree and are ILLUSTRATIVE
@@ -147,6 +147,11 @@ surface's addresses stay the filenames of a layout it is meant to replace.
 **Recommendation: A.** Ruling 4 already has every reader migrating once, so the
 rename is free at exactly the moment it is cheapest, and B permanently encodes
 the pre-config layout in the post-config API.
+
+> **RULED 2026-09-20 — logical keys (Option A).** Operator verbatim: *"logical
+> keys, and author 0.39.0 now — I'll except ADR order"*. The question is closed;
+> `load_registry(root, "thresholds.audit")` is the shape, and the entry point
+> owns the key → path mapping.
 
 ## Migration plan (ruling 4)
 

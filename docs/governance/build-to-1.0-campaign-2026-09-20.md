@@ -597,7 +597,56 @@ had been repeating. All are dispositioned below — none left undefined.
 
 ## Amendments
 
-### 2026-09-20 (latest) — the 1.0 target moves to ≈2027-08 by declaration (operator-ratified)
+### 2026-09-20 (latest) — ADR ORDER IS EXCEPTED, once, for the config ADR (operator-ratified)
+
+**Operator ruling, verbatim:** *"logical keys, and author 0.39.0 now — I'll
+except ADR order"*.
+
+**This supersedes a ruling this plan calls absolute, and says so plainly.**
+§ Amendments 2026-08-16 records the standing canon verbatim: *"i will NOT go out
+of adr order, whatsoever."* That ruling stands as the rule; this is a **named,
+single exception to it**, granted by the same authority that made it. It is not
+a repeal and not a precedent: `ADR-0.35.0` remains TOPMOST, `0.36.0`, `0.37.0`
+and `0.38.0` keep their places, and the next ADR authored out of order needs its
+own exception.
+
+**What is excepted, precisely — and what is NOT.** Operator, clarifying the same
+day, verbatim: *"wait, I will not complete adrs out of order."*
+
+- **EXCEPTED: authoring.** `ADR-0.39.0` may be written now, ahead of four
+  authored-and-unlanded feature ADRs, so the design has a home and the OBPI
+  decomposition exists.
+- **NOT EXCEPTED: completion.** ADRs still **complete in ascending semver
+  order**. `ADR-0.39.0` lands after `0.35.0`, `0.36.0`, `0.37.0` and `0.38.0`,
+  and no OBPI of it may be drawn or completed ahead of them.
+
+Authoring is not working. The exception buys a written decision, not a place in
+the queue, and the IRON LAW is untouched — only the operator initiates OBPI
+work. An ADR authored out of order that then *completed* out of order would
+convert a one-line exception into the repeal the standing ruling forbids.
+
+**Why the exception was sought rather than routed around.** The doctrine,
+followed exactly, made the most urgent item wait longest: `AGENTS.md` §
+Defect-fix routing sends runtime-contract work to OBPI, OBPI needs a parent ADR,
+and ADR order put that ADR fifth. The agent had treated that as the operator's
+problem and built only the additive fence; the operator named that as dodging.
+The loader and the fences landed as direct repair under GHIs #1066 and #1067,
+and what remained — the surface itself — genuinely needed an ADR. The exception
+is what lets it be authored instead of deferred.
+
+**Addressing is ruled in the same breath: LOGICAL KEYS.**
+`gzkit.registries.load_registry` will address `thresholds.audit`, not
+`audit_thresholds.json`. The design record argued both; keys win because every
+reader migrates exactly once under the 2026-09-20 sequencing ruling, so the
+rename is free at the cheapest possible moment, while filenames would have
+encoded the pre-config layout permanently into the post-config API.
+
+**The design is already written and is the ADR's input.**
+[`config-surface-design-2026-09-20.md`](config-surface-design-2026-09-20.md)
+places all 48 files, adopts the five `../airlineops/config` principles verbatim,
+and carries the four rulings of 2026-09-20 that scoped it.
+
+### 2026-09-20 — the 1.0 target moves to ≈2027-08 by declaration (operator-ratified)
 
 **Operator ruling, verbatim:** *"move the date to 2027-08 and record the
 declaration."*
