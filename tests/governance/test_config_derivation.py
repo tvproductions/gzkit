@@ -20,6 +20,7 @@ from pathlib import Path
 
 from gzkit.governance.trust_audits.config_derivation import (
     audit_derivation,
+    audit_direct_data_reach,
     audit_module_constants,
     policy_constants,
     records_derivation,
@@ -195,6 +196,66 @@ class LiveTreeIsFenced(unittest.TestCase):
             )["constants"]
         )
         self.assertEqual(sorted(rostered - set(policy_constants(REPO_ROOT))), [])
+
+
+class DirectDataReachIsRostered(unittest.TestCase):
+    """A single read seam is single only while nothing routes around it (GHI #1067)."""
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+        (self.root / "data").mkdir()
+        (self.root / "src" / "gzkit").mkdir(parents=True)
+        self.addCleanup(self._tmp.cleanup)
+
+    def _roster(self, modules: list[str]) -> None:
+        (self.root / "data" / "direct_data_reach_grandfather.json").write_text(
+            json.dumps({"_doc": "Fixture roster, GHI #1067.", "modules": modules}),
+            encoding="utf-8",
+        )
+
+    def _module(self, name: str, body: str) -> str:
+        (self.root / "src" / "gzkit" / name).write_text(body, encoding="utf-8")
+        return f"src/gzkit/{name}"
+
+    def test_new_direct_reach_is_refused(self) -> None:
+        self._roster([])
+        rel = self._module("m.py", 'P = "data/x.json"\n')
+        self.assertEqual([e.artifact for e in audit_direct_data_reach(self.root)], [rel])
+
+    def test_path_data_form_is_caught(self) -> None:
+        """The first cut of the detector missed this form and under-rostered by 40%."""
+        self._roster([])
+        rel = self._module("m.py", 'from pathlib import Path\nP = Path("data") / "x.json"\n')
+        self.assertEqual([e.artifact for e in audit_direct_data_reach(self.root)], [rel])
+
+    def test_root_slash_data_form_is_caught(self) -> None:
+        self._roster([])
+        rel = self._module("m.py", 'def f(root):\n    return root / "data" / "x.json"\n')
+        self.assertEqual([e.artifact for e in audit_direct_data_reach(self.root)], [rel])
+
+    def test_rostered_module_is_permitted(self) -> None:
+        rel = self._module("m.py", 'P = "data/x.json"\n')
+        self._roster([rel])
+        self.assertEqual(audit_direct_data_reach(self.root), [])
+
+    def test_module_using_the_seam_is_not_flagged(self) -> None:
+        self._roster([])
+        self._module("m.py", "from gzkit.registries import load_registry\n")
+        self.assertEqual(audit_direct_data_reach(self.root), [])
+
+    def test_stale_roster_entry_is_a_finding(self) -> None:
+        """A migrated module left on the roster lets a regression hide under it."""
+        self._roster(["src/gzkit/gone.py"])
+        self.assertEqual(
+            [e.artifact for e in audit_direct_data_reach(self.root)], ["src/gzkit/gone.py"]
+        )
+
+    def test_missing_roster_fails_closed(self) -> None:
+        self._module("m.py", 'P = "data/x.json"\n')
+        errors = audit_direct_data_reach(self.root)
+        self.assertEqual(len(errors), 1)
+        self.assertIn("missing or unparseable", errors[0].message)
 
 
 if __name__ == "__main__":

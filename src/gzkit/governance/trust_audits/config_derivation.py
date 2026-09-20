@@ -20,6 +20,7 @@ import re
 from pathlib import Path
 
 from gzkit.core.validation_rules import ValidationError
+from gzkit.registries import RegistryError, load_registry
 
 #: Keys a registry may use to carry provenance. `$schema` is excluded on purpose:
 #: it declares shape, never origin.
@@ -37,8 +38,24 @@ THRESHOLD_NAME_RE = re.compile(
     re.I,
 )
 
-_DERIVATION_BASELINE = Path("data") / "config_derivation_grandfather.json"
-_CONSTANT_BASELINE = Path("data") / "module_constant_grandfather.json"
+_DERIVATION_BASELINE = "config_derivation_grandfather.json"
+_CONSTANT_BASELINE = "module_constant_grandfather.json"
+_REACH_BASELINE = "direct_data_reach_grandfather.json"
+#: Two modules are excluded from the direct-reach scan. The seam is the one
+#: place allowed to name `data/`; this detector matches its own pattern
+#: literal, which is a regex definition rather than a config read.
+_REACH_SCAN_EXEMPT = (
+    "src/gzkit/registries.py",
+    "src/gzkit/governance/trust_audits/config_derivation.py",
+)
+
+#: A module naming a `data/` registry path resolves its own config location.
+#: `gzkit.registries.load_registry` is the one place that may (GHI #1067).
+_DATA_REACH_RE = re.compile(
+    r"""["']data/[\w.-]+\.json["']"""  # "data/x.json"
+    r"""|["']data["']\s*[/)]"""  # "data" / ...  or  Path("data")
+    r"""|/\s*["']data["']"""  # root / "data"
+)
 _RECOVER = "uv run gz validate --config-registry"
 
 
@@ -47,11 +64,16 @@ def _err(artifact: str, message: str) -> ValidationError:
     return ValidationError(type="config-registry", artifact=artifact, message=message)
 
 
-def _baseline(project_root: Path, relative: Path, key: str) -> set[str] | None:
-    """Return a shrink-only baseline's entries, or None when it is unreadable."""
+def _baseline(project_root: Path, name: str, key: str) -> set[str] | None:
+    """Return a shrink-only baseline's entries, or None when it is unreadable.
+
+    Reads through `gzkit.registries.load_registry`, like any other consumer. A
+    fence that resolved its own `data/` path while refusing that of every other
+    module would be the first thing to drift (GHI #1067).
+    """
     try:
-        payload = json.loads((project_root / relative).read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+        payload = load_registry(project_root, name)
+    except RegistryError:
         return None
     entries = payload.get(key) if isinstance(payload, dict) else None
     return set(entries) if isinstance(entries, list) else None
@@ -109,8 +131,8 @@ def audit_derivation(
     if baseline is None:
         return [
             _err(
-                _DERIVATION_BASELINE.as_posix(),
-                f"The derivation baseline {_DERIVATION_BASELINE.as_posix()} is missing or "
+                f"data/{_DERIVATION_BASELINE}",
+                f"The derivation baseline data/{_DERIVATION_BASELINE} is missing or "
                 f"unparseable, so every unsourced registry would pass unobserved. Restore it. "
                 f"Re-run `{_RECOVER}`.",
             )
@@ -162,8 +184,8 @@ def audit_module_constants(project_root: Path) -> list[ValidationError]:
     if baseline is None:
         return [
             _err(
-                _CONSTANT_BASELINE.as_posix(),
-                f"The module-constant roster {_CONSTANT_BASELINE.as_posix()} is missing or "
+                f"data/{_CONSTANT_BASELINE}",
+                f"The module-constant roster data/{_CONSTANT_BASELINE} is missing or "
                 f"unparseable, so a new hardcoded threshold would enter unobserved. Restore "
                 f"it. Re-run `{_RECOVER}`.",
             )
@@ -173,7 +195,7 @@ def audit_module_constants(project_root: Path) -> list[ValidationError]:
         _err(
             entry,
             f"Module-level policy constant {entry} is not in the shrink-only roster "
-            f"{_CONSTANT_BASELINE.as_posix()}. data/config_registry.json scopes its "
+            f"data/{_CONSTANT_BASELINE}. data/config_registry.json scopes its "
             f"exhaustiveness to data/*.json, so a threshold in a module body is unreachable "
             f"by the gate meant to catch unowned config (GHI #1066). Put the value in the "
             f"config surface, or rename it out of the policy shape if it is an implementation "
@@ -181,3 +203,61 @@ def audit_module_constants(project_root: Path) -> list[ValidationError]:
         )
         for entry in sorted(found - baseline)
     ]
+
+
+def audit_direct_data_reach(project_root: Path) -> list[ValidationError]:
+    """Refuse a module that resolves a `data/` registry path instead of using the seam.
+
+    A single read seam is only single while nothing routes around it -- principle
+    3 of the shape campaign Movement F adopts, *"No Parallel Systems: one loader,
+    one source of truth"*. The roster is shrink-only, so the thirty readers that
+    predate the seam migrate incrementally while a thirty-first is refused.
+    """
+    baseline = _baseline(project_root, _REACH_BASELINE, "modules")
+    if baseline is None:
+        return [
+            _err(
+                f"data/{_REACH_BASELINE}",
+                f"The direct-reach roster data/{_REACH_BASELINE} is missing or "
+                f"unparseable, so a new parallel config reader would enter unobserved. "
+                f"Restore it. Re-run `{_RECOVER}`.",
+            )
+        ]
+
+    found: set[str] = set()
+    source_root = project_root / "src" / "gzkit"
+    for path in sorted(source_root.rglob("*.py")):
+        if "__pycache__" in path.parts:
+            continue
+        relative = path.relative_to(project_root).as_posix()
+        if relative in _REACH_SCAN_EXEMPT:
+            continue
+        try:
+            text = path.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        if _DATA_REACH_RE.search(text):
+            found.add(relative)
+
+    errors = [
+        _err(
+            module,
+            f"Module {module} resolves a data/ registry path itself instead of calling "
+            f"gzkit.registries.load_registry. A single read seam is single only while "
+            f"nothing routes around it (GHI #1067), and hexagonal rule 4 requires taking "
+            f"the location as a parameter rather than naming it. Call the seam. The "
+            f"roster may only shrink. Re-run `{_RECOVER}`.",
+        )
+        for module in sorted(found - baseline)
+    ]
+    errors.extend(
+        _err(
+            stale,
+            f"The direct-reach roster names {stale}, which no longer reaches into data/ "
+            f"directly. A stale entry lets a later regression hide under it. Remove the "
+            f"entry -- the roster may only shrink, and this is how it shrinks. "
+            f"Re-run `{_RECOVER}`.",
+        )
+        for stale in sorted(baseline - found)
+    )
+    return errors

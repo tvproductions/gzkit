@@ -197,6 +197,13 @@
       "mechanism": "shrink-ratchet",
       "entries_path": "constants",
       "baseline_count": 56
+    },
+    {
+      "data_file": "data/direct_data_reach_grandfather.json",
+      "gates_step": "config registry (gz validate --config-registry)",
+      "mechanism": "shrink-ratchet",
+      "entries_path": "modules",
+      "baseline_count": 50
     }
   ],
   "excluded": [

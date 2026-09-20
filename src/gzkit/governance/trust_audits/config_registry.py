@@ -35,6 +35,7 @@ from pathlib import Path
 from gzkit.core.validation_rules import ValidationError
 from gzkit.governance.trust_audits.config_derivation import (
     audit_derivation,
+    audit_direct_data_reach,
     audit_module_constants,
 )
 from gzkit.governance.trust_audits.waiver_ratchet import (
@@ -207,6 +208,7 @@ def audit_config_registry(project_root: Path) -> list[ValidationError]:
     # the two axes that claim does not reach (GHI #1066).
     errors.extend(audit_derivation(project_root, entries, data_root))
     errors.extend(audit_module_constants(project_root))
+    errors.extend(audit_direct_data_reach(project_root))
 
     if data_root.is_dir():
         waiver_owned = _waiver_owned(project_root, data_root)

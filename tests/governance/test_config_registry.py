@@ -35,13 +35,21 @@ def _root(registries: dict, data_files: list[str], modules: dict | None = None) 
             {
                 "_doc": "Test fixture baseline, GHI #1066.",
                 "grandfathered": [n for n in data_files if n != "config_registry.json"]
-                + ["config_registry.json", "module_constant_grandfather.json"],
+                + [
+                    "config_registry.json",
+                    "module_constant_grandfather.json",
+                    "direct_data_reach_grandfather.json",
+                ],
             }
         ),
         encoding="utf-8",
     )
     (root / "data" / "module_constant_grandfather.json").write_text(
         json.dumps({"_doc": "Test fixture roster, GHI #1066.", "constants": []}),
+        encoding="utf-8",
+    )
+    (root / "data" / "direct_data_reach_grandfather.json").write_text(
+        json.dumps({"_doc": "Test fixture roster, GHI #1067.", "modules": []}),
         encoding="utf-8",
     )
     for rel, text in (modules or {}).items():
