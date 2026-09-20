@@ -1,14 +1,14 @@
 ---
 name: gz-big-picture
 persona: main-session
-description: Explain what the whole project is becoming, the value being built, and its architectural trajectory; publish a retained, ledger-recorded report when the operator requests a high-altitude perspective.
+description: Explain what the project is and does by design, what it is becoming, the value being built, and its architectural trajectory; publish a retained, ledger-recorded report when the operator requests a high-altitude perspective.
 category: agent-operations
 lifecycle_state: active
 disable-model-invocation: true
 owner: gzkit-governance
 last_reviewed: 2026-09-19
 metadata:
-  skill-version: "0.1.1"
+  skill-version: "0.2.0"
 model: opus
 gz_command: report publish
 ---
@@ -18,10 +18,11 @@ gz_command: report publish
 ## Purpose and initiation
 
 Help the operator see the forest: **what does this all mean, and what does the
-project look like from up high?** Explain its purpose, the value being built,
-its trajectory, and what the architecture reveals about its strengths and
-unresolved problems. Treat the reader as someone investing attention and resources
-who needs an honest account of how that investment is progressing.
+project look like from up high?** Explain what the system is and does by design,
+its purpose, the value being built, its trajectory, and what the architecture
+reveals about its strengths and unresolved problems. Treat the reader as someone
+investing attention and resources who needs an honest account of both the thing
+being built and how that investment is progressing.
 
 Only the operator initiates a run. An agent may suggest one and explain its value;
 a milestone or elapsed time is a reason to suggest, not permission to start.
@@ -47,11 +48,32 @@ which expectations held, which were contradicted, and what remains untested.
 
 ## Write the account
 
-Every report covers **purpose, value, trajectory, architecture, and uncertainty**.
-Choose the structure that best explains this project; these are coverage obligations,
-not mandatory headings. Start with a readable overall assessment. Connect major
-efforts to the capabilities and outcomes they enable, preserve, or impair. Explain
-how the pieces fit together and what recurring problems suggest about the design.
+Every report covers **purpose, design, capabilities, value, trajectory, and
+uncertainty**. Choose the structure that best explains this project; these are
+coverage obligations, not mandatory headings. Start with a readable overall
+assessment. Connect major efforts to the capabilities and outcomes they enable,
+preserve, or impair. Explain how the pieces fit together and what recurring
+problems suggest about the design.
+
+### Describe the system, not only its condition
+
+A reader who has not used the project should finish the report able to say what it
+is, what it does, and how its parts compose. Give that description standing room:
+name the major components and the job each one does, show how they fit together, and
+state the capability surface a user actually gets — the commands, interfaces or
+workflows they invoke, and what each produces. Where the designed shape and the
+shipped one differ, say so.
+
+Design choices carry claims. Name the claim behind each significant mechanism — what
+it makes impossible, guarantees, or replaces — and say whether the evidence supports
+it. A mechanism that exists but never engages is a finding, as is one whose input is
+always empty or whose callers never populate it; both pass any witness that only asks
+whether the mechanism is present.
+
+Condition assessment — throughput, defect counts, queue depth, velocity — explains how
+the project is faring, not what it is. Keep the two in proportion. When condition
+material crowds out the description of the system, the reader learns the project's
+mood and not its shape.
 
 Support interpretation with inspectable evidence and give contrary evidence appropriate
 weight. Distinguish intended, implemented, released, and observed capabilities when
@@ -147,8 +169,8 @@ explains both the value delivered and the limits of the current claim.
 Judge factual support separately from explanatory usefulness. Useful evaluation cases
 include high delivery volume with poor user outcomes, sparse adopter evidence, stale
 planning claims, and a prior forecast contradicted by later results. Ask whether the
-reader can explain what the project is becoming, why the work matters, and which
-architectural uncertainties remain. Prescribed headings or a model's self-awarded
+reader can explain what the system is and does, what the project is becoming, why the
+work matters, and which architectural uncertainties remain. Prescribed headings or a model's self-awarded
 score do not demonstrate this.
 
 Research informing this approach:
