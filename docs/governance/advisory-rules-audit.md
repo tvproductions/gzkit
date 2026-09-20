@@ -64,7 +64,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `model-selection.md` | `0.6.1` |
 | `security-sensitivity.md` | `0.6.0` |
 | `skill-surface-sync.md` | `0.13.0` |
-| `skill-authoring.md` | `0.1.1` |
+| `skill-authoring.md` | `0.2.0` |
 | `chores.md` | `0.5.3` |
 | `cli.md` | `0.9.1` |
 | `cross-platform.md` | `0.7.0` |
@@ -180,6 +180,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | 94 | Procedure stays; history leaves — qualitative parsimony (one home per meaning, name the verb, branch test, earned rationalization rows) | **Judgment** | **Scored 2026-09-19 (rule `0.1.1`, GHI #1037).** Whether a paragraph is procedure or history, and whether a row names a failure observed here, requires reading. Reviewed by `instructions-files-diet` and `skill-authoring-quality`. The countable size and unfinished-marker arms now have runtime checks in `gz skill audit`, regression coverage in `tests/test_skill_body_audit.py`, and explicit warning/error boundaries; these checks do not establish qualitative parsimony. Formal Mechanical promotion remains pending a registered property-level negative-control witness, per the scoring contract above. |
 | 94a | Existing oversized bodies within their ceilings warn; new oversized bodies and growth beyond a ceiling block. | **Promotable** | Runtime enforcement landed in `gz skill audit` (GHI #1037), with size-boundary and growth regression tests. Formal Mechanical scoring requires registration of a property-level negative control; the qualitative row above no longer includes this countable arm. Packaged cutover ceilings are registered in the waiver ratchet and tested against the committed baseline. |
 | 94b | Unfinished active or deprecated bodies block, drafts warn, and retired bodies are excluded. | **Promotable** | Runtime enforcement landed in `gz skill audit` (GHI #1037), with lifecycle, scaffold-to-audit and fenced-example regression tests. This recognizes mechanical markers, not arbitrary semantic incompleteness. Formal Mechanical scoring requires a registered property-level negative control. |
+| 94c | Hitting the ceiling triggers a compression-and-merge search BEFORE lifting or extracting; the commit says what was compressed | **Judgment** | **Scored 2026-09-20 (rule `0.2.0`, operator ruling).** `gz skill audit` measures the body AFTER an edit and cannot see which move produced the number: a body that fell under its ceiling by compression and one that got there by moving four sections to `references/` are byte-identical to it. Whether duplicated meaning was searched for first is exactly the qualitative parsimony row 94 already scores Judgment, one trigger later. The near arm — an extraction that grows the skill's total footprint while shrinking SKILL.md — is countable in principle (compare pre/post totals across `SKILL.md` + `references/`) and is NOT built; it would witness the footprint, never the search. Occasioned by `ghi-author` reaching its ceiling on 2026-09-20 and being extracted before being compressed. |
 | 95 | Text attributed to `AGENTS.md` is quoted from the current file, by section name, or not quoted | **Judgment** | **Scored 2026-09-19.** The top defect class of the 2026-09-19 skill pass (GHI #921) and of its `src` remainder (GHI #1035). A resolver for `AGENTS.md § X` citations was considered at #1035 and not built under the promotion freeze; no check reads a skill's quotations against the live contract. |
 | 96 | § Model alignment — scope and stop conditions stated, no re-check step where a mechanical witness exists, `MUST`/`NEVER` reserved for constraints the skill owns, written constraints kept, positive target | **Judgment** | **Scored 2026-09-19.** Sourced to `docs/governance/opus-tuning.md`, never to a card. Whether wording suits the current model is settled by running the skill, not by reading it; `frontier-model-card-currency` (currency) is where a card rotation puts such wording up for re-sourcing. |
 | 97 | A skill step never instructs what the root contract forbids (OBPI initiation, `gh issue create` / bare `gh issue close`, a real-name attestor, lane-dependent Gate 5, a retired command or dead path) | **Judgment** | **Scored 2026-09-19.** Mechanical neighbours cover two narrow arms: `gz validate --cli-alignment` resolves every `gz <verb>` a skill names, and `gz validate --skill-alignment` holds every verb to a wielding skill. Neither reads whether a step crosses an authority line; that was found only by reading each skill end to end. |
@@ -508,9 +509,9 @@ decays in whichever direction the next reader's grep happens to point.
 
 | Score | Rows | % of scored rows |
 |-------|-------|---|
-| **Mechanical** | 71 | 41% |
+| **Mechanical** | 71 | 40% |
 | **Promotable** | 33 | 19% |
-| **Judgment** | 71 | 41% |
+| **Judgment** | 72 | 41% |
 | **Ambiguous** | 0 | 0% |
 
 <!-- The Rows column is machine-checked by `gz validate --advisory-scorecard`;

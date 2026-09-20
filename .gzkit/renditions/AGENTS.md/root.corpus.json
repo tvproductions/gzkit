@@ -1,9 +1,9 @@
 {
   "algorithm": "sha256",
-  "corpus_fingerprint": "afdf1c50961660db1fb6b926593c7200bf4634c098c9d34c3ca22c236d8b748d",
-  "corpus_entry_count": 367,
-  "rendition_fingerprint": "d7f8a4041c5bd6afceceb97a33413a5dd14c54c1fdafc23e6d2ab3817226f276",
-  "committed_ts": "2026-09-18T01:52:40.015952+00:00",
+  "corpus_fingerprint": "8d808e1bc460818ffe6ef547c22bfdf9f01602fb7dcac3959d35ca04c5680c13",
+  "corpus_entry_count": 372,
+  "rendition_fingerprint": "52ea4d836733f3a8590226dc55b5b38073707da0fd4561e6ed608e09ac529522",
+  "committed_ts": "2026-09-20T14:07:42.807451+00:00",
   "attestor": "g0",
-  "attestation_text": "B"
+  "attestation_text": "if we hit a limit then the agent htting the limit needs to stop and look for opportunities for compression and merging. We can't just have these grow, we need a discipline. — Evidence: corpus entry corpus-behavior-rules-2026-09-20T14:07:35.014473+00:00 (compressible, Judgment); two retractions in the same session (a TEST probe row, and the verbose first draft of this same entry which rendered 20362 B against the 20000 B budget); recomposed root rendition 19979 B, invariant floor unchanged at 19084 B; paired clause in .gzkit/rules/skill-authoring.md 0.2.0 clause 6."
 }
