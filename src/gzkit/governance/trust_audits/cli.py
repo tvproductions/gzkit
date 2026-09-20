@@ -130,6 +130,14 @@ def _cli_alignment_sources(project_root: Path) -> list[Path]:
     row per discovered GHI from that issue's title, so an issue *about* a dead
     verb carries the string as quoted evidence rather than as a pointer.
 
+    ``docs/reports/`` is excluded on the same ground. ``gz report publish`` retains
+    immutable assessments whose bytes are witnessed by a ``report_published``
+    sha256, and their prose quotes versions and verbs as evidence of what was true
+    at a moment. They are sealed records in the :func:`_is_exempt_source` sense, so
+    the speculative marker is unavailable by construction: applying it would mean
+    *editing* witnessed bytes, which breaks the witness every later publication
+    verifies (GHI #532 precedent, same reasoning as the terminal-brief exemption).
+
     The surfaces an agent executes from are read too: chore docs (``gz-chore-runner``
     Step 5 follows a CHORE.md), rules, and the root ``AGENTS.md`` (GHI #1006).
     A chore's ``proofs/`` are run records and stay out, like ``docs/releases/``.
@@ -137,9 +145,11 @@ def _cli_alignment_sources(project_root: Path) -> list[Path]:
     sources: list[Path] = []
     docs_root = project_root / "docs"
     if docs_root.is_dir():
-        releases_root = docs_root / "releases"
+        retained_roots = (docs_root / "releases", docs_root / "reports")
         sources.extend(
-            path for path in sorted(docs_root.rglob("*.md")) if releases_root not in path.parents
+            path
+            for path in sorted(docs_root.rglob("*.md"))
+            if not any(root in path.parents for root in retained_roots)
         )
     features_root = project_root / "features"
     if features_root.is_dir():

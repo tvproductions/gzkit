@@ -202,6 +202,28 @@ class TestStructuralExemptions(_Tree):
         self.write("docs/releases/v1.2.3.md", "- #123 `gz nosuchverb` miscounts rows\n")
         self.assertEqual(audit_cli_alignment(self.root), [])
 
+    def test_published_reports_are_exempt(self) -> None:
+        """A published report's bytes are sha256-witnessed, so neither repair exists.
+
+        `gz report publish` refuses the same id with different bytes and verifies
+        every retained file against its `report_published` witness, so rewording the
+        reference and adding the speculative marker both break the witness. The
+        assessment quotes a version as evidence; it does not point at a verb.
+        """
+        self.write(
+            "docs/reports/big-picture/2026-09-19.md",
+            "The adopter filed it running `gz v0.28.1`.\n",
+        )
+        self.assertEqual(audit_cli_alignment(self.root), [])
+
+    def test_a_live_doc_beside_a_report_still_fails(self) -> None:
+        """The report exemption is scoped to its root, never a blanket over `docs/`."""
+        self.write("docs/reports/big-picture/2026-09-19.md", "`gz nosuchverb`\n")
+        self.write("docs/user/guide.md", "`gz alsonosuchverb`\n")
+        errors = audit_cli_alignment(self.root)
+        self.assertEqual(len(errors), 1, f"expected one finding, got {errors}")
+        self.assertIn("alsonosuchverb", errors[0].message)
+
     def test_a_live_doc_beside_an_exempt_one_still_fails(self) -> None:
         """Exemption is per-artifact, never a blanket over the directory."""
         self.write("docs/design/adr/pool/ADR-pool.thing.md", "`gz nosuchverb`\n")
