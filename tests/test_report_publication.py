@@ -50,7 +50,7 @@ class TestReportPublication(unittest.TestCase):
 
     def test_retry_repairs_views_without_duplicate_or_rewinding_current(self):
         first = self.publish()
-        self.source.write_text("# Second\n", encoding="utf-8")
+        self.source.write_bytes(b"# Second\n")
         self.publish("2026-10-01-second")
         current = self.root / "manual/reports/big-picture/current.md"
         current.unlink()
