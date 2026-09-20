@@ -160,3 +160,8 @@ site/
 # successful recovery retained it. Cover the whole extraction-file family, final and temporary,
 # at every depth (operator ruling 2026-09-05 point 4).
 .*.unowning-recovery.*.tmp
+
+# Local settings backups written by scripts/settings_local_backup.py.
+# The backed-up file (.claude/settings.local.json) is itself ignored, so its
+# snapshots must never be tracked either.
+settings.local/
