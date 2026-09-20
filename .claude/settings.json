@@ -188,7 +188,16 @@
       }
     ]
   },
+  "extraKnownMarketplaces": {
+    "gz-skills": {
+      "source": {
+        "source": "github",
+        "repo": "tvproductions/gz-skills"
+      }
+    }
+  },
   "enabledPlugins": {
+    "gz-skills@gz-skills": true,
     "superpowers@claude-plugins-official": false
   }
 }
