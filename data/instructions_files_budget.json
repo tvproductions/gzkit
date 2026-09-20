@@ -1,7 +1,7 @@
 {
   "_doc": "Per-file char budgets read by gz validate --instructions-files-budget; advisory until 1.0 (operator ruling 2026-08-17). Decision history: docs/governance/instructions-files-budget-history.md.",
   "files": {
-    "AGENTS.md": 50000,
+    "AGENTS.md": 20000,
     "CLAUDE.md": 15000
   },
   "globs": [
