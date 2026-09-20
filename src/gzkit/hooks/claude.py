@@ -39,6 +39,12 @@ from gzkit.hooks.scripts.validation import (
 )
 from gzkit.surface_write import ensure_dir, write_if_changed, write_text_if_changed
 
+# Top-level settings keys whose gzkit-declared entries merge into whatever the
+# project already holds, instead of replacing the value outright. A project must
+# be able to enable its own plugins without the sync silently reverting them
+# (GHI #1070).
+_PER_KEY_MERGED_SETTINGS = frozenset({"enabledPlugins"})
+
 
 def _claude_hooks_readme() -> str:
     """Return the generated local README for the Claude hook surface."""
@@ -443,9 +449,17 @@ def merge_settings(
     # Start with existing settings to preserve user keys
     merged = dict(existing)
 
-    # Merge top-level gzkit keys (enabledPlugins, etc.) — gzkit wins
+    # Merge top-level gzkit keys. gzkit wins on every entry it declares, but
+    # keys in _PER_KEY_MERGED_SETTINGS merge entry by entry so a project's own
+    # additions survive the sync instead of vanishing from it (GHI #1070).
     for key, value in gzkit_settings.items():
-        if key != "hooks":
+        if key == "hooks":
+            continue
+        current = merged.get(key)
+        mergeable = key in _PER_KEY_MERGED_SETTINGS
+        if mergeable and isinstance(value, dict) and isinstance(current, dict):
+            merged[key] = {**current, **value}
+        else:
             merged[key] = value
 
     # Merge hooks phase by phase, preserving the existing file's phase

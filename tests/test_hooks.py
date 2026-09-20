@@ -882,6 +882,39 @@ class TestSettingsMergePreservesUserHooks(unittest.TestCase):
                 edit_write_hooks[0]["hooks"][0]["command"],
             )
 
+    def test_a_project_added_plugin_survives_the_settings_merge(self) -> None:
+        """A project may enable its own plugin without the sync reverting it.
+
+        GHI #1070: `enabledPlugins` was replaced wholesale by the generator's
+        single declared entry, so a project-added plugin vanished at the next
+        `gz agent sync control-surfaces` with no signal at all. gzkit must
+        still win on the keys it declares, and must not discard the ones it
+        does not. Same class as the ADR-0.0.70 hook-phase revert, one key over.
+        """
+        from gzkit.hooks.claude import merge_settings
+
+        config = GzkitConfig(project_name="gzkit-test")
+        settings = generate_claude_settings(config)
+
+        with tempfile.TemporaryDirectory() as tmp:
+            settings_path = Path(tmp) / "settings.json"
+            existing = {
+                "enabledPlugins": {
+                    "project-plugin@some-marketplace": True,
+                    # The project tries to overturn a gzkit-declared entry;
+                    # gzkit still wins on the keys it owns.
+                    "superpowers@claude-plugins-official": True,
+                },
+                "hooks": settings["hooks"],
+            }
+            settings_path.write_text(json.dumps(existing), encoding="utf-8")
+
+            merged = merge_settings(settings_path, settings, ".claude/hooks")
+
+            plugins = merged["enabledPlugins"]
+            self.assertTrue(plugins["project-plugin@some-marketplace"])
+            self.assertFalse(plugins["superpowers@claude-plugins-official"])
+
 
 class TestPostEditRuffHook(unittest.TestCase):
     """Tests for the generated post-edit-ruff hook script (GHI #239)."""
