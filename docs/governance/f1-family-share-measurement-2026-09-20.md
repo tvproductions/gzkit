@@ -118,9 +118,28 @@ queue, at both dates. The second is confirmed and quantified — 10 closed again
 the stock grew 36%. The family is not shrinking; the queue is growing slightly faster than
 the family is, and the growth arriving from elsewhere is what moves the ratio.
 
-## What this does not do
+## Disposition (operator ruling, 2026-09-20)
 
-This record amends no plan. Correcting the three live surfaces that carry `19 of 32`, and
-deciding whether a 7.8-point share drift warrants any change to the box's position, are
-operator rulings: campaign sequencing is operator-ratified, and a silent change to a ratified
-threshold is the doctrine drift `AGENTS.md` names. The routing facts are here; the ruling is not.
+This record was taken as a measurement and amended nothing on its own. The operator then
+ruled on its two routing questions, and the rulings are recorded here as provenance:
+
+- **The campaign's live sequencing text becomes a pointer, not a corrected number.** Ruling,
+  verbatim: *"Pointer, not value"*, selected over correcting `32` to `37` in place. The two
+  live sites in `build-to-1.0-campaign-2026-08-16.md` now cite this record instead of
+  carrying a transcribed share, and a dated § Amendments 2026-09-20 entry records the
+  re-measure. Correcting the integer would re-create the same defect one value later, with
+  nothing observing it.
+- **The box does not move.** The 7.8-point drift is not discharge, and the measurement
+  strengthens the premise that placed the box at NEXT-IN-PRIORITY rather than revising it.
+
+**The archives are deliberately untouched.** The 2026-09-02 amendment block,
+`capability-control-review-2026-09-12.md:410` and both citations in
+`docs/rnd/ghi-landscape-reorganization.md` each accurately quote what their author found on
+their date. Editing evidence inside a record falsifies it; this record is their linked
+follow-up, which is the same route a published report's correction takes.
+
+**One thing this record does not settle.** A transcribed measurement, binding on what
+sessions draw, with no witness over whether it is still true, is an instance of the family
+measured here. Whether that warrants its own work order — and how it sits against the
+queue-staleness chore the R&D run funded, and against GHI #1009 — is unrouted. `ghi-author`
+Step 0 would settle the prior art before anything is filed.

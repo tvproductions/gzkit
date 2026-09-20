@@ -46,7 +46,7 @@ identical two days into Movement B holding TOPMOST — zero transits — while `
 commits rose by four. The ungoverned door widened while the governed one stayed
 shut, inside the window where that Movement was supposedly being worked.
 
-> **Topmost (sequenced):** **`ADR-0.35.0-canon-entry-corpus-landing` is TOPMOST (2026-09-01, operator-ratified, UNCHANGED). AMENDED 2026-09-02 (operator-ratified) — Movement C's `Close the doctrine-declared-without-mechanism family` box is pulled forward to NEXT-IN-PRIORITY, immediately behind TOPMOST and ahead of both Movement B and every other Movement C box; Movement B steps down one place; Movement A remains HELD as a Movement.** The box outranks its own Movement, on the precedent the 2026-09-01 amendment set when Movement A's `ADR-0.35.0` box became TOPMOST inside a HELD Movement. It is placed high because it is drawable without the operator: under the IRON LAW only the operator initiates OBPI work, while this box discharges through rule-text amendment, scorecard scoring and GHI-shaped direct repair. Measured 2026-09-02: 19 of 32 open GHIs are members of this family, and the open queue climbed 9 → 32 in four weeks while 179 issues closed at a median age of 0.15 days — instances close same-session, the class keeps producing. Run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` for its lifecycle and landed count rather than trusting a figure transcribed here. See § Amendments 2026-09-02. From 2026-08-14 to this amendment the plan declared TOPMOST a Movement that ADR order forbade working, while the work drawn every session sat as a box inside a HELD Movement — two amendments (2026-08-16, 2026-08-23) were spent explaining that split rather than removing it. This removes it. Run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` for its lifecycle and landed count rather than trusting a figure transcribed here. See § Amendments 2026-09-01.
+> **Topmost (sequenced):** **`ADR-0.35.0-canon-entry-corpus-landing` is TOPMOST (2026-09-01, operator-ratified, UNCHANGED). AMENDED 2026-09-02 (operator-ratified) — Movement C's `Close the doctrine-declared-without-mechanism family` box is pulled forward to NEXT-IN-PRIORITY, immediately behind TOPMOST and ahead of both Movement B and every other Movement C box; Movement B steps down one place; Movement A remains HELD as a Movement.** The box outranks its own Movement, on the precedent the 2026-09-01 amendment set when Movement A's `ADR-0.35.0` box became TOPMOST inside a HELD Movement. It is placed high because it is drawable without the operator: under the IRON LAW only the operator initiates OBPI work, while this box discharges through rule-text amendment, scorecard scoring and GHI-shaped direct repair. The family's share of the open queue and its production rate are measured in [`f1-family-share-measurement-2026-09-20.md`](f1-family-share-measurement-2026-09-20.md) — re-run its evidence script rather than trusting a figure transcribed here. Instances close same-session while the class keeps producing: that premise was re-measured 2026-09-20 under a shared criterion and VERIFIED, not revised. See § Amendments 2026-09-20. Run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` for its lifecycle and landed count rather than trusting a figure transcribed here. See § Amendments 2026-09-02. From 2026-08-14 to this amendment the plan declared TOPMOST a Movement that ADR order forbade working, while the work drawn every session sat as a box inside a HELD Movement — two amendments (2026-08-16, 2026-08-23) were spent explaining that split rather than removing it. This removes it. Run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` for its lifecycle and landed count rather than trusting a figure transcribed here. See § Amendments 2026-09-01.
 >
 > **DRAWN-WORK ORDER — AMENDED 2026-09-15 (operator-ratified).** Work a session draws without the operator, at the NEXT-IN-PRIORITY position, is taken in this order: **(a) the R&D front** — the `gz-rnd` skill and the design in `docs/governance/rnd-discipline.md`; **(b) the chore estate** — the conversion directive and the overdue board, the family-closure box's agent-side arm; **(c) GHI direct repair, only** when the GHI closes a named arm of that box, blocks (a) or (b), or is an emergency. TOPMOST and ADR order are unchanged. See § Amendments 2026-09-15.
 >
@@ -222,7 +222,7 @@ gzkit is 1.0 when ALL hold. Each gate is bounded; none is a standing obligation.
 - [ ] Oversized modules — census-driven, with working proof. **RE-MEASURED 2026-08-16: 51 modules over 600 lines, up from the 33 this box carried — a 55% increase, and the largest measured regression on the board.** Method, so the next reader re-runs rather than transcribes: `find src/gzkit -name '*.py' -exec wc -l {} + | awk '$1>600 && $2!="total"'`. The box is not merely unstarted; its subject grew faster than anything shrank it. Note the threshold itself is contested — `.gzkit/rules/pythonic.md` § Size Limits records that 600 is authoring-time guidance with **no enforcing gate**, and that it disagrees with the canonical `complexity-thresholds.md` table (which warns at 733.2 and blocks at 1031.9), so a census against 600 counts modules that no gate rejects. Settle which number governs as part of the census, or the proof will be measured against an authority the codebase does not enforce.
 - [ ] **The Firewall** *(recovered orphan, § 9a)* — classify every delivered surface by destiny: **wheel-borne / authored-into-battlefield / lab-only-jig**, enforced at scaffold-time and validate-time. Operator, 2026-06-14: *"the rigging and jigs do not remain attached to the fuselage once we open the factory hangar doors for final delivery — we haven't been careful about this."* Booked 06-14, never built. Load-bearing for §1's public-product trajectory: today an adopter inherits gzkit's lab jigs. Genuinely reductive — it defines what does **not** ship.
 - [ ] **Render the stability-gradient spine** *(recovered orphan, § 9a)* — the 06-14 ruling ordered the tree `Constitution → PRD → ADR → OBPI` by rate of change and declared the legacy `PRD → Constitution` spine backwards. AGENTS.md § Workflow still carries the old order across ~12 surfaces. Booked and never rendered.
-- [ ] **Close the doctrine-declared-without-mechanism family** *(added 2026-08-07)* — the family's own name, from GHI #537: *"Layer X declares a discipline that Layer X does not mechanically enforce."* Measured by the `failure-class-index` chore over the 333 GHIs closed since 2026-05-09: the **two deepest recurrence chains in the corpus** (depth 12 and depth 7) are both this family, ~19 members, and it holds the two most-cited ancestors on record (#537 cited 3×, #538 cited 4×). Both arms are in scope — **validator-side** (a check whose subject is narrower than its name: #692 *checks section presence, not population*; #693 *verifies a flag is mentioned, never that its description is true*; #770 *an audit named for dispatch attestation whose entire subject is a frontmatter string*) and **agent-side** (a skill mandate with no receipt: #459, #574, #620). **Completion criterion:** a declared discipline either carries a mechanical witness or is demoted to advisory in its own text — no third state. This is the reductive move that stops the `validate()` surface producing scope #95: it closes the family rather than the instance. **Re-scoped 2026-08-08 (operator-ratified) — the six named issues all closed and the box did NOT discharge; see the amendment for why, and the measurable criterion below.** **PULLED FORWARD TO NEXT-IN-PRIORITY 2026-09-02 (operator-ratified) — directly beneath TOPMOST `ADR-0.35.0`, ahead of Movement B and of every other Movement C box. 19 of 32 open GHIs are members of this family and the open queue climbed 9 → 32 in four weeks while instances closed at a median age of 0.15 days; the criterion, the three arms and the doctrine-side residual are UNCHANGED. See § Amendments 2026-09-02.** **DRAWN-WORK ORDER 2026-09-15 (operator-ratified): GHI direct repair under this box is drawn only after the R&D front and the chore estate, and only when the GHI closes a named arm, blocks those two, or is an emergency. See § Amendments 2026-09-15.**
+- [ ] **Close the doctrine-declared-without-mechanism family** *(added 2026-08-07)* — the family's own name, from GHI #537: *"Layer X declares a discipline that Layer X does not mechanically enforce."* Measured by the `failure-class-index` chore over the 333 GHIs closed since 2026-05-09: the **two deepest recurrence chains in the corpus** (depth 12 and depth 7) are both this family, ~19 members, and it holds the two most-cited ancestors on record (#537 cited 3×, #538 cited 4×). Both arms are in scope — **validator-side** (a check whose subject is narrower than its name: #692 *checks section presence, not population*; #693 *verifies a flag is mentioned, never that its description is true*; #770 *an audit named for dispatch attestation whose entire subject is a frontmatter string*) and **agent-side** (a skill mandate with no receipt: #459, #574, #620). **Completion criterion:** a declared discipline either carries a mechanical witness or is demoted to advisory in its own text — no third state. This is the reductive move that stops the `validate()` surface producing scope #95: it closes the family rather than the instance. **Re-scoped 2026-08-08 (operator-ratified) — the six named issues all closed and the box did NOT discharge; see the amendment for why, and the measurable criterion below.** **PULLED FORWARD TO NEXT-IN-PRIORITY 2026-09-02 (operator-ratified) — directly beneath TOPMOST `ADR-0.35.0`, ahead of Movement B and of every other Movement C box. The share and production figures that placed it here are measured in [`f1-family-share-measurement-2026-09-20.md`](f1-family-share-measurement-2026-09-20.md), not transcribed here; the 2026-09-20 re-measure VERIFIED the placement premise. The criterion, the three arms and the doctrine-side residual are UNCHANGED. See § Amendments 2026-09-02.** **DRAWN-WORK ORDER 2026-09-15 (operator-ratified): GHI direct repair under this box is drawn only after the R&D front and the chore estate, and only when the GHI closes a named arm, blocks those two, or is an emergency. See § Amendments 2026-09-15.**
 
   **All six exemplars are CLOSED** — validator-side `#692`, `#693`, `#770`; agent-side `#459`, `#574`, `#620` (verified 2026-08-08 via `gh issue view`). They are **evidence the class exists, not a checklist**: the box's own text says *"it closes the family rather than the instance."* Six closed instances do not discharge a class-level criterion, and checking the box on their strength is the enumerate-the-exemplars habit the criterion was written to resist.
 
@@ -464,7 +464,67 @@ had been repeating. All are dispositioned below — none left undefined.
 
 ## Amendments
 
-### 2026-09-19 (latest) — three-pillars repairs delivered; #1028 held (operator-ratified)
+### 2026-09-20 (latest) — the family-share premise is re-measured and VERIFIED; the transcribed figure becomes a pointer (operator-ratified)
+
+**Operator (`g0`), ruling on the options put to them:** *"Pointer, not value"* — selected
+over correcting `32` to `37` in place and over an amendment that left both live sites as
+ratified.
+
+**Nothing is resequenced.** `ADR-0.35.0-canon-entry-corpus-landing` remains TOPMOST and the
+`Close the doctrine-declared-without-mechanism family` box remains NEXT-IN-PRIORITY. This
+amendment changes how the box's evidence is cited, and records that its placement premise
+was re-measured rather than assumed.
+
+**What was measured.** `docs/rnd/ghi-landscape-reorganization.md` closed 2026-09-20 naming
+one measurement it did not take: whether this family is genuinely shrinking in share. It
+recorded 19 of 32 (59%) from this plan against 14 of 57 (~25%) from its own pass, and said
+plainly that *"two judgments by different readers are not a measurement."* The measurement
+was then taken on the operator's work selection and is recorded, with its method and a
+read-only evidence script, in
+[`f1-family-share-measurement-2026-09-20.md`](f1-family-share-measurement-2026-09-20.md).
+
+**The premise is VERIFIED and is stronger than this plan claimed it.** One reader, one
+criterion — the box's own, from GHI #537 — applied to both cohorts on one day: the family is
+**75.7% of the open queue on 2026-09-02 and 67.9% today**, a 7.8-point share drift while the
+absolute stock grows 36%. Eleven borderline calls were carried and flipped in both
+directions; under every treatment the family is 57–81% of the queue at both dates and the
+count rises. Flow over the 18 days: **10 members closed, 20 filed**. The box's own finding —
+instances close same-session, the class keeps producing — is confirmed and quantified at a
+2:1 production rate.
+
+**The share decline is not discharge, and does not move the box.** Share fell because the
+queue grew 51% while the family grew 36%; both grew. The faster-growing remainder is 18
+issues across eleven other families, most with two to six members, which the R&D record
+found *"wants a different mechanism"* each and does not consolidate — it grows faster and
+cannot be drawn as one piece, so it does not compete for this slot.
+
+**The 2026-09-02 denominator was wrong by 5, and the numerator was sound.** That pass is
+reproducible because it stated its criterion and listed its 19 members; all 19 verify as
+open at its measurement instant, pinned to `#933`'s creation time. The open queue held **37**
+at that instant, not 32, and never held 32 on that date — it passed through 32 around
+2026-08-25/26. The claim as written is **19 of 37 = 51.4%**, not 59.4%. The section heading
+it sits under, *"Half the open GHI queue is this family"*, survives the correction; the
+percentage does not.
+
+**Why the figure becomes a pointer rather than a corrected number.** Replacing `32` with
+`37` would re-create the same defect one integer later, with nothing observing it — and a
+transcribed measurement in live sequencing text, binding on what sessions draw, with no
+witness over whether it is still true, is an instance of the very family this box exists to
+close. The 2026-09-02 amendment block, `capability-control-review-2026-09-12.md` and the R&D
+record are **left untouched**: each is a dated record accurately quoting what it found, and
+editing evidence inside an archive falsifies it. The measurement record is their linked
+follow-up. This plan already applies the same discipline to the ADR's landed count in the
+same sentence; it now applies it to the family share beside it — `AGENTS.md`, verbatim:
+*"Cite the authority, not the value."*
+
+**Limits, stated because they bound the claim.** The criterion is a reading; only the cohort
+reconstruction and the arithmetic are mechanical, and the evidence script fails closed on
+three asserts rather than proving the judgment. The measurement cannot separate enumeration
+from creation — some of the 20 new members were filed by sessions working this campaign,
+which is filing working as Prime Directive 6 requires. If the production is largely
+enumeration, the class is larger than has been counted, which argues for the box more.
+
+### 2026-09-19 — three-pillars repairs delivered; #1028 held (operator-ratified)
 
 **Operator (`g0`), verbatim:** *"ok, we need to hold off on 1028. update handoff, update campaign."*
 
