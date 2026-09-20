@@ -205,9 +205,15 @@ gzkit is 1.0 when ALL hold. Each gate is bounded; none is a standing obligation.
 > **Re-cut 2026-08-17 (operator-ratified; § Amendments 2026-08-17).** The gate set was
 > **enlarged** and **nothing was removed** — operator verbatim: *"Nothing — move the date
 > instead."* `FINITE` alone would now assert a boundedness this plan does not have, so it is
-> qualified: **finite against a declared target of ≈2027-04**, arrived at by this plan's own §7
-> arithmetic (≈60 unlanded OBPIs at the `ADR-0.34.0`-observed rate of ≈3.8 days each).
-> **The date moves by declaration, never by slippage.**
+> qualified: **finite against a declared target of ≈2027-08 (declared 2026-09-20;
+> was ≈2027-04)**. The original figure came from this plan's own §7 arithmetic (≈60
+> unlanded OBPIs at the `ADR-0.34.0`-observed rate of ≈3.8 days each); the move funds
+> Movement F, whose work that arithmetic never counted.
+> **The date moves by declaration, never by slippage.** This is the second enlargement
+> the date has absorbed (2026-08-17 added five gates and moved nothing; 2026-09-20 adds
+> the config gate and moves four months). A date that absorbs every enlargement stops
+> being a bound — see § Amendments 2026-09-20 for what that costs and what would
+> reclaim it.
 
 - **The floor holds** — `gate5_invariants` intact **and** the §4 meta-validator is green
   **over the claim set registered as of 2026-07-18**. Claims registered later are
@@ -430,9 +436,10 @@ gzkit is 1.0 when ALL hold. Each gate is bounded; none is a standing obligation.
 > 2026-08-16, verbatim: *"i will NOT go out of adr order, whatsoever."*). `ADR-0.35.0`,
 > `0.36.0`, `0.37.0` and `0.38.0` are authored and unlanded, so the config ADR is
 > `ADR-0.39.0` and is **not drawable** until they land. Stating the consequence plainly:
-> **this gate makes 1.0 later**, and § 5's declared target of ≈2027-04 does not yet
-> account for it. **The date moves by declaration, never by slippage** (§ 5, re-cut
-> 2026-08-17) — that declaration is the operator's and has not been made.
+> **this gate makes 1.0 later**, and § 5's target has been moved to fund it:
+> **≈2027-04 → ≈2027-08, by operator declaration 2026-09-20.** **The date moves by
+> declaration, never by slippage** (§ 5, re-cut 2026-08-17), and this is the
+> declaration.
 
 - [ ] **Author the config ADR** as `ADR-0.39.0`, in strict ADR order, modelled on
       `../airlineops` `ADR-0.0.22`'s five principles rather than designed from scratch.
@@ -528,7 +535,7 @@ what §8 says orphaned ~74 of the 06-10 edition's 77.)*
 |---|---|---|
 | 1.0 is **both** stations of §1 — a complete and contemporary toolkit; public product **and** personal toolkit. Scope negotiable per item; the standard is not | 08-17 interview (A.1) | **CARRIED** → §1, §5 |
 | The five contemporary-stack layers are built **properly**, not thinly: harness portability · foreign skills · MCP/tools · agent+session identity · eval | 08-17 interview (A.2) | **CARRIED** → new §5 gate |
-| **Nothing comes out of 1.0** to fund the above — the standard is not negotiable, the calendar is; target ≈2027-04 **by declaration, never by slippage** | 08-17 interview (A.3) | **CARRIED** → §5 re-cut header |
+| **Nothing comes out of 1.0** to fund the above — the standard is not negotiable, the calendar is; target ≈2027-08 **by declaration, never by slippage** (moved from ≈2027-04 by operator declaration 2026-09-20 to fund Movement F) | 08-17 interview (A.3) | **CARRIED** → §5 re-cut header |
 | §5's `FINITE` is qualified to *finite against a declared target* — bare `FINITE` would assert a boundedness the enlarged gate set no longer has | 08-17 (A.3 consequence) | **CARRIED** → §5 header + blockquote |
 | The external forcing function is a **gate in strict ADR order**, carried by `ADR-0.38.0`; no exception to ADR-order-is-absolute. Accepted cost: it **certifies rather than informs** | 08-17 interview (B.4) | **CARRIED** → Movement E |
 | Execution layer is **hybrid** — adapter by default, runner only for integrity gates. gzkit invokes the cross-vendor reviewer itself; a self-summoned adversary is not an adversary. Full orchestration declined | 08-17 interview (B.5) | **CARRIED** → §5, README narrowing owed |
@@ -590,7 +597,42 @@ had been repeating. All are dispositioned below — none left undefined.
 
 ## Amendments
 
-### 2026-09-20 (latest) — one config system becomes a 1.0 gate; Movement F is created to carry it (operator-ratified)
+### 2026-09-20 (latest) — the 1.0 target moves to ≈2027-08 by declaration (operator-ratified)
+
+**Operator ruling, verbatim:** *"move the date to 2027-08 and record the
+declaration."*
+
+**≈2027-04 → ≈2027-08.** The four months fund Movement F, whose work the original
+§ 7 arithmetic never counted: that figure was ≈60 unlanded OBPIs at the
+`ADR-0.34.0`-observed rate of ≈3.8 days each, computed before a config system was
+a gate. Moved at § 5's header and at the § 9 Rulings Register row that carries the
+same claim; the dated amendment blocks that quote ≈2027-04 are records of what was
+true when written and are left unedited.
+
+**What the date is for, stated plainly because it is now fair to ask.** It is not
+a prediction and it was never load-bearing as one. § 5 was re-cut on 2026-08-17
+because `FINITE` alone asserted a boundedness the plan did not have; the date
+exists so that **enlarging 1.0 costs something visible**. The alternative the
+operator rejected that day was shrinking the gate set — verbatim, *"Nothing — move
+the date instead."* So the date is the ledger entry for scope: every gate added
+has to be paid for somewhere, and this is where.
+
+**And the honest counter, recorded rather than left for a reader to notice.** A
+date that absorbs every enlargement is not a bound, it is a cushion. This is the
+second enlargement: 2026-08-17 added five gates and moved the date zero months;
+2026-09-20 adds one gate and moves it four. On that trend the mechanism describes
+scope growth rather than constraining it, and § 2's own diagnosis — *gzkit has no
+external forcing function* — would apply to the plan as well as to the product.
+
+**What would make the date bind rather than absorb.** Nothing here does that, and
+no such mechanism is proposed by this amendment. The two candidates on the record
+are Movement E's flight-test sortie, which is the only § 5 gate that answers to
+something outside gzkit, and § 5's own untouched escape: *"the standard is not
+negotiable, the calendar is"* — which reads as licence to move the date forever
+unless something else is negotiable instead. Naming that hole is not closing it.
+It is the operator's to rule on, and this amendment deliberately does not.
+
+### 2026-09-20 — one config system becomes a 1.0 gate; Movement F is created to carry it (operator-ratified)
 
 **Operator ruling, verbatim:** *"gzkit lacks a comprehensive and all-encompassing
 config system like airlineops had, we need to adopt this as a pre-requisite for
