@@ -1,14 +1,14 @@
 ---
 name: gz-big-picture
 persona: main-session
-description: Explain what the project is and does by design, what it is becoming, the value being built, and its architectural trajectory; publish a retained, ledger-recorded report when the operator requests a high-altitude perspective.
+description: Explain what the project is and does by design, what it is becoming, the value being built, its architectural trajectory, and where design intent and built reality diverge; publish a retained, ledger-recorded report when the operator requests a high-altitude perspective.
 category: agent-operations
 lifecycle_state: active
 disable-model-invocation: true
 owner: gzkit-governance
 last_reviewed: 2026-09-19
 metadata:
-  skill-version: "0.2.0"
+  skill-version: "0.3.0"
 model: opus
 gz_command: report publish
 ---
@@ -48,8 +48,8 @@ which expectations held, which were contradicted, and what remains untested.
 
 ## Write the account
 
-Every report covers **purpose, design, capabilities, value, trajectory, and
-uncertainty**. Choose the structure that best explains this project; these are
+Every report covers **purpose, design, capabilities, value, trajectory, alignment,
+and uncertainty**. Choose the structure that best explains this project; these are
 coverage obligations, not mandatory headings. Start with a readable overall
 assessment. Connect major efforts to the capabilities and outcomes they enable,
 preserve, or impair. Explain how the pieces fit together and what recurring
@@ -65,15 +65,35 @@ workflows they invoke, and what each produces. Where the designed shape and the
 shipped one differ, say so.
 
 Design choices carry claims. Name the claim behind each significant mechanism — what
-it makes impossible, guarantees, or replaces — and say whether the evidence supports
-it. A mechanism that exists but never engages is a finding, as is one whose input is
-always empty or whose callers never populate it; both pass any witness that only asks
-whether the mechanism is present.
+it makes impossible, guarantees, or replaces — then read the built system against the
+designed one. **What is the design trying to look like, and what does it look like?**
+Where the two diverge, say where and in which direction: a mechanism reaching further
+than it was meant to, one not yet reaching as far, one the project has outgrown. A
+divergence is a finding about alignment. Report it as that, at the altitude of the
+design, and leave its repair to the surfaces that own repairs.
 
 Condition assessment — throughput, defect counts, queue depth, velocity — explains how
 the project is faring, not what it is. Keep the two in proportion. When condition
 material crowds out the description of the system, the reader learns the project's
 mood and not its shape.
+
+### Stay at altitude
+
+Deficiencies are a valid output and never the purpose. A big-picture report says what
+is, what is not, what could be, and what maybe should not be — strengths and gaps
+together with the design's intentions, its misalignments, and what it cannot currently
+see about itself. Name a deficiency when it explains the shape of the whole. Do not go
+looking for more.
+
+Instance-level defect hunting belongs to the surfaces that own it — triage, chores,
+review, a scoped R&D run. A report that enumerates defects has changed altitude and
+stopped doing this job. One structural observation that reframes how the reader sees
+the project is worth more than a catalogue, and a catalogue is the signal that the
+altitude slipped.
+
+Blind spots earn their own attention, because no other surface looks for them: what
+does the project not measure, not ask about itself, or have no instrument for? An
+absence is harder to see than a fault and usually matters more.
 
 Support interpretation with inspectable evidence and give contrary evidence appropriate
 weight. Distinguish intended, implemented, released, and observed capabilities when
