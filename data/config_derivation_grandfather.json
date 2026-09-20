@@ -1,0 +1,24 @@
+{
+  "_doc": "Registries that carried no traceable derivation when the fence landed (GHI #1066). SHRINK-ONLY: this list may lose entries and never gain one. An entry leaves by the registry recording its authority -- a provenance field citing a docs/**.md path, an ADR, a GHI or an operator ruling, or a `derivation` field on its data/config_registry.json entry for a bare array that cannot carry one. Presence here is NOT a judgement that the value is wrong; it records that no reader can tell a deliberate choice from an inherited accident. Measured by docs/governance/config-derivation-2026-09-20-evidence/census.py.",
+  "grandfathered": [
+    "advisor_archetype_rules.json",
+    "audit_thresholds.json",
+    "behave_coverage_waivers.json",
+    "chores_layout_waivers.json",
+    "distribution_baseline_manifest.json",
+    "eval_feedback_thresholds.json",
+    "exemplar_corpus.json",
+    "flags.json",
+    "foundation_grandfather.json",
+    "historical_self_close_waivers.json",
+    "interview_transcript_waivers.json",
+    "ledger_vocabulary_grandfather.json",
+    "req_kind_grandfathering.json",
+    "security_surfaces.json",
+    "surface_weight_waivers.json",
+    "tautological_test_baseline.json",
+    "tautological_test_waivers.json",
+    "validator_reachability_grandfather.json",
+    "vendor-manifest.json"
+  ]
+}

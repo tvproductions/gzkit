@@ -26,6 +26,24 @@ def _root(registries: dict, data_files: list[str], modules: dict | None = None) 
         if name == "config_registry.json":
             continue  # already written above; do not clobber the registry itself
         (root / "data" / name).write_text("{}", encoding="utf-8")
+    # audit_config_registry also runs the GHI #1066 derivation and module-constant
+    # fences. These cases exercise ownership, so the data files they mint are
+    # grandfathered on the derivation axis and the constant roster starts empty —
+    # a fixture asserting two axes at once would make every failure ambiguous.
+    (root / "data" / "config_derivation_grandfather.json").write_text(
+        json.dumps(
+            {
+                "_doc": "Test fixture baseline, GHI #1066.",
+                "grandfathered": [n for n in data_files if n != "config_registry.json"]
+                + ["config_registry.json", "module_constant_grandfather.json"],
+            }
+        ),
+        encoding="utf-8",
+    )
+    (root / "data" / "module_constant_grandfather.json").write_text(
+        json.dumps({"_doc": "Test fixture roster, GHI #1066.", "constants": []}),
+        encoding="utf-8",
+    )
     for rel, text in (modules or {}).items():
         p = root / "src" / rel
         p.parent.mkdir(parents=True, exist_ok=True)
