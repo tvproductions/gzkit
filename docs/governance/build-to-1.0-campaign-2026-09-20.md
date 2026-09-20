@@ -233,6 +233,16 @@ gzkit is 1.0 when ALL hold. Each gate is bounded; none is a standing obligation.
   properly built"* — capability-modelled adapters, skill trust/provenance policy, real MCP
   governance, a full session/agent model, an eval suite with baselines. Not thin instances, not
   schema-only (§ Amendments 2026-08-17 A.2).
+- **One config system governs every setting** *(added 2026-09-20)* — a single entry
+  point, one loader, no parallel systems, no value with two homes, and every threshold
+  recording the authority for its value. Operator verbatim: *"gzkit lacks a comprehensive
+  and all-encompassing config system like airlineops had, we need to adopt this as a
+  pre-requisite for 1.0."* Measured at this ruling: **45 registries under `data/`, 19 of
+  them with no traceable derivation**, `src/gzkit/config.py` governing **none** of them,
+  and **56 numeric policy constants** in module bodies outside the config gate's reach
+  entirely ([`config-derivation-census-2026-09-20.md`](config-derivation-census-2026-09-20.md)
+  — re-run its script rather than trusting these). **Tracked by Movement F, created by
+  this amendment.** Not a documentation pass: the gate is the system.
 - **Release line healthy** from 0.34.0; GHI backlog at steady-state triage scale.
 - **v1.0.0 released** through the ceremony.
 
@@ -381,6 +391,69 @@ gzkit is 1.0 when ALL hold. Each gate is bounded; none is a standing obligation.
   - **Three defects blocked this and were fixed first** (`a98c482f7` and successor). **GHI #774** — park is a two-sided protocol with one side never exercised (371 `obpi_parked`, 0 `obpi_unparked`), so these OBPIs read *parked* under a live ADR; `parkable_children` would have skipped them, emitting zero park events while `rmtree` deleted every brief, with the orphan census (which excludes parked OBPIs) reporting nothing. **GHI #775** — neither collision policy could return an ADR that had been worked, and this one had diverged from its intake by 139 insertions / 140 deletions. **Third, found by executing it:** 36 `@covers` decorators named REQs in the briefs being deleted, and `@covers` validates at *import*, so the suite stopped loading. `gz adr demote` now refuses that shape unless `--force`, and strips `promoted_from` and retitles the H1 so a demoted file reads as the pool ADR it has become.
   - **The residual is honest:** the Codex tests keep running and keep asserting the behaviour; what was discarded is REQ-to-test traceability for an OBPI whose coverage was already attested at Gate 5. That was the price of retiring an overreached structure, taken deliberately rather than by omission.
 
+**Movement F — One config system** *(created 2026-09-20; carries the § 5 config gate)*
+
+> **Operator ruling 2026-09-20, verbatim:** *"gzkit lacks a comprehensive and
+> all-encompassing config system like airlineops had, we need to adopt this as a
+> pre-requisite for 1.0. this is inexcusable. there are so many janky and undocumented
+> rules, thresholds and pseudo-settings handing around gzkit. it is a travesty"*
+> (spelling preserved).
+>
+> **A § 5 gate with no Movement is the defect this plan already closed once.** Movement E
+> was created 2026-08-17 for exactly that reason — the forcing-function gate had gone two
+> months untracked, which the plan itself named as Movement C item 162's family reproduced
+> inside the plan. This Movement is created in the same amendment as its gate so that
+> never recurs.
+>
+> **The shape is named, not invented.** `../airlineops/config/` is the operator's own prior
+> art and states five principles: **single entry point** (`settings.json` is THE config;
+> all code calls `load_settings()`), **categorical subdirectories**, **no parallel
+> systems**, **config is not documentation**, **no duplication** (each value has ONE
+> authoritative location). It is governed there by `ADR-0.0.22` with a declared merge
+> order — packaged defaults, then project settings, then optional local overrides.
+>
+> **What gzkit has instead**, measured 2026-09-20 and re-runnable via
+> [`config-derivation-2026-09-20-evidence/census.py`](config-derivation-2026-09-20-evidence/census.py):
+> 45 registries under `data/`, each resolving its own path; `src/gzkit/config.py` (279
+> lines, five Pydantic models) governing **none** of them; **19 of 45 with no traceable
+> derivation**; and **56 numeric policy constants** in `src/gzkit` module bodies, which
+> `data/config_registry.json` cannot reach because it declares itself exhaustive over
+> `data/*.json` only. Five policy names already have two homes, two of them disagreeing.
+>
+> **What was already built, so it is not rebuilt.** GHI #929 produced
+> `data/config_registry.json`, which fail-closes on an undeclared registry and *verifies*
+> each declared owner actually reads the file. That is the **ownership** half and it
+> works. The **loader**, **coherence** and **derivation** halves are what this Movement
+> owes; #929's own title named the first two and it closed without them.
+>
+> **ADR ORDER IS ABSOLUTE and this Movement is behind four feature ADRs** (operator ruling
+> 2026-08-16, verbatim: *"i will NOT go out of adr order, whatsoever."*). `ADR-0.35.0`,
+> `0.36.0`, `0.37.0` and `0.38.0` are authored and unlanded, so the config ADR is
+> `ADR-0.39.0` and is **not drawable** until they land. Stating the consequence plainly:
+> **this gate makes 1.0 later**, and § 5's declared target of ≈2027-04 does not yet
+> account for it. **The date moves by declaration, never by slippage** (§ 5, re-cut
+> 2026-08-17) — that declaration is the operator's and has not been made.
+
+- [ ] **Author the config ADR** as `ADR-0.39.0`, in strict ADR order, modelled on
+      `../airlineops` `ADR-0.0.22`'s five principles rather than designed from scratch.
+      Operator-initiated only (IRON LAW). **Not drawable until `0.35.0`–`0.38.0` land.**
+- [ ] **Single entry point and one loader.** One `load_*()` call site contract that every
+      consumer uses, with a declared merge order. Done means no module resolves a config
+      path of its own.
+- [ ] **The 56 module constants are brought in or justified.** Each either moves into the
+      config surface or records why it is an implementation detail rather than a setting.
+      The census names them; the population is the acceptance boundary.
+- [ ] **Every value records its authority.** The convention already exists and two
+      registries honour it — `complexity-thresholds.json` carries a `citation` held by
+      `gz validate --complexity-doctrine-links`, `instructions_files_budget.json` cites a
+      decision-history doc. GHI #1065 is the narrow instance (`SKILL_BODY_MAX_LINES`);
+      this box is its general form.
+- [ ] **A coherence gate — no concept with two homes.** Today
+      `DEFAULT_MAX_REVIEW_AGE_DAYS` is 90 in two modules and agrees by coincidence, while
+      `DEFAULT_MAX_OUTPUT_CHARS` and `DEFAULT_TIMEOUT_SECONDS` each differ across their
+      two homes with nothing reconciling them. Done means a check fails when one concept
+      acquires a second home, not that a human noticed.
+
 ## 7. Post-1.0 — the pool→feature release line
 
 **Operator ruling 2026-07-18: the pool backlog does NOT gate 1.0.** The ~23 unstarted
@@ -517,7 +590,66 @@ had been repeating. All are dispositioned below — none left undefined.
 
 ## Amendments
 
-### 2026-09-20 (latest) — THIS EDITION: the reckoning is re-measured and becomes a pointer; the zero-transits premise is retired (operator-ratified)
+### 2026-09-20 (latest) — one config system becomes a 1.0 gate; Movement F is created to carry it (operator-ratified)
+
+**Operator ruling, verbatim:** *"gzkit lacks a comprehensive and all-encompassing
+config system like airlineops had, we need to adopt this as a pre-requisite for
+1.0. this is inexcusable. there are so many janky and undocumented rules,
+thresholds and pseudo-settings handing around gzkit. it is a travesty"* (spelling
+preserved).
+
+**§ 5 gains a gate and Movement F is created in the same amendment.** Adding a 1.0
+gate without a Movement to carry it is the exact defect this plan closed on
+2026-08-17, when the forcing-function gate was found to have gone two months
+untracked — *"the only §5 gate no Movement tracked"*, which the plan named as
+Movement C item 162's own family reproduced inside the plan. Creating both at once
+is that lesson applied rather than restated.
+
+**The shape is the operator's prior art, not a fresh design.**
+`../airlineops/config/` states five principles under `ADR-0.0.22`: single entry
+point (`settings.json` is THE config, all code calls `load_settings()`),
+categorical subdirectories, no parallel systems, config is not documentation, and
+no duplication — each value has ONE authoritative location, with a declared merge
+order of packaged defaults → project settings → optional local overrides. Movement
+F adopts that shape; it does not re-derive it.
+
+**The measurement behind the ruling.** Taken the same day at the operator's
+question *"how many other arbitrary and random rules do we have lingering?"* and
+recorded at
+[`config-derivation-census-2026-09-20.md`](config-derivation-census-2026-09-20.md),
+whose script carries no literals and reports whatever tree it is run against: 45
+registries under `data/`, **19 with no traceable derivation**;
+`src/gzkit/config.py` governing none of them; **56 numeric policy constants** in
+module bodies that `data/config_registry.json` cannot reach, because it declares
+itself exhaustive over `data/*.json` alone. Five policy names already hold two
+homes, two of them disagreeing.
+
+**What is NOT rebuilt.** GHI #929 produced `config_registry.json`, which
+fail-closes on an undeclared registry and verifies each declared owner actually
+reads the file. The **ownership** half works and stays. The **loader**,
+**coherence** and **derivation** halves are Movement F's debt — #929's title named
+the first two and it closed without them, which is why its class kept producing
+(GHI #1064 and #1065, both this week).
+
+**Two consequences stated rather than left implicit.**
+
+1. **ADR order puts this fourth in line.** `ADR-0.35.0`, `0.36.0`, `0.37.0` and
+   `0.38.0` are authored and unlanded, and ADR order is absolute (2026-08-16,
+   *"i will NOT go out of adr order, whatsoever."*). The config ADR is
+   `ADR-0.39.0` and is not drawable until those four land.
+2. **This gate makes 1.0 later, and the date has not been moved.** § 5's declared
+   target of ≈2027-04 was arrived at by § 7 arithmetic that does not include this
+   Movement. The 2026-08-17 precedent for enlarging the gate set is operator
+   verbatim — *"Nothing — move the date instead"* — so the gate stands and the
+   date is owed a **declaration**, which only the operator makes. It is recorded
+   here as outstanding rather than silently adjusted: **the date moves by
+   declaration, never by slippage.**
+
+**Sequencing is otherwise UNCHANGED.** `ADR-0.35.0` remains TOPMOST, Movement C's
+family-closure box remains NEXT-IN-PRIORITY, Movements B, D and E are unmoved.
+Movement F is created at the back of the ADR queue, not inserted ahead of anything.
+
+### 2026-09-20 — THIS EDITION: the reckoning is re-measured and becomes a pointer; the zero-transits premise is retired (operator-ratified)
 
 **Operator ruling**, selected from a four-option picker over how to repair the
 stale measurements: **"New edition — full re-evaluation."** The alternatives —
