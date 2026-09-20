@@ -34,10 +34,11 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import shutil
 import sys
 from datetime import UTC, datetime
-from pathlib import Path
+from pathlib import Path, PurePath
 
 _KEEP = 20
 _REL = Path(".claude") / "settings.local.json"
@@ -52,9 +53,22 @@ def _find_project_root(start: Path) -> Path:
     return start
 
 
+def _slug(root: PurePath) -> str:
+    """Flatten a project root into one filesystem-safe path segment.
+
+    ``str(Path)`` emits the platform separator, so a Windows root keeps its
+    backslashes AND its drive letter. A segment carrying a drive is absolute,
+    and ``pathlib`` discards everything to its left, which relocated the vault
+    inside the repository it exists to survive (GHI #1071). ``as_posix()``
+    normalises the separator on every platform, and the character filter
+    removes the drive colon and anything else a filesystem would object to.
+    """
+    flattened = re.sub(r"[^A-Za-z0-9._-]+", "-", root.as_posix()).strip("-")
+    return flattened or "root"
+
+
 def _vault(root: Path) -> Path:
-    slug = str(root).replace("/", "-")
-    return Path.home() / ".claude" / "backups" / slug / "settings.local"
+    return Path.home() / ".claude" / "backups" / _slug(root) / "settings.local"
 
 
 def _digest(path: Path) -> str:
