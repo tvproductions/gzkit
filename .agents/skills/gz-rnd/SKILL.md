@@ -1,14 +1,14 @@
 ---
 name: gz-rnd
 persona: main-session
-description: Run a governed R&D session — diamond 1 of the double diamond, which defines the problem and names which fan-out artifacts are warranted. Use when the operator pastes external material and says "consider this for gzkit", asks "is there something here gzkit is missing or could improve on", or opens an exploratory design discussion whose outcome is not yet known. Ends at a six-row disposition map and operator sign-off; produces no fan-out artifact itself. Operator-invoked only.
+description: Run a governed R&D session — diamond 1 of the double diamond, which defines the problem and names which fan-out artifacts are warranted. Use when the operator pastes external material and says "consider this for gzkit", asks "is there something here gzkit is missing or could improve on", opens an exploratory design discussion whose outcome is not yet known, or asks why a class of defects keeps recurring and how the issues carrying it should be restructured. Ends at a six-row disposition map and operator sign-off; produces no fan-out artifact itself. Operator-invoked only.
 category: agent-operations
 lifecycle_state: active
 disable-model-invocation: true
 owner: gzkit-governance
-last_reviewed: 2026-09-17
+last_reviewed: 2026-09-20
 metadata:
-  skill-version: "0.2.0"
+  skill-version: "0.3.0"
 model: opus
 ---
 
@@ -24,6 +24,14 @@ by machinery that carries its own gates. This run never enters it.
 R&D is the headwater of most gzkit design. Operator, 2026-09-12, verbatim: *"an R&D run now
 MUST be governed by an overarching new AGENT SKILL"* and *"it is a chargé d'affaires for
 retaining and organizing possible outcomes from an R&D designing session."*
+
+**Two subjects, one frame.** A run studies either something new — pasted material, an
+unexplored capability — or **a population the project already carries**: a recurring defect
+class, a queue that grows faster than it drains, a family of issues that close individually
+and keep producing. The second is as legitimate a subject as the first and was added on the
+operator's direction, 2026-09-20. Ranking what is in the queue belongs to `ghi-triage`;
+asking *why this class keeps producing, and how these issues should be framed, consolidated
+or sequenced* is design work, and it belongs here.
 
 Doctrine and the full ruling history:
 [`docs/governance/rnd-discipline.md`](../../../docs/governance/rnd-discipline.md).
@@ -88,6 +96,10 @@ the model here.
   first; where canon rules, act and name the rule that governed.
 - **Research reports are primary sources.** Save each verbatim under
   `docs/rnd/<slug>/sources/`. Never replace one with a summary.
+- **When the subject is a population the project carries**, the issue bodies, briefs and
+  chore reports are the primary sources — read them, never their titles. Characterise the
+  class from what its members say, and say how many you read against how many exist.
+  A class named from a sample is a hypothesis; say so.
 - **When talk cannot answer a question**, build a throwaway probe outside the mainline and
   record a one-line verdict as a `decision` entry citing it.
 
