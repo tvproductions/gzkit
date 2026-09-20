@@ -5,9 +5,9 @@ description: Triage every open GHI — read each body, classify severity, and pr
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-19
+last_reviewed: 2026-09-20
 metadata:
-  skill-version: "5.2.1"
+  skill-version: "5.3.0"
 model: sonnet
 ---
 
@@ -48,7 +48,8 @@ uv run python .gzkit/skills/ghi-triage/scripts/triage.py [args] --format json
 Each record contains: `number`, `title`, `labels`, `klass` (one of
 `defect`/`enhancement`/`investigation`/`chore`/`unlabeled`), `body`
 (full), `files_mentioned`, `dup_of`, `route`, `urgency`, `rationale`,
-`blockers`, `created_at`, `updated_at`. The `route` field is the script's
+`blockers`, `family_signal`, `stale_annotations`, `created_at`,
+`updated_at`. The `route` field is the script's
 mechanical classification per `AGENTS.md` § Defect-fix routing — treat it as
 evidence the agent reasons over, not as the final answer.
 
@@ -65,10 +66,43 @@ leads with `stale blocker: cites settled #N` when any citation has closed.
 script reports and the agent adjudicates. `unknown` is never reported as
 settled: missing evidence is not evidence that a precondition cleared.
 
+**`family_signal` and `stale_annotations` are the family-and-staleness pass
+(row 4 of `docs/rnd/ghi-landscape-reorganization.md`). They are not peers.**
+
+`stale_annotations` is **exact**. A body that writes `#889 (open)` transcribes a
+Layer-2 fact GitHub already renders live, so whether that transcription still
+holds is a lookup. Each entry names a reference whose subject has since closed.
+The annotation is **decoration, not a precondition** — unlike `blockers`, a
+decayed annotation gates nothing, and the body is never rewritten to fix it
+(`#889 (open)` is a dated record of what its author observed). Read it as a
+reason to discount the annotation and re-derive the relationship yourself. The
+remedy is upstream: `ghi-author` § Step 4 no longer writes them.
+
+`family_signal` is **candidate evidence with a measured error rate, never a
+count**. It lists the doctrine-declared-without-mechanism phrases a body uses.
+Measured 2026-09-20 against the 38 members
+`docs/governance/f1-family-share-2026-09-20-evidence/measure.py` names among 57
+open issues, it disagrees with that reader on 15 — 9 it matched that the reader
+excluded, and 6 members no phrase catches (#950, #968, #997, #1011, #1012,
+#1013). **An empty list is not evidence of non-membership.** Root-cause class is
+not a surface-word property, which is precisely why the family slips past
+`ghi-author` Step 0's title skim; a signal built from surface words inherits the
+same limit and may not be reported as a family size.
+
+Neither field enters the rank input, which stays structural-only (GHI #424).
+The pass informs the judgment in Step 2; the ranking stays the agent's.
+
 ### Step 2 — Read each body, compose rank input
 
 For each GHI in the JSON, read the body (it is inline — no `gh issue view`
-needed). Compose a single rank-input JSON document with one entry per GHI
+needed). While reading, rule on the pass described above: decide family
+membership from the body's root cause rather than from whether
+`family_signal` fired, and discount any cross-reference listed in
+`stale_annotations` instead of inheriting it. Ranking several members of one
+family adjacently is a legitimate ordering judgment; reporting a family
+*count* from the signal is not.
+
+Compose a single rank-input JSON document with one entry per GHI
 the agent recommends working on, in the agent's recommended order:
 
 ```json

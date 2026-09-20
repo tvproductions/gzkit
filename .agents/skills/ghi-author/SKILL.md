@@ -5,9 +5,9 @@ description: Author a GitHub Issue (GHI) when a finding needs an independent wor
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-18
+last_reviewed: 2026-09-20
 metadata:
-  skill-version: "1.8.0"
+  skill-version: "1.9.0"
 model: sonnet
 ---
 
@@ -143,19 +143,32 @@ routing matrix will consume.
    grep -rln "<keywords>" docs/rnd/ 2>/dev/null
    ```
 
-   Read every title in both result sets (titles are cheap; read bodies only on candidate hits). Decide which branch you are on:
+   Read every title in both result sets (titles are cheap; read bodies only on candidate hits).
+
+   **Then run the class test, because titles do not carry it.** A title names a
+   surface and a symptom; sibling-cut adjacency is a property of the ROOT CAUSE.
+   Before concluding "no prior", state your finding's class of failure (Step 2's
+   third bullet) in one sentence and ask of each skimmed title: *could this be
+   the same class on a different surface?* Two issues in one class routinely
+   share no surface word at all. If you cannot answer without the body, open the
+   body — the skim is 20 titles, not 20 issues.
+
+   Decide which branch you are on:
 
    | Result | Action |
    |--------|--------|
    | An open GHI already covers this exact finding | **Do not file.** Add a comment to the existing GHI with this session's new evidence; record the issue number in session evidence; stop. Duplicate-filing is the failure mode this step closes. |
-   | An open GHI covers an adjacent / sibling-cut of the same root cause | Author this GHI but include `Related: #N` in the body's `## Related` section AND post a cross-link comment on the sibling GHI naming the relationship (root vs. symptom, per-skill vs. catalog-wide, etc.) at authoring time, not as a follow-up |
+   | An open GHI covers an adjacent / sibling-cut of the same root cause | Author this GHI but include `Related: #N` in the body's `## Related` section AND post a cross-link comment on the sibling GHI naming the relationship (root vs. symptom, per-skill vs. catalog-wide, etc.) at authoring time, not as a follow-up. Write the bare `#N` — never `#N (open)` (§ Step 4) |
+   | The finding is the **Nth member of a recurring family** already tracked as a class | **Do not enumerate the siblings.** Cross-linking each one is noise that grows quadratically and decays immediately. Name the family once and the locus that tracks it — the campaign box, or the row of `docs/governance/advisory-rules-audit.md` that scores the class — and file only if THIS instance needs its own work order. If no locus tracks the class yet, say so in `## Related`: an untracked recurring family is itself a finding, and it is the operator's to route |
    | A recently-closed GHI (≤30 days) addressed this exact finding | Re-open it (`gh issue reopen <N>`) with a comment citing the regression evidence — never file a fresh GHI for the same root cause |
    | The active, operator-initiated OBPI owns this correction under its approved obligations | **Do not file unless the operator explicitly requested an issue.** Keep the correction and evidence in that OBPI's change log and continue its pipeline; an explicitly requested issue links back to that work. |
    | Another live OBPI owns the work, or the correction requires an unapproved amendment | Read the brief's `status:`, parent ADR, and matching requirement lines; surface the actual ownership or amendment decision to the operator. Do not initiate that OBPI or file a duplicate work order. |
    | An R&D record under `docs/rnd/` carries this finding as a `not pursued` row in its **disposition map** | **Do not file on your own judgment.** Quote the record's reason and the row to the operator; a rejected idea is re-opened only by the operator. |
    | No prior or adjacent GHI exists | Proceed to Step 1 |
 
-   **Canonical sibling-cut regression:** GHIs #459 and #460 (2026-05-12) shared the T1→T2 doctrine-drift root cause (skill prose declares an agent action with no mechanical fail-close) but shared no title keywords — #459 named the per-skill Stage 2 dispatch gap, #460 named the catalog-wide skill-body-as-procedural-script surface. #460 was filed ~17 minutes after #459 without cross-link at authoring time; the relationship was only recorded in a follow-up comment after the operator noticed the overlap. The recent-by-date skim catches this class even when keywords disagree.
+   **Canonical sibling-cut regression (the PAIR shape):** GHIs #459 and #460 (2026-05-12) shared the T1→T2 doctrine-drift root cause (skill prose declares an agent action with no mechanical fail-close) but shared no title keywords — #459 named the per-skill Stage 2 dispatch gap, #460 named the catalog-wide skill-body-as-procedural-script surface. #460 was filed ~17 minutes after #459 without cross-link at authoring time; the relationship was only recorded in a follow-up comment after the operator noticed the overlap. The recent-by-date skim reaches this class even when keywords disagree.
+
+   **Canonical FAMILY regression — the skim reaching the sibling is not the defense (measured 2026-09-20):** GHI #1063 was authored with zero cross-links. Its `## Related` section is empty. Replaying Step 0's recent-by-date query at #1063's own authoring instant returns #1017 at rank 12 of the 20 titles shown — **the query did not miss it; the reading did** — and 11 of those 20 titles are members of #1063's own `doctrine-declared-without-mechanism` family. A 55%-family skim produced no relationship at all, because nothing in this step told the author to test for class, and the class is not visible in a title. Widening `--limit` would have changed nothing. This is why the class test above is stated separately from "read every title", and why the family row exists: at 11 siblings the correct output is a named family, not eleven cross-links.
 
    The pre-flight is **defense, not guarantee** — semantic neighbors may evade every query. When in doubt, surface the candidate matches to the operator with the routing facts (open GHI numbers + one-line title-summaries + relationship hypothesis) before proceeding to Step 1.
 
@@ -255,8 +268,22 @@ Surface **the brief id, its `status:`, its parent ADR, and the requirement lines
 
    ## Related
 
-   - <linked GHIs, ADRs, briefs, rule files>
+   - <linked GHIs, ADRs, briefs, rule files — bare `#N`, no state annotation>
    ```
+
+   **Never transcribe a sibling's state into the body.** Write `#889`, never
+   `#889 (open)`. GitHub renders state live at every reference, so the
+   annotation is redundant when written and wrong once the sibling closes — and
+   unrepairable after: `#889 (open)` is a dated record of what its author
+   observed, so editing it falsifies the record, and `gh issue edit` is outside
+   `.gzkit/rules/gh-cli.md`'s allowed commands. Stopping is the only remedy.
+   Measured 2026-09-20: 10 such annotations open-queue-wide, 5 already decayed.
+   This is the subtraction GHI #768 ruled for transcribed ADR counts, one
+   surface over; `.gzkit/chores/ghi-cross-reference-staleness` measures the
+   residue and `ghi-triage` reports it as `stale_annotations`.
+
+   Keep the *relationship* — `root cause of #889` — which is your finding and
+   which nothing else records. Subtract the state, keep the claim.
 
 5. **Create the issue.** Include the primary class label AND every secondary label whose Step-1 predicate fired. Repeat `--label` per label; a runtime-touching defect that also remediates accumulated drift would carry `--label defect --label runtime --label tech-debt`.
 
@@ -293,50 +320,10 @@ Surface **the brief id, its `status:`, its parent ADR, and the requirement lines
 
 ## Examples
 
-### Example 1 — Correction within the active OBPI
-
-**Input**: Review finds that a corpus-generator test derives expected boundaries
-from the same production parser it is supposed to check.
-
-**Output**: Keep the finding attached to the generator's boundary obligation.
-Repair the test using contract-derived expectations, demonstrate sensitivity to
-the production fault, and obtain the required independent closure. Record the
-change and proof/closure references in the OBPI change log. No GHI is needed.
-
-### Example 1a — Independent infrastructure defect surfaced mid-pipeline
-
-**Input**: During OBPI-0.0.16-04 implementation, `uv run gz validate --documents` flagged a pool ADR for drifted frontmatter. Pool ADRs are supposed to skip that check per schema.
-
-**Output**: The validator defect needs its own disposition beyond the OBPI's
-deliverable. After ownership/prior-art lookup, file `defect` GHI titled
-`validator: frontmatter check does not skip pool ADRs`, with observed output and
-the pool-skip rule. Link the independent issue from the brief's Tracked Defects
-section. The GHI's direct-repair authority applies; discovery during the pipeline
-does not make the validator repair a new OBPI.
-
-### Example 2 — Enhancement for a working surface
-
-**Input**: `gz adr status` renders a Rich table correctly, but the lane column abbreviates "heavy" to "H" which operators consistently misread.
-
-**Output**: File `enhancement` GHI titled `gz adr status: lane column abbreviation hurts legibility`. Body includes a screenshot/paste, the operator feedback, and a proposal ("spell out heavy/lite; alignment issue only, no schema change"). Not a defect — the verb does what it says; the taste is off.
-
-### Example 3 — Investigation, root cause unknown
-
-**Input**: Reconciliation caches are regenerating at 3x the expected rate across sessions. No specific failure observed; the cost signal is what surfaced it.
-
-**Output**: File `investigation` GHI titled `reconcile: cache regenerates more often than expected`. Body skips "Expected" (no canonical baseline yet); includes the cost signal, the observation window, and candidate hypotheses. The GHI is the home for the investigation itself — closing it will produce either a defect GHI with a known fix or a documentation update explaining the observed rate as correct.
-
-### Example 4 — Architectural absence, route to pool ADR + close in same session
-
-**Input**: During OBPI-0.0.21-08 closeout, the operator surfaced that gzkit's governance surface is "choreographed not state-machined" — there is no canonical state machine, no runtime invariant monitor, and silent state demotions go unnoticed (concrete symptom: `gz frontmatter reconcile` rewrote a hand-marked `Withdrawn` brief to `pending` because no withdrawal transition exists).
-
-**Output**: This is two findings — a concrete observed symptom and a class-level architectural absence. File **two GHIs**, one per finding shape:
-1. A `defect` GHI for the silent demotion (concrete reproduction, expected vs. observed, citation of ADR-0.0.9 Rule 1 the reconciler was honoring).
-2. An architectural-absence GHI listing the symptom-class with citations across `STATUS_VOCAB_MAPPING`, GHI #290/#292 bolted-on guards, reconcile-then-precomplete loops, frontmatter rewrite cascades.
-
-**Same-session routing:** the right destination is a pool ADR (the design conversation is genuinely architectural, but no existing ADR absorbs it). Author it via `uv run gz plan create obpi-state-machine --kind pool --lane heavy --title "OBPI State Machine and Runtime Invariant Monitor"`, populate Intent / Decision / four rejected alternatives / ADR relationship matrix / OBPI promotion plan grounded in the GHIs' evidence, commit. Then close **both** GHIs `superseded` citing the pool ADR ID. The GHIs' purpose (route the observations to a durable home) is fulfilled; the pool ADR's lifecycle (promotion → gates → OBPI ceremony) owns implementation.
-
-**Anti-pattern this example replaces:** filing the architectural-absence GHI with an acceptance criterion of "closes when state machine ships" and leaving it open for months as a stale tracker. The pool ADR is the tracker; the GHI was the routing artifact, and routing is complete.
+Four worked examples — correction inside an active OBPI, an independent defect
+surfaced mid-pipeline, an enhancement, an investigation, and an architectural
+absence routed to a pool ADR and closed in the same session — live in
+[`references/examples.md`](references/examples.md).
 
 ## Constraints
 
@@ -364,9 +351,15 @@ These thoughts mean STOP — you are about to produce a low-quality GHI:
 | "A brief mentions this surface, but my finding is clearly a defect — I'll file and note it" | **A live brief owning the work makes routing an operator question, not yours** (`AGENTS.md` § Defect-fix routing). Surface the brief id, status, parent ADR and matching requirement lines, and wait. |
 | "The brief mentions the same ids, so the work overlaps — that's all I need to report" | **A presence check answers "is something armed", never "what does it say".** Read the disposition (§ When a brief owns the work, GHI #862). |
 | "I'll call `gh issue create` directly — faster than going through the skill" | A process defect per `AGENTS.md` § Behavior Rules. The skill is the mechanical home of Step 0's prior-art lookup; bypassing it bypasses the only defense against sibling-cut duplicates. |
+| "The skim returned the sibling, so Step 0 worked" | **Reaching it is not recognising it.** #1017 sat at rank 12 of the 20 titles Step 0 showed #1063's author, alongside 10 more members of the same family, and #1063 shipped with an empty `## Related`. Run the class test, not just the title read. |
+| "Eleven siblings, so eleven `Related:` cross-links" | At family scale, enumeration IS the defect — it is noise that decays the moment any sibling closes. Name the family and its tracking locus once (§ Step 0, family row). |
+| "I'll write `#889 (open)` so the reader knows where it stood" | GitHub renders that live at every reference; the annotation is redundant when written and wrong when the sibling closes, and it cannot be repaired afterwards without falsifying a dated record. Write the bare `#889` (§ Step 4). |
 
 ## Red Flags
 
+- Concluding "no prior GHI" from titles alone, without stating the finding's class of failure and testing the skim against it
+- Writing a state annotation — `#N (open)`, `#N (still open)` — beside an issue reference in a body or comment
+- Cross-linking every member of a recurring family instead of naming the family and its tracking locus
 - GHI title is a bare noun or a vague verb ("broken", "issue", "problem")
 - Body contains "TODO add evidence" or equivalent placeholder
 - Multiple unrelated defects bundled into one GHI

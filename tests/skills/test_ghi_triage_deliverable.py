@@ -15,6 +15,7 @@ the agent.
 from __future__ import annotations
 
 import importlib.util
+import json
 import os
 import sys
 import tempfile
@@ -242,6 +243,140 @@ class TestRankInputCachePathRequirement(unittest.TestCase):
         resolved = _TRIAGE._ensure_rank_input_cache_dir()
         self.assertTrue(self.cache_dir.exists())
         self.assertEqual(resolved, self.cache_dir.resolve())
+
+
+class TestStaleAnnotationPass(unittest.TestCase):
+    """Row 4: the exact half of the family/staleness pass.
+
+    A transcribed `#N (open)` is decoration over a Layer-2 fact GitHub renders
+    live. Reporting its decay is a lookup, so these assert the lookup's
+    semantics -- which references it binds to, and that an unresolved state is
+    never reported as decayed.
+    """
+
+    @staticmethod
+    def _resolver(mapping: dict[int, str]):
+        return lambda number: mapping.get(number, "unknown")
+
+    def test_reports_annotation_whose_subject_has_closed(self) -> None:
+        issue = _issue(1, "t", "blocked by #889 (open) until that lands")
+        self.assertEqual(
+            _TRIAGE.stale_annotations(issue, self._resolver({889: "settled"})),
+            [{"identifier": "#889", "annotated": "open"}],
+        )
+
+    def test_live_subject_is_not_decayed(self) -> None:
+        issue = _issue(2, "t", "see #929 (open)")
+        self.assertEqual(_TRIAGE.stale_annotations(issue, self._resolver({929: "live"})), [])
+
+    def test_unknown_subject_is_not_reported_as_decayed(self) -> None:
+        """Missing evidence is not evidence that the subject closed."""
+        issue = _issue(3, "t", "see #929 (open)")
+        self.assertEqual(_TRIAGE.stale_annotations(issue, self._resolver({})), [])
+
+    def test_annotation_binds_to_the_reference_it_follows(self) -> None:
+        """The window trap: a correct `(closed)` list must not lend `(open)`.
+
+        A window-based match reached a 44% false-positive rate on this exact
+        shape when the `ghi-cross-reference-staleness` chore first tried it.
+        """
+        issue = _issue(4, "t", "#929 (open) -- #2, #889 (closed) -- done")
+        found = _TRIAGE.stale_annotations(issue, self._resolver({889: "settled", 929: "live"}))
+        self.assertEqual(found, [], "annotation read from a neighbouring reference")
+
+    def test_bold_reference_still_binds(self) -> None:
+        issue = _issue(5, "t", "**#889** (open)")
+        self.assertEqual(
+            _TRIAGE.stale_annotations(issue, self._resolver({889: "settled"})),
+            [{"identifier": "#889", "annotated": "open"}],
+        )
+
+    def test_repeated_subject_reported_once(self) -> None:
+        issue = _issue(6, "t", "#889 (open) ... and again #889 (still open)")
+        found = _TRIAGE.stale_annotations(issue, self._resolver({889: "settled"}))
+        self.assertEqual([entry["identifier"] for entry in found], ["#889"])
+
+    def test_absent_resolver_reports_nothing(self) -> None:
+        """Exercisable without `gh`; an unreachable live state never renders as decayed."""
+        issue = _issue(7, "t", "#889 (open)")
+        self.assertEqual(_TRIAGE.stale_annotations(issue, None), [])
+
+
+class TestFamilySignalIsCandidateEvidence(unittest.TestCase):
+    """Row 4: the inexact half, pinned to the contract it actually meets.
+
+    `family_signal` names candidates for the agent's body read. These tests
+    assert that contract rather than a hit rate -- including the blind spot,
+    so a later reader cannot mistake an empty list for non-membership.
+    """
+
+    def test_names_the_phrases_a_declared_without_mechanism_body_uses(self) -> None:
+        issue = _issue(
+            1063,
+            "registries: 51 validator scopes and 10 event types are never invoked",
+            "A registry declares a scope with no caller; nothing enforces it.",
+        )
+        self.assertEqual(
+            _TRIAGE.family_signal(issue),
+            ["declares a scope with no", "never invoked", "no caller", "nothing enforces"],
+        )
+
+    def test_reads_the_title_as_well_as_the_body(self) -> None:
+        """Step 0's skim shows titles only, so a title-only signal must still fire."""
+        issue = _issue(8, "commit-trailers: the trailer has no automated witness", "")
+        self.assertNotEqual(_TRIAGE.family_signal(issue), [])
+
+    def test_silence_is_not_evidence_of_non_membership(self) -> None:
+        """The documented blind spot, held as a test so it cannot be forgotten.
+
+        #1012 ("reserved words and $( ) hide a verifier's head") is a member of
+        the family that no surface phrase catches. Root-cause class is not a
+        surface-word property -- which is why `ghi-author` Step 0's title skim
+        misses the family and why this signal may never be counted.
+        """
+        issue = _issue(
+            1012, "verifier-pipe-gate: reserved words and $( ) hide a verifier's head", ""
+        )
+        self.assertEqual(_TRIAGE.family_signal(issue), [])
+
+    def test_ordinary_defect_report_produces_no_signal(self) -> None:
+        issue = _issue(9, "cli: exits 2 on a valid flag", "Ran the verb, got exit 2, expected 0.")
+        self.assertEqual(_TRIAGE.family_signal(issue), [])
+
+
+class TestRowFourPassStaysOutOfTheRankInput(unittest.TestCase):
+    """The pass informs Step 2's read; it must not reopen GHI #424.
+
+    The rank-input schema is structural-only: the agent contributes selection,
+    ordering and severity. Adding a family or staleness field there would put
+    script-derived prose back on the agent's surface, which is the defect
+    GHI #424 closed by removing prose fields from the schema entirely.
+    """
+
+    def test_family_signal_rejected_as_agent_input(self) -> None:
+        with self.assertRaises(_TRIAGE.RankInputError):
+            _TRIAGE.parse_rank_input(
+                {"rankings": [{"number": 1, "severity": "blocking", "family_signal": ["x"]}]},
+                {1},
+            )
+
+    def test_stale_annotations_rejected_as_agent_input(self) -> None:
+        with self.assertRaises(_TRIAGE.RankInputError):
+            _TRIAGE.parse_rank_input(
+                {"rankings": [{"number": 1, "severity": "blocking", "stale_annotations": []}]},
+                {1},
+            )
+
+    def test_render_json_carries_both_fields(self) -> None:
+        issue = _issue(1, "surface: nothing enforces the rule", "blocked by #889 (open)")
+        payload = json.loads(
+            _TRIAGE.render_json(
+                [issue], precedent=5, duplicates={}, blocker_resolver=lambda n: "settled"
+            )
+        )
+        record = payload["issues"][0]
+        self.assertNotEqual(record["family_signal"], [])
+        self.assertEqual(record["stale_annotations"], [{"identifier": "#889", "annotated": "open"}])
 
 
 if __name__ == "__main__":

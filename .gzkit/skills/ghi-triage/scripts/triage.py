@@ -278,6 +278,92 @@ def _stale_blocker_note(issue: Issue, resolver) -> str | None:
     return f"stale blocker: cites settled {', '.join(dict.fromkeys(settled))}"
 
 
+# --- Family and staleness pass -----------------------------------------------
+#
+# Row 4 of `docs/rnd/ghi-landscape-reorganization.md`. Two signals of
+# deliberately unequal strength; the difference is the point, so it is stated
+# here and in the skill rather than left for a reader to infer.
+#
+# `stale_annotations` is EXACT. A body that writes `#889 (open)` transcribes a
+# Layer-2 fact GitHub already renders live, so whether the transcription still
+# holds is a lookup. The pattern binds the annotation to the reference it
+# follows: a window-based match lends `(open)` to the neighbours of a correct
+# `(closed)` list, which is how the `ghi-cross-reference-staleness` chore's
+# first detector reached a 44% false-positive rate. Mirrored from that chore's
+# `ANNOTATION_RE` rather than imported -- the chore is `projectLocal` and this
+# script is mirrored to every vendor surface by `gz agent sync`.
+#
+# `family_signal` is NOT a classifier and its hits must never be counted as a
+# family. Measured 2026-09-20 against the 38 members
+# `docs/governance/f1-family-share-2026-09-20-evidence/measure.py` names among
+# 57 open issues, these patterns disagree with that reader on 15: 9 they
+# excluded, and 6 members no phrase catches (#950, #968, #997, #1011, #1012,
+# #1013). Root-cause class is not a surface-word property -- which is exactly
+# why the family slips past `ghi-author` Step 0's title skim. The signal names
+# candidates for the agent's body read in Step 2; the agent rules.
+
+_ANNOTATION_RE = re.compile(r"#(\d+)\*{0,2}\s*\((open|still open)\)", re.IGNORECASE)
+
+_FAMILY_SIGNALS = (
+    re.compile(
+        r"\bno\s+(?:\w+\s+){0,2}(?:mechanism|witness|enforcement|validator|check|gate"
+        r"|counter|caller|detection|coverage|owner|scope|path)\b",
+        re.I,
+    ),
+    re.compile(
+        r"\bnever\s+(?:\w+\s+){0,2}(?:invoked|called|enforced|checked|run|read"
+        r"|validated|measured|passed|formed|fires?)\b",
+        re.I,
+    ),
+    re.compile(r"\bunwitnessed\b|\bunmeasured\b|\buncorpused\b|\bunenforced\b", re.I),
+    re.compile(
+        r"\bnothing\s+(?:\w+\s+){0,2}(?:enforces|checks|validates|observes|refuses"
+        r"|reads|asserts|detects)\b",
+        re.I,
+    ),
+    re.compile(r"\bonly\s+in\s+prose\b|\bprose\s+only\b|\badvisory\s+only\b", re.I),
+    re.compile(r"\bdeclares?\b[^.\n]{0,80}\bno\b|\bdeclared\b[^.\n]{0,40}\bwithout\b", re.I),
+    re.compile(r"\bnot\s+(?:enforced|witnessed|validated|checked|detected|measured)\b", re.I),
+    re.compile(r"\bexits?\s+0\s+(?:while|despite)\b|\breports?\s+success\s+over\b", re.I),
+)
+
+
+def family_signal(issue: Issue) -> list[str]:
+    """Return the distinct doctrine-declared-without-mechanism phrases a body uses.
+
+    Candidate evidence for the Step 2 body read, never a verdict and never a
+    count -- see the calibration above. An empty list means no phrase matched,
+    which is not evidence the issue is outside the family.
+    """
+    haystack = f"{issue.title}\n{issue.body or ''}"
+    return sorted({m.group(0).lower() for p in _FAMILY_SIGNALS for m in p.finditer(haystack)})
+
+
+def stale_annotations(issue: Issue, resolver=None) -> list[dict]:
+    """Return the issue's transcribed sibling-state annotations that have decayed.
+
+    `resolver` is a parameter, never a named technology (hexagonal § Operative
+    rule 4), matching `blockers` above: it maps a GHI number to `live` /
+    `settled` / `unknown`. With none injected nothing resolves, so the core is
+    exercisable without `gh` and an unreachable live state never renders as
+    decayed.
+
+    A decayed annotation is DECORATION, not a precondition. The
+    `ghi-cross-reference-staleness` chore never rewrites a body, because
+    `#889 (open)` is a dated record of what its author observed; this function
+    reports the decay so the reader discounts the annotation, and the remedy is
+    to stop writing them (`ghi-author` § Step 4).
+    """
+    if resolver is None:
+        return []
+    found: list[dict] = []
+    for match in _ANNOTATION_RE.finditer(issue.body or ""):
+        number = int(match.group(1))
+        if resolver(number) == "settled":
+            found.append({"identifier": f"#{number}", "annotated": match.group(2).lower()})
+    return list({entry["identifier"]: entry for entry in found}.values())
+
+
 # --- Data acquisition --------------------------------------------------------
 
 ISSUE_JSON_FIELDS = "number,title,labels,createdAt,updatedAt,body,comments"
@@ -747,6 +833,11 @@ def render_json(
     each recorded precondition with the live state of what it cites, so the
     judgment pass re-derives them (`ghi-close` § Phase 1 step 1a) instead of
     inheriting them as standing fact.
+
+    `family_signal` and `stale_annotations` are the row-4 pass. They are not
+    peers: `stale_annotations` is an exact lookup, `family_signal` is candidate
+    evidence with a measured disagreement rate that the agent adjudicates.
+    Neither feeds the rank-input schema, which stays structural-only (GHI #424).
     """
     precedent_ok = precedent >= 3
     records: list[dict] = []
@@ -776,6 +867,8 @@ def render_json(
                     }
                     for b in blockers(issue, blocker_resolver)
                 ],
+                "family_signal": family_signal(issue),
+                "stale_annotations": stale_annotations(issue, blocker_resolver),
                 "created_at": issue.created_at,
                 "updated_at": issue.updated_at,
             }
