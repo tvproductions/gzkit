@@ -15,13 +15,14 @@ from tempfile import TemporaryDirectory
 
 from gzkit.enforcement import POPULATION_NONE
 from gzkit.governance.trust_audits.population_controls import (
-    ACCEPTED_REL,
+    ACCEPTED_DISPLAY,
+    ACCEPTED_NAME,
     audit_population_controls,
 )
 
 
 def _seed(root: Path, claims: list[str]) -> None:
-    path = root / ACCEPTED_REL
+    path = root / "data" / ACCEPTED_NAME
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(
         json.dumps({"_doc": "fixture", "accepted_claims": [{"claim": c} for c in claims]}),
@@ -84,7 +85,7 @@ class NothingMeasuredIsNeverGreenTests(unittest.TestCase):
     def test_a_missing_list_is_a_finding(self) -> None:
         with TemporaryDirectory() as tmp:
             errors = audit_population_controls(Path(tmp), declarations={"c": POPULATION_NONE})
-        self.assertEqual([e.artifact for e in errors], [ACCEPTED_REL.as_posix()])
+        self.assertEqual([e.artifact for e in errors], [ACCEPTED_DISPLAY])
 
 
 class TheLiveRegistryIsInventoriedTests(unittest.TestCase):

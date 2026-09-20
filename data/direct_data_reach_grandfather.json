@@ -35,7 +35,6 @@
     "src/gzkit/governance/trust_audits/gate_callers.py",
     "src/gzkit/governance/trust_audits/instructions_files_budget.py",
     "src/gzkit/governance/trust_audits/persona_witness.py",
-    "src/gzkit/governance/trust_audits/population_controls.py",
     "src/gzkit/governance/trust_audits/receipt_shape.py",
     "src/gzkit/governance/trust_audits/release.py",
     "src/gzkit/governance/trust_audits/sensitivity.py",

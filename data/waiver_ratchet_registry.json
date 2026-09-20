@@ -203,7 +203,7 @@
       "gates_step": "config registry (gz validate --config-registry)",
       "mechanism": "shrink-ratchet",
       "entries_path": "modules",
-      "baseline_count": 50
+      "baseline_count": 49
     }
   ],
   "excluded": [

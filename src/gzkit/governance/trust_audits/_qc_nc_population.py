@@ -15,8 +15,9 @@ import json
 from pathlib import Path
 
 from gzkit.enforcement import create_fixture_tempdir, get_enforcement_registry
+from gzkit.registries import registry_path
 
-from .population_controls import ACCEPTED_REL
+from .population_controls import ACCEPTED_NAME
 
 
 def undeclared_claim_population() -> list[str]:
@@ -33,7 +34,7 @@ def undeclared_claim_population() -> list[str]:
 
 def _root_with_disclosed(claims: list[str]) -> Path:
     root = create_fixture_tempdir(prefix="gzkit-qc-nc-population-controls-")
-    path = root / ACCEPTED_REL
+    path = registry_path(root, ACCEPTED_NAME)
     path.parent.mkdir(parents=True)
     path.write_text(
         json.dumps({"accepted_claims": [{"claim": c} for c in claims]}), encoding="utf-8"

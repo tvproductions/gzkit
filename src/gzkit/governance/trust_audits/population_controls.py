@@ -22,14 +22,15 @@ and this inventory reads a disclosed list only gzkit's repository carries.
 
 from __future__ import annotations
 
-import json
 from collections.abc import Callable, Sequence
 from pathlib import Path
 
 from gzkit.core.validation_rules import ValidationError
 from gzkit.enforcement import POPULATION_NONE
+from gzkit.registries import RegistryError, load_registry
 
-ACCEPTED_REL = Path("data") / "population_control_grandfather.json"
+ACCEPTED_NAME = "population_control_grandfather.json"
+ACCEPTED_DISPLAY = f"data/{ACCEPTED_NAME}"
 _ENTRIES_KEY = "accepted_claims"
 _RECOVER = "uv run gz validate --population-controls"
 
@@ -43,14 +44,14 @@ def _err(artifact: str, message: str) -> ValidationError:
 def _load_accepted(project_root: Path) -> tuple[list[str], ValidationError | None]:
     """Read the shrink-only accepted claim ids, or the finding that they are unreadable."""
     try:
-        payload = json.loads((project_root / ACCEPTED_REL).read_text(encoding="utf-8"))
+        payload = load_registry(project_root, ACCEPTED_NAME)
         entries = payload[_ENTRIES_KEY]
         if not isinstance(entries, list):
             raise TypeError(_ENTRIES_KEY)
-    except (OSError, json.JSONDecodeError, KeyError, TypeError):
+    except (RegistryError, KeyError, TypeError):
         return [], _err(
-            ACCEPTED_REL.as_posix(),
-            f"{ACCEPTED_REL.as_posix()} is missing, unparseable, or carries no "
+            ACCEPTED_DISPLAY,
+            f"{ACCEPTED_DISPLAY} is missing, unparseable, or carries no "
             f"'{_ENTRIES_KEY}' list. This inventory cannot tell a disclosed absence from a "
             f"new one without it, and a green run would assert something never measured. "
             f"Repair the file. Re-run `{_RECOVER}`.",
@@ -97,7 +98,7 @@ def audit_population_controls(
         if claim not in declared:
             errors.append(
                 _err(
-                    ACCEPTED_REL.as_posix(),
+                    ACCEPTED_DISPLAY,
                     f"Accepted claim {claim!r} is not registered any more, so the acceptance "
                     "points at nothing. Remove the entry and decrement 'baseline_count' in "
                     f"data/waiver_ratchet_registry.json. Re-run `{_RECOVER}`.",
@@ -106,7 +107,7 @@ def audit_population_controls(
         elif declared[claim] is not None:
             errors.append(
                 _err(
-                    ACCEPTED_REL.as_posix(),
+                    ACCEPTED_DISPLAY,
                     f"Accepted claim {claim!r} now DECLARES its population, so the acceptance "
                     "is stale. Surrender it: remove the entry and decrement 'baseline_count' "
                     "in data/waiver_ratchet_registry.json. That surrender is what makes this "
@@ -123,7 +124,7 @@ def audit_population_controls(
                     "control planted at one member passes a witness that reads only that "
                     f"member (GHI #1007). Declare it: population={POPULATION_NONE!r} if the "
                     "claim ranges over no such set, or a callable reading the members from "
-                    f"the declaring surface. NEVER add an entry to {ACCEPTED_REL.name} to "
+                    f"the declaring surface. NEVER add an entry to {ACCEPTED_NAME} to "
                     "silence a newly-authored claim — that is the laundering ADR-0.0.73 "
                     f"Boundary Invariant #8 forbids. Re-run `{_RECOVER}`.",
                 )
