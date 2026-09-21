@@ -235,7 +235,6 @@ def _build_adversarial_event(
         "schema": LEDGER_SCHEMA,
         "event": "adversarial_validation",
         "id": f"ADV-{obpi_id}-{now.strftime('%Y%m%dT%H%M%SZ')}",
-        "ts": now.isoformat(),
         "obpi_id": obpi_id,
         "verdict": verdict,
         "adversary": adversary,

@@ -32,7 +32,7 @@ from gzkit.events import (
     DiscoveredFromEvent,
     ValidatesEvent,
 )
-from gzkit.ledger import Ledger, LedgerEvent
+from gzkit.ledger import Ledger, ledger_row
 from gzkit.ontology.model import (
     OBJECT_TYPE_REGISTRY,
     LinkType,
@@ -253,4 +253,4 @@ def emit_work_edge(
             "— the four edge types are permanent once emitted (ADR-0.32.0 § Consequences "
             "Negative #4). Record the WWHTBT pass over the exact edge set, then retry."
         )
-    ledger.append(LedgerEvent.model_validate(event.model_dump()))
+    ledger.append(ledger_row(event))

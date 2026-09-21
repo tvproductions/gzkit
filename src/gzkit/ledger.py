@@ -154,6 +154,13 @@ class LedgerEvent(BaseModel):
     - id: Artifact identifier
     - ts: ISO 8601 UTC timestamp
 
+    The ``ts`` default is a fallback for an event that is never appended. For one
+    that is, :meth:`Ledger.append` fixes ``ts`` under the write lock, because a
+    stamp taken at construction ordered rows by when a caller BUILT them rather
+    than by when they were committed (GHI #1074). Pass ``ts`` explicitly only to
+    state an instant that means something — a re-parsed row, a fixture — since
+    doing so tells the writer to leave it alone.
+
     Event-specific fields are stored in extra and flattened during serialization.
 
     Use ``model_validate(data)`` to parse from a dict (replaces ``from_dict``).
@@ -245,6 +252,23 @@ class LedgerEvent(BaseModel):
         if "ts" not in row:
             row["ts"] = ""
         return cls.model_validate(row)
+
+
+def ledger_row(typed: BaseModel) -> LedgerEvent:
+    """Convert a typed event model into a row for :meth:`Ledger.append`.
+
+    A typed event's ``ts`` is normally its own ``default_factory`` reading the
+    clock at construction. Carrying that through ``model_validate`` would mark
+    ``ts`` as STATED on the row, and a stated ``ts`` is the one thing that stops
+    ``append`` from fixing it under the write lock — which is how a
+    construction-time stamp reached the file and inverted two writers' order
+    (GHI #1074). So a defaulted ``ts`` is dropped here for the writer to supply,
+    and a genuinely stated one is preserved.
+    """
+    payload = typed.model_dump()
+    if "ts" not in typed.model_fields_set:
+        payload.pop("ts", None)
+    return LedgerEvent.model_validate(payload)
 
 
 def parse_frontmatter_value(content: str, key: str) -> str | None:
@@ -470,13 +494,19 @@ class Ledger:
     def append(self, event: LedgerEvent) -> None:
         """Append an event to the ledger.
 
-        The whole transaction — fragment recovery, the length probe, the write
-        and the rollback — runs under ONE inter-process lock (GHI #953). Without
-        it the three steps were unserialized over one shared file and the
-        rollback truncated to a length another writer had already moved past:
-        writer A probed, writer B appended and reported SUCCESS, A failed
+        The whole transaction — fragment recovery, the `ts` stamp, the length
+        probe, the write and the rollback — runs under ONE inter-process lock
+        (GHI #953). Without it the steps were unserialized over one shared file
+        and the rollback truncated to a length another writer had already moved
+        past: writer A probed, writer B appended and reported SUCCESS, A failed
         mid-write and truncated back to its own probe, deleting B's committed
         row. B's caller had already been told the row was durable.
+
+        The stamp belongs inside that lock for the same reason (GHI #1074): `ts`
+        is what orders the ledger, so fixing it anywhere but the critical section
+        that serializes writes lets two writers commit in one order while
+        claiming another. An event whose caller STATED a `ts` keeps it; an
+        unstated one is fixed here, at the instant the row is committed.
 
         The lock is :func:`~gzkit.file_lock.exclusive_file_lock`, the
         repository's one implementation, rather than a second one here — two
@@ -495,7 +525,13 @@ class Ledger:
 
         # Serialize fully BEFORE touching the file so a serialization error
         # cannot leave a partial JSONL line on disk (failure-atomic, GHI #687).
-        line = json.dumps(event.model_dump(), separators=(",", ":")) + "\n"
+        payload = event.model_dump()
+        line = json.dumps(payload, separators=(",", ":")) + "\n"
+
+        # A caller that STATED `ts` means it — a re-parsed row, a deliberate
+        # fixture — and the writer may not overwrite it. An unstated one is only
+        # a default, and defaults are what the stamp below replaces.
+        stamp_under_lock = "ts" not in event.model_fields_set
 
         with exclusive_file_lock(self.path):
             self._establish_creation()
@@ -522,6 +558,19 @@ class Ledger:
                     "no row was discarded",
                     file=sys.stderr,
                 )
+
+            # The value that ORDERS the ledger is fixed HERE, inside the lock
+            # that serializes the write, so file order and `ts` order cannot
+            # disagree. Stamped when the caller BUILT the event it was fixed
+            # before the lock was ever contended, and any two writers whose
+            # build order disagreed with their lock order wrote a descending
+            # pair — the invariant `validate_ledger` witnesses (GHI #812),
+            # broken by its own producer (GHI #1074). Re-serializing one
+            # already-dumped `str` field cannot introduce a new failure, so the
+            # failure-atomicity established above still holds.
+            if stamp_under_lock:
+                payload["ts"] = datetime.now(UTC).isoformat()
+                line = json.dumps(payload, separators=(",", ":")) + "\n"
 
             # Record the pre-append length so a mid-write failure (disk full,
             # I/O error, interrupted write) can be rolled back to a clean record

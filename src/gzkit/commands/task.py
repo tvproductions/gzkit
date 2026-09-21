@@ -18,7 +18,7 @@ from gzkit.events import (
     TaskEscalatedEvent,
     TaskStartedEvent,
 )
-from gzkit.ledger import LEDGER_SCHEMA, Ledger, LedgerEvent
+from gzkit.ledger import LEDGER_SCHEMA, Ledger, ledger_row
 from gzkit.tasks import TaskId, TaskStatus, derive_req_task_id, get_task_registry, next_seq_for_req
 from gzkit.triangle import extract_reqs_from_brief
 
@@ -168,8 +168,7 @@ def _emit_task_event(
     event_model: TaskStartedEvent | TaskCompletedEvent | TaskBlockedEvent | TaskEscalatedEvent,
 ) -> None:
     """Serialize a typed task event and append to the ledger."""
-    data = json.loads(event_model.model_dump_json())
-    ledger.append(LedgerEvent.model_validate(data))
+    ledger.append(ledger_row(event_model))
 
 
 def auto_start_obpi_tasks(

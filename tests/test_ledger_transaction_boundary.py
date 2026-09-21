@@ -28,7 +28,9 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 import unittest
+from datetime import datetime
 from pathlib import Path
 
 from gzkit.ledger import BoundaryRepair, Ledger, LedgerEvent, read_corrected_rows
@@ -571,6 +573,125 @@ class TestLockSidecarIsNotCommittable(unittest.TestCase):
             env=_isolated_git_env(),
         )
         self.assertEqual(result.returncode, 0, f".gzkit/{opened[0]} is not gitignored")
+
+
+def _appended_rows(path: Path) -> list[dict[str, object]]:
+    """Every stored row, read back the way a reader replays them."""
+    return [
+        json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()
+    ]
+
+
+class TestTsIsFixedUnderTheWriteLock(unittest.TestCase):
+    """The value that orders the ledger is stamped by the writer, not the caller.
+
+    ``ts`` was fixed by ``default_factory`` when a caller BUILT an event, while
+    the lock that serializes the write is taken later inside ``append``. Any two
+    writers whose build order disagreed with their lock order therefore wrote a
+    descending pair — the ordering invariant ``validate_ledger`` witnesses
+    (GHI #812), broken by its own producer (GHI #1074).
+    """
+
+    def test_ts_is_stamped_at_write_not_at_construction(self) -> None:
+        """Appending decides ``ts``, so build order cannot invert file order.
+
+        The deterministic cut of the race: build two events, append them in the
+        opposite order. Under a construction-time stamp the file is guaranteed
+        descending; under a write-time stamp it cannot be.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "ledger.jsonl"
+            built_first = LedgerEvent(event="adr_created", id="BUILT-FIRST")
+            time.sleep(0.002)
+            built_second = LedgerEvent(event="adr_created", id="BUILT-SECOND")
+
+            self.assertLess(
+                datetime.fromisoformat(built_first.ts),
+                datetime.fromisoformat(built_second.ts),
+                "precondition: the two builds must differ, or this test proves nothing",
+            )
+
+            ledger = Ledger(path)
+            ledger.append(built_second)
+            ledger.append(built_first)
+
+            written = [
+                r for r in _appended_rows(path) if r["id"] in {"BUILT-FIRST", "BUILT-SECOND"}
+            ]
+
+        self.assertEqual(
+            [r["id"] for r in written],
+            ["BUILT-SECOND", "BUILT-FIRST"],
+            "append order is the file order under test",
+        )
+        stamps = [datetime.fromisoformat(str(r["ts"])) for r in written]
+        self.assertEqual(
+            stamps, sorted(stamps), "the row written second must not precede the first"
+        )
+
+    def test_concurrent_appends_land_non_decreasing_in_ts(self) -> None:
+        """Under real lock contention the stored file is ordered by ``ts``.
+
+        The invariant stated over concurrent writers rather than over one
+        mechanism: whichever order the lock is granted in, the bytes on disk
+        replay non-decreasing. Builds are staggered so no two writers share an
+        instant, which is what made the pre-fix inversion reachable at all;
+        ``test_ts_is_stamped_at_write_not_at_construction`` is the deterministic
+        control for the same mechanism.
+        """
+        writers = 8
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "ledger.jsonl"
+            ready = threading.Barrier(writers)
+            failures: list[str] = []
+
+            def writer(index: int) -> None:
+                # Build order is strictly increasing by index; the race is only
+                # over who reaches the lock first once the barrier releases.
+                time.sleep(index * 0.002)
+                event = LedgerEvent(event="adr_created", id=f"W{index:02d}")
+                try:
+                    ready.wait(10)
+                    Ledger(path).append(event)
+                except (OSError, threading.BrokenBarrierError) as exc:
+                    failures.append(f"W{index:02d}: {exc}")
+
+            threads = [
+                threading.Thread(target=writer, args=(index,), name=f"W{index:02d}")
+                for index in range(writers)
+            ]
+            for thread in threads:
+                thread.start()
+            for thread in threads:
+                thread.join(30)
+
+            rows = _appended_rows(path)
+
+        self.assertEqual(failures, [], "no writer may fail")
+        stored = {str(r["id"]) for r in rows}
+        self.assertTrue(
+            {f"W{index:02d}" for index in range(writers)} <= stored,
+            "every writer's row must survive",
+        )
+        stamps = [datetime.fromisoformat(str(r["ts"])) for r in rows]
+        self.assertEqual(stamps, sorted(stamps), "stored rows must replay non-decreasing in ts")
+
+    def test_an_explicitly_supplied_ts_is_preserved(self) -> None:
+        """A caller that states ``ts`` keeps it; only an unstated one is stamped.
+
+        Re-parsed rows and deliberate fixtures carry a ``ts`` that means
+        something, so the writer may not overwrite it. Without this boundary,
+        stamping at write time would silently rewrite history on any
+        round-trip.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "ledger.jsonl"
+            stated = "2026-01-02T03:04:05+00:00"
+            Ledger(path).append(LedgerEvent(event="adr_created", id="STATED", ts=stated))
+
+            written = [r for r in _appended_rows(path) if r["id"] == "STATED"]
+
+        self.assertEqual([r["ts"] for r in written], [stated])
 
 
 if __name__ == "__main__":  # pragma: no cover - unittest entry point

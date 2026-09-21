@@ -9,7 +9,7 @@ re-exports.
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Any, Literal
 
-from gzkit.ledger import LedgerEvent
+from gzkit.ledger import LedgerEvent, ledger_row
 
 if TYPE_CHECKING:
     from gzkit.event_evidence import EventAnchor
@@ -17,6 +17,23 @@ if TYPE_CHECKING:
 # ---------------------------------------------------------------------------
 # Event factory functions for type safety and documentation
 # ---------------------------------------------------------------------------
+
+
+def _timestamped_id(prefix: str) -> str:
+    """Mint a unique event id from *prefix* and the instant the row is built.
+
+    Twelve constructors hand-rolled this, each reading the clock itself and
+    passing the same value as ``ts`` — the duplication that made GHI #1074 a
+    twelve-site defect rather than a one-line one, because there was no single
+    place where the stamp could move under the write lock.
+
+    The instant here is for UNIQUENESS only. The authoritative ``ts`` is stamped
+    by :meth:`~gzkit.ledger.Ledger.append` inside the lock that serializes the
+    write, so an id's instant and its row's ``ts`` differ by the microseconds
+    between building a row and committing it. Nothing parses an instant back out
+    of an id; readers order rows by ``ts``.
+    """
+    return f"{prefix}-{datetime.now(UTC).isoformat()}"
 
 
 def project_init_event(project_name: str, mode: str) -> LedgerEvent:
@@ -68,7 +85,7 @@ def acceptance_recorded_event(
     typed = AcceptanceRecordedEvent(
         event="acceptance_recorded", id=obpi_id, record_type=record_type, payload=payload
     )
-    return LedgerEvent.model_validate(typed.model_dump())
+    return ledger_row(typed)
 
 
 def obpi_withdrawn_event(obpi_id: str, parent: str, reason: str, attestor: str = "") -> LedgerEvent:
@@ -187,7 +204,7 @@ def ledger_event_corrected_event(
         attestor=attestor,
         reason=reason,
     )
-    return LedgerEvent.model_validate(typed.model_dump())
+    return ledger_row(typed)
 
 
 def security_floor_overridden_event(
@@ -785,11 +802,9 @@ def distribution_baseline_regenerated_event(
     Symmetric to ``gz register-adrs`` for the ADR status index; records manifest
     hash before/after so Layer-2 truth captures every regeneration.
     """
-    timestamp = datetime.now(UTC).isoformat()
     return LedgerEvent(
         event="distribution_baseline_regenerated",
-        id=f"distribution-baseline-regen-{timestamp}",
-        ts=timestamp,
+        id=_timestamped_id("distribution-baseline-regen"),
         extra={
             "surfaces_walked": list(surfaces_walked),
             "file_count": file_count,
@@ -811,11 +826,9 @@ def agent_sync_completed_event(
     operator-initiated, hook-driven, or ``gz tidy --fix`` — and is suppressed in
     snapshot-replay paths (``plan_sync_all`` in ``validate_pkg/sync_parity.py``).
     """
-    timestamp = datetime.now(UTC).isoformat()
     return LedgerEvent(
         event="agent_sync_completed",
-        id=f"agent-sync-{timestamp}",
-        ts=timestamp,
+        id=_timestamped_id("agent-sync"),
         extra={
             "updated_paths": list(updated_paths),
             "canonical_rule_count": canonical_rule_count,
@@ -856,11 +869,12 @@ def composition_rendered_event(
     byte_count: int,
 ) -> LedgerEvent:
     """Create an event recording a successful constitutional invariant composition render."""
+    # `render_ts` carries the instant as DATA, so this one keeps its own read
+    # rather than using `_timestamped_id`; the row's `ts` is still the writer's.
     timestamp = datetime.now(UTC).isoformat()
     return LedgerEvent(
         event="composition_rendered",
         id=f"composition-rendered-{timestamp}",
-        ts=timestamp,
         extra={
             "invariant_count": invariant_count,
             "target": target,
@@ -879,7 +893,6 @@ def composition_drift_detected_event(
     return LedgerEvent(
         event="composition_drift_detected",
         id=f"composition-drift-{timestamp}",
-        ts=timestamp,
         extra={
             "target": target,
             "diff_first_50_lines": diff_first_50_lines,
@@ -902,11 +915,9 @@ def composition_candidate_emitted_event(
     Layer-2 witness that ``gz content compose`` validated and staged a candidate
     rendition. Carries per-tier byte evidence for the compose audit trail.
     """
-    timestamp = datetime.now(UTC).isoformat()
     return LedgerEvent(
         event="composition_candidate_emitted",
-        id=f"composition-candidate-emitted-{timestamp}",
-        ts=timestamp,
+        id=_timestamped_id("composition-candidate-emitted"),
         extra={
             "surface": surface,
             "consumer": consumer,
@@ -931,11 +942,9 @@ def rendition_committed_event(
     durable committed rendition under operator attestation (Gate 5), freezing the
     corpus content-fingerprint the rendition was attested against.
     """
-    timestamp = datetime.now(UTC).isoformat()
     return LedgerEvent(
         event="rendition_committed",
-        id=f"rendition-committed-{timestamp}",
-        ts=timestamp,
+        id=_timestamped_id("rendition-committed"),
         extra={
             "surface": surface,
             "consumer": consumer,
@@ -957,7 +966,6 @@ def rendition_advisor_verdict_event(
     information-retained-per-byte verdict as an ARB receipt. Advisory, never
     gating — emitted on every successful record regardless of the score value.
     """
-    timestamp = datetime.now(UTC).isoformat()
     extra: dict[str, Any] = {
         "surface": surface,
         "receipt_id": receipt_id,
@@ -967,8 +975,7 @@ def rendition_advisor_verdict_event(
         extra["consumer"] = consumer
     return LedgerEvent(
         event="rendition_advisor_verdict",
-        id=f"rendition-advisor-verdict-{timestamp}",
-        ts=timestamp,
+        id=_timestamped_id("rendition-advisor-verdict"),
         extra=extra,
     )
 
@@ -984,11 +991,9 @@ def corpus_entry_appended_event(
     Layer-2 witness for a ``gz content remember`` append to the per-surface corpus
     store. Mirrors ``composition_rendered_event``'s shape.
     """
-    timestamp = datetime.now(UTC).isoformat()
     return LedgerEvent(
         event="corpus_entry_appended",
-        id=f"corpus-entry-appended-{timestamp}",
-        ts=timestamp,
+        id=_timestamped_id("corpus-entry-appended"),
         extra={
             "surface": surface,
             "section": section,
@@ -1058,11 +1063,9 @@ def corpus_entry_retired_event(
             "from one before/after fold and are disjoint by construction."
         )
 
-    timestamp = datetime.now(UTC).isoformat()
     return LedgerEvent(
         event="corpus_entry_retired",
-        id=f"corpus-entry-retired-{timestamp}",
-        ts=timestamp,
+        id=_timestamped_id("corpus-entry-retired"),
         extra={
             "surface": surface,
             "retired_entry_id": retired_entry_id,
@@ -1106,11 +1109,9 @@ def corpus_retirement_reconciled_event(
     which event type answers — and that distinction survives only because the
     two types are separate.
     """
-    timestamp = datetime.now(UTC).isoformat()
     return LedgerEvent(
         event="corpus_retirement_reconciled",
-        id=f"corpus-retirement-reconciled-{timestamp}",
-        ts=timestamp,
+        id=_timestamped_id("corpus-retirement-reconciled"),
         extra={
             "surface": surface,
             "retired_entry_id": retired_entry_id,
@@ -1138,11 +1139,9 @@ def brief_reconciled_event(
     Summary record for one ``gz obpi brief-drift`` run. ``applied`` / ``attestor``
     are set only when ``--apply --attestor`` wrote amendments back to the brief.
     """
-    timestamp = datetime.now(UTC).isoformat()
     return LedgerEvent(
         event="brief_reconciled",
-        id=f"brief-reconciled-{timestamp}",
-        ts=timestamp,
+        id=_timestamped_id("brief-reconciled"),
         extra={
             "brief_id": brief_id,
             "has_drift": has_drift,
@@ -1169,11 +1168,9 @@ def brief_reconcile_drift_detected_event(
     citation_stale: list[str],
 ) -> LedgerEvent:
     """Create a brief_reconcile_drift_detected event with the full delta payload (OBPI-06)."""
-    timestamp = datetime.now(UTC).isoformat()
     return LedgerEvent(
         event="brief_reconcile_drift_detected",
-        id=f"brief-reconcile-drift-{timestamp}",
-        ts=timestamp,
+        id=_timestamped_id("brief-reconcile-drift"),
         extra={
             "brief_id": brief_id,
             "allowlist_missing_in_brief": allowlist_missing_in_brief,

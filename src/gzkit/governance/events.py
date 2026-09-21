@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
 from pathlib import Path
 
 from gzkit.governance.brief_reconcile import ReconcileResult
@@ -137,13 +136,11 @@ def emit_unowned_ratchet_updated(
     unchanged, mirroring the mint-then-embed-then-emit shape
     ``commands/content/unown.py`` uses for its own event.
     """
-    timestamp = datetime.now(UTC).isoformat()
     ledger = Ledger(root / ".gzkit" / "ledger.jsonl")
     ledger.append(
         LedgerEvent(
             event="unowned_ratchet_updated",
             id=event_id,
-            ts=timestamp,
             extra={
                 "surface": surface,
                 "sections_digest": sections_digest,
@@ -177,13 +174,11 @@ def emit_section_ownership_genesis(
     Layer-1 (the declaration) and Layer-2 (the ledger) agree on which event
     proves the genesis floor.
     """
-    timestamp = datetime.now(UTC).isoformat()
     ledger = Ledger(root / ".gzkit" / "ledger.jsonl")
     ledger.append(
         LedgerEvent(
             event="section_ownership_genesis",
             id=event_id,
-            ts=timestamp,
             extra={
                 "surface": surface,
                 "sections_digest": sections_digest,
@@ -228,13 +223,11 @@ def emit_section_ownership_reanchored(
     Layer-1 (the declaration) and Layer-2 (the ledger) agree on which event
     proves the re-anchored floor.
     """
-    timestamp = datetime.now(UTC).isoformat()
     ledger = Ledger(root / ".gzkit" / "ledger.jsonl")
     ledger.append(
         LedgerEvent(
             event="section_ownership_reanchored",
             id=event_id,
-            ts=timestamp,
             extra={
                 "surface": surface,
                 "sections_digest": sections_digest,
