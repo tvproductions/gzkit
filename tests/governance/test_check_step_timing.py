@@ -60,14 +60,20 @@ def _runner(name: str, sleep_s: float = 0.0) -> CheckStepRunner:
 
 
 def _collect(
-    names: list[str], classes: dict[str, str], sleeps: dict[str, float]
+    names: list[str],
+    classes: dict[str, str],
+    sleeps: dict[str, float],
+    overlapping: set[str] | None = None,
 ) -> dict[str, float]:
     """Run *names* through the real runner and return the durations it recorded."""
     steps = [(n, _runner(n, sleeps.get(n, 0.0))) for n in names]
     durations: dict[str, float] = {}
     with (
         mock.patch("gzkit.commands.quality._step_concurrency_classes", return_value=classes),
-        mock.patch("gzkit.commands.quality._steps_overlapping_writers", return_value=set()),
+        mock.patch(
+            "gzkit.commands.quality._steps_overlapping_writers",
+            return_value=overlapping or set(),
+        ),
         mock.patch("gzkit.commands.quality._seam", side_effect=lambda _n, r, _p: r),
     ):
         _run_check_steps(steps, get_project_root(), _Progress(), durations=durations)
@@ -102,6 +108,19 @@ class TestEveryStepIsTimedInGate(unittest.TestCase):
             0.05,
             "the figure must be measured around the real call, not estimated",
         )
+
+    def test_the_overlap_lane_is_timed(self) -> None:
+        """The live path: a reader carrying `overlaps_writers` runs beside the lane.
+
+        `Test` is the only step carrying that flag today (GHI #904), so this
+        branch is what the real gate takes on every run. Mocking the flag away --
+        which every other test here does -- exercises the serial fallback and the
+        gated pool while leaving the production path undriven.
+        """
+        durations = _collect(self._NAMES, self._CLASSES, {"Test": 0.05}, overlapping={"Test"})
+
+        self.assertEqual(sorted(durations), sorted(self._NAMES))
+        self.assertGreaterEqual(durations["Test"], 0.05)
 
     def test_a_run_with_no_writers_still_times_every_step(self) -> None:
         names = ["Lint", "Format"]
