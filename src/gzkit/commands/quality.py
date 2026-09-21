@@ -10,6 +10,7 @@ import json
 import os
 import pathlib
 import subprocess
+import time
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Any
@@ -821,6 +822,7 @@ def _run_check_steps(
     steps: list[tuple[str, CheckStepRunner]],
     project_root: pathlib.Path,
     progress: Any,
+    durations: dict[str, float] | None = None,
 ) -> list[tuple[str, QualityResult]]:
     """Run every step and return results in the declared list order.
 
@@ -858,16 +860,36 @@ def _run_check_steps(
     early = [(n, r) for n, r in concurrent if n in overlapping]
     gated = [(n, r) for n, r in concurrent if n not in overlapping]
     collected: dict[str, QualityResult] = {}
+    sink = durations if durations is not None else {}
+
+    def _run_one(name: str, runner: CheckStepRunner) -> QualityResult:
+        """Run one step, recording its IN-GATE wall time (GHI #1077).
+
+        Timed around the call AS THE GATE RUNS IT, never around the step alone.
+        A standalone figure overstates the available gain by more than half --
+        ``Behave`` measures 29.33s alone and 47-49s inside the gate (GHI #906) --
+        because the reader pool and ``unittest-parallel`` contend for the same
+        cores. The declaration says the same thing in its own protocol note:
+        "Adding step wall-times treats cores as free, and they are not."
+
+        ``finally`` so a raising step is still accounted; an unmeasured step is
+        the gap this closes.
+        """
+        start = time.monotonic()
+        try:
+            return runner(project_root)
+        finally:
+            sink[name] = time.monotonic() - start
 
     def _run_writer_lane() -> list[tuple[str, QualityResult]]:
         """Run every writer in list order. One task, so the order is preserved."""
-        return [(name, runner(project_root)) for name, runner in serial]
+        return [(name, _run_one(name, runner)) for name, runner in serial]
 
     if early:
         workers = min(_MAX_CONCURRENT_STEPS, len(early) + 1, (os.cpu_count() or 4))
         with ThreadPoolExecutor(max_workers=workers) as pool:
             lane = pool.submit(_run_writer_lane)
-            pending = {pool.submit(runner, project_root): name for name, runner in early}
+            pending = {pool.submit(_run_one, name, runner): name for name, runner in early}
             for future in as_completed(pending):
                 name = pending[future]
                 progress.advance(name)
@@ -878,18 +900,56 @@ def _run_check_steps(
     else:
         for name, runner in serial:
             progress.advance(name)
-            collected[name] = _seam(name, runner(project_root), project_root)
+            collected[name] = _seam(name, _run_one(name, runner), project_root)
 
     if gated:
         workers = min(_MAX_CONCURRENT_STEPS, len(gated), (os.cpu_count() or 4))
         with ThreadPoolExecutor(max_workers=workers) as pool:
-            pending = {pool.submit(runner, project_root): name for name, runner in gated}
+            pending = {pool.submit(_run_one, name, runner): name for name, runner in gated}
             for future in as_completed(pending):
                 name = pending[future]
                 progress.advance(name)
                 collected[name] = _seam(name, future.result(), project_root)
 
     return [(name, collected[name]) for name, _ in steps]
+
+
+def _format_elapsed(seconds: float | None) -> str:
+    """Render a step's measured cost, or empty when it was never measured.
+
+    Empty rather than ``0.00s``: an unmeasured step and a free one are different
+    claims, and rendering the first as the second is the presence-check failure
+    ``AGENTS.md`` names, one surface over.
+    """
+    return "" if seconds is None else f"{seconds:.2f}s"
+
+
+def _render_step_results(
+    results: list[tuple[str, QualityResult]],
+    durations: dict[str, float],
+    wall: float,
+) -> None:
+    """Print one line per step with its in-gate cost, then the run's totals.
+
+    Extracted from :func:`check` rather than inlined there (GHI #1077): adding
+    the cost column pushed that function to xenon rank D, and the fix that
+    removes the cause is to stop growing an already-large caller.
+
+    ``wall`` and the sum of ``durations`` are both printed because they answer
+    different questions -- wall is what the operator waited, the sum is the work
+    done, and the gap between them is what the concurrency bought.
+    """
+    for name, result in results:
+        symbol = "[green]✓[/green]" if result.success else "[red]❌[/red]"
+        elapsed = _format_elapsed(durations.get(name))
+        suffix = f" [dim]{elapsed}[/dim]" if elapsed else ""
+        console.print(f"  {symbol} [bold]{name}[/bold]{suffix}")
+    if not durations:
+        return
+    console.print(
+        f"  [dim]{len(durations)} steps, {_format_elapsed(wall)} wall "
+        f"(sum {_format_elapsed(sum(durations.values()))})[/dim]"
+    )
 
 
 def _render_step_failures(results: list[tuple[str, QualityResult]]) -> None:
@@ -1103,8 +1163,11 @@ def check(as_json: bool = False, fast: bool = False, reuse_verified: bool = Fals
 
     steps = _select_check_steps(fast=fast, prepush=reuse_verified)
 
+    durations: dict[str, float] = {}
+    started = time.monotonic()
     with fmt.progress_context(len(steps), "Running quality checks") as progress:
-        results = _run_check_steps(steps, project_root, progress)
+        results = _run_check_steps(steps, project_root, progress, durations=durations)
+    wall = time.monotonic() - started
 
     drift: DriftAdvisoryResult = run_drift_advisory(project_root)
 
@@ -1137,11 +1200,7 @@ def check(as_json: bool = False, fast: bool = False, reuse_verified: bool = Fals
             raise SystemExit(1)
         return
 
-    def _sym(ok: bool) -> str:
-        return "[green]✓[/green]" if ok else "[red]❌[/red]"
-
-    for name, result in results:
-        console.print(f"  {_sym(result.success)} [bold]{name}[/bold]")
+    _render_step_results(results, durations, wall)
 
     _render_step_advisories(results)
 
