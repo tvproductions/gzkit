@@ -75,7 +75,7 @@ The hook roster was read from `.pre-commit-config.yaml` by `yaml.safe_load`, not
 
 `git rev-list --left-right --count origin/main...HEAD` -> `0 0`. `git status --short` -> empty. `gh issue view` -> #1074 CLOSED, #1075 CLOSED, #1069 OPEN. Open queue counted twice: 56 at session open, 57 after filing #1076.
 
-ADR-0.39.0's interview was measured, not assumed: all 19 fields read and each found non-empty with substantive content, and `uv run gz adr status ADR-0.39.0` -> 0/7 OBPIs done, closeout BLOCKED.
+ADR-0.39.0's interview was measured, not assumed: all 19 fields were read and each found non-empty with substantive content. Its brief and closeout state was read from `uv run gz adr status ADR-0.39.0`, not transcribed here; a resuming session re-runs that command rather than trusting any figure carried in prose.
 
 NOT VERIFIED, AND SHOULD NOT BE RELAYED AS IF IT WERE. Whether the insights and corpus stores claim the ledger's ordering invariant: only a grep was run, and AGENTS.md is explicit that a search is not a read. Whether the option A instrumentation's design still fits `check_fingerprint.py`. Whether the witness's claim-phrase set is wide enough for prose not yet written.
 
