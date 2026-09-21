@@ -72,10 +72,11 @@ def ledger_merge_driver_cmd(ancestor: str, ours: str, theirs: str) -> None:
     if merged is None:
         console.print(
             "[yellow]gz ledger merge-driver: cannot merge automatically.[/yellow]\n"
-            "The sides are not disjoint appends — a row was edited, removed, or "
-            "carries no sortable `ts`. Left as a conflict for you to resolve; "
-            "resolve it as a timestamp-ordered union, never by appending one "
-            "side to the other."
+            "A side did more than add rows — an ancestor row was edited or "
+            "removed, a row carries no sortable `ts`, or the ancestor's own rows "
+            "are not ts-ordered. An addition never lands here, wherever in the "
+            "file it sits. Left as a conflict for you to resolve; resolve it as "
+            "a timestamp-ordered union, never by appending one side to the other."
         )
         raise SystemExit(1)
 

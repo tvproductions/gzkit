@@ -6,9 +6,9 @@ category: agent-operations
 lifecycle_state: active
 disable-model-invocation: true
 owner: gzkit-governance
-last_reviewed: 2026-09-19
+last_reviewed: 2026-09-20
 metadata:
-  skill-version: "1.3.1"
+  skill-version: "1.4.0"
 model: haiku
 ---
 
@@ -74,11 +74,13 @@ git reads a driver command from local config, which cannot be committed.
 
 **Never hand-edit `.gzkit/ledger.jsonl` to clear a conflict.** That is the
 action `AGENTS.md` § Behavior Rules prohibits (the ledger is written only through `gz` commands), and the driver exists so you do not
-have to. If the driver exits 1, the sides were not plain appends — a row was
-edited, removed, or carries no sortable `ts` — and it left the conflict for you
-deliberately. Resolve as a timestamp-ordered union; never append one side to
-the other, which is what git's built-in `merge=union` would do and why it is
-not used here (the ledger is strictly ts-ordered — `gz validate --ledger`).
+have to. If the driver exits 1, a side did more than add rows — an ancestor row
+was edited or removed, a row carries no sortable `ts`, or the ancestor was
+already out of ts order — and it left the conflict for you deliberately. An
+addition never lands there, wherever in the file it sits (GHI #1075). Resolve as
+a timestamp-ordered union; never append one side to the other, which is what
+git's built-in `merge=union` would do and why it is not used here (the ledger is
+strictly ts-ordered — `gz validate --ledger`).
 
 ## Constraints
 

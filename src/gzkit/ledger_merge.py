@@ -14,13 +14,21 @@ incident that surfaced this, the local append was *earlier* than every upstream
 append, so a union merge would have written a descending pair — trading a loud
 conflict for a silent invariant violation.
 
-The contract is deliberately narrow. This module reconciles appends and nothing
-else: if the ancestor is not a prefix of both sides, a row was edited or
+The contract is deliberately narrow. This module reconciles additions and
+nothing else: if an ancestor row is missing from either side it was edited or
 removed, which is outside append-only semantics and is returned as a conflict
 for a human to judge. Refusing is always available and never destroys evidence.
+
+Ancestry is tested by membership, never by position. Requiring the ancestor to
+be a *prefix* of both sides also refused a side that merely held an addition
+*between* two ancestor rows — the ordinary output of a ts-ordered merge on
+another clone, and additive by every measure — so every clone whose base
+predated such a merge conflicted unresolvably, with no governed route forward
+(GHI #1075).
 """
 
 import json
+from collections import Counter
 from datetime import datetime
 
 from gzkit.validate_pkg.ledger_check import parse_ledger_ts
@@ -44,8 +52,49 @@ def _row_ts(line: str) -> datetime | None:
     return parse_ledger_ts(entry.get("ts"))
 
 
-def _is_prefix(prefix: list[str], whole: list[str]) -> bool:
-    return len(prefix) <= len(whole) and whole[: len(prefix)] == prefix
+def _additions(ancestor: list[str], side: list[str]) -> list[str] | None:
+    """Return the rows `side` adds to `ancestor`, or None if it dropped one.
+
+    Multiset difference in `side` order, so a row the ancestor holds twice must
+    still appear twice to count as unchanged. None means an ancestor row is
+    missing from `side` — edited or removed — which is outside append-only
+    semantics.
+
+    Membership rather than position is what makes a side append-only: a clone
+    that merged earlier holds a backfilled row *between* ancestor rows, which
+    keeps every ancestor row while destroying the prefix relation (GHI #1075).
+    """
+    outstanding = Counter(ancestor)
+    added: list[str] = []
+    for line in side:
+        if outstanding[line]:
+            outstanding[line] -= 1
+        else:
+            added.append(line)
+    if any(outstanding.values()):
+        return None
+    return added
+
+
+def _placed(ancestor: list[str], additions: list[tuple[datetime, str]]) -> list[str]:
+    """Insert ts-sorted `additions` into `ancestor`, keeping the ancestor's order.
+
+    An ancestor row is emitted ahead of an addition sharing its instant, so the
+    ancestor's own sequence is never reordered — an addition is placed around
+    existing rows, never allowed to shuffle them.
+    """
+    merged: list[str] = []
+    index = 0
+    for instant, line in additions:
+        while index < len(ancestor):
+            ancestor_instant = _row_ts(ancestor[index])
+            if ancestor_instant is None or ancestor_instant > instant:
+                break
+            merged.append(ancestor[index])
+            index += 1
+        merged.append(line)
+    merged.extend(ancestor[index:])
+    return merged
 
 
 def _is_non_decreasing(lines: list[str]) -> bool:
@@ -74,20 +123,25 @@ def merge_append_only(
     """Merge two append-only JSONL sides, or return None to signal a conflict.
 
     Returns the reconciled rows ordered by timestamp, with the ancestor's rows
-    untouched at the front. Every append from both sides is preserved — nothing
-    is deduplicated, because dropping a row from an audit log is a worse outcome
-    than recording one twice.
+    kept in their existing order and each side's additions placed among them by
+    `ts`. Every append from both sides is preserved — nothing is deduplicated,
+    because dropping a row from an audit log is a worse outcome than recording
+    one twice.
 
-    Returns None when the merge falls outside this contract: the ancestor is not
-    a prefix of both sides (history was rewritten), a row carries no parseable
-    `ts` (it cannot be ordered), or the result would not be non-decreasing. A
-    None result leaves git's conflict markers in place for a human.
+    Returns None when the merge falls outside this contract: an ancestor row is
+    missing from either side (edited or removed), a row carries no parseable
+    `ts` (it cannot be ordered), or the result would not be non-decreasing —
+    which now means the ancestor's own rows were already out of order, since an
+    addition is always placed at its instant. A None result leaves git's
+    conflict markers in place for a human.
     """
-    if not _is_prefix(ancestor, ours) or not _is_prefix(ancestor, theirs):
+    ours_added = _additions(ancestor, ours)
+    theirs_added = _additions(ancestor, theirs)
+    if ours_added is None or theirs_added is None:
         return None
 
     keyed: list[tuple[datetime, str]] = []
-    for line in ours[len(ancestor) :] + theirs[len(ancestor) :]:
+    for line in ours_added + theirs_added:
         instant = _row_ts(line)
         if instant is None:
             return None
@@ -98,5 +152,5 @@ def merge_append_only(
     # *next* sync conflict on the merge result itself.
     keyed.sort(key=lambda pair: pair[0])
 
-    merged = ancestor + [line for _, line in keyed]
+    merged = _placed(ancestor, keyed)
     return merged if _is_non_decreasing(merged) else None

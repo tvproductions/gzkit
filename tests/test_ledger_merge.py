@@ -89,18 +89,108 @@ class TestMergeAppendOnly(unittest.TestCase):
         events = [json.loads(line)["event"] for line in merged]
         self.assertEqual(events, ["project_init", "adr_created", "obpi_created"])
 
+    def test_non_tail_insertion_on_one_side_merges(self) -> None:
+        """An ancestor row held mid-file by one side is an addition, not a rewrite.
+
+        A clone that merged earlier holds a backfilled row *between* ancestor
+        rows, so the ancestor stops being a prefix of that side while every
+        ancestor row is still present. Reading that as rewritten history refused
+        a merge whose two sides had only added rows (GHI #1075).
+        """
+        early = _row("2026-02-14T00:00:00+00:00")
+        late = _row("2026-02-14T00:00:04+00:00")
+        ancestor = [early, late]
+        ours = [early, _row("2026-02-14T00:00:02+00:00", event="adr_created"), late]
+        theirs = ancestor + [_row("2026-02-14T00:00:06+00:00", event="obpi_created")]
+
+        merged = merge_append_only(ancestor, ours, theirs)
+
+        assert merged is not None
+        self.assertEqual(
+            [json.loads(line)["ts"] for line in merged],
+            [
+                "2026-02-14T00:00:00+00:00",
+                "2026-02-14T00:00:02+00:00",
+                "2026-02-14T00:00:04+00:00",
+                "2026-02-14T00:00:06+00:00",
+            ],
+        )
+
+    def test_addition_earlier_than_the_ancestor_tail_is_placed_in_order(self) -> None:
+        """A row stamped behind the ancestor's last row is placed, not refused.
+
+        Clock skew across writers puts an append behind rows already committed
+        (#1074), and a tail-only merge could only ever put it last — which the
+        ordering witness then rejects, so the merge refused instead. Placing it
+        at its instant is the reconciliation the validator accepts.
+        """
+        ancestor = [_row("2026-02-14T00:00:00+00:00"), _row("2026-02-14T00:00:08+00:00")]
+        ours = ancestor + [_row("2026-02-14T00:00:03+00:00", event="adr_created")]
+
+        merged = merge_append_only(ancestor, ours, ancestor)
+
+        assert merged is not None
+        self.assertEqual(
+            [json.loads(line)["ts"] for line in merged],
+            [
+                "2026-02-14T00:00:00+00:00",
+                "2026-02-14T00:00:03+00:00",
+                "2026-02-14T00:00:08+00:00",
+            ],
+        )
+
+    def test_ancestor_rows_keep_their_order_and_identity(self) -> None:
+        """Ancestor rows survive a merge unreordered and unduplicated.
+
+        Placing additions around existing rows is the whole mechanism; a merge
+        that shuffled or copied a committed row would be rewriting history to
+        reconcile an addition.
+        """
+        ancestor = [_row(f"2026-02-14T00:00:0{i}+00:00", event=f"e{i}") for i in range(4)]
+        ours = ancestor[:2] + [_row("2026-02-14T00:00:01+00:00", event="inserted")] + ancestor[2:]
+        theirs = ancestor + [_row("2026-02-14T00:00:07+00:00", event="appended")]
+
+        merged = merge_append_only(ancestor, ours, theirs)
+
+        assert merged is not None
+        self.assertEqual([line for line in merged if line in ancestor], ancestor)
+
     def test_rewritten_history_refuses_to_merge(self) -> None:
         """A non-append-only change is a conflict, not something to guess at.
 
-        If the ancestor is not a prefix of both sides, a row was edited or
-        removed. That is outside this driver's contract, and silently
-        reconciling it would destroy the evidence a human needs to judge it.
+        An ancestor row replaced by a different one is missing from that side,
+        so it was edited or removed. That is outside this driver's contract, and
+        silently reconciling it would destroy the evidence a human needs.
         """
         ancestor = [_row("2026-02-14T00:00:00+00:00"), _row("2026-02-14T00:00:01+00:00")]
         ours = [_row("2026-02-14T00:00:00+00:00"), _row("2026-02-14T00:00:99+00:00")]
         theirs = ancestor + [_row("2026-02-14T00:00:02+00:00")]
 
         self.assertIsNone(merge_append_only(ancestor, ours, theirs))
+
+    def test_removed_ancestor_row_refuses_to_merge(self) -> None:
+        """A side that dropped an ancestor row is a rewrite, not an addition.
+
+        Membership is the whole ancestry test now, so the missing row is the
+        entire signal — no position check remains that would also catch it.
+        """
+        ancestor = [_row("2026-02-14T00:00:00+00:00"), _row("2026-02-14T00:00:01+00:00")]
+        ours = [_row("2026-02-14T00:00:00+00:00")]
+        theirs = ancestor + [_row("2026-02-14T00:00:02+00:00")]
+
+        self.assertIsNone(merge_append_only(ancestor, ours, theirs))
+
+    def test_unordered_ancestor_refuses_to_merge(self) -> None:
+        """An ancestor already out of ts order is not this driver's to repair.
+
+        No placement of additions makes a descending ancestor non-decreasing, and
+        silently reordering committed rows would hide the violation rather than
+        surface it.
+        """
+        ancestor = [_row("2026-02-14T00:00:09+00:00"), _row("2026-02-14T00:00:02+00:00")]
+        ours = ancestor + [_row("2026-02-14T00:00:11+00:00")]
+
+        self.assertIsNone(merge_append_only(ancestor, ours, ancestor))
 
     def test_unparseable_timestamp_refuses_to_merge(self) -> None:
         """A row that cannot be ordered refuses the merge rather than guessing.

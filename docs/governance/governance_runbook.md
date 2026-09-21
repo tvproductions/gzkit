@@ -998,10 +998,11 @@ of what is currently in force.
 
 Registration is per-clone (git reads a driver command from local config, which
 cannot be committed) and idempotent, so it self-heals on any clone that
-predates it. When the driver exits 1 the sides were not plain appends — a row
-was edited, removed, or carries no sortable `ts` — and the conflict is left for
-you deliberately. Resolve it as a timestamp-ordered union; never append one
-side to the other.
+predates it. When the driver exits 1 a side did more than add rows — an ancestor
+row was edited or removed, a row carries no sortable `ts`, or the ancestor was
+already out of ts order — and the conflict is left for you deliberately. An
+addition never lands there, wherever in the file it sits (GHI #1075). Resolve it
+as a timestamp-ordered union; never append one side to the other.
 
 Rules:
 

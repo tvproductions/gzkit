@@ -1199,9 +1199,9 @@ def _register_tooling_parsers(commands: argparse._SubParsersAction) -> None:
         "merge-driver",
         help="Reconcile a conflicted append-only JSONL file (invoked by git)",
         description=(
-            "Git merge driver for append-only JSONL. Merges disjoint appends as a "
-            "timestamp-ordered union and exits 1 when the sides are not "
-            "append-only, leaving the conflict for a human. Registered via "
+            "Git merge driver for append-only JSONL. Merges both sides' "
+            "additions as a timestamp-ordered union and exits 1 when a side is "
+            "not append-only, leaving the conflict for a human. Registered via "
             "`.gitattributes` plus local git config — you do not normally run "
             "this by hand."
         ),

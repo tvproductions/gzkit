@@ -312,7 +312,7 @@ uv run gz git-sync --apply --lint --test
 > disjoint tail additions. `gz git-sync --apply` registers
 > [`gz ledger merge-driver`](manpages/ledger-merge-driver.md), which reconciles
 > them as a timestamp-ordered union — you should not be hand-editing the
-> ledger. If the driver exits 1, the sides were not plain appends; resolve as a
+> ledger. If the driver exits 1, a side did more than add rows; resolve as a
 > timestamp-ordered union, never by appending one side to the other.
 
 > **Undoing an erroneous ledger row.** The ledger is append-only, so a row

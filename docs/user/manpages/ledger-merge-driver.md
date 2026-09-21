@@ -35,18 +35,21 @@ loud conflict for a silent invariant violation.
 
 ## PASS/FAIL Contract
 
-Exits 0 having written the merged rows when both sides are disjoint appends on
-a shared ancestor.
+Exits 0 having written the merged rows when both sides only add rows to a shared
+ancestor — wherever in the file those additions sit. A side that holds an
+addition *between* two ancestor rows, which is what a ts-ordered merge on another
+clone produces, is still only adding (GHI #1075).
 
 Exits 1, leaving git's conflict in place for a human, when the merge falls
 outside append-only semantics:
 
-- the ancestor is not a prefix of both sides (a row was edited or removed)
-- an appended row carries no parseable `ts`, so it cannot be ordered
-- the result would not be non-decreasing
+- an ancestor row is missing from either side (it was edited or removed)
+- an added row carries no parseable `ts`, so it cannot be ordered
+- the result would not be non-decreasing, which now means the ancestor's own
+  rows were already out of order
 
-Refusing never destroys evidence, so it is the safe direction whenever the
-inputs are not plainly appends.
+Refusing never destroys evidence, so it is the safe direction whenever a side did
+more than add rows.
 
 ---
 
