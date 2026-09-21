@@ -345,6 +345,23 @@ class TestAdrCitationsResolveFromRecordedCloseout(unittest.TestCase):
 
         self.assertEqual(adr_ledger_state(adr, self.root), ReferenceState.SETTLED)
 
+    def test_a_partially_attested_adr_is_settled(self) -> None:
+        """``partial`` derives ``Completed`` too, so it settles by the same rule.
+
+        Found by reading the cause->test table for empty right cells rather than
+        by review of the diff: ``derive_adr_semantics`` maps
+        ``{"completed", "partial"}`` to one lifecycle, and only the first member
+        had a test. The arm defers to that derivation instead of re-deriving it,
+        and this pins that deference.
+        """
+        adr = "ADR-0.2.1-example"
+        self._write(
+            self._created(adr, "2026-01-01T00:00:00+00:00"),
+            self._attested(adr, "2026-01-02T00:00:00+00:00", "partial"),
+        )
+
+        self.assertEqual(adr_ledger_state(adr, self.root), ReferenceState.SETTLED)
+
     def test_an_abandoned_adr_is_settled(self) -> None:
         """``dropped`` attestation reads Abandoned, and abandoned work is not advised.
 
