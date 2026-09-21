@@ -177,6 +177,48 @@ class TestObpiCitationsResolveFromTheLedger(unittest.TestCase):
 
         self.assertEqual(obpi_ledger_state(obpi, self.root), ReferenceState.LIVE)
 
+    def test_a_plain_completed_obpi_is_settled(self) -> None:
+        """``completed`` settles a citation exactly as ``attested_completed`` does.
+
+        Both are members of ``_SETTLED_COMPLETIONS`` and both set
+        ``ledger_completed``; a predicate reaching only the attested form would
+        report 36 completed OBPIs in this repository as still live.
+        """
+        obpi = "OBPI-0.1.0-09-example"
+        receipt = self._completed(obpi, "2026-01-02T00:00:00+00:00")
+        receipt["obpi_completion"] = "completed"
+        self._write(self._created(obpi, "2026-01-01T00:00:00+00:00"), receipt)
+
+        self.assertEqual(obpi_ledger_state(obpi, self.root), ReferenceState.SETTLED)
+
+    def test_a_repudiated_completion_is_live_again(self) -> None:
+        """Repudiation reverses a completion while the work intent stands.
+
+        ADR-0.0.71: a repudiated OBPI is re-completable by genuine
+        re-attestation, so the citation is LIVE. The check must sit ahead of the
+        completion check, because ``_apply_obpi_completion_repudiated_metadata``
+        clears ``ledger_completed`` but leaves ``obpi_completion`` in place — so
+        a completion-first predicate would read the stale receipt and report
+        settled work that was explicitly un-completed.
+        """
+        obpi = "OBPI-0.1.0-10-example"
+        self._write(
+            self._created(obpi, "2026-01-01T00:00:00+00:00"),
+            self._completed(obpi, "2026-01-02T00:00:00+00:00"),
+            {
+                "schema": "gzkit.ledger.v1",
+                "event": "obpi_completion_repudiated",
+                "id": obpi,
+                "ts": "2026-01-03T00:00:00+00:00",
+                "parent": "ADR-0.1.0-example",
+                "cause": "model-induced-fabrication",
+                "attestor": "g0",
+                "reason": "evidence was invalid",
+            },
+        )
+
+        self.assertEqual(obpi_ledger_state(obpi, self.root), ReferenceState.LIVE)
+
     def test_a_withdrawn_obpi_is_settled(self) -> None:
         obpi = "OBPI-0.1.0-03-example"
         self._write(
