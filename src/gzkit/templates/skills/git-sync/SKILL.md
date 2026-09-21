@@ -1,7 +1,7 @@
 ---
 name: git-sync
 persona: main-session
-description: Run the guarded repository sync ritual; pre-commit hooks enforce lint/test automatically.
+description: Run the guarded repository sync ritual; the hooks your pre-commit config declares enforce the quality gates.
 category: agent-operations
 lifecycle_state: active
 disable-model-invocation: true
@@ -43,10 +43,14 @@ Use the `gz git-sync` command flow (dry-run first, then apply as requested).
    pre-commit config drift):
    `uv run gz git-sync --apply --lint --test`
 
-> The pre-commit hook runs ruff, ty, unittest, and xenon on every commit.
-> `--lint` and `--test` re-run those gates at the `gz` level — redundant
-> for the normal ritual and multi-minute pain. Defaults were flipped to
-> `False` to match this reality (airlineops parity evolution).
+> Read your own `.pre-commit-config.yaml` for which gates run at commit
+> and which at push — gzkit ships no pre-commit config, so this skill
+> cannot state your roster. gzkit's own convention is cheap gates at
+> commit (ruff, ty, xenon) with the unit suite reached only at push,
+> through a hook that runs `gz check`. `--lint` and `--test` re-run those
+> gates at the `gz` level — redundant when the hooks already cover them,
+> and multi-minute pain. Defaults are `False` to match that (airlineops
+> parity evolution).
 
 ## Examples
 
@@ -85,10 +89,10 @@ These thoughts mean STOP — you are about to push without the guards:
 - Dry-run run without follow-through apply
 - Sync run on a tree with uncommitted control-surface drift
 
-> The pre-commit hook (ruff + ty + unittest + xenon) is the mandatory gate;
-> explicit `--lint --test` flags are redundant for the normal ritual (see
-> Steps § 3). Omitting them is not a red flag — skipping the hook via
-> `--no-verify` is.
+> The hooks your `.pre-commit-config.yaml` declares are the mandatory
+> gate; explicit `--lint --test` flags are redundant when those hooks
+> already cover the ritual (see Steps § 3). Omitting them is not a red
+> flag — skipping the hooks via `--no-verify` is.
 
 ## Related Skills
 

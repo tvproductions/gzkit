@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-09-19
 metadata:
-  skill-version: "6.59.1"
+  skill-version: "6.59.2"
 model: sonnet
 ---
 
@@ -590,9 +590,9 @@ runtime resolves this OBPI's `@REQ-...` behave tags via
 tags. When the OBPI has no @REQ-tagged scenarios, behave is omitted
 from Stage 3 entirely — the full `features/` sweep is deferred to ADR
 closeout (Stage 5 of the parent ADR), where cross-OBPI interactions
-are caught. Pre-commit hooks (ruff + ty + unittest) still run on every
-commit, so the full unittest suite isn't bypassed — it's just not
-re-run synchronously at every OBPI increment. Heavy-lane BDD runs via
+are caught. Commit hooks don't run the suite (`unittest` is `stages: [manual]`);
+the pre-push `gz check` does, so it isn't bypassed — just not re-run
+synchronously at every OBPI increment. Heavy-lane BDD runs via
 `gz test --bdd` at ADR closeout.
 
 If any baseline check fails, attempt fix and re-verify once. If still failing, release lock via `uv run gz obpi lock release {OBPI-SLUG} --force`, create handoff, and stop.

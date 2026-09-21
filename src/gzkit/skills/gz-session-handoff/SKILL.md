@@ -5,7 +5,7 @@ description: Create and resume session handoff documents for agent context prese
 category: agent-operations
 compatibility: Requires GovZero v6 framework; works with any agent operating under GovZero governance
 metadata:
-  skill-version: "7.6.0"
+  skill-version: "7.6.1"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), session continuity"
@@ -16,7 +16,7 @@ last_reviewed: 2026-09-18
 model: sonnet
 ---
 
-# gz-session-handoff (v7.6.0)
+# gz-session-handoff (v7.6.1)
 
 ## Purpose
 
@@ -98,7 +98,7 @@ than evidence of a closed issue.
 - **Reads (CREATE):** GHI state via `gh issue view` for every issue cited in a **prospective** section, to annotate settled citations at authoring time (§ Settled-citation annotation). Unreachable `gh` resolves `unknown` and annotates nothing.
 - **Writes:** Handoff markdown files under `.gzkit/handoffs/` (canonical storage per ADR-0.0.41 / OBPI-0.0.41-03); the settled-ruling store `.gzkit/handoffs/rulings.jsonl`; and, through `gz handoff decide`, one Layer-2 `handoff_resume_decided` event
 - **Validates:** No placeholders, no secrets, all sections present **and populated**, referenced files exist
-- **Blocks (RESUME): NOTHING. There is no gate.** A handoff ADVISES, and that is the whole mechanism; § Operator Authorization carries the retirement ruling. Every mutating tool call — `Write`, `Edit`, `NotebookEdit`, `gz obpi complete`, `gz attest`, commits — runs on an unruled handoff. **Gate 5 human attestation, the pre-commit hook (ruff/ty/unittest/xenon) and the pre-push `gz check` are untouched.**
+- **Blocks (RESUME): NOTHING. There is no gate.** A handoff ADVISES, and that is the whole mechanism; § Operator Authorization carries the retirement ruling. Every mutating tool call — `Write`, `Edit`, `NotebookEdit`, `gz obpi complete`, `gz attest`, commits — runs on an unruled handoff. **Gate 5 human attestation, the commit-time hooks (ruff/ty/xenon and the guards) and the pre-push `gz check`, which is where the unit suite runs, are untouched.**
 - **Still records:** `gz handoff decide` books the operator's verbatim ruling to Layer 2 (`handoff_resume_decided`, `proceed` | `pause` | `hold` | `revert`). That record is provenance an operator and an auditor read; nothing gates on its absence. The booking-coupling control (GHI #795/#797) still fails `gz check` if a ruling is recorded against a document other than the one advised.
 - **Does NOT write:** ADR status, OBPI brief status
 
