@@ -624,6 +624,27 @@ def _compose_settled(
     return _dedup_rulings([*inherited, *_bullet_items(authored)])
 
 
+#: Heading of the section whose `[operator-ruled]` entries are promoted into the
+#: rulings store. Named once so the count and the booking cannot read different
+#: sections.
+DECISIONS_SECTION = "Decisions Made"
+
+
+def _own_settled_rulings(sections: dict[str, str]) -> list[str]:
+    """Return the ``[operator-ruled]`` decisions this document itself books.
+
+    Read from the SECTION rather than the rendered document, because the count
+    these rulings belong in is written INTO that document -- parsing the render
+    to compute a number the render must carry is a cycle. The booking below uses
+    this same list, so the stated count and the stored corpus cannot disagree.
+    """
+    body = sections.get(DECISIONS_SECTION, "")
+    if not body.strip():
+        return []
+    fragment = f"## {DECISIONS_SECTION}\n\n{body}\n"
+    return [decision.text for decision in parse_decisions(fragment) if decision.is_settled]
+
+
 def _settled_pointer(count: int) -> str:
     """Render the section that REPLACED the embedded corpus (GHI #838).
 
@@ -940,13 +961,18 @@ def create_handoff(
     filename = f"{_filesystem_safe_timestamp(ts)}-{slug}.md"
     link = continues_from if continues_from is not None else _newest_predecessor(adr_id, base_path)
     composed_settled = _compose_settled(sections.get(SETTLED_SECTION, ""), link, base_path)
+    own_rulings = _own_settled_rulings(sections)
     if composed_settled:
         # Count without booking (GHI #859). The document must state the corpus
         # size, but a create the gate then REFUSES writes no document at all —
         # booking here left rulings whose `source` names a file that never
         # existed, permanently, in an append-only store. `prospective_corpus`
         # answers the count purely; `record_rulings` runs below, after the gate.
-        corpus = prospective_corpus(composed_settled, base_path=base_path)
+        # The document's OWN rulings are booked on this same write (GHI #1000),
+        # so the count must include them or the pointer understates the store by
+        # exactly the number of rulings this document contributes -- observed
+        # 2026-09-21 as "1015" against a store holding 1018.
+        corpus = prospective_corpus([*composed_settled, *own_rulings], base_path=base_path)
         sections = {**sections, SETTLED_SECTION: _settled_pointer(len(corpus))}
     sections = _annotate_settled_citations(sections, reference_checker)
     frontmatter: dict = {
@@ -986,7 +1012,6 @@ def create_handoff(
     # them left the newest rulings unsearchable, and stranded them whenever no
     # linked successor was ever written. `composed_settled` stays the inherited
     # set, so an unlinked handoff still inherits nothing (GHI #709).
-    own_rulings = [decision.text for decision in parse_decisions(document) if decision.is_settled]
     if composed_settled or own_rulings:
         record_rulings([*composed_settled, *own_rulings], base_path=base_path, source=filename)
 
