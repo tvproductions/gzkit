@@ -85,6 +85,53 @@ class SampleTest(unittest.TestCase):
 """
 
 
+#: The same hazard through the OTHER write shape the detector knows. `write_text`
+#: is not the only text-mode write; `open(..., "w")` translates identically.
+_HAZARD_OPEN = """
+import unittest
+from pathlib import Path
+
+
+class SampleTest(unittest.TestCase):
+    def test_retry_preserves_bytes(self):
+        source = Path("src.md")
+        with open(source, "w", encoding="utf-8") as handle:
+            handle.write("# Second\\n")
+        self.assertEqual(source.read_bytes(), b"# Second\\n")
+"""
+
+#: `assertNotEqual` carries the same hazard: the literal still holds LF, so a
+#: translated fixture changes the assertion's outcome on Windows alone.
+_HAZARD_NOT_EQUAL = """
+import unittest
+from pathlib import Path
+
+
+class SampleTest(unittest.TestCase):
+    def test_fixture_differs_from_expected(self):
+        source = Path("src.md")
+        source.write_text("# Second\\n", encoding="utf-8")
+        self.assertNotEqual(source.read_bytes(), b"# Third\\n")
+"""
+
+#: Control 4 — two `read_bytes()` results compared with each other. Both sides
+#: translate together, so the assertion holds on every platform and an unpinned
+#: write beside it is not this defect.
+_TWO_READ_BYTES = """
+import unittest
+from pathlib import Path
+
+
+class SampleTest(unittest.TestCase):
+    def test_copy_matches_source(self):
+        source = Path("src.md")
+        source.write_text("# Second\\n", encoding="utf-8")
+        copy = Path("copy.md")
+        copy.write_bytes(source.read_bytes())
+        self.assertEqual(copy.read_bytes(), source.read_bytes())
+"""
+
+
 def _findings(source: str) -> list[str]:
     """Return the arm's findings over a throwaway tree holding one test module."""
     with TemporaryDirectory() as name:
@@ -127,6 +174,27 @@ class TestByteExactFixturesAreDetectedStatically(unittest.TestCase):
             [],
             "the predicate is per-test, not per-write; flagging every fixture write "
             "would report 2133 instances and mean nothing",
+        )
+
+    def test_the_open_write_shape_also_fails_closed(self) -> None:
+        findings = _findings(_HAZARD_OPEN)
+
+        self.assertEqual(
+            len(findings),
+            1,
+            "`open(..., 'w')` translates exactly as `write_text` does; a predicate "
+            "that reached only one of them would leave half the family uncovered",
+        )
+        self.assertIn("open(mode='w')", findings[0])
+
+    def test_assert_not_equal_carries_the_same_hazard(self) -> None:
+        self.assertEqual(len(_findings(_HAZARD_NOT_EQUAL)), 1)
+
+    def test_two_read_bytes_compared_together_is_green(self) -> None:
+        self.assertEqual(
+            _findings(_TWO_READ_BYTES),
+            [],
+            "both sides translate together, so the assertion holds everywhere",
         )
 
 
