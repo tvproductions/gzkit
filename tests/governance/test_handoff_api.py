@@ -1513,5 +1513,83 @@ class TestSectionNumbersAreNotIssueCitations(unittest.TestCase):
         self.assertNotIn(f"Always #13 {SETTLED_MARKER}", marked)
 
 
+class TestForeignRepositoryCitations(unittest.TestCase):
+    """A ``#N`` qualified by a repository names an issue THIS repo cannot resolve.
+
+    The bare and ``GHI #N`` forms both mean "an issue in this repository". A
+    handoff that spans clones also writes the qualified form — ``gz-skills#1``,
+    ``owner/repo#4`` — which GitHub itself reads as another repository's issue.
+    The extractor read only the number, so the resolver answered from the LOCAL
+    repository and the annotator stamped its verdict onto a foreign citation.
+
+    Observed instance (2026-09-21): the `20260920T202207Z` handoff advised
+    "Rule on gz-skills#1"; that issue is OPEN in `tvproductions/gz-skills`,
+    while `tvproductions/gzkit` issue 1 is a closed Gate-5 attestation from the
+    project's first week. The step was written "gz-skills#1 [settled]" — a
+    settled mark on live work, which is the inverse of the decay the annotation
+    exists to catch.
+    """
+
+    def _references(self, step: str) -> tuple[StepReference, ...]:
+        with tempfile.TemporaryDirectory() as made:
+            base = Path(made)
+            handoff_dir = base / ".gzkit" / "handoffs"
+            handoff_dir.mkdir(parents=True, exist_ok=True)
+            body = (
+                "---\nmode: CREATE\nadr_id: ADR-0.0.65\nbranch: main\n"
+                "timestamp: 2026-07-18T10:00:00Z\nagent: test-agent\n---\n\n"
+                f"## Immediate Next Steps\n\n1. {step}\n"
+            )
+            (handoff_dir / "h.md").write_text(body, encoding="utf-8", newline="\n")
+            result = resume_handoff(
+                adr_id="ADR-0.0.65",
+                base_path=base,
+                now="2026-07-18T11:00:00Z",
+                reference_checker=lambda _reference: ReferenceState.SETTLED,
+            )
+        return result.steps[0].references
+
+    def test_qualified_citation_carries_the_repository_it_names(self) -> None:
+        """The owning repository reaches the port; the number alone never did."""
+        (reference,) = self._references("Rule on gz-skills#1 before the release.")
+
+        self.assertEqual(reference.kind, ReferenceKind.GHI)
+        self.assertEqual(reference.identifier, "1")
+        self.assertEqual(
+            reference.repo,
+            "gz-skills",
+            "the qualifier was dropped, so a resolver cannot tell whose issue this is",
+        )
+
+    def test_owner_slash_repo_form_is_read_whole(self) -> None:
+        (reference,) = self._references("Rule on tvproductions/gz-skills#4 next.")
+
+        self.assertEqual(reference.repo, "tvproductions/gz-skills")
+        self.assertEqual(reference.identifier, "4")
+
+    def test_local_forms_claim_no_repository(self) -> None:
+        """``#N`` and ``GHI #N`` still mean this repository, and say so by omission."""
+        for step in ("Rule on #693 today.", "Rule on GHI #693 today."):
+            with self.subTest(step=step):
+                (reference,) = self._references(step)
+                self.assertEqual(reference.identifier, "693")
+                self.assertIsNone(reference.repo)
+
+    def test_marking_skips_a_foreign_citation_but_marks_the_local_one(self) -> None:
+        """One body, both forms, same number: the foreign mention must stay bare.
+
+        A local citation of the same number elsewhere in the body still reaches
+        the marker, so an extraction-side guard alone cannot cover this — the
+        same shape as the rule-number case in GHI #827.
+        """
+        body = "Rule on gz-skills#1 and also close #1 here."
+
+        marked = mark_settled(body, "1")
+
+        self.assertIn(f"close #1 {SETTLED_MARKER}", marked)
+        self.assertIn("gz-skills#1 and", marked)
+        self.assertNotIn(f"gz-skills#1 {SETTLED_MARKER}", marked)
+
+
 if __name__ == "__main__":
     unittest.main()

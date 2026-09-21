@@ -52,6 +52,12 @@ def live_reference_checker(project_root: Path) -> ReferenceChecker:
     ``docs/governance/state-doctrine.md`` forbids reading one as truth — an
     honest UNKNOWN beats a confident answer sourced from a non-authority.
 
+    A citation that names ANOTHER repository resolves ``UNKNOWN`` for the same
+    reason, without a call: this adapter is built for one ``project_root`` and
+    ``gh issue view`` reads whatever repository it is run in, so resolving
+    ``gz-skills#1`` here would answer with the LOCAL issue 1. That is not a
+    missed check but a wrong one, and it reads exactly like a right one.
+
     Results are memoized per reference, and a missing/failing ``gh`` latches the
     adapter off so an offline run costs one failed call, not one per citation.
     Build one checker per command invocation so the memo spans every citation
@@ -62,7 +68,7 @@ def live_reference_checker(project_root: Path) -> ReferenceChecker:
 
     def check(reference: StepReference) -> ReferenceState:
         nonlocal reachable
-        if reference.kind is not ReferenceKind.GHI or not reachable:
+        if reference.kind is not ReferenceKind.GHI or reference.repo is not None or not reachable:
             return ReferenceState.UNKNOWN
         if reference.identifier not in cache:
             state = gh_issue_state(reference.identifier, project_root)

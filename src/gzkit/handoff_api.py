@@ -105,12 +105,20 @@ class ReferenceState(StrEnum):
 
 
 class StepReference(BaseModel):
-    """A governance identifier cited by an authored next step."""
+    """A governance identifier cited by an authored next step.
+
+    ``repo`` carries the repository a citation names when it qualifies one
+    (``gz-skills#1``, ``owner/repo#4``); ``None`` means this repository, which
+    is what the bare and ``GHI #N`` forms mean. A resolver that can only read
+    one repository needs this to know when a number is not its own — without
+    it, the LOCAL issue of that number answers for a foreign one.
+    """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     kind: ReferenceKind
     identifier: str
+    repo: str | None = None
     state: ReferenceState = ReferenceState.UNKNOWN
 
 
@@ -686,6 +694,12 @@ _SECTION_LEAD_INS: tuple[str, ...] = (
 _SECTION_NUMBER_LEAD = r"\b(?:" + "|".join(_SECTION_LEAD_INS) + r")\s+"
 _SECTION_NUMBER = _SECTION_NUMBER_LEAD + r"#\d+\b"
 
+#: A token glued to ``#`` qualifies the citation with the repository that owns
+#: it — GitHub's own ``repo#N`` / ``owner/repo#N`` shorthand, and what a handoff
+#: spanning clones writes. Whitespace is what separates this from ``GHI #696``,
+#: so the charset deliberately excludes it.
+_FOREIGN_REPO = r"(?P<repo>[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)?)"
+
 _REFERENCE_PATTERNS: tuple[tuple[ReferenceKind, re.Pattern[str]], ...] = (
     # OBPI before ADR: an OBPI id embeds its parent's semver, so matching ADR
     # first would strand the OBPI suffix as a second, bogus reference.
@@ -697,7 +711,15 @@ _REFERENCE_PATTERNS: tuple[tuple[ReferenceKind, re.Pattern[str]], ...] = (
     # The section-number branch comes FIRST and captures nothing: it exists to
     # CONSUME ``Always #13`` so the issue branch cannot re-read the number out of
     # it. A match with no ``num`` group is discarded by `_extract_references`.
-    (ReferenceKind.GHI, re.compile(_SECTION_NUMBER + r"|(?:\bGHI\s*)?#(?P<num>\d+)\b")),
+    #
+    # The repository qualifier is OPTIONAL and captured, never consumed: a
+    # foreign citation is still a citation, and dropping it would trade a wrong
+    # answer for no answer. ``GHI `` is matched before it, so the prefix form
+    # cannot be read as a repository named "GHI".
+    (
+        ReferenceKind.GHI,
+        re.compile(_SECTION_NUMBER + r"|(?:\bGHI\s*)?" + _FOREIGN_REPO + r"?#(?P<num>\d+)\b"),
+    ),
 )
 
 
@@ -705,24 +727,28 @@ def _extract_references(text: str) -> tuple[StepReference, ...]:
     """Return every governance identifier cited by one authored next step.
 
     Pure and stdlib-only — no adapter, no network. Deduplicated on
-    (kind, identifier) with first-seen order preserved so a step naming the
-    same GHI twice yields one reference.
+    (kind, identifier, repo) with first-seen order preserved so a step naming
+    the same GHI twice yields one reference. The repository is part of the key:
+    ``#1`` and ``gz-skills#1`` are different issues, and folding them would put
+    one repository's verdict on the other's citation.
     """
-    seen: set[tuple[ReferenceKind, str]] = set()
+    seen: set[tuple[ReferenceKind, str, str | None]] = set()
     found: list[StepReference] = []
     remaining = text
     for kind, pattern in _REFERENCE_PATTERNS:
         for match in pattern.finditer(remaining):
-            identifier = match.group("num") if kind is ReferenceKind.GHI else match.group(0)
+            is_ghi = kind is ReferenceKind.GHI
+            identifier = match.group("num") if is_ghi else match.group(0)
             if identifier is None:
                 # The section-number branch matched: a rule or section number, not
                 # an issue citation. Consumed above so nothing re-reads it (#827).
                 continue
-            key = (kind, identifier)
+            repo = match.group("repo") if is_ghi else None
+            key = (kind, identifier, repo)
             if key in seen:
                 continue
             seen.add(key)
-            found.append(StepReference(kind=kind, identifier=identifier))
+            found.append(StepReference(kind=kind, identifier=identifier, repo=repo))
         # Consume what this kind claimed so a later, looser pattern cannot
         # re-read the same span (``ADR-0.0.65`` inside ``OBPI-0.0.65-02``).
         remaining = pattern.sub(" ", remaining)
@@ -743,15 +769,16 @@ def _mark_settled(body: str, identifier: str) -> str:
     ``#57`` cannot claim the ``#573`` it is a prefix of.
     """
     pattern = re.compile(
-        r"(?P<lead>" + _SECTION_NUMBER_LEAD + r")?"
+        r"(?P<lead>" + _SECTION_NUMBER_LEAD + r")?" + _FOREIGN_REPO + r"?"
         r"#" + re.escape(identifier) + r"\b(?!\s*" + re.escape(SETTLED_MARKER) + r")"
     )
 
     def _mark(match: re.Match[str]) -> str:
         # A number this same body cites as a live issue ELSEWHERE still arrives
         # here, so the extraction-side guard cannot cover this: skip the mention
-        # that numbers a rule and mark only the citation (#827).
-        if match.group("lead"):
+        # that numbers a rule, and the one that numbers ANOTHER repository's
+        # issue, and mark only this repository's citation (#827).
+        if match.group("lead") or match.group("repo"):
             return match.group(0)
         return f"#{identifier} {SETTLED_MARKER}"
 

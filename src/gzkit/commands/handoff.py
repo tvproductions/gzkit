@@ -90,11 +90,17 @@ def handoff_list_cmd(
 
 
 def _render_step_references(step: NextStep) -> None:
-    """Render one step's citations and their live state, indented under it."""
+    """Render one step's citations and their live state, indented under it.
+
+    A citation naming another repository prints that repository, because its
+    ``unknown`` means "not ours to answer" while a bare ``unknown`` means "this
+    repository could not be read" — two different things for the reader to do.
+    """
     if not step.references:
         return
     rendered = " · ".join(
-        f"{ref.kind.value} {ref.identifier}: {ref.state.value}" for ref in step.references
+        f"{ref.kind.value} {ref.repo + '#' if ref.repo else ''}{ref.identifier}: {ref.state.value}"
+        for ref in step.references
     )
     console.print(f"       refs: {rendered}")
 
