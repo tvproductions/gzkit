@@ -575,11 +575,18 @@ def _append_event_once(root: Path, target: _TransactionTarget, record: dict[str,
             )
         return
 
+    # `record["ts"]` is deliberately NOT carried onto the row (GHI #1074). It is
+    # stamped when the JOURNAL is written, which is before this append and, on a
+    # crash-recovery replay, potentially long before it. `ts` is what orders the
+    # ledger, so a row stamped at journal-write time can land after rows already
+    # holding a later stamp -- the descending pair `validate_ledger` refuses. An
+    # unstated `ts` is fixed by `Ledger.append` inside the write lock, at the
+    # instant the row is committed. Nothing reads the journal's value: it stays a
+    # required journal field as provenance for when the transition was begun.
     ledger.append(
         LedgerEvent(
             event=event_type,
             id=record["event_id"],
-            ts=record["ts"],
             extra=expected,
         )
     )
