@@ -115,6 +115,35 @@ class TestEveryStepIsTimedInGate(unittest.TestCase):
 
         self.assertEqual(sorted(durations), sorted(names))
 
+    def test_a_raising_step_is_still_accounted(self) -> None:
+        """`finally`, not a trailing assignment: an exploding step is not free.
+
+        A step that raises has still consumed wall-clock. Recording the duration
+        only on the success path would make the most expensive kind of failure --
+        one that burns time and then dies -- the one the cost record cannot see.
+        """
+
+        def explode(_root: Path) -> QualityResult:
+            time.sleep(0.02)
+            raise RuntimeError("step blew up")
+
+        durations: dict[str, float] = {}
+        with (
+            mock.patch(
+                "gzkit.commands.quality._step_concurrency_classes",
+                return_value={"Boom": "read_only"},
+            ),
+            mock.patch("gzkit.commands.quality._steps_overlapping_writers", return_value=set()),
+            mock.patch("gzkit.commands.quality._seam", side_effect=lambda _n, r, _p: r),
+            self.assertRaises(RuntimeError),
+        ):
+            _run_check_steps(
+                [("Boom", explode)], get_project_root(), _Progress(), durations=durations
+            )
+
+        self.assertIn("Boom", durations)
+        self.assertGreaterEqual(durations["Boom"], 0.02)
+
     def test_the_durations_sink_is_optional(self) -> None:
         """Existing callers pass no sink and must keep working unchanged."""
         steps = [("Lint", _runner("Lint"))]
