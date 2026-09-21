@@ -858,15 +858,23 @@ class TestValidateLedger(unittest.TestCase):
         )
 
     def _ledger_with_timestamps(self, timestamps: tuple[str, ...]) -> list[ValidationError]:
-        """Validate a ledger whose rows differ only in `ts`."""
+        """Validate a ledger of DISTINCT events whose timestamps are *timestamps*.
+
+        Each row carries its own `id`. Rows that differed only in `ts` were
+        byte-identical whenever two timestamps were equal, so the equal-instant
+        case was not "two events at the same instant" at all -- it was one event
+        written twice, which is the separate condition the duplicate-row check
+        reports (GHI #1075). Keeping the ids distinct tests the ordering
+        invariant this class is about.
+        """
         with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:
-            for ts in timestamps:
+            for index, ts in enumerate(timestamps):
                 f.write(
                     json.dumps(
                         {
                             "schema": "gzkit.ledger.v1",
                             "event": "project_init",
-                            "id": "gzkit",
+                            "id": f"gzkit-{index}",
                             "ts": ts,
                             "mode": "lite",
                         }

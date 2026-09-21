@@ -1,5 +1,6 @@
 """Ledger validation for append-only JSONL governance ledger."""
 
+import hashlib
 import json
 from datetime import datetime
 from pathlib import Path
@@ -27,6 +28,62 @@ from gzkit.schemas import load_schema
 #: correction whose ``ts`` this file refused went on voiding its subject at
 #: replay, which read no timestamp at all.
 __all__ = ["parse_ledger_ts", "validate_ledger"]
+
+
+#: Exact-duplicate rows present before the check existed, waived by CONTENT hash
+#: so a fixture cannot inherit the waiver. Trust-doctrine T2 forbids rewriting
+#: closed-evidence history, and the ledger is append-only with no delete path, so
+#: the historical instance is disclosed rather than removed. The table is CLOSED:
+#: a new duplicate fails.
+_DUPLICATE_ROW_GRANDFATHER: dict[str, str] = {
+    "ec48f75c4500672b": (
+        "session_exit_bookmark_skipped @ 2026-08-16T22:14:55.716709+00:00, "
+        "present twice. Predates this check; measured 2026-09-21 as the ONLY "
+        "duplicate in 17027 rows (GHI #1075)."
+    ),
+}
+
+
+def _row_fingerprint(entry: dict[str, Any]) -> str:
+    """Return a stable content hash for *entry*, independent of key order."""
+    canonical = json.dumps(entry, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()[:16]
+
+
+def _validate_no_duplicate_rows(
+    entries: list[tuple[int, dict[str, Any]]],
+    errors: list[ValidationError],
+    ledger_path: Path,
+) -> None:
+    """Fail closed on a row that appears more than once (GHI #1075).
+
+    `ledger_merge` deliberately does NOT deduplicate: two byte-identical
+    additions, one from each side of a merge, both survive. That rule is kept --
+    collapsing rows would let a merge destroy a genuine event -- but until now
+    the result was SILENT. A ledger carrying one row twice validated at zero
+    errors, so the condition was undetectable by the surface whose job is to
+    detect it.
+
+    Detection, not deduplication, is the repair: the merge keeps both rows and
+    the validator says so, leaving what to do about it to a human who can tell a
+    genuine repeat from a merge artifact.
+    """
+    first_seen: dict[str, int] = {}
+    for line_no, entry in entries:
+        fingerprint = _row_fingerprint(entry)
+        origin = first_seen.setdefault(fingerprint, line_no)
+        if origin == line_no or fingerprint in _DUPLICATE_ROW_GRANDFATHER:
+            continue
+        _append_ledger_error(
+            errors,
+            ledger_path,
+            line_no,
+            f"Duplicate row: byte-identical to line {origin}. The ledger is "
+            "append-only and `ledger_merge` does not deduplicate, so a merge of "
+            "two sides that both hold this row keeps both copies. Resolve by "
+            "dropping the copy the merge introduced -- never by editing history "
+            "that was genuinely appended twice.",
+        )
 
 
 def _append_ledger_error(
@@ -726,4 +783,5 @@ def validate_ledger(ledger_path: Path) -> list[ValidationError]:
             previous_line = line_no
 
     _validate_ledger_corrections(entries, errors, ledger_path)
+    _validate_no_duplicate_rows(entries, errors, ledger_path)
     return errors
