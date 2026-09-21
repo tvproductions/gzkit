@@ -69,10 +69,10 @@ orphaned. See the manpages under `docs/user/manpages/handoff*.md`.
 
 ### Settled-citation annotation
 
-`create` resolves every GHI cited in a **prospective** section — `Immediate Next
-Steps` and `Pending Work / Open Loops` — against live issue state, and annotates a
-closed one `[settled]` in place. A handoff therefore cannot be *written* naming a
-settled issue as open work.
+`create` resolves every reference cited in a **prospective** section — `Immediate
+Next Steps` and `Pending Work / Open Loops` — against its Layer-2 authority, and
+annotates a settled one `[settled]` in place. A handoff therefore cannot be
+*written* naming settled work as open.
 
 Retrospective sections are never annotated: a closed GHI in `Current State
 Summary`, `Evidence / Artifacts`, `Decisions Made`, or `Settled Rulings` is the
@@ -95,7 +95,7 @@ than evidence of a closed issue.
 **Layer 3 — File Sync:** this skill writes files; a handoff proves nothing about the state it describes (§ Claim Verification Gate).
 
 - **Reads:** User input, handoff template, canonical handoff directory `.gzkit/handoffs/`
-- **Reads (CREATE):** GHI state via `gh issue view` for every issue cited in a **prospective** section, to annotate settled citations at authoring time (§ Settled-citation annotation). Unreachable `gh` resolves `unknown` and annotates nothing.
+- **Reads (CREATE):** every reference cited in a **prospective** section, each against its own Layer-2 authority — GHI via `gh issue view`, OBPI and ADR from the ledger — to annotate settled citations at authoring time (§ Settled-citation annotation). Unreachable `gh` resolves `unknown` and annotates nothing.
 - **Writes:** Handoff markdown files under `.gzkit/handoffs/` (canonical storage per ADR-0.0.41 / OBPI-0.0.41-03); the settled-ruling store `.gzkit/handoffs/rulings.jsonl`; and, through `gz handoff decide`, one Layer-2 `handoff_resume_decided` event
 - **Validates:** No placeholders, no secrets, all sections present **and populated**, referenced files exist
 - **Blocks (RESUME): NOTHING. There is no gate.** A handoff ADVISES, and that is the whole mechanism; § Operator Authorization carries the retirement ruling. Every mutating tool call — `Write`, `Edit`, `NotebookEdit`, `gz obpi complete`, `gz attest`, commits — runs on an unruled handoff. **Gate 5 human attestation, the commit-time hooks (ruff/ty/xenon and the guards) and the pre-push `gz check`, which is where the unit suite runs, are untouched.**
@@ -303,11 +303,11 @@ The RESUME workflow discovers, loads, validates, and reports on existing handoff
 
    **`uv run gz handoff resume` runs the advised-step arm of this gate for you**
    (GHI #696 defect 2). It extracts every governance reference each step cites and
-   resolves GHI state through `gh`, rendering `live` / `settled` / `unknown` per
-   reference and marking a step **CITES SETTLED** when a citation is `settled`.
-   Start there rather than hand-rolling the `gh` calls — then hand-verify what it
-   reports as `unknown` (ADR and OBPI references always resolve `unknown`, because
-   their only repo-local index is a Layer-3 derived view).
+   resolves each against its own Layer-2 authority — GHI through `gh`, OBPI and
+   ADR from the ledger (GHI #1076, #1078) — rendering `live` / `settled` /
+   `unknown` and marking a step **CITES SETTLED** when a citation is `settled`.
+   An ADR is `settled` when its closeout is RECORDED, never when a ceremony
+   merely began. Start there rather than hand-rolling it; hand-verify each `unknown`.
 
    **The flag is a citation, not a verdict — you still adjudicate.** A step may
    name a closed GHI as a *precondition* (the work is done, the step is a STALE
