@@ -315,7 +315,7 @@ _CRLF_SURFACE_MESSAGE = (
 def audit_line_endings(project_root: Path) -> list[ValidationError]:
     """Enforce cross-platform LF line endings (``cross-platform.md``; GHI #570).
 
-    Two failure surfaces mechanize the CRLF/LF hazard:
+    Three failure surfaces mechanize the CRLF/LF hazard:
 
     * ``.gitattributes`` MUST exist and carry ``* text=auto eol=lf`` so git
       normalizes line endings to LF on every platform regardless of a clone's
@@ -325,10 +325,15 @@ def audit_line_endings(project_root: Path) -> list[ValidationError]:
       ``.gitattributes`` already makes committed CRLF impossible; this index
       check is the defense-in-depth that confirms git did the work, without
       policing volatile working-tree bytes that git normalizes away on commit.
+    * No test that asserts on exact bytes may build its fixture with an unpinned
+      text-mode write — verified STATICALLY over ``tests/**`` source, because
+      that fixture is never committed for the index check to see and the runtime
+      symptom appears on Windows only (GHI #1069).
     """
     errors: list[ValidationError] = []
     errors.extend(_check_gitattributes_lf(project_root))
     errors.extend(_scan_crlf_surfaces(project_root))
+    errors.extend(_scan_test_byte_fixture_writes(project_root))
     return errors
 
 
@@ -636,4 +641,91 @@ def audit_generated_surface_newlines(project_root: Path) -> list[ValidationError
                         message=_SURFACE_NEWLINE_MESSAGE,
                     )
                 )
+    return errors
+
+
+_TEST_FIXTURE_NEWLINE_MESSAGE = (
+    'Text-mode write without newline="\\n" in a test that asserts on exact bytes. '
+    "Python translates \\n to os.linesep when newline is unset, so the fixture holds "
+    "CRLF on Windows while the assertion carries an LF literal, and the test fails "
+    "there and nowhere else (GHI #1068, GHI #1069). Build the fixture with "
+    '`write_bytes`, or pin `newline="\\n"`.'
+)
+
+
+def _is_read_bytes_call(node: ast.expr) -> bool:
+    """Whether *node* is a ``….read_bytes()`` call."""
+    return (
+        isinstance(node, ast.Call)
+        and isinstance(node.func, ast.Attribute)
+        and node.func.attr == "read_bytes"
+    )
+
+
+def _asserts_read_bytes_against_literal(func: ast.AST) -> bool:
+    """Whether *func* compares a ``read_bytes()`` result against a bytes literal.
+
+    That pairing is what makes an unpinned fixture write a DEFECT rather than a
+    style point: the literal carries LF, so a translated fixture disagrees with it
+    on Windows and on no other platform.
+
+    A comparison of two ``read_bytes()`` results is deliberately NOT this shape —
+    both sides translate together, so the assertion holds everywhere. Narrowing to
+    a literal is also what keeps the arm meaningful: 2133 unpinned text writes sit
+    under ``tests/**`` (measured 2026-09-21) and almost none of them assert bytes.
+    """
+    for node in ast.walk(func):
+        if not isinstance(node, ast.Call):
+            continue
+        name = node.func.attr if isinstance(node.func, ast.Attribute) else ""
+        if name not in {"assertEqual", "assertNotEqual"} or len(node.args) < 2:
+            continue
+        first, second = node.args[0], node.args[1]
+        if not (_is_read_bytes_call(first) or _is_read_bytes_call(second)):
+            continue
+        other = second if _is_read_bytes_call(first) else first
+        if isinstance(other, ast.Constant) and isinstance(other.value, bytes):
+            return True
+    return False
+
+
+def _scan_test_byte_fixture_writes(project_root: Path) -> list[ValidationError]:
+    """Fail closed on an unpinned text fixture write inside a byte-exact test.
+
+    The third arm of :func:`audit_line_endings`, and the only STATIC one. The
+    other two read committed bytes, and this family's defect is never committed:
+    the fixture is written at runtime into a temp directory, asserted, and
+    discarded, so ``git ls-files --eol`` cannot observe it (GHI #1069). It is
+    also invisible at runtime on Linux, where the translation is a no-op — a
+    detector that only fired on Windows would not close the family.
+
+    Reuses :func:`_writes_text_without_newline`, the detector
+    :func:`audit_generated_surface_newlines` already owns. The hazard is one
+    shape; a second copy of it here would be a second place for it to drift.
+    """
+    errors: list[ValidationError] = []
+    tests_root = project_root / "tests"
+    if not tests_root.is_dir():
+        return errors
+    for path in sorted(tests_root.rglob("*.py")):
+        try:
+            tree = ast.parse(path.read_text(encoding="utf-8"))
+        except (OSError, SyntaxError):
+            continue
+        rel = path.relative_to(project_root).as_posix()
+        for func in ast.walk(tree):
+            if not isinstance(func, ast.FunctionDef | ast.AsyncFunctionDef):
+                continue
+            if not _asserts_read_bytes_against_literal(func):
+                continue
+            errors.extend(
+                ValidationError(
+                    type="line_endings",
+                    artifact=f"{rel}:{node.lineno} {label}",
+                    message=_TEST_FIXTURE_NEWLINE_MESSAGE,
+                )
+                for node in ast.walk(func)
+                if isinstance(node, ast.Call)
+                and (label := _writes_text_without_newline(node)) is not None
+            )
     return errors
