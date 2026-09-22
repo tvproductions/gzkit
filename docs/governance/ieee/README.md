@@ -18,6 +18,63 @@ the machinery gzkit should *not* adopt, because most of what these standards
 contain is acquisition, contractual or large-organization apparatus that a
 project with one operator and several agents would only be harmed by.
 
+## Start here
+
+**Read [`FINDINGS.md`](FINDINGS.md) first.** It is the canonical register — what
+the investigation currently accepts as supported — and it is the only file needed
+to know where things stand. The numbered pieces are evidence behind its rows.
+
+| File | Tier | What it is |
+|---|---|---|
+| [`FINDINGS.md`](FINDINGS.md) | **canonical** | The findings, with status and evidence pointers. Living; amended in place |
+| [`DISAGREEMENTS.md`](DISAGREEMENTS.md) | **canonical** | Where Agent 0 and Agent 1 disagree, preserved unresolved |
+| [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) | **canonical** | The thirteen questions and the operator's ruling on each |
+| [`consequence-bands.md`](consequence-bands.md) | **canonical** | Operator-ruled consequence scale (`Q-04`). Input to Phase 4; re-keys nothing |
+| [`01-…`](01-engineering-method-2026-09-22.md), [`02-…`](02-requirements-vs-release-2026-09-22.md) | historical | Raw investigation record — what an agent said, frozen at its date |
+| [`raw/`](raw/README.md) | historical | Raw reports not part of the numbered series |
+
+**Canonical is not normative.** A finding here records what the investigation
+supports. It binds nothing, changes no rule, and authorises no work.
+
+**This is not a standards-compliance initiative, and no phase of it may become
+one.** gzkit is not pursuing conformance with any standard in this corpus, will
+not claim conformance, and is not obliged to adopt anything a standard contains.
+The corpus is used as vocabulary. [`FINDINGS.md`](FINDINGS.md) F-032 and F-033
+are the standing guard on this, and F-032 binds Phase 4 as a filter.
+
+## Investigation phases
+
+| Phase | Purpose | Lead | Status |
+|---|---|---|---|
+| 0 | Frame the investigation | operator | complete |
+| 1 | Primary forensic assessment | Agent 0 | complete — pieces 01, 02 |
+| 2 | Adversarial review of Phase 1 | Agent 1 (Astra) | **report not received in-repo** |
+| 3 | Reconciliation and canonicalization | Agent 0 | **in progress** — workspace seeded 2026-09-22 |
+| 4 | Design target engineering model | — | not authorised |
+| 5 | Bounded pilot | — | not authorised |
+| 6 | Evaluate pilot | — | not authorised |
+| 7 | Adopt / revise / reject | — | not authorised |
+| 8 | Incremental migration | — | not authorised |
+| 9 | Measure and periodically reassess | — | not authorised |
+
+**Roles.** Agent 0 performed Phase 1 and leads Phase 3. That lead is procedural:
+it does not make Agent 0's findings authoritative over Agent 1's challenges.
+Agent 1's critique enters as **evidence and challenge input**, not as a second
+canonical register merged automatically into the first.
+
+**Current gate.** Phase 3 is blocked on receiving the Phase 2 report. Astra runs
+separately and deposits into this folder; nothing had landed as of 2026-09-22
+([`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) `Q-13`). **All thirteen open questions were
+ruled by the operator on 2026-09-22**, one (`Q-09`) as a deferral. Until then no finding may be
+promoted to `CONFIRMED`. **Phase 4 is not authorised and must not begin
+implicitly** — a design candidate that goes unchallenged is still not a decision.
+
+**Phase numbering, one caution.** Piece 01 § 12 originally titled its measurement
+plan *"PROPOSED PHASE 2 INVESTIGATION PLAN"*, which meant measurement rather than
+adversarial review. Those items were renumbered **`M-A` … `M-H`** on 2026-09-22
+by operator ruling. A pre-2026-09-22 reference to "Phase 2" in this series may
+mean the measurement program.
+
 ## Reading posture
 
 These are **dated records**, in the sense `docs/governance/` already uses (see
@@ -31,12 +88,20 @@ given rather than confirming a transcribed figure.
 Findings are classified **KEEP** / **REFINE** / **ADD** / **REMOVE**, and nothing
 is classified merely because a standard contains it.
 
+**The numbered pieces are frozen at their date; the canonical register is
+not.** [`FINDINGS.md`](FINDINGS.md), [`DISAGREEMENTS.md`](DISAGREEMENTS.md) and
+[`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) are living documents amended in place
+with dated notes — the shape [`advisory-rules-audit.md`](../advisory-rules-audit.md)
+already uses. A piece is corrected only by a later piece saying so.
+
 These records are analysis, not canon. Nothing here binds until it is carried
 into a rule, an ADR, or the corpus by the ordinary route. Where a piece
 disagrees with an earlier piece, the later one says so explicitly rather than
 silently superseding it.
 
-## Pieces
+## Pieces — raw investigation record
+
+Historical. Subordinate to [`FINDINGS.md`](FINDINGS.md); read it first.
 
 | # | Piece | Subject | Measured at |
 |---|-------|---------|-------------|
@@ -83,6 +148,77 @@ adoption can even mean:
   over tailored conformance to a larger one. ISO/IEC/IEEE 32675:2022
   § 6.3.1.3 b) 4) goes further and requires enabling change through "compact
   low-dependency scopes, **low gates**, low overhead."
+
+## Handoff — for an agent joining now
+
+Read this section plus [`FINDINGS.md`](FINDINGS.md). That is enough; **you do not
+need to replay Phase 1 or Phase 2.**
+
+**What is confirmed.** Nothing, in the register's sense of the word. 35 findings
+are recorded with evidence, but none has been through the adversarial pass, so
+none is `CONFIRMED`. Three are `QUALIFIED` and two `REJECTED` — all by Agent 0's
+own later work, not by the Phase 2 review.
+
+**What is disputed.** Nothing is recorded as disputed, **because the Phase 2
+report has not been read** — not because the two agents agree. Do not read
+[`DISAGREEMENTS.md`](DISAGREEMENTS.md)'s emptiness as consensus.
+
+**What is unknown.** `Q-01` … `Q-13` in [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md),
+and everything the measurement program `M-A` … `M-H` would measure.
+
+**What must not be assumed:**
+
+- **Do not assume the central hypothesis is settled.** That persistent knowledge
+  should leave the work package (F-001) is the investigation's leading finding
+  and is `QUALIFIED`, not established.
+- **Do not assume long OBPI duration has a known cause.** F-025 lists eleven live
+  candidate explanations and attributes duration to none of them. Converging early
+  is the most likely way this investigation goes wrong.
+- **Do not assume a finding implies its remedy.** Findings stop at what is;
+  remedies are Phase 4.
+- **Do not assume a standard's presence is an argument.** F-032 and F-033: most of
+  this corpus should not be adopted, and conformance is dischargeable by reference.
+- **Do not assume the numbers are current.** Every figure is a dated observation.
+  Re-run the command or the script.
+- **Do not assume `F-###` ids are ratified.** They are an agent assumption
+  (`Q-11`).
+
+**Currently prohibited:**
+
+- Beginning Phase 4 design. It is not authorised.
+- Promoting any finding to `CONFIRMED` before the Phase 2 report is read.
+- Creating an ADR, OBPI, REQ or TASK from anything in this directory.
+- Treating a design candidate as a decision, or this register as doctrine.
+- Editing the numbered pieces other than by a dated amendment.
+- **Retiring or replacing the five-gate vocabulary.** Standing operator
+  constraint, 2026-09-22: *"do not abandon the five gates without a discussion
+  with me."* This binds Phase 4 designs too, including as a side effect.
+- **Re-proposing the 16085 consequence threshold** as a replacement for the
+  IRON LAW. Ruled against at `Q-05`, as weaker rather than merely different.
+- Promoting `ADR-pool.feature-adr-semver-discipline` before the `kind` guard
+  lands (`Q-09`).
+
+**Next permitted step.** Receive the Phase 2 adversarial review (`Q-13`), then
+reconcile it row by row into `FINDINGS.md` and `DISAGREEMENTS.md`. Phase 3 is
+complete when every row carries a settled status and the disagreements are
+recorded — at which point Phase 4 requires **explicit operator authorisation**,
+not merely an absence of objection.
+
+## Relationship to gzkit's own engineering artifacts
+
+One-directional. **Findings are inputs; nothing in this directory is an output of
+the governance pipeline, and nothing here creates one.**
+
+- No ADR, OBPI brief, REQ or TASK is created by this investigation. A Phase 4
+  decision leaves by the ordinary route — `gz-design` → ADR → OBPI — and only the
+  operator initiates that work (`AGENTS.md` § OBPI Acceptance Protocol).
+- A defect noticed here routes by `AGENTS.md` § Defect-fix routing like any
+  other. Being named in a finding neither authorises nor blocks its repair.
+- Nothing here is Layer 1 canon or Layer 2 ledger. These are analysis documents;
+  `.gzkit/ledger.jsonl` remains the system of record
+  ([`state-doctrine.md`](../state-doctrine.md)).
+- Findings are **not** requirements. They carry no proof channel, no `@covers`
+  binding and no gate.
 
 ## Related
 

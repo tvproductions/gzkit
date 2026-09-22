@@ -13,6 +13,17 @@
 > owner" is sharpened to *the release plan owns them*; and its attribution of
 > "The requirements shall be configuration controlled" to 29148 § 6.6 is
 > corrected to § 6.4.3.5.
+>
+> **Amended 2026-09-22 (Phase 3).** § 12 was titled *PROPOSED PHASE 2
+> INVESTIGATION PLAN* and its items were numbered `P2-A … P2-H`. The
+> investigation's phase model assigns Phase 2 to the adversarial review **of
+> this piece**, so one label denoted two incompatible things. The items are
+> renumbered **`M-A … M-H`** and the section retitled *PROPOSED MEASUREMENT
+> PROGRAM*; no content changed. Operator ruling, 2026-09-22.
+>
+> **This piece is a raw investigation record, subordinate to
+> [`FINDINGS.md`](FINDINGS.md).** Read the register first; come here for
+> the evidence behind a row.
 
 
 **Scope:** investigation only. No code, documentation, ADR, requirement, issue, or backlog item was created or changed. Every `gz` invocation was a read-only query.
@@ -257,7 +268,7 @@ Objective; task decomposition; implementation activity; findings-in-flight; repa
 | **REQUIREMENT → COMPONENT** | **No** | Questions (d) and (h) — impact analysis, blast radius |
 | **CONSTRAINT identity** | **No** | 3,855 constraints, 267 identified |
 
-**Minimum viable addition, stated as principle not design:** give REQUIREMENT and CONSTRAINT identity independent of the work package that introduced them, and add one upward edge and one allocation edge. Everything else GZKit already has. *This is a Phase-2 question, not a Phase-1 recommendation.*
+**Minimum viable addition, stated as principle not design:** give REQUIREMENT and CONSTRAINT identity independent of the work package that introduced them, and add one upward edge and one allocation edge. Everything else GZKit already has. *This is a measurement-program question (M-A), not a Phase-1 recommendation.*
 
 ---
 
@@ -352,7 +363,7 @@ The gaps are specific:
 
 **Presented without numeric ranking — the evidence supports each as strong, not an ordering among them.**
 
-- **The REQ→test correspondence machinery.** `gz covers` (1,794/2,749, 65.3%), `gz drift` (713 unlinked / 0 orphan / 0 unjustified), one consolidated REQ grammar (`triangle.py:24-31`, replacing ~20 disagreeing regexes under GHI #615), 5,359 `@covers` annotations. **This is 42010 §6.9.3 correspondence methods with violation recording, independently built, with absence correctly counted as violation.** It is the single most valuable asset in the repository and the natural foundation for everything Phase 2 might propose.
+- **The REQ→test correspondence machinery.** `gz covers` (1,794/2,749, 65.3%), `gz drift` (713 unlinked / 0 orphan / 0 unjustified), one consolidated REQ grammar (`triangle.py:24-31`, replacing ~20 disagreeing regexes under GHI #615), 5,359 `@covers` annotations. **This is 42010 §6.9.3 correspondence methods with violation recording, independently built, with absence correctly counted as violation.** It is the single most valuable asset in the repository and the natural foundation for everything the measurement program might propose.
 
 - **The anti-tautological-test stack.** `red_witness.py` classifies RED into `assertion` / `error` (weak) / `none` / `not-applicable` and refuses to equate them; `mutation_witness.py` splits `killed`/`survived` (a claim about the guard) from `invalid`/`inconclusive` (a claim about the run), and documents a real `.pyc`-cache contamination bug (GHI #963). **29119 has no vocabulary for any of this** — "test oracle" appears zero times in Parts 2–4. This machinery is ahead of the testing standard. The measured honesty is the point: 235 RED receipts are 71.9% `error`, 16.6% `assertion`, **8.9% `none`** — 21 tests that demonstrably cannot fail, found and recorded rather than suppressed.
 
@@ -376,7 +387,7 @@ The gaps are specific:
 
 ### 8.3 Five highest-leverage opportunities
 
-**Stated as directions, not designs. Phase 2 would test them.**
+**Stated as directions, not designs. The measurement program would test them.**
 
 - **Give requirements and constraints identity independent of the work package.** This single change addresses the deletion loss, the rediscovery loop, and traceability questions (a), (d) and (h). The REQ grammar already exists and is already unique — only its *ownership* is wrong. 16326 §7.3.1.1 states the target shape normatively: the work package **references** the requirements statement.
 
@@ -428,7 +439,7 @@ The governing permission is explicit and normative. **15289:2019 §5.1 (*shall*)
 Questions answerable from the repository have been answered above and are not repeated here. These seven are genuine engineering ambiguities where the evidence constrains the options but does not choose among them.
 
 **Q1 — Was the deletion of requirements on ADR demotion intended?**
-`gz adr demote` executes `shutil.rmtree(source_dir)` (`adr_demote.py:475`), which has removed 378 briefs carrying 1,986 REQs and 1,584 constraints. `docs/governance/pool-curation.md:47` rules that *"Deleting a retired pool file is an anti-pattern"* — but that ruling is about the **pool file**, not about the brief tree, and I found no ruling covering the latter. Either this is a deliberate decision that demoted work forfeits its specification, or it is an unexamined consequence. The answer determines whether Phase 2 treats this as a defect or as a premise.
+`gz adr demote` executes `shutil.rmtree(source_dir)` (`adr_demote.py:475`), which has removed 378 briefs carrying 1,986 REQs and 1,584 constraints. `docs/governance/pool-curation.md:47` rules that *"Deleting a retired pool file is an anti-pattern"* — but that ruling is about the **pool file**, not about the brief tree, and I found no ruling covering the latter. Either this is a deliberate decision that demoted work forfeits its specification, or it is an unexamined consequence. The answer determines whether the measurement program treats this as a defect or as a premise.
 
 **Q2 — What is GZKit's product, and is the PRD retired or dormant?**
 `PRD-GZKIT-1.0.0.md` describes a governance CLI shipped to other projects, with users, adoption friction and a graduate-course validation path. The repository's observable behaviour is a system whose primary user is its own operator. These imply different requirement sets. `FR-*` has not been cited since January and `AC-*` since ADR-0.1.0. Reviving the PRD, replacing it, or formally retiring it are all defensible; leaving it `Draft` and uncited is the one option that costs without paying.
@@ -481,34 +492,34 @@ Reported as disagreements. **No authoritative side is chosen.**
 
 ---
 
-## 12. PROPOSED PHASE 2 INVESTIGATION PLAN
+## 12. PROPOSED MEASUREMENT PROGRAM (M-A … M-H)
 
-Derived strictly from Phase-1 findings. **Not executed.** Each item names the finding it follows from and the decision it would inform. Phase 2 remains investigation and measurement; it proposes no implementation.
+Derived strictly from Phase-1 findings. **Not executed.** Each item names the finding it follows from and the decision it would inform. The measurement program remains investigation and measurement; it proposes no implementation.
 
-**P2-A — Determine what a persistent requirement object would have to carry, by reading what the existing ones actually assert.**
+**M-A — Determine what a persistent requirement object would have to carry, by reading what the existing ones actually assert.**
 *Follows:* §4.4, §6, and the 29148 §5.2.6 set-level gap. *Method:* classify a stratified sample of ~200 REQs and ~200 FAIL-CLOSED constraints against 29148 §5.2.5 (individual) and §5.2.6 (set) characteristics; measure how many would survive as system properties once separated from their work package, and how many are inherently transient acceptance criteria. *Decides:* whether the persistent layer is a subset of today's REQs or a different object. *Open risk:* the answer may be that most REQs are correctly transient and the persistent layer must be authored fresh — which is a materially different and larger finding.
 
-**P2-B — Recover and characterise the deleted specification corpus.**
+**M-B — Recover and characterise the deleted specification corpus.**
 *Follows:* Q1 and the 1,986 REQ / 1,584 constraint loss. *Method:* reconstruct the 378 deleted briefs from their parent commits; classify what was lost as durable vs transient; check whether any deleted REQ is still cited by live code, a live test, or a `@covers` annotation. *Decides:* whether the loss is recoverable, material, and whether it has already produced silent breakage.
 
-**P2-C — Measure whether the six intake surfaces can be reduced, by tracing where items actually go.**
+**M-C — Measure whether the six intake surfaces can be reduced, by tracing where items actually go.**
 *Follows:* §2 and the cross-surface conflation. *Method:* for a sample from each of pool ADRs, GHIs, insights, chores, campaign checkboxes and handoff next-steps, trace the item's end state; measure duplication across surfaces (the same concern filed in two places) and mortality (items that never move). *Decides:* which surfaces are load-bearing and which are accumulating. *Specifically resolve:* whether the 806-record insights ledger has ever changed an outcome.
 
-**P2-D — Name the claim behind each gate and each of the 89 enforcement claims, and find a non-agent witness.**
-*Follows:* §8.2 and the project's own finding that 32 of 47 claims did not prove what they asserted. *Method:* express each gate and each registered claim in 15026-2 §5.3.3 form (property, limit, uncertainty, scope); identify which have a negative control that constructs a violation *of that claim*. *Critical constraint:* the prior audit disqualified its own method as "a stochastic surface auditing a stochastic surface." **Phase 2 must first establish what a non-agent witness for this looks like, or declare the question unanswerable by agent labour.** This is the highest-risk item in the plan.
+**M-D — Name the claim behind each gate and each of the 89 enforcement claims, and find a non-agent witness.**
+*Follows:* §8.2 and the project's own finding that 32 of 47 claims did not prove what they asserted. *Method:* express each gate and each registered claim in 15026-2 §5.3.3 form (property, limit, uncertainty, scope); identify which have a negative control that constructs a violation *of that claim*. *Critical constraint:* the prior audit disqualified its own method as "a stochastic surface auditing a stochastic surface." **The measurement program must first establish what a non-agent witness for this looks like, or declare the question unanswerable by agent labour.** This is the highest-risk item in the plan.
 
-**P2-E — Establish whether an architecture description is warranted, or whether correspondence methods alone suffice.**
+**M-E — Establish whether an architecture description is warranted, or whether correspondence methods alone suffice.**
 *Follows:* §3 (42010) and the finding that decisions are indexed by *when* rather than *what*. *Method:* enumerate the concerns GZKit's 372 ADRs actually address; test whether they are coverable by a small viewpoint set; compare the cost of a minimal AD (42010 §6 kernel: entity, concerns, viewpoints, views, correspondences, known inconsistencies) against extending the existing `gz drift`/`gz covers` correspondence machinery to architectural obligations. *Decides:* whether ADD-an-architecture-description or REFINE-the-existing-correspondence-methods is the cheaper route to the same property. *Bias to declare:* the correspondence route is likely cheaper and should be tested first.
 
-**P2-F — Measure the real duplication between Gate 4 and Gate 2 before proposing removal.**
+**M-F — Measure the real duplication between Gate 4 and Gate 2 before proposing removal.**
 *Follows:* §8.3. *Method:* execute the behave suite with coverage instrumentation and compare the covered set against the unit suite's; identify precisely which scenarios cover code no unit test reaches; verify the 54 behave-only REQ count. *Decides:* what a Gate-4 retirement would actually cost. *Note:* 35 `@wip` scenarios in `brief_reconcile.feature` never execute and should be counted separately.
 
-**P2-G — Baseline the metrics that Phase 1 could only measure once.**
+**M-G — Baseline the metrics that Phase 1 could only measure once.**
 *Follows:* §8.2 and 15939 §6.2 b). *Method:* for each candidate measure, state the **information need and the decision it would support first**, then the measure — never the reverse. Candidates that passed Phase 1's need test: OBPI duration distribution (decides work-package sizing); brief-reconcile drift rate post-fix (decides whether jurisdiction is knowable in advance); REQ coverage split by kind (decides where proof channels are failing); fix:feat ratio (decides whether repair load is rising); agent entry token cost (decides what to trim); RED receipt class distribution (decides whether falsifiability is improving). Candidates that **failed** the need test and should not be adopted: `obpi_lock_ttl_warning` (no reader, measures session restarts), handoff count, validator count, total REQ count. *Explicitly:* propose no measure whose information need cannot be stated in one sentence.
 
-**P2-H — Define consequence bands with the operator.**
+**M-H — Define consequence bands with the operator.**
 *Follows:* Q4 and 1012 Clause 5. *Method:* a structured session enumerating what goes wrong when each major surface is wrong, and how badly. *Decides:* the input every proportionality question in Phase 3 would need. *Cannot be done by an agent alone* — this is a judgment about consequence, and the operator holds it.
 
-**Sequencing note.** P2-A, P2-B and P2-C are independent and can run concurrently. P2-D is gated on resolving its own method problem first and should not be started until that is settled. P2-E depends on P2-A (what a persistent object carries determines what an architecture description would need to correspond to). P2-G depends on P2-H for the consequence-scaled measures. P2-F is independent and cheap.
+**Sequencing note.** M-A, M-B and M-C are independent and can run concurrently. M-D is gated on resolving its own method problem first and should not be started until that is settled. M-E depends on M-A (what a persistent object carries determines what an architecture description would need to correspond to). M-G depends on M-H for the consequence-scaled measures. M-F is independent and cheap.
 
-**What Phase 2 should not do.** Not propose a replacement backlog taxonomy, a new lifecycle, a requirements-as-code implementation, or any new tooling. Phase 1 found a system that already contains most of the mechanisms it needs — correspondence methods, falsifiability witnesses, declared undeveloped arguments, a working ledger — and whose problem is that persistent knowledge has no owner and known gaps have no retirement path. **Adding machinery is the failure mode most consistent with this repository's history.** 12207 §4.3 states the alternative directly: prefer full conformance to a smaller declared set over tailored conformance to a larger one.
+**What the measurement program should not do.** Not propose a replacement backlog taxonomy, a new lifecycle, a requirements-as-code implementation, or any new tooling. Phase 1 found a system that already contains most of the mechanisms it needs — correspondence methods, falsifiability witnesses, declared undeveloped arguments, a working ledger — and whose problem is that persistent knowledge has no owner and known gaps have no retirement path. **Adding machinery is the failure mode most consistent with this repository's history.** 12207 §4.3 states the alternative directly: prefer full conformance to a smaller declared set over tailored conformance to a larger one.
