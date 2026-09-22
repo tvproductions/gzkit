@@ -29,7 +29,7 @@ to know where things stand. The numbered pieces are evidence behind its rows.
 | [`FINDINGS.md`](FINDINGS.md) | **canonical** | The findings, with status and evidence pointers. Living; amended in place |
 | [`DISAGREEMENTS.md`](DISAGREEMENTS.md) | **canonical** | Where Agent 0 and Agent 1 disagree, preserved unresolved |
 | [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) | **canonical** | The thirteen questions and the operator's ruling on each |
-| [`consequence-bands.md`](consequence-bands.md) | **canonical** | Operator-ruled consequence scale (`Q-04`). Input to Phase 4; re-keys nothing |
+| [`consequence-bands.md`](consequence-bands.md) | **canonical, PROVISIONAL** | Operator-ruled consequence scale (`Q-04`). Scores rest on `OPEN` findings; must be re-scored after Phase 2 |
 | [`01-…`](01-engineering-method-2026-09-22.md), [`02-…`](02-requirements-vs-release-2026-09-22.md) | historical | Raw investigation record — what an agent said, frozen at its date |
 | [`raw/`](raw/README.md) | historical | Raw reports not part of the numbered series |
 
@@ -87,6 +87,9 @@ question and records the answer before doing anything else:
 
 **Act 2 — design participation.** Only after Act 1's verdict is recorded may
 Agent 2 read the raw record and join design work, as a **declared second role**.
+**Act 2 does not exist until Phase 4 is authorised**, and Phase 4 is not
+authorised. Act 1, by contrast, is available now and does not depend on Phase 2 —
+reading the register cold is a test of the register, not of the findings.
 
 **Why the order is binding.** Act 1 is the only falsifiability test the register
 has. It checks whether this investigation exists durably in the repository or

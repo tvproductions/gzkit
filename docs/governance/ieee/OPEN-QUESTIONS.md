@@ -73,7 +73,7 @@ re-routed, or the boundaries relaxed. · Finding: F-006.
 
 ### Q-04 — What consequence scale should govern verification rigour?
 
-**RULED 2026-09-22 — settled live with the operator. See [`consequence-bands.md`](consequence-bands.md).** Two axes scored together (detectability and recoverability), band derived as `D + R`, sixteen surfaces scored. `M-G`'s consequence-scaled measures are unblocked. **The bands do not re-key the lanes and do not touch the five gates** — that is Phase 4.
+**RULED 2026-09-22 — settled live with the operator. See [`consequence-bands.md`](consequence-bands.md).** Two axes scored together (detectability and recoverability), band derived as `D + R`, sixteen surfaces scored. `M-G`'s consequence-scaled measures are unblocked in form. **The scores are PROVISIONAL** — they derive from findings that are still `OPEN`, and must be re-scored once Phase 2 is reconciled. **The bands do not re-key the lanes and do not touch the five gates** — that is Phase 4.
 
 IEEE 1012 Clause 5 makes it normative that rigour scale to integrity level,
 assigned recursively so high-consequence parts are segregated. gzkit's lite/heavy

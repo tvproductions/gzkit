@@ -13,6 +13,23 @@
 >
 > **The five gates are untouched and are not in scope here** (standing operator
 > constraint, 2026-09-22).
+>
+> ## PROVISIONAL — scored on findings that are still `OPEN`
+>
+> **Every `D2` score in this file is derived from a Phase 1 finding that has not
+> been through the Phase 2 adversarial review.** Gate logic scores `D2` from
+> F-019; validators and `@covers` from F-021; hooks from F-018. Those findings are
+> `OPEN`, not `CONFIRMED`.
+>
+> **The axes and the derivation are not at risk; the scores are.** *That*
+> detectability and recoverability are the right axes, and that `band = D + R`,
+> are operator rulings and stand on their own. What Astra could move is any
+> individual `D` or `R` digit whose evidence it overturns — and because the band
+> is derived, a moved digit re-bands its surface automatically.
+>
+> **Obligation: re-score every row against `FINDINGS.md` once Phase 2 is
+> reconciled**, and record what moved. Until then no Phase 4 work may treat a
+> band here as settled.
 
 ## Why bands at all
 
@@ -126,6 +143,9 @@ this system.
 
 ## Amendments
 
+- **2026-09-22 — Marked PROVISIONAL.** Operator challenge: the file was scored
+  on findings that are still `OPEN`, and did not say so. Dependency now named;
+  re-scoring after Phase 2 is an obligation, not an option.
 - **2026-09-22 — Authored live with the operator.** Axes ruled (two, scored
   together), band derivation ruled (`D + R`), sixteen surfaces scored, three rows
   ruled against the drafted score.
