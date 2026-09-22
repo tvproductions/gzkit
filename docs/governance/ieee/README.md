@@ -31,7 +31,8 @@ to know where things stand. The numbered pieces are evidence behind its rows.
 | [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) | **canonical** | The thirteen questions and the operator's ruling on each |
 | [`consequence-bands.md`](consequence-bands.md) | **canonical, PROVISIONAL** | Operator-ruled consequence scale (`Q-04`). Scores rest on `OPEN` findings; must be re-scored after Phase 2 |
 | [`01-…`](01-engineering-method-2026-09-22.md), [`02-…`](02-requirements-vs-release-2026-09-22.md) | historical | Raw investigation record — what an agent said, frozen at its date |
-| [`raw/`](raw/README.md) | historical | Raw reports not part of the numbered series |
+| [Astra's adversarial review](gzkit-engineering-assessment-adversarial-review.md) | historical | Agent 1's Phase 2 report, as deposited. Raw record — challenge input, not a second register |
+| [`raw/`](raw/README.md) | historical | Index and tier statement for raw reports |
 
 **Canonical is not normative.** A finding here records what the investigation
 supports. It binds nothing, changes no rule, and authorises no work.
@@ -48,7 +49,7 @@ are the standing guard on this, and F-032 binds Phase 4 as a filter.
 |---|---|---|---|
 | 0 | Frame the investigation | operator | complete |
 | 1 | Primary forensic assessment | Agent 0 | complete — pieces 01, 02 |
-| 2 | Adversarial review of Phase 1 | Agent 1 (Astra) | **report not received in-repo** |
+| 2 | Adversarial review of Phase 1 | Agent 1 (Astra) | complete — report received 2026-09-22 |
 | 3 | Reconciliation and canonicalization | Agent 0 | **in progress** — workspace seeded 2026-09-22 |
 | 4 | Design target engineering model | — | not authorised |
 | 5 | Bounded pilot | — | not authorised |
@@ -70,12 +71,54 @@ authoritative over Agent 1's challenges. Agent 1's critique enters as **evidence
 and challenge input**, not as a second canonical register merged automatically
 into the first.
 
+### How the three roles compose across phases (binding)
+
+**The three agents are not three workers taking turns.** They are three
+**positions relative to the evidence**, defined by how anchored each is:
+
+| Agent | Position | Anchoring |
+|---|---|---|
+| Agent 0 | constructs | Most anchored — holds all the context, so least able to see its own assumptions |
+| Agent 1 | attacks | Anchored *by Agent 0's output*; it argues on that terrain |
+| Agent 2 | reads cold | Least anchored — the only one that can say whether the record stands without its authors |
+
+Phases 1→2→3 worked because **construct → attack → reconcile** is a sequence in
+which each step consumes the previous step's output — not because three agents
+each took a turn. **The triad recurs only in analysis phases**, and rotating all
+three through every phase would make the investigation pay its own F-023 entry
+cost three times over for passes that mostly add nothing.
+
+| Phase | Composition |
+|---|---|
+| 4 — design | **Full triad.** A design needs attacking *more* than findings do: it has no evidence yet, only reasoning |
+| 5, 8 — pilot, migration | Execution. Agent roles barely apply; the operator runs these |
+| 6 — evaluate pilot | Independence-critical — see the rule below |
+| 7, 9 — adopt, measure | Operator decision, and recurring measurement |
+
+### Phase 6 independence rule (binding)
+
+**Agent 0 must not lead the evaluation of a pilot it designed.** Phase 6 is led
+by Agent 2, or by Agent 1 — never by the agent that produced the Phase 4 design.
+
+Whoever designs a thing cannot judge whether it worked. This is IEEE 1012
+Annex C's independence point, and it is the same failure mode observed twice in
+this investigation on 2026-09-22: Agent 0 used its own unsettled output as a
+settled input, in `consequence-bands.md` and — as Astra independently found —
+in piece 01 §§ 4, 6 and 8. **A constraint on the lead is exactly the kind that
+goes unwritten unless it is written early**, which is why it is recorded here
+before Phase 4 exists.
+
 ### Agent 2 sequencing constraint (binding)
 
 **Independent reader and design participant are two jobs, and doing them in the
 wrong order destroys the first.** The moment an agent has a stake in a design it
 can no longer give an unanchored reading. Agent 2 therefore works in two declared
 acts, in this order:
+
+**Act 1 is available now and is not phase-bound.** The register exists; the cold
+read tests whether it stands on its own. It is arguably most valuable *before*
+Phase 3's reconciliation rewrites the register, because what is on disk today is
+what a newcomer would actually inherit.
 
 **Act 1 — the cold read.** Agent 2 reads **only** this README, `FINDINGS.md`,
 `DISAGREEMENTS.md`, `OPEN-QUESTIONS.md` and `consequence-bands.md`. It reads
@@ -100,9 +143,10 @@ Agent 1 read Agent 0's report and is anchored by it, whereas Agent 2 in Act 1 is
 not. IEEE 1012 Annex C names this problem, and piece 01 found gzkit's honest
 self-description is already the `embedded` form.
 
-**Current gate.** Phase 3 is blocked on receiving the Phase 2 report. Astra runs
-separately and deposits into this folder; nothing had landed as of 2026-09-22
-([`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) `Q-13`). **All thirteen open questions were
+**Current gate.** Astra's Phase 2 report **arrived 2026-09-22** and is deposited
+in this directory. **The full reconciliation pass is deferred and not yet run** —
+no finding status has moved in response to it. Until that pass runs, every row in
+`FINDINGS.md` still carries its pre-challenge status and must be read as such. **All thirteen open questions were
 ruled by the operator on 2026-09-22**, one (`Q-09`) as a deferral. Until then no finding may be
 promoted to `CONFIRMED`. **Phase 4 is not authorised and must not begin
 implicitly** — a design candidate that goes unchallenged is still not a decision.

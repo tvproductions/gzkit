@@ -17,15 +17,17 @@ no doctrine. Nothing in it binds, including any recommendation phrased as one.
 
 ## How material arrives here
 
-The operator runs Astra separately, and **Astra deposits its reports into this
-folder.** An agent looking for the Phase 2 review looks here first and does not
-assume its absence is permanent. As of 2026-09-22 nothing had been deposited.
+The operator runs Astra separately. **Observed behaviour: Astra deposits at the
+`ieee/` directory root, not inside `raw/`** — the Phase 2 report arrived there on
+2026-09-22. The convention follows the tooling rather than the reverse; deposited
+files are not moved, because moving them would fight the operator's pipeline for
+a cosmetic gain. **Tier is set by the label, not the directory.**
 
 ## Contents
 
 | Artifact | Author | Phase | Deposited |
 |---|---|---|---|
-| *(none yet)* | Agent 1 / Astra | 2 — adversarial review | not received |
+| [`../gzkit-engineering-assessment-adversarial-review.md`](../gzkit-engineering-assessment-adversarial-review.md) | Agent 1 / Astra | 2 — adversarial review | 2026-09-22, at the `ieee/` root |
 
 ## Why the Phase 1 pieces are not in this directory
 

@@ -13,16 +13,24 @@
 
 ---
 
-## Status: no entries
+## Status: no entries — report received, reconciliation deferred
 
-**The Phase 2 adversarial review has not been received.** It is not in this
-repository, and it was not in the reconciling agent's context when this workspace
-was created on 2026-09-22. See [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) `Q-13`.
+**Astra's Phase 2 report arrived 2026-09-22** and is at
+[`gzkit-engineering-assessment-adversarial-review.md`](gzkit-engineering-assessment-adversarial-review.md).
+Its §1 verdict and §2 challenge table have been read; **the full reconciliation
+pass is deferred by operator decision and has not been run.**
 
 This file is not empty because Agent 0 and Agent 1 agree. **It is empty because
-the challenge has not been read.** A reader must not infer consensus from it.
+the reconciliation has not happened yet.** A reader must not infer consensus.
 
-Until it is populated:
+What the challenge table already shows, un-reconciled: of roughly 26 rows,
+**8 REJECT, 3 DOWNGRADE TO HYPOTHESIS, 11 CONFIRM WITH QUALIFICATION, 1 CONFIRM,
+1 NEEDS MORE EVIDENCE.** The rejects reach load-bearing findings, including the
+claim that no persistent system model exists and the claim that independent
+requirement identity is the remedy. **These verdicts are Astra's, not adopted** —
+each gets the same scrutiny Agent 0's findings did.
+
+Until this file is populated:
 
 - every reconciled row in `FINDINGS.md` stays `OPEN`;
 - no row may be promoted to `CONFIRMED`;
