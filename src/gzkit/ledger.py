@@ -357,6 +357,12 @@ class Ledger:
         self._cached_events: list[LedgerEvent] | None = None
         self._cached_graph: dict[str, dict[str, Any]] | None = None
         self._replay_manifest: LedgerReplayManifest | None = None
+        #: Streams DERIVED from ``_cached_events`` (GHI #1080). The rows were
+        #: already cached; the netting over them was not, so every caller paid
+        #: it again. Invalidated together with the rest in ``_invalidate_cache``.
+        self._cached_live: list[LedgerEvent] | None = None
+        self._cached_evidence: list[LedgerEvent] | None = None
+        self._cached_rename_map: dict[str, str] | None = None
 
     def exists(self) -> bool:
         """Check if the ledger file exists."""
@@ -429,6 +435,9 @@ class Ledger:
         self._cached_events = None
         self._cached_graph = None
         self._replay_manifest = None
+        self._cached_live = None
+        self._cached_evidence = None
+        self._cached_rename_map = None
 
     def restore_record_boundary(self) -> BoundaryRepair:
         r"""Make the file end on a record boundary without losing a stored row.
@@ -716,7 +725,9 @@ class Ledger:
 
         Results are cached for the lifetime of this Ledger instance.
         """
-        return live_events(self.read_history())
+        if self._cached_live is None:
+            self._cached_live = live_events(self.read_history())
+        return self._cached_live
 
     def read_evidence(self) -> list[LedgerEvent]:
         """Read the EVIDENTIARY stream — what the ledger says was ever TRUE.
@@ -734,7 +745,9 @@ class Ledger:
         ``obpi_lock_released`` vanished from ``handoff_archive._locked_paths``,
         so the exchange record a real token surrender cited became archivable.
         """
-        return evidence_events(self.read_history())
+        if self._cached_evidence is None:
+            self._cached_evidence = evidence_events(self.read_history())
+        return self._cached_evidence
 
     def query(
         self,
@@ -809,6 +822,29 @@ class Ledger:
             and isinstance(new_id := event.extra.get("new_id"), str)
         )
 
+    def _rename_map(self, events: list[LedgerEvent] | None = None) -> dict[str, str]:
+        """Return the folded rename map for the corrected stream, computed once.
+
+        All four callers folded the same ``read_all()`` result, and
+        ``resolve_artifact_id`` puts that fold on the hot path of
+        ``gz validate --frontmatter`` — 2691 calls in one run, which was 55s of
+        a 55.4s step (GHI #1080). Cleared by :meth:`_invalidate_cache` alongside
+        every other derived cache, so a rename appended through this instance is
+        seen by the next call.
+
+        ``events`` is the caller's ALREADY-READ corrected stream, passed where
+        one is in hand. Re-entering :meth:`read_all` there would be free now
+        that it is memoized, but REQ-0.32.0-02-04 asserts the corpus projection
+        opens exactly ONE replay routed through :meth:`get_artifact_graph`, and
+        its witness counts ``read_all`` CALLS rather than replays. Honoring the
+        REQ at the surface keeps that witness exact instead of loosening it to
+        accommodate a redundant call.
+        """
+        if self._cached_rename_map is None:
+            source = self.read_all() if events is None else events
+            self._cached_rename_map = self._build_rename_map(source)
+        return self._cached_rename_map
+
     @staticmethod
     def _canonicalize_with_map(artifact_id: str, rename_map: dict[str, str]) -> str:
         """Resolve an artifact ID to its latest canonical form via the pre-folded rename map."""
@@ -816,9 +852,7 @@ class Ledger:
 
     def canonicalize_id(self, artifact_id: str) -> str:
         """Resolve an artifact ID to the latest canonical identifier."""
-        events = self.read_all()
-        rename_map = self._build_rename_map(events)
-        return self._canonicalize_with_map(artifact_id, rename_map)
+        return self._canonicalize_with_map(artifact_id, self._rename_map())
 
     def resolve_artifact_id(self, artifact_id: str) -> str:
         """Resolve an artifact ID through rename-map then short-form→long-form (GHI #222).
@@ -854,7 +888,7 @@ class Ledger:
         """
         latest: dict[int, str] = {}
         events = self.read_all()
-        rename_map = self._build_rename_map(events)
+        rename_map = self._rename_map(events)
         target_id = self._canonicalize_with_map(adr_id, rename_map)
 
         for event in events:
@@ -902,7 +936,7 @@ class Ledger:
         (`_attestation_gate_snapshot`) where lifecycle isn't yet validated.
         """
         events = self.read_all()
-        rename_map = self._build_rename_map(events)
+        rename_map = self._rename_map(events)
         target_id = self._canonicalize_with_map(adr_id, rename_map)
 
         validated_states = {"Completed", "Validated"}
@@ -1306,7 +1340,7 @@ class Ledger:
         # a claim about what the ledger CONTAINS, not what it currently asserts.
         history = self.read_history()
         events = self.read_all()
-        rename_map = self._build_rename_map(events)
+        rename_map = self._rename_map(events)
 
         for event in events:
             canonical_id = self._canonicalize_with_map(event.id, rename_map)
