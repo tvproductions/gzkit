@@ -1073,6 +1073,57 @@ class TestExtractGovernanceAnchors(unittest.TestCase):
         self.assertIn("GHI #322", anchors)
         self.assertIn("GHI #357", anchors)
 
+    def test_a_pool_adr_id_does_not_absorb_a_file_extension(self) -> None:
+        """A pool ADR cited as a PATH yields the id, never the id plus ``.md``.
+
+        The commit body is a citation list, so an entry has to be an
+        identifier a reader can look up. ``docs/design/adr/pool/X.md`` names
+        the artifact ``X``; emitting ``X.md`` beside ``X`` lists one artifact
+        twice and neither entry says which is the real id.
+        """
+        from gzkit.commands.sync import _extract_governance_anchors  # noqa: PLC0415
+
+        diff = "+docs/design/adr/pool/ADR-pool.obpi-state-machine.md\n"
+        anchors = _extract_governance_anchors(diff)
+
+        self.assertIn("ADR-pool.obpi-state-machine", anchors)
+        self.assertNotIn("ADR-pool.obpi-state-machine.md", anchors)
+
+    def test_a_wildcard_suffix_yields_no_obpi_anchor(self) -> None:
+        """An author's wildcard is not an artifact, so it anchors nothing.
+
+        Handoffs and briefs legitimately write shell and regex notation over
+        an id stem. Matching the digits before the wildcard invents an
+        identifier no ledger ever recorded and cites it as a touched
+        artifact.
+        """
+        from gzkit.commands.sync import _extract_governance_anchors  # noqa: PLC0415
+
+        for wildcard in (
+            "OBPI-0.51.0-0x",
+            "OBPI-0.0.70-0N",
+            "OBPI-0.0.74-1[5-9]",
+            "OBPI-0.52.0-0{1,2,3}",
+        ):
+            with self.subTest(wildcard=wildcard):
+                anchors = _extract_governance_anchors(f"+run against {wildcard} today\n")
+                self.assertEqual(anchors, [], f"{wildcard} produced {anchors}")
+
+    def test_a_real_two_digit_obpi_id_still_anchors(self) -> None:
+        """The refusal above is ambiguity, not breadth -- real ids are unaffected."""
+        from gzkit.commands.sync import _extract_governance_anchors  # noqa: PLC0415
+
+        diff = (
+            "+OBPI-0.35.0-08 and OBPI-0.35.0-08-remember-post-append-advisory\n"
+            "+docs/design/adr/pool/ADR-pool.gz-chores-system.md and ADR-0.0.31\n"
+        )
+        anchors = _extract_governance_anchors(diff)
+
+        self.assertIn("OBPI-0.35.0-08", anchors)
+        self.assertIn("OBPI-0.35.0-08-remember-post-append-advisory", anchors)
+        self.assertIn("ADR-pool.gz-chores-system", anchors)
+        self.assertIn("ADR-0.0.31", anchors)
+
     def test_dedupes_repeated_ids(self) -> None:
         from gzkit.commands.sync import _extract_governance_anchors  # noqa: PLC0415
 

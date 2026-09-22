@@ -36,10 +36,28 @@ _MAX_LEDGER_EVENTS_IN_COMMIT = 12
 
 # Anchor extraction patterns. The builder groups output by family
 # (ADR semver, ADR pool, OBPI, GHI) in this order.
+#
+# Every pattern must match the IDENTIFIER SHAPE the validators enforce, because
+# the commit body is a citation list and an entry a reader cannot look up is
+# worse than no entry. Two shapes were looser than the artifacts they name:
+#
+# - The pool slug admitted ``.``, so a path ``.../ADR-pool.x.md`` yielded
+#   ``ADR-pool.x.md`` alongside ``ADR-pool.x`` — one artifact listed twice,
+#   neither entry saying which is the id. No pool slug carries an internal
+#   dot, so dropping ``.`` from the trailing class stops at the extension.
+# - The OBPI index admitted one-or-more digits, so an author's wildcard over
+#   an id stem (``-0{1,2,3}``, ``-1[5-9]``) truncated to a shorter string and
+#   was emitted as a touched artifact the ledger never recorded. The canonical
+#   index is exactly two digits — ``handoff_validation._OBPI_ID_RE`` and
+#   ``governance.brief_structure._OBPI_ID_RE`` both require ``\d{2}`` — so the
+#   floor here makes a wildcard fail to match rather than match short.
+#
+# Matching short is the failure mode to avoid: a truncation is indistinguishable
+# from a real citation downstream, whereas no match is visibly nothing.
 _ANCHOR_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("ADR-semver", re.compile(r"\bADR-\d+\.\d+\.\d+(?:-[a-z0-9][a-z0-9-]*)?\b")),
-    ("ADR-pool", re.compile(r"\bADR-pool\.[a-z0-9][a-z0-9.-]*\b")),
-    ("OBPI", re.compile(r"\bOBPI-\d+\.\d+\.\d+-\d+(?:-[a-z0-9][a-z0-9-]*)?\b")),
+    ("ADR-pool", re.compile(r"\bADR-pool\.[a-z0-9][a-z0-9-]*\b")),
+    ("OBPI", re.compile(r"\bOBPI-\d+\.\d+\.\d+-\d{2}(?:-[a-z0-9][a-z0-9-]*)?\b")),
     ("GHI", re.compile(r"\bGHI #\d+\b")),
 )
 
