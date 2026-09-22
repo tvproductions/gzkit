@@ -57,10 +57,45 @@ are the standing guard on this, and F-032 binds Phase 4 as a filter.
 | 8 | Incremental migration | — | not authorised |
 | 9 | Measure and periodically reassess | — | not authorised |
 
-**Roles.** Agent 0 performed Phase 1 and leads Phase 3. That lead is procedural:
-it does not make Agent 0's findings authoritative over Agent 1's challenges.
-Agent 1's critique enters as **evidence and challenge input**, not as a second
-canonical register merged automatically into the first.
+### Roles
+
+| Agent | Role |
+|---|---|
+| **Agent 0** | Primary investigator (Phase 1) and reconciliation lead (Phase 3) |
+| **Agent 1 — Astra** | Adversarial reviewer (Phase 2). Run separately by the operator; deposits reports into [`raw/`](raw/README.md) |
+| **Agent 2** | Later independent reader, **then** design participant — in that order (see below) |
+
+Agent 0's lead is **procedural**: it does not make Agent 0's findings
+authoritative over Agent 1's challenges. Agent 1's critique enters as **evidence
+and challenge input**, not as a second canonical register merged automatically
+into the first.
+
+### Agent 2 sequencing constraint (binding)
+
+**Independent reader and design participant are two jobs, and doing them in the
+wrong order destroys the first.** The moment an agent has a stake in a design it
+can no longer give an unanchored reading. Agent 2 therefore works in two declared
+acts, in this order:
+
+**Act 1 — the cold read.** Agent 2 reads **only** this README, `FINDINGS.md`,
+`DISAGREEMENTS.md`, `OPEN-QUESTIONS.md` and `consequence-bands.md`. It reads
+**neither** the numbered pieces **nor** anything in `raw/`. It then answers one
+question and records the answer before doing anything else:
+
+> Can the investigation's current position be stated from the canonical register
+> alone — and if not, exactly what could not be determined?
+
+**Act 2 — design participation.** Only after Act 1's verdict is recorded may
+Agent 2 read the raw record and join design work, as a **declared second role**.
+
+**Why the order is binding.** Act 1 is the only falsifiability test the register
+has. It checks whether this investigation exists durably in the repository or
+still only in Agent 0's and Agent 1's context. A failed cold read is a finding
+**about the register**, and the register is then what gets repaired — not the
+reader. It is also the closest thing available here to genuine V&V independence:
+Agent 1 read Agent 0's report and is anchored by it, whereas Agent 2 in Act 1 is
+not. IEEE 1012 Annex C names this problem, and piece 01 found gzkit's honest
+self-description is already the `embedded` form.
 
 **Current gate.** Phase 3 is blocked on receiving the Phase 2 report. Astra runs
 separately and deposits into this folder; nothing had landed as of 2026-09-22
@@ -151,8 +186,12 @@ adoption can even mean:
 
 ## Handoff — for an agent joining now
 
-Read this section plus [`FINDINGS.md`](FINDINGS.md). That is enough; **you do not
-need to replay Phase 1 or Phase 2.**
+Read this section plus [`FINDINGS.md`](FINDINGS.md), and
+[`DISAGREEMENTS.md`](DISAGREEMENTS.md), [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md)
+and [`consequence-bands.md`](consequence-bands.md) as needed. That is enough;
+**you do not need to replay Phase 1 or Phase 2.** This set is exactly Agent 2's
+Act 1 reading list — if you are Agent 2, stop at its boundary and do not open the
+numbered pieces or `raw/`.
 
 **What is confirmed.** Nothing, in the register's sense of the word. 35 findings
 are recorded with evidence, but none has been through the adversarial pass, so
@@ -190,6 +229,8 @@ and everything the measurement program `M-A` … `M-H` would measure.
 - Creating an ADR, OBPI, REQ or TASK from anything in this directory.
 - Treating a design candidate as a decision, or this register as doctrine.
 - Editing the numbered pieces other than by a dated amendment.
+- **Agent 2 reading the numbered pieces or `raw/` before its Act 1 cold read is
+  recorded.** The reading is worthless once anchored, and it cannot be retaken.
 - **Retiring or replacing the five-gate vocabulary.** Standing operator
   constraint, 2026-09-22: *"do not abandon the five gates without a discussion
   with me."* This binds Phase 4 designs too, including as a side effect.
