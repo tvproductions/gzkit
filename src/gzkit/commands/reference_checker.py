@@ -55,6 +55,30 @@ def gh_issue_state(number: str, project_root: Path) -> ReferenceState:
     return ReferenceState.UNKNOWN
 
 
+def _unique_prefix_entry(
+    graph: dict[str, dict[str, Any]], identifier: str
+) -> dict[str, Any] | None:
+    """Return the one graph entry whose id extends *identifier*, else ``None`` (GHI #1079).
+
+    The separator is load-bearing: the match is against ``<identifier>-``, never
+    raw text, so ``OBPI-0.1.0-1`` does not name ``OBPI-0.1.0-10-…``. A truncated
+    citation resolving to a numerically adjacent OBPI would be a wrong verdict
+    wearing a right one's confidence, and the extractor does produce truncations.
+
+    TWO OR MORE MATCHES RESOLVE TO NOTHING. GHI #826 ruled that an id is matched
+    "on the id the caller SUPPLIED, never on a prefix derived from it", because
+    demoting a feature ADR releases its semver while parked OBPI ids keep it, so
+    one prefix can name two OBPIs under two different parent ADRs. That is not
+    hypothetical here: ``OBPI-0.35.0-08`` extends to both ``-forbid-pytest`` and
+    ``-remember-post-append-advisory``. Refusing is the ruling, not a shortfall.
+    """
+    prefix = f"{identifier}-"
+    matches = [key for key in graph if key.startswith(prefix)]
+    if len(matches) == 1:
+        return graph[matches[0]]
+    return None
+
+
 def _artifact_info(identifier: str, project_root: Path) -> dict[str, Any] | None:
     """Read one artifact's entry in the ledger's graph, or ``None`` when Layer 2 is silent.
 
@@ -62,6 +86,19 @@ def _artifact_info(identifier: str, project_root: Path) -> dict[str, Any] | None
     one implementation. Any failure — no ledger, unreadable rows, an id the
     ledger never recorded — returns ``None``, which each caller renders
     ``UNKNOWN``: a surface that could not be read has verified nothing.
+
+    **The citation is the id the PROSE wrote, not the graph key (GHI #1079).**
+    ``_extract_references`` takes the matched text verbatim, and real handoffs
+    write ``ADR-0.35.0`` and ``OBPI-0.35.0-08``, never the full slug — measured
+    over this repository's handoff corpus, 1264 of 1854 ADR citations and 397 of
+    867 OBPI citations are unique prefixes, and **no** OBPI citation was an exact
+    graph key. An exact-key lookup therefore answered almost nothing.
+
+    Resolution is ``Ledger.resolve_artifact_id`` first, which folds renames and
+    already resolves a unique ADR prefix (GHI #222), then
+    :func:`_unique_prefix_entry` for the kinds that method passes through. The
+    fold is reused rather than reimplemented so two resolvers cannot disagree
+    about what an id means.
     """
     from gzkit.ledger import Ledger  # noqa: PLC0415 — import cost stays off the CLI's cold path
 
@@ -69,9 +106,14 @@ def _artifact_info(identifier: str, project_root: Path) -> dict[str, Any] | None
     if not ledger_path.is_file():
         return None
     try:
-        info = Ledger(ledger_path).get_artifact_graph().get(identifier)
+        ledger = Ledger(ledger_path)
+        graph = ledger.get_artifact_graph()
+        resolved = ledger.resolve_artifact_id(identifier)
     except (OSError, ValueError):
         return None
+    info = graph.get(resolved)
+    if info is None:
+        info = _unique_prefix_entry(graph, resolved)
     return info if isinstance(info, dict) else None
 
 

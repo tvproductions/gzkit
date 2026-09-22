@@ -470,3 +470,157 @@ class TestAdrCitationsResolveFromRecordedCloseout(unittest.TestCase):
         state = check(StepReference(kind=ReferenceKind.ADR, identifier=adr, repo="gz-skills"))
 
         self.assertEqual(state, ReferenceState.UNKNOWN)
+
+
+class TestCitationsResolveThroughPrefixesTheProseActuallyWrites(unittest.TestCase):
+    """A citation is the id the PROSE wrote, which is rarely the full slug (GHI #1079).
+
+    ``_extract_references`` takes ``match.group(0)``, so the identifier is
+    whatever the handoff author typed. Measured over every handoff in
+    ``.gzkit/handoffs/`` before this change:
+
+        citation shape        ADR    OBPI
+        exact graph id        288       0
+        unique prefix        1264     397
+        ambiguous prefix        0     466
+        no graph match        302       4
+
+    Both ledger arms looked the citation up as an exact graph key, so the OBPI
+    arm GHI #1076 shipped answered NONE of the 867 real OBPI citations.
+
+    ``Ledger.resolve_artifact_id`` already folds renames and already resolves a
+    unique ADR prefix (GHI #222); the fallback here extends that rule to the
+    other kinds. An AMBIGUOUS prefix resolves ``UNKNOWN`` and is never guessed —
+    GHI #826: "never on a prefix derived from it ... one prefix can name two
+    OBPIs under two different parent ADRs." That hazard is live in this
+    repository's own graph, where ``OBPI-0.35.0-08`` extends to both
+    ``-forbid-pytest`` and ``-remember-post-append-advisory``.
+    """
+
+    def setUp(self) -> None:
+        self._root = tempfile.TemporaryDirectory()
+        self.addCleanup(self._root.cleanup)
+        self.root = Path(self._root.name)
+        self.ledger = self.root / ".gzkit" / "ledger.jsonl"
+        self.ledger.parent.mkdir(parents=True, exist_ok=True)
+
+    def _write(self, *rows: dict[str, object]) -> None:
+        self.ledger.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
+
+    @staticmethod
+    def _obpi(obpi_id: str, ts: str) -> dict[str, object]:
+        return {
+            "schema": "gzkit.ledger.v1",
+            "event": "obpi_created",
+            "id": obpi_id,
+            "ts": ts,
+            "parent": "ADR-0.1.0-example",
+        }
+
+    @staticmethod
+    def _adr(adr_id: str, ts: str) -> dict[str, object]:
+        return {
+            "schema": "gzkit.ledger.v1",
+            "event": "adr_created",
+            "id": adr_id,
+            "ts": ts,
+            "lane": "heavy",
+        }
+
+    def test_a_unique_obpi_prefix_resolves(self) -> None:
+        self._write(self._obpi("OBPI-0.1.0-01-only-one", "2026-01-01T00:00:00+00:00"))
+
+        self.assertEqual(
+            obpi_ledger_state("OBPI-0.1.0-01", self.root),
+            ReferenceState.LIVE,
+            "the shape every real handoff writes resolved to nothing",
+        )
+
+    def test_an_ambiguous_obpi_prefix_is_unknown_not_guessed(self) -> None:
+        """GHI #826's hazard: the prefix names two OBPIs, so it names neither."""
+        self._write(
+            self._obpi("OBPI-0.1.0-08-forbid-pytest", "2026-01-01T00:00:00+00:00"),
+            self._obpi("OBPI-0.1.0-08-remember-advisory", "2026-01-02T00:00:00+00:00"),
+        )
+
+        self.assertEqual(
+            obpi_ledger_state("OBPI-0.1.0-08", self.root),
+            ReferenceState.UNKNOWN,
+            "an ambiguous prefix was resolved to a sibling instead of refused",
+        )
+
+    def test_the_ambiguity_control_is_real(self) -> None:
+        """Proves the previous test refuses because of ambiguity, not absence.
+
+        Without this, a resolver that simply never matched prefixes would pass
+        `test_an_ambiguous_obpi_prefix_is_unknown_not_guessed` for the wrong
+        reason. Same ledger, same prefix, one sibling removed -> it resolves.
+        """
+        self._write(self._obpi("OBPI-0.1.0-08-forbid-pytest", "2026-01-01T00:00:00+00:00"))
+
+        self.assertEqual(obpi_ledger_state("OBPI-0.1.0-08", self.root), ReferenceState.LIVE)
+
+    def test_a_prefix_must_stop_at_a_segment_boundary(self) -> None:
+        """``OBPI-0.1.0-1`` is not a prefix of ``OBPI-0.1.0-10-x``.
+
+        Matching raw text rather than ``<id>-`` would make every truncated
+        citation resolve to a numerically adjacent OBPI — a wrong verdict
+        wearing a right one's confidence. The corpus measurement found 4 such
+        truncations (`OBPI-0.51.0-0`), produced by the extractor's own pattern.
+        """
+        self._write(self._obpi("OBPI-0.1.0-10-ten", "2026-01-01T00:00:00+00:00"))
+
+        self.assertEqual(obpi_ledger_state("OBPI-0.1.0-1", self.root), ReferenceState.UNKNOWN)
+
+    def test_a_unique_adr_prefix_resolves(self) -> None:
+        self._write(
+            self._adr("ADR-0.1.0-example", "2026-01-01T00:00:00+00:00"),
+            {
+                "schema": "gzkit.ledger.v1",
+                "event": "audit_receipt_emitted",
+                "id": "ADR-0.1.0-example",
+                "ts": "2026-01-02T00:00:00+00:00",
+                "receipt_event": "validated",
+                "attestor": "g0",
+                "evidence": {"adr_completion": "completed"},
+            },
+        )
+
+        self.assertEqual(adr_ledger_state("ADR-0.1.0", self.root), ReferenceState.SETTLED)
+
+    def test_an_exact_id_keeps_its_verdict(self) -> None:
+        self._write(self._obpi("OBPI-0.1.0-01-exact", "2026-01-01T00:00:00+00:00"))
+
+        self.assertEqual(obpi_ledger_state("OBPI-0.1.0-01-exact", self.root), ReferenceState.LIVE)
+
+    def test_a_prefix_matching_nothing_is_unknown(self) -> None:
+        self._write(self._obpi("OBPI-0.1.0-01-only-one", "2026-01-01T00:00:00+00:00"))
+
+        self.assertEqual(obpi_ledger_state("OBPI-9.9.9-99", self.root), ReferenceState.UNKNOWN)
+
+    def test_a_renamed_artifact_resolves_through_its_current_id(self) -> None:
+        """The rename fold is why this routes through ``resolve_artifact_id``."""
+        self._write(
+            self._obpi("OBPI-0.1.0-01-old-name", "2026-01-01T00:00:00+00:00"),
+            {
+                "schema": "gzkit.ledger.v1",
+                "event": "artifact_renamed",
+                "id": "OBPI-0.1.0-01-old-name",
+                "ts": "2026-01-02T00:00:00+00:00",
+                "new_id": "OBPI-0.1.0-01-new-name",
+            },
+        )
+
+        self.assertEqual(
+            obpi_ledger_state("OBPI-0.1.0-01-old-name", self.root), ReferenceState.LIVE
+        )
+
+    def test_a_foreign_prefix_citation_is_still_not_read_locally(self) -> None:
+        self._write(self._obpi("OBPI-0.1.0-01-only-one", "2026-01-01T00:00:00+00:00"))
+        check = live_reference_checker(self.root)
+
+        state = check(
+            StepReference(kind=ReferenceKind.OBPI, identifier="OBPI-0.1.0-01", repo="gz-skills")
+        )
+
+        self.assertEqual(state, ReferenceState.UNKNOWN)
