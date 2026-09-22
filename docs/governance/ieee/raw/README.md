@@ -19,9 +19,16 @@ no doctrine. Nothing in it binds, including any recommendation phrased as one.
 
 The operator runs Astra separately. **Observed behaviour: Astra deposits at the
 `ieee/` directory root, not inside `raw/`** — the Phase 2 report arrived there on
-2026-09-22. The convention follows the tooling rather than the reverse; deposited
-files are not moved, because moving them would fight the operator's pipeline for
-a cosmetic gain. **Tier is set by the label, not the directory.**
+2026-09-22.
+
+> **Operator ruling, 2026-09-22:** *"leave it where astra put it, for now."*
+> Deposited files are **not** moved. The convention follows the tooling rather
+> than the reverse. **Tier is set by the label, not the directory** — a report at
+> the `ieee/` root is raw record exactly as one inside `raw/` would be.
+>
+> **The ruling is provisional** (*"for now"*). If Astra's deposit path later
+> changes, or the root accumulates enough reports to obscure the canonical files,
+> the placement is reopened — by the operator, not by an agent tidying.
 
 ## Contents
 

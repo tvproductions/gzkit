@@ -192,7 +192,7 @@ never in `FINDINGS.md`, so that a candidate cannot be misread as a decision.
 
 ### Q-13 — How is the Phase 2 adversarial review delivered? *(blocking)*
 
-**RULED 2026-09-22 — Astra runs separately and deposits its reports into this folder.** **Report received 2026-09-22**, deposited at the directory root as `gzkit-engineering-assessment-adversarial-review.md` (not inside `raw/`; the convention follows the tooling, not the reverse). Phase 3 is unblocked; the reconciliation pass is deferred by operator decision.
+**RULED 2026-09-22 — Astra runs separately and deposits its reports into this folder.** **Report received 2026-09-22**, deposited at the directory root as `gzkit-engineering-assessment-adversarial-review.md` (not inside `raw/`). **Operator ruling 2026-09-22: leave it where Astra put it, for now** — provisional, and reopened only by the operator. Phase 3 is unblocked; the reconciliation pass is deferred by operator decision.
 
 Agent 1's review is not in this repository and was not in the reconciling agent's
 context when this workspace was seeded. **Phase 3 cannot complete without it**:
