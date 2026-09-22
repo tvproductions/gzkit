@@ -27,7 +27,10 @@ _LEDGER_RELPATH = (".gzkit", "ledger.jsonl")
 # Artifact-naming patterns (REQ-06-02). Numeric foundation/feature IDs only —
 # the pool-slug forms (ADR-pool.<slug>) do not appear in fix commit subjects.
 _ADR_RE = re.compile(r"ADR-\d+\.\d+\.\d+")
-_OBPI_RE = re.compile(r"OBPI-\d+\.\d+\.\d+-\d+")
+# Two digits exactly: the canonical index width. A looser ``\d+`` truncated an
+# author's wildcard into an artifact name, which is the inverse of this
+# module's contract that nothing in the window is "narrated away".
+_OBPI_RE = re.compile(r"OBPI-\d+\.\d+\.\d+-\d{2}")
 _REQ_RE = re.compile(r"REQ-(?:\d+\.\d+\.\d+-)?\d+-\d+")
 
 # git log record/field separators (ASCII unit/record separators — never appear

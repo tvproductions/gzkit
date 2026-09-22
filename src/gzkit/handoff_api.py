@@ -724,7 +724,12 @@ _FOREIGN_REPO = r"(?P<repo>[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)?)"
 _REFERENCE_PATTERNS: tuple[tuple[ReferenceKind, re.Pattern[str]], ...] = (
     # OBPI before ADR: an OBPI id embeds its parent's semver, so matching ADR
     # first would strand the OBPI suffix as a second, bogus reference.
-    (ReferenceKind.OBPI, re.compile(r"\bOBPI-\d+\.\d+\.\d+-\d+")),
+    # The index is exactly two digits, as ``handoff_validation._OBPI_ID_RE``
+    # requires. A looser ``\d+`` matched SHORT against an author's wildcard over
+    # an id stem (``-0{1,2,3}``, ``-1[5-9]``, ``-0N``) and emitted a citation the
+    # ledger never recorded -- indistinguishable downstream from a real citation
+    # to a missing artifact, where no match at all is visibly nothing.
+    (ReferenceKind.OBPI, re.compile(r"\bOBPI-\d+\.\d+\.\d+-\d{2}")),
     (ReferenceKind.ADR, re.compile(r"\bADR-(?:pool\.[a-z0-9-]+|\d+\.\d+\.\d+)")),
     # Bare ``#123`` counts: handoff authors write "#696" far more often than
     # "GHI #696", and the bare form is the one that decayed unchecked.

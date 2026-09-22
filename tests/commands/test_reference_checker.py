@@ -624,3 +624,39 @@ class TestCitationsResolveThroughPrefixesTheProseActuallyWrites(unittest.TestCas
         )
 
         self.assertEqual(state, ReferenceState.UNKNOWN)
+
+
+class TestCitationExtractorRefusesWildcards(unittest.TestCase):
+    """A wildcard over an id stem is notation, not a citation.
+
+    Handoffs and briefs legitimately write shell and regex notation over an
+    OBPI stem. Matching the digits before the wildcard invents an identifier
+    the ledger never recorded, which then resolves UNKNOWN -- and an UNKNOWN
+    that came from a truncation is indistinguishable from one that came from
+    a real citation to a missing artifact.
+    """
+
+    def test_a_wildcard_suffix_yields_no_reference(self) -> None:
+        from gzkit.handoff_api import _extract_references  # noqa: PLC0415
+
+        for wildcard in ("OBPI-0.51.0-0x", "OBPI-0.0.70-0N", "OBPI-0.0.74-1[5-9]"):
+            with self.subTest(wildcard=wildcard):
+                refs = _extract_references(f"Re-claim per OBPI ({wildcard}) before work.")
+                obpis = [r.identifier for r in refs if r.kind.name == "OBPI"]
+                self.assertEqual(obpis, [], f"{wildcard} produced {obpis}")
+
+    def test_a_real_obpi_citation_is_unaffected(self) -> None:
+        """The extractor yields the SHORT form, and both spellings fold to it.
+
+        It carries no slug-suffix group by design: a cited long slug reduces
+        to ``OBPI-X.Y.Z-NN``, which is the key GHI #1079 taught
+        ``_artifact_info`` to resolve by unique prefix. The refusal above is
+        of ambiguity, not of breadth, so this folding must survive it.
+        """
+        from gzkit.handoff_api import _extract_references  # noqa: PLC0415
+
+        refs = _extract_references(
+            "OBPI-0.35.0-08 and OBPI-0.35.0-08-remember-post-append-advisory stay cited."
+        )
+        obpis = [r.identifier for r in refs if r.kind.name == "OBPI"]
+        self.assertEqual(obpis, ["OBPI-0.35.0-08"])

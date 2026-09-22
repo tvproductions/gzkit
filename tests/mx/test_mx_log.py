@@ -270,3 +270,28 @@ class TestExitRendersLogBeforeSigning(SilencedConsoleTestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestParseArtifactsRefusesWildcards(unittest.TestCase):
+    """``parse_artifacts`` names artifacts, so a wildcard must name none.
+
+    The docstring's contract is that nothing in the window can be "forgotten
+    or narrated away". Emitting a truncation of an author's wildcard is the
+    inverse failure: it narrates IN an artifact the ledger never recorded,
+    and a truncation is indistinguishable downstream from a real citation.
+    """
+
+    def test_a_wildcard_suffix_names_no_obpi(self) -> None:
+        from gzkit.mx.log import parse_artifacts  # noqa: PLC0415
+
+        for wildcard in ("OBPI-0.51.0-0x", "OBPI-0.0.74-1[5-9]", "OBPI-0.52.0-0{1,2,3}"):
+            with self.subTest(wildcard=wildcard):
+                got = parse_artifacts(f"fix(x): touches {wildcard} today")
+                self.assertEqual(got["OBPI"], [], f"{wildcard} produced {got['OBPI']}")
+
+    def test_a_real_two_digit_obpi_is_still_named(self) -> None:
+        from gzkit.mx.log import parse_artifacts  # noqa: PLC0415
+
+        got = parse_artifacts("fix(x): OBPI-0.35.0-08 and OBPI-0.1.0-10-templates")
+        self.assertIn("OBPI-0.35.0-08", got["OBPI"])
+        self.assertIn("OBPI-0.1.0-10", got["OBPI"])

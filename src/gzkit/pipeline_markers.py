@@ -42,7 +42,10 @@ PIPELINE_LEGACY_MARKER = ".pipeline-active.json"
 # one number for "how old before we stop believing this", not two.
 STALE_MARKER_HOURS = 24
 
-_OBPI_SHORT_FORM_RE = re.compile(r"OBPI-\d+\.\d+\.\d+-\d+")
+# Truncating the SLUG is this pattern's purpose (GHI #187, #313) -- but the
+# index itself is exactly two digits, so the floor preserves every real short
+# form while refusing a wildcard stem that would truncate to a shorter string.
+_OBPI_SHORT_FORM_RE = re.compile(r"OBPI-\d+\.\d+\.\d+-\d{2}")
 
 
 # A plan's declaration block names its subject structurally — an H1, or the

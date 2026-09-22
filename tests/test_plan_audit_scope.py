@@ -108,3 +108,38 @@ class TestPlanScope(unittest.TestCase):
                     self.assertEqual(
                         receipt["gaps"], [f"Plan references path outside brief scope: {path}"]
                     )
+
+
+class TestShortFormRefusesWildcards(unittest.TestCase):
+    """Truncating the SLUG is the point; truncating a WILDCARD is not.
+
+    ``_obpi_short_form`` exists so short-form and canonical-slug callers
+    agree on plan identity (GHI #187, #313), so it must keep folding a full
+    slug to ``OBPI-X.Y.Z-NN``. But the index is exactly two digits, and a
+    wildcard over an id stem is notation rather than an identifier -- folding
+    it produces a plan owner no ledger ever recorded.
+    """
+
+    def test_a_full_slug_still_folds_to_the_short_form(self) -> None:
+        from gzkit.pipeline_markers import _obpi_short_form  # noqa: PLC0415
+
+        self.assertEqual(
+            _obpi_short_form("OBPI-0.35.0-08-remember-post-append-advisory"),
+            "OBPI-0.35.0-08",
+        )
+        self.assertEqual(_obpi_short_form("OBPI-0.35.0-08"), "OBPI-0.35.0-08")
+
+    def test_a_wildcard_stem_is_returned_unchanged_not_truncated(self) -> None:
+        from gzkit.pipeline_markers import _obpi_short_form  # noqa: PLC0415
+
+        for wildcard in ("OBPI-0.51.0-0x", "OBPI-0.0.70-0N", "OBPI-0.52.0-0{1,2,3}"):
+            with self.subTest(wildcard=wildcard):
+                self.assertEqual(_obpi_short_form(wildcard), wildcard)
+
+    def test_a_plan_naming_a_wildcard_declares_no_obpi(self) -> None:
+        from gzkit.pipeline_markers import _declared_obpi_ids  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            plan = Path(tmp) / "plan-notes.md"
+            plan.write_text("# Re-claim per OBPI-0.51.0-0x\n", encoding="utf-8")
+            self.assertEqual(_declared_obpi_ids(plan), set())
