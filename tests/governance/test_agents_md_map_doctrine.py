@@ -28,9 +28,10 @@ Coverage:
         the invariant and the five prohibited shapes.
     REQ-0.0.54-01-02 — doctrine doc exists as the canonical expansion.
     REQ-0.0.54-01-03 — budget JSON enforces the per-turn surface contract:
-        AGENTS.md fits Codex's project-doc byte cap (no silent truncation) and
-        each surface fits its configured budget; the budget value lives only in
-        the JSON (no literal pinned in the test).
+        AGENTS.md fits Codex's project-doc byte cap (no silent truncation), the
+        configured budget stays under that cap, and an over-budget surface is
+        reported without blocking; the budget value lives only in the JSON (no
+        literal pinned in the test).
     REQ-0.0.54-01-04 — scorecard entry exists and classifies the rule as
         Mechanical with the Judgment note for per-section size targets.
     REQ-0.0.54-01-05 — zero content moved from AGENTS.md (OBPI-02 lift
@@ -40,10 +41,13 @@ Coverage:
 
 from __future__ import annotations
 
+import contextlib
+import io
 import json
 import unittest
 from pathlib import Path
 
+from gzkit.governance.trust_audits import audit_instructions_files_budget
 from gzkit.rules import RuleFrontmatter, _parse_canonical_frontmatter
 from gzkit.traceability import covers
 
@@ -171,7 +175,7 @@ class DoctrineDocExpansion(unittest.TestCase):
 
 
 class BudgetTightening(unittest.TestCase):
-    """REQ-03: the budget JSON is a real, enforced, sane contract."""
+    """REQ-03: the budget JSON is a real, sane contract, enforced where it binds."""
 
     @covers("REQ-0.0.54-01-03")
     def test_budget_enforces_codex_cap_and_files_fit(self) -> None:
@@ -186,8 +190,27 @@ class BudgetTightening(unittest.TestCase):
         budget value is the JSON; the test asserts the *semantic invariant* the
         budget exists to enforce, encoding WHY it matters: AGENTS.md is the surface
         Codex loads, so it must fit Codex's project-doc byte cap (no silent
-        truncation, GHI #519), the configured budget must itself stay under that
-        cap, and each surface must fit its configured budget.
+        truncation, GHI #519), and the configured budget must itself stay under
+        that cap.
+
+        The per-file char budget is NOT asserted as a ceiling here, and that is
+        the point (GHI #1086). Operator ruling 2026-08-17, booked in
+        ``.gzkit/handoffs/rulings.jsonl``: *"temporary stay of all control
+        surface budget limits until version 1.0. I want to be warned, and we may
+        lift the limits as needed, but no blockers."* This method predates that
+        stay (``ca22f82ee``, 2026-06-13) and kept blocking through it. What
+        replaces the ceiling is the stay's own invariant, measured against the
+        LIVE surfaces rather than a fixture: an over-budget file yields no
+        finding, so it cannot change an exit code, and it is still reported.
+        ``test_audit_instructions_files_budget`` proves both halves against
+        fixtures; only a live-input check would have caught this method
+        contradicting them.
+
+        The Codex cap below stays hard. A 32768 B delivery cap is a
+        silent-truncation correctness invariant, not a configured budget, so the
+        stay does not reach it. The method name is retained despite the
+        narrowing because ``data/tautological_test_baseline.json`` keys an entry
+        on it.
         """
         payload = json.loads(_BUDGET_PATH.read_text(encoding="utf-8"))
         files = payload["files"]
@@ -212,13 +235,30 @@ class BudgetTightening(unittest.TestCase):
             "70000 exceeds the project-doc budget ceiling and must be rejected",
         )
 
+        # The stay (GHI #1086): a control-surface budget overrun is REPORTED and
+        # never blocks before 1.0. Asserted against the live tree, so this method
+        # can no longer contradict the ruling it once enforced against.
+        buffer = io.StringIO()
+        with contextlib.redirect_stderr(buffer):
+            findings = list(audit_instructions_files_budget(_PROJECT_ROOT))
+        self.assertEqual(
+            findings,
+            [],
+            "a control-surface budget overrun must not contribute a finding "
+            "before 1.0 (operator ruling 2026-08-17: 'no blockers')",
+        )
         for name, path in (("AGENTS.md", _AGENTS_MD), ("CLAUDE.md", _CLAUDE_MD)):
             actual = len(path.read_text(encoding="utf-8"))
+            if actual <= files[name]:
+                continue
             with self.subTest(file=name):
-                self.assertLessEqual(
-                    actual,
-                    files[name],
-                    f"{name} is {actual} chars, exceeds its budget {files[name]}",
+                # The other half of the stay: it suspends the consequence, never
+                # the observation. A silenced warning is as wrong as a blocker.
+                self.assertIn(
+                    name,
+                    buffer.getvalue(),
+                    f"{name} is {actual} chars over its {files[name]} budget and "
+                    "the audit said nothing — the stay must keep measuring",
                 )
 
         # The #519 invariant proper: AGENTS.md byte size fits Codex's byte cap.
