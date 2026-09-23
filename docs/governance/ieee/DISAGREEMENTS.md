@@ -140,8 +140,10 @@ It has no **finding**, which is the gap.)*
 - Agent 1 challenge:  **NEEDS MORE EVIDENCE.** *"ID/function overlap is insufficient"*; the 1012 note is *"misapplied to suite architecture"* [S6]; *"Same lines/REQs can be exercised under different conditions and assertions."* Alternative: some redundant tests amid useful boundary and acceptance checks
 - Evidence for A0:    `01 § 3`, `01 § 8` — not re-derived by this pass
 - Evidence for A1:    S6 — IEEE 1012's note read in its own scope
-- Disposition:        MISSING EVIDENCE
+- Disposition:        MISSING EVIDENCE — **unchanged by `M-F`'s execution**; see the 2026-09-23 note below
 - To resolve:         **`M-F` is this claim's measurement home, and it already exists** — *"Measure the real duplication between Gate 4 and Gate 2 before proposing removal"*, independent and cheap, with a method (run behave under coverage instrumentation, compare against the unit suite, verify the behave-only REQ count) and a note that `@wip` scenarios which never execute must be counted separately. **So the claim is not homeless in the investigation; it is homeless in the register.** Both Astra's verdict and `M-F` say the same thing in different vocabularies: measure before proposing removal. What remains for the operator is whether a finding should be authored so the claim carries a status, or whether `M-F` alone is a sufficient home for a REMOVE-class proposal that no finding asserts. **Either way the seeding of `FINDINGS.md` from pieces 01 and 02 was not exhaustive**, which is worth knowing before the register is treated as complete
+
+*Amended 2026-09-23 — `M-F` executed; piece [`03`](03-gate4-gate2-duplication-2026-09-23.md).* **The disposition does not move, and the reason is the challenge itself.** Astra's objection was *"Same lines/REQs can be exercised under different conditions and assertions"*, and line coverage is structurally unable to answer it: a scenario asserting different behaviour over the same lines is indistinguishable from a duplicate. `M-F` measured the coverage residue — 288 behave-only statements, 1.14% of behave's own reach, 47 of 74 feature files adding none — which bounds the claim from **one side only**. A0's position is now supported for line reach and still unsupported for assertion content, which is not the same as supported. Two narrower results stand unconditionally, because they do not depend on what a scenario asserts: the 35 `@wip` scenarios execute nothing and every one of their 25 REQ tags already has a `@covers` test, and `subagent_pipeline.feature` contributes neither a behave-only statement nor a single REQ tag. **The open operator question is unchanged** — whether a finding should be authored so the claim carries a status — and `M-F` having run makes it more answerable, not answered.
 
 ---
 
@@ -187,6 +189,14 @@ changed on the finding itself. The two must not drift.
 ---
 
 ## Amendments
+
+- **2026-09-23 — `M-F` executed; `D-08` annotated, disposition unmoved.** The
+  measurement `D-08` was waiting on has been run (piece
+  [`03`](03-gate4-gate2-duplication-2026-09-23.md)). `MISSING EVIDENCE` stands:
+  the evidence produced is line coverage, and Astra's challenge is about
+  assertions over shared lines, which coverage cannot see. Recording it as
+  resolved would convert a bounded result into the unbounded one the challenge
+  contested. **No other entry changed and no other disposition moved.**
 
 - **2026-09-23 — stop condition met (`Q-14`).** § Status updated and the closing
   conditions rewritten. **No entry changed and no disposition moved.** `D-01` and

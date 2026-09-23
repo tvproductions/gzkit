@@ -387,20 +387,23 @@ the failure mode most consistent with this repository's history."*
 | `M-C` | Whether the six intake surfaces can be reduced, by tracing where sampled items actually end up; duplication and mortality across surfaces | F-006 | proposed. Bears on `D-01` |
 | `M-D` | The claim behind each gate and each enforcement claim, in 15026-2 § 5.3.3 form, and whether a non-agent witness exists | F-019, F-021 | proposed, **gated on its own method problem** — the prior audit disqualified itself as *"a stochastic surface auditing a stochastic surface."* Highest-risk item. Bears on `D-05` |
 | `M-E` | Whether an architecture description is warranted, or whether extending `gz drift`/`gz covers` reaches the same property more cheaply | F-013 | proposed. **Declared bias:** the correspondence route is likely cheaper and should be tested first |
-| `M-F` | The real duplication between Gate 4 and Gate 2 — run behave with coverage instrumentation against the unit suite, and count the behave-only REQs | *(no finding — see below)* | proposed, independent and cheap. **This is the home of `D-08`** |
+| `M-F` | The real duplication between Gate 4 and Gate 2 — run behave with coverage instrumentation against the unit suite, and count the behave-only REQs | *(no finding — see below)* | **EXECUTED 2026-09-23** — [`03`](03-gate4-gate2-duplication-2026-09-23.md). **This is the home of `D-08`**, whose disposition it does NOT move |
 | `M-G` | Baselines for the metrics Phase 1 could measure only once, each stated as an information need before a measure (15939 § 6.2 b) | F-025 | proposed. Settles `D-04` |
 | `M-H` | Consequence bands, defined **with the operator** — *"cannot be done by an agent alone"* | `Q-04` | **DISCHARGED 2026-09-22** — [`consequence-bands.md`](consequence-bands.md), authored live with the operator. Still `PROVISIONAL` |
 
 **Sequencing, from `01 § 12`:** `M-A`, `M-B` and `M-C` are independent and may run
 concurrently. `M-D` must not start until its method problem is settled. `M-E`
 depends on `M-A`. `M-G` depends on `M-H`, which is discharged. `M-F` is
-independent.
+independent, and is executed.
 
 **Two things this table makes visible that the register previously could not.**
 `M-F` **exists** and is the measurement home for the BDD-duplication claim that
 never became a finding — recorded at `DISAGREEMENTS.md` `D-08` as a challenge
 with nothing to land on. And `M-H` is **already discharged**, so the program is
 7/8 outstanding rather than 8/8; nothing in the register said so.
+*(Amended 2026-09-23: `M-F` has since been executed — piece
+[`03`](03-gate4-gate2-duplication-2026-09-23.md) — so the program now stands at
+**6/8 outstanding**.)*
 
 ---
 
@@ -436,6 +439,7 @@ Historical. Subordinate to [`FINDINGS.md`](FINDINGS.md); read it first.
 |---|-------|---------|-------------|
 | 01 | [Engineering-method assessment](01-engineering-method-2026-09-22.md) | Whole-system pass: the engineering ontology, persistent versus transient knowledge, traceability, the OBPI as a work package, agent entry and exit cost | `6a0e5241e` |
 | 02 | [Requirements engineering versus release management](02-requirements-vs-release-2026-09-22.md) | The identifier seam: decision identity, requirement identity and release identity sharing one semver namespace; baselines as the missing bridge object | `be663409a` |
+| 03 | [What Gate 4 actually adds over Gate 2](03-gate4-gate2-duplication-2026-09-23.md) | Measurement item `M-F`: behave and unittest run under identical coverage instrumentation, the behave-only line and REQ residue, and what retiring Gate 4 would actually cost | `43d63da8d` |
 
 ## Standards corpus
 
@@ -511,9 +515,13 @@ Phases 4–6 when authorised; its adoption does not open those phases.
 Carry its explicit comparison and disposition forward alongside `Q-15`; retaining
 it does not select a remedy or authorise Phase 4.
 
-**What remains unmeasured.** The proposed `M-A` … `M-G` measurements and the
-successive-change pilot. `M-H` is discharged, with its scores still provisional.
-Operator rulings do not establish empirical findings.
+**What remains unmeasured.** The proposed `M-A` … `M-E` and `M-G` measurements
+and the successive-change pilot. `M-H` is discharged, with its scores still
+provisional; `M-F` is executed at piece
+[`03`](03-gate4-gate2-duplication-2026-09-23.md) and settles less than its
+headline suggests — it bounds Gate 4's *line* redundancy and leaves the
+assertion-level question `D-08` raises untouched. Operator rulings do not
+establish empirical findings.
 
 **What must not be assumed:**
 
@@ -557,7 +565,7 @@ condition — every row carrying a settled status, and the disagreements recorde
 was met on 2026-09-23. **Phase 4 requires explicit operator authorisation**, not
 merely an absence of objection, and the full triad when it opens. Work that
 remains available *without* entering Phase 4: the measurement program `M-A` …
-`M-H` (`M-H` discharged, seven outstanding), and the two open register questions
+`M-H` (`M-H` discharged, `M-F` executed, six outstanding), and the two open register questions
 — whether findings should be authored for `D-08` and for the three independently
 observed `D2` rows.
 
@@ -588,6 +596,21 @@ the governance pipeline, and nothing here creates one.**
 
 ## Amendments
 
+- **2026-09-23 — `M-F` executed; piece [`03`](03-gate4-gate2-duplication-2026-09-23.md) added.**
+  The first measurement item run by an agent alone (`M-H` was run with the
+  operator). Both suites instrumented identically, subprocess capture enabled on
+  both sides so the ten subprocess-driving step files were not scored as reaching
+  nothing. **Headline: the unit suite already covers 98.9% of every line behave
+  reaches, and 47 of 74 feature files add no reach at all.** Five of `01
+  § 8.3`'s six transcribed figures verify; the behave-only REQ count is 55 rather
+  than ~54, and *"restates the unit file name-for-name"* is literally false and
+  should not be re-cited. **The result is deliberately one-sided and says so:**
+  line coverage cannot see a different assertion over the same line, which is
+  exactly Phase 2's challenge at `D-08`, so `D-08` keeps `MISSING EVIDENCE` and
+  no finding was authored. Two sub-results stand on their own terms — the 35
+  `@wip` scenarios prove nothing not already `@covers`-ed, and
+  `subagent_pipeline.feature` adds neither a line nor a REQ tag. `M-F`'s state
+  moved to EXECUTED in § The measurement program; the program is 6/8 outstanding.
 - **2026-09-23 — FDAU origin and separation hypothesis retained (`Q-16`).**
   Recorded the operator's account of why the IEEE investigation began, pinned
   the comparison sources, and linked explicit consideration through the phase
