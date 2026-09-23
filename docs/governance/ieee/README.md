@@ -33,6 +33,7 @@ to know where things stand. The numbered pieces are evidence behind its rows.
 | [`01-…`](01-engineering-method-2026-09-22.md), [`02-…`](02-requirements-vs-release-2026-09-22.md) | historical | Raw investigation record — what an agent said, frozen at its date |
 | [Astra's adversarial review](gzkit-engineering-assessment-adversarial-review.md) | historical | Agent 1's Phase 2 report, as deposited. Raw record — challenge input, not a second register |
 | [Act 1 cold read](act1-cold-read-2026-09-23.md) | historical | Agent 2's Act 1 verdict on **this register**, frozen at its date. Raw record — evidence about the register, not a finding about gzkit |
+| [Dex Horthy transcript excerpts](raw/dex-horthy-successive-change-2026-09-23.md) | historical, external testimony | Timestamped source excerpts behind the successive-change evaluation criterion; not verified findings about gzkit |
 | [`raw/`](raw/README.md) | historical | Index and tier statement for raw reports |
 | [`02-…-evidence/`](02-requirements-vs-release-evidence/) | tooling | `measure.py` — the re-derivation script piece 02's figures come from. **Not investigation narrative**: it holds no conclusions, carries no literals from its authoring date, and reports whatever tree it is given |
 
@@ -59,6 +60,61 @@ are the standing guard on this, and F-032 binds Phase 4 as a filter.
 | 7 | Adopt / revise / reject | — | not authorised |
 | 8 | Incremental migration | — | not authorised |
 | 9 | Measure and periodically reassess | — | not authorised |
+
+### Success across successive changes
+
+**Adopted for this investigation, 2026-09-23.** The operator asked, *"how can
+we inculcate the more compelling aspects of Dex's experiences and conclusions
+here?"* and accepted the proposed criterion and pilot approach with *"okay,
+let's do that then"*. Operator: **g0**. The accepted criterion is:
+
+> A remedy must preserve required behavior, authority, and evidence across
+> successive changes. Its evaluation must examine whether later work remains
+> understandable and verifiable, including by an agent that did not author the
+> remedy. Additional rules, artifacts, and checks are not themselves evidence of
+> improvement.
+
+This is an evaluation commitment within the investigation. It adds no runtime
+gate and does not initiate Phase 4 design, a pilot, or implementation. The phase
+authorisation table and the Phase 6 independence rule remain in force.
+
+**Source and evidence boundary.** The operator supplied an AI Native Dev
+conversation attributed to Dex Horthy. [Selected transcript excerpts](raw/dex-horthy-successive-change-2026-09-23.md)
+retain timestamps and original wording. His experiences motivate the questions
+below; they do not establish their answers for gzkit. No finding gains a status
+from this testimony. Benchmark figures, model rankings, and universal claims
+about context length are not adopted as evidence.
+
+| Lesson to test | Application in the existing phases |
+|---|---|
+| Generating a system and maintaining it are different capabilities | Phase 5 exercises successive changes against the same evolving pilot; Phase 6 evaluates later changes as well as the first success |
+| Passing checks can miss architectural deterioration | Phase 6 examines actual dependencies, state ownership, and failure paths alongside results; the explanation must point to implementation evidence |
+| Planning has greatest value where mistakes are expensive to reverse | Phase 4 gives explicit attention to requirement identity, release authority, and historical evidence, distinguishing them from cheaply reversible details |
+| Existing code supplies examples for later agents | Phase 4 identifies the implementation patterns a later agent is likely to copy; Phase 6 checks whether those patterns agree with the intended design |
+| Corrections should improve subsequent work | Phase 6 checks whether operator corrections recur, and whether existing instructions, skills, or verifiers address the cause before proposing another mechanism |
+
+**Phase 5 pilot shape, for when authorised.** Demonstrate an initial release
+within the bounded pilot, then exercise a changed requirement, a deferred item,
+and a later release. Carry forward the resulting artifacts rather than resetting
+to a clean example between changes. The pilot must expose whether requirement
+identity and approval history remain understandable, release membership can be
+reconstructed, and later changes trigger unexpected repairs or repeated requests
+for settled operator decisions.
+
+**Phase 6 evaluation.** An agent that did not author the remedy locates its
+governing decisions and reconstructs the relevant requirement and release
+history from the retained artifacts, without private explanations from the
+designer. This exercise is separate from the completed Act 1 cold read. Record
+correctness, regressions, reconstruction effort, and operator corrections
+separately, with evidence pointers and the scope of each observation. Use the
+information-need-first approach already proposed in `M-G`; establish a comparable
+baseline before claiming improvement and record relevant differences in task,
+model, and context. Reduced effort alone does not establish improved governance,
+and one successful sequence does not prove general maintainability.
+
+The evaluation feeds the existing Phase 7 **adopt / revise / reject** decision.
+An inconclusive result remains inconclusive. This adds neither a review stage
+nor a presumption that new registries, rules, or checks are the remedy.
 
 ### Roles
 
@@ -426,6 +482,13 @@ the governance pipeline, and nothing here creates one.**
 
 ## Amendments
 
+- **2026-09-23 — successive-change evaluation adopted by g0.** Operator:
+  *"okay, let's do that then"*, accepting the proposed success criterion and
+  pilot approach following the Dex Horthy transcript discussion. Added
+  § Success across successive changes and retained timestamped source excerpts
+  in `raw/`. The lessons are evaluation questions, not new findings. Phase 4–9
+  authorisation, Phase 6 independence, the five gates, and finding statuses are
+  unchanged.
 - **2026-09-23 — Phase 3 recorded complete (`Q-14`).** The phase table, § Current
   gate, § Next permitted step and § Handoff updated. **No finding changed status
   and nothing was promoted**: the fourteen `OPEN` rows stay `OPEN`, and the

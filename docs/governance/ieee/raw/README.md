@@ -4,7 +4,7 @@
 
 > **Tier: historical. Subordinate to [`../FINDINGS.md`](../FINDINGS.md).**
 >
-> What an agent said, preserved as it was said. **Not** what the project accepts
+> What an investigator or external speaker said, preserved as it was said. **Not** what the project accepts
 > as supported — that is the canonical register, and it is the only file a reader
 > needs in order to know the current state of the investigation.
 >
@@ -35,6 +35,7 @@ The operator runs Astra separately. **Observed behaviour: Astra deposits at the
 | Artifact | Author | Phase | Deposited |
 |---|---|---|---|
 | [`../gzkit-engineering-assessment-adversarial-review.md`](../gzkit-engineering-assessment-adversarial-review.md) | Agent 1 / Astra | 2 — adversarial review | 2026-09-22, at the `ieee/` root |
+| [`dex-horthy-successive-change-2026-09-23.md`](dex-horthy-successive-change-2026-09-23.md) | Dex Horthy, attributed in operator-supplied transcript | External testimony for future Phase 4–6 evaluation | 2026-09-23, selected verbatim excerpts |
 
 ## Why the Phase 1 pieces are not in this directory
 
