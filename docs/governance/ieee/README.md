@@ -95,6 +95,42 @@ about context length are not adopted as evidence.
 | Existing code supplies examples for later agents | Phase 4 identifies the implementation patterns a later agent is likely to copy; Phase 6 checks whether those patterns agree with the intended design |
 | Corrections should improve subsequent work | Phase 6 checks whether operator corrections recur, and whether existing instructions, skills, or verifiers address the cause before proposing another mechanism |
 
+**Where the testimony lands in the register.** Reconciled 2026-09-23, after the
+criterion was adopted. Each excerpt is mapped to the row it **bears on**; none
+is evidence **for** that row. Verified mechanically at reconciliation: the
+register held 35 rows at 15 `QUALIFIED` / 14 `OPEN` / 2 `CONFIRMED` /
+2 `DISPUTED` / 2 `REJECTED` before and after the deposit, so the boundary above
+— *no finding gains a status from this testimony* — holds as stated.
+
+| Excerpt | Bears on | What it is, and is not |
+|---|---|---|
+| `11:11` accumulated difficulty | F-025, F-007 | A different codebase decaying over months. **F-025 attributes duration to no cause** and lists eleven live candidates; this adds testimony to that list, not a measurement removing anything from it |
+| `19:10` *"expected pain"* — chance × pain | `consequence-bands.md`, `Q-05` | **Contrast, not corroboration.** Horthy's framing is probability-weighted; the bands are `D + R` and deliberately are not, and `Q-05` ruled the 16085 consequence threshold *weaker*, not merely different. A reader must not take this as support for re-proposing it — that re-proposal is prohibited |
+| `28:51` *"no fast oracle for software maintainability"* | F-028, `M-D` | A claim about **feedback speed**, distinct from F-028's claim about vocabulary — which Astra corrected: 29119 **Part 1** does define oracle. Bears on `M-D`'s unresolved method problem, the highest-risk item in the program |
+| `34:45` instructions unfollowed because context is too large | F-023, F-024 | The closest match to an existing finding. **F-023 is `QUALIFIED`** — Astra withdrew the 92,000-token figure and its dominance claim; testimony does not restore a withdrawn measurement |
+| `38:29`, `38:38` bad code degrades future work | F-020, F-021 | Motivates the *existing code supplies examples* row above. F-020 **chose no authoritative side on any of its 22 rows**, and that restraint is unaffected |
+| `39:44`, `39:50` analyse session traces for recurring corrections | F-006, F-021, `M-C` | The practice gzkit's insights ledger would serve. **`M-C` already asks the sharper question** — whether the insights ledger has ever changed an outcome. Testimony describes the practice; `M-C` is the measurement |
+
+**Two reconciliation notes.**
+
+**It agrees with the register's principal safeguard.** The criterion's closing
+sentence — *"Additional rules, artifacts, and checks are not themselves evidence
+of improvement"* — is **F-032** restated from outside the investigation. F-032
+is the challenge table's only unqualified `CONFIRM` and binds Phase 4 as a
+filter; it now carries independent agreement from a practitioner who reached it
+by different means. That is corroboration of a *method* commitment, and it is
+still not evidence for any finding.
+
+**The excerpts inherit F-022's defect.** They cite a SHA-256 of a supplied
+attachment that **is not in this repository**, so neither the excerpts nor the
+selection behind them can be re-derived or audited from the repo — the shape
+F-022 names, *"an evidence record nobody else can retrieve is not evidence"*,
+applied to this investigation's own record. It is recorded rather than repaired:
+vendoring a third-party transcript is a licensing decision for the operator, and
+§ Standards corpus already declines to vendor licensed texts for the same
+reason. **A future reader should treat the excerpts as attributed, not as
+verifiable.**
+
 **Phase 5 pilot shape, for when authorised.** Demonstrate an initial release
 within the bounded pilot, then exercise a changed requirement, a deferred item,
 and a later release. Carry forward the resulting artifacts rather than resetting
@@ -493,6 +529,16 @@ the governance pipeline, and nothing here creates one.**
 
 ## Amendments
 
+- **2026-09-23 — Dex Horthy deposit reconciled against the register.**
+  § Success across successive changes gains **Where the testimony lands in the
+  register**: each excerpt mapped to the F-### or `M-` item it bears on, with the
+  bears-on / evidence-for distinction stated per row. The deposit's own boundary
+  claim was **verified mechanically** — the status distribution is unchanged
+  across 35 rows — rather than accepted on its word. Two notes recorded: the
+  criterion independently agrees with **F-032**, the register's only unqualified
+  `CONFIRM`; and the excerpts cite a source not present in the repository, so
+  they inherit **F-022**'s retrievability defect and are attributed rather than
+  verifiable. **No finding status changed and no row gained evidence.**
 - **2026-09-23 — evaluation ruling propagated after operator check.** The
   operator asked *"did you update where needed?"*. The first update had recorded
   the decision here but omitted `OPEN-QUESTIONS.md`. Added `Q-15` there and
