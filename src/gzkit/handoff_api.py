@@ -359,8 +359,14 @@ def _extract_next_steps(content: str) -> list[str]:
     string, so an author numbering inline writes one LINE holding four STEPS —
     and line-anchored matching then consumed the first and dropped the rest,
     reaching the same "authored 3-5, consumed 1" outcome through authoring shape.
-    Splitting is attempted only on lines that already carry an item marker, which
-    confines the heuristic to text that is enumerated by construction.
+    Splitting is attempted only on a line that is enumerated BY CONSTRUCTION —
+    one that opens with an item marker, or one that carries an inline
+    enumeration after a preamble. Requiring the marker at line START skipped the
+    second shape whole, reaching consumed 0 where GHI #696 reached consumed 1,
+    and silently: an empty result is indistinguishable from a section that
+    authored no steps (GHI #1082). A line with neither shape is skipped, so
+    narrative prose is never split on a bare ``N.`` it happens to contain, and
+    only a MARKED chunk becomes a step, so a preamble is never emitted as one.
     """
     heading = re.search(r"^##\s+Immediate Next Steps\s*$", content, re.MULTILINE)
     if heading is None:
@@ -371,11 +377,14 @@ def _extract_next_steps(content: str) -> list[str]:
     steps: list[str] = []
     for line in section.splitlines():
         stripped = line.strip()
-        if _ITEM_MARKER_RE.match(stripped) is None:
+        chunks = _INLINE_ENUMERATION_RE.split(stripped)
+        if _ITEM_MARKER_RE.match(stripped) is None and len(chunks) == 1:
             continue
-        for chunk in _INLINE_ENUMERATION_RE.split(stripped):
+        for chunk in chunks:
             marked = _ITEM_MARKER_RE.match(chunk.strip())
-            text = (marked.group(1) if marked else chunk).strip()
+            if marked is None:
+                continue
+            text = marked.group(1).strip()
             if text:
                 steps.append(text)
     return steps

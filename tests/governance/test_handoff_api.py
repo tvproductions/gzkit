@@ -484,6 +484,81 @@ class TestResumeCarriesEveryNextStep(unittest.TestCase):
                 ["Bump to 0.33.1 and re-verify ADR-0.0.65; coverage held at 40.00%."],
             )
 
+    def _handoff_with_raw_section(self, directory: Path, section: str) -> None:
+        """Author the section body verbatim, without imposing a leading marker.
+
+        ``_handoff_with_steps`` prefixes ``N. `` to every entry, so it can only
+        author the line-anchored shape. The authoring surface imposes no such
+        prefix: ``gz handoff create --next-steps`` takes the section as one
+        string and writes whatever the author wrote.
+        """
+        body = (
+            "---\nmode: CREATE\nadr_id: ADR-0.0.65\nbranch: main\n"
+            "timestamp: 2026-07-18T10:00:00Z\nagent: test-agent\n---\n\n"
+            f"## Immediate Next Steps\n\n{section}\n"
+        )
+        (directory / "h.md").write_text(body, encoding="utf-8", newline="\n")
+
+    def test_preamble_before_an_inline_enumeration_still_yields_every_step(self) -> None:
+        """Prose ahead of the numbers must not cost the author the whole list.
+
+        The sibling test above covers a line that OPENS with its enumeration.
+        An author who frames the list first -- "In order: 1. ... 2. ..." --
+        writes a line whose first token is not an item marker, and
+        marker-anchored matching skipped the entire line rather than splitting
+        it, reaching consumed 0: strictly worse than the consumed 1 of GHI #696,
+        and silent, because an empty result is indistinguishable from a handoff
+        that authored no steps (GHI #1082).
+
+        The preamble is not a step and must not be emitted as one.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            handoff_dir = base / ".gzkit" / "handoffs"
+            handoff_dir.mkdir(parents=True)
+            self._handoff_with_raw_section(
+                handoff_dir,
+                "Unchanged from the parent handoff -- do not re-derive them here. "
+                "In order: 1. Run the full reconciliation pass. "
+                "2. Re-score the PROVISIONAL consequence bands. "
+                "3. Obtain an operator ruling narrowing Q-02. "
+                "4. Only then recommend whether Phase 4 is ready.",
+            )
+
+            result = resume_handoff(adr_id="ADR-0.0.65", base_path=base, now="2026-07-18T11:00:00Z")
+
+            self.assertEqual(
+                list(result.next_steps),
+                [
+                    "Run the full reconciliation pass.",
+                    "Re-score the PROVISIONAL consequence bands.",
+                    "Obtain an operator ruling narrowing Q-02.",
+                    "Only then recommend whether Phase 4 is ready.",
+                ],
+                "an enumeration introduced by prose must still yield one entry per step",
+            )
+
+    def test_unenumerated_section_prose_is_not_admitted_as_a_step(self) -> None:
+        """Widening the guard must not turn narrative into steps.
+
+        The guard exists so arbitrary prose is not split on any ``N.`` it
+        happens to contain. Admitting a line that CARRIES an enumeration must
+        not also admit a line that carries none.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            handoff_dir = base / ".gzkit" / "handoffs"
+            handoff_dir.mkdir(parents=True)
+            self._handoff_with_raw_section(
+                handoff_dir,
+                "Unchanged from the parent handoff; nothing further is advised here.",
+            )
+
+            result = resume_handoff(adr_id="ADR-0.0.65", base_path=base, now="2026-07-18T11:00:00Z")
+
+            self.assertEqual(list(result.next_steps), [])
+            self.assertEqual(result.first_next_step, "")
+
     def test_empty_next_steps_section_yields_empty_list_not_crash(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             base = Path(tmp)
