@@ -1030,6 +1030,29 @@ def run_wheel_path_literals_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --wheel-path-literals", cwd=project_root)
 
 
+def run_doc_code_citations_audit(project_root: Path) -> QualityResult:
+    """Run the code-citation resolvability gate over governance prose.
+
+    Fails closed when prose under ``docs/governance/**`` cites a ``src/gzkit/``
+    module that does not exist (GHI #1083). Its sibling
+    ``audit_skill_code_citations`` asks the same question of
+    ``.gzkit/skills/**`` (GHI #896) and declined to widen without measuring;
+    when the measurement came, two of the three paths #896 had repaired in the
+    skills population were still unresolved here.
+
+    Wired here explicitly even though the scope is default-tier, for the reason
+    its `wheel_path_literals` and `corpus_retirement_witness` siblings record:
+    the reachability ratchet reads this curated pipeline, not the bare-`gz
+    validate` default tier, so a scope absent here reads as ungated. For an arm
+    whose whole subject is a pointer that resolves to nothing, being reachable
+    from nothing would be the defect wearing the fix's clothes. Recovery: cite
+    the module that replaced it, or precede the item with
+    ``<!-- gz-validate-skip: code-citation -->`` when the citation is
+    historical, corrective, or prospective.
+    """
+    return run_command("uv run gz validate --doc-code-citations", cwd=project_root)
+
+
 def run_corpus_retirement_witness_audit(project_root: Path) -> QualityResult:
     """Run the corpus retirement-witness gate: Layer-1 tombstone vs Layer-2 witness.
 

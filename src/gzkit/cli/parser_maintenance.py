@@ -406,6 +406,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Every `gz <verb>` in features/operator-docs must resolve",
     )
     p_validate.add_argument(
+        "--doc-code-citations",
+        dest="check_doc_code_citations",
+        action="store_true",
+        help="Every src/gzkit path cited in docs/governance must resolve",
+    )
+    p_validate.add_argument(
         "--event-handlers",
         dest="check_event_handlers",
         action="store_true",
@@ -1005,6 +1011,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_version=a.check_version,
             check_type_ignores=a.check_type_ignores,
             check_cli_alignment=a.check_cli_alignment,
+            check_doc_code_citations=a.check_doc_code_citations,
             check_event_handlers=a.check_event_handlers,
             check_event_schemas=a.check_event_schemas,
             check_producer_fields=a.check_producer_fields,

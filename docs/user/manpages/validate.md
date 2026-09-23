@@ -1042,6 +1042,45 @@ This is the ADR/OBPI-status member of the family `--cli-alignment` already
 covers for CLI verbs: a reference pointing at something that cannot resolve is
 the same class of defect as an unresolvable import.
 
+### `--doc-code-citations`
+
+Fails closed when prose under `docs/governance/**` cites a `src/gzkit/` module
+that does not exist (GHI #1083). Runs in the **default** tier — no flag needed
+for `gz check`; the flag scopes a run to this arm alone.
+
+```bash
+uv run gz validate --doc-code-citations
+```
+
+This is the governance-prose member of the family `audit_skill_code_citations`
+covers for `.gzkit/skills/**` (GHI #896). That arm declined to widen its
+population without measuring first; the measurement arrived and is why this one
+exists. When it landed, `docs/governance/**` cited **123** distinct `src/gzkit/`
+paths and six did not resolve — two of them, `src/gzkit/cli.py` and
+`src/gzkit/governance/trust_audits.py`, paths GHI #896 had already repaired in
+the skills population and left rotting in this one, with every gate green.
+
+**Scope is the existence half only.** Whether a cited path resolves is
+mechanical; whether a cited *line number* still holds drifts on every edit to
+the cited file, and this arm does not claim it.
+
+**Exempting a citation.** Governance prose legitimately cites a path that does
+not resolve, in three measured shapes: a dated audit record citing a path that
+was correct at its date, corrective prose quoting a superseded path beside its
+replacement, and an unexecuted spec naming a module it proposes to build. Put
+the marker on the line before the item:
+
+<!-- gz-validate-skip: code-citation -->
+```markdown
+<!-- gz-validate-skip: code-citation -->
+- As it stood in January: `src/gzkit/cli.py`
+```
+
+The marker exempts **one item** — a list item and its continuation lines, or a
+paragraph — ending at the next blank line or the next list item. It does not
+exempt the rest of a list, so a corrective entry in an amendment log does not
+silently exempt its siblings. Citations inside fenced code blocks are not read.
+
 - Scans `.gzkit/skills/*/SKILL.md` and `.gzkit/rules/*.md` (canonical only —
   generated mirrors carry the same text and are repaired by sync, so flagging
   them would report one defect five times).

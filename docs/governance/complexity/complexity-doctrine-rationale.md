@@ -166,7 +166,7 @@ does not exist or is out of date.
 - `data/exemplar_corpus.json` — pinned project registry (OBPI-0.0.27-02)
 - `src/gzkit/complexity/measurement.py` — measurement pipeline (OBPI-0.0.27-03)
 - `docs/governance/complexity/` — distilled-characteristics documents
-- `src/gzkit/governance/trust_audits.py` — link-integrity validator
+- `src/gzkit/governance/trust_audits/complexity_doctrine_links.py` — link-integrity validator
   (`gz validate --complexity-doctrine-links`, OBPI-0.0.27-07)
 - `docs/governance/advisory-rules-audit.md` — scorecard entry classifying
   this rule as **Mechanical** (enforced by `gz validate --complexity-doctrine-links`,

@@ -36,4 +36,8 @@ QC_CLAIM_POPULATIONS: dict[str, Callable[[], Sequence[str]] | str] = {
     # declares; the refuse control plants all of them at once (GHI #996).
     "evaluation-justify-binding": POPULATION_NONE,
     "evaluation-justify-binding-qualified": POPULATION_NONE,
+    # Walks a glob over docs/governance/**; the members are whatever files exist,
+    # never a set another surface declares (GHI #1083).
+    "doc-code-citations": POPULATION_NONE,
+    "doc-code-citations-exempted": POPULATION_NONE,
 }

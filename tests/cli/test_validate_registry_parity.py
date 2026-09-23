@@ -87,6 +87,17 @@ _POST_SNAPSHOT_DEFAULT_ADDITIONS: tuple[str, ...] = (
     # flag-gated check nobody runs would be inert exactly where inertness caused
     # the defect.
     "corpus_retirement_witness",
+    # doc_code_citations — `src/gzkit/` paths cited in `docs/governance/**` prose
+    # that no longer resolve (GHI #1083). DEFAULT tier on the same reasoning as
+    # its two neighbours above, with the inertness already measured rather than
+    # predicted: the sibling arm `audit_skill_code_citations` was built
+    # flag-gated under `--cli-alignment` for the skills population (GHI #896),
+    # and TWO of the three paths it repaired there — `src/gzkit/cli.py` and
+    # `src/gzkit/governance/trust_audits.py` — were still live, unresolved
+    # citations in this population when this arm landed, with every gate green.
+    # A flag-gated check nobody runs is inert exactly where the inertness
+    # produced the defect.
+    "doc_code_citations",
 )
 
 # Explicit-tier scopes run only when their flag is set. Set-parity is what the

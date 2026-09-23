@@ -903,6 +903,7 @@ confirmed 2026-09-23 against the namespaced and per-piece alternatives.
   because 29119 **Part 1** defines the oracle vocabulary the finding searched
   Parts 2–4 for; and F-023's 92,000-token entry cost pairs the largest ADR with a
   median brief and includes a component the inspected pipeline does not require.
+<!-- gz-validate-skip: code-citation -->
 - **2026-09-22 — Act 1 cold-read repair pass (mechanical only).** Anchor and
   identifier repairs following Agent 2's Act 1 cold read. **No status moved and no
   finding changed in substance.** F-019's `src/gzkit/gates.py:163`, `:256-258` →

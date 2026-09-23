@@ -131,6 +131,7 @@ _STEP_CLASSIFICATION: dict[str, _StepMeta] = {
     # `python_function` like its sibling — the step shells out to `gz validate`,
     # but the catch/no-catch decision is gzkit Python, not an external tool.
     "Wheel path literals": ("audit", "src/", "bound", "python_function"),
+    "Doc code citations": ("audit", "docs/", "bound", "python_function"),
     "Brief structure": ("audit", "docs/", "bound", "python_function"),
     "Session green gate": ("audit", ".gzkit/", "bound", "python_function"),
     "Closeout proof": ("audit", "docs/", "bound", "python_function"),

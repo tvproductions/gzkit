@@ -76,6 +76,14 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     # non-finding return is "no committed rendition exists" — nothing to compare.
     "invariant-coherence": EXEMPTS_NONE,
     "corpus-retirement-witness": EXEMPTS_NONE,
+    # Scans governance prose for cited `src/gzkit/` modules. Its skip marker is an
+    # escape token in the scanned content — an exemption by the bar above, however
+    # well justified — so the admit path is exercised by a registered control
+    # rather than declared away (GHI #1083).
+    "doc-code-citations": "doc-code-citations-exempted",
+    # The admit half itself reads the same gate through one membership test and
+    # admits nothing of its own.
+    "doc-code-citations-exempted": EXEMPTS_NONE,
     # AST-scans producers for payload keys neither ledger contract declares. No
     # waiver table, allowlist, escape marker or opt-in flag: every undeclared key
     # it finds is a finding. Its static-analysis scope (literal keys only) limits

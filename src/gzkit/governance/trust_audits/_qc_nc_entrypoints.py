@@ -290,6 +290,33 @@ def _ep_python_version_pins(root: Path) -> list[ValidationError]:
     return audit_python_version_pins(root)
 
 
+def _ep_doc_code_citations(root: Path) -> list[ValidationError]:
+    """Return findings for the two citations that MUST fire, and no others.
+
+    The fixture plants the same unresolvable path inside a fenced block and
+    under a skip marker. An unfiltered control would pass on an arm that had
+    stopped honouring either exemption, which is the property this control
+    exists to witness -- so a finding against those decoys is a control
+    FAILURE, not a pass, and is surfaced by returning them unfiltered.
+    """
+    from gzkit.governance.trust_audits.cli import audit_doc_code_citations  # noqa: PLC0415
+
+    return audit_doc_code_citations(root)
+
+
+def _ep_doc_code_citations_admits_exempted(root: Path) -> int:
+    """Truthy only when the gate ADMITS every exempted citation.
+
+    The admit half (GHI #797 precedent). A gate that refused a marked or fenced
+    citation would make the exemption unusable and silently re-flag the dated
+    records, corrective prose and unexecuted specs the marker exists for; the
+    refuse half is proven at every member by ``doc-code-citations``.
+    """
+    from gzkit.governance.trust_audits.cli import audit_doc_code_citations  # noqa: PLC0415
+
+    return 0 if audit_doc_code_citations(root) else 1
+
+
 def _ep_wheel_path_literals(root: Path) -> list[ValidationError]:
     """Return findings for the WHEEL-SHIPPED doc only.
 

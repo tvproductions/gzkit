@@ -969,6 +969,63 @@ def _build_rendition_lineage() -> Path:
     return root
 
 
+def _build_doc_code_citations() -> Path:
+    """Plant governance prose citing a `src/gzkit/` module that does not exist.
+
+    Three decoys carry the property under control. The SAME unresolvable
+    citation is planted inside a fenced block and under a skip marker, so a
+    control that simply counted citations would pass on an arm that had stopped
+    honouring either exemption. A fourth citation sits in the SIBLING list item
+    directly after the marked one: a Markdown list has no blank line between its
+    items, so an arm scoping the marker to the next blank line would swallow
+    that sibling and the control would catch it (GHI #1083).
+
+    One resolving citation is planted too, so the control cannot pass on an arm
+    that flags every `src/gzkit/` string it sees.
+    """
+    root = _mkroot("doc-code-citations")
+    _write(root / "src" / "gzkit" / "real.py", "")
+    _write(
+        root / "docs" / "governance" / "runbook.md",
+        "# Runbook\n\n"
+        "- Implementation: `src/gzkit/absent.py`\n"
+        "- Resolves fine: `src/gzkit/real.py`\n"
+        "\n"
+        "<!-- gz-validate-skip: code-citation -->\n"
+        "- Corrected: `src/gzkit/exempt_by_marker.py` is now elsewhere.\n"
+        "- Sibling item citing `src/gzkit/sibling_must_fail.py`.\n"
+        "\n"
+        "```bash\n"
+        "cat src/gzkit/inside_fence.py\n"
+        "```\n",
+    )
+    return root
+
+
+def _build_doc_code_citations_exempted() -> Path:
+    """Plant ONLY citations the gate must ADMIT, so the admit path is exercised.
+
+    The admit half of the gate (GHI #797 precedent). Every citation here is
+    unresolvable, so a gate that had stopped honouring its escape marker would
+    report findings and this control would fail. The refuse half is proven at
+    every member by ``doc-code-citations``.
+
+    Both admit surfaces are planted: the skip marker, and a fenced code block.
+    """
+    root = _mkroot("doc-code-citations-exempted")
+    _write(
+        root / "docs" / "governance" / "record.md",
+        "# Dated record\n\n"
+        "<!-- gz-validate-skip: code-citation -->\n"
+        "- As it stood in January: `src/gzkit/absent_but_marked.py`\n"
+        "\n"
+        "```bash\n"
+        "cat src/gzkit/absent_in_fence.py\n"
+        "```\n",
+    )
+    return root
+
+
 def _build_wheel_path_literals() -> Path:
     """Plant a wheel-shipped skill doc naming a path rooted in one user's home.
 
@@ -1538,6 +1595,19 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         _build_wheel_path_literals,
         _ep._ep_wheel_path_literals,
         "ships an instruction naming",
+    ),
+    (
+        "doc-code-citations",
+        _build_doc_code_citations,
+        _ep._ep_doc_code_citations,
+        "does not exist",
+    ),
+    # Admit half: the escape marker and the fenced block, exercised at a tree
+    # where every citation is unresolvable (GHI #1083).
+    (
+        "doc-code-citations-exempted",
+        _build_doc_code_citations_exempted,
+        _ep._ep_doc_code_citations_admits_exempted,
     ),
     (
         "validate-default-scopes",

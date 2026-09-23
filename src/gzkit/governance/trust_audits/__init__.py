@@ -68,6 +68,7 @@ from gzkit.governance.trust_audits.chores import (
 )
 from gzkit.governance.trust_audits.cli import (
     audit_cli_alignment,
+    audit_doc_code_citations,
     audit_manpage_alignment,
     audit_skill_alignment,
     audit_skill_code_citations,
@@ -237,6 +238,7 @@ __all__ = [
     "audit_wheel_path_literals",
     "audit_cli_alignment",
     "audit_manpage_alignment",
+    "audit_doc_code_citations",
     "audit_skill_code_citations",
     "audit_doc_surface_parity",
     "audit_lifecycle_pointers",

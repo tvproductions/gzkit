@@ -207,7 +207,7 @@ witness.
 - `src/gzkit/complexity/thresholds.py` -- `ThresholdTable` /
   `ThresholdBand` Pydantic models authored under OBPI-0.0.28-02 (the
   loader contract this rule body parses against)
-- `src/gzkit/governance/trust_audits.py` --
+- `src/gzkit/governance/trust_audits/complexity_thresholds.py` --
   `validate_complexity_thresholds` validator authored under
   OBPI-0.0.28-03 (`gz validate --complexity-thresholds`); the gate-time
   defense this rule depends on for fail-closed enforcement

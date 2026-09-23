@@ -236,6 +236,7 @@ airlineops solved exactly this. The proven shape (`../airlineops/src/opsdev/lib/
 
 ### 4.1 The single source of truth (new)
 
+<!-- gz-validate-skip: code-citation -->
 `src/gzkit/governance/vocabulary.py` — the ONLY place vocabulary literals live:
 
 ```python

@@ -388,6 +388,105 @@ def audit_skill_code_citations(project_root: Path) -> list[ValidationError]:
     return errors
 
 
+_CODE_CITATION_SKIP_MARKER = "<!-- gz-validate-skip: code-citation -->"
+_LIST_ITEM_RE = re.compile(r"^\s*(?:[-*+]\s|\d+\.\s)")
+
+
+def audit_doc_code_citations(project_root: Path) -> list[ValidationError]:
+    """Fail closed on governance prose citing a ``src/gzkit/`` module that does not exist.
+
+    The sibling :func:`audit_skill_code_citations` resolves the same citations
+    over ``.gzkit/skills/**/SKILL.md`` and declined to widen its population
+    without measuring first (GHI #896, citing #854). The measurement arrived:
+    when this arm landed, ``docs/governance/**`` cited 123 distinct
+    ``src/gzkit/`` paths and six did not resolve — two of them
+    ``src/gzkit/cli.py`` and ``src/gzkit/governance/trust_audits.py``, the very
+    paths #896 repaired in the skills population and left rotting in this one,
+    because the arm it built could not see here (GHI #1083).
+
+    Unlike skill prose, governance prose LEGITIMATELY cites a path that does not
+    resolve, in three shapes measured at #1083: a dated audit record citing a
+    path that was correct at its date; corrective prose quoting a superseded
+    path beside its replacement; and an unexecuted campaign spec naming a module
+    it proposes to build (``src/gzkit/governance/vocabulary.py`` has never
+    existed, and its document is headed *PREPARED — NOT YET EXECUTED*). Each is
+    exempted by ``<!-- gz-validate-skip: code-citation -->``.
+
+    **The marker exempts the one ITEM it precedes** — a list item and its
+    continuation lines, or a paragraph — ending at the next blank line or the
+    next list item. :mod:`briefs` scopes its own marker to the next LINE, which
+    does not transfer here: governance prose is hard-wrapped, so a citation sits
+    mid-paragraph and a line-scoped marker could not be inserted without
+    splitting the prose it exempts. Block-to-blank-line does not transfer
+    either — a Markdown list is contiguous, so it would exempt every sibling
+    item as well as the intended one. Fenced code blocks are not read at all.
+
+    Scope is the EXISTENCE half only, as in the sibling: whether a cited path
+    resolves is mechanical, and whether a cited LINE still holds drifts on every
+    edit to the cited file. This arm does not claim the second half.
+    """
+    errors: list[ValidationError] = []
+    docs_root = project_root / "docs" / "governance"
+    if not docs_root.is_dir():
+        return errors
+    for doc in sorted(docs_root.rglob("*.md")):
+        try:
+            text = doc.read_text(encoding="utf-8")
+        except (UnicodeDecodeError, OSError):
+            continue
+        lines = text.splitlines()
+        in_fence = False
+        exempt = False
+        exempt_first = False
+        for idx, line in enumerate(lines):
+            if line.lstrip().startswith("```"):
+                in_fence = not in_fence
+                continue
+            if in_fence:
+                continue
+            if not line.strip():
+                exempt = exempt_first = False
+                continue
+            if line.strip() == _CODE_CITATION_SKIP_MARKER:
+                exempt = exempt_first = True
+                continue
+            if exempt:
+                if exempt_first:
+                    # The exempted item's own first line, which is itself a list
+                    # item when the marker precedes one.
+                    exempt_first = False
+                    continue
+                if _LIST_ITEM_RE.match(line):
+                    exempt = False  # a sibling item; the exemption ended
+                else:
+                    continue
+            for match in _SRC_MODULE_REF.finditer(line):
+                relpath = match.group(0)
+                if (project_root / relpath).is_file():
+                    continue
+                package = project_root / relpath[: -len(".py")]
+                recovery = (
+                    f"It is now the package {relpath[: -len('.py')]}/ — cite that, or the "
+                    "specific module inside it."
+                    if package.is_dir()
+                    else "Cite the module that replaced it, or precede the block with "
+                    f"{_CODE_CITATION_SKIP_MARKER} when the citation is historical, "
+                    "corrective, or prospective."
+                )
+                errors.append(
+                    ValidationError(
+                        type="doc_code_citation",
+                        artifact=f"{doc.relative_to(project_root).as_posix()}:{idx + 1}",
+                        message=(
+                            f"`{relpath}` does not exist, so this document points a reader at a "
+                            f"module that is not there. {recovery} "
+                            "(GHI #1083; AGENTS.md § DO IT RIGHT 1a.)"
+                        ),
+                    )
+                )
+    return errors
+
+
 def _known_cli_verbs() -> frozenset[str]:
     """Return the top-level subcommand names registered on the gz CLI."""
     import argparse  # noqa: PLC0415

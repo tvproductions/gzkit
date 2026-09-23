@@ -527,7 +527,7 @@ After implementing the changes in this runbook, verify:
 ## References
 
 - Pipeline runtime: `src/gzkit/pipeline_runtime.py`
-- CLI command: `src/gzkit/cli.py` → `obpi_pipeline_cmd()`
+- CLI command: `src/gzkit/commands/obpi_cmd.py` → `obpi_pipeline_cmd()`
 - OBPI validator hook: `src/gzkit/hooks/obpi.py`
 - Transaction contract: `docs/governance/GovZero/obpi-transaction-contract.md`
 - Runtime contract: `docs/governance/GovZero/obpi-runtime-contract.md`

@@ -137,6 +137,7 @@ F-034's residue claim was verified true: the parking verb it says does not exist
 still does not exist, though `parser_obpi.py`'s own docstring claims it is
 registered.
 
+<!-- gz-validate-skip: code-citation -->
 **Did not resolve as cited:** `src/gzkit/gates.py` (no such path; and at the real
 path the line numbers land on Gate 4's PASS/FAIL, not `_run_gate_5`);
 `src/gzkit/deprecations.py:41` (line right, path wrong);

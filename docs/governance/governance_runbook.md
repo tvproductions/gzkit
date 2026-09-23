@@ -1074,7 +1074,7 @@ Persona is a governed control surface stored in `.gzkit/personas/` (ADR-0.0.11).
 
 Traits compose by orthogonal concatenation — each trait activates an independent
 behavioral dimension without interfering with existing traits.  The canonical
-composition operation is implemented in `src/gzkit/personas.py` and follows this
+composition operation is implemented in `src/gzkit/personas/__init__.py` and follows this
 deterministic template:
 
 ```text
