@@ -379,8 +379,9 @@ ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
 - **Consequence.** The top of the traceability chain is absent, so NEED→REQUIREMENT
   (F-012) has nothing to attach to until `Q-02` is answered.
 - **Ruled 2026-09-22 (operator).** `Q-02` answered: **rewrite the PRD around the system as it actually ships.** The product claim stands — distribution is mechanically enforced — but the January framing does not. This restores the top of the traceability chain that F-012's NEED→REQUIREMENT edge needs.
+- **Narrowed 2026-09-23 (operator).** `Q-02`'s remedy shape is narrowed to **repair stale metadata and restore linkage** — operator verbatim: *"repair stale metadata and restore linkage."* The PRD is not rewritten. **The product-claim half of the prior ruling stands unchanged; only the remedy narrows.** This lands where this row's Phase 2 challenge already pointed: *"Weak explicit linkage and stale metadata, rather than absent product intent."* For F-012's NEED→REQUIREMENT edge the consequence is the same edge by a cheaper route — the identifiers exist and are uncited, rather than being absent and needing authorship.
 - **Phase 2 challenge (Astra, 2026-09-22) — CONFIRM WITH QUALIFICATION.** Challenge-table row *"§1/§2: PRD is frozen/inert; product-intent traceability was abandoned"*: *"Identifier-use evidence is narrower than claimed semantics"*, and it *"Overreads missing explicit links."* Counterevidence: *"PRD contains later glossary/context additions; git shows changes through August 17. It still states a product and north star"* [E10]. Alternative: *"Weak explicit linkage and stale metadata, rather than absent product intent."* **The identifier measurements stand; "inert" does not.** Astra reached this independently of, and agrees with, the narrowing the operator's `Q-02` ruling is awaiting — *repair stale metadata and restore linkage* rather than *rewrite*. **This bears on an unanswered operator question and is flagged for it.**
-- **Disposition.** `Q-02` is settled; the rewrite itself is Phase 4 or later, and is not authorised by this register.
+- **Disposition.** `Q-02` is settled, and narrowed 2026-09-23 to metadata repair plus linkage restoration; the repair itself is Phase 4 or later, and is not authorised by this register.
   Leaving it Draft and uncited is the one option that costs without paying.
 
 ### F-015 — No release record; the ledger cannot reconstruct a release
@@ -836,6 +837,12 @@ ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
 
 ## Amendments
 
+- **2026-09-23 — F-014's `Q-02` ruling narrowed by the operator** to *"repair
+  stale metadata and restore linkage"*, from *"rewrite the PRD."* Status
+  unchanged at `QUALIFIED`; the narrowing agrees with the Phase 2 challenge
+  already recorded on the row, and the product-claim half of the original ruling
+  is carried forward unchanged. See [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md)
+  `Q-02` for the reasoning and the retained superseded wording.
 - **2026-09-22 — Phase 3 reconciliation pass applied.** All 25 rows of Astra's
   § 2 challenge table mapped onto this register; each affected row carries a
   **Phase 2 challenge** block quoting the verdict, the counterevidence and the

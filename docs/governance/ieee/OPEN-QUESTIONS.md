@@ -46,7 +46,11 @@ merged here.)* · Findings: F-003, F-002.
 
 ### Q-02 — What is gzkit's product, and is the PRD retired or dormant?
 
-**RULED 2026-09-22 — rewrite the PRD around the system as it actually ships.** The product claim stands; the January framing does not. Not retired, not left dormant. The rewrite is Phase 4 or later and is **not** authorised by this ruling.
+**RULED 2026-09-23 (operator, narrowing the 2026-09-22 ruling) — repair stale metadata and restore linkage.** Operator's words, verbatim: *"repair stale metadata and restore linkage."* The PRD is **not rewritten**. What is stale is its metadata — `status: Draft` since January, and frontmatter frozen at 2026-01-22 against six commits through 2026-08-17 — and what is missing is the citation path from `FR-*`/`AC-*` down to the ADRs below it. Both are repairs to an existing live document, not a replacement of it. Not retired, not left dormant. The repair is Phase 4 or later and is **not** authorised by this ruling.
+
+**What this narrows, and why.** The 2026-09-22 ruling read *"rewrite the PRD around the system as it actually ships."* Two things arrived after it. The operator observed that the PRD's frontmatter is frozen while the file is not — six commits through 2026-08-17, and a problem statement that still reads as live. Astra's Phase 2 review reached the same place independently from the adversarial side: the finding *"Overreads missing explicit links"*, with counterevidence that the PRD *"contains later glossary/context additions"* and *"still states a product and north star"* [E10], and the alternative explanation *"Weak explicit linkage and stale metadata, rather than absent product intent."* **A rewrite and a metadata repair imply different work and different risk:** a rewrite discards a live document's history to fix fields it already has, which is the *"adding machinery"* failure mode F-032 names as this repository's most likely one. The superseded ruling is retained above the fold because a future reader could otherwise re-derive it.
+
+**Superseded ruling, 2026-09-22 (retained):** *rewrite the PRD around the system as it actually ships. The product claim stands; the January framing does not.* The product-claim half is carried forward unchanged; only the remedy shape is narrowed.
 
 The PRD describes a governance CLI shipped to other projects, with users,
 adoption friction and a validation path. The repository's observable behaviour is
@@ -205,6 +209,15 @@ Needed: the report itself, or a path to it, or the session to query.
 
 ## Amendments
 
+- **2026-09-23 — `Q-02` narrowed by operator ruling.** *"Repair stale metadata and
+  restore linkage"*, replacing *"rewrite the PRD"* as the remedy shape; the
+  product-claim half of the 2026-09-22 ruling carries forward unchanged and the
+  superseded wording is retained in the entry. Recorded on F-014, whose
+  `QUALIFIED` narrowing from Astra's Phase 2 challenge said the same thing from
+  the adversarial side. **This closes the last of the four next steps the
+  2026-09-22 handoffs carried.** Dated 2026-09-23 UTC; prior entries in this
+  register are dated 2026-09-22 and the separation is deliberate, since a
+  same-day change log cannot order its own entries.
 - **2026-09-22 — Act 1 cold-read repair pass (mechanical only).** **No ruling
   changed.** `Q-03`'s `pool-curation.md:47` → `:106`, where the quoted
   anti-pattern ruling actually sits; the quote itself is accurate. `Q-08`'s
