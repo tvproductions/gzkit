@@ -35,6 +35,18 @@ quality.** It records that the Phase 2 adversarial review has not yet been
 applied to this register. Promoting a Phase 1 finding to `CONFIRMED` before its
 challenge has been read would make the status word mean nothing.
 
+**`settled` and `ruled` are different words here, and the difference is
+binding.** A finding's **status** is about *evidence*: `settled` describes how
+far its disposition has been carried by observation and challenge. An operator
+**ruling** answers a `Q-##` — a question about what to do — and says nothing
+about whether the finding's evidence survived. **The two are orthogonal**, so a
+row may be `OPEN` or even `DISPUTED` and carry a ruling at the same time: F-006
+is `DISPUTED` on the evidence and ruled at `Q-03`. Never write that a `Q-##` is
+*settled*; write that it is **ruled**. Never write that a finding is *ruled*;
+write that its evidence is `OPEN`, `QUALIFIED`, `CONFIRMED`, `DISPUTED` or
+`REJECTED`. The `Ruling` column in the index carries the `Q-##`, where one
+exists.
+
 `Class` is the series' own disposition vocabulary — **KEEP / REFINE / ADD /
 REMOVE** — and is orthogonal to status. Status says how well supported a finding
 is; class says what it argues for. A finding can be `OPEN` and `KEEP`.
@@ -49,50 +61,50 @@ confirmed 2026-09-23 against the namespaced and per-piece alternatives.
 
 ## Index
 
-| ID | Finding | Status | Class |
-|---|---|---|---|
-| | **A — The persistent / transient boundary** | | |
-| F-001 | Persistent engineering knowledge is carried by transient work packages | QUALIFIED | REFINE |
-| F-002 | Requirement and constraint identity is a coordinate inside the work package | QUALIFIED | REFINE |
-| F-003 | ADR demotion destroys specification | QUALIFIED | REFINE |
-| F-004 | Roughly 10% of a brief is durable engineering knowledge; the rest is work log | OPEN | REFINE |
-| F-005 | The work package has accumulated responsibilities, in the template | QUALIFIED | REFINE |
-| F-006 | Six intake surfaces each carry part of a system model that exists nowhere | DISPUTED | ADD |
-| F-007 | Transient matter is accumulating inside durable stores | OPEN | REFINE |
-| | **B — Identity, traceability and the release seam** | | |
-| F-008 | Decision, requirement and release identity share one semver namespace | OPEN | REFINE |
-| F-009 | No requirement revision counter exists | OPEN | ADD |
-| F-010 | No requirements baseline; the freeze mechanism exists and is aimed elsewhere | OPEN | ADD |
-| F-011 | Requirements are governed by continuous reconciliation | OPEN | REFINE |
-| F-012 | Traceability is one leg of the five 29148 names | QUALIFIED | ADD |
-| F-013 | No architecture description in the 42010 § 6 sense | OPEN | ADD |
-| F-014 | The PRD is inert; product-intent traceability was practised once | QUALIFIED | REFINE |
-| F-015 | No release record; the ledger cannot reconstruct a release | OPEN | ADD |
-| F-016 | Identifier renameability funds a large standing machinery cost | OPEN | REMOVE |
-| F-017 | Two coverage numbers disagree with no reconciling statement | QUALIFIED | REFINE |
-| | **C — Enforcement and evidence** | | |
-| F-018 | Jurisdiction is declared in prose and refused by nothing | QUALIFIED | REFINE |
-| F-019 | Gates record exit codes where the covenant promises claims | QUALIFIED | REFINE |
-| F-020 | Documentation and implementation disagree at 22 measured points | QUALIFIED | REFINE |
-| F-021 | The system finds its own facades honestly and cannot retire them | DISPUTED | ADD |
-| F-022 | Evidence records are incomplete as evidence | OPEN | REFINE |
-| | **D — Cost and accumulation** | | |
-| F-023 | Agent entry cost is dominated by procedure, not by the problem | QUALIFIED | REFINE |
-| F-024 | Governance prose outweighs source code several-fold | OPEN | REFINE |
-| F-025 | Work-package duration and the collapse of pipeline throughput | QUALIFIED | — |
-| F-026 | A long release stall that no gate can see | OPEN | ADD |
-| | **E — Strengths** | | |
-| F-027 | The REQ→test correspondence machinery, with violation recording | QUALIFIED | KEEP |
-| F-028 | The anti-tautological-test stack is ahead of the testing standard | QUALIFIED | KEEP |
-| F-029 | The REQ-kind taxonomy independently rediscovers the verification-method split | QUALIFIED | KEEP |
-| F-030 | Path-scoped agent rules with real runtime enforcement | OPEN | KEEP |
-| F-031 | `RELEASE_NOTES.md` is load-bearing, not duplication | OPEN | KEEP |
-| | **F — Method boundary** | | |
-| F-032 | Most of the standards' machinery should not be adopted here | CONFIRMED | — |
-| F-033 | Conformance is dischargeable by reference, not by document | CONFIRMED | KEEP |
-| | **G — Retired readings** | | |
-| F-034 | *Parked OBPIs indicate stalling work* | REJECTED | — |
-| F-035 | *The four-baseline scheme is acquisition bureaucracy* | REJECTED | — |
+| ID | Finding | Status | Class | Ruling |
+|---|---|---|---|---|
+| | **A — The persistent / transient boundary** | | | |
+| F-001 | Persistent engineering knowledge is carried by transient work packages | QUALIFIED | REFINE |  |
+| F-002 | Requirement and constraint identity is a coordinate inside the work package | QUALIFIED | REFINE |  |
+| F-003 | ADR demotion destroys specification | QUALIFIED | REFINE | Q-01 |
+| F-004 | Roughly 10% of a brief is durable engineering knowledge; the rest is work log | OPEN | REFINE |  |
+| F-005 | The work package has accumulated responsibilities, in the template | QUALIFIED | REFINE |  |
+| F-006 | Six intake surfaces each carry part of a system model that exists nowhere | DISPUTED | ADD | Q-03 |
+| F-007 | Transient matter is accumulating inside durable stores | OPEN | REFINE | Q-06 |
+| | **B — Identity, traceability and the release seam** | | | |
+| F-008 | Decision, requirement and release identity share one semver namespace | OPEN | REFINE | Q-08 |
+| F-009 | No requirement revision counter exists | OPEN | ADD |  |
+| F-010 | No requirements baseline; the freeze mechanism exists and is aimed elsewhere | OPEN | ADD |  |
+| F-011 | Requirements are governed by continuous reconciliation | OPEN | REFINE |  |
+| F-012 | Traceability is one leg of the five 29148 names | QUALIFIED | ADD |  |
+| F-013 | No architecture description in the 42010 § 6 sense | OPEN | ADD |  |
+| F-014 | The PRD is inert; product-intent traceability was practised once | QUALIFIED | REFINE | Q-02 |
+| F-015 | No release record; the ledger cannot reconstruct a release | OPEN | ADD | Q-10 |
+| F-016 | Identifier renameability funds a large standing machinery cost | OPEN | REMOVE |  |
+| F-017 | Two coverage numbers disagree with no reconciling statement | QUALIFIED | REFINE |  |
+| | **C — Enforcement and evidence** | | | |
+| F-018 | Jurisdiction is declared in prose and refused by nothing | QUALIFIED | REFINE | Q-05 |
+| F-019 | Gates record exit codes where the covenant promises claims | QUALIFIED | REFINE | Q-07 |
+| F-020 | Documentation and implementation disagree at 22 measured points | QUALIFIED | REFINE |  |
+| F-021 | The system finds its own facades honestly and cannot retire them | DISPUTED | ADD |  |
+| F-022 | Evidence records are incomplete as evidence | OPEN | REFINE |  |
+| | **D — Cost and accumulation** | | | |
+| F-023 | Agent entry cost is dominated by procedure, not by the problem | QUALIFIED | REFINE |  |
+| F-024 | Governance prose outweighs source code several-fold | OPEN | REFINE |  |
+| F-025 | Work-package duration and the collapse of pipeline throughput | QUALIFIED | — |  |
+| F-026 | A long release stall that no gate can see | OPEN | ADD |  |
+| | **E — Strengths** | | | |
+| F-027 | The REQ→test correspondence machinery, with violation recording | QUALIFIED | KEEP |  |
+| F-028 | The anti-tautological-test stack is ahead of the testing standard | QUALIFIED | KEEP |  |
+| F-029 | The REQ-kind taxonomy independently rediscovers the verification-method split | QUALIFIED | KEEP |  |
+| F-030 | Path-scoped agent rules with real runtime enforcement | OPEN | KEEP |  |
+| F-031 | `RELEASE_NOTES.md` is load-bearing, not duplication | OPEN | KEEP |  |
+| | **F — Method boundary** | | | |
+| F-032 | Most of the standards' machinery should not be adopted here | CONFIRMED | — |  |
+| F-033 | Conformance is dischargeable by reference, not by document | CONFIRMED | KEEP |  |
+| | **G — Retired readings** | | | |
+| F-034 | *Parked OBPIs indicate stalling work* | REJECTED | — |  |
+| F-035 | *The four-baseline scheme is acquisition bureaucracy* | REJECTED | — |  |
 
 ---
 
@@ -280,7 +292,7 @@ confirmed 2026-09-23 against the namespaced and per-piece alternatives.
 - **Consequence.** The missing `kind` guard is a latent defect under either
   answer to `Q-08`.
 - **Ruled 2026-09-22 (operator).** `Q-08` answered: **the `RELEASE_NOTES.md:1226` ruling stands; the code owes the change.** `version_sync` stops deriving the package version from an ADR identifier. The missing `kind` guard is repairable immediately and independently.
-- **Disposition.** `Q-08` is settled; the form of the decoupling is Phase 4.
+- **Disposition.** `Q-08` is ruled; the form of the decoupling is Phase 4.
 
 ### F-009 — No requirement revision counter exists
 
@@ -382,7 +394,7 @@ confirmed 2026-09-23 against the namespaced and per-piece alternatives.
 - **Ruled 2026-09-22 (operator).** `Q-02` answered: **rewrite the PRD around the system as it actually ships.** The product claim stands — distribution is mechanically enforced — but the January framing does not. This restores the top of the traceability chain that F-012's NEED→REQUIREMENT edge needs.
 - **Narrowed 2026-09-23 (operator).** `Q-02`'s remedy shape is narrowed to **repair stale metadata and restore linkage** — operator verbatim: *"repair stale metadata and restore linkage."* The PRD is not rewritten. **The product-claim half of the prior ruling stands unchanged; only the remedy narrows.** This lands where this row's Phase 2 challenge already pointed: *"Weak explicit linkage and stale metadata, rather than absent product intent."* For F-012's NEED→REQUIREMENT edge the consequence is the same edge by a cheaper route — the identifiers exist and are uncited, rather than being absent and needing authorship.
 - **Phase 2 challenge (Astra, 2026-09-22) — CONFIRM WITH QUALIFICATION.** Challenge-table row *"§1/§2: PRD is frozen/inert; product-intent traceability was abandoned"*: *"Identifier-use evidence is narrower than claimed semantics"*, and it *"Overreads missing explicit links."* Counterevidence: *"PRD contains later glossary/context additions; git shows changes through August 17. It still states a product and north star"* [E10]. Alternative: *"Weak explicit linkage and stale metadata, rather than absent product intent."* **The identifier measurements stand; "inert" does not.** Astra reached this independently of, and agrees with, the narrowing the operator's `Q-02` ruling is awaiting — *repair stale metadata and restore linkage* rather than *rewrite*. **This bears on an unanswered operator question and is flagged for it.**
-- **Disposition.** `Q-02` is settled, and narrowed 2026-09-23 to metadata repair plus linkage restoration; the repair itself is Phase 4 or later, and is not authorised by this register.
+- **Disposition.** `Q-02` is ruled, and narrowed 2026-09-23 to metadata repair plus linkage restoration; the repair itself is Phase 4 or later, and is not authorised by this register.
   Leaving it Draft and uncited is the one option that costs without paying.
 
 ### F-015 — No release record; the ledger cannot reconstruct a release
@@ -403,7 +415,7 @@ confirmed 2026-09-23 against the namespaced and per-piece alternatives.
 - **Consequence.** What shipped in a given version is not reconstructible from
   L2.
 - **Ruled 2026-09-22 (operator).** `Q-10` answered: **a ledger release record** — an L2 event asserting the approved content of a version. Chosen over a tag or a manifest because it matches the instinct F-033 identifies as already standards-conformant, and adds no L1 surface.
-- **Disposition.** `Q-10` is settled as to form. Whether the unit of approval is a manifest, a ledger
+- **Disposition.** `Q-10` is ruled as to form. Whether the unit of approval is a manifest, a ledger
   event or an annotated tag is a design question; *whether it should exist* is
   not.
 
@@ -476,7 +488,7 @@ confirmed 2026-09-23 against the namespaced and per-piece alternatives.
 - **Ruled 2026-09-22 (operator).** `Q-05` answered: **keep the IRON LAW and pursue a mechanical witness.** The 16085 consequence threshold is **not adopted** — it is enforceable but strictly weaker, because it delegates below a line. Do not re-propose it as a remedy for F-018.
 - **Consequence input.** Hooks score `C2` in [`consequence-bands.md`](consequence-bands.md).
 - **Phase 2 challenge (Astra, 2026-09-22) — CONFIRM WITH QUALIFICATION, plus an evidence correction.** Challenge-table row *"§1/§8: Jurisdiction/airlock do not prevent inspected out-of-scope writes"*: *"Direct caller/hook evidence"*, verdict confirmed. Counterevidence narrows the scope: *"Airlock's limitation is explicit; its NC calls `airlock_enter`, not merely `_decide`; existing successor owns calibration"* [E8]. **Evidence correction:** the anchor cited above is `enter.py:158-170` (`_decide`); Astra's reading is that the non-conformance path calls `airlock_enter`, and the row should be re-anchored accordingly before Phase 4 relies on it. Alternative: *"Unfinished calibration/compulsion and harness coverage"* rather than absent enforcement by design. **Separately, Astra independently REJECTS the 16085 threshold remedy** — *"Risk tolerance is not a grant of authority"*, *"Initiation is an explicit human-sovereignty policy; a violation does not invalidate its purpose"* — converging with the operator's `Q-05` ruling from the opposite direction.
-- **Disposition.** `Q-05` is settled against the threshold. The
+- **Disposition.** `Q-05` is ruled against the threshold. The
   threshold is enforceable but is genuinely a *weaker* rule than the blanket
   prohibition.
 
@@ -501,7 +513,7 @@ confirmed 2026-09-23 against the namespaced and per-piece alternatives.
 - **Standing constraint (operator, 2026-09-22).** *"do not abandon the five gates without a discussion with me."* **Retiring or replacing the five-gate vocabulary is prohibited absent an explicit operator discussion** — including as an incidental consequence of any Phase 4 design. This finding describes what the gates record; it does not license removing them.
 - **Consequence input.** Surfaces in this finding are scored in [`consequence-bands.md`](consequence-bands.md): gate logic `C2`, validators `C2`, receipt durability `C3`. Ten of sixteen scored surfaces are `D2` — they fail by reporting success.
 - **Phase 2 challenge (Astra, 2026-09-22) — CONFIRM WITH QUALIFICATION; the universal form falls.** Challenge-table row *"§1/§8: Gates record exit codes and decide nothing"*: *"Good historical payload concern; false generalization"*, and it *"Confuses a check, a gate condition, and the authorization consuming it."* Counterevidence: *"Closeout blocks failures; completion emits human-attestation receipts"* [E4]. Alternative: *"Deprecated interface plus dispersed evidence, not universally absent gating."* **Surviving claim:** the historical `gate_checked` payloads are weak, and the deprecated `gz gates` Gate-5 stub is a poor guide to current completion behaviour. **Withdrawn:** that nothing in the system gates. Astra's §1 states the same in its own words. The operator's `Q-07` ruling — re-point the covenant at `gz closeout` and `gz obpi complete` — was reached independently and moves in the same direction. Carried as `D-06`.
-- **Disposition.** `Q-07` is settled. The superseded option was to retire
+- **Disposition.** `Q-07` is ruled. The superseded option was to retire
   the gate vocabulary. Both are coherent; they are not the same project. `M-D`
   would name the claim behind each gate.
 
@@ -838,6 +850,19 @@ confirmed 2026-09-23 against the namespaced and per-piece alternatives.
 
 ## Amendments
 
+- **2026-09-23 — *settled* and *ruled* separated by operator ruling.** § How to
+  read a status now states that **evidence status and operator rulings are
+  orthogonal**, with F-006 — `DISPUTED` and ruled at `Q-03` — as the worked case.
+  Five dispositions that read *"`Q-0N` is settled"* now read *"is ruled"*; the two
+  genuine evidence-sense uses (F-009 *"Depends on F-002 being settled"*, F-016
+  *"contingent on F-008 and F-009 being settled"*) are correct under the new rule
+  and are unchanged. **The index gains a `Ruling` column**, populated for the
+  eight rows carrying an operator ruling — F-003, F-006, F-007, F-008, F-014,
+  F-015, F-018, F-019 — and left **blank**, not `—`, for the other 27: `—` is
+  already an undefined value in the `Class` column and repeating it would repeat
+  the defect. **Found by Agent 2's Act 1 cold read (gap 3)**, which could not
+  determine what an `OPEN` row carrying a ruling licenses. **No status and no
+  ruling changed** — this is vocabulary and visibility only.
 - **2026-09-23 — `Q-11` ratification propagated.** § Identifier convention and
   the seeding entry below both read `F-###` as an agent assumption pending
   ratification, **eleven amendments after the operator ratified it**. Corrected
