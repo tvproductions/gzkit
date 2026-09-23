@@ -3,7 +3,7 @@
 import json
 import os
 import re
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from pathlib import Path
 from typing import Any, cast
 
@@ -24,6 +24,7 @@ from gzkit.git_sync import (
     _skip_tokens,
 )
 from gzkit.governance.trust_audits.session_green_gate import audit_session_green_gate
+from gzkit.ledger import Ledger
 from gzkit.quality import run_lint, run_tests
 from gzkit.utils import git_cmd
 
@@ -55,7 +56,22 @@ _MAX_LEDGER_EVENTS_IN_COMMIT = 12
 # Matching short is the failure mode to avoid: a truncation is indistinguishable
 # from a real citation downstream, whereas no match is visibly nothing.
 _ANCHOR_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
-    ("ADR-semver", re.compile(r"\bADR-\d+\.\d+\.\d+(?:-[a-z0-9][a-z0-9-]*)?\b")),
+    # ADR-semver only: the trailing ``(?![\\w.-])`` refuses ANY continuation, so
+    # the match is the whole identifier or nothing, and the slug class ends
+    # alphanumeric so backtracking cannot leave a trailing hyphen. The pool and
+    # OBPI patterns are deliberately UNCHANGED — a pool id is cited as a path
+    # (``ADR-pool.obpi-state-machine.md``), where refusing a following ``.``
+    # would drop a real citation, and neither family produced the measured
+    # truncation. Without the ADR-semver guard
+    # ``ADR-0.6.0-pool.gz-chores-system`` matched ``ADR-0.6.0-pool`` -- the
+    # trailing class excludes ``.`` -- which then prefix-resolved to the
+    # unrelated ``ADR-0.6.0-pool-promotion-protocol``. A truncation is
+    # indistinguishable from a real citation downstream, whereas no match is
+    # visibly nothing (``8968434ac``; GHI #1081).
+    (
+        "ADR-semver",
+        re.compile(r"\bADR-\d+\.\d+\.\d+(?:-[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)?(?![\w.-])"),
+    ),
     ("ADR-pool", re.compile(r"\bADR-pool\.[a-z0-9][a-z0-9-]*\b")),
     ("OBPI", re.compile(r"\bOBPI-\d+\.\d+\.\d+-\d{2}(?:-[a-z0-9][a-z0-9-]*)?\b")),
     ("GHI", re.compile(r"\bGHI #\d+\b")),
@@ -202,7 +218,36 @@ def _run_sync_prechecks(
 _SYNC_COMMIT_TRAILERS = "Task: TASK-gz-git-sync\nCeremony: gz-git-sync"
 
 
-def _extract_governance_anchors(diff_text: str) -> list[str]:
+def _anchor_resolver(project_root: Path) -> Callable[[str], bool]:
+    """Return a predicate answering whether an anchor names exactly one artifact.
+
+    Resolution mirrors :meth:`Ledger.resolve_artifact_id`: rename-map collapse
+    first, then exact graph membership, then a UNIQUE prefix. An AMBIGUOUS
+    prefix is refused rather than arbitrated — GHI #826 forbids resolving an
+    identifier to a nearest sibling, and an entry a reader cannot look up
+    deterministically is the defect this gate exists to stop.
+
+    Enrichment is best-effort (GHI #439), so an unreadable ledger yields a
+    predicate that admits NOTHING. The degradation is to the pre-enrichment
+    shape — no anchors — never to unverified ones: emitting a citation the
+    scanner could not check is exactly what GHI #1081 found.
+    """
+    try:
+        ledger = Ledger(project_root / ".gzkit" / "ledger.jsonl")
+        graph = ledger.get_artifact_graph()
+    except (OSError, ValueError, json.JSONDecodeError):
+        return lambda _anchor: False
+
+    def resolves(anchor: str) -> bool:
+        canonical = ledger.canonicalize_id(anchor)
+        if anchor in graph or canonical in graph:
+            return True
+        return len([k for k in graph if k.startswith(f"{canonical}-")]) == 1
+
+    return resolves
+
+
+def _extract_governance_anchors(diff_text: str, resolves: Callable[[str], bool]) -> list[str]:
     """Return sorted, deduped governance anchor IDs found in staged diff text.
 
     Surfaces OBPI / ADR (semver + pool) / GHI identifiers so the auto-commit
@@ -211,11 +256,23 @@ def _extract_governance_anchors(diff_text: str) -> list[str]:
     the IDs are sorted alphabetically. Lexicographic ordering is acceptable
     here because the consumer is a human reading ``git log`` — not a
     semver-comparison surface.
+
+    ``resolves`` is REQUIRED, not defaulted. Shape alone witnesses that a string
+    LOOKS like an id, never that the artifact exists (``AGENTS.md`` § DO IT
+    RIGHT #12), and a default would silently restore that gap for any later
+    caller. Measured on ``feac93365`` before this gate: 27 artifact anchors, six
+    naming nothing the graph holds even after rename-map collapse, one an
+    ambiguous prefix, and one a truncation aliasing to an unrelated ADR
+    (GHI #1081). GHI anchors bypass it — they are issues, not graph nodes, the
+    taxonomy GHI #1079 established.
     """
     grouped: dict[str, set[str]] = {family: set() for family, _ in _ANCHOR_PATTERNS}
     for family, pattern in _ANCHOR_PATTERNS:
         for match in pattern.finditer(diff_text):
-            grouped[family].add(match.group(0))
+            anchor = match.group(0)
+            if family != "GHI" and not resolves(anchor):
+                continue
+            grouped[family].add(anchor)
 
     ordered: list[str] = []
     for family, _ in _ANCHOR_PATTERNS:
@@ -435,7 +492,11 @@ def _commit_staged_changes(project_root: Path, blockers: list[str], executed: li
     # failures degrade silently to the pre-enrichment shape so commit-authoring
     # never blocks on enrichment IO.
     rc_diff, diff_text, _err_diff = git_cmd(project_root, "diff", "--cached")
-    anchors = _extract_governance_anchors(diff_text) if rc_diff == 0 else []
+    anchors = (
+        _extract_governance_anchors(diff_text, _anchor_resolver(project_root))
+        if rc_diff == 0
+        else []
+    )
 
     rc_head_ts, head_iso, _err_head_ts = git_cmd(project_root, "log", "-1", "--format=%cI")
     since_iso = head_iso.strip() if rc_head_ts == 0 and head_iso.strip() else None

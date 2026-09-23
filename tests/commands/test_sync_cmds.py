@@ -1039,6 +1039,16 @@ class TestCommitStagedChangesBlocksOnStrandedMessage(unittest.TestCase):
             )
 
 
+def _all_resolve(_anchor: str) -> bool:
+    """Grouping/ordering tests declare every id they assert as resolvable.
+
+    The production caller supplies a graph-backed predicate; these tests are
+    about family grouping and sort order, so they state that premise explicitly
+    rather than inheriting it from a default (GHI #1081).
+    """
+    return True
+
+
 class TestExtractGovernanceAnchors(unittest.TestCase):
     """``_extract_governance_anchors`` surfaces OBPI/ADR/GHI IDs from staged diff text (GHI #439).
 
@@ -1053,7 +1063,7 @@ class TestExtractGovernanceAnchors(unittest.TestCase):
         from gzkit.commands.sync import _extract_governance_anchors  # noqa: PLC0415
 
         diff = "diff --git a/x b/x\n+just some prose\n"
-        self.assertEqual(_extract_governance_anchors(diff), [])
+        self.assertEqual(_extract_governance_anchors(diff, _all_resolve), [])
 
     def test_extracts_obpi_adr_ghi_ids_sorted_and_grouped(self) -> None:
         from gzkit.commands.sync import _extract_governance_anchors  # noqa: PLC0415
@@ -1064,7 +1074,7 @@ class TestExtractGovernanceAnchors(unittest.TestCase):
             "+see also ADR-pool.gz-chores-system\n"
             "+(GHI #322) and (GHI #357)\n"
         )
-        anchors = _extract_governance_anchors(diff)
+        anchors = _extract_governance_anchors(diff, _all_resolve)
         # Group order: ADR (semver), ADR (pool), OBPI, GHI; alphabetical/semver within
         self.assertIn("ADR-0.0.31", anchors)
         self.assertIn("ADR-0.0.32-foo", anchors)
@@ -1084,7 +1094,7 @@ class TestExtractGovernanceAnchors(unittest.TestCase):
         from gzkit.commands.sync import _extract_governance_anchors  # noqa: PLC0415
 
         diff = "+docs/design/adr/pool/ADR-pool.obpi-state-machine.md\n"
-        anchors = _extract_governance_anchors(diff)
+        anchors = _extract_governance_anchors(diff, _all_resolve)
 
         self.assertIn("ADR-pool.obpi-state-machine", anchors)
         self.assertNotIn("ADR-pool.obpi-state-machine.md", anchors)
@@ -1106,7 +1116,9 @@ class TestExtractGovernanceAnchors(unittest.TestCase):
             "OBPI-0.52.0-0{1,2,3}",
         ):
             with self.subTest(wildcard=wildcard):
-                anchors = _extract_governance_anchors(f"+run against {wildcard} today\n")
+                anchors = _extract_governance_anchors(
+                    f"+run against {wildcard} today\n", _all_resolve
+                )
                 self.assertEqual(anchors, [], f"{wildcard} produced {anchors}")
 
     def test_a_real_two_digit_obpi_id_still_anchors(self) -> None:
@@ -1117,7 +1129,7 @@ class TestExtractGovernanceAnchors(unittest.TestCase):
             "+OBPI-0.35.0-08 and OBPI-0.35.0-08-remember-post-append-advisory\n"
             "+docs/design/adr/pool/ADR-pool.gz-chores-system.md and ADR-0.0.31\n"
         )
-        anchors = _extract_governance_anchors(diff)
+        anchors = _extract_governance_anchors(diff, _all_resolve)
 
         self.assertIn("OBPI-0.35.0-08", anchors)
         self.assertIn("OBPI-0.35.0-08-remember-post-append-advisory", anchors)
@@ -1128,9 +1140,110 @@ class TestExtractGovernanceAnchors(unittest.TestCase):
         from gzkit.commands.sync import _extract_governance_anchors  # noqa: PLC0415
 
         diff = "+(GHI #439)\n+(GHI #439)\n+OBPI-0.0.31-02 referenced twice OBPI-0.0.31-02\n"
-        anchors = _extract_governance_anchors(diff)
+        anchors = _extract_governance_anchors(diff, _all_resolve)
         self.assertEqual(anchors.count("GHI #439"), 1)
         self.assertEqual(anchors.count("OBPI-0.0.31-02"), 1)
+
+
+class TestGovernanceAnchorsResolveAgainstTheGraph(unittest.TestCase):
+    """An emitted anchor names an artifact a reader can look up (GHI #1081).
+
+    The scanner matched SHAPE and never asked the graph whether the artifact
+    exists, so any diff containing identifier-shaped prose manufactured
+    citations. Measured on `feac93365`: 27 artifact anchors, of which six named
+    nothing the graph holds even after rename-map collapse, one was an ambiguous
+    prefix, and one -- `ADR-0.6.0-pool` -- was a TRUNCATION of
+    `ADR-0.6.0-pool.gz-chores-system` that then prefix-resolved to
+    `ADR-0.6.0-pool-promotion-protocol`, an unrelated ADR the commit never
+    touched.
+
+    `8968434ac` states the standard this restores: "The commit body is a
+    citation list, so an entry a reader cannot look up is worse than no entry at
+    all", and "Matching short is the failure mode to avoid -- a truncation is
+    indistinguishable from a real citation downstream, whereas no match is
+    visibly nothing."
+    """
+
+    _GRAPH = frozenset(
+        {
+            "ADR-0.35.0-canon-entry-corpus-landing",
+            "ADR-0.6.0-pool-promotion-protocol",
+            "OBPI-0.35.0-08-remember-post-append-advisory",
+            "OBPI-0.35.0-08-something-else",
+        }
+    )
+
+    def _resolves(self, anchor: str) -> bool:
+        if anchor in self._GRAPH:
+            return True
+        matches = [k for k in self._GRAPH if k.startswith(f"{anchor}-")]
+        return len(matches) == 1
+
+    def test_id_the_graph_does_not_hold_is_not_emitted(self) -> None:
+        """`ADR-9.9.9` is an id the docstring that names it says no ADR ever bore."""
+        from gzkit.commands.sync import _extract_governance_anchors  # noqa: PLC0415
+
+        anchors = _extract_governance_anchors(
+            "+ids like ADR-9.9.9 that never existed\n", self._resolves
+        )
+
+        self.assertEqual(anchors, [])
+
+    def test_truncated_pool_id_emits_neither_the_stub_nor_its_alias(self) -> None:
+        """The alias case: a short match reads as a real citation downstream."""
+        from gzkit.commands.sync import _extract_governance_anchors  # noqa: PLC0415
+
+        anchors = _extract_governance_anchors(
+            "+renamed from ADR-0.6.0-pool.gz-chores-system here\n", self._resolves
+        )
+
+        self.assertNotIn("ADR-0.6.0-pool", anchors)
+        self.assertNotIn("ADR-0.6.0-pool-promotion-protocol", anchors)
+        self.assertNotIn("ADR-0.6.0", anchors)
+
+    def test_genuinely_touched_artifact_still_appears(self) -> None:
+        """The valid control: resolution must not silence real citations."""
+        from gzkit.commands.sync import _extract_governance_anchors  # noqa: PLC0415
+
+        anchors = _extract_governance_anchors(
+            "+work under ADR-0.35.0-canon-entry-corpus-landing\n", self._resolves
+        )
+
+        self.assertEqual(anchors, ["ADR-0.35.0-canon-entry-corpus-landing"])
+
+    def test_ambiguous_prefix_is_refused(self) -> None:
+        """GHI #826 forbids resolving an identifier to a nearest sibling.
+
+        A unique prefix names exactly one artifact and is kept; an ambiguous one
+        cannot be looked up deterministically, so it is dropped rather than
+        arbitrated.
+        """
+        from gzkit.commands.sync import _extract_governance_anchors  # noqa: PLC0415
+
+        anchors = _extract_governance_anchors("+see OBPI-0.35.0-08 for context\n", self._resolves)
+
+        self.assertEqual(anchors, [])
+
+    def test_ghi_anchors_bypass_graph_resolution(self) -> None:
+        """GHIs are issues, not graph nodes (the taxonomy GHI #1079 established)."""
+        from gzkit.commands.sync import _extract_governance_anchors  # noqa: PLC0415
+
+        anchors = _extract_governance_anchors("+fixes (GHI #1081)\n", self._resolves)
+
+        self.assertEqual(anchors, ["GHI #1081"])
+
+
+class TestGovernanceAnchorResolverDegrades(unittest.TestCase):
+    """Enrichment is best-effort; an unreadable graph must not block a commit."""
+
+    def test_unreadable_graph_yields_a_predicate_that_admits_nothing(self) -> None:
+        """Degrade to the pre-enrichment shape -- no anchors -- never to unverified ones."""
+        from gzkit.commands.sync import _anchor_resolver  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            resolves = _anchor_resolver(Path(tmp))  # no .gzkit/ledger.jsonl here
+
+            self.assertFalse(resolves("ADR-0.35.0-canon-entry-corpus-landing"))
 
 
 class TestRecentUnsyncedLedgerEvents(unittest.TestCase):
