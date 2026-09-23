@@ -5,9 +5,10 @@
 > Questions that repository inspection **cannot** answer. Everything answerable
 > from the repository was answered in the pieces and is not repeated here.
 >
-> **Status 2026-09-23: `Q-01` … `Q-15` carry operator rulings**, with `Q-09`
+> **Status 2026-09-23: `Q-01` … `Q-16` carry operator rulings**, with `Q-09`
 > deferred and its sequencing named. `Q-15` records the adopted evaluation
-> criterion; it does not authorise Phase 4 or a pilot.
+> criterion; `Q-16` retains the FDAU origin and separation hypothesis. Neither
+> authorises Phase 4 or a pilot.
 > Each ruling is recorded under its question; the questions are kept as asked,
 > because the record of what was asked is part of the record of what was decided.
 >
@@ -22,7 +23,7 @@ Three kinds, kept separate because they resolve by different means:
    settles these; they are choices about what this project is.
 2. **Further measurement** — held as the measurement program `M-A` … `M-H` in
    [`01 § 12`](01-engineering-method-2026-09-22.md), not duplicated here.
-3. **Meta** — `Q-11` … `Q-15`, about the conduct of the investigation itself.
+3. **Meta** — `Q-11` … `Q-16`, about the conduct of the investigation itself.
 
 ---
 
@@ -286,8 +287,51 @@ The Phase 6 independence rule and five-gate vocabulary remain unchanged.
 
 ---
 
+### Q-16 — How do we keep the FDAU origin and separation hypothesis under consideration?
+
+**RULED 2026-09-23 — retain the operator's framing and the originating FDAU
+comparison through the IEEE analysis.** Operator: **g0**. This records the
+request to keep the direction under consideration, not approval of a replacement
+engineering model.
+
+Operator framing, verbatim:
+
+> I think there are strengths in fdau's repressentation and organization as it separates requirements, tasks, and releases. although slightly accidental (superpowers does not provide these things), what the agnet came up with in fdau does a better job at separartinb these things than gzkit does. also, relative to the ieee guidance, gzkit is over-conflating too many things and misusing things like adrs. Also, obpis are an in-passing informality that has been too informalized in gzkit. However, opbis do bring together requirements and tasks, in an work package, that is useful. But then we tie these things to adrs in a way that the adr is being used outside of its actual purpose. And, hard-linking adrs to a release cycle is a complete mistake. OBPIs should perhaps just become work packages, or briefs, that work as a composite key to tie adrs, requirements, and tasks. As is the case with these SDD skills packages, these briefs can then even bring specs and plans into scope. As we complete these briefs, we can consider how a set of these briefs may constitute a release increment. that is, in hind sight, a better design than the sequence that gzkit now enforces. I think fdau shows the kernel of this - not perfected in any sense.  This is why I gathered these ISO/IEEE standards - to try to get a handle on what gzkit ought to do. seeing the structure in fdau - particularly the semantic naming of feature/requirement areas, and the sequence.subsequence structure: Nx.y.
+
+Operator retention request and origin account, verbatim:
+
+> okay, if you see the soundness of this, how do we keep it under consideration as this IEEE analysis plays out? fdau's accidental design is what brought this ieee analysis to bear and to light.
+
+**Where it is carried.**
+[`README.md` § Investigation origin and retained hypothesis — FDAU](README.md#investigation-origin-and-retained-hypothesis-fdau)
+holds the synthesis, commit-pinned sources, limitations, and explicit revisit
+points in the existing measurement, design, pilot, evaluation, and decision
+stages. The phase table and joining-agent guidance link to that same text.
+Later consideration must give the hypothesis a reasoned disposition; it may
+revise or reject it rather than treating the operator's diagnosis as an empirical
+finding or the FDAU model as perfected.
+
+**Questions retained for design, not answered by this recording.** Whether a
+brief has independent identity and typed links rather than a literal composite
+key; how many decisions or requirements may relate to a brief; which obligations
+outlive it; how semantic families and `Nx.y` identifiers behave under change;
+and how completed work maps to an approved delivered configuration. The agent's
+earlier suggestion of an independent brief identifier is an option to examine,
+not an operator-ratified schema.
+
+**Scope.** `Q-08` and `Q-10` remain ruled; `Q-12`'s candidate-file timing and
+`Q-15`'s evaluation criterion remain in force. No finding changes status. This
+entry starts neither Phase 4 nor a new R&D run, creates no ADR or OBPI, and
+changes no runtime rule, identifier, five-gate vocabulary, or release authority.
+
+---
+
 ## Amendments
 
+- **2026-09-23 — `Q-16` records the operator's FDAU framing and retention
+  request verbatim.** Linked its treatment in the README, phase table, and
+  joining-agent guidance. The ruling concerns continued consideration; the
+  proposed engineering model remains subject to design and independent testing.
 - **2026-09-23 — `Q-15` registered after the operator asked** *"did you update
   where needed?"*. The approved criterion was already in the README, but its
   ruling was missing from this register. Recorded the existing approval and

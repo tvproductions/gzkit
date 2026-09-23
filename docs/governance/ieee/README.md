@@ -28,7 +28,7 @@ to know where things stand. The numbered pieces are evidence behind its rows.
 |---|---|---|
 | [`FINDINGS.md`](FINDINGS.md) | **canonical** | The findings, with status and evidence pointers. Living; amended in place |
 | [`DISAGREEMENTS.md`](DISAGREEMENTS.md) | **canonical** | Where Agent 0 and Agent 1 disagree, preserved unresolved |
-| [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) | **canonical** | Operator questions and rulings, including the successive-change evaluation decision (`Q-15`) |
+| [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) | **canonical** | Operator questions and rulings, including successive-change evaluation (`Q-15`) and the FDAU origin and retained hypothesis (`Q-16`) |
 | [`consequence-bands.md`](consequence-bands.md) | **canonical, PROVISIONAL** | Operator-ruled consequence scale (`Q-04`). Scores rest on `OPEN` findings; must be re-scored after Phase 2 |
 | [`01-…`](01-engineering-method-2026-09-22.md), [`02-…`](02-requirements-vs-release-2026-09-22.md) | historical | Raw investigation record — what an agent said, frozen at its date |
 | [Astra's adversarial review](gzkit-engineering-assessment-adversarial-review.md) | historical | Agent 1's Phase 2 report, as deposited. Raw record — challenge input, not a second register |
@@ -46,6 +46,61 @@ not claim conformance, and is not obliged to adopt anything a standard contains.
 The corpus is used as vocabulary. [`FINDINGS.md`](FINDINGS.md) F-032 and F-033
 are the standing guard on this, and F-032 binds Phase 4 as a filter.
 
+## Investigation origin and retained hypothesis — FDAU
+
+**Recorded 2026-09-23 at the operator's request; `Q-16`.** The operator identifies
+xplane-fdau's emergent organization as the origin of this IEEE investigation:
+*"fdau's accidental design is what brought this ieee analysis to bear and to
+light."* The standards were gathered to help determine what gzkit ought to do
+after that comparison exposed a more intelligible separation of engineering
+objects. FDAU is an originating example to examine, not a reference implementation
+to copy or a demonstrated standards-conformant system.
+
+**Hypothesis to retain.** Requirements and specifications describe obligations;
+ADRs record architectural decisions; bounded briefs assemble the requirements,
+relevant decisions, specifications, plans, tasks, and evidence needed for a
+change; releases identify selected delivered increments. The useful work-package
+function of OBPIs can survive without making an ADR the mandatory container or
+coupling its identity to a release. Semantic capability areas and hierarchical
+`Nx.y` identifiers may make the work easier to navigate without encoding release
+membership. This is a synthesis of the operator's framing, preserved verbatim at
+[`Q-16`](OPEN-QUESTIONS.md#q-16-how-do-we-keep-the-fdau-origin-and-separation-hypothesis-under-consideration).
+It is not an approved replacement ontology, identifier scheme, or migration.
+
+**Inspectable comparison source.** The reviewed FDAU snapshot is
+`49eec3557145d9825c7026aa4dfee718443d433f`:
+[backlog method](https://github.com/tvproductions/xplane-fdau/blob/49eec3557145d9825c7026aa4dfee718443d433f/docs/project/backlog-method.md),
+[roadmap](https://github.com/tvproductions/xplane-fdau/blob/49eec3557145d9825c7026aa4dfee718443d433f/ROADMAP.md),
+and [backlog](https://github.com/tvproductions/xplane-fdau/blob/49eec3557145d9825c7026aa4dfee718443d433f/BACKLOG.md).
+Its [retrospective](https://github.com/tvproductions/xplane-fdau/blob/49eec3557145d9825c7026aa4dfee718443d433f/docs/project/backlog-governance-model.md)
+also contains proposals for other projects; distinguish those from implemented
+FDAU behavior. Its child-and-gate tracking does not itself establish durable
+individual requirement identity or complete bidirectional traceability. The
+operator attributes the organization to the agent's emergent design, rather than
+to a capability supplied by Superpowers; that provenance account is not an audit
+of Superpowers.
+
+**How it remains in consideration.** Carry this question through the existing
+phases, when each is authorised, and record its disposition rather than allowing
+it to disappear into a generic recommendation to improve governance:
+
+| Existing stage | Treatment of the retained hypothesis |
+|---|---|
+| Measurement program | Read `M-A` and `M-B` against the durable-obligation / bounded-work distinction; retain evidence that weakens it as well as evidence that supports it. This does not commission either measurement |
+| Phase 4 — design | Explicitly compare a model with separately identified requirements, decisions, work packages, and releases against the current model and narrower repairs. Examine brief relationships and semantic `Nx.y` navigation without assuming that literal composite keys or renumbering are needed. Record what to retain, revise, or reject and why |
+| Phase 5 — pilot | Use `Q-15`'s existing successive-change sequence to test whether a changed requirement, deferred brief, and later release preserve identity, approval history, and evidence. Include a case where completed work is not yet released |
+| Phase 6 — independent evaluation | Reconstruct what was required, decided, worked, verified, and shipped from retained artifacts. Check both semantic separation and the cost of maintaining the links; inspect FDAU's limitations as possible failure modes |
+| Phase 7 — operator decision | Give this hypothesis an explicit adopt / revise / reject disposition supported by the pilot evidence; record an inconclusive result as inconclusive |
+
+**Relationship to the existing record.** This bears on F-001, F-002, F-005,
+F-008, F-012, and F-015; it neither supplies new evidence for their status nor
+settles their qualifications. `Q-08` already rules against deriving a package
+version from an ADR identifier, and `Q-10` selects a ledger release record.
+Preserve those rulings while investigating the wider separation. `Q-12` still
+places design candidates in `design-candidates.md` only after Phase 4 is
+authorised. The hypothesis is retained here as investigation framing; Phase 4
+and the runtime governance rules remain unchanged.
+
 ## Investigation phases
 
 | Phase | Purpose | Lead | Status |
@@ -54,7 +109,7 @@ are the standing guard on this, and F-032 binds Phase 4 as a filter.
 | 1 | Primary forensic assessment | Agent 0 | complete — pieces 01, 02 |
 | 2 | Adversarial review of Phase 1 | Agent 1 (Astra) | complete — report received 2026-09-22 |
 | 3 | Reconciliation and canonicalization | Agent 0 | **complete 2026-09-23** — reconciled, disagreements recorded, stop condition met (`Q-14`) |
-| 4 | Design target engineering model against the [successive-change criterion](#success-across-successive-changes) (`Q-15`) | — | not authorised |
+| 4 | Design target engineering model against the [successive-change criterion](#success-across-successive-changes) (`Q-15`), explicitly addressing the [FDAU separation hypothesis](#investigation-origin-and-retained-hypothesis-fdau) (`Q-16`) | — | not authorised |
 | 5 | Bounded pilot across [successive changes](#success-across-successive-changes) (`Q-15`) | — | not authorised |
 | 6 | Independently evaluate the pilot against the [adopted criterion](#success-across-successive-changes) (`Q-15`) | — | not authorised |
 | 7 | Adopt / revise / reject | — | not authorised |
@@ -451,6 +506,10 @@ evidence that the seeding of `FINDINGS.md` from the pieces was not exhaustive.
 [successive-change evaluation criterion](#success-across-successive-changes)
 for later design, pilot, and independent evaluation. Carry that criterion into
 Phases 4–6 when authorised; its adoption does not open those phases.
+`Q-16` records FDAU as the investigation's origin and retains the
+[separation hypothesis](#investigation-origin-and-retained-hypothesis-fdau).
+Carry its explicit comparison and disposition forward alongside `Q-15`; retaining
+it does not select a remedy or authorise Phase 4.
 
 **What remains unmeasured.** The proposed `M-A` … `M-G` measurements and the
 successive-change pilot. `M-H` is discharged, with its scores still provisional.
@@ -529,6 +588,11 @@ the governance pipeline, and nothing here creates one.**
 
 ## Amendments
 
+- **2026-09-23 — FDAU origin and separation hypothesis retained (`Q-16`).**
+  Recorded the operator's account of why the IEEE investigation began, pinned
+  the comparison sources, and linked explicit consideration through the phase
+  and handoff paths. Preserved the useful work-package idea and the proposed
+  separation without adopting a schema, changing findings, or opening Phase 4.
 - **2026-09-23 — Dex Horthy deposit reconciled against the register.**
   § Success across successive changes gains **Where the testimony lands in the
   register**: each excerpt mapped to the F-### or `M-` item it bears on, with the

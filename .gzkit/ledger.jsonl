@@ -17036,3 +17036,5 @@
 {"schema":"gzkit.ledger.v1","event":"airlock_out","id":"permitted-entry:docs/governance/ieee/README.md","ts":"2026-09-23T07:54:42.198857+00:00","verdict":"clean","drift":[],"routing":[],"bodies":1}
 {"schema":"gzkit.ledger.v1","event":"airlock_in","id":"permitted-entry:docs/governance/ieee","ts":"2026-09-23T08:00:50.109647+00:00","decision":"proceed","unaccounted":[]}
 {"schema":"gzkit.ledger.v1","event":"airlock_out","id":"permitted-entry:docs/governance/ieee","ts":"2026-09-23T08:00:50.112149+00:00","verdict":"clean","drift":[],"routing":[],"bodies":1}
+{"schema":"gzkit.ledger.v1","event":"airlock_in","id":"permitted-entry:docs/governance/ieee","ts":"2026-09-23T08:31:37.098860+00:00","decision":"proceed","unaccounted":[]}
+{"schema":"gzkit.ledger.v1","event":"airlock_out","id":"permitted-entry:docs/governance/ieee","ts":"2026-09-23T08:31:37.101851+00:00","verdict":"clean","drift":[],"routing":[],"bodies":1}
