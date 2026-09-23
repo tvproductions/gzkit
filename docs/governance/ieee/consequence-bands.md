@@ -143,6 +143,21 @@ this system.
 
 ## Amendments
 
+- **2026-09-22 — Re-examined against the reconciled register; still PROVISIONAL.**
+  The standing obligation was to re-score after Phase 2. Reconciliation ran, and
+  **no `D` or `R` digit moved, so no band moved.** The three rows whose scores
+  are finding-derived were checked individually: Gate logic (F-019, now
+  `QUALIFIED`) keeps `D2` — the challenge narrows *which* gates decide nothing
+  without disturbing `_run_gate_5`, which is what the digit is anchored on;
+  Hooks (F-018, `QUALIFIED`) keeps `D2` for the same reason, the challenge being
+  about scope and calibration rather than about whether the hook refuses;
+  Validators / `gz check` (F-021, now **`DISPUTED`**) keeps `D2` on the
+  self-detection half, which Astra affirms, **but the row now rests on a finding
+  whose other half is contested and must be read as such.** **The file stays
+  PROVISIONAL**: fourteen findings remain `OPEN`, seven of the ten `D2` rows
+  still name no finding at all, and a scale resting on a disputed row is not
+  settled. Lifting PROVISIONAL is an operator decision, not a consequence of this
+  pass.
 - **2026-09-22 — Act 1 cold-read repair pass (mechanical only).** **No score
   changed.** The `D2` row count corrected from nine to ten: the table scores ten
   `D2` surfaces (Ledger writes, Attestation/completion, `gz adr demote`, ARB

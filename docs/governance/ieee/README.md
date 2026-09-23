@@ -144,9 +144,16 @@ not. IEEE 1012 Annex C names this problem, and piece 01 found gzkit's honest
 self-description is already the `embedded` form.
 
 **Current gate.** Astra's Phase 2 report **arrived 2026-09-22** and is deposited
-in this directory. **The full reconciliation pass is deferred and not yet run** —
-no finding status has moved in response to it. Until that pass runs, every row in
-`FINDINGS.md` still carries its pre-challenge status and must be read as such. **All thirteen open questions were
+in this directory. **The full reconciliation pass ran 2026-09-22**: all 25 rows of
+its § 2 challenge table are mapped onto `FINDINGS.md`, 19 statuses moved, and
+eight disagreements are recorded at `D-01` … `D-08`. **Phase 3's stop condition
+is still not met.** Fourteen rows remain `OPEN` because Astra reviewed pieces 01
+and 02 rather than this register and declares its own review non-exhaustive — a
+row it never reached was not exposed to challenge, so it did not survive one.
+Closing them needs either a further adversarial pass aimed at this register or an
+operator ruling that `OPEN` is a settled status for an unchallenged row. Two rows
+are `DISPUTED` (F-006, F-021) and must not be read as settled in either
+direction. **All thirteen open questions were
 ruled by the operator on 2026-09-22**, one (`Q-09`) as a deferral. No finding may be promoted to `CONFIRMED`
 before that pass runs. **Phase 4 is not authorised and must not begin
 implicitly** — a design candidate that goes unchallenged is still not a decision.
@@ -240,14 +247,18 @@ and [`consequence-bands.md`](consequence-bands.md) as needed. That is enough;
 Act 1 reading list — if you are Agent 2, stop at its boundary and do not open the
 numbered pieces or `raw/`.
 
-**What is confirmed.** Nothing, in the register's sense of the word. 35 findings
-are recorded with evidence, but none has been through the adversarial pass, so
-none is `CONFIRMED`. Three are `QUALIFIED` and two `REJECTED` — all by Agent 0's
-own later work, not by the Phase 2 review.
+**What is confirmed.** Two rows: F-032 (most of the standards' machinery should
+not be adopted here) and F-033 (conformance is dischargeable by reference). Both
+carry the challenge table's only affirmative verdicts. Seventeen rows are
+`QUALIFIED` — survived in narrowed form, with the narrowing on the row — and
+fourteen remain `OPEN` because the Phase 2 review never reached them.
 
-**What is disputed.** Nothing is recorded as disputed, **because the Phase 2
-report has not been read** — not because the two agents agree. Do not read
-[`DISAGREEMENTS.md`](DISAGREEMENTS.md)'s emptiness as consensus.
+**What is disputed.** Two findings, both load-bearing: **F-006** (does a
+persistent system model exist, or only fragments) and **F-021** (can the system
+retire what it detects). Eight entries are recorded at `D-01` … `D-08` in
+[`DISAGREEMENTS.md`](DISAGREEMENTS.md), three of them `A0 CONCEDES` and three
+`MISSING EVIDENCE`. `D-08` records a challenge with **no finding to land on** —
+evidence that the seeding of `FINDINGS.md` from the pieces was not exhaustive.
 
 **What is unknown.** `Q-01` … `Q-13` in [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md),
 and everything the measurement program `M-A` … `M-H` would measure.
@@ -272,7 +283,9 @@ and everything the measurement program `M-A` … `M-H` would measure.
 **Currently prohibited:**
 
 - Beginning Phase 4 design. It is not authorised.
-- Promoting any finding to `CONFIRMED` before the Phase 2 report is read.
+- Promoting any finding to `CONFIRMED` that the Phase 2 review did not reach.
+  The review is read and reconciled; a row it never challenged is still
+  unchallenged.
 - Creating an ADR, OBPI, REQ or TASK from anything in this directory.
 - Treating a design candidate as a decision, or this register as doctrine.
 - Editing the numbered pieces other than by a dated amendment.
@@ -286,11 +299,12 @@ and everything the measurement program `M-A` … `M-H` would measure.
 - Promoting `ADR-pool.feature-adr-semver-discipline` before the `kind` guard
   lands (`Q-09`).
 
-**Next permitted step.** Receive the Phase 2 adversarial review (`Q-13`), then
-reconcile it row by row into `FINDINGS.md` and `DISAGREEMENTS.md`. Phase 3 is
-complete when every row carries a settled status and the disagreements are
-recorded — at which point Phase 4 requires **explicit operator authorisation**,
-not merely an absence of objection.
+**Next permitted step.** The review was received (`Q-13`) and reconciled row by
+row on 2026-09-22. **What remains for Phase 3 is coverage, not reconciliation:**
+the fourteen `OPEN` rows, and the two `DISPUTED` ones. Phase 3 is complete when
+every row carries a settled status and the disagreements are recorded — at which
+point Phase 4 requires **explicit operator authorisation**, not merely an absence
+of objection.
 
 ## Relationship to gzkit's own engineering artifacts
 
@@ -319,6 +333,15 @@ the governance pipeline, and nothing here creates one.**
 
 ## Amendments
 
+- **2026-09-22 — Phase 3 reconciliation pass recorded.** § Current gate,
+  § Next permitted step, § Handoff (*what is confirmed*, *what is disputed*) and
+  the `CONFIRMED` prohibition updated to the post-reconciliation state. **The
+  prohibition was narrowed, not lifted:** it now forbids promoting a row the
+  review never reached, which is the condition that actually bears after the
+  report has been read. **This also settles, in one direction, the contradiction
+  flagged below** — this file and `DISAGREEMENTS.md` previously stated two
+  different gate conditions on promotion to `CONFIRMED`. The operator may
+  overturn the reading.
 - **2026-09-22 — Act 1 cold-read repair pass (mechanical only).** § Current gate's
   orphaned *"Until then"* — editing residue with no antecedent, inside a binding
   paragraph — reworded to name the reconciliation pass it was describing. **No

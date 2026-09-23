@@ -52,43 +52,43 @@ ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
 |---|---|---|---|
 | | **A — The persistent / transient boundary** | | |
 | F-001 | Persistent engineering knowledge is carried by transient work packages | QUALIFIED | REFINE |
-| F-002 | Requirement and constraint identity is a coordinate inside the work package | OPEN | REFINE |
-| F-003 | ADR demotion destroys specification | OPEN | REFINE |
+| F-002 | Requirement and constraint identity is a coordinate inside the work package | QUALIFIED | REFINE |
+| F-003 | ADR demotion destroys specification | QUALIFIED | REFINE |
 | F-004 | Roughly 10% of a brief is durable engineering knowledge; the rest is work log | OPEN | REFINE |
-| F-005 | The work package has accumulated responsibilities, in the template | OPEN | REFINE |
-| F-006 | Six intake surfaces each carry part of a system model that exists nowhere | OPEN | ADD |
+| F-005 | The work package has accumulated responsibilities, in the template | QUALIFIED | REFINE |
+| F-006 | Six intake surfaces each carry part of a system model that exists nowhere | DISPUTED | ADD |
 | F-007 | Transient matter is accumulating inside durable stores | OPEN | REFINE |
 | | **B — Identity, traceability and the release seam** | | |
 | F-008 | Decision, requirement and release identity share one semver namespace | OPEN | REFINE |
 | F-009 | No requirement revision counter exists | OPEN | ADD |
 | F-010 | No requirements baseline; the freeze mechanism exists and is aimed elsewhere | OPEN | ADD |
 | F-011 | Requirements are governed by continuous reconciliation | OPEN | REFINE |
-| F-012 | Traceability is one leg of the five 29148 names | OPEN | ADD |
+| F-012 | Traceability is one leg of the five 29148 names | QUALIFIED | ADD |
 | F-013 | No architecture description in the 42010 § 6 sense | OPEN | ADD |
-| F-014 | The PRD is inert; product-intent traceability was practised once | OPEN | REFINE |
+| F-014 | The PRD is inert; product-intent traceability was practised once | QUALIFIED | REFINE |
 | F-015 | No release record; the ledger cannot reconstruct a release | OPEN | ADD |
 | F-016 | Identifier renameability funds a large standing machinery cost | OPEN | REMOVE |
-| F-017 | Two coverage numbers disagree with no reconciling statement | OPEN | REFINE |
+| F-017 | Two coverage numbers disagree with no reconciling statement | QUALIFIED | REFINE |
 | | **C — Enforcement and evidence** | | |
 | F-018 | Jurisdiction is declared in prose and refused by nothing | QUALIFIED | REFINE |
-| F-019 | Gates record exit codes where the covenant promises claims | OPEN | REFINE |
-| F-020 | Documentation and implementation disagree at 22 measured points | OPEN | REFINE |
-| F-021 | The system finds its own facades honestly and cannot retire them | OPEN | ADD |
+| F-019 | Gates record exit codes where the covenant promises claims | QUALIFIED | REFINE |
+| F-020 | Documentation and implementation disagree at 22 measured points | QUALIFIED | REFINE |
+| F-021 | The system finds its own facades honestly and cannot retire them | DISPUTED | ADD |
 | F-022 | Evidence records are incomplete as evidence | OPEN | REFINE |
 | | **D — Cost and accumulation** | | |
-| F-023 | Agent entry cost is dominated by procedure, not by the problem | OPEN | REFINE |
+| F-023 | Agent entry cost is dominated by procedure, not by the problem | QUALIFIED | REFINE |
 | F-024 | Governance prose outweighs source code several-fold | OPEN | REFINE |
-| F-025 | Work-package duration and the collapse of pipeline throughput | OPEN | — |
+| F-025 | Work-package duration and the collapse of pipeline throughput | QUALIFIED | — |
 | F-026 | A long release stall that no gate can see | OPEN | ADD |
 | | **E — Strengths** | | |
-| F-027 | The REQ→test correspondence machinery, with violation recording | OPEN | KEEP |
-| F-028 | The anti-tautological-test stack is ahead of the testing standard | OPEN | KEEP |
-| F-029 | The REQ-kind taxonomy independently rediscovers the verification-method split | OPEN | KEEP |
+| F-027 | The REQ→test correspondence machinery, with violation recording | QUALIFIED | KEEP |
+| F-028 | The anti-tautological-test stack is ahead of the testing standard | QUALIFIED | KEEP |
+| F-029 | The REQ-kind taxonomy independently rediscovers the verification-method split | QUALIFIED | KEEP |
 | F-030 | Path-scoped agent rules with real runtime enforcement | OPEN | KEEP |
 | F-031 | `RELEASE_NOTES.md` is load-bearing, not duplication | OPEN | KEEP |
 | | **F — Method boundary** | | |
-| F-032 | Most of the standards' machinery should not be adopted here | QUALIFIED | — |
-| F-033 | Conformance is dischargeable by reference, not by document | OPEN | KEEP |
+| F-032 | Most of the standards' machinery should not be adopted here | CONFIRMED | — |
+| F-033 | Conformance is dischargeable by reference, not by document | CONFIRMED | KEEP |
 | | **G — Retired readings** | | |
 | F-034 | *Parked OBPIs indicate stalling work* | REJECTED | — |
 | F-035 | *The four-baseline scheme is acquisition bureaucracy* | REJECTED | — |
@@ -121,12 +121,13 @@ ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
   `artefact`, initiated in one process and revised in others.
 - **Consequence.** Knowledge is destroyed on a schedule set by work-package
   lifecycle rather than by system lifecycle. See F-003 for the measured loss.
+- **Phase 2 challenge (Astra, 2026-09-22) — DOWNGRADE TO HYPOTHESIS, on the causal claim.** Challenge-table row *"§6: Persistent knowledge in OBPI explains long duration"*: *"No causal test; created-to-completed mixes queue and execution."* Counterevidence: one OBPI open more than 33 days completed **3.25 hours after its first lock** [E2] — elapsed time is not work time. Alternatives offered: authorization/sequence waiting, scope coupling, churn. **The placement observation is not challenged; the explanatory claim built on it is.** Astra's §1 records that piece 01 postponed this classification to its own measurement item while treating the answer as settled in §§ 4, 6 and 8 — the same discipline failure the operator caught independently. Carried as `D-04`.
 - **Disposition.** Not a design decision. The remedy shape is named normatively
   by the standard, but which object carries persistent identity is `M-A`.
 
 ### F-002 — Requirement and constraint identity is a coordinate inside the work package
 
-- **Status:** OPEN · **Class:** REFINE
+- **Status:** QUALIFIED · **Class:** REFINE
 - **Observation.** `REQ-<adr-semver>-<obpi-NN>-<req-NN>` encodes the requirement's
   parentage in its identity, so it cannot outlive the work package that
   introduced it. Constraints are worse off: the FAIL-CLOSED population is the
@@ -143,6 +144,7 @@ ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
   maintained "Through the life cycle."
 - **Consequence.** Traceability questions (a), (d) and (h) in `01 § 5.1` are
   unanswerable, and the loss in F-003 is structural rather than incidental.
+- **Phase 2 challenge (Astra, 2026-09-22) — REJECT, on the stated form.** Challenge-table row *"§2/§8: Hierarchical IDs cannot outlive work packages"*: *"Logical assertion, not observed property of the grammar"*, and *"Contradicted by 29148's permitted relational identity"* [S2]. Counterevidence: *"The parser accepts an ID independently; storage lookup and deletion govern discoverability"* [E6]. **This register concedes the stated form**, because its own Interpretation above already says the grammar is sound and the defect is ownership rather than syntax — the Observation's *"cannot outlive"* overstated what the Interpretation claimed. **Surviving claim:** lifecycle and storage policy, not the identifier grammar, is what destroys a requirement's discoverability. Carried as `D-02`.
 - **Disposition.** `M-A` decides whether the persistent object is a subset of
   today's REQs or a different object. **Piece 01 declares an open risk here:**
   most REQs may be correctly transient, which would be a larger finding, not a
@@ -150,7 +152,7 @@ ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
 
 ### F-003 — ADR demotion destroys specification
 
-- **Status:** OPEN · **Class:** REFINE
+- **Status:** QUALIFIED · **Class:** REFINE
 - **Observation.** `gz adr demote` executes `shutil.rmtree(source_dir)`, deleting
   the ADR package including `obpis/`. Measured across git history, a large
   fraction of all REQ acceptance criteria and FAIL-CLOSED constraints ever
@@ -168,6 +170,7 @@ ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
 - **Consequence.** Piece 02 measures live behave scenario tags pointing at briefs
   that no longer exist, so the loss has already produced dangling references.
 - **Ruled 2026-09-22 (operator).** `Q-01` answered: **unexamined consequence.** The delete is collateral, not design, so this is a **defect**, not a premise. Demote should archive rather than delete; `M-B` characterises the loss.
+- **Phase 2 challenge (Astra, 2026-09-22) — DOWNGRADE TO HYPOTHESIS.** Challenge-table row *"§1/§4/§6: Deleted briefs demonstrate loss of 39% of enduring requirements"*: *"Deletion count is real; durability and causal attribution are unclassified"*, and the 16326 inference is called invalid. Counterevidence: *"364 of 384 deletion events cluster in two deliberate demotion campaigns, largely unstarted work"* [E1]. **The deletion is confirmed; what was deleted is not classified.** The share of the deleted population that was durable engineering knowledge rather than retired backlog is unmeasured on both sides — `M-B`'s question exactly. The operator's `Q-01` ruling that the delete is collateral rather than designed is unaffected by this challenge. Carried as `D-03`.
 - **Disposition.** Whether this was intended is `Q-01` — and the answer decides
   whether it is a defect or a premise. `M-B` would characterise what was lost.
 
@@ -187,11 +190,12 @@ ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
   does **not** specify requirements.
 - **Consequence.** Feeds F-023: the brief is a small share of agent entry cost,
   and a small share of the brief is the actual specification.
+- **Phase 2 note (Astra, 2026-09-22) — not directly challenged.** The challenge-table row covering brief overload confirms *"Template growth and mixed content are direct observations"* while disputing the inference (see F-005). The section-share ratio measured here is not contested, and no counterevidence is offered against it. Status unchanged: Astra's review was scoped to pieces 01 and 02 and is explicitly non-exhaustive, so silence on a row is not survival of it.
 - **Disposition.** Follows F-001. No separate decision.
 
 ### F-005 — The work package has accumulated responsibilities, in the template
 
-- **Status:** OPEN · **Class:** REFINE
+- **Status:** QUALIFIED · **Class:** REFINE
 - **Observation.** `src/gzkit/templates/obpi.md` grew roughly fivefold in lines
   and doubled in sections over eight months. Briefs at birth grew on the same
   curve, while post-birth growth stayed modest.
@@ -206,12 +210,13 @@ ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
   (planning, specification, implementation, repair, assurance) sit in one
   document.
 - **Consequence.** Every increment pays for sections it does not use.
+- **Phase 2 challenge (Astra, 2026-09-22) — CONFIRM WITH QUALIFICATION.** Challenge-table row *"§6: OBPI is overloaded and template responsibilities grew"*: *"Template growth and mixed content are direct observations"*, but *"Standards do not prohibit mixed artifacts."* Counterevidence: *"Briefs deliberately retain closure rationale; acceptance criteria and plans are not categorically incompatible"* [E2]. Alternative: *"Required ceremony grew; selection could reduce reading without splitting storage."* **The growth measurement stands; the inference that the mixing is itself the defect does not.** This bears directly on Phase 4: reducing what a reader must read is separable from splitting where content is stored.
 - **Disposition.** Open. Reducing the template is a design candidate, not a
   finding.
 
 ### F-006 — Six intake surfaces each carry part of a system model that exists nowhere
 
-- **Status:** OPEN · **Class:** ADD
+- **Status:** DISPUTED · **Class:** ADD
 - **Observation.** Pool ADRs, GitHub issues, the insights ledger, chores, the
   campaign plan and handoffs each hold part of the project's durable knowledge.
   **No surface is a backlog *against* a model, because no surface holds the
@@ -225,6 +230,7 @@ ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
 - **Consequence.** A documented three-session rediscovery loop: the repository
   records three independent sessions re-deriving the same suspected defect.
 - **Ruled 2026-09-22 (operator).** `Q-03` answered: **drain the defect-shaped pool entries to GHIs**, applying `pool-curation.md`'s three-gate filter retroactively. The pool returns to intake-only. Architectural Boundaries 1 and 2 stand unchanged.
+- **Phase 2 challenge (Astra, 2026-09-22) — REJECT, twice.** Two challenge-table rows land here. *"§2/§8: No persistent system model or knowledge home exists"*: *"Absence claim not sustained"*, and it *"Conflates full 42010 AD conformity with possession of useful system knowledge."* Counterevidence: *"State/trust doctrine, CLI specification, architectural identity, source ontology, and OKF knowledge bundle exist"* [E7,E9,E10]. And *"§2/§4: Risks/research questions have no home; interface spec absent beyond manpages"*: *"Nonexistence claims exceed the inventory"*, *"A concept need not have its own object"*, with ADR consequences, research records and a canonical CLI specification named as counterevidence [E9,E10]. Astra's alternative in both cases is a **narrowing, not a dismissal**: *"Fragmented, partly stale, insufficiently queryable knowledge."* **Unresolved.** The two positions partly talk past each other — this finding claims no surface holds a model *as a model*, Astra names artifacts that hold system knowledge — and the register does not resolve that by fiat. Carried as `D-01`.
 - **Disposition.** `M-C` traces where items in each surface actually end up.
 
 ### F-007 — Transient matter is accumulating inside durable stores
@@ -326,7 +332,7 @@ ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
 
 ### F-012 — Traceability is one leg of the five 29148 names
 
-- **Status:** OPEN · **Class:** ADD
+- **Status:** QUALIFIED · **Class:** ADD
 - **Observation.** REQ→verification exists and works. REQ→need, REQ→architecture,
   REQ→implementing element and REQ→parent do not. Of eleven traceability questions
   posed in piece 01, four are answerable, three partially, four not at all.
@@ -338,6 +344,7 @@ ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
   controlled" is § 6.4.3.5, not § 6.6.
 - **Consequence.** Impact analysis and blast radius are unavailable; the
   `## Discovery Checklist` substitutes for them and is presence-checked only.
+- **Phase 2 challenge (Astra, 2026-09-22) — CONFIRM WITH QUALIFICATION, and the qualification changes the remedy.** Challenge-table row *"§4/§5: Only REQ→test trace exists; parent/allocation are absent"*: *"Production source allocation is unpopulated; total absence is false."* Counterevidence: *"`ReqEntity.parent_obpi` exists; source-anchor/coupling implementation exists, with zero current source anchors"* [E6,E7]. Alternative: *"Incomplete population/projection rather than missing modeling capability."* **This is a material correction.** REQ→parent and REQ→implementing element are **built and unpopulated**, not missing. A finding of absent capability argues for construction; a finding of unpopulated capability argues for population. Phase 4 must not read this row as the former.
 - **Disposition.** `01 § 5.2` proposes a six-node, seven-edge graph of which four
   edges already exist. That is a **design candidate**, not a decision.
 
@@ -352,6 +359,7 @@ ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
   they cover**, so no coverage property over concerns can exist.
 - **Standards lens.** 42010:2022 § 4 and § 6 (*shall*).
 - **Consequence.** No answer to "which decisions bear on this surface."
+- **Phase 2 note (Astra, 2026-09-22) — not directly challenged.** The challenge-table row rejecting *"No persistent system model or knowledge home exists"* charges a conflation of *"full 42010 AD conformity with possession of useful system knowledge."* **That charge lands on F-006's inference, not on this row's observation**, which is a bounded subclause-coverage count and is not contradicted by any counterevidence Astra offers. Status therefore unchanged. The `M-E` disposition — test whether extending correspondence methods reaches the property more cheaply than an architecture description — is strengthened rather than weakened by Astra's *"A concept need not have its own object."*
 - **Disposition.** `M-E` tests whether an architecture description is warranted or
   whether extending the existing correspondence methods reaches the same property
   more cheaply. **Piece 01 declares its own bias:** the correspondence route is
@@ -359,7 +367,7 @@ ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
 
 ### F-014 — The PRD is inert; product-intent traceability was practised once
 
-- **Status:** OPEN · **Class:** REFINE
+- **Status:** QUALIFIED · **Class:** REFINE
 - **Observation.** The PRD has been `status: Draft` since January. Its `FR-*`
   identifiers appear nowhere outside it; its `AC-*` identifiers appear outside it
   only in the first pre-release ADR and that ADR's OBPIs.
@@ -371,6 +379,7 @@ ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
 - **Consequence.** The top of the traceability chain is absent, so NEED→REQUIREMENT
   (F-012) has nothing to attach to until `Q-02` is answered.
 - **Ruled 2026-09-22 (operator).** `Q-02` answered: **rewrite the PRD around the system as it actually ships.** The product claim stands — distribution is mechanically enforced — but the January framing does not. This restores the top of the traceability chain that F-012's NEED→REQUIREMENT edge needs.
+- **Phase 2 challenge (Astra, 2026-09-22) — CONFIRM WITH QUALIFICATION.** Challenge-table row *"§1/§2: PRD is frozen/inert; product-intent traceability was abandoned"*: *"Identifier-use evidence is narrower than claimed semantics"*, and it *"Overreads missing explicit links."* Counterevidence: *"PRD contains later glossary/context additions; git shows changes through August 17. It still states a product and north star"* [E10]. Alternative: *"Weak explicit linkage and stale metadata, rather than absent product intent."* **The identifier measurements stand; "inert" does not.** Astra reached this independently of, and agrees with, the narrowing the operator's `Q-02` ruling is awaiting — *repair stale metadata and restore linkage* rather than *rewrite*. **This bears on an unanswered operator question and is flagged for it.**
 - **Disposition.** `Q-02` is settled; the rewrite itself is Phase 4 or later, and is not authorised by this register.
   Leaving it Draft and uncited is the one option that costs without paying.
 
@@ -416,7 +425,7 @@ ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
 
 ### F-017 — Two coverage numbers disagree with no reconciling statement
 
-- **Status:** OPEN · **Class:** REFINE
+- **Status:** QUALIFIED · **Class:** REFINE
 - **Observation.** `gz covers` and `gz drift` report different counts over what
   doctrine treats as one coverage surface, and no statement anywhere reconciles
   the populations.
@@ -427,6 +436,7 @@ ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
 - **Standards lens.** 42010 § 6.9.3 — a correspondence method records whether it
   holds or records all known violations.
 - **Consequence.** Either number can be cited as *the* coverage figure.
+- **Phase 2 challenge (Astra, 2026-09-22) — CONFIRM WITH QUALIFICATION, and it supplies the missing statement.** Challenge-table row *"§5: Coverage numbers disagree without a coherent basis"*: *"Totals verified; semantic explanation omitted"*, and *"Different proof populations are legitimate."* Counterevidence: *"Covers includes feature tags and broader kinds; drift filters non-test obligations and retired work"* [E6]. **The disagreement is not a defect in either number; the absence of a reconciling statement is.** Astra's §1 separately reproduces the `1,794/2,749` coverage and `713` drift figures exactly. This sharpens the row into a documentation repair with a known answer, which strengthens the existing direct-repair disposition.
 - **Disposition.** Candidate for direct repair under the defect-fix route; it is
   one surface and small. Not an assessment decision.
 
@@ -463,13 +473,14 @@ ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
   is weaker than an enforced threshold that delegates below a line.
 - **Ruled 2026-09-22 (operator).** `Q-05` answered: **keep the IRON LAW and pursue a mechanical witness.** The 16085 consequence threshold is **not adopted** — it is enforceable but strictly weaker, because it delegates below a line. Do not re-propose it as a remedy for F-018.
 - **Consequence input.** Hooks score `C2` in [`consequence-bands.md`](consequence-bands.md).
+- **Phase 2 challenge (Astra, 2026-09-22) — CONFIRM WITH QUALIFICATION, plus an evidence correction.** Challenge-table row *"§1/§8: Jurisdiction/airlock do not prevent inspected out-of-scope writes"*: *"Direct caller/hook evidence"*, verdict confirmed. Counterevidence narrows the scope: *"Airlock's limitation is explicit; its NC calls `airlock_enter`, not merely `_decide`; existing successor owns calibration"* [E8]. **Evidence correction:** the anchor cited above is `enter.py:158-170` (`_decide`); Astra's reading is that the non-conformance path calls `airlock_enter`, and the row should be re-anchored accordingly before Phase 4 relies on it. Alternative: *"Unfinished calibration/compulsion and harness coverage"* rather than absent enforcement by design. **Separately, Astra independently REJECTS the 16085 threshold remedy** — *"Risk tolerance is not a grant of authority"*, *"Initiation is an explicit human-sovereignty policy; a violation does not invalidate its purpose"* — converging with the operator's `Q-05` ruling from the opposite direction.
 - **Disposition.** `Q-05` is settled against the threshold. The
   threshold is enforceable but is genuinely a *weaker* rule than the blanket
   prohibition.
 
 ### F-019 — Gates record exit codes where the covenant promises claims
 
-- **Status:** OPEN · **Class:** REFINE
+- **Status:** QUALIFIED · **Class:** REFINE
 - **Observation.** The large majority of `gate_checked` events carry no
   observation of what was verified — empty, or a literal constant string, or a
   skip recorded as a pass. Gate 2 ("Tests pass") has been satisfied many times by
@@ -487,13 +498,14 @@ ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
 - **Ruled 2026-09-22 (operator).** `Q-07` answered: **re-point the covenant** at `gz closeout` and `gz obpi complete`, keeping the five-gate vocabulary. Edits to `AGENTS.md` go through the corpus ceremony, not a hand-edit.
 - **Standing constraint (operator, 2026-09-22).** *"do not abandon the five gates without a discussion with me."* **Retiring or replacing the five-gate vocabulary is prohibited absent an explicit operator discussion** — including as an incidental consequence of any Phase 4 design. This finding describes what the gates record; it does not license removing them.
 - **Consequence input.** Surfaces in this finding are scored in [`consequence-bands.md`](consequence-bands.md): gate logic `C2`, validators `C2`, receipt durability `C3`. Ten of sixteen scored surfaces are `D2` — they fail by reporting success.
+- **Phase 2 challenge (Astra, 2026-09-22) — CONFIRM WITH QUALIFICATION; the universal form falls.** Challenge-table row *"§1/§8: Gates record exit codes and decide nothing"*: *"Good historical payload concern; false generalization"*, and it *"Confuses a check, a gate condition, and the authorization consuming it."* Counterevidence: *"Closeout blocks failures; completion emits human-attestation receipts"* [E4]. Alternative: *"Deprecated interface plus dispersed evidence, not universally absent gating."* **Surviving claim:** the historical `gate_checked` payloads are weak, and the deprecated `gz gates` Gate-5 stub is a poor guide to current completion behaviour. **Withdrawn:** that nothing in the system gates. Astra's §1 states the same in its own words. The operator's `Q-07` ruling — re-point the covenant at `gz closeout` and `gz obpi complete` — was reached independently and moves in the same direction. Carried as `D-06`.
 - **Disposition.** `Q-07` is settled. The superseded option was to retire
   the gate vocabulary. Both are coherent; they are not the same project. `M-D`
   would name the claim behind each gate.
 
 ### F-020 — Documentation and implementation disagree at 22 measured points
 
-- **Status:** OPEN · **Class:** REFINE
+- **Status:** QUALIFIED · **Class:** REFINE
 - **Observation.** Twenty-two specific places where a documented rule and the
   code that implements it say different things, each with both sides cited.
 - **Evidence.** `01 § 11` — the disagreement register, held there in full and not
@@ -505,12 +517,13 @@ ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
 - **Standards lens.** 42010 § 6.9.1 (*shall*) — record known inconsistencies.
 - **Consequence.** Any agent reading doctrine can act on a rule the code does not
   implement.
+- **Phase 2 challenge (Astra, 2026-09-22) — three of the twenty-two rows rejected.** The register of disagreements is not itself challenged; three of its rows are. *"§11: Computed `not-refuted` bypasses real adversarial outcome"* — **REJECT**: *"`completion_review` checks proofs, required reviews, and unresolved findings first; refuted rounds can be retained"* [E4]; alternative, *"Legacy dead code/comment beside newer acceptance model."* *"§2/§11: Fifteen agent attestations indict current Gate 5"* — **REJECT**: *"All fifteen date to March; universal rule cutoff is April 26"* [E4]; the count is *"not version-stratified"*, so it is pre-doctrine practice, and the present relay-authentication limitation is a separate question. *"§2/§11: `staleness.periodDays` is unread"* — **REJECT**: *"Contradicted by code and tests"*; *"Status calculates due dates; session orientation consumes status; freshness script also reads the field"* [E3]; what is absent is an autonomous scheduler or operator selection of due work, not a reader. **Consequence for this finding:** piece 01's restraint in choosing no authoritative side is vindicated, but at least three rows are not live disagreements at all — they are resolved against piece 01 on counterevidence, and must be marked as such before the register is used.
 - **Disposition.** Each row routes independently. Some are direct-repair sized;
   some need an operator ruling. None is an assessment decision.
 
 ### F-021 — The system finds its own facades honestly and cannot retire them
 
-- **Status:** OPEN · **Class:** ADD
+- **Status:** DISPUTED · **Class:** ADD
 - **Observation.** The repository records, in durable artifacts and without
   softening, that a majority of its enforcement claims do not prove what they
   assert while `gz check` reports them all verified; that a contract
@@ -530,6 +543,7 @@ ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
 - **Standards lens.** 42010 § 6.9.1 (*shall*); 15026-2 § 3.1.7.
 - **Consequence.** The honest inventory is itself distributed across six stores
   with no index and no retirement path (F-006).
+- **Phase 2 challenge (Astra, 2026-09-22) — REJECT on the second half.** Challenge-table row *"§1/§8: Self-detection works but retirement is missing"*: *"Historical audit and backlog sizes do not establish current failure"*, and *"A baseline is not automatically an undeveloped assurance argument"* — which challenges this row's 15026-2 § 3.1.7 reading of the grandfather ratchets directly. Counterevidence: *"July NC defects have subsequent repair commits; withdrawal, repudiation and demotion were exercised"* [E1,E5]. A second row, *"§2/§11: Insights have no reader or close path"*, is **CONFIRM WITH QUALIFICATION**: *"Too absolute"*; *"Rubric reads references from content; 36 `defect-resolution` records exist"* [E3]; the surviving alternative is *"No adequate linked current-state reduction, despite useful archival signals."* **Unresolved.** The self-detection half is not challenged and is separately affirmed in Astra's §1. The *"cannot retire"* half is rejected as stated — retirement verbs exist and were exercised — while the narrower claim that no linked current-state view of what remains unretired exists is left standing by Astra's own alternative. **This row is described above as the defining characteristic of the system, so the dispute is load-bearing and is not resolved here.** Carried as `D-05`.
 - **Disposition.** `M-D`, which carries its own method problem: the prior audit
   disqualified itself as *"a stochastic surface auditing a stochastic surface."*
   **`M-D` must first establish what a non-agent witness looks like, or declare the
@@ -561,7 +575,7 @@ ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
 
 ### F-023 — Agent entry cost is dominated by procedure, not by the problem
 
-- **Status:** OPEN · **Class:** REFINE
+- **Status:** QUALIFIED · **Class:** REFINE
 - **Observation.** Mandatory reading before an agent writes a line against a
   median OBPI totals roughly 92,000 tokens, of which the brief — the artifact
   describing the work — is under 4%. The single largest item is the pipeline
@@ -576,6 +590,7 @@ ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
   through "compact low-dependency scopes, **low gates**, low overhead."
 - **Consequence.** Beyond volume, `01 § 7.1` lists seven things an entering agent
   must **reconstruct** because nothing states them.
+- **Phase 2 challenge (Astra, 2026-09-22) — CONFIRM WITH QUALIFICATION.** Challenge-table row *"§7/§8: Mandatory entry costs 92k tokens and dominates cost"*: *"Composite byte estimate, not measured delivered tokens or time."* Counterevidence: *"Uses ADR-0.35.0 size with a median brief; generic status is not required by the inspected pipeline; harness inputs vary"* [E2] — the figure pairs the largest ADR with a median brief, and one of its components is not mandatory on the inspected path. Alternative: *"Overdelivery, lineage policy, or irrelevant retrieval rather than missing objects."* **Surviving claim:** context delivery is large and repetitive, and the brief is a small share of it — Astra's §1 calls the reconstruction burden *"credible"*. **Withdrawn:** the 92,000-token figure as a measured universal entry cost, and its claimed dominance over other costs.
 - **Disposition.** Open. Note the standing `gz-context-diet` route already exists
   for part of this.
 
@@ -598,7 +613,7 @@ ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
 
 ### F-025 — Work-package duration and the collapse of pipeline throughput
 
-- **Status:** OPEN · **Class:** —
+- **Status:** QUALIFIED · **Class:** —
 - **Observation.** Two separate measurements. **Duration:** median about three
   days, p90 about twenty, a third exceeding a week. **Throughput:** OBPI creation
   fell by more than an order of magnitude over seven months, while the
@@ -619,6 +634,7 @@ ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
   it supports **before** the measure, never the reverse.
 - **Consequence.** A remedy chosen against the wrong cause would be expensive and
   would look justified.
+- **Phase 2 challenge (Astra, 2026-09-22) — CONFIRM WITH QUALIFICATION on throughput; the refusal to attribute duration is affirmed.** Challenge-table row *"§1: GHI repair is the primary change channel, roughly 4:1"*: *"Commit-label counts support a descriptive trend, not effort or delivered value."* Counterevidence: *"Commits mentioning GHIs and OBPIs are not mutually exclusive work units; one feature may need many repair commits"* [E1]. Alternative: *"Deliberate stabilization, batching, and operator-controlled feature sequencing"* — i.e. the ratio may be a governance choice rather than a symptom. **Surviving claim:** the ratio is a real descriptive trend in commit labels. **Withdrawn:** reading it as a measure of effort or delivered value. **This row's explicit refusal to attribute duration to any cause is the one methodological position Astra affirms rather than challenges**, and its candidate list already contains Astra's alternatives. Carried with `D-04`.
 - **Disposition.** `M-G` baselines these as repeated measures. **Explicitly:
   duration is not attributed to any cause by this register.**
 
@@ -646,7 +662,7 @@ ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
 
 ### F-027 — The REQ→test correspondence machinery, with violation recording
 
-- **Status:** OPEN · **Class:** KEEP
+- **Status:** QUALIFIED · **Class:** KEEP
 - **Observation.** `gz covers`, `gz drift`, one consolidated REQ grammar replacing
   roughly twenty disagreeing regexes, and thousands of `@covers` annotations.
 - **Evidence.** `01 § 8.1`; `src/gzkit/triangle.py:24-31` (GHI #615).
@@ -656,12 +672,13 @@ ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
 - **Standards lens.** 42010 § 6.9.3 NOTE 1.
 - **Consequence.** The single most valuable asset in the repository and the
   natural foundation for anything Phase 4 proposes.
+- **Phase 2 challenge (Astra, 2026-09-22) — CONFIRM WITH QUALIFICATION.** Challenge-table row *"§3/§8: REQ correspondence and proof-channel distinction are strong assets"*: *"Direct implementations and reproducible link counts"*, and a *"Useful analogy to correspondence methods, not full conformance proof."* Counterevidence: *"Static tags do not prove execution or semantic coverage."* Alternative: *"Strength is bounded discoverability and routing of proofs."* **The asset is affirmed and its scope narrowed:** Astra's §1 reproduces the coverage and drift figures exactly and calls the mechanism *"useful, functioning"*, while recording that it *"measure[s] linkage, not passing execution or adequacy."* The KEEP class is unaffected; the claim that it proves coverage is not made here and must not be inferred.
 - **Disposition.** KEEP. Any design that weakens it should be rejected on that
   ground alone.
 
 ### F-028 — The anti-tautological-test stack is ahead of the testing standard
 
-- **Status:** OPEN · **Class:** KEEP
+- **Status:** QUALIFIED · **Class:** KEEP
 - **Observation.** RED witnesses classify into `assertion` / `error` / `none` /
   `not-applicable` and refuse to equate them. Mutation witnesses separate
   `killed`/`survived` (a claim about the guard) from `invalid`/`inconclusive` (a
@@ -674,11 +691,12 @@ ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
 - **Standards lens.** 29119-4 § 5.1 — expected results derive from the basis, not
   the implementation.
 - **Consequence.** A genuine capability the standards corpus cannot improve.
+- **Phase 2 challenge (Astra, 2026-09-22) — CONFIRM WITH QUALIFICATION, and a factual correction to the standards claim.** Challenge-table row *"§3/§8: Anti-tautology stack is ahead of 29119; `none` proves inability to fail"*: *"Mechanisms useful; superiority and universal inference unsupported."* **Correction:** *"Part 1 explicitly defines oracle and oracle problem"* [S8]. The Observation above scopes its zero-occurrence count to Parts 2–4, which remains literally true, but **the inference that 29119 has no vocabulary for this does not survive** — Part 1 supplies it. Second counterevidence: *"A passing selected baseline does not establish incapacity to fail on all relevant faults"*, so a `none` classification is a *"Local adequacy witness with limited experiment scope"*, not a proof of incapacity. **Surviving claim:** the mechanisms and their measured honesty. **Withdrawn:** *"ahead of the testing standard"* as stated, and `none` as proof of inability to fail. Carried as `D-07`.
 - **Disposition.** KEEP.
 
 ### F-029 — The REQ-kind taxonomy independently rediscovers the verification-method split
 
-- **Status:** OPEN · **Class:** KEEP
+- **Status:** QUALIFIED · **Class:** KEEP
 - **Observation.** gzkit measured that a third of test assertions were
   filesystem-shaped — grepping prose from production docs to satisfy coverage
   parity, detecting no code regressions — and responded with three REQ kinds
@@ -691,6 +709,7 @@ ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
 - **Standards lens.** 29148 § 6.5.2.2; 29119-4 § 5.1.
 - **Consequence.** The proof-channel binding is the mechanism any persistent
   requirement object must preserve.
+- **Phase 2 challenge (Astra, 2026-09-22) — CONFIRM WITH QUALIFICATION.** Covered by the same challenge-table row as F-027, *"§3/§8: REQ correspondence and proof-channel distinction are strong assets"*, whose qualification is that the strength is *"bounded discoverability and routing of proofs"* rather than proof of semantic coverage. The taxonomy's independent-rediscovery claim is not challenged. The existing note that adoption is partial — most REQs untagged, inference supplying a default — is the same bound from the other direction.
 - **Disposition.** KEEP. Note `01 § 11` row 1 records that most REQs are untagged
   and inference supplies a default — the taxonomy is sound; its adoption is
   partial.
@@ -731,7 +750,7 @@ ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
 
 ### F-032 — Most of the standards' machinery should not be adopted here
 
-- **Status:** QUALIFIED · **Class:** —
+- **Status:** CONFIRMED · **Class:** —
 - **Observation.** Piece 01 § 9 enumerates the machinery to leave behind: the
   agreement processes, organizational project-enabling processes, the four
   mandated requirements documents, formal V&V plans and IV&V organizational forms,
@@ -750,11 +769,12 @@ ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
 - **Consequence.** This finding is the investigation's principal safeguard: the
   failure mode most consistent with this repository's history is **adding
   machinery.**
+- **Phase 2 challenge (Astra, 2026-09-22) — CONFIRM.** Challenge-table row *"§9: Avoid wholesale compliance bureaucracy; reuse local mechanisms"*: *"Good project-fit judgment"*, *"Broadly supported by flexible information-item packaging"* [S4]. **This is the only unqualified CONFIRM in the challenge table**, and it lands on the register's principal safeguard. Astra attaches one condition, recorded here because it is aimed at this investigation rather than at gzkit: *"Must apply this same restraint to the report's proposed ontology."* **The filter binds the investigation's own remedies, not only the standards corpus.** Astra separately REJECTS two remedy proposals on exactly this ground — independent requirement identity, and one consolidated inconsistency list — neither of which this register asserts as a finding.
 - **Disposition.** Binding on Phase 4 as a filter, not as a decision.
 
 ### F-033 — Conformance is dischargeable by reference, not by document
 
-- **Status:** OPEN · **Class:** KEEP
+- **Status:** CONFIRMED · **Class:** KEEP
 - **Observation.** 15289 § 5.1 (*shall*) holds that information items conform when
   unpublished but available in a repository, divided across documents, or combined
   into one; § 3.1.11 defines "include" as having the information **or a reference
@@ -767,6 +787,7 @@ ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
   the view — is already the conformant form.
 - **Standards lens.** 15289 § 5.1, § 3.1.11, § 8.2.
 - **Consequence.** No finding in this register implies writing a document.
+- **Phase 2 challenge (Astra, 2026-09-22) — affirmed, no counterevidence offered.** The challenge table's §9 row records the standards interpretation as *"Broadly supported by flexible information-item packaging"* [S4], which is this finding's whole claim, and offers counterevidence only against the report's own proposed ontology. Astra's alternative — *"Existing sources plus targeted retrieval"* — is this finding restated as a remedy posture. **Promoted on an affirmative standards-interpretation verdict rather than on absence of challenge.**
 - **Disposition.** KEEP as the standing reading that bounds what adoption can
   mean.
 
@@ -815,6 +836,26 @@ ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
 
 ## Amendments
 
+- **2026-09-22 — Phase 3 reconciliation pass applied.** All 25 rows of Astra's
+  § 2 challenge table mapped onto this register; each affected row carries a
+  **Phase 2 challenge** block quoting the verdict, the counterevidence and the
+  alternative explanation, and stating what survives and what is withdrawn.
+  **Nineteen rows carry a challenge block; seventeen statuses moved:** F-032 and
+  F-033 → `CONFIRMED`; F-002, F-003, F-005, F-012, F-014, F-017, F-019, F-020,
+  F-023, F-025, F-027, F-028, F-029 → `QUALIFIED`; F-006 and F-021 → `DISPUTED`.
+  F-001 and F-018 were already `QUALIFIED` and keep that status, narrowed
+  further by their challenge blocks. **Fourteen rows remain
+  `OPEN` deliberately** — Astra reviewed pieces 01 and 02, not this register, and
+  declares its own scope non-exhaustive, so a row it never reached was not
+  exposed to challenge and did not survive one. F-004 and F-013 carry a
+  **Phase 2 note** recording that the challenge lands adjacent to them rather
+  than on them. Disagreements at `D-01` … `D-08` in
+  [`DISAGREEMENTS.md`](DISAGREEMENTS.md). **Three material corrections a Phase 4
+  reader must not miss:** F-012's missing traceability legs are **built and
+  unpopulated**, not absent; F-028's *"ahead of the testing standard"* falls
+  because 29119 **Part 1** defines the oracle vocabulary the finding searched
+  Parts 2–4 for; and F-023's 92,000-token entry cost pairs the largest ADR with a
+  median brief and includes a component the inspected pipeline does not require.
 - **2026-09-22 — Act 1 cold-read repair pass (mechanical only).** Anchor and
   identifier repairs following Agent 2's Act 1 cold read. **No status moved and no
   finding changed in substance.** F-019's `src/gzkit/gates.py:163`, `:256-258` →
