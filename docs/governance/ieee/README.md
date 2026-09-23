@@ -28,7 +28,7 @@ to know where things stand. The numbered pieces are evidence behind its rows.
 |---|---|---|
 | [`FINDINGS.md`](FINDINGS.md) | **canonical** | The findings, with status and evidence pointers. Living; amended in place |
 | [`DISAGREEMENTS.md`](DISAGREEMENTS.md) | **canonical** | Where Agent 0 and Agent 1 disagree, preserved unresolved |
-| [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) | **canonical** | The thirteen questions and the operator's ruling on each |
+| [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) | **canonical** | Operator questions and rulings, including the successive-change evaluation decision (`Q-15`) |
 | [`consequence-bands.md`](consequence-bands.md) | **canonical, PROVISIONAL** | Operator-ruled consequence scale (`Q-04`). Scores rest on `OPEN` findings; must be re-scored after Phase 2 |
 | [`01-…`](01-engineering-method-2026-09-22.md), [`02-…`](02-requirements-vs-release-2026-09-22.md) | historical | Raw investigation record — what an agent said, frozen at its date |
 | [Astra's adversarial review](gzkit-engineering-assessment-adversarial-review.md) | historical | Agent 1's Phase 2 report, as deposited. Raw record — challenge input, not a second register |
@@ -54,9 +54,9 @@ are the standing guard on this, and F-032 binds Phase 4 as a filter.
 | 1 | Primary forensic assessment | Agent 0 | complete — pieces 01, 02 |
 | 2 | Adversarial review of Phase 1 | Agent 1 (Astra) | complete — report received 2026-09-22 |
 | 3 | Reconciliation and canonicalization | Agent 0 | **complete 2026-09-23** — reconciled, disagreements recorded, stop condition met (`Q-14`) |
-| 4 | Design target engineering model | — | not authorised |
-| 5 | Bounded pilot | — | not authorised |
-| 6 | Evaluate pilot | — | not authorised |
+| 4 | Design target engineering model against the [successive-change criterion](#success-across-successive-changes) (`Q-15`) | — | not authorised |
+| 5 | Bounded pilot across [successive changes](#success-across-successive-changes) (`Q-15`) | — | not authorised |
+| 6 | Independently evaluate the pilot against the [adopted criterion](#success-across-successive-changes) (`Q-15`) | — | not authorised |
 | 7 | Adopt / revise / reject | — | not authorised |
 | 8 | Incremental migration | — | not authorised |
 | 9 | Measure and periodically reassess | — | not authorised |
@@ -66,7 +66,9 @@ are the standing guard on this, and F-032 binds Phase 4 as a filter.
 **Adopted for this investigation, 2026-09-23.** The operator asked, *"how can
 we inculcate the more compelling aspects of Dex's experiences and conclusions
 here?"* and accepted the proposed criterion and pilot approach with *"okay,
-let's do that then"*. Operator: **g0**. The accepted criterion is:
+let's do that then"*. Operator: **g0**. The ruling is registered at
+[`Q-15`](OPEN-QUESTIONS.md#q-15-how-can-we-inculcate-the-more-compelling-aspects-of-dexs-experiences-and-conclusions-here).
+The accepted criterion is:
 
 > A remedy must preserve required behavior, authority, and evidence across
 > successive changes. Its evaluation must examine whether later work remains
@@ -218,10 +220,12 @@ in either direction** — a disagreement recorded is not a disagreement resolved
 
 **Phase 4 is not authorised, and Phase 3 closing does not authorise it.** It
 requires explicit operator authorisation, not an absence of objection. Nothing in
-this register, and no `CONFIRMED` row, constitutes that authorisation. **All thirteen open questions were
-ruled by the operator on 2026-09-22**, one (`Q-09`) as a deferral. No finding may be promoted to `CONFIRMED`
-before that pass runs. **Phase 4 is not authorised and must not begin
-implicitly** — a design candidate that goes unchallenged is still not a decision.
+this register, and no `CONFIRMED` row, constitutes that authorisation. Operator
+decisions are recorded in [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md), including
+`Q-09`'s deferral and `Q-15`'s evaluation criterion. The completed reconciliation
+does not permit promotion of findings the review never reached. **Phase 4 must
+not begin implicitly** — a design candidate that goes unchallenged is still not
+a decision.
 
 **Phase numbering, one caution.** Piece 01 § 12 originally titled its measurement
 plan *"PROPOSED PHASE 2 INVESTIGATION PLAN"*, which meant measurement rather than
@@ -406,8 +410,15 @@ retire what it detects). Eight entries are recorded at `D-01` … `D-08` in
 `MISSING EVIDENCE`. `D-08` records a challenge with **no finding to land on** —
 evidence that the seeding of `FINDINGS.md` from the pieces was not exhaustive.
 
-**What is unknown.** `Q-01` … `Q-13` in [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md),
-and everything the measurement program `M-A` … `M-H` would measure.
+**What is decided.** Operator questions and their rulings are recorded in
+[`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md); `Q-09` is deferred. `Q-15` adopts the
+[successive-change evaluation criterion](#success-across-successive-changes)
+for later design, pilot, and independent evaluation. Carry that criterion into
+Phases 4–6 when authorised; its adoption does not open those phases.
+
+**What remains unmeasured.** The proposed `M-A` … `M-G` measurements and the
+successive-change pilot. `M-H` is discharged, with its scores still provisional.
+Operator rulings do not establish empirical findings.
 
 **What must not be assumed:**
 
@@ -482,6 +493,13 @@ the governance pipeline, and nothing here creates one.**
 
 ## Amendments
 
+- **2026-09-23 — evaluation ruling propagated after operator check.** The
+  operator asked *"did you update where needed?"*. The first update had recorded
+  the decision here but omitted `OPEN-QUESTIONS.md`. Added `Q-15` there and
+  linked it from the phase table, criterion, and handoff reading path. Removed
+  stale current-state prose that described ruled questions as unknown and the
+  completed reconciliation as awaiting execution. Historical amendments remain
+  dated records. No finding or phase authorisation changed.
 - **2026-09-23 — successive-change evaluation adopted by g0.** Operator:
   *"okay, let's do that then"*, accepting the proposed success criterion and
   pilot approach following the Dex Horthy transcript discussion. Added

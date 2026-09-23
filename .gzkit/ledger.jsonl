@@ -17034,3 +17034,5 @@
 {"schema":"gzkit.ledger.v1","event":"artifact_edited","id":"docs/design/adr/AGENTS.md","ts":"2026-09-23T07:38:51.498741+00:00","path":"docs/design/adr/AGENTS.md","commit":"394da59691df5ba9389f55e563add735bbefbb67"}
 {"schema":"gzkit.ledger.v1","event":"airlock_in","id":"permitted-entry:docs/governance/ieee/README.md","ts":"2026-09-23T07:54:42.196277+00:00","decision":"proceed","unaccounted":[]}
 {"schema":"gzkit.ledger.v1","event":"airlock_out","id":"permitted-entry:docs/governance/ieee/README.md","ts":"2026-09-23T07:54:42.198857+00:00","verdict":"clean","drift":[],"routing":[],"bodies":1}
+{"schema":"gzkit.ledger.v1","event":"airlock_in","id":"permitted-entry:docs/governance/ieee","ts":"2026-09-23T08:00:50.109647+00:00","decision":"proceed","unaccounted":[]}
+{"schema":"gzkit.ledger.v1","event":"airlock_out","id":"permitted-entry:docs/governance/ieee","ts":"2026-09-23T08:00:50.112149+00:00","verdict":"clean","drift":[],"routing":[],"bodies":1}

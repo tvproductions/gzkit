@@ -5,8 +5,9 @@
 > Questions that repository inspection **cannot** answer. Everything answerable
 > from the repository was answered in the pieces and is not repeated here.
 >
-> **Status 2026-09-22: all thirteen are ruled**, one of them (`Q-09`) as a
-> deferral with its sequencing named.
+> **Status 2026-09-23: `Q-01` … `Q-15` carry operator rulings**, with `Q-09`
+> deferred and its sequencing named. `Q-15` records the adopted evaluation
+> criterion; it does not authorise Phase 4 or a pilot.
 > Each ruling is recorded under its question; the questions are kept as asked,
 > because the record of what was asked is part of the record of what was decided.
 >
@@ -21,7 +22,7 @@ Three kinds, kept separate because they resolve by different means:
    settles these; they are choices about what this project is.
 2. **Further measurement** — held as the measurement program `M-A` … `M-H` in
    [`01 § 12`](01-engineering-method-2026-09-22.md), not duplicated here.
-3. **Meta** — `Q-11` … `Q-14`, about the conduct of the investigation itself.
+3. **Meta** — `Q-11` … `Q-15`, about the conduct of the investigation itself.
 
 ---
 
@@ -252,8 +253,46 @@ record than fourteen rows promoted by a pass commissioned to close a gate. · Fi
 
 ---
 
+### Q-15 — How can we inculcate the more compelling aspects of Dex's experiences and conclusions here?
+
+**RULED 2026-09-23 — adopt the successive-change evaluation criterion and pilot
+approach within the existing investigation phases.** Operator: **g0**.
+
+Operator question, verbatim: *"how can we inculcate the more compelling aspects of Dex's experiences and conclusions here?"*
+
+Operator approval, verbatim: *"okay, let's do that then"*.
+
+**What was approved.** The criterion and five evaluation questions in
+[`README.md` § Success across successive changes](README.md#success-across-successive-changes):
+preserve behavior, authority, and evidence across successive changes; evaluate
+later work as well as initial implementation; inspect architecture alongside
+checks; attend to costly-to-reverse decisions and patterns later agents will
+copy; observe whether corrections prevent recurrence. The bounded pilot carries
+the same artifacts through an initial release, a changed requirement, a deferred
+item, and a later release. Independent evaluation includes an agent that did not
+author the remedy reconstructing decisions and history from retained artifacts.
+The README holds the criterion and evaluation detail; this entry records the
+ruling and links to that text rather than maintaining a second specification.
+
+**Evidence boundary.** [Transcript excerpts](raw/dex-horthy-successive-change-2026-09-23.md)
+are external testimony motivating questions, not confirmed findings about gzkit.
+Correctness, regressions, reconstruction effort, and operator corrections are
+observed separately. Reduced effort or more checks alone is not success.
+
+**Scope.** This records evaluation expectations for Phases 4–6 and informs
+Phase 7's adopt / revise / reject decision. It adds no runtime gate, changes no
+finding status, and does not authorise design, pilot execution, or implementation.
+The Phase 6 independence rule and five-gate vocabulary remain unchanged.
+
+---
+
 ## Amendments
 
+- **2026-09-23 — `Q-15` registered after the operator asked** *"did you update
+  where needed?"*. The approved criterion was already in the README, but its
+  ruling was missing from this register. Recorded the existing approval and
+  linked the README phase and handoff paths to it. Updated the current status
+  and Meta range; earlier dated counts remain historical records.
 - **2026-09-23 — `Q-14` allocated and ruled.** New Meta question: whether `OPEN`
   is a settled status for a row the Phase 2 review never reached. **Ruled yes.**
   Given an id rather than recorded only in an amendment log, because it binds how
