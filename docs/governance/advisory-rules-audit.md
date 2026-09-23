@@ -58,7 +58,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `changelog-release-notes.md` | `1.2.1` |
 | `complexity-doctrine.md` | `0.4.0` |
 | `complexity-thresholds.md` | `0.5.0` |
-| `gh-cli.md` | `0.5.2` |
+| `gh-cli.md` | `0.6.0` |
 | `hexagonal-architecture.md` | `0.3.0` |
 | `models.md` | `0.2.0` |
 | `model-selection.md` | `0.6.1` |
