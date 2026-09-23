@@ -123,6 +123,12 @@ A size limit triggers a compress-and-merge pass before any growth or extraction;
 - ADR Feature Checklist items and OBPI briefs correspond 1:1; size them with the [OBPI Decomposition Matrix](docs/governance/GovZero/obpi-decomposition-matrix.md).
 
 - Two verbs undo a completion (ADR-0.0.71): `gz obpi withdraw` retires an OBPI permanently (superseded, phantom, duplicate; not re-completable); `gz obpi repudiate` reverses a completion whose attestation or evidence was invalid while the work intent stands (re-completable by genuine re-attestation). Only a human may repudiate a Gate-5: `--attestor` and `--reason` are required and fail closed when empty.
+
+BDD is acceptance-scope, and the lane binds the runner, not only the gate. Gate 2 asks whether all code still does what it should, and any change can falsify that, so the unit tier runs on every change. Gate 4 asks whether a new capability does what its OBPI said it would, and that question has no subject until an OBPI changes an external contract — which is what `heavy` means. So `behave` belongs to heavy-lane OBPI work and to CI, never to a per-change gate. Inherited from AirlineOps, which binds it at the directory: `features/` is "BDD scenarios (Behave, Heavy lane only)".
+
+Gate 4 precedes Gate 5 on the heavy lane and nowhere else. It is not a general precursor: Gate 5 is universal, so making Gate 4 its precondition would pull BDD onto every lite-lane OBPI completion — documentation, process and template work — which is the opposite of what the lane is for. The two scope differently because they are different kinds of gate. Gates 1–4 verify the artifact, and whether their question has a subject depends on what changed, so lane scopes them. Gate 5 asks who accepted the work; every completion has an accepter, so nothing scopes it. AirlineOps paired them under one lane axis before that distinction was drawn (`ADR-0.0.32`: "Gate 5 remains human-only... for Heavy lane work"); gzkit separated them deliberately after 42 OBPIs self-closed under the lite cell (ADR-0.0.36, GHI #331, GHI #342).
+
+A high line-overlap between the unit tier and the BDD tier is the expected signature of an acceptance suite re-walking a user path, and is never on its own evidence that a tier is redundant (`M-F`, `docs/governance/ieee/03-gate4-gate2-duplication-2026-09-23.md`).
 ## OBPI Acceptance Protocol
 
 - REQ-coverage gate: every BEHAVIOR REQ needs a passing `@covers` test before `gz obpi complete`; this cannot be waived. SUPPORT and STRUCTURAL-FENCE REQs use their declared proof channels.

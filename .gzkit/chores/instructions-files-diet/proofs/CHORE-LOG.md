@@ -4999,3 +4999,52 @@ OK (skipped=4)
 
 Unit tests passed.
 ```
+
+---
+
+## 2026-09-23 — STOPPED at § 2(c): gap exceeds the compressible budget
+
+**Not a trim. A finding.** Invoked because `gz validate --instructions-files-budget`
+warned after three invariant-tier `gate-covenant` entries landed on operator ruling
+("write all three entries", 2026-09-23). Steps 1–2 ran; nothing was cut.
+
+**§ 1 Render.** `gz content compose AGENTS.md --consumer root` — candidate 21662 B.
+Byte evidence: `invariant=20761B compressible=105B→105B total=21662B setpoint=lite`.
+
+**§ 2(a) Cap.** `AGENTS.md is 21569 chars, exceeds 20000-char budget by 1569`
+(advisory WARNING, scope exit 0). Delivery witness: 21662 B against the 65536 B
+codex cap, 43874 B of headroom — the vendor cap is not the binding constraint.
+
+**§ 2(b) Delivery routing.** Ruled out. `sync_surfaces.py:409` plays back the
+consumer `agent_contract_consumer()` resolves, which is `root`; `root.md` (21662 B)
+is the delivered surface and no compliant alternative candidate exists. The stale
+`codex.md` (15755 B, 2026-08-29) is not routed — `OBPI-0.35.0-09` collapsed
+AgentContract to the single `root` route. Not a routing defect.
+
+**§ 2(c) Closable?** **No.** Required delta 1569 chars against an available
+compressible budget of **105 B**. The gap is ~15x the entire non-invariant corpus.
+Closing it would mean compressing `tier: invariant` entries, which the composer
+preserves verbatim by design. This is § When to stop and ask, row 2 verbatim:
+*"The remaining lever is architectural (reorder, split, per-consumer delivery),
+not editorial."*
+
+**The finding underneath, which is why this is logged rather than retried.**
+§ Posture records the operator ruling of 2026-08-17: *"permit exceedances of
+accumulated render sources, then, let the chore handle overages"* and *"that is
+saner than constantly nagging when it seems we'll go over."* Capture honours it —
+`gz content remember` accepted all three entries, and the budget validator warns
+at exit 0 without blocking. But `tests/governance/test_agents_md_map_doctrine.py`
+asserts `len(AGENTS.md) <= files["AGENTS.md"]` and FAILS the run, so Gate 2 and the
+pre-push gate refuse the tree. The assertion traces to 2026-06-13 (`ca22f82ee`),
+**predating the 2026-08-17 ruling by two months.**
+
+So exceedance is permitted at capture and refused at verification. The valve the
+ruling designed is welded shut by a test older than the ruling. That is not this
+chore's to repair — it is a doctrine/mechanism contradiction for the operator to
+rule on, and the trim that would work around it is exactly the *"invariant
+relaxation wearing a diet's clothes"* § When to stop and ask names.
+
+**State at log time:** three entries captured, `root.md` recomposed and
+corpus-attested (attestor `g0`), `gz agent sync control-surfaces` run, 62 of 63
+`gz check` steps green, `Test` red on the one assertion above. Nothing trimmed,
+nothing reverted, no threshold edited.
