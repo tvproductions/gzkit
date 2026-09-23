@@ -251,7 +251,9 @@ def _extract_governance_anchors(diff_text: str, resolves: Callable[[str], bool])
     """Return sorted, deduped governance anchor IDs found in staged diff text.
 
     Surfaces OBPI / ADR (semver + pool) / GHI identifiers so the auto-commit
-    body cites the artifacts the sync touched (GHI #439). Grouped by family
+    body cites the artifacts the sync REFERENCES (GHI #439, relabelled by
+    GHI #1084 — the diff text is the only evidence, so mention is all it can
+    witness). Grouped by family
     in a stable order (ADR semver → ADR pool → OBPI → GHI); within a family
     the IDs are sorted alphabetically. Lexicographic ordering is acceptable
     here because the consumer is a human reading ``git log`` — not a
@@ -318,7 +320,20 @@ def _recent_unsynced_ledger_events(
 
 
 def _format_anchors_section(anchors: list[str]) -> str:
-    lines = ["Governance anchors touched:"]
+    """Render the anchor trailer under a label the evidence witnesses.
+
+    The label is ``referenced``, not ``touched``. The scanner matches
+    identifiers in the staged diff TEXT; a string in a diff witnesses that the
+    change MENTIONS an artifact, never that it changed one (``AGENTS.md``
+    § DO IT RIGHT #12). Measured on ``f58f27f5b``, which touched only
+    ``src/`` and ``tests/``: six artifact anchors emitted, all six resolving,
+    all six present solely because docstrings and fixtures discuss them
+    (GHI #1084). Correlating anchors with the staged path list would narrow the
+    subject to the label instead; that route was weighed and deferred, because
+    what "touched" means is unsettled — a commit implementing an OBPI's REQ
+    touches that OBPI's subject while touching none of its files.
+    """
+    lines = ["Governance anchors referenced:"]
     lines.extend(f"- {anchor}" for anchor in anchors)
     return "\n".join(lines)
 

@@ -1334,6 +1334,8 @@ class TestBuildSyncCommitMessageEnrichment(unittest.TestCase):
 
     Semantics asserted:
     - Anchors section appears when ``anchors`` is non-empty and lists each ID.
+    - The anchors label claims REFERENCE, not touch: the scanner's only evidence
+      is the diff text, which witnesses mention alone (GHI #1084).
     - Ledger-events section appears when ``ledger_events`` is non-empty and
       cites event type, id, and timestamp.
     - Both sections are omitted when their inputs are empty (preserves the
@@ -1349,10 +1351,29 @@ class TestBuildSyncCommitMessageEnrichment(unittest.TestCase):
             anchors=["ADR-0.0.31", "OBPI-0.0.31-02", "GHI #439"],
             ledger_events=[],
         )
-        self.assertIn("Governance anchors touched:", msg)
+        self.assertIn("Governance anchors referenced:", msg)
         self.assertIn("- ADR-0.0.31", msg)
         self.assertIn("- OBPI-0.0.31-02", msg)
         self.assertIn("- GHI #439", msg)
+
+    def test_anchors_label_claims_reference_not_touch(self) -> None:
+        """The label may not assert a state the scanner cannot witness (GHI #1084).
+
+        The anchors are matched in staged diff TEXT, so an anchor is evidence
+        that the change mentions an artifact and nothing more. This pins the
+        weaker claim: a message carrying anchors for a commit that touched only
+        ``src/`` must not say those artifacts were touched (``AGENTS.md``
+        § DO IT RIGHT #12).
+        """
+        from gzkit.commands.sync import _build_sync_commit_message  # noqa: PLC0415
+
+        msg = _build_sync_commit_message(
+            ["src/gzkit/commands/sync.py"],
+            anchors=["ADR-0.0.31"],
+            ledger_events=[],
+        )
+        self.assertIn("Governance anchors referenced:", msg)
+        self.assertNotIn("touched:", msg)
 
     def test_ledger_events_section_listed_when_present(self) -> None:
         from gzkit.commands.sync import _build_sync_commit_message  # noqa: PLC0415
@@ -1383,7 +1404,7 @@ class TestBuildSyncCommitMessageEnrichment(unittest.TestCase):
         msg = _build_sync_commit_message(
             ["src/gzkit/commands/foo.py"], anchors=[], ledger_events=[]
         )
-        self.assertNotIn("Governance anchors touched:", msg)
+        self.assertNotIn("Governance anchors referenced:", msg)
         self.assertNotIn("Ledger events since last commit:", msg)
         # Subject + ceremony trailer preserved.
         self.assertIn("chore: update", msg)
