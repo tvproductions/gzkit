@@ -32,17 +32,17 @@ already `QUALIFIED` before the pass and carry their challenge without a status
 change.
 
 **Fourteen rows remain `OPEN`, and that is a deliberate classification, not an
-oversight.** Astra reviewed pieces 01 and 02, not this register, and states its
+oversight.** *(Ruled a settled disposition by the operator at `Q-14` on
+2026-09-23, after the reasoning below was written.)* Astra reviewed pieces 01 and 02, not this register, and states its
 own scope limit: *"This is not an exhaustive conformity audit"*, and the report's
 subjective classifications, receipt population and historical gate events *"were
 not independently reclassified."* **A row Astra did not reach was not exposed to
 challenge, so it did not survive one.** Promoting such a row to `CONFIRMED` would
 make the status word mean what the seeding note already refuses to let it mean.
-**Consequence: Phase 3's stop condition as README states it — every row carrying
-a settled status — is not met by this pass, and cannot be met by it.** What
-remains is not reconciliation but coverage: the fourteen `OPEN` rows need either
-a further adversarial pass aimed at this register or an operator ruling that
-`OPEN` is a settled status for an unchallenged row.
+**This pass could not meet Phase 3's stop condition on its own.** The operator
+closed it at `Q-14` by ruling `OPEN` settled for an unchallenged row, rather than
+by commissioning a second adversarial pass — which would have required a fourth
+role the binding composition model does not have.
 
 **Two `REJECTED` verdicts were not adopted**, and the reasons are recorded at
 `D-01` and `D-05` rather than resolved by the lead's procedural role.
@@ -145,12 +145,16 @@ It has no **finding**, which is the gap.)*
 
 ---
 
-Until the fourteen `OPEN` rows are dispositioned:
+**Phase 3's stop condition was met on 2026-09-23** — every row carries a settled
+status, and the disagreements are recorded. Standing conditions:
 
-- Phase 3's stop condition as README § Handoff states it is **not met**;
-- `D-01` and `D-05` are live disagreements on load-bearing findings and must not
-  be read as settled in either direction;
-- Phase 4 remains unauthorised, and nothing in this file authorises it.
+- **`D-01` and `D-05` are live disagreements on load-bearing findings** (F-006,
+  F-021) and must not be read as settled in either direction. A disagreement
+  recorded is not a disagreement resolved, and this file exists to keep that
+  distinction;
+- the fourteen `OPEN` rows are settled under `Q-14`, **not confirmed** — nothing
+  challenged them, and they may not be cited as having survived challenge;
+- **Phase 4 remains unauthorised, and nothing in this file authorises it.**
 
 ---
 
@@ -184,6 +188,11 @@ changed on the finding itself. The two must not drift.
 
 ## Amendments
 
+- **2026-09-23 — stop condition met (`Q-14`).** § Status updated and the closing
+  conditions rewritten. **No entry changed and no disposition moved.** `D-01` and
+  `D-05` remain `UNRESOLVED` and are restated as standing conditions, because the
+  moment a phase closes is the moment a live disagreement is most likely to be
+  read as settled.
 - **2026-09-23 — `D-08` given its measurement home.** Tracing `M-A` … `M-H` out
   of `01 § 12` showed that **`M-F` exists and is exactly this claim's measurement
   item.** The claim is homeless in the register, not in the investigation, and

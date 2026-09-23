@@ -52,7 +52,7 @@ are the standing guard on this, and F-032 binds Phase 4 as a filter.
 | 0 | Frame the investigation | operator | complete |
 | 1 | Primary forensic assessment | Agent 0 | complete — pieces 01, 02 |
 | 2 | Adversarial review of Phase 1 | Agent 1 (Astra) | complete — report received 2026-09-22 |
-| 3 | Reconciliation and canonicalization | Agent 0 | **in progress** — workspace seeded 2026-09-22 |
+| 3 | Reconciliation and canonicalization | Agent 0 | **complete 2026-09-23** — reconciled, disagreements recorded, stop condition met (`Q-14`) |
 | 4 | Design target engineering model | — | not authorised |
 | 5 | Bounded pilot | — | not authorised |
 | 6 | Evaluate pilot | — | not authorised |
@@ -152,17 +152,17 @@ Agent 1 read Agent 0's report and is anchored by it, whereas Agent 2 in Act 1 is
 not. IEEE 1012 Annex C names this problem, and piece 01 found gzkit's honest
 self-description is already the `embedded` form.
 
-**Current gate.** Astra's Phase 2 report **arrived 2026-09-22** and is deposited
-in this directory. **The full reconciliation pass ran 2026-09-22**: all 25 rows of
-its § 2 challenge table are mapped onto `FINDINGS.md`, 19 statuses moved, and
-eight disagreements are recorded at `D-01` … `D-08`. **Phase 3's stop condition
-is still not met.** Fourteen rows remain `OPEN` because Astra reviewed pieces 01
-and 02 rather than this register and declares its own review non-exhaustive — a
-row it never reached was not exposed to challenge, so it did not survive one.
-Closing them needs either a further adversarial pass aimed at this register or an
-operator ruling that `OPEN` is a settled status for an unchallenged row. Two rows
-are `DISPUTED` (F-006, F-021) and must not be read as settled in either
-direction. **All thirteen open questions were
+**Current gate. Phase 3 is complete as of 2026-09-23.** The Phase 2 report
+arrived 2026-09-22; the reconciliation pass mapped all 25 rows of its § 2
+challenge table onto `FINDINGS.md`, moved 19 statuses, and recorded eight
+disagreements at `D-01` … `D-08`. Fourteen rows remain `OPEN` and **stay** there:
+`Q-14` rules that `OPEN` is a **settled** disposition for a row the review never
+reached. Two rows are `DISPUTED` (F-006, F-021) and **must not be read as settled
+in either direction** — a disagreement recorded is not a disagreement resolved.
+
+**Phase 4 is not authorised, and Phase 3 closing does not authorise it.** It
+requires explicit operator authorisation, not an absence of objection. Nothing in
+this register, and no `CONFIRMED` row, constitutes that authorisation. **All thirteen open questions were
 ruled by the operator on 2026-09-22**, one (`Q-09`) as a deferral. No finding may be promoted to `CONFIRMED`
 before that pass runs. **Phase 4 is not authorised and must not begin
 implicitly** — a design candidate that goes unchallenged is still not a decision.
@@ -338,9 +338,10 @@ numbered pieces or `raw/`.
 
 **What is confirmed.** Two rows: F-032 (most of the standards' machinery should
 not be adopted here) and F-033 (conformance is dischargeable by reference). Both
-carry the challenge table's only affirmative verdicts. Seventeen rows are
+carry the challenge table's only affirmative verdicts. Fifteen rows are
 `QUALIFIED` — survived in narrowed form, with the narrowing on the row — and
-fourteen remain `OPEN` because the Phase 2 review never reached them.
+fourteen are `OPEN`, which under `Q-14` means **stated with evidence and never
+reached by the review**: settled, and not promotable.
 
 **What is disputed.** Two findings, both load-bearing: **F-006** (does a
 persistent system model exist, or only fragments) and **F-021** (can the system
@@ -389,12 +390,14 @@ and everything the measurement program `M-A` … `M-H` would measure.
 - Promoting `ADR-pool.feature-adr-semver-discipline` before the `kind` guard
   lands (`Q-09`).
 
-**Next permitted step.** The review was received (`Q-13`) and reconciled row by
-row on 2026-09-22. **What remains for Phase 3 is coverage, not reconciliation:**
-the fourteen `OPEN` rows, and the two `DISPUTED` ones. Phase 3 is complete when
-every row carries a settled status and the disagreements are recorded — at which
-point Phase 4 requires **explicit operator authorisation**, not merely an absence
-of objection.
+**Next permitted step: none without operator authorisation.** Phase 3's stop
+condition — every row carrying a settled status, and the disagreements recorded —
+was met on 2026-09-23. **Phase 4 requires explicit operator authorisation**, not
+merely an absence of objection, and the full triad when it opens. Work that
+remains available *without* entering Phase 4: the measurement program `M-A` …
+`M-H` (`M-H` discharged, seven outstanding), and the two open register questions
+— whether findings should be authored for `D-08` and for the three independently
+observed `D2` rows.
 
 ## Relationship to gzkit's own engineering artifacts
 
@@ -423,6 +426,14 @@ the governance pipeline, and nothing here creates one.**
 
 ## Amendments
 
+- **2026-09-23 — Phase 3 recorded complete (`Q-14`).** The phase table, § Current
+  gate, § Next permitted step and § Handoff updated. **No finding changed status
+  and nothing was promoted**: the fourteen `OPEN` rows stay `OPEN`, and the
+  ruling is about what `OPEN` *means*, not about what those rows assert. The
+  `CONFIRMED` bar is unchanged and still requires that the review reached a row.
+  **The Phase 4 bar is restated rather than relaxed**, in § Current gate and
+  § Next permitted step, because a phase closing is the most likely moment for
+  the next one to be read as open. It is not.
 - **2026-09-23 — three cold-read gaps closed.** § Roles corrected: it said Astra
   deposits into `raw/`, against `Q-13`'s ruling that the Phase 2 report stays at
   this directory's root. **§ The measurement program added** — `M-A` … `M-H`

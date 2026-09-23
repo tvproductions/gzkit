@@ -21,7 +21,7 @@ Three kinds, kept separate because they resolve by different means:
    settles these; they are choices about what this project is.
 2. **Further measurement** — held as the measurement program `M-A` … `M-H` in
    [`01 § 12`](01-engineering-method-2026-09-22.md), not duplicated here.
-3. **Meta** — `Q-11` … `Q-13`, about the conduct of the investigation itself.
+3. **Meta** — `Q-11` … `Q-14`, about the conduct of the investigation itself.
 
 ---
 
@@ -228,10 +228,38 @@ every `OPEN` row in `FINDINGS.md` stays `OPEN`, and
 
 Needed: the report itself, or a path to it, or the session to query.
 
+### Q-14 — Is `OPEN` a settled status for a row the adversarial review never reached?
+
+**RULED 2026-09-23 — yes. `OPEN` is a settled disposition when the reason is that the Phase 2 review did not reach the row.** The fourteen such rows **stay `OPEN`**; they are **not** promoted. What changes is that `OPEN` is now recognised as a resting state and not only a waiting one, so **Phase 3's stop condition is met.**
+
+The reconciliation pass mapped all 25 of Astra's challenge rows onto the
+register and left fourteen findings untouched, because Astra reviewed **pieces 01
+and 02** rather than this register and declared its own review non-exhaustive. A
+row it never reached was never exposed to challenge, so it cannot be `CONFIRMED`
+— but it was also not left unresolved by anything. **Its disposition is known:
+stated with evidence, unchallenged.**
+
+**What this does not do.** It does not promote any row, does not weaken the
+`CONFIRMED` bar — which still requires that the review actually reached a row —
+and **does not authorise Phase 4**, which needs explicit operator authorisation
+and does not follow from Phase 3 closing.
+
+**The alternative, and why it was not taken.** Commissioning a second adversarial
+pass aimed at this register would invent a fourth role: README § Roles is binding,
+and Agent 1 is run separately by the operator. The agent's recommendation on the
+record was that fourteen rows resting `OPEN` with a stated reason is a truer
+record than fourteen rows promoted by a pass commissioned to close a gate. · Findings: all fourteen `OPEN` rows.
+
 ---
 
 ## Amendments
 
+- **2026-09-23 — `Q-14` allocated and ruled.** New Meta question: whether `OPEN`
+  is a settled status for a row the Phase 2 review never reached. **Ruled yes.**
+  Given an id rather than recorded only in an amendment log, because it binds how
+  every `OPEN` row is read — the failure mode `Q-11` demonstrated, where a ruling
+  lived in one file while three others denied it. **Phase 3's stop condition is
+  met as of this ruling; Phase 4 remains unauthorised.**
 - **2026-09-23 — `Q-11` and `Q-12` confirmed by operator ruling; both
   self-contradictions closed.** `Q-11`: ratification stands, no identifier
   changes, and the three files that still denied it are corrected.

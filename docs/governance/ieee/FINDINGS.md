@@ -27,12 +27,14 @@
 | `CONFIRMED` | Stated with evidence, exposed to adversarial challenge, and surviving with its evidence intact |
 | `QUALIFIED` | Survives in narrowed or corrected form; the narrowing is recorded on the row |
 | `DISPUTED` | A challenge stands unresolved. The disagreement is carried in [`DISAGREEMENTS.md`](DISAGREEMENTS.md) |
-| `OPEN` | Stated with evidence; disposition not yet settled — either not yet challenged, or challenged without resolution |
+| `OPEN` | Stated with evidence, and **not reached by the adversarial review**. A **settled** disposition, not a waiting one (`Q-14`, ruled 2026-09-23): the row cannot be `CONFIRMED`, because nothing challenged it, and nothing is outstanding against it either |
 | `REJECTED` | Withdrawn. Retained only where a future investigator could otherwise re-derive it |
 
-**No row is `CONFIRMED` at seeding, and that is not a comment on evidence
-quality.** It records that the Phase 2 adversarial review has not yet been
-applied to this register. Promoting a Phase 1 finding to `CONFIRMED` before its
+**`CONFIRMED` requires that the adversarial review actually reached the row.**
+Fourteen rows are `OPEN` because Astra reviewed pieces 01 and 02 rather than this
+register and declared its review non-exhaustive; `Q-14` rules that this is a
+settled disposition, not an outstanding one. Promoting such a row would make the
+status word mean nothing. Promoting a Phase 1 finding to `CONFIRMED` before its
 challenge has been read would make the status word mean nothing.
 
 **`settled` and `ruled` are different words here, and the difference is
@@ -850,6 +852,12 @@ confirmed 2026-09-23 against the namespaced and per-piece alternatives.
 
 ## Amendments
 
+- **2026-09-23 — `OPEN` redefined by operator ruling (`Q-14`).** `OPEN` was
+  defined as *"disposition not yet settled"*; it now reads as **stated with
+  evidence and not reached by the adversarial review — a settled disposition, not
+  a waiting one.** **No row changed status**, and the fourteen `OPEN` rows are
+  not promoted. The seeding note is rewritten to state the `CONFIRMED` bar as it
+  now stands. **Phase 3's stop condition is met; Phase 4 is not authorised.**
 - **2026-09-23 — *settled* and *ruled* separated by operator ruling.** § How to
   read a status now states that **evidence status and operator rulings are
   orthogonal**, with F-006 — `DISPUTED` and ruled at `Q-03` — as the worked case.
