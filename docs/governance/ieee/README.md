@@ -34,6 +34,7 @@ to know where things stand. The numbered pieces are evidence behind its rows.
 | [Astra's adversarial review](gzkit-engineering-assessment-adversarial-review.md) | historical | Agent 1's Phase 2 report, as deposited. Raw record — challenge input, not a second register |
 | [Act 1 cold read](act1-cold-read-2026-09-23.md) | historical | Agent 2's Act 1 verdict on **this register**, frozen at its date. Raw record — evidence about the register, not a finding about gzkit |
 | [`raw/`](raw/README.md) | historical | Index and tier statement for raw reports |
+| [`02-…-evidence/`](02-requirements-vs-release-evidence/) | tooling | `measure.py` — the re-derivation script piece 02's figures come from. **Not investigation narrative**: it holds no conclusions, carries no literals from its authoring date, and reports whatever tree it is given |
 
 **Canonical is not normative.** A finding here records what the investigation
 supports. It binds nothing, changes no rule, and authorises no work.
@@ -64,7 +65,7 @@ are the standing guard on this, and F-032 binds Phase 4 as a filter.
 | Agent | Role |
 |---|---|
 | **Agent 0** | Primary investigator (Phase 1) and reconciliation lead (Phase 3) |
-| **Agent 1 — Astra** | Adversarial reviewer (Phase 2). Run separately by the operator; deposits reports into [`raw/`](raw/README.md) |
+| **Agent 1 — Astra** | Adversarial reviewer (Phase 2). Run separately by the operator; deposits reports where its tooling puts them — the Phase 2 report is at this directory's root by operator ruling (`Q-13`), and [`raw/`](raw/README.md) states the tier |
 | **Agent 2** | Later independent reader, **then** design participant — in that order (see below) |
 
 Agent 0's lead is **procedural**: it does not make Agent 0's findings
@@ -216,6 +217,39 @@ Cited at `Q-03`, at `Q-09` and on F-006.
   views silently become source-of-truth"* — is the one F-021 and
   [`consequence-bands.md`](consequence-bands.md) reason inside without naming,
   and a Phase 4 design touching either should read it.
+
+---
+
+## The measurement program — `M-A` … `M-H`
+
+Eight findings route their disposition to a measurement item, so the items are
+summarised here. **Authoritative text: [`01 § 12`](01-engineering-method-2026-09-22.md).**
+The program is **proposed and not executed**, except as noted. It proposes no
+implementation, and `01 § 12` closes by naming what it must not do: no
+replacement taxonomy, no new lifecycle, no new tooling — *"adding machinery is
+the failure mode most consistent with this repository's history."*
+
+| Item | What it measures | Follows | State |
+|---|---|---|---|
+| `M-A` | What a persistent requirement object would have to carry, by classifying ~200 REQs and ~200 FAIL-CLOSED constraints against 29148 § 5.2.5/§ 5.2.6 | F-001, F-002 | proposed. **Declared open risk:** the answer may be that most REQs are correctly transient and the persistent layer must be authored fresh — a larger finding, not a smaller one |
+| `M-B` | The deleted specification corpus — reconstruct the deleted briefs, classify what was lost as durable vs transient, check whether any deleted REQ is still cited by live code, a test or a `@covers` | F-003 | proposed. Settles `D-03` |
+| `M-C` | Whether the six intake surfaces can be reduced, by tracing where sampled items actually end up; duplication and mortality across surfaces | F-006 | proposed. Bears on `D-01` |
+| `M-D` | The claim behind each gate and each enforcement claim, in 15026-2 § 5.3.3 form, and whether a non-agent witness exists | F-019, F-021 | proposed, **gated on its own method problem** — the prior audit disqualified itself as *"a stochastic surface auditing a stochastic surface."* Highest-risk item. Bears on `D-05` |
+| `M-E` | Whether an architecture description is warranted, or whether extending `gz drift`/`gz covers` reaches the same property more cheaply | F-013 | proposed. **Declared bias:** the correspondence route is likely cheaper and should be tested first |
+| `M-F` | The real duplication between Gate 4 and Gate 2 — run behave with coverage instrumentation against the unit suite, and count the behave-only REQs | *(no finding — see below)* | proposed, independent and cheap. **This is the home of `D-08`** |
+| `M-G` | Baselines for the metrics Phase 1 could measure only once, each stated as an information need before a measure (15939 § 6.2 b) | F-025 | proposed. Settles `D-04` |
+| `M-H` | Consequence bands, defined **with the operator** — *"cannot be done by an agent alone"* | `Q-04` | **DISCHARGED 2026-09-22** — [`consequence-bands.md`](consequence-bands.md), authored live with the operator. Still `PROVISIONAL` |
+
+**Sequencing, from `01 § 12`:** `M-A`, `M-B` and `M-C` are independent and may run
+concurrently. `M-D` must not start until its method problem is settled. `M-E`
+depends on `M-A`. `M-G` depends on `M-H`, which is discharged. `M-F` is
+independent.
+
+**Two things this table makes visible that the register previously could not.**
+`M-F` **exists** and is the measurement home for the BDD-duplication claim that
+never became a finding — recorded at `DISAGREEMENTS.md` `D-08` as a challenge
+with nothing to land on. And `M-H` is **already discharged**, so the program is
+7/8 outstanding rather than 8/8; nothing in the register said so.
 
 ---
 
@@ -389,6 +423,19 @@ the governance pipeline, and nothing here creates one.**
 
 ## Amendments
 
+- **2026-09-23 — three cold-read gaps closed.** § Roles corrected: it said Astra
+  deposits into `raw/`, against `Q-13`'s ruling that the Phase 2 report stays at
+  this directory's root. **§ The measurement program added** — `M-A` … `M-H`
+  summarised from `01 § 12`, which the five canonical files previously never
+  reached, leaving eight findings routing to items a reader could not evaluate
+  (cold-read gap 2). Two facts surfaced by writing it: **`M-F` exists** and is
+  the home of `D-08`, and **`M-H` is already discharged** by
+  `consequence-bands.md`. The evidence directory is added to the file table as
+  **tooling** rather than narrative (cold-read gap 8): a re-derivation script
+  holds no conclusions, so reading it cannot anchor a future Act 1 the way a
+  report would. **That last point narrows a binding reading list and the operator
+  may overturn it** — § Agent 2 sequencing constraint still bars the numbered
+  pieces and `raw/`, and only the script is at issue.
 - **2026-09-23 — Agent 2's Act 1 cold read recorded** at
   [`act1-cold-read-2026-09-23.md`](act1-cold-read-2026-09-23.md), historical
   tier, and added to the file table; § Agent 2 sequencing constraint updated to

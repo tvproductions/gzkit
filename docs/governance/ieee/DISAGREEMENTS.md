@@ -55,7 +55,9 @@ recorded on that finding.
 duplicates unit tests; retain only unique REQs"* — verdict **NEEDS MORE
 EVIDENCE** — challenges a piece 01 claim that was never carried into this
 register. Recorded at `D-08`. **A challenge with no row is a gap in the
-register, not in the challenge.**
+register, not in the challenge.** *(Amended 2026-09-23: the claim does have a
+measurement home — `M-F` — summarised in `README.md` § The measurement program.
+It has no **finding**, which is the gap.)*
 
 ---
 
@@ -139,7 +141,7 @@ register, not in the challenge.**
 - Evidence for A0:    `01 § 3`, `01 § 8` — not re-derived by this pass
 - Evidence for A1:    S6 — IEEE 1012's note read in its own scope
 - Disposition:        MISSING EVIDENCE
-- To resolve:         **First decide whether the claim belongs in the register at all.** It is a REMOVE-class proposal aimed at Gate 4, and `Q-07` has since re-pointed the covenant; it may be moot, or it may be the one row the seeding pass dropped. Either way the seeding of `FINDINGS.md` from pieces 01 and 02 was not exhaustive, which is itself worth knowing before the register is treated as complete
+- To resolve:         **`M-F` is this claim's measurement home, and it already exists** — *"Measure the real duplication between Gate 4 and Gate 2 before proposing removal"*, independent and cheap, with a method (run behave under coverage instrumentation, compare against the unit suite, verify the behave-only REQ count) and a note that `@wip` scenarios which never execute must be counted separately. **So the claim is not homeless in the investigation; it is homeless in the register.** Both Astra's verdict and `M-F` say the same thing in different vocabularies: measure before proposing removal. What remains for the operator is whether a finding should be authored so the claim carries a status, or whether `M-F` alone is a sufficient home for a REMOVE-class proposal that no finding asserts. **Either way the seeding of `FINDINGS.md` from pieces 01 and 02 was not exhaustive**, which is worth knowing before the register is treated as complete
 
 ---
 
@@ -182,6 +184,12 @@ changed on the finding itself. The two must not drift.
 
 ## Amendments
 
+- **2026-09-23 — `D-08` given its measurement home.** Tracing `M-A` … `M-H` out
+  of `01 § 12` showed that **`M-F` exists and is exactly this claim's measurement
+  item.** The claim is homeless in the register, not in the investigation, and
+  `D-08`'s *To resolve* is narrowed accordingly: the open question is whether a
+  finding should be authored so the claim carries a status, or whether `M-F`
+  alone suffices for a REMOVE-class proposal no finding asserts.
 - **2026-09-22 — Phase 3 reconciliation pass run.** The operator lifted the
   deferral; all 25 rows of Astra's § 2 challenge table were mapped onto
   `FINDINGS.md` and dispositioned. **Nineteen rows received a Phase 2 challenge

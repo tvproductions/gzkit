@@ -16,10 +16,28 @@
 >
 > ## PROVISIONAL — scored on findings that are still `OPEN`
 >
-> **Every `D2` score in this file is derived from a Phase 1 finding that has not
-> been through the Phase 2 adversarial review.** Gate logic scores `D2` from
-> F-019; validators and `@covers` from F-021; hooks from F-018. Those findings are
-> `OPEN`, not `CONFIRMED`.
+> **Most `D2` scores in this file derive from a Phase 1 finding.** Traced
+> row by row on 2026-09-23, because the original claim — *"every `D2` score is
+> derived from a Phase 1 finding"* — named three rows and asserted ten.
+>
+> **Seven of ten are finding-derived:** Gate logic ← F-019; Validators /
+> `gz check` ← F-021; Hooks ← F-018 *(the three originally named)*; Ledger writes
+> ← F-021, which cites the laundering accessor by name; `gz adr demote` ← F-003,
+> which cites `obpi_lifecycle.py:256-260`; ARB receipt durability ← F-022, which
+> cites the gitignored `artifacts/`; ARB receipt binding ← F-022, which cites
+> `arb/validator.py:279`.
+>
+> **Three are not.** Attestation / completion events, `@covers` binding and
+> Distribution / `gz init` were **scored from direct observation, with no register
+> row behind them.** All three are F-021-shaped — a surface that fails by
+> reporting success — but F-021 does not assert them, and a score with no finding
+> behind it cannot be re-scored when the register moves. **Either a finding is
+> authored for each, or the three rows are marked as independently observed.**
+> That is a Phase 4 decision, not a repair.
+>
+> **Status of the seven:** F-003, F-018, F-019 and F-022's two rows are
+> `QUALIFIED`; **F-021 is `DISPUTED`**, so Ledger writes and Validators both rest
+> on a contested row. None is `CONFIRMED`.
 >
 > **The axes and the derivation are not at risk; the scores are.** *That*
 > detectability and recoverability are the right axes, and that `band = D + R`,
@@ -143,6 +161,17 @@ this system.
 
 ## Amendments
 
+- **2026-09-23 — `D2` provenance traced row by row; no score changed.** The
+  PROVISIONAL block claimed every `D2` score was finding-derived while naming
+  three of ten — cold-read gap 5, which reported seven rows as unbacked. **Traced:
+  seven of ten are finding-derived** (the three named, plus Ledger writes ← F-021,
+  `gz adr demote` ← F-003, and both ARB rows ← F-022, each by an anchor the
+  finding already cites). **Three genuinely are not** — Attestation / completion
+  events, `@covers` binding, Distribution / `gz init` — and are now recorded as
+  independently observed rather than left inside a claim that covered them. The
+  overclaim is replaced by the traced statement. **The file stays PROVISIONAL**,
+  now for two stated reasons rather than one: three rows have no finding behind
+  them, and F-021 is `DISPUTED`, so two more rest on a contested row.
 - **2026-09-22 — Re-examined against the reconciled register; still PROVISIONAL.**
   The standing obligation was to re-score after Phase 2. Reconciliation ran, and
   **no `D` or `R` digit moved, so no band moved.** The three rows whose scores

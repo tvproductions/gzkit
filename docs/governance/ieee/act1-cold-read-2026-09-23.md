@@ -197,16 +197,16 @@ body above is **not** edited to match.
 | Item | Disposition |
 |---|---|
 | Gap 1 — which findings Astra rejected | **Closed.** The reconciliation pass mapped all 25 challenge rows onto `F-###` ids. Also **corrected a miscount the reading inherited**: the table has 25 rows and **9** REJECT, not 26 and 8 |
-| Gap 2 — `M-A`…`M-H` undefined; `M-F` uncited | **Open.** Still held only in piece 01 § 12 |
+| Gap 2 — `M-A`…`M-H` undefined; `M-F` uncited | **Closed.** Summarised at `README.md` § The measurement program, from `01 § 12`. **`M-F` does exist** — Gate 4 vs Gate 2 duplication — and is the measurement home of `D-08`. **`M-H` is already discharged** by `consequence-bands.md`, so the program is 7/8 outstanding |
 | Gap 3 — two senses of *settled* | **Open.** No ruling yet separates evidence-settled from operator-settled |
 | Gap 4 — why the deferral, what resumes it | **Closed by event.** The operator lifted it and the pass ran |
-| Gap 5 — provenance of seven `D2` rows | **Open**, and recorded in `consequence-bands.md` § Amendments |
+| Gap 5 — provenance of seven `D2` rows | **Partly closed.** Traced row by row: **seven of ten are finding-derived**, not three; **three genuinely are not** (Attestation/completion, `@covers` binding, Distribution/`gz init`) and are now recorded as independently observed. Whether to author findings for those three is a Phase 4 decision |
 | Gaps 6–7 — IRON LAW, Architectural Boundaries | **Closed.** README § Terms this series cites as binding now points at the authority for both |
-| Gap 8 — re-derivation unavailable in-boundary | **Open**, and judged structural by the reader |
+| Gap 8 — re-derivation unavailable in-boundary | **Narrowed.** The evidence directory is now tiered as **tooling**, not narrative: `measure.py` holds no conclusions and carries no literals from its authoring date, so reading it cannot anchor a future Act 1. The numbered pieces and `raw/` remain barred. **This narrows a binding reading list and the operator may overturn it** |
 | Contradiction — has the report been read | **Closed.** Reconciliation resolved it; the `CONFIRMED` bar was narrowed to *a row the review never reached* |
 | Contradiction — `F-###` ratified | **Closed.** `Q-11` confirmed 2026-09-23; the three denying files corrected |
 | Contradiction — `Q-12` self-contradictory | **Closed.** `Q-12` confirmed; *"Unratified."* struck; the file is created when Phase 4 opens, so its absence is now the ruling working |
-| Contradiction — Astra's deposit path | **Open**, minor. README § Roles still says `raw/` against `Q-13` |
+| Contradiction — Astra's deposit path | **Closed.** README § Roles now states the report sits at the directory root by `Q-13`, with `raw/` holding the tier statement |
 | Contradiction — nine vs. ten `D2`; the 24/26 tally | **Closed.** Both corrected, in `consequence-bands.md`, F-019 and `DISAGREEMENTS.md` |
 | Contradiction — orphaned *"Until then"* | **Closed.** Reworded to name the reconciliation pass; no prohibition changed |
 | Contradiction — change logs denying their bodies | **Partly closed.** Superseded entries are retained as dated records rather than rewritten; new entries are dated 2026-09-23 so the log can order itself |
