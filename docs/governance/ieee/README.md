@@ -164,6 +164,53 @@ adversarial review. Those items were renumbered **`M-A` … `M-H`** on 2026-09-2
 by operator ruling. A pre-2026-09-22 reference to "Phase 2" in this series may
 mean the measurement program.
 
+## Terms this series cites as binding
+
+Two terms are cited in this register as binding constraints without being stated
+in it. Both are **gzkit doctrine, not investigation vocabulary**. The authority
+is the pointer; the gloss is a reading aid and is **ILLUSTRATIVE, never
+authoritative** (`AGENTS.md` § Governance doctrine surfaces). Cite the authority,
+not the gloss.
+
+### IRON LAW
+
+Cited at § Currently prohibited, at `Q-05` and on F-018.
+
+- **The rule in force:** root `AGENTS.md` § OBPI Acceptance Protocol — *"Only the operator initiates and executes OBPI work through
+  gz-obpi-pipeline."* **The rule in force does not use the name**, which is why
+  searching this repository for *"IRON LAW"* finds commentary rather than canon.
+- **The name, and the operator's verbatim wording:** the corpus,
+  `.gzkit/corpus/AGENTS.md.jsonl`, entry
+  `corpus-operator-doctrine-verbatim-canon-2026-08-23T14:33:19...`. Read it with
+  the content skills; the corpus is not hand-edited.
+- **Dated record of the compression:**
+  [`context-audit-2026-09-12/root-doctrine.md`](../context-audit-2026-09-12/root-doctrine.md),
+  which carries the original beside what landed in `AGENTS.md`.
+- **Gloss, sufficient to read `Q-05`:** only the operator may *initiate* OBPI
+  work, across every arm of it — claiming or releasing locks, pipeline markers,
+  starting or completing TASKs, dispatching implementers or reviewers, editing a
+  brief. A narrow operator-named task that happens to fall inside an OBPI's scope
+  is not initiation. **It is a blanket prohibition on initiation and delegates
+  nothing**, which is exactly why `Q-05` rules the 16085 consequence threshold
+  *strictly weaker* rather than merely different: a threshold defines a line
+  below which authority is delegated, and this rule delegates none. **Advisory —
+  no mechanical witness distinguishes operator-initiated from agent-initiated
+  OBPI work today**, which is itself the condition F-018 is about.
+
+### Architectural Boundaries 1 and 2
+
+Cited at `Q-03`, at `Q-09` and on F-006.
+
+- **In force at:** root `AGENTS.md` § Architectural Boundaries, as six numbered items.
+- **As written:** **1.** *"Do not promote post-1.0 pool ADRs into active work."*
+  **2.** *"Do not add more pool ADRs to the runtime track."*
+- Only 1 and 2 are cited by this series. **Boundary 6** — *"Do not let derived
+  views silently become source-of-truth"* — is the one F-021 and
+  [`consequence-bands.md`](consequence-bands.md) reason inside without naming,
+  and a Phase 4 design touching either should read it.
+
+---
+
 ## Reading posture
 
 These are **dated records**, in the sense `docs/governance/` already uses (see
@@ -334,6 +381,17 @@ the governance pipeline, and nothing here creates one.**
 
 ## Amendments
 
+- **2026-09-23 — § Terms this series cites as binding added.** Agent 2's Act 1
+  cold read could not evaluate `Q-05` because **IRON LAW** is cited four times
+  across this register and stated nowhere in the five canonical files; the same
+  held for **Architectural Boundaries 1 and 2**, cited as binding at `Q-03`,
+  `Q-09` and F-006. Both are now pointed at their authority. **The cause is worth
+  keeping:** the rule in force in `AGENTS.md` does not carry the name *IRON LAW*,
+  so a reader searching for the name finds commentary and a reader reading
+  `AGENTS.md` finds the rule without the name — the operator's own standing
+  caution that *"a search is not a read"* and that doctrine is routinely stated as
+  a flag value or a path rather than as the prose being searched for. No rule was
+  restated as authority here; the glosses are marked ILLUSTRATIVE.
 - **2026-09-23 — `Q-11` and `Q-12` recorded.** § What must not be assumed had
   told readers not to assume `F-###` was ratified; it had been ratified on
   2026-09-22, and the line is replaced with the ruling. `Q-12` is confirmed:
