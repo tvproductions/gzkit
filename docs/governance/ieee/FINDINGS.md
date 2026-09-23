@@ -41,8 +41,9 @@ is; class says what it argues for. A finding can be `OPEN` and `KEEP`.
 
 **Identifier convention.** Flat, series-global `F-###`, allocated in order,
 never reused, stable across phases. No prior `F-###` convention existed in this
-repository; this is new and is **an agent assumption pending operator
-ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
+repository; this one was **ratified by the operator** at `Q-11`
+([`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta), ruled 2026-09-22 and
+confirmed 2026-09-23 against the namespaced and per-piece alternatives.
 
 ---
 
@@ -837,6 +838,12 @@ ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
 
 ## Amendments
 
+- **2026-09-23 — `Q-11` ratification propagated.** § Identifier convention and
+  the seeding entry below both read `F-###` as an agent assumption pending
+  ratification, **eleven amendments after the operator ratified it**. Corrected
+  to record the ruling. No identifier changed. Found by Agent 2's Act 1 cold
+  read, which could not tell from the canonical files whether the convention was
+  ratified or not.
 - **2026-09-23 — F-014's `Q-02` ruling narrowed by the operator** to *"repair
   stale metadata and restore linkage"*, from *"rewrite the PRD."* Status
   unchanged at `QUALIFIED`; the narrowing agrees with the Phase 2 challenge
@@ -887,5 +894,7 @@ ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
 - **2026-09-22 — Seeded (Phase 3).** 35 findings drawn from pieces 01 and 02. All
   rows `OPEN` except three `QUALIFIED` (F-001, F-018, F-032) and two `REJECTED`
   (F-034, F-035), none of which was qualified or rejected by the Phase 2
-  adversarial review — that pass has not yet been applied. Identifier convention
-  `F-###` is an agent assumption pending ratification.
+  adversarial review — that pass has not yet been applied. *(Identifier
+  convention `F-###` was recorded here as an agent assumption pending
+  ratification; it was ratified at `Q-11` on 2026-09-22 and confirmed
+  2026-09-23.)*

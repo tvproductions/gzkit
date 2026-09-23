@@ -179,8 +179,24 @@ an operator ruling. Identifier shape is doctrine-adjacent here — validators an
 scanners enforce ADR, OBPI and REQ id shapes, and two recent commits repaired
 exactly that class.
 
-**Cheap to change now, expensive after Phase 4 begins citing these ids.**
-Alternatives: namespaced (`IEEE-F-001`), or per-piece (`01-F-03`).
+**Confirmed 2026-09-23 (operator).** Ratification stands as ruled; **no
+identifier changes.** Alternatives considered and rejected: namespaced
+(`IEEE-F-001`) — nothing in the repository competes for `F-###`, so the
+namespace buys nothing today; per-piece (`01-F-03`) — works against the
+convention's own *stable across phases* property, and F-035 already spans two
+pieces, stated in `01` and rejected by `02`.
+
+**The cost warning in the original entry has partly come due**, which is an
+argument for confirming rather than re-IDing: the ids are now cited across 19
+reconciled finding rows and all eight `D-` entries in
+[`DISAGREEMENTS.md`](DISAGREEMENTS.md), in addition to `FINDINGS.md` itself.
+
+**This ruling was already recorded on 2026-09-22 and three files continued to
+deny it** — `FINDINGS.md` § Identifier convention, its § Amendments, and
+`README.md` § What must not be assumed all still read the convention as an
+unratified agent assumption. Those three are corrected as part of this
+confirmation. The lesson is recorded rather than the contradiction merely fixed:
+**a ruling written in one file does not propagate itself.**
 
 ### Q-12 — Where do Phase 4 design candidates live?
 
@@ -190,9 +206,16 @@ Decisions leave by the ordinary route — `gz-design` → ADR → OBPI — and
 [`README.md`](README.md) already rules that nothing here binds until carried
 there. But **candidates**, which are explicitly not decisions, have no home.
 
-Proposed: a later numbered piece or a `design-candidates.md` in this directory,
-never in `FINDINGS.md`, so that a candidate cannot be misread as a decision.
-**Unratified.**
+**Confirmed 2026-09-23 (operator).** The location is decided; **the file is
+created when Phase 4 is authorised, not before.** A later numbered piece was
+considered and rejected: pieces are frozen at their date and corrected only by a
+later piece, whereas a candidate is revised in place until it becomes a decision
+or is dropped. An empty container created ahead of need is the *"adding
+machinery"* failure mode F-032 names, and F-032 is now `CONFIRMED` and binds
+Phase 4 as a filter — so `design-candidates.md` does not exist yet, and its
+absence is the ruling working rather than a dangling pointer. The 2026-09-22
+entry read **RULED** in its heading and *"Unratified."* in its last line; that
+contradiction is resolved here in favour of the heading.
 
 ### Q-13 — How is the Phase 2 adversarial review delivered? *(blocking)*
 
@@ -209,6 +232,14 @@ Needed: the report itself, or a path to it, or the session to query.
 
 ## Amendments
 
+- **2026-09-23 — `Q-11` and `Q-12` confirmed by operator ruling; both
+  self-contradictions closed.** `Q-11`: ratification stands, no identifier
+  changes, and the three files that still denied it are corrected.
+  `Q-12`: `design-candidates.md` in this directory, tiered below
+  `FINDINGS.md`, **created when Phase 4 is authorised and not before**; the
+  entry's trailing *"Unratified."* is struck in favour of its **RULED** heading.
+  With `Q-02`'s narrowing, **all thirteen questions are now ruled and
+  internally consistent.**
 - **2026-09-23 — `Q-02` narrowed by operator ruling.** *"Repair stale metadata and
   restore linkage"*, replacing *"rewrite the PRD"* as the remedy shape; the
   product-claim half of the 2026-09-22 ruling carries forward unchanged and the

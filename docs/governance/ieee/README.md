@@ -277,8 +277,9 @@ and everything the measurement program `M-A` … `M-H` would measure.
   this corpus should not be adopted, and conformance is dischargeable by reference.
 - **Do not assume the numbers are current.** Every figure is a dated observation.
   Re-run the command or the script.
-- **Do not assume `F-###` ids are ratified.** They are an agent assumption
-  (`Q-11`).
+- **`F-###` ids are ratified** (`Q-11`, ruled 2026-09-22, confirmed
+  2026-09-23). Allocated in order, never reused, stable across phases. Cite them
+  freely.
 
 **Currently prohibited:**
 
@@ -333,6 +334,13 @@ the governance pipeline, and nothing here creates one.**
 
 ## Amendments
 
+- **2026-09-23 — `Q-11` and `Q-12` recorded.** § What must not be assumed had
+  told readers not to assume `F-###` was ratified; it had been ratified on
+  2026-09-22, and the line is replaced with the ruling. `Q-12` is confirmed:
+  Phase 4 design candidates will live in `design-candidates.md` in this
+  directory, tiered below `FINDINGS.md`, **created when Phase 4 is authorised**
+  — so § Currently prohibited's bar on beginning Phase 4 design is unaffected,
+  and no empty container is created ahead of it.
 - **2026-09-22 — Phase 3 reconciliation pass recorded.** § Current gate,
   § Next permitted step, § Handoff (*what is confirmed*, *what is disputed*) and
   the `CONFIRMED` prohibition updated to the post-reconciliation state. **The
