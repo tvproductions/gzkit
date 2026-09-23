@@ -32,6 +32,7 @@ to know where things stand. The numbered pieces are evidence behind its rows.
 | [`consequence-bands.md`](consequence-bands.md) | **canonical, PROVISIONAL** | Operator-ruled consequence scale (`Q-04`). Scores rest on `OPEN` findings; must be re-scored after Phase 2 |
 | [`01-…`](01-engineering-method-2026-09-22.md), [`02-…`](02-requirements-vs-release-2026-09-22.md) | historical | Raw investigation record — what an agent said, frozen at its date |
 | [Astra's adversarial review](gzkit-engineering-assessment-adversarial-review.md) | historical | Agent 1's Phase 2 report, as deposited. Raw record — challenge input, not a second register |
+| [Act 1 cold read](act1-cold-read-2026-09-23.md) | historical | Agent 2's Act 1 verdict on **this register**, frozen at its date. Raw record — evidence about the register, not a finding about gzkit |
 | [`raw/`](raw/README.md) | historical | Index and tier statement for raw reports |
 
 **Canonical is not normative.** A finding here records what the investigation
@@ -115,10 +116,17 @@ wrong order destroys the first.** The moment an agent has a stake in a design it
 can no longer give an unanchored reading. Agent 2 therefore works in two declared
 acts, in this order:
 
-**Act 1 is available now and is not phase-bound.** The register exists; the cold
-read tests whether it stands on its own. It is arguably most valuable *before*
-Phase 3's reconciliation rewrites the register, because what is on disk today is
-what a newcomer would actually inherit.
+**Act 1 was taken on 2026-09-23**, by operator ruling, immediately ahead of the
+Phase 3 reconciliation pass and for exactly the reason below. Its verdict —
+*the register stands, with load-bearing qualifications* — and its ranked gap
+list are recorded at [`act1-cold-read-2026-09-23.md`](act1-cold-read-2026-09-23.md),
+with a dated disposition table separating the reading from its consequences.
+**Act 1 cannot be retaken**: the register it read no longer exists in that form.
+
+The reasoning that put it first is retained, because it will apply again to any
+successor register: Act 1 is not phase-bound, the register exists, and the cold
+read is *most* valuable **before** reconciliation rewrites it — what is on disk
+on the day of the reading is what a newcomer would actually inherit.
 
 **Act 1 — the cold read.** Agent 2 reads **only** this README, `FINDINGS.md`,
 `DISAGREEMENTS.md`, `OPEN-QUESTIONS.md` and `consequence-bands.md`. It reads
@@ -381,6 +389,16 @@ the governance pipeline, and nothing here creates one.**
 
 ## Amendments
 
+- **2026-09-23 — Agent 2's Act 1 cold read recorded** at
+  [`act1-cold-read-2026-09-23.md`](act1-cold-read-2026-09-23.md), historical
+  tier, and added to the file table; § Agent 2 sequencing constraint updated to
+  say Act 1 was taken and cannot be retaken. **Act 2 is unchanged and still does
+  not exist until Phase 4 is authorised.** The reading was taken by an isolated
+  agent holding no prior context, dispatched because the main session was already
+  anchored by the handoff chain — the caveat is recorded in the record itself.
+  Written up because its verdict had existed only in session memory while its
+  consequences were already landed in the register: **F-007 happening to this
+  investigation**, caught before the session ended.
 - **2026-09-23 — § Terms this series cites as binding added.** Agent 2's Act 1
   cold read could not evaluate `Q-05` because **IRON LAW** is cited four times
   across this register and stated nowhere in the five canonical files; the same
