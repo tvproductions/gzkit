@@ -33,7 +33,7 @@ Three kinds, kept separate because they resolve by different means:
 
 `gz adr demote` executes `shutil.rmtree`, and has destroyed a large share of all
 REQ acceptance criteria and FAIL-CLOSED constraints ever authored.
-`pool-curation.md:47` rules that *"Deleting a retired pool file is an
+`pool-curation.md:106` rules that *"Deleting a retired pool file is an
 anti-pattern"* — but that ruling is about the **pool file**, not the brief tree,
 and no ruling covering the latter was found. Either demoted work deliberately
 forfeits its specification, or this is an unexamined consequence.
@@ -131,7 +131,7 @@ F-019.
 **RULED 2026-09-22 — the `RELEASE_NOTES.md:1226` ruling stands; the code owes the change.** `version_sync` stops deriving the package version from an ADR identifier. The missing `kind` guard is repairable immediately and independently of the larger decoupling.
 
 `RELEASE_NOTES.md:1226` rules that "the release line — not ADR frontmatter — is
-the source of truth for what shipped." `src/gzkit/commands/version_sync.py:289`
+the source of truth for what shipped." `src/gzkit/commands/version_sync.py:46`
 does the opposite: it makes an ADR identifier the package version. The prose
 decoupled them; the code never did.
 
@@ -205,6 +205,15 @@ Needed: the report itself, or a path to it, or the session to query.
 
 ## Amendments
 
+- **2026-09-22 — Act 1 cold-read repair pass (mechanical only).** **No ruling
+  changed.** `Q-03`'s `pool-curation.md:47` → `:106`, where the quoted
+  anti-pattern ruling actually sits; the quote itself is accurate. `Q-08`'s
+  `src/gzkit/commands/version_sync.py:289` → `:46`, the function that does what
+  the entry describes. **Unresolved, left for the operator:** `Q-12` is headed
+  **RULED** and ends *"Unratified."* four lines later in the same entry, and the
+  `design-candidates.md` it rules into existence does not exist; `Q-11` is ruled
+  **ratified** while `FINDINGS.md` and `README.md` both still record `F-###` as
+  an unratified agent assumption.
 - **2026-09-22 — Seeded (Phase 3).** `Q-01` … `Q-10` merged from
   [`01 § 10`](01-engineering-method-2026-09-22.md) (seven) and
   [`02 § Questions for the operator`](02-requirements-vs-release-2026-09-22.md)

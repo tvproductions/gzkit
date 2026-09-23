@@ -147,8 +147,8 @@ self-description is already the `embedded` form.
 in this directory. **The full reconciliation pass is deferred and not yet run** —
 no finding status has moved in response to it. Until that pass runs, every row in
 `FINDINGS.md` still carries its pre-challenge status and must be read as such. **All thirteen open questions were
-ruled by the operator on 2026-09-22**, one (`Q-09`) as a deferral. Until then no finding may be
-promoted to `CONFIRMED`. **Phase 4 is not authorised and must not begin
+ruled by the operator on 2026-09-22**, one (`Q-09`) as a deferral. No finding may be promoted to `CONFIRMED`
+before that pass runs. **Phase 4 is not authorised and must not begin
 implicitly** — a design candidate that goes unchallenged is still not a decision.
 
 **Phase numbering, one caution.** Piece 01 § 12 originally titled its measurement
@@ -314,3 +314,22 @@ the governance pipeline, and nothing here creates one.**
 - [`docs/governance/trust-doctrine.md`](../trust-doctrine.md) — trust-chain poisoning, gzkit's own rediscovery of V&V independence
 - [`docs/governance/advisory-rules-audit.md`](../advisory-rules-audit.md) — the Mechanical/Judgment scorecard the pieces read as an honesty instrument
 - [`docs/governance/req-scope-discipline.md`](../req-scope-discipline.md) — the three-kind REQ taxonomy and the measurement that produced it
+
+---
+
+## Amendments
+
+- **2026-09-22 — Act 1 cold-read repair pass (mechanical only).** § Current gate's
+  orphaned *"Until then"* — editing residue with no antecedent, inside a binding
+  paragraph — reworded to name the reconciliation pass it was describing. **No
+  prohibition was added, removed or relaxed.** This section is new; changes to
+  this file were previously unrecorded. **Unresolved, left for the operator:**
+  § Handoff states the Phase 2 report *"has not been read"*, against this file's
+  own phase table and `DISAGREEMENTS.md` § Status; § Currently prohibited gates
+  promotion to `CONFIRMED` on the report being read while `DISAGREEMENTS.md`
+  gates it on that file being populated; § What must not be assumed records
+  `F-###` as unratified against `Q-11`'s ruling; § Roles says Astra deposits into
+  `raw/` against `Q-13`'s ruling that the report stays at the directory root; and
+  **IRON LAW** and **Architectural Boundaries 1 and 2** are cited as binding
+  here without being stated, quoted or pointed at anywhere in the five canonical
+  files.

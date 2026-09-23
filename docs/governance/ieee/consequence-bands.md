@@ -97,7 +97,7 @@ validator alike.
 | `gz adr demote` | 2 | 2 | **C3** | `obpi_lifecycle.py:256-260`, its own comment: *"A hollow exit 0"* |
 | ARB receipt durability | 2 | 2 | **C3** | 391 receipts exist only on the authoring machine; `artifacts/` is gitignored |
 | ARB receipt binding | 2 | 1 | **C2** | `arb/validator.py:279` returns `None` for 5 of 9 step names |
-| Gate logic | 2 | 1 | **C2** | `gates.py:256-258` |
+| Gate logic | 2 | 1 | **C2** | `src/gzkit/commands/gates.py:261-263` |
 | Validators / `gz check` | 2 | 1 | **C2** | the 47/47 result above |
 | Hooks | 2 | 1 | **C2** | `.claude/hooks/pipeline-gate.py:156-158` continues past an out-of-allowlist path |
 | `@covers` binding | 2 | 1 | **C2** | `tautological_tests.py:108-134` |
@@ -136,13 +136,25 @@ scheme reproduced the severity of the largest measured loss in the repository
 without being told about it. That is the main evidence the axes are the right
 ones.
 
-**Nine of sixteen rows are `D2`.** Over half the scored surfaces fail by
+**Ten of sixteen rows are `D2`.** Over half the scored surfaces fail by
 reporting success. That is F-021 restated as a distribution, and it is the
 strongest argument in this file for why rigour keyed to surface *kind* mis-ranks
 this system.
 
 ## Amendments
 
+- **2026-09-22 — Act 1 cold-read repair pass (mechanical only).** **No score
+  changed.** The `D2` row count corrected from nine to ten: the table scores ten
+  `D2` surfaces (Ledger writes, Attestation/completion, `gz adr demote`, ARB
+  receipt durability, ARB receipt binding, Gate logic, Validators, Hooks,
+  `@covers` binding, Distribution/`gz init`), with Schemas and Handoffs at `D1`.
+  The error was replicated into `FINDINGS.md` F-019 and is corrected there too.
+  The Gate-logic anchor `gates.py:256-258` →
+  `src/gzkit/commands/gates.py:261-263`: the old anchor gave no valid path, and
+  its line numbers land on Gate 4's PASS/FAIL rather than `_run_gate_5` — the
+  `C2` band for that row rested on it. **Unresolved:** the PROVISIONAL block
+  asserts every `D2` score is derived from a Phase 1 finding, but only three rows
+  (Gate logic, Validators, Hooks — F-019, F-021, F-018) name one; seven do not.
 - **2026-09-22 — Marked PROVISIONAL.** Operator challenge: the file was scored
   on findings that are still `OPEN`, and did not say so. Dependency now named;
   re-scoring after Phase 2 is an obligation, not an option.

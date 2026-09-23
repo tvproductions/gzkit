@@ -42,7 +42,7 @@ is; class says what it argues for. A finding can be `OPEN` and `KEEP`.
 **Identifier convention.** Flat, series-global `F-###`, allocated in order,
 never reused, stable across phases. No prior `F-###` convention existed in this
 repository; this is new and is **an agent assumption pending operator
-ratification** (Phase 3 Q4, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
+ratification** (`Q-11`, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
 
 ---
 
@@ -262,7 +262,7 @@ ratification** (Phase 3 Q4, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
   The two lines have already diverged — releases exist with no ADR, and ADRs with
   no release.
 - **Evidence.** `02 § The finding`, `02 § The mechanism`, `02 § Findings #1`;
-  `src/gzkit/commands/version_sync.py:17-20` and `:289`. Re-derive with
+  `src/gzkit/commands/version_sync.py:17-20` and `:46`. Re-derive with
   [`02-requirements-vs-release-evidence/measure.py`](02-requirements-vs-release-evidence/measure.py).
 - **Interpretation.** That the two lines diverged while sharing a notation is the
   proof they were never the same thing.
@@ -271,7 +271,7 @@ ratification** (Phase 3 Q4, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
   an encoded identifier;* the principle is constructed from the separation of
   attributes.
 - **Consequence.** The missing `kind` guard is a latent defect under either
-  answer to `Q8`.
+  answer to `Q-08`.
 - **Ruled 2026-09-22 (operator).** `Q-08` answered: **the `RELEASE_NOTES.md:1226` ruling stands; the code owes the change.** `version_sync` stops deriving the package version from an ADR identifier. The missing `kind` guard is repairable immediately and independently.
 - **Disposition.** `Q-08` is settled; the form of the decoupling is Phase 4.
 
@@ -369,7 +369,7 @@ ratification** (Phase 3 Q4, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
   live and working; its foundation is not.
 - **Standards lens.** 29148 § 6.3/§ 6.4; 12207 Table B.1 (`artefact`).
 - **Consequence.** The top of the traceability chain is absent, so NEED→REQUIREMENT
-  (F-012) has nothing to attach to until `Q2` is answered.
+  (F-012) has nothing to attach to until `Q-02` is answered.
 - **Ruled 2026-09-22 (operator).** `Q-02` answered: **rewrite the PRD around the system as it actually ships.** The product claim stands — distribution is mechanically enforced — but the January framing does not. This restores the top of the traceability chain that F-012's NEED→REQUIREMENT edge needs.
 - **Disposition.** `Q-02` is settled; the rewrite itself is Phase 4 or later, and is not authorised by this register.
   Leaving it Draft and uncited is the one option that costs without paying.
@@ -477,8 +477,8 @@ ratification** (Phase 3 Q4, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
   return True`, and zero gate-5 events exist. `gz gates` itself prints a
   deprecation notice on every invocation while AGENTS.md documents the covenant
   against it.
-- **Evidence.** `01 § 1.2(e)`, `01 § 8.2`; `src/gzkit/gates.py:163`, `:256-258`;
-  `src/gzkit/deprecations.py:41` (GHI #705).
+- **Evidence.** `01 § 1.2(e)`, `01 § 8.2`; `src/gzkit/commands/gates.py:153-160`, `:261-263`;
+  `src/gzkit/governance/deprecations.py:41` (GHI #705).
 - **Interpretation.** In 24748-1 § 4.3.2 terms these are **checks, not decision
   gates** — no outcome can hold, restart or terminate anything.
 - **Standards lens.** 15026-2 § 5.3.3 — a claim needs a property, a limit, an
@@ -486,7 +486,7 @@ ratification** (Phase 3 Q4, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
 - **Consequence.** The largest single source of false confidence in the system.
 - **Ruled 2026-09-22 (operator).** `Q-07` answered: **re-point the covenant** at `gz closeout` and `gz obpi complete`, keeping the five-gate vocabulary. Edits to `AGENTS.md` go through the corpus ceremony, not a hand-edit.
 - **Standing constraint (operator, 2026-09-22).** *"do not abandon the five gates without a discussion with me."* **Retiring or replacing the five-gate vocabulary is prohibited absent an explicit operator discussion** — including as an incidental consequence of any Phase 4 design. This finding describes what the gates record; it does not license removing them.
-- **Consequence input.** Surfaces in this finding are scored in [`consequence-bands.md`](consequence-bands.md): gate logic `C2`, validators `C2`, receipt durability `C3`. Nine of sixteen scored surfaces are `D2` — they fail by reporting success.
+- **Consequence input.** Surfaces in this finding are scored in [`consequence-bands.md`](consequence-bands.md): gate logic `C2`, validators `C2`, receipt durability `C3`. Ten of sixteen scored surfaces are `D2` — they fail by reporting success.
 - **Disposition.** `Q-07` is settled. The superseded option was to retire
   the gate vocabulary. Both are coherent; they are not the same project. `M-D`
   would name the claim behind each gate.
@@ -718,7 +718,7 @@ ratification** (Phase 3 Q4, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
   — and the only surviving record for a dozen tags orphaned by the 2026-04-19
   filter-repo rewrite. The mechanically-derivable version is generated and
   discarded on every release.
-- **Evidence.** `02 § Findings #12`; `src/gzkit/.../release.py:201-203`.
+- **Evidence.** `02 § Findings #12`; `src/gzkit/governance/trust_audits/release.py:201-203`.
 - **Interpretation.** Recorded explicitly because it looks like duplication and is
   a plausible target for removal. It is not.
 - **Standards lens.** 15289 Table 3 — the release record.
@@ -815,6 +815,27 @@ ratification** (Phase 3 Q4, [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) § Meta).
 
 ## Amendments
 
+- **2026-09-22 — Act 1 cold-read repair pass (mechanical only).** Anchor and
+  identifier repairs following Agent 2's Act 1 cold read. **No status moved and no
+  finding changed in substance.** F-019's `src/gzkit/gates.py:163`, `:256-258` →
+  `src/gzkit/commands/gates.py:153-160`, `:261-263`: the cited path does not
+  exist, and at the real path the old line numbers land on Gate 4's PASS/FAIL
+  rather than on anything the finding asserts. `:153-160` is the
+  `_record_gate_result` call that passes `result.returncode` and the constant
+  string `"stdout/stderr captured"` — the exit-code-for-a-claim substitution the
+  finding is about; `:261-263` is `_run_gate_5`. F-019's
+  `src/gzkit/deprecations.py:41` → `src/gzkit/governance/deprecations.py:41`
+  (line correct, path wrong). F-008's `version_sync.py:289` → `:46`, where
+  `sync_project_version` writes `pyproject.toml`, `__init__.py` and the README
+  badge; `:289` is the penultimate line of an unrelated bump-detection helper.
+  F-031's elided `src/gzkit/.../release.py:201-203` →
+  `src/gzkit/governance/trust_audits/release.py:201-203`. Stale
+  pre-renumbering ids: `Q8` → `Q-08` (F-008 § Consequence), `Q2` → `Q-02`
+  (F-014 § Consequence). Dangling "Phase 3 Q4" → `Q-11` (§ Identifier
+  convention). F-019's `D2` count corrected from nine to ten, matching
+  `consequence-bands.md`'s own table. **Unresolved, left for the operator:**
+  § Identifier convention and § Amendments below both read `F-###` as "pending
+  operator ratification", while `Q-11` records it as **ratified**.
 - **2026-09-22 — Seeded (Phase 3).** 35 findings drawn from pieces 01 and 02. All
   rows `OPEN` except three `QUALIFIED` (F-001, F-018, F-032) and two `REJECTED`
   (F-034, F-035), none of which was qualified or rejected by the Phase 2
