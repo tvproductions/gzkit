@@ -180,6 +180,29 @@ class TestSkipRequiresBothSidesToAgree(unittest.TestCase):
             "the gate is the presence-check failure AGENTS.md names",
         )
 
+    def test_a_change_scope_pass_satisfies_the_per_change_gate(self) -> None:
+        root = _repo()
+        record_verified(root, staged_fingerprint(root), scope="change")
+        self.assertIsNotNone(
+            already_verified(root, accept=frozenset({"change", "full"})),
+            "the pre-push gate runs the change scope, so a change-scope pass over "
+            "the same content cannot reach a different verdict (GHI #1088)",
+        )
+
+    def test_a_change_scope_pass_never_satisfies_a_full_request(self) -> None:
+        root = _repo()
+        record_verified(root, staged_fingerprint(root), scope="change")
+        self.assertIsNone(
+            already_verified(root, accept=frozenset({"full"})),
+            "a change-scope pass never ran Behave; it cannot stand in for the full sweep",
+        )
+
+    def test_a_full_pass_satisfies_either_request(self) -> None:
+        root = _repo()
+        record_verified(root, staged_fingerprint(root), scope="full")
+        self.assertIsNotNone(already_verified(root, accept=frozenset({"full"})))
+        self.assertIsNotNone(already_verified(root, accept=frozenset({"change", "full"})))
+
     def test_a_non_git_directory_fails_open(self) -> None:
         plain = Path(tempfile.mkdtemp(prefix="gzkit-nogit-"))
         self.assertIsNone(

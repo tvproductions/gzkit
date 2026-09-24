@@ -144,26 +144,42 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
 
     p_check = commands.add_parser(
         "check",
-        help="Run all quality checks",
-        description="Run lint, format, typecheck, test, and advisory drift in sequence.",
+        help="Run the per-change quality gate (--full adds behave)",
+        description=(
+            "Run lint, format, typecheck, the unit tier, the validators and advisory "
+            "drift. The default is the per-change gate; --full adds behave and "
+            "preflight, the heavy-lane / CI sweep."
+        ),
         epilog=build_epilog(
-            ["gz check", "gz check --fast", "gz check --reuse-verified", "gz check --json"]
+            [
+                "gz check",
+                "gz check --full",
+                "gz check --fast",
+                "gz check --reuse-verified",
+                "gz check --json",
+            ]
         ),
     )
     add_json_flag(p_check)
-    p_check.add_argument(
+    check_scope = p_check.add_mutually_exclusive_group()
+    check_scope.add_argument(
         "--fast",
         action="store_true",
         help="Inner-loop scope; skips suite/behave/docs. Never satisfies the gate",
     )
+    check_scope.add_argument(
+        "--full",
+        action="store_true",
+        help="Full sweep including behave and preflight (heavy-lane and CI scope)",
+    )
     p_check.add_argument(
         "--reuse-verified",
         action="store_true",
-        help="Skip when this exact STAGED tree already passed a full check",
+        help="Skip when this exact STAGED tree already passed a check covering this scope",
     )
     p_check.set_defaults(
         func=lambda a: _lazy("check")(
-            as_json=a.as_json, fast=a.fast, reuse_verified=a.reuse_verified
+            as_json=a.as_json, fast=a.fast, reuse_verified=a.reuse_verified, full=a.full
         )
     )
 

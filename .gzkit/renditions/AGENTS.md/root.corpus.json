@@ -1,9 +1,9 @@
 {
   "algorithm": "sha256",
-  "corpus_fingerprint": "8bcc41852e77003eb1a56ba04ed3873a214e22866e20b3ae81528534f31bae28",
-  "corpus_entry_count": 375,
-  "rendition_fingerprint": "24e5381d69de559fe0aa45d3f097b666637ff4a75c9804a97ca3581765bad014",
-  "committed_ts": "2026-09-23T10:52:51.149363+00:00",
+  "corpus_fingerprint": "0d7511af54d9fe4745bcd16962ed88a15c194d08b966acddbd8d1cf664c0527c",
+  "corpus_entry_count": 377,
+  "rendition_fingerprint": "13e9447e4632870ed7af6be018dc952409569346a9dc1dbdb6371d59919ac843",
+  "committed_ts": "2026-09-24T06:21:00.365214+00:00",
   "attestor": "g0",
-  "attestation_text": "write all three entries -- operator ruling 2026-09-23, following \"maybe the airlineops perspective was correct?\" and the accepted corrections on lite: [1,2] and on Gate 4/5 scoping. Three invariant-tier entries appended to gate-covenant: behave is acceptance-scope bound to the heavy lane; Gate 4 precedes Gate 5 on the heavy lane only; how to read unit/BDD line overlap. Evidence: corpus entries corpus-gate-covenant-2026-09-23T10:51:52.880312+00:00, ...T10:51:59.415920+00:00, ...T10:52:06.245633+00:00; candidate 21662B (invariant=20761B) against a 65536B cap; section diff is additive only, no existing bullet changed."
+  "attestation_text": "I attest to that wording, land it"
 }

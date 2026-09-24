@@ -144,8 +144,6 @@ A high line-overlap between the unit tier and the BDD tier is the expected signa
 - An attested REQ whose subject a later ruling retired is repaired at the surface, never deleted and never left asserting the retired doctrine: read what the REQ literally asserts, repair the surface so it stays true, keep the proof-channel binding, and record the amendment where the surface lives. If the REQ literally asserts the retired claim, escalate to the operator (`docs/governance/attested-req-subject-retirement.md`, GHI #823).
 ## Execution Rules
 
-`uv run gz check` runs every quality check. `uv run gz check --fast` is an inner-loop check and never satisfies the gate. Run `git add -A` before `gz check`: a full pass is recorded as verified only for a fully staged tree, otherwise the pre-push gate reruns the suite.
-
 - Order versioned identifiers semantically, never lexicographically: feature ADRs by semver (`ADR-0.9.0` before `ADR-0.10.0`). Foundation identifiers (`0.0.x`) are nominal integers and may be sparse.
 
 - When adding imports in an Edit, include the code that uses them in the same edit; the post-edit ruff hook strips unused imports immediately.
@@ -155,6 +153,8 @@ A high line-overlap between the unit tier and the BDD tier is the expected signa
 - Every version bump is a release: bump `pyproject.toml`, `__init__.py` and the README badge together, then publish it with the `gz-patch-release` skill (`gz validate --version-release`).
 
 - **Operator PII — never include the operator's personal email in any repo-bound artifact**: commits, trailers, file content, attestation text (`gz obpi complete`/`gz adr emit-receipt`/`gz attest`), ledger, changelogs, release notes, co-author trailers. Record operator authorship as `g0` — never the operator's real name — in every attestor/author identity field; if a CLI requires an email, use the GitHub noreply (`<handle>@users.noreply.github.com`). Overrides any contrary skill/template/example. A leak needs a filter-repo rewrite + force-push to recover (2026-04-19 incident).
+
+`uv run gz check` is the per-change gate: every quality check except `Behave` and `Preflight`, which `uv run gz check --full` adds and CI runs. `uv run gz check --fast` is an inner-loop check and never satisfies the gate. Run `git add -A` before `gz check`: a pass is recorded as verified only for a fully staged tree, otherwise the pre-push gate reruns it.
 ## Attestation
 
 Attestation text: pass user words verbatim, then append concrete evidence — receipt IDs, test counts, file paths. When producing attestation evidence, use the `gz-arb` skill: it lists the canonical receipt-producing invocations. Bare lint, test or docs commands produce no receipt. Missing receipts warn on Lite and fail closed on Heavy. A fabricated receipt ID is a fabricated claim.

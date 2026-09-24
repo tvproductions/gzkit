@@ -150,8 +150,9 @@ repos:
 
       - id: gz-check-pre-push
         name: gz check (pre-push gate)
+        # Runs the default per-change scope (no Behave, GHI #1088).
         # --reuse-verified skips the run when this exact tree CONTENT already
-        # passed a full check (GHI #835). A fix used to pay ~148s twice: once
+        # passed a check covering that scope (GHI #835). A fix used to pay ~148s twice: once
         # when it was verified, then again here over an unchanged tree, where
         # the second run cannot reach a different verdict. Content-addressed,
         # so the intervening commit does not defeat it and any edit does; and

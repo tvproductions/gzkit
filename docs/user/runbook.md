@@ -969,7 +969,8 @@ Use [`/gz-check`](skills/gz-check.md) to run all quality checks in one pass, or 
 - `uv run gz drift` (detect spec-test-code governance drift)
 - `uv run gz preflight` (detect stale markers and orphan receipts)
 - `uv run gz preflight --apply` (clean up stale artifacts)
-- `uv run gz check` (all quality checks + advisory drift)
+- `uv run gz check` (the per-change gate + advisory drift; `--full` adds behave and preflight)
+- `uv run gz check --full` (the full sweep CI runs)
 - `uv run gz check --json` (machine-readable output with advisory drift section)
 - `uv run gz adr audit-check ADR-<X.Y.Z>`
 - `uv run gz adr covers-check ADR-<X.Y.Z>`

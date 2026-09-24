@@ -5,11 +5,11 @@ paths:
 description: Test policy and coverage requirements
 ---
 
-<!-- rule-version: 0.26.4 -->
+<!-- rule-version: 0.26.5 -->
 
 # Test Policy (canonical)
 
-> **Rule version:** `0.26.4` — § Two runners states which `gz check` scopes run `behave`, reconciling it with the Gate Covenant's heavy-lane binding; no runner or scope changed. Rationale: [Tests — Rationale](../../docs/governance/tests-rationale.md); history: [Rule Version History](../../docs/governance/rule-version-history.md#testsmd).
+> **Rule version:** `0.26.5` — § Two runners follows GHI #1088: plain `gz check` is the per-change gate and drops `behave`; `gz check --full` and CI run both tiers. Rationale: [Tests — Rationale](../../docs/governance/tests-rationale.md); history: [Rule Version History](../../docs/governance/rule-version-history.md#testsmd).
 
 ## General Rules (binding)
 
@@ -82,7 +82,7 @@ OBPI-scoped: `gz covers` → `gz task start` → TDD cycle → commit with `Task
 | `unittest` | `tests/` | Pure Python behavior, command contracts | Mocked subprocess boundaries (`_uv_sync_patcher`, `_git_subprocess_patcher`, `_quick_init` in `tests/commands/common.py`); deterministic; < 200ms; `tempfile` DBs |
 | `behave` | `features/` | End-to-end CLI and governance scenarios | Real operator flows; anything needing a real subprocess lives here |
 
-`gz test` runs the unit tier; `gz test --bdd` runs the unit tier then `behave`. The unit tier runs on every change; `behave` is heavy-lane OBPI and CI scope, never a per-change gate (`AGENTS.md` § Gate Covenant). The full `gz check` sweep and CI run both tiers; the pre-push and `--fast` scopes drop `Behave` (`data/check_step_scopes.json`).
+`gz test` runs the unit tier; `gz test --bdd` runs the unit tier then `behave`. The unit tier runs on every change; `behave` is heavy-lane OBPI and CI scope, never a per-change gate (`AGENTS.md` § Gate Covenant). Plain `gz check` is the per-change gate and drops `Behave`; `gz check --full` and CI run both tiers (`data/check_step_scopes.json`).
 
 **Behave scenarios covering a REQ carry `@REQ-X.Y.Z-NN-MM`** as a scenario tag — `gz validate --behave-req-tags` (fires on `Completed`/`Validated` briefs; waivers in `data/behave_coverage_waivers.json`). The gate is REQ-kind-aware (GHI #636): a BEHAVIOR REQ is satisfied by a tagged scenario or an `@covers` unit test; SUPPORT and STRUCTURAL-FENCE REQs are exempt by kind; a missing `[kind]` tag defaults to BEHAVIOR.
 

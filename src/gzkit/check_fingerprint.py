@@ -151,32 +151,39 @@ def staged_fingerprint(project_root: Path) -> str | None:
         shutil.rmtree(tmp_dir, ignore_errors=True)
 
 
-def record_verified(project_root: Path, fingerprint: str | None, *, scope: str) -> None:
-    """Record that the FULL gate passed over *fingerprint*. Best-effort.
+#: Scopes whose pass may be recorded: each drops nothing the per-change gate runs
+#: (``data/check_step_scopes.json``; GHI #1088). ``fast`` drops the unit tier.
+RECORDABLE_SCOPES: frozenset[str] = frozenset({"change", "full"})
 
-    Only a full-scope pass is recordable. A scoped run skips the expensive steps
-    by design, so recording one would let a partial verification satisfy the gate
-    — the presence-check failure ``AGENTS.md`` names, in a new costume.
+
+def record_verified(project_root: Path, fingerprint: str | None, *, scope: str) -> None:
+    """Record that a gate of *scope* passed over *fingerprint*. Best-effort.
+
+    Only a scope in :data:`RECORDABLE_SCOPES` is recordable. A narrower scope skips
+    steps the per-change gate runs, so recording it would let a partial
+    verification satisfy that gate — the presence-check failure ``AGENTS.md``
+    names, in a new costume. The receipt carries the scope so a reader can refuse
+    a pass narrower than what it asks for.
 
     Callers pass :func:`staged_fingerprint`, and it is recorded only when
     :func:`tree_is_fully_staged` holds, so the recorded tree is exactly the one
     the gate ran against.
     """
-    if fingerprint is None or scope != "full":
+    if fingerprint is None or scope not in RECORDABLE_SCOPES:
         return
     receipt = project_root / _RECEIPT_REL
     try:
         receipt.parent.mkdir(parents=True, exist_ok=True)
         receipt.write_text(
-            json.dumps({"fingerprint": fingerprint, "scope": "full"}, sort_keys=True) + "\n",
+            json.dumps({"fingerprint": fingerprint, "scope": scope}, sort_keys=True) + "\n",
             encoding="utf-8",
         )
     except OSError:
         return
 
 
-def verified_fingerprint(project_root: Path) -> str | None:
-    """Return the fingerprint the last full-scope pass covered, or None."""
+def _read_receipt(project_root: Path) -> tuple[str, str] | None:
+    """Return ``(fingerprint, scope)`` from a well-formed recordable receipt, or None."""
     try:
         raw = (project_root / _RECEIPT_REL).read_text(encoding="utf-8")
     except OSError:
@@ -185,25 +192,41 @@ def verified_fingerprint(project_root: Path) -> str | None:
         payload: Any = json.loads(raw)
     except json.JSONDecodeError:
         return None
-    if not isinstance(payload, dict) or payload.get("scope") != "full":
+    if not isinstance(payload, dict) or payload.get("scope") not in RECORDABLE_SCOPES:
         return None
     recorded = payload.get("fingerprint")
-    return recorded if isinstance(recorded, str) and recorded else None
+    if not isinstance(recorded, str) or not recorded:
+        return None
+    return recorded, payload["scope"]
 
 
-def already_verified(project_root: Path) -> str | None:
-    """Return the fingerprint when THIS tree already passed the full gate.
+def verified_fingerprint(project_root: Path) -> str | None:
+    """Return the fingerprint the last recordable pass covered, or None."""
+    receipt = _read_receipt(project_root)
+    return receipt[0] if receipt else None
 
-    Both sides must be present and equal. A missing receipt, an unreadable tree,
-    or any difference returns None and the caller runs the gate.
+
+def already_verified(
+    project_root: Path, *, accept: frozenset[str] = RECORDABLE_SCOPES
+) -> str | None:
+    """Return the fingerprint when THIS tree already passed a gate in *accept*.
+
+    Both sides must be present and equal, and the recorded scope must be one the
+    caller accepts: a ``change`` pass never ran ``Behave``, so it cannot stand in
+    for a ``full`` request. A missing receipt, an unreadable tree, or any
+    difference returns None and the caller runs the gate.
     """
+    receipt = _read_receipt(project_root)
+    if receipt is None or receipt[1] not in accept:
+        return None
     current = staged_fingerprint(project_root)
     if current is None:
         return None
-    return current if current == verified_fingerprint(project_root) else None
+    return current if current == receipt[0] else None
 
 
 __all__ = [
+    "RECORDABLE_SCOPES",
     "already_verified",
     "record_verified",
     "staged_fingerprint",

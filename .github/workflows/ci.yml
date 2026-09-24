@@ -2,7 +2,8 @@ name: CI
 
 # Full gate runs server-side so the local loop can stay light.
 # Locally: ruff + ty + `gz test --obpi <id>` (~3s) for iteration;
-# `gz check` is the heavy sweep and belongs here, not on every keyboard.
+# `gz check --full` is the heavy sweep and belongs here, not on every keyboard;
+# plain `gz check` is the per-change gate (GHI #1088).
 on:
   push:
     branches: [main]
@@ -67,5 +68,5 @@ jobs:
       - name: Sync dependencies
         run: uv sync --frozen --all-extras
 
-      - name: Run gz check (full gate — lint, format, typecheck, test, behave, validators)
-        run: uv run gz check
+      - name: Run gz check --full (lint, format, typecheck, test, behave, validators)
+        run: uv run gz check --full

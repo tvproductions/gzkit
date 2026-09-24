@@ -1,14 +1,14 @@
 ---
 name: gz-check
 persona: main-session
-description: Run full quality checks in one pass. Use for pre-merge or pre-attestation quality verification.
+description: Run the per-change quality gate in one pass, or the full sweep with --full. Use for pre-merge or pre-attestation quality verification.
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-19
+last_reviewed: 2026-09-23
 model: haiku
 metadata:
-  skill-version: "1.5.2"
+  skill-version: "1.6.0"
 ---
 
 # gz check
@@ -29,7 +29,8 @@ Unified quality gate for all code verification. Replaces the individual
 | `uv run gz test --obpi OBPI-X.Y.Z-NN` | Tests covering one OBPI's REQs (pipeline Stage 3) |
 | `uv run gz test` | Full unittest suite |
 | `uv run gz test --bdd` | Unit tests + behave (ADR closeout / Heavy-lane) |
-| `uv run gz check` | All of the above in one pass |
+| `uv run gz check` | Per-change gate: lint, format, typecheck, unit suite, validators, docs build (no behave) |
+| `uv run gz check --full` | The per-change gate plus behave and preflight — heavy-lane closeout and CI (GHI #1088) |
 
 `gz smoke` is the cheapest useful signal: it runs only `@smoke`-marked tests and
 fails closed if they exceed the budget in `.gzkit/rules/tests.md`. An empty tier
@@ -40,10 +41,10 @@ which proves it is correct.
 ## When to Use
 
 - **Quick fix-up:** Run individual commands (`gz lint`, `gz format`) after small edits
-- **Pre-merge / pre-attestation:** Run `gz check` for the full suite
+- **Every change, pre-merge / pre-attestation:** Run `gz check` — the per-change gate
 - **Before `gz git-sync --apply`:** Run `gz check` first
-- **Before Gate 2 / Gate 3 verification:** Full suite required
-- **Before closeout and attestation workflows:** Full suite required
+- **Before Gate 2 / Gate 3 verification:** `gz check` covers both
+- **Heavy-lane closeout, or to reproduce CI locally:** Run `gz check --full`. Behave belongs to heavy-lane OBPI work and CI, never to a per-change gate (`AGENTS.md` § Gate Covenant)
 
 ## Workflow
 
@@ -92,8 +93,11 @@ uv run gz check
 ## Example
 
 ```bash
-# Full quality check (preferred)
+# Per-change gate (preferred)
 uv run gz check
+
+# Full sweep including behave (heavy-lane closeout, CI parity)
+uv run gz check --full
 
 # Individual checks when iterating
 uv run gz lint

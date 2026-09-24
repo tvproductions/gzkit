@@ -653,6 +653,14 @@ Lifted 2026-08-29 at version `0.11.0` (rule now at `0.12.0`).
 
 ## `tests.md`
 
+### Changed 2026-09-23 at version `0.26.5` (GHI #1088)
+
+Plain `gz check` became the per-change gate (the `change` scope, without
+`Behave` or `Preflight`) and records the reuse fingerprint; `gz check --full` is
+the full sweep, and CI runs it. § Two runners states the new scopes. `0.26.4`,
+the same day, had described the old ones: a full default sweep and a `prepush`
+scope that dropped `Behave` but could not record.
+
 ### Clarified 2026-09-23 at version `0.26.4`
 
 § Two runners said "Both tiers must pass for `gz check`", which read as
