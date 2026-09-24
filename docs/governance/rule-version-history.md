@@ -653,6 +653,15 @@ Lifted 2026-08-29 at version `0.11.0` (rule now at `0.12.0`).
 
 ## `tests.md`
 
+### Clarified 2026-09-23 at version `0.26.4`
+
+§ Two runners said "Both tiers must pass for `gz check`", which read as
+binding `behave` to every change after the Gate Covenant bound it to the
+heavy lane (commit `45e82992b`). The sentence now names the scopes as
+`data/check_step_scopes.json` declares them: the full sweep and CI run both
+tiers, the pre-push and `--fast` scopes drop `Behave`. No runner, scope or
+obligation changed.
+
 ### Clarified 2026-09-19 at version `0.26.3` (GHI #1047)
 
 The empty smoke-tier claim now states the opt-in boundary established by GHI
