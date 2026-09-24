@@ -21,7 +21,7 @@
 
 "Sol" moved from flagship to middle tier. The old `gpt-tuning.md` mapping, Sol for judgment work, would have silently routed judgment to the middle tier. gzkit now names GPT models by generation and name.
 
-**Default profile, operator-ruled 2026-09-24.** GPT-6 Sol is the default, GPT-6 Astra is used only by explicit selection, and GPT-6 Luna handles mechanical work. Operator, verbatim: "If we default to astra, I find that it is too token hungry", then "yes, explicit selection". The card's per-task token figures point the other way in places (Astra uses fewer reasoning tokens than Sol at matched budgets in § 9.2.2), but its cost note says real-world results may vary substantially. The operator's observation measures gzkit's workload and governs the default.
+**Default profile, operator-ruled 2026-09-24.** gzkit's skills stay Anthropic-first; GPT runs bounded adversarial reviews (operator: "A."). For those reviews GPT-6 Sol is the default, GPT-6 Astra is used only by explicit selection, and GPT-6 Luna suits narrow mechanical checks. Operator, verbatim: "If we default to astra, I find that it is too token hungry", then "yes, explicit selection". The card's per-task token figures point the other way in places (Astra uses fewer reasoning tokens than Sol at matched budgets in § 9.2.2), but its cost note says real-world results may vary substantially. The operator's observation measures gzkit's workload and governs the default.
 
 A consequence the default carries: GPT-6 Sol fails to stop after a warning in 64.4 % of rollouts, against 17.4 % for Astra (Appendix A.6.2, p. 128). `gpt-tuning.md` states this beside the default.
 

@@ -21,17 +21,19 @@ between generations: GPT-5.6 Sol was the flagship and GPT-6 Sol is the
 lower-cost tier. Cite a GPT model by generation and name, never by name
 alone.
 
-**Default: GPT-6 Sol. GPT-6 Astra by explicit selection only** (operator
-ruling 2026-09-24, verbatim: "If we default to astra, I find that it is too
-token hungry"; "yes, explicit selection"). This mirrors Fable's standing on
-the Claude side: a subordinate, explicit profile, chosen per task for
-judgment work where the operator accepts the cost, never an automatic route.
+**Where GPT runs in gzkit.** gzkit's skills are Anthropic-first: skill and
+subagent routing stays on the Claude tiers in `.gzkit/rules/model-selection.md`,
+and GPT is used for bounded, independent adversarial review (operator
+ruling 2026-09-24, "A.", confirming the recorded clarification that the
+skill catalog is not remapped to GPT-6).
 
-| gzkit work (`.gzkit/rules/model-selection.md` tiers) | GPT-6 model |
-|---|---|
-| Judgment and design (`opus`) | GPT-6 Sol; GPT-6 Astra only when the operator selects it |
-| Structured mid-tier (`sonnet`) | GPT-6 Sol |
-| Mechanical lookup and validation (`haiku`) | GPT-6 Luna |
+**Choosing the model for a review: GPT-6 Sol by default, GPT-6 Astra by
+explicit selection only** (operator ruling 2026-09-24, verbatim: "If we
+default to astra, I find that it is too token hungry"; "yes, explicit
+selection"). Astra's standing mirrors Fable's on the Claude side: a
+subordinate, explicit profile, chosen per review where the operator accepts
+the cost, never an automatic route. GPT-6 Luna suits narrow mechanical
+checks inside a review.
 
 The card reports Astra using fewer reasoning tokens than Sol at matched
 budgets in its monitor-evasion evaluation (§ 9.2.2, p. 62), and says its API-cost estimates
