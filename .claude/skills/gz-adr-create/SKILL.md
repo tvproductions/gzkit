@@ -5,14 +5,14 @@ description: Create and book a GovZero ADR with its OBPI briefs. Enforces next-f
 category: adr-lifecycle
 compatibility: Requires GovZero v6 framework; provides governance rules internally for portable use across repositories
 metadata:
-  skill-version: "6.9.0"
+  skill-version: "6.10.0"
   govzero-framework-version: "v6"
   version-consistency-rule: "Skill major version tracks GovZero major. Minor increments for governance rule changes. Patch increments for tooling/template improvements."
   govzero-compliance-areas: "charter (gates 1-5), lifecycle (state machine), linkage (ADR/OBPI/GHI), foundation-nominal-allocation (next-free-integer)"
   govzero_layer: "Layer 3 - File Sync"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-19
+last_reviewed: 2026-09-24
 model: opus
 ---
 
@@ -47,6 +47,12 @@ Create GovZero-compliant ADR files with proper SemVer versioning, OBPI briefs, a
 - Agent creates ADR files before any conversation with the human
 
 ---
+
+## Work order (operator ruling, verbatim canon)
+
+- Work feature ADRs in ascending semver order: the lowest version with unlanded OBPIs is in flight. Do not work, author, or recommend a higher feature ADR ahead of it. The campaign selects work but cannot override that order. If campaign sequencing conflicts, semver governs; surface the conflict to the operator rather than silently resolving it. “One feature at a time” does not authorize swapping the order.
+
+> Carried verbatim from root `AGENTS.md` § Operator Doctrine on 2026-09-17 (GHI #921), and into this skill on 2026-09-24 (GHI #1091, sweep finding S06): the ruling governs authoring and recommending, not only working. The corpus `.gzkit/corpus/AGENTS.md.jsonl` keeps the ruling's history.
 
 ## Persona
 

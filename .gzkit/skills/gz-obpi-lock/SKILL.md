@@ -5,9 +5,9 @@ description: Claim or release OBPI-level work locks for multi-agent coordination
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-19
+last_reviewed: 2026-09-24
 metadata:
-  skill-version: "6.2.1"
+  skill-version: "6.3.0"
 model: haiku
 ---
 
@@ -36,6 +36,12 @@ These thoughts mean STOP — you are about to bypass coordination:
 - Work begins on an OBPI without any `gz obpi lock claim` in the session
 
 ---
+
+## Three subjects (operator ruling, verbatim canon)
+
+Keep three subjects distinct: transit is ecosystem movement through the airlock (ADR-0.33.0); exchange is one block’s occupancy (ADR-0.0.41); handoff is session memory (ADR-0.0.65). Classify by the citing event type, never a shared field name or path. Token blocks implement features through the airlock’s Build door. The airlock provides awareness and synthetic memory, controls project movement, keeps the agent focused and watches for contamination, and monitors results/disturbance; it is not a verification gate. ADR-0.33.0 incompletely captures those purposes; silence does not revoke them. Transit supplies current ecosystem orientation and handoff carries the prior session model; they cooperate, and neither alone supplies a resident project model.
+
+> Carried verbatim from root `AGENTS.md` § Operator Doctrine on 2026-09-17 (GHI #921), and into this surface on 2026-09-24 (GHI #1091, sweep findings S07/S08), where transit, exchange and lock work happens. The corpus `.gzkit/corpus/AGENTS.md.jsonl` keeps the ruling's history.
 
 ## When to Use
 

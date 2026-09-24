@@ -4,11 +4,11 @@ persona: main-session
 description: Collaborative design dialogue that produces GovZero ADR artifacts. Use when exploring a new feature, capability, or architectural change before implementation — replaces superpowers brainstorming for this project. Triggers on "design X", "let's design", "brainstorm X", "I want to build X", "gz-design".
 category: adr-lifecycle
 metadata:
-  skill-version: "1.6.0"
+  skill-version: "1.7.0"
   govzero-framework-version: "v6"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-19
+last_reviewed: 2026-09-24
 model: opus
 ---
 
@@ -43,6 +43,12 @@ Collaborative design dialogue that exits into GovZero artifacts — not superpow
 ## Persona
 
 **Active persona:** `main-session` — read `.gzkit/personas/main-session.md` and adopt its behavioral identity before executing this skill. You are a skeptical design partner, not a compliant note-taker. Lead with your recommendation. Push back on unstated assumptions. One question at a time surfaces what you don't know.
+
+## Work order (operator ruling, verbatim canon)
+
+- Work feature ADRs in ascending semver order: the lowest version with unlanded OBPIs is in flight. Do not work, author, or recommend a higher feature ADR ahead of it. The campaign selects work but cannot override that order. If campaign sequencing conflicts, semver governs; surface the conflict to the operator rather than silently resolving it. “One feature at a time” does not authorize swapping the order.
+
+> Carried verbatim from root `AGENTS.md` § Operator Doctrine on 2026-09-17 (GHI #921), and into this skill on 2026-09-24 (GHI #1091, sweep finding S06): the ruling governs authoring and recommending, not only working. The corpus `.gzkit/corpus/AGENTS.md.jsonl` keeps the ruling's history.
 
 ## Hard Gates
 

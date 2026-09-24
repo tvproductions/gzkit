@@ -11,11 +11,11 @@ description: >
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-28
+last_reviewed: 2026-09-24
 model: haiku
 gz_command: airlock
 metadata:
-  skill-version: "1.1.0"
+  skill-version: "1.2.0"
 ---
 
 # gz airlock
@@ -42,6 +42,12 @@ The airlock is **diagnostic-only**: a NO-GO or a surfaced drift is *reported*,
 never a hard block — it always exits 0. It **never writes L1 canon**; it
 proposes governed, attested amendments only. Its acknowledge-and-decide gate is
 **never** a Gate-5 completion attestation.
+
+## Three subjects (operator ruling, verbatim canon)
+
+Keep three subjects distinct: transit is ecosystem movement through the airlock (ADR-0.33.0); exchange is one block’s occupancy (ADR-0.0.41); handoff is session memory (ADR-0.0.65). Classify by the citing event type, never a shared field name or path. Token blocks implement features through the airlock’s Build door. The airlock provides awareness and synthetic memory, controls project movement, keeps the agent focused and watches for contamination, and monitors results/disturbance; it is not a verification gate. ADR-0.33.0 incompletely captures those purposes; silence does not revoke them. Transit supplies current ecosystem orientation and handoff carries the prior session model; they cooperate, and neither alone supplies a resident project model.
+
+> Carried verbatim from root `AGENTS.md` § Operator Doctrine on 2026-09-17 (GHI #921), and into this surface on 2026-09-24 (GHI #1091, sweep findings S07/S08), where transit, exchange and lock work happens. The corpus `.gzkit/corpus/AGENTS.md.jsonl` keeps the ruling's history.
 
 ## When to Use
 

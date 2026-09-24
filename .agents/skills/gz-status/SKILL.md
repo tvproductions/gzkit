@@ -4,9 +4,9 @@ description: Report project workflow fronts alongside ADR lifecycle and gate sta
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-17
+last_reviewed: 2026-09-24
 metadata:
-  skill-version: "1.3.0"
+  skill-version: "1.4.0"
 model: haiku
 ---
 
@@ -21,6 +21,12 @@ Operate the gz status command surface as a reusable governance workflow.
 Status covers handoff system, GHI triage, ADR/OBPI campaign, and new R&D. Read Workflow fronts in the campaign selected by data/active_campaign.json; use gz-status to report evidence, freshness or unknowns, and next actions. Focused inquiries include material dependencies. Handoffs preserve the map reference and session changes. The campaign owns the map; live sources establish progress. Campaign sequence, ascending feature-ADR order, and operator-only OBPI initiation govern execution.
 
 > Carried verbatim from root `AGENTS.md` § Operator Doctrine on 2026-09-17 (GHI #921); the corpus `.gzkit/corpus/AGENTS.md.jsonl` keeps the ruling's history.
+
+## Work order (operator ruling, verbatim canon)
+
+- Work feature ADRs in ascending semver order: the lowest version with unlanded OBPIs is in flight. Do not work, author, or recommend a higher feature ADR ahead of it. The campaign selects work but cannot override that order. If campaign sequencing conflicts, semver governs; surface the conflict to the operator rather than silently resolving it. “One feature at a time” does not authorize swapping the order.
+
+> Carried verbatim from root `AGENTS.md` § Operator Doctrine on 2026-09-17 (GHI #921), and into this skill on 2026-09-24 (GHI #1091, sweep finding S06): the ruling governs authoring and recommending, not only working. The corpus `.gzkit/corpus/AGENTS.md.jsonl` keeps the ruling's history.
 
 ## Workflow
 

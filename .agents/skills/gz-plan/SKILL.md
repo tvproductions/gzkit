@@ -3,10 +3,10 @@ name: gz-plan
 description: Create ADR artifacts for planned change. Use when recording architecture intent and lane-specific scope.
 category: adr-lifecycle
 metadata:
-  skill-version: "1.4.0"
+  skill-version: "1.5.0"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-19
+last_reviewed: 2026-09-24
 model: opus
 ---
 
@@ -18,6 +18,12 @@ model: opus
 > **Self-Escalation (opus-tier).** The dialogue with the operator stays in the main session: a subagent cannot ask the operator a question or hear the answer, and what the operator adds is this skill's primary input. When the session model is below opus-tier, you may spawn an `Agent` with `model="opus"` for a bounded drafting or QC track that needs no operator input — pass the operator's words verbatim and the relevant context (ADR IDs, OBPI IDs, prior decisions), and treat what it returns as a draft you verify, not as the operator-facing result.
 
 Operate the gz plan command surface as a reusable governance workflow.
+
+## Work order (operator ruling, verbatim canon)
+
+- Work feature ADRs in ascending semver order: the lowest version with unlanded OBPIs is in flight. Do not work, author, or recommend a higher feature ADR ahead of it. The campaign selects work but cannot override that order. If campaign sequencing conflicts, semver governs; surface the conflict to the operator rather than silently resolving it. “One feature at a time” does not authorize swapping the order.
+
+> Carried verbatim from root `AGENTS.md` § Operator Doctrine on 2026-09-17 (GHI #921), and into this skill on 2026-09-24 (GHI #1091, sweep finding S06): the ruling governs authoring and recommending, not only working. The corpus `.gzkit/corpus/AGENTS.md.jsonl` keeps the ruling's history.
 
 ## Workflow
 
