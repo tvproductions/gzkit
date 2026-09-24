@@ -1,9 +1,9 @@
 {
   "algorithm": "sha256",
-  "corpus_fingerprint": "15fd1a332a45c6dcd5e2513b313d87e6b9ed5e5eafe4ada13f72061db1dbaa9d",
-  "corpus_entry_count": 379,
-  "rendition_fingerprint": "3c7b829283d77f58d66cfcd33afdccc366ca56a869ddf9ad1114a326596b3be3",
-  "committed_ts": "2026-09-24T06:55:00.600476+00:00",
+  "corpus_fingerprint": "6b5debf846e1411b84867d812f0810ec612657853e596919c1d0df40b02d079c",
+  "corpus_entry_count": 381,
+  "rendition_fingerprint": "2023efae923a01be7e499e9324f29e34a4aa686a2dbf9c35c086f39c70bafcb9",
+  "committed_ts": "2026-09-24T09:45:37.029076+00:00",
   "attestor": "g0",
-  "attestation_text": "I attest to that wording, land it"
+  "attestation_text": "1 approved — restores the REQ-coverage gate's lane scope dropped by the 2026-09-17 diet (GHI #1090); advisor receipt arb-step-judge-7413770c0daf4ff4835905b0044b6f30 (0.98); retention map in the retirement reason, dropped: none."
 }

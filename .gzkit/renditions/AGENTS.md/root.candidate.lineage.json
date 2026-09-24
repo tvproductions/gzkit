@@ -174,16 +174,16 @@
   "obpi-acceptance-protocol": {
     "owned": true,
     "entry_ids": [
-      "corpus-obpi-acceptance-protocol-2026-09-17T11:53:09.474894+00:00",
       "corpus-obpi-acceptance-protocol-2026-09-17T11:53:09.620341+00:00",
       "corpus-obpi-acceptance-protocol-2026-09-17T11:53:09.765681+00:00",
       "corpus-obpi-acceptance-protocol-2026-09-17T11:53:09.913095+00:00",
       "corpus-obpi-acceptance-protocol-2026-09-17T11:53:10.057206+00:00",
-      "corpus-obpi-acceptance-protocol-2026-09-18T01:34:15.540676+00:00"
+      "corpus-obpi-acceptance-protocol-2026-09-18T01:34:15.540676+00:00",
+      "corpus-obpi-acceptance-protocol-2026-09-24T09:45:16.973250+00:00"
     ],
     "byte_span": [
       10927,
-      12449
+      12611
     ]
   },
   "execution-rules": {
@@ -197,8 +197,8 @@
       "corpus-execution-rules-2026-09-24T06:20:45.578325+00:00"
     ],
     "byte_span": [
-      12449,
-      14075
+      12611,
+      14237
     ]
   },
   "attestation": {
@@ -209,8 +209,8 @@
       "corpus-attestation-2026-09-17T11:39:36.310597+00:00"
     ],
     "byte_span": [
-      14075,
-      15082
+      14237,
+      15244
     ]
   },
   "defect-fix-routing": {
@@ -222,8 +222,8 @@
       "corpus-defect-fix-routing-2026-09-17T11:39:36.944710+00:00"
     ],
     "byte_span": [
-      15082,
-      15940
+      15244,
+      16102
     ]
   },
   "control-surfaces": {
@@ -232,16 +232,16 @@
       "corpus-control-surfaces-2026-09-17T11:39:37.113322+00:00"
     ],
     "byte_span": [
-      15940,
-      16206
+      16102,
+      16368
     ]
   },
   "local-agent-rules": {
     "owned": false,
     "entry_ids": [],
     "byte_span": [
-      16206,
-      16226
+      16368,
+      16388
     ]
   },
   "operator-doctrine-verbatim-canon": {
@@ -255,8 +255,8 @@
       "corpus-operator-doctrine-verbatim-canon-2026-09-18T01:52:09.129089+00:00"
     ],
     "byte_span": [
-      16226,
-      18232
+      16388,
+      18394
     ]
   },
   "governance-doctrine-surfaces": {
@@ -279,8 +279,8 @@
       "corpus-governance-doctrine-surfaces-2026-09-18T01:52:11.829321+00:00"
     ],
     "byte_span": [
-      18232,
-      21370
+      18394,
+      21532
     ]
   },
   "architectural-boundaries": {
@@ -294,8 +294,8 @@
       "corpus-architectural-boundaries-2026-09-17T11:39:41.407562+00:00"
     ],
     "byte_span": [
-      21370,
-      21885
+      21532,
+      22047
     ]
   }
 }

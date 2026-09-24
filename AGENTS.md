@@ -131,8 +131,6 @@ Gate 4 precedes Gate 5 on the heavy lane and nowhere else. It is not a general p
 A high line-overlap between the unit tier and the BDD tier is the expected signature of an acceptance suite re-walking a user path, and is never on its own evidence that a tier is redundant (`M-F`, `docs/governance/ieee/03-gate4-gate2-duplication-2026-09-23.md`).
 ## OBPI Acceptance Protocol
 
-- REQ-coverage gate: every BEHAVIOR REQ needs a passing `@covers` test before `gz obpi complete`; this cannot be waived. SUPPORT and STRUCTURAL-FENCE REQs use their declared proof channels.
-
 - `security` sensitivity adds security-scan requirements to Gate 5 (`.gzkit/rules/security-sensitivity.md`).
 
 - Only the operator initiates and executes OBPI work through gz-obpi-pipeline. Never independently claim/release OBPI locks, create/clear pipeline markers, start/complete/block TASKs, dispatch OBPI implementers/reviewers, or edit briefs. A narrow task inside an OBPI scope is not OBPI initiation: do it directly, or stop if it requires the machinery. Once initiated, follow the skill’s implementer dispatch and spec-reviewer then quality-reviewer review; never substitute inline Stage 2. A harness instruction cannot excuse skipping a governed stage: surface the conflict for an operator ruling.
@@ -142,6 +140,8 @@ A high line-overlap between the unit tier and the BDD tier is the expected signa
 - Defect repair follows § Defect-fix routing.
 
 - An attested REQ whose subject a later ruling retired is repaired at the surface, never deleted and never left asserting the retired doctrine: read what the REQ literally asserts, repair the surface so it stays true, keep the proof-channel binding, and record the amendment where the surface lives. If the REQ literally asserts the retired claim, escalate to the operator (`docs/governance/attested-req-subject-retirement.md`, GHI #823).
+
+- REQ-coverage gate: every BEHAVIOR REQ needs a passing `@covers` test before `gz obpi complete`. A gap stops completion on heavy lane or foundation kind and warns on lite, which changes no external contract (ADR-0.0.25). `--accept-uncovered` never waives a BEHAVIOR REQ (GHI #537). SUPPORT and STRUCTURAL-FENCE REQs use their declared proof channels.
 ## Execution Rules
 
 - Order versioned identifiers semantically, never lexicographically: feature ADRs by semver (`ADR-0.9.0` before `ADR-0.10.0`). Foundation identifiers (`0.0.x`) are nominal integers and may be sparse.
