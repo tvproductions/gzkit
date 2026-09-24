@@ -20,7 +20,7 @@ When compacting context (`/compact`), preserve:
 - Active OBPI ID with lane, gates passed and attestation state
 - Gate state for the current ADR (`uv run gz status`)
 - Any Gate 5 still awaiting the operator's attestation
-- Open GHIs and logged insights for the work in flight
+- Any unresolved defects or blockers (GHIs in scope, insights logged)
 - The open TASK ID, if any (`uv run gz task list --active`)
 
 The ledger (`.gzkit/ledger.jsonl`) is the system of record; keep the references to this session's live ledger events.

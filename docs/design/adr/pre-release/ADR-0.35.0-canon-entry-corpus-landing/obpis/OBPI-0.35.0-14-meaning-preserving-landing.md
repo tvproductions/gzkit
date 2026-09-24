@@ -3,7 +3,7 @@ id: OBPI-0.35.0-14-meaning-preserving-landing
 parent: ADR-0.35.0-canon-entry-corpus-landing
 item: 14
 lane: Heavy
-status: Draft
+status: Active
 allowlist:
   - src/gzkit/content/retention.py
   - src/gzkit/commands/content/commit.py
@@ -33,6 +33,15 @@ verification:
   - uv run gz validate --documents --req-kind-discipline --cli-alignment
   - uv run gz cli audit
   - uv run mkdocs build --strict
+tasks:
+  - TASK-0.35.0-14-01-01
+  - TASK-0.35.0-14-02-01
+  - TASK-0.35.0-14-03-01
+  - TASK-0.35.0-14-04-01
+  - TASK-0.35.0-14-05-01
+  - TASK-0.35.0-14-06-01
+  - TASK-0.35.0-14-07-01
+  - TASK-0.35.0-14-08-01
 ---
 
 # OBPI-0.35.0-14-meaning-preserving-landing: Meaning Preserving Landing

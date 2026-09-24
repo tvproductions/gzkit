@@ -57,7 +57,7 @@ Every agent frame MUST include a Persona. Default: `main-session` — craftspers
 12. A gate's evidence must witness the required state or action — a stage, a dispatch record, a receipt. A file or marker being present shows only that something is armed.
 ## SKILLS FIRST (EXECUTION ROUTING)
 
-When a skill matches the task, read its `SKILL.md` before edits, shell, ledger or governance claims, and follow its order. Report tool evidence before prose. If blocked, name and track the blocker, then use the closest governed fallback. When a skill's scope is narrow (git-sync, for example), do only that task.
+When a skill matches the task, read its `SKILL.md` before edits, shell, ledger or governance claims, and follow its order. Report tool evidence before prose. If blocked, name and track the blocker, then use the closest governed fallback. When a skill's scope is narrow (git-sync, for example), do only that task. Do not autonomously launch unrequested implementation work — treat context as background, not a mandate.
 ## MAKE LLM STOCHASTIC VIBES INERT (ANTI-VIBING MANTRA)
 
 - Governance is how agent-driven work is steered and held accountable. Choose between options by which leaves the smallest surface for unverified pattern-matching to leak through; maintenance burden, velocity and lighter ceremony do not decide it.
@@ -76,7 +76,7 @@ Use stdlib by default. A runtime dependency, new or existing, needs ADR or OBPI 
 
 - Carry booked decisions forward; the operator does not restate them.
 
-- Consult canon before asking. Where canon already rules, act and name the rule: presenting a settled matter as a choice invites a re-ruling that can drift from canon.
+- Consult canon before asking. Where canon already rules, act and name the rule: presenting a settled matter as a choice invites a re-ruling that can drift from canon. A prose acknowledgement of the miss is NOT capture: this rule reached canon only because the operator asked whether it had, after the agent named the gap in conversation and moved on without recording it.
 ## Behavior Rules
 
 - Ask when unsure of direction — architecture, scope reading, file targeting — and state assumptions before implementing so the operator can ratify or replace them.
@@ -228,7 +228,7 @@ A value written in a Markdown doc is ILLUSTRATIVE, never authoritative. Executio
 
 - Every REQ in an OBPI brief's Acceptance Criteria MUST declare exactly one of three kinds — BEHAVIOR, SUPPORT, or STRUCTURAL-FENCE — via an inline tag `[kind]`, each with exactly one proof channel — `gz validate --req-kind-discipline` (ADR-0.0.59).
 
-- Every `gz <verb>` string appearing in an operator-facing doc must resolve to a registered parser verb, multi-word subcommands included — `gz validate --cli-alignment` over docs, features, skills, chores, rules and root `AGENTS.md`; manpages are `docs/user/manpages/<verb>.md`, never `gz-<verb>.md`. For a planned-but-unlanded CLI surface, file a GHI and put `<!-- gz-validate-skip: command-shape -->` on the preceding line.
+- Every `gz <verb>` string appearing in an operator-facing doc must resolve to a registered parser verb, multi-word subcommands included — `gz validate --cli-alignment` over docs, features, skills, chores, rules and root `AGENTS.md`; manpages are `docs/user/manpages/<verb>.md`, never `gz-<verb>.md`. Terminal OBPI briefs are exempt as sealed historical records (`is_terminal_brief_status`). For a planned-but-unlanded CLI surface, file a GHI and put `<!-- gz-validate-skip: command-shape -->` on the preceding line.
 
 - `docs/governance/GovZero/adr-status.md` is a Layer 3 derived view per `docs/governance/state-doctrine.md`, never hand-maintained; regenerate with `uv run gz register-adrs` — `gz validate --adr-status-fresh`, in the default `gz check` (GHI #322).
 ## Architectural Boundaries
