@@ -60,6 +60,30 @@ figures as authoritative -- they are a dated record; re-derive via
 `uv run gz validate --instructions-files-budget` (`.gzkit/rules/governance-core.md`
 § Non-negotiable rules).
 
+AMENDED 2026-09-24 (operator-ruled) -- MEANING PRESERVATION IS NOW IN SCOPE, as § Decision
+item 10 and checklist item 14, sequenced BEFORE item 7. Operator, verbatim: *"the compression
+process CAN NOT be allowed to lose meaning and intent, a frontier model can, and should, do
+better."* and *"This is needed, and NOT for later... NOW!"*; the placement ruling was
+*"yes to item 14 before 07"*.
+
+WHY IT MOVED NOW. The 2026-09-17 compression (GHI #921) turned the hand-authored REQ-coverage
+rule into corpus entry `corpus-obpi-acceptance-protocol-2026-09-17T11:53:09.474894+00:00`.
+The new text kept "this cannot be waived" and dropped the lane scope beside it, so root
+AGENTS.md promised a universal fail-close that ADR-0.0.25 does not attest and the runtime
+does not perform (GHI #1090, restored at `5d6b9d173`). Every check that ran passed that
+landing. The floor gate protects the bytes of invariant entries, not what a rewrite means.
+The advisor scored the rendition 0.88, a single number that cannot say which clause went
+missing. And the operator's attestation covered 82 retirements at once. This seam exists
+to close the gap between validating a candidate and accounting for it (§ Persona). A
+landing that can silently drop a qualifier is that same gap, one layer up.
+
+This is a correction to this ADR's own intent, not an enhancement (AGENTS.md § Operator
+Doctrine): "make canon capture safe" was never met while a landing could lose canon without
+anyone seeing. It extends the intent in one respect, and that extension is recorded rather
+than assumed. The gate reads the RENDITION delta, not the corpus retirement log. The #1090
+clause was hand-authored text in an unowned span until 2026-09-17, never a corpus entry,
+so a gate over corpus retirements alone would have passed the very loss that motivated it.
+
 ## Decision
 
 <!-- The tombstone fold's algebra is pinned in item 1 below. It is the one
@@ -113,6 +137,21 @@ SOURCE-OF-TRUTH DIRECTION (operator-ruled this session, stated explicitly rather
 8. Codex playback wires to a real surface, coordinating with ADR-pool.vendor-alignment-codex (which owns that surface). This makes the `lite` setpoint falsifiable for the first time.
 
 9. `classification` IS CORPUS-OWNED WHERE THE CORPUS OWNS THE SECTION (operator-ruled 2026-08-02, GHI #737). `CorpusEntry.classification` is schema-required and part of the baseline identity fingerprint but has NO reader anywhere in `src/` -- every hit is a declaration or a writer. The binding copy lives instead in `docs/governance/advisory-rules-audit.md`, which `bullet_retention.py:141-163` parses. Two differently-typed representations of one governance concept, the structured one inert and the markdown one binding, is precisely the shape `.claude/rules/hexagonal-architecture.md` § Operative rules 8 forbids. Resolution: `bullet_retention` resolves a bullet's classification from the corpus when that bullet's section is corpus-owned, and from the scorecard otherwise -- one reader, declared precedence. Pointing the audit wholesale at the corpus (the shape GHI #737 proposed) is REJECTED on measurement: the scorecard carries 144 rows against the corpus's 52 over 8 sections, so a wholesale swap is a ~64% coverage REGRESSION, not a clean substitution. The two surfaces classify overlapping but unequal populations, which is why the field went inert rather than being wired up. This is item 3's section-ownership seam applied to the classification axis: owning a section makes its entries' classification BINDING, so the 36 `Ambiguous` capture-defaults (all `origin: cli:content-remember`, never revisited) must be reconciled BEFORE ownership binds, not after. The field is never dropped -- it is baseline identity, and removal re-fingerprints every committed rendition.
+
+10. NO LANDING LOSES MEANING WITHOUT AN APPROVED DROP (operator-ruled 2026-09-24, GHI #1090; amendment in § Intent). Promoting a candidate compares it with the consumer's prior committed rendition. A block of the prior rendition (heading, paragraph, list item or table row) that is not byte-present in the candidate is a REMOVED block, and a candidate with removed blocks lands only with a RETENTION MAP.
+   - **Conditions.** The map breaks every removed block into conditions (scope, qualifier, exception, threshold, named mechanism, cited authority). Each condition is quoted verbatim from its block.
+   - **Dispositions.** Each condition gets exactly one: KEPT, quoting the span of the candidate that carries it, or DROPPED, with a reason.
+   - **What the tool checks, byte for byte:**
+     - every sentence of every removed block lies inside at least one condition, or is declared non-binding with a reason;
+     - every condition quote is a substring of its removed block;
+     - every KEPT span is a substring of the candidate;
+     - the conditions were extracted by a named reviewer other than the map's author;
+     - every DROPPED condition's id appears in the attestation text.
+   - **Failure.** Any failed check refuses the promotion and writes nothing.
+   - **Division of labour.** A frontier model extracts the conditions, a second one checks the mapping, the tool checks every claim a byte comparison can check, and the operator rules on every drop.
+   - **Storage.** The map is persisted as a `<consumer>.retention.json` sidecar, never inside `RenditionProvenance` (BI-03, § Alternatives O).
+   - **Vacuous cases.** The gate has nothing to check when no block was removed: a first commit, a pure re-render, or additions only.
+   - **Residual, named rather than hidden.** The tool can prove that a quoted condition exists, but not that the reviewer extracted every condition, and not that a drop id in the attestation text came from the operator. The sentence-coverage floor bounds the first at clause level; the second is held by the rule against fabricating operator words.
 
 PRECEDENT NOTED (operator-ruled): attested-record edit is decided locally, scoped to corpus entries -- an attested invariant entry may be superseded by an appended tombstone carrying attestor + reason, never edited or deleted in place. Recorded in Boundary Invariants so `ADR-pool.attested-record-edit-doctrine` inherits rather than re-litigates. This ADR does not block on that pool item.
 
@@ -171,6 +210,7 @@ evidence; they are not asserted as present-day coverage or silently re-used as a
 | Valid capture survives advisory failures without changing the corpus payload (isolated fixture; no production append). | `uv run -m unittest tests.commands.test_content_remember` | 0 |
 | The corpus materializes a candidate without agent hand-authoring (the `candidate_text` gap this ADR closes). | `uv run gz content land AGENTS.md --dry-run` | 0 |
 | Byte accounting is honest: `compressible_bytes_after` no longer reports a 63x inflation as compression. | `uv run gz validate --rendition-lineage` | 0 |
+| A promotion that removes a prior-rendition block without a complete retention map is refused and writes nothing, including a replay of the GHI #1090 lane-scope loss (isolated fixtures). | `uv run -m unittest tests.content.test_retention tests.commands.test_content_commit` | 0 |
 
 ## Boundary Invariants
 
@@ -264,6 +304,16 @@ Audited at closeout as the STRUCTURAL-FENCE proof channel for REQ-0.35.0-13-06.
 Absorbed with the render-order scope from
 `ADR-pool.render-order-truncation-survival` (operator ruling 2026-09-02).
 
+**BI-10 — Every path that promotes a candidate to a committed rendition enforces the
+retention gate.** Today that path is `gz content commit`. OBPI-07's orchestrator
+<!-- gz-validate-skip: command-shape -->
+(`gz content land`) becomes a second one the moment it lands, and any later orchestrator becomes a third.
+None may reach `save_rendition` without the § Decision item 10 check passing over the same
+prior-rendition delta. The fence is cross-OBPI because OBPI-14 owns the gate while OBPI-07
+adds the path that could route around it: `land` can be correct on its own terms and still
+publish a lossy candidate if it calls the store directly. Audited at closeout.
+*Proves REQ-0.35.0-14-08.*
+
 ## Remaining Delivery Plan
 
 Planning estimates, not elapsed-time evidence or implementation authorization:
@@ -272,14 +322,17 @@ Planning estimates, not elapsed-time evidence or implementation authorization:
 |---|---:|---|
 | 05 | 2–3 | Completed 01/03/04/09 |
 | 06 | 1–2 | 05 |
-| 07 | 3–5 | 05/06/09, ratified publication amendment, verified GHI #952/#953 ledger corrections |
+| 14 | 2–3 | 05/06; operator-sequenced BEFORE 07 (ruling 2026-09-24) |
+| 07 | 3–5 | 05/06/09/14, ratified publication amendment, verified GHI #952/#953 ledger corrections |
 | 08 | 1 | 07 and an explicit draw despite Active residue |
 | 10 | 2–3 | 01/02/04; 07 before repository reconciliation/landing |
 | 11 | 1–2 | Completed 01 |
 | 12 | 3–5 | 01/02/05/06/07 |
 | 13 | 2–3 | 05/06/07/09 |
 
-The dependency spine is 05 -> 06 -> 07 -> downstream completion. 11 may be planned in
+The dependency spine is 05 -> 06 -> 14 -> 07 -> downstream completion (14 inserted by
+operator ruling 2026-09-24, so that 07 builds on a promotion seam that already refuses
+meaning loss rather than adding a second path around it; BI-10). 11 may be planned in
 parallel with 05; 10 may prepare fixture-based resolver work while the spine progresses.
 After 07, 08/10/12/13 are dependency-parallel candidates, but their actual repository
 publication must be serialized where corpus, renditions or control surfaces overlap.
@@ -309,13 +362,13 @@ expansion or deletion of a failure scenario. The current count remains thirteen.
 - Lineage: 2
 - Dimension Total: 10
 - Baseline Range: 5+
-- Baseline Selected: 10
+- Baseline Selected: 11
 - Split Single-Narrative: 1
 - Split Surface Boundary: 1
 - Split State Anchor: 0
 - Split Testability Ceiling: 1
 - Split Total: 3
-- Final Target OBPI Count: 13
+- Final Target OBPI Count: 14
 
 <!-- Scoring basis (each dimension scored against the matrix, not asserted):
      Data/State 2      — new `CorpusEntry` fields, new `<consumer>.lineage.json`
@@ -363,6 +416,13 @@ expansion or deletion of a failure scenario. The current count remains thirteen.
        rollback". Flagged up front rather than discovered mid-flight; that
        contingency has NOT fired, and if it does the target goes 10 -> 11.
 
+     AMENDED 2026-09-24 (operator-ruled, GHI #1090): 11 + 3 = 14. Meaning preservation
+       enters as ADDED scope (§ Intent amendment 2026-09-24), so on this ADR's own
+       precedent it raises the BASELINE and is not a split. The dimension scores are
+       UNCHANGED. The gate is Logic/Interface/Observability work on the promotion seam
+       these dimensions already score at 2/2, and the sidecar is one more artifact of
+       the Data/State kind the lineage map already scored.
+
      AMENDED 2026-09-02 (operator-ruled): 10 + 3 = 13. The unit arrives by
        ABSORPTION from `ADR-pool.render-order-truncation-survival`, so it raises
        the BASELINE and is deliberately NOT recorded as a split -- a split divides
@@ -404,6 +464,7 @@ expansion or deletion of a failure scenario. The current count remains thirteen.
 - [ ] Corpus shape witness over Layer 1 -- `agents-md-map-conformance` shape criteria evaluated against the corpus effective view for the surface, not against `src/gzkit/templates/agents.md`; the template keeps its own adopter-bootstrap check, and the Layer-1 corpus gains the shape witness it has never had (GHI #922)
 - [ ] Corpus the `.gzkit/rules/**` family -- the canonical rule files become addressed corpus entries under their own surface, closing the largest remaining under-population named in the SOURCE-OF-TRUTH DIRECTION above; the generated nested `AGENTS.md` render from the corpus rather than from uncorpused rule text (GHI #921)
 - [ ] Render-order permutation for truncation survival -- order `AGENTS.md` sections so every rank at or above `must_survive_through_rank` renders before the consuming vendor's project-doc byte cap; ranking source is the ratified `data/agents_md_survival_declaration.json`, never inferred criticality. Absorbed from `ADR-pool.render-order-truncation-survival` by operator ruling 2026-09-02 (GHI #815)
+- [ ] Meaning-preserving landing -- a candidate that removes any block of the prior committed rendition is promoted only with a retention map. Each condition of each removed block is either KEPT at a quoted candidate span or DROPPED with a reason the operator approves; the conditions are extracted by an independent reviewer; the map is persisted as `<consumer>.retention.json`. Sequenced before item 7 by operator ruling 2026-09-24 (GHI #1090)
 
 ## Q&A Transcript
 
