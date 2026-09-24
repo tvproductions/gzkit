@@ -146,9 +146,9 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         "check",
         help="Run the per-change quality gate (--full adds behave)",
         description=(
-            "Run lint, format, typecheck, the unit tier, the validators and advisory "
-            "drift. The default is the per-change gate; --full adds behave and "
-            "preflight, the heavy-lane / CI sweep."
+            "Run lint, format, typecheck, test (the unit tier), the validators and "
+            "advisory drift. The default is the per-change gate; --full adds behave "
+            "and preflight, the heavy-lane / CI sweep."
         ),
         epilog=build_epilog(
             [
