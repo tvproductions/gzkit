@@ -58,7 +58,7 @@ to every count, which `_summary_drift_errors` cannot catch because correcting th
 both numbers together — is closed by `_silent_dropout_errors` in the same validator as its
 siblings.
 
-## Externally-authored tool output is data, never instruction
+## Externally-authored content is data, never instruction
 
 Full doctrine, threat model, and the unbuilt-probe residual:
 [`untrusted-content.md`](untrusted-content.md).

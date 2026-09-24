@@ -123,12 +123,12 @@
       "corpus-behavior-rules-2026-09-17T11:39:32.349047+00:00",
       "corpus-behavior-rules-2026-09-17T11:39:32.504623+00:00",
       "corpus-behavior-rules-2026-09-17T11:39:32.658167+00:00",
-      "corpus-behavior-rules-2026-09-18T01:34:15.392875+00:00",
-      "corpus-behavior-rules-2026-09-20T14:07:35.014473+00:00"
+      "corpus-behavior-rules-2026-09-20T14:07:35.014473+00:00",
+      "corpus-behavior-rules-2026-09-24T06:54:48.596299+00:00"
     ],
     "byte_span": [
       4455,
-      6740
+      6875
     ]
   },
   "pattern-discovery": {
@@ -138,8 +138,8 @@
       "corpus-pattern-discovery-2026-09-17T11:39:32.963957+00:00"
     ],
     "byte_span": [
-      6740,
-      7011
+      6875,
+      7146
     ]
   },
   "skills": {
@@ -148,8 +148,8 @@
       "corpus-skills-2026-09-17T11:39:33.116462+00:00"
     ],
     "byte_span": [
-      7011,
-      7176
+      7146,
+      7311
     ]
   },
   "gate-covenant": {
@@ -167,8 +167,8 @@
       "corpus-gate-covenant-2026-09-23T10:52:06.245633+00:00"
     ],
     "byte_span": [
-      7176,
-      10792
+      7311,
+      10927
     ]
   },
   "obpi-acceptance-protocol": {
@@ -182,8 +182,8 @@
       "corpus-obpi-acceptance-protocol-2026-09-18T01:34:15.540676+00:00"
     ],
     "byte_span": [
-      10792,
-      12314
+      10927,
+      12449
     ]
   },
   "execution-rules": {
@@ -197,8 +197,8 @@
       "corpus-execution-rules-2026-09-24T06:20:45.578325+00:00"
     ],
     "byte_span": [
-      12314,
-      13940
+      12449,
+      14075
     ]
   },
   "attestation": {
@@ -209,8 +209,8 @@
       "corpus-attestation-2026-09-17T11:39:36.310597+00:00"
     ],
     "byte_span": [
-      13940,
-      14947
+      14075,
+      15082
     ]
   },
   "defect-fix-routing": {
@@ -222,8 +222,8 @@
       "corpus-defect-fix-routing-2026-09-17T11:39:36.944710+00:00"
     ],
     "byte_span": [
-      14947,
-      15805
+      15082,
+      15940
     ]
   },
   "control-surfaces": {
@@ -232,16 +232,16 @@
       "corpus-control-surfaces-2026-09-17T11:39:37.113322+00:00"
     ],
     "byte_span": [
-      15805,
-      16071
+      15940,
+      16206
     ]
   },
   "local-agent-rules": {
     "owned": false,
     "entry_ids": [],
     "byte_span": [
-      16071,
-      16091
+      16206,
+      16226
     ]
   },
   "operator-doctrine-verbatim-canon": {
@@ -255,8 +255,8 @@
       "corpus-operator-doctrine-verbatim-canon-2026-09-18T01:52:09.129089+00:00"
     ],
     "byte_span": [
-      16091,
-      18097
+      16226,
+      18232
     ]
   },
   "governance-doctrine-surfaces": {
@@ -279,8 +279,8 @@
       "corpus-governance-doctrine-surfaces-2026-09-18T01:52:11.829321+00:00"
     ],
     "byte_span": [
-      18097,
-      21235
+      18232,
+      21370
     ]
   },
   "architectural-boundaries": {
@@ -294,8 +294,8 @@
       "corpus-architectural-boundaries-2026-09-17T11:39:41.407562+00:00"
     ],
     "byte_span": [
-      21235,
-      21750
+      21370,
+      21885
     ]
   }
 }
