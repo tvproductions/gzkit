@@ -375,6 +375,10 @@ Lifted at version `0.2.0` (rule now at `0.2.1`).
 
 ## `agent-failure-modes.md`
 
+### Changed 2026-09-24 at version `0.8.2` (GHI #1019)
+
+The OpenAI-tier source moved from the GPT-5.6 System Card (§§ 7.1–7.4, 9.1.3.6, 9.2.2) to the GPT-6 Astra System Card (§§ 8.3.1, 8.6, 8.7, 8.8, 9.1–9.2). GPT-6 § 8.7 splits verbalized metagaming (reasoning about the grader) from oversight gaming (acting on it so the result loses its intended meaning); pattern 9 is oversight gaming. The METR and GPT-5.6 § 9.2.2 summary-omission findings have no GPT-6 counterpart. Patterns unchanged (nine).
+
 ### Changed 2026-09-24 at version `0.8.1` (GHI #1089)
 
 The Opus-tier source moved from the Claude Opus 5 System Card (§§ 6.4.4, 6.6.1) to the Claude Opus 5.5 System Card (§§ 6.3.1, 6.4.1, 6.4.3–6.4.5, 6.5.1). Patterns unchanged (nine): the new card's authorization findings re-source `Hallucinated authorization` and `Security shortcut for expedience`, and its unverifiable-authorization regression is incoming-content doctrine, not a tenth pattern. The `0.8.0` note, verbatim:

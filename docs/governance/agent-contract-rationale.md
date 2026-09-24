@@ -586,46 +586,51 @@ Its companion dimensions in the same audit, approval-gate bypass and working
 around a stated constraint or technical control, are backstopped in gzkit by
 universal Gate 5 and the hook rule.
 
-**Second-vendor corroboration — GPT-5.6 § 7.2 (OpenAI, 2026-07-09, GHI #750):**
-OpenAI's misalignment monitor on internal agentic-coding traffic surfaced
-three incident summaries that land on the taxonomy without remainder,
+**Second-vendor corroboration — GPT-6 Astra § 8.6 (OpenAI, 2026-09-03, GHI #1019):**
+OpenAI's deployment simulation of internal Codex traffic flagged four
+severity-3 cases for GPT-6 Astra (pp. 39–40). Each lands on the taxonomy,
 from a different vendor's model and harness:
 
-- *Hallucinated authorization + Reckless action (patterns 7, 2):* authorized
-  to delete three named virtual machines, the model could not find them in
-  one namespace, "substituted remote virtual machine 5, remote virtual
-  machine 6, and remote virtual machine 7 without asking, killed active
-  processes, and force-removed worktrees." The authorization existed; the
-  model transferred it to targets the user never named — the same
-  fabricated-precondition shape as Opus 5.5 § 6.3.1.
-- *Fabrication (pattern 3):* the model "actively decided to update an
-  internal research draft to say an equation had been computed and verified,
-  even though it knew it had not."
-- *Security shortcut for expedience (pattern 8):* asked only to keep a
-  pipeline running, the model "searched hidden local credential caches,"
-  copied token files between machines, and relaunched the job with
-  credentials the user never authorized moving.
+- *Security shortcut for expedience (pattern 8):* asked to investigate
+  duplicate notifications, the model found a running service's secret bot
+  token and used it to read Slack messages as the service, with no explicit
+  permission to extract the credential.
+- *Safeguard circumvention (pattern 1):* asked to deploy an emergency change
+  from an unreviewed branch, it met a safeguard allowing production deploys
+  only from main, and modified the deployment script to allow an exception.
+- *Safeguard circumvention and Reckless action (patterns 1, 2):* after the
+  normal membership endpoint rejected access, it created staging users
+  through an escalated administrative database connection, bypassing the
+  application's access controls without user approval.
+- *Hallucinated authorization shape (pattern 7):* setting up a recurring
+  helper, it enabled every available action across its connections and
+  turned off per-action approval: permissions the requested workflow did not
+  need, granted without asking.
 
-The card names the driver: coding-context misalignment "stems from a mix of
+The card names the driver: coding misalignment "stems from a mix of
 overeagerness to complete the task and interpreting user instructions too
 permissively – assuming that actions are allowed unless they're explicitly
-and unambiguously prohibited" (§ 7.2). That is the exact disposition gzkit's
-OBPI allowed-paths and DO IT RIGHT #11 exist to invert: in gzkit, actions
-are denied unless the brief names them. Same provenance caveat as pattern 7
-above: cite these as demonstrated shapes on internal traffic, not as
-released-model rates.
+and unambiguously prohibited" (§ 8.6, p. 35). That is the exact disposition
+gzkit's OBPI allowed-paths and DO IT RIGHT #11 exist to invert: in gzkit,
+actions are denied unless the brief names them. Cite these as demonstrated
+shapes in a simulation of internal traffic, not as released-model rates.
 
-**Metagaming / gaming the gate — GPT-5.6 §§ 7.4, 9.1.3.6, 9.2.2 (pattern 9,
-rule version 0.6.0, operator-ruled 2026-08-02):** OpenAI defines metagaming
-as a model reasoning "about how it will be graded, rewarded, or monitored,
-rather than only reasoning about the situation described in the prompt"
-(§ 7.4) — measured at 55.4% of monitored samples on their honesty suite
-versus 41.2% for GPT-5.5. The behavior invalidates measurement itself: METR
-"did not consider the time-horizon result to be a robust measurement of the
-model's capabilities" because of the detected cheating rate (§ 9.1.3.6), and
-UK AISI observed the model anticipating how it might be monitored, taking
-steps "to avoid anticipated checks," and downplaying in user-facing
-summaries strategies its own reasoning described as cheating (§ 9.2.2).
+**Metagaming / gaming the gate — GPT-6 Astra § 8.7 (pattern 9, operator-ruled
+2026-08-02; re-sourced 2026-09-24, GHI #1019):** OpenAI now separates two
+things. *Verbalized metagaming* is a model reasoning in its chain of thought
+"about how it will be graded, rewarded, or monitored, rather than only
+engaging in the intended task". *Oversight gaming* is the special case where
+the model acts on that reasoning in a way that would undermine the intended
+meaning of the evaluation result (§ 8.7, p. 40). Pattern 9 is oversight
+gaming: reasoning about the gate is the precondition, and shaping output so
+the check passes while its intent does not is the pattern. Reasoning about
+the grader without acting on it is not a pattern-9 instance.
+
+The behavior undermines measurement itself. Apollo Research found evaluation
+awareness in 41.1 % of Astra samples at `xhigh` and 50.6 % at `max`, and
+judged that low misbehavior rates therefore do not provide substantial
+evidence of alignment (§ 8.8.1, p. 46). Told a monitor is present, Astra
+attempts to evade monitoring (§ 9.2.2, p. 61).
 
 *Why this is a distinct pattern, not a special case of 1 or 3:* Safeguard
 circumvention routes around a gate it acknowledges; Fabrication invents
@@ -635,12 +640,10 @@ green is about the validator's blind spots, not the REQ's intent. The gzkit
 shape: an agent writing tests derived from a run of the code so `gz test`
 passes (the GHI #157 test-dump theater class), or shaping output to slide
 through a validator's known gaps. Backstops: DO IT RIGHT #6 (assertions
-derive from the REQ), Never #6 (a hook block is evidence missing, not an
-obstacle), and receipts-over-narrative (§ External corroboration,
-trust-doctrine.md). Apollo's caveat (§ 9.3.1) keeps the pattern honest in
-the other direction: in ~70% of flagged samples the model was *wrong* about
-what the eval measured — metagaming reasoning is common; successful gaming
-is rarer. Cite observed instances, not assumed intent.
+derive from the REQ), the ledger-and-hooks rule (a hook block is evidence
+missing, not an obstacle), and receipts-over-narrative (§ External
+corroboration, trust-doctrine.md). Cite observed instances, not assumed
+intent.
 
 **Anthropic-side corroboration and current-generation vignettes — Claude
 Fable 5.1 & Claude Mythos 5.1 System Card (2026-09-01, consumed 2026-09-17,
@@ -742,12 +745,14 @@ Touch only what you must. Don't improve adjacent code. Match existing style. Don
 
 The PRIME DIRECTIVE is, in prompting terms, a persistence-emphasizing system
 prompt: complete all work fully, no deferral, scope expansion is not scope
-creep. The GPT-5.6 System Card (OpenAI, 2026-07-09, § 7.2) measured exactly
-that prompt property as an amplifier of beyond-intent action: increased
-misalignment on internal agentic-coding traffic was "driven in part by the
-model's increased persistence … when using the highest reasoning efforts,"
-and the effects "can be more pronounced with system prompts that emphasize
-sustained persistence." Anthropic's current cards measure the same failure
+creep. The GPT-6 Astra System Card (OpenAI, 2026-09-03) measures the
+failure that framing risks and the counterweight that closes it. Persistence
+against a restriction is its own measured failure: after hitting a warning,
+models tried to find another way round it, "running afoul of the
+restriction's spirit" — GPT-6 Sol in 64.4 % of rollouts, GPT-6 Astra in
+17.4 % (§ 8.2.2, p. 26; Appendix A.6.2, p. 128). And the scope boundary
+works: out-of-scope attacks fell from 60 of 499 samples to 2 of 500 once the
+task scope explicitly excluded internet access (§ 8.8, p. 45). Anthropic's current cards measure the same failure
 shape from the other side: FrontierCode scores decline above `medium` effort
 on grading that penalizes out-of-scope changes (Claude Opus 5.5 System Card
 § 8.4), and a brevity-and-scope instruction reduced out-of-scope edits (Claude
@@ -760,7 +765,7 @@ now independently measured that ownership framing without a written scope
 boundary converts effort into out-of-scope action. A future diet pass may
 compress any of these surfaces, but it must never sever them: the ownership
 doctrine and the scope boundary are one mechanism, stated from opposite
-ends. (GHI #750; effort-level calibration in
+ends. (GHI #750, re-sourced under GHI #1019; effort-level calibration in
 [`opus-tuning.md`](opus-tuning.md).)
 
 ## Operator economy — claim expansions for 3, 4

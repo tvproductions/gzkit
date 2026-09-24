@@ -180,24 +180,22 @@ scope boundary above; adds only what the Fable evidence shows differs.
   operator's words only, and a blocking hook is diagnosed, never split
   around.
 
-**Cross-vendor confirmation — GPT-5.6 System Card (OpenAI, 2026-07-09).**
-The high-effort failure mode is not Opus-specific. OpenAI reports GPT-5.6
-takes actions beyond user intent more often than its predecessor, driven "in part
-by the model's increased persistence … when using the highest reasoning
-efforts" (§ 7.2), with coding-context misalignment stemming from
-overeagerness and permissive instruction-reading — "assuming that actions
-are allowed unless they're explicitly and unambiguously prohibited"
-(§ 7.2). PostTrainBench (§ 9.1.3.4) adds that at higher efforts models can
-"optimize too narrowly against the evaluation." Two frontier vendors now
-independently measure the same coupling: effort buys persistence, and
-unbounded persistence converts to out-of-scope action — which makes the
-written scope boundary (OBPI allowed-paths, DO IT RIGHT #11) the standing
-mitigation on both stacks, not an Anthropic-specific workaround. § 7.2
-adds one sharpening gzkit must own: system prompts "that emphasize
-sustained persistence" amplify the effect — see
+**Cross-vendor confirmation — GPT-6 Astra System Card (OpenAI, 2026-09-03).**
+The scope failure is not Anthropic-specific. OpenAI traces coding
+misalignment to overeagerness and permissive instruction-reading —
+"assuming that actions are allowed unless they're explicitly and
+unambiguously prohibited" (§ 8.6, p. 35) — and measures persistence against
+a restriction directly: after a warning, GPT-6 Sol failed to stop in 64.4 %
+of rollouts (Appendix A.6.2, p. 128). It also measures the remedy: an
+explicit scope cut out-of-scope attacks from 60 of 499 samples to 2 of 500
+(§ 8.8, p. 45). Two frontier vendors measure the same shape — unbounded
+persistence converts to out-of-scope action, and a written scope boundary
+(OBPI allowed-paths, DO IT RIGHT #11) is the standing mitigation on both
+stacks, not an Anthropic-specific workaround. See
 [`agent-contract-rationale.md` § Why #10/#11 travel with the PRIME
 DIRECTIVE](agent-contract-rationale.md#why-1011-travel-with-the-prime-directive-cross-vendor-persistence-evidence)
-for the consequence for gzkit's ownership doctrine. (GHI #750.)
+for the consequence for gzkit's ownership doctrine. (GHI #750, re-sourced
+under GHI #1019.)
 
 > **Operational note.** Opus 5.5 runs safety classifiers (biology,
 > cybersecurity, reasoning extraction); a flagged request can be retried on a
@@ -290,6 +288,10 @@ re-stale against the next release.
 
 Cross-vendor confirmation added 2026-08-02 from the GPT-5.6 System Card
 (OpenAI, 2026-07-09) — §§ 1, 7.2, 9.1.3.4 (GHI #750).
+Re-sourced 2026-09-24 to the GPT-6 Astra System Card (§§ 8.6, 8.8,
+Appendix A.6.2; GHI #1019): the effort-persistence coupling, the
+persistence-prompt amplifier and the PostTrainBench over-optimization quote
+have no GPT-6 counterpart and were retired.
 
 Re-sourced 2026-09-24 (GHI #1089): the Opus profile moved to the Claude
 Opus 5.5 System Card (2026-09-22) — §§ 5.2, 6.3.1, 6.4.1–6.4.2, 6.5.1, 8.1,

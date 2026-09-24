@@ -56,36 +56,25 @@
     },
     {
       "vendor": "openai",
-      "model_family": "GPT-5.6 (Sol / Terra / Luna)",
-      "card_date": "2026-07-09",
-      "url": "https://deploymentsafety.openai.com/gpt-5-6/gpt-5-6.pdf",
+      "model_family": "GPT-6 (Astra / Sol / Luna)",
+      "card_date": "2026-09-03",
+      "url": "https://deploymentsafety.openai.com/gpt-6-astra/gpt-6-astra.pdf",
       "status": "current",
-      "consumed_on": "2026-08-02",
+      "consumed_on": "2026-09-24",
       "consumed_commits": [
-        "7f0b8bdf4",
-        "79ce8b25b"
+        "GHI #1019 landing commit (SHA in the GHI close comment)"
       ],
       "doctrine_surfaces": [
         ".gzkit/rules/agent-failure-modes.md",
+        "docs/governance/gpt-tuning.md",
         "docs/governance/opus-tuning.md",
         "docs/governance/agent-contract-rationale.md",
         "docs/governance/trust-doctrine.md",
+        "docs/governance/model-regression-taxonomy.md",
         "docs/governance/advisory-rules-audit.md"
       ],
-      "notes": "SS 1, 3.3, 4.2, 7.1-7.4, 9.1.3, 9.2, 9.3 consumed. Source of failure-mode pattern 9 (Metagaming / gaming the gate).",
-      "local_path": "data/system_cards/openai-gpt-5-6-2026-07-09.pdf"
-    },
-    {
-      "vendor": "openai",
-      "model_family": "GPT-6 Astra",
-      "card_date": "2026-09-03",
-      "url": "https://deploymentsafety.openai.com/gpt-6-astra/gpt-6-astra.pdf",
-      "status": "unconsumed",
-      "consumed_on": null,
-      "consumed_commits": [],
-      "doctrine_surfaces": [],
-      "notes": "Detected by the 2026-09-17 scan of deploymentsafety.openai.com. Supersedes the GPT-5.6 entry once consumed; until then GPT-5.6 stays current and the GPT-side doctrine (gpt-tuning.md, agent-failure-modes.md pattern 9, opus-tuning.md cross-vendor block, trust-doctrine.md, model-regression-taxonomy.md) remains sourced to it. Routing awaits the operator's word on a GHI (class ancestor GHI #750).",
-      "local_path": null
+      "notes": "Consumed 2026-09-24 under GHI #1019 from the card as updated 2026-09-22 (change log: 2026-09-09 alignment and verbalized-metagaming revisions; 2026-09-22 HealthBench correction, alignment-evaluation updates, and Appendix A adding GPT-6 Sol and GPT-6 Luna). PDF SHA-256 cd6d9846df54e75c22b7e4e17f84fa7264f602c134a7e73a70035de5ecec1a02, 156 pages. Family roles changed: GPT-6 Astra is the flagship, GPT-6 Sol a lower-cost alternative, GPT-6 Luna the fastest and cheapest; GPT-5.6 Sol was the flagship, so cite a GPT model by generation and name, never by name alone. Supersedes the GPT-5.6 card (2026-07-09), rotated out. Source of failure-mode pattern 9.",
+      "local_path": "data/system_cards/openai-gpt-6-astra-2026-09-03.pdf"
     }
   ]
 }

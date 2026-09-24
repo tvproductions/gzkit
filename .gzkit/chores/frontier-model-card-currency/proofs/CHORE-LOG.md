@@ -198,3 +198,35 @@ Validated: documents
 
 ✓ All validations passed (1 scopes).
 ```
+
+## 2026-09-24 — GPT-6 consumed (GHI #1019)
+
+- **CONSUMED (OpenAI tier).** Registry rotated to `GPT-6 (Astra / Sol / Luna)`; GPT-5.6 entry and PDF removed. Seven doctrine surfaces re-sourced. The card's 2026-09-22 Appendix re-ran five alignment evaluations; doctrine cites the Appendix values where main body and Appendix disagree.
+- **Family rename handled:** doctrine names GPT models by generation and name. Default profile GPT-6 Sol, GPT-6 Astra by explicit selection (operator ruling 2026-09-24).
+- **Defects found in the outgoing doctrine:** figure-only metagaming percentages, an overstated Apollo gloss, a mislabelled "production traffic" citation, and two unlisted registry consumers; recorded in the analysis.
+- **Manual completion check:** every drifted item is routed; no `unconsumed` card remains in the registry.
+
+## 2026-09-24T02:13:33-05:00
+- Status: PASS
+- Chore: frontier-model-card-currency
+- Title: Frontier Model Card Currency (System-Card Doctrine Refresh)
+- Lane: lite
+- Version: 1.4.0
+- Criteria Results:
+  - [PASS] `uv run python scripts/check_proof_freshness.py frontier-model-card-currency` => rc=0 (0.08s) -- exit 0 == 0
+  - [PASS] `python3 -c "import json; cards=json.load(open('data/frontier_model_cards.json'))['cards']; assert cards, 'registry empty'; missing=[c for c in cards if not all(c.get(k) for k in ('vendor','model_family','card_date','url','status'))]; assert not missing, f'incomplete entries: {missing}'; assert all(c['status'] in ('current','unconsumed','superseded') for c in cards), 'bad status'"` => rc=0 (0.01s) -- exit 0 == 0
+  - [PASS] `uv run gz validate --documents` => rc=0 (0.30s) -- exit 0 == 0
+
+```text
+[uv run python scripts/check_proof_freshness.py frontier-model-card-currency] stdout:
+scan-interval gate — frontier-model-card-currency
+  maximum age:  30d
+  scan record:  .gzkit/chores/frontier-model-card-currency/proofs/scan-record.md
+  last scan:    2026-09-24 (0d ago)
+
+PASS: the scan record changed within the scan interval.
+[uv run gz validate --documents] stdout:
+Validated: documents
+
+✓ All validations passed (1 scopes).
+```
