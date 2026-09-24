@@ -114,7 +114,7 @@ A size limit triggers a compress-and-merge pass before any growth or extraction;
 
 `uv run gz gates --adr <ADR-ID>` runs the gates the ADR's lane requires and records each result in the ledger; `--gate N` runs one. The command behind each gate is `.gzkit/manifest.json` § `verification`.
 
-- `lite` lane requires Gates 1–2. `heavy` lane adds Gate 3 (docs) and Gate 4 (BDD) and is for changes to a CLI, API, schema or runtime contract used by humans or external systems; documentation, process and template changes stay `lite`.
+- `lite` lane requires Gates 1–2. `heavy` lane adds Gate 3 (docs) and Gate 4 (BDD) and is for changes to a CLI, API, schema or runtime contract used by humans or external systems; documentation, process and template changes stay `lite` unless they change one of those external surfaces.
 
 - Gate 5 is universal: it applies to every OBPI completion in every lane, kind and sensitivity (ADR-0.0.36, GHI #342; enforced by `_requires_human_obpi_attestation`). The operator attests, and the agent records their words with `--attestation-text`.
 
@@ -139,7 +139,7 @@ A high line-overlap between the unit tier and the BDD tier is the expected signa
 
 - Defect repair follows § Defect-fix routing.
 
-- An attested REQ whose subject a later ruling retired is repaired at the surface, never deleted and never left asserting the retired doctrine: read what the REQ literally asserts, repair the surface so it stays true, keep the proof-channel binding, and record the amendment where the surface lives. If the REQ literally asserts the retired claim, escalate to the operator (`docs/governance/attested-req-subject-retirement.md`, GHI #823).
+- An attested REQ whose subject a later ruling retired is repaired at the surface, never deleted and never left asserting the retired doctrine: read what the REQ literally asserts, repair the surface so it stays true, keep the proof-channel binding, and record the amendment where the surface lives. Applies when the parent ADR is terminal and therefore unamendable. If the REQ literally asserts the retired claim, escalate to the operator (`docs/governance/attested-req-subject-retirement.md`, GHI #823).
 
 - REQ-coverage gate: every BEHAVIOR REQ needs a passing `@covers` test before `gz obpi complete`. A gap stops completion on heavy lane or foundation kind and warns on lite, which changes no external contract (ADR-0.0.25). `--accept-uncovered` never waives a BEHAVIOR REQ (GHI #537). SUPPORT and STRUCTURAL-FENCE REQs use their declared proof channels.
 ## Execution Rules
@@ -168,7 +168,7 @@ Attestation text: pass user words verbatim, then append concrete evidence — re
 
 - First ask who owns the work: search live OBPI briefs for the surface and read the matching requirements and their disposition. If a live brief owns it, surface the brief, its status and its parent ADR, and wait for the operator's ruling.
 
-- Without a GHI, fix directly when the change is small (about ten source lines or two files), sits in one surface, surfaced in flight, and a unit test covers it. Work that crosses briefs, changes a CLI, schema or runtime contract, or is new feature work is OBPI work, which the operator initiates.
+- Without a GHI, fix directly when the change is small (≤10 source lines or ≤2 source files), sits in one surface, surfaced in flight, and a unit test covers it. Work that crosses briefs, changes a CLI, schema or runtime contract, or is new feature work is OBPI work, which the operator initiates.
 
 - When the route is unclear, give the operator the routing facts — size, surface, trigger, coverage — rather than defaulting to ceremony.
 ## Control Surfaces
@@ -179,7 +179,7 @@ Root `AGENTS.md` is playback of the committed `root` rendition composed from `.g
 
 Operator rulings. The corpus (`.gzkit/corpus/AGENTS.md.jsonl`) keeps each ruling's original wording and history. Four rulings that bind only status, work selection and session transit are carried verbatim by the skill that runs when they apply: status fronts in `gz-status`; campaign work selection and ascending feature-ADR order in `gz-obpi-pipeline`; the transit/exchange/handoff distinction in `gz-session-handoff`.
 
-- A gap in fulfilling original feature intent is a correction under its owning ADR, never a new pool ADR or enhancement. Enhancement means the designed intent already works and could merely improve.
+- Correction vs enhancement (operator doctrine, verbatim): 'discovering that more is needed to fulfill the intent of a feature is not an enhancement, it is a correction.' Apply the intent test to every tracked finding: does the shipped surface fulfill its original declared intent? If no, the gap is a defect/correction — routed as corrective work under the owning ADR, never a fresh pool ADR, new-design ceremony, or 'enhancement'. Enhancement = the surface works as designed and could merely be tighter. Never default 'capability not yet built' to enhancement/new-design.
 
 - Operator authorship in repo-bound artifacts is recorded as 'g0' (operator directive, 2026-06-10) — git author name, attestor fields, handoffs, release notes. Author email remains the GitHub noreply (2949663+ahuimanu@users.noreply.github.com); the operator-PII prohibition on the personal email stands unchanged.
 
@@ -216,7 +216,7 @@ A value written in a Markdown doc is ILLUSTRATIVE, never authoritative. Executio
 
 - Every REQ in an OBPI brief's Acceptance Criteria MUST declare exactly one of three kinds — BEHAVIOR, SUPPORT, or STRUCTURAL-FENCE — via an inline tag `[kind]`, each with exactly one proof channel — `gz validate --req-kind-discipline` (ADR-0.0.59).
 
-- Every `gz <verb>` string appearing in an operator-facing doc must resolve to a registered parser verb, multi-word subcommands included — `gz validate --cli-alignment` over docs, features, skills, chores, rules and root `AGENTS.md`; manpages are `docs/user/manpages/<verb>.md`, never `gz-<verb>.md`. For a planned surface put `<!-- gz-validate-skip: command-shape -->` on the preceding line.
+- Every `gz <verb>` string appearing in an operator-facing doc must resolve to a registered parser verb, multi-word subcommands included — `gz validate --cli-alignment` over docs, features, skills, chores, rules and root `AGENTS.md`; manpages are `docs/user/manpages/<verb>.md`, never `gz-<verb>.md`. For a planned-but-unlanded CLI surface, file a GHI and put `<!-- gz-validate-skip: command-shape -->` on the preceding line.
 
 - `docs/governance/GovZero/adr-status.md` is a Layer 3 derived view per `docs/governance/state-doctrine.md`, never hand-maintained; regenerate with `uv run gz register-adrs` — `gz validate --adr-status-fresh`, in the default `gz check` (GHI #322).
 ## Architectural Boundaries
