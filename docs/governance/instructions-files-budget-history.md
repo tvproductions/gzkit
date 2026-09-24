@@ -83,3 +83,26 @@ MEASURED AT THE RULING: AGENTS.md 21,792 chars, 1,792 over the budget, warning a
 WHAT THIS REFINES: the second 2026-09-19 ruling set 20,000 chars as the ceiling the surface does not pass and said new canon cannot land without removing or compressing something. The surface now passes it, by attested canon. This ruling holds that state knowingly rather than restoring it by trimming: the ceiling remains the doctrine target, the audit keeps warning at every build, and nothing blocks until the stay ends at 1.0. New canon still lands only through the attested content chain, so the operator sees the growth at each landing.
 
 OPEN AT THIS ENTRY: `REQ-0.0.54-01-03` asserts the retired values 15000 / 4000 / 16000 against the live 20000 / 15000 / 30000; its escalation stands as a separate operator act. CLAUDE.md 2,167 chars against 15000 and the rule files are inside their budgets.
+
+## 2026-09-24 (2) — stay-site census
+
+A DATED RECORD, not a standing fact: the sites that apply the 2026-08-17 stay, swept by hand at `54bb8873b` on 2026-09-24. Operator ruling on GHI #1087's shape, verbatim: 'C with the Movement D amendment'. Nothing re-runs this census. Sweep again, and add a dated entry, whenever a ruling books, lifts or retargets a control-surface budget stay. The mechanism that would make the sweep resolvable is Movement D's `Rulings become first-class` box in `docs/governance/build-to-1.0-campaign-2026-09-20.md`.
+
+RULINGS IN SCOPE: four rulings in `.gzkit/handoffs/rulings.jsonl` relax a control-surface enforcement, and all four concern these budgets. They are the 2026-08-17 stay (booked 2026-08-22); 2026-08-29, which took the size and trim gates out of `gz check`; 2026-08-30, which kept the Codex delivery-cap breach advisory; and 2026-09-24 above ('D — hold under the stay'). Rows carry no ruling id, so each is named here by its date.
+
+AUDIT LAYER, all four warn and return no findings:
+
+| Site | State at `54bb8873b` |
+|---|---|
+| `src/gzkit/governance/trust_audits/instructions_files_budget.py` | the overrun goes to stderr; `return []` |
+| `src/gzkit/governance/trust_audits/agents_md_map_conformance.py` | `_check_budget` warns and returns `[]`; criteria (a)–(c) still fail closed |
+| `src/gzkit/governance/trust_audits/surface_delivery_witness.py` | vendor-cap distance goes to stderr and never changes the exit code |
+| `src/gzkit/governance/trust_audits/codex_delivery_witness.py` | always returns an empty list |
+
+OBSERVED: with AGENTS.md at 21,792 chars against 20,000, `gz validate --instructions-files-budget` and `gz validate --agents-md-map-conformance` each print one WARNING and exit 0.
+
+TEST LAYER: GHI #1086 found the stay missing from this layer. `tests/governance/test_agents_md_map_doctrine.py` (`@covers("REQ-0.0.54-01-03")`) now asserts the stay against the live tree. A grep of `tests/` for size assertions against control surfaces finds no other ceiling. The live overrun has passed the unit suite in CI since `cd33a7665`.
+
+DELIBERATELY STILL ENFORCING (a valid control, not a violation): the project-doc budget ceiling in the same test rejects a configured AGENTS.md budget above it. That ceiling guards against Codex's silent truncation (GHI #519), which the stay does not reach.
+
+The escalation of `REQ-0.0.54-01-03` that the entry above leaves open was set aside by the operator on 2026-09-24 (verbatim: 'set it aside'). The REQ's wording still states the retired values; its covering test asserts the stay.

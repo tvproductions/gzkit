@@ -363,7 +363,7 @@ gzkit is 1.0 when ALL hold. Each gate is bounded; none is a standing obligation.
 - [x] **Handoff-local repair** — every authored next step now survives the resume (`ResumeResult.next_steps`); the `continues_from` chain link is correct-by-construction. GHI #696, commit `5ec44ad1`, receipt `arb-step-unittest-430503d2`.
 - [x] **Recover the orphaned 06-10 rulings.** Done 2026-07-18, in-session. Counted **17** amendments + 4 scope decisions + a goal-state — not the "77" the 06-30 edition asserted. All dispositioned in § 9a. Highest-value catch: **Scope decision #1 ("Full pool build-out … no item left undecided at 1.0") was live and unwithdrawn**, in direct contradiction to today's post-1.0 pool ruling — the precise orphan that resurfaces months later as *"but we booked that for 1.0."*
 <!-- gz-validate-skip: command-shape -->
-- [ ] **Rulings become first-class** — `ruling_issued` / `ruling_superseded` typed ledger events; a `ruling` verb; the handoff *Settled* section and per-decision operator-ruled/agent-chose attribution as **rendered projections**; the campaign body as a rendered Layer-3 view; supersession **fail-closed on orphaned rulings**. Sibling: GHI #611. Diagnosis: **nothing in gzkit represents the state "settled"** — 60+ typed ledger event kinds, no ruling event — so settled decisions are re-derived, and re-deriving is re-adjudicating. § Rulings Register is the manual stand-in until this lands.
+- [ ] **Rulings become first-class** — `ruling_issued` / `ruling_superseded` typed ledger events; a `ruling` verb; the handoff *Settled* section and per-decision operator-ruled/agent-chose attribution as **rendered projections**; the campaign body as a rendered Layer-3 view; supersession **fail-closed on orphaned rulings**. Sibling: GHI #611. Diagnosis: **nothing in gzkit represents the state "settled"** — 60+ typed ledger event kinds, no ruling event — so settled decisions are re-derived, and re-deriving is re-adjudicating. § Rulings Register is the manual stand-in until this lands. **AMENDED 2026-09-24 (operator-ratified): a ruling that stays, relaxes or retargets an existing enforcement names the sites it governs, and those sites resolve against the ruling mechanically. A ruling that names no enforcement site is unaffected. Until this lands, a dated manual census stands in. See § Amendments 2026-09-24.**
 
 **Movement E — The external forcing function** *(carried by `ADR-0.38.0`; created 2026-08-17)*
 
@@ -597,7 +597,33 @@ had been repeating. All are dispositioned below — none left undefined.
 
 ## Amendments
 
-### 2026-09-20 (latest) — ADR ORDER IS EXCEPTED, once, for the config ADR (operator-ratified)
+### 2026-09-24 (latest) — a ruling that stays an enforcement must name its sites (operator-ratified)
+
+**Operator (`g0`), verbatim:** *"C with the Movement D amendment"*, choosing among
+the shapes GHI #1087 offered: a registry mapping rulings to sites, a resolvable
+ruling-id citation convention, dated manual sweeps, or nothing.
+
+GHI #1087 found that the 2026-08-17 control-surface budget stay was applied by
+hand, one site at a time. Nothing recorded where it bound, so the sweep could not
+be shown to be complete. GHI #1086 is the instance that got through: a test kept
+blocking Gate 2 for five weeks after the stay.
+
+**Now:** a dated manual census, the cheapest of the four shapes. It is recorded in
+`docs/governance/instructions-files-budget-history.md` § 2026-09-24 (2), and the
+four stay-type rulings in the rulings store all concern control-surface budgets.
+
+**Movement D's `Rulings become first-class` box gains one requirement.** A ruling
+that stays, relaxes or retargets an existing enforcement names the sites it
+governs, and those sites resolve against the ruling mechanically. Rulings carry
+no identity today (a rulings-store row is `ts`, `source` and `text`), so both the
+registry and the citation convention depend on the `ruling_issued` event this box
+already plans. Building either before it would add machinery with nothing stable
+to key on. A ruling that names no enforcement site is unaffected.
+
+TOPMOST, ADR order and the operator initiation boundary are unchanged. This
+amendment authorizes no feature execution.
+
+### 2026-09-20 — ADR ORDER IS EXCEPTED, once, for the config ADR (operator-ratified)
 
 **Operator ruling, verbatim:** *"logical keys, and author 0.39.0 now — I'll
 except ADR order"*.
