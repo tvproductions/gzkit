@@ -29,7 +29,7 @@ to know where things stand. The numbered pieces are evidence behind its rows.
 | [`FINDINGS.md`](FINDINGS.md) | **canonical** | The findings, with status and evidence pointers. Living; amended in place |
 | [`DISAGREEMENTS.md`](DISAGREEMENTS.md) | **canonical** | Where Agent 0 and Agent 1 disagree, preserved unresolved |
 | [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) | **canonical** | Operator questions and rulings, including successive-change evaluation (`Q-15`) and the FDAU origin and retained hypothesis (`Q-16`) |
-| [`consequence-bands.md`](consequence-bands.md) | **canonical, PROVISIONAL** | Operator-ruled consequence scale (`Q-04`). Scores rest on `OPEN` findings; must be re-scored after Phase 2 |
+| [`consequence-bands.md`](consequence-bands.md) | **canonical, PROVISIONAL** | Operator-ruled consequence scale (`Q-04`). Kept PROVISIONAL by operator ruling 2026-09-23: three rows have no finding behind them, and four rest on F-022 (`OPEN`) or F-021 (`DISPUTED`); the lift is decided when Phase 4 is authorised |
 | [`01-…`](01-engineering-method-2026-09-22.md), [`02-…`](02-requirements-vs-release-2026-09-22.md) | historical | Raw investigation record — what an agent said, frozen at its date |
 | [Astra's adversarial review](gzkit-engineering-assessment-adversarial-review.md) | historical | Agent 1's Phase 2 report, as deposited. Raw record — challenge input, not a second register |
 | [Act 1 cold read](act1-cold-read-2026-09-23.md) | historical | Agent 2's Act 1 verdict on **this register**, frozen at its date. Raw record — evidence about the register, not a finding about gzkit |

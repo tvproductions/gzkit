@@ -14,7 +14,7 @@
 > **The five gates are untouched and are not in scope here** (standing operator
 > constraint, 2026-09-22).
 >
-> ## PROVISIONAL — scored on findings that are still `OPEN`
+> ## PROVISIONAL — three rows unbacked, four resting on unsettled findings
 >
 > **Most `D2` scores in this file derive from a Phase 1 finding.** Traced
 > row by row on 2026-09-23, because the original claim — *"every `D2` score is
@@ -35,9 +35,10 @@
 > authored for each, or the three rows are marked as independently observed.**
 > That is a Phase 4 decision, not a repair.
 >
-> **Status of the seven:** F-003, F-018, F-019 and F-022's two rows are
-> `QUALIFIED`; **F-021 is `DISPUTED`**, so Ledger writes and Validators both rest
-> on a contested row. None is `CONFIRMED`.
+> **Status of the seven:** F-003, F-018 and F-019 are `QUALIFIED`; **F-022 is
+> `OPEN`** — never challenged — so both ARB rows rest on an unexamined row; **F-021
+> is `DISPUTED`**, so Ledger writes and Validators both rest on a contested row.
+> None is `CONFIRMED`.
 >
 > **The axes and the derivation are not at risk; the scores are.** *That*
 > detectability and recoverability are the right axes, and that `band = D + R`,
@@ -161,6 +162,15 @@ this system.
 
 ## Amendments
 
+- **2026-09-23 — Operator ruling: keep PROVISIONAL; F-022 status corrected.**
+  Verbatim: *"A. Keep PROVISIONAL"*, chosen over a row-by-row lift and an
+  outright lift. The lift is decided when Phase 4 is authorised, the first
+  point at which a band is consumed. The same pass corrected the PROVISIONAL
+  block, which reported F-022's two ARB rows as `QUALIFIED` while `FINDINGS.md`
+  carries F-022 as `OPEN`, and retitled the block: after Phase 2's
+  reconciliation the blockers are three unbacked rows, F-022 `OPEN` and F-021
+  `DISPUTED`, not findings that are still `OPEN` as a class. **No score
+  changed.**
 - **2026-09-23 — `D2` provenance traced row by row; no score changed.** The
   PROVISIONAL block claimed every `D2` score was finding-derived while naming
   three of ten — cold-read gap 5, which reported seven rows as unbacked. **Traced:
