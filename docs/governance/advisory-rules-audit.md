@@ -53,7 +53,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 |---|---|
 | `agents-md-map-doctrine.md` | `0.13.0` |
 | `adr-audit.md` | `0.3.2` |
-| `agent-failure-modes.md` | `0.8.0` |
+| `agent-failure-modes.md` | `0.8.1` |
 | `brief-heading-conventions.md` | `0.2.0` |
 | `changelog-release-notes.md` | `1.2.1` |
 | `complexity-doctrine.md` | `0.4.0` |
@@ -61,7 +61,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `gh-cli.md` | `0.6.0` |
 | `hexagonal-architecture.md` | `0.3.0` |
 | `models.md` | `0.2.0` |
-| `model-selection.md` | `0.6.1` |
+| `model-selection.md` | `0.6.2` |
 | `security-sensitivity.md` | `0.6.0` |
 | `skill-surface-sync.md` | `0.13.0` |
 | `skill-authoring.md` | `0.2.0` |

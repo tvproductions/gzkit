@@ -137,3 +137,64 @@ Validated: documents
 
 ✓ All validations passed (1 scopes).
 ```
+## 2026-09-23T20:13:28-05:00
+- Status: PASS
+- Chore: frontier-model-card-currency
+- Title: Frontier Model Card Currency (System-Card Doctrine Refresh)
+- Lane: lite
+- Version: 1.4.0
+- Criteria Results:
+  - [PASS] `uv run python scripts/check_proof_freshness.py frontier-model-card-currency` => rc=0 (0.09s) -- exit 0 == 0
+  - [PASS] `python3 -c "import json; cards=json.load(open('data/frontier_model_cards.json'))['cards']; assert cards, 'registry empty'; missing=[c for c in cards if not all(c.get(k) for k in ('vendor','model_family','card_date','url','status'))]; assert not missing, f'incomplete entries: {missing}'; assert all(c['status'] in ('current','unconsumed','superseded') for c in cards), 'bad status'"` => rc=0 (0.02s) -- exit 0 == 0
+  - [PASS] `uv run gz validate --documents` => rc=0 (0.31s) -- exit 0 == 0
+
+```text
+[uv run python scripts/check_proof_freshness.py frontier-model-card-currency] stdout:
+scan-interval gate — frontier-model-card-currency
+  maximum age:  30d
+  scan record:  .gzkit/chores/frontier-model-card-currency/proofs/scan-record.md
+  last scan:    2026-09-24 (0d ago)
+
+PASS: the scan record changed within the scan interval.
+[uv run gz validate --documents] stdout:
+Validated: documents
+
+✓ All validations passed (1 scopes).
+```
+
+## 2026-09-23 — Opus 5.5 scan disposition
+
+- **DRIFT (Anthropic, Opus tier).** The 2026-09-22 Opus 5.5 primary card was read and mapped to live doctrine at `docs/governance/opus-5-5-system-card-analysis-2026-09-23.md`; the registry records it as `unconsumed`, with Opus 5 still `current`. GHI #1089 owns the refresh.
+- **DRIFT (OpenAI), already routed.** GPT-6 Astra remains `unconsumed` under GHI #1019.
+- **Manual completion check:** both drifted cards have a GHI and registry entry. The scan record names the open Sonnet-tier scope question. No card was marked consumed by this scan.
+
+## 2026-09-24 — Opus 5.5 consumed (GHI #1089)
+
+- **CONSUMED (Anthropic, Opus tier).** Registry rotated: Opus 5.5 `current`, Opus 5 entry and PDF removed. Nine doctrine surfaces re-sourced; `model-selection.md` mapping moved to the current catalog.
+- **Defect found in the outgoing doctrine:** two quotations attributed to the Opus 5 card's § 8.4 are not in that card's text; retired with the rotation, recorded in the analysis § Review.
+- **Manual completion check:** every drifted item is routed. GPT-6 Astra stays with GHI #1019.
+
+## 2026-09-24T01:49:38-05:00
+- Status: PASS
+- Chore: frontier-model-card-currency
+- Title: Frontier Model Card Currency (System-Card Doctrine Refresh)
+- Lane: lite
+- Version: 1.4.0
+- Criteria Results:
+  - [PASS] `uv run python scripts/check_proof_freshness.py frontier-model-card-currency` => rc=0 (0.08s) -- exit 0 == 0
+  - [PASS] `python3 -c "import json; cards=json.load(open('data/frontier_model_cards.json'))['cards']; assert cards, 'registry empty'; missing=[c for c in cards if not all(c.get(k) for k in ('vendor','model_family','card_date','url','status'))]; assert not missing, f'incomplete entries: {missing}'; assert all(c['status'] in ('current','unconsumed','superseded') for c in cards), 'bad status'"` => rc=0 (0.01s) -- exit 0 == 0
+  - [PASS] `uv run gz validate --documents` => rc=0 (0.35s) -- exit 0 == 0
+
+```text
+[uv run python scripts/check_proof_freshness.py frontier-model-card-currency] stdout:
+scan-interval gate — frontier-model-card-currency
+  maximum age:  30d
+  scan record:  .gzkit/chores/frontier-model-card-currency/proofs/scan-record.md
+  last scan:    2026-09-24 (0d ago)
+
+PASS: the scan record changed within the scan interval.
+[uv run gz validate --documents] stdout:
+Validated: documents
+
+✓ All validations passed (1 scopes).
+```

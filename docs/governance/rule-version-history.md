@@ -375,6 +375,12 @@ Lifted at version `0.2.0` (rule now at `0.2.1`).
 
 ## `agent-failure-modes.md`
 
+### Changed 2026-09-24 at version `0.8.1` (GHI #1089)
+
+The Opus-tier source moved from the Claude Opus 5 System Card (§§ 6.4.4, 6.6.1) to the Claude Opus 5.5 System Card (§§ 6.3.1, 6.4.1, 6.4.3–6.4.5, 6.5.1). Patterns unchanged (nine): the new card's authorization findings re-source `Hallucinated authorization` and `Security shortcut for expedience`, and its unverifiable-authorization regression is incoming-content doctrine, not a tenth pattern. The `0.8.0` note, verbatim:
+
+> **Rule version:** `0.8.0` — re-sourced to the Claude Fable 5.1 & Claude Mythos 5.1 System Card (GHI #934) and the Backstop column repointed to where each rule lives since the 2026-09-17 `AGENTS.md` rewrite (GHI #921); the `Always/Never #N` numbers and `DO IT RIGHT 6a` no longer resolve in the contract. Prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#agent-failure-modesmd). Patterns unchanged (nine).
+
 Lifted at version `0.6.0` (rule now at `0.6.1`, re-sourced to current-card-only
 citations under the 2026-08-02 operator ruling against retaining superseded-model
 references in live rules). Origin provenance for the pattern set, preserved
@@ -516,6 +522,13 @@ Lifted 2026-08-29 at version `0.2.0` (rule now at `0.3.0`).
 > **Rule version:** `0.3.0` — diet pass under GHI #921 (operator ruling 2026-08-29, *"we are compressing everything and anything that the agent can consume"*). Version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#guardrail-feedback-prosemd). Binding rules unchanged.
 
 ## `model-selection.md`
+
+### Changed 2026-09-24 at version `0.6.2` (GHI #1089)
+
+The Claude mapping moved to the current catalog: `opus` → `claude-opus-5-5`
+(Opus 5.5 card consumed, GHI #1089) and `fable` → `claude-fable-5-1`, which
+the 2026-09-17 Fable 5.1 consumption (GHI #934) had left at `claude-fable-5`.
+Routing policy is unchanged.
 
 Lifted 2026-08-29 at version `0.5.1` (rule now at `0.6.0`).
 

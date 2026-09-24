@@ -9,9 +9,9 @@ description: Token-efficient model routing across skills, subagents, and work su
 
 # Model Selection (gzkit)
 
-<!-- rule-version: 0.6.1 -->
+<!-- rule-version: 0.6.2 -->
 
-> **Rule version:** `0.6.1` — the skill example uses the existing nested version contract (GHI #1040); routing policy is unchanged. Prior history: [Rule Version History](../../docs/governance/rule-version-history.md#model-selectionmd).
+> **Rule version:** `0.6.2` — the Claude model mapping follows the current catalog: `opus` → `claude-opus-5-5`, `fable` → `claude-fable-5-1` (GHI #1089); routing policy is unchanged. Prior history: [Rule Version History](../../docs/governance/rule-version-history.md#model-selectionmd).
 
 ## Operative claims (binding)
 
@@ -52,7 +52,7 @@ model: haiku  # or: sonnet, opus
 
 **Valid values:** `haiku`, `sonnet`, `opus`, `fable`. No inference; no runtime detection; declared value is the contract. `fable` is reserved for Mythos-class judgment surfaces (operator-supervised); pipelines and mechanical work never default to it.
 
-**Mapping to Claude models** (re-sourced 2026-08-02; IDs move each release — verify against the current catalog rather than inheriting): `haiku` → `claude-haiku-4-5`; `sonnet` → `claude-sonnet-5`; `opus` → `claude-opus-5`; `fable` → `claude-fable-5`.
+**Mapping to Claude models** (re-sourced 2026-09-24; IDs move each release — verify against the current catalog rather than inheriting): `haiku` → `claude-haiku-4-5`; `sonnet` → `claude-sonnet-5`; `opus` → `claude-opus-5-5`; `fable` → `claude-fable-5-1`.
 
 ## Subagent effort levels
 
