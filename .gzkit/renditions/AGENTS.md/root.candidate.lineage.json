@@ -31,36 +31,40 @@
   "prime-directive-ownership": {
     "owned": true,
     "entry_ids": [
-      "corpus-prime-directive-ownership-2026-09-17T11:39:26.932062+00:00",
-      "corpus-prime-directive-ownership-2026-09-17T11:39:27.084585+00:00",
-      "corpus-prime-directive-ownership-2026-09-17T11:39:27.235730+00:00"
+      "corpus-prime-directive-ownership-2026-09-24T10:12:17.528269+00:00",
+      "corpus-prime-directive-ownership-2026-09-24T10:12:17.679281+00:00",
+      "corpus-prime-directive-ownership-2026-09-24T10:12:17.830283+00:00",
+      "corpus-prime-directive-ownership-2026-09-24T10:12:17.980450+00:00",
+      "corpus-prime-directive-ownership-2026-09-24T10:12:18.131958+00:00",
+      "corpus-prime-directive-ownership-2026-09-24T10:12:18.282446+00:00",
+      "corpus-prime-directive-ownership-2026-09-24T10:12:18.437185+00:00"
     ],
     "byte_span": [
       421,
-      1011
+      1984
     ]
   },
   "do-it-right-craftsmanship-maxim": {
     "owned": true,
     "entry_ids": [
-      "corpus-do-it-right-craftsmanship-maxim-2026-09-17T11:39:27.409308+00:00",
-      "corpus-do-it-right-craftsmanship-maxim-2026-09-17T11:39:27.563225+00:00",
-      "corpus-do-it-right-craftsmanship-maxim-2026-09-17T11:39:27.716606+00:00",
-      "corpus-do-it-right-craftsmanship-maxim-2026-09-17T11:39:27.871109+00:00",
-      "corpus-do-it-right-craftsmanship-maxim-2026-09-17T11:39:28.025043+00:00",
-      "corpus-do-it-right-craftsmanship-maxim-2026-09-17T11:39:28.179290+00:00",
-      "corpus-do-it-right-craftsmanship-maxim-2026-09-17T11:39:28.333648+00:00",
-      "corpus-do-it-right-craftsmanship-maxim-2026-09-17T11:39:28.486416+00:00",
-      "corpus-do-it-right-craftsmanship-maxim-2026-09-17T11:39:28.639932+00:00",
-      "corpus-do-it-right-craftsmanship-maxim-2026-09-17T11:39:28.797504+00:00",
-      "corpus-do-it-right-craftsmanship-maxim-2026-09-17T11:39:28.951627+00:00",
-      "corpus-do-it-right-craftsmanship-maxim-2026-09-17T11:39:29.105595+00:00",
-      "corpus-do-it-right-craftsmanship-maxim-2026-09-17T11:39:29.257243+00:00",
-      "corpus-do-it-right-craftsmanship-maxim-2026-09-17T11:39:29.410102+00:00"
+      "corpus-do-it-right-craftsmanship-maxim-2026-09-24T10:12:20.678249+00:00",
+      "corpus-do-it-right-craftsmanship-maxim-2026-09-24T10:12:20.838398+00:00",
+      "corpus-do-it-right-craftsmanship-maxim-2026-09-24T10:12:20.989317+00:00",
+      "corpus-do-it-right-craftsmanship-maxim-2026-09-24T10:12:21.139610+00:00",
+      "corpus-do-it-right-craftsmanship-maxim-2026-09-24T10:12:21.290465+00:00",
+      "corpus-do-it-right-craftsmanship-maxim-2026-09-24T10:12:21.442101+00:00",
+      "corpus-do-it-right-craftsmanship-maxim-2026-09-24T10:12:21.592428+00:00",
+      "corpus-do-it-right-craftsmanship-maxim-2026-09-24T10:12:21.742855+00:00",
+      "corpus-do-it-right-craftsmanship-maxim-2026-09-24T10:12:21.893602+00:00",
+      "corpus-do-it-right-craftsmanship-maxim-2026-09-24T10:12:22.044776+00:00",
+      "corpus-do-it-right-craftsmanship-maxim-2026-09-24T10:12:22.196701+00:00",
+      "corpus-do-it-right-craftsmanship-maxim-2026-09-24T10:12:22.356643+00:00",
+      "corpus-do-it-right-craftsmanship-maxim-2026-09-24T10:12:22.510161+00:00",
+      "corpus-do-it-right-craftsmanship-maxim-2026-09-24T10:12:22.664054+00:00"
     ],
     "byte_span": [
-      1011,
-      2630
+      1984,
+      3819
     ]
   },
   "skills-first-execution-routing": {
@@ -69,8 +73,8 @@
       "corpus-skills-first-execution-routing-2026-09-17T11:39:29.565382+00:00"
     ],
     "byte_span": [
-      2630,
-      2980
+      3819,
+      4169
     ]
   },
   "make-llm-stochastic-vibes-inert-anti-vibing-mantra": {
@@ -80,8 +84,8 @@
       "corpus-make-llm-stochastic-vibes-inert-anti-vibing-mantra-2026-09-17T11:39:29.868038+00:00"
     ],
     "byte_span": [
-      2980,
-      3392
+      4169,
+      4581
     ]
   },
   "stdlib-first-doctrine-dependency-posture": {
@@ -90,8 +94,8 @@
       "corpus-stdlib-first-doctrine-dependency-posture-2026-09-17T11:39:30.020757+00:00"
     ],
     "byte_span": [
-      3392,
-      3799
+      4581,
+      4988
     ]
   },
   "operator-economy-of-effort-design-dialogue-mode": {
@@ -104,8 +108,8 @@
       "corpus-operator-economy-of-effort-design-dialogue-mode-2026-09-17T11:39:30.794956+00:00"
     ],
     "byte_span": [
-      3799,
-      4455
+      4988,
+      5644
     ]
   },
   "behavior-rules": {
@@ -127,8 +131,8 @@
       "corpus-behavior-rules-2026-09-24T06:54:48.596299+00:00"
     ],
     "byte_span": [
-      4455,
-      6875
+      5644,
+      8064
     ]
   },
   "pattern-discovery": {
@@ -138,8 +142,8 @@
       "corpus-pattern-discovery-2026-09-17T11:39:32.963957+00:00"
     ],
     "byte_span": [
-      6875,
-      7146
+      8064,
+      8335
     ]
   },
   "skills": {
@@ -148,8 +152,8 @@
       "corpus-skills-2026-09-17T11:39:33.116462+00:00"
     ],
     "byte_span": [
-      7146,
-      7311
+      8335,
+      8500
     ]
   },
   "gate-covenant": {
@@ -167,8 +171,8 @@
       "corpus-gate-covenant-2026-09-24T10:04:50.709025+00:00"
     ],
     "byte_span": [
-      7311,
-      10977
+      8500,
+      12166
     ]
   },
   "obpi-acceptance-protocol": {
@@ -182,8 +186,8 @@
       "corpus-obpi-acceptance-protocol-2026-09-24T10:04:51.311314+00:00"
     ],
     "byte_span": [
-      10977,
-      12728
+      12166,
+      13917
     ]
   },
   "execution-rules": {
@@ -197,8 +201,8 @@
       "corpus-execution-rules-2026-09-24T06:20:45.578325+00:00"
     ],
     "byte_span": [
-      12728,
-      14354
+      13917,
+      15543
     ]
   },
   "attestation": {
@@ -209,8 +213,8 @@
       "corpus-attestation-2026-09-17T11:39:36.310597+00:00"
     ],
     "byte_span": [
-      14354,
-      15361
+      15543,
+      16550
     ]
   },
   "defect-fix-routing": {
@@ -222,8 +226,8 @@
       "corpus-defect-fix-routing-2026-09-24T10:04:51.916661+00:00"
     ],
     "byte_span": [
-      15361,
-      16223
+      16550,
+      17412
     ]
   },
   "control-surfaces": {
@@ -232,16 +236,16 @@
       "corpus-control-surfaces-2026-09-17T11:39:37.113322+00:00"
     ],
     "byte_span": [
-      16223,
-      16489
+      17412,
+      17678
     ]
   },
   "local-agent-rules": {
     "owned": false,
     "entry_ids": [],
     "byte_span": [
-      16489,
-      16509
+      17678,
+      17698
     ]
   },
   "operator-doctrine-verbatim-canon": {
@@ -255,8 +259,8 @@
       "corpus-operator-doctrine-verbatim-canon-2026-09-24T10:04:54.019100+00:00"
     ],
     "byte_span": [
-      16509,
-      18892
+      17698,
+      20081
     ]
   },
   "governance-doctrine-surfaces": {
@@ -279,8 +283,8 @@
       "corpus-governance-doctrine-surfaces-2026-09-24T10:04:52.531637+00:00"
     ],
     "byte_span": [
-      18892,
-      22063
+      20081,
+      23252
     ]
   },
   "architectural-boundaries": {
@@ -294,8 +298,8 @@
       "corpus-architectural-boundaries-2026-09-17T11:39:41.407562+00:00"
     ],
     "byte_span": [
-      22063,
-      22578
+      23252,
+      23767
     ]
   }
 }

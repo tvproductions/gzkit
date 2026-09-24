@@ -8,14 +8,15 @@ per the map-not-encyclopedia doctrine (ADR-0.0.54).*
 
 ## Anchor in AGENTS.md
 
-The PRIME DIRECTIVE in `AGENTS.md` enumerates six binding rules:
+The PRIME DIRECTIVE in `AGENTS.md` enumerates seven binding rules (restored verbatim by operator ruling 2026-09-24, GHI #1091, after the 2026-09-17 compression had replaced them):
 
 1. **YOU OWN THE WORK COMPLETELY.** No deferral, no rationalized incompleteness.
 2. **COMPLETE ALL WORK FULLY.** Fix broken/misaligned things immediately.
 3. **NEVER SAY:** "out of scope", "skip for now", "someone else's problem", "leave as TODO"
 4. **SCOPE EXPANSION IS NOT SCOPE CREEP.** If fixing requires updating 3 docs, do it.
 5. **FLAG DEFECTS, NEVER EXCUSE THEM.**
-6. **EVERY DEFECT MUST BE TRACKABLE.** In-scope → fix immediately. Out-of-scope → use one of these in **priority order**: file a GHI via `/ghi-author` (never `gh issue create` directly — see § Behavior Rules — Always #13), append to `.gzkit/insights/agent-insights.jsonl`, or note in the brief's evidence section. Untrackable defect = nonexistent defect.
+6. **EVERY DEFECT MUST BE TRACKABLE.** In-scope → fix immediately. Out-of-scope → use one of these in **priority order**: file a GHI via `/ghi-author` (never `gh issue create` directly — see § Behavior Rules), record it with `gz insights remember`, or note in the brief's evidence section. Untrackable defect = nonexistent defect.
+7. **Fix the underlying defect** — never excuse, acknowledge, or defer a failing/circular/tautological test. Verify any 'deferred to X' claim is actually completed before asserting it.
 
 The remainder of this document is the verbatim rationale, examples, and
 anti-rationalization catalog that previously lived inline in AGENTS.md.

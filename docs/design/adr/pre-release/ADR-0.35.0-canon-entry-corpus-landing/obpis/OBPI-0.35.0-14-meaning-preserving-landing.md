@@ -14,6 +14,9 @@ allowlist:
   - features/steps/content_commit_retention_steps.py
   - docs/user/manpages/content.md
   - .gzkit/skills/gz-content-compose/SKILL.md
+  - src/gzkit/skills/gz-content-compose/SKILL.md
+  - .claude/skills/gz-content-compose/SKILL.md
+  - .agents/skills/gz-content-compose/SKILL.md
   - docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-14-meaning-preserving-landing.md
 reqs:
   - REQ-0.35.0-14-01
@@ -66,6 +69,7 @@ The contract changes are a new `--retention-map` flag on `gz content commit`, a 
 - `features/steps/content_commit_retention_steps.py` — **CREATE**, following `features/steps/content_retire_steps.py`
 - `docs/user/manpages/content.md` — the `commit` section: flag, sidecar, refusal and recovery
 - `.gzkit/skills/gz-content-compose/SKILL.md` — the wielding skill: reviewer dispatch, map authoring, presenting drops to the operator
+- `src/gzkit/skills/gz-content-compose/SKILL.md`, `.claude/skills/gz-content-compose/SKILL.md`, `.agents/skills/gz-content-compose/SKILL.md` — generated mirrors, written only by `uv run gz agent sync control-surfaces`, never hand-edited
 - `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-14-meaning-preserving-landing.md`
 
 ## Denied Paths

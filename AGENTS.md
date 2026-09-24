@@ -9,14 +9,26 @@ Python 3.13+ with uv, ruff, ty; always `uv run` for Python commands.
 Every agent frame MUST include a Persona. Default: `main-session` — craftsperson, governance-aware, whole-file-reasoning, direct. Read the applicable definition in [`.gzkit/personas/`](.gzkit/personas/) when assigning a role; compose traits, not generic expertise claims.
 ## PRIME DIRECTIVE (OWNERSHIP)
 
-- Complete the requested behavior and every coupled correctness surface; route unrelated defects rather than silently expanding the change.
+1. **YOU OWN THE WORK COMPLETELY. No deferral, no rationalized incompleteness.**
 
-- Track every defect. Fix it when it is in scope; otherwise file a GHI through `ghi-author`, record it with `gz insights remember`, or note it in the brief's evidence. "Pre-existing" and "not in scope" decide where a defect goes, not whether it is recorded.
+2. **COMPLETE ALL WORK FULLY. Fix broken/misaligned things immediately.**
+   - Code change with output format change → update ALL doc examples; commit together
+   - Documentation references a feature → manpage EXAMPLES section shows real CLI output
+   - Tests pass but unrelated lint error found → fix it before declaring complete
+   - Markdown invalid in a file you didn't edit → fix it; code quality is shared
 
-- Repair a failing, circular or tautological test at its cause. Before saying work was deferred elsewhere, confirm the destination accepted and completed it.
+3. **NEVER SAY: 'out of scope', 'skip for now', 'someone else's problem', 'leave as TODO'**
+
+4. **SCOPE EXPANSION IS NOT SCOPE CREEP. If fixing requires updating 3 docs, do it.**
+
+5. **FLAG DEFECTS, NEVER EXCUSE THEM. Anti-rationalizations: 'Pre-existing' → still a defect; 'Not in scope' → flag and expand, or file GHI; 'Template has drifted' → drift is a defect; 'Evidence unavailable' → missing evidence is a verification-chain defect**
+
+6. **EVERY DEFECT MUST BE TRACKABLE. In-scope → fix immediately. Out-of-scope → file GHI, append to insights, or note in brief evidence. Untrackable defect = nonexistent defect.** Priority order for out-of-scope: file a GHI via `/ghi-author` (never `gh issue create` directly — see § Behavior Rules), record it with `gz insights remember`, or note it in the brief's evidence section.
+
+7. **Fix the underlying defect — never excuse, acknowledge, or defer a failing/circular/tautological test. Verify any 'deferred to X' claim is actually completed before asserting it.**
 ## DO IT RIGHT (CRAFTSMANSHIP MAXIM)
 
-Fix root causes inside the requested scope and its coupled surfaces.
+**The most thorough and comprehensive fix is always preferred.** Fix root causes and their coupled surfaces.
 
 1. Fix the class of failure, not the instance.
 
@@ -24,7 +36,7 @@ Fix root causes inside the requested scope and its coupled surfaces.
 
 2. Before trusting plausible-looking code: read the surface, write the failing test first, trace the data flow, check observed output.
 
-3. Choose the fix that removes the cause, inside the requested scope; diff size alone is not a reason either way.
+3. **Prefer the more thorough fix — the one that removes the cause. 'Smaller diff' / 'faster to land' are not concrete downsides.**
 
 4. Verify observed behavior, not assumed behavior: run the command and paste its actual output.
 
@@ -40,7 +52,7 @@ Fix root causes inside the requested scope and its coupled surfaces.
 
 10. Simplicity first: minimum code that solves the problem, nothing speculative, no abstraction for single-use code.
 
-11. Surgical changes: touch only what you must, match existing style, leave adjacent code alone. Expansion under 1a is for coupled correctness only.
+11. **Surgical changes.** Touch only what you must. Don't improve adjacent code. Match existing style. Don't refactor what isn't broken. The expansion duty in 1a is for coupled-correctness surfaces only — never taste-driven cleanup. Fixing a defect under § PRIME DIRECTIVE is not taste-driven cleanup.
 
 12. A gate's evidence must witness the required state or action — a stage, a dispatch record, a receipt. A file or marker being present shows only that something is armed.
 ## SKILLS FIRST (EXECUTION ROUTING)

@@ -58,7 +58,9 @@ Operating guidance:
   model is not a calibration.
 - **Above `medium`, the risk on scope-graded work is out-of-scope change,
   and the mitigation is a written scope boundary.** gzkit carries it as
-  `AGENTS.md` § DO IT RIGHT #11 (surgical changes) and OBPI allowed-paths.
+  `AGENTS.md` § DO IT RIGHT #11 (surgical changes) and OBPI allowed-paths. That
+  boundary governs taste-driven change only: fixing a defect found in flight is a
+  § PRIME DIRECTIVE duty, which the operator ruled prevails (2026-09-24, GHI #1091).
   The Fable 5.1 card measures a brevity-and-scope instruction reducing those
   edits (§ 8.4); the Opus 5.5 card reports the decline and its cause and
   makes no claim about a prompt remedy.

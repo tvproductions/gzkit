@@ -1,9 +1,9 @@
 {
   "algorithm": "sha256",
-  "corpus_fingerprint": "681ffaebae3ef063fc85e3dca751bc4f88dff2a02d252d58300b9db9630b778d",
-  "corpus_entry_count": 419,
-  "rendition_fingerprint": "a6a32778799e990601465c78424c22296dcb09ee259daa322aeeeba8c0d9b42d",
-  "committed_ts": "2026-09-24T10:05:09.187902+00:00",
+  "corpus_fingerprint": "7d25755be10a636f3d568020ace53eb0c3bc00f816e5552e65640b3466d33d85",
+  "corpus_entry_count": 457,
+  "rendition_fingerprint": "fb51e5c073152f81783eea6fa9c958f11a13f1dd05cb476c9901563c8a7ce822",
+  "committed_ts": "2026-09-24T10:13:08.294124+00:00",
   "attestor": "g0",
-  "attestation_text": "1 restore now, 2 restore — restores sweep findings S02, S03, S10, S11, S13 (GHI #1091); per-entry retention maps in each retirement reason, dropped: none; render order preserved."
+  "attestation_text": "Full restore (Recommended) — restores sweep findings S04 and S05 (GHI #1091): PRIME DIRECTIVE's seven rules verbatim from c3582975f, the DO IT RIGHT thorough-fix preference, and #11 deferring to the PRIME DIRECTIVE. Drops approved by that ruling: D1 (route unrelated defects rather than silently expanding the change), D2 (fix bound 'inside the requested scope'), D3 (neutral diff-size clause). Retention maps in each retirement reason."
 }
