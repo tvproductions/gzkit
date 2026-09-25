@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-09-25
 metadata:
-  skill-version: "6.59.3"
+  skill-version: "6.59.4"
 model: sonnet
 ---
 
@@ -435,8 +435,8 @@ assertions. Do not build an all-assertions classifier or count mutations as cove
          `uv run gz obpi acceptance {OBPI-SLUG} status --stage stage2 --json`.
          A blocked status before reviews is expected; its payload contains the
          canonical obligations, actual proofs, and retained findings. The composer
-         requests exactly one `gzkit.acceptance.review.v1` result in addition to
-         the legacy `ReviewResult`. The reviewer uses actual IDs and digest from
+         requests one `gzkit.acceptance.review.v1` envelope only; `parse_review_result`
+         derives `ReviewResult` from it (GHI #1095). The reviewer uses actual IDs and digest from
          that context and explicitly lists `accepted_proof_ids`; the importer
          assigns the review and receipt IDs. Missing proof is recorded as a
          mapped `missing-proof` finding with no invented proof or approval ID.
@@ -462,7 +462,7 @@ assertions. Do not build an all-assertions classifier or count mutations as cove
          ```
 
          Use the quality persona and its own prompt for the second invocation.
-         Wait for both, parse their legacy `ReviewResult`, and import each actual
+         Wait for both, derive each `ReviewResult` with `parse_review_result`, and import each actual
          ARB run ID with
          `uv run gz obpi acceptance {OBPI-SLUG} review --receipt {arb-run-id}`.
          A native Agent-tool summary alone does not supply the required receipt.
@@ -1315,17 +1315,15 @@ deliverable. Determine a finding's relevance by the acceptance claim it affects,
 not the document or review round where it originated.
 
 Also supply the current acceptance status JSON and require exactly one
-`gzkit.acceptance.review.v1` object in the actual reviewer output, using the
-schema in the acceptance manpage. Set `stage` to `adversarial`; copy the current
-input digest and proof/obligation IDs from the supplied records. Explicitly list
-`accepted_proof_ids` for the proof the reviewer approves; never infer this set
-from a global verdict. The `accepted`/`refuted` verdict is retained as review
-history. Mapped findings and explicit proof approvals govern readiness, so an
-auxiliary observation cannot revoke an approved requirement through its wording.
-Mapped findings retain stable IDs. A verified repair emits a closure containing
-`finding_id`, `obligation_id`, and the current `proof_id`. The reviewer must not
-author `id` or `receipt_id`; ingestion derives them from the executed receipt.
-Record the review through `gz obpi acceptance ... review --receipt ...`, including
+`gzkit.acceptance.review.v1` object in the actual reviewer output, rendered with
+`gzkit.acceptance_context.acceptance_review_frame("adversarial", <status json>)`:
+the Stage-2 frame, carrying the schema, identities and import rules (GHI #1095).
+Explicitly list `accepted_proof_ids` for the proof the reviewer approves; never
+infer this set from a global verdict. The `accepted`/`refuted` verdict is retained
+as review history. Mapped findings and explicit proof approvals govern readiness,
+so an auxiliary observation cannot revoke an approved requirement through its
+wording. Mapped findings retain stable IDs. A verified repair emits a closure
+containing `finding_id`, `obligation_id`, and the current `proof_id`. Record the review through `gz obpi acceptance ... review --receipt ...`, including
 truthful refutations, so the next round receives the same outstanding obligations.
 
 **Two transport facts that decide what actually reaches it (measured 2026-09-04, re-measured 2026-09-10 on the writable path, GHI #961).** The suite runs under the venv interpreter, never `uv run` — uv cannot initialize its cache in the sandbox. Inside the disposable checkout, run it as `PYTHONPATH=<checkout>/src <repo>/.venv/bin/python -m unittest <selector>`; the editable install points at the ORIGINAL `src`, so without that `PYTHONPATH` the reviewer would mutate the copy and import the original — a replay that proves nothing. `gz obpi adversary-workspace` prints the exact invocation. Second: the `task` path DOES take `--prompt-file` and stdin, so the positional-only limitation belongs to `adversarial-review` alone and no longer applies; still name large artifacts BY PATH and let the reviewer open them. And where `renderReviewResult` collapses a review to a rendered summary, `renderTaskResult` (`lib/render.mjs:315`) emits the reviewer's `rawOutput` **verbatim** — which is why the review object now reaches the ARB receipt the importer reads. Observed 2026-09-10: a complete, correct review object authored through `adversarial-review` was lost in transport and the import refused it (`exit 3`).

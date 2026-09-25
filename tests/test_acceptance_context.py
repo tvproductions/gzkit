@@ -93,7 +93,7 @@ class ReviewContextTests(unittest.TestCase):
 
     def test_malformed_or_mismapped_responses_cannot_gain_credit(self):
         for changes in (
-            {"verification_gaps": []},
+            {"summary": "an unlisted field the envelope schema forbids"},
             {"obligation_ids": ["unknown"]},
             {"proof_ids": ["unknown"], "accepted_proof_ids": ["unknown"]},
             {
@@ -142,7 +142,7 @@ class ReviewContextTests(unittest.TestCase):
             ],
         )
         judgment = json.loads(original["stdout_tail"].split("```json\n")[1].split("\n```")[0])
-        original["stdout_tail"] = json.dumps({**judgment, "verification_gaps": []})
+        original["stdout_tail"] = json.dumps({**judgment, "summary": "an unlisted field"})
         original_path = f.write(
             f"artifacts/receipts/{original['run_id']}.json", json.dumps(original)
         )

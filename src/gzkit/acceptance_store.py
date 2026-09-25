@@ -16,6 +16,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.acceptance import (
+    REVIEW_SCHEMA,
     Obligation,
     Proof,
     Readiness,
@@ -23,6 +24,7 @@ from gzkit.acceptance import (
     ReviewResponse,
     assess_readiness,
     proof_aliases,
+    review_objects,
     validate_review_record,
 )
 from gzkit.acceptance_execution import (
@@ -38,8 +40,6 @@ from gzkit.ledger import Ledger
 from gzkit.ledger_events import acceptance_recorded_event
 from gzkit.req_kind_fence import resolve_fence_proof
 from gzkit.req_kind_support import resolve_support_proof
-
-REVIEW_SCHEMA = "gzkit.acceptance.review.v1"
 
 
 class Contract(BaseModel):
@@ -162,26 +162,6 @@ def record_proof(root: Path, obpi_id: str, proof: Proof) -> None:
     _append(root, obpi_id, "proof", proof.model_dump(mode="json"))
 
 
-def _review_objects(text: str) -> list[dict[str, Any]]:
-    """Read schema-tagged JSON objects from executed output, including code fences."""
-    decoder = json.JSONDecoder()
-    objects: list[dict[str, Any]] = []
-    index = 0
-    while index < len(text):
-        start = text.find("{", index)
-        if start < 0:
-            break
-        try:
-            value, length = decoder.raw_decode(text[start:])
-        except json.JSONDecodeError:
-            index = start + 1
-            continue
-        if isinstance(value, dict) and value.get("schema") == REVIEW_SCHEMA:
-            objects.append(value)
-        index = start + length
-    return objects
-
-
 def _refuse_inadequate_replay(judgment: ReviewResponse) -> None:
     """Refuse a replay claim the reviewer's own record does not support (GHI #961).
 
@@ -226,8 +206,8 @@ def review_from_receipt(receipt: dict[str, Any]) -> Review:
     run_id = receipt.get("run_id")
     if not isinstance(run_id, str) or not run_id.startswith("arb-step-"):
         raise ValueError("Review receipt has no execution identity")
-    candidates = _review_objects(str(receipt.get("stdout_tail", "")))
-    candidates.extend(_review_objects(str(receipt.get("stderr_tail", ""))))
+    candidates = review_objects(str(receipt.get("stdout_tail", "")))
+    candidates.extend(review_objects(str(receipt.get("stderr_tail", ""))))
     if len(candidates) != 1:
         raise ValueError(
             "Receipt output must contain exactly one gzkit.acceptance.review.v1 object"

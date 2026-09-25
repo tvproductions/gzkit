@@ -171,9 +171,12 @@ generate the response schema from the same `ReviewResponse` model used by the
 importer. Context includes the captured input components, requested obligation
 scope, proof history, and open finding IDs. Missing or contradictory context is a
 local error. The reviewer owns approvals and closure judgments; a generated
-example supplies neither. The legacy `ReviewResult` is a separate envelope:
-`verification_gaps` belongs there, and `description` belongs to findings, never
-closures. Formatting repair uses a fresh invocation that references the original
+example supplies neither. The reply is that one envelope and nothing else: the
+orchestrator derives the legacy `ReviewResult` from it, and a stray legacy block
+is ignored (GHI #1095). `verification_gaps` travels in the envelope as the
+reviewer's own coverage limits and never approves or blocks; `description`
+belongs to findings, never closures. A closure's `proof_id` must also appear in
+`accepted_proof_ids`. Formatting repair uses a fresh invocation that references the original
 receipt and preserves its subject and substantive judgment; receipts are not edited.
 
 Each finding contains `id`, `obligation_id`, `kind` (`counterexample` or

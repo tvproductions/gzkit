@@ -11,14 +11,15 @@ import re
 from enum import StrEnum
 from pathlib import Path
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
-from gzkit.acceptance import Readiness
+from gzkit.acceptance import Readiness, ReviewResponse, review_objects
 from gzkit.complexity.thresholds import load_threshold_table
 from gzkit.models.persona import load_persona
 from gzkit.roles import (
     HandoffResult,
     HandoffStatus,
+    ReviewFinding,
     ReviewFindingSeverity,
     ReviewResult,
     ReviewVerdict,
@@ -540,6 +541,18 @@ def _test_evidence_frame() -> list[str]:
     ]
 
 
+# One reply envelope (GHI #1095). A second, legacy JSON block with its own
+# `verdict` and `findings` vocabulary is what reviewers kept merging into the
+# acceptance object; the orchestrator derives the legacy result instead.
+_REPLY_INSTRUCTIONS = (
+    "Reply with exactly one JSON object: the acceptance envelope specified under",
+    "Durable Acceptance Result below. Emit no other JSON object. A finding against a",
+    "requirement names its obligation_id and blocks; an observation that breaks no",
+    "requirement uses obligation_id null and does not block.",
+    "",
+)
+
+
 def _acceptance_review_frame(stage: str, acceptance_context: str) -> list[str]:
     """Compose the locally validated handoff from the importer-owned response model."""
     from gzkit.acceptance_context import acceptance_review_frame
@@ -600,26 +613,7 @@ def compose_spec_review_prompt(
             "the implementation satisfies it. Do not take the implementer's word for anything --",
             "check the code directly.",
             "",
-            "Return your verdict as a JSON code block with this exact structure:",
-            "",
-            "```json",
-            "{",
-            '  "verdict": "PASS|FAIL|CONCERNS",',
-            '  "findings": [',
-            '    {"file": "...", "line": null, "severity": "critical|major|minor|info",',
-            '     "message": "..."}',
-            "  ],",
-            '  "verification_gaps": ["checks you could not perform, if any"],',
-            '  "summary": "Brief explanation of overall verdict"',
-            "}",
-            "```",
-            "",
-            "Severity guide:",
-            "- critical: requirement not met, blocks advancement",
-            "- major: significant gap, should be addressed",
-            "- minor: small issue; obligation mapping determines acceptance blocking",
-            "- info: observation only",
-            "",
+            *_REPLY_INSTRUCTIONS,
         ]
     )
     lines.extend(_acceptance_review_frame("spec", acceptance_context))
@@ -687,42 +681,68 @@ def compose_quality_review_prompt(
             "",
             "Read each file listed above. Report only what affects correctness or a",
             "stated brief requirement as blocking; everything else is an observation.",
-            "Style preferences and taste calls are non-blocking -- record them at",
-            "`minor` or `info` severity and do not escalate. Do not manufacture",
-            "findings: PASS with no findings is a valid and expected verdict.",
+            "Style preferences and taste calls are non-blocking -- record them as",
+            "auxiliary findings (obligation_id null) and do not escalate. Do not manufacture",
+            "findings: an accepted verdict with no findings is valid and expected.",
             "",
-            "Return your verdict as a JSON code block with this exact structure:",
-            "",
-            "```json",
-            "{",
-            '  "verdict": "PASS|FAIL|CONCERNS",',
-            '  "findings": [',
-            '    {"file": "...", "line": null, "severity": "critical|major|minor|info",',
-            '     "message": "..."}',
-            "  ],",
-            '  "verification_gaps": ["checks you could not perform, if any"],',
-            '  "summary": "Brief explanation of overall verdict"',
-            "}",
-            "```",
-            "",
-            "Severity guide:",
-            "- critical: serious violation that must be fixed before advancement",
-            "- major: notable issue that should be addressed",
-            "- minor: small improvement opportunity",
-            "- info: observation only",
-            "",
+            *_REPLY_INSTRUCTIONS,
         ]
     )
     lines.extend(_acceptance_review_frame("quality", acceptance_context))
     return "\n".join(lines)
 
 
+def review_result_from_envelope(response: ReviewResponse) -> ReviewResult:
+    """Derive the orchestrator's advancement result from the reviewer's one envelope.
+
+    A refuted envelope fails. A finding mapped to an obligation blocks at critical
+    severity; an auxiliary observation (no obligation) is informational and never
+    blocks. The reviewer's own coverage limits stay in ``verification_gaps``
+    (GHI #941, #1095).
+    """
+    findings = [
+        ReviewFinding(
+            file="",
+            severity=(
+                ReviewFindingSeverity.CRITICAL
+                if finding.obligation_id is not None
+                else ReviewFindingSeverity.INFO
+            ),
+            message=(
+                f"{finding.id} ({finding.obligation_id or 'auxiliary'}, {finding.kind}): "
+                f"{finding.description}"
+            ),
+        )
+        for finding in response.findings
+    ]
+    if response.verdict == "refuted":
+        verdict = ReviewVerdict.FAIL
+    elif findings:
+        verdict = ReviewVerdict.CONCERNS
+    else:
+        verdict = ReviewVerdict.PASS
+    return ReviewResult(
+        verdict=verdict,
+        findings=findings,
+        verification_gaps=list(response.verification_gaps),
+        summary="Derived from the gzkit.acceptance.review.v1 envelope",
+    )
+
+
 def parse_review_result(reviewer_output: str) -> ReviewResult | None:
     """Extract a ReviewResult from reviewer subagent output text.
 
-    Looks for a JSON code block containing the result fields.
-    Returns None if no valid result block is found.
+    The reviewer's single acceptance envelope is authoritative (GHI #1095): when
+    the output carries exactly one valid envelope, the result derives from it and
+    any legacy block is ignored. Output with no envelope falls back to the legacy
+    JSON block. Returns None if neither yields a valid result.
     """
+    envelopes = review_objects(reviewer_output)
+    if len(envelopes) == 1:
+        try:
+            return review_result_from_envelope(ReviewResponse.model_validate(envelopes[0]))
+        except ValidationError:
+            return None
     match = _RESULT_JSON_RE.search(reviewer_output)
     if not match:
         return None

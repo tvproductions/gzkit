@@ -214,21 +214,20 @@ class TestComposeSpecReviewPrompt(unittest.TestCase):
         self.assertIn("`src/gzkit/widget.py`", prompt)
         self.assertIn("`tests/test_widget.py`", prompt)
 
-    def test_contains_json_result_format_instructions(self):
+    def test_reply_contract_is_the_single_acceptance_envelope(self):
+        """GHI #1095: one reply envelope, with no competing legacy verdict vocabulary."""
         prompt = self._prompt()
-        self.assertIn("verdict", prompt)
-        self.assertIn("findings", prompt)
-        self.assertIn("summary", prompt)
-        self.assertIn("PASS|FAIL|CONCERNS", prompt)
+        self.assertIn('"schema": "gzkit.acceptance.review.v1"', prompt)
+        self.assertIn("exactly one JSON object", prompt)
+        self.assertNotIn("PASS|FAIL|CONCERNS", prompt)
 
-    def test_contains_severity_guide(self):
+    def test_blocking_is_stated_by_obligation_mapping(self):
+        """A mapped finding blocks; an auxiliary one (obligation_id null) does not."""
         prompt = self._prompt()
-        self.assertIn("critical", prompt)
-        self.assertIn("major", prompt)
-        self.assertIn("minor", prompt)
-        self.assertIn("info", prompt)
+        self.assertIn("obligation_id null", prompt)
+        self.assertIn("names its obligation_id and blocks", prompt)
         self.assertNotIn("small issue, noted but non-blocking", prompt)
-        self.assertIn("obligation mapping determines acceptance blocking", prompt)
+        self.assertIn("Obligation mapping, not wording, determines acceptance blocking", prompt)
 
     def test_works_with_empty_brief_requirements(self):
         prompt = self._prompt(brief_requirements=[])
@@ -305,12 +304,12 @@ class TestComposeQualityReviewPrompt(unittest.TestCase):
         prompt = self._prompt()
         self.assertIn("Pydantic", prompt)
 
-    def test_contains_json_result_format_instructions(self):
+    def test_reply_contract_is_the_single_acceptance_envelope(self):
+        """GHI #1095: one reply envelope, with no competing legacy verdict vocabulary."""
         prompt = self._prompt()
-        self.assertIn("verdict", prompt)
-        self.assertIn("findings", prompt)
-        self.assertIn("summary", prompt)
-        self.assertIn("PASS|FAIL|CONCERNS", prompt)
+        self.assertIn('"schema": "gzkit.acceptance.review.v1"', prompt)
+        self.assertIn("exactly one JSON object", prompt)
+        self.assertNotIn("PASS|FAIL|CONCERNS", prompt)
 
     def test_works_with_empty_test_files(self):
         prompt = self._prompt(test_files=[])

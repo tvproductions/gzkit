@@ -6,8 +6,9 @@ not infer semantic test adequacy from metadata or authenticate raw receipts.
 Historical reviews and findings remain inputs even after replacement proofs.
 """
 
+import json
 from collections.abc import Sequence
-from typing import Literal
+from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -135,6 +136,13 @@ class ReviewJudgment(AcceptanceModel):
         default=(),
         description="Excerpts the reviewer read that ground its approvals (GHI #994)",
     )
+    verification_gaps: tuple[str, ...] = Field(
+        default=(),
+        description=(
+            "Checks the reviewer could not perform; its own coverage, never a finding "
+            "and never an approval (GHI #941, #1095)"
+        ),
+    )
 
 
 class Review(ReviewJudgment):
@@ -155,6 +163,34 @@ class ReviewResponse(ReviewJudgment):
     schema_name: Literal["gzkit.acceptance.review.v1"] = Field(
         alias="schema", description="Acceptance review envelope discriminator"
     )
+
+
+REVIEW_SCHEMA = "gzkit.acceptance.review.v1"
+
+
+def review_objects(text: str) -> list[dict[str, Any]]:
+    """Read schema-tagged review envelopes from reviewer output, including code fences.
+
+    The importer and the orchestrator's legacy-result derivation read the same
+    envelopes with this one scanner, so they can never disagree about which
+    object in a reply is the review (GHI #1095).
+    """
+    decoder = json.JSONDecoder()
+    objects: list[dict[str, Any]] = []
+    index = 0
+    while index < len(text):
+        start = text.find("{", index)
+        if start < 0:
+            break
+        try:
+            value, length = decoder.raw_decode(text[start:])
+        except json.JSONDecodeError:
+            index = start + 1
+            continue
+        if isinstance(value, dict) and value.get("schema") == REVIEW_SCHEMA:
+            objects.append(value)
+        index = start + length
+    return objects
 
 
 class Readiness(AcceptanceModel):
