@@ -549,7 +549,12 @@ def _register_commit(content_commands: argparse._SubParsersAction) -> None:
             "consumer's last committed rendition; a re-render of UNCHANGED canon needs "
             "none and carries the standing attestation forward (GHI #821) — attestation "
             "attaches to the canon change, never to this Layer-3 re-render. The frozen "
-            "fingerprint is what `gz validate --rendition-freshness` checks the corpus against."
+            "fingerprint is what `gz validate --rendition-freshness` checks the corpus against. "
+            "RETENTION GATE (ADR-0.35.0 Decision 10): when the candidate drops a block the "
+            "prior committed rendition carried, --retention-map is required and must account "
+            "for every condition of every removed block, or the commit exits 3 and writes "
+            "NOTHING (no rendition, no provenance sidecar, no retention sidecar, no ledger "
+            "event)."
         ),
         epilog=_build_epilog(
             [
@@ -557,6 +562,9 @@ def _register_commit(content_commands: argparse._SubParsersAction) -> None:
                 '--attestor "g0" --attestation-text "attest completed"',
                 "gz content commit AGENTS.md --consumer claude "
                 '--attestor "g0" --attestation-text "recompose attested"',
+                "gz content commit AGENTS.md --consumer codex --attestor g0 "
+                '--attestation-text "C1 drop accepted" '
+                "--retention-map /tmp/agents.retention.json",
             ]
         ),
     )
@@ -577,12 +585,19 @@ def _register_commit(content_commands: argparse._SubParsersAction) -> None:
         default="",
         help="Operator's verbatim corpus-attestation token; same conditional requirement.",
     )
+    p.add_argument(
+        "--retention-map",
+        dest="retention_map",
+        default=None,
+        help="Retention map JSON; required when the candidate drops a prior block.",
+    )
     p.set_defaults(
         func=lambda a: _content("commit", "content_commit_cmd")(
             surface=a.surface,
             consumer=a.consumer,
             attestor=a.attestor,
             attestation_text=a.attestation_text,
+            retention_map=a.retention_map,
         )
     )
 

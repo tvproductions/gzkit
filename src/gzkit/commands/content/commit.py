@@ -15,15 +15,28 @@ This attestation is NOT Gate 5. Gate 5 names OBPI/ADR completion attestation
 (``ADR-0.0.36``) and nothing else; a build step wearing that name is the collision
 the transit/exchange/handoff fence forbids (operator ruling 2026-08-17, GHI #822).
 
-Exit 0: rendition + sidecar committed + ledger event emitted.
-Exit 1: user/config error (empty attestation, absent candidate, absent corpus).
-Exit 2: system/IO error.
+OBPI-0.35.0-14 (ADR-0.35.0 § Decision item 10) adds the RETENTION GATE: when the
+candidate drops a block the prior committed rendition carried, promotion requires a
+``--retention-map`` accounting for every condition of every removed block, so a
+compression can never silently lose a binding condition again (GHI #1090, #1091).
+``enforce_retention`` is the one callable that runs this check, so a future
+``content land`` seam can call it without going through the CLI (ADR-0.35.0 BI-10).
+
+Exit 0: rendition + sidecar (+ retention sidecar, when blocks were removed) committed
+    and ledger event emitted.
+Exit 1: user/config error (empty attestation, absent candidate, absent corpus,
+    malformed --retention-map).
+Exit 2: system/IO error (including an unreadable prior committed rendition).
+Exit 3: retention gate refusal — a removed block is unaccounted for. Writes NOTHING.
 """
 
 from __future__ import annotations
 
 import sys
 from datetime import UTC, datetime
+from pathlib import Path
+
+from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.commands.common import get_project_root
 from gzkit.content.corpus_store import corpus_path, load_corpus
@@ -38,15 +51,174 @@ from gzkit.content.rendition_store import (
     save_fingerprint,
     save_rendition,
 )
+from gzkit.content.retention import (
+    RetentionMap,
+    RetentionViolation,
+    first_line,
+    removed_blocks,
+    retention_path,
+    validate_retention,
+)
 from gzkit.governance.events import emit_rendition_committed
 
 
+class RetentionOutcome(BaseModel):
+    """Result of running the retention gate: whether to proceed, and what to write.
+
+    Pure with respect to the filesystem beyond reads — ``enforce_retention`` never
+    writes a rendition, sidecar, or ledger event; the caller writes only when
+    ``ok`` is True (Requirement 4).
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    ok: bool = Field(..., description="True when the gate passed; caller may write")
+    exit_code: int | None = Field(None, description="sys.exit code on failure (1, 2, or 3)")
+    message: str | None = Field(None, description="stderr recovery prose on failure")
+    removed: list[str] = Field(
+        default_factory=list, description="Prior blocks removed by this promotion"
+    )
+    retention_map: RetentionMap | None = Field(
+        None,
+        description="Validated map to persist, or None when no block was removed",
+    )
+
+
+def _render_violation_report(violations: list[RetentionViolation]) -> str:
+    """Render every violation plus three-part recovery prose (guardrail-feedback-prose.md)."""
+    findings = "\n".join(f"- [{v.kind}] {v.message}" for v in violations)
+    return (
+        "Error: the retention gate refused this commit. Nothing was written.\n"
+        f"{findings}\n"
+        "Why forbidden: a removed block with an unaccounted condition is an "
+        "unreviewed meaning loss (ADR-0.35.0 § Decision item 10) — the "
+        "2026-09-17 compression dropped 23 binding conditions this way and every "
+        "check passed (GHI #1090, #1091).\n"
+        "Next: account for every condition of each removed block in a "
+        "--retention-map (`gz content commit --help`; manpage `content` § commit) — mark "
+        "each KEPT with its verbatim candidate span or DROPPED with a reason, name "
+        "every DROPPED condition's id in --attestation-text, then re-run "
+        "`gz content commit`."
+    )
+
+
+def enforce_retention(
+    root: Path,
+    surface: str,
+    consumer: str,
+    candidate_text: str,
+    retention_map_path: str | None,
+    attestation_text: str,
+) -> RetentionOutcome:
+    """Run the retention gate for one candidate→committed promotion.
+
+    The prior rendition is the consumer's COMMITTED rendition
+    (``rendition_path(root, surface, consumer)``). The vacuous branch tests that
+    path's EXISTENCE, never an empty delta after a failed read — an absent prior
+    is never evidence that nothing was lost; it means there is no prior delta to
+    lose (Requirement 1). An existing-but-unreadable prior is a system error
+    (exit 2), never silently treated as vacuous.
+
+    Args:
+        root: Project root.
+        surface: Control surface name (e.g. 'AGENTS.md').
+        consumer: Target vendor consumer.
+        candidate_text: The candidate rendition text about to be promoted.
+        retention_map_path: Path to a ``--retention-map`` JSON file, or None.
+        attestation_text: The attestation text supplied on THIS invocation --
+            never a carried-forward standing attestation. ADR-0.35.0 Decision 10:
+            the operator rules on every drop in the words supplied WITH THIS
+            COMMIT, so a DROPPED condition's id must appear here, not in an
+            earlier, unrelated commit's text that happens to be exempt because
+            the CORPUS (not the candidate) is unchanged (GHI #821).
+
+    Returns:
+        A ``RetentionOutcome``. ``ok=False`` never has a side effect; the caller
+        writes the rendition, provenance sidecar, retention sidecar, and ledger
+        event only when ``ok`` is True.
+
+    """
+    prior_path = rendition_path(root, surface, consumer)
+    if not prior_path.exists():
+        removed: list[str] = []
+    else:
+        try:
+            prior_text = prior_path.read_text(encoding="utf-8")
+        except OSError as exc:
+            return RetentionOutcome(
+                ok=False,
+                exit_code=2,
+                message=f"Error reading prior rendition {prior_path.as_posix()!r}: {exc}",
+            )
+        removed = removed_blocks(prior_text, candidate_text)
+
+    retention_map: RetentionMap | None = None
+    if retention_map_path is not None:
+        try:
+            raw = Path(retention_map_path).read_text(encoding="utf-8")
+            retention_map = RetentionMap.model_validate_json(raw)
+        except (OSError, ValueError) as exc:
+            # ValueError catches both UnicodeDecodeError (read_text's base for
+            # invalid UTF-8 bytes) and ValidationError (pydantic-core's own base
+            # for a JSON/schema error) -- a malformed map file is a user/config
+            # error (exit 1) either way, never an uncaught traceback.
+            return RetentionOutcome(
+                ok=False,
+                exit_code=1,
+                message=(
+                    f"Error: --retention-map {retention_map_path!r} is malformed: "
+                    f"{exc}. Nothing committed."
+                ),
+            )
+
+    if not removed:
+        # No block was removed this promotion — no sidecar governs a delta that
+        # does not exist (Requirement 5), whether or not a map was supplied.
+        return RetentionOutcome(ok=True, removed=[], retention_map=None)
+
+    if retention_map is None:
+        violations = [
+            RetentionViolation(
+                kind="missing-retention-map",
+                message=(
+                    f"Removed block '{first_line(block)}' has no --retention-map accounting for it"
+                ),
+            )
+            for block in removed
+        ]
+        return RetentionOutcome(ok=False, exit_code=3, message=_render_violation_report(violations))
+
+    violations = validate_retention(removed, candidate_text, retention_map, attestation_text)
+    if violations:
+        return RetentionOutcome(ok=False, exit_code=3, message=_render_violation_report(violations))
+
+    return RetentionOutcome(ok=True, removed=removed, retention_map=retention_map)
+
+
+def _retention_correspondence_lines(retention_map: RetentionMap) -> list[str]:
+    """Render the KEPT/DROPPED correspondence the tool cannot judge (Requirement 9)."""
+    lines: list[str] = []
+    for block in retention_map.blocks:
+        for condition in block.conditions:
+            if condition.disposition == "kept":
+                lines.append(f'{condition.id}: "{condition.quote}" -> "{condition.span}"')
+            else:
+                lines.append(f"{condition.id}: DROPPED -- {condition.reason}")
+    return lines
+
+
 def content_commit_cmd(
-    *, surface: str, consumer: str, attestor: str = "", attestation_text: str = ""
+    *,
+    surface: str,
+    consumer: str,
+    attestor: str = "",
+    attestation_text: str = "",
+    retention_map: str | None = None,
 ) -> None:
     """Handle ``gz content commit <surface> --consumer <c> --attestor <n> --attestation-text <t>``.
 
-    Exit 0 on success; 1 on config/validation error; 2 on IO error.
+    Exit 0 on success; 1 on config/validation error; 2 on IO error; 3 on a
+    retention-gate refusal (a removed block is unaccounted for).
     """
     root = get_project_root()
 
@@ -116,6 +288,23 @@ def content_commit_cmd(
         )
         sys.exit(1)
 
+    # The retention gate runs after the checks above and before any write
+    # (Requirement 8) — it never weakens an existing `commit` refusal, only
+    # adds its own. It checks a DROPPED id against `attestation_text`, the RAW
+    # text supplied on THIS invocation — never `effective_text`, which may be
+    # a standing attestation carried forward from an earlier, unrelated commit
+    # (exempt only because the CORPUS is unchanged, GHI #821). ADR-0.35.0
+    # Decision 10 requires the operator to rule on every drop in the words
+    # supplied WITH THIS COMMIT, so an old attestation that happens to contain
+    # a condition id must never satisfy this check.
+    outcome = enforce_retention(
+        root, surface, consumer, candidate_text, retention_map, attestation_text
+    )
+    if not outcome.ok:
+        print(outcome.message, file=sys.stderr)
+        sys.exit(outcome.exit_code)
+
+    retention_sidecar = retention_path(root, surface, consumer)
     try:
         save_rendition(root, surface, consumer, rendition_bytes)
         save_fingerprint(
@@ -131,6 +320,14 @@ def content_commit_cmd(
                 attestation_text=effective_text,
             ),
         )
+        if outcome.retention_map is not None:
+            retention_sidecar.parent.mkdir(parents=True, exist_ok=True)
+            retention_sidecar.write_text(outcome.retention_map.model_dump_json(), encoding="utf-8")
+        elif retention_sidecar.exists():
+            # No block was removed this promotion — a stale sidecar from an
+            # earlier one must never describe a delta it did not govern
+            # (Requirement 5).
+            retention_sidecar.unlink()
     except OSError as exc:
         print(f"Error committing rendition for {surface!r}/{consumer!r}: {exc}", file=sys.stderr)
         sys.exit(2)
@@ -143,6 +340,12 @@ def content_commit_cmd(
         attestor=effective_attestor,
     )
 
+    retention_report = ""
+    if outcome.retention_map is not None:
+        lines = _retention_correspondence_lines(outcome.retention_map)
+        if lines:
+            retention_report = "\nRetention:\n" + "\n".join(lines)
+
     print(
         f"Committed: {rendition_path(root, surface, consumer).as_posix()}\n"
         f"Provenance: {fingerprint_path(root, surface, consumer).as_posix()} "
@@ -154,6 +357,7 @@ def content_commit_cmd(
             if standing is not None and not attestor.strip()
             else ""
         )
+        + retention_report
         # Three-part next step (`.claude/rules/guardrail-feedback-prose.md`): this seam
         # writes the RENDITION only, and a session that stops here has a played-back
         # surface still showing the prior canon. Naming the playback writer here is the
