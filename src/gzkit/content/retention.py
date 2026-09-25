@@ -590,6 +590,31 @@ def _check_empty_non_binding_quotes(
     ]
 
 
+def _check_empty_non_binding_reason(
+    block_map: RemovedBlock, first_line: str
+) -> list[RetentionViolation]:
+    """Flag an empty/whitespace-only non_binding reason.
+
+    ``NonBinding.reason`` is a required ``str``, but nothing previously
+    rejected ``""``. NOT a Pydantic constraint: a model ``ValidationError``
+    would turn a map defect into a malformed-map exit 1 and hide every other
+    violation, while Requirement 3 needs every violation reported in one
+    refusal (amended 2026-09-25 by operator ruling; aux-empty-nonbinding-reason).
+    """
+    return [
+        RetentionViolation(
+            kind="non-binding-without-reason",
+            message=(
+                f"non_binding declaration for '{nb.quote[:50]}' has an empty or "
+                f"whitespace-only reason in block '{first_line}' — a non-binding "
+                "declaration must name why the sentence binds nothing"
+            ),
+        )
+        for nb in block_map.non_binding
+        if not nb.reason.strip()
+    ]
+
+
 def _check_block_coverage(block_map: RemovedBlock) -> list[RetentionViolation]:
     """Check meaningful-character coverage for one block (Requirement 3)."""
     block_text = block_map.removed
@@ -622,6 +647,7 @@ def _check_block_coverage(block_map: RemovedBlock) -> list[RetentionViolation]:
         )
 
     violations.extend(_check_empty_non_binding_quotes(block_map, block_first_line))
+    violations.extend(_check_empty_non_binding_reason(block_map, block_first_line))
     return violations
 
 
@@ -743,6 +769,43 @@ def _check_block_conditions(
         )
         violations.extend(_check_condition_dropped(condition, attestation_text, block_first_line))
 
+    return violations
+
+
+def check_map_target(
+    retention_map: RetentionMap, surface: str, consumer: str
+) -> list[RetentionViolation]:
+    """Check the map's (surface, consumer) match this invocation's.
+
+    ``validate_retention`` takes no invocation target, so the gate entry
+    point (``enforce_retention``) calls this beside it and merges both lists;
+    BI-10 keeps ``validate_retention``'s signature unchanged for
+    OBPI-0.35.0-07, whose ``land`` must call both. A map
+    authored for one (surface, consumer) pair must never silently govern a
+    different one's promotion (aux-retention-map-target-unbound; amended
+    2026-09-25 by operator ruling).
+    """
+    violations: list[RetentionViolation] = []
+    if retention_map.surface != surface:
+        violations.append(
+            RetentionViolation(
+                kind="map-target-mismatch",
+                message=(
+                    f"--retention-map surface {retention_map.surface!r} does not match "
+                    f"this invocation's surface {surface!r}"
+                ),
+            )
+        )
+    if retention_map.consumer != consumer:
+        violations.append(
+            RetentionViolation(
+                kind="map-target-mismatch",
+                message=(
+                    f"--retention-map consumer {retention_map.consumer!r} does not match "
+                    f"this invocation's consumer {consumer!r}"
+                ),
+            )
+        )
     return violations
 
 

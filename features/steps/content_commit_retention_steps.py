@@ -43,9 +43,10 @@ from gzkit.content.rendition_store import (
     save_fingerprint,
     save_rendition,
 )
+from gzkit.content.retention import RetentionMap, retention_path
 
-# Verbatim c3582975f:AGENTS.md:234 (saved byte-for-byte at
-# scratchpad/prior-234.txt) -- the GHI #1090 replay fixture's prior block.
+# Verbatim c3582975f:AGENTS.md:234 -- the GHI #1090 replay fixture's prior block,
+# reproducible via `git show c3582975f:AGENTS.md | sed -n '234p'`.
 _PRIOR_BLOCK_1090 = (
     "**REQ-coverage gate (ADR-0.0.25, ADR-0.0.59).** Every **BEHAVIOR** REQ "
     "must have a covering passing test before `gz obpi complete`; it cannot "
@@ -239,3 +240,20 @@ def step_provenance_unchanged(context, surface: str, consumer: str) -> None:
     assert actual == context.prior_provenance_bytes, (
         "the provenance sidecar was overwritten on a retention-gate refusal"
     )
+
+
+@then('no "{event}" ledger event was written')
+def step_no_ledger_event(_context, event: str) -> None:
+    ledger = Path(".gzkit", "ledger.jsonl")
+    lines = ledger.read_text(encoding="utf-8").splitlines() if ledger.exists() else []
+    written = [line for line in lines if line.strip() and json.loads(line).get("event") == event]
+    assert not written, f"a {event!r} ledger event was written on refusal: {written}"
+
+
+@then('the retention sidecar for "{surface}" consumer "{consumer}" holds the map "{filename}"')
+def step_sidecar_holds_map(_context, surface: str, consumer: str, filename: str) -> None:
+    sidecar = retention_path(Path("."), surface, consumer)
+    assert sidecar.exists(), f"no retention sidecar at {sidecar}"
+    expected = RetentionMap.model_validate_json(Path(filename).read_text(encoding="utf-8"))
+    actual = RetentionMap.model_validate_json(sidecar.read_text(encoding="utf-8"))
+    assert actual == expected, f"the sidecar does not hold the validated map: {actual!r}"

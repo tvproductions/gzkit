@@ -696,6 +696,34 @@ class TestContentCommitRetentionGate(unittest.TestCase):
 
             self.assertEqual(result.exit_code, 2, msg=result.output)
 
+    def test_invalid_utf8_prior_rendition_exits_2_and_writes_nothing(self) -> None:
+        """A prior committed rendition holding invalid UTF-8 bytes exits 2 (Requirement 1).
+
+        `UnicodeDecodeError` is a `ValueError`, not an `OSError` -- the read
+        of the prior rendition previously caught only `OSError`, so this
+        escaped uncaught and fell through to the CLI's generic handler as
+        exit 1 "Unexpected error" (aux-invalid-utf8-prior-exit, tier-1
+        adversary round 1). Requirement 1 says an unreadable prior rendition
+        is exit 2, same as any other unreadable-prior case.
+        """
+        with self._runner.isolated_filesystem():
+            Path(".gzkit").mkdir()
+            Path(".gzkit", "corpus").mkdir()
+            append_entry(Path("."), "AGENTS.md", _entry("e1"))
+            prior_rendition = rendition_path(Path("."), "AGENTS.md", "codex")
+            prior_rendition.parent.mkdir(parents=True, exist_ok=True)
+            prior_rendition.write_bytes(b"\xff\xfe not valid utf-8")
+            _stage_candidate(_CANDIDATE_TEXT)
+
+            result = self._runner.invoke(main, _commit_args())
+
+            self.assertEqual(result.exit_code, 2, msg=result.output)
+            self.assertIn(prior_rendition.as_posix(), result.output)
+            self.assertEqual(prior_rendition.read_bytes(), b"\xff\xfe not valid utf-8")
+            self.assertFalse(fingerprint_path(Path("."), "AGENTS.md", "codex").exists())
+            self.assertFalse(retention_path(Path("."), "AGENTS.md", "codex").exists())
+            self.assertFalse(Path(".gzkit/ledger.jsonl").exists())
+
     def test_success_prints_kept_and_dropped_correspondence(self) -> None:
         """A successful commit with removed blocks prints each KEPT/DROPPED correspondence."""
         with self._runner.isolated_filesystem():
@@ -1118,6 +1146,133 @@ class TestContentCommitRetentionGate(unittest.TestCase):
             )
 
             self.assertEqual(result.exit_code, 0, msg=result.output)
+
+    @covers("REQ-0.35.0-14-02")
+    def test_retention_map_target_mismatch_exits_3_and_writes_nothing(self) -> None:
+        """A --retention-map whose surface or consumer differs from the invocation is refused.
+
+        aux-retention-map-target-unbound (tier-1 adversary round 1, amended
+        Requirement 3): nothing previously compared ``retention_map.surface`` /
+        ``retention_map.consumer`` with the invocation's ``surface`` /
+        ``consumer``, so a map authored for one (surface, consumer) pair could
+        silently govern promotion of a different one. Both surface and
+        consumer mismatches are checked; each names the map's value AND the
+        invocation's value, and the mismatch is reported in the same refusal
+        as any other violation.
+        """
+        prior = "# AGENTS.md\n\nDeprecated note about legacy policy text.\n"
+
+        def _map(surface: str, consumer: str) -> dict:
+            return {
+                "surface": surface,
+                "consumer": consumer,
+                "extracted_by": "reviewer-agent",
+                "mapped_by": "author-agent",
+                "blocks": [
+                    {
+                        "removed": "Deprecated note about legacy policy text.",
+                        "conditions": [
+                            {
+                                "id": "C1",
+                                "quote": "Deprecated note about legacy policy text.",
+                                "disposition": "dropped",
+                                "reason": "superseded by replacement body",
+                            }
+                        ],
+                        "non_binding": [],
+                    }
+                ],
+            }
+
+        cases = [
+            ("surface-mismatch", "OTHER.md", "codex"),
+            ("consumer-mismatch", "AGENTS.md", "other-consumer"),
+        ]
+        for label, map_surface, map_consumer in cases:
+            with self.subTest(label=label), self._runner.isolated_filesystem():
+                _seed_prior_rendition(prior)
+                _stage_candidate("# AGENTS.md\n\nreplacement body.\n")
+                retention_map = _map(map_surface, map_consumer)
+                Path("map.json").write_text(json.dumps(retention_map), encoding="utf-8")
+
+                root = Path(".")
+                prior_provenance = fingerprint_path(root, "AGENTS.md", "codex").read_text(
+                    encoding="utf-8"
+                )
+                ledger_lines_before = _ledger_line_count()
+
+                result = self._runner.invoke(
+                    main,
+                    _commit_args(text="C1 drop accepted", retention_map="map.json"),
+                )
+
+                self.assertEqual(result.exit_code, 3, msg=result.output)
+                self.assertIn("map-target-mismatch", result.output)
+                # Names the map's differing value AND the invocation's value
+                # for whichever field mismatched.
+                if label == "surface-mismatch":
+                    self.assertIn(map_surface, result.output)
+                    self.assertIn("AGENTS.md", result.output)
+                else:
+                    self.assertIn(map_consumer, result.output)
+                    self.assertIn("codex", result.output)
+
+                self.assertFalse(
+                    retention_path(root, "AGENTS.md", "codex").exists(),
+                    "no retention sidecar is written on refusal",
+                )
+                self.assertEqual(
+                    rendition_path(root, "AGENTS.md", "codex").read_text(encoding="utf-8"),
+                    prior,
+                    "the committed rendition must be unchanged on refusal",
+                )
+                self.assertEqual(
+                    fingerprint_path(root, "AGENTS.md", "codex").read_text(encoding="utf-8"),
+                    prior_provenance,
+                    "the provenance sidecar must be unchanged on refusal",
+                )
+                self.assertEqual(
+                    _ledger_line_count(),
+                    ledger_lines_before,
+                    "no rendition_committed ledger event is written on refusal",
+                )
+
+    @covers("REQ-0.35.0-14-02")
+    def test_map_target_mismatch_merged_with_other_violations_in_one_refusal(self) -> None:
+        """A map with a target mismatch AND another violation reports both in one refusal."""
+        with self._runner.isolated_filesystem():
+            prior = "# AGENTS.md\n\nDeprecated note about legacy policy text.\n"
+            _seed_prior_rendition(prior)
+            _stage_candidate("# AGENTS.md\n\nreplacement body.\n")
+            retention_map = {
+                "surface": "OTHER.md",
+                "consumer": "codex",
+                "extracted_by": "reviewer-agent",
+                "mapped_by": "author-agent",
+                "blocks": [
+                    {
+                        "removed": "Deprecated note about legacy policy text.",
+                        "conditions": [
+                            {
+                                "id": "C1",
+                                "quote": "Deprecated note about legacy policy text.",
+                                "disposition": "dropped",
+                                "reason": "",  # a second, distinct violation
+                            }
+                        ],
+                        "non_binding": [],
+                    }
+                ],
+            }
+            Path("map.json").write_text(json.dumps(retention_map), encoding="utf-8")
+
+            result = self._runner.invoke(
+                main, _commit_args(text="C1 drop accepted", retention_map="map.json")
+            )
+
+            self.assertEqual(result.exit_code, 3, msg=result.output)
+            self.assertIn("map-target-mismatch", result.output)
+            self.assertIn("dropped-without-reason", result.output)
 
 
 class TestContentCommitRetentionGateVacuousCases(unittest.TestCase):

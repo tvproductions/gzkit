@@ -1056,3 +1056,6 @@
 {"ts": "2026-09-25T00:18:39Z", "source": "20260925T001838Z-compression-losses-restored-obpi14-blocked.md", "text": "S06-S08: keep the fa1a52dca placement and carry the rulings into the missing skills (answer: \"Add to the missing skills (Recommended)\")."}
 {"ts": "2026-09-25T00:18:39Z", "source": "20260925T001838Z-compression-losses-restored-obpi14-blocked.md", "text": "Restore the remaining binding findings (verbatim: \"restore S09, S12, S16, S17 too\")."}
 {"ts": "2026-09-25T00:18:39Z", "source": "20260925T001838Z-compression-losses-restored-obpi14-blocked.md", "text": "Continue the OBPI-14 pipeline (verbatim: \"keep going with the pipeline\")."}
+{"ts": "2026-09-25T09:46:13Z", "source": "20260925T094609Z-obpi14-completed.md", "text": "aux-empty-nonbinding-reason is added to Requirement 3's violation list and fixed now (verbatim option chosen: 'Amend + fix now (Recommended)')."}
+{"ts": "2026-09-25T09:46:13Z", "source": "20260925T094609Z-obpi14-completed.md", "text": "aux-retention-map-target-unbound is added to Requirement 3's violation list and fixed now (verbatim option chosen: 'Amend + fix now (Recommended)')."}
+{"ts": "2026-09-25T09:46:13Z", "source": "20260925T094609Z-obpi14-completed.md", "text": "Gate 5 for OBPI-0.35.0-14-meaning-preserving-landing, verbatim: 'attest completed'."}

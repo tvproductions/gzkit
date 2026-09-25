@@ -253,9 +253,7 @@ class TestValidateRetentionAllViolations(unittest.TestCase):
         )
 
         violations = validate_retention(removed, candidate, map_obj, "")
-        span_violations = [
-            v for v in violations if "span" in v.kind.lower() or "span" in v.message.lower()
-        ]
+        span_violations = [v for v in violations if v.kind == "kept-span-not-in-candidate"]
         self.assertTrue(span_violations, "Should detect span not in candidate")
 
     @covers("REQ-0.35.0-14-02")
@@ -604,6 +602,99 @@ class TestValidateRetentionEmptyQuoteBypass(unittest.TestCase):
         self.assertTrue(
             uncovered,
             "An empty condition quote must not count as covering the block's sentence",
+        )
+
+
+class TestValidateRetentionNonBindingWithoutReason(unittest.TestCase):
+    """aux-empty-nonbinding-reason: a non_binding entry needs a non-empty reason.
+
+    ``NonBinding.reason`` is a required ``str``, but nothing previously
+    rejected ``""`` -- a non-binding declaration with no reason silently
+    excused a removed block's meaning loss with no operator-visible
+    rationale. Not a Pydantic constraint: a model ``ValidationError`` would
+    turn this into a malformed-map exit 1 and hide every OTHER violation,
+    while Requirement 3 needs every violation reported in one refusal
+    (amended 2026-09-25 by operator ruling).
+    """
+
+    @covers("REQ-0.35.0-14-02")
+    def test_empty_non_binding_reason_is_a_violation_alongside_others(self) -> None:
+        """An empty non_binding reason is flagged, alongside every other violation."""
+        removed = ["## Block\n\nFirst sentence covered. Second sentence non-binding."]
+        candidate = "## Other"
+
+        map_obj = RetentionMap(
+            surface="AGENTS.md",
+            consumer="root",
+            extracted_by="Reviewer",
+            mapped_by="Author",
+            blocks=[
+                RemovedBlock(
+                    removed=removed[0],
+                    conditions=[
+                        Condition(
+                            id="C1",
+                            quote="First sentence covered",
+                            disposition="dropped",
+                            reason="",  # a second, distinct violation
+                        )
+                    ],
+                    non_binding=[
+                        NonBinding(
+                            quote="Second sentence non-binding",
+                            reason="",  # empty reason -- the violation under test
+                        )
+                    ],
+                )
+            ],
+        )
+
+        violations = validate_retention(removed, candidate, map_obj, "approve C1")
+
+        non_binding_violations = [v for v in violations if v.kind == "non-binding-without-reason"]
+        self.assertTrue(
+            non_binding_violations,
+            f"An empty non_binding reason must be its own violation, got: {violations}",
+        )
+        self.assertIn("Block", non_binding_violations[0].message)
+
+        reason_violations = [v for v in violations if v.kind == "dropped-without-reason"]
+        self.assertTrue(
+            reason_violations,
+            "The non_binding violation must be reported ALONGSIDE the dropped-condition "
+            f"violation, never only the first: got {violations}",
+        )
+
+    @covers("REQ-0.35.0-14-02")
+    def test_whitespace_only_non_binding_reason_is_a_violation(self) -> None:
+        """A whitespace-only non_binding reason is also flagged, not merely an empty string."""
+        removed = ["## Block\n\nA sentence that is non-binding."]
+        candidate = "## Other"
+
+        map_obj = RetentionMap(
+            surface="AGENTS.md",
+            consumer="root",
+            extracted_by="Reviewer",
+            mapped_by="Author",
+            blocks=[
+                RemovedBlock(
+                    removed=removed[0],
+                    conditions=[],
+                    non_binding=[
+                        NonBinding(
+                            quote="A sentence that is non-binding",
+                            reason="   ",
+                        )
+                    ],
+                )
+            ],
+        )
+
+        violations = validate_retention(removed, candidate, map_obj, "")
+        non_binding_violations = [v for v in violations if v.kind == "non-binding-without-reason"]
+        self.assertTrue(
+            non_binding_violations,
+            f"A whitespace-only non_binding reason must be a violation, got: {violations}",
         )
 
 

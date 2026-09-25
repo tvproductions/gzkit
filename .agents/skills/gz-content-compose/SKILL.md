@@ -4,9 +4,9 @@ description: Validate and stage a candidate rendition from the corpus via gz con
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-08-02
+last_reviewed: 2026-09-25
 metadata:
-  skill-version: "1.0.1"
+  skill-version: "1.1.0"
 model: sonnet
 gz_command: gz content compose
 ---
@@ -59,6 +59,46 @@ grep "composition_candidate_emitted" .gzkit/ledger.jsonl
 7. The candidate flows to the advisor-QC loop (OBPI-24) and operator attestation
    (OBPI-22) before promotion to a committed rendition.
 
+## Before commit: the retention map
+
+`gz content commit` enforces a retention gate (ADR-0.35.0 § Decision item 10,
+GHI #1090/#1091; manpage `content` § "Retention gate: `--retention-map`") when
+the candidate drops a block the consumer's prior **committed** rendition
+carried. The gate proves only bytes; whether the extraction was independent,
+whether a KEPT span carries its quote's meaning, and whether the operator
+actually ruled each drop live in this procedure, not in the tool. Before
+running `commit`:
+
+1. **Find the removed blocks before committing.** Compare the consumer's
+   committed rendition `.gzkit/renditions/<surface>/<consumer>.md` with the
+   candidate block by block (a block is a heading, paragraph, list item or
+   table row; a fenced code block is one block); every prior block whose text
+   does not appear in the candidate is removed. No committed rendition, or no
+   removed block, means no map is needed. `gz content commit` has **NO dry
+   run**: without a map it exits 3 and names each removed block, but when
+   nothing was removed it **PROMOTES** (exit 0) — never run it as a probe
+   with attestation words the operator did not say.
+2. **Dispatch an independent reviewer** — a different model from the author
+   wherever one is available; otherwise a fresh-context agent, and say so —
+   to extract the binding conditions of each removed block, verbatim. The
+   reviewer's identity goes in `extracted_by`; it must differ from
+   `mapped_by`.
+3. **The author (you) maps each condition**: KEPT with the verbatim candidate
+   span that carries it, or DROPPED with a reason; sentences that bind
+   nothing go in `non_binding` with a reason. Every meaningful character of
+   each removed block must be covered.
+4. **The reviewer verifies every KEPT pair** (quote -> span) for sameness of
+   meaning, and every `non_binding` exemption; the tool checks only byte
+   presence. Record the reviewer's verdict on each pair, and present it to
+   the operator alongside the DROPPED ids in step 5.
+5. **Present every DROPPED condition to the operator by id** (e.g. `C2`),
+   with its quote and reason, and obtain the operator's own words ruling
+   each drop. Never author attestation text the operator did not say.
+6. **Commit with `--retention-map <file>`** and the operator's words in
+   `--attestation-text`, which must contain every DROPPED id at a token
+   boundary. On exit 3, read every named violation and repair the map; never
+   delete a condition to make the refusal go away.
+
 ## Output Contract
 
 On success (`exit 0`):
@@ -74,7 +114,9 @@ On failure (`exit 1`):
 ## Do Not
 
 - Call any Anthropic/LLM API in tool code — the tool is deterministic; this skill IS the LLM surface
-- Auto-promote the candidate to a committed rendition — that is OBPI-22 scope
+- Promote the candidate (`gz content commit`) except through § Before commit: the retention map, with the operator's own attestation words
 - Rewrite or drop `tier: invariant` entries in the candidate text
 - Claim compose is complete without running `gz content compose` and confirming `exit 0`
 - Edit `AGENTS.md`, `CLAUDE.md`, or any mirror during this skill — rendered surfaces are never touched
+- Mark a condition KEPT at a candidate span that does not carry its removed quote's meaning — byte presence is not sameness of meaning
+- Author or paraphrase the operator's drop ruling — a DROPPED condition's attestation words must be the operator's own, never invented on their behalf

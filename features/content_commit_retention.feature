@@ -17,6 +17,7 @@ Feature: Retention gate for gz content commit (OBPI-0.35.0-14, ADR-0.35.0 Decisi
     And the committed rendition for "AGENTS.md" consumer "codex" equals the prior text
     And the provenance sidecar for "AGENTS.md" consumer "codex" is unchanged since seeding
     And the file ".gzkit/renditions/AGENTS.md/codex.retention.json" does not exist
+    And no "rendition_committed" ledger event was written
 
   @REQ-0.35.0-14-04
   Scenario: a DROPPED condition's id must appear in this invocation's attestation text
@@ -29,7 +30,7 @@ Feature: Retention gate for gz content commit (OBPI-0.35.0-14, ADR-0.35.0 Decisi
     And the file ".gzkit/renditions/AGENTS.md/codex.retention.json" does not exist
     When I run the gz command "content commit AGENTS.md --consumer codex --attestor g0 --attestation-text 'attest completed; C1 drop accepted' --retention-map map.json"
     Then the command exits with code 0
-    And the file ".gzkit/renditions/AGENTS.md/codex.retention.json" exists
+    And the retention sidecar for "AGENTS.md" consumer "codex" holds the map "map.json"
 
   @REQ-0.35.0-14-05
   Scenario: a byte-identical re-render commits without a map
@@ -48,4 +49,4 @@ Feature: Retention gate for gz content commit (OBPI-0.35.0-14, ADR-0.35.0 Decisi
     Given the same retention map "map.json" with the accept-uncovered condition DROPPED and its id attested
     When I run the gz command "content commit AGENTS.md --consumer codex --attestor g0 --attestation-text 'C1 drop accepted for the accept-uncovered clause' --retention-map map.json"
     Then the command exits with code 0
-    And the file ".gzkit/renditions/AGENTS.md/codex.retention.json" exists
+    And the retention sidecar for "AGENTS.md" consumer "codex" holds the map "map.json"

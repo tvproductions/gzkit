@@ -54,6 +54,7 @@ from gzkit.content.rendition_store import (
 from gzkit.content.retention import (
     RetentionMap,
     RetentionViolation,
+    check_map_target,
     first_line,
     removed_blocks,
     retention_path,
@@ -144,7 +145,12 @@ def enforce_retention(
     else:
         try:
             prior_text = prior_path.read_text(encoding="utf-8")
-        except OSError as exc:
+        except (OSError, UnicodeDecodeError) as exc:
+            # UnicodeDecodeError is a ValueError, not an OSError -- without this
+            # clause it escaped uncaught to the CLI's generic handler as exit 1
+            # "Unexpected error" (aux-invalid-utf8-prior-exit). An unreadable
+            # prior rendition is exit 2 whatever the reason it cannot be read
+            # (Requirement 1), mirroring the --retention-map read below.
             return RetentionOutcome(
                 ok=False,
                 exit_code=2,
@@ -188,7 +194,8 @@ def enforce_retention(
         ]
         return RetentionOutcome(ok=False, exit_code=3, message=_render_violation_report(violations))
 
-    violations = validate_retention(removed, candidate_text, retention_map, attestation_text)
+    violations = check_map_target(retention_map, surface, consumer)
+    violations.extend(validate_retention(removed, candidate_text, retention_map, attestation_text))
     if violations:
         return RetentionOutcome(ok=False, exit_code=3, message=_render_violation_report(violations))
 

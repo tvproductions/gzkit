@@ -936,7 +936,9 @@ before this gate existed:**
 An **existing but unreadable** prior committed rendition is a system error,
 exit 2 — never silently treated as vacuous.
 
-**The map JSON schema** — `surface`, `consumer`, `extracted_by` (the
+**The map JSON schema** — `surface` and `consumer` (both must equal this
+invocation's surface and `--consumer`: a map written for one pair never
+governs another pair's promotion, so a mismatch is a violation), `extracted_by` (the
 independent reviewer's identity), `mapped_by` (the author's identity, and it
 must differ from `extracted_by` after case-folding and trimming), and
 `blocks[]`. Each block entry carries `removed` (the removed block, verbatim),
@@ -947,7 +949,10 @@ must differ from `extracted_by` after case-folding and trimming), and
   of `removed`; a **KEPT** condition names `span`, a substring of the
   candidate; a **DROPPED** condition names a non-empty `reason`;
 - a **non_binding** entry is `{quote, reason}` — a sentence of `removed` that
-  binds nothing, named with its exemption reason.
+  binds nothing, named with a non-empty exemption reason. An empty or
+  whitespace-only reason is a violation, because an exemption with no stated
+  reason would drop a sentence without either a DROPPED id or a rationale the
+  operator can read.
 
 Minimal example:
 
@@ -963,7 +968,7 @@ Minimal example:
       "conditions": [
         {
           "id": "C1",
-          "quote": "`--accept-uncovered` is refused on every lane",
+          "quote": "`--accept-uncovered` is refused on every lane.",
           "disposition": "dropped",
           "reason": "superseded by the retention gate itself"
         }
@@ -994,7 +999,8 @@ runnable next step — account for every condition of each removed block in
 DROPPED with a reason, name every DROPPED condition's id in
 `--attestation-text`, then re-run `gz content commit`. Exit 1 is reserved for
 a malformed map (including non-UTF-8 bytes or an id that fails the id
-pattern); exit 2 is reserved for an unreadable prior committed rendition.
+pattern); exit 2 is reserved for an unreadable prior committed rendition,
+including one whose bytes are not valid UTF-8.
 
 A DROPPED condition's id must appear, at a token boundary, in **this
 invocation's** `--attestation-text` — a carried-forward standing attestation
@@ -1017,16 +1023,24 @@ NB: "<quote>" -- NON-BINDING: <reason>
 ```
 
 **Named residual (Requirement 9) — the tool proves bytes, never meaning.**
-The gate cannot prove that the reviewer extracted every sub-clause
-condition, that a KEPT span carries the **same meaning** as its quote (a
-KEPT span is checked only for byte **presence** in the candidate, never for
-semantic equivalence), or that the reviewer was genuinely a different model
-rather than merely a different name. Whether a KEPT span means what its
-quote means, and whether a `non_binding` sentence truly binds nothing, is
-the independent reviewer's and the operator's judgment — never the tool's.
-The sentence-coverage floor bounds the first residual at clause level; the
-rule against fabricating operator words holds the second; the third is left
-to the skill's dispatch record (`.gzkit/skills/gz-content-compose/SKILL.md`).
+The gate cannot prove four things, and each is held by something other
+than the tool:
+
+- **That the reviewer extracted every sub-clause condition.** The
+  sentence-coverage floor bounds this at clause level: every meaningful
+  character of a removed block must lie inside some quote.
+- **That a KEPT span carries the same meaning as its quote.** A KEPT span is
+  checked only for byte **presence** in the candidate, never for semantic
+  equivalence. The independent reviewer verifies each pair, and the success
+  output prints every pair so the operator can read it.
+- **That a DROPPED id in `--attestation-text` came from the operator.** The
+  rule against fabricating operator words holds this.
+- **That the reviewer was a different model rather than a different name.**
+  This is left to the skill's dispatch record
+  (`.gzkit/skills/gz-content-compose/SKILL.md`).
+
+Whether a `non_binding` sentence truly binds nothing is likewise the
+reviewer's and the operator's judgment, never the tool's.
 
 ### advise-rendition
 
@@ -1077,7 +1091,7 @@ verdict value itself is never the fail-closed trigger.
 | `--candidate <file>` | compose | Path to the candidate rendition file; when omitted, reads piped/redirected stdin with real content (explicit path), or generates from the corpus when stdin is a tty or is empty/whitespace-only (generated path) |
 | `--attestor <name>` | retire, commit | Operator retiring (retire) or attesting the corpus delta this promotion renders (commit); empty fails closed **only when** the retirement moves invariant-tier liveness (retire) or the corpus moved since the last commit (commit) |
 | `--attestation-text <text>` | commit | Operator's verbatim corpus-attestation token; same conditional requirement as `--attestor`. Also where a DROPPED retention condition's id must appear (§ Retention gate) |
-| `--retention-map <file>` | commit | Path to a retention map JSON accounting for every condition of every block the candidate removes from the prior committed rendition; required only when a block was removed (§ Retention gate); empty, no removed blocks → not required |
+| `--retention-map <file>` | commit | Path to a retention map JSON accounting for every condition of every block the candidate removes from the prior committed rendition. Required only when the candidate drops a prior block; vacuous cases (no prior, byte-identical, blocks only added/reordered, whitespace-only diff) never require it (§ Retention gate) |
 | `--score <float>` | advise-rendition | Information-retained-per-byte verdict value; advisory, never gates (required) |
 | `--explanation <text>` | advise-rendition | The advisor's reasoning, recorded before the verdict; empty value fails closed (required) |
 | `--quiet`, `-q` | global | Suppress non-error output |
@@ -1138,6 +1152,115 @@ uv run gz content advise-rendition AGENTS.md --consumer root --score 0.94 \
 
 # The verdict is witnessed in the ledger and written as an ARB receipt cited at Gate 5:
 grep "rendition_advisor_verdict" .gzkit/ledger.jsonl
+```
+
+### Worked example: the retention gate, refused then accepted
+
+Captured 2026-09-25 in a throwaway project outside this repository. The prior **committed** rendition:
+
+```text
+# AGENTS.md
+
+- Run `uv run gz check` before every push.
+
+- Never push with `--no-verify`; the pre-push hook is the gate.
+```
+
+The staged **candidate** drops both blocks, folding them into one line:
+
+```text
+# AGENTS.md
+
+- Run `uv run gz check` before every push; never bypass the pre-push hook.
+```
+
+Committing without a map names both removed blocks and writes nothing:
+
+```console
+$ gz content commit AGENTS.md --consumer root --attestor g0 --attestation-text "compress behavior rules"
+Error: the retention gate refused this commit. Nothing was written.
+- [missing-retention-map] Removed block '- Run `uv run gz check` before every push.' has no --retention-map accounting for it
+- [missing-retention-map] Removed block '- Never push with `--no-verify`; the pre-push hook is the gate.' has no --retention-map accounting for it
+Why forbidden: a removed block with an unaccounted condition is an unreviewed meaning loss (ADR-0.35.0 § Decision item 10) — the 2026-09-17 compression dropped 23 binding conditions this way and every check passed (GHI #1090, #1091).
+Next: account for every condition of each removed block in a --retention-map (`gz content commit --help`; manpage `content` § commit) — mark each KEPT with its verbatim candidate span or DROPPED with a reason, name every DROPPED condition's id in --attestation-text, then re-run `gz content commit`.
+$ echo "exit $?"
+exit 3
+```
+
+The retention map (`agents.retention.json`) accounts for every condition of
+both removed blocks — `C1` and `C3` KEPT at candidate spans, `C2` DROPPED:
+
+```json
+{
+  "surface": "AGENTS.md",
+  "consumer": "root",
+  "extracted_by": "reviewer-agent",
+  "mapped_by": "author-agent",
+  "blocks": [
+    {
+      "removed": "- Run `uv run gz check` before every push.",
+      "conditions": [
+        {
+          "id": "C1",
+          "quote": "Run `uv run gz check` before every push.",
+          "disposition": "kept",
+          "span": "Run `uv run gz check` before every push"
+        }
+      ],
+      "non_binding": []
+    },
+    {
+      "removed": "- Never push with `--no-verify`; the pre-push hook is the gate.",
+      "conditions": [
+        {
+          "id": "C2",
+          "quote": "Never push with `--no-verify`;",
+          "disposition": "dropped",
+          "reason": "the candidate no longer names the --no-verify flag; C3 keeps the intent, the flag itself is dropped"
+        },
+        {
+          "id": "C3",
+          "quote": "the pre-push hook is the gate.",
+          "disposition": "kept",
+          "span": "never bypass the pre-push hook"
+        }
+      ],
+      "non_binding": []
+    }
+  ]
+}
+```
+
+With the map supplied but `C2`'s id absent from `--attestation-text`, the
+commit still refuses (`dropped-id-not-attested`); with `C2` named in the
+attestation text, the same map succeeds:
+
+```console
+$ gz content commit AGENTS.md --consumer root --attestor g0 --attestation-text "compress behavior rules" --retention-map agents.retention.json
+Error: the retention gate refused this commit. Nothing was written.
+- [dropped-id-not-attested] Condition C2 is DROPPED but the id does not appear in attestation text in block '- Never push with `--no-verify`; the pre-push hook is the gate.'
+Why forbidden: a removed block with an unaccounted condition is an unreviewed meaning loss (ADR-0.35.0 § Decision item 10) — the 2026-09-17 compression dropped 23 binding conditions this way and every check passed (GHI #1090, #1091).
+Next: account for every condition of each removed block in a --retention-map (`gz content commit --help`; manpage `content` § commit) — mark each KEPT with its verbatim candidate span or DROPPED with a reason, name every DROPPED condition's id in --attestation-text, then re-run `gz content commit`.
+$ echo "exit $?"
+exit 3
+
+$ gz content commit AGENTS.md --consumer root --attestor g0 --attestation-text "compress behavior rules; C2 drop approved" --retention-map agents.retention.json
+Committed: .../.gzkit/renditions/AGENTS.md/root.md
+Provenance: .../.gzkit/renditions/AGENTS.md/root.corpus.json (corpus_fingerprint=573d9a607eac…, entries=1)
+Attested by: g0
+Retention:
+C1: "Run `uv run gz check` before every push." -> "Run `uv run gz check` before every push"
+C2: DROPPED -- the candidate no longer names the --no-verify flag; C3 keeps the intent, the flag itself is dropped
+C3: "the pre-push hook is the gate." -> "never bypass the pre-push hook"
+Next: `uv run gz agent sync control-surfaces` — this wrote the rendition only; playback is the sole writer of AGENTS.md and its mirrors, so `uv run gz validate --invariant-coherence` stays red until it runs.
+$ echo "exit $?"
+exit 0
+
+$ ls .gzkit/renditions/AGENTS.md/
+root.candidate.md
+root.corpus.json
+root.md
+root.retention.json
 ```
 
 ## Files
