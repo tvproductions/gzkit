@@ -204,6 +204,8 @@ def _retention_correspondence_lines(retention_map: RetentionMap) -> list[str]:
                 lines.append(f'{condition.id}: "{condition.quote}" -> "{condition.span}"')
             else:
                 lines.append(f"{condition.id}: DROPPED -- {condition.reason}")
+        for nb in block.non_binding:
+            lines.append(f'NB: "{nb.quote}" -- NON-BINDING: {nb.reason}')
     return lines
 
 

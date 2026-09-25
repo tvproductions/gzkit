@@ -746,6 +746,67 @@ class TestContentCommitRetentionGate(unittest.TestCase):
             )
             self.assertIn("C2: DROPPED -- no longer relevant", result.output)
 
+    def test_success_prints_non_binding_exemptions_with_their_reason(self) -> None:
+        """A non_binding declaration that exempts a removed block is never invisible.
+
+        Requirement 9: a KEPT/DROPPED condition is not the only way a removed
+        block's meaning can be accounted for -- a ``non_binding`` declaration
+        can exempt a whole block from coverage with only a reason attached.
+        Change Log 2026-09-25: that exemption was never printed alongside the
+        KEPT/DROPPED correspondence, so the loss it excuses stayed invisible
+        to the operator. Every non_binding entry must appear in the success
+        report, each with its quote and reason.
+        """
+        with self._runner.isolated_filesystem():
+            prior = "# AGENTS.md\n\nKept block text here.\n\nSide note that binds nothing.\n"
+            _seed_prior_rendition(prior)
+            _stage_candidate("# AGENTS.md\n\nKept block relocated here.\n")
+            retention_map = {
+                "surface": "AGENTS.md",
+                "consumer": "codex",
+                "extracted_by": "reviewer-agent",
+                "mapped_by": "author-agent",
+                "blocks": [
+                    {
+                        "removed": "Kept block text here.",
+                        "conditions": [
+                            {
+                                "id": "C1",
+                                "quote": "Kept block text here.",
+                                "disposition": "kept",
+                                "span": "Kept block relocated here.",
+                            }
+                        ],
+                        "non_binding": [],
+                    },
+                    {
+                        "removed": "Side note that binds nothing.",
+                        "conditions": [],
+                        "non_binding": [
+                            {
+                                "quote": "Side note that binds nothing.",
+                                "reason": "editorial aside, not a governed condition",
+                            }
+                        ],
+                    },
+                ],
+            }
+            Path("map.json").write_text(json.dumps(retention_map), encoding="utf-8")
+
+            result = self._runner.invoke(
+                main, _commit_args(text="no drops this commit", retention_map="map.json")
+            )
+
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            self.assertIn(
+                'C1: "Kept block text here." -> "Kept block relocated here."', result.output
+            )
+            self.assertIn(
+                'NB: "Side note that binds nothing." -- NON-BINDING: '
+                "editorial aside, not a governed condition",
+                result.output,
+            )
+
     @covers("REQ-0.35.0-14-04")
     def test_dropped_id_check_uses_this_invocations_attestation_not_standing(self) -> None:
         """A DROPPED id must appear in THIS invocation's attestation text.
@@ -835,6 +896,180 @@ class TestContentCommitRetentionGate(unittest.TestCase):
                 ledger_lines_before,
                 "no rendition_committed ledger event is written on refusal",
             )
+
+    @covers("REQ-0.35.0-14-02")
+    def test_multiple_violations_all_named_in_one_refusal(self) -> None:
+        """Three distinct violation kinds in one map: exit 3, EACH is named, nothing written.
+
+        REQ-0.35.0-14-02: the validator returns every violation, not only the
+        first, so one refusal names every gap. Proven here at the CLI (not
+        only against the pure validator) so a regression that swallows all
+        but the first violation on the way to `result.output` is caught.
+        """
+        with self._runner.isolated_filesystem():
+            prior = (
+                "# AGENTS.md\n\n"
+                "Sentence Alpha must persist here. Sentence Beta must persist "
+                "elsewhere. Sentence Gamma must persist too.\n"
+            )
+            _seed_prior_rendition(prior)
+            _stage_candidate("# AGENTS.md\n\nreplacement body only.\n")
+
+            removed_block = (
+                "Sentence Alpha must persist here. Sentence Beta must persist "
+                "elsewhere. Sentence Gamma must persist too."
+            )
+            retention_map = {
+                "surface": "AGENTS.md",
+                "consumer": "codex",
+                "extracted_by": "reviewer-agent",
+                "mapped_by": "author-agent",
+                "blocks": [
+                    {
+                        "removed": removed_block,
+                        "conditions": [
+                            {
+                                # quote-not-in-block: not a substring of removed_block.
+                                "id": "C1",
+                                "quote": "ZZZZ not present anywhere in this block",
+                                "disposition": "dropped",
+                                "reason": "quote check fixture",
+                            },
+                            {
+                                # kept-span-not-in-candidate: span absent from candidate.
+                                "id": "C2",
+                                "quote": "Sentence Beta must persist elsewhere.",
+                                "disposition": "kept",
+                                "span": "this span text is nowhere in the candidate",
+                            },
+                            {
+                                # dropped-without-reason: empty reason.
+                                "id": "C3",
+                                "quote": "Sentence Gamma must persist too.",
+                                "disposition": "dropped",
+                                "reason": "",
+                            },
+                        ],
+                        "non_binding": [],
+                    }
+                ],
+            }
+            Path("map.json").write_text(json.dumps(retention_map), encoding="utf-8")
+
+            root = Path(".")
+            prior_provenance = fingerprint_path(root, "AGENTS.md", "codex").read_text(
+                encoding="utf-8"
+            )
+            ledger_lines_before = _ledger_line_count()
+
+            result = self._runner.invoke(
+                main, _commit_args(text="attest test run", retention_map="map.json")
+            )
+
+            self.assertEqual(result.exit_code, 3, msg=result.output)
+            self.assertIn("quote-not-in-block", result.output)
+            self.assertIn("kept-span-not-in-candidate", result.output)
+            self.assertIn("dropped-without-reason", result.output)
+            self.assertIn(removed_block, result.output)
+            self.assertIn("Why forbidden", result.output)
+            self.assertIn("Next: account for every condition", result.output)
+
+            self.assertFalse(
+                retention_path(root, "AGENTS.md", "codex").exists(),
+                "no retention sidecar is written on refusal",
+            )
+            self.assertEqual(
+                rendition_path(root, "AGENTS.md", "codex").read_text(encoding="utf-8"),
+                prior,
+                "the committed rendition must be unchanged on refusal",
+            )
+            self.assertEqual(
+                fingerprint_path(root, "AGENTS.md", "codex").read_text(encoding="utf-8"),
+                prior_provenance,
+                "the provenance sidecar must be unchanged on refusal",
+            )
+            self.assertEqual(
+                _ledger_line_count(),
+                ledger_lines_before,
+                "no rendition_committed ledger event is written on refusal",
+            )
+
+    @covers("REQ-0.35.0-14-03")
+    def test_independence_violations_named_at_cli(self) -> None:
+        """extracted_by == mapped_by (case/whitespace-folded), or empty: exit 3, nothing written.
+
+        REQ-0.35.0-14-03: proven at the CLI, not only against the pure
+        validator, so a regression that drops the independence check between
+        the validator and `result.output` is caught.
+        """
+        prior = "# AGENTS.md\n\nDeprecated note about legacy policy text.\n"
+
+        def _map(extracted_by: str, mapped_by: str) -> dict:
+            return {
+                "surface": "AGENTS.md",
+                "consumer": "codex",
+                "extracted_by": extracted_by,
+                "mapped_by": mapped_by,
+                "blocks": [
+                    {
+                        "removed": "Deprecated note about legacy policy text.",
+                        "conditions": [
+                            {
+                                "id": "C1",
+                                "quote": "Deprecated note about legacy policy text.",
+                                "disposition": "dropped",
+                                "reason": "superseded by replacement body",
+                            }
+                        ],
+                        "non_binding": [],
+                    }
+                ],
+            }
+
+        cases = [
+            ("non-independent-mapping", " Reviewer-A ", "reviewer-a"),
+            ("empty-extracted-by", "", "author-agent"),
+        ]
+        for expected_kind, extracted_by, mapped_by in cases:
+            with self.subTest(expected_kind=expected_kind), self._runner.isolated_filesystem():
+                _seed_prior_rendition(prior)
+                _stage_candidate("# AGENTS.md\n\nreplacement body.\n")
+                retention_map = _map(extracted_by, mapped_by)
+                Path("map.json").write_text(json.dumps(retention_map), encoding="utf-8")
+
+                root = Path(".")
+                prior_provenance = fingerprint_path(root, "AGENTS.md", "codex").read_text(
+                    encoding="utf-8"
+                )
+                ledger_lines_before = _ledger_line_count()
+
+                result = self._runner.invoke(
+                    main,
+                    _commit_args(text="C1 drop accepted", retention_map="map.json"),
+                )
+
+                self.assertEqual(result.exit_code, 3, msg=result.output)
+                self.assertIn(expected_kind, result.output)
+
+                self.assertFalse(
+                    retention_path(root, "AGENTS.md", "codex").exists(),
+                    "no retention sidecar is written on refusal",
+                )
+                self.assertEqual(
+                    rendition_path(root, "AGENTS.md", "codex").read_text(encoding="utf-8"),
+                    prior,
+                    "the committed rendition must be unchanged on refusal",
+                )
+                self.assertEqual(
+                    fingerprint_path(root, "AGENTS.md", "codex").read_text(encoding="utf-8"),
+                    prior_provenance,
+                    "the provenance sidecar must be unchanged on refusal",
+                )
+                self.assertEqual(
+                    _ledger_line_count(),
+                    ledger_lines_before,
+                    "no rendition_committed ledger event is written on refusal",
+                )
 
     @covers("REQ-0.35.0-14-04")
     def test_all_kept_map_may_still_land_on_standing_attestation(self) -> None:

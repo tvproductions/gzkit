@@ -890,6 +890,10 @@ gz content commit AGENTS.md --consumer root \
 
 # Re-render of unchanged canon (a trim, a recompose): no attestation needed.
 gz content commit AGENTS.md --consumer root
+
+# A candidate that removes a prior block: --retention-map required.
+gz content commit AGENTS.md --consumer root --attestor "g0" \
+  --attestation-text "C2 drop accepted" --retention-map /tmp/agents.retention.json
 ```
 
 The command **fails closed** (non-zero exit, nothing written) when:
@@ -897,6 +901,132 @@ The command **fails closed** (non-zero exit, nothing written) when:
   fingerprint differs from this consumer's committed sidecar, or no sidecar exists,
 - no staged candidate exists for `(surface, consumer)`, or
 - no corpus store exists for `<surface>` (nothing to fingerprint).
+
+The retention gate above runs **after** these checks and before any write — it
+never weakens one of them, it only adds its own (Requirement 8).
+
+#### Retention gate: `--retention-map` (ADR-0.35.0 § Decision item 10)
+
+When the candidate about to be committed drops a **block** the consumer's
+prior **committed** rendition carried (`rendition_path(root, surface,
+consumer)` — never the staged candidate), promotion requires a
+`--retention-map <file>` accounting for every condition of every removed
+block, or the commit **exits 3 and writes NOTHING**: no rendition, no
+provenance sidecar, no retention sidecar, no ledger event. This is the
+mechanical floor the 2026-09-17 compression skipped when it dropped 23
+binding conditions and every check passed (GHI #1090, #1091): the tool
+proves bytes, never meaning (see § Named residual below).
+
+A **block** is a markdown heading, paragraph, list item or table row, as
+split in the rendered surface; a fenced code block counts as one block. A
+prior block is **removed** when its LF-normalized, trailing-whitespace-
+stripped text is not a substring of the candidate. Moving or reordering a
+block never removes it.
+
+**Vacuous cases — no `--retention-map` needed, commit succeeds exactly as
+before this gate existed:**
+- no prior committed rendition exists for `(surface, consumer)` (first
+  commit) — a **missing** prior is checked by the committed file's
+  **absence**, never by an empty delta after a failed read, because a
+  missing prior is never evidence that nothing was lost,
+- a byte-identical re-render,
+- a candidate that only adds or reorders blocks,
+- a whitespace-only difference from the prior rendition.
+
+An **existing but unreadable** prior committed rendition is a system error,
+exit 2 — never silently treated as vacuous.
+
+**The map JSON schema** — `surface`, `consumer`, `extracted_by` (the
+independent reviewer's identity), `mapped_by` (the author's identity, and it
+must differ from `extracted_by` after case-folding and trimming), and
+`blocks[]`. Each block entry carries `removed` (the removed block, verbatim),
+`conditions[]` and `non_binding[]`:
+- a **condition** is `{id, quote, disposition: kept|dropped, span?, reason?}`
+  — `id` is a short human-typable token matching `^[A-Za-z][A-Za-z0-9_-]{0,15}$`
+  (e.g. `C1`, `C2`), unique within the whole map; `quote` must be a substring
+  of `removed`; a **KEPT** condition names `span`, a substring of the
+  candidate; a **DROPPED** condition names a non-empty `reason`;
+- a **non_binding** entry is `{quote, reason}` — a sentence of `removed` that
+  binds nothing, named with its exemption reason.
+
+Minimal example:
+
+```json
+{
+  "surface": "AGENTS.md",
+  "consumer": "root",
+  "extracted_by": "reviewer-agent",
+  "mapped_by": "author-agent",
+  "blocks": [
+    {
+      "removed": "- `--accept-uncovered` is refused on every lane.",
+      "conditions": [
+        {
+          "id": "C1",
+          "quote": "`--accept-uncovered` is refused on every lane",
+          "disposition": "dropped",
+          "reason": "superseded by the retention gate itself"
+        }
+      ],
+      "non_binding": []
+    }
+  ]
+}
+```
+
+**Coverage** — every meaningful character of `removed` (any non-whitespace
+character except markdown markup `*`, `_`, `` ` ``, `#`, `|`, `>` and the
+block's leading list marker) must lie inside some `conditions[].quote` or
+`non_binding[].quote`; symbols such as `<=`, `%` and `--` count because they
+change meaning. Coverage is reported **per sentence**, naming the uncovered
+text — a sentence may be split across several conditions whose quotes
+together cover it, but a quote naming three words of a sentence leaves the
+rest of that sentence unaccounted for. **Every map entry is validated**: a
+map entry naming no removed block of this delta, or two entries for the same
+removed block, is a violation — no entry is silently ignored.
+
+**Exit 3** names **every** violation in one refusal, never only the first,
+each with the removed block's first line, and a three-part recovery
+(`.claude/rules/guardrail-feedback-prose.md`): what failed, why it is
+forbidden (citing ADR-0.35.0 § Decision item 10 and GHI #1090/#1091), and the
+runnable next step — account for every condition of each removed block in
+`--retention-map`, mark each KEPT with its verbatim candidate span or
+DROPPED with a reason, name every DROPPED condition's id in
+`--attestation-text`, then re-run `gz content commit`. Exit 1 is reserved for
+a malformed map (including non-UTF-8 bytes or an id that fails the id
+pattern); exit 2 is reserved for an unreadable prior committed rendition.
+
+A DROPPED condition's id must appear, at a token boundary, in **this
+invocation's** `--attestation-text` — a carried-forward standing attestation
+(the unchanged-canon exemption above) never counts, because the operator
+rules on every drop in the words supplied WITH THIS commit.
+
+**On success**, the validated map is written to
+`.gzkit/renditions/<surface>/<consumer>.retention.json`, in the same
+transaction order as the rendition and provenance writes. The next promotion
+overwrites it — history lives in git beside the rendition. A promotion with
+no removed blocks removes any stale retention sidecar, so a sidecar never
+describes a delta it did not govern. The success output lists every
+correspondence and exemption the tool cannot judge, so the operator can read
+what happened without opening the sidecar:
+
+```text
+C1: "<quote>" -> "<span>"
+C2: DROPPED -- <reason>
+NB: "<quote>" -- NON-BINDING: <reason>
+```
+
+**Named residual (Requirement 9) — the tool proves bytes, never meaning.**
+The gate cannot prove that the reviewer extracted every sub-clause
+condition, that a KEPT span carries the **same meaning** as its quote (a
+KEPT span is checked only for byte **presence** in the candidate, never for
+semantic equivalence), or that the reviewer was genuinely a different model
+rather than merely a different name. Whether a KEPT span means what its
+quote means, and whether a `non_binding` sentence truly binds nothing, is
+the independent reviewer's and the operator's judgment — never the tool's.
+The sentence-coverage floor bounds the first residual at clause level; the
+rule against fabricating operator words holds the second; the third is left
+to the skill's dispatch record (`.gzkit/skills/gz-content-compose/SKILL.md`).
 
 ### advise-rendition
 
@@ -946,7 +1076,8 @@ verdict value itself is never the fail-closed trigger.
 | `--consumer <vendor>` | compose, commit, advise-rendition | Target vendor consumer (e.g. `codex`, `claude`); optional for advise-rendition (surface-wide when omitted) |
 | `--candidate <file>` | compose | Path to the candidate rendition file; when omitted, reads piped/redirected stdin with real content (explicit path), or generates from the corpus when stdin is a tty or is empty/whitespace-only (generated path) |
 | `--attestor <name>` | retire, commit | Operator retiring (retire) or attesting the corpus delta this promotion renders (commit); empty fails closed **only when** the retirement moves invariant-tier liveness (retire) or the corpus moved since the last commit (commit) |
-| `--attestation-text <text>` | commit | Operator's verbatim corpus-attestation token; same conditional requirement as `--attestor` |
+| `--attestation-text <text>` | commit | Operator's verbatim corpus-attestation token; same conditional requirement as `--attestor`. Also where a DROPPED retention condition's id must appear (§ Retention gate) |
+| `--retention-map <file>` | commit | Path to a retention map JSON accounting for every condition of every block the candidate removes from the prior committed rendition; required only when a block was removed (§ Retention gate); empty, no removed blocks → not required |
 | `--score <float>` | advise-rendition | Information-retained-per-byte verdict value; advisory, never gates (required) |
 | `--explanation <text>` | advise-rendition | The advisor's reasoning, recorded before the verdict; empty value fails closed (required) |
 | `--quiet`, `-q` | global | Suppress non-error output |
@@ -961,7 +1092,7 @@ verdict value itself is never the fail-closed trigger.
 | 0 | Success |
 | 1 | User/config error (unknown type, missing `$EDITOR`, parse error, validation error, missing file) |
 | 2 | System/IO error (filesystem unreadable, atomic-replace failed) |
-| 3 | Policy breach (reserved; not currently emitted by `gz content`) |
+| 3 | Policy breach — `commit`'s retention gate refuses a candidate that drops a prior block without an accounting `--retention-map`, or whose map fails validation (§ Retention gate); writes nothing |
 
 ## Examples
 
