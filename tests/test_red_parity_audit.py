@@ -219,3 +219,81 @@ class TestVoidWitnessesDoNotCount(_Project):
         errors = self.audit()
         self.assertEqual(len(errors), 1)
         self.assertIn("failure_class 'none'", errors[0].message)
+
+
+class TestAcceptanceProofIsAWitness(_Project):
+    """A valid executed acceptance proof witnesses falsifiability (GHI #1094).
+
+    Each mutation control removes production behavior, and the producer marks the
+    proof valid only when every control is killed on an assertion and the restored
+    run is green. That is direct evidence the covering tests CAN fail, which is the
+    whole claim this gate exists to demand (GHI #642). It is also the only witness
+    still obtainable for a REQ whose production code landed before `gz arb red`
+    ran, because the reconstructed-base `error` is void by design (GHI #849).
+    """
+
+    def proof(self, *, req_id: str | None = None, valid: bool = True, controls: int = 1) -> None:
+        mutation = {"label": "m", "find": "a", "replace": "b", "expected_tests": ["t.T.t"]}
+        self.events.append(
+            {
+                "event": "acceptance_recorded",
+                "id": self.OBPI,
+                "ts": _AFTER,
+                "record_type": "proof",
+                "payload": {
+                    "id": "proof-1",
+                    "obligation_id": req_id or self.REQ,
+                    "contract_digest": "c",
+                    "input_digest": "i",
+                    "selectors": ["t.T.t"],
+                    "evidence": json.dumps({"mutations": [mutation] * controls}),
+                    "valid": valid,
+                },
+            }
+        )
+
+    def test_a_valid_proof_with_a_killed_control_satisfies_the_gate(self) -> None:
+        self.brief(_brief())
+        self.completed(_AFTER)
+        self.proof()
+        self.assertEqual(self.audit(), [])
+
+    def test_it_satisfies_the_gate_beside_a_void_reconstructed_witness(self) -> None:
+        # The observed case: landed code, an inconclusive re-run, a valid proof.
+        self.brief(_brief())
+        self.completed(_AFTER)
+        self.witness("error", base_provenance="reconstructed")
+        self.proof()
+        self.assertEqual(self.audit(), [])
+
+    def test_an_invalid_proof_witnesses_nothing(self) -> None:
+        self.brief(_brief())
+        self.completed(_AFTER)
+        self.proof(valid=False)
+        errors = self.audit()
+        self.assertEqual(len(errors), 1)
+        self.assertIn("no 'red_receipt_emitted' witness", errors[0].message)
+
+    def test_a_proof_with_no_mutation_control_witnesses_nothing(self) -> None:
+        # A resolver-only proof (SUPPORT or FENCE shape) never made a test fail.
+        self.brief(_brief())
+        self.completed(_AFTER)
+        self.proof(controls=0)
+        self.assertEqual(len(self.audit()), 1)
+
+    def test_a_proof_for_a_different_req_does_not_satisfy_this_one(self) -> None:
+        self.brief(_brief())
+        self.completed(_AFTER)
+        self.proof(req_id="REQ-9.9.9-99-99")
+        self.assertEqual(len(self.audit()), 1)
+
+    def test_a_proof_cannot_launder_an_unfalsifiable_red_witness(self) -> None:
+        # A `none` RED says the test passed with its implementation withheld. That
+        # finding stands whatever else the ledger carries.
+        self.brief(_brief())
+        self.completed(_AFTER)
+        self.witness("none")
+        self.proof()
+        errors = self.audit()
+        self.assertEqual(len(errors), 1)
+        self.assertIn("failure_class 'none'", errors[0].message)

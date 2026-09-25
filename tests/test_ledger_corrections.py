@@ -513,7 +513,7 @@ class TestRedParityConsumesCorrections(unittest.TestCase):
         (tmp / ".gzkit" / "ledger.jsonl").write_text(
             "".join(json.dumps(r, separators=(",", ":")) + "\n" for r in rows), encoding="utf-8"
         )
-        witnesses, _ = _collect(tmp)
+        witnesses, _, _ = _collect(tmp)
         self.assertEqual(witnesses["REQ-1"]["failure_class"], "assertion")
 
     def test_a_discharged_witness_is_still_evidence(self) -> None:
@@ -538,7 +538,7 @@ class TestRedParityConsumesCorrections(unittest.TestCase):
         (tmp / ".gzkit" / "ledger.jsonl").write_text(
             "".join(json.dumps(r, separators=(",", ":")) + "\n" for r in rows), encoding="utf-8"
         )
-        witnesses, _ = _collect(tmp)
+        witnesses, _, _ = _collect(tmp)
         self.assertEqual(witnesses["REQ-1"]["failure_class"], "none")
 
 

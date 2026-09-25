@@ -9,7 +9,9 @@ This audit is that witness's read-path. For every BEHAVIOR REQ in a heavy-lane b
 whose completion receipt postdates the cutover, the ledger must carry a
 ``red_receipt_emitted`` event, and that event's ``failure_class`` may not be ``none``
 — a test that passes with the production hunks withheld cannot fail, which is exactly
-the ``AGENTS.md`` § DO IT RIGHT Rule 6 defect.
+the ``AGENTS.md`` § DO IT RIGHT Rule 6 defect. A valid executed acceptance proof with
+at least one killed mutation control witnesses the same claim and also satisfies the
+gate (GHI #1094); it never erases a ``none`` finding.
 
 Per ADR-0.0.74 §5, an enforcement claim with no live negative control is a facade.
 The pipeline asserts test-first discipline; this audit plus its paired NC is what
@@ -24,6 +26,9 @@ import re
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from pydantic import ValidationError as PydanticValidationError
+
+from gzkit.acceptance import Proof
 from gzkit.ledger_corrections import evidence_events
 from gzkit.validate import ValidationError
 
@@ -97,10 +102,34 @@ def _event_ts(event: dict) -> dt.datetime | None:
     return parsed if parsed.tzinfo else parsed.replace(tzinfo=dt.UTC)
 
 
-def _collect(project_root: Path) -> tuple[dict[str, dict], dict[str, dt.datetime]]:
-    """Single ledger pass: RED witnesses by REQ, and completion instants by OBPI."""
+def _proof_witnesses_falsifiability(event: dict) -> str | None:
+    """Return the REQ a valid executed acceptance proof witnesses, else None (GHI #1094).
+
+    A BEHAVIOR proof's mutation controls each remove production behavior, and the
+    producer marks it valid only when every control is killed on an assertion and
+    the restored run is green. That shows the covering tests CAN fail, which is
+    this gate's whole claim. It is also the only witness still obtainable once
+    the production hunks have landed, because a reconstructed-base ``error`` is
+    void (GHI #849). A proof with no control (a SUPPORT or FENCE resolver) never
+    made a test fail, so it witnesses nothing.
+    """
+    if event.get("record_type") != "proof":
+        return None
+    try:
+        proof = Proof.model_validate(event.get("payload"))
+        controls = json.loads(proof.evidence).get("mutations") or []
+    except (PydanticValidationError, ValueError, AttributeError):
+        return None
+    return proof.obligation_id if proof.valid and controls else None
+
+
+def _collect(
+    project_root: Path,
+) -> tuple[dict[str, dict], dict[str, dt.datetime], set[str]]:
+    """Single ledger pass: RED witnesses and proven REQs, and completion instants by OBPI."""
     witnesses: dict[str, dict] = {}
     completions: dict[str, dt.datetime] = {}
+    proven: set[str] = set()
     # A raw-row audit must honour the write-side void, or every audit grows its
     # own void-awareness — the per-verb hand-patching GHI #611 exists to end.
     # ``evidence_events`` and not ``live_events``: this reads what a run FOUND,
@@ -121,7 +150,11 @@ def _collect(project_root: Path) -> tuple[dict[str, dict], dict[str, dt.datetime
             ts = _event_ts(event)
             if isinstance(obpi_id, str) and ts is not None:
                 completions[obpi_id] = ts
-    return witnesses, completions
+        elif name == "acceptance_recorded":
+            req_id = _proof_witnesses_falsifiability(event)
+            if req_id is not None:
+                proven.add(req_id)
+    return witnesses, completions, proven
 
 
 def _behavior_reqs(brief_path: Path) -> list[str]:
@@ -155,7 +188,9 @@ def _missing_witness_error(obpi_id: str, req_id: str, brief_rel: str) -> Validat
             "'red_receipt_emitted' witness. `@covers` parity proves the REQ has a covering "
             "test; it never proves that test can fail. Recovery: run `uv run gz arb red "
             f"--req {req_id} --obpi {obpi_id}` to run the covering test against the base "
-            "tree with the production hunks withheld (GHI #642)."
+            "tree with the production hunks withheld (GHI #642), or, once the production "
+            f"change has landed, record a mutation-control proof with `uv run gz obpi "
+            f"acceptance {obpi_id} prove --spec <controls.json>` (GHI #1094)."
         ),
     )
 
@@ -181,7 +216,7 @@ def audit_red_parity(project_root: Path) -> list[ValidationError]:
     if not adr_root.is_dir():
         return []
 
-    witnesses, completions = _collect(project_root)
+    witnesses, completions, proven = _collect(project_root)
     errors: list[ValidationError] = []
 
     for brief in sorted(adr_root.rglob("OBPI-*.md")):
@@ -199,9 +234,10 @@ def audit_red_parity(project_root: Path) -> list[ValidationError]:
         brief_rel = brief.relative_to(project_root).as_posix()
         for req_id in _behavior_reqs(brief):
             witness = witnesses.get(req_id)
-            if witness is None:
-                errors.append(_missing_witness_error(obpi_id, req_id, brief_rel))
-            elif witness.get("failure_class") == "none":
+            # A `none` RED is a finding that no other evidence erases.
+            if witness is not None and witness.get("failure_class") == "none":
                 errors.append(_unfalsifiable_error(obpi_id, req_id, brief_rel))
+            elif witness is None and req_id not in proven:
+                errors.append(_missing_witness_error(obpi_id, req_id, brief_rel))
 
     return errors

@@ -5,9 +5,9 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-19
+last_reviewed: 2026-09-25
 metadata:
-  skill-version: "6.59.2"
+  skill-version: "6.59.3"
 model: sonnet
 ---
 
@@ -645,7 +645,7 @@ Every receipt and ledger event also records a **`base_provenance`**, and it chan
 | `working-tree` | HEAD, with the production change still uncommitted | A weak RED. The withheld hunk is the only difference, so the import can only have failed for the missing implementation |
 | `reconstructed` | The parent of the commit that introduced the covering test | **Inconclusive — not a RED and not an accusation.** The tree can be months older than the test, so the import is as likely to have failed on unrelated drift |
 
-A `none` verdict means the test cannot fail when the business logic changes (AGENTS.md § DO IT RIGHT Rule 6), so it witnesses nothing. `uv run gz validate --red-parity`, a bound `gz check` step, re-audits this repo-wide past the cutover.
+A `none` verdict means the test cannot fail when the business logic changes (AGENTS.md § DO IT RIGHT Rule 6), so it witnesses nothing. `uv run gz validate --red-parity`, a bound `gz check` step, re-audits this repo-wide past the cutover. It also accepts a valid executed acceptance proof with at least one killed mutation control as the REQ's witness (GHI #1094), which is the only witness still obtainable once the production hunks have landed.
 
 **On the `--from=verify` path the witness now runs, against a reconstructed base (GHI #849).** It used to be inert there: the base was HEAD, so once the production code landed the base tree already carried the implementation, nothing was withheld, and every BEHAVIOR REQ returned `not-applicable` — the pipeline mandating, on its own already-implemented path, a check that structurally could not execute. The base is now resolved from the commit that introduced the REQ's covering test, whose parent predates both the test and its implementation.
 
