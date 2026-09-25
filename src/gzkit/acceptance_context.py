@@ -9,6 +9,7 @@ from pydantic import Field
 from gzkit.acceptance import (
     AcceptanceModel,
     Closure,
+    Finding,
     Ground,
     Obligation,
     Proof,
@@ -37,6 +38,38 @@ class ReviewContext(AcceptanceModel):
     blockers: tuple[str, ...] = Field(description="Required evidence still missing at capture")
     open_findings: tuple[str, ...] = Field(description="Mapped finding IDs requiring closure")
     obligation_ids: tuple[str, ...] = Field(description="Requested canonical review scope")
+
+
+class ReviewSubject(AcceptanceModel):
+    """The working set a reviewer is handed; the proof history stays in the ledger.
+
+    The frame validates the whole ``ReviewContext`` locally, then embeds only this
+    projection, so a prompt scales with the current obligations and their open
+    findings rather than with every repair round the OBPI has run (GHI #1096).
+    """
+
+    input_digest: str = Field(min_length=1, description="Single supplied review subject")
+    input_components: dict[str, str] = Field(description="Audited artifact and contract identities")
+    implementer_id: str = Field(
+        min_length=1, description="Implementing identity; never a valid reviewer_id"
+    )
+    obligations: tuple[Obligation, ...] = Field(description="Canonical obligations under review")
+    proofs: tuple[Proof, ...] = Field(description="Current executed proof for each obligation")
+    open_findings: tuple[Finding, ...] = Field(
+        description="Mapped findings in scope that still need independent closure"
+    )
+    ready: bool = Field(description="Readiness at capture")
+    blockers: tuple[str, ...] = Field(description="Required evidence still missing at capture")
+
+
+def _open_finding_records(context: ReviewContext) -> tuple[Finding, ...]:
+    """Return the full record of each open mapped finding in the review scope."""
+    mapped = {item.id: item for review in context.reviews for item in review.findings}
+    return tuple(
+        mapped[key]
+        for key in context.open_findings
+        if key in mapped and mapped[key].obligation_id in context.obligation_ids
+    )
 
 
 def build_review_context(
@@ -130,12 +163,17 @@ def acceptance_review_frame(stage: str, serialized: str) -> list[str]:
     )
     if errors:
         raise ValueError("Invalid review context: " + "; ".join(errors))
-    mapped = {item.id: item for review in context.reviews for item in review.findings}
-    open_mapped = [
-        mapped[key]
-        for key in context.open_findings
-        if key in mapped and mapped[key].obligation_id in context.obligation_ids
-    ]
+    open_mapped = _open_finding_records(context)
+    subject = ReviewSubject(
+        input_digest=context.input_digest,
+        input_components=context.input_components,
+        implementer_id=context.contract.author_id,
+        obligations=obligations,
+        proofs=proofs,
+        open_findings=open_mapped,
+        ready=context.ready,
+        blockers=context.blockers,
+    )
     finding = open_mapped[0] if open_mapped else None
     proof = next(
         (item for item in proofs if finding and item.obligation_id == finding.obligation_id),
@@ -150,9 +188,10 @@ def acceptance_review_frame(stage: str, serialized: str) -> list[str]:
     return [
         "### Durable Acceptance Result",
         "",
-        "Captured current context (single supplied subject):",
+        "Captured current subject (the working set; the full history was validated",
+        "locally and stays in the ledger):",
         "```json",
-        context.model_dump_json(indent=2),
+        subject.model_dump_json(indent=2),
         "```",
         "Your whole reply is exactly one acceptance envelope; emit no other JSON object.",
         "The response schema below comes from the same model used by the importer.",

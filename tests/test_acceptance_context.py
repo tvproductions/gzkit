@@ -177,6 +177,40 @@ class ReviewContextTests(unittest.TestCase):
         self.assertEqual(source.read_bytes(), before_source)
         self.assertEqual(load_history(f.root, store_tests.OBPI).proofs, [self.proof])
 
+    def test_embedded_context_is_the_working_set_not_the_proof_history(self):
+        """GHI #1096: superseded proofs never reach the reviewer's prompt.
+
+        The status payload keeps the whole history (its documented contract), and
+        the frame still validates all of it locally. What the reviewer is handed is
+        the current proof per obligation plus the open findings it must close, so
+        the prompt no longer grows with every repair round.
+        """
+        f = self.fixture
+        finding = {
+            "id": "F-history",
+            "obligation_id": REQ,
+            "kind": "missing-proof",
+            "description": "The negative input boundary was never exercised.",
+        }
+        record_review(
+            f.root,
+            store_tests.OBPI,
+            f.receipt(self.proof, "spec", findings=[finding], verdict="refuted"),
+        )
+        f.write("src/engine.py", "def double(value):\n    return value + value\n")
+        current = f.synthetic_proof()
+        context = build_review_context(f.root, store_tests.OBPI, stage="stage2")
+        self.assertIn(self.proof.id, [proof.id for proof in context.proofs])
+
+        frame = "\n".join(_acceptance_review_frame("spec", context.model_dump_json()))
+        subject = json.loads(frame.split("```json\n", 1)[1].split("\n```", 1)[0])
+        self.assertEqual([proof["id"] for proof in subject["proofs"]], [current.id])
+        self.assertNotIn(self.proof.id, frame)
+        self.assertEqual(
+            [(item["id"], item["description"]) for item in subject["open_findings"]],
+            [("F-history", finding["description"])],
+        )
+
     def test_contradictory_context_is_rejected_before_dispatch(self):
         context = build_review_context(
             self.fixture.root, store_tests.OBPI, stage="stage2"

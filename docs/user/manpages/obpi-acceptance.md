@@ -168,9 +168,12 @@ derives both from the executed receipt.
 
 The pipeline composers validate the supplied status context before dispatch and
 generate the response schema from the same `ReviewResponse` model used by the
-importer. Context includes the captured input components, requested obligation
-scope, proof history, and open finding IDs. Missing or contradictory context is a
-local error. The reviewer owns approvals and closure judgments; a generated
+importer. They validate the whole supplied status payload locally, proof and
+review history included, then embed only the working set: input components, the
+requested obligations, each one's current proof, and the full record of every
+open finding in scope. The prompt therefore does not grow with repair rounds
+(GHI #1096), while `status --json` itself still returns the full history.
+Missing or contradictory context is a local error. The reviewer owns approvals and closure judgments; a generated
 example supplies neither. The reply is that one envelope and nothing else: the
 orchestrator derives the legacy `ReviewResult` from it, and a stray legacy block
 is ignored (GHI #1095). `verification_gaps` travels in the envelope as the
