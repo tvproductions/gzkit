@@ -356,6 +356,26 @@ PY
 # Paste behave output here when Gate 4 applies
 ```
 
+### Step 4b — Independent Adversarial Validation
+
+**Adversary identity and tier.** Tier 1, cross-vendor: OpenAI Codex, dispatched through the `openai-codex` Claude Code plugin (`codex-companion.mjs task --write --cwd <disposable checkout>`) and ARB-wrapped on every round. `codex:setup` reported `ready: true`, so tiers 2 and 3 were forbidden. Each round ran in a throwaway writable copy of the reviewed tree (`gz obpi adversary-workspace`), so the adversary replayed the recorded proofs rather than judging them by reading.
+
+| Round | Receipt | Verdict | Claims broken |
+|---|---|---|---|
+| 1 | `arb-step-codexadversary-19743ce8aff64c9a998251308ba6ec9b` | CORROBORATED-WITH-CAVEATS / accepted | REQ-01..07 approved after 18 replayed controls; 3 auxiliary counterexamples; REQ-08 not adjudicated |
+| 1 (formatting repair) | `arb-step-codexadversary-91370c4450284f6da7afbb02cbb7e22d` | identical judgment | imported; the original was refused only for a `verification_gaps` key the orchestrator's prompt had wrongly requested |
+| 2 | `arb-step-codexadversary-0db64ea60fbb4e8dbef0e952323057aa` | CORROBORATED-WITH-CAVEATS / accepted | none; all 8 proofs approved, 21 controls replayed, no findings |
+
+**What the adversary broke, and how each was resolved.** Round 1's three counterexamples carried no obligation id, so none blocked the gate. They were repaired anyway, as Task 5:
+
+- **`aux-invalid-utf8-prior-exit`.** A non-UTF-8 prior committed rendition exited 1 ("Unexpected error"), while Requirement 1 requires exit 2. RESOLVED: `enforce_retention` catches `UnicodeDecodeError` alongside `OSError`. Round 2 confirmed exit 2, prior bytes unchanged, and no sidecar or ledger row.
+- **`aux-empty-nonbinding-reason`.** A `non_binding` entry with an empty reason could exempt a whole removed block without a DROPPED id. RESOLVED by operator ruling ("Amend + fix now (Recommended)"): a new Requirement-3 violation, `non-binding-without-reason`, reported alongside the others. Round 2 confirmed it fires for empty and whitespace-only reasons and not for a real one.
+- **`aux-retention-map-target-unbound`.** A map naming another surface or consumer was accepted and persisted. RESOLVED by operator ruling ("Amend + fix now (Recommended)"): `check_map_target`, called from `enforce_retention` and merged into the same refusal, with `validate_retention`'s signature unchanged for OBPI-0.35.0-07. Round 2 confirmed both mismatches fire and a matching map lands.
+
+**Weakest point (round 2, the adversary's words, summarized).** The target binding sits outside the unchanged `validate_retention` API, so a future promotion caller must use the complete gate. That is BI-10's fence for OBPI-0.35.0-07's `land`, audited at ADR closeout; it is not a finding against this OBPI.
+
+**What the adversary could not confirm.** The disposable copy carries no Git metadata, so it could not verify the reviewed revision SHA. It did not perform the ADR-wide BI-10 closeout audit; it approved REQ-08 on its declared channel and on the local promotion path it inspected.
+
 ### Gate 5 (Human)
 
 ```text
