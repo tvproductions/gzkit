@@ -8,10 +8,12 @@ shell hook is reserved for behave (REQ-0.0.29-05-08).
 from __future__ import annotations
 
 import io
+import json
 import os
 import subprocess
 import tempfile
 import textwrap
+import time
 import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -26,6 +28,7 @@ from gzkit.complexity.advisor.timeout import TimeoutOk, TimeoutTimedOut
 from gzkit.hooks.install_complexity_advisor import (
     _HOOK_ID,
     install,
+    main,
     run_auto_chain,
 )
 from tests.commands.common import _isolated_git_env
@@ -303,6 +306,41 @@ class TestInstaller(unittest.TestCase):
             self.assertEqual(code, 0)
 
 
+class TestConfiguredTimeoutAndInstallEntry(unittest.TestCase):
+    """The hook honours advisor_timeout_seconds, and the documented command installs (GHI #1105)."""
+
+    @covers("REQ-0.0.29-05-04")
+    @patch("sys.stderr", new_callable=io.StringIO)
+    def test_configured_timeout_governs_the_hook(self, _stderr: io.StringIO) -> None:
+        def _slow(_paths: list[str]) -> list[AdvisorDiagnosis]:
+            time.sleep(1.0)
+            return []
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / ".gzkit.json").write_text('{"advisor_timeout_seconds": 0.2}', encoding="utf-8")
+            original_cwd = os.getcwd()
+            try:
+                os.chdir(tmp)
+                with patch("gzkit.hooks.install_complexity_advisor._diagnose_files", _slow):
+                    code = run_auto_chain(["src/foo.py"])
+            finally:
+                os.chdir(original_cwd)
+            self.assertEqual(code, 0)
+            log = root / ".gzkit" / "insights" / "advisor-failures.jsonl"
+            entry = json.loads(log.read_text(encoding="utf-8").splitlines()[0])
+            self.assertEqual(entry["timeout_s"], 0.2)
+
+    @covers("REQ-0.0.29-05-01")
+    def test_bare_module_invocation_installs(self) -> None:
+        with (
+            patch("sys.argv", ["install_complexity_advisor.py"]),
+            patch("gzkit.hooks.install_complexity_advisor.install", return_value=0) as installed,
+        ):
+            self.assertEqual(main(), 0)
+        installed.assert_called_once_with()
+
+
 class TestShellHookContract(unittest.TestCase):
     """Tests for the shell hook script contract.
 
@@ -320,6 +358,23 @@ class TestShellHookContract(unittest.TestCase):
     Python; `_asserts_shipped_executable` extends it to shipped non-Python
     executables (GHI #730).
     """
+
+    def test_hook_runs_the_xenon_gate_it_replaces(self) -> None:
+        """The hook's xenon command is the xenon-complexity entry it replaces (GHI #1105)."""
+        config_lines = Path(".pre-commit-config.yaml").read_text(encoding="utf-8").splitlines()
+        gate_index = config_lines.index("      - id: xenon-complexity")
+        gate_entry = next(
+            line.split("entry:", 1)[1].strip()
+            for line in config_lines[gate_index:]
+            if line.strip().startswith("entry:")
+        )
+        hook_lines = (
+            Path(".gzkit/hooks/pre-commit-complexity-advisor")
+            .read_text(encoding="utf-8")
+            .splitlines()
+        )
+        hook_xenon = [line.strip() for line in hook_lines if "xenon --max" in line]
+        self.assertEqual(hook_xenon, [gate_entry])
 
     def test_hook_is_posix_shell(self) -> None:
         """Hook script starts with #!/bin/sh."""

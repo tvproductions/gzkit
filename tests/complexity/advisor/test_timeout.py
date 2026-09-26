@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import ast
 import json
+import os
 import tempfile
 import time
 import unittest
@@ -143,6 +144,41 @@ class TestRunWithTimeout(unittest.TestCase):
     def test_no_subprocess_spawned(self) -> None:
         source = Path("src/gzkit/complexity/advisor/timeout.py").read_text(encoding="utf-8")
         self.assertNotIn("subprocess", source)
+
+
+class TestPrimitiveHonoursConfiguredTimeout(unittest.TestCase):
+    """The primitive, not only the reader, honours advisor_timeout_seconds (GHI #1105)."""
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        root = Path(self._tmp.name)
+        (root / ".gzkit.json").write_text(
+            json.dumps({"advisor_timeout_seconds": 0.2}), encoding="utf-8"
+        )
+        self.log_path = root / "advisor-failures.jsonl"
+        self._prior = Path.cwd()
+        os.chdir(root)
+
+    def tearDown(self) -> None:
+        os.chdir(self._prior)
+        self._tmp.cleanup()
+
+    @staticmethod
+    def _slow() -> str:
+        time.sleep(1.0)
+        return "done"
+
+    @covers("REQ-0.0.29-09-04")
+    def test_omitted_timeout_uses_config_key(self) -> None:
+        result = run_with_timeout(self._slow, log_path=self.log_path)
+        self.assertIsInstance(result, TimeoutTimedOut)
+        entry = json.loads(self.log_path.read_text(encoding="utf-8").splitlines()[0])
+        self.assertEqual(entry["timeout_s"], 0.2)
+
+    @covers("REQ-0.0.29-09-04")
+    def test_explicit_timeout_wins_over_config_key(self) -> None:
+        result = run_with_timeout(self._slow, timeout_s=5.0, log_path=self.log_path)
+        self.assertIsInstance(result, TimeoutOk)
 
 
 class TestAdvisorConfig(unittest.TestCase):

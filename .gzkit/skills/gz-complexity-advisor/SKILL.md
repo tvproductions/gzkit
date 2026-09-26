@@ -6,7 +6,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-09-26
 metadata:
-  skill-version: "0.2.0"
+  skill-version: "0.2.1"
   govzero-framework-version: "v6"
   govzero_layer: "Layer 3 - File Sync"
 gz_command: complexity advise
@@ -69,8 +69,9 @@ the `advise` band. Read the function's code before trusting that label.
 `uv run python -m gzkit.hooks.install_complexity_advisor`. Once installed, it
 runs xenon and, on failure, diagnoses the staged Python files in its own
 process, printing to stderr and failing the commit on a `block` crossing. It
-wraps the advisor in a timeout, 30 seconds unless the hook passes
-`--timeout`; on timeout it lets the commit through and appends a record to
+wraps the advisor in a timeout, `.gzkit.json` § `advisor_timeout_seconds`
+(30 seconds when unset) unless the hook is run with `--timeout`; on timeout
+it lets the commit through and appends a record to
 `.gzkit/insights/advisor-failures.jsonl`. Skip it for one commit with
 `SKIP=complexity-advisor-auto-chain git commit`.
 

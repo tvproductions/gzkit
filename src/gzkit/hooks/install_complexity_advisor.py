@@ -5,7 +5,7 @@ composite hook that runs xenon first and chains to the complexity advisor
 on failure. Run mode wraps the advisor in OBPI-09's timeout primitive and
 returns the appropriate exit code per REQ-0.0.29-05-06.
 
-Install::
+Install (``--install`` is the default mode)::
 
     python -m gzkit.hooks.install_complexity_advisor
 
@@ -32,7 +32,6 @@ from gzkit.complexity.thresholds import load_threshold_table
 _DEFAULT_RULE_PATH = Path(".gzkit/rules/complexity-thresholds.json")
 _FAILURE_LOG_PATH = Path(".gzkit/insights/advisor-failures.jsonl")
 _METRIC_KEY = "radon_cc"
-_DEFAULT_TIMEOUT_S = 30.0
 
 _HOOK_ID = "complexity-advisor-auto-chain"
 _HOOK_NAME = "complexity advisor (xenon + advisor auto-chain)"
@@ -49,8 +48,11 @@ _NEW_HOOK_YAML = f"""\
 """
 
 
-def run_auto_chain(file_paths: list[str], *, timeout_s: float = _DEFAULT_TIMEOUT_S) -> int:
-    """Run the advisor on staged files with timeout. Returns hook exit code."""
+def run_auto_chain(file_paths: list[str], *, timeout_s: float | None = None) -> int:
+    """Run the advisor on staged files with timeout. Returns hook exit code.
+
+    An omitted *timeout_s* takes ``.gzkit.json`` ``advisor_timeout_seconds``.
+    """
     result = run_with_timeout(
         lambda: _diagnose_files(file_paths),
         timeout_s=timeout_s,
@@ -231,11 +233,11 @@ def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Complexity advisor auto-chain hook installer and runtime."
     )
-    group = parser.add_mutually_exclusive_group(required=True)
+    group = parser.add_mutually_exclusive_group()
     group.add_argument(
         "--install",
         action="store_true",
-        help="Install the hook in .pre-commit-config.yaml",
+        help="Install the hook in .pre-commit-config.yaml (the default mode)",
     )
     group.add_argument(
         "--run",
@@ -246,8 +248,8 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--timeout",
         type=float,
-        default=_DEFAULT_TIMEOUT_S,
-        help=f"Advisor timeout in seconds (default: {_DEFAULT_TIMEOUT_S})",
+        default=None,
+        help="Timeout in seconds (default: .gzkit.json advisor_timeout_seconds, else 30)",
     )
     return parser
 
@@ -257,9 +259,9 @@ def main() -> int:
     parser = _build_parser()
     args = parser.parse_args()
 
-    if args.install:
-        return install()
-    return run_auto_chain(args.run, timeout_s=args.timeout)
+    if args.run:
+        return run_auto_chain(args.run, timeout_s=args.timeout)
+    return install()
 
 
 if __name__ == "__main__":

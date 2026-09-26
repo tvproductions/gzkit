@@ -4,7 +4,7 @@
 # Skip:    SKIP=complexity-advisor-auto-chain git commit
 
 # Step 1: Run xenon-as-gate (same invocation as complexity-reduction-xenon chore)
-uvx xenon --max-absolute C --max-modules C --max-average C src/
+uv run xenon --max-absolute C --max-modules C --max-average C src/
 XENON_EXIT=$?
 
 if [ "$XENON_EXIT" -eq 0 ]; then

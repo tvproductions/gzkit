@@ -22,7 +22,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-_DEFAULT_TIMEOUT_S = 30.0
+from gzkit.complexity.advisor.config import get_advisor_timeout_seconds
 
 
 class TimeoutOk(BaseModel):
@@ -54,16 +54,20 @@ class _TimeoutError(Exception):
 def run_with_timeout[T](
     callable_: Callable[[], T],
     *,
-    timeout_s: float = _DEFAULT_TIMEOUT_S,
+    timeout_s: float | None = None,
     log_path: Path,
     context_file_paths: list[str] | None = None,
     context_invocation: Literal["auto-chain", "ad-hoc"] = "auto-chain",
 ) -> TimeoutResult:
     """Run *callable_* with a hard timeout; log on timeout.
 
+    An omitted *timeout_s* takes ``.gzkit.json`` ``advisor_timeout_seconds``
+    (30s when unset); an explicit value wins (REQ-0.0.29-09-04, GHI #1105).
     Returns ``TimeoutOk`` on success, ``TimeoutTimedOut`` on timeout.
     The caller decides policy (fail-open or closed) based on the result.
     """
+    if timeout_s is None:
+        timeout_s = get_advisor_timeout_seconds()
     start = time.monotonic()
     callable_name = getattr(callable_, "__name__", repr(callable_))
 
