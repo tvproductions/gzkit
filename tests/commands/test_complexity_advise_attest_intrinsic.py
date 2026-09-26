@@ -22,7 +22,9 @@ from pathlib import Path
 from unittest.mock import patch
 
 from gzkit.commands.complexity_advise import complexity_advise_cmd
-from gzkit.complexity.advisor.intrinsic import clear_registry, intrinsic_complexity
+from gzkit.complexity.advisor.intrinsic import clear_registry
+from gzkit.ledger import Ledger
+from gzkit.ledger_events import intrinsic_complexity_attestation_event
 from gzkit.traceability import covers
 
 _PRACTITIONER_EYE = "Refactor signal: extract the responsibility seam and re-test."
@@ -111,10 +113,39 @@ def _synthetic_environment(metric: str = "radon_cc") -> Iterator[Path]:
             os.chdir(prior_cwd)
 
 
-def _write_complex_function(target: Path, *, qualname: str = "complex_fn") -> None:
+_DECORATOR = '@intrinsic_complexity(reason="under test", attestor="g0")'
+
+
+def _ledger_with_attestation(root: Path, *, file_path: str, qualname: str) -> Path:
+    """Write a temp ledger holding one intrinsic-complexity-attestation event."""
+    ledger = root / ".gzkit" / "ledger.jsonl"
+    ledger.parent.mkdir(parents=True, exist_ok=True)
+    event = intrinsic_complexity_attestation_event(
+        file_path=file_path,
+        qualname=qualname,
+        reason="irreducibly complex dispatch",
+        attestor="g0",
+        attestation_date="2026-09-26",
+        metric="radon_cc",
+        crossing_band="block",
+        crossing_value=13.0,
+    )
+    Ledger(ledger).append(event)
+    return ledger
+
+
+def _write_complex_function(
+    target: Path, *, qualname: str = "complex_fn", decorator: str | None = None
+) -> None:
     """Write a Python source file containing a function with cc above the block band."""
+    header = (
+        ["from gzkit.complexity.advisor.intrinsic import intrinsic_complexity", "", "", decorator]
+        if decorator
+        else []
+    )
     body = "\n".join(
         [
+            *header,
             f"def {qualname}(x):",
             "    if x == 1:",
             "        return 1",
@@ -165,39 +196,55 @@ class TestComplexityAdviseRegistryEnrichment(unittest.TestCase):
         clear_registry()
 
     @covers("REQ-0.0.29-07-02")
-    def test_attested_function_renders_attestation_message(self) -> None:
-        """A registered function emits the attestation message and exits 0.
+    def test_ledger_attested_function_renders_attestation_message(self) -> None:
+        """A function attested in the ledger emits the attestation message and exits 0.
 
         The advisor must NOT render a refactor recommendation for an attested
-        function, and the run MUST exit 0 (the function is attested, not a
-        violation).
+        function, and the run MUST exit 0 (GHI #1102: the event was written and
+        never read back).
         """
-        with tempfile.TemporaryDirectory() as tmp_str:
-            tmp = Path(tmp_str)
-            source_file = tmp / "complex.py"
+        with _synthetic_environment() as rule_path:
+            source_file = rule_path.parent / "complex.py"
             _write_complex_function(source_file)
-
-            # Register the function via the runtime registry. The
-            # complexity_advise_cmd path keys on str(source_file.absolute()).
-            from gzkit.complexity.advisor import intrinsic as intr_mod
-
-            intr_mod._REGISTRY[(str(source_file.absolute()), "complex_fn")] = (
-                "irreducibly complex dispatch",
-                "Test Attestor",
-                "2026-05-07",
+            ledger = _ledger_with_attestation(
+                rule_path.parent, file_path=str(source_file), qualname="complex_fn"
             )
 
             buf = io.StringIO()
-            with contextlib.redirect_stdout(buf):
-                exit_code = complexity_advise_cmd(path=str(source_file))
+            with (
+                contextlib.redirect_stdout(buf),
+                patch(
+                    "gzkit.commands.complexity_advise._resolve_ledger_path",
+                    return_value=ledger,
+                ),
+            ):
+                exit_code = complexity_advise_cmd(path=str(source_file), rule_path=str(rule_path))
 
             self.assertEqual(exit_code, 0)
             output = buf.getvalue()
-            self.assertIn("intrinsic complexity attested", output)
-            self.assertIn("Test Attestor", output)
+            self.assertIn("intrinsic complexity attested by 'g0'", output)
             self.assertIn("irreducibly complex dispatch", output)
-            # The attested function must not be presented as a refactor candidate.
-            self.assertNotIn("Recommended move", output)
+            self.assertNotIn("Recommended", output)
+
+    @covers("REQ-0.0.29-07-02")
+    def test_ledger_attestation_of_another_function_does_not_apply(self) -> None:
+        with _synthetic_environment() as rule_path:
+            source_file = rule_path.parent / "complex.py"
+            _write_complex_function(source_file)
+            ledger = _ledger_with_attestation(
+                rule_path.parent, file_path=str(source_file), qualname="other_fn"
+            )
+
+            with (
+                contextlib.redirect_stdout(io.StringIO()),
+                patch(
+                    "gzkit.commands.complexity_advise._resolve_ledger_path",
+                    return_value=ledger,
+                ),
+                self.assertRaises(SystemExit) as ctx,
+            ):
+                complexity_advise_cmd(path=str(source_file), rule_path=str(rule_path))
+            self.assertEqual(ctx.exception.code, 3)
 
     @covers("REQ-0.0.29-07-02")
     def test_unattested_block_band_still_exits_3(self) -> None:
@@ -378,39 +425,36 @@ class TestIntrinsicComplexityCliPath(unittest.TestCase):
         clear_registry()
 
     @covers("REQ-0.0.29-07-02")
-    def test_decorator_registered_function_takes_attestation_path(self) -> None:
-        """A function decorated with @intrinsic_complexity in a discoverable file
-        renders the attestation message rather than a refactor recommendation."""
-        with tempfile.TemporaryDirectory() as tmp_str:
-            tmp = Path(tmp_str)
-            source_file = tmp / "complex.py"
-            _write_complex_function(source_file)
-
-            # Simulate decorator effect by writing into the registry with the
-            # exact key the cmd uses (str(source_file), qualname).
-            @intrinsic_complexity(reason="under test", attestor="Test Attestor")
-            def _placeholder() -> None:  # pragma: no cover — registration-only
-                pass
-
-            # The decorator wrote (placeholder_file, qualname). Move that entry
-            # to the file the advisor will scan.
-            from gzkit.complexity.advisor import intrinsic as intr_mod
-
-            intr_mod._REGISTRY.clear()
-            intr_mod._REGISTRY[(str(source_file), "complex_fn")] = (
-                "under test",
-                "Test Attestor",
-                "2026-05-07",
-            )
+    def test_decorated_function_takes_attestation_path(self) -> None:
+        """A literal @intrinsic_complexity in source is honoured by a CLI run (GHI #1102)."""
+        with _synthetic_environment() as rule_path:
+            source_file = rule_path.parent / "complex.py"
+            _write_complex_function(source_file, decorator=_DECORATOR)
 
             buf = io.StringIO()
             with contextlib.redirect_stdout(buf):
-                exit_code = complexity_advise_cmd(path=str(source_file))
+                exit_code = complexity_advise_cmd(path=str(source_file), rule_path=str(rule_path))
 
             self.assertEqual(exit_code, 0)
             output = buf.getvalue()
-            self.assertIn("intrinsic complexity attested", output)
-            self.assertNotIn("Recommended move", output)
+            self.assertIn("intrinsic complexity attested by 'g0'", output)
+            self.assertIn("under test", output)
+            self.assertNotIn("Recommended", output)
+
+    @covers("REQ-0.0.29-07-02")
+    def test_decorator_with_empty_reason_is_not_honoured(self) -> None:
+        with _synthetic_environment() as rule_path:
+            source_file = rule_path.parent / "complex.py"
+            _write_complex_function(
+                source_file, decorator='@intrinsic_complexity(reason="", attestor="g0")'
+            )
+
+            with (
+                contextlib.redirect_stdout(io.StringIO()),
+                self.assertRaises(SystemExit) as ctx,
+            ):
+                complexity_advise_cmd(path=str(source_file), rule_path=str(rule_path))
+            self.assertEqual(ctx.exception.code, 3)
 
 
 if __name__ == "__main__":

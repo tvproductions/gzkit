@@ -27,10 +27,13 @@ from gzkit.complexity.advisor.diagnosis import (
 from gzkit.complexity.advisor.timeout import TimeoutOk, TimeoutTimedOut
 from gzkit.hooks.install_complexity_advisor import (
     _HOOK_ID,
+    _diagnose_files,
     install,
     main,
     run_auto_chain,
 )
+from gzkit.ledger import Ledger
+from gzkit.ledger_events import intrinsic_complexity_attestation_event
 from tests.commands.common import _isolated_git_env
 
 # --- test-data helpers ---------------------------------------------------
@@ -339,6 +342,57 @@ class TestConfiguredTimeoutAndInstallEntry(unittest.TestCase):
         ):
             self.assertEqual(main(), 0)
         installed.assert_called_once_with()
+
+
+def _complex_source(decorator: str = "") -> str:
+    branches = "".join(f"    if x == {i}:\n        return {i}\n" for i in range(1, 14))
+    header = (
+        f"from gzkit.complexity.advisor.intrinsic import intrinsic_complexity\n\n\n{decorator}\n"
+        if decorator
+        else ""
+    )
+    return f"{header}def complex_fn(x):\n{branches}    return 0\n"
+
+
+class TestHookHonoursIntrinsicAttestation(unittest.TestCase):
+    """The auto-chain runtime honours both attestation paths (GHI #1102)."""
+
+    def _diagnose(self, source: str, *, ledger_event_qualname: str | None = None) -> list:
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "subject.py"
+            target.write_text(source, encoding="utf-8")
+            ledger = Path(tmp) / "ledger.jsonl"
+            if ledger_event_qualname:
+                Ledger(ledger).append(
+                    intrinsic_complexity_attestation_event(
+                        file_path=str(target),
+                        qualname=ledger_event_qualname,
+                        reason="irreducible state machine",
+                        attestor="g0",
+                        attestation_date="2026-09-26",
+                        metric="radon_cc",
+                        crossing_band="block",
+                        crossing_value=14.0,
+                    )
+                )
+            with (
+                patch("gzkit.hooks.install_complexity_advisor._LEDGER_PATH", ledger),
+                patch("sys.stderr", new_callable=io.StringIO),
+            ):
+                return _diagnose_files([str(target)])
+
+    @covers("REQ-0.0.29-05-06")
+    def test_unattested_function_is_diagnosed(self) -> None:
+        self.assertEqual(len(self._diagnose(_complex_source())), 1)
+
+    @covers("REQ-0.0.29-05-06")
+    def test_decorated_function_is_not_diagnosed(self) -> None:
+        source = _complex_source('@intrinsic_complexity(reason="dispatch", attestor="g0")')
+        self.assertEqual(self._diagnose(source), [])
+
+    @covers("REQ-0.0.29-05-06")
+    def test_ledger_attested_function_is_not_diagnosed(self) -> None:
+        self.assertEqual(self._diagnose(_complex_source(), ledger_event_qualname="complex_fn"), [])
 
 
 class TestShellHookContract(unittest.TestCase):

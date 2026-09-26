@@ -10,7 +10,7 @@ Feature: Intrinsic complexity attestation — two-path escape from refactor pres
   @REQ-0.0.29-07-01
   Scenario: decorator-path attested function renders "intrinsic complexity attested" and exits 0
     Given a synthetic complexity-advise environment with a block-band Python source
-    And the function "block_band" in "subject.py" is registered as intrinsically attested
+    And the function "block_band" in "subject.py" is decorated with @intrinsic_complexity
     When I run the gz command "complexity advise subject.py --rule-path complexity-thresholds.json"
     Then the command exits with code 0
     And the output contains "intrinsic complexity attested"
@@ -31,6 +31,15 @@ Feature: Intrinsic complexity attestation — two-path escape from refactor pres
     Then the command exits with code 0
     And the output contains "Intrinsic complexity attested"
     And the ledger contains an "intrinsic-complexity-attestation" event for "block_band"
+
+  @REQ-0.0.29-07-02
+  Scenario: a ledger-attested function is honoured on the next advise run
+    Given a synthetic complexity-advise environment with a block-band Python source
+    And the ledger directory exists at ".gzkit"
+    When I run the gz command "complexity advise subject.py:block_band --attest-intrinsic --reason=irreducible-state-machine --attestor=g0 --rule-path complexity-thresholds.json" with simulated TTY attestation
+    And I run the gz command "complexity advise subject.py --rule-path complexity-thresholds.json"
+    Then the command exits with code 0
+    And the output contains "intrinsic complexity attested by 'g0'"
 
   @REQ-0.0.29-07-05
   Scenario: --attest-intrinsic refused in headless environment

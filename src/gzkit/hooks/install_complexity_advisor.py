@@ -26,11 +26,13 @@ from radon.visitors import Function
 
 from gzkit.complexity.advisor.diagnosis import AdvisorDiagnosis
 from gzkit.complexity.advisor.engine import AstContext, DiagnosisEngine, EngineError
+from gzkit.complexity.advisor.intrinsic import find_attestation, ledger_attestations
 from gzkit.complexity.advisor.timeout import TimeoutOk, run_with_timeout
 from gzkit.complexity.thresholds import load_threshold_table
 
 _DEFAULT_RULE_PATH = Path(".gzkit/rules/complexity-thresholds.json")
 _FAILURE_LOG_PATH = Path(".gzkit/insights/advisor-failures.jsonl")
+_LEDGER_PATH = Path(".gzkit/ledger.jsonl")
 _METRIC_KEY = "radon_cc"
 
 _HOOK_ID = "complexity-advisor-auto-chain"
@@ -97,6 +99,7 @@ def _diagnose_files(file_paths: list[str]) -> list[AdvisorDiagnosis]:
         print(f"warning: engine init failed: {exc}; skipping advisor", file=sys.stderr)
         return []
 
+    ledger_index = ledger_attestations(_LEDGER_PATH)
     all_diagnoses: list[AdvisorDiagnosis] = []
     for file_path_str in file_paths:
         file_path = Path(file_path_str)
@@ -117,6 +120,15 @@ def _diagnose_files(file_paths: list[str]) -> list[AdvisorDiagnosis]:
                 continue
             target_node = func_nodes_by_line.get(block.lineno)
             if target_node is None:
+                continue
+            qualname = f"{block.classname}.{block.name}" if block.classname else block.name
+            attestation = find_attestation(target_node, file_path, qualname, ledger_index)
+            if attestation is not None:
+                reason, attestor, attested_on = attestation
+                print(
+                    f"intrinsic complexity attested by {attestor!r} on {attested_on}: {reason}",
+                    file=sys.stderr,
+                )
                 continue
             ast_context = AstContext(
                 file_path=file_path_str,

@@ -37,7 +37,11 @@ from gzkit.complexity.advisor.engine import (
     DiagnosisEngine,
     EngineError,
 )
-from gzkit.complexity.advisor.intrinsic import get_attestation
+from gzkit.complexity.advisor.intrinsic import (
+    Attestation,
+    find_attestation,
+    ledger_attestations,
+)
 from gzkit.complexity.advisor.presentation import AdHocPresenter, AutoChainPresenter
 from gzkit.complexity.thresholds import ThresholdTable, load_threshold_table
 from gzkit.ledger import Ledger
@@ -99,6 +103,7 @@ def complexity_advise_cmd(
 
     table = _load_table_or_exit(rule_path)
     engine = _build_engine_or_exit()
+    ledger_index = ledger_attestations(_resolve_ledger_path())
 
     diagnoses: list[AdvisorDiagnosis] = []
     attested_all: list[_AttestedInfo] = []
@@ -106,7 +111,7 @@ def complexity_advise_cmd(
     for source_file in _iter_python_files(target):
         try:
             file_diagnoses, file_attested, file_func_count = _analyze_file(
-                source_file, table, engine
+                source_file, table, engine, ledger_index
             )
             functions_checked += file_func_count
             diagnoses.extend(file_diagnoses)
@@ -173,12 +178,14 @@ def _analyze_file(
     source_file: Path,
     table: ThresholdTable,
     engine: DiagnosisEngine,
+    ledger_index: dict[tuple[str, str], Attestation],
 ) -> tuple[list[AdvisorDiagnosis], list[_AttestedInfo], int]:
     """Run attestation check and engine for each ``radon_cc`` crossing.
 
-    Attested functions are short-circuited before the engine call — this
-    avoids EngineError for functions whose practitioner-eye content is
-    pending operator authoring.
+    A function attested by a literal ``@intrinsic_complexity`` in source or by
+    an ``intrinsic-complexity-attestation`` ledger event is short-circuited
+    before the engine call (GHI #1102) — this also avoids EngineError for
+    functions whose practitioner-eye content is pending operator authoring.
 
     Returns:
         (diagnoses, attested_infos, func_block_count)
@@ -201,7 +208,7 @@ def _analyze_file(
         qualname = (
             f"{block.classname}.{block.name}" if getattr(block, "classname", None) else block.name
         )
-        attestation = get_attestation(str(source_file.absolute()), qualname)
+        attestation = find_attestation(target_node, source_file, qualname, ledger_index)
         if attestation is not None:
             reason_val, attestor_val, date_val = attestation
             attested.append((qualname, reason_val, attestor_val, date_val))

@@ -2,7 +2,8 @@
 
 Provides Given steps that:
 - Build the same synthetic fixture as ``complexity_advise_steps.py``
-- Pre-populate the in-process ``_REGISTRY`` (decorator path)
+- Decorate the synthetic source with a literal ``@intrinsic_complexity`` (decorator path;
+  GHI #1102 — the CLI reads the declaration, it never imports the file)
 - Create the ``.gzkit`` ledger directory (commit-time path)
 - Mock TTY gate + ATTEST input (REQ-0.0.29-07-04 happy path)
 
@@ -10,6 +11,7 @@ The ``When I run the gz command`` / ``Then the command exits with code N``
 steps live in ``gz_steps.py`` and are shared.
 
 @covers REQ-0.0.29-07-01
+@covers REQ-0.0.29-07-02
 @covers REQ-0.0.29-07-03
 @covers REQ-0.0.29-07-04
 @covers REQ-0.0.29-07-05
@@ -40,19 +42,19 @@ def _invoke(args: list[str]) -> tuple[int, str]:
     return 0 if code is None else int(code), output.getvalue()
 
 
-@given('the function "{qualname}" in "{filename}" is registered as intrinsically attested')
-def step_register_intrinsic(context, qualname: str, filename: str) -> None:
-    from datetime import date
-
-    from gzkit.complexity.advisor.intrinsic import _REGISTRY  # noqa: PLC2701
-
-    file_path = str((Path.cwd() / filename).absolute())
-    _REGISTRY[(file_path, qualname)] = (
-        "irreducible branching for all observed states",
-        "g0",
-        date.today().isoformat(),
+@given('the function "{qualname}" in "{filename}" is decorated with @intrinsic_complexity')
+def step_decorate_intrinsic(_context, qualname: str, filename: str) -> None:
+    source_path = Path.cwd() / filename
+    source = source_path.read_text(encoding="utf-8")
+    decorated = source.replace(
+        f"def {qualname}(",
+        '@intrinsic_complexity(reason="irreducible branching for all observed states", '
+        f'attestor="g0")\ndef {qualname}(',
+        1,
     )
-    context.add_cleanup(_REGISTRY.clear)
+    assert decorated != source, f"def {qualname}( not found in {filename}"
+    header = "from gzkit.complexity.advisor.intrinsic import intrinsic_complexity\n\n\n"
+    source_path.write_text(header + decorated, encoding="utf-8")
 
 
 @given('the ledger directory exists at "{rel_path}"')

@@ -6,7 +6,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-09-26
 metadata:
-  skill-version: "0.2.1"
+  skill-version: "0.2.2"
   govzero-framework-version: "v6"
   govzero_layer: "Layer 3 - File Sync"
 gz_command: complexity advise
@@ -77,21 +77,22 @@ it lets the commit through and appends a record to
 
 ## Intrinsic-complexity attestation
 
-Two paths exist. Neither currently stops `gz complexity advise` from
-diagnosing the function.
+Two paths exist. Either one makes `gz complexity advise` and the auto-chain
+hook print `intrinsic complexity attested by '<attestor>' on <date>: <reason>`
+for that function instead of a diagnosis, so it no longer fails the run.
 
-- **`@intrinsic_complexity(reason=..., attestor=...)`** registers the function
-  in an in-memory registry when its module is imported. `gz complexity advise`
-  reads source files as text and never imports them, so the decorator has no
-  effect on a CLI run.
+- **`@intrinsic_complexity(reason=..., attestor=...)`** on the function, with
+  both arguments as non-empty string literals: the advisor reads the
+  declaration from the parsed source, never importing the file. Use it for
+  known-irreducible functions whose complexity will not change.
 - **`--attest-intrinsic`** takes `<file_path>:<qualname>` as the path, plus
   `--reason` and `--attestor` (a handle, never a real name; an omitted
   `--attestor` takes `.gzkit.json` § `authorship.attestor_handle`). It refuses
   a function that crosses no band and refuses without an interactive terminal.
   The operator types `ATTEST` to confirm, and it appends an
   `intrinsic-complexity-attestation` event to the ledger, whose shape
-  `gz validate --intrinsic-attestation` checks. The advisor does not read that
-  event back.
+  `gz validate --intrinsic-attestation` checks. Later advisor runs honour it,
+  matched on the resolved file path and qualname.
 
 The operator runs `--attest-intrinsic` themselves; the agent drafts the reason.
 
