@@ -39,9 +39,9 @@ For every crossing, the engine emits an `AdvisorDiagnosis` carrying:
   distilled-characteristics document (never fabricated).
 
 Default output is structured human-readable prose; `--json` mode
-emits the canonical Pydantic serialization as a JSON array. The
-`--auto-chain` flag is reserved for OBPI-0.0.29-05 (the xenon
-auto-fire hook) and is currently a no-op marker.
+emits the canonical Pydantic serialization as a JSON array.
+`--auto-chain` selects the condensed commit-time presentation used
+for a trigger-fired run.
 
 ## OPTIONS
 
@@ -53,7 +53,9 @@ auto-fire hook) and is currently a no-op marker.
 - `--quiet` — Errors only; no progress output.
 - `--verbose` — Debug output (per-file analysis trace).
 - `--dry-run` — Reserved; analysis is read-only and dry-run is a no-op.
-- `--auto-chain` — Reserved for OBPI-0.0.29-05.
+- `--auto-chain` — Condensed commit-time presentation for a
+  trigger-fired run. The OBPI-0.0.29-05 pre-commit hook runs the
+  advisor in its own process and does not pass this flag.
 - `--rule-path PATH` — Override the threshold rule path. Default is
   `.gzkit/rules/complexity-thresholds.json`. Test injection only;
   production runs use the default.
