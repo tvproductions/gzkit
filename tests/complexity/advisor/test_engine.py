@@ -258,6 +258,25 @@ class DiagnoseAtBlockBandTest(unittest.TestCase):
             self.assertEqual(result.crossing_value, 15.0)
 
 
+class ProofLeadsWithDiagnosedNodeTest(unittest.TestCase):
+    """proof[0] is the diagnosed node's own range, ahead of its sub-nodes (GHI #1104)."""
+
+    @covers("REQ-0.0.29-02-02")
+    def test_first_proof_range_is_the_function_not_its_signature(self) -> None:
+        source = "def f(a, b):\n    x = a + b\n    if x:\n        return x\n    return 0\n"
+        with _synthetic_environment("radon_cc") as (_, rule_path):
+            table = load_threshold_table(rule_path)
+            result = diagnose(_ast_context_for(source), "radon_cc", 8.0, table, rules=())
+            assert result is not None
+            first = result.proof[0]
+            self.assertEqual((first.start_line, first.end_line), (1, 5))
+            self.assertEqual(first.ast_node_kind, "FunctionDef")
+            self.assertIn(
+                ("arg", 1, 1),
+                [(p.ast_node_kind, p.start_line, p.end_line) for p in result.proof[1:]],
+            )
+
+
 class EmptyProofFailsClosedTest(unittest.TestCase):
     @covers("REQ-0.0.29-02-03")
     def test_target_node_without_lineno_raises_engine_error(self) -> None:

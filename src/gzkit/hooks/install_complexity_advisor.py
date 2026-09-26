@@ -148,7 +148,6 @@ def _render_to_stderr(diagnoses: list[AdvisorDiagnosis]) -> None:
     """Render diagnoses to stderr (REQ-0.0.29-05-06)."""
     for index, diag in enumerate(diagnoses, start=1):
         proof_first = diag.proof[0]
-        proof_last = diag.proof[-1]
         print(
             f"[{index}] metric={diag.metric} value={diag.crossing_value} band={diag.crossing_band}",
             file=sys.stderr,
@@ -160,7 +159,7 @@ def _render_to_stderr(diagnoses: list[AdvisorDiagnosis]) -> None:
         )
         print(
             f"  Proof: {Path(proof_first.file_path).as_posix()}"
-            f":{proof_first.start_line}-{proof_last.end_line}",
+            f":{proof_first.start_line}-{proof_first.end_line}",
             file=sys.stderr,
         )
         print(f"  Recommended move: {diag.recommended_move}", file=sys.stderr)

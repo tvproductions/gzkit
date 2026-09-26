@@ -6,7 +6,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-09-26
 metadata:
-  skill-version: "0.2.0"
+  skill-version: "0.2.1"
   govzero-framework-version: "v6"
   govzero_layer: "Layer 3 - File Sync"
 gz_command: complexity guide
@@ -57,8 +57,7 @@ block headed `── <file>:<start>-<end> ──` with four lines:
 - **Guidance** — the doctrinal-frame headline
 - **Move** — the recommended-move excerpt
 
-The line range is the diagnosis's first proof range, which is often the `def`
-line alone rather than the whole function. No archetype rule in
+The line range is the diagnosed function's full span. No archetype rule in
 `data/advisor_archetype_rules.json` covers the `advise` band, so every hint's
 archetype is the `long_parameter_list` fallback; judge the function from its
 code, not the label.

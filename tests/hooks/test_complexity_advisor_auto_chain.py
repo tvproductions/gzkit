@@ -105,6 +105,39 @@ class TestRunAutoChain(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertIn("Archetype", mock_stderr.getvalue())
 
+    @covers("REQ-0.0.29-05-06")
+    @patch("gzkit.hooks.install_complexity_advisor.run_with_timeout")
+    @patch("sys.stderr", new_callable=io.StringIO)
+    def test_proof_line_reports_the_diagnosed_function_range(
+        self, mock_stderr: io.StringIO, mock_timeout: MagicMock
+    ) -> None:
+        """The Proof line is proof[0]'s span, not a stitch of first and last (GHI #1104)."""
+        # output-contract: the stderr Proof line is the hook's rendered location.
+        diagnosis = _make_diagnosis(band="warn").model_copy(
+            update={
+                "proof": (
+                    ProofRange(
+                        file_path="src/foo.py",
+                        start_line=10,
+                        end_line=30,
+                        ast_node_kind="FunctionDef",
+                    ),
+                    ProofRange(
+                        file_path="src/foo.py",
+                        start_line=10,
+                        end_line=10,
+                        ast_node_kind="arguments",
+                    ),
+                    ProofRange(
+                        file_path="src/foo.py", start_line=25, end_line=26, ast_node_kind="Return"
+                    ),
+                )
+            }
+        )
+        mock_timeout.return_value = _make_timeout_ok([diagnosis])
+        run_auto_chain(["src/foo.py"])
+        self.assertIn("Proof: src/foo.py:10-30\n", mock_stderr.getvalue())
+
     @covers("REQ-0.0.29-05-04")
     @patch("gzkit.hooks.install_complexity_advisor.run_with_timeout")
     def test_timeout_wraps_advisor(self, mock_timeout: MagicMock) -> None:

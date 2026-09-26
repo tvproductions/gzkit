@@ -209,6 +209,27 @@ class TestEngineAdviseCrossings(unittest.TestCase):
             )
 
 
+class TestHintRangeSpansFunction(unittest.TestCase):
+    """A hint's line range is the diagnosed function's, not a signature sub-node (GHI #1104)."""
+
+    @covers("REQ-0.0.30-03-04")
+    def test_one_line_signature_hint_spans_whole_function(self) -> None:
+        with _synthetic_root() as rule_path:
+            src = _write_py_source(rule_path.parent, "lower.py", _ADVISE_LOWER_SOURCE)
+            table = load_threshold_table(rule_path)
+            (hint,) = analyze(src, table=table)
+            self.assertEqual((hint.start_line, hint.end_line), (1, 10))
+
+    @covers("REQ-0.0.30-03-04")
+    def test_one_line_function_hint_is_one_line(self) -> None:
+        source = "def one(x):  return 1 if x == 1 else 2 if x == 2 else 3 if x == 3 else 4\n"
+        with _synthetic_root() as rule_path:
+            src = _write_py_source(rule_path.parent, "one.py", source)
+            table = load_threshold_table(rule_path)
+            (hint,) = analyze(src, table=table)
+            self.assertEqual((hint.start_line, hint.end_line), (1, 1))
+
+
 class TestPrecedenceBandClassification(unittest.TestCase):
     @covers("REQ-0.0.30-03-07")
     def test_lower_portion_classifies_as_approaching(self) -> None:

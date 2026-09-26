@@ -171,6 +171,12 @@ def diagnose(
 
 
 def _extract_proof(target_node: ast.AST, file_path: str) -> tuple[ProofRange, ...]:
+    target_line = getattr(target_node, "lineno", None)
+    target_key = (
+        target_line,
+        getattr(target_node, "end_lineno", target_line) or target_line,
+        type(target_node).__name__,
+    )
     seen: set[tuple[int, int, str]] = set()
     ranges: list[ProofRange] = []
     for node in ast.walk(target_node):
@@ -191,7 +197,15 @@ def _extract_proof(target_node: ast.AST, file_path: str) -> tuple[ProofRange, ..
                 ast_node_kind=kind,
             )
         )
-    ranges.sort(key=lambda pr: (pr.start_line, pr.end_line))
+    # The diagnosed node's own range leads, so proof[0] spans what was
+    # diagnosed; its sub-nodes follow by position (GHI #1104).
+    ranges.sort(
+        key=lambda pr: (
+            (pr.start_line, pr.end_line, pr.ast_node_kind) != target_key,
+            pr.start_line,
+            pr.end_line,
+        )
+    )
     return tuple(ranges)
 
 
