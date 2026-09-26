@@ -36,6 +36,7 @@ from gzkit.governance.trust_audits.session_green_gate import (
     install_command,
 )
 from gzkit.hooks.claude import setup_claude_hooks
+from gzkit.hooks.commit_ledger import RECORDER_HOOK_NAME, install_recorder_hook
 from gzkit.ledger import (
     Ledger,
     adr_created_event,
@@ -548,6 +549,29 @@ def _install_pre_commit_hooks(project_root: Path, *, dry_run: bool = False) -> s
     )
 
 
+def _install_commit_locus_recorder(project_root: Path, *, dry_run: bool = False) -> str | None:
+    """Install the commit-locus recorder where pre-commit runs it before stashing.
+
+    Delivered only when the project declares the ``post-commit`` hook type: the
+    recorder runs as that shim's ``post-commit.legacy`` hook, which pre-commit
+    executes before it stashes unstaged changes. As a pre-commit post-commit
+    hook its ledger row was rolled back whenever the ledger carried unstaged
+    rows (GHI #1092).
+
+    Returns a human-readable status string, or None if skipped.
+    """
+    if not (project_root / ".git").is_dir():
+        return None
+    if "post-commit" not in declared_hook_types(project_root):
+        return None
+    if configured_hooks_path(project_root) is not None:
+        # pre-commit refused to install; the install step already reported it.
+        return None
+    if dry_run:
+        return f"Would install commit-locus recorder ({RECORDER_HOOK_NAME})"
+    return install_recorder_hook(project_root / ".git" / "hooks")
+
+
 def _session_green_gate_statuses(project_root: Path, *, dry_run: bool = False) -> list[str]:
     """Declare the pre-push gate, then deliver it; return each step's status line.
 
@@ -559,6 +583,7 @@ def _session_green_gate_statuses(project_root: Path, *, dry_run: bool = False) -
         for status in (
             _scaffold_pre_commit_config(project_root, dry_run=dry_run),
             _install_pre_commit_hooks(project_root, dry_run=dry_run),
+            _install_commit_locus_recorder(project_root, dry_run=dry_run),
         )
         if status
     ]

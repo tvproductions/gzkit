@@ -40,7 +40,6 @@ _NOT_A_GZKIT_GUARD = {
     "stays hard by construction -- over-strict, never under-strict",
     "check-todos-fixmes": "informational only; `|| true` can never fail",
     "task-trailer-stamp": "prepare-commit-msg stamper, not a gate",
-    "ledger-commit-locus": "post-commit recorder; git ignores its exit status",
     "unittest": "test runner, manual stage",
     "surface-fidelity-cheap": "`gz validate` scopes -- already checkpointed at "
     "validate_cmd.py `_run_scope_checks`",

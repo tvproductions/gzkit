@@ -34,12 +34,22 @@ observe. Merge commits produce no ``diff-tree`` output without ``-m`` and are
 not walked; gzkit commits directly to main (operator directive 2026-06-16), so
 authored content does not arrive that way. A rebase replays commits and can
 re-record a path whose original row fell outside the replayed window.
+
+**Delivery: pre-commit's legacy hook, never a pre-commit hook (GHI #1092).**
+pre-commit stashes unstaged changes before every hook stage, post-commit
+included, and restores them with ``git apply``. While the ledger carries
+unstaged rows — mid-session it nearly always does — a row appended inside that
+window conflicts with the restore, and pre-commit rolls it back after this
+module has printed ``recorded 1``. pre-commit runs ``post-commit.legacy``
+before it stashes, so ``gz init`` installs the recorder there
+(:func:`install_recorder_hook`), and the delivery audit checks it is on disk.
 """
 
 from __future__ import annotations
 
 import json
 import os
+import stat
 import subprocess
 import sys
 from datetime import UTC, datetime
@@ -50,6 +60,64 @@ from gzkit.hooks.core import is_governance_artifact
 from gzkit.ledger import Ledger, artifact_edited_event
 
 _ARTIFACT_EDITED = "artifact_edited"
+
+#: The file pre-commit's post-commit shim runs before it stashes.
+RECORDER_HOOK_NAME = "post-commit.legacy"
+#: Identifies the hook as gzkit's; a legacy hook without it is someone else's.
+RECORDER_HOOK_MARKER = "# gzkit commit-locus recorder (GHI #847, GHI #1092)"
+_RECORDER_COMMAND = "uv run -m gzkit.hooks.commit_ledger"
+
+
+def render_recorder_hook(command: str = _RECORDER_COMMAND) -> str:
+    """Return the body of the ``post-commit.legacy`` hook that runs *command*."""
+    return (
+        "#!/usr/bin/env sh\n"
+        f"{RECORDER_HOOK_MARKER}\n"
+        "# Installed by `gz init`. pre-commit runs this before it stashes unstaged\n"
+        "# changes, so the ledger row it appends survives a partial-stage commit.\n"
+        f"exec {command}\n"
+    )
+
+
+def install_recorder_hook(hooks_dir: Path, *, command: str = _RECORDER_COMMAND) -> str:
+    """Install the recorder as ``hooks_dir/post-commit.legacy``; return a status line.
+
+    Idempotent. A legacy hook that is not gzkit's is never overwritten: it is
+    the project's own post-commit hook, which pre-commit moved aside on install.
+    """
+    target = hooks_dir / RECORDER_HOOK_NAME
+    if target.exists():
+        try:
+            existing = target.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            existing = ""
+        if RECORDER_HOOK_MARKER not in existing:
+            return (
+                f"Commit-locus recorder NOT installed: {target.as_posix()} is another "
+                "post-commit hook, and gz init does not overwrite it. Chain "
+                f"`{command}` from it to record governance edits made outside the tool locus."
+            )
+    hooks_dir.mkdir(parents=True, exist_ok=True)
+    target.write_text(render_recorder_hook(command), encoding="utf-8", newline="\n")
+    mode = target.stat().st_mode
+    target.chmod(mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+    return f"Installed commit-locus recorder ({RECORDER_HOOK_NAME})"
+
+
+def recorder_undelivered_reason(hooks_dir: Path) -> str | None:
+    """Return why the recorder would not run on the next commit, or None when it would."""
+    target = hooks_dir / RECORDER_HOOK_NAME
+    if not target.is_file():
+        return f"the commit-locus recorder is not installed at {target.as_posix()}"
+    try:
+        body = target.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        body = ""
+    if RECORDER_HOOK_MARKER not in body:
+        return f"{target.as_posix()} is not the gzkit commit-locus recorder"
+    if not os.access(target, os.X_OK):
+        return f"{target.as_posix()} is not executable, so pre-commit skips it"
+    return None
 
 
 def _git(args: list[str], root: Path) -> str:
@@ -160,12 +228,29 @@ def record_committed_artifact_edits(root: Path, rev: str = "HEAD") -> list[str]:
     return pending
 
 
-def main() -> int:
+def _install_from_cli(root: Path) -> int:
+    """Install the recorder into the hooks directory git reads; 0 when installed."""
+    hooks = _git(["rev-parse", "--git-path", "hooks"], root).strip()
+    if not hooks:
+        print("[ledger] not a git worktree; nothing installed", file=sys.stderr)  # noqa: T201
+        return 1
+    status = install_recorder_hook(root / hooks)
+    print(status)  # noqa: T201
+    return 0 if status.startswith("Installed") else 1
+
+
+def main(argv: list[str] | None = None) -> int:
     """post-commit entry point. Always exits 0 — a recorder gates nothing.
 
     Git ignores a post-commit hook's exit status, so a non-zero return would
     be theatre. Failure is reported on stderr and the commit stands.
+
+    ``--install`` installs the recorder hook instead of recording, for a clone
+    that ran ``pre-commit install`` but not ``gz init`` (GHI #1092).
     """
+    args = sys.argv[1:] if argv is None else argv
+    if args == ["--install"]:
+        return _install_from_cli(Path.cwd())
     try:
         recorded = record_committed_artifact_edits(Path.cwd())
     except Exception as exc:  # noqa: BLE001 - never let a recorder break a commit

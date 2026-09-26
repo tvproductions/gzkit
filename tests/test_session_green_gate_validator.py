@@ -296,6 +296,12 @@ class SessionGreenGateDeliversEveryDeclaredHookType(unittest.TestCase):
         hooks.mkdir(parents=True)
         for hook_type in installed:
             (hooks / hook_type).write_text(_SHIM.format(hook_type), encoding="utf-8")
+        if "post-commit" in installed:
+            # A delivered post-commit is the shim plus the recorder it runs
+            # before stashing (GHI #1092); the shim alone records nothing.
+            from gzkit.hooks.commit_ledger import install_recorder_hook
+
+            install_recorder_hook(hooks)
 
     def _audit(self, root: Path):
         import contextlib

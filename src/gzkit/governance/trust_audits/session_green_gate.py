@@ -12,6 +12,7 @@ import yaml
 
 from gzkit.advisory import emit_advisory
 from gzkit.core.validation_rules import ValidationError
+from gzkit.hooks.commit_ledger import recorder_undelivered_reason
 
 _RECOVERY = (
     "Recovery: declare a 'pre-push' stage hook running 'gz check' in "
@@ -148,6 +149,12 @@ def _delivery_errors(project_root: Path, hook_types: list[str]) -> list[Validati
     errors: list[ValidationError] = []
     for hook_type in hook_types:
         reason = _undelivered_reason(hooks_dir / hook_type)
+        recovery = _delivery_recovery(hook_types)
+        if reason is None and hook_type == "post-commit":
+            # The shim alone records nothing: the recorder runs as its legacy
+            # hook, outside pre-commit's stash (GHI #1092).
+            reason = recorder_undelivered_reason(hooks_dir)
+            recovery = "Recovery: `uv run -m gzkit.hooks.commit_ledger --install`."
         if reason is None:
             continue
         artifact = f"{hooks_dir.as_posix()}/{hook_type}"
@@ -155,7 +162,7 @@ def _delivery_errors(project_root: Path, hook_types: list[str]) -> list[Validati
             emit_advisory(
                 f"session-green-gate: declared '{hook_type}' hook is not delivered — "
                 f"{reason} at {artifact}. It records and gates nothing, so this does not "
-                f"block; its record is lost until it is installed. {_delivery_recovery(hook_types)}"
+                f"block; its record is lost until it is installed. {recovery}"
             )
             continue
         errors.append(

@@ -40,6 +40,12 @@ gz init [OPTIONS]
 10. Runs `pre-commit install` for every hook type the config declares
     (`default_install_hook_types`, plus `pre-push`), so the gate is actually
     delivered into `.git/hooks/`, not merely declared
+11. When the config declares `post-commit`, installs the commit-locus ledger
+    recorder as `.git/hooks/post-commit.legacy`. pre-commit runs that file
+    before it stashes unstaged changes; run as an ordinary post-commit hook,
+    the recorder's ledger row was rolled back whenever the ledger had
+    unstaged rows (GHI #1092). An existing `post-commit.legacy` that is not
+    gzkit's is left in place and reported
 
 Steps 9 and 10 are separate on purpose. A declared-but-uninstalled gate
 enforces nothing while every surface reports green, so `gz check` verifies the
