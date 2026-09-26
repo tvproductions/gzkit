@@ -5,10 +5,10 @@ description: Run maintenance checks and cleanup routines. Use for repository hyg
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-12
+last_reviewed: 2026-09-26
 model: haiku
 metadata:
-  skill-version: "1.1.1"
+  skill-version: "1.1.2"
 ---
 
 # gz tidy
@@ -42,12 +42,15 @@ additional surface health checks:
 2. **Settings coherence**: Verify `.claude/settings.json` permissions and hook
    references match actual files on disk. Tag with `@claude-code-guide` if
    settings reference missing hooks or stale paths.
-3. **CLAUDE.md budget**: Check CLAUDE.md line count. If over 200 lines, flag
-   for pruning. The guide subagent can recommend `@path` imports and section
+3. **Instructions budget**: Run `uv run gz validate --instructions-files-budget`.
+   The per-file character budgets for `AGENTS.md`, `CLAUDE.md` and
+   `.claude/rules/*.md` live in `data/instructions_files_budget.json`. For a file
+   over budget, the guide subagent can recommend `@path` imports and section
    relocation.
-4. **Skill mirror parity**: Verify `.claude/skills/` mirrors match
-   `.gzkit/skills/` canonical source. `gz agent sync control-surfaces` fixes
-   this, but the guide can diagnose why mirrors drifted.
+4. **Skill mirror parity**: Run `uv run gz skill audit`. It checks every enabled
+   vendor's mirror (roster: `.gzkit.json` § `vendors`) against the canonical
+   `.gzkit/skills/`. `gz agent sync control-surfaces` fixes the drift, and the
+   guide can diagnose why the mirrors drifted.
 
 ## Validation
 
@@ -76,7 +79,7 @@ These thoughts mean STOP — you are about to leave drift in place:
 |---------|---------|
 | "Tidy is just cosmetic, skip it" | Tidy catches surface drift before it becomes a Gate 5 blocker. The cost of skipping is paid later in attestation, when the drift is harder to find. |
 | "The mirrors look fine — sync isn't needed" | Skill mirrors and canonical state can diverge silently. Tidy is the routine check that surfaces it. "Looks fine" is not a verification protocol. |
-| "CLAUDE.md is over budget but it's all useful content" | The 200-line budget exists because adherence drops past it. Useful content that the agent can't load is dead content. Prune or relocate via `@path` imports. |
+| "CLAUDE.md is over budget but it's all useful content" | The budget in `data/instructions_files_budget.json` exists because adherence drops past it. Useful content that the agent can't load is dead content. Prune or relocate via `@path` imports. |
 | "Hook errors at startup are pre-existing — not my problem" | Pre-existing failures are still failures. Tidy is when you self-heal, not when you ignore. |
 | "I'll run `--check` instead of `--fix` to be safe" | `--check` is for diagnosis. If you saw drift and didn't fix it, you traded a 30-second sync for a future debugging session. |
 | "The Claude surface self-heal is too vague to act on" | Tag the broken files with `@claude-code-guide` and let it diagnose against current Anthropic docs. Vagueness is solved by delegation, not avoidance. |
@@ -85,7 +88,7 @@ These thoughts mean STOP — you are about to leave drift in place:
 
 - Running tidy with `--check` and ignoring the reported drift
 - Skipping the Claude surface validation steps
-- CLAUDE.md over 200 lines with no relocation plan
+- An instructions file over its budget (`gz validate --instructions-files-budget`) with no relocation plan
 - Hook errors observed but never resolved
 - Skill mirrors not regenerated after a skill edit
 - Tidy runs that produce no evidence trail (sync output, log, or proof)

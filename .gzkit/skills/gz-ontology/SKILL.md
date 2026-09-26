@@ -4,9 +4,9 @@ description: Image the governance shape with the read-only ontology sonar. Use t
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-06
+last_reviewed: 2026-09-26
 metadata:
-  skill-version: "0.1.0"
+  skill-version: "0.1.1"
 model: haiku
 ---
 
