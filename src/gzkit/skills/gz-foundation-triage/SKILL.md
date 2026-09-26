@@ -7,9 +7,9 @@ description: Rank the in-flight foundation backlog by priority — cross-referen
 category: adr-lifecycle
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-06-27
+last_reviewed: 2026-09-26
 metadata:
-  skill-version: "1.0.1"
+  skill-version: "1.0.2"
 model: sonnet
 ---
 
@@ -26,9 +26,11 @@ This skill is **diagnosis only**. It MUST NOT mutate any foundation ADR,
 ledger entry, registry, or promote/complete/change-status on any artifact.
 Running the skill is read-only across the governance surface.
 
-The rubric module at `src/gzkit/foundation/rubric.py` is the foundation-triage-rubric
-OBPI's surface and is not implemented in this OBPI; this skill references it
-by path/name and ranks on raw signal counts in the interim.
+The bundled script reports raw signal counts. Weighted scoring is the
+foundation-triage-rubric surface at `src/gzkit/foundation/rubric.py`:
+`uv run python -m gzkit.foundation.rubric` prints a `priority_score` with its
+evidence for each in-flight foundation. Read those scores as evidence in
+Step 2; they never enter the rank-input JSON, whose schema rejects extra fields.
 
 ## Invocation
 
