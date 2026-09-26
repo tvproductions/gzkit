@@ -7,6 +7,7 @@ import unittest
 from collections.abc import Iterator, Mapping
 from contextlib import contextmanager, redirect_stderr, redirect_stdout
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
 from typing import Any
 from unittest.mock import patch
@@ -358,6 +359,41 @@ def stop_init_subprocess_patches() -> None:
     for patcher in reversed(_ruff_format_patchers):
         patcher.stop()
     _uv_sync_patcher.stop()
+
+
+_review_clock_patcher = patch("gzkit.skills_audit.review_clock")
+
+
+def shipped_review_floor() -> date:
+    """Return the oldest ``last_reviewed`` among the skills the wheel delivers."""
+    from gzkit.skills import _iter_canonical_skill_slugs, _parse_frontmatter  # noqa: PLC0415
+
+    reviewed: list[date] = []
+    for slug in _iter_canonical_skill_slugs():
+        frontmatter, _ = _parse_frontmatter(slug.joinpath("SKILL.md").read_text(encoding="utf-8"))
+        if (frontmatter.get("lifecycle_state") or "active") == "retired":
+            continue
+        value = str(frontmatter.get("last_reviewed") or "").strip("'\"")
+        if value:
+            reviewed.append(date.fromisoformat(value))
+    return min(reviewed)
+
+
+def start_review_clock_pin() -> None:
+    """Audit scaffolded wheel skills on a day none of them is stale (GHI #1099).
+
+    Call from ``setUpModule`` in a module that runs ``gz skill audit`` over
+    skills ``gz init`` delivered, when the test is about something other than
+    review age. Without the pin, the module's verdict follows the calendar: it
+    turns red the day the oldest shipped review crosses 90 days. Pinned to that
+    oldest review date, every shipped review has age zero or less.
+    """
+    _review_clock_patcher.start().return_value = shipped_review_floor()
+
+
+def stop_review_clock_pin() -> None:
+    """Stop the pin started by ``start_review_clock_pin``."""
+    _review_clock_patcher.stop()
 
 
 # Back-compat shims for callers that used the narrower helpers during GHI #183

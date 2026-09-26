@@ -1,12 +1,11 @@
 """Skill frontmatter validation for canonical sync preflight checks."""
 
-from datetime import date, timedelta
+from datetime import date
 from pathlib import Path
 
 from gzkit.config import GzkitConfig
 from gzkit.skill_contract import SKILL_DESCRIPTION_MAX_CHARS, SUPPORTED_SKILL_HARNESSES
 from gzkit.sync_skills import (
-    DEFAULT_MAX_REVIEW_AGE_DAYS,
     SKILL_ALLOWED_TRANSITIONS,
     SKILL_CAPABILITY_FIELDS,
     SKILL_DEPRECATION_DATE_FIELDS,
@@ -109,20 +108,14 @@ def _append_invalid_lifecycle_state(errors: list[str], rel_file: str, lifecycle_
 def _append_last_reviewed_issues(
     errors: list[str], frontmatter: dict[str, str], rel_file: str
 ) -> None:
-    """Append last_reviewed validation and staleness issues."""
+    """Append a malformed-``last_reviewed`` error.
+
+    Review AGE is not judged here: a stale review is not corruption, and sync
+    propagates it. ``gz skill audit`` owns the age verdict (GHI #1099).
+    """
     last_reviewed = frontmatter.get("last_reviewed", "")
-    if not last_reviewed:
-        return
-    parsed_last_reviewed = _parse_skill_date(last_reviewed)
-    if parsed_last_reviewed is None:
+    if last_reviewed and _parse_skill_date(last_reviewed) is None:
         errors.append(f"{rel_file}: invalid last_reviewed '{last_reviewed}' (YYYY-MM-DD).")
-        return
-    if date.today() - parsed_last_reviewed <= timedelta(days=DEFAULT_MAX_REVIEW_AGE_DAYS):
-        return
-    errors.append(
-        f"{rel_file}: last_reviewed '{last_reviewed}' is older than "
-        f"{DEFAULT_MAX_REVIEW_AGE_DAYS} days."
-    )
 
 
 def _append_deprecation_date_issues(

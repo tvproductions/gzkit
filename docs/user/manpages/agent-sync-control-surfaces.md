@@ -91,10 +91,12 @@ Blocking preflight failures include:
 - missing canonical skill directories (without a legacy bootstrap candidate),
 - missing `SKILL.md`,
 - missing or invalid `SKILL.md` frontmatter identity fields,
-- stale `last_reviewed` values older than policy threshold (90 days),
+- malformed `last_reviewed` values (not `YYYY-MM-DD`),
 - invalid/missing deprecation metadata for `deprecated` or `retired` skills.
 
 On failure, sync exits non-zero and prints recovery steps.
+
+Review **age** never blocks sync. A `last_reviewed` older than the policy threshold is a maintenance signal on canon, not corruption: sync propagates it, and neither the preflight nor the post-sync audit refuses on it. `gz skill audit` and Gate 3 report it and block (GHI #1099).
 
 ## Recovery Behavior (Non-Destructive)
 

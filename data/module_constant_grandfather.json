@@ -55,7 +55,6 @@
     "src/gzkit/skills_audit.py::DEFAULT_MAX_REVIEW_AGE_DAYS",
     "src/gzkit/skills_audit.py::DEFAULT_WARN_REVIEW_AGE_DAYS",
     "src/gzkit/smoke.py::SMOKE_BUDGET_SECONDS",
-    "src/gzkit/sync_skills.py::DEFAULT_MAX_REVIEW_AGE_DAYS",
     "src/gzkit/tautological_tests.py::_HELPER_RESOLUTION_MAX_DEPTH"
   ]
 }

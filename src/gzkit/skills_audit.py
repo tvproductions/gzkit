@@ -7,6 +7,8 @@ import re
 from datetime import date, timedelta
 from pathlib import Path
 
+from pydantic import BaseModel, ConfigDict, Field
+
 from gzkit.config import GzkitConfig
 from gzkit.skill_contract import (
     SKILL_BODY_GRANDFATHER,
@@ -79,6 +81,20 @@ SKILL_GOVZERO_LAYERS = {
     "Layer 2 - Ledger Consumption",
     "Layer 3 - File Sync",
 }
+
+
+class ReviewWindow(BaseModel):
+    """How old a skill review may be, measured from which day."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    max_age_days: int = Field(..., description="Age past which a review blocks the audit")
+    today: date = Field(..., description="Day review ages are measured from")
+
+
+def review_clock() -> date:
+    """Return today's date: the audit's only read of the machine clock (GHI #1099)."""
+    return date.today()
 
 
 def _skill_dirs(root: Path) -> dict[str, Path]:
@@ -165,14 +181,12 @@ def _validate_skill_metadata_fields(
     issues: list[SkillAuditIssue],
     skill_file: Path,
     frontmatter: dict[str, str],
-    max_review_age_days: int,
+    review: ReviewWindow,
 ) -> None:
     """Validate metadata fields for one canonical skill."""
     _validate_required_skill_fields(project_root, issues, skill_file, frontmatter)
     _validate_description_length(project_root, issues, skill_file, frontmatter)
-    _validate_lifecycle_field_values(
-        project_root, issues, skill_file, frontmatter, max_review_age_days
-    )
+    _validate_lifecycle_field_values(project_root, issues, skill_file, frontmatter, review)
     _validate_capability_fields(project_root, issues, skill_file, frontmatter)
     _validate_known_metadata_fields(project_root, issues, skill_file, frontmatter)
 
@@ -224,12 +238,12 @@ def _validate_lifecycle_field_values(
     issues: list[SkillAuditIssue],
     skill_file: Path,
     frontmatter: dict[str, str],
-    max_review_age_days: int,
+    review: ReviewWindow,
 ) -> None:
     """Validate lifecycle enum/date constraints."""
     lifecycle_state = frontmatter.get("lifecycle_state", "")
     _validate_lifecycle_state(project_root, issues, skill_file, lifecycle_state)
-    _validate_last_reviewed(project_root, issues, skill_file, frontmatter, max_review_age_days)
+    _validate_last_reviewed(project_root, issues, skill_file, frontmatter, review)
     _validate_deprecation_dates(project_root, issues, skill_file, frontmatter)
     _validate_transition_fields(project_root, issues, skill_file, frontmatter, lifecycle_state)
     _validate_deprecation_field_contract(
@@ -271,7 +285,7 @@ def _validate_last_reviewed(
     issues: list[SkillAuditIssue],
     skill_file: Path,
     frontmatter: dict[str, str],
-    max_review_age_days: int,
+    review: ReviewWindow,
 ) -> None:
     """Validate last_reviewed format and staleness."""
     last_reviewed = frontmatter.get("last_reviewed", "")
@@ -287,7 +301,8 @@ def _validate_last_reviewed(
             f"Invalid last_reviewed '{last_reviewed}' (expected YYYY-MM-DD).",
         )
         return
-    age = date.today() - parsed_last_reviewed
+    max_review_age_days = review.max_age_days
+    age = review.today - parsed_last_reviewed
     if age > timedelta(days=max_review_age_days):
         _append_audit_issue(
             issues,
@@ -670,7 +685,7 @@ def _validate_canonical_skill(
     issues: list[SkillAuditIssue],
     skill_name: str,
     skill_dir: Path,
-    max_review_age_days: int,
+    review: ReviewWindow,
 ) -> None:
     """Validate one canonical skill directory and SKILL metadata."""
     if not KEBAB_CASE_RE.match(skill_name):
@@ -706,17 +721,21 @@ def _validate_canonical_skill(
 
     _validate_skill_body(project_root, issues, skill_file, frontmatter)
     _validate_skill_identity(project_root, issues, skill_name, skill_file, frontmatter)
-    _validate_skill_metadata_fields(
-        project_root, issues, skill_file, frontmatter, max_review_age_days
-    )
+    _validate_skill_metadata_fields(project_root, issues, skill_file, frontmatter, review)
 
 
 def audit_skills(
     project_root: Path,
     config: GzkitConfig | None = None,
     max_review_age_days: int = DEFAULT_MAX_REVIEW_AGE_DAYS,
+    today: date | None = None,
 ) -> SkillAuditReport:
-    """Audit skill naming, metadata, and canonical/mirror parity."""
+    """Audit skill naming, metadata, and canonical/mirror parity.
+
+    ``today`` is the day review ages are measured from. Omitted, it is read from
+    :func:`review_clock`, so a live tree is judged against the calendar while a
+    test names the day it assumes (GHI #1099).
+    """
     # Late import to avoid circular dependency (skills_mirror imports from skills_audit).
     from gzkit.skills_mirror import validate_mirror_root
     from gzkit.sync_surfaces import has_vendor_declaration
@@ -726,6 +745,9 @@ def audit_skills(
     if max_review_age_days <= 0:
         msg = "max_review_age_days must be positive."
         raise ValueError(msg)
+    review = ReviewWindow(
+        max_age_days=max_review_age_days, today=today if today is not None else review_clock()
+    )
 
     # Mirror expectations follow vendor enablement, on the SAME predicate
     # ``sync_all`` uses. The roots were hardcoded, so a project that disabled a
@@ -759,7 +781,7 @@ def audit_skills(
 
     checked_skills = len(canonical_dirs)
     for skill_name, skill_dir in sorted(canonical_dirs.items()):
-        _validate_canonical_skill(project_root, issues, skill_name, skill_dir, max_review_age_days)
+        _validate_canonical_skill(project_root, issues, skill_name, skill_dir, review)
 
     # Manpage coverage for active skills (only when skills index exists)
     index_file = project_root / SKILL_INDEX_PATH

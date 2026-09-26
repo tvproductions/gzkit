@@ -10,6 +10,10 @@ from gzkit.skills import audit_skills
 from gzkit.sync import collect_canonical_sync_blockers, find_stale_mirror_paths, sync_all
 from gzkit.validate import validate_all
 
+# Audit verdicts sync does not own. A stale review is a maintenance signal on
+# canon, judged by `gz skill audit` and Gate 3; sync propagates it (GHI #1099).
+_AUDIT_ONLY_CODES = frozenset({"SKA-LAST-REVIEWED-STALE"})
+
 
 def _is_path_within_root(path: str, root: str) -> bool:
     """Return True when a project-relative path is equal to or nested under root."""
@@ -65,7 +69,11 @@ def _run_agent_control_sync(dry_run: bool) -> None:
 
     report = audit_skills(project_root, config)
     blocking_errors = sorted(
-        [issue for issue in report.issues if issue.blocking],
+        [
+            issue
+            for issue in report.issues
+            if issue.blocking and issue.code not in _AUDIT_ONLY_CODES
+        ],
         key=lambda issue: (issue.path, issue.message),
     )
     if blocking_errors:

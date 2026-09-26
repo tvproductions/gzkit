@@ -4,7 +4,7 @@ import shutil
 import tempfile
 import unittest
 from contextlib import ExitStack
-from datetime import date, timedelta
+from datetime import timedelta
 from pathlib import Path
 from unittest.mock import patch
 
@@ -13,8 +13,11 @@ from gzkit.quality import QualityResult
 from gzkit.traceability import covers
 from tests.commands.common import (
     CliRunner,
+    shipped_review_floor,
     start_init_subprocess_patches,
+    start_review_clock_pin,
     stop_init_subprocess_patches,
+    stop_review_clock_pin,
 )
 
 # Module-level cache: run ``gz init`` once into a template dir. Each test
@@ -30,6 +33,7 @@ def setUpModule() -> None:
     """Stub init subprocesses and build a cached init'd project template."""
     global _TEMPLATE_CTX, _TEMPLATE_DIR, _ORIG_CWD
     start_init_subprocess_patches()
+    start_review_clock_pin()
     _TEMPLATE_CTX = tempfile.TemporaryDirectory(prefix="gzkit-skills-tpl-")
     _TEMPLATE_DIR = Path(_TEMPLATE_CTX.name) / "project"
     _TEMPLATE_DIR.mkdir()
@@ -48,6 +52,7 @@ def tearDownModule() -> None:
     _TEMPLATE_CTX = None
     _TEMPLATE_DIR = None
     _ORIG_CWD = None
+    stop_review_clock_pin()
     stop_init_subprocess_patches()
 
 
@@ -344,7 +349,7 @@ class TestSkillCommands(unittest.TestCase):
         """
         runner = CliRunner()
         with _InitFromTemplate():
-            stale_date = (date.today() - timedelta(days=120)).isoformat()
+            stale_date = (shipped_review_floor() - timedelta(days=120)).isoformat()
             self._set_skill_last_reviewed_all_roots("gz-prd", stale_date)
 
             default_result = runner.invoke(main, ["skill", "audit"])

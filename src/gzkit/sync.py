@@ -28,9 +28,6 @@ from gzkit.sync_skill_validation import (
 # Re-exports from sync_skills (skill catalog, validation, mirrors)
 # ---------------------------------------------------------------------------
 from gzkit.sync_skills import (
-    DEFAULT_MAX_REVIEW_AGE_DAYS as DEFAULT_MAX_REVIEW_AGE_DAYS,
-)
-from gzkit.sync_skills import (
     SKILL_ALLOWED_TRANSITIONS as SKILL_ALLOWED_TRANSITIONS,
 )
 from gzkit.sync_skills import (

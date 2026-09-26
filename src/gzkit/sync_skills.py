@@ -16,7 +16,6 @@ from gzkit.surface_write import ensure_dir, write_if_changed
 
 SKILL_NAME_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 SKILL_LAST_REVIEWED_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-DEFAULT_MAX_REVIEW_AGE_DAYS = 90
 SKILL_IDENTITY_FIELDS = ("name", "description")
 SKILL_LIFECYCLE_FIELDS = ("lifecycle_state", "owner", "last_reviewed")
 SKILL_REQUIRED_FRONTMATTER_FIELDS = SKILL_IDENTITY_FIELDS + SKILL_LIFECYCLE_FIELDS

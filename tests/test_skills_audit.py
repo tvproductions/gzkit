@@ -4,10 +4,15 @@ import tempfile
 import unittest
 from datetime import date, timedelta
 from pathlib import Path
+from unittest.mock import patch
 
+from gzkit import skills_audit
 from gzkit.config import GzkitConfig
 from gzkit.skills import audit_skills, scaffold_skill
 from gzkit.sync import sync_skill_mirrors
+
+# Review-age tests name the day they assume, never the machine's (GHI #1099).
+_REVIEW_TODAY = date(2026, 1, 15)
 
 
 def _skill_frontmatter(
@@ -18,7 +23,8 @@ def _skill_frontmatter(
         "description": "Demo skill",
         "lifecycle_state": "active",
         "owner": "gzkit-governance",
-        "last_reviewed": date.today().isoformat(),
+        # Stamped from the clock the audit reads, so fixture and verdict agree on "today".
+        "last_reviewed": skills_audit.review_clock().isoformat(),
         "metadata": {"skill-version": "0.1.0"},
     }
     fields.update(overrides)
@@ -321,7 +327,7 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
             config = GzkitConfig(project_name="gzkit-test")
-            stale_date = (date.today() - timedelta(days=120)).isoformat()
+            stale_date = (_REVIEW_TODAY - timedelta(days=120)).isoformat()
             stale_frontmatter = _skill_frontmatter("demo-skill", last_reviewed=stale_date)
 
             _write_skill(
@@ -337,7 +343,7 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
                 frontmatter=stale_frontmatter,
             )
 
-            report = audit_skills(project_root, config)
+            report = audit_skills(project_root, config, today=_REVIEW_TODAY)
             self.assertFalse(report.valid)
             self.assertTrue(any(issue.code == "SKA-LAST-REVIEWED-STALE" for issue in report.issues))
 
@@ -361,12 +367,12 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
             config = GzkitConfig(project_name="gzkit-test")
-            aging_date = (date.today() - timedelta(days=80)).isoformat()
+            aging_date = (_REVIEW_TODAY - timedelta(days=80)).isoformat()
             self._write_skill_all_roots(
                 project_root, config, _skill_frontmatter("demo-skill", last_reviewed=aging_date)
             )
 
-            report = audit_skills(project_root, config)
+            report = audit_skills(project_root, config, today=_REVIEW_TODAY)
 
             aging = [i for i in report.issues if i.code == "SKA-LAST-REVIEWED-AGING"]
             self.assertEqual(len(aging), 1, "expected exactly one aging issue")
@@ -383,12 +389,12 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
             config = GzkitConfig(project_name="gzkit-test")
-            fresh_date = (date.today() - timedelta(days=10)).isoformat()
+            fresh_date = (_REVIEW_TODAY - timedelta(days=10)).isoformat()
             self._write_skill_all_roots(
                 project_root, config, _skill_frontmatter("demo-skill", last_reviewed=fresh_date)
             )
 
-            report = audit_skills(project_root, config)
+            report = audit_skills(project_root, config, today=_REVIEW_TODAY)
 
             self.assertFalse(
                 any(i.code == "SKA-LAST-REVIEWED-AGING" for i in report.issues),
@@ -401,12 +407,12 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
             config = GzkitConfig(project_name="gzkit-test")
-            stale_date = (date.today() - timedelta(days=200)).isoformat()
+            stale_date = (_REVIEW_TODAY - timedelta(days=200)).isoformat()
             self._write_skill_all_roots(
                 project_root, config, _skill_frontmatter("demo-skill", last_reviewed=stale_date)
             )
 
-            report = audit_skills(project_root, config)
+            report = audit_skills(project_root, config, today=_REVIEW_TODAY)
 
             self.assertTrue(any(i.code == "SKA-LAST-REVIEWED-STALE" for i in report.issues))
             self.assertFalse(
@@ -414,6 +420,31 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
                 "a stale review must not also be reported as aging",
             )
             self.assertFalse(report.valid)
+
+    def test_audit_without_a_date_reads_the_review_clock(self) -> None:
+        """The machine clock enters only through ``review_clock`` (GHI #1099).
+
+        Callers that pass no ``today`` — the ``gz skill audit`` CLI, Gate 3,
+        ``gz tidy`` — are judged against the clock, so a live tree still blocks
+        once a review ages out.
+        """
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+            reviewed = (_REVIEW_TODAY - timedelta(days=10)).isoformat()
+            self._write_skill_all_roots(
+                project_root, config, _skill_frontmatter("demo-skill", last_reviewed=reviewed)
+            )
+
+            with patch("gzkit.skills_audit.review_clock", return_value=_REVIEW_TODAY):
+                fresh = audit_skills(project_root, config)
+            later = _REVIEW_TODAY + timedelta(days=100)
+            with patch("gzkit.skills_audit.review_clock", return_value=later):
+                aged = audit_skills(project_root, config)
+
+            self.assertTrue(fresh.valid)
+            self.assertFalse(aged.valid)
+            self.assertTrue(any(i.code == "SKA-LAST-REVIEWED-STALE" for i in aged.issues))
 
     def test_missing_skill_version_is_blocking(self) -> None:
         """A skill with no metadata.skill-version fails the audit.
@@ -464,7 +495,7 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
             config = GzkitConfig(project_name="gzkit-test")
-            stale_date = (date.today() - timedelta(days=120)).isoformat()
+            stale_date = (_REVIEW_TODAY - timedelta(days=120)).isoformat()
             stale_frontmatter = _skill_frontmatter("demo-skill", last_reviewed=stale_date)
 
             _write_skill(
@@ -480,7 +511,9 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
                 frontmatter=stale_frontmatter,
             )
 
-            report = audit_skills(project_root, config, max_review_age_days=365)
+            report = audit_skills(
+                project_root, config, max_review_age_days=365, today=_REVIEW_TODAY
+            )
             self.assertTrue(report.valid)
             self.assertFalse(
                 any(issue.code == "SKA-LAST-REVIEWED-STALE" for issue in report.issues)

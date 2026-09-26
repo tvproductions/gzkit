@@ -2,10 +2,14 @@
 
 import tempfile
 import unittest
+from datetime import date
 from pathlib import Path
 
 from gzkit.skills import scaffold_skill
-from gzkit.skills_audit import _validate_canonical_skill
+from gzkit.skills_audit import ReviewWindow, _validate_canonical_skill
+
+# Scaffolding stamps today's review, so the window is measured from today too.
+_REVIEW = ReviewWindow(max_age_days=90, today=date.today())
 
 
 class TestSkillBodyAudit(unittest.TestCase):
@@ -14,7 +18,7 @@ class TestSkillBodyAudit(unittest.TestCase):
             root = Path(tmp)
             path = scaffold_skill(root, "demo", ".gzkit/skills")
             issues = []
-            _validate_canonical_skill(root, issues, "demo", path.parent, 90)
+            _validate_canonical_skill(root, issues, "demo", path.parent, _REVIEW)
             self.assertTrue(any(i.code == "SKA-BODY-UNFINISHED" and i.blocking for i in issues))
             text = path.read_text(encoding="utf-8")
             for number in (1, 2, 3):
@@ -23,7 +27,7 @@ class TestSkillBodyAudit(unittest.TestCase):
                 )
             path.write_text(text, encoding="utf-8")
             issues = []
-            _validate_canonical_skill(root, issues, "demo", path.parent, 90)
+            _validate_canonical_skill(root, issues, "demo", path.parent, _REVIEW)
             self.assertFalse(any(i.code == "SKA-BODY-UNFINISHED" for i in issues))
 
     def test_markers_are_distinguished_from_substantive_or_quoted_examples(self) -> None:

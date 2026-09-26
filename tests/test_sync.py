@@ -6,7 +6,7 @@
 
 import tempfile
 import unittest
-from datetime import date, timedelta
+from datetime import date
 from pathlib import Path
 
 from jsonschema import Draft202012Validator
@@ -860,21 +860,39 @@ class TestSyncControlSurfaces(unittest.TestCase):
             blockers = collect_canonical_sync_blockers(project_root, config)
             self.assertEqual(blockers, [])
 
-    def test_canonical_sync_preflight_blocks_stale_last_reviewed(self) -> None:
-        """Stale lifecycle review metadata is a blocking preflight error."""
+    def test_canonical_sync_preflight_ignores_review_age(self) -> None:
+        """A stale review is not corruption: sync propagates it (GHI #1099).
+
+        Review age is judged by `gz skill audit`, the gate that owns it. Before
+        GHI #1099 the preflight judged it too, so every surface stopped
+        regenerating the day any skill's review aged out.
+        """
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
             config = GzkitConfig(project_name="gzkit-test")
-            stale_date = (date.today() - timedelta(days=120)).isoformat()
+
+            aged_skill = project_root / config.paths.skills / "aged-skill"
+            aged_skill.mkdir(parents=True, exist_ok=True)
+            (aged_skill / "SKILL.md").write_text(
+                _skill_markdown("aged-skill", last_reviewed="2000-01-01"), encoding="utf-8"
+            )
+
+            self.assertEqual(collect_canonical_sync_blockers(project_root, config), [])
+
+    def test_canonical_sync_preflight_blocks_malformed_last_reviewed(self) -> None:
+        """Control: a malformed date is a format error, and still blocks."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
 
             broken_skill = project_root / config.paths.skills / "broken-skill"
             broken_skill.mkdir(parents=True, exist_ok=True)
             (broken_skill / "SKILL.md").write_text(
-                _skill_markdown("broken-skill", last_reviewed=stale_date), encoding="utf-8"
+                _skill_markdown("broken-skill", last_reviewed="2000-13-45"), encoding="utf-8"
             )
 
             blockers = collect_canonical_sync_blockers(project_root, config)
-            self.assertTrue(any("older than 90 days" in blocker for blocker in blockers))
+            self.assertTrue(any("invalid last_reviewed" in blocker for blocker in blockers))
 
     def test_canonical_sync_preflight_blocks_missing_deprecation_fields(self) -> None:
         """Deprecated skills must provide communication metadata."""
