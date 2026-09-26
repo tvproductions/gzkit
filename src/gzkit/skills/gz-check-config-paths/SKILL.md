@@ -4,9 +4,9 @@ description: Validate configured and manifest path coherence. Use when diagnosin
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-25
+last_reviewed: 2026-09-26
 metadata:
-  skill-version: "0.1.1"
+  skill-version: "0.2.0"
 model: haiku
 ---
 
@@ -14,19 +14,30 @@ model: haiku
 
 ## Overview
 
-Operate the gz check-config-paths command surface as a reusable governance workflow.
+Check that the paths `.gzkit.json` configures and the manifest declares exist
+and agree. The command reports these checks:
+
+- every configured directory (governance roots, source, tests and docs roots,
+  the canonical skills root and each vendor skill mirror) and file (ledger,
+  manifest) exists;
+- the artifacts and control surfaces the manifest declares exist;
+- OBPI briefs live inside their ADR package (the OBPI path contract);
+- source code carries no path literal the config does not govern.
+
+It is read-only. It exits 0 with `Config-path audit passed.` and exits 1 when
+it lists any issue.
 
 ## Workflow
 
-1. Confirm target context, IDs, and lane assumptions.
-2. Run uv run gz check-config-paths with the required options.
-3. Summarize results, including evidence and any follow-up gates.
-
-## Validation
-
-- Verify command output reflects the requested scope.
-- If governance state changed, confirm with uv run gz status or uv run gz state.
+1. Run `uv run gz check-config-paths`, or add `--json` for `{valid, issues}`.
+2. On exit 1, fix each named path: correct the value in `.gzkit.json`, create
+   the missing directory or file, or regenerate the manifest and control
+   surfaces with `uv run gz agent sync control-surfaces`.
+3. Re-run until it exits 0, then summarize what changed.
 
 ## Example
 
-Use $gz-check-config-paths to validate config and manifest paths..
+```bash
+uv run gz check-config-paths
+uv run gz check-config-paths --json
+```
