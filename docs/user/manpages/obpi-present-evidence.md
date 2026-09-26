@@ -17,6 +17,15 @@ The command executes the brief's `## Demo` commands, reads canonical ARB receipt
 runs `gz covers`, and checks current Stage-2 acceptance proof. It writes the
 result to `.gzkit/evidence/<OBPI-ID>.evidence.json` and displays it as text or JSON.
 
+Demo commands run in a disposable copy of the working tree, never in the live
+checkout. The copy holds the tracked files, uncommitted changes, and untracked
+files that are not ignored. It uses the project's environment without syncing it,
+and it is deleted afterwards. A Demo that writes, such as an attesting
+`gz content commit`, therefore cannot overwrite canon or append ledger rows
+(GHI #1093). When no copy can be made — the project is not a git checkout, or it
+has no commit — the Demo is not run, and the packet carries a `Demo not run`
+blocker. `gz obpi complete` re-runs the Demo the same way.
+
 Step 4a supplies evidence to Step 4b. The independent review therefore need not
 have completed before this command can prepare its input. The packet separates:
 

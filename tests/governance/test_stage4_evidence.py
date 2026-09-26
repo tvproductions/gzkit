@@ -8,6 +8,7 @@ fail-closed validator (no packet → blocked; bad demo → blocked).
 
 from __future__ import annotations
 
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -21,6 +22,7 @@ from gzkit.governance.stage4_evidence import (
     validate_stage4_evidence,
     write_packet,
 )
+from tests.commands.common import _isolated_git_env
 
 
 class TestCoversCountsSummary(unittest.TestCase):
@@ -46,8 +48,36 @@ class TestCoversCountsSummary(unittest.TestCase):
         self.assertEqual(_counts_from_covers_summary(payload), (4, 1))
 
 
+def _git(tmp: Path, *args: str) -> str:
+    return subprocess.run(
+        ["git", *args],
+        cwd=tmp,
+        env=_isolated_git_env(),
+        check=True,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    ).stdout
+
+
+def _project(tmp: Path) -> None:
+    """Make *tmp* a committed git checkout: Demos run only in an isolated copy of one."""
+    if (tmp / ".git").exists():
+        return
+    _git(tmp, "init", "-q", "-b", "main")
+    _git(tmp, "config", "user.email", "g0@users.noreply.github.com")
+    _git(tmp, "config", "user.name", "g0")
+    (tmp / ".gzkit").mkdir(exist_ok=True)
+    (tmp / ".gzkit" / "ledger.jsonl").write_text('{"event":"base"}\n', encoding="utf-8")
+    (tmp / "README.md").write_text("base\n", encoding="utf-8")
+    _git(tmp, "add", "-A")
+    _git(tmp, "commit", "-qm", "base")
+
+
 def _brief(tmp: Path, demo_body: str | None) -> Path:
     """Write a minimal brief; demo_body is the inside of the ## Demo fenced block."""
+    _project(tmp)
     text = "# Brief\n\n## Objective\n\nx\n"
     if demo_body is not None:
         text += f"\n## Demo\n\n```bash\n{demo_body}\n```\n"
@@ -267,6 +297,75 @@ class TestValidateFailClosed(unittest.TestCase):
                 any("Demo exited 1" in e.message for e in errors),
                 [e.message for e in errors],
             )
+
+
+class TestDemoNeverTouchesTheLiveCheckout(unittest.TestCase):
+    """GHI #1093: generating Stage-4 evidence must not mutate the live checkout.
+
+    `gz obpi present-evidence` executed OBPI-0.35.0-14's Demo in the repository
+    itself; its attesting `gz content commit` overwrote the rendition sidecar's
+    operator attestation with "demo" and appended a `rendition_committed` row that
+    the append-only ledger can never remove.
+    """
+
+    _WRITING_DEMO = (
+        "touch probe && printf '%s\\n' '{\"event\":\"demo\"}' >> .gzkit/ledger.jsonl "
+        "&& grep -q demo .gzkit/ledger.jsonl"
+    )
+
+    def _live_state(self, tmp: Path) -> tuple[str, bytes]:
+        return _git(tmp, "status", "--porcelain"), (tmp / ".gzkit" / "ledger.jsonl").read_bytes()
+
+    def test_writing_demo_leaves_the_live_checkout_unchanged(self) -> None:
+        with tempfile.TemporaryDirectory() as t:
+            tmp = Path(t)
+            brief = _brief(tmp, self._WRITING_DEMO)
+            before = self._live_state(tmp)
+            packet = generate_evidence_packet(tmp, brief, "OBPI-x")
+            self.assertEqual(self._live_state(tmp), before)
+            self.assertFalse((tmp / "probe").exists())
+            # The demo still ran, and its writes were real where it ran.
+            self.assertEqual([(d.ran, d.exit_status) for d in packet.demos], [(True, 0)])
+
+    def test_validate_re_run_leaves_the_live_checkout_unchanged(self) -> None:
+        """`gz obpi complete` re-runs the Demo through the same path."""
+        with tempfile.TemporaryDirectory() as t:
+            tmp = Path(t)
+            brief = _brief(tmp, self._WRITING_DEMO)
+            before = self._live_state(tmp)
+            validate_stage4_evidence(tmp, brief, "OBPI-x")
+            self.assertEqual(self._live_state(tmp), before)
+
+    def test_demo_sees_uncommitted_and_untracked_work(self) -> None:
+        """Isolation must not hide the work under review: the Demo runs on the working tree."""
+        with tempfile.TemporaryDirectory() as t:
+            tmp = Path(t)
+            brief = _brief(tmp, "grep -q edited README.md && test -f new_module.py")
+            (tmp / "README.md").write_text("edited\n", encoding="utf-8")
+            (tmp / "new_module.py").write_text("x = 1\n", encoding="utf-8")
+            packet = generate_evidence_packet(tmp, brief, "OBPI-x")
+            self.assertEqual([d.exit_status for d in packet.demos], [0], packet.demos)
+
+    def test_read_only_demo_output_is_reported(self) -> None:
+        """Control: a read-only Demo still reports its real exit and output."""
+        with tempfile.TemporaryDirectory() as t:
+            tmp = Path(t)
+            brief = _brief(tmp, "cat README.md")
+            packet = generate_evidence_packet(tmp, brief, "OBPI-x")
+            self.assertEqual([d.exit_status for d in packet.demos], [0])
+            self.assertIn("base", packet.demos[0].stdout_tail)
+
+    def test_uncheckoutable_root_refuses_rather_than_running_live(self) -> None:
+        """Fail closed: with no git checkout to copy, the Demo is not run at all."""
+        with tempfile.TemporaryDirectory() as t:
+            tmp = Path(t)
+            brief = tmp / "brief.md"
+            brief.write_text("# B\n\n## Demo\n\n```bash\ntouch probe\n```\n", encoding="utf-8")
+            packet = generate_evidence_packet(tmp, brief, "OBPI-x")
+            self.assertFalse((tmp / "probe").exists())
+            self.assertEqual([d.ran for d in packet.demos], [False])
+            self.assertFalse(packet.attestable)
+            self.assertTrue(any("not run" in b for b in packet.blockers), packet.blockers)
 
 
 if __name__ == "__main__":

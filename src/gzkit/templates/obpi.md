@@ -153,7 +153,11 @@ uv run gz test
      diagnosis run against a real file, the `--json` form, an auto-chain
      trigger. The closeout ceremony walkthrough harvests this section
      (parser-validated; unregistered verbs are dropped). Prefer real paths
-     and arguments over `<placeholder>` syntax. `--help` is not a demo. -->
+     and arguments over `<placeholder>` syntax. `--help` is not a demo.
+     Make each command assert-shaped: exit non-zero on a bad state.
+     `gz obpi present-evidence` and `gz obpi complete` run these commands in a
+     disposable copy of the working tree, and the copy is deleted afterwards,
+     so a writing command never reaches live canon or the ledger (GHI #1093). -->
 
 ```bash
 # Replace with concrete product demonstrations for this OBPI.

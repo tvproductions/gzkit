@@ -8,11 +8,12 @@ running anything — the fabrication class GHI #643 documents (and ADR-0.0.74 §
 This module makes the evidence **non-fabricable** via two independent mechanisms the
 agent does not author:
 
-* **generate** (`generate_evidence_packet`) — runs the brief's ``## Demo`` command(s),
-  reads the on-disk ARB receipts, and runs ``gz covers``; writes an ``EvidencePacket``
-  the operator reads at Stage 4. The agent relays this, it does not type it.
+* **generate** (`generate_evidence_packet`) — runs the brief's ``## Demo`` command(s)
+  in a disposable copy of the working tree (`run_demos`, GHI #1093), reads the on-disk
+  ARB receipts, and runs ``gz covers``; writes an ``EvidencePacket`` the operator reads
+  at Stage 4. The agent relays this, it does not type it.
 * **validate** (`validate_stage4_evidence`) — at ``gz obpi complete`` time, **re-runs the
-  demo live** (does not trust the packet's recorded exit), re-resolves the receipts on
+  demo** (does not trust the packet's recorded exit), re-resolves the receipts on
   disk, and re-checks coverage; fail-closed (returns errors) if the packet is absent, the
   live demo exits non-zero, a required receipt is missing/red, or any REQ is uncovered.
 
@@ -30,6 +31,8 @@ import os
 import re
 import shutil
 import subprocess
+import sys
+import tempfile
 from datetime import UTC, datetime
 from functools import lru_cache
 from pathlib import Path
@@ -37,7 +40,9 @@ from pathlib import Path
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.acceptance_store import acceptance_blockers
+from gzkit.adversary_workspace import materialize_adversary_workspace
 from gzkit.core.validation_rules import ValidationError
+from gzkit.git_spawn_boundary import isolated_git_env
 
 # Canonical ARB steps whose receipts back a Heavy-lane completion.
 _REQUIRED_RECEIPT_STEPS: tuple[str, ...] = ("ruff", "typecheck", "unittest")
@@ -312,13 +317,67 @@ def replay_invocation(command: str) -> tuple[list[str] | str, bool]:
     return [shell, "-c", command], False
 
 
-def _run_demo(command: str, project_root: Path) -> DemoResult:
-    """Execute one demo command, capturing exit status and a stdout/stderr tail."""
+def _materialize_demo_checkout(project_root: Path, destination: Path) -> None:
+    """Copy the working tree the Demo evidences into *destination* (GHI #1093).
+
+    Tracked content and uncommitted tracked changes come from the Step-4b
+    workspace builder; untracked, non-ignored files are overlaid too, because
+    work under review is routinely not yet added.
+    """
+    materialize_adversary_workspace(project_root, destination)
+    listed = subprocess.run(
+        ["git", "ls-files", "--others", "--exclude-standard", "-z"],
+        cwd=project_root,
+        env=isolated_git_env(os.environ),
+        capture_output=True,
+        check=False,
+    )
+    if listed.returncode != 0:
+        detail = listed.stderr.decode("utf-8", errors="replace").strip()[:400]
+        raise RuntimeError(f"cannot list untracked files: {detail}")
+    for raw in listed.stdout.split(b"\0"):
+        if not raw:
+            continue
+        source = project_root / raw.decode("utf-8", errors="surrogateescape")
+        if source.is_file():
+            target = destination / source.relative_to(project_root)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, target)
+
+
+def _demo_env(project_root: Path, checkout: Path) -> dict[str, str]:
+    """Environment that runs the Demo against *checkout* with the live, unsynced venv.
+
+    ``UV_NO_SYNC`` with ``UV_PROJECT_ENVIRONMENT`` makes ``uv run`` use the live
+    environment without installing into it, and ``PYTHONPATH`` resolves imports
+    from the copy, so no Demo command reaches the live checkout through the
+    interpreter either.
+    """
+    venv = project_root / ".venv"
+    env_root = venv if venv.is_dir() else Path(sys.prefix)
+    bin_dir = env_root / ("Scripts" if os.name == "nt" else "bin")
+    env = isolated_git_env(os.environ)
+    python_path = [str(checkout / "src"), env.get("PYTHONPATH", "")]
+    env.update(
+        {
+            "UV_PROJECT_ENVIRONMENT": str(env_root),
+            "UV_NO_SYNC": "1",
+            "VIRTUAL_ENV": str(env_root),
+            "PATH": os.pathsep.join([str(bin_dir), env.get("PATH", "")]),
+            "PYTHONPATH": os.pathsep.join(p for p in python_path if p),
+        }
+    )
+    return env
+
+
+def _run_demo(command: str, checkout: Path, env: dict[str, str]) -> DemoResult:
+    """Execute one demo command in *checkout*, capturing exit status and an output tail."""
     args, use_shell = replay_invocation(command)
-    proc = subprocess.run(  # noqa: S602 — demo commands are operator-authored in the brief
+    proc = subprocess.run(  # noqa: S602 — runs in a disposable copy, never the live checkout
         args,
         shell=use_shell,
-        cwd=project_root,
+        cwd=checkout,
+        env=env,
         capture_output=True,
         text=True,
         errors="replace",
@@ -327,6 +386,34 @@ def _run_demo(command: str, project_root: Path) -> DemoResult:
     combined = (proc.stdout or "") + (proc.stderr or "")
     tail = "\n".join(combined.splitlines()[-_STDOUT_TAIL_LINES:])
     return DemoResult(command=command, ran=True, exit_status=proc.returncode, stdout_tail=tail)
+
+
+def run_demos(project_root: Path, commands: list[str]) -> list[DemoResult]:
+    """Run the brief Demo in a disposable copy of the working tree (GHI #1093).
+
+    Evidence generation must never mutate the live checkout: a Demo carrying a
+    writing command, such as an attesting ``gz content commit``, once overwrote
+    a recorded operator attestation and appended a ledger row nothing can
+    remove. The Demo therefore runs in a copy that is deleted afterwards. When
+    no copy can be made, the Demo is refused, never run live.
+    """
+    if not commands:
+        return []
+    with tempfile.TemporaryDirectory(prefix="gz-demo-") as scratch:
+        checkout = Path(scratch) / "checkout"
+        try:
+            _materialize_demo_checkout(project_root, checkout)
+        except (RuntimeError, OSError, subprocess.SubprocessError) as exc:
+            reason = (
+                "not run: the Demo could not be isolated from the live checkout, and it "
+                f"never runs there ({exc})"
+            )
+            return [
+                DemoResult(command=c, ran=False, exit_status=-1, stdout_tail=reason)
+                for c in commands
+            ]
+        env = _demo_env(project_root, checkout)
+        return [_run_demo(command, checkout, env) for command in commands]
 
 
 def _collect_receipts(project_root: Path) -> list[ReceiptResult]:
@@ -400,7 +487,9 @@ def _compute_blockers(
             "demo (exit non-zero on a bad state) so completion can re-run it fail-closed."
         )
     for d in demos:
-        if d.exit_status != 0:
+        if not d.ran:
+            blockers.append(f"Demo {d.stdout_tail}: {d.command}")
+        elif d.exit_status != 0:
             blockers.append(f"Demo exited {d.exit_status} (expected 0): {d.command}")
     for r in receipts:
         if not r.found:
@@ -418,7 +507,7 @@ def _compute_blockers(
 
 def generate_evidence_packet(project_root: Path, brief_path: Path, obpi_id: str) -> EvidencePacket:
     """Run the brief Demo + read receipts + run covers; build the EvidencePacket."""
-    demos = [_run_demo(cmd, project_root) for cmd in extract_demo_commands(brief_path)]
+    demos = run_demos(project_root, extract_demo_commands(brief_path))
     receipts = _collect_receipts(project_root)
     total, uncovered = _covers_counts(project_root, obpi_id)
     blockers = _compute_blockers(demos, receipts, uncovered)
