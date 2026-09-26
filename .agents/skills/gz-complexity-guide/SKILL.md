@@ -6,7 +6,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-09-26
 metadata:
-  skill-version: "0.2.1"
+  skill-version: "0.2.2"
   govzero-framework-version: "v6"
   govzero_layer: "Layer 3 - File Sync"
 gz_command: complexity guide
@@ -59,8 +59,8 @@ block headed `── <file>:<start>-<end> ──` with four lines:
 
 The line range is the diagnosed function's full span. No archetype rule in
 `data/advisor_archetype_rules.json` covers the `advise` band, so every hint's
-archetype is the `long_parameter_list` fallback; judge the function from its
-code, not the label.
+archetype is `unclassified`, and its guidance and move are the metric's general
+ones.
 
 **Machine-readable mode:** `--json` emits an array of `AuthoringHint` objects
 with `metric`, `precedence_band`, `crossing_value`, `archetype`,

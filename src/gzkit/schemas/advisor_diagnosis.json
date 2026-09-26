@@ -65,9 +65,10 @@
         "shotgun_surgery",
         "primitive_obsession",
         "data_clumps",
-        "message_chain"
+        "message_chain",
+        "unclassified"
       ],
-      "description": "Canonical ten-value refactor archetype enumeration. Amendments require ADR-0.0.29 ceremony."
+      "description": "Canonical refactor archetype enumeration: ten archetypes plus unclassified, bound when no archetype rule matches (GHI #1103). Amendments require ADR-0.0.29 ceremony."
     },
     "DoctrinalFrame": {
       "type": "object",

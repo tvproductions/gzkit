@@ -146,7 +146,7 @@ class DiagnosisEngine:
             archetype = matched_rule.archetype
             doctrinal_frame = matched_rule.doctrinal_frame
         else:
-            archetype = RefactorArchetype.LONG_PARAMETER_LIST
+            archetype = RefactorArchetype.UNCLASSIFIED
             doctrinal_frame = _resolve_default_doctrinal_frame(metric, distilled_text)
         return AdvisorDiagnosis(
             metric=metric,

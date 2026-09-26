@@ -22,6 +22,7 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
 
+from gzkit.complexity.advisor.diagnosis import RefactorArchetype
 from gzkit.complexity.authoring.engine import (
     _classify_precedence_band,
     analyze,
@@ -207,6 +208,18 @@ class TestEngineAdviseCrossings(unittest.TestCase):
                 hint.precedence_band,
                 ("approaching", "approaching_warn"),
             )
+
+
+class TestUnmatchedHintIsUnclassified(unittest.TestCase):
+    """No archetype rule covers the advise band, so a hint names none (GHI #1103)."""
+
+    @covers("REQ-0.0.29-02-06")
+    def test_one_parameter_advise_hint_is_unclassified(self) -> None:
+        with _synthetic_root() as rule_path:
+            src = _write_py_source(rule_path.parent, "lower.py", _ADVISE_LOWER_SOURCE)
+            table = load_threshold_table(rule_path)
+            (hint,) = analyze(src, table=table)
+            self.assertEqual(hint.archetype, RefactorArchetype.UNCLASSIFIED)
 
 
 class TestHintRangeSpansFunction(unittest.TestCase):

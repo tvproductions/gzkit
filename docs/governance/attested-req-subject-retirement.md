@@ -65,12 +65,13 @@ the surface underneath it was stranded.
 
 If a REQ *literally* asserts the retired doctrine, step 2 has nothing to
 repair toward — no rewriting of the surface can make a retired claim true.
-**There is no known instance of this, and no procedure is claimed for it.**
-The honest disposition is operator escalation: the attestation is a true
-historical record of what was decided on its date, the ruling is a true
-statement of what is decided now, and reconciling two true records on an
-unamendable artifact is a governance decision rather than an editing task.
-Do not stretch the procedure above to cover it.
+**No procedure is claimed for it.** The honest disposition is operator
+escalation: the attestation is a true historical record of what was decided on
+its date, the ruling is a true statement of what is decided now, and
+reconciling two true records on an unamendable artifact is a governance
+decision rather than an editing task. Do not stretch the procedure above to
+cover it. One instance has been escalated and ruled (§ Worked example 3); that
+ruling decided its own case and is not a procedure for the next one.
 
 ## Worked example 1 — four `@covers` tests (GHI #819, `da935dc35`, 2026-08-17)
 
@@ -117,6 +118,31 @@ was standing, and a `tests/**`-scoped rule would have been silent.
 
 Note also *"asserts only that … never that the claim text is true"*. That is
 step 1 performed explicitly, and it is the sentence to imitate.
+
+## Worked example 3 — a REQ that literally asserts the retired claim (GHI #1103, 2026-09-26)
+
+The first instance of the discriminator case. `REQ-0.0.29-02-06` (attested,
+`OBPI-0.0.29-02`, Completed) read: *"Given no archetype rule matches a metric
+crossing, when the engine runs, then `archetype=long_parameter_list` (default)
+is bound and `recommended_move` is populated from the distilled-characteristics
+document, never from a fabricated string."* The default named a real archetype
+for every unmatched crossing — 1178 of 2193 diagnoses over `src/gzkit`,
+one-parameter functions labelled Long Parameter List — so no repair of the
+surface could keep the literal assertion true and fix the defect. Step 2 had
+nothing to repair toward.
+
+It was escalated with three choices: amend the REQ in place, leave the REQ as
+history and drop its `@covers` binding, or hold the fix. The operator ruled,
+verbatim: *"fix 1103 with an explicit unclassified archetype"* and *"Amend in
+place (Recommended)"*. So:
+
+- the REQ line keeps its attested text and gains a dated `Amended 2026-09-26`
+  note quoting the ruling — the record of 2026-05-06 is not rewritten;
+- the covering test keeps `@covers("REQ-0.0.29-02-06")` and asserts the amended
+  behaviour, with its docstring recording why;
+- the REQ's second clause (`recommended_move` never fabricated) was
+  doctrine-neutral and kept its original covering test unchanged — step 1
+  applied clause by clause.
 
 ## What this is not
 

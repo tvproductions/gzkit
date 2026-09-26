@@ -6,7 +6,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-09-26
 metadata:
-  skill-version: "0.2.2"
+  skill-version: "0.2.3"
   govzero-framework-version: "v6"
   govzero_layer: "Layer 3 - File Sync"
 gz_command: complexity advise
@@ -59,8 +59,9 @@ objects with `metric`, `crossing_band`, `crossing_value`, `archetype`,
 `doctrinal_frame`, `proof`, `recommended_move` and `intrinsic_attestation`.
 
 When no archetype rule in `data/advisor_archetype_rules.json` matches a
-crossing, the archetype falls back to `long_parameter_list`, and no rule covers
-the `advise` band. Read the function's code before trusting that label.
+crossing, the archetype is `unclassified`: the doctrinal frame and move are the
+metric's general ones, not an archetype's. No rule covers the `advise` band, so
+every advise-band crossing is `unclassified`.
 
 ## Auto-chain hook
 

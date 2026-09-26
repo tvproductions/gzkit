@@ -208,6 +208,12 @@ class TestProjection(unittest.TestCase):
 
 class TestAuthoringHintSchemaMirror(unittest.TestCase):
     @covers("REQ-0.0.30-03-01")
+    def test_schema_archetype_enum_mirrors_the_model(self) -> None:
+        """The hint schema's archetype enum is the model's, including unclassified (GHI #1103)."""
+        schema_enum = _load_schema()["properties"]["archetype"]["enum"]
+        self.assertEqual(sorted(schema_enum), sorted(a.value for a in RefactorArchetype))
+
+    @covers("REQ-0.0.30-03-01")
     def test_valid_payload_validates_against_schema(self) -> None:
         hint = AuthoringHint(**_valid_hint_kwargs())
         payload = hint.model_dump(mode="json")

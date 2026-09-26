@@ -29,7 +29,14 @@ __all__ = [
 
 
 class RefactorArchetype(StrEnum):
-    """Canonical ten-value refactor archetype enumeration (ADR-0.0.29 § Decision rationale #2).
+    """Canonical refactor archetype enumeration (ADR-0.0.29 § Decision rationale #2).
+
+    Ten refactor archetypes plus ``UNCLASSIFIED``, which the engine binds when no
+    rule in ``data/advisor_archetype_rules.json`` matches a crossing, so a
+    diagnosis never names an archetype the function does not have. Added
+    2026-09-26 by operator ruling on GHI #1103 ("fix 1103 with an explicit
+    unclassified archetype"); the doctrine-amendment-protocol pool ADR is
+    unbuilt, so that recorded ruling is the amendment's witness.
 
     Values are snake_case to round-trip cleanly through JSON serialization
     without a ``.value`` accessor call (StrEnum emits the string value directly).
@@ -46,6 +53,7 @@ class RefactorArchetype(StrEnum):
     PRIMITIVE_OBSESSION = "primitive_obsession"
     DATA_CLUMPS = "data_clumps"
     MESSAGE_CHAIN = "message_chain"
+    UNCLASSIFIED = "unclassified"
 
 
 class DoctrinalFrame(BaseModel):

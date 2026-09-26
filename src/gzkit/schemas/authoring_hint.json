@@ -43,9 +43,10 @@
         "shotgun_surgery",
         "primitive_obsession",
         "data_clumps",
-        "message_chain"
+        "message_chain",
+        "unclassified"
       ],
-      "description": "Canonical refactor archetype."
+      "description": "Canonical refactor archetype; unclassified when no archetype rule matches (GHI #1103)."
     },
     "doctrinal_frame_headline": {
       "type": "string",

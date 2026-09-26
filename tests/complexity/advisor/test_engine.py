@@ -340,14 +340,22 @@ class MissingDistilledCharacteristicsFailsClosedTest(unittest.TestCase):
 
 class DefaultArchetypeFallbackTest(unittest.TestCase):
     @covers("REQ-0.0.29-02-06")
-    def test_no_matching_rule_returns_default_archetype(self) -> None:
+    def test_no_matching_rule_returns_unclassified_archetype(self) -> None:
+        """An unmatched crossing is reported as unclassified, never as a real archetype.
+
+        REQ-0.0.29-02-06 originally bound ``long_parameter_list`` here, so every
+        unmatched crossing named an archetype the function did not have (1178 of
+        2193 diagnoses over src/gzkit). Amended 2026-09-26 by operator ruling on
+        GHI #1103 ("fix 1103 with an explicit unclassified archetype"; record
+        reconciled "Amend in place"), with the amendment noted on the REQ line.
+        """
         with _synthetic_environment("radon_cc") as (_, rule_path):
             table = load_threshold_table(rule_path)
             ctx = _ast_context_for(_function_with_n_params(2))
             result = diagnose(ctx, "radon_cc", value=8.0, table=table, rules=())
             self.assertIsNotNone(result)
             assert result is not None
-            self.assertEqual(result.archetype, RefactorArchetype.LONG_PARAMETER_LIST)
+            self.assertEqual(result.archetype, RefactorArchetype.UNCLASSIFIED)
             self.assertEqual(result.doctrinal_frame.authority, "martin")
 
     @covers("REQ-0.0.29-02-06")

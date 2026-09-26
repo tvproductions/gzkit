@@ -204,6 +204,13 @@ class TestAdvisorDiagnosisSchema(unittest.TestCase):
         self.assertGreater(len(errors), 0, "Expected validation error for empty proof")
 
     @covers("REQ-0.0.29-01-06")
+    def test_json_schema_archetype_enum_mirrors_the_model(self) -> None:
+        """The schema's archetype enum is the model's, including unclassified (GHI #1103)."""
+        schema_enum = _load_schema()["$defs"]["RefactorArchetype"]["enum"]
+        self.assertEqual(sorted(schema_enum), sorted(a.value for a in RefactorArchetype))
+        self.assertIn("unclassified", schema_enum)
+
+    @covers("REQ-0.0.29-01-06")
     def test_json_schema_rejects_unknown_archetype_enum(self) -> None:
         """JSON Schema rejects a diagnosis dict with an archetype value outside the enum."""
         schema = _load_schema()
