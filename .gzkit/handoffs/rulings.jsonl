@@ -1073,3 +1073,6 @@
 {"ts": "2026-09-26T06:14:00Z", "source": "20260926T061354Z-ghis-1098-1099-fixed-review-age-scoped.md", "text": "Stale gz-foundation-triage review blocking the push, verbatim: \"Review + bump, file GHI (Recommended)\" (65cb75abf, GHI #1099 filed)."}
 {"ts": "2026-09-26T06:14:00Z", "source": "20260926T061354Z-ghis-1098-1099-fixed-review-age-scoped.md", "text": "Verbatim: \"fix 1099\"."}
 {"ts": "2026-09-26T06:14:00Z", "source": "20260926T061354Z-ghis-1098-1099-fixed-review-age-scoped.md", "text": "GHI #1099 sync policy, verbatim: \"Audit only, sync stops (Recommended)\". Sync no longer refuses on review age; gz skill audit and Gate 3 still block."}
+{"ts": "2026-09-26T06:41:53Z", "source": "20260926T064148Z-skills-reviewed-sync-preflight-guarded.md", "text": "Verbatim: \"review gz-ontology and gz-tidy\" (1ea283613)."}
+{"ts": "2026-09-26T06:41:53Z", "source": "20260926T064148Z-skills-reviewed-sync-preflight-guarded.md", "text": "Verbatim: \"file a ghi for the tidy --fix bypass\" (GHI #1100)."}
+{"ts": "2026-09-26T06:41:53Z", "source": "20260926T064148Z-skills-reviewed-sync-preflight-guarded.md", "text": "Verbatim: \"fix 1100\" (19a90b413)."}
