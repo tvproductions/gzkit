@@ -4,9 +4,9 @@ description: Audit CLI documentation coverage and headings. Use when verifying c
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-25
+last_reviewed: 2026-09-26
 metadata:
-  skill-version: "0.1.1"
+  skill-version: "0.2.0"
 model: haiku
 ---
 
@@ -14,19 +14,40 @@ model: haiku
 
 ## Overview
 
-Operate the gz cli audit command surface as a reusable governance workflow.
+Check that every CLI command's documentation exists and agrees with the parser.
+`gz cli audit` reads the command roster in `config/doc-coverage.json` and checks:
+
+- each command with a manpage surface has `docs/user/manpages/<slug>.md`, whose
+  first line is `# gz <command>` and which `docs/user/manpages/index.md` links;
+- every `gz` command in the README `## Quick Start` block parses against the
+  live CLI;
+- cross-coverage: each command discovered from the parser source has a manpage,
+  an index entry, a reference in the operator runbook and in the governance
+  runbook, and a handler docstring, unless the manifest sets that surface to
+  `false`; a deprecated verb must instead be absent from both runbooks; a
+  manpage with no matching command is an orphan;
+- each long flag is named in its manpage, and the manpage's usage block does
+  not bracket a required flag as optional or show a valueless flag taking a
+  value.
+
+It is read-only. It exits 0 with `CLI audit passed.` and exits 1 when it lists
+any issue. In an adopter project with no `config/doc-coverage.json` it skips
+with exit 0; in gzkit's own tree a missing manifest is an issue. `gz check` runs
+it as the `CLI audit` step.
 
 ## Workflow
 
-1. Confirm target context, IDs, and lane assumptions.
-2. Run uv run gz cli audit with the required options.
-3. Summarize results, including evidence and any follow-up gates.
-
-## Validation
-
-- Verify command output reflects the requested scope.
-- If governance state changed, confirm with uv run gz status or uv run gz state.
+1. Run `uv run gz cli audit`, or add `--json` for `{valid, issues,
+   cross_coverage}`.
+2. On exit 1, fix each named surface: write or retitle the manpage, add its
+   index link, reference the command in the runbook the issue names, add the
+   handler docstring, correct the Quick Start line, or make the usage block
+   match the parser. Remove an orphaned manpage only when its command is gone.
+3. Re-run until it exits 0, then summarize what changed.
 
 ## Example
 
-Use $gz-cli-audit to audit command docs and coverage..
+```bash
+uv run gz cli audit
+uv run gz cli audit --json
+```

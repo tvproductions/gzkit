@@ -555,7 +555,7 @@ def _apply_manifest_exemptions(
 def check_surfaces_report(project_root: Path | None = None) -> CoverageReport:
     """Run a full documentation coverage scan and return a CoverageReport.
 
-    Discovers commands via AST, checks all six surfaces per command, and
+    Discovers commands via AST, checks all five surfaces per command, and
     identifies any orphaned documentation referencing removed commands.
     """
     if project_root is None:

@@ -8,13 +8,13 @@ compatibility: Project-local skill contract.
 project_local: true
 category: agent-operations
 metadata:
-  skill-version: "1.0.1"
+  skill-version: "1.1.0"
   govzero-framework-version: "v6"
   govzero-author: "gzkit-governance"
   govzero_layer: "Layer 1 - Evidence Gathering"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-25
+last_reviewed: 2026-09-26
 model: opus
 ---
 
@@ -38,6 +38,9 @@ spec ecosystems, and adjacent workflow tools.
   be hand-edited.
 - **Portability.** Deterministic scripts live with this skill under
   `scripts/`, per Agent Skills packaging guidance.
+- **Cadence.** Monthly is the intended cadence, but nothing schedules it: the
+  radar runs when the operator invokes it. The newest file under
+  `artifacts/reports/competitor-radar/scans/` shows when it last ran.
 
 ## When To Use
 
@@ -52,10 +55,12 @@ spec ecosystems, and adjacent workflow tools.
 1. **Refresh sources.** Browse current official sources first: project homepage,
    repository, docs, release notes, marketplace entry, and credible radar-style
    commentary. Do not rely on memory.
-2. **Update scan JSON.** Write findings to
-   `artifacts/reports/competitor-radar/scans/YYYY-MM.json`. The agent authors
-   this JSON from evidence and from grill answers. The operator does not edit
-   JSON or Markdown.
+2. **Update scan JSON.** For a new month, create the skeleton with
+   `radar.py new-scan --month YYYY-MM`: it seeds one snapshot per registry
+   competitor and refuses an existing month unless `--overwrite` is passed.
+   Write findings to `artifacts/reports/competitor-radar/scans/YYYY-MM.json`.
+   The agent authors this JSON from evidence and from grill answers. The
+   operator does not edit JSON or Markdown.
 3. **Render reports.**
 
    ```bash
@@ -72,21 +77,17 @@ spec ecosystems, and adjacent workflow tools.
    time, recommend an answer, and walk the decision tree. Record answers back
    into the scan JSON, rerender, and revalidate.
 6. **Route only after decisions.** Approved outcomes may update pool ADRs, file
-   GHIs, or start design/promotion work. Rejections are recorded explicitly.
+   GHIs through `ghi-author`, or start design/promotion work. Rejections are
+   recorded explicitly. A move's `route` must be one of `existing-pool-adr`,
+   `new-pool-adr`, `open-feature-adr`, `ghi`, `explicit-rejection` or
+   `discussion-only`; foundation ADRs are closed to new authoring
+   (`AGENTS.md` § Gate Covenant), so there is no foundation route.
 
 ## Grill Discipline
 
-For every suggested move, ask:
-
-1. Are we copying a product or absorbing a mechanism?
-2. What evidence proves the strength or trajectory changed?
-3. Are we chasing fashion?
-4. Is this foundation intent, feature capability, pool backlog, GHI, or reject?
-5. Which gzkit invariant must not weaken?
-6. What mechanical witness would make this safe?
-7. What is the recommended route?
-
-Ask one question at a time. Prefer a recommended answer with tradeoffs. If the
+Ask the per-move questions in `references/grill-questions.md` for every
+suggested move, and its admission questions for every new candidate. Ask one
+question at a time. Prefer a recommended answer with tradeoffs. If the
 answer is discoverable from repo state or source evidence, gather it instead of
 asking the operator to type it.
 
@@ -101,7 +102,8 @@ uv run python .gzkit/skills/gz-competitor-radar/scripts/validate_registry.py
 uv run python .gzkit/skills/gz-competitor-radar/scripts/validate_report.py
 ```
 
-The wrapper scripts delegate to `scripts/radar.py`.
+The wrapper scripts delegate to `scripts/radar.py`. `validate_registry.py`
+and `validate_report.py` both run the same full `validate`.
 
 ## Data Contract
 
@@ -131,6 +133,10 @@ the Markdown differs, edit the JSON or the renderer, rerender, and revalidate.
 
 - `references/registry.schema.json` — registry shape.
 - `references/scan.schema.json` — monthly scan shape.
+
+The schemas name only the top-level keys. `radar.py validate` is the authority:
+it also checks each competitor, pattern, snapshot and move, their ids and
+cross-references, and the route and watch-level vocabularies.
 - `references/report-template.md` — report section contract.
 - `references/grill-questions.md` — grill question bank.
 

@@ -8,7 +8,8 @@ operator to confirm, amend, or reject it.
 1. Are we copying a product or absorbing a mechanism?
 2. What evidence proves the strength or trajectory changed?
 3. Are we chasing fashion?
-4. Is this foundation intent, feature capability, pool backlog, GHI, or reject?
+4. Is this feature capability, pool backlog, GHI, or reject? Foundation ADRs
+   are closed to new authoring.
 5. Which gzkit invariant must not weaken?
 6. What mechanical witness would make this safe?
 7. What route do you recommend?

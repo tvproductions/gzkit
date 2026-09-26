@@ -3,7 +3,7 @@
 
 The script intentionally uses only the Python standard library so the skill can
 travel with its execution assets. Repository-specific state lives under
-``data/`` and ``docs/``; this script remains inside the skill.
+``artifacts/reports/competitor-radar/``; this script remains inside the skill.
 """
 
 from __future__ import annotations
@@ -29,7 +29,6 @@ INDEX_PATH = REPORT_DIR / "index.md"
 ROUTES = {
     "existing-pool-adr",
     "new-pool-adr",
-    "open-foundation-adr",
     "open-feature-adr",
     "ghi",
     "explicit-rejection",

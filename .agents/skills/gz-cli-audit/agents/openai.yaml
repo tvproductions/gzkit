@@ -1,4 +1,4 @@
 interface:
   display_name: "gz cli audit"
-  short_description: "Operate the gz cli audit workflow"
+  short_description: "Check CLI manpage, index and runbook coverage"
   default_prompt: "Use $gz-cli-audit to run gz cli audit for this task."
