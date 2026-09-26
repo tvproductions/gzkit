@@ -120,7 +120,9 @@ class TestAnalyzeWithCrossings(unittest.TestCase):
 
     @covers("REQ-0.0.30-04-02")
     def test_analyze_advise_band_file_returns_hints(self) -> None:
-        with tempfile.NamedTemporaryFile(suffix=".py", mode="w", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            suffix=".py", mode="w", encoding="utf-8", delete=False
+        ) as f:
             f.write(_ADVISE_BAND_SOURCE)
             fixture_path = Path(f.name)
         try:
@@ -153,7 +155,9 @@ class TestAnalyzeCleanFile(unittest.TestCase):
 
     @covers("REQ-0.0.30-04-03")
     def test_analyze_clean_file_returns_hints_list(self) -> None:
-        with tempfile.NamedTemporaryFile(suffix=".py", mode="w", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            suffix=".py", mode="w", encoding="utf-8", delete=False
+        ) as f:
             f.write("def simple(): pass\n")
             fixture_path = Path(f.name)
         try:

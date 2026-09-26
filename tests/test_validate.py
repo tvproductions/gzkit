@@ -126,7 +126,9 @@ class TestValidateDocument(unittest.TestCase):
 
     def test_valid_adr(self) -> None:
         """Valid ADR passes validation."""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", suffix=".md", delete=False
+        ) as f:
             f.write("""---
 id: ADR-0.1.0-test-feature
 status: Draft
@@ -187,7 +189,9 @@ Test evidence.
 
     def test_adr_decomposition_checklist_mismatch_fails(self) -> None:
         """Checklist count must match scorecard final target."""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", suffix=".md", delete=False
+        ) as f:
             f.write("""---
 id: ADR-0.1.0
 status: Draft
@@ -309,7 +313,9 @@ Test evidence.
     def test_checklist_tick_is_rejected(self) -> None:
         """A ticked row asserts completion state the ADR body cannot witness (GHI #928)."""
         body = self._adr_with_checklist("- [x] OBPI-0.1.0-01: Done\n- [ ] OBPI-0.1.0-02: Not done")
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", suffix=".md", delete=False
+        ) as f:
             f.write(body)
             f.flush()
             errors = validate_document(Path(f.name), "adr")
@@ -321,7 +327,9 @@ Test evidence.
     def test_uppercase_checklist_tick_is_rejected(self) -> None:
         """`[X]` is the same claim as `[x]` and must not slip the check (GHI #928)."""
         body = self._adr_with_checklist("- [X] OBPI-0.1.0-01: Done\n- [ ] OBPI-0.1.0-02: Not done")
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", suffix=".md", delete=False
+        ) as f:
             f.write(body)
             f.flush()
             errors = validate_document(Path(f.name), "adr")
@@ -330,7 +338,9 @@ Test evidence.
     def test_unticked_checklist_is_accepted(self) -> None:
         """The empty box is the row marker and stays legal (GHI #928)."""
         body = self._adr_with_checklist("- [ ] OBPI-0.1.0-01: One\n- [ ] OBPI-0.1.0-02: Two")
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", suffix=".md", delete=False
+        ) as f:
             f.write(body)
             f.flush()
             errors = validate_document(Path(f.name), "adr")
@@ -339,7 +349,9 @@ Test evidence.
     def test_every_tick_is_named_not_just_the_first(self) -> None:
         """Two ticked rows produce two findings, so remediation is not iterative."""
         body = self._adr_with_checklist("- [x] OBPI-0.1.0-01: One\n- [x] OBPI-0.1.0-02: Two")
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", suffix=".md", delete=False
+        ) as f:
             f.write(body)
             f.flush()
             errors = validate_document(Path(f.name), "adr")
@@ -356,7 +368,9 @@ Test evidence.
         body = self._adr_with_checklist(
             "- [x] OBPI-0.1.0-01: Done\n- [ ] OBPI-0.1.0-02: Not done"
         ).replace("status: Draft", "status: Validated")
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", suffix=".md", delete=False
+        ) as f:
             f.write(body)
             f.flush()
             errors = validate_document(Path(f.name), "adr")
@@ -367,7 +381,9 @@ Test evidence.
         body = self._adr_with_checklist(
             "- [ ] OBPI-0.1.0-01: One"  # one row against a target of 2
         ).replace("status: Draft", "status: Validated")
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", suffix=".md", delete=False
+        ) as f:
             f.write(body)
             f.flush()
             errors = validate_document(Path(f.name), "adr")
@@ -378,7 +394,9 @@ Test evidence.
 
     def test_missing_frontmatter_field(self) -> None:
         """Missing frontmatter field returns error."""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", suffix=".md", delete=False
+        ) as f:
             f.write("""---
 id: ADR-0.1.0
 status: Draft
@@ -433,7 +451,9 @@ status: Draft
 
     def test_missing_section(self) -> None:
         """Missing required section returns error."""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".md", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", suffix=".md", delete=False
+        ) as f:
             f.write("""---
 id: ADR-0.1.0
 status: Draft
@@ -731,7 +751,9 @@ class TestValidateManifest(unittest.TestCase):
             },
         }
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", suffix=".json", delete=False
+        ) as f:
             json.dump(manifest, f)
             f.flush()
             errors = validate_manifest(Path(f.name))
@@ -750,7 +772,9 @@ class TestValidateLedger(unittest.TestCase):
 
     def test_valid_ledger(self) -> None:
         """Valid ledger events pass validation."""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", suffix=".jsonl", delete=False
+        ) as f:
             entries = [
                 {
                     "schema": "gzkit.ledger.v1",
@@ -835,7 +859,9 @@ class TestValidateLedger(unittest.TestCase):
         validated in isolation here is individually well-formed — the defect is
         only visible between rows, which is the phase the validator lacked.
         """
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", suffix=".jsonl", delete=False
+        ) as f:
             for ts in ("2026-02-14T00:00:02+00:00", "2026-02-14T00:00:01+00:00"):
                 f.write(
                     json.dumps(
@@ -867,7 +893,9 @@ class TestValidateLedger(unittest.TestCase):
         reports (GHI #1075). Keeping the ids distinct tests the ordering
         invariant this class is about.
         """
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", suffix=".jsonl", delete=False
+        ) as f:
             for index, ts in enumerate(timestamps):
                 f.write(
                     json.dumps(
@@ -936,7 +964,9 @@ class TestValidateLedger(unittest.TestCase):
             "fold-to-validator-whole-file-delete",
             "no-op-already-clean",
         ]
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", suffix=".jsonl", delete=False
+        ) as f:
             for i, disposition in enumerate(recorded_dispositions):
                 entry = {
                     "schema": "gzkit.ledger.v1",
@@ -954,7 +984,9 @@ class TestValidateLedger(unittest.TestCase):
 
     def test_chore_decommission_unknown_disposition_rejected(self) -> None:
         """An unrecognized disposition is still rejected — widening did not remove the enum."""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", suffix=".jsonl", delete=False
+        ) as f:
             entry = {
                 "schema": "gzkit.ledger.v1",
                 "event": "chore_decommission_processed",
@@ -974,7 +1006,9 @@ class TestValidateLedger(unittest.TestCase):
 
     def test_invalid_obpi_req_proof_inputs_rejected(self) -> None:
         """Malformed nested req_proof_inputs fail ledger validation."""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", suffix=".jsonl", delete=False
+        ) as f:
             f.write(
                 json.dumps(
                     {
@@ -1007,7 +1041,9 @@ class TestValidateLedger(unittest.TestCase):
 
     def test_invalid_obpi_req_proof_optional_fields_rejected(self) -> None:
         """Optional proof-input metadata must be non-empty strings when present."""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", suffix=".jsonl", delete=False
+        ) as f:
             f.write(
                 json.dumps(
                     {
@@ -1045,7 +1081,9 @@ class TestValidateLedger(unittest.TestCase):
 
     def test_invalid_obpi_structured_receipt_context_rejected(self) -> None:
         """Malformed structured scope/git receipt context fails ledger validation."""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", suffix=".jsonl", delete=False
+        ) as f:
             f.write(
                 json.dumps(
                     {
@@ -1090,7 +1128,9 @@ class TestValidateLedger(unittest.TestCase):
 
     def test_invalid_json_line(self) -> None:
         """Malformed JSON line returns ledger validation error."""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", suffix=".jsonl", delete=False
+        ) as f:
             f.write("{not-json}\n")
             f.flush()
             errors = validate_ledger(Path(f.name))
@@ -1098,7 +1138,9 @@ class TestValidateLedger(unittest.TestCase):
 
     def test_unknown_event_rejected(self) -> None:
         """Unknown event type fails closed."""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", suffix=".jsonl", delete=False
+        ) as f:
             f.write(
                 json.dumps(
                     {
@@ -1116,7 +1158,9 @@ class TestValidateLedger(unittest.TestCase):
 
     def test_invalid_event_field_type_rejected(self) -> None:
         """Event field type violations are reported with line context."""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", suffix=".jsonl", delete=False
+        ) as f:
             f.write(
                 json.dumps(
                     {
@@ -1159,7 +1203,9 @@ class TestValidateLedger(unittest.TestCase):
         ``audit_receipt_emitted.receipt_event.enum`` must accept all of
         them or runtime-emitted ledger lines are reported as drift.
         """
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", suffix=".jsonl", delete=False
+        ) as f:
             for value in ("completed", "validated", "meta-receipt-bind", "closed"):
                 f.write(
                     json.dumps(
@@ -1184,7 +1230,9 @@ class TestValidateLedger(unittest.TestCase):
         Extending the enum for runtime parity must not become a free-for-all.
         ``not-a-real-event`` is not a producer-side value and must fail.
         """
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", suffix=".jsonl", delete=False
+        ) as f:
             f.write(
                 json.dumps(
                     {
@@ -1247,7 +1295,9 @@ class TestLedgerConditionalRules(unittest.TestCase):
         return {k: v for k, v in entry.items() if v is not _ABSENT}
 
     def _validate(self, *entries: dict[str, object]) -> list[ValidationError]:
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".jsonl", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", suffix=".jsonl", delete=False
+        ) as f:
             for entry in entries:
                 f.write(json.dumps(entry) + "\n")
             f.flush()

@@ -1,8 +1,8 @@
 """Regression test for text I/O without ``encoding="utf-8"`` (GHI #384).
 
 ``Path.write_text(content)``, ``Path.read_text()`` and a text-mode
-``open()`` / ``Path.open()`` without an explicit ``encoding=`` defer to the
-system locale. On Windows that is cp1252; on POSIX it is usually UTF-8. A
+``open()`` / ``Path.open()`` / ``tempfile`` open without an explicit
+``encoding=`` defer to the system locale. On Windows that is cp1252; on POSIX it is usually UTF-8. A
 file written with em-dash / smart quotes / arrows under cp1252 and read back
 as UTF-8 (or vice versa) raises ``UnicodeDecodeError`` or reads mojibake.
 POSIX CI never sees the bug; Windows does.
@@ -43,6 +43,14 @@ _NON_TEXT_OPEN_MODULES = frozenset(
     {"os", "tarfile", "zipfile", "gzip", "bz2", "lzma", "webbrowser", "shelve", "dbm", "wave"}
 )
 
+# Positional index of (mode, encoding) per tempfile opener;
+# SpooledTemporaryFile takes max_size first.
+_TEMPFILE_POSITIONS = {
+    "NamedTemporaryFile": (0, 2),
+    "TemporaryFile": (0, 2),
+    "SpooledTemporaryFile": (1, 3),
+}
+
 
 def _open_positions(func: ast.expr) -> tuple[int, int] | None:
     if isinstance(func, ast.Name) and func.id == "open":
@@ -74,10 +82,33 @@ def _is_text_open_missing_encoding(node: ast.Call) -> bool:
     return "b" not in mode.value
 
 
+def _is_text_tempfile_missing_encoding(node: ast.Call) -> bool:
+    """Return True for a text-mode ``tempfile`` open lacking encoding.
+
+    Unlike ``open()``, a tempfile's default mode is ``"w+b"``, so only an
+    explicit mode without ``b`` is a locale-defaulting text open.
+    """
+    func = node.func
+    name = func.attr if isinstance(func, ast.Attribute) else getattr(func, "id", None)
+    positions = _TEMPFILE_POSITIONS.get(name or "")
+    if positions is None:
+        return False
+    mode_index, encoding_index = positions
+    if len(node.args) > encoding_index or any(kw.arg == "encoding" for kw in node.keywords):
+        return False
+    mode: ast.expr | None = node.args[mode_index] if len(node.args) > mode_index else None
+    for kw in node.keywords:
+        if kw.arg == "mode":
+            mode = kw.value
+    return isinstance(mode, ast.Constant) and isinstance(mode.value, str) and "b" not in mode.value
+
+
 def _is_text_io_call_missing_encoding(node: ast.AST) -> bool:
     """Return True for any locale-defaulting text I/O call lacking encoding."""
     if not isinstance(node, ast.Call):
         return False
+    if _is_text_tempfile_missing_encoding(node):
+        return True
     if isinstance(node.func, ast.Attribute) and node.func.attr in _PATH_TEXT_IO_ARITY:
         expected_arity = _PATH_TEXT_IO_ARITY[node.func.attr]
         if len(node.args) != expected_arity:
@@ -157,6 +188,11 @@ class TestEncodingDetector(unittest.TestCase):
             "p.open(mode='a')",
             "open(name)",
             "open(name, 'w')",
+            "tempfile.NamedTemporaryFile(mode='w')",
+            "tempfile.NamedTemporaryFile('w+')",
+            "NamedTemporaryFile(mode='w', suffix='.md')",
+            "tempfile.TemporaryFile('w')",
+            "tempfile.SpooledTemporaryFile(0, 'w')",
         ):
             with self.subTest(source=source):
                 self.assertTrue(self._flagged(source))
@@ -176,6 +212,12 @@ class TestEncodingDetector(unittest.TestCase):
             "os.open(name, flags)",
             "tarfile.open(name)",
             "fs.read_text(path)",
+            "tempfile.NamedTemporaryFile()",
+            "tempfile.NamedTemporaryFile(mode='wb')",
+            "tempfile.NamedTemporaryFile(mode='w', encoding='utf-8')",
+            "tempfile.NamedTemporaryFile('w', -1, 'utf-8')",
+            "tempfile.SpooledTemporaryFile(0, 'w+b')",
+            "tempfile.SpooledTemporaryFile(1024)",
         ):
             with self.subTest(source=source):
                 self.assertFalse(self._flagged(source))

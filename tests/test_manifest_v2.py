@@ -173,7 +173,9 @@ class TestManifestV2Validation(unittest.TestCase):
             },
             "gates": {"lite": [1, 2], "heavy": [1, 2, 3, 4, 5]},
         }
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", suffix=".json", delete=False
+        ) as f:
             json.dump(v1_manifest, f)
             f.flush()
             errors = validate_manifest(Path(f.name))
@@ -206,7 +208,9 @@ class TestManifestV2Validation(unittest.TestCase):
             "verification": {"lint": "l", "format": "f", "typecheck": "t", "test": "x"},
             "gates": {"lite": [1, 2], "heavy": [1, 2, 3, 4, 5]},
         }
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", encoding="utf-8", suffix=".json", delete=False
+        ) as f:
             json.dump(bad_manifest, f)
             f.flush()
             errors = validate_manifest(Path(f.name))
