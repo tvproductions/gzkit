@@ -22,13 +22,20 @@ project with one operator and several agents would only be harmed by.
 
 **Read [`FINDINGS.md`](FINDINGS.md) first.** It is the canonical register — what
 the investigation currently accepts as supported — and it is the only file needed
-to know where things stand. The numbered pieces are evidence behind its rows.
+to know the evidential findings. For the accepted design direction and the
+remaining candidate mechanics, read the
+[grounding pivot](design-candidates.md#grounding-pivot), authorized at `Q-17`.
+The numbered pieces are evidence behind the findings, not the current design.
+For the broader design conversation, its stakes, and the alternatives that led
+to the anchor, read the [dated session record](design-pivot-session-2026-09-25.md).
 
 | File | Tier | What it is |
 |---|---|---|
 | [`FINDINGS.md`](FINDINGS.md) | **canonical** | The findings, with status and evidence pointers. Living; amended in place |
 | [`DISAGREEMENTS.md`](DISAGREEMENTS.md) | **canonical** | Where Agent 0 and Agent 1 disagree, preserved unresolved |
 | [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) | **canonical** | Operator questions and rulings, including successive-change evaluation (`Q-15`) and the FDAU origin and retained hypothesis (`Q-16`) |
+| [`design-candidates.md`](design-candidates.md) | **accepted grounding; proposed mechanics** | `Q-17`'s grounding/anchoring pivot, requirement classification, revision/acceptance model, alternatives, review, and pilot specification. Ownership relationship adopted in Magna Carta §3; catalog mechanics remain proposed |
+| [Design pivot session](design-pivot-session-2026-09-25.md) | **deliberation and provenance** | Why the pivot arose; recovery choices; conventional ADR, capability and mADR alternatives; attachment strands; source limits; unresolved cost. History, not a second candidate home |
 | [`consequence-bands.md`](consequence-bands.md) | **canonical, PROVISIONAL** | Operator-ruled consequence scale (`Q-04`). Kept PROVISIONAL by operator ruling 2026-09-23: three rows have no finding behind them, and four rest on F-022 (`OPEN`) or F-021 (`DISPUTED`); the lift is decided when Phase 4 is authorised |
 | [`01-…`](01-engineering-method-2026-09-22.md), [`02-…`](02-requirements-vs-release-2026-09-22.md) | historical | Raw investigation record — what an agent said, frozen at its date |
 | [Astra's adversarial review](gzkit-engineering-assessment-adversarial-review.md) | historical | Agent 1's Phase 2 report, as deposited. Raw record — challenge input, not a second register |
@@ -46,7 +53,46 @@ not claim conformance, and is not obliged to adopt anything a standard contains.
 The corpus is used as vocabulary. [`FINDINGS.md`](FINDINGS.md) F-032 and F-033
 are the standing guard on this, and F-032 binds Phase 4 as a filter.
 
-## Investigation origin and retained hypothesis — FDAU
+## Grounding pivot — 2026-09-25
+
+The operator accepted the roles of independent requirements catalog, mADR as
+bounded advance with design rationale, brief as requirement assignment,
+plan/specification/tasks as execution detail, and release record as shipped
+content with evidence. They then directed:
+
+> make the results from this conversation a GROUNDING/ANCHORING pivot.
+
+[`Q-17`](OPEN-QUESTIONS.md#q-17-move-this-conversation-to-a-plausible-design-pivot)
+preserves the wording and authorization.
+[`design-candidates.md`](design-candidates.md#grounding-pivot) is the anchor:
+accepted direction first, proposed mechanics and evaluation separately labeled.
+Read it when resuming this design; do not reconstruct the direction from earlier
+alternatives or infer implementation approval from acceptance of the roles.
+
+**Retention amendment, 2026-09-25.** At the operator's request for richer capture,
+the [session record](design-pivot-session-2026-09-25.md) preserves the wider
+reasoning, and the [option inventory](design-candidates.md#alternatives-and-their-disposition)
+separates timing, replacement scope, ownership, naming, and implementation order.
+Conventional ADRs are distinct from capability ownership; strong mADR/release
+association is distinct from deriving package version from an ADR identifier.
+The anchor does not settle all these choices or establish affordable recovery.
+
+**All investigations continue.** IEEE can substantiate and challenge the design
+despite unconventional names; the test work addresses real verification debt;
+Magna Carta supplies release planning logic. TDD, BDD, and DDD remain grounding
+influences. Phase 4 is open for this bounded design and its full-triad review.
+Pilot, adoption of mechanics, migration, runtime rules, and campaign sequence
+are separate. No finding is promoted by the design decision.
+
+**Doctrine amendment, 2026-09-25.** The operator subsequently directed the
+[explicit amendment of Magna Carta §3 and its governing surfaces](../build-to-1.0-campaign-2026-09-20.md#amendments-2026-09-25).
+Independent requirement authority and reference-based assignments are now the
+governing relationship. Brief-local acceptance criteria and current identifiers,
+parsers and proof bindings remain in force during migration. This narrow adoption
+does not authorize the proposed pilot or implement the catalog; `Q-17` records
+the distinction.
+
+## Investigation origin and retained hypothesis: FDAU
 
 **Recorded 2026-09-23 at the operator's request; `Q-16`.** The operator identifies
 xplane-fdau's emergent organization as the origin of this IEEE investigation:
@@ -66,6 +112,43 @@ coupling its identity to a release. Semantic capability areas and hierarchical
 membership. This is a synthesis of the operator's framing, preserved verbatim at
 [`Q-16`](OPEN-QUESTIONS.md#q-16-how-do-we-keep-the-fdau-origin-and-separation-hypothesis-under-consideration).
 It is not an approved replacement ontology, identifier scheme, or migration.
+
+**Accepted relationship, 2026-09-25.** The operator accepted that a brief
+presents requirements together with their work and evidence by referencing
+their authoritative definitions. The verbatim acceptance and accompanying
+request for deeper option analysis are recorded under
+[`Q-16`](OPEN-QUESTIONS.md#q-16-how-do-we-keep-the-fdau-origin-and-separation-hypothesis-under-consideration).
+Storage, identity, capability boundaries, and migration timing remain open.
+The operator subsequently clarified that using capabilities as organizing
+containers is itself uncertain: SEI is one possible anchor, while IEEE is
+sought for authority, standards, and principles. `Q-16` preserves that wording;
+the capability model is not the assumed destination of this investigation.
+
+**Narrowed framing — 2026-09-25.** The operator subsequently identified the
+needed separation as ADRs, the requirements corpus, and release/backlog
+planning, and raised making the smallest adjustment that achieves it.
+Poor tests are technical debt; IEEE comparison is reflective maintenance;
+Magna Carta is release planning. `Q-16` preserves the wording and the retained
+TDD/BDD/DDD grounding constraint. These efforts do not require a single broad
+recovery program or a capability hierarchy. Implementation remains unselected.
+
+**Earlier alternative under comparison — 2026-09-25.** The operator subsequently asked
+to explore retaining the ADR as a modified delivery increment (mADR): one active
+increment, other prospective work pooled, corrections through GHIs and patch
+releases, and reusable requirements held separately and referenced by briefs.
+`Q-16` preserves the request and proposed composite notation verbatim. At that
+point neither alternative was selected; `Q-17` records the later accepted
+grounding that retains bounded advances with independent requirements. Source grounding
+must distinguish traceability principles from FDAU's particular naming scheme.
+The operator then accepted the distinction among catalog requirement,
+work package, and requirement assignment (`Q-16`), while asking whether the
+proposed discipline removes complexity or merely preserves the old model through
+added exceptions. The ADR name and OBPI-as-sortie terminology remain open.
+`Q-16` also retains the operator's original one-brief/airlock purpose: bound one
+serious agent foray, while catalog requirements describe evolving product needs.
+The comparison must account for that control function, including requirements
+discovered during planning, rather than judge the structure by ADR terminology
+alone.
 
 **Inspectable comparison source.** The reviewed FDAU snapshot is
 `49eec3557145d9825c7026aa4dfee718443d433f`:
@@ -98,8 +181,8 @@ settles their qualifications. `Q-08` already rules against deriving a package
 version from an ADR identifier, and `Q-10` selects a ledger release record.
 Preserve those rulings while investigating the wider separation. `Q-12` still
 places design candidates in `design-candidates.md` only after Phase 4 is
-authorised. The hypothesis is retained here as investigation framing; Phase 4
-and the runtime governance rules remain unchanged.
+authorised. That authorization is now recorded at `Q-17`; the earlier hypothesis
+is retained here as the investigation's history. Runtime governance is unchanged.
 
 ## Investigation phases
 
@@ -109,7 +192,7 @@ and the runtime governance rules remain unchanged.
 | 1 | Primary forensic assessment | Agent 0 | complete — pieces 01, 02 |
 | 2 | Adversarial review of Phase 1 | Agent 1 (Astra) | complete — report received 2026-09-22 |
 | 3 | Reconciliation and canonicalization | Agent 0 | **complete 2026-09-23** — reconciled, disagreements recorded, stop condition met (`Q-14`) |
-| 4 | Design target engineering model against the [successive-change criterion](#success-across-successive-changes) (`Q-15`), explicitly addressing the [FDAU separation hypothesis](#investigation-origin-and-retained-hypothesis-fdau) (`Q-16`) | — | not authorised |
+| 4 | Develop the [grounding pivot and candidate](design-candidates.md) against `Q-15`, carrying the FDAU origin (`Q-16`) | Full triad | bounded drafting and review authorized 2026-09-25 (`Q-17`); mechanics not adopted |
 | 5 | Bounded pilot across [successive changes](#success-across-successive-changes) (`Q-15`) | — | not authorised |
 | 6 | Independently evaluate the pilot against the [adopted criterion](#success-across-successive-changes) (`Q-15`) | — | not authorised |
 | 7 | Adopt / revise / reject | — | not authorised |
@@ -288,9 +371,10 @@ question and records the answer before doing anything else:
 
 **Act 2 — design participation.** Only after Act 1's verdict is recorded may
 Agent 2 read the raw record and join design work, as a **declared second role**.
-**Act 2 does not exist until Phase 4 is authorised**, and Phase 4 is not
-authorised. Act 1, by contrast, is available now and does not depend on Phase 2 —
-reading the register cold is a test of the register, not of the findings.
+**Act 2 depends on Phase 4 authorization**, now supplied for the bounded pivot
+at `Q-17` (2026-09-25). The current fresh design reader is a new participant,
+not the historical Act 1 agent. That cold read remains a dated test of the
+register and is not repeated or claimed as this design's pilot evaluation.
 
 **Why the order is binding.** Act 1 is the only falsifiability test the register
 has. It checks whether this investigation exists durably in the repository or
@@ -309,14 +393,12 @@ disagreements at `D-01` … `D-08`. Fourteen rows remain `OPEN` and **stay** the
 reached. Two rows are `DISPUTED` (F-006, F-021) and **must not be read as settled
 in either direction** — a disagreement recorded is not a disagreement resolved.
 
-**Phase 4 is not authorised, and Phase 3 closing does not authorise it.** It
-requires explicit operator authorisation, not an absence of objection. Nothing in
-this register, and no `CONFIRMED` row, constitutes that authorisation. Operator
-decisions are recorded in [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md), including
-`Q-09`'s deferral and `Q-15`'s evaluation criterion. The completed reconciliation
-does not permit promotion of findings the review never reached. **Phase 4 must
-not begin implicitly** — a design candidate that goes unchallenged is still not
-a decision.
+**Phase 4 bounded design is authorized at `Q-17`, 2026-09-25.** The authority
+is the operator's request for a plausible design pivot and grounding record,
+not Phase 3 completion or a finding's status. The full triad constructs,
+challenges, and reconciles the candidate. This does not open pilot execution,
+adoption, or migration, promote a finding, or turn proposed mechanics into
+runtime rules. `Q-09`'s deferral and `Q-15`'s evaluation criterion remain.
 
 **Phase numbering, one caution.** Piece 01 § 12 originally titled its measurement
 plan *"PROPOSED PHASE 2 INVESTIGATION PLAN"*, which meant measurement rather than
@@ -509,11 +591,15 @@ evidence that the seeding of `FINDINGS.md` from the pieces was not exhaustive.
 [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md); `Q-09` is deferred. `Q-15` adopts the
 [successive-change evaluation criterion](#success-across-successive-changes)
 for later design, pilot, and independent evaluation. Carry that criterion into
-Phases 4–6 when authorised; its adoption does not open those phases.
+Phases 4–6 when authorised; its adoption alone did not open those phases.
 `Q-16` records FDAU as the investigation's origin and retains the
 [separation hypothesis](#investigation-origin-and-retained-hypothesis-fdau).
-Carry its explicit comparison and disposition forward alongside `Q-15`; retaining
-it does not select a remedy or authorise Phase 4.
+Carry its history forward alongside `Q-15`. `Q-17` now records the accepted
+grounding direction and bounded design request; read the
+[anchor and candidate](design-candidates.md) as the current design account.
+The [session record](design-pivot-session-2026-09-25.md) preserves its reasoning
+and wider alternatives; read it when continuing this design so the latest
+recommendation does not erase the decision space.
 
 **What remains unmeasured.** The proposed `M-A` … `M-E` and `M-G` measurements
 and the successive-change pilot. `M-H` is discharged, with its scores still
@@ -543,7 +629,8 @@ establish empirical findings.
 
 **Currently prohibited:**
 
-- Beginning Phase 4 design. It is not authorised.
+- Exceeding `Q-17`'s bounded design authorization, or treating it as permission
+  to pilot, migrate, book an ADR, or execute an OBPI.
 - Promoting any finding to `CONFIRMED` that the Phase 2 review did not reach.
   The review is read and reconciled; a row it never challenged is still
   unchallenged.
@@ -560,14 +647,12 @@ establish empirical findings.
 - Promoting `ADR-pool.feature-adr-semver-discipline` before the `kind` guard
   lands (`Q-09`).
 
-**Next permitted step: none without operator authorisation.** Phase 3's stop
-condition — every row carrying a settled status, and the disagreements recorded —
-was met on 2026-09-23. **Phase 4 requires explicit operator authorisation**, not
-merely an absence of objection, and the full triad when it opens. Work that
-remains available *without* entering Phase 4: the measurement program `M-A` …
-`M-H` (`M-H` discharged, `M-F` executed, six outstanding), and the two open register questions
-— whether findings should be authored for `D-08` and for the three independently
-observed `D2` rows.
+**Permitted design work:** develop and review the bounded candidate under
+`Q-17`, with the full triad. The accepted grounding is not an instruction to
+restart the investigation, discontinue its other tracks, or implement the
+candidate. The existing measurement program `M-A` … `M-H` continues on its own
+terms (`M-H` discharged, `M-F` executed, six outstanding); the two register
+questions about `D-08` and the independently observed `D2` rows remain separate.
 
 ## Relationship to gzkit's own engineering artifacts
 
@@ -595,6 +680,19 @@ the governance pipeline, and nothing here creates one.**
 ---
 
 ## Amendments
+
+- **2026-09-25 — Design-session retention expanded after operator review.**
+  Added the dated deliberation record and linked the expanded candidate
+  inventory. Preserved recovery timing and cost, distinct ownership models,
+  stronger mADR coupling, the earlier release-first proposal, SWP/CNS, and the
+  attachment's vocabulary and boundary hypotheses. No additional adoption or
+  execution authorization is inferred.
+
+- **2026-09-25 — Grounding pivot and bounded Phase 4 design (`Q-17`).**
+  Added the accepted direction and designated candidate; updated current phase,
+  joining-agent, and authorization surfaces. Preserved continuation of IEEE,
+  test investigation, and Magna Carta release planning. No finding, runtime
+  rule, campaign sequence, pilot, or migration changed.
 
 - **2026-09-23 — `M-F` executed; piece [`03`](03-gate4-gate2-duplication-2026-09-23.md) added.**
   The first measurement item run by an agent alone (`M-H` was run with the

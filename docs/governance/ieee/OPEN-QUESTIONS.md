@@ -9,6 +9,13 @@
 > deferred and its sequencing named. `Q-15` records the adopted evaluation
 > criterion; `Q-16` retains the FDAU origin and separation hypothesis. Neither
 > authorises Phase 4 or a pilot.
+> **Update 2026-09-25:** `Q-17` records the accepted grounding pivot and the
+> request to develop its bounded Phase 4 design. The investigations continue;
+> pilot execution, adoption of candidate mechanics, and migration are not opened.
+> **Update 2026-09-25:** `Q-16` records the operator's accepted requirement-reference
+> relationship, request for deeper comparison, and subsequent narrowing to
+> separation of ADRs, requirements, and release/backlog planning. It also retains
+> the subsequently requested mADR alternative for comparison.
 > Each ruling is recorded under its question; the questions are kept as asked,
 > because the record of what was asked is part of the record of what was decided.
 >
@@ -23,7 +30,7 @@ Three kinds, kept separate because they resolve by different means:
    settles these; they are choices about what this project is.
 2. **Further measurement** — held as the measurement program `M-A` … `M-H` in
    [`01 § 12`](01-engineering-method-2026-09-22.md), not duplicated here.
-3. **Meta** — `Q-11` … `Q-16`, about the conduct of the investigation itself.
+3. **Meta** — `Q-11` … `Q-17`, about the conduct of the investigation itself.
 
 ---
 
@@ -219,6 +226,9 @@ absence is the ruling working rather than a dangling pointer. The 2026-09-22
 entry read **RULED** in its heading and *"Unratified."* in its last line; that
 contradiction is resolved here in favour of the heading.
 
+**Update 2026-09-25:** `Q-17` now authorizes bounded design drafting and review;
+[`design-candidates.md`](design-candidates.md) is created under this ruling.
+
 ### Q-13 — How is the Phase 2 adversarial review delivered? *(blocking)*
 
 **RULED 2026-09-22 — Astra runs separately and deposits its reports into this folder.** **Report received 2026-09-22**, deposited at the directory root as `gzkit-engineering-assessment-adversarial-review.md` (not inside `raw/`). **Operator ruling 2026-09-22: leave it where Astra put it, for now** — provisional, and reopened only by the operator. Phase 3 is unblocked; the reconciliation pass is deferred by operator decision.
@@ -319,15 +329,286 @@ and how completed work maps to an approved delivered configuration. The agent's
 earlier suggestion of an independent brief identifier is an option to examine,
 not an operator-ratified schema.
 
+**Accepted relationship — 2026-09-25.** Operator: **g0**. In a discussion of
+moving OBPIs from ADRs into capabilities, renaming them briefs, and bringing
+requirements, tasks, and V&V together as a work package, the operator accepted
+the following relationship. Operator words, verbatim:
+
+> yes to this: "a brief can present requirements together with their work and evidence while referencing their authoritative definitions. That would let the bundle be useful without making the requirements disappear into it again."
+>
+> But, I ask for a deeper analysis of my options lest I make a mistake like I did with the ADR.
+
+The accepted point is that the brief assembles requirements with work and
+evidence by reference to authoritative definitions. The choice of storage,
+identifiers, revision binding, capability boundaries, migration route, and
+timing remains open. The broader capability/brief model remains a direction
+under discussion; this acceptance does not select a migration or change the
+investigation's phase authorizations.
+
+**Purpose of the concurrent efforts — 2026-09-25.** The operator clarified
+why the four efforts exist. Operator words, verbatim:
+
+> I reached for ieee to ground on authority/first principles; I reached for the test evaluation because I believe the models have been writing poor tests; I reach for the magna carta because I need some prioritized path forward; I reach for for the effort about requirements/release separation because I know the current approach is flawed.
+
+The option comparison must therefore account for engineering grounding,
+trustworthy verification, prioritized execution, and correction of the
+requirements/release model. Reorganizing artifacts alone does not establish
+that the other three purposes have been fulfilled.
+
+**Organizing model remains open — 2026-09-25.** The operator clarified the
+role of the proposed capability organization and the external sources. Operator
+words, verbatim:
+
+> I do not know if reaching for capabilities organization "buckets" is right either. I mention SEI as one potential anchor. I am trying to fall back on IEEE as a fallback onto authority/standards/principles.
+
+Whether capabilities should organize the work at all remains a question, not
+only where their boundaries belong. SEI is one possible source to examine;
+the operator seeks grounding in standards and engineering principles before
+selecting the organizing model. Distinguish what a cited standard states, the
+investigation's interpretation, and a proposed gzkit implementation. Neither
+the accepted requirement-reference relationship nor this clarification selects
+a parent hierarchy for briefs.
+
+**Simplified separation and effort classification — 2026-09-25.** Operator:
+**g0**. The operator narrowed the discussion after the agent proposed a broader
+recovery program. Operator words, verbatim:
+
+> we need to separate adrs, requirements, and release tracking, that is the simplest. we also might want to just make the smallest adjustment that allows for that. adr == release increment is a mistake. tying the requirements corpus to adrs is a mistake. not treating release/backlog planning as a separate matter is a mistake.
+>
+> shoddy tests is tech debt.
+>
+> double-checking against ieee is good reflective maintenance
+>
+> Magna cart is release planning.
+
+This establishes the separation sought and distinguishes the roles of the
+existing efforts. The smallest sufficient adjustment is the option to examine;
+the wording does not select an implementation. Capability containers and a
+broader reorganization are not prerequisites implied by this direction. The
+earlier grounding constraint also carries forward, in the operator's words:
+
+> also, I still strongly believe in keeping TDD, BDD, DDD as strong grounding influences on this project.
+
+**Alternative requested for exploration — 2026-09-25.** Operator: **g0**.
+The operator then asked to examine retaining deliberate ADR/release coupling
+as a modified ADR (mADR), with an independent reusable requirements catalog.
+Operator words, verbatim:
+
+> there is also the case that my appropriation of the adr is ok/defensible and tying it to release is a new kind of discipline. the models need that coupling and strictness and that all downstream misalignments are accidents to correct as we accept tight coupling between intent, design, and architecture. We just GHI corrections, as I do. And NEVER allow more than one active ADR. all else is pooled. It is a recovery.
+>
+> So, what if I have a new conceptualization of adr and we just deal with it? do not move to a new adr until all current problems resolved with GHIs and patch bumps.
+>
+> Explore that as a simpler alternative and allow our mADR (modified) to be some agentic workaroud/provision. This still allows all current research projects to remain valid.
+>
+> I can still pull REQS away into a catalog and sew them in. this allows for a REQs reuse. An FDAU-like REQ system.
+>
+> this is a bastardization and an extension of REQ coding.
+>
+> OBPI-x.y.x-nn-NNx.y
+>
+> obpi (adr number) - obpi sequence nn - REQ code (NNx.y)
+>
+> I still need a defensible source for the fdau system though.
+
+This is an alternative to compare, not a selection of a replacement model or
+identifier schema. Separate the evidence for requirement identification and
+traceability from the provenance of FDAU's specific notation. The candidate's
+claims about agent behavior and causes of misalignment remain hypotheses.
+Adopting a version-derivation rule contrary to `Q-08` would require explicitly
+revisiting that ruling; exploring the alternative does not change it.
+
+**Accepted identity distinction and further exploration — 2026-09-25.**
+Operator: **g0**. The operator responded **"I love this:"** to the following
+three-identity distinction (table formatting normalized):
+
+| Identity | Illustrative form | Meaning |
+|---|---|---|
+| Catalog requirement | `REQ-C2.3` | The independently maintained obligation |
+| Work package | `OBPI-0.35.0-14` | The assignment being executed |
+| Requirement assignment | `OBPI-0.35.0-14-C2.3` | That OBPI's responsibility for that requirement |
+
+The operator seeks IEEE, SEI, and other authoritative grounding for an
+increment-to-brief discipline around human/agent work, with catalog requirements
+revisited as understanding changes and each brief declaring its contribution.
+An OBPI as a sortie, enclosing or referencing a plan/specification, remains
+under discussion. Retaining the ADR name is not a condition of the proposed
+campaign-step function. The operator explicitly challenges the proposal:
+
+> This might be an epicyclic cope btw.
+>
+> can I pull this off without it becoming Ptolemy vs. Copernicus?
+
+The acceptance concerns the distinction among the three identities. It does
+not ratify identifier grammar, a storage schema, the sortie terminology, or
+claims that agents require this exact hierarchy. Evaluate whether the proposed
+control removes ambiguity and special cases; do not treat retention of the
+existing artifact structure as the criterion for success.
+
+**Product needs and bounded advances — 2026-09-25.** Operator: **g0**.
+The operator further explained the model and its original purpose. Excerpts,
+verbatim:
+
+> I think the modification - pull REQs out, even during adr planning, is a way to allow reqs to evolve separately. an army learns from the wars, campaigns, and battles it fights. requirements are categorical and attend to the product as a system of needs.  the adrs, obpis and tasks are a way to achieve a single advance of the system to attempt to realize the constellation of requirements in a moment in time, under the capabilities of the time, and the constraints of the time. each adr is a battle into the realization of the system, the briefs are the ops orders, and the plan, spec, tasks are ways to move towards the material realization of the reqs.
+>
+> In fact, the whole point of one-brief-per-item is that the agent could only handle one serious foray into the system. I conceived of the airlock to help with that.
+
+The comparison must preserve that intended bounded-work function rather than
+treat the ADR/OBPI structure as defective solely because its terminology departs
+from conventional ADR usage. The catalog is proposed as independent product
+knowledge, including requirements learned during planning; each work assignment
+states its contribution to an identifiable requirement state. The original
+[airlock design](../work-phases-and-airlock.md#1-the-core-idea-model-in-model-out)
+describes the same bounded-context purpose. This records intent, not a finding
+that the shipped airlock fully realizes it or that the proposed extraction is
+already implemented.
+
 **Scope.** `Q-08` and `Q-10` remain ruled; `Q-12`'s candidate-file timing and
 `Q-15`'s evaluation criterion remain in force. No finding changes status. This
 entry starts neither Phase 4 nor a new R&D run, creates no ADR or OBPI, and
 changes no runtime rule, identifier, five-gate vocabulary, or release authority.
 
+**Subsequent direction, 2026-09-25:** `Q-17` records the conversation's accepted
+grounding pivot. It develops this hypothesis into a bounded design exercise;
+the earlier framing above remains its history rather than the latest direction.
+
+### Q-17 — Move this conversation to a plausible design pivot
+
+**RULED 2026-09-25 — preserve the accepted direction as a grounding/anchoring
+pivot and develop its design.** Operator: **g0**. Source: the operator's requests
+below. This authorizes bounded Phase 4 drafting and design review, not a pilot,
+implementation, ADR booking, campaign reordering, or migration.
+
+The operator accepted the following role statement, supplied in their message:
+
+> The resulting roles are understandable:
+>
+> - **Requirements catalog:** what the product must satisfy, why, and how that understanding has changed.
+> - **mADR:** the decision and rationale for the next bounded advance, including its scope and constraints.
+> - **Brief:** the assignment—its contribution to selected requirements, implementation boundaries, and required evidence.
+> - **Plan, specification, and tasks:** the detail needed to execute that assignment.
+> - **Release record:** what actually shipped, with its supporting evidence.
+
+Their acceptance and scope clarification, verbatim:
+
+> I deeply agree, help me with this (also ADRs capture, currently, a lot of design intent and REQ material):
+
+The referenced distinction was between independently maintained product
+obligations and local acceptance criteria: extraction must read the existing
+ADRs as well as their briefs, and must not convert every implementation step
+or evidence obligation into an enduring catalog requirement. The operator also
+deeply agreed with binding an assignment to the requirement state it addresses,
+preserving historical evidence rather than silently updating its claim when
+requirements change. They requested help with the control hypothesis: enforced
+boundaries and transitions cannot establish semantic correctness, and TDD,
+BDD, DDD, and test evaluation remain necessary.
+
+Operator request, verbatim:
+
+> The anthropic articles you found are also compelling.
+>
+> Copernicus is the truth that my current model is flawed. Clinging to Ptolemy is the pain of correction and relying on epicycles.
+>
+> I need help moving this whole conversation to a plausible design pivot.
+
+Subsequent operator directions, verbatim:
+
+> I will continue all investigations - ieee can substantiate the design even in some of its nomenclature appropriations were wrong. the tests do have a problem, the magna carta is a release planning logic.
+>
+> make the results from this conversation a GROUNDING/ANCHORING pivot.
+
+**Anchor and candidate home:**
+[`design-candidates.md` § Grounding pivot](design-candidates.md#grounding-pivot).
+The grounding section carries the accepted distinctions; the remainder proposes
+mechanics and an evaluation path. Future design starts from this anchor rather
+than silently reopening the roles or treating an agent's preferred terminology
+as a requirement. An explicit operator decision may revise the anchor.
+
+**What continues:** IEEE/SEI grounding and challenge; the test investigation and
+verification-debt work; Magna Carta's release planning; the existing campaign
+and its governed execution. The pivot neither discredits these efforts nor
+consolidates them into a new compulsory recovery program. Correct or unconventional
+nomenclature alone does not decide the engineering value of a mechanism.
+
+**What remains proposed:** catalog layout and executable identity grammar,
+assignment amendment mechanics, applicability/supersession, whole-requirement
+satisfaction claims, release interruption policy, and migration timing. The
+accepted catalog/work-package/assignment distinction does not ratify a parser.
+The existing five gates, operator initiation, TDD/BDD/DDD grounding, campaign
+sequence, Q-08, Q-10, and Q-15 remain. Consequence bands stay PROVISIONAL and
+are not consumed by this candidate. No finding changes status.
+
+**Review boundary:** the Phase 4 full-triad requirement is met by the main
+author, a separate adversarial design reader, and a fresh design reader. This
+is not a repeat of the historical Act 1 or an independent evaluation of an
+executed pilot. The design-review record lives with the candidate. Adoption of
+the proposed mechanics requires later evidence and an operator decision; the anchor is not a claim
+that the implementation already meets it.
+
+**Retention correction, 2026-09-25.** The operator subsequently asked:
+
+> we have a LOT of design pivot candidates here, have you richly captured it? this is a very important design conversation/session
+
+The first candidate preserved the latest synthesis but compressed the wider
+option space too far. The [dated session record](design-pivot-session-2026-09-25.md)
+now retains the stakes, reasoning sequence, supplied dialogue's contribution,
+and source limitations. The [expanded option inventory](design-candidates.md#alternatives-and-their-disposition)
+separates recovery timing/extent, conventional ADRs, capability ownership,
+retained and stronger mADR coupling, naming, requirement mechanics, and earlier
+implementation-order proposals. This fulfills the request for rich capture;
+it does not reopen the accepted five roles or turn prior proposals into rulings.
+Affordability and execution timing remain unmeasured/unselected, respectively.
+
+**Explicit ownership ruling, 2026-09-25.** The operator then directed amendment
+of Magna Carta §3 and its governing surfaces, rather than a proposal link alone.
+The [campaign amendment](../build-to-1.0-campaign-2026-09-20.md#amendments-2026-09-25)
+preserves the full instruction verbatim and superseded hierarchy explicitly.
+Durable requirements now have independent authority; bounded mADR/ADR →
+brief/OBPI → plan/specification/tasks assignments reference identifiable
+requirement states. Briefs retain local acceptance criteria. Acceptance binds
+requirement state and product configuration; release content is a separate claim.
+This is adopted doctrine with an explicit implementation boundary: current
+identifiers, parsers, proof bindings and historical ledger subjects remain until
+governed migration. The candidate pilot, executable catalog and identity grammar
+remain unimplemented proposals. No campaign order, 1.0 gate or finding status changes.
+
 ---
 
 ## Amendments
 
+- **2026-09-25 — `Q-17` records explicit adoption of the ownership relationship.**
+  Linked the operator-ratified Magna Carta §3 amendment and distinguished adopted
+  doctrine from unimplemented catalog mechanics and the retained execution rules.
+
+- **2026-09-25 — `Q-17` enriched after the operator's retention challenge.**
+  Recorded the request verbatim and linked deliberation history and the expanded
+  option inventory, distinguishing accepted grounding, operator-origin options,
+  agent recommendations, source support, and unresolved choices.
+
+- **2026-09-25 — `Q-17` records the grounding pivot and bounded design request.**
+  Preserved accepted roles and operator wording, including continuation of all
+  investigations. Opened the designated candidate file for drafting and review;
+  retained the separate boundaries for pilot, adoption, and implementation.
+
+- **2026-09-25 — `Q-16` retains the bounded-foray origin.** Recorded the
+  operator's product-needs/advance distinction and the original brief/airlock
+  purpose; linked the existing design account without claiming runtime proof.
+- **2026-09-25 — `Q-16` records acceptance of the three-identity distinction.**
+  Retained the request for authoritative grounding and the explicit challenge
+  to preserving a flawed structure through added exceptions. Schema and
+  terminology choices remain open.
+- **2026-09-25 — `Q-16` retains the mADR alternative.** Preserved the request
+  to explore one active delivery increment, GHI/patch correction, independently
+  reusable requirements, composite references, and defensible source grounding.
+  Exploration does not select the alternative or supersede `Q-08`.
+- **2026-09-25 — `Q-16` narrows the separation discussion.** Recorded the
+  operator's distinction between the structural correction, test debt, IEEE
+  reflective maintenance, and Magna Carta release planning; retained the
+  possibility of the smallest sufficient adjustment and the TDD/BDD/DDD
+  grounding constraint. Linked the clarification from the README.
+- **2026-09-25 — `Q-16` records the accepted requirement-reference relationship.**
+  Preserved the operator's acceptance and request for deeper option analysis
+  verbatim. Linked the clarification from the retained hypothesis; no migration
+  choice, runtime rule, or phase authorization is inferred.
 - **2026-09-23 — `Q-16` records the operator's FDAU framing and retention
   request verbatim.** Linked its treatment in the README, phase table, and
   joining-agent guidance. The ruling concerns continued consideration; the

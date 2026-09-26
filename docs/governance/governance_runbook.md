@@ -715,7 +715,12 @@ Rules:
 
 ## Workflow: Task-Level Governance
 
-**When:** Managing TASK entities (fourth tier: ADR > OBPI > REQ > TASK).
+**When:** Managing TASK entities in the current execution lineage:
+ADR > OBPI > local REQ > TASK. This is task allocation and brief-local proof
+binding, not ownership of durable catalog requirements. Under the
+[2026-09-25 hierarchy amendment](build-to-1.0-campaign-2026-09-20.md#amendments-2026-09-25),
+briefs reference identifiable requirement states and retain local criteria;
+current identifiers and proof bindings continue until governed migration.
 
 ```bash
 uv run gz task list OBPI-<X.Y.Z-NN>              # List tasks for an OBPI

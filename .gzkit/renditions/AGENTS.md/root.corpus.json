@@ -1,9 +1,9 @@
 {
   "algorithm": "sha256",
-  "corpus_fingerprint": "e61aadbb62fdde7797348affa809708c7d5d53fb12aaa8472d707d68237231a9",
-  "corpus_entry_count": 465,
-  "rendition_fingerprint": "5e0f8217839f24825057682aff253eaaa7153ae7a2a5bd45cec83aac0a4b2411",
-  "committed_ts": "2026-09-24T10:36:10.748585+00:00",
+  "corpus_fingerprint": "bba8d0205462cbca35c0ce60afd845f03e06225711405bbc161255257a16e011",
+  "corpus_entry_count": 469,
+  "rendition_fingerprint": "20b1ef470c18e5d9dfe5aa690e55b08bac5b89b33b738498f7f66b0adf396cff",
+  "committed_ts": "2026-09-26T00:49:14.585659+00:00",
   "attestor": "g0",
-  "attestation_text": "restore S09, S12, S16, S17 too — S09, S12 and S16 restored verbatim from c3582975f through corpus supersession (GHI #1091); S17 restored in the CLAUDE.md template. Retention maps in each retirement reason, dropped: none."
+  "attestation_text": "di it: \"There is one substantive reconciliation we must address: **§3 currently places REQs beneath OBPIs in the intent hierarchy.** Adoption of this pivot requires an explicit amendment to that relationship and its governing surfaces. Adding a proposal link alone would leave the transition ambiguous\""
 }

@@ -14,9 +14,17 @@
 
 gzkit's essence is not "five gates." It is **model-in / model-out through a graph**, in four phases, across an **airlock**.
 
-- **The stack (vertical)** — Constitution → PRD → ADR → OBPI → REQ → TASK. Where intent lives, decomposed. *Already exists.*
+- **Intent and bounded work** — Constitution → PRD grounds product intent; durable catalog requirements have independent authority. ADR → OBPI (brief) → plan/spec/tasks organizes a bounded advance against referenced requirement states. The brief retains local acceptance criteria and required evidence.
 - **The phases (modes)** — design / build / fix / refactor. *How* you traverse the stack on one unit of work.
 - **The airlock (the ritual)** — every entry into the artifact-or-code environment, *including a design act*, crosses the same in/out gate.
+
+**Ownership amendment, 2026-09-25:** the original vertical stack was
+`Constitution → PRD → ADR → OBPI → REQ → TASK`. The operator's
+[Magna Carta amendment](build-to-1.0-campaign-2026-09-20.md#amendments-2026-09-25)
+replaces its treatment of durable requirements as children of work packages.
+The bounded-foray purpose and airlock accountability remain. Current local
+REQ/TASK identities, graph behavior and proof bindings remain operational;
+this design ruling does not claim that catalog or graph migration has landed.
 
 > **The airlock's real job is to make the model *not need the whole picture*.** On entry it is *handed* the bounded set of seams a change can touch; it accounts for exactly those and ignores the rest with a clear conscience. The seam-map *is* the externalized working set. This is why the ceremony is *less* cognitive load, not more — it replaces "hold everything" with "hold exactly these N accounted seams."
 

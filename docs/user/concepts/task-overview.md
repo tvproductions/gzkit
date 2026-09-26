@@ -16,10 +16,15 @@ gz task escalate TASK-0.20.0-01-01-01 --reason "Needs human"  # Escalate with re
 
 ## Description
 
-The `gz task` command group manages TASK entities -- the fourth tier of
-gzkit's governance hierarchy (ADR > OBPI > REQ > TASK). Each subcommand
-transitions a task through its lifecycle and emits the corresponding
-ledger event.
+The `gz task` command group manages TASK entities in the current execution
+lineage (ADR > OBPI > local REQ > TASK). Each subcommand transitions a task
+through its lifecycle and emits the corresponding ledger event.
+
+This lineage encodes brief-local acceptance criteria and task allocation, not
+ownership of durable product requirements. The [2026-09-25 hierarchy amendment](../../governance/build-to-1.0-campaign-2026-09-20.md#amendments-2026-09-25)
+establishes independent catalog authority: briefs address identifiable states
+of requirements and retain local criteria. Existing TASK/REQ identifiers and
+proof bindings remain valid while catalog mechanics await implementation.
 
 ### Subcommands
 

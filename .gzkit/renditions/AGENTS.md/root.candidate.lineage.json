@@ -138,12 +138,12 @@
   "pattern-discovery": {
     "owned": true,
     "entry_ids": [
-      "corpus-pattern-discovery-2026-09-17T11:39:32.811075+00:00",
-      "corpus-pattern-discovery-2026-09-17T11:39:32.963957+00:00"
+      "corpus-pattern-discovery-2026-09-17T11:39:32.963957+00:00",
+      "corpus-pattern-discovery-2026-09-26T00:47:43.730867+00:00"
     ],
     "byte_span": [
       8376,
-      8647
+      9199
     ]
   },
   "skills": {
@@ -152,8 +152,8 @@
       "corpus-skills-2026-09-17T11:39:33.116462+00:00"
     ],
     "byte_span": [
-      8647,
-      8812
+      9199,
+      9364
     ]
   },
   "gate-covenant": {
@@ -171,8 +171,8 @@
       "corpus-gate-covenant-2026-09-24T10:04:50.709025+00:00"
     ],
     "byte_span": [
-      8812,
-      12478
+      9364,
+      13030
     ]
   },
   "obpi-acceptance-protocol": {
@@ -186,8 +186,8 @@
       "corpus-obpi-acceptance-protocol-2026-09-24T10:04:51.311314+00:00"
     ],
     "byte_span": [
-      12478,
-      14229
+      13030,
+      14781
     ]
   },
   "execution-rules": {
@@ -201,8 +201,8 @@
       "corpus-execution-rules-2026-09-24T06:20:45.578325+00:00"
     ],
     "byte_span": [
-      14229,
-      15855
+      14781,
+      16407
     ]
   },
   "attestation": {
@@ -213,8 +213,8 @@
       "corpus-attestation-2026-09-17T11:39:36.310597+00:00"
     ],
     "byte_span": [
-      15855,
-      16862
+      16407,
+      17414
     ]
   },
   "defect-fix-routing": {
@@ -226,8 +226,8 @@
       "corpus-defect-fix-routing-2026-09-24T10:04:51.916661+00:00"
     ],
     "byte_span": [
-      16862,
-      17724
+      17414,
+      18276
     ]
   },
   "control-surfaces": {
@@ -236,16 +236,16 @@
       "corpus-control-surfaces-2026-09-17T11:39:37.113322+00:00"
     ],
     "byte_span": [
-      17724,
-      17990
+      18276,
+      18542
     ]
   },
   "local-agent-rules": {
     "owned": false,
     "entry_ids": [],
     "byte_span": [
-      17990,
-      18010
+      18542,
+      18562
     ]
   },
   "operator-doctrine-verbatim-canon": {
@@ -259,8 +259,8 @@
       "corpus-operator-doctrine-verbatim-canon-2026-09-24T10:04:54.019100+00:00"
     ],
     "byte_span": [
-      18010,
-      20393
+      18562,
+      20945
     ]
   },
   "governance-doctrine-surfaces": {
@@ -283,8 +283,8 @@
       "corpus-governance-doctrine-surfaces-2026-09-24T10:35:54.990937+00:00"
     ],
     "byte_span": [
-      20393,
-      23655
+      20945,
+      24207
     ]
   },
   "architectural-boundaries": {
@@ -298,8 +298,8 @@
       "corpus-architectural-boundaries-2026-09-17T11:39:41.407562+00:00"
     ],
     "byte_span": [
-      23655,
-      24170
+      24207,
+      24722
     ]
   }
 }

@@ -679,6 +679,15 @@ Lifted 2026-08-29 at version `0.11.0` (rule now at `0.12.0`).
 
 ## `tests.md`
 
+### Changed 2026-09-25 at version `0.26.6`
+
+The operator's [Magna Carta hierarchy amendment](build-to-1.0-campaign-2026-09-20.md#amendments-2026-09-25)
+separates durable catalog requirements from bounded work assignments. § TASK-Driven
+Workflow now distinguishes that authority from the current brief-local REQ/TASK
+identifier and proof lineage. Task trailers, REQ kinds, proof channels, TDD, BDD,
+coverage and human acceptance obligations remain in force. Catalog runtime and
+identifier migration are not implemented by this wording change.
+
 ### Changed 2026-09-23 at version `0.26.5` (GHI #1088)
 
 Plain `gz check` became the per-change gate (the `change` scope, without

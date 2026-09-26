@@ -161,9 +161,10 @@ See [`.gzkit/rules/agent-failure-modes.md`](.gzkit/rules/agent-failure-modes.md)
 
 ### Workflow
 
-```
-PRD → Constitution → ADR → OBPI → REQ → TASK → Attestation
-```
+- Constitution → PRD grounds product intent; ADRs remain subject to both. Durable catalog requirements have authority independent of work packages.
+- ADR (mADR) → OBPI (brief) → plan/spec/tasks organizes a bounded advance against referenced requirement states, with local acceptance criteria retained in the brief.
+- Evidence binds assignment, requirement state and product configuration; human attestation accepts work, and release records identify what shipped.
+- During migration, current local REQ → TASK lineage, identifiers, parsers and proof bindings remain in force; this ruling does not implement catalog mechanics.
 
 ## Skills
 

@@ -156,7 +156,10 @@ status, and the disagreements are recorded. Standing conditions:
   distinction;
 - the fourteen `OPEN` rows are settled under `Q-14`, **not confirmed** — nothing
   challenged them, and they may not be cited as having survived challenge;
-- **Phase 4 remains unauthorised, and nothing in this file authorises it.**
+- **Bounded Phase 4 design is now authorized at `OPEN-QUESTIONS.md` Q-17
+  (2026-09-25).** Nothing in this disagreement register supplies that authority
+  or settles the disagreements; the operator's request does. Pilot and migration
+  remain separate.
 
 ---
 
@@ -189,6 +192,10 @@ changed on the finding itself. The two must not drift.
 ---
 
 ## Amendments
+
+- **2026-09-25 — Authorization pointer updated for `Q-17`.** The operator
+  requested a grounding design pivot. Updated the current phase boundary only;
+  no disagreement or finding disposition changed.
 
 - **2026-09-23 — `M-F` executed; `D-08` annotated, disposition unmoved.** The
   measurement `D-08` was waiting on has been run (piece

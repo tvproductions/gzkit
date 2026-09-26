@@ -5,11 +5,11 @@ paths:
 description: Test policy and coverage requirements
 ---
 
-<!-- rule-version: 0.26.5 -->
+<!-- rule-version: 0.26.6 -->
 
 # Test Policy (canonical)
 
-> **Rule version:** `0.26.5` — § Two runners follows GHI #1088: plain `gz check` is the per-change gate and drops `behave`; `gz check --full` and CI run both tiers. Rationale: [Tests — Rationale](../../docs/governance/tests-rationale.md); history: [Rule Version History](../../docs/governance/rule-version-history.md#testsmd).
+> **Rule version:** `0.26.6` — § TASK-Driven Workflow distinguishes independent catalog requirements from the current brief-local REQ/TASK lineage (operator hierarchy amendment, 2026-09-25). Rationale: [Tests — Rationale](../../docs/governance/tests-rationale.md); history: [Rule Version History](../../docs/governance/rule-version-history.md#testsmd).
 
 ## General Rules (binding)
 
@@ -65,7 +65,7 @@ Gate 2 is named TDD. Per behavior increment:
 
 ## TASK-Driven Workflow (binding)
 
-TASK is the leaf of `PRD → Constitution → ADR → OBPI → REQ → TASK → Attestation`. **src/tests commits MUST carry a `Task:` trailer.** Enforced by `gz validate --commit-trailers`. `Ceremony:` and `Eval-feedback-source:` do not substitute on src/tests scope.
+TASK executes a brief's bounded contribution to requirements. Durable catalog requirements have authority independent of ADRs and OBPIs; a brief references their applicable states and retains local acceptance criteria. The current `ADR → OBPI → local REQ → TASK` identifier and proof lineage remains in force during migration; it does not define catalog ownership. **src/tests commits MUST carry a `Task:` trailer.** Enforced by `gz validate --commit-trailers`. `Ceremony:` and `Eval-feedback-source:` do not substitute on src/tests scope.
 
 | Form | Use | Example |
 |------|-----|---------|

@@ -171,11 +171,21 @@ the correction. (Accounting gap also open: **23 `airlock_in` vs 10 `airlock_out`
 ## 3. Doctrine (carried — see § Rulings Register for provenance)
 
 - **Four modes, one airlock each:** Design · Build (OBPI, minor) · MX (GHI squawks, patch) · Chores (patch). `GHI : MX :: OBPI : Build`.
-- **Intent hierarchy:** Constitution → PRD (one per major) → ADR → OBPI → REQ → TASK.
+- **Product requirements (amended 2026-09-25):** Constitution → PRD (one per major) grounds durable product requirements. Their authoritative definitions, applicability and change history belong to an independent requirements catalog; no ADR or brief owns their continuing existence. Planning may discover or refine requirements through an explicit approving decision.
+- **Bounded assignments:** mADR/ADR → brief/OBPI → plan, specification and tasks. The mADR retains the bounded advance's intent, decisions, rationale, scope and constraints. A brief references the exact applicable requirement states, states its contribution, and retains its local acceptance criteria, work boundaries and evidence references. These are information roles, not a mandate for separate files.
+- **Acceptance and release claims:** brief completion, whole-requirement satisfaction for an identified product configuration, and actual release content are distinct claims with distinct evidence. An accepted contribution does not establish the whole obligation or prove it shipped. Requirement changes preserve the original subjects of historical evidence and acceptance.
 - **Versioning:** feature = minor · MX/GHI = patch · MX-produced contract change = patch + AD artifact. Every bump is a release.
 - **Taxonomy:** `foundation` is a **closed, frozen-historic** kind; `pool` and `feature` are the two live kinds. Completed foundations stay; unstarted ones drop to pool. Realized by `ADR-0.34.0`.
 - **Code architecture:** Hexagonal (Ports & Adapters) is primary, seated in the DDD → HA → BDD → TDD spine; the domain is modeled as the **ontology** (`ADR-0.32.0`), never a folder tree.
 - **STDLIB-FIRST** governs the interior; Pydantic is the one ratified exception.
+
+**Implementation boundary.** The ownership relationship above is amended doctrine;
+catalog storage, reference grammar and runtime migration remain governed follow-on
+work. Existing ADR/OBPI/REQ identifiers, parsers, proof channels and ledger subjects
+remain in use until that work lands. This amendment creates no catalog command,
+new gate, capability hierarchy or release event. Design detail and unresolved
+mechanics remain in [the candidate record](ieee/design-candidates.md); deliberation
+and alternatives remain in [the session record](ieee/design-pivot-session-2026-09-25.md).
 
 ## 4. The floor — never relaxes, either engine, in or out of the hangar
 
@@ -290,7 +300,7 @@ gzkit is 1.0 when ALL hold. Each gate is bounded; none is a standing obligation.
 - [x] Collapse the `validate()` surface to the registry — **DONE 2026-08-08** against the amended criterion. **Done means the enumeration family is closed, not that the count fell** (amended 2026-08-07): the registry is the single source, and *registering a scope enrolls it in the gate* (GHI #744). Siblings that must stop recurring: #704 (six solo-only scopes silently dropped when combined, under a green check), #745 (fenced blocks escape all three verb detectors), #748 (a weaker verb extractor reimplemented alongside one that already shipped). A count target alone leaves every one of those live. **All three sub-claims now hold, each fenced:** *(a)* enrollment landed 2026-08-02 (`0f671b31c`, GHI #744) — `data/check_scope_membership.json` declares membership and `tests/governance/test_check_scope_parity.py` recomputes it from source via AST, so drift in either direction fails and a default-tier scope outside the gate fails closed; *(b)* the registry is **now** genuinely the single source — `--qc-binding`, `--fidelity-presence` and `--waiver-ratchet` had dispatched through the early-return chain alone since the #618 collapse, contradicting the `VALIDATOR_REGISTRY` header's own "Single source of validate dispatch" claim, and that gap had already cost GHI #630 (every SUPPORT REQ citing one read `unproven-support` regardless of truth) which was patched with a *third* hand-maintained map rather than closed; registering the three retired that map (**net −18 source lines**) and the fence now asserts `reached − registry == ∅` instead of accommodating the exception; *(c)* #704, #745 and #748 all closed 2026-08-02 with standing fences, #704 with a genuine class-level fix replacing the per-scope guards that had been copied forward onto every new scope. **Count correction:** the "94 scopes" this box carried matched no enforced surface — `VALIDATOR_REGISTRY` holds **85**, the roster classifies 85 (44 `in_check` / 41 `out_of_check`), and `gz validate --help` prints 99 *flag* lines including non-scope flags. The retargeting off counting is exactly why that stale figure changed nothing about completion.
 - [ ] Oversized modules — census-driven, with working proof. **RE-MEASURED 2026-08-16: 51 modules over 600 lines, up from the 33 this box carried — a 55% increase, and the largest measured regression on the board.** Method, so the next reader re-runs rather than transcribes: `find src/gzkit -name '*.py' -exec wc -l {} + | awk '$1>600 && $2!="total"'`. The box is not merely unstarted; its subject grew faster than anything shrank it. Note the threshold itself is contested — `.gzkit/rules/pythonic.md` § Size Limits records that 600 is authoring-time guidance with **no enforcing gate**, and that it disagrees with the canonical `complexity-thresholds.md` table (which warns at 733.2 and blocks at 1031.9), so a census against 600 counts modules that no gate rejects. Settle which number governs as part of the census, or the proof will be measured against an authority the codebase does not enforce.
 - [ ] **The Firewall** *(recovered orphan, § 9a)* — classify every delivered surface by destiny: **wheel-borne / authored-into-battlefield / lab-only-jig**, enforced at scaffold-time and validate-time. Operator, 2026-06-14: *"the rigging and jigs do not remain attached to the fuselage once we open the factory hangar doors for final delivery — we haven't been careful about this."* Booked 06-14, never built. Load-bearing for §1's public-product trajectory: today an adopter inherits gzkit's lab jigs. Genuinely reductive — it defines what does **not** ship.
-- [ ] **Render the stability-gradient spine** *(recovered orphan, § 9a)* — the 06-14 ruling ordered the tree `Constitution → PRD → ADR → OBPI` by rate of change and declared the legacy `PRD → Constitution` spine backwards. AGENTS.md § Workflow still carries the old order across ~12 surfaces. Booked and never rendered.
+- [ ] **Render the stability-gradient spine** *(recovered orphan, § 9a; amended 2026-09-25)* — retain the 06-14 ruling's enduring Constitution → PRD product grounding. Under §3's amended ownership model, durable requirements have independent authority and bounded mADR/ADR → brief/OBPI → plan/specification/tasks assignments reference their exact applicable states. Render these relationships across governing surfaces without restoring REQ ownership beneath OBPI. This box remains open for the remaining all-surface reconciliation. Catalog/runtime migration is unimplemented and receives no schedule or new completion condition from this amendment. The old linear tree remains historical provenance, not the target to render.
 - [ ] **Close the doctrine-declared-without-mechanism family** *(added 2026-08-07)* — the family's own name, from GHI #537: *"Layer X declares a discipline that Layer X does not mechanically enforce."* Measured by the `failure-class-index` chore over the 333 GHIs closed since 2026-05-09: the **two deepest recurrence chains in the corpus** (depth 12 and depth 7) are both this family, ~19 members, and it holds the two most-cited ancestors on record (#537 cited 3×, #538 cited 4×). Both arms are in scope — **validator-side** (a check whose subject is narrower than its name: #692 *checks section presence, not population*; #693 *verifies a flag is mentioned, never that its description is true*; #770 *an audit named for dispatch attestation whose entire subject is a frontmatter string*) and **agent-side** (a skill mandate with no receipt: #459, #574, #620). **Completion criterion:** a declared discipline either carries a mechanical witness or is demoted to advisory in its own text — no third state. This is the reductive move that stops the `validate()` surface producing scope #95: it closes the family rather than the instance. **Re-scoped 2026-08-08 (operator-ratified) — the six named issues all closed and the box did NOT discharge; see the amendment for why, and the measurable criterion below.** **PULLED FORWARD TO NEXT-IN-PRIORITY 2026-09-02 (operator-ratified) — directly beneath TOPMOST `ADR-0.35.0`, ahead of Movement B and of every other Movement C box. The share and production figures that placed it here are measured in [`f1-family-share-measurement-2026-09-20.md`](f1-family-share-measurement-2026-09-20.md), not transcribed here; the 2026-09-20 re-measure VERIFIED the placement premise. The criterion, the three arms and the doctrine-side residual are UNCHANGED. See § Amendments 2026-09-02.** **DRAWN-WORK ORDER 2026-09-15 (operator-ratified): GHI direct repair under this box is drawn only after the R&D front and the chore estate, and only when the GHI closes a named arm, blocks those two, or is an emergency. See § Amendments 2026-09-15.**
 
   **All six exemplars are CLOSED** — validator-side `#692`, `#693`, `#770`; agent-side `#459`, `#574`, `#620` (verified 2026-08-08 via `gh issue view`). They are **evidence the class exists, not a checklist**: the box's own text says *"it closes the family rather than the instance."* Six closed instances do not discharge a class-level criterion, and checking the box on their strength is the enumerate-the-exemplars habit the criterion was written to resist.
@@ -503,7 +513,7 @@ today. **WITHDRAWN** = no longer steers, with reason.
 | Reductive moves wait for post-1.0 | 06-10 sequencing | **WITHDRAWN** 2026-07-18 — deadlocked against the line above; accretion was blocking 1.0 |
 | "The facade is drained" as an unbounded gate | 06-30 §8 | **WITHDRAWN** 2026-07-18 — replaced by the dated census bound in §5; had no terminal state |
 | Adoption is not a 1.0 gate | 06-30 §1 | **CARRIED, amended** — still not a gate, but one flight-test sortie is now a §5 gate |
-| Four airlocks + MX granularity + intent hierarchy | 06-20 §3 | **CARRIED** → §3 |
+| Four airlocks + MX granularity + intent hierarchy | 06-20 §3 | **CARRIED, amended 2026-09-25** → §3. The modes and MX granularity stand; independent product requirements replace REQ ownership beneath OBPI, with bounded assignments referencing applicable requirement states. |
 | Versioning: feature=minor, MX=patch, contract-change=patch+AD | 06-20 §4 | **CARRIED** → §3 |
 | Severity ladder = Python `logging` + NOTICE (not kernel 0–7) | 06-21 amendment | **CARRIED** |
 | OKF/CMS documentation-knowledge orientation layer | 06-23 amendment | **CARRIED** — delivered `ADR-0.30.0` |
@@ -565,7 +575,7 @@ had been repeating. All are dispositioned below — none left undefined.
 | "we don't direct edit AGENTS.md; the CMS must be near-top priority" (06-10) | **CARRIED** — AGENTS.md is corpus-rendered; the 2026-07 corpus-derivation work is this |
 | Buetow practices adopted → `ADR-0.0.70` (06-12) | **CARRIED** — delivered, `Validated` |
 | **Firewall foundation ADR** — classify every delivered surface by destiny (**wheel-borne / authored-into-battlefield / lab-only-jig**); *"the rigging and jigs do not remain attached to the fuselage"* (06-14) | **CARRIED — UNDELIVERED.** No Firewall ADR exists. Load-bearing for §1's "public product" trajectory: today an adopter inherits the lab jigs. Booked as a Movement C box. |
-| **Constitution as enduring root; tree ordered by stability gradient** — `Constitution → PRD → ADR → OBPI`; the legacy `PRD → Constitution` spine is *backwards* (06-14) | **CARRIED — UNAPPLIED.** AGENTS.md § Workflow still reads `PRD → Constitution → ADR → OBPI`. The ruling was booked and never rendered. Booked as a Movement C box. |
+| **Constitution as enduring root; tree ordered by stability gradient** — `Constitution → PRD → ADR → OBPI`; the legacy `PRD → Constitution` spine is *backwards* (06-14) | **CARRIED, amended 2026-09-25.** Constitution → PRD product grounding stands. §3 now distinguishes independent durable requirements from bounded assignments; the old linear tree is no longer the rendering target. All-surface reconciliation remains owed in Movement C; catalog/runtime migration is unimplemented and receives no schedule or new completion condition from this amendment. |
 | CMS ↔ hierarchy coupling; disclosure tier ∝ inverse volatility (06-14) | **CARRIED** — realized as progressive disclosure + the always-injected router |
 | Dispatch drift-guards #617 (CLI handler resolution) / #618 (`validate()` scopes) (06-14) | **CARRIED** — #618 → Movement C; **#617 status unverified**, folded into that box |
 | Governance-friction drainage empowered to the campaign; file the GHI in the moment of discovery (06-14) | **CARRIED** — now AGENTS.md § Defect-fix routing |
@@ -597,7 +607,63 @@ had been repeating. All are dispositioned below — none left undefined.
 
 ## Amendments
 
-### 2026-09-24 (latest) — a ruling that stays an enforcement must name its sites (operator-ratified)
+<a id="amendments-2026-09-25"></a>
+
+### 2026-09-25 (latest) — requirements have independent authority; briefs carry bounded assignments (operator-ratified)
+
+**Operator (`g0`), full message verbatim:**
+
+> di it: "There is one substantive reconciliation we must address: **§3 currently places REQs beneath OBPIs in the intent hierarchy.** Adoption of this pivot requires an explicit amendment to that relationship and its governing surfaces. Adding a proposal link alone would leave the transition ambiguous"
+
+**The superseded §3 text, explicitly:**
+
+> **Intent hierarchy:** Constitution → PRD (one per major) → ADR → OBPI → REQ → TASK.
+
+**What is adopted.** Durable product requirements have authority and change
+history independent of any assignment. Constitution and PRD supply their product
+grounding. The catalog carries authoritative definitions; bounded mADR/ADR →
+brief/OBPI → plan/specification/tasks work references the exact applicable
+requirement states. Briefs retain their local acceptance criteria, promised
+contributions, boundaries and evidence references. mADRs retain decisions,
+rationale, scope and constraints. A brief can therefore present requirements,
+work and evidence together without taking ownership of the requirements.
+
+Acceptance names its requirement state and product configuration. Completing a
+brief accepts its assigned contribution; whole-requirement satisfaction and
+actual release content remain separate claims. Changed needs do not rewrite
+prior evidence or acceptance. These ownership and claim distinctions reconcile
+§3 with the accepted [grounding pivot](ieee/design-candidates.md#grounding-pivot).
+The [session record](ieee/design-pivot-session-2026-09-25.md) retains the reasoning
+and alternatives; unselected mechanics remain proposals in the candidate record.
+
+**The transition is explicit.** This is a doctrine amendment, not a claim that
+the catalog reader, schema, identity grammar, acceptance binding or migration
+already exists. Current legacy identifiers, parsers, proof paths and historical
+ledger subjects continue to govern execution until their replacements are
+implemented through the existing authorized routes. No catalog command or new
+proof channel is introduced by prose. The stability-gradient box and its carried
+ruling are reconciled to the amended relationship and remain open; changing this
+file does not complete all-surface or runtime migration.
+
+**Scope of the ruling.** No new Movement, queue position or 1.0 gate is created.
+TOPMOST, ascending ADR order, operator initiation, existing gates and release
+rulings remain in force. This amendment authorizes neither the candidate pilot
+nor migration implementation, and adopts no capability hierarchy or identifier
+rename. IEEE and test review continue under their existing investigative scope.
+
+**Agent-contract retention review.** A separate GPT-6 Sol reviewer extracted
+the six relationships in the old root-contract chain and checked the author's
+map against the generated candidate. Constitutional authority over ADRs,
+ADR-to-brief assignment, current local REQ-to-TASK traceability and human
+acceptance are retained; no other committed block is removed. The map records
+two retired conditions: `intent` (`PRD → Constitution`, replaced under the
+already-ratified Constitution-first ruling in §9a) and `REQs` (`OBPI → REQ`,
+replaced by the ownership ruling above). The reviewer noted that these map IDs
+were assigned after the operator's ruling. No new approval of those IDs is
+claimed: the amendment relies on the already-booked substantive authorizations.
+The persisted map is `.gzkit/renditions/AGENTS.md/root.retention.json`.
+
+### 2026-09-24 — a ruling that stays an enforcement must name its sites (operator-ratified)
 
 **Operator (`g0`), verbatim:** *"C with the Movement D amendment"*, choosing among
 the shapes GHI #1087 offered: a registry mapping rulings to sites, a resolvable
