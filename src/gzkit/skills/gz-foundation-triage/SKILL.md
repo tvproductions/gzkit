@@ -9,7 +9,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-09-26
 metadata:
-  skill-version: "1.0.2"
+  skill-version: "1.0.3"
 model: sonnet
 ---
 
@@ -29,8 +29,9 @@ Running the skill is read-only across the governance surface.
 The bundled script reports raw signal counts. Weighted scoring is the
 foundation-triage-rubric surface at `src/gzkit/foundation/rubric.py`:
 `uv run python -m gzkit.foundation.rubric` prints a `priority_score` with its
-evidence for each in-flight foundation. Read those scores as evidence in
-Step 2; they never enter the rank-input JSON, whose schema rejects extra fields.
+evidence for each in-flight foundation. Read those scores as evidence in the
+cognitive pass; they never enter the rank-input JSON, whose schema rejects
+extra fields.
 
 ## Invocation
 
