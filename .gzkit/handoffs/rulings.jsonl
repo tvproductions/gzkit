@@ -1069,3 +1069,7 @@
 {"ts": "2026-09-26T01:21:35Z", "source": "20260926T012130Z-ghis-1092-1093-fixed-req9-corrected.md", "text": "OBPI-0.35.0-14 Requirement 9, verbatim: \"Correct Req 9 in place and log it (Recommended)\"."}
 {"ts": "2026-09-26T01:21:35Z", "source": "20260926T012130Z-ghis-1092-1093-fixed-req9-corrected.md", "text": "GHI #1092 route, verbatim: \"Run before the stash (Recommended)\". The recorder is installed as pre-commit's post-commit.legacy hook, and the pre-commit config entry is removed."}
 {"ts": "2026-09-26T01:21:35Z", "source": "20260926T012130Z-ghis-1092-1093-fixed-req9-corrected.md", "text": "Verbatim: \"commit the insights file\" (42b7ba816, which includes two rows appended by the concurrent session)."}
+{"ts": "2026-09-26T06:14:00Z", "source": "20260926T061354Z-ghis-1098-1099-fixed-review-age-scoped.md", "text": "Handoff ruling on next work, verbatim: \"Direct-fix GHI #1098 (Recommended)\"."}
+{"ts": "2026-09-26T06:14:00Z", "source": "20260926T061354Z-ghis-1098-1099-fixed-review-age-scoped.md", "text": "Stale gz-foundation-triage review blocking the push, verbatim: \"Review + bump, file GHI (Recommended)\" (65cb75abf, GHI #1099 filed)."}
+{"ts": "2026-09-26T06:14:00Z", "source": "20260926T061354Z-ghis-1098-1099-fixed-review-age-scoped.md", "text": "Verbatim: \"fix 1099\"."}
+{"ts": "2026-09-26T06:14:00Z", "source": "20260926T061354Z-ghis-1098-1099-fixed-review-age-scoped.md", "text": "GHI #1099 sync policy, verbatim: \"Audit only, sync stops (Recommended)\". Sync no longer refuses on review age; gz skill audit and Gate 3 still block."}
