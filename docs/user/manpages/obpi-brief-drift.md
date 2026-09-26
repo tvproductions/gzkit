@@ -112,13 +112,13 @@ uv run gz obpi brief-drift OBPI-0.0.37-06-brief-reconcile-cli --json
 Preview amendments without writing:
 
 ```bash
-uv run gz obpi brief-drift OBPI-0.0.37-06-brief-reconcile-cli --apply --attestor "Jane Doe" --dry-run
+uv run gz obpi brief-drift OBPI-0.0.37-06-brief-reconcile-cli --apply --attestor g0 --dry-run
 ```
 
 Apply operator-attested amendments:
 
 ```bash
-uv run gz obpi brief-drift OBPI-0.0.37-06-brief-reconcile-cli --apply --attestor "Jane Doe"
+uv run gz obpi brief-drift OBPI-0.0.37-06-brief-reconcile-cli --apply --attestor g0
 ```
 
 ## SEE ALSO

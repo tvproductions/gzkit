@@ -78,8 +78,8 @@ def register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         ),
         epilog=build_epilog(
             [
-                'gz obpi emit-receipt OBPI-0.1.0-01 --event completed --attestor "Jane Doe"',
-                'gz obpi emit-receipt OBPI-0.1.0-01 --event validated --attestor "Jane Doe"',
+                "gz obpi emit-receipt OBPI-0.1.0-01 --event completed --attestor g0",
+                "gz obpi emit-receipt OBPI-0.1.0-01 --event validated --attestor g0",
             ]
         ),
     )
@@ -225,7 +225,7 @@ def register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
             [
                 "gz obpi brief-drift OBPI-0.1.0-01",
                 "gz obpi brief-drift OBPI-0.1.0-01 --apply --dry-run",
-                'gz obpi brief-drift OBPI-0.1.0-01 --apply --attestor "Jane Doe"',
+                "gz obpi brief-drift OBPI-0.1.0-01 --apply --attestor g0",
             ]
         ),
     )
@@ -433,9 +433,8 @@ def register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         epilog=build_epilog(
             [
                 'gz obpi withdraw OBPI-0.21.0-01 --reason "phantom entry from promotion"'
-                ' --attestor "Jane Doe"',
-                'gz obpi withdraw OBPI-0.21.0-01 --reason "duplicate" --attestor "Jane Doe"'
-                " --dry-run",
+                " --attestor g0",
+                'gz obpi withdraw OBPI-0.21.0-01 --reason "duplicate" --attestor g0 --dry-run',
             ]
         ),
     )
@@ -524,9 +523,9 @@ def register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         epilog=build_epilog(
             [
                 "gz obpi supersede OBPI-0.21.0-01 --by OBPI-0.21.0-04"
-                ' --rationale "replaced by redesigned brief" --attestor "Jane Doe"',
+                ' --rationale "replaced by redesigned brief" --attestor g0',
                 "gz obpi supersede OBPI-0.21.0-01 --by OBPI-0.21.0-04"
-                ' --rationale "replaced by redesigned brief" --attestor "Jane Doe"'
+                ' --rationale "replaced by redesigned brief" --attestor g0'
                 " --dry-run",
             ]
         ),

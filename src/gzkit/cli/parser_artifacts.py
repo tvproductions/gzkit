@@ -878,8 +878,8 @@ def _register_adr_parsers(commands: argparse._SubParsersAction) -> None:
         ),
         epilog=build_epilog(
             [
-                'gz adr emit-receipt ADR-0.1.0 --event completed --attestor "Jane Doe"',
-                'gz adr emit-receipt ADR-0.1.0 --event validated --attestor "Jane Doe" --dry-run',
+                "gz adr emit-receipt ADR-0.1.0 --event completed --attestor g0",
+                "gz adr emit-receipt ADR-0.1.0 --event validated --attestor g0 --dry-run",
             ]
         ),
     )

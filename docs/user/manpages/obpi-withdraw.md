@@ -51,8 +51,8 @@ the intent is to reverse a completion while keeping the OBPI re-completable.
 
 ```bash
 # Withdraw an OBPI with reason
-uv run gz obpi withdraw OBPI-0.21.0-03 --reason "Superseded by OBPI-0.21.0-04" --attestor "Jane Doe"
+uv run gz obpi withdraw OBPI-0.21.0-03 --reason "Superseded by OBPI-0.21.0-04" --attestor g0
 
 # Dry-run to see what would happen
-uv run gz obpi withdraw OBPI-0.21.0-03 --reason "No longer needed" --attestor "Jane Doe" --dry-run
+uv run gz obpi withdraw OBPI-0.21.0-03 --reason "No longer needed" --attestor g0 --dry-run
 ```

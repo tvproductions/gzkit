@@ -52,11 +52,11 @@ withdraw` instead when an OBPI is simply retired with no replacement.
 ```bash
 # Supersede an OBPI with the replacement that carries its intent forward
 uv run gz obpi supersede OBPI-0.21.0-01 --by OBPI-0.21.0-04 \
-  --rationale "Replaced by redesigned brief" --attestor "Jane Doe"
+  --rationale "Replaced by redesigned brief" --attestor g0
 
 # Dry-run to see what would happen
 uv run gz obpi supersede OBPI-0.21.0-01 --by OBPI-0.21.0-04 \
-  --rationale "Replaced by redesigned brief" --attestor "Jane Doe" --dry-run
+  --rationale "Replaced by redesigned brief" --attestor g0 --dry-run
 ```
 
 ## Related
