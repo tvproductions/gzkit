@@ -1010,7 +1010,9 @@ def init(
 
     - **default** (no flags) — repair mode if already initialized; otherwise
       full initialization. Idempotent; preserves operator-edited files.
-    - ``--force`` — full wipe-and-recreate. Overwrites every canonical surface.
+    - ``--force`` — full reinitialize. Re-copies the wheel's skills, rules,
+      templates and chores over the project's copies and rewrites
+      ``.gzkit.json``; deletes nothing and never overwrites personas.
     - ``--update`` — version-aware refresh of canonical surfaces from the
       installed wheel. Preserves operator-edited files via marker detection
       (see :func:`_detect_refresh_state`). Reports conflicts and exits 3 if

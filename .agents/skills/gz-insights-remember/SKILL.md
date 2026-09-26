@@ -1,12 +1,12 @@
 ---
 name: gz-insights-remember
-description: Record a course-correction, defect, defect-resolution, or discovery insight via the governed gz insights remember verb. Use when an operator course-corrects in flight (Behavior Rule #11), an agent surfaces a defect/discovery, or a defect-resolution outcome needs recording — never hand-append a line to .gzkit/insights/agent-insights.jsonl.
+description: Record a course-correction, defect, defect-resolution, or discovery insight via the governed gz insights remember verb. Use when an operator course-corrects in flight (AGENTS.md § Behavior Rules), an agent surfaces a defect/discovery, or a defect-resolution outcome needs recording — never hand-append a line to .gzkit/insights/agent-insights.jsonl.
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-13
+last_reviewed: 2026-09-26
 metadata:
-  skill-version: "0.1.0"
+  skill-version: "0.1.1"
 model: haiku
 gz_command: gz insights remember
 ---
@@ -31,8 +31,9 @@ hand-authoring a JSONL line for the insights store.
 
 1. Identify the record kind via `--type`: `defect` (an observed problem),
    `defect-resolution` (the fix outcome), `improvement` (a post-correction
-   lesson — this is the required record for Behavior Rule #11's in-flight
-   course-correction mandate), or `discovery` (a survey finding).
+   lesson — the record `AGENTS.md` § Behavior Rules requires when the operator
+   course-corrects in flight; rationale in `docs/governance/behavior-rules.md`
+   § Always #11), or `discovery` (a survey finding).
 2. Supply `--scope` (the surface or skill the record names) and
    `--summary` (a one-sentence record body). Both are required and fail
    closed when empty.
@@ -42,7 +43,7 @@ hand-authoring a JSONL line for the insights store.
 4. Run the capture:
 
    ```bash
-   gz insights remember --type <defect|defect-resolution|improvement|discovery> \
+   uv run gz insights remember --type <defect|defect-resolution|improvement|discovery> \
      --scope <surface-or-skill> --summary "<one-sentence body>" \
      [--evidence <command-or-path> ...] [--next-action "<structural change>"]
    ```
@@ -61,13 +62,13 @@ hand-authoring a JSONL line for the insights store.
 ## Example
 
 ```bash
-# Record a Behavior Rule #11 course-correction insight
-gz insights remember --type improvement --scope obpi-pipeline \
+# Record a course-correction insight
+uv run gz insights remember --type improvement --scope obpi-pipeline \
   --summary "governed author verb replaces hand-authored appends" \
   --next-action "delete the hand-authored append path"
 
 # Record a defect with witnessing evidence
-gz insights remember --type defect --scope gzkit.insights \
+uv run gz insights remember --type defect --scope gzkit.insights \
   --summary "verb drifted from schema" \
   --evidence "uv run -m unittest tests.commands.test_insights_cmd"
 ```

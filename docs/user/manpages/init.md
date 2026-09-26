@@ -113,13 +113,13 @@ Running `gz init` on an already-initialized project enters **repair mode**:
 
 Every file repair writes appears in its output and in the `Repaired N artifact(s)` count. `gz init --dry-run` lists the same writes and makes none. The one limit: a dry run renders the sync plan against the tree as it stands, so for an artifact it would newly scaffold, its `Would scaffold` line stands in for that artifact's mirrors (GHI #1098).
 
-Use `--force` only when you need a full reinitialize (rewrites config, re-scaffolds everything).
+Use `--force` only when you need a full reinitialize (rewrites config, re-copies the wheel's canonical surfaces except personas; deletes nothing).
 
 ---
 
 ## Update Mode (Version-Aware Refresh)
 
-`gz init --update` is the **third** init mode, distinct from default (repair-missing) and `--force` (wipe-and-recreate). It refreshes canonical surfaces in the adopter's `.gzkit/<surface>/` from the installed wheel's package data while **preserving operator-edited files** via marker detection.
+`gz init --update` is the **third** init mode, distinct from default (repair-missing) and `--force` (re-copy from the wheel). It refreshes canonical surfaces in the adopter's `.gzkit/<surface>/` from the installed wheel's package data while **preserving operator-edited files** via marker detection.
 
 ### Three modes — when to use which
 
@@ -127,7 +127,7 @@ Use `--force` only when you need a full reinitialize (rewrites config, re-scaffo
 |------|-------------|--------------------------------------|
 | **default** (`gz init`) | First init, or repair missing artifacts on an existing project | Skip-existing: never overwrites |
 | **`--update`** | Cross-version upgrade after `pip install py-gzkit==X.Y.Z` brings new canonical content | Refresh STALE entries in place; preserve EDITED entries; report conflicts |
-| **`--force`** | Full reinitialize; willing to lose operator edits | Wipe and re-copy every canonical surface |
+| **`--force`** | Full reinitialize; willing to lose operator edits | Re-copy the wheel's skills, rules, templates and chores over the project's copies; deletes nothing (project-local files remain) and never overwrites personas |
 
 ### Three-state detection (REQ-0.0.32-05-02)
 
