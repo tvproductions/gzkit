@@ -24,7 +24,7 @@ _SCHEMA_PATH = Path(__file__).parent.parent / "src" / "gzkit" / "schemas" / "led
 
 
 def _ledger_schema() -> dict:
-    with open(_SCHEMA_PATH) as f:
+    with open(_SCHEMA_PATH, encoding="utf-8") as f:
         return json.load(f)
 
 

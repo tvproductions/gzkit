@@ -3,6 +3,7 @@
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from gzkit.config import GzkitConfig, PathConfig
 
@@ -365,6 +366,25 @@ class TestGatesRemoved(unittest.TestCase):
             self.assertEqual(len(deprecation_warnings), 1)
             self.assertIn("gates", str(deprecation_warnings[0].message))
             self.assertIn("flags", str(deprecation_warnings[0].message))
+
+
+def _cp1252_locale_default(encoding: str | None, stacklevel: int = 2) -> str:
+    """Stand in for ``io.text_encoding`` on a Windows cp1252 locale."""
+    return encoding if encoding is not None else "cp1252"
+
+
+class TestGzkitConfigEncoding(unittest.TestCase):
+    """.gzkit.json is UTF-8 whatever the locale (.gzkit/rules/cross-platform.md § Encoding)."""
+
+    def test_load__non_ascii_value__reads_utf8_under_cp1252_locale(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            config_file = Path(tmpdir) / ".gzkit.json"
+            config_file.write_bytes('{"project_name": "Café Ω"}'.encode())
+
+            with patch("io.text_encoding", _cp1252_locale_default):
+                config = GzkitConfig.load(config_file)
+
+            self.assertEqual(config.project_name, "Café Ω")
 
 
 if __name__ == "__main__":

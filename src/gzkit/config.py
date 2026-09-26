@@ -194,7 +194,7 @@ class GzkitConfig(BaseModel):
         if not config_path.exists():
             return cls()
 
-        with config_path.open() as f:
+        with config_path.open(encoding="utf-8") as f:
             content = f.read().strip()
             data = json.loads(content) if content else {}
 
@@ -241,7 +241,7 @@ class GzkitConfig(BaseModel):
         if "vendors" not in self.model_fields_set:
             data.pop("vendors", None)
 
-        with config_path.open("w") as f:
+        with config_path.open("w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
             f.write("\n")
 
