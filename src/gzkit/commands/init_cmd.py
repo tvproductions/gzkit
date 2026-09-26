@@ -14,7 +14,12 @@ from typing import Literal, cast
 from pydantic import BaseModel, ConfigDict, Field
 from rich.markup import escape
 
-from gzkit.chores import _classify_chore_file, merge_chores_registry, scaffold_core_chores
+from gzkit.chores import (
+    _classify_chore_file,
+    merge_chores_registry,
+    missing_surface_files,
+    scaffold_core_chores,
+)
 from gzkit.commands.common import (
     _confirm,
     console,
@@ -59,6 +64,7 @@ from gzkit.sync import (
 )
 from gzkit.templates import render_template, scaffold_core_templates
 from gzkit.templates.author_prompts import AUTHOR_PROMPTS
+from gzkit.validate_pkg.sync_parity import plan_sync_changes
 
 RefreshState = Literal["IDENTICAL", "STALE", "EDITED"]
 
@@ -671,20 +677,26 @@ def _repair_chores(
     dry_run: bool,
     yes: bool,
 ) -> list[str]:
-    """Scaffold canonical chores and merge the registry; return repair messages."""
+    """Scaffold canonical chores and merge the registry; return repair messages.
+
+    A dry run never calls the scaffolder, which writes (GHI #1098); it lists what
+    the real run's ``skip_existing`` scaffold would add instead.
+    """
     from gzkit.chores import _iter_canonical_chore_slugs  # noqa: PLC0415
 
+    chores_dir = project_root / config.paths.chores
+    surface_files = [f"{config.paths.chores}/{name}" for name in missing_surface_files(chores_dir)]
     messages: list[str] = []
-    new_chores = scaffold_core_chores(project_root, config, skip_existing=not dry_run)
     if dry_run:
-        chores_dir = project_root / config.paths.chores
         for slug_resource in _iter_canonical_chore_slugs():
             slug = slug_resource.name
-            if not (chores_dir / slug / "CHORE.md").exists():
+            if not (chores_dir / slug).exists():
                 messages.append(f"Would scaffold chore: {slug}")
+        messages.extend(f"Would scaffold {path}" for path in surface_files)
     else:
-        for chore_path in new_chores:
+        for chore_path in scaffold_core_chores(project_root, config, skip_existing=True):
             messages.append(f"Scaffolded new chore: {chore_path.parent.name}")
+        messages.extend(f"Scaffolded {path}" for path in surface_files)
 
     merge_report = merge_chores_registry(project_root, config, auto_yes=yes, dry_run=dry_run)
     if merge_report.added or merge_report.changed:
@@ -784,6 +796,27 @@ def _dry_run_missing_canonical_skills(
     return messages
 
 
+def _repair_control_surfaces(
+    project_root: Path,
+    config: GzkitConfig,
+    *,
+    dry_run: bool,
+) -> list[str]:
+    """Re-sync control surfaces, reporting each file the sync changes (GHI #1098).
+
+    The plan is rendered against the tree as it stands, so a dry run cannot name
+    the mirrors of an artifact it has not yet scaffolded; its ``Would scaffold``
+    line stands for them. A tree already in sync plans nothing, so repair runs no
+    sync and appends no ``agent_sync_completed`` row.
+    """
+    changes = plan_sync_changes(project_root, config)
+    if dry_run:
+        return [f"Would sync {path}" for path in changes]
+    if changes:
+        sync_all(project_root, config)
+    return [f"Synced {path}" for path in changes]
+
+
 def _repair_missing_artifacts(
     project_root: Path,
     config: GzkitConfig,
@@ -838,12 +871,12 @@ def _repair_missing_artifacts(
     # initialized before GHI #715 carry neither; repair is how they get both.
     repaired.extend(_session_green_gate_statuses(project_root, dry_run=dry_run))
 
-    # Repair skills — scaffold any core skills added in newer gzkit versions
-    new_skills = scaffold_core_skills(project_root, config, skip_existing=not dry_run)
+    # Repair skills — scaffold any core skills added in newer gzkit versions.
+    # A dry run never calls the scaffolder, which writes (GHI #1098).
     if dry_run:
         repaired.extend(_dry_run_missing_canonical_skills(project_root, config))
-    elif new_skills:
-        for skill_path in new_skills:
+    else:
+        for skill_path in scaffold_core_skills(project_root, config, skip_existing=True):
             repaired.append(f"Scaffolded new skill: {skill_path.parent.name}")
 
     # Repair rules — scaffold any core rules added in newer gzkit versions
@@ -868,9 +901,7 @@ def _repair_missing_artifacts(
             write_manifest(project_root, manifest, config)
             repaired.append(f"Regenerated {config.paths.manifest}")
 
-    # Always re-sync control surfaces (idempotent, not counted as repairs)
-    if not dry_run:
-        sync_all(project_root, config)
+    repaired.extend(_repair_control_surfaces(project_root, config, dry_run=dry_run))
 
     if repaired:
         if dry_run:

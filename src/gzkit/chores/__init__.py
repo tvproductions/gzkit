@@ -276,15 +276,34 @@ def _scaffold_surface_level_files(chores_dir: Path) -> None:
     `README.md` as the authoring contract, so an adopter without it is pointed
     at a file they were never sent.
     """
-    root = importlib.resources.files(_CANONICAL_RESOURCE)
-    for entry in root.iterdir():
-        if entry.is_dir() or entry.name.startswith("__") or entry.name == _REGISTRY_FILE:
-            continue
-        if _classify_chore_file(Path(".gzkit/chores") / entry.name) != "canonical":
-            continue
+    for entry in _surface_level_entries():
         target = chores_dir / entry.name
         if not target.exists():
             target.write_bytes(entry.read_bytes())
+
+
+def _surface_level_entries() -> list[Traversable]:
+    """Return the canonical files at the chores surface root, outside every slug."""
+    root = importlib.resources.files(_CANONICAL_RESOURCE)
+    return [
+        entry
+        for entry in root.iterdir()
+        if not (entry.is_dir() or entry.name.startswith("__") or entry.name == _REGISTRY_FILE)
+        and _classify_chore_file(Path(".gzkit/chores") / entry.name) == "canonical"
+    ]
+
+
+def missing_surface_files(chores_dir: Path) -> list[str]:
+    """Name the surface-root files :func:`scaffold_core_chores` would write.
+
+    Scaffolding delivers these, and the registry, only when absent and reports
+    none of them, so a repair lists them beforehand to announce the write
+    (GHI #1098).
+    """
+    names = [entry.name for entry in _surface_level_entries()]
+    if importlib.resources.files(_CANONICAL_RESOURCE).joinpath(_REGISTRY_FILE).is_file():
+        names.append(_REGISTRY_FILE)
+    return sorted(name for name in names if not (chores_dir / name).exists())
 
 
 class RegistryMergeReport(BaseModel):

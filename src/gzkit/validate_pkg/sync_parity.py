@@ -210,19 +210,41 @@ def plan_sync_all(project_root: Path, config: GzkitConfig | None = None) -> list
     if config is None:
         config = GzkitConfig.load(project_root / ".gzkit.json")
 
-    planned: list[str] = []
     with capture_surface_writes():
         raw_planned = list(sync_all(project_root, config, emit_event=False))
-    for entry in raw_planned:
-        candidate = Path(entry)
-        if candidate.is_absolute():
-            try:
-                planned.append(candidate.relative_to(project_root).as_posix())
-            except ValueError:
-                planned.append(candidate.as_posix())
-        else:
-            planned.append(candidate.as_posix())
-    return sorted(set(planned))
+    return sorted({_display_path(project_root, Path(entry)) for entry in raw_planned})
+
+
+def plan_sync_changes(project_root: Path, config: GzkitConfig | None = None) -> list[str]:
+    """Return the paths ``sync_all()`` would change on disk, without mutating disk.
+
+    :func:`plan_sync_all` lists every path sync touches, including writes whose
+    bytes already match. This lists only real changes -- a create, a differing
+    write or a delete -- so ``gz init`` repair can announce exactly what it
+    writes, and an already-synced tree plans nothing (GHI #1098).
+    """
+    if config is None:
+        config = GzkitConfig.load(project_root / ".gzkit.json")
+
+    with capture_surface_writes() as sink:
+        sync_all(project_root, config, emit_event=False)
+    changed = {
+        path
+        for path, payload in sink.written.items()
+        if not path.is_file() or path.read_bytes() != payload
+    }
+    changed.update(path for path in sink.removed if path.is_file())
+    return sorted(_display_path(project_root.resolve(), path) for path in changed)
+
+
+def _display_path(project_root: Path, candidate: Path) -> str:
+    """Render ``candidate`` repo-relative in POSIX form when it lies under the root."""
+    if candidate.is_absolute():
+        try:
+            return candidate.relative_to(project_root).as_posix()
+        except ValueError:
+            return candidate.as_posix()
+    return candidate.as_posix()
 
 
 def snapshot_surfaces(project_root: Path, config: GzkitConfig | None = None) -> dict[Path, bytes]:

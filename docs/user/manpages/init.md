@@ -106,9 +106,11 @@ does not make a malformed or untrusted project hook authoritative.
 Running `gz init` on an already-initialized project enters **repair mode**:
 
 - Detects and creates any missing artifacts (skeleton files, governance dirs, manifest)
-- Re-syncs control surfaces
+- Re-syncs control surfaces, listing each file the sync changes; a tree already in sync is left untouched
 - Does not overwrite existing files
 - Does not require `--force`
+
+Every file repair writes appears in its output and in the `Repaired N artifact(s)` count. `gz init --dry-run` lists the same writes and makes none. The one limit: a dry run renders the sync plan against the tree as it stands, so for an artifact it would newly scaffold, its `Would scaffold` line stands in for that artifact's mirrors (GHI #1098).
 
 Use `--force` only when you need a full reinitialize (rewrites config, re-scaffolds everything).
 
