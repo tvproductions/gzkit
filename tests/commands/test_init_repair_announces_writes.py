@@ -56,8 +56,11 @@ def _route_to_a_local_skill() -> None:
     """
     local = Path(".gzkit/skills/local-scan/SKILL.md")
     local.parent.mkdir(parents=True)
+    # Valid canon, so the sync preflight passes and only the router row is at issue.
     local.write_text(
-        "---\nname: local-scan\ndescription: Repo-local scan.\n---\n\n# local-scan\n",
+        "---\nname: local-scan\ndescription: Repo-local scan.\nlifecycle_state: active\n"
+        "owner: gzkit-governance\nlast_reviewed: 2026-01-01\n"
+        'metadata:\n  skill-version: "0.1.0"\n---\n\n# local-scan\n',
         encoding="utf-8",
     )
     body = _ROUTER.read_text(encoding="utf-8")

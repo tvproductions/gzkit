@@ -107,6 +107,7 @@ Running `gz init` on an already-initialized project enters **repair mode**:
 
 - Detects and creates any missing artifacts (skeleton files, governance dirs, manifest)
 - Re-syncs control surfaces, listing each file the sync changes; a tree already in sync is left untouched
+- Refuses to sync when canonical skills fail the sync preflight: it reports what it already repaired, then exits 1 with the blockers and leaves every mirror unchanged. `gz init --force` runs the same preflight, because it re-copies the wheel's skills but keeps local ones (GHI #1100)
 - Does not overwrite existing files
 - Does not require `--force`
 

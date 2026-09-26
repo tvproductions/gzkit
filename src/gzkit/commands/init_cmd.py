@@ -34,6 +34,7 @@ from gzkit.commands.register import (
     warn_foundation_refused,
     warn_unreadable_refused,
 )
+from gzkit.commands.sync_guard import refuse_on_sync_blockers, report_sync_blockers
 from gzkit.config import GzkitConfig, PathConfig
 from gzkit.governance.trust_audits.session_green_gate import (
     configured_hooks_path,
@@ -54,6 +55,7 @@ from gzkit.personas import scaffold_core_personas
 from gzkit.rules import scaffold_core_rules
 from gzkit.skills import scaffold_core_skills
 from gzkit.sync import (
+    collect_canonical_sync_blockers,
     detect_project_name,
     detect_project_structure,
     generate_manifest,
@@ -901,7 +903,11 @@ def _repair_missing_artifacts(
             write_manifest(project_root, manifest, config)
             repaired.append(f"Regenerated {config.paths.manifest}")
 
-    repaired.extend(_repair_control_surfaces(project_root, config, dry_run=dry_run))
+    # Canon that fails preflight is never propagated to the mirrors (GHI #1100).
+    # The refusal comes after the summary, so every write made above is reported.
+    blockers = [] if dry_run else collect_canonical_sync_blockers(project_root, config)
+    if not blockers:
+        repaired.extend(_repair_control_surfaces(project_root, config, dry_run=dry_run))
 
     if repaired:
         if dry_run:
@@ -909,8 +915,10 @@ def _repair_missing_artifacts(
         for item in repaired:
             console.print(f"  {item}")
         console.print(f"\n[green]Repaired {len(repaired)} artifact(s).[/green]")
-    else:
+    elif not blockers:
         console.print("  All artifacts present. Nothing to repair.")
+    if blockers:
+        report_sync_blockers(blockers)
 
 
 def _setup_init_hooks(project_root: Path, config: GzkitConfig) -> None:
@@ -1151,7 +1159,10 @@ def init(
     # carry the canonical file.
     _scaffold_audit_thresholds(project_root)
 
-    # Sync control surfaces (including skill mirrors)
+    # Sync control surfaces (including skill mirrors). `--force` re-copies the
+    # wheel's skills but keeps local ones, so canon can still fail preflight here
+    # (GHI #1100).
+    refuse_on_sync_blockers(project_root, config)
     updated = sync_all(project_root, config)
     for path in updated:
         console.print(f"  Generated {path}")
@@ -1176,7 +1187,8 @@ def init(
     # a brand-new project failed `gz validate --surfaces` out of the box until
     # the operator ran a sync nobody told them about (GHI #908). The rules are on
     # disk by now, which is the state the comment above already anticipates for
-    # "subsequent gz init --repair and gz agent sync runs".
+    # "subsequent gz init --repair and gz agent sync runs". No second preflight:
+    # only rules and hooks were written since the one above, never skills.
     sync_all(project_root, config)
 
     # Record init event

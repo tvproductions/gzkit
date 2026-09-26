@@ -80,6 +80,7 @@ class TestManifestLocationConfiguration(unittest.TestCase):
                 "_repair_personas",
                 "_repair_templates",
                 "_repair_chores",
+                "collect_canonical_sync_blockers",
                 "sync_all",
             ):
                 patches.enter_context(patch(f"gzkit.commands.init_cmd.{name}", return_value=[]))

@@ -1,13 +1,16 @@
 """Tidy and sync control surfaces command implementations."""
 
+from pathlib import Path
+
 from rich.markup import escape
 
 from gzkit.commands.common import console, ensure_initialized, get_project_root
+from gzkit.commands.sync_guard import refuse_on_sync_blockers
 from gzkit.config import GzkitConfig
 from gzkit.ledger import Ledger
 from gzkit.settings_vault import vault_status
 from gzkit.skills import audit_skills
-from gzkit.sync import collect_canonical_sync_blockers, find_stale_mirror_paths, sync_all
+from gzkit.sync import find_stale_mirror_paths, sync_all
 from gzkit.validate import validate_all
 
 # Audit verdicts sync does not own. A stale review is a maintenance signal on
@@ -34,6 +37,24 @@ def _is_recoverable_stale_mirror_issue(path: str, message: str, config: GzkitCon
     return any(_is_path_within_root(path, root) for root in mirror_roots)
 
 
+def _post_sync_check(project_root: Path, config: GzkitConfig) -> None:
+    """Exit 1 when the skill audit still reports a blocking parity error after a sync."""
+    report = audit_skills(project_root, config)
+    blocking_errors = sorted(
+        [
+            issue
+            for issue in report.issues
+            if issue.blocking and issue.code not in _AUDIT_ONLY_CODES
+        ],
+        key=lambda issue: (issue.path, issue.message),
+    )
+    if blocking_errors:
+        console.print("\n[red]Sync post-check failed: unresolved skill parity errors.[/red]")
+        for issue in blocking_errors:
+            console.print(f"  [red]ERROR[/red] {escape(issue.path)}: {escape(issue.message)}")
+        raise SystemExit(1)
+
+
 def _run_agent_control_sync(dry_run: bool) -> None:
     """Execute control-surface regeneration flow."""
     config = ensure_initialized()
@@ -50,16 +71,7 @@ def _run_agent_control_sync(dry_run: bool) -> None:
         console.print(f"\n  ({len(planned)} path(s) planned)")
         return
 
-    preflight_blockers = collect_canonical_sync_blockers(project_root, config)
-    if preflight_blockers:
-        console.print("[red]Sync preflight failed: canonical skills state is corrupted.[/red]")
-        for blocker in preflight_blockers:
-            console.print(f"  - {escape(blocker)}")
-        console.print("\nRecovery:")
-        console.print("  1. Fix canonical skills under .gzkit/skills")
-        console.print("  2. Run: uv run gz skill audit --json")
-        console.print("  3. Re-run: uv run gz agent sync control-surfaces")
-        raise SystemExit(1)
+    refuse_on_sync_blockers(project_root, config)
 
     console.print("Syncing control surfaces...")
     updated = sync_all(project_root, config)
@@ -67,20 +79,7 @@ def _run_agent_control_sync(dry_run: bool) -> None:
     for path in updated:
         console.print(f"  Updated {path}")
 
-    report = audit_skills(project_root, config)
-    blocking_errors = sorted(
-        [
-            issue
-            for issue in report.issues
-            if issue.blocking and issue.code not in _AUDIT_ONLY_CODES
-        ],
-        key=lambda issue: (issue.path, issue.message),
-    )
-    if blocking_errors:
-        console.print("\n[red]Sync post-check failed: unresolved skill parity errors.[/red]")
-        for issue in blocking_errors:
-            console.print(f"  [red]ERROR[/red] {escape(issue.path)}: {escape(issue.message)}")
-        raise SystemExit(1)
+    _post_sync_check(project_root, config)
 
     stale_paths = find_stale_mirror_paths(project_root, config)
     if stale_paths:
@@ -151,8 +150,10 @@ def tidy(check_only: bool, fix: bool, dry_run: bool) -> None:
         if dry_run:
             console.print("\n  → [yellow]Dry run:[/yellow] would sync control surfaces.")
         else:
-            # Run sync to fix surface alignment
+            # Same guarded path as `gz agent sync control-surfaces` (GHI #1100).
+            refuse_on_sync_blockers(project_root, config)
             sync_all(project_root, config)
+            _post_sync_check(project_root, config)
             console.print("\n  [green]✓ Synced control surfaces.[/green]")
 
     if not result.errors and not orphan_obpis and not pending:
