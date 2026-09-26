@@ -67,8 +67,9 @@ emission, and the amendment-write path only.
   recorded under `## Tracked Defects` (never silently rewritten — that is an
   operator-judgment call); REQ-count drift is recorded as a tracked-defect note.
   **Requires `--attestor`.**
-- `--attestor "<name>"` — full name of the attesting human. Required with
-  `--apply`; without it, `--apply` fails with `--apply requires --attestor`.
+- `--attestor "<name>"` — attestor handle, never a real name. Required with
+  `--apply`; Defaults to `authorship.attestor_handle` in `.gzkit.json` when set (GHI #1036). With neither, `--apply` fails with
+  `--apply requires --attestor`.
 - `--dry-run` — preview the would-be amendments without writing the brief or
   recording an applied event.
 - `--json` — emit a machine-consumption payload (`brief_id`, `has_drift`,

@@ -18,6 +18,7 @@ from gzkit.cli.helpers import (
     add_json_flag,
     build_epilog,
 )
+from gzkit.cli.helpers.attestor_default import default_attestor_from_config
 from gzkit.cli.parser_handler_manifest import _lazy
 from gzkit.cli.parser_obpi import register_obpi_parsers
 
@@ -271,8 +272,9 @@ def _register_complexity_parsers(commands: argparse._SubParsersAction) -> None:
         "--attestor",
         dest="attestor",
         default=None,
-        help="Full name of the attesting human (required with --attest-intrinsic)",
+        help="Attestor handle, never a real name (required with --attest-intrinsic).",
     )
+    default_attestor_from_config(p_advise)
     p_advise.set_defaults(
         func=lambda a: _lazy("complexity_advise_cmd")(
             path=a.path,
@@ -891,7 +893,8 @@ def _register_adr_parsers(commands: argparse._SubParsersAction) -> None:
         choices=["completed", "validated", "closed"],
         help="Receipt event type (completed|validated|closed)",
     )
-    p_adr_emit.add_argument("--attestor", required=True, help="Identity of the attestor")
+    p_adr_emit.add_argument("--attestor", required=True, help="Identity of the attestor.")
+    default_attestor_from_config(p_adr_emit)
     p_adr_emit.add_argument(
         "--evidence-json",
         help="JSON with value_narrative, key_proof; Heavy adds attestation fields",

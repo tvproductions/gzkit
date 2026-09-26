@@ -11,7 +11,8 @@
     "design_root": "docs/design"
   },
   "authorship": {
-    "required_email_suffix": "@users.noreply.github.com"
+    "required_email_suffix": "@users.noreply.github.com",
+    "attestor_handle": "g0"
   },
   "smoke": {
     "required": true

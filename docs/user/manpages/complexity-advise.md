@@ -64,8 +64,8 @@ auto-fire hook) and is currently a no-op marker.
   ledger event. Headless invocations are refused (exit 1).
 - `--reason REASON` — Human-readable rationale for the intrinsic
   attestation (required with `--attest-intrinsic`).
-- `--attestor NAME` — Full name of the attesting human (required with
-  `--attest-intrinsic`).
+- `--attestor NAME` — Attestor handle, never a real name (required with
+  `--attest-intrinsic`). Defaults to `authorship.attestor_handle` in `.gzkit.json` when set (GHI #1036).
 - `--help`, `-h` — Show usage and exit 0.
 
 ## EXIT CODES

@@ -132,6 +132,16 @@ class AuthorshipConfig(BaseModel):
             "Unset means no policy is declared and the scope is a no-op."
         ),
     )
+    attestor_handle: str | None = Field(
+        default=None,
+        pattern=r"^\S+$",
+        description=(
+            "The handle an omitted `--attestor` records, on the verbs whose attestor is "
+            "an identity (GHI #1036). A handle, never a real name. Unset keeps "
+            "`--attestor` exactly as required as it was. `gz init` never scaffolds "
+            "gzkit's own value here."
+        ),
+    )
 
 
 class SmokeConfig(BaseModel):

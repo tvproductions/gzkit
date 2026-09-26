@@ -16,7 +16,7 @@ gz obpi complete OBPI-X.Y.Z-NN --attestor NAME --attestation-text TEXT
 | Argument | Description |
 |----------|-------------|
 | `OBPI-X.Y.Z-NN` | OBPI identifier to complete |
-| `--attestor NAME` | Identity of the attestor (required) |
+| `--attestor NAME` | Identity of the attestor. Defaults to `authorship.attestor_handle` in `.gzkit.json` when set (GHI #1036); required otherwise |
 | `--attestation-text TEXT` | Substantive attestation text (required) |
 | `--implementation-summary TEXT` | Implementation summary (reads from brief if omitted) |
 | `--key-proof TEXT` | Key proof text (reads from brief if omitted) |

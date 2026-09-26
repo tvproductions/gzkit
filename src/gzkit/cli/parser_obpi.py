@@ -26,6 +26,7 @@ from gzkit.cli.helpers import (
     add_json_flag,
     build_epilog,
 )
+from gzkit.cli.helpers.attestor_default import default_attestor_from_config
 from gzkit.cli.parser_acceptance import acceptance_handler, configure_acceptance_parser
 from gzkit.cli.parser_handler_manifest import _lazy
 from gzkit.lock_manager import DEFAULT_LOCK_TTL_MINUTES
@@ -91,7 +92,8 @@ def register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         choices=["completed", "validated"],
         help="Receipt event type (completed|validated)",
     )
-    p_obpi_emit.add_argument("--attestor", required=True, help="Identity of the attestor")
+    p_obpi_emit.add_argument("--attestor", required=True, help="Identity of the attestor.")
+    default_attestor_from_config(p_obpi_emit)
     p_obpi_emit.add_argument(
         "--evidence-json",
         help="JSON with value_narrative, key_proof; Heavy adds attestation fields",
@@ -154,8 +156,9 @@ def register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
     )
     p_obpi_pipeline.add_argument(
         "--attestor",
-        help="Attestor identity for Stage 5 (e.g. g0 or agent:<name>)",
+        help="Attestor identity for Stage 5 (e.g. g0 or agent:<name>).",
     )
+    default_attestor_from_config(p_obpi_pipeline)
     p_obpi_pipeline.add_argument(
         "--evidence-json",
         dest="evidence_json",
@@ -238,8 +241,9 @@ def register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
     p_brief_drift.add_argument(
         "--attestor",
         default=None,
-        help="Full name of the attesting human (required with --apply)",
+        help="Attestor handle, never a real name (required with --apply).",
     )
+    default_attestor_from_config(p_brief_drift)
     add_dry_run_flag(p_brief_drift)
     add_json_flag(p_brief_drift)
     p_brief_drift.set_defaults(
@@ -642,9 +646,8 @@ def register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         ),
     )
     p_obpi_complete.add_argument("obpi", help="OBPI identifier (e.g. OBPI-0.0.14-01)")
-    p_obpi_complete.add_argument(
-        "--attestor", required=True, help="Identity of the attestor (required)"
-    )
+    p_obpi_complete.add_argument("--attestor", required=True, help="Identity of the attestor.")
+    default_attestor_from_config(p_obpi_complete)
     p_obpi_complete.add_argument(
         "--attestation-text",
         dest="attestation_text",

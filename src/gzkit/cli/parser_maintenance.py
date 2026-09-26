@@ -19,6 +19,7 @@ from gzkit.cli.helpers import (
     add_json_flag,
     build_epilog,
 )
+from gzkit.cli.helpers.attestor_default import default_attestor_from_config
 from gzkit.cli.parser_handler_manifest import _lazy
 from gzkit.cli.parser_handoff import register_handoff_parsers
 from gzkit.ledger_corrections import CAUSES, DISPOSITIONS
@@ -865,6 +866,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         default="",
         help="With --recalibrate: who attests the band/floor change (required).",
     )
+    default_attestor_from_config(p_validate)
     p_validate.add_argument(
         "--reason",
         dest="recalibrate_reason",

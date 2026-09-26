@@ -9,6 +9,7 @@ from typing import Any
 
 from gzkit import __version__
 from gzkit.cli.helpers import add_common_flags
+from gzkit.cli.helpers.attestor_default import apply_configured_attestor
 from gzkit.cli.helpers.exit_codes import exit_code_for
 from gzkit.cli.parser import StableArgumentParser
 from gzkit.cli.parser_arb import register_arb_parsers
@@ -141,6 +142,7 @@ def main(argv: list[str] | None = None) -> int:
     parser = _get_parser()
     try:
         args = parser.parse_args(argv)
+        apply_configured_attestor(args)
     except SystemExit as exc:
         return int(exc.code) if isinstance(exc.code, int) else 1
 

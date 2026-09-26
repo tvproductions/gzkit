@@ -54,6 +54,7 @@ from typing import Any, NoReturn
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit.attestor import attestor_hint
 from gzkit.commands.common import get_project_root
 from gzkit.content.corpus_store import load_corpus
 from gzkit.content.ownership import (
@@ -115,7 +116,7 @@ def _refuse_blank_attestation(
         "named attestor and a reason, fail-closed, with no unchanged-canon exemption "
         "(REQ-0.35.0-04-04; AGENTS.md § Operator Doctrine). Nothing written.\n"
         f"  Retry with `gz content {verb} {surface} --section {section} "
-        '--attestor "<attestor-handle>" --reason "<why>"`.',
+        f'--attestor "{attestor_hint()}" --reason "<why>"`.',
         file=sys.stderr,
     )
     sys.exit(1)
@@ -322,7 +323,7 @@ def _refuse_surface_identity(
     if declared is not None:
         retry = (
             f"  Retry with `gz content {verb} {declared} --section {section} "
-            '--attestor "<attestor-handle>" --reason "<why>"`.'
+            f'--attestor "{attestor_hint()}" --reason "<why>"`.'
         )
     else:
         retry = (

@@ -38,7 +38,7 @@ operator's verbatim `attestation_text` in `--evidence-json` (recorded as
   - `human_attestation: true`
   - `attestation_text` (string)
   - `attestation_date` (`YYYY-MM-DD`)
-  and `--attestor` uses `human:<name>` format.
+  and `--attestor` records a handle, never a real name. Defaults to `authorship.attestor_handle` in `.gzkit.json` when set (GHI #1036); required otherwise.
 - Appends `obpi_receipt_emitted` to the ledger (unless `--dry-run`).
   Completed receipts write machine-readable completion semantics
   (`obpi_completion`) plus proof metadata for lifecycle reconciliation.

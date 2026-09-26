@@ -21,6 +21,7 @@ gz init [OPTIONS]
 | `--update` | flag | — | Version-aware refresh of canonical surfaces from the installed wheel; preserves operator edits via marker detection. Mutually exclusive with `--force` |
 | `--no-skeleton` | flag | — | Skip Python project skeleton (pyproject.toml, src/, tests/) |
 | `--yes` | flag | — | Auto-accept registry-merge prompts during repair |
+| `--attestor-handle` | string | — | Record `authorship.attestor_handle` in `.gzkit.json`: the handle an omitted `--attestor` records on the verbs that default it. A handle with no spaces, never a real name. On first init without the flag, an interactive terminal is asked; otherwise none is set, and gzkit's own handle is never scaffolded. Mutually exclusive with `--update` (GHI #1036) |
 | `--dry-run` | flag | — | Show actions without writing |
 
 ---
@@ -108,6 +109,7 @@ Running `gz init` on an already-initialized project enters **repair mode**:
 - Detects and creates any missing artifacts (skeleton files, governance dirs, manifest)
 - Re-syncs control surfaces, listing each file the sync changes; a tree already in sync is left untouched
 - Refuses to sync when canonical skills fail the sync preflight: it reports what it already repaired, then exits 1 with the blockers and leaves every mirror unchanged. `gz init --force` runs the same preflight, because it re-copies the wheel's skills but keeps local ones (GHI #1100)
+- With `--attestor-handle`, sets `authorship.attestor_handle` in `.gzkit.json` and changes no other key (listed like every other repair write)
 - Does not overwrite existing files
 - Does not require `--force`
 

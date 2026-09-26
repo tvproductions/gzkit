@@ -46,6 +46,7 @@ import sys
 import unicodedata
 from datetime import UTC, datetime
 
+from gzkit.attestor import attestor_hint
 from gzkit.commands.common import get_project_root
 from gzkit.commands.content._drift import warn_on_rendition_drift
 from gzkit.content.corpus_store import append_entry, load_corpus
@@ -280,7 +281,7 @@ def content_retire_cmd(
             "GHI #635); nothing written.\n"
             f"{_live_id_hint(corpus, surface)}\n"
             f"  Retry with `gz content retire {surface} --entry <id> "
-            '--reason "<why>" --attestor "<attestor-handle>"`.',
+            f'--reason "<why>" --attestor "{attestor_hint()}"`.',
             file=sys.stderr,
         )
         sys.exit(1)
@@ -292,7 +293,7 @@ def content_retire_cmd(
             "(GHI #635); nothing written.\n"
             f"{_live_id_hint(corpus, surface)}\n"
             f"  Retry with `gz content retire {surface} --entry <id> "
-            '--reason "<why>" --attestor "<attestor-handle>"`.',
+            f'--reason "<why>" --attestor "{attestor_hint()}"`.',
             file=sys.stderr,
         )
         sys.exit(1)
@@ -317,7 +318,7 @@ def content_retire_cmd(
             "retirement (AGENTS.md § Operator Doctrine; the ATTESTATION GRANULARITY "
             "FOR THE CONTENT SURFACE ruling); nothing written.\n"
             f"  Retry with `gz content retire {surface} --entry {entry_id} "
-            '--reason "<why>" --attestor "<attestor-handle>"`.',
+            f'--reason "<why>" --attestor "{attestor_hint()}"`.',
             file=sys.stderr,
         )
         sys.exit(1)
@@ -337,7 +338,7 @@ def content_retire_cmd(
             "both reject an empty one (.claude/rules/guardrail-feedback-prose.md); "
             "nothing written.\n"
             f"  Retry with `gz content retire {surface} --entry {entry_id} "
-            '--reason "<why>" --attestor "<attestor-handle>"`.',
+            f'--reason "<why>" --attestor "{attestor_hint()}"`.',
             file=sys.stderr,
         )
         sys.exit(1)
@@ -369,7 +370,7 @@ def content_retire_cmd(
             "named --attestor (AGENTS.md § Operator Doctrine; the ATTESTATION "
             "GRANULARITY FOR THE CONTENT SURFACE ruling); nothing written.\n"
             f"  Retry with `gz content retire {surface} --entry {entry_id} "
-            '--reason "<why>" --attestor "<attestor-handle>"`.',
+            f'--reason "<why>" --attestor "{attestor_hint()}"`.',
             file=sys.stderr,
         )
         sys.exit(1)

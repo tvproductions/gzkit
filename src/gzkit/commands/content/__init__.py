@@ -10,6 +10,8 @@ from __future__ import annotations
 import argparse
 from typing import Any
 
+from gzkit.cli.helpers.attestor_default import default_attestor_from_config
+
 
 def _build_epilog(examples: list[str]) -> str:
     from gzkit.cli.helpers import build_epilog  # noqa: PLC0415
@@ -380,6 +382,7 @@ def _register_retire(content_commands: argparse._SubParsersAction) -> None:
         default="",
         help="Operator retiring; required when retirement moves invariant-tier liveness.",
     )
+    default_attestor_from_config(p)
     p.add_argument(
         "--origin",
         default="cli:content-retire",
@@ -427,6 +430,7 @@ def _register_unown(content_commands: argparse._SubParsersAction) -> None:
         default="",
         help="Operator un-owning the section; required and never empty.",
     )
+    default_attestor_from_config(p)
     p.add_argument(
         "--reason",
         default="",
@@ -473,6 +477,7 @@ def _register_own(content_commands: argparse._SubParsersAction) -> None:
         default="",
         help="Operator attesting the ownership change; required and never empty.",
     )
+    default_attestor_from_config(p)
     p.add_argument(
         "--reason",
         default="",
@@ -579,6 +584,7 @@ def _register_commit(content_commands: argparse._SubParsersAction) -> None:
         default="",
         help="Operator attesting the corpus delta; required only if canon moved.",
     )
+    default_attestor_from_config(p)
     p.add_argument(
         "--attestation-text",
         dest="attestation_text",

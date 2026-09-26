@@ -35,7 +35,7 @@ from gzkit.commands.register import (
     warn_unreadable_refused,
 )
 from gzkit.commands.sync_guard import refuse_on_sync_blockers, report_sync_blockers
-from gzkit.config import GzkitConfig, PathConfig
+from gzkit.config import AuthorshipConfig, GzkitConfig, PathConfig
 from gzkit.governance.trust_audits.session_green_gate import (
     configured_hooks_path,
     declared_hook_types,
@@ -819,6 +819,84 @@ def _repair_control_surfaces(
     return [f"Synced {path}" for path in changes]
 
 
+# A handle, never a real name: whitespace is what makes a value name-shaped.
+_HANDLE_PATTERN = re.compile(r"^\S+$")
+
+
+def _checked_attestor_handle(handle: str | None) -> str | None:
+    """Return ``handle`` if it is a valid attestor handle; refuse a name-shaped one."""
+    if handle is None or _HANDLE_PATTERN.match(handle):
+        return handle
+    console.print(
+        "[red]Error:[/red] --attestor-handle takes a handle with no spaces, never a real "
+        "name (AGENTS.md § Execution Rules). Nothing written."
+    )
+    sys.exit(1)
+
+
+def _checked_init_flags(*, update: bool, force: bool, attestor_handle: str | None) -> str | None:
+    """Refuse contradictory init flags; return the validated attestor handle."""
+    if update and force:
+        console.print("[red]Error:[/red] --update and --force are mutually exclusive.")
+        sys.exit(1)
+    if update and attestor_handle is not None:
+        console.print(
+            "[red]Error:[/red] --attestor-handle and --update are mutually exclusive; "
+            "record the handle with `gz init --attestor-handle <handle>`."
+        )
+        sys.exit(1)
+    return _checked_attestor_handle(attestor_handle)
+
+
+def _first_init_authorship(attestor_handle: str | None) -> AuthorshipConfig:
+    """Return the authorship block a first init writes, and report the handle.
+
+    gzkit's own handle is never scaffolded: the value comes from this project's
+    operator, by flag or prompt, or stays unset (GHI #1036).
+    """
+    handle = attestor_handle if attestor_handle is not None else _prompt_attestor_handle()
+    if handle:
+        console.print(f"  Recorded attestor handle: {handle}")
+    else:
+        console.print("  No attestor handle set; `gz init --attestor-handle <handle>` records one.")
+    return AuthorshipConfig(attestor_handle=handle)
+
+
+def _prompt_attestor_handle() -> str | None:
+    """Ask for the attestor handle on an interactive first init; None when skipped.
+
+    Asked only when both streams are a terminal, so a scripted or captured init
+    never blocks on input (GHI #1036).
+    """
+    if not (sys.stdin.isatty() and sys.stdout.isatty()):
+        return None
+    while True:
+        answer = input(
+            "Attestor handle an omitted --attestor records "
+            "(a handle, never a real name; blank to skip): "
+        ).strip()
+        if not answer or _HANDLE_PATTERN.match(answer):
+            return answer or None
+        console.print("  A handle has no spaces.")
+
+
+def _repair_attestor_handle(project_root: Path, handle: str | None, *, dry_run: bool) -> list[str]:
+    """Record ``handle`` in `.gzkit.json`, changing that one key and nothing else."""
+    if handle is None:
+        return []
+    config_path = project_root / ".gzkit.json"
+    data = json.loads(config_path.read_text(encoding="utf-8"))
+    authorship = data.setdefault("authorship", {})
+    if authorship.get("attestor_handle") == handle:
+        return []
+    if dry_run:
+        return [f"Would set authorship.attestor_handle in .gzkit.json to {handle}"]
+    authorship["attestor_handle"] = handle
+    GzkitConfig.model_validate(data)
+    config_path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+    return [f"Set authorship.attestor_handle in .gzkit.json to {handle}"]
+
+
 def _repair_missing_artifacts(
     project_root: Path,
     config: GzkitConfig,
@@ -826,6 +904,7 @@ def _repair_missing_artifacts(
     no_skeleton: bool = False,
     dry_run: bool = False,
     yes: bool = False,
+    attestor_handle: str | None = None,
 ) -> None:
     """Detect and repair missing artifacts on an already-initialized project.
 
@@ -835,6 +914,7 @@ def _repair_missing_artifacts(
     repaired: list[str] = []
 
     console.print(f"Repairing [bold]{project_name}[/bold]...")
+    repaired.extend(_repair_attestor_handle(project_root, attestor_handle, dry_run=dry_run))
 
     # Repair project skeleton
     if not no_skeleton:
@@ -1003,6 +1083,7 @@ def init(
     no_skeleton: bool = False,
     yes: bool = False,
     update: bool = False,
+    attestor_handle: str | None = None,
 ) -> None:
     """Initialize gzkit in the current project.
 
@@ -1018,9 +1099,9 @@ def init(
       (see :func:`_detect_refresh_state`). Reports conflicts and exits 3 if
       any unresolved EDITED entries remain. Mutually exclusive with ``--force``.
     """
-    if update and force:
-        console.print("[red]Error:[/red] --update and --force are mutually exclusive.")
-        sys.exit(1)
+    attestor_handle = _checked_init_flags(
+        update=update, force=force, attestor_handle=attestor_handle
+    )
 
     project_root = get_project_root()
     gzkit_dir = project_root / ".gzkit"
@@ -1042,7 +1123,12 @@ def init(
     if gzkit_dir.exists() and not force:
         config = GzkitConfig.load(project_root / ".gzkit.json")
         _repair_missing_artifacts(
-            project_root, config, no_skeleton=no_skeleton, dry_run=dry_run, yes=yes
+            project_root,
+            config,
+            no_skeleton=no_skeleton,
+            dry_run=dry_run,
+            yes=yes,
+            attestor_handle=attestor_handle,
         )
         return
 
@@ -1060,6 +1146,8 @@ def init(
         console.print(f"  Would create {gzkit_dir}")
         console.print("  Would create .gzkit/ledger.jsonl")
         console.print("  Would create .gzkit.json")
+        if attestor_handle is not None:
+            console.print(f"  Would record attestor handle: {attestor_handle}")
         console.print("  Would generate .gzkit/manifest.json")
         console.print("  Would create governance directories (prd, constitutions, adr)")
         if not no_skeleton:
@@ -1099,7 +1187,12 @@ def init(
         tests_root=tests_root,
         docs_root=structure.get("docs_root", "docs"),
     )
-    config = GzkitConfig(mode=mode_literal, paths=paths, project_name=project_name)
+    config = GzkitConfig(
+        mode=mode_literal,
+        paths=paths,
+        project_name=project_name,
+        authorship=_first_init_authorship(attestor_handle),
+    )
     config.save(project_root / ".gzkit.json")
 
     # Generate manifest

@@ -120,6 +120,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
                 "gz init --force --dry-run",
                 "gz init --update",
                 "gz init --update --dry-run",
+                "gz init --attestor-handle g0",
             ]
         ),
     )
@@ -147,6 +148,12 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
         default=False,
         help="Refresh canonical surfaces from wheel; preserve operator edits.",
     )
+    p_init.add_argument(
+        "--attestor-handle",
+        dest="attestor_handle",
+        default=None,
+        help="Handle an omitted --attestor records; never a real name.",
+    )
     add_force_flag(p_init)
     add_dry_run_flag(p_init)
     p_init.set_defaults(
@@ -157,6 +164,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
             no_skeleton=a.no_skeleton,
             yes=a.yes,
             update=a.update,
+            attestor_handle=a.attestor_handle,
         )
     )
 
