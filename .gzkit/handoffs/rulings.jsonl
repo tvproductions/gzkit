@@ -1086,3 +1086,13 @@
 {"ts": "2026-09-26T07:51:06Z", "source": "20260926T075059Z-attestor-handle-configured-skills-reviewed.md", "text": "Settings layering, verbatim: \"gzkit has a settings and adopters will too. we need to bear in mind that gzkit is building itself. so, we may beed scaffolding settings and adopter settings\"."}
 {"ts": "2026-09-26T07:51:06Z", "source": "20260926T075059Z-attestor-handle-configured-skills-reviewed.md", "text": "Verbatim: \"fix 1036\" (bb4d8d40e)."}
 {"ts": "2026-09-26T07:51:06Z", "source": "20260926T075059Z-attestor-handle-configured-skills-reviewed.md", "text": "Attestor default scope, verbatim: \"All but the 7 human-act (Recommended)\"."}
+{"ts": "2026-09-26T13:14:38Z", "source": "20260926T131431Z-complexity-ghis-fixed-skills-reviewed.md", "text": "Verbatim: \"fix the encoding defect directly\" (151cb0f89)."}
+{"ts": "2026-09-26T13:14:38Z", "source": "20260926T131431Z-complexity-ghis-fixed-skills-reviewed.md", "text": "Verbatim: \"fix the tempfile gap too\" (f086619c8)."}
+{"ts": "2026-09-26T13:14:38Z", "source": "20260926T131431Z-complexity-ghis-fixed-skills-reviewed.md", "text": "Verbatim: \"review gz-cli-audit and gz-competitor-radar\" (6aadee271)."}
+{"ts": "2026-09-26T13:14:38Z", "source": "20260926T131431Z-complexity-ghis-fixed-skills-reviewed.md", "text": "Verbatim: \"review gz-complexity-advisor and gz-complexity-guide\" (0b6e2a22d)."}
+{"ts": "2026-09-26T13:14:38Z", "source": "20260926T131431Z-complexity-ghis-fixed-skills-reviewed.md", "text": "Verbatim: \"file a ghi for each\" (GHIs #1102, #1103, #1104, #1105)."}
+{"ts": "2026-09-26T13:14:38Z", "source": "20260926T131431Z-complexity-ghis-fixed-skills-reviewed.md", "text": "Verbatim: \"fix 1104\" (3fdab739f)."}
+{"ts": "2026-09-26T13:14:38Z", "source": "20260926T131431Z-complexity-ghis-fixed-skills-reviewed.md", "text": "Verbatim: \"fix 1105\" (c9e1e68fa)."}
+{"ts": "2026-09-26T13:14:38Z", "source": "20260926T131431Z-complexity-ghis-fixed-skills-reviewed.md", "text": "Verbatim: \"fix 1102\" (80ea34ef5)."}
+{"ts": "2026-09-26T13:14:38Z", "source": "20260926T131431Z-complexity-ghis-fixed-skills-reviewed.md", "text": "Verbatim: \"fix 1103 with an explicit unclassified archetype\" (07d13ee36)."}
+{"ts": "2026-09-26T13:14:38Z", "source": "20260926T131431Z-complexity-ghis-fixed-skills-reviewed.md", "text": "REQ-0.0.29-02-06 record reconciliation, verbatim: \"Amend in place (Recommended)\" (dated amendment note on the REQ line; @covers kept)."}
