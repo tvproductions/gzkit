@@ -115,6 +115,13 @@ What the Opus 5.5 evidence adds:
   intent, including one instance of a fabricated user quote passed to a
   subagent, which auto mode blocked (§ 6.3.1). `--attestation-text` carries
   the operator's words only.
+- **Never ask an agent to reproduce its hidden reasoning.** The card's
+  distillation classifiers, which cover "attempting to extract a model's
+  hidden reasoning", block on Opus 5.5 with no fallback model (§ 1.5). A
+  prompt, skill or review frame that asks for thinking verbatim in the reply
+  risks a hard block mid-run. Ask for the conclusion and its evidence
+  instead. An audit on 2026-09-25 found no such ask on any prompt surface
+  (GHI #1097).
 
 ### Fable 5.1 profile (subordinate)
 
@@ -199,28 +206,36 @@ DIRECTIVE](agent-contract-rationale.md#why-1011-travel-with-the-prime-directive-
 for the consequence for gzkit's ownership doctrine. (GHI #750, re-sourced
 under GHI #1019.)
 
-> **Operational note.** Opus 5.5 runs safety classifiers (biology,
-> cybersecurity, reasoning extraction); a flagged request can be retried on a
-> fallback model, Claude Opus 4.8. In the card's adaptive coding-injection
-> evaluation 64 % of valid responses were fallback-served, and those carried
-> the successful attacks (§ 5.2.2.1). A long pipeline run can be silently
-> served by an older model: treat an unexplained quality dip mid-run as a
-> possible fallback, not only as a prompt defect.
+> **Operational note.** Opus 5.5 runs blocking safety classifiers, and each
+> routes a flagged request differently (§ 1.5):
+>
+> | Classifier | On a block |
+> |---|---|
+> | Cyber misuse | falls back to Claude Opus 4.8 |
+> | Research biology (CB) | falls back to Claude Opus 5 |
+> | Frontier-LLM development (such as accelerator kernels) | falls back to Claude Opus 5 |
+> | Conventional weapons, high-yield explosives | blocks, no fallback |
+> | Distillation (such as extracting hidden reasoning) | blocks, no fallback |
+>
+> This applies to first-party products and to API developers who opted in;
+> other platforms may differ (§ 1.5). In the card's adaptive coding-injection
+> evaluation 64 % of valid responses were served by the cyber fallback, and
+> those carried the successful attacks (§ 5.2.2.1). In Claude Code a flagged
+> session continues on the fallback model until switched back with `/model`,
+> and auto-switching can be turned off in settings (*Getting the most out of
+> Opus 5.5*, claude.dev, 2026-09-22). A long pipeline run can therefore sit
+> on an older model for the rest of the session: treat an unexplained quality
+> dip mid-run as a possible fallback, not only as a prompt defect.
 
-## Explicit thinking prompts
+## Thinking is controlled by effort, not by prompt
 
-Neither current Anthropic prompting guide lists per-turn thinking prompts;
-effort is the documented control. The two below remain usable as a per-turn
-nudge and are retained from the prior revision:
-
-- *"Think carefully and step-by-step"* — hard reasoning, ambiguous
-  scope, cross-surface tradeoffs, doctrine collisions.
-- *"Prioritize responding quickly"* — light tasks where deliberation is
-  pure overhead.
-
-These prompts override the model's adaptive default for the prompted
-turn. They are not a substitute for the effort-level default — they are
-the per-turn dial on top of it.
+Opus 5.5 always thinks before replying, and effort is the documented control
+(§ Adaptive regulation). Per-turn thinking prompts are retired: *"Think
+carefully and step-by-step"* and *"Prioritize responding quickly"*, carried
+over from earlier revisions, are not listed by either current Anthropic
+prompting guide. The guide measures lowering effort as reducing thinking more
+reliably than a prompt instruction. To get more deliberation, raise effort for
+the turn or the subagent; to get less, lower it (GHI #1097).
 
 ## Model Selection
 
@@ -244,7 +259,7 @@ section names the Claude-Code-specific calibration.
 
 ## Recalibration on model change
 
-Effort defaults and thinking prompts are **model-specific and expire**.
+Effort defaults are **model-specific and expire**.
 This page once stayed pinned to a superseded model for three generations
 before the current-card evidence inverted its central rule — treat every value here as
 carrying an implicit "as measured on the named model" and re-derive on
@@ -252,8 +267,8 @@ each frontier release rather than inheriting.
 
 - Prompts authored under 4.6 assumptions ("ultrathink", fixed
   thinking-token budgets, "extended thinking" toggles) are inert or
-  counter-productive under adaptive regulation; the per-turn thinking
-  prompts above are the supported shape.
+  counter-productive under adaptive regulation; effort is the supported
+  control (§ Thinking is controlled by effort, not by prompt).
 - Prompts authored for earlier generations should be re-read for scope
   discipline — both current Anthropic models expand task scope at higher
   effort by default — and for legacy anti-laziness or verification
@@ -303,6 +318,16 @@ peak. Retired with the old card: its effort table, the thinking-disable rule,
 its fallback rate, and its constraint-adherence comparison. Also retired: two
 quotations the page attributed to the old card's § 8.4, which the retained
 card's text does not contain. Lineage in `rule-version-history.md`.
+
+Corrected 2026-09-25 (GHI #1097): the classifier-fallback note re-derived
+from card § 1.5, which routes cyber blocks to Opus 4.8, biology and
+frontier-LLM blocks to Opus 5, and weapons and distillation blocks to no
+fallback; the note had named Opus 4.8 for all of them. Added the
+hidden-reasoning prohibition from the same section. Retired the two per-turn
+thinking prompts carried from earlier revisions in favor of effort. The
+Claude Code switch-back behaviour is sourced to Anthropic's *Getting the most
+out of Opus 5.5* post (claude.dev, 2026-09-22), a secondary source that cites
+no evals; its performance anecdote is not adopted.
 
 Re-sourced 2026-09-17 (GHI #934, #943): the Fable section moved from the
 Claude Fable 5 / Mythos 5 card (2026-06-09, rotated out) to the Claude

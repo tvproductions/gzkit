@@ -7,9 +7,9 @@
 
 # Model Selection (gzkit)
 
-<!-- rule-version: 0.6.2 -->
+<!-- rule-version: 0.6.3 -->
 
-> **Rule version:** `0.6.2` — the Claude model mapping follows the current catalog: `opus` → `claude-opus-5-5`, `fable` → `claude-fable-5-1` (GHI #1089); routing policy is unchanged. Prior history: [Rule Version History](../../docs/governance/rule-version-history.md#model-selectionmd).
+> **Rule version:** `0.6.3` — the `effort: max` row no longer names extended thinking, which Opus 5.5 does not toggle (GHI #1097); routing policy is unchanged. Prior history: [Rule Version History](../../docs/governance/rule-version-history.md#model-selectionmd).
 
 ## Operative claims (binding)
 
@@ -59,7 +59,7 @@ Subagents use effort directives, not model names. The Agent tool maps effort →
 - `effort: light` → Haiku (fast, bounded tasks)
 - `effort: high` → Sonnet (moderate complexity, structured output)
 - `effort: xhigh` → Opus (hard problems, novel design, unbounded reasoning)
-- `effort: max` → Opus + extended thinking (genuinely hard; use sparingly)
+- `effort: max` → Opus at `max` effort (genuinely hard; use sparingly). Thinking is always on; effort sets its depth, and no prompt or toggle turns it on
 
 **Rule:** Prompt the subagent with the effort level needed to close the decision, not the effort level that would be "nice to have."
 

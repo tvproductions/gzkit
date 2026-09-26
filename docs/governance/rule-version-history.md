@@ -527,6 +527,15 @@ Lifted 2026-08-29 at version `0.2.0` (rule now at `0.3.0`).
 
 ## `model-selection.md`
 
+### Changed 2026-09-25 at version `0.6.3` (GHI #1097)
+
+The `effort: max` row read *"Opus + extended thinking"*. Opus 5.5 always
+thinks and effort sets how much (`docs/governance/opus-tuning.md` § Adaptive
+regulation), so the row now names `max` effort. Routing policy is unchanged.
+Prior marker, verbatim:
+
+> **Rule version:** `0.6.2` — the Claude model mapping follows the current catalog: `opus` → `claude-opus-5-5`, `fable` → `claude-fable-5-1` (GHI #1089); routing policy is unchanged.
+
 ### Changed 2026-09-24 at version `0.6.2` (GHI #1089)
 
 The Claude mapping moved to the current catalog: `opus` → `claude-opus-5-5`

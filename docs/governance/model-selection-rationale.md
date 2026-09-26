@@ -11,5 +11,5 @@ Every decision made by a lower model frees tokens for a higher model to spend on
 
 ## See also
 
-- `docs/governance/opus-tuning.md` — per-turn thinking and effort tuning within Opus
+- `docs/governance/opus-tuning.md` — effort tuning within Opus
 - `docs/governance/agent-contract-rationale.md` — context and token economy rationale
