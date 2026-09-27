@@ -15,10 +15,10 @@ no-flag ``gz check`` never reached it, and two non-compliant commits reached
 ``origin`` with every gate green (2026-09-17, and ``84ea8e435`` on 2026-09-20).
 Both were found by running the validator by hand while checking something else.
 
-Pre-commit cannot host this check: the validator scans HEAD, which at
-pre-commit time is still the previous commit. ``gz check`` runs at pre-push,
-where HEAD exists and the commit is still amendable, so that is the moment the
-obligation can actually bind.
+Pre-commit cannot host this check: the commit being made does not exist yet.
+``gz check`` runs at pre-push, where every unpushed commit exists and is still
+amendable, so that is the moment the obligation can actually bind. Which
+commits it reads is ``test_commit_trailers_pushed_range.py``'s subject.
 """
 
 from __future__ import annotations

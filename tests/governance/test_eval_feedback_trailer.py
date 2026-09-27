@@ -72,7 +72,7 @@ class TestEvalFeedbackTrailerValidation(unittest.TestCase):
     @covers("REQ-0.0.26-04-04")
     def test_fails_rule_edit_closing_eval_feedback_ghi_without_trailer(self) -> None:
         """Commit touching .gzkit/rules/ + closes eval-feedback GHI, no trailer → error."""
-        # Use _head_commit_message_and_files to inject a synthetic commit state so
+        # Use _pushable_commits to inject a synthetic commit state so
         # real git is not needed for the eval-feedback branch, and patch gh only.
         eval_feedback_response = '{"labels":[{"name":"eval-feedback"}]}'
         fake_head = (
@@ -84,8 +84,8 @@ class TestEvalFeedbackTrailerValidation(unittest.TestCase):
             _quick_init()
             with (
                 patch(
-                    "gzkit.commands.validate_commit_trailers._head_commit_message_and_files",
-                    return_value=fake_head,
+                    "gzkit.commands.validate_commit_trailers._pushable_commits",
+                    return_value=[("abc1234", *fake_head)],
                 ),
                 patch(
                     "gzkit.commands.validate_commit_trailers.subprocess.run",
@@ -116,8 +116,8 @@ class TestEvalFeedbackTrailerValidation(unittest.TestCase):
             _quick_init()
             with (
                 patch(
-                    "gzkit.commands.validate_commit_trailers._head_commit_message_and_files",
-                    return_value=fake_head,
+                    "gzkit.commands.validate_commit_trailers._pushable_commits",
+                    return_value=[("abc1234", *fake_head)],
                 ),
                 patch(
                     "gzkit.commands.validate_commit_trailers.subprocess.run",

@@ -119,14 +119,21 @@ ADRs using the legacy fail-closed requirements template.
 
 ### `--commit-trailers`
 
-Flags HEAD commits that touch `src/` or `tests/` without a `Task:` trailer.
-The trailer format is `Task: TASK-X.Y.Z-NN-MM-PP` and provides the
+Flags commits that touch `src/` or `tests/` without a `Task:` trailer. The
+trailer is `Task: TASK-X.Y.Z-NN-MM-PP` for OBPI-scoped work or
+`Task: TASK-<slug>-#<ghi>` for direct-fix work, and provides the
 execution-level link from a code change back to the governing REQ. Added
-under GHI-160 Phase 6 as an advisory guard against the TASK-registry
-bypass pattern observed across GHI-141 through GHI-156.
+under GHI-160 Phase 6 against the TASK-registry bypass pattern observed
+across GHI-141 through GHI-156; a default scope of `gz check`, and so of the
+pre-push gate, since GHI #1017. A rule-edit commit that closes an
+`eval-feedback` GHI must also carry `Eval-feedback-source:`.
 
-Non-code commits (docs-only, config-only) and commits with a valid
-trailer pass the check. The scope scans HEAD only.
+The scope reads every commit the next push publishes (`@{upstream}..HEAD`),
+so a non-conforming commit is caught even with a non-code commit on top of
+it (GHI #1017). With no upstream (an untracked branch, CI's detached
+checkout) it reads HEAD alone. Commits already on the upstream are not
+re-flagged. Non-code commits (docs-only, config-only) and commits with a
+valid trailer pass the check.
 
 ### `--documents`
 
