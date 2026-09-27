@@ -28,7 +28,7 @@ Pool
 gzkit cannot safely run more than one agent at a time against the same
 repository because the system-of-record is not concurrency-safe.
 `.gzkit/ledger.jsonl` is an append-only file written on the single-writer
-assumption, and the OBPI-lock system (`.gzkit/locks/`) is advisory. Two agents
+assumption *(superseded for one checkout 2026-09-06 — see § Amendments)*, and the OBPI-lock system (`.gzkit/locks/`) is advisory. Two agents
 working concurrently — e.g. two worktrees both reaching `gz obpi complete` —
 would interleave writes to Layer-2, corrupting the append-only invariant the
 whole trust model rests on.
@@ -151,6 +151,28 @@ append-only ledger becomes the contended surface this ADR protects.
   rejected daemon alternative reopens.
 - Interview artifact: `ledger-concurrency-substrate-interview.json` (this
   directory) records the Step-0 forcing functions.
+
+## Amendments
+
+### 2026-09-27 — the premise moved; the decision stands (GHI #1139)
+
+**What changed.** Since `be75c6b22` (2026-09-06, GHI #953), `Ledger.append` runs under
+`exclusive_file_lock` (`src/gzkit/ledger.py`), so concurrent appends to one ledger file in
+one checkout are serialized by an OS lock. The Intent's *"written on the single-writer
+assumption"* no longer holds for a single checkout, and interleaved bytes are no longer the risk.
+
+**The live risk.** `.gzkit/ledger.jsonl` is git-tracked (`git ls-files` confirms it), so every
+worktree carries its own copy. Two worktrees that each append produce divergent tails that git
+can reconcile only as an end-of-file merge conflict. That is forked history, not interleaved
+writes. It is common: 64 of 124 `fix(...)` commits between 2026-09-13 and 2026-09-27 append to
+the ledger, mostly `agent_sync_completed`, `task_started`, `red_receipt_emitted` and corpus events.
+
+**Effect on this ADR.** The Decision (parallel agents write zero Layer-2 events; only the
+serialized merge lane appends) is unchanged, and it is now justified by forked tracked history
+rather than by an unlocked writer. Promotion Criterion 2 gains a named case: a RED receipt must
+witness failure on the pre-fix tree, so it cannot simply be replayed by the writer after a
+worktree drafted the fix (R&D run `docs/rnd/ghi-batch-closure.md`, Q3).
+
 
 Pool ADRs are backlog items — they carry no `semver:` or `kind:` frontmatter.
 Promotion into the active tree (foundation or feature) is performed via

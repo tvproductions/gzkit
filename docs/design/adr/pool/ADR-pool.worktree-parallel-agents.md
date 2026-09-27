@@ -45,7 +45,7 @@ Write-heavy modes are recorded as future scope and do depend on that substrate.
 
 1. Adopt **ephemeral git worktrees** as the isolation substrate: scratch
    checkouts (e.g. under `.worktrees/<slug>`), each with its own clean baseline,
-   **never pushed as a remote branch**, landing on `main` via fast-forward/squash
+   **never pushed as a remote branch**, landing on `main` via fast-forward/squash *(superseded 2026-09-27 — see § Amendments)*
    at merge.
 2. This preserves the intent of the standing operator directive *"Never create
    feature branches — work directly on main"*, which bans the
@@ -91,7 +91,7 @@ Write-heavy modes are recorded as future scope and do depend on that substrate.
   [ADR-pool.ledger-concurrency-substrate](ADR-pool.ledger-concurrency-substrate.md)
   — for the **write-heavy** modes only (parallel OBPI implementation, parallel
   GHI fixes, parallel ADR pipelines).
-- **Blocked by**: an operator-ratified doctrine carve-out permitting ephemeral
+- **Blocked by** *(met 2026-09-27 — see § Amendments)*: an operator-ratified doctrine carve-out permitting ephemeral
   worktrees (amends *"Never create feature branches — work directly on main"*).
   Blocks **promotion**, not authoring.
 - **Read-only review-persona mode is exempt** from the substrate dependency —
@@ -149,6 +149,26 @@ worktree substrate, not the review methodology.
   concurrency + isolation, not new agent roles.
 - Interview artifact: `worktree-parallel-agents-interview.json` (this directory)
   records the Step-0 forcing functions.
+
+## Amendments
+
+### 2026-09-27 — landing is through the single writer; the carve-out blocker is met (GHI #1139)
+
+**What changed.** The operator ratified the carve-out this ADR's promotion waited on, in
+`AGENTS.md` § Operator Doctrine, verbatim: *"Local worktrees for subagents (operator,
+2026-09-27, verbatim: 'local worktrees are fine'): a subagent may work in an ephemeral local
+git worktree that is never pushed; its result lands on main through the single writer, never
+by merging a branch. The no-branches directive is unchanged."*
+
+**Effect on this ADR.** Decision 1's *"landing on `main` via fast-forward/squash at merge"* is
+superseded: a worktree's result lands through the single writer, never by merging a branch.
+The `Blocked by` doctrine carve-out and Promotion Criterion 2 are met. Nothing else in the
+Decision changes, and the ADR stays in the pool.
+
+**Related ruling.** R&D run `docs/rnd/ghi-batch-closure.md` (Q3) ruled that GHI fan-out stops
+at the read-only Read phase for now: "parallel independent GHI fixes" (Decision 4) stays
+deferred behind `ADR-pool.ledger-concurrency-substrate` criterion 2.
+
 
 Pool ADRs are backlog items — they carry no `semver:` or `kind:` frontmatter.
 Promotion into the active tree (foundation or feature) is performed via

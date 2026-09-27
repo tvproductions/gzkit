@@ -129,3 +129,19 @@ Heavy — new CLI subcommand group, two new skills, runbook additions, BDD scena
 **What the amendment adds.** New `## Target Scope` section with 5 terse bullets (required for promotion). New `## Detailed Specification` H2 with per-OBPI detail. 2 new Use Cases for the skill-layer flows. 4 new Consequences for the merged scope. Two new skills named (`gz-ghi-fix`, `gz-ghi-triage`). Runbook and manpage coverage added as OBPI-04. `gz-patch-release` integration added as OBPI-05.
 
 **What it does NOT do.** No pre-decision on whether `gz-ghi-fix` should fan-out via subagents or run sequentially (promotion-time decision). No pre-decision on whether `gz-ghi-triage` batch output should auto-dispatch or require operator approval per item (operator-preference choice). No pre-resolution of the routing-threshold tuning (inherits `defect-fix-routing.md` as-is).
+
+### 2026-09-27 — skill scope shipped; the fan-out question is answered (GHI #1139)
+
+**What changed.** The two skills this ADR proposes shipped under other names: `gz-ghi-fix` as
+`ghi-close` (`.gzkit/skills/ghi-close/`) and `gz-ghi-triage` as `ghi-triage`
+(`.gzkit/skills/ghi-triage/`). The 2026-04-19 amendment left one question to promotion time,
+*"whether `gz-ghi-fix` should fan-out via subagents or run sequentially"*. R&D run
+`docs/rnd/ghi-batch-closure.md` answered it (Q1–Q3, operator rulings 2026-09-27): fan out the
+**read-only Read phase** inside `ghi-triage`, which renders a landing queue and a ruling docket,
+and land fixes **sequentially** through one writer running `ghi-close` per issue. Its
+"never batch-close" rule stands, and no Phase-2 fan-out happens until
+`ADR-pool.ledger-concurrency-substrate` criterion 2 is solved. No separate batch skill.
+
+**What remains in scope.** The `gz ghi` CLI verbs, their runbook and manpage coverage, and the
+`gz-patch-release` integration are unbuilt and remain this ADR's scope. The two skill OBPIs in
+§ Target Scope would, at promotion, amend the shipped skills rather than author new ones.
