@@ -467,6 +467,47 @@ class TestContentCommitRetentionGate(unittest.TestCase):
                 "no rendition_committed ledger event is written on refusal",
             )
 
+    def test_retention_sidecar_ends_with_a_newline(self) -> None:
+        """The sidecar passes the repo's end-of-file hook unmodified (GHI #1109).
+
+        Written without a trailing newline, `end-of-file-fixer` rewrote it and
+        refused the first commit carrying it; the map must still round-trip.
+        """
+        with self._runner.isolated_filesystem():
+            _seed_prior_rendition("# AGENTS.md\n\nDeprecated note: old policy text.\n")
+            _stage_candidate("# AGENTS.md\n\nreplacement body.\n")
+            retention_map = {
+                "surface": "AGENTS.md",
+                "consumer": "codex",
+                "extracted_by": "reviewer-agent",
+                "mapped_by": "author-agent",
+                "blocks": [
+                    {
+                        "removed": "Deprecated note: old policy text.",
+                        "conditions": [
+                            {
+                                "id": "C1",
+                                "quote": "Deprecated note: old policy text.",
+                                "disposition": "dropped",
+                                "reason": "superseded by replacement body",
+                            }
+                        ],
+                        "non_binding": [],
+                    }
+                ],
+            }
+            Path("map.json").write_text(json.dumps(retention_map), encoding="utf-8")
+            result = self._runner.invoke(
+                main, _commit_args(text="C1 drop accepted", retention_map="map.json")
+            )
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            written = retention_path(Path("."), "AGENTS.md", "codex").read_bytes()
+            self.assertTrue(written.endswith(b"\n"), "sidecar lacks a trailing newline")
+            self.assertEqual(
+                RetentionMap.model_validate_json(written),
+                RetentionMap.model_validate(retention_map),
+            )
+
     @covers("REQ-0.35.0-14-04")
     def test_dropped_condition_requires_id_in_attestation(self) -> None:
         """A DROPPED condition's id absent from --attestation-text exits 3; present, exits 0."""

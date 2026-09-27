@@ -331,7 +331,10 @@ def content_commit_cmd(
         )
         if outcome.retention_map is not None:
             retention_sidecar.parent.mkdir(parents=True, exist_ok=True)
-            retention_sidecar.write_text(outcome.retention_map.model_dump_json(), encoding="utf-8")
+            # Newline-terminated so the repo's end-of-file hook leaves it alone (GHI #1109).
+            retention_sidecar.write_text(
+                outcome.retention_map.model_dump_json() + "\n", encoding="utf-8"
+            )
         elif retention_sidecar.exists():
             # No block was removed this promotion — a stale sidecar from an
             # earlier one must never describe a delta it did not govern
