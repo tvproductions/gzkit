@@ -385,10 +385,10 @@ uv run gz init --update              # Execute: refresh STALE entries; report co
 Three-state detection determines the action per artifact:
 
 - **IDENTICAL** — bytes match the wheel canonical; skipped silently
-- **STALE** — bytes differ, no canonical-version marker present; refreshed in place
-- **EDITED** — bytes differ AND the file carries a
-  `<!-- gzkit-canonical-version: X.Y.Z -->` marker; left untouched and surfaced
-  as a conflict in the end-of-run summary
+- **STALE** — bytes differ but equal a version of the file gzkit has shipped
+  (the wheel's `canonical_history.json`), or the file is missing; refreshed in place
+- **EDITED** — bytes differ and match no shipped version, so the operator changed
+  it; left untouched and surfaced as a conflict in the end-of-run summary
 
 Only delivered files are refreshed: package-only files never reach `.gzkit/`,
 and `chores/registry.json` is merged rather than copied, so project-local chore

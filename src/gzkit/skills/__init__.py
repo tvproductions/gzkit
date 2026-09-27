@@ -493,6 +493,37 @@ def scaffold_skill(
     return skill_file
 
 
+def delivered_skill_slugs(bodies: dict[str, bytes]) -> set[str]:
+    """Return the slugs a scaffold delivers from ``bodies`` (slug to ``SKILL.md`` bytes).
+
+    Every skill that is not retired. One definition for ``gz init`` delivery,
+    ``gz init --update``, ``gz upgrade`` and the shipped hash history (GHI #1122).
+    """
+    delivered: set[str] = set()
+    for slug, content in bodies.items():
+        frontmatter, _ = _parse_frontmatter(content.decode("utf-8"))
+        if (frontmatter.get("lifecycle_state") or "active") != "retired":
+            delivered.add(slug)
+    return delivered
+
+
+def delivered_skill_body(content: bytes, delivered: set[str]) -> bytes:
+    """Return the ``SKILL.md`` bytes delivery writes: router rows scoped to ``delivered``.
+
+    A route to a withheld skill would fail the adopter's own router audit, so
+    rows naming a slug outside ``delivered`` are dropped (GHI #915). The result
+    is LF-encoded: this is a generated surface, and a Windows default would emit
+    CRLF (GHI #681).
+    """
+    from gzkit.governance.trust_audits.router_tables import (  # noqa: PLC0415
+        scope_router_rows_for_delivery,
+    )
+
+    return scope_router_rows_for_delivery(content.decode("utf-8"), delivered=delivered).encode(
+        "utf-8"
+    )
+
+
 def scaffold_core_skills(
     project_root: Path,
     config: GzkitConfig | None = None,
@@ -527,35 +558,26 @@ def scaffold_core_skills(
     skills_dir = project_root / config.paths.skills
     skills_dir.mkdir(parents=True, exist_ok=True)
 
-    from gzkit.governance.trust_audits.router_tables import (  # noqa: PLC0415
-        scope_router_rows_for_delivery,
-    )
-
     # Resolve the delivered set BEFORE writing anything. A router's rows are
     # scoped against what this scaffold actually lands, and a filter applied
     # slug-by-slug would judge each row against a set still being built --
     # dropping a valid route purely because its target sorts later (GHI #915).
-    payloads: dict[str, bytes] = {}
-    for slug_resource in _iter_canonical_skill_slugs():
-        content_bytes = slug_resource.joinpath("SKILL.md").read_bytes()
-        frontmatter, _ = _parse_frontmatter(content_bytes.decode("utf-8"))
-        if (frontmatter.get("lifecycle_state") or "active") == "retired":
-            continue
-        payloads[slug_resource.name] = content_bytes
-    delivered = set(payloads)
+    payloads = {
+        slug_resource.name: slug_resource.joinpath("SKILL.md").read_bytes()
+        for slug_resource in _iter_canonical_skill_slugs()
+    }
+    delivered = delivered_skill_slugs(payloads)
 
     created: list[Path] = []
     for slug, content_bytes in payloads.items():
+        if slug not in delivered:
+            continue
         target_dir = skills_dir / slug
         target_file = target_dir / "SKILL.md"
         if skip_existing and target_file.exists():
             continue
-        scoped = scope_router_rows_for_delivery(content_bytes.decode("utf-8"), delivered=delivered)
         target_dir.mkdir(parents=True, exist_ok=True)
-        # LF pinned: this is a generated surface now that routers are
-        # scoped at delivery, so the byte-for-byte write no longer covers
-        # it and a Windows default would emit CRLF (GHI #681).
-        target_file.write_text(scoped, encoding="utf-8", newline="\n")
+        target_file.write_bytes(delivered_skill_body(content_bytes, delivered))
         created.append(target_file)
         # A skill's other packaged files ship with it: SKILL.md links into its
         # own `references/`, which would otherwise be dead on arrival (GHI #1108).
@@ -676,6 +698,8 @@ __all__ = [
     "SkillAuditReport",
     "_classify_skill_file",
     "audit_skills",
+    "delivered_skill_body",
+    "delivered_skill_slugs",
     "get_skill",
     "list_skills",
     "scaffold_core_skills",

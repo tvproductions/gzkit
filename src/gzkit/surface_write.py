@@ -52,6 +52,8 @@ __all__ = [
     "SurfaceSink",
     "capture_surface_writes",
     "dir_exists",
+    "effective_bytes",
+    "effective_files",
     "ensure_dir",
     "remove_dir_if_empty",
     "remove_if_present",
@@ -202,6 +204,33 @@ def dir_exists(path: Path) -> bool:
         return True
     sink = _ACTIVE_SINK.get()
     return sink is not None and path.resolve() in sink.created_dirs
+
+
+def effective_bytes(path: Path) -> bytes | None:
+    """Return the bytes ``path`` holds, or would hold after a captured sync.
+
+    The file-content sibling of :func:`dir_exists`, for a pass that reads what an
+    earlier pass wrote. ``None`` means the file does not (or would not) exist.
+    """
+    sink = _ACTIVE_SINK.get()
+    if sink is not None:
+        resolved = path.resolve()
+        if resolved in sink.written:
+            return sink.written[resolved]
+        if resolved in sink.removed:
+            return None
+    return path.read_bytes() if path.is_file() else None
+
+
+def effective_files(root: Path) -> list[Path]:
+    """List the files under ``root`` as they stand, or would stand after a captured sync."""
+    resolved_root = root.resolve()
+    files = {p.resolve() for p in resolved_root.rglob("*") if p.is_file()}
+    sink = _ACTIVE_SINK.get()
+    if sink is not None:
+        files |= {p for p in sink.written if resolved_root in p.parents}
+        files -= sink.removed
+    return sorted(files)
 
 
 def write_if_changed(path: Path, payload: bytes, *, mode: int | None = None) -> bool:

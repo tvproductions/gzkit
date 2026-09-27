@@ -14,6 +14,7 @@ from typing import Literal, cast
 from pydantic import BaseModel, ConfigDict, Field
 from rich.markup import escape
 
+from gzkit.canonical_history import content_hash, load_canonical_history, skill_body_slug
 from gzkit.chores import (
     RegistryMergeReport,
     iter_deliverable_chore_files,
@@ -54,7 +55,7 @@ from gzkit.ledger import (
 from gzkit.models.foundation_grandfather import foundation_kind_is_closed
 from gzkit.personas import scaffold_core_personas
 from gzkit.rules import scaffold_core_rules
-from gzkit.skills import scaffold_core_skills
+from gzkit.skills import delivered_skill_body, delivered_skill_slugs, scaffold_core_skills
 from gzkit.sync import (
     collect_canonical_sync_blockers,
     detect_project_name,
@@ -70,8 +71,6 @@ from gzkit.templates.author_prompts import AUTHOR_PROMPTS
 from gzkit.validate_pkg.sync_parity import plan_sync_changes
 
 RefreshState = Literal["IDENTICAL", "STALE", "EDITED"]
-
-CANONICAL_VERSION_MARKER_PATTERN = r"<!-- gzkit-canonical-version: \d+\.\d+\.\d+ -->"
 
 
 class RefreshResult(BaseModel):
@@ -95,30 +94,27 @@ def _detect_refresh_state(
     *,
     project_bytes: bytes,
     canonical_bytes: bytes,
-    marker_pattern: str = CANONICAL_VERSION_MARKER_PATTERN,
+    known_hashes: frozenset[str],
 ) -> RefreshState:
     """Classify a project canonical-surface artifact against the wheel canonical.
 
+    ``known_hashes`` holds the hash of every version of this path gzkit has
+    shipped (:mod:`gzkit.canonical_history`) — OBPI-0.0.32-05 requirement 4(b),
+    chosen by operator ruling on GHI #1122.
+
     Returns:
         ``IDENTICAL`` when ``project_bytes`` equals ``canonical_bytes`` byte-for-byte.
-        ``EDITED`` when the bytes differ AND ``project_bytes`` carries the
-        operator-edit marker matched by ``marker_pattern`` — interpreted as a
-        positive signal that the scaffolder previously stamped this copy and
-        the operator has since edited it. The refresh path must NOT overwrite.
-        ``STALE`` when the bytes differ and no marker is present — safe to refresh.
-
-    The marker mechanism (REQ-0.0.32-05-04 option a): the scaffolder writes
-    ``<!-- gzkit-canonical-version: X.Y.Z -->`` into every canonical body on
-    copy. ``--update`` rewrites the marker on a STALE refresh; an operator
-    edit either leaves the marker in place (signal: EDITED) or removes it
-    (signal: STALE — operator wants the next refresh to restore canon).
+        ``STALE`` when the bytes differ but equal a version gzkit shipped: the
+        copy is unedited, so the refresh may overwrite it.
+        ``EDITED`` for any other difference, including a path with no recorded
+        version: an operator edit, which the refresh must NOT overwrite.
 
     """
     if project_bytes == canonical_bytes:
         return "IDENTICAL"
-    if re.search(marker_pattern, project_bytes.decode("utf-8", errors="replace")):
-        return "EDITED"
-    return "STALE"
+    if content_hash(project_bytes) in known_hashes:
+        return "STALE"
+    return "EDITED"
 
 
 def _iter_canonical_surface_files(resource_pkg: str) -> Iterator[tuple[Traversable, Path]]:
@@ -153,19 +149,50 @@ def _walk_traversable(
             yield entry, next_rel
 
 
+def delivery_scope(project_root: Path) -> set[str]:
+    """Return the skill slugs a skill router's rows may route to in ``project_root``.
+
+    The slugs the wheel delivers, plus any the project already holds: a project
+    that has a skill the wheel withholds (gzkit's own project-local skills) keeps
+    its routes to it, and an adopter gets exactly what a fresh scaffold writes.
+    """
+    bodies = {
+        rel.parts[0]: source.read_bytes()
+        for source, rel in _iter_canonical_surface_files("gzkit.skills")
+        if len(rel.parts) == 2 and rel.name == "SKILL.md"
+    }
+    project_skills = project_root / ".gzkit" / "skills"
+    held = (
+        {p.name for p in project_skills.iterdir() if (p / "SKILL.md").is_file()}
+        if project_skills.is_dir()
+        else set()
+    )
+    return delivered_skill_slugs(bodies) | held
+
+
+def delivered_bytes(surface: str, rel_path: Path, canonical: Traversable, scope: set[str]) -> bytes:
+    """Return the bytes delivery writes for a wheel file: routers scoped, others verbatim."""
+    payload = canonical.read_bytes()
+    if skill_body_slug(f"{surface}/{rel_path.as_posix()}"):
+        return delivered_skill_body(payload, scope)
+    return payload
+
+
 def _refresh_one_artifact(
     *,
-    canonical: Traversable,
+    canonical_bytes: bytes,
     project_path: Path,
     dry_run: bool,
+    known_hashes: frozenset[str],
 ) -> RefreshState:
-    """Detect state for ``project_path`` against ``canonical`` and refresh if STALE.
+    """Detect state for ``project_path`` against ``canonical_bytes`` and refresh if STALE.
 
-    Returns the detected state. Writes to ``project_path`` only when the state
-    is STALE and ``dry_run`` is False. EDITED state never writes; the caller is
-    responsible for recording the conflict.
+    ``canonical_bytes`` is what delivery would write (:func:`delivered_bytes`).
+    Returns the detected state. A missing project copy is STALE and is written.
+    Writes to ``project_path`` only when the state is STALE and ``dry_run`` is
+    False. EDITED state never writes; the caller is responsible for recording
+    the conflict.
     """
-    canonical_bytes = canonical.read_bytes()
     if not project_path.exists():
         if not dry_run:
             project_path.parent.mkdir(parents=True, exist_ok=True)
@@ -175,6 +202,7 @@ def _refresh_one_artifact(
     state = _detect_refresh_state(
         project_bytes=project_bytes,
         canonical_bytes=canonical_bytes,
+        known_hashes=known_hashes,
     )
     if state == "STALE" and not dry_run:
         project_path.write_bytes(canonical_bytes)
@@ -211,12 +239,15 @@ def _refresh_canonical_surfaces(
     from gzkit.commands.upgrade import _SURFACE_CLASSIFIERS, SURFACE_PKG_MAP  # noqa: PLC0415
 
     result = RefreshResult(dry_run=dry_run)
+    history = load_canonical_history()
+    scope = delivery_scope(project_root)
 
-    def refresh(canonical: Traversable, display: str) -> None:
+    def refresh(payload: bytes, display: str) -> None:
         state = _refresh_one_artifact(
-            canonical=canonical,
+            canonical_bytes=payload,
             project_path=project_root / display,
             dry_run=dry_run,
+            known_hashes=history.get(display.removeprefix(".gzkit/"), frozenset()),
         )
         {
             "IDENTICAL": result.identical,
@@ -229,10 +260,11 @@ def _refresh_canonical_surfaces(
         for canonical, rel_path in _iter_canonical_surface_files(resource_pkg):
             wheel_path = Path("src/gzkit") / surface / rel_path
             if classify(wheel_path, project_root=project_root) == "canonical":
-                refresh(canonical, f".gzkit/{surface}/{rel_path.as_posix()}")
+                payload = delivered_bytes(surface, rel_path, canonical, scope)
+                refresh(payload, f".gzkit/{surface}/{rel_path.as_posix()}")
 
     for canonical, rel_path in iter_deliverable_chore_files():
-        refresh(canonical, f".gzkit/chores/{rel_path.as_posix()}")
+        refresh(canonical.read_bytes(), f".gzkit/chores/{rel_path.as_posix()}")
 
     config = GzkitConfig.load(project_root / ".gzkit.json")
     registry = project_root / config.paths.chores / "registry.json"
@@ -242,7 +274,7 @@ def _refresh_canonical_surfaces(
         )
     else:
         shipped = importlib.resources.files("gzkit.chores").joinpath("registry.json")
-        refresh(shipped, registry.relative_to(project_root).as_posix())
+        refresh(shipped.read_bytes(), registry.relative_to(project_root).as_posix())
 
     return result
 
@@ -1109,7 +1141,7 @@ def init(
       templates and chores over the project's copies and rewrites
       ``.gzkit.json``; deletes nothing and never overwrites personas.
     - ``--update`` — version-aware refresh of canonical surfaces from the
-      installed wheel. Preserves operator-edited files via marker detection
+      installed wheel. Preserves operator-edited files via the shipped hash history
       (see :func:`_detect_refresh_state`). Reports conflicts and exits 3 if
       any unresolved EDITED entries remain. Mutually exclusive with ``--force``.
     """

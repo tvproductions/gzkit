@@ -82,6 +82,13 @@ def step_operator_edits_chore(context, relpath: str, marker: str) -> None:
     target.write_text(existing + f"\n<!-- {marker} -->\n", encoding="utf-8")
 
 
+@given('the operator deletes "{relpath}"')
+def step_operator_deletes(context, relpath: str) -> None:
+    target = context.project_root / Path(relpath)
+    assert target.exists(), f"Expected {target} to exist before deletion"
+    target.unlink()
+
+
 @given('the slug "{slug}" has been removed from "{relpath}"')
 def step_remove_slug_from_registry(context, slug: str, relpath: str) -> None:
     registry_path = context.project_root / Path(relpath)

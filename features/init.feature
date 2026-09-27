@@ -9,11 +9,12 @@ Feature: gz init --update — version-aware canonical refresh
   Scenario: stale canonical refreshes cleanly
     Given a fresh empty project directory
     And the workspace has been initialized via gz init
-    And the operator edits ".gzkit/chores/quality-check/CHORE.md" with marker "DRIFTED-WITHOUT-MARKER-XYZ"
+    And the operator deletes ".gzkit/chores/quality-check/CHORE.md"
     When I run "gz init --update" as a subprocess
     Then the subprocess exits with code 0
     And the subprocess output contains "STALE"
     And the subprocess output contains ".gzkit/chores/quality-check/CHORE.md"
+    And the file ".gzkit/chores/quality-check/CHORE.md" exists
 
   @REQ-0.0.32-05-02
   @REQ-0.0.32-05-05
@@ -22,11 +23,11 @@ Feature: gz init --update — version-aware canonical refresh
   Scenario: project-edit preservation (EDITED state is not overwritten)
     Given a fresh empty project directory
     And the workspace has been initialized via gz init
-    And the operator edits ".gzkit/chores/quality-check/CHORE.md" with marker "<!-- gzkit-canonical-version: 0.1.0 -->"
+    And the operator edits ".gzkit/chores/quality-check/CHORE.md" with marker "OPERATOR-OWN-CLAUSE"
     When I run "gz init --update" as a subprocess
     Then the subprocess exits with code 3
     And the subprocess output contains "EDITED"
-    And the file ".gzkit/chores/quality-check/CHORE.md" contains "<!-- gzkit-canonical-version: 0.1.0 -->"
+    And the file ".gzkit/chores/quality-check/CHORE.md" contains "OPERATOR-OWN-CLAUSE"
 
   @REQ-0.0.32-05-03
   @REQ-0.0.32-05-05
@@ -34,8 +35,8 @@ Feature: gz init --update — version-aware canonical refresh
   Scenario: conflict reporting — unresolved EDITED entries surface in summary
     Given a fresh empty project directory
     And the workspace has been initialized via gz init
-    And the operator edits ".gzkit/chores/quality-check/CHORE.md" with marker "<!-- gzkit-canonical-version: 0.1.0 -->"
-    And the operator edits ".gzkit/chores/pool-triage/CHORE.md" with marker "<!-- gzkit-canonical-version: 0.1.0 -->"
+    And the operator edits ".gzkit/chores/quality-check/CHORE.md" with marker "OPERATOR-OWN-CLAUSE"
+    And the operator edits ".gzkit/chores/pool-triage/CHORE.md" with marker "OPERATOR-OWN-CLAUSE"
     When I run "gz init --update" as a subprocess
     Then the subprocess exits with code 3
     And the subprocess output contains "Conflicts (EDITED"
@@ -47,9 +48,9 @@ Feature: gz init --update — version-aware canonical refresh
   Scenario: dry-run prints per-artifact action without writing
     Given a fresh empty project directory
     And the workspace has been initialized via gz init
-    And the operator edits ".gzkit/chores/quality-check/CHORE.md" with marker "DRIFTED-WITHOUT-MARKER-XYZ"
+    And the operator deletes ".gzkit/chores/quality-check/CHORE.md"
     When I run "gz init --update --dry-run" as a subprocess
     Then the subprocess exits with code 0
     And the subprocess output contains "Dry run"
     And the subprocess output contains "STALE"
-    And the file ".gzkit/chores/quality-check/CHORE.md" contains "DRIFTED-WITHOUT-MARKER-XYZ"
+    And the file ".gzkit/chores/quality-check/CHORE.md" does not exist

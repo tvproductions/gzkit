@@ -18,7 +18,7 @@ gz init [OPTIONS]
 |--------|------|---------|-------------|
 | `--mode` | `lite` \| `heavy` | `lite` | Governance mode |
 | `--force` | flag | — | Full reinitialize (overwrites config, re-scaffolds). Mutually exclusive with `--update` |
-| `--update` | flag | — | Version-aware refresh of canonical surfaces from the installed wheel; preserves operator edits via marker detection. Mutually exclusive with `--force` |
+| `--update` | flag | — | Version-aware refresh of canonical surfaces from the installed wheel; leaves any file that matches no version gzkit shipped (an operator edit) untouched. Mutually exclusive with `--force` |
 | `--no-skeleton` | flag | — | Skip Python project skeleton (pyproject.toml, src/, tests/) |
 | `--yes` | flag | — | Auto-accept registry-merge prompts during repair or `--update` |
 | `--attestor-handle` | string | — | Record `authorship.attestor_handle` in `.gzkit.json`: the handle an omitted `--attestor` records on the verbs that default it. A handle with no spaces, never a real name. On first init without the flag, an interactive terminal is asked; otherwise none is set, and gzkit's own handle is never scaffolded. Mutually exclusive with `--update` (GHI #1036) |
@@ -127,7 +127,7 @@ Use `--force` only when you need a full reinitialize (rewrites config, re-copies
 
 ## Update Mode (Version-Aware Refresh)
 
-`gz init --update` is the **third** init mode, distinct from default (repair-missing) and `--force` (re-copy from the wheel). It refreshes canonical surfaces in the adopter's `.gzkit/<surface>/` from the installed wheel's package data, leaving a file alone only when it carries the operator-edit marker below. It does nothing else: no manifest write, no control-surface sync, no ledger event. Run `gz agent sync control-surfaces` afterwards so the mirrors carry the refreshed canon.
+`gz init --update` is the **third** init mode, distinct from default (repair-missing) and `--force` (re-copy from the wheel). It refreshes canonical surfaces in the adopter's `.gzkit/<surface>/` from the installed wheel's package data, overwriting a file only when it holds a version gzkit shipped, never an operator's edit (below). It does nothing else: no manifest write, no control-surface sync, no ledger event. Run `gz agent sync control-surfaces` afterwards so the mirrors carry the refreshed canon.
 
 What it refreshes is what delivery defines (GHI #1123):
 
@@ -150,24 +150,16 @@ Per artifact under `.gzkit/<surface>/`, `--update` classifies the project copy a
 | State | Condition | Action |
 |-------|-----------|--------|
 | `IDENTICAL` | bytes match wheel canonical | skip; no write |
-| `STALE` | bytes differ; no canonical-version marker present | refresh in place (overwrite with wheel canonical) |
-| `EDITED` | bytes differ; canonical-version marker present | **conflict — never overwrite**; record in summary |
+| `STALE` | bytes differ, and equal a version of this file gzkit has shipped; also a file missing from the project | refresh in place (overwrite with wheel canonical) |
+| `EDITED` | bytes differ, and match no version gzkit has shipped | **conflict — never overwrite**; record in summary |
 
-### Operator-edit marker (REQ-0.0.32-05-04)
+### Edit detection (content-hash history)
 
-The marker is a body-level HTML comment:
+The wheel ships `canonical_history.json`: the sha256 of every version of every canonical-surface file gzkit has ever shipped, keyed by `<surface>/<path>` (OBPI-0.0.32-05 requirement 4(b), ruled on GHI #1122). A project copy whose hash is in that history is one gzkit delivered and nobody changed, so refreshing it loses nothing. Any other difference is treated as the operator's edit, including a copy of a path the history has never seen. Nothing is written into the files themselves.
 
-```html
-<!-- gzkit-canonical-version: X.Y.Z -->
-```
+The history is appended by `gz agent sync control-surfaces` every time a canonical file changes, and entries are never removed, so a project scaffolded by any earlier release is recognized. The first entries were backfilled from gzkit's git history on 2026-09-27.
 
-The marker's presence in a file whose bytes differ from the current wheel canonical is what `_detect_refresh_state` reads as an operator edit. **No scaffolder writes it**: `gz init` copies the wheel's content byte-for-byte, and a STALE refresh writes the wheel's bytes, which carry no marker. So a project copy is `EDITED` only when the operator has added the marker by hand; every other differing file is `STALE` and is overwritten, operator edits included. Review `gz init --update --dry-run` before running it.
-
-The marker composes with — and does **not** replace — the existing surface-author version markers per `.claude/rules/skill-surface-sync.md`:
-
-- Skills retain `skill-version:` in YAML frontmatter
-- Rules retain body-level `<!-- rule-version: X.Y.Z -->`
-- The canonical-version marker tracks "version of canonical content delivered by the wheel" — a distinct dimension from surface-author version semantics.
+Because the hash covers the whole file, detection composes with the surface-author version markers in `.claude/rules/skill-surface-sync.md` without reading them: a copy whose `skill-version:` or `<!-- rule-version: X.Y.Z -->` differs from the wheel's is `STALE` when that copy shipped, and `EDITED` when the operator changed it.
 
 ### Dry-run
 
@@ -189,7 +181,7 @@ Reports the per-surface `IDENTICAL`/`STALE`/`EDITED` count and lists every artif
 
 When `gz init --update` exits 3, review each `EDITED` conflict listed in the summary. Two operator actions resolve a conflict:
 
-1. **Accept the canonical version** — delete the project copy and re-run `gz init --update`. The next run sees the file as missing, copies the wheel canonical, and stamps a fresh marker.
+1. **Accept the canonical version** — delete the project copy and re-run `gz init --update`. The next run sees the file as missing and copies the wheel canonical.
 2. **Keep the project edits** — no action required. The conflict persists across runs; `--update` will continue to surface it until the operator either accepts the canonical or rewrites the project copy to match.
 
 ### Surface coverage
@@ -202,9 +194,9 @@ When `gz init --update` exits 3, review each `EDITED` conflict listed in the sum
 - `gzkit.personas` → `.gzkit/personas/<slug>.md`
 - `gzkit.templates` → `.gzkit/templates/<name>.md`
 
-Package-internal entries (`__init__.py`, `_scaffolder.py`, `__pycache__/`) are excluded by the leading-underscore filter. Chore `proofs/` and runtime-state files are excluded by the chores class-classifier. No other surface is classified, so files the template classifier marks `package_only` (`author_prompts.py`, `skills/**`) are still copied into `.gzkit/templates/`; `gz upgrade` applies every surface's classifier and skips them.
+Package-internal entries (`__init__.py`, `_scaffolder.py`, `__pycache__/`) are excluded by the leading-underscore filter, and each surface's class-classifier excludes its package-only and runtime-state files (see What it refreshes, above).
 
-In gzkit's own repository the installed package is the editable `src/gzkit/`, itself a copy synced from `.gzkit/`, so `--update` there copies it back over canon and reverts any `.gzkit/` edit not yet synced.
+In gzkit's own repository the installed package is the editable `src/gzkit/`, itself a copy synced from `.gzkit/`. A `.gzkit/` edit not yet synced matches no shipped version, so `--update` reports it `EDITED` and leaves it alone.
 
 ---
 

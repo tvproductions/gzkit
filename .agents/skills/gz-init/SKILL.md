@@ -7,7 +7,7 @@ owner: gzkit-governance
 last_reviewed: 2026-09-27
 gz_command: init
 metadata:
-  skill-version: "6.3.0"
+  skill-version: "6.4.0"
 model: sonnet
 ---
 
@@ -43,8 +43,9 @@ current directory; it never searches upward for a project.
   and rewrites the recorder hook, so it always reports at least those.
 - **Update** (`--update`) — refreshes `.gzkit/` skills, rules, chores, personas
   and templates from the installed wheel by `_detect_refresh_state`:
-  `IDENTICAL` is skipped, `STALE` is overwritten, `EDITED` is reported and
-  left. It writes only what delivery defines: `gz upgrade`'s classifiers pick
+  `IDENTICAL` is skipped; `STALE` (the copy equals a version gzkit shipped, per
+  the wheel's `canonical_history.json`, or is missing) is overwritten; `EDITED`
+  (any other difference, so an operator edit) is reported and left. It writes only what delivery defines: `gz upgrade`'s classifiers pick
   the skills, rules, templates and personas, chores follow first-init delivery,
   and `chores/registry.json` is merged, keeping project-local entries (`--yes`
   accepts the merge). Nothing else runs: no manifest, no sync, no ledger event.
@@ -83,14 +84,10 @@ containing whitespace, or a canonical-skill sync preflight failure; 3 when
 
 ## Cautions
 
-- `--update` does not preserve operator edits in practice. `EDITED` requires a
-  `<!-- gzkit-canonical-version: X.Y.Z -->` marker in the project copy, and no
-  scaffolder writes one, so every differing file reads `STALE` and is
-  overwritten. Read the `--update --dry-run` list with the operator before
-  running it.
 - In gzkit's own repository the installed wheel is the editable
-  `src/gzkit/`, a copy synced from `.gzkit/`. There, `--update` copies that
-  copy back over canon and reverts any `.gzkit/` edit not yet synced.
+  `src/gzkit/`, a copy synced from `.gzkit/`. A `.gzkit/` edit not yet synced
+  matches no shipped version, so `--update` reports it `EDITED` rather than
+  reverting it; sync first.
 
 ## Validation
 

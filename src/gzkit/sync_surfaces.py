@@ -17,6 +17,7 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from gzkit.content.models.base import BaseContentModel
 
+from gzkit.canonical_history import HISTORY_FILE, record_canonical_history
 from gzkit.codex_roles import sync_codex_roles
 from gzkit.config import (
     CODEX_CONFIG_DEFAULT_PATH,
@@ -950,6 +951,11 @@ def sync_pkg_surfaces(project_root: Path, config: GzkitConfig) -> list[str]:
     # gone missing must not strand residue in the wheel (GHI #783).
     _prune_unshippable_chores(pkg_chores, project_root, updated)
     _prune_unshippable_skills(pkg_root / "skills", project_root, updated)
+
+    # Every version shipped joins the history `gz init --update` reads to tell an
+    # unedited adopter copy from an operator edit (GHI #1122).
+    if (pkg_root / HISTORY_FILE).is_file():
+        record_canonical_history(pkg_root, project_root, updated)
 
     return updated
 

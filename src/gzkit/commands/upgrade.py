@@ -18,12 +18,15 @@ from typing import Literal, Protocol
 
 from rich.markup import escape
 
+from gzkit.canonical_history import load_canonical_history
 from gzkit.commands.common import console, get_project_root
 
 # Re-export so tests can patch them at gzkit.commands.upgrade.*
 from gzkit.commands.init_cmd import (
     _iter_canonical_surface_files,
     _refresh_one_artifact,
+    delivered_bytes,
+    delivery_scope,
 )
 from gzkit.personas import _classify_persona_file
 from gzkit.rules import _classify_rule_file
@@ -116,6 +119,8 @@ def upgrade_cmd(args: argparse.Namespace) -> None:
     surfaces_to_process: list[str] = list(surfaces) if surfaces else list(KNOWN_SURFACES)
 
     project_root = get_project_root()
+    history = load_canonical_history()
+    scope = delivery_scope(project_root)
 
     identical = 0
     stale_refreshed = 0
@@ -141,13 +146,16 @@ def upgrade_cmd(args: argparse.Namespace) -> None:
                     continue
             project_path = project_root / ".gzkit" / surface / rel_path
             display = project_path.relative_to(project_root).as_posix()
+            known = history.get(f"{surface}/{rel_path.as_posix()}", frozenset())
+            payload = delivered_bytes(surface, rel_path, canonical, scope)
 
             if args.dry_run:
                 # Detect state without writing; still classify for the summary
                 state = _refresh_one_artifact(
-                    canonical=canonical,
+                    canonical_bytes=payload,
                     project_path=project_path,
                     dry_run=True,
+                    known_hashes=known,
                 )
                 if state == "IDENTICAL":
                     identical += 1
@@ -161,24 +169,25 @@ def upgrade_cmd(args: argparse.Namespace) -> None:
                 # Force path: detect state first, then emit overwrite line, then write.
                 # Print BEFORE the write so output is recorded even if write fails in tests.
                 state = _refresh_one_artifact(
-                    canonical=canonical,
+                    canonical_bytes=payload,
                     project_path=project_path,
                     dry_run=True,
+                    known_hashes=known,
                 )
                 if state in ("EDITED", "STALE"):
                     console.print(f"force overwrite ({state}): {display}")
                     forced_overwrites.append(display)
-                    canonical_bytes = canonical.read_bytes()
                     project_path.parent.mkdir(parents=True, exist_ok=True)
-                    project_path.write_bytes(canonical_bytes)
+                    project_path.write_bytes(payload)
                 else:
                     identical += 1
             else:
                 # Normal path: refresh STALE, skip IDENTICAL, report EDITED
                 state = _refresh_one_artifact(
-                    canonical=canonical,
+                    canonical_bytes=payload,
                     project_path=project_path,
                     dry_run=False,
+                    known_hashes=known,
                 )
                 if state == "IDENTICAL":
                     identical += 1

@@ -1,0 +1,2378 @@
+{
+  "schema": "gzkit.canonical_history.v1",
+  "description": "sha256 of every canonical-surface file version gzkit has shipped, keyed by <surface>/<path>. Appended by `gz agent sync control-surfaces`; read by `gz init --update` and `gz upgrade` to tell an unedited copy from an edit (GHI #1122). Never hand-edited; entries are never removed.",
+  "files": {
+    "chores/AGENTS.md": [
+      "02a85bdfe8313e137567eef81f335945e59efd00a57ad42dbdb282bf0efd317a",
+      "0798c8a068314f6d3db8d1baf9fdecfac864bc8dc9933fb28a73f924d1fa2448",
+      "1271dcfa4b0a8135d042efc11d4d382ed58ff55b13b8e3d5b583ea5c74a35793",
+      "3f285d71861d1809a6f5a85140c301324fdf9dd35d4a7903eda6f3c27e725e37",
+      "5dbbc7ac0e9d8e9de49eb428bb47b5a10533392bc12426f718d563d68a67c304",
+      "6912e1277c7bbe5b66d7538c1fc6cfb06622a8428c9510dabc1c270816e2fd76",
+      "7adf5a211dad7e1ff1130d72c8c6bb094c6f363ccf1366423574a51c4b8fb857",
+      "94e479aa00c3850e1cfe24d04e0e5de067157f37c3e9738233e951226efa9050",
+      "b72116dea63adfc386048b784dfd1b29745d4d97659f44441695ce8595f018a1",
+      "ce4b06fbb95f774f180f84e40f3a3f18c2fe27d3467511cf30181542e2e5ecf1",
+      "e7e947263f3cb3a4f024e9e774a3962eca01ffd0a1252a8d83f9a0d094457c6a"
+    ],
+    "chores/CLAUDE.md": [
+      "896516a539d56e3d3faf1d43a28880fa53978478a46cba3ff7b754ed10d94893"
+    ],
+    "chores/README.md": [
+      "0a6ee3a92a94cdf41c35fbd43d80384db8de7a91f7496f196fb29ce89e6a38d1",
+      "14fb3293a9f851df956afe3f00a5d8a3d9aba191594e2f31989b1df01da0d70c",
+      "282897ca0ffadfd8c1a929764712cd40bd0205f3600d70acb8701b54ae4775cf",
+      "4c38e76a6c20e18b9ce7aa72989175197e957eba4321387a0ca9a640ce04213f",
+      "78da48afd28aea0c8645b5d42ac3735376cafe7ff156bf5a9e2b85455742fedc",
+      "a986bbf7240b620d381f69ab709e21957d2b646a90313e7ffd469579f2e70282",
+      "b8fcbb9650cfc044b7aae22e6bb1e852cc6bf0e641873605a5821af87ff2c46f",
+      "cc34c3e6951dba44e6efb59dc99b0c6b31515262dd26d21c55db2e11ac9a45a8",
+      "d4bb270d71e0ea446dd8b25230914b10201d9da8f54a4afb54848adbf528acd4",
+      "e2b4f9d19becff34a50b492f588e8889d87daaa85a39b162f09a256bbcf9c50c",
+      "f7ab91162dfd4425e559b6470dfb5b54a52fd75e9716035c3912b0fc735df6e7"
+    ],
+    "chores/agents-md-architectural-boundaries/CHORE.md": [
+      "ee483c2610f5acdda0187ef0ae0658f9a537aeaff141e6245dc516f20f44071a"
+    ],
+    "chores/agents-md-architectural-boundaries/README.md": [
+      "8e2bbc814cff66ebcebe8bc747be3b09e1a079b6904bb5f5170df3f58929d8b2"
+    ],
+    "chores/agents-md-architectural-boundaries/acceptance.json": [
+      "c6e46fe697cdedc67e264b62121307725c4a77c8866edd48c321d79ebc6b5972"
+    ],
+    "chores/agents-md-architectural-boundaries/proofs/.gitkeep": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    "chores/agents-md-architectural-boundaries/proofs/CHORE-LOG.md": [
+      "95a0f63e00269f94a8e45dcfdaad27029e48a0ea80375adee8d412c1e3555604"
+    ],
+    "chores/arb-pattern-extraction/CHORE.md": [
+      "8065440e00bd4ff22e22338624f67831d6f236ab7296fbb0347aaff85cbeffde",
+      "87f818e7a7e2afabdf60384023701bf7db75708839c52dfcf6c4aa421628c12a",
+      "b508b2821a29c817b6d1b89113d0d46fc5c58fff022b5095e5461fda6d6fa43a",
+      "bd381a99066f230809954ea8548392858cffc26496e91c8e4c9c6f53eb8ed5a5",
+      "d1c8ea0fa9d5cdfd56d048f3d18c0821c954b078a0f17cf4f37f2e2e8bf1c835"
+    ],
+    "chores/arb-pattern-extraction/README.md": [
+      "154d719bcbd8d5f840002158fbe24dfa995a65a3bb96a63df9e4d716feac8c05"
+    ],
+    "chores/arb-pattern-extraction/acceptance.json": [
+      "56d6cbde4366e14216383bedd0ca54e200ff83a3fdeddace6656f3a69b5af269",
+      "f3f8048d9ce19ab3a36f55bd5faeb63ea72de9badddf2c644cae1c04f7332079",
+      "f5e57b1be9285e58795bc72976e513a2970e5df9c9391f8223127185534ab577"
+    ],
+    "chores/arb-pattern-extraction/proofs/.gitkeep": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    "chores/arb-pattern-extraction/proofs/CHORE-LOG.md": [
+      "31a920070824379f45f9e3114898c21c0cd0a61dd311d676acc8a3360ad10387"
+    ],
+    "chores/cli-contract-governance/CHORE.md": [
+      "2fa8d9f4567931064a07e61311d5a629ae80d2c84bb8c2b986d7fdbfa60f4fd5",
+      "6ca8a9ccf1a3282a8666096ddfbba8f29b1b5484dce612d980101d991de28a54",
+      "8077ca8e9066e8cc7c333203f9f7e41347d9fff64013755ef7f0ffed472463bb",
+      "8b2c3f6c9c8303895a64d94632f9c1ef624459d813bcd8f6c303ccac9c0db274",
+      "e102e6f9a86ea1b5ac6d016440850e6ee2e10e14d253ca8d6d4bdd34b85f1394"
+    ],
+    "chores/cli-contract-governance/README.md": [
+      "2df6dd131c06dc31b0e7cded5a11aaeab1ae63f71843b37ae425eb3526d81044"
+    ],
+    "chores/cli-contract-governance/acceptance.json": [
+      "43998ce51878c84a62f04d883f0e88c19918323932596cf044b53c8d57b9e15f",
+      "9cbaa0633cb5a4beaafdf8c02ef5ab5565de041d09cda5e679f5dd7511418f99"
+    ],
+    "chores/cli-contract-governance/proofs/.gitkeep": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    "chores/cli-contract-governance/proofs/CHORE-LOG.md": [
+      "47a4b925205090f27985287fa646a5c8c1a0f5a926dcb5045e0aacd33c6a6f93"
+    ],
+    "chores/complexity-reduction-xenon/CHORE.md": [
+      "266bdb39ef3d961da5a761fe4582bd54d8a18b6dc4486664ee2734013c18414d",
+      "9cb9265b4d0432f9c7415ad51d55047c3e3c761d6e33c24df4faa286d88c88be",
+      "bd20bd48fe566e421c8a56cbfadf28c375fbff9f01be0a7a20ea2c41edebe060",
+      "e0284d1129bfac355d80985ace346d1b81a0b818d5b44fb9310e3e2e0e28ec13",
+      "f77c3d7c4aa84425b8bd9c7f32dbecc2d116909fc8f548de621b0c27ffaeae42",
+      "fbd131a147b8666e78eafc0efd424edb2d3aa28458d72fa2440ad704715f2353"
+    ],
+    "chores/complexity-reduction-xenon/README.md": [
+      "09cea0c613d6189b246720e135678c0cb74971f2677346bb3f1ce4ca40883314"
+    ],
+    "chores/complexity-reduction-xenon/acceptance.json": [
+      "36f39fc10afb73fe3fca6de236d2f764853bf246c23773d99f0c00123cef9c1c",
+      "fe9888c2a576f511e0c9c94656bcc56aa155d7644e7b3a5d5a1d1d7103bb1ada"
+    ],
+    "chores/complexity-reduction-xenon/proofs/.gitkeep": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    "chores/complexity-reduction-xenon/proofs/CHORE-LOG.md": [
+      "ce792d78f0cfad1fcb5652e724d6bbbaf56b609beed85c3df992509551295547"
+    ],
+    "chores/config-paths-remediation/CHORE.md": [
+      "28281ca30cd6cbd5a29905923413cbdc83fd0d4e9f55712dc5fd1b7334725602",
+      "935f850c3a77e0a2e8f04d3ff8c9b605bd326dc746a951a9f77767fdf5a999bf",
+      "c5438a20f395a66325a926fd42c8295c7aef8671010bbd5c6f1df9cec7a86215",
+      "c89996d190a93484032d997272f336800cb440d55db1d78a647f536624bf0f5a",
+      "cb5eb83155eb8200edb2e5ac580d8fba921090746f0b01eba775f35cb401a03c"
+    ],
+    "chores/config-paths-remediation/README.md": [
+      "8e88d526a2047e43311f9b7297f070bc63b115f2fadf11b723a0cb32d0476a38"
+    ],
+    "chores/config-paths-remediation/acceptance.json": [
+      "c629b256a0111d0c1531c9cc62c34e39b963fc1f47391aec966f090721f01778",
+      "fa1f94144ac3c602f287c9b837cee75681bca45644b36a76dcf10fa50a30015e"
+    ],
+    "chores/config-paths-remediation/proofs/.gitkeep": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    "chores/config-paths-remediation/proofs/CHORE-LOG.md": [
+      "266b5e75296ca6489a9a1685c2eff32d45c2600a7d1dc3414e463c40f95143da"
+    ],
+    "chores/control-surface-permission-consent-drift/CHORE.md": [
+      "19618feb2a794fce7fe80d2d4825490c66cfea4b5037503317ecc874f899c75f",
+      "6155589869c70f4c6e559eefb31566751a6423461e721fcf1bd0753445c108e4",
+      "77055b5e2b1784226a9afc95440d7da759ed86d8166258443ffb087fdd62f271",
+      "a66b23e79fdc8af5f55104b2329821f0577bafbc9bc1a5af72e90e2afb47cd85"
+    ],
+    "chores/control-surface-permission-consent-drift/README.md": [
+      "10433df28f99e185232ba9b1e436c51d9a41390c547b6995b484d023dc8fc54d"
+    ],
+    "chores/control-surface-permission-consent-drift/acceptance.json": [
+      "001b46020655d987c537a4477f8ceb3aae6195a3a0b3c7f8c549f52be8932fb7",
+      "00bb816fad38b87fca901693b6793e398f83cf6ca898b37b769d389fa608096e",
+      "81105c5cd8e0efea37f58e980e53c58105670072fe44f59adcce71a7b04964c5",
+      "d467eeff13e58fbd1a70e07319fdfb700d6a5e14a70140bec175d3a699b77ff2",
+      "f9141fd22d6c3a81184192ec89cde9ab7cda0e4174f7216550dbb716ad9aa69c"
+    ],
+    "chores/control-surface-rule-conflicts/CHORE.md": [
+      "4d2e3cf44aa988fa3ea70c7ccbe8ea2e3b5a30a70fa266dff2ef628cab653747",
+      "8253af22bab8e108daa6494e32344122455b864231dba0488a8420136f9cb2b4",
+      "8400dcf81b23dd0b36ce543d18eb03b45911486790a6d017a7dd1fa30b650981",
+      "870655397db63bcf6f08e22ab58c30464d38346d2d4fc0923ae4affb71a27f60",
+      "ac85e249eb65d7d6b76157c40d733bdcf546481dd4c21500901badb6b488fd4f"
+    ],
+    "chores/control-surface-rule-conflicts/README.md": [
+      "7f19206f21f4f981e5c2fd998c23ef67c6eba91ef073300a0828eb7a4d7725fb"
+    ],
+    "chores/control-surface-rule-conflicts/acceptance.json": [
+      "3f199cdb8c5958b49a10fed854be06dff47df012176db0ab5aa281dbdea2c8bc",
+      "6e772fa36b3c4cf804a93c5f14b18558b3d9746d0d985d923aaf821cfbcb86c7",
+      "969aa2cc4ecfe97f3e25a18f99725af6dfde518796673a644f823848a5a17276",
+      "ae726e1b5266d22da3c573caba09d5262c3934ac325eba33219b2b061c48786a",
+      "f3992b0c4ac7f230f5f62e0ddaa645edd51f5d7845097b5dab85bfd4dd4f8d31"
+    ],
+    "chores/control-surface-rule-conflicts/check_evidence.py": [
+      "2d07919211700647a027ecb5f57ba324d3e6dcb496bf7defc6b26e92dc1e57a8",
+      "d46d6612addaa1c06428d0576f46d678c3c6581dfdab1e0fbb10aa654ce1d239",
+      "f11a1b5d76a0f48a01216fbb1cb350655f86d691063e0c3b76214c4ddb41e2b1"
+    ],
+    "chores/control-surface-rule-conflicts/proofs/.gitkeep": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    "chores/control-surface-rule-conflicts/proofs/CHORE-LOG.md": [
+      "a27b79ca33b7a49aae1fcf339ca544813012fa512689201c98e71263741d6584"
+    ],
+    "chores/control-surface-rule-conflicts/proofs/conflict-matrix.md": [
+      "e9dc7a8e17c8a34c84d25d09260c80990b73cca904d3866c3e0e95536ffa6052"
+    ],
+    "chores/control-surface-rule-conflicts/proofs/rule-inventory.md": [
+      "306abaa9132994a9ae38a452f16b34c56cbb782a7f03ad1f7d9ca3ed1cd6123c"
+    ],
+    "chores/control-surface-rule-conflicts/proofs/summary.md": [
+      "3698d1f6296b80492169ffad6a3b2414635743b9a5bbb4806652e98091a62cf2"
+    ],
+    "chores/control-surface-rule-vs-check-drift/CHORE.md": [
+      "27461bae1405bda2ac178c35f44916a44738f1ed42a0c24a319c2b2517971e43",
+      "389d9a241a4f65c640197d4c49853cbb2bcfd1d3a86a490487ee62b794746e19",
+      "608540edbe8ffed161c9b07b8946245dcbb1e49b177cbd988fcde90aafe942a3",
+      "64df04d6d2f634c7fac1376bf040a2fcd13a256c9f290e8e7dea94d924ff469c"
+    ],
+    "chores/control-surface-rule-vs-check-drift/README.md": [
+      "205cdd94ab07b0b4f7e3e9c5e8ae9d62833d0e858c8579437d949eb6e0718ff8"
+    ],
+    "chores/control-surface-rule-vs-check-drift/acceptance.json": [
+      "1384e1c584290d91bc4555012e0b5ef11d750710498be3024dcd8eed5b81440b",
+      "5752235df81e492b613cf55503fef88ed790f1febe229c55b195418481d64883",
+      "91b6d63b1757216bf843bb9cdc34b75e034683a9fcd6a7d3d1275004a7c3cb4f",
+      "ceaf0c8fa0e25832c25f7368ca1c37e68c5c01a053bdcb6121d704eab105588c"
+    ],
+    "chores/control-surface-rule-vs-check-drift/proofs/.gitkeep": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    "chores/control-surface-rule-vs-check-drift/proofs/CHORE-LOG.md": [
+      "6ab4bb7b7db7f1f6ac916011be6fd7e70b296c2363667e6252d827f67543845a"
+    ],
+    "chores/control-surface-rule-vs-check-drift/proofs/check-behaviors.md": [
+      "26786b1906666685458a3591dbaf1674b3850b321550083b77abb4eef296da53",
+      "ba5f6d2f3f9705f97667b607b403246e96dde65965f138a06f6b9223698a9195"
+    ],
+    "chores/control-surface-rule-vs-check-drift/proofs/parity-diff.md": [
+      "1d779e50af605b0ebe0f9b025e015314fdd7df258896c45a1809718060636764"
+    ],
+    "chores/control-surface-rule-vs-check-drift/proofs/promoted-inventory.md": [
+      "7aadf78df4dce98f88d62e2f9c38a8fb1631ccf8ee9c27925fabb22a7ab6f3cd"
+    ],
+    "chores/control-surface-rule-vs-check-drift/proofs/prose-assertions.md": [
+      "3b3a7171ae4aab0c47f61cd62e7f27e8906c644adab8ef6aa04b2c3571b12331",
+      "b9ae50d4fbaceab07ea496de9e81cf887d81b2fc0349494c151b0dde0f87710d"
+    ],
+    "chores/control-surface-rule-vs-check-drift/proofs/summary.md": [
+      "2cc2439a70f98a06d367227c4dd341160dec6c621245689a12a6a06d4670cfd8"
+    ],
+    "chores/control-surface-skill-rule-reachability/CHORE.md": [
+      "32cc77ea851017a6a2f82133fc7b22a727467a65ff0579bc82e89089bbda6fe5",
+      "49e25de9df0377896e98538570da57131cbbe0e9237492c511442d64ac39dca7",
+      "50bb580d637d8ef226f11c5f81ef13affecf613ba71cf0e21c935fd2b1c601e3",
+      "9b8e3b4b71ccc0726b0723778c6ea3bf59c37679c44997b4cecacc275346be44"
+    ],
+    "chores/control-surface-skill-rule-reachability/README.md": [
+      "0e02fd886b2e63d2067e86cb2efd062ea44f8b8598c5207ff768bb7d80e9f34f"
+    ],
+    "chores/control-surface-skill-rule-reachability/acceptance.json": [
+      "3d9b853ed57bd15b74f0c9100a5f51ca02bdf34e15d91f70c142ee3700169a9a",
+      "a42177eae68fbf9b81f70dca7a112fadc56bdda6f64a993433444c0b99b33122",
+      "bbbb08472dde6ebd7326ef03a2fc32b1504fd2cd661de45ad8d8e4434dd8ec3a",
+      "bf5a00ba919d17b404d30ef6845f698f9ac4623c41b59e4fa1f14c990f90729d"
+    ],
+    "chores/control-surface-skill-rule-reachability/proofs/.gitkeep": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    "chores/control-surface-skill-rule-reachability/proofs/CHORE-LOG.md": [
+      "3c1c3d2b00e0d60ccd15f9b20d85f537cb816acc346f3a696e1ac2bfe5f5d676"
+    ],
+    "chores/control-surface-skill-rule-reachability/proofs/ghi-cross-reference.md": [
+      "673103840cd074020cd88d46b04f0369022837ce74de248a881dda7b34c1a1b8"
+    ],
+    "chores/control-surface-skill-rule-reachability/proofs/reachability-matrix.md": [
+      "51b3cb4885f05231f1f11a0c7d2baf2a050769860f626c31b26269721acb3780",
+      "568e718bdcd827f3f2f23610fcabe2e3270350599485a17f0c37fd7ff479c85f"
+    ],
+    "chores/control-surface-skill-rule-reachability/proofs/skill-inventory.md": [
+      "6053c7e8cc34552a7b9d73aaa6f8f3fe5dace8be289e29acf3f99b6075589fc0"
+    ],
+    "chores/control-surface-skill-rule-reachability/proofs/summary.md": [
+      "c55a18da67ae9c29cc1754fc9e450a49da64f21b68ea29c3ab6efa155a533e3e"
+    ],
+    "chores/control-surface-validator-reachability/CHORE.md": [
+      "2fa8c40f1c23089729f6b1fcf2d7e04b5a8b18143f09128e54046924e04a70e1",
+      "837f123a2d83887b6e3a780ccf6d30141a8b07a6a536f26062220bcf3b87f532",
+      "9a361e2449cdae0e206f7807abb4040f905b7c6273f12be743242701a6d90490"
+    ],
+    "chores/control-surface-validator-reachability/README.md": [
+      "0e9a6b6560d849bfb2ea57d41c3b1076dd5914b31ec0fe8f21530f38d634b290",
+      "ed42eae7b4e93c69504c14a8ea9f29c8c514fa3b33430c97e9faf790afa849e9"
+    ],
+    "chores/control-surface-validator-reachability/acceptance.json": [
+      "304811dc07f99e2e37f608d7c85568cede78b701a8eccbce3c88afa78385d402"
+    ],
+    "chores/control-surface-validator-reachability/check_reachability.py": [
+      "0ab8b75b2f20dc646a7efa21078ce3eb06aa6886c9afd9d3033d14639b97d8be",
+      "439190285535a31879ddc211a080b5de3d613da4aac4adb87e150173e05f66bf",
+      "4b189856dbfcce1b0885be01cd85bb4bcfb3ca96e9416614a6ab0e27134f68f5",
+      "6bf98fb445410a7537d5ae0449afa71bf95a8419fa4052d6ed6ab264b2d2d335",
+      "7e03a84453d31cf2ad8c16575426c67455bc98d4d4848e40940bcc9e328d3923",
+      "e97ad25c6a01207782f6bfcd78808e452a4117dd163e5a1fcfb05b1a5cdfa191"
+    ],
+    "chores/coverage-40pct/CHORE.md": [
+      "1301d8af0cf783f9d7206865524e332d4673aa06804dbe6b10aa057878b9ceae",
+      "19bef10259b76bbf2efc4086800ee6546a8673c6d924b70a8a957c8d48216bab",
+      "1bc6bbde62f8e612ecc1da0b9ef9e700d38dee0f0ab9dd0ec07b8aa7bffdd3e8",
+      "44fa69219e00fb59a2c8fa7f4c8fcb692ccfeaa9ac34edffaa15f7b9854dba0b",
+      "632a925a418b2aaecad078e9058c39f1a792046c692afa02b405cad9495488c9",
+      "6408499f8d65fe2e950d34c2dba500c3e5078d80ddb0dc6b192a25f77451e207",
+      "9d820588a9248910e10abe808b0b4ce962a4b6bf5689c8eac99e3138ffa22270",
+      "a855b19ffd1b657ef8aa5afaea9e4919e0daac8a2b44195b4a451d052abc207d"
+    ],
+    "chores/coverage-40pct/README.md": [
+      "4d6cce439b17bca314b19ec25d1fcd2548688540e10343e749051f73933f9600",
+      "6a5869457aaf25fe9af1426bb7803cfd0819c2338084c1b4b713848f56842749"
+    ],
+    "chores/coverage-40pct/acceptance.json": [
+      "82f163089737867c605ee0f1eb97a76796dd7a85685348ba40e062b54a3cddbd",
+      "c2e96a6dc0fb0580108f45e195746a87ff2e6f051997e25d56e8d08ec741a3a7",
+      "d98ae165b2b9460893dae94185b9c6ed1832b968b1a685a167a67a11a3244ea0"
+    ],
+    "chores/coverage-40pct/proofs/.gitkeep": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    "chores/coverage-40pct/proofs/CHORE-LOG.md": [
+      "9683479bfb424e1d57918cc22412446da140c1a5a3820fdc15b9cc4eda0269b1"
+    ],
+    "chores/cross-platform-test-cleanup/CHORE.md": [
+      "0ad2ae3162d0616d67ea1c6d3761ab779f13212286d013ce928a0fb655034252",
+      "35641c5bd408767b5237501f85464b96ec45d9b6451312b978cf2564a212de8e",
+      "5df4eef0d01fc3a1102e89f5d8ad430429b6eb564bb19184a830627111215f8b",
+      "83e05f42cdba0bbe9efe9db3912089a8ff2a1ed0913aade75c6853bbc7089672",
+      "cb71b608705f7609c1821d737222f5948f9d2266e4043ae9a4e9104ec62f5284",
+      "d39215c7f6fd7521ff6e1d5b0b41643011d93273bc0ddd97b5984ac8629ebb61",
+      "e71e0e7871cde9f93d819ec8e2ba6dc86b3b4454bdecb2d8d684e32fa2394535"
+    ],
+    "chores/cross-platform-test-cleanup/README.md": [
+      "3062c80cf67965fbaa4b19da4ff1ef2e4670a15d3ec504a2faec46c90a939a3d",
+      "4d84227591be96b44e18359c746aa650e8d4fc641f9f1fbd76ac374e3791160c",
+      "f64ebdf2a6cfb687dc703b60741c6d17c7edc966212e64bd4898a4cb0355b7d2"
+    ],
+    "chores/cross-platform-test-cleanup/acceptance.json": [
+      "2f19a8e9efacfdfd0cea76f416c4918400ac9e637afb590a7f21ca145fb07043",
+      "bcb1faa722e9fb65330da0a2430ae3309c4af6a0bd059c6186594e6011d133b3",
+      "f5e57b1be9285e58795bc72976e513a2970e5df9c9391f8223127185534ab577"
+    ],
+    "chores/cross-platform-test-cleanup/proofs/.gitkeep": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    "chores/cross-platform-test-cleanup/proofs/CHORE-LOG.md": [
+      "74119c7ef7a3df4100236fe4165cb96b85cbde21b8fa4fb7d74a953c5fb2474c"
+    ],
+    "chores/decommission-tautological-tests/CHORE.md": [
+      "23d11100ec90a9ab27ed76a7d862d6003382b5242ae5219e4cd17c6a638f78f2",
+      "bb94b147fa350273b6c520c92ca7270273042554f211d97416285c9fce937e0b",
+      "be7b9237265027ad509c086b255f5ffa39a911006c26c4bf1b51ba8cfdf86aa4",
+      "eb73e5ae4dee000135102cb00349976c41429a02af4f8cca79052ecc18ac2c93",
+      "f6bf27edf50718873d9db3f94ac1ecadc1f1ee832ae066c68c5ad022f411cf8b"
+    ],
+    "chores/decommission-tautological-tests/README.md": [
+      "475a43f2fbac03e4dd01278dcfb6647c981eaaaad894fa52401814aa82b97f98"
+    ],
+    "chores/decommission-tautological-tests/acceptance.json": [
+      "380b0fc16ebc40b3b7a00fbb03aa8f1ae19ea8ccd791ab32414b56e1c2d6a966"
+    ],
+    "chores/dependency-currency/CHORE.md": [
+      "21390baceb753fb55a21543325ff675ec17ddc6f94b7d59335cb296d3685189e",
+      "214e7d44e57daa7afefc2a9462ae561bd12a5deb77034350a8e87d0ddc762f03",
+      "4cce5b2c1f0455737c8b124955a23faf698bc9d3b4d9f5e0012c33aa328c7175",
+      "de1b35d5ff90f16287f23470cb6b4623a9d06d3bd64cea419147a2faf6d2e061"
+    ],
+    "chores/dependency-currency/README.md": [
+      "9db959814fc0ba33735f447d934a06f084314edf921ebfbc56bdaa7cb77b400c"
+    ],
+    "chores/dependency-currency/acceptance.json": [
+      "0e6d51060a0f4549d874adc920a0cef128ef7a25255f5efb2bce2e1ca55ed04d"
+    ],
+    "chores/dependency-currency/proofs/.gitkeep": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    "chores/dependency-currency/proofs/CHORE-LOG.md": [
+      "7ee367d9bd8629910a430b919dd2827641b250a841cfebe8954c9b3a71dc76b7"
+    ],
+    "chores/doc-coverage/CHORE.md": [
+      "042709f598043575fc949d8ba3b8fca84b1727559f8808f90ad5e2d65f1b0e31",
+      "3a6f854813e5663146ccd2b8c0634e3474de76e4e776d6b81fb94a614bdd3b96",
+      "53818ece5d5fce3892566accd1f26438fcf8bbe8bada3721f2cdd6735f211fc9",
+      "6c9446924af0da6e5cb20e6c88c78b5e5d6ad6e6bbfdffd49b57bd281b48b03a",
+      "920e93f9f036bbcb5749ba1989cf41b1b0820d60c72543a74c9c957becb9bdf2"
+    ],
+    "chores/doc-coverage/README.md": [
+      "cafd3e278159957df59f184b73c9f45a27b0c30cf0de0ece53b49444e61d3561"
+    ],
+    "chores/doc-coverage/acceptance.json": [
+      "68d0211021e003a4da02110fd85aa3a1b6382d10d4ca57e99e24874669f51f9a"
+    ],
+    "chores/doc-coverage/proofs/.gitkeep": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    "chores/doc-coverage/proofs/CHORE-LOG.md": [
+      "178d23d7896cb2e53fd91b091e456eb6bca886e0dd860e911b77d86e6d6223b0",
+      "359519b82cb28929a71d7f9160c42467b93f8205497d4af317b3e2526be6b9b6"
+    ],
+    "chores/eval-feedback-cluster/CHORE.md": [
+      "40d3ae949246a87f4f7d484e6cc6a3540d135271db696cd7f662d89f8103e265",
+      "6e430951363defe4bf23dcfd93423d78f2ace0bb6396bd2f2ab301fd2448c2e9",
+      "d0cfbb3850d6bf11c1d2f1103285f2992a5b09de4c62bd4e2737c16652e1bc23",
+      "f21ba108d1eb63366e0d17cfbaf05028dc0b0acafa9573f6fcb09daa26c32f5a"
+    ],
+    "chores/eval-feedback-cluster/README.md": [
+      "021176cb4a0d7c903a31e500bbba422a2d48bdacbce9ec90ba8c4808d45b276a",
+      "e0b538fae41b05ed0334b19559268b8422bae6bcc2758e6367fbcd1e5cdac8ec"
+    ],
+    "chores/eval-feedback-cluster/acceptance.json": [
+      "d80783d71bb89635c3fb1b2e4e532ca74e824a787a7da6148e04f5b031854c85"
+    ],
+    "chores/eval_feedback_cluster_lib.py": [
+      "2a8e5aea892d8ef5de6a5d3b883b93640dbda033556f7bdaeb45faa4fe06b921",
+      "53f4cc6831bc70c4532ca614dc22c3dc3ac72f60468a62ae19f5a89474dafe6d",
+      "64218fac0fe485069f32b5839df3dd14b241cbe608256d4644b4ef1a3edd3583",
+      "da8c4b9731ab8945e8a759bf796a1d8c4756c4f5866b73648baff2af5e70698c"
+    ],
+    "chores/evidence-integrity-audit/CHORE.md": [
+      "030d129024d094dbfae9eed04637756543f1179c241d254d0a77ee951e478588",
+      "2e81c953b948782db184d21088a5d1714c27f7ca6a7866a6eb2c81db6f3bfcb0",
+      "44850e21abbe7e1a9262d7fd3b83e6aa63c820f84314e45ee35623b724dfc211",
+      "5dddfb30f8bb29ebd4aa3839bbb350105dc86bf8d425db83b885869e641f00db",
+      "968d4cecf642124f01f11321e1ce33f06e53be8e9f8c24d6fec7e6396ef46939"
+    ],
+    "chores/evidence-integrity-audit/README.md": [
+      "016137233c02f6fc4bc3e323af66edc63c09a582535c486dfd1fe809ccf7b7cc"
+    ],
+    "chores/evidence-integrity-audit/acceptance.json": [
+      "acfeba745984caebcf2e6410ceae025411faffa1da87a046b6168ab0ec0e76b1",
+      "b3413c2d85dbad0b3757d93a55303a601b48dd9d2720e6154be00f9863986b80",
+      "f5e57b1be9285e58795bc72976e513a2970e5df9c9391f8223127185534ab577"
+    ],
+    "chores/evidence-integrity-audit/proofs/.gitkeep": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    "chores/evidence-integrity-audit/proofs/CHORE-LOG.md": [
+      "2a7d481d79027fb241072bc4a762b3e11b3f80f2e0e8642fa513a1b89dc09bfe"
+    ],
+    "chores/exceptions-and-logging-rationalization/CHORE.md": [
+      "26a8a8598cabab7118c5e4abef855774a635854cb5b3c2c053057bc7ad8b75c4",
+      "73da575a2d6806ef9b4f544f1788245a81d8d9817d205b531fa0ee5ef67d4fa0",
+      "7a1efa575645d29e898e243c62d6a937c946981be1f1884cc609762b94ddfa06",
+      "f7bee2c0282e610192155948d0508c5b16deae51b1478540f8de60cb528aff82",
+      "fb01c752feb5df7fab53dbdc38496eefc10de9d4a6244408050e05aec52ac474"
+    ],
+    "chores/exceptions-and-logging-rationalization/README.md": [
+      "7c8c4ed534be9d0ad114c9e677dc9b124c9d37033f7a1637e0a9d9b4e2f864f6"
+    ],
+    "chores/exceptions-and-logging-rationalization/acceptance.json": [
+      "52f03e890cbdea8eab7bc3a4e524148dc9efe301a44bf0c6d3d18875ff7ea24c",
+      "c093775872060d8742e4f8e9579dd55d0b9a824a27d46298e12dc99638b1bc5b"
+    ],
+    "chores/exceptions-and-logging-rationalization/proofs/.gitkeep": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    "chores/exceptions-and-logging-rationalization/proofs/CHORE-LOG.md": [
+      "5be1176735bf7b107ac105dd4482609f62a5040ce602a8e1df1cc47e018b9a28"
+    ],
+    "chores/failure-class-index/CHORE.md": [
+      "3b0c4d4e7ba74697b5c36662b872e45bccaa6598f6c78b03dd176a4f32a1395b",
+      "5bb50b235b4bceb0a75cf2f8e3619ed7df4776c5d05f5595e85806c2b5ee24fe",
+      "9e2cae803ae9caaf73c2ce99909d76c0e2837c592f2873c760106e4de19e580c",
+      "a01055e45ee7b35ee315a6ca1d0b6dc0b13db1b60526a6416d5bcbfabe40a3cc",
+      "ec0f383626e693077e7aabcceac81a48e9e0dc11cd37aef4fc3d4c78ae8f0ad6"
+    ],
+    "chores/failure-class-index/README.md": [
+      "a93b7337a497846206f3b2e3776854431c3e86bb54cd614743ceab07d1d242d2"
+    ],
+    "chores/failure-class-index/acceptance.json": [
+      "0b87ebdfb641044168937c419e79c984dca64225e06a73790fc2d4925a6ac0ff"
+    ],
+    "chores/frontier-model-card-currency/CHORE.md": [
+      "0fd5d291c86055499c9b1e2cc7f652ded27bbe9f7106ee15caf7d6f744c45ac6",
+      "20f1298f99784fbfc3195cff81db11df04c3219be9deb86bafaf9cc666b03a8f",
+      "6ae7e6e30ea65ad9559ad09a972f66ef3fce05f436023a18f87c994ffe58d095",
+      "a87fc56340492d8562bb7fa3f2fd61f3f1531d923d7d22326ce11a24011feb47",
+      "d5a781afa399f7d0e1282c3b8c5041829155ef5aa12a0f805c35aa022b8fe8f2",
+      "d7552c171930318cbb05cc3ba7bf6e6b27c3201fe0697698cc9385f26ec1eb25",
+      "e462afcc2e0be48ef761f3600afcf8d094636d17901f88b3cad71a176d6dc29b",
+      "f60dcb99fb8b8f0a07a3d27ae2164cbf1088d41a24d8281cb9dee0845ee1f133"
+    ],
+    "chores/frontier-model-card-currency/README.md": [
+      "7b22485b82315f77d0a38e86f15114afc7cdec4492738db6c39b7d5439d02dc6"
+    ],
+    "chores/frontier-model-card-currency/acceptance.json": [
+      "35753aab65aecd77fbf05cec27d04bd1e2f153576d735c2f9bb71fe33f7c01f5",
+      "f81d4a9db97d3e649221764ddeecdb6566c7cca1c6c7d8a44796080c4180e638"
+    ],
+    "chores/frontmatter-ledger-coherence/CHORE.md": [
+      "0ef41b38b9c775c6e2557b2ba1021045197becf5342f895024ff58e263550ff0",
+      "34f926165b83f869109924ef587bd0a5e5bfbee9a2b2f853e8bc986775579864",
+      "74ee4eefea59fa896564ce86e5ce1595b0a7b3bb6e78ec127cd24c83939d5f3c",
+      "d481aef8a30cb4bced0f6a143e0299ffd83d139aa31e204b8e9e2545ef779992"
+    ],
+    "chores/frontmatter-ledger-coherence/README.md": [
+      "cf559745538d54e5cca3068295343b8e386c2362fa528a39ecc1a9707d39af6a"
+    ],
+    "chores/frontmatter-ledger-coherence/acceptance.json": [
+      "62150fd7655074b4588f779a16935ab4b7a6e6a8673f279cca0fa03601d01e42"
+    ],
+    "chores/frontmatter-ledger-coherence/proofs/.gitkeep": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    "chores/frontmatter-ledger-coherence/proofs/CHORE-LOG.md": [
+      "db92059f30274f0a493b97e756a84d2b3f599fe636bdcfd35a9f56b55a53251c"
+    ],
+    "chores/hardcoded-root-eradication/CHORE.md": [
+      "00cd343afee4a39f28424d3013c0d26f78448a6406b4c3c8034946374eacfcc2",
+      "2359453a9ba30b76c07b9770a2e7163ec8f325ab9e9d5f206679a3dfe3c526b0",
+      "359a5e6bee0869c85ffac882bac41503f62a6d1c6e2e64ee7a3c52dbb4f3e34a",
+      "55dd5aa3eb2df3f5d8cef5210c990f230c3f0f34953e0092622ebfc244661bff",
+      "69ec2859a5d0afd43c253011340d89578c9dc41c971a4ebc7d31d95abf6eed5d",
+      "93c6aed5dc5048cd670d832ca17528dd5c88def6d2525decd3e6c869cf916933",
+      "9a55f1d28e94a5e29015787aef9d89d03db66f9773d1e8fc0ca392ff9e595a0f",
+      "a456660d31cb84b3cccb8cc7dd7820a9d25effe0c16d79fc4ec8e13e670db352",
+      "e9820e60136adb9c163348f226386bf490c5f8bfbc3149ee74d83ec53dc4f315"
+    ],
+    "chores/hardcoded-root-eradication/README.md": [
+      "55e783ade27535e57f881cead16d4380863fce42782d1d21360d8ab409b7a1a9"
+    ],
+    "chores/hardcoded-root-eradication/acceptance.json": [
+      "3fdd5b5b4c3867ce48c98ca860d3c761b40b08498c75c37d79a79fd20b49ef60",
+      "75d163a7987ed26173a28a082c6cf5b52505e9c43feed7efd2e0b4f0360e56a1",
+      "7e4f8d665cc90eeedbf1f5ca7e0e84627072b41a62029c9cb5c2f7f0cdc295b7",
+      "bfd70ae64368855aac96d764851a26897132f503f6b3fd95aafab3c5652b854e"
+    ],
+    "chores/hardcoded-root-eradication/proofs/.gitkeep": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    "chores/hardcoded-root-eradication/proofs/CHORE-LOG.md": [
+      "e366f0f0febf3dcca83a214fdfd240f952a134fa59e0e09e57034a0858198890"
+    ],
+    "chores/instructions-files-diet/CHORE.md": [
+      "078cf842a851ba34527b512c7caa7c2a1875b30a2df39a58de95089843e94bf5",
+      "74e839c82865fc15da5a6cbc10f57e8a5219590697836eb2f39d654cf3eabcbd",
+      "8e295686c74fa645ea85a7408a27aafcfb944cf33e5125624ac118b911cea909",
+      "9c65787cc94ea122c37b0b451209c96d78d6cded72ca9ebc405c4700411e0593",
+      "a14fece17d87b78a2dc38b0b50e1c6c24d309fcf1b5799f147591882bfb72435",
+      "a3204fede0a77c7c8a617173c5e61e79573f38a8bca8548234179dfe5c6c153f",
+      "a3cdfec6d37e74e841a62f1bc46823580ad458827067605afeb0bd4ad65f637f",
+      "e9c55b32b4dbfa8e8ea5944fb8a45e51d72f18426d2c4bf05a38606e417f5c62",
+      "f5e29963df5ba4a24005533dbfd5864cb340ec9456429a0066bb8e1ffaab16ea"
+    ],
+    "chores/instructions-files-diet/README.md": [
+      "7cbd3ed282bebbc6ee312dae948738e9d4e8661e810dc2d768a7114e43e85e09"
+    ],
+    "chores/instructions-files-diet/acceptance.json": [
+      "126ec48baa0772d1a1d1c1f27922aebeffb5447cb79f43f62ed004c35b13ac17",
+      "1db8349c4b2bebb24e6a825696acc6274f8822fd6c72cb1c81a7eb243a9997cb",
+      "b03b10522808b2b443a56521f1837410920b5ab3f6965749c8cee70455316cb1"
+    ],
+    "chores/ledger-vocabulary-inertness/CHORE.md": [
+      "12689fcc257dfd20ebf0875ea7f8c0affcb46360dbf4b84210dbe335c7e551c2",
+      "4a0f25d459ac5644747c6d79a9d60f0bbbc5f41cac7e42a8cb8832629ff1d010",
+      "4e1884a7f9136648fc48e6e20b56107f5831aac08c8db86c74872b194e043247",
+      "cf1bceedca3aa07988543364361a1a8a2c2967d2faa199b0abf25e1478648b5f",
+      "e9b88f031ca7be3e87a6f62488297af4e5103e17ae1f65070e9304ed53fb8cc5"
+    ],
+    "chores/ledger-vocabulary-inertness/README.md": [
+      "5528838e10d700dcf6e14c5dd6f8e1db29bfe85e4b18fa584b63c1f525b1040b",
+      "bad522547c890304c5bf5a4202093a621764ead2419d9c66b948a09f0a39bffd",
+      "dc14e19cc651771f9cfdaaee3d4f394d47548d8693a7261c6fe063722841fcfa"
+    ],
+    "chores/ledger-vocabulary-inertness/acceptance.json": [
+      "1b4bf4243c777ca1e3daa90ea90e4dd7270ee6beffeb1db957ce59597f24056e",
+      "3b8f1dc8a8a931fc96fe4262d8075b3d1f863f1ca90828d12917b9d9d806c3da"
+    ],
+    "chores/ledger-vocabulary-inertness/check_ledger_inertness.py": [
+      "08796b2777d9a4f86cc476704d6598710c5d73be06b2dcb41b15c28417e270bf",
+      "3602b69378a2c9c28874b9b02affe05b018f579b44879b3c2324bc7522f240d4",
+      "88d05a4d8613b6402450d41425ca06468b0013a6df2007c2526ffcdee12773a5",
+      "9e6e7b459568d28d93543499ef0c2beaa91917905a6040e81fccd539dbf0a60d",
+      "b6afea052a828e25e0bf5cc86db7cfd5cf6185fc9826275f8b59222783ebd1b2"
+    ],
+    "chores/memory-hygiene/CHORE.md": [
+      "1abb0b6e41f778049f5b96593cfd1e26b52e0a20d54ba03469068429bc6271e9",
+      "402f7d2342d8ea29986d322c2e066c01786239c340e2c15d7c602680e5842703",
+      "663ed736e2599408f369bdf7d68d4c08029595090e7d10b9149d733b9580624d",
+      "6d06e59a43677ee5105286c4ce77b0991b715b99b9fee2ab97874076e899c36f",
+      "c5c736b48653accbac0f50ad93c125cfeaa0c3c2366d554506f7ecf895992226",
+      "d63e0b80f2293387d48a92859f3b2c4d77eea6d7b65573613182782e0e0106f0"
+    ],
+    "chores/memory-hygiene/README.md": [
+      "a6bf1298cf172e4f92136fabb7d2b410f56b6a6f21e28916d2650d9246744335"
+    ],
+    "chores/memory-hygiene/acceptance.json": [
+      "2e09447914f6711d6497012ad9d08de235e0a579e37b25d1f3e6e832cab6ba88",
+      "559b6e1d397da8541d39a89886dd2f63c13a2b8dc738525f709fdfcf93915f31",
+      "85ff07b8bf9ecff0bc75e54e0c192927cb3ed0666bd4c65e82a1acfcb744c326",
+      "ae355d89bf245d9e509e956ff2e43cfe1540c0a31a7bbe3f38abf3f537bdc8e2",
+      "e95a7e8b9b697d48cfd57f5cf796f262206fc5ddceed3c4c9715eeeab346bb38"
+    ],
+    "chores/memory-hygiene/check_memory_drift.py": [
+      "ea7c37fe25d2a43327cf74b666054e16212e4a93d953d1928cec14b7cf4338d7"
+    ],
+    "chores/memory-hygiene/proofs/.gitkeep": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    "chores/memory-hygiene/proofs/CHORE-LOG.md": [
+      "9c84682584e6a8e6e2c3fa538409da0082e8b7359ea932c7a26c6f2542900787"
+    ],
+    "chores/module-sloc-cap-radon/CHORE.md": [
+      "3eb91769c01ab6331118437e190a7e4a49faf3d7f537e72ddcd7501280d128dd",
+      "53eed1c6293dd5c2244869c7f3f5bee1fb93483b8cbb5568d801caf664f1b934",
+      "5b687b37fd5c3746fb5c3d0bb6b26a3fb9d4084fa1f3ce5063a42af6254bf3b0",
+      "64decde1014fb77fc0588b5375af40c326e97c2baa30e74d43586418d41e54b1",
+      "694e12ba34255a6038019f80e2382d39df34b5d30727c0f42226e1713d2d0837",
+      "85fabaa688852fd56deed56fedd51b6b68f73ab4b94a4d244211c9f98d346936",
+      "a3f57d3baad3e814a14ffba8e4fbb08281056683c7e8de234eee07b78b31debc",
+      "edeaeed160484dd79210ab0bc905b989aada0001d9e260babf2a5f1febf07035"
+    ],
+    "chores/module-sloc-cap-radon/README.md": [
+      "6a48922f36caafc3d5cd4da247401cbf6c00b1a1473c9c072c29e8537ad8035f"
+    ],
+    "chores/module-sloc-cap-radon/acceptance.json": [
+      "40309e61d9ee1191407c77e123968a2924c6f863532256a2bec14e2be4786fcc",
+      "9e3c761fa4202c92301c0d2a52bf05f36298fa38a78cc45243816956c8e3afb0",
+      "f5e57b1be9285e58795bc72976e513a2970e5df9c9391f8223127185534ab577"
+    ],
+    "chores/module-sloc-cap-radon/check_module_size.py": [
+      "6f9dd2ed1d01329f483148082268f311885b79788838a5f2d244c223c4b3ff37",
+      "8c29bb93e2fe499a1aab3810af667dee7de21d515fbfe65fb087d557cbeb13ac",
+      "c331a4c8ac8acdac13339a8e291e5428629b2a92742a206e0ca08e7f5a540540",
+      "c7b243e8618d05b86b8ef35b3fba3d1d1bd17a30f530ceea1ebe8565525d7d49",
+      "cce5dae961d047de4372e52e62bc6921ab4bd83b20270613832946deece355a5",
+      "cfe9d40344fd73ec09ddb783761912285230bf7ac3cc80902f810b432ae6b9fd"
+    ],
+    "chores/module-sloc-cap-radon/proofs/.gitkeep": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    "chores/module-sloc-cap-radon/proofs/CHORE-LOG.md": [
+      "eadd860d031a3c7d014e12c0bb989ec9100523e74581d09e0e072dfde1727076"
+    ],
+    "chores/owasp-top10-2025-scan/mapping.json": [
+      "3feb77c14d0e53e5e0785c82450e80bfd91563a3d799776a25587204b560d630"
+    ],
+    "chores/owasp-top10-2025-scan/mapping.schema.json": [
+      "5a941ce8af893ee1027f64529481504e8fb9c3bf22c7ddeb6bb4c115d55edcf4"
+    ],
+    "chores/pep257-docstring-compliance/CHORE.md": [
+      "40beb6dc75111cba81d2f2871eaa9cc0939bcd524781bd8c32f582f83caa5c37",
+      "58bcaacefb9bbf61a7e5d43cdafc2cb5fb586e06a1edbdcd2780dc4a6be3fa40",
+      "f77c8ddea4332b7bed50a0ed41b807bd8b9b25d22ec0b3dc6c9caa92d38f6fba",
+      "fd63aac7a825e462c74d053061142888f76c78d7f2653a876739f3bede6a7d83"
+    ],
+    "chores/pep257-docstring-compliance/README.md": [
+      "99a96d6d2c3bf06b5d0e4fe808041c0eb9f073b2d5a2ad52ca2a9b608df5bdb0"
+    ],
+    "chores/pep257-docstring-compliance/acceptance.json": [
+      "8415f83afdbeeb4332c3c6304af374b697a508a313626dfde17e01b524b95861"
+    ],
+    "chores/pep257-docstring-compliance/proofs/.gitkeep": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    "chores/pep257-docstring-compliance/proofs/CHORE-LOG.md": [
+      "37a7f4a5d65054ed598fd4b2a9ddf67c9489d62c4b2113de687ba25ff3bbd1da"
+    ],
+    "chores/pool-triage/CHORE.md": [
+      "00536cc07234d8f54b09c851302ab88cae03e5fa1243f97f890387a0c6062e3e",
+      "0e8d2eaaf19ddeb8fb9d38c19570bf033a4d9d0d6616dff020c859d1e3776f1f",
+      "226bd22cbae6092c0e4658e51c74af2e0a88c0fc9d6562d246d8e3473f7dd217",
+      "59f1c8c850faf5ef5fe7268ec84fa44d0ffb161b464e0535e136a3c03ce39222",
+      "97ceb117eb439d29246adf83286e55fd713176a046fec7ba349fba1fcdaa1cd9"
+    ],
+    "chores/pool-triage/README.md": [
+      "377b578f24e55d1317abf2184574dcb70823cab9d8414395fee2f4e004421a17"
+    ],
+    "chores/pool-triage/acceptance.json": [
+      "3557b37f621b1e53fb2cebc2fa8420bcd608cbf6f364ed32902c61599f05f839",
+      "3aec65842effe63a4ff7c034c3329b5abcd39a30b01ba9df0d130f6d11d40bfa"
+    ],
+    "chores/pool-triage/proofs/.gitkeep": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    "chores/pool-triage/proofs/CHORE-LOG.md": [
+      "b2e483740264a587afdad3bc6e511c5cd7065376aab5ae13cc4bedaeb968324a"
+    ],
+    "chores/pythonic-design-pattern-application/CHORE.md": [
+      "2fe2f62db58c7d67e63afa387165e1abbdd7ac5ca4bcbf9ffa4f3c972b2c3e7d",
+      "38f3048a53b7485a3b77de1d1f447c7c8ae05a30b572e49d0740d4d9c35a8de6",
+      "473b0dca67b32852c24f7876cc1f367ca2cbdc10c2cec0c6b618ca9a0801c610",
+      "70babce3cc4a229c03609134650291ec72300c8b9b18de238dbd64943f885f56",
+      "88e59dd0ef022171bca28abb27f33c1c905a50b8aa8e0192e202f50cb176b903",
+      "efd156c04b4d4db4905c46db372480f61516ba53cadb6f02d1f2a42aa03bfbb2",
+      "fb75a9ce52bfaf9f87a8c5800e779cedd877a21677ea4c80bc8fc092067fa48d",
+      "ff626470498a352c52892e5ba10f4528ab4b8240d4e6f94762dcb7bbae2be929"
+    ],
+    "chores/pythonic-design-pattern-application/README.md": [
+      "12b373a2f4ef68dbd3baf6e5711138722b8ee3f8f4ef579079df37f4f4676c44",
+      "1930b33e36dd1c51e55fd0a40e66f03ec81cb75e94377f16e6e8220636f8aeac",
+      "999de86d9ba129d2ef7cc21775644775a750edaf454824034a56ebf6a7b3d2f7"
+    ],
+    "chores/pythonic-design-pattern-application/acceptance.json": [
+      "36f39fc10afb73fe3fca6de236d2f764853bf246c23773d99f0c00123cef9c1c",
+      "fe9888c2a576f511e0c9c94656bcc56aa155d7644e7b3a5d5a1d1d7103bb1ada"
+    ],
+    "chores/pythonic-design-pattern-detection/CHORE.md": [
+      "3d38ae5c2c71fa2cdaf52ea8e5c6b1728ad715d7f8335fdf224e517076b47e34",
+      "4c44915bf69b92114464c621cedcef9f08b0c80089c75beee7b7cd29cfd55827",
+      "51e5ee03f12d1bde09645c3870d16f57a683f7dbb51662089548af94ca223ddc",
+      "926ca1e8f83683c5d395b125dad6d1de7a0551a0614ea31392470b70bb1c2974",
+      "95c108de465f26dcf5d2db32652d3dd2b57d8c10dbf13964370d47583f45b121",
+      "9aed948729b279ad9c1e55d5b0ff0de3823655f891e56c9b620e6cebb14d40db",
+      "c44ccdc0944cf74f44941a2eab5c7d4e1e23e8958145603b641d57dcf367fbc4",
+      "f13e243d2d8ea8c4bc25f391e1091218ef986aa74640dec2aaa157e711fcbac6",
+      "f7d0326ea032f098a99a1454942be65352023cc42bd4868ff4a619ea5072d796"
+    ],
+    "chores/pythonic-design-pattern-detection/README.md": [
+      "c20297c944284ae992cc9170ef894f6e778d37aab255c63ea14273c19be9f470",
+      "e1295f0dd73932face5882979be43f9f3338e19889cf6b4a6cf1b0e1189b8305",
+      "e2de036d9010c8d84fbbe23eb9c421a6e13ebabf7f462965accbf0378f71e376"
+    ],
+    "chores/pythonic-design-pattern-detection/acceptance.json": [
+      "14fd06a197ad13b79987325f6ac292eaf1b09b296ab20a1d4bc92499b9367b81",
+      "34f91676b33dceee4830eb8c8686853b060a876ea4dac0a471bd429b3952a7a5",
+      "b17de04dbba063aab32f3c45702dcbded0dce05a769f930d446ca4b6ffc27059"
+    ],
+    "chores/pythonic-design-pattern-detection/scan.py": [
+      "053bc230cf920c2f169e41225778873b48eee282101a79758e46990ae5dea7fd",
+      "19fd06103031a8378b8d45424b06cec0ce5ab4e0d4c115f7be40a47805ebf6a7",
+      "3b452e514050b4d375bc48b5a90fb88920d9b013b9e0771fd4412befe7bc8335",
+      "fae2fdf3868c6af011be79815c9548dc8c51406fdc386cc81636ba9032de14b1"
+    ],
+    "chores/pythonic-refactoring/CHORE.md": [
+      "4b8c9de58793163d121c56f98b0a68d81b8dd63949e34c748067116589c2e726",
+      "6c2a1a5a7055d39d7c229af17c6bed580efe9cc6651e3462d9945f4c6adc7517",
+      "94159d9f69f961818535e7113486e829653ac56ced93c1b0a16dd835f48efdd6",
+      "9dba4aeb0ea7ca8520718ea065a5eb47942a0903c414cb6428f7d22304ab4d46",
+      "a19790bc9951c6495b97da046e0f052f65eefac4a5efa6447a49db7f09887d96"
+    ],
+    "chores/pythonic-refactoring/README.md": [
+      "26d365af68e1c94dc5a663cf02ac3533a6a43f91b0af560b06215683eaec0832"
+    ],
+    "chores/pythonic-refactoring/acceptance.json": [
+      "84e388f5e557eca3a479e66163c644ea6f7f2ca42c59aad18058ad1e41419deb",
+      "ef75146623c7476b7e3e348049a966b233d35350414cd6a3d44ff85a85d37126"
+    ],
+    "chores/pythonic-refactoring/proofs/.gitkeep": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    "chores/pythonic-refactoring/proofs/CHORE-LOG.md": [
+      "89e8a96d88aa25f676f560b193487b8b9e5198d9161a577592e2055d2aee6766"
+    ],
+    "chores/quality-check/CHORE.md": [
+      "65eda9c144eae0310fd707ad323ef63f50051cd8390d8e247548fd6703c1b057",
+      "993fb54ab2e8ad880de7f192cb62f8d09c6214a1545c918b5f589c5fd91aad6d",
+      "b3246557c6e389fbc9d0b2955ecdaac3fe1de3ba1c4258badd6a81ac44971014",
+      "f82fd55241a50e46022043e2adf52e92125c85946c3c2d3f50dfeb16658e7d3e",
+      "f8c7820125961f87fe37c4c88a84898e18703e9ca0a53c4b3ab0053d8e17b2b7",
+      "f9a0194674802c7fd18be9a53058b401f205cdd6e7323fe9fd8428852f0f0a9f"
+    ],
+    "chores/quality-check/README.md": [
+      "f79483f141bb5fe57480a81c38cb85e0ba96ed06cd9a95f5ed74bea2f9e54924"
+    ],
+    "chores/quality-check/acceptance.json": [
+      "5ad7958b37db37388521801f54b5d258ce97bc4083eaea14fd9a56a9a27ca418"
+    ],
+    "chores/quality-check/proofs/.gitkeep": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    "chores/quality-check/proofs/CHORE-LOG.md": [
+      "37aa382a7cd9b27ff5649a4fd0c9ec42a48f09c968b65ecdc1463ef85ebfa4ee"
+    ],
+    "chores/registry.json": [
+      "016052d5ccb50100c7740e0a1feb82dde48e257818a2868d42a612adf92b195d",
+      "0e7c9dd73345c78b5c2c214efef7ca99ba6a7a87162b0989f52d66ba088f730e",
+      "150252caa8ad8ad0f2eb72d919adb5d1c4c56453aa1c5202dad75f440a0b8e0f",
+      "1db4f2e07734df20100e000d62b62d9960d4171571885073cac3d85a6eaa79c8",
+      "3ffecdf13ec748442c1aab4ed18fd3a32a5002355dd51e3b23c14bb1d89c0c4a",
+      "4901205b634d1782ca478bf5328ab86f0bc917429ea87a4f496d8eccf15a212d",
+      "508a40b42d375cd62d8b45e8db1b8ea30ab97fb891c5ff431e652cbf17045fb7",
+      "526df05f3d154cb6cd0aa036c8dad1ba1e0429a861333af50e223b2d6bc768c5",
+      "5914f6e68ca2aa2f0725fe97f78f336231584348671569fc78d23b531208f828",
+      "608701597d079ffefea1679c5a67967a61a04eeb760a240786d8ed0376240dab",
+      "61f9aef18bc1a243d665f240611c05885d34cf669b712d64998068750e039aa1",
+      "62279ec7ac5ec6d34f1f02ddc2d98759b11050205d3bffdc538d66c56803bd57",
+      "6d887e63d10eca34ba60e7bbd1f3f6aa7cd6c4befac7c5fc29ee002cf714d91a",
+      "7e59550336e96ff44f60ac3fc06092022d7cd214737caff98c8e4602dfb5c5d5",
+      "a330ff130bc48d7f4e56b9f435ae7aaa118f1fb00541b0138afcf40c0931ee4b",
+      "a4f0b042adc0633dc68295adb17fc76248e1809fc9618214deae570cca131ea8",
+      "aba681b2f9aa7e8f553e1cd98eb4e24765c9edad41cdc5c7e2374fa9fe34e29b",
+      "bad29eaf879629ea98a454d5ee9d0202382cd1f3f6993a57bbab85477a94bfff",
+      "c4e0c213ffa9849642b896516457e79af20af5364ad1f45541909e178d685bbd",
+      "c8ec9348cec77245ed95bf7c606b881c5e6c1479bf7597ee27b854d49e7b3e90",
+      "ce0a048c42f9eb2aba2f59cb505785fdebeb297808e46a6ba591f21b5066d3c7",
+      "d05b5672f6323f82f511f4ee3076b011f799712f21fe8d918f7262ff7c0caef5",
+      "d786db8d4e46ef07bbed89c2a9158656889781a9e7c9a4c95265976c9877b0a5",
+      "db003b13cee653ce0f0e78cbd46173f3690d9d01bcf8a46ce0d78d674bb1808e",
+      "dd1c9dab4651a5e5c463f339afcad0ec2499dd7963c69c5169cc501a58f25f70",
+      "f24e46518333fa8b086f4402bb89826327fa0cb52dbb0befd755076ea455ee49",
+      "f62c911fb86bc1c4551fa20af024c2a1774c0bc66626193b476b0eb201654a7d"
+    ],
+    "chores/repository-structure-normalization/CHORE.md": [
+      "00d5e091b3e6df045344eea8b0d36dd9d2e7fe928c686cdcef50ae67cbc2729d",
+      "8b7770cee7bb78dd341905179a17dc57d06de5bdd7cf3f696e556157d42441c1",
+      "ada13f87c6eec2c1f2fdcaba09ae26a903394f24a06c33f9d4b782f7d88708c5",
+      "c3f0e62063435621f869858631fe74b667848248f9d1e4f8359a6b63ee0ee253",
+      "ced59ecc750d4710d6b0e4ca4e1b4293bd31ccf80744a7a09ef0e5092ba69e4d"
+    ],
+    "chores/repository-structure-normalization/README.md": [
+      "4ac88d41f7c9b644533b1d3a4a42c25d5da7f6afa6d6ec3bf5df77983e091d01"
+    ],
+    "chores/repository-structure-normalization/acceptance.json": [
+      "3e26aa06a5fc4ffa2e841a7c80f78d6910f31b081a4e0a4b7d8fc28edf820026",
+      "b07428bcb86981e7754c56035dfcb79237013b946c543c4879dcd86513337ddf"
+    ],
+    "chores/repository-structure-normalization/proofs/.gitkeep": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    "chores/repository-structure-normalization/proofs/CHORE-LOG.md": [
+      "515c697efb288aff03b1331a5945a6ac7aad50924b1e42d6a2c3e6b7dac55b5b"
+    ],
+    "chores/schema-and-config-drift-audit/CHORE.md": [
+      "c3c9711589f71f58ea8ed6d4a5a1b93db537b141940c30aca4806f68ecc4fe4b"
+    ],
+    "chores/schema-and-config-drift-audit/README.md": [
+      "ffe956e8d1ff0a58da5d9981136dc69c7b2e0c8baf3e2a9e9f6dc585f717c9c9"
+    ],
+    "chores/schema-and-config-drift-audit/acceptance.json": [
+      "f5e57b1be9285e58795bc72976e513a2970e5df9c9391f8223127185534ab577"
+    ],
+    "chores/schema-and-config-drift-audit/proofs/.gitkeep": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    "chores/schema-and-config-drift-audit/proofs/CHORE-LOG.md": [
+      "5dee301ddb1859f3ea6a517968d4718bb9c83ad44a037d0a07a66cd460cf1ed1"
+    ],
+    "chores/session-correction-mining/CHORE.md": [
+      "2695f31e8652a7667a8c6fd9fc666a0fc90171f0edab0da8a95d4c41a62cef30",
+      "40a3e8af1e337d9a2ffb94bfedb928941d19d772f8b3cb879f3cec3e2fe582e5",
+      "c2938a7bb82cc56614e5a0a2c73e3483c6ddacfd553756b2a12d93456414df10",
+      "da63a04263b96d236b86e41be7cd220377b78efd3f9073695f1f2a120110d543"
+    ],
+    "chores/session-correction-mining/README.md": [
+      "50e521ffeb707e479b136ecafaa4b30f62fde4d90a2c68248b62d0b7b254f652"
+    ],
+    "chores/session-correction-mining/acceptance.json": [
+      "358101490d082a44da0ea839ba96e811d6d0c29dee708fe868a6cbdb791d9a4e"
+    ],
+    "chores/skill-authoring-quality/CHORE.md": [
+      "3a8bfdc82aa98b85bbaf1fa6da74d829c688aba51d230b3bc29e38f9cee4b557",
+      "4a8c8df14738ad5313f0c89f7748a2391981b9c24e285ba2fb005bda640f19fb",
+      "62cb720d0b3035790ab3d066c057ffd62aa4384576ff270629e4ee06fa69a3e0",
+      "896d5d29ffe2a78ea11212e91d6bebfbe6640831f7001c721c065518de37c3d8",
+      "9c3933a8469b9e02d989a4628c4280bbd13844345e2526854e58af2d988c50f6",
+      "b76c81cd9044580ddba4f3ee62b487a8bfeeac636d4bafbf46998074a5b4845a",
+      "c55b8f2836874c3e5ef4952217d993ef927327fde6a3d67fcbb87ab5f9e8d881",
+      "f48cf4036e0f8069a3e4c931ec00c70e2bf13fa98416caea20ff332882a64d90"
+    ],
+    "chores/skill-authoring-quality/README.md": [
+      "67576e75f01d157a7e4e2f636990fde6ecbccbbeadb15b094a322bb5fc14a9ee",
+      "fa5add5a92674923ff60f50f7d6dd148fd5601741fe5de6600bf76c807f6336c"
+    ],
+    "chores/skill-authoring-quality/acceptance.json": [
+      "39690434fab4d59a9a075622daeae264a49aedb87cec83743f80c309f7538047",
+      "c2f1c82fed534b854b41a434e548df82c48b260079200d7a2b462ca97d565786",
+      "f5e57b1be9285e58795bc72976e513a2970e5df9c9391f8223127185534ab577"
+    ],
+    "chores/skill-authoring-quality/proofs/.gitkeep": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    "chores/skill-authoring-quality/proofs/CHORE-LOG.md": [
+      "de14dfbd859967a5ff83aa3ebd87263d490bfa77c0460444992ae4b3cae8b997"
+    ],
+    "chores/skill-command-doc-parity/CHORE.md": [
+      "0855dede1ec122c9e4ac84217a48193b09e6376d0be5e142f304c0fb3dafdae3",
+      "28af632a4dac65e25901f065415c45ddd8abe434a76a19f7d0971805c14731bc",
+      "5adec590443d5e3e7e946da6522ab12b70f381d41a05c468c4dc89c559bf0c8c",
+      "67e929ff0c9efdb1efabc60282ba4f28d16211961795cfbedfe5bf798dfeb1f6",
+      "a47e7ea840f0f395e00ef62824d26aa3bcce6d186533668caa875ad05a7fba20",
+      "c298d4dfa60126d57eb474ed1569f39352f996fab952752622609ef67845e20e",
+      "df1dcd882f4fb078b81975770befa7455837387f070e1e5394d7f978f424abdf"
+    ],
+    "chores/skill-command-doc-parity/README.md": [
+      "5552514da680b5ae9d71cf7ef77105a35c636d26521e0dccb33aedb4e89bb61d"
+    ],
+    "chores/skill-command-doc-parity/acceptance.json": [
+      "84b542c2099c48371ff593f586d66e395365f6b819e236ec469afc2be80716ab",
+      "ca72b587f83976bc0db802ed4468f89dac4da196b6e2405d33335fc8fc454f23"
+    ],
+    "chores/skill-command-doc-parity/proofs/.gitkeep": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    "chores/skill-command-doc-parity/proofs/CHORE-LOG.md": [
+      "903e1e75d2315d6852cac2e10a693ee0ebe30333bc61bc7e22f72fdc53cc7cab"
+    ],
+    "chores/skill-manifest-sync/CHORE.md": [
+      "3e4b007dba93c80fdef595f73a5f6c9a2ec364fe2b674801961c59f00190a406"
+    ],
+    "chores/skill-manifest-sync/README.md": [
+      "22c1374c388804cad94b2c90baf273edb6b29c1b57bbc9ed7b1c5133254af31d"
+    ],
+    "chores/skill-manifest-sync/acceptance.json": [
+      "302984eb6333982ed7b60e935d1878b9144831ca06e784c0553d65df167e40bc"
+    ],
+    "chores/skill-manifest-sync/proofs/.gitkeep": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    "chores/skill-manifest-sync/proofs/CHORE-LOG.md": [
+      "3ee071fdcde2215a4954a1462ce6ba317ce76bc9ee4be0e1f70421327cdc303b"
+    ],
+    "chores/skill-trigger-testing/CHORE.md": [
+      "371f3d2332328d748ed4add63a212b7c5e22c2902a5fa1b5ef8c179793414319",
+      "6e4784d357010a8e9bc4fa9bb9ff366d2f1909b45268847c64ccfcabc8c4a13b",
+      "8a9e5ef24a496b340bfbcb4f29077d9fe9b2470c633cab7034acd5cb7290da61",
+      "918725472eaf310c30b01bd748f71db303b63c3e2eb4968a7f6ad5f57054d191",
+      "bf8ecb00dde58c8c6138a31b13b198013377e459b2b54ecd15a81cdede635342",
+      "f343c0dcf4f2e30c59a01869b4b701701e3a9abbf3f51e53faa57c5d9c7d58dc"
+    ],
+    "chores/skill-trigger-testing/README.md": [
+      "2f04e056fb31f34aa0eef4b1d6094367b6cd28e89fcc898beb3a24ce38513516",
+      "f25971a81fde8d0646d8709f6fd3be27a9cc078184e0de7b00a1e57b31f113ac"
+    ],
+    "chores/skill-trigger-testing/acceptance.json": [
+      "59deea3862182efc61d9c2a9cba2a2e9ead7aa91a5e90f18914db00da0652d37",
+      "c754cac4b33b28f348e627d7ef7b0e59a1b9117e5ae63296b13c485aaf72dc49",
+      "f5e57b1be9285e58795bc72976e513a2970e5df9c9391f8223127185534ab577"
+    ],
+    "chores/skill-trigger-testing/proofs/.gitkeep": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    "chores/skill-trigger-testing/proofs/CHORE-LOG.md": [
+      "c65954d077a160d1331f0e249b88cf0ea9b382912dda8c794d424798fc17d8da"
+    ],
+    "chores/sync-manpage-docstrings/CHORE.md": [
+      "806c88df84ef87309a94b5fefb443ab7dec9bbddebc20071f96dec6935877454"
+    ],
+    "chores/sync-manpage-docstrings/README.md": [
+      "c2f07fc116f1f114329c1d7225ea2455de05057e388bd9497c8525fb33e95e9c"
+    ],
+    "chores/sync-manpage-docstrings/acceptance.json": [
+      "1facb4e25c8a5845671572860291a7cf47de562fa2af4bf62cb197555af46df8"
+    ],
+    "chores/sync-manpage-docstrings/proofs/.gitkeep": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    "chores/sync-manpage-docstrings/proofs/CHORE-LOG.md": [
+      "dba85fdd8d818e4a873a256df25b4fdbf2f407ac79b336de928860889ba95c1a"
+    ],
+    "chores/test-consolidation-subtest-sweep/CHORE.md": [
+      "7e59c0a52dfd24ba22a47990fcd4ea72cf5cbfec4f2ad5b265760dd4ccbb743d",
+      "8ac7858314344b002517928f12e05278382c6f75750fd94ee62607cb2c42e2d6",
+      "a2cd61f0f6b1214ea870dfc60d2adf5a0bcbe954ee8f663ee1bbcb6a87473d2b"
+    ],
+    "chores/test-consolidation-subtest-sweep/README.md": [
+      "08d01ea846dc3162fd9c2d02c8c8da19e75b801bd35e4c82fdd66a95e8c7cdf3",
+      "9febb59a85cd41d789464d3bba8667da092beef88035c58c2352e0a12c89acff"
+    ],
+    "chores/test-consolidation-subtest-sweep/acceptance.json": [
+      "ca03008553a7ed710b9f801b659710065aefdcd60a156f3a9b368858197bfc70"
+    ],
+    "chores/test-isolation-compliance/CHORE.md": [
+      "4624fd45339bc9f358fa90a615e9b73f12cde3cdb9ae63caaae2a01acd2af1b9",
+      "57b4849585e9dc30cc3de8297fb0f5af769b3f835520982ba1ce2604129c8459",
+      "6b032997b17918c84f6c4f7207477c83c7e19aa6efd3279ac17b60ea5dbc1d37",
+      "81a1293f200d2475a0cb6e8a23a33bf9a4ce940ec47edae49cfda66cb493c16e",
+      "86c15933e4381c43c70c915c6b75624d0f9157e566d0f01c13fabdaeddecb7c4",
+      "9809f2a39d9e115a50d92c759be95525bde6672342503ec77e5c7710ba4bdf46"
+    ],
+    "chores/test-isolation-compliance/README.md": [
+      "be6540bda1969025d769b314d61bf2cd0cd8cc37174ba57fed47900a90d9bf90",
+      "c75ee33fc7759c513e4968f5eec9b0131105405c5f76e7630cbd0767bd3dd15f"
+    ],
+    "chores/test-isolation-compliance/acceptance.json": [
+      "641aa829f848d98879d23eb86d384f2d2888ab4a2c5dec9b557466dc5d2d51cf",
+      "885b2b6b4578cef94bba811bb513f4e2f02e6dc2c82e2225bd231046e69d9968",
+      "912628f0d54ee395d3503a83b6dfd6bcbd52470a1bb4151dc77e0ee96543a155"
+    ],
+    "chores/test-isolation-compliance/proofs/.gitkeep": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    "chores/test-isolation-compliance/proofs/CHORE-LOG.md": [
+      "231e3976c7f1ab1b3713ad4d6d4d0ef830cbed223f5b2b47c74e46230da94f93"
+    ],
+    "chores/test-isolation-compliance/proofs/health-report.json": [
+      "697d88f8e2b9aceac9f4f5b7a93744fc9f8d017742b51df6c76a0a786eacb69c"
+    ],
+    "chores/test-manpage-examples/CHORE.md": [
+      "1add65e7e96a3877ff27ee93898245dd7211ed8bcabb4187bc0ac2bc8a69d91b",
+      "497c60d149bd9c391734dc3b8e0d981967349c52fc2f8bf392d2ad044bf82205",
+      "6d87184de60453e3b4a641519c439fd8f6c1a73ba8bd0f654e33697faac67c21",
+      "80ae68b83d62659ea63ff35c0b3a40d847bf16b884f7d41a504567b3f10da031",
+      "8e1236407a9ae665fa0e68cd3b239aa3dde9b03f93caa611032f7ec50880d15e"
+    ],
+    "chores/test-manpage-examples/README.md": [
+      "18f7677ba70d0ae9d1d0b60d0e1e4d656b985c7943aafb9272a226f3039ffb5c"
+    ],
+    "chores/test-manpage-examples/acceptance.json": [
+      "43998ce51878c84a62f04d883f0e88c19918323932596cf044b53c8d57b9e15f",
+      "9cbaa0633cb5a4beaafdf8c02ef5ab5565de041d09cda5e679f5dd7511418f99"
+    ],
+    "chores/test-manpage-examples/proofs/.gitkeep": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    "chores/test-manpage-examples/proofs/CHORE-LOG.md": [
+      "4ef551c431fd4182c64e76256a3d1b2e2bb4482ca8e517145dfd83f92915884e"
+    ],
+    "chores/validate-manpages/CHORE.md": [
+      "2daa908d370edaca72f72f6f047fe29d6466b96969a25584af05c247fd4fadd2",
+      "5ea1dfd4fc53bb87eb4c61daadc63fa1130f365fff72fca8c93922e01686dbc6",
+      "86500f14eaf5eac9f55e78cb83863a93b248c6299e58bce735bf15dad8014ae6",
+      "cc76359040b627425980b719ecfe96c33f4a5f73e525e344f28153e2546d7205",
+      "dc5b30c4a9d7b3bcfc25345dbd53d8d43b9b79da446cdbb14420b9556c177e81"
+    ],
+    "chores/validate-manpages/README.md": [
+      "73845cd40525be3b814b09f38c4385022963c7a3aa6465afbc521a9d4e285b77"
+    ],
+    "chores/validate-manpages/acceptance.json": [
+      "1facb4e25c8a5845671572860291a7cf47de562fa2af4bf62cb197555af46df8"
+    ],
+    "chores/validate-manpages/proofs/.gitkeep": [
+      "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ],
+    "chores/validate-manpages/proofs/CHORE-LOG.md": [
+      "3d0ece564ca9f4c2be89fce31fafb96fd054dfd1b02fdfb8cc15578c415fc6b3"
+    ],
+    "personas/flight-test-engineer.md": [
+      "1537c51e50208de6a7fd56362e965fafd08479a8ebee2cf82070a6d001b9f40b"
+    ],
+    "personas/implementer.md": [
+      "1d41b127febcd98dff2aa3eea780bf8ba9dff8b10236da1b9f98890e9f5307d0"
+    ],
+    "personas/main-session.md": [
+      "b78e5fcb7bb426ff3c109439a98d70b8b7a88634ab85212d70b9100dcb347265"
+    ],
+    "personas/narrator.md": [
+      "dc681aa61fd905b7ceae4777c4f32779ade1d99cc466be80dc0d920f92fb2cb3"
+    ],
+    "personas/pipeline-orchestrator.md": [
+      "b38d1e428e8a243708542ac923783edc067538cd260e62151e802bd88a322e12",
+      "bb538434c90677e4d9fd2d5a1beda9f8c7f5448f8ae9632be3f759ca7f5759f5"
+    ],
+    "personas/quality-reviewer.md": [
+      "0cea6d92c4df404f9e406fca0f671854232502fcd650ac5b064228ade2630f32"
+    ],
+    "personas/spec-reviewer.md": [
+      "64a130dd28257d2cc3fc27961e20ffcdf3628c77a521168fcaf774b853ded7ec"
+    ],
+    "rules/AGENTS.md": [
+      "869181072aa68460fd78a3c4ef835a6e04f05db22aab3f4bab56651aecb7138c",
+      "a0a7121a3c8a37dbc637e128a666ec85091ea4c846432557e08bfd282d9a9889",
+      "b568ae2451c87e6fe82a2779b39c2d0842e1aac98208bd5dceb65ba753cbb691"
+    ],
+    "rules/adr-audit.md": [
+      "148412f378b2a06016fe7eb27bea66f6d9746ebcdd1f24d296fbf48425bf9c83",
+      "565aea21ad2ec115312650a3e2f63c8db8814c0d27de791656d19abb70604dac",
+      "598de25bd7228368987e9a7e65a0c94fbb078a9b78bd4e2b51c040666875409c",
+      "97d5c438c9927d9f6258477033fc0d2750302a7ff2c665aab353aa4e25e59dba",
+      "de85269007f1c85e836e03137e6184b35c4e88b2d79616b1463a9006d5eccd1c",
+      "e5c9c74f54ea7bdccd29357c955f88297214ae6a91ce6af42387b684bf316481",
+      "f793628f1cee660f7512d69eedeb4d249b9cbeafa6372eca77e8ab8d26301c6c"
+    ],
+    "rules/agent-failure-modes.md": [
+      "25a5f46040bcb5bd22af577b803926539e90c7f5f6bd338af32d029fea27042f",
+      "42709226d841d0630d0035817afb0890b942c6838c6e8e827781363f6161491b",
+      "4d1da485e5677aa6d23724005815253233cd3af7d4b25ad3628e67ab3ddc1e8e",
+      "4d4d3a93a25918d12a2c28a49a1a5ba86d2165a0dc9fac48a6f57044f381707f",
+      "5d9df5a514b0774238eb62175f0ff43d1cda72ed02e8ad0b3d0d244433bbebab",
+      "6d5003f0876de920ca4c353fd8358bfbc87e7f10583975c2927097c03c7556ea",
+      "7c20547d4c6388ef4d134e6dc841b946ddd0da7203c1c7aeccf8f7b27c299287",
+      "7ecc294b1eb918f3343844f5f5bea5d9da9c5b3964c9e3ba1f5bb6a093260df0",
+      "9d2579cd58f0234a2b7c857eec92b942e3ac11e794c33ae11e30c873d89ef596",
+      "d821600c7960441a9584a25fc11c76f88ff98b9366c2b355b14390f0c9536335",
+      "e7247587c0e76aad20cee76def6b8675b319dd691d60f2b0658e8b6c17326a54",
+      "f587ab60eecf3d3990c9ac71ee69650a98aa4ca6e9f166a604342917bdc9522f"
+    ],
+    "rules/agents-md-map-doctrine.md": [
+      "028deceffbff6ddc1a6f8479f92fba20136642a15a571a67d81aca6d47a91fe3",
+      "1ad140f2e5a7b9851f92b1c20139fbfb32d9449f7c6ecc602671d9484dce99b7",
+      "300725402d886acc56ebe19c19bbb5fde7da7fe927e7c2e20f7a4c8b1b9e2e6b",
+      "36b17c4ec088fa48e799ab288a1743cbd8a7dc65be1836662f1b7768de104e17",
+      "4095c950406fa2bd8d052cb55431416e858d9eff028af52fa6ef34257a83ef25",
+      "513480a6af0d0c76b7c2fa7884fa2abef3d3e44b8e4da5306984667b3309747a",
+      "5d36d61da974600507dedb777685f05b63c3e801cd0d5495f74ab714e3c00725",
+      "66874a6b4dd946d07994fd0e5ec06dc5eb515e27c0c147baf4b653874c9325ed",
+      "8c20793f38a8d0e9c5104562c914f3ad75b0c67c9b687c37d585dfdbb3d3493b",
+      "9a00e6ef785a2fb9e1f679d561b7db6c4cb8ff301e1e38c5ec66d5bd00e662cf",
+      "c68c8c5ad3f311c27f7c8fc8be85ab847737c989c54ef8406cd6692c258e1caf",
+      "d4100011fbcc3e6d32f9114870f86d0b0591515605f4be9f2d13e36da3397b13",
+      "e8137c4f73cc87086c9ad9b3e744cea253b3740dcc28fd059fad8204a2bc7800",
+      "f9211ad31f581a2ebdf5225ffba129a49a8d28ea8149644ff4acd9df18894577"
+    ],
+    "rules/brief-heading-conventions.md": [
+      "286fce8b2ff358f5dcf6b3d8bb1d4c0e746a1e54b64b91ea486c2c984dcfbae8",
+      "6baffe4cc324012004e7b458594b4ac531260ca644db5bafb1c443714324205e",
+      "faba9758582f67c795448109508d907a1d6eeb9de69ef3f63a96b085cc0f7dd0"
+    ],
+    "rules/changelog-release-notes.md": [
+      "73903b5e5eb7a62e684b53cde7b964dfe2b65c7348713d5c032004a75d70b04e",
+      "746a869e32306b1f67cff429dc6779afc11d096a1914b58ee1cd6f49196613e7",
+      "74b21e39d9b5e57f36d69ad03e969943ecff272b12a5eed0e6e837645f85ef7d",
+      "bd72114fa2c767cf81b6c1f614c6e4590628155218c160d78a5f68974c36f196"
+    ],
+    "rules/chores.md": [
+      "01b979b0365bfc8aca7a864c7f823a69da0042d0809201973db58f37cf9572b5",
+      "07b41a40e8aec8d2a46fa79c5c597f2f486a54853c96eaf6454d6420e0aee486",
+      "0e8aeb915c29cdd8b2e08f164818e28181e9bca46f1eb0388614c9657a4b31da",
+      "63a63293ae4326976b30d6d7c47fc9181bfbfca910c38f0086ab9ff1cf991eac",
+      "6c0fd83454bdf5b1d01f2d09cc89880cf7fd5b87c62f7ec561ff6df6b0689fb9",
+      "9882c5333de44ace962937a0573143270e12ae8ba23e3a71257b2c8d4218b8c3",
+      "a35be4864178ef4f131b61ec5d8f622ddfcbc0ed2065fef78a40cdbbea3ed2cc",
+      "c26c5dcfdcae121bfa007b527b8e372737ceab2c7736daffd308b973bd4f3d5e",
+      "c641de2ee79a399db756ca25ab87dff5b140901ae0820c65fd07e660daa499c2",
+      "cc050383635a86f6e3a40693c197acb82b0f31f26a8c03f1cf1a968d6d6ba2d2"
+    ],
+    "rules/cli.md": [
+      "06a63e83c12e01dd929a6422d16498be8e69d4c78d04aee0039f7ba32533d7a8",
+      "241cfee11c70604acdd445867e672c3e77cc9686adc532951cf02b48b00b8a03",
+      "4dd67df21358ea692f30693fda042962a9bec5048f9ee625376a61e74c2a03bc",
+      "4fbbca781be666cb55448de67440b67cd78ed96fe42b4cf6320c31bf96f8daf8",
+      "5781b4c85ff1292e897acc5b8963dc990f4bf97100a45c45b546c85644a94101",
+      "5f2e0044b50afe0543ff8a54e52c94a4090440ccb05542fdb3d181db076b98df",
+      "63c5df9be3e7d439f921ee205371e978e3c9a754159da84af57b981cd64b4feb",
+      "67bc057e9c5205bef20464006663e68f6dd77995fb7f6f0b8b9a77904b95029e",
+      "7fdaaaa78f845578bd879b3be7c72e8c6e83663badc18ea9a39ad0dcc1acaa5f",
+      "a0ab55343cb62d37bed7afed38851fae75f1a34cb10dde1076556db1a21166e6",
+      "dfb6d1bc6b76300798889a72cd350efb95c66d79e2547c9fbefb40c981b1b593",
+      "e77f95c24bd22b258c52755e40d667d0999caef423e8c6bd368f55912b03ee8c",
+      "ed2080352d8a27689bad80943430459d01e48b34026fc110f490add2ee52ea4b"
+    ],
+    "rules/complexity-doctrine.md": [
+      "9914a641cb0c7f72dbebb8d8c3a77a3c11e19a5fe63f2fcca621be1e43f4eda6",
+      "ab02eeb4911968ae60021da993aefec9ed14c3779c09283010035154625046ce",
+      "d194ac2dd54cdbffe596290e4f52c6fc1eed3790f2f453b61495726f1f8c246a"
+    ],
+    "rules/complexity-thresholds.json": [
+      "baf066226cb8a772a4cb8cf3957a537a77245dd76ddc3737e6c4814e840ec6af",
+      "d8d2688c83e68b4f22e57d6e2aa023899ab6de438ed02e341986c724b8ae2fc7"
+    ],
+    "rules/complexity-thresholds.md": [
+      "0d7368e2a2af83a09ecccad2fc3760931cb94943e6072103f1728b68b62b989b",
+      "45237ef09b9cf639a4684bfcd82d44e98a46386942635e9a454875e877119ecf",
+      "5f56ca628f1b1676015c90d7c9b1f5808f8a48d597bc4f29ba42abfc4d312e1b",
+      "dc388d87260c1adff9979399d5374fa329719c46db40e55992ed517199834bb4"
+    ],
+    "rules/cross-platform.md": [
+      "6b3b556e6c6b0c06bfcd516466c78df0bff53d8a41bf4e2bccdda491148c1356",
+      "87c24bb3d26293277f7794d029a0dd3cff46326c4051e1348be3c1b9c59c170e",
+      "88ad6537de6596999d17cda40fbddcfa27784259de544f697eedd32b07c1edc6",
+      "f360266d7cb07c28826d3dc06672dd8249b8c388e3035e25d5ffd2513ff2ead1",
+      "f725868195fabdd4971a73a9ff45802d17ae7b92f5dfe147acedf7e014a1f49f"
+    ],
+    "rules/gate5-runbook-code-covenant.md": [
+      "1b219a5f9e8a20bb68c6fa5da5a1555c0d41f63f9184eeb6cffb66513e12267d",
+      "2e924e44ef54ab55d4fb13cd905ba749b78ab56bc0999526f2f73bec07906785",
+      "33c4c17bf81a34d2355658bd07965756b8681d1baed865c66aab43a0c5d1242d",
+      "63289ff90b3be3a77de6897d0eb1b4287803dc165d25a7e8313a1cc10cbe8b6f",
+      "6b8d3a920abc0754afaae45a408f52450305b7e464aef4cee5babf4ae77fd3db",
+      "d5ef456baef268565b83dfb2599bcb440a96940d067c21884ef8490c2f91c2f1",
+      "db2687e835b54f60d3cf65c26bbe1e7afabdddea0277ca741ff7a80418144412"
+    ],
+    "rules/gh-cli.md": [
+      "354e78117816310d0fae72bd7a69194017fb38cdb29c93b1efb0791228ae7ed7",
+      "422610e449d64f50adbb2df3a8ef3465141688d0e587b1b83132a5a2d9022e59",
+      "47ed4c73bcf6ceeebff774f6a8bfff86332be496e9876f9d1c0b61c971e007fa",
+      "66761706ba4596ddde95b181cc60e26a5622d1e92747e6dace1ea23fa6205bc9",
+      "71b95477c7d1794b9cfd5477c72b04f89415abd292df3e3e0faa38606f86483f",
+      "9c0e87e46fb3666a8fe0d8c22088cd48153608a3cdc1f1bdbdc019e65a606d3f",
+      "9efccd33b198047fd0a1613b75a61d5fe5334773cf78b5769e740ed543b222bf",
+      "afdb279f001971202622c557136f8d9a6fd85b84886293aff49a7804273e74d1",
+      "ef75d01666102ea7897b4a5240d003d65adcc231bc64e2421238b8612fa385d7"
+    ],
+    "rules/governance-core.md": [
+      "05290bae830d70b707c25d05141b20eb4d032c926d60da1497b48e36d6ddcc27",
+      "1eef395fd538e9b18e1b11c181d7eac400dbbc9eb9271068e4a1d08099dbb4d8",
+      "2f8043fdf5cb87ac76f997ed8290f33cbe98057ac1ab01161895a51b7f45818a",
+      "4494acb8cc85de4adc0468b1dce970f3245e261973cfadbeed1eb9ca6ed985ff",
+      "4a3c8504df3986b54a494e402bd16b0125f7ee952f5eb4bd4a27609639e990cd",
+      "5d1f467d7448f5d5b96df97e259e185938c98ec10ea58f477dcbfbc304fa9f89",
+      "65d38554f96ac486da464c6066c16dfe9ecff839640a3d542c4e21b42d38b862",
+      "9f54532510cc051d0b548dc68b0d6001c224a27bcef0830be0dc122dc60e7f2c",
+      "a0b9f127dd87cfe6c9993da8faf266e7cb53ef3a088a1154f9612c58bbe74199",
+      "a43e0add7728af463c5c33b26c6b123f02040a84133e80ded3779d152ed7242f",
+      "bedf4e190f89c5796fe24d76577ad7d597884ef6b8e9d959c0c6a96ebb9d75c3",
+      "c02f002509be52238e087bd54c63cb2a86eec898976455c97a3fa36adc0300d5",
+      "d22e3e571705d6c684f2b4db0ebbf8908653089b6c79b5e9c5d97b6f2aff9221",
+      "d6783fb6d657b590485d5f02c265bc3b9aac08843b6b7d3984fa15c4f9c03cf2",
+      "fe4d05aaebb59130b766c45b439e38578e5be7691d44b0c8ba5484b807de4851",
+      "fe86eb5985f772e5e1faa9fe9c6ae1641e10327e6686f6b7639a0ec4688e0573"
+    ],
+    "rules/guardrail-feedback-prose.md": [
+      "21ed743418c4b512380e882ddf9e657a8d910a12a4cfb213d83bd2b334dc87a0",
+      "8069dfe23a6cbbe8cca5a21a706992842c52754c4050e4bf228fc67a9343ec5b",
+      "8cc7a1502ad002f25e7929bff19ea126cc6c653a5eaf9c4229f798594acaadb4",
+      "935f06c9ff67a5b0b9b7384c42df7245e798d121c61aa0a8000d4531aa736736"
+    ],
+    "rules/hexagonal-architecture.md": [
+      "2b5d79912ed9f51e37217f76a2d09b8217c7986420dedba60b255bfef2d407dc",
+      "7d3046c96b9ada5f2c0b3bca17bdf598ef9e3f51f7d6459f6a6693b737fb2b23",
+      "a288e99ef6c630db223b71d5a731101a05db318cb39d5405c27487563f75d78c",
+      "f6bb7a7becdbdf341b5c6c4766def59595a66845e8ab1c80967b230ca633fde9"
+    ],
+    "rules/model-selection.md": [
+      "1421b7f40b1545bf27fad8fc915f99cf93d42b8d6beb124659feb2b83a1ef08e",
+      "1ec223d7e139913810cc7fb230b95e40220d25d8c580b87b80509e391cf20c72",
+      "31f3866b416242aeb6637845637a74d82780a7f1d4932483cadc93393dd07df7",
+      "55229f6a121377f5c257f3addfb1d3f05b2ea7384cac2c8b7f7e8e0ff6a7f825",
+      "710c185bff2d49d5182f61fe3b58d41f1fc82b624dcf190a821350533282f7ec",
+      "7bce896bd87fb4447a53e62e01ddfd81ced33a6727dd93a035ad81f6a1da4d0b",
+      "99c4c063ab4f66dee4f12024d1b03a304f7ad16728b08d32f7cb9942e07dcc42",
+      "c4345689da7e1ce71f9940193e33c4f2229a23a74234e69ae2d840a47585b28a",
+      "da712cc4c91578177e43bf10edd9a7f573f13a1653855c7a958af56f89aa82d0"
+    ],
+    "rules/models.md": [
+      "0fbe189f91942f8d1bab058d16efd80c9448c28b4272095e20f3b712cf03e128",
+      "2b860964aa76a1c3633bc173e2d26e4d964ca723aa6f1846f025976ca84858b2",
+      "4e2bc90202fd60878ba29b47adf9e3f9235ba005b9a2f70e19f639d109d9ca58"
+    ],
+    "rules/mx-mode.md": [
+      "4233bcf9635c995e01269f6c64f435783731ecc48cc2d8c9060e3eb3a5fca7ed",
+      "44a1b63c72655c70b3f6ca6cd1c7de0a73ca6b49aa4d202621f0a8c9c974c494",
+      "5a195f5585350cb21878e1e9dbb7fd49fdfd26bba538ed35a3ea442788e368f1",
+      "70f5e11a1ac1ad17b0db34329c18f5ba2cc5f1730f01d6a9990de57ba535034c",
+      "8cc518fd5939551373dfc5ae5e76a42fd4214bdda2c287f3b4d668703519c495",
+      "a4875eb30dcc8dbca735705b2725ed905aacf3c01552fb0afa4527b4b8cf3fab",
+      "b7c2b4bf3a26bc9dd04f8e0d6365d1072524ca2e9792e23e3a720e0a9c3774e1"
+    ],
+    "rules/pythonic.md": [
+      "408b267cd3894c57ff8b50456ea6c6c1429ef525b1da35ed327c80c28f7e9c05",
+      "4d30ace5868f1a90f2030a651eb61446e25b8114e20d6d77748ee8a2830a3118",
+      "508bfc3a3a54d7af3646eaaee3541994e251b3fe730b64acf5a3fde969163372",
+      "5156a6219b95cd905084c8c3d583635e09402dbe37d14410d471b22ffe48a4e6",
+      "7d803c39a88da6c4f6b7c64d520e56aab7e9e62971e8c8e18499a782c61993a6",
+      "9849726d9e36a68e3f23b30ec0d62aad9f2a64e3bfe97f206fd2a7bd24af68a7",
+      "a8be254750c57e8fa20809a621a097901ac7e80d9c4a3d445d035dc5480358cb",
+      "a9ea7751b4f31e10f0ef759c0a946bd5e13ac3e5521de73d1312491b5758188b",
+      "b30bb78b326c948d51dfffebc72cb8d72a9282b36b8d8eee16e5281d0bcf7e09"
+    ],
+    "rules/security-sensitivity.md": [
+      "2d627bab53d4cc1271fa14dea78d6997fc8d4cfcb941fd8376e9b2e8f8a4bf06",
+      "8b8f3584c7c32c05afb4dae347a46caa6ff77c9ae83b9b84569f4bc8cfa7dc48",
+      "a746427e23b3bd598edc1a8edb213d838f6d03a7c5962a0d4a90d62c5569fe11",
+      "abc156b49e8482857ee5ec4a386ff99c2a0174b6576ba88e23b36231272a8f26",
+      "accf19772057c22d5c56e6a2d18ca7fe504a2b87ab2008e1ce8dd1b2a1249a7c",
+      "ca71699315f1ab2a2e844fdae9108d311af9538602691679b09c53270f29dfe3",
+      "e403268e9761ad708a241c2bc80f5328a6bc1e6f1b2fe7161b6afc74f44d445d",
+      "f6750ef0656c3d71f2b633566814db809f0a88ed2332d5c21304d47f0cf3cb9e"
+    ],
+    "rules/skill-authoring.md": [
+      "244a90eae18d83a87504f440f5eb233270f8b3ece0bc1e6c898df9af7ea5502f",
+      "51732ffb90aa78b8e12eeaac93a2dbe62ccd5a6a97697c07aa391702ab40c22c",
+      "788634b9e317ea216dcab494337d3136ee8e2be159f9150e055fab24435f0b35"
+    ],
+    "rules/skill-surface-sync.md": [
+      "0c39e7016a9f48932ec65c49daa5a2ca6b068895578b023665b90cc044580fa2",
+      "1274589b287dbc2ed245f5f34d2205eab8f436d7b72f260c082f00811344d4c0",
+      "248e9bc4822aa5e737852fe1f2dbb55685058f8764265fbd4564879eb7be1664",
+      "3f8870ba10a4ccd5fee8af5cd4d6abb6afb4634957e54fca2475d34753a5779e",
+      "57cfc85b594c96d0d6bc700afc1708fd73d28feb4653a4ed5ee4e2aebf2346c3",
+      "6bc92ec21d4bc12d1cec289c065ce3b7d1be6160f5e8b182d486d9872bec170e",
+      "74475fa5abaa227910abace2efcdccf47cf776c9e70f038308c951294a2b6f96",
+      "7e2ad784901c0ca22be764b9e57810434ce728182f7a197cfca2dc2a17b6539a",
+      "b407a12163dae170d84af74df3e4999659a0f79a9ac6d090c17ca2fb5771563e",
+      "ba9db7709b619ddec491de427ea334e23577e3caa3436b4ac4685fe9531f0d7e",
+      "bbfd36d8f08dbeb9beb73bb9f297eec922611f6e78342225b258b298d7eb24be",
+      "be9820ce64dfbb9532999e295b5222a869886901823649fbfafae09375ed8507",
+      "f46eed667cb0ae87dfe325ba393530fb5e3d6fd573706e8980a6e3dd05535a72",
+      "fd6ae5f1bfb95120eb60e5f2c8c0bdf92e322f394c6038a3bf8b32c55ac4b0d7"
+    ],
+    "rules/task-discovery.md": [
+      "07957ea67f85c44a31e1d7f2fe89ce78fe1d56c6d18765856fdd23577ce9d284",
+      "1020c43f5923ff6a0b3efdcba75b453b4876a9d3232cd70892fbe2219ed68912",
+      "176af539bfc5b42bde9a6dbb15f56fa3905b0d4f3665010efb0ae1a43397176f",
+      "1e39548954227fd02b43b410c4a826c6ab081c56cd29b826662a9ca6fd6191c9",
+      "3971db27fbbfd2f7ea0256165e73ce3ca527aae6740bf5a58119b34e1b3e2118",
+      "40913757d73ebdd204e5dbd54e83350bbf9b024689196dc6e245cdb60b1e98e6",
+      "5e1468daf77d7a6c68a0c33176898031062af55c8c150fea23c3f8c541b23408",
+      "67ebbff6292fe494f7932357189022091c5d7c5d6c36612742884771d85b0dbf",
+      "98e4179dfdc5540b53760a28fae7d7bf7dc663cdd454a671df64d1bcd527f9b0",
+      "b601c6bae2915c26139bb801ef1897dcd8f256aa26868175bc1415029271e4ee",
+      "c2bccca8887faf3bc55ec96f320a9fba27b99a8be53f08ae103b26f0fd678384",
+      "c86a9b0d6e4b6d5f0694276545b1ec115a236567800c2fad649709f5c1a79561",
+      "f15f2eff1a81fb13a772719da3c68e1ac7806b1abf9fe0e9d026523dd412192e",
+      "facc7ddf198807355cfd08286ff6e0cc6c813b19ee14256eb26151a93364ecf3"
+    ],
+    "rules/tests.md": [
+      "09ec7c92b870fe00d1617cc8f295cf651eda23456f8340366de65449ffe5d73e",
+      "1c8f57121e284113a17540d01eb1a9f50b0dec80f15fd0d7ab0162513cb58625",
+      "1e4add202413a1e506c4dd872d9367de94d4ab4054783824cbe8e101426a4c2b",
+      "40ab3e7f51fef424953b3f88f0463b3d382cfefac590c676c570155fc0863d5c",
+      "4288a6ca118369b25d078c185c1bc08b3fab80535635a4aab055cf3e112c5794",
+      "44de03e83a880f3acfab89468d22fe027460f564af477f98bc828b699c60683a",
+      "558618cdaa3fb8bfd8e1db75b7d624668089b5b8f43a911b332dffedc8e748d6",
+      "5664a8f7a7e8fd7a37e06488b2e48ef8c98cab42b119e84e4d6224a7be70cb14",
+      "5b3f2844bf7dcaa73bc52d7cc56778c8cb0b3d12a169057122e04e9a7f2062e7",
+      "5d8bae247a2c7e0e0503e17e292878e2871bbbad977b876f915e56aae78f04b3",
+      "5db8e36ca725c724913b6d0cb5fd4fa8123ec9216b229cb3fa642770e4ca4472",
+      "698e11706c92f978bb0fe257c43f26b592778d201991f43b000505e049ddfbb2",
+      "7a6099e67eea43c94f5f1eaa6c9c2bd4bd3a335bd2609a04cb1e300c723519c6",
+      "7d3766ed5d857409d17af94e1bf9c5e02736e4838ed3916c40ee40eecbc7f291",
+      "7dbc271001f21818171b6d4535169d1b127478044f2bff5064b074a2c2d026c1",
+      "7f8f3ebfd1b0191f920675d8144fe718c675627f6954cef6ee4c4c3487340893",
+      "91d2ef4c843123f1b4b64d22d3085064d79e16a97a3f9157a43fd65176f9b142",
+      "927c48ad33951dd9d419d798f588dd564868e33b4a18ed5e87aaecacc46cb443",
+      "9363d74f21a342f7d75a7370bfe0a849771fbd005b10242a8153ebbbc3e1064e",
+      "9fd36c4d9d4f8b9a1f5a4e4330293d3f2582e9cb61c4e99778f54ffc341b3cf2",
+      "a811f2982765b0e5efa8f117db77aca863f9806821efecc77e3d521bd6f12c8c",
+      "af44b278e208af1ab7b725d78c3bc40222b7bf2a1864c8ed117171fed12d4efc",
+      "c674ff8ee7017768849ad10089e966b694470de1d86c42b2fa46f8b6a7fb537c",
+      "ef735df0fc20dfd92bedda1558a9449ff1a5954fd964ff43d88aed213efa0317",
+      "f17eb9708cd809cf79917d3ee7d93a33f539288f7cffd488c4b97bd83731f1d4",
+      "f1d63811ea92d870a1f221415de5fb118976be8a507954d50573443c0a7b0713",
+      "f26e8c3dfe687d2418ea4fda452c3f67def6e189a63a5b81e6eec929c2132237",
+      "f992977ac5e8c9f5d20b98970a67a09867547da320766cab3e6a3b56ddd4a633",
+      "faea15035650a2be9d1981fe09cbc5078da937ae917e3ca27789d0c3f51ff212",
+      "fb047282511fcc555508a62d8e5a1a2b0f67898ebccb14c66b81eb562e694182"
+    ],
+    "rules/token-block-discipline.md": [
+      "09ebb8ac35ee7e8cbbb6fa37d04790537c6dd93231efd24651a8c2a279ac2791",
+      "0bdb89ff2eac18b3bdff23da96f4b003398208b6e461c84e772fe9473d5445cd",
+      "25c038aabe776fe2f2577483d4863b28a68009a74accf720b279325a58b168ca",
+      "3aba0ec44e51f813ea21ddf63147d64081bc4b4e4ebf209115ca577c99f2d000",
+      "4929b3adb1b06501cbeb9a3cb7122d9b4a71e93952905ce31eb2ea4d9bd14874",
+      "65514997c58c0da4b9115f2fad029946b019491bf1af0a5d0a501b7864043088",
+      "6b403e2be153573fe6907f547b93de733ba09e4189774c39f49e3abf186fa8e9",
+      "81ea1dbc3e96320da6c73357d99e9ae4bd186a84e60a0499950d528e7e29798d",
+      "b3c593fd7170d4051edcf29157f71c4de19b97a0e608fcaa4889bd7c9a49e9bd",
+      "c543910622c4b01cdce04ccb0e5ba722c725a7ab1a8f60f0f0b4756e0304a631",
+      "d7fab6faaed63eb837d11c973f414c9609411c5553301a8973f0384e0ea015b4"
+    ],
+    "rules/tool-skill-runbook-alignment.md": [
+      "504794b61f4f5574a71ce3c7fdedb0ffbdbd7d17255cd92aaba2d63fef971d70",
+      "50a145e6f5371c257b67ace7198376531b1149d24cf18e21c084f71ddd0dddef",
+      "6d0275be1a0ce2b7047c5aaff22e377b1a5e63bd5cfde2aa773b8e20aac03e83",
+      "8fe7e798bccbcd2ee42d1ca3d0784a733c1f9f557e3cb95016b36162feb459b9",
+      "b499c2cf796301d6b6d644847cafb02a271246b9aa485f1034ddff6a1f2f5944",
+      "dada484d1a6dcbde47d28de9b14b965b9026911d65d0b01919a8eed15aa12c08"
+    ],
+    "skills/airlineops-parity-scan/SKILL.md": [
+      "1796b403001872bda23355feed771e947694b03ede55d0f6f8bdba9943405bc4",
+      "91ea5a7e0de31027f58445a156297e09accd8285cb173f7eb37a03a6b7b9d602",
+      "c99df52fce994047bd15fd111cdd50a34edd9596c35196fd322b6f8919d0156a",
+      "e6164c274a619ac1eb79769a3859760f1643b977c973b4861851e91916b96a0c"
+    ],
+    "skills/complexity-advisor/SKILL.md": [
+      "344784886471f49b491a08af2476b75b1d1e5fe81c518fcdf54183f98ab01fd4"
+    ],
+    "skills/complexity-guide/SKILL.md": [
+      "57d223462391d0e0b6b6bdf443b561a6dc906901a003dc3705183b4d898f16e7"
+    ],
+    "skills/format/SKILL.md": [
+      "1f31ce1516ea8b8e5fdd0fedd9685a694d5605a31dac097ac686d22e9533ab9d"
+    ],
+    "skills/ghi-author/SKILL.md": [
+      "25d66fa48d00c8def79e2e29ae2a0b41e037b694c5aa6354b06345141f0ec8c6",
+      "37885edc0445dd7a86c2c547d633aea811eef71100c1d1889f0be20a54c13f2e",
+      "5718fc9d4c58493434e794d58c942935e641647f73641c09aab08ad7c809d467",
+      "67db4a4778179526660b38552eeea30fd717632b93075c787a0361b4fbb321cb",
+      "6dc610ccdb7082263212aa20b12d4183d51140030de1edbf0415fc0043305302",
+      "b6bed32d152a94936af9ffb2fba208f57ecf0deaf2828c62fd8db980817e36f0",
+      "c941864cf4797a5e41094d0a70dfc4c1f3b461317624a7db1949aed417151905",
+      "cd0ee951b5f5b757e7a615edceba1449bde78abab8de26b1dfed0669ecb0ad45",
+      "d337f47f36d2c8f36b00045af663c83d4e0e4a216ad19a6d9ad167ab5b93c18c",
+      "fd8a9a4ed9f6a149503e8be01668494fbd622c95c704bcd2d3f379882b49eb45"
+    ],
+    "skills/ghi-author/references/examples.md": [
+      "c28f993eff6960e92e4aaea2940e43aba1b3771c2608916ee4ea686ca7ec61a2"
+    ],
+    "skills/ghi-close/SKILL.md": [
+      "1b09b041b73571edbc7fa3f141ed46b898290a9b0473836cf8257431d89b0e9f",
+      "774d54bf97821d7e0fc88b2adffc95b66a790922a060f87caf9b4d2d87128f83",
+      "7f683cbab9eb58048f3fb20106d34faa235e56b22cfead77247f9faf9a828522",
+      "8239b3c314ea3b8801fb0477939b8a229811f07569d389892c5b6e3a286ab243",
+      "88b0f68a71a3766fabf726a8ddb92bc36f115ef92db2cd826d08b92f007f3778",
+      "962e896bb9db5a010b3d8ebfba3e1e08784bdc141091cd26e5420ed7e1e253c6",
+      "add959709c61969654e88205d6416c62a428ac1e926f6fe50f97eb4e92f8c452",
+      "b6cf6db3d0bd8c111dfcf9a8f62a3be88393293574d3eb72249861997f1bad23",
+      "b8d19e6f0134c36e33f216bf611fa2d737c7c30e42de8aa93422fd4fb70f98b4"
+    ],
+    "skills/ghi-triage/SKILL.md": [
+      "545e701f01276a35ed42511d33bc2bacd8c9ea1a8fb14c00907399cee3d0fc51",
+      "89b80fd47498e68da378a1286e7e8e128892c8b8a76b516c4bd23fa86add9923",
+      "a71f707328988c6f07330edbe367b92d447c8291ae63e7bb09abaf9ab264057e",
+      "e3b9e58dbef729c02bd5ec1e19648b3414b66e2735307139ce3cc7f686dbd2ff",
+      "fecb577936b3146a119695c6e06d705edbdb203a33bc831d7acbcfdcc859f40a"
+    ],
+    "skills/git-sync/SKILL.md": [
+      "0ef9986c3b82719c5c44fbe75478303304d115151adeb6fabb81bda7eafc94f9",
+      "2a58ec4419979802777ea4e7526bd539dbbbd17c0dc1257d580efd5e2d316178",
+      "49adef62e9764b86900b6db182d4d1345eeab19ef525d73c45a6fec1e21f4800",
+      "97d371db25048a3e5adc3275ad4ff174ed60a7944450f014d934f0661852b6b6",
+      "c0838c90d3dd112e013687f9fbeca546b3b17cc9d78f62940852738753e32828",
+      "f69d1ede60fea90f77bd4dbcd311626c31495461304443122d36ddc83f6a2c86"
+    ],
+    "skills/gz-adr-audit/SKILL.md": [
+      "15b945e95c9612f2c1eca20e7ff38dd30888038be89c939aca492cf1c7e15456",
+      "1c4637330b40ec2f68cd46f86689dcf1b2a326b59a5ac5777988a4adde91ecc4",
+      "205ca056d053d550d48d9a7e7a44a638b0600c2fba4b26e52c0b2e95380b9f72",
+      "230287dc273feb4d261e9f1fc7cc002dc9e2d9ec47e1123fec8e98b7d7c5eed3",
+      "62faf408ba213802dffe1a010c9eff212031d8c835216f9c3b7cdd3c4774ba10",
+      "7e4fda9633493344b4dffc27d30b7a148c422970ced8fd546e2c475b0632c14a",
+      "bd76d01ae451d806d99d1002445f84a60f561115febc42adb4a844bf0275b218",
+      "bf78e4c66bea32b9106b9d49ca6d780a6b168f141a260e9eee2540fe04e7f904",
+      "c74096aa0746eb156a7eb4c07f06c503744f5e164ca44555bc9e590d197e6dd9",
+      "dc4a23b175ca9497a0db8fe1477c479db14a34537308c31b92e8b73ef93c1954",
+      "e4d2349f6d233054f2e2bae9761c0ff442fb1c67564479e610806e82cae422e1",
+      "eff06d2874264a5c3b34a4e8c5fbdf147dbf763a432b29343fa2bbcaab9d373e"
+    ],
+    "skills/gz-adr-audit/assets/AUDIT.template.md": [
+      "acc59836e41bac3c0180f8e7a009c86a2a221b54ae151d1682b7f09b3bc677a0"
+    ],
+    "skills/gz-adr-audit/assets/AUDIT_PLAN.template.md": [
+      "2a2888e63315ca32dc66b70c8f0382213ecf7291c0ae14288fd56cf9f4a715c6"
+    ],
+    "skills/gz-adr-autolink/SKILL.md": [
+      "9b442d539d6745210afcc11c97335eebae9045aa03c45ab2fa56b48c34b19997"
+    ],
+    "skills/gz-adr-check/SKILL.md": [
+      "a0b4f5d676a0c0853d53463ab8930acc3716df093e5fcc71bd47bbe98839e298"
+    ],
+    "skills/gz-adr-closeout-ceremony/SKILL.md": [
+      "0f701692faf94a565fbe36252b1e5e2e4ec815a673e749f8a010b77bc7a214de",
+      "24b063d5a9377b8216d5035f46bfb40ec2a6cc634b94abd5389bef394424b1f6",
+      "293baa9ff3839d8132aaa9a2422148fa1f690c6c0d3fd816ea4b94003c99d5d2",
+      "369e97fd7ac81fa7959181796df6c4b73a5b8783a2c7e19ceb600d0fb4355b9c",
+      "4516a6160a33c851480165230ea294b1d2e944935ef875e17b5278275017afd1",
+      "4c6a6f9deadd5d8a29d7e75de2de0a5d87767f7198c9bf3b2ff0dcc47eb075c2",
+      "7c4949ad303b5b0cac9e326a88a2d6771c1f2ff9b98341a1498561d2ca49a365",
+      "8bcdfac7ccc4abee0aa771abdb37da3c1bb42d801f8b62578abffcdeb2d1e913",
+      "9b0859beeee9e7f2f02aa98db5909cfdd95b83ff2e13ba9904ddd8ce22072215",
+      "a19b82f6a533f75894f5895e42457f1f631a0f6c33111e854e81b8daf17f88de",
+      "bc5e29e5b86751f89ef0abd45a2aff1c8e63b9b885b576fdea5f8075c7e7153b",
+      "db661cce98b5a579ca7beb4857d85682eb661bae220dab48e1835a95ffdb957b",
+      "e6cae56f5bb9f4c334d927fff014942168652a60d1749b3dd556685a5a449c5b"
+    ],
+    "skills/gz-adr-closeout-ceremony/references/cli-reference.md": [
+      "82e665b2370833370cadcdcd8b2ee33c0dc8cc381d9b426fbcc26dbc80e4e13a"
+    ],
+    "skills/gz-adr-closeout-ceremony/references/folder-structure.md": [
+      "3edf1171f0d200159e0f125f9eefef05f1548d603eb9068907b5efd8f9e8bdb3"
+    ],
+    "skills/gz-adr-create/SKILL.md": [
+      "0e40dbacce17fcf20819179458897426f3653b463249c6b3191c4ffd1b9dc231",
+      "14ceccf0f5fec37b5f9857ee27d680fafbcc1892005e77c48c15724ee5c28c54",
+      "29184b9e4772aa00b7ea4f8609389dca775468281ca4c245c6a1c5720f8853e5",
+      "379bf98f6c0e2f7b58aa2fc7dda29894863de59610413cb5290d30d1f5a59f62",
+      "456f0e0f00e6573e988cb7eaebac16e45c12c5181eb3d2b990a9024c29b61ab8",
+      "524732b38b4c9c59a097456a2d3561c2cf9c8f64ce98a2f0d4cc1d7f4cbeb645",
+      "54ff7d4d8fd3c759ec2c8eaac45c401a53e8b487463a7e42bab6649d8e927cc1",
+      "6b5c1809a92939b81457f3b6f057d5a950f2f9ea2bff6a41d1703ed5cff35829",
+      "71f1675f50d9cee1c3636817a28c8652a5f9788c521c2a931f57ea38d3a64524",
+      "8ba2e26f33a6b57edfffa902685f6f0d3e900bd2dc0a675a0da688c3604fde50",
+      "8c3995655938f1728e0c38e2f9b939f3bd8afdafbd4c5c3f46ec1f077aaa4ed8",
+      "92202d657730e8715af4eafc03913ceca344900c593fef190e7d2ee4f8130415",
+      "96988ddd391cc40751f24e4eb8e732a8e9fdfef97bd545797dd23a2728ed9624",
+      "ad9a19b09e8011a3e51b36afbee1bef318bc572743d29b8183a892bf9996b8cb",
+      "c0f2cc396ac9ec35e786e02a7b444dcae5cd7bf483f5b77dc0d5ab6c5510d690",
+      "c2c97725f0b3d08d13962ce214d6b6cbf8caa603344105ceddbc0c2ecc24446c",
+      "da98dd554259507b6d10abc59fc72c3692a4999daabb445d5829e2bd82016168",
+      "f316d8ca2635c96f4b242d92ce5f1eeebfce056d3f496852ebf817dd049e40e1"
+    ],
+    "skills/gz-adr-create/references/govzero-compliance-rules.md": [
+      "46cd3d7b29575f8a85b984f20ea46d3bcc0d636d3b55ba3e3e9c3de9e4d3aa72"
+    ],
+    "skills/gz-adr-emit-receipt/SKILL.md": [
+      "1b506f3e7080213806ae5768a2d83be8353bf6706ef7762a07a0e8c92b75fcb8",
+      "1d6125e510320f1eaf43a7e8c725e7831611a6a3865979880623846e37dda744",
+      "419f6aa7ef39dc02df59b9d7de6279947faab3ea7060870147962795aeb22cbf",
+      "d8526e1deb4bb4f3251c76b3a921f0a69c6650453daf82f40a0022c3363de4eb"
+    ],
+    "skills/gz-adr-evaluate/SKILL.md": [
+      "037178e6ecb361513da49524caa9abd5b5d6ead5bf575636280bf89a6fe6a13a",
+      "0dac83a1066055c0a91b7da21fcabf2c8564e6f37afb9350eb9853e3c2c8d09c",
+      "4b3cf1e1488e4168115ab9843b6b41714fd2222736b4487496c6b90ea335b36b",
+      "4e9ce329cf0b809a07364d2842764be0f7904930c207de6229256ba4e2f82eb5",
+      "73c4dd34238d4fd959382dacc55918bca5a9aa0d3da2575c34c78dfdb658908b",
+      "a2dd1215281dfa74bc83c6011beb65954728e2acd2c06ad9fc22761f1a376bc6",
+      "c98eb09a856b01215030e64f1355dd2b1ed66b805f2ffb40f4c5a3ef0ff47a8a",
+      "ec149396ad936384b0352ce9d117d8a78bf39494f4388d76b2683a69952a3bad",
+      "f0d4709a1fb992122bcd1488d6da389b61b24b5249d472436d1a0a805d293eb4"
+    ],
+    "skills/gz-adr-evaluate/assets/ADR_EVALUATION_FRAMEWORK.md": [
+      "2281812115e7ef85c1a9c0f0bb92d409db79682e3791c7367844ebc9f96b2076"
+    ],
+    "skills/gz-adr-manager/SKILL.md": [
+      "6c66851d516907b5f355ac5978fa5f30a6f281b51e9f7d04e69bc846342c5112"
+    ],
+    "skills/gz-adr-map/SKILL.md": [
+      "23af7590504cba10d4c878935ef94cfad86ddfdf07d3d374404e06625852740d",
+      "3eccdfeb9509fcd15857435d6dd675b62b06c47448033e63b7005e8417e0cf57",
+      "e6f2b83868178cbd95af1eecc4b1f002cd81f179c16d5cb9b8263aa6cb91623a",
+      "f34074fa148aa2f031089d1c5895c8b9cf39ed932af9370dd971e0adb3825ef3"
+    ],
+    "skills/gz-adr-promote/SKILL.md": [
+      "0d5b32e2c924dc34c79838fe744c1ffd5446e393613611da0562b1769e9d0be8",
+      "13349f0028062b385464b174f90362b5928d09b4362de96c3382963f7665246c",
+      "24f7f76491c204d114947ee744d50e24a0e8692cf71ace63fc63790559877375",
+      "3d8a341290584343b47ee640faddc2803fb175e16810d7c827f7c9da895eeff7",
+      "4656980e186a944326f46ee365c880b792e040ec43319946761360e0f2844478",
+      "c3572cc674555310857fd123f64364388f1d0e696284a274404b77b8f6026029",
+      "cc2db81fb6f5eb1e7328389bb82505d74abeb47508786381904408c703c6ff5c",
+      "cc338d392ee25529eb013f92739eca8ec5353d9bdb16bb04197e592c9ea22ee9",
+      "dbe97d0aad344f4bc9a0428379f64178fa19c36f968aa19d3748bc759316fc5b"
+    ],
+    "skills/gz-adr-recon/SKILL.md": [
+      "49aace933f6daff560f70883f16e26e89e661c7008b4b57d8c3bc02a258170b3"
+    ],
+    "skills/gz-adr-status/SKILL.md": [
+      "6118bd1fd325729726e1b0fc49dbbbd6f94ea1a802289adce0fef21ebb0afa46",
+      "807ac61ad0544eec69904318d3dc96246a0641ec874ef55b145e5139d790f1a2",
+      "b61bb93274e6e50d86936504b2738220a63277f4124d863f9acd7e4462c1f75f",
+      "be4fc2f33bfe3c9269b30465a50653f73ce41fd01472f520b0aacf0a1c4de14c",
+      "bfc7ef6a28fbbc330a287ac5a88e777ea504726364dd1628c2485f052a25759e",
+      "e65d3cb8c5229047c317e1717df3c9093a706f1706126369ec17e755a199ffc1"
+    ],
+    "skills/gz-adr-sync/SKILL.md": [
+      "15a63aa1586a0240f3fe7563722e826068d974f0c8acbdcd616aa230d0c99a7b",
+      "3a57cf7bdb915c4c071375abd37585a33458ccb3ba83030a795221c36c289a0d",
+      "60358e6b5b5066e0ea9ec38da9cfd7eee48f0d14d64fc11dff9a0046dfe5184d",
+      "d0269ab17398a82f0ff2ed4accd141706e189ee905dde6cada30f7a7622bfb16"
+    ],
+    "skills/gz-adr-verification/SKILL.md": [
+      "efa8eb4c4e945d44cc27a69a136c346f500c9efea376274387655769984f672d"
+    ],
+    "skills/gz-advisor-qc/SKILL.md": [
+      "3222e321e50c3931edd58da3a98475f5e66145cd0b90fb7c2abd3412bca64396",
+      "8a99ac9814c6d90983fdc79f12931d3a8e02a680d45ef8ba8781b2e978af5725",
+      "deaa4745bf7fd81b8d705c662b34d03e000fa5792d71a8083ca9b7f8d099d008"
+    ],
+    "skills/gz-agent-sync/SKILL.md": [
+      "0a11baed6e71fe9637d891b415e5491e187d99e96a87431162672f8e55f6e7f4",
+      "4904c08d2e3b8f8a86091faa5749c3a06f28af08a82e972a278fb897063473f0",
+      "8407597cccbe4174edd2a6d300c2e651ffc24efde69c5877c76eb8588e32de52",
+      "abca99f477f5c62372d245ea66b84432b7302de7038ffd1f546bf0708d7fb7e2",
+      "d4239cbfc604f0e64ad63c7f0152e19e2e677a6e39a9f3ea4e07594b7fa71f1d"
+    ],
+    "skills/gz-airlock/SKILL.md": [
+      "becad4a9371e3a77cd4adac714ae87a206a78832388cc9a35dcb8a48781eadbf",
+      "bf3194bab2f7f9f0668726aa3e6d6206766bb4810300748f23a4c54ebe39e253",
+      "ef3ac4f968381478ef1e576c3723d7d72df1962f1536ecd4bd2c122e80818ba7"
+    ],
+    "skills/gz-arb/SKILL.md": [
+      "02942fb8cb0e3e945fa79b3c5fa51bd88a1b2fca85766549ab16b8e591ba5191",
+      "5d9e2db378e6df0c0e53bf8be2dd27a982eb6ebc8884c8ff6c4d8afa24ce057f",
+      "6950d9010aa570b7e3308d1c3c42b24a390e7f858586677fe6b02e9642336158",
+      "6c40ec9411f01080eca28b421623285d2790479004e49094048769bc334971e8",
+      "b3be98cda0a1cf28eb3363b9d57fb9bacaf38da4ad9dc312378edcab49b70b6c",
+      "d2ef372b74c53c663a4b6044ac0b777ef1258ee248a7fac285683e0c8712eb8b",
+      "f9d954a17ac4e10c296fd716ea736a3b0981c6b1503653b90f1124719be618ef"
+    ],
+    "skills/gz-attest/SKILL.md": [
+      "f685e093d3b0009da732d66eb94c0ce080984e94838e843edfa9091ce2fa98f7"
+    ],
+    "skills/gz-audit/SKILL.md": [
+      "2b7c7b436a64b2c7196b59ce0ace56bf48dd6ed97b2d47487ce2c4fdd94d5e38"
+    ],
+    "skills/gz-big-picture/SKILL.md": [
+      "8791cdb386a1fefa9d7c11a3f0b905ef332cc5cfb1a478136d6fa1fc28d0c036",
+      "b2c08fd9cb18beeba2980595a50d21eeeea942ece0a62df5be2238952741ea2b",
+      "f895eeb74b39b842394682d7545c99b3214ac95c0d653ef60e999ea46ec3074c"
+    ],
+    "skills/gz-brief-reconcile/SKILL.md": [
+      "4d6074ed9f51745621bc6b844a39d875d403e34e9e2bea4c8b81e87c777944e9",
+      "707eeb97584401ad6e52f60a0f8cc5b9d20e864106a62f073519439a8890c39d",
+      "70e3652dfd3856d42a6daa8665a2ab3f90d69e9347d2a36c2068c39e44b33739",
+      "7a91fb78e8915a0a61fc2b16f3fcf49633abb9fc3673bd414acb9ea323488b3d",
+      "8e313e169e5bec5fdf9b6a377b335b5554e8ace0a68fde0f5f6e6fe5c719f115",
+      "e25fd558a39aca7f9459540620fb9061b8016cca3b04659021c41d81c48cbf6b"
+    ],
+    "skills/gz-check-config-paths/SKILL.md": [
+      "5d505d851b3e5898f6a07276f2d8c100c148b5a01857c7b727e0a77c214ade8f",
+      "96d8865fb5e98321c50d36c758b9732df2805142a65997c61f1fa283611d7aac",
+      "a770286910443a15dad2752f430aed460e88ef609b42dd3aee5e195478714eb6",
+      "e6e57afb685455f764881dcd896b4c5186d899bd46772b51c0beca2a77be9ff6",
+      "e94622411f2d48f08bb3d830262374579703ca98eca8c61805bf5bfa7469831e",
+      "fffd50bd6cb31e8fb020e5353ea13f51ca97636ee46c9e1c753e0dabe1ad825b"
+    ],
+    "skills/gz-check/SKILL.md": [
+      "0ed2a3310f5306794c4bc4653cc9b3f5440367666058eef77640cd0bbe1f7337",
+      "3ed55e3bbeaeaf6ae7fabb824930fc4837dfcc7ac6e46088b5d8d20afb07acbf",
+      "462182efa541b768f675e054930904af8737c4fa53628f6ab7721a6b6e881081",
+      "731ab4663eb180c7a8d6c52037aef3359ba70e680a75a0313100dc4e070883c7",
+      "9f36e4350cece9e2009151f52b62914658bf7acea68267d9ac2c5c0fef7a24f2",
+      "cd687419bc2476f4b15b6852b625aa6c503585a69b717ae5143c3f0fb99952a2",
+      "d3c4dae4751f6f0651123a34fd40366923c61cab4315601472f0946e3b346c6c"
+    ],
+    "skills/gz-chore-runner/SKILL.md": [
+      "084a0aac6db2460b8c86b1e56ea188bf1ea9ff426866b7c4f7ea096e9f5a6858",
+      "5bdb51c7b5a8705d3ee07428028f2d11f23d1c782e3583b07223d77763a7978e",
+      "6018a26c7d0153f1ece4ebe41ebbcb9dfb443e57324dfa44d58d06c7534781ed",
+      "8478b70267bbdc325579e51384314b8d051d9eea24b71351892397c60cd0f794",
+      "a89f18fe997af8c5d9f8b6bcfa32d0a9ebf078cbd43a9ed85d506c66c6054242",
+      "d6be2255b03f52c35961381181dfec787b4429192a89375a7d66ec9b14978350",
+      "e5b6b4e1cabe9754f82008cc0d334bbe21915bbe294eee7f14cd049130095379"
+    ],
+    "skills/gz-chores/SKILL.md": [
+      "0ef0069c148a0f6837ef92cadf77130cc9cfc74cdedb48afd13c877387cb944b",
+      "76186ec1a9636e611a23817cac33e813875f57e40ee76c5b2d8c95e8d48a41f0",
+      "88c607f616904c71bb7478b64ed80690bca013c494d540304e211613cb2ee006",
+      "be0643aa08a61ce5847edfb0322c84b29d0f1196a77bed79801b2fe37b78934b",
+      "f8025da1e2da6a6c44789f2d06b13b05fdefc763195b5fc5c63d97c324a20fd8"
+    ],
+    "skills/gz-cli-audit/SKILL.md": [
+      "47d9448f4b1ce1dcb441d58364c5e3c9cd0419517451fd9a50d004b857f5e230",
+      "68ea1014de5613aee692048ca3ec5c68d4ee5d2e0002338baa5cabd85f38b3f4",
+      "6edea632e64166e117d40acb04598a9853e46b9bb3055fa9717402eec1c6b77a",
+      "81fb73f3a2d74ce387a1fb1740d953352bb9e58fea391187eb41305f0479b885",
+      "df5b887e8c44a895a5cb860a210a2bcbc5b09335564ac51ab1a054833c5f96e1"
+    ],
+    "skills/gz-closeout/SKILL.md": [
+      "2d938933f6cc10cc739a74def6b61b4f405863ee6f45c5a85987b2fc541050e0"
+    ],
+    "skills/gz-competitor-radar/SKILL.md": [
+      "22d20dc11811e69fc4268a4f1cc2619f42d7960aa727c5b306671fa2fc001ce5",
+      "e92216018edff9768347a1484732c569401fbfac5960e64d6130dad2c6b68033"
+    ],
+    "skills/gz-complexity-advisor/SKILL.md": [
+      "08442f877bca50d3e5766d40130bacdb556f596eaae680ee6dfb502fc90cf45e",
+      "1f2b81e7a7ea7f167225acfa7c27481aeda4b416f89137ad6ba6429e56692594",
+      "22f446e267b33db497fea723f772e2a932f7c5a45f13368946214f9e68c08dad",
+      "8464eba42dd007acfe0b94f0ded3b554969a270af50994aa8c5ba8331b2584cd",
+      "87d6107aef50df9f8c8d349e72708223840a2150b6662540bf37c223d5565a7a",
+      "9c1a6142a05d062dacf785bdd7aa9638bf415b4280161ed4a871beaefd0d4428",
+      "9d4a1c07624548ebe3d6ce0dcdc5403787067aee3eac1b94204fcc018718e39b",
+      "db0b3bb9a488c137d71cf63a6d2498543dee8fe3bccc671a9b7254b763102448"
+    ],
+    "skills/gz-complexity-distill/SKILL.md": [
+      "277f98b1c76264424821544fc7d246edd7149fb123d6a5f47082f3bacc40a9f7",
+      "55c5f43ccabc14ea970acead3f55da4d205af6bbfb89bc4024cded430e1572cb",
+      "9736281e2c87ca316f0eeb30abe73a5ba7458996456f9f960f546f358636670f",
+      "9b0e3ef4838e90f5441710ee7fa226f6a3a968b121c27389fc37e3dce672ca74",
+      "bf336c8d83c761c254ca2004b7785bb05c42c018df95026ad06ada03f64e6e76",
+      "f7e6e33a992c8363c4de1027bc4160884ff76ab7bb17c02738527e5cf69b78b3"
+    ],
+    "skills/gz-complexity-guide/SKILL.md": [
+      "0e0cffd7a43f81892d3e6f09d82a3c853dc2250220799274a7577d601623a5f0",
+      "15917ee249f4d84c5620ccb9c359f66e6bf2f0392bc20ba0b6d72fb7d2cdc545",
+      "5a2526dd1e964d2c0bde517d4b710ef92c9c7dd19989924ff036cfbe764f5d84",
+      "5d68232faa052916885e886137a7e246cceaeff9a9c76e3e8e39cfea20158460",
+      "68326a02ffaa85ebc2f813a651cbecf41616e559bb39e08c6389c789306d744a",
+      "f7fd2ce218d94b0575f2c59145074b64ab3e29225d245fec4dd18a50782ca742"
+    ],
+    "skills/gz-constitute/SKILL.md": [
+      "718337214446f6cb24a8d81b6eba75de76aeca986f04d49e385d3677ab501b5c",
+      "85a916868edae8306c0bf0aa5d171c81fbd33ce214e4bba0af9c26161ad592e6",
+      "898561cda5c9b7c3e50ea156bf83c8e15bb2bd72d6786148b90a3d62f4c3a7d9",
+      "ea7a01c3b9f2599f9ab58b555b168341020e04768fb5198422e7e7eebcdd2279",
+      "efbf5a499eb55ffdd3e20b0e6fad7c1e27fdd1006b71e9b32e05a7e652db9b76",
+      "f1673c7dc712fd40669693389ee297cf1d86fd4dab9cacdef7f71abb19f5a0fb"
+    ],
+    "skills/gz-content-compose/SKILL.md": [
+      "28a86d65b6b6376dae81fc8acec0c0aef2201b417349301df9d28cc5e5553fbd",
+      "3fb8a6c9e7b8e056349653b4338c79aa0af708786e28ed45e127c24fc133fe68",
+      "d2f84626d4a9568226d71263603c6fe9a46fc6f04f834fbb290673798fd374a5",
+      "fbb911e84a2c3c4d46a321d8bc03bbe731503e3af43eb72dff8f202233401b0b"
+    ],
+    "skills/gz-content-remember/SKILL.md": [
+      "21bae9585a2855188abce8f03540859a0836b8dd8a820e279eff5821d8a049c1",
+      "8570406a4399ed523ccfc6f359a9f48b3af18d701799a34de882f0a99bb0ffb2",
+      "ec4f309878a476d1c33f727a359c08de1111c8a74902bfb1bed0ce3dbbe1a735"
+    ],
+    "skills/gz-context-diet/SKILL.md": [
+      "3fcbf337ca02c147589cde5b308cdfa44c0e89504af0ef705bdc26327f03b202",
+      "69a2a8bf2241fde867abd858af0a74b2c620d60bd01b8c558768b1227ed16f6b",
+      "eaacec938f43bb6bae18b8647e36c2ff0505d1acd5f007b13241cf83962eb529",
+      "f52bb5cebcc2e15f38b269d833d6cc4a094c6fe4b07875dadbd58e7b7466a722"
+    ],
+    "skills/gz-context/SKILL.md": [
+      "001a1b1b0502a49e30d33cf25bca942cc3bbe8ece2f80a643a8c8bf707e28681",
+      "0b8ba8ce778c8a395c0af88ec3ec531f53223766054208559e4d12e36be99fc2",
+      "300cf440a61071a71c4ba4f85a9b0f592cb47019c812280436cf58b2843e31f7",
+      "55977460c766bda8f11a4091c1e84331af3cfa2503a1dc74e43e33a4a4c2d4fb",
+      "691532e6261e76a3f8fe62cdf0a3396f8d345ff56278f143f444774e82889079",
+      "92e424d116afb6769f45be2f2ea1c066dec75c029bf34115a009c41cd6206aae",
+      "ae1d3b45ac162b434bd1694ef824ebdaf3e5cba83c808dd9a6b3a8bf52b49ee9",
+      "b32f1f93e9fced95a46974587d5f8bb9ee3afd99b70cc21e594fa31e16c641aa",
+      "b9af297cd06b1daa788c9577ecc5695336be7ad5b788b34ac3633193df5689d7",
+      "e89bf6547422d654709d95f34a73dce64fa105bff40ea525ce8b7d88365aba9d",
+      "eb728a52c21680d5ffaab7bfbdda3a048e3212c43e3f244df9f0887317717927",
+      "f6e900c7bb6d1151c4baf771ab361458be1f28dad8b772a0f62e43fce732c3f4",
+      "f9ebb10ab979b8b5bd9255841d9e2047bfc813484b02d12667671ba059b5fe81"
+    ],
+    "skills/gz-deps-upgrade/SKILL.md": [
+      "245f695df4d5b527ee543b7c5a4976b71d15920f37e26475537606a4cd88e7db",
+      "6dc58e0a4e68afaed8119acbb30d2eaa1888e9e43624aa43a1fd4c1612142977",
+      "e1493a752e1e2987eff9b40edeb4701b169e488d411845a629f800fa4d4b2df5",
+      "e55a4efc321e959ba31caa2cb00d52380da0dd78643e64c40db98e966e31fd78"
+    ],
+    "skills/gz-design/SKILL.md": [
+      "021809456e28176a0f51c73d2069c2ad5ea9da7a33c3b8d8a370b58883487c4c",
+      "3a77de8d73b6e70c744de11938b8c0683d3fc179b7a0b91c127585d9bd8aaa04",
+      "5c0f65483195557548acdbb66b214bcbc0e244255c73f83039c7d46d27236c24",
+      "96d3539d67d298763d82fc7820319aa6390100d727f01df19bfc07a3ff189ded",
+      "98b07f7848e1dde02b00355e01e89ddeb04a7aac4a103a8468a5eb32750e90cd",
+      "cb855a85a0a996710ea6fa796abf05c7ffb3ab7c7cb7a4fc2efeb26f391ff11c",
+      "d63f55b67f2c9ea559ff514d98078a919073645d6046d970c2d6179313dd2148",
+      "ff27cbb27b10d940a79b0a1d3e6ea425734e4f6b06ab3f6b7d81b85c28ba5bd5"
+    ],
+    "skills/gz-flighttest/SKILL.md": [
+      "590109a661ff28f1c4e19dc472d8c0c81c1ce10c3f9a04a188b2dbac055bebc2",
+      "7e0a6c743eb25d011790f75dff53a6589e675000bd5ba2f90ce0ffe5bd3661a3",
+      "cd1cd20ab77c871cb46d58a58bad3814dd9b8517976f3ca50a281e03ad809014"
+    ],
+    "skills/gz-foundation-triage/SKILL.md": [
+      "043f02698e9b74438b101f066f766f7039e1cc7f598045fcff36cd84e1d37ccd",
+      "0acdd0042c28358836597e1026462fd4bdcf4a70481744f89b7f93396786c46c",
+      "3c765e1d6dec3b6ae91dd274fa8a3fd71e240bf1ebc9e1a3b69d83b8bfbe6aeb",
+      "41364ec652c18dbc207583cfe67966f98c103a0086773023c9e1f1efabf94094"
+    ],
+    "skills/gz-gates/SKILL.md": [
+      "778dfb6b93d69c2346977424ea1863916fb0596d17bf699a0eefa458b1bca022",
+      "d78e0315464738460cb8039a253709130a8404995668008290a3dc3cfe75ce1d"
+    ],
+    "skills/gz-governance/SKILL.md": [
+      "1521a925d5e930062178042ba8b4848a055eebe7beb6b672e49aed74427aace6",
+      "1903cf138b436ea83d512848a79d47d1969c90219f6ec65f6ecce1784db431d2",
+      "3a8666cc17a31b277deccc356e40fa113fa1d4196099ab019327a5ee7ed8f6c8",
+      "3d799aeb6e8493a7bea79b4723d1abb35ff8c7eced327d147ea6c6e3b5a36b66",
+      "4d9687d8ad01892b1adcfe322ad4c51bb27161fcf8573ba7ea78b00a7e99813f",
+      "5472933c8e32207c108387fbbc2bad6ff9f8fadf6013d4d63bf16519163b8027",
+      "6272ff80968a66f85743e606f44148159a6adbb2465616253f7af8ae94feb3ee",
+      "678ad8bf96cc91ed4961b076630f1fb96f7ce6d9c69b2d75e764f6eaf809aead",
+      "a4cf5242d74199359eab98826bcf72ab21067a148dfd49d23a929ff8d6232acc",
+      "a8239ff67f56c4a623f407e720ad6cd6be633d8b5e9a8a14051eb997b3ce1258",
+      "d391cc62a6f03a20b01b5c5fe66ad7942c7d9ccaede564be7121829eb6e9eb15",
+      "fffe26b66b49d03d0f24c4d7417ca90cd5764a37ece4381027d3c0cd445e3ee1"
+    ],
+    "skills/gz-health-audit/SKILL.md": [
+      "00e9b9729c3ac887a41ca829a8022aa6bdb6471baf585cb999bd92224d955c82",
+      "2a21bfe1486732c79f642d4f6a30ae70d3cf77fb3947df88869d95a9e88dc9d9",
+      "6cb3331cb536d65a7889af30efdc3fcdd4c532521455608aa9df463f6d9f89a0",
+      "85c3706f3b8d2e541bf51c8fdf4782f23fbac33f18fa072649ddec72eab7bbe1",
+      "b35812e8a861eae36737d6eb0bc88283f85aa3f142ddd01c9fa2028991f55a6a",
+      "ef31f13171fdb70c6f1b8973bace10be25cfc5cb848e9308208de0b6ef87e9a0",
+      "fae62e08b40e251ae57901d2ef456d3ea4128fd25b7e7a4000d9b64cab066abf"
+    ],
+    "skills/gz-health-audit/references/constellations.md": [
+      "f0234334578467829bc70fcc518eed9e3d0542c39449da1db1c42abecbcebb98"
+    ],
+    "skills/gz-how/SKILL.md": [
+      "a8c35cf70a1ecd7570daea4ce5bc41eae019830dca7e848d7e499a76093c576c",
+      "b03929abf2da33dcc88278f6c0245cc75ad30713b41414c1018134bda3ca7d40"
+    ],
+    "skills/gz-how/references/adr-closeout.md": [
+      "3893bc6c39d511dd85995fc6eaa701129d72e72001b76be1fa998236513d8284"
+    ],
+    "skills/gz-how/references/canon-content.md": [
+      "3bde60c15da99f52499dc482e923386946c534710dbb8b954a170e9f9a648882"
+    ],
+    "skills/gz-how/references/codebase-upkeep.md": [
+      "eb481d981be03f9a2559e4d23a49a751e29a2be225a0108627c4ea412c33ebaf"
+    ],
+    "skills/gz-how/references/commit-and-sync.md": [
+      "fb718cb56a6d350d7ea59f4f48aced93c50c03aec8bd8bf5cbeeaf115c2d9959"
+    ],
+    "skills/gz-how/references/complexity.md": [
+      "7d897776b82158a234af617087be3c6a2e90933cbb0a6a91cb4a35593f958714"
+    ],
+    "skills/gz-how/references/defects-and-ghis.md": [
+      "6e5ea76fb6ee566262e743da325cf21a1949674fbfeb543934241adb9a069c53"
+    ],
+    "skills/gz-how/references/does-it-work.md": [
+      "c6abe0a08f5c590d9ce6f64c179d69acd3708cd0fbde713674c0f8b272c29ae1"
+    ],
+    "skills/gz-how/references/idea-to-adr.md": [
+      "927e35a82b76194ce66d2dac6328d23fefdef081047adb3b92708095e654a63b"
+    ],
+    "skills/gz-how/references/looking-outward.md": [
+      "c37926b906937b8e20afbcb2896c55836cdc9377e71fe87d6d1b391732214d59"
+    ],
+    "skills/gz-how/references/obpi-delivery.md": [
+      "6e6cde04b69d57242f58e33fce691673f8df14e9fd847cbbc6dcd1a793a3ea78"
+    ],
+    "skills/gz-how/references/project-setup.md": [
+      "658513bf5cc9b29fc9842d92e62b57846432d3f71e5e1e37d8d33f70ac2651d3"
+    ],
+    "skills/gz-how/references/release.md": [
+      "90724929b89376d3dae29bafc53f4fe0f01f5fba9cd57728f455a09e5cae3a53"
+    ],
+    "skills/gz-how/references/repair.md": [
+      "6eace02ecf0d2bf78fe0b1364f89e305bb512c17e07501dc5b9333608806524c"
+    ],
+    "skills/gz-how/references/session-end.md": [
+      "455711771806323916412265b1ba9bc2c1253f69af80615e07a9c179cbe0c323"
+    ],
+    "skills/gz-how/references/session-start.md": [
+      "b5f1f3b882c8f38406118022f1c1bcf622c506fd5249fc8cc8ac68b4d242bc55"
+    ],
+    "skills/gz-how/references/skill-maintenance.md": [
+      "eebfd408f05d244ed92e04dac702ae2c1a5b507f1c407c897fbc31ab468a3b80"
+    ],
+    "skills/gz-how/references/surface-integrity.md": [
+      "ac7d0ee8908a80be5b50e6814d2b2f78eb720916158ea708f4fd95490022b311"
+    ],
+    "skills/gz-how/references/traceability.md": [
+      "cb5885640181ab72eee521aa6e1f1bfdb516c91d446690d6e1f51db073c03f7e"
+    ],
+    "skills/gz-implement/SKILL.md": [
+      "06b05f6cc2e8bb6823ee841e95f5770288f588a1b5f2be29c144e8854d2b432c",
+      "795c326f728f9c26e4e648e31ff52d87c59d9206141ff3e76f38f97ebb0e9ea2",
+      "9fdd60fd17e1d637ec2bb8741b9e754b6b128c1db097ac19ab9ea28b3f2f7be1",
+      "de4b77db9b058d328698375cfeb96c318ce476a99bc9d282d045e3d868f1cf5e",
+      "f81baef3ac97ef12c870e90224f3709a0a9b0e510db34dc5242ff8d3de54df93"
+    ],
+    "skills/gz-init/SKILL.md": [
+      "176e3a6a181262190ecca85a5c0ae100a46cb3f7e1a6a81663cb2d7c76a4d13c",
+      "1c517da1c73d989a071bf31c0296a7d035209c40688e24546feb90085db3668f",
+      "3acc54c9a5df6356ad91fa13a9e47b7fd1ea821e66b9ebe96cb3c4ed051fcc32",
+      "4652d5cf88af385092d804596de9030cca9b0f3b366ca88825c3585236eb216e",
+      "7aea509352c861dbc6fcbaea3b0fd69fbf92114513ac5649c1d79ee1981ce7cf",
+      "844378ca1647da2b494f570754da60809cb7c2bc4a2956aada8b0796dbf3a5a9",
+      "f2e3b2ad9a545b4dfbd8096e240728354a69b9553c5d68e6772c4d4dd4e3860a"
+    ],
+    "skills/gz-insights-remember/SKILL.md": [
+      "49b48eb9217db2425d48e766dcc59ac35101d3b16176d2f696f404db33a42738",
+      "896d1b9cda2479987edbc3a2ea22028c3353d56e5108a1707780d29998c5482e",
+      "af6580244ef48687adcdb1692a9f02ea035f8e94a45b7285b8003c51f62bcda5"
+    ],
+    "skills/gz-intent-trace/SKILL.md": [
+      "39cb0a5f3ca58b25a8e7346ef2b9d133558774a5efe9f2c5decc27f82127a2fd",
+      "65915f80fda779bbf312504fe71d01d8add8cd74aa02a980af4350ae15100771",
+      "a687db0842474c76ad5d3f9ade626d2a57247982125a31a2fe5fa5035e4c066f"
+    ],
+    "skills/gz-interview/SKILL.md": [
+      "e21a123f5b4adcdf4089ebbc10690d44a7799471772702851e83c9832c5b8a98"
+    ],
+    "skills/gz-issue-file/SKILL.md": [
+      "1ebe2f7418e2e103cf432e807fdb40d8d259e2f0a962f85bfe1689b8f5a9b030",
+      "49a2e44926a36da80fe97e217458ba33f5528586fc307bb47044850eb5da406c",
+      "4c1d6352a762aadd14dc36c2c8a7f825024483d60d35b8ddd84de2b746ebe2a8",
+      "af6ff576f725a86711bb87de4094e2f2863cc3a07d6be1852dbf79fc2efb1026",
+      "c79433b69f00805eaa5d24aba15bda2a9cbab0a4a20d4cc73504261f433feb27"
+    ],
+    "skills/gz-justify/SKILL.md": [
+      "08ff76ee1294812ed208afdafa04717eeba9d46727140eaba8d53be4a611f019",
+      "34c01c7bb57748bc8f9c166dff4a5e9217ff3035865790814960f7cd894fffba",
+      "572aaaa66b4130870647766868fee34ba7507f421be538ff028e61a34aea3078",
+      "67833adb26a91503e58c4e1bbeafe233dd52ebcb5122712d1acffcd5d0dcece1",
+      "8ab0546f72d1acf3cdc4d2dbc151208982610e66edc3c0451e36e2d0e230b900",
+      "90a924c2f45bd4ec8ae080c59f7576f7aa9d502d10d0765a6ca787c17b5c7fde",
+      "a532c862141c733a49e60a997cd86741110e7b8f94e8467913f98896d08a1b91"
+    ],
+    "skills/gz-manage/SKILL.md": [
+      "46deb16771dfdbb7d3580403056e0ab4b05f2a28c96478fc7c76d72a820b8dce",
+      "5da4980f5c3adbad36b99ceed393e5167f0093f92f60f899029862f14d943126",
+      "5f38f52bf2e18bfb3d12ad6b48c562bad6c9e24603e08c237bbcffba1ebf37be",
+      "6db3baae76b60f2210a23b29b92180134d84738dcf25866a9d28b77c97c643b3",
+      "7301267c392d81095b0a511e852ff43dc611e46d5d284483b42eb86665d99340",
+      "7cb6b9f5de48937b881480fb18fbd305f507d5f980a0ffaeb847a41165d3dc1a",
+      "e82503219bd2e8d41a84ad05c531370c6674d848682265be04265795193d6355",
+      "ef21a437001e9a35def3cf1cdc7a36b9bac6e12f35fc86ca16faa9188cfd3db7"
+    ],
+    "skills/gz-migrate-semver/SKILL.md": [
+      "3dd125b42e2df2d6c3d7c18bbe78abdc956378b0de2af035ce8ec8f257c5ed84",
+      "6351c9c4baae8dd291e04a2628bb81e4de2438cb7f9db2581a030ddc693449e3",
+      "82b5a54c0a4059cae6cb682f7aeb8bd3fc667c459f2070bf6276b40628d6339c",
+      "b7609cccdebda5379d1d98027e7b476395376c3618108d4e27e36d2a597280d3",
+      "d7ba091bc3bba218600cf76e72f99ee6ff0ec5c85935135c60836ee54bf97453"
+    ],
+    "skills/gz-mx/AGENTS.md": [
+      "75835224c3b9c3f49024047543a0f3e632f533488631cd717b7fc21487697c11"
+    ],
+    "skills/gz-mx/SKILL.md": [
+      "1911361896103e36ea460fec354ff5a10f2e536c15207908b245100c5b7f4c75",
+      "26e31920e09f93cce3151605c668bf60dfe322a2d8cd0485e3a528edc0136c8a",
+      "29c3b03215fb5571c021827005741e5d2ebc805bb78a9486d24e33675b133921",
+      "655a3e3fdec4dfb7bf2d44779f5e03166d11db4566f25be2efea62995807ac07"
+    ],
+    "skills/gz-obpi-audit/SKILL.md": [
+      "56d9e944d9cbb3a89e7d247d170ded392d774921022cb68cf3d968ef009ee0d9"
+    ],
+    "skills/gz-obpi-brief-drift/SKILL.md": [
+      "1440594af6097814583ac1871586a0995d01139b73cdb77cd0bc4ffcc0085a3c",
+      "2c1ec9b4f1ac6b1af2b65c1b0b9e556b9a475f02cbc63c19b30f6be2b4c11762",
+      "3536bccadd6d1f9a5cac7882f281c889b5055376b567f21fa33b5f07b08a4f28",
+      "d34284998745c2f02a189940f9f7bfde5654a9740a62c5238effb778c62c7af8"
+    ],
+    "skills/gz-obpi-brief/SKILL.md": [
+      "fa2cdb4471ba083053f17dcfa5a96aa04e8c2a5a19f6ad19c174169daa68927f"
+    ],
+    "skills/gz-obpi-lock/SKILL.md": [
+      "1346314c4a8c89fda9fa2ef7785fd77bb725611def9a41ce9c73b3e021ef1988",
+      "533c6527016f88e5e58cd287dcf7a548bf974e10fefc763fd13d240263caa32c",
+      "55229ac9c6d54e2f4ac83a739a9337803dfef752280de8e875983bef7b2fe8f2",
+      "9c276b79bada272607abc85b4c97f3a4c4666e90c1fb1846d4d13159637fc1a8",
+      "d873f741640cbbc2dc8cdf20572f8d5baee9e565135f47710bfac092c87a8e97",
+      "e2302256e222e5979fb996957ee3ffef7fea042295acebc793ede94d54f97955"
+    ],
+    "skills/gz-obpi-pipeline/SKILL.md": [
+      "067daac5e7871eb9c7c9533585497f868bcb37731d02af3cd283905718fa209c",
+      "0de07f7108319c7a0f7a2132de31316ddaf3f32205199f65a0df731c94ad9450",
+      "148e284b21b7c5e669597565d73838cae972d490edcdf98d984c987eae47f8a3",
+      "1705155e5565224d30ba32006412491eb94a2d45983f226131800716f776db3f",
+      "180ca0d9086db327b7365674c97681eb15d64d442462de8101fa4b8c7979a074",
+      "1b37d8f24056adcff80a5341de15c8b47d6d033805a8e23a9cb83945aca3038c",
+      "1ecba705cee257d31431966ae0d03d501b0e947ae7188eff90c962765273701b",
+      "2b47898258bc70839b23e828f1b8a5b938540337b19486769777c63a539417a7",
+      "35c0d2eebae4ec77cfe213c46941558ad0305188f62c986d2d2812f4ba52f049",
+      "3bbea61ea4ebaebd0c2c9db9abe680193fdc520be8bbd75f81b0c97f1c082bc4",
+      "3c43f794e147ade603cdef616229f0983c96d7d74f049b9308798a8518631f84",
+      "3cb070bc3cfe37f6e3b5f41ec72a7ffaf8b4a33840c9983441ed77cf7c2b8474",
+      "3d3c51e131679b6dbd3418ead0cb78b1cb663b1ab6f7bc47af64a5c2ff2ea149",
+      "407193c2e6bdf3ab20b13e0d90b094f4b80a26bace25f8452fb1e0fcff50edb9",
+      "40964662cd4d1441ba172bc770c39afcb0a451381d44870ca68d80679e29d732",
+      "45fa3fa7311269b790bc3b62ee938b8a7629d8f3d21b45995e8f04542a65eac9",
+      "4990631db2c10dd1d5205a6b64a7b46f0954e9482f4077cf3342a5d992f4dbae",
+      "4f89a45ee0ead20ac602b4ea37b8bbf785841634e0da7b30cfde4bc0ab34e3e9",
+      "507a00e275d8dbacc5dcb0ed508eb7a80768ed92f0721610c5bb5d8739ffb58f",
+      "5377a361818880f2d2d49e332b2792b9dd6cfa11b18698eab29c972423c80c4b",
+      "595f983479eb6c178ca1c6d61837c83872474ef7ec78f651f76096320e9c8d16",
+      "5df27a3235f53444d95427d1127c1ffc183720c78c1a6c272f4cbe2e0ee31bc2",
+      "67cf2a31e13f79680a98d24b96378d9995d1b184a3c3b83a726d199d161eab8a",
+      "6bec08e81a4fc5d2f7f947910ac1b25c4d46129e1e76bce2909f31eab9be8057",
+      "7198aba6e08ef4fc9e03bed018fcc9932744a6bf83c5f28c3a4c06ca5d845a11",
+      "7258f088d21814ae373f70829f5dc9b0405ae77cac7b8c55c4ccddd6662e0632",
+      "7bba5377af9821cc71482b6604daa356e4aff2dc36bd89cdcb981fd8e88c22f4",
+      "7ea7537e4fbcf24d00b387447518d6d0ec29967141163b59cbace53aa646e4dd",
+      "861f95b735fc562c517ee432f51f319d06556fda593aec05379e62873b279a03",
+      "87776eb0d27a9a5284ddfbba34920992beb6be874a6df59b6584fc63c993c30e",
+      "8a8a57bc705abe622779a188e0c0f157ee146385e9d952d1dc3962364b4b82c2",
+      "8e93197f44120c2112a7d73963e7b15dddb9f25237add812df1494b9d104b649",
+      "8f6896ad601b450092a295ddc94104a8923ea8288f7123ee570228abc80c4378",
+      "9133b310cba93f1aa30e045d9e42b50b7aff54a3862372830298e4cebf3b0400",
+      "95fc000ec8bede3992f7c28563581d90cd54a050ac06d5f96622332cead30b0a",
+      "977b7d48d8fd40890dbe133fcfb2492ac5ae089910e24841cc1b50918f31f229",
+      "9aa29452e239d8027ac1fa464b8b60e2ca414e905939817fa9e4d266ffe72c69",
+      "9af46527421e5c28560aec85aadb2e7793fb601fbffccc85c037926dfa037688",
+      "9eb39a945c5a2d7bc54759fd70168df64bd8035484d851eb7579c3343226e37d",
+      "9f873504b2a3bdb9f749811e1d6c50c281975dc7fa3ce7dacb69f980112e00eb",
+      "a1542d7081779996f867aa42d07a457efde1bf669b7f8e697ade8b74b03f4f63",
+      "a211ed26969c087b07c54d8d745fd48064084da1cdf65b1744285b40700904b2",
+      "a63056552f1e3b8288ad5ff85f520f4b423881f9dfed09af21696e9d663247a3",
+      "a818718f5d2cbeb3ac919a167ac5ab94a77230808bb78fb6458bb2c0b787a243",
+      "a97bf35a7839a11a35f46e8ca57c57c00ac1fb450f04959a852a0f1d84b980cf",
+      "ad95197fffdc8937ccf45771893f7aa20ecb9315b70af344ff5bd6a1acbef5d0",
+      "aefe1932c0727fff840f4e350fde0e47eeacf22f5bd602a4b66f3305708f7a40",
+      "b3688e8b2fd14296391325d42cd4319589895af5f472b9258c97555805b56e26",
+      "b990e50006c8496e1c15c1bc4d06c9e9603746a15da85bbfe963cbdb6171b95c",
+      "b9fa5ea6c18bc4fe8c5585875c8cd26143f3e148049f81a41c354fd2b33092a8",
+      "bb1cb6374a803449e80fea16b5a980450a7e8bc03b657135d1a16f61c72a5972",
+      "bb715480a9d507dcc747c38cd105c1199418f0b6c0bb4ddca58f5faca4e3ba52",
+      "bccb391d9a5c0f21432b7363322fe4b3b7b1850420ccc191675950c3d069dd85",
+      "bd9d00fe3d35c2eea20b680bb1870af56833ec6b49ee6170ee1c8c37ae437160",
+      "be00306cc5d1b2faf5ecc7d92d5e4384e7e62b6c81a9a4d26b371e22d0f431ac",
+      "c023d8c5fbc5b425bc5a304ac174bdcb05be3c2c80b63e1912b77c886fc056b6",
+      "c14c0b1abe6bbb4289adda39f3123cde21483f706011dad43d302a728744da30",
+      "c54dfa7a1f2fd4f29af4e7689d46d6c4878de8b98633fbc42d37fd8cbae18f48",
+      "c5b448da0165850eb9eb4e88f2a19f36513e27bd493236282aa45bd1cf991092",
+      "cc7df5e79ce2f590968f87fed37646563b0b73fd1fbaf7feeebc2c266f0d7f87",
+      "cca820b382de0e9f0fe2758ed170bf3a2ebd96e3ed6c14d6551f4762fff9a14e",
+      "ce8b3ec2a48cd779acd6d7d4c6ca7e8a49fb97aa19381483ef63b4d9691be866",
+      "cf183dd233e803621fc7db8934f1adcf3440002d3a6d7c2c093af402ed26846d",
+      "ddfd033a75d9bc634f01c2647a5135ca4d4fbee32936b9b7396e3ed5a66e1ed6",
+      "de11b120a029eba82c182cd23f17ca573e499a363dc73e6a7600e1218a9e49f5",
+      "deeee44269c11aad8e34b91cadb49fddafc6f8f321caaa7f7f267d7926187a70",
+      "e36d20794e6027dd171d2a3aa98d512c137c5c5f2846c6382a21f4673b0a02b8",
+      "e37e3f9c1f180befd3138be458c9dfcc115bc487db73ba32e74444c5c6afe974",
+      "e738380dcbe037d3f1c79547f1dad331595e1ec6aa883560ee72ab5b2c5daca6",
+      "e91e955aef6005fec09800adfef4342a457146266d21cbfe7d311bb203f084d5",
+      "fa388f838a9c1aa9fe1318ec6a9b3b467b7c846fc91359fab9801bf82dacaba6",
+      "fe560ee55b14523abe08c14d312277364da32af96a15877d64286b3bbe23ace4"
+    ],
+    "skills/gz-obpi-pipeline/references/design-notes.md": [
+      "4aa6430421c83952fa1c86ae64b6e23dcddcbb466a93bcc70e7f010e878ffdaf"
+    ],
+    "skills/gz-obpi-pipeline/references/evidence-capture.md": [
+      "9c80cf62096e8977883c75880fd635443632e6eb4b8a1fd29b27347caf98a86b"
+    ],
+    "skills/gz-obpi-pipeline/references/plan-audit-receipt-contract.md": [
+      "187c27f83025fa4b17a948beb062338242a19c1ef1118d64e60bf65ef2e3c6d1"
+    ],
+    "skills/gz-obpi-reconcile/SKILL.md": [
+      "1acb08d93c597dbf3df0fb0f0ee359056c4729ccb3a86ffdae0babbd0a7031ce",
+      "2d46593d32ac6063e48245ecad315c4c1f62f9033492d4d11e0c522b1728b777",
+      "d73cd9fc263a0bbdbd0ba4417daa58ceedd320fa06ca0adfb364490392175602"
+    ],
+    "skills/gz-obpi-simplify/SKILL.md": [
+      "0c5de969fb47312ab6707eaa7a80593b573a4f9f676e6f4acb539de8d6ed8f0f",
+      "7729c6a018aa4f6770b36f2fddb0220358dd66283da240e015e1f88f7b16cecf",
+      "828008e5efeca060e86029dd88b9820fadcd2dc50dbe9840958375badf044d03",
+      "c7d411d15d014248db556a156ef1287bbf024c30fddd8c6ed92e8d2f298b13ce"
+    ],
+    "skills/gz-obpi-specify/SKILL.md": [
+      "0b0f426ca4949b05efcd84d2e72de9ce49b1365f6467c9e46a6d4cbf71688722",
+      "0c1805f40abdae12cd18b3e7596610cef1f6c72ed0f4211a669b1bed5c1e6509",
+      "5bae4753fdbaa1c04cdac80be5f930a26962e3e16b269476816e35c898a70983",
+      "684d16c66922172dd8f0572d2820066b5028bb3da19fa6c7a3be8e3806e93163",
+      "7316dd2a709526b91009c6de2d12ca136b4438d5c0072d6e8d31338c8980a92b",
+      "878989c7456d54eaf2bb382cfb874920802e28bf2fd6feed56d8b0ba85de4da5",
+      "8c9975d32e847867eac37a3d23703bea94e75864150237d88e76bb8ec2d539df",
+      "b4c7a29c6d37afab9f2d101274c506ff33902837baf22133033198bbb7c78894",
+      "d571b50dc7fcd546367dc7295468dd6f42033382f20042181d28090c235c1575",
+      "eb3b04a03fce8fe7cd7da756cd5557aa38667c731727d17e7d016fd26282a1c3"
+    ],
+    "skills/gz-obpi-specify/assets/HEAVY_LANE_PLAN_TEMPLATE.md": [
+      "f1d5ec33363aff688f47ab4b9e758125eddb935ac1509ed0354b3f3ed88a3cd1"
+    ],
+    "skills/gz-obpi-specify/assets/OBPI_BRIEF-template.md": [
+      "654c305af027415aceca2291c8e93e8e798bc6e29cbcad37e392600da617569d"
+    ],
+    "skills/gz-obpi-sync/SKILL.md": [
+      "021bf25b35b3b526ec766a80a8a7e4f18fe28646c83bf830b2dc839af0efb0f8",
+      "4a3b19870ee8ae51643f858839a05f5fb6532b6a64833bb0b941e541dc0b7d1d",
+      "b019b2745bc147a3de018ed3b0e507a40d288a8df68670524dff73b9bf5d899d"
+    ],
+    "skills/gz-ontology/SKILL.md": [
+      "32050770b7f22e6d2c5dce03685cde5ae8e2e254f9975c5a3f69df265959963d",
+      "a80a66a8c929242dcbcf138d76474cbd5d7c54f647638a57e86504c4d04f2e66",
+      "ec26ecc07a52b301e04b6c1602ebe2b66bb885854ea073ec0be2c83e9f56b8dc"
+    ],
+    "skills/gz-patch-release/SKILL.md": [
+      "00b0ab1c9ed60188081eaed919f0d9c41c167a0cbdb556211ebce88667beb75e",
+      "170298ce214e6193b28c5573cb900383bc37a68323b8103537ab1f07bb73981d",
+      "3c3e2598cfbec89ebd76d3922b68580a0adae49bd3c997535adb1aa2d7521054",
+      "6e9ab6d066f4af20964e5006e5c163e710647187de817b95e535a079e8ea554e",
+      "7a9bcf302a6884374768f37e95686b733d94cc85ad94c8ddbf84fcb4b47db590",
+      "8a55f46feae1b4e146b401b0316126e48c0d4d8d5a1be238933b09e65d15e4a0",
+      "98fee7fa834e2adbee2e95f6097f37f2e46ad33da2724adcd7a8539339ecf638",
+      "bfcbc28f7b118fdb468a5bbf57cd1b8dea2559d621c769f8baf9455bd9d135a0",
+      "f4d6679dfb703c8befc3ad4e6b760b547aa99246c16cf2ced17fbda9dca0cef4",
+      "f9b9f0e17658a1becd21cc57a94cd37277f88b74409e141f3b0ccc55fc79cb27"
+    ],
+    "skills/gz-plan-audit/SKILL.md": [
+      "165e573365d3ab82f2023b83a0017c084cae32004b6637eab548dce016a2f57e",
+      "83064eda9e9a1c78d9e66fee38b1fbea0a15edd0663b0aed7a360cb4e48caa05",
+      "8e7f50049f78d6d6eb8e540fd56161e8550d6fc4b5aa490c86f0bb55d4ec8f3d",
+      "b924382b6ef57cb3efb2b22f82876e5ef0bccffab9f59bd72362bf92e5472126",
+      "bb4920b71d007946d4ea64df1027bdcf1f43202e282483ded662817d356498a0",
+      "ef93743355db3c23f5dcc131e4f49a2c35553f162fc54017850e04f5096f0b1d"
+    ],
+    "skills/gz-plan/SKILL.md": [
+      "1fbac2feb9ad3f9fc2b07ef8cdb64d3f6ce7e352885a75e637fdfddebcc79983",
+      "67d1840419b450eeebb0f8f0904a2d41181c27671607ad5a9538336c14e7bdce",
+      "744187ebe81b57358bca488bc47c2642a771f76e15c4c3b77c7795e8a28125c0",
+      "89e14fd069d8a8790b1e26501fe54656d2d178ec101014f17918a600c8166ff8",
+      "b6466af7f366b1978339b5594efc1fe940811dd10b80db7f5cb1c1e19a5868e2",
+      "bd884ab64413ca04d6595d0106ccf3b3bafee57c22447a73ae8086a71e67ec15",
+      "c56db1d1067bef5ab6349b269aa93ddda2c6df03e09cc920ab5e15b78690a889",
+      "d1d7b5160a5bf6d2b019fde7554c895c546003d7be7c01db832f9e06df027300",
+      "dff7ae927fecc77160c9cd6bb6bf5b8d49da2596db1d580c48716a23cdb0b824",
+      "e5365dea1f114cee0669e27a854e22f30f54e8e26581fe3d6898e17f1fa3f48c"
+    ],
+    "skills/gz-prd/SKILL.md": [
+      "30268ae77898c598a9af4eaff67427b14b8c49d2757812e2a171e21077b5d0e6",
+      "3857d0155a9f9a07c68e7305fa4107b509db78b8185bb9273069856b71178784",
+      "5328086f84db7889484f7e80b2f039d85098bf18ff9dc922f68347cf5aa225cf",
+      "b201d3599467e705b2537c9d831d4678dd9881eaea99f90e240462d5e7290700",
+      "b61610c441328166b7d065a19ce1b3c6608bd75d5ee120af664d207dff4bfd4e",
+      "e5969d1c48f194f76cae290edc2726bd1316119e9b5682a7495330af24b2dd46"
+    ],
+    "skills/gz-project/SKILL.md": [
+      "058320f3ab0ab02f821e0677473ffa703bc2c45998b43eaa4b7a0eb068d7e990",
+      "25df4786d6d6048b68c7a2699f28b32c98b6b76942e0ba673e4ff58a4467779c",
+      "48a388e210473eba473420f22456c8830dc066c0142ec85c455e359c8ef93510",
+      "639d1b59389b25e40de874dd6a1554f6274310a4eda78393db7f288993721352",
+      "64c85db44302dad08d9c116229c8af34f072694a77014ee40d11312548a2e1fd",
+      "7dec465ebf22f69913342e465785fa4a25b8fb1ce45afe251a6a285be34369f7",
+      "7e9212b2494b8b70f08f75bf4af15943f1b78809a62ee7ea101927a0142154ad",
+      "8798baf3a2886869f2a1b23c2f1d79b2cfebbe7e371c2ab56ebc3266d333a326",
+      "bf0e8c194a787ebfe0e68b1495f6b29573a94ff7304e660abd06f0c167d675a3",
+      "d758a0ccfa51880ddfa8288da241c714e351436cdc5c914f411c8876399cd2b7",
+      "eb3c54afcfc191f683f12b6b0434e659d69368684ff32aeb03337bc1d96f6e8d",
+      "fbc11592df7dee3e2f3d3348151893dd594f92172872977547e3093fec2d8533",
+      "fc208738447c5c6bac4fcdfc4ca8ada5ed1126cce8bdd3bd067c04f77bdcf7e2"
+    ],
+    "skills/gz-pythonic-pattern-apply/SKILL.md": [
+      "971960acb02c683398b3af00da6db9ca3ae1d9eaa43ba5aedb70f3b390cd7238",
+      "9b632a0cfd3c62471478d7dba214b09d76bbe2d3552e6a20269fe7539fbd7830",
+      "aa1daef77ed6a0d945e98be7973c1d5d9c5a4e1f0710358a12ed49fd6f296bcc",
+      "cbc6db5729d9b84f0c9d84cd1fdea261515daea6c140e9a155f6f79e117a7ec0"
+    ],
+    "skills/gz-pythonic-pattern-detect/SKILL.md": [
+      "2a0cd178a9016d21dfac55975fbe6edb3fbeefc499196c20fa77e97926bc8e1d",
+      "90e34cdb7008eee6022eb6553211a9d1c04e1c6868998254e5e07241db851fd4",
+      "a3fa81f5b70fe9a5e50f580b21c95267a2051ac9e9be9f8129ebae5913c7147e",
+      "d88a29dbaad68ebc3831c5332414b21f7ac02ec5878c9fc9be85f30882e189aa",
+      "e796f6d2b26151664bccbbd9e9c2272e7e9a84ea6fb88ee51a4b64faddbccf1c"
+    ],
+    "skills/gz-quality/SKILL.md": [
+      "0ab6ed5e3ac9a4e7a708f6eaa415b011287c65ed1610f8d3c9e45632bc3f49ea",
+      "5cde1350b216cb3b081e2078d7ac074e1498981ae2ce5a46c2e35036ac3050a7",
+      "60493de41548d5c44162d28947cfa56133a2148c875e50064e37536e2ca740df",
+      "9841840f325b6a2788febfd31b138be3050c39ab04e1f55ffc0e90c2201fb80c",
+      "afdcafaad60abbac9cbbbcfcdb225077ef916567e95fad1292ff99b3550d693b",
+      "c55196478755833e359dc46a2d3c8b850114015bb23150a76b2b3880ca95fc69",
+      "c870dbae6b6de98c03470b27d8a734ac38bd81eaf1543cf5ade86ed7b5dcdb0e"
+    ],
+    "skills/gz-register-adrs/SKILL.md": [
+      "958fee062b3326ff21bf79cee59d85c45019db652b9a6f491ec765b50e072055"
+    ],
+    "skills/gz-rnd/SKILL.md": [
+      "699980dadcfd5b340d95d197de2d59e3f2676e86696e473a3ad6304f09e78575",
+      "95963721fcb583f6fa866e6bead65c77cba037f8ccc90345d95c5fe9d12bf14e",
+      "b76cd63444e9cf91d678085a446dbb6ea7919f4d105fb764ee8650e33bc492ac"
+    ],
+    "skills/gz-rnd/assets/rnd-record-template.md": [
+      "007a047d86dcec7451d3093e7b7e1d1b24bc3a79ce7fe9ab7b55a308943f3e2d"
+    ],
+    "skills/gz-session-handoff/SKILL.md": [
+      "01f53f6ab875d70f4444878f09c65273585779546bfc6fa2aac7fff7d60de1b9",
+      "09a0bc92dad0247072ef8190638332131e0379955c757d62a6f7f0e03f02cd33",
+      "0c6c794b164c75e4723c4402853b571dc7ad83cddca846c70e053d4f3aa9d623",
+      "0cf6f7bb8845a71ba2f1a40c34980929e75ded947e3a360cdda55aaff01e7a10",
+      "0d6e70b94adb9dc913195598dfc564fefc638aef155b99aea7d7e91163fb12e3",
+      "116a9053e04935e3db29e86cfd467572b65089a0866f4b486ab62f3497816063",
+      "16f0d11ad3ccbc48a9f2d9b10e0ea99e59d19d34eb7ede85e2f5dd088ee54ec5",
+      "24195231b158c57657aea603372dc5fd92f557e4f66b9de7f57367ebb5886023",
+      "2eac0ab0f92949855b159ce7f4379fa57345f64d552bea26c1e6dea6660a1cdb",
+      "2fa53e040ec78217d3f87047b8a524834f3cabe6a371a2bdd79ba928f72e198f",
+      "3044b3d8a87d74a503b078c9cfeaf3dbe99f62d62337c1a67d78b282f7507dd2",
+      "33479737a77716194d82530130c4c154585e8e8f9d672fbd5c7be176aa572365",
+      "351a5a437813f83dba3cba8a06bd058fe8cf26426cbf7e0d196b0cb6d77262dd",
+      "3a65d28bcd85e674e0793f53a6b8034d2633abccd5d14dfa2afaa52413c76e19",
+      "3fee8d57a0e6c9166f7e11b9322de2118345c3a9ddf8c0dbd2f3e99ac529342d",
+      "441bfc2af1da8d1a55629c0e0cb323a6820975f53ada351a6cb338dbe4d755bb",
+      "595340d4b154242979c1ab169f7f2663dd20bebecaf022c59f2013d12b2c67bb",
+      "63990d4b0fa59d607e1892a448bb2a7f0209e2628fa0e850b820f610d0fd59f8",
+      "6d0124402c8bb9689c7494aa3cdd46948eafe3a6b06d61985674609757215ded",
+      "713d37ee60141865852aefd21d030124ee0bbadc58907f02332c2ee5d545570d",
+      "79946df2ab2cba66ab207ae42da9c7fad7fab69bdaca15e7ff4ee94d8f11846d",
+      "79f3b9d18d3baf3e48b4e6abf367c433828573f77d6a7f874444c3a5ed320326",
+      "7f3a61ddeac4d565a99bf6665c98acbaaed8c46164ee3d2a8e5d4433bcc799c9",
+      "80321d2591df46bace502fc7717c012fe6a4ebc880ca8850ef603723a2e6315e",
+      "844a435ab64494f3f7552455b286ca2feae3c1e21019bae43b7f214cefc6c292",
+      "8c482884f139c0a85ec28d4cdcc06be26eef4d7d8ef0bac83611bebe2a137430",
+      "9499c518dfceb25f747e398ab358ad8cadf9227a04669f0e644aad7ac55cc388",
+      "95bea94fb0f06fa3df7188e59912f1da7f90169a91f929092ff1bb1fcb6741c9",
+      "b1d0b2c6504f1af019978771856f5725e8d6de239d595b1cf66b48cecd2f3f46",
+      "b35aaeb32bf07aeb35c68d7574fae3e08fe003b8b07b93c6568a4243b2720911",
+      "b7cf5a16ce661905c4f5fa7da44bb1fc1e38d53da888e5a631322b91aed140d8",
+      "c5e7080f0ece937904c99fb9e79be2149b22f0910d992069747333a99d6b0ccb",
+      "cd71457bceb1839a97b6bcb7ad707301a7e231256ac9106a5ddf5c4d7f8c9816",
+      "d08ed59d99db5f0079cbd2d123dadfb9882dd054055036ee477adf7b0b092119",
+      "d0d489d2bfd583cd399e861bc4d942c106282bc31808c2a9e5ad6944b72b1ad6",
+      "da1f907f4bc7e287cce22bea813f5647ac3c8d1e66f4a7879c9efcca6226aeaf",
+      "db0b8cb6e4d4efb55cc1dc4e59446e18f28c7f491e344db585d1590e2dbad767",
+      "f380903c190fbda1232559081b1fcc30cea110c812418b52fcb970ed1829d111",
+      "fb6cfd8c4fd815e5379a32da981de31aa7c5622f950959715013f783c83c86d5",
+      "fe824d0c1740e55a4ce9d5cd90873c311ef7d5ace1da23192c36a017f3c500bd"
+    ],
+    "skills/gz-session-handoff/assets/handoff-template.md": [
+      "6d459efabe9b1f1aea29bc6d5679bc4590591fca5ae82d340357b2b874fc7f79"
+    ],
+    "skills/gz-session-handoff/assets/staleness-rules.md": [
+      "168d6e8c070185ae8a0ed3eacecedb4a90b2688bfa6df6796355d9b8460243f1"
+    ],
+    "skills/gz-skill-review/SKILL.md": [
+      "21a19ed524fcb1a27e5a4f8d574c2d41153279d36ff4620851ec5b8e3453048a"
+    ],
+    "skills/gz-skill-router/SKILL.md": [
+      "17bc3dd913a59047e4b83bbbb067dab1c16a954d91aeaad756dce1d2b4d31b36",
+      "1e3fe302dc7e8f68fe856273986f7b02a31c1a77381d872c55adeaadb41fc938",
+      "584d6a8f3e0ca6d69e1bdf18114b93beae48a7fcf4cdf0bfbf2d09ab79a442b7",
+      "5f059de831c8142aa0484c88fa7a8718b4e8121d36099f479bda88e00e70bb84",
+      "65eb5715bec5536903d67a283110583dec9cc6265a597b7cda1af8bf11ba2329",
+      "742a3fab9d28db758f10231c0ee1c04d5419276e363c99862c63ab1fc1b504c8",
+      "759d032448a9643ec9f336efa8e9c835a7704e5db6db2abd1316e400939fd7c3",
+      "948af20e55d121c953cc3130986dcd3555d3335f30bc4beed5ba84c5d6b45362",
+      "a813fd5212f309e09e3e640534d473a2101aef40d5a8d63c8c720afc0ce15c19",
+      "aa315e8c9ace4231cf9cdfeba104b1af1604c4dba939aaae801402f898bbb28d",
+      "de7920929f0f1cdcfce90df1bed2edac24daf24190462afaa0d500d136854828"
+    ],
+    "skills/gz-specify/SKILL.md": [
+      "9d655dd844dee2d40d14a0a765b352ab619460b840c9a3b88778f57e3bf26d9e"
+    ],
+    "skills/gz-state/SKILL.md": [
+      "4d4b6a17f81f5ab7df85651a0ebc20f5c82c5fed8a1b7a54a6d7d858784e2a8c",
+      "667a13ecac861486bc9fbbc686a06bada39ef3cef98230d04aacf996ca18c87f",
+      "7c423ddf703f86b99a91353b35a9cff1b1196c7a08e7e604b8ab275938fb5148",
+      "d644b2b0a10496d6a0a15a01eb0f7849c36ba8f43338f4d1fa0a72031a12af8c",
+      "f91520da1b115ed78784077c67f81811f9f2865ecda003ddf89c0dab8fe8c301"
+    ],
+    "skills/gz-status/SKILL.md": [
+      "02364c84614b624c25a1f1fda377cb5c4ceded5abc3afca1f692f3a9465ca317",
+      "42534009d4a22c0f73654b96433334c766fc114a6b4fa9e05f892023ae141b89",
+      "557e02414dd3e676832df6a68d58d90dbf105b562d18b18b0f599c5edee06bdf",
+      "69be6531a903b74b5a3c6fcf67f0d81f4c4e2bba8f9721962dc7dd943fdcaa4b",
+      "941415a1bdf8cc5781b3e06b89b95019e4f10ea55aaa8b11786a1bcf6df2ea84",
+      "9c0d6a61590b3f7d72d11cfd168d7c47c1f057d386bd9f407580065f52fcea79",
+      "af86dad6c90b63cc1b21eab4b287b94afdef3db6c9018b4577cef16aac5af994",
+      "be69298fc1cff32e0f200fad8518cc4b25e267cb8fdc7ee5f6a36e249a2338d2"
+    ],
+    "skills/gz-tech-debt-review/SKILL.md": [
+      "4fa18fa6a29fb26bc3ba5b28cfba0f982373311b35eb4c1b9ebb455ab4387999",
+      "6298859de856a8829bc66434f4843f7e9267ebe22070c1608c231d1a843122b2",
+      "75a9a567fdbf8d7c03aec29b00af58e253b2871a592753685efd3906098915b8",
+      "feecd2af5543ec240b9b4e916f7789c8e821ee5efa786d8a728acdf9cb603d2a"
+    ],
+    "skills/gz-tidy/SKILL.md": [
+      "1e0336354682bb21037db201e88925d9b899dae9b00e8dac8b737a3d2ba48ff2",
+      "c8d1469281b42768bc2364db7781ae5e001e09bb7c357efbef83229b2943001f",
+      "cb3c8a38fd8d570fd69eb5430d43132bda3fd822a30e85597cd12ab46985260a",
+      "e4b7e8bf7e7e620dce66d9bde15c6d8390c5f192225db9e6ab8d18be4828c840"
+    ],
+    "skills/gz-typecheck/SKILL.md": [
+      "e46329b46dbc81006473be4895ef9773ebf82d27dfb98e157745648e6fa38868"
+    ],
+    "skills/gz-validate/SKILL.md": [
+      "1685bca099a874ef814c0ef6874cd2eab28cbeacfd3a946e4aee27227a17a89b",
+      "1c16d2887364989be38dd0bc2f0f99cedb4c09aedc873b5aceade49e9638d330",
+      "451a6856a29e1ae540545cfc362e73ed074a82e9f0cf566ea2e3be4e4349c944",
+      "944dc036f14979324c86933d4636078a2861a7719d1dc3a3bda091d4b15b7fb1",
+      "e09c1a0b58b1213518dbd4d4bb53cf5dff2fd7015d8e9dd37a216b28f48966ed"
+    ],
+    "skills/gz-workflow/SKILL.md": [
+      "390fae92a7e5444adc15c574c6f90de1d70af2e5b3cc61797bb9ee39b6ff0714",
+      "5e74d6c31d3fc3a389623b04d323495acd6c9bce7e5341fcb84f49b7479258b6",
+      "687aa8f4d52d23066e0a55d7e3206ada19519453da80889a0e019e3309b9990a",
+      "aef26522d36830713bbe452011f0ba9aba7fa17ace71cab3021bd71297f0641e",
+      "c90a0aa7d29da7ed2c8a26ecba51b9a4377d345e0a0ca4bd649b2fe9cc9441e8",
+      "d03c83300f20bf9676fbbf6e7dd3880b5650beec7bdf811388f683accab50b21",
+      "de3991c4fc100b04c586c3533cf41c5d8d37b62a08156ef54aec2ee848726a0b"
+    ],
+    "skills/lint/SKILL.md": [
+      "dbd85e95595c2bdba70ac9d8b059a987642419a2aa80246e1e8c7fe5de94a3e5"
+    ],
+    "skills/test/SKILL.md": [
+      "e4afe82ddc8ebef6c86416e65dde79128d85ebaa90dd2c38b49e9d33154e9c20"
+    ],
+    "templates/adr.md": [
+      "00f42efb8e12bd994bf32c7de25636e7f4a422cda89492935300934efd27ce7a",
+      "55155957198b7fb71fc5ae37d6f8d6fcd955ae7d8cf8c3c46d7e4c3fd5adadf1",
+      "6a539c2545810f5dce7ac0ae20177b8e3b2b8cb1bb616bccf0fc4200aff456ac",
+      "72628f16ab8fb4b9b8456865a0c68e5418cc999d67abe88fd653c47ab4e75b3d",
+      "b1bfd8d4e6c6f256dbe48f6f047611e3d962c73f836d174c9d5f4d605eec7955",
+      "c6a422244a27cb55c90d73a568d5653733f71d1893d90f4c023f1fcdceed7e89",
+      "df8ab58222fe97c645331f6e8bf0ea5dcf7baf2a0c5fee1eca9c430407f4e3bd",
+      "ec91ccb24452fd465c13cd62b8230356548128f7ecf25337dbfe5483b98b08d1",
+      "eeb13b4a139116ca070dc20be4af31ec3eda5e421b60e74391440a77bfdf6392"
+    ],
+    "templates/adr_pool.md": [
+      "8aa7bbdfef6cf09ece15068e9198860fa843e0cbb7dfc1759fd852a5258180c0"
+    ],
+    "templates/agents.md": [
+      "063853a74858104a1e8cb7991796580ded8bbd27269b62292f563e6d44ce7c9f",
+      "0a24e0b43bc3df01c117a54d39847bbe59b370def4a0ca2c8bb5570ba381eb95",
+      "0ebeb4929e90ad066fd8b20be938f9b5f2eb4f2ef5025a7449393a1d67975ad0",
+      "113ac42bcffaceb5f932f6de06376420dd2b22213476bae067abb25f8a41df8e",
+      "1557d05ae944b183dace07eba55bed7f57aa43476227cfea67fb6430bf99149b",
+      "222315ca74f659a0e3a76628d36d90cbcd7540ccc7e3b513efca9153dff76461",
+      "266b018eec28c62fbeee15ff38395b1989a8f7fdeb112eda3e608f565a561bb3",
+      "270c1b9736a1c9295f3bbceffdb8b9473efb3158e8ab9d0f4ebf91e96369c12e",
+      "299f17ebd021f94cb23797f7c8bcd779c18360dbfb777623f8b16121b0b97b6a",
+      "2e49f6d6cd50334172ddcc53b02661c5137965d4b0e5f9b111938f5c8b5960b8",
+      "3da2e0e00c0f73082202d3d14b01eca2aa4eb5b91c46a2942b85411892b6da61",
+      "3e22b62ec407a7da50a472fa1baf329d83950fb2153c5c3e712e0f3d58733e80",
+      "44a48d56bbdb1c3b470db885e2af4c457520fc31229eb4883d34c6f15da43d61",
+      "4f289c1943ab856c9c4a34a380c9b926b881419387d8af7030fbf0c8eb81fbdf",
+      "51d75823f4f7a3937b1f628de0e74b724996863d8667ace264b1731b74136a06",
+      "5250214982a88112c73e13a3614158a31f7d9794e24030984cf10e764a3905fa",
+      "59a4a2d8349814ea4d3e1a0f1bf3c493d5b625083fde67b909b299e62b28b0b6",
+      "5bb1fc5cffccb1b856225d6ea9c0375ee306a7ee25384ce6be6a936731290212",
+      "5ed15e6b153fb12fae2a68dcec0ee7aa89141ab43e27a3287679a4c148216438",
+      "6435067e2bca96c2d049f0dc24d29927a4418731591a71d0ab0a2d9ce9513f16",
+      "6756600af7e5151dc73231350123da12539cac32b4a2dd6bdc49278d9ed6a873",
+      "6b472edf23dc1ffddef94f883be488475d993f5b467db824484c905c2b94170e",
+      "7043c4e4ccb6ebd64e1d46c43c948358324651ba914981935b1184b7997883e3",
+      "70d3ce3c68041b7d7603ba9439cbe4314b8947163453e283232c5b216049fc1f",
+      "72c68fed453295858f607db9c9064b94ce1907f901949f64b546c1d55fb1b588",
+      "73bed7de182257475fcbd00c5d55e925504edb6049a8e73bd92f8e9927d2d734",
+      "816079c08adcac44aaf14d4e01bfec19c81537d18e28756f2b32f79d3cceef39",
+      "837c1f4515a5c5798b10043fb07a33463780f54006e8c925a41e68fdc0dc843f",
+      "854d99020cddc57b9368af87cda1dcf8bfc0de4ec9f87c5afa94c55bb479bb76",
+      "891211294c951af722c48f920256e86792f2f8f824ce1f4d34313272b43caeda",
+      "8a2b499d32232ea89b875f8d8fbed378b485febe98636a9e471c6d56cb986aef",
+      "912ba8a6597903404ab520891d82dd53817cef871372dbfe3b7b13e1c717cfd9",
+      "934b4b4708e0327b5c0523175bc4cd6bd1df9f60c007ee406f2d7c460a82281f",
+      "93675aa8be9c3ba90b9a113583445dcf81cb2e6800ce3b8773c1d9bb1cdcfaa6",
+      "9b60a1d0c00cd2b298d96623f093d465006652c73adc236ce6e56877f0095bef",
+      "a31ca6c37cfd73db5e2b612d7a81cac4cfb4c9bc1cc51d7fa847e96da7c6b195",
+      "aa3d1f97f2ee34f41bf3346f9f02c5c4da51b8d1786758c022b0f2e9416e3e67",
+      "ac000e8880af91859b25d85494a96c3f32f478f909a0bb20ccc31581ac1de88c",
+      "ad2a990615e232e85563b8b71d74670826f81a8efa6fe9af48501f36d6df1e69",
+      "b12d786b350d6c2734beeaca4c5afff372d2c46816adeb91d18d5a8ea9a3d3b2",
+      "b71c5f4697c752b29f77e6eb326469a22df349fae496f5caeebd0b14f7128d6b",
+      "bae0bca780f9206f4d7f0aadfadfd21fe41f83e99bbe70922f57d9d794add704",
+      "bbb741a86bb8ebedfa92d549bd1d465719b4352a94d867e110ab7e2edb3ed032",
+      "bd03b865e96384da875c6964f20b3d3b677343f2cd7505ad2f0b297bade6f933",
+      "bfa2df21e63bfd43ea2dd7ac4743f5d41a93cc82866302c0b7c9a4748c41529f",
+      "c01f89093498b6ec380e4acbef353d341ec92656cd8350a83dfb6a426a14ed51",
+      "c369f7e1ff2e94e130c2baae36943be1bb9e51f3aef3e89f55166a85dfd20c3f",
+      "c62c0523abf61f2f9f512fe9590cb78941296e74bce64127d8cba35bf5a6962f",
+      "c8b431a8c9458ad44c9884e2ca605b08cd0e3761e1e65ca7aefca3e17fac72c7",
+      "cf1003bd4f3dd27fb46d07469c241abe62a480b3936216f8d4302260957b9e52",
+      "d385bf2e241fa38990613c0800e5683045a21f7b1282be872d822e0696e89a8e",
+      "d3ccadd443e0b44226940caee9212305f7926f9629d8fcf7808c9a93c7ce3143",
+      "d66d5d70fe4976341b9406af22f292cb6da6e813a0a33a63be8cace6dfd4ffac",
+      "d6ed52bd3e993979d9dabf0eec23c497964df22a1a7a901746f4ed3b7ebc13d3",
+      "d714eef15e95d8caeaebb151424f8c779af482a43227bb63bc7be9cd93df8ed4",
+      "dddb338970431aad9c90d6cf926601166238968d4d9fbf2d147d612bda896fd5",
+      "dfcbb82af615405ca227a131e84c51d99c48e15c7442fd5438c2e31b562ce5ae",
+      "dfda08e302ca90d63081dab3a95cbe041aa993a7a4476f774374e1a220a9c546",
+      "eb264aa5ebc0db231e940d99724474f12fbcd05ce6f93ac999d6a967d1bb8f85",
+      "ee05731d51971cdf1618c76f623d910547ea77d35f17706dfbbe27d551a9d677",
+      "f431e4ab25e13db5c0a3ea7ed74482b82cdfd5fda5d64f5f7bc846e77b06253d",
+      "f44dbc756592bc17fa27dcfba7f7544b1270b81fe01978a68e08dfea444db09d",
+      "f667cd7d49b8eedf47318ebb303dcf003ad883c9a9c3aab41ef50d4cd9c5cf5a",
+      "f915bf2bbf76a19d8ef49aff4b9a878ef8cdc58fe028ab1596bca8326cfd5d2c",
+      "fc11307e100a0c15af4169577d4fe58c24240cf4ef92eedfcc9166082b72aa63",
+      "fe7e08afbe5d30189ec56c5c67f9aff0af8be5533866f5e74e1fb9c71533f42e"
+    ],
+    "templates/audit.md": [
+      "e183b880c269973160e5b0590315afbd8c19b657308b63b45ac3007b9668173a"
+    ],
+    "templates/audit_plan.md": [
+      "8a3acbec42af9d3a946370420f7128841e6ce1959cd389b9ac36a55a3fb16242"
+    ],
+    "templates/author_prompts.py": [
+      "3d45c9dc8242c44849b592a044d5361e31b7a80e20f49d1af5f473e19fc6909c",
+      "b0046ea29a910f7eb03f4e198f51694f276aa7bff67b3d8a3c1165c3f6532bbd"
+    ],
+    "templates/brief.md": [
+      "51e7463a4d4a5e0a72e4047e756f99988e50ae99c0e5da82136f0d4d72d5c397"
+    ],
+    "templates/changelog.md": [
+      "73fcf2b4faaf2f78c03879dc8edb8dd8e19264bd36790bfc411fdc7302dc2c1e"
+    ],
+    "templates/claude.md": [
+      "005f4add224d4407d51ea6bac3e458b6064fd46601711ec0bd89afca3067a51f",
+      "02fd64ba7d247fb18b48bcce57377a7454f1e556451014481ab30def0e00e976",
+      "0b52837e0ec9669801aaf0fa113ed5a19818d72b39e8d4e1d7740739974b4cbd",
+      "321434328acd7d1558fa9a71376133ec6c544d7e541274bdad3d55fd7746f1a6",
+      "425de1bb929de95eb9af3df70f64215f30fc6ae8873e816a902f0da76e815bf6",
+      "4f93f818489b109cfa2ba755cc8adefa5743c7de0f9035185884923357b0c398",
+      "503c73647df1ee610179e323e40400aa88bbe8634232d675efafa8f52dec569b",
+      "630f9d26e88331202d0b2b05c94113ffd032480b8fc71df1c47357947a7efe61",
+      "70559a8d8f22a1ed1493cf3c598d1a002c2916359319af43759c1552c612d2bb",
+      "7583879b06fa9ef20906d09f7d75564d9b43cd004af7ccc6dd8a09a7dfe60c6d",
+      "776d47d886381dfd1feafc14b5e13ef303c94570c4e76bcc6da8a4c37cd795ed",
+      "8773a82a46936cf46ef19c4bc83e550280068d929422e3c755e03d2d8f40cb80",
+      "9292281b0c494e05c4bf2a36438ffe90b224fcc68f4253b153f77d1262936cf8",
+      "968f67c11e135712b23620d86afecae25839716c830761cc3315b814ea87fc11",
+      "99ff29dcaf7fcee72143da9774f8db152c048cb5d2feb84a2b319bb4fdc6ccdc",
+      "a1c3d4185d67639fc86db6032f54522b659c107475b38fae53b0a7dab34170c2",
+      "a2bfe947e16d80e7b3b6692328473abb0299b31361383c1b4538d5ff17c1a09f",
+      "a87bb5193021172e32bbbb1d3c2c32dcf63f80e7434cbcd6e7dc88be4cb33c04",
+      "ac689127974cd9ce43a3e199ed6e27931746f9fe3f53e7be1ab3eaa934f63367",
+      "ace947de7462a2fba0e4a77a08d53da9bd2e8948ec0434a57567bf2923aef506",
+      "bed31471681fd7c210a226441b03b05d29ddf736e097cb5f0e4cdfe590e946ab",
+      "d8fe1bfd095bc661b1601a0c8fd379e11a04959cc76e45efa47ae1524939c8fe",
+      "e0e245d369df70646cff6f1aaea9c3bcdeecace4128ecc07c4e7091ed16702ca",
+      "ef135398236d10855c3a4fb4ae3d86912314d5ca54dc1f75d61288b49c44480b"
+    ],
+    "templates/closeout.md": [
+      "d82f6cf5945d9edd20dfb230a6a01d2225410976d09ca09702eeb45f1284726a",
+      "e55800411182b4414c2f0141dd31d07358e2d3d42903ab85ffcd935ec853fdcb",
+      "e6cf5cde8d8cb686506740548205df6ab09dad256ef52ddcf511430f2d948b3b"
+    ],
+    "templates/constitution.md": [
+      "a246afb639bcd2bf65b6cb62e62cfab8b5a48ed3f2a8527202c2f90d40069b9f",
+      "eca2c83facf85b023cbe945b7145b267d1941d551dc208f19817d8bb6988f030"
+    ],
+    "templates/copilot.md": [
+      "17bad4ff73163c56b38186ec7fd97bff28936b1a0efbea78042e5f7bbcf55c22",
+      "305bb8fdd2f60f350f91cbafe0c713474b04c8b6f530210f6ea6813d5ea837d4",
+      "307f9d6f731f67524dca5ddd2d9e238758c9d08d69d6d7020129dd06107b2151",
+      "39f2394b11a3d3fa1b2fc03ad89f6d1b5427afb983eccd9a51c55cb026842b26",
+      "449f15c8d5dcc256eff95d76134056029e89ee4bbfcc922e304cf070ac45e13a",
+      "568f308ed7a1617a910fb6a719fc42d34eb502b24d3bdaa42ad3a7b852470bf8",
+      "6106b48e12fb43c787978f0c297da61a6af2d3e71ca152724011a9481cd22c2a",
+      "be13e5d2d2c2b71aa31db1a1f2d96d9299e6433e89e6c3b442fb361e212051fe",
+      "cd5f78207fb3332c93cf9c2df6744e6d049b863f9fb4d3f7874bd486460f1cd0",
+      "eaa823cdc23e311341351ad292bebac440efa40feb0260b8cad70e153bd128ca",
+      "f981cbdcd99ea3471476799ce029b6528b2914248a49a1194c9d7aa549a83579"
+    ],
+    "templates/obpi.md": [
+      "023b68d4fe2747055e5d367acbb22efd28e4d1b01cdf667c68b8330b6898518c",
+      "1b0b8fa69925978e8798ac3b3c262a71c9c27cb24a9aa99c93dfe2997609669d",
+      "1e0b4003d6c84c84840ce430c495fd02013a22e4d76dc5863e889219c175dbc0",
+      "22426004b1babf74320fdad8eda631957d845f37e68125ed7cdf9ed945c371c2",
+      "233163bd063d5c7f9ac2e5b20d049996c3ef61578d514408dead6cfcd6838baf",
+      "3869ee14a36adbb1e5a5b18a7c280c3eacf50a7c3428422ffb2ada54b04aaa51",
+      "3d2bd793af35efd0c920e052bc093c9fa71f7eb222e230ebe1014336116ed70f",
+      "7554ca23540a7e609e5856c8a57b5730035dab4fe70c99e7a129a4b7cf3dc6de",
+      "826a00a640a786183eb1abe002d9039b2bb20d0676a2a6586a876f5234f561c5",
+      "89e5860b1f063464cabb63f83ebef8a35ecb6170041466e27478098b348742c5",
+      "91844fe360a6371489fe1e488018b00cd514de933972963ffe5554c7afadb473",
+      "b040f904221f41c464f6b656b6305f4d46b608eea3c2a4db32d84f703b9ebfa4",
+      "b2ff95ce948d09f85ef59f53db72f2c7f79542229c521c6a6090199cd720850d",
+      "c493a713f82cfd1384604b6ec1c5376204b4f1b98d92ecf1c3e7375edf21eed8",
+      "cbd061e3d0f5cb7e80e4a4f4c8171b7eeaa154845d614313013a94ddf05a1064",
+      "d63c32c46cbdbc55ac8b3469823a40863fe73e01fdbd972cb420ba7e160e6975",
+      "dbb37ced2cb79d09925be3322dd434d5b8fc1f1c95b8fba1e5a328472856009b",
+      "dbec9428130a91d87ee345117bdf0ea97b552cf6118f4934f284c5ff12036648",
+      "e8f85f8707b551dd143c5a0e05bbcfe8f822d794077a9594166c7b9c161c48e1",
+      "f09b419d5f03bece4f33d28b074def08b8128f0a4f04e464da75d18c6e6714f3",
+      "f24e6665022a2e65a5a367b841e94de00c80df1b4d3e4f202f7ac6dddd59a1ed"
+    ],
+    "templates/prd.md": [
+      "049f5d1e3d13176e7e34e8964d08488975d35de5581c12712f8e81c4ed5bb016",
+      "40a7b4cbbce1727b4209aff1848ceea4891a524124ff0e70a34d60e03cf61942",
+      "5b410c0f02a2b625f7ac0aa129e3a7a47b8ab189a06575f61ff2e374e03a9b7e"
+    ],
+    "templates/release_notes.md": [
+      "5d1fae0510e7dd642a1f7f94346382bec03f9b6b0f63d02aa5163f0459ff3b71"
+    ],
+    "templates/skill.md": [
+      "005a59ec76edce159ff2f51dcc62de12b624ca376c84b4be78afbd5f1ecd11ab",
+      "b882083e72a8e7c432484a796a9d29d78e587e0f3022726dea5eb416e9551628",
+      "c452f100361ef3ecd0440b515d9cf013b5a2e5df3f0e1b64efd00b23671e9cd5",
+      "e17df9fd1ea83812cf72fd61c152a1d8dc87a4bef287ed6e23d684a1069266d7",
+      "f61fd978df69385f4b748f33ccbc3d5cc91f47205c2f3ef634313274f5a75a64"
+    ],
+    "templates/skills/git-sync/SKILL.md": [
+      "295b3631e241988e2693402c577f32ac94707ededdff7922f8aa95b80cda6866",
+      "8637d01f17bc3c8824e4a28b0d3f3c8eeff4414f5494de923cb7b6dfed74bae2",
+      "b166c5cb87fa3f802929630c25223d43ca684d5eeae28781ea937f63cb7e5eb1"
+    ]
+  }
+}

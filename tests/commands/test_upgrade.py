@@ -156,13 +156,12 @@ class TestUpgradeEditedConflicts(unittest.TestCase):
             skills_dir.mkdir()
             skill_file = skills_dir / "test-skill" / "SKILL.md"
             skill_file.parent.mkdir()
-            original_content = (
-                b"# Operator-edited content\n<!-- gzkit-canonical-version: 1.0.0 -->\n"
-            )
+            original_content = b"# Operator-edited content\n"
             skill_file.write_bytes(original_content)
 
             fake_canonical = MagicMock()
             fake_canonical.name = "SKILL.md"
+            fake_canonical.read_bytes.return_value = b"# Canonical content\n"
 
             with (
                 patch(
@@ -262,7 +261,7 @@ class TestUpgradeForce(unittest.TestCase):
             skills_dir = gzkit_dir / "skills"
             skills_dir.mkdir()
             skill_file = skills_dir / "overwrite-me.md"
-            skill_file.write_bytes(b"old content\n<!-- gzkit-canonical-version: 0.0.1 -->\n")
+            skill_file.write_bytes(b"old content\n")
 
             canonical_bytes = b"# New canonical content\n"
             fake_canonical = MagicMock()

@@ -41,7 +41,7 @@ def step_manifest_checksum_unchanged(context) -> None:
 def step_edited_skill(context, path: str) -> None:
     p = Path(path)
     p.parent.mkdir(parents=True, exist_ok=True)
-    p.write_bytes(b"# Operator-edited skill\n<!-- gzkit-canonical-version: 0.0.0 -->\nedited\n")
+    p.write_bytes(b"# Operator-edited skill\nedited\n")
 
 
 @given("the .gzkit/skills directory is removed")

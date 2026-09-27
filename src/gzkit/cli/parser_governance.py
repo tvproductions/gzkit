@@ -110,7 +110,8 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
             "Initialize gzkit governance scaffolding and Python project skeleton. "
             "Re-running on an initialized project repairs missing artifacts. "
             "Use --update for version-aware refresh of canonical surfaces from "
-            "the installed wheel (preserves operator edits via marker detection)."
+            "the installed wheel (preserves operator edits: a file matching no "
+            "shipped version is left alone)."
         ),
         epilog=build_epilog(
             [

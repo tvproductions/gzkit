@@ -34,13 +34,14 @@ remaining artifacts against the project's `.gzkit/<surface>/` tree using
 three-state detection:
 
 - **IDENTICAL** — bytes match the wheel canonical; artifact skipped silently
-- **STALE** — bytes differ and no canonical-version marker is present; artifact
-  refreshed in place (unless `--dry-run`)
-- **EDITED** — bytes differ AND the file carries a
-  `<!-- gzkit-canonical-version: X.Y.Z -->` marker; operator has customized this
-  file since last scaffold. Without `--force`, the conflict is reported and the
-  file is left unchanged. With `--force`, the file is overwritten and a per-file
-  audit line is printed.
+- **STALE** — bytes differ but equal a version of this file gzkit has shipped
+  (or the file is missing); artifact refreshed in place (unless `--dry-run`)
+- **EDITED** — bytes differ and match no version gzkit has shipped: the
+  operator has customized this file. The shipped hash history,
+  `canonical_history.json`, decides (see `gz init` § Edit detection; GHI
+  #1122). Without `--force`, the conflict is reported and the file is left
+  unchanged. With `--force`, the file is overwritten and a per-file audit
+  line is printed.
 
 The command is **idempotent**: running it twice immediately produces exit 0 with
 zero STALE or EDITED artifacts on the second invocation (modulo concurrent
