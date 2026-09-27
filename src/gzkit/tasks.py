@@ -338,7 +338,8 @@ def has_task_trailer(commit_message: str) -> bool:
     """Return True if the commit's trailer block contains any ``Task:`` line.
 
     Accepts BOTH the formal four-tier ID `TASK-X.Y.Z-NN-MM-PP` and the slug-form
-    `TASK-<slug>-#<ghi>` (direct-fix work outside OBPI scope). Used by
+    `TASK-<slug>`, with an optional `-#<ghi>` anchor (direct-fix work outside
+    OBPI scope). Used by
     `gz validate --commit-trailers` to enforce TASK discipline on src/tests
     commits without restricting direct-fix authors to formal IDs they have no
     OBPI to mint against.

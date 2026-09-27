@@ -121,7 +121,9 @@ ADRs using the legacy fail-closed requirements template.
 
 Flags commits that touch `src/` or `tests/` without a `Task:` trailer. The
 trailer is `Task: TASK-X.Y.Z-NN-MM-PP` for OBPI-scoped work or
-`Task: TASK-<slug>-#<ghi>` for direct-fix work, and provides the
+`Task: TASK-<slug>` for direct-fix work, with a `-#<ghi>` anchor appended
+only when a GHI already exists (never file one to satisfy the trailer), and
+provides the
 execution-level link from a code change back to the governing REQ. Added
 under GHI-160 Phase 6 against the TASK-registry bypass pattern observed
 across GHI-141 through GHI-156; a default scope of `gz check`, and so of the

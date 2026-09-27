@@ -117,5 +117,36 @@ class NoUpstreamTests(unittest.TestCase):
             self.assertEqual([e.artifact for e in errors], [head])
 
 
+class RefusalRemedyRendering(unittest.TestCase):
+    """The refusal's remedy states the direct-work form as the rule does (GHI #1142).
+
+    output-contract: the remedy text is the contract. `.gzkit/rules/tests.md` makes
+    the `-#<ghi>` anchor optional and forbids filing a GHI to satisfy the trailer;
+    a remedy presenting the anchored form as required steered an agent into doing
+    exactly that.
+    """
+
+    def _refusal(self) -> str:
+        offender = [("abc1234", "feat: change code", ["src/gzkit/x.py"])]
+        with patch(
+            "gzkit.commands.validate_commit_trailers._pushable_commits",
+            return_value=offender,
+        ):
+            errors = _validate_commit_trailers(Path("."))
+        self.assertEqual(len(errors), 1)
+        return errors[0].message
+
+    def test_remedy_names_the_bare_slug_form(self) -> None:
+        self.assertIn("'Task: TASK-<slug>'", self._refusal())
+
+    def test_remedy_does_not_require_the_ghi_anchor(self) -> None:
+        self.assertNotIn("'Task: TASK-<slug>-#<ghi>'", self._refusal())
+
+    def test_remedy_forbids_filing_a_ghi_for_the_trailer(self) -> None:
+        message = self._refusal()
+        self.assertIn("only when a GHI already exists", message)
+        self.assertIn("never file one to satisfy the trailer", message)
+
+
 if __name__ == "__main__":
     unittest.main()

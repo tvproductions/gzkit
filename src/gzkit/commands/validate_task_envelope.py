@@ -742,7 +742,7 @@ def _obpi_id_for_task(task_id: str) -> str | None:
 
     Inverse of ``_task_matches_obpi``: ``_task_matches_obpi(tid, obpi)`` is true
     iff ``_obpi_id_for_task(tid) == obpi``. Slug-form direct-fix ids
-    (``TASK-<slug>-#<ghi>``) have no OBPI parent and return ``None``.
+    (``TASK-<slug>``, optionally ``-#<ghi>``) have no OBPI parent and return ``None``.
     """
     m = re.match(r"^TASK-(\d+\.\d+\.\d+)-(\d+)-", task_id)
     if not m:

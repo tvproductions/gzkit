@@ -70,8 +70,9 @@ def _validate_commit_trailers(project_root: Path) -> list[ValidationError]:
     (3 Task: vs. 305+ Ceremony: trailers in 30-day audit window).
 
     Task: trailer accepts BOTH the formal four-tier ID `TASK-X.Y.Z-NN-MM-PP`
-    (under an OBPI/REQ) AND the slug-form `TASK-<slug>-#<ghi>` (direct-fix
-    work outside OBPI scope, per GHI #160 Phase 7 convention).
+    (under an OBPI/REQ) AND the slug-form `TASK-<slug>` (direct-fix work
+    outside OBPI scope, per GHI #160 Phase 7 convention). The `-#<ghi>` anchor
+    is optional and appended only when a GHI already exists (GHI #1142).
 
     Scans every commit ``_pushable_commits`` returns — preventing new trailer
     omissions before they publish, not retroactively flagging historical
@@ -91,7 +92,9 @@ def _validate_commit_trailers(project_root: Path) -> list[ValidationError]:
                     "Commit touches src/ or tests/ but has no `Task:` trailer — "
                     "TASK chain is broken (GHI #552 strict-mode). Expected "
                     "'Task: TASK-X.Y.Z-NN-MM-PP' for OBPI-scoped work or "
-                    "'Task: TASK-<slug>-#<ghi>' for direct-fix work. "
+                    "'Task: TASK-<slug>' for direct-fix work (append '-#<ghi>' "
+                    "only when a GHI already exists; never file one to satisfy the "
+                    "trailer, per .gzkit/rules/tests.md). "
                     "`Ceremony:` and `Eval-feedback-source:` no longer substitute "
                     "for `Task:` on src/tests scope (per AGENTS.md § Workflow: "
                     "PRD → Constitution → ADR → OBPI → REQ → TASK → Attestation). "
