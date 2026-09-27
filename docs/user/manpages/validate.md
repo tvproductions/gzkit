@@ -2540,9 +2540,10 @@ Included in `gz check` (step "Complexity-thresholds") and runnable as `gz valida
 
 ## Scopes Reference
 
-The following table catalogs audit scopes the `gz validate` surface exposes;
-`VALIDATOR_REGISTRY` in `src/gzkit/commands/validate_cmd.py` is the complete
-list and the authority for each scope's tier. Scopes marked **yes** run when no
+The following table lists every scope in `VALIDATOR_REGISTRY`
+(`src/gzkit/commands/validate_cmd.py`), which is the authority for each
+scope's tier; `tests/governance/test_validate_scopes_reference.py` fails when
+a scope has no row or a row's tier disagrees (GHI #1117). Scopes marked **yes** run when no
 flag is supplied; the rest are opt-in, and `gz check` runs some opt-in scopes
 as steps of their own. Each scope can be invoked individually for focused verification or as
 part of `gz validate --audits` / `gz check` aggregate passes.
@@ -2620,6 +2621,34 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--brief-command-shape` | opt-in | Fail closed (exit 3) when a brief Verification block contains non-shell-less commands (OBPI-0.0.63-07, GHI #550) |
 | `--tautological-test-audit` | opt-in | Fail closed (exit 3) when tautological-test count exceeds baseline + waivers; `current > baseline + W` → exit 3; waivers at `data/tautological_test_waivers.json` (OBPI-0.0.59-04) |
 | `--task-envelope-coherence` | opt-in | Fail closed (exit 3) on TASK attribution drift: worklog without task_id, all-seq=01 without req_atomic, layer-drift across channels, or obpi_id divergence on one task_id (ADR-0.0.64 / OBPI-04, GHI #653) |
+| `--brief-reconcile` | opt-in | Check the OBPI brief corpus against project shape across five drift dimensions (frontmatter coherence, lane mismatch, unreplaced scaffold defaults, and more) (ADR-0.0.37) |
+| `--brief-structure` | opt-in | Every live OBPI brief carries valid structured frontmatter (`allowlist`, `reqs`, `verification`) instead of falling back to `LegacyBriefShape` |
+| `--changelog` | opt-in | Hermetic structural audit of `CHANGELOG.md` against `.gzkit/templates/changelog.md`: version headers and section headings (GHI #685) |
+| `--config-registry` | opt-in | Every top-level registry under `data/` is declared, with an owner and a loader (GHI #929) |
+| `--corpus-retirement-witness` | yes | A corpus entry that retires or supersedes another has a Layer-2 ledger witness naming it |
+| `--doc-code-citations` | yes | Prose under `docs/governance/**` cites only `src/gzkit/` modules that exist (GHI #1083) |
+| `--doc-surface-parity` | opt-in | No `.md` file exists under the decommissioned `docs/user/commands/`; `docs/user/manpages/` is canonical (GHI #418) |
+| `--exemption-controls` | opt-in | Inventory of gate exemptions and whether a negative control exercises each one, not only the refusal half, via `@enforces` `exempts` (GHI #797) |
+| `--fidelity-presence` | opt-in | Every non-pool ADR carries a parseable `## Fidelity Assertions` block (ADR-0.0.73 / OBPI-0.0.73-08) |
+| `--gate-callers` | opt-in | Inventory of gates nothing calls, so an uncalled gate is disclosed rather than read as a green run (GHI #785) |
+| `--invariant-coherence` | yes | Committed `AGENTS.md` is byte-identical to the playback of its committed rendition; exit 3 on drift (ADR-0.0.37) |
+| `--invariant-witness` | yes | Every constitutional invariant's `structural_witness` names a command this CLI registers |
+| `--kind-invariance` | opt-in | Every `kind: foundation` ADR carries a substantive `## Why foundation tier?` section |
+| `--ontology-purity` | opt-in | The ontology's `ownership:harness` axis admits only GovZero-universal object types (ADR-0.32.0 Boundary Invariant #4) |
+| `--persona-witness` | opt-in | Every canonical ADR carries an authored `## Persona` section |
+| `--pointer-anchors` | opt-in | Every `> See [path#anchor]` pointer in the per-turn surfaces resolves to a matching `lifted-from` destination (ADR-0.0.33 Invariant 3) |
+| `--population-controls` | opt-in | Inventory of population declarations, shrink-only; the counterpart of `--exemption-controls` (GHI #1007) |
+| `--qc-binding` | opt-in | Flags a bound QC step that passes its own negative-control fixture or shows a theater signature (ADR-0.0.73 / OBPI-0.0.73-02) |
+| `--rendition-floor-coherence` | opt-in | Every committed rendition carries each invariant-tier corpus entry of its surface verbatim |
+| `--rendition-freshness` | opt-in | The corpus for a surface still matches the committed rendition it was attested against (content fingerprint) |
+| `--rendition-lineage` | opt-in | A committed rendition's `corpus-owned` sections still derive from the effective corpus |
+| `--router-tables` | opt-in | Intent-to-skill tables in namespace-router skills name only real skills (exit 3); a concrete skill no router reaches is reported advisory (exit 1) (ADR-0.27.0) |
+| `--rule-version-markers` | yes | Every canonical rule under `.gzkit/rules/` carries its body-level `<!-- rule-version: X.Y.Z -->` marker |
+| `--setpoint-coherence` | opt-in | Every routed `(content_type, vendor)` pair in `data/vendor-manifest.json` declares a legal compression setpoint |
+| `--surface-weight` | opt-in | The per-turn surface corpus does not grow past the floor in `data/surface_weight_floor.json` (ADR-0.0.33 Invariant 2) |
+| `--vendor-manifest` | opt-in | `data/vendor-manifest.json` validates against its schema and every routed content type maps to a vendor mirror |
+| `--waiver-ratchet` | opt-in | Every waiver, grandfather or baseline surface that gates a `gz check` step carries exactly one honesty mechanism (ADR-0.0.73 / OBPI-0.0.73-09) |
+| `--wheel-path-literals` | yes | Wheel-shipped instruction text names no path only its authoring environment can resolve (GHI #900) |
 | `--audits` | opt-in | Run all four trust-doctrine pattern audits in one pass |
 
 The `--allowlist-only` flag is a sub-modifier for `--unscoped-rules` —
