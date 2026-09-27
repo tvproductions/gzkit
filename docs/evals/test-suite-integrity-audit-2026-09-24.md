@@ -4,7 +4,7 @@ Dated diagnostic at commit `5d9885a08c438b0aa546716b20a181c55342612e`. Persona: 
 
 **Read these limits first.** Semantic review covered all 600 selected pilot test methods and a seeded sample of 300 other methods, plus targeted adjacent comparisons. Mutation covered nine modules and their declared test commands, not all production code. All generated survivors are listed; most have not received semantic equivalence review. Coverage excludes arbitrary child processes. Git establishes committed order, not within-commit TDD order. The complete exclusions and omitted validator scopes are in section 11.
 
-Navigation: [Controls](#3-controls) · [Measurements](#4-numbers) · [Twenty tests](#5-the-twenty-worst-confirmed-tests) · [All survivors](#6-survived-mutants--complete-list) · [Dispositions](#7-dispositions-and-bloat) · [History](#8-process-findings) · [Unapplied proposal](#9-pool-adr-proposal--unapplied-unified-diff) · [Proposed gates](#10-proposed-scriptable-gates) · [Limits](#11-not-examined-and-inference-limits).
+Navigation: [Controls](#3-controls) · [Measurements](#4-numbers) · [Twenty tests](#5-the-twenty-worst-confirmed-tests) · [All survivors](#6-survived-mutants-complete-list) · [Dispositions](#7-dispositions-and-bloat) · [History](#8-process-findings) · [Unapplied proposal](#9-pool-adr-proposal-unapplied-unified-diff) · [Proposed gates](#10-proposed-scriptable-gates) · [Limits](#11-not-examined-and-inference-limits).
 
 ## 1. Verdict
 
