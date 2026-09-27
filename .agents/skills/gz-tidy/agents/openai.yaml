@@ -1,4 +1,4 @@
 interface:
   display_name: "gz tidy"
-  short_description: "Operate the gz tidy workflow"
+  short_description: "Report maintenance findings; --fix regenerates control surfaces"
   default_prompt: "Use $gz-tidy to run gz tidy for this task."

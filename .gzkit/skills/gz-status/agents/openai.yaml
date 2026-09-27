@@ -1,4 +1,4 @@
 interface:
   display_name: "gz status"
-  short_description: "Operate the gz status workflow"
+  short_description: "Report campaign fronts and ledger-derived ADR/OBPI status"
   default_prompt: "Use $gz-status to run gz status for this task."

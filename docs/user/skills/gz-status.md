@@ -6,7 +6,7 @@ Report project workflow fronts alongside ADR lifecycle and gate status. Use for 
 
 ## Purpose
 
-`/gz-status` exposes the canonical gz-status workflow for operator invocation. Operate the gz status command surface as a reusable governance workflow.
+`/gz-status` exposes the canonical gz-status workflow for operator invocation. It reads the active campaign's declared workflow fronts and the ledger-derived ADR/OBPI status from the read-only `gz status`, then reports each front's evidence, freshness and next action.
 
 ## When to Use
 
@@ -14,7 +14,7 @@ Invoke this skill when the task described above matches your current workflow st
 
 ## What to Expect
 
-The skill reads its canonical execution contract from `.gzkit/skills/gz-status/SKILL.md` (mirrored into `.claude/skills/`, `.agents/skills/`, and `.github/skills/`). Follow the agent-facing instructions in that file for the exact execution protocol, stages, and evidence requirements.
+The skill reads its canonical execution contract from `.gzkit/skills/gz-status/SKILL.md` (mirrored into `.claude/skills/` and `.agents/skills/`). Follow the agent-facing instructions in that file for the exact execution protocol, stages, and evidence requirements.
 
 ## Invocation
 

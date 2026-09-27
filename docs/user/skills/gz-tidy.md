@@ -6,7 +6,7 @@ Run maintenance checks and cleanup routines. Use for repository hygiene and gove
 
 ## Purpose
 
-`/gz-tidy` exposes the canonical gz-tidy workflow for operator invocation. Operate the gz tidy command surface as a reusable governance workflow. Includes Claude surface self-heal via `@claude-code-guide` when running in Claude Code.
+`/gz-tidy` exposes the canonical gz-tidy workflow for operator invocation. It runs the read-only `gz tidy` report (validation issues, orphaned OBPIs, settings vault, ADRs pending attestation), routes each finding to its repair or to the operator, regenerates control surfaces with `--fix`, and in Claude Code checks hooks, the instructions budget and skill mirror parity.
 
 ## When to Use
 
@@ -14,7 +14,7 @@ Invoke this skill when the task described above matches your current workflow st
 
 ## What to Expect
 
-The skill reads its canonical execution contract from `.gzkit/skills/gz-tidy/SKILL.md` (mirrored into `.claude/skills/`, `.agents/skills/`, and `.github/skills/`). Follow the agent-facing instructions in that file for the exact execution protocol, stages, and evidence requirements.
+The skill reads its canonical execution contract from `.gzkit/skills/gz-tidy/SKILL.md` (mirrored into `.claude/skills/` and `.agents/skills/`). Follow the agent-facing instructions in that file for the exact execution protocol, stages, and evidence requirements.
 
 ## Invocation
 

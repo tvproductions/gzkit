@@ -5,70 +5,108 @@ description: Run maintenance checks and cleanup routines. Use for repository hyg
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-26
+last_reviewed: 2026-09-27
 model: haiku
 metadata:
-  skill-version: "1.1.2"
+  skill-version: "1.2.0"
 ---
 
 # gz tidy
 
 ## Overview
 
-Operate the gz tidy command surface as a reusable governance workflow.
-Includes Claude surface self-heal via `@claude-code-guide` when running in Claude Code.
+`gz tidy` prints a maintenance report and, with `--fix`, regenerates the
+control surfaces. It deletes nothing. The handler is `tidy` in
+`src/gzkit/commands/tidy.py`; the report has four sections:
+
+- **Validation issues** from `validate_all` (`src/gzkit/validate.py`): the
+  manifest, the ledger, every ADR and OBPI document the manifest lists
+  against its schema, the control surfaces including sync parity (a
+  generated file that differs from what sync would write), the instruction
+  audit and the persona files. Each line prints the issue type and message,
+  not the file.
+- **Orphaned OBPIs**: ledger OBPIs whose parent ADR is absent from the
+  ledger graph.
+- **Settings vault**: printed when the snapshots of
+  `.claude/settings.local.json` are drifted, absent or recoverable
+  (`vault_status` in `src/gzkit/settings_vault.py`, GHI #1072). The message
+  says what to do.
+- **ADRs pending attestation**: every ADR in the ledger graph with no
+  attestation event, pool ADRs included — an inventory, not a defect list.
+
+The run exits 0 whatever it reports. It exits 1 only when the project is not
+initialized, or when `--fix` is refused or fails (below). Read the output, not
+the exit code.
+
+Flags:
+
+- A bare run and `--check` are the same read-only report: the handler never
+  reads `check_only`.
+- `--fix`, after the report, runs the guarded sync `gz agent sync
+  control-surfaces` uses: it refuses with exit 1, writing no mirror, when
+  canonical skills fail the sync preflight (`refuse_on_sync_blockers`, GHI
+  #1100); otherwise `sync_all` regenerates the surfaces and appends an
+  `agent_sync_completed` ledger event, and the post-sync skill audit exits 1
+  on a blocking parity error. It repairs control-surface drift only, never
+  documents, orphans, the vault or attestations, and unlike `gz agent sync
+  control-surfaces` it lists neither the updated paths nor stale mirror-only
+  paths.
+- `--dry-run` changes only `--fix`, to a single "would sync control
+  surfaces" line with no path list. Alone it has no effect.
 
 ## Workflow
 
-1. Confirm target context, IDs, and lane assumptions.
-2. Run `uv run gz tidy` with the required options.
-3. Summarize results, including evidence and any follow-up gates.
-4. **Claude surface self-heal** (Claude Code only): If any surface issues are
-   detected (hook errors, stale settings, CLAUDE.md drift), invoke the
-   `@claude-code-guide` subagent to diagnose and fix. Tag the broken files
-   directly (e.g., `@claude-code-guide look at .claude/settings.json and
-   .claude/hooks/` — the guide reads current Anthropic documentation and can
-   self-heal configuration without stale knowledge.
+1. Run `uv run gz tidy > <file> 2>&1` and read the file; the report is long.
+2. Act on each section:
+   - `[surface] Generated surface is out of sync`: preview with
+     `uv run gz agent sync control-surfaces --dry-run`, then sync with that
+     command or `uv run gz tidy --fix`. Sync overwrites a hand edit to a
+     generated file, so move any intended change into canon first.
+   - `[header]` / `[frontmatter]` lines name no file, and raw-schema-check
+     the historical OBPI corpus that `gz validate --documents` deliberately
+     skips (GHI #500). Run `uv run gz validate --documents` and the
+     version-aware `uv run gz validate --briefs` for findings that name the
+     file, and act on those.
+   - Orphaned OBPIs, a vault notice, and the pending-attestation list are
+     reported for the operator; tidy repairs none of them.
+3. Report what each section held, what was synced, and what remains open.
 
 ## Claude Surface Validation
 
-When running in Claude Code, after the core `gz tidy` checks, perform these
-additional surface health checks:
+In Claude Code, after the report:
 
-1. **Hook health**: Verify all hooks in `.claude/hooks/` are syntactically valid
-   and referenced in `.claude/settings.json`. If any hook errors appeared at
-   session start, tag the broken hook files with `@claude-code-guide` for
-   diagnosis against current Anthropic docs.
-2. **Settings coherence**: Verify `.claude/settings.json` permissions and hook
-   references match actual files on disk. Tag with `@claude-code-guide` if
-   settings reference missing hooks or stale paths.
-3. **Instructions budget**: Run `uv run gz validate --instructions-files-budget`.
-   The per-file character budgets for `AGENTS.md`, `CLAUDE.md` and
-   `.claude/rules/*.md` live in `data/instructions_files_budget.json`. For a file
-   over budget, the guide subagent can recommend `@path` imports and section
-   relocation.
-4. **Skill mirror parity**: Run `uv run gz skill audit`. It checks every enabled
-   vendor's mirror (roster: `.gzkit.json` § `vendors`) against the canonical
-   `.gzkit/skills/`. `gz agent sync control-surfaces` fixes the drift, and the
-   guide can diagnose why the mirrors drifted.
-
-## Validation
-
-- Verify command output reflects the requested scope.
-- If governance state changed, confirm with `uv run gz status` or `uv run gz state`.
+1. **Hook health**: `.claude/hooks/*.py` and the hook wiring in
+   `.claude/settings.json` are generated — the scripts by `setup_claude_hooks`
+   in `src/gzkit/hooks/claude.py`, the settings by `sync_claude_settings` in
+   `src/gzkit/sync_surfaces.py`, which keeps user-added phases and keys. A hand
+   edit shows as a `[surface]` sync-parity issue. If a hook errored at session
+   start, dispatch the `claude-code-guide` subagent with the failing hook and
+   the error to diagnose it against current Claude Code documentation. The
+   repair belongs in the generator and reaches the tree through sync; never
+   edit the generated file.
+2. **Instructions budget**: run `uv run gz validate --instructions-files-budget`.
+   It is an explicit-tier scope, so neither `gz tidy` nor a bare `gz validate`
+   runs it. The per-file budgets for `AGENTS.md`, `CLAUDE.md` and
+   `.claude/rules/*.md` live in `data/instructions_files_budget.json`. Trim a
+   file over budget with the `gz-context-diet` skill.
+3. **Skill mirror parity**: run `uv run gz skill audit`. It checks canonical
+   `.gzkit/skills/` and the Codex and Claude skill mirrors, each when its
+   vendor is enabled in `.gzkit.json` § `vendors`
+   (`audit_skills` in `src/gzkit/skills_audit.py`). `gz agent sync
+   control-surfaces` clears mirror drift.
 
 ## Example
 
-```
-# Core tidy
-uv run gz tidy --check
+```bash
+# Read-only report (identical to --check)
+uv run gz tidy > tidy.log 2>&1
 
-# With fix (syncs control surfaces)
+# Preview, then apply, the control-surface sync
+uv run gz tidy --fix --dry-run
 uv run gz tidy --fix
 
-# Claude surface self-heal (invoke in conversation)
-@claude-code-guide look at .claude/settings.json and .claude/hooks/ —
-diagnose any broken hooks or stale references against current docs
+# Actionable, file-named document findings
+uv run gz validate --documents
 ```
 
 ## Common Rationalizations
@@ -77,18 +115,18 @@ These thoughts mean STOP — you are about to leave drift in place:
 
 | Thought | Reality |
 |---------|---------|
-| "Tidy is just cosmetic, skip it" | Tidy catches surface drift before it becomes a Gate 5 blocker. The cost of skipping is paid later in attestation, when the drift is harder to find. |
-| "The mirrors look fine — sync isn't needed" | Skill mirrors and canonical state can diverge silently. Tidy is the routine check that surfaces it. "Looks fine" is not a verification protocol. |
-| "CLAUDE.md is over budget but it's all useful content" | The budget in `data/instructions_files_budget.json` exists because adherence drops past it. Useful content that the agent can't load is dead content. Prune or relocate via `@path` imports. |
-| "Hook errors at startup are pre-existing — not my problem" | Pre-existing failures are still failures. Tidy is when you self-heal, not when you ignore. |
-| "I'll run `--check` instead of `--fix` to be safe" | `--check` is for diagnosis. If you saw drift and didn't fix it, you traded a 30-second sync for a future debugging session. |
-| "The Claude surface self-heal is too vague to act on" | Tag the broken files with `@claude-code-guide` and let it diagnose against current Anthropic docs. Vagueness is solved by delegation, not avoidance. |
+| "Tidy exited 0, so the project is tidy" | Tidy exits 0 whatever it reports. Only the printed sections say what it found. |
+| "`--check` is the safe mode" | `--check` does nothing a bare run does not; both are read-only. The choice is between reporting and `--fix`. |
+| "`--fix` fixed everything tidy reported" | `--fix` only regenerates control surfaces. Document, orphan, vault and attestation findings stay until someone acts on them. |
+| "The mirrors look fine — sync isn't needed" | A `[surface]` issue is the sync-parity check saying they are not. "Looks fine" is not a verification. |
+| "CLAUDE.md is over budget but it's all useful content" | The budget in `data/instructions_files_budget.json` exists because adherence drops past it. Relocate the narrative through `gz-context-diet`. |
+| "Hook errors at startup are pre-existing — not my problem" | Pre-existing failures are still failures. Diagnose, repair the generator, sync. |
 
 ## Red Flags
 
-- Running tidy with `--check` and ignoring the reported drift
-- Skipping the Claude surface validation steps
+- Reading tidy's exit code instead of its output
+- Hand-editing a file under `.claude/hooks/` or `.claude/settings.json` instead of its generator
+- Acting on a `[header]` line from tidy without the file-named `gz validate` finding behind it
 - An instructions file over its budget (`gz validate --instructions-files-budget`) with no relocation plan
 - Hook errors observed but never resolved
 - Skill mirrors not regenerated after a skill edit
-- Tidy runs that produce no evidence trail (sync output, log, or proof)
