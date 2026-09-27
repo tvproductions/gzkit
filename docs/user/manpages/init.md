@@ -20,7 +20,7 @@ gz init [OPTIONS]
 | `--force` | flag | — | Full reinitialize (overwrites config, re-scaffolds). Mutually exclusive with `--update` |
 | `--update` | flag | — | Version-aware refresh of canonical surfaces from the installed wheel; preserves operator edits via marker detection. Mutually exclusive with `--force` |
 | `--no-skeleton` | flag | — | Skip Python project skeleton (pyproject.toml, src/, tests/) |
-| `--yes` | flag | — | Auto-accept registry-merge prompts during repair |
+| `--yes` | flag | — | Auto-accept registry-merge prompts during repair or `--update` |
 | `--attestor-handle` | string | — | Record `authorship.attestor_handle` in `.gzkit.json`: the handle an omitted `--attestor` records on the verbs that default it. A handle with no spaces, never a real name. On first init without the flag, an interactive terminal is asked; otherwise none is set, and gzkit's own handle is never scaffolded. Mutually exclusive with `--update` (GHI #1036) |
 | `--dry-run` | flag | — | Show actions without writing |
 
@@ -128,6 +128,12 @@ Use `--force` only when you need a full reinitialize (rewrites config, re-copies
 ## Update Mode (Version-Aware Refresh)
 
 `gz init --update` is the **third** init mode, distinct from default (repair-missing) and `--force` (re-copy from the wheel). It refreshes canonical surfaces in the adopter's `.gzkit/<surface>/` from the installed wheel's package data, leaving a file alone only when it carries the operator-edit marker below. It does nothing else: no manifest write, no control-surface sync, no ledger event. Run `gz agent sync control-surfaces` afterwards so the mirrors carry the refreshed canon.
+
+What it refreshes is what delivery defines (GHI #1123):
+
+- **skills, rules, templates, personas** — the files `gz upgrade` refreshes, selected by the same per-surface classifiers, so package-only files such as `templates/author_prompts.py` and `templates/skills/**` never reach `.gzkit/`;
+- **chores** — the files first init delivers: the surface-root documents and each shipped slug's canonical files, new slugs included;
+- **`chores/registry.json`** — merged, never copied: shipped entries are added or updated, and entries only the project has (`projectLocal` chores, adopter chores) are kept. `--yes` accepts the merge without the prompt. A missing registry is delivered whole.
 
 ### Three modes — when to use which
 

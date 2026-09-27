@@ -209,6 +209,33 @@ def _iter_canonical_chore_slugs() -> Iterator[Traversable]:
         yield entry
 
 
+def _deliverable_slug_files(slug_resource: Traversable) -> Iterator[tuple[Traversable, Path]]:
+    """Yield ``(source, rel_path)`` for the files of one wheel slug that ``gz init`` delivers."""
+    for source, rel in _iter_slug_files(slug_resource):
+        # Classify against the DESTINATION spelling: `.gzkit/chores/...` is
+        # canonical by definition, so a gate script resolves without the
+        # `.gzkit/` counterpart test — which can never succeed at adopter
+        # init time, because the counterpart is what init is creating.
+        if _classify_chore_file(Path(".gzkit/chores") / slug_resource.name / rel) == "canonical":
+            yield source, rel
+
+
+def iter_deliverable_chore_files() -> Iterator[tuple[Traversable, Path]]:
+    """Yield ``(source, rel_path)`` for every wheel chore file ``gz init`` delivers.
+
+    The one delivery definition first init and ``gz init --update`` share (GHI
+    #1123): the surface-root documents and each ``CHORE.md``-bearing slug's
+    canonical files. The registry is excluded because it is merged, never
+    copied: a byte copy of the shipped registry drops every project-local entry
+    (see :func:`merge_chores_registry`).
+    """
+    for entry in _surface_level_entries():
+        yield entry, Path(entry.name)
+    for slug_resource in _iter_canonical_chore_slugs():
+        for source, rel in _deliverable_slug_files(slug_resource):
+            yield source, Path(slug_resource.name) / rel
+
+
 def scaffold_core_chores(
     project_root: Path,
     config: GzkitConfig | None = None,
@@ -244,13 +271,7 @@ def scaffold_core_chores(
         if skip_existing and target_dir.exists():
             continue
         target_dir.mkdir(parents=True, exist_ok=True)
-        for source, rel in _iter_slug_files(slug_resource):
-            # Classify against the DESTINATION spelling: `.gzkit/chores/...` is
-            # canonical by definition, so a gate script resolves without the
-            # `.gzkit/` counterpart test — which can never succeed at adopter
-            # init time, because the counterpart is what init is creating.
-            if _classify_chore_file(Path(".gzkit/chores") / slug / rel) != "canonical":
-                continue
+        for source, rel in _deliverable_slug_files(slug_resource):
             target = target_dir / rel
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_bytes(source.read_bytes())

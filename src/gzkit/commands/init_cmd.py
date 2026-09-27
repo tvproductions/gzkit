@@ -15,7 +15,8 @@ from pydantic import BaseModel, ConfigDict, Field
 from rich.markup import escape
 
 from gzkit.chores import (
-    _classify_chore_file,
+    RegistryMergeReport,
+    iter_deliverable_chore_files,
     merge_chores_registry,
     missing_surface_files,
     scaffold_core_chores,
@@ -84,6 +85,9 @@ class RefreshResult(BaseModel):
     identical: list[str] = Field(default_factory=list)
     stale_refreshed: list[str] = Field(default_factory=list)
     edited_conflicts: list[str] = Field(default_factory=list)
+    registry_merge: RegistryMergeReport | None = Field(
+        default=None, description="Chores registry merge; None when the registry was absent"
+    )
     dry_run: bool = Field(default=False)
 
 
@@ -181,61 +185,64 @@ def _refresh_canonical_surfaces(
     project_root: Path,
     *,
     dry_run: bool = False,
+    yes: bool = False,
 ) -> RefreshResult:
     """Refresh canonical surfaces in ``.gzkit/<surface>/`` from the wheel.
 
-    Walks each canonical surface resource (skills, rules, chores canonical-class
-    files, templates, personas), classifies each artifact via
-    :func:`_detect_refresh_state`, and refreshes STALE entries in place.
-    EDITED entries are recorded as conflicts and NOT overwritten.
+    Writes only what delivery defines (GHI #1123), classifying each artifact via
+    :func:`_detect_refresh_state` and refreshing STALE entries in place. EDITED
+    entries are recorded as conflicts and NOT overwritten.
 
-    Surface targets (REQ-0.0.32-05-02):
-
-    - ``gzkit.skills``  -> ``.gzkit/skills/``
-    - ``gzkit.rules``   -> ``.gzkit/rules/``
-    - ``gzkit.chores``  -> ``.gzkit/chores/`` (canonical class only;
-      package_only/runtime_state are excluded per chores class-classifier)
-    - ``gzkit.personas`` -> ``.gzkit/personas/``
-    - ``gzkit.templates`` -> ``.gzkit/templates/``
+    - skills, rules, templates, personas: the files ``gz upgrade`` refreshes,
+      selected by the same per-surface classifiers, so package-only files
+      (``templates/skills/**``, REQ-0.0.32-11-04) never reach ``.gzkit/``;
+    - chores: the files first init delivers
+      (:func:`gzkit.chores.iter_deliverable_chore_files`);
+    - ``chores/registry.json``: merged by :func:`merge_chores_registry`, which
+      keeps project-local entries, or delivered whole when absent.
 
     Args:
         project_root: Project root containing the adopter's ``.gzkit/``.
         dry_run: When True, detect and report state without writing.
+        yes: Accept the chores registry merge without prompting.
 
     """
+    # upgrade imports this module, so its classifier map is read at call time.
+    from gzkit.commands.upgrade import _SURFACE_CLASSIFIERS, SURFACE_PKG_MAP  # noqa: PLC0415
+
     result = RefreshResult(dry_run=dry_run)
 
-    surface_map: list[tuple[str, str]] = [
-        ("gzkit.skills", "skills"),
-        ("gzkit.rules", "rules"),
-        ("gzkit.chores", "chores"),
-        ("gzkit.personas", "personas"),
-        ("gzkit.templates", "templates"),
-    ]
+    def refresh(canonical: Traversable, display: str) -> None:
+        state = _refresh_one_artifact(
+            canonical=canonical,
+            project_path=project_root / display,
+            dry_run=dry_run,
+        )
+        {
+            "IDENTICAL": result.identical,
+            "STALE": result.stale_refreshed,
+            "EDITED": result.edited_conflicts,
+        }[state].append(display)
 
-    for resource_pkg, surface_name in surface_map:
-        target_root = project_root / ".gzkit" / surface_name
+    for surface, resource_pkg in SURFACE_PKG_MAP.items():
+        classify = _SURFACE_CLASSIFIERS[surface]
         for canonical, rel_path in _iter_canonical_surface_files(resource_pkg):
-            project_path = target_root / rel_path
-            if surface_name == "chores":
-                classification = _classify_chore_file(
-                    Path("src/gzkit/chores") / rel_path,
-                    project_root=project_root,
-                )
-                if classification != "canonical":
-                    continue
-            display = f".gzkit/{surface_name}/{rel_path.as_posix()}"
-            state = _refresh_one_artifact(
-                canonical=canonical,
-                project_path=project_path,
-                dry_run=dry_run,
-            )
-            if state == "IDENTICAL":
-                result.identical.append(display)
-            elif state == "STALE":
-                result.stale_refreshed.append(display)
-            else:  # EDITED
-                result.edited_conflicts.append(display)
+            wheel_path = Path("src/gzkit") / surface / rel_path
+            if classify(wheel_path, project_root=project_root) == "canonical":
+                refresh(canonical, f".gzkit/{surface}/{rel_path.as_posix()}")
+
+    for canonical, rel_path in iter_deliverable_chore_files():
+        refresh(canonical, f".gzkit/chores/{rel_path.as_posix()}")
+
+    config = GzkitConfig.load(project_root / ".gzkit.json")
+    registry = project_root / config.paths.chores / "registry.json"
+    if registry.exists():
+        result.registry_merge = merge_chores_registry(
+            project_root, config, auto_yes=yes, dry_run=dry_run
+        )
+    else:
+        shipped = importlib.resources.files("gzkit.chores").joinpath("registry.json")
+        refresh(shipped, registry.relative_to(project_root).as_posix())
 
     return result
 
@@ -254,6 +261,13 @@ def _print_refresh_summary(result: RefreshResult) -> None:
         console.print(f"\n[green]{prefix} (STALE):[/green]")
         for path in result.stale_refreshed:
             console.print(f"  - {path}")
+    merge = result.registry_merge
+    if merge is not None and (merge.added or merge.changed):
+        verb = "Would merge" if result.dry_run else ("Merged" if merge.wrote else "Did not merge")
+        console.print(
+            f"\n{verb} chores registry: +{len(merge.added)}/~{len(merge.changed)}; "
+            f"{len(merge.unchanged_local)} local-only entries kept"
+        )
     if result.edited_conflicts:
         console.print("\n[red]Conflicts (EDITED — not overwritten):[/red]")
         for path in result.edited_conflicts:
@@ -1113,7 +1127,7 @@ def init(
             )
             sys.exit(1)
         console.print("Refreshing canonical surfaces from installed wheel...")
-        result = _refresh_canonical_surfaces(project_root, dry_run=dry_run)
+        result = _refresh_canonical_surfaces(project_root, dry_run=dry_run, yes=yes)
         _print_refresh_summary(result)
         if result.edited_conflicts:
             sys.exit(3)

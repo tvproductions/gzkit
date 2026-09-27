@@ -140,7 +140,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
         "--yes",
         action="store_true",
         default=False,
-        help="Auto-accept registry-merge prompts during repair",
+        help="Auto-accept registry-merge prompts during repair or --update",
     )
     p_init.add_argument(
         "--update",

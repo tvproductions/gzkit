@@ -445,7 +445,6 @@ PRIVATE_CROSS_PACKAGE_IMPORT_BASELINE: dict[str, tuple[str, ...]] = {
         "traceability._semver_sort_key",
     ),
     "commands/init_cmd.py": (
-        "chores._classify_chore_file",
         "chores._iter_canonical_chore_slugs",
         "personas._iter_canonical_persona_slugs",
         "rules._iter_canonical_rule_slugs",

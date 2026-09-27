@@ -7,7 +7,7 @@ owner: gzkit-governance
 last_reviewed: 2026-09-27
 gz_command: init
 metadata:
-  skill-version: "6.2.0"
+  skill-version: "6.3.0"
 model: sonnet
 ---
 
@@ -44,7 +44,10 @@ current directory; it never searches upward for a project.
 - **Update** (`--update`) — refreshes `.gzkit/` skills, rules, chores, personas
   and templates from the installed wheel by `_detect_refresh_state`:
   `IDENTICAL` is skipped, `STALE` is overwritten, `EDITED` is reported and
-  left. Nothing else runs: no manifest, no sync, no ledger event.
+  left. It writes only what delivery defines: `gz upgrade`'s classifiers pick
+  the skills, rules, templates and personas, chores follow first-init delivery,
+  and `chores/registry.json` is merged, keeping project-local entries (`--yes`
+  accepts the merge). Nothing else runs: no manifest, no sync, no ledger event.
 
 Exit codes: 0 on success; 1 for `--update` with `--force` or
 `--attestor-handle`, `--update` on an uninitialized project, a handle
@@ -85,9 +88,6 @@ containing whitespace, or a canonical-skill sync preflight failure; 3 when
   scaffolder writes one, so every differing file reads `STALE` and is
   overwritten. Read the `--update --dry-run` list with the operator before
   running it.
-- `--update` applies no per-surface classifier except for chores, so it also
-  copies package-only files, such as `templates/author_prompts.py`, into
-  `.gzkit/templates/`. `gz upgrade` filters them.
 - In gzkit's own repository the installed wheel is the editable
   `src/gzkit/`, a copy synced from `.gzkit/`. There, `--update` copies that
   copy back over canon and reverts any `.gzkit/` edit not yet synced.

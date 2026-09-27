@@ -14,12 +14,22 @@ markers), REQ-0.0.32-05-08 (manpage docs).
 
 from __future__ import annotations
 
+import importlib.resources
+import json
+import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
+from gzkit.chores import scaffold_core_chores
+from gzkit.commands import upgrade
 from gzkit.commands.init_cmd import (
     CANONICAL_VERSION_MARKER_PATTERN,
+    RefreshResult,
     _detect_refresh_state,
+    _iter_canonical_surface_files,
+    _refresh_canonical_surfaces,
+    init,
 )
 from gzkit.traceability import covers
 
@@ -200,6 +210,109 @@ class TestInitManpageDocumentsUpdateMode(unittest.TestCase):
         self.assertRegex(self.manpage_text, r"`?0`?\s*\|\s*Success")
         self.assertRegex(self.manpage_text, r"`?1`?\s*\|\s*Usage error")
         self.assertRegex(self.manpage_text, r"`?3`?\s*\|\s*Policy breach")
+
+
+def _reported(result: RefreshResult) -> set[str]:
+    return {*result.identical, *result.stale_refreshed, *result.edited_conflicts}
+
+
+def _files_under(root: Path) -> set[str]:
+    return {p.relative_to(root).as_posix() for p in root.rglob("*") if p.is_file()}
+
+
+class TestUpdateWritesOnlyWhatDeliveryDefines(unittest.TestCase):
+    """`gz init --update` writes into `.gzkit/` only what delivery defines (GHI #1123).
+
+    The per-surface classifiers and the chores registry merge are the delivery
+    contract (`.gzkit/rules/skill-surface-sync.md` § class-classifier; GHI #728).
+    Each test runs the refresh against a temp adopter tree with no `src/gzkit/`.
+    """
+
+    def test_shared_surfaces_match_what_gz_upgrade_classifies_canonical(self) -> None:
+        """Skills, rules, templates and personas: the same population as `gz upgrade`."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / ".gzkit").mkdir()
+            result = _refresh_canonical_surfaces(root, dry_run=True)
+            for surface in upgrade.KNOWN_SURFACES:
+                classify = upgrade._SURFACE_CLASSIFIERS[surface]
+                expected = {
+                    f".gzkit/{surface}/{rel.as_posix()}"
+                    for _, rel in _iter_canonical_surface_files(upgrade.SURFACE_PKG_MAP[surface])
+                    if classify(Path("src/gzkit") / surface / rel, project_root=root) == "canonical"
+                }
+                reported = {p for p in _reported(result) if p.startswith(f".gzkit/{surface}/")}
+                self.assertEqual(reported, expected, surface)
+
+    def test_package_only_templates_are_never_written(self) -> None:
+        """A package-only template never lands in `.gzkit/templates/` (REQ-0.0.32-11-04)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / ".gzkit").mkdir()
+            _refresh_canonical_surfaces(root)
+            templates = root / ".gzkit" / "templates"
+            self.assertFalse((templates / "author_prompts.py").exists())
+            self.assertFalse((templates / "skills").exists())
+
+    def test_chores_match_what_first_init_scaffolds(self) -> None:
+        """New slugs, their scripts and the surface files arrive exactly as `gz init` delivers."""
+        with tempfile.TemporaryDirectory() as tmp:
+            scaffolded, refreshed = Path(tmp) / "a", Path(tmp) / "b"
+            for root in (scaffolded, refreshed):
+                (root / ".gzkit").mkdir(parents=True)
+            scaffold_core_chores(scaffolded)
+            _refresh_canonical_surfaces(refreshed, yes=True)
+            chores = Path(".gzkit") / "chores"
+            self.assertEqual(_files_under(refreshed / chores), _files_under(scaffolded / chores))
+
+    def test_registry_merge_keeps_project_local_entries(self) -> None:
+        """A project's own registry entries survive; shipped entries still arrive."""
+        canonical = json.loads(
+            importlib.resources.files("gzkit.chores").joinpath("registry.json").read_text("utf-8")
+        )
+        shipped = {entry["slug"] for entry in canonical["chores"]}
+        local_entry = {"slug": "my-local-chore", "projectLocal": True, "title": "Local"}
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            registry = root / ".gzkit" / "chores" / "registry.json"
+            registry.parent.mkdir(parents=True)
+            local = dict(canonical, chores=[*canonical["chores"][1:], local_entry])
+            registry.write_text(json.dumps(local, indent=4) + "\n", encoding="utf-8")
+            before = registry.read_bytes()
+            _refresh_canonical_surfaces(root, dry_run=True, yes=True)
+            self.assertEqual(registry.read_bytes(), before)
+            _refresh_canonical_surfaces(root, yes=True)
+            slugs = {e["slug"] for e in json.loads(registry.read_text("utf-8"))["chores"]}
+            self.assertIn("my-local-chore", slugs)
+            self.assertLessEqual(shipped, slugs)
+
+    def test_init_update_forwards_yes_to_the_refresh(self) -> None:
+        """`gz init --update --yes` accepts the registry merge without a prompt."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / ".gzkit").mkdir()
+            with (
+                mock.patch("gzkit.commands.init_cmd.get_project_root", return_value=root),
+                mock.patch(
+                    "gzkit.commands.init_cmd._refresh_canonical_surfaces",
+                    return_value=RefreshResult(),
+                ) as refresh,
+            ):
+                init("lite", force=False, dry_run=False, yes=True, update=True)
+            self.assertIs(refresh.call_args.kwargs["yes"], True)
+
+    def test_differing_canonical_file_is_still_refreshed(self) -> None:
+        """Control: an unmarked canonical file that differs is refreshed to the wheel bytes."""
+        source, rel = next(
+            (s, r) for s, r in _iter_canonical_surface_files("gzkit.rules") if r.suffix == ".md"
+        )
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            target = root / ".gzkit" / "rules" / rel
+            target.parent.mkdir(parents=True)
+            target.write_text("stale\n", encoding="utf-8")
+            _refresh_canonical_surfaces(root, yes=True)
+            self.assertEqual(target.read_bytes(), source.read_bytes())
 
 
 if __name__ == "__main__":

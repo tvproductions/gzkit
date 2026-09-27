@@ -390,6 +390,10 @@ Three-state detection determines the action per artifact:
   `<!-- gzkit-canonical-version: X.Y.Z -->` marker; left untouched and surfaced
   as a conflict in the end-of-run summary
 
+Only delivered files are refreshed: package-only files never reach `.gzkit/`,
+and `chores/registry.json` is merged rather than copied, so project-local chore
+entries survive (`--yes` accepts the merge).
+
 Exit code 3 means at least one EDITED conflict remains unresolved. Two ways
 forward per conflict:
 
