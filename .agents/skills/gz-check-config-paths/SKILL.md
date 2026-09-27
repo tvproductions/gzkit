@@ -4,9 +4,9 @@ description: Validate configured and manifest path coherence. Use when diagnosin
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-26
+last_reviewed: 2026-09-27
 metadata:
-  skill-version: "0.2.0"
+  skill-version: "0.2.1"
 model: haiku
 ---
 

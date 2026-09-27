@@ -4,9 +4,9 @@ description: Emit ADR receipt events with scoped evidence payloads. Use when rec
 category: adr-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-26
+last_reviewed: 2026-09-27
 metadata:
-  skill-version: "1.1.0"
+  skill-version: "1.1.1"
 model: haiku
 ---
 

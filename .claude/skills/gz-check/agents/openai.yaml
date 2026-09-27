@@ -1,4 +1,4 @@
 interface:
   display_name: "gz check"
-  short_description: "Operate the gz check workflow"
+  short_description: "Run the per-change quality gate, or the full sweep with --full"
   default_prompt: "Use $gz-check to run gz check for this task."

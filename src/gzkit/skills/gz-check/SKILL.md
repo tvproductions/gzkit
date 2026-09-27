@@ -5,10 +5,10 @@ description: Run the per-change quality gate in one pass, or the full sweep with
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-23
+last_reviewed: 2026-09-27
 model: haiku
 metadata:
-  skill-version: "1.6.0"
+  skill-version: "1.6.1"
 ---
 
 # gz check
