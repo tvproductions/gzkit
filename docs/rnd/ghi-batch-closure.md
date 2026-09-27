@@ -342,6 +342,21 @@ ruling session, one question per R2 issue, the surface AGENTS.md § Operator Eco
 prescribes. GHI #424 holds unchanged: no prose in the input, no duplicate render. Row 4's *What*
 is read under this ruling.
 
+## decision · row 4's trailer: canon form, and #1141 filed against a standing directive
+
+At git-sync, the pre-push `commit_trailers` gate refused row 4's commit for having no `Task:`
+trailer. Its message reads *"Expected ... 'Task: TASK-<slug>-#<ghi>' for direct-fix work"*.
+Reading that as canon, the agent asked the operator to file a GHI and reword the commit, and
+the operator agreed (*"File GHI, reword commit (Recommended)"*). #1141 was filed. Canon says
+otherwise. `.gzkit/rules/tests.md` § TASK-Driven Workflow: *"`TASK-<kebab-slug>` (optional
+`-#<ghi>`) | Direct-fix work; append the GHI only when one already exists — never file one to
+satisfy the trailer (operator directive 2026-06-01)"*, and the validator only checks that a
+trailer is present. The agent surfaced the error, and the operator re-ruled on the corrected
+premise, verbatim: *"Bare slug; close #1141 fixed (Recommended)"*. The commit carries
+`Task: TASK-ghi-triage-readiness` (reworded locally before push: `ead445895` → `76253ef4f`).
+#1141 closes `fixed`: the defect it records is real and that commit fixes it. The validator's
+misleading message is filed as its own defect.
+
 ---
 
 ## Disposition map
@@ -351,7 +366,7 @@ is read under this ruling.
 | 1 | ADR / OBPI | **not pursued** | No ADR for the `ghi-triage` extension; Phase-2 fan-out not promoted. | The skill edit is reversible, so it fails the admission question. Phase-2 fan-out needs `ADR-pool.ledger-concurrency-substrate` criterion 2 (merge-lane accounting, RED-receipt replay). **Revisit** when landing, not Read, is the measured bottleneck of the landing queue (Q3). |
 | 2 | GHI / direct fix | **commissioned** | One GHI via `ghi-author`: three pool-ADR drifts (worktree landing by merge vs. single writer; ledger premise stale since `be75c6b22`; ghi-triage-closeout's shipped skills and answered fan-out question). Repaired as dated `## Amendments` entries. **Filed #1139; fixed at `3db5f97c9` and closed 2026-09-27.** Cross-linked to sibling #837 (same class). | Q4 ruling. Drift is a defect (PRIME DIRECTIVE 5), and it must be trackable (6). Awaits the operator's go on this row. |
 | 3 | chore | **not pursued** | No new chore. | `ghi-cross-reference-staleness` already covers closed-GHI references. OBPI- and code-state preconditions are caught by the readiness pass in row 4. **Revisit** if stale preconditions recur between triage runs. |
-| 4 | control surface, rule, doc, skill, hook | **commissioned** | Extend `ghi-triage`: compress-and-merge pass first (Parsimony 6), then a readiness verdict R1–R4 with re-derived preconditions, an optional parallel read-only fan-out, a main-session spot-check step, and two renderings (landing queue and ruling docket). `ghi-close` unchanged. | Q1, Q2, Q3 and Q5 rulings. **No new `ghi-batch` skill** (Parsimony 2). **Landed at `ead445895`** (`ghi-triage` 5.4.0; readiness enum in `triage.py`; 8 new tests). Awaits the operator's go on this row. |
+| 4 | control surface, rule, doc, skill, hook | **commissioned** | Extend `ghi-triage`: compress-and-merge pass first (Parsimony 6), then a readiness verdict R1–R4 with re-derived preconditions, an optional parallel read-only fan-out, a main-session spot-check step, and two renderings (landing queue and ruling docket). `ghi-close` unchanged. | Q1, Q2, Q3 and Q5 rulings. **No new `ghi-batch` skill** (Parsimony 2). **Landed at `76253ef4f`** (`ghi-triage` 5.4.0; readiness enum in `triage.py`; 8 new tests). Awaits the operator's go on this row. |
 | 5 | one-shot refactoring | **not pursued** | — | The six R1 file-overlap clusters (e.g. {1126, 1128, 1129, 1130}, {1012, 1013}) are landing-order facts for the writer, not a refactoring program. |
 | 6 | no action | **commissioned** | Do not build worktree-parallel fix execution now, and do not reorganise the residue. | The residue is 30 of 36 operator-bound. Only rulings drain it, and the docket (row 4) is the lever. **Revisit** if the residue share that is R1 rises above today's 6 of 36. |
 
