@@ -1073,6 +1073,24 @@ uv run gz validate --how-coverage
 The router `gz-how` replaced carried the same duty in prose with no gate, and
 fell 36 skills behind a 73-skill catalog.
 
+### `--pending-renames`
+
+Fails closed (exit 3) while the ledger holds events under a bare
+`ADR-X.Y.Z` or `OBPI-X.Y.Z-NN` whose artifact's on-disk id is its slug and no
+`artifact_renamed` event yet maps one to the other (GHI #1118). It runs the
+same detector as `gz migrate-semver`, in the **default** tier, so the drift
+fails the gate instead of waiting for an operator to remember the migration
+(AGENTS.md § Architectural Boundaries 4). The finding lists every pending pair.
+
+Repair: review with `uv run gz migrate-semver --dry-run`, then append the
+renames with `uv run gz migrate-semver`. Producers record the slug id since
+GHI #1118 (`gz adr evaluate`, `gz obpi lock`, the airlock), so new pending
+renames come only from older history or an id no producer resolved.
+
+```bash
+uv run gz validate --pending-renames
+```
+
 ### `--doc-code-citations`
 
 Fails closed when prose under `docs/governance/**` cites a `src/gzkit/` module
@@ -2551,6 +2569,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | Scope flag | Default? | Purpose |
 |------------|----------|---------|
 | `--how-coverage` | yes | The `gz-how` guide catalogues every live skill, names only real ones, and its flow links resolve |
+| `--pending-renames` | yes | No ledger event waits on a bare-to-slug rename `gz migrate-semver` would append; exit 3 lists each pending pair (GHI #1118) |
 | `--manifest` | yes | Validate `.gzkit/manifest.json` against the manifest schema |
 | `--documents` | yes | Validate governance docs (PRDs, constitutions, ADRs); OBPI briefs are owned by `--briefs` |
 | `--surfaces` | yes | Validate control-surface existence, frontmatter shape, and canonical sync parity |

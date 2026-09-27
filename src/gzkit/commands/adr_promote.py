@@ -477,7 +477,7 @@ def adr_eval_cmd(adr_id: str, as_json: bool, write_scorecard: bool) -> None:
         render_scorecard_markdown,
         resolve_adr_package,
     )
-    from gzkit.ledger import adr_eval_completed_event  # noqa: PLC0415
+    from gzkit.ledger import adr_eval_completed_event, slug_id_for  # noqa: PLC0415
     from gzkit.ledger_events import adr_evaluation_event  # noqa: PLC0415
 
     config = ensure_initialized()
@@ -485,16 +485,24 @@ def adr_eval_cmd(adr_id: str, as_json: bool, write_scorecard: bool) -> None:
     adr_input = adr_id if adr_id.startswith("ADR-") else f"ADR-{adr_id}"
 
     result = evaluate_adr(project_root, adr_input)
+    # Record the ADR's slug id, never the bare id typed (GHI #1118). evaluate_adr
+    # already resolved the package, so a miss here falls back to the id as typed.
+    try:
+        adr_path: Path | None = resolve_adr_package(project_root, adr_input)[0]
+    except FileNotFoundError:
+        adr_path = None
+    recorded_id = slug_id_for(adr_input, adr_path.stem) if adr_path else adr_input
 
     if write_scorecard:
-        adr_path, _, _ = resolve_adr_package(project_root, adr_input)
+        if adr_path is None:
+            adr_path = resolve_adr_package(project_root, adr_input)[0]
         scorecard_path = adr_path.parent / "EVALUATION_SCORECARD.md"
         scorecard_path.write_text(render_scorecard_markdown(result), encoding="utf-8")
 
     ledger = Ledger(project_root / config.paths.ledger)
     ledger.append(
         adr_evaluation_event(
-            artifact_id=adr_input,
+            artifact_id=recorded_id,
             artifact_type="ADR",
             dimensions={d.dimension: float(d.score) for d in result.adr_dimensions},
             scores={d.dimension: d.weighted for d in result.adr_dimensions},
@@ -508,7 +516,7 @@ def adr_eval_cmd(adr_id: str, as_json: bool, write_scorecard: bool) -> None:
     )
     ledger.append(
         adr_eval_completed_event(
-            adr_id=adr_input,
+            adr_id=recorded_id,
             verdict=result.verdict.value,
             adr_weighted_total=result.adr_weighted_total,
             obpi_count=len(result.obpi_scores),

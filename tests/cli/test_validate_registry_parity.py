@@ -103,6 +103,10 @@ _POST_SNAPSHOT_DEFAULT_ADDITIONS: tuple[str, ...] = (
     # and fell 36 skills behind; a flag-gated check nobody runs would be inert
     # exactly where that inertness produced the defect.
     "how_coverage",
+    # pending_renames — bare-to-slug renames gz migrate-semver would append (GHI #1118).
+    # DEFAULT tier: the detector only ran on a manual invocation, and 87 rows under
+    # 21 bare ids accumulated between runs.
+    "pending_renames",
 )
 
 # Explicit-tier scopes run only when their flag is set. Set-parity is what the

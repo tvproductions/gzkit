@@ -262,11 +262,14 @@ def _collect_disk_drift_renames(
     return candidates
 
 
-def migrate_semver(dry_run: bool) -> None:
-    """Record SemVer artifact ID renames in the append-only ledger."""
-    config = ensure_initialized()
-    project_root = get_project_root()
-    ledger = Ledger(project_root / config.paths.ledger)
+def pending_semver_renames(
+    project_root: Path, design_root: str, ledger: Ledger
+) -> list[tuple[str, str]]:
+    """Return the ``(old_id, new_id)`` renames ``gz migrate-semver`` would append.
+
+    The single source for the migration and for ``gz validate --pending-renames``
+    (GHI #1118), so the gate cannot report a rename the migration would not make.
+    """
     events = ledger.read_all()
 
     existing_renames: set[tuple[str, str]] = set()
@@ -293,7 +296,7 @@ def migrate_semver(dry_run: bool) -> None:
         pending.append((old_id, new_id))
         pending_seen.add((old_id, new_id))
 
-    artifacts = scan_existing_artifacts(project_root, config.paths.design_root)
+    artifacts = scan_existing_artifacts(project_root, design_root)
     for old_id, new_id in _collect_disk_drift_renames(
         ledger=ledger,
         artifacts=artifacts,
@@ -304,6 +307,15 @@ def migrate_semver(dry_run: bool) -> None:
             continue
         pending.append((old_id, new_id))
         pending_seen.add((old_id, new_id))
+    return pending
+
+
+def migrate_semver(dry_run: bool) -> None:
+    """Record SemVer artifact ID renames in the append-only ledger."""
+    config = ensure_initialized()
+    project_root = get_project_root()
+    ledger = Ledger(project_root / config.paths.ledger)
+    pending = pending_semver_renames(project_root, config.paths.design_root, ledger)
 
     if not pending:
         console.print("No applicable SemVer ID migrations found.")

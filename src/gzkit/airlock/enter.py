@@ -42,7 +42,7 @@ from gzkit.enforcement import (
     set_known_claims,
 )
 from gzkit.governance.brief_path_validity import extract_allowed_paths
-from gzkit.ledger import Ledger, LedgerEvent
+from gzkit.ledger import Ledger, LedgerEvent, slug_id_for
 
 
 def _default_reach(node_id: str) -> list[str] | None:
@@ -78,6 +78,7 @@ def airlock_enter(
     ledger: Ledger | None = None,
 ) -> Preflight:
     """Three-beat airlock-IN gate — DECLARE -> PING -> RECONCILE -> decide."""
+    target = slug_id_for(target, brief_path.stem)  # book the slug, never a bare id (GHI #1118)
     brief_text = brief_path.read_text(encoding="utf-8")  # DECLARE (intent + expectation)
     bodies = tuple(extract_allowed_paths(brief_path) or ())
     reach = reach_fn(target) or []  # PING: L3 advisory input, never the verdict

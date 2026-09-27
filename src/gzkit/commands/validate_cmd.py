@@ -28,6 +28,7 @@ from gzkit.commands.validate_frontmatter import (
     _render_frontmatter_explain,
     validate_frontmatter_coherence,
 )
+from gzkit.commands.validate_pending_renames import _validate_pending_renames
 from gzkit.commands.validate_req_kind import _validate_req_kind_discipline
 from gzkit.commands.validate_sensitivity import (
     _parse_sensitivity_path_list,
@@ -435,6 +436,10 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
     # router it replaced carried the same duty with no gate and fell 36 skills
     # behind; a flag-gated check nobody runs would reproduce exactly that.
     _ScopeEntry("how_coverage", "default", True, lambda r, _f: _ta().audit_how_coverage(r)),
+    # Default tier (GHI #1118): the bare-to-slug detector only ran when an operator
+    # invoked `gz migrate-semver`, and 87 rows under 21 bare ids accumulated between
+    # runs. Gating on it makes the reconciliation continuous (Boundary 4).
+    _ScopeEntry("pending_renames", "default", True, lambda r, _f: _validate_pending_renames(r)),
     _ScopeEntry("kind_invariance", "explicit", True, lambda r, _f: _ta().audit_kind_invariance(r)),
     _ScopeEntry("persona_witness", "explicit", True, lambda r, _f: _ta().audit_persona_witness(r)),
     _ScopeEntry("receipt_shape", "explicit", True, lambda r, _f: _ta().audit_receipt_shape(r)),
@@ -1096,6 +1101,7 @@ _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
     {
         "frontmatter",
         "how_coverage",
+        "pending_renames",
         "chores_layout",
         "complexity_doctrine_links",
         "complexity_thresholds",
@@ -1447,6 +1453,7 @@ def validate(
     check_cli_alignment: bool = False,
     check_doc_code_citations: bool = False,
     check_how_coverage: bool = False,
+    check_pending_renames: bool = False,
     check_event_handlers: bool = False,
     check_event_schemas: bool = False,
     check_producer_fields: bool = False,
@@ -1590,6 +1597,7 @@ def validate(
         "cli_alignment": check_cli_alignment,
         "doc_code_citations": check_doc_code_citations,
         "how_coverage": check_how_coverage,
+        "pending_renames": check_pending_renames,
         "event_handlers": check_event_handlers,
         "event_schemas": check_event_schemas,
         "producer_fields": check_producer_fields,

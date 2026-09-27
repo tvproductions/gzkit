@@ -29,6 +29,7 @@ from pathlib import Path
 from gzkit.core.validation_rules import ValidationError
 from gzkit.justify.models import AnchorRef
 from gzkit.justify.parser import WalkthroughParseError, parse_walkthrough
+from gzkit.obpi_lifecycle import fold_renames
 
 _ADR_ID_RE = re.compile(r"^ADR-(\d+\.\d+\.\d+)(?:-([a-z0-9][a-z0-9-]*))?$", re.IGNORECASE)
 _OBPI_ID_RE = re.compile(r"^OBPI-(\d+\.\d+\.\d+-\d+)(?:-([a-z0-9][a-z0-9-]*))?$", re.IGNORECASE)
@@ -96,10 +97,16 @@ def _load_thresholds(project_root: Path) -> dict:
 
 
 def _latest_evaluation_event(ledger_path: Path, artifact_id: str) -> dict | None:
-    """Return the most recent ``adr-evaluation`` event for ``artifact_id``, or None."""
+    """Return the most recent ``adr-evaluation`` event for ``artifact_id``, or None.
+
+    Ids are compared through the ledger's rename map, so an evaluation booked
+    under a bare id the ledger has renamed to ``artifact_id`` still counts. A
+    raw-id match missed it and the gate passed on scores it never read (GHI #1118).
+    """
     if not ledger_path.exists():
         return None
-    events = []
+    evaluations: list[dict] = []
+    renames: list[tuple[str, str]] = []
     for line in ledger_path.read_text(encoding="utf-8").splitlines():
         line = line.strip()
         if not line:
@@ -108,9 +115,14 @@ def _latest_evaluation_event(ledger_path: Path, artifact_id: str) -> dict | None
             ev = json.loads(line)
         except json.JSONDecodeError:
             continue
-        if ev.get("event") == "adr-evaluation" and ev.get("id") == artifact_id:
-            events.append(ev)
-    return events[-1] if events else None
+        if ev.get("event") == "adr-evaluation":
+            evaluations.append(ev)
+        elif ev.get("event") == "artifact_renamed" and isinstance(ev.get("new_id"), str):
+            renames.append((ev.get("id", ""), ev["new_id"]))
+    current = fold_renames(renames)
+    target = current.get(artifact_id, artifact_id)
+    matches = [ev for ev in evaluations if current.get(ev.get("id"), ev.get("id")) == target]
+    return matches[-1] if matches else None
 
 
 def _assess_walkthroughs(

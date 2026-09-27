@@ -42,7 +42,7 @@ from gzkit.airlock.model import (
     Verdict,
 )
 from gzkit.governance.brief_path_validity import extract_allowed_paths
-from gzkit.ledger import Ledger, LedgerEvent
+from gzkit.ledger import Ledger, LedgerEvent, slug_id_for
 
 
 class ExitDecision(enum.StrEnum):
@@ -249,6 +249,7 @@ def airlock_exit(
     event. NEVER writes L1 canon (parent ADR § Boundary Invariants #1); the L3
     reach INFORMS the drift-diff, it never gates (BI #6, state-doctrine Rule 5).
     """
+    target = slug_id_for(target, brief_path.stem)  # book the slug, never a bare id (GHI #1118)
     booked = False
     try:
         bodies = tuple(extract_allowed_paths(brief_path) or ())  # DECLARE: the footprint

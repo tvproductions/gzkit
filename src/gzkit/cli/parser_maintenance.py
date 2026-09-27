@@ -435,6 +435,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="The gz-how guide catalogues every live skill and names only real ones",
     )
     p_validate.add_argument(
+        "--pending-renames",
+        dest="check_pending_renames",
+        action="store_true",
+        help="No ledger event waits on a bare-to-slug rename gz migrate-semver would append",
+    )
+    p_validate.add_argument(
         "--event-handlers",
         dest="check_event_handlers",
         action="store_true",
@@ -1037,6 +1043,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_cli_alignment=a.check_cli_alignment,
             check_doc_code_citations=a.check_doc_code_citations,
             check_how_coverage=a.check_how_coverage,
+            check_pending_renames=a.check_pending_renames,
             check_event_handlers=a.check_event_handlers,
             check_event_schemas=a.check_event_schemas,
             check_producer_fields=a.check_producer_fields,

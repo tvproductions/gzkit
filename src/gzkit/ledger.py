@@ -106,6 +106,21 @@ def extract_bare_obpi_id(obpi_id: str) -> str | None:
     return f"OBPI-{match.group(1)}"
 
 
+def slug_id_for(artifact_id: str, resolved_stem: str) -> str:
+    """Return ``resolved_stem`` when it is the slug form of bare ``artifact_id``.
+
+    An ADR or OBPI's canonical id is its on-disk slug. A producer that books the
+    bare id an operator typed orphans the event from its artifact until a rename
+    is appended (GHI #1118). Producers pass the stem of the file they resolved
+    and record the result; any other pairing returns ``artifact_id`` unchanged.
+    """
+    if resolved_stem.startswith("OBPI-"):
+        bare = extract_bare_obpi_id(resolved_stem)
+    else:
+        bare = _extract_bare_adr_semver(resolved_stem)
+    return resolved_stem if bare == artifact_id != resolved_stem else artifact_id
+
+
 #: Re-exported from :mod:`gzkit.ledger_corrections`, which owns the single
 #: definition. Every module that stamps a row still imports it from here; the
 #: value moved so the replay-side envelope check and the producers cannot drift.

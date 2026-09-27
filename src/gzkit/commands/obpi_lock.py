@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import sys
+from pathlib import Path
 
 from rich.markup import escape
 
@@ -21,7 +22,7 @@ from gzkit.exchange_records import (
     parse_abandon_spec,
     write_degenerate_exchange,
 )
-from gzkit.ledger import Ledger
+from gzkit.ledger import Ledger, slug_id_for
 from gzkit.ledger_events import obpi_lock_claimed_event, obpi_lock_released_event
 from gzkit.lock_manager import (
     LockData,
@@ -34,6 +35,17 @@ from gzkit.lock_manager import (
     resolve_session_id,
     write_lock,
 )
+from gzkit.pipeline_markers import find_obpi_brief
+
+
+def _slug_obpi_id(project_root: Path, adrs: str, obpi_id: str) -> str:
+    """Key the lock file and its ledger events by the brief's slug id (GHI #1118).
+
+    A lock keyed by the bare id typed let a second agent claim the same brief
+    under its slug, and booked events the ledger did not resolve to the OBPI.
+    """
+    brief = find_obpi_brief(project_root / adrs, obpi_id)
+    return slug_id_for(obpi_id, brief.stem) if brief is not None else obpi_id
 
 
 def obpi_lock_claim_cmd(
@@ -45,6 +57,7 @@ def obpi_lock_claim_cmd(
     """Claim an OBPI work lock with ledger accounting."""
     config = ensure_initialized()
     project_root = get_project_root()
+    obpi_id = _slug_obpi_id(project_root, config.paths.adrs, obpi_id)
 
     resolved_agent = resolve_agent(agent)
     existing = read_lock(project_root, obpi_id)
@@ -145,6 +158,7 @@ def obpi_lock_release_cmd(
     """
     config = ensure_initialized()
     project_root = get_project_root()
+    obpi_id = _slug_obpi_id(project_root, config.paths.adrs, obpi_id)
 
     # Validate abandon spec early so we fail before deleting the lock.
     abandon_spec: AbandonSpec | None = None
@@ -260,8 +274,9 @@ def obpi_lock_release_cmd(
 
 def obpi_lock_check_cmd(obpi_id: str, as_json: bool) -> None:
     """Check if an OBPI is locked.  Exit 0 if held, exit 1 if free."""
-    ensure_initialized()
+    config = ensure_initialized()
     project_root = get_project_root()
+    obpi_id = _slug_obpi_id(project_root, config.paths.adrs, obpi_id)
 
     existing = read_lock(project_root, obpi_id)
 
