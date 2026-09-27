@@ -9,6 +9,14 @@ inspired_by: openspec
 
 # ADR-pool.adr-amendment-tracking: ADR Amendment Tracking
 
+> **Funded 2026-09-27, to be absorbed into `ADR-0.40.0`.** The R&D run
+> [`docs/rnd/design-amendment.md`](../../../rnd/design-amendment.md) designed an amendment
+> verb family that covers this stub's mid-flight case and amendments to attested designs,
+> and answers its open questions (gate reset, re-verification). The operator funded it as
+> pre-1.0 work, authored after `ADR-0.38.0` — see the Magna Carta,
+> [§ Amendments 2026-09-27 (2)](../../../governance/build-to-1.0-campaign-2026-09-20.md#amendments-2026-09-27-2).
+> Read those before this stub.
+
 ## Status
 
 Pool

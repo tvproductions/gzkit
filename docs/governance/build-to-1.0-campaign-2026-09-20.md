@@ -87,6 +87,8 @@ glob it used, so that is a method difference rather than 114 deleted briefs. See
 for every counting rule, and for why the scorecard tallies are deliberately not
 computed there.
 
+> **RESEQUENCED 2026-09-27 (operator-ratified): ADR WORK FIRST.** Feature ADRs are worked in ascending order (`0.35.0` → `0.36.0` → `0.37.0` → `0.38.0` → `0.39.0` → the funded amendment ADR) before Movement C refactoring resumes. The 2026-09-02 NEXT-IN-PRIORITY placement of Movement C's family-closure box, recorded below, is SUPERSEDED. See § Amendments 2026-09-27 (3).
+>
 > **Topmost (sequenced):** **`ADR-0.35.0-canon-entry-corpus-landing` is TOPMOST (2026-09-01, operator-ratified, UNCHANGED). AMENDED 2026-09-02 (operator-ratified) — Movement C's `Close the doctrine-declared-without-mechanism family` box is pulled forward to NEXT-IN-PRIORITY, immediately behind TOPMOST and ahead of both Movement B and every other Movement C box; Movement B steps down one place; Movement A remains HELD as a Movement.** The box outranks its own Movement, on the precedent the 2026-09-01 amendment set when Movement A's `ADR-0.35.0` box became TOPMOST inside a HELD Movement. It is placed high because it is drawable without the operator: under the IRON LAW only the operator initiates OBPI work, while this box discharges through rule-text amendment, scorecard scoring and GHI-shaped direct repair. The family's share of the open queue and its production rate are measured in [`f1-family-share-measurement-2026-09-20.md`](f1-family-share-measurement-2026-09-20.md) — re-run its evidence script rather than trusting a figure transcribed here. Instances close same-session while the class keeps producing: that premise was re-measured 2026-09-20 under a shared criterion and VERIFIED, not revised. See § Amendments 2026-09-20. Run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` for its lifecycle and landed count rather than trusting a figure transcribed here. See § Amendments 2026-09-02. From 2026-08-14 to this amendment the plan declared TOPMOST a Movement that ADR order forbade working, while the work drawn every session sat as a box inside a HELD Movement — two amendments (2026-08-16, 2026-08-23) were spent explaining that split rather than removing it. This removes it. Run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` for its lifecycle and landed count rather than trusting a figure transcribed here. See § Amendments 2026-09-01.
 >
 > **DRAWN-WORK ORDER — AMENDED 2026-09-15 (operator-ratified).** Work a session draws without the operator, at the NEXT-IN-PRIORITY position, is taken in this order: **(a) the R&D front** — the `gz-rnd` skill and the design in `docs/governance/rnd-discipline.md`; **(b) the chore estate** — the conversion directive and the overdue board, the family-closure box's agent-side arm; **(c) GHI direct repair, only** when the GHI closes a named arm of that box, blocks (a) or (b), or is an emergency. TOPMOST and ADR order are unchanged. See § Amendments 2026-09-15.
@@ -295,7 +297,7 @@ gzkit is 1.0 when ALL hold. Each gate is bounded; none is a standing obligation.
 - [ ] Close the transit-accounting gap: **23 `airlock_in` vs 5 `airlock_out`** — **18** transits never accounted for on exit. Failure-atomic pairing precedent: GHI #679 / `89c5ee9a`. **Count corrected 2026-08-14** from the 23/10 this box carried; re-measure rather than transcribe. Sequence it **second, after item 0** — do not widen what you cannot yet account for. This is the third instance of one paired-event family found on 2026-08-14: the resume gate recorded 160 lifts and 0 blocks (fixed, `2a326f042`), `session_exit` records 37 skips and 0 writes (GHI #766, open), and the airlock pairs 23 entries to 5 exits. Consider dispositioning the family once rather than three times.
 - [ ] Bind with a §4 live NC on each widened door: **un-triggered entry → the claim fails**. Not "un-accounted seam → GO unreachable" (that is `ADR-0.33.0`'s existing NC, and it only fires once you are already inside the airlock). The new NC must catch *never entering at all* — the failure mode that let ~97% of commits through.
 
-**Movement C — Reduce the accretion** *(deferral LIFTED 2026-07-18 — this is pre-1.0; the `doctrine-declared-without-mechanism` box below is **NEXT-IN-PRIORITY as of 2026-09-02** — pulled forward to sit directly beneath TOPMOST and ahead of every other box in this Movement, operator-ratified; § Amendments)*
+**Movement C — Reduce the accretion** *(**RESEQUENCED 2026-09-27: waits behind ADR work in ascending order; the NEXT-IN-PRIORITY placement below is SUPERSEDED — § Amendments 2026-09-27 (3).**)* *(deferral LIFTED 2026-07-18 — this is pre-1.0; the `doctrine-declared-without-mechanism` box below is **NEXT-IN-PRIORITY as of 2026-09-02** — pulled forward to sit directly beneath TOPMOST and ahead of every other box in this Movement, operator-ratified; § Amendments)*
 - [ ] **Surface mirroring** — 703 of 810 chore commits (47% of all commits) are `gz git-sync` regenerating five copies of every skill/rule across `.gzkit/`, `src/gzkit/`, `.claude/`, `.agents/`, `.github/`. One canonical location; generate at install, not at commit. Largest single line item on the board. **RE-MEASURED 2026-08-16 — the ratio holds, and this box's window is unrecorded so the original figures are NOT overwritten.** Over a stated 90-day window: **1561 commits, 761 `chore` subjects, 633 mentioning `gz git-sync`** (`git log --since='90 days ago' --format='%s'`). The proportion is materially unchanged (~49% vs the 47% recorded), so the box's claim stands on fresh evidence rather than on a transcribed number. The original 703/810 is left in place because the window it was taken over is not stated anywhere — replacing figures whose method is unknown with figures from a different method would manufacture a false comparison, which is the transcription failure `gz validate --transcribed-adr-counts` exists to refuse. **Whoever works this box states the window first.**
 - [x] Collapse the `validate()` surface to the registry — **DONE 2026-08-08** against the amended criterion. **Done means the enumeration family is closed, not that the count fell** (amended 2026-08-07): the registry is the single source, and *registering a scope enrolls it in the gate* (GHI #744). Siblings that must stop recurring: #704 (six solo-only scopes silently dropped when combined, under a green check), #745 (fenced blocks escape all three verb detectors), #748 (a weaker verb extractor reimplemented alongside one that already shipped). A count target alone leaves every one of those live. **All three sub-claims now hold, each fenced:** *(a)* enrollment landed 2026-08-02 (`0f671b31c`, GHI #744) — `data/check_scope_membership.json` declares membership and `tests/governance/test_check_scope_parity.py` recomputes it from source via AST, so drift in either direction fails and a default-tier scope outside the gate fails closed; *(b)* the registry is **now** genuinely the single source — `--qc-binding`, `--fidelity-presence` and `--waiver-ratchet` had dispatched through the early-return chain alone since the #618 collapse, contradicting the `VALIDATOR_REGISTRY` header's own "Single source of validate dispatch" claim, and that gap had already cost GHI #630 (every SUPPORT REQ citing one read `unproven-support` regardless of truth) which was patched with a *third* hand-maintained map rather than closed; registering the three retired that map (**net −18 source lines**) and the fence now asserts `reached − registry == ∅` instead of accommodating the exception; *(c)* #704, #745 and #748 all closed 2026-08-02 with standing fences, #704 with a genuine class-level fix replacing the per-scope guards that had been copied forward onto every new scope. **Count correction:** the "94 scopes" this box carried matched no enforced surface — `VALIDATOR_REGISTRY` holds **85**, the roster classifies 85 (44 `in_check` / 41 `out_of_check`), and `gz validate --help` prints 99 *flag* lines including non-scope flags. The retargeting off counting is exactly why that stale figure changed nothing about completion.
 - [ ] Oversized modules — census-driven, with working proof. **RE-MEASURED 2026-08-16: 51 modules over 600 lines, up from the 33 this box carried — a 55% increase, and the largest measured regression on the board.** Method, so the next reader re-runs rather than transcribes: `find src/gzkit -name '*.py' -exec wc -l {} + | awk '$1>600 && $2!="total"'`. The box is not merely unstarted; its subject grew faster than anything shrank it. Note the threshold itself is contested — `.gzkit/rules/pythonic.md` § Size Limits records that 600 is authoring-time guidance with **no enforcing gate**, and that it disagrees with the canonical `complexity-thresholds.md` table (which warns at 733.2 and blocks at 1031.9), so a census against 600 counts modules that no gate rejects. Settle which number governs as part of the census, or the proof will be measured against an authority the codebase does not enforce.
@@ -607,9 +609,137 @@ had been repeating. All are dispositioned below — none left undefined.
 
 ## Amendments
 
+<a id="amendments-2026-09-27-3"></a>
+
+### 2026-09-27 (3) (latest) — ADR WORK FIRST: feature ADRs in ascending order ahead of Movement C refactoring (operator-ratified)
+
+**Operator (`g0`), verbatim:**
+
+> no, we have campaign plans to fix this, so until it is fixed, I don't want to break how
+> gzkit currently works. this makes it clear ot me that we need to get going on adr work in
+> the campaign. get these all made, then go back to other refactoring
+
+**Asked which reading applied** — (A) ADR work in ascending order comes first and Movement C
+refactoring waits; (B) only author the queued ADRs now, then return to refactoring; (C) run
+both side by side. **Operator, verbatim:** *"A, ADR work first, record it"*.
+
+**What changes.**
+
+- **The work drawn is feature ADR work, in ascending order:** `ADR-0.35.0` (TOPMOST) →
+  `ADR-0.36.0` → `ADR-0.37.0` → `ADR-0.38.0` → `ADR-0.39.0` → the amendment ADR funded
+  by § Amendments 2026-09-27 (2). Movement C's refactoring boxes (the
+  doctrine-declared-without-mechanism family, surface mirroring, oversized modules and the
+  rest) resume after this sequence.
+- **The 2026-09-02 amendment is superseded** where it placed Movement C's
+  `Close the doctrine-declared-without-mechanism family` box at NEXT-IN-PRIORITY,
+  directly behind TOPMOST. The **2026-09-15 drawn-work order** is superseded to the same
+  extent: it ranked work drawn at that position, and that position is now ADR work. The
+  two entries stay in this file as the record of what was ruled then.
+- Pointers were added at the § Topmost block and the Movement C header so neither reads
+  as current. Every other box, Movement and ruling is unchanged.
+
+**What does not change.** Only the operator initiates OBPI work (IRON LAW); ADR work
+proceeds as the operator initiates it through `gz-obpi-pipeline`. ADR order stays absolute,
+with no exception (§ Amendments 2026-09-27 (2)). Defects found in flight are still fixed
+immediately under `AGENTS.md` § PRIME DIRECTIVE; this ruling governs which planned work is
+drawn, not whether a defect in hand is repaired. The pre-1.0 DDD-discipline R&D run
+(§ Amendments 2026-09-27) is operator-invoked and is not resequenced by this entry.
+
+<a id="amendments-2026-09-27-2"></a>
+
+### 2026-09-27 (2) — an ADR amendment verb family is funded as pre-1.0 ADR work, in ascending order (operator-ratified)
+
+**Operator (`g0`), verbatim, signing off the R&D run
+[`docs/rnd/design-amendment.md`](../rnd/design-amendment.md):**
+
+> fund it, pre-1.0, we need it now. I have no idea what to do with it - we are stuck (and
+> this has plagued me the entire gzkit run) keeping in sequence.
+
+**And on sequencing, verbatim:**
+
+> no, we have campaign plans to fix this, so until it is fixed, I don't want to break how
+> gzkit currently works. this makes it clear ot me that we need to get going on adr work in
+> the campaign. get these all made, then go back to other refactoring
+
+**What is funded.** A heavy-lane feature ADR for an ADR amendment verb family: revising an
+attested design without a new ADR or a reopened one. An amendment rides with its original
+ADR, adds new REQs without changing the old ones, retires the old ones by an attested
+ledger event, is verified by an adversary sized to the change, and ships as a mandatory
+patch release. The run record carries the design decisions (Q1–Q10), the open design
+questions, and the prior art the ADR must reconcile: `ADR-pool.adr-amendment-tracking`,
+`gz obpi supersede`, GHI #611, and the 2026-09-25 grounding pivot's *"Amendments are new
+contract versions."* Its first use is gzkit's own ADR-0.0.32: in an adopter repo,
+gzkit's shipped tooling is gzkit's and upgrades overwrite adopter edits.
+
+**`AGENTS.md` § Architectural Boundaries 1 is answered for this ADR only.** The rule,
+verbatim: *"Do not promote post-1.0 pool ADRs into active work."* The operator's ruling,
+verbatim: *"fund it, pre-1.0"*. The pool ADR it absorbs is therefore not post-1.0 work.
+
+**Placement: no exception to ADR order.** The ADR takes the next feature ADR number in
+ascending order (after `ADR-0.39.0` as the queue stands) and is authored and completed in
+turn. The 2026-08-16 ruling *"i will NOT go out of adr order, whatsoever"* and the
+2026-09-20 ruling *"I will not complete adrs out of order"* stand unchanged. The agent had
+recommended a named completion-order exception; the operator declined it.
+
+**Combined with the pool ADR; authored in turn.** Operator, verbatim, the same day: *"we
+combine both uses of the verb - today's design and the pool's design."* and, on whether to
+author it ahead of the unauthored `ADR-0.38.0`: **"Wait for 0.38.0"**. The ADR is
+`ADR-0.40.0` as the queue stands. It covers both mid-flight design changes
+(`ADR-pool.adr-amendment-tracking`'s subject) and amendments to attested designs, and it is
+authored after `ADR-0.38.0`. No authoring exception is granted.
+
+**Scope of the ruling.** No ADR is authored or booked by this amendment; only the operator
+initiates ADR work. TOPMOST remains `ADR-0.35.0`.
+
+<a id="amendments-2026-09-27"></a>
+
+### 2026-09-27 — an R&D run on DDD discipline is pre-1.0 work (operator-ratified)
+
+**Operator (`g0`), verbatim:**
+
+> you keep the need for a DDD run in both a h/o AND in the magna carta. I am NOT waiting
+> for post 1.0 for that.
+
+> Pocock's CONTEXT.md system is good and worthy of appropration. He must have some naming
+> convention for them, this is highly worthy of appropriate during the DDD design makeup.
+
+Earlier the same session, verbatim: *"I think a ball was dropped here where I am under the
+belief that our DDD use/discipline is as active as our TDD and BDD."*
+
+**What was found.** Recorded with citations in
+[`docs/rnd/design-amendment.md`](../rnd/design-amendment.md) (the R&D run that surfaced it):
+
+- DDD's **model arm** is live: `.gzkit/rules/hexagonal-architecture.md` § The cascade
+  binds DDD as stage 1 of DDD → HA → BDD → TDD, with the domain modelled as the ontology
+  (ADR-0.32.0).
+- DDD's **language arm** has no mechanism. TDD has Gate 2 and `@covers`, BDD has Gate 4
+  and `features/`; ubiquitous language has no gate, validator or skill step.
+- Canon names **two glossary homes and neither is built**: PRD § 2.1 Ubiquitous Language
+  (17 terms, touched three times since creation on 2026-05-22), and the 2026-09-17 R&D
+  ruling's root `GLOSSARY.md`, which rested on the false premise *"no glossary surface"*
+  and was never created.
+- The DDD cascade design (formerly ADR-0.0.43) sits in the pool as
+  `ADR-pool.ddd-domain-cascade`, with all four OBPIs unbuilt.
+  `docs/governance/agent-contract-rationale.md:349` still describes it as pinned by
+  `gz validate` scopes, which is false.
+
+**What is adopted.** An R&D run on DDD discipline is **pre-1.0 work**. It asks why the
+language arm lapsed, where the glossary lives, how it stays current beside TDD and BDD, and
+how it fits the hexagonal rule and the ontology. Its inputs include Pocock's `CONTEXT.md` /
+`CONTEXT-MAP.md` convention and its naming, marked by the operator as worth appropriating.
+The run is carried on the **new R&D** workflow front and, because it is the doctrine-side
+arm's shape (a foundational discipline declared with no witness), it is an instance of
+Movement C's `Close the doctrine-declared-without-mechanism family` box.
+
+**Scope of the ruling.** Only the operator opens an R&D run (`gz-rnd`,
+`disable-model-invocation: true`); this amendment schedules the need, not the run. It
+creates no Movement, gate or queue position, promotes no pool ADR, and leaves TOPMOST,
+ascending ADR order and operator initiation unchanged. Where a glossary lives, and
+whether `ADR-pool.ddd-domain-cascade` is promoted, are that run's questions.
+
 <a id="amendments-2026-09-25"></a>
 
-### 2026-09-25 (latest) — requirements have independent authority; briefs carry bounded assignments (operator-ratified)
+### 2026-09-25 — requirements have independent authority; briefs carry bounded assignments (operator-ratified)
 
 **Operator (`g0`), full message verbatim:**
 
