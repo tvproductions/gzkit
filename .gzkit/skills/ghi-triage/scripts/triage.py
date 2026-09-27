@@ -622,13 +622,24 @@ CLASS_STYLE = {
 
 SEVERITY_VALUES = ("blocking", "degrading", "latent")
 SEVERITY_RANK = {sev: idx for idx, sev in enumerate(SEVERITY_VALUES)}
-_ALLOWED_RANKING_KEYS = frozenset({"number", "severity"})
+# What ends the issue: an agent now, an operator ruling, another landing, or an
+# open question. Structural, like severity — never prose (GHI #424). Tuple order
+# is render order: the landing queue first, then the ruling docket.
+READINESS_VALUES = ("ready", "ruling", "sequence", "design")
+READINESS_HEADERS = {
+    "ready": "## Landing queue — ready (single writer, ghi-close one issue at a time)",
+    "ruling": "## Ruling docket — awaiting an operator ruling",
+    "sequence": "## Waiting on sequence",
+    "design": "## Open design questions",
+}
+_ALLOWED_RANKING_KEYS = frozenset({"number", "severity", "readiness"})
 
 
 @dataclass(frozen=True)
 class RankItem:
     number: int
     severity: str
+    readiness: str | None = None
 
 
 class RankInputError(ValueError):
@@ -638,7 +649,8 @@ class RankInputError(ValueError):
 def parse_rank_input(payload: object, known_numbers: set[int]) -> list[RankItem]:
     """Validate agent-supplied rank input.
 
-    Schema is structural-only: number + severity per entry. No prose fields
+    Schema is structural-only: number + severity per entry, plus an optional
+    readiness enum that every entry carries or none does. No prose fields
     (no `action`, no `why`) — those duplicated the renderer's title output
     and produced the recurring chat-surface duplication GHI #424 closed
     structurally. Cognitive freedom lives in selection + ordering + severity;
@@ -658,7 +670,7 @@ def parse_rank_input(payload: object, known_numbers: set[int]) -> list[RankItem]
         if extra:
             raise RankInputError(
                 f"rankings[{idx}] has forbidden field(s) {extra!r}; "
-                "schema accepts only 'number' and 'severity' (GHI #424)"
+                "schema accepts only 'number', 'severity' and 'readiness' (GHI #424)"
             )
         number = entry.get("number")
         if not isinstance(number, int) or isinstance(number, bool):
@@ -673,7 +685,16 @@ def parse_rank_input(payload: object, known_numbers: set[int]) -> list[RankItem]
         severity = entry.get("severity")
         if not isinstance(severity, str) or severity not in SEVERITY_VALUES:
             raise RankInputError(f"rankings[{idx}].severity must be one of {SEVERITY_VALUES}")
-        items.append(RankItem(number=number, severity=severity))
+        readiness = entry.get("readiness")
+        if readiness is not None and readiness not in READINESS_VALUES:
+            raise RankInputError(f"rankings[{idx}].readiness must be one of {READINESS_VALUES}")
+        items.append(RankItem(number=number, severity=severity, readiness=readiness))
+    carrying = sum(item.readiness is not None for item in items)
+    if carrying not in (0, len(items)):
+        raise RankInputError(
+            f"readiness is on {carrying} of {len(items)} entries; "
+            "every entry carries it or none does"
+        )
     return items
 
 
@@ -691,19 +712,36 @@ def render_rank(
     parse_rank_input, and no formatting branches on environment. The line
     shape is a strict superset of the agent's input — the agent contributes
     {number, severity, ordering}; the renderer adds {route, title} from the
-    fetched issue set. No prose field appears in both surfaces.
+    fetched issue set. No prose field appears in both surfaces. When the input
+    carries readiness, items render in fixed-order readiness groups, caller
+    order kept within each.
     """
     lines = [
         f"# GHI Triage Ranking — {len(items)} ranked of {total} open "
         f"| fix() precedent (60d): {precedent}",
         "",
     ]
-    for rank, item in enumerate(items, start=1):
-        title = issue_index[item.number].title
-        route_label = routes.get(item.number, "—")
-        lines.append(f"{rank}. #{item.number} [{item.severity}] {route_label} — {title}")
-    lines.append("")
+    if items and items[0].readiness is not None:
+        for readiness in READINESS_VALUES:
+            group = [item for item in items if item.readiness == readiness]
+            if group:
+                lines.extend([READINESS_HEADERS[readiness], ""])
+                lines.extend(_rank_lines(group, issue_index, routes))
+                lines.append("")
+    else:
+        lines.extend(_rank_lines(items, issue_index, routes))
+        lines.append("")
     return "\n".join(lines)
+
+
+def _rank_lines(
+    items: list[RankItem], issue_index: dict[int, Issue], routes: dict[int, str]
+) -> list[str]:
+    return [
+        f"{rank}. #{item.number} [{item.severity}] {routes.get(item.number, '—')} — "
+        f"{issue_index[item.number].title}"
+        for rank, item in enumerate(items, start=1)
+    ]
 
 
 # --- Rendering ---------------------------------------------------------------
@@ -950,11 +988,12 @@ def main() -> int:
         "--rank-input",
         default=None,
         help="Path to a JSON file containing the agent's rank input "
-        "({'rankings': [{number, severity}, ...]}). Path MUST live under "
+        "({'rankings': [{number, severity[, readiness]}, ...]}). Path MUST live under "
         f"{RANK_INPUT_CACHE_DIR.as_posix()}/ (stdin rejected — Write the "
         "JSON to a cache file and pass the path). Required with --format "
         f"rank. Schema is structural-only: severity is one of "
-        f"{SEVERITY_VALUES}. No prose fields are accepted (extras are "
+        f"{SEVERITY_VALUES}; readiness, on every entry or none, is one of "
+        f"{READINESS_VALUES}. No prose fields are accepted (extras are "
         "rejected, GHI #424).",
     )
     p.add_argument(

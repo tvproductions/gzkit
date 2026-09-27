@@ -136,13 +136,13 @@ def main() -> int:
         f"{pair_summary}.\n"
         "\n"
         "The rendered rank list is the deliverable. Per "
-        ".gzkit/skills/ghi-triage/SKILL.md anti-patterns, the agent must "
+        ".gzkit/skills/ghi-triage/SKILL.md § Step 3, the agent must "
         "NOT narrate severity choices in chat before piping to "
         "--format rank. The Bash tool result already presents the rank "
         "list; chat-side restatement duplicates the deliverable.\n"
         "\n"
         "Recovery: drop the per-GHI prose preamble. The agent's cognitive "
-        "contribution is selection + ordering + severity, encoded in the "
+        "contribution is selection + ordering + severity + readiness, encoded in the "
         "rank-input JSON. Prose belongs in the renderer's output only.\n"
     )
     return 2

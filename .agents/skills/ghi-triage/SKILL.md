@@ -5,9 +5,9 @@ description: Triage every open GHI — read each body, classify severity, and pr
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-20
+last_reviewed: 2026-09-27
 metadata:
-  skill-version: "5.3.0"
+  skill-version: "5.4.0"
 model: sonnet
 ---
 
@@ -102,14 +102,30 @@ membership from the body's root cause rather than from whether
 family adjacently is a legitimate ordering judgment; reporting a family
 *count* from the signal is not.
 
+**Rule each issue's readiness: what ends it.** `ready`: the fix is specified or
+derivable from the body, so `ghi-close` could land it now. `ruling`: the next
+action is an operator decision. `sequence`: it waits on another landing, a fenced
+pool ADR or a live OBPI brief. `design`: an open question with no remedy chosen.
+Pick the one that gates first. Re-derive every stated blocker against the tree,
+as `ghi-close` Phase 1 step 1a does, because a blocker describes the day it was
+written. The script's `route` is authority, not readiness: it reads `direct-fix`
+for almost every issue.
+
+**Parallel read (optional, for a large queue).** Split the fetched set into
+disjoint chunks and dispatch read-only subagents with this rubric and a JSON
+output file each. They read and classify; they edit, comment on and close
+nothing. Spot-check a sample of their verdicts against the issues before using
+them (`.claude/rules/model-selection.md` claim 5). In the first such run, one
+verdict in five cited a false fact (`docs/rnd/ghi-batch-closure.md`).
+
 Compose a single rank-input JSON document with one entry per GHI
 the agent recommends working on, in the agent's recommended order:
 
 ```json
 {
   "rankings": [
-    {"number": 324, "severity": "blocking"},
-    {"number": 323, "severity": "degrading"}
+    {"number": 324, "severity": "blocking", "readiness": "ready"},
+    {"number": 323, "severity": "degrading", "readiness": "ruling"}
   ]
 }
 ```
@@ -121,12 +137,13 @@ round 3):**
 |-------|------------|
 | `number` | int; must appear in the Step 1 fetched set |
 | `severity` | one of `blocking` (current work fails), `degrading` (succeeds but produces drift), `latent` (deferrable) |
-| any other field | **rejected** — the script returns exit 1 if a `rankings[*]` entry contains keys other than `number` and `severity` |
+| `readiness` | optional; one of `ready`, `ruling`, `sequence`, `design`; on every entry or on none (a partial set exits 1) |
+| any other field | **rejected** — the script returns exit 1 if a `rankings[*]` entry contains keys other than `number`, `severity` and `readiness` |
 
 The schema is structural-only by design: prose fields in the rank input
 duplicated the renderer's output in the operator's chat surface, and only
 removing them from the schema made that impossible (GHI #424). The agent's
-cognitive contribution is **selection + ordering + severity**; the renderer owns
+cognitive contribution is **selection + ordering + severity + readiness**; the renderer owns
 all prose, derived from the fetched issue set.
 
 ### Step 3 — Render the deliverable
@@ -160,8 +177,16 @@ Compose the rank input silently — the hook is the structural backstop on
 the chat-text surface, paired with the `--rank-input` cache-path
 requirement on the bash-command-line surface.
 
-There is no Step 4. There is no "Recommended order" follow-up table. The
-rank list IS the recommended order.
+With readiness, the rows fall into fixed-order groups: the **landing queue**
+(`ready`), the **ruling docket** (`ruling`), waiting on sequence, and open design
+questions. The agent's order is kept within each group.
+
+There is no Step 4. The rank list IS the recommended order. What follows belongs
+to other skills. The single writer draws the landing queue with `ghi-close`, one
+issue at a time, never batch-closed. The ruling docket goes to the operator as a
+live ruling session: one question per issue, with a recommended answer
+(`AGENTS.md` § Operator Economy of Effort). The docket's prose lives in those
+questions, never in the rank input.
 
 ## Optional cross-check (conditional, NOT mandatory)
 
@@ -194,72 +219,19 @@ The rank list is the only deliverable. The script also supports
 skim) and `--format rich` (terminal-only, opt-in for TTY operators) but
 neither is part of the agent's binding output.
 
-## What the script does (mechanical detail)
+## What the script does
 
-1. `gh issue list --state open --limit N --json number,title,labels,createdAt,updatedAt,body,comments`
-2. `git log --since='60 days ago' --grep='^fix('` to compute precedent count (cached in `~/.cache/gzkit/triage-precedent.json` keyed by HEAD SHA — recomputed only when HEAD moves)
-3. Detects duplicates by identical title (canonical = lowest number)
-3a. Mines blocker comments for cited GHI/ADR/OBPI references and resolves each
-   GHI against live state, so a precondition that has already closed surfaces
-   in the report instead of being inherited as standing fact. A bare `#N`
-   preceded by an ordinal word (`rule #6`, `` `some-rule.md` #6 ``) is not
-   treated as a citation — it numbers another document, and resolving it
-   against the tracker produces a confident false gate
-4. Routes each issue:
-   - **direct-fix** when precedent ≥3 (default — almost any defect can be corrected inside the GHI itself; the GHI is the repair vessel and its receipts are the audit trail)
-   - **close-dup** when an earlier issue has the same title
-   - **ambiguous** when precedent is missing (operator decides direction)
-   - **Escalation rule (one-way only):** if a GHI's shape warrants architectural work, the operator authors a *new ADR* via `gz plan` / `gz-design`, and OBPI decomposition follows from that ADR. The path is GHI → ADR → OBPI; it is never GHI → OBPI. An OBPI without an ADR home is a definitional defect, not a destination. Triage cannot manufacture either escalation step — schema/contract/scope-expansion signals in a GHI body are surfaced through the rationale field as escalation hints for operator judgment, not as a routing flip, and the script will never emit an OBPI route.
-5. Scores urgency: `now` (blocking signal), `soon` (defect default), `later` (chore)
-6. Validates rank input (each entry is exactly `number` + `severity`; the severity enum; the number is in the fetched set; any other key exits 1) and renders the deterministic deliverable
+Fetch, precedent cache, duplicate detection, blocker mining, routing, urgency
+and rank validation are documented in `scripts/triage.py` (`--help` and its
+docstrings). One routing rule binds the agent: the script never emits an OBPI
+route. Architectural work goes GHI → ADR → OBPI through `gz plan` / `gz-design`,
+at the operator's choice, and triage surfaces the hint only.
 
-The mechanical pre-pass is necessary but not sufficient. It cannot read
-the body for intent, weigh against in-flight ADR work, or sequence work
-by dependency — that is what the agent does in Step 2.
+## Scope
 
-## Why script + agent, not script alone
-
-A script alone produces **routing classification, not triage** — it can compute a
-precedent count but cannot answer "is this issue blocking the current ADR?" or
-"should #319 land before #318?". An agent alone rendering the deliverable leaks
-determinism turn to turn. So the script is both the mechanical pre-pass and the
-deterministic renderer, and the agent contributes exactly one structured
-artifact, the rank input (GHI #324). Cognitive freedom on the input; determinism
-on the render.
-
-## Anti-patterns
-
-- Running the script with `--format markdown` or `--format rich` and
-  presenting that as the deliverable — those are operator-skim views,
-  not the rank deliverable
-- Adding `action`, `why`, `rationale`, or any prose field to a `rankings[*]`
-  entry — the schema is structural-only and rejects extras with exit 1.
-  The rationale for ranking lives in the agent's reasoning, not the
-  payload (GHI #424 round 3 — prose in input duplicates renderer output).
-- Calling the script twice for the same data (one for `--format markdown`,
-  one for `--format json`) — Step 1 is a single call
-- Piping the rank-input JSON via `echo '<json>' | … --rank-input -` —
-  rejected by the script (GHI #424 round 4); surfaces the entire payload
-  on the bash command line and reproduces the duplicate-render shape in
-  chat. Write the JSON to `.gzkit/cache/triage/<name>.json` and pass the
-  path.
-- Running `gz state --json` unconditionally — the cross-check is
-  conditional on `files_mentioned` overlap with in-flight ADR allowed
-  paths
-- Rendering per-GHI panels, recommended-order tables, or any other
-  intermediate view between Step 2 and Step 3 — the rank list IS the
-  deliverable
-- Narrating rank choices in chat before piping to `--format rank`
-  (e.g. *"Ranked order: 1. #N — blocking; …"*) — the JSON is the
-  agent's input artifact; chat-side restatement duplicates the
-  deliverable
-- Echoing the renderer's output in agent text after `--format rank`
-  has produced it — even verbatim. The Bash tool result already
-  presents the deliverable in Claude Code surfaces; restating it
-  through the agent's generation channel is a duplicate render, not
-  a confirmation. "Present verbatim" means *let the tool result stand*,
-  not *copy-paste it into a text response*.
-- Modifying GHIs from this skill — triage is read-only
+Triage is read-only: it never edits, comments on, labels or closes an issue. Every
+prohibition this skill binds is stated once, at its step. The GHI #424 history
+behind Steps 2 and 3 is in the issue itself.
 
 ## Related
 

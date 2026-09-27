@@ -181,6 +181,133 @@ class TestRankInputStructuralSchema(unittest.TestCase):
         self.assertEqual(items[0].severity, "blocking")
 
 
+class TestReadinessGrouping(unittest.TestCase):
+    """Readiness is one structural enum; the render groups by it (R&D ghi-batch-closure Q5).
+
+    Readiness says what ends an issue: an agent now (ready), an operator ruling (ruling),
+    another landing (sequence), or an open question (design). The landing queue is the
+    ready group, the ruling docket the ruling group. No prose enters the input (GHI #424).
+    """
+
+    def setUp(self) -> None:
+        self.issues = [
+            _issue(11, "ready one"),
+            _issue(12, "ruling one"),
+            _issue(13, "ready two"),
+            _issue(14, "design one"),
+            _issue(15, "sequence one"),
+        ]
+        self.index = {i.number: i for i in self.issues}
+        self.routes = dict.fromkeys(self.index, "direct-fix")
+
+    def _render(self, rankings: list[dict]) -> str:
+        items = _TRIAGE.parse_rank_input({"rankings": rankings}, set(self.index))
+        return _TRIAGE.render_rank(items, self.index, self.routes, 5, len(self.issues))
+
+    @staticmethod
+    def _section(rendered: str, header: str) -> str:
+        start = rendered.index(header)
+        nxt = rendered.find("\n## ", start + len(header))
+        return rendered[start : nxt if nxt != -1 else len(rendered)]
+
+    def test_readiness_must_be_enum(self) -> None:
+        with self.assertRaises(_TRIAGE.RankInputError):
+            _TRIAGE.parse_rank_input(
+                {"rankings": [{"number": 11, "severity": "latent", "readiness": "maybe"}]},
+                set(self.index),
+            )
+
+    def test_partial_readiness_rejected(self) -> None:
+        """All entries carry readiness or none do; a partial set has no unambiguous grouping."""
+        with self.assertRaises(_TRIAGE.RankInputError):
+            _TRIAGE.parse_rank_input(
+                {
+                    "rankings": [
+                        {"number": 11, "severity": "latent", "readiness": "ready"},
+                        {"number": 12, "severity": "latent"},
+                    ]
+                },
+                set(self.index),
+            )
+
+    def test_prose_still_rejected_beside_readiness(self) -> None:
+        with self.assertRaises(_TRIAGE.RankInputError):
+            _TRIAGE.parse_rank_input(
+                {
+                    "rankings": [
+                        {
+                            "number": 12,
+                            "severity": "latent",
+                            "readiness": "ruling",
+                            "decision": "pick A or B",
+                        }
+                    ]
+                },
+                set(self.index),
+            )
+
+    def test_each_issue_lands_in_its_readiness_group(self) -> None:
+        rendered = self._render(
+            [
+                {"number": 12, "severity": "degrading", "readiness": "ruling"},
+                {"number": 11, "severity": "blocking", "readiness": "ready"},
+                {"number": 14, "severity": "latent", "readiness": "design"},
+                {"number": 13, "severity": "latent", "readiness": "ready"},
+                {"number": 15, "severity": "latent", "readiness": "sequence"},
+            ]
+        )
+        queue = self._section(rendered, _TRIAGE.READINESS_HEADERS["ready"])
+        docket = self._section(rendered, _TRIAGE.READINESS_HEADERS["ruling"])
+        sequence = self._section(rendered, _TRIAGE.READINESS_HEADERS["sequence"])
+        design = self._section(rendered, _TRIAGE.READINESS_HEADERS["design"])
+        for n in (11, 13):
+            self.assertIn(f"#{n} ", queue)
+            self.assertNotIn(f"#{n} ", docket)
+        self.assertIn("#12 ", docket)
+        self.assertNotIn("#12 ", queue)
+        self.assertIn("#15 ", sequence)
+        self.assertIn("#14 ", design)
+
+    def test_groups_render_in_fixed_order_whatever_the_input_order(self) -> None:
+        rendered = self._render(
+            [
+                {"number": 14, "severity": "latent", "readiness": "design"},
+                {"number": 12, "severity": "latent", "readiness": "ruling"},
+                {"number": 11, "severity": "latent", "readiness": "ready"},
+                {"number": 15, "severity": "latent", "readiness": "sequence"},
+            ]
+        )
+        positions = [rendered.index(_TRIAGE.READINESS_HEADERS[r]) for r in _TRIAGE.READINESS_VALUES]
+        self.assertEqual(positions, sorted(positions))
+
+    def test_caller_order_preserved_within_a_group(self) -> None:
+        rendered = self._render(
+            [
+                {"number": 13, "severity": "latent", "readiness": "ready"},
+                {"number": 11, "severity": "blocking", "readiness": "ready"},
+            ]
+        )
+        queue = self._section(rendered, _TRIAGE.READINESS_HEADERS["ready"])
+        self.assertLess(queue.index("#13 "), queue.index("#11 "))
+
+    def test_empty_groups_are_omitted(self) -> None:
+        rendered = self._render([{"number": 11, "severity": "latent", "readiness": "ready"}])
+        self.assertIn(_TRIAGE.READINESS_HEADERS["ready"], rendered)
+        for r in ("ruling", "sequence", "design"):
+            self.assertNotIn(_TRIAGE.READINESS_HEADERS[r], rendered)
+
+    def test_without_readiness_the_render_is_the_flat_list(self) -> None:
+        rendered = self._render(
+            [
+                {"number": 11, "severity": "blocking"},
+                {"number": 12, "severity": "latent"},
+            ]
+        )
+        for header in _TRIAGE.READINESS_HEADERS.values():
+            self.assertNotIn(header, rendered)
+        self.assertLess(rendered.index("#11 "), rendered.index("#12 "))
+
+
 class TestRankInputCachePathRequirement(unittest.TestCase):
     """GHI #424 round 4: --rank-input must live under .gzkit/cache/triage/.
 

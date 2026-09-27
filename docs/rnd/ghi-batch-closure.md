@@ -125,7 +125,7 @@ today** as operator doctrine, though no ADR text records it. The ledger ADR's *d
 the merge lane writes Layer-2") is exactly "one writer lands fixes on main", and a GHI direct fix
 emits few or no ledger events anyway. The ghi-triage-closeout ADR proposes `gz-ghi-fix` and
 `gz-ghi-triage`; both have since shipped as the `ghi-close` and `ghi-triage` skills, without the
-`gz ghi` CLI verbs. Its open question ("fan-out via subagents or sequential") is **the operator's
+proposed `ghi` CLI verb group. Its open question ("fan-out via subagents or sequential") is **the operator's
 question in this run**, and it was deliberately left to promotion time.
 
 ## source · how the 113 closures actually happened
@@ -289,7 +289,7 @@ changed beyond the facts:
   `be75c6b22`. The live risk is forked tracked history across worktrees; the decision stands.
 - `ADR-pool.ghi-triage-closeout`: its `gz-ghi-fix`/`gz-ghi-triage` skills shipped as
   `ghi-close`/`ghi-triage`. Its open question (*"fan-out via subagents or sequential"*) is
-  answered by Q1–Q3: fan out the Read, land sequentially. The `gz ghi` CLI verbs and
+  answered by Q1–Q3: fan out the Read, land sequentially. The proposed `ghi` CLI verb group and
   patch-release scope remain.
 
 **commissions:** disposition 2, one GHI.
@@ -315,6 +315,32 @@ Held terms, each with its rejected synonym:
   *batch* (implies batch-closing, which `ghi-close` forbids).
 - **ruling docket** — the R2 issues, each with the decision it needs, its options and a
   recommended answer, for the operator to rule on in one sitting. _Avoid_: *backlog*, *punch list*.
+
+## source · ghi-triage's rank input is structural-only by ruling (re-entry, after sign-off)
+
+`.gzkit/skills/ghi-triage/SKILL.md` v5.3.0 § Step 2 · read 2026-09-27, while starting row 4
+
+> | any other field | **rejected** — the script returns exit 1 if a `rankings[*]` entry contains keys other than `number` and `severity` |
+
+> The schema is structural-only by design: prose fields in the rank input
+> duplicated the renderer's output in the operator's chat surface, and only
+> removing them from the schema made that impossible (GHI #424).
+
+Row 4 as funded specifies the ruling docket as *"the decision it needs, its options and a
+recommended answer"*, which is per-issue prose. The run's frontier was declared empty without
+reading `ghi-triage`'s rendering boundary, so this conflict was missed. Per `gz-rnd`, a
+signed-off run reopens when later findings send it back. The run reopens for one question
+(Q5) before row 4 executes.
+
+## decision · Q5 — readiness is one structural enum; the docket's prose is asked live
+
+Operator ruling, 2026-09-27, selecting verbatim: *"Enum in input; rulings asked live
+(Recommended)"*. The rank input gains one structural enum, `readiness`. The renderer groups its
+deliverable into a landing queue (ready) and a ruling docket (ruling), still structural (number,
+title, severity). The docket's prose (decision needed, options, recommendation) goes into a live
+ruling session, one question per R2 issue, the surface AGENTS.md § Operator Economy of Effort
+prescribes. GHI #424 holds unchanged: no prose in the input, no duplicate render. Row 4's *What*
+is read under this ruling.
 
 ---
 
