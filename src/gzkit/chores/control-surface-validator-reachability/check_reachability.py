@@ -61,6 +61,11 @@ _NON_SCOPE_FLAGS = frozenset(
 _GATING = frozenset({"HOOK", "CI", "PRECOMMIT"})
 
 _CHECK_REGISTRY_RE = re.compile(r'"([a-z][a-z0-9-]+)",\s*_mx_levels')
+#: `gz check`'s "Validate default scopes" step runs bare `gz validate`, which runs
+#: every default-tier scope, so each is gated by that one step. Read from the
+#: registry itself so a scope's tier cannot be restated here and drift (GHI #1106).
+_DEFAULT_STEP_MARKER = "run_validate_default_scopes"
+_DEFAULT_TIER_RE = re.compile(r'_ScopeEntry\(\s*(?:#[^\n]*\n\s*)*"([a-z][a-z0-9_]+)",\s*"default"')
 #: One invocation may gate several scopes — `.pre-commit-config.yaml:68` runs
 #: `gz validate --bullet-retention --surface-weight --pointer-anchors`. Capturing
 #: only the first flag mis-tiered the other two as doc-only, understating the
@@ -147,7 +152,13 @@ def check_registry_members(root: Path) -> set[str]:
     quality = root / "src" / "gzkit" / "commands" / "quality.py"
     if not quality.is_file():
         return set()
-    return set(_CHECK_REGISTRY_RE.findall(quality.read_text(encoding="utf-8", errors="replace")))
+    text = quality.read_text(encoding="utf-8", errors="replace")
+    members = set(_CHECK_REGISTRY_RE.findall(text))
+    registry = root / "src" / "gzkit" / "commands" / "validate_cmd.py"
+    if _DEFAULT_STEP_MARKER in text and registry.is_file():
+        tier_source = registry.read_text(encoding="utf-8", errors="replace")
+        members |= {stem.replace("_", "-") for stem in _DEFAULT_TIER_RE.findall(tier_source)}
+    return members
 
 
 def _repo_files(root: Path) -> Iterator[Path]:

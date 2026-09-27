@@ -88,6 +88,30 @@ class TestRatchetSeesEveryGatedStep(unittest.TestCase):
         )
 
 
+class TestRatchetSeesTheDefaultTier(unittest.TestCase):
+    """`gz check` runs bare `gz validate`, so every default-tier scope is gated.
+
+    The ratchet read only `_STEP_GUARD_META`, so a default-tier scope reached
+    through the "Validate default scopes" step read as ungated: `--manifest`,
+    `--ledger` and `--rule-version-markers` sat in its ungated baseline while
+    running on every commit, and each new default-tier scope had to be wired a
+    second time as its own step to pass the ratchet (GHI #1106).
+    """
+
+    def test_every_default_tier_scope_reads_as_gated(self) -> None:
+        from gzkit.commands.validate_cmd import VALIDATOR_REGISTRY
+
+        self.assertIn("Validate default scopes", _live_step_names(), "fixture premise")
+        ratchet = _load_ratchet()
+        seen_as_gated = ratchet.check_registry_members(get_project_root())
+        scopes = {flag.lstrip("-") for flag in ratchet.runnable_scopes()}
+        default_tier = {
+            entry.stem.replace("_", "-") for entry in VALIDATOR_REGISTRY if entry.tier == "default"
+        }
+        missed = sorted((default_tier & scopes) - seen_as_gated)
+        self.assertEqual(missed, [], f"default-tier scopes the ratchet reads as ungated: {missed}")
+
+
 class TestNoStaleGuardMetaEntry(unittest.TestCase):
     """The inverse: an entry outliving its step tells the ratchet a lie."""
 
