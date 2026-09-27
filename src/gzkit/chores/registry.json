@@ -122,133 +122,6 @@
       "governingRule": "none"
     },
     {
-      "slug": "control-surface-permission-consent-drift",
-      "title": "Control Surface Audit \u2014 Rule Prose vs. Permission Standing Consent (Pass D)",
-      "version": "1.1.0",
-      "path": ".gzkit/chores/control-surface-permission-consent-drift",
-      "lane": "lite",
-      "timeoutSeconds": 120,
-      "class": "conformance",
-      "rung": "operator-only-repair",
-      "idempotent": true,
-      "staleness": {
-        "signal": "elapsed-time",
-        "periodDays": 30,
-        "artifacts": [
-          ".gzkit/chores/control-surface-permission-consent-drift/proofs/summary.md"
-        ],
-        "graceDays": 7
-      },
-      "remediation": {
-        "category": "vendor_fix",
-        "details": "A live context-free row has a derivable fix: remove the allow rule or add a deny. Applied only in an operator-initiated run."
-      },
-      "nonAuthority": "Never edits AGENTS.md or any rule; never touches a context-dependent or broad allow rule (Bash(gh issue:*) is load-bearing for /ghi-author); never applies the patch in an automatic run; never acquires a gz validate scope.",
-      "governingRule": "none"
-    },
-    {
-      "slug": "control-surface-rule-conflicts",
-      "title": "Control Surface Audit \u2014 Rule-Pair Conflict Matrix (Pass A)",
-      "version": "1.1.0",
-      "path": ".gzkit/chores/control-surface-rule-conflicts",
-      "lane": "lite",
-      "timeoutSeconds": 120,
-      "class": "coherence",
-      "rung": "propose",
-      "idempotent": true,
-      "staleness": {
-        "signal": "content-delta",
-        "surfaces": [
-          ".gzkit/rules"
-        ],
-        "graceDays": 7
-      },
-      "remediation": {
-        "category": "no_fix_planned",
-        "details": "A rule conflict is a ruling. The chore recommends a resolution per row and stops; the operator rules, and the repair lands as a direct fix."
-      },
-      "nonAuthority": "Never edits .gzkit/rules/**, AGENTS.md, CLAUDE.md, a skill or source; resolving a conflict is the operator's ruling.",
-      "governingRule": "none"
-    },
-    {
-      "slug": "control-surface-rule-vs-check-drift",
-      "title": "Control Surface Audit \u2014 Rule Prose vs Promoted Check Parity (Pass C)",
-      "version": "1.1.0",
-      "path": ".gzkit/chores/control-surface-rule-vs-check-drift",
-      "lane": "lite",
-      "timeoutSeconds": 120,
-      "class": "coherence",
-      "rung": "propose",
-      "idempotent": true,
-      "staleness": {
-        "signal": "content-delta",
-        "surfaces": [
-          ".gzkit/rules",
-          "src/gzkit/governance/trust_audits"
-        ],
-        "graceDays": 7
-      },
-      "remediation": {
-        "category": "no_fix_planned",
-        "details": "Whether to widen a check or narrow its prose is a ruling. The chore recommends one per non-parity row and stops."
-      },
-      "nonAuthority": "Never edits .gzkit/rules/**, src/gzkit/commands/validate*, any check implementation or the advisory scorecard; closing a gap is an operator ruling landed as a direct fix.",
-      "governingRule": "none"
-    },
-    {
-      "slug": "control-surface-skill-rule-reachability",
-      "title": "Control Surface Audit \u2014 Skill/Rule Reachability Matrix (Pass B)",
-      "version": "1.1.0",
-      "path": ".gzkit/chores/control-surface-skill-rule-reachability",
-      "lane": "lite",
-      "timeoutSeconds": 120,
-      "class": "coherence",
-      "rung": "propose",
-      "idempotent": true,
-      "staleness": {
-        "signal": "content-delta",
-        "surfaces": [
-          ".gzkit/rules",
-          ".gzkit/skills"
-        ],
-        "graceDays": 7
-      },
-      "remediation": {
-        "category": "no_fix_planned",
-        "details": "Which of a skill or a rule still states intent is a ruling. The chore recommends reconcile skill, reconcile rule, promote check or accept gap per gap and stops."
-      },
-      "nonAuthority": "Never edits .gzkit/skills/**, .gzkit/rules/**, vendor mirrors or source; the reconciliation direction is the operator's ruling.",
-      "governingRule": "none"
-    },
-    {
-      "slug": "control-surface-validator-reachability",
-      "title": "Control Surface Audit \u2014 Validator Reachability & Ungated Ratchet (Pass E)",
-      "version": "1.1.0",
-      "path": ".gzkit/chores/control-surface-validator-reachability",
-      "lane": "lite",
-      "timeoutSeconds": 300,
-      "class": "coherence",
-      "rung": "propose",
-      "idempotent": true,
-      "staleness": {
-        "signal": "content-delta",
-        "surfaces": [
-          "src/gzkit/cli",
-          "src/gzkit/commands/quality.py",
-          ".pre-commit-config.yaml",
-          ".github/workflows",
-          ".claude/hooks"
-        ],
-        "graceDays": 7
-      },
-      "remediation": {
-        "category": "no_fix_planned",
-        "details": "Promote or retire is a ruling per scope. The chore emits a disposition per ungated scope and stops; the ratchet refuses growth."
-      },
-      "nonAuthority": "Never edits src/gzkit/commands/validate* or any check; never wires a scope into a gate or deletes one itself; never re-baselines the ratchet upward.",
-      "governingRule": "none"
-    },
-    {
       "slug": "coverage-40pct",
       "title": "Coverage >=40% Baseline",
       "version": "1.2.0",
@@ -476,31 +349,6 @@
       "governingRule": "none"
     },
     {
-      "slug": "frontier-model-card-currency",
-      "title": "Frontier Model Card Currency (System-Card Doctrine Refresh)",
-      "version": "1.4.0",
-      "path": ".gzkit/chores/frontier-model-card-currency",
-      "lane": "lite",
-      "timeoutSeconds": 120,
-      "class": "currency",
-      "rung": "operator-only-repair",
-      "idempotent": true,
-      "staleness": {
-        "signal": "elapsed-time",
-        "periodDays": 30,
-        "artifacts": [
-          ".gzkit/chores/frontier-model-card-currency/proofs/scan-record.md"
-        ],
-        "graceDays": 7
-      },
-      "remediation": {
-        "category": "vendor_fix",
-        "details": "Re-source or retire doctrine and skill wording pinned to a superseded card and rotate the registry, as a GHI-tracked direct doc fix in an operator-initiated run."
-      },
-      "nonAuthority": "Never rewrites doctrine in an automatic run; never consumes a card from secondary reporting; never keeps a superseded card for reference.",
-      "governingRule": ".gzkit/rules/agent-failure-modes.md"
-    },
-    {
       "slug": "frontmatter-ledger-coherence",
       "title": "Frontmatter-Ledger Reconciliation (ADR-0.0.16 OBPI-03)",
       "version": "2.1.0",
@@ -571,32 +419,6 @@
       },
       "nonAuthority": "Never edits a rendered surface or vendor mirror; never trims a tier: invariant entry or a Mechanical or Promotable bullet; never acts on an item the operator did not rule; never removes a step, a stop condition or an authority line from a skill; never runs a skill it is trimming.",
       "governingRule": ".gzkit/rules/agents-md-map-doctrine.md \u00a7 Budget"
-    },
-    {
-      "slug": "ledger-vocabulary-inertness",
-      "title": "Ledger Vocabulary Inertness \u2014 never-fired types and paired-event ratios",
-      "version": "1.2.0",
-      "path": ".gzkit/chores/ledger-vocabulary-inertness",
-      "lane": "lite",
-      "timeoutSeconds": 120,
-      "class": "coherence",
-      "rung": "propose",
-      "idempotent": true,
-      "staleness": {
-        "signal": "content-delta",
-        "surfaces": [
-          "src/gzkit/schemas/ledger.json",
-          "src/gzkit/ledger_events.py",
-          "src/gzkit/events.py"
-        ],
-        "graceDays": 7
-      },
-      "remediation": {
-        "category": "no_fix_planned",
-        "details": "Whether a never-fired type is wired, retired or disclosed is a ruling; the chore recommends one per type, reads each lopsided pair to its producer, and stops."
-      },
-      "nonAuthority": "Never edits the schema, the ledger or any producer; never re-baselines disclosure upward; never interprets a ratio.",
-      "governingRule": "none"
     },
     {
       "slug": "memory-hygiene",

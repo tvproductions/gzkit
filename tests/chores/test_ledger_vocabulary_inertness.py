@@ -20,10 +20,9 @@ Two checks deliberately live elsewhere rather than here:
   substring assertion over a production message is the exact shape the
   discriminator routes away — `gz validate --tautological-tests` flagged the
   attempt, correctly;
-* that the packaged chore and its `.gzkit` mirror stay byte-identical is already
-  `gz validate --distribution`, which walks `src/gzkit/chores` (GHI #783). A
-  second, weaker copy here would be the per-consumer duplication this codebase
-  keeps paying for.
+* the chore is projectLocal (GHI #1114), so it has no packaged copy to keep
+  byte-identical; `gz validate --distribution` holds the withheld set out of the
+  wheel (GHI #783, #728).
 """
 
 from __future__ import annotations
@@ -39,13 +38,9 @@ from typing import Any
 from unittest.mock import patch
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
+# projectLocal chore: the script lives only at the canonical surface (GHI #1114).
 _SCRIPT = (
-    _REPO_ROOT
-    / "src"
-    / "gzkit"
-    / "chores"
-    / "ledger-vocabulary-inertness"
-    / "check_ledger_inertness.py"
+    _REPO_ROOT / ".gzkit" / "chores" / "ledger-vocabulary-inertness" / "check_ledger_inertness.py"
 )
 
 

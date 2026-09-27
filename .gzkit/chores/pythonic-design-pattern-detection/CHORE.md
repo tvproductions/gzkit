@@ -121,7 +121,7 @@ Plus one Python-idiom signal not on the GoF list:
 ### 1. Run the scanner — observe
 
 ```bash
-uv run python src/gzkit/chores/pythonic-design-pattern-detection/scan.py \
+uv run python .gzkit/chores/pythonic-design-pattern-detection/scan.py \
     --root src \
     --out .gzkit/chores/pythonic-design-pattern-detection/proofs/candidates-$(date +%Y-%m-%d).md
 ```
@@ -162,7 +162,7 @@ Disposition rows must include the Python example evidence:
 
 ```bash
 uv run gz test
-uv run python src/gzkit/chores/pythonic-design-pattern-detection/scan.py --self-test
+uv run python .gzkit/chores/pythonic-design-pattern-detection/scan.py --self-test
 ```
 
 ## Acceptance Criteria

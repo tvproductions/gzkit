@@ -8,13 +8,13 @@
     },
     {
       "type": "exitCodeEquals",
-      "command": "uv run python src/gzkit/chores/control-surface-rule-conflicts/check_evidence.py --self-test",
+      "command": "uv run python .gzkit/chores/control-surface-rule-conflicts/check_evidence.py --self-test",
       "expected": 0,
       "description": "Evidence-gate parser self-test (deterministic, no network)"
     },
     {
       "type": "exitCodeEquals",
-      "command": "uv run python src/gzkit/chores/control-surface-rule-conflicts/check_evidence.py --offline",
+      "command": "uv run python .gzkit/chores/control-surface-rule-conflicts/check_evidence.py --offline",
       "expected": 0,
       "description": "Conflict matrix conforms to ADR-pool.control-surface-rule-pair-conflict-audit \u00a7 Audit-row schema (evidence column resolves)"
     },

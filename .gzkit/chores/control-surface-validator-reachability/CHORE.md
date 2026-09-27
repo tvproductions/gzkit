@@ -73,7 +73,7 @@ this repository. The test passes, the repo is dirty, and nobody is told.
 ### 1. Tier census — observe
 
 ```bash
-uv run python src/gzkit/chores/control-surface-validator-reachability/check_reachability.py --report
+uv run python .gzkit/chores/control-surface-validator-reachability/check_reachability.py --report
 ```
 
 Record the tier table and the orphan list in `proofs/reachability-matrix.md`.
@@ -92,7 +92,7 @@ matters: solo-only scopes refuse combination outright (GHI #704), and `--audits`
 was found broken precisely because it was run alone.
 
 ```bash
-uv run python src/gzkit/chores/control-surface-validator-reachability/check_reachability.py --sweep
+uv run python .gzkit/chores/control-surface-validator-reachability/check_reachability.py --sweep
 ```
 
 The sweep is Python, not shell, for two reasons both observed while building
@@ -116,7 +116,7 @@ gate that was already broken and had no way to tell anyone.
 ### 3. Ratchet enforcement — observe
 
 ```bash
-uv run python src/gzkit/chores/control-surface-validator-reachability/check_reachability.py
+uv run python .gzkit/chores/control-surface-validator-reachability/check_reachability.py
 ```
 
 Exit 3 when a scope entered the ungated set. Recovery is to wire it into a gate

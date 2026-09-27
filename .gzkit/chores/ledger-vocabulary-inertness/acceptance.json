@@ -8,13 +8,13 @@
     },
     {
       "type": "exitCodeEquals",
-      "command": "uv run python src/gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py --self-test",
+      "command": "uv run python .gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py --self-test",
       "expected": 0,
       "description": "Helper assertions (deterministic, no repo state, no network) — malformed baseline reads as empty; no pair names itself"
     },
     {
       "type": "exitCodeEquals",
-      "command": "uv run python src/gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py",
+      "command": "uv run python .gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py",
       "expected": 0,
       "description": "Every declared type has live use, baseline disclosure, or freshly verified isolated producer execution"
     }

@@ -10,6 +10,7 @@ canonical/package_only/runtime_state classes.
 
 from __future__ import annotations
 
+import json
 import unittest
 from pathlib import Path
 
@@ -110,8 +111,12 @@ class TestChoresLayoutDualSurface(unittest.TestCase):
             d.name for d in pkg_root.iterdir() if d.is_dir() and not d.name.startswith(".")
         }
 
-        # Filter to only slugs that exist in BOTH locations
-        dual_surface_slugs = authored_slugs & pkg_slugs
+        # Filter to only slugs that exist in BOTH locations. A projectLocal slug has
+        # no package copy by definition, so a stale cache directory left under
+        # src/gzkit/chores/ after it moved is not a second surface (GHI #1114).
+        registry = json.loads((authored_root / "registry.json").read_text(encoding="utf-8"))
+        project_local = {c["slug"] for c in registry["chores"] if c.get("projectLocal")}
+        dual_surface_slugs = (authored_slugs & pkg_slugs) - project_local
 
         self.assertTrue(
             dual_surface_slugs,

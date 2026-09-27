@@ -434,9 +434,6 @@ class TestCommandEnvUsage(unittest.TestCase):
 PRIVATE_CROSS_PACKAGE_IMPORT_BASELINE: dict[str, tuple[str, ...]] = {
     "airlock/enter.py": ("governance.trust_audits._qc_negative_controls._KNOWN_QC_CLAIM_IDS",),
     "chores/__init__.py": ("commands.common._confirm",),
-    "chores/control-surface-validator-reachability/check_reachability.py": (
-        "cli.main._build_parser",
-    ),
     "commands/ceremony_data.py": ("cli.main._build_parser",),
     "commands/cli_audit.py": (
         "cli.main._build_parser",

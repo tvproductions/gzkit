@@ -52,10 +52,10 @@ _NOT_A_GZKIT_GUARD = {
 
 _CHORES = {
     "validator-reachability": (
-        "src/gzkit/chores/control-surface-validator-reachability/check_reachability.py"
+        ".gzkit/chores/control-surface-validator-reachability/check_reachability.py"
     ),
     "ledger-vocabulary-inertness": (
-        "src/gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py"
+        ".gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py"
     ),
 }
 
@@ -223,7 +223,10 @@ class TestPrecommitSurfaceInventory(unittest.TestCase):
             hook_id, entry = hook["id"], hook["entry"]
             if hook_id in _NOT_A_GZKIT_GUARD:
                 continue
-            targets = [_ROOT / m for m in re.findall(r"(src/gzkit/\S+\.py)", entry)]
+            # gzkit-authored hook scripts live in the package, or in a projectLocal
+            # chore's canonical directory, which the package never carries (GHI #1114).
+            pattern = r"((?:src/gzkit|\.gzkit/chores)/\S+\.py)"
+            targets = [_ROOT / m for m in re.findall(pattern, entry)]
             if "gzkit.hooks.guards" in entry:
                 targets.append(_ROOT / "src/gzkit/hooks/guards.py")
             if not targets:

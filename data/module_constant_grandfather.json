@@ -8,7 +8,6 @@
     "src/gzkit/arb/ruff_reporter.py::DEFAULT_MAX_FINDINGS",
     "src/gzkit/arb/step_reporter.py::DEFAULT_MAX_OUTPUT_CHARS",
     "src/gzkit/check_fingerprint.py::_GIT_TIMEOUT_S",
-    "src/gzkit/chores/control-surface-rule-conflicts/check_evidence.py::MAX_PLAUSIBLE_GHI",
     "src/gzkit/chores/eval_feedback_cluster_lib.py::_DEFAULT_CLUSTER_MIN_RECURRENCE",
     "src/gzkit/chores/eval_feedback_cluster_lib.py::_DEFAULT_SCORE_THRESHOLD",
     "src/gzkit/commands/adr_audit_covers_backfill.py::_MAX_DECORATOR_STACK_SCAN",

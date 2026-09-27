@@ -123,6 +123,7 @@
     },
     {
       "slug": "control-surface-permission-consent-drift",
+      "projectLocal": true,
       "title": "Control Surface Audit — Rule Prose vs. Permission Standing Consent (Pass D)",
       "version": "1.1.0",
       "path": ".gzkit/chores/control-surface-permission-consent-drift",
@@ -148,6 +149,7 @@
     },
     {
       "slug": "control-surface-rule-conflicts",
+      "projectLocal": true,
       "title": "Control Surface Audit — Rule-Pair Conflict Matrix (Pass A)",
       "version": "1.1.0",
       "path": ".gzkit/chores/control-surface-rule-conflicts",
@@ -172,6 +174,7 @@
     },
     {
       "slug": "control-surface-rule-vs-check-drift",
+      "projectLocal": true,
       "title": "Control Surface Audit — Rule Prose vs Promoted Check Parity (Pass C)",
       "version": "1.1.0",
       "path": ".gzkit/chores/control-surface-rule-vs-check-drift",
@@ -197,6 +200,7 @@
     },
     {
       "slug": "control-surface-skill-rule-reachability",
+      "projectLocal": true,
       "title": "Control Surface Audit — Skill/Rule Reachability Matrix (Pass B)",
       "version": "1.1.0",
       "path": ".gzkit/chores/control-surface-skill-rule-reachability",
@@ -222,6 +226,7 @@
     },
     {
       "slug": "control-surface-validator-reachability",
+      "projectLocal": true,
       "title": "Control Surface Audit — Validator Reachability & Ungated Ratchet (Pass E)",
       "version": "1.1.0",
       "path": ".gzkit/chores/control-surface-validator-reachability",
@@ -477,6 +482,7 @@
     },
     {
       "slug": "frontier-model-card-currency",
+      "projectLocal": true,
       "title": "Frontier Model Card Currency (System-Card Doctrine Refresh)",
       "version": "1.4.0",
       "path": ".gzkit/chores/frontier-model-card-currency",
@@ -597,6 +603,7 @@
     },
     {
       "slug": "ledger-vocabulary-inertness",
+      "projectLocal": true,
       "title": "Ledger Vocabulary Inertness — never-fired types and paired-event ratios",
       "version": "1.2.0",
       "path": ".gzkit/chores/ledger-vocabulary-inertness",

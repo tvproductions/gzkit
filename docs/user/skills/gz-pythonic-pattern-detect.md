@@ -35,8 +35,8 @@ The skill reads its canonical execution contract from `.gzkit/skills/gz-pythonic
 | `.gzkit/skills/gz-pythonic-pattern-detect/SKILL.md` | Canonical skill contract | Read |
 | `.claude/skills/gz-pythonic-pattern-detect/SKILL.md` | Claude mirror | Read |
 | `.agents/skills/gz-pythonic-pattern-detect/SKILL.md` | Codex mirror | Read |
-| `src/gzkit/chores/pythonic-design-pattern-detection/scan.py` | AST scanner | Read |
-| `src/gzkit/chores/pythonic-design-pattern-detection/CHORE.md` | Chore canon (full 22-pattern example table) | Read |
+| `.gzkit/chores/pythonic-design-pattern-detection/scan.py` | AST scanner | Read |
+| `.gzkit/chores/pythonic-design-pattern-detection/CHORE.md` | Chore canon (full 22-pattern example table) | Read |
 | `$DESIGN_PATTERNS_ARCHIVE` | Local Python example corpus (`Python/src/<Pattern>/Conceptual/main.py`); not shipped, and unset makes each disposition provisional | Read |
 
 ## Related Skills and Commands

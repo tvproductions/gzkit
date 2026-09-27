@@ -7,7 +7,7 @@
     },
     {
       "type": "exitCodeEquals",
-      "command": "uv run python src/gzkit/chores/pythonic-design-pattern-detection/scan.py --self-test",
+      "command": "uv run python .gzkit/chores/pythonic-design-pattern-detection/scan.py --self-test",
       "expected": 0
     }
   ]

@@ -8,13 +8,13 @@
     },
     {
       "type": "exitCodeEquals",
-      "command": "uv run python src/gzkit/chores/control-surface-validator-reachability/check_reachability.py --self-test",
+      "command": "uv run python .gzkit/chores/control-surface-validator-reachability/check_reachability.py --self-test",
       "expected": 0,
       "description": "Tiering self-test (deterministic, no repo state, no network) — gating dominates co-occurring classes; a multi-scope invocation yields every flag"
     },
     {
       "type": "exitCodeEquals",
-      "command": "uv run python src/gzkit/chores/control-surface-validator-reachability/check_reachability.py",
+      "command": "uv run python .gzkit/chores/control-surface-validator-reachability/check_reachability.py",
       "expected": 0,
       "description": "Ungated-scope ratchet holds — no validator entered the set reachable from no gz check step, hook, CI workflow, or pre-commit entry"
     }

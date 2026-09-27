@@ -9,13 +9,13 @@ verified execution of its registered real producer in a disposable project.
 
 ```bash
 # Both dimensions
-uv run python src/gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py --report
+uv run python .gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py --report
 
 # Enforcement — exit 3 without live use, disclosure, or verified isolated execution
-uv run python src/gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py
+uv run python .gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py
 
 # Re-baseline after draining (refuses to grow)
-uv run python src/gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py --report --write
+uv run python .gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py --report --write
 ```
 
 ## Two dimensions, unequal in force

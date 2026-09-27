@@ -162,6 +162,10 @@
       "reason": "Chore gate script check_memory_drift.py has no automatic caller -- it runs when a human runs the chore. Named in GHI #785 as one of the two of three chore gate scripts with no caller; the third (module-sloc-cap-radon) was wired 2026-08-09 in 59931cb07 after a 297-SLOC breach shipped in v0.34.2 with every gate green."
     },
     {
+      "gate": "chore:control-surface-rule-conflicts",
+      "reason": "Chore gate script check_evidence.py has no automatic caller -- it runs when a human runs the chore. Not new: the script sat uncalled at src/gzkit/chores/control-surface-rule-conflicts/ where this inventory could not see it, and became visible when GHI #1114 moved it to its canonical .gzkit/chores/ home (the chore is now projectLocal). Same disposition as chore:memory-hygiene and chore:pythonic-design-pattern-detection; per-chore caller ruling still owed."
+    },
+    {
       "gate": "chore:pythonic-design-pattern-detection",
       "reason": "Chore gate script scan.py has no automatic caller -- it runs when a human runs the chore. Detection-only by design (it surfaces refactor candidates rather than gating), so a caller ruling should decide whether an advisory scan belongs in an automatic surface at all."
     }

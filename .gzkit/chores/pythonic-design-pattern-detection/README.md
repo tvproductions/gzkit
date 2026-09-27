@@ -7,7 +7,7 @@ When `design-patterns-en.zip` is available, use its `Python/src/<Pattern>/Concep
 ## Quick Start
 
 ```bash
-uv run python src/gzkit/chores/pythonic-design-pattern-detection/scan.py \
+uv run python .gzkit/chores/pythonic-design-pattern-detection/scan.py \
     --root src \
     --out .gzkit/chores/pythonic-design-pattern-detection/proofs/candidates-$(date +%Y-%m-%d).md
 ```

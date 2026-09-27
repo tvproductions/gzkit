@@ -27,13 +27,9 @@ from unittest.mock import patch
 
 def _load_check_evidence() -> Any:
     repo_root = Path(__file__).resolve().parents[2]
+    # projectLocal chore: its script lives only at the canonical surface (GHI #1114).
     script = (
-        repo_root
-        / "src"
-        / "gzkit"
-        / "chores"
-        / "control-surface-rule-conflicts"
-        / "check_evidence.py"
+        repo_root / ".gzkit" / "chores" / "control-surface-rule-conflicts" / "check_evidence.py"
     )
     spec = importlib.util.spec_from_file_location("check_evidence", script)
     assert spec is not None and spec.loader is not None

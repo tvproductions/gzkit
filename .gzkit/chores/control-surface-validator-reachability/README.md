@@ -12,16 +12,16 @@ still execute on no commit path, protecting nothing while reading as coverage.
 
 ```bash
 # Tier census (fast)
-uv run python src/gzkit/chores/control-surface-validator-reachability/check_reachability.py --report
+uv run python .gzkit/chores/control-surface-validator-reachability/check_reachability.py --report
 
 # Conformance sweep — every scope in its own process, own exit code (slow)
-uv run python src/gzkit/chores/control-surface-validator-reachability/check_reachability.py --sweep
+uv run python .gzkit/chores/control-surface-validator-reachability/check_reachability.py --sweep
 
 # Ratchet enforcement — exit 3 when the ungated set grew
-uv run python src/gzkit/chores/control-surface-validator-reachability/check_reachability.py
+uv run python .gzkit/chores/control-surface-validator-reachability/check_reachability.py
 
 # Re-baseline after draining (refuses to grow)
-uv run python src/gzkit/chores/control-surface-validator-reachability/check_reachability.py --report --write
+uv run python .gzkit/chores/control-surface-validator-reachability/check_reachability.py --report --write
 ```
 
 ## Tiers and dispositions

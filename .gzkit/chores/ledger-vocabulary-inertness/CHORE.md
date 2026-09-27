@@ -71,7 +71,7 @@ that every *emitted* type has a schema entry; nothing checks the converse.
 ### 1. Report both dimensions — observe
 
 ```bash
-uv run python src/gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py --report
+uv run python .gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py --report
 ```
 
 Record the output in `proofs/vocabulary-inertness.md`.
@@ -101,7 +101,7 @@ answer to the operator — this chore does not rule.
 ### 4. Enforcement — observe
 
 ```bash
-uv run python src/gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py
+uv run python .gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py
 ```
 
 Exit 3 when an undisclosed never-fired type lacks verified isolated execution.

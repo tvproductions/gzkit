@@ -5,9 +5,9 @@ description: Surface Pythonic-design-pattern refactor candidates after ADR close
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-26
+last_reviewed: 2026-09-27
 metadata:
-  skill-version: "1.1.0"
+  skill-version: "1.1.1"
 gz_command: chores run pythonic-design-pattern-detection
 model: sonnet
 ---
@@ -45,13 +45,13 @@ Run the `pythonic-design-pattern-detection` chore to surface structural refactor
 2. Run scanner self-test before scanning real source — proves the detector set still recognises its own fixtures:
 
    ```bash
-   uv run python src/gzkit/chores/pythonic-design-pattern-detection/scan.py --self-test
+   uv run python .gzkit/chores/pythonic-design-pattern-detection/scan.py --self-test
    ```
 
 3. Run the scanner against `src`:
 
    ```bash
-   uv run python src/gzkit/chores/pythonic-design-pattern-detection/scan.py \
+   uv run python .gzkit/chores/pythonic-design-pattern-detection/scan.py \
        --root src \
        --out .gzkit/chores/pythonic-design-pattern-detection/proofs/candidates-$(date +%Y-%m-%d).md
    ```
@@ -90,7 +90,7 @@ Run the `pythonic-design-pattern-detection` chore to surface structural refactor
 
 ## Acceptance Rules
 
-- Uses `uv run python src/gzkit/chores/pythonic-design-pattern-detection/scan.py` — never a shadow scanner
+- Uses `uv run python .gzkit/chores/pythonic-design-pattern-detection/scan.py` — never a shadow scanner
 - Self-test runs before any real scan
 - Every flagged candidate gets a disposition (`applied`/`deferred`/`not-pythonic-rewrite`) before the chore is considered done for this period
 - Every disposition row cites the local Python example path and records a role map
@@ -122,8 +122,8 @@ These thoughts mean STOP — you are about to ship a detection pass that broke i
 
 ## Reference
 
-- Chore canon: `src/gzkit/chores/pythonic-design-pattern-detection/CHORE.md`
-- Scanner: `src/gzkit/chores/pythonic-design-pattern-detection/scan.py`
+- Chore canon: `.gzkit/chores/pythonic-design-pattern-detection/CHORE.md`
+- Scanner: `.gzkit/chores/pythonic-design-pattern-detection/scan.py`
 - Local example corpus: `Python/src/<Pattern>/Conceptual/main.py` inside the archive `DESIGN_PATTERNS_ARCHIVE` points at (not shipped; GHI #900)
 - Pair skill: `gz-pythonic-pattern-apply` (evidence capture for applied refactors)
 - Related chores: `pythonic-refactoring` (idiom-level), `complexity-reduction-xenon` (metric-level)

@@ -79,14 +79,14 @@ repos:
 
       - id: validator-reachability-ratchet
         name: validator reachability (ungated scopes may only shrink)
-        entry: uv run python src/gzkit/chores/control-surface-validator-reachability/check_reachability.py
+        entry: uv run python .gzkit/chores/control-surface-validator-reachability/check_reachability.py
         language: system
         pass_filenames: false
         stages: [pre-commit]
 
       - id: ledger-vocabulary-inertness
         name: ledger vocabulary (never-fired types must stay disclosed)
-        entry: uv run python src/gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py
+        entry: uv run python .gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py
         language: system
         pass_filenames: false
         stages: [pre-commit]
