@@ -302,6 +302,7 @@ The Claude-specific invariant 10a is scored as a row rather than in prose:
 | # | Rule | Score | Notes |
 |---|------|-------|-------|
 | 53a | **Invariant 10a — skill-tool-invoke-same-turn.** When a skill step names a tool (`EnterPlanMode`, `ExitPlanMode`, …), invoke it in the same turn; ending the turn with "Required next step" instead of calling the tool is a violation (`CLAUDE.md`) | **Judgment** | **Given a row 2026-08-08 (rule `CLAUDE.md`), Movement C skill arm — it had none.** This clause sat in free prose between two subsections of § Scorecard reading "is **promotable** — could be detected via hook analysis, but the signal-to-noise ratio is probably poor": a discipline declared with neither a witness nor an admission, which is the forbidden third state, and *invisible to the family-closure criterion because it was never a row to count*. Scored **Judgment**, not Promotable: the check would have to attribute a turn's tool calls to a skill step's semantics, and gzkit models neither a turn nor a skill's step graph — the same unmodelled-caller ground as row 62b. The § Recommended promotion order freeze (2026-06-08) admits a new check only on named, observed drift, and the original note recorded the opposite (poor signal-to-noise) without any observed instance. Reclassify on a named session where a skill step named a tool, the turn ended without it, and nothing caught it. Fenced by `gz validate --advisory-scorecard`, which now refuses prose assigning **Promotable** to a named clause outside a row. |
+| 53c | **Skill selection routes through `gz-how`.** When no skill clearly matches, or two look alike, consult `gz-how` before choosing (`AGENTS.md` § SKILLS FIRST) | **Judgment** | Added 2026-09-27 by operator ruling (verbatim: "approve the canon line"; GHI #1106). Which skill an agent picks is a model decision no artifact records, so the clause itself has no witness; no routing eval set exists to measure it. What is mechanical is everything around the choice: `tests/governance/test_how_coverage.py::TestAgentCanSelectGzHow` fails if `gz-how` becomes operator-only or loses its trigger phrases, `tests/scripts/test_session_orientation.py` asserts the session-start pointer, and `gz validate --how-coverage` keeps the guide's catalog complete. Reclassify on a routing eval set that scores prompts against the skill that should be chosen. |
 
 ### Agent Rule Placement Invariant (`ADR-0.0.20`)
 
@@ -512,9 +513,9 @@ decays in whichever direction the next reader's grep happens to point.
 
 | Score | Rows | % of scored rows |
 |-------|-------|---|
-| **Mechanical** | 71 | 40% |
-| **Promotable** | 35 | 20% |
-| **Judgment** | 73 | 41% |
+| **Mechanical** | 71 | 39% |
+| **Promotable** | 35 | 19% |
+| **Judgment** | 74 | 41% |
 | **Ambiguous** | 0 | 0% |
 
 <!-- The Rows column is machine-checked by `gz validate --advisory-scorecard`;
@@ -531,7 +532,7 @@ decays in whichever direction the next reader's grep happens to point.
      158 as of row 58c (GHI #962, 2026-09-05), and 159 as of row 88 (the CLI
      lane-is-not-route carve-out, 2026-09-06), and 160 as of row 89 (mutation-sweep
      integrity, GHI #963), and 161 as of row 51c (census-query completeness,
-     GHI #972), and 163 as of rows 91-92 (the exit-code-2 relabel, GHI #1001), and 167 as of rows 56a-56b (suppression is not a repair, GHI #999), and 168 as of row 93 (verbosity flags realigned to the specification, 2026-09-14); the entries between 131 and 158 were
+     GHI #972), and 163 as of rows 91-92 (the exit-code-2 relabel, GHI #1001), and 167 as of rows 56a-56b (suppression is not a repair, GHI #999), and 168 as of row 93 (verbosity flags realigned to the specification, 2026-09-14), and 180 as of row 53c (skill selection routes through gz-how, GHI #1106, 2026-09-27); the entries between 131 and 158 were
      not recorded here as they landed, so this list names the endpoints it can
      evidence rather than reconstructing a history it cannot. -->
 

@@ -1,9 +1,9 @@
 {
   "algorithm": "sha256",
-  "corpus_fingerprint": "bba8d0205462cbca35c0ce60afd845f03e06225711405bbc161255257a16e011",
-  "corpus_entry_count": 469,
-  "rendition_fingerprint": "20b1ef470c18e5d9dfe5aa690e55b08bac5b89b33b738498f7f66b0adf396cff",
-  "committed_ts": "2026-09-26T00:49:14.585659+00:00",
+  "corpus_fingerprint": "697ce543629cb985ca6482808ab36518c1ada95af1dc1881985128db3bca4910",
+  "corpus_entry_count": 470,
+  "rendition_fingerprint": "339bb25ffe040a2ea2549130adc2135032e7e3d16574acc376dad8e4831d5e0d",
+  "committed_ts": "2026-09-27T06:43:57.034661+00:00",
   "attestor": "g0",
-  "attestation_text": "di it: \"There is one substantive reconciliation we must address: **§3 currently places REQs beneath OBPIs in the intent hierarchy.** Adoption of this pivot requires an explicit amendment to that relationship and its governing surfaces. Adding a proposal link alone would leave the transition ambiguous\""
+  "attestation_text": "approve the canon line — adds corpus-skills-first-execution-routing-2026-09-27T06:43:02.438468+00:00 to SKILLS FIRST; advisor-QC receipt arb-step-judge-4cf71a9367c34cd4842c8d288f0608b5 (score 1.0); GHI #1106"
 }

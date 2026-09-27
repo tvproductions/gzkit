@@ -58,6 +58,8 @@ Every agent frame MUST include a Persona. Default: `main-session` — craftspers
 ## SKILLS FIRST (EXECUTION ROUTING)
 
 When a skill matches the task, read its `SKILL.md` before edits, shell, ledger or governance claims, and follow its order. Report tool evidence before prose. If blocked, name and track the blocker, then use the closest governed fallback. When a skill's scope is narrow (git-sync, for example), do only that task. Do not autonomously launch unrequested implementation work — treat context as background, not a mandate.
+
+When no skill clearly matches, or two look alike, consult `gz-how` before choosing.
 ## MAKE LLM STOCHASTIC VIBES INERT (ANTI-VIBING MANTRA)
 
 - Governance is how agent-driven work is steered and held accountable. Choose between options by which leaves the smallest surface for unverified pattern-matching to leak through; maintenance burden, velocity and lighter ceremony do not decide it.
