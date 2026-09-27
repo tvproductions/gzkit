@@ -1117,3 +1117,7 @@
 {"ts": "2026-09-27T10:16:27Z", "source": "20260927T101622Z-seven-ghis-fixed-1017-reopened-and-closed.md", "text": "Verbatim: \"fix 1117\" (0ffc98162)."}
 {"ts": "2026-09-27T10:16:27Z", "source": "20260927T101622Z-seven-ghis-fixed-1017-reopened-and-closed.md", "text": "Verbatim: \"fix 1118\"; backlog \"Append all 21 (Recommended)\"; check \"Block (default tier) (Recommended)\" (ed2a97c4e, f0cc88e01)."}
 {"ts": "2026-09-27T10:16:27Z", "source": "20260927T101622Z-seven-ghis-fixed-1017-reopened-and-closed.md", "text": "Verbatim: \"fix 1114\"; seven chores \"Mark projectLocal (Recommended)\"; pythonic \"Ship it runnable (Recommended)\" (e9dcb8a60)."}
+{"ts": "2026-09-27T12:00:21Z", "source": "20260927T120013Z-three-ghis-fixed-twenty-filed.md", "text": "Verbatim: \"fix 1112\" (booked on the predecessor with gz handoff decide; cee03d911, 895e961eb, a45297d24, f6d6d7da7, 2de60b196)."}
+{"ts": "2026-09-27T12:00:21Z", "source": "20260927T120013Z-three-ghis-fixed-twenty-filed.md", "text": "Verbatim: \"yes, file the ghis\" (#1119 to #1137 filed; #1022 and #1060 re-opened)."}
+{"ts": "2026-09-27T12:00:21Z", "source": "20260927T120013Z-three-ghis-fixed-twenty-filed.md", "text": "Verbatim: \"fix 1123\" (29f195491)."}
+{"ts": "2026-09-27T12:00:21Z", "source": "20260927T120013Z-three-ghis-fixed-twenty-filed.md", "text": "Verbatim: \"fix 1122\"; mechanism \"Shipped hash history (Recommended)\", brief OBPI-0.0.32-05 requirement 4(b) (3cad9e3f1)."}
