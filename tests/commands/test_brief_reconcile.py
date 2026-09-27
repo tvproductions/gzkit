@@ -8,6 +8,8 @@ not from a run of the code.
 
 from __future__ import annotations
 
+import difflib
+import json
 import unittest
 from pathlib import Path
 
@@ -532,6 +534,52 @@ class TestBriefReconcileCommand(unittest.TestCase):
                 "--apply reported drift it did not clear",
             )
             self.assertEqual(result.exit_code, 0)
+
+    @covers("REQ-0.0.37-06-05")
+    def test_dry_run_previews_exactly_the_lines_apply_writes(self) -> None:
+        """--apply --dry-run shows what --apply writes, not just how much (GHI #1116).
+
+        The operator attests the amendment, so the preview must name it. Each
+        fixture drives a different writer arm: a tracked-defect line (legacy
+        brief, unresolved verb), a prose allowlist bullet (legacy brief) and a
+        frontmatter allowlist value (structured brief). The expected lines are
+        read back from the brief after a real --apply, never restated here.
+        """
+        fixtures = [
+            ("OBPI-0.1.0-02-drift", _DRIFT_BRIEF),
+            ("OBPI-0.1.0-03-repairable", _REPAIRABLE_BRIEF),
+            ("OBPI-0.1.0-04-structured", _STRUCTURED_REPAIRABLE_BRIEF),
+        ]
+        runner = CliRunner()
+        for obpi_id, body in fixtures:
+            with self.subTest(obpi_id=obpi_id), runner.isolated_filesystem():
+                _quick_init()
+                _seed_repairable_project()
+                brief_path = self._adrs_dir() / f"{obpi_id}.md"
+                _write_brief(brief_path, body)
+                apply_args = ["obpi", "brief-drift", obpi_id, "--apply", "--attestor", "g0"]
+
+                preview = runner.invoke(main, [*apply_args, "--dry-run", "--json"])
+                self.assertEqual(brief_path.read_text(encoding="utf-8"), body)
+                # A legacy brief's DeprecationWarning shares the captured stream.
+                payload = preview.output[preview.output.index("{\n") :]
+                planned = json.loads(payload)["planned_amendments"]
+
+                human = runner.invoke(main, [*apply_args, "--dry-run"])
+                self.assertEqual(brief_path.read_text(encoding="utf-8"), body)
+
+                runner.invoke(main, apply_args)
+                written = brief_path.read_text(encoding="utf-8")
+                added = [
+                    line[2:]
+                    for line in difflib.ndiff(body.splitlines(), written.splitlines())
+                    if line.startswith("+ ")
+                ]
+                self.assertTrue(added, "fixture must drive at least one amendment")
+                self.assertEqual(planned["added_lines"], added)
+                flat_human = " ".join(human.output.split())
+                for line in added:
+                    self.assertIn(" ".join(line.split()), flat_human)
 
 
 if __name__ == "__main__":

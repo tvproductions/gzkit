@@ -6,7 +6,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-09-27
 metadata:
-  skill-version: "0.7.0"
+  skill-version: "0.8.0"
 model: haiku
 gz_command: gz obpi brief-drift
 ---
@@ -54,8 +54,9 @@ The REQ count delta never gates; it is reported for information.
    Exit 0 means clean; exit 3 means drift. On a live (non-terminal) brief only.
 3. If drift is real, preview with
    `uv run gz obpi brief-drift <OBPI-ID> --apply --dry-run`. The preview
-   writes nothing to the brief and prints the same delta counts; it does not
-   list the amendment text.
+   writes nothing to the brief and lists every line `--apply` would add or
+   remove (`planned_amendments` under `--json`). Show that list to the
+   operator: it is the amendment they attest in step 4.
 4. Apply with `uv run gz obpi brief-drift <OBPI-ID> --apply`. `--attestor`
    takes a handle, never a real name, and defaults to
    `authorship.attestor_handle` in `.gzkit.json`; `--apply` refuses without

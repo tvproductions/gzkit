@@ -10,7 +10,10 @@ surface, ledger emission, and the amendment-write path only.
 
 from __future__ import annotations
 
+import difflib
 import json
+
+from rich.markup import escape
 
 from gzkit.commands.closeout_form import _append_frontmatter_list_value
 from gzkit.commands.common import (
@@ -65,8 +68,11 @@ def _append_under_heading(text: str, heading: str, bullets: list[str]) -> str:
     return f"{text.rstrip()}\n\n{heading}\n\n{block}\n"
 
 
-def _apply_amendments(brief_path, result: ReconcileResult, attestor: str) -> None:
-    """Write operator-attested amendments back into the brief frontmatter/body.
+def _amended_text(brief_path, result: ReconcileResult, attestor: str) -> str:
+    """Return the brief text as ``--apply`` would write it.
+
+    The single source for both the write and the ``--dry-run`` preview, so the
+    preview cannot show an amendment the write would not make (GHI #1116).
 
     The allowlist amendment must land on the surface the engine READS, which
     differs by brief shape: ``reconcile_brief`` takes ``parsed.allowlist`` from
@@ -92,7 +98,26 @@ def _apply_amendments(brief_path, result: ReconcileResult, attestor: str) -> Non
             )
     if defects:
         text = _append_under_heading(text, "## Tracked Defects", defects)
-    brief_path.write_text(text, encoding="utf-8")
+    return text
+
+
+def _apply_amendments(brief_path, result: ReconcileResult, attestor: str) -> None:
+    """Write operator-attested amendments back into the brief frontmatter/body."""
+    brief_path.write_text(_amended_text(brief_path, result, attestor), encoding="utf-8")
+
+
+def _planned_amendments(brief_path, result: ReconcileResult, attestor: str) -> dict:
+    """Describe what ``--apply`` would write, line for line, without writing it."""
+    allowlist_adds, defects = _compute_amendments(result, attestor)
+    before = brief_path.read_text(encoding="utf-8").splitlines()
+    after = _amended_text(brief_path, result, attestor).splitlines()
+    diff = list(difflib.unified_diff(before, after, lineterm="", n=0))
+    return {
+        "allowlist_additions": allowlist_adds,
+        "tracked_defects": defects,
+        "added_lines": [d[1:] for d in diff if d.startswith("+") and not d.startswith("+++")],
+        "removed_lines": [d[1:] for d in diff if d.startswith("-") and not d.startswith("---")],
+    }
 
 
 def _delta_counts(result: ReconcileResult) -> dict[str, int]:
@@ -108,7 +133,9 @@ def _delta_counts(result: ReconcileResult) -> dict[str, int]:
     }
 
 
-def _render_report(result: ReconcileResult, *, do_write: bool, dry_run: bool) -> None:
+def _render_report(
+    result: ReconcileResult, *, do_write: bool, dry_run: bool, planned: dict | None
+) -> None:
     counts = _delta_counts(result)
     if result.terminal:
         # `has_drift` is false here because a sealed brief cannot gate, not
@@ -126,6 +153,16 @@ def _render_report(result: ReconcileResult, *, do_write: bool, dry_run: bool) ->
         f"verification={counts['verification']} req_count={counts['req_count']} "
         f"citation={counts['citation']}"
     )
+    if planned is not None:
+        # Blank separator lines stay in --json; here they only add noise.
+        changes = [f"  - {escape(line)}" for line in planned["removed_lines"] if line.strip()]
+        changes += [f"  + {escape(line)}" for line in planned["added_lines"] if line.strip()]
+        if changes:
+            console.print("Planned amendments (what --apply would write):")
+            for change in changes:
+                console.print(change)
+        else:
+            console.print("Planned amendments: none.")
     if dry_run:
         console.print("[yellow]Dry run:[/yellow] no amendments written.")
     elif do_write:
@@ -160,6 +197,7 @@ def brief_reconcile_cmd(
             f"Next: run `gz obpi brief-drift {obpi_id}` without --apply to read its deltas."
         )
     do_write = bool(apply and not dry_run)
+    planned = _planned_amendments(brief_path, result, attestor or "") if apply and dry_run else None
 
     if do_write:
         _apply_amendments(brief_path, result, attestor or "")
@@ -179,12 +217,13 @@ def brief_reconcile_cmd(
                     "deltas": _delta_counts(result),
                     "applied": do_write,
                     "dry_run": bool(dry_run),
+                    "planned_amendments": planned,
                 },
                 indent=2,
             )
         )
     else:
-        _render_report(result, do_write=do_write, dry_run=dry_run)
+        _render_report(result, do_write=do_write, dry_run=dry_run, planned=planned)
 
     if do_write:
         emit_brief_reconciled(root, result, applied=True, attestor=attestor)

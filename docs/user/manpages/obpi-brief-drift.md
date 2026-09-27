@@ -76,41 +76,94 @@ emission, and the amendment-write path only.
 - `--attestor "<name>"` — attestor handle, never a real name. Required with
   `--apply`; Defaults to `authorship.attestor_handle` in `.gzkit.json` when set (GHI #1036). With neither, `--apply` fails with
   `--apply requires --attestor`.
-- `--dry-run` — report the deltas `--apply` would act on without writing the
-  brief. It prints delta counts, not the amendment text, and still records a
-  `brief_reconciled` event with `applied` false.
-- `--json` — emit a machine-consumption payload (`brief_id`, `has_drift`,
-  per-dimension `deltas`, `applied`, `dry_run`).
+- `--dry-run` — write nothing to the brief. With `--apply` it previews the
+  amendment: every line `--apply` would add or remove, taken from the same
+  function that performs the write, so the preview and the write cannot
+  disagree (GHI #1116). It still records a `brief_reconciled` event with
+  `applied` false.
+- `--json` — ## EXAMPLES
 
-## EXAMPLES
+Output below is from a live (`Active`) brief whose allowlist names a file that
+does not exist and whose verification block names an unknown `gz` verb. Every
+run shown exits 3 because the drift remains. A terminal brief (for example,
+`Completed`) reports `sealed` instead and exits 0, and `--apply` on it is
+refused.
 
 Report mode (exits 3 on drift):
 
 ```bash
-uv run gz obpi brief-drift OBPI-0.0.37-06-brief-reconcile-cli
+uv run gz obpi brief-drift OBPI-0.1.0-02-drift
 ```
 
 ```text
-Brief reconcile: OBPI-0.0.37-06-brief-reconcile-cli — DRIFT
-  deltas: allowlist=2 discovery=0 verification=0 req_count=-1 citation=0
+Brief reconcile: OBPI-0.1.0-02-drift — DRIFT
+  deltas: allowlist=1 discovery=0 verification=1 req_count=0 citation=0
 ```
 
 Machine-readable output:
 
 ```bash
-uv run gz obpi brief-drift OBPI-0.0.37-06-brief-reconcile-cli --json
+uv run gz obpi brief-drift OBPI-0.1.0-02-drift --json
 ```
 
 ```json
 {
-  "brief_id": "OBPI-0.0.37-06-brief-reconcile-cli",
+  "brief_id": "OBPI-0.1.0-02-drift",
   "has_drift": true,
   "deltas": {
-    "allowlist": 2,
+    "allowlist": 1,
     "discovery": 0,
-    "verification": 0,
-    "req_count": -1,
+    "verification": 1,
+    "req_count": 0,
     "citation": 0
+  },
+  "applied": false,
+  "dry_run": false,
+  "planned_amendments": null
+}
+```
+
+Preview amendments without writing:
+
+```bash
+uv run gz obpi brief-drift OBPI-0.1.0-02-drift --apply --attestor g0 --dry-run
+```
+
+```text
+Brief reconcile: OBPI-0.1.0-02-drift — DRIFT
+  deltas: allowlist=1 discovery=0 verification=1 req_count=0 citation=0
+Planned amendments (what --apply would write):
+  + ## Tracked Defects
+  + - Unresolved verb `gz totally-not-a-real-verb-xyz` (obpi brief-drift, attestor g0)
+Dry run: no amendments written.
+```
+
+The same preview as JSON (`--apply --attestor g0 --dry-run --json`) carries it
+line for line:
+
+```json
+  "planned_amendments": {
+    "allowlist_additions": [],
+    "tracked_defects": [
+      "Unresolved verb `gz totally-not-a-real-verb-xyz` (obpi brief-drift, attestor g0)"
+    ],
+    "added_lines": [
+      "",
+      "## Tracked Defects",
+      "",
+      "- Unresolved verb `gz totally-not-a-real-verb-xyz` (obpi brief-drift, attestor g0)"
+    ],
+    "removed_lines": []
+  }
+```
+
+Apply operator-attested amendments:
+
+```bash
+uv run gz obpi brief-drift OBPI-0.1.0-02-drift --apply --attestor g0
+```
+
+ "citation": 0
   },
   "applied": false,
   "dry_run": false
