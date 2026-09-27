@@ -1107,3 +1107,13 @@
 {"ts": "2026-09-27T07:24:31Z", "source": "20260927T072424Z-skills-reviewed-gz-how-built-nine-ghis-filed.md", "text": "Verbatim: \"fix the gz gates line in AGENTS.md\"; drop ruling \"Drop C0 and C2 as proposed\" (f1ab5ee56)."}
 {"ts": "2026-09-27T07:24:31Z", "source": "20260927T072424Z-skills-reviewed-gz-how-built-nine-ghis-filed.md", "text": "Verbatim: \"fix 1109\" (2324263c9)."}
 {"ts": "2026-09-27T07:24:31Z", "source": "20260927T072424Z-skills-reviewed-gz-how-built-nine-ghis-filed.md", "text": "Verbatim: \"file a ghi for each of the remaining findings\" (GHIs #1110 to #1118)."}
+{"ts": "2026-09-27T10:16:27Z", "source": "20260927T101622Z-seven-ghis-fixed-1017-reopened-and-closed.md", "text": "Verbatim: \"yes, commit and git-sync\" (Windows exec-bit test skip, d9c099add)."}
+{"ts": "2026-09-27T10:16:27Z", "source": "20260927T101622Z-seven-ghis-fixed-1017-reopened-and-closed.md", "text": "Verbatim: \"fix 1115\" (c9a73bebe)."}
+{"ts": "2026-09-27T10:16:27Z", "source": "20260927T101622Z-seven-ghis-fixed-1017-reopened-and-closed.md", "text": "Verbatim: \"yes, file the ghi\"; route \"Reopen #1017 (Recommended)\"; allowlist \"Add reopen to the rule (Recommended)\" (5928cd60f)."}
+{"ts": "2026-09-27T10:16:27Z", "source": "20260927T101622Z-seven-ghis-fixed-1017-reopened-and-closed.md", "text": "Verbatim: \"fix 1017\"; homing \"Fix under #1017 (Recommended)\", over OBPI-0.37.0-04's Denied Paths note (98bec10c1)."}
+{"ts": "2026-09-27T10:16:27Z", "source": "20260927T101622Z-seven-ghis-fixed-1017-reopened-and-closed.md", "text": "Verbatim: \"danger! why was this invoked? `rm -rf`\" (course-correction, recorded as an improvement insight; the command was refused and never ran)."}
+{"ts": "2026-09-27T10:16:27Z", "source": "20260927T101622Z-seven-ghis-fixed-1017-reopened-and-closed.md", "text": "Verbatim: \"fix 1111\" (6d900df98)."}
+{"ts": "2026-09-27T10:16:27Z", "source": "20260927T101622Z-seven-ghis-fixed-1017-reopened-and-closed.md", "text": "Verbatim: \"fix 1116\" (0732235ca)."}
+{"ts": "2026-09-27T10:16:27Z", "source": "20260927T101622Z-seven-ghis-fixed-1017-reopened-and-closed.md", "text": "Verbatim: \"fix 1117\" (0ffc98162)."}
+{"ts": "2026-09-27T10:16:27Z", "source": "20260927T101622Z-seven-ghis-fixed-1017-reopened-and-closed.md", "text": "Verbatim: \"fix 1118\"; backlog \"Append all 21 (Recommended)\"; check \"Block (default tier) (Recommended)\" (ed2a97c4e, f0cc88e01)."}
+{"ts": "2026-09-27T10:16:27Z", "source": "20260927T101622Z-seven-ghis-fixed-1017-reopened-and-closed.md", "text": "Verbatim: \"fix 1114\"; seven chores \"Mark projectLocal (Recommended)\"; pythonic \"Ship it runnable (Recommended)\" (e9dcb8a60)."}
