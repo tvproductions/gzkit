@@ -96,6 +96,28 @@ class TestActiveTaskTrailers(unittest.TestCase):
                 ["Task: TASK-0.34.0-03-02-01"],
             )
 
+    def test_restarted_task_is_stamped_once_in_first_start_order(self) -> None:
+        """A TASK started twice yields one trailer, at its first start's position.
+
+        A duplicate `Task:` trailer attributes the same diff twice; reordering
+        on restart would make the stamp depend on ledger replay history.
+        """
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            path = _ledger(
+                root,
+                [
+                    _started("TASK-0.34.0-03-01-01"),
+                    _started("TASK-0.34.0-03-02-01"),
+                    _started("TASK-0.34.0-03-01-01"),
+                ],
+            )
+
+            self.assertEqual(
+                active_task_trailers(path, ["src/gzkit/tasks.py"]),
+                ["Task: TASK-0.34.0-03-01-01", "Task: TASK-0.34.0-03-02-01"],
+            )
+
     def test_no_stamp_outside_src_and_tests_scope(self) -> None:
         """`Task:` is mandatory only on src/tests commits — do not invent one.
 

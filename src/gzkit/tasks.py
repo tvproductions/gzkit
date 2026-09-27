@@ -294,12 +294,7 @@ def active_task_trailers(ledger_path: pathlib.Path, staged_paths: Iterable[str])
         elif kind in _TASK_CLOSING_EVENTS:
             closed.add(task_id)
 
-    seen: set[str] = set()
-    return [
-        f"Task: {task_id}"
-        for task_id in started
-        if task_id not in closed and not (task_id in seen or seen.add(task_id))
-    ]
+    return [f"Task: {task_id}" for task_id in dict.fromkeys(started) if task_id not in closed]
 
 
 def parse_task_trailers(commit_message: str) -> list[TaskId]:

@@ -21,17 +21,9 @@ import unittest
 from unittest.mock import patch
 
 from gzkit.core.validation_rules import ValidationError
+from gzkit.governance.trust_audits import validate_surface_fidelity
 from gzkit.traceability import covers
 from tests.governance.common import QuietAdvisoriesMixin
-
-# REQ-0.0.33-05-06: this import will fail at test-run time (TDD Red)
-# until implementation lands.
-try:
-    from gzkit.governance.trust_audits import validate_surface_fidelity
-except ImportError:
-    # Placeholder for TDD Red phase — test will fail with ImportError
-    validate_surface_fidelity = None  # type: ignore
-
 
 _PROJECT_ROOT = pathlib.Path(__file__).resolve().parents[2]
 
@@ -45,10 +37,6 @@ class TestValidateSurfaceFidelityImportable(QuietAdvisoriesMixin):
 
         validate_surface_fidelity must be importable and callable.
         """
-        self.assertIsNotNone(
-            validate_surface_fidelity,
-            "validate_surface_fidelity not importable — TDD Red expected",
-        )
         self.assertTrue(
             callable(validate_surface_fidelity),
             "validate_surface_fidelity must be callable",

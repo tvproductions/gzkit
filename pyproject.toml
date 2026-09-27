@@ -30,21 +30,21 @@ dependencies = [
     # GO-attested Phase-0 airlock-in 2026-07-02): networkx supplies the
     # MultiDiGraph + lateral/reachability traversal that stdlib graphlib
     # (a topological sorter only) cannot. Consumed by src/gzkit/ontology/.
-    "networkx>=3.4",
+    "networkx>=3.7",
     # Stdlib-First named departure (ADR-0.32.0-gzkit-ontology § Decision;
     # GO-attested Phase-0 airlock-in 2026-07-02): tree-sitter is the polyglot
     # source sensor that stdlib `ast` (Python-only) cannot be — gzkit is a
     # harness that runs on adopter codebases. Confined to the adapter in
     # src/gzkit/ontology/source.py per hexagonal-architecture.md.
-    "tree-sitter>=0.23",
-    "tree-sitter-python>=0.23",
+    "tree-sitter>=0.26",
+    "tree-sitter-python>=0.25",
     # Stdlib-First named departures (ADR-0.0.27 § Decision; AGENTS.md
     # § STDLIB-FIRST DOCTRINE § "Existing dependencies inherit this rule").
     # Stdlib does not expose cyclomatic complexity, nesting depth, or LCOM4;
     # these deps are corpus-measurement-only and consumed exclusively by
     # src/gzkit/complexity/measurement.py.
     "radon>=6.0,<7.0",
-    "lizard>=1.23,<2.0",
+    "lizard>=1.24,<2.0",
     "cohesion>=1.2,<2.0",
 ]
 
@@ -225,10 +225,10 @@ dev = [
     "bandit>=1.9.4",
     "behave>=1.3.3",
     "cohesion>=1.2.0",
-    "coverage>=7.15.4",
+    "coverage>=7.16.2",
     "detect-secrets>=1.5.0",
     "interrogate>=1.7.0",
-    "lizard>=1.23.0",
+    "lizard>=1.24.0",
     "mkdocs==1.6.1",
     "mkdocs-material==9.7.7",
     "pygount>=3.2.0",
@@ -240,7 +240,7 @@ dev = [
     # up, do not avoid hard work by clinging to older version of Ty." The 88
     # diagnostics 0.0.69 surfaced were latent defects the older release could not
     # see, so the checker moving is the signal to fix the code (GHI #789).
-    "ty>=0.0.69",
+    "ty>=0.0.84",
     # Pinned here rather than fetched via `uv run --with` (operator ruling
     # 2026-08-27, GHI #856). It backs the canonical "Tests pass" attestation
     # (`CANONICAL_STEP_COMMANDS["unittest"]`), and an ARB receipt is durable
@@ -252,7 +252,7 @@ dev = [
     # "un-pinned xenon/gitleaks precedent" cited when the accelerator was adopted
     # (GHI #512) does not exist -- xenon is two lines below, and gitleaks is a
     # native binary rather than a Python package.
-    "unittest-parallel>=1.7.2",
+    "unittest-parallel>=1.8.6",
     "vulture>=2.16",
     "wily>=1.12.2",
     "xenon>=0.9.3",
