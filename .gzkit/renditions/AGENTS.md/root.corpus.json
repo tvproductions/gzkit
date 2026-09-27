@@ -1,9 +1,9 @@
 {
   "algorithm": "sha256",
-  "corpus_fingerprint": "0fbe7a4a205f5ad90ef08a164cf0f519674ecacc7ecc2d2c254d62a1e884bc1b",
-  "corpus_entry_count": 472,
-  "rendition_fingerprint": "0a0ca155e5672838a6fe423b5b882211d7e232d772fbb13bf2a9c5cb433a013c",
-  "committed_ts": "2026-09-27T07:05:45.209133+00:00",
+  "corpus_fingerprint": "66210c9ba2ffb285e80d024dbb6755f0abb07fcda8502e95d97ea6d11d4096d3",
+  "corpus_entry_count": 473,
+  "rendition_fingerprint": "46c9e60756737470314a42d56bc0942d40a695d6988d512fd88ba664de368db0",
+  "committed_ts": "2026-09-27T20:36:06.206958+00:00",
   "attestor": "g0",
-  "attestation_text": "fix the gz gates line in AGENTS.md / Drop C0 and C2 as proposed — replaces corpus-gate-covenant-2026-09-17T11:39:33.420703+00:00 with corpus-gate-covenant-2026-09-27T07:04:55.362786+00:00; advisor-QC receipt arb-step-judge-d7f31c1436794edc88e97345bb014c51; GHI #705"
+  "attestation_text": "approved, keep it as a separate line — evidence: corpus entry corpus-operator-doctrine-verbatim-canon-2026-09-27T20:35:02.678914+00:00; advisor receipt arb-step-judge-ad5a6ee6647e49efbcf683392e3724c5; no blocks removed"
 }

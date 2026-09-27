@@ -199,6 +199,8 @@ Operator rulings. The corpus (`.gzkit/corpus/AGENTS.md.jsonl`) keeps each ruling
 
 - Work directly on main, commit, and git-sync. Do not create feature branches or a branch/merge/delete workflow.
 
+- Local worktrees for subagents (operator, 2026-09-27, verbatim: 'local worktrees are fine'): a subagent may work in an ephemeral local git worktree that is never pushed; its result lands on main through the single writer, never by merging a branch. The no-branches directive is unchanged.
+
 - Root AGENTS.md is the sole rendered AgentContract and the default for every harness, including Claude. Its lite rendition fits the smallest vendor delivery cap. Forbid per-vendor AgentContract routes or temperatures in data/vendor-manifest.json; vendor-specific material belongs in that vendor’s own surface.
 
 - Before any move related to the higher rules and function of this project, stop and read all docs and all code before taking or recommending action. Stop and ask the operator in case of uncertainty. A search is not a read — never report that something is absent, undocumented, or unruled on the strength of keyword queries. Doctrine is routinely stated as a flag value, a schema field, or a path rather than as the prose you searched for ('--vendor=root', 2026-08-17). Supersedes the prior '90% convinced/confident' framing (operator verbatim: 'forget 90%, you have zero basis for any certainty').
