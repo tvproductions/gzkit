@@ -20,6 +20,7 @@ from gzkit.commands.common import (
     get_project_root,
 )
 from gzkit.commands.obpi_precomplete import _resolve_brief_path
+from gzkit.core.exceptions import PolicyBreachError
 from gzkit.governance.brief_reconcile import ReconcileResult, reconcile_brief
 from gzkit.governance.brief_structure import BriefStructure, parse_brief
 from gzkit.governance.events import (
@@ -149,6 +150,15 @@ def brief_reconcile_cmd(
         raise GzCliError("--apply requires --attestor")
 
     result = reconcile_brief(brief_path, root)
+    if apply and result.terminal:
+        # Refused under --dry-run too, so the preview predicts the refusal (GHI #1115).
+        raise PolicyBreachError(
+            f"{brief_path.relative_to(root).as_posix()} is a sealed brief (terminal status); "
+            "--apply refused, nothing written.\n"
+            "Why: amending a sealed record rewrites it under an attestation no "
+            "operator can honestly give (GHI #707).\n"
+            f"Next: run `gz obpi brief-drift {obpi_id}` without --apply to read its deltas."
+        )
     do_write = bool(apply and not dry_run)
 
     if do_write:

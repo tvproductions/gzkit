@@ -54,6 +54,11 @@ no future work for that gate to hold, and the only `--apply` repair available
 would rewrite a sealed governance artifact under an attestation no operator can
 honestly give (GHI #707).
 
+So `--apply` on a terminal brief is **refused**: it exits **3** (policy breach),
+writes nothing to the brief, and records no ledger event. `--apply --dry-run`
+is refused the same way, so the preview predicts the refusal the write would
+hit (GHI #1115). Run the command without `--apply` to read the deltas.
+
 Read the deltas on a terminal brief as *"here is what moved since this shipped"*,
 never as *"here is what you must fix"*. Drift that gates is drift on a live brief.
 

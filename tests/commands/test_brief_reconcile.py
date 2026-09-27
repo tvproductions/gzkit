@@ -13,6 +13,7 @@ from pathlib import Path
 
 from gzkit.cli import main
 from gzkit.config import GzkitConfig
+from gzkit.governance.brief_structure import BRIEF_TERMINAL_STATUSES
 from gzkit.ledger import Ledger
 from gzkit.traceability import covers
 from tests.commands.common import CliRunner, _quick_init
@@ -396,6 +397,35 @@ class TestBriefReconcileCommand(unittest.TestCase):
             result = runner.invoke(main, ["obpi", "brief-drift", "OBPI-0.1.0-01-clean"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn("clean", result.output)
+
+    @covers("REQ-0.0.37-06-04")
+    def test_apply_refuses_to_write_a_sealed_brief(self) -> None:
+        """--apply never modifies a terminal-status brief, dry run or not (GHI #1115).
+
+        The engine already marks the brief terminal; writing amendments into it
+        rewrites a sealed record under an attestation no operator can honestly
+        give (GHI #707). Every status the shared terminal vocabulary names is
+        driven, with and without --dry-run, because the preview must predict the
+        same refusal the write would hit.
+        """
+        runner = CliRunner()
+        for status in sorted(BRIEF_TERMINAL_STATUSES):
+            for extra in ([], ["--dry-run"]):
+                with self.subTest(status=status, extra=extra), runner.isolated_filesystem():
+                    _quick_init()
+                    brief_path = self._adrs_dir() / "OBPI-0.1.0-02-drift.md"
+                    _write_brief(
+                        brief_path, _DRIFT_BRIEF.replace("status: Active", f"status: {status}")
+                    )
+                    before = brief_path.read_bytes()
+                    args = ["obpi", "brief-drift", "OBPI-0.1.0-02-drift", "--apply"]
+                    result = runner.invoke(main, [*args, "--attestor", "g0", *extra])
+                    self.assertEqual(result.exit_code, 3, result.output)
+                    self.assertEqual(brief_path.read_bytes(), before)
+                    self.assertEqual(self._events("brief_reconciled"), [])
+                    self.assertIn("sealed", result.output)
+                    self.assertIn("GHI #707", result.output)
+                    self.assertIn("without --apply", result.output)
 
     @covers("REQ-0.0.37-06-07")
     def test_new_event_types_are_registered_and_parse(self) -> None:

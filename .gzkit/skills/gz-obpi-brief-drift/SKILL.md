@@ -4,9 +4,9 @@ description: Reconcile an OBPI brief against current project state and optionall
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-26
+last_reviewed: 2026-09-27
 metadata:
-  skill-version: "0.6.0"
+  skill-version: "0.7.0"
 model: haiku
 gz_command: gz obpi brief-drift
 ---
@@ -46,10 +46,10 @@ The REQ count delta never gates; it is reported for information.
    `status:` first** — a terminal brief (`Completed`, `attested_completed`,
    `Validated`, `Superseded`, `archived`, `Promoted`, `Abandoned`, `Withdrawn`) reports deltas but never
    gates: `has_drift` is always false and the run exits 0. Its deltas read as
-   *"what moved since this shipped"*, never as a repair worklist. Do not run
-   `--apply` on one — the amendment would rewrite a sealed record under an
-   attestation no operator can honestly give (GHI #707). The CLI does not
-   refuse it; this step is the only guard.
+   *"what moved since this shipped"*, never as a repair worklist. `--apply` on
+   one is refused — exit 3, nothing written, no ledger event, `--dry-run`
+   included — because the amendment would rewrite a sealed record under an
+   attestation no operator can honestly give (GHI #707, #1115).
 2. Run `uv run gz obpi brief-drift <OBPI-ID>` to report per-dimension deltas.
    Exit 0 means clean; exit 3 means drift. On a live (non-terminal) brief only.
 3. If drift is real, preview with
