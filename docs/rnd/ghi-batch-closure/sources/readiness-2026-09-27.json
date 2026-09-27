@@ -1,0 +1,1269 @@
+[
+  {
+    "number": 594,
+    "title": "arb: no archive/purge half — 1875 receipts accumulate unbounded",
+    "readiness": "R2-ruling",
+    "secondary": null,
+    "size": "unknown",
+    "surfaces": [
+      "src/gzkit/commands/arb.py",
+      "src/gzkit/cli/parser_arb.py",
+      "artifacts/receipts/"
+    ],
+    "hot_files": [
+      "src/gzkit/cli/*"
+    ],
+    "evidence": "\"Remaining scope on this issue is the purge half plus its harvest-before-purge ordering guard, both awaiting that conversation\"",
+    "precondition_status": "holds",
+    "notes": "Archive half shipped (1c947aa5c); purge design/ordering-guard still needs operator decision on whether purge ships at all."
+  },
+  {
+    "number": 611,
+    "title": "governance: no general append-only corrective-action primitive to undo agent/human error",
+    "readiness": "R2-ruling",
+    "secondary": null,
+    "size": "unknown",
+    "surfaces": [
+      "src/gzkit/ledger_corrections.py",
+      "src/gzkit/ledger.py",
+      "src/gzkit/commands/ledger_correct.py"
+    ],
+    "hot_files": [
+      "src/gzkit/cli/*"
+    ],
+    "evidence": "\"Migrating changes what three attested verbs write into Layer 2, which is not a call an agent makes unilaterally.\"",
+    "precondition_status": "holds",
+    "notes": "Primitive (ledger_event_corrected) landed and verified; only clause 4 (migrating repudiate/park/block verbs onto it) awaits an operator design call."
+  },
+  {
+    "number": 766,
+    "title": "session-exit: floor bookmark emits constants, so it informs nothing",
+    "readiness": "R3-sequence",
+    "secondary": "R2-ruling",
+    "size": "<=100",
+    "surfaces": [
+      "src/gzkit/session_exit.py",
+      "src/gzkit/ledger_events.py"
+    ],
+    "hot_files": [],
+    "evidence": "\"#766 is blocked by #767 ... The two share no files, sit under different ADRs, and move in opposite directions.\"",
+    "precondition_status": "holds",
+    "notes": "Verified #767 still OPEN and ADR-0.35.0 still 8/14 (one-feature-at-a-time still binds); pool ADR promotion is a separate operator-only act."
+  },
+  {
+    "number": 767,
+    "title": "handoff: frontmatter carries no transcript reference",
+    "readiness": "R2-ruling",
+    "secondary": "R3-sequence",
+    "size": "<=100",
+    "surfaces": [
+      "src/gzkit/handoff_validation.py",
+      "src/gzkit/handoff_api.py",
+      "scripts/session_orientation.py"
+    ],
+    "hot_files": [],
+    "evidence": "\"Design not yet ratified — do not build ahead of it.\" (parked behind ADR-pool.primary-source-corroboration)",
+    "precondition_status": "holds",
+    "notes": "Verified ADR-pool.primary-source-corroboration still status: Pool (unpromoted). Promotion is operator-only; this issue also gates #766."
+  },
+  {
+    "number": 799,
+    "title": "advisory-scorecard: ADR-declared doctrine unscorable without a surface mirror",
+    "readiness": "R3-sequence",
+    "secondary": "R2-ruling",
+    "size": "unknown",
+    "surfaces": [
+      "docs/governance/advisory-rules-audit.md",
+      ".gzkit/corpus/AGENTS.md.jsonl",
+      "AGENTS.md",
+      "src/gzkit/governance/trust_audits/bullet_retention.py"
+    ],
+    "hot_files": [
+      "AGENTS.md",
+      ".gzkit/corpus/*"
+    ],
+    "evidence": "\"cheap only after ADR-0.35.0 OBPI-05 (corpus->candidate generator) and OBPI-07 (gz content land) land\"",
+    "precondition_status": "stale: OBPI-0.35.0-05 now Completed; OBPI-0.35.0-07 still Draft, not landed",
+    "notes": "Half the cited precondition cleared. Alternative 'teach bullet_retention source-aware scope' route (#939) still needs an operator pick between the two remedy branches."
+  },
+  {
+    "number": 802,
+    "title": "docs: gzkit.org serves stale docs from a hand-deployed VPS",
+    "readiness": "R2-ruling",
+    "secondary": null,
+    "size": "unknown",
+    "surfaces": [],
+    "hot_files": [],
+    "evidence": "\"GitHub Pages settings → set custom domain to gzkit.org ... a repo settings mutation — .gzkit/rules/gh-cli.md § Prohibited without explicit approval\"",
+    "precondition_status": "unknown: no network access in this sandbox to re-check gzkit.org's live last-modified header",
+    "notes": "Pure operator-credentialed act (DNS + GitHub Pages settings mutation); zero repo lines, no code surface at all."
+  },
+  {
+    "number": 803,
+    "title": "docs-build: mkdocs validation downgrades withdraw the dead-link enforcement claim",
+    "readiness": "R2-ruling",
+    "secondary": null,
+    "size": "unknown",
+    "surfaces": [
+      "mkdocs.yml",
+      "src/gzkit/quality.py"
+    ],
+    "hot_files": [],
+    "evidence": "\"Operator rules among the three dispositions in the body. They are not equivalent: 1 and 2 fix the instance in opposite directions, 3 fixes the class.\"",
+    "precondition_status": "holds",
+    "notes": "Three genuinely different-cost dispositions (restore/correct-docstring/couple-to-gate); no ruling recorded since filing."
+  },
+  {
+    "number": 804,
+    "title": "req-kind-discipline: an attested deferred frontier needs no owner, so it is never scheduled",
+    "readiness": "R1-ready",
+    "secondary": null,
+    "size": "<=100",
+    "surfaces": [
+      "src/gzkit/governance/",
+      "tests/governance/"
+    ],
+    "hot_files": [],
+    "evidence": "\"Corpus safety — measured, and it is better than expected ... zero live briefs are affected and no grandfather clause, waiver file, or backfill pass is needed.\"",
+    "precondition_status": "holds/clear",
+    "notes": "Predicate + corpus-safety measurement already done (corpus-clean, all 3 matches terminal). No live brief found owning req_kind_fence.py in current tree."
+  },
+  {
+    "number": 807,
+    "title": "airlock: parent_invariants never passed, so LAW pull edges never form",
+    "readiness": "R3-sequence",
+    "secondary": null,
+    "size": "<=100",
+    "surfaces": [
+      "src/gzkit/airlock/enter.py",
+      "src/gzkit/airlock/exit.py",
+      "src/gzkit/commands/airlock.py",
+      "src/gzkit/commands/mx_cmd.py",
+      "src/gzkit/commands/permitted_entry.py",
+      "src/gzkit/pipeline_runtime.py"
+    ],
+    "hot_files": [],
+    "evidence": "\"Operator ruling 2026-08-16, verbatim: 'we will NOT go out of adr order.'\"",
+    "precondition_status": "holds",
+    "notes": "Verified via `gz status`: ADR-0.35.0 (8/14) and ADR-0.36.0 (0/9) both still pending ahead of ADR-0.37.0, which owns this fix's OBPI."
+  },
+  {
+    "number": 808,
+    "title": "decommission-tautological-tests: criteria gate the ratchet, not the debt",
+    "readiness": "R2-ruling",
+    "secondary": null,
+    "size": "<=100",
+    "surfaces": [
+      ".gzkit/chores/decommission-tautological-tests/acceptance.json",
+      "src/gzkit/chores/decommission-tautological-tests/acceptance.json",
+      ".gzkit/chores/decommission-tautological-tests/CHORE.md"
+    ],
+    "hot_files": [],
+    "evidence": "\"Not a direct-fix candidate ... #743 § Scope hint fenced the identical move on an operator ruling for exactly this reason; the same ruling is needed here.\"",
+    "precondition_status": "holds",
+    "notes": "Body explicitly declines direct-fix: adding a truthful criterion turns a green gate red over a known 274-op backlog; needs the same operator ruling #743 already required."
+  },
+  {
+    "number": 810,
+    "title": "cli-shape: build the arms for 8 Promotable CLI doctrine rows",
+    "readiness": "R1-ready",
+    "secondary": null,
+    "size": "larger",
+    "surfaces": [
+      "src/gzkit/governance/trust_audits/",
+      "src/gzkit/cli/parser_obpi.py",
+      "src/gzkit/lock_manager.py",
+      "data/advisory_scorecard_grandfather.json"
+    ],
+    "hot_files": [
+      "src/gzkit/cli/*"
+    ],
+    "evidence": "\"This issue is deliberately open under operator ruling ... 'GHIs are AUTHORIZED for direct repair, always ... the GHI is the work order and the receipt.' Do not close this as a stale tracker.\"",
+    "precondition_status": "holds/ready",
+    "notes": "Three arms fully specified with exact seed counts (rows 76-85); operator already ruled to keep this open as the direct-fix work order, not a design ticket."
+  },
+  {
+    "number": 813,
+    "title": "handoff: no authorship event, so 387 documents have zero Layer-2 provenance",
+    "readiness": "R1-ready",
+    "secondary": null,
+    "size": "<=100",
+    "surfaces": [
+      "src/gzkit/handoff_api.py",
+      "src/gzkit/session_exit.py",
+      "src/gzkit/exchange_records.py",
+      "src/gzkit/lock_manager.py",
+      "src/gzkit/schemas/ledger.json",
+      "src/gzkit/ledger_events.py"
+    ],
+    "hot_files": [],
+    "evidence": "\"Operator ruling 2026-08-17 (verbatim: 'b'). The fix is emit-plus-reconcile, not emit-only.\"",
+    "precondition_status": "holds/ready",
+    "notes": "Scope ruled, writer call graph and design constraints fully mapped. Minor residual: backfill-grandfather approach is agent-proposed (precedented) not yet operator-confirmed."
+  },
+  {
+    "number": 818,
+    "title": "governance: Architectural Boundaries rest on a memo, not an ADR",
+    "readiness": "R2-ruling",
+    "secondary": null,
+    "size": "larger",
+    "surfaces": [
+      "docs/design/adr/foundation/",
+      "AGENTS.md",
+      "docs/governance/agent-contract-rationale.md",
+      "docs/governance/trust-doctrine.md"
+    ],
+    "hot_files": [
+      "AGENTS.md"
+    ],
+    "evidence": "\"Three questions have to be answered first, and only the operator can answer them: 1. Shape ... 2. Sequencing ... 3. Fidelity.\"",
+    "precondition_status": "holds",
+    "notes": "Explicit operator-only design ruling required (ADR shape / sequencing / which rendering is canonical) before any authoring starts. New sibling #929 filed since, unresolved."
+  },
+  {
+    "number": 832,
+    "title": "release-tags: 22 of 34 grandfathered releases are repairable, not stuck",
+    "readiness": "R2-ruling",
+    "secondary": null,
+    "size": "unknown",
+    "surfaces": [
+      "data/release_tag_reachability_grandfather.json",
+      "data/waiver_ratchet_registry.json"
+    ],
+    "hot_files": [],
+    "evidence": "\"Next concrete operator action: rule whether to take the 22-tag sweep, and if so whether in one pass or batched.\"",
+    "precondition_status": "stale: blocking issue #834 is CLOSED (fixed at 0900df622 — tag re-push no longer rewrites release body/assets)",
+    "notes": "The cited #834 blocker cleared, but outward-facing GitHub tag/release mutation across 22 published releases still needs explicit operator authorization per the body's own scope hint."
+  },
+  {
+    "number": 837,
+    "title": "pool ADRs: 5 promotion criteria route through the sealed foundation kind",
+    "readiness": "R2-ruling",
+    "secondary": null,
+    "size": "<=10",
+    "surfaces": [
+      "docs/design/adr/pool/ADR-pool.adr-layer-coherence.md",
+      "docs/design/adr/pool/ADR-pool.attested-record-edit-doctrine.md",
+      "docs/design/adr/pool/ADR-pool.gz-adr-pool-triage.md",
+      "docs/design/adr/pool/ADR-pool.obpi-doctrine-mechanization-coherence.md",
+      "docs/design/adr/pool/ADR-pool.polarity-aware-threshold-model.md"
+    ],
+    "hot_files": [],
+    "evidence": "\"operator picks the feature semver slot for ADR-pool.adr-layer-coherence, then one fix(adr-pool): ... commit sweeps all five\"",
+    "precondition_status": "holds",
+    "notes": "4 of 5 files are pure wording swaps, but the fifth needs the operator to allocate a feature semver slot (operator-only act), gating the whole sweep as filed. 2026-09-27 comment adds unscoped sibling instances (own GHI #1126)."
+  },
+  {
+    "number": 871,
+    "title": "adr-routing: corrective re-home collides with ascending-semver order",
+    "readiness": "R2-ruling",
+    "secondary": "R3-sequence",
+    "size": "unknown",
+    "surfaces": [
+      "src/gzkit/handoff_api.py",
+      "scripts/session_orientation.py"
+    ],
+    "hot_files": [],
+    "evidence": "\"No same-session destination exists. The four rules in the body select ADR-0.38.0 and then forbid it, so there is no artifact to author.\"",
+    "precondition_status": "holds",
+    "notes": "ADR-0.38.0 is also campaign-booked for Movement E, so even 'land the queue' doesn't free it for these findings — still a pure operator ruling among 3 options."
+  },
+  {
+    "number": 894,
+    "title": "ledger validator: attestor guard is weaker than the gate it witnesses",
+    "readiness": "R2-ruling",
+    "secondary": "R3-sequence",
+    "size": "<=100",
+    "surfaces": [
+      "src/gzkit/commands/content/retire.py",
+      "src/gzkit/validate_pkg/ledger_check.py",
+      "src/gzkit/schemas/ledger.json"
+    ],
+    "hot_files": [],
+    "evidence": "\"Do not act on this without an operator ruling ... rule on whether the _is_named relocation lands as a GHI-direct repair now, or waits for OBPI-0.35.0-08 to reach a terminal status.\"",
+    "precondition_status": "holds",
+    "notes": "Verified OBPI-0.35.0-08 still status: Active, still declares content/retire.py READ-ONLY specifically to protect _is_named — exact collision as filed."
+  },
+  {
+    "number": 907,
+    "title": "authorship: rule scopes file content, witness reads only git config",
+    "readiness": "R1-ready",
+    "secondary": null,
+    "size": "<=100",
+    "surfaces": [
+      "src/gzkit/governance/trust_audits/",
+      "src/gzkit/validate_pkg/"
+    ],
+    "hot_files": [],
+    "evidence": "\"the remedy here is structurally available. What still gates it is the scope predicate ... and the ratchet-vs-clean-tree limit imposed by #611 — not the module ceiling.\"",
+    "precondition_status": "stale (partial): #611's corrective-action primitive landed 2026-09-06, so the 'ratchet-only, never clean-tree' limit cited here may now be liftable",
+    "notes": "Design fully specified (runtime git-config derivation mirroring --authorship, exemption list, multi-spelling matching); no live brief found owning the surface."
+  },
+  {
+    "number": 919,
+    "title": "qc-binding: a control that could not run is reported as theater",
+    "readiness": "R2-ruling",
+    "secondary": null,
+    "size": "larger",
+    "surfaces": [
+      "src/gzkit/governance/trust_audits/_qc_nc_entrypoints.py",
+      "src/gzkit/governance/trust_audits/_qc_negative_controls.py"
+    ],
+    "hot_files": [],
+    "evidence": "\"whether an inconclusive control should fail the gate ... or warn and abstain ... These have opposite failure modes and the choice is a ruling, not a detail.\"",
+    "precondition_status": "holds",
+    "notes": "Body explicitly names the fail-vs-warn choice as an operator ruling; shared return contract touches 59 entrypoints plus two reporters."
+  },
+  {
+    "number": 921,
+    "title": "instruction surfaces: .gzkit/rules/** is uncorpused, and fans out to all 26 generated AGENTS.md",
+    "readiness": "R2-ruling",
+    "secondary": "R3-sequence",
+    "size": "larger",
+    "surfaces": [
+      ".gzkit/rules/**",
+      ".gzkit/corpus/**",
+      "AGENTS.md",
+      "docs/governance/**",
+      "data/advisory_scorecard_grandfather.json",
+      "src/gzkit/rules/**"
+    ],
+    "hot_files": [
+      "AGENTS.md",
+      ".gzkit/corpus/*"
+    ],
+    "evidence": "Remaining under this GHI: the bullet-narrative compression pass, gated at the instructions-files-diet chore's section-4 consult gate (operator rules per item or per rank-band before any edit).",
+    "precondition_status": "holds",
+    "notes": "Long-running program GHI; rules-half gated on operator per-item consult; corpus-half awaits operator-initiated ADR-0.35.0 OBPI."
+  },
+  {
+    "number": 922,
+    "title": "agents-md-map-conformance: 26 nested AGENTS.md are checked by nothing",
+    "readiness": "R2-ruling",
+    "secondary": "R1-ready",
+    "size": "unknown",
+    "surfaces": [
+      "src/gzkit/governance/trust_audits/agents_md_map_conformance.py",
+      "data/instructions_files_budget.json",
+      ".gzkit/rules/agents-md-map-doctrine.md",
+      "tests/governance/test_agents_md_map_doctrine.py"
+    ],
+    "hot_files": [],
+    "evidence": "No brief is authored — under the IRON LAW the operator initiates OBPI work via the gz-obpi-pipeline skill.",
+    "precondition_status": "holds",
+    "notes": "Coverage-gap capability needs operator-initiated OBPI (checklist item 11); a small constant-repoint sub-fix was flagged as direct but is bundled into the larger capability."
+  },
+  {
+    "number": 926,
+    "title": "ledger: multi-event witness loops outside the corpus have no detection arm",
+    "readiness": "R4-design",
+    "secondary": "R2-ruling",
+    "size": "unknown",
+    "surfaces": [
+      "src/gzkit/commands/register.py",
+      "src/gzkit/commands/adr_demote.py",
+      "src/gzkit/validate_pkg/ledger_check.py"
+    ],
+    "hot_files": [
+      ".gzkit/ledger.jsonl"
+    ],
+    "evidence": "Needs a posture ruling before a patch, as #878 did... the detection strategy is undecided, and the strategy determines the diff... Candidate detection grounds, none yet measured.",
+    "precondition_status": "holds",
+    "notes": "Verified parent GHI #878 is CLOSED. Detection strategy for non-corpus ledger witnesses unresolved; three candidate approaches unmeasured."
+  },
+  {
+    "number": 927,
+    "title": "red-witness: direct-fix guards are outside every falsifiability gate",
+    "readiness": "R2-ruling",
+    "secondary": "R3-sequence",
+    "size": "larger",
+    "surfaces": [
+      "src/gzkit/red_witness.py",
+      "src/gzkit/governance/trust_audits/red_parity.py",
+      "src/gzkit/commands/arb.py"
+    ],
+    "hot_files": [],
+    "evidence": "It closes when #849's destination artifact is authored.",
+    "precondition_status": "stale: #849 closed via ca5670e5 (2026-09-06), but the landed fix stayed REQ-keyed (arb.py still requires --req; red_parity.py's _brief_is_in_scope still restricts to heavy-lane terminal briefs). The 2026-09-02 operator ruling's promised un-keyed widening for direct-fix guards was never delivered.",
+    "notes": "Fold target closed without shipping the promised widening; design was already specified by operator ruling but the broken promise needs a fresh operator check."
+  },
+  {
+    "number": 930,
+    "title": "obpi lifecycle: no governed reversal for a wrongly-started OBPI",
+    "readiness": "R2-ruling",
+    "secondary": null,
+    "size": "larger",
+    "surfaces": [
+      "src/gzkit/core/lifecycle.py",
+      "src/gzkit/commands/obpi_cmd.py",
+      ".gzkit/locks/",
+      "docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-08-remember-post-append-advisory.md"
+    ],
+    "hot_files": [
+      ".gzkit/ledger.jsonl"
+    ],
+    "evidence": "Keep all live corrections on hold.",
+    "precondition_status": "holds",
+    "notes": "General un-start mechanism shipped under #611; applying the void correction to this repo's live ledger is held by operator ruling, reaffirmed 2026-09-21."
+  },
+  {
+    "number": 939,
+    "title": "advisory-scorecard: skill-declared doctrine is structurally unscorable",
+    "readiness": "R2-ruling",
+    "secondary": null,
+    "size": "larger",
+    "surfaces": [
+      "src/gzkit/governance/trust_audits/bullet_retention.py",
+      "docs/governance/advisory-rules-audit.md",
+      ".gzkit/skills/gz-obpi-pipeline/SKILL.md",
+      "src/gzkit/commands/obpi_complete_adversarial.py"
+    ],
+    "hot_files": [],
+    "evidence": "This finding has no same-session destination because the remedy is a design choice only the operator can make.",
+    "precondition_status": "holds",
+    "notes": "OBPI-0.35.0-10 (collides with remedy a) confirmed still status Draft. Retention-scope choice and lane-exception fix both named operator rulings."
+  },
+  {
+    "number": 943,
+    "title": "Claude tuning: universal pressure miscalibrates Opus 5 and Fable 5.1",
+    "readiness": "R4-design",
+    "secondary": "R1-ready",
+    "size": "larger",
+    "surfaces": [
+      "docs/governance/opus-tuning.md",
+      "CLAUDE.md",
+      "docs/governance/gpt-tuning.md",
+      "tests/ (new behavioral evaluation fixtures)"
+    ],
+    "hot_files": [
+      "AGENTS.md",
+      ".gzkit/corpus/*"
+    ],
+    "evidence": "the next concrete action is an operator invocation of ghi-close for #943",
+    "precondition_status": "stale: this blocker comment predates 5adb751ee (2026-09-17), which already landed the Opus-first precedence rule and both full Opus 5.5/Fable 5.1 profiles in CLAUDE.md and opus-tuning.md, quoting 'favor opus over fable'. Policy decision is done; unmet criterion is fixture design.",
+    "notes": "Doctrine content substantially landed already, uncredited to a dedicated ghi-close. Remaining gap is designing deterministic behavioral fixtures for LLM properties."
+  },
+  {
+    "number": 950,
+    "title": "task-envelope: no roster member meets the roster's task_id criterion",
+    "readiness": "R2-ruling",
+    "secondary": null,
+    "size": "<=100",
+    "surfaces": [
+      "src/gzkit/ledger.py",
+      "src/gzkit/commands/validate_task_envelope.py",
+      "producers of attested_event/gate_checked_event/audit_receipt_emitted_event/obpi_completion_uncovered_accept_event"
+    ],
+    "hot_files": [],
+    "evidence": "Two coherent dispositions, neither obviously dominant, which is why this is filed rather than fixed in the #947 close.",
+    "precondition_status": "none",
+    "notes": "No comments; parent #947 CLOSED and owning OBPI-0.0.64-04 terminal/Completed, so no live brief owns the surface. The gate is the disposition pick itself."
+  },
+  {
+    "number": 956,
+    "title": "imports: 104 cross-package private-symbol reaches, and ruff sees 1",
+    "readiness": "R4-design",
+    "secondary": "R1-ready",
+    "size": "larger",
+    "surfaces": [
+      "tests/policy/test_import_boundaries.py",
+      "src/gzkit/commands/common.py",
+      "src/gzkit/hooks/*",
+      "src/gzkit/hooks/scripts/*",
+      "src/gzkit/governance/trust_audits/*",
+      "src/gzkit/foundation/*"
+    ],
+    "hot_files": [],
+    "evidence": "Pass 2 is the remaining work. Adjudicate the 100 edges and either promote the symbol to a public name or relocate it.",
+    "precondition_status": "holds",
+    "notes": "Verified PRIVATE_CROSS_PACKAGE_IMPORT_BASELINE (100 edges) in tree, pass-1 ratchet landed. Pass-2 per-edge adjudication is unresolved investigation."
+  },
+  {
+    "number": 968,
+    "title": "reviewer personas: \"read-only\" is enforced as \"no Bash\", and no surface expresses the difference",
+    "readiness": "R2-ruling",
+    "secondary": null,
+    "size": "unknown",
+    "surfaces": [
+      ".claude/agents/spec-reviewer.md",
+      ".claude/agents/quality-reviewer.md",
+      "src/gzkit/pipeline_dispatch.py",
+      ".claude/settings.json"
+    ],
+    "hot_files": [],
+    "evidence": "Next concrete action, operator-level: decide whether to pursue disposition 2 upstream, or to settle on disposition 1 permanently and close this.",
+    "precondition_status": "holds",
+    "notes": "Verified both persona files already say 'cannot execute commands (GHI #968)' (disposition 1 applied); settings.json allow=0, deny=42, matching comment's re-derivation."
+  },
+  {
+    "number": 969,
+    "title": "attestation evidence: a harness aggregate status can report success over a red verifier",
+    "readiness": "R4-design",
+    "secondary": "R2-ruling",
+    "size": "unknown",
+    "surfaces": [
+      "src/gzkit/verifier_pipe_gate.py",
+      ".gzkit/rules/tests.md",
+      "attestation-evidence surface (unnamed, to be chosen)"
+    ],
+    "hot_files": [],
+    "evidence": "Estimated diff: unknown — this is a design question (which surface must refuse an aggregate-derived claim), not a located fix.",
+    "precondition_status": "stale: #889 cited as OPEN in body/Related is now CLOSED (fixed by c9e296d8e), but its own closure comment rules '#969 stays open by the same ruling', so #969's status is unaffected by the reference going stale.",
+    "notes": "Two live recurrences logged as evidence, not remedies. Operator's #889-closure ruling reaffirms #969 stays open as a distinct unresolved design question."
+  },
+  {
+    "number": 973,
+    "title": "ledger: a lost row has no governed restoration path, and #611's primitive deliberately refuses one",
+    "readiness": "R2-ruling",
+    "secondary": "R4-design",
+    "size": "larger",
+    "surfaces": [
+      "src/gzkit/ledger.py",
+      "src/gzkit/schemas/ledger.json",
+      "src/gzkit/commands/ledger_correct.py"
+    ],
+    "hot_files": [
+      ".gzkit/ledger.jsonl"
+    ],
+    "evidence": "Either a governed mechanism that can re-append a recovered historical row with honest provenance, or a recorded ruling that restoration is not a capability gzkit will offer.",
+    "precondition_status": "holds",
+    "notes": "Re-ran gz ledger --help: still only correct/corrections/merge-driver, no restore verb. Body frames this as a policy call before design questions can be posed."
+  },
+  {
+    "number": 978,
+    "title": "ownership prose: 13 sibling witness-chain refusals prescribe a refused step",
+    "readiness": "R2-ruling",
+    "secondary": "R4-design",
+    "size": "larger",
+    "surfaces": [
+      "src/gzkit/content/ownership.py",
+      "src/gzkit/commands/content/unown.py",
+      "src/gzkit/commands/content/own.py",
+      "tests/content/test_ownership.py",
+      "tests/commands/test_content_own.py",
+      "tests/commands/test_content_unown.py",
+      "docs/user/manpages/content.md"
+    ],
+    "hot_files": [],
+    "evidence": "Missing mechanisms awaiting an operator ruling (3 states, surfaced by arms 3, 4 and 5): no gz content verb declares a new section, removes a declaration entry, or mints a genesis event.",
+    "precondition_status": "holds",
+    "notes": "Long saga, 5 direct-fix passes landed. OBPI-0.35.0-04/05/06 now all Completed, so 'no live brief owns this' holds more strongly than when last asserted."
+  },
+  {
+    "number": 983,
+    "title": "section ownership: 10 of 12 corpus-owned sections carry no covering corpus content",
+    "readiness": "R4-design",
+    "secondary": "R2-ruling",
+    "size": "unknown",
+    "surfaces": [
+      "src/gzkit/content/ownership.py",
+      ".gzkit/ownership/AGENTS.md.json"
+    ],
+    "hot_files": [
+      "AGENTS.md",
+      ".gzkit/corpus/*"
+    ],
+    "evidence": "whether the correct remedy is a loader arm, a gz validate scope, or a corpus-population campaign is an open design question — this issue does not prescribe it.",
+    "precondition_status": "stale: body called OBPI-0.35.0-05 'Draft, in flight' at filing; it (and -06) are now status Completed — does not change the remedy-choice gate, just outdated context.",
+    "notes": "No comments; issue exactly as filed. Closure contract defers both the mechanism choice and disposition of the 10 sections to the operator."
+  },
+  {
+    "number": 993,
+    "title": "obpi acceptance human-review: no scope — hardcodes stage=\"adversarial\" for all obligations",
+    "readiness": "R1-ready",
+    "secondary": null,
+    "size": "<=100",
+    "surfaces": [
+      "src/gzkit/acceptance_store.py",
+      "src/gzkit/commands/obpi_acceptance.py",
+      "src/gzkit/cli/parser_acceptance.py",
+      "docs/user/manpages/obpi-acceptance.md"
+    ],
+    "hot_files": [
+      "src/gzkit/cli/parser_acceptance.py"
+    ],
+    "evidence": "Landed via the direct-fix path per AGENTS.md Defect-fix routing once scope is confirmed at fix time (surface is bounded, precedent exists for small gz obpi acceptance CLI/store changes).",
+    "precondition_status": "holds",
+    "notes": "No comments; closure contract gives concrete invariant, boundary, test plan, exit condition. Related GHIs #985/#961/#678 all CLOSED; no live OBPI brief owns the surface."
+  },
+  {
+    "number": 997,
+    "title": "eval-feedback-cluster: the chore runs fixtures, not live clustering",
+    "readiness": "R1-ready",
+    "secondary": "R4-design",
+    "size": "unknown",
+    "surfaces": [
+      "src/gzkit/chores/eval-feedback-cluster/CHORE.md",
+      "src/gzkit/chores/eval_feedback_cluster_lib.py",
+      "src/gzkit/commands/chores.py",
+      "src/gzkit/commands/chores_propose_ghi_cmd.py",
+      "tests/chores/test_eval_feedback_cluster.py"
+    ],
+    "hot_files": [],
+    "evidence": "Ownership search found this terminal brief and a terminal chore-pattern reference; neither authorizes new OBPI work.",
+    "precondition_status": "holds",
+    "notes": "ADR-0.0.26 Validated, OBPI-0.0.26-03 terminal/Completed, no live brief found. Fix shape clear (wire chore to real run_cluster); 'recent' population window undefined, a Read-step judgment call."
+  },
+  {
+    "number": 998,
+    "title": "waiver-ratchet: honesty mechanisms gate debt volume, never coverage",
+    "readiness": "R4-design",
+    "secondary": null,
+    "size": "unknown",
+    "surfaces": [
+      "src/gzkit/governance/trust_audits/waiver_ratchet.py",
+      "data/waiver_ratchet_registry.json",
+      "tests/governance/test_waiver_ratchet_scope.py"
+    ],
+    "hot_files": [],
+    "evidence": "Which arm is right is a design question this GHI does not settle.",
+    "precondition_status": "none",
+    "notes": "No external blocker; GHI's own closure contract states the remedy shape (cheap per-entry field vs. thorough sole-witness detector) is an open choice."
+  },
+  {
+    "number": 1003,
+    "title": "handoff rulings: a successor restating an inherited ruling books a second copy",
+    "readiness": "R3-sequence",
+    "secondary": "R2-ruling",
+    "size": "larger",
+    "surfaces": [
+      ".gzkit/skills/gz-session-handoff/SKILL.md",
+      "src/gzkit/handoff_rulings.py",
+      "src/gzkit/handoff_api.py"
+    ],
+    "hot_files": [
+      "campaign plan"
+    ],
+    "evidence": "No gzkit surface models that today. Its home is the campaign Movement D box \"Rulings become first-class\" (ruling_issued / ruling_superseded typed ledger events).",
+    "precondition_status": "holds: verified docs/governance/build-to-1.0-campaign-2026-08-16.md, Movement D 'Rulings become first-class' still an unchecked item as of 2026-09-27",
+    "notes": "Advisory arm already landed; identity-arm fix waits on operator drawing Movement D, which only the operator initiates."
+  },
+  {
+    "number": 1009,
+    "title": "chore staleness: accumulated-work declares no counter, so it is unmeasured",
+    "readiness": "R1-ready",
+    "secondary": null,
+    "size": "<=100",
+    "surfaces": [
+      "src/gzkit/commands/chores_declaration.py",
+      "src/gzkit/commands/chores_staleness.py",
+      ".gzkit/chores/registry.json",
+      ".gzkit/chores/README.md"
+    ],
+    "hot_files": [],
+    "evidence": "for example, pool ADR count for pool-triage, the waiver/grandfather population for decommission-tautological-tests, and rendered bytes over budget for instructions-files-diet.",
+    "precondition_status": "holds: verified #936 CLOSED; the routing ruling ('Declare content-delta (Recommended)', 2026-09-14) that authorizes this follow-up already landed",
+    "notes": "Per-chore counters are named concretely, existing measurable quantities, not new mechanisms. Ruling caveat applies only to a hypothetical new counter type."
+  },
+  {
+    "number": 1011,
+    "title": "chores: 4 CHORE.md files describe mechanisms or paths that don't exist",
+    "readiness": "R2-ruling",
+    "secondary": "R1-ready",
+    "size": "<=100",
+    "surfaces": [
+      ".gzkit/chores/validate-manpages/CHORE.md",
+      ".gzkit/chores/test-consolidation-subtest-sweep/CHORE.md",
+      ".gzkit/chores/doc-coverage/CHORE.md",
+      ".gzkit/chores/cross-platform-test-cleanup/CHORE.md",
+      "src/gzkit/chores/"
+    ],
+    "hot_files": [],
+    "evidence": "the operator rules between building the trace check and restating the chore as its actual `cli audit` subject",
+    "precondition_status": "none",
+    "notes": "3 of 4 are simple prose/removal fixes; validate-manpages needs an operator pick between build-check vs restate."
+  },
+  {
+    "number": 1012,
+    "title": "verifier-pipe-gate: reserved words and $( ) hide a verifier's head",
+    "readiness": "R1-ready",
+    "secondary": "R4-design",
+    "size": "<=100",
+    "surfaces": [
+      "src/gzkit/verifier_pipe_gate.py",
+      "src/gzkit/shell_reading.py",
+      "tests/hooks/test_verifier_pipe_gate.py"
+    ],
+    "hot_files": [],
+    "evidence": "each member measured in bash and /bin/sh before a verdict is pinned",
+    "precondition_status": "none",
+    "notes": "Acceptance evidence per-member is concrete; edge-case masking semantics for $() are an open design question, non-blocking."
+  },
+  {
+    "number": 1013,
+    "title": "verifier-pipe-gate: heredoc bodies are read as shell commands",
+    "readiness": "R1-ready",
+    "secondary": "R4-design",
+    "size": "<=100",
+    "surfaces": [
+      "src/gzkit/shell_reading.py",
+      "src/gzkit/verifier_pipe_gate.py",
+      "tests/hooks/test_verifier_pipe_gate.py"
+    ],
+    "hot_files": [],
+    "evidence": "A body FED TO A SHELL (bash <<EOF, sh -s <<EOF) is code, not data: it must not be elided into a silent permit. Either read it or refuse to guess, with the choice measured.",
+    "precondition_status": "none",
+    "notes": "Sibling of #1012, same gate; main case (heredoc body never masks/unmasks) is derivable, interpreter-piped edge case is open."
+  },
+  {
+    "number": 1014,
+    "title": "closeout: from_state is hardcoded and bypasses transition validation",
+    "readiness": "R2-ruling",
+    "secondary": "R1-ready",
+    "size": "<=100",
+    "surfaces": [
+      "src/gzkit/commands/closeout.py",
+      "src/gzkit/lifecycle.py",
+      "tests"
+    ],
+    "hot_files": [
+      ".gzkit/ledger.jsonl"
+    ],
+    "evidence": "the bypass is removed at every producer, a test demonstrates the invalid pair is refused, and the historical record's disposition is ruled on by the operator",
+    "precondition_status": "none",
+    "notes": "Code fix (route through transition()) is derivable; exit condition explicitly bundles an operator ruling on the 62 historical rows."
+  },
+  {
+    "number": 1015,
+    "title": "audit: Completed -> Validated unreachable; guard reads its own write",
+    "readiness": "R1-ready",
+    "secondary": null,
+    "size": "<=100",
+    "surfaces": [
+      "src/gzkit/commands/audit_cmd.py",
+      "src/gzkit/ledger.py",
+      "tests"
+    ],
+    "hot_files": [
+      ".gzkit/ledger.jsonl"
+    ],
+    "evidence": "the guard reads recorded Layer-2 state rather than a post-write derivation, the transition demonstrably lands in the ledger, and REQ-0.19.0-07-01's covering evidence is re-bound to the ledger event it names",
+    "precondition_status": "holds",
+    "notes": "Confirmed OBPI-0.19.0-07 is Completed/terminal; exit condition names no operator ruling, only known-uncertainty on historical rows is optional."
+  },
+  {
+    "number": 1018,
+    "title": "gz content: H1 sections can hold no corpus entry and are never ownable",
+    "readiness": "R4-design",
+    "secondary": null,
+    "size": "larger",
+    "surfaces": [
+      "src/gzkit/commands/content/remember.py",
+      "src/gzkit/commands/content/own.py",
+      "src/gzkit/content/ownership.py",
+      "src/gzkit/content/models/"
+    ],
+    "hot_files": [
+      "AGENTS.md",
+      ".gzkit/corpus/*"
+    ],
+    "evidence": "whether the right shape is a new verb (the operator's `gz content heading`), widening pillar parsing to H1, or a third ownership state for heading-only sections is a design question for the executing agent",
+    "precondition_status": "none",
+    "notes": "Three architecturally distinct remedies named, none chosen; a new verb would be contract-bearing (operator territory)."
+  },
+  {
+    "number": 1022,
+    "title": "templates/agents.md: adopter Gate Covenant rows name gz lint and a manual check for Gates 3 and 4",
+    "readiness": "R1-ready",
+    "secondary": null,
+    "size": "<=10",
+    "surfaces": [
+      "src/gzkit/templates/prd.md",
+      "src/gzkit/templates/obpi.md",
+      ".gzkit/templates/"
+    ],
+    "hot_files": [],
+    "evidence": "each such row agrees with root § Gate Covenant (Gate 5: all lanes; Gates 3–4: heavy); a test fails when a template states Gate 5 as lane-scoped",
+    "precondition_status": "holds",
+    "notes": "Original fix (2e44b60de) landed for templates/agents.md; reopened only for prd.md/obpi.md, same mechanical pattern."
+  },
+  {
+    "number": 1023,
+    "title": "gz cli: BDD has no verb of its own — Gate 4 and scenario work run bare behave",
+    "readiness": "R2-ruling",
+    "secondary": null,
+    "size": "larger",
+    "surfaces": [
+      "src/gzkit/commands/",
+      "src/gzkit/commands/gates.py",
+      ".gzkit/manifest.json",
+      "docs/user/manpages/",
+      ".gzkit/rules/tests.md"
+    ],
+    "hot_files": [],
+    "evidence": "this is new capability, not a defect remedy — it is filed here as observation routing on the operator's word and routes to a design home (pool ADR or an OBPI under an active ADR) that the operator chooses",
+    "precondition_status": "none",
+    "notes": "Issue's own exit condition requires operator to pick the destination; labeled enhancement, not defect."
+  },
+  {
+    "number": 1028,
+    "title": "gz-obpi-pipeline Stage 4: 4a and 4b invalidate each other with no bound and no exit",
+    "readiness": "R1-ready",
+    "secondary": "R3-sequence",
+    "size": "larger",
+    "surfaces": [
+      ".gzkit/skills/gz-obpi-pipeline/SKILL.md",
+      "src/gzkit/commands/obpi_complete_adversarial.py"
+    ],
+    "hot_files": [],
+    "evidence": "There are two sections called \"Stage 4.\" ... The repair landed in the section an agent reading \"Stage 4 the ceremony\" may never reach.",
+    "precondition_status": "stale: re-checked HEAD — `gz obpi block` now appears inside the second (Ceremony) Stage 4 span and the N=2 round bound is present in the first; the 2026-09-22 comment's finding-4 HOLDS verdict is superseded, though the frozen-subject cross-reference into the ceremony section is still absent",
+    "notes": "Most of the 5 original findings are now repaired per fresher tree read; residual is a small cross-reference plus a production-observation requirement from the next operator-initiated OBPI."
+  },
+  {
+    "number": 1030,
+    "title": "gz issue file: declared Step 0 pre-flight has no mechanism",
+    "readiness": "R1-ready",
+    "secondary": null,
+    "size": "<=100",
+    "surfaces": [
+      "src/gzkit/commands/issue_cmd.py",
+      ".gzkit/skills/gz-issue-file/SKILL.md",
+      ".gzkit/skills/ghi-author/SKILL.md"
+    ],
+    "hot_files": [],
+    "evidence": "whether the lookup belongs in the verb (adopter agents may lack `gh` search scope on the target) or in the skill is a design choice for the fixer",
+    "precondition_status": "holds",
+    "notes": "Two OR'd acceptance paths given (mechanical lookup, or make skill's declaration match reality); either is fixer's judgment call, not operator's."
+  },
+  {
+    "number": 1032,
+    "title": "agent sync: exits 0 while printing 'Recovery required' for stale mirror paths",
+    "readiness": "R1-ready",
+    "secondary": null,
+    "size": "<=100",
+    "surfaces": [
+      "src/gzkit/commands/tidy.py",
+      "src/gzkit/sync_skills.py",
+      "tests"
+    ],
+    "hot_files": [],
+    "evidence": "stale mirror-only path present → status is distinguishable from a clean sync (test drives the stale-path state, not a string); control: clean tree → exit 0, unchanged",
+    "precondition_status": "holds",
+    "notes": "Confirmed live: tidy.py:86 still prints \"Recovery required\" with no exit-code/status change; two sibling instances (#1124/#1135) filed separately, non-blocking."
+  },
+  {
+    "number": 1034,
+    "title": "gz-flighttest: the skill ships to the target, the program files it reads do not",
+    "readiness": "R1-ready",
+    "secondary": "R3-sequence",
+    "size": "larger",
+    "surfaces": [
+      ".gzkit/skills/gz-flighttest/",
+      "docs/flighttest/",
+      "mkdocs.yml"
+    ],
+    "hot_files": [],
+    "evidence": "the shape is the fixer's choice — moving the four files into the skill's `assets/` (which ships) with `docs/flighttest/` pointing at them is the obvious candidate, but it touches the docs site",
+    "precondition_status": "holds",
+    "notes": "Confirmed #1138 (catalog-wide sibling, same class across 42 skills) is still OPEN; fixing this instance alone risks rework once #1138's shape lands."
+  },
+  {
+    "number": 1039,
+    "title": "skills audit: fresh audit-first import fails on circular dependency",
+    "readiness": "R1-ready",
+    "secondary": null,
+    "size": "<=100",
+    "surfaces": [
+      "src/gzkit/skills_audit.py",
+      "src/gzkit/skills/__init__.py",
+      "tests/test_skills.py"
+    ],
+    "hot_files": [],
+    "evidence": "exact import-boundary repair is left to the implementing pass; extracting shared definitions or delayed compatibility imports are hypotheses, not acceptance criteria",
+    "precondition_status": "holds",
+    "notes": "Owning OBPI-0.0.32-01 confirmed Completed/terminal (does not own this residual); classic circular-import fix, well-bounded."
+  },
+  {
+    "number": 1044,
+    "title": "chore rules: canonical authoring and damaged-slug recovery name opposing sources",
+    "readiness": "R2-ruling",
+    "secondary": null,
+    "size": "unknown",
+    "surfaces": [
+      ".gzkit/rules/chores.md",
+      ".gzkit/rules/skill-surface-sync.md",
+      "src/gzkit/commands/chores.py",
+      "src/gzkit/sync_surfaces.py"
+    ],
+    "hot_files": [],
+    "evidence": "no implementation is selected before the source/recovery distinction is ruled",
+    "precondition_status": "none",
+    "notes": "Tagged investigation; explicit exit condition requires an operator-ruled resolution naming which source is authoritative."
+  },
+  {
+    "number": 1060,
+    "title": "sync docs: delivery table names retired vendor targets",
+    "readiness": "R1-ready",
+    "secondary": null,
+    "size": "<=100",
+    "surfaces": [
+      "docs/user/skills/*.md",
+      "docs/user/manpages/agent-sync-control-surfaces.md"
+    ],
+    "hot_files": [],
+    "evidence": "Pages state the mirror set by pointing at the vendor roster (skill-surface-sync.md rule 4) rather than listing paths. `mkdocs build --strict` stays green.",
+    "precondition_status": "holds",
+    "notes": "Confirmed live: `grep -rl \".github/skills\" docs/user` still returns 40 files; mechanical prose fix, same pattern already applied to 8 pages and the manpage."
+  },
+  {
+    "number": 1062,
+    "title": "report publish: witnessed bytes in a scanned tree have no repair path",
+    "readiness": "R1-ready",
+    "secondary": "R4-design",
+    "size": "<=100",
+    "surfaces": [
+      "src/gzkit/governance/trust_audits/",
+      "src/gzkit/reports.py",
+      "tests/governance/"
+    ],
+    "hot_files": [],
+    "evidence": "for each consumer found to scan a retained-record root, a live negative control ... paired with a control asserting the same construct in a non-retained docs/ file still does error",
+    "precondition_status": "none",
+    "notes": "Acceptance criteria (paired positive/negative controls) are concrete regardless of which of 3 hypothesized shapes is chosen; enumeration may return a null result."
+  },
+  {
+    "number": 1063,
+    "title": "registries: 51 validator scopes and 10 event types are never invoked",
+    "readiness": "R2-ruling",
+    "secondary": null,
+    "size": "larger",
+    "surfaces": [
+      "src/gzkit/commands/quality.py",
+      "src/gzkit/commands/validate_cmd.py",
+      "src/gzkit/chores/control-surface-validator-reachability/",
+      "src/gzkit/chores/ledger-vocabulary-inertness/"
+    ],
+    "hot_files": [],
+    "evidence": "Next concrete operator action: rule whether the enrollment witness is (a) a new checklist item under an existing active ADR, (b) a chore-class promotion ... or (c) deferred until the campaign reaches a Movement that can accept it.",
+    "precondition_status": "holds",
+    "notes": "Author's own comment names this a non-blocking, explicitly operator-owned routing decision (pool-ADR route is forbidden by Architectural Boundary #2)."
+  },
+  {
+    "number": 1091,
+    "title": "control surfaces: 2026-09-17 compression dropped 23 binding conditions",
+    "readiness": "R1-ready",
+    "secondary": null,
+    "size": "<=10",
+    "surfaces": [
+      ".gzkit/corpus/AGENTS.md.jsonl",
+      ".gzkit/renditions/AGENTS.md/",
+      "AGENTS.md"
+    ],
+    "hot_files": [
+      "AGENTS.md",
+      ".gzkit/corpus/*"
+    ],
+    "evidence": "every binding finding in the sweep is either restored or was ruled with its drop named. Open work under this issue is now only prevention: OBPI-0.35.0-14, in its pipeline.",
+    "precondition_status": "stale: OBPI-0.35.0-14 (meaning-preserving-landing) is now status Completed, not \"in its pipeline\" — verified in docs/design/adr/pre-release/ADR-0.35.0.../obpis/OBPI-0.35.0-14-meaning-preserving-landing.md",
+    "notes": "All 23 binding findings already dispositioned per comments; the one remaining precondition (prevention OBPI) has since landed, so closing evidence just needs assembling."
+  },
+  {
+    "number": 1110,
+    "title": "skill alignment: 16 of 27 no-skill waivers name wielded verbs",
+    "readiness": "R1-ready",
+    "secondary": null,
+    "size": "<=100",
+    "surfaces": [
+      "src/gzkit/governance/trust_audits/cli.py",
+      "its test"
+    ],
+    "hot_files": [],
+    "evidence": "the audit fails on a fixture waiving a wielded verb and passes on the repo after the redundant entries are removed or re-justified; group keys handled deliberately",
+    "precondition_status": "none",
+    "notes": "Concrete, enumerated list of false waivers with named skills that already exist; group-key split is fixer judgment, not operator's."
+  },
+  {
+    "number": 1113,
+    "title": "chores: 8 chores run pinned tools through unpinned uvx",
+    "readiness": "R1-ready",
+    "secondary": null,
+    "size": "<=100",
+    "surfaces": [
+      ".gzkit/chores/*/",
+      "src/gzkit/chores/*/"
+    ],
+    "hot_files": [],
+    "evidence": "every chore command invoking a tool pinned in `pyproject.toml` runs it as `uv run <tool>`",
+    "precondition_status": "none",
+    "notes": "No live OBPI owns chores surface; #1105 is the direct precedent fix; adopter-shipped-chore question is flagged as separately open."
+  },
+  {
+    "number": 1119,
+    "title": "gz prd / constitute: an existing id is overwritten and re-booked",
+    "readiness": "R1-ready",
+    "secondary": null,
+    "size": "<=100",
+    "surfaces": [
+      "src/gzkit/commands/init_cmd.py",
+      "src/gzkit/commands/interview_cmd.py"
+    ],
+    "hot_files": [],
+    "evidence": "plan create already guards the ADR equivalent (`ledger.has_adr_created`)",
+    "precondition_status": "none",
+    "notes": "Comment folds #1120's id-canonicalization gap into this scope, not a blocker; analog guard pattern exists to copy."
+  },
+  {
+    "number": 1120,
+    "title": "gz interview prd: the PRD id bypasses canonicalization",
+    "readiness": "R1-ready",
+    "secondary": null,
+    "size": "<=10",
+    "surfaces": [
+      "src/gzkit/commands/interview_cmd.py"
+    ],
+    "hot_files": [],
+    "evidence": "every PRD id written by any producer matches the `prd.json` id pattern (GHI #186)",
+    "precondition_status": "none",
+    "notes": "Shared canonicalizer (`_canonicalize_prd_id`) already exists; mechanical reroute."
+  },
+  {
+    "number": 1121,
+    "title": "cli: a string SystemExit exits 1 with its message discarded",
+    "readiness": "R1-ready",
+    "secondary": null,
+    "size": "<=10",
+    "surfaces": [
+      "src/gzkit/cli/main.py"
+    ],
+    "hot_files": [],
+    "evidence": "every non-zero exit caused by a string SystemExit prints that string to stderr",
+    "precondition_status": "none",
+    "notes": "Dispatcher-print vs per-site GzCliError conversion left to executing agent; invariant is fixed either way."
+  },
+  {
+    "number": 1124,
+    "title": "gz tidy: --check is a no-op and findings never set the exit code",
+    "readiness": "R2-ruling",
+    "secondary": "R1-ready",
+    "size": "<=100",
+    "surfaces": [
+      "src/gzkit/commands/tidy.py",
+      "src/gzkit/cli/parser_maintenance.py",
+      "docs/user/manpages/tidy.md",
+      "docs/user/runbook.md"
+    ],
+    "hot_files": [],
+    "evidence": "whether tidy should gate or stay informational is a design ruling",
+    "precondition_status": "none",
+    "notes": "Gate-vs-informational is the core exit-code decision; check_only wiring itself is mechanical once ruled."
+  },
+  {
+    "number": 1125,
+    "title": "gz tidy: validate_all forks gz validate and ignores its scope rulings",
+    "readiness": "R1-ready",
+    "secondary": null,
+    "size": "<=100",
+    "surfaces": [
+      "src/gzkit/commands/tidy.py",
+      "src/gzkit/validate.py",
+      "src/gzkit/ledger.py"
+    ],
+    "hot_files": [],
+    "evidence": "tidy's validation findings are exactly those the registry's default tier reports, each naming its artifact",
+    "precondition_status": "none",
+    "notes": "validate_all has a single caller (tidy); reduce-to-registry-call is derivable; #1124 is a separate concern per comment."
+  },
+  {
+    "number": 1126,
+    "title": "adr promote: kind refusals prescribe kinds the command refuses",
+    "readiness": "R1-ready",
+    "secondary": null,
+    "size": "<=30",
+    "surfaces": [
+      "src/gzkit/commands/adr_promote.py",
+      "src/gzkit/commands/plan.py"
+    ],
+    "hot_files": [],
+    "evidence": "every kind-refusal message in plan create and adr promote names only kinds that command would accept in the current project",
+    "precondition_status": "none",
+    "notes": "`foundation_kind_is_closed` already exists as the decider; mechanical message fix, tested closed and open."
+  },
+  {
+    "number": 1127,
+    "title": "cli help: plan/promote examples omit --kind; descriptions misstate verbs",
+    "readiness": "R1-ready",
+    "secondary": null,
+    "size": "<=100",
+    "surfaces": [
+      "src/gzkit/cli/parser_governance.py",
+      "src/gzkit/cli/parser_artifacts.py",
+      "src/gzkit/cli/parser_maintenance.py",
+      "src/gzkit/commands/upgrade.py",
+      "docs/user/runbook.md"
+    ],
+    "hot_files": [],
+    "evidence": "every example in a parser epilog parses and passes the handler's argument validation",
+    "precondition_status": "none",
+    "notes": "Mechanical rewrite + example-execution test; full-catalog scope is an agent judgment call, not a blocker."
+  },
+  {
+    "number": 1128,
+    "title": "plan create: kind, semver and embedded id semver are not bound",
+    "readiness": "R1-ready",
+    "secondary": null,
+    "size": "<=30",
+    "surfaces": [
+      "src/gzkit/commands/plan.py"
+    ],
+    "hot_files": [],
+    "evidence": "plan create refuses foundation with a non-0.0.x semver, and feature with 0.0.x, whenever the kind is open",
+    "precondition_status": "none",
+    "notes": "Known uncertainties: none (stated). Analog enforcement exists in adr_promote.py to port."
+  },
+  {
+    "number": 1129,
+    "title": "plan create --kind pool: no Target Scope; parent names gzkit's PRD",
+    "readiness": "R1-ready",
+    "secondary": null,
+    "size": "<=30",
+    "surfaces": [
+      "src/gzkit/templates/adr_pool.md",
+      "src/gzkit/commands/plan.py"
+    ],
+    "hot_files": [],
+    "evidence": "without --parent, the default is the project's PRD if one exists, or else no dangling id",
+    "precondition_status": "none",
+    "notes": "No-PRD default flagged as a design choice, but acceptance evidence already specifies the fallback behavior."
+  },
+  {
+    "number": 1130,
+    "title": "cli --json: adr promote and status print human lines on stdout",
+    "readiness": "R1-ready",
+    "secondary": null,
+    "size": "<=30",
+    "surfaces": [
+      "src/gzkit/commands/adr_promote.py",
+      "src/gzkit/commands/status.py"
+    ],
+    "hot_files": [],
+    "evidence": "under --json, stdout is exactly one JSON document, and warnings go to stderr",
+    "precondition_status": "none",
+    "notes": "Same family as #1010 (precedent fix exists); mechanical console.print reroute to stderr."
+  },
+  {
+    "number": 1131,
+    "title": "adr promote: promotion never books adr_created for the new id",
+    "readiness": "R4-design",
+    "secondary": "R2-ruling",
+    "size": "unknown",
+    "surfaces": [
+      "src/gzkit/commands/adr_promote.py",
+      "src/gzkit/commands/register.py",
+      ".gzkit/ledger.jsonl"
+    ],
+    "hot_files": [
+      ".gzkit/ledger.jsonl"
+    ],
+    "evidence": "The design choice is the operator's.",
+    "precondition_status": "none",
+    "notes": "Labeled investigation; deliverable is measurement + ruling-ready recommendation, not yet a fix; remedy not chosen."
+  },
+  {
+    "number": 1132,
+    "title": "adr_promote_utils: dead _adr_bucket_for_semver names a nonexistent bucket",
+    "readiness": "R1-ready",
+    "secondary": null,
+    "size": "<=10",
+    "surfaces": [
+      "src/gzkit/commands/adr_promote_utils.py"
+    ],
+    "hot_files": [],
+    "evidence": "no uncalled private helper describing a nonexistent ADR layout remains",
+    "precondition_status": "none",
+    "notes": "Dead code confirmed by grep in the body itself; pure deletion plus a doc-claim grep sweep."
+  },
+  {
+    "number": 1133,
+    "title": "hooks: GOVERNANCE_PATTERNS ignores configured artifact paths",
+    "readiness": "R1-ready",
+    "secondary": null,
+    "size": "<=30",
+    "surfaces": [
+      "src/gzkit/hooks/core.py"
+    ],
+    "hot_files": [],
+    "evidence": "a file under any configured governance-artifact path (config.paths.prd, constitutions, adrs, OBPI locations) matches, for any .gzkit.json",
+    "precondition_status": "none",
+    "notes": "Constant-roster side question (ADR-0.39.0) is a note, not a blocker to the main config-driven fix."
+  },
+  {
+    "number": 1134,
+    "title": "constitution type: registry, transitions, model and schema disagree",
+    "readiness": "R2-ruling",
+    "secondary": "R1-ready",
+    "size": "<=30",
+    "surfaces": [
+      "src/gzkit/registry.py",
+      "src/gzkit/core/lifecycle.py",
+      "src/gzkit/core/models.py",
+      "src/gzkit/schemas/constitution.json"
+    ],
+    "hot_files": [],
+    "evidence": "whether Amended or Review is the intended state is a doctrine choice to surface",
+    "precondition_status": "none",
+    "notes": "Cross-source consistency test and path-match fix are mechanical; picking the canonical state set needs a ruling."
+  },
+  {
+    "number": 1135,
+    "title": "gz init: success lines are printed without checking the action",
+    "readiness": "R1-ready",
+    "secondary": null,
+    "size": "<=30",
+    "surfaces": [
+      "src/gzkit/commands/ledger.py",
+      "src/gzkit/commands/init_cmd.py"
+    ],
+    "hot_files": [],
+    "evidence": "each of these messages prints only when its action succeeded or, in dry-run, is phrased as would-do",
+    "precondition_status": "none",
+    "notes": "Same family as #1032 (precedent fix exists); check-return-code pattern is mechanical."
+  },
+  {
+    "number": 1136,
+    "title": "docs: init --force and sync described with behaviour they lack",
+    "readiness": "R1-ready",
+    "secondary": null,
+    "size": "<=30",
+    "surfaces": [
+      ".gzkit/rules/skill-surface-sync.md",
+      "docs/user/runbook.md",
+      "docs/governance/governance_runbook.md"
+    ],
+    "hot_files": [],
+    "evidence": "every statement above matches init_cmd.py, sync_skills.py and gzkit.personas, and counts point at their authority",
+    "precondition_status": "stale: EDITED-marker item resolved by 3cad9e3f1 (GHI #1122), commit confirmed present in git log; the other 4 items still hold — I confirmed CORE_PERSONAS len is 7 (not 6) via `uv run python -c ...`, and runbook/storybook still show PRD before Constitution",
+    "notes": "Operator comment narrows scope to 4 remaining items; verified persona count independently."
+  },
+  {
+    "number": 1137,
+    "title": "docs: runbook and storybook order PRD before Constitution, against canon",
+    "readiness": "R1-ready",
+    "secondary": null,
+    "size": "<=10",
+    "surfaces": [
+      "docs/user/runbook.md",
+      "docs/user/storybook/from-init-to-first-attested-release.md"
+    ],
+    "hot_files": [],
+    "evidence": "every operator-facing statement of the intent-stage order agrees with AGENTS.md § Pattern Discovery",
+    "precondition_status": "holds: confirmed via grep that runbook.md:33 and the storybook still state PRD -> Constitution while AGENTS.md:115 states Constitution -> PRD",
+    "notes": "Verified the discrepancy is still live in both files as described; pure doc sweep."
+  },
+  {
+    "number": 1138,
+    "title": "skills: 42 delivered skills cite docs/ paths adopters never have",
+    "readiness": "R4-design",
+    "secondary": "R2-ruling",
+    "size": "larger",
+    "surfaces": [
+      ".gzkit/skills/*/SKILL.md",
+      ".gzkit/rules/cross-platform.md",
+      "tests/governance/"
+    ],
+    "hot_files": [],
+    "evidence": "the executor should split the 62 into gzkit-only references and adopter-generated paths before choosing a remedy per reference",
+    "precondition_status": "none",
+    "notes": "42 skills, per-reference remedy (ship/rewrite/drop/project_local) not derivable in bulk; rule-doctrine amendment also needed."
+  }
+]
