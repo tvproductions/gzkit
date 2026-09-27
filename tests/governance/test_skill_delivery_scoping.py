@@ -161,6 +161,41 @@ class TestSkillDeliveryBoundary(unittest.TestCase):
             self.assertIn("src/gzkit/skills/gz-ordinary/SKILL.md", written)
             self.assertNotIn("src/gzkit/skills/gz-internal/SKILL.md", written)
 
+    def test_sync_delivers_every_packaged_asset_of_a_shipped_skill(self) -> None:
+        """A skill's `references/*.md` reach the package tree with its SKILL.md (GHI #1108).
+
+        `gz init` walks the package tree recursively, so a reference file sync
+        leaves behind is a dead link in every adopter's copy of the skill. Only
+        what the wheel include glob (`src/gzkit/skills/**/*.md`) packages is
+        copied; `agents/openai.yaml` is vendor-mirror metadata and never ships.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._project(root)
+            skill_dir = _write_skill(root, "gz-ordinary", project_local=False)
+            (skill_dir / "references").mkdir()
+            (skill_dir / "references" / "flow.md").write_text("# Flow\n", encoding="utf-8")
+            (skill_dir / "agents").mkdir()
+            (skill_dir / "agents" / "openai.yaml").write_text("interface: {}\n", encoding="utf-8")
+            written = self._sync(root)
+            pkg_skill = root / "src" / "gzkit" / "skills" / "gz-ordinary"
+            self.assertEqual(
+                (pkg_skill / "references" / "flow.md").read_text(encoding="utf-8"), "# Flow\n"
+            )
+            self.assertIn("src/gzkit/skills/gz-ordinary/references/flow.md", written)
+            self.assertFalse((pkg_skill / "agents" / "openai.yaml").exists())
+
+    def test_a_withheld_slug_ships_none_of_its_assets(self) -> None:
+        """The project-local fence covers a skill's reference files, not only its SKILL.md."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._project(root)
+            skill_dir = _write_skill(root, "gz-internal", project_local=True)
+            (skill_dir / "references").mkdir()
+            (skill_dir / "references" / "flow.md").write_text("# Flow\n", encoding="utf-8")
+            self._sync(root)
+            self.assertEqual(self._delivered(root), set())
+
     def test_package_side_residue_is_removed_and_accounted_for(self) -> None:
         """Sync walks the canonical side, so declining to copy cannot remove.
 

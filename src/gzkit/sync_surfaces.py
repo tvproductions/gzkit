@@ -855,7 +855,7 @@ def sync_pkg_surfaces(project_root: Path, config: GzkitConfig) -> list[str]:
     updated: list[str] = []
     pkg_root = project_root / "src" / "gzkit"
 
-    # Skills: .gzkit/skills/<slug>/SKILL.md → src/gzkit/skills/<slug>/SKILL.md
+    # Skills: .gzkit/skills/<slug>/**/*.md → src/gzkit/skills/<slug>/**/*.md
     if _pkg_surface_exists(project_root, "skills"):
         from gzkit.skills import _classify_skill_file  # noqa: PLC0415
 
@@ -872,9 +872,16 @@ def sync_pkg_surfaces(project_root: Path, config: GzkitConfig) -> list[str]:
             # class reach this boundary at all (GHI #915).
             if _classify_skill_file(skill_md, project_root=project_root) != "canonical":
                 continue
-            _copy_if_changed(
-                skill_md, pkg_root / "skills" / skill_dir.name / "SKILL.md", project_root, updated
-            )
+            # Every `*.md` the wheel include glob packages, not SKILL.md alone:
+            # `gz init` walks the package tree recursively, so a `references/`
+            # file left behind is a dead link in every adopter copy (GHI #1108).
+            for asset in sorted(skill_dir.rglob("*.md")):
+                _copy_if_changed(
+                    asset,
+                    pkg_root / "skills" / skill_dir.name / asset.relative_to(skill_dir),
+                    project_root,
+                    updated,
+                )
 
     # Rules / personas / templates: flat canonical dirs gated by a per-surface classifier
     if _pkg_surface_exists(project_root, "rules"):
