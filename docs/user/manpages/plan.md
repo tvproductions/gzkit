@@ -20,7 +20,7 @@ gz plan {create,audit} [OPTIONS]
 
 | Subcommand | Purpose | Details |
 |------------|---------|---------|
-| [`gz plan create`](plan-create.md) | Create a new ADR scaffold | Taxonomy-aware: `--kind {pool,foundation,feature}` routes output and frontmatter. Foundation requires `--semver 0.0.x`; feature requires non-`0.0.x`; pool writes a flat backlog ADR. |
+| [`gz plan create`](plan-create.md) | Create a new ADR scaffold | Taxonomy-aware: the required `--kind` routes output and frontmatter. Feature requires non-`0.0.x` semver and books `adr_created`; pool writes a flat backlog ADR and books nothing; `foundation` is refused where the kind is closed, as it is in gzkit (ADR-0.34.0). |
 | [`gz plan audit`](plan-audit.md) | Structural prerequisite check for plan-OBPI alignment | Verifies ADR package, OBPI brief, plan file, and allowed-path containment before implementation begins. |
 
 ---

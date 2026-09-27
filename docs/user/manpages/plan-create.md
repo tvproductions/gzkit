@@ -7,7 +7,7 @@ Create a new ADR scaffold with a deterministic decomposition scorecard.
 ## Usage
 
 ```bash
-gz plan <name> [OPTIONS]
+gz plan create <name> --kind {feature,pool} [OPTIONS]
 ```
 
 ---
@@ -16,7 +16,7 @@ gz plan <name> [OPTIONS]
 
 | Argument | Required | Description |
 |----------|----------|-------------|
-| `name` | Yes | ADR name or identifier |
+| `name` | Yes | Descriptive kebab-case slug; the id becomes `ADR-<semver>-<name>` (pool: `ADR-pool.<name>`). A full `ADR-<semver>-<slug>` id is used as given. For a non-pool kind a bare semver (`0.2.0`) or a bare `ADR-<semver>` without a slug is refused, exit 1 (GHI #494). |
 
 ---
 
@@ -38,20 +38,20 @@ gz plan <name> [OPTIONS]
 | `--split-surface-boundary` | flag | off | Add mandatory split for internal/external mixing |
 | `--split-state-anchor` | flag | off | Add mandatory split for mixed state writes |
 | `--split-testability-ceiling` | flag | off | Add mandatory split when scenario clusters exceed ceiling |
-| `--baseline-selected` | integer | computed | Override selected baseline count within computed range |
+| `--baseline-selected` | integer | lower bound of the computed range | Selected baseline count; a value outside the computed range fails (exit 1) |
 | `--dry-run` | flag | — | Show actions without writing |
 
 ---
 
 ## What It Does
 
-1. Rejects `--kind foundation` **before** any file or ledger write (see [Closed kind: `foundation`](#closed-kind-foundation)).
-2. Validates `--kind` / `--semver` compatibility **before** any file or ledger write.
-3. Creates an ADR document from the taxonomy-appropriate template.
-4. Routes output by kind:
-   - `feature` → `design/adr/pre-release/<id>/<id>.md` (per-ADR folder)
-   - `pool` → `design/adr/pool/ADR-pool.<slug>.md` (flat)
-5. For `feature`, computes and writes a deterministic `## Decomposition Scorecard`, seeds `## Checklist`, and records ADR creation in the ledger. Pool ADRs are backlog stubs and are only registered after promotion via `gz adr promote`.
+1. Refuses, exit 1 and before any file or ledger write: a missing `--kind`; `--kind foundation` where the kind is closed (see [Closed kind: `foundation`](#closed-kind-foundation)); `--kind feature` with a `0.0.x` `--semver`; a bare-semver or slugless `ADR-<semver>` `name` for a non-pool kind.
+2. `feature`: renders the ADR template (`src/gzkit/templates/adr.md`) with status `Draft`, a deterministic `## Decomposition Scorecard` and a `## Checklist` seeded to the scorecard's final OBPI count, and writes `<paths.adrs>/pre-release/<id>/<id>.md` (per-ADR folder).
+3. `feature`: appends an `adr_created` ledger event, skipped with a warning when the id already has one. The ADR file is written first, so when this step fails the file stays on disk: exit 3 if the directory name is not a canonical `ADR-<semver>-<slug>` id, exit 2 if the ledger append fails or the id is absent from the graph afterwards. Each message names `gz register-adrs --all` as the recovery.
+4. `pool`: renders `src/gzkit/templates/adr_pool.md` (no scorecard, checklist, `kind:` or `semver:`) to `<paths.adrs>/pool/ADR-pool.<name>.md` and appends **no** ledger event. [`gz register-adrs`](register-adrs.md) books pool ADRs. `gz adr promote` requires a `## Target Scope` section, which the pool template does not carry, so author one before promoting.
+5. `--dry-run` applies step 1, prints the path it would write and, for a non-pool kind, the `adr_created` event it would append, then exits 0 without writing.
+
+It creates no OBPI briefs; `gz specify` does, one per checklist item.
 
 ---
 
@@ -104,9 +104,11 @@ in-flight ones.
 
 ## Output
 
+The path printed is absolute:
+
 ```
-Created ADR: design/adr/pre-release/ADR-0.2.0-login-impl/ADR-0.2.0-login-impl.md
-Created pool ADR: design/adr/pool/ADR-pool.exotic-idea.md
+Created ADR: <project>/docs/design/adr/pre-release/ADR-0.2.0-login-impl/ADR-0.2.0-login-impl.md
+Created pool ADR: <project>/docs/design/adr/pool/ADR-pool.exotic-idea.md
 ```
 
 ---
@@ -118,16 +120,21 @@ Each dimension is scored 0 (none), 1 (simple), or 2 (complex):
 
 | Dimension | Score | Rationale |
 |-----------|-------|-----------|
-| Data state | 0 | No persistent storage in this ADR |
+| Data state | 1 | One persisted index |
 | Logic | 2 | Predicate DSL parsing + evaluation |
 | Interface | 1 | ReadRepo protocol definition |
 | Observability | 0 | Not needed yet |
 | Lineage | 0 | No upstream/downstream dependencies |
-| **Total** | **3** | |
+| **Total** | **4** | |
 
-**Reading the total:** A total of 3 means 3-4 OBPIs are recommended.
-The formula is `baseline = total` with a range of `[total, total+1]`.
-Mandatory splits (flags like `--split-surface-boundary`) add +1 each.
+**Reading the total:** `baseline_range_for_total` in `src/gzkit/core/scoring.py`
+maps the dimension total to a baseline range, the table in
+[OBPI Decomposition Matrix](../../governance/GovZero/obpi-decomposition-matrix.md)
+§ Step 2. This total falls in the band that yields a baseline of 3.
+`--baseline-selected` chooses inside a range that spans more than one count
+and defaults to its lower bound. Each mandatory split flag
+(`--split-surface-boundary` and the rest) adds one OBPI, and the sum is the
+number of checklist items seeded.
 
 In this example, three checklist items map naturally:
 
@@ -145,20 +152,20 @@ probably underscored something.
 
 The created ADR contains:
 
-- **Metadata**: ID, title, version, lane, parent
+- **Frontmatter**: `id`, `status: Draft`, `kind`, `semver`, `lane`, `parent`, `date`
 - **Decomposition Scorecard**: dimension scores, baseline range/selection, mandatory splits, final OBPI target
-- **Checklist**: auto-seeded count that must match scorecard target
-- **Attestation Table**: lifecycle sign-off tracking
+- **Checklist**: one placeholder `OBPI-<semver>-NN` item per targeted OBPI
+- **Attestation Block**: lifecycle sign-off tracking
+- Persona, Decision, Consequences, Fidelity Assertions, Q&A Transcript, Evidence, Alternatives Considered and Forcing Functions sections carrying `_[Author: …]_` prompts
 
 ---
 
 ## Workflow
 
-1. Create an ADR with `gz plan` (this command)
-2. Adjust score/split inputs until target decomposition is right-sized
-3. Create OBPIs with `gz specify --parent ADR-... --item N`
+1. Preview with `gz plan create <name> --kind feature --semver X.Y.Z --dry-run`
+2. Adjust score/split inputs until target decomposition is right-sized, then create the ADR
+3. Create OBPIs with `gz specify <slug> --parent ADR-<X.Y.Z>-<slug> --item <N>`
 4. Check lifecycle with `gz status` / `gz adr status`
-5. Attest with `gz attest`
 
 ---
 
@@ -166,4 +173,4 @@ The created ADR contains:
 
 - [ADR-0.0.17 — ADR Taxonomy (Mechanical)](../../design/adr/foundation/ADR-0.0.17-adr-taxonomy-mechanical/ADR-0.0.17-adr-taxonomy-mechanical.md) — the mechanical contract this command implements (`kind:` frontmatter, `--kind` flag, kind/semver binding).
 - [ADR-0.0.18 — ADR Taxonomy (Doctrine)](../../design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/ADR-0.0.18-adr-taxonomy-doctrine.md) — operator-facing guidance on *when to choose which* kind (PRD → ADR derivation, pool curation, epic grouping, worked examples).
-- `AGENTS.md` § Kinds (pool, foundation, feature) — the axis summary and mechanical enforcement surfaces.
+- `AGENTS.md` § Gate Covenant — the kind axis (`feature`, `pool`; `foundation` closed) and `gz validate --taxonomy`.

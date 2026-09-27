@@ -3,10 +3,10 @@ name: gz-plan
 description: Create ADR artifacts for planned change. Use when recording architecture intent and lane-specific scope.
 category: adr-lifecycle
 metadata:
-  skill-version: "1.5.0"
+  skill-version: "1.6.0"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-24
+last_reviewed: 2026-09-27
 model: opus
 ---
 
@@ -14,10 +14,52 @@ model: opus
 
 ## Overview
 
-
 > **Self-Escalation (opus-tier).** The dialogue with the operator stays in the main session: a subagent cannot ask the operator a question or hear the answer, and what the operator adds is this skill's primary input. When the session model is below opus-tier, you may spawn an `Agent` with `model="opus"` for a bounded drafting or QC track that needs no operator input — pass the operator's words verbatim and the relevant context (ADR IDs, OBPI IDs, prior decisions), and treat what it returns as a draft you verify, not as the operator-facing result.
 
-Operate the gz plan command surface as a reusable governance workflow.
+Scaffold one ADR from its template and, for a non-pool kind, book it in the
+ledger. `uv run gz plan create <name>` (`plan_cmd`, `src/gzkit/commands/plan.py`):
+
+- **refuses before any write, exit 1,** when `--kind` is missing (argparse gives
+  it no default; `_validate_kind_and_semver` requires it); when `--kind
+  foundation` is asked in a project that has sunset the kind
+  (`foundation_kind_is_closed`: `data/foundation_grandfather.json` exists, as it
+  does in gzkit per ADR-0.34.0; an adopter without that file keeps the kind
+  open); when `--kind feature` carries a `0.0.x` `--semver`; and, for a non-pool
+  kind, when `name` is a bare semver or a bare `ADR-<semver>` id without a slug
+  (`_reject_noncanonical_name`, GHI #494);
+- **non-pool:** composes the id `ADR-<semver>-<name>` (a `name` already of that
+  form is used as given), renders `src/gzkit/templates/adr.md` with status
+  `Draft`, a Decomposition Scorecard and a `## Checklist` seeded with one
+  placeholder `OBPI-<semver>-NN` item per targeted OBPI, and writes it to
+  `<paths.adrs>/pre-release/<id>/<id>.md` (`foundation/<id>/` for an open
+  foundation kind);
+- then appends `adr_created` through `register_adr_in_ledger`, which skips an id
+  that already has one (`Ledger.has_adr_created`). It exits 3 when the
+  directory name is not a canonical id or the package is an ungrandfathered
+  foundation, and 2 when the append fails or the id is missing from the graph
+  afterwards, each time naming `uv run gz register-adrs --all` as the recovery.
+  The ADR file is already on disk in all of those cases;
+- **pool:** writes `<paths.adrs>/pool/ADR-pool.<name>.md` from
+  `src/gzkit/templates/adr_pool.md` (no scorecard, no checklist, no `kind:` or
+  `semver:`; `--semver` is ignored) and **books nothing**: the pool branch
+  returns before `register_adr_in_ledger`. `uv run gz register-adrs` books pool
+  entries.
+
+`--dry-run` runs every refusal above, prints the path it would write and, for a
+non-pool kind, the `adr_created` it would append, and writes nothing.
+
+It creates no OBPI briefs: `gz specify` (skill `gz-obpi-specify`) authors each
+brief against a checklist item. `gz-adr-create` is the full authoring flow that
+books an ADR together with its briefs.
+
+**Scorecard.** The five `--score-*` flags (0–2) default from
+`default_dimension_scores` (`src/gzkit/core/scoring.py`), which reads the semver
+and lane. `baseline_range_for_total` maps their total to a baseline range;
+`--baseline-selected` picks a count inside it (default: the lower bound; a value
+outside the range fails, exit 1); each `--split-*` flag adds one OBPI. The sum
+is the number of checklist items seeded. The doctrine the numbers implement is
+`docs/governance/GovZero/obpi-decomposition-matrix.md` § Deterministic
+Decomposition Gate.
 
 ## Work order (operator ruling, verbatim canon)
 
@@ -27,34 +69,63 @@ Operate the gz plan command surface as a reusable governance workflow.
 
 ## Workflow
 
-1. **Spec Developer Phase:** Before planning or generating an ADR, act as a Spec Developer. Review the target context and aggressively spin up `Explore` subagents to search and read relevant code.
-
-    **Pre-flight — defect-fix routing.** If this is an in-flight defect fix per AGENTS.md § Defect-fix routing thresholds (≤10 source lines, ≤2 source files, in-flight trigger, ≥3 recent `fix(...)` precedents in the 60-day window, unit-test coverage viable), route to a direct `fix(<scope>): … (GHI #N)` commit instead of scaffolding an ADR. Default-to-ceremony for small in-flight defects is the exact over-application pattern GHI #195 authored the routing rule to prevent.
-2. **Decomposition Protocol (Two-Step):**
-    *   **Step 1: Baseline Structural Template (Rule of Three)**: For complex ADRs, scaffold into three baseline layers (Registry, Core Execution, and Lifecycle/Operations).
-    *   **Step 2: Refining Overlay (Matrix of Four)**: Apply the four core principles (Single-Narrative, Testability Ceiling, State Anchor, Surface Boundary) to each baseline unit. If a unit violates a principle, it MUST be further decomposed.
-    *   **1:1 Synchronization**: The resulting Feature Checklist in the ADR MUST remain in 1:1 synchronization with the generated OBPI brief files. No drift is permitted.
-3. Present the assessment results and the resulting OBPI checklist to the user for approval.
-4. Ask the user up to 20 non-obvious, clarifying questions to discover edge cases, dependencies, and potential regressions regarding the planned change. Do not generate the ADR until these questions are answered.
-5. Once the scope and edge cases are clearly defined, confirm target context, IDs, and lane assumptions.
-6. **Ask the operator for `--kind` explicitly.** `gz plan create` has no default kind — the operator must choose. Present the concise heuristic verbatim and wait for an answer; do not guess, do not propose a default.
-
-    > **What kind of ADR is this?** `foundation` (app/system invariant, always 0.0.x) / `feature` (release-carrying capability) / `pool` (noted, not committed).
-    >
-    > Heuristic: Does this decision shape what the app IS (identity/invariant)? → `foundation`. Does this decision ship a named capability to users? → `feature`. Is this decision noted but not committed? → `pool`. For deeper context see `docs/user/concepts/adr-taxonomy.md`.
-    >
-    > **Invariance Test (Foundation/Feature Boundary):** *"Foundation = without it, we wouldn't be doing the project."* Use the hexagonal-ports lens to resolve edge cases: **ports point to invariance; adapters are features**. See `docs/user/concepts/foundation-feature-invariance-test.md` for worked examples and anti-patterns.
-
-7. Run `uv run gz plan create` with the required options, passing the operator's chosen `--kind` through verbatim. (Bare `uv run gz plan` errors — `plan_command` is required.)
-8. **Registration is automatic for non-pool kinds; verify rather than re-run.** `gz plan create --kind {foundation,feature}` appends the `adr_created` event itself (`src/gzkit/commands/plan.py`, idempotent via `ledger.has_adr_created`), so no follow-up registrar call is needed on the success path. Only if that append fails does `plan.py` prescribe `uv run gz register-adrs --all` to recover.
-   **`--kind pool` is the exception and books nothing.** The pool branch returns before the register call, so a pool ADR is unwitnessed at Layer 2 until it is reconciled. `uv run gz register-adrs` (or `--pool-only`) is the designated booking path for pool entries — **not** a failure-recovery step and **not** a one-shot historical registrar in this case. Verify with `uv run gz register-adrs --pool-only --dry-run`, which names every pool ADR still missing its event.
-9. Summarize results, including evidence and any follow-up gates.
-
-## Validation
-
-- Verify command output reflects the requested scope.
-- If governance state changed, confirm with uv run gz status or uv run gz state.
+1. **Route first.** A GHI authorizes direct defect repair, and a small in-flight
+   defect without one is fixed directly when it meets `AGENTS.md` § Defect-fix
+   routing. Neither gets an ADR.
+2. **Read the target.** Read the code and docs the change touches before sizing
+   it. Hand a subagent only an independent research track, with its Why
+   (`AGENTS.md` § Behavior Rules).
+3. **Size the decomposition** with the matrix doc: the Rule of Three baseline
+   (which the doc sets for heavy-lane ADRs), then the Matrix of Four overlay,
+   whose four principles are the four `--split-*` flags. Choose the dimension
+   scores, then present them, the resulting OBPI count and the rationale for
+   the operator's approval: the Granularity Assessment the doc's § Enforcement
+   asks of this skill.
+4. **Ask before creating.** Put up to 20 non-obvious questions to the operator
+   on edge cases, dependencies and possible regressions. Do not create the ADR
+   until they are answered.
+5. **Ask the operator for `--kind`; never propose a default.** In gzkit the
+   choices are `feature` (ships a named capability, semver `0.y.z` and up) and
+   `pool` (noted, not committed). `foundation` is closed here by ADR-0.34.0
+   and the command refuses it. In an adopter project without
+   `data/foundation_grandfather.json` it stays open: offer it with the
+   invariance test,
+   *"Foundation = without it, we wouldn't be doing the project"*
+   (the hexagonal-ports lens: ports point to invariance; adapters are features),
+   and see `docs/user/concepts/foundation-feature-invariance-test.md` and
+   `docs/user/concepts/adr-taxonomy.md`. Bare `uv run gz plan` exits 2, since
+   the subcommand is required.
+6. **Preview, then create.** Pick a descriptive kebab-case `name` and, for a
+   feature, the semver the work order allows. Run with `--dry-run`, then without
+   it, passing the operator's `--kind` through unchanged.
+7. **Verify the booking.** Non-pool: `uv run gz adr status <ADR-ID>` shows the
+   ADR. Do not re-run a registrar on success; `register-adrs --all` is only the
+   recovery the exit-2/3 messages name. Pool: `uv run gz register-adrs
+   --pool-only --dry-run` lists the entry as unregistered, and `uv run gz
+   register-adrs ADR-pool.<name>` books it.
+8. **Hand off.** The template's `_[Author: …]_` prompts are the ADR sections
+   left to write. Briefs follow 1:1 with the checklist through
+   `gz-obpi-specify`. A pool ADR needs a non-empty `## Target Scope` section
+   before `gz adr promote` accepts it, and the pool template carries none
+   (`gz-adr-promote`).
+9. **Report** the ADR id, its path, the `adr_created` event or, for pool, that
+   none was booked, and the next step.
 
 ## Example
 
-Use $gz-plan to plan a new ADR with semver and lane options..
+```bash
+uv run gz plan create login-impl --kind feature --semver 0.2.0 --lane heavy --dry-run
+uv run gz plan create login-impl --kind feature --semver 0.2.0 --lane heavy \
+  --score-interface 2 --split-surface-boundary
+uv run gz adr status ADR-0.2.0-login-impl
+
+uv run gz plan create exotic-idea --kind pool
+uv run gz register-adrs ADR-pool.exotic-idea
+```
+
+## Related
+
+- `gz-adr-create`: authoring an ADR with its briefs end to end
+- `gz-obpi-specify`: one brief per checklist item
+- `gz-adr-promote`: moving a pool ADR into a versioned package
+- `gz-plan-audit`: `gz plan audit`, the plan-to-brief alignment check

@@ -16,16 +16,16 @@ gz adr promote <POOL-ADR> --semver X.Y.Z --kind feature [OPTIONS]
 
 | Option | Type | Description |
 |--------|------|-------------|
-| `--semver` | string | Target ADR semantic version (`X.Y.Z`) |
+| `--semver` | string | Required. Target ADR semantic version (`X.Y.Z`) |
 | `--kind` | `feature` | Required. Target ADR taxonomy. `pool` is rejected (pool is the source kind, not a promotion target). **`foundation` is closed to new authoring by [ADR-0.34.0](../../design/adr/pre-release/ADR-0.34.0-foundation-sunset/ADR-0.34.0-foundation-sunset.md) and is rejected here — see [Closed kind: `foundation`](#closed-kind-foundation).** |
 | `--slug` | string | Target ADR slug override (kebab-case) |
 | `--title` | string | Target ADR title override |
 | `--parent` | string | Target ADR parent override |
-| `--lane` | `lite`/`heavy` | Target ADR lane override |
+| `--lane` | `lite`/`heavy` | Target ADR lane override (defaults to the pool's `lane:`, then the project `mode`) |
 | `--status` | `draft`/`proposed` | Initial promoted ADR status (default: `proposed`) |
 | `--dry-run` | flag | Show promotion plan without writing files/events |
 | `--json` | flag | Emit structured output |
-| `--force` | flag | Override scaffold/eval quality gates. Does NOT bypass `--kind`/`--semver` binding. |
+| `--force` | flag | Skip the post-write structure, path, scaffold and evaluation checks. Takes effect only on the first application. Does NOT bypass `--kind`/`--semver` binding. |
 
 ---
 
@@ -52,7 +52,7 @@ ADRs keep validating. Promote new work with `--kind feature`.
 
 `--kind` and `--semver` are validated together before any file is moved or any ledger event written:
 
-- `--kind foundation` is rejected outright (closed kind, see above). Exit 1.
+- `--kind foundation` is rejected outright where the kind is closed, as in gzkit (see above). Exit 1. In a project that never closed it (no `data/foundation_grandfather.json`), `--kind foundation` requires a `0.0.x` `--semver`.
 - `--kind feature` requires `--semver` to NOT match `^0\.0\.\d+$`. Mismatch -> exit 1.
 - `--kind pool` is rejected (pool is the source). Exit 1.
 - Missing `--kind` is rejected with a recovery message naming the valid choices. Exit 1.
@@ -67,15 +67,18 @@ Validation runs before pool resolution, so a rejected promotion leaves the pool 
 2. Target ADR ID is derived as `ADR-{semver}-{slug}`.
 3. Target ADR package path is selected by **kind**:
    - `--kind feature` -> `docs/design/adr/pre-release/ADR-X.Y.Z-<slug>/`
-4. Pool ADR must already contain actionable `## Target Scope` bullets.
-5. Promotion derives a concrete ADR checklist from that scope and creates matching OBPI briefs immediately.
+   - `--kind foundation`, where open -> `docs/design/adr/foundation/ADR-0.0.Z-<slug>/`
+4. Pool ADR must contain a non-empty `## Target Scope` section, preserved verbatim in the promoted ADR.
+5. Promotion derives the ADR checklist from a `## Proposed OBPI Decomposition` table (`Slug` and `Description` columns) when present, else from the top-level `## Target Scope` bullets; legacy narrative-only bullets warn (GHI #241). It creates one OBPI brief per checklist item immediately.
 6. Promoted ADR frontmatter carries `kind: <value>` (per ADR-0.0.17 schema).
 7. Pool file is retained and updated to archival context:
    - `status: Superseded`
    - `promoted_to: ADR-X.Y.Z-slug`
+   - a `> Promoted to ... on <date>` note under the H1
 8. Promotion lineage is written to ledger as:
    - `artifact_renamed` with `reason: pool_promotion`, `kind: <value>`, `semver: <value>`
-9. One `obpi_created` ledger event is written per generated brief.
+9. One `obpi_created` ledger event is written per generated brief, and one `obpi_unparked` per OBPI a prior `gz adr demote` parked at this pool id (GHI #584).
+10. No `adr_created` is written. The promoted ADR inherits the pool id's `adr_created` through the rename; if the pool ADR was never booked (`gz plan create --kind pool` books nothing), run `gz register-adrs <TARGET-ADR>` to book it.
 
 Post-promotion brief checks report missing allowed paths and generated vendor
 mirrors, including paths beginning with `./`, with canonical edit advice for

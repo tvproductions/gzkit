@@ -6,7 +6,7 @@ Create ADR artifacts for planned change. Use when recording architecture intent 
 
 ## Purpose
 
-`/gz-plan` exposes the canonical gz-plan workflow for operator invocation. Operate the gz plan command surface as a reusable governance workflow.
+`/gz-plan` exposes the canonical gz-plan workflow for operator invocation. It sizes an ADR's decomposition with the operator, then runs `gz plan create` to write the ADR from its template and book `adr_created` for a feature ADR; a pool ADR is written but not booked until `gz register-adrs` runs.
 
 ## When to Use
 

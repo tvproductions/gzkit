@@ -23,7 +23,7 @@ gz adr demote <ADR-ID> --ghi <NUMBER> [OPTIONS]
 | `--operator` | string | Operator identity (name only; never email per Local Agent Rules). Defaults to omitted. |
 | `--dry-run` | flag | Show planned actions without writing files or ledger events. |
 | `--json` | flag | Emit a structured JSON result payload to stdout. |
-| `--force` | flag | Override the dependent-children safety check (exit 3). Orphans any ADRs whose `parent:` frontmatter points at the demoted ADR. |
+| `--force` | flag | Override both exit-3 safety checks: dependent children (orphans any ADRs whose `parent:` frontmatter points at the demoted ADR) and live `@covers` decorators naming REQs from the deleted briefs (GHI #773). |
 | `--on-collision` | choice | How to handle a pre-existing pool file at the target slug. `fail` (default) blocks; `keep-pool` deletes the source feature/foundation package and keeps the existing pool ADR — reversing any stale `status: Superseded` / `promoted_to:` / promotion-note markers that name the ADR now being demoted (GHI #558), and leaving an unrelated pool file at the same slug untouched; `take-demoted` writes the demoted ADR's **current** content to the pool slug, overwriting the retained intake (GHI #775). The ledger event records `collision_resolution: "keep-pool"` when that path is taken. |
 
 ---
@@ -34,22 +34,23 @@ gz adr demote <ADR-ID> --ghi <NUMBER> [OPTIONS]
 2. Pool target id is derived as `ADR-pool.<slug>`, where `<slug>` comes from the source ADR's id (`ADR-X.Y.Z-<slug>` → `<slug>`).
 3. Target file path: `docs/design/adr/pool/ADR-pool.<slug>.md`.
 4. **Collision check.** If the pool target file already exists, the demotion is rejected (exit 1) by default. **A promote/demote round trip always collides**, because `gz adr promote` retains the pool file as historical intake by design — so the choice of policy is the choice of which document survives. Pass `--on-collision take-demoted` when the ADR was *worked* after promotion: it writes the demoted ADR's current content to the pool slug, so what gets drawn from the queue later is the thinking as it stands. `keep-pool` is correct only when the promoted ADR did not diverge from its intake — otherwise it exits 0 having silently discarded every decision recorded after promotion (GHI #775). The superseded intake remains in git history either way. Passing `--on-collision keep-pool` resolves the collision by deleting the source feature/foundation package. If the kept pool ADR's `promoted_to:` still names the ADR being demoted (i.e. this demotion reverses that prior promotion), its `status`/`promoted_to`/promotion-note markers are reversed to their canonical pre-promotion state (`status: Pool`, `promoted_to:` stripped, the `> Promoted to ...` note removed) — this is the symmetric inverse of what `gz adr promote` writes on the pool side (GHI #558). A pool file colliding on slug but promoted to a *different* ADR is left untouched. The ledger event records the resolution either way.
-5. **Frontmatter strip.** `kind`, `semver`, and frontmatter `date` are removed. `id` is rewritten to the pool id. `status` is set to `Pool`. Other fields (`lane`, `parent`, `inspired_by`, etc.) are preserved.
-6. **OBPI briefs deleted.** Per the 2026-05-23 get-out-of-jail prequel Q1=b decision, pool ADRs carry no OBPIs by doctrine; brief files under `<source-dir>/obpis/` are deleted via the source-dir removal. Briefs are re-authored if the ADR is later re-promoted.
+5. **Frontmatter strip.** `kind`, `semver`, frontmatter `date` and `promoted_from` (GHI #775) are removed. `id` is rewritten to the pool id, and so is the id in the body H1 (GHI #776). `status` is set to `Pool`. The `## OBPI Acceptance Note (Human Acknowledgment)` section is stripped (GHI #777). Other fields (`lane`, `parent`, `inspired_by`, etc.) are preserved.
+6. **OBPI briefs deleted.** Per the 2026-05-23 get-out-of-jail prequel Q1=b decision, pool ADRs carry no OBPIs by doctrine; brief files under `<source-dir>/obpis/` are deleted via the source-dir removal. A later `gz adr promote` regenerates briefs from the pool's scope and unparks the OBPIs this demotion parked.
 7. **Source directory removed.** The entire `docs/design/adr/{pre-release,foundation}/<source-id>/` directory is deleted (taking the briefs, closeout form, and any other authoring artifacts with it).
 8. **Dependent children check** (fail-closed). If any other non-pool ADR has `parent: <source-id>` in its frontmatter, demotion is rejected with exit 3. Pass `--force` to orphan those children deliberately.
-9. **Ledger event.** A single `artifact_renamed` event is appended with `reason="pool_demotion"` and the following extras:
+9. **Live `@covers` check** (fail-closed, GHI #773). If any `@covers` decorator under `tests/` names a REQ of this ADR's semver, demotion is rejected with exit 3: deleting the briefs would make those test modules fail to import. Remove or retarget the decorators, or pass `--force`.
+10. **Ledger events.** One `artifact_renamed` event is appended with `reason="pool_demotion"`, followed by one `obpi_parked` event per child OBPI (`parked_to: <pool-id>`, reversible on re-promotion, GHI #584). The rename carries these extras (plus `collision_resolution: "keep-pool"` on that path):
 
-   ```json
-   {
-     "prior_kind": "feature",
-     "prior_semver": "0.27.0",
-     "demoted_at": "<RFC 3339 UTC timestamp>",
-     "ghi": 520,
-     "operator": "<optional>",
-     "note": "<optional>"
-   }
-   ```
+    ```json
+    {
+      "prior_kind": "feature",
+      "prior_semver": "0.27.0",
+      "demoted_at": "<RFC 3339 UTC timestamp>",
+      "ghi": 520,
+      "operator": "<optional>",
+      "note": "<optional>"
+    }
+    ```
 
 Per state doctrine (Layer 2 ledger = source of truth for state transitions), the demote event is the canonical record of the prior life. Pool files do not carry `previously:` frontmatter; `gz state <pool-id>` is the query path.
 
@@ -62,7 +63,7 @@ Per state doctrine (Layer 2 ledger = source of truth for state transitions), the
 | 0 | Demotion completed (or dry-run succeeded). |
 | 1 | User/config error: missing `--ghi`, pool target collision, ADR already pool, missing `kind`/`semver`. |
 | 2 | System/IO error: frontmatter parse failure, ledger write failure. |
-| 3 | Policy breach: dependent children exist; `--force` overrides. |
+| 3 | Policy breach: dependent children exist, or live `@covers` decorators name REQs from the briefs being deleted; `--force` overrides. |
 
 ---
 

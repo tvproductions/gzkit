@@ -6,7 +6,7 @@ Promote a pool ADR into canonical ADR package structure. Use when moving a backl
 
 ## Purpose
 
-`/gz-adr-promote` exposes the canonical gz-adr-promote workflow for operator invocation. Operate the gz adr promote command surface to transition pool (backlog) ADRs into versioned, executable ADR packages with preserved ledger lineage.
+`/gz-adr-promote` exposes the canonical gz-adr-promote workflow for operator invocation. It runs `gz adr promote` to turn a pool ADR into a versioned ADR package with one OBPI brief per scope item, marks the pool file Superseded and records `artifact_renamed` and `obpi_created` in the ledger; `gz adr demote` is the inverse.
 
 ## When to Use
 
