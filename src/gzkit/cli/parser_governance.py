@@ -415,9 +415,9 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
         ),
     )
     add_json_flag(p_state)
-    p_state.add_argument("--blocked", action="store_true", help="Show only blocked artifacts")
+    p_state.add_argument("--blocked", action="store_true", help="Show only unattested artifacts")
     p_state.add_argument(
-        "--ready", action="store_true", help="Show only ready-to-proceed artifacts"
+        "--ready", action="store_true", help="Show only ADRs ready for attestation"
     )
     p_state.add_argument(
         "--include-withdrawn",

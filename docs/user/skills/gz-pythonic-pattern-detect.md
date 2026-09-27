@@ -6,7 +6,7 @@ Surface Pythonic-design-pattern refactor candidates after ADR closeout. Use when
 
 ## Purpose
 
-`/gz-pythonic-pattern-detect` exposes the post-post-implementation pattern-shape audit. After idiom-level chores (`pythonic-refactoring`) and metric-level chores (`complexity-reduction-xenon`, `module-sloc-cap-radon`) have all passed, this skill drives the AST scanner over `src/` to flag class shapes whose Pythonic equivalent is cleaner. The local `design-patterns-en.zip` Python examples are the absorption surface — every disposition records the `Python/src/<Pattern>/Conceptual/main.py` witness, role map, and Pythonic collapse.
+`/gz-pythonic-pattern-detect` exposes the post-post-implementation pattern-shape audit. After idiom-level chores (`pythonic-refactoring`) and metric-level chores (`complexity-reduction-xenon`, `module-sloc-cap-radon`) have all passed, this skill drives the AST scanner over `src/` to flag class shapes whose Pythonic equivalent is cleaner. The Python examples of a local Refactoring Guru archive, named by `DESIGN_PATTERNS_ARCHIVE`, are the absorption surface — every disposition records the `Python/src/<Pattern>/Conceptual/main.py` witness, role map, and Pythonic collapse.
 
 ## When to Use
 
@@ -37,7 +37,7 @@ The skill reads its canonical execution contract from `.gzkit/skills/gz-pythonic
 | `.agents/skills/gz-pythonic-pattern-detect/SKILL.md` | Codex mirror | Read |
 | `src/gzkit/chores/pythonic-design-pattern-detection/scan.py` | AST scanner | Read |
 | `src/gzkit/chores/pythonic-design-pattern-detection/CHORE.md` | Chore canon (full 22-pattern example table) | Read |
-| `design-patterns-en.zip` | Local Python example corpus (`Python/src/<Pattern>/Conceptual/main.py`) | Read |
+| `$DESIGN_PATTERNS_ARCHIVE` | Local Python example corpus (`Python/src/<Pattern>/Conceptual/main.py`); not shipped, and unset makes each disposition provisional | Read |
 
 ## Related Skills and Commands
 

@@ -6,7 +6,7 @@ Query artifact relationships and readiness state. Use when reporting lineage or 
 
 ## Purpose
 
-`/gz-state` exposes the canonical gz-state workflow for operator invocation. Operate the gz state command surface as a reusable governance workflow.
+`/gz-state` exposes the canonical gz-state workflow for operator invocation. It reads the ledger's artifact graph — relationships, attestation and readiness — and, with `--repair`, sets OBPI brief status from the ledger.
 
 ## When to Use
 

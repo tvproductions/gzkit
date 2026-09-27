@@ -5,23 +5,23 @@ description: Surface Pythonic-design-pattern refactor candidates after ADR close
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-07-25
+last_reviewed: 2026-09-26
 metadata:
-  skill-version: "1.0.2"
+  skill-version: "1.1.0"
 gz_command: chores run pythonic-design-pattern-detection
 model: sonnet
 ---
 
-# pythonic-pattern-detect
+# gz-pythonic-pattern-detect
 
 ## Purpose
 
-Run the `pythonic-design-pattern-detection` chore to surface structural refactor candidates that mechanical metric chores (`pythonic-refactoring`, `complexity-reduction-xenon`, `module-sloc-cap-radon`) cannot catch. The chore's scanner walks `src/` AST-by-AST and flags class shapes whose Pythonic equivalent is cleaner — paired with local `design-patterns-en.zip` Python examples as the absorption surface.
+Run the `pythonic-design-pattern-detection` chore to surface structural refactor candidates that mechanical metric chores (`pythonic-refactoring`, `complexity-reduction-xenon`, `module-sloc-cap-radon`) cannot catch. The chore's scanner walks `src/` AST-by-AST and flags class shapes whose Pythonic equivalent is cleaner — paired with the Python examples of a local Refactoring Guru archive (`DESIGN_PATTERNS_ARCHIVE`) as the absorption surface.
 
 ## Inputs
 
 - `root`: source tree to scan (default `src`)
-- `out`: markdown candidates report path (default `.gzkit/chores/pythonic-design-pattern-detection/proofs/candidates-YYYY-MM-DD.md`)
+- `out`: markdown candidates report path. The scanner requires `--out` and has no default; the convention is `.gzkit/chores/pythonic-design-pattern-detection/proofs/candidates-YYYY-MM-DD.md`
 - `xenon_band` (optional): xenon hot-spot band to cross-reference, default `B`
 - `DESIGN_PATTERNS_ARCHIVE` (optional): path to your own copy of the local Refactoring
   Guru archive. **No default** — it is a third-party asset gzkit does not ship, and a
@@ -59,13 +59,13 @@ Run the `pythonic-design-pattern-detection` chore to surface structural refactor
 4. Cross-reference complexity hotspots:
 
    ```bash
-   uvx xenon --max-absolute B src/ \
+   uv run xenon --max-absolute B src/ \
        > .gzkit/chores/pythonic-design-pattern-detection/proofs/xenon-hotspots-$(date +%Y-%m-%d).txt 2>&1 || true
    ```
 
 5. Open the candidates report. For each candidate:
 
-   - Read the matching local archive example (`Python/src/<Pattern>/Conceptual/main.py` plus `Output.txt` when present) as the role-map witness
+   - Read the matching local archive example (`Python/src/<Pattern>/Conceptual/main.py` plus `Output.txt` when present) as the role-map witness. With `DESIGN_PATTERNS_ARCHIVE` unset, record that the corpus was unavailable and mark the disposition provisional
    - Record `Example`, `Output`, `Role map`, and `Pythonic collapse` in the candidate row before deciding disposition
    - Decide one disposition: `applied`, `deferred`, or `not-pythonic-rewrite`
    - For `applied`: route to `gz-pythonic-pattern-apply` to capture evidence
@@ -74,7 +74,7 @@ Run the `pythonic-design-pattern-detection` chore to surface structural refactor
 
 6. For reference-mode patterns (Bridge, Flyweight, Factory Method) — open the matching archive example side-by-side with any module ranked B-or-worse by xenon. Add an inline `## Reference-mode candidates` section to the report.
 
-7. Mark the chore as run:
+7. Run the chore's acceptance criteria. `gz chores run` executes `acceptance.json` — the full `uv run gz test` suite and the scanner self-test — and appends the result to `proofs/CHORE-LOG.md`:
 
    ```bash
    uv run gz chores run pythonic-design-pattern-detection
@@ -83,7 +83,8 @@ Run the `pythonic-design-pattern-detection` chore to surface structural refactor
 ## Failure Modes
 
 - **Scanner self-test fails:** detector set has drifted from its fixtures. Read `scan.py` and the failing fixture; either fix the detector or update the fixture if the rewrite was intentional.
-- **`--out` path missing parent directory:** the scanner creates the parent automatically, but if the project overlay was deleted, run `uv run gz chores doctor` to scaffold it.
+- **`--out` omitted:** the scanner exits 2 with a usage error; pass the report path. It creates the parent directory itself.
+- **`gz chores show` cannot find the chore:** the project overlay is missing or damaged; `uv run gz chores doctor` re-scaffolds it and keeps `proofs/`.
 - **Empty report (`NO_CANDIDATES_DETECTED`):** AST signals returned zero hits. Switch to reference-mode review against local Python examples; do not assume the codebase is Pythonic everywhere — Bridge, Flyweight, Factory Method are not detected mechanically.
 - **Many candidates without xenon overlap:** the structural drift exists but is metric-invisible. Do not skip those — that is exactly the post-post-implementation gap this skill is designed to catch.
 
@@ -123,7 +124,7 @@ These thoughts mean STOP — you are about to ship a detection pass that broke i
 
 - Chore canon: `src/gzkit/chores/pythonic-design-pattern-detection/CHORE.md`
 - Scanner: `src/gzkit/chores/pythonic-design-pattern-detection/scan.py`
-- Local example corpus: `design-patterns-en.zip` `Python/src/<Pattern>/Conceptual/main.py`
+- Local example corpus: `Python/src/<Pattern>/Conceptual/main.py` inside the archive `DESIGN_PATTERNS_ARCHIVE` points at (not shipped; GHI #900)
 - Pair skill: `gz-pythonic-pattern-apply` (evidence capture for applied refactors)
 - Related chores: `pythonic-refactoring` (idiom-level), `complexity-reduction-xenon` (metric-level)
-- Doctrine: AGENTS.md § Stdlib-First Doctrine (absorption relationship), `.gzkit/rules/tests.md` § Tests assert semantics, not strings
+- Doctrine: `CHORE.md` § Pythonic-first absorption stance, `.gzkit/rules/tests.md` § Tests assert semantics, not strings

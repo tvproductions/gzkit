@@ -1,4 +1,4 @@
 interface:
   display_name: "gz state"
-  short_description: "Operate the gz state workflow"
+  short_description: "Query the ledger artifact graph and attestation readiness"
   default_prompt: "Use $gz-state to run gz state for this task."

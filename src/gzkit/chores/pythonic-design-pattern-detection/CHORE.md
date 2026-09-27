@@ -11,13 +11,13 @@
 
 This chore is **post-post-implementation**: runs after ADR closeout and after `pythonic-refactoring` has zeroed ruff/ty, asking *given the code is idiomatic line-by-line, is the **shape** Pythonic?*
 
-Pair with `pythonic-design-pattern-application` — detection surfaces candidates; application captures the refactor with mechanical-delta evidence. Both are wielded by skills (`pythonic-pattern-detect`, `pythonic-pattern-apply`) so an agent can route into the work via skill discovery rather than chore-slug recall.
+Pair with `pythonic-design-pattern-application` — detection surfaces candidates; application captures the refactor with mechanical-delta evidence. Both are wielded by skills (`gz-pythonic-pattern-detect`, `gz-pythonic-pattern-apply`) so an agent can route into the work via skill discovery rather than chore-slug recall.
 
 ## Pythonic-first absorption stance
 
 The local `design-patterns-en.zip` Python examples are the internal absorption surface for the GoF taxonomy. We **learn** from the examples; we do not **adopt** their class hierarchies. Each entry below cites the archive path so an agent walking through a refactor can inspect the example shape, map the roles, then write the Pythonic equivalent.
 
-This is the same relationship gzkit has with `click` (per AGENTS.md § Stdlib-First Doctrine): we measure the design metrics to inform doctrine; we do not depend on the surface.
+This is the same relationship gzkit has with `click` (per `.gzkit/rules/complexity-doctrine.md`): we measure the design metrics to inform doctrine; we do not depend on the surface.
 
 ## Python example corpus
 
@@ -129,7 +129,7 @@ uv run python src/gzkit/chores/pythonic-design-pattern-detection/scan.py \
 ### 2. Cross-reference complexity hotspots — observe
 
 ```bash
-uvx xenon --max-absolute B src/ > .gzkit/chores/pythonic-design-pattern-detection/proofs/xenon-hotspots-$(date +%Y-%m-%d).txt 2>&1 || true
+uv run xenon --max-absolute B src/ > .gzkit/chores/pythonic-design-pattern-detection/proofs/xenon-hotspots-$(date +%Y-%m-%d).txt 2>&1 || true
 ```
 
 A scanner candidate that *also* shows up in xenon's B-band hotspot list jumps to the top of the apply queue: structural rewrite has both a structural and a metric reason to land.
