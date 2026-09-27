@@ -1,12 +1,12 @@
 # /gz-adr-emit-receipt
 
-Emit ADR receipt events with scoped evidence payloads. Use when recording completed or validated accounting events.
+Emit ADR receipt events with scoped evidence payloads. Use when recording a completed, validated or closed ADR receipt event.
 
 ---
 
 ## Purpose
 
-`/gz-adr-emit-receipt` exposes the canonical gz-adr-emit-receipt workflow for operator invocation. Operate the gz adr emit-receipt command surface as a reusable governance workflow.
+`/gz-adr-emit-receipt` exposes the canonical gz-adr-emit-receipt workflow for operator invocation. It records one ADR receipt event (`completed`, `validated` or `closed`) in the ledger with `uv run gz adr emit-receipt`, carrying the evidence that event and the ADR's lane and kind require.
 
 ## When to Use
 

@@ -1,6 +1,6 @@
 # /gz-obpi-sync
 
-OBPI brief reconciliation — Audit briefs against evidence, fix stale metadata, sync ADR table, write ledger proof. Absorbs gz-obpi-audit and gz-obpi-sync.
+OBPI brief reconciliation — audit briefs against evidence, reconcile brief and ADR table from the ledger, and report what only the operator can resolve.
 
 ---
 

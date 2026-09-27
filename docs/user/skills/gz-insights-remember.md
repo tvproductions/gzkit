@@ -1,6 +1,6 @@
 # /gz-insights-remember
 
-Record a course-correction, defect, defect-resolution, or discovery insight via the governed `gz insights remember` verb. Use when an operator course-corrects in flight (Behavior Rule #11), an agent surfaces a defect/discovery, or a defect-resolution outcome needs recording — never hand-append a line to `.gzkit/insights/agent-insights.jsonl`.
+Record a course-correction, defect, defect-resolution, or discovery insight via the governed `gz insights remember` verb. Use when an operator course-corrects in flight (`AGENTS.md` § Behavior Rules), an agent surfaces a defect/discovery, or a defect-resolution outcome needs recording — never hand-append a line to `.gzkit/insights/agent-insights.jsonl`.
 
 ---
 

@@ -8,11 +8,16 @@ repo cannot accumulate a new backlog of missing manpages without a red test
 surface.
 """
 
+import re
 import unittest
 from pathlib import Path
 
 from gzkit.skills import _parse_frontmatter
 from gzkit.skills_audit import SKILL_INDEX_PATH, SKILL_MANPAGE_DIR
+
+_SCAFFOLD_OVERVIEW_RE = re.compile(
+    r"Operate the gz [\w -]+? command surface as a reusable governance workflow\."
+)
 
 
 def _active_skills(project_root: Path) -> list[str]:
@@ -70,6 +75,28 @@ class ActiveSkillManpageCoverageTest(unittest.TestCase):
             if f"{skill_name}.md" not in index_content:
                 unlinked.append(skill_name)
         self.assertEqual([], unlinked, f"active skills not linked from index: {unlinked}")
+
+    def test_no_manpage_keeps_a_scaffold_overview_its_skill_dropped(self) -> None:
+        """A page may not quote the scaffold overview once the skill was rewritten (GHI #1111).
+
+        The scaffold writes "Operate the gz <verb> command surface as a reusable
+        governance workflow" into both the skill and its page. A skill review
+        replaces the skill's copy; the page's copy then describes nothing.
+        """
+        project_root = Path(__file__).resolve().parent.parent
+        manpage_dir = project_root / SKILL_MANPAGE_DIR
+        stale: list[str] = []
+        for skill_name in _active_skills(project_root):
+            manpage = manpage_dir / f"{skill_name}.md"
+            if not manpage.is_file():
+                continue
+            skill = project_root / ".gzkit" / "skills" / skill_name / "SKILL.md"
+            page_text = manpage.read_text(encoding="utf-8")
+            skill_text = skill.read_text(encoding="utf-8")
+            for match in _SCAFFOLD_OVERVIEW_RE.finditer(page_text):
+                if match.group(0) not in skill_text:
+                    stale.append(skill_name)
+        self.assertEqual([], stale, f"manpages quoting a scaffold overview: {stale}")
 
 
 if __name__ == "__main__":

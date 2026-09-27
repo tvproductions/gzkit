@@ -1,6 +1,6 @@
 # /gz-init
 
-Initialize gzkit governance scaffolding for a repository. Use when bootstrapping or reinitializing project governance surfaces.
+Initialize gzkit governance scaffolding and project skeleton for a repository. Use when bootstrapping, reinitializing, or repairing project governance surfaces.
 
 ---
 

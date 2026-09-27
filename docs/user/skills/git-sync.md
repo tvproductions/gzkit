@@ -1,12 +1,12 @@
 # /git-sync
 
-Run the guarded repository sync ritual with lint/test gates.
+Run the guarded repository sync ritual; commit-time hooks enforce the cheap gates and the pre-push hook runs `gz check`.
 
 ---
 
 ## Purpose
 
-`/git-sync` exposes the canonical git-sync workflow for operator invocation. Run the guarded repository sync ritual with lint/test gates.
+`/git-sync` exposes the canonical git-sync workflow for operator invocation. Run the guarded repository sync ritual; commit-time hooks enforce the cheap gates and the pre-push hook runs `gz check`.
 
 ## When to Use
 

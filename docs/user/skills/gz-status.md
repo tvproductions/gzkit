@@ -1,6 +1,6 @@
 # /gz-status
 
-Report gate and lifecycle status across ADRs. Use when checking blockers and next governance actions.
+Report project workflow fronts alongside ADR lifecycle and gate status. Use for ordinary status inquiries, blockers, and next actions, or a focused governance status check.
 
 ---
 

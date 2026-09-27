@@ -6,7 +6,7 @@ Validate configured and manifest path coherence. Use when diagnosing control-sur
 
 ## Purpose
 
-`/gz-check-config-paths` exposes the canonical gz-check-config-paths workflow for operator invocation. Operate the gz check-config-paths command surface as a reusable governance workflow.
+`/gz-check-config-paths` exposes the canonical gz-check-config-paths workflow for operator invocation. It checks that the paths `.gzkit.json` configures and the manifest declares exist and agree, that OBPI briefs live inside their ADR package, and that source code carries no ungoverned path literal. It is read-only.
 
 ## When to Use
 

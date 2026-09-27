@@ -6,7 +6,7 @@ Audit CLI documentation coverage and headings. Use when verifying command manpag
 
 ## Purpose
 
-`/gz-cli-audit` exposes the canonical gz-cli-audit workflow for operator invocation. Operate the gz cli audit command surface as a reusable governance workflow.
+`/gz-cli-audit` exposes the canonical gz-cli-audit workflow for operator invocation. It checks that every CLI command's documentation exists and agrees with the parser: its manpage and index entry, both runbooks, its handler docstring, and each long flag in its manpage.
 
 ## When to Use
 
