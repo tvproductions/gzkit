@@ -1,9 +1,9 @@
 {
   "algorithm": "sha256",
-  "corpus_fingerprint": "697ce543629cb985ca6482808ab36518c1ada95af1dc1881985128db3bca4910",
-  "corpus_entry_count": 470,
-  "rendition_fingerprint": "339bb25ffe040a2ea2549130adc2135032e7e3d16574acc376dad8e4831d5e0d",
-  "committed_ts": "2026-09-27T06:43:57.034661+00:00",
+  "corpus_fingerprint": "0fbe7a4a205f5ad90ef08a164cf0f519674ecacc7ecc2d2c254d62a1e884bc1b",
+  "corpus_entry_count": 472,
+  "rendition_fingerprint": "0a0ca155e5672838a6fe423b5b882211d7e232d772fbb13bf2a9c5cb433a013c",
+  "committed_ts": "2026-09-27T07:05:45.209133+00:00",
   "attestor": "g0",
-  "attestation_text": "approve the canon line — adds corpus-skills-first-execution-routing-2026-09-27T06:43:02.438468+00:00 to SKILLS FIRST; advisor-QC receipt arb-step-judge-4cf71a9367c34cd4842c8d288f0608b5 (score 1.0); GHI #1106"
+  "attestation_text": "fix the gz gates line in AGENTS.md / Drop C0 and C2 as proposed — replaces corpus-gate-covenant-2026-09-17T11:39:33.420703+00:00 with corpus-gate-covenant-2026-09-27T07:04:55.362786+00:00; advisor-QC receipt arb-step-judge-d7f31c1436794edc88e97345bb014c51; GHI #705"
 }

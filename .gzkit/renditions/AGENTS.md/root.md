@@ -126,7 +126,7 @@ Constitution → PRD grounds product intent; ADRs remain subject to both. Durabl
 | 4 | BDD verified | `uv run -m behave features/` |
 | 5 | Human attests | the operator's attestation |
 
-`uv run gz gates --adr <ADR-ID>` runs the gates the ADR's lane requires and records each result in the ledger; `--gate N` runs one. The command behind each gate is `.gzkit/manifest.json` § `verification`.
+At closeout, `uv run gz closeout <ADR-ID>` runs the gates the ADR's lane requires and records each result in the ledger (`--dry-run` shows the plan); `uv run gz implement --adr <ADR-ID>` runs Gate 2 alone at any time. The command behind each gate is `.gzkit/manifest.json` § `verification`.
 
 - `lite` lane requires Gates 1–2. `heavy` lane adds Gate 3 (docs) and Gate 4 (BDD) and is for changes to a CLI, API, schema or runtime contract used by humans or external systems; documentation, process and template changes stay `lite` unless they change one of those external surfaces.
 
