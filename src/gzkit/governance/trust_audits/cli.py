@@ -44,7 +44,6 @@ _SEALED_ADR_ARTIFACTS: frozenset[str] = frozenset(
 # CLI verbs that legitimately have no wielding skill (e.g. bootstrap and
 # internal commands). Each entry must cite a reason.
 _NO_SKILL_VERBS: dict[str, str] = {
-    "init": "Bootstrap command — scaffolds a new repo; no skill mediates initialization.",
     "register-adrs": "One-shot historical registrar; not a recurring operator action.",
     "personas": "Internal persona listing; consumed by other skills, not directly.",
     "roles": "Internal role listing; consumed by other skills, not directly.",

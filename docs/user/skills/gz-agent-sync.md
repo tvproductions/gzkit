@@ -6,7 +6,7 @@ Synchronize generated control surfaces and skill mirrors. Use after skill or gov
 
 ## Purpose
 
-`/gz-agent-sync` exposes the canonical gz-agent-sync workflow for operator invocation. Operate the gz agent sync control-surfaces command surface as a reusable governance workflow.
+`/gz-agent-sync` exposes the canonical gz-agent-sync workflow for operator invocation. It runs `gz agent sync control-surfaces`, which regenerates every derived control surface (vendor skill, rule and persona mirrors, AGENTS.md, CLAUDE.md, settings, manifest, Codex files) from `.gzkit/` canon, refusing when canonical skills fail its preflight.
 
 ## When to Use
 
@@ -14,7 +14,7 @@ Invoke this skill when the task described above matches your current workflow st
 
 ## What to Expect
 
-The skill reads its canonical execution contract from `.gzkit/skills/gz-agent-sync/SKILL.md` (mirrored into `.claude/skills/`, `.agents/skills/`, and `.github/skills/`). Follow the agent-facing instructions in that file for the exact execution protocol, stages, and evidence requirements.
+The skill reads its canonical execution contract from `.gzkit/skills/gz-agent-sync/SKILL.md` (mirrored into `.claude/skills/` and `.agents/skills/`). Follow the agent-facing instructions in that file for the exact execution protocol, stages, and evidence requirements.
 
 ## Invocation
 

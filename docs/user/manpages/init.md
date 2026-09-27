@@ -31,8 +31,8 @@ gz init [OPTIONS]
 1. Creates `.gzkit/` directory with ledger
 2. Creates `.gzkit.json` configuration
 3. Detects project structure (source, tests, docs paths)
-4. Creates Python project skeleton (`pyproject.toml`, `src/<project>/`, `tests/`)
-5. Generates `CLAUDE.md` from governance canon
+4. Creates Python project skeleton (`pyproject.toml`, `README.md`, `src/<package>/`, `tests/`) and runs `uv sync` when `.venv` is absent
+5. Copies the wheel's canonical skills, chores, personas, templates and rules into `.gzkit/`, runs the sync preflight, and syncs every control surface (`AGENTS.md`, `CLAUDE.md`, vendor mirrors, manifest, Codex files); see [`gz agent sync control-surfaces`](agent-sync-control-surfaces.md)
 6. Sets up agent hooks (Claude)
 7. Creates `design/` directories for governance artifacts
 8. Scans for existing PRDs/ADRs and offers to register them
@@ -47,6 +47,11 @@ gz init [OPTIONS]
     the recorder's ledger row was rolled back whenever the ledger had
     unstaged rows (GHI #1092). An existing `post-commit.legacy` that is not
     gzkit's is left in place and reported
+12. Writes `.gitignore` and `data/audit_thresholds.json` when absent and, in a
+    git worktree, registers the `gzkit-jsonl` append-only merge driver in
+    local git config
+13. Appends `project_init` to the ledger, plus one `agent_sync_completed` per
+    sync it runs
 
 Steps 9 and 10 are separate on purpose. A declared-but-uninstalled gate
 enforces nothing while every surface reports green, so `gz check` verifies the
@@ -66,6 +71,7 @@ empty. The managed baseline is:
 ```toml
 # gzkit-managed-codex-config: v1
 sandbox_mode = "workspace-write"
+project_doc_max_bytes = 65536
 [features]
 hooks = true
 
@@ -86,7 +92,7 @@ line after adding persistent model, approval, MCP, or other local settings to
 accept operator ownership and silence that managed-drift diagnostic.
 
 When `paths.codex_config` moves away from the default, sync removes the old
-default only when its bytes still exactly match the generated baseline. A
+default only when it is empty or its bytes still exactly match the generated baseline. A
 customized old default is preserved and reported as a conflicting duplicate by
 surface and sync-parity validation, preventing silent operator-data loss.
 
@@ -110,7 +116,7 @@ Running `gz init` on an already-initialized project enters **repair mode**:
 - Re-syncs control surfaces, listing each file the sync changes; a tree already in sync is left untouched
 - Refuses to sync when canonical skills fail the sync preflight: it reports what it already repaired, then exits 1 with the blockers and leaves every mirror unchanged. `gz init --force` runs the same preflight, because it re-copies the wheel's skills but keeps local ones (GHI #1100)
 - With `--attestor-handle`, sets `authorship.attestor_handle` in `.gzkit.json` and changes no other key (listed like every other repair write)
-- Does not overwrite existing files
+- Does not overwrite existing files, except that in a git worktree with a pre-commit config it re-runs `pre-commit install` and rewrites gzkit's `post-commit.legacy` recorder on every run, so repair always reports those two lines
 - Does not require `--force`
 
 Every file repair writes appears in its output and in the `Repaired N artifact(s)` count. `gz init --dry-run` lists the same writes and makes none. The one limit: a dry run renders the sync plan against the tree as it stands, so for an artifact it would newly scaffold, its `Would scaffold` line stands in for that artifact's mirrors (GHI #1098).
@@ -121,7 +127,7 @@ Use `--force` only when you need a full reinitialize (rewrites config, re-copies
 
 ## Update Mode (Version-Aware Refresh)
 
-`gz init --update` is the **third** init mode, distinct from default (repair-missing) and `--force` (re-copy from the wheel). It refreshes canonical surfaces in the adopter's `.gzkit/<surface>/` from the installed wheel's package data while **preserving operator-edited files** via marker detection.
+`gz init --update` is the **third** init mode, distinct from default (repair-missing) and `--force` (re-copy from the wheel). It refreshes canonical surfaces in the adopter's `.gzkit/<surface>/` from the installed wheel's package data, leaving a file alone only when it carries the operator-edit marker below. It does nothing else: no manifest write, no control-surface sync, no ledger event. Run `gz agent sync control-surfaces` afterwards so the mirrors carry the refreshed canon.
 
 ### Three modes — when to use which
 
@@ -149,7 +155,7 @@ The marker is a body-level HTML comment:
 <!-- gzkit-canonical-version: X.Y.Z -->
 ```
 
-The scaffolder writes this marker when it copies canonical content into `.gzkit/<surface>/`. `--update` rewrites it on a STALE refresh. The marker's presence in a file whose bytes differ from the current wheel canonical is the positive signal that the scaffolder previously stamped this copy and the operator (or a prior `--update`) has since edited it.
+The marker's presence in a file whose bytes differ from the current wheel canonical is what `_detect_refresh_state` reads as an operator edit. **No scaffolder writes it**: `gz init` copies the wheel's content byte-for-byte, and a STALE refresh writes the wheel's bytes, which carry no marker. So a project copy is `EDITED` only when the operator has added the marker by hand; every other differing file is `STALE` and is overwritten, operator edits included. Review `gz init --update --dry-run` before running it.
 
 The marker composes with — and does **not** replace — the existing surface-author version markers per `.claude/rules/skill-surface-sync.md`:
 
@@ -190,7 +196,9 @@ When `gz init --update` exits 3, review each `EDITED` conflict listed in the sum
 - `gzkit.personas` → `.gzkit/personas/<slug>.md`
 - `gzkit.templates` → `.gzkit/templates/<name>.md`
 
-Package-internal entries (`__init__.py`, `_scaffolder.py`, `__pycache__/`) are excluded by the leading-underscore filter. Chore `proofs/` and runtime-state files are excluded by the chores class-classifier.
+Package-internal entries (`__init__.py`, `_scaffolder.py`, `__pycache__/`) are excluded by the leading-underscore filter. Chore `proofs/` and runtime-state files are excluded by the chores class-classifier. No other surface is classified, so files the template classifier marks `package_only` (`author_prompts.py`, `skills/**`) are still copied into `.gzkit/templates/`; `gz upgrade` applies every surface's classifier and skips them.
+
+In gzkit's own repository the installed package is the editable `src/gzkit/`, itself a copy synced from `.gzkit/`, so `--update` there copies it back over canon and reverts any `.gzkit/` edit not yet synced.
 
 ---
 
@@ -205,14 +213,15 @@ scaffolded; entries whose canonical SKILL.md declares
 Once written, `.gzkit/skills/` is the **project canonical source-of-truth** —
 the same editing invariant binds in every gzkit-or-adopter repo. Edit files
 under `.gzkit/skills/`; run `gz agent sync control-surfaces` to propagate to
-vendor mirrors (`.claude/skills/`, `.github/skills/`).
+vendor mirrors (`paths.claude_skills` and `paths.codex_skills`, default `.claude/skills/` and `.agents/skills/`).
 
 Re-running `gz init` (repair mode) adds any new canonical skills delivered by
 the installed gzkit version without overwriting operator-edited files
 (`skip_existing=True` semantics).
 
-Use `--force` to wipe and re-copy all canonical SKILL.md content from the
-wheel's package surface (replaces any operator edits).
+Use `--force` to re-copy all canonical SKILL.md content from the wheel's
+package surface over the project's copies (replaces any operator edits;
+project-local skills are kept).
 
 ---
 
@@ -348,51 +357,77 @@ gz init --update --dry-run
 
 ## Output
 
-```
-Initializing gzkit for my-project in lite mode...
+A dated record, observed 2026-09-27: `gz init --no-skeleton` in an empty
+directory that is not a git worktree, excerpt. The counts are what that
+installed wheel shipped, not a contract; `gz skill list` shows the current
+set. Most of the first sync's `Generated <path>` lines are elided. Without
+`--no-skeleton`, `Created pyproject.toml`, `README.md`, the package and test
+`__init__.py` files and `Ran uv sync` precede the scaffold lines.
+
+```text
+Initializing gzkit for demo-proj in lite mode...
+  No attestor handle set; `gz init --attestor-handle <handle>` records one.
   Created design/prd/
   Created design/constitutions/
   Created design/adr/
-  Created pyproject.toml
-  Created src/my_project/__init__.py
-  Created tests/__init__.py
-  Ran uv sync (virtualenv created)
-  Scaffolded 15 skills (run gz skill list to see all)
-  Scaffolded 2 default personas
+  Created .gitignore
+  Created .pre-commit-config.yaml (pre-push gz check gate)
+  Registered git merge driver 'gzkit-jsonl' for append-only JSONL
+  Scaffolded 71 core skills
+  Scaffolded 32 core chores
+  Scaffolded 7 core personas
+  Scaffolded 12 core templates
+  ...
+  Generated AGENTS.md
   Generated CLAUDE.md
+  ...
+  Scaffolded 26 core rules
+  Created .claude/hooks/instruction-router.py
+  ...
   Created .claude/settings.json
+  (No existing artifacts to register)
 
 gzkit initialized successfully!
 
-  Scaffolded 15 skills (run gz skill list to see all)
+  Scaffolded 71 skills (run gz skill list to see all)
 
 Next steps:
   Skill (preferred)         CLI equivalent
   /gz-prd                    gz prd <name>
   /gz-plan                   gz plan create <name>
   /gz-status                 gz status
-  /gz-gates                  gz gates --adr ADR-<X.Y.Z>
+  /gz-check                  gz check
 ```
 
 ---
 
 ## Result Tree
 
-After `gz init --mode lite`, your project looks like this:
+After `gz init --mode lite` with the skeleton:
 
 ```text
 my-project/
 ├── .gzkit/
 │   ├── ledger.jsonl           ← Governance event log
 │   ├── manifest.json          ← Project structure manifest
+│   ├── chores/                ← Canonical chores and registry
 │   ├── personas/              ← Agent persona definitions
 │   ├── rules/                 ← Canonical governance rules
-│   └── skills/                ← Canonical skill definitions (15 core skills)
+│   ├── skills/                ← Canonical skill definitions
+│   └── templates/             ← Canonical artifact templates
 ├── .gzkit.json                ← Project configuration
 ├── .claude/
+│   ├── hooks/                 ← Claude Code hook scripts
+│   ├── personas/              ← Mirror of .gzkit/personas/
 │   ├── rules/                 ← Mirror of .gzkit/rules/
 │   ├── skills/                ← Mirror of .gzkit/skills/
 │   └── settings.json          ← Claude Code hooks
+├── .agents/
+│   ├── personas/              ← Codex persona mirror
+│   └── skills/                ← Codex skill mirror
+├── .codex/config.toml         ← Codex project baseline
+├── .github/discovery-index.json
+├── data/audit_thresholds.json
 ├── design/
 │   ├── prd/                   ← Product Requirements Documents
 │   ├── constitutions/         ← Governance constitutions
@@ -402,8 +437,10 @@ my-project/
 ├── tests/
 │   └── __init__.py
 ├── pyproject.toml
+├── README.md
 ├── .gitignore
-├── AGENTS.md                  ← Agent governance contract
+├── .pre-commit-config.yaml    ← Pre-push gz check gate
+├── AGENTS.md                  ← Agent governance contract (plus nested AGENTS.md files)
 └── CLAUDE.md                  ← Claude Code instructions (generated)
 ```
 

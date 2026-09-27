@@ -6,7 +6,7 @@ Initialize gzkit governance scaffolding and project skeleton for a repository. U
 
 ## Purpose
 
-`/gz-init` exposes the canonical gz-init workflow for operator invocation. Operate the gz init command surface as a reusable governance workflow.
+`/gz-init` exposes the canonical gz-init workflow for operator invocation. It runs `gz init` to scaffold gzkit into a new repository, to repair an initialized one by adding what is missing, or with `--update` to refresh `.gzkit/` canon from the installed wheel.
 
 ## When to Use
 
@@ -14,7 +14,7 @@ Invoke this skill when the task described above matches your current workflow st
 
 ## What to Expect
 
-The skill reads its canonical execution contract from `.gzkit/skills/gz-init/SKILL.md` (mirrored into `.claude/skills/`, `.agents/skills/`, and `.github/skills/`). Follow the agent-facing instructions in that file for the exact execution protocol, stages, and evidence requirements.
+The skill reads its canonical execution contract from `.gzkit/skills/gz-init/SKILL.md` (mirrored into `.claude/skills/` and `.agents/skills/`). Follow the agent-facing instructions in that file for the exact execution protocol, stages, and evidence requirements.
 
 ## Invocation
 

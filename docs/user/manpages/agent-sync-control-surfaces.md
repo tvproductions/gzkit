@@ -40,7 +40,15 @@ marker, run sync once (closes GHI #449).
 | `.gzkit/agents/roles.json` + registered Markdown bodies | (project-local opt-in) | `.codex/agents/*.toml` (body transformed; native metadata preserved) |
 | `src/gzkit/hooks/codex.py` + repository orientation script | Python producer | `.codex/hooks.json` (native matcher groups) |
 
-Re-running on freshly-synced state produces zero writes (idempotent).
+The same pass also writes the manifest, the Codex baseline `.codex/config.toml`
+(only when missing or empty), `AGENTS.md` (playback of the committed
+rendition), and, when Claude is enabled, `CLAUDE.md`, `.claude/settings.json`
+and the Claude hook scripts, then `.github/discovery-index.json` and the
+nested `AGENTS.md` files.
+
+Re-running on freshly-synced state changes no surface bytes (idempotent). Each
+real run still appends one `agent_sync_completed` ledger event; `--dry-run`
+appends none.
 
 ### Codex interim delivery
 
@@ -65,6 +73,11 @@ for measured support and the work still owned by the pool ADR.
 ## Determinism Contract
 
 For unchanged inputs, sync emits a deterministic updated-path list and stable operator output.
+
+The list is not a list of changes. Skill mirror files appear only when their
+bytes change; the manifest, `AGENTS.md`, `CLAUDE.md`, settings, rules, hooks
+and persona mirrors appear on every run. `--dry-run` renders the sync into a
+capture sink and prints the same list without writing anything.
 
 ## Persona Mirroring
 
@@ -92,9 +105,16 @@ Blocking preflight failures include:
 - missing `SKILL.md`,
 - missing or invalid `SKILL.md` frontmatter identity fields,
 - malformed `last_reviewed` values (not `YYYY-MM-DD`),
-- invalid/missing deprecation metadata for `deprecated` or `retired` skills.
+- invalid/missing deprecation metadata for `deprecated` or `retired` skills,
+- malformed `lifecycle_state`, `metadata.skill-version` or other metadata values.
 
-On failure, sync exits non-zero and prints recovery steps.
+On failure, sync exits 1 before writing anything and prints recovery steps.
+`--dry-run` does not run the preflight, so it can print a plan the real run
+refuses.
+
+After writing, sync re-runs the skill audit and exits 1 if a blocking issue
+other than a stale review remains ("Sync post-check failed"); the writes are
+already on disk.
 
 Review **age** never blocks sync. A `last_reviewed` older than the policy threshold is a maintenance signal on canon, not corruption: sync propagates it, and neither the preflight nor the post-sync audit refuses on it. `gz skill audit` and Gate 3 report it and block (GHI #1099).
 
