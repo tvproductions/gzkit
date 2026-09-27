@@ -234,6 +234,10 @@ Lifted at version `0.3.0` (rule now at `0.3.1`).
 
 > **Rule version:** `0.5.2` — the allowed `gh issue close` and `gh release create` examples no longer model a narrative close or a whole-file release body, and the `/ghi-author` mandate is cited where it lives (GHI #921). Prior `0.5.1` and earlier lifted to [Rule Version History](../../docs/governance/rule-version-history.md#gh-climd). Binding rules unchanged.
 
+### Lifted 2026-09-27 at version `0.6.0` (rule now at `0.7.0`)
+
+> **Rule version:** `0.6.0` — operator ruling 2026-09-23: § Allowed commands gains `gh issue comment`. `/ghi-author` Step 0 mandates a cross-link comment on a sibling GHI *"at authoring time, not as a follow-up"*, and this allowlist did not carry the verb — so a skill-mandated step was unreachable through the only rule an agent greps on a `gh` question. Measured at GHI #1083, whose cross-link to sibling #1081 went unwritten for exactly this reason. **Binding rules changed: the allowlist widens by one verb.** Prior `0.5.2` and earlier lifted to [Rule Version History](../../docs/governance/rule-version-history.md#gh-climd).
+
 ### Lifted 2026-09-07 at version `0.5.0` (rule now at `0.5.1`)
 
 > **Rule version:** `0.5.0` — GHI #972 (2026-09-07): adds § Census queries. § Allowed commands sanctioned `gh issue list` by *verb* while the hazard is scoped by *result-set size* — every `gh <noun> list` returns a 30-row page with no truncation marker and exit 0, and the handoff chain's own "re-derive the count" step was that capped command, so a session that noticed a wrong count re-derived `30` with fresh confidence. Scored **Judgment** at row 51c. Prior version history lifted to [Rule Version History](../../docs/governance/rule-version-history.md#gh-climd).

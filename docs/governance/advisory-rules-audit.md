@@ -58,7 +58,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `changelog-release-notes.md` | `1.2.1` |
 | `complexity-doctrine.md` | `0.4.0` |
 | `complexity-thresholds.md` | `0.5.0` |
-| `gh-cli.md` | `0.6.0` |
+| `gh-cli.md` | `0.7.0` |
 | `hexagonal-architecture.md` | `0.3.0` |
 | `models.md` | `0.2.0` |
 | `model-selection.md` | `0.6.3` |
@@ -277,6 +277,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | 51a | **`gh issue create` is forbidden as a direct agent invocation** — author every GHI through `/ghi-author`; file cross-repo through `gz issue file` | **Judgment** | **Scored 2026-08-30 (rule `0.4.0`), GHI #921 — the file's headline clause carried no row at all.** The rule states its own unmechanizability and the reason: *"The prohibition is on the caller, not the string"* — `/ghi-author` invokes `gh issue create` at its own `SKILL.md:199`, so the sanctioned and forbidden invocations are byte-identical commands. Distinguishing them requires attributing a call to its caller, which gzkit does not model (the unmodelled-caller ground of row 62b). Backstop is the skill's Step-0 prior-art lookup, whose absence produced the canonical sibling-cut regression GHI #459/#460. No mechanical witness, and none is planned. |
 | 51b | MUST go to `tvproductions/gzkit` via `gz issue file` | **Promotable** | **Scored 2026-08-30 (rule `0.4.0`), GHI #921.** The wrapper itself fails closed on a body referencing no gzkit-owned surface and auto-stamps provenance, so the *filing path* is enforced once taken; what is unwitnessed is the choice to take it rather than file locally. Promotion path: the same caller-attribution problem as 51a bounds a general check, but the narrow arm is tractable — scan a consuming repo's issue bodies for gzkit-owned surface references. Scored Promotable on that narrow arm, not the general one. |
 | 51c | **Census queries establish completeness** — a whole-queue count reads the search API `total_count` (and treats `incomplete_results` as no count obtained); an inventory paginates or verifies its population against that total; a bounded search never supports "no such issue exists"; an explicit `--limit` alone is insufficient | **Judgment** | **Scored 2026-09-07 (rule `0.5.0`), GHI #972.** Written guidance whose recommended commands were verified to return the complete result (41 by `total_count`, 41 by `--paginate`, 30 by the default page, 10 by `--limit 10`) — that the command works is evidence the guidance is *correct*, not that it is *enforced*. Whether a given `gh <noun> list` is a census or a scoped search is a reading of the consumer's intent, which gzkit does not model (the unmodelled-caller ground of 51a / 62b). The narrow syntactic arm — a Bash PreToolUse hook refusing `gh <noun> list … --jq 'length'` with no `--limit`, the verifier-pipe-gate pattern — is deliberately NOT scored Promotable: the `--limit 200` form passes it and still truncates silently, so the check would grade by shape (the `shape-graded-not-substance` signature this scorecard exists to close). Reclassify on a named session where a capped page was booked as a total after this clause landed. **Notes corrected 2026-09-07 (rule `0.5.1`, #972 reopened):** the count form now refuses to print a number on `incomplete_results: true` (verified — jq exit 5 on an incomplete fixture, the total on a complete one), and the at-limit claim was withdrawn — `--limit 40` returned 40 against a 40-issue queue, complete, so equality proves nothing; completeness is unproven until pagination or an authoritative total establishes it. Score unchanged. |
+| 51d | **`gh issue reopen` is allowed only for `/ghi-author` Step 0's regression case** — a GHI closed in the last 30 days whose root cause regressed, reopened with the regression evidence rather than filed fresh | **Judgment** | **Scored 2026-09-27 (rule `0.7.0`), operator ruling "Add reopen to the rule".** The same caller-attribution ground as 51a: a sanctioned reopen and an unsanctioned one are byte-identical commands, and whether the regression shares the closed GHI's root cause is a reading of two issue bodies. The widening closes an unreachable skill step (the `0.6.0` precedent for `comment`), measured at GHI #1017. No mechanical witness, and none is planned. |
 | 52 | Prohibited commands (settings mutations, secret management, force push, un-authorized merges) | **Judgment** | Permission model lives in `.claude/settings.json`; gh-level enforcement is server-side |
 | 53 | Defect tracking: create GHI when fix deferred | **Judgment** | Cultural enforcement; see rule 17 |
 
@@ -515,7 +516,7 @@ decays in whichever direction the next reader's grep happens to point.
 |-------|-------|---|
 | **Mechanical** | 71 | 39% |
 | **Promotable** | 35 | 19% |
-| **Judgment** | 74 | 41% |
+| **Judgment** | 75 | 41% |
 | **Ambiguous** | 0 | 0% |
 
 <!-- The Rows column is machine-checked by `gz validate --advisory-scorecard`;
@@ -532,7 +533,7 @@ decays in whichever direction the next reader's grep happens to point.
      158 as of row 58c (GHI #962, 2026-09-05), and 159 as of row 88 (the CLI
      lane-is-not-route carve-out, 2026-09-06), and 160 as of row 89 (mutation-sweep
      integrity, GHI #963), and 161 as of row 51c (census-query completeness,
-     GHI #972), and 163 as of rows 91-92 (the exit-code-2 relabel, GHI #1001), and 167 as of rows 56a-56b (suppression is not a repair, GHI #999), and 168 as of row 93 (verbosity flags realigned to the specification, 2026-09-14), and 180 as of row 53c (skill selection routes through gz-how, GHI #1106, 2026-09-27); the entries between 131 and 158 were
+     GHI #972), and 163 as of rows 91-92 (the exit-code-2 relabel, GHI #1001), and 167 as of rows 56a-56b (suppression is not a repair, GHI #999), and 168 as of row 93 (verbosity flags realigned to the specification, 2026-09-14), and 180 as of row 53c (skill selection routes through gz-how, GHI #1106, 2026-09-27), and 181 as of row 51d (gh issue reopen for ghi-author's regression case, 2026-09-27); the entries between 131 and 158 were
      not recorded here as they landed, so this list names the endpoints it can
      evidence rather than reconstructing a history it cannot. -->
 
