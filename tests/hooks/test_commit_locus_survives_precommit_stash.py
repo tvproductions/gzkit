@@ -42,7 +42,9 @@ _SESSION_ROW = {
     "id": "ttl-1",
     "ts": "2026-09-25T00:51:19+00:00",
 }
-_RECORDER = f"{sys.executable} -m gzkit.hooks.commit_ledger"
+# Forward slashes: the hook runs under sh and pre-commit splits its entry
+# POSIX-style, both of which eat a Windows path's backslashes.
+_RECORDER = f"{Path(sys.executable).as_posix()} -m gzkit.hooks.commit_ledger"
 
 _NO_POST_COMMIT_HOOKS = """\
 default_install_hook_types: [post-commit]
