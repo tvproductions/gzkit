@@ -1154,9 +1154,9 @@ Skill shortcuts for governance planning — these provide guided workflows beyon
 ```bash
 # Create governance artifacts
 uv run gz init                     # Initialize gzkit in a repository
-uv run gz prd                      # Create a Product Requirements Document
-uv run gz constitute               # Create a constitution artifact
-uv run gz plan                     # Create an ADR
+uv run gz prd <name>               # Create a Product Requirements Document
+uv run gz constitute <name>        # Create a constitution artifact
+uv run gz plan create <name> --kind feature --semver X.Y.Z  # Create an ADR
 uv run gz specify                  # Create an implementation brief (OBPI)
 uv run gz interview                # Run interactive governance interviews
 uv run gz migrate-semver           # Record SemVer ID rename events

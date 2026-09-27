@@ -6,7 +6,7 @@ Create constitution artifacts. Use when governance constitutions must be created
 
 ## Purpose
 
-`/gz-constitute` exposes the canonical gz-constitute workflow for operator invocation. Operate the gz constitute command surface as a reusable governance workflow.
+`/gz-constitute` exposes the canonical gz-constitute workflow for operator invocation. It scaffolds a `CONSTITUTION-<SLUG>-<semver>` document from the constitution template, records a `constitution_created` ledger event, and drafts its sections with the operator.
 
 ## When to Use
 

@@ -36,8 +36,8 @@ uv run gz personas list --json         # List personas as JSON
 ```bash
 uv run gz init                        # Initialize governance scaffolding
 uv run gz upgrade                     # Surface-only refresh from installed wheel (no manifest mutation)
-uv run gz prd                         # Create Product Requirements Document
-uv run gz constitute                  # Create constitution artifact
+uv run gz prd <name>                  # Create Product Requirements Document
+uv run gz constitute <name>           # Create constitution artifact
 uv run gz plan create <name> --kind feature --semver X.Y.Z  # Create an ADR
 uv run gz plan audit OBPI-<X.Y.Z-NN> # Structural prereq check for plan alignment
 uv run gz specify                     # Create implementation brief (OBPI)
@@ -952,7 +952,7 @@ when multiple Draft/Proposed foundations compete for the next sprint.
 
 **Constraints:**
 - The skill output is diagnosis only — it does NOT modify any ADR or ledger
-- Promotion remains a manual decision: `gz adr promote --kind feature <slug>` (the `foundation` kind is closed to new authoring by ADR-0.34.0)
+- Promotion remains a manual decision: `gz adr promote ADR-pool.<slug> --kind feature --semver X.Y.Z` (the `foundation` kind is closed to new authoring by ADR-0.34.0)
 - Do not run foundation triage as a commit gate; it is on-demand
 
 **Cross-reference:** Operator runbook `§ Foundation Triage`, manpage `foundation-triage.md`

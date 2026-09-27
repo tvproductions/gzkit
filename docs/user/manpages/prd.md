@@ -16,7 +16,7 @@ gz prd <name> [OPTIONS]
 
 | Argument | Required | Description |
 |----------|----------|-------------|
-| `name` | Yes | PRD name (e.g., `my-feature-1.0.0`) |
+| `name` | Yes | PRD slug (e.g., `my-feature` or `my-feature-1.0.0`), canonicalized to `PRD-<SLUG>-<semver>` |
 
 ---
 
@@ -24,16 +24,19 @@ gz prd <name> [OPTIONS]
 
 | Option | Type | Description |
 |--------|------|-------------|
-| `--title` | string | PRD title (defaults to name) |
-| `--dry-run` | flag | Show actions without writing |
+| `--title` | string | PRD title (defaults to the canonical id) |
+| `--dry-run` | flag | Print the file and ledger event it would write; write nothing |
 
 ---
 
 ## What It Does
 
-1. Creates a PRD document from template
-2. Records the creation event in the ledger
-3. Sets up the PRD as a parent for briefs
+1. Requires an initialized project (`.gzkit.json`); exits 1 otherwise
+2. Canonicalizes `name`: drops a leading `PRD-`, takes a trailing `-X.Y.Z` as the semver (default `1.0.0`), and upper-cases the rest stripped to alphanumerics (`my-feature-1.0.0` → `PRD-MYFEATURE-1.0.0`); a name with no alphanumeric character exits 1
+3. Renders the PRD template with `status: Draft` and author prompts in the sections the operator must write, into `<paths.prd>/<id>.md`
+4. Appends a `prd_created` ledger event; the id becomes a node in the `gz state` graph, and an ADR recorded with it as parent attaches beneath it
+
+It does not check for an existing file: a name that canonicalizes to an existing id overwrites it and appends a second event. `gz validate --documents` checks the result against `src/gzkit/schemas/prd.json`.
 
 ---
 
@@ -54,8 +57,16 @@ gz prd my-feature-1.0.0 --dry-run
 
 ## Output
 
+The path printed is absolute and follows `paths.prd` in `.gzkit.json` (this repository: `docs/design/prd`).
+
 ```
-Created PRD: design/prd/PRD-my-feature-1.0.0.md
+$ gz prd my-feature-1.0.0 --dry-run
+Dry run: no files will be written.
+  Would create PRD: /path/to/repo/docs/design/prd/PRD-MYFEATURE-1.0.0.md
+  Would append ledger event: prd_created (PRD-MYFEATURE-1.0.0)
+
+$ gz prd my-feature-1.0.0
+Created PRD: /path/to/repo/docs/design/prd/PRD-MYFEATURE-1.0.0.md
 ```
 
 ---
@@ -64,12 +75,13 @@ Created PRD: design/prd/PRD-my-feature-1.0.0.md
 
 The created PRD contains:
 
-- **Metadata**: ID, title, version, status
-- **Overview**: High-level description
-- **Goals**: What success looks like
-- **Non-Goals**: What's explicitly out of scope
-- **Requirements**: Functional and non-functional
-- **Success Metrics**: How to measure completion
+- **Frontmatter**: `id`, `status`, `semver`, `date`
+- **Problem Statement**, **North Star**, **Invariants**: author prompts for the operator to answer
+- **Gate Mapping**: the gate-to-lane table
+- **Q&A Transcript**: an author prompt for the interview that produced the PRD
+- **Attestation Block**: one `Pending` row for the semver
+
+`required_headers` in `src/gzkit/schemas/prd.json` is the authority for the required sections.
 
 ---
 
@@ -78,16 +90,15 @@ The created PRD contains:
 Create a PRD when:
 
 - Starting a new product or major feature
-- Defining scope for a body of work
-- Need a parent artifact for multiple briefs
+- Defining the project-level intent that ADRs are planned against
 
-For smaller changes, you might skip directly to `gz specify`.
+For an interactive version that asks each question and writes the answers into the same template, use `gz interview prd`.
 
 ---
 
 ## Workflow
 
-1. Create a PRD with `gz prd` (this command)
-2. Create briefs with `gz specify --parent PRD-...`
-3. Create ADRs with `gz plan --brief BRIEF-...`
+1. Create a PRD with `gz prd` (this command) and write its sections with the operator
+2. Plan ADRs against it with `gz plan create`
+3. Create OBPI briefs under each ADR with `gz specify --parent ADR-...`
 4. Implement and attest

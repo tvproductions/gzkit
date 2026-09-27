@@ -6,7 +6,7 @@ Create product requirement artifacts. Use when defining or revising project-leve
 
 ## Purpose
 
-`/gz-prd` exposes the canonical gz-prd workflow for operator invocation. Operate the gz prd command surface as a reusable governance workflow.
+`/gz-prd` exposes the canonical gz-prd workflow for operator invocation. It scaffolds a `PRD-<SLUG>-<semver>` document whose sections carry author prompts, records a `prd_created` ledger event, and interviews the operator to replace each prompt.
 
 ## When to Use
 
