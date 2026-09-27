@@ -6,7 +6,7 @@ Validate governance artifacts against schema rules. Use when checking manifest, 
 
 ## Purpose
 
-`/gz-validate` exposes the canonical gz-validate workflow for operator invocation. Operate the gz validate command surface as a reusable governance workflow.
+`/gz-validate` exposes the canonical gz-validate workflow for operator invocation. It runs one validator per `--<scope>` flag, or the whole default tier when no flag is given, and reads the exit code and findings back.
 
 ## When to Use
 

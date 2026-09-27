@@ -33,10 +33,11 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
 
 Verifies governance artifacts against their schema definitions and enforces
 canonical/mirror sync parity for generated control surfaces. When no flag is
-supplied, the manifest, documents, surfaces, ledger, instructions, briefs, and
-personas scopes all run. The `--interviews`, `--decomposition`,
-`--requirements`, and `--commit-trailers` scopes are opt-in and only run when
-explicitly requested.
+supplied, every default-tier scope runs; every other scope is explicit-tier and
+runs only when its flag is named. `VALIDATOR_REGISTRY` in
+`src/gzkit/commands/validate_cmd.py` is the authority for each scope's tier.
+`uv run gz check` runs the default tier as its `Validate` step and some
+explicit-tier scopes as steps of their own.
 
 `--json` changes how findings are rendered, never the exit status: a scope that
 fails exits with the same code in `--json` mode as in plain mode, so a caller
@@ -2510,9 +2511,11 @@ Included in `gz check` (step "Complexity-thresholds") and runnable as `gz valida
 
 ## Scopes Reference
 
-The following table catalogs every audit scope the `gz validate` surface
-exposes. Scopes marked **default** run when no flag is supplied; the rest are
-opt-in. Each scope can be invoked individually for focused verification or as
+The following table catalogs audit scopes the `gz validate` surface exposes;
+`VALIDATOR_REGISTRY` in `src/gzkit/commands/validate_cmd.py` is the complete
+list and the authority for each scope's tier. Scopes marked **yes** run when no
+flag is supplied; the rest are opt-in, and `gz check` runs some opt-in scopes
+as steps of their own. Each scope can be invoked individually for focused verification or as
 part of `gz validate --audits` / `gz check` aggregate passes.
 
 | Scope flag | Default? | Purpose |
@@ -2527,12 +2530,12 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--interviews` | opt-in | Verify ADRs with OBPIs have interview-transcript artifacts |
 | `--decomposition` | opt-in | Validate ADR decomposition scorecards and checklist-to-brief alignment |
 | `--requirements` | opt-in | Flag OBPI briefs whose `## REQUIREMENTS` sections lack REQ-ID identifiers |
-| `--commit-trailers` | opt-in | Flag HEAD commits touching `src/` or `tests/` without a `Task:` trailer |
-| `--frontmatter` | opt-in | Validate the four governed frontmatter fields against the ledger graph (exits 3 on drift) |
+| `--commit-trailers` | yes | Flag HEAD commits touching `src/` or `tests/` without a `Task:` trailer |
+| `--frontmatter` | yes | Validate the four governed frontmatter fields against the ledger graph (exits 3 on drift) |
 | `--taxonomy` | yes | Enforce ADR `kind`/`semver`/id-prefix consistency (ADR-0.0.17) |
 | `--chores-layout` | opt-in | Forbid `CHORE.md` / `acceptance.json` outside the canonical chore roots |
 | `--unscoped-rules` | opt-in | Flag agent rules with `paths: "**"` or missing `paths:` outside `AGENTS.md` (ADR-0.0.20) |
-| `--version` | opt-in | Validate version consistency across all version-bearing locations (`pyproject.toml`, `__init__.py`, README badge) |
+| `--version` | yes | Validate version consistency across all version-bearing locations (`pyproject.toml`, `__init__.py`, README badge) |
 | `--type-ignores` | opt-in | Fail on `# type: ignore[<code>]` under `src/` (ty does not honor the bracketed-code form — see GHI #197) |
 | `--cli-alignment` | opt-in | Every `gz <verb>` reference in operator docs / features / skills / chore docs / rules / root `AGENTS.md` must resolve to a registered parser verb |
 | `--event-handlers` | opt-in | Every ledger event type must be claimed by a graph handler |
@@ -2558,10 +2561,10 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--insights-shape` | opt-in | Validate `.gzkit/insights/agent-insights.jsonl` records against the canonical `InsightRecord` schema (GHI #358) |
 | `--instructions-files-budget` | opt-in | AGENTS.md / CLAUDE.md / `.claude/rules/*.md` are measured against the per-file char budgets in `data/instructions_files_budget.json` (GHI #373); an overrun is reported to stderr with its distance and the `/gz-context-diet` pointer, and is **advisory — never fail-closed — until 1.0** (operator ruling 2026-08-17; the budget values still bind as the reporting threshold, and the stay lifts when `ADR-0.35.0` § Decision 3 supplies the mechanism that makes an over-budget surface fixable). Also runs the surface-delivery witness: every rendered `##` section must carry a survival rank in `data/agents_md_survival_declaration.json` (fail-closed), and the rendered surface's byte distance from each consuming vendor's delivery cap in `data/vendor-manifest.json` is reported to stderr (warning only — never fail-closed, so the core stays decoupled from the adapter limit; GHI #712) |
 | `--agents-md-map-conformance` | opt-in | AGENTS.md template + rendered shape conformance: four criteria (paragraph <=5 lines or binding-bullet marker; no prohibited subsection titles; relative links resolve with anchors; rendered AGENTS.md within budget). Tables and code fences exempt from criterion (a). The first three criteria hard-reject at exit 3 with a `/gz-context-diet` remediation pointer; the budget criterion (d) is **advisory — reported to stderr, never fail-closed — until 1.0** under the same 2026-08-17 stay as `--instructions-files-budget` (ADR-0.0.54 / OBPI-0.0.54-03) |
-| `--adr-status-fresh` | yes | `docs/governance/GovZero/adr-status.md` must agree with on-disk ADR canon (GHI #322) |
-| `--obpi-lifecycle-coherence` | yes | every `obpi_created` must be terminal, parked, completed, or hold a resolvable parent ADR (GHI #584) |
-| `--red-parity` | yes | Every BEHAVIOR REQ in a heavy-lane brief completed at or after the `2026-07-09T12:00:00Z` cutover must carry a `red_receipt_emitted` witness whose `failure_class` is not `none`. `@covers` parity proves a REQ has a covering test; it never proves that test can fail. A `failure_class` of `none` means the covering test passed against the base tree with the production hunks withheld — it cannot fail, which is the `AGENTS.md` § DO IT RIGHT Rule 6 defect. A valid executed acceptance proof with at least one killed mutation control also satisfies the gate, because each control makes the covering tests fail on an assertion (GHI #1094); it never erases a `none` finding. Recovery: `uv run gz arb red --req <REQ> --obpi <OBPI>` (GHI #642), or, once the production change has landed, `uv run gz obpi acceptance <OBPI> prove --spec <controls.json>` |
-| `--adversarial-validation` | yes | Step-4b adversary verdicts must be durably captured. Two invariants: every heavy-lane completion receipt emitted at or after the `2026-07-09T09:00:00Z` cutover carries a paired `adversarial_validation` ledger event (and a `refuted` verdict carries a resolution); and every terminal heavy-lane brief carries a `### Step 4b — Independent Adversarial Validation` section, unless named in the closed `data/adversarial_validation_grandfather.json` snapshot. Pre-cutover receipts are out of scope — the gate did not exist, and back-dating a verdict is the fabrication this gate prevents (GHI #643 / #676) |
+| `--adr-status-fresh` | opt-in | `docs/governance/GovZero/adr-status.md` must agree with on-disk ADR canon (GHI #322) |
+| `--obpi-lifecycle-coherence` | opt-in | every `obpi_created` must be terminal, parked, completed, or hold a resolvable parent ADR (GHI #584) |
+| `--red-parity` | opt-in | Every BEHAVIOR REQ in a heavy-lane brief completed at or after the `2026-07-09T12:00:00Z` cutover must carry a `red_receipt_emitted` witness whose `failure_class` is not `none`. `@covers` parity proves a REQ has a covering test; it never proves that test can fail. A `failure_class` of `none` means the covering test passed against the base tree with the production hunks withheld — it cannot fail, which is the `AGENTS.md` § DO IT RIGHT Rule 6 defect. A valid executed acceptance proof with at least one killed mutation control also satisfies the gate, because each control makes the covering tests fail on an assertion (GHI #1094); it never erases a `none` finding. Recovery: `uv run gz arb red --req <REQ> --obpi <OBPI>` (GHI #642), or, once the production change has landed, `uv run gz obpi acceptance <OBPI> prove --spec <controls.json>` |
+| `--adversarial-validation` | opt-in | Step-4b adversary verdicts must be durably captured. Two invariants: every heavy-lane completion receipt emitted at or after the `2026-07-09T09:00:00Z` cutover carries a paired `adversarial_validation` ledger event (and a `refuted` verdict carries a resolution); and every terminal heavy-lane brief carries a `### Step 4b — Independent Adversarial Validation` section, unless named in the closed `data/adversarial_validation_grandfather.json` snapshot. Pre-cutover receipts are out of scope — the gate did not exist, and back-dating a verdict is the fabrication this gate prevents (GHI #643 / #676) |
 | `--session-green-gate` | opt-in | `.pre-commit-config.yaml` must declare a `stages: [pre-push]` hook running `gz check`; exits 3 when absent, unparseable, or missing — fail-closed floor (ADR-0.0.68 / OBPI-0.0.68-02). Outside CI it also checks that every hook type in `default_install_hook_types` (plus `pre-push`) is installed: a missing `prepare-commit-msg` or `post-commit` hook is advisory, and any other missing type exits 3 (GHI #851). A delivered `post-commit` also needs the commit-locus recorder at `post-commit.legacy`, installed by `gz init` or `uv run -m gzkit.hooks.commit_ledger --install` (GHI #1092) |
 | `--orientation-freshness` | opt-in | The SessionStart orientation hook + script must remain wired (GHI #341) |
 | `--brief-headings` | opt-in | OBPI brief evidence sections must be H3, not H2 (GHI #238) |
@@ -2569,7 +2572,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--brief-demo-section` | opt-in | Heavy-lane CLI-shipping briefs must carry a `## Demo` H2 section so the closeout walkthrough does not fall back to `--help` (GHI #431) |
 | `--sensitivity` | opt-in | ADR-0.0.22 sensitivity-binding (auto-detect floor; escalate-not-escape against `data/security_surfaces.json`) |
 | `--absorption-duplicates` | opt-in | Same opsdev source path across parent ADRs needs `paired_with:` frontmatter waiver (GHI #376) |
-| `--orphaned-implementation` | yes | Non-completed OBPI with lock-claim + force-release + allowed-path edits and no `obpi_completion_*` is a silent broken state (GHI #438) |
+| `--orphaned-implementation` | opt-in | Non-completed OBPI with lock-claim + force-release + allowed-path edits and no `obpi_completion_*` is a silent broken state (GHI #438) |
 | `--evaluation-justify-binding` | opt-in | Fail-closed gate: `gz-justify` artifact required when evaluation scores are low (ADR-0.0.26) |
 | `--intrinsic-attestation` | opt-in | Validate `intrinsic-complexity-attestation` ledger events against canonical schema (OBPI-0.0.29-07) |
 | `--advisor-proof-binding` | opt-in | Verdict <-> proof binding audit across fixtures, ledger-cited diagnoses, and JSON Schema (OBPI-0.0.29-08) |

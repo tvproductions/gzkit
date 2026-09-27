@@ -63,15 +63,17 @@ emission, and the amendment-write path only.
 ## OPTIONS
 
 - `--apply` — write operator-attested amendments back into the brief. Allowlist
-  additions append under `## Allowed Paths`; unresolved-verb references are
+  additions go to frontmatter `allowlist:` on a structured brief and under
+  `## Allowed Paths` on a legacy one (GHI #825); unresolved-verb references are
   recorded under `## Tracked Defects` (never silently rewritten — that is an
-  operator-judgment call); REQ-count drift is recorded as a tracked-defect note.
+  operator-judgment call); REQ identity drift is recorded as a tracked-defect note.
   **Requires `--attestor`.**
 - `--attestor "<name>"` — attestor handle, never a real name. Required with
   `--apply`; Defaults to `authorship.attestor_handle` in `.gzkit.json` when set (GHI #1036). With neither, `--apply` fails with
   `--apply requires --attestor`.
-- `--dry-run` — preview the would-be amendments without writing the brief or
-  recording an applied event.
+- `--dry-run` — report the deltas `--apply` would act on without writing the
+  brief. It prints delta counts, not the amendment text, and still records a
+  `brief_reconciled` event with `applied` false.
 - `--json` — emit a machine-consumption payload (`brief_id`, `has_drift`,
   per-dimension `deltas`, `applied`, `dry_run`).
 
