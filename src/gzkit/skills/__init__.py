@@ -557,8 +557,29 @@ def scaffold_core_skills(
         # it and a Windows default would emit CRLF (GHI #681).
         target_file.write_text(scoped, encoding="utf-8", newline="\n")
         created.append(target_file)
+        # A skill's other packaged files ship with it: SKILL.md links into its
+        # own `references/`, which would otherwise be dead on arrival (GHI #1108).
+        for rel_path, asset in _iter_slug_assets(_CANONICAL_SKILLS_RESOURCE, slug):
+            asset_target = target_dir / rel_path
+            asset_target.parent.mkdir(parents=True, exist_ok=True)
+            asset_target.write_bytes(asset.read_bytes())
 
     return created
+
+
+def _iter_slug_assets(resource_pkg: str, slug: str) -> Iterator[tuple[Path, Traversable]]:
+    """Yield ``(path relative to the slug, resource)`` for each non-SKILL.md file."""
+
+    def _walk(node: Traversable, rel: Path) -> Iterator[tuple[Path, Traversable]]:
+        for entry in node.iterdir():
+            if entry.name.startswith("_"):
+                continue
+            if entry.is_dir():
+                yield from _walk(entry, rel / entry.name)
+            elif entry.is_file() and (rel / entry.name) != Path("SKILL.md"):
+                yield rel / entry.name, entry
+
+    yield from _walk(importlib.resources.files(resource_pkg).joinpath(slug), Path())
 
 
 def list_skills(

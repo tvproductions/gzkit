@@ -347,11 +347,35 @@ class TestRouterRowsFollowTheBoundary(unittest.TestCase):
             scaffold_core_skills(root, GzkitConfig())
             offenders = [
                 f"{path.parent.name}: {line.strip()}"
-                for path in sorted((root / ".gzkit" / "skills").glob("*/SKILL.md"))
+                # Every delivered `.md`, not SKILL.md alone: a skill's
+                # `references/` ship too (GHI #1108), and a withheld slug named
+                # there is the same dead instruction.
+                for path in sorted((root / ".gzkit" / "skills").glob("*/**/*.md"))
                 for line in path.read_text(encoding="utf-8").splitlines()
                 if any(slug in line for slug in withheld)
             ]
             self.assertEqual(offenders, [], "delivered skills still name a withheld slug")
+
+    def test_a_fresh_scaffold_delivers_a_skills_reference_files(self) -> None:
+        """`gz init` lands a skill's `references/` beside its SKILL.md (GHI #1108).
+
+        The scaffolder wrote SKILL.md alone, so on a fresh install every link a
+        delivered skill makes into its own `references/` was dead even once the
+        wheel carried the files.
+        """
+        from gzkit.config import GzkitConfig
+        from gzkit.skills import scaffold_core_skills
+
+        shipped = sorted(
+            path.relative_to(REPO_ROOT / "src" / "gzkit" / "skills").as_posix()
+            for path in (REPO_ROOT / "src" / "gzkit" / "skills").glob("*/references/*.md")
+        )
+        self.assertTrue(shipped, "fixture premise: the wheel tree carries reference files")
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            scaffold_core_skills(root, GzkitConfig())
+            missing = [rel for rel in shipped if not (root / ".gzkit" / "skills" / rel).is_file()]
+            self.assertEqual(missing, [], "a delivered skill's reference files were not scaffolded")
 
     def test_a_scaffolded_tree_passes_its_own_router_gate(self) -> None:
         """The end-to-end property, run through the real gate rather than a proxy."""
