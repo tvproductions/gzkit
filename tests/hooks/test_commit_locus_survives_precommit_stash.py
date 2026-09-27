@@ -232,6 +232,7 @@ class RecorderHookInstallation(unittest.TestCase):
         self.assertIn("NOT installed", status)
         self.assertIsNotNone(recorder_undelivered_reason(self.hooks_dir))
 
+    @unittest.skipIf(os.name == "nt", "Windows has no exec bit; os.access(X_OK) is always True")
     def test_non_executable_recorder_is_not_delivered(self) -> None:
         """pre-commit skips a legacy hook it cannot execute, so presence is not delivery."""
         install_recorder_hook(self.hooks_dir)
