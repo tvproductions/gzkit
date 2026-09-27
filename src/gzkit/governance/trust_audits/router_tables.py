@@ -27,8 +27,8 @@ from pathlib import Path
 from gzkit.validate import ValidationError
 
 # `Intent` need only OPEN the first cell. Requiring it to be the whole cell made
-# `gz-skill-router` -- the discovery router AGENTS.md sends agents to, and the
-# largest one -- structurally invisible here: its header reads
+# `gz-skill-router` -- the discovery router of its day and the largest one,
+# retired for `gz-how` under GHI #1106 -- structurally invisible here: its header reads
 # `| Intent / Keyword | Skill |`, so its ~40 rows were never resolved against
 # disk by the REQ that shipped this audit (REQ-0.27.0-03-01). Found because two
 # rows survived the GHI #915 delivery filter, which reads the same pattern.

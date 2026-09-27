@@ -24,4 +24,4 @@ model: haiku
 | plan audit | `gz-plan-audit` |
 | release | `gz-patch-release` (also routed by `gz-manage`) |
 
-Invoke the matched skill directly. See `gz-skill-router` for the full catalog.
+Invoke the matched skill directly. See `gz-how` for the flows and the full catalog.

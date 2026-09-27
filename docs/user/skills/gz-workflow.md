@@ -25,5 +25,5 @@ Use `/gz-workflow` when you know you're doing end-to-end workflow work but haven
 
 ## Related
 
-- `/gz-skill-router` — full catalog with cross-namespace discovery
+- `/gz-how` — the flows every skill belongs to, and the full catalog
 - `/gz-governance` — ADR, OBPI, and ledger governance intents

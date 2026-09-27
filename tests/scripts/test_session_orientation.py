@@ -97,6 +97,17 @@ class TestRenderEmitsAllSections(unittest.TestCase):
         for heading in SECTION_HEADINGS:
             self.assertIn(heading, rendered, f"missing section: {heading}")
 
+    def test_skill_awareness_points_skill_selection_at_gz_how(self):
+        """Every session starts told where to go when no skill clearly fits (GHI #1106).
+
+        The agent chooses skills on its own; the flow guide only helps if the
+        agent is steered to it at the moment of choosing, and session start is
+        the one surface every session receives.
+        """
+        rendered = self.mod.render({}, self.now)
+        section = rendered.split("## Skill-awareness re-injection", 1)[1]
+        self.assertIn("`gz-how`", section)
+
     def test_sections_appear_in_canonical_order(self):
         empty_state = {
             "remote_state": None,

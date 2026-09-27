@@ -109,6 +109,8 @@ nav:
       - /git-sync: user/skills/git-sync.md
       - /gz-patch-release: user/skills/gz-patch-release.md
       - /gz-session-handoff: user/skills/gz-session-handoff.md
+      - /gz-how: user/skills/gz-how.md
+      - /gz-skill-review: user/skills/gz-skill-review.md
       - /gz-chore-runner: user/skills/gz-chore-runner.md
       - /gz-obpi-lock: user/skills/gz-obpi-lock.md
       - /gz-cli-audit: user/skills/gz-cli-audit.md

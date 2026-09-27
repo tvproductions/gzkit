@@ -23,4 +23,4 @@ model: haiku
 | arb receipts | `gz-arb` |
 | obpi simplify | `gz-obpi-simplify` |
 
-Invoke the matched skill directly. See `gz-skill-router` for the full catalog.
+Invoke the matched skill directly. See `gz-how` for the flows and the full catalog.

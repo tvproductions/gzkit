@@ -26,5 +26,5 @@ Use `/gz-project` when you need to initialize, configure, or check the status of
 
 ## Related
 
-- `/gz-skill-router` — full catalog with cross-namespace discovery
+- `/gz-how` — the flows every skill belongs to, and the full catalog
 - `/gz-manage` — repo and release management intents

@@ -23,4 +23,4 @@ model: haiku
 | competitor radar | `gz-competitor-radar` |
 | flight test | `gz-flighttest` |
 
-Invoke the matched skill directly. See `gz-skill-router` for the full catalog.
+Invoke the matched skill directly. See `gz-how` for the flows and the full catalog.

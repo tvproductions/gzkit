@@ -93,6 +93,14 @@ POST_COMPACTION_NOTE = (
     "threshold; orientation re-injection is the mechanical backstop."
 )
 
+# The agent picks skills on its own; the flow guide helps only if it is named at
+# the moment of choosing (GHI #1106).
+SKILL_SELECTION_NOTE = (
+    "Choosing a skill: when no skill clearly matches, or two look alike, consult "
+    "`gz-how` first. It places the task in its flow and names the skill to run, "
+    "the look-alike not to use, and the steps only the operator may take."
+)
+
 
 def collect_campaign(repo_root: Path) -> dict | None:
     """Read the ACTIVE campaign plan named by the registry and extract its state.
@@ -1228,6 +1236,7 @@ def render(state: dict, now: datetime) -> str:
 
     lines.append("## Skill-awareness re-injection")
     lines.append(f"- {POST_COMPACTION_NOTE}")
+    lines.append(f"- {SKILL_SELECTION_NOTE}")
     lines.append("")
 
     return "\n".join(lines)

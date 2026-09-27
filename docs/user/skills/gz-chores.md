@@ -26,5 +26,5 @@ Use `/gz-chores` when you know you're doing maintenance or code-quality chore wo
 
 ## Related
 
-- `/gz-skill-router` — full catalog with cross-namespace discovery
+- `/gz-how` — the flows every skill belongs to, and the full catalog
 - `/gz-quality` — quality and complexity intents (check, lint, tech debt, complexity)

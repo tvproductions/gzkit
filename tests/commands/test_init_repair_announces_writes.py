@@ -64,7 +64,7 @@ def _route_to_a_local_skill() -> None:
         encoding="utf-8",
     )
     body = _ROUTER.read_text(encoding="utf-8")
-    anchor = "| orientation | `gz-skill-router` |\n"
+    anchor = "| orientation | `gz-how` |\n"
     if anchor not in body:
         raise AssertionError(f"precondition: {_ROUTER} intent table lacks {anchor!r}")
     _ROUTER.write_text(body.replace(anchor, _LOCAL_ROW + anchor), encoding="utf-8")

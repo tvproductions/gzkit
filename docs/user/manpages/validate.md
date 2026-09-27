@@ -25,7 +25,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--transcribed-adr-counts]
             [--tautological-test-audit]
             [--closeout-proof] [--okf-conformance] [--ontology-purity]
-            [--deprecated-verb-prescription]
+            [--deprecated-verb-prescription] [--how-coverage]
             [--attestation-receipts <text|@file> [--lane heavy|lite] [--kind foundation|feature]]
 ```
 
@@ -1043,6 +1043,28 @@ none could ever occur.
 This is the ADR/OBPI-status member of the family `--cli-alignment` already
 covers for CLI verbs: a reference pointing at something that cannot resolve is
 the same class of defect as an unresolvable import.
+
+### `--how-coverage`
+
+Fails closed when the `gz-how` flow guide falls behind the skill catalog
+(GHI #1106). Runs in the **default** tier. Four checks, each against the
+project's own `.gzkit/skills/`:
+
+- every live skill has a row in the hub's catalog under a flow, or a line in its
+  "Not in the catalog" list with a reason;
+- every skill the hub or a flow file names exists and is not retired;
+- every `references/*.md` link in the hub resolves;
+- every flow file under `references/` is linked from the hub.
+
+A catalog row or exclusion that does not parse is itself a finding. A project
+with no `gz-how` skill is skipped.
+
+```bash
+uv run gz validate --how-coverage
+```
+
+The router `gz-how` replaced carried the same duty in prose with no gate, and
+fell 36 skills behind a 73-skill catalog.
 
 ### `--doc-code-citations`
 
@@ -2520,6 +2542,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 
 | Scope flag | Default? | Purpose |
 |------------|----------|---------|
+| `--how-coverage` | yes | The `gz-how` guide catalogues every live skill, names only real ones, and its flow links resolve |
 | `--manifest` | yes | Validate `.gzkit/manifest.json` against the manifest schema |
 | `--documents` | yes | Validate governance docs (PRDs, constitutions, ADRs); OBPI briefs are owned by `--briefs` |
 | `--surfaces` | yes | Validate control-surface existence, frontmatter shape, and canonical sync parity |

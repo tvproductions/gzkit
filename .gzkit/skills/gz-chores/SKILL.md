@@ -23,4 +23,4 @@ model: haiku
 | config check | `gz-check-config-paths` |
 | cli audit | `gz-cli-audit` |
 
-Invoke the matched skill directly. See `gz-skill-router` for the full catalog.
+Invoke the matched skill directly. See `gz-how` for the flows and the full catalog.

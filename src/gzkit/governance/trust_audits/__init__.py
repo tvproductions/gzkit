@@ -117,6 +117,7 @@ from gzkit.governance.trust_audits.events import (
 from gzkit.governance.trust_audits.exemption_controls import audit_exemption_controls
 from gzkit.governance.trust_audits.fidelity_presence import audit_fidelity_presence
 from gzkit.governance.trust_audits.gate_callers import audit_gate_callers
+from gzkit.governance.trust_audits.how_coverage import audit_how_coverage
 from gzkit.governance.trust_audits.insights import audit_insights_shape
 from gzkit.governance.trust_audits.instructions_files_budget import (
     audit_instructions_files_budget,
@@ -236,6 +237,7 @@ __all__ = [
     "audit_class_size",
     "audit_distribution",
     "audit_wheel_path_literals",
+    "audit_how_coverage",
     "audit_cli_alignment",
     "audit_manpage_alignment",
     "audit_doc_code_citations",

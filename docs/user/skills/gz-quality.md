@@ -30,5 +30,5 @@ Use `/gz-quality` when you need to run quality checks, review complexity, or man
 
 ## Related
 
-- `/gz-skill-router` — full catalog with cross-namespace discovery
+- `/gz-how` — the flows every skill belongs to, and the full catalog
 - `/gz-workflow` — end-to-end workflow intents

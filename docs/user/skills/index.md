@@ -145,10 +145,10 @@ First-stage intent routers. Pick the namespace that matches your intent, then in
 | [`/gz-competitor-radar`](gz-competitor-radar.md) | Track competitor status, trajectory, and gzkit improvement opportunities |
 | [`/gz-flighttest`](gz-flighttest.md) | Fly one flight-test sortie against a target repo to prove a gzkit workflow and harvest refinement feedback |
 | [`/gz-migrate-semver`](gz-migrate-semver.md) | Record semver identifier migration events |
-| [`/gz-register-adrs`](gz-register-adrs.md) | Register existing ADR files missing from ledger state |
 | [`/gz-patch-release`](gz-patch-release.md) | Orchestrate the GHI-driven patch release ceremony |
 | [`/gz-session-handoff`](gz-session-handoff.md) | Create and resume session handoff documents for agent context preservation |
-| [`/gz-skill-router`](gz-skill-router.md) | Route agents to the correct skill for a given task type |
+| [`/gz-how`](gz-how.md) | Answer how do I / what can I: the flows gzkit's skills belong to, their look-alikes and the full catalog |
+| [`/gz-skill-review`](gz-skill-review.md) | Review a skill by re-verifying every claim against the code it wields |
 | [`/gz-mx`](gz-mx.md) | Enter and exit the MX Maintenance Hangar — operator's interface to `gz mx` |
 | [`/gz-tidy`](gz-tidy.md) | Run maintenance checks and cleanup routines |
 

@@ -22,8 +22,9 @@ model: haiku
 | issue file | `gz-issue-file` |
 | patch release | `gz-patch-release` |
 | agent sync | `gz-agent-sync` |
+| skill review | `gz-skill-review` |
 | mx hangar | `gz-mx` |
 | airlock (cross / inspect the entry membrane) | `gz-airlock` |
 | tidy | `gz-tidy` |
 
-Invoke the matched skill directly. See `gz-skill-router` for the full catalog.
+Invoke the matched skill directly. See `gz-how` for the flows and the full catalog.

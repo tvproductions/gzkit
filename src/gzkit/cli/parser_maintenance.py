@@ -429,6 +429,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Every src/gzkit path cited in docs/governance must resolve",
     )
     p_validate.add_argument(
+        "--how-coverage",
+        dest="check_how_coverage",
+        action="store_true",
+        help="The gz-how guide catalogues every live skill and names only real ones",
+    )
+    p_validate.add_argument(
         "--event-handlers",
         dest="check_event_handlers",
         action="store_true",
@@ -1030,6 +1036,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_type_ignores=a.check_type_ignores,
             check_cli_alignment=a.check_cli_alignment,
             check_doc_code_citations=a.check_doc_code_citations,
+            check_how_coverage=a.check_how_coverage,
             check_event_handlers=a.check_event_handlers,
             check_event_schemas=a.check_event_schemas,
             check_producer_fields=a.check_producer_fields,

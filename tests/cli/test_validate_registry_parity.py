@@ -98,6 +98,11 @@ _POST_SNAPSHOT_DEFAULT_ADDITIONS: tuple[str, ...] = (
     # A flag-gated check nobody runs is inert exactly where the inertness
     # produced the defect.
     "doc_code_citations",
+    # how_coverage — the gz-how guide against the live skill catalog (GHI #1106).
+    # DEFAULT tier: the router it replaced declared the same duty with no gate
+    # and fell 36 skills behind; a flag-gated check nobody runs would be inert
+    # exactly where that inertness produced the defect.
+    "how_coverage",
 )
 
 # Explicit-tier scopes run only when their flag is set. Set-parity is what the

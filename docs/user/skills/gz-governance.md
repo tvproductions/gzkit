@@ -36,5 +36,5 @@ Use `/gz-governance` when you need to perform ADR, OBPI, or ledger governance wo
 
 ## Related
 
-- `/gz-skill-router` — full catalog with cross-namespace discovery
+- `/gz-how` — the flows every skill belongs to, and the full catalog
 - `/gz-workflow` — end-to-end workflow intents (design through release)

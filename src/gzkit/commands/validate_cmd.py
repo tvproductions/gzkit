@@ -431,6 +431,10 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
         True,
         lambda r, _f: _ta().audit_doc_code_citations(r),
     ),
+    # gz-how must catalogue every live skill (GHI #1106). Default tier: the
+    # router it replaced carried the same duty with no gate and fell 36 skills
+    # behind; a flag-gated check nobody runs would reproduce exactly that.
+    _ScopeEntry("how_coverage", "default", True, lambda r, _f: _ta().audit_how_coverage(r)),
     _ScopeEntry("kind_invariance", "explicit", True, lambda r, _f: _ta().audit_kind_invariance(r)),
     _ScopeEntry("persona_witness", "explicit", True, lambda r, _f: _ta().audit_persona_witness(r)),
     _ScopeEntry("receipt_shape", "explicit", True, lambda r, _f: _ta().audit_receipt_shape(r)),
@@ -1091,6 +1095,7 @@ def _resolve_scopes(checks: dict[str, bool]) -> list[str]:
 _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
     {
         "frontmatter",
+        "how_coverage",
         "chores_layout",
         "complexity_doctrine_links",
         "complexity_thresholds",
@@ -1441,6 +1446,7 @@ def validate(
     check_type_ignores: bool = False,
     check_cli_alignment: bool = False,
     check_doc_code_citations: bool = False,
+    check_how_coverage: bool = False,
     check_event_handlers: bool = False,
     check_event_schemas: bool = False,
     check_producer_fields: bool = False,
@@ -1583,6 +1589,7 @@ def validate(
         "type_ignores": check_type_ignores,
         "cli_alignment": check_cli_alignment,
         "doc_code_citations": check_doc_code_citations,
+        "how_coverage": check_how_coverage,
         "event_handlers": check_event_handlers,
         "event_schemas": check_event_schemas,
         "producer_fields": check_producer_fields,

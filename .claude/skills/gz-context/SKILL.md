@@ -19,14 +19,14 @@ model: haiku
 | state | `gz-state` |
 | map | `gz-adr-map` |
 | parity | `airlineops-parity-scan` |
-| orientation | `gz-skill-router` |
+| orientation | `gz-how` |
 | context diet | `gz-context-diet` |
 | remember | `gz-content-remember` |
 | insights remember | `gz-insights-remember` |
 | compose | `gz-content-compose` |
 | advisor qc | `gz-advisor-qc` |
 
-Invoke the matched skill directly. See `gz-skill-router` for the full catalog.
+Invoke the matched skill directly. See `gz-how` for the flows and the full catalog.
 
 ## Tool surface: `gz context <ADR-ID>` (ADR-0.28.0)
 

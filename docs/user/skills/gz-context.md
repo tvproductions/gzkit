@@ -22,5 +22,5 @@ Use `/gz-context` when you need to preserve session context, orient to an ADR, o
 
 ## Related
 
-- `/gz-skill-router` — full catalog with cross-namespace discovery
+- `/gz-how` — the flows every skill belongs to, and the full catalog
 - `/gz-governance` — ADR and OBPI governance intents

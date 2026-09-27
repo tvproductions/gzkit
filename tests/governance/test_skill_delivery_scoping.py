@@ -305,7 +305,7 @@ class TestRouterRowsFollowTheBoundary(unittest.TestCase):
         """`| Intent / Keyword | Skill |` is a router table too.
 
         The header pattern required `Intent` to be the WHOLE first cell, so
-        `gz-skill-router` -- the discovery router AGENTS.md sends agents to --
+        `gz-skill-router` -- the discovery router of its day, since retired --
         was invisible to both this filter and `audit_router_tables`, its ~40
         rows unchecked by the very REQ that shipped the audit
         (REQ-0.27.0-03-01: *"every routed skill resolves to a registered skill

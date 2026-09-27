@@ -24,9 +24,10 @@ Use `/gz-manage` when you need to sync the repository, manage issues, create rel
 | patch release | `/gz-patch-release` |
 | semver migrate | `/gz-migrate-semver` |
 | agent sync | `/gz-agent-sync` |
+| skill review | `/gz-skill-review` |
 | tidy | `/gz-tidy` |
 
 ## Related
 
-- `/gz-skill-router` — full catalog with cross-namespace discovery
+- `/gz-how` — the flows every skill belongs to, and the full catalog
 - `/gz-project` — project lifecycle intents

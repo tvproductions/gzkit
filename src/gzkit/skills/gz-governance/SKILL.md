@@ -33,4 +33,4 @@ model: haiku
 | health audit | `gz-health-audit` |
 | intent trace | `gz-intent-trace` |
 
-Invoke the matched skill directly. See `gz-skill-router` for the full catalog.
+Invoke the matched skill directly. See `gz-how` for the flows and the full catalog.
