@@ -6,7 +6,7 @@ Run Gate 2 verification and record result events. Use when validating implementa
 
 ## Purpose
 
-`/gz-implement` exposes the canonical gz-implement workflow for operator invocation. Operate the gz implement command surface as a reusable governance workflow.
+`/gz-implement` exposes the canonical gz-implement workflow for operator invocation. It runs the manifest test command for one ADR, then the eval delta when the tests pass, and records each result as a Gate 2 ledger event.
 
 ## When to Use
 

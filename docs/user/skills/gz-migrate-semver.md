@@ -6,7 +6,7 @@ Record semver identifier migration events. Use when applying canonical ADR or OB
 
 ## Purpose
 
-`/gz-migrate-semver` exposes the canonical gz-migrate-semver workflow for operator invocation. Operate the gz migrate-semver command surface as a reusable governance workflow.
+`/gz-migrate-semver` exposes the canonical gz-migrate-semver workflow for operator invocation. It previews, then on operator approval appends, `artifact_renamed` events for legacy ids and for bare ADR/OBPI ids whose files now carry a slug.
 
 ## When to Use
 

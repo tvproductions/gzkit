@@ -22,8 +22,8 @@ gz migrate-semver [OPTIONS]
 
 ## What It Does
 
-1. Scans ledger history for known old artifact IDs (including legacy SemVer pool IDs).
-2. Appends `artifact_renamed` events for matching IDs.
+1. Collects rename pairs from the legacy rename table (including SemVer pool IDs) and from on-disk drift: a bare ADR or OBPI id the ledger still carries whose file now has a slug stem.
+2. Appends `artifact_renamed` events for pairs whose old ID appears in the ledger and is not already renamed.
 3. Keeps ledger append-only (no rewrites).
 4. Makes `gz state` and `gz status` resolve renamed IDs to canonical IDs.
 

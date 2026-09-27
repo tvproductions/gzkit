@@ -46,7 +46,6 @@ _SEALED_ADR_ARTIFACTS: frozenset[str] = frozenset(
 _NO_SKILL_VERBS: dict[str, str] = {
     "init": "Bootstrap command — scaffolds a new repo; no skill mediates initialization.",
     "register-adrs": "One-shot historical registrar; not a recurring operator action.",
-    "migrate-semver": "One-shot migration command; no skill mediates historical renames.",
     "personas": "Internal persona listing; consumed by other skills, not directly.",
     "roles": "Internal role listing; consumed by other skills, not directly.",
     "interview": "Subcommand invoked inside gz-adr-create; no standalone skill needed.",

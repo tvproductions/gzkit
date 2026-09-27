@@ -1,4 +1,4 @@
 interface:
   display_name: "gz implement"
-  short_description: "Operate the gz implement workflow"
+  short_description: "Run Gate 2 tests and eval delta for an ADR"
   default_prompt: "Use $gz-implement to run gz implement for this task."
