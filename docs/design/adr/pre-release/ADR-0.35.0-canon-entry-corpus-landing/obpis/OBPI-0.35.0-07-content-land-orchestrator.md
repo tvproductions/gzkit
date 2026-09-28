@@ -433,6 +433,37 @@ Each checkbox carries a deterministic REQ ID and exactly one kind tag
 - 2026-09-28, Step 4b round 3 (tier 1, Codex plugin `task --write` in a disposable checkout, digest 8f584601…; arb-step-codexadversary-0264a78a0ba041878f39853b02548bf0, imported): NOT-CORROBORATED. It approved 8 of 10 proofs, REQ-09's amended witness among them, and confirmed that both round-2 counterexamples are now caught. It refuted REQ-02 and REQ-07 with adv-07-fresh-check-replace-race and adv-07-resume-check-replace-race: a writer thread scheduled at the real `Path.replace` edits `gamma.md` after `_publish` read its hash, and that edit is overwritten. This is the check-to-replace residual the repair disclosed, which the ratified Threat Model does not accept. It is round 2's root cause (a check separated from its replacement) one layer deeper, and it is the third round, so under the pipeline's design-escalation rule and the 2026-09-18 round bound the OBPI is blocked (`gz obpi block`) pending an operator ruling on the design.
 - 2026-09-28, design ruling and confirmation. Operator ruling, option chosen verbatim: "Accept as residual (Recommended)" (`gz obpi unblock`, operator g0). The Threat Model now names the check-to-replace window as an accepted residual; edits made at any earlier point stay in scope. The amendment moved the contract digest, so all ten proofs were re-run unchanged (27 of 27 controls killed on assertion, digest 9bfa895c…) and re-reviewed. Spec arb-step-specreview-1aabd745d6d74abbace6760b17110cd4 (a first run, arb-step-specreview-fd3b1a373b804963af97374a4060d61b, was refused at import for emitting no review object) and quality arb-step-qualityreview-e1acaee0c71c4093a16f5b66ca8d341c approved all ten and closed both race findings. Step 4b round 4 (tier 1, operator-authorized past the follow-up bound; arb-step-codexadversary-5186184340874c11a717355b77bc4b51, imported): CORROBORATED, 10 of 10 proofs approved, both race findings closed. Stage-4 acceptance status: ready. Process defect recorded as an insight: an unquoted heredoc used to compose a prompt made the shell execute its backticked spans, among them `gz content land`. It failed on the older PATH install, and no landing event was written.
 
+### Step 4b — Independent Adversarial Validation
+
+**Adversary identity and tier.** Tier 1, cross-vendor: OpenAI Codex dispatched through the
+`openai-codex` Claude Code plugin (`codex-companion.mjs task --write --cwd <disposable checkout>`),
+ARB-wrapped on every round. Each round ran in a throwaway writable copy of the reviewed tree, so
+the adversary could replay recorded proofs rather than judge them only by reading. Codex reported
+`ready: true` for rounds 2–4, so tiers 2 and 3 were forbidden.
+
+**The adversary refuted this OBPI twice before corroborating it.** The claims it broke were
+REQ-02 and REQ-07: `land` and `resume` overwrote an in-scope hand edit. REQ-09's witness named a
+ledger event that is never emitted.
+
+| Round | Receipt | Verdict | Claims broken / outcome |
+|---|---|---|---|
+| 1 | `arb-step-codexadversary-37f1a032013e45d4b7c86f90d3b4f90b` | environment failure | Windows sandbox could not re-ACL `.sandbox-bin`; no findings, no approvals |
+| 2 | `arb-step-codexadversary-70151f5432974f658c362e2bfd5fe005` | **NOT-CORROBORATED** | REQ-02 / REQ-07: an edit made during staging, or after resume's checks, was overwritten; REQ-09: the witness event is absent. Import REFUSED (abridged replay output) |
+| 3 | `arb-step-codexadversary-0264a78a0ba041878f39853b02548bf0` | **NOT-CORROBORATED / refuted** | Confirmed round 2's repairs. REQ-02 / REQ-07: a writer racing the check-to-replace instant is overwritten (adv-07-fresh-check-replace-race, adv-07-resume-check-replace-race). Blocked at the round bound |
+| 4 | `arb-step-codexadversary-5186184340874c11a717355b77bc4b51` | **CORROBORATED / accepted** | Focused confirmation against the amended Threat Model, operator-authorized past the follow-up bound: 10 of 10 proofs approved, both race findings closed |
+
+**How each was resolved.** Round 2's two overwrite findings were closed by a per-file
+compare-and-swap in `_publish`, with red-first tests and a `publish-overwrites-foreign-edit` mutation
+control. Its REQ-09 finding was closed by an operator amendment of the witness clause to the GHI #647
+arm-2 proof (verbatim ruling: "Amend witness to arm 2 (Recommended)"). Round 3's race findings
+describe a window the stdlib cannot close. The operator ruled verbatim "Accept as residual
+(Recommended)", and the Threat Model now names that window. Independent Stage-2 reviews
+(`arb-step-specreview-1aabd745d6d74abbace6760b17110cd4`,
+`arb-step-qualityreview-e1acaee0c71c4093a16f5b66ca8d341c`) and round 4 closed both race findings
+against the amended contract. Round 2's review record carries no acceptance-ledger entry because
+its import was refused. Its ARB receipt is durable, and its findings are recorded in the Change Log.
+This is disclosed here rather than smoothed over.
+
 ### Implementation Summary
 
 
