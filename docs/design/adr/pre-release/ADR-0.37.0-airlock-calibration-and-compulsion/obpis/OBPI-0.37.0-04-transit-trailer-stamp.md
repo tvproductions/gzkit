@@ -62,6 +62,7 @@ OBPI-0.37.0-04 transit-trailer-stamp -- door stamps the Transit: trailer; gz val
 - `gz git-sync` — exempt unconditionally (parent ADR § Boundary Invariants #5, standing operator ruling).
 - Widening or altering the existing `Task:` trailer invariant — `Transit:` is a separate key alongside it, never a replacement.
   - **STILL DENIED, and now with a named instance (2026-09-11).** `validate_commit_trailers.py:65` scans **HEAD only** ("preventing new trailer omissions, not retroactively") and runs at pre-push, so in a push of N commits the N−1 beneath the tip are examined by nothing — one of the two mechanisms behind the 24.9% measured at REQ-0.37.0-04-03. Widening that scan is *altering the existing `Task:` trailer invariant* and so remains outside this brief. Recorded here rather than filed so it is trackable (`AGENTS.md` § PRIME DIRECTIVE #6); lifting this denial, or homing the finding elsewhere, is a separate operator ruling this amendment does not take.
+    - **RESOLVED 2026-09-27 by GHI #1017** (amended 2026-09-28, operator ruling verbatim: "Dated resolution note (Recommended)"). `src/gzkit/commands/validate_commit_trailers.py` now reads every commit the push publishes (`@{upstream}..HEAD`, `_pushable_commits`), so the unexamined-N−1 mechanism above no longer exists. The denial on altering the `Task:` invariant stands; this brief did not lift it.
 - Paths not listed in Allowed Paths
 - New dependencies
 - CI files, lockfiles
