@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import subprocess
 import sys
@@ -95,6 +96,10 @@ def run_step_via_arb(
             check=False,
             encoding="utf-8",
             errors="replace",
+            # The capture decodes UTF-8, so a Python child must encode UTF-8 too.
+            # Left to its default, a piped Python child on Windows writes cp1252
+            # and dies on any character outside it, recording a crash as the step.
+            env={**os.environ, "PYTHONIOENCODING": "utf-8"},
         )
     except OSError as exc:
         result = subprocess.CompletedProcess(cmd, 127, "", str(exc))

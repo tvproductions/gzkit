@@ -58,6 +58,7 @@ def register_content_parsers(commands: argparse._SubParsersAction) -> None:
     _register_own(content_commands)
     _register_compose(content_commands)
     _register_commit(content_commands)
+    _register_land(content_commands)
     _register_advise_rendition(content_commands)
 
 
@@ -604,6 +605,85 @@ def _register_commit(content_commands: argparse._SubParsersAction) -> None:
             attestor=a.attestor,
             attestation_text=a.attestation_text,
             retention_map=a.retention_map,
+        )
+    )
+
+
+def _register_land(content_commands: argparse._SubParsersAction) -> None:
+    p = content_commands.add_parser(
+        "land",
+        help="Land a corpus delta across every routed consumer under one attestation",
+        description=(
+            "Promote the corpus-generated candidate of EVERY consumer routed for <surface> "
+            "(data/vendor-manifest.json) to its committed rendition, provenance sidecar and "
+            "lineage artifact under ONE corpus attestation (ADR-0.35.0 Decision 6). "
+            "Preflight runs before anything is written: each candidate is generated from the "
+            "corpus, verified against the ownership declaration, and passed through the "
+            "retention gate. Any refusal refuses the WHOLE landing and writes nothing. "
+            "--attestor and --attestation-text fail closed when empty IF the corpus moved "
+            "since the committed sidecars; an unchanged corpus reuses their evidence only "
+            "when every sidecar verifies. When a consumer's candidate drops a block of its "
+            "prior committed rendition, a --retention-map bound to that consumer is required, "
+            "or the landing exits 3. Every consumer's sidecar carries the same landing_id "
+            "and attestation. --dry-run prints the plan and writes nothing. When a landing "
+            "of <surface> was interrupted, re-running land RESUMES it: the recorded "
+            "attestation and landing_id are reused (no new attestation is taken) and files "
+            "already at their new hash are never rewritten; drift or a foreign edit refuses. "
+            "--status LANDING_ID classifies each consumer as new, old or indeterminate by "
+            "content hashes (never mtimes) and writes nothing."
+        ),
+        epilog=_build_epilog(
+            [
+                "gz content land AGENTS.md --dry-run",
+                'gz content land AGENTS.md --attestor "g0" --attestation-text "attest completed"',
+                "gz content land AGENTS.md --attestor g0 "
+                '--attestation-text "C1 drop accepted" '
+                "--retention-map /tmp/root.retention.json",
+                "gz content land AGENTS.md --status landing-20260927T120000Z-0123abcd",
+            ]
+        ),
+    )
+    p.add_argument("surface", help="Control surface to land (e.g. AGENTS.md).")
+    p.add_argument(
+        "--attestor",
+        default="",
+        help="Operator attesting the corpus delta; required only if canon moved.",
+    )
+    default_attestor_from_config(p)
+    p.add_argument(
+        "--attestation-text",
+        dest="attestation_text",
+        default="",
+        help="Operator's verbatim corpus-attestation token; same conditional requirement.",
+    )
+    p.add_argument(
+        "--retention-map",
+        dest="retention_maps",
+        action="append",
+        default=[],
+        help="Retention map JSON bound to one consumer; repeat once per consumer.",
+    )
+    p.add_argument(
+        "--dry-run",
+        dest="dry_run",
+        action="store_true",
+        help="Print the landing plan (targets, hashes, attestation); write nothing.",
+    )
+    p.add_argument(
+        "--status",
+        dest="status",
+        default=None,
+        metavar="LANDING_ID",
+        help="Classify each consumer of a landing by fingerprint; read-only.",
+    )
+    p.set_defaults(
+        func=lambda a: _content("land", "content_land_cmd")(
+            surface=a.surface,
+            attestor=a.attestor,
+            attestation_text=a.attestation_text,
+            retention_maps=a.retention_maps,
+            dry_run=a.dry_run,
+            status=a.status,
         )
     )
 

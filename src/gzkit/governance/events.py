@@ -4,8 +4,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from gzkit.events import RenditionLandedEvent
 from gzkit.governance.brief_reconcile import ReconcileResult
-from gzkit.ledger import Ledger, LedgerEvent
+from gzkit.ledger import Ledger, LedgerEvent, ledger_row
 from gzkit.ledger_events import (
     brief_reconcile_drift_detected_event,
     brief_reconciled_event,
@@ -64,6 +65,25 @@ def emit_rendition_committed(
             attestor=attestor,
         )
     )
+
+
+def emit_rendition_landed(root: Path, event: RenditionLandedEvent) -> str:
+    """Append a landing's one ``rendition_landed`` event unless its id is already present.
+
+    Idempotent by exact id (``rendition-landed-<landing_id>``) over the RAW row
+    history: a crash after this append and before the landing journal is
+    cleared re-runs completion, and a second row for one landing would record
+    the one corpus attestation twice (OBPI-0.35.0-07, REQ-0.35.0-07-04). The
+    caller holds the surface's landing lock, so no second landing of the
+    surface can race this check. Returns the event id.
+    """
+    ledger = Ledger(root / ".gzkit" / "ledger.jsonl")
+    already = any(
+        row.event == "rendition_landed" and row.id == event.id for row in ledger.read_history()
+    )
+    if not already:
+        ledger.append(ledger_row(event))
+    return event.id
 
 
 def emit_brief_reconciled(

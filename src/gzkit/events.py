@@ -837,6 +837,72 @@ class RenditionCommittedEvent(_EventBase):
     task_id: str | None = Field(default=None, description="TASK attribution (ADR-0.0.64-01)")
 
 
+class LandedArtifact(BaseModel):
+    """One target of a landing's manifest: path, kind and old/new SHA-256 (OBPI-0.35.0-07)."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    kind: Literal["rendition", "provenance", "lineage", "retention"]
+    path: str = Field(..., min_length=1, description="Project-relative POSIX path")
+    old_sha256: str | None = Field(..., description="Committed bytes before; None when absent")
+    new_sha256: str | None = Field(..., description="Published bytes; None means removed")
+
+
+class LandedConsumer(BaseModel):
+    """One consumer of a landing: its prior corpus fingerprint and artifact manifest."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    consumer: str = Field(..., min_length=1)
+    old_corpus_fingerprint: str | None = Field(
+        ..., description="Corpus fingerprint of the replaced sidecar; None when absent"
+    )
+    artifacts: list[LandedArtifact] = Field(..., min_length=1)
+
+
+class RenditionLandedEvent(_EventBase):
+    """rendition_landed event -- one landing's completion record (ADR-0.35.0 Decision 6).
+
+    Layer-2 witness that ``gz content land`` published and verified every routed
+    consumer of a surface under ONE corpus attestation. The ``consumers`` manifest
+    carries every target's old/new SHA-256 so status can classify each consumer
+    after the landing journal is cleared. ``id`` is ``rendition-landed-<landing_id>``,
+    which makes completion idempotent by exact-id lookup.
+    """
+
+    event: Literal["rendition_landed"]
+    surface: str = Field(..., min_length=1)
+    landing_id: str = Field(..., min_length=1)
+    corpus_fingerprint: str = Field(..., min_length=1)
+    corpus_entry_count: int = Field(..., ge=0)
+    attestor: str = Field(..., min_length=1)
+    attestation_text: str = Field(..., min_length=1)
+    attestation_reused: bool
+    consumers: list[LandedConsumer] = Field(..., min_length=1)
+    task_id: str | None = Field(default=None, description="TASK attribution (ADR-0.0.64-01)")
+
+    @model_serializer
+    def _serialize(self) -> dict[str, Any]:
+        """Flatten like every event, dumping the nested manifest to plain JSON values."""
+        result: dict[str, Any] = {
+            "schema": self.schema_,
+            "event": self.event,
+            "id": self.id,
+            "ts": self.ts,
+        }
+        if self.parent:
+            result["parent"] = self.parent
+        for name in type(self).model_fields:
+            if name in self._BASE_FIELDS:
+                continue
+            value = getattr(self, name)
+            if name == "consumers":
+                value = [consumer.model_dump() for consumer in value]
+            if value is not None:
+                result[name] = value
+        return result
+
+
 class RenditionAdvisorVerdictEvent(_EventBase):
     """rendition_advisor_verdict event — advisor-QC verdict record (ADR-0.0.37, OBPI-24).
 
@@ -1506,6 +1572,7 @@ TypedLedgerEvent = Annotated[
     | CorpusRetirementReconciledEvent
     | CompositionCandidateEmittedEvent
     | RenditionCommittedEvent
+    | RenditionLandedEvent
     | RenditionAdvisorVerdictEvent
     | BriefReconciledEvent
     | BriefReconcileDriftDetectedEvent

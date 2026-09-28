@@ -162,6 +162,10 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         "ledger_event_corrected",
         "rendition_advisor_verdict",
         "rendition_committed",
+        # `rendition_landed` (OBPI-0.35.0-07) is a Layer-2 provenance record for a
+        # rendition SET under one corpus attestation -- files under
+        # `.gzkit/renditions/`, never governance artifacts -- so it draws no edge.
+        "rendition_landed",
         "security_floor_overridden",
         # Both wired into the union by GHI #877, which is why they arrive here
         # together: the model classes existed and were simply never union members,

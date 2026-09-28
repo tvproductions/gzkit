@@ -36,6 +36,7 @@ _DEFAULTING = frozenset(
         "gz content unown",
         "gz content own",
         "gz content commit",
+        "gz content land",
         "gz validate",
         "gz obpi brief-drift",
         "gz complexity advise",

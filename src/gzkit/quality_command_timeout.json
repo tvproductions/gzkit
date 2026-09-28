@@ -1,0 +1,4 @@
+{
+  "_doc": "Hang bound for every quality-gate command run through gzkit.quality.run_command (GHI #1143). A command that exceeds it has its whole process tree killed and fails closed with exit 124, so a deadlocked child (e.g. a unittest-parallel worker) cannot hold gz check or the pre-push hook open silently. This is a hang bound, NOT a performance budget: it must sit well above the slowest healthy step. Measured 2026-09-27 (a dated record): full unit suite 86.3 s, slowest measured gz check step ~32 s. Raise default_seconds only with a new measurement.",
+  "default_seconds": 900
+}

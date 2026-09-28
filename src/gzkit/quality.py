@@ -5,13 +5,18 @@ Provides unified interface to linting, formatting, testing, and type checking.
 
 import ast
 import concurrent.futures
+import contextlib
+import importlib.resources
 import json
 import os
 import re
 import shlex
+import signal
 import subprocess
+import sys
 from collections.abc import Mapping, Sequence
 from datetime import UTC, datetime
+from functools import cache
 from pathlib import Path
 from typing import Any
 
@@ -50,11 +55,96 @@ class QualityResult(BaseModel):
         }
 
 
+# Hang bound for every command run through `run_command` (GHI #1143). The value
+# lives in JSON shipped INSIDE the package, never in code and never in the invoking
+# project's `data/`: an adopter project, and a test run from a temp project root,
+# must get the same bound as this repository (see its `_doc`).
+QUALITY_COMMAND_TIMEOUT_FILE = "quality_command_timeout.json"
+_QUALITY_COMMAND_TIMEOUT_DISPLAY = f"src/gzkit/{QUALITY_COMMAND_TIMEOUT_FILE}"
+_DRAIN_SECONDS = 10
+
+
+class QualityCommandTimeoutConfigError(ValueError):
+    """The hang-bound declaration is missing or malformed."""
+
+
+def _quality_command_timeout_file() -> Path:
+    """Return the hang-bound declaration shipped with the installed gzkit package.
+
+    Read from the package (as ``canonical_history.json`` is), never from the
+    invoking project or from ``run_command``'s ``cwd``: those can be any
+    directory, and an adopter project has no ``data/`` of gzkit's.
+    """
+    return Path(str(importlib.resources.files("gzkit").joinpath(QUALITY_COMMAND_TIMEOUT_FILE)))
+
+
+@cache
+def _load_quality_command_timeout(path: Path) -> float:
+    """Return ``default_seconds`` from the declaration at ``path``, read once per path.
+
+    Fails closed: a missing, unparseable, or non-positive-integer declaration
+    raises rather than letting a gate command run unbounded (GHI #1143).
+    """
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        msg = f"cannot read {_QUALITY_COMMAND_TIMEOUT_DISPLAY} at {path}: {exc}"
+        raise QualityCommandTimeoutConfigError(msg) from exc
+    value = data.get("default_seconds") if isinstance(data, dict) else None
+    if isinstance(value, bool) or not isinstance(value, int) or value <= 0:
+        msg = (
+            f"{_QUALITY_COMMAND_TIMEOUT_DISPLAY} at {path} must declare "
+            f"'default_seconds' as a positive integer, found {value!r}"
+        )
+        raise QualityCommandTimeoutConfigError(msg)
+    return float(value)
+
+
+def _kill_process_tree(proc: subprocess.Popen[str]) -> None:
+    """Kill ``proc`` and every descendant; it was started as its own group/session."""
+    if sys.platform == "win32":
+        subprocess.run(
+            ["taskkill", "/T", "/F", "/PID", str(proc.pid)],
+            capture_output=True,
+            check=False,
+        )
+    else:
+        with contextlib.suppress(ProcessLookupError):
+            os.killpg(proc.pid, signal.SIGKILL)
+
+
+def _timeout_prose(display: str, seconds: float) -> str:
+    """Three-part recovery prose for a command killed at its hang bound."""
+    bound = f"{seconds:g}"
+    return (
+        f"`{display}` exceeded {bound} seconds and its process tree was killed.\n"
+        "A quality-gate command that cannot finish must fail rather than hold "
+        "`gz check` or the pre-push hook open silently (GHI #1143).\n"
+        f"Next: re-run `{display}` directly to see where it stalls; for the unit "
+        "suite, run the suspect module alone (`uv run -m unittest <module>`). Raise "
+        f"`default_seconds` in `{_QUALITY_COMMAND_TIMEOUT_DISPLAY}` only "
+        "with a measurement."
+    )
+
+
+def _config_error_prose(display: str, exc: Exception) -> str:
+    """Three-part recovery prose for a missing or malformed hang-bound declaration."""
+    return (
+        f"`{display}` was not run: {exc}.\n"
+        "Every quality-gate command must run under a declared hang bound; running "
+        "it unbounded is what let `gz check` hang silently (GHI #1143).\n"
+        f"Next: restore `{_QUALITY_COMMAND_TIMEOUT_DISPLAY}` in the installed gzkit "
+        'package with a positive integer `"default_seconds"` (see its `_doc`); '
+        "reinstalling gzkit restores it. Then re-run the command."
+    )
+
+
 def run_command(
     command: str | Sequence[str],
     cwd: Path | None = None,
     *,
     env_overrides: Mapping[str, str | None] | None = None,
+    timeout_seconds: float | None = None,
 ) -> QualityResult:
     """Run a command without shell interpretation and capture output.
 
@@ -77,6 +167,12 @@ def run_command(
             blanking it is not the same as removing it). Callers that need the
             child's behaviour pinned rather than inherited use this; the default
             inherits, unchanged.
+        timeout_seconds: Hang bound for the command. ``None`` reads
+            ``default_seconds`` from ``quality_command_timeout.json`` shipped
+            in the gzkit package; a missing or malformed
+            declaration fails closed without running the command. On expiry the
+            child's whole process tree is killed and the result carries exit
+            124 (GHI #1143).
 
     Returns:
         QualityResult with command output.
@@ -105,23 +201,58 @@ def run_command(
             child_env.pop(key, None)
         else:
             child_env[key] = value
+    if timeout_seconds is None:
+        try:
+            timeout_seconds = _load_quality_command_timeout(_quality_command_timeout_file())
+        except QualityCommandTimeoutConfigError as exc:
+            return QualityResult(
+                success=False,
+                command=display,
+                stdout="",
+                stderr=_config_error_prose(display, exc),
+                returncode=-1,
+            )
+
+    # Own process group/session so a timeout can kill the WHOLE tree: a
+    # deadlocked `unittest-parallel` worker is a grandchild (GHI #1143).
+    if sys.platform == "win32":
+        group_kwargs: dict[str, Any] = {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
+    else:
+        group_kwargs = {"start_new_session": True}
     try:
-        result = subprocess.run(
+        proc = subprocess.Popen(
             argv,
-            capture_output=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             text=True,
             encoding="utf-8",
             errors="replace",
             cwd=cwd,
-            check=False,
             env=child_env,
+            **group_kwargs,
         )
+        try:
+            stdout, stderr = proc.communicate(timeout=timeout_seconds)
+        except subprocess.TimeoutExpired:
+            _kill_process_tree(proc)
+            try:
+                stdout, _ = proc.communicate(timeout=_DRAIN_SECONDS)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+                stdout = ""
+            return QualityResult(
+                success=False,
+                command=display,
+                stdout=stdout or "",
+                stderr=_timeout_prose(display, timeout_seconds),
+                returncode=124,  # the exit status `timeout(1)` reports for a kill
+            )
         return QualityResult(
-            success=result.returncode == 0,
+            success=proc.returncode == 0,
             command=display,
-            stdout=result.stdout,
-            stderr=result.stderr,
-            returncode=result.returncode,
+            stdout=stdout,
+            stderr=stderr,
+            returncode=proc.returncode,
         )
     except (OSError, subprocess.SubprocessError) as e:
         return QualityResult(

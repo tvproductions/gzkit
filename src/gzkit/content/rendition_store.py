@@ -51,6 +51,16 @@ class RenditionProvenance(BaseModel):
     committed_ts: str = Field(..., description="ISO-8601 commit timestamp.")
     attestor: str = Field(..., description="Operator whose corpus attestation this commit carries.")
     attestation_text: str = Field(..., description="Operator's verbatim attestation token.")
+    landing_id: str | None = Field(
+        None,
+        description=(
+            "Id of the `gz content land` transaction that published this sidecar "
+            "(OBPI-0.35.0-07). Every consumer landed together carries the same id, which "
+            "is what keeps a one-attestation-over-N-consumers bundle legible. Optional "
+            "ONLY so sidecars written by `gz content commit` or before the field existed "
+            "still load."
+        ),
+    )
 
 
 def corpus_fingerprint(corpus: Corpus) -> str:
@@ -175,7 +185,10 @@ def save_fingerprint(
     """Commit *provenance* as the corpus-fingerprint sidecar for *(surface, consumer)*."""
     path = fingerprint_path(root, surface, consumer)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(provenance.model_dump_json(indent=2) + "\n", encoding="utf-8")
+    # write_bytes, never write_text: write_text newline-translates (LF -> CRLF on
+    # Windows), which made the sidecar's committed bytes platform-dependent and
+    # unequal to the bytes `gz content land` hashes and publishes (OBPI-0.35.0-07).
+    path.write_bytes((provenance.model_dump_json(indent=2) + "\n").encode("utf-8"))
 
 
 def load_fingerprint(root: Path, surface: str, consumer: str) -> RenditionProvenance | None:

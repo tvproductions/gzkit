@@ -73,6 +73,7 @@ from gzkit.events import (
     RedReceiptEmittedEvent,
     RenditionAdvisorVerdictEvent,
     RenditionCommittedEvent,
+    RenditionLandedEvent,
     ReportPublishedEvent,
     SectionOwnershipGenesisEvent,
     SectionOwnershipReanchoredEvent,
@@ -91,6 +92,7 @@ from gzkit.events import (
     ValidatesEvent,
     parse_typed_event,
 )
+from gzkit.ledger import ledger_row
 from gzkit.models.frontmatter import (
     AdrFrontmatter,
     ObpiFrontmatter,
@@ -322,6 +324,9 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     "corpus_retirement_reconciled": CorpusRetirementReconciledEvent,
     "composition_candidate_emitted": CompositionCandidateEmittedEvent,
     "rendition_committed": RenditionCommittedEvent,
+    # One corpus attestation over N consumers, with the full target/hash
+    # manifest (OBPI-0.35.0-07, ADR-0.35.0 Decision 6)
+    "rendition_landed": RenditionLandedEvent,
     "rendition_advisor_verdict": RenditionAdvisorVerdictEvent,
     "brief_reconciled": BriefReconciledEvent,
     "brief_reconcile_drift_detected": BriefReconcileDriftDetectedEvent,
@@ -1068,3 +1073,72 @@ class TestTypedModelParsesEveryCommittedLedgerRow(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestRenditionLandedRegistration(unittest.TestCase):
+    """``rendition_landed`` -- the one completion event of a landing (OBPI-0.35.0-07).
+
+    Status classifies consumers after the journal is cleared from this event
+    alone, so the manifest (every target path with its old/new SHA-256) must
+    survive the schema and the typed reader intact.
+    """
+
+    _PAYLOAD = {
+        "schema": "gzkit.ledger.v1",
+        "event": "rendition_landed",
+        "id": "rendition-landed-landing-20260927T120000Z-0123abcd",
+        "ts": "2026-09-27T12:00:00+00:00",
+        "surface": "AGENTS.md",
+        "landing_id": "landing-20260927T120000Z-0123abcd",
+        "corpus_fingerprint": "a" * 64,
+        "corpus_entry_count": 2,
+        "attestor": "g0",
+        "attestation_text": "corpus delta attested",
+        "attestation_reused": False,
+        "consumers": [
+            {
+                "consumer": "claude",
+                "old_corpus_fingerprint": None,
+                "artifacts": [
+                    {
+                        "kind": "rendition",
+                        "path": ".gzkit/renditions/AGENTS.md/claude.md",
+                        "old_sha256": "b" * 64,
+                        "new_sha256": "c" * 64,
+                    },
+                    {
+                        "kind": "retention",
+                        "path": ".gzkit/renditions/AGENTS.md/claude.retention.json",
+                        "old_sha256": "d" * 64,
+                        "new_sha256": None,
+                    },
+                ],
+            }
+        ],
+    }
+
+    def test_manifest_round_trips_through_the_typed_reader_and_ledger_row(self) -> None:
+        parsed = parse_typed_event(dict(self._PAYLOAD))
+        self.assertIsInstance(parsed, RenditionLandedEvent)
+        self.assertEqual(ledger_row(parsed).model_dump(), self._PAYLOAD)
+
+    def test_schema_requires_the_manifest_the_model_requires(self) -> None:
+        rules = load_schema("ledger")["events"]["rendition_landed"]
+        self.assertEqual(
+            set(rules["required"]),
+            {
+                "surface",
+                "landing_id",
+                "corpus_fingerprint",
+                "corpus_entry_count",
+                "attestor",
+                "attestation_text",
+                "attestation_reused",
+                "consumers",
+            },
+        )
+        with self.assertRaises(ValidationError):
+            parse_typed_event({k: v for k, v in self._PAYLOAD.items() if k != "consumers"})
+
+    def test_discriminator_is_registered_in_the_live_typed_union(self) -> None:
+        self.assertIn("rendition_landed", _live_event_discriminators())

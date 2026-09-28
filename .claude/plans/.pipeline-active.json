@@ -1,0 +1,16 @@
+{
+  "obpi_id": "OBPI-0.35.0-07-content-land-orchestrator",
+  "parent_adr": "ADR-0.35.0-canon-entry-corpus-landing",
+  "lane": "heavy",
+  "entry": "full",
+  "execution_mode": "normal",
+  "current_stage": "implement",
+  "started_at": "2026-09-27T23:04:43Z",
+  "updated_at": "2026-09-27T23:04:43Z",
+  "receipt_state": "pass",
+  "nonce": "9d9fa88dbb3c5f7c3e00791b316c914b",
+  "blockers": [],
+  "required_human_action": null,
+  "next_command": "uv run gz obpi pipeline OBPI-0.35.0-07-content-land-orchestrator --from=verify",
+  "resume_point": "verify"
+}

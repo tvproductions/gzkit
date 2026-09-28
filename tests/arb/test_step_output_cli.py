@@ -50,7 +50,17 @@ class TestStepOutputRetentionCli(unittest.TestCase):
                 str(exit_status),
             ],
             cwd=self.root,
-            env={**os.environ, "GZKIT_ARB_RECEIPTS_ROOT": str(self.receipts)},
+            # Ambient UTF-8 switches are stripped so the test proves `gz arb step`
+            # supplies the child's stdio encoding itself; with them present the
+            # test passed only in shells that happened to set them.
+            env={
+                **{
+                    key: value
+                    for key, value in os.environ.items()
+                    if key not in {"PYTHONUTF8", "PYTHONIOENCODING"}
+                },
+                "GZKIT_ARB_RECEIPTS_ROOT": str(self.receipts),
+            },
             capture_output=True,
             encoding="utf-8",
             errors="replace",

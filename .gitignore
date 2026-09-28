@@ -137,6 +137,16 @@ site/
 # needs its own rule — the `*.journal` glob above requires the name to END in `.journal`,
 # so it does not match `<surface>.json.journal.source` at all.
 .gzkit/ownership/**/*.journal.source
+
+# Landing transaction sidecars (OBPI-0.35.0-07). `gz content land` takes an OS lock on
+# `.landing.lock` in the surface's rendition directory, writes its journal `.landing.json`
+# before the first artifact byte, and stages new bytes under `.landing-staging-<id>/`.
+# `.gzkit/renditions/` IS tracked, so these are ignored by name. The journal and staging
+# exist only while a landing is in flight or interrupted; committing them would make every
+# clone see an in-flight landing that already finished or was abandoned here.
+.gzkit/renditions/**/.landing.lock
+.gzkit/renditions/**/.landing.json
+.gzkit/renditions/**/.landing-staging-*/
 # The state-E extract is the one artifact written OUTSIDE `.gzkit/`. A refusal copies the
 # retained bytes beside the surface so the operator can diff and restore from them, which for
 # the real declaration means `AGENTS.md.unowning-recovery` — a full copy of Layer-1 canon in

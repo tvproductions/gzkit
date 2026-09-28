@@ -271,7 +271,9 @@ class TestCommandSurfaceUnchanged(unittest.TestCase):
         # it precisely because "an undefined reversal path is the one agents invent";
         # own by GHI #974 — the same Decision declares the seam two-directional and
         # only the raise arm had shipped, so an unowned section that grew past its
-        # floor had no governed exit but a hand-edited declaration)
+        # floor had no governed exit but a hand-edited declaration; land by
+        # OBPI-0.35.0-07 -- ADR-0.35.0 Decision 6 names the governed
+        # multi-consumer promotion seam, one corpus attestation over N consumers)
         expected_subcommands = {
             "import",
             "list",
@@ -286,6 +288,7 @@ class TestCommandSurfaceUnchanged(unittest.TestCase):
             "reconcile-retirements",
             "unown",
             "own",
+            "land",
         }
 
         # Run `gz content --help` via uv run (gzkit has no __main__.py)

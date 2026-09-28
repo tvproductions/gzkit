@@ -3,7 +3,7 @@ id: OBPI-0.35.0-07-content-land-orchestrator
 parent: ADR-0.35.0-canon-entry-corpus-landing
 item: 7
 lane: Heavy
-status: Draft
+status: Active
 allowlist:
 - src/gzkit/commands/content/land.py
 - src/gzkit/commands/content/__init__.py
@@ -11,10 +11,15 @@ allowlist:
 - src/gzkit/content/rendition_store.py
 - src/gzkit/events.py
 - src/gzkit/schemas/ledger.json
-- src/gzkit/ledger_events.py
 - config/doc-coverage.json
 - tests/content/test_tui_affordances.py
+- tests/cli/test_attestor_default.py
+- src/gzkit/content/corpus_store.py
+- src/gzkit/content/retention.py
+- .gitignore
 - src/gzkit/governance/events.py
+- src/gzkit/ontology/corpus.py
+- tests/test_schemas.py
 - tests/content/test_landing.py
 - tests/commands/test_content_land.py
 - features/content_land.feature
@@ -32,6 +37,7 @@ reqs:
 - REQ-0.35.0-07-07
 - REQ-0.35.0-07-08
 - REQ-0.35.0-07-09
+- REQ-0.35.0-07-10
 verification:
 - uv run -m unittest tests.content.test_landing tests.commands.test_content_land
 - uv run -m behave features/content_land.feature
@@ -43,6 +49,17 @@ verification:
 - uv run gz validate --rendition-freshness
 - uv run gz cli audit
 - uv run mkdocs build --strict
+tasks:
+  - TASK-0.35.0-07-01-01
+  - TASK-0.35.0-07-02-01
+  - TASK-0.35.0-07-03-01
+  - TASK-0.35.0-07-04-01
+  - TASK-0.35.0-07-05-01
+  - TASK-0.35.0-07-06-01
+  - TASK-0.35.0-07-07-01
+  - TASK-0.35.0-07-08-01
+  - TASK-0.35.0-07-09-01
+  - TASK-0.35.0-07-10-01
 ---
 
 # OBPI-0.35.0-07-content-land-orchestrator: Content Land Orchestrator
@@ -70,7 +87,7 @@ Ship gz content land &lt;surface&gt; — one corpus-attested, journaled, resumab
 > `### Gate 5 (Human)` gate-covenant sections are UNCHANGED — those are the genuine
 > Gate 5, on this OBPI's completion. Naming only; no REQ semantics change.
 
-**Dependency order:** 07 depends on 05 (pure candidate/lineage generator), 06 (owned-lineage verification) and 09 (active route resolution), plus the ledger atomicity/durability corrections tracked by GHI #952/#953 before implementation begins. Per § Scope Minimization, 07 is NOT cuttable — without the generator and `land`, OBPIs 01-03 are schema with no consumer. See the testability-ceiling note in Requirements: the parent ADR's Decomposition Scorecard flagged this item up front.
+**Dependency order:** 07 depends on 05 (pure candidate/lineage generator), 06 (owned-lineage verification), 09 (active route resolution) and 14 (the retention gate, operator-sequenced before 07 on 2026-09-24; ADR BI-10), plus the ledger atomicity/durability corrections tracked by GHI #952/#953 before implementation begins. Per § Scope Minimization, 07 is NOT cuttable — without the generator and `land`, OBPIs 01-03 are schema with no consumer. See the testability-ceiling note in Requirements: the parent ADR's Decomposition Scorecard flagged this item up front.
 
 ## Lane
 
@@ -86,11 +103,23 @@ Ship gz content land &lt;surface&gt; — one corpus-attested, journaled, resumab
 - `src/gzkit/commands/content/__init__.py` — content-group parser registration for land only
 - `src/gzkit/content/landing.py` — landing state file model, staged publication, journal, resume and status logic **CREATE**
 - `src/gzkit/content/rendition_store.py` — `landing_id` on the provenance sidecar, additively only
-- `src/gzkit/events.py`, `src/gzkit/schemas/ledger.json`, `src/gzkit/ledger_events.py`, `src/gzkit/governance/events.py` — typed landing events and emitters
-- `config/doc-coverage.json`, `tests/content/test_tui_affordances.py` — new-verb coupled consumers
-- `tests/content/test_landing.py`, `tests/commands/test_content_land.py` — covering tests **CREATE**
-- `features/content_land.feature`, `features/steps/content_land_steps.py` — **CREATE**, Gate 4 scenarios
-- `docs/user/manpages/content.md`, `docs/user/runbook.md` — the `land` contract and the named rollback
+- `src/gzkit/events.py` — typed landing event model (`ledger_events.py` is a registered `ledger_integrity` security surface and is NOT touched; the event is appended with `ledger_row(model)` — ruling 2026-09-27)
+- `src/gzkit/schemas/ledger.json` — the landing event's schema entry
+- `src/gzkit/governance/events.py` — the landing event emitter
+- `src/gzkit/ontology/corpus.py` — coupled consumer: every new ledger event type is dispositioned here (ruling 2026-09-27)
+- `tests/test_schemas.py` — coupled consumer: the per-event model map (ruling 2026-09-27)
+- `config/doc-coverage.json` — new-verb coupled consumer
+- `tests/content/test_tui_affordances.py` — new-verb coupled consumer
+- `tests/cli/test_attestor_default.py` — new-verb coupled consumer: `gz content land` defaults `--attestor` from config (ruling 2026-09-27)
+- `src/gzkit/content/corpus_store.py` — READ-ONLY fixture import for the covering tests; never modified (ruling 2026-09-27)
+- `src/gzkit/content/retention.py` — READ-ONLY import (retention map model and sidecar path); never modified (ruling 2026-09-27)
+- `.gitignore` — ignore the landing lock, journal and staging sidecars by name (ruling 2026-09-27)
+- `tests/content/test_landing.py` — covering tests **CREATE**
+- `tests/commands/test_content_land.py` — covering tests **CREATE**
+- `features/content_land.feature` — Gate 4 scenarios **CREATE**
+- `features/steps/content_land_steps.py` — Gate 4 step definitions **CREATE**
+- `docs/user/manpages/content.md` — the `land` contract and the named rollback
+- `docs/user/runbook.md` — the operator flow and the named rollback
 - `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-07-content-land-orchestrator.md` — this brief's evidence sections
 
 ## Denied Paths
@@ -105,7 +134,7 @@ Ship gz content land &lt;surface&gt; — one corpus-attested, journaled, resumab
 
 ## Requirements (FAIL-CLOSED)
 
-1. Implement one landing transaction state machine with three verification groups: preflight/staging, durable publication/completion, and status/resume/recovery. Argument shape and attestation are preflight invariants; they are not separate products. No automatic rollback command, storage generation redesign, parallel publishers or per-consumer repudiation is added. Preserve all nine REQs.
+1. Implement one landing transaction state machine with three verification groups: preflight/staging, durable publication/completion, and status/resume/recovery. Argument shape and attestation are preflight invariants; they are not separate products. No automatic rollback command, storage generation redesign, parallel publishers or per-consumer repudiation is added. Preserve all ten REQs.
 2. ALWAYS require the positional `<surface>`. It is required, matching `compose` and `commit`; there is no default surface.
 3. ALWAYS write the landing state file BEFORE the first byte of the first consumer and clear it LAST, after the final consumer's sidecar. It MUST carry the `landing_id`, the intended consumer set, and the corpus fingerprint. Sidecars are written alongside their renditions, so a crash after `claude.md` and before `codex.md` otherwise leaves the two consumers with NO common record that a landing was in flight (`DESIGN_FORCING_FUNCTIONS.md` § 5).
 4. RATIFIED PUBLICATION CONTRACT — operator approval recorded below. Stage and verify every target before publication; any staging failure leaves committed artifacts unchanged. Publication uses atomic replacement per file, not an atomic snapshot of the entire set. A crash or replace failure may leave mixed artifacts; retain the journal, refuse successful completion and expose the actual verified state for resume. Never claim sequential renames provide whole-set atomic visibility.
@@ -116,7 +145,8 @@ Ship gz content land &lt;surface&gt; — one corpus-attested, journaled, resumab
 9. NEVER re-prompt for attestation on resume. The corpus attestation is on the corpus delta, not on the write; resume reuses the recorded `attestation_text` and `landing_id`. If resume re-prompts, the operator will `--force` past it at 2am and the attestation becomes theater — the exact failure AGENTS.md names.
 10. ALWAYS name the rollback in the operator docs. Committed renditions are single files at `.gzkit/renditions/<surface>/<consumer>.md` with NO prior-version retention, so "put it back" means `git checkout`. That is acceptable, but it MUST be stated rather than left for the operator to discover at 2am.
 11. ALWAYS emit three-part recovery prose on every fail-closed exit and on every indeterminate `--status` verdict per `.claude/rules/guardrail-feedback-prose.md`.
-12. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief.
+12. ALWAYS pass every consumer's candidate through the OBPI-0.35.0-14 retention gate (`enforce_retention`, the complete gate — never `validate_retention` alone) before anything is written (ADR BI-10). `land` accepts a repeatable `--retention-map PATH`; each map binds to its consumer through the existing map-target check. A consumer whose candidate removes a block of its prior committed rendition without a valid map refuses the WHOLE landing at preflight, writing nothing. DROPPED condition ids are checked against the `--attestation-text` supplied on THIS invocation. A validated map is published as `<consumer>.retention.json`, staged, journaled and hashed with the consumer's other artifacts; a consumer with no removed block has any stale retention sidecar removed within the same journaled publication. Resume reuses the staged retention sidecar and never re-runs the gate against new attestation text (Requirement 9). Operator ruling 2026-09-27, option chosen: "Repeatable map (Recommended)".
+13. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -156,8 +186,9 @@ the full target set, including candidates, lineage and owned-section findings fr
 Dry-run writes nothing. Reject changed route/ownership/corpus inputs after preparation.
 Store a durable journal under the existing rendition directory with landing id, old/new
 corpus fingerprints, route and ownership digests, exact target paths, old/new artifact hashes,
-attestation evidence and publication progress. Stage complete rendition/provenance/lineage
-triples and fsync durable state before each publication boundary. Another active landing
+attestation evidence and publication progress. Stage each consumer's complete artifact
+set — rendition, provenance and lineage, plus the retention sidecar when Requirement 12
+publishes or removes one — and fsync durable state before each publication boundary. Another active landing
 for the surface cannot interleave writes. Treat malformed state and unsafe paths as errors.
 
 The phases are prepared -> publishing -> verified -> complete. File presence is never
@@ -185,6 +216,13 @@ journal and report any remaining drift until governed recovery completes.
 REQ-02/05/06/07/08 cover the state transitions and failure boundaries above. REQ-04 also
 covers old sidecars loading without optional landing_id, new landings requiring it, and
 RenditionProvenance still rejecting unexpected fields or embedded lineage.
+
+## Threat Model
+
+Ratified 2026-09-27 by operator g0, option chosen: "Ratify draft (Recommended)".
+
+- **In scope.** An interrupted process at any publication boundary; concurrent `gz` invocations; edits by hand or by another tool to files under `.gzkit/renditions/<surface>/` (renditions, provenance and lineage sidecars, retention sidecars, the landing journal), including a good sidecar copied next to altered bytes.
+- **Accepted residual.** Someone with write access who appends forged rows to `.gzkit/ledger.jsonl`, or who forges a journal and a ledger that agree with each other. This is the same residual OBPI-0.35.0-04 accepted for `.gzkit/ownership/` (same directory class, same access). Findings that require it are out of scope for Step 4b.
 
 ## Discovery Checklist
 
@@ -305,6 +343,7 @@ Each checkbox carries a deterministic REQ ID and exactly one kind tag
 - [ ] REQ-0.35.0-07-06 [behavior]: Given a `landing_id` and a consumer set in mixed state, when `--status <landing_id>` runs, then each consumer is classified as new-fingerprint, old-fingerprint, or indeterminate by verifying actual rendition/lineage hashes and their provenance against recorded old/new corpus fingerprints; altered bytes with a copied good sidecar are indeterminate. Given two renditions with identical fingerprints but different mtimes, then the classification is IDENTICAL for both — mtime is never consulted.
 - [ ] REQ-0.35.0-07-07 [behavior]: Given an interrupted landing where consumer 1 of 3 already landed, when `land` is re-run to resume, then consumer 1's rendition and sidecar are BYTE-UNCHANGED and consumers 2 and 3 land — resume is non-destructive.
 - [ ] REQ-0.35.0-07-08 [behavior]: Given a resume of an interrupted landing whose state file records an attestation, when `land` is re-run, then it completes WITHOUT prompting for or requiring `--attestor`/`--attestation-text`, reusing the recorded values and `landing_id` — and no `--force`-style override is needed or offered.
+- [ ] REQ-0.35.0-07-10 [behavior]: Given a consumer whose generated candidate removes a block of its prior committed rendition, when `land` runs without a `--retention-map` for that consumer, or with one that fails the retention gate (for example a DROPPED id absent from this invocation's `--attestation-text`), then it exits 3 and writes nothing for ANY consumer — no state file, rendition, sidecar or ledger event; and given a valid map, the landing completes and publishes `<consumer>.retention.json` with the consumer's other artifacts.
 - [ ] REQ-0.35.0-07-09 [support]: `docs/user/manpages/content.md` and `docs/user/runbook.md` document the `land` contract and NAME the rollback — committed renditions have no prior-version retention, so recovery is `git checkout` — witnessed by an `artifact_edited` ledger event citing `docs/user/manpages/content.md`, and `gz validate --cli-alignment` resolves every gz content land reference they prescribe.
 
 ## Completion Checklist
@@ -366,6 +405,22 @@ Each checkbox carries a deterministic REQ ID and exactly one kind tag
 ### Key Proof
 
 <!-- One concrete usage example, command, or before/after behavior. -->
+
+### Change Log
+
+- 2026-09-27, Stage 1 plan audit (FAIL receipt: no plan; ADR/brief drift). Four operator rulings, options chosen verbatim: (1) "Repeatable map (Recommended)" — Requirement 12 and REQ-0.35.0-07-10 added so `land` passes the OBPI-14 retention gate (ADR BI-10), which the brief predated; (2) "Avoid the surface (Recommended)" — `src/gzkit/ledger_events.py` (a registered `ledger_integrity` surface) removed from the allowlist, and the typed event is built with `ledger_row(model)`; (3) "Add both (Recommended)" — `src/gzkit/ontology/corpus.py` and `tests/test_schemas.py` added as coupled consumers of a new ledger event type; (4) "Ratify draft (Recommended)" — § Threat Model added. Allowed Paths bullets were split to one path each, because `extract_allowed_paths` reads only the first backticked path of a bullet (its documented contract), which hid paths from `gz plan audit` and `--sensitivity`. Defects recorded with `gz insights remember`: the `--sensitivity` floor reads only the first path of a multi-path Allowed Paths bullet (fail-open; hid `ledger_events.py` here), and OBPI-0.39.0-01/-02 fail that floor unseen because the scope is out of `gz check`.
+
+- 2026-09-27, Task 1 (implementer, opus; dispatch recorded). Delivered the pure preparation layer and the CLI shell (25 tests OK). Operator ruling, option chosen verbatim: "Add all three (Recommended)" — allowlist gains `tests/cli/test_attestor_default.py` (new-verb coupled consumer) and read-only `src/gzkit/content/corpus_store.py` and `src/gzkit/content/retention.py` (brief-reconcile counts covering-test imports), the same amendment ratified for OBPI-0.35.0-14. Defect fixed in scope: `save_fingerprint` wrote sidecars with `write_text`, producing CRLF bytes on Windows that differ from the bytes a landing hashes and publishes; it now writes LF bytes, pinned by a byte-form test.
+
+- 2026-09-27, Task 1 Stage-2 round. Proofs: REQ-01 proof-d2622f19a60f4356afadd6dc43a047bb (1 control), REQ-03 proof-79edf99d02884362912e1a9347816f91 (3 controls), REQ-10 proof-195a0a140a514199b10d06ec50f249f3 (2 controls); every control killed on an assertion and restored green. Quality review arb-step-qualityreview-d67330382a3b4c8b9be43817b07b7659 accepted all three, with three unmapped observations (oversized `prepare_landing`; CLI refusal exit/no-write assertions vacuous while `publish_landing` was a stub; an unneeded `arbitrary_types_allowed`). Spec review arb-step-specreview-22e569903f5d4e21b7b74b1291d7c282 refuted REQ-10 with spec-rev1-req10-stray-map-exits-1-not-3: a map targeting an unrouted consumer exited 1, where REQ-10 and the retention gate's own map-target check make it exit 3. It also recorded the success halves of REQ-03 and REQ-10 as missing proof (owned by Tasks 2 and 3). All repairs are batched into Task 2's dispatch as one fix cycle.
+
+- 2026-09-27, Task 2 (implementer, opus; dispatch recorded; one resume after its turn limit). Delivered journaled publication, verification, the idempotent `rendition_landed` event and journal-last cleanup, and repaired the Task 1 findings in one batch: a map bound to another surface or an unrouted consumer now exits 3 (spec-rev1-req10-stray-map-exits-1-not-3); the REQ-03 and REQ-10 success halves are proven end to end through the CLI; `prepare_landing` split to 31 lines; `arbitrary_types_allowed` dropped and plan payloads made immutable. Operator ruling, option chosen verbatim: "Ignore all three (Recommended)" — `.gitignore` added to the allowlist and the landing's `.landing.lock`, `.landing.json` and `.landing-staging-*/` sidecars ignored by name, matching OBPI-0.35.0-04's ownership sidecars. Measured: `landing.py` is 1,212 lines, under the `gz check` module-size block band (radon_raw_nloc 3,143.82) and xenon-clean at `--max-absolute C --max-modules B --max-average A`; several Task 1 helpers exceed the advisory lizard function bands, and the module exceeds `pythonic.md`'s 600-line guidance. Both are advisory and disclosed for review rather than split, because the allowlist names one landing module.
+
+- 2026-09-27, Task 3 (implementer, opus; dispatch recorded) delivered `--status` and resume through one shared publication path. Two orchestrator corrections under REQ-0.35.0-07-08 followed: a landing killed while staging (phase `prepared`, nothing published) now regenerates its bytes from the journal's recorded values and resumes without attestation, and each consumer's reviewed retention sidecar text is recorded in the journal so resume never re-runs the gate. Task 4 (implementer, opus) delivered the manpage `### land` section with the named rollback, the runbook flow, the doc-coverage entry, the TUI fence and 13 BDD scenarios. INCIDENT during Task 4: a failed `cd` chain left the implementer at the repository root, and two real `gz content land AGENTS.md` landings ran; one ledger row recorded fabricated attestation text for g0. Operator ruling, option chosen verbatim: "Restore + void both (Recommended)". Renditions restored with `git checkout HEAD`, `root.lineage.json` removed, rows `rendition-landed-landing-20260927T235819Z-6b95f418` and `rendition-landed-landing-20260927T235820Z-83fe801f` voided with `gz ledger correct` (cause agent-error, attestor g0). Recorded as an insight.
+- 2026-09-27, process deviation, disclosed: Tasks 2 and 3 were reviewed together with Task 4 in one combined Stage-2 round, because every task edits the one landing module and each edit stales every proof. Orchestrator corrections before that round: CRLF line endings written by the Task 2 implementer normalized to LF (the proof runner matches raw bytes); `_provenance_claim` removed from status as unreachable (the provenance sidecar's content hash already binds its landing_id and corpus fingerprint; its mutation survived); success-path unit tests routed through `_must_succeed` so a refusal fails as an assertion; one internally inconsistent mutation replaced. Proofs: all nine BEHAVIOR REQs valid, 24 of 24 mutations killed on assertion. Quality review arb-step-qualityreview-ba916fb2b2ab4348a65aa6cba8d91512 accepted all nine and closed the three Task 1 findings. Spec review arb-step-specreview-546a46b9f9d64c54a8c1a6bf0f0d8b7d approved eight, closed the same three findings, and recorded spec-rev2-req02-retry-from-verified-hashes-unproven: the REQ-02 proof never retries after the replace failure, so a flag-based resume would pass it. Repair batch dispatched with that proof plus four auxiliary corrections.
+- 2026-09-27, gate defects found and fixed in the same working tree under their own routes (not OBPI scope): GHI #1143 (`run_command` had no timeout; `gz test` hung 24 minutes), repaired with a packaged hang bound that kills the whole process tree; and `gz arb step` never set its child's stdio encoding, so `tests/arb/test_step_output_cli.py` passed only in shells with `PYTHONUTF8` set. Both land in the same commit as this OBPI's work: the `ty` pre-commit hook type-checks the whole working tree, so a partial commit of either fix failed on the uncommitted landing module; the commit message names each part.
+
+- 2026-09-27, Stage-2 fix cycle 1 (implementer, sonnet; dispatch recorded; one resume). Repaired spec-rev2-req02-retry-from-verified-hashes-unproven with `test_retry_resumes_from_verified_hashes_not_from_the_published_flag`, now in the REQ-02 proof with the mutation `resume-skips-by-published-flag` (killed on assertion); the resume note now names only flags this invocation supplied (a configured `--attestor` is not reported as ignored) and names dropped `--retention-map` values; a failing staging cleanup no longer masks the exit-2 refusal; the landing manifest's round trip through the ledger event is pinned by a test. All nine proofs re-run: 25 of 25 mutations killed on assertion. Focused follow-up: spec arb-step-specreview-2617905ffe284f1fbbe640dca4a3b3ac and quality arb-step-qualityreview-e295c75f3d8845eebd81b95d72fe6d4f accepted all nine current proofs and closed every mapped finding. One cosmetic observation deferred: the resume note says "were ignored" for a single flag. Stage-3 receipts: arb-ruff-4f4e80dbc54b43d1b09d556ad8b58179, arb-step-typecheck-4ab83c7ed25a431289ede565e3d62682, arb-step-unittest-92545fa88b7244189c1b3d02080b97a0, arb-step-mkdocs-87b2feb3938545c19f4ef3792429a58a, arb-step-behave-6cd45fd061784845ab93f0fab462ab0e (13 scenarios, 96 steps).
 
 ### Implementation Summary
 

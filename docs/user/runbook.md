@@ -1312,6 +1312,54 @@ and the renditions are re-seeded under attestation. It flips fail-closed (`exit 
 later increment. Recovery is always recompose + attest + commit, never editing a rendered
 surface directly.
 
+**To land a corpus change on every consumer at once (OBPI-0.35.0-07):**
+`gz content land <surface>` generates every routed consumer's candidate from the corpus and
+lands the whole set under ONE corpus attestation; every consumer's sidecar records the same
+`attestation_text` and `landing_id`. That single attestation is a bundle with no
+per-consumer repudiation; the shared `landing_id` is what keeps it legible. Contract,
+exit codes and captured output: [`gz content`](manpages/content.md) § land.
+
+```bash
+# 1. Plan: targets, hash prefixes, attestation source; writes nothing
+uv run gz content land AGENTS.md --attestor "g0" --attestation-text "<verbatim words>" --dry-run
+
+# 2. Land (add one --retention-map per consumer whose candidate removes a block;
+#    name every DROPPED condition id in the attestation text)
+uv run gz content land AGENTS.md --attestor "g0" --attestation-text "<verbatim words>"
+
+# 3. Confirm every consumer is on the new fingerprint (content hashes, never mtimes)
+uv run gz content land AGENTS.md --status <landing_id>
+
+# 4. Deliver
+uv run gz agent sync control-surfaces
+```
+
+**If a landing was interrupted** (exit 2, "incomplete", or the process was killed), the
+journal `.gzkit/renditions/<surface>/.landing.json` records the landing. Leave it in place:
+
+```bash
+# Which consumers are new, old or indeterminate?
+uv run gz content land AGENTS.md --status <landing_id>
+
+# Resume: reuses the recorded attestation and landing_id; asks for none, ignores any
+# --attestor/--attestation-text you pass, and never rewrites an already-landed file
+uv run gz content land AGENTS.md
+```
+
+A landing killed while still staging resumes the same way: the journal's recorded bytes
+are regenerated from the corpus and checked against their recorded hashes. Resume refuses
+(exit 1) on corpus/route/ownership drift or a foreign edit; follow its `Next:` line.
+
+**Rollback is `git checkout`.** Committed renditions keep NO prior version, so restore
+the surface's rendition directory from ONE known-good revision, so that the rendition,
+provenance, lineage and retention sidecars come back together, then check that revision
+against the current corpus. Restoring old files cannot roll back append-only canon:
+
+```bash
+git checkout <known-good-revision> -- .gzkit/renditions/AGENTS.md/
+uv run gz validate --rendition-freshness
+```
+
 ---
 
 ## Rules Surface
