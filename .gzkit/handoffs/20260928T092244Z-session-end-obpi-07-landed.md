@@ -34,7 +34,7 @@ ADR-0.35.0 is the lowest feature ADR with unlanded OBPIs and the campaign's TOPM
 
 ## Verification Checklist
 
-git status -sb (expect main in sync, clean); uv run gz obpi status OBPI-0.35.0-07-content-land-orchestrator (expect ATTESTED COMPLETED); uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing (expect 9/14); uv run gz obpi lock list (expect no active locks); gh issue view 1144 (expect OPEN).
+git status -sb (expect main in sync, clean); uv run gz obpi status OBPI-0.35.0-07-content-land-orchestrator (expect ATTESTED COMPLETED); uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing, which reports the landed OBPI count; uv run gz obpi lock list (expect no active locks); gh issue view 1144 (expect OPEN).
 
 ## Evidence / Artifacts
 
