@@ -54,7 +54,7 @@ OBPI-0.35.0-07-content-land-orchestrator (ADR-0.35.0, Heavy) is implemented and 
 - Round-limit accounting: Step-4b round 1 was an environment failure (sandbox), round 2 was substantive; the pipeline bounds Step 4b at three rounds total, so decide with the operator whether round 1 counts.
 - GHI #1143: the timeout fix landed in 6e2c7df90; close the GHI through ghi-close citing that SHA.
 - Insights recorded this session (defects): sensitivity parser misses multi-path bullets; ADR-0.39.0-01/-02 fail `--sensitivity` unseen; Ledger.append writes CRLF on Windows; commands.content import cycle; `adversary-workspace` interpreter path on Windows; missing `gz content land` wielding skill; three REQ-09-adjacent observations (seven hand-written rollback strings, untracked sidecars after restore, witness-by-existence).
-- ADR-0.35.0 next OBPIs after 07: 08/10/12/13 per the parent ADR's delivery plan.
+- ADR-0.35.0's remaining OBPIs: read them from `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` and the parent ADR's § Remaining Delivery Plan, never from a transcribed list.
 
 ## Verification Checklist
 
