@@ -1082,7 +1082,7 @@ BLOCKERS: gz content land: error: the following arguments are required: surface
 |------|------|
 | 0 | Landed or resumed; with `--dry-run`, planned; with `--status`, classified (including indeterminate consumers: the verdict is the output) |
 | 1 | User/config error: empty attestation on a new delta, unreusable evidence, unrouted surface, duplicate or malformed `--retention-map`, inputs changed after preparation, a malformed journal, a resume refused over drift or a foreign edit, an unknown `--status` landing id |
-| 2 | Usage error (missing `<surface>`), or system/IO error including **incomplete publication**: the journal is retained and no completion event is recorded |
+| 2 | Usage error (missing `<surface>`), or system/IO error including **incomplete publication**: the journal is retained and no completion event is recorded. This includes a target edited outside the landing after its checks ran (during staging, or after resume's checks): publication stops at that file without overwriting it |
 | 3 | Retention gate refusal: a removed block is unaccounted for, or a `--retention-map` is bound to no routed consumer of the surface |
 
 Every refusal prints three-part recovery prose (`Error:` / `Why forbidden:` /

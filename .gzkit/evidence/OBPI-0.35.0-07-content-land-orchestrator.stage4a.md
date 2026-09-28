@@ -2,7 +2,7 @@
 
 ## Value
 
-Before: promoting a corpus change to committed renditions was `gz content commit`, one consumer at a time, each write non-atomic, with no shared record that a multi-consumer change was in flight. Now: `gz content land <surface>` generates every routed consumer's candidate, verifies lineage, runs the OBPI-14 retention gate, and publishes the whole set under ONE corpus attestation and a shared `landing_id`, through a journal written before the first byte and cleared last, with hash-based `--status` and a non-destructive resume that never re-prompts.
+Before this OBPI, `gz content commit` promoted a corpus change to its committed renditions one consumer at a time. Each write was non-atomic, and no shared record showed that a multi-consumer change was in progress. Now `gz content land <surface>` does five things in order. It generates the candidate for every routed consumer, verifies lineage, runs the OBPI-14 retention gate, and then publishes the whole set under ONE corpus attestation and a shared `landing_id`. A journal is written before the first byte and cleared last. `--status` classifies consumers by hash, and resume is non-destructive and never re-prompts. This round adds a per-file compare-and-swap in `_publish`: a target that was edited outside the landing after its checks ran is never overwritten. Publication stops at that file with exit 2, the journal is retained, and no completion event is recorded.
 
 ## Key proof
 
@@ -17,52 +17,73 @@ usage: gz content land [-h] [--attestor ATTESTOR]
                        surface
 ```
 
-The covering unit tests pass:
+The two concurrent-edit tests for this round's repair (REQ-02 during staging, REQ-07 after resume checks) pass:
 
 ```text
-$ uv run -m unittest tests.content.test_landing tests.commands.test_content_land
-...
+$ uv run -m unittest tests.content.test_landing.TestPublishLanding.test_edit_during_staging_is_never_overwritten tests.content.test_landing.TestResumeLanding.test_edit_after_resume_checks_is_never_overwritten
+Ran 2 tests
 OK
 ```
 
-Stage-2 acceptance is ready over all ten obligations (every current proof approved by spec and quality review, every mapped finding independently closed):
+The full set of covering unit tests passes:
 
 ```text
-$ uv run gz obpi acceptance OBPI-0.35.0-07-content-land-orchestrator status --stage stage2 --json
-  "ready": true,
+$ uv run -m unittest tests.content.test_landing tests.commands.test_content_land
+Ran 78 tests
+OK
 ```
 
 ## Executed acceptance proofs (current)
 
+All proofs are at input digest `9bfa895c…` (the amended contract below; code unchanged) and all are valid. All 27 of 27 mutation controls were killed on assertion.
+
 | REQ | Kind | Proof | Controls |
 |-----|------|-------|----------|
-| REQ-0.35.0-07-01 | BEHAVIOR | proof-730833314c9e4afdab11249f698dffcc | 1/1 killed on assertion |
-| REQ-0.35.0-07-02 | BEHAVIOR | proof-f159c695fa9c4d0abd6cfc98c5374c5d | 5/5 |
-| REQ-0.35.0-07-03 | BEHAVIOR | proof-0bce2a9066b3498ca160fcc459a69086 | 3/3 |
-| REQ-0.35.0-07-04 | BEHAVIOR | proof-92e2f786830f4983839dcbbff1a926a1 | 2/2 |
-| REQ-0.35.0-07-05 | BEHAVIOR | proof-1058fa7598a549f5a699957cb99a17b4 | 3/3 |
-| REQ-0.35.0-07-06 | BEHAVIOR | proof-d477011537e5493bbdb096d47b3f9627 | 1/1 |
-| REQ-0.35.0-07-07 | BEHAVIOR | proof-fa5927ac2a5e40ee804830bb15a56b70 | 3/3 |
-| REQ-0.35.0-07-08 | BEHAVIOR | proof-778caef14d8049ea8fc89c25c26a9aae | 3/3 |
-| REQ-0.35.0-07-09 | SUPPORT | proof-3f38b80e476845d6b564fda7ceeb003c | SUPPORT resolver pass |
-| REQ-0.35.0-07-10 | BEHAVIOR | proof-4bc2cb4107d2413ab3ef0e40c17fb8f4 | 4/4 |
+| REQ-0.35.0-07-01 | BEHAVIOR | proof-a10f1b3e786a41c49d7fa92b6959818d | 1/1 killed on assertion |
+| REQ-0.35.0-07-02 | BEHAVIOR | proof-c8c8f9d5689f400a9704595f67a2fc21 | 6/6 |
+| REQ-0.35.0-07-03 | BEHAVIOR | proof-5159f13a01c3430c8de1cf2df3cd17ec | 3/3 |
+| REQ-0.35.0-07-04 | BEHAVIOR | proof-1dff311a157c4be09e00b07a28d7ac6d | 2/2 |
+| REQ-0.35.0-07-05 | BEHAVIOR | proof-be5817d41e564351b42184a102495e61 | 3/3 |
+| REQ-0.35.0-07-06 | BEHAVIOR | proof-2d86cc7779684b44963a54ea4572adc1 | 1/1 |
+| REQ-0.35.0-07-07 | BEHAVIOR | proof-2e527176787c4bc4be4c127a86c7c687 | 4/4 |
+| REQ-0.35.0-07-08 | BEHAVIOR | proof-92c6cba21e614d33a81e8c1e575dab70 | 3/3 |
+| REQ-0.35.0-07-09 | SUPPORT | proof-40cd97defef345ce8f95ceb44855f985 | SUPPORT resolver pass |
+| REQ-0.35.0-07-10 | BEHAVIOR | proof-3d3c1a47e7464225aacc3a744e2a0831 | 4/4 |
 
-Stage-2 reviews on these proofs: spec `arb-step-specreview-7c33d579e6404c22981224557428c375`, quality `arb-step-qualityreview-f4d2438d928f460491f31b9a1bb4453a`.
+Stage-2 reviews imported on these proofs, at the amended contract:
+
+- Spec review `arb-step-specreview-1aabd745d6d74abbace6760b17110cd4`: all ten approved; closed every mapped finding, including the two round-3 race findings.
+- Quality review `arb-step-qualityreview-e1acaee0c71c4093a16f5b66ca8d341c`: all ten approved, same closures.
+
+Stage-2 status is ready (true) with no open findings.
+
+This round's repair closes the Step-4b round 2 findings (Codex, tier 1):
+
+- `adv-07-publication-overwrites-concurrent-edit` (REQ-02) and `adv-07-resume-overwrites-concurrent-edit` (REQ-07) are repaired by the per-file compare-and-swap in `_publish` (`src/gzkit/content/landing.py`). The rule for each file: if its current SHA-256 equals `new_sha256`, it is skipped; if it equals `old_sha256`, it is replaced; any other value raises `_foreign_edit`, exit 2.
+- `adv-07-manpage-edit-witness-absent` (REQ-09) is resolved by the operator-ruled amendment of REQ-09's witness clause to GHI #647 arm 2. The operator chose, verbatim: "Amend witness to arm 2 (Recommended)".
+- The exit table in `docs/user/manpages/content.md` now names the exit-2 foreign-edit stop.
 
 ## Receipts (Stage 3; cited, not replayed)
 
+All have exit_status 0:
+
 ```text
-arb-ruff-4f4e80dbc54b43d1b09d556ad8b58179
-arb-step-typecheck-4ab83c7ed25a431289ede565e3d62682
-arb-step-unittest-92545fa88b7244189c1b3d02080b97a0
-arb-step-mkdocs-87b2feb3938545c19f4ef3792429a58a
-arb-step-behave-6cd45fd061784845ab93f0fab462ab0e
+arb-ruff-ccb1590fae3f442f94530db0fd163909
+arb-step-typecheck-09a88cde2f52428bbac00c1bdc20eacf
+arb-step-unittest-f268bffbeadb405ab1c1441cfe73650b
+arb-step-mkdocs-c806200f55bd4176a68519a0405a8fda
+arb-step-behave-4a0f8b5ebcad4ea6bb814f71dddcdb13
 ```
 
-These predate the final rollback-prose edit; they are re-run before attestation.
+- The unittest receipt records Ran 11078 tests, OK (skipped=7).
+- The behave receipt records 13 scenarios and 96 steps passed.
+
+These also exited 0: `gz validate --documents`, `--req-kind-discipline`, `--rendition-freshness`, `--cli-alignment`, and `gz cli audit`.
 
 ## Limits disclosed
 
-- `landing.py` is about 1,660 lines (advisory `pythonic.md` 600-line guidance; `gz check` module band and xenon pass).
-- The rollback command is written in seven message sites; `git restore` leaves untracked new sidecars when a landing is rolled back before it is committed; REQ-09's SUPPORT proof passes on the artifact-exists arm (recorded as insights).
-- The RED witness receipts are `failure_class=error` (no landing module at base); the executed mutation proofs above are the behavioural evidence.
+- `landing.py` is about 1,690 lines, against the advisory 600-line guidance in `pythonic.md` (quality review observation `aux-landing-module-size`). The `gz check` module band and xenon pass.
+- Step 4b round 3 (`arb-step-codexadversary-0264a78a0ba041878f39853b02548bf0`) approved 8 of 10 proofs and refuted REQ-02/07 with a writer racing the instant between `_publish`'s hash read and the replacement. The operator ruled, verbatim, "Accept as residual (Recommended)": the brief's Threat Model now names that check-to-replace window as an accepted residual, because the stdlib offers no compare-and-swap rename. Edits made at any earlier point stay in scope and are never overwritten.
+- The Stage-2 arb red receipts for REQ-02 and REQ-07 are `failure_class=error` on a reconstructed base, so they are inconclusive. The RED evidence is the assertion failures observed before the fix, plus the killed publish-overwrites-foreign-edit controls.
+- REQ-09's SUPPORT proof passes on the artifact-exists arm (GHI #647 arm 2), which the REQ itself now states.
+- Step 4b round 4 (`arb-step-codexadversary-5186184340874c11a717355b77bc4b51`, tier 1, imported) was the focused confirmation against the amended Threat Model that the operator authorized past the follow-up bound. It returned CORROBORATED: 10 of 10 proofs approved, both race findings closed. It replayed `publish-overwrites-foreign-edit` for REQ-02 and REQ-07; the other controls were inspected, not re-run. Its weakest point is the accepted window itself, and its checks confirmed the exception does not extend back into staging or resume's checks.

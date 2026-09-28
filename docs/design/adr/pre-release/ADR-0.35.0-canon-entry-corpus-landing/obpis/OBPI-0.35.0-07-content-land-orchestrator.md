@@ -3,7 +3,7 @@ id: OBPI-0.35.0-07-content-land-orchestrator
 parent: ADR-0.35.0-canon-entry-corpus-landing
 item: 7
 lane: Heavy
-status: Active
+status: Completed
 allowlist:
 - src/gzkit/commands/content/land.py
 - src/gzkit/commands/content/__init__.py
@@ -60,6 +60,8 @@ tasks:
   - TASK-0.35.0-07-08-01
   - TASK-0.35.0-07-09-01
   - TASK-0.35.0-07-10-01
+  - TASK-0.35.0-07-02-02
+  - TASK-0.35.0-07-07-02
 ---
 
 # OBPI-0.35.0-07-content-land-orchestrator: Content Land Orchestrator
@@ -70,7 +72,7 @@ tasks:
 <!-- gz-validate-skip: command-shape -->
 - **Checklist Item:** #7 - "gz content land &lt;surface&gt; orchestrator -- journaled multi-consumer publication with per-file atomic replacement, single corpus attestation on the corpus delta, shared `landing_id`, landing state file written first and cleared last, `--status` and non-destructive resume that does NOT re-prompt for attestation"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -223,6 +225,7 @@ Ratified 2026-09-27 by operator g0, option chosen: "Ratify draft (Recommended)".
 
 - **In scope.** An interrupted process at any publication boundary; concurrent `gz` invocations; edits by hand or by another tool to files under `.gzkit/renditions/<surface>/` (renditions, provenance and lineage sidecars, retention sidecars, the landing journal), including a good sidecar copied next to altered bytes.
 - **Accepted residual.** Someone with write access who appends forged rows to `.gzkit/ledger.jsonl`, or who forges a journal and a ledger that agree with each other. This is the same residual OBPI-0.35.0-04 accepted for `.gzkit/ownership/` (same directory class, same access). Findings that require it are out of scope for Step 4b.
+- **Accepted residual — the check-to-replace window.** A write to a target that lands after `_publish` has read that target's hash and before its atomic replacement completes may be overwritten. An edit made at any earlier point, including during staging or after resume's checks, is still in scope and is never overwritten. The residual exists because the stdlib offers no compare-and-swap rename, and closing it would give up per-file atomic replacement under the ratified Publication Amendment. Other `gz` landings are already excluded by the surface lock. AMENDED 2026-09-28 (operator ruling, option chosen verbatim: "Accept as residual (Recommended)"), after Step-4b round 3 findings adv-07-fresh-check-replace-race and adv-07-resume-check-replace-race.
 
 ## Discovery Checklist
 
@@ -344,7 +347,7 @@ Each checkbox carries a deterministic REQ ID and exactly one kind tag
 - [ ] REQ-0.35.0-07-07 [behavior]: Given an interrupted landing where consumer 1 of 3 already landed, when `land` is re-run to resume, then consumer 1's rendition and sidecar are BYTE-UNCHANGED and consumers 2 and 3 land — resume is non-destructive.
 - [ ] REQ-0.35.0-07-08 [behavior]: Given a resume of an interrupted landing whose state file records an attestation, when `land` is re-run, then it completes WITHOUT prompting for or requiring `--attestor`/`--attestation-text`, reusing the recorded values and `landing_id` — and no `--force`-style override is needed or offered.
 - [ ] REQ-0.35.0-07-10 [behavior]: Given a consumer whose generated candidate removes a block of its prior committed rendition, when `land` runs without a `--retention-map` for that consumer, or with one that fails the retention gate (for example a DROPPED id absent from this invocation's `--attestation-text`), then it exits 3 and writes nothing for ANY consumer — no state file, rendition, sidecar or ledger event; and given a valid map, the landing completes and publishes `<consumer>.retention.json` with the consumer's other artifacts.
-- [ ] REQ-0.35.0-07-09 [support]: `docs/user/manpages/content.md` and `docs/user/runbook.md` document the `land` contract and NAME the rollback — committed renditions have no prior-version retention, so recovery is `git restore --source=<known-good-revision> --staged --worktree -- .gzkit/renditions/<surface>/`, restoring the whole artifact set and removing artifacts added since (amended 2026-09-27, operator ruling "Name restore, amend REQ (Recommended)"; it read "recovery is `git checkout`") — witnessed by an `artifact_edited` ledger event citing `docs/user/manpages/content.md`, and `gz validate --cli-alignment` resolves every gz content land reference they prescribe.
+- [ ] REQ-0.35.0-07-09 [support]: `docs/user/manpages/content.md` and `docs/user/runbook.md` document the `land` contract and NAME the rollback — committed renditions have no prior-version retention, so recovery is `git restore --source=<known-good-revision> --staged --worktree -- .gzkit/renditions/<surface>/`, restoring the whole artifact set and removing artifacts added since (amended 2026-09-27, operator ruling "Name restore, amend REQ (Recommended)"; it read "recovery is `git checkout`") — witnessed by the SUPPORT channel's `artifact_edited` arm citing `docs/user/manpages/content.md`, which that arm satisfies by the cited manpage existing on disk (GHI #647 arm 2, `resolve_support_proof`) because no `gz` path books that event for a manpage, together with `gz validate --cli-alignment` resolving every gz content land reference they prescribe. AMENDED 2026-09-28 (operator ruling, option chosen verbatim: "Amend witness to arm 2 (Recommended)"): the witness clause named an `artifact_edited` ledger event citing the manpage, an event the post-commit recorder never books outside governance paths (Step-4b finding adv-07-manpage-edit-witness-absent).
 
 ## Completion Checklist
 
@@ -404,7 +407,8 @@ Each checkbox carries a deterministic REQ ID and exactly one kind tag
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+`uv run -m unittest tests.content.test_landing tests.commands.test_content_land` → `Ran 78 tests … OK`. Current acceptance proofs: 27 of 27 mutation controls killed on assertion across nine BEHAVIOR REQs, and the REQ-09 SUPPORT resolver passes. Stage-3 receipts: `arb-step-unittest-f268bffbeadb405ab1c1441cfe73650b` (11078 tests OK), `arb-ruff-ccb1590fae3f442f94530db0fd163909`, `arb-step-typecheck-09a88cde2f52428bbac00c1bdc20eacf`, `arb-step-mkdocs-c806200f55bd4176a68519a0405a8fda`, `arb-step-behave-4a0f8b5ebcad4ea6bb814f71dddcdb13`. Step 4b tier 1 `arb-step-codexadversary-5186184340874c11a717355b77bc4b51`: CORROBORATED, 10 of 10.
 
 ### Change Log
 
@@ -424,14 +428,22 @@ Each checkbox carries a deterministic REQ ID and exactly one kind tag
 
 - 2026-09-27/28, REQ-09 scoped review and repair. Spec arb-step-specreview-e2f9726aa5c9430380f625c25a1b85aa and quality arb-step-qualityreview-a4e21a70ef954e92995e8f81fbff3579 both refuted REQ-09: `git checkout <rev> -- <dir>` leaves artifacts added since `<rev>` (reproduced by the orchestrator in a scratch repository). Operator ruling, option chosen verbatim: "Name restore, amend REQ (Recommended)" — Requirement 10 and REQ-09 amended to `git restore --source=<rev> --staged --worktree`; code recovery prose and docs repaired (implementer, sonnet; dispatch recorded), resume note grammar fixed. All ten proofs re-run valid (25 of 25 mutations killed; REQ-09 SUPPORT pass). Follow-up spec arb-step-specreview-7c33d579e6404c22981224557428c375 and quality arb-step-qualityreview-f4d2438d928f460491f31b9a1bb4453a accepted all ten current proofs and closed every mapped finding; Stage-2 status ready. Step 4a packet `.gzkit/evidence/OBPI-0.35.0-07-content-land-orchestrator.stage4a.md` VERIFIED by `gz obpi verify-packet`.
 - 2026-09-27/28, Step 4b (tier 1, Codex plugin `task --write` in a disposable checkout, digest f8276d8c…). The Codex plugin was not installed; operator installed it (option "Install plugin, tier 1 (Recommended)"). Round 1 (arb-step-codexadversary-37f1a032013e45d4b7c86f90d3b4f90b, imported): environment failure — Codex's Windows sandbox could not re-ACL `~\.codex\.sandbox-bin` (owner BUILTIN\Administrators; `helper_sandbox_lock_failed`, error 5; upstream openai/codex #36475, #45734, #46380); no findings, no approvals. Operator closed other Codex processes, then, on "fix it", the orchestrator renamed the directory to `.sandbox-bin.old` so Codex recreated it, and set aside a stale companion `broker.json` whose runtime had died. Round 2 (arb-step-codexadversary-70151f5432974f658c362e2bfd5fe005): NOT-CORROBORATED; replayed one mutation per BEHAVIOR REQ and confirmed the git-restore rollback, approved 7 of 10 proofs, and found three counterexamples: `adv-07-publication-overwrites-concurrent-edit` (REQ-02: `_publish` does not recheck a target's old hash at its replacement boundary, so an in-scope edit during staging is overwritten), `adv-07-resume-overwrites-concurrent-edit` (REQ-07: same gap on resume), `adv-07-manpage-edit-witness-absent` (REQ-09: no `artifact_edited` event cites the manpage; the SUPPORT resolver passed on file existence). IMPORT REFUSED (exit 3): the review's replay records carried abridged test output without the unittest summary line, which the importer classifies as `error`, contradicting its prose. The findings are therefore not yet in the acceptance ledger; this entry is their record until the next round.
+- 2026-09-28, Step-4b repair round (resumed on macOS; operator ruling on the handoff: "resume OBPI-0.35.0-07"). adv-07-publication-overwrites-concurrent-edit and adv-07-resume-overwrites-concurrent-edit share one cause, so one repair closes both: `_publish`, shared by land and resume, now compare-and-swaps per file (skip at new hash, replace at old hash, otherwise refuse exit 2 through `_foreign_edit`, journal retained, no event). The check-to-replace residual is disclosed in its docstring. Red-first tests `test_edit_during_staging_is_never_overwritten` (REQ-02) and `test_edit_after_resume_checks_is_never_overwritten` (REQ-07) were observed failing on their own assertions before the fix. The resume test's first draft passed spuriously, because its hook re-applied the foreign edit after the overwrite; it now edits exactly once. Implementer (haiku; dispatch recorded, task 5; TASK-0.35.0-07-02-02, TASK-0.35.0-07-07-02; one resume after its turn limit). Orchestrator correction: the "keep the edit" recovery path named a fresh landing, which `_refuse_active_landing` blocks while the journal exists; it now names the governed journal removal first. adv-07-manpage-edit-witness-absent: operator ruling, option chosen verbatim: "Amend witness to arm 2 (Recommended)". REQ-09's witness clause now states the GHI #647 arm-2 proof actually used, since the post-commit recorder books `artifact_edited` only for governance paths (`src/gzkit/hooks/core.py`). Mutation controls `resume-skips-by-published-flag` and `rewrite-landed-files` were re-anchored to the rewritten lines with their original meaning, and `publish-overwrites-foreign-edit` was added to REQ-02 and REQ-07. All ten proofs were re-run at input digest b6fa8f1d…; 27 of 27 controls were killed on an assertion, and the REQ-09 SUPPORT resolver passes. Stage-2 arb red receipts for REQ-02/07 are `error` on a `reconstructed` base, which is inconclusive; the observed assertion REDs above are the RED evidence.
+- 2026-09-28, Stage-2 reviews for the repair round: spec arb-step-specreview-9187f4a0f13944579f7b75b342dac053 approved all ten current proofs and closed the six historical findings, with one unmapped observation: the manpage exit table did not name the exit-2 foreign-edit stop. That row was added to `docs/user/manpages/content.md`. Quality arb-step-qualityreview-88aa8ee22a6541adb4e7a96da73eced6 approved REQ-02, REQ-07 and REQ-09. Quality arb-step-qualityreview-3a3bd59d50ec40f880f4fc7a3d06ba55 approved the other seven, with the unmapped module-size observation that the Task 2 entry already disclosed. Stage 2 was ready. Stage-3 receipts: arb-ruff-ccb1590fae3f442f94530db0fd163909, arb-step-typecheck-09a88cde2f52428bbac00c1bdc20eacf, arb-step-unittest-f268bffbeadb405ab1c1441cfe73650b (11078 tests OK), arb-step-mkdocs-c806200f55bd4176a68519a0405a8fda, arb-step-behave-4a0f8b5ebcad4ea6bb814f71dddcdb13 (13 scenarios). The Step-4a packet was rebuilt by the narrator and VERIFIED by replay.
+- 2026-09-28, Step 4b round 3 (tier 1, Codex plugin `task --write` in a disposable checkout, digest 8f584601…; arb-step-codexadversary-0264a78a0ba041878f39853b02548bf0, imported): NOT-CORROBORATED. It approved 8 of 10 proofs, REQ-09's amended witness among them, and confirmed that both round-2 counterexamples are now caught. It refuted REQ-02 and REQ-07 with adv-07-fresh-check-replace-race and adv-07-resume-check-replace-race: a writer thread scheduled at the real `Path.replace` edits `gamma.md` after `_publish` read its hash, and that edit is overwritten. This is the check-to-replace residual the repair disclosed, which the ratified Threat Model does not accept. It is round 2's root cause (a check separated from its replacement) one layer deeper, and it is the third round, so under the pipeline's design-escalation rule and the 2026-09-18 round bound the OBPI is blocked (`gz obpi block`) pending an operator ruling on the design.
+- 2026-09-28, design ruling and confirmation. Operator ruling, option chosen verbatim: "Accept as residual (Recommended)" (`gz obpi unblock`, operator g0). The Threat Model now names the check-to-replace window as an accepted residual; edits made at any earlier point stay in scope. The amendment moved the contract digest, so all ten proofs were re-run unchanged (27 of 27 controls killed on assertion, digest 9bfa895c…) and re-reviewed. Spec arb-step-specreview-1aabd745d6d74abbace6760b17110cd4 (a first run, arb-step-specreview-fd3b1a373b804963af97374a4060d61b, was refused at import for emitting no review object) and quality arb-step-qualityreview-e1acaee0c71c4093a16f5b66ca8d341c approved all ten and closed both race findings. Step 4b round 4 (tier 1, operator-authorized past the follow-up bound; arb-step-codexadversary-5186184340874c11a717355b77bc4b51, imported): CORROBORATED, 10 of 10 proofs approved, both race findings closed. Stage-4 acceptance status: ready. Process defect recorded as an insight: an unquoted heredoc used to compose a prompt made the shell execute its backticked spans, among them `gz content land`. It failed on the older PATH install, and no landing event was written.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Parent ADR Decision item implemented: checklist item #7, "gz content land <surface> orchestrator -- journaled multi-consumer publication with per-file atomic replacement, single corpus attestation on the corpus delta, shared `landing_id`, landing state file written first and cleared last, `--status` and non-destructive resume that does NOT re-prompt for attestation"
+- Files created: `src/gzkit/commands/content/land.py`, `src/gzkit/content/landing.py`, `tests/content/test_landing.py`, `tests/commands/test_content_land.py`, `features/content_land.feature`, `features/steps/content_land_steps.py`
+- Files modified: `src/gzkit/commands/content/__init__.py`, `src/gzkit/content/rendition_store.py`, `src/gzkit/events.py`, `src/gzkit/schemas/ledger.json`, `src/gzkit/governance/events.py`, `src/gzkit/ontology/corpus.py`, `tests/test_schemas.py`, `config/doc-coverage.json`, `tests/content/test_tui_affordances.py`, `tests/cli/test_attestor_default.py`, `.gitignore`, `docs/user/manpages/content.md`, `docs/user/runbook.md`
+- Publication: journaled per-file atomic replacement with a compare-and-swap at each replacement (skip at new hash, replace at old hash, otherwise stop with exit 2 and keep the journal); one idempotent `rendition_landed` event carries the full target/hash manifest
+- Tests added: 78 unit tests across the two landing modules, plus 13 BDD scenarios
+- Date completed: 2026-09-28
+- Attestation status: operator attested ("attest completed")
+- Defects noted: the check-to-replace window is an accepted residual (Threat Model, operator ruling 2026-09-28); `landing.py` exceeds the advisory 600-line module guidance
 
 ## Tracked Defects
 
@@ -442,12 +454,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.35.0-07 gz content land: Stage-4 acceptance ready over 10 obligations (27/27 mutation controls killed on assertion; REQ-09 SUPPORT pass); Step 4b tier-1 Codex round 4 arb-step-codexadversary-5186184340874c11a717355b77bc4b51 CORROBORATED 10/10 after operator rulings "Amend witness to arm 2 (Recommended)" and "Accept as residual (Recommended)"; Stage-2 spec arb-step-specreview-1aabd745d6d74abbace6760b17110cd4, quality arb-step-qualityreview-e1acaee0c71c4093a16f5b66ca8d341c; receipts arb-step-unittest-f268bffbeadb405ab1c1441cfe73650b (11078 tests OK), arb-ruff-ccb1590fae3f442f94530db0fd163909, arb-step-typecheck-09a88cde2f52428bbac00c1bdc20eacf, arb-step-mkdocs-c806200f55bd4176a68519a0405a8fda, arb-step-behave-4a0f8b5ebcad4ea6bb814f71dddcdb13 (13 scenarios).
+- Date: 2026-09-28
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-09-28
 
 **Evidence Hash:** -

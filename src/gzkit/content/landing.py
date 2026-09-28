@@ -1041,6 +1041,26 @@ def _begin(root: Path, plan: LandingPlan) -> Path:
     return staging
 
 
+def _foreign_edit(root: Path, journal: LandingJournal, path: str) -> LandingRefusal:
+    surface, landing_id = journal.surface, journal.landing_id
+    return LandingRefusal(
+        2,
+        f"Error: landing {landing_id} of {surface!r} detected a concurrent edit to "
+        f"{path} -- it was NOT overwritten and the landing journal is retained.\n"
+        "Why forbidden: a compare-and-swap at the replacement boundary protects against "
+        "concurrent edits made during staging or after resume checks; a file whose bytes "
+        "are neither the old committed state nor the new prepared state has been edited "
+        "outside the landing transaction and must not be silently replaced.\n"
+        f"Next: inspect the landing with `gz content land {surface} --status {landing_id}`; "
+        f"discard the concurrent edit with `git restore --source=<known-good-revision> "
+        f"--staged --worktree -- {surface_rendition_dir(surface).as_posix()}/`, "
+        f"then resume with `gz content land {surface}`. To keep the edit, remove the journal "
+        f"{journal_path(root, surface).as_posix()!r} only after a governed decision to "
+        f"abandon landing {landing_id}, then run `gz content land {surface}` to prepare and "
+        "attest a fresh landing.",
+    )
+
+
 def _incomplete(journal: LandingJournal, what: str) -> LandingRefusal:
     surface, landing_id = journal.surface, journal.landing_id
     return LandingRefusal(
@@ -1073,15 +1093,30 @@ def _mark_published(journal: LandingJournal, index: int) -> LandingJournal:
 def _publish(root: Path, journal: LandingJournal, staging: Path) -> LandingJournal:
     """Replace every target from staging, persisting progress after each consumer.
 
-    An artifact whose current bytes already hash to its new SHA-256 is skipped,
-    which is what keeps a resumed landing from rewriting a verified file.
+    Compare-and-swap at the replacement boundary: for each artifact, read its current
+    SHA-256 and compare against both the old committed state and the new prepared state.
+    If current SHA equals new_sha256, skip (already correct). If current SHA equals old_sha256,
+    replace (proceed with publication). Otherwise, a concurrent edit has been detected and
+    the landing refuses with exit 2 without touching that file, keeping the journal and
+    recording no event.
+
+    Residual: a write in the instant between the hash read and the replacement is not detected.
+    Other gz landings are excluded by the surface lock.
     """
     journal = journal.model_copy(update={"phase": "publishing"})
     _write_journal(root, journal)
     for index, consumer in enumerate(journal.consumers):
         for artifact in consumer.artifacts:
-            if _current_sha(root, artifact.path) != artifact.new_sha256:
+            current = _current_sha(root, artifact.path)
+            # Skip if already at target state
+            if current == artifact.new_sha256:
+                continue
+            # Replace if at old state
+            if current == artifact.old_sha256:
                 _replace_artifact(root, staging, artifact)
+                continue
+            # Foreign edit detected
+            raise _foreign_edit(root, journal, artifact.path)
         journal = _mark_published(journal, index)
         _write_journal(root, journal)
     return journal

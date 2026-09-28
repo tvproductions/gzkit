@@ -457,6 +457,35 @@ class TestPublishLanding(_TempRoot):
         self.assertEqual(landed_events(self.root), [])
 
     @covers("REQ-0.35.0-07-02")
+    def test_edit_during_staging_is_never_overwritten(self) -> None:
+        # Threat model: a hand edit under .gzkit/renditions/<surface>/ is in scope. The
+        # drift check runs before staging, so an edit made while staging is only caught
+        # by comparing each target to its old hash at the replacement boundary.
+        plan = self._plan()
+        gamma = self.root / artifact_relpath(LAND_SURFACE, "gamma", "rendition")
+        foreign = b"edited by hand while the landing staged\n"
+        real_stage = landing_mod._stage_artifact
+
+        def stage(path: Path, data: bytes) -> None:
+            real_stage(path, data)
+            gamma.write_bytes(foreign)
+
+        refusal: LandingRefusal | None = None
+        with mock.patch.object(landing_mod, "_stage_artifact", side_effect=stage):
+            try:
+                publish_landing(self.root, plan)
+            except LandingRefusal as exc:
+                refusal = exc
+        self.assertEqual(gamma.read_bytes(), foreign, "a concurrent edit was overwritten")
+        assert refusal is not None
+        self.assertEqual(refusal.exit_code, 2)
+        for part in ("Error:", "Why forbidden:", "Next:"):
+            self.assertIn(part, refusal.message)
+        self.assertIn("gamma.md", refusal.message)
+        self.assertTrue(self._journal_exists(), "the journal is the only record of the landing")
+        self.assertEqual(landed_events(self.root), [])
+
+    @covers("REQ-0.35.0-07-02")
     def test_journal_write_failure_before_any_byte_writes_nothing(self) -> None:
         plan = self._plan()
         before = committed_artifacts(snapshot_tree(self.root))
@@ -871,6 +900,38 @@ class TestResumeLanding(_TempRoot):
         refusal = self._assert_refused_writing_nothing()
         self.assertIn("gamma.md", refusal.message)
         self.assertIn(f"--status {plan.journal.landing_id}", refusal.message)
+
+    @covers("REQ-0.35.0-07-07")
+    def test_edit_after_resume_checks_is_never_overwritten(self) -> None:
+        self._interrupted()
+        alpha_before = self._alpha_bytes()
+        gamma = self.root / artifact_relpath(LAND_SURFACE, "gamma", "rendition")
+        foreign = b"edited by hand after resume checked the set\n"
+        real_write = landing_mod._write_journal
+        edited: list[bool] = []
+
+        def write(root: Path, journal: LandingJournal) -> None:
+            # Resume's drift checks have passed; publication is about to start. Edit
+            # exactly once: re-applying on later journal writes would restore the bytes
+            # after an overwrite and hide it.
+            if journal.phase == "publishing" and not edited:
+                gamma.write_bytes(foreign)
+                edited.append(True)
+            real_write(root, journal)
+
+        refusal: LandingRefusal | None = None
+        with mock.patch.object(landing_mod, "_write_journal", side_effect=write):
+            try:
+                landing_mod.resume_landing(self.root, LAND_SURFACE)
+            except LandingRefusal as exc:
+                refusal = exc
+        self.assertEqual(gamma.read_bytes(), foreign, "resume overwrote a concurrent edit")
+        self.assertEqual(self._alpha_bytes(), alpha_before)
+        assert refusal is not None
+        self.assertEqual(refusal.exit_code, 2)
+        self.assertIn("gamma.md", refusal.message)
+        self.assertTrue(journal_path(self.root, LAND_SURFACE).exists())
+        self.assertEqual(landed_events(self.root), [])
 
     @covers("REQ-0.35.0-07-07")
     def test_deleted_staged_file_refuses(self) -> None:

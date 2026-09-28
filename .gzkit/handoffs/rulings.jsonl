@@ -1157,3 +1157,7 @@
 {"ts": "2026-09-28T02:54:08Z", "source": "20260928T025407Z-obpi-07-paused-at-step-4b.md", "text": "Run Step 4b tier 1 after installing the Codex plugin (verbatim: \"Install plugin, tier 1 (Recommended)\")."}
 {"ts": "2026-09-28T02:54:08Z", "source": "20260928T025407Z-obpi-07-paused-at-step-4b.md", "text": "Rollback is `git restore --source=<rev> --staged --worktree`; amend REQ-09 and Requirement 10 (verbatim: \"Name restore, amend REQ (Recommended)\")."}
 {"ts": "2026-09-28T02:54:08Z", "source": "20260928T025407Z-obpi-07-paused-at-step-4b.md", "text": "Fix the Codex sandbox directory rather than fall back to tier 2 (verbatim: \"fix it\")."}
+{"ts": "2026-09-28T09:13:45Z", "source": "20260928T091343Z-obpi-07-completed.md", "text": "Resume the paused OBPI (verbatim: \"resume OBPI-0.35.0-07\")."}
+{"ts": "2026-09-28T09:13:45Z", "source": "20260928T091343Z-obpi-07-completed.md", "text": "Amend REQ-09's witness clause to the GHI #647 arm-2 proof (verbatim: \"Amend witness to arm 2 (Recommended)\")."}
+{"ts": "2026-09-28T09:13:45Z", "source": "20260928T091343Z-obpi-07-completed.md", "text": "Accept the check-to-replace window as a Threat Model residual and run one focused Codex confirmation round past the follow-up bound (verbatim: \"Accept as residual (Recommended)\")."}
+{"ts": "2026-09-28T09:13:45Z", "source": "20260928T091343Z-obpi-07-completed.md", "text": "Gate 5 for OBPI-0.35.0-07 (verbatim: \"attest completed\")."}
