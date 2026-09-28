@@ -442,6 +442,55 @@ class TestSignatureA(unittest.TestCase):
                 len(errors), 0, "composition_rendered telemetry must not trip signature (a)"
             )
 
+    def _rename_under_active_task(self, root: Path, reason: str) -> list:
+        _write_ledger(
+            root,
+            [
+                json.dumps(
+                    {
+                        "event": "task_started",
+                        "task_id": "TASK-0.35.0-07-01-01",
+                        "obpi_id": "OBPI-0.35.0-07-content-land-orchestrator",
+                        "id": "evt-1",
+                        "schema_": "1.0",
+                        "timestamp": "2026-09-27T23:04:30Z",
+                    }
+                ),
+                json.dumps(
+                    {
+                        "event": "artifact_renamed",
+                        "id": "OBPI-0.35.0-07",
+                        "new_id": "OBPI-0.35.0-07-content-land-orchestrator",
+                        "reason": reason,
+                        "schema_": "1.0",
+                        "timestamp": "2026-09-28T03:04:36Z",
+                    }
+                ),
+            ],
+        )
+        return [e for e in _validate_task_envelope_coherence(root) if "Signature (a)" in e.message]
+
+    def test_semver_migration_rename_is_bookkeeping_not_labor(self) -> None:
+        """A ``gz migrate-semver`` id-reconciliation rename MUST NOT trip signature (a).
+
+        The pending-renames gate prescribes ``gz migrate-semver``; run while any
+        TASK is live, its ``artifact_renamed`` (reason
+        ``semver_minor_sequence_migration``) carried no ``task_id`` and failed this
+        gate, so each gate's remedy tripped the other (2026-09-28, ledger ``:17736``).
+        The rename reconciles an identifier; no TASK performed it, and attributing it
+        to an arbitrary live one would be false attribution. Operator ruling,
+        option chosen verbatim: "Excuse as bookkeeping (Recommended)".
+        """
+        with tempfile.TemporaryDirectory() as td:
+            errors = self._rename_under_active_task(Path(td), "semver_minor_sequence_migration")
+            self.assertEqual(errors, [], "a semver id-migration rename is not TASK labor")
+
+    def test_other_rename_reasons_still_require_attribution(self) -> None:
+        """The bookkeeping carve-out is narrowed to the migration reason only."""
+        with tempfile.TemporaryDirectory() as td:
+            errors = self._rename_under_active_task(Path(td), "operator_rename")
+            self.assertEqual(len(errors), 1, "an unattributed non-migration rename must fail")
+
     def test_commit_locus_artifact_edited_excluded_from_signature_a(self) -> None:
         """A commit-locus backstop row has NO attribution channel, so it cannot fail (GHI #869).
 

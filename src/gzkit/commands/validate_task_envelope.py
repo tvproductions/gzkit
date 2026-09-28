@@ -328,6 +328,16 @@ def _sig_a_is_not_labor_event(
     if ev_type == "composition_rendered":
         return True
 
+    # A `gz migrate-semver` rename reconciles an artifact identifier; no TASK
+    # performs it, so attributing it to whichever TASK is live would be false
+    # attribution. Before this carve-out the pending-renames gate prescribed
+    # `gz migrate-semver` and this gate then failed the row it wrote, so each
+    # gate's remedy tripped the other (2026-09-28). Narrowed to that reason:
+    # every other rename still needs a `task_id`. Operator ruling, verbatim
+    # option: "Excuse as bookkeeping (Recommended)".
+    if ev_type == "artifact_renamed" and ev.get("reason") == "semver_minor_sequence_migration":
+        return True
+
     # NOTE (GHI #947): a ``commit``-keyed carve-out for commit-locus
     # ``artifact_edited`` rows lived here from GHI #869 until 2026-09-02. It is
     # gone because ``artifact_edited`` left ``_TASK_WORKLOG_TYPES`` entirely —
