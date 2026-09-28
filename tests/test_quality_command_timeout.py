@@ -145,6 +145,32 @@ class TestQualityCommandTimeout(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 124)
 
+    def test_timeout_keeps_output_written_before_the_kill(self) -> None:
+        # A hung unit tier reports its progress on stderr; losing it on timeout
+        # leaves the operator with no clue which test was running (GHI #1143).
+        _write_config(self.root, {"_doc": "test", "default_seconds": 2})
+        # A script file, not `-c`: the timeout prose echoes the command line, so
+        # markers inside argv would satisfy the assertions without any capture.
+        script = self.root / "hang.py"
+        script.write_text(
+            textwrap.dedent(
+                f"""
+                import sys, time
+                print("stdout-before-hang", flush=True)
+                print("stderr-before-hang", file=sys.stderr, flush=True)
+                time.sleep({_SLEEP_SECONDS})
+                """
+            ),
+            encoding="utf-8",
+        )
+
+        result = run_command([sys.executable, str(script)], cwd=self.root)
+
+        self.assertEqual(result.returncode, 124)
+        self.assertIn("stdout-before-hang", result.stdout)
+        self.assertIn("stderr-before-hang", result.stderr)
+        self.assertIn("process tree", result.stderr)
+
     def test_fast_command_output_unchanged(self) -> None:
         _write_config(self.root, {"_doc": "test", "default_seconds": 30})
         result = run_command(

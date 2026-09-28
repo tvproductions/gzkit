@@ -241,15 +241,18 @@ def run_command(
         except subprocess.TimeoutExpired:
             _kill_process_tree(proc)
             try:
-                stdout, _ = proc.communicate(timeout=_DRAIN_SECONDS)
+                stdout, stderr = proc.communicate(timeout=_DRAIN_SECONDS)
             except subprocess.TimeoutExpired:
                 proc.kill()
-                stdout = ""
+                stdout, stderr = "", ""
+            # Keep what the child wrote before the kill: a hung unit tier reports
+            # its progress on stderr, the only clue to which test stalled.
+            prose = _timeout_prose(display, timeout_seconds)
             return QualityResult(
                 success=False,
                 command=display,
                 stdout=stdout or "",
-                stderr=_timeout_prose(display, timeout_seconds),
+                stderr=f"{stderr.rstrip()}\n\n{prose}" if stderr else prose,
                 returncode=124,  # the exit status `timeout(1)` reports for a kill
             )
         return QualityResult(
