@@ -156,6 +156,71 @@
       "status": "in_progress",
       "result": null,
       "persona_loaded": null
+    },
+    {
+      "task_id": 7,
+      "role": "SpecReviewer",
+      "agent_file": "",
+      "model": "sonnet",
+      "isolation": "inline",
+      "background": false,
+      "dispatched_at": "2026-09-28T02:06:26.363586+00:00",
+      "completed_at": null,
+      "status": "in_progress",
+      "result": null,
+      "persona_loaded": null
+    },
+    {
+      "task_id": 7,
+      "role": "QualityReviewer",
+      "agent_file": ".claude/agents/quality-reviewer.md",
+      "model": "sonnet",
+      "isolation": "inline",
+      "background": false,
+      "dispatched_at": "2026-09-28T02:06:27.131816+00:00",
+      "completed_at": null,
+      "status": "in_progress",
+      "result": null,
+      "persona_loaded": null
+    },
+    {
+      "task_id": 7,
+      "role": "Implementer",
+      "agent_file": ".claude/agents/implementer.md",
+      "model": "sonnet",
+      "isolation": "inline",
+      "background": false,
+      "dispatched_at": "2026-09-28T02:10:26.331331+00:00",
+      "completed_at": null,
+      "status": "in_progress",
+      "result": null,
+      "persona_loaded": null
+    },
+    {
+      "task_id": 8,
+      "role": "SpecReviewer",
+      "agent_file": "",
+      "model": "opus",
+      "isolation": "inline",
+      "background": false,
+      "dispatched_at": "2026-09-28T02:29:46.663115+00:00",
+      "completed_at": null,
+      "status": "in_progress",
+      "result": null,
+      "persona_loaded": null
+    },
+    {
+      "task_id": 8,
+      "role": "QualityReviewer",
+      "agent_file": ".claude/agents/quality-reviewer.md",
+      "model": "opus",
+      "isolation": "inline",
+      "background": false,
+      "dispatched_at": "2026-09-28T02:29:47.456047+00:00",
+      "completed_at": null,
+      "status": "in_progress",
+      "result": null,
+      "persona_loaded": null
     }
   ]
 }
