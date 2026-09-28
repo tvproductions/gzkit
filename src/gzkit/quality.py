@@ -215,10 +215,14 @@ def run_command(
 
     # Own process group/session so a timeout can kill the WHOLE tree: a
     # deadlocked `unittest-parallel` worker is a grandchild (GHI #1143).
+    # Both keywords passed explicitly: a `**dict[str, Any]` unpack matches no
+    # `Popen` overload under ty, which then types `proc` as `Popen[AnyStr]`.
     if sys.platform == "win32":
-        group_kwargs: dict[str, Any] = {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
+        creationflags = subprocess.CREATE_NEW_PROCESS_GROUP
+        start_new_session = False
     else:
-        group_kwargs = {"start_new_session": True}
+        creationflags = 0
+        start_new_session = True
     try:
         proc = subprocess.Popen(
             argv,
@@ -229,7 +233,8 @@ def run_command(
             errors="replace",
             cwd=cwd,
             env=child_env,
-            **group_kwargs,
+            creationflags=creationflags,
+            start_new_session=start_new_session,
         )
         try:
             stdout, stderr = proc.communicate(timeout=timeout_seconds)
