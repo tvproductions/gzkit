@@ -60,12 +60,12 @@ The rulings live as comments on each GHI (gh issue view N --comments, newest com
 - Operator-initiated OBPI work: #978 two recovery verbs; #939 retention scope inside OBPI-0.35.0-10; #921 (OBPI-0.35.0-12) and #922 (OBPI-0.35.0-11) held in order; #1023 waits for the next feature ADR.
 - Open GHIs filed this session: #1145, #1146, #1147 (ready for ghi-close), #1148 (blocked on ADR-0.40.0).
 - Other 2026-09-28 insights not in scope this session: content import cycle, ledger CRLF on Windows, skill-alignment subcommand gap, land rollback prose, adversary-workspace Windows interpreter.
-- ADR-0.35.0 at 9/14; OBPI-0.35.0-08 in progress with no lock; only the operator initiates the next OBPI.
+- ADR-0.35.0 landed count: `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing`; OBPI-0.35.0-08 in progress with no lock; only the operator initiates the next OBPI.
 - Still carried: GHI #1144 worker deadlock; the DDD-discipline R&D run; ADR-0.40.0 promote-versus-fresh with GHI #1131 first.
 
 ## Verification Checklist
 
-git rev-list --left-right --count origin/main...HEAD (expect 0 0 after sync); git log --oneline -3 shows 05d1dda14 and 1e03fbe3c; gh issue view 837 --comments shows the 2026-09-28 ruling comment (repeat for any issue before drawing it); gh issue list --state open --search 'created:>=2026-09-28' lists #1145-#1148; uv run gz obpi lock list (expect no active locks); uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing reports 9/14.
+git rev-list --left-right --count origin/main...HEAD (expect 0 0 after sync); git log --oneline -3 shows 05d1dda14 and 1e03fbe3c; gh issue view 837 --comments shows the 2026-09-28 ruling comment (repeat for any issue before drawing it); gh issue list --state open --search 'created:>=2026-09-28' lists #1145-#1148; uv run gz obpi lock list (expect no active locks); uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing reports the landed count.
 
 ## Evidence / Artifacts
 
