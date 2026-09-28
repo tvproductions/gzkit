@@ -1350,15 +1350,29 @@ A landing killed while still staging resumes the same way: the journal's recorde
 are regenerated from the corpus and checked against their recorded hashes. Resume refuses
 (exit 1) on corpus/route/ownership drift or a foreign edit; follow its `Next:` line.
 
-**Rollback is `git checkout`.** Committed renditions keep NO prior version, so restore
-the surface's rendition directory from ONE known-good revision, so that the rendition,
-provenance, lineage and retention sidecars come back together, then check that revision
-against the current corpus. Restoring old files cannot roll back append-only canon:
+**Rollback is `git restore`, not a pathspec checkout.** Committed renditions keep NO
+prior version, so restore the surface's rendition directory from ONE known-good
+revision, so that the rendition, provenance, lineage and retention sidecars come back
+together. A pathspec checkout of that revision only overwrites files present in it --
+it does NOT delete a lineage or retention sidecar a landing added since, leaving a
+mixed set; `git restore --staged --worktree` stages those deletions too. Review the
+staged restore before committing, then check the revision against the
+current corpus -- restoring old files cannot roll back append-only canon. Inside the MX
+hangar, or whenever the freshness gate is staged in warn mode, drift prints a
+`WARNING [rendition-freshness ...]` line and still exits 0, so read the printed output,
+never only the exit code:
 
 ```bash
-git checkout <known-good-revision> -- .gzkit/renditions/AGENTS.md/
+git restore --source=<known-good-revision> --staged --worktree -- .gzkit/renditions/AGENTS.md/
+git status --short .gzkit/renditions/AGENTS.md/
 uv run gz validate --rendition-freshness
 ```
+
+If a landing is interrupted and recovery is not yet ruled out, keep `.landing.json` --
+do not delete it by hand. The tool's refusals name exactly one governed exception:
+remove the journal only after a governed decision to ABANDON the landing (for example
+a foreign edit or a regeneration mismatch that cannot be resumed), then start a fresh,
+attested landing.
 
 ---
 

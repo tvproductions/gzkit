@@ -15,8 +15,11 @@ so, and files already at their new hash are never rewritten. ``--status
 writes nothing.
 
 Rollback: committed renditions are single files with NO prior-version
-retention, so "put it back" is ``git checkout`` of the rendition, provenance
-and lineage artifacts together from one known-good revision.
+retention, so "put it back" is ``git restore --source=<known-good-revision>
+--staged --worktree -- .gzkit/renditions/<surface>/``, restoring the whole
+artifact set together. A pathspec checkout of that revision restores files
+present in it but does NOT delete files added since, so it leaves newer
+lineage/retention sidecars beside the restored rendition -- a mixed set.
 
 Exit 0: landed or resumed (or, with ``--dry-run``, planned; with ``--status``,
     classified -- including indeterminate consumers).
@@ -89,8 +92,9 @@ def render_landed(journal: LandingJournal, notes: tuple[str, ...], *, resumed: b
         )
     lines.extend(notes)
     lines.append(
-        "Every sidecar carries this landing_id; rollback is `git checkout` of the rendition, "
-        "provenance and lineage artifacts together from one known-good revision."
+        "Every sidecar carries this landing_id; rollback is `git restore "
+        "--source=<known-good-revision> --staged --worktree -- "
+        f".gzkit/renditions/{journal.surface}/`."
     )
     lines.append(
         "Next: run `uv run gz agent sync control-surfaces` to deliver the landed renditions."
@@ -196,8 +200,9 @@ def _resume_ignored_note(
     ]
     sentences: list[str] = []
     if flags:
+        verb = "was" if len(flags) == 1 else "were"
         sentences.append(
-            f"{'/'.join(flags)} were ignored: landing {active.landing_id} keeps the "
+            f"{'/'.join(flags)} {verb} ignored: landing {active.landing_id} keeps the "
             "attestation recorded when it was prepared -- the attestation is on the corpus "
             "delta, not on the write."
         )

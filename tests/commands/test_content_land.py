@@ -597,7 +597,7 @@ class TestLandResume(unittest.TestCase):
                 main, ["content", "land", LAND_SURFACE, "--attestation-text", "other words"]
             )
         self.assertEqual(result.exit_code, 0, msg=result.output)
-        self.assertIn("--attestation-text were ignored", result.output)
+        self.assertIn("--attestation-text was ignored", result.output)
         self.assertNotIn("--attestor/--attestation-text", result.output)
 
     @covers("REQ-0.35.0-07-08")

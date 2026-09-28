@@ -895,7 +895,9 @@ def load_journal(root: Path, surface: str) -> LandingJournal | None:
             "Why forbidden: the journal is the only common record of an interrupted "
             "landing; guessing its contents could overwrite files it never verified.\n"
             f"Next: restore the rendition, provenance and lineage artifacts of {surface!r} "
-            "together with `git checkout` from one known-good revision, remove the "
+            "together with `git restore --source=<known-good-revision> --staged --worktree "
+            f"-- {surface_rendition_dir(surface).as_posix()}/` (a pathspec checkout of that "
+            "revision would leave newer lineage/retention sidecars behind), remove the "
             "journal, then re-run `gz content land`.",
         ) from exc
     return journal
@@ -958,8 +960,9 @@ def _refuse_active_landing(root: Path, surface: str) -> None:
         "and the retained journal is the only common record of what that landing intended.\n"
         f"Next: inspect it with `gz content land {surface} --status {active.landing_id}` and "
         f"resume it with `gz content land {surface}`; if it cannot be resumed, restore the "
-        "rendition, provenance and lineage artifacts together with `git checkout` from one "
-        "known-good revision.",
+        "rendition, provenance and lineage artifacts together with `git restore "
+        f"--source=<known-good-revision> --staged --worktree -- "
+        f"{surface_rendition_dir(surface).as_posix()}/`.",
     )
 
 
@@ -1050,8 +1053,9 @@ def _incomplete(journal: LandingJournal, what: str) -> LandingRefusal:
         "hash may not claim success.\n"
         f"Next: inspect each consumer with `gz content land {surface} --status {landing_id}`, "
         f"then resume with `gz content land {surface}`, which reuses the recorded attestation "
-        "and never rewrites a verified file. Rollback is `git checkout` of the rendition, "
-        "provenance and lineage artifacts together from one known-good revision.",
+        "and never rewrites a verified file. Rollback is `git restore "
+        f"--source=<known-good-revision> --staged --worktree -- "
+        f"{surface_rendition_dir(surface).as_posix()}/`.",
     )
 
 
@@ -1419,7 +1423,8 @@ def resume_landing(root: Path, surface: str) -> LandingJournal:
                 "would land bytes nobody attested.",
                 f"inspect each consumer with `gz content land {surface} --status "
                 f"{journal.landing_id}`; restore the rendition, provenance and lineage "
-                "artifacts together with `git checkout` from one known-good revision "
+                "artifacts together with `git restore --source=<known-good-revision> "
+                f"--staged --worktree -- {surface_rendition_dir(surface).as_posix()}/` "
                 "(committed renditions keep no prior version); remove the journal "
                 f"{journal_path(root, surface).as_posix()!r} only after a governed decision "
                 "to abandon this landing.",
@@ -1497,8 +1502,9 @@ def _manifest_from_event(surface: str, landing_id: str, extra: Mapping[str, obje
             "Why forbidden: status classifies consumers only against a manifest whose every "
             "path is the surface's own artifact; a malformed manifest is no witness.\n"
             "Next: inspect the event in .gzkit/ledger.jsonl, and restore the rendition, "
-            "provenance and lineage artifacts together with `git checkout` from one "
-            "known-good revision if their state is in doubt.",
+            "provenance and lineage artifacts together with `git restore "
+            f"--source=<known-good-revision> --staged --worktree -- "
+            f"{surface_rendition_dir(surface).as_posix()}/` if their state is in doubt.",
         ) from exc
     return _Manifest(
         landing_id=landing_id,
@@ -1548,10 +1554,13 @@ def _indeterminate_recovery(manifest: _Manifest, consumer: str) -> str:
         "current bytes match neither the landing's old nor its new manifest as a whole.\n"
         "Why forbidden: only a consumer whose every artifact hashes to one recorded state "
         "can be called landed or untouched; mtimes and sidecar claims are no witness.\n"
-        f"Next: restore {consumer!r}'s rendition, provenance and lineage artifacts together "
-        "with `git checkout` from one known-good revision (committed renditions keep no prior "
-        f"version), then re-run `gz content land {surface} --status {landing_id}`; resume "
-        f"with `gz content land {surface}` only once no consumer is indeterminate."
+        f"Next: restore the whole surface's rendition set with `git restore "
+        f"--source=<known-good-revision> --staged --worktree -- "
+        f"{surface_rendition_dir(surface).as_posix()}/` (committed renditions keep no prior "
+        f"version) -- this repairs {consumer!r} too; a pathspec checkout of that revision "
+        "leaves newer lineage/retention sidecars behind and reproduces this same mixed set. "
+        f"Then re-run `gz content land {surface} --status {landing_id}`; resume with "
+        f"`gz content land {surface}` only once no consumer is indeterminate."
     )
 
 

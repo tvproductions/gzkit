@@ -1140,10 +1140,10 @@ journal cleared. A crash or replace failure keeps the journal, emits no
 completion event and exits 2:
 
 ```text
-Error: landing landing-20260927T235913Z-ecc3e349 of 'AGENTS.md' is incomplete -- publication stopped: injected: interrupted after the first consumer
+Error: landing landing-20260928T022114Z-0307cbf4 of 'AGENTS.md' is incomplete -- publication stopped: injected: interrupted after the first consumer
 The landing journal is retained and no completion event was recorded; readers may observe mixed bytes until the landing completes.
 Why forbidden: publication replaces one file at a time (ratified Publication Amendment), so a landing whose every target is not verified against its recorded hash may not claim success.
-Next: inspect each consumer with `gz content land AGENTS.md --status landing-20260927T235913Z-ecc3e349`, then resume with `gz content land AGENTS.md`, which reuses the recorded attestation and never rewrites a verified file. Rollback is `git checkout` of the rendition, provenance and lineage artifacts together from one known-good revision.
+Next: inspect each consumer with `gz content land AGENTS.md --status landing-20260928T022114Z-0307cbf4`, then resume with `gz content land AGENTS.md`, which reuses the recorded attestation and never rewrites a verified file. Rollback is `git restore --source=<known-good-revision> --staged --worktree -- .gzkit/renditions/AGENTS.md/`.
 ```
 
 (Captured in a throwaway project, with the replacement of the second
@@ -1160,9 +1160,9 @@ sidecar). It never consults mtimes and never trusts a sidecar's claimed corpus
 fingerprint. It writes nothing. After the interruption above:
 
 ```text
-$ uv run gz content land AGENTS.md --status landing-20260927T235913Z-ecc3e349
-Landing landing-20260927T235913Z-ecc3e349 of AGENTS.md: phase publishing
-Manifest: the active landing journal; corpus fingerprint 6be864c97e66...
+$ uv run gz content land AGENTS.md --status landing-20260928T022114Z-0307cbf4
+Landing landing-20260928T022114Z-0307cbf4 of AGENTS.md: phase publishing
+Manifest: the active landing journal; corpus fingerprint d3ec0bb559f7...
 Classified by the SHA-256 of every artifact's current bytes (never mtimes):
   claude: new
   codex: old
@@ -1172,17 +1172,17 @@ Classified by the SHA-256 of every artifact's current bytes (never mtimes):
 After a hand edit to one consumer of a completed landing:
 
 ```text
-$ uv run gz content land AGENTS.md --status landing-20260927T235901Z-7a3e2a46
-Landing landing-20260927T235901Z-7a3e2a46 of AGENTS.md: phase complete
-Manifest: its rendition_landed ledger event; corpus fingerprint 6be864c97e66...
+$ uv run gz content land AGENTS.md --status landing-20260928T021919Z-97226600
+Landing landing-20260928T021919Z-97226600 of AGENTS.md: phase complete
+Manifest: its rendition_landed ledger event; corpus fingerprint d3ec0bb559f7...
 Classified by the SHA-256 of every artifact's current bytes (never mtimes):
   claude: new
   codex: indeterminate
-    - .gzkit/renditions/AGENTS.md/codex.md: sha256 f2152bc4e79d... matches neither its old nor its new manifest entry
+    - .gzkit/renditions/AGENTS.md/codex.md: sha256 7f0895e9e471... matches neither its old nor its new manifest entry
   copilot: new
-Error: consumer 'codex' of landing landing-20260927T235901Z-7a3e2a46 is indeterminate -- its current bytes match neither the landing's old nor its new manifest as a whole.
+Error: consumer 'codex' of landing landing-20260928T021919Z-97226600 is indeterminate -- its current bytes match neither the landing's old nor its new manifest as a whole.
 Why forbidden: only a consumer whose every artifact hashes to one recorded state can be called landed or untouched; mtimes and sidecar claims are no witness.
-Next: restore 'codex''s rendition, provenance and lineage artifacts together with `git checkout` from one known-good revision (committed renditions keep no prior version), then re-run `gz content land AGENTS.md --status landing-20260927T235901Z-7a3e2a46`; resume with `gz content land AGENTS.md` only once no consumer is indeterminate.
+Next: restore the whole surface's rendition set with `git restore --source=<known-good-revision> --staged --worktree -- .gzkit/renditions/AGENTS.md/` (committed renditions keep no prior version) -- this repairs 'codex' too; a pathspec checkout of that revision leaves newer lineage/retention sidecars behind and reproduces this same mixed set. Then re-run `gz content land AGENTS.md --status landing-20260928T021919Z-97226600`; resume with `gz content land AGENTS.md` only once no consumer is indeterminate.
 ```
 
 #### Resume: no new attestation, no rewritten files
@@ -1202,29 +1202,29 @@ edit): follow the printed recovery, never an overwrite.
 
 ```text
 $ uv run gz content land AGENTS.md --dry-run
-Resume plan (dry run -- nothing written): landing-20260927T235913Z-ecc3e349 (phase publishing)
+Resume plan (dry run -- nothing written): landing-20260928T022114Z-0307cbf4 (phase publishing)
 Attestation: g0 -- recorded in the landing journal
   claude (published):
     rendition  .gzkit/renditions/AGENTS.md/claude.md  new=2af63dcd5a45
-    provenance .gzkit/renditions/AGENTS.md/claude.corpus.json  new=1167f0ae302d
+    provenance .gzkit/renditions/AGENTS.md/claude.corpus.json  new=2b7fb2d02233
     lineage    .gzkit/renditions/AGENTS.md/claude.lineage.json  new=f8bc52c9780b
   codex (pending):
     rendition  .gzkit/renditions/AGENTS.md/codex.md  new=2af63dcd5a45
-    provenance .gzkit/renditions/AGENTS.md/codex.corpus.json  new=1167f0ae302d
+    provenance .gzkit/renditions/AGENTS.md/codex.corpus.json  new=2b7fb2d02233
     lineage    .gzkit/renditions/AGENTS.md/codex.lineage.json  new=f8bc52c9780b
   copilot (pending):
     rendition  .gzkit/renditions/AGENTS.md/copilot.md  new=2af63dcd5a45
-    provenance .gzkit/renditions/AGENTS.md/copilot.corpus.json  new=1167f0ae302d
+    provenance .gzkit/renditions/AGENTS.md/copilot.corpus.json  new=2b7fb2d02233
     lineage    .gzkit/renditions/AGENTS.md/copilot.lineage.json  new=f8bc52c9780b
-Next: re-run without --dry-run to resume; `gz content land AGENTS.md --status landing-20260927T235913Z-ecc3e349` classifies each consumer first.
+Next: re-run without --dry-run to resume; `gz content land AGENTS.md --status landing-20260928T022114Z-0307cbf4` classifies each consumer first.
 ```
 
 Resuming with an explicit, different attestation; it is ignored:
 
 ```text
 $ uv run gz content land AGENTS.md --attestor someone --attestation-text "a different text"
-Landed AGENTS.md: landing-20260927T235913Z-ecc3e349
-Corpus fingerprint: 6be864c97e66... (entries=2)
+Landed AGENTS.md: landing-20260928T022114Z-0307cbf4
+Corpus fingerprint: d3ec0bb559f7... (entries=2)
 Attestation: g0 -- recorded in the landing journal (reused on resume)
   claude:
     published rendition  .gzkit/renditions/AGENTS.md/claude.md
@@ -1238,14 +1238,14 @@ Attestation: g0 -- recorded in the landing journal (reused on resume)
     published rendition  .gzkit/renditions/AGENTS.md/copilot.md
     published provenance .gzkit/renditions/AGENTS.md/copilot.corpus.json
     published lineage    .gzkit/renditions/AGENTS.md/copilot.lineage.json
-Note: --attestor/--attestation-text were ignored: landing landing-20260927T235913Z-ecc3e349 keeps the attestation recorded when it was prepared -- the attestation is on the corpus delta, not on the write.
-Resumed landing landing-20260927T235913Z-ecc3e349; already-landed files were not rewritten.
-Every sidecar carries this landing_id; rollback is `git checkout` of the rendition, provenance and lineage artifacts together from one known-good revision.
+Note: --attestor/--attestation-text were ignored: landing landing-20260928T022114Z-0307cbf4 keeps the attestation recorded when it was prepared -- the attestation is on the corpus delta, not on the write.
+Resumed landing landing-20260928T022114Z-0307cbf4; already-landed files were not rewritten.
+Every sidecar carries this landing_id; rollback is `git restore --source=<known-good-revision> --staged --worktree -- .gzkit/renditions/AGENTS.md/`.
 Next: run `uv run gz agent sync control-surfaces` to deliver the landed renditions.
 ```
 
 Afterwards every sidecar still records `"attestation_text": "corpus delta
-attested"` and `"landing_id": "landing-20260927T235913Z-ecc3e349"`, and the
+attested"` and `"landing_id": "landing-20260928T022114Z-0307cbf4"`, and the
 ledger holds exactly one `rendition_landed` event.
 
 **Resume after a kill mid-staging.** A process killed after the journal was
@@ -1257,16 +1257,16 @@ that they hash to exactly what the journal recorded (a mismatch refuses, exit 1,
 nothing written), and completes, again with no attestation asked for:
 
 ```text
-$ uv run gz content land AGENTS.md --status landing-20260927T235924Z-ef861fc0
-Landing landing-20260927T235924Z-ef861fc0 of AGENTS.md: phase prepared
-Manifest: the active landing journal; corpus fingerprint 6be864c97e66...
+$ uv run gz content land AGENTS.md --status landing-20260928T021922Z-424b99bb
+Landing landing-20260928T021922Z-424b99bb of AGENTS.md: phase prepared
+Manifest: the active landing journal; corpus fingerprint d3ec0bb559f7...
 Classified by the SHA-256 of every artifact's current bytes (never mtimes):
   claude: old
   codex: old
   copilot: old
 $ uv run gz content land AGENTS.md
-Landed AGENTS.md: landing-20260927T235924Z-ef861fc0
-Corpus fingerprint: 6be864c97e66... (entries=2)
+Landed AGENTS.md: landing-20260928T021922Z-424b99bb
+Corpus fingerprint: d3ec0bb559f7... (entries=2)
 Attestation: g0 -- recorded in the landing journal (reused on resume)
   claude:
     published rendition  .gzkit/renditions/AGENTS.md/claude.md
@@ -1280,8 +1280,8 @@ Attestation: g0 -- recorded in the landing journal (reused on resume)
     published rendition  .gzkit/renditions/AGENTS.md/copilot.md
     published provenance .gzkit/renditions/AGENTS.md/copilot.corpus.json
     published lineage    .gzkit/renditions/AGENTS.md/copilot.lineage.json
-Resumed landing landing-20260927T235924Z-ef861fc0; already-landed files were not rewritten.
-Every sidecar carries this landing_id; rollback is `git checkout` of the rendition, provenance and lineage artifacts together from one known-good revision.
+Resumed landing landing-20260928T021922Z-424b99bb; already-landed files were not rewritten.
+Every sidecar carries this landing_id; rollback is `git restore --source=<known-good-revision> --staged --worktree -- .gzkit/renditions/AGENTS.md/`.
 Next: run `uv run gz agent sync control-surfaces` to deliver the landed renditions.
 ```
 
@@ -1314,8 +1314,8 @@ gate against new attestation text.
 
 ```text
 $ uv run gz content land AGENTS.md --attestor g0 --attestation-text "corpus delta attested; C1 drop accepted" --retention-map claude.map.json --retention-map codex.map.json --retention-map copilot.map.json
-Landed AGENTS.md: landing-20260927T235934Z-3832644b
-Corpus fingerprint: 6be864c97e66... (entries=2)
+Landed AGENTS.md: landing-20260928T021924Z-dc633bf7
+Corpus fingerprint: d3ec0bb559f7... (entries=2)
 Attestation: g0 -- supplied on this invocation
   claude:
     published rendition  .gzkit/renditions/AGENTS.md/claude.md
@@ -1338,7 +1338,7 @@ Retention (codex):
   C1: DROPPED -- superseded by the seed rule
 Retention (copilot):
   C1: DROPPED -- superseded by the seed rule
-Every sidecar carries this landing_id; rollback is `git checkout` of the rendition, provenance and lineage artifacts together from one known-good revision.
+Every sidecar carries this landing_id; rollback is `git restore --source=<known-good-revision> --staged --worktree -- .gzkit/renditions/AGENTS.md/`.
 Next: run `uv run gz agent sync control-surfaces` to deliver the landed renditions.
 ```
 
@@ -1360,23 +1360,23 @@ The plan (the id shown is minted per invocation; a real landing records its own)
 
 ```text
 $ uv run gz content land AGENTS.md --attestor g0 --attestation-text "corpus delta attested" --dry-run
-Landing plan (dry run -- nothing written): landing-20260927T235913Z-4b8e13b0
+Landing plan (dry run -- nothing written): landing-20260928T021926Z-0bb8b202
   (the id is minted per invocation; a real landing records its own)
 Surface: AGENTS.md
-Corpus fingerprint: 6be864c97e66... (entries=2)
+Corpus fingerprint: d3ec0bb559f7... (entries=2)
 Attestation: g0 -- supplied on this invocation
 Consumers: claude, codex, copilot
-  claude (old corpus fingerprint c85b132877c0):
+  claude (old corpus fingerprint 894845454f8d):
     write     rendition  .gzkit/renditions/AGENTS.md/claude.md  old=74037dddea96 new=2af63dcd5a45
-    write     provenance .gzkit/renditions/AGENTS.md/claude.corpus.json  old=a29aa6d9ff98 new=86e0446648a9
+    write     provenance .gzkit/renditions/AGENTS.md/claude.corpus.json  old=b9852900013c new=bd757223ba45
     write     lineage    .gzkit/renditions/AGENTS.md/claude.lineage.json  old=absent new=f8bc52c9780b
-  codex (old corpus fingerprint c85b132877c0):
+  codex (old corpus fingerprint 894845454f8d):
     write     rendition  .gzkit/renditions/AGENTS.md/codex.md  old=74037dddea96 new=2af63dcd5a45
-    write     provenance .gzkit/renditions/AGENTS.md/codex.corpus.json  old=a29aa6d9ff98 new=86e0446648a9
+    write     provenance .gzkit/renditions/AGENTS.md/codex.corpus.json  old=b9852900013c new=bd757223ba45
     write     lineage    .gzkit/renditions/AGENTS.md/codex.lineage.json  old=absent new=f8bc52c9780b
-  copilot (old corpus fingerprint c85b132877c0):
+  copilot (old corpus fingerprint 894845454f8d):
     write     rendition  .gzkit/renditions/AGENTS.md/copilot.md  old=74037dddea96 new=2af63dcd5a45
-    write     provenance .gzkit/renditions/AGENTS.md/copilot.corpus.json  old=a29aa6d9ff98 new=86e0446648a9
+    write     provenance .gzkit/renditions/AGENTS.md/copilot.corpus.json  old=b9852900013c new=bd757223ba45
     write     lineage    .gzkit/renditions/AGENTS.md/copilot.lineage.json  old=absent new=f8bc52c9780b
 Next: re-run without --dry-run to land AGENTS.md across every consumer above.
 ```
@@ -1385,8 +1385,8 @@ The landing, then its status once complete:
 
 ```text
 $ uv run gz content land AGENTS.md --attestor g0 --attestation-text "corpus delta attested"
-Landed AGENTS.md: landing-20260927T235901Z-7a3e2a46
-Corpus fingerprint: 6be864c97e66... (entries=2)
+Landed AGENTS.md: landing-20260928T021927Z-74ceb105
+Corpus fingerprint: d3ec0bb559f7... (entries=2)
 Attestation: g0 -- supplied on this invocation
   claude:
     published rendition  .gzkit/renditions/AGENTS.md/claude.md
@@ -1400,11 +1400,11 @@ Attestation: g0 -- supplied on this invocation
     published rendition  .gzkit/renditions/AGENTS.md/copilot.md
     published provenance .gzkit/renditions/AGENTS.md/copilot.corpus.json
     published lineage    .gzkit/renditions/AGENTS.md/copilot.lineage.json
-Every sidecar carries this landing_id; rollback is `git checkout` of the rendition, provenance and lineage artifacts together from one known-good revision.
+Every sidecar carries this landing_id; rollback is `git restore --source=<known-good-revision> --staged --worktree -- .gzkit/renditions/AGENTS.md/`.
 Next: run `uv run gz agent sync control-surfaces` to deliver the landed renditions.
-$ uv run gz content land AGENTS.md --status landing-20260927T235901Z-7a3e2a46
-Landing landing-20260927T235901Z-7a3e2a46 of AGENTS.md: phase complete
-Manifest: its rendition_landed ledger event; corpus fingerprint 6be864c97e66...
+$ uv run gz content land AGENTS.md --status landing-20260928T021927Z-74ceb105
+Landing landing-20260928T021927Z-74ceb105 of AGENTS.md: phase complete
+Manifest: its rendition_landed ledger event; corpus fingerprint d3ec0bb559f7...
 Classified by the SHA-256 of every artifact's current bytes (never mtimes):
   claude: new
   codex: new
@@ -1419,17 +1419,29 @@ the rendered surfaces.
 
 **Committed renditions keep no prior version.** Each is a single file at
 `.gzkit/renditions/<surface>/<consumer>.md`, overwritten by the next landing, so
-"put it back" means **`git checkout`**:
+"put it back" means restoring the whole rendition directory from ONE known-good
+revision:
 
 ```bash
 # 1. Pick ONE known-good revision and restore the surface's rendition directory
 #    from it, so every consumer's rendition, provenance, lineage and retention
 #    sidecar come back TOGETHER; never mix files from different revisions.
-git checkout <known-good-revision> -- .gzkit/renditions/<surface>/
+#    `git restore` -- unlike a pathspec checkout of that revision -- also
+#    stages the DELETION of any lineage or retention sidecar a landing added
+#    since that revision; a pathspec checkout only overwrites files present in
+#    the revision, so a sidecar added afterward is left standing beside the
+#    restored (older) rendition -- a mixed set.
+git restore --source=<known-good-revision> --staged --worktree -- .gzkit/renditions/<surface>/
 
-# 2. Check whether that revision matches the CURRENT corpus: restoring old files
+# 2. Review the staged restore and deletions before committing.
+git status --short .gzkit/renditions/<surface>/
+
+# 3. Check whether that revision matches the CURRENT corpus: restoring old files
 #    cannot roll back append-only canon. The freshness gate compares each
-#    restored sidecar's corpus_fingerprint with the live corpus.
+#    restored sidecar's corpus_fingerprint with the live corpus. Inside the MX
+#    hangar, or whenever the gate is staged in warn mode, drift prints a
+#    `WARNING [rendition-freshness ...]` line and the command still EXITS 0 --
+#    read the printed output, never only the exit code.
 uv run gz validate --rendition-freshness
 ```
 
@@ -1440,11 +1452,16 @@ still stands, and bringing the renditions level again is a new, attested
 landing, not a rollback. Retiring the canon itself goes through
 `gz content retire`.
 
-If a landing was **interrupted**, keep its journal until governed recovery
-completes (resume with `gz content land <surface>`) and re-run
+**Do not delete `.landing.json` by hand while recovery is still possible.**
+It is the only common record that a landing was in flight across the consumer
+set, and the tool's own refusals name exactly one governed exception: after a
+governed decision to ABANDON the landing (for example, a foreign edit or a
+regeneration mismatch that cannot be resumed), remove the journal named in the
+refusal's `Next:` line and start a fresh, attested landing. If a landing was
+**interrupted** and recovery has not yet been ruled out, keep the journal,
+resume with `gz content land <surface>`, and re-run
 `gz content land <surface> --status <landing_id>` to report any remaining
-drift. Do not delete `.landing.json` by hand: it is the only record that a
-landing was in flight across the consumer set.
+drift -- the printed `Next:` lines name the same one exception.
 
 ### advise-rendition
 
