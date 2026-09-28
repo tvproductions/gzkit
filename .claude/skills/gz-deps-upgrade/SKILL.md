@@ -5,10 +5,10 @@ description: Move the toolchain and dependencies to current upstream in one pass
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-18
+last_reviewed: 2026-09-27
 model: haiku
 metadata:
-  skill-version: "1.1.1"
+  skill-version: "1.2.0"
 ---
 
 # gz deps-upgrade
@@ -50,13 +50,22 @@ order, not skipping the floor-bump or the verification step.
    uv tool upgrade --all
    ```
 
-3. **Refresh Python 3.13.x runtime.** uv installs the latest patch release
-   of 3.13 — idempotent. Leave any `.python-version` file at `3.13`.
+3. **Refresh Python 3.13.x runtime and move the pin with it.** uv installs
+   the latest patch release of 3.13 — idempotent. `.python-version` pins the
+   full patch (e.g. `3.13.15`), not `3.13`: it is the authority
+   `gz validate --python-version-pins` holds every CI declaration to
+   (`python-version:` and `uv python install` in `.github/workflows/`).
 
    ```bash
    uv python install 3.13
    uv python list --only-installed | grep '^cpython-3.13'
+   cat .python-version
    ```
+
+   When the newest installed patch is above the pin, run
+   `uv python pin 3.13.<N>` and change every workflow declaration to the same
+   patch in this pass; the pin and the workflows move together or not at all.
+   Confirm with `uv run gz validate --python-version-pins`.
 
 4. **Bump pinned (`==`) deps in `pyproject.toml` to current PyPI latest.**
    Inspect the pinned entries under `[project.optional-dependencies]` and
@@ -165,6 +174,8 @@ skip the upgrade for the rest of the surface.
 
 - `uv run gz check` exits 0
 - `uv.lock` resolves cleanly with no churn on the second `uv lock` run
+- `.python-version` names the newest installed 3.13 patch, and
+  `uv run gz validate --python-version-pins` exits 0
 - ARB unittest receipt at `exit_status=0` exists in
   `artifacts/receipts/`
 
