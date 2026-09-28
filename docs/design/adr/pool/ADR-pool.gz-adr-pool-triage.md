@@ -178,7 +178,9 @@ candidate pool ADR's scope matches hexagonal-port characteristics — it
 authors an invariant or prerequisite without which downstream features
 cannot exist — flag it as `reclassify: foundation` and exclude it from the
 promotion-rank list. Reclassified items surface in a separate annotation for
-the operator to route via `gz adr promote --kind foundation`.
+the operator to route: via `gz adr promote --kind foundation` in adopter
+repositories, whose foundation kind stays open; in gzkit, where ADR-0.34.0
+(Foundation Sunset) closes that kind, via `--kind feature`.
 
 ### Step 3 — Deterministic markdown renderer
 

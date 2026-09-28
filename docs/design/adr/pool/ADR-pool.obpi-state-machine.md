@@ -251,10 +251,10 @@ Pool ADRs are backlog items — they carry no `semver:` or `kind:` frontmatter.
 Promotion into the active tree (foundation or feature) is performed via
 `gz adr promote`, which rewrites the frontmatter with the chosen taxonomy.
 
-This ADR is **foundation-kind** material when promoted (it codifies an
-app-system invariant — every OBPI's lifecycle — and binds every governance
-surface). Promotion would be `gz adr promote ADR-pool.obpi-state-machine
---kind foundation --semver 0.0.<next>`.
+This ADR codifies an app-system invariant — every OBPI's lifecycle — and binds
+every governance surface. Promotion is `gz adr promote ADR-pool.obpi-state-machine
+--kind feature` at the next available feature slot at promotion time;
+`foundation` is CLOSED to new authoring by ADR-0.34.0 (Foundation Sunset) and is refused at the command layer.
 
 **Suggested next ADRs / OBPIs once promoted:**
 

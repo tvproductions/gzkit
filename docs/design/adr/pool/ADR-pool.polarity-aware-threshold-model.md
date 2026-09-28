@@ -168,11 +168,10 @@ time breaks the citation tuple.
 
 ### Promotion guidance
 
-This is foundation-kind work — the threshold-table contract is an
-app-system invariant cited by every downstream complexity-doctrine
-consumer. Promotion via `gz adr promote --kind foundation` lands at
-`ADR-0.0.31` (or the next available foundation slot at promotion
-time).
+The threshold-table contract is an app-system invariant cited by every
+downstream complexity-doctrine consumer. Promotion is via
+`gz adr promote --kind feature` at the next available feature slot at
+promotion time; `foundation` is CLOSED to new authoring by ADR-0.34.0 (Foundation Sunset) and is refused at the command layer.
 
 The OBPI cluster at promotion time should preserve the coupled-surface
 coherence pattern from ADR-0.0.28's three-OBPI cluster:

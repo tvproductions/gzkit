@@ -149,13 +149,13 @@ mechanism*.
   attested briefs: a pure evidence-frontmatter key-rename is an **Admit**-bucket
   edit under this doctrine. #593's fix depends on this ruling.
 
-**Promotion criteria:** before `gz adr promote --kind foundation`, resolve the
-three § Open surface decisions with operator preference. Likely promotes as a
-**foundation** ADR (a governance invariant — *without a write-side rule for
-attested records, the ledger-of-truth doctrine is half-specified*). May promote
+**Promotion criteria:** before `gz adr promote --kind feature`, resolve the
+three § Open surface decisions with operator preference. Promotes as a
+**feature** ADR — `foundation` is CLOSED to new authoring by ADR-0.34.0 (Foundation Sunset) and is refused at the command layer — though its subject is a governance invariant: *without a write-side rule for
+attested records, the ledger-of-truth doctrine is half-specified*. May promote
 **alongside GHI #593's fix**, since #593 cannot land its rename until this
-doctrine authorizes it. Promotion semver assigned at promotion time (next
-foundation slot).
+doctrine authorizes it. Promotion semver candidate: next available feature slot
+at promotion time.
 
 Pool ADRs are backlog items — they carry no `semver:` or `kind:` frontmatter.
 Promotion into the active tree (foundation or feature) is performed via

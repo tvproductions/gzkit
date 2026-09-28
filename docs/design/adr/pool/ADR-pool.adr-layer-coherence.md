@@ -52,11 +52,7 @@ _(Pool — full rejected-alternatives table to be authored on promotion. Sketch:
 - GHI #365 (frontmatter↔body lane-coherence at validate-time) closes `superseded` against this ADR.
 - GHI #366 (canon↔ledger amendment surface) closes `superseded` against this ADR.
 
-**Promotion criteria:** before `gz adr promote --kind foundation`, the open surface decisions in § Decision must be resolved with operator preference. Promotion semver candidate: `ADR-0.0.37` (next foundation slot at promotion time).
-
-Pool ADRs are backlog items — they carry no `semver:` or `kind:` frontmatter.
-Promotion into the active tree (foundation or feature) is performed via
-`gz adr promote`, which rewrites the frontmatter with the chosen taxonomy.
+**Promotion criteria:** before `gz adr promote --kind feature`, the open surface decisions in § Decision must be resolved with operator preference. Promotion semver candidate: next available feature slot at promotion time; `foundation` is CLOSED to new authoring by ADR-0.34.0 (Foundation Sunset) and is refused at the command layer.
 
 Pool ADRs are backlog items — they carry no `semver:` or `kind:` frontmatter.
 Promotion into the active tree (foundation or feature) is performed via

@@ -55,7 +55,7 @@ _(Pool — full rejected-alternatives table to be authored on promotion. Sketch:
   - Gap 2 (Brief-template Allowed-Paths drift between siblings) — § Intent second concrete instance.
   - Gap 3 (`gz covers OBPI-X --json` short-form returns empty entries) — verified non-reproducing on 2026-04-30. Both forms returned 3 entries; the GHI's reproducer included the string `(3 REQs found)` which is not present in the actual `gz covers` text output. Disposition documented in the close comment as withdrawn-as-misobserved within the consolidated `superseded` close.
 
-**Promotion criteria:** before `gz adr promote --kind foundation`, the open surface decisions in § Decision must be resolved with operator preference. Specifically: parity-gate enforcement boundary (precomplete vs complete vs both), doc-shape escape mechanism (flag vs frontmatter vs `[doc]` syntax promotion), and waiver shape (waivers JSON vs frontmatter vs ADR rule). Promotion semver candidate: next foundation slot at promotion time.
+**Promotion criteria:** before `gz adr promote --kind feature`, the open surface decisions in § Decision must be resolved with operator preference. Specifically: parity-gate enforcement boundary (precomplete vs complete vs both), doc-shape escape mechanism (flag vs frontmatter vs `[doc]` syntax promotion), and waiver shape (waivers JSON vs frontmatter vs ADR rule). Promotion semver candidate: next available feature slot at promotion time; `foundation` is CLOSED to new authoring by ADR-0.34.0 (Foundation Sunset) and is refused at the command layer.
 
 **Adjacent mechanization precedents:**
 
