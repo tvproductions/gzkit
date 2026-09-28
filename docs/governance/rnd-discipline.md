@@ -105,11 +105,20 @@ Everything else is a **view over the entries**, derived and never separately aut
 
 They resolve *outward*, at the moment they resolve, carrying the run id as provenance:
 
-- a **term** writes to [`GLOSSARY.md`](../../GLOSSARY.md) at the repo root;
+- a **term** writes to the project glossary;
 - an **insight** writes through `gz insights remember`.
 
 The destination points back at the run. **The record never holds a copy** — a copy is the
 duplicate state that Layer-3 views become when they shadow Layer-2 truth.
+
+**The glossary's home is unsettled.** The only glossary today is
+[`PRD-GZKIT-1.0.0.md` § 2.1 Ubiquitous Language](../design/prd/PRD-GZKIT-1.0.0.md). The
+2026-09-17 ruling named `GLOSSARY.md` at the repo root, on the false premise that gzkit had
+no glossary; that file was never created. The DDD-discipline R&D run decides the home
+(design-amendment Q8, operator verbatim: *"We need option A to make up for this lapse."*).
+Until it does, a run holds each term it lands in its own record as a `decision` entry, and
+that run collects them. This is the one exception to "never holds a copy", and it ends when
+the home is named.
 
 ### The disposition map: six rows, two states
 
@@ -124,6 +133,14 @@ mechanical stopping condition, so an absent row is an unfinished run, not a tidy
 | 4 | control surface, rule, doc, skill, hook | draft, on the operator's go for that row |
 | 5 | one-shot refactoring | propose a program; the operator selects its route |
 | 6 | no action | record it, with the reason |
+
+**Row 4 includes the planning documents.** The Magna Carta
+([`build-to-1.0-campaign-2026-09-20.md`](build-to-1.0-campaign-2026-09-20.md)), the roadmap
+([`ROADMAP-GZKIT.md`](../design/roadmap/ROADMAP-GZKIT.md)) and the backlog are valid row-4
+destinations. A run that changes sequencing or priority drafts that change as an amendment
+there, on the operator's go. Operator verbatim, 2026-09-27: *"rnd is our grill-me and I
+think acknowledging magna carta, roadmap, and backlog as valid additional docs changes
+strengthens gzkit's guidance to an agent."*
 
 **State is one of two values — `commissioned` or `not pursued`.** There is deliberately no
 third `retained` state (ruled 2026-09-17). Where a finding is set aside but worth revisiting,
@@ -235,7 +252,7 @@ rules the other way, is how an appropriation smuggles in a foreign posture.
 
 | MPAS surface | What gzkit takes | The fence |
 |---|---|---|
-| **`domain-modeling`** | its five inline behaviours — challenge against the glossary, sharpen fuzzy language, discuss concrete scenarios, cross-reference with code, update inline — its capture rule *"Don't batch these up: capture them as they happen"*, and its **`_Avoid_` convention** naming the rejected synonym beside the term that won | **It must not emit ADRs.** MPAS's `domain-modeling` writes `docs/adr/NNNN-slug.md` inline as decisions land. Under the IRON LAW an R&D run **proposes** disposition 1 and never initiates it. gzkit takes the glossary arm and leaves the ADR arm entirely. It is also **not a fourth R&D-scoped skill**: `GLOSSARY.md` is a foundational DDD surface, project-wide, fed by all work, with R&D one contributor among several. Operator verbatim: *"no, other routines use DDD in gzkit, DDD is foundational to gzkit, as are TDD, and BDD."* DDD is not an MPAS import and must never be described as one. |
+| **`domain-modeling`** | its five inline behaviours — challenge against the glossary, sharpen fuzzy language, discuss concrete scenarios, cross-reference with code, update inline — its capture rule *"Don't batch these up: capture them as they happen"*, and its **`_Avoid_` convention** naming the rejected synonym beside the term that won | **It must not emit ADRs.** MPAS's `domain-modeling` writes `docs/adr/NNNN-slug.md` inline as decisions land. Under the IRON LAW an R&D run **proposes** disposition 1 and never initiates it. gzkit takes the glossary arm and leaves the ADR arm entirely. It is also **not a fourth R&D-scoped skill**: the project glossary is a foundational DDD surface, project-wide, fed by all work, with R&D one contributor among several. Operator verbatim: *"no, other routines use DDD in gzkit, DDD is foundational to gzkit, as are TDD, and BDD."* DDD is not an MPAS import and must never be described as one. |
 | **`codebase-design`** | its fixed vocabulary — module, interface, implementation, depth, **seam** (credited to Michael Feathers), adapter, leverage, locality | A reference, not a sequence. A pattern, not a skill. |
 
 ### One orchestrator, taken as the shape of the run
@@ -267,7 +284,7 @@ ADRs and OBPI briefs are durable, attested and reconciled. The collision is real
 and the run must say which is which rather than inherit either posture:
 
 - **disposable** — the probe from `prototype`, and any scratch produced inside the run;
-- **durable** — the R&D record itself, its verbatim sources, every `GLOSSARY.md` term, every
+- **durable** — the R&D record itself, its verbatim sources, every glossary term, every
   insight, and every artifact a commissioned row routes to.
 
 ## Naming collisions, fenced
@@ -280,7 +297,7 @@ gzkit already owns these words. An R&D run must not redefine them:
 | `gate` | the five-gate covenant; **Gate 5 is OBPI/ADR completion attestation and nothing else** |
 | `freeze` | lock-down (LEGO, Virgin) *or* set-aside (Alessi) — **the source collides with itself**; do not import it |
 | `work order` | a GHI is the work order and the receipt |
-| `CONTEXT.md` | `gz context <ADR-ID>` is a registered verb — which is why the glossary is `GLOSSARY.md` |
+| `CONTEXT.md` | `gz context <ADR-ID>` is a registered verb; a glossary file named `CONTEXT.md` collides with it |
 
 **Three agent coinages were caught mid-session and retired.** Each was a wrong model
 travelling under a new word:
@@ -307,7 +324,7 @@ retired shapes.
 | Outcomes state: routed / proposed-awaiting-operator | **`commissioned` / `not pursued`** | two states; the reason field carries any revisit condition |
 | first-class promotion deferred until three runs | **three ledger events, designed, unbuilt** | *"yes to ledger"*; the vocabulary lands with its producer |
 | phases 0 / 1 / 2 / 3 / 7 | **diamond 1**, with those mechanics inside it | the phase list described the mechanics but not the shape or the gate |
-| no glossary surface | **`GLOSSARY.md` at repo root**, foundational DDD | project-wide, fed by all work, not R&D-owned |
+| no glossary surface *(false premise: PRD § 2.1 existed)* | **the project glossary**, foundational DDD; home decided by the DDD-discipline R&D run | project-wide, fed by all work, not R&D-owned; `GLOSSARY.md` was named 2026-09-17 on the false premise and never created |
 
 Unchanged: invocation class and the sensing-out ruling, the hard stop and its pre-declared
 consultation points, the ADR admission question, no namespace router, MPAS appropriated

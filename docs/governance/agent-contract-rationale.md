@@ -346,10 +346,15 @@ misread as lag.
    is mechanical enforcement) is independent of the surface vocabulary.
 3. **Rigid architectural model with mechanical enforcement.** OpenAI:
    *"constraints are what allow speed without decay or architectural
-   drift."* gzkit: ADR-0.0.3 (hexagonal architecture), ADR-0.0.43 (DDD
-   cascade), and the package import-direction invariant in ADR-0.0.55
-   (Draft) are the structural floor that the corresponding
-   `gz validate` scopes pin mechanically. The shared claim is that
+   drift."* gzkit: ADR-0.0.3 (hexagonal architecture) is the structural
+   floor, pinned mechanically by the AST policy tests in
+   `tests/policy/test_import_boundaries.py` that run at Gate 2. Two more
+   constraints are designed but not yet pinned by anything: the DDD
+   cascade ([`ADR-pool.ddd-domain-cascade`](../design/adr/pool/ADR-pool.ddd-domain-cascade.md),
+   once cited as ADR-0.0.43) and the package import-direction invariant
+   ([`ADR-pool.package-import-direction-invariant`](../design/adr/pool/ADR-pool.package-import-direction-invariant.md),
+   once cited as ADR-0.0.55, whose `gz validate` scope is unbuilt).
+   The shared claim is that
    architectural constraints are velocity-enabling, not
    velocity-throttling, once they are mechanically pinned.
 

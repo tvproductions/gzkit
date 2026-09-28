@@ -5,9 +5,9 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-25
+last_reviewed: 2026-09-28
 metadata:
-  skill-version: "6.59.4"
+  skill-version: "6.60.0"
 model: sonnet
 ---
 
@@ -1361,8 +1361,9 @@ After attestation:
 
 **Two-sync pattern:** Stage 5 uses two git-sync cycles. The `gz obpi complete`
 command atomically writes the attestation to the ADR-level audit ledger, updates
-the brief to Completed, and emits the completion receipt. Git-sync #1 commits all
-these governance edits plus lock release and marker cleanup. Git-sync #2 commits
+the brief to Completed, emits the completion receipt, and surrenders the lock.
+Git-sync #1 commits these governance edits, the Step 4b brief section and marker
+cleanup. Git-sync #2 commits
 the reconcile output and ADR status refresh.
 
 0. **Pre-flight checklist (MANDATORY, GHI #196)** — `uv run gz obpi precomplete {OBPI-SLUG}`
@@ -1471,40 +1472,35 @@ the reconcile output and ADR status refresh.
    Write long `--attestation-text` / `--implementation-summary` /
    `--key-proof` payloads to `/tmp/*.txt|md` first to keep the invocation
    tractable.
-3. **Author the completion handoff register entry, THEN release the lock (ADR-0.0.41 coupling).**
-   `gz obpi lock release` fail-closes without a register entry (token-block
-   discipline § Sub-Invariant 5) — even for a *completed* OBPI, which is not
-   abandoned. The Stage-5 ordering is therefore **handoff-before-release**, not
-   the reverse:
-   - Author a completion handoff via `/gz-session-handoff` (this is the step-10
-     session handoff, pulled earlier because the release depends on it).
-   - The handoff frontmatter `obpi_id:` MUST be the **full OBPI slug**
-     (e.g. `OBPI-0.0.37-22-committed-rendition-store-deterministic-playback`),
-     not the short form — `find_exchange_for_release` matches by exact equality
-     against the lock's full-slug `obpi_id`. Known surface friction:
-     `validate_handoff_document`'s `_OBPI_ID_RE` rejects the full slug, so the
-     standalone validator will flag it; the full slug is nonetheless the
-     de-facto working form for release pairing (prior-OBPI precedent). Do NOT
-     "correct" the handoff to short form — that breaks the release match.
-   - The handoff timestamp MUST postdate the lock claim.
-   - Then release: `uv run gz obpi lock release {OBPI-SLUG}` (exit 0). Do NOT
-     use `--abandon` for a completed OBPI — abandonment is the wrong semantics;
-     the handoff is a completion register entry, not a surrender.
+3. **Confirm the lock is gone — `gz obpi complete` released it.** After its
+   atomic transaction commits, `gz obpi complete` writes the completion register
+   entry (`.gzkit/locks/exchange/<ts>-{OBPI-SLUG}-complete.md`) and, if a lock is
+   held, deletes it and emits `obpi_lock_released` citing that entry (GHI #619,
+   `_surrender_lock_at_completion` in `src/gzkit/commands/obpi_complete.py`). Run
+   `uv run gz obpi lock list` to confirm. Do not run `gz obpi lock release`
+   afterwards; it prints `No lock found`. If the register entry could not be
+   written, the lock is left for TTL reaping. Report that to the operator, and
+   never `--abandon` a completed OBPI.
+3a. **Heavy lane: author the brief's `### Step 4b — Independent Adversarial
+   Validation` section** under `## Evidence`. `gz obpi complete` does not write it,
+   and `gz validate --adversarial-validation` (in `gz check`, so the pre-push gate)
+   fails a Completed or Validated heavy-lane brief without it. It carries the
+   adversary's identity and tier, one row per round (ARB receipt, verdict, claims
+   broken), and how each finding was resolved, citing operator rulings verbatim.
 4. Remove `.claude/plans/.pipeline-active-{OBPI-ID}.json` if it was created.
 5. Remove `.claude/plans/.pipeline-active.json` only when it still points at
    the same OBPI as the per-OBPI marker.
 6. **Git-sync #1** — `uv run gz git-sync --apply`
-   Commits all governance edits from steps 1-5. Tree is now clean.
+   Commits all governance edits from steps 2-5. Tree is now clean.
 7. Run `uv run gz obpi sync {OBPI-SLUG}` to confirm receipt and brief agree.
 8. Run `uv run gz adr status {PARENT-ADR} --json` so the parent ADR view
    reflects the reconciled OBPI state.
 9. **Git-sync #2** — `uv run gz git-sync --apply`
    Commits the reconcile output (step 7) and ADR status refresh (step 8).
-10. The completion handoff authored in step 3 already serves as the session
-    handoff — confirm its "Pending Work / Open Loops" captures remaining
-    parent-ADR OBPIs and any deferred follow-up so the next session resumes
-    cleanly. (Authored at step 3 because the lock release depends on it; this
-    step is the content check, not a second handoff.)
+10. Author the session handoff with `/gz-session-handoff`. Its "Pending Work /
+    Open Loops" names the remaining parent-ADR OBPIs and any deferred follow-up.
+    The completion register entry from step 3 is the lock's exchange record, not
+    this handoff.
 
 **GHI closure discipline (cross-reference):** When a GHI is closed as part of
 pipeline execution or handoff, apply `ghi-close` v2.4.0's dead-letter doctrine:
@@ -1581,9 +1577,9 @@ verified reality — fewer GHIs, less friction, the brief stays honest.
 | Human rejects attestation | Record feedback, return to Stage 2 with corrections |
 | `git sync` fails or repo remains unsynced | Stop before `gz obpi complete` and repair blockers |
 | Gate blocks on stale brief/allowlist (reconcile drift, security floor, under-declared coupled surface) | Run the **Gate Friction: Evaluator Escalation** loop (above) — dispatch evaluator → determination → operator approval → surgical brief amendment + documented override. Do NOT contort code to fit the brief or file a GHI to stall. |
-| Lock release fail-closes ("no register entry") on a *completed* OBPI | Author the completion handoff FIRST (full-slug `obpi_id:`), then release — see Stage 5 step 3. Never `--abandon` a completed OBPI. |
+| A lock survives `gz obpi complete` | The completion register entry could not be written, so the lock was left for TTL reaping (Stage 5 step 3). Report it; never `--abandon` a completed OBPI. |
 
-**Lock bracket:** Lock is claimed at Stage 1 and released at Stage 5 AND on any abort/handoff. No orphaned locks.
+**Lock bracket:** Lock is claimed at Stage 1 and released by `gz obpi complete` at Stage 5, or explicitly on any abort/handoff. No orphaned locks.
 
 **Handoff creation:** On any abort, release lock via `uv run gz obpi lock release {OBPI-SLUG} --force`, then run `/gz-session-handoff` to preserve context for the next session.
 
@@ -1674,16 +1670,16 @@ All OBPIs require per-OBPI human attestation (universal per ADR-0.0.36).
 
 The pipeline is complete when — and ONLY when — all of these are true:
 
-1. `gz obpi complete` ran successfully — attestation, brief, and receipt written atomically (Stage 5, Step 1)
-2. Lock released via `gz obpi lock release` (Stage 5, Step 2)
-3. Pipeline markers cleaned (Stage 5, Steps 3-4)
-4. Git-sync #1 committed governance edits (Stage 5, Step 5)
-5. `gz obpi sync` passed (Stage 5, Step 6)
-6. Git-sync #2 committed reconcile output (Stage 5, Step 8)
+1. `gz obpi complete` ran successfully — attestation, brief and receipt written atomically, and the lock surrendered (Stage 5, Steps 2–3)
+2. Heavy lane: the brief carries its `### Step 4b` section (Stage 5, Step 3a)
+3. Pipeline markers cleaned (Stage 5, Steps 4–5)
+4. Git-sync #1 committed governance edits (Stage 5, Step 6)
+5. `gz obpi sync` passed (Stage 5, Step 7)
+6. Git-sync #2 committed reconcile output (Stage 5, Step 9)
 
 If any of these have not happened, the pipeline is not complete. Do not claim otherwise.
 
-**What "done" looks like:** The final output of a successful pipeline run is a short status line confirming Stage 5 completed — not a summary of the implementation, not a recap of what was built. Just: "Pipeline complete. OBPI-X.Y.Z-NN synced. The pipeline does not manage the work lock; if one is held on OBPI-X.Y.Z-NN, release it with 'gz obpi lock release OBPI-X.Y.Z-NN'."
+**What "done" looks like:** The final output of a successful pipeline run is a short status line confirming Stage 5 completed — not a summary of the implementation, not a recap of what was built. Just: "Pipeline complete. OBPI-X.Y.Z-NN synced."
 
 ### Anti-Pattern: The Premature Summary
 

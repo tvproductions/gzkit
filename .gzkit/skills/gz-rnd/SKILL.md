@@ -6,9 +6,9 @@ category: agent-operations
 lifecycle_state: active
 disable-model-invocation: true
 owner: gzkit-governance
-last_reviewed: 2026-09-20
+last_reviewed: 2026-09-28
 metadata:
-  skill-version: "0.3.0"
+  skill-version: "0.4.0"
 model: opus
 ---
 
@@ -66,7 +66,10 @@ plan-item kind: that shape would let work be commissioned with no recorded reaso
 **Two things resolve outward instead of becoming entries**, each carrying the run's slug as
 provenance. The record never holds a copy.
 
-- a **term** → append to `GLOSSARY.md` at the repo root
+- a **term** → the project glossary. Its home is unsettled until the DDD-discipline R&D run
+  names it; until then hold the term in this record as a `decision` entry
+  ([`rnd-discipline.md`](../../../docs/governance/rnd-discipline.md) § `term` and `insight`
+  are not entry kinds). Do not create `GLOSSARY.md`.
 - an **insight** → `Call the Skill tool with "gz-insights-remember"`
 
 ## The MPAS surfaces you may reach for
@@ -117,6 +120,10 @@ absent row is an unfinished run.
 | 5 | one-shot refactoring | propose a program | the operator selects its route |
 | 6 | no action | record it, with the reason | none |
 
+Row 4 includes the Magna Carta (`docs/governance/build-to-1.0-campaign-2026-09-20.md`), the
+roadmap (`docs/design/roadmap/ROADMAP-GZKIT.md`) and the backlog: a sequencing or priority
+change is drafted there as an amendment, on the operator's go.
+
 **State is `commissioned` or `not pursued`. There is no third state.** Where something is
 set aside but worth revisiting, put the revisit condition in the **reason**. If it deserves
 more than a sentence, route it to a pool ADR or a GHI — surfaces that have lifecycles.
@@ -154,7 +161,8 @@ the invocation class, which the run cannot change.
 
 - The record was open before the first question and grew as decisions landed.
 - Every source entry quotes its source verbatim; no summary stands in for a report.
-- Terms went to `GLOSSARY.md` and insights through `gz insights remember`, not into the record.
+- Terms went to the project glossary (or, until its home is named, into `decision` entries)
+  and insights through `gz insights remember`.
 - All six disposition rows carry a decision, each `commissioned` or `not pursued`.
 - The challenge was restated at the close on purpose.
 - No ADR, OBPI or chore was started by the run.
