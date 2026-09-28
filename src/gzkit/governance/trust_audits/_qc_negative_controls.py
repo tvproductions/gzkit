@@ -394,6 +394,44 @@ def _build_module_size() -> Path:
     return root
 
 
+def _build_tautological_debt() -> Path:
+    """Violation: one outstanding tautological op against a zero ceiling (GHI #808).
+
+    A zero ``start_count`` and zero decline pin the ceiling at 0 on every date,
+    so the verdict does not decay with the calendar; one planted filesystem read
+    co-occurring with an assertion is debt the ceiling cannot hold. The empty
+    waiver registry is written because the gate reads it through the registry
+    seam, which treats a missing registry as a tree defect.
+    """
+    root = _mkroot("tautological-debt")
+    _write(
+        root / "data" / "tautological_test_debt_target.json",
+        json.dumps({"start_date": "2026-01-01", "start_count": 0, "decline_per_month": 0}),
+    )
+    _write(root / "data" / "tautological_test_waivers.json", json.dumps({"file_waivers": {}}))
+    _write(
+        root / "tests" / "test_planted.py",
+        "from pathlib import Path\n\n\ndef test_reads_file():\n"
+        '    text = Path("README.md").read_text()\n    assert "x" in text\n',
+    )
+    return root
+
+
+def _build_tautological_debt_waived() -> Path:
+    """Plant the same op under a zero ceiling, discharged by a same-file waiver slot.
+
+    The admit half (GHI #797 precedent): a gate that stopped honouring waiver slots
+    would count the op as debt and breach, and this control would fail. The refuse
+    half is ``tautological-debt``.
+    """
+    root = _build_tautological_debt()
+    _write(
+        root / "data" / "tautological_test_waivers.json",
+        json.dumps({"file_waivers": {"tests/test_planted.py": ["fixture-rationale"]}}),
+    )
+    return root
+
+
 def _build_typecheck() -> Path:
     root = _mkroot("typecheck")
     _minimal_pyproject(root)
@@ -1561,6 +1599,12 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
     ("format", _build_format, _ep._ep_format),
     ("typecheck", _build_typecheck, _ep._ep_typecheck),
     ("module-size", _build_module_size, _ep._ep_module_size),
+    ("tautological-debt", _build_tautological_debt, _ep._ep_tautological_debt),
+    (
+        "tautological-debt-waived",
+        _build_tautological_debt_waived,
+        _ep._ep_tautological_debt_admits_waived,
+    ),
     ("test", _build_test, _ep._ep_test),
     ("behave", _build_behave, _ep._ep_behave),
     ("docs-build", _build_docs_build, _ep._ep_docs_build),

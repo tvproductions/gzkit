@@ -116,6 +116,11 @@
       "owner": "gzkit/governance/trust_audits/waiver_ratchet.py",
       "kind": "code",
       "purpose": "Declaration index for the waiver/grandfather family — the companion registry this one is exhaustive with."
+    },
+    "tautological_test_debt_target.json": {
+      "owner": "gzkit/chores/decommission-tautological-tests/check_debt_target.py",
+      "kind": "code",
+      "purpose": "Declining debt target (start date, start count, monthly decline) the decommission-tautological-tests chore and the `gz check` 'Tautological debt' step gate outstanding tautological-test ops against (GHI #808)."
     }
   }
 }

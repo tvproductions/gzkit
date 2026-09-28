@@ -40,4 +40,8 @@ QC_CLAIM_POPULATIONS: dict[str, Callable[[], Sequence[str]] | str] = {
     # never a set another surface declares (GHI #1083).
     "doc-code-citations": POPULATION_NONE,
     "doc-code-citations-exempted": POPULATION_NONE,
+    # Walks tests/** in code; the members are whatever test files exist, never a set
+    # another surface declares (GHI #808).
+    "tautological-debt": POPULATION_NONE,
+    "tautological-debt-waived": POPULATION_NONE,
 }

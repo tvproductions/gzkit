@@ -22,6 +22,7 @@ fail-closes on growth above baseline + waivers (ADR-0.0.59-04).
 - **Waivers:** `data/tautological_test_waivers.json` (rationale-key indirection)
 - The waivers file is unconditionally excluded from the scan (self-exemption)
 - First sweep wave (top-5 offenders) lands in OBPI-0.0.59-05
+- **Automatic caller:** the per-change quality gate runs `check_debt_target.py` on every push as its `Tautological debt` step (operator ruling 2026-09-28, GHI #808), so a stall surfaces on the next push rather than whenever the chore is next run.
 
 ## Workflow
 
@@ -82,13 +83,18 @@ print(f'Baseline updated: {len(ops)} operations')
 > `tests/governance/test_defect_fix_routing_fold.py`) to fail-close when test docstrings
 > legitimately quoted retired rule paths — the baseline file would carry those quoted paths
 > as a derived artifact and trip the "no inbound references to legacy paths" structural
-> fence. Drift-gate logic compares `(file_path, line_number, operation_kind, function_name)`
-> tuples; `context_hint` is informational only and not part of the drift comparison key.
+> fence. Drift-gate logic matches ops by stable identity `(file_path, function_name, operation_kind,
+> assertion_kind)` (`_op_identity`, GHI #632), never by line number; `context_hint` is informational only and not part of the drift comparison key.
 > (Defect surfaced in OBPI-0.0.59-05; direct-fix landed post-completion.)
 
 ## Acceptance Criteria
 
 Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan decommission-tautological-tests`. This section explains them and does not restate them (GHI #1002).
+
+Two criteria witness two different properties of the same subject, and both stay:
+
+- **The drift ratchet** (`gz validate --tautological-test-audit`) witnesses that no NEW tautological op landed. It is green at any debt level, so on its own it cannot say whether the chore is being worked.
+- **The declining target** (`check_debt_target.py`) witnesses that the OLD ops are being drained. It reads the outstanding debt (live scan minus same-file waiver slots) against a ceiling that falls on the schedule declared in `data/tautological_test_debt_target.json`, and fails when debt sits above it. A stalled chore turns red on its own (GHI #808: four PASS receipts had been logged across a seven-week stall under the ratchet alone). The start count and decline rate are the operator's, read from that file; its `--self-test` criterion proves the gate breaches on synthetic stalled data.
 
 ## Evidence Commands
 

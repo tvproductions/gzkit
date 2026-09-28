@@ -165,6 +165,41 @@ def _ep_module_size(root: Path) -> int:
     )
 
 
+def _ep_tautological_debt(root: Path) -> int:
+    """Run the production tautological-debt gate script against the fixture root.
+
+    Aimed by subprocess cwd, resolved through ``_resolve_chore_dir``, and pinned
+    by ``expect_output`` for the reasons ``_ep_module_size`` gives: exit 1 is the
+    missing-registry bail-out, so only the breach text proves the verdict.
+    """
+    import sys  # noqa: PLC0415
+
+    from gzkit.commands.chores import _resolve_chore_dir  # noqa: PLC0415
+
+    script = _resolve_chore_dir("decommission-tautological-tests").path / "check_debt_target.py"
+    return _command_fails_argv(
+        [sys.executable, str(script)],
+        root,
+        expected_exit=3,
+        expect_output="above the declining target",
+    )
+
+
+def _ep_tautological_debt_admits_waived(root: Path) -> int:
+    """Truthy only when the gate ADMITS a waived op: exit 0 with zero debt counted.
+
+    The admit half (GHI #797 precedent); the refuse half is ``tautological-debt``.
+    """
+    import sys  # noqa: PLC0415
+
+    from gzkit.commands.chores import _resolve_chore_dir  # noqa: PLC0415
+    from gzkit.quality import run_command  # noqa: PLC0415
+
+    script = _resolve_chore_dir("decommission-tautological-tests").path / "check_debt_target.py"
+    result = run_command([sys.executable, str(script)], cwd=root)
+    return 1 if result.returncode == 0 and "debt: 0 outstanding" in result.stdout else 0
+
+
 def _ep_test(root: Path) -> int:
     return _command_fails("uv run -m unittest discover tests", root, expected_exit=1)
 

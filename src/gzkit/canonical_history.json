@@ -324,17 +324,27 @@
       "74119c7ef7a3df4100236fe4165cb96b85cbde21b8fa4fb7d74a953c5fb2474c"
     ],
     "chores/decommission-tautological-tests/CHORE.md": [
+      "07afbfe18aeadcba2282c13c7f88ce1fc743143212e388fe9e9c3e5c673ad51b",
       "23d11100ec90a9ab27ed76a7d862d6003382b5242ae5219e4cd17c6a638f78f2",
+      "74a2dc3a5db385effbac7ebb13ce6c0f16730eb5c18e400693d94ce337e7f503",
       "bb94b147fa350273b6c520c92ca7270273042554f211d97416285c9fce937e0b",
       "be7b9237265027ad509c086b255f5ffa39a911006c26c4bf1b51ba8cfdf86aa4",
       "eb73e5ae4dee000135102cb00349976c41429a02af4f8cca79052ecc18ac2c93",
-      "f6bf27edf50718873d9db3f94ac1ecadc1f1ee832ae066c68c5ad022f411cf8b"
+      "f6bf27edf50718873d9db3f94ac1ecadc1f1ee832ae066c68c5ad022f411cf8b",
+      "fc81c3b0420614267fbc043cb04e65278f7231d59d1f82c99a7c665b73b92bed"
     ],
     "chores/decommission-tautological-tests/README.md": [
-      "475a43f2fbac03e4dd01278dcfb6647c981eaaaad894fa52401814aa82b97f98"
+      "475a43f2fbac03e4dd01278dcfb6647c981eaaaad894fa52401814aa82b97f98",
+      "f662c5cb9312c6c07fd395d91cdadf3eaa79b7f9d934747072b1b5c127c870b1"
     ],
     "chores/decommission-tautological-tests/acceptance.json": [
-      "380b0fc16ebc40b3b7a00fbb03aa8f1ae19ea8ccd791ab32414b56e1c2d6a966"
+      "380b0fc16ebc40b3b7a00fbb03aa8f1ae19ea8ccd791ab32414b56e1c2d6a966",
+      "4defb20cd00af7d449966768a85e5dbfa26264611dc7e3f2ad3f5b203f36a826"
+    ],
+    "chores/decommission-tautological-tests/check_debt_target.py": [
+      "0b8b1ffdcab29d6eaac3d9a844434c6059b8acddbb597c7f08c4968fadfbf11a",
+      "5307231304b78938369a62669df9ff75e675182f40fffeef6de4b8d9a95b9282",
+      "5a1b9898aad12bcecc46dd6cd74bd094333dc3418a2b76c2c6dcea8a052413f0"
     ],
     "chores/dependency-currency/CHORE.md": [
       "21390baceb753fb55a21543325ff675ec17ddc6f94b7d59335cb296d3685189e",

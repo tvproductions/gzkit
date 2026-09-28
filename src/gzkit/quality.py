@@ -1760,6 +1760,28 @@ def run_module_size_audit(project_root: Path) -> QualityResult:
     return run_command(["uv", "run", "python", str(script)], cwd=project_root)
 
 
+def run_tautological_debt_audit(project_root: Path) -> QualityResult:
+    """Gate outstanding tautological-test debt against its declining target (GHI #808).
+
+    The drift ratchet (`gz validate --tautological-test-audit`) refuses NEW ops
+    but is green at any debt level, so `decommission-tautological-tests` logged
+    four PASS receipts across a seven-week stall. The chore's declining-target
+    script fails when outstanding debt sits above a ceiling that falls on the
+    operator's schedule; wiring it here is what makes a stall surface on the next
+    push instead of whenever someone runs the chore (operator ruling 2026-09-28).
+
+    Invokes the chore's own script, self-test first, for the reason
+    `run_module_size_audit` gives: one authority, and teeth verified before use.
+    """
+    from gzkit.commands.chores import _resolve_chore_dir  # noqa: PLC0415
+
+    script = _resolve_chore_dir("decommission-tautological-tests").path / "check_debt_target.py"
+    self_test = run_command(["uv", "run", "python", str(script), "--self-test"], cwd=project_root)
+    if not self_test.success:
+        return self_test
+    return run_command(["uv", "run", "python", str(script)], cwd=project_root)
+
+
 def run_authorship_audit(project_root: Path) -> QualityResult:
     """Run the commit-authorship policy audit (GHI #725).
 

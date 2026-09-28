@@ -233,4 +233,11 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     "evaluation-justify-binding": "evaluation-justify-binding-qualified",
     # The admit control itself: the qualifier is one predicate with no further admit path.
     "evaluation-justify-binding-qualified": EXEMPTS_NONE,
+    # --- GHI #808 -------------------------------------------------------------
+    # A same-file slot in data/tautological_test_waivers.json discharges an op the
+    # declining target would otherwise count as debt: a waiver table, an exemption
+    # by the bar above. The start count and decline rate are threshold parameters.
+    "tautological-debt": "tautological-debt-waived",
+    # The admit control itself: slot accounting is one count with no further admit path.
+    "tautological-debt-waived": EXEMPTS_NONE,
 }

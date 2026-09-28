@@ -1,0 +1,6 @@
+{
+  "_doc": "GHI #808 operator ruling 2026-09-28: 'Add declining target (Recommended)'; rate '20 ops/month (Recommended)'. start_count is the live scan measured that day (232 ops, 0 waived).",
+  "start_date": "2026-09-28",
+  "start_count": 232,
+  "decline_per_month": 20
+}

@@ -82,6 +82,10 @@ _STEP_CLASSIFICATION: dict[str, _StepMeta] = {
     # `gz check` exit code; the ratchet's whole defect was having no caller, so
     # classifying it advisory would re-create that hole under a different name.
     "Module size": ("audit", "src/", "bound", "subprocess"),
+    # Enrolled the same commit it joined `gz check` (GHI #808). Subject is
+    # `tests/` — the population whose tautological ops it counts. `bound` for
+    # the Module size reason: the defect was a gate nothing called.
+    "Tautological debt": ("audit", "tests/", "bound", "subprocess"),
     "Test": ("test", "tests/", "bound", "subprocess"),
     "Behave": ("bdd", "features/", "bound", "subprocess"),
     "Docs build": ("audit", "docs/", "bound", "subprocess"),

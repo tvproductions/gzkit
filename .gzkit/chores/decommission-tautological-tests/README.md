@@ -3,7 +3,8 @@
 Re-runnable AST-based scanner for tautological test patterns in `tests/**`.
 Identifies filesystem-shaped operations co-occurring with assertions, proposes
 dispositions (convert / replace-with-ledger / fold-to-validator / keep-as-fixture),
-and enforces a drift gate via `gz validate --tautological-test-audit` (ADR-0.0.59-04).
+enforces a drift gate via `gz validate --tautological-test-audit` (ADR-0.0.59-04),
+and gates the drain itself against a declining target via `check_debt_target.py` (GHI #808).
 
 ## Quick Start
 
@@ -30,3 +31,4 @@ for op in ops[:5]:
 
 - `data/tautological_test_baseline.json` — baselined operation count
 - `data/tautological_test_waivers.json` — per-file waivers with rationale keys
+- `data/tautological_test_debt_target.json` — declining debt target (start date, start count, monthly decline) read by `check_debt_target.py` (GHI #808)

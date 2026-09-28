@@ -7,6 +7,18 @@
     },
     {
       "type": "exitCodeEquals",
+      "command": "uv run python .gzkit/chores/decommission-tautological-tests/check_debt_target.py --self-test",
+      "expected": 0,
+      "description": "the debt gate itself has teeth: a stalled debt breaches on synthetic data"
+    },
+    {
+      "type": "exitCodeEquals",
+      "command": "uv run python .gzkit/chores/decommission-tautological-tests/check_debt_target.py",
+      "expected": 0,
+      "description": "outstanding tautological ops sit at or below the declining target in data/tautological_test_debt_target.json (GHI #808)"
+    },
+    {
+      "type": "exitCodeEquals",
       "command": "uv run gz validate --chores-layout",
       "expected": 0
     },
