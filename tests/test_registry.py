@@ -7,7 +7,12 @@ import unittest
 
 from pydantic import ValidationError
 
-from gzkit.models.frontmatter import AdrFrontmatter, ObpiFrontmatter, PrdFrontmatter
+from gzkit.models.frontmatter import (
+    AdrFrontmatter,
+    ConstitutionFrontmatter,
+    ObpiFrontmatter,
+    PrdFrontmatter,
+)
 from gzkit.registry import REGISTRY, ContentType, ContentTypeRegistry
 
 
@@ -159,8 +164,13 @@ class TestGlobalRegistry(unittest.TestCase):
     def test_prd_has_correct_model(self) -> None:
         self.assertIs(REGISTRY.get("PRD").frontmatter_model, PrdFrontmatter)
 
+    def test_constitution_has_correct_model(self) -> None:
+        # Was listed as unschematized while schemas/constitution.json and
+        # ConstitutionFrontmatter existed (GHI #1134).
+        self.assertIs(REGISTRY.get("Constitution").frontmatter_model, ConstitutionFrontmatter)
+
     def test_unschematized_types_have_no_model(self) -> None:
-        for name in ("Constitution", "Skill", "Attestation"):
+        for name in ("Skill", "Attestation"):
             with self.subTest(name=name):
                 self.assertIsNone(REGISTRY.get(name).frontmatter_model)
 

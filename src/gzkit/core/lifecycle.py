@@ -76,8 +76,11 @@ PRD_TRANSITIONS: list[TransitionRule] = [
     TransitionRule(from_state="Approved", to_state="Superseded"),
 ]
 
+# Draft→Review→Ratified→Amended→Superseded (operator-ratified 2026-06-14; GHI #1134).
 CONSTITUTION_TRANSITIONS: list[TransitionRule] = [
-    TransitionRule(from_state="Draft", to_state="Ratified"),
+    TransitionRule(from_state="Draft", to_state="Review"),
+    TransitionRule(from_state="Review", to_state="Ratified"),
+    TransitionRule(from_state="Review", to_state="Draft"),
     TransitionRule(from_state="Ratified", to_state="Amended"),
     TransitionRule(from_state="Amended", to_state="Superseded"),
     TransitionRule(from_state="Ratified", to_state="Superseded"),

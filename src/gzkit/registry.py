@@ -10,6 +10,7 @@ Singleton: the global ``REGISTRY`` is populated at import time.
 
 from __future__ import annotations
 
+from pathlib import PurePosixPath
 from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -130,9 +131,26 @@ def _translate_errors(
 REGISTRY = ContentTypeRegistry()
 
 
+def _constitution_path_pattern() -> str:
+    """Return where ``gz constitute`` writes, derived from ``paths.constitutions``.
+
+    The registry is built at import time with no project root, so it reads the
+    configured directory's name rather than one project's full path: a project
+    that roots it under ``docs/`` still matches (GHI #1134).
+    """
+    from gzkit.config import PathConfig  # noqa: PLC0415 — mirrors the imports below
+
+    return f"**/{PurePosixPath(PathConfig().constitutions).name}/CONSTITUTION-*.md"
+
+
 def _bootstrap_registry() -> None:
     """Register all known governance content types."""
-    from gzkit.models.frontmatter import AdrFrontmatter, ObpiFrontmatter, PrdFrontmatter
+    from gzkit.models.frontmatter import (
+        AdrFrontmatter,
+        ConstitutionFrontmatter,
+        ObpiFrontmatter,
+        PrdFrontmatter,
+    )
     from gzkit.rules import RuleFrontmatter  # noqa: PLC0415 — avoids circular import
 
     REGISTRY.register(
@@ -180,10 +198,10 @@ def _bootstrap_registry() -> None:
     REGISTRY.register(
         ContentType(
             name="Constitution",
-            schema_name=None,
-            frontmatter_model=None,
-            lifecycle_states=["Draft", "Ratified", "Amended", "Superseded"],
-            canonical_path_pattern="docs/governance/**/constitution*.md",
+            schema_name="constitution",
+            frontmatter_model=ConstitutionFrontmatter,
+            lifecycle_states=["Draft", "Review", "Ratified", "Amended", "Superseded"],
+            canonical_path_pattern=_constitution_path_pattern(),
             vendor_rendering_rules={},
         )
     )

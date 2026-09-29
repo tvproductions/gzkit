@@ -87,7 +87,7 @@ class ConstitutionFrontmatter(BaseModel):
     model_config = ConfigDict(frozen=True, extra="allow")
 
     id: str = Field(..., pattern=r"^CONSTITUTION-[A-Z0-9]+-[0-9]+\.[0-9]+\.[0-9]+$")
-    status: Literal["Draft", "Review", "Ratified", "Superseded"]
+    status: Literal["Draft", "Review", "Ratified", "Amended", "Superseded"]
     semver: str = Field(..., pattern=r"^[0-9]+\.[0-9]+\.[0-9]+$")
     date: str = Field(..., pattern=r"^[0-9]{4}-[0-9]{2}-[0-9]{2}$")
 

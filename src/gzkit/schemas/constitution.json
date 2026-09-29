@@ -18,7 +18,7 @@
         },
         "status": {
           "type": "string",
-          "enum": ["Draft", "Review", "Ratified", "Superseded"],
+          "enum": ["Draft", "Review", "Ratified", "Amended", "Superseded"],
           "description": "Document status"
         },
         "semver": {
