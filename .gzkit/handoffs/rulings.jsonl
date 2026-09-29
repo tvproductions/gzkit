@@ -1187,3 +1187,14 @@
 {"ts": "2026-09-28T23:18:00Z", "source": "20260928T231740Z-ruling-docket-complete-ruled-work-queued.md", "text": "GHI #1124: gz tidy findings set the exit code (verbatim: 'Make findings gate (Recommended)')."}
 {"ts": "2026-09-28T23:18:00Z", "source": "20260928T231740Z-ruling-docket-complete-ruled-work-queued.md", "text": "GHI #1063: promote the two measuring chores from propose to enforce (verbatim: 'Promote the two chores (Recommended)')."}
 {"ts": "2026-09-28T23:18:00Z", "source": "20260928T231740Z-ruling-docket-complete-ruled-work-queued.md", "text": "GHI #1134: canonical states Draft/Ratified/Amended/Superseded (verbatim: 'Keep Amended (Recommended)') and the registry reads config.paths.constitutions (verbatim: 'Configured path (Recommended)')."}
+{"ts": "2026-09-29T07:23:11Z", "source": "20260929T072302Z-ghi-queue-step1-landed.md", "text": "Resume the handoff queue (verbatim: 'yes, proceed as recommended')."}
+{"ts": "2026-09-29T07:23:11Z", "source": "20260929T072302Z-ghi-queue-step1-landed.md", "text": "GHI #808 decline rate (verbatim: '20 ops/month (Recommended)')."}
+{"ts": "2026-09-29T07:23:11Z", "source": "20260929T072302Z-ghi-queue-step1-landed.md", "text": "GHI #808 automatic caller (verbatim: 'gz check (Recommended)')."}
+{"ts": "2026-09-29T07:23:11Z", "source": "20260929T072302Z-ghi-queue-step1-landed.md", "text": "GHI #1124 gating sections (verbatim: 'Breaches gate; attestation informational (Recommended)')."}
+{"ts": "2026-09-29T07:23:11Z", "source": "20260929T072302Z-ghi-queue-step1-landed.md", "text": "GHI #1134 constitution lifecycle, reconciling the docket with the 2026-06-14 ratified lifecycle (verbatim: 'Five states, with Review (Recommended)')."}
+{"ts": "2026-09-29T07:23:11Z", "source": "20260929T072302Z-ghi-queue-step1-landed.md", "text": "GHI #950 task_id source (verbatim: 'Infer in scope; unset if ambiguous (Recommended)')."}
+{"ts": "2026-09-29T07:23:11Z", "source": "20260929T072302Z-ghi-queue-step1-landed.md", "text": "GHI #1014 Accepted writer (verbatim: 'Record at OBPI work start (Recommended)')."}
+{"ts": "2026-09-29T07:23:11Z", "source": "20260929T072302Z-ghi-queue-step1-landed.md", "text": "GHI #1014 dropped closeout (verbatim: 'Map to Deprecated (Recommended)')."}
+{"ts": "2026-09-29T07:23:11Z", "source": "20260929T072302Z-ghi-queue-step1-landed.md", "text": "GHI #1014 Draft ADR at work start, superseding an earlier 'Refuse launch until Proposed' ruling once no governed propose verb was found (verbatim: 'Walk Draft→Proposed→Accepted at launch (Recommended)')."}
+{"ts": "2026-09-29T07:23:11Z", "source": "20260929T072302Z-ghi-queue-step1-landed.md", "text": "GHI #1014 mid-flight ADRs at closeout (verbatim: 'Catch up with cited evidence (Recommended)')."}
+{"ts": "2026-09-29T07:23:11Z", "source": "20260929T072302Z-ghi-queue-step1-landed.md", "text": "GHI #1014 ADR frontmatter and vocab (verbatim: 'Write it; fix the vocab (Recommended)')."}
