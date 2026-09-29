@@ -11,7 +11,13 @@ from unittest.mock import MagicMock, patch
 from gzkit.cli import main
 from gzkit.quality import ObpiProofStatus, ProductProofResult
 from gzkit.traceability import covers
-from tests.commands.common import CliRunner, _init_git_repo, _quick_init, _write_obpi
+from tests.commands.common import (
+    CliRunner,
+    _init_git_repo,
+    _quick_init,
+    _record_adr_work_start,
+    _write_obpi,
+)
 
 
 def _make_proof_result(
@@ -75,6 +81,7 @@ class TestCloseoutMigrationEnforce(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             _scaffold_closeout_adr()
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 1)
@@ -102,6 +109,7 @@ class TestCloseoutMigrationAdvisory(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             _scaffold_closeout_adr()
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 0, result.output)
@@ -128,6 +136,7 @@ class TestCloseoutMigrationProofPresent(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             _scaffold_closeout_adr()
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 0, result.output)
@@ -149,6 +158,7 @@ class TestCloseoutMigrationProofPresent(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             _scaffold_closeout_adr()
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 0, result.output)

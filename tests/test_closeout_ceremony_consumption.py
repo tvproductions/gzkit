@@ -21,7 +21,7 @@ from gzkit.commands.closeout_ceremony import (
 )
 from gzkit.ledger import Ledger, attested_event
 from gzkit.quality import QualityResult
-from tests.commands.common import CliRunner, _init_git_repo, _quick_init
+from tests.commands.common import CliRunner, _init_git_repo, _quick_init, _record_adr_work_start
 
 
 def _qr_ok() -> QualityResult:
@@ -70,6 +70,7 @@ class TestCloseoutConsumesCeremonyAttestation(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             _seed_ceremony_state(
                 Path.cwd(),
                 "ADR-0.1.0-f",
@@ -89,6 +90,7 @@ class TestCloseoutConsumesCeremonyAttestation(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             _seed_ceremony_state(
                 Path.cwd(),
                 "ADR-0.1.0-f",
@@ -118,6 +120,7 @@ class TestCloseoutConsumesCeremonyAttestation(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             _seed_ceremony_state(
                 Path.cwd(),
                 "ADR-0.1.0-f",
@@ -130,9 +133,11 @@ class TestCloseoutConsumesCeremonyAttestation(unittest.TestCase):
             mock_input.assert_not_called()
             ledger_text = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertIn('"status":"dropped"', ledger_text.replace(" ", ""))
-            # Pipeline still drives the lifecycle transition to Dropped (BI-2:
+            # Pipeline still drives the dropped lifecycle transition (BI-2:
             # only the duplicate attested emit is removed, not the transition).
-            self.assertIn('"to_state":"Dropped"', ledger_text.replace(" ", ""))
+            # GHI #1014: "Dropped" was not in ADR_TRANSITIONS; a dropped closeout now
+            # ends Deprecated (operator ruling 2026-09-28, "Map to Deprecated").
+            self.assertIn('"to_state":"Deprecated"', ledger_text.replace(" ", ""))
 
     @patch("gzkit.cli.main.run_command")
     @patch("builtins.input")
@@ -143,6 +148,7 @@ class TestCloseoutConsumesCeremonyAttestation(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             _seed_ceremony_state(
                 Path.cwd(),
                 "ADR-0.1.0-f",
@@ -169,6 +175,7 @@ class TestCloseoutLegacyPromptPreserved(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 0, result.output)
             mock_input.assert_called()
@@ -182,6 +189,7 @@ class TestCloseoutLegacyPromptPreserved(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             _seed_ceremony_state(
                 Path.cwd(),
                 "ADR-0.1.0-f",

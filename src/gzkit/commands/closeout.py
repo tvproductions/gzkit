@@ -47,7 +47,7 @@ from gzkit.ledger import (
     attested_event,
     closeout_initiated_event,
     gate_checked_event,
-    lifecycle_transition_event,
+    parse_frontmatter_value,
     resolve_adr_lane,
 )
 from gzkit.mx import hardening
@@ -457,6 +457,49 @@ def _render_product_proof_human(proof_result: ProductProofResult) -> None:
             console.print(f"    {p.obpi_id}: [red]MISSING[/red]")
 
 
+def _work_start_evidence(graph: dict[str, dict[str, Any]], adr_id: str) -> str | None:
+    """Return a child OBPI of *adr_id* that shows OBPI work began, else None.
+
+    A launched pipeline or a ledger completion is evidence the ADR was worked,
+    which is what licenses a late ``Proposed -> Accepted`` catch-up (GHI #1014).
+    """
+    for child in graph.get(adr_id, {}).get("children", []):
+        info = graph.get(child, {})
+        if info.get("pipeline_launched") or info.get("ledger_completed"):
+            return child
+    return None
+
+
+def _plan_closeout_lifecycle(
+    ledger: Ledger, adr_id: str, adr_file: Path, *, dropped: bool
+) -> tuple[list[tuple[str, str]], str | None]:
+    """Plan closeout's lifecycle transitions from the ADR's actual state (GHI #1014).
+
+    Closeout once wrote ``Proposed -> Completed`` with a hardcoded ``from_state``,
+    a pair ``ADR_TRANSITIONS`` forbids, 62 times; those rows stay as dated
+    records (operator ruling 2026-09-28, "Fix forward only"). Refuses before any
+    ledger write when the ADR's state cannot legally reach its closeout state.
+    """
+    from gzkit.lifecycle import InvalidTransitionError, closeout_transitions, current_adr_state
+
+    graph = ledger.get_artifact_graph()
+    frontmatter_status = parse_frontmatter_value(adr_file.read_text(encoding="utf-8"), "status")
+    state = current_adr_state(graph.get(adr_id, {}), frontmatter_status)
+    evidence = _work_start_evidence(graph, adr_id)
+    try:
+        steps = closeout_transitions(state, dropped=dropped, work_started=evidence is not None)
+    except InvalidTransitionError as exc:
+        console.print(
+            f"[red]Closeout refused:[/red] {escape(adr_id)} is {escape(repr(state))}, which "
+            f"cannot reach its closeout state ({escape(str(exc))}). Start OBPI work "
+            "through `gz obpi pipeline`, which records the ADR as Accepted, then re-run "
+            "closeout."
+        )
+        raise SystemExit(1) from exc
+    catch_up = evidence if steps[0] == ("Proposed", "Accepted") else None
+    return steps, catch_up
+
+
 def _complete_closeout_pipeline(
     *,
     project_root: Path,
@@ -487,6 +530,9 @@ def _complete_closeout_pipeline(
         attest_status, reason = _prompt_closeout_attestation(quiet=as_json)
         ceremony_attestation_text = None
     attester = get_git_user()
+    lifecycle_steps, catch_up_evidence = _plan_closeout_lifecycle(
+        ledger, adr_id, adr_file, dropped=attest_status == "dropped"
+    )
     if consumed is None:
         # BI-2 (OBPI-0.0.63-05 dual-runtime-collapse): the pipeline is the sole
         # `attested` emitter only on the direct interactive path. When a ceremony
@@ -515,8 +561,17 @@ def _complete_closeout_pipeline(
         # executable; `gz patch release` has always done this at its bump site.
         version_updated.append(write_in_flight_release_manifest(project_root, adr_ver, adr_id))
 
-    to_state = "Dropped" if attest_status == "dropped" else "Completed"
-    ledger.append(lifecycle_transition_event(adr_id, "adr", "Proposed", to_state))
+    from gzkit.lifecycle import LifecycleStateMachine
+
+    machine = LifecycleStateMachine(ledger)
+    for from_state, step_to in lifecycle_steps:
+        machine.transition(adr_id, "ADR", from_state, step_to)
+    if catch_up_evidence and not as_json:
+        console.print(
+            f"  Recorded Accepted late: work started under {catch_up_evidence} before the "
+            "work-start writer existed (GHI #1014)."
+        )
+    to_state = lifecycle_steps[-1][1]
 
     canonical_term = _canonical_attestation_term(attest_status, reason)
     gate_statuses = ledger.get_latest_gate_statuses(adr_id)
@@ -558,8 +613,8 @@ def _complete_closeout_pipeline(
     # lifecycle just written (Layer 2). Without this the ADR is left
     # Proposed/Draft-vs-Completed drifted: `gz validate --frontmatter` fails
     # (exit 3) and the Layer-3 index regenerated below is built from stale
-    # frontmatter. `to_state` is the ledger-derived term for both the Completed
-    # and Dropped paths.
+    # frontmatter. `to_state` is the validated end state: Completed, or Deprecated
+    # for a dropped attestation (GHI #1014).
     from gzkit.governance.frontmatter_coherence import rewrite_governed_keys_in_place
 
     rewrite_governed_keys_in_place(adr_file, {"status": to_state})
@@ -586,8 +641,10 @@ def _complete_closeout_pipeline(
                 "files_updated": version_updated,
             },
             "status_transition": {
-                "from": "Proposed",
+                "from": lifecycle_steps[0][0],
                 "to": to_state,
+                "path": [list(step) for step in lifecycle_steps],
+                "catch_up_evidence": catch_up_evidence,
             },
             "adr_status_regen": {
                 "adr_count": regen_count,

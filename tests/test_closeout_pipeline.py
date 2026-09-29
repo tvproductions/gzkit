@@ -18,7 +18,7 @@ from gzkit.commands.closeout_ceremony import (
 from gzkit.ledger import Ledger, attested_event
 from gzkit.quality import QualityResult
 from gzkit.traceability import covers
-from tests.commands.common import CliRunner, _init_git_repo, _quick_init
+from tests.commands.common import CliRunner, _init_git_repo, _quick_init, _record_adr_work_start
 
 
 def _make_qr(success: bool = True, command: str = "test", returncode: int = 0) -> QualityResult:
@@ -82,6 +82,7 @@ class TestCloseoutPipelineGates(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 0, result.output)
             self.assertTrue(mock_run.called, "run_command must be called for gate execution")
@@ -99,6 +100,7 @@ class TestCloseoutPipelineGates(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 1)
             ledger_text = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
@@ -123,6 +125,7 @@ class TestCloseoutPipelineGates(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 1)
             ledger_text = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
@@ -143,6 +146,7 @@ class TestCloseoutPipelineAttestation(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 0, result.output)
             ledger_text = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
@@ -159,6 +163,7 @@ class TestCloseoutPipelineAttestation(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             runner.invoke(main, ["closeout", "ADR-0.1.0-f"])
             mock_input.assert_called_once()
 
@@ -180,6 +185,7 @@ class TestCloseoutPipelineVersionBump(unittest.TestCase):
                 '[project]\nname = "test"\nversion = "0.0.1"\n', encoding="utf-8"
             )
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 0, result.output)
             content = Path("pyproject.toml").read_text(encoding="utf-8")
@@ -199,6 +205,7 @@ class TestCloseoutPipelineCompletion(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 0, result.output)
             ledger_text = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
@@ -226,6 +233,7 @@ class TestCloseoutPipelineCompletion(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 0, result.output)
             matches = [
@@ -252,6 +260,7 @@ class TestCloseoutDryRun(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--dry-run"])
             self.assertEqual(result.exit_code, 0, result.output)
             self.assertIn("Dry run", result.output)
@@ -268,6 +277,7 @@ class TestCloseoutDryRun(unittest.TestCase):
                 '[project]\nname = "test"\nversion = "0.0.1"\n', encoding="utf-8"
             )
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--dry-run", "--json"])
             self.assertEqual(result.exit_code, 0, result.output)
             data = json.loads(result.output)
@@ -288,6 +298,7 @@ class TestCloseoutJsonOutput(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--json"])
             self.assertEqual(result.exit_code, 0, result.output)
             data = json.loads(result.output)
@@ -304,6 +315,7 @@ class TestCloseoutJsonOutput(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--json"])
             self.assertEqual(result.exit_code, 1)
             data = json.loads(result.output)
@@ -323,6 +335,7 @@ class TestCloseoutAdrStatusRegen(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             status_path = Path("docs/governance/GovZero/adr-status.md")
             status_path.parent.mkdir(parents=True, exist_ok=True)
             status_path.write_text("stale content\n", encoding="utf-8")
@@ -341,6 +354,7 @@ class TestCloseoutAdrStatusRegen(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--json"])
             self.assertEqual(result.exit_code, 0, result.output)
             data = json.loads(result.output)
@@ -359,6 +373,7 @@ class TestCloseoutExitCodes(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 0)
 
@@ -370,6 +385,7 @@ class TestCloseoutExitCodes(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 1)
 
@@ -395,6 +411,7 @@ class TestDualRuntimeCollapseBI2(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             _seed_consumed_ceremony(Path.cwd(), "ADR-0.1.0-f", "Completed")
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 0, result.output)
@@ -418,6 +435,7 @@ class TestDualRuntimeCollapseBI2(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             _seed_consumed_ceremony(Path.cwd(), "ADR-0.1.0-f", "Completed")
             runner.invoke(main, ["closeout", "ADR-0.1.0-f"])
             count_ceremony = _count_attested("ADR-0.1.0-f")
@@ -425,6 +443,7 @@ class TestDualRuntimeCollapseBI2(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             runner.invoke(main, ["closeout", "ADR-0.1.0-f"])
             count_direct = _count_attested("ADR-0.1.0-f")
         self.assertEqual(
@@ -448,6 +467,7 @@ class TestDualRuntimeCollapseBI2(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 0, result.output)
             self.assertEqual(

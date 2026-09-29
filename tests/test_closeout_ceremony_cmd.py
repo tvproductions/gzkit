@@ -23,7 +23,7 @@ from gzkit.commands.closeout_ceremony import (
     save_ceremony_state,
 )
 from gzkit.traceability import covers
-from tests.commands.common import CliRunner, _init_git_repo, _quick_init
+from tests.commands.common import CliRunner, _init_git_repo, _quick_init, _record_adr_work_start
 
 
 def _advance_to_attestation(runner, adr_id: str = "ADR-0.1.0-f", limit: int = 25) -> None:
@@ -220,6 +220,7 @@ class TestCeremonyInit(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony"])
             self.assertEqual(result.exit_code, 0, result.output)
             self.assertIn("Readiness", result.output)
@@ -237,6 +238,7 @@ class TestCeremonyInit(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony", "--json"])
             self.assertEqual(result.exit_code, 0, result.output)
             data = json.loads(result.output)
@@ -253,6 +255,7 @@ class TestCeremonyInit(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony"])
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("Cannot start ceremony", result.output)
@@ -270,6 +273,7 @@ class TestCeremonyAdvance(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony"])
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony", "--next"])
             self.assertEqual(result.exit_code, 0, result.output)
@@ -319,6 +323,7 @@ class TestCeremonyAdvance(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony", "--next"])
             self.assertNotEqual(result.exit_code, 0)
             self.assertIn("No ceremony in progress", result.output)
@@ -570,6 +575,7 @@ class TestCeremonyPause(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony"])
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony", "--pause"])
             self.assertEqual(result.exit_code, 0, result.output)
@@ -595,6 +601,7 @@ class TestNonCeremonyUnchanged(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 0, result.output)
 
@@ -656,6 +663,7 @@ class TestStep5PerDemoCadence(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             self._seed_step_5_state(
                 commands=["uv run gz alpha", "uv run gz beta", "uv run gz gamma"],
             )
@@ -674,6 +682,7 @@ class TestStep5PerDemoCadence(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             self._seed_step_5_state(
                 commands=["uv run gz alpha", "uv run gz beta", "uv run gz gamma"],
             )
@@ -714,6 +723,7 @@ class TestStep5PerDemoCadence(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             self._seed_step_5_state(commands=["uv run gz adr status ADR-0.1.0-f"])
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony", "--next"])
             self.assertEqual(result.exit_code, 0, result.output)
@@ -729,6 +739,7 @@ class TestStep5PerDemoCadence(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             self._seed_step_5_state(commands=[])
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony", "--next"])
             self.assertEqual(result.exit_code, 0, result.output)

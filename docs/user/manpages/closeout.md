@@ -23,6 +23,17 @@ hangar is open (ADR-0.0.74): if `.gzkit/mx.json` is present, the executing path
 exits `3` with `Closeout refused: an MX maintenance hangar is open; exit it
 (gz mx exit) before releasing`. Exit the hangar first; `--dry-run` is unaffected.
 
+The ADR's lifecycle transition starts from its actual state (the latest recorded
+`lifecycle_transition`, else its frontmatter `status:`) and goes through the
+lifecycle state machine, so an illegal pair is refused before anything is
+written (GHI #1014). An `Accepted` ADR ends `Completed`, or `Deprecated` when the
+attestation is `Dropped`. An ADR still `Proposed` whose OBPI work began before
+work start recorded `Accepted` first catches up `Proposed -> Accepted`, citing
+the child OBPI that shows the work; without that evidence, or from `Draft`,
+closeout exits `1` with `Closeout refused: <ADR> is '<state>', which cannot reach
+its closeout state`. The 62 `Proposed -> Completed` rows written before this fix
+remain in the ledger as dated records.
+
 Output includes:
 
 - Gate 1 ADR path

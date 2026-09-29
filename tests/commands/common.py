@@ -514,3 +514,17 @@ def _quick_init(mode: str = "lite") -> None:
     from gzkit.personas import scaffold_default_personas
 
     scaffold_default_personas(project_root)
+
+
+def _record_adr_work_start(adr_id: str, root: Path | None = None) -> None:
+    """Record OBPI work having started on *adr_id*, as `gz obpi pipeline` does (GHI #1014).
+
+    Closeout validates its transition from the ADR's actual state, and a freshly
+    planned ADR is Draft, which cannot legally complete. A real closeout follows
+    work start, which walks Draft -> Proposed -> Accepted.
+    """
+    from gzkit.ledger import Ledger, lifecycle_transition_event  # noqa: PLC0415
+
+    ledger = Ledger((root or Path.cwd()) / ".gzkit" / "ledger.jsonl")
+    for from_state, to_state in (("Draft", "Proposed"), ("Proposed", "Accepted")):
+        ledger.append(lifecycle_transition_event(adr_id, "ADR", from_state, to_state))

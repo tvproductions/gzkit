@@ -51,6 +51,12 @@ _SANCTIONED_MONITORS = frozenset(
 #: empty reason is refused (mirrors the ``AdvisorDiagnosis.proof``
 #: ``min_length=1`` precedent): a one-token escape hatch is not a record.
 _REGISTERED_WRITERS: dict[str, str] = {
+    "src/gzkit/commands/obpi_cmd.py::_accept_adr_on_work_start": (
+        "Scope: the parent ADR, not an OBPI brief. It writes `status: Accepted` only "
+        "after `LifecycleStateMachine` validated and recorded Draft/Proposed -> "
+        "Accepted, so the frontmatter mirrors a legal ledger transition; OBPIState's "
+        "terminal-clobber rule does not govern ADRs (GHI #1014)."
+    ),
     "src/gzkit/commands/obpi_cmd.py::_reset_brief_status_after_repudiation": (
         'Scope: OBPI brief. Exempt by construction — the `current == "completed"` '
         "guard above the write proves the source status is Completed, a non-terminal "

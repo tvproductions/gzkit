@@ -650,6 +650,47 @@ def obpi_emit_receipt_cmd(
     console.print(f"  Attestor: {attestor}")
 
 
+def _accept_adr_on_work_start(
+    project_root: Path,
+    ledger: Ledger,
+    graph: dict[str, dict[str, Any]],
+    obpi_id: str,
+    adr_id: str,
+    adr_file: Path,
+) -> None:
+    """Record the parent ADR as Accepted when OBPI work starts on it (GHI #1014).
+
+    Operator ruling 2026-09-16, verbatim: "if we start work on an ADR, it is
+    accepted". Each edge goes through ``LifecycleStateMachine``, so a Draft ADR
+    walks ``Draft -> Proposed`` under the evaluation-justify-binding gate first; a
+    gate refusal writes nothing and blocks the launch with the gate's own recovery.
+    Frontmatter follows the ledger so Layer 1 and Layer 2 agree.
+    """
+    from gzkit.governance.frontmatter_coherence import (  # noqa: PLC0415
+        rewrite_governed_keys_in_place,
+    )
+    from gzkit.lifecycle import (  # noqa: PLC0415
+        LifecycleStateMachine,
+        current_adr_state,
+        work_start_transitions,
+    )
+
+    frontmatter_status = parse_frontmatter_value(adr_file.read_text(encoding="utf-8"), "status")
+    steps = work_start_transitions(current_adr_state(graph.get(adr_id, {}), frontmatter_status))
+    if not steps:
+        return
+    machine = LifecycleStateMachine(ledger, project_root=project_root)
+    try:
+        for from_state, to_state in steps:
+            machine.transition(adr_id, "ADR", from_state, to_state)
+    except ValueError as exc:
+        _print_pipeline_blockers(obpi_id, [str(exc)])
+        raise SystemExit(3) from exc
+    rewrite_governed_keys_in_place(adr_file, {"status": "Accepted"})
+    path = " -> ".join([steps[0][0], *(to_state for _, to_state in steps)])
+    console.print(f"ADR {escape(adr_id)} accepted: OBPI work started ({escape(path)}).")
+
+
 def _advance_brief_status_on_launch(obpi_file: Path) -> bool:
     """Advance a launched OBPI's brief out of ``Draft`` (GHI #992).
 
@@ -848,6 +889,7 @@ def obpi_pipeline_cmd(
         receipt_state,
         requires_human_attestation=requires_human_attestation,
     )
+    _accept_adr_on_work_start(project_root, ledger, graph, obpi_id, resolved_parent, _adr_file)
     per_obpi_marker, legacy_marker = write_pipeline_markers(plans_dir, marker_payload)
     ledger.append(
         pipeline_launched_event(

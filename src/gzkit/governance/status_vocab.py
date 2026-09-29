@@ -39,7 +39,7 @@ _RAW_MAPPING: dict[str, str] = {
     "in_progress": "in_progress",
     "In-Progress": "in_progress",
     "In Progress": "in_progress",
-    "Accepted": "validated",
+    "Accepted": "in_progress",  # work started on the ADR (GHI #1014)
     "Validated": "validated",
     "Pending-Attestation": "completed",
     "Completed": "completed",
@@ -70,6 +70,7 @@ _OBPI_FRONTMATTER_BY_LEDGER_STATE: MappingProxyType[str, str] = MappingProxyType
 _ADR_FRONTMATTER_BY_LEDGER_STATE: MappingProxyType[str, str] = MappingProxyType(
     {
         "pending": "Pending",
+        "in_progress": "Accepted",
         "completed": "Completed",
         "validated": "Validated",
         "abandoned": "Abandoned",

@@ -39,6 +39,12 @@ the generated Claude pipeline hooks.
 
 Current command contract:
 
+- every launch records the parent ADR as `Accepted` before writing markers: a
+  `Proposed` ADR transitions `Proposed -> Accepted`, and a `Draft` ADR walks
+  `Draft -> Proposed -> Accepted` through the lifecycle state machine, whose
+  evaluation-justify-binding gate on `Draft -> Proposed` can refuse the launch
+  (exit `3`, nothing written). The ADR's frontmatter `status:` follows the
+  ledger. An ADR already `Accepted` or later is left alone (GHI #1014)
 - full launch creates the active pipeline markers, reads the plan-audit receipt
   when present, advances the brief's frontmatter `status:` out of `Draft` to
   `Active`, and prints the implementation handoff with the follow-up

@@ -13,7 +13,7 @@ from gzkit.ledger import (
     obpi_created_event,
     obpi_receipt_emitted_event,
 )
-from tests.commands.common import CliRunner, _init_git_repo, _quick_init
+from tests.commands.common import CliRunner, _init_git_repo, _quick_init, _record_adr_work_start
 
 
 class TestAdrRuntimeCommands(unittest.TestCase):
@@ -144,6 +144,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
             _init_git_repo(Path.cwd())
             self._set_manifest_verification_noop()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 0, result.output)
             ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
@@ -163,6 +164,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         with runner.isolated_filesystem():
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--dry-run"])
             self.assertEqual(result.exit_code, 0)
             ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
@@ -173,6 +175,7 @@ class TestAdrRuntimeCommands(unittest.TestCase):
         with runner.isolated_filesystem():
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            _record_adr_work_start("ADR-0.1.0-f")
             result = runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--dry-run"])
             self.assertEqual(result.exit_code, 0)
             self.assertIn("Completed - Partial: [reason]", result.output)

@@ -148,3 +148,56 @@ class LifecycleStateMachine:
         Returns True if the state appears in the transition table.
         """
         return state in get_all_states(content_type)
+
+
+# ---------------------------------------------------------------------------
+# ADR work-start and closeout transitions (GHI #1014)
+# ---------------------------------------------------------------------------
+
+
+def current_adr_state(graph_info: dict[str, Any], frontmatter_status: str | None) -> str | None:
+    """Return an ADR's actual lifecycle state: the latest recorded transition, else frontmatter.
+
+    Closeout once wrote a hardcoded ``from_state`` of ``Proposed`` whatever the ADR
+    was (GHI #1014); every transition now starts from this value instead.
+    """
+    return graph_info.get("lifecycle_state") or frontmatter_status
+
+
+def work_start_transitions(state: str | None) -> list[tuple[str, str]]:
+    """Return the transitions starting OBPI work records on its ADR.
+
+    Operator rulings: "if we start work on an ADR, it is accepted" (2026-09-16),
+    and a Draft ADR walks through Proposed so the justify-binding gate on
+    ``Draft -> Proposed`` still runs (2026-09-28). Any other state is left alone.
+    """
+    if state == "Draft":
+        return [("Draft", "Proposed"), ("Proposed", "Accepted")]
+    if state == "Proposed":
+        return [("Proposed", "Accepted")]
+    return []
+
+
+def closeout_transitions(
+    state: str | None, *, dropped: bool, work_started: bool
+) -> list[tuple[str, str]]:
+    """Return closeout's validated transitions from the ADR's actual state.
+
+    A dropped closeout ends ``Deprecated``; a completed one ends ``Completed``. An
+    ADR still ``Proposed`` whose OBPI work began before the work-start writer
+    existed first catches up through ``Accepted``, but only on evidence that work
+    started (operator ruling 2026-09-28). Any illegal pair raises
+    ``InvalidTransitionError`` before anything is written.
+    """
+    source = state or ""
+    target = "Deprecated" if dropped else "Completed"
+    path: list[tuple[str, str]] = []
+    if source == "Proposed" and work_started and not dropped:
+        path.append(("Proposed", "Accepted"))
+        source = "Accepted"
+    path.append((source, target))
+    for from_state, to_state in path:
+        if not is_valid_transition("ADR", from_state, to_state):
+            allowed = get_allowed_transitions("ADR", from_state)
+            raise InvalidTransitionError("ADR", from_state, to_state, allowed)
+    return path

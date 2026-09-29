@@ -1043,6 +1043,7 @@ class Ledger:
         if event.event == "adr_created":
             entry["lane"] = event.extra.get("lane")
             entry["closeout_initiated"] = False
+            entry["lifecycle_state"] = None
             entry["closeout_by"] = None
             entry["closeout_mode"] = None
             entry["closeout_evidence"] = None
@@ -1113,6 +1114,25 @@ class Ledger:
                     "obpi_completion"
                 ) or event.extra.get("obpi_completion")
                 graph[canonical_id]["attestation_by"] = event.extra.get("attestor")
+
+    @staticmethod
+    def _apply_adr_lifecycle_metadata(
+        graph: dict[str, dict[str, Any]],
+        canonical_id: str,
+        event: LedgerEvent,
+    ) -> None:
+        """Record an ADR's latest recorded lifecycle state (GHI #1014).
+
+        Reads ``to_state`` whatever the ``content_type`` casing: closeout wrote
+        ``adr`` and the state machine writes ``ADR``.
+        """
+        if event.event != "lifecycle_transition" or canonical_id not in graph:
+            return
+        if graph[canonical_id].get("type") != "adr":
+            return
+        to_state = event.extra.get("to_state")
+        if isinstance(to_state, str) and to_state:
+            graph[canonical_id]["lifecycle_state"] = to_state
 
     @staticmethod
     def _apply_closeout_metadata(
@@ -1303,6 +1323,7 @@ class Ledger:
         cls._apply_adr_created_metadata(graph, canonical_id, event)
         cls._apply_attestation_metadata(graph, canonical_id, event)
         cls._apply_closeout_metadata(graph, canonical_id, event)
+        cls._apply_adr_lifecycle_metadata(graph, canonical_id, event)
         cls._apply_audit_receipt_metadata(graph, canonical_id, event)
         cls._apply_obpi_receipt_metadata(graph, canonical_id, event)
         cls._apply_pipeline_launched_metadata(graph, canonical_id, event)
@@ -1425,10 +1446,15 @@ class Ledger:
             lifecycle_status = "Completed"
             closeout_phase = "attested"
         elif closeout_initiated:
-            lifecycle_status = "Pending"
+            lifecycle_status = (
+                "Accepted" if info.get("lifecycle_state") == "Accepted" else "Pending"
+            )
             closeout_phase = "closeout_initiated"
         else:
-            lifecycle_status = "Pending"
+            # Accepted = OBPI work has started on the ADR (GHI #1014).
+            lifecycle_status = (
+                "Accepted" if info.get("lifecycle_state") == "Accepted" else "Pending"
+            )
             closeout_phase = "pre_closeout"
 
         return {
