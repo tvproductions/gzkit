@@ -801,6 +801,8 @@ Bundled questions, unjustified open prompts, *"please specify"* when a draft wou
 
 Source: Architecture Planning Memo Section 12 (Decision Record 2026-03-29).
 
+**Re-ratified 2026-09-29 (GHI #818).** The operator reviewed all six against the repo: 1 retired (superseded by the Magna Carta's release prioritization), 2 retired (the pool may grow; promotion selection is carried by `ADR-pool.pool-management` § 9), 3 retired as fulfilled (ADR-0.0.9 Validated), and 4–6 kept with their witnesses named. Authority is now the AGENTS.md corpus (`.gzkit/corpus/AGENTS.md.jsonl`, section `architectural-boundaries`), which holds the operator's rulings verbatim; the list below is the 2026-03-29 record.
+
 1. **Do not promote post-1.0 pool ADRs into active work.** `ai-runtime-foundations`, `controlled-agency-recovery`, and `evaluation-infrastructure` remain parked until the graph spine, proof architecture, and pipeline lifecycle are stable.
 2. **Do not add more pool ADRs to the runtime track.** The pool has sufficient runtime intent; lock foundation first.
 3. **Do not build the graph engine without locking state doctrine first.** A graph engine built on implicit state assumptions becomes the single biggest source of reconciliation bugs.

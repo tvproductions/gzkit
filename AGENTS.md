@@ -237,14 +237,10 @@ A value written in a Markdown doc is ILLUSTRATIVE, never authoritative. Executio
 - `docs/governance/GovZero/adr-status.md` is a Layer 3 derived view per `docs/governance/state-doctrine.md`, never hand-maintained; regenerate with `uv run gz register-adrs` — `gz validate --adr-status-fresh`, in the default `gz check` (GHI #322).
 ## Architectural Boundaries
 
-1. Do not promote post-1.0 pool ADRs into active work.
+4. Do not let reconciliation remain a maintenance chore. Witness: `gz validate --reconcile-freshness`.
 
-2. Do not add more pool ADRs to the runtime track.
+5. Do not let AirlineOps parity become perpetual catch-up: gzkit leads and AirlineOps adopts; gzkit does not chase AirlineOps patches. gzkit's purpose is wider than AirlineOps, which is part of its genesis.
 
-3. Do not build the graph engine without locking state doctrine first.
+6. Do not let derived views silently become source-of-truth — `gz status`, pipeline markers, and reconciliation caches are Layer 3; every fact traces to Layer 1 canon or Layer 2 ledger (`docs/governance/state-doctrine.md`). Witnesses: `gz validate --frontmatter`, `--event-handlers`, `--validator-fields`, `--adr-status-fresh`.
 
-4. Do not let reconciliation remain a maintenance chore.
-
-5. Do not let AirlineOps parity become perpetual catch-up.
-
-6. Do not let derived views silently become source-of-truth — `gz status`, pipeline markers, and reconciliation caches are Layer 3; every fact traces to Layer 1 canon or Layer 2 ledger.
+Boundaries 1–3 were retired 2026-09-29 (GHI #818): 1 is superseded by the Magna Carta's release prioritization, 2 by pool triage (`ADR-pool.pool-management` § 9), and 3 is fulfilled by ADR-0.0.9. The operator's rulings are verbatim in the corpus retirements.

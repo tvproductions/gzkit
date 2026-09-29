@@ -5,9 +5,9 @@ description: Promote a pool ADR into canonical ADR package structure. Use when m
 category: adr-lifecycle
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-27
+last_reviewed: 2026-09-29
 metadata:
-  skill-version: "1.8.0"
+  skill-version: "1.8.1"
 model: sonnet
 ---
 
@@ -108,8 +108,8 @@ under a clean table (path 1) while keeping rich prose in a
 ## Workflow
 
 1.  **Identify the pool ADR** (e.g. `ADR-pool.ai-runtime-foundations`) and read
-    it through. Check it against `AGENTS.md` § Architectural Boundaries: item 1
-    forbids promoting post-1.0 pool ADRs into active work.
+    it through. Check it against `AGENTS.md` § Architectural Boundaries and the
+    active campaign plan, which sets release prioritization.
 2.  **Choose the target version and kind.** `--kind feature` in gzkit, with the
     semver the ascending feature-ADR order allows (the work-order ruling carried
     in `gz-obpi-pipeline`). In an adopter project where `foundation` is open, it
@@ -162,7 +162,6 @@ These thoughts mean STOP — you are about to violate the architectural boundary
 
 | Thought | Reality |
 |---------|---------|
-| "This pool ADR is post-1.0 but the work is interesting — promote it anyway" | `AGENTS.md` § Architectural Boundaries item 1: do not promote post-1.0 pool ADRs into active work. "Interesting" is not the criterion. |
 | "The pool ADR doesn't have actionable Target Scope bullets, but I know what it means" | Promotion is fail-closed without actionable scope. Your interpretation is not a substitute. Refine the pool ADR first. |
 | "The Rule of Three feels like overengineering for this small ADR" | The decomposition protocol exists because ADRs that skip it produce briefs that drift during implementation. Small now, sprawling later. |
 | "I'll add OBPIs after the promote runs" | Promotion fixes the checklist and briefs 1:1 from the pool's decomposition. Change the pool's table or bullets before promoting, not the promoted package after it. |

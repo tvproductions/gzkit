@@ -57,9 +57,10 @@ def audit_pool_adr_isolation(project_root: Path) -> list[ValidationError]:
     """Fail on pool ADRs receiving runtime-track lifecycle or gate events.
 
     Pool ADRs (under ``docs/design/adr/pool/`` or id-prefixed ``ADR-pool.*``)
-    are architectural backlog. Per architectural-boundaries rules 1–2 they
-    must not receive Gate 1+ events; doing so means they were promoted
-    without the formal ``gz-adr-promote`` ceremony.
+    are architectural backlog and must not receive Gate 1+ events; doing so
+    means they were promoted without the formal ``gz-adr-promote`` ceremony.
+    (Architectural Boundaries 1–2, which this once cited, were retired
+    2026-09-29 under GHI #818; the ceremony requirement stands on its own.)
     """
     ledger = project_root / ".gzkit" / "ledger.jsonl"
     if not ledger.is_file():

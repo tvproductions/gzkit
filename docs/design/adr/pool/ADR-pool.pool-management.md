@@ -141,6 +141,23 @@ The decision belongs to the ADR's promotion review, not to the chore's author. T
 
 **Not a framework feature.** The `pool-triage` chore is a gzkit-internal maintenance item — it targets gzkit's own pool, runs in gzkit's own chore suite, and serves gzkit's own operator. Downstream projects that adopt gzkit will have their own pools and may author their own triage chores using gzkit's chore framework, but this specific chore is not packaged as a framework deliverable or a template. The tooling-layer-vs-consumer-layer distinction (see OBPI-0.25.0-29 Exclude precedent) governs here: gzkit ships the *chore framework*, not a catalog of chores for downstream consumers.
 
+### 9. Operator requirement: pool triage for promotion selection (2026-09-29)
+
+Operator (`g0`), verbatim, while retiring Architectural Boundary 2 (*"do not add more pool ADRs to the runtime track"*) during the GHI #818 interview:
+
+> retire it, we can allow items in the pool without almost any limit. what we need, if we don't have it yet, is a skill/process that allows us to review the pool for triage (selection for promotion) in a manner that is similar to the `ghi-triage` skill/chore.
+
+> for boundary 2, yes, we need a note, either in ADR-pool.pool-management or in the chore, that either ADR-pool.pool-management does this triage work or new dedicated facility does this triage work. don't lose this. this way, boundary two can be retired too.
+
+**What exists at this date and what does not.** The `pool-triage` chore (§ 8) reports drift only and declares that it *"never ranks pool items"*; no skill wields it. § 7 designs the ranking but it is unbuilt. There is no `ghi-triage`-shaped surface — a skill plus deterministic script that reads every pool ADR and renders a rank-ordered promotion-selection deliverable.
+
+**Obligation carried by this ADR.** Unlimited pool growth is acceptable *because* promotion selection is triaged. The obligation is to deliver an operator-run pool triage that ranks pool ADRs for promotion, modeled on `ghi-triage`. It is discharged in one of two ways, decided at this ADR's promotion review:
+
+- **This ADR delivers it** — § 7's ranking, surfaced through a triage skill in the `ghi-triage` shape; or
+- **A new dedicated facility delivers it** — a skill/chore authored for the purpose, with this section pointing at it by name once it exists.
+
+Until one of those lands, this section is the tracking record. Retiring Boundary 2 does not retire this obligation.
+
 ---
 
 ## Non-Goals

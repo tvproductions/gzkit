@@ -87,11 +87,10 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 
 ### Architectural Boundaries (`CLAUDE.md` § Architectural Boundaries)
 
+**Re-ratified 2026-09-29 (GHI #818).** The operator reviewed all six against the repo, retired 1–3 and kept 4–6 with their witnesses named. Authority is the AGENTS.md corpus (section `architectural-boundaries`), not the planning memo. Rows 1–3 are removed from the table (a retired rule has no score); rows 4–6 keep their numbers for citation stability.
+
 | # | Rule | Score | Notes |
 |---|------|-------|-------|
-| 1 | Do not promote post-1.0 pool ADRs into active work | **Mechanical** | Enforced by `gz validate --pool-adr-isolation` (GHI #208) — scans ledger for pool ADR IDs receiving Gate 1+ events |
-| 2 | Do not add more pool ADRs to the runtime track | **Mechanical** | Same audit as #1 — a pool ADR receiving `gate_checked`/`lifecycle_transition`/`attestation`/`obpi_completed`/`adr_audit`/`adr_closeout` is a violation |
-| 3 | Do not build the graph engine without locking state doctrine first | **Judgment** | "Locking" is a human decision; can't mechanize ordering of conceptual work |
 | 4 | Do not let reconciliation remain a maintenance chore | **Mechanical** | Enforced by `gz validate --reconcile-freshness` (GHI #213) — flags when the latest reconcile ledger event is older than HEAD by more than 24h |
 | 5 | Do not let AirlineOps parity become perpetual catch-up | **Judgment** | Requires a metric ("perpetual") that depends on external repo state |
 | 6 | Do not let derived views silently become source-of-truth | **Mechanical** | Enforced by `gz validate --frontmatter`, `--event-handlers`, `--validator-fields`. Trust doctrine operationalizes this rule |
@@ -516,9 +515,9 @@ decays in whichever direction the next reader's grep happens to point.
 
 | Score | Rows | % of scored rows |
 |-------|-------|---|
-| **Mechanical** | 71 | 39% |
+| **Mechanical** | 69 | 38% |
 | **Promotable** | 36 | 20% |
-| **Judgment** | 76 | 42% |
+| **Judgment** | 75 | 42% |
 | **Ambiguous** | 0 | 0% |
 
 <!-- The Rows column is machine-checked by `gz validate --advisory-scorecard`;

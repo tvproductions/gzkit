@@ -1,9 +1,10 @@
 {
   "algorithm": "sha256",
-  "corpus_fingerprint": "66210c9ba2ffb285e80d024dbb6755f0abb07fcda8502e95d97ea6d11d4096d3",
-  "corpus_entry_count": 473,
-  "rendition_fingerprint": "46c9e60756737470314a42d56bc0942d40a695d6988d512fd88ba664de368db0",
-  "committed_ts": "2026-09-27T20:36:06.206958+00:00",
+  "corpus_fingerprint": "bc8e64cb9cc7a9540c09065927545c29894c0a95f8af68023dca5c701462e4e0",
+  "corpus_entry_count": 483,
+  "rendition_fingerprint": "2ba89ed9d9cd4458ea58d6a5d8a5ce631e8637297365dd3cdbd509666f315711",
+  "committed_ts": "2026-09-29T08:19:27.201767+00:00",
   "attestor": "g0",
-  "attestation_text": "approved, keep it as a separate line — evidence: corpus entry corpus-operator-doctrine-verbatim-canon-2026-09-27T20:35:02.678914+00:00; advisor receipt arb-step-judge-ad5a6ee6647e49efbcf683392e3724c5; no blocks removed"
+  "attestation_text": "attest: drop C1, C2, C3 as retired; keep 4–6 with witnesses",
+  "landing_id": null
 }
