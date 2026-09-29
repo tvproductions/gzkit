@@ -2,11 +2,12 @@
 
 **STOP. Read this entire file before authoring or modifying any chore.**
 
-This directory is the **canonical, packaged source** of gzkit chores
-(`src/gzkit/chores/`). It ships in the wheel and is discoverable at runtime via
-`importlib.resources.files("gzkit.chores")`. Project repositories receive
-project-local overlays at `.gzkit/chores/<slug>/`; canonical templates here are
-read-only at runtime.
+Chores are **authored in `.gzkit/chores/`** and
+`uv run gz agent sync control-surfaces` generates the distribution copy at
+`src/gzkit/chores/` (`.gzkit/rules/skill-surface-sync.md` rule 1). The
+distribution copy ships in the wheel, is discoverable at runtime via
+`importlib.resources.files("gzkit.chores")`, and is what `gz chores doctor`
+restores from. Never edit it: the next sync overwrites it.
 
 ---
 
@@ -14,8 +15,8 @@ read-only at runtime.
 
 | Surface | Path | Role | Shipped in wheel? |
 |---------|------|------|-------------------|
-| Canonical (package) | `src/gzkit/chores/<slug>/` | Authoritative templates and registry | **Yes** |
-| Project overlay | `.gzkit/chores/<slug>/` | Project-local copies + execution evidence (`proofs/`) | No |
+| Canonical (edit here) | `.gzkit/chores/<slug>/` | Authoring source, project-local chores, execution evidence (`proofs/`) | No |
+| Distribution (generated) | `src/gzkit/chores/<slug>/` | Synced canonical-class templates and filtered registry; runtime fallback and doctor source | **Yes** |
 
 `gz chores` resolves each slug **project-first → package-fallback**: it looks
 under `<project_root>/.gzkit/chores/<slug>/` first; if that path is absent or
@@ -103,9 +104,12 @@ uv run gz chores doctor --dry-run       # Report-only; no file changes
 uv run gz chores doctor --json          # One JSON record per slug
 ```
 
-`doctor` re-creates any missing canonical file (`CHORE.md`, `acceptance.json`,
-`README.md`) inside `.gzkit/chores/<slug>/` from the package source, byte-for-byte
-matching the canonical scaffold output. It never touches `proofs/` content
+`doctor` repairs only slugs the package carries. A `MISSING` slug (directory
+absent) is re-scaffolded from the package. A `DAMAGED` slug (a definition file
+absent, or `acceptance.json` unparseable) has **every** definition file whose
+bytes differ from the package rewritten, surviving edited files included. A
+`HEALTHY` slug is left alone even when it differs. Run `--dry-run` first and sync
+unsynced `.gzkit/chores/` edits before repairing. It never touches `proofs/` content
 (REQ-0.0.21-09-05) and never modifies project-local-only slugs that are absent
 from the canonical set (REQ-0.0.21-09-06).
 

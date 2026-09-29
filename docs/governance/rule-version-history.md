@@ -186,6 +186,12 @@ Lifted at version `0.3.2` (rule now at `0.3.3`).
 
 > **Rule version:** `0.5.1` — the full-suite test invocation is `uv run gz test`, the parallel canonical runner; the serial `-m unittest` form is retired (operator ruling 2026-09-18, under GHI #921). Prior `0.5.0`: § Discover Chores adds `gz chores status`, the staleness board that reads every chore's band without running one (GHI #936), and § Plan & Advise drops a `--replace` flag `gz chores plan` never had; prior `0.4.0` lifted to [Rule Version History](../../docs/governance/rule-version-history.md#choresmd).
 
+### Lifted 2026-09-28 at version `0.5.3` (rule now at `0.6.0`)
+
+> **Rule version:** `0.5.3` — distinguish Lite chore verification from required full-repository checks and Heavy BDD evidence (GHI #1042).
+
+> **Rule version:** `0.5.2` — the Lite-lane typecheck line is the canonical `uv run ty check . --exclude features` (GHI #921). Binding rules unchanged. (Recovered from `7422e33ab`; the `0.5.3` edit replaced it without lifting it.)
+
 ## `adr-audit.md`
 
 Lifted at version `0.2.0` (rule now at `0.2.1`).

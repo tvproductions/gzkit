@@ -65,7 +65,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `security-sensitivity.md` | `0.6.0` |
 | `skill-surface-sync.md` | `0.13.0` |
 | `skill-authoring.md` | `0.2.0` |
-| `chores.md` | `0.5.3` |
+| `chores.md` | `0.6.0` |
 | `cli.md` | `0.9.1` |
 | `cross-platform.md` | `0.7.0` |
 | `gate5-runbook-code-covenant.md` | `0.3.1` |
@@ -218,6 +218,8 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | 56 | CLI-only evidence (no raw SQL attestation) | **Judgment** | Anti-pattern prevention; cultural. A regex for SQL keywords in attestation text would grade shape, not substance (the `shape-graded-not-substance` signature ADR-0.0.73 refuses). |
 | 56a | **A chore never discharges a finding by suppression.** | **Mechanical** | Arms: no criterion runs through a shell interpreter or passes an exit-forcing flag, and no criterion or CHORE.md command writes suppression markers. **Added 2026-09-13 (rule `0.4.0`), GHI #999 step 6**, landed with its witness so the clause never stood unwitnessed (operator ruling 2026-09-13, verbatim *"Static chore check (Recommended)"*). Witness `NC:chore-suppression`, which plants a chore carrying an exit-forcing criterion beside an honest criterion and a workflow report capture ending `\|\| true`, so the control fails for the planted reason. Enforced arm: `tests/governance/test_chore_suppression.py` runs `audit_chore_suppression` over the live registry in the unit suite, with planted cases for each route; a mutation sweep over its six guards killed all six, conclusive. The registry loader's `SHELL_OPERATORS_RE` already refused `&&`, `\|\|`, `\|`, `<` and `>` in a criterion; this row covers the routes that refusal leaves open. Scope limits, declared: an interpreter that is not a shell (`python -c`) can still exit 0 by construction, and a writer quoted with its command inside prose code reads as an instruction. |
 | 56b | A suppression marker hand-written during a chore run | **Judgment** | **Added 2026-09-13 (rule `0.4.0`), GHI #999 step 6; advisory in the rule's own text.** gzkit models no binding from a chore run to the diff it leaves, so attributing a new `# noqa` to a run is a reading of the diff. A repo-wide suppression ratchet was considered and not chosen at the same ruling: it would gate every commit rather than chore runs. Reclassify on a named run that discharged a finding by a hand-written marker and was caught late. |
+| 56c | Author every chore in `.gzkit/chores/<slug>/` | **Promotable** | **Added 2026-09-28 (rule `0.6.0`), GHI #1044**, which found the rule naming the package copy canonical while `skill-surface-sync.md` rule 1 named `.gzkit/`; operator ruling 2026-09-28, verbatim *".gzkit/chores/ canonical (Recommended)"*. The consequence arm exists: `gz validate --distribution` byte-compares canonical-class chore files between the two trees, so an edit made only in the package copy fails it, and the next `gz agent sync control-surfaces` overwrites it. Promotable rather than Mechanical because no registered `NC:<claim-id>` plants a package-only chore edit and asserts the distribution check fires. Promotion path: author that control. |
+| 56d | `gz chores doctor` rewrites every differing definition file of a `DAMAGED` slug; dry-run and sync before repairing | **Judgment** | **Added 2026-09-28 (rule `0.6.0`), GHI #1044.** The replacement semantics are code (`_repair_damaged_doctor_slug`, `src/gzkit/commands/chores.py`), described rather than changed, as the issue required. Whether an operator dry-runs and syncs first is procedure with no artifact recording it. |
 
 ### ADR Audit (`.gzkit/rules/adr-audit.md`)
 
@@ -515,8 +517,8 @@ decays in whichever direction the next reader's grep happens to point.
 | Score | Rows | % of scored rows |
 |-------|-------|---|
 | **Mechanical** | 71 | 39% |
-| **Promotable** | 35 | 19% |
-| **Judgment** | 75 | 41% |
+| **Promotable** | 36 | 20% |
+| **Judgment** | 76 | 42% |
 | **Ambiguous** | 0 | 0% |
 
 <!-- The Rows column is machine-checked by `gz validate --advisory-scorecard`;
