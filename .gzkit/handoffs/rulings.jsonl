@@ -1210,3 +1210,4 @@
 {"ts": "2026-09-29T09:53:27Z", "source": "20260929T095323Z-ghi-queue-drained-boundaries-reratified.md", "text": "GHI #1063: 'Add both ratchets to gz check'."}
 {"ts": "2026-09-29T09:53:27Z", "source": "20260929T095323Z-ghi-queue-drained-boundaries-reratified.md", "text": "GHI #803 required level: 'A' (warn)."}
 {"ts": "2026-09-29T09:53:27Z", "source": "20260929T095323Z-ghi-queue-drained-boundaries-reratified.md", "text": "GHI #927 ownership: 'A' (#927 owns it; #849 stays closed)."}
+{"ts": "2026-09-29T10:01:29Z", "source": "20260929T100124Z-worktrees-removed-ghi-1150-filed.md", "text": "Remove the worktrees and file the ADR-0.33.0 GHI (verbatim: 'yes, remove the worktrees and file the ADR-0.33.0 GHI')."}
