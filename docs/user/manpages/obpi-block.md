@@ -81,5 +81,5 @@ uv run gz obpi block OBPI-0.35.0-02 --reason "..." --next-action "..." --dry-run
 
 - [`obpi-unblock`](obpi-unblock.md) — record the ruling and release the block
 - [`obpi-pipeline`](obpi-pipeline.md) — the launch surface the block gates
-- [`obpi-precomplete`](obpi-precomplete.md) — surfaces the block as a precondition
+- `obpi-precomplete` — surfaces the block as a precondition
 - [`obpi-withdraw`](obpi-withdraw.md) — permanent, attested retirement

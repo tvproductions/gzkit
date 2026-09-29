@@ -79,8 +79,7 @@ sync, CLAUDE.md under budget.
 
 | Related | Relationship |
 |---------|-------------|
-| [`gz check`](../commands/check.md) | The CLI command this skill wraps |
+| [`gz check`](../manpages/check.md) | The CLI command this skill wraps |
 | [`/gz-arb`](gz-arb.md) | Quality-only workflow (no Claude surface checks) |
-| [`/gz-gates`](gz-gates.md) | Gate verification that depends on check results |
 | [`/gz-agent-sync`](gz-agent-sync.md) | Regenerates surfaces when drift is detected |
 | [`/git-sync`](git-sync.md) | Typically follows after checks pass |

@@ -4,7 +4,7 @@ Date: 2026-09-19. Persona: main-session — craftsperson, governance-aware, whol
 
 ## Scope and method
 
-Read the complete canonical [skill](../../.gzkit/skills/gz-big-picture/SKILL.md), including its inline examples and quality guidance (version 0.1.1). The examples were initially read as a reference file and were reread after being moved unchanged into the self-contained skill. Applied its writing instructions to the two supplied synthetic cases below, with no other project facts. The evaluator authored the samples and assessed them; this is not a blinded comparison or an independent human usefulness verdict.
+Read the complete canonical [skill](https://github.com/tvproductions/gzkit/blob/main/.gzkit/skills/gz-big-picture/SKILL.md), including its inline examples and quality guidance (version 0.1.1). The examples were initially read as a reference file and were reread after being moved unchanged into the self-contained skill. Applied its writing instructions to the two supplied synthetic cases below, with no other project facts. The evaluator authored the samples and assessed them; this is not a blinded comparison or an independent human usefulness verdict.
 
 These are fictional evaluation specimens, not reports about gzkit or an actual adopting project. They are retained here as evaluation evidence only. No publication command was invoked, no report-history entry was created, and no ledger event was emitted by this evaluation.
 

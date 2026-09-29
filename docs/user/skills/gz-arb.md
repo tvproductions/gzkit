@@ -72,10 +72,9 @@ directly.
 
 | Related | Relationship |
 |---------|-------------|
-| [`gz lint`](../commands/lint.md) | Individual lint command (run separately by this skill) |
-| [`gz typecheck`](../commands/typecheck.md) | Individual typecheck command |
-| [`gz test`](../commands/test.md) | Individual test command |
-| [`gz check`](../commands/check.md) | Composite quality check command |
+| [`gz lint`](../manpages/lint.md) | Individual lint command (run separately by this skill) |
+| [`gz typecheck`](../manpages/typecheck.md) | Individual typecheck command |
+| [`gz test`](../manpages/test.md) | Individual test command |
+| [`gz check`](../manpages/check.md) | Composite quality check command |
 | [`/gz-check`](gz-check.md) | Similar skill with additional Claude surface validation |
 | [`/git-sync`](git-sync.md) | Typically follows after quality checks pass |
-| [`/gz-gates`](gz-gates.md) | Gate verification that depends on quality evidence |

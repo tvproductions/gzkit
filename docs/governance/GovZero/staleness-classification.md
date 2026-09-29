@@ -162,6 +162,6 @@ ctx = gather_git_context("2026-02-10T10:00:00Z", handoff_branch="main")
 ## See Also
 
 - [Session Handoff Schema](session-handoff-schema.md) -- Time-only staleness spec (superseded for multi-factor use)
-- [ADR-0.0.25](../../design/adr/adr-0.0.x/ADR-0.0.25-compounding-engineering-session-handoff-contract/ADR-0.0.25-compounding-engineering-session-handoff-contract.md) -- Architecture decision record
+- ADR-0.0.25 -- Architecture decision record
 - Tests: `tests/governance/test_staleness.py`
 - Agent rules: `.github/skills/gz-session-handoff/assets/staleness-rules.md`

@@ -84,4 +84,4 @@ Without both sides, the covenant fails silently.
 - [OBPIs](concepts/obpis.md) — Atomic work units
 - [Closeout Ceremony](concepts/closeout.md) — How attestation works
 - [Daily Workflow](concepts/workflow.md) — The daily habits
-- [Commands](commands/index.md) — Full reference
+- [Commands](manpages/index.md) — Full reference

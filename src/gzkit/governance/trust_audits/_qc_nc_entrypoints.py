@@ -302,6 +302,21 @@ def _ep_docs_build(root: Path) -> int:
     return int("absent-page.md" in output and "strict mode" in output)
 
 
+def _ep_docs_build_validation_floor(root: Path) -> int:
+    """Require the production ``run_mkdocs`` to refuse a downgraded validation config.
+
+    Exit 3 alone would not distinguish the floor from any other refusal, so every
+    key in ``MKDOCS_VALIDATION_FLOOR`` must be named — the fixture downgrades all
+    of them through the shorthand, and a floor that dropped a key goes red here.
+    """
+    from gzkit.quality import MKDOCS_VALIDATION_FLOOR, run_mkdocs  # noqa: PLC0415
+
+    result = run_mkdocs(root)
+    if result.success or result.returncode != 3:
+        return 0
+    return int(all(f"validation.{key}" in result.stderr for key in MKDOCS_VALIDATION_FLOOR))
+
+
 def _ep_behave(root: Path) -> int:
     """Run behave from THIS interpreter, so the installed behave is the one used.
 

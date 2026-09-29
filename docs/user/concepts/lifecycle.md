@@ -79,5 +79,5 @@ license to skip context loading.
 
 - [Closeout](closeout.md)
 - [Workflow](workflow.md)
-- [gz adr status](../commands/adr-status.md)
-- [gz status](../commands/status.md)
+- [gz adr status](../manpages/adr-status.md)
+- [gz status](../manpages/status.md)

@@ -537,7 +537,7 @@ carrying a supersession banner pointing here):
 | Superseded artifact | Was |
 |---|---|
 | [`return-to-health-plan-2026-05-30.md`](return-to-health-plan-2026-05-30.md) | Active canonical recovery plan (emergencies, Tier-0 fires, snapshots A–N) |
-| [`ultraplan-brief.md`](../../ultraplan-brief.md) | Single planning input for ultraplan (restore-health convergence) |
+| [`ultraplan-brief.md`](ultraplan-brief.md) | Single planning input for ultraplan (restore-health convergence) |
 | [`restore-health-convergence-roadmap.md`](../design/restore-health-convergence-roadmap.md) | Layer-3 sequencing view over the ultraplan brief |
 
 `docs/design/ARCHITECTURE-PLANNING-MEMO.md` is retained as a historical

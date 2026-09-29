@@ -59,7 +59,7 @@ The ceremony commits under an auto-generated `chore: … (gz git-sync)` subject
 carrying `Task: TASK-gz-git-sync`. That attribution is correct for what the
 ceremony produces — generated mirrors, `.gzkit/` state, the ledger — and wrong
 for `src/**` / `tests/**` work, which
-[`.gzkit/rules/tests.md` § TASK-Driven Workflow](../../../.gzkit/rules/tests.md)
+[`.gzkit/rules/tests.md` § TASK-Driven Workflow](https://github.com/tvproductions/gzkit/blob/main/.gzkit/rules/tests.md)
 scopes a real `Task:` trailer to.
 
 So before `git add -A`, sync reads the three sets that sweep would stage — the

@@ -33,8 +33,6 @@ First-stage intent routers. Pick the namespace that matches your intent, then in
 | [`/gz-adr-evaluate`](gz-adr-evaluate.md) | Post-authoring quality evaluation for ADRs and OBPIs |
 | [`/gz-adr-promote`](gz-adr-promote.md) | Promote a pool ADR into canonical ADR package structure |
 | [`/gz-adr-status`](gz-adr-status.md) | Show ADR table or focused lifecycle and OBPI detail |
-| [`/gz-attest`](gz-attest.md) | Record human attestation with prerequisite enforcement |
-| [`/gz-closeout`](gz-closeout.md) | Initiate ADR closeout with evidence context |
 | [`/gz-design`](gz-design.md) | Collaborative design dialogue that produces GovZero ADR artifacts |
 | [`/gz-rnd`](gz-rnd.md) | Governed R&D session that retains and routes exploratory design outcomes |
 | [`/gz-plan`](gz-plan.md) | Create ADR artifacts for planned change |
@@ -45,12 +43,9 @@ First-stage intent routers. Pick the namespace that matches your intent, then in
 
 | Skill | Description |
 |-------|-------------|
-| [`/gz-adr-check`](gz-adr-check.md) | Run blocking ADR evidence checks for a target ADR |
 | [`/gz-adr-emit-receipt`](gz-adr-emit-receipt.md) | Emit ADR receipt events with scoped evidence payloads |
-| [`/gz-adr-manager`](gz-adr-manager.md) | Compatibility alias for gz-adr-create |
 | [`/gz-adr-map`](gz-adr-map.md) | Build ADR-to-artifact traceability using gz state and repository search |
 | [`/gz-adr-sync`](gz-adr-sync.md) | End-to-end ADR governance sync — evidence discovery, ledger reconciliation, and registration (Layers 1-3) |
-| [`/gz-adr-verification`](gz-adr-verification.md) | Verify ADR evidence and linkage using ADR/status checks |
 | [`/gz-advisor-qc`](gz-advisor-qc.md) | Judge the information-retained-per-byte of a candidate rendition and record the verdict via `gz content advise-rendition` — advisory, never gating |
 
 ---
@@ -61,7 +56,6 @@ First-stage intent routers. Pick the namespace that matches your intent, then in
 |-------|-------------|
 | [`/gz-adr-audit`](gz-adr-audit.md) | Gate-5 audit templates and procedure for ADR verification |
 | [`/gz-adr-closeout-ceremony`](gz-adr-closeout-ceremony.md) | Execute the ADR closeout ceremony protocol for human attestation |
-| [`/gz-audit`](gz-audit.md) | Run strict post-attestation reconciliation audits |
 
 ---
 
@@ -69,8 +63,6 @@ First-stage intent routers. Pick the namespace that matches your intent, then in
 
 | Skill | Description |
 |-------|-------------|
-| [`/gz-obpi-audit`](gz-obpi-audit.md) | Audit OBPI brief status against actual code/test evidence |
-| [`/gz-obpi-brief`](gz-obpi-brief.md) | Generate a new OBPI brief file with correct headers and evidence stubs |
 | [`/gz-obpi-lock`](gz-obpi-lock.md) | Claim or release OBPI-level work locks for multi-agent coordination |
 | [`/gz-obpi-pipeline`](gz-obpi-pipeline.md) | Post-plan OBPI execution pipeline — implement, verify, present, sync |
 | [`/gz-obpi-sync`](gz-obpi-sync.md) | Audit briefs against evidence, fix stale metadata, write ledger proof |
@@ -79,7 +71,6 @@ First-stage intent routers. Pick the namespace that matches your intent, then in
 | [`/gz-obpi-specify`](gz-obpi-specify.md) | Create and author OBPI briefs linked to parent ADR items |
 | [`/gz-plan-audit`](gz-plan-audit.md) | Pre-flight alignment audit — verify plan aligns with OBPI brief |
 | [`/gz-justify`](gz-justify.md) | Pre-execution reasoning walkthrough for GHIs, OBPIs, and drafts |
-| [`/gz-specify`](gz-specify.md) | Create OBPI briefs linked to parent ADR items |
 
 ---
 
@@ -87,7 +78,6 @@ First-stage intent routers. Pick the namespace that matches your intent, then in
 
 | Skill | Description |
 |-------|-------------|
-| [`/format`](format.md) | Auto-format code with Ruff |
 | [`/gz-arb`](gz-arb.md) | Quality evidence workflow using native gz lint/typecheck/test/check |
 | [`/gz-check`](gz-check.md) | Run full quality checks in one pass |
 | [`/gz-chore-runner`](gz-chore-runner.md) | Run a gzkit chore end-to-end (show, plan, advise, execute, validate) |
@@ -103,9 +93,6 @@ First-stage intent routers. Pick the namespace that matches your intent, then in
 | [`/gz-pythonic-pattern-detect`](gz-pythonic-pattern-detect.md) | Surface Pythonic-design-pattern refactor candidates after ADR closeout (AST scanner over `src/`) |
 | [`/gz-pythonic-pattern-apply`](gz-pythonic-pattern-apply.md) | Capture before/after evidence with mechanical-delta proof when a Pythonic-pattern rewrite is applied |
 | [`/gz-tech-debt-review`](gz-tech-debt-review.md) | Survey the codebase for technical debt and recommend resolutions across many debt classes |
-| [`/gz-typecheck`](gz-typecheck.md) | Run static type checks |
-| [`/lint`](lint.md) | Run code linting with Ruff and PyMarkdown |
-| [`/test`](test.md) | Run unit tests with unittest |
 
 ---
 
@@ -114,11 +101,9 @@ First-stage intent routers. Pick the namespace that matches your intent, then in
 | Skill | Description |
 |-------|-------------|
 | [`/gz-constitute`](gz-constitute.md) | Create constitution artifacts |
-| [`/gz-gates`](gz-gates.md) | Run lane-required gates or specific gate checks |
 | [`/gz-implement`](gz-implement.md) | Run Gate 2 verification and record result events |
 | [`/gz-airlock`](gz-airlock.md) | Cross the airlock entry/exit membrane — inspect a seam-map, account for drift, or make a governed ad-hoc reconnaissance entry |
 | [`/gz-init`](gz-init.md) | Initialize gzkit governance scaffolding for a repository |
-| [`/gz-interview`](gz-interview.md) | Run interactive governance interviews |
 | [`/gz-ontology`](gz-ontology.md) | Image the governance shape with the read-only ontology sonar |
 | [`/gz-prd`](gz-prd.md) | Create product requirement artifacts |
 | [`/gz-state`](gz-state.md) | Query artifact relationships and readiness state |

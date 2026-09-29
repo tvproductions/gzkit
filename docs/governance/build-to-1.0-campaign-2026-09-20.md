@@ -7,7 +7,7 @@ Supersedes [`build-to-1.0-campaign-2026-08-16.md`](build-to-1.0-campaign-2026-08
 priors are retained for audit and no longer steer.
 
 > **This line is a restatement, not the authority.** Which plan governs is declared in
-> [`data/active_campaign.json`](../../data/active_campaign.json) and read from there by
+> [`data/active_campaign.json`](https://github.com/tvproductions/gzkit/blob/main/data/active_campaign.json) and read from there by
 > `scripts/session_orientation.py` and `gzkit.knowledge.generate` — execution reads state
 > from JSON, never from prose (`.gzkit/rules/governance-core.md` 0.10.0, operator ruling
 > 2026-08-16). Supersession is performed by moving this file between that registry's

@@ -33,7 +33,7 @@ fire* — they NEVER determine whether Gate 5 brief-level attestation fires. Gat
 - **`heavy` lane** — determines whether Gate 3 (docs) and Gate 4 (BDD) are required.
 - **`security` sensitivity** — adds security-scan requirements to Gate 5.
 
-Third-axis doctrine: [`.gzkit/rules/security-sensitivity.md`](../../.gzkit/rules/security-sensitivity.md).
+Third-axis doctrine: [`.gzkit/rules/security-sensitivity.md`](https://github.com/tvproductions/gzkit/blob/main/.gzkit/rules/security-sensitivity.md).
 
 ## Related
 

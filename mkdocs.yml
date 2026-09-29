@@ -221,12 +221,18 @@ exclude_docs: |
   lodestar/**
   developer/**
   rnd/**
+  # Nested AGENTS.md files are agent instruction surfaces rendered by
+  # `gz agent sync control-surfaces`, not operator pages; their links resolve
+  # from the rule sources they were composed from (GHI #803).
+  AGENTS.md
+  # Authoring template for skill manpages; its links are placeholders.
+  user/skills/_TEMPLATE.md
 
 validation:
   nav:
     omitted_files: info
   links:
-    not_found: ignore
+    not_found: warn
     absolute_links: info
     unrecognized_links: info
     anchors: info

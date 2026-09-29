@@ -31,9 +31,9 @@ procedure, run and audit. The run log's mere existence is not a pass.
 
 | Axis | Observed result | Evidence |
 |---|---|---|
-| Conformance and reachability | 98 runnable scopes; 97 zero exits, one nonzero: evaluation-to-justification binding. Static tiers A47/B27/C23/D1; 51 ungated against baseline 52, ratchet holds. | [98-row matrix](../../.gzkit/chores/control-surface-validator-reachability/proofs/reachability-matrix.md), [sweep](../../.gzkit/chores/control-surface-validator-reachability/proofs/conformance-sweep.md) |
-| Ledger vocabulary | 76 declared types, 66 used, 10 never fired. Disclosure gate passes against baseline 11; the unowned-ratchet event has now fired. No baseline changed. | [Vocabulary and producer dispositions](../../.gzkit/chores/ledger-vocabulary-inertness/proofs/vocabulary-inertness.md) |
-| Doctrine coherence | 29 files, 406 unordered pairs reviewed; source hashes unchanged. Six concrete conflicting/stale prescriptions; all evidence rows validate. Twenty prior findings explicitly disposed. | [Conflict matrix](../../.gzkit/chores/control-surface-rule-conflicts/proofs/conflict-matrix.md), [complete pair record](../../.gzkit/chores/control-surface-rule-conflicts/proofs/pair-review.json) |
+| Conformance and reachability | 98 runnable scopes; 97 zero exits, one nonzero: evaluation-to-justification binding. Static tiers A47/B27/C23/D1; 51 ungated against baseline 52, ratchet holds. | [98-row matrix](https://github.com/tvproductions/gzkit/blob/main/.gzkit/chores/control-surface-validator-reachability/proofs/reachability-matrix.md), [sweep](https://github.com/tvproductions/gzkit/blob/main/.gzkit/chores/control-surface-validator-reachability/proofs/conformance-sweep.md) |
+| Ledger vocabulary | 76 declared types, 66 used, 10 never fired. Disclosure gate passes against baseline 11; the unowned-ratchet event has now fired. No baseline changed. | [Vocabulary and producer dispositions](https://github.com/tvproductions/gzkit/blob/main/.gzkit/chores/ledger-vocabulary-inertness/proofs/vocabulary-inertness.md) |
+| Doctrine coherence | 29 files, 406 unordered pairs reviewed; source hashes unchanged. Six concrete conflicting/stale prescriptions; all evidence rows validate. Twenty prior findings explicitly disposed. | [Conflict matrix](https://github.com/tvproductions/gzkit/blob/main/.gzkit/chores/control-surface-rule-conflicts/proofs/conflict-matrix.md), [complete pair record](https://github.com/tvproductions/gzkit/blob/main/.gzkit/chores/control-surface-rule-conflicts/proofs/archive/2026-09-12/pair-review.json) |
 
 The freshness criterion failed for all three recorded chore runs: its old proofs preceded
 the audited source changes. The refreshed files remain uncommitted; the current
@@ -46,9 +46,9 @@ baseline or receipt was changed to manufacture a green result.
 
 **Lenses:** invariant, change point. The scanner's D category means “No caller
 anywhere”, and its chore prescribes deletion. It assigns D to doc-surface parity.
-However, [the umbrella](../../src/gzkit/commands/validate_audits.py) dispatches
+However, [the umbrella](https://github.com/tvproductions/gzkit/blob/main/src/gzkit/commands/validate_audits.py) dispatches
 that scope through Python keyword arguments, and
-[five tests](../../tests/governance/test_doc_surface_parity.py) directly call
+[five tests](https://github.com/tvproductions/gzkit/blob/main/tests/governance/test_doc_surface_parity.py) directly call
 the audit, including one against the live repository. Those five tests passed;
 the standalone scope and the umbrella both passed in the sweep.
 
@@ -67,11 +67,11 @@ rows: ADR-0.33.0-airlock-membrane, ADR-0.35.0, and
 ADR-0.35.0-canon-entry-corpus-landing. Their latest exact-ID evaluation records
 have Feature Checklist score 1.0 and no matching justification artifact.
 The short and long corpus IDs are evaluated independently by
-[`_scan_all_evaluation_justify_binding`](../../src/gzkit/commands/validate_cmd.py);
+[`_scan_all_evaluation_justify_binding`](https://github.com/tvproductions/gzkit/blob/main/src/gzkit/commands/validate_cmd.py);
 three error rows therefore must not be presented as three independent features.
 
 The same consumer's
-[`_has_justify_artifact`](../../src/gzkit/governance/trust_audits/evaluation_justify_binding.py)
+[`_has_justify_artifact`](https://github.com/tvproductions/gzkit/blob/main/src/gzkit/governance/trust_audits/evaluation_justify_binding.py)
 only inspects a matching name. An isolated probe copied a real triggering
 evaluation event into a disposable project and called the real validator:
 
@@ -100,7 +100,7 @@ reasoning, or re-score the ADR merely to clear the gate.
 ### F3 — Intrinsic-complexity attestation retains a transport prerequisite
 
 **Lenses:** jurisdiction, escalation, invariant. The live producer exists at
-[`complexity_advise.py`](../../src/gzkit/commands/complexity_advise.py), but
+[`complexity_advise.py`](https://github.com/tvproductions/gzkit/blob/main/src/gzkit/commands/complexity_advise.py), but
 refuses a noninteractive invocation before recording an otherwise eligible
 attestation. Its error is “requires an interactive TTY; headless invocation
 refused”. Root operator canon says:
@@ -121,7 +121,7 @@ attestation was attempted, supplied or recorded by this audit.
 **Lenses:** escalation, jurisdiction. Ten never-fired event types are explicitly
 disclosed. Six have wired command producers, including supersession, TASK
 escalation and ledger correction. The other four work-edge types share
-[`emit_work_edge`](../../src/gzkit/ontology/work.py), an append-capable library
+[`emit_work_edge`](https://github.com/tvproductions/gzkit/blob/main/src/gzkit/ontology/work.py), an append-capable library
 path guarded by vocabulary attestation; caller inspection found no production
 integration. This is an integration question under ADR-0.32.0, not proof that
 graph edges should be fabricated or the declarations retired.
@@ -173,7 +173,7 @@ qualification must travel with both outputs.
 
 ### F5 — Doctrine and audit-evidence drift
 
-The [six-row matrix](../../.gzkit/chores/control-surface-rule-conflicts/proofs/conflict-matrix.md)
+The [six-row matrix](https://github.com/tvproductions/gzkit/blob/main/.gzkit/chores/control-surface-rule-conflicts/proofs/conflict-matrix.md)
 records opposing chore authoring sources, Lite evidence that invokes BDD, stale
 shape-check status/subject, misplaced skill metadata, obsolete canonical test
 command and release review mislabeled Gate5. R21–R23 have already-settled

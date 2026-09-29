@@ -153,16 +153,16 @@ uv run gz complexity advise <path> --json        # Machine-readable JSON
 ```
 
 `gz complexity distill` is the destination CLI verb for the
-[`gz-complexity-distill`](../../.gzkit/skills/gz-complexity-distill/SKILL.md)
+[`gz-complexity-distill`](https://github.com/tvproductions/gzkit/blob/main/.gzkit/skills/gz-complexity-distill/SKILL.md)
 skill (parent ADR-0.0.27, OBPI-0.0.27-06). It composes the OBPI-03
 measurement pipeline with the OBPI-04 distillation render and emits a
 dated `distilled-characteristics-{YYYY-MM-DD}.md` under
 `docs/governance/complexity/`. Operator follow-up at Gate 5 fills the
 per-metric Practitioner-eye observation placeholders the verb leaves
 intact (REQ-0.0.27-04-10 — the OEE seam). Full options + exit codes in
-[`gz complexity distill`](../user/commands/complexity-distill.md).
+[`gz complexity distill`](../user/manpages/complexity-distill.md).
 
-`gz complexity guide` (ADR-0.0.30, OBPI-0.0.30-01) is the authoring-time preview surface. Wraps the OBPI-0.0.30-03 hint engine; emits `AuthoringHint` blocks for `advise`-band crossings only. Never blocks (exit 3 unused). Full reference in [`gz complexity guide`](../user/commands/complexity-guide.md).
+`gz complexity guide` (ADR-0.0.30, OBPI-0.0.30-01) is the authoring-time preview surface. Wraps the OBPI-0.0.30-03 hint engine; emits `AuthoringHint` blocks for `advise`-band crossings only. Never blocks (exit 3 unused). Full reference in [`gz complexity guide`](../user/manpages/complexity-guide.md).
 
 `gz complexity advise` (ADR-0.0.29, OBPI-0.0.29-03) is the trigger-time
 response surface that consumes the threshold table at
@@ -175,7 +175,7 @@ active distilled-characteristics document. Operator moment: preview
 advisor diagnosis on a file before commit. Exit codes follow the
 four-code map: `0` clean or warn-band, `3` block-band crossing. Full
 options + exit codes in
-[`gz complexity advise`](../user/commands/complexity-advise.md).
+[`gz complexity advise`](../user/manpages/complexity-advise.md).
 
 ### Cross-repo defect routing
 
@@ -510,7 +510,7 @@ post-hoc reconstruction (per `docs/governance/arb-middleware.md`
 § Why receipts, not narrative).
 
 See [`/gz-justify`](../user/skills/gz-justify.md) and
-[`commands/justify.md`](../user/commands/justify.md) for the full
+[`commands/justify.md`](../user/manpages/justify.md) for the full
 walkthrough protocol.
 
 ### Step 5c: Focused-context payload (`gz context`)
@@ -560,10 +560,9 @@ the record does not support is refused at import (GHI #961). See the
 Skill shortcuts for OBPI execution:
 
 - [`/gz-obpi-pipeline`](../user/skills/gz-obpi-pipeline.md) — post-plan execution pipeline (implement, verify, present, sync)
-- [`/gz-obpi-brief`](../user/skills/gz-obpi-brief.md) — generate a new OBPI brief with correct headers and evidence stubs
+- [`/gz-obpi-specify`](../user/skills/gz-obpi-specify.md) — generate a new OBPI brief with correct headers and evidence stubs
 - [`/gz-obpi-lock`](../user/skills/gz-obpi-lock.md) — claim or release OBPI work locks for multi-agent coordination
 - [`/gz-plan-audit`](../user/skills/gz-plan-audit.md) — pre-flight audit to verify plan aligns with OBPI brief scope
-- [`/gz-specify`](../user/skills/gz-specify.md) — create OBPI briefs linked to parent ADR items
 
 1. Orient on current state and the parent ADR.
 
@@ -670,9 +669,6 @@ If `audit-check` fails, fix the referenced OBPI brief evidence and rerun until P
 Skill shortcuts for the closeout and audit ceremony:
 
 - [`/gz-adr-closeout-ceremony`](../user/skills/gz-adr-closeout-ceremony.md) — execute the full closeout ceremony protocol for human attestation
-- [`/gz-closeout`](../user/skills/gz-closeout.md) — initiate ADR closeout with evidence context
-- [`/gz-attest`](../user/skills/gz-attest.md) — record human attestation with prerequisite enforcement
-- [`/gz-audit`](../user/skills/gz-audit.md) — run strict post-attestation reconciliation audits (only after attestation)
 - [`/gz-adr-audit`](../user/skills/gz-adr-audit.md) — Gate-5 audit templates and procedure for ADR verification
 
 1. Pre-closeout blocking check.

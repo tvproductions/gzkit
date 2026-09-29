@@ -377,7 +377,7 @@ To add a new entry type:
 ## See Also
 
 - [Layered Trust Architecture](layered-trust.md) — Tool layer model and boundaries
-- [ADR-0.0.21](../../design/adr/adr-0.0.x/ADR-0.0.21-govzero-tooling-layered-trust/ADR-0.0.21-govzero-tooling-layered-trust.md) — Architecture decision record
+- ADR-0.0.21 — Architecture decision record
 - [GovZero Charter](charter.md) — Gate definitions and authority
 - [ADR Lifecycle](adr-lifecycle.md) — Status transitions
 - Python modules: `src/gzkit/validate.py`, `src/gzkit/ledger.py`

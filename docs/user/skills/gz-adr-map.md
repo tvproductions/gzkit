@@ -71,8 +71,8 @@ and repository search.
 
 | Related | Relationship |
 |---------|-------------|
-| [`gz state`](../commands/state.md) | Provides the ADR/OBPI graph data |
-| [`gz adr audit-check`](../commands/adr-audit-check.md) | Validates brief evidence linkage |
-| [`/gz-adr-verification`](gz-adr-verification.md) | Deeper ADR evidence and linkage verification |
+| [`gz state`](../manpages/state.md) | Provides the ADR/OBPI graph data |
+| [`gz adr audit-check`](../manpages/adr-audit-check.md) | Validates brief evidence linkage |
+| [`/gz-adr-audit`](gz-adr-audit.md) | Deeper ADR evidence and linkage verification |
 | [`/gz-adr-autolink`](gz-adr-autolink.md) | Maintains `@covers` decorator links in tests |
-| [`/gz-closeout`](gz-closeout.md) | Typically follows after traceability is confirmed |
+| [`/gz-adr-closeout-ceremony`](gz-adr-closeout-ceremony.md) | Typically follows after traceability is confirmed |

@@ -63,7 +63,7 @@ evidence after creation.
 
 - [`/ghi-author`](ghi-author.md) — author a GHI at the current repo.
 - [`/ghi-close`](ghi-close.md) — work and close a filed GHI.
-- Manpage: [`gz issue file`](../commands/issue-file.md).
+- Manpage: [`gz issue file`](../manpages/issue-file.md).
 - Doctrine: `.gzkit/rules/gh-cli.md` § Cross-repo filing.
 - Failure shape: `.gzkit/rules/agent-failure-modes.md` § Safeguard circumvention.
 - Parent ADR: ADR-0.0.23-agent-failure-mode-taxonomy.

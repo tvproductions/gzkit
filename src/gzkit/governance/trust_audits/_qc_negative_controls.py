@@ -553,6 +553,22 @@ def _build_docs_build() -> Path:
     return root
 
 
+def _build_docs_build_validation_floor() -> Path:
+    """Plant a dead link under a config that downgrades both floored levels (GHI #803).
+
+    ``validation.not_found: ignore`` propagates to nav and links alike, so a strict
+    build would stay green over the dead link — the shape that hid 122 dead links in
+    this repo. The gate must refuse the config before building.
+    """
+    root = _mkroot("docs-build-validation-floor")
+    _write(root / "docs" / "index.md", "# Home\n\n[gone](absent-page.md)\n")
+    _write(
+        root / "mkdocs.yml",
+        "site_name: gzkit-qc-nc\nnav:\n  - Home: index.md\nvalidation:\n  not_found: ignore\n",
+    )
+    return root
+
+
 def _build_behave() -> Path:
     """Build a scenario whose step FAILS — not one whose step is merely undefined.
 
@@ -1690,6 +1706,11 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
     ("test", _build_test, _ep._ep_test),
     ("behave", _build_behave, _ep._ep_behave),
     ("docs-build", _build_docs_build, _ep._ep_docs_build),
+    (
+        "docs-build-validation-floor",
+        _build_docs_build_validation_floor,
+        _ep._ep_docs_build_validation_floor,
+    ),
     ("skill-audit", _build_skill_audit, _ep._ep_skill_audit),
     ("parity-check", _build_parity_check, _ep._ep_parity_check),
     ("readiness-audit", _build_readiness_audit, _ep._ep_readiness_audit),

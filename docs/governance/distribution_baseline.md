@@ -184,6 +184,6 @@ attestation cycles.
 
 - [ADR-0.0.31 — Distribution Invariant Doctrine](../design/adr/foundation/ADR-0.0.31-distribution-invariant-doctrine/ADR-0.0.31-distribution-invariant-doctrine.md)
 - [ADR-0.0.32 — Canonical Surface Packaging](../design/adr/foundation/ADR-0.0.32-canonical-surface-packaging/ADR-0.0.32-canonical-surface-packaging.md)
-- [`.gzkit/rules/skill-surface-sync.md`](../../.gzkit/rules/skill-surface-sync.md) — Canonical-routing direction
+- [`.gzkit/rules/skill-surface-sync.md`](https://github.com/tvproductions/gzkit/blob/main/.gzkit/rules/skill-surface-sync.md) — Canonical-routing direction
 - `features/distribution_invariant.feature` — the smoke scenario itself
 - `tests/distribution/test_baseline_manifest.py` — unit-tier manifest validation

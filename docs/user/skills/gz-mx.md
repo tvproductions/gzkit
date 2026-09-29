@@ -67,7 +67,7 @@ The skill is the correct interface. Nobody shells out to `gz mx enter` or
 
 | Related | Relationship |
 |---------|-------------|
-| [`gz mx enter`](../commands/mx.md) | CLI command this skill wields to open the hangar |
-| [`gz mx exit`](../commands/mx.md) | CLI command this skill wields to close the hangar |
+| [`gz mx enter`](../manpages/mx.md) | CLI command this skill wields to open the hangar |
+| [`gz mx exit`](../manpages/mx.md) | CLI command this skill wields to close the hangar |
 | [`/gz-status`](gz-status.md) | Check governance gate status mid-session |
 | [`/gz-check`](gz-check.md) | Run full quality checks; also runs at exit to re-enforce guards |

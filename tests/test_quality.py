@@ -670,6 +670,106 @@ class TestDocsBuildInCheckPipeline(unittest.TestCase):
         self.assertIn("--strict", invoked, f"Docs build must be strict; got {invoked!r}")
 
 
+class TestDocsBuildValidationFloor(unittest.TestCase):
+    """`--strict` promotes WARNINGs only, so a downgraded `validation:` level blinds it.
+
+    GHI #803: `mkdocs.yml` set `validation.links.not_found: ignore`, and the
+    strict build stayed green over 122 dead links while `run_mkdocs` promised
+    dead links fail closed. The gate now refuses a config that sets either
+    `not_found` level below the floor in `quality.MKDOCS_VALIDATION_FLOOR`,
+    before the build runs, so a silent downgrade breaks `gz check`.
+    """
+
+    def _run(self, config: str, files: dict[str, str] | None = None):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "mkdocs.yml").write_text(config, encoding="utf-8")
+            for name, text in (files or {}).items():
+                (root / name).write_text(text, encoding="utf-8")
+            with patch.object(quality, "run_command") as run_command:
+                run_command.return_value = QualityResult(
+                    success=True, command="", stdout="built", stderr="", returncode=0
+                )
+                result = quality.run_mkdocs(root)
+        return result, run_command
+
+    def _assert_refused(self, config: str, key: str, files: dict[str, str] | None = None):
+        result, run_command = self._run(config, files)
+        self.assertFalse(result.success, f"a {key} downgrade must fail the docs gate")
+        self.assertEqual(result.returncode, 3)
+        self.assertIn(key, result.stderr)
+        self.assertIn("warn", result.stderr)
+        run_command.assert_not_called()
+
+    def _assert_admitted(self, config: str, files: dict[str, str] | None = None):
+        result, run_command = self._run(config, files)
+        self.assertTrue(result.success, result.stderr)
+        run_command.assert_called_once()
+
+    def test_links_not_found_ignore_is_refused(self) -> None:
+        self._assert_refused(
+            "site_name: p\nvalidation:\n  links:\n    not_found: ignore\n",
+            "validation.links.not_found",
+        )
+
+    def test_links_not_found_info_is_refused(self) -> None:
+        self._assert_refused(
+            "site_name: p\nvalidation:\n  links:\n    not_found: info\n",
+            "validation.links.not_found",
+        )
+
+    def test_nav_not_found_downgrade_is_refused(self) -> None:
+        self._assert_refused(
+            "site_name: p\nvalidation:\n  nav:\n    not_found: info\n",
+            "validation.nav.not_found",
+        )
+
+    def test_top_level_shorthand_downgrade_is_refused(self) -> None:
+        """mkdocs propagates `validation.not_found` into both nav and links."""
+        result, run_command = self._run("site_name: p\nvalidation:\n  not_found: ignore\n")
+        self.assertFalse(result.success)
+        self.assertIn("validation.nav.not_found", result.stderr)
+        self.assertIn("validation.links.not_found", result.stderr)
+        run_command.assert_not_called()
+
+    def test_inherited_downgrade_is_refused(self) -> None:
+        self._assert_refused(
+            "INHERIT: base.yml\nsite_name: p\n",
+            "validation.links.not_found",
+            files={"base.yml": "validation:\n  links:\n    not_found: ignore\n"},
+        )
+
+    def test_child_config_overrides_an_inherited_downgrade(self) -> None:
+        self._assert_admitted(
+            "INHERIT: base.yml\nsite_name: p\nvalidation:\n  links:\n    not_found: warn\n",
+            files={"base.yml": "validation:\n  links:\n    not_found: ignore\n"},
+        )
+
+    def test_explicit_warn_levels_build(self) -> None:
+        self._assert_admitted(
+            "site_name: p\nvalidation:\n  nav:\n    not_found: warn\n"
+            "  links:\n    not_found: warn\n    anchors: info\n"
+        )
+
+    def test_mkdocs_defaults_meet_the_floor(self) -> None:
+        """Absent keys take mkdocs' own default, which is `warn` for both."""
+        self._assert_admitted("site_name: p\n")
+
+    def test_section_key_wins_over_top_level_shorthand(self) -> None:
+        """mkdocs `setdefault`s the shorthand, so an explicit section key wins."""
+        self._assert_admitted(
+            "site_name: p\nvalidation:\n  not_found: ignore\n"
+            "  nav:\n    not_found: warn\n  links:\n    not_found: warn\n"
+        )
+
+    def test_yaml_tags_do_not_crash_the_floor_read(self) -> None:
+        self._assert_admitted("site_name: !ENV [SITE_NAME, 'p']\n")
+
+    def test_this_repositorys_mkdocs_config_meets_the_floor(self) -> None:
+        root = Path(__file__).resolve().parents[1]
+        self.assertEqual(quality.mkdocs_validation_floor_violations(root / "mkdocs.yml"), [])
+
+
 class TestModuleSizeInCheckPipeline(unittest.TestCase):
     """The shrink-only module-size ratchet must run inside `gz check`.
 

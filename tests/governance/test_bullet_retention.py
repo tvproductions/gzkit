@@ -158,6 +158,40 @@ class TestBulletPresentReturnsNoErrors(unittest.TestCase):
             )
 
 
+class TestLinkTargetIsLocationRelative(unittest.TestCase):
+    """A quoted bullet keeps its words; its link target is relative to where it lives.
+
+    The scorecard (under `docs/`) quotes a rule clause (under `.claude/rules/`).
+    A relative link valid beside the rule is dead in the docs site, so the quote
+    must be free to repoint the target without failing retention (GHI #803).
+    The link TEXT stays under the verbatim contract.
+    """
+
+    _SCORECARD = (
+        "| # | Rule | Score | Notes |\n|---|------|-------|-------|\n"
+        "| 1 | data lives in [`t.json`](https://example.invalid/rules/t.json) "
+        "| **Promotable** | note |\n"
+    )
+
+    def test_repointed_link_target_still_matches(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_tree(
+                tmp,
+                scorecard_content=self._SCORECARD,
+                rule_content="The data lives in [`t.json`](t.json), a sibling.",
+            )
+            self.assertEqual(validate_bullet_retention(root), [])
+
+    def test_changed_link_text_still_fails(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = _make_tree(
+                tmp,
+                scorecard_content=self._SCORECARD,
+                rule_content="The data lives in [`other.json`](t.json), a sibling.",
+            )
+            self.assertEqual(len(validate_bullet_retention(root)), 1)
+
+
 class TestBulletAbsentReturnsError(unittest.TestCase):
     """Mechanical or Promotable bullet absent from per-turn surface → exit-3 ValidationError."""
 

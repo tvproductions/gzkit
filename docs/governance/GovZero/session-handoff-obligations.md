@@ -61,7 +61,7 @@ The handoff system preserves engineering context across sessions. Without normat
 3. **Validate** — Run full validation pipeline (6 checks)
 4. **Write** — Persist to `{ADR-package}/handoffs/{timestamp}-{slug}.md`
 
-Full specification: [gz-session-handoff SKILL](../../../.github/skills/gz-session-handoff/SKILL.md)
+Full specification: [gz-session-handoff SKILL](https://github.com/tvproductions/gzkit/blob/main/.gzkit/skills/gz-session-handoff/SKILL.md)
 
 ---
 
@@ -73,7 +73,7 @@ Full specification: [gz-session-handoff SKILL](../../../.github/skills/gz-sessio
 4. **Load chain** — Traverse `continues_from` links for full lineage
 5. **Extract** — Pull first next step for immediate action
 
-Full specification: [gz-session-handoff SKILL](../../../.github/skills/gz-session-handoff/SKILL.md)
+Full specification: [gz-session-handoff SKILL](https://github.com/tvproductions/gzkit/blob/main/.gzkit/skills/gz-session-handoff/SKILL.md)
 
 ---
 
@@ -107,6 +107,6 @@ Full specification: [Handoff Document Chaining Protocol](handoff-chaining.md)
 - [Handoff Document Validation](handoff-validation.md) — Validation checks (OBPI-06)
 - [Multi-Factor Staleness Classification](staleness-classification.md) — Staleness system (OBPI-05)
 - [Handoff Document Chaining Protocol](handoff-chaining.md) — Chaining protocol (OBPI-07)
-- [ADR-0.0.25](../../design/adr/adr-0.0.x/ADR-0.0.25-compounding-engineering-session-handoff-contract/ADR-0.0.25-compounding-engineering-session-handoff-contract.md) — Architecture decision record
-- [gz-session-handoff SKILL](../../../.github/skills/gz-session-handoff/SKILL.md) — Skill specification
-- [AGENTS.md § Session Handoff](../../../AGENTS.md) — Agent contract integration
+- ADR-0.0.25 — Architecture decision record
+- [gz-session-handoff SKILL](https://github.com/tvproductions/gzkit/blob/main/.gzkit/skills/gz-session-handoff/SKILL.md) — Skill specification
+- [AGENTS.md § Session Handoff](https://github.com/tvproductions/gzkit/blob/main/AGENTS.md) — Agent contract integration

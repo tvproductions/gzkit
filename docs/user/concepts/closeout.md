@@ -50,6 +50,6 @@ For heavy lane ADRs:
 
 - [Lifecycle](lifecycle.md)
 - [Gates](gates.md)
-- [gz closeout](../commands/closeout.md)
-- [gz attest](../commands/attest.md)
-- [gz audit](../commands/audit.md)
+- [gz closeout](../manpages/closeout.md)
+- [gz attest](../manpages/attest.md)
+- [gz audit](../manpages/audit.md)

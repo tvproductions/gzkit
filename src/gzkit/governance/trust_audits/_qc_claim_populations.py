@@ -43,6 +43,10 @@ QC_CLAIM_POPULATIONS: dict[str, Callable[[], Sequence[str]] | str] = {
     # Walks tests/** in code; the members are whatever test files exist, never a set
     # another surface declares (GHI #808).
     "tautological-debt": POPULATION_NONE,
+    # The floored keys are MKDOCS_VALIDATION_FLOOR, an in-code table the control
+    # itself iterates: the fixture downgrades every key and the entrypoint requires
+    # each one named, so no second surface declares the set (GHI #803).
+    "docs-build-validation-floor": POPULATION_NONE,
     "tautological-debt-waived": POPULATION_NONE,
     # Each ratchet reads its subject set from the declaring surface itself on every
     # run -- the live `gz validate` parser, the ledger schema -- and applies one

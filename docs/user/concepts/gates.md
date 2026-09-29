@@ -42,5 +42,5 @@ Audit and receipts are downstream accounting, not substitutes for human attestat
 
 - [Lanes](lanes.md)
 - [Closeout](closeout.md)
-- [gz attest](../commands/attest.md)
-- [gz audit](../commands/audit.md)
+- [gz attest](../manpages/attest.md)
+- [gz audit](../manpages/audit.md)

@@ -892,8 +892,93 @@ def run_pymarkdown(project_root: Path) -> QualityResult:
     return run_command("uv run -m pymarkdown scan docs/", cwd=project_root)
 
 
+#: The authority for the docs gate's validation floor (GHI #803). ``--strict``
+#: promotes WARNING-level diagnostics to errors and nothing else, so each key here
+#: must resolve to at least ``warn`` or the strict build is blind to its class.
+#: An absent key takes mkdocs' own default, which is ``warn`` for both.
+MKDOCS_VALIDATION_FLOOR: Mapping[str, str] = {
+    "nav.not_found": "warn",
+    "links.not_found": "warn",
+}
+_MKDOCS_DEFAULT_LEVEL = "warn"
+_MKDOCS_LEVEL_RANK: Mapping[str, int] = {"ignore": 0, "info": 1, "warn": 2}
+
+
+def _raw_mkdocs_validation(config_path: Path, seen: frozenset[Path]) -> dict[str, Any]:
+    """Return one config's ``validation`` mapping, deep-merged over its ``INHERIT`` chain.
+
+    Mirrors mkdocs: a child config deep-merges over the file it inherits, before
+    any propagation. Unknown YAML tags (``!ENV``, ``!!python/name:``) load as
+    ``None``; only ``validation`` and ``INHERIT`` are read.
+    """
+    import yaml  # noqa: PLC0415 — only the docs gate parses mkdocs.yml
+
+    class _TagTolerantLoader(yaml.SafeLoader):
+        pass
+
+    _TagTolerantLoader.add_multi_constructor("", lambda _loader, _suffix, _node: None)
+    try:
+        raw = yaml.load(config_path.read_text(encoding="utf-8"), Loader=_TagTolerantLoader)
+    except yaml.YAMLError as exc:
+        raise ValueError(f"not valid YAML: {exc}") from exc
+    if not isinstance(raw, dict):
+        raise ValueError("top level is not a mapping")
+    merged: dict[str, Any] = {}
+    parent = raw.get("INHERIT")
+    if isinstance(parent, str):
+        parent_path = (config_path.parent / parent).resolve()
+        if parent_path in seen:
+            raise ValueError(f"INHERIT cycle at {parent_path}")
+        merged = _raw_mkdocs_validation(parent_path, seen | {parent_path})
+    own = raw.get("validation") or {}
+    if not isinstance(own, dict):
+        raise ValueError("validation is not a mapping")
+    for key, value in own.items():
+        if isinstance(value, dict) and isinstance(merged.get(key), dict):
+            merged[key] = {**merged[key], **value}
+        else:
+            merged[key] = value
+    return merged
+
+
+def mkdocs_validation_floor_violations(config_path: Path) -> list[str]:
+    """Name every ``MKDOCS_VALIDATION_FLOOR`` key the config resolves below its floor.
+
+    Resolution follows mkdocs: a top-level ``validation.<key>`` shorthand is
+    ``setdefault``-ed into each section, so an explicit section key wins; an absent
+    key takes mkdocs' default. An unreadable config is itself a violation — the
+    floor cannot be shown to hold.
+    """
+    try:
+        validation = _raw_mkdocs_validation(config_path, frozenset({config_path.resolve()}))
+    except (OSError, ValueError) as exc:
+        return [f"{config_path.name}: validation levels unreadable ({exc})"]
+    violations: list[str] = []
+    for dotted, floor in MKDOCS_VALIDATION_FLOOR.items():
+        section_name, key = dotted.split(".", 1)
+        section = validation.get(section_name)
+        section = section if isinstance(section, dict) else {}
+        level = section.get(key, validation.get(key, _MKDOCS_DEFAULT_LEVEL))
+        if _MKDOCS_LEVEL_RANK.get(str(level), -1) < _MKDOCS_LEVEL_RANK[floor]:
+            violations.append(
+                f"validation.{dotted} is {level!r}; the docs gate requires at least {floor!r}"
+            )
+    return violations
+
+
 def run_mkdocs(project_root: Path) -> QualityResult:
     """Build the docs site strictly, so broken nav and dead links fail closed.
+
+    Two halves, both required for that sentence to be true. First the config
+    floor: ``mkdocs.yml`` (with any ``INHERIT`` chain) must resolve
+    ``validation.nav.not_found`` and ``validation.links.not_found`` to at least the
+    level in ``MKDOCS_VALIDATION_FLOOR`` (``warn``); a lower level suppresses the
+    diagnostic below what ``--strict`` promotes, so the gate refuses it with exit 3
+    before building. That downgrade shipped here and hid 122 dead links under a
+    green ``gz check`` (GHI #803). Then ``mkdocs build --strict``, which fails on
+    every WARNING — an unresolvable nav entry or a link to a missing page. Anchor,
+    absolute-link and unrecognized-link levels are not floored: ``info`` there is
+    the project's choice and this gate does not claim them.
 
     ``mkdocs build --strict`` was already a canonical ARB step
     (``CANONICAL_STEP_COMMANDS``) and the Gate-3 docs command, but it was never
@@ -915,6 +1000,18 @@ def run_mkdocs(project_root: Path) -> QualityResult:
             stdout="skipped: no mkdocs.yml (project ships no docs site)",
             stderr="",
             returncode=0,
+        )
+    violations = mkdocs_validation_floor_violations(project_root / "mkdocs.yml")
+    if violations:
+        return QualityResult(
+            success=False,
+            command="uv run mkdocs build --strict",
+            stdout="",
+            stderr="docs gate refused mkdocs.yml below its validation floor (GHI #803):\n"
+            + "\n".join(f"  - {v}" for v in violations)
+            + "\nRecovery: raise the level(s) in mkdocs.yml and repair what the strict "
+            "build then reports; the floor lives in gzkit.quality.MKDOCS_VALIDATION_FLOOR.",
+            returncode=3,
         )
     return run_command("uv run mkdocs build --strict", cwd=project_root)
 

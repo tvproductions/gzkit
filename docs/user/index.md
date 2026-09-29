@@ -41,7 +41,7 @@ gzkit enforces a ledger-first GovZero workflow:
 - [Quickstart](quickstart.md) — One full cycle, start to finish
 - [Runbook](runbook.md) — Daily operational loops
 - [Skills](skills/index.md) — Skill reference (governance logic lives here)
-- [Commands](commands/index.md) — CLI command reference
+- [Commands](manpages/index.md) — CLI command reference
 - [Canonical GovZero docs](../governance/GovZero/charter.md)
 
 ---

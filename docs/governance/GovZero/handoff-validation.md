@@ -171,6 +171,6 @@ uv run gz interview handoff
 
 - [Session Handoff Schema](session-handoff-schema.md) -- Schema specification
 - [Staleness Classification](staleness-classification.md) -- Multi-factor staleness system
-- [ADR-0.0.25](../../design/adr/adr-0.0.x/ADR-0.0.25-compounding-engineering-session-handoff-contract/ADR-0.0.25-compounding-engineering-session-handoff-contract.md) -- Architecture decision record
+- ADR-0.0.25 -- Architecture decision record
 - Sources: `src/gzkit/handoff_validation.py`
 - Tests: `tests/governance/test_handoff_validation.py`

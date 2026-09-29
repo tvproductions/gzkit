@@ -1181,7 +1181,7 @@ Included in `gz validate --audits` and `gz check` aggregate passes — future un
 
 ### `--rule-version-markers`
 
-Enforces the rule-version-marker invariant declared by [`.gzkit/rules/skill-surface-sync.md`](../../../.gzkit/rules/skill-surface-sync.md) § Non-negotiable rules #2: every canonical rule under `.gzkit/rules/` carries a body-level `<!-- rule-version: X.Y.Z -->` comment **and** a visible `> **Rule version:** \`X.Y.Z\`` block quote naming the same version.
+Enforces the rule-version-marker invariant declared by [`.gzkit/rules/skill-surface-sync.md`](https://github.com/tvproductions/gzkit/blob/main/.gzkit/rules/skill-surface-sync.md) § Non-negotiable rules #2: every canonical rule under `.gzkit/rules/` carries a body-level `<!-- rule-version: X.Y.Z -->` comment **and** a visible `> **Rule version:** \`X.Y.Z\`` block quote naming the same version.
 
 The clause was binding but unenforced. Four rules shipped with no marker at all, and three of those four (`adr-audit.md`, `cli.md`, `pythonic.md`) were among the worst-drifted files surfaced by the Pass A conflict-matrix re-run (2026-07-16) — a rule with no version marker has no staleness signal, so nothing prompts a re-read when the code it describes moves.
 

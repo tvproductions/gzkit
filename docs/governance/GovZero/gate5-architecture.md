@@ -181,4 +181,4 @@ Every Heavy brief must satisfy:
 
 - [GovZero Charter](charter.md) — Gate definitions
 - [Audit Protocol](audit-protocol.md) — Closeout ceremony procedure
-- [Runbook-Code Covenant](../../../.github/instructions/gate5_runbook_code_covenant.instructions.md) — Binding instructions
+- [Runbook-Code Covenant](https://github.com/tvproductions/gzkit/blob/main/.gzkit/rules/gate5-runbook-code-covenant.md) — Binding instructions

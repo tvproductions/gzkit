@@ -95,4 +95,4 @@ handoffs is loaded to reconstruct session lineage.
 | [`/gz-obpi-pipeline`](gz-obpi-pipeline.md) | Creates handoffs automatically on pipeline abort |
 | [`/gz-obpi-lock`](gz-obpi-lock.md) | Lock state is preserved in handoff context |
 | [`/gz-adr-create`](gz-adr-create.md) | Creates the ADR package where handoffs are stored |
-| [`/gz-closeout`](gz-closeout.md) | Closeout may reference handoff chain as evidence |
+| [`/gz-adr-closeout-ceremony`](gz-adr-closeout-ceremony.md) | Closeout may reference handoff chain as evidence |

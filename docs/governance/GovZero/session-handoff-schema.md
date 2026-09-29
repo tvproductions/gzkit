@@ -244,7 +244,7 @@ else:
 
 - [Layered Trust Architecture](layered-trust.md) — Tool layer model and boundaries
 - [Unified Ledger Schema](ledger-schema.md) — Companion schema for JSONL governance ledgers
-- [ADR-0.0.25](../../design/adr/adr-0.0.x/ADR-0.0.25-compounding-engineering-session-handoff-contract/ADR-0.0.25-compounding-engineering-session-handoff-contract.md) — Architecture decision record
+- ADR-0.0.25 — Architecture decision record
 - [GovZero Charter](charter.md) — Gate definitions and authority
 - [ADR Lifecycle](adr-lifecycle.md) — Status transitions
 - Template: `.github/skills/gz-session-handoff/assets/handoff-template.md`

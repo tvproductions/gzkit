@@ -82,9 +82,9 @@ Heavy actions but you're running Lite validation).
 
 | Related | Relationship |
 |---------|-------------|
-| [`gz chores list`](../commands/chores.md) | Lists available chores |
-| [`gz chores show`](../commands/chores.md) | Displays chore details |
-| [`gz chores advise`](../commands/chores.md) | Dry-runs acceptance criteria |
-| [`gz chores run`](../commands/chores.md) | Logs the chore execution result |
+| [`gz chores list`](../manpages/chores.md) | Lists available chores |
+| [`gz chores show`](../manpages/chores.md) | Displays chore details |
+| [`gz chores advise`](../manpages/chores.md) | Dry-runs acceptance criteria |
+| [`gz chores run`](../manpages/chores.md) | Logs the chore execution result |
 | [`/gz-arb`](gz-arb.md) | Quality checks run during chore validation |
 | [`/gz-check`](gz-check.md) | Full quality check for Heavy lane chores |

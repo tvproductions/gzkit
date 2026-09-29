@@ -132,7 +132,7 @@ Migration of existing GovZero outputs (agent-insights.jsonl) from root to `.gzki
 
 ## References
 
-- [ADR-0.0.25](../../design/adr/adr-0.0.x/ADR-0.0.25-compounding-engineering-session-handoff-contract/ADR-0.0.25-compounding-engineering-session-handoff-contract.md) — Parent ADR
+- ADR-0.0.25 — Parent ADR
 - [Unified Ledger Schema](ledger-schema.md) — JSONL field definitions and validation API
 - [Layered Trust Architecture](layered-trust.md) — Tool layer model and boundaries
 - [GovZero Charter](charter.md) — Gate definitions and authority

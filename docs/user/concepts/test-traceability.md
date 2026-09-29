@@ -126,7 +126,7 @@ gz covers OBPI-0.21.0-03
 gz covers --json
 ```
 
-See [gz covers command reference](../commands/covers.md) for full usage.
+See [gz covers command reference](../manpages/covers.md) for full usage.
 
 ---
 
@@ -313,7 +313,7 @@ OBPI Brief              Test File                gz covers
 
 ## Related
 
-- [gz covers command reference](../commands/covers.md)
+- [gz covers command reference](../manpages/covers.md)
 - [OBPIs concept](obpis.md)
 - [Gates concept](gates.md)
 - [Daily Workflow](workflow.md)

@@ -251,4 +251,8 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     "validator-reachability-disclosed": EXEMPTS_NONE,
     "ledger-vocabulary-inertness": "ledger-vocabulary-inertness-disclosed",
     "ledger-vocabulary-inertness-disclosed": EXEMPTS_NONE,
+    # --- GHI #803 -------------------------------------------------------------
+    # The floor reads mkdocs.yml (and its INHERIT chain) against an in-code table;
+    # the only non-finding return is "no mkdocs.yml" — nothing to compare.
+    "docs-build-validation-floor": EXEMPTS_NONE,
 }

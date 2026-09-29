@@ -239,7 +239,7 @@ the turn or the subagent; to get less, lower it (GHI #1097).
 
 ## Model Selection
 
-Skill-level model routing is governed by [`.gzkit/rules/model-selection.md`](../../.gzkit/rules/model-selection.md). Every skill declares `model: haiku|sonnet|opus` in frontmatter; the routing matrix maps decision complexity to model tier. This page governs per-turn *effort* within a chosen model; model-selection governs *which model*.
+Skill-level model routing is governed by [`.gzkit/rules/model-selection.md`](https://github.com/tvproductions/gzkit/blob/main/.gzkit/rules/model-selection.md). Every skill declares `model: haiku|sonnet|opus` in frontmatter; the routing matrix maps decision complexity to model tier. This page governs per-turn *effort* within a chosen model; model-selection governs *which model*.
 
 ## Subagent fan-out
 

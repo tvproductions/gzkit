@@ -6,7 +6,7 @@
 
 **Authority:** [ADR-0.0.18 — ADR Taxonomy Doctrine](../design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/ADR-0.0.18-adr-taxonomy-doctrine.md)
 
-**Companions:** [ADR Taxonomy concept page](../user/concepts/adr-taxonomy.md) · [adr-promote command reference](../user/commands/adr-promote.md) · [Governance Runbook](governance_runbook.md) · [Storage Tiers](storage-tiers.md)
+**Companions:** [ADR Taxonomy concept page](../user/concepts/adr-taxonomy.md) · [adr-promote command reference](../user/manpages/adr-promote.md) · [Governance Runbook](governance_runbook.md) · [Storage Tiers](storage-tiers.md)
 
 **Enforcement surface:** `uv run gz adr promote` (kind/semver binding is fail-closed). `uv run gz validate --taxonomy` (pool ⇒ no `kind`/`semver` frontmatter).
 
@@ -89,7 +89,7 @@ The mechanical gate is:
 uv run gz adr promote ADR-pool.<slug> --kind {foundation,feature} --semver X.Y.Z
 ```
 
-`gz adr promote` enforces the kind/semver binding at the CLI boundary: `foundation` requires `0.0.x`, `feature` requires non-`0.0.x`, and `pool` is rejected as a `--kind` value (pool is the source, not the target). The command scaffolds the canonical ADR package, derives OBPI briefs from the pool file's Target Scope bullets, and records `artifact_renamed` plus one `obpi_created` event per brief in the ledger. Flag reference and worked examples live in the [adr-promote command doc](../user/commands/adr-promote.md).
+`gz adr promote` enforces the kind/semver binding at the CLI boundary: `foundation` requires `0.0.x`, `feature` requires non-`0.0.x`, and `pool` is rejected as a `--kind` value (pool is the source, not the target). The command scaffolds the canonical ADR package, derives OBPI briefs from the pool file's Target Scope bullets, and records `artifact_renamed` plus one `obpi_created` event per brief in the ledger. Flag reference and worked examples live in the [adr-promote command doc](../user/manpages/adr-promote.md).
 
 Promotion is deliberate, not automatic. A promoted ADR begins at Gate 1 like any other; nothing about having lived in the pool grants a gate skip.
 
@@ -168,6 +168,6 @@ The same applies to features when the sponsor is ready in the same breath as the
 
 - [ADR-0.0.18 — ADR Taxonomy Doctrine](../design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/ADR-0.0.18-adr-taxonomy-doctrine.md) — the kind/lane/semver model this policy operationalizes
 - [ADR Taxonomy concept page](../user/concepts/adr-taxonomy.md) — operator doctrine on when to choose each kind, with worked examples
-- [adr-promote command reference](../user/commands/adr-promote.md) — flag reference and preconditions for `gz adr promote`
+- [adr-promote command reference](../user/manpages/adr-promote.md) — flag reference and preconditions for `gz adr promote`
 - [Governance Runbook](governance_runbook.md) — operator procedures including pool-promotion checkpoints
 - [Storage Tiers](storage-tiers.md) — Tier A placement of `docs/design/adr/pool/`

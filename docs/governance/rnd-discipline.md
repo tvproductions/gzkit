@@ -5,7 +5,7 @@
 > all six (Recommended)"*) — see § What changed from the first edition for exactly which
 > rulings moved and why. Evidence:
 > [`mpas-appropriation-analysis.md`](mpas-appropriation-analysis.md). The skill this
-> specifies is [`.gzkit/skills/gz-rnd/SKILL.md`](../../.gzkit/skills/gz-rnd/SKILL.md).
+> specifies is [`.gzkit/skills/gz-rnd/SKILL.md`](https://github.com/tvproductions/gzkit/blob/main/.gzkit/skills/gz-rnd/SKILL.md).
 >
 > Operator framing, 2026-09-13, verbatim: *"the mpas appropriation is meant to generate a
 > design discussion, not a wholesale onboarding."* And 2026-09-16, verbatim: *"also, we are

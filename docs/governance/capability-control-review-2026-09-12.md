@@ -163,10 +163,10 @@ the lenses, not a measured defect or work order.
 
 A diagnostic record and a reusable reading framework. Not a campaign amendment,
 not a new requirement, not initiation of OBPI work. The governing campaign is
-identified by [`data/active_campaign.json`](../../data/active_campaign.json);
+identified by [`data/active_campaign.json`](https://github.com/tvproductions/gzkit/blob/main/data/active_campaign.json);
 nothing here changes its work order. Under the IRON LAW only the operator
 initiates OBPI work; observed failures route as GHI-shaped direct repair or
-governed insights, per [`AGENTS.md`](../../AGENTS.md) § Operator Doctrine.
+governed insights, per [`AGENTS.md`](https://github.com/tvproductions/gzkit/blob/main/AGENTS.md) § Operator Doctrine.
 
 ## Evidence standard
 
@@ -231,7 +231,7 @@ Hunt and Thomas (tracer bullets).
 - REQ-level proof specs and mutation controls: `gz arb red`, the replayable
   specs under `.gzkit/evidence/<obpi>/proof-specs/`, and the acceptance store's
   input digest, which defines the bytes whose change re-opens every proof.
-- Coupled-surface coherence, [`AGENTS.md`](../../AGENTS.md) § DO IT RIGHT 1a:
+- Coupled-surface coherence, [`AGENTS.md`](https://github.com/tvproductions/gzkit/blob/main/AGENTS.md) § DO IT RIGHT 1a:
   when a change touches a surface another surface reads or validates, verify the
   consumer in the same commit.
 
@@ -297,11 +297,11 @@ boundaries); the modularity constellation.
 Over code:
 
 - OBPI brief `allowlist:` frontmatter plus `## Allowed Paths` / `## Denied
-  Paths` ([`src/gzkit/templates/obpi.md`](../../src/gzkit/templates/obpi.md));
+  Paths` ([`src/gzkit/templates/obpi.md`](https://github.com/tvproductions/gzkit/blob/main/src/gzkit/templates/obpi.md));
   31 briefs under ADR-0.3x carry an allowlist. The 2026-09-05 ADR-0.35.0
   substance evaluation notes the structural scorer counts allowed paths as a
   size heuristic; that counts files, not decisions.
-- [`.claude/hooks/pipeline-gate.py`](../../.claude/hooks/pipeline-gate.py)
+- [`.claude/hooks/pipeline-gate.py`](https://github.com/tvproductions/gzkit/blob/main/.claude/hooks/pipeline-gate.py)
   refuses writes under `src/` and `tests/` once the pipeline marker's stage is
   past `implement`. `PreToolUse` matchers: `ExitPlanMode`, `Bash`,
   `Write|Edit|NotebookEdit`.
@@ -315,7 +315,7 @@ Over canon, the surface the conversation said the answers kept missing:
 
 - Root `AGENTS.md` is a rendition of the corpus; editing the delivered file
   bypasses the ownership chain. Section ownership lives in
-  [`.gzkit/ownership/AGENTS.md.json`](../../.gzkit/ownership/AGENTS.md.json)
+  [`.gzkit/ownership/AGENTS.md.json`](https://github.com/tvproductions/gzkit/blob/main/.gzkit/ownership/AGENTS.md.json)
   with attested `gz content own` / `gz content unown` transitions;
   `gz validate --invariant-coherence` byte-compares the rendered surface
   against the registry.
@@ -338,7 +338,7 @@ Over canon, the surface the conversation said the answers kept missing:
 - GHI #983: 10 of 12 sections the live declaration marks `corpus-owned` carry
   no covering corpus content. Ownership is claimed at the transition and never
   re-checked at rest; a generator that trusts the claim would drop content.
-- [`AGENTS.md`](../../AGENTS.md), measured 2026-08-21: a pipeline marker left by
+- [`AGENTS.md`](https://github.com/tvproductions/gzkit/blob/main/AGENTS.md), measured 2026-08-21: a pipeline marker left by
   an earlier session armed the pipeline and licensed roughly 350 lines of
   production code with no implementer dispatch and no review. Measured
   2026-08-23: told to bind `@covers` decorators, an agent escalated into a full
@@ -412,7 +412,7 @@ integrity); Naur (the theory the artifacts must carry when no one holds it).
   43 on 2026-09-12. Promotable rows rose 30 → 31 in the same window.
 - `gz validate --evaluation-justify-binding` fails at HEAD on three artifact
   ids, all for a low Feature Checklist score. The scorer
-  ([`src/gzkit/adr_eval_scoring.py`](../../src/gzkit/adr_eval_scoring.py))
+  ([`src/gzkit/adr_eval_scoring.py`](https://github.com/tvproductions/gzkit/blob/main/src/gzkit/adr_eval_scoring.py))
   awards one point each for items existing, every item starting with `OBPI-`,
   the count matching the brief count, and word-count consistency. ADR-0.35.0
   finds all 13 items and the count matches; it scores 1 of 4 because the ADR
@@ -431,7 +431,7 @@ integrity); Naur (the theory the artifacts must carry when no one holds it).
   `validates`).
 - The reachability scanner labels `--doc-surface-parity` an orphan; it is
   dispatched from `AUDITS_AGGREGATE_MEMBERS` in
-  [`validate_audits.py`](../../src/gzkit/commands/validate_audits.py) and passed
+  [`validate_audits.py`](https://github.com/tvproductions/gzkit/blob/main/src/gzkit/commands/validate_audits.py) and passed
   in the live umbrella run. The scanner's textual caller search does not model
   Python dispatch and does not say so.
 
@@ -497,7 +497,7 @@ controlled handoffs; the airlock as the point that turns *just keep going* into
   the shared-CLI defect out to GHI #995. Escalation worked and left a record.
 - The same brief: three legitimate reviewer judgments were refused at import
   because the closure rule at
-  [`src/gzkit/acceptance.py`](../../src/gzkit/acceptance.py) (`_closure_retains_subject`)
+  [`src/gzkit/acceptance.py`](https://github.com/tvproductions/gzkit/blob/main/src/gzkit/acceptance.py) (`_closure_retains_subject`)
   cannot express *old finding repaired, new finding found on the same
   obligation*, nor a raised-then-repaired finding recorded retroactively. An
   escalation the record cannot hold. GHI #985 closed 2026-09-09 with seven
@@ -505,14 +505,14 @@ controlled handoffs; the airlock as the point that turns *just keep going* into
 - `task_escalated` has a model, a CLI verb and a consumer, and zero rows in the
   ledger. Escalation happens through prose, handoffs and GHIs, not the declared
   event.
-- [`AGENTS.md`](../../AGENTS.md), 2026-08-21: a harness instruction conflicted
+- [`AGENTS.md`](https://github.com/tvproductions/gzkit/blob/main/AGENTS.md), 2026-08-21: a harness instruction conflicted
   with a skill-mandated gate and the agent resolved it silently against the
   skill. GHI #994: a reviewer's inability to execute belonged in
   `verification_gaps` and was asserted as a confirmation instead.
 - Handoff transport (kept from the first cut): the session-handoff skill records
   copied rulings once occupying 91.4% of a handoff before transport moved to a
   persistent store and pointer, and
-  [`handoff_validation.py`](../../src/gzkit/handoff_validation.py) guards
+  [`handoff_validation.py`](https://github.com/tvproductions/gzkit/blob/main/src/gzkit/handoff_validation.py) guards
   attributed decisions lacking list markers after ten operator rulings vanished
   from a successor.
 
@@ -546,11 +546,11 @@ written nowhere as a rule a fresh agent could apply. Gap.
    contract. Lens 3: two guarantees that could not both hold. Lens 1: the
    publication seam made explicit. Useful detection; preserve the semantic
    review's role.
-2. **OBPI-0.35.0-06 checkpoint, 2026-09-11** ([handoff](../../.gzkit/handoffs/20260911T082702Z-obpi-0.35.0-06-stage2-complete-awaiting-req03-reclosure.md)):
+2. **OBPI-0.35.0-06 checkpoint, 2026-09-11** ([handoff](https://github.com/tvproductions/gzkit/blob/main/.gzkit/handoffs/20260911T082702Z-obpi-0.35.0-06-stage2-complete-awaiting-req03-reclosure.md)):
    three allowlist amendments (Lens 2, jurisdiction discovered late) and a
    repair dispatched during review that invalidated the reviewed digest (Lens 1,
    the digest's seam). Classify separately; do not reopen the OBPI.
-3. **Session memory transport** ([gz-session-handoff SKILL.md](../../.gzkit/skills/gz-session-handoff/SKILL.md)):
+3. **Session memory transport** ([gz-session-handoff SKILL.md](https://github.com/tvproductions/gzkit/blob/main/.gzkit/skills/gz-session-handoff/SKILL.md)):
    Lens 4. Memory quality is what survives delivery and parsing; the two named
    failure modes have targeted responses, not measured savings.
 

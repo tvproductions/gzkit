@@ -193,7 +193,7 @@ their original subject. A split produces successor assignments with explicit
 lineage, not duplicate identities or rewritten proof subjects. The current
 acceptance store's immutable contract/roster behavior needs a designed transition
 for this; adding a mutable catalog lookup does not supply one.
-See [`acceptance_store.py`](../../../src/gzkit/acceptance_store.py), contract
+See [`acceptance_store.py`](https://github.com/tvproductions/gzkit/blob/main/src/gzkit/acceptance_store.py), contract
 initialization and replay: an existing contract and its roster cannot simply be
 replaced under the same recorded subject.
 
@@ -361,10 +361,10 @@ is not itself a delivery schedule.
 
 Inspection at HEAD `5972058826e654db1c06cb33e7f2b57ee7fa4393`, with concurrent
 working-tree activity, identifies reusable machinery, not an implementation
-estimate. [`acceptance.py`](../../../src/gzkit/acceptance.py) already separates
+estimate. [`acceptance.py`](https://github.com/tvproductions/gzkit/blob/main/src/gzkit/acceptance.py) already separates
 obligations, executed proofs, and independent judgments. Its module contract
 explicitly disclaims inferring semantic adequacy from metadata.
-[`acceptance_execution.py`](../../../src/gzkit/acceptance_execution.py) obtains
+[`acceptance_execution.py`](https://github.com/tvproductions/gzkit/blob/main/src/gzkit/acceptance_execution.py) obtains
 requirements from the brief and includes the brief and parent ADR in the
 contract digest. Catalog definitions and their pinned revisions would have to
 enter that authoritative read path and digest.

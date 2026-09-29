@@ -45,5 +45,5 @@ Exit code 0 when no drift detected, exit code 3 on policy breach.
 
 ## See Also
 
-- [personas-list](../commands/personas-list.md)
-- [personas-drift](../commands/personas-drift.md)
+- [personas-list](personas-list.md)
+- [personas-drift](personas-drift.md)

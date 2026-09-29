@@ -1,6 +1,6 @@
 # Defect-fix routing
 
-> Read [AGENTS.md § Defect-fix routing](../../AGENTS.md#defect-fix-routing) with the active-OBPI clarification below (operator ruling, 2026-09-08). The clarification governs continued work in an already-authorized pipeline; the ownership precondition still governs entry into another live brief's work.
+> Read [AGENTS.md § Defect-fix routing](https://github.com/tvproductions/gzkit/blob/main/AGENTS.md#defect-fix-routing) with the active-OBPI clarification below (operator ruling, 2026-09-08). The clarification governs continued work in an already-authorized pipeline; the ownership precondition still governs entry into another live brief's work.
 
 When a defect surfaces, the routing decision (direct `fix(...)` commit vs. full OBPI ceremony) is made against the explicit thresholds in AGENTS.md. This page records *why* those thresholds exist, what they look like when applied wrong, and which other rules they compose with.
 
@@ -28,7 +28,7 @@ automatically creating another work order.
 | Explicit operator request to file an issue | GHI linked to the owning work; no acceptance obligation is discharged by filing |
 
 Use `### Change Log` under `## Evidence`, following the brief template and
-[`gz-obpi-pipeline`](../../.gzkit/skills/gz-obpi-pipeline/SKILL.md#corrections-belong-to-the-active-obpi).
+[`gz-obpi-pipeline`](https://github.com/tvproductions/gzkit/blob/main/.gzkit/skills/gz-obpi-pipeline/SKILL.md#corrections-belong-to-the-active-obpi).
 Capture substantive adjustments, affected requirements or contract clauses,
 changes, and verification/closure references. Reuse finding identities and group
 related repairs. The log indexes existing evidence and ledger records; it does
@@ -85,11 +85,11 @@ The rule originally lived at `.gzkit/rules/defect-fix-routing.md` with a univers
 
 ## Related
 
-- [AGENTS.md § Defect-fix routing](../../AGENTS.md#defect-fix-routing) — the binding threshold tables and decision protocol this page is the pedagogy for.
-- [AGENTS.md § Behavior Rules — Never, item 5](../../AGENTS.md#never) (brief-boundary anti-pattern).
-- [AGENTS.md § DO IT RIGHT, item 7 (6c)](../../AGENTS.md#do-it-right-craftsmanship-maxim) — "choose fix scope per thresholds, not intuition." Ceremony is not always more thorough.
-- [`gz-obpi-pipeline` SKILL](../../.gzkit/skills/gz-obpi-pipeline/SKILL.md) — the ceremony this rule modulates; its "When NOT to Use" section cites the direct-fix thresholds.
-- [`gz-obpi-specify` SKILL](../../.gzkit/skills/gz-obpi-specify/SKILL.md) — the brief-authoring skill this rule modulates.
+- [AGENTS.md § Defect-fix routing](https://github.com/tvproductions/gzkit/blob/main/AGENTS.md#defect-fix-routing) — the binding threshold tables and decision protocol this page is the pedagogy for.
+- [AGENTS.md § Behavior Rules — Never, item 5](https://github.com/tvproductions/gzkit/blob/main/AGENTS.md#never) (brief-boundary anti-pattern).
+- [AGENTS.md § DO IT RIGHT, item 7 (6c)](https://github.com/tvproductions/gzkit/blob/main/AGENTS.md#do-it-right-craftsmanship-maxim) — "choose fix scope per thresholds, not intuition." Ceremony is not always more thorough.
+- [`gz-obpi-pipeline` SKILL](https://github.com/tvproductions/gzkit/blob/main/.gzkit/skills/gz-obpi-pipeline/SKILL.md) — the ceremony this rule modulates; its "When NOT to Use" section cites the direct-fix thresholds.
+- [`gz-obpi-specify` SKILL](https://github.com/tvproductions/gzkit/blob/main/.gzkit/skills/gz-obpi-specify/SKILL.md) — the brief-authoring skill this rule modulates.
 
 ## Routing matrix as it stood in AGENTS.md until 2026-09-17 (a dated record)
 

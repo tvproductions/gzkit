@@ -140,4 +140,4 @@ using the appropriate template.
 - [Skills](skills/index.md)
 - [Lifecycle](concepts/lifecycle.md)
 - [Closeout](concepts/closeout.md)
-- [Command reference](commands/index.md)
+- [Command reference](manpages/index.md)

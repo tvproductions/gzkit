@@ -128,5 +128,5 @@ Frozen dataclass returned by `check_chain_integrity()`:
 - [Handoff Document Validation](handoff-validation.md) — Document-level validation checks
 - [Staleness Classification](staleness-classification.md) — Multi-factor staleness system
 - [Session Handoff Schema](session-handoff-schema.md) — Schema specification
-- [ADR-0.0.25](../../design/adr/adr-0.0.x/ADR-0.0.25-compounding-engineering-session-handoff-contract/ADR-0.0.25-compounding-engineering-session-handoff-contract.md) — Architecture decision record
+- ADR-0.0.25 — Architecture decision record
 - Tests: `tests/governance/test_handoff_chaining.py`

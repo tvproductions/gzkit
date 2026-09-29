@@ -297,5 +297,5 @@ fields are also fail-closed when canonical skills define them.
 
 - [Ledger Schema](ledger-schema.md) — JSONL entry format specifications
 - [GovZero Charter](charter.md) — Gate definitions and authority
-- [ADR-0.0.21](../../design/adr/adr-0.0.x/ADR-0.0.21-govzero-tooling-layered-trust/ADR-0.0.21-govzero-tooling-layered-trust.md) — Architecture decision record
+- ADR-0.0.21 — Architecture decision record
 - [Audit Protocol](audit-protocol.md) — Closeout ceremony procedure

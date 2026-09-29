@@ -218,7 +218,7 @@ Flags are declared in `data/flags.json` and validated against
 
 ## CLI Commands
 
-- [`gz flags`](../user/commands/flags.md) --- list all flags with
+- [`gz flags`](../user/manpages/flags.md) --- list all flags with
   resolved values
-- [`gz flag explain <key>`](../user/commands/flag-explain.md) ---
+- [`gz flag explain <key>`](../user/manpages/flag-explain.md) ---
   inspect one flag in detail

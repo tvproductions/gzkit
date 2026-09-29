@@ -34,7 +34,7 @@ surrounded by adapters on every side.
 Beyond the ADR-taxonomy mapping below, hexagonal is gzkit's **primary code
 architecture directive** (operator ruling, 2026-07-06 — mid-course reflection on
 ADR-0.32.0). The binding per-turn form lives in
-[`.gzkit/rules/hexagonal-architecture.md`](../../.gzkit/rules/hexagonal-architecture.md);
+[`.gzkit/rules/hexagonal-architecture.md`](https://github.com/tvproductions/gzkit/blob/main/.gzkit/rules/hexagonal-architecture.md);
 this section enshrines the full Cockburn reference (§1–§2.3) and maps every
 element to gzkit's actual structure.
 
@@ -92,7 +92,7 @@ Benefits: **(1) testing** — system-level tests with no production connection, 
 
 **gzkit conformance (resolved 2026-07-06 — the injection seam IS the canonical hexagon):** gzkit satisfies the pattern **through parameter injection, and that is its blessed hexagon** (operator ruling, 2026-07-06). Rules 3/4 hold via `project_root: Path` (738 param sites) and path-injectable `Ledger(path)` / `load_config(path=)` threaded from the command layer — the **configurator** (Cockburn Fig 2.1: the composition root instantiates the driven adapter, injects it into the app, then hands the app to the driving adapter). Tests act as configurator + driving actor over temp worlds; `tests/policy/test_import_boundaries.py` is a real AST "test wall" enforcing **core purity** (rule 5); the `ontology/` package is the strong-conformance exemplar — pure domain (`model`/`purity`/`corpus`) with `networkx` confined to the single `graph.py` adapter that returns domain types (rule 3), never a library-native view.
 
-**Retired facade (the resolution):** the former `src/gzkit/ports/` + `src/gzkit/adapters/` + `tests/fakes/` layer (FileStore/ProcessRunner/LedgerStore/ConfigStore Protocols, the in-memory fakes, and `FileConfigStore`) was built and conformance-tested but wired into **zero** production code and injected into **zero** domain tests — by Cockburn's own test, *"a nice drawing but not much more."* It was retired as a correction under ADR-0.0.3 (supersession callouts on OBPI-0.0.3-01/-04/-05/-09). A port ABC over a single/zero impl beside a working self-contained seam is exactly the speculative generality the [primary directive](../../.gzkit/rules/hexagonal-architecture.md) forbids (*"encapsulate first; formalize the port only when the second adapter is real"*).
+**Retired facade (the resolution):** the former `src/gzkit/ports/` + `src/gzkit/adapters/` + `tests/fakes/` layer (FileStore/ProcessRunner/LedgerStore/ConfigStore Protocols, the in-memory fakes, and `FileConfigStore`) was built and conformance-tested but wired into **zero** production code and injected into **zero** domain tests — by Cockburn's own test, *"a nice drawing but not much more."* It was retired as a correction under ADR-0.0.3 (supersession callouts on OBPI-0.0.3-01/-04/-05/-09). A port ABC over a single/zero impl beside a working self-contained seam is exactly the speculative generality the [primary directive](https://github.com/tvproductions/gzkit/blob/main/.gzkit/rules/hexagonal-architecture.md) forbids (*"encapsulate first; formalize the port only when the second adapter is real"*).
 
 **Adapters-outside-the-core as a *folder* discipline is NOT adopted — and was superseded (v0.2.0).** The facade retirement removed the *wrong-shaped, dormant* facade (`src/gzkit/adapters/` happened to sit *inside* the app package); it neither relocated nor built any adapter and enshrined no folder mandate. A subsequent deliberate design discussion (hexagonal directive **v0.2.0**; see § "The DDD → HA → BDD → TDD cascade" and § "Why gzkit's domain lives in the ontology, not the folder tree" below) **reversed** the earlier "adapters live outside the core in `domain`/`application`/`adapters` folders" direction: **`core/` stays, no folder partitions are added, and bounded contexts are subgraphs of the ontology, not directories** (the "folder cosplay" trap). The former pool item `ADR-pool.hexagonal-folder-structure-realization` is **Superseded** accordingly. What survives is not folder work but **content-based purity** — third-party deps confined to sanctioned adapter modules (rule 1), enforceable as a direct correction, never a folder rewire.
 
@@ -148,7 +148,7 @@ folder restructure** (ADR-0.32.0, the ontology object/link plane):
   precedes the tool: every new module, object, and seam earns its place by imaging
   the *actual* shape, never a convenient one (ADR-0.32.0 persona). The binding
   per-turn form of this cascade lives in
-  [`.gzkit/rules/hexagonal-architecture.md`](../../.gzkit/rules/hexagonal-architecture.md)
+  [`.gzkit/rules/hexagonal-architecture.md`](https://github.com/tvproductions/gzkit/blob/main/.gzkit/rules/hexagonal-architecture.md)
   § "The cascade & domain cohesion."
 
 ## Mapping to gzkit ADR taxonomy

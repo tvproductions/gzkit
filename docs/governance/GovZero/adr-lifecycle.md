@@ -280,6 +280,6 @@ When validating an ADR, agents MUST:
 
 - Gate definitions: [charter.md](charter.md)
 - Closeout ceremony: [audit-protocol.md](audit-protocol.md)
-- Disposition rubric: [../ADR_DISPOSITION_RUBRIC.md](../ADR_DISPOSITION_RUBRIC.md)
+- Disposition rubric: ../ADR_DISPOSITION_RUBRIC.md
 - ADR status table: [adr-status.md](adr-status.md)
 - Release doctrine: [releases/README.md](releases/README.md)

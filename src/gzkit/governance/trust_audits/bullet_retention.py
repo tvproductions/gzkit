@@ -182,6 +182,9 @@ def _normalize(text: str) -> str:
     # Strip leading markdown bullet markers: -, *, digits followed by .
     text = re.sub(r"^[\s\-\*]+", "", text.strip())
     text = re.sub(r"^\d+\.\s*", "", text)
+    # Drop inline-link targets, keep link text: a target is relative to the file
+    # carrying it, so a quote in docs/ must repoint what the rule links (GHI #803).
+    text = re.sub(r"\]\([^)\s]*\)", "]", text)
     # Collapse runs of whitespace to a single space
     text = re.sub(r"\s+", " ", text)
     return text.strip().lower()

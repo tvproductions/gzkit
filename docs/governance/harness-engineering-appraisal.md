@@ -4,7 +4,7 @@
 >
 > **Companion:** Böckeler + Chris Ford video deep-dive on the "sensors" axis of harness engineering (linked from the article)
 >
-> **Authored:** 2026-04-26 in design dialogue. Companion to the [improvement plan handoff](../../.gzkit/handoffs/2026-04-26-harness-engineering-improvement-plan.md). This appraisal is the substantive evaluation; the handoff is the routing artifact that decomposes the appraisal into Wave 1 / 2 / 3 work.
+> **Authored:** 2026-04-26 in design dialogue. Companion to the [improvement plan handoff](https://github.com/tvproductions/gzkit/blob/main/.gzkit/handoffs/2026-04-26-harness-engineering-improvement-plan.md). This appraisal is the substantive evaluation; the handoff is the routing artifact that decomposes the appraisal into Wave 1 / 2 / 3 work.
 
 ## Framing
 
@@ -54,7 +54,7 @@ gzkit IS a harness-engineering project by design. The `MAKE LLM STOCHASTIC VIBES
 
 The article's framing is that **guides anticipate, sensors observe**. gzkit invests massively in both. If you read `AGENTS.md` and the rules together, the outer harness here is *very* thick — among the thickest I've seen. The cost is paid every turn; the payoff is real (the GHI ledger shows defects caught the surface previously missed). But until gzkit can show *which* guides are still load-bearing in the presence of the current validator surface, the contract is heavier than it has to be on at least one axis. That's the highest-leverage place to look — not adding more, but proving (or disproving) that some current guide is now reachable from sensors alone, then deleting it.
 
-The two concrete additions that emerged as highest-priority from this appraisal: **mutation testing as a `gz validate --mutation` scope** (closes the Invariant 6f gap mechanically) and **an in-session sensor sidecar** that streams `gz validate` deltas to the agent during edits. Both are on the [improvement plan](../../.gzkit/handoffs/2026-04-26-harness-engineering-improvement-plan.md) — mutation testing in Wave 1 (already booked as `OBPI-0.31.0-07-mutate`), sidecar in Wave 2 (planned as `ADR-pool.harness-sidecar` but never drafted to disk — reconciled 2026-06-12; the Stop-hook turn-end sensor landed by **ADR-0.0.70** is the cheap down-payment whose block telemetry now funds that decision with evidence).
+The two concrete additions that emerged as highest-priority from this appraisal: **mutation testing as a `gz validate --mutation` scope** (closes the Invariant 6f gap mechanically) and **an in-session sensor sidecar** that streams `gz validate` deltas to the agent during edits. Both are on the [improvement plan](https://github.com/tvproductions/gzkit/blob/main/.gzkit/handoffs/2026-04-26-harness-engineering-improvement-plan.md) — mutation testing in Wave 1 (already booked as `OBPI-0.31.0-07-mutate`), sidecar in Wave 2 (planned as `ADR-pool.harness-sidecar` but never drafted to disk — reconciled 2026-06-12; the Stop-hook turn-end sensor landed by **ADR-0.0.70** is the cheap down-payment whose block telemetry now funds that decision with evidence).
 
 ## External Validation — Greyling on Claude Code (recursive case)
 
@@ -150,6 +150,6 @@ No new ratio evidence (the interview carries no measurement), no displacement of
 - Greyling axis source: <https://github.com/cobusgreyling/98-percent-claude-code-not-ai>
 - Compound Engineering source: <https://github.com/EveryInc/compound-engineering-plugin> and <https://every.to/chain-of-thought/compound-engineering-how-every-codes-with-agents>
 - Buetow axis source: Beyond Coding Podcast (2026-06-10) + <https://cracking-ai-engineering.com>; adoption: `docs/design/adr/foundation/ADR-0.0.70-turn-end-feedback-and-correction-mining/`
-- Improvement plan handoff: [`.gzkit/handoffs/2026-04-26-harness-engineering-improvement-plan.md`](../../.gzkit/handoffs/2026-04-26-harness-engineering-improvement-plan.md)
-- Booked work: [`OBPI-0.31.0-07-mutate`](../design/adr/pre-release/ADR-0.31.0-new-cli-command-absorption/obpis/OBPI-0.31.0-07-mutate.md)
+- Improvement plan handoff: [`.gzkit/handoffs/2026-04-26-harness-engineering-improvement-plan.md`](https://github.com/tvproductions/gzkit/blob/main/.gzkit/handoffs/2026-04-26-harness-engineering-improvement-plan.md)
+- Booked work: `OBPI-0.31.0-07-mutate`
 - Doctrine roots cited: `AGENTS.md` §§ MAKE LLM STOCHASTIC VIBES INERT, STDLIB-FIRST DOCTRINE, OPERATOR ECONOMY OF EFFORT, Attestation; `.claude/rules/tests.md` § Invariant 6f; `docs/governance/advisory-rules-audit.md`; `docs/governance/state-doctrine.md`

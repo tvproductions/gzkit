@@ -130,7 +130,7 @@ Stage 1→2 Confidence Gate routes operators here automatically when
 self-reported confidence is low; this section documents the same
 operator move outside the pipeline.
 
-See [`commands/justify.md`](commands/justify.md) for the full command
+See [`commands/justify.md`](manpages/justify.md) for the full command
 contract and [manpages/justify.md](manpages/justify.md) for the
 exit-code matrix and option reference.
 
@@ -552,7 +552,7 @@ always recompute truth from `gz` status surfaces before closeout:
 
 Skill shortcuts for drift detection and reconciliation:
 
-- [`/gz-adr-check`](skills/gz-adr-check.md) — run blocking ADR evidence checks for a target ADR
+- [`/gz-adr-audit`](skills/gz-adr-audit.md) — run blocking ADR evidence checks for a target ADR
 - [`/gz-adr-sync`](skills/gz-adr-sync.md) — end-to-end ADR governance sync (evidence, reconciliation, registration)
 - [`/gz-adr-status`](skills/gz-adr-status.md) — focused ADR drilldown with lifecycle and OBPI detail
 
@@ -690,9 +690,6 @@ Run this only when linked OBPIs are complete and evidenced.
 
 Skill shortcuts for the closeout ceremony:
 
-- [`/gz-closeout`](skills/gz-closeout.md) — initiate ADR closeout with evidence context (dry-run first)
-- [`/gz-attest`](skills/gz-attest.md) — record human attestation with prerequisite enforcement
-- [`/gz-audit`](skills/gz-audit.md) — run strict post-attestation reconciliation audits
 - [`/gz-adr-closeout-ceremony`](skills/gz-adr-closeout-ceremony.md) — execute the full closeout ceremony protocol
 - [`/gz-adr-emit-receipt`](skills/gz-adr-emit-receipt.md) — emit ADR receipt events with scoped evidence payloads
 
@@ -1151,9 +1148,8 @@ Skill shortcuts for governance planning — these provide guided workflows beyon
 - [`/gz-design`](skills/gz-design.md) — collaborative design dialogue that produces GovZero ADR artifacts
 - [`/gz-adr-create`](skills/gz-adr-create.md) — create and book a GovZero ADR with its OBPI briefs
 - [`/gz-plan`](skills/gz-plan.md) — create ADR artifacts for planned change
-- [`/gz-specify`](skills/gz-specify.md) — create OBPI briefs linked to parent ADR items
+- [`/gz-obpi-specify`](skills/gz-obpi-specify.md) — create OBPI briefs linked to parent ADR items
 - [`/gz-adr-promote`](skills/gz-adr-promote.md) — promote a pool ADR into canonical ADR package structure
-- [`/gz-interview`](skills/gz-interview.md) — run interactive governance interviews for structured input
 
 ```bash
 # Create governance artifacts
@@ -1398,7 +1394,7 @@ project adds new canonical rules without overwriting operator-edited files
 (`skip_existing=True`).
 
 See [`gz init`](manpages/init.md#rules-scaffolding) for rules scaffolding details
-and [`.claude/rules/skill-surface-sync.md`](../../../.gzkit/rules/skill-surface-sync.md)
+and [`.claude/rules/skill-surface-sync.md`](https://github.com/tvproductions/gzkit/blob/main/.gzkit/rules/skill-surface-sync.md)
 for the "Edit `.gzkit/` first" editing invariant.
 
 ### Recovery flows
@@ -1458,11 +1454,11 @@ uv run gz validate --intrinsic-attestation      # Audit intrinsic attestation ev
 uv run gz validate --advisor-proof-binding      # Verdict <-> proof binding audit (OBPI-0.0.29-08)
 ```
 
-Fail-closed (exit 3) audit of every citation in cluster ADRs (0.0.27 / 0.0.28 / 0.0.29 / 0.0.30) plus `.gzkit/rules/complexity-doctrine.md` and any document under `docs/governance/complexity/`. Recovery on a flagged citation: re-author the citation against the current `corpus_revision` and `distilled-characteristics-*.md` file, or amend the citing ADR through its own ceremony per `ADR-pool.doctrine-amendment-protocol`. Closes the 2am-Scenario-2 failure mode (advisor diagnosis references missing artifact). Included in `gz check`. See [`gz validate --complexity-doctrine-links`](commands/validate.md#-complexity-doctrine-links) for the speculative-citation marker (used when an ADR forward-references a planned-but-unlanded distillation).
+Fail-closed (exit 3) audit of every citation in cluster ADRs (0.0.27 / 0.0.28 / 0.0.29 / 0.0.30) plus `.gzkit/rules/complexity-doctrine.md` and any document under `docs/governance/complexity/`. Recovery on a flagged citation: re-author the citation against the current `corpus_revision` and `distilled-characteristics-*.md` file, or amend the citing ADR through its own ceremony per `ADR-pool.doctrine-amendment-protocol`. Closes the 2am-Scenario-2 failure mode (advisor diagnosis references missing artifact). Included in `gz check`. See [`gz validate --complexity-doctrine-links`](manpages/validate.md#-complexity-doctrine-links) for the speculative-citation marker (used when an ADR forward-references a planned-but-unlanded distillation).
 
-`gz validate --complexity-thresholds` (ADR-0.0.28, OBPI-0.0.28-03) audits the per-metric threshold table at `.gzkit/rules/complexity-thresholds.json`: every canonical metric must have at least one band; the loader's Pydantic model fail-closes on missing block bands, off-enum percentiles, off-enum trigger semantics, missing percentile + absolute pairing, or unparseable citation tuples. When the rule body declares the `## Bootstrap absolutes` carve-out, the validator emits a non-policy-breach `complexity_thresholds_bootstrap_mode` warning naming the upstream-defect GHIs (#404 parser zeros, #405 polarity-aware threshold model). Included in `gz check` (step "Complexity-thresholds"). See [`gz validate --complexity-thresholds`](commands/validate.md#-complexity-thresholds) for the full surface.
+`gz validate --complexity-thresholds` (ADR-0.0.28, OBPI-0.0.28-03) audits the per-metric threshold table at `.gzkit/rules/complexity-thresholds.json`: every canonical metric must have at least one band; the loader's Pydantic model fail-closes on missing block bands, off-enum percentiles, off-enum trigger semantics, missing percentile + absolute pairing, or unparseable citation tuples. When the rule body declares the `## Bootstrap absolutes` carve-out, the validator emits a non-policy-breach `complexity_thresholds_bootstrap_mode` warning naming the upstream-defect GHIs (#404 parser zeros, #405 polarity-aware threshold model). Included in `gz check` (step "Complexity-thresholds"). See [`gz validate --complexity-thresholds`](manpages/validate.md#-complexity-thresholds) for the full surface.
 
-`gz complexity distill` is the destination CLI verb for the [`gz-complexity-distill`](../../.gzkit/skills/gz-complexity-distill/SKILL.md) skill (parent ADR-0.0.27, OBPI-0.0.27-06). It composes the OBPI-03 measurement pipeline with the OBPI-04 distillation render and emits a dated `distilled-characteristics-{YYYY-MM-DD}.md` under `docs/governance/complexity/`. Operator follow-up at Gate 5 fills the per-metric Practitioner-eye observation blocks the verb leaves as placeholders (REQ-0.0.27-04-10, the OEE seam). See [`gz complexity distill`](commands/complexity-distill.md) for full options and exit codes.
+`gz complexity distill` is the destination CLI verb for the [`gz-complexity-distill`](https://github.com/tvproductions/gzkit/blob/main/.gzkit/skills/gz-complexity-distill/SKILL.md) skill (parent ADR-0.0.27, OBPI-0.0.27-06). It composes the OBPI-03 measurement pipeline with the OBPI-04 distillation render and emits a dated `distilled-characteristics-{YYYY-MM-DD}.md` under `docs/governance/complexity/`. Operator follow-up at Gate 5 fills the per-metric Practitioner-eye observation blocks the verb leaves as placeholders (REQ-0.0.27-04-10, the OEE seam). See [`gz complexity distill`](manpages/complexity-distill.md) for full options and exit codes.
 
 **Intrinsic complexity attestation** (ADR-0.0.29, OBPI-0.0.29-07) provides two escape paths for functions whose cyclomatic complexity is irreducibly intrinsic — neither path is a silent bypass; both require human attestation:
 
@@ -1479,11 +1475,11 @@ Fail-closed (exit 3) audit of every citation in cluster ADRs (0.0.27 / 0.0.28 / 
 
 `gz complexity guide` (ADR-0.0.30, OBPI-0.0.30-01) is the authoring-time preview surface. It wraps the OBPI-0.0.30-03 hint engine and emits one `AuthoringHint` per `advise`-band crossing — functions approaching the warn threshold, surfaced while editing before reaching gate time. Exit 3 is NOT used; this verb never blocks. Default output is one prose block per hint (archetype, guidance headline, recommended move); `--json` emits the canonical `AuthoringHint` array. See [`gz-complexity-guide`](manpages/complexity-guide.md) for the full manpage.
 
-`gz complexity guide --server` (ADR-0.0.30, OBPI-0.0.30-04) starts the JSON-over-stdio protocol server for editor/IDE integration. Editors communicate via LSP-style Content-Length–framed JSON envelopes (`initialize` → `analyze*` → `shutdown`). Protocol specification: [`docs/governance/complexity/authoring-guide-protocol.md`](governance/complexity/authoring-guide-protocol.md).
+`gz complexity guide --server` (ADR-0.0.30, OBPI-0.0.30-04) starts the JSON-over-stdio protocol server for editor/IDE integration. Editors communicate via LSP-style Content-Length–framed JSON envelopes (`initialize` → `analyze*` → `shutdown`). Protocol specification: [`docs/governance/complexity/authoring-guide-protocol.md`](../governance/complexity/authoring-guide-protocol.md).
 
 `gz complexity advise` (ADR-0.0.29, OBPI-0.0.29-03) is the trigger-time advisor surface. It runs the OBPI-0.0.29-02 diagnosis engine against `<path>`, measures per-function `radon_cc` via radon's Python API, and emits an `AdvisorDiagnosis` (canonical refactor archetype, doctrinal authority, non-empty proof tuple linking to AST nodes, recommended-move excerpt) for every band crossing in the threshold table at `.gzkit/rules/complexity-thresholds.json`. Operator moment: preview advisor diagnosis on a file before commit. Default output is structured prose; `--json` emits the canonical Pydantic serialization. Exit codes follow the four-code map: `0` clean or warn-band, `3` block-band crossing. See [`gz-complexity-advise`](manpages/complexity-advise.md) for the full manpage.
 
-**Verdict <-> proof binding audit** (ADR-0.0.29, OBPI-0.0.29-08): `gz validate --advisor-proof-binding` is the gate-time defense-in-depth backstop for the verdict <-> proof binding. Model-layer enforcement (OBPI-01: `Field(min_length=1)` on `AdvisorDiagnosis.proof`) and engine-layer enforcement (OBPI-02: `EngineError` raised before model instantiation when proof is unavailable) prevent empty-proof diagnoses at runtime; this validator catches any regression of either lower layer by scanning `tests/fixtures/advisor/*.json`, `intrinsic-complexity-attestation` ledger events that cite a diagnosis id, and `src/gzkit/schemas/advisor_diagnosis.json` (must require `properties.proof.minItems >= 1`). Negative-case fixtures (the OBPI-01 model test that asserts `ValidationError` on empty proof) are skipped via the `"_negative_case": true` speculative-marker escape. Included in `gz validate --all` and `gz check`. See [`gz validate --advisor-proof-binding`](commands/validate.md#-advisor-proof-binding) for the full surface.
+**Verdict <-> proof binding audit** (ADR-0.0.29, OBPI-0.0.29-08): `gz validate --advisor-proof-binding` is the gate-time defense-in-depth backstop for the verdict <-> proof binding. Model-layer enforcement (OBPI-01: `Field(min_length=1)` on `AdvisorDiagnosis.proof`) and engine-layer enforcement (OBPI-02: `EngineError` raised before model instantiation when proof is unavailable) prevent empty-proof diagnoses at runtime; this validator catches any regression of either lower layer by scanning `tests/fixtures/advisor/*.json`, `intrinsic-complexity-attestation` ledger events that cite a diagnosis id, and `src/gzkit/schemas/advisor_diagnosis.json` (must require `properties.proof.minItems >= 1`). Negative-case fixtures (the OBPI-01 model test that asserts `ValidationError` on empty proof) are skipped via the `"_negative_case": true` speculative-marker escape. Included in `gz validate --all` and `gz check`. See [`gz validate --advisor-proof-binding`](manpages/validate.md#-advisor-proof-binding) for the full surface.
 
 **Advisor timeout primitive** (ADR-0.0.29, OBPI-0.0.29-09): The `run_with_timeout` primitive at `src/gzkit/complexity/advisor/timeout.py` wraps advisor invocations with a configurable timeout (default 30s). On timeout, the primitive returns `TimeoutTimedOut` (fail-open — commit proceeds) and logs a JSONL entry to `.gzkit/insights/advisor-failures.jsonl`. The auto-chain hook (OBPI-05) consumes this primitive; the hook never blocks a commit indefinitely. Config override: set `advisor_timeout_seconds` in `.gzkit.json` (e.g. `{"advisor_timeout_seconds": 15}`); it applies whenever the caller passes no explicit timeout, and an explicit timeout (the hook's `--timeout`) wins. pre-commit's own `SKIP=complexity-advisor-auto-chain` bypasses both xenon and the advisor entirely — the timeout only governs the non-SKIP path.
 
@@ -1503,7 +1499,7 @@ uv run gz frontmatter reconcile             # Apply ledger-wins reconciliation
 uv run gz frontmatter reconcile --json      # Emit receipt JSON to stdout
 ```
 
-Rewrites drifted ADR/OBPI `id`/`parent`/`lane`/`status` to match the ledger; ungoverned keys preserved byte-identically. See [`gz frontmatter reconcile`](commands/frontmatter-reconcile.md) and ADR-0.0.16 for details.
+Rewrites drifted ADR/OBPI `id`/`parent`/`lane`/`status` to match the ledger; ungoverned keys preserved byte-identically. See [`gz frontmatter reconcile`](manpages/frontmatter-reconcile.md) and ADR-0.0.16 for details.
 
 ---
 
