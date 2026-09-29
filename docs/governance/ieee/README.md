@@ -42,6 +42,7 @@ to the anchor, read the [dated session record](design-pivot-session-2026-09-25.m
 | [Act 1 cold read](act1-cold-read-2026-09-23.md) | historical | Agent 2's Act 1 verdict on **this register**, frozen at its date. Raw record — evidence about the register, not a finding about gzkit |
 | [Dex Horthy transcript excerpts](raw/dex-horthy-successive-change-2026-09-23.md) | historical, external testimony | Timestamped source excerpts behind the successive-change evaluation criterion; not verified findings about gzkit |
 | [`raw/`](raw/README.md) | historical | Index and tier statement for raw reports |
+| [`references/`](references/README.md) | reference | Vendored, freely distributable companion texts. Currently FAA DOT/FAA/AR-08/32, the *Requirements Engineering Management Handbook* |
 | [`02-…-evidence/`](02-requirements-vs-release-evidence/) | tooling | `measure.py` — the re-derivation script piece 02's figures come from. **Not investigation narrative**: it holds no conclusions, carries no literals from its authoring date, and reports whatever tree it is given |
 
 **Canonical is not normative.** A finding here records what the investigation
@@ -541,6 +542,14 @@ to answer concrete questions raised by the repository.
 The standards texts themselves are **not** vendored into this repository; they
 are licensed documents. Pieces cite standard, clause and a paraphrase, and quote
 only where exact wording carries the argument.
+
+**Companion reference, outside the standards corpus.** DOT/FAA/AR-08/32,
+*Requirements Engineering Management Handbook* (Lempia and Miller, FAA, 2009),
+is read alongside the corpus during review and alignment. It is a public
+U.S. Government report, so it is vendored at
+[`references/FAA-AR-08-32.pdf`](references/FAA-AR-08-32.pdf). Its provenance
+and checksum are in [`references/`](references/README.md). The F-032 and F-033
+guard applies to it exactly as it applies to the standards.
 
 ## The three permissions that shape the whole series
 
