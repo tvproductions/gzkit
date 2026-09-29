@@ -101,7 +101,13 @@ def sync_control_surfaces(dry_run: bool) -> None:
 
 
 def tidy(check_only: bool, fix: bool, dry_run: bool) -> None:
-    """Run maintenance checks and cleanup."""
+    """Report maintenance findings; exit 3 when any breach section has one (GHI #1124).
+
+    Validation issues, orphaned OBPIs and an actionable settings vault are policy
+    breaches. ADRs pending attestation are a workflow queue: listed, never gating
+    (operator ruling 2026-09-28). ``check_only`` is enforced at the parser, which
+    refuses ``--check`` with ``--fix``.
+    """
     config = ensure_initialized()
     project_root = get_project_root()
 
@@ -139,10 +145,10 @@ def tidy(check_only: bool, fix: bool, dry_run: bool) -> None:
         console.print("\n  ⚠ [yellow]Settings vault:[/yellow]")
         console.print(f"    → {escape(vault.message)}")
 
-    # Find ADRs without attestation
+    # ADRs without attestation: an informational queue, never a breach.
     pending = ledger.get_pending_attestations()
     if pending:
-        console.print("\n  ⚠ [yellow]ADRs pending attestation:[/yellow]")
+        console.print("\n  [dim]ADRs pending attestation (informational):[/dim]")
         for adr_id in pending:
             console.print(f"    → {adr_id}")
 
@@ -155,6 +161,12 @@ def tidy(check_only: bool, fix: bool, dry_run: bool) -> None:
             sync_all(project_root, config)
             _post_sync_check(project_root, config)
             console.print("\n  [green]✓ Synced control surfaces.[/green]")
+            # The verdict judges the tree the run leaves behind, not the one it found.
+            result = validate_all(project_root)
+            for error in result.errors:
+                console.print(f"    → still open: \\[{error.type}] {escape(error.message)}")
 
-    if not result.errors and not orphan_obpis and not pending:
-        console.print("[green]✓ All checks passed. Project is tidy.[/green]")
+    if result.errors or orphan_obpis or vault.is_actionable:
+        console.print("\n[red]✗ Maintenance breaches found.[/red]")
+        raise SystemExit(3)
+    console.print("\n[green]✓ All checks passed. Project is tidy.[/green]")

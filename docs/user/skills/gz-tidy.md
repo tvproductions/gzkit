@@ -1,6 +1,6 @@
 # /gz-tidy
 
-Run maintenance checks and cleanup routines. Use for repository hygiene and governance maintenance operations.
+Report governance maintenance findings, exiting 3 on a breach, and regenerate control surfaces with --fix. Use for repository hygiene and governance maintenance operations.
 
 ---
 

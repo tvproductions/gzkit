@@ -150,7 +150,7 @@ First-stage intent routers. Pick the namespace that matches your intent, then in
 | [`/gz-how`](gz-how.md) | Answer how do I / what can I: the flows gzkit's skills belong to, their look-alikes and the full catalog |
 | [`/gz-skill-review`](gz-skill-review.md) | Review a skill by re-verifying every claim against the code it wields |
 | [`/gz-mx`](gz-mx.md) | Enter and exit the MX Maintenance Hangar — operator's interface to `gz mx` |
-| [`/gz-tidy`](gz-tidy.md) | Run maintenance checks and cleanup routines |
+| [`/gz-tidy`](gz-tidy.md) | Report maintenance findings (exit 3 on a breach); `--fix` regenerates control surfaces |
 
 ---
 

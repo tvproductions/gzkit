@@ -1,14 +1,14 @@
 ---
 name: gz-tidy
 persona: main-session
-description: Run maintenance checks and cleanup routines. Use for repository hygiene and governance maintenance operations.
+description: Report governance maintenance findings, exiting 3 on a breach, and regenerate control surfaces with --fix. Use for repository hygiene and governance maintenance operations.
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-27
+last_reviewed: 2026-09-28
 model: haiku
 metadata:
-  skill-version: "1.2.0"
+  skill-version: "1.3.0"
 ---
 
 # gz tidy
@@ -32,16 +32,20 @@ control surfaces. It deletes nothing. The handler is `tidy` in
   (`vault_status` in `src/gzkit/settings_vault.py`, GHI #1072). The message
   says what to do.
 - **ADRs pending attestation**: every ADR in the ledger graph with no
-  attestation event, pool ADRs included — an inventory, not a defect list.
+  attestation event, pool ADRs included — an inventory, not a defect list,
+  and never gating.
 
-The run exits 0 whatever it reports. It exits 1 only when the project is not
-initialized, or when `--fix` is refused or fails (below). Read the output, not
-the exit code.
+A finding in any of the first three sections is a policy breach: the run
+prints `✗ Maintenance breaches found.` and exits 3 (GHI #1124). It exits 0 with
+`✓ All checks passed. Project is tidy.` only when none of them has a finding,
+and 1 when the project is not initialized or `--fix` is refused or fails
+(below). Until GHI #1125 retires the `validate_all` fork, its `[header]` lines
+alone keep the run at exit 3.
 
 Flags:
 
-- A bare run and `--check` are the same read-only report: the handler never
-  reads `check_only`.
+- `--check` is the report-only mode: the parser refuses it together with
+  `--fix` (exit 2). A bare run is also report-only unless `--fix` is given.
 - `--fix`, after the report, runs the guarded sync `gz agent sync
   control-surfaces` uses: it refuses with exit 1, writing no mirror, when
   canonical skills fail the sync preflight (`refuse_on_sync_blockers`, GHI
@@ -50,7 +54,8 @@ Flags:
   on a blocking parity error. It repairs control-surface drift only, never
   documents, orphans, the vault or attestations, and unlike `gz agent sync
   control-surfaces` it lists neither the updated paths nor stale mirror-only
-  paths.
+  paths. After a successful sync the run re-validates, and the exit status
+  judges that tree, so a drift the sync repaired no longer counts.
 - `--dry-run` changes only `--fix`, to a single "would sync control
   surfaces" line with no path list. Alone it has no effect.
 

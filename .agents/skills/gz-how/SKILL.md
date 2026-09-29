@@ -5,10 +5,10 @@ description: Answer "how do I …?" and "what can I …?" about gzkit by placing
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-26
+last_reviewed: 2026-09-28
 model: sonnet
 metadata:
-  skill-version: "1.0.0"
+  skill-version: "1.0.1"
 ---
 
 # gz-how
@@ -162,7 +162,7 @@ skill is missing here, so this list cannot fall behind the catalog.
 | record the evidence for an applied rewrite | `gz-pythonic-pattern-apply` |
 | upgrade uv, Python and dependencies | `gz-deps-upgrade` |
 | rank the foundation backlog | `gz-foundation-triage` |
-| run hygiene and cleanup routines | `gz-tidy` |
+| report maintenance findings | `gz-tidy` |
 
 ### Surface integrity
 

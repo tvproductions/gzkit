@@ -160,6 +160,11 @@ class TestCheckSymbols(unittest.TestCase):
         self.assertIn("\u274c", console.text)
 
 
+def _quiet_vault() -> object:
+    """A non-actionable vault, so the host machine's real vault never leaks in."""
+    return SimpleNamespace(is_actionable=False, message="")
+
+
 class TestTidySymbols(unittest.TestCase):
     """REQ-0.0.4-08-03: gz tidy output uses structured symbols."""
 
@@ -190,6 +195,8 @@ class TestTidySymbols(unittest.TestCase):
                     get_pending_attestations=lambda: [],
                 ),
             ),
+            patch.object(tidy, "vault_status", return_value=_quiet_vault()),
+            self.assertRaises(SystemExit),
         ):
             tidy.tidy(check_only=False, fix=True, dry_run=True)
 
@@ -209,6 +216,7 @@ class TestTidySymbols(unittest.TestCase):
                     get_pending_attestations=lambda: [],
                 ),
             ),
+            patch.object(tidy, "vault_status", return_value=_quiet_vault()),
         ):
             tidy.tidy(check_only=True, fix=False, dry_run=False)
 

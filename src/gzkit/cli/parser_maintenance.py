@@ -1156,14 +1156,13 @@ def _register_tooling_parsers(commands: argparse._SubParsersAction) -> None:
     """Register tooling, sync, and audit subcommands."""
     p_tidy = commands.add_parser(
         "tidy",
-        help="Run maintenance checks and cleanup",
-        description="Run maintenance checks and apply cleanup routines.",
+        help="Report maintenance findings; exit 3 on a breach",
+        description="Report maintenance findings; --fix regenerates control surfaces.",
         epilog=build_epilog(["gz tidy --check", "gz tidy --fix", "gz tidy --fix --dry-run"]),
     )
-    p_tidy.add_argument(
-        "--check", dest="check_only", action="store_true", help="Report issues without fixing"
-    )
-    p_tidy.add_argument("--fix", action="store_true", help="Apply automatic fixes")
+    tidy_mode = p_tidy.add_mutually_exclusive_group()
+    tidy_mode.add_argument("--check", dest="check_only", action="store_true", help="Report only")
+    tidy_mode.add_argument("--fix", action="store_true", help="Regenerate control surfaces")
     add_dry_run_flag(p_tidy)
     p_tidy.set_defaults(
         func=lambda a: _lazy("tidy")(check_only=a.check_only, fix=a.fix, dry_run=a.dry_run)
