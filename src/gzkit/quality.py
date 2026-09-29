@@ -1782,6 +1782,92 @@ def run_tautological_debt_audit(project_root: Path) -> QualityResult:
     return run_command(["uv", "run", "python", str(script)], cwd=project_root)
 
 
+#: The projectLocal ratchets `gz check` runs (GHI #1063), as (slug, script).
+PROJECT_LOCAL_RATCHETS: tuple[tuple[str, str], ...] = (
+    ("control-surface-validator-reachability", "check_reachability.py"),
+    ("ledger-vocabulary-inertness", "check_ledger_inertness.py"),
+)
+
+
+def source_checkout_chore_script(slug: str, script_name: str) -> Path | None:
+    """Return a projectLocal chore script from the gzkit checkout this package runs from.
+
+    The ratchets in :data:`PROJECT_LOCAL_RATCHETS` are ``projectLocal`` chores
+    (GHI #1114): the wheel withholds them. Resolving from the running package
+    rather than the CWD makes their availability a property of the INSTALL, never
+    of the working directory (the capture GHI #857 names): a gzkit source
+    checkout carries them, a wheel install carries none.
+    """
+    package_chores = Path(str(importlib.resources.files("gzkit.chores")))
+    checkout = package_chores.parent.parent.parent
+    script = checkout / ".gzkit" / "chores" / slug / script_name
+    return script if script.is_file() else None
+
+
+def project_local_ratchets_installed() -> bool:
+    """Report whether this install carries every projectLocal ratchet script.
+
+    One predicate keys the `gz check` steps, their QC classification and their
+    negative controls, so a wheel install never lists a bound step it cannot prove
+    (QC binding's green-by-emptiness refusal) and a checkout never drops one.
+    """
+    return all(source_checkout_chore_script(slug, name) for slug, name in PROJECT_LOCAL_RATCHETS)
+
+
+def _run_project_local_ratchet(project_root: Path, slug: str, script_name: str) -> QualityResult:
+    """Run a projectLocal chore's ratchet script, self-test first (GHI #1063).
+
+    Both ratchets below are ``projectLocal`` chores (GHI #1114): they audit
+    gzkit's own surfaces, so the wheel withholds them and an adopter's tree
+    carries neither. A project without the chore passes the step, the shape
+    ``run_mkdocs`` uses for a project with no ``mkdocs.yml`` — failing a tree for
+    a gate it was never delivered would make ``gz check`` unadoptable. Where the
+    chore IS present, the self-test runs first for the reason
+    ``run_module_size_audit`` gives, then the ratchet's own exit is the verdict.
+    """
+    from gzkit.commands.chores import _resolve_chore_dir  # noqa: PLC0415
+    from gzkit.commands.common import GzCliError  # noqa: PLC0415
+
+    try:
+        chore_dir = _resolve_chore_dir(slug).path
+    except GzCliError:
+        return QualityResult(
+            success=True,
+            command=f"{slug}/{script_name}",
+            stdout=f"skipped: projectLocal chore {slug} not present in this project",
+            stderr="",
+            returncode=0,
+        )
+    script = chore_dir / script_name
+    self_test = run_command(["uv", "run", "python", str(script), "--self-test"], cwd=project_root)
+    if not self_test.success:
+        return self_test
+    return run_command(["uv", "run", "python", str(script)], cwd=project_root)
+
+
+def run_validator_reachability_audit(project_root: Path) -> QualityResult:
+    """Fail when the ungated `gz validate` scope set grows past its baseline (GHI #1063).
+
+    The ratchet's only automatic caller was a pre-commit hook, so `gz check` and
+    CI never ran it and a push could land an ungated scope with the gate green
+    (operator ruling 2026-09-29: "Add both ratchets to gz check").
+    """
+    return _run_project_local_ratchet(
+        project_root, "control-surface-validator-reachability", "check_reachability.py"
+    )
+
+
+def run_ledger_inertness_audit(project_root: Path) -> QualityResult:
+    """Fail when an undisclosed never-fired ledger event type appears (GHI #1063).
+
+    Same defect as `run_validator_reachability_audit`: a fail-closed ratchet
+    whose only caller was a pre-commit hook, never `gz check` or CI.
+    """
+    return _run_project_local_ratchet(
+        project_root, "ledger-vocabulary-inertness", "check_ledger_inertness.py"
+    )
+
+
 def run_authorship_audit(project_root: Path) -> QualityResult:
     """Run the commit-authorship policy audit (GHI #725).
 

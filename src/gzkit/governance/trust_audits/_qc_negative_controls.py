@@ -432,6 +432,88 @@ def _build_tautological_debt_waived() -> Path:
     return root
 
 
+def _build_validator_reachability() -> Path:
+    """Violation: every runnable scope is ungated against an empty baseline (GHI #1063).
+
+    The fixture carries no ``gz check`` registry, hook, CI workflow or pre-commit
+    entry, so no scope has a gating caller, and the shrink-only baseline discloses
+    none of them: the ungated set has grown past its baseline, the ratchet's own
+    breach. ``pyproject.toml`` is planted because the script refuses a non-root.
+    """
+    root = _mkroot("validator-reachability")
+    _minimal_pyproject(root)
+    _write(
+        root / "data" / "validator_reachability_grandfather.json",
+        json.dumps({"schema_version": 1, "ungated_scopes": []}),
+    )
+    return root
+
+
+def _build_validator_reachability_disclosed() -> Path:
+    """Plant the same ungated tree, with every runnable scope disclosed in the baseline.
+
+    The admit half (GHI #797 precedent): a ratchet that stopped honouring its
+    baseline would breach here and this control would fail. The scope list is the
+    ratchet's own ``runnable_scopes()`` over the live parser: an admit control asks
+    whether a disclosed scope is admitted, so it discloses exactly what is tiered.
+    """
+    import importlib.util  # noqa: PLC0415
+
+    root = _build_validator_reachability()
+    from gzkit.quality import source_checkout_chore_script  # noqa: PLC0415
+
+    script = source_checkout_chore_script(
+        "control-surface-validator-reachability", "check_reachability.py"
+    )
+    spec = importlib.util.spec_from_file_location("_nc_reachability_ratchet", script or "")
+    if spec is None or spec.loader is None:
+        msg = "reachability ratchet script is not in this install"
+        raise FileNotFoundError(msg)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    flags = module.runnable_scopes()
+    _write(
+        root / "data" / "validator_reachability_grandfather.json",
+        json.dumps({"schema_version": 1, "ungated_scopes": flags}),
+    )
+    return root
+
+
+def _build_ledger_vocabulary_inertness() -> Path:
+    """Violation: a declared ledger event type that never fired, undisclosed (GHI #1063).
+
+    The schema declares one type, the ledger is empty and the baseline discloses
+    nothing. The type is not one ``probe_producer`` can run in isolation, so no
+    fresh-project observation can verify it: the only way out is disclosure.
+    """
+    root = _mkroot("ledger-vocabulary-inertness")
+    _minimal_pyproject(root)
+    _write(
+        root / "src" / "gzkit" / "schemas" / "ledger.json",
+        json.dumps({"events": {"nc_never_emitted": {"required": [], "properties": {}}}}),
+    )
+    _write(root / ".gzkit" / "ledger.jsonl", "")
+    _write(
+        root / "data" / "ledger_vocabulary_grandfather.json",
+        json.dumps({"schema_version": 1, "never_fired": []}),
+    )
+    return root
+
+
+def _build_ledger_vocabulary_inertness_disclosed() -> Path:
+    """Plant the same never-fired type, disclosed by a baseline entry.
+
+    The admit half (GHI #797 precedent); the refuse half is
+    ``ledger-vocabulary-inertness``.
+    """
+    root = _build_ledger_vocabulary_inertness()
+    _write(
+        root / "data" / "ledger_vocabulary_grandfather.json",
+        json.dumps({"schema_version": 1, "never_fired": ["nc_never_emitted"]}),
+    )
+    return root
+
+
 def _build_typecheck() -> Path:
     root = _mkroot("typecheck")
     _minimal_pyproject(root)
@@ -1859,6 +1941,45 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         "Empty required section",
     ),
 )
+
+
+def _optional_project_local_controls() -> tuple[tuple[Any, ...], ...]:
+    """Return the projectLocal ratchet controls, present only where the install has them.
+
+    The ``Validator reachability`` and ``Ledger vocabulary inertness`` steps run
+    chore scripts the wheel withholds (GHI #1114); in a project without them the
+    step skips, so there is no gate to prove and no claim is made. Where the gzkit
+    checkout carries the scripts, both halves of each gate are proven (GHI #1063).
+    """
+    from gzkit.quality import project_local_ratchets_installed  # noqa: PLC0415
+
+    if not project_local_ratchets_installed():
+        return ()
+    return (
+        (
+            "validator-reachability",
+            _build_validator_reachability,
+            _ep._ep_validator_reachability,
+        ),
+        (
+            "validator-reachability-disclosed",
+            _build_validator_reachability_disclosed,
+            _ep._ep_validator_reachability_admits_disclosed,
+        ),
+        (
+            "ledger-vocabulary-inertness",
+            _build_ledger_vocabulary_inertness,
+            _ep._ep_ledger_vocabulary_inertness,
+        ),
+        (
+            "ledger-vocabulary-inertness-disclosed",
+            _build_ledger_vocabulary_inertness_disclosed,
+            _ep._ep_ledger_vocabulary_inertness_admits_disclosed,
+        ),
+    )
+
+
+_QC_NEGATIVE_CONTROL_TABLE += _optional_project_local_controls()
 
 # The known-claims set the @enforces decorator validates against at decoration time.
 # Includes every NC id above + "qc-binding" (registered in qc_binding.py). Defined

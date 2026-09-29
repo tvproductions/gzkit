@@ -240,4 +240,15 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     "tautological-debt": "tautological-debt-waived",
     # The admit control itself: slot accounting is one count with no further admit path.
     "tautological-debt-waived": EXEMPTS_NONE,
+    # --- GHI #1063 ------------------------------------------------------------
+    # Each ratchet admits a finding its shrink-only baseline discloses:
+    # data/validator_reachability_grandfather.json and
+    # data/ledger_vocabulary_grandfather.json are grandfather tables, exemptions by
+    # the bar above. Inertness's fresh-project producer probe is NOT an admit path
+    # of the same kind: it runs a registered producer in code and admits only a
+    # type that producer verifiably emits, which no project input can widen.
+    "validator-reachability": "validator-reachability-disclosed",
+    "validator-reachability-disclosed": EXEMPTS_NONE,
+    "ledger-vocabulary-inertness": "ledger-vocabulary-inertness-disclosed",
+    "ledger-vocabulary-inertness-disclosed": EXEMPTS_NONE,
 }

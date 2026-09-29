@@ -165,6 +165,12 @@ _STEP_CLASSIFICATION: dict[str, _StepMeta] = {
     "Waiver ratchet": ("audit", "data/", "bound", "python_function"),
     "Config registry": ("audit", "data/", "bound", "python_function"),
     "Gate callers": ("audit", "src/", "bound", "python_function"),
+    # Both ratchets ran only as pre-commit hooks until GHI #1063 wired them in.
+    # `bound` for the Module size reason: the defect was a gate `gz check` never
+    # called. Reachability scans every repo file for a scope's callers, so its
+    # subject is `all`; inertness reads the ledger against its schema.
+    "Validator reachability": ("audit", "all", "bound", "subprocess"),
+    "Ledger vocabulary inertness": ("audit", ".gzkit/", "bound", "subprocess"),
     "Exemption controls": ("audit", "src/", "bound", "python_function"),
     "Population controls": ("audit", "src/", "bound", "python_function"),
     "Handoff documents": ("audit", "docs/", "bound", "python_function"),

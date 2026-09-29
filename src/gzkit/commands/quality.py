@@ -58,8 +58,14 @@ _STEP_GUARD_META: dict[str, tuple[str, int]] = {
     "Lint": ("lint", _mx_levels.ERROR),
     "Format": ("format", _mx_levels.ERROR),
     "Typecheck": ("typecheck", _mx_levels.ERROR),
+    # The four entries below are the names `_seam`'s fallback already derived;
+    # they were missing, which item 7 of `_build_check_steps` names a defect.
+    "Module size": ("module-size", _mx_levels.ERROR),
+    "Tautological debt": ("tautological-debt", _mx_levels.ERROR),
     "Test": ("test", _mx_levels.ERROR),
     "Behave": ("behave", _mx_levels.ERROR),
+    "Docs build": ("docs-build", _mx_levels.ERROR),
+    "Validate default scopes": ("validate-default-scopes", _mx_levels.ERROR),
     "Skill audit": ("skill-audit", _mx_levels.ERROR),
     "Parity check": ("parity-check", _mx_levels.ERROR),
     "Readiness audit": ("readiness-audit", _mx_levels.ERROR),
@@ -104,6 +110,11 @@ _STEP_GUARD_META: dict[str, tuple[str, int]] = {
     "Waiver ratchet": ("waiver-ratchet", _mx_levels.ERROR),
     "Config registry": ("config-registry", _mx_levels.ERROR),
     "Gate callers": ("gate-callers", _mx_levels.ERROR),
+    # Guard names match the ones each chore script passes to the MX checkpoint
+    # itself, so a hangar demotion reads the same at commit time and in the gate.
+    # NOT `ledger`: that GATE5_INVARIANTS member means ledger integrity (GHI #1063).
+    "Validator reachability": ("validator-reachability", _mx_levels.ERROR),
+    "Ledger vocabulary inertness": ("ledger-vocabulary-inertness", _mx_levels.ERROR),
     "Exemption controls": ("exemption-controls", _mx_levels.ERROR),
     "Population controls": ("population-controls", _mx_levels.ERROR),
     "Handoff documents": ("handoff-documents", _mx_levels.ERROR),
@@ -523,6 +534,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
     that binds.
     """
     from gzkit.quality import (
+        project_local_ratchets_installed,
         run_adr_status_fresh_audit,
         run_adversarial_validation_audit,
         run_advisory_scorecard_audit,
@@ -548,6 +560,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         run_interviews_audit,
         run_invariant_coherence_audit,
         run_kind_invariance_audit,
+        run_ledger_inertness_audit,
         run_line_endings_audit,
         run_lock_exchange_coupling_audit,
         run_mkdocs,
@@ -581,6 +594,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         run_transcribed_adr_counts_audit,
         run_unscoped_rules_audit,
         run_validate_default_scopes,
+        run_validator_reachability_audit,
         run_waiver_ratchet_audit,
         run_wheel_path_literals_audit,
     )
@@ -639,6 +653,16 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         ("Waiver ratchet", run_waiver_ratchet_audit),
         ("Config registry", run_config_registry_audit),
         ("Gate callers", run_gate_callers_audit),
+        # projectLocal ratchets (GHI #1063): listed only where the install carries
+        # them, so the QC registry and the enforcement floor agree with the steps.
+        *(
+            [
+                ("Validator reachability", run_validator_reachability_audit),
+                ("Ledger vocabulary inertness", run_ledger_inertness_audit),
+            ]
+            if project_local_ratchets_installed()
+            else []
+        ),
         ("Exemption controls", run_exemption_controls_audit),
         ("Population controls", run_population_controls_audit),
         ("Handoff documents", run_handoff_document_audit),

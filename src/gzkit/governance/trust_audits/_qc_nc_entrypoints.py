@@ -200,6 +200,85 @@ def _ep_tautological_debt_admits_waived(root: Path) -> int:
     return 1 if result.returncode == 0 and "debt: 0 outstanding" in result.stdout else 0
 
 
+def _project_local_script(slug: str, script_name: str) -> Path:
+    from gzkit.quality import source_checkout_chore_script  # noqa: PLC0415
+
+    script = source_checkout_chore_script(slug, script_name)
+    if script is None:
+        msg = f"projectLocal chore script {slug}/{script_name} is not in this install"
+        raise FileNotFoundError(msg)
+    return script
+
+
+def _ep_validator_reachability(root: Path) -> int:
+    """Run the production reachability ratchet against the fixture root (GHI #1063).
+
+    Aimed by subprocess cwd and pinned by ``expect_output`` for the reasons
+    ``_ep_module_size`` gives: exit 2 is the not-a-project-root bail-out and a
+    missing baseline raises ``SystemExit`` with exit 1, so only the breach text
+    proves the verdict.
+    """
+    import sys  # noqa: PLC0415
+
+    script = _project_local_script(
+        "control-surface-validator-reachability", "check_reachability.py"
+    )
+    return _command_fails_argv(
+        [sys.executable, str(script)],
+        root,
+        expected_exit=3,
+        expect_output="entered the ungated set",
+    )
+
+
+def _ep_validator_reachability_admits_disclosed(root: Path) -> int:
+    """Truthy only when the ratchet ADMITS ungated scopes its baseline discloses.
+
+    The admit half (GHI #797 precedent); the refuse half is ``validator-reachability``.
+    """
+    import sys  # noqa: PLC0415
+
+    from gzkit.quality import run_command  # noqa: PLC0415
+
+    script = _project_local_script(
+        "control-surface-validator-reachability", "check_reachability.py"
+    )
+    result = run_command([sys.executable, str(script)], cwd=root)
+    return 1 if result.returncode == 0 and "ratchet holds" in result.stdout else 0
+
+
+def _ep_ledger_vocabulary_inertness(root: Path) -> int:
+    """Run the production ledger-inertness ratchet against the fixture root (GHI #1063).
+
+    Pinned by ``expect_output``: exit 1 is also a missing-baseline ``SystemExit``,
+    so only the breach text proves the verdict.
+    """
+    import sys  # noqa: PLC0415
+
+    script = _project_local_script("ledger-vocabulary-inertness", "check_ledger_inertness.py")
+    return _command_fails_argv(
+        [sys.executable, str(script)],
+        root,
+        expected_exit=3,
+        expect_output="have no live occurrence, disclosure, or verified isolated producer",
+    )
+
+
+def _ep_ledger_vocabulary_inertness_admits_disclosed(root: Path) -> int:
+    """Truthy only when the ratchet ADMITS a never-fired type its baseline discloses.
+
+    The admit half (GHI #797 precedent); the refuse half is
+    ``ledger-vocabulary-inertness``.
+    """
+    import sys  # noqa: PLC0415
+
+    from gzkit.quality import run_command  # noqa: PLC0415
+
+    script = _project_local_script("ledger-vocabulary-inertness", "check_ledger_inertness.py")
+    result = run_command([sys.executable, str(script)], cwd=root)
+    return 1 if result.returncode == 0 and "disclosure holds" in result.stdout else 0
+
+
 def _ep_test(root: Path) -> int:
     return _command_fails("uv run -m unittest discover tests", root, expected_exit=1)
 

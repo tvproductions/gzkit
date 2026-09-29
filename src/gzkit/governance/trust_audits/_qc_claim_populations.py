@@ -44,4 +44,13 @@ QC_CLAIM_POPULATIONS: dict[str, Callable[[], Sequence[str]] | str] = {
     # another surface declares (GHI #808).
     "tautological-debt": POPULATION_NONE,
     "tautological-debt-waived": POPULATION_NONE,
+    # Each ratchet reads its subject set from the declaring surface itself on every
+    # run -- the live `gz validate` parser, the ledger schema -- and applies one
+    # set difference against its baseline uniformly, so it cannot pin a literal
+    # subset the way GHI #851's witness did. The refuse fixtures plant every member
+    # at once (GHI #1063).
+    "validator-reachability": POPULATION_NONE,
+    "validator-reachability-disclosed": POPULATION_NONE,
+    "ledger-vocabulary-inertness": POPULATION_NONE,
+    "ledger-vocabulary-inertness-disclosed": POPULATION_NONE,
 }
