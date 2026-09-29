@@ -1280,8 +1280,9 @@ Included in `gz validate --audits` and `gz check` aggregate passes.
 ### `--evaluation-justify-binding`
 
 Enforces the ADR-0.0.26 evaluation feedback-loop doctrine (§ Decision #2). Reads the most
-recent `adr-evaluation` ledger event for the specified artifact (or all artifacts when no ID
-is given). If any dimension score is below `low_score_threshold` **or** the number of
+recent `adr-evaluation` ledger event for the specified artifact. With no ID it checks every
+evaluated ADR whose lifecycle can still advance, once each under its current ID after renames;
+a `Validated` or `Abandoned` ADR is skipped (GHI #1150). If any dimension score is below `low_score_threshold` **or** the number of
 red-team challenges fired is at or above `red_team_count_threshold` (both configured in
 `data/eval_feedback_thresholds.json`), a qualifying `gz-justify` walkthrough
 must exist under `artifacts/justify/`. The gate is also called automatically before any artifact
@@ -1294,7 +1295,8 @@ the subject's name, including an empty one, does not qualify:
 2. Every section is filled. This is a structural check, not a judgment of reasoning quality.
 3. Its own frontmatter names the evaluated subject. The filename carries no weight.
    - **ADR evaluation:** an OBPI under that ADR, or a draft slug of the ADR ID with dots as dashes.
-     A short and a full ID of the same ADR both match. A tracking-GHI walkthrough never does.
+     A short and a full ID of the same ADR both match, as does any earlier ID the ledger renamed
+     to it, such as a feature ID before a pool demotion. A tracking-GHI walkthrough never does.
    - **OBPI evaluation:** that OBPI's own anchor.
 4. It was generated at or after the evaluation it answers (the event's `timestamp`, else `ts`).
 
@@ -1304,7 +1306,7 @@ The finding names each walkthrough it refused and why.
 # Check a specific artifact
 gz validate --evaluation-justify-binding ADR-0.0.26
 
-# Check all artifacts that have adr-evaluation events
+# Check every evaluated ADR that is not Validated or Abandoned
 gz validate --evaluation-justify-binding
 ```
 

@@ -20,11 +20,19 @@ import unittest
 from datetime import UTC, datetime
 from pathlib import Path
 
+from gzkit.commands import validate_cmd
 from gzkit.governance.trust_audits.evaluation_justify_binding import (
     validate_evaluation_justify_binding,
 )
 from gzkit.justify.models import AnchorRef, EvidenceBundle
 from gzkit.justify.walkthrough import render_markdown, render_scaffold
+from gzkit.ledger import Ledger, LedgerEvent
+from gzkit.ledger_events import (
+    adr_created_event,
+    artifact_renamed_event,
+    attested_event,
+    audit_receipt_emitted_event,
+)
 from gzkit.lifecycle import LifecycleStateMachine
 from gzkit.traceability import covers
 
@@ -279,6 +287,33 @@ class TestSubjectIdentity(unittest.TestCase):
                 self.assertEqual(self._result(artifact_id, anchor), [])
 
     @covers("REQ-0.0.26-02-03")
+    def test_reasoning_under_a_pre_rename_id_answers_the_renamed_adr(self) -> None:
+        """GHI #1150: a feature ADR demoted to the pool keeps the walkthrough it earned."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _triggered_project(root, "ADR-0.47.0")
+            _append_events(root, artifact_renamed_event("ADR-0.47.0", "ADR-pool.owasp-scan"))
+            _write_justify(
+                root, "adr-0-47-0-20260102.md", _walkthrough(_draft_anchor("adr-0-47-0"))
+            )
+
+            self.assertEqual(validate_evaluation_justify_binding("ADR-pool.owasp-scan", root), [])
+
+    @covers("REQ-0.0.26-02-01")
+    def test_reasoning_under_an_unrelated_id_does_not_answer_a_renamed_adr(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _triggered_project(root, "ADR-0.47.0")
+            _append_events(root, artifact_renamed_event("ADR-0.47.0", "ADR-pool.owasp-scan"))
+            _write_justify(
+                root, "adr-0-48-0-20260102.md", _walkthrough(_draft_anchor("adr-0-48-0"))
+            )
+
+            result = validate_evaluation_justify_binding("ADR-pool.owasp-scan", root)
+
+            self.assertEqual([e.artifact for e in result], ["ADR-pool.owasp-scan"])
+
+    @covers("REQ-0.0.26-02-03")
     def test_an_obpi_under_the_evaluated_adr_answers_it(self) -> None:
         """Operator ruling 2026-09-14 ("Draft slug or OBPI (Recommended)").
 
@@ -478,6 +513,64 @@ class TestLifecycleConsumesTheQualifier(unittest.TestCase):
             except ValueError as exc:
                 self.fail(f"a qualifying walkthrough was refused at the lifecycle gate: {exc}")
             self.assertEqual(result["to_state"], "Proposed")
+
+
+def _append_events(root: Path, *events: LedgerEvent) -> None:
+    ledger = Ledger(root / ".gzkit" / "ledger.jsonl")
+    for event in events:
+        ledger.append(event)
+
+
+class TestScanAllPopulation(unittest.TestCase):
+    """GHI #1150: the scan-all grades each non-terminal evaluated ADR once, canonically.
+
+    The binding applies before an ADR's lifecycle advances (ADR-0.0.26 Decision 2),
+    so a Validated or Abandoned ADR has no subject for it; and one ADR is one
+    artifact however its evaluation events spelled the id.
+    """
+
+    @covers("REQ-0.0.26-02-01")
+    def test_validated_adr_is_not_reported(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _append_events(root, adr_created_event("ADR-0.0.26", "PRD-X", "lite"))
+            _triggered_project(root)
+            _append_events(root, audit_receipt_emitted_event("ADR-0.0.26", "validated", "g0"))
+
+            self.assertEqual(validate_cmd._scan_all_evaluation_justify_binding(root), [])
+
+    @covers("REQ-0.0.26-02-01")
+    def test_abandoned_adr_is_not_reported(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _append_events(root, adr_created_event("ADR-0.0.26", "PRD-X", "lite"))
+            _triggered_project(root)
+            _append_events(root, attested_event("ADR-0.0.26", "dropped", "g0"))
+
+            self.assertEqual(validate_cmd._scan_all_evaluation_justify_binding(root), [])
+
+    @covers("REQ-0.0.26-02-01")
+    def test_non_terminal_adr_is_still_reported(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _append_events(root, adr_created_event("ADR-0.0.26", "PRD-X", "lite"))
+            _triggered_project(root)
+
+            result = validate_cmd._scan_all_evaluation_justify_binding(root)
+
+            self.assertEqual([e.artifact for e in result], ["ADR-0.0.26"])
+
+    @covers("REQ-0.0.26-02-01")
+    def test_short_and_renamed_ids_are_graded_once(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _triggered_project(root, "ADR-0.0.26")
+            _append_events(root, artifact_renamed_event("ADR-0.0.26", "ADR-0.0.26-gate"))
+            _write_ledger_event(root, "ADR-0.0.26-gate", {"clarity": 1.0})
+
+            result = validate_cmd._scan_all_evaluation_justify_binding(root)
+
+            self.assertEqual([e.artifact for e in result], ["ADR-0.0.26-gate"])
 
 
 if __name__ == "__main__":

@@ -590,32 +590,43 @@ def _evaluation_justify_binding_runner(
     return validate_evaluation_justify_binding(artifact_id_or_sentinel, project_root)
 
 
-def _scan_all_evaluation_justify_binding(project_root: Path) -> list[ValidationError]:
-    """Check evaluation-justify-binding for all artifacts with adr-evaluation events."""
-    import json as _json  # noqa: PLC0415
+#: ADR lifecycles with nothing left to advance (``Ledger.derive_adr_semantics``).
+_EVALUATION_BINDING_TERMINAL_LIFECYCLES = frozenset({"Validated", "Abandoned"})
 
+
+def _scan_all_evaluation_justify_binding(project_root: Path) -> list[ValidationError]:
+    """Check evaluation-justify-binding for every evaluated ADR whose lifecycle can advance.
+
+    The binding applies before an ADR's lifecycle advances (ADR-0.0.26 Decision 2),
+    so a Validated or Abandoned ADR has no subject for it. Each ADR is graded once,
+    under the id the ledger's rename map folds its evaluation ids to — the same fold
+    the per-ADR gate reads its latest evaluation through (GHI #1150).
+    """
     from gzkit.governance.trust_audits.evaluation_justify_binding import (  # noqa: PLC0415
         validate_evaluation_justify_binding,
     )
+    from gzkit.ledger import Ledger  # noqa: PLC0415
 
     ledger_path = project_root / ".gzkit" / "ledger.jsonl"
     if not ledger_path.exists():
         return []
+    ledger = Ledger(ledger_path)
+    graph = ledger.get_artifact_graph()
     seen: set[str] = set()
     errors: list[ValidationError] = []
-    for line in ledger_path.read_text(encoding="utf-8").splitlines():
-        line = line.strip()
-        if not line:
+    for ev in ledger.read_all():
+        if ev.event != "adr-evaluation" or not ev.id:
             continue
-        try:
-            ev = _json.loads(line)
-        except _json.JSONDecodeError:
+        artifact_id = ledger.canonicalize_id(ev.id)
+        if artifact_id in seen:
             continue
-        if ev.get("event") == "adr-evaluation":
-            artifact_id = ev.get("id", "")
-            if artifact_id and artifact_id not in seen:
-                seen.add(artifact_id)
-                errors.extend(validate_evaluation_justify_binding(artifact_id, project_root))
+        seen.add(artifact_id)
+        info = graph.get(ledger.resolve_artifact_id(artifact_id))
+        if info is not None:
+            lifecycle = Ledger.derive_adr_semantics(info)["lifecycle_status"]
+            if lifecycle in _EVALUATION_BINDING_TERMINAL_LIFECYCLES:
+                continue
+        errors.extend(validate_evaluation_justify_binding(artifact_id, project_root))
     return errors
 
 

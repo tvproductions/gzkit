@@ -51,7 +51,7 @@ def validate_evaluation_justify_binding(
     """
     # Find most recent adr-evaluation event for this artifact
     lp = ledger_path or (project_root / ".gzkit" / "ledger.jsonl")
-    event = _latest_evaluation_event(lp, artifact_id)
+    event, aliases = _latest_evaluation_event(lp, artifact_id)
     if event is None:
         return []  # No evaluation has run — no gate requirement
 
@@ -60,7 +60,7 @@ def validate_evaluation_justify_binding(
         return []  # No trigger
 
     evaluated_at = _parse_instant(event.get("timestamp") or event.get("ts"))
-    qualified, refusals = _assess_walkthroughs(project_root, artifact_id, evaluated_at)
+    qualified, refusals = _assess_walkthroughs(project_root, artifact_id, aliases, evaluated_at)
     if qualified:
         return []
 
@@ -96,15 +96,21 @@ def _load_thresholds(project_root: Path) -> dict:
     return json.loads(config_path.read_text(encoding="utf-8"))
 
 
-def _latest_evaluation_event(ledger_path: Path, artifact_id: str) -> dict | None:
-    """Return the most recent ``adr-evaluation`` event for ``artifact_id``, or None.
+def _latest_evaluation_event(
+    ledger_path: Path, artifact_id: str
+) -> tuple[dict | None, frozenset[str]]:
+    """Return the most recent ``adr-evaluation`` event for ``artifact_id`` and its id aliases.
 
     Ids are compared through the ledger's rename map, so an evaluation booked
     under a bare id the ledger has renamed to ``artifact_id`` still counts. A
     raw-id match missed it and the gate passed on scores it never read (GHI #1118).
+
+    The aliases are every id the rename map folds onto the same artifact, so a
+    walkthrough that answered it under an earlier id — a feature ADR since demoted
+    to the pool — still names it (GHI #1150).
     """
     if not ledger_path.exists():
-        return None
+        return None, frozenset({artifact_id})
     evaluations: list[dict] = []
     renames: list[tuple[str, str]] = []
     for line in ledger_path.read_text(encoding="utf-8").splitlines():
@@ -122,11 +128,14 @@ def _latest_evaluation_event(ledger_path: Path, artifact_id: str) -> dict | None
     current = fold_renames(renames)
     target = current.get(artifact_id, artifact_id)
     matches = [ev for ev in evaluations if current.get(ev.get("id"), ev.get("id")) == target]
-    return matches[-1] if matches else None
+    aliases = frozenset(
+        {artifact_id, target} | {old for old, new in current.items() if new == target}
+    )
+    return (matches[-1] if matches else None), aliases
 
 
 def _assess_walkthroughs(
-    project_root: Path, artifact_id: str, evaluated_at: datetime | None
+    project_root: Path, artifact_id: str, aliases: frozenset[str], evaluated_at: datetime | None
 ) -> tuple[bool, list[str]]:
     """Return whether a walkthrough qualifies, plus why each candidate for this subject did not.
 
@@ -142,7 +151,7 @@ def _assess_walkthroughs(
     for path in sorted(justify_dir.iterdir()):
         name = path.name.lower()
         named_for_subject = name.startswith((f"{name_prefix}-", f"{name_prefix}."))
-        refusal = _refusal_reason(path, artifact_id, evaluated_at)
+        refusal = _refusal_reason(path, artifact_id, aliases, evaluated_at)
         if refusal is None:
             return True, []
         if named_for_subject or refusal[1]:
@@ -151,7 +160,7 @@ def _assess_walkthroughs(
 
 
 def _refusal_reason(
-    path: Path, artifact_id: str, evaluated_at: datetime
+    path: Path, artifact_id: str, aliases: frozenset[str], evaluated_at: datetime
 ) -> tuple[str, bool] | None:
     """Return ``None`` when ``path`` qualifies, else ``(reason, names_this_subject)``."""
     if not path.is_file():
@@ -162,7 +171,7 @@ def _refusal_reason(
         return f"unreadable: {exc}", False
     except WalkthroughParseError as exc:
         return f"not a parseable walkthrough: {exc}", False
-    if not _names_subject(walkthrough.anchor, artifact_id):
+    if not any(_names_subject(walkthrough.anchor, alias) for alias in aliases):
         return f"names {_anchor_label(walkthrough.anchor)}, not {artifact_id}", False
     unfilled = [section.ordinal for section in walkthrough.sections if not section.is_filled]
     if unfilled:
