@@ -261,7 +261,23 @@ def _documented_release_errors(project_root: Path, current_version: str) -> list
             errors.append(_missing_tag_error(version, expected))
         elif version not in exempt:
             errors.extend(_unreachable_tag_errors(project_root, version, expected))
+        elif not _unreachable_tag_errors(project_root, version, expected):
+            errors.append(_stale_exemption_error(version, expected))
     return errors
+
+
+def _stale_exemption_error(version: str, expected: str) -> ValidationError:
+    """Build the violation for a grandfathered version that is reachable (GHI #832)."""
+    return ValidationError(
+        type="version_release",
+        artifact=f"{REACHABILITY_GRANDFATHER_REL.as_posix()}::{version}",
+        message=(
+            f"`{version}` is exempted as unreachable, but tag `{expected}` is contained "
+            f"in `{ORIGIN_MAIN_REF}`. The disclosure is no longer true — surrender the "
+            f"entry from `{REACHABILITY_GRANDFATHER_REL.as_posix()}` and lower the "
+            "`baseline_count` in `data/waiver_ratchet_registry.json` to match."
+        ),
+    )
 
 
 #: Tags the inverse sweep judges. Strict ``vMAJOR.MINOR.PATCH`` — ``_local_tags``

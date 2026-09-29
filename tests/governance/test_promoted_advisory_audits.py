@@ -1266,6 +1266,23 @@ class VersionReleaseAuditDocumentedSweep(unittest.TestCase):
             self._orphan_tag(root, "9.9.0", head)
             self.assertEqual(audit_version_release(root), [])
 
+    def test_grandfathered_version_whose_tag_is_reachable_is_refused(self) -> None:
+        """A shrink-only list must shrink when an entry stops being true (GHI #832).
+
+        An entry discloses that reachability is unprovable. Once the tag points
+        into the published line, the disclosure is false and the entry is owed
+        surrender; carrying it silently let 22 reachable releases sit waived.
+        """
+        import tempfile  # noqa: PLC0415
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            head = self._seed(root, documented=("9.9.0",), grandfathered=("9.9.0",))
+            self._git(root, "tag", "v9.9.0", head)
+            errors = audit_version_release(root)
+            self.assertEqual(len(errors), 1, msg=f"expected one violation, got {errors}")
+            self.assertIn("surrender", errors[0].message)
+
     def test_grandfathered_version_still_requires_its_tag(self) -> None:
         """The exemption covers reachability only — a deleted tag is still refused.
 
