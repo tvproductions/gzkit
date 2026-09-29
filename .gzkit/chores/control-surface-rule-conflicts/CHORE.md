@@ -15,7 +15,7 @@ Background: ADR-0.0.16 through 0.0.18 surfaced acute control-surface instability
 
 - **Lane:** Lite — audit-only; zero file edits outside `.gzkit/chores/control-surface-rule-conflicts/proofs/`
 - **Read-only on rules.** This chore does NOT modify any `.gzkit/rules/` file, any skill, or any source.
-- **Scope:** every `.md` under `.gzkit/rules/` plus `AGENTS.md` and `CLAUDE.md`. Vendor mirrors (`.claude/rules/`, `.github/instructions/`) are derivatives and are NOT audited here — they should match canonical per sync discipline.
+- **Scope:** every `.md` under `.gzkit/rules/` plus `AGENTS.md` and `CLAUDE.md`. Vendor mirrors (`.claude/rules/` and each enabled vendor's rules path) are derivatives and are NOT audited here — they should match canonical per sync discipline.
 - **No speculation.** A conflict row requires a concrete worked example (a specific case where rule X says one thing and rule Y says the opposite). No "these could maybe conflict" entries.
 
 ## Workflow

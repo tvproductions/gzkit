@@ -184,6 +184,7 @@
       "decommission-tautological-tests/CHORE.md",
       "decommission-tautological-tests/README.md",
       "decommission-tautological-tests/acceptance.json",
+      "decommission-tautological-tests/check_debt_target.py",
       "dependency-currency/CHORE.md",
       "dependency-currency/README.md",
       "dependency-currency/acceptance.json",
@@ -260,10 +261,7 @@
       "test-isolation-compliance/acceptance.json",
       "test-manpage-examples/CHORE.md",
       "test-manpage-examples/README.md",
-      "test-manpage-examples/acceptance.json",
-      "validate-manpages/CHORE.md",
-      "validate-manpages/README.md",
-      "validate-manpages/acceptance.json"
+      "test-manpage-examples/acceptance.json"
     ]
   }
 }

@@ -61,8 +61,9 @@ conclusions.
    slow tail is ranked and visible, then decide whether the tail belongs in a
    separate segment. Wiring first, policy second.
 3. **Fixture consolidation audit.** Confirm duplicated `setUp` bodies route
-   through the existing `tests/fakes/{config,filesystem,ledger,process}.py` and
-   `tests/commands/common.py` patchers rather than being re-inlined.
+   through the existing shared helpers in `tests/commands/common.py`
+   (`CliRunner`, `SilencedConsoleTestCase`, the git and init subprocess
+   patchers) and the data under `tests/fixtures/` rather than being re-inlined.
 
 ## Out of scope
 

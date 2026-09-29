@@ -1,9 +1,0 @@
-{
-  "criteria": [
-    {
-      "type": "exitCodeEquals",
-      "command": "uv run gz cli audit",
-      "expected": 0
-    }
-  ]
-}

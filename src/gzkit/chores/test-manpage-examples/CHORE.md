@@ -9,6 +9,8 @@
 
 Verify that examples in manpage EXAMPLES sections are executable with correct results. Ensures documentation examples actually work.
 
+`gz cli audit` (manpage coverage and structure) is this chore's first criterion. It absorbed the retired `validate-manpages` chore, whose only criterion was the same `gz cli audit` and whose "IMPLEMENTATION TRACE" subject no manpage or code carries (GHI #1011).
+
 ## Policy and Guardrails
 
 - **Lane:** Heavy — external documentation contract

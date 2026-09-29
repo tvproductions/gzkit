@@ -7,52 +7,53 @@
 
 ## Overview
 
-Enforce Windows-safe test cleanup patterns. Eliminate raw `shutil.rmtree()` in tearDown methods. Use context managers or safe cleanup patterns throughout.
+Hold the three mechanical cross-platform scopes green, with the unit suite as the
+regression check. Its criteria gate exactly these, and nothing else:
+
+- `uv run gz validate --utf8-prefix` — no `PYTHONUTF8=1 uv run gz` prefix in docs or
+  skills; the CLI handles UTF-8 itself.
+- `uv run gz validate --line-endings` — no CRLF text surfaces, and `.gitattributes`
+  carries its LF rule.
+- `uv run gz validate --type-ignores` — no `# type: ignore[<code>]` under `src/` that
+  `ty` would silently not honor.
+
+Test-teardown hygiene (raw `shutil.rmtree()` in `tearDown`) was this chore's original
+prose subject, but nothing in its criteria reads a `tearDown` body, so it is not
+claimed here (GHI #1011).
 
 ## Policy and Guardrails
 
-- **Lane:** Lite — test-infra hygiene (Windows-safe cleanup patterns); unit-tier only, no behave/network
-- **Timeout:** 300s — explicit per-chore `timeoutSeconds` (was lane-derived 300 under the removed medium tier); GHI #447
-- Use `tempfile.TemporaryDirectory()` context managers (preferred)
-- Use `pathlib.Path` throughout; no hard-coded path separators
+- **Lane:** Lite — repository hygiene through three validator scopes; unit-tier only, no behave/network
+- **Timeout:** 300s — explicit per-chore `timeoutSeconds`; GHI #447
 - Cross-platform: Windows, macOS, Linux — co-equal (no primary platform)
 
 ## Workflow
 
 ### 1. Baseline — observe
 
-Scan for `shutil.rmtree` usage in test tearDown methods.
-
-### 2. Plan — propose
-
-Replace each violation with context manager pattern.
-
-### 3. Implement — repair
-
-```python
-# Before (unsafe on Windows):
-def tearDown(self):
-    shutil.rmtree(self.temp_dir)
-
-# After (safe):
-def test_something(self):
-    with tempfile.TemporaryDirectory() as temp_dir:
-        # test logic here
+```bash
+uv run gz validate --utf8-prefix --line-endings --type-ignores
 ```
 
-### 4. Validate — observe
+### 2. Repair — repair
+
+Fix each finding at its source: drop the `PYTHONUTF8=1` prefix, normalize the file
+to LF (or add the missing `.gitattributes` rule), and rewrite the suppression in a
+form `ty` honors (`.gzkit/rules/pythonic.md` § Type-check suppression syntax).
+
+### 3. Validate — observe
 
 ```bash
+uv run gz validate --utf8-prefix --line-endings --type-ignores
 uv run gz test
-uv run coverage report --fail-under=40
 ```
 
 ## Checklist
 
-- [ ] No `shutil.rmtree()` in tearDown methods
-- [ ] Context managers used for all temp resources
-- [ ] Tests pass on Windows
-- [ ] Coverage >=40%
+- [ ] `--utf8-prefix` exits 0
+- [ ] `--line-endings` exits 0
+- [ ] `--type-ignores` exits 0
+- [ ] `uv run gz test` exits 0
 
 ## Acceptance Criteria
 
@@ -61,7 +62,7 @@ Criteria live in `acceptance.json`, which `gz chores run` executes; render them 
 ## Evidence Commands
 
 ```bash
-uv run -m unittest -v > .gzkit/chores/cross-platform-test-cleanup/proofs/test-results.txt
+uv run gz validate --utf8-prefix --line-endings --type-ignores > .gzkit/chores/cross-platform-test-cleanup/proofs/validate.txt
 ```
 
 ---

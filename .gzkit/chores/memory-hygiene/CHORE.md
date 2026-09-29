@@ -23,7 +23,7 @@ source. The memory is not portable, not shared, and not auditable.
 
 ## Migration targets (binding — never edit a rendered surface)
 
-`AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md` and everything under
+`AGENTS.md`, `CLAUDE.md` and everything under
 `.claude/**` are **generated**: `gz agent sync control-surfaces` composes them from
 the sources below (`src/gzkit/sync_surfaces.py`). An edit applied to the render is
 reverted by the next sync and leaves no trace of the correction it was meant to

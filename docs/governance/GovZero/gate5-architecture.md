@@ -144,7 +144,6 @@ module.py :: function_name() — One-liner from docstring
 
 | Hook | Purpose | Threshold |
 |------|---------|-----------|
-| `validate-manpages` | Every function in manpage IMPLEMENTATION TRACE exists in code | 100% |
 | `sync-manpage-docstrings --check` | One-liners match between code and manpage | Exact match |
 | `interrogate -f 85` | Docstring coverage | ≥85% |
 | `test-manpage-examples` | Extract bash from EXAMPLES, execute, verify exit codes | All pass |
@@ -174,7 +173,7 @@ Every Heavy brief must satisfy:
 - [ ] Examples are concrete, accurate, executable
 - [ ] Links/anchors validated (mkdocs build clean)
 - [ ] Markdown lint clean
-- [ ] Validation chores pass (validate-manpages, sync-manpage-docstrings --check, interrogate)
+- [ ] Validation chores pass (test-manpage-examples, sync-manpage-docstrings --check, interrogate)
 
 ---
 

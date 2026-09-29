@@ -48,8 +48,10 @@ uv run -m gzkit.doc_coverage.runner --json
 
 ### 3. Fix gaps — repair
 
-Create the missing documentation surfaces (manpages, index entries,
-runbook references, docstrings, COMMAND_DOCS mappings).
+Create the missing documentation surfaces the runner reports. Each command's
+required surfaces are declared in `config/doc-coverage.json` (`manpage`,
+`index_entry`, `operator_runbook`, `governance_runbook`, `docstring`); a new
+command also needs its entry there.
 
 ### 4. Re-validate — observe
 

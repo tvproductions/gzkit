@@ -150,7 +150,7 @@
     {
       "slug": "cross-platform-test-cleanup",
       "title": "Cross-Platform Test Cleanup (Windows-Safe Patterns)",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "path": ".gzkit/chores/cross-platform-test-cleanup",
       "lane": "lite",
       "timeoutSeconds": 300,
@@ -225,7 +225,7 @@
     {
       "slug": "doc-coverage",
       "title": "Documentation Cross-Coverage Enforcement",
-      "version": "1.1.0",
+      "version": "1.1.1",
       "path": ".gzkit/chores/doc-coverage",
       "lane": "heavy",
       "frequency": "per-release",
@@ -423,7 +423,7 @@
     {
       "slug": "memory-hygiene",
       "title": "Audit auto-memory for process drift into governed artifacts",
-      "version": "1.2.0",
+      "version": "1.2.1",
       "path": ".gzkit/chores/memory-hygiene",
       "lane": "lite",
       "vendor": "claude",
@@ -827,7 +827,7 @@
     {
       "slug": "test-manpage-examples",
       "title": "Test Manpage Examples (Executable Verification)",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "path": ".gzkit/chores/test-manpage-examples",
       "lane": "heavy",
       "timeoutSeconds": 900,
@@ -852,36 +852,6 @@
         "details": "Replace each manpage example whose output no longer matches with output captured from a real run."
       },
       "nonAuthority": "Never edits the CLI to match a stale example; a behavior change the example expected is an operator ruling.",
-      "governingRule": ".gzkit/rules/gate5-runbook-code-covenant.md"
-    },
-    {
-      "slug": "validate-manpages",
-      "title": "Validate Manpages (Call Stack Alignment)",
-      "version": "1.1.0",
-      "path": ".gzkit/chores/validate-manpages",
-      "lane": "lite",
-      "timeoutSeconds": 120,
-      "class": "conformance",
-      "rung": "repair",
-      "idempotent": true,
-      "staleness": {
-        "signal": "content-delta",
-        "surfaces": [
-          "docs/user/manpages",
-          "config/doc-coverage.json",
-          "src/gzkit/cli",
-          "src/gzkit/commands",
-          "README.md",
-          "docs/user/runbook.md",
-          "docs/governance/governance_runbook.md"
-        ],
-        "graceDays": 7
-      },
-      "remediation": {
-        "category": "vendor_fix",
-        "details": "Update manpage implementation traces to the functions that exist."
-      },
-      "nonAuthority": "Never renames or restores source to match a stale trace.",
       "governingRule": ".gzkit/rules/gate5-runbook-code-covenant.md"
     }
   ]

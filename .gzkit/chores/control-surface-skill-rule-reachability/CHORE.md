@@ -14,7 +14,7 @@ Background: `gz-adr-audit` Step 2 ("If audit-check fails, fix brief evidence fir
 ## Policy and Guardrails
 
 - **Lane:** Lite — audit-only; zero edits to skills, rules, or source.
-- **Scope:** every `SKILL.md` under `.gzkit/skills/**`. Vendor mirrors (`.claude/skills/`, `.agents/skills/`, `.github/skills/`) are derivatives and are NOT audited.
+- **Scope:** every `SKILL.md` under `.gzkit/skills/**`. Vendor mirrors (`.claude/skills/`, `.agents/skills/`) are derivatives and are NOT audited.
 - **Rule applicability test.** A rule applies to a skill if (a) the skill's `paths:` frontmatter overlaps the rule's `paths:` frontmatter, OR (b) the skill's procedure invokes a CLI verb the rule governs, OR (c) the skill modifies files the rule's `paths:` covers.
 - **Honors test.** A skill honors an applicable rule if the skill body either cites the rule by filename OR enforces the rule's invariant mechanically (e.g. by calling `gz validate --<scope>`). Absence of both is a reachability gap.
 
