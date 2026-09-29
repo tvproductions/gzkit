@@ -1,0 +1,30 @@
+name: Docs freshness
+
+# Fails when gzkit.org serves a build older than the latest release, so a
+# stalled or broken deploy is reported instead of found by accident (GHI #802).
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    if: ${{ vars.VPS_HOST != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Compare the served tag with the latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          latest=$(gh release view --repo "${{ github.repository }}" --json tagName -q .tagName)
+          served=$(curl -fsS "https://${{ vars.VPS_HOST }}/build-info.json" \
+            | python3 -c 'import json, sys; print(json.load(sys.stdin)["tag"])')
+          echo "latest release: $latest"
+          echo "served build:   $served"
+          if [ "$served" != "$latest" ]; then
+            echo "::error::https://${{ vars.VPS_HOST }} serves $served, latest release is $latest. Re-run the Docs workflow (workflow_dispatch) and read its deploy-vps job."
+            exit 1
+          fi

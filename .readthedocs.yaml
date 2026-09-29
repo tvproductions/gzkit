@@ -32,10 +32,10 @@
 # contract is enforced even if the admin config drifts.
 #
 # gzkit.org is NOT a Read the Docs custom domain, and nothing in this file or in
-# the RTD admin reaches it. It is a self-hosted DigitalOcean VPS running Caddy,
-# deployed BY HAND (`git pull && uv run mkdocs build`) — see
-# docs/developer/deployment.md. Verified 2026-08-13: it resolves to
-# 68.183.108.119 and serves no /en/<version>/ path structure at all (both
+# the RTD admin reaches it. It is a self-hosted DigitalOcean droplet running
+# Caddy, deployed on every release by the Docs workflow's deploy-vps job (GHI
+# #802) — see docs/developer/deployment.md. Verified 2026-08-13, when it was a
+# hand-deployed box at 68.183.108.119: it serves no /en/<version>/ path structure at all (both
 # /en/stable/ and /en/latest/ return 404). The `server: Caddy` response header
 # is what prior revisions mis-read as an RTD identification; RTD uses Caddy, but
 # so does any self-hosted Caddy box. `/en/<version>/` is the discriminator.

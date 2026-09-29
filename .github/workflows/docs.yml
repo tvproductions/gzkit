@@ -5,9 +5,10 @@ on:
     types: [published]
   workflow_dispatch:
 
-# GitHub Actions Pages source: the build job produces the artifact and the
-# deploy job publishes it via the official Pages deployment. No gh-pages
-# branch push (retired peaceiris/actions-gh-pages@v4).
+# One build, two destinations. gzkit.org is served from a DigitalOcean droplet
+# (deploy-vps, GHI #802); GitHub Pages stays as the mirror (deploy). No gh-pages
+# branch push (retired peaceiris/actions-gh-pages@v4). Server setup and the
+# secrets deploy-vps reads: docs/developer/deployment.md.
 permissions:
   contents: read
   pages: write
@@ -45,6 +46,19 @@ jobs:
       - name: Build docs (strict)
         run: uv run -m mkdocs build --strict
 
+      # What the freshness check compares against the latest release (GHI #802).
+      - name: Stamp build info
+        run: |
+          tag="${{ github.event.release.tag_name }}"
+          [ -n "$tag" ] || tag=$(git describe --tags --abbrev=0)
+          printf '{"tag": "%s", "sha": "%s"}\n' "$tag" "${{ github.sha }}" > site/build-info.json
+
+      - name: Upload site artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: ./site
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5
         with:
@@ -60,3 +74,43 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
+
+  deploy-vps:
+    needs: build
+    # Skipped until the operator sets the VPS_HOST repository variable.
+    if: ${{ vars.VPS_HOST != '' }}
+    runs-on: ubuntu-latest
+    concurrency:
+      group: "vps"
+      cancel-in-progress: false
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: ./site
+
+      - name: Install deploy key and pinned host key
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+          VPS_KNOWN_HOSTS: ${{ secrets.VPS_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          printf '%s\n' "$VPS_KNOWN_HOSTS" > ~/.ssh/known_hosts
+
+      # The key is restricted server-side by rrsync to /var/www/gzkit.org/site,
+      # so the remote path is relative to that directory.
+      - name: Rsync site to the droplet
+        run: |
+          rsync -rlz --delete --checksum \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=yes" \
+            ./site/ "deploy@${{ vars.VPS_HOST }}:./"
+
+      - name: Verify the served build
+        run: |
+          expected=$(cat site/build-info.json)
+          served=$(curl -fsS "https://${{ vars.VPS_HOST }}/build-info.json")
+          echo "expected: $expected"
+          echo "served:   $served"
+          [ "$expected" = "$served" ]
