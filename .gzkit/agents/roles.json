@@ -16,11 +16,11 @@
       "legacy_codex_body_sha256": "37983da1224ad2c4100b8fbbe16d7b10e5e0f2cad96c9d99b7fccde1d5ff68c1"
     },
     "quality-reviewer": {
-      "description": "Evaluates code architecture, SOLID, test coverage, maintainability. Read-only independent review.",
+      "description": "Evaluates code architecture, SOLID, test coverage, maintainability. Independent review by reading; cannot execute commands (GHI #968).",
       "legacy_codex_body_sha256": "48e1d56e9737b45d1ff03900a409db1c2a01dc9c65320141967f2c884d627416"
     },
     "spec-reviewer": {
-      "description": "Verifies implementation matches plan/brief requirements. Read-only independent review.",
+      "description": "Verifies implementation matches plan/brief requirements. Independent review by reading; cannot execute commands (GHI #968).",
       "legacy_codex_body_sha256": "f3c9bf2487906e5360c258f396d0f41bb1525c1aec0d84ca4a6f7efbfab80b3e"
     }
   }

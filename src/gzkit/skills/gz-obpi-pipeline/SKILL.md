@@ -5,9 +5,9 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-28
+last_reviewed: 2026-09-29
 metadata:
-  skill-version: "6.61.0"
+  skill-version: "6.62.0"
 model: sonnet
 ---
 
@@ -496,16 +496,17 @@ assertions. Do not build an all-assertions classifier or count mutations as cove
          `verification_gaps`, never into `findings`.
 
          A reviewer capability gap is **not** a defect and never blocks: `review_blocks_advancement` reads
-         `findings`, so a gap kept in its own channel cannot pull a passing review down.
-         Measured 2026-09-02 on OBPI-0.35.0-04: a reviewer asked to re-derive a byte span and
-         re-run a behave selection could do neither, reported both honestly as `info` findings,
-         and returned **CONCERNS** — every finding about its own coverage, none about the code.
-         Re-derived by the orchestrator, both checks passed.
+         `findings`, so a gap kept in its own channel cannot pull a passing review down
+         (incident: GHI #941).
 
          **Do not ask a reviewer to verify by running.** If a check needs execution, run it
          yourself and hand the reviewer the observed output to check *against the code*. A
          non-empty `verification_gaps` is a signal to you, not a verdict: it names what this
          review did not cover, and the coverage is yours to close.
+
+         **Proving a test can fail is the orchestrator's duty (GHI #968).** Reviewers catch
+         hollow tests by reading; no repo surface can scope execution to reviewers alone. Run
+         `gzkit.mutation_witness.run_mutation_sweep` (GHI #963) and hand over its verdict.
 
          Distinguish that limitation from an identified defect in REQUIRED proof:
          an import failure described as an assertion failure, a test that never
