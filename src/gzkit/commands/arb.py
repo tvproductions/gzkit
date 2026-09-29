@@ -50,19 +50,70 @@ def arb_ruff_cmd(
     return exit_status
 
 
+def _arb_red_commit(commit: str, quiet: bool) -> int:
+    """Witness every production hunk ``commit`` added against its own tests (GHI #927)."""
+    from gzkit.commands.common import get_project_root
+    from gzkit.commit_witness import run_commit_witness
+
+    try:
+        witness = run_commit_witness(get_project_root(), commit)
+    except (OSError, RuntimeError, ValueError) as exc:
+        print(f"arb red: cannot run commit witness: {exc}", file=sys.stderr)
+        return _INTERNAL_ERROR
+    if not quiet:
+        print(f"arb red commit={witness.commit[:12]} verdict={witness.verdict}")
+        for hunk in witness.hunks:
+            reason = f" ({hunk.reason})" if hunk.reason else ""
+            print(f"  {hunk.outcome:<12} {hunk.label}{reason}")
+    if witness.verdict == "no-tests":
+        print(
+            f"RED WITNESS FAILED: {witness.commit[:12]} {witness.detail}. A guard added "
+            "without a test that fails when it is removed is protected by nothing "
+            "(AGENTS.md § DO IT RIGHT Rule 6). Add a test to the fix that asserts the "
+            "guard's behavior.",
+            file=sys.stderr,
+        )
+        return 1
+    if witness.verdict == "undriven":
+        labels = ", ".join(h.label for h in witness.undriven)
+        print(
+            f"RED WITNESS FAILED: reverting {labels} left every test in "
+            f"{witness.commit[:12]}'s own test modules passing, so no test there can fail "
+            "when that guard is removed (GHI #927). Add an assertion that fails without "
+            "the hunk, in the same commit's tests.",
+            file=sys.stderr,
+        )
+        return 1
+    if witness.verdict == "inconclusive":
+        print(
+            f"RED WITNESS INCONCLUSIVE: at least one hunk of {witness.commit[:12]} could not "
+            "be graded (see the per-hunk reasons). This is a claim about the run, not a "
+            "finding about the tests.",
+            file=sys.stderr,
+        )
+    return 0
+
+
 def arb_red_cmd(
     *,
-    req: str,
+    req: str | None = None,
+    commit: str | None = None,
     base: str | None = None,
     obpi: str | None = None,
     quiet: bool = False,
 ) -> int:
-    """Witness a BEHAVIOR REQ's test failing against the base tree (GHI #642).
+    """Witness a test failing without the code it covers (GHI #642, #927).
 
-    Exit 0 means a RED was witnessed (``assertion`` or the weaker ``error``). Exit 1
-    means the test PASSED with the production hunks withheld — it cannot fail, so it
-    proves nothing, and that is the defect this command exists to surface.
+    ``--req``: exit 0 means a RED was witnessed (``assertion`` or the weaker
+    ``error``); exit 1 means the test PASSED with the production hunks withheld — it
+    cannot fail, so it proves nothing. ``--commit``: exit 1 when a hunk the commit
+    added survives being reverted, or the commit touches no test module.
     """
+    if commit is not None:
+        return _arb_red_commit(commit, quiet)
+    if req is None:
+        print("arb red: pass --req or --commit.", file=sys.stderr)
+        return 1
     from gzkit.arb.red_reporter import run_red_via_arb
     from gzkit.commands.common import get_project_root
     from gzkit.ledger import Ledger

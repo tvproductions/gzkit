@@ -124,22 +124,32 @@ def _register_ruff(arb_commands: argparse._SubParsersAction) -> None:
 def _register_red(arb_commands: argparse._SubParsersAction) -> None:
     p = arb_commands.add_parser(
         "red",
-        help="Witness a BEHAVIOR REQ's test failing against the base tree",
+        help="Witness a test failing without the code it covers (by REQ or by commit)",
         description=(
-            "Reconstruct the base tree in a throwaway git worktree, copy in ONLY the "
-            "test files, and run the REQ's covering test there. Exit 0 when a RED is "
+            "--req: reconstruct the base tree in a throwaway git worktree, copy in ONLY "
+            "the test files, and run the REQ's covering test there. Exit 0 when a RED is "
             "witnessed; exit 1 when the test passes without its implementation and "
-            "therefore cannot fail (GHI #642)."
+            "therefore cannot fail (GHI #642). --commit: for a commit with no REQ (the "
+            "direct-fix route), revert each production hunk it added, one at a time, and "
+            "run the test modules the same commit touched. Exit 0 when every hunk is "
+            "driven; exit 1 when a hunk survives (a guard no test in its commit drives) "
+            "or the commit touches no test module (GHI #927)."
         ),
         epilog=build_epilog(
             [
                 "gz arb red --req REQ-0.33.0-01-01",
                 "gz arb red --req REQ-0.33.0-01-01 --obpi OBPI-0.33.0-01-airlock",
                 "gz arb red --req REQ-0.33.0-01-01 --base HEAD~1",
+                "gz arb red --commit HEAD",
             ]
         ),
     )
-    p.add_argument("--req", required=True, help="BEHAVIOR REQ id to witness.")
+    target = p.add_mutually_exclusive_group(required=True)
+    target.add_argument("--req", help="BEHAVIOR REQ id to witness.")
+    target.add_argument(
+        "--commit",
+        help="Commit whose production hunks to witness against its own tests (no REQ needed).",
+    )
     p.add_argument(
         "--base",
         default=None,
@@ -149,6 +159,7 @@ def _register_red(arb_commands: argparse._SubParsersAction) -> None:
     p.set_defaults(
         func=lambda a: _arb("arb_red_cmd")(
             req=a.req,
+            commit=a.commit,
             base=a.base,
             obpi=a.obpi,
             quiet=getattr(a, "quiet", False),

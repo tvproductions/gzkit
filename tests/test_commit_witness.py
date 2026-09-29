@@ -1,0 +1,194 @@
+"""The commit-keyed falsifiability witness (GHI #927).
+
+Each test builds a throwaway repository whose last commit is one shape of the
+direct-fix route, and asserts the verdict the witness owes it. The fixture's
+production code is a one-line clamp, so a reverted guard either changes what
+`clamp(-1)` returns or it does not; the commit's own tests decide which.
+"""
+
+import contextlib
+import io
+import subprocess
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+from unittest import mock
+
+from gzkit.cli.main import _build_parser
+from gzkit.commands.arb import arb_red_cmd
+from gzkit.commit_witness import CommitWitness, HunkWitness, run_commit_witness
+from tests.commands.common import _isolated_git_env
+
+_RUNNER = (sys.executable, "-m", "unittest", "-v")
+_BASE = "def clamp(x):\n    return x\n"
+_GUARDED = "def clamp(x):\n    if x < 0:\n        return 0\n    return x\n"
+_BASE_TEST = (
+    "import unittest\n\nfrom pkg.mod import clamp\n\n\n"
+    "class T(unittest.TestCase):\n    def test_identity(self):\n"
+    "        self.assertEqual(clamp(1), 1)\n"
+)
+
+
+class TestCommitWitness(unittest.TestCase):
+    """Verdicts for the four commit shapes the direct-fix route produces."""
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+        self._git("init", "-q", "-b", "main")
+        (self.root / "pkg").mkdir()
+        (self.root / "tests").mkdir()
+        (self.root / "pkg" / "__init__.py").write_text("", encoding="utf-8")
+        (self.root / "tests" / "__init__.py").write_text("", encoding="utf-8")
+        (self.root / "pkg" / "mod.py").write_text(_BASE, encoding="utf-8")
+        (self.root / "tests" / "test_mod.py").write_text(_BASE_TEST, encoding="utf-8")
+        self._commit("base")
+
+    def tearDown(self):
+        self._tmp.cleanup()
+
+    def _git(self, *args: str) -> str:
+        return subprocess.run(
+            ["git", "-c", "user.email=t@example.com", "-c", "user.name=t", *args],
+            cwd=self.root,
+            check=True,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            env=_isolated_git_env(),
+        ).stdout.strip()
+
+    def _commit(self, message: str) -> str:
+        self._git("add", "-A")
+        self._git("commit", "-qm", message)
+        return self._git("rev-parse", "HEAD")
+
+    def _add_test(self, body: str) -> None:
+        path = self.root / "tests" / "test_mod.py"
+        path.write_text(path.read_text(encoding="utf-8") + body, encoding="utf-8")
+
+    def test_a_guard_its_commit_tests_is_driven(self):
+        """Reverting the guard fails the commit's own assertion: every hunk is killed."""
+        (self.root / "pkg" / "mod.py").write_text(_GUARDED, encoding="utf-8")
+        self._add_test("\n    def test_negative(self):\n        self.assertEqual(clamp(-1), 0)\n")
+        result = run_commit_witness(self.root, self._commit("guard + test"), runner=_RUNNER)
+        self.assertEqual(result.verdict, "driven", result)
+        self.assertEqual({h.outcome for h in result.hunks}, {"killed"})
+
+    def test_a_guard_beside_an_unrelated_test_is_undriven(self):
+        """The #927 instance: the commit touches tests, none drives the guard."""
+        (self.root / "pkg" / "mod.py").write_text(_GUARDED, encoding="utf-8")
+        self._add_test("\n    def test_two(self):\n        self.assertEqual(clamp(2), 2)\n")
+        result = run_commit_witness(self.root, self._commit("guard + other test"), runner=_RUNNER)
+        self.assertEqual(result.verdict, "undriven", result)
+        self.assertEqual([h.path for h in result.undriven], ["pkg/mod.py"])
+
+    def test_a_guard_with_no_test_module_is_reported_not_graded(self):
+        """No test module in the commit: nothing in it can fail, so no hunk is graded."""
+        (self.root / "pkg" / "mod.py").write_text(_GUARDED, encoding="utf-8")
+        result = run_commit_witness(self.root, self._commit("guard only"), runner=_RUNNER)
+        self.assertEqual(result.verdict, "no-tests", result)
+        self.assertEqual(result.hunks, [])
+
+    def test_a_comment_only_hunk_is_not_a_guard(self):
+        """Reverting a comment changes no behavior, so it must not read as undriven."""
+        (self.root / "pkg" / "mod.py").write_text("# note\n" + _BASE, encoding="utf-8")
+        self._add_test("\n    def test_two(self):\n        self.assertEqual(clamp(2), 2)\n")
+        result = run_commit_witness(self.root, self._commit("comment + test"), runner=_RUNNER)
+        self.assertEqual(result.verdict, "no-production-hunks", result)
+
+
+class TestArbRedCommitCli(unittest.TestCase):
+    """`gz arb red --commit`: its argument contract and the exit code each verdict owes."""
+
+    def _parse(self, *argv: str):
+        with contextlib.redirect_stderr(io.StringIO()):
+            return _build_parser().parse_args(["arb", "red", *argv])
+
+    def test_commit_alone_parses_without_a_req(self):
+        args = self._parse("--commit", "HEAD")
+        self.assertEqual((args.commit, args.req), ("HEAD", None))
+
+    def test_req_and_commit_together_are_refused(self):
+        with self.assertRaises(SystemExit):
+            self._parse("--req", "REQ-0.1.0-01-01", "--commit", "HEAD")
+
+    def test_neither_target_is_refused(self):
+        with self.assertRaises(SystemExit):
+            self._parse()
+
+    def test_the_parsed_command_routes_commit_to_the_witness(self):
+        """Dispatch through the parser, not the function: the lambda must pass --commit on."""
+        witness = CommitWitness(commit="a" * 40, verdict="no-tests", detail="d")
+        with (
+            mock.patch("gzkit.commit_witness.run_commit_witness", return_value=witness) as run,
+            mock.patch("gzkit.commands.common.get_project_root", return_value=Path(".")),
+            contextlib.redirect_stdout(io.StringIO()),
+            contextlib.redirect_stderr(io.StringIO()),
+        ):
+            args = self._parse("--commit", "abc123")
+            with self.assertRaises(SystemExit) as exited:  # _arb propagates the status
+                args.func(args)
+        self.assertEqual(exited.exception.code, 1)
+        self.assertEqual(run.call_args.args[1], "abc123")
+
+    def _exit_for(self, verdict: str, outcome: str = "killed") -> tuple[int, str]:
+        hunks = [HunkWitness(path="p.py", label="p.py:1-2", outcome=outcome)]
+        witness = CommitWitness(commit="a" * 40, verdict=verdict, hunks=hunks, detail="d")
+        err = io.StringIO()
+        with (
+            mock.patch("gzkit.commit_witness.run_commit_witness", return_value=witness),
+            mock.patch("gzkit.commands.common.get_project_root", return_value=Path(".")),
+            contextlib.redirect_stdout(io.StringIO()),
+            contextlib.redirect_stderr(err),
+        ):
+            return arb_red_cmd(commit="HEAD"), err.getvalue()
+
+    def test_a_driven_commit_exits_zero(self):
+        self.assertEqual(self._exit_for("driven")[0], 0)
+
+    def test_an_undriven_hunk_exits_one_and_names_it(self):
+        code, err = self._exit_for("undriven", outcome="survived")
+        self.assertEqual(code, 1)
+        self.assertIn("p.py:1-2", err)
+
+    def test_a_commit_without_tests_exits_one(self):
+        self.assertEqual(self._exit_for("no-tests")[0], 1)
+
+    def test_an_inconclusive_run_is_not_a_failure_but_says_so(self):
+        code, err = self._exit_for("inconclusive", outcome="inconclusive")
+        self.assertEqual(code, 0)
+        self.assertIn("INCONCLUSIVE", err)
+
+    def test_a_witness_that_cannot_run_is_an_internal_error(self):
+        with (
+            mock.patch("gzkit.commit_witness.run_commit_witness", side_effect=RuntimeError("x")),
+            mock.patch("gzkit.commands.common.get_project_root", return_value=Path(".")),
+            contextlib.redirect_stderr(io.StringIO()),
+        ):
+            self.assertEqual(arb_red_cmd(commit="HEAD"), 2)
+
+
+class TestArbRedHelpOutputForm(unittest.TestCase):
+    """The operator-facing help names both modes (output-contract: help text is the contract)."""
+
+    def _help(self, *argv: str) -> str:
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out), self.assertRaises(SystemExit):
+            _build_parser().parse_args([*argv, "--help"])
+        return out.getvalue()
+
+    def test_red_help_describes_both_modes_and_an_example(self):
+        text = " ".join(self._help("arb", "red").split())
+        self.assertIn("--req: reconstruct the base tree", text)
+        self.assertIn("direct-fix route", text)
+        self.assertIn("gz arb red --commit HEAD", text)
+
+    def test_arb_listing_summarizes_red_as_req_or_commit(self):
+        self.assertIn("by REQ or by commit", " ".join(self._help("arb").split()))
+
+
+if __name__ == "__main__":
+    unittest.main()

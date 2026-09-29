@@ -1,6 +1,6 @@
 # gz arb red
 
-Witness a BEHAVIOR REQ's covering test failing against the base tree.
+Witness a test failing without the code it covers — by BEHAVIOR REQ, or by commit.
 
 ---
 
@@ -8,7 +8,10 @@ Witness a BEHAVIOR REQ's covering test failing against the base tree.
 
 ```bash
 gz arb red --req <REQ-ID> [--base <commit>] [--obpi <OBPI-ID>]
+gz arb red --commit <commit>
 ```
+
+Exactly one of `--req` or `--commit` is required.
 
 Reconstructs the base tree in a throwaway git worktree, copies in **only** the
 test files, and runs the REQ's covering test there. The production hunks are
@@ -28,7 +31,8 @@ Emits an ARB red receipt and a `red_receipt_emitted` ledger event.
 
 | Option | Description |
 |--------|-------------|
-| `--req` | BEHAVIOR REQ id to witness (required) |
+| `--req` | BEHAVIOR REQ id to witness |
+| `--commit` | Commit whose production hunks to witness against its own tests (see § Commit mode) |
 | `--base` | Commit to run the test against (default: `HEAD`, the pre-change tree) |
 | `--obpi` | Owning OBPI id, recorded on the ledger event |
 
@@ -46,6 +50,31 @@ The `failure_class` is the verdict, not decoration.
 
 ---
 
+## Commit mode (`--commit`, GHI #927)
+
+A guard added on the direct-fix route (`fix(<scope>): … (GHI #N)`) has no REQ, so
+`--req` has no subject there. `--commit` keys the witness on the commit instead:
+each production hunk the commit **added** is reverted to its parent's text, one at
+a time, and the test modules **the same commit touched** are run against the
+mutant through `gzkit.mutation_witness` (baseline, activation, bytecode isolation
+and failure cause all verified). Hunks that change only comments, docstrings or
+blank lines are skipped, and pure deletions are not mutated.
+
+| Verdict | Meaning | Exit |
+|---------|---------|------|
+| `driven` | Every hunk was `killed`: a test in the commit fails without it | 0 |
+| `undriven` | A hunk `survived`: reverting it left the commit's tests passing | 1 |
+| `no-tests` | The commit changes production code and no test module | 1 |
+| `inconclusive` | A hunk could not be graded (baseline not green, or the revert raised an error rather than an assertion) — a claim about the run, not the tests | 0 |
+| `no-production-hunks` | Nothing behavioral to witness | 0 |
+
+The declared test set is the commit's own test modules, deliberately: a fix that
+adds a guard owes a test, in the same commit, that fails without it. A historical
+commit whose tests no longer pass in a fresh checkout reads `inconclusive`, never
+a verdict. Commit mode prints its result and writes no receipt or ledger event.
+
+---
+
 ## Examples
 
 ```bash
@@ -57,6 +86,9 @@ gz arb red --req REQ-0.33.0-01-01 --obpi OBPI-0.33.0-01-airlock-data-model-and-e
 
 # Witness against an explicit base (e.g. before the implementation commit).
 gz arb red --req REQ-0.33.0-01-01 --base HEAD~1
+
+# Witness the guards the last direct-fix commit added (no REQ needed).
+gz arb red --commit HEAD
 ```
 
 ---
@@ -66,7 +98,7 @@ gz arb red --req REQ-0.33.0-01-01 --base HEAD~1
 | Code | Meaning |
 |------|---------|
 | 0 | A RED was witnessed (`assertion`, or the weaker `error`); receipt created |
-| 1 | No covering test found, or `failure_class: none` — the test cannot fail |
+| 1 | No covering test found, or `failure_class: none` — the test cannot fail; with `--commit`, a surviving hunk or no test module |
 | 2 | ARB internal error (worktree creation failed, git unavailable) |
 
 ---
