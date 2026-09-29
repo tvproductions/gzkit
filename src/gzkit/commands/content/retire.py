@@ -43,7 +43,6 @@ Whitespace-only values for either flag are refused as not-attestation.
 from __future__ import annotations
 
 import sys
-import unicodedata
 from datetime import UTC, datetime
 
 from gzkit.attestor import attestor_hint
@@ -52,118 +51,11 @@ from gzkit.commands.content._drift import warn_on_rendition_drift
 from gzkit.content.corpus_store import append_entry, load_corpus
 from gzkit.content.models import CorpusEntry
 from gzkit.content.models.corpus import effective_corpus
+from gzkit.core.attestor_names import is_named, ucd_currency_warning
 from gzkit.ledger import Ledger
 from gzkit.ledger_events import corpus_entry_appended_event, corpus_entry_retired_event
 
 _ID_SAMPLE = 3
-
-# Unicode's Default_Ignorable_Code_Point property (DerivedCoreProperties.txt) names
-# code points a conformant renderer draws at ZERO advance width regardless of
-# General_Category. Almost every one is already Cs/Cn/Cc/Cf and excluded below; these
-# four are the entire exception -- Unicode classifies them General_Category=Lo
-# (letter) even though they are placeholders for an EMPTY Hangul syllable-composition
-# slot, never a script character a human is named with. A tier-1 cross-vendor
-# adversary found the letter-category bar admitted them, one of which (U+3164) still
-# NFKC-normalizes to another member of this same set (U+1160).
-#
-# Only two of the four are ever tested at the `_is_named` call site below: NFKC
-# normalization runs BEFORE the membership check, and U+3164 -> U+1160 and
-# U+FFA0 -> U+1160 under NFKC (measured against UCD 15.1.0), so `ch` is never
-# U+3164 or U+FFA0 by the time this set is consulted there. All four stay --
-# as a complete, readable statement of the class, and as defense-in-depth for a
-# future caller that tests a pre-normalization string.
-#
-# This is the complete Lo-category subset of Default_Ignorable_Code_Point for UCD
-# 15.1.0 -- the Unicode version bundled with CPython's `unicodedata` at the time
-# this set was derived -- not the three code points the adversary happened to
-# probe. stdlib `unicodedata` has no accessor for Default_Ignorable_Code_Point
-# (the `regex` module's `\p{Default_Ignorable_Code_Point}` would need an
-# ADR-level STDLIB-FIRST departure), so this literal set IS the compliant shape;
-# `ucd_currency_warning` below is the drift witness for the one thing a literal
-# set cannot self-check -- that the UCD it was derived against is still the UCD
-# in use. It WARNS on the retire path and asserts hard only in the test suite
-# (operator ruling 2026-08-25): a maintainer in CI can re-derive the set, an
-# operator mid-retirement cannot.
-_DEFAULT_IGNORABLE_LETTERS_UCD_VERSION = "15.1.0"
-
-_DEFAULT_IGNORABLE_LETTERS = frozenset(
-    {
-        "ᅟ",  # HANGUL CHOSEONG FILLER
-        "ᅠ",  # HANGUL JUNGSEONG FILLER
-        "ㅤ",  # HANGUL FILLER
-        "ﾠ",  # HALFWIDTH HANGUL FILLER
-    }
-)
-
-
-def ucd_currency_warning(version: str | None = None) -> str:
-    """Return the UCD-drift warning text, or ``""`` when the bundled UCD is current.
-
-    ``_DEFAULT_IGNORABLE_LETTERS`` is a hand-transcribed subset of
-    DerivedCoreProperties.txt: stdlib exposes no accessor for
-    ``Default_Ignorable_Code_Point``, so a literal set is the compliant shape
-    under STDLIB-FIRST, but a literal set cannot self-check its own currency.
-    A future CPython bundling a newer UCD would silently change which code
-    points this set excludes, and ``_is_named`` would resume accepting an
-    invisible glyph as a named attestor with nothing to signal it.
-
-    This WARNS; it does not raise. An earlier revision asserted here and the
-    module-level call site therefore aborted ``gz content retire`` at import on
-    any runtime whose UCD differed -- and ``pyproject.toml`` declares
-    ``requires-python >=3.13`` with NO upper bound, so a declared-SUPPORTED
-    CPython (3.14 bundles UCD 16.0.0) crashed the command outright. A tier-1
-    cross-vendor adversary found it 2026-08-25; the operator ruled warn-not-raise
-    the same day. The reasoning is where the witness has to land: a maintainer in
-    CI can re-derive the set, while an operator mid-retirement cannot, so the
-    HARD failure belongs in the test suite (``unidata_version`` is asserted there)
-    and the runtime gets a line on stderr it can act on or ignore.
-    """
-    actual = unicodedata.unidata_version if version is None else version
-    if actual == _DEFAULT_IGNORABLE_LETTERS_UCD_VERSION:
-        return ""
-    return (
-        f"warning: unicodedata.unidata_version is {actual!r}, but "
-        "_DEFAULT_IGNORABLE_LETTERS was derived against UCD "
-        f"{_DEFAULT_IGNORABLE_LETTERS_UCD_VERSION!r}. An invisible attestor "
-        "admitted by the newer UCD would not be refused. Re-derive "
-        "_DEFAULT_IGNORABLE_LETTERS from DerivedCoreProperties.txt for the new "
-        "UCD (the full General_Category=Lo subset of "
-        "Default_Ignorable_Code_Point), then update "
-        "_DEFAULT_IGNORABLE_LETTERS_UCD_VERSION to match."
-    )
-
-
-def _is_named(value: str) -> bool:
-    """Return True when *value* is plausibly a human name.
-
-    "At least one visible character" was the first fix here and it was too weak:
-    an independent review retired invariant-tier canon with an attestor of ``.``,
-    ``7``, a lone combining mark, and a lone surrogate, each recorded as the human
-    who authorized the change (2026-08-25). The audit record this gate protects
-    asks WHO, so punctuation and digits do not answer it.
-
-    The bar is at least one Unicode LETTER after NFKC normalization, with
-    surrogates, unassigned code points, controls and formats excluded. That bar was
-    still too weak: General_Category alone cannot tell letter from glyph -- a code
-    point can be category Lo and STILL be `Default_Ignorable_Code_Point`, meaning a
-    renderer draws it with no visible mark at all (`_DEFAULT_IGNORABLE_LETTERS`).
-    This is a plausibility floor, not identity verification -- ``gz`` has no
-    operator registry to check a name against. It rejects the values that are
-    certainly not names; it cannot confirm that a name is the person's.
-    """
-    try:
-        normalized = unicodedata.normalize("NFKC", value)
-    except (TypeError, ValueError):
-        return False
-    for ch in normalized:
-        category = unicodedata.category(ch)
-        if category in {"Cs", "Cn", "Cc", "Cf"}:
-            # Surrogate, unassigned, control, format -- never name content, and a
-            # lone surrogate cannot even round-trip through the ledger's UTF-8.
-            continue
-        if category.startswith("L") and ch not in _DEFAULT_IGNORABLE_LETTERS:
-            return True
-    return False
 
 
 def _at_risk_rationale(added: set[str], removed: set[str]) -> str:
@@ -302,7 +194,7 @@ def content_retire_cmd(
     # something that LOOKS like a value but carries no content. `--reason` is
     # argparse-required, so an omitted one never reaches here; `--attestor` is
     # optional and arrives as "" when omitted, which the tier gate below handles.
-    if attestor and not _is_named(attestor):
+    if attestor and not is_named(attestor):
         # Two distinct causes, two distinct diagnoses. Reporting every rejected value
         # as "whitespace-only" told an operator who typed `--attestor 7` the wrong
         # cause AND the wrong recovery (a tier-1 adversary observed exactly that,
@@ -361,7 +253,7 @@ def content_retire_cmd(
 
     floor_added, floor_removed = _floor_liveness_delta(corpus, retraction)
     at_risk = floor_added | floor_removed
-    if at_risk and not _is_named(attestor):
+    if at_risk and not is_named(attestor):
         print(
             f"Error: retiring {entry_id!r} moves the liveness of invariant-tier "
             f"{'entries' if len(at_risk) > 1 else 'entry'} "

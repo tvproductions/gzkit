@@ -1530,7 +1530,8 @@
             "properties": {
               "attestor": {
                 "type": "string",
-                "min_length": 1
+                "min_length": 1,
+                "named": true
               }
             }
           },

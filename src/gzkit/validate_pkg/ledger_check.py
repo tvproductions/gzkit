@@ -8,6 +8,7 @@ from typing import Any
 
 from pydantic import ValidationError as PydanticValidationError
 
+from gzkit.core.attestor_names import is_named
 from gzkit.core.validation_rules import ValidationError
 from gzkit.event_evidence import ObpiReceiptEvidence, pydantic_loc_to_field_path
 from gzkit.ledger_corrections import (
@@ -150,6 +151,45 @@ def _declared_types(rule: dict[str, Any]) -> tuple[str, ...]:
     return ()
 
 
+def _validate_ledger_string(
+    value: str,
+    field: str,
+    rule: dict[str, Any],
+    errors: list[ValidationError],
+    ledger_path: Path,
+    line_no: int,
+) -> None:
+    """Apply the string predicates of one field rule: ``min_length`` and ``named``."""
+    min_length = rule.get("min_length")
+    # Measure the STRIPPED length. A raw character count is satisfied by
+    # whitespace, so `"   "` passed every `min_length` guard in the schema
+    # while carrying no content — measured on `foundation_grandfathered`'s
+    # `attestor`, where it meant a witnessless event satisfied the gate that
+    # exists to require a witness (ADR-0.34.0 OBPI-04). This is a class fix:
+    # 54 event types carry min_length-guarded string fields and all of them
+    # had the same hole. Blast radius measured before landing — zero live
+    # ledger rows pass today and fail under the stripped check.
+    if isinstance(min_length, int) and len(value.strip()) < min_length:
+        _append_ledger_error(
+            errors,
+            ledger_path,
+            line_no,
+            f"Field '{field}' must be at least {min_length} non-whitespace characters.",
+            field=field,
+        )
+    # `named` witnesses the runtime gate's own predicate rather than a proxy:
+    # `gz content retire` refuses an attestor `is_named` rejects, so a row
+    # recording one must not validate (GHI #894).
+    if rule.get("named") is True and value.strip() and not is_named(value):
+        _append_ledger_error(
+            errors,
+            ledger_path,
+            line_no,
+            f"Field '{field}' must name a person: at least one visible letter.",
+            field=field,
+        )
+
+
 def _validate_ledger_field(
     value: Any,
     field: str,
@@ -185,23 +225,7 @@ def _validate_ledger_field(
         return
 
     if isinstance(value, str):
-        min_length = rule.get("min_length")
-        # Measure the STRIPPED length. A raw character count is satisfied by
-        # whitespace, so `"   "` passed every `min_length` guard in the schema
-        # while carrying no content — measured on `foundation_grandfathered`'s
-        # `attestor`, where it meant a witnessless event satisfied the gate that
-        # exists to require a witness (ADR-0.34.0 OBPI-04). This is a class fix:
-        # 54 event types carry min_length-guarded string fields and all of them
-        # had the same hole. Blast radius measured before landing — zero live
-        # ledger rows pass today and fail under the stripped check.
-        if isinstance(min_length, int) and len(value.strip()) < min_length:
-            _append_ledger_error(
-                errors,
-                ledger_path,
-                line_no,
-                f"Field '{field}' must be at least {min_length} non-whitespace characters.",
-                field=field,
-            )
+        _validate_ledger_string(value, field, rule, errors, ledger_path, line_no)
 
     if isinstance(value, int):
         min_value = rule.get("min")

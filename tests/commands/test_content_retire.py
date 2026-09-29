@@ -16,11 +16,6 @@ import unittest
 from pathlib import Path
 
 from gzkit.cli.main import main
-from gzkit.commands.content.retire import (
-    _DEFAULT_IGNORABLE_LETTERS_UCD_VERSION,
-    _is_named,
-    ucd_currency_warning,
-)
 from gzkit.content.models import Corpus
 from gzkit.content.models.corpus import effective_corpus
 from gzkit.content.rendition_store import (
@@ -31,6 +26,11 @@ from gzkit.content.rendition_store import (
     save_rendition,
 )
 from gzkit.content.tier_policy import invariant_entries
+from gzkit.core.attestor_names import (
+    DEFAULT_IGNORABLE_LETTERS_UCD_VERSION,
+    is_named,
+    ucd_currency_warning,
+)
 from gzkit.ledger_events import corpus_entry_retired_event, floor_direction_for
 from gzkit.traceability import covers
 from gzkit.validate_pkg.ledger_check import validate_ledger
@@ -1036,7 +1036,7 @@ class TestContentRetireAttestation(unittest.TestCase):
 
         `_DEFAULT_IGNORABLE_LETTERS` is a literal frozenset hand-transcribed from
         DerivedCoreProperties.txt for one named UCD edition
-        (`_DEFAULT_IGNORABLE_LETTERS_UCD_VERSION`). Nothing in the repo referenced
+        (`DEFAULT_IGNORABLE_LETTERS_UCD_VERSION`). Nothing in the repo referenced
         `unicodedata.unidata_version` before this fix (measured: zero hits under
         `src/`), and `pyproject.toml` pins `requires-python >=3.13` with no upper
         bound — so a future CPython bundling a newer UCD could add a fifth
@@ -1059,15 +1059,15 @@ class TestContentRetireAttestation(unittest.TestCase):
         """
         message = ucd_currency_warning(version="99.0.0")
         self.assertIn("99.0.0", message)
-        self.assertIn(_DEFAULT_IGNORABLE_LETTERS_UCD_VERSION, message)
-        self.assertIn("_DEFAULT_IGNORABLE_LETTERS", message)
+        self.assertIn(DEFAULT_IGNORABLE_LETTERS_UCD_VERSION, message)
+        self.assertIn("DEFAULT_IGNORABLE_LETTERS", message)
         self.assertIn("DerivedCoreProperties", message)
         # Not always-firing: the real, bundled version must produce no warning.
         self.assertEqual(ucd_currency_warning(), "")
         # The hard CI gate the runtime deliberately no longer enforces.
         self.assertEqual(
             unicodedata.unidata_version,
-            _DEFAULT_IGNORABLE_LETTERS_UCD_VERSION,
+            DEFAULT_IGNORABLE_LETTERS_UCD_VERSION,
             "CPython now bundles a different UCD — re-derive _DEFAULT_IGNORABLE_LETTERS "
             "from DerivedCoreProperties.txt and update the constant",
         )
@@ -1090,7 +1090,7 @@ class TestContentRetireAttestation(unittest.TestCase):
         for label, value in real_names.items():
             with self.subTest(name=label):
                 self.assertTrue(
-                    _is_named(value), msg=f"{label!r} ({value!r}) was rejected as not a name"
+                    is_named(value), msg=f"{label!r} ({value!r}) was rejected as not a name"
                 )
 
     @covers("REQ-0.35.0-02-07")

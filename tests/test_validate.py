@@ -1362,6 +1362,32 @@ class TestLedgerConditionalRules(unittest.TestCase):
             f"an omitted attestor must be rejected when the floor moved, got: {errors}",
         )
 
+    def test_an_attestor_the_gate_refuses_is_rejected(self) -> None:
+        """The witness asserts the gate's own predicate, not a proxy (GHI #894).
+
+        `gz content retire` refuses these attestors through `is_named`; the
+        validator once accepted them because it checked non-empty only. They are
+        the values an independent review actually retired canon with.
+        """
+        for label, value in (
+            ("punctuation", "."),
+            ("digit", "7"),
+            ("combining mark", "\u0301"),
+            ("hangul filler", "\u3164"),
+        ):
+            with self.subTest(attestor=label):
+                errors = self._validate(
+                    self._retirement(
+                        floor_direction="grew",
+                        floor_moved_ids=["corpus-operator-doctrine"],
+                        attestor=value,
+                    )
+                )
+                self.assertTrue(
+                    any(error.field == "attestor" for error in errors),
+                    f"attestor {label!r} is refused by the gate and must fail here, got: {errors}",
+                )
+
     def test_a_named_attestor_satisfies_the_condition(self) -> None:
         """The rule must not fail closed on the state it exists to require."""
         errors = self._validate(
