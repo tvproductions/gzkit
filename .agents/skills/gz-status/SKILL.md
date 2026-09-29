@@ -4,9 +4,9 @@ description: Report project workflow fronts alongside ADR lifecycle and gate sta
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-27
+last_reviewed: 2026-09-29
 metadata:
-  skill-version: "1.5.0"
+  skill-version: "1.6.0"
 model: haiku
 ---
 
@@ -49,7 +49,7 @@ Status covers handoff system, GHI triage, ADR/OBPI campaign, and new R&D. Read W
 
 ## Work order (operator ruling, verbatim canon)
 
-- Work feature ADRs in ascending semver order: the lowest version with unlanded OBPIs is in flight. Do not work, author, or recommend a higher feature ADR ahead of it. The campaign selects work but cannot override that order. If campaign sequencing conflicts, semver governs; surface the conflict to the operator rather than silently resolving it. “One feature at a time” does not authorize swapping the order.
+- Work feature ADRs in ascending semver order: the lowest version with unlanded OBPIs is in flight. Do not work, author, or recommend a higher feature ADR ahead of it. The campaign selects work but cannot override that order. If campaign sequencing conflicts, semver governs; surface the conflict to the operator rather than silently resolving it. “One feature at a time” does not authorize swapping the order. Exception — corrections to a Validated ADR: residual scope re-homed from a terminal (Validated) ADR because the shipped surface does not fulfill its declared intent takes the next unallocated feature semver and may be authored and worked ahead of the in-flight ADR; new-design work stays in strict order (operator rulings: 'Exempt corrections (Recommended)', 2026-09-28; 'canon plus campaign', 2026-09-29; GHI #871).
 
 > Carried verbatim from root `AGENTS.md` § Operator Doctrine on 2026-09-17 (GHI #921), and into this skill on 2026-09-24 (GHI #1091, sweep finding S06): the ruling governs authoring and recommending, not only working. The corpus `.gzkit/corpus/AGENTS.md.jsonl` keeps the ruling's history.
 

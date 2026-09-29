@@ -609,9 +609,50 @@ had been repeating. All are dispositioned below — none left undefined.
 
 ## Amendments
 
+<a id="amendments-2026-09-29"></a>
+
+### 2026-09-29 (latest) — corrections to a Validated ADR are exempt from strict ascending order (operator-ratified)
+
+**Operator (`g0`), verbatim:** *"Exempt corrections (Recommended)"* (ruling docket, 2026-09-28, GHI #871),
+then, choosing how to carry it, *"canon plus campaign"* (2026-09-29).
+
+**The collision this resolves (GHI #871).** A correction whose owning ADR is `Validated` cannot be
+appended to it (the settled re-homing ruling), so it re-homes to a feature ADR; strict ascending
+order then withheld every feature slot above the in-flight one, and planned Movements already book
+those slots by subject (`ADR-0.38.0` Movement E, `ADR-0.39.0` config, `ADR-0.40.0` amendment verbs).
+Two Critical/High `handoff_api.py` findings from the 2026-08-23 tech-debt dossier had no permitted
+home. Operator doctrine names what they are: *"discovering that more is needed to fulfill the intent
+of a feature is not an enhancement, it is a correction."*
+
+**What changes.**
+
+- **Strict ascending order binds new-design work only.** Residual scope re-homed from a `Validated`
+  ADR, because its shipped surface does not fulfill its declared intent, takes the **next
+  unallocated feature semver at authoring time** and may be authored and worked ahead of the
+  in-flight ADR.
+- **Canon carries it, not this plan alone.** The ascending-order ruling says *"The campaign selects
+  work but cannot override that order"*, so the exception is written into the ruling itself, at
+  every skill that carries it verbatim (`gz-obpi-pipeline`, `gz-adr-create`, `gz-design`,
+  `gz-plan`, `gz-status`; carried there since 2026-09-17, GHI #921). The AGENTS.md corpus records
+  the amended wording in its history. This entry is the campaign's half.
+- **§ Amendments 2026-09-27 (3) is superseded where it says ADR order stays absolute "with no
+  exception"** — for corrections to a `Validated` ADR only. Its ADR-WORK-FIRST sequencing is
+  otherwise unchanged.
+
+**What does not change.** New-design feature ADRs stay in strict ascending order; `ADR-0.35.0`
+remains TOPMOST. Only the operator initiates OBPI work (IRON LAW), so a correction ADR is authored
+and drawn when the operator initiates it. Booked slots keep their owners. Defects in hand are still
+fixed immediately under `AGENTS.md` § PRIME DIRECTIVE, and a GHI still authorizes direct repair —
+this exception is for residual that genuinely needs an ADR, not a route around direct fixes.
+
+**Next concrete action (operator-initiated):** re-home the two `handoff_api.py` findings
+(`governance-resume-contract-not-mechanized`, `governance-time-only-staleness`,
+`.gzkit/audits/tech-debt/2026-08-23/findings.json`) into a correction ADR at the next unallocated
+feature semver, parented on `ADR-0.0.65-handoff-system-consolidation`.
+
 <a id="amendments-2026-09-27-3"></a>
 
-### 2026-09-27 (3) (latest) — ADR WORK FIRST: feature ADRs in ascending order ahead of Movement C refactoring (operator-ratified)
+### 2026-09-27 (3) — ADR WORK FIRST: feature ADRs in ascending order ahead of Movement C refactoring (operator-ratified)
 
 **Operator (`g0`), verbatim:**
 

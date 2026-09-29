@@ -1,10 +1,10 @@
 {
   "algorithm": "sha256",
-  "corpus_fingerprint": "bc8e64cb9cc7a9540c09065927545c29894c0a95f8af68023dca5c701462e4e0",
-  "corpus_entry_count": 483,
+  "corpus_fingerprint": "b09f705a8cfb40da3812f54c30a01f6e7d78c26a15a24a5af6c2766757b4df38",
+  "corpus_entry_count": 485,
   "rendition_fingerprint": "2ba89ed9d9cd4458ea58d6a5d8a5ce631e8637297365dd3cdbd509666f315711",
-  "committed_ts": "2026-09-29T08:19:27.201767+00:00",
+  "committed_ts": "2026-09-29T08:56:24.547431+00:00",
   "attestor": "g0",
-  "attestation_text": "attest: drop C1, C2, C3 as retired; keep 4–6 with witnesses",
+  "attestation_text": "attest to this edit",
   "landing_id": null
 }

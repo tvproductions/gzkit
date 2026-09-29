@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-09-29
 metadata:
-  skill-version: "6.62.0"
+  skill-version: "6.63.0"
 model: sonnet
 ---
 
@@ -103,7 +103,7 @@ This is not optional. This is not something you can "derive informally." The pla
 
 - The active docs/governance/*-campaign-*.md plan governs work selection; handoffs and triage advise. Select its topmost unchecked item whose gate is met, subject to ascending feature-ADR order and operator-only OBPI initiation. Campaign amendments require operator ratification; ADR, OBPI, and GHI repair remain the work mechanisms.
 
-- Work feature ADRs in ascending semver order: the lowest version with unlanded OBPIs is in flight. Do not work, author, or recommend a higher feature ADR ahead of it. The campaign selects work but cannot override that order. If campaign sequencing conflicts, semver governs; surface the conflict to the operator rather than silently resolving it. “One feature at a time” does not authorize swapping the order.
+- Work feature ADRs in ascending semver order: the lowest version with unlanded OBPIs is in flight. Do not work, author, or recommend a higher feature ADR ahead of it. The campaign selects work but cannot override that order. If campaign sequencing conflicts, semver governs; surface the conflict to the operator rather than silently resolving it. “One feature at a time” does not authorize swapping the order. Exception — corrections to a Validated ADR: residual scope re-homed from a terminal (Validated) ADR because the shipped surface does not fulfill its declared intent takes the next unallocated feature semver and may be authored and worked ahead of the in-flight ADR; new-design work stays in strict order (operator rulings: 'Exempt corrections (Recommended)', 2026-09-28; 'canon plus campaign', 2026-09-29; GHI #871).
 
 > Carried verbatim from root `AGENTS.md` § Operator Doctrine on 2026-09-17 (GHI #921); the corpus `.gzkit/corpus/AGENTS.md.jsonl` keeps the ruling's history.
 
