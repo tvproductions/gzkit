@@ -52,6 +52,7 @@ from gzkit.ledger import (
 )
 from gzkit.mx import hardening
 from gzkit.quality import ProductProofResult, check_product_proof
+from gzkit.tasks import in_scope_task_id
 
 
 def _manifest_verification_commands(
@@ -398,6 +399,7 @@ def _run_closeout_quality_gates(
                 gate_status,
                 command,
                 qr.returncode,
+                task_id=in_scope_task_id(ledger.path, adr_id),
             )
         )
         if not as_json:
@@ -493,7 +495,15 @@ def _complete_closeout_pipeline(
         # single-source receipt); re-emitting here is the transitional double-emit
         # OBPI-01 deferred and this OBPI collapses. `--attest` is an orchestration
         # shortcut, never a parallel emitter.
-        ledger.append(attested_event(adr_id, attest_status, attester, reason))
+        ledger.append(
+            attested_event(
+                adr_id,
+                attest_status,
+                attester,
+                reason,
+                task_id=in_scope_task_id(ledger.path, adr_id),
+            )
+        )
 
     version_updated: list[str] = []
     if needs_bump and adr_ver is not None:

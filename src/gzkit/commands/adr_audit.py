@@ -49,6 +49,7 @@ from gzkit.ledger import (
     normalize_req_proof_inputs,
     parse_frontmatter_value,
 )
+from gzkit.tasks import in_scope_task_id
 from gzkit.traceability import find_covers_in_source
 from gzkit.utils import capture_validation_anchor
 
@@ -1208,6 +1209,7 @@ def _emit_adr_closeout_receipt(
         attestor=attestor,
         evidence=None,
         anchor=anchor,
+        task_id=in_scope_task_id(ledger.path, adr_id),
     )
     if dry_run:
         console.print("[yellow]Dry run:[/yellow] no ledger event will be written.")
@@ -1269,6 +1271,7 @@ def adr_emit_receipt_cmd(
         attestor=attestor,
         evidence=evidence,
         anchor=anchor,
+        task_id=in_scope_task_id(ledger.path, adr_id),
     )
 
     if not dry_run and _is_human_attestation_receipt_event(receipt_event):

@@ -378,11 +378,14 @@ def attested_event(
     status: str,
     by: str,
     reason: str | None = None,
+    task_id: str | None = None,
 ) -> LedgerEvent:
-    """Create an attestation event."""
+    """Create an attestation event; ``task_id`` attributes it to a TASK (GHI #950)."""
     extra: dict[str, Any] = {"status": status, "by": by}
     if reason:
         extra["reason"] = reason
+    if task_id:
+        extra["task_id"] = task_id
     return LedgerEvent(
         event="attested",
         id=adr_id,
@@ -397,8 +400,9 @@ def gate_checked_event(
     command: str,
     returncode: int,
     evidence: str | None = None,
+    task_id: str | None = None,
 ) -> LedgerEvent:
-    """Create a gate checked event."""
+    """Create a gate checked event; ``task_id`` attributes it to a TASK (GHI #950)."""
     extra: dict[str, Any] = {
         "gate": gate,
         "status": status,
@@ -407,6 +411,8 @@ def gate_checked_event(
     }
     if evidence:
         extra["evidence"] = evidence
+    if task_id:
+        extra["task_id"] = task_id
     return LedgerEvent(
         event="gate_checked",
         id=adr_id,
@@ -455,13 +461,16 @@ def audit_receipt_emitted_event(
     attestor: str,
     evidence: dict[str, Any] | None = None,
     anchor: "EventAnchor | None" = None,
+    task_id: str | None = None,
 ) -> LedgerEvent:
-    """Create an audit receipt event."""
+    """Create an audit receipt event; ``task_id`` attributes it to a TASK (GHI #950)."""
     extra: dict[str, Any] = {"receipt_event": receipt_event, "attestor": attestor}
     if evidence is not None:
         extra["evidence"] = evidence
     if anchor is not None:
         extra["anchor"] = anchor.model_dump(exclude_none=True)
+    if task_id:
+        extra["task_id"] = task_id
     return LedgerEvent(
         event="audit_receipt_emitted",
         id=adr_id,
@@ -616,19 +625,26 @@ def obpi_completion_uncovered_accept_event(
     operator: str,
     rationale: str,
     acceptance_type: str,
+    task_id: str | None = None,
 ) -> LedgerEvent:
-    """Create an event recording one accepted-uncovered REQ waiver (ADR-0.0.25-02)."""
+    """Create an event recording one accepted-uncovered REQ waiver (ADR-0.0.25-02).
+
+    ``task_id`` attributes the waiver to a TASK (GHI #950).
+    """
+    extra: dict[str, Any] = {
+        "obpi_id": obpi_id,
+        "req_id": req_id,
+        "operator": operator,
+        "rationale": rationale,
+        "acceptance_type": acceptance_type,
+    }
+    if task_id:
+        extra["task_id"] = task_id
     return LedgerEvent(
         event="obpi_completion_uncovered_accept",
         id=obpi_id,
         parent=obpi_id,
-        extra={
-            "obpi_id": obpi_id,
-            "req_id": req_id,
-            "operator": operator,
-            "rationale": rationale,
-            "acceptance_type": acceptance_type,
-        },
+        extra=extra,
     )
 
 
@@ -867,8 +883,13 @@ def composition_rendered_event(
     invariant_count: int,
     target: str,
     byte_count: int,
+    task_id: str | None = None,
 ) -> LedgerEvent:
-    """Create an event recording a successful constitutional invariant composition render."""
+    """Create an event recording a successful constitutional invariant composition render.
+
+    ``task_id`` is the roster channel (GHI #950); a render has no ADR or OBPI
+    scope, so its producer leaves it unset rather than guess a TASK.
+    """
     # `render_ts` carries the instant as DATA, so this one keeps its own read
     # rather than using `_timestamped_id`; the row's `ts` is still the writer's.
     timestamp = datetime.now(UTC).isoformat()
@@ -880,6 +901,7 @@ def composition_rendered_event(
             "target": target,
             "byte_count": byte_count,
             "render_ts": timestamp,
+            **({"task_id": task_id} if task_id else {}),
         },
     )
 
@@ -1212,8 +1234,13 @@ def intrinsic_complexity_attestation_event(
     metric: str,
     crossing_band: str,
     crossing_value: float,
+    task_id: str | None = None,
 ) -> LedgerEvent:
-    """Create an intrinsic-complexity-attestation event (OBPI-0.0.29-07)."""
+    """Create an intrinsic-complexity-attestation event (OBPI-0.0.29-07).
+
+    ``task_id`` is the roster channel (GHI #950); a ``file::qualname`` attestation
+    has no ADR or OBPI scope, so its producer leaves it unset.
+    """
     return LedgerEvent(
         event="intrinsic-complexity-attestation",
         id=f"{file_path}::{qualname}",
@@ -1226,6 +1253,7 @@ def intrinsic_complexity_attestation_event(
             "metric": metric,
             "crossing_band": crossing_band,
             "crossing_value": crossing_value,
+            **({"task_id": task_id} if task_id else {}),
         },
     )
 

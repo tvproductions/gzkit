@@ -27,6 +27,7 @@ from gzkit.commands.common import (
 from gzkit.commands.status import _adr_obpi_status_rows
 from gzkit.config import GzkitConfig
 from gzkit.ledger import Ledger, attested_event
+from gzkit.tasks import in_scope_task_id
 
 
 def _attest_verification_steps(
@@ -183,7 +184,15 @@ def attest(
         return
 
     # Record attestation
-    ledger.append(attested_event(adr_id, attest_status, attester, reason))
+    ledger.append(
+        attested_event(
+            adr_id,
+            attest_status,
+            attester,
+            reason,
+            task_id=in_scope_task_id(ledger.path, adr_id),
+        )
+    )
 
     today = date.today().isoformat()
     attestation_text = _closeout_form_attestation_text(attest_status, reason)

@@ -56,6 +56,7 @@ from gzkit.commands.status import (
     _collect_obpi_files_for_adr,
 )
 from gzkit.ledger import Ledger, resolve_adr_lane
+from gzkit.tasks import in_scope_task_id
 
 # ---------------------------------------------------------------------------
 # Ceremony context (shared across renderers)
@@ -478,7 +479,15 @@ def _record_attestation(
     config = ensure_initialized()
     ledger = Ledger(project_root / config.paths.ledger)
     status, reason = _classify_attestation_verdict(attestation)
-    ledger.append(attested_event(adr_id, status, get_git_user(), reason))
+    ledger.append(
+        attested_event(
+            adr_id,
+            status,
+            get_git_user(),
+            reason,
+            task_id=in_scope_task_id(ledger.path, adr_id),
+        )
+    )
 
     _commit_advance(
         project_root,

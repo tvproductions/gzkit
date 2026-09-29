@@ -23,6 +23,7 @@ from gzkit.commands.common import (
 from gzkit.fidelity import assert_fidelity_for_ceremony
 from gzkit.ledger import Ledger, audit_generated_event, audit_receipt_emitted_event
 from gzkit.lifecycle import InvalidTransitionError, LifecycleStateMachine
+from gzkit.tasks import in_scope_task_id
 from gzkit.templates import render_template
 
 
@@ -331,6 +332,7 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
             receipt_event="validated",
             attestor=auditor,
             evidence=receipt_evidence,
+            task_id=in_scope_task_id(ledger.path, adr_id),
         )
     )
 

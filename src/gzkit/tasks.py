@@ -261,6 +261,44 @@ def active_task_trailers(ledger_path: pathlib.Path, staged_paths: Iterable[str])
         path.replace("\\", "/").startswith(_TRAILER_REQUIRED_ROOTS) for path in staged_paths
     ):
         return []
+    return [f"Task: {task_id}" for task_id in in_progress_task_ids(ledger_path)]
+
+
+# Scope keys: an artifact id's semver and optional OBPI number, and the same two
+# parts of an OBPI-scoped TASK id. A slug TASK (direct fix) has neither.
+_SCOPE_ID_RE = re.compile(r"^(?:ADR|OBPI)-(\d+\.\d+\.\d+)(?:-(\d+)(?=-|$))?")
+_SCOPED_TASK_RE = re.compile(r"^TASK-(\d+\.\d+\.\d+)-(\d+)-\d+-\d+$")
+
+
+def in_scope_task_id(ledger_path: pathlib.Path, scope_id: str | None) -> str | None:
+    """Return the single in-progress TASK inside *scope_id*'s scope, or None (GHI #950).
+
+    *scope_id* is an ADR id (every OBPI under it is in scope) or an OBPI id (that
+    OBPI only). Zero or several matches return None: a worklog event is never
+    attributed to an unrelated TASK, and an ambiguous one is left for Signature (a)
+    of ``gz validate --task-envelope-coherence`` to report (operator ruling
+    2026-09-28, "Infer in scope; unset if ambiguous").
+    """
+    scope = _SCOPE_ID_RE.match(scope_id) if scope_id else None
+    if scope is None:
+        return None
+    semver, obpi_number = scope.groups()
+    matches: list[str] = []
+    for task_id in in_progress_task_ids(ledger_path):
+        task = _SCOPED_TASK_RE.match(task_id)
+        if task is None or task.group(1) != semver:
+            continue
+        if obpi_number is None or int(task.group(2)) == int(obpi_number):
+            matches.append(task_id)
+    return matches[0] if len(matches) == 1 else None
+
+
+def in_progress_task_ids(ledger_path: pathlib.Path) -> list[str]:
+    """Return every TASK started and not yet closed, in start order.
+
+    Returns ``[]`` for an absent ledger and skips malformed lines: callers include
+    a commit hook, where an exception blocks all work.
+    """
     try:
         raw = ledger_path.read_text(encoding="utf-8")
     except OSError:
@@ -294,7 +332,7 @@ def active_task_trailers(ledger_path: pathlib.Path, staged_paths: Iterable[str])
         elif kind in _TASK_CLOSING_EVENTS:
             closed.add(task_id)
 
-    return [f"Task: {task_id}" for task_id in dict.fromkeys(started) if task_id not in closed]
+    return [task_id for task_id in dict.fromkeys(started) if task_id not in closed]
 
 
 def parse_task_trailers(commit_message: str) -> list[TaskId]:

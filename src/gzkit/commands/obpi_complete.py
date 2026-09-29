@@ -75,6 +75,7 @@ from gzkit.ledger_events import (
     security_floor_overridden_event,
 )
 from gzkit.obpi_completion_fence import completion_blockers
+from gzkit.tasks import in_scope_task_id
 from gzkit.utils import capture_validation_anchor
 
 # ---------------------------------------------------------------------------
@@ -409,6 +410,7 @@ def _enforce_attestation_receipt_gate(
         receipt_event="meta-receipt-bind",
         attestor=attestor,
         evidence=evidence,
+        task_id=in_scope_task_id(ledger.path, obpi_id),
     )
     ledger.append(meta_event)
     resolved = evidence.get("resolved_receipt_ids", [])
@@ -591,6 +593,7 @@ def _apply_uncovered_waivers(
                     operator=attestor,
                     rationale=reason_map.get(req, ""),
                     acceptance_type=acceptance_type,
+                    task_id=in_scope_task_id(ledger.path, obpi_id),
                 )
             )
     return [g for g in gaps if g not in accepted_set]

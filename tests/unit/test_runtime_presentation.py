@@ -32,6 +32,8 @@ class _CaptureConsole:
 class _FakeLedger:
     def __init__(self) -> None:
         self.events: list[object] = []
+        # Ledger's own attribute; absent file, so no TASK is ever in scope.
+        self.path = Path("nonexistent-ledger.jsonl")
 
     def append(self, event: object) -> None:
         self.events.append(event)

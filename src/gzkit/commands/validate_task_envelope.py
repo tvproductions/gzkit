@@ -39,6 +39,12 @@ from gzkit.validate import ValidationError
 # GHI #869 fixed only the commit-locus half by keying a carve-out to ``commit``,
 # on the premise that the tool locus could attribute; that premise was false, so
 # the carve-out is gone and the type is out of the roster entirely.
+#
+# GHI #950 (2026-09-28): the criterion was also false for four more members, whose
+# constructors had no ``task_id`` parameter. All seven now carry the channel; the
+# ADR/OBPI-scoped producers fill it with ``gzkit.tasks.in_scope_task_id`` (the one
+# in-progress TASK in the event's scope, else unset), and the two unscoped ones
+# (``composition_rendered``, ``intrinsic-complexity-attestation``) leave it unset.
 _TASK_WORKLOG_TYPES: frozenset[str] = frozenset(
     {
         "attested",

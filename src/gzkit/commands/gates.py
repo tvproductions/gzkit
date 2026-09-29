@@ -21,6 +21,7 @@ from gzkit.config import GzkitConfig
 from gzkit.governance.deprecations import deprecation_notice
 from gzkit.governance.status_vocab import canonicalize_status
 from gzkit.ledger import Ledger, gate_checked_event
+from gzkit.tasks import in_scope_task_id
 from gzkit.validate import ValidationError
 
 Gate1Result = Literal["pass", "fail", "policy_breach"]
@@ -43,6 +44,7 @@ def _record_gate_result(
             command=command,
             returncode=returncode,
             evidence=evidence,
+            task_id=in_scope_task_id(ledger.path, adr_id),
         )
     )
 
