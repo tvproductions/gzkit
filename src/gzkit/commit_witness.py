@@ -24,6 +24,13 @@ asks the question per hunk.
 
 Pure deletions are not mutated: re-inserting removed code tests a different claim,
 and this witness makes none about it.
+
+A hunk is a textual unit, not a unit of behavior (GHI #1153). A fix that adds a
+helper and its call site, or changes a signature and its callers, has hunks whose
+lone revert raises instead of asserting, so the revert grades nothing. Such a hunk
+is re-mutated one guard statement at a time; a hunk holding no guard statement
+(a signature line, a constant) makes no guard claim and is reported as a
+declaration, outside the aggregate verdict.
 """
 
 from __future__ import annotations
@@ -36,10 +43,17 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from gzkit.mutation_witness import Mutation, _run, _test_observations, run_mutation_sweep
+from gzkit.mutation_witness import (
+    Mutation,
+    MutationWitness,
+    _run,
+    _test_observations,
+    run_mutation_sweep,
+)
 from gzkit.red_witness import _git, base_tree_worktree
 
 CommitVerdict = Literal["driven", "undriven", "no-tests", "no-production-hunks", "inconclusive"]
+WitnessUnit = Literal["hunk", "statement", "declaration"]
 
 _HUNK_HEADER = re.compile(r"^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@")
 #: Verbose unittest, so :func:`gzkit.mutation_witness._test_observations` can read IDs.
@@ -55,6 +69,11 @@ class HunkWitness(BaseModel):
     label: str = Field(..., description="path:start-end of the added lines")
     outcome: str = Field(..., description="killed | survived | invalid | inconclusive")
     reason: str = Field(default="", description="Why, when not a plain kill")
+    unit: WitnessUnit = Field(
+        default="hunk",
+        description="hunk | statement (one guard of an ungradable hunk) | declaration "
+        "(an ungradable hunk with no guard statement; outside the aggregate)",
+    )
 
 
 class CommitWitness(BaseModel):
@@ -188,8 +207,70 @@ def _behavior(source: str) -> str | None:
     return ast.dump(tree)
 
 
-def hunk_mutations(project_root: Path, commit: str, path: str) -> list[Mutation]:
-    """Build one revert-this-hunk mutation per hunk that added lines to ``path``."""
+def _splice(lines: list[str], start: int, end: int, replacement: str, label: str) -> Mutation:
+    """Replace ``lines[start:end]`` with ``replacement``, anchored on text unique in the file."""
+    lo, hi = _unique_window(lines, start, end)
+    find = "".join(lines[lo:hi])
+    replace = "".join(lines[lo:start]) + replacement + "".join(lines[end:hi])
+    return Mutation(find=find, replace=replace, label=label)
+
+
+#: Statement shapes that carry a guard: each is replaced with ``pass`` when its hunk
+#: cannot be graded whole (GHI #1153).
+_GUARD_STATEMENTS = (
+    ast.If,
+    ast.For,
+    ast.AsyncFor,
+    ast.While,
+    ast.With,
+    ast.AsyncWith,
+    ast.Try,
+    ast.TryStar,
+    ast.Match,
+    ast.Raise,
+    ast.Assert,
+    ast.Return,
+    ast.Continue,
+    ast.Break,
+)
+
+
+def statement_mutations(source: str, path: str, first: int, last: int) -> list[Mutation]:
+    """Build one ``pass``-for-this-guard mutation per guard statement starting in ``first..last``.
+
+    A statement that does not open its line (``if x: return``) is reached through the
+    statement that does. A mutant that does not parse, or changes no behavior, is not
+    built.
+    """
+    try:
+        tree = ast.parse(source)
+    except SyntaxError:
+        return []
+    lines = source.splitlines(keepends=True)
+    fingerprint = _behavior(source)
+    spans = sorted(
+        {
+            (node.lineno, node.end_lineno or node.lineno)
+            for node in ast.walk(tree)
+            if isinstance(node, _GUARD_STATEMENTS)
+            and first <= node.lineno <= last
+            and node.col_offset
+            == len(lines[node.lineno - 1]) - len(lines[node.lineno - 1].lstrip())
+        }
+    )
+    mutations = []
+    for start, end in spans:
+        line = lines[start - 1]
+        indent = line[: len(line) - len(line.lstrip())]
+        mutation = _splice(lines, start - 1, end, f"{indent}pass\n", f"{path}:{start}-{end}")
+        behavior = _behavior(source.replace(mutation.find, mutation.replace, 1))
+        if behavior is not None and behavior != fingerprint:
+            mutations.append(mutation)
+    return mutations
+
+
+def _hunk_units(project_root: Path, commit: str, path: str) -> list[tuple[Mutation, int, int]]:
+    """Return each revert-this-hunk mutation with the 1-based added-line range it reverts."""
     new_src = _git(["show", f"{commit}:{path}"], project_root)
     old_src = _git(["show", f"{commit}^:{path}"], project_root)
     if new_src.returncode != 0:
@@ -197,7 +278,7 @@ def hunk_mutations(project_root: Path, commit: str, path: str) -> list[Mutation]
     new_lines = new_src.stdout.splitlines(keepends=True)
     old_lines = old_src.stdout.splitlines(keepends=True) if old_src.returncode == 0 else []
     diff = _git(["diff", "-U0", "--no-renames", f"{commit}^", commit, "--", path], project_root)
-    mutations: list[Mutation] = []
+    units: list[tuple[Mutation, int, int]] = []
     for line in diff.stdout.splitlines():
         match = _HUNK_HEADER.match(line)
         if not match:
@@ -206,20 +287,45 @@ def hunk_mutations(project_root: Path, commit: str, path: str) -> list[Mutation]
         n_start, n_len = int(match.group(3)), int(match.group(4) or 1)
         if n_len == 0:
             continue  # pure deletion: not mutated (see module docstring)
-        n0 = n_start - 1
+        n0, n_end = n_start - 1, n_start + n_len - 1
         old_block = old_lines[o_start - 1 : o_start - 1 + o_len] if o_len else []
-        lo, hi = _unique_window(new_lines, n0, n0 + n_len)
-        find = "".join(new_lines[lo:hi])
-        tail = "".join(new_lines[n0 + n_len : hi])
-        replace = "".join(new_lines[lo:n0]) + "".join(old_block) + tail
+        mutation = _splice(new_lines, n0, n_end, "".join(old_block), f"{path}:{n_start}-{n_end}")
         original = "".join(new_lines)
         fingerprint = _behavior(original)
-        if fingerprint is not None and _behavior(original.replace(find, replace, 1)) == fingerprint:
+        reverted = original.replace(mutation.find, mutation.replace, 1)
+        if fingerprint is not None and _behavior(reverted) == fingerprint:
             continue  # comment/docstring/blank-only hunk: reverting it changes no behavior
-        mutations.append(
-            Mutation(find=find, replace=replace, label=f"{path}:{n_start}-{n_start + n_len - 1}")
+        units.append((mutation, n_start, n_end))
+    return units
+
+
+def _regrade(
+    worktree: Path, path: str, hunk: MutationWitness, span: tuple[int, int], command: list[str]
+) -> list[HunkWitness]:
+    """Re-mutate an ungradable hunk one guard statement at a time (GHI #1153)."""
+    source = worktree / path
+    statements = [
+        m.model_copy(update={"expected_tests": hunk.executed_tests or []})
+        for m in statement_mutations(source.read_text(encoding="utf-8"), path, *span)
+    ]
+    if not statements:
+        reason = f"no guard statement to grade; the hunk's revert: {hunk.reason}"
+        return [
+            HunkWitness(
+                path=path, label=hunk.label, outcome=hunk.outcome, reason=reason, unit="declaration"
+            )
+        ]
+    sweep = run_mutation_sweep(worktree, source, statements, command)
+    return [
+        HunkWitness(
+            path=path,
+            label=w.label,
+            outcome=w.outcome,
+            reason=f"guard in {hunk.label}" + (f": {w.reason}" if w.reason else ""),
+            unit="statement",
         )
-    return mutations
+        for w in sweep.witnesses
+    ]
 
 
 def _sweep_hunks(
@@ -233,23 +339,28 @@ def _sweep_hunks(
         executed, _, _ = _test_observations((baseline.stdout or "") + (baseline.stderr or ""))
         expected = sorted(executed)
         for path in production:
-            mutations = [
-                m.model_copy(update={"expected_tests": expected})
-                for m in hunk_mutations(project_root, sha, path)
-            ]
-            if not mutations:
+            units = _hunk_units(project_root, sha, path)
+            if not units:
                 continue
+            mutations = [m.model_copy(update={"expected_tests": expected}) for m, _, _ in units]
             sweep = run_mutation_sweep(worktree, worktree / path, mutations, command)
-            hunks.extend(
-                HunkWitness(path=path, label=w.label, outcome=w.outcome, reason=w.reason)
-                for w in sweep.witnesses
-            )
+            for (_, first, last), w in zip(units, sweep.witnesses, strict=True):
+                if sweep.baseline_green and w.outcome in ("invalid", "inconclusive"):
+                    graded = w.model_copy(update={"executed_tests": expected})
+                    hunks.extend(_regrade(worktree, path, graded, (first, last), command))
+                else:
+                    hunks.append(
+                        HunkWitness(path=path, label=w.label, outcome=w.outcome, reason=w.reason)
+                    )
     return hunks
 
 
 def _aggregate(hunks: list[HunkWitness]) -> CommitVerdict:
-    """Any survivor is undriven; only an all-killed sweep is driven."""
-    outcomes = {h.outcome for h in hunks}
+    """Any survivor is undriven; only an all-killed sweep is driven.
+
+    A declaration row makes no guard claim, so it does not enter the verdict.
+    """
+    outcomes = {h.outcome for h in hunks if h.unit != "declaration"}
     if "survived" in outcomes:
         return "undriven"
     return "driven" if outcomes == {"killed"} else "inconclusive"

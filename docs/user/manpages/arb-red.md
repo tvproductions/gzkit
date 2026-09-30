@@ -65,12 +65,22 @@ change a function's argument or return annotations in a module with
 may read its signature. Class-field annotations (which Pydantic reads) and
 annotations in modules that evaluate them at definition time are still mutated.
 
+A hunk is text, not a unit of behavior, so a fix whose hunks depend on each other
+(a helper and its call site, a signature and its callers) has hunks whose lone
+revert raises instead of asserting (GHI #1153). When a hunk's revert cannot be
+graded on a green baseline, each guard statement starting in it (`if`, `for`,
+`while`, `with`, `try`, `match`, `raise`, `assert`, `return`, `continue`,
+`break`) is replaced with `pass`, one at a time, and graded as its own row
+(`unit: statement`, reason `guard in <hunk>`). A hunk holding no guard statement,
+such as a signature line or a constant, makes no guard claim: it is listed with
+`unit: declaration` and stays outside the verdict.
+
 | Verdict | Meaning | Exit |
 |---------|---------|------|
-| `driven` | Every hunk was `killed`: a test in the commit fails without it | 0 |
-| `undriven` | A hunk `survived`: reverting it left the commit's tests passing | 1 |
+| `driven` | Every hunk or guard statement was `killed`: a test in the commit fails without it | 0 |
+| `undriven` | A hunk or guard statement `survived`: reverting it left the commit's tests passing | 1 |
 | `no-tests` | The commit changes production code and no test module | 1 |
-| `inconclusive` | A hunk could not be graded (baseline not green, or the revert raised an error rather than an assertion) — a claim about the run, not the tests | 0 |
+| `inconclusive` | A hunk or guard statement could not be graded (baseline not green, or the revert raised an error rather than an assertion) — a claim about the run, not the tests | 0 |
 | `no-production-hunks` | Nothing behavioral to witness | 0 |
 
 The declared test set is the commit's own test modules, deliberately: a fix that

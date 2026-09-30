@@ -19,7 +19,13 @@ from unittest import mock
 from gzkit.arb.validator import validate_receipts
 from gzkit.cli.main import _build_parser
 from gzkit.commands.arb import arb_red_cmd
-from gzkit.commit_witness import CommitWitness, HunkWitness, _behavior, run_commit_witness
+from gzkit.commit_witness import (
+    CommitWitness,
+    HunkWitness,
+    _behavior,
+    run_commit_witness,
+    statement_mutations,
+)
 from gzkit.ledger import Ledger
 from tests.commands.common import _isolated_git_env
 
@@ -33,8 +39,8 @@ _BASE_TEST = (
 )
 
 
-class TestCommitWitness(unittest.TestCase):
-    """Verdicts for the four commit shapes the direct-fix route produces."""
+class _CommitRepo(unittest.TestCase):
+    """A throwaway repository whose last commit is the shape under test."""
 
     def setUp(self):
         self._tmp = tempfile.TemporaryDirectory()
@@ -72,6 +78,10 @@ class TestCommitWitness(unittest.TestCase):
         path = self.root / "tests" / "test_mod.py"
         path.write_text(path.read_text(encoding="utf-8") + body, encoding="utf-8")
 
+
+class TestCommitWitness(_CommitRepo):
+    """Verdicts for the four commit shapes the direct-fix route produces."""
+
     def test_a_guard_its_commit_tests_is_driven(self):
         """Reverting the guard fails the commit's own assertion: every hunk is killed."""
         (self.root / "pkg" / "mod.py").write_text(_GUARDED, encoding="utf-8")
@@ -101,6 +111,118 @@ class TestCommitWitness(unittest.TestCase):
         self._add_test("\n    def test_two(self):\n        self.assertEqual(clamp(2), 2)\n")
         result = run_commit_witness(self.root, self._commit("comment + test"), runner=_RUNNER)
         self.assertEqual(result.verdict, "no-production-hunks", result)
+
+
+_HELPER = (
+    "def _floor(value):\n    if value < 0:\n        return 0\n    return value\n\n\n"
+    "def clamp(x):\n    return _floor(x)\n"
+)
+_CALLER_BASE = (
+    'def clamp(x):\n    """Clamp."""\n    return x\n\n\ndef use(x):\n    return clamp(x)\n'
+)
+_CALLER_NEW = (
+    'def clamp(x, floor):\n    """Clamp."""\n    if x < floor:\n        return floor\n'
+    "    return x\n\n\ndef use(x):\n    return clamp(x, 0)\n"
+)
+
+
+class TestDependentHunks(_CommitRepo):
+    """GHI #1153: a fix whose hunks depend on each other still gets its guards graded.
+
+    Reverting a new helper's definition alone, or a signature without its callers,
+    raises rather than asserts. The witness falls back to one guard statement at a
+    time, and a hunk with no guard statement is a declaration, not an ungraded guard.
+    """
+
+    def _use_test(self, arg: int, expected: int) -> None:
+        """Replace the module's tests: the new signature breaks the base ``clamp(1)``."""
+        (self.root / "tests" / "test_mod.py").write_text(
+            "import unittest\n\nfrom pkg.mod import use\n\n\nclass T(unittest.TestCase):\n"
+            f"    def test_use(self):\n        self.assertEqual(use({arg}), {expected})\n",
+            encoding="utf-8",
+        )
+
+    def test_a_helper_its_test_drives_is_driven(self):
+        (self.root / "pkg" / "mod.py").write_text(_HELPER, encoding="utf-8")
+        self._add_test("\n    def test_negative(self):\n        self.assertEqual(clamp(-1), 0)\n")
+        result = run_commit_witness(self.root, self._commit("helper + call"), runner=_RUNNER)
+        self.assertEqual(result.verdict, "driven", result)
+        self.assertIn("statement", {h.unit for h in result.hunks})
+
+    def test_a_helper_guard_no_test_drives_is_undriven(self):
+        (self.root / "pkg" / "mod.py").write_text(_HELPER, encoding="utf-8")
+        self._add_test("\n    def test_two(self):\n        self.assertEqual(clamp(2), 2)\n")
+        result = run_commit_witness(
+            self.root, self._commit("helper, no guard test"), runner=_RUNNER
+        )
+        self.assertEqual(result.verdict, "undriven", result)
+        self.assertIn("statement", {h.unit for h in result.undriven}, result)
+
+    def _signature_change(self) -> None:
+        (self.root / "pkg" / "mod.py").write_text(_CALLER_BASE, encoding="utf-8")
+        self._commit("caller base")
+        (self.root / "pkg" / "mod.py").write_text(_CALLER_NEW, encoding="utf-8")
+
+    def test_a_signature_change_its_test_drives_is_driven(self):
+        self._signature_change()
+        self._use_test(-1, 0)
+        result = run_commit_witness(self.root, self._commit("signature + caller"), runner=_RUNNER)
+        self.assertEqual(result.verdict, "driven", result)
+        self.assertIn("declaration", {h.unit for h in result.hunks})
+
+    def test_a_signature_change_no_test_drives_is_undriven(self):
+        self._signature_change()
+        self._use_test(2, 2)
+        result = run_commit_witness(self.root, self._commit("signature, no test"), runner=_RUNNER)
+        self.assertEqual(result.verdict, "undriven", result)
+
+    def test_a_red_baseline_stays_inconclusive(self):
+        """A run that cannot be graded is not rescued by statement fallback."""
+        (self.root / "pkg" / "mod.py").write_text(_HELPER, encoding="utf-8")
+        self._add_test("\n    def test_wrong(self):\n        self.assertEqual(clamp(-1), 5)\n")
+        result = run_commit_witness(self.root, self._commit("red baseline"), runner=_RUNNER)
+        self.assertEqual(result.verdict, "inconclusive", result)
+        self.assertEqual({h.unit for h in result.hunks}, {"hunk"})
+
+
+class TestStatementMutations(unittest.TestCase):
+    """GHI #1153: which guards the statement unit builds, and that each is a valid program."""
+
+    _SOURCE = (
+        "def f(x):\n"
+        "    if x < 0: return 0\n"
+        "    if x > 9:\n        return 9\n    elif x == 5:\n        raise ValueError\n"
+        "    return x\n"
+    )
+
+    def _mutants(self, first: int, last: int) -> dict[str, str]:
+        return {
+            m.label: self._SOURCE.replace(m.find, m.replace, 1)
+            for m in statement_mutations(self._SOURCE, "m.py", first, last)
+        }
+
+    def test_each_guard_in_range_is_one_parseable_mutant(self):
+        mutants = self._mutants(1, 8)
+        self.assertEqual(
+            sorted(mutants),
+            ["m.py:2-2", "m.py:3-6", "m.py:4-4", "m.py:5-6", "m.py:6-6", "m.py:7-7"],
+        )
+        for label, source in mutants.items():
+            with self.subTest(label=label):
+                self.assertIsNotNone(_behavior(source))
+
+    def test_an_elif_mutant_removes_only_its_branch(self):
+        mutants = self._mutants(5, 5)
+        self.assertEqual(list(mutants), ["m.py:5-6"])
+        namespace: dict = {}
+        exec(compile(mutants["m.py:5-6"], "m.py", "exec"), namespace)  # noqa: S102
+        self.assertEqual((namespace["f"](5), namespace["f"](10)), (5, 9))
+
+    def test_only_guards_starting_in_range_are_mutated(self):
+        self.assertEqual(sorted(self._mutants(4, 4)), ["m.py:4-4"])
+
+    def test_source_that_does_not_parse_builds_no_mutant(self):
+        self.assertEqual(statement_mutations("def f(:\n", "m.py", 1, 1), [])
 
 
 class TestAnnotationOnlyHunks(unittest.TestCase):
