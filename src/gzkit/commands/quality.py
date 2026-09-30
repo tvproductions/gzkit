@@ -1029,17 +1029,25 @@ def _record_pass(project_root: pathlib.Path, scope: str) -> None:
 def _unfingerprinted_findings(project_root: pathlib.Path) -> list:
     """Return findings from gate steps whose input the tree fingerprint does not hash.
 
-    The trailer checks read the commits a push publishes. Committing leaves the
-    staged tree unchanged, so a matching fingerprint says nothing about them, and
-    a trailer-less commit made after the verifying run reached the skip unread
-    (GHI #1017).
+    The trailer checks read the commits a push publishes, and the task-envelope
+    step reads every commit's trailers as one of its four channels. Committing
+    leaves the staged tree unchanged, so a matching fingerprint says nothing about
+    them, and a trailer-less commit made after the verifying run reached the skip
+    unread (GHI #1017).
     """
     from gzkit.commands.validate_commit_trailers import (  # noqa: PLC0415
         _validate_commit_trailers,
         _validate_eval_feedback_trailer,
     )
+    from gzkit.commands.validate_task_envelope import (  # noqa: PLC0415
+        _validate_task_envelope_coherence,
+    )
 
-    return _validate_commit_trailers(project_root) + _validate_eval_feedback_trailer(project_root)
+    return (
+        _validate_commit_trailers(project_root)
+        + _validate_eval_feedback_trailer(project_root)
+        + _validate_task_envelope_coherence(project_root)
+    )
 
 
 def _report_reuse_skip(project_root: pathlib.Path, *, scope: str, as_json: bool) -> bool:

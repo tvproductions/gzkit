@@ -24,6 +24,7 @@ from gzkit.commands.validate_commit_trailers import (
     _validate_commit_trailers,
     _validate_eval_feedback_trailer,
 )
+from gzkit.validate import ValidationError
 from tests.commands.common import _init_git_repo, _isolated_git_env
 
 
@@ -145,7 +146,7 @@ class ReuseSkipDoesNotBypassTheTrailerWitness(unittest.TestCase):
     def _verify_then_commit(self, message: str) -> bool:
         path = self.root / "tests" / "test_x.py"
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text("X = 1\n", encoding="utf-8")
+        path.write_text(f"X = {message.splitlines()[0]!r}\n", encoding="utf-8")
         _git(self.root, "add", "-A")
         record_verified(self.root, staged_fingerprint(self.root), scope="change")
         _git(self.root, "commit", "-m", message)
@@ -158,6 +159,21 @@ class ReuseSkipDoesNotBypassTheTrailerWitness(unittest.TestCase):
     def test_a_conforming_commit_over_a_verified_tree_still_skips(self) -> None:
         """Control: the skip still saves the rerun when the pushed commits comply."""
         self.assertTrue(self._verify_then_commit("test: x\n\nTask: TASK-x"))
+
+    def test_every_step_reading_commit_messages_can_refuse_the_skip(self) -> None:
+        """Each gate step whose verdict reads commit messages is consulted.
+
+        The eval-feedback trailer and the task-envelope trailer channel read
+        commits too; a finding from either on a compliant `Task:` commit must
+        still send the push through the gate.
+        """
+        finding = [ValidationError(type="x", artifact="abc1234", message="finding")]
+        for target in (
+            "gzkit.commands.validate_commit_trailers._validate_eval_feedback_trailer",
+            "gzkit.commands.validate_task_envelope._validate_task_envelope_coherence",
+        ):
+            with self.subTest(step=target), patch(target, return_value=finding):
+                self.assertFalse(self._verify_then_commit(f"test: {target}\n\nTask: TASK-x"))
 
 
 class RefusalRemedyRendering(unittest.TestCase):
