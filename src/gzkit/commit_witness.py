@@ -342,6 +342,10 @@ def _sweep_hunks(
             units = _hunk_units(project_root, sha, path)
             if not units:
                 continue
+            # The mutations are built from `git show` text, which has LF endings; a CRLF
+            # checkout (Windows, no `eol=lf`) never contains it, so sweep that text instead.
+            blob = _git(["show", f"{sha}:{path}"], project_root)
+            (worktree / path).write_bytes(blob.stdout.encode("utf-8"))
             mutations = [m.model_copy(update={"expected_tests": expected}) for m, _, _ in units]
             sweep = run_mutation_sweep(worktree, worktree / path, mutations, command)
             for (_, first, last), w in zip(units, sweep.witnesses, strict=True):

@@ -98,6 +98,14 @@ class TestCommitWitness(_CommitRepo):
         self.assertEqual(result.verdict, "undriven", result)
         self.assertEqual([h.path for h in result.undriven], ["pkg/mod.py"])
 
+    def test_a_crlf_checkout_is_graded_like_any_other(self):
+        """Windows checks out CRLF unless the repo pins ``eol=lf``; the verdict must not care."""
+        (self.root / ".gitattributes").write_text("*.py text eol=crlf\n", encoding="utf-8")
+        (self.root / "pkg" / "mod.py").write_text(_GUARDED, encoding="utf-8")
+        self._add_test("\n    def test_negative(self):\n        self.assertEqual(clamp(-1), 0)\n")
+        result = run_commit_witness(self.root, self._commit("guard + test, crlf"), runner=_RUNNER)
+        self.assertEqual(result.verdict, "driven", result)
+
     def test_a_guard_with_no_test_module_is_reported_not_graded(self):
         """No test module in the commit: nothing in it can fail, so no hunk is graded."""
         (self.root / "pkg" / "mod.py").write_text(_GUARDED, encoding="utf-8")
