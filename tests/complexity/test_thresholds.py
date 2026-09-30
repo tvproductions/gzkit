@@ -37,6 +37,7 @@ import unittest
 from pathlib import Path
 from typing import Any
 
+from jsonschema.validators import validator_for
 from pydantic import ValidationError
 
 from gzkit.complexity.thresholds import (
@@ -387,24 +388,26 @@ class LoaderIntegration(unittest.TestCase):
 class JsonSchemaMirror(unittest.TestCase):
     """Pin the JSON Schema mirror parity with the Pydantic model."""
 
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.schema = json.loads(_SCHEMA_PATH.read_text(encoding="utf-8"))
+        cls.table = json.loads(_REAL_DATA_PATH.read_text(encoding="utf-8"))
+
     @covers("REQ-0.0.28-02-08")
-    def test_schema_file_exists_and_loads(self) -> None:
-        self.assertTrue(_SCHEMA_PATH.is_file(), f"missing JSON schema: {_SCHEMA_PATH}")
-        schema = json.loads(_SCHEMA_PATH.read_text(encoding="utf-8"))
-        self.assertEqual(schema.get("type"), "object")
-        self.assertFalse(schema.get("additionalProperties", True))
+    def test_schema_admits_the_real_table_and_refuses_an_unknown_key(self) -> None:
+        validator = validator_for(self.schema)(self.schema)
+        self.assertEqual([e.message for e in validator.iter_errors(self.table)], [])
+        self.assertFalse(validator.is_valid({**self.table, "unexpected": 1}))
 
     @covers("REQ-0.0.28-02-08")
     def test_schema_enforces_trigger_semantic_enum(self) -> None:
-        schema = json.loads(_SCHEMA_PATH.read_text(encoding="utf-8"))
-        bands_schema = schema["properties"]["bands"]["items"]
+        bands_schema = self.schema["properties"]["bands"]["items"]
         trigger_schema = bands_schema["properties"]["trigger_semantic"]
         self.assertEqual(set(trigger_schema["enum"]), set(TRIGGER_VOCABULARY))
 
     @covers("REQ-0.0.28-02-08")
     def test_schema_enforces_canonical_percentile_enum(self) -> None:
-        schema = json.loads(_SCHEMA_PATH.read_text(encoding="utf-8"))
-        bands_schema = schema["properties"]["bands"]["items"]
+        bands_schema = self.schema["properties"]["bands"]["items"]
         percentile_schema = bands_schema["properties"]["corpus_percentile"]
         self.assertEqual(set(percentile_schema["enum"]), set(CANONICAL_PERCENTILES))
 

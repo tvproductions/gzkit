@@ -7,6 +7,10 @@
   "additionalProperties": false,
   "required": ["corpus_revision", "bands", "citation"],
   "properties": {
+    "$schema": {
+      "type": "string",
+      "description": "Editor pointer to this schema; load_threshold_table drops $-prefixed keys before validation."
+    },
     "corpus_revision": {
       "type": "integer",
       "minimum": 1,
