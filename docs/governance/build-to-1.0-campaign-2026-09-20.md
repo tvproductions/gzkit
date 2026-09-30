@@ -645,10 +645,13 @@ and drawn when the operator initiates it. Booked slots keep their owners. Defect
 fixed immediately under `AGENTS.md` § PRIME DIRECTIVE, and a GHI still authorizes direct repair —
 this exception is for residual that genuinely needs an ADR, not a route around direct fixes.
 
-**Next concrete action (operator-initiated):** re-home the two `handoff_api.py` findings
-(`governance-resume-contract-not-mechanized`, `governance-time-only-staleness`,
-`.gzkit/audits/tech-debt/2026-08-23/findings.json`) into a correction ADR at the next unallocated
-feature semver, parented on `ADR-0.0.65-handoff-system-consolidation`.
+**Next concrete action (operator-initiated):** ~~re-home the two `handoff_api.py` findings into a
+correction ADR at the next unallocated feature semver~~ **Done 2026-09-29 as a pool ADR**:
+[`ADR-pool.handoff-resume-assessment`](../design/adr/pool/ADR-pool.handoff-resume-assessment.md),
+parented on `ADR-0.0.65-handoff-system-consolidation`. Operator, verbatim: *"this could ONLY be a
+pool adr at this point"*. Freed feature slots cannot be reallocated safely yet (demoted ids still
+resolve through the rename map), so the semver is assigned at promotion, where the correction
+exemption above still applies.
 
 <a id="amendments-2026-09-27-3"></a>
 

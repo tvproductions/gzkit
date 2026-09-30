@@ -1,0 +1,19 @@
+{
+  "id": "ADR-pool.handoff-resume-assessment",
+  "title": "Handoff Resume Assessment",
+  "semver": "pool",
+  "lane": "heavy",
+  "parent": "ADR-0.0.65-handoff-system-consolidation",
+  "intent": "gz handoff resume judges a handoff by age alone: it never validates the loaded document, never reconciles branch, commits or cited files, cannot represent 'could not verify', and the skill documents a verify_context() that does not exist. ADR-0.0.65 (Validated) declared the resume contract and staleness gate useful; the shipped surface does not fulfil that intent, so this is a correction re-homed from a Validated ADR.",
+  "decision": "resume_handoff produces one advisory resume assessment: re-validate the document; reconcile branch, commits since recorded HEAD and cited files; classify each factor verified / drifted / UNVERIFIED; freshness follows the worst verified factor with age as one factor. Gates nothing. verify_context is built or struck from the skill.",
+  "alternatives": "1. Leave verification to the agent (rejected: discipline without mechanism). 2. Fail closed on drift (rejected: re-arms the retired resume gate). 3. Add UNVERIFIED only (rejected: a label with no evidence).",
+  "positive_consequences": "Checked facts instead of an age bucket; 'could not verify' representable; the skill documents only existing code.",
+  "negative_consequences": "StalenessLevel and ResumeResult change shape for all consumers; resume reads git state and is slower; pre-existing handoffs report commit drift UNVERIFIED.",
+  "checklist": "1. Validate on resume. 2. Record HEAD at create; reconcile branch/commits/cited files. 3. Add UNVERIFIED; worst-factor freshness. 4. Render in gz handoff resume and orientation. 5. Align skill, manpages, runbook; build or strike verify_context.",
+  "pre_mortem": "UNVERIFIED everywhere from baseline-less handoffs trains agents to ignore it; mitigate with distinct wording for missing baseline vs failed check.",
+  "wwhtbt": "Git state is readable at resume time; where it is not the factor is UNVERIFIED, never assumed clean.",
+  "reversibility": "Two-way door: advisory output, additive fields.",
+  "operator_2am": "A resumed handoff says Fresh but the branch moved: the assessment names the drifted factor and the command that shows it.",
+  "scope_minimization": "Checklist 1-3 without orientation rendering.",
+  "downstream_adrs": "Possible unification of orientation, gz airlock in and resume on one drift model."
+}
