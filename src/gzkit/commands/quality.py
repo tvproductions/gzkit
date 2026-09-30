@@ -1026,11 +1026,29 @@ def _record_pass(project_root: pathlib.Path, scope: str) -> None:
     record_verified(project_root, staged_fingerprint(project_root), scope=scope)
 
 
+def _unfingerprinted_findings(project_root: pathlib.Path) -> list:
+    """Return findings from gate steps whose input the tree fingerprint does not hash.
+
+    The trailer checks read the commits a push publishes. Committing leaves the
+    staged tree unchanged, so a matching fingerprint says nothing about them, and
+    a trailer-less commit made after the verifying run reached the skip unread
+    (GHI #1017).
+    """
+    from gzkit.commands.validate_commit_trailers import (  # noqa: PLC0415
+        _validate_commit_trailers,
+        _validate_eval_feedback_trailer,
+    )
+
+    return _validate_commit_trailers(project_root) + _validate_eval_feedback_trailer(project_root)
+
+
 def _report_reuse_skip(project_root: pathlib.Path, *, scope: str, as_json: bool) -> bool:
     """Announce and return True when this exact tree already passed a gate covering *scope*.
 
     A ``full`` request accepts only a full pass: a ``change`` pass never ran
-    ``Behave`` (GHI #1088).
+    ``Behave`` (GHI #1088). A matching tree is also refused when a step whose
+    input the fingerprint does not hash has findings, so the gate runs and reports
+    them (GHI #1017).
     """
     import json  # noqa: PLC0415
     import sys  # noqa: PLC0415
@@ -1039,7 +1057,7 @@ def _report_reuse_skip(project_root: pathlib.Path, *, scope: str, as_json: bool)
 
     accept = frozenset({"full"}) if scope == "full" else RECORDABLE_SCOPES
     verified = already_verified(project_root, accept=accept)
-    if verified is None:
+    if verified is None or _unfingerprinted_findings(project_root):
         return False
     if as_json:
         sys.stdout.write(
@@ -1181,8 +1199,10 @@ def check(
     ``reuse_verified`` skips the run when this exact tree CONTENT already passed a
     check covering the requested scope (GHI #835). A fix used to pay the gate
     twice: once when the agent verified, then again at ``git push`` over a tree
-    that had not changed. The second run cannot reach a different verdict. The
-    pre-push hook passes it, and runs the default scope when nothing is reusable.
+    that had not changed. The second run cannot reach a different verdict on a
+    step that reads only the tree; the trailer steps read the pushed commits, so
+    their findings refuse the skip (GHI #1017). The pre-push hook passes it, and
+    runs the default scope when nothing is reusable.
     """
     import json
     import sys

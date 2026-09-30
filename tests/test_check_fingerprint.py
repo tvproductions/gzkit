@@ -3,7 +3,9 @@
 `gz check` costs ~148s (measured 2026-08-22: Test 44s, Behave 33s, ~46 validator
 subprocesses ~15s, docs build 4s). A fix paid it TWICE -- once when the agent
 verified, then again when `git push` fired the pre-push gate over a tree that had
-not changed since. The second run cannot reach a different verdict.
+not changed since. On a step that reads only the tree, the second run cannot
+reach a different verdict; the trailer steps are consulted before the skip
+(tests/governance/test_commit_trailers_pushed_range.py, GHI #1017).
 
 The fingerprint is the tree's CONTENT, deliberately not HEAD: a commit is created
 between the two runs, so a HEAD-keyed check would never fire the skip. These

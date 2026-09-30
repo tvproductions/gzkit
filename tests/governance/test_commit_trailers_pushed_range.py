@@ -10,12 +10,16 @@ bare remote so ``@{upstream}`` exists, then build the unpushed range.
 
 from __future__ import annotations
 
+import contextlib
+import io
 import subprocess
 import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from gzkit.check_fingerprint import record_verified, staged_fingerprint
+from gzkit.commands.quality import _report_reuse_skip
 from gzkit.commands.validate_commit_trailers import (
     _validate_commit_trailers,
     _validate_eval_feedback_trailer,
@@ -115,6 +119,45 @@ class NoUpstreamTests(unittest.TestCase):
             head = _commit(root, "src/a.py", "feat: a")
             errors = _validate_commit_trailers(root)
             self.assertEqual([e.artifact for e in errors], [head])
+
+
+class ReuseSkipDoesNotBypassTheTrailerWitness(unittest.TestCase):
+    """The pre-push reuse skip cannot certify the commits it never hashed (GHI #1017).
+
+    `gz check --reuse-verified` skips the gate when the staged tree matches the last
+    recorded pass. Committing does not change that tree, so `git add -A && gz check`,
+    then a trailer-less commit, then `git push` reached the skip with the offender
+    unread -- 57a94bd58 reached origin that way.
+    """
+
+    def setUp(self) -> None:
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        base = Path(tmp.name)
+        remote = base / "remote.git"
+        _git(base, "init", "--bare", "-b", "main", str(remote))
+        self.root = base / "work"
+        self.root.mkdir()
+        _init_git_repo(self.root)
+        _git(self.root, "remote", "add", "origin", str(remote))
+        _git(self.root, "push", "-u", "origin", "main")
+
+    def _verify_then_commit(self, message: str) -> bool:
+        path = self.root / "tests" / "test_x.py"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("X = 1\n", encoding="utf-8")
+        _git(self.root, "add", "-A")
+        record_verified(self.root, staged_fingerprint(self.root), scope="change")
+        _git(self.root, "commit", "-m", message)
+        with contextlib.redirect_stdout(io.StringIO()):
+            return _report_reuse_skip(self.root, scope="change", as_json=True)
+
+    def test_a_trailerless_code_commit_refuses_the_skip(self) -> None:
+        self.assertFalse(self._verify_then_commit("test: x"))
+
+    def test_a_conforming_commit_over_a_verified_tree_still_skips(self) -> None:
+        """Control: the skip still saves the rerun when the pushed commits comply."""
+        self.assertTrue(self._verify_then_commit("test: x\n\nTask: TASK-x"))
 
 
 class RefusalRemedyRendering(unittest.TestCase):

@@ -57,7 +57,10 @@ requested scope (GHI #835). A default-scope or `--full` pass satisfies the defau
 scope; only a `--full` pass satisfies `--full --reuse-verified`, because a
 default-scope pass never ran `Behave`. Without it a fix pays the gate twice: once when it is verified,
 then again when `git push` fires the pre-push gate over a tree that has not
-changed. The second run cannot reach a different verdict.
+changed. For every step that reads only the tree, the second run cannot reach a
+different verdict. The commit-trailer checks read the commits being pushed, which
+the fingerprint does not hash, so a matching tree whose pushed commits lack a
+required trailer is not skipped: the gate runs and reports them (GHI #1017).
 
 **Use it as: `git add -A && uv run gz check && git commit && git push`.** The
 staging step is not incidental — it is what makes the skip possible.

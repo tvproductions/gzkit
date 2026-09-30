@@ -144,7 +144,9 @@ repos:
         # --reuse-verified skips the run when this exact tree CONTENT already
         # passed a check covering that scope (GHI #835). A fix used to pay ~148s twice: once
         # when it was verified, then again here over an unchanged tree, where
-        # the second run cannot reach a different verdict. Content-addressed,
+        # the second run cannot reach a different verdict on a tree-only step;
+        # the trailer steps read the pushed commits and refuse the skip when
+        # they have findings (GHI #1017). Content-addressed,
         # so the intervening commit does not defeat it and any edit does; and
         # fail-open, so an unreadable repo runs the gate rather than skipping.
         entry: uv run gz check --reuse-verified

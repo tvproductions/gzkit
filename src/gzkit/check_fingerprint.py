@@ -2,8 +2,10 @@
 
 ``gz check`` costs ~148s, and a fix pays it TWICE: once when the agent verifies,
 then again when ``git push`` fires the pre-push gate over a tree that has not
-changed since. The second run cannot reach a different verdict — same content,
-same commands — so it is pure latency on every commit.
+changed since. For a step that reads only the tree, the second run cannot reach a
+different verdict — same content, same commands — so it is pure latency on every
+commit. Steps that read the pushed commits are consulted before the skip
+(``quality._unfingerprinted_findings``, GHI #1017).
 
 The fingerprint is the INDEX tree — deliberately neither ``HEAD`` nor the
 working tree, and both alternatives were tried:
