@@ -275,6 +275,18 @@ class TestAnnotationOnlyHunks(unittest.TestCase):
         )
         self.assertTrue(self._neutral(before, after))
 
+    def test_an_attribute_decorator_is_named_by_its_attribute(self):
+        """``@functools.cache`` is the annotation-blind ``cache``, not an unknown decorator."""
+        before = self._FUTURE + "@functools.cache\ndef f(x):\n    return x\n"
+        after = self._FUTURE + "@functools.cache\ndef f(x: int) -> int:\n    return x\n"
+        self.assertTrue(self._neutral(before, after))
+
+    def test_star_argument_annotations_are_not_behavior(self):
+        """``*args`` and ``**kwargs`` annotations are signature annotations like any other."""
+        before = self._FUTURE + "def f(*args, **kwargs):\n    return args\n"
+        after = self._FUTURE + "def f(*args: int, **kwargs: str):\n    return args\n"
+        self.assertTrue(self._neutral(before, after))
+
 
 class TestArbRedCommitCli(unittest.TestCase):
     """`gz arb red --commit`: its argument contract and the exit code each verdict owes."""

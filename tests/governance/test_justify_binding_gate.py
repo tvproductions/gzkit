@@ -19,6 +19,7 @@ import tempfile
 import unittest
 from datetime import UTC, datetime
 from pathlib import Path
+from unittest import mock
 
 from gzkit.commands import validate_cmd
 from gzkit.governance.trust_audits.evaluation_justify_binding import (
@@ -571,6 +572,22 @@ class TestScanAllPopulation(unittest.TestCase):
             result = validate_cmd._scan_all_evaluation_justify_binding(root)
 
             self.assertEqual([e.artifact for e in result], ["ADR-0.0.26-gate"])
+
+    @covers("REQ-0.0.26-02-01")
+    def test_only_evaluated_adrs_are_graded(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _append_events(root, adr_created_event("ADR-0.0.27", "PRD-X", "lite"))
+            _triggered_project(root)
+
+            with mock.patch(
+                "gzkit.governance.trust_audits.evaluation_justify_binding."
+                "validate_evaluation_justify_binding",
+                return_value=[],
+            ) as grade:
+                validate_cmd._scan_all_evaluation_justify_binding(root)
+
+            self.assertEqual([c.args[0] for c in grade.call_args_list], ["ADR-0.0.26"])
 
 
 if __name__ == "__main__":
