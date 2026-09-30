@@ -24,6 +24,9 @@ reqs:
   - REQ-0.35.0-10-05
   - REQ-0.35.0-10-06
   - REQ-0.35.0-10-07
+  - REQ-0.35.0-10-08
+  - REQ-0.35.0-10-09
+  - REQ-0.35.0-10-10
 verification:
   - uv run -m unittest tests.governance.test_bullet_retention
   - uv run -m behave features/classification_ownership.feature
@@ -58,6 +61,12 @@ means exactly one surface classifies any given bullet, every identity in the mea
 population is preserved, and no corpus section binds while its entries still
 carry the capture-default.
 
+The same audit also learns **where** a row is retained. A scorecard section
+attributed to a skill or ADR source is retention-checked against that source's
+own text. It is not exempted: an exempt `Mechanical` row would be a declared
+discipline with no witness, the "third state" GHI #939 measured. Rows attributed
+to the per-turn surface keep today's check unchanged.
+
 **Dependency order:** 10 consumes landed 01/02 (effective fold and governed retirement),
 04 (ownership), and 07 for the post-reconciliation landing. 09 supplies the root-only
 AgentContract route. Development may use isolated fixtures; completion includes governed
@@ -72,6 +81,16 @@ retirement/capture and re-landing so the repository is coherent.
 > that nothing reads does not fulfill that declared intent. The Decomposition
 > Scorecard's `Baseline Selected` moved 6 -> 7 in the same amendment; the
 > dimension scores are unchanged, because this opens no new dimension.
+
+> **Amendment 2026-09-29 — retention scope (GHI #939).** Operator ruling
+> 2026-09-28 (ruling docket), verbatim: *"Fold into OBPI-10 (Recommended)"* —
+> the source-aware `bullet_retention` scope goes to this OBPI. Amendment directed
+> 2026-09-29, verbatim: *"do all four"*, then *"take care of these"*. Same file,
+> same seam: today `_SURFACE_FILES` / `_RULES_GLOB` (`bullet_retention.py:49-50`)
+> fix retention to the per-turn surface, so a discipline declared in a `SKILL.md`
+> or an ADR can never be scored `Mechanical` or `Promotable` without first being
+> mirrored into `AGENTS.md`, and scoring it `Judgment` to dodge that is the
+> laundering the scorecard names. This adds REQ-08..10. REQ-01..07 are unchanged.
 
 ## Lane
 
@@ -119,6 +138,7 @@ this ADR exists to kill.
 6. ALWAYS surface a corpus/scorecard disagreement on an owned bullet rather than silently resolving it. Precedence decides which value BINDS; it never decides whether the operator gets to see that the two surfaces disagreed.
 7. NEVER add a second classification model. `.claude/rules/hexagonal-architecture.md` § Operative rules 8 forbids "a second, differently-typed representation of the same objects" — this OBPI's whole purpose is to collapse one such pair, not to add a third resolver.
 8. REQUIREMENT: Work MUST stay inside the Allowed Paths declared in this brief.
+9. ALWAYS retention-check a skill- or ADR-sourced scorecard row against its attributed source, and NEVER exempt it from retention. The source comes from the same Notes-column attribution the Identity contract below requires, never inferred from the rule text. A missing source file or an absent row text fails closed.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -263,6 +283,9 @@ uv run gz content show AGENTS.md --section prime-directive-ownership
 - [ ] REQ-0.35.0-10-05 [behavior]: Given the committed corpus, when this OBPI's reconciliation has landed, then `corpus_fingerprint()` over the pre-existing rows is unchanged and every reconciliation is an appended row rather than an edited one
 - [ ] REQ-0.35.0-10-06 [support]: `docs/governance/advisory-rules-audit.md` records that its authority is now narrowed to non-corpus-owned sections, so the scorecard cannot be read as the sole classification authority. Witnessed by `artifact_edited` citing `docs/governance/advisory-rules-audit.md` + `gz validate --documents`.
 - [ ] REQ-0.35.0-10-07 [structural-fence]: no classification surface exists without a reader, and no bullet resolves from two surfaces at once, after every ADR-0.35.0 OBPI has landed
+- [ ] REQ-0.35.0-10-08 [behavior]: Given a scorecard section whose attributed source is a `.gzkit/skills/*/SKILL.md` or an ADR file, when `validate_bullet_retention` runs, then its `Mechanical`/`Promotable` rows are retention-checked against that source's text and not the per-turn surface, while rows attributed to the per-turn surface keep their current tier-scoped check
+- [ ] REQ-0.35.0-10-09 [behavior]: Given a skill- or ADR-sourced row whose source file is missing or whose text is absent from it, when the audit runs, then it fails closed naming the row identity, the attributed source path, the rule that binds, and the runnable next step
+- [ ] REQ-0.35.0-10-10 [support]: `docs/user/manpages/validate.md` § `--bullet-retention` and `docs/governance/advisory-rules-audit.md` state the source-aware retention scope. Witnessed by `artifact_edited` citing both paths + `gz validate --documents`.
 
 ## Completion Checklist
 
@@ -340,6 +363,8 @@ before this OBPI, because the corpus value reached no consumer.
 
 ## Tracked Defects
 
+- GHI #939 — `advisory-scorecard: skill-declared doctrine is structurally unscorable`. Retention-scope arm folded here by operator ruling 2026-09-28 (REQ-08..10). Its skill-text arm landed separately in `74adc5fc1`.
+- GHI #799 — the ADR-declared sibling cut of the same `bullet_retention` precondition. REQ-08's ADR-sourced arm covers its remedy branch (a). Its disposition is the operator's, recorded on #799.
 - GHI #737 — `corpus: CorpusEntry.classification is required but has no consumer`. Folded into this ADR by operator ruling 2026-08-02 rather than repaired as a standalone direct fix, because the resolution depends on the section-ownership seam OBPI-0.35.0-04 introduces.
 
 ## Human Attestation
