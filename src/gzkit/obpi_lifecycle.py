@@ -185,16 +185,16 @@ def fold_renames(pairs: Iterable[tuple[str, str]]) -> dict[str, str]:
     own event-shape extraction and get identical semantics, so the two readers
     of this question cannot drift apart again.
 
-    For each rename ``A -> B`` in temporal order: when A is the artifact's live id
-    (unrenamed, or self-mapped after a cycle), repoint every key resolving to A onto
-    B, then map A itself to B. Propagating is what makes a **cycle** resolve
+    For each rename ``A -> B`` in temporal order: repoint every key resolving to A
+    onto B, then map A itself to B. Propagating is what makes a **cycle** resolve
     correctly — on ``A -> B -> A`` the second hop repoints B *and* A to A, so both
     land where the artifact actually sits.
 
-    When A was already renamed away it is only an alias, so the rename re-binds A
-    alone. That is a freed feature slot being reused: a demoted ADR's short id
-    moves to the new ADR while the demoted ADR keeps its slugged and pool ids
-    (GHI #1151).
+    Only keys resolving to A itself move, never keys resolving to A's current
+    target. When A was already renamed away it is only an alias that nothing
+    resolves to, so the rename re-binds A alone. That is a freed feature slot being
+    reused: a demoted ADR's short id moves to the new ADR while the demoted ADR
+    keeps its slugged and pool ids (GHI #1151).
 
     A flat last-write-wins dict cannot do this: it stores ``{A: B, B: A}`` and
     leaves the reader to walk it, which either loops or must stop early, and
@@ -209,10 +209,9 @@ def fold_renames(pairs: Iterable[tuple[str, str]]) -> dict[str, str]:
     for old_id, new_id in pairs:
         if not old_id or not new_id or old_id == new_id:
             continue
-        if canonical.get(old_id, old_id) == old_id:
-            for key, target in canonical.items():
-                if target == old_id:
-                    canonical[key] = new_id
+        for key, target in canonical.items():
+            if target == old_id:
+                canonical[key] = new_id
         canonical[old_id] = new_id
     return canonical
 
