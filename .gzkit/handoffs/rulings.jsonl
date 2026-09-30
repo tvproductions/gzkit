@@ -1220,3 +1220,5 @@
 {"ts": "2026-09-30T00:57:50Z", "source": "20260930T005747Z-handoff-four-steps-droplet-live-1151-fixed.md", "text": "Fix GHI #1151 in this session (verbatim: 'fix #1151 now')."}
 {"ts": "2026-09-30T03:17:39Z", "source": "20260930T031736Z-arb-red-receipts-and-annotation-fix.md", "text": "Take up the gz arb red annotation false-positive insight (verbatim: 'take up the gz arb red annotation false positive')."}
 {"ts": "2026-09-30T03:17:39Z", "source": "20260930T031736Z-arb-red-receipts-and-annotation-fix.md", "text": "File the no-receipt and inconclusive-rate findings as GHIs and fix the no-receipt one now (verbatim: 'yes')."}
+{"ts": "2026-09-30T09:43:02Z", "source": "20260930T094259Z-ghi-1153-closed-ci-green-both-platforms.md", "text": "Close GHI #1153 (verbatim: 'close 1153')."}
+{"ts": "2026-09-30T09:43:02Z", "source": "20260930T094259Z-ghi-1153-closed-ci-green-both-platforms.md", "text": "Mutation unit for GHI #1153 is statement fallback (verbatim selection: 'Statement fallback (Recommended)')."}
