@@ -17,7 +17,7 @@ from unittest import mock
 
 from gzkit.cli.main import _build_parser
 from gzkit.commands.arb import arb_red_cmd
-from gzkit.commit_witness import CommitWitness, HunkWitness, run_commit_witness
+from gzkit.commit_witness import CommitWitness, HunkWitness, _behavior, run_commit_witness
 from tests.commands.common import _isolated_git_env
 
 _RUNNER = (sys.executable, "-m", "unittest", "-v")
@@ -98,6 +98,49 @@ class TestCommitWitness(unittest.TestCase):
         self._add_test("\n    def test_two(self):\n        self.assertEqual(clamp(2), 2)\n")
         result = run_commit_witness(self.root, self._commit("comment + test"), runner=_RUNNER)
         self.assertEqual(result.verdict, "no-production-hunks", result)
+
+
+class TestAnnotationOnlyHunks(unittest.TestCase):
+    """Which annotation changes are behavior (the 92f64debc false positive)."""
+
+    _FUTURE = "from __future__ import annotations\n\n"
+
+    def _neutral(self, before: str, after: str) -> bool:
+        """True when reverting ``after`` to ``before`` changes no behavior."""
+        return _behavior(after) == _behavior(before)
+
+    def test_a_signature_annotation_under_the_future_import_is_not_behavior(self):
+        """Under PEP 563 a signature annotation is a string nothing in gzkit reads."""
+        before = self._FUTURE + "def f(x):\n    return x\n"
+        after = self._FUTURE + "def f(x: int) -> tuple[int, str]:\n    return x\n"
+        self.assertTrue(self._neutral(before, after))
+
+    def test_a_signature_annotation_without_the_future_import_is_behavior(self):
+        """Evaluated at definition time: a changed annotation can fail the import."""
+        before = "def f(x):\n    return x\n"
+        after = "def f(x: int) -> int:\n    return x\n"
+        self.assertFalse(self._neutral(before, after))
+
+    def test_a_class_field_annotation_is_behavior(self):
+        """Pydantic builds its fields from class annotations."""
+        before = self._FUTURE + "class M(BaseModel):\n    x: int\n"
+        after = self._FUTURE + "class M(BaseModel):\n    x: str\n"
+        self.assertFalse(self._neutral(before, after))
+
+    def test_an_annotation_read_by_its_decorator_is_behavior(self):
+        """A decorator outside the known annotation-blind set may read the signature."""
+        before = self._FUTURE + "@validate_call\ndef f(x: int):\n    return x\n"
+        after = self._FUTURE + "@validate_call\ndef f(x: str):\n    return x\n"
+        self.assertFalse(self._neutral(before, after))
+
+    def test_a_staticmethod_signature_annotation_is_not_behavior(self):
+        """staticmethod never reads annotations, so its methods stay neutral."""
+        before = self._FUTURE + "class C:\n    @staticmethod\n    def f(x):\n        return x\n"
+        after = (
+            self._FUTURE
+            + "class C:\n    @staticmethod\n    def f(x: int) -> int:\n        return x\n"
+        )
+        self.assertTrue(self._neutral(before, after))
 
 
 class TestArbRedCommitCli(unittest.TestCase):

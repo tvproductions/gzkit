@@ -100,12 +100,81 @@ def _unique_window(lines: list[str], start: int, end: int) -> tuple[int, int]:
     return lo, hi
 
 
+#: Decorators that never read the signature they wrap. A signature annotation on a
+#: function decorated with anything else may be read at runtime, so it stays behavior.
+_ANNOTATION_BLIND_DECORATORS = frozenset(
+    {
+        "staticmethod",
+        "classmethod",
+        "property",
+        "setter",
+        "getter",
+        "deleter",
+        "abstractmethod",
+        "override",
+        "cache",
+        "lru_cache",
+        "cached_property",
+        "wraps",
+    }
+)
+
+
+def _decorator_name(node: ast.expr) -> str:
+    """Return the bare name a decorator expression calls or refers to."""
+    target = node.func if isinstance(node, ast.Call) else node
+    if isinstance(target, ast.Attribute):
+        return target.attr
+    return target.id if isinstance(target, ast.Name) else ""
+
+
+def _postponed_annotations(tree: ast.Module) -> bool:
+    """Return whether the module has ``from __future__ import annotations`` (PEP 563)."""
+    return any(
+        isinstance(node, ast.ImportFrom)
+        and node.module == "__future__"
+        and any(alias.name == "annotations" for alias in node.names)
+        for node in tree.body
+    )
+
+
+def _drop_signature_annotations(tree: ast.Module) -> None:
+    """Blank argument and return annotations no runtime reads.
+
+    Under PEP 563 a signature annotation is a string stored in ``__annotations__``;
+    it changes behavior only when something introspects it. Class-field annotations
+    are kept (Pydantic builds fields from them), as are signatures under a decorator
+    outside :data:`_ANNOTATION_BLIND_DECORATORS`, and every annotation in a module
+    that evaluates them at definition time.
+    """
+    if not _postponed_annotations(tree):
+        return
+    for node in ast.walk(tree):
+        if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
+        if any(_decorator_name(d) not in _ANNOTATION_BLIND_DECORATORS for d in node.decorator_list):
+            continue
+        node.returns = None
+        arguments = node.args
+        for arg in [*arguments.posonlyargs, *arguments.args, *arguments.kwonlyargs]:
+            arg.annotation = None
+        for arg in (arguments.vararg, arguments.kwarg):
+            if arg is not None:
+                arg.annotation = None
+
+
 def _behavior(source: str) -> str | None:
-    """Return an AST fingerprint with docstrings dropped, or None if it does not parse."""
+    """Return an AST fingerprint with docstrings and inert annotations dropped.
+
+    ``None`` when the source does not parse. Signature annotations no runtime reads
+    are dropped too (:func:`_drop_signature_annotations`), so a hunk that only
+    re-types a function is not swept as a guard.
+    """
     try:
         tree = ast.parse(source)
     except SyntaxError:
         return None
+    _drop_signature_annotations(tree)
     for node in ast.walk(tree):
         body = getattr(node, "body", None)
         if (

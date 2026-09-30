@@ -58,7 +58,11 @@ each production hunk the commit **added** is reverted to its parent's text, one 
 a time, and the test modules **the same commit touched** are run against the
 mutant through `gzkit.mutation_witness` (baseline, activation, bytecode isolation
 and failure cause all verified). Hunks that change only comments, docstrings or
-blank lines are skipped, and pure deletions are not mutated.
+blank lines are skipped, and pure deletions are not mutated. So are hunks that only
+change a function's argument or return annotations in a module with
+`from __future__ import annotations`, unless the function carries a decorator that
+may read its signature. Class-field annotations (which Pydantic reads) and
+annotations in modules that evaluate them at definition time are still mutated.
 
 | Verdict | Meaning | Exit |
 |---------|---------|------|
