@@ -2076,6 +2076,31 @@
         }
       }
     },
+    "red_commit_receipt_emitted": {
+      "required": [
+        "commit",
+        "receipt_id",
+        "verdict",
+        "exit_status"
+      ],
+      "properties": {
+        "commit": {
+          "type": "string",
+          "min_length": 7
+        },
+        "receipt_id": {
+          "type": "string",
+          "min_length": 1
+        },
+        "verdict": {
+          "type": "string",
+          "min_length": 1
+        },
+        "exit_status": {
+          "type": "integer"
+        }
+      }
+    },
     "airlock_in": {
       "required": [],
       "properties": {

@@ -153,6 +153,9 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         "pipeline_marker_purged",
         "project_init",
         "red_receipt_emitted",
+        # `red_commit_receipt_emitted` (GHI #1152) is its commit-keyed sibling:
+        # evidence about a commit's tests, never a governance artifact, so no edge.
+        "red_commit_receipt_emitted",
         # `ledger_event_corrected` (GHI #611) is the append-only corrective action.
         # DISPOSITIONED OUT: its subject is another ledger ROW — named by the
         # `(event, id, ts)` triple — never a governance artifact, so it draws no

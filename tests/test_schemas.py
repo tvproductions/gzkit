@@ -70,6 +70,7 @@ from gzkit.events import (
     PipelineMarkerPurgedEvent,
     PrdCreatedEvent,
     ProjectInitEvent,
+    RedCommitReceiptEmittedEvent,
     RedReceiptEmittedEvent,
     RenditionAdvisorVerdictEvent,
     RenditionCommittedEvent,
@@ -345,6 +346,7 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     "airlock_out": AirlockOutEvent,
     # Base-tree RED falsifiability witness (GHI #642)
     "red_receipt_emitted": RedReceiptEmittedEvent,
+    "red_commit_receipt_emitted": RedCommitReceiptEmittedEvent,
     # Operator ruling lifting the handoff resume gate (GHI #574)
     "handoff_resume_authorized": HandoffResumeAuthorizedEvent,
     # Successor carrying a transit decision rather than a consent boolean (GHI #757)

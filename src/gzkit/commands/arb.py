@@ -14,7 +14,9 @@ deep-dive, and `src/gzkit/arb/` for the implementation.
 from __future__ import annotations
 
 import sys
+import time
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from gzkit.arb.advisor import collect_arb_advice, render_arb_advice_text
 from gzkit.arb.patterns import collect_patterns, render_patterns_compact, render_patterns_markdown
@@ -26,7 +28,12 @@ from gzkit.arb.validator import (
     validate_receipts,
 )
 
+if TYPE_CHECKING:
+    from gzkit.commit_witness import CommitWitness
+
 _INTERNAL_ERROR = 2
+#: Commit-mode verdicts that exit 1: a guard nothing in the fix can fail on.
+_FAILING_COMMIT_VERDICTS = frozenset({"undriven", "no-tests"})
 
 
 def arb_ruff_cmd(
@@ -50,18 +57,48 @@ def arb_ruff_cmd(
     return exit_status
 
 
+def _record_commit_witness(witness: CommitWitness, project_root: Path, duration_ms: int) -> str:
+    """Write the commit-mode receipt and book it in the ledger; return its id (GHI #1152).
+
+    ``ghi-close`` cites this verdict when it closes a direct fix, so a run that left
+    only terminal output left nothing a reader could resolve.
+    """
+    from gzkit.arb.red_reporter import build_red_commit_receipt, write_red_commit_receipt
+    from gzkit.ledger import Ledger
+    from gzkit.ledger_events import red_commit_receipt_emitted_event
+
+    exit_status = 1 if witness.verdict in _FAILING_COMMIT_VERDICTS else 0
+    receipt = build_red_commit_receipt(witness, exit_status=exit_status, duration_ms=duration_ms)
+    receipt_id = write_red_commit_receipt(receipt, project_root).stem
+    Ledger(project_root / ".gzkit" / "ledger.jsonl").append(
+        red_commit_receipt_emitted_event(
+            commit=witness.commit,
+            receipt_id=receipt_id,
+            verdict=witness.verdict,
+            exit_status=exit_status,
+        )
+    )
+    return receipt_id
+
+
 def _arb_red_commit(commit: str, quiet: bool) -> int:
     """Witness every production hunk ``commit`` added against its own tests (GHI #927)."""
     from gzkit.commands.common import get_project_root
     from gzkit.commit_witness import run_commit_witness
 
+    project_root = get_project_root()
+    started = time.perf_counter()
     try:
-        witness = run_commit_witness(get_project_root(), commit)
+        witness = run_commit_witness(project_root, commit)
     except (OSError, RuntimeError, ValueError) as exc:
         print(f"arb red: cannot run commit witness: {exc}", file=sys.stderr)
         return _INTERNAL_ERROR
+    duration_ms = int((time.perf_counter() - started) * 1000)
+    receipt_id = _record_commit_witness(witness, project_root, duration_ms)
     if not quiet:
-        print(f"arb red commit={witness.commit[:12]} verdict={witness.verdict}")
+        print(
+            f"arb red commit={witness.commit[:12]} verdict={witness.verdict} receipt={receipt_id}"
+        )
         for hunk in witness.hunks:
             reason = f" ({hunk.reason})" if hunk.reason else ""
             print(f"  {hunk.outcome:<12} {hunk.label}{reason}")

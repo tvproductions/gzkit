@@ -1,0 +1,87 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "gzkit.arb.red_commit_receipt.schema.json",
+    "title": "ARB RED Commit Witness Receipt",
+    "description": "The verdict of `gz arb red --commit`: each production hunk a commit added, reverted and swept against the test modules the same commit touched (GHI #927). Written so the verdict a GHI close cites can be resolved (GHI #1152).",
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+        "schema",
+        "run_id",
+        "timestamp_utc",
+        "git",
+        "commit",
+        "verdict",
+        "detail",
+        "test_modules",
+        "hunks",
+        "exit_status",
+        "duration_ms"
+    ],
+    "properties": {
+        "schema": {
+            "type": "string",
+            "const": "gzkit.arb.red_commit_receipt.v1",
+            "description": "Schema identifier for this receipt."
+        },
+        "run_id": {
+            "type": "string",
+            "pattern": "^arb-red-commit-[0-9a-f]{12}-[a-f0-9]{32}$",
+            "description": "Receipt id: arb-red-commit-<12-char commit>-<uuid4 hex>."
+        },
+        "timestamp_utc": {
+            "type": "string",
+            "description": "UTC timestamp of the run."
+        },
+        "git": {
+            "type": "object",
+            "description": "Git context of the working tree that ran the witness."
+        },
+        "commit": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{40}$",
+            "description": "The witnessed commit, fully resolved."
+        },
+        "verdict": {
+            "type": "string",
+            "enum": ["driven", "undriven", "no-tests", "no-production-hunks", "inconclusive"],
+            "description": "Aggregate verdict: driven = every hunk killed; undriven = a hunk survived; no-tests = the commit touched no test module; no-production-hunks = nothing to mutate; inconclusive = a hunk could not be graded."
+        },
+        "detail": {
+            "type": "string",
+            "description": "Why the verdict, when it is not per-hunk."
+        },
+        "test_modules": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Dotted test modules the sweep ran."
+        },
+        "hunks": {
+            "type": "array",
+            "description": "One entry per mutated production hunk.",
+            "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["path", "label", "outcome", "reason"],
+                "properties": {
+                    "path": { "type": "string", "minLength": 1 },
+                    "label": { "type": "string", "minLength": 1 },
+                    "outcome": {
+                        "type": "string",
+                        "enum": ["killed", "survived", "invalid", "inconclusive"]
+                    },
+                    "reason": { "type": "string" }
+                }
+            }
+        },
+        "exit_status": {
+            "type": "integer",
+            "description": "Exit status `gz arb red --commit` returned for this verdict."
+        },
+        "duration_ms": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Wall-clock duration of the witness run."
+        }
+    }
+}

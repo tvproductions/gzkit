@@ -1155,6 +1155,25 @@ class RedReceiptEmittedEvent(_EventBase):
     )
 
 
+class RedCommitReceiptEmittedEvent(_EventBase):
+    """red_commit_receipt_emitted event — a commit-mode falsifiability run (GHI #1152).
+
+    ``gz arb red --commit`` reverts each production hunk a commit added and sweeps it
+    against the commit's own tests (GHI #927). ``ghi-close`` cites that verdict when
+    it closes a direct fix, so the run is booked here with the receipt that holds its
+    per-hunk outcomes. Kept apart from ``red_receipt_emitted``, which is keyed on a
+    BEHAVIOR REQ and read by ``gz validate --red-parity``; a commit has no REQ.
+    """
+
+    event: Literal["red_commit_receipt_emitted"]
+    commit: str = Field(..., min_length=7, description="The witnessed commit")
+    receipt_id: str = Field(..., min_length=1, description="ARB red commit receipt run_id")
+    verdict: Literal["driven", "undriven", "no-tests", "no-production-hunks", "inconclusive"] = (
+        Field(..., description="Aggregate verdict; a closed vocabulary")
+    )
+    exit_status: int = Field(..., description="Exit status the command returned")
+
+
 class AirlockInEvent(_EventBase):
     """airlock_in event — a transit entered the airlock (declare -> ping -> reconcile -> gate).
 
@@ -1591,6 +1610,7 @@ TypedLedgerEvent = Annotated[
     | HandoffResumeBlockedEvent
     | AdversarialValidationEvent
     | RedReceiptEmittedEvent
+    | RedCommitReceiptEmittedEvent
     | FoundationGrandfatheredEvent
     | SectionOwnershipGenesisEvent
     | UnownedRatchetUpdatedEvent

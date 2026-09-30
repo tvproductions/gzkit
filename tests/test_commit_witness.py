@@ -8,6 +8,7 @@ production code is a one-line clamp, so a reverted guard either changes what
 
 import contextlib
 import io
+import json
 import subprocess
 import sys
 import tempfile
@@ -15,9 +16,11 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
+from gzkit.arb.validator import validate_receipts
 from gzkit.cli.main import _build_parser
 from gzkit.commands.arb import arb_red_cmd
 from gzkit.commit_witness import CommitWitness, HunkWitness, _behavior, run_commit_witness
+from gzkit.ledger import Ledger
 from tests.commands.common import _isolated_git_env
 
 _RUNNER = (sys.executable, "-m", "unittest", "-v")
@@ -166,8 +169,9 @@ class TestArbRedCommitCli(unittest.TestCase):
         """Dispatch through the parser, not the function: the lambda must pass --commit on."""
         witness = CommitWitness(commit="a" * 40, verdict="no-tests", detail="d")
         with (
+            tempfile.TemporaryDirectory() as tmp,
             mock.patch("gzkit.commit_witness.run_commit_witness", return_value=witness) as run,
-            mock.patch("gzkit.commands.common.get_project_root", return_value=Path(".")),
+            mock.patch("gzkit.commands.common.get_project_root", return_value=Path(tmp)),
             contextlib.redirect_stdout(io.StringIO()),
             contextlib.redirect_stderr(io.StringIO()),
         ):
@@ -182,8 +186,9 @@ class TestArbRedCommitCli(unittest.TestCase):
         witness = CommitWitness(commit="a" * 40, verdict=verdict, hunks=hunks, detail="d")
         err = io.StringIO()
         with (
+            tempfile.TemporaryDirectory() as tmp,
             mock.patch("gzkit.commit_witness.run_commit_witness", return_value=witness),
-            mock.patch("gzkit.commands.common.get_project_root", return_value=Path(".")),
+            mock.patch("gzkit.commands.common.get_project_root", return_value=Path(tmp)),
             contextlib.redirect_stdout(io.StringIO()),
             contextlib.redirect_stderr(err),
         ):
@@ -207,11 +212,85 @@ class TestArbRedCommitCli(unittest.TestCase):
 
     def test_a_witness_that_cannot_run_is_an_internal_error(self):
         with (
+            tempfile.TemporaryDirectory() as tmp,
             mock.patch("gzkit.commit_witness.run_commit_witness", side_effect=RuntimeError("x")),
-            mock.patch("gzkit.commands.common.get_project_root", return_value=Path(".")),
+            mock.patch("gzkit.commands.common.get_project_root", return_value=Path(tmp)),
             contextlib.redirect_stderr(io.StringIO()),
         ):
             self.assertEqual(arb_red_cmd(commit="HEAD"), 2)
+
+
+class TestCommitModeRecordsItsVerdict(unittest.TestCase):
+    """GHI #1152: a commit-mode verdict is cited at GHI close, so it must be resolvable."""
+
+    def _run(self, verdict: str, outcome: str) -> tuple[int, Path]:
+        hunks = [
+            HunkWitness(path="p.py", label="p.py:1-2", outcome=outcome, reason="r"),
+            HunkWitness(path="p.py", label="p.py:9-9", outcome="killed"),
+        ]
+        witness = CommitWitness(
+            commit="b" * 40, verdict=verdict, hunks=hunks, test_modules=["tests.t"], detail="d"
+        )
+        root = Path(self._tmp.name)
+        self.stdout = io.StringIO()
+        with (
+            mock.patch("gzkit.commit_witness.run_commit_witness", return_value=witness),
+            mock.patch("gzkit.commands.common.get_project_root", return_value=root),
+            contextlib.redirect_stdout(self.stdout),
+            contextlib.redirect_stderr(io.StringIO()),
+        ):
+            return arb_red_cmd(commit="HEAD"), root
+
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self._tmp.cleanup)
+
+    def _receipts(self, root: Path) -> list[dict]:
+        return [
+            json.loads(p.read_text(encoding="utf-8"))
+            for p in sorted((root / "artifacts" / "receipts").glob("arb-red-commit-*.json"))
+        ]
+
+    def test_the_receipt_records_what_the_run_found(self):
+        code, root = self._run("undriven", "survived")
+        (receipt,) = self._receipts(root)
+        self.assertEqual(receipt["commit"], "b" * 40)
+        self.assertEqual(receipt["verdict"], "undriven")
+        self.assertEqual(receipt["exit_status"], code)
+        self.assertEqual(
+            [(h["label"], h["outcome"]) for h in receipt["hunks"]],
+            [("p.py:1-2", "survived"), ("p.py:9-9", "killed")],
+        )
+
+    def test_the_receipt_satisfies_its_schema(self):
+        _, root = self._run("driven", "killed")
+        result = validate_receipts(root=root / "artifacts" / "receipts", limit=-1)
+        self.assertEqual((result.scanned, result.invalid), (1, 0), result.errors)
+
+    def test_the_ledger_names_the_receipt(self):
+        _, root = self._run("inconclusive", "inconclusive")
+        (receipt,) = self._receipts(root)
+        events = [
+            e
+            for e in Ledger(root / ".gzkit" / "ledger.jsonl").read_all()
+            if e.event == "red_commit_receipt_emitted"
+        ]
+        self.assertEqual([e.id for e in events], [receipt["run_id"]])
+        self.assertEqual(events[0].extra["verdict"], "inconclusive")
+
+    def test_the_printed_receipt_id_resolves_to_the_receipt(self):
+        """ghi-close cites the id the run prints, so that id must name the file written."""
+        _, root = self._run("driven", "killed")
+        (receipt,) = self._receipts(root)
+        printed = dict(
+            field.split("=", 1) for field in self.stdout.getvalue().split() if "=" in field
+        )
+        self.assertEqual(printed.get("receipt"), receipt["run_id"])
+
+    def test_a_commit_without_tests_is_recorded_too(self):
+        code, root = self._run("no-tests", "killed")
+        self.assertEqual(code, 1)
+        self.assertEqual([r["verdict"] for r in self._receipts(root)], ["no-tests"])
 
 
 class TestArbRedHelpOutputForm(unittest.TestCase):

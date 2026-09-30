@@ -97,6 +97,13 @@ _NO_GRAPH_IMPACT: dict[str, str] = {
         "that the REQ's covering test fails without its implementation; read by "
         "`gz validate --red-parity`. Attaches to a REQ, not to an artifact graph node."
     ),
+    "red_commit_receipt_emitted": (
+        "Commit-mode falsifiability witness (GHI #927, #1152): the verdict of `gz arb "
+        "red --commit` for one commit, naming the receipt that holds its per-hunk "
+        "outcomes. Evidence cited when `ghi-close` closes a direct fix. Attaches to a "
+        "commit, not to an artifact graph node, on the same grounds as "
+        "`red_receipt_emitted` one entry up."
+    ),
     "corpus_entry_retired": (
         "Append-only corpus retirement receipt (GHI #635) — a retraction row superseded "
         "an earlier entry, shrinking the surface's invariant floor. Consumed by "

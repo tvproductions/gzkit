@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-09-29
 metadata:
-  skill-version: "2.10.0"
+  skill-version: "2.11.0"
 model: opus
 ---
 
@@ -314,7 +314,7 @@ Four-phase protocol: **read**, **execute**, **verify**, **close**.
 
       **Canonical regression (GHI #771, arm B).** GHI #708's 2026-07-21 close comment enumerated three causes and asserted *"All three now hit the same guard"* — while listing three tests by name one section up. The enumeration omitted the cause that was the entire premise of the flag the guard sat inside (an ordinary dirty worktree, nothing staged), and all nine tests stubbed the same git read. The defect sat marked-closed for seventeen days and re-landed as `57bd15f91`. Evidence was named; the family was wrong.
 
-   c. **Test semantics check.** New tests assert REQ-derived semantics per `.gzkit/rules/tests.md` § Red-Green-Refactor (**Tests assert semantics, not strings**). String-shape tests outside the output-form fixture carve-out are the GHI #272 cosmetic-backfill pattern — re-derive before continuing. **Falsifiability:** when the fix adds production code, run `uv run gz arb red --commit <sha>`: each added hunk is reverted and the commit's own tests re-run (GHI #927). `undriven` or `no-tests` means a guard nothing in the fix can fail on — add the test before closing. `inconclusive` is about the run; cite its reason instead of a verdict.
+   c. **Test semantics check.** New tests assert REQ-derived semantics per `.gzkit/rules/tests.md` § Red-Green-Refactor (**Tests assert semantics, not strings**). String-shape tests outside the output-form fixture carve-out are the GHI #272 cosmetic-backfill pattern — re-derive before continuing. **Falsifiability:** when the fix adds production code, run `uv run gz arb red --commit <sha>`: each added hunk is reverted and the commit's own tests re-run (GHI #927). `undriven` or `no-tests` means a guard nothing in the fix can fail on — add the test before closing. `inconclusive` is about the run; cite its reason instead of a verdict. Every run writes an `arb-red-commit-*` receipt and prints its id; cite that receipt id in the close comment, resolved per step 7d, never the verdict text alone (GHI #1152).
 
    d. **Heavy-lane ARB receipts — resolve, don't transcribe.** For heavy-lane or foundation-kind fixes, ARB receipts exist for lint/typecheck/tests/coverage/docs per `AGENTS.md` § Attestation. Cite receipt IDs in the close comment, and confirm each one resolves on disk before citing it:
 

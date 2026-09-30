@@ -1298,6 +1298,26 @@ def red_receipt_emitted_event(
     )
 
 
+def red_commit_receipt_emitted_event(
+    *, commit: str, receipt_id: str, verdict: str, exit_status: int
+) -> LedgerEvent:
+    """Create a commit-mode RED-witness event (GHI #1152).
+
+    Books a ``gz arb red --commit`` run so the verdict a GHI close cites resolves to
+    a receipt. The id is the receipt's run_id; the per-hunk outcomes live there.
+    """
+    return LedgerEvent(
+        event="red_commit_receipt_emitted",
+        id=receipt_id,
+        extra={
+            "commit": commit,
+            "receipt_id": receipt_id,
+            "verdict": verdict,
+            "exit_status": exit_status,
+        },
+    )
+
+
 def handoff_resume_authorized_event(
     *,
     session_id: str,

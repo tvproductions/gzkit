@@ -23,7 +23,8 @@ test can fail. A test authored after the production code, passing on its first
 run, is byte-indistinguishable from a genuine RED-first test. This command is the
 mechanical witness the pipeline's Red-Green-Refactor instruction lacked (GHI #642).
 
-Emits an ARB red receipt and a `red_receipt_emitted` ledger event.
+Emits an ARB red receipt and a `red_receipt_emitted` ledger event. Commit mode emits
+its own receipt and a `red_commit_receipt_emitted` event (§ Receipt).
 
 ---
 
@@ -75,7 +76,10 @@ annotations in modules that evaluate them at definition time are still mutated.
 The declared test set is the commit's own test modules, deliberately: a fix that
 adds a guard owes a test, in the same commit, that fails without it. A historical
 commit whose tests no longer pass in a fresh checkout reads `inconclusive`, never
-a verdict. Commit mode prints its result and writes no receipt or ledger event.
+a verdict. Every commit-mode run, whatever its verdict, writes a receipt and a
+`red_commit_receipt_emitted` ledger event, and prints the receipt id after the
+verdict (`arb red commit=<sha12> verdict=<verdict> receipt=<run_id>`), so the
+verdict a GHI close cites can be resolved (GHI #1152).
 
 ---
 
@@ -109,9 +113,20 @@ gz arb red --commit HEAD
 
 ## Receipt
 
+REQ mode (`--req`):
+
 - Schema: `gzkit.arb.red_receipt.v1` (`data/schemas/arb_red_receipt.schema.json`)
 - Prefix: `arb-red-<REQ-ID>-<uuid4 hex>`
+- Ledger event: `red_receipt_emitted`
 - Read by `gz validate --red-parity`, a bound `gz check` step.
+
+Commit mode (`--commit`):
+
+- Schema: `gzkit.arb.red_commit_receipt.v1` (`data/schemas/arb_red_commit_receipt.schema.json`)
+- Prefix: `arb-red-commit-<commit sha12>-<uuid4 hex>`
+- Records the commit, verdict, per-hunk outcomes and reasons, test modules and exit status
+- Ledger event: `red_commit_receipt_emitted`
+- Cited by `ghi-close` step 7c when a direct fix closes; validated by `gz arb validate`.
 
 ---
 
