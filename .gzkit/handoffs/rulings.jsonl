@@ -1211,3 +1211,10 @@
 {"ts": "2026-09-29T09:53:27Z", "source": "20260929T095323Z-ghi-queue-drained-boundaries-reratified.md", "text": "GHI #803 required level: 'A' (warn)."}
 {"ts": "2026-09-29T09:53:27Z", "source": "20260929T095323Z-ghi-queue-drained-boundaries-reratified.md", "text": "GHI #927 ownership: 'A' (#927 owns it; #849 stays closed)."}
 {"ts": "2026-09-29T10:01:29Z", "source": "20260929T100124Z-worktrees-removed-ghi-1150-filed.md", "text": "Remove the worktrees and file the ADR-0.33.0 GHI (verbatim: 'yes, remove the worktrees and file the ADR-0.33.0 GHI')."}
+{"ts": "2026-09-30T00:57:50Z", "source": "20260930T005747Z-handoff-four-steps-droplet-live-1151-fixed.md", "text": "Resume the handoff and work all four advised steps (verbatim: 'do all four')."}
+{"ts": "2026-09-30T00:57:50Z", "source": "20260930T005747Z-handoff-four-steps-droplet-live-1151-fixed.md", "text": "Keep gzkit.org on the droplet and automate its deploy, superseding the 2026-09-28 Pages ruling (verbatim: 'A, set up the droplet')."}
+{"ts": "2026-09-30T00:57:50Z", "source": "20260930T005747Z-handoff-four-steps-droplet-live-1151-fixed.md", "text": "Apply the OBPI-0.35.0-10 brief amendment and handle the ADR interview (verbatim: 'take care of these')."}
+{"ts": "2026-09-30T00:57:50Z", "source": "20260930T005747Z-handoff-four-steps-droplet-live-1151-fixed.md", "text": "The handoff_api correction is a pool ADR, not a feature slot (verbatim: 'this could ONLY be a pool adr at this point')."}
+{"ts": "2026-09-30T00:57:50Z", "source": "20260930T005747Z-handoff-four-steps-droplet-live-1151-fixed.md", "text": "Author the pool ADR and file the ledger GHI (verbatim: 'yes to both, author the pool ADR and file the GHI')."}
+{"ts": "2026-09-30T00:57:50Z", "source": "20260930T005747Z-handoff-four-steps-droplet-live-1151-fixed.md", "text": "Freed semver slots are reused, not retired (verbatim: 'no, these are semver sequences, we can't just 'retire' them')."}
+{"ts": "2026-09-30T00:57:50Z", "source": "20260930T005747Z-handoff-four-steps-droplet-live-1151-fixed.md", "text": "Fix GHI #1151 in this session (verbatim: 'fix #1151 now')."}
