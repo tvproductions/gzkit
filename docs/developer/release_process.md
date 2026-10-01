@@ -77,6 +77,17 @@ awk '/^## v/{c++} c==2{exit} c==1' RELEASE_NOTES.md > "$BODY"
 gh release create vX.Y.Z --target main --latest --title "vX.Y.Z" --notes-file "$BODY"
 ```
 
+8. Publish an existing tag to PyPI (only when its tag-push run failed to publish)
+
+A tag push runs `release.yml` as it stands at the tag, so a fix landed on `main`
+never reaches a re-run of that push. Dispatch the workflow from `main` against
+the tag instead; it runs only the PyPI job, builds the named tag, and leaves the
+binaries and release body alone:
+
+```zsh
+gh workflow run release.yml --ref main -f tag=vX.Y.Z
+```
+
 ## Notes
 
 - Full sync is mandatory immediately before release/tag commands: `uv run gz git-sync --apply --lint --test`.

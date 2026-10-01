@@ -12,6 +12,13 @@
 # Re-pushing a tag that is already fully released is a no-op: the release body
 # is never rewritten, binaries already attached are left alone, and PyPI
 # re-uploads are skipped as already-present (GHI #834).
+#
+# Publishing an existing tag to PyPI after its tag-push run failed:
+#   gh workflow run release.yml --ref main -f tag=vX.Y.Z
+# A tag push runs the workflow file AT the tag, so a fix landed on main never
+# reaches a re-run of that push. A dispatch runs this file from main, checks out
+# the named tag, and runs only the PyPI job: the binaries and the release body
+# belong to the tag-push run and are left alone.
 
 name: Release
 
@@ -19,6 +26,12 @@ on:
   push:
     tags:
       - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing release tag to publish to PyPI (vX.Y.Z)"
+        required: true
+        type: string
 
 permissions:
   contents: write  # needed to create releases
@@ -26,6 +39,7 @@ permissions:
 
 jobs:
   build:
+    if: github.event_name == 'push'
     strategy:
       matrix:
         include:
@@ -176,11 +190,20 @@ jobs:
 
   pypi:
     needs: build
+    # A dispatch skips `build`; publish then rests on the tag alone.
+    if: >-
+      !cancelled() &&
+      (github.event_name == 'workflow_dispatch' || needs.build.result == 'success')
     runs-on: ubuntu-latest
     environment: pypi
+    env:
+      RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          # refs/tags/ makes a dispatch that names a branch or a typo fail here.
+          ref: refs/tags/${{ env.RELEASE_TAG }}
 
       - name: Install uv
         uses: astral-sh/setup-uv@v4
@@ -191,7 +214,7 @@ jobs:
       - name: Verify tag matches package version
         shell: bash
         run: |
-          TAG="${GITHUB_REF_NAME#v}"
+          TAG="${RELEASE_TAG#v}"
           PKG_VERSION="$(grep -m1 '^version' pyproject.toml | sed 's/version = "\(.*\)"/\1/')"
           echo "Tag version: $TAG"
           echo "Package version: $PKG_VERSION"
@@ -199,6 +222,13 @@ jobs:
             echo "::error::Version mismatch — tag v$TAG vs pyproject.toml $PKG_VERSION. Refusing to publish."
             exit 1
           fi
+
+      # v0.34.8 was tagged with Codex runtime symlinks under .codex/tmp that point
+      # at an absolute host path; `uv build` refuses them when it unpacks the
+      # sdist to build the wheel. Main no longer tracks them
+      # (tests/governance/test_tracked_symlinks.py), but a tag is immutable.
+      - name: Drop Codex runtime scratch the tag may carry
+        run: rm -rf .codex/tmp
 
       - name: Build wheel
         run: uv build
