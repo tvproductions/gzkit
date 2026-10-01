@@ -9,7 +9,7 @@ checked, not the working tree: a clean checkout is what the release job builds.
 
 from __future__ import annotations
 
-import os
+import posixpath
 import subprocess
 import tempfile
 import unittest
@@ -40,7 +40,9 @@ def _external_symlinks(root: Path) -> list[str]:
         if mode != "120000":
             continue
         target = _git(root, "cat-file", "-p", sha)
-        resolved = os.path.normpath(PurePosixPath(path).parent / target)
+        # Git stores link targets with '/', so resolve them as POSIX paths on every
+        # host; os.path.normpath turns '../..' into '..\\..' on Windows.
+        resolved = posixpath.normpath(f"{PurePosixPath(path).parent}/{target}")
         if PurePosixPath(target).is_absolute() or resolved.split("/")[0] == "..":
             found.append(f"{path} -> {target}")
     return found
