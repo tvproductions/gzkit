@@ -340,7 +340,7 @@ def _materialize_demo_checkout(project_root: Path, destination: Path) -> None:
             shutil.copy2(source, target)
 
 
-def _demo_env(project_root: Path, checkout: Path) -> dict[str, str]:
+def demo_env(project_root: Path, checkout: Path) -> dict[str, str]:
     """Environment that runs the Demo against *checkout* with the live, unsynced venv.
 
     ``UV_NO_SYNC`` with ``UV_PROJECT_ENVIRONMENT`` makes ``uv run`` use the live
@@ -407,7 +407,7 @@ def run_demos(project_root: Path, commands: list[str]) -> list[DemoResult]:
                 DemoResult(command=c, ran=False, exit_status=-1, stdout_tail=reason)
                 for c in commands
             ]
-        env = _demo_env(project_root, checkout)
+        env = demo_env(project_root, checkout)
         return [_run_demo(command, checkout, env) for command in commands]
 
 

@@ -200,10 +200,10 @@ def _run_at_head(assertion: FidelityAssertion, project_root: Path) -> int:
     """Run one assertion in a fresh detached worktree at HEAD; return its exit code.
 
     ``uv run`` and ``python`` resolve the worktree's ``src`` through the live,
-    unsynced venv (``_demo_env``, the GHI #1093 Stage-4 Demo environment), so no
+    unsynced venv (``demo_env``, the GHI #1093 Stage-4 Demo environment), so no
     command reaches the live checkout through its cwd or its interpreter.
     """
-    from gzkit.governance.stage4_evidence import _demo_env  # noqa: PLC0415
+    from gzkit.governance.stage4_evidence import demo_env  # noqa: PLC0415
     from gzkit.red_witness import base_tree_worktree  # noqa: PLC0415
 
     try:
@@ -212,7 +212,7 @@ def _run_at_head(assertion: FidelityAssertion, project_root: Path) -> int:
                 proc = subprocess.run(  # noqa: S603 — runs in a disposable worktree
                     shlex.split(assertion.command),
                     cwd=worktree,
-                    env=_demo_env(project_root, worktree),
+                    env=demo_env(project_root, worktree),
                     capture_output=True,
                     check=False,
                 )

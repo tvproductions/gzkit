@@ -14,6 +14,7 @@ from gzkit.ledger import (
     obpi_receipt_emitted_event,
 )
 from tests.commands.common import CliRunner, _init_git_repo, _quick_init, _record_adr_work_start
+from tests.governance.common import init_committed_repo
 
 
 class TestAdrRuntimeCommands(unittest.TestCase):
@@ -324,6 +325,8 @@ class TestAdrRuntimeCommands(unittest.TestCase):
             ledger.append(gate_checked_event("ADR-0.1.0-f", 2, "pass", "test", 0))
             attestation = runner.invoke(main, ["attest", "ADR-0.1.0-f", "--status", "completed"])
             self.assertEqual(attestation.exit_code, 0)
+            # The fidelity gate runs at committed HEAD (GHI #1156), so commit the project.
+            init_committed_repo(Path.cwd())
 
             result = runner.invoke(main, ["audit", "ADR-0.1.0-f"])
             self.assertEqual(result.exit_code, 0)

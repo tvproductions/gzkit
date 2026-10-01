@@ -75,7 +75,7 @@ from pathlib import Path
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.governance import stage4_evidence
-from gzkit.governance.stage4_evidence import _demo_env, _join_demo_commands, replay_invocation
+from gzkit.governance.stage4_evidence import _join_demo_commands, demo_env, replay_invocation
 from gzkit.verifier_pipe_gate import masked_verifier
 
 # A fenced block cites shell commands only when it says so. A ``json``/``text``
@@ -486,7 +486,7 @@ def _replay(
                 f"checkout, and it never runs them there ({exc})"
             )
             return [_not_run(t, reason) for t in transcripts], reason
-        env = _demo_env(project_root, checkout)
+        env = demo_env(project_root, checkout)
         return [_verify_transcript(t, checkout, env) for t in transcripts], None
 
 
