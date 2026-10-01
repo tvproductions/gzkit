@@ -175,3 +175,9 @@ site/
 # The backed-up file (.claude/settings.local.json) is itself ignored, so its
 # snapshots must never be tracked either.
 settings.local/
+
+# Codex runtime scratch. Codex writes `.codex/tmp/arg0/*` (a .lock and symlinks to
+# the host's absolute `codex` binary) when CODEX_HOME points at the repo. Committed,
+# those symlinks broke `uv build` and kept v0.34.8 off PyPI; see
+# tests/governance/test_tracked_symlinks.py.
+.codex/tmp/
