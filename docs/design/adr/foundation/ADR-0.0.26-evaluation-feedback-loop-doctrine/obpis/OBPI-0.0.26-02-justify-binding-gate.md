@@ -3,7 +3,28 @@ id: OBPI-0.0.26-02-justify-binding-gate
 parent: ADR-0.0.26-evaluation-feedback-loop-doctrine
 item: 2
 lane: Heavy
-status: Completed
+status: Active
+allowlist:
+- src/gzkit/governance/trust_audits/evaluation_justify_binding.py
+- src/gzkit/cli/parser_artifacts.py
+- src/gzkit/lifecycle.py
+- data/eval_feedback_thresholds.json
+- tests/governance/test_justify_binding_gate.py
+- docs/design/adr/foundation/ADR-0.0.26-evaluation-feedback-loop-doctrine/**
+- src/gzkit/ledger.py
+- src/gzkit/ledger_events.py
+reqs:
+- REQ-0.0.26-02-01
+- REQ-0.0.26-02-02
+- REQ-0.0.26-02-03
+- REQ-0.0.26-02-04
+- REQ-0.0.26-02-05
+verification:
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
+- uv run gz arb step --name unittest -- uv run -m unittest tests/governance/test_justify_binding_gate.py -v
+- uv run gz validate --evaluation-justify-binding ADR-<fixture-id>
 ---
 
 # OBPI-0.0.26-02-justify-binding-gate: `gz validate --evaluation-justify-binding`
@@ -25,9 +46,10 @@ Mechanically enforce the existing advisory rule that `gz-justify` must be invoke
 
 ## Allowed Paths
 
-- `src/gzkit/governance/trust_audits.py` — new `validate_evaluation_justify_binding`
+- `src/gzkit/governance/trust_audits/evaluation_justify_binding.py` — new `validate_evaluation_justify_binding`
 - `src/gzkit/cli/parser_artifacts.py` — register `--evaluation-justify-binding` flag
-- `src/gzkit/commands/lifecycle.py` (or wherever artifact-state advance happens) — call the gate before advancing past Pending/Draft
+- `src/gzkit/lifecycle.py` — call the gate before advancing past Pending/Draft (`LifecycleStateMachine.transition`)
+- **Amendment (operator-approved, 2026-10-01, verbatim: "Amend now (Recommended)"):** two paths repointed. trust_audits.py was split into the trust_audits package by GHI #360, and the gate lives in evaluation_justify_binding.py. src/gzkit/commands/lifecycle.py never existed, and the gate is wired in src/gzkit/lifecycle.py. Surfaced by `gz validate --brief-reconcile` when the repudiation reopened this brief.
 - `data/eval_feedback_thresholds.json` — new config file with `low_score_threshold` (default 3.0) and `red_team_count_threshold` (default 3)
 - `tests/governance/test_justify_binding_gate.py`
 - `docs/design/adr/foundation/ADR-0.0.26-evaluation-feedback-loop-doctrine/**`

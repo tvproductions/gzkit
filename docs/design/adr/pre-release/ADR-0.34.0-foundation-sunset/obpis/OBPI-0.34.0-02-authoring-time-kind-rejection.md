@@ -3,7 +3,35 @@ id: OBPI-0.34.0-02-authoring-time-kind-rejection
 parent: ADR-0.34.0-foundation-sunset
 item: 2
 lane: Heavy
-status: Completed
+status: Active
+allowlist:
+- src/gzkit/commands/plan.py
+- src/gzkit/commands/adr_promote.py
+- tests/
+- docs/user/manpages/plan-create.md
+- docs/user/manpages/adr-promote.md
+- docs/user/runbook.md
+- docs/governance/governance_runbook.md
+- src/gzkit/commands/interview_cmd.py
+- features/
+- docs/design/adr/foundation/ADR-0.0.57-foundation-adr-nominal-id-triage/obpis/OBPI-0.0.57-02-gz-adr-create-nominal-allocator.md
+- .gzkit/rules/tests.md
+- src/gzkit/commands/common.py
+- docs/design/adr/pre-release/ADR-0.34.0-foundation-sunset/ADR-0.34.0-foundation-sunset.md
+- src/gzkit/commands/register.py
+reqs:
+- REQ-0.34.0-02-01
+- REQ-0.34.0-02-02
+- REQ-0.34.0-02-03
+- REQ-0.34.0-02-05
+- REQ-0.34.0-02-04
+verification:
+- gz validate --brief-command-shape and rejected at the verify stage.
+- Write multi-step verification as separate uv run ... lines. -->
+- uv run gz validate --documents
+- uv run gz lint
+- uv run gz typecheck
+- uv run gz test
 ---
 
 # OBPI-0.34.0-02-authoring-time-kind-rejection: Authoring Time Kind Rejection
@@ -38,7 +66,7 @@ Close the two foundation-authoring doors — `gz plan create --kind foundation` 
 - `src/gzkit/commands/interview_cmd.py` — the **third** authoring door. **Amendment (operator-approved, 2026-07-20):** Step-4b adversarial validation (Codex, tier 1) REFUTED the completion claim by reproducing `gz interview adr` authoring a new `kind: foundation` ADR at exit 0. `interview_cmd.py:159-166` carries its *own* kind-routing — it derives `foundation` from a `0.0.x` semver embedded in the ADR id and never calls `plan.py`'s `_render_adr_by_kind`, so there is no shared choke point to guard. Closing only `plan create` and `adr promote` does not discharge this brief's stated objective; per operator doctrine a gap in declared intent is a **correction**, not new scope.
 - `features/` — Gate 4 (Heavy) scenarios that assert the now-closed authoring path (`plan_create_nominal.feature`, `adr_promote.feature`). Same amendment; the scenarios carry no `@REQ-0.34.0-02` tag but exercise the surface this OBPI changes, so scoped-tag discipline does not exempt them.
 - `docs/design/adr/foundation/ADR-0.0.57-foundation-adr-nominal-id-triage/obpis/OBPI-0.0.57-02-gz-adr-create-nominal-allocator.md` — **supersession annotation only** (operator-approved, 2026-07-20). Deleting `_next_free_nominal_foundation_id` retired the subject of REQ-0.0.57-02-01…-04 and -02-06, so no honest test can cover them. The annotation records the supersession without retracting the attested record; manufacturing coverage instead would be the filesystem-grep anti-pattern (`.gzkit/rules/tests.md` § REQ Scope Discipline).
-- `src/gzkit/commands/common.py` — **read-only reference, not modified** (`git status` clean). The REQ-05 test imports `GzCliError` from here to assert the promotion-plan guard's exception type; `gz brief reconcile` surfaces that import as an undeclared surface, so it is declared rather than left as drift.
+- `src/gzkit/commands/common.py` — **read-only reference, not modified** (`git status` clean). The REQ-05 test imports `GzCliError` from here to assert the promotion-plan guard's exception type; `gz obpi brief-drift` surfaces that import as an undeclared surface, so it is declared rather than left as drift.
 - `docs/design/adr/pre-release/ADR-0.34.0-foundation-sunset/ADR-0.34.0-foundation-sunset.md` — parent ADR (read-only, for intent and scope).
 - This brief itself — evidence sections and the operator-ratified amendments recorded above.
 

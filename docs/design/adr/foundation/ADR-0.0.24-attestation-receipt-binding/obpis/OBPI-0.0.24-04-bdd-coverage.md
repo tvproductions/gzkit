@@ -3,7 +3,20 @@ id: OBPI-0.0.24-04-bdd-coverage
 parent: ADR-0.0.24-attestation-receipt-binding
 item: 4
 lane: Heavy
-status: Completed
+status: Active
+allowlist:
+- features/attestation_receipt_binding.feature
+- features/steps/attestation_receipt_binding_steps.py
+- data/behave_coverage_waivers.json
+- docs/design/adr/foundation/ADR-0.0.24-attestation-receipt-binding/**
+reqs:
+- REQ-0.0.24-04-01
+- REQ-0.0.24-04-02
+- REQ-0.0.24-04-03
+verification:
+- uv run gz lint
+- uv run -m behave features/attestation_receipt_binding.feature
+- uv run gz validate --behave-req-tags
 ---
 
 # OBPI-0.0.24-04-bdd-coverage: BDD scenario coverage for receipt-binding gate
@@ -28,7 +41,7 @@ Author behave scenarios that exercise the receipt-binding gate end-to-end agains
 - `features/attestation_receipt_binding.feature` — new feature file
 - `features/steps/attestation_receipt_binding_steps.py` (or extend existing step modules) — step implementations
 - `data/behave_coverage_waivers.json` — read-only access; no edits expected
-- `tests/fixtures/ledger/` (or wherever ledger fixtures live) — fixture ledger files for the scenarios
+- **Amendment (operator-approved, 2026-10-01, verbatim: "Amend now (Recommended)"):** the hedged `tests/fixtures/ledger` entry is removed. That directory never existed; the scenarios seed their ledgers inside `features/steps/attestation_receipt_binding_steps.py`. Surfaced by `gz validate --brief-reconcile` when the repudiation reopened this brief.
 - `docs/design/adr/foundation/ADR-0.0.24-attestation-receipt-binding/**` — parent ADR package scope
 
 ## Denied Paths
@@ -80,7 +93,7 @@ Author behave scenarios that exercise the receipt-binding gate end-to-end agains
   stdout/stderr via `redirect_stdout`. Both pass through the gzkit CLI's
   UTF-8 stdout reconfigure, so `❌`/`→` glyphs in validator output land
   in the StringIO buffer cleanly.
-- [x] `features/environment.py:before_scenario` chdirs into a per-scenario
+- [x] `features/environment.py` (`before_scenario`) chdirs into a per-scenario
   tempdir; `after_scenario` rmtrees it. Extended in this OBPI to also
   restore `GZKIT_ARB_RECEIPTS_ROOT` to its pre-scenario value.
 - [x] `features/arb.feature` was read as the canonical shape reference

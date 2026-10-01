@@ -3,7 +3,7 @@ id: OBPI-0.35.0-09-codex-playback-wiring
 parent: ADR-0.35.0-canon-entry-corpus-landing
 item: 9
 lane: Heavy
-status: Completed
+status: Active
 allowlist:
 - src/gzkit/sync_surfaces.py
 - src/gzkit/governance/compose.py
