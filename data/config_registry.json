@@ -121,6 +121,11 @@
       "owner": "gzkit/chores/decommission-tautological-tests/check_debt_target.py",
       "kind": "code",
       "purpose": "Declining debt target (start date, start count, monthly decline) the decommission-tautological-tests chore and the `gz check` 'Tautological debt' step gate outstanding tautological-test ops against (GHI #808)."
+    },
+    "unit_collection_floor.json": {
+      "owner": "gzkit/unit_run_provenance.py",
+      "kind": "code",
+      "purpose": "Minimum test count a unit-tier run must collect; a lower count is refused even at exit 0 (GHI #1154)."
     }
   }
 }

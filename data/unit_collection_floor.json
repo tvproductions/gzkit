@@ -1,0 +1,5 @@
+{
+  "min_tests": 11000,
+  "rationale": "A unit run that collects fewer tests than this floor is refused even at exit 0: a module silently dropping out of collection must be a reviewed edit to this file, not a quiet green (GHI #1154). Raise it as the suite grows; lowering it is a reviewed deletion.",
+  "measured": {"date": "2026-10-01", "ran": 11229, "note": "dated record of the run that set the slack; the floor above is the authority"}
+}

@@ -31,6 +31,7 @@ from gzkit.handoff_validation import (
     parse_frontmatter,
     validate_handoff_document,
 )
+from gzkit.unit_run_provenance import judge_unit_run
 
 
 class QualityResult(BaseModel):
@@ -563,7 +564,21 @@ def run_tests(project_root: Path) -> QualityResult:
         QualityResult from testing.
 
     """
-    return run_command(CANONICAL_STEP_COMMANDS["unittest"], cwd=project_root)
+    result = run_command(CANONICAL_STEP_COMMANDS["unittest"], cwd=project_root)
+    if not result.success:
+        return result
+    # A zero exit proves only that nothing failed: `unittest-parallel` also exits
+    # 0 for an empty or fully skipped suite (GHI #1154).
+    reason = judge_unit_run(f"{result.stdout}\n{result.stderr}", project_root)
+    if reason is None:
+        return result
+    return result.model_copy(
+        update={
+            "success": False,
+            "returncode": 3,
+            "stderr": f"{result.stderr.rstrip()}\n\nUnit tier refused despite exit 0: {reason}.",
+        }
+    )
 
 
 def run_behave(project_root: Path, tags: list[str] | None = None) -> QualityResult:
