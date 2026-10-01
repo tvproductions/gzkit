@@ -117,6 +117,7 @@ from gzkit.governance.trust_audits.events import (
 from gzkit.governance.trust_audits.exemption_controls import audit_exemption_controls
 from gzkit.governance.trust_audits.fidelity_presence import audit_fidelity_presence
 from gzkit.governance.trust_audits.gate_callers import audit_gate_callers
+from gzkit.governance.trust_audits.gate_enrollment import audit_gate_enrollment
 from gzkit.governance.trust_audits.how_coverage import audit_how_coverage
 from gzkit.governance.trust_audits.insights import audit_insights_shape
 from gzkit.governance.trust_audits.instructions_files_budget import (
@@ -259,6 +260,7 @@ __all__ = [
     "audit_qc_binding",
     "audit_fidelity_presence",
     "audit_exemption_controls",
+    "audit_gate_enrollment",
     "audit_population_controls",
     "audit_gate_callers",
     "audit_config_registry",

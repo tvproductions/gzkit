@@ -900,6 +900,39 @@ def _ep_population_controls_admits_disclosed(root: Path) -> int:
     return 0 if audit_population_controls(root, declarations=declared) else 1
 
 
+def _ep_gate_enrollment(root: Path) -> list[ValidationError]:
+    """Drive the production gate-enrollment inventory against the fixture's disclosed list.
+
+    The audit reads the live validate registry and the registry the floor run already
+    populated (discovery is not re-run per member), so the control fails at the one
+    scope its fixture left undisclosed.
+    """
+    from gzkit.enforcement import get_enforcement_registry  # noqa: PLC0415
+    from gzkit.governance.trust_audits.gate_enrollment import (  # noqa: PLC0415
+        audit_gate_enrollment,
+        claimed_functions,
+    )
+
+    return audit_gate_enrollment(root, claimed=claimed_functions(get_enforcement_registry()))
+
+
+def _ep_gate_enrollment_admits_disclosed(root: Path) -> int:
+    """Truthy only when the inventory ADMITS a fully disclosed scope population.
+
+    The admit half of the gate (GHI #797 precedent): an audit that refused a disclosed
+    scope would make the shrink-only list an unsatisfiable gate. The refuse half is
+    proven at every member by ``gate-enrollment``.
+    """
+    from gzkit.enforcement import get_enforcement_registry  # noqa: PLC0415
+    from gzkit.governance.trust_audits.gate_enrollment import (  # noqa: PLC0415
+        audit_gate_enrollment,
+        claimed_functions,
+    )
+
+    claimed = claimed_functions(get_enforcement_registry())
+    return 0 if audit_gate_enrollment(root, claimed=claimed) else 1
+
+
 def _ep_evaluation_justify_binding(root: Path) -> list[ValidationError]:
     """Drive the production justify-binding gate at the fixture's planted subject."""
     from gzkit.governance.trust_audits._qc_nc_evaluation import SUBJECT  # noqa: PLC0415

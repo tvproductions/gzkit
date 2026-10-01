@@ -225,6 +225,12 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     "population-controls": "population-controls-disclosed",
     # The admit control itself: a membership test with no further admit path.
     "population-controls-disclosed": EXEMPTS_NONE,
+    # --- GHI #1155 ------------------------------------------------------------
+    # The enrollment inventory ADMITS every scope on its disclosed list, an exemption by
+    # the bar above; the control that exercises it is registered. The admit control is
+    # a membership test with no further admit path.
+    "gate-enrollment": "gate-enrollment-disclosed",
+    "gate-enrollment-disclosed": EXEMPTS_NONE,
     # --- GHI #996 -------------------------------------------------------------
     # A qualifying walkthrough under artifacts/justify/ ADMITS a triggered evaluation
     # the gate would otherwise fail: a project-controllable file, an exemption by the

@@ -33,6 +33,7 @@ from . import _qc_nc_composite as _cx
 from . import _qc_nc_corpus as _cr
 from . import _qc_nc_entrypoints as _ep
 from . import _qc_nc_evaluation as _ev
+from . import _qc_nc_gate_enrollment as _ge
 from . import _qc_nc_hooks as _hk
 from . import _qc_nc_population as _pc
 from ._qc_claim_exemptions import QC_CLAIM_EXEMPTS
@@ -1888,6 +1889,18 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         "population-controls-disclosed",
         _pc.build_fully_disclosed,
         _ep._ep_population_controls_admits_disclosed,
+    ),
+    # Refuse half proven at every disclosed scope; admit half as its own claim (GHI #1155).
+    (
+        "gate-enrollment",
+        _ge.build_undisclosed_scope,
+        _ep._ep_gate_enrollment,
+        "is named by no enforcement claim",
+    ),
+    (
+        "gate-enrollment-disclosed",
+        _ge.build_fully_disclosed,
+        _ep._ep_gate_enrollment_admits_disclosed,
     ),
     # Refuse half plants every present-but-false form of evidence; admit half plants
     # a walkthrough the real producer writes (GHI #996).

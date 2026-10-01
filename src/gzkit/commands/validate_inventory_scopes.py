@@ -86,6 +86,41 @@ def run_population_controls_scope(project_root: Path, *, as_json: bool) -> None:
     raise SystemExit(3)
 
 
+def run_gate_enrollment_scope(project_root: Path, *, as_json: bool) -> None:
+    """Dedicated handler for ``gz validate --gate-enrollment`` (exit 0/3).
+
+    Reports the COUNTS on a green run, on the ``--exemption-controls`` precedent: the
+    point of GHI #1155 is that "this gate has no registered control" becomes a visible,
+    counted fact, and a green run hiding the number would restore the silence.
+    """
+    from gzkit.governance.trust_audits.gate_enrollment import (  # noqa: PLC0415
+        audit_gate_enrollment,
+        claimed_functions,
+        enrolled_claims,
+        scope_population,
+    )
+
+    errors = audit_gate_enrollment(project_root)
+    if as_json:
+        print(json.dumps([e.model_dump(exclude_none=True) for e in errors], indent=2))  # noqa: T201
+        raise SystemExit(3 if errors else 0)
+    console.print("[bold]Validated:[/bold] gate-enrollment\n")
+    if not errors:
+        population = scope_population()
+        claimed = claimed_functions()
+        enrolled = sum(1 for fns in population.values() if enrolled_claims(fns, claimed))
+        console.print(
+            f"[green]✓ {len(population)} validate scopes inventoried; "
+            f"{enrolled} named by an enforcement claim, "
+            f"{len(population) - enrolled} disclosed as unenrolled.[/green]"
+        )
+        raise SystemExit(0)
+    console.print(f"[red]❌ {len(errors)} gate-enrollment finding(s):[/red]\n")
+    for e in errors:
+        console.print(f"   [red]→[/red] {escape(e.artifact)}: {escape(e.message)}")
+    raise SystemExit(3)
+
+
 def run_gate_callers_scope(project_root: Path, *, as_json: bool) -> None:
     """Dedicated handler for `gz validate --gate-callers` (exit 0/3).
 

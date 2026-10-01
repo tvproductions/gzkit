@@ -172,6 +172,7 @@ _STEP_CLASSIFICATION: dict[str, _StepMeta] = {
     "Validator reachability": ("audit", "all", "bound", "subprocess"),
     "Ledger vocabulary inertness": ("audit", ".gzkit/", "bound", "subprocess"),
     "Exemption controls": ("audit", "src/", "bound", "python_function"),
+    "Gate enrollment": ("audit", "src/", "bound", "python_function"),
     "Population controls": ("audit", "src/", "bound", "python_function"),
     "Handoff documents": ("audit", "docs/", "bound", "python_function"),
     "Preflight": ("audit", ".gzkit/", "bound", "python_function"),

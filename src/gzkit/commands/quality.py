@@ -116,6 +116,7 @@ _STEP_GUARD_META: dict[str, tuple[str, int]] = {
     "Validator reachability": ("validator-reachability", _mx_levels.ERROR),
     "Ledger vocabulary inertness": ("ledger-vocabulary-inertness", _mx_levels.ERROR),
     "Exemption controls": ("exemption-controls", _mx_levels.ERROR),
+    "Gate enrollment": ("gate-enrollment", _mx_levels.ERROR),
     "Population controls": ("population-controls", _mx_levels.ERROR),
     "Handoff documents": ("handoff-documents", _mx_levels.ERROR),
     "Preflight": ("preflight", _mx_levels.ERROR),
@@ -554,6 +555,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         run_fidelity_presence_audit,
         run_format_check,
         run_gate_callers_audit,
+        run_gate_enrollment_audit,
         run_handoff_document_audit,
         run_insights_shape_audit,
         run_instructions_files_budget_audit,
@@ -664,6 +666,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
             else []
         ),
         ("Exemption controls", run_exemption_controls_audit),
+        ("Gate enrollment", run_gate_enrollment_audit),
         ("Population controls", run_population_controls_audit),
         ("Handoff documents", run_handoff_document_audit),
         ("Preflight", run_preflight),

@@ -19,6 +19,7 @@ from collections.abc import Callable, Sequence
 
 from gzkit.enforcement import POPULATION_NONE
 
+from . import _qc_nc_gate_enrollment as _ge
 from . import _qc_nc_hooks as _hk
 from . import _qc_nc_population as _pc
 
@@ -28,6 +29,10 @@ QC_CLAIM_POPULATIONS: dict[str, Callable[[], Sequence[str]] | str] = {
     "session-green-gate-delivery": _hk.hook_type_population,
     # Every claim whose population is undeclared, read from the registry directly.
     "population-controls": _pc.undeclared_claim_population,
+    # Every validate scope no claim names, read from the validate and enforcement
+    # registries directly (GHI #1155).
+    "gate-enrollment": _ge.unenrolled_scope_population,
+    "gate-enrollment-disclosed": POPULATION_NONE,
     # Admission is one membership test applied uniformly over the list; the refuse
     # claim above carries the per-member proof, so this control ranges over no set.
     "population-controls-disclosed": POPULATION_NONE,

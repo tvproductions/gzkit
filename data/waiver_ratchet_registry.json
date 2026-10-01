@@ -204,6 +204,13 @@
       "mechanism": "shrink-ratchet",
       "entries_path": "modules",
       "baseline_count": 49
+    },
+    {
+      "data_file": "data/gate_enrollment_grandfather.json",
+      "gates_step": "Gate enrollment (gz validate --gate-enrollment)",
+      "mechanism": "shrink-ratchet",
+      "entries_path": "accepted_scopes",
+      "baseline_count": 57
     }
   ],
   "excluded": [

@@ -363,6 +363,7 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
     _ScopeEntry(
         "population_controls", "explicit", False, lambda r, _f: _ta().audit_population_controls(r)
     ),
+    _ScopeEntry("gate_enrollment", "explicit", False, lambda r, _f: _ta().audit_gate_enrollment(r)),
     _ScopeEntry(
         "intrinsic_attestation",
         "explicit",
@@ -1332,6 +1333,7 @@ def _dispatch_early_return_scopes(
     check_gate_callers: bool,
     check_exemption_controls: bool,
     check_population_controls: bool,
+    check_gate_enrollment: bool,
     check_audits: bool,
     as_json: bool,
 ) -> bool:
@@ -1392,6 +1394,7 @@ def _dispatch_early_return_scopes(
                 ("--gate-callers", check_gate_callers),
                 ("--exemption-controls", check_exemption_controls),
                 ("--population-controls", check_population_controls),
+                ("--gate-enrollment", check_gate_enrollment),
             )
             if requested
         ]
@@ -1438,6 +1441,7 @@ def _dispatch_early_return_scopes(
         (check_gate_callers, lambda: _inventory().run_gate_callers_scope),
         (check_exemption_controls, lambda: _inventory().run_exemption_controls_scope),
         (check_population_controls, lambda: _inventory().run_population_controls_scope),
+        (check_gate_enrollment, lambda: _inventory().run_gate_enrollment_scope),
     )
     for requested, resolve_scope in uniform:
         if requested:
@@ -1552,6 +1556,7 @@ def validate(
     check_gate_callers: bool = False,
     check_exemption_controls: bool = False,
     check_population_controls: bool = False,
+    check_gate_enrollment: bool = False,
     check_audits: bool = False,
     attestation_receipts: str | None = None,
     attestation_lane: str = "heavy",
@@ -1708,6 +1713,7 @@ def validate(
         check_gate_callers=check_gate_callers,
         check_exemption_controls=check_exemption_controls,
         check_population_controls=check_population_controls,
+        check_gate_enrollment=check_gate_enrollment,
         check_audits=check_audits,
         as_json=as_json,
     ):

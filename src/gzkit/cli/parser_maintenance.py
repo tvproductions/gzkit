@@ -783,6 +783,13 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Population-declaration inventory (GHI #1007). Exit 0: declared; 3: undeclared.",
     )
     p_validate.add_argument(
+        "--gate-enrollment",
+        dest="check_gate_enrollment",
+        action="store_true",
+        default=False,
+        help="Gate-enrollment inventory (GHI #1155). Exit 0: named or disclosed; 3: neither.",
+    )
+    p_validate.add_argument(
         "--closeout-proof",
         dest="check_closeout_proof",
         action="store_true",
@@ -1097,6 +1104,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_gate_callers=a.check_gate_callers,
             check_exemption_controls=a.check_exemption_controls,
             check_population_controls=a.check_population_controls,
+            check_gate_enrollment=a.check_gate_enrollment,
             check_audits=a.check_audits,
             check_invariant_coherence=a.check_invariant_coherence,
             check_invariant_witness=a.check_invariant_witness,

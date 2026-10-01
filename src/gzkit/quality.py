@@ -1621,6 +1621,18 @@ def run_exemption_controls_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --exemption-controls", cwd=project_root)
 
 
+def run_gate_enrollment_audit(project_root: Path) -> QualityResult:
+    """Run the gate-enrollment inventory (GHI #1155).
+
+    Fails closed (exit 3) when a ``gz validate`` scope is named by no registered
+    enforcement claim and is not recorded in data/gate_enrollment_grandfather.json,
+    or when an acceptance has gone stale. The enforcement floor verifies the claims
+    that are present and cannot notice a gate with none.
+    Recovery: uv run gz validate --gate-enrollment to see the scopes.
+    """
+    return run_command("uv run gz validate --gate-enrollment", cwd=project_root)
+
+
 def run_population_controls_audit(project_root: Path) -> QualityResult:
     """Run the population-declaration inventory (GHI #1007).
 

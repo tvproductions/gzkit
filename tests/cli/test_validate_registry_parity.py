@@ -171,6 +171,7 @@ _POST_SNAPSHOT_EXPLICIT_ADDITIONS: frozenset[str] = frozenset(
         "gate_callers",
         "exemption_controls",
         "population_controls",
+        "gate_enrollment",
         # Interpreter-pin coherence. Explicit tier because its subject is a
         # named population (`.github/workflows/**` declarations) rather than a
         # whole-tree sweep. `in_check` from the outset: the drift it catches is
@@ -316,6 +317,7 @@ _POST_SNAPSHOT_OTHER_SCOPES_EXCLUDED: frozenset[str] = frozenset(
         "gate_callers",
         "exemption_controls",
         "population_controls",
+        "gate_enrollment",
     }
 )
 

@@ -1,0 +1,238 @@
+{
+  "_doc": "Shrink-only disclosed list of `gz validate` scopes that no registered enforcement claim names as its gate (GHI #1155). Seeded 2026-10-01 at the population measured on main: 100 scopes in VALIDATOR_REGISTRY, of which the entries below had no claim whose source_fn or gate_targets is a function the scope's runner delegates to. An entry records a DISCLOSED absence of a control, never a justified one: it means the count is visible and a load-bearing control is still owed. NEVER add an entry to silence a newly authored scope; register a claim instead (the laundering ADR-0.0.73 Boundary Invariant #8 forbids). An entry MUST be surrendered the moment a claim names its scope (gz validate --gate-enrollment fails closed on a stale acceptance), which is what makes the list shrink-only. Enforced by src/gzkit/governance/trust_audits/gate_enrollment.py and ratcheted via data/waiver_ratchet_registry.json. The population is validate scopes only; check steps that run a tool, precomplete checks, complete refusals and closeout steps are not yet enumerated.",
+  "cutover": "2026-10-01",
+  "measurement": {
+    "scopes_in_registry": 100,
+    "disclosed": 57
+  },
+  "accepted_scopes": [
+    {
+      "scope": "absorption_duplicates",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "advisor_proof_binding",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "behave_req_tags",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "brief_command_shape",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "brief_cross_references",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "brief_demo_section",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "brief_headings",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "brief_reconcile",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "briefs",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "bullet_retention",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "changelog",
+      "reason": "the scope's runner resolves no gzkit callable, so no claim can name its gate"
+    },
+    {
+      "scope": "chores_layout",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "class_size",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "cli_alignment",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "commit_trailers",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "decomposition",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "deprecated_verb_prescription",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "distribution",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "doc_surface_parity",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "documents",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "evaluation_justify_binding",
+      "reason": "the scope's runner resolves no gzkit callable, so no claim can name its gate"
+    },
+    {
+      "scope": "event_handlers",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "event_schemas",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "frontmatter",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "how_coverage",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "instructions",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "intrinsic_attestation",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "invariant_witness",
+      "reason": "the scope's runner resolves no gzkit callable, so no claim can name its gate"
+    },
+    {
+      "scope": "manifest",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "okf_conformance",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "ontology_purity",
+      "reason": "the scope's runner resolves no gzkit callable, so no claim can name its gate"
+    },
+    {
+      "scope": "orphaned_implementation",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "pending_renames",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "personas",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "pointer_anchors",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "pool_adr_isolation",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "pydantic_models",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "qc_binding",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "reconcile_freshness",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "requirements",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "router_tables",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "rule_version_markers",
+      "reason": "the scope's runner resolves no gzkit callable, so no claim can name its gate"
+    },
+    {
+      "scope": "sensitivity",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "setpoint_coherence",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "skill_alignment",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "surface_weight",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "surfaces",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "tautological_test_audit",
+      "reason": "the scope's runner resolves no gzkit callable, so no claim can name its gate"
+    },
+    {
+      "scope": "taxonomy",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "test_tiers",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "type_ignores",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "unscoped_rules",
+      "reason": "the scope's runner resolves no gzkit callable, so no claim can name its gate"
+    },
+    {
+      "scope": "utf8_prefix",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "validator_fields",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "vendor_manifest",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "version",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    },
+    {
+      "scope": "version_release",
+      "reason": "no registered enforcement claim names this scope's deciding function"
+    }
+  ]
+}

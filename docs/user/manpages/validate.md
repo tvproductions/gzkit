@@ -14,7 +14,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--bullet-retention] [--surface-weight] [--pointer-anchors]
             [--surface-fidelity]
             [--frontmatter [--adr <ID>] [--explain <ADR-ID>]]
-            [--advisor-proof-binding] [--lock-exchange-coupling] [--qc-binding] [--fidelity-presence] [--waiver-ratchet] [--config-registry] [--gate-callers] [--exemption-controls] [--population-controls] [--vendor-manifest]
+            [--advisor-proof-binding] [--lock-exchange-coupling] [--qc-binding] [--fidelity-presence] [--waiver-ratchet] [--config-registry] [--gate-callers] [--exemption-controls] [--population-controls] [--gate-enrollment] [--vendor-manifest]
             [--setpoint-coherence] [--rendition-freshness]
             [--rendition-floor-coherence] [--rendition-lineage]
             [--corpus-retirement-witness]
@@ -1664,6 +1664,38 @@ uv run gz validate --population-controls --json
 | 0 | Every claim declares its population, or is disclosed | — |
 | 3 | A claim is undeclared and undisclosed, or an acceptance is stale | Declare it — `population="none"`, or a callable reading the members from the declaring surface. Surrender a stale entry from `data/population_control_grandfather.json` and lower `baseline_count` in `data/waiver_ratchet_registry.json`; re-run `uv run gz validate --population-controls` |
 
+### `--gate-enrollment`
+
+Gate-enrollment inventory (GHI #1155). The enforcement floor verifies the claims
+that are present and cannot notice a gate that has **none**: nine of the twelve
+gates GHI #1154 lists had no registered claim on the function that was hollow.
+This scope reads the population from the code, `VALIDATOR_REGISTRY`, resolves each
+scope's deciding function from its runner, and requires a registered `@enforces`
+claim to name it (as its `source_fn` or one of its `gate_targets`). Inventory and
+disclosure, not enrollment: a scope no claim names is either on the shrink-only
+list `data/gate_enrollment_grandfather.json` or a finding. The population is the
+`gz validate` scopes; check steps that run a tool, `gz obpi precomplete` checks,
+`gz obpi complete` refusals and `gz closeout` steps are not yet enumerated.
+
+```console
+uv run gz validate --gate-enrollment
+uv run gz validate --gate-enrollment --json
+```
+
+Observed output at the 2026-10-01 cutover:
+
+```text
+Validated: gate-enrollment
+
+✓ 101 validate scopes inventoried; 44 named by an enforcement claim, 57
+disclosed as unenrolled.
+```
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Every scope is named by a claim, or is disclosed | — |
+| 3 | A scope is named by no claim and not disclosed, an acceptance is stale, or an entry names a scope that no longer exists | Register an `@enforces` claim whose entrypoint or `gate_targets` name the scope, with a control that fails when its deciding guard is removed. Never add an entry to silence a new scope. Surrender a stale entry from `data/gate_enrollment_grandfather.json` and lower `baseline_count` in `data/waiver_ratchet_registry.json`; re-run `uv run gz validate --gate-enrollment` |
+
 ### `--closeout-proof`
 
 Derived closeout-proof view (ADR-0.0.69 / OBPI-0.0.69-03). Recomputes per-REQ
@@ -2654,6 +2686,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--exemption-controls` | opt-in | Inventory of gate exemptions and whether a negative control exercises each one, not only the refusal half, via `@enforces` `exempts` (GHI #797) |
 | `--fidelity-presence` | opt-in | Every non-pool ADR carries a parseable `## Fidelity Assertions` block (ADR-0.0.73 / OBPI-0.0.73-08) |
 | `--gate-callers` | opt-in | Inventory of gates nothing calls, so an uncalled gate is disclosed rather than read as a green run (GHI #785) |
+| `--gate-enrollment` | opt-in | Inventory of validate scopes no enforcement claim names, so a gate with no registered control is disclosed rather than read as a green run (GHI #1155) |
 | `--invariant-coherence` | yes | Committed `AGENTS.md` is byte-identical to the playback of its committed rendition; exit 3 on drift (ADR-0.0.37) |
 | `--invariant-witness` | yes | Every constitutional invariant's `structural_witness` names a command this CLI registers |
 | `--kind-invariance` | opt-in | Every `kind: foundation` ADR carries a substantive `## Why foundation tier?` section |

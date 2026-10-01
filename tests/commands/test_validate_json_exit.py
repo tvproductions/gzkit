@@ -172,6 +172,11 @@ _SOLO_SCOPES: dict[str, tuple[list[str], str, Callable[[], Any]]] = {
         f"{_TA}.population_controls.audit_population_controls",
         lambda: [_POLICY],
     ),
+    "check_gate_enrollment": (
+        ["--gate-enrollment"],
+        f"{_TA}.gate_enrollment.audit_gate_enrollment",
+        lambda: [_POLICY],
+    ),
     # Not a ``check_*`` param, so the roster assertion below cannot see it.
     "attestation_receipts": (
         ["--attestation-receipts", "no receipts cited"],
