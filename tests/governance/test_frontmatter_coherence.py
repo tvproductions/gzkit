@@ -230,6 +230,57 @@ class ReconciliationLogicTests(unittest.TestCase):
             self.assertEqual(second.files_rewritten, [])
             self.assertEqual(validate_frontmatter_coherence(root), [])
 
+    def test_repudiated_obpi_reads_active_and_is_not_reverted_to_completed(self) -> None:
+        """A repudiated completion is re-completable; reconcile must not resurrect it."""
+        from gzkit.commands.validate_frontmatter import (  # noqa: PLC0415
+            validate_frontmatter_coherence,
+        )
+        from gzkit.governance.frontmatter_coherence import reconcile_frontmatter  # noqa: PLC0415
+        from gzkit.ledger_events import (  # noqa: PLC0415
+            obpi_completion_repudiated_event,
+            obpi_receipt_emitted_event,
+        )
+
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            root = Path.cwd()
+            ledger = Ledger(root / ".gzkit" / "ledger.jsonl")
+            ledger.append(adr_created_event("ADR-0.1.0", "PRD-TEST-1.0.0", "lite"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-test", "ADR-0.1.0"))
+            ledger.append(
+                obpi_receipt_emitted_event(
+                    "OBPI-0.1.0-01-test",
+                    "completed",
+                    "g0",
+                    evidence={"human_attestation": True, "attestation_text": "attest completed"},
+                    parent_adr="ADR-0.1.0",
+                    obpi_completion="attested_completed",
+                )
+            )
+            ledger.append(
+                obpi_completion_repudiated_event(
+                    "OBPI-0.1.0-01-test",
+                    "ADR-0.1.0",
+                    "receipt",
+                    "verification-invalid",
+                    "g0",
+                    "invalid evidence",
+                )
+            )
+            path = _scaffold_obpi(
+                root,
+                "ADR-0.1.0",
+                "OBPI-0.1.0-01",
+                "---\nid: OBPI-0.1.0-01-test\nparent: ADR-0.1.0\n"
+                "item: 1\nlane: lite\nstatus: Active\n---\n# OBPI\n",
+            )
+
+            self.assertEqual(validate_frontmatter_coherence(root), [])
+            receipt = reconcile_frontmatter(root, dry_run=False)
+            self.assertEqual(receipt.files_rewritten, [])
+            self.assertIn("status: Active", path.read_text(encoding="utf-8"))
+
     @covers("REQ-0.0.16-03-05")
     def test_ungoverned_keys_preserved_byte_identical(self) -> None:
         """Rewriting governed keys must leave every other byte identical."""

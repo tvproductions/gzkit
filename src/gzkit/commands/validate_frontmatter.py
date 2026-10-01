@@ -197,6 +197,11 @@ def _derive_status_from_graph(info: dict) -> str | None:
         if artifact_type == "obpi":
             if info.get("withdrawn"):
                 return "withdrawn"
+            # A repudiated completion is re-completable; its pre-repudiation receipt
+            # still sits on the node, so deriving from it would read `Completed` and
+            # reconcile would revert the brief `gz obpi repudiate` reset to Active.
+            if info.get("repudiated"):
+                return "in_progress"
             return _derive_obpi_runtime_state(
                 issues=[],
                 anchor_issues=[],
