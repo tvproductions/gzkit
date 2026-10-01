@@ -1,5 +1,266 @@
 # gzkit Release Notes
 
+## v0.34.8 (2026-10-01)
+
+### Highlights
+
+A month of repair: 153 GHIs closed. Grouped by the drafters' theme tags, the
+largest areas are the OBPI pipeline (14 entries), ledger integrity (13), adopter
+init and update (11), gate integrity (9) and session handoff (9).
+
+Several fixes close gates that reported green without holding: `gz obpi
+precomplete` accepted any receipt as evidence, failed runs included; `gz obpi
+complete` accepted a refuted adversarial verdict with a resolution note
+attached; `gz validate --json` and `gz tidy` exited 0 on failure; the plan audit
+passed out-of-scope paths; the docs build ignored dead links; and commits
+without their task trailer reached the remote. Each now fails when its condition
+fails. Known issues below records what an audit of earlier completions found
+while these gates were open.
+
+The ledger now takes one writer at a time with crash-safe recovery, resolves
+ordinary merges between clones on its own, and gains `gz ledger correct` for
+append-only corrections.
+
+Upgrade note: a hand-authored `vendors.gemini` entry in `.gzkit.json` now fails
+validation; delete it (`gz init` never writes one).
+
+### New features
+
+- **#611** — `gz ledger correct` and `gz ledger corrections` let an operator
+  undo an agent's or a human's error by appending a correction to the ledger
+  instead of editing it: a row can be voided as never true, discharged as no
+  longer in force, or reinstated, and every view of project state reads the
+  corrected picture while the original record stays intact.
+- **#927** — `gz arb red --commit` checks whether the tests landed with a direct
+  fix actually exercise the guard it added, closing a route that had no
+  falsifiability check at all.
+- **#942** — `gz obpi verify-packet` re-runs every command shown in an
+  attestation packet and refuses output the command never produced, so a packet
+  can no longer present invented results, and the usual ways of showing a
+  failing run as a success are refused.
+- **#1106** — `gz-how` answers "how do I …?" and "what can I …?" by placing a
+  question in one of gzkit's flows: which skill to run, which look-alike to
+  avoid, and which steps only the operator may take. A validator keeps it in
+  step with the skill catalog.
+- **#936** — `gz chores status` shows which maintenance chores are overdue or
+  due without running any of them, and session start now names the ones that
+  need attention.
+- **#961** — `gz obpi adversary-workspace` gives the independent Step 4b
+  reviewer a disposable copy of the code it reviews, so it can actually run the
+  work and try to break it rather than only read it, while the real checkout
+  stays protected.
+- **#963** — Mutation sweeps run each mutant in isolation and report a run that
+  proved nothing as invalid or inconclusive, never as a caught mutant.
+- **#974** — `gz content own` gives an unowned section of a control surface a
+  governed, attested way to become corpus-owned.
+- **#1036** — A project can record its attestor handle once in `.gzkit.json`;
+  routine commands use it when `--attestor` is omitted, and recovery hints print
+  it instead of a placeholder.
+
+### Improvements
+
+- **#1088** — Plain `gz check` no longer runs the BDD suite on every change; `gz
+  check --full` runs everything, and CI uses it.
+- **#921** — The root agent contract is generated from its governed corpus and
+  is about 45% smaller than in v0.34.7, and gzkit's own tree now renders only
+  the Claude and Codex surfaces it uses; a project that declares a vendor
+  disabled no longer has that vendor's files rewritten on every sync. The rest
+  of the instruction-surface work stays open.
+- **#1007** — A check that covers only part of what it claims to enforce now
+  fails its own control instead of passing it.
+- **#1027** — Coverage now runs in parallel, 493 s down to 307 s with identical
+  results in the measured run, and `gz arb coverage` with no arguments runs the
+  canonical form.
+
+### Bug fixes
+
+- **#815** — Codex sessions received only about 70% of the agent contract, cut
+  off at Codex's default size limit with the operator's verbatim canon among the
+  losses; they now receive all of it.
+- **#849** — The falsifiability check on already-implemented work ran nothing;
+  it now runs, and a result it cannot interpret is reported inconclusive rather
+  than counted as proof.
+- **#889** — `gz obpi precomplete` accepted any receipt in the tree as evidence,
+  failed runs included; it now requires passing lint, typecheck and test
+  receipts written since the OBPI was claimed.
+- **#920** — A mis-authored test fixture could make the test suite delete the
+  working repository; a wrong fixture now fails its test and removes nothing
+  outside its own workspace.
+- **#953** — A failed ledger write could erase a record another process had just
+  written successfully, and a record left half-written by a crash made the
+  ledger unreadable. Ledger writes now happen one at a time, and recovery
+  removes only a record that was never finished.
+- **#959** — An OBPI whose adversarial review was refuted with caveats could
+  complete without any recorded resolution.
+- **#960** — An OBPI could be completed on a refuted adversarial verdict by
+  attaching a resolution note; a refutation now sends the work back for another
+  round.
+- **#985** — OBPI acceptance could lose a recorded finding or accept an invalid
+  proof when a brief was re-edited or re-run; required proof and open findings
+  now carry through until they are demonstrably closed, and legitimate work can
+  still finish.
+- **#995** — `gz validate --json` exited 0 even when most of its checks failed,
+  so any caller reading the exit status saw success.
+- **#996** — An empty file could stand in for the reasoning walkthrough an ADR
+  evaluation requires; only a completed, current walkthrough counts now.
+- **#1017** — Commits missing their required task trailer reached the remote
+  with every check green, including when the pre-push gate reused an earlier
+  pass; the gate now reads every commit being pushed.
+- **#1057** — The pre-implementation plan audit passed plans that touched files
+  outside the brief's allowed paths.
+- **#1075** — Ledger merges between clones could conflict with no way out short
+  of hand-editing the ledger; ordinary merges now resolve on their own, and
+  duplicate rows are reported instead of passing silently.
+- **#1098** — `gz init --dry-run` modified canonical skill files while reporting
+  that it wrote nothing, and a real repair changed files it never mentioned.
+- **#1108** — Installed skills shipped without their reference files and
+  templates, so their links pointed at files that were never delivered; they now
+  arrive with them.
+- **#1123** — `gz init --update` would have erased a project's local chore
+  registrations, copied files that belong only to the package, and never
+  delivered newly shipped chores to adopters.
+- **#1124** — `gz tidy` exited successfully while listing hundreds of findings,
+  and could report the project tidy while showing an actionable notice.
+- **#803** — The docs gate caught dead links again. A configuration setting had
+  silenced them while the gate still reported green, and broken links had built
+  up across the docs. They are fixed, and the gate now refuses a setting that
+  would silence them again.
+- **#851** — The session-green gate checked only one of the git hook types a
+  project declares, so a missing hook passed unnoticed; every declared hook is
+  now checked.
+- **#877** — Several hundred committed ledger rows could not be read through the
+  typed ledger reader; every committed row now parses, and events a producer has
+  never yet written are checked too.
+- **#888** — A requirement that stated its evidence was missing could be read as
+  citing that evidence; requirements now declare their proof explicitly.
+- **#940** — A verification command followed by another statement could report
+  success over a failure; that form is now refused.
+- **#944** — Failing `gz validate` output dropped the error type naming which
+  check refused, and `gz check` stripped bracketed tokens from the child output
+  it relays; operator-verbatim rulings printed with their bracketed markers
+  missing.
+- **#951** — Session bookmarks wrote the operator's home directory and username
+  into the repository; they now record only the transcript's file name.
+- **#971** — A command that hid a failing verifier behind `&& … ;` or `&& … ||`
+  was accepted as reporting its real exit status.
+- **#979** — Rolling back a section-ownership declaration file silently undid
+  attested ownership changes, in either direction, while the ledger still
+  recorded them.
+- **#982** — The Windows CI check had failed on every push, so it could not tell
+  a new break from an old one; it is green again, and transcript replay on
+  Windows no longer reports output a command never produced.
+- **#986** — Acceptance proofs failed for any requirement whose covering test
+  had a docstring, which was nearly half the suite.
+- **#992** — Launching an OBPI left its brief marked Draft, which blocked every
+  push until the OBPI completed; the brief now becomes active at launch.
+- **#994** — A reviewer that could only read files was able to record a
+  confirmation of evidence that did not exist. Approvals must now quote what the
+  reviewer actually read, and an approval whose quote cannot be found is
+  refused.
+- **#1008** — Wrapping a check in parentheses or braces could hide its failure
+  from the verifier gate; grouped commands are now judged by the check inside
+  them.
+- **#1010** — Commands run with `--json` could print log lines or reformatted
+  text into their output, which broke scripts that parse it and could drop text
+  from recorded reasons. `--json` output is now only the JSON document, and log
+  output and unhandled errors go to stderr.
+- **#1014** — Every ADR lifecycle transition ever recorded skipped the Accepted
+  state and bypassed transition validation; closeout now follows the lifecycle
+  rules and records the ADR's real path.
+- **#1070** — A plugin a project enabled in its Claude settings silently
+  disappeared at the next sync; project-added plugins are now kept.
+- **#1074** — Concurrent writers could leave the ledger out of time order, and
+  the ledger's own validator then refused it.
+- **#1092** — The ledger row recording each commit was sometimes discarded after
+  being reported as written; it now survives.
+- **#1093** — Generating evidence for an OBPI could run the brief's Demo against
+  the real project, overwriting a recorded attestation and adding a permanent
+  ledger entry. Demos now run in a throwaway copy, and the project is left
+  untouched.
+- **#1094** — The pre-push gate refused an attested OBPI whose falsifiability
+  proof already existed, and its named recovery could not help.
+- **#1099** — `gz agent sync` refused to run once any skill's last review was
+  more than 90 days old, even with nothing changed; review age is now judged
+  only by the skill audit.
+- **#1100** — Three commands could copy corrupted skills into every agent's
+  mirror and report success; they now refuse, as `gz agent sync` already did.
+- **#1115** — `gz obpi brief-drift --apply` wrote amendments into sealed,
+  completed briefs.
+- **#1118** — Some commands recorded ledger events under short ids, orphaning
+  history and letting two agents lock the same brief; they now record the full
+  id, and a new check catches any rename left unmigrated.
+- **#1122** — `gz init --update` could not tell a file you had edited from one
+  that was merely out of date, so your changes could be overwritten. Edited
+  files are now detected and reported as conflicts.
+- **#1143** — A hung test run could block a push forever with no output; a
+  stalled gate step now fails after a fixed bound, names itself, and keeps the
+  output it had printed.
+
+### Known issues
+
+- **Gates without a proven control (#1154, #1155).** Of the 12 gates above that
+  reported green without holding, 9 had no registered enforcement claim on the
+  function that was hollow (measured at each fix commit's parent). A mutation
+  sweep of the 98 registered claims found 92 whose control fails when a guard in
+  its gate is removed; 5 could not be measured. Until #1155 lands, a green from
+  a gate without a registered control is not evidence it can fail.
+- **Completions made while gates were open.** An audit replayed earlier
+  completions against each gap. Confirmed from the ledger and receipts:
+  OBPI-0.0.24-04 completed with a failed unit-test receipt that its attestation
+  neither cites nor discloses; OBPI-0.35.0-09 and OBPI-0.34.0-02 completed
+  without a valid falsifiability witness for some REQs; three OBPIs completed on
+  a refuted adversarial verdict that was disclosed at attestation. Repudiation
+  of any of these is an operator ruling and has not been made.
+- **Docs build.** The audit reports that the docs gate passed with dead links on
+  every release since v0.3.1. The fix for #803 measured 226 link warnings; it
+  repoints or removes them, excludes generated agent files and an authoring
+  template from the build, and makes the docs gate refuse a configuration that
+  silences dead links.
+- **Further audit findings, not yet confirmed:** brief Demos still run in the
+  live checkout at ADR closeout; `gz obpi verify-packet` replays transcripts in
+  the live checkout; `validate_stage4_evidence` has no production caller; the
+  justify check does not run at ADR closeout; red-parity reads a missing base
+  provenance as the working tree. Each is being confirmed before a fix.
+- **Trailer history.** Four commits on `main` touch `src/` or `tests/` without a
+  `Task:` trailer (`57a94bd58`, `d85a36ca3`, `4cb8cedbc`, `d98b520f3`). They are
+  published history and are not rewritten.
+
+### Gate Evidence
+
+- Qualifier: behavior-level GHIs closed since `v0.34.7`
+  (2026-08-29T04:21:13-05:00). 192 discovered: 150 qualified, 11 `diff_only`, 14
+  `unclassified_reference`, 8 `excluded`, 5 `label_only`, 4 `open_upstream`. No
+  foundation closeouts.
+- § Step 1a: operator confirmed `runtime` backfill on #815, #832, #936 and #963;
+  all four re-ran as `qualified`. The other 11 `diff_only` GHIs stay excluded:
+  their `src/gzkit/` changes are rule, skill or template text, or a docstring
+  (#533, #818, #972, #977, #980, #1011, #1019, #1022, #1025, #1091, #1107).
+  #1022 and #1091 are still OPEN although discovery reported them as
+  `diff_only`.
+- § Step 1b: operator ruled #611, #921, #978 and #1028 still-open trackers; each
+  is described only by what landed and is not counted in Stats.
+- § Step 1c, case A: #934, #1089, #1112; #939 (skill-text arm only); #943 and
+  #1003 (partial, still open). Case A with nothing user-visible: #956, #1087.
+  Case B: #922, #1052, #1053. Case C: #1029, #1045, #1048.
+- `label_only` excluded (no `src/gzkit/` commits in range): #949, #957, #1064,
+  #1085, #1141.
+- #815: the closing comment says no fix landed under its number, but `344f71896
+  fix(vendors): … (GHI #815)` is in range; #962 lowered and restored the cap.
+  The shipped effect is credited to both.
+- Verification: every one of the 160 changelog entries and release-note lines
+  was checked against its commits and issue by an independent pass; 96 held as
+  drafted and 64 were corrected. A further correction was made in the main
+  session (#959).
+- Curation: these notes carry the 57 highest-impact changes; all 160 entries are
+  in `CHANGELOG.md`.
+- Operator approval, verbatim: "attest the release".
+
+### Stats
+
+- 153 GHIs closed (150 qualified, plus #934, #1089 and #1112 adjudicated case A)
+- 7 partial landings under open or superseded trackers: #611, #921, #939, #943,
+  #978, #1003, #1028
+
 ## v0.34.7 (2026-08-29)
 
 ### Highlights
