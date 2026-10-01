@@ -1,0 +1,367 @@
+[
+ {
+  "obpi": "OBPI-0.0.65-02",
+  "lane": "heavy",
+  "verify": [
+   "2026-07-13T01:14"
+  ],
+  "red": {
+   "error/pre": 14
+  },
+  "completed": [
+   "2026-07-13T06:56"
+  ],
+  "repud": [],
+  "withdrawn": false,
+  "first_red": "2026-07-13T01:13",
+  "last_red": "2026-07-13T01:19"
+ },
+ {
+  "obpi": "OBPI-0.0.65-03",
+  "lane": "heavy",
+  "verify": [],
+  "red": {
+   "error/pre": 7
+  },
+  "completed": [
+   "2026-07-15T10:06"
+  ],
+  "repud": [],
+  "withdrawn": false,
+  "first_red": "2026-07-15T07:07",
+  "last_red": "2026-07-15T09:31"
+ },
+ {
+  "obpi": "OBPI-0.0.65-04",
+  "lane": "heavy",
+  "verify": [
+   "2026-07-14T23:54"
+  ],
+  "red": {
+   "assertion/pre": 6
+  },
+  "completed": [
+   "2026-07-15T00:35"
+  ],
+  "repud": [],
+  "withdrawn": false,
+  "first_red": "2026-07-14T22:48",
+  "last_red": "2026-07-15T00:10"
+ },
+ {
+  "obpi": "OBPI-0.0.65-05",
+  "lane": "heavy",
+  "verify": [],
+  "red": {
+   "error/pre": 8
+  },
+  "completed": [
+   "2026-07-15T18:54"
+  ],
+  "repud": [],
+  "withdrawn": false,
+  "first_red": "2026-07-15T17:12",
+  "last_red": "2026-07-15T18:25"
+ },
+ {
+  "obpi": "OBPI-0.0.72-03",
+  "lane": "heavy",
+  "verify": [],
+  "red": {
+   "error/pre": 9
+  },
+  "completed": [
+   "2026-07-13T12:29"
+  ],
+  "repud": [],
+  "withdrawn": false,
+  "first_red": "2026-07-13T11:47",
+  "last_red": "2026-07-13T11:53"
+ },
+ {
+  "obpi": "OBPI-0.0.72-04",
+  "lane": "heavy",
+  "verify": [
+   "2026-07-13T23:24"
+  ],
+  "red": {
+   "error/pre": 12
+  },
+  "completed": [
+   "2026-07-14T00:42"
+  ],
+  "repud": [],
+  "withdrawn": false,
+  "first_red": "2026-07-13T23:19",
+  "last_red": "2026-07-14T00:38"
+ },
+ {
+  "obpi": "OBPI-0.33.0-02",
+  "lane": "heavy",
+  "verify": [],
+  "red": {
+   "error/pre": 12
+  },
+  "completed": [
+   "2026-07-11T08:37"
+  ],
+  "repud": [],
+  "withdrawn": false,
+  "first_red": "2026-07-11T08:14",
+  "last_red": "2026-07-11T08:25"
+ },
+ {
+  "obpi": "OBPI-0.33.0-03",
+  "lane": "heavy",
+  "verify": [],
+  "red": {
+   "error/pre": 6
+  },
+  "completed": [
+   "2026-07-11T10:02"
+  ],
+  "repud": [],
+  "withdrawn": false,
+  "first_red": "2026-07-11T09:25",
+  "last_red": "2026-07-11T09:38"
+ },
+ {
+  "obpi": "OBPI-0.33.0-04",
+  "lane": "heavy",
+  "verify": [],
+  "red": {
+   "error/pre": 3,
+   "assertion/pre": 1
+  },
+  "completed": [
+   "2026-07-11T12:25"
+  ],
+  "repud": [],
+  "withdrawn": false,
+  "first_red": "2026-07-11T12:00",
+  "last_red": "2026-07-11T12:00"
+ },
+ {
+  "obpi": "OBPI-0.33.0-05",
+  "lane": "heavy",
+  "verify": [],
+  "red": {
+   "error/pre": 6
+  },
+  "completed": [
+   "2026-07-12T07:40"
+  ],
+  "repud": [],
+  "withdrawn": false,
+  "first_red": "2026-07-11T23:00",
+  "last_red": "2026-07-11T23:00"
+ },
+ {
+  "obpi": "OBPI-0.34.0-01",
+  "lane": "heavy",
+  "verify": [],
+  "red": {
+   "error/pre": 4
+  },
+  "completed": [
+   "2026-07-19T16:56"
+  ],
+  "repud": [],
+  "withdrawn": false,
+  "first_red": "2026-07-19T14:51",
+  "last_red": "2026-07-19T14:51"
+ },
+ {
+  "obpi": "OBPI-0.34.0-02",
+  "lane": "heavy",
+  "verify": [],
+  "red": {
+   "assertion/pre": 3,
+   "error/pre": 4,
+   "none/post": 5,
+   "error/post": 5
+  },
+  "completed": [
+   "2026-07-20T10:54"
+  ],
+  "repud": [],
+  "withdrawn": false,
+  "first_red": "2026-07-20T01:20",
+  "last_red": "2026-07-20T11:03"
+ },
+ {
+  "obpi": "OBPI-0.34.0-03",
+  "lane": "heavy",
+  "verify": [],
+  "red": {
+   "assertion/pre": 7,
+   "error/pre": 1
+  },
+  "completed": [
+   "2026-07-29T09:28"
+  ],
+  "repud": [],
+  "withdrawn": false,
+  "first_red": "2026-07-29T02:09",
+  "last_red": "2026-07-29T03:26"
+ },
+ {
+  "obpi": "OBPI-0.34.0-04",
+  "lane": "heavy",
+  "verify": [],
+  "red": {
+   "error/pre": 2
+  },
+  "completed": [
+   "2026-07-30T09:42"
+  ],
+  "repud": [],
+  "withdrawn": false,
+  "first_red": "2026-07-30T02:20",
+  "last_red": "2026-07-30T02:20"
+ },
+ {
+  "obpi": "OBPI-0.34.0-05",
+  "lane": "heavy",
+  "verify": [],
+  "red": {
+   "none/post": 1,
+   "error/pre": 2,
+   "assertion/pre": 1
+  },
+  "completed": [
+   "2026-07-31T08:32"
+  ],
+  "repud": [],
+  "withdrawn": false,
+  "first_red": "2026-07-30T10:44",
+  "last_red": "2026-07-30T10:45"
+ },
+ {
+  "obpi": "OBPI-0.35.0-01",
+  "lane": "heavy",
+  "verify": [
+   "2026-08-24T09:22"
+  ],
+  "red": {
+   "assertion/pre": 1,
+   "error/pre": 9
+  },
+  "completed": [
+   "2026-08-24T11:08"
+  ],
+  "repud": [],
+  "withdrawn": false,
+  "first_red": "2026-08-24T08:39",
+  "last_red": "2026-08-24T09:18"
+ },
+ {
+  "obpi": "OBPI-0.35.0-02",
+  "lane": "heavy",
+  "verify": [
+   "2026-08-26T01:35",
+   "2026-08-26T01:38"
+  ],
+  "red": {
+   "assertion/pre": 12,
+   "none/pre": 1,
+   "assertion/post": 1,
+   "error/post": 7
+  },
+  "completed": [
+   "2026-08-26T02:01"
+  ],
+  "repud": [],
+  "withdrawn": false,
+  "first_red": "2026-08-25T01:54",
+  "last_red": "2026-08-25T11:26"
+ },
+ {
+  "obpi": "OBPI-0.35.0-03",
+  "lane": "heavy",
+  "verify": [
+   "2026-09-05T19:17"
+  ],
+  "red": {},
+  "completed": [
+   "2026-09-05T20:05"
+  ],
+  "repud": [],
+  "withdrawn": false,
+  "first_red": null,
+  "last_red": null
+ },
+ {
+  "obpi": "OBPI-0.35.0-04",
+  "lane": "heavy",
+  "verify": [
+   "2026-09-05T17:58"
+  ],
+  "red": {
+   "error/pre": 7,
+   "error/post": 2,
+   "assertion/post": 1
+  },
+  "completed": [
+   "2026-09-05T18:11"
+  ],
+  "repud": [],
+  "withdrawn": false,
+  "first_red": "2026-09-02T18:49",
+  "last_red": "2026-09-03T01:05"
+ },
+ {
+  "obpi": "OBPI-0.35.0-08",
+  "lane": "heavy",
+  "verify": [],
+  "red": {
+   "not-applicable/pre": 5,
+   "assertion/pre": 2
+  },
+  "completed": [],
+  "repud": [],
+  "withdrawn": false,
+  "first_red": "2026-08-23T12:10",
+  "last_red": "2026-08-23T13:28"
+ },
+ {
+  "obpi": "OBPI-0.35.0-09",
+  "lane": "heavy",
+  "verify": [
+   "2026-08-18T01:13",
+   "2026-08-21T01:07",
+   "2026-08-21T04:44"
+  ],
+  "red": {
+   "none/pre": 2,
+   "error/pre": 15,
+   "none/post": 10,
+   "assertion/post": 4,
+   "not-applicable/post": 1
+  },
+  "completed": [
+   "2026-08-21T08:23"
+  ],
+  "repud": [],
+  "withdrawn": false,
+  "first_red": "2026-08-18T01:23",
+  "last_red": "2026-09-06T15:31"
+ },
+ {
+  "obpi": "OBPI-0.44.0-01",
+  "lane": "heavy",
+  "verify": [
+   "2026-07-10T09:15"
+  ],
+  "red": {
+   "error/pre": 4
+  },
+  "completed": [
+   "2026-07-10T10:26"
+  ],
+  "repud": [],
+  "withdrawn": false,
+  "first_red": "2026-07-10T09:23",
+  "last_red": "2026-07-10T09:24"
+ }
+]

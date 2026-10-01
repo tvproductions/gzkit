@@ -1,0 +1,1441 @@
+[
+ {
+  "obpi": "OBPI-0.0.16-04",
+  "tier": "B-init-only",
+  "hours": 1.3,
+  "receipt_ts": "2026-04-18T09:57",
+  "receipt_commit": "3af3d717c",
+  "plan": "sorted-soaring-cerf.md",
+  "files": [
+   "tests/chores/__init__.py"
+  ],
+  "shas": [
+   "bbb032a0d"
+  ],
+  "tagged": [
+   "bbb032a0d"
+  ],
+  "completed": "2026-04-18 10:43",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.16-frontmatter-ledger-coherence-guard/obpis/OBPI-0.0.16-04-backfill-and-ghi-closure.md"
+ },
+ {
+  "obpi": "OBPI-0.0.16-05",
+  "tier": "B-init-only",
+  "hours": 0.6,
+  "receipt_ts": "2026-04-18T02:12",
+  "receipt_commit": "a1ab0fce2",
+  "plan": "sharded-pondering-gem.md",
+  "files": [
+   "src/gzkit/governance/__init__.py"
+  ],
+  "shas": [
+   "a1ab0fce2"
+  ],
+  "tagged": [],
+  "completed": "2026-04-18 02:20",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.16-frontmatter-ledger-coherence-guard/obpis/OBPI-0.0.16-05-status-vocab-mapping.md"
+ },
+ {
+  "obpi": "OBPI-0.0.17-02",
+  "tier": "A",
+  "hours": 2.6,
+  "receipt_ts": "2026-04-19T15:09",
+  "receipt_commit": "70853ae23",
+  "plan": "sunny-booping-lecun.md",
+  "files": [
+   "src/gzkit/cli/parser_governance.py",
+   "src/gzkit/templates/adr_pool.md"
+  ],
+  "shas": [
+   "dd63c3b45"
+  ],
+  "tagged": [],
+  "completed": "2026-04-19 17:13",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.17-adr-taxonomy-mechanical/obpis/OBPI-0.0.17-02-plan-create-kind.md"
+ },
+ {
+  "obpi": "OBPI-0.0.17-05",
+  "tier": "B-placeholder",
+  "hours": 0.8,
+  "receipt_ts": "2026-04-19T19:24",
+  "receipt_commit": "70853ae23",
+  "plan": "glittery-baking-wall.md",
+  "files": [
+   "src/gzkit/core/models.py",
+   "tests/scripts/__init__.py",
+   "tests/scripts/test_backfill_adr_taxonomy.py"
+  ],
+  "shas": [
+   "c88068394"
+  ],
+  "tagged": [],
+  "completed": "2026-04-19 19:44",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.17-adr-taxonomy-mechanical/obpis/OBPI-0.0.17-05-backfill-and-roundtrip.md"
+ },
+ {
+  "obpi": "OBPI-0.0.17-06",
+  "tier": "A",
+  "hours": 0.9,
+  "receipt_ts": "2026-04-19T20:06",
+  "receipt_commit": "70853ae23",
+  "plan": "enchanted-munching-hollerith.md",
+  "files": [
+   "src/gzkit/templates/agents.md",
+   "src/gzkit/templates/copilot.md"
+  ],
+  "shas": [
+   "d8f05c449"
+  ],
+  "tagged": [],
+  "completed": "2026-04-19 20:27",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.17-adr-taxonomy-mechanical/obpis/OBPI-0.0.17-06-agents-md-correction.md"
+ },
+ {
+  "obpi": "OBPI-0.0.18-04",
+  "tier": "A",
+  "hours": 0.6,
+  "receipt_ts": "2026-04-20T11:58",
+  "receipt_commit": "6764d94b7",
+  "plan": "swirling-beaming-manatee.md",
+  "files": [
+   "src/gzkit/cli/parser_governance.py"
+  ],
+  "shas": [
+   "6764d94b7"
+  ],
+  "tagged": [],
+  "completed": "2026-04-20 12:06",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.18-adr-taxonomy-doctrine/obpis/OBPI-0.0.18-04-epic-grouping.md"
+ },
+ {
+  "obpi": "OBPI-0.0.19-04",
+  "tier": "B-init-only",
+  "hours": 0.7,
+  "receipt_ts": "2026-04-22T09:45",
+  "receipt_commit": "19e95ae52",
+  "plan": "eager-snacking-perlis.md",
+  "files": [
+   "tests/skills/__init__.py"
+  ],
+  "shas": [
+   "19e95ae52"
+  ],
+  "tagged": [],
+  "completed": "2026-04-22 09:57",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.19-pre-execution-reasoning-walkthrough/obpis/OBPI-0.0.19-04-skill-and-upstream-integrations.md"
+ },
+ {
+  "obpi": "OBPI-0.0.20-01",
+  "tier": "A",
+  "hours": 0.8,
+  "receipt_ts": "2026-04-22T12:29",
+  "receipt_commit": "a2a92d173",
+  "plan": "adaptive-squishing-lovelace.md",
+  "files": [
+   "src/gzkit/cli/parser_maintenance.py",
+   "src/gzkit/commands/quality.py",
+   "src/gzkit/commands/validate_cmd.py"
+  ],
+  "shas": [
+   "a2a92d173"
+  ],
+  "tagged": [],
+  "completed": "2026-04-22 12:49",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant/obpis/OBPI-0.0.20-01-validator-and-allowlist.md"
+ },
+ {
+  "obpi": "OBPI-0.0.20-02",
+  "tier": "A",
+  "hours": 0.8,
+  "receipt_ts": "2026-04-22T13:09",
+  "receipt_commit": "b2ae1c06f",
+  "plan": "OBPI-0.0.20-02-fold-agent-contract.md",
+  "files": [
+   "src/gzkit/templates/agents.md",
+   "tests/AGENTS.md",
+   "tests/governance/test_agent_contract_fold.py"
+  ],
+  "shas": [
+   "b2ae1c06f"
+  ],
+  "tagged": [],
+  "completed": "2026-04-22 13:29",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant/obpis/OBPI-0.0.20-02-fold-agent-contract.md"
+ },
+ {
+  "obpi": "OBPI-0.0.20-04",
+  "tier": "A",
+  "hours": 0.5,
+  "receipt_ts": "2026-04-23T11:54",
+  "receipt_commit": "efc46535e",
+  "plan": "compressed-painting-kernighan.md",
+  "files": [
+   "tests/governance/test_attestation_fold.py",
+   "tests/governance/test_defect_fix_routing_fold.py"
+  ],
+  "shas": [
+   "efc46535e"
+  ],
+  "tagged": [],
+  "completed": "2026-04-23 11:55",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.20-agent-rule-placement-invariant/obpis/OBPI-0.0.20-04-fold-defect-fix-routing.md"
+ },
+ {
+  "obpi": "OBPI-0.0.21-04",
+  "tier": "A",
+  "hours": 0.8,
+  "receipt_ts": "2026-04-25T00:34",
+  "receipt_commit": "d7080b945",
+  "plan": "glistening-sauteeing-gizmo.md",
+  "files": [
+   "src/gzkit/cli/parser_maintenance.py"
+  ],
+  "shas": [
+   "d7080b945"
+  ],
+  "tagged": [],
+  "completed": "2026-04-25 00:52",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.21-chores-as-gzkit-surface/obpis/OBPI-0.0.21-04-resolver-with-fallback.md"
+ },
+ {
+  "obpi": "OBPI-0.0.21-05",
+  "tier": "B-init-only",
+  "hours": 0.8,
+  "receipt_ts": "2026-04-25T07:06",
+  "receipt_commit": "414061ca0",
+  "plan": "snuggly-watching-waterfall.md",
+  "files": [
+   "src/gzkit/chores/__init__.py"
+  ],
+  "shas": [
+   "414061ca0"
+  ],
+  "tagged": [],
+  "completed": "2026-04-25 07:23",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.21-chores-as-gzkit-surface/obpis/OBPI-0.0.21-05-scaffold-core-chores.md"
+ },
+ {
+  "obpi": "OBPI-0.0.21-09",
+  "tier": "A",
+  "hours": 0.8,
+  "receipt_ts": "2026-04-27T11:59",
+  "receipt_commit": "e6ce59a2d",
+  "plan": "OBPI-0.0.21-09-chores-doctor-command-plan.md",
+  "files": [
+   "src/gzkit/cli/parser_maintenance.py"
+  ],
+  "shas": [
+   "e6ce59a2d"
+  ],
+  "tagged": [],
+  "completed": "2026-04-27 12:18",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.21-chores-as-gzkit-surface/obpis/OBPI-0.0.21-09-chores-doctor-command.md"
+ },
+ {
+  "obpi": "OBPI-0.0.22-01",
+  "tier": "A",
+  "hours": 0.7,
+  "receipt_ts": "2026-04-29T01:13",
+  "receipt_commit": "bfa3d57b1",
+  "plan": "OBPI-0.0.22-01-schema-frontmatter-field.md",
+  "files": [
+   "src/gzkit/core/models.py"
+  ],
+  "shas": [
+   "bfa3d57b1"
+  ],
+  "tagged": [],
+  "completed": "2026-04-29 01:23",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.22-security-sensitivity-doctrine/obpis/OBPI-0.0.22-01-schema-frontmatter-field.md"
+ },
+ {
+  "obpi": "OBPI-0.0.22-03",
+  "tier": "A",
+  "hours": 5.1,
+  "receipt_ts": "2026-04-29T02:01",
+  "receipt_commit": "7576c746e",
+  "plan": "OBPI-0.0.22-03-validate-sensitivity-scope.md",
+  "files": [
+   "src/gzkit/commands/validate_cmd.py"
+  ],
+  "shas": [
+   "7576c746e"
+  ],
+  "tagged": [],
+  "completed": "2026-04-29 06:35",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.22-security-sensitivity-doctrine/obpis/OBPI-0.0.22-03-validate-sensitivity-scope.md"
+ },
+ {
+  "obpi": "OBPI-0.0.22-04",
+  "tier": "A",
+  "hours": 0.8,
+  "receipt_ts": "2026-04-29T07:04",
+  "receipt_commit": "78cb44508",
+  "plan": "OBPI-0.0.22-04-requires-security-review-attestation.md",
+  "files": [
+   "src/gzkit/commands/obpi_complete.py",
+   "tests/test_adr_audit_predicates.py",
+   "tests/test_obpi_complete_cmd.py"
+  ],
+  "shas": [
+   "78cb44508",
+   "c817a24a2"
+  ],
+  "tagged": [],
+  "completed": "2026-04-29 07:25",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.22-security-sensitivity-doctrine/obpis/OBPI-0.0.22-04-requires-security-review-attestation.md"
+ },
+ {
+  "obpi": "OBPI-0.0.22-05",
+  "tier": "A",
+  "hours": 0.8,
+  "receipt_ts": "2026-04-29T07:32",
+  "receipt_commit": "c817a24a2",
+  "plan": "OBPI-0.0.22-05-gate5-walkthrough-arb-slot.md",
+  "files": [
+   "src/gzkit/commands/obpi_complete.py"
+  ],
+  "shas": [
+   "c817a24a2"
+  ],
+  "tagged": [],
+  "completed": "2026-04-29 07:49",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.22-security-sensitivity-doctrine/obpis/OBPI-0.0.22-05-gate5-walkthrough-arb-slot.md"
+ },
+ {
+  "obpi": "OBPI-0.0.24-01",
+  "tier": "A",
+  "hours": 1.2,
+  "receipt_ts": "2026-05-02T14:39",
+  "receipt_commit": "b27f42c92",
+  "plan": "OBPI-0.0.24-01-validator-scope.md",
+  "files": [
+   "src/gzkit/commands/validate_cmd.py"
+  ],
+  "shas": [
+   "b27f42c92"
+  ],
+  "tagged": [],
+  "completed": "2026-05-02 15:19",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.24-attestation-receipt-binding/obpis/OBPI-0.0.24-01-validator-scope.md"
+ },
+ {
+  "obpi": "OBPI-0.0.24-02",
+  "tier": "A",
+  "hours": 1.0,
+  "receipt_ts": "2026-05-02T15:29",
+  "receipt_commit": "b4f552151",
+  "plan": "OBPI-0.0.24-02-wire-into-completion.md",
+  "files": [
+   "src/gzkit/commands/adr_audit.py",
+   "src/gzkit/commands/obpi_cmd.py",
+   "src/gzkit/commands/obpi_complete.py",
+   "tests/commands/test_adr_emit_receipt.py"
+  ],
+  "shas": [
+   "b4f552151"
+  ],
+  "tagged": [],
+  "completed": "2026-05-02 15:57",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.24-attestation-receipt-binding/obpis/OBPI-0.0.24-02-wire-into-completion.md"
+ },
+ {
+  "obpi": "OBPI-0.0.25-01",
+  "tier": "A",
+  "hours": 0.8,
+  "receipt_ts": "2026-05-02T23:45",
+  "receipt_commit": "70853ae23",
+  "plan": "OBPI-0.0.25-01-implement-coverage-gate.md",
+  "files": [
+   "src/gzkit/commands/obpi_complete.py",
+   "tests/commands/test_obpi_complete.py"
+  ],
+  "shas": [
+   "6162f61a0"
+  ],
+  "tagged": [],
+  "completed": "2026-05-03 00:02",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.25-obpi-completion-req-coverage-gate/obpis/OBPI-0.0.25-01-implement-coverage-gate.md"
+ },
+ {
+  "obpi": "OBPI-0.0.25-02",
+  "tier": "A",
+  "hours": 1.1,
+  "receipt_ts": "2026-05-03T00:32",
+  "receipt_commit": "f97ac8a26",
+  "plan": "staged-percolating-seahorse.md",
+  "files": [
+   "src/gzkit/events.py"
+  ],
+  "shas": [
+   "f97ac8a26"
+  ],
+  "tagged": [],
+  "completed": "2026-05-03 01:08",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.25-obpi-completion-req-coverage-gate/obpis/OBPI-0.0.25-02-override-and-mirror.md"
+ },
+ {
+  "obpi": "OBPI-0.0.26-01",
+  "tier": "A",
+  "hours": 1.1,
+  "receipt_ts": "2026-05-03T10:16",
+  "receipt_commit": "32adb990c",
+  "plan": "OBPI-0.0.26-01-persist-evaluation-events.md",
+  "files": [
+   "src/gzkit/commands/adr_promote.py",
+   "src/gzkit/events.py",
+   "src/gzkit/governance/trust_audits/events.py",
+   "src/gzkit/ledger.py",
+   "src/gzkit/ledger_events.py",
+   "tests/commands/test_adr_evaluate_emission.py"
+  ],
+  "shas": [
+   "32adb990c"
+  ],
+  "tagged": [],
+  "completed": "2026-05-03 10:54",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.26-evaluation-feedback-loop-doctrine/obpis/OBPI-0.0.26-01-persist-evaluation-events.md"
+ },
+ {
+  "obpi": "OBPI-0.0.27-02",
+  "tier": "A",
+  "hours": 3.0,
+  "receipt_ts": "2026-05-04T09:37",
+  "receipt_commit": "833988852",
+  "plan": "plan-OBPI-0.0.27-02-initial-corpus-authoring.md",
+  "files": [
+   "src/gzkit/commands/validate_cmd.py",
+   "tests/governance/test_exemplar_corpus.py"
+  ],
+  "shas": [
+   "833988852"
+  ],
+  "tagged": [],
+  "completed": "2026-05-04 12:09",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/obpis/OBPI-0.0.27-02-initial-corpus-authoring.md"
+ },
+ {
+  "obpi": "OBPI-0.0.27-03",
+  "tier": "A",
+  "hours": 1.2,
+  "receipt_ts": "2026-05-04T22:38",
+  "receipt_commit": "da8e2714a",
+  "plan": "plan-OBPI-0.0.27-03-measurement-pipeline.md",
+  "files": [
+   "tests/complexity/__init__.py",
+   "tests/complexity/test_aggregator.py",
+   "tests/complexity/test_baseline.py"
+  ],
+  "shas": [
+   "da8e2714a"
+  ],
+  "tagged": [],
+  "completed": "2026-05-04 23:21",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.27-exemplar-corpus-doctrine/obpis/OBPI-0.0.27-03-measurement-pipeline.md"
+ },
+ {
+  "obpi": "OBPI-0.0.29-01",
+  "tier": "B-init-only",
+  "hours": 1.0,
+  "receipt_ts": "2026-05-06T09:03",
+  "receipt_commit": "f79163f76",
+  "plan": "advisor-diagnosis-schema-OBPI-0.0.29-01.md",
+  "files": [
+   "tests/complexity/advisor/__init__.py"
+  ],
+  "shas": [
+   "6c2fe10a5"
+  ],
+  "tagged": [],
+  "completed": "2026-05-06 09:34",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.29-complexity-advisor/obpis/OBPI-0.0.29-01-advisor-diagnosis-schema.md"
+ },
+ {
+  "obpi": "OBPI-0.0.29-02",
+  "tier": "A",
+  "hours": 2.0,
+  "receipt_ts": "2026-05-06T09:46",
+  "receipt_commit": "d5cdc33d6",
+  "plan": "diagnosis-engine-OBPI-0.0.29-02.md",
+  "files": [
+   "tests/complexity/advisor/test_archetype_rules.py"
+  ],
+  "shas": [
+   "d5cdc33d6"
+  ],
+  "tagged": [],
+  "completed": "2026-05-06 11:19",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.29-complexity-advisor/obpis/OBPI-0.0.29-02-diagnosis-engine.md"
+ },
+ {
+  "obpi": "OBPI-0.0.29-05",
+  "tier": "B-init-only",
+  "hours": 8.1,
+  "receipt_ts": "2026-05-07T01:38",
+  "receipt_commit": "03385a5b2",
+  "plan": "plan-OBPI-0.0.29-05-auto-chain-hook.md",
+  "files": [
+   "tests/hooks/__init__.py"
+  ],
+  "shas": [
+   "03385a5b2"
+  ],
+  "tagged": [],
+  "completed": "2026-05-07 09:12",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.29-complexity-advisor/obpis/OBPI-0.0.29-05-auto-chain-hook.md"
+ },
+ {
+  "obpi": "OBPI-0.0.29-07",
+  "tier": "A",
+  "hours": 1.8,
+  "receipt_ts": "2026-05-08T00:45",
+  "receipt_commit": "4f11bf49b",
+  "plan": "silly-herding-mist.md",
+  "files": [
+   "src/gzkit/commands/validate_cmd.py",
+   "src/gzkit/governance/trust_audits/__init__.py",
+   "src/gzkit/governance/trust_audits/intrinsic_attestation.py",
+   "src/gzkit/ledger_events.py",
+   "tests/commands/test_complexity_advise_attest_intrinsic.py",
+   "tests/governance/test_intrinsic_attestation_event.py"
+  ],
+  "shas": [
+   "4f11bf49b"
+  ],
+  "tagged": [],
+  "completed": "2026-05-08 02:02",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.29-complexity-advisor/obpis/OBPI-0.0.29-07-intrinsic-complexity-attestation.md"
+ },
+ {
+  "obpi": "OBPI-0.0.30-03",
+  "tier": "B-init-only",
+  "hours": 2.5,
+  "receipt_ts": "2026-05-09T18:34",
+  "receipt_commit": "31b09332c",
+  "plan": "OBPI-0.0.30-03-authoring-hint-engine.md",
+  "files": [
+   "tests/complexity/authoring/__init__.py"
+  ],
+  "shas": [
+   "31b09332c"
+  ],
+  "tagged": [],
+  "completed": "2026-05-09 20:32",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.30-complexity-authoring-guidance/obpis/OBPI-0.0.30-03-authoring-hint-engine.md"
+ },
+ {
+  "obpi": "OBPI-0.0.30-05",
+  "tier": "A",
+  "hours": 0.5,
+  "receipt_ts": "2026-05-10T01:38",
+  "receipt_commit": "13d9b89e8",
+  "plan": "OBPI-0.0.30-05-justify-integration.md",
+  "files": [
+   "tests/skills/test_gz_justify_complexity_amendment.py"
+  ],
+  "shas": [
+   "13d9b89e8"
+  ],
+  "tagged": [],
+  "completed": "2026-05-10 01:40",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.30-complexity-authoring-guidance/obpis/OBPI-0.0.30-05-justify-integration.md"
+ },
+ {
+  "obpi": "OBPI-0.0.32-04",
+  "tier": "A",
+  "hours": 1.2,
+  "receipt_ts": "2026-05-12T10:09",
+  "receipt_commit": "8f3ca6dfe",
+  "plan": "OBPI-0.0.32-04-rules-scaffolder-authoring.md",
+  "files": [
+   "tests/commands/test_init.py"
+  ],
+  "shas": [
+   "8f3ca6dfe"
+  ],
+  "tagged": [
+   "8f3ca6dfe"
+  ],
+  "completed": "2026-05-12 10:49",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.32-canonical-surface-packaging/obpis/OBPI-0.0.32-04-rules-scaffolder-authoring.md"
+ },
+ {
+  "obpi": "OBPI-0.0.32-05",
+  "tier": "A",
+  "hours": 0.8,
+  "receipt_ts": "2026-05-13T01:30",
+  "receipt_commit": "4e4f8c167",
+  "plan": "OBPI-0.0.32-05-init-update-flag.md",
+  "files": [
+   "tests/commands/test_init_update.py"
+  ],
+  "shas": [
+   "4e4f8c167"
+  ],
+  "tagged": [
+   "4e4f8c167"
+  ],
+  "completed": "2026-05-13 01:49",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.32-canonical-surface-packaging/obpis/OBPI-0.0.32-05-init-update-flag.md"
+ },
+ {
+  "obpi": "OBPI-0.0.32-06",
+  "tier": "B-init-only",
+  "hours": 0.6,
+  "receipt_ts": "2026-05-13T08:13",
+  "receipt_commit": "8624adb50",
+  "plan": "OBPI-0.0.32-06-t0-smoke-test.md",
+  "files": [
+   "tests/distribution/__init__.py"
+  ],
+  "shas": [
+   "8624adb50"
+  ],
+  "tagged": [
+   "8624adb50"
+  ],
+  "completed": "2026-05-13 08:17",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.32-canonical-surface-packaging/obpis/OBPI-0.0.32-06-t0-smoke-test.md"
+ },
+ {
+  "obpi": "OBPI-0.0.32-07",
+  "tier": "A",
+  "hours": 1.1,
+  "receipt_ts": "2026-05-13T08:42",
+  "receipt_commit": "a93f13ac5",
+  "plan": "OBPI-0.0.32-07-validate-distribution.md",
+  "files": [
+   "src/gzkit/cli/parser_maintenance.py",
+   "src/gzkit/commands/validate_cmd.py",
+   "src/gzkit/governance/trust_audits/__init__.py",
+   "src/gzkit/governance/trust_audits/distribution.py"
+  ],
+  "shas": [
+   "a93f13ac5"
+  ],
+  "tagged": [
+   "a93f13ac5"
+  ],
+  "completed": "2026-05-13 09:15",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.32-canonical-surface-packaging/obpis/OBPI-0.0.32-07-validate-distribution.md"
+ },
+ {
+  "obpi": "OBPI-0.0.32-08",
+  "tier": "B-placeholder",
+  "hours": 1.4,
+  "receipt_ts": "2026-05-13T09:37",
+  "receipt_commit": "a1865ac51",
+  "plan": "OBPI-0.0.32-08-mirror-sync.md",
+  "files": [
+   "src/gzkit/sync_surfaces.py",
+   "tests/test_sync_surfaces.py"
+  ],
+  "shas": [
+   "a1865ac51"
+  ],
+  "tagged": [
+   "a1865ac51"
+  ],
+  "completed": "2026-05-13 10:34",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.32-canonical-surface-packaging/obpis/OBPI-0.0.32-08-mirror-sync.md"
+ },
+ {
+  "obpi": "OBPI-0.0.32-09",
+  "tier": "B-placeholder",
+  "hours": 0.9,
+  "receipt_ts": "2026-05-12T07:44",
+  "receipt_commit": "560d76c3e",
+  "plan": "OBPI-0.0.32-09-personas-physical-migration.md",
+  "files": [
+   "src/gzkit/personas/implementer.md",
+   "src/gzkit/personas/main-session.md",
+   "src/gzkit/personas/narrator.md",
+   "src/gzkit/personas/pipeline-orchestrator.md",
+   "src/gzkit/personas/quality-reviewer.md",
+   "src/gzkit/personas/spec-reviewer.md"
+  ],
+  "shas": [
+   "560d76c3e"
+  ],
+  "tagged": [
+   "560d76c3e"
+  ],
+  "completed": "2026-05-12 08:05",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.32-canonical-surface-packaging/obpis/OBPI-0.0.32-09-personas-physical-migration.md"
+ },
+ {
+  "obpi": "OBPI-0.0.32-10",
+  "tier": "A",
+  "hours": 0.8,
+  "receipt_ts": "2026-05-12T11:15",
+  "receipt_commit": "8bf2aea57",
+  "plan": "OBPI-0.0.32-10-personas-scaffolder-authoring.md",
+  "files": [
+   "tests/commands/test_init.py"
+  ],
+  "shas": [
+   "8bf2aea57"
+  ],
+  "tagged": [
+   "8bf2aea57"
+  ],
+  "completed": "2026-05-12 11:30",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.32-canonical-surface-packaging/obpis/OBPI-0.0.32-10-personas-scaffolder-authoring.md"
+ },
+ {
+  "obpi": "OBPI-0.0.32-15",
+  "tier": "A",
+  "hours": 9.9,
+  "receipt_ts": "2026-05-14T01:42",
+  "receipt_commit": "45dcdf811",
+  "plan": "OBPI-0.0.32-15-t0-maintenance-surfaces.md",
+  "files": [
+   "tests/test_personas.py",
+   "tests/test_skills.py",
+   "tests/test_templates.py"
+  ],
+  "shas": [
+   "45dcdf811",
+   "80142c0b2"
+  ],
+  "tagged": [
+   "45dcdf811"
+  ],
+  "completed": "2026-05-14 11:03",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.32-canonical-surface-packaging/obpis/OBPI-0.0.32-15-t0-maintenance-surfaces.md"
+ },
+ {
+  "obpi": "OBPI-0.0.33-02",
+  "tier": "A",
+  "hours": 0.5,
+  "receipt_ts": "2026-05-15T13:06",
+  "receipt_commit": "ab244b077",
+  "plan": "OBPI-0.0.33-02-surface-weight-validator.md",
+  "files": [
+   "src/gzkit/commands/validate_cmd.py"
+  ],
+  "shas": [
+   "ab244b077"
+  ],
+  "tagged": [
+   "ab244b077"
+  ],
+  "completed": "2026-05-15 13:08",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/obpis/OBPI-0.0.33-02-surface-weight-validator.md"
+ },
+ {
+  "obpi": "OBPI-0.0.33-03",
+  "tier": "A",
+  "hours": 0.7,
+  "receipt_ts": "2026-05-15T13:27",
+  "receipt_commit": "bfd891be5",
+  "plan": "OBPI-0.0.33-03-pointer-integrity-validator.md",
+  "files": [
+   "src/gzkit/commands/validate_cmd.py"
+  ],
+  "shas": [
+   "bfd891be5"
+  ],
+  "tagged": [
+   "bfd891be5"
+  ],
+  "completed": "2026-05-15 13:37",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/obpis/OBPI-0.0.33-03-pointer-integrity-validator.md"
+ },
+ {
+  "obpi": "OBPI-0.0.33-04",
+  "tier": "A",
+  "hours": 0.5,
+  "receipt_ts": "2026-05-15T23:30",
+  "receipt_commit": "7c5dc526a",
+  "plan": "OBPI-0.0.33-04-scenario-reachability-validator.md",
+  "files": [
+   "src/gzkit/commands/validate_cmd.py"
+  ],
+  "shas": [
+   "7c5dc526a"
+  ],
+  "tagged": [
+   "7c5dc526a"
+  ],
+  "completed": "2026-05-15 23:31",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/obpis/OBPI-0.0.33-04-scenario-reachability-validator.md"
+ },
+ {
+  "obpi": "OBPI-0.0.33-05",
+  "tier": "A",
+  "hours": 1.2,
+  "receipt_ts": "2026-05-15T23:48",
+  "receipt_commit": "f6af0e6a5",
+  "plan": "OBPI-0.0.33-05-surface-fidelity-composite.md",
+  "files": [
+   "src/gzkit/commands/quality.py",
+   "src/gzkit/commands/validate_cmd.py",
+   "src/gzkit/quality.py"
+  ],
+  "shas": [
+   "f6af0e6a5"
+  ],
+  "tagged": [
+   "f6af0e6a5"
+  ],
+  "completed": "2026-05-16 00:28",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.33-agent-control-surface-fidelity/obpis/OBPI-0.0.33-05-surface-fidelity-composite.md"
+ },
+ {
+  "obpi": "OBPI-0.0.34-01",
+  "tier": "B-init-only",
+  "hours": 0.8,
+  "receipt_ts": "2026-05-16T12:13",
+  "receipt_commit": "a830aaf39",
+  "plan": "OBPI-0.0.34-01-content-model-registry.md",
+  "files": [
+   "src/gzkit/content/__init__.py",
+   "tests/content/__init__.py"
+  ],
+  "shas": [
+   "a830aaf39"
+  ],
+  "tagged": [
+   "a830aaf39"
+  ],
+  "completed": "2026-05-16 12:33",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/obpis/OBPI-0.0.34-01-content-model-registry.md"
+ },
+ {
+  "obpi": "OBPI-0.0.34-02",
+  "tier": "B-placeholder",
+  "hours": 1.4,
+  "receipt_ts": "2026-05-16T13:17",
+  "receipt_commit": "64ac378d1",
+  "plan": "plan-OBPI-0.0.34-02-rendering-pipeline.md",
+  "files": [
+   "src/gzkit/content/templates/bullet/claude.md.j2",
+   "src/gzkit/content/templates/chore/claude.md.j2",
+   "src/gzkit/content/templates/handoff/claude.md.j2",
+   "src/gzkit/content/templates/persona/claude.md.j2",
+   "src/gzkit/content/templates/rule/claude.md.j2",
+   "src/gzkit/content/templates/scenario/claude.md.j2",
+   "src/gzkit/content/templates/skill/claude.md.j2"
+  ],
+  "shas": [
+   "64ac378d1"
+  ],
+  "tagged": [
+   "64ac378d1"
+  ],
+  "completed": "2026-05-16 14:09",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/obpis/OBPI-0.0.34-02-rendering-pipeline.md"
+ },
+ {
+  "obpi": "OBPI-0.0.34-03",
+  "tier": "A",
+  "hours": 8.3,
+  "receipt_ts": "2026-05-16T14:40",
+  "receipt_commit": "f70d9d4c9",
+  "plan": "obpi-0.0.34-03-reverse-parse-migration.md",
+  "files": [
+   "src/gzkit/cli/main.py"
+  ],
+  "shas": [
+   "f70d9d4c9"
+  ],
+  "tagged": [
+   "f70d9d4c9"
+  ],
+  "completed": "2026-05-16 22:27",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.34-agent-control-surface-rendering-substrate/obpis/OBPI-0.0.34-03-reverse-parse-migration.md"
+ },
+ {
+  "obpi": "OBPI-0.0.35-03",
+  "tier": "A",
+  "hours": 1.1,
+  "receipt_ts": "2026-05-17T15:36",
+  "receipt_commit": "70853ae23",
+  "plan": "OBPI-0.0.35-03-why-foundation-tier-convention.md",
+  "files": [
+   "tests/commands/test_plan.py"
+  ],
+  "shas": [
+   "c943bc1e5"
+  ],
+  "tagged": [
+   "c943bc1e5"
+  ],
+  "completed": "2026-05-17 16:13",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.35-foundation-feature-invariance-test/obpis/OBPI-0.0.35-03-why-foundation-tier-convention.md"
+ },
+ {
+  "obpi": "OBPI-0.0.35-04",
+  "tier": "A",
+  "hours": 1.9,
+  "receipt_ts": "2026-05-17T17:50",
+  "receipt_commit": "70853ae23",
+  "plan": "kind-invariance-validator-OBPI-0.0.35-04.md",
+  "files": [
+   "src/gzkit/commands/quality.py",
+   "src/gzkit/governance/trust_audits/__init__.py",
+   "src/gzkit/governance/trust_audits/kind_invariance.py",
+   "src/gzkit/quality.py"
+  ],
+  "shas": [
+   "aa91cae35"
+  ],
+  "tagged": [
+   "aa91cae35"
+  ],
+  "completed": "2026-05-17 19:16",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.35-foundation-feature-invariance-test/obpis/OBPI-0.0.35-04-kind-invariance-validator.md"
+ },
+ {
+  "obpi": "OBPI-0.0.36-03",
+  "tier": "A",
+  "hours": 1.4,
+  "receipt_ts": "2026-05-18T00:39",
+  "receipt_commit": "0a8afc844",
+  "plan": "OBPI-0.0.36-03-receipt-shape-validator.md",
+  "files": [
+   "src/gzkit/cli/parser_maintenance.py",
+   "src/gzkit/commands/validate_cmd.py",
+   "src/gzkit/governance/trust_audits/__init__.py",
+   "src/gzkit/governance/trust_audits/receipt_shape.py",
+   "src/gzkit/quality.py"
+  ],
+  "shas": [
+   "0a8afc844"
+  ],
+  "tagged": [
+   "0a8afc844"
+  ],
+  "completed": "2026-05-18 01:30",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.36-universal-obpi-attestation/obpis/OBPI-0.0.36-03-validate-receipt-shape-scope.md"
+ },
+ {
+  "obpi": "OBPI-0.0.37-05",
+  "tier": "A",
+  "hours": 6.8,
+  "receipt_ts": "2026-05-20T01:39",
+  "receipt_commit": "a8e195880",
+  "plan": "brief-reconcile-engine-OBPI-0.0.37-05.md",
+  "files": [
+   "src/gzkit/cli/parser_maintenance.py",
+   "src/gzkit/commands/validate_cmd.py"
+  ],
+  "shas": [
+   "a8e195880"
+  ],
+  "tagged": [
+   "a8e195880"
+  ],
+  "completed": "2026-05-20 07:59",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-05-brief-reconcile-engine.md"
+ },
+ {
+  "obpi": "OBPI-0.0.37-06",
+  "tier": "A",
+  "hours": 44.0,
+  "receipt_ts": "2026-06-04T10:40",
+  "receipt_commit": "329c33ffd",
+  "plan": "OBPI-0.0.37-06-brief-reconcile-cli.md",
+  "files": [
+   "src/gzkit/ledger_events.py"
+  ],
+  "shas": [
+   "664b1c5b0"
+  ],
+  "tagged": [
+   "664b1c5b0"
+  ],
+  "completed": "2026-06-06 06:13",
+  "now_in_scope": [
+   "src/gzkit/ledger_events.py"
+  ],
+  "brief": "docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-06-brief-reconcile-cli.md"
+ },
+ {
+  "obpi": "OBPI-0.0.37-07",
+  "tier": "A",
+  "hours": 0.9,
+  "receipt_ts": "2026-06-06T06:48",
+  "receipt_commit": "5a2c352fb",
+  "plan": "pipeline-stage1-gate-OBPI-0.0.37-07.md",
+  "files": [
+   "src/gzkit/commands/obpi_cmd.py"
+  ],
+  "shas": [
+   "5a2c352fb"
+  ],
+  "tagged": [
+   "5a2c352fb"
+  ],
+  "completed": "2026-06-06 07:13",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-07-pipeline-stage1-gate.md"
+ },
+ {
+  "obpi": "OBPI-0.0.37-13",
+  "tier": "A",
+  "hours": 1.5,
+  "receipt_ts": "2026-06-01T22:57",
+  "receipt_commit": "70853ae23",
+  "plan": "OBPI-0.0.37-13-reverse-parse-migration.md",
+  "files": [
+   "tests/content/test_migration_layer.py"
+  ],
+  "shas": [
+   "34989b6c8"
+  ],
+  "tagged": [
+   "34989b6c8"
+  ],
+  "completed": "2026-06-01 23:57",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-13-reverse-parse-migration.md"
+ },
+ {
+  "obpi": "OBPI-0.0.37-24",
+  "tier": "A",
+  "hours": 6.4,
+  "receipt_ts": "2026-06-15T02:16",
+  "receipt_commit": "169f89923",
+  "plan": "OBPI-0.0.37-24-advisor-panel-info-retention-qc-loop.md",
+  "files": [
+   "src/gzkit/skills/gz-advisor-qc/SKILL.md"
+  ],
+  "shas": [
+   "169f89923"
+  ],
+  "tagged": [
+   "169f89923"
+  ],
+  "completed": "2026-06-15 08:11",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.37-constitutional-invariant-composition/obpis/OBPI-0.0.37-24-advisor-panel-info-retention-qc-loop.md"
+ },
+ {
+  "obpi": "OBPI-0.0.54-03",
+  "tier": "A",
+  "hours": 4.9,
+  "receipt_ts": "2026-05-25T21:09",
+  "receipt_commit": "e969a33c1",
+  "plan": "quiet-dazzling-starfish.md",
+  "files": [
+   "src/gzkit/templates/agents.md"
+  ],
+  "shas": [
+   "e969a33c1"
+  ],
+  "tagged": [
+   "e969a33c1"
+  ],
+  "completed": "2026-05-26 01:33",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.54-agents-md-map-not-encyclopedia-doctrine/obpis/OBPI-0.0.54-03-agents-md-map-conformance-validator.md"
+ },
+ {
+  "obpi": "OBPI-0.0.57-01",
+  "tier": "A",
+  "hours": 1.3,
+  "receipt_ts": "2026-05-23T09:02",
+  "receipt_commit": "5a7443ef8",
+  "plan": "cozy-leaping-bonbon.md",
+  "files": [
+   "src/gzkit/governance/trust_audits/taxonomy.py"
+  ],
+  "shas": [
+   "5a7443ef8"
+  ],
+  "tagged": [
+   "5a7443ef8"
+  ],
+  "completed": "2026-05-23 09:51",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.57-foundation-adr-nominal-id-triage/obpis/OBPI-0.0.57-01-nominal-id-doctrine.md"
+ },
+ {
+  "obpi": "OBPI-0.0.57-02",
+  "tier": "A",
+  "hours": 0.6,
+  "receipt_ts": "2026-05-23T11:32",
+  "receipt_commit": "c3dd7721e",
+  "plan": "OBPI-0.0.57-02-gz-adr-create-nominal-allocator.md",
+  "files": [
+   "tests/test_taxonomy_validator_nominal.py"
+  ],
+  "shas": [
+   "c3dd7721e"
+  ],
+  "tagged": [
+   "c3dd7721e"
+  ],
+  "completed": "2026-05-23 11:37",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.57-foundation-adr-nominal-id-triage/obpis/OBPI-0.0.57-02-gz-adr-create-nominal-allocator.md"
+ },
+ {
+  "obpi": "OBPI-0.0.59-05",
+  "tier": "A",
+  "hours": 0.8,
+  "receipt_ts": "2026-05-27T07:01",
+  "receipt_commit": "3119a3b37",
+  "plan": "first-sweep-wave-top-5-offenders-OBPI-0.0.59-05.md",
+  "files": [
+   "tests/governance/test_token_block_discipline.py"
+  ],
+  "shas": [
+   "3119a3b37"
+  ],
+  "tagged": [
+   "3119a3b37"
+  ],
+  "completed": "2026-05-27 07:18",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.59-req-scope-discipline-and-test-shape-doctrine/obpis/OBPI-0.0.59-05-first-sweep-wave-top-5-offenders.md"
+ },
+ {
+  "obpi": "OBPI-0.0.63-02",
+  "tier": "A",
+  "hours": 0.6,
+  "receipt_ts": "2026-05-29T05:45",
+  "receipt_commit": "b9fc4f78e",
+  "plan": "demo-and-arb-receipt-discipline-OBPI-0.0.63-02.md",
+  "files": [
+   "tests/fixtures/ceremony_demos/multiline_demo.md"
+  ],
+  "shas": [
+   "b9fc4f78e"
+  ],
+  "tagged": [
+   "b9fc4f78e"
+  ],
+  "completed": "2026-05-29 05:53",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.63-closeout-ceremony-runtime-engine-parity/obpis/OBPI-0.0.63-02-demo-and-arb-receipt-discipline.md"
+ },
+ {
+  "obpi": "OBPI-0.0.64-01",
+  "tier": "A",
+  "hours": 0.8,
+  "receipt_ts": "2026-05-28T06:44",
+  "receipt_commit": "c0c0bf7ce",
+  "plan": "OBPI-0.0.64-01-task-id-worklog-schema-additive.md",
+  "files": [
+   "tests/governance/test_task_id_worklog_field.py"
+  ],
+  "shas": [
+   "c0c0bf7ce"
+  ],
+  "tagged": [
+   "c0c0bf7ce"
+  ],
+  "completed": "2026-05-28 06:59",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.64-task-envelope-and-planning-decomposition/obpis/OBPI-0.0.64-01-task-id-worklog-schema-additive.md"
+ },
+ {
+  "obpi": "OBPI-0.0.64-02",
+  "tier": "A",
+  "hours": 1.1,
+  "receipt_ts": "2026-05-28T07:15",
+  "receipt_commit": "e9265da90",
+  "plan": "OBPI-0.0.64-02-advances-decorator-and-discovery-convention.md",
+  "files": [
+   "tests/governance/test_advances_decorator.py"
+  ],
+  "shas": [
+   "e9265da90"
+  ],
+  "tagged": [
+   "e9265da90"
+  ],
+  "completed": "2026-05-28 07:53",
+  "now_in_scope": [
+   "tests/governance/test_advances_decorator.py"
+  ],
+  "brief": "docs/design/adr/foundation/ADR-0.0.64-task-envelope-and-planning-decomposition/obpis/OBPI-0.0.64-02-advances-decorator-and-discovery-convention.md"
+ },
+ {
+  "obpi": "OBPI-0.0.64-03",
+  "tier": "A",
+  "hours": 0.9,
+  "receipt_ts": "2026-05-28T08:07",
+  "receipt_commit": "6ef884daa",
+  "plan": "OBPI-0.0.64-03-subdivision-driven-seq-advancement.md",
+  "files": [
+   "src/gzkit/cli/parser_artifacts.py",
+   "src/gzkit/commands/task.py",
+   "tests/test_tasks.py"
+  ],
+  "shas": [
+   "6ef884daa"
+  ],
+  "tagged": [
+   "6ef884daa"
+  ],
+  "completed": "2026-05-28 08:33",
+  "now_in_scope": [
+   "tests/test_tasks.py"
+  ],
+  "brief": "docs/design/adr/foundation/ADR-0.0.64-task-envelope-and-planning-decomposition/obpis/OBPI-0.0.64-03-subdivision-driven-seq-advancement.md"
+ },
+ {
+  "obpi": "OBPI-0.0.64-04",
+  "tier": "A",
+  "hours": 1.5,
+  "receipt_ts": "2026-05-28T09:27",
+  "receipt_commit": "ad187cde5",
+  "plan": "velvety-sauteeing-hickey.md",
+  "files": [
+   "src/gzkit/cli/parser_artifacts.py",
+   "src/gzkit/cli/parser_maintenance.py"
+  ],
+  "shas": [
+   "ad187cde5"
+  ],
+  "tagged": [
+   "ad187cde5"
+  ],
+  "completed": "2026-05-28 10:27",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.64-task-envelope-and-planning-decomposition/obpis/OBPI-0.0.64-04-gz-validate-task-envelope-coherence.md"
+ },
+ {
+  "obpi": "OBPI-0.0.68-02",
+  "tier": "A",
+  "hours": 1.2,
+  "receipt_ts": "2026-06-09T11:26",
+  "receipt_commit": "4b97c2463",
+  "plan": "OBPI-0.0.68-02-session-green-gate-validator.md",
+  "files": [
+   "src/gzkit/governance/trust_audits/__init__.py",
+   "src/gzkit/governance/trust_audits/session_green_gate.py"
+  ],
+  "shas": [
+   "4b97c2463"
+  ],
+  "tagged": [
+   "4b97c2463"
+  ],
+  "completed": "2026-06-09 12:07",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.68-green-between-sessions-gate/obpis/OBPI-0.0.68-02-session-green-gate-validator.md"
+ },
+ {
+  "obpi": "OBPI-0.0.69-01",
+  "tier": "A",
+  "hours": 2.4,
+  "receipt_ts": "2026-06-10T05:16",
+  "receipt_commit": "3d59f60d6",
+  "plan": "OBPI-0.0.69-01-support-channel-plan.md",
+  "files": [
+   "src/gzkit/commands/validate_req_kind.py"
+  ],
+  "shas": [
+   "3d59f60d6"
+  ],
+  "tagged": [
+   "3d59f60d6"
+  ],
+  "completed": "2026-06-10 07:10",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.69-channels-first-closeout-proof/obpis/OBPI-0.0.69-01-support-channel-ledger-and-validator-dispatch.md"
+ },
+ {
+  "obpi": "OBPI-0.0.69-04",
+  "tier": "B-init-only",
+  "hours": 1.7,
+  "receipt_ts": "2026-06-10T23:09",
+  "receipt_commit": "8dc4f335f",
+  "plan": "retire-ln-surface-OBPI-0.0.69-04.md",
+  "files": [
+   "src/gzkit/governance/trust_audits/__init__.py"
+  ],
+  "shas": [
+   "8dc4f335f"
+  ],
+  "tagged": [
+   "8dc4f335f"
+  ],
+  "completed": "2026-06-11 00:21",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.69-channels-first-closeout-proof/obpis/OBPI-0.0.69-04-retire-ln-closeout-proof-binding-surface.md"
+ },
+ {
+  "obpi": "OBPI-0.0.74-05",
+  "tier": "A",
+  "hours": 6.0,
+  "receipt_ts": "2026-06-25T23:34",
+  "receipt_commit": "bd9c8abb6",
+  "plan": "OBPI-0.0.74-05-mx-exit-hard-gate.md",
+  "files": [
+   "src/gzkit/cli/parser_governance.py"
+  ],
+  "shas": [
+   "bd9c8abb6"
+  ],
+  "tagged": [
+   "bd9c8abb6"
+  ],
+  "completed": "2026-06-26 05:06",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/foundation/ADR-0.0.74-mx-mode-maintenance-hangar/obpis/OBPI-0.0.74-05-mx-exit-hard-gate.md"
+ },
+ {
+  "obpi": "OBPI-0.32.0-02",
+  "tier": "A",
+  "hours": 2.3,
+  "receipt_ts": "2026-07-06T08:53",
+  "receipt_commit": "3fbc3e072",
+  "plan": "OBPI-0.32.0-02-networkx-substrate-and-corpus-projection.md",
+  "files": [
+   "src/gzkit/events.py"
+  ],
+  "shas": [
+   "e1dc58c34"
+  ],
+  "tagged": [
+   "e1dc58c34"
+  ],
+  "completed": "2026-07-06 10:42",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/pre-release/ADR-0.32.0-gzkit-ontology/obpis/OBPI-0.32.0-02-networkx-substrate-and-corpus-projection.md"
+ },
+ {
+  "obpi": "OBPI-0.34.0-03",
+  "tier": "A",
+  "hours": 9.9,
+  "receipt_ts": "2026-07-29T00:02",
+  "receipt_commit": "be26cef18",
+  "plan": "plan-OBPI-0.34.0-03-terminal-partition-gate-and-doctrine-retirement.md",
+  "files": [
+   "src/gzkit/commands/validate_cmd.py"
+  ],
+  "shas": [
+   "be26cef18"
+  ],
+  "tagged": [
+   "be26cef18"
+  ],
+  "completed": "2026-07-29 09:28",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/pre-release/ADR-0.34.0-foundation-sunset/obpis/OBPI-0.34.0-03-terminal-partition-gate-and-doctrine-retirement.md"
+ },
+ {
+  "obpi": "OBPI-0.35.0-04",
+  "tier": "B-long-window-untagged",
+  "hours": 12.1,
+  "receipt_ts": "2026-09-05T06:33",
+  "receipt_commit": "428eb35d0",
+  "plan": "section-ownership-and-ratchet-OBPI-0.35.0-04.md",
+  "files": [
+   "tests/commands/test_content_unown.py"
+  ],
+  "shas": [
+   "18454c906",
+   "31a448039",
+   "40fd9994e",
+   "428eb35d0",
+   "f89520331"
+  ],
+  "tagged": [],
+  "completed": "2026-09-05 18:11",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-04-section-ownership-and-ratchet.md"
+ },
+ {
+  "obpi": "OBPI-0.35.0-05",
+  "tier": "A",
+  "hours": 48.5,
+  "receipt_ts": "2026-09-09T00:07",
+  "receipt_commit": "417154bd4",
+  "plan": "glittery-kindling-dongarra.md",
+  "files": [
+   "tests/commands/test_content_compose.py",
+   "tests/content/test_lineage.py"
+  ],
+  "shas": [
+   "2c32d6de8"
+  ],
+  "tagged": [
+   "2c32d6de8"
+  ],
+  "completed": "2026-09-11 00:07",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-05-corpus-candidate-generator.md"
+ },
+ {
+  "obpi": "OBPI-0.35.0-09",
+  "tier": "A",
+  "hours": 79.5,
+  "receipt_ts": "2026-08-18T01:22",
+  "receipt_commit": "51545dbae",
+  "plan": "OBPI-0.35.0-09-codex-playback-wiring.md",
+  "files": [
+   "tests/governance/test_rendition_floor_coherence.py",
+   "tests/governance/test_rendition_freshness.py",
+   "tests/governance/test_surface_delivery_witness.py"
+  ],
+  "shas": [
+   "0f666fa94",
+   "3d7641718",
+   "521decc75"
+  ],
+  "tagged": [
+   "0f666fa94",
+   "3d7641718",
+   "521decc75"
+  ],
+  "completed": "2026-08-21 08:23",
+  "now_in_scope": [],
+  "brief": "docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-09-codex-playback-wiring.md"
+ }
+]

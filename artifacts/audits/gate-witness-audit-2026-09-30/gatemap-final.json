@@ -1,0 +1,2285 @@
+{
+ "adr-status-freshness": {
+  "claim": "adr-status-freshness",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.taxonomy:audit_adr_status_fresh",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 3,
+    "counts": {
+     "survived": 2,
+     "killed": 1
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/taxonomy.py:756-757",
+     "src/gzkit/governance/trust_audits/taxonomy.py:757-757"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "advisory-scorecard-ruff-reachability": {
+  "claim": "advisory-scorecard-ruff-reachability",
+  "expect": true,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.release:audit_advisory_scorecard",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 12,
+    "counts": {
+     "survived": 11,
+     "killed": 1
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/release.py:1070-1071",
+     "src/gzkit/governance/trust_audits/release.py:1071-1071",
+     "src/gzkit/governance/trust_audits/release.py:1082-1137",
+     "src/gzkit/governance/trust_audits/release.py:1085-1088",
+     "src/gzkit/governance/trust_audits/release.py:1088-1088",
+     "src/gzkit/governance/trust_audits/release.py:1090-1092",
+     "src/gzkit/governance/trust_audits/release.py:1092-1092",
+     "src/gzkit/governance/trust_audits/release.py:1093-1109",
+     "src/gzkit/governance/trust_audits/release.py:1109-1109",
+     "src/gzkit/governance/trust_audits/release.py:1111-1137",
+     "src/gzkit/governance/trust_audits/release.py:1124-1137"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "authorship-policy": {
+  "claim": "authorship-policy",
+  "expect": true,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.authorship:audit_authorship",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 3,
+    "counts": {
+     "survived": 2,
+     "killed": 1
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/authorship.py:110-111",
+     "src/gzkit/governance/trust_audits/authorship.py:111-111"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "cli-audit": {
+  "claim": "cli-audit",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits._qc_nc_entrypoints:_ep_cli_audit",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 1,
+    "counts": {
+     "killed": 1
+    },
+    "survivors": []
+   }
+  ],
+  "error": ""
+ },
+ "complexity-doctrine-links": {
+  "claim": "complexity-doctrine-links",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.complexity_doctrine_links:validate_complexity_doctrine_links",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 10,
+    "counts": {
+     "killed": 5,
+     "survived": 5
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/complexity_doctrine_links.py:198-207",
+     "src/gzkit/governance/trust_audits/complexity_doctrine_links.py:207-207",
+     "src/gzkit/governance/trust_audits/complexity_doctrine_links.py:220-230",
+     "src/gzkit/governance/trust_audits/complexity_doctrine_links.py:230-230",
+     "src/gzkit/governance/trust_audits/complexity_doctrine_links.py:231-242"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "dispatch-absorption-marker": {
+  "claim": "dispatch-absorption-marker",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.quality:run_dispatch_absorption_marker_audit",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 5,
+    "counts": {
+     "survived": 3,
+     "killed": 2
+    },
+    "survivors": [
+     "src/gzkit/quality.py:2005-2015",
+     "src/gzkit/quality.py:2006-2015",
+     "src/gzkit/quality.py:2029-2035"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "docs-build-validation-floor": {
+  "claim": "docs-build-validation-floor",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.quality:run_mkdocs",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 5,
+    "counts": {
+     "survived": 3,
+     "killed": 2
+    },
+    "survivors": [
+     "src/gzkit/quality.py:996-1003",
+     "src/gzkit/quality.py:997-1003",
+     "src/gzkit/quality.py:1016-1016"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "exemption-controls": {
+  "claim": "exemption-controls",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.exemption_controls:audit_exemption_controls",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 16,
+    "counts": {
+     "survived": 12,
+     "killed": 4
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/exemption_controls.py:149-150",
+     "src/gzkit/governance/trust_audits/exemption_controls.py:150-150",
+     "src/gzkit/governance/trust_audits/exemption_controls.py:155-163",
+     "src/gzkit/governance/trust_audits/exemption_controls.py:156-163",
+     "src/gzkit/governance/trust_audits/exemption_controls.py:168-201",
+     "src/gzkit/governance/trust_audits/exemption_controls.py:170-179",
+     "src/gzkit/governance/trust_audits/exemption_controls.py:179-179",
+     "src/gzkit/governance/trust_audits/exemption_controls.py:181-201",
+     "src/gzkit/governance/trust_audits/exemption_controls.py:191-201",
+     "src/gzkit/governance/trust_audits/exemption_controls.py:204-220",
+     "src/gzkit/governance/trust_audits/exemption_controls.py:220-220",
+     "src/gzkit/governance/trust_audits/exemption_controls.py:221-232"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "gate5-attestation-absence": {
+  "claim": "gate5-attestation-absence",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.commands.adr_audit:_requires_human_obpi_attestation",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 1,
+    "counts": {
+     "killed": 1
+    },
+    "survivors": []
+   },
+   {
+    "target": "gzkit.commands.adr_audit:_validate_obpi_human_attestation_fields",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 8,
+    "counts": {
+     "survived": 5,
+     "killed": 3
+    },
+    "survivors": [
+     "src/gzkit/commands/adr_audit.py:901-902",
+     "src/gzkit/commands/adr_audit.py:903-904",
+     "src/gzkit/commands/adr_audit.py:911-919",
+     "src/gzkit/commands/adr_audit.py:915-919",
+     "src/gzkit/commands/adr_audit.py:916-919"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "handoff-documents": {
+  "claim": "handoff-documents",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.quality:run_handoff_document_audit",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 17,
+    "counts": {
+     "survived": 13,
+     "killed": 4
+    },
+    "survivors": [
+     "src/gzkit/quality.py:1715-1722",
+     "src/gzkit/quality.py:1716-1722",
+     "src/gzkit/quality.py:1737-1737",
+     "src/gzkit/quality.py:1744-1745",
+     "src/gzkit/quality.py:1745-1745",
+     "src/gzkit/quality.py:1751-1752",
+     "src/gzkit/quality.py:1753-1754",
+     "src/gzkit/quality.py:1754-1754",
+     "src/gzkit/quality.py:1755-1757",
+     "src/gzkit/quality.py:1757-1757",
+     "src/gzkit/quality.py:1780-1782",
+     "src/gzkit/quality.py:1783-1790",
+     "src/gzkit/quality.py:1791-1797"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "instructions-files-budget": {
+  "claim": "instructions-files-budget",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.instructions_files_budget:audit_instructions_files_budget",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 6,
+    "counts": {
+     "survived": 5,
+     "killed": 1
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/instructions_files_budget.py:93-96",
+     "src/gzkit/governance/trust_audits/instructions_files_budget.py:95-96",
+     "src/gzkit/governance/trust_audits/instructions_files_budget.py:97-103",
+     "src/gzkit/governance/trust_audits/instructions_files_budget.py:99-103",
+     "src/gzkit/governance/trust_audits/instructions_files_budget.py:102-103"
+    ]
+   },
+   {
+    "target": "gzkit.governance.trust_audits.surface_delivery_witness:audit_surface_delivery_witness",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 8,
+    "counts": {
+     "survived": 5,
+     "killed": 3
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/surface_delivery_witness.py:222-223",
+     "src/gzkit/governance/trust_audits/surface_delivery_witness.py:223-223",
+     "src/gzkit/governance/trust_audits/surface_delivery_witness.py:227-227",
+     "src/gzkit/governance/trust_audits/surface_delivery_witness.py:232-233",
+     "src/gzkit/governance/trust_audits/surface_delivery_witness.py:234-234"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "ledger-vocabulary-inertness": {
+  "claim": "ledger-vocabulary-inertness",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits._qc_nc_entrypoints:_ep_ledger_vocabulary_inertness",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 1,
+    "counts": {
+     "killed": 1
+    },
+    "survivors": []
+   }
+  ],
+  "error": ""
+ },
+ "lock-exchange-coupling": {
+  "claim": "lock-exchange-coupling",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.lock_exchange_coupling:validate_lock_exchange_coupling",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 18,
+    "counts": {
+     "survived": 16,
+     "killed": 2
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/lock_exchange_coupling.py:46-47",
+     "src/gzkit/governance/trust_audits/lock_exchange_coupling.py:47-47",
+     "src/gzkit/governance/trust_audits/lock_exchange_coupling.py:55-56",
+     "src/gzkit/governance/trust_audits/lock_exchange_coupling.py:56-56",
+     "src/gzkit/governance/trust_audits/lock_exchange_coupling.py:62-63",
+     "src/gzkit/governance/trust_audits/lock_exchange_coupling.py:63-63",
+     "src/gzkit/governance/trust_audits/lock_exchange_coupling.py:65-66",
+     "src/gzkit/governance/trust_audits/lock_exchange_coupling.py:66-66",
+     "src/gzkit/governance/trust_audits/lock_exchange_coupling.py:70-82",
+     "src/gzkit/governance/trust_audits/lock_exchange_coupling.py:82-82",
+     "src/gzkit/governance/trust_audits/lock_exchange_coupling.py:84-96",
+     "src/gzkit/governance/trust_audits/lock_exchange_coupling.py:96-96",
+     "src/gzkit/governance/trust_audits/lock_exchange_coupling.py:97-113",
+     "src/gzkit/governance/trust_audits/lock_exchange_coupling.py:113-113",
+     "src/gzkit/governance/trust_audits/lock_exchange_coupling.py:114-127",
+     "src/gzkit/governance/trust_audits/lock_exchange_coupling.py:127-127"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "parity-check": {
+  "claim": "parity-check",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits._qc_nc_entrypoints:_ep_parity_check",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 1,
+    "counts": {
+     "killed": 1
+    },
+    "survivors": []
+   }
+  ],
+  "error": ""
+ },
+ "population-controls-disclosed": {
+  "claim": "population-controls-disclosed",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.enforcement:get_enforcement_registry",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 1,
+    "counts": {
+     "inconclusive": 1
+    },
+    "survivors": []
+   },
+   {
+    "target": "gzkit.governance.trust_audits.population_controls:audit_population_controls",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 10,
+    "counts": {
+     "survived": 10
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/population_controls.py:83-84",
+     "src/gzkit/governance/trust_audits/population_controls.py:84-84",
+     "src/gzkit/governance/trust_audits/population_controls.py:86-94",
+     "src/gzkit/governance/trust_audits/population_controls.py:87-94",
+     "src/gzkit/governance/trust_audits/population_controls.py:97-116",
+     "src/gzkit/governance/trust_audits/population_controls.py:98-116",
+     "src/gzkit/governance/trust_audits/population_controls.py:107-116",
+     "src/gzkit/governance/trust_audits/population_controls.py:117-131",
+     "src/gzkit/governance/trust_audits/population_controls.py:118-131",
+     "src/gzkit/governance/trust_audits/population_controls.py:132-132"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "qc-binding": {
+  "claim": "qc-binding",
+  "expect": true,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.theater_signature_scan:scan_validator_tree",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 5,
+    "counts": {
+     "killed": 3,
+     "survived": 2
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/theater_signature_scan.py:278-279",
+     "src/gzkit/governance/trust_audits/theater_signature_scan.py:279-279"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "rendition-floor-coherence": {
+  "claim": "rendition-floor-coherence",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.rendition_floor_coherence:validate_rendition_floor_coherence",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 17,
+    "counts": {
+     "survived": 14,
+     "killed": 3
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/rendition_floor_coherence.py:84-85",
+     "src/gzkit/governance/trust_audits/rendition_floor_coherence.py:85-85",
+     "src/gzkit/governance/trust_audits/rendition_floor_coherence.py:90-91",
+     "src/gzkit/governance/trust_audits/rendition_floor_coherence.py:91-91",
+     "src/gzkit/governance/trust_audits/rendition_floor_coherence.py:93-94",
+     "src/gzkit/governance/trust_audits/rendition_floor_coherence.py:94-94",
+     "src/gzkit/governance/trust_audits/rendition_floor_coherence.py:97-98",
+     "src/gzkit/governance/trust_audits/rendition_floor_coherence.py:98-98",
+     "src/gzkit/governance/trust_audits/rendition_floor_coherence.py:101-102",
+     "src/gzkit/governance/trust_audits/rendition_floor_coherence.py:102-102",
+     "src/gzkit/governance/trust_audits/rendition_floor_coherence.py:105-106",
+     "src/gzkit/governance/trust_audits/rendition_floor_coherence.py:106-106",
+     "src/gzkit/governance/trust_audits/rendition_floor_coherence.py:119-121",
+     "src/gzkit/governance/trust_audits/rendition_floor_coherence.py:121-121"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "session-green-gate": {
+  "claim": "session-green-gate",
+  "expect": true,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.session_green_gate:audit_session_green_gate",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 9,
+    "counts": {
+     "survived": 6,
+     "killed": 3
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/session_green_gate.py:207-217",
+     "src/gzkit/governance/trust_audits/session_green_gate.py:208-217",
+     "src/gzkit/governance/trust_audits/session_green_gate.py:221-230",
+     "src/gzkit/governance/trust_audits/session_green_gate.py:231-238",
+     "src/gzkit/governance/trust_audits/session_green_gate.py:232-238",
+     "src/gzkit/governance/trust_audits/session_green_gate.py:253-253"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "status-writer-coverage": {
+  "claim": "status-writer-coverage",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.status_writer_coverage:audit_status_writer_coverage",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 7,
+    "counts": {
+     "survived": 4,
+     "killed": 3
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/status_writer_coverage.py:233-234",
+     "src/gzkit/governance/trust_audits/status_writer_coverage.py:234-234",
+     "src/gzkit/governance/trust_audits/status_writer_coverage.py:243-243",
+     "src/gzkit/governance/trust_audits/status_writer_coverage.py:253-265"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "task-envelope-coherence": {
+  "claim": "task-envelope-coherence",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.commands.validate_task_envelope:_validate_task_envelope_coherence",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 1,
+    "counts": {
+     "killed": 1
+    },
+    "survivors": []
+   }
+  ],
+  "error": ""
+ },
+ "tautological-debt": {
+  "claim": "tautological-debt",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.commands.chores:_resolve_chore_dir",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 5,
+    "counts": {
+     "survived": 5
+    },
+    "survivors": [
+     "src/gzkit/commands/chores.py:175-176",
+     "src/gzkit/commands/chores.py:176-176",
+     "src/gzkit/commands/chores.py:179-188",
+     "src/gzkit/commands/chores.py:188-188",
+     "src/gzkit/commands/chores.py:191-193"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "theater-signature-scan": {
+  "claim": "theater-signature-scan",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.theater_signature_scan:scan_source_for_signatures",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 5,
+    "counts": {
+     "killed": 4,
+     "survived": 1
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/theater_signature_scan.py:256-256"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "validate-default-scopes": {
+  "claim": "validate-default-scopes",
+  "expect": true,
+  "targets": [
+   {
+    "target": "gzkit.commands.validate_cmd:_collect_errors",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 1,
+    "counts": {
+     "killed": 1
+    },
+    "survivors": []
+   }
+  ],
+  "error": ""
+ },
+ "verifier-exit-status-masked": {
+  "claim": "verifier-exit-status-masked",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.verifier_pipe_gate:_ep_verifier_pipe_gate",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 1,
+    "counts": {
+     "killed": 1
+    },
+    "survivors": []
+   }
+  ],
+  "error": ""
+ },
+ "waiver-ratchet-silent-bypass": {
+  "claim": "waiver-ratchet-silent-bypass",
+  "expect": true,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.waiver_ratchet:audit_waiver_ratchet",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 11,
+    "counts": {
+     "survived": 9,
+     "killed": 2
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/waiver_ratchet.py:221-231",
+     "src/gzkit/governance/trust_audits/waiver_ratchet.py:222-231",
+     "src/gzkit/governance/trust_audits/waiver_ratchet.py:246-284",
+     "src/gzkit/governance/trust_audits/waiver_ratchet.py:250-259",
+     "src/gzkit/governance/trust_audits/waiver_ratchet.py:259-259",
+     "src/gzkit/governance/trust_audits/waiver_ratchet.py:261-271",
+     "src/gzkit/governance/trust_audits/waiver_ratchet.py:271-271",
+     "src/gzkit/governance/trust_audits/waiver_ratchet.py:273-284",
+     "src/gzkit/governance/trust_audits/waiver_ratchet.py:279-284"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "adr-taxonomy": {
+  "claim": "adr-taxonomy",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.taxonomy:audit_foundation_closure",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 1,
+    "counts": {
+     "killed": 1
+    },
+    "survivors": []
+   }
+  ],
+  "error": ""
+ },
+ "advisory-scorecard-summary-drift": {
+  "claim": "advisory-scorecard-summary-drift",
+  "expect": true,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.release:audit_advisory_scorecard",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 12,
+    "counts": {
+     "survived": 11,
+     "killed": 1
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/release.py:1070-1071",
+     "src/gzkit/governance/trust_audits/release.py:1071-1071",
+     "src/gzkit/governance/trust_audits/release.py:1082-1137",
+     "src/gzkit/governance/trust_audits/release.py:1085-1088",
+     "src/gzkit/governance/trust_audits/release.py:1088-1088",
+     "src/gzkit/governance/trust_audits/release.py:1090-1092",
+     "src/gzkit/governance/trust_audits/release.py:1092-1092",
+     "src/gzkit/governance/trust_audits/release.py:1093-1109",
+     "src/gzkit/governance/trust_audits/release.py:1109-1109",
+     "src/gzkit/governance/trust_audits/release.py:1111-1137",
+     "src/gzkit/governance/trust_audits/release.py:1124-1137"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "behave": {
+  "claim": "behave",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits._qc_nc_entrypoints:_ep_behave",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 1,
+    "counts": {
+     "killed": 1
+    },
+    "survivors": []
+   }
+  ],
+  "error": ""
+ },
+ "cli-log-levels-follow-spec": {
+  "claim": "cli-log-levels-follow-spec",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.cli.helpers.log_level_claims:_ep_log_levels_follow_spec",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 2,
+    "counts": {
+     "killed": 2
+    },
+    "survivors": []
+   }
+  ],
+  "error": ""
+ },
+ "complexity-thresholds": {
+  "claim": "complexity-thresholds",
+  "expect": true,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.complexity_thresholds:validate_complexity_thresholds",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 6,
+    "counts": {
+     "survived": 4,
+     "killed": 2
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/complexity_thresholds.py:55-56",
+     "src/gzkit/governance/trust_audits/complexity_thresholds.py:56-56",
+     "src/gzkit/governance/trust_audits/complexity_thresholds.py:63-63",
+     "src/gzkit/governance/trust_audits/complexity_thresholds.py:68-69"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "doc-code-citations": {
+  "claim": "doc-code-citations",
+  "expect": true,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.cli:audit_doc_code_citations",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 23,
+    "counts": {
+     "survived": 18,
+     "killed": 5
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/cli.py:428-429",
+     "src/gzkit/governance/trust_audits/cli.py:429-429",
+     "src/gzkit/governance/trust_audits/cli.py:434-434",
+     "src/gzkit/governance/trust_audits/cli.py:440-442",
+     "src/gzkit/governance/trust_audits/cli.py:442-442",
+     "src/gzkit/governance/trust_audits/cli.py:443-444",
+     "src/gzkit/governance/trust_audits/cli.py:444-444",
+     "src/gzkit/governance/trust_audits/cli.py:445-447",
+     "src/gzkit/governance/trust_audits/cli.py:447-447",
+     "src/gzkit/governance/trust_audits/cli.py:448-450",
+     "src/gzkit/governance/trust_audits/cli.py:450-450",
+     "src/gzkit/governance/trust_audits/cli.py:451-460",
+     "src/gzkit/governance/trust_audits/cli.py:452-456",
+     "src/gzkit/governance/trust_audits/cli.py:456-456",
+     "src/gzkit/governance/trust_audits/cli.py:457-460",
+     "src/gzkit/governance/trust_audits/cli.py:460-460",
+     "src/gzkit/governance/trust_audits/cli.py:463-464",
+     "src/gzkit/governance/trust_audits/cli.py:464-464"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "enforcement-floor": {
+  "claim": "enforcement-floor",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.enforcement:run_meta_validator",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 3,
+    "counts": {
+     "survived": 2,
+     "killed": 1
+    },
+    "survivors": [
+     "src/gzkit/enforcement.py:777-778",
+     "src/gzkit/enforcement.py:781-782"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "fidelity-presence": {
+  "claim": "fidelity-presence",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.fidelity_presence:audit_fidelity_presence",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 5,
+    "counts": {
+     "killed": 3,
+     "survived": 2
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/fidelity_presence.py:100-101",
+     "src/gzkit/governance/trust_audits/fidelity_presence.py:101-101"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "gate5-ledger": {
+  "claim": "gate5-ledger",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.validate_pkg.ledger_check:validate_ledger",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 16,
+    "counts": {
+     "survived": 10,
+     "killed": 6
+    },
+    "survivors": [
+     "src/gzkit/validate_pkg/ledger_check.py:717-724",
+     "src/gzkit/validate_pkg/ledger_check.py:718-724",
+     "src/gzkit/validate_pkg/ledger_check.py:729-735",
+     "src/gzkit/validate_pkg/ledger_check.py:755-756",
+     "src/gzkit/validate_pkg/ledger_check.py:756-756",
+     "src/gzkit/validate_pkg/ledger_check.py:769-776",
+     "src/gzkit/validate_pkg/ledger_check.py:776-776",
+     "src/gzkit/validate_pkg/ledger_check.py:790-791",
+     "src/gzkit/validate_pkg/ledger_check.py:791-791",
+     "src/gzkit/validate_pkg/ledger_check.py:792-803"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "handoff-documents-populated-sections": {
+  "claim": "handoff-documents-populated-sections",
+  "expect": true,
+  "targets": [
+   {
+    "target": "gzkit.quality:run_handoff_document_audit",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 17,
+    "counts": {
+     "survived": 13,
+     "killed": 4
+    },
+    "survivors": [
+     "src/gzkit/quality.py:1715-1722",
+     "src/gzkit/quality.py:1716-1722",
+     "src/gzkit/quality.py:1737-1737",
+     "src/gzkit/quality.py:1744-1745",
+     "src/gzkit/quality.py:1745-1745",
+     "src/gzkit/quality.py:1751-1752",
+     "src/gzkit/quality.py:1753-1754",
+     "src/gzkit/quality.py:1754-1754",
+     "src/gzkit/quality.py:1755-1757",
+     "src/gzkit/quality.py:1757-1757",
+     "src/gzkit/quality.py:1780-1782",
+     "src/gzkit/quality.py:1783-1790",
+     "src/gzkit/quality.py:1791-1797"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "interview-transcripts": {
+  "claim": "interview-transcripts",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.commands.validate_briefs:_validate_interviews",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 15,
+    "counts": {
+     "survived": 12,
+     "killed": 3
+    },
+    "survivors": [
+     "src/gzkit/commands/validate_briefs.py:100-101",
+     "src/gzkit/commands/validate_briefs.py:101-101",
+     "src/gzkit/commands/validate_briefs.py:107-108",
+     "src/gzkit/commands/validate_briefs.py:108-108",
+     "src/gzkit/commands/validate_briefs.py:110-111",
+     "src/gzkit/commands/validate_briefs.py:111-111",
+     "src/gzkit/commands/validate_briefs.py:115-116",
+     "src/gzkit/commands/validate_briefs.py:116-116",
+     "src/gzkit/commands/validate_briefs.py:118-119",
+     "src/gzkit/commands/validate_briefs.py:119-119",
+     "src/gzkit/commands/validate_briefs.py:121-129",
+     "src/gzkit/commands/validate_briefs.py:129-129"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "ledger-vocabulary-inertness-disclosed": {
+  "claim": "ledger-vocabulary-inertness-disclosed",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.quality:run_command",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 13,
+    "counts": {
+     "killed": 5,
+     "survived": 8
+    },
+    "survivors": [
+     "src/gzkit/quality.py:199-203",
+     "src/gzkit/quality.py:200-203",
+     "src/gzkit/quality.py:204-214",
+     "src/gzkit/quality.py:205-214",
+     "src/gzkit/quality.py:208-214",
+     "src/gzkit/quality.py:243-247",
+     "src/gzkit/quality.py:251-257",
+     "src/gzkit/quality.py:266-272"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "module-size": {
+  "claim": "module-size",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.commands.chores:_resolve_chore_dir",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 5,
+    "counts": {
+     "survived": 5
+    },
+    "survivors": [
+     "src/gzkit/commands/chores.py:175-176",
+     "src/gzkit/commands/chores.py:176-176",
+     "src/gzkit/commands/chores.py:179-188",
+     "src/gzkit/commands/chores.py:188-188",
+     "src/gzkit/commands/chores.py:191-193"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "persona-witness": {
+  "claim": "persona-witness",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.persona_witness:audit_persona_witness",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 12,
+    "counts": {
+     "survived": 8,
+     "killed": 4
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/persona_witness.py:113-114",
+     "src/gzkit/governance/trust_audits/persona_witness.py:114-114",
+     "src/gzkit/governance/trust_audits/persona_witness.py:120-121",
+     "src/gzkit/governance/trust_audits/persona_witness.py:121-121",
+     "src/gzkit/governance/trust_audits/persona_witness.py:123-124",
+     "src/gzkit/governance/trust_audits/persona_witness.py:124-124",
+     "src/gzkit/governance/trust_audits/persona_witness.py:125-126",
+     "src/gzkit/governance/trust_audits/persona_witness.py:126-126"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "preflight": {
+  "claim": "preflight",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits._qc_nc_entrypoints:_ep_preflight",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 1,
+    "counts": {
+     "killed": 1
+    },
+    "survivors": []
+   }
+  ],
+  "error": ""
+ },
+ "readiness-audit": {
+  "claim": "readiness-audit",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.quality:run_command",
+    "error": "OSError(66, 'Directory not empty')"
+   }
+  ],
+  "error": ""
+ },
+ "rendition-freshness": {
+  "claim": "rendition-freshness",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.rendition_freshness:validate_rendition_freshness",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 15,
+    "counts": {
+     "survived": 9,
+     "killed": 6
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/rendition_freshness.py:139-140",
+     "src/gzkit/governance/trust_audits/rendition_freshness.py:140-140",
+     "src/gzkit/governance/trust_audits/rendition_freshness.py:145-146",
+     "src/gzkit/governance/trust_audits/rendition_freshness.py:146-146",
+     "src/gzkit/governance/trust_audits/rendition_freshness.py:149-150",
+     "src/gzkit/governance/trust_audits/rendition_freshness.py:150-150",
+     "src/gzkit/governance/trust_audits/rendition_freshness.py:159-160",
+     "src/gzkit/governance/trust_audits/rendition_freshness.py:160-160",
+     "src/gzkit/governance/trust_audits/rendition_freshness.py:175-184"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "session-green-gate-delivery": {
+  "claim": "session-green-gate-delivery",
+  "expect": true,
+  "targets": [
+   {
+    "target": "gzkit.advisory:advisory_lines",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 1,
+    "counts": {
+     "killed": 1
+    },
+    "survivors": []
+   },
+   {
+    "target": "gzkit.governance.trust_audits.session_green_gate:audit_session_green_gate",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 9,
+    "counts": {
+     "survived": 7,
+     "killed": 2
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/session_green_gate.py:207-217",
+     "src/gzkit/governance/trust_audits/session_green_gate.py:208-217",
+     "src/gzkit/governance/trust_audits/session_green_gate.py:221-230",
+     "src/gzkit/governance/trust_audits/session_green_gate.py:231-238",
+     "src/gzkit/governance/trust_audits/session_green_gate.py:232-238",
+     "src/gzkit/governance/trust_audits/session_green_gate.py:245-252",
+     "src/gzkit/governance/trust_audits/session_green_gate.py:246-252"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "surface-fidelity": {
+  "claim": "surface-fidelity",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits:validate_surface_fidelity",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 1,
+    "counts": {
+     "killed": 1
+    },
+    "survivors": []
+   }
+  ],
+  "error": ""
+ },
+ "task-envelope-layer-drift": {
+  "claim": "task-envelope-layer-drift",
+  "expect": true,
+  "targets": [
+   {
+    "target": "gzkit.commands.validate_task_envelope:_validate_task_envelope_coherence",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 1,
+    "counts": {
+     "killed": 1
+    },
+    "survivors": []
+   }
+  ],
+  "error": ""
+ },
+ "tautological-debt-waived": {
+  "claim": "tautological-debt-waived",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.commands.chores:_resolve_chore_dir",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 5,
+    "counts": {
+     "survived": 5
+    },
+    "survivors": [
+     "src/gzkit/commands/chores.py:175-176",
+     "src/gzkit/commands/chores.py:176-176",
+     "src/gzkit/commands/chores.py:179-188",
+     "src/gzkit/commands/chores.py:188-188",
+     "src/gzkit/commands/chores.py:191-193"
+    ]
+   },
+   {
+    "target": "gzkit.quality:run_command",
+    "error": "OSError(66, 'Directory not empty')"
+   }
+  ],
+  "error": ""
+ },
+ "transcribed-adr-counts": {
+  "claim": "transcribed-adr-counts",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.transcribed_counts:audit_transcribed_counts",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 7,
+    "counts": {
+     "killed": 3,
+     "survived": 4
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/transcribed_counts.py:248-249",
+     "src/gzkit/governance/trust_audits/transcribed_counts.py:249-249",
+     "src/gzkit/governance/trust_audits/transcribed_counts.py:251-264",
+     "src/gzkit/governance/trust_audits/transcribed_counts.py:264-264"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "validator-reachability": {
+  "claim": "validator-reachability",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits._qc_nc_entrypoints:_ep_validator_reachability",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 1,
+    "counts": {
+     "killed": 1
+    },
+    "survivors": []
+   }
+  ],
+  "error": ""
+ },
+ "waiver-ratchet": {
+  "claim": "waiver-ratchet",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.waiver_ratchet:audit_waiver_ratchet",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 11,
+    "counts": {
+     "survived": 7,
+     "killed": 4
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/waiver_ratchet.py:221-231",
+     "src/gzkit/governance/trust_audits/waiver_ratchet.py:222-231",
+     "src/gzkit/governance/trust_audits/waiver_ratchet.py:250-259",
+     "src/gzkit/governance/trust_audits/waiver_ratchet.py:259-259",
+     "src/gzkit/governance/trust_audits/waiver_ratchet.py:261-271",
+     "src/gzkit/governance/trust_audits/waiver_ratchet.py:271-271",
+     "src/gzkit/governance/trust_audits/waiver_ratchet.py:288-299"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "wheel-path-literals": {
+  "claim": "wheel-path-literals",
+  "expect": true,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.wheel_path_literals:audit_wheel_path_literals",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 2,
+    "counts": {
+     "killed": 2
+    },
+    "survivors": []
+   }
+  ],
+  "error": ""
+ },
+ "adversarial-validation": {
+  "claim": "adversarial-validation",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.adversarial_validation:audit_adversarial_validation",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 1,
+    "counts": {
+     "killed": 1
+    },
+    "survivors": []
+   }
+  ],
+  "error": ""
+ },
+ "agents-md-map-conformance": {
+  "claim": "agents-md-map-conformance",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.agents_md_map_conformance:audit_agents_md_map_conformance",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 3,
+    "counts": {
+     "killed": 2,
+     "survived": 1
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/agents_md_map_conformance.py:142-147"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "brief-structure": {
+  "claim": "brief-structure",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.brief_structure:validate_brief_structure",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 8,
+    "counts": {
+     "killed": 5,
+     "survived": 3
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/brief_structure.py:70-71",
+     "src/gzkit/governance/trust_audits/brief_structure.py:71-71",
+     "src/gzkit/governance/trust_audits/brief_structure.py:90-101"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "cli-usage-error-exit-two": {
+  "claim": "cli-usage-error-exit-two",
+  "expect": false,
+  "targets": [],
+  "error": "no in-tree gate function to mutate (subprocess-delegated or unresolved)"
+ },
+ "config-registry": {
+  "claim": "config-registry",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.config_registry:audit_config_registry",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 10,
+    "counts": {
+     "survived": 9,
+     "killed": 1
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/config_registry.py:172-181",
+     "src/gzkit/governance/trust_audits/config_registry.py:173-181",
+     "src/gzkit/governance/trust_audits/config_registry.py:189-204",
+     "src/gzkit/governance/trust_audits/config_registry.py:190-199",
+     "src/gzkit/governance/trust_audits/config_registry.py:199-199",
+     "src/gzkit/governance/trust_audits/config_registry.py:213-228",
+     "src/gzkit/governance/trust_audits/config_registry.py:215-228",
+     "src/gzkit/governance/trust_audits/config_registry.py:216-217",
+     "src/gzkit/governance/trust_audits/config_registry.py:217-217"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "doc-code-citations-exempted": {
+  "claim": "doc-code-citations-exempted",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.cli:audit_doc_code_citations",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 23,
+    "counts": {
+     "survived": 14,
+     "killed": 9
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/cli.py:428-429",
+     "src/gzkit/governance/trust_audits/cli.py:429-429",
+     "src/gzkit/governance/trust_audits/cli.py:430-484",
+     "src/gzkit/governance/trust_audits/cli.py:434-434",
+     "src/gzkit/governance/trust_audits/cli.py:439-484",
+     "src/gzkit/governance/trust_audits/cli.py:442-442",
+     "src/gzkit/governance/trust_audits/cli.py:445-447",
+     "src/gzkit/governance/trust_audits/cli.py:447-447",
+     "src/gzkit/governance/trust_audits/cli.py:457-460",
+     "src/gzkit/governance/trust_audits/cli.py:460-460",
+     "src/gzkit/governance/trust_audits/cli.py:461-484",
+     "src/gzkit/governance/trust_audits/cli.py:463-464",
+     "src/gzkit/governance/trust_audits/cli.py:464-464",
+     "src/gzkit/governance/trust_audits/cli.py:485-485"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "evaluation-justify-binding": {
+  "claim": "evaluation-justify-binding",
+  "expect": true,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.evaluation_justify_binding:validate_evaluation_justify_binding",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 7,
+    "counts": {
+     "survived": 6,
+     "killed": 1
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/evaluation_justify_binding.py:55-56",
+     "src/gzkit/governance/trust_audits/evaluation_justify_binding.py:56-56",
+     "src/gzkit/governance/trust_audits/evaluation_justify_binding.py:59-60",
+     "src/gzkit/governance/trust_audits/evaluation_justify_binding.py:60-60",
+     "src/gzkit/governance/trust_audits/evaluation_justify_binding.py:64-65",
+     "src/gzkit/governance/trust_audits/evaluation_justify_binding.py:65-65"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "format": {
+  "claim": "format",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits._qc_nc_entrypoints:_ep_format",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 1,
+    "counts": {
+     "killed": 1
+    },
+    "survivors": []
+   }
+  ],
+  "error": ""
+ },
+ "git-fixture-isolation": {
+  "claim": "git-fixture-isolation",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.git_spawn_boundary:git_spawns_outside_boundary",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 6,
+    "counts": {
+     "killed": 5,
+     "survived": 1
+    },
+    "survivors": [
+     "src/gzkit/git_spawn_boundary.py:195-195"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "handoff-resume-booking-coupling": {
+  "claim": "handoff-resume-booking-coupling",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.handoff_resume_gate:_ep_resume_gate_booking_coupling",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 1,
+    "counts": {
+     "killed": 1
+    },
+    "survivors": []
+   }
+  ],
+  "error": ""
+ },
+ "invariant-coherence": {
+  "claim": "invariant-coherence",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.invariant_coherence:validate_invariant_coherence",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 5,
+    "counts": {
+     "survived": 4,
+     "killed": 1
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/invariant_coherence.py:68-69",
+     "src/gzkit/governance/trust_audits/invariant_coherence.py:69-69",
+     "src/gzkit/governance/trust_audits/invariant_coherence.py:72-73",
+     "src/gzkit/governance/trust_audits/invariant_coherence.py:73-73"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "line-endings": {
+  "claim": "line-endings",
+  "expect": true,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.cross_platform:audit_line_endings",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 1,
+    "counts": {
+     "killed": 1
+    },
+    "survivors": []
+   }
+  ],
+  "error": ""
+ },
+ "obpi-lifecycle-coherence": {
+  "claim": "obpi-lifecycle-coherence",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.taxonomy:audit_obpi_lifecycle_coherence",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 3,
+    "counts": {
+     "survived": 2,
+     "killed": 1
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/taxonomy.py:690-691",
+     "src/gzkit/governance/trust_audits/taxonomy.py:691-691"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "pool-interview-schema": {
+  "claim": "pool-interview-schema",
+  "expect": true,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.taxonomy:audit_pool_interview_schema",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 7,
+    "counts": {
+     "survived": 4,
+     "killed": 3
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/taxonomy.py:175-176",
+     "src/gzkit/governance/trust_audits/taxonomy.py:176-176",
+     "src/gzkit/governance/trust_audits/taxonomy.py:195-195",
+     "src/gzkit/governance/trust_audits/taxonomy.py:198-212"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "producer-field-parity": {
+  "claim": "producer-field-parity",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.events:audit_producer_fields",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 15,
+    "counts": {
+     "survived": 9,
+     "killed": 6
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/events.py:775-776",
+     "src/gzkit/governance/trust_audits/events.py:776-776",
+     "src/gzkit/governance/trust_audits/events.py:785-785",
+     "src/gzkit/governance/trust_audits/events.py:794-795",
+     "src/gzkit/governance/trust_audits/events.py:795-795",
+     "src/gzkit/governance/trust_audits/events.py:798-799",
+     "src/gzkit/governance/trust_audits/events.py:799-799",
+     "src/gzkit/governance/trust_audits/events.py:812-813",
+     "src/gzkit/governance/trust_audits/events.py:813-813"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "receipt-shape": {
+  "claim": "receipt-shape",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.receipt_shape:audit_receipt_shape",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 14,
+    "counts": {
+     "survived": 10,
+     "killed": 4
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/receipt_shape.py:286-287",
+     "src/gzkit/governance/trust_audits/receipt_shape.py:287-287",
+     "src/gzkit/governance/trust_audits/receipt_shape.py:290-291",
+     "src/gzkit/governance/trust_audits/receipt_shape.py:291-291",
+     "src/gzkit/governance/trust_audits/receipt_shape.py:299-299",
+     "src/gzkit/governance/trust_audits/receipt_shape.py:303-304",
+     "src/gzkit/governance/trust_audits/receipt_shape.py:304-304",
+     "src/gzkit/governance/trust_audits/receipt_shape.py:308-308",
+     "src/gzkit/governance/trust_audits/receipt_shape.py:310-311",
+     "src/gzkit/governance/trust_audits/receipt_shape.py:311-311"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "rendition-lineage": {
+  "claim": "rendition-lineage",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.rendition_lineage:validate_rendition_lineage",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 17,
+    "counts": {
+     "survived": 13,
+     "killed": 4
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/rendition_lineage.py:489-490",
+     "src/gzkit/governance/trust_audits/rendition_lineage.py:490-490",
+     "src/gzkit/governance/trust_audits/rendition_lineage.py:496-497",
+     "src/gzkit/governance/trust_audits/rendition_lineage.py:497-497",
+     "src/gzkit/governance/trust_audits/rendition_lineage.py:499-500",
+     "src/gzkit/governance/trust_audits/rendition_lineage.py:500-500",
+     "src/gzkit/governance/trust_audits/rendition_lineage.py:501-502",
+     "src/gzkit/governance/trust_audits/rendition_lineage.py:502-502",
+     "src/gzkit/governance/trust_audits/rendition_lineage.py:505-506",
+     "src/gzkit/governance/trust_audits/rendition_lineage.py:506-506",
+     "src/gzkit/governance/trust_audits/rendition_lineage.py:511-512",
+     "src/gzkit/governance/trust_audits/rendition_lineage.py:514-516",
+     "src/gzkit/governance/trust_audits/rendition_lineage.py:516-516"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "skill-audit": {
+  "claim": "skill-audit",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits._qc_nc_entrypoints:_ep_skill_audit",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 1,
+    "counts": {
+     "killed": 1
+    },
+    "survivors": []
+   }
+  ],
+  "error": ""
+ },
+ "surface-fidelity-bullet-retention": {
+  "claim": "surface-fidelity-bullet-retention",
+  "expect": true,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits:validate_surface_fidelity",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 1,
+    "counts": {
+     "killed": 1
+    },
+    "survivors": []
+   }
+  ],
+  "error": ""
+ },
+ "task-envelope-obpi-divergence": {
+  "claim": "task-envelope-obpi-divergence",
+  "expect": true,
+  "targets": [
+   {
+    "target": "gzkit.commands.validate_task_envelope:_validate_task_envelope_coherence",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 1,
+    "counts": {
+     "killed": 1
+    },
+    "survivors": []
+   }
+  ],
+  "error": ""
+ },
+ "tautological-test-audit": {
+  "claim": "tautological-test-audit",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.tautological_tests:audit_drift",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 6,
+    "counts": {
+     "killed": 2,
+     "survived": 4
+    },
+    "survivors": [
+     "src/gzkit/tautological_tests.py:633-635",
+     "src/gzkit/tautological_tests.py:635-635",
+     "src/gzkit/tautological_tests.py:636-638",
+     "src/gzkit/tautological_tests.py:638-638"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "typecheck": {
+  "claim": "typecheck",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits._qc_nc_entrypoints:_ep_typecheck",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 1,
+    "counts": {
+     "killed": 1
+    },
+    "survivors": []
+   }
+  ],
+  "error": ""
+ },
+ "validator-reachability-disclosed": {
+  "claim": "validator-reachability-disclosed",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.quality:run_command",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 13,
+    "counts": {
+     "killed": 5,
+     "survived": 8
+    },
+    "survivors": [
+     "src/gzkit/quality.py:199-203",
+     "src/gzkit/quality.py:200-203",
+     "src/gzkit/quality.py:204-214",
+     "src/gzkit/quality.py:205-214",
+     "src/gzkit/quality.py:208-214",
+     "src/gzkit/quality.py:243-247",
+     "src/gzkit/quality.py:251-257",
+     "src/gzkit/quality.py:266-272"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "waiver-ratchet-closed-set-lock": {
+  "claim": "waiver-ratchet-closed-set-lock",
+  "expect": true,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.waiver_ratchet:audit_waiver_ratchet",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 11,
+    "counts": {
+     "survived": 8,
+     "killed": 3
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/waiver_ratchet.py:221-231",
+     "src/gzkit/governance/trust_audits/waiver_ratchet.py:222-231",
+     "src/gzkit/governance/trust_audits/waiver_ratchet.py:250-259",
+     "src/gzkit/governance/trust_audits/waiver_ratchet.py:259-259",
+     "src/gzkit/governance/trust_audits/waiver_ratchet.py:261-271",
+     "src/gzkit/governance/trust_audits/waiver_ratchet.py:271-271",
+     "src/gzkit/governance/trust_audits/waiver_ratchet.py:279-284",
+     "src/gzkit/governance/trust_audits/waiver_ratchet.py:288-299"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "advisory-scorecard-coverage": {
+  "claim": "advisory-scorecard-coverage",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.release:audit_advisory_scorecard",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 12,
+    "counts": {
+     "survived": 9,
+     "killed": 3
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/release.py:1070-1071",
+     "src/gzkit/governance/trust_audits/release.py:1071-1071",
+     "src/gzkit/governance/trust_audits/release.py:1085-1088",
+     "src/gzkit/governance/trust_audits/release.py:1088-1088",
+     "src/gzkit/governance/trust_audits/release.py:1090-1092",
+     "src/gzkit/governance/trust_audits/release.py:1092-1092",
+     "src/gzkit/governance/trust_audits/release.py:1093-1109",
+     "src/gzkit/governance/trust_audits/release.py:1109-1109",
+     "src/gzkit/governance/trust_audits/release.py:1124-1137"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "airlock-in-unaccounted-seam": {
+  "claim": "airlock-in-unaccounted-seam",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.airlock.enter:_ep_airlock_unaccounted_seam",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 1,
+    "counts": {
+     "killed": 1
+    },
+    "survivors": []
+   }
+  ],
+  "error": ""
+ },
+ "chore-suppression": {
+  "claim": "chore-suppression",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.chores:audit_chore_suppression",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 11,
+    "counts": {
+     "killed": 7,
+     "survived": 4
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/chores.py:497-497",
+     "src/gzkit/governance/trust_audits/chores.py:500-501",
+     "src/gzkit/governance/trust_audits/chores.py:501-501",
+     "src/gzkit/governance/trust_audits/chores.py:518-518"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "closeout-proof": {
+  "claim": "closeout-proof",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.closeout_proof:validate_closeout_proof",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 14,
+    "counts": {
+     "survived": 10,
+     "killed": 4
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/closeout_proof.py:363-364",
+     "src/gzkit/governance/trust_audits/closeout_proof.py:364-364",
+     "src/gzkit/governance/trust_audits/closeout_proof.py:380-381",
+     "src/gzkit/governance/trust_audits/closeout_proof.py:382-382",
+     "src/gzkit/governance/trust_audits/closeout_proof.py:391-397",
+     "src/gzkit/governance/trust_audits/closeout_proof.py:398-398",
+     "src/gzkit/governance/trust_audits/closeout_proof.py:401-402",
+     "src/gzkit/governance/trust_audits/closeout_proof.py:402-402",
+     "src/gzkit/governance/trust_audits/closeout_proof.py:406-407",
+     "src/gzkit/governance/trust_audits/closeout_proof.py:407-407"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "corpus-retirement-witness": {
+  "claim": "corpus-retirement-witness",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.corpus_retirement_witness:validate_corpus_retirement_witness",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 7,
+    "counts": {
+     "survived": 4,
+     "killed": 3
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/corpus_retirement_witness.py:103-104",
+     "src/gzkit/governance/trust_audits/corpus_retirement_witness.py:104-104",
+     "src/gzkit/governance/trust_audits/corpus_retirement_witness.py:113-114",
+     "src/gzkit/governance/trust_audits/corpus_retirement_witness.py:114-114"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "docs-build": {
+  "claim": "docs-build",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.quality:run_mkdocs",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 5,
+    "counts": {
+     "survived": 4,
+     "killed": 1
+    },
+    "survivors": [
+     "src/gzkit/quality.py:996-1003",
+     "src/gzkit/quality.py:997-1003",
+     "src/gzkit/quality.py:1005-1015",
+     "src/gzkit/quality.py:1006-1015"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "evaluation-justify-binding-qualified": {
+  "claim": "evaluation-justify-binding-qualified",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.evaluation_justify_binding:validate_evaluation_justify_binding",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 7,
+    "counts": {
+     "survived": 5,
+     "killed": 2
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/evaluation_justify_binding.py:55-56",
+     "src/gzkit/governance/trust_audits/evaluation_justify_binding.py:56-56",
+     "src/gzkit/governance/trust_audits/evaluation_justify_binding.py:59-60",
+     "src/gzkit/governance/trust_audits/evaluation_justify_binding.py:60-60",
+     "src/gzkit/governance/trust_audits/evaluation_justify_binding.py:67-73"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "gate-callers": {
+  "claim": "gate-callers",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.gate_callers:audit_gate_callers",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 14,
+    "counts": {
+     "survived": 12,
+     "killed": 2
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/gate_callers.py:245-246",
+     "src/gzkit/governance/trust_audits/gate_callers.py:246-246",
+     "src/gzkit/governance/trust_audits/gate_callers.py:248-258",
+     "src/gzkit/governance/trust_audits/gate_callers.py:249-258",
+     "src/gzkit/governance/trust_audits/gate_callers.py:266-311",
+     "src/gzkit/governance/trust_audits/gate_callers.py:268-277",
+     "src/gzkit/governance/trust_audits/gate_callers.py:277-277",
+     "src/gzkit/governance/trust_audits/gate_callers.py:279-288",
+     "src/gzkit/governance/trust_audits/gate_callers.py:290-311",
+     "src/gzkit/governance/trust_audits/gate_callers.py:301-311",
+     "src/gzkit/governance/trust_audits/gate_callers.py:314-315",
+     "src/gzkit/governance/trust_audits/gate_callers.py:315-315"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "grader-gaming": {
+  "claim": "grader-gaming",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.mx.proxy_reality:_ep_proxy_reality",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 1,
+    "counts": {
+     "killed": 1
+    },
+    "survivors": []
+   }
+  ],
+  "error": ""
+ },
+ "insights-shape": {
+  "claim": "insights-shape",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.insights:audit_insights_shape",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 9,
+    "counts": {
+     "survived": 6,
+     "killed": 3
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/insights.py:85-86",
+     "src/gzkit/governance/trust_audits/insights.py:86-86",
+     "src/gzkit/governance/trust_audits/insights.py:90-91",
+     "src/gzkit/governance/trust_audits/insights.py:91-91",
+     "src/gzkit/governance/trust_audits/insights.py:93-94",
+     "src/gzkit/governance/trust_audits/insights.py:94-94"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "kind-invariance": {
+  "claim": "kind-invariance",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.kind_invariance:audit_kind_invariance",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 7,
+    "counts": {
+     "survived": 4,
+     "killed": 3
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/kind_invariance.py:97-98",
+     "src/gzkit/governance/trust_audits/kind_invariance.py:98-98",
+     "src/gzkit/governance/trust_audits/kind_invariance.py:102-103",
+     "src/gzkit/governance/trust_audits/kind_invariance.py:103-103"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "lint": {
+  "claim": "lint",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits._qc_nc_entrypoints:_ep_lint",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 1,
+    "counts": {
+     "killed": 1
+    },
+    "survivors": []
+   }
+  ],
+  "error": ""
+ },
+ "orientation-freshness": {
+  "claim": "orientation-freshness",
+  "expect": true,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.orientation:audit_orientation_freshness",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 8,
+    "counts": {
+     "survived": 5,
+     "killed": 3
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/orientation.py:269-270",
+     "src/gzkit/governance/trust_audits/orientation.py:277-282",
+     "src/gzkit/governance/trust_audits/orientation.py:281-282",
+     "src/gzkit/governance/trust_audits/orientation.py:285-293",
+     "src/gzkit/governance/trust_audits/orientation.py:293-293"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "population-controls": {
+  "claim": "population-controls",
+  "expect": true,
+  "targets": [
+   {
+    "target": "gzkit.enforcement:get_enforcement_registry",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 1,
+    "counts": {
+     "inconclusive": 1
+    },
+    "survivors": []
+   },
+   {
+    "target": "gzkit.governance.trust_audits.population_controls:audit_population_controls",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 10,
+    "counts": {
+     "survived": 7,
+     "killed": 3
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/population_controls.py:83-84",
+     "src/gzkit/governance/trust_audits/population_controls.py:84-84",
+     "src/gzkit/governance/trust_audits/population_controls.py:86-94",
+     "src/gzkit/governance/trust_audits/population_controls.py:87-94",
+     "src/gzkit/governance/trust_audits/population_controls.py:97-116",
+     "src/gzkit/governance/trust_audits/population_controls.py:98-116",
+     "src/gzkit/governance/trust_audits/population_controls.py:107-116"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "python-version-pins": {
+  "claim": "python-version-pins",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.python_version_pins:audit_python_version_pins",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 1,
+    "counts": {
+     "killed": 1
+    },
+    "survivors": []
+   }
+  ],
+  "error": ""
+ },
+ "red-parity": {
+  "claim": "red-parity",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.red_parity:audit_red_parity",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 13,
+    "counts": {
+     "survived": 7,
+     "killed": 6
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/red_parity.py:216-217",
+     "src/gzkit/governance/trust_audits/red_parity.py:217-217",
+     "src/gzkit/governance/trust_audits/red_parity.py:225-226",
+     "src/gzkit/governance/trust_audits/red_parity.py:226-226",
+     "src/gzkit/governance/trust_audits/red_parity.py:230-230",
+     "src/gzkit/governance/trust_audits/red_parity.py:231-232",
+     "src/gzkit/governance/trust_audits/red_parity.py:232-232"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "req-kind-discipline": {
+  "claim": "req-kind-discipline",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.commands.validate_req_kind:_validate_req_kind_discipline",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 2,
+    "counts": {
+     "killed": 2
+    },
+    "survivors": []
+   }
+  ],
+  "error": ""
+ },
+ "smoke-tier": {
+  "claim": "smoke-tier",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.commands.smoke_cmd:smoke_gate",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 11,
+    "counts": {
+     "killed": 3,
+     "survived": 8
+    },
+    "survivors": [
+     "src/gzkit/commands/smoke_cmd.py:43-43",
+     "src/gzkit/commands/smoke_cmd.py:45-55",
+     "src/gzkit/commands/smoke_cmd.py:55-55",
+     "src/gzkit/commands/smoke_cmd.py:69-75",
+     "src/gzkit/commands/smoke_cmd.py:75-75",
+     "src/gzkit/commands/smoke_cmd.py:77-88",
+     "src/gzkit/commands/smoke_cmd.py:88-88",
+     "src/gzkit/commands/smoke_cmd.py:91-91"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "surface-fidelity-surface-weight": {
+  "claim": "surface-fidelity-surface-weight",
+  "expect": true,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits:validate_surface_fidelity",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 1,
+    "counts": {
+     "killed": 1
+    },
+    "survivors": []
+   }
+  ],
+  "error": ""
+ },
+ "task-envelope-subdivision": {
+  "claim": "task-envelope-subdivision",
+  "expect": true,
+  "targets": [
+   {
+    "target": "gzkit.commands.validate_task_envelope:_validate_task_envelope_coherence",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 1,
+    "counts": {
+     "killed": 1
+    },
+    "survivors": []
+   }
+  ],
+  "error": ""
+ },
+ "test": {
+  "claim": "test",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits._qc_nc_entrypoints:_ep_test",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 1,
+    "counts": {
+     "killed": 1
+    },
+    "survivors": []
+   }
+  ],
+  "error": ""
+ },
+ "unscoped-rules": {
+  "claim": "unscoped-rules",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.validators.unscoped_rules:run_unscoped_rules",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 10,
+    "counts": {
+     "survived": 6,
+     "killed": 4
+    },
+    "survivors": [
+     "src/gzkit/validators/unscoped_rules.py:159-167",
+     "src/gzkit/validators/unscoped_rules.py:160-167",
+     "src/gzkit/validators/unscoped_rules.py:180-187",
+     "src/gzkit/validators/unscoped_rules.py:191-192",
+     "src/gzkit/validators/unscoped_rules.py:192-192",
+     "src/gzkit/validators/unscoped_rules.py:215-222"
+    ]
+   }
+  ],
+  "error": ""
+ },
+ "verifier-escape-must-be-used": {
+  "claim": "verifier-escape-must-be-used",
+  "expect": false,
+  "targets": [
+   {
+    "target": "gzkit.verifier_pipe_gate:_ep_verifier_escape_must_be_used",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 1,
+    "counts": {
+     "killed": 1
+    },
+    "survivors": []
+   }
+  ],
+  "error": ""
+ },
+ "waiver-ratchet-dated-cutover": {
+  "claim": "waiver-ratchet-dated-cutover",
+  "expect": true,
+  "targets": [
+   {
+    "target": "gzkit.governance.trust_audits.waiver_ratchet:audit_waiver_ratchet",
+    "baseline_green": true,
+    "baseline_tail": "",
+    "guards": 11,
+    "counts": {
+     "survived": 7,
+     "killed": 4
+    },
+    "survivors": [
+     "src/gzkit/governance/trust_audits/waiver_ratchet.py:221-231",
+     "src/gzkit/governance/trust_audits/waiver_ratchet.py:222-231",
+     "src/gzkit/governance/trust_audits/waiver_ratchet.py:250-259",
+     "src/gzkit/governance/trust_audits/waiver_ratchet.py:259-259",
+     "src/gzkit/governance/trust_audits/waiver_ratchet.py:261-271",
+     "src/gzkit/governance/trust_audits/waiver_ratchet.py:271-271",
+     "src/gzkit/governance/trust_audits/waiver_ratchet.py:288-299"
+    ]
+   }
+  ],
+  "error": ""
+ }
+}

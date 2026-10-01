@@ -1,0 +1,81 @@
+2026-06-24T11:25:29 OBPI-0.0.74-16 0 uv run python -c "from gzkit import enforcement; r = enforcement.run_meta_validator(); raise SystemExit(0 if r
+2026-06-24T12:00:59 OBPI-0.0.74-16-meta-validator-runner 0 uv run python -c "from gzkit import enforcement; r = enforcement.run_meta_validator(); raise SystemExit(0 if r
+2026-07-06T12:58:54 OBPI-0.32.0-04-ownership-plane-doctrine- 0 cat docs/governance/ontology-ownership-plane-doctrine.md
+2026-07-06T12:58:54 OBPI-0.32.0-04-ownership-plane-doctrine- 0 uv run gz covers OBPI-0.32.0-04-ownership-plane-doctrine-and-boundary-invariants
+2026-07-06T12:58:54 OBPI-0.32.0-04-ownership-plane-doctrine- 0 uv run gz validate --closeout-proof
+2026-07-10T10:04:49 OBPI-0.44.0-01-codex-config-generation 0 uv run gz validate --surfaces
+2026-07-13T01:32:22 OBPI-0.0.65-02-programmatic-api-implemen 0 uv run python -c "from gzkit.handoff_api import create_handoff; help(create_handoff)"
+2026-07-13T01:32:22 OBPI-0.0.65-02-programmatic-api-implemen 0 uv run python -c "from gzkit.handoff_api import scaffold_handoff; help(scaffold_handoff)"
+2026-07-13T07:40:18 OBPI-0.0.65-02-programmatic-api-implemen 0 uv run python -c "from gzkit.handoff_api import create_handoff; help(create_handoff)"
+2026-07-13T07:40:18 OBPI-0.0.65-02-programmatic-api-implemen 0 uv run python -c "from gzkit.handoff_api import scaffold_handoff; help(scaffold_handoff)"
+2026-07-15T08:49:27 OBPI-0.0.65-03-gz-handoff-cli-verb 0 uv run gz handoff create --adr ADR-0.0.65 --slug demo-gz-handoff-create --agent g0 --decisions "Demonstrate th
+2026-07-15T08:49:27 OBPI-0.0.65-03-gz-handoff-cli-verb 0 uv run gz handoff list --adr ADR-0.0.65
+2026-07-15T08:49:27 OBPI-0.0.65-03-gz-handoff-cli-verb 0 uv run gz handoff list --json
+2026-07-15T08:49:27 OBPI-0.0.65-03-gz-handoff-cli-verb 0 uv run gz handoff resume --adr ADR-0.0.65
+2026-08-24T09:28:30 OBPI-0.35.0-01-corpus-tombstone-schema-a 0 uv run python -c "from pathlib import Path; from gzkit.content.corpus_store import load_corpus; from gzkit.con
+2026-09-02T19:00:09 OBPI-0.35.0-04-section-ownership-and-rat 0 uv run gz content unown --help
+2026-09-02T19:00:09 OBPI-0.35.0-04-section-ownership-and-rat 0 uv run python -c "import json, pathlib; from gzkit.content.models import Corpus; from gzkit.content.ownership
+2026-09-02T19:00:09 OBPI-0.35.0-04-section-ownership-and-rat 0 uv run python -c "import subprocess, sys, pathlib; d = pathlib.Path('.gzkit/ownership/AGENTS.md.json'); before
+2026-09-02T22:04:48 OBPI-0.35.0-04-section-ownership-and-rat 0 uv run gz content unown --help
+2026-09-02T22:04:48 OBPI-0.35.0-04-section-ownership-and-rat 0 uv run python -c "import json, pathlib; from gzkit.content.models import Corpus; from gzkit.content.ownership
+2026-09-02T22:04:48 OBPI-0.35.0-04-section-ownership-and-rat 0 uv run python -c "import subprocess, sys, pathlib; d = pathlib.Path('.gzkit/ownership/AGENTS.md.json'); before
+2026-09-03T01:55:05 OBPI-0.35.0-04-section-ownership-and-rat 0 uv run gz content unown --help
+2026-09-03T01:55:05 OBPI-0.35.0-04-section-ownership-and-rat 0 uv run python -c "import json, pathlib; from gzkit.content.models import Corpus; from gzkit.content.ownership
+2026-09-03T01:55:05 OBPI-0.35.0-04-section-ownership-and-rat 0 uv run python -c "import subprocess, sys, pathlib; d = pathlib.Path('.gzkit/ownership/AGENTS.md.json'); before
+2026-09-04T01:19:16 OBPI-0.35.0-04-section-ownership-and-rat 0 uv run gz content unown --help
+2026-09-04T01:19:16 OBPI-0.35.0-04-section-ownership-and-rat 0 uv run python -c "import json, pathlib; from gzkit.content.models import Corpus; from gzkit.content.ownership
+2026-09-04T01:19:16 OBPI-0.35.0-04-section-ownership-and-rat 0 uv run python -c "import subprocess, sys, pathlib; d = pathlib.Path('.gzkit/ownership/AGENTS.md.json'); before
+2026-09-05T17:57:13 OBPI-0.35.0-04-section-ownership-and-rat 0 uv run gz content unown --help
+2026-09-05T17:57:13 OBPI-0.35.0-04-section-ownership-and-rat 0 uv run python -c "import json, pathlib; from gzkit.content.models import Corpus; from gzkit.content.ownership
+2026-09-05T17:57:13 OBPI-0.35.0-04-section-ownership-and-rat 0 uv run python -c "import subprocess, sys, pathlib; d = pathlib.Path('.gzkit/ownership/AGENTS.md.json'); before
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 127 from gzkit.content.corpus_store import load_corpus
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 127 from gzkit.content.models.corpus import effective_corpus
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 127 from pathlib import Path
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 127 import collections, json, re
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 127 import json, subprocess
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 127 live_ids = {e.id for e in live.entries}
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 127 path = ".gzkit/corpus/AGENTS.md.jsonl"
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 127 raw = {e.id: e for e in corpus.entries}
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 2 '
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 2 after = subprocess.check_output(["git", "show", revision + ":" + path])
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 2 assert after.startswith(before), revision
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 2 assert all(("AGENTS.md", x) in subjects for x in losers)
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 2 assert all(sum(e.retires == x and e.id not in dead for e in corpus.entries) == 1 for x in losers)
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 2 assert all(x in live_ids for x in winners)
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 2 assert all(x in raw and x not in live_ids for x in losers)
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 2 assert current.startswith(after), revision
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 2 assert len(rows) == added and all(row.get("retires") for row in rows), revision
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 2 assert len(set(losers)) == len(set(winners)) == 8
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 2 assert not any(n > 1 for n in counts.values())
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 2 before = subprocess.check_output(["git", "show", revision + "^:" + path])
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 2 brief = Path("docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-03-retire-du
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 2 corpus = load_corpus(Path("."), "AGENTS.md")
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 2 counts = collections.Counter(e.text for e in live.entries if e.tier == "invariant")
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 2 current = Path(path).read_bytes()
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 2 dead = corpus.retired_ids()
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 2 events = [json.loads(line) for line in Path(".gzkit/ledger.jsonl").read_text().splitlines() if line.strip()]
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 2 for revision, added in (("f314da7f53b79b67c5fdc55e0a34112ccdc77f47", 1), ("8ed48271017d247fcf5a7a7800b1117998b
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 2 live = effective_corpus(corpus)
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 2 losers = re.findall(r"— retire `([^`]+)`; RETAIN", requirements) + re.findall(r"IS CANON; retire `([^`]+)`", r
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 2 print("8 targets retired; 8 winners live; 8 live tombstones witnessed; duplicate invariant texts: 0")
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 2 print(revision[:8], "appended", len(rows), "tombstones; prior bytes and current prefix preserved")
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 2 requirements = brief.split("## Requirements (FAIL-CLOSED)")[1].split("## Discovery Checklist")[0]
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 2 rows = [json.loads(line) for line in after[len(before):].splitlines()]
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 2 subjects = {(e.get("surface"), e.get("retired_entry_id")) for e in events if e.get("event") in {"corpus_entry_
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 2 uv run python -c '
+2026-09-05T19:21:56 OBPI-0.35.0-03-retire-duplicate-invarian 2 winners = re.findall(r"; RETAIN `([^`]+)`", requirements) + re.findall(r"SINGLE-QUOTE row `([^`]+)`", requirem
+2026-09-06T09:41:26 OBPI-0.35.0-03-retire-duplicate-invarian 0 uv run python -c ' import collections, json, re from pathlib import Path from gzkit.content.corpus_store impor
+2026-09-06T09:41:26 OBPI-0.35.0-03-retire-duplicate-invarian 0 uv run python -c ' import json, subprocess from pathlib import Path path = ".gzkit/corpus/AGENTS.md.jsonl" cur
+2026-09-08T11:30:39 OBPI-0.35.0-05-corpus-candidate-generato 0 uv run -m behave features/content_compose.feature
+2026-09-08T11:30:39 OBPI-0.35.0-05-corpus-candidate-generato 0 uv run -m unittest tests.content.test_composer tests.content.test_lineage tests.commands.test_content_compose
+2026-09-08T11:30:39 OBPI-0.35.0-05-corpus-candidate-generato 0 uv run gz content compose AGENTS.md --consumer root
+2026-09-12T05:31:33 OBPI-0.35.0-06-validate-rendition-lineag 0 uv run -m behave features/rendition_lineage.feature
+2026-09-12T05:31:33 OBPI-0.35.0-06-validate-rendition-lineag 0 uv run gz validate --rendition-lineage
+2026-09-12T05:31:33 OBPI-0.35.0-06-validate-rendition-lineag 0 uv run gz validate --rendition-lineage --json
+2026-09-25T09:02:05 OBPI-0.35.0-14-meaning-preserving-landin 0 R="$(pwd)"; D="$(mktemp -d)"; cd "$D" && uv run --project "$R" python - <<'PY' import json, subprocess, sys fr
+2026-09-28T02:33:12 OBPI-0.35.0-07-content-land-orchestrator 0 uv run -m behave features/content_land.feature
+2026-09-28T02:33:12 OBPI-0.35.0-07-content-land-orchestrator 0 uv run gz content land --help
+2026-09-28T02:33:12 OBPI-0.35.0-07-content-land-orchestrator 0 uv run gz content land AGENTS.md --dry-run
+2026-09-28T09:10:29 OBPI-0.35.0-07-content-land-orchestrator 0 uv run -m behave features/content_land.feature
+2026-09-28T09:10:29 OBPI-0.35.0-07-content-land-orchestrator 0 uv run gz content land --help
+2026-09-28T09:10:29 OBPI-0.35.0-07-content-land-orchestrator 0 uv run gz content land AGENTS.md --dry-run

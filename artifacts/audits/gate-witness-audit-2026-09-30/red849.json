@@ -1,0 +1,2032 @@
+[
+ {
+  "ts": "2026-07-10T09:23:46",
+  "req": "REQ-0.44.0-01-01",
+  "cls": "error",
+  "prov": null,
+  "base": "0aab50bd8",
+  "intro": "ee07fd7a3",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.44.0-01-01-70c7c51ecf6c4c329ec7a4c5215bba72"
+ },
+ {
+  "ts": "2026-07-10T09:24:04",
+  "req": "REQ-0.44.0-01-02",
+  "cls": "error",
+  "prov": null,
+  "base": "0aab50bd8",
+  "intro": "ee07fd7a3",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.44.0-01-02-41e5fc5b356f432292b8be4926ce7342"
+ },
+ {
+  "ts": "2026-07-10T09:24:15",
+  "req": "REQ-0.44.0-01-03",
+  "cls": "error",
+  "prov": null,
+  "base": "0aab50bd8",
+  "intro": "ee07fd7a3",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.44.0-01-03-1e84ac460ba2449a8fb0f7be0f613fa2"
+ },
+ {
+  "ts": "2026-07-10T09:24:26",
+  "req": "REQ-0.44.0-01-04",
+  "cls": "error",
+  "prov": null,
+  "base": "0aab50bd8",
+  "intro": "ee07fd7a3",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.44.0-01-04-e69d14dfbeac48ff90c798aeb08817f3"
+ },
+ {
+  "ts": "2026-07-11T08:14:53",
+  "req": "REQ-0.33.0-02-01",
+  "cls": "error",
+  "prov": null,
+  "base": "c2156a0a6",
+  "intro": "1b6e315cf",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.33.0-02-01-ff53426e67874353825349e59a86da7d"
+ },
+ {
+  "ts": "2026-07-11T08:14:56",
+  "req": "REQ-0.33.0-02-02",
+  "cls": "error",
+  "prov": null,
+  "base": "c2156a0a6",
+  "intro": "1b6e315cf",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.33.0-02-02-2b130795251c4e04a4855f7371c6dd40"
+ },
+ {
+  "ts": "2026-07-11T08:15:00",
+  "req": "REQ-0.33.0-02-03",
+  "cls": "error",
+  "prov": null,
+  "base": "c2156a0a6",
+  "intro": "1b6e315cf",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.33.0-02-03-9d13b8068fef45a8be28d59f235112b2"
+ },
+ {
+  "ts": "2026-07-11T08:15:03",
+  "req": "REQ-0.33.0-02-04",
+  "cls": "error",
+  "prov": null,
+  "base": "c2156a0a6",
+  "intro": "1b6e315cf",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.33.0-02-04-2b5fa2914b704860a80bf66065c75509"
+ },
+ {
+  "ts": "2026-07-11T08:15:07",
+  "req": "REQ-0.33.0-02-05",
+  "cls": "error",
+  "prov": null,
+  "base": "c2156a0a6",
+  "intro": "1b6e315cf",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.33.0-02-05-aabd9906e8fc40a9b47a41b539985cbd"
+ },
+ {
+  "ts": "2026-07-11T08:15:10",
+  "req": "REQ-0.33.0-02-06",
+  "cls": "error",
+  "prov": null,
+  "base": "c2156a0a6",
+  "intro": "1b6e315cf",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.33.0-02-06-2b99c402d5b44342b587099f314b696d"
+ },
+ {
+  "ts": "2026-07-11T08:24:50",
+  "req": "REQ-0.33.0-02-03",
+  "cls": "error",
+  "prov": null,
+  "base": "c2156a0a6",
+  "intro": "1b6e315cf",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.33.0-02-03-140a517959904e17b2bb05897fc62b27"
+ },
+ {
+  "ts": "2026-07-11T08:25:02",
+  "req": "REQ-0.33.0-02-01",
+  "cls": "error",
+  "prov": null,
+  "base": "c2156a0a6",
+  "intro": "1b6e315cf",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.33.0-02-01-f9cbca8f03fd445390037b6b6bf67e72"
+ },
+ {
+  "ts": "2026-07-11T08:25:05",
+  "req": "REQ-0.33.0-02-02",
+  "cls": "error",
+  "prov": null,
+  "base": "c2156a0a6",
+  "intro": "1b6e315cf",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.33.0-02-02-728243194b1f469c9f0956538588aa78"
+ },
+ {
+  "ts": "2026-07-11T08:25:09",
+  "req": "REQ-0.33.0-02-04",
+  "cls": "error",
+  "prov": null,
+  "base": "c2156a0a6",
+  "intro": "1b6e315cf",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.33.0-02-04-39b3a340dcde4367bc5f1022936d6372"
+ },
+ {
+  "ts": "2026-07-11T08:25:12",
+  "req": "REQ-0.33.0-02-05",
+  "cls": "error",
+  "prov": null,
+  "base": "c2156a0a6",
+  "intro": "1b6e315cf",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.33.0-02-05-ddcb530d6e8e490c9c4b8abca38179ed"
+ },
+ {
+  "ts": "2026-07-11T08:25:16",
+  "req": "REQ-0.33.0-02-06",
+  "cls": "error",
+  "prov": null,
+  "base": "c2156a0a6",
+  "intro": "1b6e315cf",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.33.0-02-06-d656abbed75b428789066c0a29fe96d1"
+ },
+ {
+  "ts": "2026-07-11T09:25:39",
+  "req": "REQ-0.33.0-03-01",
+  "cls": "error",
+  "prov": null,
+  "base": "c543bb639",
+  "intro": "dcc8dca6f",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.33.0-03-01-303c24c1aa5c4ccfb7e88756414c0ebf"
+ },
+ {
+  "ts": "2026-07-11T09:25:43",
+  "req": "REQ-0.33.0-03-02",
+  "cls": "error",
+  "prov": null,
+  "base": "c543bb639",
+  "intro": "dcc8dca6f",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.33.0-03-02-f66ba360a0444516bb6df777f6024059"
+ },
+ {
+  "ts": "2026-07-11T09:25:46",
+  "req": "REQ-0.33.0-03-03",
+  "cls": "error",
+  "prov": null,
+  "base": "c543bb639",
+  "intro": "dcc8dca6f",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.33.0-03-03-bfff43d99b16458585b6c2e10632fbe5"
+ },
+ {
+  "ts": "2026-07-11T09:25:49",
+  "req": "REQ-0.33.0-03-04",
+  "cls": "error",
+  "prov": null,
+  "base": "c543bb639",
+  "intro": "dcc8dca6f",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.33.0-03-04-650d6c230e7e4a3ab6040704087fcbe2"
+ },
+ {
+  "ts": "2026-07-11T09:25:53",
+  "req": "REQ-0.33.0-03-05",
+  "cls": "error",
+  "prov": null,
+  "base": "c543bb639",
+  "intro": "dcc8dca6f",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.33.0-03-05-b2f825c6c4c24f0992196b2eb6c46a72"
+ },
+ {
+  "ts": "2026-07-11T09:38:35",
+  "req": "REQ-0.33.0-03-04",
+  "cls": "error",
+  "prov": null,
+  "base": "c543bb639",
+  "intro": "dcc8dca6f",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.33.0-03-04-8fa04b20d7914c18ada78ef3fdb8764b"
+ },
+ {
+  "ts": "2026-07-11T12:00:26",
+  "req": "REQ-0.33.0-04-01",
+  "cls": "error",
+  "prov": null,
+  "base": "998008c7b",
+  "intro": "d15d5cbeb",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.33.0-04-01-bebbea80f9914ff6bce1b6a8b9d86b40"
+ },
+ {
+  "ts": "2026-07-11T12:00:30",
+  "req": "REQ-0.33.0-04-02",
+  "cls": "assertion",
+  "prov": null,
+  "base": "998008c7b",
+  "intro": "d15d5cbeb",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.33.0-04-02-1b102c38388f4ed098a5987f4630b477"
+ },
+ {
+  "ts": "2026-07-11T12:00:35",
+  "req": "REQ-0.33.0-04-03",
+  "cls": "error",
+  "prov": null,
+  "base": "998008c7b",
+  "intro": "d15d5cbeb",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.33.0-04-03-93bf4334575a4689856adb91eba3e673"
+ },
+ {
+  "ts": "2026-07-11T12:00:40",
+  "req": "REQ-0.33.0-04-04",
+  "cls": "error",
+  "prov": null,
+  "base": "998008c7b",
+  "intro": "d15d5cbeb",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.33.0-04-04-64a9c5d964d9455f845c153858c4d110"
+ },
+ {
+  "ts": "2026-07-11T23:00:27",
+  "req": "REQ-0.33.0-05-01",
+  "cls": "error",
+  "prov": null,
+  "base": "1128bfc2c",
+  "intro": "5a04b3ff9",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.33.0-05-01-4409a63b1b374a18b50786dc3d1021d4"
+ },
+ {
+  "ts": "2026-07-11T23:00:31",
+  "req": "REQ-0.33.0-05-02",
+  "cls": "error",
+  "prov": null,
+  "base": "1128bfc2c",
+  "intro": "5a04b3ff9",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.33.0-05-02-f762c95737634c068a8e1bd0db7bb672"
+ },
+ {
+  "ts": "2026-07-11T23:00:36",
+  "req": "REQ-0.33.0-05-03",
+  "cls": "error",
+  "prov": null,
+  "base": "1128bfc2c",
+  "intro": "5a04b3ff9",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.33.0-05-03-101645bfcaf24a0c94d5395086d6040d"
+ },
+ {
+  "ts": "2026-07-11T23:00:40",
+  "req": "REQ-0.33.0-05-04",
+  "cls": "error",
+  "prov": null,
+  "base": "1128bfc2c",
+  "intro": "5a04b3ff9",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.33.0-05-04-f8721b06c84546a1b80555e7ac3474d7"
+ },
+ {
+  "ts": "2026-07-11T23:00:44",
+  "req": "REQ-0.33.0-05-05",
+  "cls": "error",
+  "prov": null,
+  "base": "1128bfc2c",
+  "intro": "5a04b3ff9",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.33.0-05-05-4bb24a680b8348a4acc13f946aec56e2"
+ },
+ {
+  "ts": "2026-07-11T23:00:48",
+  "req": "REQ-0.33.0-05-06",
+  "cls": "error",
+  "prov": null,
+  "base": "1128bfc2c",
+  "intro": "5a04b3ff9",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.33.0-05-06-173044d43aa1494291f09fca1d0bd214"
+ },
+ {
+  "ts": "2026-07-13T01:13:39",
+  "req": "REQ-0.0.65-02-01",
+  "cls": "error",
+  "prov": null,
+  "base": "868b332f2",
+  "intro": "af6bba3ed",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.65-02-01-dfdce30be3344ae4bfd94221ffd8b939"
+ },
+ {
+  "ts": "2026-07-13T01:14:06",
+  "req": "REQ-0.0.65-02-02",
+  "cls": "error",
+  "prov": null,
+  "base": "868b332f2",
+  "intro": "af6bba3ed",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.65-02-02-dc6b102832f741f58620923ffcfc382a"
+ },
+ {
+  "ts": "2026-07-13T01:14:09",
+  "req": "REQ-0.0.65-02-03",
+  "cls": "error",
+  "prov": null,
+  "base": "868b332f2",
+  "intro": "af6bba3ed",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.65-02-03-a9313d95f6b34e1b971ffa3e684f1e7e"
+ },
+ {
+  "ts": "2026-07-13T01:14:13",
+  "req": "REQ-0.0.65-02-04",
+  "cls": "error",
+  "prov": null,
+  "base": "868b332f2",
+  "intro": "af6bba3ed",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.65-02-04-da1e067a85e04cec946539d4f7e7b7a7"
+ },
+ {
+  "ts": "2026-07-13T01:14:16",
+  "req": "REQ-0.0.65-02-05",
+  "cls": "error",
+  "prov": null,
+  "base": "868b332f2",
+  "intro": "af6bba3ed",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.65-02-05-4b15386d72e3479d95929807ef5b0bd8"
+ },
+ {
+  "ts": "2026-07-13T01:14:20",
+  "req": "REQ-0.0.65-02-07",
+  "cls": "error",
+  "prov": null,
+  "base": "868b332f2",
+  "intro": "af6bba3ed",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.65-02-07-9e6f35acceb54491aa49ee0553b4f308"
+ },
+ {
+  "ts": "2026-07-13T01:14:23",
+  "req": "REQ-0.0.65-02-08",
+  "cls": "error",
+  "prov": null,
+  "base": "868b332f2",
+  "intro": "af6bba3ed",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.65-02-08-71b87b9330534e21b942c9194574b098"
+ },
+ {
+  "ts": "2026-07-13T01:18:51",
+  "req": "REQ-0.0.65-02-01",
+  "cls": "error",
+  "prov": null,
+  "base": "868b332f2",
+  "intro": "af6bba3ed",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.65-02-01-3422a8f8ed984842ad8aa2a03b2e77a0"
+ },
+ {
+  "ts": "2026-07-13T01:19:25",
+  "req": "REQ-0.0.65-02-02",
+  "cls": "error",
+  "prov": null,
+  "base": "868b332f2",
+  "intro": "af6bba3ed",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.65-02-02-c2cf8d9bbb5841918fa5e1bbed916de9"
+ },
+ {
+  "ts": "2026-07-13T01:19:29",
+  "req": "REQ-0.0.65-02-03",
+  "cls": "error",
+  "prov": null,
+  "base": "868b332f2",
+  "intro": "af6bba3ed",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.65-02-03-bac80240dbb949d0b1969e0478d85903"
+ },
+ {
+  "ts": "2026-07-13T01:19:32",
+  "req": "REQ-0.0.65-02-04",
+  "cls": "error",
+  "prov": null,
+  "base": "868b332f2",
+  "intro": "af6bba3ed",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.65-02-04-9ae51c59291045dd961ea9d0b7caf181"
+ },
+ {
+  "ts": "2026-07-13T01:19:36",
+  "req": "REQ-0.0.65-02-05",
+  "cls": "error",
+  "prov": null,
+  "base": "868b332f2",
+  "intro": "af6bba3ed",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.65-02-05-b71ce9225f2e493e9c05e928700d4296"
+ },
+ {
+  "ts": "2026-07-13T01:19:39",
+  "req": "REQ-0.0.65-02-07",
+  "cls": "error",
+  "prov": null,
+  "base": "868b332f2",
+  "intro": "af6bba3ed",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.65-02-07-5fe5534f082c4ae3bc6b592f0dcb2a87"
+ },
+ {
+  "ts": "2026-07-13T01:19:43",
+  "req": "REQ-0.0.65-02-08",
+  "cls": "error",
+  "prov": null,
+  "base": "868b332f2",
+  "intro": "af6bba3ed",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.65-02-08-435fdca736094f55a8b92bd16c2db1e8"
+ },
+ {
+  "ts": "2026-07-13T11:47:56",
+  "req": "REQ-0.0.72-03-01",
+  "cls": "error",
+  "prov": null,
+  "base": "c465934b1",
+  "intro": "5f3910e5b",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.72-03-01-cd98ab2bc00e486f9cad5d6544153c11"
+ },
+ {
+  "ts": "2026-07-13T11:48:00",
+  "req": "REQ-0.0.72-03-02",
+  "cls": "error",
+  "prov": null,
+  "base": "c465934b1",
+  "intro": "5f3910e5b",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.72-03-02-6180f483c51b46c1990178a331c9c8bf"
+ },
+ {
+  "ts": "2026-07-13T11:48:05",
+  "req": "REQ-0.0.72-03-05",
+  "cls": "error",
+  "prov": null,
+  "base": "c465934b1",
+  "intro": "5f3910e5b",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.72-03-05-31fe26d29fab46bca4c8691feccfc3d5"
+ },
+ {
+  "ts": "2026-07-13T11:49:58",
+  "req": "REQ-0.0.72-03-05",
+  "cls": "error",
+  "prov": null,
+  "base": "c465934b1",
+  "intro": "5f3910e5b",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.72-03-05-a32f0c5e475e4fe496a59a3ab57c905f"
+ },
+ {
+  "ts": "2026-07-13T11:51:43",
+  "req": "REQ-0.0.72-03-05",
+  "cls": "error",
+  "prov": null,
+  "base": "c465934b1",
+  "intro": "5f3910e5b",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.72-03-05-3ab059742a024b1f8403dfc4460006cb"
+ },
+ {
+  "ts": "2026-07-13T11:51:51",
+  "req": "REQ-0.0.72-03-02",
+  "cls": "error",
+  "prov": null,
+  "base": "c465934b1",
+  "intro": "5f3910e5b",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.72-03-02-6439734cea804ba1bc6c43552c92818c"
+ },
+ {
+  "ts": "2026-07-13T11:51:51",
+  "req": "REQ-0.0.72-03-01",
+  "cls": "error",
+  "prov": null,
+  "base": "c465934b1",
+  "intro": "5f3910e5b",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.72-03-01-88fbaf27f00b472185ca851372bcaab7"
+ },
+ {
+  "ts": "2026-07-13T11:51:52",
+  "req": "REQ-0.0.72-03-05",
+  "cls": "error",
+  "prov": null,
+  "base": "c465934b1",
+  "intro": "5f3910e5b",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.72-03-05-a943e91910db4f21886671179a8a39a2"
+ },
+ {
+  "ts": "2026-07-13T11:53:17",
+  "req": "REQ-0.0.72-03-05",
+  "cls": "error",
+  "prov": null,
+  "base": "c465934b1",
+  "intro": "5f3910e5b",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.72-03-05-72bb7116123641cf82cd30c95a92e825"
+ },
+ {
+  "ts": "2026-07-13T23:19:22",
+  "req": "REQ-0.0.72-04-01",
+  "cls": "error",
+  "prov": null,
+  "base": "45ee3a446",
+  "intro": "0293aa132",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.72-04-01-70317be8e9fe48aface86af4b96acc10"
+ },
+ {
+  "ts": "2026-07-13T23:19:27",
+  "req": "REQ-0.0.72-04-02",
+  "cls": "error",
+  "prov": null,
+  "base": "45ee3a446",
+  "intro": "0293aa132",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.72-04-02-cd0146f833d14915b5a34c5d163cf425"
+ },
+ {
+  "ts": "2026-07-13T23:19:31",
+  "req": "REQ-0.0.72-04-03",
+  "cls": "error",
+  "prov": null,
+  "base": "45ee3a446",
+  "intro": "0293aa132",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.72-04-03-26e518df51494b4a9147feb9d5c5d220"
+ },
+ {
+  "ts": "2026-07-13T23:19:35",
+  "req": "REQ-0.0.72-04-05",
+  "cls": "error",
+  "prov": null,
+  "base": "45ee3a446",
+  "intro": "0293aa132",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.72-04-05-5567b171c52e404aa06c9b4a92036de2"
+ },
+ {
+  "ts": "2026-07-13T23:52:28",
+  "req": "REQ-0.0.72-04-02",
+  "cls": "error",
+  "prov": null,
+  "base": "45ee3a446",
+  "intro": "0293aa132",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.72-04-02-8673938106e84f179d54785de27071da"
+ },
+ {
+  "ts": "2026-07-13T23:59:54",
+  "req": "REQ-0.0.72-04-02",
+  "cls": "error",
+  "prov": null,
+  "base": "45ee3a446",
+  "intro": "0293aa132",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.72-04-02-64291e1db49841e79749e7176aefdec0"
+ },
+ {
+  "ts": "2026-07-14T00:06:15",
+  "req": "REQ-0.0.72-04-02",
+  "cls": "error",
+  "prov": null,
+  "base": "45ee3a446",
+  "intro": "0293aa132",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.72-04-02-471644cebab3476fb74f5db8846cffef"
+ },
+ {
+  "ts": "2026-07-14T00:23:16",
+  "req": "REQ-0.0.72-04-02",
+  "cls": "error",
+  "prov": null,
+  "base": "45ee3a446",
+  "intro": "0293aa132",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.72-04-02-7660e5e4f02e4ebab774b581ee6686b6"
+ },
+ {
+  "ts": "2026-07-14T00:38:08",
+  "req": "REQ-0.0.72-04-01",
+  "cls": "error",
+  "prov": null,
+  "base": "45ee3a446",
+  "intro": "0293aa132",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.72-04-01-60bf3f962b934fcf98684b11fe8ddb4f"
+ },
+ {
+  "ts": "2026-07-14T00:38:12",
+  "req": "REQ-0.0.72-04-02",
+  "cls": "error",
+  "prov": null,
+  "base": "45ee3a446",
+  "intro": "0293aa132",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.72-04-02-37093d2d71b141eab564c21804e2691f"
+ },
+ {
+  "ts": "2026-07-14T00:38:16",
+  "req": "REQ-0.0.72-04-03",
+  "cls": "error",
+  "prov": null,
+  "base": "45ee3a446",
+  "intro": "0293aa132",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.72-04-03-674cf994e53c4ab4a02aa508564c5cbe"
+ },
+ {
+  "ts": "2026-07-14T00:38:20",
+  "req": "REQ-0.0.72-04-05",
+  "cls": "error",
+  "prov": null,
+  "base": "45ee3a446",
+  "intro": "0293aa132",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.72-04-05-618eb09e5c1146e9bd911c3635cdf80b"
+ },
+ {
+  "ts": "2026-07-14T22:48:05",
+  "req": "REQ-0.0.65-04-01",
+  "cls": "assertion",
+  "prov": null,
+  "base": "965700507",
+  "intro": "591a45367",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.65-04-01-7648a022a7d242eb87bc24e863fe52aa"
+ },
+ {
+  "ts": "2026-07-14T22:48:09",
+  "req": "REQ-0.0.65-04-02",
+  "cls": "assertion",
+  "prov": null,
+  "base": "965700507",
+  "intro": "591a45367",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.65-04-02-a88b81cfcdbd457cafcea15449e2f071"
+ },
+ {
+  "ts": "2026-07-14T22:48:13",
+  "req": "REQ-0.0.65-04-03",
+  "cls": "assertion",
+  "prov": null,
+  "base": "965700507",
+  "intro": "591a45367",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.65-04-03-bea063a9d29747ea9a71e09b229070ef"
+ },
+ {
+  "ts": "2026-07-15T00:10:34",
+  "req": "REQ-0.0.65-04-01",
+  "cls": "assertion",
+  "prov": null,
+  "base": "965700507",
+  "intro": "591a45367",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.65-04-01-8fc817b3ca874d84af823fe32c8d7758"
+ },
+ {
+  "ts": "2026-07-15T00:10:38",
+  "req": "REQ-0.0.65-04-02",
+  "cls": "assertion",
+  "prov": null,
+  "base": "965700507",
+  "intro": "591a45367",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.65-04-02-496b1004c7a04d07bbbd3ec207c9ed96"
+ },
+ {
+  "ts": "2026-07-15T00:10:42",
+  "req": "REQ-0.0.65-04-03",
+  "cls": "assertion",
+  "prov": null,
+  "base": "965700507",
+  "intro": "591a45367",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.65-04-03-e390a557316b4861aa1106d6259c8459"
+ },
+ {
+  "ts": "2026-07-15T07:07:38",
+  "req": "REQ-0.0.65-03-01",
+  "cls": "error",
+  "prov": null,
+  "base": "2ff89baf1",
+  "intro": "09f38f4ba",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.65-03-01-e53862d86fe04cf583396003f06fec18"
+ },
+ {
+  "ts": "2026-07-15T07:07:42",
+  "req": "REQ-0.0.65-03-02",
+  "cls": "error",
+  "prov": null,
+  "base": "2ff89baf1",
+  "intro": "09f38f4ba",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.65-03-02-8129e90da5f84bf8b3afc46754407836"
+ },
+ {
+  "ts": "2026-07-15T07:07:45",
+  "req": "REQ-0.0.65-03-03",
+  "cls": "error",
+  "prov": null,
+  "base": "2ff89baf1",
+  "intro": "09f38f4ba",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.65-03-03-97cfcf97060042d0bcd4570818420c17"
+ },
+ {
+  "ts": "2026-07-15T08:45:07",
+  "req": "REQ-0.0.65-03-01",
+  "cls": "error",
+  "prov": null,
+  "base": "2ff89baf1",
+  "intro": "09f38f4ba",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.65-03-01-96912b7216ee4a5c8e5c581dc2e53e39"
+ },
+ {
+  "ts": "2026-07-15T08:45:25",
+  "req": "REQ-0.0.65-03-02",
+  "cls": "error",
+  "prov": null,
+  "base": "2ff89baf1",
+  "intro": "09f38f4ba",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.65-03-02-9fee46f859cc4e2491497aa36dddae87"
+ },
+ {
+  "ts": "2026-07-15T08:45:28",
+  "req": "REQ-0.0.65-03-03",
+  "cls": "error",
+  "prov": null,
+  "base": "2ff89baf1",
+  "intro": "09f38f4ba",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.65-03-03-d8110cbe5cbb40ae99fa733ed2e643fe"
+ },
+ {
+  "ts": "2026-07-15T09:31:25",
+  "req": "REQ-0.0.65-03-03",
+  "cls": "error",
+  "prov": null,
+  "base": "2ff89baf1",
+  "intro": "09f38f4ba",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.65-03-03-d719841af04147cdbc7ae712d7417123"
+ },
+ {
+  "ts": "2026-07-15T17:12:09",
+  "req": "REQ-0.0.65-05-01",
+  "cls": "error",
+  "prov": null,
+  "base": "ccf7c0356",
+  "intro": "1ce1d7d74",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.65-05-01-3b97ae79bd9c4d229c2b1d54b9ba8040"
+ },
+ {
+  "ts": "2026-07-15T17:12:37",
+  "req": "REQ-0.0.65-05-02",
+  "cls": "error",
+  "prov": null,
+  "base": "ccf7c0356",
+  "intro": "1ce1d7d74",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.65-05-02-052738fc21f7416fa591b07b9335183b"
+ },
+ {
+  "ts": "2026-07-15T17:12:40",
+  "req": "REQ-0.0.65-05-03",
+  "cls": "error",
+  "prov": null,
+  "base": "ccf7c0356",
+  "intro": "1ce1d7d74",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.65-05-03-cb57a5516a68431a8fbecb0e3ad89e03"
+ },
+ {
+  "ts": "2026-07-15T17:12:44",
+  "req": "REQ-0.0.65-05-04",
+  "cls": "error",
+  "prov": null,
+  "base": "ccf7c0356",
+  "intro": "1ce1d7d74",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.65-05-04-270b08882d114a97a26ffa23bd12a1df"
+ },
+ {
+  "ts": "2026-07-15T17:12:47",
+  "req": "REQ-0.0.65-05-05",
+  "cls": "error",
+  "prov": null,
+  "base": "ccf7c0356",
+  "intro": "1ce1d7d74",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.65-05-05-07d8ad3d2e7e4602b56b9b277e94a3ce"
+ },
+ {
+  "ts": "2026-07-15T18:25:47",
+  "req": "REQ-0.0.65-05-01",
+  "cls": "error",
+  "prov": null,
+  "base": "ccf7c0356",
+  "intro": "1ce1d7d74",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.65-05-01-e926ac29729d494cb4b8fe51f4fac137"
+ },
+ {
+  "ts": "2026-07-15T18:25:51",
+  "req": "REQ-0.0.65-05-03",
+  "cls": "error",
+  "prov": null,
+  "base": "ccf7c0356",
+  "intro": "1ce1d7d74",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.65-05-03-b049978a28684aea84081f310c239d3f"
+ },
+ {
+  "ts": "2026-07-15T18:25:54",
+  "req": "REQ-0.0.65-05-05",
+  "cls": "error",
+  "prov": null,
+  "base": "ccf7c0356",
+  "intro": "1ce1d7d74",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.0.65-05-05-9f85497b3e5d45c39abdc5df6a2720bb"
+ },
+ {
+  "ts": "2026-07-19T14:51:29",
+  "req": "REQ-0.34.0-01-01",
+  "cls": "error",
+  "prov": null,
+  "base": "5d2b84057",
+  "intro": "8e57a818f",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.34.0-01-01-e95127d5ecd048579175fbd967d3258d"
+ },
+ {
+  "ts": "2026-07-19T14:51:34",
+  "req": "REQ-0.34.0-01-02",
+  "cls": "error",
+  "prov": null,
+  "base": "5d2b84057",
+  "intro": "8e57a818f",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.34.0-01-02-8cdc256bcfa744868e0b64242822906b"
+ },
+ {
+  "ts": "2026-07-19T14:51:38",
+  "req": "REQ-0.34.0-01-03",
+  "cls": "error",
+  "prov": null,
+  "base": "5d2b84057",
+  "intro": "8e57a818f",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.34.0-01-03-4b692c58fb834c0fa42de71964b1402e"
+ },
+ {
+  "ts": "2026-07-19T14:51:43",
+  "req": "REQ-0.34.0-01-04",
+  "cls": "error",
+  "prov": null,
+  "base": "5d2b84057",
+  "intro": "8e57a818f",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.34.0-01-04-b1793b68f6304792a467c50aa1607aed"
+ },
+ {
+  "ts": "2026-07-20T01:20:56",
+  "req": "REQ-0.34.0-02-01",
+  "cls": "assertion",
+  "prov": null,
+  "base": "1c0f52511",
+  "intro": "09259e2f1",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.34.0-02-01-67e78dab99f64ed3b0c8c208b04e0841"
+ },
+ {
+  "ts": "2026-07-20T01:21:01",
+  "req": "REQ-0.34.0-02-02",
+  "cls": "assertion",
+  "prov": null,
+  "base": "1c0f52511",
+  "intro": "09259e2f1",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.34.0-02-02-2759de2a6745415c8bcadd764ab81577"
+ },
+ {
+  "ts": "2026-07-20T01:21:07",
+  "req": "REQ-0.34.0-02-03",
+  "cls": "assertion",
+  "prov": null,
+  "base": "1c0f52511",
+  "intro": "09259e2f1",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.34.0-02-03-8e5e46a8795f4f4bb641c48345c72141"
+ },
+ {
+  "ts": "2026-07-20T08:50:06",
+  "req": "REQ-0.34.0-02-01",
+  "cls": "error",
+  "prov": null,
+  "base": "1c0f52511",
+  "intro": "09259e2f1",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.34.0-02-01-e5f3d46454c940aa87bde3f5f99ba9b7"
+ },
+ {
+  "ts": "2026-07-20T08:50:11",
+  "req": "REQ-0.34.0-02-02",
+  "cls": "error",
+  "prov": null,
+  "base": "1c0f52511",
+  "intro": "09259e2f1",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.34.0-02-02-dfe12f5efc7f492698c30d9fa20d1fef"
+ },
+ {
+  "ts": "2026-07-20T08:50:16",
+  "req": "REQ-0.34.0-02-03",
+  "cls": "error",
+  "prov": null,
+  "base": "1c0f52511",
+  "intro": "09259e2f1",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.34.0-02-03-6de68e55cfd849aea990f555d52366a8"
+ },
+ {
+  "ts": "2026-07-20T08:50:21",
+  "req": "REQ-0.34.0-02-04",
+  "cls": "error",
+  "prov": null,
+  "base": "1c0f52511",
+  "intro": "09259e2f1",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.34.0-02-04-e2fbaa1c50ea4ac0bd967331f535842f"
+ },
+ {
+  "ts": "2026-07-20T11:01:41",
+  "req": "REQ-0.34.0-02-01",
+  "cls": "none",
+  "prov": null,
+  "base": "9fff4e7ef",
+  "intro": "09259e2f1",
+  "rel": "unres-after-intro",
+  "id": "arb-red-REQ-0.34.0-02-01-440b77328b104c818654aab29a0ac9a6"
+ },
+ {
+  "ts": "2026-07-20T11:01:46",
+  "req": "REQ-0.34.0-02-02",
+  "cls": "none",
+  "prov": null,
+  "base": "9fff4e7ef",
+  "intro": "09259e2f1",
+  "rel": "unres-after-intro",
+  "id": "arb-red-REQ-0.34.0-02-02-24d54bc4ebda42e0b84a7f504a26171a"
+ },
+ {
+  "ts": "2026-07-20T11:01:52",
+  "req": "REQ-0.34.0-02-03",
+  "cls": "none",
+  "prov": null,
+  "base": "9fff4e7ef",
+  "intro": "09259e2f1",
+  "rel": "unres-after-intro",
+  "id": "arb-red-REQ-0.34.0-02-03-cbf2f81754574f5c84cc52d9b91e3f74"
+ },
+ {
+  "ts": "2026-07-20T11:01:57",
+  "req": "REQ-0.34.0-02-04",
+  "cls": "none",
+  "prov": null,
+  "base": "9fff4e7ef",
+  "intro": "09259e2f1",
+  "rel": "unres-after-intro",
+  "id": "arb-red-REQ-0.34.0-02-04-e0f249f2f42b4f0285b20643b029eda2"
+ },
+ {
+  "ts": "2026-07-20T11:02:02",
+  "req": "REQ-0.34.0-02-05",
+  "cls": "none",
+  "prov": null,
+  "base": "9fff4e7ef",
+  "intro": "09259e2f1",
+  "rel": "unres-after-intro",
+  "id": "arb-red-REQ-0.34.0-02-05-b8cc8cdc926f46d4afb269b5c3762c87"
+ },
+ {
+  "ts": "2026-07-20T11:02:59",
+  "req": "REQ-0.34.0-02-05",
+  "cls": "error",
+  "prov": null,
+  "base": "1c0f5251",
+  "intro": "09259e2f1",
+  "rel": "unres-after-intro",
+  "id": "arb-red-REQ-0.34.0-02-05-63f3dfe4167248d1863ce783ba585e56"
+ },
+ {
+  "ts": "2026-07-20T11:03:04",
+  "req": "REQ-0.34.0-02-04",
+  "cls": "error",
+  "prov": null,
+  "base": "1c0f5251",
+  "intro": "09259e2f1",
+  "rel": "unres-after-intro",
+  "id": "arb-red-REQ-0.34.0-02-04-ac7fc763b5b7452f95249f5bbc098aa4"
+ },
+ {
+  "ts": "2026-07-20T11:03:08",
+  "req": "REQ-0.34.0-02-03",
+  "cls": "error",
+  "prov": null,
+  "base": "1c0f5251",
+  "intro": "09259e2f1",
+  "rel": "unres-after-intro",
+  "id": "arb-red-REQ-0.34.0-02-03-184530703eb24a159da7acfe3837ff89"
+ },
+ {
+  "ts": "2026-07-20T11:03:13",
+  "req": "REQ-0.34.0-02-02",
+  "cls": "error",
+  "prov": null,
+  "base": "1c0f5251",
+  "intro": "09259e2f1",
+  "rel": "unres-after-intro",
+  "id": "arb-red-REQ-0.34.0-02-02-fa288c1adefa478689d7674a53dedad2"
+ },
+ {
+  "ts": "2026-07-20T11:03:19",
+  "req": "REQ-0.34.0-02-01",
+  "cls": "error",
+  "prov": null,
+  "base": "1c0f5251",
+  "intro": "09259e2f1",
+  "rel": "unres-after-intro",
+  "id": "arb-red-REQ-0.34.0-02-01-5d16d7ee7b9b413088e8d6acbe0531d4"
+ },
+ {
+  "ts": "2026-07-29T02:09:22",
+  "req": "REQ-0.34.0-03-01",
+  "cls": "assertion",
+  "prov": null,
+  "base": "ce32a7e62",
+  "intro": "be26cef18",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.34.0-03-01-bdc840c480b6400ca585d723ab8b04b4"
+ },
+ {
+  "ts": "2026-07-29T02:09:28",
+  "req": "REQ-0.34.0-03-02",
+  "cls": "error",
+  "prov": null,
+  "base": "ce32a7e62",
+  "intro": "be26cef18",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.34.0-03-02-9abc69eb5ab648f893463af9e0f5201c"
+ },
+ {
+  "ts": "2026-07-29T02:09:32",
+  "req": "REQ-0.34.0-03-03",
+  "cls": "assertion",
+  "prov": null,
+  "base": "ce32a7e62",
+  "intro": "be26cef18",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.34.0-03-03-6b00ce2817ae448a95d8ca826af44fe9"
+ },
+ {
+  "ts": "2026-07-29T02:09:37",
+  "req": "REQ-0.34.0-03-04",
+  "cls": "assertion",
+  "prov": null,
+  "base": "ce32a7e62",
+  "intro": "be26cef18",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.34.0-03-04-5d384fe13e9b4a8ea349c717cfae0b8b"
+ },
+ {
+  "ts": "2026-07-29T02:10:08",
+  "req": "REQ-0.34.0-03-02",
+  "cls": "assertion",
+  "prov": null,
+  "base": "ce32a7e62",
+  "intro": "be26cef18",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.34.0-03-02-648088e049ba44c196710313f026c8b1"
+ },
+ {
+  "ts": "2026-07-29T03:26:17",
+  "req": "REQ-0.34.0-03-01",
+  "cls": "assertion",
+  "prov": null,
+  "base": "ce32a7e62",
+  "intro": "be26cef18",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.34.0-03-01-d688344bde8f4c8da66ec3350596805c"
+ },
+ {
+  "ts": "2026-07-29T03:26:22",
+  "req": "REQ-0.34.0-03-03",
+  "cls": "assertion",
+  "prov": null,
+  "base": "ce32a7e62",
+  "intro": "be26cef18",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.34.0-03-03-dcb61d90d3654509825bd377252430fa"
+ },
+ {
+  "ts": "2026-07-29T03:26:26",
+  "req": "REQ-0.34.0-03-04",
+  "cls": "assertion",
+  "prov": null,
+  "base": "ce32a7e62",
+  "intro": "be26cef18",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.34.0-03-04-83cb31b55893467ea7bc57f08f723935"
+ },
+ {
+  "ts": "2026-07-30T02:20:13",
+  "req": "REQ-0.34.0-04-01",
+  "cls": "error",
+  "prov": null,
+  "base": "6b593b40f",
+  "intro": "b15d586da",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.34.0-04-01-0c9ec6cc4af6485a8b208f8c54035801"
+ },
+ {
+  "ts": "2026-07-30T02:20:30",
+  "req": "REQ-0.34.0-04-03",
+  "cls": "error",
+  "prov": null,
+  "base": "6b593b40f",
+  "intro": "b15d586da",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.34.0-04-03-840b2d1621a04d94a62b0bd91f74daf2"
+ },
+ {
+  "ts": "2026-07-30T10:44:18",
+  "req": "REQ-0.34.0-05-01",
+  "cls": "none",
+  "prov": null,
+  "base": "a4fc44759",
+  "intro": "",
+  "rel": "unres-after-intro",
+  "id": "arb-red-REQ-0.34.0-05-01-323f5e22297c4907aa11456a4527faf1"
+ },
+ {
+  "ts": "2026-07-30T10:44:41",
+  "req": "REQ-0.34.0-05-02",
+  "cls": "error",
+  "prov": null,
+  "base": "a4fc44759",
+  "intro": "c3b644992",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.34.0-05-02-d99d24aef25c49a9ab79b80ab1d385c1"
+ },
+ {
+  "ts": "2026-07-30T10:44:54",
+  "req": "REQ-0.34.0-05-03",
+  "cls": "error",
+  "prov": null,
+  "base": "a4fc44759",
+  "intro": "c3b644992",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.34.0-05-03-59391233b1f440d2afa95f433f7f85cb"
+ },
+ {
+  "ts": "2026-07-30T10:45:03",
+  "req": "REQ-0.34.0-05-04",
+  "cls": "assertion",
+  "prov": null,
+  "base": "a4fc44759",
+  "intro": "c3b644992",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.34.0-05-04-ce65b61a06224bb48f79358c81a1c919"
+ },
+ {
+  "ts": "2026-08-18T01:23:44",
+  "req": "REQ-0.35.0-09-05",
+  "cls": "none",
+  "prov": null,
+  "base": "d69f17aec",
+  "intro": "521decc75",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.35.0-09-05-263ccffbbe324442ac365bcd0db4b323"
+ },
+ {
+  "ts": "2026-08-18T01:24:41",
+  "req": "REQ-0.35.0-09-05",
+  "cls": "none",
+  "prov": null,
+  "base": "422aecad2",
+  "intro": "521decc75",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.35.0-09-05-3514d7f3d01c489f90a69b24476da857"
+ },
+ {
+  "ts": "2026-08-18T01:25:41",
+  "req": "REQ-0.35.0-09-05",
+  "cls": "error",
+  "prov": null,
+  "base": "422aecad2",
+  "intro": "521decc75",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.35.0-09-05-6472d1f4b27a4610a349d7bc7c86a5a4"
+ },
+ {
+  "ts": "2026-08-18T01:26:26",
+  "req": "REQ-0.35.0-09-11",
+  "cls": "error",
+  "prov": null,
+  "base": "422aecad2",
+  "intro": "521decc75",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.35.0-09-11-54520fa23dbd4aa68d7169adacc8a1dc"
+ },
+ {
+  "ts": "2026-08-18T01:27:31",
+  "req": "REQ-0.35.0-09-10",
+  "cls": "error",
+  "prov": null,
+  "base": "422aecad2",
+  "intro": "521decc75",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.35.0-09-10-14689ad2029a4188ba9696c70dde45a0"
+ },
+ {
+  "ts": "2026-08-18T01:29:31",
+  "req": "REQ-0.35.0-09-01",
+  "cls": "error",
+  "prov": null,
+  "base": "422aecad2",
+  "intro": "521decc75",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.35.0-09-01-891f8007b3e94412b1bbf9ce0f45ec87"
+ },
+ {
+  "ts": "2026-08-18T01:29:36",
+  "req": "REQ-0.35.0-09-02",
+  "cls": "error",
+  "prov": null,
+  "base": "422aecad2",
+  "intro": "521decc75",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.35.0-09-02-c446b6692b4c4bcdaf40e4eefacf933c"
+ },
+ {
+  "ts": "2026-08-18T01:29:41",
+  "req": "REQ-0.35.0-09-03",
+  "cls": "error",
+  "prov": null,
+  "base": "422aecad2",
+  "intro": "521decc75",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.35.0-09-03-4a9feb82307f41f9b1c7871b1b9b985f"
+ },
+ {
+  "ts": "2026-08-18T01:29:46",
+  "req": "REQ-0.35.0-09-06",
+  "cls": "error",
+  "prov": null,
+  "base": "422aecad2",
+  "intro": "521decc75",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.35.0-09-06-a36e37c9f18e4891895c037c777e71b1"
+ },
+ {
+  "ts": "2026-08-18T01:30:21",
+  "req": "REQ-0.35.0-09-04",
+  "cls": "error",
+  "prov": null,
+  "base": "422aecad2",
+  "intro": "521decc75",
+  "rel": "unres-before-intro",
+  "id": "arb-red-REQ-0.35.0-09-04-8f670be269954ac5ac976ee8c14ead7b"
+ },
+ {
+  "ts": "2026-08-21T01:10:26",
+  "req": "REQ-0.35.0-09-01",
+  "cls": "none",
+  "prov": null,
+  "base": "558e80996",
+  "intro": "521decc75",
+  "rel": "base-has-test",
+  "id": "arb-red-REQ-0.35.0-09-01-aea9b84f08fd49afa3f6d76185049f14"
+ },
+ {
+  "ts": "2026-08-21T01:10:33",
+  "req": "REQ-0.35.0-09-02",
+  "cls": "none",
+  "prov": null,
+  "base": "558e80996",
+  "intro": "521decc75",
+  "rel": "base-has-test",
+  "id": "arb-red-REQ-0.35.0-09-02-b7455fab380e4f73b8326d27a6ae3edb"
+ },
+ {
+  "ts": "2026-08-21T01:10:40",
+  "req": "REQ-0.35.0-09-03",
+  "cls": "none",
+  "prov": null,
+  "base": "558e80996",
+  "intro": "521decc75",
+  "rel": "base-has-test",
+  "id": "arb-red-REQ-0.35.0-09-03-2519825d0562496390c30780fff4c079"
+ },
+ {
+  "ts": "2026-08-21T01:10:46",
+  "req": "REQ-0.35.0-09-04",
+  "cls": "none",
+  "prov": null,
+  "base": "558e80996",
+  "intro": "521decc75",
+  "rel": "base-has-test",
+  "id": "arb-red-REQ-0.35.0-09-04-f99bae9c8f8f494da1c77b5cac95132a"
+ },
+ {
+  "ts": "2026-08-21T01:10:53",
+  "req": "REQ-0.35.0-09-05",
+  "cls": "none",
+  "prov": null,
+  "base": "558e80996",
+  "intro": "521decc75",
+  "rel": "base-has-test",
+  "id": "arb-red-REQ-0.35.0-09-05-f6d5d7a299f54083bbba4e23622583f0"
+ },
+ {
+  "ts": "2026-08-21T01:10:59",
+  "req": "REQ-0.35.0-09-06",
+  "cls": "none",
+  "prov": null,
+  "base": "558e80996",
+  "intro": "521decc75",
+  "rel": "base-has-test",
+  "id": "arb-red-REQ-0.35.0-09-06-4fbe01d2bb9b440c95683a47764341a9"
+ },
+ {
+  "ts": "2026-08-21T01:11:06",
+  "req": "REQ-0.35.0-09-08",
+  "cls": "none",
+  "prov": null,
+  "base": "558e80996",
+  "intro": "32e13d11f",
+  "rel": "base-has-test",
+  "id": "arb-red-REQ-0.35.0-09-08-f3f97ec1dc024177bb9546eb395f98ba"
+ },
+ {
+  "ts": "2026-08-21T01:11:13",
+  "req": "REQ-0.35.0-09-09",
+  "cls": "none",
+  "prov": null,
+  "base": "558e80996",
+  "intro": "32e13d11f",
+  "rel": "base-has-test",
+  "id": "arb-red-REQ-0.35.0-09-09-076818081c374310b89dc8a8ab6c1370"
+ },
+ {
+  "ts": "2026-08-21T01:11:19",
+  "req": "REQ-0.35.0-09-10",
+  "cls": "none",
+  "prov": null,
+  "base": "558e80996",
+  "intro": "521decc75",
+  "rel": "base-has-test",
+  "id": "arb-red-REQ-0.35.0-09-10-ce0157d84aa641de88eed36e10888c82"
+ },
+ {
+  "ts": "2026-08-21T01:11:26",
+  "req": "REQ-0.35.0-09-11",
+  "cls": "none",
+  "prov": null,
+  "base": "558e80996",
+  "intro": "521decc75",
+  "rel": "base-has-test",
+  "id": "arb-red-REQ-0.35.0-09-11-2fad49c817444fecb4157fa73079a4e1"
+ },
+ {
+  "ts": "2026-08-21T08:33:06",
+  "req": "REQ-0.35.0-09-11",
+  "cls": "assertion",
+  "prov": null,
+  "base": "94d2efa0",
+  "intro": "521decc75",
+  "rel": "base-has-test",
+  "id": "arb-red-REQ-0.35.0-09-11-9f84c158baf54ad18c3447d1d04d03b1"
+ },
+ {
+  "ts": "2026-08-21T08:33:25",
+  "req": "REQ-0.35.0-09-08",
+  "cls": "assertion",
+  "prov": null,
+  "base": "94d2efa0",
+  "intro": "32e13d11f",
+  "rel": "base-has-test",
+  "id": "arb-red-REQ-0.35.0-09-08-670e63da721648e48daf0a9d740045d6"
+ },
+ {
+  "ts": "2026-08-21T08:33:33",
+  "req": "REQ-0.35.0-09-09",
+  "cls": "assertion",
+  "prov": null,
+  "base": "94d2efa0",
+  "intro": "32e13d11f",
+  "rel": "base-has-test",
+  "id": "arb-red-REQ-0.35.0-09-09-fd20b33b8c3c46c187aa8aba553b06f3"
+ },
+ {
+  "ts": "2026-08-21T08:33:40",
+  "req": "REQ-0.35.0-09-03",
+  "cls": "assertion",
+  "prov": null,
+  "base": "94d2efa0",
+  "intro": "521decc75",
+  "rel": "base-has-test",
+  "id": "arb-red-REQ-0.35.0-09-03-6fa81edf029c4852a7718cc15294ba4a"
+ },
+ {
+  "ts": "2026-08-21T08:34:16",
+  "req": "REQ-0.35.0-09-01",
+  "cls": "error",
+  "prov": null,
+  "base": "4f6f5884",
+  "intro": "521decc75",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-09-01-78defb3487b8401c8fae7db4ed26c527"
+ },
+ {
+  "ts": "2026-08-21T08:34:22",
+  "req": "REQ-0.35.0-09-02",
+  "cls": "error",
+  "prov": null,
+  "base": "4f6f5884",
+  "intro": "521decc75",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-09-02-024ce26e7ce64efa91f9561aaf7d00bb"
+ },
+ {
+  "ts": "2026-08-21T08:34:28",
+  "req": "REQ-0.35.0-09-04",
+  "cls": "error",
+  "prov": null,
+  "base": "4f6f5884",
+  "intro": "521decc75",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-09-04-bae526d38b7c4ab99853d6d05f229c36"
+ },
+ {
+  "ts": "2026-08-21T08:34:35",
+  "req": "REQ-0.35.0-09-05",
+  "cls": "error",
+  "prov": null,
+  "base": "4f6f5884",
+  "intro": "521decc75",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-09-05-9bc87f4ed0224770a86d63344fcefe30"
+ },
+ {
+  "ts": "2026-08-21T08:34:42",
+  "req": "REQ-0.35.0-09-06",
+  "cls": "error",
+  "prov": null,
+  "base": "4f6f5884",
+  "intro": "521decc75",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-09-06-586d1558a2b84bcbad90d31491fb038f"
+ },
+ {
+  "ts": "2026-08-21T08:34:49",
+  "req": "REQ-0.35.0-09-10",
+  "cls": "error",
+  "prov": null,
+  "base": "4f6f5884",
+  "intro": "521decc75",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-09-10-4877d22e1b0d45c6b682a3e0b072c27d"
+ },
+ {
+  "ts": "2026-08-22T07:09:49",
+  "req": "REQ-0.35.0-09-01",
+  "cls": "not-applicable",
+  "prov": null,
+  "base": "48b61fd58",
+  "intro": "521decc75",
+  "rel": "base-has-test",
+  "id": "arb-red-REQ-0.35.0-09-01-512d7fefbf7a48a2b2a986bf1a737f81"
+ },
+ {
+  "ts": "2026-08-23T12:10:23",
+  "req": "REQ-0.35.0-08-03",
+  "cls": "not-applicable",
+  "prov": null,
+  "base": "e51427fd8",
+  "intro": "809f13709",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-08-03-84a33557ffd544d79f1855ce40b16acc"
+ },
+ {
+  "ts": "2026-08-23T12:10:25",
+  "req": "REQ-0.35.0-08-08",
+  "cls": "not-applicable",
+  "prov": null,
+  "base": "e51427fd8",
+  "intro": "809f13709",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-08-08-e231f1a5632345d2abcbaf51a24e4b65"
+ },
+ {
+  "ts": "2026-08-23T12:11:12",
+  "req": "REQ-0.35.0-08-03",
+  "cls": "assertion",
+  "prov": null,
+  "base": "e51427fd8",
+  "intro": "809f13709",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-08-03-a84e371f264d4050bf8be165bed7b55d"
+ },
+ {
+  "ts": "2026-08-23T12:11:20",
+  "req": "REQ-0.35.0-08-08",
+  "cls": "assertion",
+  "prov": null,
+  "base": "e51427fd8",
+  "intro": "809f13709",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-08-08-6abd3bcd045b496d9a999cc6d196c718"
+ },
+ {
+  "ts": "2026-08-23T13:28:45",
+  "req": "REQ-0.35.0-08-01",
+  "cls": "not-applicable",
+  "prov": null,
+  "base": "4203b0421",
+  "intro": "fe19fdc9f",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-08-01-562f7b6175414f9e94c703a2342a6c49"
+ },
+ {
+  "ts": "2026-08-23T13:28:47",
+  "req": "REQ-0.35.0-08-02",
+  "cls": "not-applicable",
+  "prov": null,
+  "base": "4203b0421",
+  "intro": "fe19fdc9f",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-08-02-a3cd51c07d8a453b867b8e9c4b045b39"
+ },
+ {
+  "ts": "2026-08-23T13:28:49",
+  "req": "REQ-0.35.0-08-05",
+  "cls": "not-applicable",
+  "prov": null,
+  "base": "4203b0421",
+  "intro": "fe19fdc9f",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-08-05-fe43e52ed7544a8da70a9d7ab9e088a0"
+ },
+ {
+  "ts": "2026-08-24T08:39:32",
+  "req": "REQ-0.35.0-01-01",
+  "cls": "assertion",
+  "prov": null,
+  "base": "1a3fc7471",
+  "intro": "1bc7196bd",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-01-01-4faa8e7aa5054bf8a7927322d55751e7"
+ },
+ {
+  "ts": "2026-08-24T08:44:45",
+  "req": "REQ-0.35.0-01-02",
+  "cls": "error",
+  "prov": null,
+  "base": "1a3fc7471",
+  "intro": "1bc7196bd",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-01-02-e3c82266319d499fbfd76c36ab585fa7"
+ },
+ {
+  "ts": "2026-08-24T08:46:07",
+  "req": "REQ-0.35.0-01-03",
+  "cls": "error",
+  "prov": null,
+  "base": "1a3fc7471",
+  "intro": "1bc7196bd",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-01-03-7e4f16085a5546898b474375d69c65df"
+ },
+ {
+  "ts": "2026-08-24T08:48:05",
+  "req": "REQ-0.35.0-01-04",
+  "cls": "error",
+  "prov": null,
+  "base": "1a3fc7471",
+  "intro": "1bc7196bd",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-01-04-0b1250cdd17545a5b0c4cab9b09c34a2"
+ },
+ {
+  "ts": "2026-08-24T08:49:27",
+  "req": "REQ-0.35.0-01-05",
+  "cls": "error",
+  "prov": null,
+  "base": "1a3fc7471",
+  "intro": "1bc7196bd",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-01-05-d959fcd9a9834708ab7df5583f3e9922"
+ },
+ {
+  "ts": "2026-08-24T08:51:18",
+  "req": "REQ-0.35.0-01-06",
+  "cls": "error",
+  "prov": null,
+  "base": "1a3fc7471",
+  "intro": "1bc7196bd",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-01-06-24241a544f2b4fd68736c6984d636fc2"
+ },
+ {
+  "ts": "2026-08-24T08:53:31",
+  "req": "REQ-0.35.0-01-07",
+  "cls": "error",
+  "prov": null,
+  "base": "1a3fc7471",
+  "intro": "1bc7196bd",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-01-07-8faf5033b1924a9d9a84ad98ae8e3e9d"
+ },
+ {
+  "ts": "2026-08-24T09:05:05",
+  "req": "REQ-0.35.0-01-03",
+  "cls": "error",
+  "prov": null,
+  "base": "1a3fc7471",
+  "intro": "1bc7196bd",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-01-03-105f9bd2ed6d4d71a5c6d46cdf6fd1b4"
+ },
+ {
+  "ts": "2026-08-24T09:08:54",
+  "req": "REQ-0.35.0-01-08",
+  "cls": "error",
+  "prov": null,
+  "base": "1a3fc7471",
+  "intro": "1bc7196bd",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-01-08-379a64eb764d42ed8c3a014e45514ef9"
+ },
+ {
+  "ts": "2026-08-24T09:18:13",
+  "req": "REQ-0.35.0-01-08",
+  "cls": "error",
+  "prov": null,
+  "base": "1a3fc7471",
+  "intro": "1bc7196bd",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-01-08-e64a62c60e69427c823c15ad475656a0"
+ },
+ {
+  "ts": "2026-08-25T01:54:21",
+  "req": "REQ-0.35.0-02-01",
+  "cls": "assertion",
+  "prov": null,
+  "base": "b97617890",
+  "intro": "d3fa949dc",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-02-01-7b4043da1acf4b60a9be72a4ef100464"
+ },
+ {
+  "ts": "2026-08-25T01:54:29",
+  "req": "REQ-0.35.0-02-02",
+  "cls": "assertion",
+  "prov": null,
+  "base": "b97617890",
+  "intro": "d3fa949dc",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-02-02-65829da651e8495d9bc41fb789492700"
+ },
+ {
+  "ts": "2026-08-25T01:54:36",
+  "req": "REQ-0.35.0-02-03",
+  "cls": "assertion",
+  "prov": null,
+  "base": "b97617890",
+  "intro": "d3fa949dc",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-02-03-bcb9b9bfeead44a2a8e81c18ba9fa379"
+ },
+ {
+  "ts": "2026-08-25T01:54:43",
+  "req": "REQ-0.35.0-02-05",
+  "cls": "assertion",
+  "prov": null,
+  "base": "b97617890",
+  "intro": "d3fa949dc",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-02-05-6b8e9e0db3844b7aa771412404a40ba0"
+ },
+ {
+  "ts": "2026-08-25T01:54:51",
+  "req": "REQ-0.35.0-02-06",
+  "cls": "none",
+  "prov": null,
+  "base": "b97617890",
+  "intro": "d3fa949dc",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-02-06-55a37c3e78e44ed29e4606f1225a05a1"
+ },
+ {
+  "ts": "2026-08-25T01:55:26",
+  "req": "REQ-0.35.0-02-06",
+  "cls": "assertion",
+  "prov": null,
+  "base": "b97617890",
+  "intro": "d3fa949dc",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-02-06-2863e50bb59f45e8a7f84e4694efccdc"
+ },
+ {
+  "ts": "2026-08-25T06:08:34",
+  "req": "REQ-0.35.0-02-01",
+  "cls": "assertion",
+  "prov": null,
+  "base": "d1ac75632",
+  "intro": "d3fa949dc",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-02-01-c129cbf74b2b4c3aac847fd74f21af94"
+ },
+ {
+  "ts": "2026-08-25T06:08:41",
+  "req": "REQ-0.35.0-02-02",
+  "cls": "assertion",
+  "prov": null,
+  "base": "d1ac75632",
+  "intro": "d3fa949dc",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-02-02-3120ff0a84c1425f8c8696f0e3238b46"
+ },
+ {
+  "ts": "2026-08-25T06:08:48",
+  "req": "REQ-0.35.0-02-03",
+  "cls": "assertion",
+  "prov": null,
+  "base": "d1ac75632",
+  "intro": "d3fa949dc",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-02-03-7a3d9669506d4dbcb72d7dccdb4eeebe"
+ },
+ {
+  "ts": "2026-08-25T06:08:55",
+  "req": "REQ-0.35.0-02-05",
+  "cls": "assertion",
+  "prov": null,
+  "base": "d1ac75632",
+  "intro": "d3fa949dc",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-02-05-019183fb5d06460989e4b13162c2e366"
+ },
+ {
+  "ts": "2026-08-25T06:09:03",
+  "req": "REQ-0.35.0-02-06",
+  "cls": "assertion",
+  "prov": null,
+  "base": "d1ac75632",
+  "intro": "d3fa949dc",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-02-06-522ef2b4a7444caab7c0c449f3d0a7ab"
+ },
+ {
+  "ts": "2026-08-25T06:39:05",
+  "req": "REQ-0.35.0-02-04",
+  "cls": "assertion",
+  "prov": null,
+  "base": "d1ac75632",
+  "intro": "d3fa949dc",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-02-04-aa05692ebbca4fe48b8ec04d7c45c17e"
+ },
+ {
+  "ts": "2026-08-25T06:39:14",
+  "req": "REQ-0.35.0-02-07",
+  "cls": "assertion",
+  "prov": null,
+  "base": "d1ac75632",
+  "intro": "d3fa949dc",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-02-07-a0c81d012069497e86b578ca17dcac09"
+ },
+ {
+  "ts": "2026-08-25T10:37:50",
+  "req": "REQ-0.35.0-02-01",
+  "cls": "assertion",
+  "prov": null,
+  "base": "cbc5c0c13",
+  "intro": "d3fa949dc",
+  "rel": "base-has-test",
+  "id": "arb-red-REQ-0.35.0-02-01-aa182069b3b84937a46309a7de4bbe44"
+ },
+ {
+  "ts": "2026-08-25T11:13:46",
+  "req": "REQ-0.35.0-02-01",
+  "cls": "error",
+  "prov": null,
+  "base": "cbc5c0c13",
+  "intro": "d3fa949dc",
+  "rel": "base-has-test",
+  "id": "arb-red-REQ-0.35.0-02-01-f656739dca5d4c969edc91f5ff440c14"
+ },
+ {
+  "ts": "2026-08-25T11:26:19",
+  "req": "REQ-0.35.0-02-02",
+  "cls": "error",
+  "prov": null,
+  "base": "cbc5c0c13",
+  "intro": "d3fa949dc",
+  "rel": "base-has-test",
+  "id": "arb-red-REQ-0.35.0-02-02-274095ccf9fc4048921bc130001fb900"
+ },
+ {
+  "ts": "2026-08-25T11:26:26",
+  "req": "REQ-0.35.0-02-03",
+  "cls": "error",
+  "prov": null,
+  "base": "cbc5c0c13",
+  "intro": "d3fa949dc",
+  "rel": "base-has-test",
+  "id": "arb-red-REQ-0.35.0-02-03-10a12d1203454e9a8eb62b323bea86c4"
+ },
+ {
+  "ts": "2026-08-25T11:26:33",
+  "req": "REQ-0.35.0-02-04",
+  "cls": "error",
+  "prov": null,
+  "base": "cbc5c0c13",
+  "intro": "d3fa949dc",
+  "rel": "base-has-test",
+  "id": "arb-red-REQ-0.35.0-02-04-f6f1b97277a948d199925eb5b3947c29"
+ },
+ {
+  "ts": "2026-08-25T11:26:41",
+  "req": "REQ-0.35.0-02-05",
+  "cls": "error",
+  "prov": null,
+  "base": "cbc5c0c13",
+  "intro": "d3fa949dc",
+  "rel": "base-has-test",
+  "id": "arb-red-REQ-0.35.0-02-05-fcb947ad527a468da219b3f01a7cab6e"
+ },
+ {
+  "ts": "2026-08-25T11:26:48",
+  "req": "REQ-0.35.0-02-06",
+  "cls": "error",
+  "prov": null,
+  "base": "cbc5c0c13",
+  "intro": "d3fa949dc",
+  "rel": "base-has-test",
+  "id": "arb-red-REQ-0.35.0-02-06-4a643e970ce443449839d2e4cffb1389"
+ },
+ {
+  "ts": "2026-08-25T11:26:54",
+  "req": "REQ-0.35.0-02-07",
+  "cls": "error",
+  "prov": null,
+  "base": "cbc5c0c13",
+  "intro": "d3fa949dc",
+  "rel": "base-has-test",
+  "id": "arb-red-REQ-0.35.0-02-07-163900ce6ea34dad92a75807c29a4025"
+ },
+ {
+  "ts": "2026-09-02T18:49:07",
+  "req": "REQ-0.35.0-04-01",
+  "cls": "error",
+  "prov": null,
+  "base": "b5329f1ec",
+  "intro": "79a1f6f03",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-04-01-d89aaa8392344175828a601ec895c0b3"
+ },
+ {
+  "ts": "2026-09-02T18:49:13",
+  "req": "REQ-0.35.0-04-02",
+  "cls": "error",
+  "prov": null,
+  "base": "b5329f1ec",
+  "intro": "79a1f6f03",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-04-02-5280cc00c1f441559f85898d5a95fba8"
+ },
+ {
+  "ts": "2026-09-02T18:49:19",
+  "req": "REQ-0.35.0-04-03",
+  "cls": "error",
+  "prov": null,
+  "base": "b5329f1ec",
+  "intro": "79a1f6f03",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-04-03-caf5883253444374b0830795495e51ec"
+ },
+ {
+  "ts": "2026-09-02T18:49:26",
+  "req": "REQ-0.35.0-04-04",
+  "cls": "error",
+  "prov": null,
+  "base": "b5329f1ec",
+  "intro": "79a1f6f03",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-04-04-6e23d0536c694cc69abed9805a4cd25f"
+ },
+ {
+  "ts": "2026-09-02T18:49:31",
+  "req": "REQ-0.35.0-04-05",
+  "cls": "error",
+  "prov": null,
+  "base": "b5329f1ec",
+  "intro": "79a1f6f03",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-04-05-c3461fb9d88144548de0b5a3afe3758e"
+ },
+ {
+  "ts": "2026-09-02T18:49:37",
+  "req": "REQ-0.35.0-04-06",
+  "cls": "error",
+  "prov": null,
+  "base": "b5329f1ec",
+  "intro": "79a1f6f03",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-04-06-10544678d5a545458d887d8c9fa2bfde"
+ },
+ {
+  "ts": "2026-09-02T18:49:42",
+  "req": "REQ-0.35.0-04-07",
+  "cls": "error",
+  "prov": null,
+  "base": "b5329f1ec",
+  "intro": "79a1f6f03",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-04-07-a92b5756b6d64cf59b770bba48c10611"
+ },
+ {
+  "ts": "2026-09-02T20:50:46",
+  "req": "REQ-0.35.0-04-05",
+  "cls": "error",
+  "prov": null,
+  "base": "600f7fd54",
+  "intro": "79a1f6f03",
+  "rel": "base-has-test",
+  "id": "arb-red-REQ-0.35.0-04-05-30984ae0143d4d3a97daa189510400bc"
+ },
+ {
+  "ts": "2026-09-03T00:48:45",
+  "req": "REQ-0.35.0-04-02",
+  "cls": "assertion",
+  "prov": null,
+  "base": "e962b01aa",
+  "intro": "79a1f6f03",
+  "rel": "base-has-test",
+  "id": "arb-red-REQ-0.35.0-04-02-97c9cdb0682b4cd9a2167abc694200cf"
+ },
+ {
+  "ts": "2026-09-03T01:05:24",
+  "req": "REQ-0.35.0-04-02",
+  "cls": "error",
+  "prov": null,
+  "base": "e962b01aa",
+  "intro": "79a1f6f03",
+  "rel": "base-has-test",
+  "id": "arb-red-REQ-0.35.0-04-02-032185576df2401ca74a627dd29ecb5b"
+ },
+ {
+  "ts": "2026-09-06T15:31:08",
+  "req": "REQ-0.35.0-09-01",
+  "cls": "error",
+  "prov": "reconstructed",
+  "base": "c9256d40e",
+  "intro": "521decc75",
+  "rel": "base-lacks-test",
+  "id": "arb-red-REQ-0.35.0-09-01-54bb1ab89ed8495a9bc2f5134cd30f33"
+ }
+]

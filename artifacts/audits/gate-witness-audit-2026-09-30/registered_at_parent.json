@@ -1,0 +1,243 @@
+[
+ {
+  "ghi": "#889",
+  "fix": "c9e296d8e",
+  "parent": "6b3e71a7c",
+  "claims_at_parent": 86,
+  "modified": [
+   "gzkit.commands.obpi_precomplete:_check_arb_receipts_passed",
+   "gzkit.commands.obpi_precomplete:_check_lock_held",
+   "gzkit.commands.obpi_precomplete:_held_lock_files",
+   "gzkit.commands.obpi_precomplete:_lock_claimed_at",
+   "gzkit.commands.obpi_precomplete:_newest_receipts_since",
+   "gzkit.commands.obpi_precomplete:_receipt_step",
+   "gzkit.commands.obpi_precomplete:_run_all_checks",
+   "gzkit.commands.obpi_precomplete:_utc"
+  ],
+  "registered_claims_naming_a_modified_fn": []
+ },
+ {
+  "ghi": "#996",
+  "fix": "eb91f20b6",
+  "parent": "9b04ba692",
+  "claims_at_parent": 86,
+  "modified": [
+   "gzkit.chores.eval_feedback_cluster_lib:_authored_text",
+   "gzkit.chores.eval_feedback_cluster_lib:_build_buckets",
+   "gzkit.chores.eval_feedback_cluster_lib:_walk_justify_artifacts",
+   "gzkit.governance.trust_audits._qc_nc_entrypoints:_ep_evaluation_justify_binding",
+   "gzkit.governance.trust_audits._qc_nc_entrypoints:_ep_evaluation_justify_binding_admits_qualified",
+   "gzkit.governance.trust_audits._qc_nc_evaluation:_triggered_root",
+   "gzkit.governance.trust_audits._qc_nc_evaluation:_walkthrough",
+   "gzkit.governance.trust_audits._qc_nc_evaluation:build_present_but_false_evidence",
+   "gzkit.governance.trust_audits._qc_nc_evaluation:build_qualifying_walkthrough",
+   "gzkit.governance.trust_audits.evaluation_justify_binding:_anchor_label",
+   "gzkit.governance.trust_audits.evaluation_justify_binding:_assess_walkthroughs",
+   "gzkit.governance.trust_audits.evaluation_justify_binding:_claimed_subject",
+   "gzkit.governance.trust_audits.evaluation_justify_binding:_names_subject",
+   "gzkit.governance.trust_audits.evaluation_justify_binding:_parse_instant",
+   "gzkit.governance.trust_audits.evaluation_justify_binding:_producer_step",
+   "gzkit.governance.trust_audits.evaluation_justify_binding:_refusal_message",
+   "gzkit.governance.trust_audits.evaluation_justify_binding:_refusal_reason",
+   "gzkit.governance.trust_audits.evaluation_justify_binding:_subject_key",
+   "gzkit.governance.trust_audits.evaluation_justify_binding:_trigger_reasons",
+   "gzkit.governance.trust_audits.evaluation_justify_binding:validate_evaluation_justify_binding"
+  ],
+  "registered_claims_naming_a_modified_fn": []
+ },
+ {
+  "ghi": "#995",
+  "fix": "9cc334ee4",
+  "parent": "f5a7cf71c",
+  "claims_at_parent": 86,
+  "modified": [
+   "gzkit.commands.validate_cmd:_exit_for_errors",
+   "gzkit.commands.validate_cmd:_print_validation_result",
+   "gzkit.commands.validate_cmd:validate"
+  ],
+  "registered_claims_naming_a_modified_fn": []
+ },
+ {
+  "ghi": "#960",
+  "fix": "edbab5ae4",
+  "parent": "ac57c15a8",
+  "claims_at_parent": 78,
+  "modified": [
+   "gzkit.commands.obpi_complete_adversarial:_enforce_adversarial_validation"
+  ],
+  "registered_claims_naming_a_modified_fn": []
+ },
+ {
+  "ghi": "#959",
+  "fix": "ac57c15a8",
+  "parent": "b3b5f3b1e",
+  "claims_at_parent": 78,
+  "modified": [
+   "gzkit.commands.obpi_complete_adversarial:_enforce_adversarial_validation",
+   "gzkit.commands.obpi_precomplete:_check_adversarial_validation",
+   "gzkit.commands.obpi_precomplete:_refutation_verdicts"
+  ],
+  "registered_claims_naming_a_modified_fn": []
+ },
+ {
+  "ghi": "#888",
+  "fix": "f289bd483",
+  "parent": "b82a32736",
+  "claims_at_parent": 78,
+  "modified": [
+   "gzkit.governance.trust_audits.closeout_proof:_check_req",
+   "gzkit.req_kind_support:_sole_event_type",
+   "gzkit.req_kind_support:_witness_clause",
+   "gzkit.req_kind_support:parse_support_citation",
+   "gzkit.req_kind_support:resolve_support_proof"
+  ],
+  "registered_claims_naming_a_modified_fn": []
+ },
+ {
+  "ghi": "#932",
+  "fix": "a2a952959",
+  "parent": "31cbf9626",
+  "claims_at_parent": 78,
+  "modified": [
+   "gzkit.governance.trust_audits.pointer_integrity:_validate_pointer"
+  ],
+  "registered_claims_naming_a_modified_fn": []
+ },
+ {
+  "ghi": "#933",
+  "fix": "82f8ab453",
+  "parent": "b75f3bb53",
+  "claims_at_parent": 79,
+  "modified": [
+   "gzkit.governance.trust_audits.pointer_integrity:_check_back_pointers",
+   "gzkit.governance.trust_audits.pointer_integrity:_check_one_back_pointer",
+   "gzkit.governance.trust_audits.pointer_integrity:_check_source_file",
+   "gzkit.governance.trust_audits.pointer_integrity:_origin_points_at",
+   "gzkit.governance.trust_audits.pointer_integrity:_validate_back_pointer",
+   "gzkit.governance.trust_audits.pointer_integrity:validate_pointer_integrity"
+  ],
+  "registered_claims_naming_a_modified_fn": []
+ },
+ {
+  "ghi": "#851",
+  "fix": "1edf9dc1b",
+  "parent": "451b31e4a",
+  "claims_at_parent": 83,
+  "modified": [
+   "gzkit.cli.parser_maintenance:_register_quality_parsers",
+   "gzkit.commands.init_cmd:_install_pre_commit_hooks",
+   "gzkit.commands.quality:_build_check_steps",
+   "gzkit.commands.validate_cmd:_dispatch_early_return_scopes",
+   "gzkit.commands.validate_cmd:validate",
+   "gzkit.commands.validate_inventory_scopes:run_population_controls_scope",
+   "gzkit.enforcement:_run_claim_in_workspace",
+   "gzkit.enforcement:_run_claim_once",
+   "gzkit.enforcement:_run_population_claim",
+   "gzkit.enforcement:_run_single_claim",
+   "gzkit.enforcement:_test_bug",
+   "gzkit.enforcement:decorator",
+   "gzkit.enforcement:enforces",
+   "gzkit.enforcement:production_enforcement_registry",
+   "gzkit.governance.trust_audits._qc_nc_entrypoints:_ep_population_controls",
+   "gzkit.governance.trust_audits._qc_nc_entrypoints:_ep_population_controls_admits_disclosed",
+   "gzkit.governance.trust_audits._qc_nc_entrypoints:_ep_session_green_gate_delivery",
+   "gzkit.governance.trust_audits._qc_nc_hooks:build_undelivered_hook",
+   "gzkit.governance.trust_audits._qc_nc_hooks:hook_type_population",
+   "gzkit.governance.trust_audits._qc_nc_population:_root_with_disclosed",
+   "gzkit.governance.trust_audits._qc_nc_population:build_fully_disclosed",
+   "gzkit.governance.trust_audits._qc_nc_population:build_undisclosed_claim",
+   "gzkit.governance.trust_audits._qc_nc_population:undeclared_claim_population",
+   "gzkit.governance.trust_audits._qc_negative_controls:register_qc_negative_controls",
+   "gzkit.governance.trust_audits.population_controls:_err",
+   "gzkit.governance.trust_audits.population_controls:_load_accepted",
+   "gzkit.governance.trust_audits.population_controls:audit_population_controls",
+   "gzkit.governance.trust_audits.population_controls:registry_declarations",
+   "gzkit.governance.trust_audits.session_green_gate:_declared_hook_types",
+   "gzkit.governance.trust_audits.session_green_gate:_delivery_errors",
+   "gzkit.governance.trust_audits.session_green_gate:_delivery_recovery",
+   "gzkit.governance.trust_audits.session_green_gate:_undelivered_reason",
+   "gzkit.governance.trust_audits.session_green_gate:audit_session_green_gate",
+   "gzkit.governance.trust_audits.session_green_gate:declared_hook_types",
+   "gzkit.governance.trust_audits.session_green_gate:install_command",
+   "gzkit.quality:run_population_controls_audit"
+  ],
+  "registered_claims_naming_a_modified_fn": [
+   "session-green-gate"
+  ]
+ },
+ {
+  "ghi": "#1007",
+  "fix": "1edf9dc1b",
+  "parent": "451b31e4a",
+  "claims_at_parent": 83,
+  "modified": [
+   "gzkit.cli.parser_maintenance:_register_quality_parsers",
+   "gzkit.commands.init_cmd:_install_pre_commit_hooks",
+   "gzkit.commands.quality:_build_check_steps",
+   "gzkit.commands.validate_cmd:_dispatch_early_return_scopes",
+   "gzkit.commands.validate_cmd:validate",
+   "gzkit.commands.validate_inventory_scopes:run_population_controls_scope",
+   "gzkit.enforcement:_run_claim_in_workspace",
+   "gzkit.enforcement:_run_claim_once",
+   "gzkit.enforcement:_run_population_claim",
+   "gzkit.enforcement:_run_single_claim",
+   "gzkit.enforcement:_test_bug",
+   "gzkit.enforcement:decorator",
+   "gzkit.enforcement:enforces",
+   "gzkit.enforcement:production_enforcement_registry",
+   "gzkit.governance.trust_audits._qc_nc_entrypoints:_ep_population_controls",
+   "gzkit.governance.trust_audits._qc_nc_entrypoints:_ep_population_controls_admits_disclosed",
+   "gzkit.governance.trust_audits._qc_nc_entrypoints:_ep_session_green_gate_delivery",
+   "gzkit.governance.trust_audits._qc_nc_hooks:build_undelivered_hook",
+   "gzkit.governance.trust_audits._qc_nc_hooks:hook_type_population",
+   "gzkit.governance.trust_audits._qc_nc_population:_root_with_disclosed",
+   "gzkit.governance.trust_audits._qc_nc_population:build_fully_disclosed",
+   "gzkit.governance.trust_audits._qc_nc_population:build_undisclosed_claim",
+   "gzkit.governance.trust_audits._qc_nc_population:undeclared_claim_population",
+   "gzkit.governance.trust_audits._qc_negative_controls:register_qc_negative_controls",
+   "gzkit.governance.trust_audits.population_controls:_err",
+   "gzkit.governance.trust_audits.population_controls:_load_accepted",
+   "gzkit.governance.trust_audits.population_controls:audit_population_controls",
+   "gzkit.governance.trust_audits.population_controls:registry_declarations",
+   "gzkit.governance.trust_audits.session_green_gate:_declared_hook_types",
+   "gzkit.governance.trust_audits.session_green_gate:_delivery_errors",
+   "gzkit.governance.trust_audits.session_green_gate:_delivery_recovery",
+   "gzkit.governance.trust_audits.session_green_gate:_undelivered_reason",
+   "gzkit.governance.trust_audits.session_green_gate:audit_session_green_gate",
+   "gzkit.governance.trust_audits.session_green_gate:declared_hook_types",
+   "gzkit.governance.trust_audits.session_green_gate:install_command",
+   "gzkit.quality:run_population_controls_audit"
+  ],
+  "registered_claims_naming_a_modified_fn": [
+   "session-green-gate"
+  ]
+ },
+ {
+  "ghi": "#1124",
+  "fix": "1a5317c89",
+  "parent": "74adc5fc1",
+  "claims_at_parent": 93,
+  "modified": [
+   "gzkit.cli.parser_maintenance:_register_tooling_parsers",
+   "gzkit.commands.tidy:tidy"
+  ],
+  "registered_claims_naming_a_modified_fn": []
+ },
+ {
+  "ghi": "#803",
+  "fix": "d266be9ff",
+  "parent": "0bd4268e9",
+  "claims_at_parent": 97,
+  "modified": [
+   "gzkit.governance.trust_audits._qc_nc_entrypoints:_ep_docs_build_validation_floor",
+   "gzkit.governance.trust_audits._qc_negative_controls:_build_docs_build_validation_floor",
+   "gzkit.governance.trust_audits.bullet_retention:_normalize",
+   "gzkit.quality:_raw_mkdocs_validation",
+   "gzkit.quality:mkdocs_validation_floor_violations",
+   "gzkit.quality:run_mkdocs"
+  ],
+  "registered_claims_naming_a_modified_fn": [
+   "docs-build"
+  ]
+ }
+]
