@@ -627,6 +627,51 @@ class TestDiscoveryNonClaimRows(unittest.TestCase):
         self.assertTrue(_looks_like_path("src/gzkit/config.py"))
 
     @covers("REQ-0.0.37-05-01")
+    def test_path_symbol_citation_resolves_on_the_file(self):
+        # GHI #1160 — `path.py:symbol` names a symbol inside a file. Existence is a
+        # claim about the FILE, so the row resolves when the file exists and drifts
+        # (with the bare path reported) when it does not. Reading the whole token as
+        # a filename drifts by construction, as the #626 spellings did.
+        from gzkit.governance.brief_reconcile import _compute_discovery_delta
+
+        with tempfile.TemporaryDirectory() as td:
+            root = Path(td)
+            (root / "features").mkdir()
+            (root / "features" / "environment.py").write_text(
+                "def before_scenario(): ...\n", encoding="utf-8"
+            )
+            body = textwrap.dedent(
+                """\
+                ## Discovery Checklist
+
+                - [ ] `features/environment.py:before_scenario` hook
+                - [ ] `features/absent_zzz.py:before_scenario` hook
+                """
+            )
+            delta = _compute_discovery_delta(body, root)
+
+        self.assertEqual(delta.unresolved_paths, ["features/absent_zzz.py"])
+
+    @covers("REQ-0.0.37-05-01")
+    def test_path_symbol_citation_names_its_file_in_section_paths(self):
+        # GHI #1160 — the allowlist/denylist extractor shares the discovery
+        # helper, so a `path.py:symbol` bullet there must also yield the file.
+        from gzkit.governance.brief_reconcile import _DENIED_HEADING_RE, _extract_section_paths
+
+        body = "## Denied Paths\n\n- `src/gzkit/cli.py:main` the entry point\n"
+        self.assertEqual(_extract_section_paths(body, _DENIED_HEADING_RE), ["src/gzkit/cli.py"])
+
+    @covers("REQ-0.0.37-05-01")
+    def test_path_symbol_does_not_swallow_other_colon_forms(self):
+        # A Windows drive path has `/` after its colon, so it is not `path:symbol`;
+        # a bare symbol with no file part is not a path at all.
+        from gzkit.governance.brief_reconcile import _looks_like_path
+
+        self.assertTrue(_looks_like_path("features/environment.py:before_scenario"))
+        self.assertTrue(_looks_like_path("C:/x/y.py"))
+        self.assertFalse(_looks_like_path("before_scenario:helper"))
+
+    @covers("REQ-0.0.37-05-01")
     def test_plain_missing_row_still_reported(self):
         # Negative control — the narrowing is scoped to rows that disclaim the
         # existence assertion. An unqualified row naming a path that is not there

@@ -176,6 +176,9 @@ _NON_PATH_MARKERS = ("(", ")", '"', "'", "::", "{", "}")
 # citation convention naming two regions; anchoring a single range let that
 # spelling fall through and be existence-checked as a filename (GHI #615).
 _LINE_RANGE_SUFFIX_RE = re.compile(r":\d+(?:-\d+)?(?:\s*,\s*\d+(?:-\d+)?)*$")
+# `path.py:symbol` names a symbol inside a file. Existence is a claim about the
+# file, so the symbol suffix is stripped before the path is checked (GHI #1160).
+_SYMBOL_SUFFIX_RE = re.compile(r":[A-Za-z_]\w*$")
 
 # A Discovery row is drift evidence only when it CLAIMS the cited path exists.
 # Three row shapes the corpus already uses disclaim that assertion in prose, and
@@ -361,7 +364,7 @@ def _extract_section_paths(body: str, heading_re: re.Pattern[str]) -> list[str]:
     for line in _section_lines(body, heading_re):
         for token in _BACKTICK_PATH_RE.findall(line):
             if _looks_like_path(token):
-                paths.append(token)
+                paths.append(_strip_symbol_suffix(token))
     return paths
 
 
@@ -390,8 +393,13 @@ def _extract_discovery_paths(body: str) -> list[str]:
             continue
         for token in _BACKTICK_PATH_RE.findall(line):
             if _looks_like_path(token):
-                paths.append(token)
+                paths.append(_strip_symbol_suffix(token))
     return paths
+
+
+def _strip_symbol_suffix(token: str) -> str:
+    """Drop a trailing ``:symbol`` so a ``path.py:symbol`` citation names its file."""
+    return _SYMBOL_SUFFIX_RE.sub("", token)
 
 
 def _looks_like_path(token: str) -> bool:
@@ -407,7 +415,8 @@ def _looks_like_path(token: str) -> bool:
     CREATE-marker variants). Two further spellings in the same family: a
     ``path.py:36-66`` line-range citation names a region rather than a file, and a
     ``{adrs}/{adr_id}.md`` template placeholder is a config substitution that can
-    never exist on disk under that spelling.
+    never exist on disk under that spelling. A ``path.py:symbol`` citation is a
+    real path; extractors strip the suffix with ``_strip_symbol_suffix`` (GHI #1160).
     """
     if any(marker in token for marker in _NON_PATH_MARKERS):
         return False
