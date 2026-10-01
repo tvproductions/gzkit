@@ -2,8 +2,8 @@
 
 The Stage-4 acceptance evidence must be derived from observables the agent cannot
 author. These tests pin: Demo extraction, the assert-shaped-demo keystone (a demo that
-exits non-zero on a bad state produces a blocker), receipt resolution, and the
-fail-closed validator (no packet → blocked; bad demo → blocked).
+exits non-zero on a bad state produces a blocker), receipt resolution, packet
+round-trip, and Demo isolation from the live checkout (GHI #1093).
 """
 
 from __future__ import annotations
@@ -19,7 +19,6 @@ from gzkit.governance.stage4_evidence import (
     extract_demo_commands,
     generate_evidence_packet,
     load_packet,
-    validate_stage4_evidence,
     write_packet,
 )
 from tests.commands.common import _isolated_git_env
@@ -264,41 +263,6 @@ class TestPacketRoundTrip(unittest.TestCase):
             self.assertIsNone(load_packet(Path(t), "OBPI-nope"))
 
 
-class TestValidateFailClosed(unittest.TestCase):
-    def test_no_packet_is_fail_closed(self) -> None:
-        with tempfile.TemporaryDirectory() as t:
-            tmp = Path(t)
-            brief = _brief(tmp, 'python3 -c "raise SystemExit(0)"')
-            errors = validate_stage4_evidence(tmp, brief, "OBPI-x")
-            self.assertTrue(
-                any("No tool-generated evidence packet" in e.message for e in errors),
-                [e.message for e in errors],
-            )
-
-    def test_bad_demo_is_fail_closed_even_with_packet(self) -> None:
-        # A green packet on disk must NOT rescue a live-failing demo — validate re-runs it.
-        with tempfile.TemporaryDirectory() as t:
-            tmp = Path(t)
-            brief = _brief(tmp, 'python3 -c "raise SystemExit(1)"')
-            fabricated = EvidencePacket(
-                obpi_id="OBPI-x",
-                generated_at="2026-06-24T00:00:00+00:00",
-                demos=[],
-                receipts=[],
-                covers_total=0,
-                covers_uncovered=0,
-                attestable=True,  # fabricated green
-                blockers=[],
-            )
-            write_packet(tmp, fabricated)
-            errors = validate_stage4_evidence(tmp, brief, "OBPI-x")
-            # The live re-run sees exit 1 → fail-closed regardless of the packet's claim.
-            self.assertTrue(
-                any("Demo exited 1" in e.message for e in errors),
-                [e.message for e in errors],
-            )
-
-
 class TestDemoNeverTouchesTheLiveCheckout(unittest.TestCase):
     """GHI #1093: generating Stage-4 evidence must not mutate the live checkout.
 
@@ -326,15 +290,6 @@ class TestDemoNeverTouchesTheLiveCheckout(unittest.TestCase):
             self.assertFalse((tmp / "probe").exists())
             # The demo still ran, and its writes were real where it ran.
             self.assertEqual([(d.ran, d.exit_status) for d in packet.demos], [(True, 0)])
-
-    def test_validate_re_run_leaves_the_live_checkout_unchanged(self) -> None:
-        """`gz obpi complete` re-runs the Demo through the same path."""
-        with tempfile.TemporaryDirectory() as t:
-            tmp = Path(t)
-            brief = _brief(tmp, self._WRITING_DEMO)
-            before = self._live_state(tmp)
-            validate_stage4_evidence(tmp, brief, "OBPI-x")
-            self.assertEqual(self._live_state(tmp), before)
 
     def test_demo_sees_uncommitted_and_untracked_work(self) -> None:
         """Isolation must not hide the work under review: the Demo runs on the working tree."""

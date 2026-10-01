@@ -5,23 +5,19 @@ evidence packet (Value Narrative, Key Proof, Evidence table, REQ coverage) as pr
 and `gz obpi complete` trusted it. That let an agent assert "this is verified" without
 running anything — the fabrication class GHI #643 documents (and ADR-0.0.74 §5 forbids).
 
-This module makes the evidence **non-fabricable** via two independent mechanisms the
-agent does not author:
+This module makes the evidence **non-fabricable**: `generate_evidence_packet` runs the
+brief's ``## Demo`` command(s) in a disposable copy of the working tree (`run_demos`,
+GHI #1093), reads the on-disk ARB receipts, and runs ``gz covers``; it writes an
+``EvidencePacket`` the operator reads at Stage 4. The agent relays this, it does not type it.
 
-* **generate** (`generate_evidence_packet`) — runs the brief's ``## Demo`` command(s)
-  in a disposable copy of the working tree (`run_demos`, GHI #1093), reads the on-disk
-  ARB receipts, and runs ``gz covers``; writes an ``EvidencePacket`` the operator reads
-  at Stage 4. The agent relays this, it does not type it.
-* **validate** (`validate_stage4_evidence`) — at ``gz obpi complete`` time, **re-runs the
-  demo** (does not trust the packet's recorded exit), re-resolves the receipts on
-  disk, and re-checks coverage; fail-closed (returns errors) if the packet is absent, the
-  live demo exits non-zero, a required receipt is missing/red, or any REQ is uncovered.
+Nothing re-derives this packet at ``gz obpi complete``. The deterministic completion
+re-run was reverted in GHI #643's resolution and replaced by the Step 4b adversary; the
+uncalled ``validate_stage4_evidence`` that still claimed to gate was removed (GHI #1158).
 
 Keystone: the brief ``## Demo`` MUST be **assert-shaped** — exit non-zero on a bad state
 (``raise SystemExit(0 if <invariant> else 1)``), never a bare ``print``. A print-shaped
 demo exits 0 even when the OBPI is broken, which is exactly how the GHI #643 fabrication
-survived. ``validate_stage4_evidence`` requires at least one demo command and treats a
-non-zero live exit as fail-closed.
+survived. A brief with no demo, or a demo exiting non-zero, is a packet blocker.
 """
 
 from __future__ import annotations
@@ -41,7 +37,6 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.acceptance_store import acceptance_blockers
 from gzkit.adversary_workspace import materialize_adversary_workspace
-from gzkit.core.validation_rules import ValidationError
 from gzkit.git_spawn_boundary import isolated_git_env
 
 # Canonical ARB steps whose receipts back a Heavy-lane completion.
@@ -484,7 +479,7 @@ def _compute_blockers(
     if not demos:
         blockers.append(
             "No ## Demo command in the brief. Stage-4 evidence requires an assert-shaped "
-            "demo (exit non-zero on a bad state) so completion can re-run it fail-closed."
+            "demo (exit non-zero on a bad state) so a broken OBPI cannot produce a green packet."
         )
     for d in demos:
         if not d.ran:
@@ -548,41 +543,3 @@ def load_packet(project_root: Path, obpi_id: str) -> EvidencePacket | None:
         return EvidencePacket.model_validate_json(path.read_text(encoding="utf-8"))
     except (ValueError, OSError):
         return None
-
-
-# ---------------------------------------------------------------------------
-# Validate (independent re-derivation — does NOT trust the packet)
-# ---------------------------------------------------------------------------
-
-
-def _err(message: str) -> ValidationError:
-    return ValidationError(type="stage4_evidence", artifact="stage4-evidence", message=message)
-
-
-def validate_stage4_evidence(
-    project_root: Path, brief_path: Path, obpi_id: str
-) -> list[ValidationError]:
-    """Fail-closed Stage-4 gate: re-derive evidence live; never trust the packet's values.
-
-    Returns one ValidationError per blocker (empty → attestable). The gate:
-
-    1. A tool-generated packet must EXIST (proves ``gz obpi present-evidence`` was run).
-    2. The brief Demo is RE-RUN live; every demo must exit 0 (assert-shaped). Absence of
-       any demo is fail-closed.
-    3. The canonical ARB receipts are re-resolved on disk; each must be present + exit 0.
-    4. ``gz covers`` is re-run; uncovered REQs is fail-closed.
-    """
-    errors: list[ValidationError] = []
-    if load_packet(project_root, obpi_id) is None:
-        errors.append(
-            _err(
-                f"No tool-generated evidence packet for {obpi_id}. Run "
-                f"`gz obpi present-evidence {obpi_id}` first — Stage-4 evidence may not be "
-                "agent-authored (GHI #643)."
-            )
-        )
-    # Re-derive live, independently of the packet's recorded values.
-    fresh = generate_evidence_packet(project_root, brief_path, obpi_id)
-    errors.extend(_err(b) for b in fresh.blockers)
-    errors.extend(_err(b) for b in fresh.review_blockers)
-    return errors
