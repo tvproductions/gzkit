@@ -199,16 +199,8 @@ def arb_red_cmd(
         )
 
     if witness.failure_class == "not-applicable":
-        print(
-            f"RED WITNESS DID NOT RUN: no production hunks were withheld against base "
-            f"{witness.base_commit[:12]}, and no earlier tree could be reconstructed for "
-            f"{req} — its `@covers` string is absent from the test tree's history, or the "
-            "commit that introduced it has no parent. So the base tree already carries "
-            f"{req}'s implementation and its covering test would pass there no matter what "
-            "it asserts. This is NOT a finding about the test — do NOT rewrite it "
-            "(GHI #839, #849).",
-            file=sys.stderr,
-        )
+        # The witness carries its own reason: nothing withheld, or a base run that tested nothing.
+        print(witness.output_tail.strip(), file=sys.stderr)
         return 0
     if not witness.is_conclusive:
         print(

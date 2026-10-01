@@ -31,6 +31,11 @@ from tests.commands.common import _isolated_git_env
 _RUNNER = [sys.executable, "-m", "unittest"]
 
 
+_PASSING_TEST = (
+    "import unittest\n\nclass T(unittest.TestCase):\n    def test_ok(self):\n        pass\n"
+)
+
+
 def _git(args: list[str], cwd: Path) -> None:
     subprocess.run(
         ["git", *args],
@@ -269,6 +274,63 @@ class TestRunRedWitness(_GitFixture):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestWitnessSufficiency(_GitFixture):
+    """GHI #1154 — a base run that never executed a test witnesses nothing either way.
+
+    A crashed runner (non-zero, no unittest summary) must not bank as a weak RED, and a
+    run that executed no test (all skipped, or none) must not accuse the test of being
+    hollow. Both are the run reporting that it could not tell (GHI #839's lesson).
+    """
+
+    def _witness(self, runner: list[str], test_source: str | None = None) -> RedWitness:
+        (self.root / "impl.py").write_text("", encoding="utf-8")
+        self._commit("base")
+        (self.root / "impl.py").write_text("def added():\n    return 1\n", encoding="utf-8")
+        (self.root / "tests" / "test_impl.py").write_text(
+            test_source or _PASSING_TEST,
+            encoding="utf-8",
+        )
+        return run_red_witness(
+            project_root=self.root,
+            req_id="REQ-1.2.3-01-01",
+            test_names=["tests.test_impl"],
+            test_runner=runner,
+        )
+
+    def test_a_runner_that_crashes_before_running_tests_is_not_a_red(self) -> None:
+        witness = self._witness([sys.executable, "-c", "import sys; sys.exit(2)"])
+        self.assertEqual(witness.failure_class, "not-applicable")
+        self.assertFalse(witness.is_red, "a crashed runner must not clear the falsifiability gate")
+        self.assertFalse(witness.is_conclusive)
+
+    def test_a_fully_skipped_base_run_is_not_a_hollow_accusation(self) -> None:
+        source = (
+            "import unittest\n\n@unittest.skip('x')\nclass T(unittest.TestCase):\n"
+            "    def test_ok(self):\n        pass\n"
+        )
+        witness = self._witness(_RUNNER, source)
+        self.assertEqual(witness.failure_class, "not-applicable")
+        self.assertFalse(witness.is_conclusive)
+
+    def test_a_run_that_executed_nothing_is_not_a_hollow_accusation(self) -> None:
+        witness = self._witness([sys.executable, "-c", "pass"])
+        self.assertEqual(witness.failure_class, "not-applicable")
+
+    def test_the_reason_travels_with_the_witness(self) -> None:
+        witness = self._witness([sys.executable, "-c", "import sys; sys.exit(2)"])
+        self.assertIn("did not run", witness.output_tail)
+        self.assertIn("summary", witness.output_tail)
+
+    def test_an_import_error_with_a_summary_is_still_a_weak_red(self) -> None:
+        source = (
+            "import unittest\nfrom impl import missing_symbol\n\n"
+            "class T(unittest.TestCase):\n    def test_x(self):\n        pass\n"
+        )
+        witness = self._witness(_RUNNER, source)
+        self.assertEqual(witness.failure_class, "error")
+        self.assertTrue(witness.is_red)
 
 
 class TestResolveIntroducingBase(_GitFixture):

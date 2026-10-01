@@ -42,6 +42,8 @@ from typing import TYPE_CHECKING, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit.unit_run_provenance import judge_executed
+
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
@@ -397,12 +399,21 @@ def run_red_witness(
         )
 
     output = (result.stdout or "") + (result.stderr or "")
+    failure_class = classify_failure(int(result.returncode), output)
+    # A run that executed no test cannot witness anything either way: a crash before
+    # any test ran is not the missing implementation, and an exit 0 with nothing
+    # executed did not show the test passes without it (GHI #1154, as GHI #839).
+    void_reason = judge_executed(output)
+    if void_reason is not None:
+        failure_class = "not-applicable"
+        note = f"RED witness did not run: {void_reason}. This is NOT a finding about the test."
+        output = f"{note}\n{output}"
     return RedWitness(
         req_id=req_id,
         base_commit=base,
         test_names=sorted(test_names),
         exit_status=int(result.returncode),
-        failure_class=classify_failure(int(result.returncode), output),
+        failure_class=failure_class,
         base_provenance=provenance,
         output_tail=output[-4000:],
     )
