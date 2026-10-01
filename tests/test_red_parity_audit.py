@@ -181,9 +181,10 @@ class TestVoidWitnessesDoNotCount(_Project):
         self.assertIn("no 'red_receipt_emitted' witness", errors[0].message)
 
     def test_an_error_with_no_provenance_still_satisfies_it(self) -> None:
-        # Every witness banked before the field existed ran against HEAD, where an
-        # error IS a legitimate weak RED. Reading the absence as "unknown" would
-        # retroactively invalidate the whole pre-#849 corpus.
+        # A witness banked before the field existed is read as `working-tree`, where
+        # an error IS a legitimate weak RED. Reading the absence as "unknown" would
+        # retroactively invalidate the whole pre-#849 corpus. The absence does not
+        # prove a HEAD run, so it cannot displace a `none` (GHI #1159).
         self.brief(_brief())
         self.completed(_AFTER)
         self.witness("error")
@@ -297,3 +298,41 @@ class TestAcceptanceProofIsAWitness(_Project):
         errors = self.audit()
         self.assertEqual(len(errors), 1)
         self.assertIn("failure_class 'none'", errors[0].message)
+
+
+class TestOnlyAConclusiveRedDisplacesANoneFinding(_Project):
+    """A stored `none` is replaced only by a later conclusive RED (GHI #1159).
+
+    The per-REQ reduction keeps the last witness, so without this rule a later
+    provenance-less `error` erased a standing `none`. Absence of `base_provenance`
+    does not prove a HEAD run (`gz arb red` accepted an explicit `--base` before
+    GHI #849), so such an `error` may satisfy a REQ on its own but cannot overturn a
+    finding that the test passed with its implementation withheld.
+    """
+
+    def test_a_provenance_less_error_cannot_erase_an_earlier_none(self) -> None:
+        self.brief(_brief())
+        self.completed(_AFTER)
+        self.witness("none")
+        self.witness("error")
+        errors = self.audit()
+        self.assertEqual(len(errors), 1)
+        self.assertIn("failure_class 'none'", errors[0].message)
+
+    def test_a_later_assertion_displaces_an_earlier_none(self) -> None:
+        # The recovery the unfalsifiable message prescribes: rewrite the test, re-run.
+        # A test that now fails on its assertion is a strong RED on any tree.
+        self.brief(_brief())
+        self.completed(_AFTER)
+        self.witness("none")
+        self.witness("assertion")
+        self.assertEqual(self.audit(), [])
+
+    def test_an_explicit_working_tree_error_displaces_an_earlier_none(self) -> None:
+        # On `working-tree` the withheld hunk is the only difference, so an import
+        # failure can only be the missing implementation: a conclusive weak RED.
+        self.brief(_brief())
+        self.completed(_AFTER)
+        self.witness("none")
+        self.witness("error", base_provenance="working-tree")
+        self.assertEqual(self.audit(), [])

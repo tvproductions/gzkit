@@ -1134,9 +1134,11 @@ class RedReceiptEmittedEvent(_EventBase):
     difference, so an import failure can only be the missing implementation — a weak
     RED. On ``reconstructed`` (the parent of the commit that introduced the covering
     test) the tree can be months older than the test, so the same class is as likely
-    to be unrelated drift and witnesses nothing. Defaults to ``working-tree`` because
-    that is what every event predating the field actually ran against; reading the
-    absence as unknown would retroactively void the whole prior corpus.
+    to be unrelated drift and witnesses nothing. Defaults to ``working-tree`` so the
+    events predating the field still satisfy a REQ; reading the absence as unknown
+    would retroactively void the whole prior corpus. The default is a compatibility
+    reading, not evidence of a HEAD run: `gz arb red` accepted an explicit ``--base``
+    before GHI #849, so a defaulted ``error`` cannot displace a ``none`` (GHI #1159).
     """
 
     event: Literal["red_receipt_emitted"]

@@ -62,15 +62,30 @@ def _is_void_witness(event: dict) -> bool:
       old code clear this gate. Fail-OPEN, which is why it is excluded here rather
       than merely reported.
 
-    An event with no ``base_provenance`` predates the reconstructed base and therefore
-    ran against HEAD, where ``error`` IS a legitimate weak RED — so the field's absence
-    must read as ``working-tree``, never as unknown.
+    An event with no ``base_provenance`` is read as ``working-tree`` so the pre-#849
+    corpus still satisfies a REQ, but the absence does NOT prove a HEAD run: `gz arb
+    red` accepted an explicit ``--base`` before GHI #849. Such an ``error`` is
+    therefore never conclusive enough to displace a ``none`` (GHI #1159).
     """
     failure_class = event.get("failure_class")
     if failure_class == "not-applicable":
         return True
     provenance = event.get("base_provenance", "working-tree")
     return failure_class == "error" and provenance == "reconstructed"
+
+
+def _is_conclusive_red(event: dict) -> bool:
+    """Report whether a RED event may displace a standing ``none`` finding (GHI #1159).
+
+    An ``assertion`` failed on its assertion, which is the same evidence on any tree.
+    An ``error`` is conclusive only on an explicit ``working-tree`` base, where the
+    withheld hunk is the only difference; a provenance-less one may have run on an
+    older ``--base`` and could be unrelated drift.
+    """
+    failure_class = event.get("failure_class")
+    if failure_class == "assertion":
+        return True
+    return failure_class == "error" and event.get("base_provenance") == "working-tree"
 
 
 def _iter_ledger(project_root: Path) -> Iterator[dict]:
@@ -143,8 +158,14 @@ def _collect(
             # genuine witness for the same REQ — this dict keeps the last event per
             # REQ, so a void re-run after a real one would otherwise erase the finding
             # it could not reproduce.
-            if isinstance(req_id, str) and not _is_void_witness(event):
-                witnesses[req_id] = event
+            if not isinstance(req_id, str) or _is_void_witness(event):
+                continue
+            # A `none` already found stands unless a conclusive RED supersedes it —
+            # the rewritten test the recovery prescribes (GHI #1159).
+            prior = witnesses.get(req_id, {})
+            if prior.get("failure_class") == "none" and not _is_conclusive_red(event):
+                continue
+            witnesses[req_id] = event
         elif name == "obpi_receipt_emitted" and event.get("receipt_event") == "completed":
             obpi_id = event.get("obpi_id") or event.get("id")
             ts = _event_ts(event)
