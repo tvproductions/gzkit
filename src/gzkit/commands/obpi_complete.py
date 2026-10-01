@@ -76,6 +76,7 @@ from gzkit.ledger_events import (
 )
 from gzkit.obpi_completion_fence import completion_blockers
 from gzkit.tasks import in_scope_task_id
+from gzkit.unit_run_provenance import judge_behave_run, judge_executed
 from gzkit.utils import capture_validation_anchor
 
 # ---------------------------------------------------------------------------
@@ -465,12 +466,14 @@ def _behave_ref_passes(ref: TestRef, project_root: Path, req_id: str) -> bool:
     """Run the behave scenario tagged ``req_id`` and return True iff exit code is 0."""
     try:
         completed = _run_captured(
-            ["uv", "run", "-m", "behave", ref.file_path, "--tags", f"@{req_id}", "--no-summary"],
+            ["uv", "run", "-m", "behave", ref.file_path, "--tags", f"@{req_id}"],
             cwd=str(project_root),
         )
     except (OSError, subprocess.SubprocessError):
         return False
-    return completed.returncode == 0
+    # Exit 0 also covers a tag that selects no scenario (GHI #1154); the summary
+    # must show one scenario passed.
+    return completed.returncode == 0 and judge_behave_run(completed.stdout) is None
 
 
 def _any_covering_test_passes(refs: list[TestRef], project_root: Path, *, req_id: str) -> bool:
@@ -495,7 +498,11 @@ def _any_covering_test_passes(refs: list[TestRef], project_root: Path, *, req_id
             )
         except (OSError, subprocess.SubprocessError):
             continue
-        if completed.returncode == 0:
+        # Exit 0 also covers a skipped or empty run (GHI #1154); one test must have run.
+        if (
+            completed.returncode == 0
+            and judge_executed(completed.stdout + completed.stderr) is None
+        ):
             return True
     return False
 

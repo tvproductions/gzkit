@@ -15,7 +15,7 @@ from pathlib import Path
 from unittest import mock
 
 from gzkit.quality import QualityResult, run_tests
-from gzkit.unit_run_provenance import judge_unit_run
+from gzkit.unit_run_provenance import judge_behave_run, judge_executed, judge_unit_run
 
 
 def _summary(ran: int, verdict: str = "OK") -> str:
@@ -78,6 +78,35 @@ class TestJudgeUnitRun(unittest.TestCase):
     def test_no_floor_declared_checks_only_execution(self):
         with tempfile.TemporaryDirectory() as td:
             self.assertIsNone(judge_unit_run(_summary(1), Path(td)))
+
+
+class TestJudgeExecuted(unittest.TestCase):
+    """The floor-free witness shared by every lane that runs a covering test."""
+
+    def test_one_executed_test_passes(self):
+        self.assertIsNone(judge_executed(_summary(1)))
+
+    def test_zero_and_all_skipped_and_missing_are_refused(self):
+        for out in (_summary(0), _summary(2, "OK (skipped=2)"), "nothing\n"):
+            with self.subTest(out=out):
+                self.assertIsNotNone(judge_executed(out))
+
+
+class TestJudgeBehaveRun(unittest.TestCase):
+    def test_a_passed_scenario_is_witnessed(self):
+        out = "1 feature passed, 0 failed, 0 skipped\n1 scenario passed, 0 failed, 0 skipped\n"
+        self.assertIsNone(judge_behave_run(out))
+
+    def test_no_selected_scenario_is_refused(self):
+        out = "0 features passed, 0 failed, 0 skipped\n0 scenarios passed, 0 failed, 0 skipped\n"
+        self.assertIn("scenario", judge_behave_run(out) or "")
+
+    def test_only_skipped_scenarios_are_refused(self):
+        out = "0 features passed, 0 failed, 1 skipped\n0 scenarios passed, 0 failed, 1 skipped\n"
+        self.assertIsNotNone(judge_behave_run(out))
+
+    def test_missing_summary_is_refused(self):
+        self.assertIsNotNone(judge_behave_run("no summary\n"))
 
 
 class TestRunTestsWitnessesExecution(unittest.TestCase):

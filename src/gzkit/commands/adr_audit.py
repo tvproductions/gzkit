@@ -1082,8 +1082,13 @@ def _check_adr_obpi_coverage_gaps(
         if not reqs:
             continue
         obpi_id = brief_path.stem
+        # Same kind distinction as `gz obpi complete`: only BEHAVIOR REQs (and
+        # untagged legacy ones) are proven by @covers (GHI #1154).
+        req_kinds = parse_brief_req_kinds(brief_path)
         gaps: list[str] = []
         for req in reqs:
+            if req_kinds.get(req, "BEHAVIOR") in ("SUPPORT", "STRUCTURAL-FENCE"):
+                continue
             refs = discover_covers(req, tests_root, features_root=features_root)
             if not refs and (obpi_id, req) not in waived:
                 gaps.append(req)
