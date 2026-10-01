@@ -1,172 +1,77 @@
 ---
 id: ADR-pool.new-cli-command-absorption
 status: Pool
-lane: heavy
 parent: PRD-GZKIT-1.0.0
 ---
 
-<!-- markdownlint-disable-file MD013 MD022 MD036 MD040 MD041 -->
-
-# ADR-pool.new-cli-command-absorption: New CLI Command Absorption
-
-## Tidy First Plan
-
-- Prep tidyings (behavior-preserving):
-  1. Audit opsdev's quality tooling commands to catalog every command, its arguments, output format, and line count.
-  1. Audit gzkit's existing CLI surface to confirm these 10 commands have no equivalent in gzkit today.
-  1. Create a portability matrix assessing each command's governance-generality vs project-specificity.
+# ADR-pool.new-cli-command-absorption: Remaining CLI Command Absorption
 
 **Date Added:** 2026-03-21
-**Date Closed:**
-**Status:** Proposed
-**SemVer:** 0.31.0
-**Area:** CLI Commands --- Companion Absorption (Quality Tooling)
-
-## Agent Context Frame --- MANDATORY
-
-**Role:** Absorption evaluator --- porting quality tooling commands from opsdev to gzkit, adapting each to gzkit's CLI conventions (argparse, exit codes, --json/--plain output).
-
-**Purpose:** When this ADR is complete, gzkit owns 10 quality tooling commands that exist in opsdev but have no gzkit equivalent: SLOC analysis, cyclomatic complexity checking, per-test duration tracking, AST-based test quality metrics, code quality violation scanning, continuous monitoring, mutation testing, manpage validation, docstring sync, and docstring coverage. Each command has been ported with gzkit CLI conventions, unit tests, and documentation.
-
-**Goals:**
-
-- All 10 quality tooling commands are ported from opsdev to gzkit
-- Each ported command follows gzkit's CLI conventions: argparse, exit codes 0/1/2/3, --json/--plain output
-- Each ported command has unit tests with >= 40% coverage
-- Each ported command has manpage documentation
-- The subtraction test holds: opsdev's quality tooling after porting contains only project-specific wrappers
-
-**Critical Constraint:** All 10 commands must be ported. These are genuinely generic quality tools (SLOC, complexity, test metrics, mutation testing, manpage validation) --- none are airline-specific. The question is not whether they belong in gzkit, but how to adapt them to gzkit's CLI conventions.
-
-**Anti-Pattern Warning:** A failed implementation looks like: porting commands verbatim from opsdev without adapting them to gzkit's CLI conventions. Each ported command must use argparse (not click), return proper exit codes (0/1/2/3), support --json/--plain output, and include help text with examples. Equally bad: declaring a command "ported" without tests or documentation.
-
-**Integration Points:**
-
-- `src/gzkit/commands/` --- new command modules
-- `src/gzkit/config.py` --- configuration consumed by quality tooling (depends on ADR-0.30.0)
-- `docs/user/manpages/` --- manpage documentation for each ported command
-- `tests/` --- unit tests for each ported command
-
----
-
-## Feature Checklist --- Appraisal of Completeness
-
-- Scope and surface
-  - External contract will change (Heavy lane) --- 10 new CLI commands
-- Tests
-  - Each ported command must have unit tests; coverage >= 40%
-- Docs
-  - Each ported command must have manpage documentation and help text with examples
-- OBPI mapping
-  - Each numbered checklist item maps to one brief; 10 items = 10 briefs
+**Status:** Pool
+**SemVer:** Unassigned; allocate only at promotion.
 
 ## Intent
 
-opsdev contains quality tooling commands that are genuinely governance-generic --- SLOC analysis (radon), cyclomatic complexity checking (xenon), per-test duration tracking, AST-based test quality metrics, code quality violation scanning, continuous monitoring, mutation testing (Cosmic Ray), manpage structure validation, docstring synchronization, and docstring coverage (interrogate). None of these are airline-specific or project-specific --- they are the kind of quality tooling that every gzkit-governed project should have access to. This ADR governs the porting of all 10 commands, adapting each to gzkit's CLI conventions.
+Evaluate the remaining opsdev quality-tooling ports independently of the three
+test-integrity candidates. This is backlog intent, not an active work order.
 
-## Decision
+## Proposed split — 2026-09-24
 
-- Each of the 10 opsdev quality commands gets individual OBPI examination and porting
-- For each command: read the implementation, adapt to gzkit CLI conventions, write tests, create documentation
-- All commands must support: argparse, exit codes 0/1/2/3, --json/--plain output, help text with examples
-- Ported commands must follow gzkit conventions: Pydantic models, pathlib.Path, UTF-8 encoding, no bare except
+Move `mutate`, `test-quality`, and `test-times` to
+[ADR-pool.test-integrity-tooling](ADR-pool.test-integrity-tooling.md), allowing
+that scope to be considered for promotion on its own. Retain the other seven
+original command rows here, including the already-withdrawn complexity row.
+This proposal promotes neither entry and reserves no release number.
 
-## Interfaces
+`ADR-0.31.0-obpi-state-machine` holds SemVer 0.31.0. The former absorption
+package was demoted at `993a16c11` on 2026-05-23, removing its briefs. Its
+old numbered OBPI references are historical identities, not current briefs.
 
-- **CLI (external contract):** `uv run gz {command}` --- 10 new commands
-- **Config keys consumed (read-only):** `.gzkit/manifest.json`, config files from ADR-0.30.0
-- **Internal APIs:** New modules in `src/gzkit/commands/` providing quality tooling
+## Target Scope
 
-## OBPI Decomposition --- Work Breakdown Structure (Level 1)
+The keys below are document-local candidate keys, not OBPI identifiers.
+At promotion, reassess each candidate against the then-current CLI, allocate
+one feature ADR, and author one OBPI brief per accepted checklist item.
 
-| # | OBPI | Specification Summary | Lane | Status |
-|---|------|----------------------|------|--------|
-| 1 | OBPI-0.31.0-01 | Port `sloc-scan` (159 lines) --- radon-based SLOC analysis | Heavy | Pending |
-| 2 | OBPI-0.31.0-02 | ~~Port `complexity-check` (122 lines) --- xenon cyclomatic complexity~~ → **subsumed by [ADR-0.0.29](../../foundation/ADR-0.0.29-complexity-advisor/ADR-0.0.29-complexity-advisor.md)** | Heavy | Withdrawn (2026-04-25) |
-| 3 | OBPI-0.31.0-03 | Port `test-times` (87 lines) --- per-test duration tracking | Heavy | Pending |
-| 4 | OBPI-0.31.0-04 | Port `test-quality` (495 lines) --- AST-based test quality metrics | Heavy | Pending |
-| 5 | OBPI-0.31.0-05 | Port `metrics scan` (429 lines) --- code quality violation scanning | Heavy | Pending |
-| 6 | OBPI-0.31.0-06 | Port `metrics report/watch` (429 lines) --- continuous monitoring and reporting | Heavy | Pending |
-| 7 | OBPI-0.31.0-07 | Port `mutate` (450 lines) --- Cosmic Ray mutation testing | Heavy | Pending |
-| 8 | OBPI-0.31.0-08 | Port `validate-manpages` (473 lines) --- manpage structure validation | Heavy | Pending |
-| 9 | OBPI-0.31.0-09 | Port `sync-manpage-docstrings` (473 lines) --- docstring synchronization | Heavy | Pending |
-| 10 | OBPI-0.31.0-10 | Port `interrogate` (wrapper) --- docstring coverage integration | Heavy | Pending |
+| Key | Original row | Candidate | Disposition |
+|---|---:|---|---|
+| CLI-01 | 1 | `sloc-scan`: SLOC analysis | Pending evaluation |
+| CLI-02 | 2 | `complexity-check`: cyclomatic complexity | Withdrawn 2026-04-25; subsumed by [ADR-0.0.29](../foundation/ADR-0.0.29-complexity-advisor/ADR-0.0.29-complexity-advisor.md) |
+| CLI-05 | 5 | `metrics scan`: code quality violation scanning | Pending evaluation |
+| CLI-06 | 6 | `metrics report/watch`: monitoring and reporting | Pending evaluation |
+| CLI-08 | 8 | `validate-manpages`: manpage structure validation | Pending evaluation |
+| CLI-09 | 9 | `sync-manpage-docstrings`: docstring synchronization | Pending evaluation |
+| CLI-10 | 10 | `interrogate`: docstring coverage integration | Pending evaluation |
 
-**Briefs location:** `obpis/OBPI-0.31.0-*.md`
+**Briefs:** This flat pool entry has no current OBPI package. These rows do not
+claim a corresponding brief exists. Briefs are authored at promotion, using
+the promoted ADR's newly allocated identifier.
 
-**WBS Completeness Rule:** Every row in this table has a corresponding brief file.
+## Promotion decisions
 
-**Lane definitions:**
-
-- **Heavy** --- All OBPIs are Heavy because each introduces a new CLI command (external contract change)
-
----
-
-## Rationale
-
-opsdev's quality tooling represents approximately 3,100+ lines of governance-generic code that every project benefits from. SLOC analysis, complexity checking, test quality metrics, mutation testing, and manpage validation are not airline-specific --- they are fundamental code quality tools. gzkit as a governance framework must own these tools so that any gzkit-governed project gets quality tooling out of the box, rather than each project reimplementing these capabilities. This ADR depends on ADR-0.25.0 (core infrastructure) and ADR-0.30.0 (config schema) because ported commands consume infrastructure and configuration provided by those ADRs.
-
-## Comparator Uplift (2026-05-07)
-
-Front-door improvements need command surfaces operators can discover. This ADR
-should bias new commands toward witnessed entry points such as `workspace`,
-`workflow inspect`, `vendor matrix`, `skill feedback-report`, and `uat`, with
-manpage examples bound to captured output where ADR-0.46.0 applies.
+- Establish that a proposed command adds a capability the current gzkit CLI
+  does not already supply; the original port inventory is a dated proposal.
+- Choose the supported input, output, failure, and configuration contracts.
+- Resolve actual capability dependencies; the old references to ADR-0.25.0
+  and ADR-0.30.0 must not be treated as current dependencies by number alone.
+- Use stdlib first. Any dependency needs an explicit promoted ADR/OBPI
+  rationale naming the capability stdlib cannot supply and its maintenance cost.
+- Follow [pool curation](../../../governance/pool-curation.md): sponsor,
+  acceptance criteria, settled dependencies, capacity, and operator promotion.
 
 ## Consequences
 
-- gzkit gains 10 new CLI commands, significantly expanding its quality tooling surface
-- Every gzkit-governed project gets access to SLOC, complexity, test quality, and mutation testing
-- Manpage validation and docstring sync enforce documentation quality programmatically
-- opsdev can replace its implementations with gzkit equivalents, reducing its own codebase
-- New dependencies may be required (radon, xenon, cosmic-ray, interrogate) --- these must be managed as optional dependencies
+The test-integrity decision can be considered without committing to the six
+remaining pending ports. The withdrawn row stays in the historical inventory.
+No CLI, dependency, validator, release, ledger event, or execution commitment
+is introduced by this pool proposal.
 
-## Evidence (Four Gates)
+## Evidence
 
-- **ADR:** this document
-- **TDD (required):** `tests/test_cmd_*.py` --- unit tests for each ported command
-- **BDD (Heavy):** `features/quality_tooling.feature` --- smoke tests for new CLI commands
-- **Docs:** Manpages in `docs/user/manpages/`, help text with examples in each command
-
----
-
-## Evidence Ledger (authoritative summary)
-
-### Provenance
-
-- **Git tag:** `adr-0.31.0`
-- **Dependencies:** ADR-0.25.0, ADR-0.30.0
-
-### Source & Contracts
-
-- opsdev source: quality tooling commands (~3,100+ lines total)
-- gzkit target: `src/gzkit/commands/` --- 10 new command modules
-
-### Tests
-
-- Unit: `tests/test_cmd_*.py` (per ported command)
-
-### Docs
-
-- Manpages: `docs/user/manpages/` (per ported command)
-- Governance: this ADR
-- Decision rationale: per OBPI brief in `obpis/`
-
----
-
-## Completion Checklist --- Post-Ship Tidy (Human Sign-Off)
-
-| Artifact Path | Class | Validated Behaviors | Evidence | Notes |
-|---------------|-------|-------------------|----------|-------|
-| `src/gzkit/commands/` | M | All 10 commands ported | Test output | |
-| `tests/` | M | All ported commands tested | `uv run gz test` | |
-| `docs/user/manpages/` | P | All ported commands documented | Manpage review | |
-| `obpis/` | P | All 10 OBPIs have evidence documented | Brief review | |
-
-### SIGN-OFF --- Post-Ship Tidy
-
-Human Approver: ___________________________
-
-Date: _________________________
-
-Decision: Accept | Request Changes
+- Original inventory dated 2026-03-21; retained by git history.
+- Demotion commit `993a16c11` removed the former feature package and briefs.
+- Audit baseline `5d9885a08c438b0aa546716b20a181c55342612e`, measured
+  2026-09-24: this pool frontmatter says Pool while its former body said
+  Proposed, reserved 0.31.0, and claimed every numbered row had a brief.
+- The test-integrity pilot and proposed promotion trigger belong in the
+  [split entry](ADR-pool.test-integrity-tooling.md).

@@ -23,6 +23,15 @@ continues_from: 2026-04-25-complexity-doctrine-cluster.md
      waves; this artifact captures the design output for further
      action across multiple subsequent sessions. -->
 
+## Correction — 2026-09-24
+
+This is a dated 2026-04-26 account. `OBPI-0.31.0-07-mutate` and its
+probe TASK/lock/marker references below name the historical absorption package,
+which was demoted at `993a16c11` on 2026-05-23. The brief no longer exists;
+these references do not authorize a lock, pipeline, or implementation today.
+The test audit proposes ADR-pool.test-integrity-tooling, item TI-01, as the
+backlog home; SemVer 0.31.0 belongs to ADR-0.31.0-obpi-state-machine.
+
 ## Current State Summary
 
 Operator pivoted from execution to evaluate/design mode mid-session and asked for a structured improvement plan against the harness-engineering frame: **fortify** strengths, **strengthen/implement** weaknesses, **illuminate** blindspots. The plan was produced and **all three waves were confirmed**. No implementation occurred. One incidental ledger artifact exists from a TASK-store probe (`TASK-0.31.0-07-01-01` started + completed, used to confirm tasks are implicit and don't require pre-allocation); the OBPI lock for `OBPI-0.31.0-07-mutate` was claimed and released within the same session; pipeline marker was cleared.
@@ -52,7 +61,7 @@ No new pool ADRs needed; small-surface work that can land standalone.
 
 | Item | Type | Status / Route |
 |---|---|---|
-| **F-5 / S-2** Drive `OBPI-0.31.0-07-mutate` to completion (port airlineops mutation testing → `gz mutate`) | Existing OBPI (heavy lane, status Pending) | Brief at `docs/design/adr/pre-release/ADR-0.31.0-new-cli-command-absorption/obpis/OBPI-0.31.0-07-mutate.md`. Source: `../airlineops/src/opsdev/commands/mutation_tools.py` (451 lines). Adaptation notes captured in the originating session's implementer dispatch (size caps, Pydantic models, ASCII-only console, exit codes 0/1/2/3, `--min-kill-rate FLOAT` for new policy-breach gate, mocked unit tests). |
+| **F-5 / S-2** General mutation tooling (historical Wave 1 proposal) | Pool intent; no current OBPI | The former brief was removed by the 2026-05-23 demotion; the 2026-09-24 audit proposes ADR-pool.test-integrity-tooling, TI-01. A future operator-authorized promotion must decide the tool and its diagnostic contract; no kill-rate gate is inherited from this dated dispatch. |
 | **S-6** Author `dependency-freshness-sweep` chore | New chore | Layout: `src/gzkit/chores/dependency-freshness-sweep/` (canonical) + `.gzkit/chores/dependency-freshness-sweep/` (project overlay) per ADR-0.0.21. Computational tier: parse `pyproject.toml` + `uv.lock`, fetch PyPI versions, emit age-in-days. Optional inferential tier: subagent flags deprecation/abandonment via web research. Cadence: monthly via `/schedule`. |
 | **B-6** Doctrine fold for `hypothesis` as named-future-departure | Small AGENTS.md edit | Extend `AGENTS.md § STDLIB-FIRST DOCTRINE § Existing canonical applications` to name `hypothesis` as a future named departure contingent on Wave 2's S-3 landing. Documents the property-testing tradeoff explicitly. |
 
@@ -118,7 +127,7 @@ The plan layers on top of these. No conflict expected; if conflict surfaces duri
 The next session resumes work on this plan via one of the following entry points (operator-routed):
 
 1. **Wave 1 — pick a starting item:**
-   - `OBPI-0.31.0-07-mutate` — re-claim lock, restart pipeline, dispatch implementer (full brief preserved in originating session transcript)
+   - General mutation tooling — consider the proposed ADR-pool.test-integrity-tooling, TI-01; do not resume the removed OBPI or claim its historical identifier.
    - `dependency-freshness-sweep` chore — author via `gz-chore-runner` skill
    - `hypothesis` doctrine fold — small AGENTS.md edit
 2. **Wave 2 — pick one pool ADR to draft first.** Recommendation: `ADR-pool.harness-sidecar` (highest-leverage gap from the article; unlocks several downstream invariants). Route: `/gz-design ADR-pool.harness-sidecar`.
@@ -129,7 +138,7 @@ The next session resumes work on this plan via one of the following entry points
 ## Outstanding Session Artifacts
 
 - Probe TASK in ledger: `TASK-0.31.0-07-01-01` (started + completed, harmless, used only to confirm TASK lifecycle is implicit)
-- OBPI lock for `OBPI-0.31.0-07-mutate`: released
-- Pipeline markers for `OBPI-0.31.0-07-mutate`: cleared via `gz obpi pipeline --clear-stale`
+- Historical 2026-04-26 lock record for `OBPI-0.31.0-07-mutate`: released then; not a current lock or work order.
+- Historical 2026-04-26 pipeline record for `OBPI-0.31.0-07-mutate`: cleared then; this account prescribes no current pipeline action.
 - No source files modified
 - No commits authored
