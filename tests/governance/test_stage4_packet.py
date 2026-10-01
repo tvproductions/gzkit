@@ -29,9 +29,38 @@ from gzkit.governance.stage4_packet import (
     extract_transcripts,
     verify_packet,
 )
+from tests.commands.common import _isolated_git_env
+
+
+def _git(tmp: Path, *args: str) -> str:
+    return subprocess.run(
+        ["git", *args],
+        cwd=tmp,
+        env=_isolated_git_env(),
+        check=True,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+    ).stdout
+
+
+def _project(tmp: Path) -> None:
+    """Make *tmp* a committed git checkout: replay runs only in an isolated copy of one."""
+    if (tmp / ".git").exists():
+        return
+    _git(tmp, "init", "-q", "-b", "main")
+    _git(tmp, "config", "user.email", "g0@users.noreply.github.com")
+    _git(tmp, "config", "user.name", "g0")
+    (tmp / ".gzkit").mkdir(exist_ok=True)
+    (tmp / ".gzkit" / "ledger.jsonl").write_text('{"event":"base"}\n', encoding="utf-8")
+    (tmp / "README.md").write_text("base\n", encoding="utf-8")
+    _git(tmp, "add", "-A")
+    _git(tmp, "commit", "-qm", "base")
 
 
 def _packet(tmp: Path, body: str) -> Path:
+    _project(tmp)
     path = tmp / "packet.md"
     path.write_text(body, encoding="utf-8")
     return path
@@ -472,6 +501,58 @@ class TestOrElseConcealment(unittest.TestCase):
             )
             result = verify_packet(tmp, _packet(tmp, body))
         self.assertTrue(result.verified, result.blockers)
+
+
+class TestReplayNeverTouchesTheLiveCheckout(unittest.TestCase):
+    """GHI #1157: verify-packet replay must not mutate the checkout under review.
+
+    `verify_packet` re-ran every `$` transcript with `cwd=project_root`, so a
+    packet line such as `echo pwned >> f.txt; echo ok` wrote into the live
+    working tree and the packet still verified. Same contract as GHI #1093 for
+    the brief Demo: replay runs in a disposable copy, and when no copy can be
+    built every transcript is reported not run, never run live.
+    """
+
+    # `python` resolves from the replay environment's venv on every platform,
+    # so the probe does not depend on a POSIX `touch`.
+    _WRITING = "```\n$ python -c \"open('probe', 'w').close(); print('ok')\"\nok\n```\n"
+
+    def test_writing_transcript_verifies_without_touching_the_live_checkout(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            packet = _packet(tmp, self._WRITING)
+            before = _git(tmp, "status", "--porcelain")
+            result = verify_packet(tmp, packet)
+            self.assertTrue(result.verified, result.blockers)
+            self.assertFalse((tmp / "probe").exists())
+            self.assertEqual(_git(tmp, "status", "--porcelain"), before)
+
+    def test_replay_sees_uncommitted_and_untracked_work(self) -> None:
+        """Isolation must not hide the state under review: the copy is the working tree."""
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            packet = _packet(tmp, "```\n$ cat README.md new.txt\nedited\nfresh\n```\n")
+            (tmp / "README.md").write_text("edited\n", encoding="utf-8")
+            (tmp / "new.txt").write_text("fresh\n", encoding="utf-8")
+            result = verify_packet(tmp, packet)
+            self.assertTrue(result.verified, result.blockers)
+
+    def test_no_isolation_means_not_run_never_run_live(self) -> None:
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            packet = _packet(tmp, self._WRITING)
+            before = _git(tmp, "status", "--porcelain")
+            with mock.patch.object(
+                stage4_evidence,
+                "_materialize_demo_checkout",
+                side_effect=RuntimeError("no copy"),
+            ):
+                result = verify_packet(tmp, packet)
+            self.assertFalse(result.verified)
+            self.assertFalse((tmp / "probe").exists())
+            self.assertEqual(_git(tmp, "status", "--porcelain"), before)
+            self.assertEqual([t.exit_status for t in result.transcripts], [-1])
+            self.assertTrue(any("could not isolate" in b for b in result.blockers), result.blockers)
 
 
 class TestReplayShellCanRunWhatTheGateSanctions(unittest.TestCase):

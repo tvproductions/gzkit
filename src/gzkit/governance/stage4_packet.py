@@ -54,17 +54,28 @@ transcripts chosen are the ones the REQs needed — nor that its **interpretatio
 correct, that a reproducing command actually demonstrates what the surrounding prose says
 it does. Those stay with Step 4b and the operator. What replay does close is the gap
 between what the packet says a command printed and what the command prints.
+
+**Replay never touches the checkout under review (GHI #1157).** Every transcript runs
+in one disposable copy of the working tree — tracked content, uncommitted changes and
+untracked non-ignored files, built by the GHI #1093 Demo materializer — with the
+Demo's environment, and the copy is deleted afterwards. A packet carries no commit
+identity and is verified before attestation, so the working tree is the state under
+review; a replayed ``>> ledger.jsonl`` must not land in it. When no copy can be
+built, every transcript is reported not run and the packet is not verified: replay is
+refused, never run live.
 """
 
 from __future__ import annotations
 
 import re
 import subprocess
+import tempfile
 from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from gzkit.governance.stage4_evidence import _join_demo_commands, replay_invocation
+from gzkit.governance import stage4_evidence
+from gzkit.governance.stage4_evidence import _demo_env, _join_demo_commands, replay_invocation
 from gzkit.verifier_pipe_gate import masked_verifier
 
 # A fenced block cites shell commands only when it says so. A ``json``/``text``
@@ -113,6 +124,9 @@ class TranscriptResult(BaseModel):
     model_config = ConfigDict(frozen=True, extra="forbid")
 
     command: str = Field(..., description="The transcript's command, verbatim")
+    ran: bool = Field(
+        default=True, description="False when replay could not be isolated and was refused"
+    )
     exit_status: int = Field(..., description="Observed exit code (-1 if it did not run)")
     timed_out: bool = Field(default=False, description="True if the command exceeded the limit")
     produced_output: bool = Field(..., description="True if the re-run wrote anything")
@@ -233,7 +247,7 @@ def _claimed_content(claimed: list[str]) -> list[str]:
     ]
 
 
-def _run(command: str, project_root: Path) -> tuple[int, str, bool]:
+def _run(command: str, cwd: Path, env: dict[str, str] | None = None) -> tuple[int, str, bool]:
     """Re-run one transcript command; return ``(exit_status, output, timed_out)``.
 
     The command comes from a packet an agent composed, which is the point: the
@@ -246,13 +260,17 @@ def _run(command: str, project_root: Path) -> tuple[int, str, bool]:
     `verifier_pipe_gate` sanctions — so replay rejected the very transcripts the
     gate tells authors to write, and `cmd.exe` is not a POSIX shell at all.
     See `replay_shell` / `replay_invocation`, which both replay sites share.
+
+    *cwd* is the disposable copy `verify_packet` builds, never the live checkout
+    (GHI #1157).
     """
     args, use_shell = replay_invocation(command)
     try:
-        proc = subprocess.run(  # noqa: S602 — re-running the packet's own claim is the check
+        proc = subprocess.run(  # noqa: S602 — runs in a disposable copy, never the live checkout
             args,
             shell=use_shell,
-            cwd=project_root,
+            cwd=cwd,
+            env=env,
             capture_output=True,
             text=True,
             errors="replace",
@@ -357,9 +375,11 @@ def _omitted_failure_lines(claimed: list[str], output: str) -> list[str]:
     return omitted
 
 
-def _verify_transcript(transcript: Transcript, project_root: Path) -> TranscriptResult:
-    """Re-run one transcript and record which of its claimed lines did not reproduce."""
-    exit_status, output, timed_out = _run(transcript.command, project_root)
+def _verify_transcript(
+    transcript: Transcript, checkout: Path, env: dict[str, str]
+) -> TranscriptResult:
+    """Re-run one transcript in *checkout* and record which claimed lines did not reproduce."""
+    exit_status, output, timed_out = _run(transcript.command, checkout, env)
     claimed = _claimed_content(transcript.claimed)
     # Containment, not equality: a packet may show less than the command produced
     # (abridging) and may re-indent what it shows (presentation). It may not show
@@ -377,6 +397,18 @@ def _verify_transcript(transcript: Transcript, project_root: Path) -> Transcript
         masked_verifier=masked_verifier(transcript.command),
         omitted_failure_lines=omitted,
         status_suppressor=_status_suppressing_suffix(transcript.command),
+    )
+
+
+def _not_run(transcript: Transcript, reason: str) -> TranscriptResult:
+    """Report a transcript that was refused because replay could not be isolated."""
+    return TranscriptResult(
+        command=transcript.command,
+        ran=False,
+        exit_status=-1,
+        produced_output=False,
+        missing_lines=[],
+        output_tail=reason,
     )
 
 
@@ -433,12 +465,49 @@ def _blockers(results: list[TranscriptResult], transcripts: list[Transcript]) ->
     return blockers
 
 
+def _replay(
+    project_root: Path, transcripts: list[Transcript]
+) -> tuple[list[TranscriptResult], str | None]:
+    """Replay *transcripts* in one disposable copy of the working tree (GHI #1157).
+
+    Returns the results and, when the copy could not be built, the reason every
+    transcript was refused. The materializer is read off the module so the one
+    seam both replay sites share is the one a test or a fix patches.
+    """
+    if not transcripts:
+        return [], None
+    with tempfile.TemporaryDirectory(prefix="gz-packet-") as scratch:
+        checkout = Path(scratch) / "checkout"
+        try:
+            stage4_evidence._materialize_demo_checkout(project_root, checkout)
+        except (RuntimeError, OSError, subprocess.SubprocessError) as exc:
+            reason = (
+                "not run: replay could not isolate the packet's transcripts from the live "
+                f"checkout, and it never runs them there ({exc})"
+            )
+            return [_not_run(t, reason) for t in transcripts], reason
+        env = _demo_env(project_root, checkout)
+        return [_verify_transcript(t, checkout, env) for t in transcripts], None
+
+
 def verify_packet(project_root: Path, packet_path: Path) -> PacketVerification:
-    """Re-run every transcript in a Step-4a packet and hold the packet to its claims."""
+    """Re-run every transcript in a Step-4a packet and hold the packet to its claims.
+
+    The replay runs in a disposable copy of *project_root*'s working tree, never in
+    *project_root* itself (GHI #1157).
+    """
     text = packet_path.read_text(encoding="utf-8")
     transcripts = extract_transcripts(text)
-    results = [_verify_transcript(t, project_root) for t in transcripts]
-    blockers = _blockers(results, transcripts)
+    results, refused = _replay(project_root, transcripts)
+    if refused is not None:
+        blockers = [
+            f"{refused}. Replay runs only in a disposable copy of the working tree, never "
+            "in the checkout under review (GHI #1157, the GHI #1093 contract). Make the "
+            "root a git checkout whose uncommitted changes `git diff HEAD` reproduces, "
+            "then re-run `uv run gz obpi verify-packet <packet>`."
+        ]
+    else:
+        blockers = _blockers(results, transcripts)
     return PacketVerification(
         packet=str(packet_path),
         transcripts=results,

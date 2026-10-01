@@ -385,7 +385,9 @@ def register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
             "Re-execute every $-prompted transcript in a composed Step-4a evidence "
             "packet and report which pasted output lines the command did not produce. "
             "Fenced shell blocks with no $ prompt claim no output and are reported as "
-            "citations, never re-run. Exits 3 (NOT-VERIFIED) on any blocker."
+            "citations, never re-run. Replay runs in a disposable copy of the working "
+            "tree and never touches the live checkout; if no copy can be built, no "
+            "transcript runs (GHI #1157). Exits 3 (NOT-VERIFIED) on any blocker."
         ),
         epilog=build_epilog(
             [

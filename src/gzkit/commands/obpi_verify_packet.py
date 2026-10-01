@@ -5,6 +5,10 @@ command output was believed on the composing agent's word. This command re-runs 
 ``$``-prompted transcript in the packet and reports which pasted lines the command did
 not actually produce, so the fabrication is on the table before the attestation is.
 
+The replay runs in a disposable copy of the working tree and never touches the live
+checkout; when no copy can be built, no transcript runs and the packet is
+NOT-VERIFIED (GHI #1157).
+
 Exit codes (`.claude/rules/cli.md`):
   0 = packet VERIFIED (every transcript reproduces)
   1 = user/config error (packet file not found)
@@ -27,7 +31,9 @@ def _render_human(result: PacketVerification) -> None:
     console.print(f"Step-4a packet: {escape(result.packet)} — {verdict}")
     console.print("\n  Transcripts (re-run):")
     for t in result.transcripts:
-        if t.timed_out:
+        if not t.ran:
+            tag = "[red]not run[/red]"
+        elif t.timed_out:
             tag = "[red]timeout[/red]"
         elif t.missing_lines:
             tag = f"[red]{len(t.missing_lines)} unreproduced[/red]"
@@ -49,7 +55,8 @@ def _render_human(result: PacketVerification) -> None:
 def obpi_verify_packet_cmd(*, packet: str, as_json: bool = False) -> int:
     """Handle ``gz obpi verify-packet``.
 
-    Re-executes the packet's transcripts against the project root. Returns
+    Re-executes the packet's transcripts in a disposable copy of the project root's
+    working tree, never the root itself (GHI #1157). Returns
     ``EXIT_POLICY_BREACH`` (3) when a pasted line does not reproduce, so the operator
     and any downstream gate see the fail-closed signal before attestation.
     """
