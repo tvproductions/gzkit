@@ -207,7 +207,6 @@ nav:
       - Harmonization Audit: governance/GovZero/audits/governance-harmonization-2026-01-11.md
       - Agent Readiness Audit Template: governance/GovZero/audits/AUDIT-TEMPLATE-agent-readiness.md
   - Reference:
-    - Docs README: README.md
     - Charter: user/reference/charter.md
     - Lineage: user/reference/lineage.md
     - Agent Input Disciplines: user/reference/agent-input-disciplines.md
@@ -227,6 +226,9 @@ exclude_docs: |
   AGENTS.md
   # Authoring template for skill manpages; its links are placeholders.
   user/skills/_TEMPLATE.md
+  # Repo-browsing guide to docs/; the site root is index.md, which
+  # redirects to the Home page at user/.
+  /README.md
 
 validation:
   nav:
