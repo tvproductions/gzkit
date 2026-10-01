@@ -181,3 +181,9 @@ settings.local/
 # those symlinks broke `uv build` and kept v0.34.8 off PyPI; see
 # tests/governance/test_tracked_symlinks.py.
 .codex/tmp/
+
+# Session runtime state, never repo content: Claude Code's scheduled-task lock
+# (a sessionId/pid record) and the scratch directory agents write under .gzkit/tmp/
+# (e.g. a ghi-triage rank input). Both were committed by sweeping syncs.
+.claude/scheduled_tasks.lock
+.gzkit/tmp/
