@@ -57,7 +57,9 @@ _AUDIT_SUBJECT_LITERALS: tuple[str, ...] = (".github/skills",)
 
 def _write(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(content, encoding="utf-8")
+    # LF on every host: fixtures plant byte-measured artifacts (rendition spans,
+    # ownership floors), and Windows text mode would add a CR per line.
+    path.write_text(content, encoding="utf-8", newline="\n")
 
 
 def _write_jsonl(path: Path, records: list[dict[str, object]]) -> None:
@@ -1787,7 +1789,12 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
         _build_rendition_floor_coherence,
         _ep._ep_rendition_floor_coherence,
     ),
-    ("rendition-lineage", _build_rendition_lineage, _ep._ep_rendition_lineage),
+    (
+        "rendition-lineage",
+        _build_rendition_lineage,
+        _ep._ep_rendition_lineage,
+        "corpus-owned, but its committed bytes differ",
+    ),
     ("invariant-coherence", _build_invariant_coherence, _ep._ep_invariant_coherence),
     ("corpus-retirement-witness", _cr.build_retirement_witness, _ep._ep_corpus_retirement_witness),
     ("brief-structure", _build_brief_structure, _ep._ep_brief_structure),

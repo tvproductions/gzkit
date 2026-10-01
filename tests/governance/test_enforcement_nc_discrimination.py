@@ -14,9 +14,10 @@ and assert it fails **for the reason the claim names**.
 
 from __future__ import annotations
 
+import contextlib
 import tempfile
 import unittest
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
 from pathlib import Path
 
 
@@ -520,6 +521,56 @@ class TestRemainingClaimsBite(unittest.TestCase):
             "Violation-by-absence fixtures answer from the validator's "
             f"missing-artifact branch, never the claim's own: {offenders}",
         )
+
+
+class TestFixturesAreInvariantUnderHostNewlines(unittest.TestCase):
+    """A control must trip for its own reason on Windows too.
+
+    `Path.write_text` translates "\\n" to "\\r\\n" on Windows. The rendition-lineage
+    fixture wrote its committed rendition that way, so the unowned section
+    measured 56 bytes against a 54-byte floor computed from the LF text, and the
+    generator refused before the drift check ran. With no `expect` pinned, the
+    runner scored that unrelated refusal as PASS (windows-latest, CI run
+    36823827020). Windows text mode is simulated here so the contract holds on
+    every host.
+    """
+
+    CLAIMS = ("rendition-lineage", "invariant-coherence")
+
+    @staticmethod
+    @contextlib.contextmanager
+    def _windows_text_mode() -> Iterator[None]:
+        from unittest.mock import patch
+
+        native = Path.write_text
+
+        def write_text(
+            self: Path,
+            data: str,
+            encoding: str | None = None,
+            errors: str | None = None,
+            newline: str | None = None,
+        ) -> int:
+            if newline is None:
+                data, newline = data.replace("\n", "\r\n"), ""
+            return native(self, data, encoding=encoding, errors=errors, newline=newline)
+
+        with patch.object(Path, "write_text", write_text):
+            yield
+
+    def test_rendition_lineage_pins_its_drift_reason(self) -> None:
+        record = TestRemainingClaimsBite._registry()["rendition-lineage"]
+        self.assertIsNotNone(record.expect, "an unpinned control accepts any refusal")
+        self.assertIn("committed bytes differ", record.expect)
+
+    def test_each_claim_passes_under_windows_text_mode(self) -> None:
+        from gzkit.enforcement import _run_single_claim
+
+        registry = TestRemainingClaimsBite._registry()
+        for claim in self.CLAIMS:
+            with self.subTest(claim=claim), self._windows_text_mode():
+                result = _run_single_claim(registry[claim])
+                self.assertEqual(result.outcome, "PASS", result.message)
 
 
 class TestFloorDiscoversProductionClaims(unittest.TestCase):
