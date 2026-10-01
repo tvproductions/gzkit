@@ -285,7 +285,8 @@ def _gate_closeout_proof(project_root: Path, state: CeremonyState) -> None:
 
     # Fidelity gate (ADR-0.0.73, OBPI-0.0.73-04): the bound replacement for the
     # prose 'Demonstrate Value' step. Run the ADR's ## Fidelity Assertions block
-    # against the running system before advancing to attestation; a failed
+    # against the committed tree (a detached worktree at HEAD, GHI #1156) before
+    # advancing to attestation; a failed
     # assertion blocks the transition (raises PolicyBreachError), a missing block
     # warns gracefully (operator-ratified absence policy, OBPI-04). If the ADR
     # file cannot be resolved there is nothing to gate, so the gate is skipped.
@@ -297,7 +298,7 @@ def _gate_closeout_proof(project_root: Path, state: CeremonyState) -> None:
         adr_file, _ = resolve_adr_file(project_root, config, state.adr_id)
     except (GzCliError, FileNotFoundError):
         return
-    assert_fidelity_for_ceremony(adr_file, state.adr_id)
+    assert_fidelity_for_ceremony(adr_file, state.adr_id, project_root)
 
 
 def _gate_closeout_readiness(project_root: Path, state: CeremonyState) -> None:

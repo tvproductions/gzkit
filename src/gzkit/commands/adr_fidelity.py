@@ -1,7 +1,8 @@
 """gz adr fidelity command (ADR-0.0.73, OBPI-0.0.73-03).
 
 Parses the ``## Fidelity Assertions`` block from an ADR Decision, runs each
-command, and reports observed-vs-expected exit with pass/fail per assertion.
+command in a detached worktree at HEAD (GHI #1156), and reports
+observed-vs-expected exit with pass/fail per assertion.
 Exits non-zero when any assertion fails.  ``--check`` parses the block without
 running any commands.
 """
@@ -19,7 +20,7 @@ from gzkit.commands.common import (
     get_project_root,
     resolve_adr_file,
 )
-from gzkit.fidelity import parse_fidelity_assertions, run_fidelity_gate
+from gzkit.fidelity import failure_hint, parse_fidelity_assertions, run_fidelity_gate
 
 
 def adr_fidelity_cmd(adr: str, check_only: bool = False) -> None:
@@ -50,7 +51,7 @@ def adr_fidelity_cmd(adr: str, check_only: bool = False) -> None:
     console.print(f"  Assertions: {len(assertions)}")
     console.print("")
 
-    results = run_fidelity_gate(assertions, adr_id=adr)
+    results = run_fidelity_gate(assertions, adr_id=adr, project_root=project_root)
 
     any_fail = False
     for r in results:
@@ -58,6 +59,8 @@ def adr_fidelity_cmd(adr: str, check_only: bool = False) -> None:
         console.print(f"  {status}  {r.claim}")
         console.print(f"        command:  {r.command}")
         console.print(f"        expected: {r.expected_exit}  observed: {r.observed}")
+        if r.result == "fail" and (hint := failure_hint(r)):
+            console.print(f"        {escape(hint.removeprefix(' — '))}")
         console.print("")
         if r.result == "fail":
             any_fail = True

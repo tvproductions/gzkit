@@ -697,7 +697,9 @@ Skill shortcuts for the closeout ceremony:
 # 1) Reconcile ADR <-> OBPI completeness
 uv run gz adr audit-check ADR-<X.Y.Z>
 
-# 1b) Run ADR Fidelity Assertions against the running system.
+# 1b) Run ADR Fidelity Assertions against the running system. Each assertion
+#      runs in a detached worktree at HEAD, so commit first: uncommitted files
+#      cannot satisfy it and it cannot write to the live checkout (GHI #1156).
 #      Both the closeout ceremony (EXECUTE->ATTESTATION edge) and the audit
 #      ceremony invoke this SAME bound gate — it replaces the old prose
 #      'Demonstrate Value' step (ADR-0.0.73). A failed assertion blocks the

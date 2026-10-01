@@ -180,7 +180,7 @@ This step is a **bound, runnable gate**, not prose: the audit ceremony invokes t
 uv run gz adr fidelity <ADR-ID>
 ```
 
-It parses the ADR Decision's `## Fidelity Assertions` block and RUNS each assertion's command against the running system, comparing observed vs expected exit. A failed assertion **blocks the audit** (exit 3) before any validation receipt is written — a red thesis cannot record a false `validated`.
+It parses the ADR Decision's `## Fidelity Assertions` block and RUNS each assertion's command against the committed tree — a detached worktree at HEAD, so uncommitted files cannot satisfy it and its commands cannot write to the live checkout; no buildable worktree fails closed (GHI #1156) — comparing observed vs expected exit. A failed assertion **blocks the audit** (exit 3) before any validation receipt is written — a red thesis cannot record a false `validated`.
 
 **Absence policy (graceful migration, OBPI-0.0.73-04):** an ADR that carries no `## Fidelity Assertions` block is **flagged with a warning** (the prose 'Demonstrate Value' step is gone — absence is surfaced, not papered over with agent prose) but does not hard-block the in-flight audit. Hard presence-enforcement lives at ADR closeout (ADR-0.0.73 Boundary Invariant #4) and the new-ADR template. The back-fill of fidelity blocks onto already-VALIDATED ADRs is a separate forced sweep.
 

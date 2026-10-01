@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import shlex
 import sys
+import tempfile
 import textwrap
 import unittest
 from pathlib import Path
@@ -14,6 +15,7 @@ from pathlib import Path
 from pydantic import ValidationError
 
 from gzkit.traceability import covers
+from tests.governance.common import init_committed_repo
 
 
 def _py_exit(code: int) -> str:
@@ -232,6 +234,12 @@ class TestFidelityAssertionParser(unittest.TestCase):
 class TestFidelityGateRunner(unittest.TestCase):
     """REQ-0.0.73-03-03 and 03-04: Gate runs commands and sets result correctly."""
 
+    def _root(self) -> Path:
+        """A committed repo: the gate runs each command at its HEAD (GHI #1156)."""
+        tmp = tempfile.TemporaryDirectory(prefix="gzkit-fid-runner-")
+        self.addCleanup(tmp.cleanup)
+        return init_committed_repo(Path(tmp.name))
+
     def _make_assertion(
         self,
         command: str,
@@ -254,7 +262,7 @@ class TestFidelityGateRunner(unittest.TestCase):
         from gzkit.fidelity import run_fidelity_gate
 
         assertion = self._make_assertion(command=_py_exit(0), expected_exit=0)
-        results = run_fidelity_gate([assertion], adr_id="ADR-test")
+        results = run_fidelity_gate([assertion], adr_id="ADR-test", project_root=self._root())
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0].observed, 0)
         self.assertEqual(results[0].result, "pass")
@@ -264,7 +272,7 @@ class TestFidelityGateRunner(unittest.TestCase):
         from gzkit.fidelity import run_fidelity_gate
 
         assertion = self._make_assertion(command=_py_exit(0), expected_exit=1)
-        results = run_fidelity_gate([assertion], adr_id="ADR-test")
+        results = run_fidelity_gate([assertion], adr_id="ADR-test", project_root=self._root())
         self.assertEqual(results[0].observed, 0)
         self.assertEqual(results[0].result, "fail")
 
@@ -273,7 +281,7 @@ class TestFidelityGateRunner(unittest.TestCase):
         from gzkit.fidelity import run_fidelity_gate
 
         assertion = self._make_assertion(command=_py_exit(1), expected_exit=1)
-        results = run_fidelity_gate([assertion], adr_id="ADR-test")
+        results = run_fidelity_gate([assertion], adr_id="ADR-test", project_root=self._root())
         self.assertNotEqual(results[0].observed, 0)
         self.assertEqual(results[0].result, "pass")
 
@@ -282,7 +290,7 @@ class TestFidelityGateRunner(unittest.TestCase):
         from gzkit.fidelity import run_fidelity_gate
 
         assertion = self._make_assertion(command=_py_exit(1), expected_exit=0)
-        results = run_fidelity_gate([assertion], adr_id="ADR-test")
+        results = run_fidelity_gate([assertion], adr_id="ADR-test", project_root=self._root())
         failed = [r for r in results if r.result == "fail"]
         self.assertEqual(len(failed), 1)
 
@@ -294,7 +302,7 @@ class TestFidelityGateRunner(unittest.TestCase):
             self._make_assertion(command=_py_exit(0), expected_exit=0, claim="first"),
             self._make_assertion(command=_py_exit(1), expected_exit=1, claim="second"),
         ]
-        results = run_fidelity_gate(assertions, adr_id="ADR-test")
+        results = run_fidelity_gate(assertions, adr_id="ADR-test", project_root=self._root())
         self.assertTrue(all(r.result == "pass" for r in results))
 
 

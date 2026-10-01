@@ -19,7 +19,16 @@ gz adr fidelity ADR-ID [--check]
 `gz adr fidelity` reads the `## Fidelity Assertions` markdown table from
 an ADR's Decision section, runs each command via a shell-less subprocess
 call (`shlex.split` + `subprocess.run`), and reports the result of each
-assertion:
+assertion.
+
+Assertions grade the committed tree, not the live checkout (GHI #1156).
+Each command runs in its own throwaway detached git worktree at `HEAD`,
+with `uv run` pointed at that worktree, so uncommitted or untracked files
+cannot satisfy an assertion and a command that writes cannot change the
+checkout, ledger or canon. Commit the work before running the gate. When
+no worktree can be built (for example, the project is not a git
+repository), every assertion fails with observed exit `-2` and nothing
+runs. The fields reported per assertion:
 
 - **claim** — what the assertion tests
 - **command** — the command that was run

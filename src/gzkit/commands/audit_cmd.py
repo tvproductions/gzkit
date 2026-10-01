@@ -289,10 +289,11 @@ def audit_cmd(adr: str, as_json: bool, dry_run: bool) -> None:
     # Fidelity gate (ADR-0.0.73, OBPI-0.0.73-04): the SAME bound gate the closeout
     # ceremony invokes — one gate, two consumers — replacing the prose
     # 'Demonstrate Value' step. Run the ADR's ## Fidelity Assertions against the
-    # running system before any validation receipt is written, so a missing block
+    # committed tree (a detached worktree at HEAD, GHI #1156) before any
+    # validation receipt is written, so a missing block
     # or a failed assertion cannot record a false 'validated' (raises
     # PolicyBreachError → exit 3).
-    assert_fidelity_for_ceremony(adr_file, adr_id)
+    assert_fidelity_for_ceremony(adr_file, adr_id, project_root)
 
     plan_file, audit_file, enrichment = _write_audit_artifacts(
         adr_id,

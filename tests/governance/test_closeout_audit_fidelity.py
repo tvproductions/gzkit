@@ -30,6 +30,7 @@ from unittest import mock
 from gzkit.core.exceptions import PolicyBreachError
 from gzkit.fidelity import assert_fidelity_for_ceremony
 from gzkit.traceability import covers
+from tests.governance.common import init_committed_repo
 
 
 def _py_exit(code: int) -> str:
@@ -116,7 +117,7 @@ def _write_adr(tmpdir: Path, content: str) -> Path:
 class TestSharedFidelityGate(unittest.TestCase):
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
-        self._dir = Path(self._tmp.name)
+        self._dir = init_committed_repo(Path(self._tmp.name))
 
     def tearDown(self) -> None:
         self._tmp.cleanup()
@@ -128,14 +129,14 @@ class TestSharedFidelityGate(unittest.TestCase):
         behaviour both closeout (REQ-01) and audit (REQ-02) inherit."""
         adr = _write_adr(self._dir, _ADR_FAILING)
         with self.assertRaises(PolicyBreachError) as ctx:
-            assert_fidelity_for_ceremony(adr, "ADR-test-fid")
+            assert_fidelity_for_ceremony(adr, "ADR-test-fid", self._dir)
         self.assertIn("Fidelity gate", str(ctx.exception))
         self.assertIn("failed", str(ctx.exception))
 
     @covers("REQ-0.0.73-04-01")
     def test_passing_assertion_returns_results(self) -> None:
         adr = _write_adr(self._dir, _ADR_PASSING)
-        results = assert_fidelity_for_ceremony(adr, "ADR-test-fid")
+        results = assert_fidelity_for_ceremony(adr, "ADR-test-fid", self._dir)
         self.assertEqual(len(results), 1)
         self.assertEqual(results[0].result, "pass")
 
@@ -147,7 +148,7 @@ class TestSharedFidelityGate(unittest.TestCase):
         adr = _write_adr(self._dir, _ADR_NO_BLOCK)
         # A stderr warning is emitted; no PolicyBreachError is raised.
         with mock.patch("rich.console.Console.print") as warn:
-            results = assert_fidelity_for_ceremony(adr, "ADR-test-fid")
+            results = assert_fidelity_for_ceremony(adr, "ADR-test-fid", self._dir)
         self.assertEqual(results, [])
         self.assertTrue(warn.called, "absence must be flagged with a warning")
         warned_text = " ".join(str(c.args[0]) for c in warn.call_args_list if c.args)
@@ -182,7 +183,7 @@ class TestOneGateTwoConsumers(unittest.TestCase):
 class TestCloseoutWiring(unittest.TestCase):
     def setUp(self) -> None:
         self._tmp = tempfile.TemporaryDirectory()
-        self._dir = Path(self._tmp.name)
+        self._dir = init_committed_repo(Path(self._tmp.name))
 
     def tearDown(self) -> None:
         self._tmp.cleanup()

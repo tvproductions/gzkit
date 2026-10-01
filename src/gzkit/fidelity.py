@@ -3,7 +3,8 @@
 ``FidelityAssertion`` is a frozen Pydantic model that records one runnable
 assertion from an ADR's ``## Fidelity Assertions`` block.  The parser reads
 that block from an ADR file and the gate runs each command, filling in the
-``observed`` exit code and ``result`` (``"pass"`` or ``"fail"``).
+``observed`` exit code and ``result`` (``"pass"`` or ``"fail"``). Commands run
+in a detached worktree at HEAD, never the live checkout (GHI #1156).
 """
 
 from __future__ import annotations
@@ -189,12 +190,53 @@ def parse_fidelity_assertions(adr_path: Path) -> list[FidelityAssertion]:
 # Gate
 # ---------------------------------------------------------------------------
 
+#: ``observed`` sentinel: the committed-state worktree could not be built, so the
+#: command was never run anywhere (GHI #1156). Distinct from ``-1``, which means
+#: the command itself could not be executed.
+WORKTREE_UNAVAILABLE = -2
+
+
+def _run_at_head(assertion: FidelityAssertion, project_root: Path) -> int:
+    """Run one assertion in a fresh detached worktree at HEAD; return its exit code.
+
+    ``uv run`` and ``python`` resolve the worktree's ``src`` through the live,
+    unsynced venv (``_demo_env``, the GHI #1093 Stage-4 Demo environment), so no
+    command reaches the live checkout through its cwd or its interpreter.
+    """
+    from gzkit.governance.stage4_evidence import _demo_env  # noqa: PLC0415
+    from gzkit.red_witness import base_tree_worktree  # noqa: PLC0415
+
+    try:
+        with base_tree_worktree(project_root, "HEAD") as worktree:
+            try:
+                proc = subprocess.run(  # noqa: S603 — runs in a disposable worktree
+                    shlex.split(assertion.command),
+                    cwd=worktree,
+                    env=_demo_env(project_root, worktree),
+                    capture_output=True,
+                    check=False,
+                )
+            except (OSError, ValueError):
+                return -1
+            return proc.returncode
+    except (RuntimeError, OSError, subprocess.SubprocessError):
+        return WORKTREE_UNAVAILABLE
+
 
 def run_fidelity_gate(
     assertions: list[FidelityAssertion],
     adr_id: str,
+    project_root: Path,
 ) -> list[FidelityAssertion]:
-    """Run each assertion's command and return updated assertions with results.
+    """Run each assertion against the committed tree and return updated assertions.
+
+    The gate grades the ADR's shipped state, so each command runs in its own
+    detached worktree at ``project_root``'s HEAD, never in the live checkout:
+    uncommitted or untracked files cannot satisfy an assertion, and a command
+    that writes cannot mutate the tree, ledger or canon being attested (GHI
+    #1156, operator ruling 2026-10-01). When no worktree can be built the
+    assertion fails closed with ``observed=WORKTREE_UNAVAILABLE`` and is never
+    run live.
 
     Each assertion's ``observed`` is set to the subprocess return code and
     ``result`` is ``"pass"`` when ``observed == expected_exit`` else ``"fail"``.
@@ -203,18 +245,26 @@ def run_fidelity_gate(
     """
     results: list[FidelityAssertion] = []
     for assertion in assertions:
-        try:
-            proc = subprocess.run(  # noqa: S603
-                shlex.split(assertion.command),
-                capture_output=True,
-                check=False,
-            )
-            observed = proc.returncode
-        except (OSError, ValueError):
-            observed = -1
+        observed = _run_at_head(assertion, project_root)
         result = "pass" if observed == assertion.expected_exit else "fail"
         results.append(assertion.model_copy(update={"observed": observed, "result": result}))
     return results
+
+
+def failure_hint(assertion: FidelityAssertion) -> str:
+    """Name the cause of a runner sentinel so a failure is actionable (GHI #673, #1156)."""
+    if assertion.observed == WORKTREE_UNAVAILABLE:
+        return (
+            " — not run: no detached worktree at HEAD could be built, and fidelity "
+            "assertions never run in the live checkout (GHI #1156)"
+        )
+    if assertion.observed == -1:
+        return (
+            " — command could not be executed (not found or unparseable; "
+            "check for stray markdown backticks or a shell builtin, "
+            "not a real exit-code mismatch)"
+        )
+    return ""
 
 
 # ---------------------------------------------------------------------------
@@ -222,13 +272,15 @@ def run_fidelity_gate(
 # ---------------------------------------------------------------------------
 
 
-def assert_fidelity_for_ceremony(adr_path: Path, adr_id: str) -> list[FidelityAssertion]:
+def assert_fidelity_for_ceremony(
+    adr_path: Path, adr_id: str, project_root: Path
+) -> list[FidelityAssertion]:
     """Run the ADR's Fidelity Assertions as a ceremony gate (ADR-0.0.73, OBPI-04).
 
     This is the one bound gate that BOTH the closeout ceremony and the audit
     ceremony invoke, replacing the prose 'Demonstrate Value' step. Parses the
     ADR's ``## Fidelity Assertions`` block and runs each assertion against the
-    running system.
+    committed tree at ``project_root``'s HEAD (``run_fidelity_gate``, GHI #1156).
 
     Absence policy (graceful migration, operator-ratified 2026-06-17): the ADR
     scopes out back-filling fidelity assertions onto already-VALIDATED ADRs (that
@@ -264,26 +316,12 @@ def assert_fidelity_for_ceremony(adr_path: Path, adr_id: str) -> list[FidelityAs
         )
         return []
 
-    results = run_fidelity_gate(assertions, adr_id=adr_id)
+    results = run_fidelity_gate(assertions, adr_id=adr_id, project_root=project_root)
     failed = [r for r in results if r.result == "fail"]
     if failed:
-
-        def _hint(assertion: FidelityAssertion) -> str:
-            # observed == -1 is the runner's "could not execute" sentinel (OSError
-            # /ValueError from shlex.split + subprocess), distinct from a real
-            # exit-code mismatch. Name the cause so the failure is actionable
-            # (guardrail-feedback-prose rule), not an opaque -1 (GHI #673).
-            if assertion.observed == -1:
-                return (
-                    " — command could not be executed (not found or unparseable; "
-                    "check for stray markdown backticks or a shell builtin, "
-                    "not a real exit-code mismatch)"
-                )
-            return ""
-
         lines = "\n".join(
             f"  FAIL  {r.claim} (command={r.command!r}, "
-            f"expected={r.expected_exit}, observed={r.observed}){_hint(r)}"
+            f"expected={r.expected_exit}, observed={r.observed}){failure_hint(r)}"
             for r in failed
         )
         raise PolicyBreachError(

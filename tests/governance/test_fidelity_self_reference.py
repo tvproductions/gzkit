@@ -140,7 +140,7 @@ class TestCeremonyGateBlocksSelfReferential(unittest.TestCase):
         adr_path = Path(tmp) / "ADR-selfref.md"
         adr_path.write_text(_ADR_SELF_REF, encoding="utf-8")
         with self.assertRaises(PolicyBreachError):
-            assert_fidelity_for_ceremony(adr_path, "ADR-selfref")
+            assert_fidelity_for_ceremony(adr_path, "ADR-selfref", Path(tmp))
 
 
 class TestPresenceAuditFlagsSelfReferential(unittest.TestCase):
