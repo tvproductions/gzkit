@@ -678,6 +678,9 @@ def _ensure_production_claims_registered() -> None:
       * ``commands.obpi_complete_adversarial_claims`` — ``adversarial-refutation-loops`` and
         its admit control, the witnesses for the ``gz obpi complete`` Step-4b refusal of a
         refuted adversary round (GHI #1155).
+      * ``commands.obpi_precomplete_receipt_claims`` — ``arb-receipt-red-run-refused`` and
+        its admit control, the witnesses for the precomplete refusal of a failed ARB run
+        recorded in a receipt (GHI #889, enrolled under GHI #1155).
       * ``cli.helpers.log_level_claims`` — ``cli-log-levels-follow-spec``, the witness
         for `.gzkit/rules/cli.md` § Flag Conventions verbosity rows: the entrypoint
         logs at cli-standards-v3.md § Verbosity Levels, and only to stderr.
@@ -697,6 +700,9 @@ def _ensure_production_claims_registered() -> None:
     from gzkit.commands.obpi_complete_adversarial_claims import (  # noqa: PLC0415
         ensure_completion_gate_claims_registered,
     )
+    from gzkit.commands.obpi_precomplete_receipt_claims import (  # noqa: PLC0415
+        ensure_receipt_gate_claims_registered,
+    )
     from gzkit.governance.trust_audits import qc_binding  # noqa: PLC0415
     from gzkit.handoff_resume_gate import _ensure_resume_gate_claims_registered  # noqa: PLC0415
     from gzkit.mx.invariants import _ensure_gate5_claims_registered  # noqa: PLC0415
@@ -714,6 +720,7 @@ def _ensure_production_claims_registered() -> None:
     ensure_cli_exit_code_claims_registered()
     ensure_cli_log_level_claims_registered()
     ensure_completion_gate_claims_registered()
+    ensure_receipt_gate_claims_registered()
 
 
 def production_enforcement_registry() -> list[EnforcementClaimRecord]:
