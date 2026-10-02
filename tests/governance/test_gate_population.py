@@ -119,9 +119,16 @@ class TestTheAuditRefusesEachWayTheInventoryRots(unittest.TestCase):
         entries = [_entry("complete-refusal:_enforce_beta", reason=" ")]
         self.assertEqual(_audit(entries), ["complete-refusal:_enforce_beta"])
 
-    def test_a_disclosure_without_a_member_is_refused(self):
+    def test_a_disclosure_without_a_member_is_refused_for_that_reason(self):
         entries = [_entry("complete-refusal:_enforce_beta"), {"population": "x", "reason": "r"}]
-        self.assertEqual(_audit(entries), [gp.ACCEPTED_DISPLAY])
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            path = registry_path(root, gp.ACCEPTED_NAME)
+            path.parent.mkdir(parents=True)
+            path.write_text(json.dumps({gp.ENTRIES_KEY: entries}), encoding="utf-8")
+            errors = gp.audit_gate_population_enrollment(root, members=_MEMBERS, claimed=_CLAIMED)
+        self.assertEqual(len(errors), 1)
+        self.assertIn("lacks a 'population' or 'member'", errors[0].message)
 
     def test_a_missing_list_fails_closed(self):
         self.assertEqual(_audit(None), [gp.ACCEPTED_DISPLAY])
@@ -130,6 +137,35 @@ class TestTheAuditRefusesEachWayTheInventoryRots(unittest.TestCase):
         for label, kwargs in (("members", {"members": {}}), ("claims", {"claimed": {}})):
             with self.subTest(label):
                 self.assertEqual(len(_audit([], **kwargs)), 1)
+
+
+class TestTheBytecodeReaders(unittest.TestCase):
+    def test_a_gz_validate_command_inside_a_nested_function_is_found(self):
+        def runner():
+            return (lambda: "uv run gz validate --example")()
+
+        self.assertTrue(gp._runs_gz_validate(runner))
+
+    def test_a_docstring_that_is_the_command_is_not_an_invocation(self):
+        def runner():
+            """uv run gz validate --example"""
+            return "uv run ruff check ."
+
+        self.assertFalse(gp._runs_gz_validate(runner))
+
+    def test_a_lazy_import_of_a_module_that_does_not_exist_names_no_function(self):
+        self.assertIsNone(gp._imported("gzkit.no_such_module_for_this_test", "anything"))
+
+
+class TestTheScopeRunsBothInventories(unittest.TestCase):
+    def test_the_gate_enrollment_scope_reports_both_missing_lists(self):
+        from gzkit.commands.validate_cmd import VALIDATOR_REGISTRY  # noqa: PLC0415
+
+        entry = next(e for e in VALIDATOR_REGISTRY if e.stem == "gate_enrollment")
+        with tempfile.TemporaryDirectory() as tmp:
+            artifacts = {e.artifact for e in entry.run(Path(tmp), None)}
+        self.assertIn(gp.ACCEPTED_DISPLAY, artifacts)
+        self.assertIn("data/gate_enrollment_grandfather.json", artifacts)
 
 
 class TestTheLiveTree(unittest.TestCase):

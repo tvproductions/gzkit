@@ -7,6 +7,8 @@ to fail.
 
 from __future__ import annotations
 
+import json
+import tempfile
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -18,6 +20,7 @@ from gzkit.governance.trust_audits.gate_population_claims import (
     REFUSE_CLAIM_ID,
     unnamed_member_population,
 )
+from gzkit.registries import registry_path
 
 _GATE = "gzkit.governance.trust_audits.gate_population:audit_gate_population_enrollment"
 
@@ -61,6 +64,23 @@ class TestControlsFailWhenTheAuditIsWeakened(unittest.TestCase):
         with mock.patch.object(gp, "population_members", without_check_steps):
             findings = gp.audit_gate_population_enrollment(root)
         self.assertTrue(any("no longer a member" in f.message for f in findings), findings)
+
+    def test_a_control_hands_the_audit_the_floor_registry_rather_than_rediscovering(self):
+        from gzkit.governance.trust_audits import gate_population_claims as claims  # noqa: PLC0415
+
+        entries = [
+            {"population": k.split(":", 1)[0], "member": k.split(":", 1)[1], "reason": "r"}
+            for k in unnamed_member_population()
+        ]
+        with (
+            tempfile.TemporaryDirectory() as tmp,
+            mock.patch.object(gp, "claimed_functions") as rediscover,
+        ):
+            path = registry_path(Path(tmp), gp.ACCEPTED_NAME)
+            path.parent.mkdir(parents=True)
+            path.write_text(json.dumps({gp.ENTRIES_KEY: entries}), encoding="utf-8")
+            claims._ep_disclosed_admitted(Path(tmp))
+        rediscover.assert_not_called()
 
     def test_an_audit_that_ignores_disclosures_fails_the_admit_control(self):
         with mock.patch.object(gp, "_load_accepted", lambda _root: ([], None)):

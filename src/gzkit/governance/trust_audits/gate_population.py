@@ -34,7 +34,7 @@ import dis
 import importlib
 import re
 import types
-from collections.abc import Callable, Iterator, Mapping
+from collections.abc import Iterator, Mapping
 from pathlib import Path
 
 from gzkit.core.validation_rules import ValidationError
@@ -152,14 +152,16 @@ def _precomplete_members() -> dict[str, frozenset[str]]:
     }
 
 
-def _runs_gz_validate(runner: Callable[..., object]) -> bool:
-    code = getattr(runner, "__code__", None)
-    if not isinstance(code, types.CodeType):
-        return False
-    doc = getattr(runner, "__doc__", None)
+def _runs_gz_validate(runner: types.FunctionType) -> bool:
+    """Return True when a string constant of *runner* IS a ``gz validate`` command.
+
+    The docstring is excluded: prose naming the command is not an invocation.
+    """
     return any(
-        isinstance(const, str) and const != doc and _VALIDATE_COMMAND.fullmatch(const.strip())
-        for nested in _code_objects(code)
+        isinstance(const, str)
+        and const != runner.__doc__
+        and _VALIDATE_COMMAND.fullmatch(const.strip())
+        for nested in _code_objects(runner.__code__)
         for const in nested.co_consts
     )
 
