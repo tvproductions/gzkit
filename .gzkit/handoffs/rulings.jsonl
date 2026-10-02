@@ -1252,3 +1252,7 @@
 {"ts": "2026-10-01T08:50:08Z", "source": "20261001T085000Z-repudiations-four-defects-fixed-s9-s10-ruled.md", "text": "Migrate the reopened legacy briefs and fix the stale verb (verbatim: \"Migrate + fix verb (Recommended)\")."}
 {"ts": "2026-10-01T08:50:08Z", "source": "20261001T085000Z-repudiations-four-defects-fixed-s9-s10-ruled.md", "text": "Amend brief drift now and file a GHI for the path:symbol false positive (verbatim: \"Amend now (Recommended)\")."}
 {"ts": "2026-10-01T08:50:08Z", "source": "20261001T085000Z-repudiations-four-defects-fixed-s9-s10-ruled.md", "text": "Close the session (verbatim: \"write handoff and git sync\")."}
+{"ts": "2026-10-02T00:17:03Z", "source": "20261002T001654Z-gates-enrolled-1154-items-1-3-1155-increments-1-2.md", "text": "Work the advised steps 2, 3 and 4 (verbatim: \"proceed with 2 then 3 and 4\")."}
+{"ts": "2026-10-02T00:17:03Z", "source": "20261002T001654Z-gates-enrolled-1154-items-1-3-1155-increments-1-2.md", "text": "Take item 1 of GHI #1154 first, then 2 and 3 (verbatim: \"A\"; then \"do item 2, then 3\")."}
+{"ts": "2026-10-02T00:17:03Z", "source": "20261002T001654Z-gates-enrolled-1154-items-1-3-1155-increments-1-2.md", "text": "Keep lite-lane REQ gaps warn-only, take the stated defaults for #1154 items 4 and 5, and do #1155 next (verbatim: \"approve all three\")."}
+{"ts": "2026-10-02T00:17:03Z", "source": "20261002T001654Z-gates-enrolled-1154-items-1-3-1155-increments-1-2.md", "text": "Start enrolling the nine hollow gates, beginning with the verdict gate (verbatim: \"a\")."}
