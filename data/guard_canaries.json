@@ -27,7 +27,7 @@
       "binding_sha256": "7aa46eb3fd77e43846fbea5c5b51bcef76b6ae41279e7ef1ffadb28cf221c6c1",
       "authority": "GHI #1155: rebound 2026-10-02 to acceptance.assess_readiness, the reducer completion runs since GHI #985; the prior mutant bound obpi_complete_adversarial._enforce_adversarial_validation, which no production path calls",
       "proposed_by": "claude-code session 2026-10-02",
-      "reviewed_by": null
+      "reviewed_by": "g0"
     },
     {
       "claim_id": "validate-json-exit-classified",
@@ -125,7 +125,7 @@
       "binding_sha256": "ba7c7dba8a5cc5536e6d3cfd79f0cb2a35314ff6e3ef42ad0b2647edbca98d0a",
       "authority": "GHI #1154 item 5; admit canaries ordered 2026-10-02 (operator, verbatim: \"do all 5 steps\")",
       "proposed_by": "claude-code session 2026-10-02",
-      "reviewed_by": null
+      "reviewed_by": "g0"
     },
     {
       "claim_id": "adversarial-clean-verdict-admitted",
@@ -139,7 +139,7 @@
       "binding_sha256": "601c6d13b5cfeb10a662a16026c610819e81b6773186a6befc6a83867800afca",
       "authority": "GHI #1155: rebound 2026-10-02 to acceptance.assess_readiness, the reducer completion runs since GHI #985; the prior mutant bound obpi_complete_adversarial._enforce_adversarial_validation, which no production path calls",
       "proposed_by": "claude-code session 2026-10-02",
-      "reviewed_by": null
+      "reviewed_by": "g0"
     },
     {
       "claim_id": "validate-json-exit-clean-passes",
@@ -153,7 +153,7 @@
       "binding_sha256": "30cedff08996e980b511a1eb4de6f8b67282dcd30c9f68296ac85f99d667069a",
       "authority": "GHI #1154 item 5; admit canaries ordered 2026-10-02 (operator, verbatim: \"do all 5 steps\")",
       "proposed_by": "claude-code session 2026-10-02",
-      "reviewed_by": null
+      "reviewed_by": "g0"
     },
     {
       "claim_id": "support-citation-declared-admitted",
@@ -167,7 +167,7 @@
       "binding_sha256": "15a754e545bb1c42345335fe930fa13b075c8632d7afd7b68ef43e2330c3579f",
       "authority": "GHI #1154 item 5; admit canaries ordered 2026-10-02 (operator, verbatim: \"do all 5 steps\")",
       "proposed_by": "claude-code session 2026-10-02",
-      "reviewed_by": null
+      "reviewed_by": "g0"
     },
     {
       "claim_id": "pointer-back-pointer-matched-admitted",
@@ -181,7 +181,7 @@
       "binding_sha256": "66d0f2ac9ee432cfdc48031649cf329eec7141039b8723b16ee6586ac9f0e45b",
       "authority": "GHI #1154 item 5; admit canaries ordered 2026-10-02 (operator, verbatim: \"do all 5 steps\")",
       "proposed_by": "claude-code session 2026-10-02",
-      "reviewed_by": null
+      "reviewed_by": "g0"
     },
     {
       "claim_id": "pointer-reverse-arm-live-lift-admitted",
@@ -195,7 +195,7 @@
       "binding_sha256": "00bf929e3014ae43e0b358cac629da0641959b9b710d2d930010953b00f7cb13",
       "authority": "GHI #1154 item 5; admit canaries ordered 2026-10-02 (operator, verbatim: \"do all 5 steps\")",
       "proposed_by": "claude-code session 2026-10-02",
-      "reviewed_by": null
+      "reviewed_by": "g0"
     },
     {
       "claim_id": "tidy-clean-exits-zero",
@@ -209,7 +209,7 @@
       "binding_sha256": "147cfbcd6498de66acadd4c97b035a769c7d9352863b70229beea4a4c80f8f77",
       "authority": "GHI #1154 item 5; admit canaries ordered 2026-10-02 (operator, verbatim: \"do all 5 steps\")",
       "proposed_by": "claude-code session 2026-10-02",
-      "reviewed_by": null
+      "reviewed_by": "g0"
     },
     {
       "claim_id": "waiver-identity-reviewed-admitted",
@@ -218,12 +218,12 @@
       "mutation": {
         "find": "    if new:\n",
         "replace": "    if True:\n",
-        "label": "every identity is refused"
+        "label": "a surface with no new identity is refused"
       },
       "binding_sha256": "68c437e9ed05e961f49cd62ffa2ff5bc0e07b3d8423036b3cf3121f483ca148b",
       "authority": "GHI #1154 item 5; admit canaries ordered 2026-10-02 (operator, verbatim: \"do all 5 steps\")",
       "proposed_by": "claude-code session 2026-10-02",
-      "reviewed_by": null
+      "reviewed_by": "g0"
     },
     {
       "claim_id": "gate-population-enrollment",
@@ -237,7 +237,7 @@
       "binding_sha256": "4b0546d3e9af416c7103b9e986a0372fbb125ec05a1f17bf68aa352d24ff59ff",
       "authority": "GHI #1155 acceptance (a); the population inventory's own claims, bound when they were authored 2026-10-02 (operator, verbatim: \"do all 5 steps\")",
       "proposed_by": "claude-code session 2026-10-02",
-      "reviewed_by": null
+      "reviewed_by": "g0"
     },
     {
       "claim_id": "gate-population-disclosed",
@@ -251,7 +251,7 @@
       "binding_sha256": "0c18d490c2dc58715e8d78487fe2fa4ebd10d28122f40a8c65318491c40d3199",
       "authority": "GHI #1155 acceptance (a); the population inventory's own claims, bound when they were authored 2026-10-02 (operator, verbatim: \"do all 5 steps\")",
       "proposed_by": "claude-code session 2026-10-02",
-      "reviewed_by": null
+      "reviewed_by": "g0"
     },
     {
       "claim_id": "gate-enrollment",
@@ -265,7 +265,7 @@
       "binding_sha256": "6b2b856087d1f53e16f45205b979f55dc2d00449c628b533a75d7a68933db5d4",
       "authority": "GHI #1154 item 5 roster shrink, step 5 of the 2026-10-02 handoff (operator, verbatim: \"do all 5 steps\")",
       "proposed_by": "claude-code session 2026-10-02",
-      "reviewed_by": null
+      "reviewed_by": "g0"
     },
     {
       "claim_id": "gate-enrollment-disclosed",
@@ -279,7 +279,7 @@
       "binding_sha256": "71a986bc929039836a8509c71c6b2bc58ab463b776e21938cdd914446b6083f8",
       "authority": "GHI #1154 item 5 roster shrink, step 5 of the 2026-10-02 handoff (operator, verbatim: \"do all 5 steps\")",
       "proposed_by": "claude-code session 2026-10-02",
-      "reviewed_by": null
+      "reviewed_by": "g0"
     }
   ]
 }
