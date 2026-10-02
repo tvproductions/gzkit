@@ -17,9 +17,9 @@ facts, so this compares two read values and grades no prose.
 **What this module is, and is not.** INVENTORY AND DISCLOSURE for the validate-scope
 population, on the ``exemption_controls`` and ``gate_callers`` posture: a scope with no
 claim is either named in the shrink-only accepted-list or a finding. It does not write
-controls. Other gate populations (``gz check`` steps that run a tool, ``gz obpi
-precomplete`` checks, ``gz obpi complete`` refusals, ``gz closeout`` steps) are not yet
-enumerated here; the issue names them as the starting set, not a claim of completeness.
+controls. The other gate populations (``gz check`` steps that run no ``gz validate``,
+``gz obpi precomplete`` checks, ``gz obpi complete`` refusals, ``gz closeout`` gates) are
+enumerated by ``gate_population``, which runs in the same scope.
 """
 
 from __future__ import annotations

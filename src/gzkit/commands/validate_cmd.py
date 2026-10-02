@@ -363,7 +363,15 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
     _ScopeEntry(
         "population_controls", "explicit", False, lambda r, _f: _ta().audit_population_controls(r)
     ),
-    _ScopeEntry("gate_enrollment", "explicit", False, lambda r, _f: _ta().audit_gate_enrollment(r)),
+    _ScopeEntry(
+        "gate_enrollment",
+        "explicit",
+        False,
+        lambda r, _f: [
+            *_ta().audit_gate_enrollment(r),
+            *_ta().audit_gate_population_enrollment(r),
+        ],
+    ),
     _ScopeEntry(
         "intrinsic_attestation",
         "explicit",

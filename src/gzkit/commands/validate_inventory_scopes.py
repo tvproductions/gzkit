@@ -99,21 +99,31 @@ def run_gate_enrollment_scope(project_root: Path, *, as_json: bool) -> None:
         enrolled_claims,
         scope_population,
     )
+    from gzkit.governance.trust_audits.gate_population import (  # noqa: PLC0415
+        audit_gate_population_enrollment,
+        population_members,
+    )
 
-    errors = audit_gate_enrollment(project_root)
+    errors = [
+        *audit_gate_enrollment(project_root),
+        *audit_gate_population_enrollment(project_root),
+    ]
     if as_json:
         print(json.dumps([e.model_dump(exclude_none=True) for e in errors], indent=2))  # noqa: T201
         raise SystemExit(3 if errors else 0)
     console.print("[bold]Validated:[/bold] gate-enrollment\n")
     if not errors:
-        population = scope_population()
         claimed = claimed_functions()
-        enrolled = sum(1 for fns in population.values() if enrolled_claims(fns, claimed))
-        console.print(
-            f"[green]✓ {len(population)} validate scopes inventoried; "
-            f"{enrolled} named by an enforcement claim, "
-            f"{len(population) - enrolled} disclosed as unenrolled.[/green]"
-        )
+        for label, population in (
+            ("validate scopes", scope_population()),
+            ("other gates", population_members()),
+        ):
+            enrolled = sum(1 for fns in population.values() if enrolled_claims(fns, claimed))
+            console.print(
+                f"[green]✓ {len(population)} {label} inventoried; "
+                f"{enrolled} named by an enforcement claim, "
+                f"{len(population) - enrolled} disclosed as unenrolled.[/green]"
+            )
         raise SystemExit(0)
     console.print(f"[red]❌ {len(errors)} gate-enrollment finding(s):[/red]\n")
     for e in errors:

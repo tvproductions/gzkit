@@ -224,6 +224,34 @@
       "authority": "GHI #1154 item 5; admit canaries ordered 2026-10-02 (operator, verbatim: \"do all 5 steps\")",
       "proposed_by": "claude-code session 2026-10-02",
       "reviewed_by": null
+    },
+    {
+      "claim_id": "gate-population-enrollment",
+      "guard": "gzkit.governance.trust_audits.gate_population:audit_gate_population_enrollment",
+      "failing_test": "tests.governance.test_gate_population_claims.TestGatePopulationClaims.test_both_claims_name_the_audit_and_pass",
+      "mutation": {
+        "find": "        if key in disclosed or enrolled_claims(functions, named):",
+        "replace": "        if True:",
+        "label": "an unnamed undisclosed gate is never refused"
+      },
+      "binding_sha256": "4b0546d3e9af416c7103b9e986a0372fbb125ec05a1f17bf68aa352d24ff59ff",
+      "authority": "GHI #1155 acceptance (a); the population inventory's own claims, bound when they were authored 2026-10-02 (operator, verbatim: \"do all 5 steps\")",
+      "proposed_by": "claude-code session 2026-10-02",
+      "reviewed_by": null
+    },
+    {
+      "claim_id": "gate-population-disclosed",
+      "guard": "gzkit.governance.trust_audits.gate_population:audit_gate_population_enrollment",
+      "failing_test": "tests.governance.test_gate_population_claims.TestGatePopulationClaims.test_both_claims_name_the_audit_and_pass",
+      "mutation": {
+        "find": "        if key in disclosed or enrolled_claims(functions, named):",
+        "replace": "        if enrolled_claims(functions, named):",
+        "label": "a disclosure is never honoured"
+      },
+      "binding_sha256": "0c18d490c2dc58715e8d78487fe2fa4ebd10d28122f40a8c65318491c40d3199",
+      "authority": "GHI #1155 acceptance (a); the population inventory's own claims, bound when they were authored 2026-10-02 (operator, verbatim: \"do all 5 steps\")",
+      "proposed_by": "claude-code session 2026-10-02",
+      "reviewed_by": null
     }
   ]
 }

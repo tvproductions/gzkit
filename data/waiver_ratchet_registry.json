@@ -322,6 +322,20 @@
       }
     },
     {
+      "data_file": "data/gate_population_grandfather.json",
+      "gates_step": "Gate enrollment (gz validate --gate-enrollment)",
+      "mechanism": "shrink-ratchet",
+      "entries_path": "accepted_gates",
+      "baseline_count": 49,
+      "identity": {
+        "kind": "fields",
+        "fields": [
+          "population",
+          "member"
+        ]
+      }
+    },
+    {
       "data_file": "data/guard_canary_grandfather.json",
       "gates_step": "Unit tests (tests/governance/test_guard_canaries.py)",
       "mechanism": "shrink-ratchet",

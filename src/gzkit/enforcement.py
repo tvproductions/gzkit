@@ -720,6 +720,9 @@ def _ensure_production_claims_registered() -> None:
       * ``governance.trust_audits.waiver_identity_claims`` — ``waiver-identity-new-entry-refused``
         and its admit control, the witnesses for a shrink-ratchet surface carrying only
         identities its baseline accepted or a reviewed record names (GHI #1154 item 4).
+      * ``governance.trust_audits.gate_population_claims`` — ``gate-population-enrollment``
+        and its admit control, the witnesses for the inventory of the precomplete, complete,
+        closeout and check-step gate populations (GHI #1155 acceptance (a)).
       * ``cli.helpers.log_level_claims`` — ``cli-log-levels-follow-spec``, the witness
         for `.gzkit/rules/cli.md` § Flag Conventions verbosity rows: the entrypoint
         logs at cli-standards-v3.md § Verbosity Levels, and only to stderr.
@@ -745,6 +748,9 @@ def _ensure_production_claims_registered() -> None:
         ensure_json_exit_claims_registered,
     )
     from gzkit.governance.trust_audits import qc_binding  # noqa: PLC0415
+    from gzkit.governance.trust_audits.gate_population_claims import (  # noqa: PLC0415
+        ensure_gate_population_claims_registered,
+    )
     from gzkit.governance.trust_audits.pointer_integrity_claims import (  # noqa: PLC0415
         ensure_back_pointer_claims_registered,
     )
@@ -776,6 +782,7 @@ def _ensure_production_claims_registered() -> None:
     ensure_back_pointer_claims_registered()
     ensure_tidy_verdict_claims_registered()
     ensure_waiver_identity_claims_registered()
+    ensure_gate_population_claims_registered()
 
 
 def production_enforcement_registry() -> list[EnforcementClaimRecord]:

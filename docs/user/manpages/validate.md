@@ -1689,28 +1689,37 @@ This scope reads the population from the code, `VALIDATOR_REGISTRY`, resolves ea
 scope's deciding function from its runner, and requires a registered `@enforces`
 claim to name it (as its `source_fn` or one of its `gate_targets`). Inventory and
 disclosure, not enrollment: a scope no claim names is either on the shrink-only
-list `data/gate_enrollment_grandfather.json` or a finding. The population is the
-`gz validate` scopes; check steps that run a tool, `gz obpi precomplete` checks,
-`gz obpi complete` refusals and `gz closeout` steps are not yet enumerated.
+list `data/gate_enrollment_grandfather.json` or a finding.
+
+The same scope inventories four more populations from code
+(`gate_population.population_members`): the `_check_*` functions
+`gz obpi precomplete` runs, the functions in `gz obpi complete` and `gz closeout`
+(including `--ceremony`) that refuse, and the `gz check` steps that run no
+`gz validate`. A member's subject is the member plus the gzkit functions it loads
+from other modules, one level down; a command's entry point is its own subject.
+An unnamed member is disclosed on `data/gate_population_grandfather.json` or is a
+finding, under the same stale, dead-pointer and reason arms.
 
 ```console
 uv run gz validate --gate-enrollment
 uv run gz validate --gate-enrollment --json
 ```
 
-Observed output at the 2026-10-01 cutover:
+Observed output on 2026-10-02, after the other populations were enumerated:
 
 ```text
 Validated: gate-enrollment
 
-✓ 101 validate scopes inventoried; 44 named by an enforcement claim, 57
+✓ 101 validate scopes inventoried; 45 named by an enforcement claim, 56
 disclosed as unenrolled.
+✓ 56 other gates inventoried; 7 named by an enforcement claim, 49 disclosed as
+unenrolled.
 ```
 
 | Code | Meaning | Recovery |
 |------|---------|----------|
-| 0 | Every scope is named by a claim, or is disclosed | — |
-| 3 | A scope is named by no claim and not disclosed, an acceptance is stale, or an entry names a scope that no longer exists | Register an `@enforces` claim whose entrypoint or `gate_targets` name the scope, with a control that fails when its deciding guard is removed. Never add an entry to silence a new scope. Surrender a stale entry from `data/gate_enrollment_grandfather.json` and lower `baseline_count` in `data/waiver_ratchet_registry.json`; re-run `uv run gz validate --gate-enrollment` |
+| 0 | Every scope and every other gate is named by a claim, or is disclosed | — |
+| 3 | A scope or gate is named by no claim and not disclosed, an acceptance is stale, or an entry names a scope or gate that no longer exists | Register an `@enforces` claim whose entrypoint or `gate_targets` name the scope or gate, with a control that fails when its deciding guard is removed. Never add an entry to silence a new one. Surrender a stale entry from `data/gate_enrollment_grandfather.json` or `data/gate_population_grandfather.json` and lower `baseline_count` in `data/waiver_ratchet_registry.json`; re-run `uv run gz validate --gate-enrollment` |
 
 ### `--closeout-proof`
 

@@ -1,0 +1,251 @@
+{
+  "_doc": "Shrink-only disclosed list of gates in the four populations beyond the validate scopes (gz obpi precomplete checks, gz obpi complete refusals, gz closeout gates, and gz check steps that run no gz validate) that no registered enforcement claim names (GHI #1155 acceptance (a)). Seeded 2026-10-02 at the population measured on main by gate_population.population_members(). An entry records a DISCLOSED absence of a control, never a justified one. NEVER add an entry to silence a new gate; register a claim instead (ADR-0.0.73 Boundary Invariant #8). An entry MUST be surrendered the moment a claim names its member (gz validate --gate-enrollment fails on a stale one). Ratcheted via data/waiver_ratchet_registry.json.",
+  "cutover": "2026-10-02",
+  "accepted_gates": [
+    {
+      "population": "check-step",
+      "member": "Behave",
+      "reason": "verdict decided out of process by `python -m behave`, which qc claim behave drives; no claim names a gzkit function the step runs"
+    },
+    {
+      "population": "check-step",
+      "member": "CLI audit",
+      "reason": "verdict decided out of process by `python -m gzkit cli audit`, which qc claim cli-audit drives; no claim names a gzkit function the step runs"
+    },
+    {
+      "population": "check-step",
+      "member": "Format",
+      "reason": "verdict decided out of process by `uv run ruff format --check .`, which qc claim format drives; no claim names a gzkit function the step runs"
+    },
+    {
+      "population": "check-step",
+      "member": "Ledger vocabulary inertness",
+      "reason": "verdict decided out of process by `chore script ledger-vocabulary-inertness/check_ledger_inertness.py`, which qc claim ledger-vocabulary-inertness drives; no claim names a gzkit function the step runs"
+    },
+    {
+      "population": "check-step",
+      "member": "Lint",
+      "reason": "verdict decided out of process by `uv run ruff check .`, which qc claim lint drives; the in-process run_adr_path_contract_lint and run_parents_pattern_lint arms are unclaimed"
+    },
+    {
+      "population": "check-step",
+      "member": "Module size",
+      "reason": "verdict decided out of process by `chore script module-sloc-cap-radon/check_module_size.py`, which qc claim module-size drives; no claim names a gzkit function the step runs"
+    },
+    {
+      "population": "check-step",
+      "member": "Parity check",
+      "reason": "verdict decided out of process by `python -m gzkit parity check`, which qc claim parity-check drives; no claim names a gzkit function the step runs"
+    },
+    {
+      "population": "check-step",
+      "member": "Preflight",
+      "reason": "verdict decided out of process by `python -m gzkit preflight`, which qc claim preflight drives; no claim names a gzkit function the step runs"
+    },
+    {
+      "population": "check-step",
+      "member": "Readiness audit",
+      "reason": "verdict decided out of process by `python -m gzkit readiness audit --json`, which qc claim readiness-audit drives; no claim names a gzkit function the step runs"
+    },
+    {
+      "population": "check-step",
+      "member": "Skill audit",
+      "reason": "verdict decided out of process by `python -m gzkit skill audit`, which qc claim skill-audit drives; no claim names a gzkit function the step runs"
+    },
+    {
+      "population": "check-step",
+      "member": "Smoke tier",
+      "reason": "runs `uv run gz smoke` out of process; claim smoke-tier names smoke_cmd.smoke_gate, which this step reaches only through that subprocess"
+    },
+    {
+      "population": "check-step",
+      "member": "Tautological debt",
+      "reason": "verdict decided out of process by `chore script decommission-tautological-tests/check_debt_target.py`, which qc claim tautological-debt drives; no claim names a gzkit function the step runs"
+    },
+    {
+      "population": "check-step",
+      "member": "Test",
+      "reason": "verdict decided out of process by `uv run -m unittest discover tests`, which qc claim test drives; no claim names a gzkit function the step runs"
+    },
+    {
+      "population": "check-step",
+      "member": "Test (changed)",
+      "reason": "the --fast inner-loop step, appended by _select_check_steps outside _build_check_steps and every registry; no claim"
+    },
+    {
+      "population": "check-step",
+      "member": "Typecheck",
+      "reason": "verdict decided out of process by `uv run ty check .`, which qc claim typecheck drives; no claim names a gzkit function the step runs"
+    },
+    {
+      "population": "check-step",
+      "member": "Validator reachability",
+      "reason": "verdict decided out of process by `chore script control-surface-validator-reachability/check_reachability.py`, which qc claim validator-reachability drives; no claim names a gzkit function the step runs"
+    },
+    {
+      "population": "closeout-gate",
+      "member": "_advance_ceremony",
+      "reason": "seeded 2026-10-02 at the population measured on main: no claim names the member or a gzkit function it loads one level down"
+    },
+    {
+      "population": "closeout-gate",
+      "member": "_gate_attestation_boundary",
+      "reason": "seeded 2026-10-02 at the population measured on main: no claim names the member or a gzkit function it loads one level down"
+    },
+    {
+      "population": "closeout-gate",
+      "member": "_gate_closeout_readiness",
+      "reason": "seeded 2026-10-02 at the population measured on main: no claim names the member or a gzkit function it loads one level down"
+    },
+    {
+      "population": "closeout-gate",
+      "member": "_initialize_ceremony",
+      "reason": "seeded 2026-10-02 at the population measured on main: no claim names the member or a gzkit function it loads one level down"
+    },
+    {
+      "population": "closeout-gate",
+      "member": "_pause_ceremony",
+      "reason": "seeded 2026-10-02 at the population measured on main: no claim names the member or a gzkit function it loads one level down"
+    },
+    {
+      "population": "closeout-gate",
+      "member": "_plan_closeout_lifecycle",
+      "reason": "seeded 2026-10-02 at the population measured on main: no claim names the member or a gzkit function it loads one level down"
+    },
+    {
+      "population": "closeout-gate",
+      "member": "_present_step",
+      "reason": "seeded 2026-10-02 at the population measured on main: no claim names the member or a gzkit function it loads one level down"
+    },
+    {
+      "population": "closeout-gate",
+      "member": "_prompt_closeout_attestation",
+      "reason": "seeded 2026-10-02 at the population measured on main: no claim names the member or a gzkit function it loads one level down"
+    },
+    {
+      "population": "closeout-gate",
+      "member": "_record_attestation",
+      "reason": "seeded 2026-10-02 at the population measured on main: no claim names the member or a gzkit function it loads one level down"
+    },
+    {
+      "population": "closeout-gate",
+      "member": "_run_closeout_quality_gates",
+      "reason": "seeded 2026-10-02 at the population measured on main: no claim names the member or a gzkit function it loads one level down"
+    },
+    {
+      "population": "closeout-gate",
+      "member": "ceremony_cmd",
+      "reason": "seeded 2026-10-02 at the population measured on main: no claim names the member or a gzkit function it loads one level down"
+    },
+    {
+      "population": "closeout-gate",
+      "member": "closeout_cmd",
+      "reason": "seeded 2026-10-02 at the population measured on main: no claim names the member or a gzkit function it loads one level down"
+    },
+    {
+      "population": "complete-refusal",
+      "member": "_apply_uncovered_waivers",
+      "reason": "seeded 2026-10-02 at the population measured on main: no claim names the member or a gzkit function it loads one level down"
+    },
+    {
+      "population": "complete-refusal",
+      "member": "_current_adversarial_event",
+      "reason": "control exists below one-level resolution: adversarial-refutation-loops and its admit control drive acceptance.assess_readiness, which completion_review reaches through acceptance_blockers and acceptance_status"
+    },
+    {
+      "population": "complete-refusal",
+      "member": "_enforce_attestation_receipt_gate",
+      "reason": "seeded 2026-10-02 at the population measured on main: no claim names the member or a gzkit function it loads one level down"
+    },
+    {
+      "population": "complete-refusal",
+      "member": "_enforce_reconcile_receipt_gate",
+      "reason": "seeded 2026-10-02 at the population measured on main: no claim names the member or a gzkit function it loads one level down"
+    },
+    {
+      "population": "complete-refusal",
+      "member": "_enforce_req_coverage_gate",
+      "reason": "seeded 2026-10-02 at the population measured on main: no claim names the member or a gzkit function it loads one level down"
+    },
+    {
+      "population": "complete-refusal",
+      "member": "_enforce_security_review_gate",
+      "reason": "seeded 2026-10-02 at the population measured on main: no claim names the member or a gzkit function it loads one level down"
+    },
+    {
+      "population": "complete-refusal",
+      "member": "_enforce_task_envelope_gate",
+      "reason": "seeded 2026-10-02 at the population measured on main: no claim names the member or a gzkit function it loads one level down"
+    },
+    {
+      "population": "complete-refusal",
+      "member": "_load_security_checklist",
+      "reason": "seeded 2026-10-02 at the population measured on main: no claim names the member or a gzkit function it loads one level down"
+    },
+    {
+      "population": "complete-refusal",
+      "member": "_reject_behavior_waivers",
+      "reason": "seeded 2026-10-02 at the population measured on main: no claim names the member or a gzkit function it loads one level down"
+    },
+    {
+      "population": "complete-refusal",
+      "member": "_resolve_evidence",
+      "reason": "seeded 2026-10-02 at the population measured on main: no claim names the member or a gzkit function it loads one level down"
+    },
+    {
+      "population": "complete-refusal",
+      "member": "obpi_complete_cmd",
+      "reason": "seeded 2026-10-02 at the population measured on main: no claim names the member or a gzkit function it loads one level down"
+    },
+    {
+      "population": "precomplete-check",
+      "member": "_check_acceptance_records",
+      "reason": "control exists below one-level resolution: adversarial-refutation-loops and its admit control drive acceptance.assess_readiness, which acceptance_blockers reaches through acceptance_blockers and acceptance_status"
+    },
+    {
+      "population": "precomplete-check",
+      "member": "_check_behave_req_coverage_scoped",
+      "reason": "seeded 2026-10-02 at the population measured on main: no claim names the member or a gzkit function it loads one level down"
+    },
+    {
+      "population": "precomplete-check",
+      "member": "_check_brief_headings_scoped",
+      "reason": "seeded 2026-10-02 at the population measured on main: no claim names the member or a gzkit function it loads one level down"
+    },
+    {
+      "population": "precomplete-check",
+      "member": "_check_brief_readiness",
+      "reason": "seeded 2026-10-02 at the population measured on main: no claim names the member or a gzkit function it loads one level down"
+    },
+    {
+      "population": "precomplete-check",
+      "member": "_check_lock_held",
+      "reason": "seeded 2026-10-02 at the population measured on main: no claim names the member or a gzkit function it loads one level down"
+    },
+    {
+      "population": "precomplete-check",
+      "member": "_check_operator_block",
+      "reason": "seeded 2026-10-02 at the population measured on main: no claim names the member or a gzkit function it loads one level down"
+    },
+    {
+      "population": "precomplete-check",
+      "member": "_check_plan_audit_receipt",
+      "reason": "seeded 2026-10-02 at the population measured on main: no claim names the member or a gzkit function it loads one level down"
+    },
+    {
+      "population": "precomplete-check",
+      "member": "_check_reconcile_idempotent",
+      "reason": "seeded 2026-10-02 at the population measured on main: no claim names the member or a gzkit function it loads one level down"
+    },
+    {
+      "population": "precomplete-check",
+      "member": "_check_stage2_dispatch",
+      "reason": "seeded 2026-10-02 at the population measured on main: no claim names the member or a gzkit function it loads one level down"
+    },
+    {
+      "population": "precomplete-check",
+      "member": "_check_task_envelope_coherence",
+      "reason": "seeded 2026-10-02 at the population measured on main: no claim names the member or a gzkit function it loads one level down"
+    }
+  ]
+}
