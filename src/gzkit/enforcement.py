@@ -107,9 +107,18 @@ class EnforcementClaimRecord(BaseModel):
         description=(
             "The claim's SUBJECT: gzkit callables the entrypoint delegates to, as "
             "'module:name', derived from its own imports at decoration time (GHI #798). "
-            "Empty when the entrypoint IS the gate (read `source_fn`) or delegates to a "
-            "subprocess. Producer-stamped because the delegation is a runtime fact, "
-            "unlike `exempts`, which is an authoring judgment."
+            "Empty when the entrypoint IS the gate (read `source_fn`) or when "
+            "`delegates_to` declares a subprocess. Producer-stamped because the delegation "
+            "is a runtime fact, unlike `exempts`, which is an authoring judgment."
+        ),
+    )
+    delegates_to: str | None = Field(
+        None,
+        description=(
+            "The external command or script the control drives, when the verdict is "
+            "decided out of process (GHI #1155 (d)). Declared, because an import a shim "
+            "makes to locate or launch that command is plumbing, not the gate, and the "
+            "derivation cannot tell the two apart. When set, `gate_targets` is empty."
         ),
     )
     population: Callable[[], Sequence[str]] | str | None = Field(
@@ -215,6 +224,7 @@ def enforces(
     expect: str | None = None,
     exempts: str | None = None,
     population: Callable[[], Sequence[str]] | str | None = None,
+    delegates_to: str | None = None,
 ) -> Callable[[_EF], _EF]:
     """Declare that a production callable enforces an enforcement claim.
 
@@ -244,10 +254,14 @@ def enforces(
     reuse the witness's own reader — a population derived from the code under
     test narrows whenever the witness does, and proves nothing.
 
+    ``delegates_to`` names the command or script the control drives when the
+    verdict is decided out of process (GHI #1155 (d)); ``gate_targets`` is then
+    empty, because what such a shim imports locates or launches the command.
+
     Raises:
         ValueError: If ``claim`` has an invalid format or is not in the
-            registered known-claims set, or ``population`` is neither ``None``,
-            :data:`POPULATION_NONE`, nor a callable.
+            registered known-claims set, ``population`` is neither ``None``,
+            :data:`POPULATION_NONE`, nor a callable, or ``delegates_to`` is blank.
 
     """
     if not _CLAIM_ID_RE.match(claim):
@@ -277,8 +291,15 @@ def enforces(
         source_file = code.co_filename
         source_line = code.co_firstlineno
 
+    if delegates_to is not None and not delegates_to.strip():
+        msg = (
+            f"Enforcement claim {claim!r} declares a blank delegates_to — name the command "
+            "or script its control drives, or omit it (GHI #1155)"
+        )
+        raise ValueError(msg)
+
     source_fn = _qualified_fn_name(entrypoint)
-    gate_targets = _derive_gate_targets(entrypoint)
+    gate_targets = () if delegates_to else _derive_gate_targets(entrypoint)
 
     def decorator(fn: _EF) -> _EF:
         record = EnforcementClaimRecord(
@@ -292,6 +313,7 @@ def enforces(
             exempts=exempts,
             gate_targets=gate_targets,
             population=population,
+            delegates_to=delegates_to,
         )
         _ENFORCEMENT_REGISTRY.append(record)
         return fn

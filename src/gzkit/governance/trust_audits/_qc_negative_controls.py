@@ -36,6 +36,7 @@ from . import _qc_nc_evaluation as _ev
 from . import _qc_nc_gate_enrollment as _ge
 from . import _qc_nc_hooks as _hk
 from . import _qc_nc_population as _pc
+from ._qc_claim_delegations import QC_CLAIM_DELEGATIONS
 from ._qc_claim_exemptions import QC_CLAIM_EXEMPTS
 from ._qc_claim_populations import QC_CLAIM_POPULATIONS
 
@@ -2053,6 +2054,7 @@ def register_qc_negative_controls() -> None:
             expect,
             exempts=QC_CLAIM_EXEMPTS.get(claim_id),
             population=QC_CLAIM_POPULATIONS.get(claim_id),
+            delegates_to=QC_CLAIM_DELEGATIONS.get(claim_id),
         )(_register_marker)
 
 

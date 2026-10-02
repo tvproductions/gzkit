@@ -353,6 +353,57 @@ class ClaimRecordsItsDelegatedGateTests(unittest.TestCase):
         self.assertEqual(get_enforcement_registry()[0].gate_targets, ())
 
 
+class ADelegatedClaimNamesItsCommandNotItsPlumbingTests(unittest.TestCase):
+    """A control that drives a subprocess declares the command it drives (GHI #1155 (d)).
+
+    Derivation reads a shim's imports, so a shim that imports a path resolver to find the
+    script it runs named the resolver as its gate (`module-size`, `tautological-debt`).
+    An empty tuple could not say "delegates to a subprocess" either, since it also means
+    the entrypoint is the gate. The declaration names the command and clears the targets.
+    """
+
+    def setUp(self) -> None:
+        reset_enforcement_registry()
+        set_known_claims(_TEST_CLAIMS)
+
+    def tearDown(self) -> None:
+        reset_enforcement_registry()
+
+    def test_a_declared_delegation_is_recorded_and_its_plumbing_is_not_a_gate(self) -> None:
+        def _fixture() -> str:
+            return "v"
+
+        def _shim(root: Any) -> Any:
+            from gzkit.commands.chores import _resolve_chore_dir  # noqa: PLC0415
+
+            return _resolve_chore_dir(root)
+
+        @enforces("lint", _fixture, _shim, delegates_to="chore script x/check.py")
+        def _marker() -> None:
+            pass
+
+        record = get_enforcement_registry()[0]
+        self.assertEqual(record.delegates_to, "chore script x/check.py")
+        self.assertEqual(record.gate_targets, ())
+
+    def test_an_undeclared_claim_records_no_delegation(self) -> None:
+        def _fixture() -> str:
+            return "v"
+
+        def _entrypoint(v: Any) -> list[Any]:
+            return []
+
+        @enforces("lint", _fixture, _entrypoint)
+        def _marker() -> None:
+            pass
+
+        self.assertIsNone(get_enforcement_registry()[0].delegates_to)
+
+    def test_a_blank_delegation_is_refused(self) -> None:
+        with self.assertRaises(ValueError):
+            enforces("lint", lambda: "v", lambda v: [], delegates_to="  ")
+
+
 class LiveRegistryResolvesTheKnownTruePairsTests(unittest.TestCase):
     """The production population resolves the pairs both heuristics missed (GHI #798).
 
@@ -376,6 +427,68 @@ class LiveRegistryResolvesTheKnownTruePairsTests(unittest.TestCase):
             "gzkit.governance.trust_audits:validate_surface_fidelity",
             by_id["surface-fidelity-surface-weight"].gate_targets,
         )
+
+    def test_no_live_claim_names_command_plumbing_as_its_gate(self) -> None:
+        from gzkit.enforcement import _ensure_production_claims_registered  # noqa: PLC0415
+
+        _ensure_production_claims_registered()
+        plumbing = ("gzkit.commands.chores:_resolve_chore_dir", "gzkit.quality:run_command")
+        naming = {
+            r.claim_id: r.gate_targets
+            for r in get_enforcement_registry()
+            if set(plumbing) & set(r.gate_targets)
+        }
+        self.assertEqual(naming, {})
+
+    def test_the_two_mis_derived_claims_declare_the_script_they_run(self) -> None:
+        from gzkit.enforcement import _ensure_production_claims_registered  # noqa: PLC0415
+
+        _ensure_production_claims_registered()
+        by_id = {r.claim_id: r for r in get_enforcement_registry()}
+        for claim_id, script in (
+            ("module-size", "check_module_size.py"),
+            ("tautological-debt", "check_debt_target.py"),
+        ):
+            with self.subTest(claim_id):
+                self.assertIn(script, by_id[claim_id].delegates_to or "")
+                self.assertEqual(by_id[claim_id].gate_targets, ())
+
+    def test_every_declared_delegation_names_a_registered_claim(self) -> None:
+        from gzkit.enforcement import _ensure_production_claims_registered  # noqa: PLC0415
+        from gzkit.governance.trust_audits._qc_claim_delegations import (  # noqa: PLC0415
+            QC_CLAIM_DELEGATIONS,
+        )
+        from gzkit.quality import project_local_ratchets_installed  # noqa: PLC0415
+
+        _ensure_production_claims_registered()
+        registered = {r.claim_id for r in get_enforcement_registry()}
+        optional = {"validator-reachability", "ledger-vocabulary-inertness"}
+        expected = {
+            claim
+            for claim in QC_CLAIM_DELEGATIONS
+            if project_local_ratchets_installed() or not claim.startswith(tuple(optional))
+        }
+        self.assertEqual(expected - registered, set())
+
+    def test_every_qc_control_that_launches_a_command_declares_it(self) -> None:
+        import dis  # noqa: PLC0415
+
+        from gzkit.enforcement import _ensure_production_claims_registered  # noqa: PLC0415
+
+        _ensure_production_claims_registered()
+        launchers = {"_command_fails", "_command_fails_argv", "_gz_command_fails", "run_command"}
+        undeclared = []
+        for record in get_enforcement_registry():
+            if not record.source_fn.startswith("gzkit.governance.trust_audits._qc_nc_"):
+                continue
+            names = {
+                str(i.argval)
+                for i in dis.get_instructions(record.entrypoint.__code__)
+                if i.opname in ("LOAD_GLOBAL", "IMPORT_FROM")
+            }
+            if names & launchers and record.delegates_to is None:
+                undeclared.append(record.claim_id)
+        self.assertEqual(undeclared, [])
 
     def test_most_of_the_live_population_resolves_to_a_gate(self) -> None:
         """A resolution that covers a handful of claims would not have discharged
