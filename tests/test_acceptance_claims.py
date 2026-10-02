@@ -72,6 +72,16 @@ class TestControlsFailWhenTheReducerIsWeakened(unittest.TestCase):
         with mock.patch.object(acceptance, "assess_readiness", lambda *_a, **_k: refused):
             self.assertEqual(_outcomes()[ADMIT_CLAIM_ID], "FACADE")
 
+    def test_a_reducer_that_closes_only_some_finding_kinds_fails_the_admit_control(self):
+        real = acceptance._closure_retains_subject
+
+        def only_counterexamples(closure, finding, review):
+            kept = finding is not None and finding.kind == "counterexample"
+            return kept and real(closure, finding, review)
+
+        with mock.patch.object(acceptance, "_closure_retains_subject", only_counterexamples):
+            self.assertEqual(_outcomes()[ADMIT_CLAIM_ID], "FACADE")
+
     def test_a_reducer_that_ignores_closures_fails_the_admit_control(self):
         with mock.patch.object(acceptance, "_record_closures", lambda *_a: None):
             self.assertEqual(_outcomes()[ADMIT_CLAIM_ID], "FACADE")

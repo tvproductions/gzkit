@@ -159,8 +159,12 @@ def _ep_refutation_loops(kind: str) -> list[str]:
     return [f"{kind}: {_OPEN}"] if open_finding and refused else []
 
 
-def _ep_clean_verdict_admitted(kind: str) -> int:
-    """Truthy only when a clean round, and a *kind* refutation closed, both reach readiness."""
+def _ep_clean_verdict_admitted(_member: str) -> int:
+    """Truthy only when a clean round, and a closed refutation of every kind, reach readiness.
+
+    The kinds are read here rather than declared as a population: an admit control
+    returns a verdict, not findings that could name a member.
+    """
     from gzkit.acceptance import assess_readiness  # noqa: PLC0415
 
     clean = _assess(
@@ -168,16 +172,15 @@ def _ep_clean_verdict_admitted(kind: str) -> int:
         _records(),
         (*_approvals("proof-original"), _review("adversarial", "adv-clean", ("proof-original",))),
     )
-    repaired = _assess(
-        assess_readiness,
-        _records(repaired=True),
-        (
-            _refutation(kind),
-            *_approvals("proof-repair"),
-            _closing_review(),
-        ),
-    )
-    return 1 if clean.ready and repaired.ready else 0
+    repaired = [
+        _assess(
+            assess_readiness,
+            _records(repaired=True),
+            (_refutation(kind), *_approvals("proof-repair"), _closing_review()),
+        )
+        for kind in refutation_population()
+    ]
+    return 1 if clean.ready and all(r.ready for r in repaired) else 0
 
 
 class _AcceptanceGateMarker:
