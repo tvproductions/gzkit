@@ -112,6 +112,118 @@
       "authority": "GHI #1154 item 5 ruling 2026-10-01 (operator, verbatim: \"approve all three\")",
       "proposed_by": "claude-code session 2026-10-02",
       "reviewed_by": "g0"
+    },
+    {
+      "claim_id": "arb-receipt-green-run-admitted",
+      "guard": "gzkit.commands.obpi_precomplete:_check_arb_receipts_passed",
+      "failing_test": "tests.commands.test_obpi_precomplete_receipt_claims.TestReceiptGateClaims.test_both_claims_name_the_gate_function_and_pass",
+      "mutation": {
+        "find": "        elif payload.get(\"exit_status\") != 0:",
+        "replace": "        elif True:",
+        "label": "every present receipt is refused"
+      },
+      "binding_sha256": "ba7c7dba8a5cc5536e6d3cfd79f0cb2a35314ff6e3ef42ad0b2647edbca98d0a",
+      "authority": "GHI #1154 item 5; admit canaries ordered 2026-10-02 (operator, verbatim: \"do all 5 steps\")",
+      "proposed_by": "claude-code session 2026-10-02",
+      "reviewed_by": null
+    },
+    {
+      "claim_id": "adversarial-clean-verdict-admitted",
+      "guard": "gzkit.commands.obpi_complete_adversarial:_enforce_adversarial_validation",
+      "failing_test": "tests.commands.test_obpi_complete_adversarial_claims.TestVerdictGateClaims.test_both_claims_name_the_gate_function_and_pass",
+      "mutation": {
+        "find": "    if verdict in REFUTATION_VERDICTS:",
+        "replace": "    if True:",
+        "label": "a clean verdict loops too"
+      },
+      "binding_sha256": "9e5ac421e187264460e577617109496bfa7c6357ef47a0cd1825841e2ded6693",
+      "authority": "GHI #1154 item 5; admit canaries ordered 2026-10-02 (operator, verbatim: \"do all 5 steps\")",
+      "proposed_by": "claude-code session 2026-10-02",
+      "reviewed_by": null
+    },
+    {
+      "claim_id": "validate-json-exit-clean-passes",
+      "guard": "gzkit.commands.validate_cmd:_exit_for_errors",
+      "failing_test": "tests.commands.test_validate_json_exit_claims.TestJsonExitClaims.test_both_claims_name_the_handler_and_pass",
+      "mutation": {
+        "find": "    if errors:\n        raise SystemExit(3)",
+        "replace": "    if True:\n        raise SystemExit(3)",
+        "label": "a clean run exits 3"
+      },
+      "binding_sha256": "30cedff08996e980b511a1eb4de6f8b67282dcd30c9f68296ac85f99d667069a",
+      "authority": "GHI #1154 item 5; admit canaries ordered 2026-10-02 (operator, verbatim: \"do all 5 steps\")",
+      "proposed_by": "claude-code session 2026-10-02",
+      "reviewed_by": null
+    },
+    {
+      "claim_id": "support-citation-declared-admitted",
+      "guard": "gzkit.req_kind_support:_witness_clause",
+      "failing_test": "tests.test_req_kind_support_claims.TestSupportCitationClaims.test_both_claims_name_the_parser_and_pass",
+      "mutation": {
+        "find": "    if len(markers) != 1:",
+        "replace": "    if True:",
+        "label": "a declared clause is never read"
+      },
+      "binding_sha256": "15a754e545bb1c42345335fe930fa13b075c8632d7afd7b68ef43e2330c3579f",
+      "authority": "GHI #1154 item 5; admit canaries ordered 2026-10-02 (operator, verbatim: \"do all 5 steps\")",
+      "proposed_by": "claude-code session 2026-10-02",
+      "reviewed_by": null
+    },
+    {
+      "claim_id": "pointer-back-pointer-matched-admitted",
+      "guard": "gzkit.governance.trust_audits.pointer_integrity:_validate_pointer",
+      "failing_test": "tests.governance.test_pointer_integrity_claims.TestBackPointerClaims.test_both_claims_name_the_validator_and_pass",
+      "mutation": {
+        "find": "    if expected not in back_pointers:",
+        "replace": "    if True:",
+        "label": "a matching back-pointer is refused"
+      },
+      "binding_sha256": "66d0f2ac9ee432cfdc48031649cf329eec7141039b8723b16ee6586ac9f0e45b",
+      "authority": "GHI #1154 item 5; admit canaries ordered 2026-10-02 (operator, verbatim: \"do all 5 steps\")",
+      "proposed_by": "claude-code session 2026-10-02",
+      "reviewed_by": null
+    },
+    {
+      "claim_id": "pointer-reverse-arm-live-lift-admitted",
+      "guard": "gzkit.governance.trust_audits.pointer_integrity:_check_one_back_pointer",
+      "failing_test": "tests.governance.test_pointer_integrity_claims.TestBackPointerClaims.test_both_claims_name_the_validator_and_pass",
+      "mutation": {
+        "find": "    if not _origin_points_at(origin_path, origin_content, dest_path, anchor):",
+        "replace": "    if True:",
+        "label": "a live lift is orphaned"
+      },
+      "binding_sha256": "00bf929e3014ae43e0b358cac629da0641959b9b710d2d930010953b00f7cb13",
+      "authority": "GHI #1154 item 5; admit canaries ordered 2026-10-02 (operator, verbatim: \"do all 5 steps\")",
+      "proposed_by": "claude-code session 2026-10-02",
+      "reviewed_by": null
+    },
+    {
+      "claim_id": "tidy-clean-exits-zero",
+      "guard": "gzkit.commands.tidy:tidy",
+      "failing_test": "tests.commands.test_tidy_claims.TestTidyClaims.test_both_claims_name_the_handler_and_pass",
+      "mutation": {
+        "find": "    if result.errors or orphan_obpis or vault.is_actionable:",
+        "replace": "    if True:",
+        "label": "a clean tree exits 3"
+      },
+      "binding_sha256": "147cfbcd6498de66acadd4c97b035a769c7d9352863b70229beea4a4c80f8f77",
+      "authority": "GHI #1154 item 5; admit canaries ordered 2026-10-02 (operator, verbatim: \"do all 5 steps\")",
+      "proposed_by": "claude-code session 2026-10-02",
+      "reviewed_by": null
+    },
+    {
+      "claim_id": "waiver-identity-reviewed-admitted",
+      "guard": "gzkit.governance.trust_audits.waiver_ratchet:_check_identity",
+      "failing_test": "tests.governance.test_waiver_identity_monotonic.TestIdentityClaims.test_both_claims_name_the_audit_and_pass",
+      "mutation": {
+        "find": "    if new:\n",
+        "replace": "    if True:\n",
+        "label": "every identity is refused"
+      },
+      "binding_sha256": "68c437e9ed05e961f49cd62ffa2ff5bc0e07b3d8423036b3cf3121f483ca148b",
+      "authority": "GHI #1154 item 5; admit canaries ordered 2026-10-02 (operator, verbatim: \"do all 5 steps\")",
+      "proposed_by": "claude-code session 2026-10-02",
+      "reviewed_by": null
     }
   ]
 }

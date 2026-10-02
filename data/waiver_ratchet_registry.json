@@ -326,7 +326,7 @@
       "gates_step": "Unit tests (tests/governance/test_guard_canaries.py)",
       "mechanism": "shrink-ratchet",
       "entries_path": "claims",
-      "baseline_count": 108,
+      "baseline_count": 100,
       "identity": {
         "kind": "strings"
       }
