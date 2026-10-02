@@ -1,0 +1,117 @@
+{
+  "_doc": "Reviewed guard mutation canaries (GHI #1154 item 5). Each record binds one reviewed mutant to one registered enforcement claim: the mutant is applied to an isolated copy of the tree and the designated test must fail. binding_sha256 is sha256 of the guard function's source, the claim id and the failing test id joined by newlines (src/gzkit/guard_canary.py binding_hash); when any of them changes the canary is stale and must be re-reviewed, never silently re-hashed. reviewed_by is null until the operator has reviewed the mutant; a canary is enforced either way. Seeded 2026-10-02 for the refuse claims enrolled under GHI #1155.",
+  "canaries": [
+    {
+      "claim_id": "arb-receipt-red-run-refused",
+      "guard": "gzkit.commands.obpi_precomplete:_check_arb_receipts_passed",
+      "failing_test": "tests.commands.test_obpi_precomplete_receipt_claims.TestReceiptGateClaims.test_both_claims_name_the_gate_function_and_pass",
+      "mutation": {
+        "find": "        elif payload.get(\"exit_status\") != 0:",
+        "replace": "        elif False:",
+        "label": "receipt exit status never read"
+      },
+      "binding_sha256": "47a5cc107a96deb1a8c6017e1a16e0f256434f077ab1befc833781f292c063da",
+      "authority": "GHI #1154 item 5 ruling 2026-10-01 (operator, verbatim: \"approve all three\")",
+      "proposed_by": "claude-code session 2026-10-02",
+      "reviewed_by": null
+    },
+    {
+      "claim_id": "adversarial-refutation-loops",
+      "guard": "gzkit.commands.obpi_complete_adversarial:_enforce_adversarial_validation",
+      "failing_test": "tests.commands.test_obpi_complete_adversarial_claims.TestVerdictGateClaims.test_both_claims_name_the_gate_function_and_pass",
+      "mutation": {
+        "find": "    if verdict in REFUTATION_VERDICTS:",
+        "replace": "    if False:",
+        "label": "refutation never loops"
+      },
+      "binding_sha256": "ec1d84458451ab9308f3b13f8189680291bc2a97ae8f52b59ba12855991b512d",
+      "authority": "GHI #1154 item 5 ruling 2026-10-01 (operator, verbatim: \"approve all three\")",
+      "proposed_by": "claude-code session 2026-10-02",
+      "reviewed_by": null
+    },
+    {
+      "claim_id": "validate-json-exit-classified",
+      "guard": "gzkit.commands.validate_cmd:_exit_for_errors",
+      "failing_test": "tests.commands.test_validate_json_exit_claims.TestJsonExitClaims.test_both_claims_name_the_handler_and_pass",
+      "mutation": {
+        "find": "    if errors:\n        raise SystemExit(3)",
+        "replace": "    if False:\n        raise SystemExit(3)",
+        "label": "policy breach never exits 3"
+      },
+      "binding_sha256": "c2eb5a273cda7a896e32298ee30e894969086963fb9dcb5db60748347fc7a67a",
+      "authority": "GHI #1154 item 5 ruling 2026-10-01 (operator, verbatim: \"approve all three\")",
+      "proposed_by": "claude-code session 2026-10-02",
+      "reviewed_by": null
+    },
+    {
+      "claim_id": "support-citation-declared-only",
+      "guard": "gzkit.req_kind_support:_witness_clause",
+      "failing_test": "tests.test_req_kind_support_claims.TestSupportCitationClaims.test_both_claims_name_the_parser_and_pass",
+      "mutation": {
+        "find": "    if len(markers) != 1:",
+        "replace": "    if len(markers) < 1:",
+        "label": "a doubled clause is tolerated"
+      },
+      "binding_sha256": "f16c12e25a2c66516d7cb1c23a55126b4bb86afcc2a91d76060617b858a31e99",
+      "authority": "GHI #1154 item 5 ruling 2026-10-01 (operator, verbatim: \"approve all three\")",
+      "proposed_by": "claude-code session 2026-10-02",
+      "reviewed_by": null
+    },
+    {
+      "claim_id": "pointer-back-pointer-matched",
+      "guard": "gzkit.governance.trust_audits.pointer_integrity:_validate_pointer",
+      "failing_test": "tests.governance.test_pointer_integrity_claims.TestBackPointerClaims.test_both_claims_name_the_validator_and_pass",
+      "mutation": {
+        "find": "    if expected not in back_pointers:",
+        "replace": "    if False:",
+        "label": "back-pointer match never checked"
+      },
+      "binding_sha256": "3af4680bf16acd5eb480f4b78854061da7df52f1fc73fe8f300187c86e482f0e",
+      "authority": "GHI #1154 item 5 ruling 2026-10-01 (operator, verbatim: \"approve all three\")",
+      "proposed_by": "claude-code session 2026-10-02",
+      "reviewed_by": null
+    },
+    {
+      "claim_id": "pointer-reverse-arm-orphan-refused",
+      "guard": "gzkit.governance.trust_audits.pointer_integrity:_check_one_back_pointer",
+      "failing_test": "tests.governance.test_pointer_integrity_claims.TestBackPointerClaims.test_both_claims_name_the_validator_and_pass",
+      "mutation": {
+        "find": "    if not _origin_points_at(origin_path, origin_content, dest_path, anchor):",
+        "replace": "    if False:",
+        "label": "an origin with no link is accepted"
+      },
+      "binding_sha256": "116d31e9a30b044324f6dd4e51fd952fe546aa49132330330deaebe915883854",
+      "authority": "GHI #1154 item 5 ruling 2026-10-01 (operator, verbatim: \"approve all three\")",
+      "proposed_by": "claude-code session 2026-10-02",
+      "reviewed_by": null
+    },
+    {
+      "claim_id": "tidy-breach-exits-three",
+      "guard": "gzkit.commands.tidy:tidy",
+      "failing_test": "tests.commands.test_tidy_claims.TestTidyClaims.test_both_claims_name_the_handler_and_pass",
+      "mutation": {
+        "find": "    if result.errors or orphan_obpis or vault.is_actionable:",
+        "replace": "    if False:",
+        "label": "findings never gate"
+      },
+      "binding_sha256": "b23c7fc37b36b3942d5fd3303779fec0542571aabcda1fb2caa6915ee805c19e",
+      "authority": "GHI #1154 item 5 ruling 2026-10-01 (operator, verbatim: \"approve all three\")",
+      "proposed_by": "claude-code session 2026-10-02",
+      "reviewed_by": null
+    },
+    {
+      "claim_id": "waiver-identity-new-entry-refused",
+      "guard": "gzkit.governance.trust_audits.waiver_ratchet:_check_identity",
+      "failing_test": "tests.governance.test_waiver_identity_monotonic.TestIdentityClaims.test_both_claims_name_the_audit_and_pass",
+      "mutation": {
+        "find": "    if new:\n",
+        "replace": "    if False:\n",
+        "label": "a new identity is never refused"
+      },
+      "binding_sha256": "8fd637f9ccb350b826c615ffb3d68e583cae05ae067e877076ab5e23a071bdd0",
+      "authority": "GHI #1154 item 5 ruling 2026-10-01 (operator, verbatim: \"approve all three\")",
+      "proposed_by": "claude-code session 2026-10-02",
+      "reviewed_by": null
+    }
+  ]
+}

@@ -320,6 +320,16 @@
           "scope"
         ]
       }
+    },
+    {
+      "data_file": "data/guard_canary_grandfather.json",
+      "gates_step": "Unit tests (tests/governance/test_guard_canaries.py)",
+      "mechanism": "shrink-ratchet",
+      "entries_path": "claims",
+      "baseline_count": 108,
+      "identity": {
+        "kind": "strings"
+      }
     }
   ],
   "excluded": [

@@ -137,6 +137,11 @@
       "relates_to": [
         "waiver_ratchet_registry.json"
       ]
+    },
+    "guard_canaries.json": {
+      "owner": "gzkit/guard_canary.py",
+      "kind": "code",
+      "purpose": "Reviewed guard mutation canaries: one mutant bound by hash to each registered enforcement claim, killed on an isolated copy of the tree by a designated test (GHI #1154 item 5)."
     }
   }
 }
