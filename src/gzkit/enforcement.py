@@ -675,9 +675,9 @@ def _ensure_production_claims_registered() -> None:
       * ``cli.helpers.exit_code_claims`` — ``cli-usage-error-exit-two``, the witness
         for `.gzkit/rules/cli.md` § Exit Codes code 2: a parse error exits 2 and the
         help epilog labels 2 Usage or System/IO (GHI #1001).
-      * ``commands.obpi_complete_adversarial_claims`` — ``adversarial-refutation-loops`` and
-        its admit control, the witnesses for the ``gz obpi complete`` Step-4b refusal of a
-        refuted adversary round (GHI #1155).
+      * ``acceptance_claims`` — ``adversarial-refutation-loops`` and its admit control, the
+        witnesses for the Step-4b acceptance gate refusing a refutation that no independent
+        closure repaired (GHI #959, #960, enrolled under GHI #1155).
       * ``commands.obpi_precomplete_receipt_claims`` — ``arb-receipt-red-run-refused`` and
         its admit control, the witnesses for the precomplete refusal of a failed ARB run
         recorded in a receipt (GHI #889, enrolled under GHI #1155).
@@ -707,15 +707,13 @@ def _ensure_production_claims_registered() -> None:
     OBPI-17/19 incomplete-implementation miss. Lazy imports avoid an import cycle with the
     ``mx`` package, which imports this module.
     """
+    from gzkit.acceptance_claims import ensure_acceptance_gate_claims_registered  # noqa: PLC0415
     from gzkit.airlock.enter import _ensure_airlock_claims_registered  # noqa: PLC0415
     from gzkit.cli.helpers.exit_code_claims import (  # noqa: PLC0415
         ensure_cli_exit_code_claims_registered,
     )
     from gzkit.cli.helpers.log_level_claims import (  # noqa: PLC0415
         ensure_cli_log_level_claims_registered,
-    )
-    from gzkit.commands.obpi_complete_adversarial_claims import (  # noqa: PLC0415
-        ensure_completion_gate_claims_registered,
     )
     from gzkit.commands.obpi_precomplete_receipt_claims import (  # noqa: PLC0415
         ensure_receipt_gate_claims_registered,
@@ -749,7 +747,7 @@ def _ensure_production_claims_registered() -> None:
     _ensure_verifier_pipe_claims_registered()
     ensure_cli_exit_code_claims_registered()
     ensure_cli_log_level_claims_registered()
-    ensure_completion_gate_claims_registered()
+    ensure_acceptance_gate_claims_registered()
     ensure_receipt_gate_claims_registered()
     ensure_json_exit_claims_registered()
     ensure_support_citation_claims_registered()

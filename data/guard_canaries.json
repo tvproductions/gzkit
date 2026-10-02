@@ -17,17 +17,17 @@
     },
     {
       "claim_id": "adversarial-refutation-loops",
-      "guard": "gzkit.commands.obpi_complete_adversarial:_enforce_adversarial_validation",
-      "failing_test": "tests.commands.test_obpi_complete_adversarial_claims.TestVerdictGateClaims.test_both_claims_name_the_gate_function_and_pass",
+      "guard": "gzkit.acceptance:_open_findings",
+      "failing_test": "tests.test_acceptance_claims.TestAcceptanceGateClaims.test_both_claims_name_the_reducer_completion_runs_and_pass",
       "mutation": {
-        "find": "    if verdict in REFUTATION_VERDICTS:",
-        "replace": "    if False:",
-        "label": "refutation never loops"
+        "find": "        if proof is None or aliases.get(state.closures.get(finding.id, \"\")) != aliases[proof.id]:",
+        "replace": "        if False:",
+        "label": "an unclosed finding is never outstanding"
       },
-      "binding_sha256": "ec1d84458451ab9308f3b13f8189680291bc2a97ae8f52b59ba12855991b512d",
-      "authority": "GHI #1154 item 5 ruling 2026-10-01 (operator, verbatim: \"approve all three\")",
+      "binding_sha256": "7aa46eb3fd77e43846fbea5c5b51bcef76b6ae41279e7ef1ffadb28cf221c6c1",
+      "authority": "GHI #1155: rebound 2026-10-02 to acceptance.assess_readiness, the reducer completion runs since GHI #985; the prior mutant bound obpi_complete_adversarial._enforce_adversarial_validation, which no production path calls",
       "proposed_by": "claude-code session 2026-10-02",
-      "reviewed_by": "g0"
+      "reviewed_by": null
     },
     {
       "claim_id": "validate-json-exit-classified",
@@ -129,15 +129,15 @@
     },
     {
       "claim_id": "adversarial-clean-verdict-admitted",
-      "guard": "gzkit.commands.obpi_complete_adversarial:_enforce_adversarial_validation",
-      "failing_test": "tests.commands.test_obpi_complete_adversarial_claims.TestVerdictGateClaims.test_both_claims_name_the_gate_function_and_pass",
+      "guard": "gzkit.acceptance:assess_readiness",
+      "failing_test": "tests.test_acceptance_claims.TestAcceptanceGateClaims.test_both_claims_name_the_reducer_completion_runs_and_pass",
       "mutation": {
-        "find": "    if verdict in REFUTATION_VERDICTS:",
-        "replace": "    if True:",
-        "label": "a clean verdict loops too"
+        "find": "    return Readiness(ready=not errors, blockers=tuple(errors), open_findings=outstanding)",
+        "replace": "    return Readiness(ready=False, blockers=tuple(errors), open_findings=outstanding)",
+        "label": "readiness is never reached"
       },
-      "binding_sha256": "9e5ac421e187264460e577617109496bfa7c6357ef47a0cd1825841e2ded6693",
-      "authority": "GHI #1154 item 5; admit canaries ordered 2026-10-02 (operator, verbatim: \"do all 5 steps\")",
+      "binding_sha256": "601c6d13b5cfeb10a662a16026c610819e81b6773186a6befc6a83867800afca",
+      "authority": "GHI #1155: rebound 2026-10-02 to acceptance.assess_readiness, the reducer completion runs since GHI #985; the prior mutant bound obpi_complete_adversarial._enforce_adversarial_validation, which no production path calls",
       "proposed_by": "claude-code session 2026-10-02",
       "reviewed_by": null
     },
