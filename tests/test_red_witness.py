@@ -209,8 +209,10 @@ class TestRunRedWitness(_GitFixture):
         (self.root / "impl.py").write_text("def added():\n    return 1\n", encoding="utf-8")
         (self.root / "tests" / "test_impl.py").write_text(
             "import unittest, pathlib\n\nclass T(unittest.TestCase):\n"
-            "    def test_base_impl_is_empty(self):\n"
-            "        self.assertEqual(pathlib.Path('impl.py').read_text(), '')\n",
+            "    def test_impl_is_the_working_tree_version(self):\n"
+            "        self.assertEqual(\n"
+            "            pathlib.Path('impl.py').read_text(), 'def added():\\n    return 1\\n'\n"
+            "        )\n",
             encoding="utf-8",
         )
         witness = run_red_witness(
@@ -219,8 +221,11 @@ class TestRunRedWitness(_GitFixture):
             test_names=["tests.test_impl"],
             test_runner=_RUNNER,
         )
-        # The test asserts impl.py is EMPTY in the worktree; it passes => not grafted.
-        self.assertEqual(witness.exit_status, 0, "production hunks leaked into the base tree")
+        # Green on the current tree (a valid baseline); on the base tree it fails on
+        # its assertion only because impl.py is the base version. A leak reads `none`.
+        self.assertEqual(
+            witness.failure_class, "assertion", "production hunks leaked into the base tree"
+        )
 
     def test_no_covering_tests_raises(self) -> None:
         self._seed_base()
@@ -230,6 +235,8 @@ class TestRunRedWitness(_GitFixture):
     def test_witness_records_the_base_commit_it_ran_against(self) -> None:
         self._seed_base()
         base = resolve_base_commit(self.root)
+        # A withheld production hunk, so the experiment actually runs on that base.
+        (self.root / "impl.py").write_text("def added():\n    return 1\n", encoding="utf-8")
         (self.root / "tests" / "test_impl.py").write_text(
             "import unittest\n\nclass T(unittest.TestCase):\n"
             "    def test_ok(self):\n        self.assertTrue(True)\n",
@@ -246,6 +253,8 @@ class TestRunRedWitness(_GitFixture):
     def test_worktree_is_removed_after_the_run(self) -> None:
         """A leaked worktree would poison every later `git worktree` operation."""
         self._seed_base()
+        # Without a withheld hunk the run short-circuits and no worktree is ever made.
+        (self.root / "impl.py").write_text("def added():\n    return 1\n", encoding="utf-8")
         (self.root / "tests" / "test_impl.py").write_text(
             "import unittest\n\nclass T(unittest.TestCase):\n"
             "    def test_ok(self):\n        self.assertTrue(True)\n",
@@ -324,8 +333,9 @@ class TestWitnessSufficiency(_GitFixture):
         self.assertIn("summary", witness.output_tail)
 
     def test_an_import_error_with_a_summary_is_still_a_weak_red(self) -> None:
+        # `added` exists on the current tree (a valid baseline) and not on the base.
         source = (
-            "import unittest\nfrom impl import missing_symbol\n\n"
+            "import unittest\nfrom impl import added\n\n"
             "class T(unittest.TestCase):\n    def test_x(self):\n        pass\n"
         )
         witness = self._witness(_RUNNER, source)
@@ -413,6 +423,7 @@ class TestLandedWorkStillWitnesses(_GitFixture):
             req,
             test_body=(
                 "import unittest\nfrom impl import value\n\n"
+                "def covers(req):\n    return lambda fn: fn\n\n"
                 "class T(unittest.TestCase):\n"
                 f'    @covers("{req}")\n'
                 "    def test_value(self):\n        self.assertEqual(value(), 2)\n"
@@ -665,3 +676,128 @@ class TestReconstructedPremiseIsRecheckedNotAssumed(_GitFixture):
             "nothing was withheld against EITHER base, so there is no experiment to report",
         )
         self.assertFalse(witness.is_conclusive)
+
+
+_VALUE_TEST = (
+    "import unittest\nfrom impl import value\n\n"
+    "class T(unittest.TestCase):\n"
+    "    def test_value(self):\n        self.assertEqual(value(), {expected})\n"
+)
+
+
+class TestWitnessSufficiencyOfTheNamedTest(_GitFixture):
+    """GHI #1154 item 3 — the RED must be the NAMED test failing for want of its code.
+
+    The integrity-audit contract requires the witness to fail when the baseline is
+    invalid or the source/test identity is mismatched, and requires the designated
+    behavior discriminator itself to fail. An aggregate `FAILED` summary witnesses
+    none of that: a test that also fails on the current tree, a covering name the
+    graft never carried, and a failure in some other test all used to bank as a RED.
+    Each is the run reporting that it could not tell, so each is `not-applicable` —
+    never a finding about the test (GHI #839's lesson).
+    """
+
+    def _seed_value(self, *, base: int, head: int) -> None:
+        (self.root / "impl.py").write_text(f"def value():\n    return {base}\n", encoding="utf-8")
+        self._commit("base")
+        (self.root / "impl.py").write_text(f"def value():\n    return {head}\n", encoding="utf-8")
+
+    def _witness(self, test_names: list[str]) -> RedWitness:
+        return run_red_witness(
+            project_root=self.root,
+            req_id="REQ-1.2.3-01-20",
+            test_names=test_names,
+            test_runner=_RUNNER,
+        )
+
+    def test_a_test_that_also_fails_on_the_current_tree_is_not_a_red(self) -> None:
+        # Fails against base (1 != 3) AND against HEAD (2 != 3): its failure on the base
+        # tree says nothing about the withheld implementation.
+        self._seed_value(base=1, head=2)
+        (self.root / "tests" / "test_impl.py").write_text(
+            _VALUE_TEST.format(expected=3), encoding="utf-8"
+        )
+        witness = self._witness(["tests.test_impl"])
+        self.assertEqual(witness.failure_class, "not-applicable")
+        self.assertFalse(witness.is_red, "a test red on HEAD too witnesses no implementation")
+        self.assertFalse(witness.is_conclusive)
+        self.assertIn("baseline", witness.output_tail)
+
+    def test_a_covering_test_the_graft_never_carried_is_not_a_weak_red(self) -> None:
+        # The covering module is real and green on HEAD, but ignored by git, so the graft
+        # (`ls-files --exclude-standard`) never copies it. The base run then dies on
+        # `No module named` the TEST module — no test ran, so nothing was witnessed.
+        (self.root / ".gitignore").write_text("tests/test_local.py\n", encoding="utf-8")
+        self._seed_value(base=1, head=2)
+        (self.root / "tests" / "test_local.py").write_text(
+            _VALUE_TEST.format(expected=2), encoding="utf-8"
+        )
+        witness = self._witness(["tests.test_local"])
+        self.assertEqual(witness.failure_class, "not-applicable")
+        self.assertFalse(witness.is_red, "a covering test that never executed cleared the gate")
+        self.assertIn("tests.test_local", witness.output_tail)
+
+    def test_one_covering_test_missing_from_the_graft_voids_the_whole_witness(self) -> None:
+        # A second named test genuinely fails on its assertion, so the run IS
+        # attributable to a named test — only the identity check sees that the other
+        # covering test never executed, and a REQ is witnessed by all its tests.
+        (self.root / ".gitignore").write_text("tests/test_local.py\n", encoding="utf-8")
+        self._seed_value(base=1, head=2)
+        (self.root / "tests" / "test_impl.py").write_text(
+            _VALUE_TEST.format(expected=2), encoding="utf-8"
+        )
+        (self.root / "tests" / "test_local.py").write_text(
+            _VALUE_TEST.format(expected=2), encoding="utf-8"
+        )
+        witness = self._witness(["tests.test_impl.T.test_value", "tests.test_local"])
+        self.assertEqual(witness.failure_class, "not-applicable")
+        self.assertIn("tests.test_local", witness.output_tail)
+
+    def test_a_failure_only_in_a_test_the_req_does_not_name_is_not_a_red(self) -> None:
+        # The named test is a tautology that passes everywhere; its module's
+        # `load_tests` pulls in a sibling that genuinely depends on the withheld code.
+        # The run fails — but not in the designated discriminator.
+        self._seed_value(base=1, head=2)
+        (self.root / "tests" / "test_other.py").write_text(
+            _VALUE_TEST.format(expected=2), encoding="utf-8"
+        )
+        (self.root / "tests" / "test_named.py").write_text(
+            "import unittest\n\n"
+            "class N(unittest.TestCase):\n"
+            "    def test_named(self):\n        self.assertTrue(True)\n\n"
+            "def load_tests(loader, tests, pattern):\n"
+            "    from tests import test_other\n"
+            "    tests.addTests(loader.loadTestsFromModule(test_other))\n"
+            "    return tests\n",
+            encoding="utf-8",
+        )
+        witness = self._witness(["tests.test_named"])
+        self.assertEqual(witness.failure_class, "not-applicable")
+        self.assertFalse(witness.is_red, "a failure outside the named test is not its RED")
+
+    def test_an_assertion_in_the_named_test_is_still_a_strong_red(self) -> None:
+        # The control: a full `module.Class.method` id that executed and failed on its
+        # own assertion is exactly the evidence the witness exists to record.
+        self._seed_value(base=1, head=2)
+        (self.root / "tests" / "test_impl.py").write_text(
+            _VALUE_TEST.format(expected=2), encoding="utf-8"
+        )
+        witness = self._witness(["tests.test_impl.T.test_value"])
+        self.assertEqual(witness.failure_class, "assertion")
+        self.assertTrue(witness.is_red)
+
+    def test_a_withheld_new_production_module_is_still_a_weak_red(self) -> None:
+        # `No module named` a PRODUCTION module is the GHI #849 weak RED, not a missing
+        # test: the test module is present and raised while importing the withheld code.
+        (self.root / "impl.py").write_text("", encoding="utf-8")
+        self._commit("base")
+        (self.root / "newmod.py").write_text("def added():\n    return 1\n", encoding="utf-8")
+        (self.root / "tests" / "test_impl.py").write_text(
+            "import unittest\nfrom newmod import added\n\n"
+            "class T(unittest.TestCase):\n"
+            "    def test_added(self):\n        self.assertEqual(added(), 1)\n",
+            encoding="utf-8",
+        )
+        witness = self._witness(["tests.test_impl.T.test_added"])
+        self.assertEqual(witness.failure_class, "error")
+        self.assertTrue(witness.is_red)

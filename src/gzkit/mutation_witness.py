@@ -45,17 +45,11 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from gzkit.red_witness import classify_failure
+from gzkit.unit_run_provenance import read_test_observations
 
 MutationOutcome = Literal["killed", "survived", "invalid", "inconclusive"]
 
 _RUN_TIMEOUT_S = 600
-# unittest -v writes `test_name (module.Class.test_name) ... FAIL` and a
-# `FAIL: test_name (...)` block; the summary line is the reliable one to read.
-_TEST_LINE = re.compile(r"^\s*(\w+) \(([^)]+)\)(?: \(.*\))? \.\.\. (ok|FAIL|ERROR|skipped.*)$")
-_TEST_ID_LINE = re.compile(r"^\s*(\w+) \(([^)]+)\)(?: \(.*\))?$")
-_STATUS_TAIL = re.compile(r" \.\.\. (ok|FAIL|ERROR|skipped.*)$")
-_FAILURE_LINE = re.compile(r"^(FAIL|ERROR): (\w+) \(([^)]+)\)")
-_RAN_TESTS = re.compile(r"^Ran (\d+) tests? in ", re.MULTILINE)
 _FIXTURE_FRAME = re.compile(
     r"^  File .*, line \d+, in (?:setUp|tearDown|setUpClass|tearDownClass|"
     r"setUpModule|tearDownModule|asyncSetUp|asyncTearDown|_callCleanup)$",
@@ -146,60 +140,6 @@ class MutationSweep(BaseModel):
         return bool(self.witnesses) and not (self.invalid or self.inconclusive)
 
 
-def _test_id(method: str, context: str) -> str:
-    """Normalize the two stdlib unittest identity display formats."""
-    return context if context.endswith("." + method) else f"{context}.{method}"
-
-
-def _one_line_descriptions(output: str) -> list[str]:
-    """Fold unittest's TWO-line verbose description back into the one-line form.
-
-    ``TextTestResult.getDescription`` joins ``str(test)`` and the docstring's
-    first line with a newline whenever the test is documented, so the trailing
-    ``... ok`` lands on the SECOND line and a parser keyed to the one-line form
-    sees no result at all -- a green baseline reads red and every mutation is
-    graded ``inconclusive`` (GHI #986). Undocumented output is returned
-    unchanged, so the one-line form keeps its existing behaviour exactly.
-    """
-    lines = output.splitlines()
-    folded: list[str] = []
-    index = 0
-    while index < len(lines):
-        following = lines[index + 1] if index + 1 < len(lines) else ""
-        status = _STATUS_TAIL.search(following) if _TEST_ID_LINE.match(lines[index]) else None
-        if status:
-            folded.append(f"{lines[index]} ... {status.group(1)}")
-            index += 2
-            continue
-        folded.append(lines[index])
-        index += 1
-    return folded
-
-
-def _test_observations(output: str) -> tuple[set[str], list[str], int]:
-    """Read completed, non-skipped unittest IDs and failure identities.
-
-    Unknown/custom runner output is inconclusive. This parses execution reports;
-    it does not decide whether an assertion expresses the intended requirement.
-    """
-    executed: set[str] = set()
-    failures: list[str] = []
-    for line in _one_line_descriptions(output):
-        if match := _TEST_LINE.match(line):
-            method, context, status = match.groups()
-            if not status.startswith("skipped"):
-                executed.add(_test_id(method, context))
-        if match := _FAILURE_LINE.match(line):
-            _, method, context = match.groups()
-            identity = _test_id(method, context)
-            executed.add(identity)
-            if identity not in failures:
-                failures.append(identity)
-    summaries = _RAN_TESTS.findall(output)
-    count = int(summaries[0]) if len(summaries) == 1 else 0
-    return executed, failures, count
-
-
 def _resolve_tests(selectors: list[str], executed: set[str]) -> set[str] | None:
     """Require each nominated selector to identify one actually executed test."""
     if not selectors:
@@ -286,7 +226,7 @@ def _witness_one(
             )
         result = _run(command, cwd, prefix)
         output = (result.stdout or "") + (result.stderr or "")
-        executed, failing, count = _test_observations(output)
+        executed, failing, count = read_test_observations(output)
 
         def observed(outcome: MutationOutcome, reason: str = "") -> MutationWitness:
             """Build the witness from what this run actually observed."""
@@ -348,7 +288,7 @@ def run_mutation_sweep(
     with tempfile.TemporaryDirectory() as cache:
         baseline = _run(command, project_root, Path(cache))
     baseline_output = (baseline.stdout or "") + (baseline.stderr or "")
-    baseline_tests, _, baseline_count = _test_observations(baseline_output)
+    baseline_tests, _, baseline_count = read_test_observations(baseline_output)
     baseline_green = baseline.returncode == 0 and baseline_count > 0 and bool(baseline_tests)
 
     witnesses: list[MutationWitness] = []

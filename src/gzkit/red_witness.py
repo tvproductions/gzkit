@@ -8,7 +8,7 @@ byte-indistinguishable from a genuine RED-first test.
 
 This module supplies the witness. It reconstructs the base tree in a throwaway
 git worktree, copies in **only** the test files (never the production files), and
-runs the scoped test there. Three outcomes, and they are not equivalent:
+runs the scoped test there. Four outcomes, and they are not equivalent:
 
   * ``assertion`` — the test failed on an assertion. A strong RED: the test
     genuinely depends on the implementation under test.
@@ -18,12 +18,24 @@ runs the scoped test there. Three outcomes, and they are not equivalent:
   * ``none``      — the test PASSED without the production code. It cannot fail.
     This is exactly the ``AGENTS.md`` § DO IT RIGHT Rule 6 test "that can't fail
     when business logic changes," and it is rejected.
-  * ``not-applicable`` — nothing was withheld, so the experiment never ran. NOT a
-    verdict on the test (GHI #839). The premise of every class above is that the
-    implementation is ABSENT from the base tree, and ``resolve_base_commit``
-    returns HEAD — so once the production code lands, the base tree already
-    carries it, every covering test passes, and a ``none`` would be a confident
-    accusation against a test that was never actually tested.
+  * ``not-applicable`` — the run could not tell. NOT a verdict on the test
+    (GHI #839). Five causes, each named in ``output_tail``:
+
+    - nothing was withheld, so the experiment never ran. The premise of every
+      class above is that the implementation is ABSENT from the base tree, and
+      ``resolve_base_commit`` returns HEAD — so once the production code lands,
+      the base tree already carries it, every covering test passes, and a
+      ``none`` would be a confident accusation against a test never tested;
+    - the base run executed no test (a crashed runner, all skipped, none
+      collected — GHI #1154);
+    - the baseline is invalid: the covering tests do not pass on the CURRENT
+      tree, so a failure on the base tree witnesses nothing about the withheld
+      code (GHI #1154);
+    - a covering name matched no test that executed in the base graft — the
+      source/test identity is mismatched, e.g. a test module the graft never
+      carried (GHI #1154);
+    - the run failed, but only in tests the REQ does not name, so the
+      designated discriminator itself was never observed failing (GHI #1154).
 
 Why a base-tree run and not superpowers' commit-the-failing-test witness: gzkit's
 trunk is green and pre-commit runs unittest, so a RED can never be committed to
@@ -42,7 +54,7 @@ from typing import TYPE_CHECKING, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from gzkit.unit_run_provenance import judge_executed
+from gzkit.unit_run_provenance import judge_executed, read_test_observations
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
@@ -64,6 +76,11 @@ BaseProvenance = Literal["working-tree", "reconstructed"]
 _FAILED_SUMMARY_RE = re.compile(r"FAILED\s*\((?P<body>[^)]*)\)")
 _FAILURES_RE = re.compile(r"failures=(\d+)")
 _ERRORS_RE = re.compile(r"errors=(\d+)")
+
+# unittest's `-v` failure blocks, and the header of a test module it could not import.
+_FAILURE_BLOCK_SEPARATOR = "=" * 70
+_FAILED_IMPORT_RE = re.compile(r"^ImportError: Failed to import test module: (\w+)$", re.MULTILINE)
+_NO_MODULE_RE = re.compile(r"No module named '([\w.]+)'")
 
 _GIT_TIMEOUT_S = 120
 _TEST_TIMEOUT_S = 600
@@ -342,6 +359,120 @@ def _resolve_base(
     return None
 
 
+def _run_tests(runner: list[str], test_names: list[str], cwd: Path) -> tuple[int, str]:
+    """Run ``test_names`` verbosely in ``cwd``, returning the exit code and output.
+
+    Verbose so every executed and failing test is printed by id; the aggregate
+    summary alone cannot say WHICH test failed (GHI #1154).
+    """
+    result = subprocess.run(
+        [*runner, "-v", *test_names],
+        cwd=cwd,
+        capture_output=True,
+        text=True,
+        check=False,
+        encoding="utf-8",
+        errors="replace",
+        timeout=_TEST_TIMEOUT_S,
+    )
+    return int(result.returncode), (result.stdout or "") + (result.stderr or "")
+
+
+def _falls_under(test_id: str, name: str) -> bool:
+    """Report whether ``test_id`` is ``name`` itself, or lies inside a module/class ``name``."""
+    return test_id == name or test_id.startswith(name + ".")
+
+
+def _baseline_void(exit_status: int, output: str) -> str | None:
+    """Return why the current-tree run invalidates the experiment, or ``None``.
+
+    The RED premise is a test that passes WITH its implementation and fails
+    without it. A test already failing on the current tree fails on the base
+    tree too, for reasons that have nothing to do with the withheld code.
+    """
+    executed = judge_executed(output)
+    if executed is None and exit_status == 0:
+        return None
+    cause = executed or f"the run exited {exit_status}"
+    return (
+        f"the baseline is invalid — the covering tests do not pass on the current tree "
+        f"({cause}), so a failure on the base tree would witness nothing"
+    )
+
+
+def _import_failed_names(output: str, test_names: list[str]) -> set[str]:
+    """Return the requested names whose PRESENT test module raised while importing.
+
+    unittest reports both a missing test module and a test module that raised on
+    import as ``ImportError: Failed to import test module: <leaf>``. They differ in
+    the cause: ``No module named`` the requested name (or a package holding it)
+    means the graft never carried the test, so nothing executed; any other cause —
+    ``No module named`` a production module, or an ImportError raised inside the
+    module — is the test meeting the withheld implementation, the GHI #849 weak RED.
+    """
+    failed: set[str] = set()
+    for block in output.split(_FAILURE_BLOCK_SEPARATOR):
+        header = _FAILED_IMPORT_RE.search(block)
+        if header is None:
+            continue
+        missing = _NO_MODULE_RE.findall(block)
+        for name in test_names:
+            if header.group(1) not in name.split("."):
+                continue
+            if missing and _falls_under(name, missing[-1]):
+                continue  # the test module itself is absent from the base graft
+            failed.add(name)
+    return failed
+
+
+def _unexecuted_names(output: str, test_names: list[str], import_failed: set[str]) -> list[str]:
+    """Return the requested names that match no test executed in the base run."""
+    executed, _, _ = read_test_observations(output)
+    return [
+        name
+        for name in test_names
+        if name not in import_failed and not any(_falls_under(test, name) for test in executed)
+    ]
+
+
+def _identity_void(output: str, test_names: list[str], failure_class: FailureClass) -> str | None:
+    """Return why the base run is not the NAMED tests' own result, or ``None``.
+
+    Two checks, both GHI #1154:
+
+    * **Identity.** Each requested name must match a test that executed — exactly
+      for a ``module.Class.method`` id, by prefix for a module or class name. A
+      loader stand-in (``unittest.loader._FailedTest.<leaf>``) never counts as
+      executed: its id lies under no requested name, so it matches by construction
+      no name a caller can pass.
+      One exception keeps the GHI #849 weak-RED policy intact: a present test
+      module that raised while importing (see :func:`_import_failed_names`)
+      counts, because on a working-tree base that import can only have failed for
+      the withheld implementation. On a reconstructed base the resulting ``error``
+      is already inconclusive (:attr:`RedWitness.is_conclusive`).
+    * **Attribution.** A RED (``assertion`` or ``error``) must include a failure
+      under a requested name. A run that failed only elsewhere never observed the
+      designated discriminator fail.
+    """
+    import_failed = _import_failed_names(output, test_names)
+    unexecuted = _unexecuted_names(output, test_names, import_failed)
+    if unexecuted:
+        return (
+            f"covering test(s) {', '.join(unexecuted)} did not execute in the base graft — "
+            "the source/test identity is mismatched, so the run says nothing about them"
+        )
+    if failure_class not in ("assertion", "error") or import_failed:
+        return None
+    _, failing, _ = read_test_observations(output)
+    if any(_falls_under(test, name) for test in failing for name in test_names):
+        return None
+    return (
+        f"the base run failed only in tests the REQ does not name "
+        f"({', '.join(failing) or 'no failing test id was reported'}); none of "
+        f"{', '.join(test_names)} failed there"
+    )
+
+
 def run_red_witness(
     *,
     project_root: Path,
@@ -352,6 +483,11 @@ def run_red_witness(
     test_runner: list[str] | None = None,
 ) -> RedWitness:
     """Run ``test_names`` against the base tree and classify how they fail.
+
+    The covering tests run first on the current tree: the baseline must be green
+    before a failure on the base tree can be laid at the withheld code's door. The
+    base run's class then stands only when the NAMED tests produced it
+    (:func:`_identity_void`); otherwise the witness is ``not-applicable``.
 
     Raises:
         ValueError: when no covering test names were supplied — a BEHAVIOR REQ with
@@ -381,38 +517,44 @@ def run_red_witness(
             ),
         )
     base, provenance = resolved
-
-    test_files = changed_test_files(project_root, base, tests_dir)
     runner = list(test_runner) if test_runner else list(DEFAULT_TEST_RUNNER)
 
-    with base_tree_worktree(project_root, base) as worktree:
-        _graft_test_files(project_root, worktree, test_files)
-        result = subprocess.run(
-            [*runner, *test_names],
-            cwd=worktree,
-            capture_output=True,
-            text=True,
-            check=False,
-            encoding="utf-8",
-            errors="replace",
-            timeout=_TEST_TIMEOUT_S,
+    def void(exit_status: int, reason: str, output: str) -> RedWitness:
+        """Report a run that could not tell, carrying its reason (GHI #839, #1154)."""
+        note = f"RED witness did not run: {reason}. This is NOT a finding about the test."
+        return RedWitness(
+            req_id=req_id,
+            base_commit=base,
+            test_names=sorted(test_names),
+            exit_status=exit_status,
+            failure_class="not-applicable",
+            base_provenance=provenance,
+            output_tail=f"{note}\n{output}"[-4000:],
         )
 
-    output = (result.stdout or "") + (result.stderr or "")
-    failure_class = classify_failure(int(result.returncode), output)
+    baseline_exit, baseline_output = _run_tests(runner, test_names, project_root)
+    baseline_reason = _baseline_void(baseline_exit, baseline_output)
+    if baseline_reason is not None:
+        # No base-tree run happened, so its exit status is recorded as the void runs' 0.
+        return void(0, baseline_reason, baseline_output)
+
+    test_files = changed_test_files(project_root, base, tests_dir)
+    with base_tree_worktree(project_root, base) as worktree:
+        _graft_test_files(project_root, worktree, test_files)
+        exit_status, output = _run_tests(runner, test_names, worktree)
+
+    failure_class = classify_failure(exit_status, output)
     # A run that executed no test cannot witness anything either way: a crash before
     # any test ran is not the missing implementation, and an exit 0 with nothing
     # executed did not show the test passes without it (GHI #1154, as GHI #839).
-    void_reason = judge_executed(output)
-    if void_reason is not None:
-        failure_class = "not-applicable"
-        note = f"RED witness did not run: {void_reason}. This is NOT a finding about the test."
-        output = f"{note}\n{output}"
+    reason = judge_executed(output) or _identity_void(output, test_names, failure_class)
+    if reason is not None:
+        return void(exit_status, reason, output)
     return RedWitness(
         req_id=req_id,
         base_commit=base,
         test_names=sorted(test_names),
-        exit_status=int(result.returncode),
+        exit_status=exit_status,
         failure_class=failure_class,
         base_provenance=provenance,
         output_tail=output[-4000:],

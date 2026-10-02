@@ -23,10 +23,11 @@ from gzkit.acceptance import Obligation, Proof
 from gzkit.config import GzkitConfig
 from gzkit.frontmatter import read_frontmatter
 from gzkit.governance.req_coverage import discover_covers
-from gzkit.mutation_witness import Mutation, _test_observations, run_mutation_sweep
+from gzkit.mutation_witness import Mutation, run_mutation_sweep
 from gzkit.req_kind_fence import resolve_fence_proof
 from gzkit.req_kind_support import resolve_support_proof
 from gzkit.triangle import ReqEntity, extract_reqs_from_brief
+from gzkit.unit_run_provenance import read_test_observations
 
 # These sections carry workflow history, not the contract being accepted. All
 # other sections are conservatively included, including unknown new headings.
@@ -306,7 +307,7 @@ def _restored_run(root: Path, command: list[str], selectors: list[str]) -> dict:
             timeout=600,
         )  # noqa: S603
     output = (run.stdout or "") + (run.stderr or "")
-    executed, failures, count = _test_observations(output)
+    executed, failures, count = read_test_observations(output)
     return {
         "exit_status": run.returncode,
         "output": output,

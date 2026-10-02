@@ -47,16 +47,16 @@ from gzkit.mutation_witness import (
     Mutation,
     MutationWitness,
     _run,
-    _test_observations,
     run_mutation_sweep,
 )
 from gzkit.red_witness import _git, base_tree_worktree
+from gzkit.unit_run_provenance import read_test_observations
 
 CommitVerdict = Literal["driven", "undriven", "no-tests", "no-production-hunks", "inconclusive"]
 WitnessUnit = Literal["hunk", "statement", "declaration"]
 
 _HUNK_HEADER = re.compile(r"^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@")
-#: Verbose unittest, so :func:`gzkit.mutation_witness._test_observations` can read IDs.
+#: Verbose unittest, so :func:`gzkit.unit_run_provenance.read_test_observations` can read IDs.
 DEFAULT_RUNNER: tuple[str, ...] = ("uv", "run", "-m", "unittest", "-v")
 
 
@@ -336,7 +336,7 @@ def _sweep_hunks(
     with base_tree_worktree(project_root, sha) as worktree:
         with tempfile.TemporaryDirectory() as cache:
             baseline = _run(command, worktree, Path(cache))
-        executed, _, _ = _test_observations((baseline.stdout or "") + (baseline.stderr or ""))
+        executed, _, _ = read_test_observations((baseline.stdout or "") + (baseline.stderr or ""))
         expected = sorted(executed)
         for path in production:
             units = _hunk_units(project_root, sha, path)

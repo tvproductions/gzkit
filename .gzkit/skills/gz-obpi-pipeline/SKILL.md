@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-09-29
 metadata:
-  skill-version: "6.63.0"
+  skill-version: "6.63.1"
 model: sonnet
 ---
 
@@ -637,7 +637,7 @@ This reconstructs the base tree in a throwaway git worktree, copies in **only** 
 | `assertion` | Strong RED — the test failed on an assertion | Proceed |
 | `error` | Weak RED — failed for the wrong reason (usually a not-yet-existing symbol) | Proceed **only on a `working-tree` base**; on a `reconstructed` base it is inconclusive (below). **Never** report it as an assertion RED |
 | `none` | The test PASSED without its implementation | **Blocking.** Rewrite the test to assert the REQ's semantics, then re-run |
-| `not-applicable` | Nothing was withheld and no earlier tree could be reconstructed | **Non-blocking.** NOT a finding about the test; do **not** rewrite it. Note in the evidence that the witness did not run |
+| `not-applicable` | The run could not tell; `output_tail` names why: nothing withheld, nothing executed, an invalid baseline (the covering test fails on the current tree), a covering test absent from the base graft, or a failure only in tests the REQ does not name (GHI #1154) | **Non-blocking.** NOT a finding about the test; do **not** rewrite it for that. An invalid baseline is repaired on HEAD and re-run; otherwise note in the evidence that the witness did not run |
 
 Every receipt and ledger event also records a **`base_provenance`**, and it changes what `error` means:
 

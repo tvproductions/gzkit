@@ -48,6 +48,7 @@ The `failure_class` is the verdict, not decoration.
 | `assertion` | The test failed on an assertion | **Strong RED.** The test genuinely depends on the implementation. |
 | `error` | The test failed on an ImportError or other exception | **Weak RED.** It failed for the wrong reason — usually the new symbol does not exist yet. Recorded as `error`; never silently equated with an assertion RED. |
 | `none` | The test **passed** with the production hunks withheld | **No RED.** The test cannot fail when the business logic changes (`AGENTS.md` § DO IT RIGHT Rule 6), so it witnesses nothing. Blocking. |
+| `not-applicable` | The run could not tell; `output_tail` names the cause | **Not a verdict on the test** (GHI #839). Five causes: nothing was withheld; the base run executed no test; the baseline is invalid because the covering tests do not pass on the **current** tree; a covering test did not execute in the base graft (mismatched source/test identity); or the run failed only in tests the REQ does not name (GHI #1154). An invalid baseline is repaired on HEAD before re-running. |
 
 ---
 
@@ -142,10 +143,12 @@ Commit mode (`--commit`):
 
 ## Notes
 
-Running this against a REQ whose implementation is **already committed** yields
-`failure_class: none` — the base tree contains the implementation, so nothing was
-withheld. The witness is meaningful only while the production change is
-uncommitted, or against an explicit `--base` that predates it.
+Against a REQ whose implementation is **already committed**, the witness runs on
+the parent of the commit that introduced the covering test (`base_provenance:
+reconstructed`, GHI #849). When no tree withholds the implementation it reports
+`not-applicable`, never `none` (GHI #839). The covering tests also run first on the
+current tree, and the base run's class stands only when the named covering tests
+executed there and produced it (GHI #1154).
 
 gzkit's trunk is green and pre-commit runs unittest, so a RED can never be
 committed to `main`. That is why the witness is an isolated base-tree run rather
