@@ -1262,3 +1262,7 @@
 {"ts": "2026-10-02T09:18:51Z", "source": "20261002T091845Z-canaries-reviewed-1155-populations-1154-identity.md", "text": "Accept the 8 seeded refuse canaries (verbatim: \"accept all 8\")."}
 {"ts": "2026-10-02T09:18:51Z", "source": "20261002T091845Z-canaries-reviewed-1155-populations-1154-identity.md", "text": "Work every advised step of the predecessor (verbatim: \"do all 5 steps\")."}
 {"ts": "2026-10-02T09:18:51Z", "source": "20261002T091845Z-canaries-reviewed-1155-populations-1154-identity.md", "text": "Run the governed insights command when canon requires it rather than deferring on a harness denial (verbatim: \"NO! you run that insights command - that is ridiculous\")."}
+{"ts": "2026-10-02T10:02:20Z", "source": "20261002T100215Z-canaries-all-reviewed-1161-filed.md", "text": "Work advised step 1 of the predecessor only (verbatim: \"Review the 13 unreviewed canaries.\")."}
+{"ts": "2026-10-02T10:02:20Z", "source": "20261002T100215Z-canaries-all-reviewed-1161-filed.md", "text": "Accept all 13 canaries and correct the waiver-identity-reviewed-admitted label (verbatim: \"a\")."}
+{"ts": "2026-10-02T10:02:20Z", "source": "20261002T100215Z-canaries-all-reviewed-1161-filed.md", "text": "Add a project allow rule for data/guard_canaries.json, then file a GHI for a governed canary-review verb (verbatim: \"do 1, then file the GHI for 2\")."}
+{"ts": "2026-10-02T10:02:20Z", "source": "20261002T100215Z-canaries-all-reviewed-1161-filed.md", "text": "Write the handoff and git-sync (verbatim: \"write handoff and git sync\")."}
