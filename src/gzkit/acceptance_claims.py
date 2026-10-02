@@ -159,8 +159,8 @@ def _ep_refutation_loops(kind: str) -> list[str]:
     return [f"{kind}: {_OPEN}"] if open_finding and refused else []
 
 
-def _ep_clean_verdict_admitted(_member: str | None) -> int:
-    """Truthy only when a clean round and a verified closure both reach readiness."""
+def _ep_clean_verdict_admitted(kind: str) -> int:
+    """Truthy only when a clean round, and a *kind* refutation closed, both reach readiness."""
     from gzkit.acceptance import assess_readiness  # noqa: PLC0415
 
     clean = _assess(
@@ -172,16 +172,12 @@ def _ep_clean_verdict_admitted(_member: str | None) -> int:
         assess_readiness,
         _records(repaired=True),
         (
-            _refutation("counterexample"),
+            _refutation(kind),
             *_approvals("proof-repair"),
             _closing_review(),
         ),
     )
     return 1 if clean.ready and repaired.ready else 0
-
-
-def _build_clean_round() -> None:
-    return None
 
 
 class _AcceptanceGateMarker:
@@ -217,7 +213,7 @@ def ensure_acceptance_gate_claims_registered() -> None:
     if ADMIT_CLAIM_ID not in existing:
         enforces(
             ADMIT_CLAIM_ID,
-            _build_clean_round,
+            _build_kind,
             _ep_clean_verdict_admitted,
             exempts=EXEMPTS_NONE,
             population=POPULATION_NONE,
