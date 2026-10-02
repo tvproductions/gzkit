@@ -1,5 +1,8 @@
 {
   "permissions": {
+    "allow": [
+      "Edit(data/guard_canaries.json)"
+    ],
     "deny": [
       "Bash(git *--no-verify*)",
       "Bash(git *--no-verify)",
