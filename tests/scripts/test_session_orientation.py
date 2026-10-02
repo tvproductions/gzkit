@@ -1144,6 +1144,74 @@ class TestChoreStalenessAnnouncement(unittest.TestCase):
                 self.assertIsNone(self.mod.collect_chore_staleness())
 
 
+class TestUnreviewedCanariesReachSessionStart(unittest.TestCase):
+    """A seeded guard canary no human has reviewed is named at session start (GHI #1154).
+
+    ``reviewed_by`` was provenance nothing read back: no surface told the operator a
+    canary awaited review, so a seeded mutant could stay unreviewed indefinitely. The
+    section is conditional, like the chore one: absent when every canary is reviewed.
+    """
+
+    def setUp(self):
+        self.mod = _load_orientation_module()
+        self.now = datetime(2026, 10, 2, 12, 0, 0, tzinfo=UTC)
+
+    def _collect(self, canaries) -> list[str] | None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "data").mkdir()
+            body = canaries if isinstance(canaries, str) else json.dumps({"canaries": canaries})
+            (root / "data" / "guard_canaries.json").write_text(body, encoding="utf-8")
+            return self.mod.collect_unreviewed_canaries(root)
+
+    def test_only_canaries_with_no_reviewer_are_collected(self):
+        found = self._collect(
+            [
+                {"claim_id": "pending-one", "reviewed_by": None},
+                {"claim_id": "blank-one", "reviewed_by": ""},
+                {"claim_id": "seen-one", "reviewed_by": "g0"},
+                {"claim_id": "absent-field"},
+            ]
+        )
+        self.assertEqual(found, ["pending-one", "blank-one", "absent-field"])
+
+    def test_an_unreadable_registry_degrades_to_silence(self):
+        for label, body in (("unparseable", "not json"), ("wrong shape", '{"canaries": 3}')):
+            with self.subTest(label):
+                self.assertIsNone(self._collect(body))
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertIsNone(self.mod.collect_unreviewed_canaries(Path(tmp)))
+
+    def test_pending_canaries_are_announced_by_name_with_the_count(self):
+        out = self.mod.render({"unreviewed_canaries": ["pending-one", "pending-two"]}, self.now)
+        self.assertIn("## Guard canaries awaiting operator review", out)
+        self.assertIn("2 canar", out)
+        self.assertIn("pending-one", out)
+        self.assertIn("pending-two", out)
+
+    def test_nothing_pending_renders_no_section(self):
+        for label, payload in (("all reviewed", []), ("registry unavailable", None)):
+            with self.subTest(label):
+                out = self.mod.render({"unreviewed_canaries": payload}, self.now)
+                self.assertNotIn("Guard canaries awaiting", out)
+
+    def test_a_long_list_names_a_bounded_set_and_states_the_rest(self):
+        limit = self.mod.CANARY_ANNOUNCE_LIMIT
+        pending = [f"claim-{i:02d}" for i in range(limit + 3)]
+        out = self.mod.render({"unreviewed_canaries": pending}, self.now)
+        self.assertIn(f"{limit + 3} canar", out)
+        self.assertIn("claim-00", out)
+        self.assertNotIn(f"claim-{limit + 2:02d}", out)
+        self.assertIn("+3 more", out)
+
+    def test_the_boot_hook_agrees_with_the_library_on_the_live_registry(self):
+        from gzkit import guard_canary  # noqa: PLC0415
+
+        self.assertEqual(
+            self.mod.collect_unreviewed_canaries(REPO_ROOT), guard_canary.unreviewed(REPO_ROOT)
+        )
+
+
 def subprocess_completed(stdout: str = "", returncode: int = 0):
     """Tiny stand-in for subprocess.CompletedProcess covering the fields we use."""
     import subprocess as _sp

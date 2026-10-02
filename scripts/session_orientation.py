@@ -71,6 +71,8 @@ SECTION_HEADINGS: tuple[str, ...] = (
 # total and the overflow is stated, as with ACCOUNT_COMMIT_LIMIT.
 CHORE_STATUS_TIMEOUT_SEC = 15
 CHORE_ANNOUNCE_LIMIT = 10
+# Unreviewed guard canaries named before the announcement summarizes the rest.
+CANARY_ANNOUNCE_LIMIT = 10
 
 REMOTE_FETCH_TIMEOUT_SEC = 8
 REMOTE_QUERY_TIMEOUT_SEC = 4
@@ -1041,6 +1043,45 @@ def _render_chore_staleness(lines: list[str], payload: object) -> None:
     lines.append("")
 
 
+def collect_unreviewed_canaries(repo_root: Path) -> list[str] | None:
+    """Return the claim ids whose guard canary no human has reviewed (GHI #1154).
+
+    ``reviewed_by`` was provenance nothing read back, so a seeded mutant could sit
+    unreviewed with no surface saying so. ``data/guard_canaries.json`` is read
+    directly, as ``data/active_campaign.json`` is: the predicate is the one
+    ``gzkit.guard_canary.unreviewed`` applies, and a test holds the two together.
+    Returns ``None`` when the registry is missing, unreadable or mis-shaped.
+    """
+    registry = repo_root / "data" / "guard_canaries.json"
+    try:
+        canaries = json.loads(registry.read_text(encoding="utf-8", errors="replace"))["canaries"]
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+    if not isinstance(canaries, list):
+        return None
+    return [
+        str(canary.get("claim_id"))
+        for canary in canaries
+        if isinstance(canary, dict) and not canary.get("reviewed_by")
+    ]
+
+
+def _render_unreviewed_canaries(lines: list[str], payload: object) -> None:
+    """Announce canaries awaiting operator review; render nothing when none are."""
+    if not isinstance(payload, list) or not payload:
+        return
+    lines.append("## Guard canaries awaiting operator review")
+    named = ", ".join(str(claim) for claim in payload[:CANARY_ANNOUNCE_LIMIT])
+    overflow = len(payload) - CANARY_ANNOUNCE_LIMIT
+    suffix = f" (+{overflow} more)" if overflow > 0 else ""
+    lines.append(
+        f"- {len(payload)} canaries carry `reviewed_by: null` in `data/guard_canaries.json`. "
+        "A canary is enforced either way; review records that a human accepted the mutant."
+    )
+    lines.append(f"- Pending: {named}{suffix}")
+    lines.append("")
+
+
 def collect_state(repo_root: Path, now: datetime) -> dict:
     """Aggregate authoritative state. Best-effort; never raises."""
     campaign = collect_campaign(repo_root)
@@ -1059,6 +1100,7 @@ def collect_state(repo_root: Path, now: datetime) -> dict:
         "adr_pipeline": [],
         "recent_events": collect_recent_events(repo_root / ".gzkit" / "ledger.jsonl", now),
         "chore_staleness": collect_chore_staleness(),
+        "unreviewed_canaries": collect_unreviewed_canaries(repo_root),
         "blockers": [],
     }
 
@@ -1224,6 +1266,7 @@ def render(state: dict, now: datetime) -> str:
     lines.append("")
 
     _render_chore_staleness(lines, state.get("chore_staleness"))
+    _render_unreviewed_canaries(lines, state.get("unreviewed_canaries"))
 
     lines.append("## Open blockers")
     blockers = state.get("blockers") or []

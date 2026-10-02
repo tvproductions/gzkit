@@ -250,7 +250,11 @@ def check_canaries(project_root: Path, registered: set[str]) -> list[ValidationE
 
 
 def unreviewed(project_root: Path) -> list[str]:
-    """Return the claims whose canary no human has reviewed yet."""
+    """Return the claims whose canary no human has reviewed yet.
+
+    Session orientation (``scripts/session_orientation.py``) applies the same predicate to
+    announce them, and a test holds the two readers together.
+    """
     return [c.claim_id for c in load_canaries(project_root) if not c.reviewed_by]
 
 
