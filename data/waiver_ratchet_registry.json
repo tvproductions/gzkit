@@ -210,7 +210,7 @@
       "gates_step": "Gate enrollment (gz validate --gate-enrollment)",
       "mechanism": "shrink-ratchet",
       "entries_path": "accepted_scopes",
-      "baseline_count": 57
+      "baseline_count": 56
     }
   ],
   "excluded": [

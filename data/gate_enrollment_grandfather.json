@@ -143,10 +143,6 @@
       "reason": "no registered enforcement claim names this scope's deciding function"
     },
     {
-      "scope": "pointer_anchors",
-      "reason": "no registered enforcement claim names this scope's deciding function"
-    },
-    {
       "scope": "pool_adr_isolation",
       "reason": "no registered enforcement claim names this scope's deciding function"
     },
