@@ -689,7 +689,9 @@ def _ensure_production_claims_registered() -> None:
         clause, never inferring it from prose (GHI #888, enrolled under GHI #1155).
       * ``governance.trust_audits.pointer_integrity_claims`` — ``pointer-back-pointer-matched``
         and its admit control, the witnesses for a lift pointer's back-pointer naming that
-        pointer's source and anchor (GHI #932, enrolled under GHI #1155).
+        pointer's source and anchor (GHI #932), and ``pointer-reverse-arm-orphan-refused`` with
+        its admit control, the witnesses for a ``lifted-from`` declaration needing a live lift
+        (GHI #933); both enrolled under GHI #1155.
       * ``cli.helpers.log_level_claims`` — ``cli-log-levels-follow-spec``, the witness
         for `.gzkit/rules/cli.md` § Flag Conventions verbosity rows: the entrypoint
         logs at cli-standards-v3.md § Verbosity Levels, and only to stderr.
