@@ -692,6 +692,9 @@ def _ensure_production_claims_registered() -> None:
         pointer's source and anchor (GHI #932), and ``pointer-reverse-arm-orphan-refused`` with
         its admit control, the witnesses for a ``lifted-from`` declaration needing a live lift
         (GHI #933); both enrolled under GHI #1155.
+      * ``commands.tidy_claims`` — ``tidy-breach-exits-three`` and its admit control, the
+        witnesses for ``gz tidy`` exiting 3 on a breach and 0 on a clean or informational
+        tree (GHI #1124, enrolled under GHI #1155).
       * ``cli.helpers.log_level_claims`` — ``cli-log-levels-follow-spec``, the witness
         for `.gzkit/rules/cli.md` § Flag Conventions verbosity rows: the entrypoint
         logs at cli-standards-v3.md § Verbosity Levels, and only to stderr.
@@ -714,6 +717,7 @@ def _ensure_production_claims_registered() -> None:
     from gzkit.commands.obpi_precomplete_receipt_claims import (  # noqa: PLC0415
         ensure_receipt_gate_claims_registered,
     )
+    from gzkit.commands.tidy_claims import ensure_tidy_verdict_claims_registered  # noqa: PLC0415
     from gzkit.commands.validate_json_exit_claims import (  # noqa: PLC0415
         ensure_json_exit_claims_registered,
     )
@@ -744,6 +748,7 @@ def _ensure_production_claims_registered() -> None:
     ensure_json_exit_claims_registered()
     ensure_support_citation_claims_registered()
     ensure_back_pointer_claims_registered()
+    ensure_tidy_verdict_claims_registered()
 
 
 def production_enforcement_registry() -> list[EnforcementClaimRecord]:
