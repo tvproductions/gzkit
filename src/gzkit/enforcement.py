@@ -695,6 +695,9 @@ def _ensure_production_claims_registered() -> None:
       * ``commands.tidy_claims`` — ``tidy-breach-exits-three`` and its admit control, the
         witnesses for ``gz tidy`` exiting 3 on a breach and 0 on a clean or informational
         tree (GHI #1124, enrolled under GHI #1155).
+      * ``governance.trust_audits.waiver_identity_claims`` — ``waiver-identity-new-entry-refused``
+        and its admit control, the witnesses for a shrink-ratchet surface carrying only
+        identities its baseline accepted or a reviewed record names (GHI #1154 item 4).
       * ``cli.helpers.log_level_claims`` — ``cli-log-levels-follow-spec``, the witness
         for `.gzkit/rules/cli.md` § Flag Conventions verbosity rows: the entrypoint
         logs at cli-standards-v3.md § Verbosity Levels, and only to stderr.
@@ -725,6 +728,9 @@ def _ensure_production_claims_registered() -> None:
     from gzkit.governance.trust_audits.pointer_integrity_claims import (  # noqa: PLC0415
         ensure_back_pointer_claims_registered,
     )
+    from gzkit.governance.trust_audits.waiver_identity_claims import (  # noqa: PLC0415
+        ensure_waiver_identity_claims_registered,
+    )
     from gzkit.handoff_resume_gate import _ensure_resume_gate_claims_registered  # noqa: PLC0415
     from gzkit.mx.invariants import _ensure_gate5_claims_registered  # noqa: PLC0415
     from gzkit.mx.proxy_reality import _ensure_grader_gaming_registered  # noqa: PLC0415
@@ -749,6 +755,7 @@ def _ensure_production_claims_registered() -> None:
     ensure_support_citation_claims_registered()
     ensure_back_pointer_claims_registered()
     ensure_tidy_verdict_claims_registered()
+    ensure_waiver_identity_claims_registered()
 
 
 def production_enforcement_registry() -> list[EnforcementClaimRecord]:

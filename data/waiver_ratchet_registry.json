@@ -7,7 +7,10 @@
       "gates_step": "BDD coverage (gz validate --behave-req-tags)",
       "mechanism": "shrink-ratchet",
       "entries_path": "waivers",
-      "baseline_count": 522
+      "baseline_count": 522,
+      "identity": {
+        "kind": "keys"
+      }
     },
     {
       "data_file": "data/historical_self_close_waivers.json",
@@ -21,77 +24,117 @@
       "gates_step": "sensitivity floor (gz validate --sensitivity)",
       "mechanism": "shrink-ratchet",
       "entries_path": "grandfathered_briefs",
-      "baseline_count": 87
+      "baseline_count": 87,
+      "identity": {
+        "kind": "strings"
+      }
     },
     {
       "data_file": "data/fidelity_presence_grandfather.json",
       "gates_step": "fidelity presence (gz validate --fidelity-presence)",
       "mechanism": "shrink-ratchet",
       "entries_path": "grandfathered_adrs",
-      "baseline_count": 0
+      "baseline_count": 0,
+      "identity": {
+        "kind": "strings"
+      }
     },
     {
       "data_file": "data/tautological_test_waivers.json",
       "gates_step": "tautological-test detection (gz validate --tautological-test-audit)",
       "mechanism": "shrink-ratchet",
       "entries_path": "file_waivers",
-      "baseline_count": 2
+      "baseline_count": 2,
+      "identity": {
+        "kind": "keys"
+      }
     },
     {
       "data_file": "data/tautological_test_baseline.json",
       "gates_step": "tautological-test baseline (gz validate --tautological-test-audit)",
       "mechanism": "shrink-ratchet",
       "entries_path": "operations",
-      "baseline_count": 290
+      "baseline_count": 290,
+      "identity": {
+        "kind": "fields",
+        "fields": [
+          "file_path",
+          "function_name",
+          "operation_kind",
+          "assertion_kind"
+        ]
+      }
     },
     {
       "data_file": "data/interview_transcript_waivers.json",
       "gates_step": "interview transcript (gz validate --interviews)",
       "mechanism": "shrink-ratchet",
       "entries_path": "waivers",
-      "baseline_count": 44
+      "baseline_count": 44,
+      "identity": {
+        "kind": "keys"
+      }
     },
     {
       "data_file": "data/surface_weight_waivers.json",
       "gates_step": "surface weight (gz validate --surface-weight)",
       "mechanism": "shrink-ratchet",
       "entries_path": "",
-      "baseline_count": 6
+      "baseline_count": 6,
+      "identity": {
+        "kind": "count-only",
+        "reason": "one covering bridge waiver, updated in place and never appended (its own rationale, ADR-0.0.73 BI#8): the entry has no stable name to carry"
+      }
     },
     {
       "data_file": "data/req_kind_grandfathering.json",
       "gates_step": "req-kind discipline (gz validate --req-kind-discipline)",
       "mechanism": "shrink-ratchet",
       "entries_path": "",
-      "baseline_count": 3
+      "baseline_count": 3,
+      "identity": {
+        "kind": "keys"
+      }
     },
     {
       "data_file": "data/chores_layout_waivers.json",
       "gates_step": "chores layout (gz validate --chores-layout)",
       "mechanism": "shrink-ratchet",
       "entries_path": "",
-      "baseline_count": 0
+      "baseline_count": 0,
+      "identity": {
+        "kind": "strings"
+      }
     },
     {
       "data_file": "data/support_proof_grandfather.json",
       "gates_step": "SUPPORT proof path-aware (gz validate --closeout-proof)",
       "mechanism": "shrink-ratchet",
       "entries_path": "grandfathered_reqs",
-      "baseline_count": 2
+      "baseline_count": 2,
+      "identity": {
+        "kind": "strings"
+      }
     },
     {
       "data_file": "data/adversarial_validation_grandfather.json",
       "gates_step": "Step-4b adversary verdict (gz validate --adversarial-validation)",
       "mechanism": "shrink-ratchet",
       "entries_path": "grandfathered_obpis",
-      "baseline_count": 225
+      "baseline_count": 225,
+      "identity": {
+        "kind": "strings"
+      }
     },
     {
       "data_file": "data/handoff_section_grandfather.json",
       "gates_step": "handoff section population (gz check: Handoff documents)",
       "mechanism": "shrink-ratchet",
       "entries_path": "grandfathered_handoffs",
-      "baseline_count": 4
+      "baseline_count": 4,
+      "identity": {
+        "kind": "strings"
+      }
     },
     {
       "data_file": "data/foundation_grandfather.json",
@@ -105,115 +148,182 @@
       "gates_step": "ADR persona population (gz check: Persona witness)",
       "mechanism": "shrink-ratchet",
       "entries_path": "grandfathered_adrs",
-      "baseline_count": 44
+      "baseline_count": 44,
+      "identity": {
+        "kind": "strings"
+      }
     },
     {
       "data_file": "data/module_size_grandfather.json",
       "gates_step": "module size vs the canonical radon_raw_nloc block band (.gzkit/chores/module-sloc-cap-radon/check_module_size.py)",
       "mechanism": "shrink-ratchet",
       "entries_path": "grandfathered_modules",
-      "baseline_count": 5
+      "baseline_count": 5,
+      "identity": {
+        "kind": "strings"
+      }
     },
     {
       "data_file": "data/uncalled_gate_grandfather.json",
       "gates_step": "uncalled-gate inventory (gz validate --gate-callers)",
       "mechanism": "shrink-ratchet",
       "entries_path": "accepted_gates",
-      "baseline_count": 40
+      "baseline_count": 40,
+      "identity": {
+        "kind": "fields",
+        "fields": [
+          "gate"
+        ]
+      }
     },
     {
       "data_file": "data/advisory_scorecard_grandfather.json",
       "gates_step": "advisory scorecard coverage (gz validate --advisory-scorecard)",
       "mechanism": "shrink-ratchet",
       "entries_path": "grandfathered_rules",
-      "baseline_count": 23
+      "baseline_count": 23,
+      "identity": {
+        "kind": "strings"
+      }
     },
     {
       "data_file": "data/mechanical_witness_grandfather.json",
       "gates_step": "advisory scorecard mechanical-row witness (gz validate --advisory-scorecard)",
       "mechanism": "shrink-ratchet",
       "entries_path": "unwitnessed_mechanical_rows",
-      "baseline_count": 64
+      "baseline_count": 64,
+      "identity": {
+        "kind": "fields",
+        "fields": [
+          "key"
+        ]
+      }
     },
     {
       "data_file": "data/exemption_control_grandfather.json",
       "gates_step": "Exemption controls (gz validate --exemption-controls)",
       "mechanism": "shrink-ratchet",
       "entries_path": "accepted_claims",
-      "baseline_count": 55
+      "baseline_count": 55,
+      "identity": {
+        "kind": "fields",
+        "fields": [
+          "claim"
+        ]
+      }
     },
     {
       "data_file": "data/population_control_grandfather.json",
       "gates_step": "Population controls (gz validate --population-controls)",
       "mechanism": "shrink-ratchet",
       "entries_path": "accepted_claims",
-      "baseline_count": 83
+      "baseline_count": 83,
+      "identity": {
+        "kind": "fields",
+        "fields": [
+          "claim"
+        ]
+      }
     },
     {
       "data_file": "data/validator_reachability_grandfather.json",
       "gates_step": "validator reachability (chore: control-surface-validator-reachability)",
       "mechanism": "shrink-ratchet",
       "entries_path": "ungated_scopes",
-      "baseline_count": 52
+      "baseline_count": 52,
+      "identity": {
+        "kind": "strings"
+      }
     },
     {
       "data_file": "data/ledger_vocabulary_grandfather.json",
       "gates_step": "ledger vocabulary inertness (chore: ledger-vocabulary-inertness)",
       "mechanism": "shrink-ratchet",
       "entries_path": "never_fired",
-      "baseline_count": 11
+      "baseline_count": 11,
+      "identity": {
+        "kind": "strings"
+      }
     },
     {
       "data_file": "data/release_tag_reachability_grandfather.json",
       "gates_step": "release-tag reachability (gz validate --version-release)",
       "mechanism": "shrink-ratchet",
       "entries_path": "accepted_unreachable_versions",
-      "baseline_count": 12
+      "baseline_count": 12,
+      "identity": {
+        "kind": "strings"
+      }
     },
     {
       "data_file": "src/gzkit/skill_body_grandfather.json",
       "gates_step": "Skill audit (gz skill audit)",
       "mechanism": "shrink-ratchet",
       "entries_path": "",
-      "baseline_count": 12
+      "baseline_count": 12,
+      "identity": {
+        "kind": "keys"
+      }
     },
     {
       "data_file": "data/ghi_cross_reference_baseline.json",
       "gates_step": "GHI cross-reference staleness (chore: ghi-cross-reference-staleness)",
       "mechanism": "shrink-ratchet",
       "entries_path": "disclosed",
-      "baseline_count": 5
+      "baseline_count": 5,
+      "identity": {
+        "kind": "fields",
+        "fields": [
+          "issue"
+        ]
+      }
     },
     {
       "data_file": "data/config_derivation_grandfather.json",
       "gates_step": "config registry (gz validate --config-registry)",
       "mechanism": "shrink-ratchet",
       "entries_path": "grandfathered",
-      "baseline_count": 19
+      "baseline_count": 19,
+      "identity": {
+        "kind": "strings"
+      }
     },
     {
       "data_file": "data/module_constant_grandfather.json",
       "gates_step": "config registry (gz validate --config-registry)",
       "mechanism": "shrink-ratchet",
       "entries_path": "constants",
-      "baseline_count": 56
+      "baseline_count": 56,
+      "identity": {
+        "kind": "strings"
+      }
     },
     {
       "data_file": "data/direct_data_reach_grandfather.json",
       "gates_step": "config registry (gz validate --config-registry)",
       "mechanism": "shrink-ratchet",
       "entries_path": "modules",
-      "baseline_count": 49
+      "baseline_count": 49,
+      "identity": {
+        "kind": "strings"
+      }
     },
     {
       "data_file": "data/gate_enrollment_grandfather.json",
       "gates_step": "Gate enrollment (gz validate --gate-enrollment)",
       "mechanism": "shrink-ratchet",
       "entries_path": "accepted_scopes",
-      "baseline_count": 56
+      "baseline_count": 56,
+      "identity": {
+        "kind": "fields",
+        "fields": [
+          "scope"
+        ]
+      }
     }
   ],
   "excluded": [
     "data/distribution_baseline_manifest.json"
-  ]
+  ],
+  "identity_baseline": "data/waiver_identity_baseline.json"
 }

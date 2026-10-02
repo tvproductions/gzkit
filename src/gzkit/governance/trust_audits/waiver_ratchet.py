@@ -19,6 +19,17 @@ disk that is NOT registered (the silent-bypass an unratcheted surface is): the
 registry is the closed set, and a new ``data/*_waivers.json`` /
 ``*_grandfather*.json`` that escapes it is the exact hole this law closes.
 
+**Identity monotonicity (GHI #1154 item 4).** A count ratchet cannot see a swap: drop
+one entry, add another, and the count never moved. A registry that declares
+``identity_baseline`` also declares, per shrink-ratchet surface, how an entry is
+identified (``identity``), and the surface may carry only identities its committed
+baseline holds or a reviewed authorization record names. A renamed or moved operation is
+a NEW identity, so it fails unless a record in the baseline file names it. The baseline
+(``waiver_identity_baseline.json``) is a high-water set, never pruned by this audit: a
+removed entry may return (the count bounds growth), a new one may not. Identity kinds:
+``strings`` (list of strings), ``keys`` (dict keys), ``fields`` (list of objects, the named
+fields joined), and ``count-only`` (a disclosed absence of identity, with a reason).
+
 The verb self-registers as a ``bound`` QC step subject to ``--qc-binding`` (no
 facade-of-the-facade): it ships a negative control it must fail on.
 """
@@ -26,6 +37,7 @@ facade-of-the-facade): it ships a negative control it must fail on.
 from __future__ import annotations
 
 import json
+from collections import Counter
 from datetime import date
 from pathlib import Path
 from typing import cast
@@ -39,6 +51,10 @@ _DATA_REL = Path("data")
 _WAIVER_GLOBS = ("*_waivers.json", "*_grandfather*.json", "*_grandfathering.json")
 _VALID_MECHANISMS = frozenset({"closed-set-lock", "dated-cutover", "shrink-ratchet"})
 _RECOVER = "uv run gz validate --waiver-ratchet"
+_IDENTITY_KINDS = frozenset({"strings", "keys", "fields", "count-only"})
+#: Every field a reviewed authorization record carries; each must be non-empty.
+_AUTHORIZATION_FIELDS = ("data_file", "identity", "reason", "authorized_by", "ruling")
+_SEPARATOR = "::"
 
 
 def _err(artifact: str, message: str) -> ValidationError:
@@ -181,6 +197,137 @@ def _check_shrink_ratchet(
     return []
 
 
+def _keys_of(collection: object, _spec: dict[str, object]) -> Counter[str] | None:
+    return Counter(str(k) for k in collection) if isinstance(collection, dict) else None
+
+
+def _strings_of(collection: object, _spec: dict[str, object]) -> Counter[str] | None:
+    readable = isinstance(collection, list) and all(isinstance(e, str) for e in collection)
+    return Counter(collection) if readable else None
+
+
+def _fields_of(collection: object, spec: dict[str, object]) -> Counter[str] | None:
+    fields = spec.get("fields")
+    if not isinstance(collection, list) or not isinstance(fields, list) or not fields:
+        return None
+    found: Counter[str] = Counter()
+    for entry in collection:
+        if not isinstance(entry, dict) or any(f not in entry for f in fields):
+            return None
+        found[_SEPARATOR.join(str(entry[f]) for f in fields)] += 1
+    return found
+
+
+_IDENTITY_READERS = {"keys": _keys_of, "strings": _strings_of, "fields": _fields_of}
+
+
+def _identities(collection: object, spec: dict[str, object]) -> Counter[str] | None:
+    """Return the identities *collection* holds under *spec*, or ``None`` when unreadable.
+
+    A multiset: two entries may legitimately share an identity, and a second copy of one is
+    still growth.
+    """
+    reader = _IDENTITY_READERS.get(str(spec.get("kind")))
+    return reader(collection, spec) if reader else None
+
+
+def _authorized(baseline: dict[str, object], data_file: str) -> tuple[Counter[str], list[str]]:
+    """Return the identities authorized for *data_file* and the records that are malformed."""
+    authorized: Counter[str] = Counter()
+    malformed: list[str] = []
+    records = baseline.get("authorizations", [])
+    for record in records if isinstance(records, list) else []:
+        if not isinstance(record, dict) or record.get("data_file") != data_file:
+            continue
+        missing = [f for f in _AUTHORIZATION_FIELDS if not str(record.get(f, "")).strip()]
+        if missing:
+            malformed.append(f"{record.get('identity', '<unnamed>')} lacks {', '.join(missing)}")
+        else:
+            authorized[str(record["identity"])] += 1
+    return authorized, malformed
+
+
+def _check_identity(
+    artifact: str,
+    data_file: str,
+    collection: object,
+    spec: object,
+    baseline: dict[str, object],
+) -> list[ValidationError]:
+    """Fail an identity the baseline neither holds nor a reviewed record names."""
+    if not isinstance(spec, dict) or spec.get("kind") not in _IDENTITY_KINDS:
+        return [
+            _err(
+                artifact,
+                f"Waiver surface {data_file} declares 'shrink-ratchet' in a registry that "
+                f"declares 'identity_baseline', but its 'identity' ({spec!r}) is not one of "
+                f"{sorted(_IDENTITY_KINDS)}. Without it a swap (drop one entry, add another) "
+                f"never moves the count (GHI #1154). Declare how an entry is identified. "
+                f"Re-run `{_RECOVER}`.",
+            )
+        ]
+    if spec["kind"] == "count-only":
+        if str(spec.get("reason", "")).strip():
+            return []
+        return [
+            _err(
+                artifact,
+                f"Waiver surface {data_file} declares identity 'count-only' with no 'reason'. "
+                f"That is a disclosed absence of identity, and a disclosure without a reason "
+                f"is silence (GHI #1154). Name why entries here carry no identity. Re-run "
+                f"`{_RECOVER}`.",
+            )
+        ]
+    current = _identities(collection, spec)
+    if current is None:
+        return [
+            _err(
+                artifact,
+                f"Waiver surface {data_file} declares identity {spec!r} but its entries do not "
+                f"have that shape, so no identity can be read (GHI #1154). Correct the 'identity' "
+                f"declaration. Re-run `{_RECOVER}`.",
+            )
+        ]
+    surfaces = baseline.get("surfaces", {})
+    held = surfaces.get(data_file) if isinstance(surfaces, dict) else None
+    if not isinstance(held, list):
+        return [
+            _err(
+                artifact,
+                f"Waiver surface {data_file} has no identity baseline, so none of its "
+                f"{sum(current.values())} entries can be recognised as already accepted "
+                f"(GHI #1154). Record its identities under 'surfaces' in the identity baseline. "
+                f"Re-run `{_RECOVER}`.",
+            )
+        ]
+    authorized, malformed = _authorized(baseline, data_file)
+    new = (current - Counter(str(i) for i in held)) - authorized
+    errors: list[ValidationError] = []
+    if malformed:
+        errors.append(
+            _err(
+                artifact,
+                f"Waiver surface {data_file} carries authorization record(s) that are not "
+                f"reviewed: {'; '.join(malformed)}. A record needs {list(_AUTHORIZATION_FIELDS)}, "
+                f"each non-empty (GHI #1154). Complete it. Re-run `{_RECOVER}`.",
+            )
+        )
+    if new:
+        shown = sorted(new)[:5]
+        errors.append(
+            _err(
+                artifact,
+                f"Waiver surface {data_file} carries {sum(new.values())} identit(ies) its "
+                f"baseline never accepted, e.g. {shown}. A renamed or moved entry is a NEW "
+                f"entry: dropping one and adding another leaves the count unchanged and is how "
+                f"a ratchet is swapped (GHI #1154; ADR-0.0.73 Boundary Invariant #8). Revert "
+                f"the change, or add a record naming each identity ({list(_AUTHORIZATION_FIELDS)}) "
+                f"under 'authorizations' in the identity baseline. Re-run `{_RECOVER}`.",
+            )
+        )
+    return errors
+
+
 def _registered_data_files(surfaces: list[dict[str, object]]) -> set[str]:
     files: set[str] = set()
     for s in surfaces:
@@ -243,6 +390,22 @@ def audit_waiver_ratchet(
 
     errors: list[ValidationError] = []
 
+    identity_baseline: dict[str, object] | None = None
+    baseline_rel = str(payload.get("identity_baseline", "")).strip()
+    if baseline_rel:
+        loaded = _load_json(project_root / baseline_rel)
+        if isinstance(loaded, dict):
+            identity_baseline = loaded
+        else:
+            errors.append(
+                _err(
+                    baseline_rel,
+                    f"The registry declares identity_baseline {baseline_rel} but it is missing "
+                    f"or unparseable, so no surface's identities can be checked (GHI #1154). "
+                    f"Restore it. Re-run `{_RECOVER}`.",
+                )
+            )
+
     for s in surface_dicts:
         data_file = str(s.get("data_file", "")).strip()
         artifact = data_file or "<unnamed-surface>"
@@ -282,6 +445,12 @@ def audit_waiver_ratchet(
             errors.extend(
                 _check_shrink_ratchet(artifact, data_file, collection, s.get("baseline_count"))
             )
+            if identity_baseline is not None:
+                errors.extend(
+                    _check_identity(
+                        artifact, data_file, collection, s.get("identity"), identity_baseline
+                    )
+                )
 
     # Silent-bypass guard: any waiver/grandfather data file not registered.
     registered = _registered_data_files(surface_dicts)

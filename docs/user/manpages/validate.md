@@ -1544,6 +1544,22 @@ gate-bearing waiver. The verb self-registers as a `bound` QC step subject to
 `--qc-binding` (no facade-of-the-facade). Wired into the default `gz check`
 pipeline.
 
+A count cannot see a swap, so each shrink-ratchet surface is also held to its
+identities (GHI #1154). The registry's `identity_baseline`
+(`data/waiver_identity_baseline.json`) records the identities each surface held
+when it was seeded, and the surface's `identity` entry says how an entry is
+identified: `strings` (a list of strings), `keys` (the keys of an object),
+`fields` (a list of objects, the named fields joined) or `count-only` (a
+disclosed absence of identity, with a `reason`). A surface may carry only
+identities the baseline holds or a reviewed record names. A renamed or moved
+entry is a new entry, so dropping one entry and adding another fails even though
+the count is unchanged. To accept a genuinely new identity, add a record under
+`authorizations` in the identity baseline with `data_file`, `identity`,
+`reason`, `authorized_by` (`g0` for the operator) and `ruling` (the operator's
+words, or the GHI); a record never raises the count, so growth still needs the
+`baseline_count` raised in the registry. The audit does not prune the baseline:
+a removed entry may return, a new one may not.
+
 ```bash
 uv run gz validate --waiver-ratchet
 uv run gz validate --waiver-ratchet --json
@@ -1552,7 +1568,7 @@ uv run gz validate --waiver-ratchet --json
 | Code | Meaning | Recovery |
 |------|---------|----------|
 | 0 | Every registered waiver surface carries a valid honesty mechanism | — |
-| 3 | A waiver surface is unratcheted, violates its mechanism (e.g. a shrink-ratchet list grew), or an on-disk waiver file is unregistered | Add/repair the mechanism in `data/waiver_ratchet_registry.json` (or remove the added waiver entries); re-run `uv run gz validate --waiver-ratchet` |
+| 3 | A waiver surface is unratcheted, violates its mechanism (e.g. a shrink-ratchet list grew, or carries an identity its baseline never accepted), or an on-disk waiver file is unregistered | Add/repair the mechanism in `data/waiver_ratchet_registry.json` (or remove the added waiver entries); for a new identity, add a reviewed record under `authorizations` in `data/waiver_identity_baseline.json`; re-run `uv run gz validate --waiver-ratchet` |
 
 ### `--gate-callers`
 

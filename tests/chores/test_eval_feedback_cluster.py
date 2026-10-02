@@ -18,6 +18,7 @@ from gzkit.chores.eval_feedback_cluster_lib import (
     ProposalRecord,
     run_cluster,
 )
+from gzkit.commands.chores import _load_chores_registry
 from gzkit.commands.common import get_project_root
 from gzkit.governance.trust_audits.chores import audit_chores_layout
 from gzkit.justify.models import AnchorRef, EvidenceBundle
@@ -347,11 +348,10 @@ class TestEvalFeedbackCluster(unittest.TestCase):
     @covers("REQ-0.0.26-03-01")
     def test_chore_registered_in_registry(self) -> None:
         """Chore registration: eval-feedback-cluster slug appears in chores registry."""
-        registry_path = Path(__file__).parents[2] / "src" / "gzkit" / "chores" / "registry.json"
-        self.assertTrue(registry_path.exists(), "registry.json not found")
-        data = json.loads(registry_path.read_text(encoding="utf-8"))
-        slugs = [entry["slug"] for entry in data.get("chores", [])]
-        self.assertIn("eval-feedback-cluster", slugs)
+        # The loader `gz chores` itself uses: it validates the v2.0 schema, so a slug that
+        # loads is registered in the shape the verbs can run, not merely named in a file.
+        _registry_path, definitions = _load_chores_registry()
+        self.assertIn("eval-feedback-cluster", definitions)
 
     @covers("REQ-0.0.26-03-05")
     def test_chores_layout_validation_passes(self) -> None:

@@ -115,7 +115,10 @@
     "waiver_ratchet_registry.json": {
       "owner": "gzkit/governance/trust_audits/waiver_ratchet.py",
       "kind": "code",
-      "purpose": "Declaration index for the waiver/grandfather family — the companion registry this one is exhaustive with."
+      "purpose": "Declaration index for the waiver/grandfather family — the companion registry this one is exhaustive with.",
+      "relates_to": [
+        "waiver_identity_baseline.json"
+      ]
     },
     "tautological_test_debt_target.json": {
       "owner": "gzkit/chores/decommission-tautological-tests/check_debt_target.py",
@@ -126,6 +129,14 @@
       "owner": "gzkit/unit_run_provenance.py",
       "kind": "code",
       "purpose": "Minimum test count a unit-tier run must collect; a lower count is refused even at exit 0 (GHI #1154)."
+    },
+    "waiver_identity_baseline.json": {
+      "owner": "gzkit/governance/trust_audits/waiver_ratchet.py",
+      "kind": "code",
+      "purpose": "Committed identity baseline and reviewed authorization records for the shrink-ratchet surfaces: a renamed or moved entry is new, so a swap that leaves the count unchanged fails (GHI #1154 item 4).",
+      "relates_to": [
+        "waiver_ratchet_registry.json"
+      ]
     }
   }
 }
