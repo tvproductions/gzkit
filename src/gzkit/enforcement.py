@@ -684,6 +684,9 @@ def _ensure_production_claims_registered() -> None:
       * ``commands.validate_json_exit_claims`` — ``validate-json-exit-classified`` and its
         admit control, the witnesses for ``gz validate --json`` exiting non-zero on a
         failing tree, in step with plain mode (GHI #995, enrolled under GHI #1155).
+      * ``req_kind_support_claims`` — ``support-citation-declared-only`` and its admit
+        control, the witnesses for a SUPPORT REQ declaring its proof channel in a witness
+        clause, never inferring it from prose (GHI #888, enrolled under GHI #1155).
       * ``cli.helpers.log_level_claims`` — ``cli-log-levels-follow-spec``, the witness
         for `.gzkit/rules/cli.md` § Flag Conventions verbosity rows: the entrypoint
         logs at cli-standards-v3.md § Verbosity Levels, and only to stderr.
@@ -713,6 +716,9 @@ def _ensure_production_claims_registered() -> None:
     from gzkit.handoff_resume_gate import _ensure_resume_gate_claims_registered  # noqa: PLC0415
     from gzkit.mx.invariants import _ensure_gate5_claims_registered  # noqa: PLC0415
     from gzkit.mx.proxy_reality import _ensure_grader_gaming_registered  # noqa: PLC0415
+    from gzkit.req_kind_support_claims import (  # noqa: PLC0415
+        ensure_support_citation_claims_registered,
+    )
     from gzkit.verifier_pipe_gate import (  # noqa: PLC0415
         _ensure_verifier_pipe_claims_registered,
     )
@@ -728,6 +734,7 @@ def _ensure_production_claims_registered() -> None:
     ensure_completion_gate_claims_registered()
     ensure_receipt_gate_claims_registered()
     ensure_json_exit_claims_registered()
+    ensure_support_citation_claims_registered()
 
 
 def production_enforcement_registry() -> list[EnforcementClaimRecord]:
