@@ -34,8 +34,6 @@
     "fidelity-presence",
     "format",
     "gate-callers",
-    "gate-enrollment",
-    "gate-enrollment-disclosed",
     "gate5-attestation-absence",
     "gate5-ledger",
     "git-fixture-isolation",

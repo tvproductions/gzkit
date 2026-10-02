@@ -252,6 +252,34 @@
       "authority": "GHI #1155 acceptance (a); the population inventory's own claims, bound when they were authored 2026-10-02 (operator, verbatim: \"do all 5 steps\")",
       "proposed_by": "claude-code session 2026-10-02",
       "reviewed_by": null
+    },
+    {
+      "claim_id": "gate-enrollment",
+      "guard": "gzkit.governance.trust_audits.gate_enrollment:audit_gate_enrollment",
+      "failing_test": "tests.governance.test_gate_enrollment.TestControlsOfTheGateItself.test_both_claims_are_registered_and_pass_the_floor_runner",
+      "mutation": {
+        "find": "        if scope in accepted_ids or enrolled_claims(functions, named):",
+        "replace": "        if True:",
+        "label": "an unnamed undisclosed scope is never refused"
+      },
+      "binding_sha256": "6b2b856087d1f53e16f45205b979f55dc2d00449c628b533a75d7a68933db5d4",
+      "authority": "GHI #1154 item 5 roster shrink, step 5 of the 2026-10-02 handoff (operator, verbatim: \"do all 5 steps\")",
+      "proposed_by": "claude-code session 2026-10-02",
+      "reviewed_by": null
+    },
+    {
+      "claim_id": "gate-enrollment-disclosed",
+      "guard": "gzkit.governance.trust_audits.gate_enrollment:audit_gate_enrollment",
+      "failing_test": "tests.governance.test_gate_enrollment.TestControlsOfTheGateItself.test_both_claims_are_registered_and_pass_the_floor_runner",
+      "mutation": {
+        "find": "        if scope in accepted_ids or enrolled_claims(functions, named):",
+        "replace": "        if enrolled_claims(functions, named):",
+        "label": "a disclosed scope is never admitted"
+      },
+      "binding_sha256": "71a986bc929039836a8509c71c6b2bc58ab463b776e21938cdd914446b6083f8",
+      "authority": "GHI #1154 item 5 roster shrink, step 5 of the 2026-10-02 handoff (operator, verbatim: \"do all 5 steps\")",
+      "proposed_by": "claude-code session 2026-10-02",
+      "reviewed_by": null
     }
   ]
 }
