@@ -16,6 +16,7 @@ contract:
 
 from __future__ import annotations
 
+import contextlib
 import importlib.util
 import json
 import re
@@ -1203,6 +1204,25 @@ class TestUnreviewedCanariesReachSessionStart(unittest.TestCase):
         self.assertIn("claim-00", out)
         self.assertNotIn(f"claim-{limit + 2:02d}", out)
         self.assertIn("+3 more", out)
+
+    def test_the_boot_state_carries_the_pending_canaries(self):
+        others = [
+            name
+            for name in dir(self.mod)
+            if name.startswith("collect_")
+            and name not in {"collect_state", "collect_unreviewed_canaries"}
+        ]
+        with tempfile.TemporaryDirectory() as tmp, contextlib.ExitStack() as stack:
+            root = Path(tmp)
+            (root / "data").mkdir()
+            registry = {"canaries": [{"claim_id": "pending-one", "reviewed_by": None}]}
+            (root / "data" / "guard_canaries.json").write_text(
+                json.dumps(registry), encoding="utf-8"
+            )
+            for name in others:
+                stack.enter_context(mock.patch.object(self.mod, name, return_value=None))
+            state = self.mod.collect_state(root, self.now)
+        self.assertEqual(state.get("unreviewed_canaries"), ["pending-one"])
 
     def test_the_boot_hook_agrees_with_the_library_on_the_live_registry(self):
         from gzkit import guard_canary  # noqa: PLC0415
