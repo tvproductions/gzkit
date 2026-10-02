@@ -685,6 +685,27 @@ _VALUE_TEST = (
 )
 
 
+class TestImportFailuresAreAttributedToTheirModule(unittest.TestCase):
+    """An import failure counts only for the requested name whose module raised (GHI #1154)."""
+
+    _BLOCK = (
+        "=" * 70 + "\nERROR: other (unittest.loader._FailedTest.other)\n" + "-" * 70 + "\n"
+        "ImportError: Failed to import test module: other\n"
+        "ImportError: cannot import name 'added' from 'impl'\n"
+    )
+
+    def test_a_failure_importing_another_module_is_not_the_named_tests(self):
+        from gzkit.red_witness import _import_failed_names  # noqa: PLC0415
+
+        self.assertEqual(_import_failed_names(self._BLOCK, ["tests.test_impl"]), set())
+
+    def test_a_failure_importing_the_named_module_is_the_named_tests(self):
+        from gzkit.red_witness import _import_failed_names  # noqa: PLC0415
+
+        block = self._BLOCK.replace("other", "test_impl")
+        self.assertEqual(_import_failed_names(block, ["tests.test_impl"]), {"tests.test_impl"})
+
+
 class TestWitnessSufficiencyOfTheNamedTest(_GitFixture):
     """GHI #1154 item 3 — the RED must be the NAMED test failing for want of its code.
 
