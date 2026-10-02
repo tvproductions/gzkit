@@ -13,7 +13,7 @@
       "binding_sha256": "47a5cc107a96deb1a8c6017e1a16e0f256434f077ab1befc833781f292c063da",
       "authority": "GHI #1154 item 5 ruling 2026-10-01 (operator, verbatim: \"approve all three\")",
       "proposed_by": "claude-code session 2026-10-02",
-      "reviewed_by": null
+      "reviewed_by": "g0"
     },
     {
       "claim_id": "adversarial-refutation-loops",
@@ -27,7 +27,7 @@
       "binding_sha256": "ec1d84458451ab9308f3b13f8189680291bc2a97ae8f52b59ba12855991b512d",
       "authority": "GHI #1154 item 5 ruling 2026-10-01 (operator, verbatim: \"approve all three\")",
       "proposed_by": "claude-code session 2026-10-02",
-      "reviewed_by": null
+      "reviewed_by": "g0"
     },
     {
       "claim_id": "validate-json-exit-classified",
@@ -41,7 +41,7 @@
       "binding_sha256": "c2eb5a273cda7a896e32298ee30e894969086963fb9dcb5db60748347fc7a67a",
       "authority": "GHI #1154 item 5 ruling 2026-10-01 (operator, verbatim: \"approve all three\")",
       "proposed_by": "claude-code session 2026-10-02",
-      "reviewed_by": null
+      "reviewed_by": "g0"
     },
     {
       "claim_id": "support-citation-declared-only",
@@ -55,7 +55,7 @@
       "binding_sha256": "f16c12e25a2c66516d7cb1c23a55126b4bb86afcc2a91d76060617b858a31e99",
       "authority": "GHI #1154 item 5 ruling 2026-10-01 (operator, verbatim: \"approve all three\")",
       "proposed_by": "claude-code session 2026-10-02",
-      "reviewed_by": null
+      "reviewed_by": "g0"
     },
     {
       "claim_id": "pointer-back-pointer-matched",
@@ -69,7 +69,7 @@
       "binding_sha256": "3af4680bf16acd5eb480f4b78854061da7df52f1fc73fe8f300187c86e482f0e",
       "authority": "GHI #1154 item 5 ruling 2026-10-01 (operator, verbatim: \"approve all three\")",
       "proposed_by": "claude-code session 2026-10-02",
-      "reviewed_by": null
+      "reviewed_by": "g0"
     },
     {
       "claim_id": "pointer-reverse-arm-orphan-refused",
@@ -83,7 +83,7 @@
       "binding_sha256": "116d31e9a30b044324f6dd4e51fd952fe546aa49132330330deaebe915883854",
       "authority": "GHI #1154 item 5 ruling 2026-10-01 (operator, verbatim: \"approve all three\")",
       "proposed_by": "claude-code session 2026-10-02",
-      "reviewed_by": null
+      "reviewed_by": "g0"
     },
     {
       "claim_id": "tidy-breach-exits-three",
@@ -97,7 +97,7 @@
       "binding_sha256": "b23c7fc37b36b3942d5fd3303779fec0542571aabcda1fb2caa6915ee805c19e",
       "authority": "GHI #1154 item 5 ruling 2026-10-01 (operator, verbatim: \"approve all three\")",
       "proposed_by": "claude-code session 2026-10-02",
-      "reviewed_by": null
+      "reviewed_by": "g0"
     },
     {
       "claim_id": "waiver-identity-new-entry-refused",
@@ -111,7 +111,7 @@
       "binding_sha256": "8fd637f9ccb350b826c615ffb3d68e583cae05ae067e877076ab5e23a071bdd0",
       "authority": "GHI #1154 item 5 ruling 2026-10-01 (operator, verbatim: \"approve all three\")",
       "proposed_by": "claude-code session 2026-10-02",
-      "reviewed_by": null
+      "reviewed_by": "g0"
     }
   ]
 }
