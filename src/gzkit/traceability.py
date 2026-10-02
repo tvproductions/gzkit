@@ -275,17 +275,24 @@ def reset_registry() -> None:
 
 def _iter_test_functions(
     tree: ast.Module,
-) -> list[ast.FunctionDef | ast.AsyncFunctionDef]:
-    """Yield module-level and class-level function defs, skipping nested inner functions."""
-    funcs: list[ast.FunctionDef | ast.AsyncFunctionDef] = []
+) -> list[ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef]:
+    """Yield the defs a ``@covers`` decorator can sit on, skipping nested inner functions.
+
+    Module-level functions, top-level classes and their methods. A class decorator names
+    the class, so a runner given the record executes that class, not its whole module;
+    the decorator pass once skipped classes, and the regex pass recorded the file
+    instead (GHI #1154).
+    """
+    nodes: list[ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef] = []
     for top_node in ast.iter_child_nodes(tree):
         if isinstance(top_node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            funcs.append(top_node)
+            nodes.append(top_node)
         elif isinstance(top_node, ast.ClassDef):
+            nodes.append(top_node)
             for child in ast.iter_child_nodes(top_node):
                 if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                    funcs.append(child)
-    return funcs
+                    nodes.append(child)
+    return nodes
 
 
 def scan_test_tree(test_dir: pathlib.Path) -> list[LinkageRecord]:
@@ -541,8 +548,10 @@ def _extract_covers_arg(node: ast.expr) -> str | None:
     return None
 
 
-def _ast_qualified_name(func_node: ast.FunctionDef | ast.AsyncFunctionDef, tree: ast.Module) -> str:
-    """Build a dotted qualified name for a function from its AST context."""
+def _ast_qualified_name(
+    func_node: ast.FunctionDef | ast.AsyncFunctionDef | ast.ClassDef, tree: ast.Module
+) -> str:
+    """Build a dotted qualified name for a function or top-level class from its AST context."""
     for cls_node in ast.walk(tree):
         if not isinstance(cls_node, ast.ClassDef):
             continue

@@ -539,6 +539,35 @@ class TestScanTestTree(unittest.TestCase):
 
         self.assertEqual(len(records), 1)
 
+    def test_a_class_level_decorator_names_its_class_not_the_module(self):
+        """A class decorated @covers names the class, so the RED witness runs it (GHI #1154).
+
+        The decorator pass read only function defs, so the regex pass recorded a class
+        decorator with the file as its identifier and every test in the module ran.
+        """
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "test_cls.py").write_text(
+                textwrap.dedent("""\
+                    from gzkit.traceability import covers
+
+                    @covers("REQ-0.15.0-03-01")
+                    class TestCovered:
+                        def test_one(self):
+                            pass
+
+                    class TestOther:
+                        def test_two(self):
+                            pass
+                """),
+                encoding="utf-8",
+            )
+
+            records = scan_test_tree(root)
+
+        self.assertEqual([r.source.identifier for r in records], ["TestCovered"])
+        self.assertEqual(records[0].evidence_line, 3)
+
     def test_picks_up_docstring_form_covers(self):
         """Docstring/comment-form @covers must be discovered alongside decorator form (#120)."""
         with tempfile.TemporaryDirectory() as tmp:
