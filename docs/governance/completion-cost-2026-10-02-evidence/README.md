@@ -5,6 +5,11 @@ amendment draft [`amendment-draft-r2.md`](amendment-draft-r2.md), which is **DRA
 RATIFIED** and binds nothing until the operator rules on it. Re-run the scripts rather than
 trusting the figures the draft transcribes.
 
+**Ruled 2026-10-03.** The operator ratified all six proposals, three of them with a change.
+The ruling is § Amendments 2026-10-03 of
+[`build-to-1.0-campaign-2026-09-20.md`](../build-to-1.0-campaign-2026-09-20.md); the draft
+is kept unedited as the record of what was put to the operator.
+
 ## Cost per OBPI completion (`cost_per_completion.py`)
 
 Read-only. It reads `.gzkit/ledger.jsonl` and two inputs fetched into this directory:

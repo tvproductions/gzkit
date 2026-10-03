@@ -5,9 +5,9 @@ description: Author a GitHub Issue (GHI) when a finding needs an independent wor
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-20
+last_reviewed: 2026-10-03
 metadata:
-  skill-version: "1.9.0"
+  skill-version: "1.10.0"
 model: sonnet
 ---
 
@@ -214,6 +214,7 @@ Surface **the brief id, its `status:`, its parent ADR, and the requirement lines
    - The exact command run and its observed output (paste, don't paraphrase)
    - The canonical source of truth the output contradicts (file path + line, or rule citation)
    - The class of failure (not just the instance — see `AGENTS.md` § DO IT RIGHT #1)
+   - Where the defect came from, when it can be established: the commit, GHI or ADR that introduced it. Write `unknown` rather than guess, and `multiple` with each id when several did. Finding a defect while checking a mechanism does not make that mechanism its origin (campaign § Amendments 2026-10-03).
 
 2a. **Draft the bounded closure contract.** Follow
    [`ghi-close` § Bounded closure contract](../ghi-close/SKILL.md#bounded-closure-contract-ghi-980):
@@ -251,6 +252,8 @@ Surface **the brief id, its `status:`, its parent ADR, and the requirement lines
    ## Class of failure
 
    <one sentence: what family of inputs produces this? Not just this instance.>
+
+   Introduced by: <commit SHA, GHI or ADR id | `unknown` | `multiple` with each id>
 
    ## Closure contract
 

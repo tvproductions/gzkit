@@ -89,9 +89,9 @@ computed there.
 
 > **RESEQUENCED 2026-09-27 (operator-ratified): ADR WORK FIRST.** Feature ADRs are worked in ascending order (`0.35.0` → `0.36.0` → `0.37.0` → `0.38.0` → `0.39.0` → the funded amendment ADR) before Movement C refactoring resumes. The 2026-09-02 NEXT-IN-PRIORITY placement of Movement C's family-closure box, recorded below, is SUPERSEDED. See § Amendments 2026-09-27 (3).
 >
-> **Topmost (sequenced):** **`ADR-0.35.0-canon-entry-corpus-landing` is TOPMOST (2026-09-01, operator-ratified, UNCHANGED). AMENDED 2026-09-02 (operator-ratified) — Movement C's `Close the doctrine-declared-without-mechanism family` box is pulled forward to NEXT-IN-PRIORITY, immediately behind TOPMOST and ahead of both Movement B and every other Movement C box; Movement B steps down one place; Movement A remains HELD as a Movement.** The box outranks its own Movement, on the precedent the 2026-09-01 amendment set when Movement A's `ADR-0.35.0` box became TOPMOST inside a HELD Movement. It is placed high because it is drawable without the operator: under the IRON LAW only the operator initiates OBPI work, while this box discharges through rule-text amendment, scorecard scoring and GHI-shaped direct repair. The family's share of the open queue and its production rate are measured in [`f1-family-share-measurement-2026-09-20.md`](f1-family-share-measurement-2026-09-20.md) — re-run its evidence script rather than trusting a figure transcribed here. Instances close same-session while the class keeps producing: that premise was re-measured 2026-09-20 under a shared criterion and VERIFIED, not revised. See § Amendments 2026-09-20. Run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` for its lifecycle and landed count rather than trusting a figure transcribed here. See § Amendments 2026-09-02. From 2026-08-14 to this amendment the plan declared TOPMOST a Movement that ADR order forbade working, while the work drawn every session sat as a box inside a HELD Movement — two amendments (2026-08-16, 2026-08-23) were spent explaining that split rather than removing it. This removes it. Run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` for its lifecycle and landed count rather than trusting a figure transcribed here. See § Amendments 2026-09-01.
+> **Topmost (sequenced):** **AMENDED 2026-10-03 (operator-ratified) — what a session draws: an initiated OBPI first; on its own, a GHI only when it blocks in-flight feature work, a gate or a release (§ Amendments 2026-10-03). Feature ADRs are worked in ascending order ahead of Movement C (§ Amendments 2026-09-27 (3)), so the NEXT-IN-PRIORITY placement of the family-closure box described below is SUPERSEDED.** **`ADR-0.35.0-canon-entry-corpus-landing` is TOPMOST (2026-09-01, operator-ratified, UNCHANGED). AMENDED 2026-09-02 (operator-ratified) — Movement C's `Close the doctrine-declared-without-mechanism family` box is pulled forward to NEXT-IN-PRIORITY, immediately behind TOPMOST and ahead of both Movement B and every other Movement C box; Movement B steps down one place; Movement A remains HELD as a Movement.** The box outranks its own Movement, on the precedent the 2026-09-01 amendment set when Movement A's `ADR-0.35.0` box became TOPMOST inside a HELD Movement. It is placed high because it is drawable without the operator: under the IRON LAW only the operator initiates OBPI work, while this box discharges through rule-text amendment, scorecard scoring and GHI-shaped direct repair. The family's share of the open queue and its production rate are measured in [`f1-family-share-measurement-2026-09-20.md`](f1-family-share-measurement-2026-09-20.md) — re-run its evidence script rather than trusting a figure transcribed here. Instances close same-session while the class keeps producing: that premise was re-measured 2026-09-20 under a shared criterion and VERIFIED, not revised. See § Amendments 2026-09-20. Run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` for its lifecycle and landed count rather than trusting a figure transcribed here. See § Amendments 2026-09-02. From 2026-08-14 to this amendment the plan declared TOPMOST a Movement that ADR order forbade working, while the work drawn every session sat as a box inside a HELD Movement — two amendments (2026-08-16, 2026-08-23) were spent explaining that split rather than removing it. This removes it. Run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` for its lifecycle and landed count rather than trusting a figure transcribed here. See § Amendments 2026-09-01.
 >
-> **DRAWN-WORK ORDER — AMENDED 2026-09-15 (operator-ratified).** Work a session draws without the operator, at the NEXT-IN-PRIORITY position, is taken in this order: **(a) the R&D front** — the `gz-rnd` skill and the design in `docs/governance/rnd-discipline.md`; **(b) the chore estate** — the conversion directive and the overdue board, the family-closure box's agent-side arm; **(c) GHI direct repair, only** when the GHI closes a named arm of that box, blocks (a) or (b), or is an emergency. TOPMOST and ADR order are unchanged. See § Amendments 2026-09-15.
+> **DRAWN-WORK ORDER — AMENDED 2026-09-15 (operator-ratified); SUPERSEDED by § Amendments 2026-09-27 (3) and 2026-10-03, and kept as the record of what was ruled then.** Work a session draws without the operator, at the NEXT-IN-PRIORITY position, is taken in this order: **(a) the R&D front** — the `gz-rnd` skill and the design in `docs/governance/rnd-discipline.md`; **(b) the chore estate** — the conversion directive and the overdue board, the family-closure box's agent-side arm; **(c) GHI direct repair, only** when the GHI closes a named arm of that box, blocks (a) or (b), or is an emergency. TOPMOST and ADR order are unchanged. See § Amendments 2026-09-15.
 >
 > **THREE-PILLARS FOLLOW-UP — HELD 2026-09-19 (operator-ratified):** the selected repairs are delivered; GHI #1028 remains open but its production observation is held until the operator explicitly resumes it. See § Amendments 2026-09-19.
 >
@@ -262,6 +262,9 @@ gzkit is 1.0 when ALL hold. Each gate is bounded; none is a standing obligation.
   — re-run its script rather than trusting these). **Tracked by Movement F, created by
   this amendment.** Not a documentation pass: the gate is the system.
 - **Release line healthy** from 0.34.0; GHI backlog at steady-state triage scale.
+  *(Defined 2026-10-03 as a bounded check run once at 1.0 closeout: every open GHI carries
+  a disposition, and no open `defect` GHI is older than an operator-set age without a
+  blocker comment. § Amendments 2026-10-03.)*
 - **v1.0.0 released** through the ceremony.
 
 **Explicitly NOT 1.0 gates:** the pool backlog (§7 — post-1.0 release line), RECALL
@@ -609,9 +612,106 @@ had been repeating. All are dispositioned below — none left undefined.
 
 ## Amendments
 
+<a id="amendments-2026-10-03"></a>
+
+### 2026-10-03 (latest) — feature work becomes drawable; completion-path additions come to the operator (operator-ratified)
+
+**Operator (`g0`), verbatim:** *"yes, I think we really need to rethink why the last 4 months
+has greatly expanded fixes with far fewer features being completed"* (2026-10-02), then
+*"measure #3 first, then draft the amendment (maybe we invite codex in occassionally to take a
+'sanity pass' to ensure that gaps and blindspots are identified?)"* (spelling preserved).
+Ruling on the draft proposal by proposal, 2026-10-03: P1 *"Adopt as written (Recommended)"*;
+P2 *"Adopt, run when you call it (Recommended)"*; P3 *"Adopt, batch recorded in plan
+(Recommended)"*; P4 *"Adopt, origin cites an id (Recommended)"*; P5 *"Adopt as written
+(Recommended)"*; P6 *"Adopt as written (Recommended)"*.
+
+**The measurement is a dated record, kept as a pointer.** It was taken 2026-10-02 and is held
+with its scripts in
+[`completion-cost-2026-10-02-evidence/`](completion-cost-2026-10-02-evidence/README.md). Re-run
+the scripts rather than trusting a figure transcribed anywhere. What it found:
+
+- **Repair grew and the queue is not rotting.** `fix` commits rose sharply from July to
+  August–September, while issues closed nearly as fast as they opened.
+- **The fall in monthly completions is mostly the Foundation Sunset running out.** Feature
+  completions were never high, and every August–September completion belongs to `ADR-0.35.0`.
+- **Agents can start repair on their own; feature work needs the operator to start it.** Under
+  the IRON LAW only the operator initiates OBPI work, while a GHI authorizes direct repair at
+  any time, so a session with no initiated pipeline has one kind of work it may draw.
+- **Retries per completion rose and the completion path grew.** The data does not show that
+  the added gates caused the decline.
+
+**What changes.**
+
+1. **Completion-path additions come to the operator (advisory).** While this entry stands, a
+   fix that would add a check, pipeline step, dispatch role, hook or `gz check` step to the
+   completion path states three things before it lands: the obligation it protects, the defect
+   it answers, and its expected false-refusal cost. The operator rules. Removing a false
+   refusal and deleting obsolete code are exempt. No mechanical witness is claimed. This widens
+   the 2026-06-08 scorecard freeze, which covered promotion only, to additions that arrive
+   through GHI fixes.
+2. **The post-June completion path is reviewed against the scorecard's own bar, when the
+   operator calls for it.** One bounded pass, started only on the operator's word, over each
+   completion-path check and `gz check` step added after 2026-06-15. Each is assessed for the
+   obligation it protects, its exposure, recorded false refusals, independent coverage of the
+   same obligation, and its run cost. The bar is canon's: removal needs *"named
+   steering-failure evidence"* (`docs/governance/advisory-rules-audit.md`), and having caught
+   nothing is not that evidence. The pass produces recommendations; each removal is the
+   operator's ruling.
+3. **Feature work becomes drawable.**
+   - **Batch initiation.** The operator may initiate the next N OBPIs of the in-flight ADR in
+     one act. Each batch is recorded in § Amendments as its own dated line, with the operator's
+     verbatim words and the OBPI ids. A session cites that record; a handoff's account of a
+     batch advises and does not authorize. Gate 5 still takes the operator's attestation for
+     each OBPI. No batch is initiated by this entry.
+   - **Draw order.** A session draws an initiated OBPI first. On its own it draws a GHI only
+     when that GHI blocks in-flight feature work, a gate or a release. Every other GHI is
+     tracked and batched. A GHI the operator directs is worked when directed, and an open GHI
+     remains an authorized work order (§ Amendments 2026-09-15).
+4. **A GHI records where its defect came from, when that can be known.** `ghi-author` adds an
+   `Introduced by:` line. A named origin cites a commit, GHI or ADR id; `unknown` and
+   `multiple` are first-class answers. A defect found by checking a mechanism is not thereby
+   introduced by that mechanism. The line is read monthly, to measure whether gzkit's own
+   mechanisms and fixes are a leading source of defects, which the 2026-09-20 family-share
+   measurement could not separate.
+5. **§ 5's backlog gate is a bounded check at 1.0 closeout.** Every open GHI carries a
+   disposition, either routed or open with a named blocker, and no open `defect` GHI is older
+   than an operator-set age without a blocker comment. It is run once at closeout and is not a
+   standing obligation. What makes the ≈2027-08 date bind stays open and is the operator's to
+   rule on (§ Amendments 2026-09-20).
+6. **A periodic outside sanity pass.** A read-only Codex review of this plan's latest amendment
+   and its evidence, asked what gaps, blind spots or self-confirming reasoning it misses. It
+   runs at each campaign amendment and monthly, each time on the operator's go-ahead. Its
+   findings, and what changed because of them, are kept in the amendment they reviewed. It
+   advises and never gates. It is not `ADR-0.36.0`, whose automatic critic is unbuilt; this is
+   a manual practice using the installed Codex plugin, and it adds no hook or gate.
+
+**What does not change.** Prime Directive #6, the IRON LAW and one-feature-at-a-time. Gate 5
+stays universal. ADR order stays ascending, as amended 2026-09-29. A defect found in the work
+being done is still fixed immediately. Nothing comes out of 1.0.
+
+**Review record (item 6 applied to this entry).** A read-only Codex pass reviewed the first
+draft on 2026-10-02. What it changed:
+
+| Finding | Change |
+|---|---|
+| The draft compared mixed populations | Completions re-cut by foundation and feature streams |
+| The cost composite mixed instrumentation dates | Only signals instrumented the same way across July–September are counted |
+| Dead helpers were read as a missing gate | Dead code and current enforcement are distinguished |
+| Item 1 claimed a witness that cannot enforce it | Item 1 is advisory and claims no witness |
+| Item 2 defaulted to retire on zero catches, against canon | Item 2 uses the scorecard's evidence bar |
+| Item 5 created standing obligations and conflicted with the carried 1.0 ruling | Item 5 is a bounded closeout check |
+| Item 4 forced a unique origin | Item 4 allows `unknown` and `multiple` |
+| Push wording was stale | Corrected in the evidence record |
+
+Three further changes were made at ratification, from the resuming session's read of this plan
+and not from Codex: item 2 runs only on the operator's word, because § Amendments 2026-09-27 (3)
+holds Movement C work behind ADR work; item 3 records each batch in this plan, because a
+handoff cannot authorize; and item 4 requires a named origin to cite an id, so the line can be
+checked.
+
 <a id="amendments-2026-09-29"></a>
 
-### 2026-09-29 (latest) — corrections to a Validated ADR are exempt from strict ascending order (operator-ratified)
+### 2026-09-29 — corrections to a Validated ADR are exempt from strict ascending order (operator-ratified)
 
 **Operator (`g0`), verbatim:** *"Exempt corrections (Recommended)"* (ruling docket, 2026-09-28, GHI #871),
 then, choosing how to carry it, *"canon plus campaign"* (2026-09-29).
