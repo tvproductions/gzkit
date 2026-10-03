@@ -281,10 +281,13 @@ class TestCliAuditCoverage(unittest.TestCase):
 
     @covers("REQ-0.0.19-02-12")
     def test_justify_command_doc_and_index_exist(self) -> None:
-        command_doc = Path("docs/user/manpages/justify.md")
-        self.assertTrue(command_doc.is_file(), "command doc stub must exist for Gate 3")
-        index_text = Path("docs/user/manpages/index.md").read_text(encoding="utf-8")
-        self.assertIn("justify.md", index_text, "justify must appear in commands index")
+        from gzkit.doc_coverage.scanner import check_surfaces_report
+
+        report = check_surfaces_report(Path.cwd())
+        justify = next(c for c in report.coverage if c.command == "justify")
+        passed = {surface.surface: surface.passed for surface in justify.surfaces}
+        self.assertTrue(passed["manpage"], "command doc stub must exist for Gate 3")
+        self.assertTrue(passed["index_entry"], "justify must appear in commands index")
 
 
 class TestHelpSurface(unittest.TestCase):

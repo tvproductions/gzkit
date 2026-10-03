@@ -40,16 +40,14 @@ class TestFrontmatterReconcileCli(unittest.TestCase):
 
     @covers("REQ-0.0.16-03-01")
     def test_chore_registered_as_heavy_lane_in_production_config(self) -> None:
-        """Production ``config/gzkit.chores.json`` lists the chore at lane heavy."""
-        repo_root = Path(__file__).resolve().parents[2]
-        registry = json.loads(
-            (repo_root / "src" / "gzkit" / "chores" / "registry.json").read_text(encoding="utf-8")
+        """The registry `gz chores` reads lists the chore at lane heavy."""
+        from gzkit.commands.chores import _load_chores_registry
+
+        _registry_path, chores = _load_chores_registry()
+        self.assertIn("frontmatter-ledger-coherence", chores, "chore must be registered")
+        self.assertEqual(
+            chores["frontmatter-ledger-coherence"].lane, "heavy", "post-OBPI-03 lane is heavy"
         )
-        matches = [
-            c for c in registry.get("chores", []) if c.get("slug") == "frontmatter-ledger-coherence"
-        ]
-        self.assertEqual(len(matches), 1, "chore must be registered exactly once")
-        self.assertEqual(matches[0].get("lane"), "heavy", "post-OBPI-03 lane is heavy")
 
     @covers("REQ-0.0.16-03-02")
     @covers("REQ-0.0.16-03-06")
