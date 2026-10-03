@@ -320,6 +320,31 @@ A violation emits `ValidationError(type="bullet_retention")` naming the bullet,
 its source classification, the tier-specific reason, and the governed recovery
 step. Exit 3 on any violation; exit 0 when the surface is clean.
 
+**Classification source (ADR-0.35.0 § Decision item 9, OBPI-0.35.0-10).** In a
+project with a section-ownership declaration (`.gzkit/ownership/<surface>.json`)
+every scorecard row names its source in the Notes column, inside one code span:
+
+```text
+source=<path>[#<section-id>] [entry=<entry-id>]
+```
+
+| Row's attributed source | Classification read from | Retained against |
+|-------------------------|--------------------------|------------------|
+| A `corpus-owned` section of an enrolled surface | The cited entry's `CorpusEntry.classification`; the row's Score cell does not bind | The per-turn surface, by the entry's tier |
+| An `unowned` section, a rule file, or any other file | The row's Score cell | The per-turn surface, by tier (unchanged) |
+| A `.gzkit/skills/*/SKILL.md` or an ADR file under `docs/design/adr/` | The row's Score cell | That source file's own text (GHI #939) |
+
+Exactly one surface classifies a row. A row's identity is its scorecard section
+id plus its row number. A row with no attribution, a duplicated identity, a
+section the declaration does not name, or an entry id that is retired, unknown
+or addressed to another section fails closed and is never answered from the
+scorecard instead. A corpus-owned section whose live entries still carry the
+capture default `Ambiguous` fails closed naming each entry. When the scorecard
+and the corpus disagree on an owned row, the corpus value binds and the
+disagreement is printed as an advisory; it does not change the exit code. A
+project with no ownership declaration and no attributed row keeps the audit
+described above, with the scorecard classifying every row.
+
 ```bash
 # Audit the per-turn surface against the advisory scorecard (tier-scoped)
 uv run gz validate --bullet-retention
@@ -331,12 +356,37 @@ uv run gz validate --bullet-retention
 $ uv run gz validate --bullet-retention
 Validated: bullet_retention
 
-✓ All validations passed (1 scope).
+✓ All validations passed (1 scopes).
 $ echo $?
 0
 ```
 
-**Missing Mechanical bullet:**
+**Corpus-owned bullet the scorecard scores Judgment, absent from the surface**
+(the corpus class enforces it, and the disagreement is reported):
+
+```
+$ uv run gz validate --bullet-retention
+[advisory] bullet-retention: scorecard row agent-contract #1 scores 'Judgment' but corpus entry 'corpus-owned-section-0001' classifies it 'Mechanical'; the corpus value binds (ADR-0.35.0 § Decision item 9). Reconcile the row's Score in docs/governance/advisory-rules-audit.md or the entry in .gzkit/corpus/AGENTS.md.jsonl so the two agree.
+Validated: bullet_retention
+
+❌ Validation failed with 1 error(s):
+
+   → [bullet_retention] docs/governance/advisory-rules-audit.md
+    Bullet-retention violation: invariant-tier 'Mechanical' bullet not found
+verbatim in per-turn surface.
+  Bullet: 'use uv run for commands'
+  Classification source: corpus entry 'corpus-owned-section-0001' (section
+'owned-section' of AGENTS.md is corpus-owned; ADR-0.35.0 § Decision item 9).
+  Why: ADR-0.0.33 Invariant 1 requires invariant-tier content to render verbatim
+at every setpoint (tier-scoped amendment 2026-06-03).
+  Fix: restore the bullet text verbatim to AGENTS.md/CLAUDE.md/.claude/rules, or
+re-classify it compressible in the corpus and record an advisor-QC verdict.
+  Source: docs/governance/advisory-rules-audit.md
+$ echo $?
+3
+```
+
+**Corpus-owned section still carrying the capture default:**
 
 ```
 $ uv run gz validate --bullet-retention
@@ -345,10 +395,41 @@ Validated: bullet_retention
 ❌ Validation failed with 1 error(s):
 
    → [bullet_retention] docs/governance/advisory-rules-audit.md
-    Bullet-retention violation: 'Mechanical' bullet not found verbatim in
-    per-turn surface.
-      Bullet: 'use uv run for commands'
-      Source: docs/governance/advisory-rules-audit.md
+    Bullet-retention classification violation: corpus-owned section
+'owned-section' of 'AGENTS.md' carries the capture default 'Ambiguous' on:
+corpus-owned-section-0001.
+  Why: ADR-0.35.0 § Decision item 9 — owning a section makes its entries'
+classification binding, so an unreviewed capture default may not author a gate
+verdict.
+  Fix: for each entry run `uv run gz content retire AGENTS.md --entry <id>
+--reason "<why>"`, capture the reviewed class with `uv run gz content remember
+AGENTS.md --section owned-section --text "<text>" --classification
+<Mechanical|Promotable|Judgment>`, publish with `uv run gz content land
+AGENTS.md`, then re-run `uv run gz validate --bullet-retention`.
+  Source: docs/governance/advisory-rules-audit.md
+$ echo $?
+3
+```
+
+**Skill-sourced Mechanical row absent from its skill file:**
+
+```
+$ uv run gz validate --bullet-retention
+Validated: bullet_retention
+
+❌ Validation failed with 1 error(s):
+
+   → [bullet_retention] docs/governance/advisory-rules-audit.md
+    Bullet-retention violation: 'Mechanical' scorecard row agent-contract #2 is
+not found verbatim in its attributed source '.gzkit/skills/demo/SKILL.md'.
+  Bullet: 'name the verb before the flag'
+  Why: ADR-0.0.33 Invariant 1, source-aware per OBPI-0.35.0-10 (GHI #939) — a
+skill- or ADR-sourced discipline is retained against that source's own text and
+is never exempt.
+  Fix: restore the bullet text verbatim to .gzkit/skills/demo/SKILL.md, or
+correct the row's `source=` attribution, then re-run `uv run gz validate
+--bullet-retention`.
+  Source: docs/governance/advisory-rules-audit.md
 $ echo $?
 3
 ```
@@ -356,6 +437,10 @@ $ echo $?
 | Code | Meaning | Recovery |
 |------|---------|----------|
 | 0 | Surface is clean — every enforced bullet satisfies its tier-scoped retention contract | — |
+| 3 (mapping) | A row has no `source=` attribution, a duplicated identity, an undeclared section, or an entry id that is retired, unknown or in another section | Record `source=<path>#<section-id> entry=<entry-id>` in the row's Notes column, taking the live entry id from `.gzkit/corpus/<surface>.jsonl`, then re-run |
+| 3 (ownership) | An enrolled surface's ownership declaration or corpus cannot be loaded | Repair the surface as the finding's detail directs, then re-run |
+| 3 (capture default) | A corpus-owned section has a live entry classified `Ambiguous` | Retire the entry, capture the reviewed class, land the surface, refresh the row's `entry=` id, then re-run |
+| 3 (declared source) | A row attributed to a skill or ADR file names a missing file, or its Mechanical/Promotable text is absent from that file | Restore the text to the source, or correct the row's `source=` attribution, then re-run |
 | 3 (invariant tier) | One or more invariant-tier Mechanical/Promotable bullets absent from per-turn surface | Restore the missing bullet text verbatim to `AGENTS.md`, `CLAUDE.md`, or a `.claude/rules/*.md` file, then re-run |
 | 3 (compressible tier) | One or more compressible-tier bullets lack a valid advisor-QC retention witness | Record the verdict with `uv run gz content advise-rendition <surface> --score <0.0-1.0> --explanation "<reasoning>"`, cite the receipt at Gate 5, then re-run |
 

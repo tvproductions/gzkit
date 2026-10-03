@@ -90,6 +90,10 @@ class CorpusEntry(BaseModel):
     a content row in the effective view. The fold that interprets both fields
     (``effective_corpus``) lands in a later task; this task only declares the
     additive field and its schema/identity classification.
+
+    ``classification`` is read by ``bullet_retention.validate_bullet_retention``:
+    for a scorecard row attributed to a corpus-owned section it is the binding
+    class, in place of the scorecard's own cell (ADR-0.35.0 § Decision item 9).
     """
 
     model_config = ConfigDict(frozen=True, extra="forbid")

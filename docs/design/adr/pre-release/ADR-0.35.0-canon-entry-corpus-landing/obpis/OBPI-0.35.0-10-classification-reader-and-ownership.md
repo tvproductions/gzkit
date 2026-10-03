@@ -3,7 +3,7 @@ id: OBPI-0.35.0-10-classification-reader-and-ownership
 parent: ADR-0.35.0-canon-entry-corpus-landing
 item: 10
 lane: Heavy
-status: Draft
+status: Active
 allowlist:
   - src/gzkit/governance/trust_audits/bullet_retention.py
   - tests/governance/test_bullet_retention.py
@@ -27,6 +27,17 @@ reqs:
   - REQ-0.35.0-10-08
   - REQ-0.35.0-10-09
   - REQ-0.35.0-10-10
+req_atomic:
+  - REQ-0.35.0-10-01  # One resolver arm: an owned row binds its cited corpus entry; landed with its covering tests as one unit.
+  - REQ-0.35.0-10-02  # One population contract: identity and source parsing with the scorecard fallback; one unit.
+  - REQ-0.35.0-10-03  # One advisory emitted at the single point where the corpus class binds; one unit.
+  - REQ-0.35.0-10-04  # One fence over the owned sections of the effective corpus; one unit.
+  - REQ-0.35.0-10-05  # One append-only reconciliation walk proven on a fixture; the live corpus needed no change.
+  - REQ-0.35.0-10-06  # One doctrine paragraph in the scorecard; one SUPPORT authoring unit.
+  - REQ-0.35.0-10-07  # Fenced by parent-ADR BI-04; no labor of its own in this OBPI.
+  - REQ-0.35.0-10-08  # One retention arm for skill- and ADR-sourced rows; one unit.
+  - REQ-0.35.0-10-09  # The fail-closed half of that same arm; one unit.
+  - REQ-0.35.0-10-10  # Manpage section plus scorecard paragraph; one SUPPORT authoring unit.
 verification:
   - uv run -m unittest tests.governance.test_bullet_retention
   - uv run -m behave features/classification_ownership.feature
@@ -38,6 +49,17 @@ verification:
   - uv run gz validate --documents
   - uv run gz validate --req-kind-discipline
   - uv run mkdocs build --strict
+tasks:
+  - TASK-0.35.0-10-01-01
+  - TASK-0.35.0-10-02-01
+  - TASK-0.35.0-10-03-01
+  - TASK-0.35.0-10-04-01
+  - TASK-0.35.0-10-05-01
+  - TASK-0.35.0-10-06-01
+  - TASK-0.35.0-10-07-01
+  - TASK-0.35.0-10-08-01
+  - TASK-0.35.0-10-09-01
+  - TASK-0.35.0-10-10-01
 ---
 
 # OBPI-0.35.0-10-classification-reader-and-ownership: Classification Reader And Ownership
