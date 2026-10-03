@@ -1,0 +1,20 @@
+{
+  "obpi_id": "OBPI-0.35.0-10-classification-reader-and-ownership",
+  "parent_adr": "ADR-0.35.0-canon-entry-corpus-landing",
+  "lane": "heavy",
+  "entry": "full",
+  "execution_mode": "normal",
+  "current_stage": "implement",
+  "started_at": "2026-10-03T12:07:42Z",
+  "updated_at": "2026-10-03T12:07:42Z",
+  "receipt_state": "other_obpi",
+  "nonce": "677a284d9a8f2e63725a6a19dfb12314",
+  "blockers": [],
+  "required_human_action": null,
+  "next_command": "uv run gz obpi pipeline OBPI-0.35.0-10-classification-reader-and-ownership --from=verify",
+  "resume_point": "verify",
+  "single_driver_declaration": {
+    "reason": "operator-ruled single-session trial",
+    "declared_at": "2026-10-03T12:07:45.470376+00:00"
+  }
+}

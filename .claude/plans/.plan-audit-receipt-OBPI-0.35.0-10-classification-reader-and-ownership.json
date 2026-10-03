@@ -1,0 +1,369 @@
+{
+  "obpi_id": "OBPI-0.35.0-10-classification-reader-and-ownership",
+  "timestamp": "2026-10-03T12:35:30.932281+00:00",
+  "verdict": "FAIL",
+  "plan_file": null,
+  "gaps_found": 1,
+  "gaps": [
+    "No plan file found for OBPI-0.35.0-10-classification-reader-and-ownership in .claude/plans/ or ~/.claude/plans/"
+  ],
+  "scope_collisions": [
+    {
+      "sibling_adr": "ADR-0.30.0",
+      "sibling_obpi": "OBPI-0.30.0-03-okf-conformance-validator",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/bullet_retention.py",
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.27.0",
+      "sibling_obpi": "OBPI-0.27.0-03-router-tables-validator",
+      "contested_paths": [
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.39.0",
+      "sibling_obpi": "OBPI-0.39.0-03-settings-debt-fence",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/bullet_retention.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.39.0",
+      "sibling_obpi": "OBPI-0.39.0-05-roster-relocation-to-debt",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/bullet_retention.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.33.0",
+      "sibling_obpi": "OBPI-0.33.0-01-airlock-data-model-and-events",
+      "contested_paths": [
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.32.0",
+      "sibling_obpi": "OBPI-0.32.0-01-ontology-model-and-purity",
+      "contested_paths": [
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.17",
+      "sibling_obpi": "OBPI-0.0.17-04-validate-taxonomy",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.69",
+      "sibling_obpi": "OBPI-0.0.69-02-structural-fence-channel-boundary-invariants-anchor",
+      "contested_paths": [
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.69",
+      "sibling_obpi": "OBPI-0.0.69-03-closeout-proof-derived-view",
+      "contested_paths": [
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.69",
+      "sibling_obpi": "OBPI-0.0.69-04-retire-ln-closeout-proof-binding-surface",
+      "contested_paths": [
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.69",
+      "sibling_obpi": "OBPI-0.0.69-01-support-channel-ledger-and-validator-dispatch",
+      "contested_paths": [
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.70",
+      "sibling_obpi": "OBPI-0.0.70-03-guardrail-feedback-prose-rule",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.31",
+      "sibling_obpi": "OBPI-0.0.31-02-register-t0-scorecard",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.30",
+      "sibling_obpi": "OBPI-0.0.30-04-editor-protocol-contract",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.68",
+      "sibling_obpi": "OBPI-0.0.68-02-session-green-gate-validator",
+      "contested_paths": [
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.64",
+      "sibling_obpi": "OBPI-0.0.64-04-gz-validate-task-envelope-coherence",
+      "contested_paths": [
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.23",
+      "sibling_obpi": "OBPI-0.0.23-02-cross-link-and-scorecard",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-22-committed-rendition-store-deterministic-playback",
+      "contested_paths": [
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-25-bullet-retention-tier-scoped-validator",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/bullet_retention.py",
+        "tests/governance/test_bullet_retention.py",
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-05-brief-reconcile-engine",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-03-composition-drift-validator",
+      "contested_paths": [
+        "docs/user/manpages/validate.md",
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-20-setpoint-declaration-coherence-validator",
+      "contested_paths": [
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.37",
+      "sibling_obpi": "OBPI-0.0.37-18-append-only-corpus-model",
+      "contested_paths": [
+        "src/gzkit/content/models/corpus.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.22",
+      "sibling_obpi": "OBPI-0.0.22-06-rule-file-matrix-scorecard",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.59",
+      "sibling_obpi": "OBPI-0.0.59-01-author-doctrine-and-supersession",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.59",
+      "sibling_obpi": "OBPI-0.0.59-04-decommission-tautological-tests-chore",
+      "contested_paths": [
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.74",
+      "sibling_obpi": "OBPI-0.0.74-10-mx-doc-type-taxonomy",
+      "contested_paths": [
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-15-t0-maintenance-surfaces",
+      "contested_paths": [
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.32",
+      "sibling_obpi": "OBPI-0.0.32-07-validate-distribution",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.34",
+      "sibling_obpi": "OBPI-0.0.34-08-vendor-manifest-expansion",
+      "contested_paths": [
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.63",
+      "sibling_obpi": "OBPI-0.0.63-03-evidence-summary-and-proof-binding",
+      "contested_paths": [
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.29",
+      "sibling_obpi": "OBPI-0.0.29-08-verdict-proof-binding",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.28",
+      "sibling_obpi": "OBPI-0.0.28-01-threshold-rule-file",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.28",
+      "sibling_obpi": "OBPI-0.0.28-03-threshold-validator",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.20",
+      "sibling_obpi": "OBPI-0.0.20-01-validator-and-allowlist",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.24",
+      "sibling_obpi": "OBPI-0.0.24-01-validator-scope",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/bullet_retention.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.27",
+      "sibling_obpi": "OBPI-0.0.27-07-link-integrity-validator",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.27",
+      "sibling_obpi": "OBPI-0.0.27-01-selection-methodology",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.41",
+      "sibling_obpi": "OBPI-0.0.41-04-lock-handoff-coupling-validator",
+      "contested_paths": [
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.72",
+      "sibling_obpi": "OBPI-0.0.72-03-insight-record-reconcile",
+      "contested_paths": [
+        ".gzkit/renditions/AGENTS.md/claude.md",
+        ".gzkit/renditions/AGENTS.md/claude.candidate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.72",
+      "sibling_obpi": "OBPI-0.0.72-01-writer-model-roundtrip-validator",
+      "contested_paths": [
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.73",
+      "sibling_obpi": "OBPI-0.0.73-08-fidelity-presence-enforcement",
+      "contested_paths": [
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.73",
+      "sibling_obpi": "OBPI-0.0.73-02-qc-binding-validate-scope",
+      "contested_paths": [
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.73",
+      "sibling_obpi": "OBPI-0.0.73-09-waiver-ratchet-honesty-contract",
+      "contested_paths": [
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.33",
+      "sibling_obpi": "OBPI-0.0.33-01-bullet-retention-validator",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/bullet_retention.py",
+        "tests/governance/test_bullet_retention.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.33",
+      "sibling_obpi": "OBPI-0.0.33-02-surface-weight-validator",
+      "contested_paths": [
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.33",
+      "sibling_obpi": "OBPI-0.0.33-05-surface-fidelity-composite",
+      "contested_paths": [
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.33",
+      "sibling_obpi": "OBPI-0.0.33-03-pointer-integrity-validator",
+      "contested_paths": [
+        "docs/user/manpages/validate.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.54",
+      "sibling_obpi": "OBPI-0.0.54-01-author-map-doctrine-budget",
+      "contested_paths": [
+        "docs/governance/advisory-rules-audit.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.54",
+      "sibling_obpi": "OBPI-0.0.54-03-agents-md-map-conformance-validator",
+      "contested_paths": [
+        "src/gzkit/governance/trust_audits/bullet_retention.py",
+        "docs/user/manpages/validate.md"
+      ]
+    }
+  ]
+}
