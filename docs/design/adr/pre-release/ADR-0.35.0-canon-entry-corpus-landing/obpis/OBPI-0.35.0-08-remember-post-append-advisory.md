@@ -3,7 +3,7 @@ id: OBPI-0.35.0-08-remember-post-append-advisory
 parent: ADR-0.35.0-canon-entry-corpus-landing
 item: 8
 lane: Heavy
-status: Active
+status: Completed
 allowlist:
 - src/gzkit/commands/content/remember.py
 - src/gzkit/commands/content/_drift.py
@@ -42,6 +42,35 @@ tasks:
   - TASK-0.35.0-08-06-01
   - TASK-0.35.0-08-07-01
   - TASK-0.35.0-08-08-01
+  - TASK-0.35.0-08-04-02
+  - TASK-0.35.0-08-02-02
+  - TASK-0.35.0-08-04-03
+  - TASK-0.35.0-08-01-02
+  - TASK-0.35.0-08-04-04
+  - TASK-0.35.0-08-06-02
+req_atomic:
+# Declared 2026-10-03 at Stage 2, where the labor happened (GHI #590). REQ-01, REQ-02,
+# REQ-04 and REQ-06 are ABSENT on purpose: each carried more than one unit of labor and was
+# subdivided via `gz task start --seq next`.
+#   REQ-01 -> seq 01/02: the covering test (2026-08-23), then the Step-4b repair that
+#             made advisory emission best-effort.
+#   REQ-02 -> seq 01/02: the ValueError binding (2026-08-23), then the OSError arm
+#             through a real unreadable sidecar.
+#   REQ-06 -> seq 01/02: the paired byte-identity test, then the paired output-fault
+#             test that gives the exit-code clause a conclusive RED (added at Stage 5,
+#             after the red-parity gate refused the first test's `none` witness).
+#   REQ-04 -> seq 01/02/03/04: the advisory prose and its unit test; the manpage
+#             contract and the Gate 4 scenarios; the review repair that put the
+#             attestation flags on the printed command; then the Step-4b repair
+#             that shell-quotes the surface.
+# REQ-03: one change to the enumeration, shared with REQ-08.
+- REQ-0.35.0-08-03
+# REQ-05: one covering test for the silent case; no production change.
+- REQ-0.35.0-08-05
+# REQ-07: structural fence; its proof is the parent ADR's Boundary Invariants entry.
+- REQ-0.35.0-08-07
+# REQ-08: one covering test binding the advisory to the shared predicate.
+- REQ-0.35.0-08-08
 ---
 
 # OBPI-0.35.0-08-remember-post-append-advisory: Remember Post Append Advisory
@@ -73,12 +102,16 @@ tasks:
 >
 > Annotation authored by the direct path under an explicit operator ruling — no lock, no
 > pipeline marker, no TASK, no dispatch — on the precedent set for `OBPI-0.35.0-01`.
+>
+> **DRAWN 2026-10-03 (operator-initiated).** The operator invoked
+> `/gz-obpi-pipeline OBPI-0.35.0-08`. The annotation above is the record of the 2026-08-23
+> history and no longer bars the work.
 
 
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/ADR-0.35.0-canon-entry-corpus-landing.md`
 - **Checklist Item:** #8 - "`gz content remember` post-append advisory -- three-part recovery prose, exit stays 0, never refuses the append"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -109,15 +142,19 @@ Give `gz content remember` a POST-APPEND advisory that names the renditions its 
 > | REQ | State | Where |
 > |-----|-------|-------|
 > | REQ-0.35.0-08-01 | **BOUND 2026-08-23** | `test_append_survives_and_exit_stays_0_when_the_advisory_fires` — authored for this REQ because the previously cited test (`test_warns_naming_the_routed_consumer_not_the_retained_record`) asserts exit 0 and never reads the corpus, so it cannot carry the append-intact half. The new test asserts BOTH halves: exit 0 AND the corpus on disk holding the entry with its `surface`/`section`/`text`. Negative control (substituting for `gz arb red`, which returns `not-applicable` once production has landed): `append_entry` was disabled and the test failed. That failure was ERROR-class (`FileNotFoundError` on the corpus read), not assertion-class, for that one mutation shape; subtler breaks (wrong text or section) fail on the field assertions. |
-> | REQ-0.35.0-08-02 | **BOUND 2026-08-23, one channel of three** | `test_malformed_sidecar_never_costs_the_append_or_the_exit_code`; RED observed before `dcf29b95`. It genuinely raises — `RenditionProvenance.model_validate_json` throws a `ValidationError` (a `ValueError` subclass) into the drift seam's `except (OSError, ValueError)` — so it proves the REQ's raise-survival semantics. `test_malformed_manifest_never_costs_the_exit_code` was bound to this REQ and the binding was REMOVED the same day: `vendors.py::_read_manifest_key` now guards `isinstance(data, dict)` (landed in `809f1370`), so a `[]` manifest returns `{}` and NOTHING raises — that test proves the guard, not the REQ, and the decorator claimed a proof its body no longer carries. Two of the REQ's three named channels remain unbound: *absent renditions directory* returns `[]` gracefully rather than raising, so it structurally cannot prove raise-survival, and *unreadable sidecar* is exercised only on the `ValueError` branch, never the `OSError` one. |
+> | REQ-0.35.0-08-02 | **BOUND 2026-08-23, one channel of three** | `test_malformed_sidecar_never_costs_the_append_or_the_exit_code`; RED observed before `dcf29b95`. It genuinely raises — `RenditionProvenance.model_validate_json` throws a `ValidationError` (a `ValueError` subclass) into the drift seam's `except (OSError, ValueError)` — so it proves the REQ's raise-survival semantics. `test_malformed_manifest_never_costs_the_exit_code` was bound to this REQ and the binding was REMOVED the same day: `vendors.py::_read_manifest_key` now guards `isinstance(data, dict)` (landed in `809f1370`), so a `[]` manifest returns `{}` and NOTHING raises — that test proves the guard, not the REQ, and the decorator claimed a proof its body no longer carries. Two of the REQ's three named channels remain unbound: *absent renditions directory* returns `[]` gracefully rather than raising, so it structurally cannot prove raise-survival, and *unreadable sidecar* is exercised only on the `ValueError` branch, never the `OSError` one. **OSError branch BOUND 2026-10-03** — `test_drift_detection_raising_oserror_never_costs_the_append_or_the_exit_code` makes the sidecar path a directory, so the production read itself raises. |
 > | REQ-0.35.0-08-03 | **RE-OPENED 2026-08-23** | was landed by the same test as 08-01, which asserts BOTH `claude` and `codex` are named. The operator-ruled amendment above changed the REQ's subject to the ROUTED consumer only, so that test now pins the behaviour the amended REQ forbids. Re-derive its assertions; do not read the old GREEN as coverage. **Landed 2026-08-23** — `test_warns_naming_the_routed_consumer_not_the_retained_record` on both the remember and retire halves; RED witness `arb-red-REQ-0.35.0-08-03-a84e371f264d4050bf8be165bed7b55d`. |
 > | REQ-0.35.0-08-08 | **landed 2026-08-23** | `test_advisory_names_exactly_what_the_gates_grade`; count and names parsed from one rendered line, expectation derived from the predicate rather than pinned to a literal. RED witness `arb-red-REQ-0.35.0-08-08-6abd3bcd045b496d9a999cc6d196c718`. |
-> | REQ-0.35.0-08-04 | **OPEN** | advisory currently cites the failing gates and points at `compose` + `commit`; it does NOT cite the ADR-0.0.37 seam, and its next step is not yet `gz content land` |
+> | REQ-0.35.0-08-04 | **LANDED 2026-10-03** | `test_advisory_names_drift_cites_the_seam_and_gives_a_runnable_land`. The advisory names the corpus->rendition seam, cites ADR-0.0.37 § Decision Re-Alignment with that section's own item title quoted, and gives `uv run gz content land <surface>` with `--attestor` and `--attestation-text` as the next step (the flags were added in the same day's fix cycle; see the Change Log); the compose + commit recovery lines are removed. RED observed on the assertion before the change. Was OPEN: the advisory cited the failing gates and pointed at `compose` + `commit`. |
 > | REQ-0.35.0-08-05 | **BOUND 2026-08-23, one disjunct of two; second disjunct STRUCTURALLY UNREACHABLE** | `test_silent_when_no_rendition_has_been_committed` proves the reachable disjunct (no committed renditions -> no advisory), with its assertions strengthened the same day from a single `gz content compose` substring check to the advisory's structural markers, so unrelated advisory output can no longer pass silently. The FIRST disjunct — *renditions already on the current corpus fingerprint* — can never co-occur with a `remember` that reaches the advisory: `remember.py` calls `append_entry` BEFORE `warn_on_rendition_drift`, `drifted_consumers` computes `current` AFTER the append, and `corpus_fingerprint` digests every entry (`rendition_store.py:56-64`), so a successful append always moves the fingerprint; duplicate-text appends are refused earlier and never reach the advisory at all. Confirmed independently by the spec review. The clause *and stderr is empty* is INEXPRESSIBLE through this harness for the same reason REQ-06 is — `CliRunner.invoke` merges both streams into one buffer (`tests/commands/common.py:69`). **RESOLVED 2026-08-24 — the operator ruled reword over changing the runner. Both residuals are removed from the REQ text rather than left unproven; the covering test is unchanged and still binds the reachable disjunct.** |
-> | REQ-0.35.0-08-06 | **REWORDED 2026-08-24 — was marked landed on an unobservable claim; still OPEN** | `CliRunner.invoke` merges both streams into one buffer (`tests/commands/common.py`, `redirect_stdout(output)` and `redirect_stderr(output)`), so the stream-separation half of this REQ cannot be expressed as an assertion here at all. The byte-identical-corpus-rows half is also unasserted. Found by the independent spec review, 2026-08-23; pre-existing, not introduced by that change. **Operator ruled reword over changing the runner (2026-08-24):** the stream-separation clause is struck from the REQ and stderr-only routing is now proven nowhere in this brief; the retained byte-identity and exit-code halves still need a covering test. |
+> | REQ-0.35.0-08-06 | **REWORDED 2026-08-24 — was marked landed on an unobservable claim; still OPEN** | `CliRunner.invoke` merges both streams into one buffer (`tests/commands/common.py`, `redirect_stdout(output)` and `redirect_stderr(output)`), so the stream-separation half of this REQ cannot be expressed as an assertion here at all. The byte-identical-corpus-rows half is also unasserted. Found by the independent spec review, 2026-08-23; pre-existing, not introduced by that change. **Operator ruled reword over changing the runner (2026-08-24):** the stream-separation clause is struck from the REQ and stderr-only routing is now proven nowhere in this brief; the retained byte-identity and exit-code halves still need a covering test. **BOUND 2026-10-03** — `test_corpus_row_is_byte_identical_with_and_without_drift`, paired fixtures on one frozen clock. `gz arb red` returned `none` because the property already held on the base tree; the witness is the killed mutation in the executed acceptance proof. |
 > | REQ-0.35.0-08-07 | **open (structural-fence)** | audited at ADR closeout, not here |
 >
 > **COVERAGE CHANNEL WARNING (spec review, 2026-08-23) — DISCHARGED for REQs 01, 02 and 05 on 2026-08-23; REQ-06 stands.** The warning read: REQs 01, 02, 05 and 06 carry NO `@covers` decorator anywhere in the repo, all four are `[behavior]` whose only proof channel is `@covers`, and the rows above called them landed on PROSE evidence while `gz obpi complete` reads the decorator channel. Measured before the repair: `gz covers` reported `covered_reqs 2`, `behavior_uncovered_reqs 5`. After: `covered_reqs 5`, `behavior_uncovered_reqs 2` — REQ-04 (blocked on the unlanded `gz content land`) and REQ-06 (unprovable through this harness). **The count is not the evidence.** One binding added in that repair was removed again the same day because the decorator asserted a proof its test body did not carry, and a second was strengthened because a substring check stood in for the REQ's actual claim — both found by the independent spec review, not by the coverage number, which rose either way. REQ-06 remains unbound and unprovable here; it is an operator call, now joined by the two REQ-05 residuals recorded in its row above.
+>
+> **2026-10-03: REQ-04 is unblocked and landed.** `gz content land` is a registered verb since
+> OBPI-0.35.0-07 completed, so the blocker recorded in the next paragraph no longer holds. The
+> paragraphs below are kept as the record of what was true when they were written.
 >
 > **Remaining scope after the 2026-08-23 amendment: REQ-04, REQ-03 (re-opened) and REQ-08.** REQ-04 remains BLOCKED — `gz content land` is not a registered verb (measured 2026-08-23) and OBPI-0.35.0-07 is `Draft`, so this OBPI cannot complete until 07 lands. REQ-03 and REQ-08 are unblocked and land together: they are one change to the enumeration. Original note follows.
 >
@@ -280,9 +317,19 @@ uv run mkdocs build --strict
 <!-- gz-validate-skip: command-shape -->
 ```bash
 uv run gz content remember AGENTS.md --section behavior-rules --text "Advisory demonstration entry." --tier compressible
-uv run gz validate --rendition-freshness
-uv run gz content land AGENTS.md --dry-run
+uv run gz content land AGENTS.md --attestor g0 --attestation-text "demo corpus delta attested" --dry-run
 ```
+
+> **Corrected 2026-10-03, twice.** (1) The landing line read
+> `uv run gz content land AGENTS.md --dry-run`. Run after the append it exits 1: the append
+> moves the corpus, and landing then requires `--attestor` and `--attestation-text` even for
+> a dry run (observed in a disposable checkout). (2) A middle line,
+> `uv run gz validate --rendition-freshness`, is removed. After the append it exits 3 by
+> design, which is the drift the advisory announces, and the Stage-4 evidence generator
+> requires every Demo command to exit 0, so it blocked the packet on the state it was meant
+> to show. The landing plan's old and new corpus fingerprints show the same drift.
+> The first line appends to the real corpus, so run this Demo in a disposable checkout
+> (`uv run gz obpi adversary-workspace <OBPI-ID>`), never in the working repository.
 
 ## Acceptance Criteria
 
@@ -321,55 +368,276 @@ Each checkbox carries a deterministic REQ ID and exactly one kind tag
 <!-- Record observations during/after implementation.
      Command outputs, file:line references, dates. -->
 
+### Change Log
+
+- **2026-10-03 — REQ-0.35.0-08-04.** Advisory prose retargeted in
+  `src/gzkit/commands/content/_drift.py`: seam named and cited, next step is
+  `uv run gz content land <surface>`. First draft paraphrased the seam and its test asserted
+  only the ADR id; corrected before review so the test asserts the seam name with the ADR id.
+- **2026-10-03 — REQ-0.35.0-08-02.** OSError branch bound through a real unreadable sidecar.
+  A first draft mocked the drift call; replaced before review.
+- **2026-10-03 — REQ-0.35.0-08-06.** Paired-fixture byte-identity test added.
+- **2026-10-03 — Gate 3 and Gate 4.** `docs/user/manpages/content.md` gains the advisory
+  contract with captured output; `features/content_remember.feature` gains two scenarios.
+- **2026-10-03 — REQ-0.35.0-08-08 proof baseline.** `tests/commands/test_content_retire.py`
+  could not be imported when run alone: `gzkit.ledger_events` fails if imported before
+  `gzkit.ledger` (a production import cycle outside this brief's Allowed Paths, recorded with
+  `gz insights remember`). The test module now imports `gzkit.ledger` first, so the REQ-08
+  covering test runs on its own. The production cycle is not repaired here.
+- **2026-10-03 — finding `QR-0.35.0-08-04-printed-land-invocation-refused-in-firing-state`
+  (quality review, receipt `arb-step-qualityreview-76c995ef5bdf4968934b19c8c19aa1ab`;
+  the spec review, `arb-step-specreview-f62289ff7c9040fea40fe1f83cfad942`, noted the same
+  root unmapped), REQ-0.35.0-08-04.** The advisory printed bare
+  `uv run gz content land <surface>`, which landing refuses in exactly the state the advisory
+  fires, because a moved corpus requires `--attestor` and `--attestation-text`. Repair: the
+  advisory prints the invocation with both flags, in the placeholder wording landing's own
+  refusal uses. The unit test now extracts the printed command by shape and runs it through
+  the real parser, so a misspelled verb or flag fails there. The unit fixture cannot carry a
+  landing, so recovery is demonstrated at Gate 4: a scenario runs `remember` on the
+  three-consumer landing project, shows bare `land` refused for want of attestation, then
+  runs the printed command with its placeholders filled and observes the landing complete.
+- **2026-10-03 — review notes, same cycle.** Prose assembly extracted to `_advisory_lines`
+  to keep `warn_on_rendition_drift` inside the function-size band. The REQ-01 and REQ-02
+  tests now guard their fixture premises; the REQ-05 test's vestigial `compose` assertion
+  is replaced. The manpage states the no-sidecar exclusion and the attested next step.
+- **2026-10-03 — round-2 reviews (spec `arb-step-specreview-a46f35dac082412eb20aed1f300f669c`,
+  quality `arb-step-qualityreview-b783acaec8ed4db8945db0259cf0392c`).** Both accepted all
+  eight proofs and closed the REQ-0.35.0-08-04 finding against the repaired state. Their
+  unmapped notes were then repaired in a second cycle: the stale module docstring in
+  `features/steps/content_remember_steps.py`, and a `unittest.main()` block in
+  `tests/commands/test_content_remember.py` that sat above the last test class (18 tests
+  ran through it before the move, 21 after). The REQ-04 proof gained a fourth substitution,
+  the attestation flags dropped from the printed command. The `## Demo` third line was
+  corrected the same day.
+- **2026-10-03 — Step 4b round 1 (Codex, tier 1, receipt
+  `arb-step-codexadversary-c811f6d7391a45ca9b339d772f89b0db`): refuted, two mapped findings.**
+  The reviewer replayed all eleven recorded substitutions and ran the Demo, both test
+  modules and both features in a disposable checkout, then produced two counterexamples.
+  - `AR-0.35.0-08-01-advisory-write-error-changes-exit`, REQ-0.35.0-08-01. A stderr sink
+    raising `OSError` while the advisory was written made `remember` exit 1 after the row
+    was durable; the flush and print sat outside the best-effort handler. Repair: emission
+    is guarded for `OSError` and `ValueError`, as detection is. Covering test
+    `test_advisory_output_fault_never_costs_the_exit_code` (paired with a no-drift control).
+  - `AR-0.35.0-08-04-unquoted-surface-breaks-printed-command`, REQ-0.35.0-08-04. A surface
+    named `Land Surface.md` printed a command that split into two arguments and exited 2.
+    Repair: the printed command uses `shlex.quote(surface)`; names without special
+    characters print unchanged. Covering test
+    `test_printed_command_quotes_a_surface_name_containing_a_space`.
+  - Two unmapped notes repaired in the same batch. The REQ-0.35.0-08-08 test's fixture now
+    routes a consumer named `alpha` through a vendor manifest, so a hard-coded
+    `stem != "root"` copy of the predicate, which survived before, now fails it.
+    `warn_on_rendition_drift`'s docstring no longer says a retirement can only shrink the
+    floor. The manpage states both new behaviours.
+  Closure of both findings is for the Step 4b follow-up to give or withhold.
+- **2026-10-03 — round-5 Stage-2 reviews of the Step 4b repairs (spec
+  `arb-step-specreview-dacab557598a422d9233afd45ad0a2df`, quality
+  `arb-step-qualityreview-18e3f5de23da4a8a9a8201508d4c601a`).** Both accepted all eight
+  proofs and closed both Step 4b findings and the earlier REQ-04 finding by reading. Their
+  notes are not mapped to any REQ and are carried to the ceremony unrepaired, except the
+  manpage sentence, which was corrected (the quoting is POSIX-shell quoting):
+  - the emission handler's `ValueError` arm has no covering assertion, and
+    `test_advisory_output_fault_never_costs_the_exit_code` does not assert the failing sink
+    was reached (its reach is shown by the killed `emission-fault-not-guarded` substitution);
+  - `sys.stdout.flush()` shares the emission `try`, so a stdout fault also drops an advisory
+    stderr could have delivered;
+  - `tests/commands/test_content_retire.py` keeps a docstring saying retirement only ever
+    shrinks the floor; `TestContentRememberDriftWarning` is past the class-size guidance;
+  - an output fault on the SUCCESS line or the ledger append in
+    `src/gzkit/commands/content/remember.py`, after the row is durable, also exits 1. It
+    behaves the same with and without drift, so it is not the advisory's doing; whether
+    Requirement 1's "on EVERY path" reaches it is the operator's ruling.
+- **2026-10-03 — Step 4b round 2, focused follow-up (Codex, tier 1): accepted, all three
+  mapped findings closed by execution.** The reviewer re-ran its own round-1 counterexamples
+  on the repaired tree (both now pass), replayed all 14 recorded substitutions, ran both
+  test modules, both features and the Demo, and approved all eight current proofs. Its
+  verdict lines: `CORROBORATED-WITH-CAVEATS` / `not-refuted`. Its stated weakest point: the
+  REQ-01 output-fault test neither asserts the failing sink was reached nor covers the
+  emission handler's `ValueError` arm; its own instrumented probe observed both arms reached
+  with exit 0. It ran the success-line and ledger output faults (exit 1, row durable, with
+  and without drift) and judged them outside REQ-01; that is its opinion, and the question
+  stays with the operator.
+  Two receipts carry this round. `arb-step-codexadversary-532836277d0e409db476f5300dd499ab`
+  is the executed review; the importer refused it because three unmapped observations reused
+  finding ids from earlier rounds with different text. The reviewer's own thread was resumed
+  and re-issued the same object with new ids for those three and the statement "No judgment
+  changed": `arb-step-codexadversary-786f351877904100a29553682a505316`, which is the imported
+  record. Every other field was compared and is identical.
+- **2026-10-03 — correction made AFTER attestation and completion (Stage 5).** The operator
+  attested ("attest completed") and `gz obpi complete` recorded the completion. The per-change
+  gate then failed on `gz validate --red-parity`: REQ-0.35.0-08-06's RED witness was
+  `failure_class: none`, which that validator never lets an executed acceptance proof erase.
+  The orchestrating agent had carried that `none` past Stage 3, whose table marks it blocking,
+  and had reported red-parity as passing when it passed only because the brief was not yet
+  `Completed`. That error is recorded with `gz insights remember`.
+  Repair, in `tests/commands/test_content_remember.py` only: a second REQ-0.35.0-08-06
+  covering test, `test_exit_code_and_row_are_identical_with_and_without_drift_under_an_output_fault`.
+  REQ-06's exit-code clause is false on the base tree under an advisory output fault (drift
+  exits 1, no drift exits 0), so the test fails there by assertion: RED receipt
+  `arb-red-REQ-0.35.0-08-06-e102516d2600415e879c371edc281c80` (`failure_class` assertion, working-tree base). No production file changed.
+  The operator, asked how much re-review to run on the post-attestation change, ruled
+  verbatim: "Finish the two reviews, then sync (Recommended)". Round-6 Stage-2 reviews: spec
+  `arb-step-specreview-1b1d4259f37b41bf93749016a6ce246a` and quality
+  `arb-step-qualityreview-c24004323feb4ed3a0df08a5cc1e626e`, both accepted, both judging the test
+  to be REQ-06 as written and not REQ-01 re-labelled. **No Step 4b round ran on this
+  correction: the cross-vendor reviewer has not seen the added test.** Post-correction records:
+  lint `arb-ruff-2f643767eaed463f800c740ce9c4e7b9`, typecheck
+  `arb-step-typecheck-3c45e0e3be444b809cc04e940bba529c`, full unit suite
+  `arb-step-unittest-36689e12c5c948b5ba56d8c81d43c322` (11408 tests, exit 0).
+  The Implementer dispatch for this correction has no ledger record, because the pipeline
+  marker had been removed at completion. The Stage-4 packet under `.gzkit/evidence/` is the
+  packet the operator attested against and is left as it was. Reviewer notes carried: the
+  REQ-06 and REQ-01 proofs share one discriminating substitution on the exit-code clause;
+  the byte-identity half of REQ-06 still has no RED of its own; the dated 2026-08-24 sentence
+  in the REQ-0.35.0-08-06 acceptance criterion ("still UNASSERTED ... remains OPEN"), and the
+  "Brief is `Draft`" sentences in three criteria, describe a state that no longer holds and
+  are left as dated contract text.
+- **2026-10-03 — outside this brief (four items recorded with
+  `gz insights remember` for an operator routing ruling, and one noted here).** The `gz-content-remember` skill
+  still shows the compose, advise, commit chain as the way to land a captured entry.
+  `docs/user/runbook.md` still says a retirement implies no recomposition. The
+  `gzkit.ledger_events` import cycle named above is a production defect.
+  The rendition-freshness gate's recovery message and `retire`'s floor-direction prose still
+  say recompose and re-attest. Noted here only: this brief's frontmatter `allowlist` omits
+  `src/gzkit/core/attestor_names.py`, which its Allowed Paths body lists as READ-ONLY.
+
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD — Red-Green-Refactor)
 
 ```text
-# Paste test output here
+uv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer
+Ran 11407 tests
+OK (skipped=7)
+receipt: arb-step-unittest-c4592cebdbf84d95902c8fb71f253af5 (exit_status 0)
+
+uv run -m unittest tests.commands.test_content_remember tests.commands.test_content_retire
+Ran 79 tests
+OK
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+uv run gz arb ruff        -> exit_status 0, receipt arb-ruff-beeb7f3446134fdd8d54c639fa57a6bc
+uv run gz arb typecheck   -> exit_status 0, receipt arb-step-typecheck-99ecd388c77c46e2a1aa13afb68eec9b
 ```
 
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here when Gate 3 applies
+uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
+exit_status 0, receipt arb-step-mkdocs-d2c1b207d90044a59557adfbb618846d
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here when Gate 4 applies
+uv run gz arb step --name behave -- uv run -m behave features/content_remember.feature features/content_land.feature
+2 features passed, 0 failed, 0 skipped
+20 scenarios passed, 0 failed, 0 skipped
+140 steps passed, 0 failed, 0 skipped
+receipt: arb-step-behave-b9ae23437ab347ccb163176bb3bde746 (exit_status 0)
+
+uv run gz arb step --name behave -- uv run -m behave --tags=@REQ-0.35.0-08-04,@REQ-0.35.0-08-05 features/
+3 scenarios passed, 0 failed, 453 skipped
+receipt: arb-step-behave-178ac5a438fb4d8db9f00195520f34cf (exit_status 0)
 ```
 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+Operator (g0), 2026-10-03, verbatim: attest completed
 ```
 
 ### Value Narrative
 
 <!-- What problem existed before this OBPI, and what capability exists now? -->
 
+Before, `gz content remember` warned about drifted renditions but pointed at a per-consumer
+compose and commit recovery and never cited the seam, and GHI #654 had named the original
+defect as the silence. Now the advisory names which routed consumers drifted, cites the
+corpus->rendition seam (ADR-0.0.37 § Decision Re-Alignment), and prints the one
+`gz content land` command that recovers, with the attestation flags that command requires in
+that state. The append is never refused and the exit code stays 0, including when drift
+detection or the advisory's own output fails.
+
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+The brief's Demo, run by the Stage-4 evidence generator in a disposable copy on 2026-10-03 (both commands exit 0). The entry id is elided because it carries a timestamp.
+
+```text
+$ uv run gz content remember AGENTS.md --section behavior-rules --text "Advisory demonstration entry." --tier compressible
+Appended corpus entry corpus-behavior-rules-... to AGENTS.md [behavior-rules].
+
+Warning: this append drifted 1 committed rendition(s) of 'AGENTS.md'
+  (root). They no longer derive from the current corpus,
+  so `gz check` will now fail on:
+    - Rendition freshness
+
+  Why: the corpus->rendition seam (ADR-0.0.37 § Decision Re-Alignment). The
+  corpus is the "Append-only corpus (source of truth)" and a committed
+  rendition is derived from it, so this append leaves each one stale
+  until it is landed.
+
+  Land the corpus into every consumer in one governed step. The corpus moved,
+  so the landing takes your attestation of the corpus change:
+    uv run gz content land AGENTS.md \
+        --attestor <handle> --attestation-text "<the operator's verbatim words>"
+```
+
+Executed proof for the three parts: `proof-9547d290ab01499f969af47e274b81e3` (REQ-0.35.0-08-04), five substitutions each killed on an assertion. Full unit suite `arb-step-unittest-c4592cebdbf84d95902c8fb71f253af5` (11407 tests, exit 0); lint `arb-ruff-beeb7f3446134fdd8d54c639fa57a6bc`; typecheck `arb-step-typecheck-99ecd388c77c46e2a1aa13afb68eec9b`; docs `arb-step-mkdocs-d2c1b207d90044a59557adfbb618846d`; Gate 4 `arb-step-behave-b9ae23437ab347ccb163176bb3bde746` (20 scenarios). Independent cross-vendor confirmation: `arb-step-codexadversary-786f351877904100a29553682a505316`.
+
+### Step 4b — Independent Adversarial Validation
+
+**Adversary identity and tier.** Tier 1, cross-vendor: OpenAI Codex dispatched through the
+`openai-codex` Claude Code plugin (`codex-companion.mjs task --write --cwd <disposable checkout>`),
+ARB-wrapped on every round. Each round ran in a throwaway writable copy of the reviewed tree, so
+the adversary replayed the recorded proofs and ran its own probes. Codex reported `ready: true`
+before round 1, so tiers 2 and 3 were forbidden.
+
+**The adversary refuted this OBPI once before corroborating it.** The claims it broke were
+REQ-01 (an advisory output fault cost the exit code) and REQ-04 (the printed command was not
+runnable for a surface name containing a space).
+
+| Round | Receipt | Verdict | Claims broken / outcome |
+|---|---|---|---|
+| 1 | `arb-step-codexadversary-c811f6d7391a45ca9b339d772f89b0db` | **NOT-CORROBORATED / refuted** | All eleven recorded substitutions replayed; 7 of 8 proofs approved. `AR-0.35.0-08-01-advisory-write-error-changes-exit` (REQ-01): a stderr sink raising `OSError` while the advisory was written made `remember` exit 1 after the row was durable. `AR-0.35.0-08-04-unquoted-surface-breaks-printed-command` (REQ-04): for `Land Surface.md` the printed command split into two arguments and exited 2 |
+| 2 | `arb-step-codexadversary-532836277d0e409db476f5300dd499ab` | **CORROBORATED-WITH-CAVEATS / not-refuted** | Focused follow-up. Its own two counterexamples re-run and passing; all 14 recorded substitutions replayed; 8 of 8 proofs approved; three closures. Import REFUSED: three unmapped observations reused earlier finding ids with different text |
+| 2, re-issue | `arb-step-codexadversary-786f351877904100a29553682a505316` | **accepted** (the imported record) | The same reviewer's resumed thread re-issued the round-2 object with new ids for those three observations and the statement "No judgment changed". Every other field compared identical |
+
+**How each was resolved.** REQ-01: advisory emission in `warn_on_rendition_drift` is guarded for
+`OSError` and `ValueError`, as detection already was, with a red-first paired test
+(`test_advisory_output_fault_never_costs_the_exit_code`) and an `emission-fault-not-guarded`
+substitution. REQ-04: the printed command uses `shlex.quote(surface)`, with a red-first test
+(`test_printed_command_quotes_a_surface_name_containing_a_space`) and a
+`surface-not-shell-quoted` substitution. The earlier Stage-2 finding
+`QR-0.35.0-08-04-printed-land-invocation-refused-in-firing-state` (the printed command lacked the
+attestation flags landing requires) was closed again by the adversary's own three-consumer probe:
+bare `land` exit 1, the printed attested command exit 0, no remaining drift. No operator ruling
+was needed to close a finding; no requirement, allowlist or threat-model boundary was amended.
+
+**What the adversary left open, unmapped to any requirement.** Its weakest point: the REQ-01
+output-fault test neither asserts the failing sink was reached nor covers the handler's
+`ValueError` arm (its own probe observed both arms reached with exit 0). It executed an output
+fault on the success line and on the ledger append in `remember.py` (exit 1, row durable, with and
+without drift) and judged both outside REQ-01; whether Requirement 1's "on EVERY path" reaches
+them was put to the operator and is unruled at completion. It confirmed the five items outside
+this brief's Allowed Paths that the Change Log records. It ran on macOS only.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Parent ADR Decision item implemented: § Decision item 7, "`gz content remember` gains a POST-APPEND ADVISORY -- three-part recovery prose per `.claude/rules/guardrail-feedback-prose.md`, never a refusal, exit stays 0. Capture must never be blocked: losing the operator's words is strictly worse than a red tree. The tree going red is correct; GHI #654's defect is the SILENCE, not the redness." (Feature Checklist item #8)
+- Files created: none
+- Files modified: `src/gzkit/commands/content/_drift.py`, `tests/commands/test_content_remember.py`, `tests/commands/test_content_retire.py`, `features/content_remember.feature`, `features/steps/content_remember_steps.py`, `docs/user/manpages/content.md`
+- Advisory: shared by `remember` and `retire`; names the count and each routed consumer graded by `is_graded_rendition`, cites the corpus->rendition seam (ADR-0.0.37 § Decision Re-Alignment), and prints `uv run gz content land <surface>` with `--attestor` and `--attestation-text`, the surface quoted for a POSIX shell. Detection and emission are both best-effort: neither can cost the append or the exit code.
+- Tests added: six unit tests in `TestContentRememberDriftWarning` (three-part advisory run through the real parser, spaced surface name, unreadable sidecar, advisory output fault, byte-identical rows, and, added after attestation, the paired output-fault test for REQ-06's exit-code clause) and three BDD scenarios, one of which runs the command extracted from the advisory and observes the landing. The REQ-08 test's fixture now routes a consumer named `alpha`.
+- Date completed: 2026-10-03
+- Attestation status: operator attested ("attest completed")
+- Defects noted: stderr-only routing is proven by no test (struck from REQ-05 and REQ-06 by operator ruling 2026-08-24); the REQ-01 output-fault test does not assert the failing sink was reached and does not cover the emission handler's `ValueError` arm; an output fault on the success line or the ledger append in `remember.py` also exits 1 after the row is durable, with or without drift, and whether Requirement 1 reaches it is unruled; five items outside this brief's Allowed Paths are recorded with `gz insights remember` (see the Change Log)
 
 ## Tracked Defects
 
@@ -380,12 +648,12 @@ _No defects tracked._
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — OBPI-0.35.0-08: the post-append advisory in src/gzkit/commands/content/_drift.py names the drifted routed consumers, cites the corpus->rendition seam (ADR-0.0.37 § Decision Re-Alignment) and prints the attested gz content land command; the append is never refused and the exit code stays 0. Receipts: arb-ruff-beeb7f3446134fdd8d54c639fa57a6bc; arb-step-typecheck-99ecd388c77c46e2a1aa13afb68eec9b; arb-step-unittest-c4592cebdbf84d95902c8fb71f253af5 (11407 tests, exit 0); arb-step-mkdocs-d2c1b207d90044a59557adfbb618846d; arb-step-behave-178ac5a438fb4d8db9f00195520f34cf (3 scenarios); arb-step-behave-b9ae23437ab347ccb163176bb3bde746 (20 scenarios). Step 4b, tier 1 Codex: round 1 arb-step-codexadversary-c811f6d7391a45ca9b339d772f89b0db refuted with two findings, both repaired; round 2 arb-step-codexadversary-786f351877904100a29553682a505316 accepted, 8 of 8 proofs approved, three findings closed by execution. 7 BEHAVIOR REQs covered by tests; REQ-0.35.0-08-07 is a structural fence audited at ADR closeout. Packet replay VERIFIED: .gzkit/evidence/OBPI-0.35.0-08-remember-post-append-advisory.stage4a.md.
+- Date: 2026-10-03
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-10-03
 
 **Evidence Hash:** -

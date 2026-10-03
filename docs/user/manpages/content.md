@@ -124,6 +124,66 @@ section resolves to no template-defined section of that surface — an
 unaddressable entry is never stored. `--tier invariant` marks entries emitted
 verbatim at every compression setpoint; `--tier` defaults to `compressible`.
 
+#### Post-append advisory
+
+Appending moves the corpus fingerprint, so every committed, routed rendition of
+the surface stops deriving from the current corpus. When that happens, `remember`
+prints an advisory **after** the corpus row is durably written:
+
+- It fires only when the append left at least one committed, routed rendition
+  stale. A surface with no committed rendition produces a silent success, and a
+  retained off-route rendition is never named: only consumers routed for the
+  surface have landing work due. A routed rendition with no provenance sidecar
+  is skipped too: it was already unprovable before this append, and naming it
+  would misattribute pre-existing drift (`gz validate --rendition-freshness`
+  still reports it).
+- It **never refuses the append** and the exit code stays `0`. If drift detection
+  itself fails (a malformed sidecar, an unreadable corpus), the append still
+  stands and the advisory is simply omitted. A failure while writing the
+  advisory (for example an output stream that raises) likewise costs only the
+  advisory, never the append or the exit code.
+- It goes to **stderr**; the `Appended corpus entry ...` line on stdout is
+  unchanged. It does not alter the appended row.
+- It has three parts: what drifted (the count of stale renditions, each named by
+  consumer), why (the corpus->rendition seam of ADR-0.0.37), and the governed next
+  step: `uv run gz content land <surface>` with `--attestor` and
+  `--attestation-text`. The corpus moved, so the landing takes the operator's
+  attestation of the corpus change; bare `gz content land <surface>` is refused
+  in this state. The surface name is quoted for a POSIX shell (`shlex.quote`)
+  when it contains spaces or other special characters, so in `sh`, `bash` or
+  `zsh` the command can be pasted as printed; in `cmd.exe` neither the
+  single-quoting nor the trailing-backslash continuation applies, so type the
+  command on one line and wrap such a name in double quotes.
+- An `--tier invariant` append additionally names *Rendition floor coherence*,
+  because the new entry must appear verbatim in every rendition.
+
+Nothing is composed, committed, or landed automatically: the advisory prints the
+attested `gz content land` invocation, and the operator runs it with their own
+words. Example (entry-id timestamp elided):
+
+```text
+Appended corpus entry corpus-behavior-rules-2026-10-03T...+00:00 to AGENTS.md [behavior-rules].
+
+Warning: this append drifted 1 committed rendition(s) of 'AGENTS.md'
+  (root). They no longer derive from the current corpus,
+  so `gz check` will now fail on:
+    - Rendition freshness
+    - Rendition floor coherence (invariant-tier entry)
+
+  Why: the corpus->rendition seam (ADR-0.0.37 § Decision Re-Alignment). The
+  corpus is the "Append-only corpus (source of truth)" and a committed
+  rendition is derived from it, so this append leaves each one stale
+  until it is landed.
+
+  Land the corpus into every consumer in one governed step. The corpus moved,
+  so the landing takes your attestation of the corpus change:
+    uv run gz content land AGENTS.md \
+        --attestor <handle> --attestation-text "<the operator's verbatim words>"
+
+  The invariant-tier text must appear VERBATIM in every rendition;
+  omitting it fails the floor gate even after a landing.
+```
+
 ### retire
 
 Retire a superseded corpus entry by appending a **retraction row** whose

@@ -15,6 +15,9 @@ import unicodedata
 import unittest
 from pathlib import Path
 
+# `gzkit.ledger_events` is not importable before `gzkit.ledger` (production import
+# cycle, recorded 2026-10-03 via gz insights); this module must load when run alone.
+import gzkit.ledger  # noqa: F401
 from gzkit.cli.main import main
 from gzkit.content.models import Corpus
 from gzkit.content.models.corpus import effective_corpus
@@ -233,12 +236,26 @@ class TestContentRetireDriftWarning(unittest.TestCase):
         with self._runner.isolated_filesystem():
             _seed_surface()
             entry_id = self._remember("Some directive.")
+            # Route a consumer that is NOT the literal "root", so the graded set is
+            # not {"root"} and a hard-coded private copy of the predicate (a glob
+            # plus `stem == "root"`) cannot satisfy the parity claim (REQ-08).
+            Path("data").mkdir(exist_ok=True)
+            Path("data", "vendor-manifest.json").write_text(
+                json.dumps(
+                    {
+                        "content_type_routes": {"AgentContract": ["alpha"]},
+                        "surface_content_types": {"AGENTS.md": "AgentContract"},
+                    }
+                ),
+                encoding="utf-8",
+            )
+            _seed_committed_rendition("alpha", corpus_fingerprint="stale-alpha")
             _seed_committed_rendition("root", corpus_fingerprint="stale-root")
             _seed_committed_rendition("codex", corpus_fingerprint="stale-codex")
             # A sidecar, so the candidate is excluded by the PREDICATE rather than
             # by the `provenance is not None` skip further down — without it this
             # arm of the fixture proves nothing about grading.
-            _seed_committed_rendition("root.candidate", corpus_fingerprint="stale-cand")
+            _seed_committed_rendition("alpha.candidate", corpus_fingerprint="stale-cand")
 
             result = self._retire(entry_id)
 

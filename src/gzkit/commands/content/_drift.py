@@ -14,6 +14,7 @@ instead of re-deriving the reporting logic.
 
 from __future__ import annotations
 
+import shlex
 import sys
 from pathlib import Path
 
@@ -65,6 +66,49 @@ def drifted_consumers(root: Path, surface: str) -> list[str]:
     return drifted
 
 
+def _advisory_lines(
+    surface: str,
+    drifted: list[str],
+    *,
+    mutation: str,
+    floor_risk: bool,
+) -> list[str]:
+    """Assemble the three-part advisory (guardrail-feedback-prose): what, why, next step.
+
+    The next step carries ``--attestor`` and ``--attestation-text`` because this
+    advisory fires exactly when a committed sidecar's ``corpus_fingerprint`` differs
+    from the current corpus, and in that state ``gz content land`` refuses unless
+    both are non-blank (``landing._resolve_attestation``). The placeholders reuse the
+    wording of that refusal.
+    """
+    lines = [
+        "",
+        f"Warning: this {mutation} drifted {len(drifted)} committed rendition(s) of {surface!r}",
+        f"  ({', '.join(drifted)}). They no longer derive from the current corpus,",
+        "  so `gz check` will now fail on:",
+        "    - Rendition freshness",
+    ]
+    if floor_risk:
+        lines.append("    - Rendition floor coherence (invariant-tier entry)")
+    lines.append("")
+    lines.append("  Why: the corpus->rendition seam (ADR-0.0.37 § Decision Re-Alignment). The")
+    lines.append('  corpus is the "Append-only corpus (source of truth)" and a committed')
+    lines.append(f"  rendition is derived from it, so this {mutation} leaves each one stale")
+    lines.append("  until it is landed.")
+    lines.append("")
+    lines.append("  Land the corpus into every consumer in one governed step. The corpus moved,")
+    lines.append("  so the landing takes your attestation of the corpus change:")
+    lines.append(f"    uv run gz content land {shlex.quote(surface)} \\")
+    lines.append(
+        '        --attestor <handle> --attestation-text "<the operator\'s verbatim words>"'
+    )
+    if floor_risk:
+        lines.append("")
+        lines.append("  The invariant-tier text must appear VERBATIM in every rendition;")
+        lines.append("  omitting it fails the floor gate even after a landing.")
+    return lines
+
+
 def warn_on_rendition_drift(
     root: Path,
     surface: str,
@@ -74,15 +118,16 @@ def warn_on_rendition_drift(
 ) -> None:
     """Announce, on stderr, the rendition drift this mutation just caused.
 
-    *mutation* is the noun used in the warning ("append", "retirement"), and
-    *floor_risk* says whether the floor gate is also at stake.
+    *mutation* is the noun used in the warning ("append", "retirement").
 
-    The floor distinction is the substantive difference between the verbs and is
-    why this is not a single boolean tier check: an invariant-tier APPEND adds an
-    entry every rendition must now carry verbatim, so floor coherence can fail. A
-    RETIREMENT only ever removes entries from that set, so a rendition satisfying
-    the floor before still satisfies it after — naming the floor gate there would
-    send the operator to recompose for a reason that cannot occur.
+    *floor_risk* is the caller's statement that the floor GREW, which is why this is
+    not a single boolean tier check. An invariant-tier APPEND adds an entry every
+    rendition must now carry verbatim, and a RETIREMENT that revives an invariant
+    entry does the same (retiring a tombstone revives its target; ``retire.py``
+    passes ``floor_risk=bool(floor_added)``), so floor coherence can fail. An
+    ordinary retirement only removes entries from that set, shrinks the floor, and
+    passes False: naming the floor gate there would send the operator to recompose
+    for a reason that cannot occur.
 
     Advisory only — never changes the exit code. The mutation succeeded and IS the
     intended effect; what the operator lacked was any signal that ``gz check`` would
@@ -99,29 +144,13 @@ def warn_on_rendition_drift(
     if not drifted:
         return
 
-    # Flush first: stdout is buffered and stderr is not, so without this the warning
-    # lands ABOVE the success line it is annotating (observed 2026-07-22).
-    sys.stdout.flush()
-
-    lines = [
-        "",
-        f"Warning: this {mutation} drifted {len(drifted)} committed rendition(s) of {surface!r}",
-        f"  ({', '.join(drifted)}). They no longer derive from the current corpus,",
-        "  so `gz check` will now fail on:",
-        "    - Rendition freshness",
-    ]
-    if floor_risk:
-        lines.append("    - Rendition floor coherence (invariant-tier entry)")
-    lines.append("")
-    lines.append("  Recover by recomposing and re-attesting each consumer:")
-    for consumer in drifted:
-        lines.append(f"    uv run gz content compose {surface} --consumer {consumer} \\")
-        lines.append("        --candidate <file>")
-        lines.append(f"    uv run gz content commit {surface} --consumer {consumer} \\")
-        lines.append("        --attestor <you> --attestation-text <words>")
-    if floor_risk:
-        lines.append("")
-        lines.append("  The invariant-tier text must appear VERBATIM in every rendition;")
-        lines.append("  omitting it fails the floor gate even after a recompose.")
-
-    print("\n".join(lines), file=sys.stderr)
+    lines = _advisory_lines(surface, drifted, mutation=mutation, floor_risk=floor_risk)
+    # Emission is guarded like detection: the row is already durable, so an output
+    # fault (full disk, closed stream) may cost the warning, never the exit code.
+    try:
+        # Flush first: stdout is buffered and stderr is not, so without this the warning
+        # lands ABOVE the success line it is annotating (observed 2026-07-22).
+        sys.stdout.flush()
+        print("\n".join(lines), file=sys.stderr)
+    except (OSError, ValueError):
+        return

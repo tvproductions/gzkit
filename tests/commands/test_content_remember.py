@@ -8,15 +8,22 @@ closed on an unknown surface or an unaddressable section.
 
 from __future__ import annotations
 
+import contextlib
+import errno
+import io
 import json
 import re
+import shlex
 import unittest
+from datetime import UTC, datetime
 from pathlib import Path
+from unittest import mock
 
 from gzkit.cli.main import main
 from gzkit.content.models import Corpus
 from gzkit.content.rendition_store import (
     RenditionProvenance,
+    is_graded_rendition,
     save_fingerprint,
     save_rendition,
 )
@@ -56,13 +63,15 @@ def _ledger_events() -> list[dict]:
     ]
 
 
-def _seed_committed_rendition(consumer: str, *, corpus_fingerprint: str) -> None:
-    """Commit a rendition + provenance sidecar for AGENTS.md/<consumer> in the cwd."""
+def _seed_committed_rendition(
+    consumer: str, *, corpus_fingerprint: str, surface: str = "AGENTS.md"
+) -> None:
+    """Commit a rendition + provenance sidecar for <surface>/<consumer> in the cwd."""
     root = Path()
-    save_rendition(root, "AGENTS.md", consumer, _SURFACE.encode("utf-8"))
+    save_rendition(root, surface, consumer, _SURFACE.encode("utf-8"))
     save_fingerprint(
         root,
-        "AGENTS.md",
+        surface,
         consumer,
         RenditionProvenance(
             corpus_fingerprint=corpus_fingerprint,
@@ -184,6 +193,20 @@ class TestContentRemember(unittest.TestCase):
             self.assertFalse((Path(".gzkit") / "corpus" / "AGENTS.md.jsonl").exists())
 
 
+class _AdvisoryWriteFails(io.StringIO):
+    """A stderr sink that raises OSError when the drift advisory is written; counts hits."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.hits = 0
+
+    def write(self, text: str) -> int:
+        if "Warning: this" in text:
+            self.hits += 1
+            raise OSError(errno.ENOSPC, "No space left on device (advisory sink)")
+        return super().write(text)
+
+
 class TestContentRememberDriftWarning(unittest.TestCase):
     """Capture must announce the rendition drift it causes (GHI #654 gap 1).
 
@@ -229,6 +252,8 @@ class TestContentRememberDriftWarning(unittest.TestCase):
             _seed_committed_rendition("root", corpus_fingerprint="0" * 64)
             result = self._remember()
             self.assertEqual(result.exit_code, 0, msg=result.output)
+            # Premise guard: this is the advisory-fires path, not a silent one.
+            self.assertIn("committed rendition(s)", result.output)
             corpus = Corpus.loads(
                 (Path(".gzkit") / "corpus" / "AGENTS.md.jsonl").read_text(encoding="utf-8")
             )
@@ -256,7 +281,7 @@ class TestContentRememberDriftWarning(unittest.TestCase):
             # remember produced no operator-visible signal at all.
             self.assertEqual(result.exit_code, 0, msg=result.output)
             self.assertNotIn("codex", result.output)
-            self.assertIn("gz content compose", result.output)
+            self.assertIn("gz content land AGENTS.md", result.output)
             # Count and name are built from different expressions in production,
             # so assert both off the SAME rendered line: an implementation that
             # counts from the raw glob and names from the predicate would emit
@@ -269,6 +294,143 @@ class TestContentRememberDriftWarning(unittest.TestCase):
             assert match is not None
             self.assertEqual(int(match.group(1)), 1)
             self.assertEqual({name.strip() for name in match.group(2).split(",")}, {"root"})
+
+    @covers("REQ-0.35.0-08-04")
+    def test_advisory_names_drift_cites_the_seam_and_gives_a_runnable_land(self) -> None:
+        """The advisory carries all three parts of the guardrail-feedback bar.
+
+        REQ-0.35.0-08-04: WHAT drifted (each rendition named), WHY (the
+        ADR-0.0.37 corpus -> rendition seam, cited), and the GOVERNED NEXT STEP
+        (`gz content land <surface>`), never the stale compose+commit recovery
+        and never an auto-compose of the rendition.
+
+        The next step is EXECUTED, not only matched: the printed invocation is
+        extracted, its two placeholders filled, and run through the real CLI. The
+        advisory fires exactly when a sidecar is frozen against another corpus
+        fingerprint, the state in which `land` demands an attestor and text, so the
+        printed command must carry those flags.
+
+        Fixture limit, observed: in this minimal fixture `land` stops at candidate
+        generation (no temperature in a vendor manifest; past that, the ownership
+        declaration needs a ledger-witnessed genesis that only production modules
+        this file does not import can write), which precedes the attestation check.
+        So the printed command is extracted by shape (whatever verb and flags were
+        printed), run through the real parser, and must reach the handler (exit 1,
+        never the exit-2 usage error): a wrong verb or flag in the advisory fails
+        there. Only then is it pinned to `content land` with both attestation flags.
+        The attestation refusal itself is not reachable in this fixture.
+        """
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            _seed_committed_rendition("root", corpus_fingerprint="0" * 64)
+            result = self._remember()
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            # output-contract: the advisory prose IS the deliverable (GHI #654).
+            self.assertRegex(result.output, r"\(root\)")
+            self.assertRegex(result.output, r"corpus->rendition seam \(ADR-0\.0\.37")
+            self.assertNotIn("gz content compose", result.output)
+            self.assertNotIn("gz content commit", result.output)
+            # The advisory never auto-landed: `remember` left the rendition untouched.
+            sidecar_path = Path(".gzkit") / "renditions" / "AGENTS.md" / "root.corpus.json"
+            sidecar = json.loads(sidecar_path.read_text(encoding="utf-8"))
+            self.assertEqual(sidecar["corpus_fingerprint"], "0" * 64)
+
+            # Match the command by SHAPE, not by its tokens, so a wrong verb or flag in
+            # the advisory reaches the real parser instead of failing the extraction.
+            printed = re.search(
+                r"(?m)^\s*(uv run gz content \S+ AGENTS\.md\s*\\\n"
+                r"\s*--\S+ <handle> --\S+ \"<[^\"]*>\")\s*$",
+                result.output,
+            )
+            self.assertIsNotNone(printed, msg=result.output)
+            assert printed is not None
+            command = printed.group(1).replace("\\\n", " ")
+            command = command.replace("<handle>", "g0")
+            command = re.sub(r'"<[^"]*>"', '"the operator words"', command)
+            argv = shlex.split(command)
+            self.assertEqual(argv[:3], ["uv", "run", "gz"], msg=command)
+            landed = self._runner.invoke(main, argv[3:])
+            # Exit 2 is the parser rejecting the verb or a flag; the handler's own
+            # refusals exit 1. A wrong verb or flag fails here.
+            self.assertEqual(landed.exit_code, 1, msg=landed.output)
+            self.assertNotIn("unrecognized arguments", landed.output)
+            self.assertNotIn("invalid choice", landed.output)
+            self.assertIn("could not be generated", landed.output)
+            # Only now, with the parser satisfied, pin that it is the governed command.
+            self.assertEqual(argv[3:5], ["content", "land"], msg=command)
+            self.assertIn("--attestor", argv)
+            self.assertIn("--attestation-text", argv)
+
+    @covers("REQ-0.35.0-08-01")
+    def test_advisory_output_fault_never_costs_the_exit_code(self) -> None:
+        """A stderr sink that raises while the advisory is written cannot cost the exit.
+
+        Brief Requirement 1: on EVERY path the entry is appended and the exit stays 0.
+        Emission is part of the path: the row is durable before the advisory is
+        written, so an output fault may cost the warning, never the exit code.
+        Paired fixtures share one sink; only the stale rendition differs.
+        """
+
+        def run(*, stale: bool) -> tuple[object, list]:
+            with self._runner.isolated_filesystem():
+                _seed_surface()
+                if stale:
+                    _seed_committed_rendition("root", corpus_fingerprint="0" * 64)
+                stderr = _AdvisoryWriteFails()
+                with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(stderr):
+                    try:
+                        code = main(
+                            ["content", "remember", "AGENTS.md", "--section", "behavior-rules"]
+                            + ["--text", "durable capture"]
+                        )
+                    except SystemExit as exc:
+                        code = exc.code
+                entries = Corpus.loads(
+                    (Path(".gzkit") / "corpus" / "AGENTS.md.jsonl").read_text(encoding="utf-8")
+                ).entries
+                return (code or 0), list(entries)
+
+        control_code, control_rows = run(stale=False)
+        self.assertEqual(control_code, 0)
+        self.assertEqual(len(control_rows), 1)
+        code, rows = run(stale=True)
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0].text, "durable capture")
+        self.assertEqual(code, 0, "an advisory output fault must not change the exit code")
+
+    @covers("REQ-0.35.0-08-04")
+    def test_printed_command_quotes_a_surface_name_containing_a_space(self) -> None:
+        """The printed land command is runnable for a surface whose name has a space.
+
+        An unquoted surface splits into two positionals and the parser exits 2
+        (`unrecognized arguments`). The command is extracted by shape, the surface
+        must arrive as ONE argv token equal to the real name, and the real parser
+        must accept it (the handler's exit 1, never the parser's exit 2).
+        """
+        surface = "Land Surface.md"
+        with self._runner.isolated_filesystem():
+            _seed_surface(surface)
+            _seed_committed_rendition("root", corpus_fingerprint="0" * 64, surface=surface)
+            result = self._runner.invoke(
+                main,
+                ["content", "remember", surface, "--section", "behavior-rules", "--text", "x"],
+            )
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            self.assertIn("committed rendition(s)", result.output)
+            printed = re.search(
+                r"(?m)^\s*(uv run gz content \S+ (?:'[^']*'|\S+)\s*\\\n"
+                r"\s*--\S+ <handle> --\S+ \"<[^\"]*>\")\s*$",
+                result.output,
+            )
+            self.assertIsNotNone(printed, msg=result.output)
+            assert printed is not None
+            command = printed.group(1).replace("\\\n", " ").replace("<handle>", "g0")
+            command = re.sub(r'"<[^"]*>"', '"the operator words"', command)
+            argv = shlex.split(command)
+            self.assertIn(surface, argv, msg=command)
+            landed = self._runner.invoke(main, argv[3:])
+            self.assertEqual(landed.exit_code, 1, msg=landed.output)
+            self.assertNotIn("unrecognized arguments", landed.output)
 
     def test_invariant_tier_append_also_warns_about_the_floor(self) -> None:
         """An invariant-tier entry additionally breaks floor coherence; the warning says so."""
@@ -298,12 +460,124 @@ class TestContentRememberDriftWarning(unittest.TestCase):
             (Path(".gzkit") / "renditions" / "AGENTS.md" / "root.corpus.json").write_text(
                 "{ not json at all", encoding="utf-8"
             )
+            # Premise guard: the advisory is silent on this fault path, so prove the
+            # enumeration grades the seeded rendition (and so opens the corrupt sidecar).
+            self.assertTrue(
+                is_graded_rendition(Path(".gzkit") / "renditions" / "AGENTS.md" / "root.md", Path())
+            )
             result = self._remember()
             self.assertEqual(result.exit_code, 0, msg=result.output)
             corpus = Corpus.loads(
                 (Path(".gzkit") / "corpus" / "AGENTS.md.jsonl").read_text(encoding="utf-8")
             )
             self.assertEqual(len(corpus.entries), 1)
+
+    @covers("REQ-0.35.0-08-02")
+    def test_drift_detection_raising_oserror_never_costs_the_append_or_the_exit_code(
+        self,
+    ) -> None:
+        """The seam's OSError arm: an unreadable corpus/rendition store at advisory time.
+
+        The sibling malformed-sidecar test exercises the ValueError arm. This one
+        makes the sidecar unreadable (a directory in its place) so the production
+        read raises OSError AFTER the row is durable; narrowing the handler to
+        ValueError fails here.
+        """
+        with self._runner.isolated_filesystem():
+            _seed_surface()
+            _seed_committed_rendition("root", corpus_fingerprint="0" * 64)
+            # Real unreadable evidence: a DIRECTORY where the sidecar file should be
+            # makes `read_text` raise an OSError subclass on every platform.
+            sidecar = Path(".gzkit") / "renditions" / "AGENTS.md" / "root.corpus.json"
+            sidecar.unlink()
+            sidecar.mkdir()
+            # Premise guard: the enumeration grades the seeded rendition, so it reads
+            # the unreadable sidecar rather than skipping it.
+            self.assertTrue(
+                is_graded_rendition(Path(".gzkit") / "renditions" / "AGENTS.md" / "root.md", Path())
+            )
+            result = self._remember()
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            self.assertNotIn("Unexpected error", result.output)
+            corpus = Corpus.loads(
+                (Path(".gzkit") / "corpus" / "AGENTS.md.jsonl").read_text(encoding="utf-8")
+            )
+            self.assertEqual(len(corpus.entries), 1)
+            self.assertEqual(corpus.entries[0].text, "x")
+
+    @covers("REQ-0.35.0-08-06")
+    def test_exit_code_and_row_are_identical_with_and_without_drift_under_an_output_fault(
+        self,
+    ) -> None:
+        """REQ-0.35.0-08-06: "...BYTE-IDENTICAL and the exit code is identical".
+
+        The exit-code clause is the half a quiet run cannot falsify: without an
+        output fault, drift and no-drift both exit 0 whatever the code does. Under a
+        stderr sink that raises when the advisory is written, a run that lets the
+        fault escape exits 1 with drift and 0 without, so the paired form is what
+        makes "identical" bite. Both runs share one frozen clock and the same sink
+        class; only the stale rendition differs.
+        """
+        frozen = datetime(2026, 10, 3, 12, 0, 0, tzinfo=UTC)
+
+        def run(*, stale: bool) -> tuple[object, bytes, int]:
+            with self._runner.isolated_filesystem():
+                _seed_surface()
+                if stale:
+                    _seed_committed_rendition("root", corpus_fingerprint="0" * 64)
+                sink = _AdvisoryWriteFails()
+                with (
+                    mock.patch("gzkit.commands.content.remember.datetime") as clock,
+                    contextlib.redirect_stdout(io.StringIO()),
+                    contextlib.redirect_stderr(sink),
+                ):
+                    clock.now.return_value = frozen
+                    try:
+                        code = main(
+                            ["content", "remember", "AGENTS.md", "--section", "behavior-rules"]
+                            + ["--text", "x"]
+                        )
+                    except SystemExit as exc:
+                        code = exc.code
+                corpus = (Path(".gzkit") / "corpus" / "AGENTS.md.jsonl").read_bytes()
+                return (code or 0), corpus, sink.hits
+
+        drift_code, drift_bytes, drift_hits = run(stale=True)
+        quiet_code, quiet_bytes, quiet_hits = run(stale=False)
+        self.assertGreater(drift_hits, 0, "the drift run must attempt the advisory")
+        self.assertEqual(quiet_hits, 0, "the no-drift run must not")
+        self.assertEqual(drift_code, quiet_code, "exit code must be identical")
+        self.assertEqual(drift_bytes, quiet_bytes)
+        self.assertEqual(drift_code, 0)
+
+    @covers("REQ-0.35.0-08-06")
+    def test_corpus_row_is_byte_identical_with_and_without_drift(self) -> None:
+        """The advisory never alters what is appended (paired fixtures, one clock).
+
+        REQ-0.35.0-08-06: the same append, once where a committed rendition is
+        left stale (advisory fires) and once where none exists (silent), writes
+        byte-identical corpus rows and the same exit code. The clock in
+        `remember.py` stamps both `ts` and the entry id, so it is frozen.
+        """
+        frozen = datetime(2026, 10, 3, 12, 0, 0, tzinfo=UTC)
+        outcomes: list[tuple[int, bytes, str]] = []
+        for with_drift in (True, False):
+            with self._runner.isolated_filesystem():
+                _seed_surface()
+                if with_drift:
+                    _seed_committed_rendition("root", corpus_fingerprint="0" * 64)
+                with mock.patch("gzkit.commands.content.remember.datetime") as clock:
+                    clock.now.return_value = frozen
+                    result = self._remember()
+                corpus_bytes = (Path(".gzkit") / "corpus" / "AGENTS.md.jsonl").read_bytes()
+                outcomes.append((result.exit_code, corpus_bytes, result.output))
+        (drift_exit, drift_bytes, drift_out), (quiet_exit, quiet_bytes, quiet_out) = outcomes
+        # Guard the fixtures: the paired runs must actually differ in advisory.
+        self.assertIn("committed rendition(s)", drift_out)
+        self.assertNotIn("committed rendition(s)", quiet_out)
+        self.assertEqual(drift_exit, quiet_exit)
+        self.assertEqual(drift_exit, 0)
+        self.assertEqual(drift_bytes, quiet_bytes)
 
     # No @covers here. `vendors.py::_read_manifest_key` (809f1370) added
     # `if not isinstance(data, dict): return {}`, so a `[]` manifest now
@@ -365,7 +639,7 @@ class TestContentRememberDriftWarning(unittest.TestCase):
             self.assertEqual(result.exit_code, 0, msg=result.output)
             self.assertNotIn("Warning:", result.output)
             self.assertNotIn("committed rendition(s)", result.output)
-            self.assertNotIn("gz content compose", result.output)
+            self.assertNotIn("gz content land", result.output)
 
 
 class TestContentRememberRefusesLiveDuplicates(unittest.TestCase):
@@ -456,10 +730,6 @@ class TestContentRememberRefusesLiveDuplicates(unittest.TestCase):
             self.assertEqual(again.exit_code, 0, "a retired copy must not block re-capture")
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
 class TestRememberWitnessProvenance(unittest.TestCase):
     """`--witness` records WHO stands behind an entry, distinct from `--origin` (GHI #821).
 
@@ -526,3 +796,7 @@ class TestRememberWitnessProvenance(unittest.TestCase):
             entry = self._only_entry()
             self.assertEqual(entry.witness, "g0")
             self.assertEqual(entry.origin, "GHI #821")
+
+
+if __name__ == "__main__":
+    unittest.main()
