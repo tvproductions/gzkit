@@ -1471,6 +1471,30 @@ def handoff_resume_decided_event(
     )
 
 
+def guard_canary_reviewed_event(
+    *,
+    claim_id: str,
+    binding_sha256: str,
+    attestor: str,
+    operator_text: str,
+    ruling_source: str | None = None,
+) -> LedgerEvent:
+    """Create the operator's review of one guard canary (GHI #1161).
+
+    The Layer-2 witness ``gzkit.guard_canary.unreviewed`` reads. It records the binding
+    the operator saw, so a canary rebound since is unreviewed again, and the operator's
+    words verbatim. ``ruling_source`` is set when the review is booked after the fact.
+    """
+    extra: dict[str, str] = {
+        "binding_sha256": binding_sha256,
+        "attestor": attestor,
+        "operator_text": operator_text,
+    }
+    if ruling_source:
+        extra["ruling_source"] = ruling_source
+    return LedgerEvent(event="guard_canary_reviewed", id=claim_id, extra=extra)
+
+
 def report_published_event(
     report_id: str,
     *,

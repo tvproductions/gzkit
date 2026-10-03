@@ -28,6 +28,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from unittest import mock
 
+from gzkit.guard_canary import load_canaries
 from gzkit.traceability import covers
 from tests.commands.common import _isolated_git_env
 
@@ -1157,29 +1158,33 @@ class TestUnreviewedCanariesReachSessionStart(unittest.TestCase):
         self.mod = _load_orientation_module()
         self.now = datetime(2026, 10, 2, 12, 0, 0, tzinfo=UTC)
 
-    def _collect(self, canaries) -> list[str] | None:
+    def test_orientation_reports_exactly_what_the_canary_module_reports(self):
+        """One predicate, one implementation (GHI #1161): orientation does not re-derive it."""
+        with mock.patch("gzkit.guard_canary.unreviewed", return_value=["pending-one"]) as owner:
+            found = self.mod.collect_unreviewed_canaries(Path("/repo"))
+        self.assertEqual(found, ["pending-one"])
+        owner.assert_called_once_with(Path("/repo"))
+
+    def test_a_hand_set_reviewed_by_does_not_silence_the_announcement(self):
+        """The field is a projection; only a ledger review event counts (GHI #1161)."""
+        live = load_canaries(REPO_ROOT)[0].model_dump()
+        live["reviewed_by"] = "g0"
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             (root / "data").mkdir()
-            body = canaries if isinstance(canaries, str) else json.dumps({"canaries": canaries})
-            (root / "data" / "guard_canaries.json").write_text(body, encoding="utf-8")
-            return self.mod.collect_unreviewed_canaries(root)
-
-    def test_only_canaries_with_no_reviewer_are_collected(self):
-        found = self._collect(
-            [
-                {"claim_id": "pending-one", "reviewed_by": None},
-                {"claim_id": "blank-one", "reviewed_by": ""},
-                {"claim_id": "seen-one", "reviewed_by": "g0"},
-                {"claim_id": "absent-field"},
-            ]
-        )
-        self.assertEqual(found, ["pending-one", "blank-one", "absent-field"])
+            (root / "data" / "guard_canaries.json").write_text(
+                json.dumps({"canaries": [live]}), encoding="utf-8"
+            )
+            found = self.mod.collect_unreviewed_canaries(root)
+        self.assertEqual(found, [live["claim_id"]])
 
     def test_an_unreadable_registry_degrades_to_silence(self):
         for label, body in (("unparseable", "not json"), ("wrong shape", '{"canaries": 3}')):
-            with self.subTest(label):
-                self.assertIsNone(self._collect(body))
+            with self.subTest(label), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                (root / "data").mkdir()
+                (root / "data" / "guard_canaries.json").write_text(body, encoding="utf-8")
+                self.assertIsNone(self.mod.collect_unreviewed_canaries(root))
         with tempfile.TemporaryDirectory() as tmp:
             self.assertIsNone(self.mod.collect_unreviewed_canaries(Path(tmp)))
 
@@ -1213,15 +1218,12 @@ class TestUnreviewedCanariesReachSessionStart(unittest.TestCase):
             and name not in {"collect_state", "collect_unreviewed_canaries"}
         ]
         with tempfile.TemporaryDirectory() as tmp, contextlib.ExitStack() as stack:
-            root = Path(tmp)
-            (root / "data").mkdir()
-            registry = {"canaries": [{"claim_id": "pending-one", "reviewed_by": None}]}
-            (root / "data" / "guard_canaries.json").write_text(
-                json.dumps(registry), encoding="utf-8"
+            stack.enter_context(
+                mock.patch("gzkit.guard_canary.unreviewed", return_value=["pending-one"])
             )
             for name in others:
                 stack.enter_context(mock.patch.object(self.mod, name, return_value=None))
-            state = self.mod.collect_state(root, self.now)
+            state = self.mod.collect_state(Path(tmp), self.now)
         self.assertEqual(state.get("unreviewed_canaries"), ["pending-one"])
 
     def test_the_boot_hook_agrees_with_the_library_on_the_live_registry(self):

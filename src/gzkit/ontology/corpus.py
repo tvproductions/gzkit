@@ -119,6 +119,10 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         # materializes no new node or edge from it.
         "foundation_grandfathered",
         "gate_checked",
+        # The operator's review of one guard canary (GHI #1161). Provenance about a
+        # data record, not corpus lineage: a canary is not a graph node, so there is
+        # no second node for an edge.
+        "guard_canary_reviewed",
         # Session-scoped operator consent lifting the handoff resume gate (GHI
         # #574). Not corpus lineage: it binds to a harness session id, and the
         # handoff it names is already a node via its own frontmatter.

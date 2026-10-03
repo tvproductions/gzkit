@@ -1372,6 +1372,28 @@ class HandoffResumeBlockedEvent(_EventBase):
     tool_name: str = Field(..., min_length=1, description="Tool whose call was refused")
 
 
+class GuardCanaryReviewedEvent(_EventBase):
+    """guard_canary_reviewed event — the operator accepted one canary's mutant (GHI #1161).
+
+    ``id`` is the claim the canary is bound to. ``binding_sha256`` is the binding the
+    operator reviewed, so a rebind (guard, claim or designated test changed) leaves the
+    canary unreviewed until it is reviewed again. ``operator_text`` is verbatim.
+    ``ruling_source`` names where the words were first recorded when the event is booked
+    after the fact. Before this event the review was a ``reviewed_by`` field any writer
+    could set, which could not tell an operator's review from an agent's.
+    """
+
+    event: Literal["guard_canary_reviewed"]
+    binding_sha256: str = Field(
+        ..., min_length=64, max_length=64, description="Canary binding the operator reviewed"
+    )
+    attestor: str = Field(..., min_length=1, description="Operator identity that reviewed")
+    operator_text: str = Field(..., min_length=1, description="Operator's verbatim review words")
+    ruling_source: str | None = Field(
+        default=None, description="Where the words were first recorded, when booked later"
+    )
+
+
 class SectionOwnershipGenesisEvent(_EventBase):
     """section_ownership_genesis event — the day-one unowned-byte ratchet floor.
 
@@ -1610,6 +1632,7 @@ TypedLedgerEvent = Annotated[
     | HandoffResumeAuthorizedEvent
     | HandoffResumeDecidedEvent
     | HandoffResumeBlockedEvent
+    | GuardCanaryReviewedEvent
     | AdversarialValidationEvent
     | RedReceiptEmittedEvent
     | RedCommitReceiptEmittedEvent

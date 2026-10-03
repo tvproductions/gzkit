@@ -18,6 +18,7 @@ from pathlib import Path
 from unittest import mock
 
 from gzkit import guard_canary as gc
+from gzkit.core import exceptions as gz_errors
 from gzkit.enforcement import production_enforcement_registry
 from gzkit.guard_canary import Canary, CanaryMutation
 from gzkit.registries import registry_path
@@ -228,12 +229,120 @@ class TestRunsCanBeNarrowed(unittest.TestCase):
         self.assertEqual([r.claim_id for r in runs], ["tidy-breach-exits-three"])
 
 
-class TestUnreviewedCanariesAreNamed(unittest.TestCase):
-    def test_a_canary_with_no_reviewer_is_listed_and_a_reviewed_one_is_not(self):
-        pending, reviewed = _canary(), _canary(claim_id="tidy-breach-exits-three")
-        reviewed = reviewed.model_copy(update={"reviewed_by": "g0"})
-        with mock.patch.object(gc, "load_canaries", lambda _root: [pending, reviewed]):
-            self.assertEqual(gc.unreviewed(_ROOT), [_CLAIM])
+_OTHER_CLAIM = "tidy-breach-exits-three"
+
+
+def _ledger_rows(root: Path) -> list[dict]:
+    path = root / ".gzkit" / "ledger.jsonl"
+    if not path.is_file():
+        return []
+    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line]
+
+
+def _review_row(claim_id: str, binding: str) -> dict:
+    return {
+        "schema": "gzkit.ledger.v1",
+        "event": "guard_canary_reviewed",
+        "id": claim_id,
+        "ts": "2026-10-02T00:00:00+00:00",
+        "binding_sha256": binding,
+        "attestor": "g0",
+        "operator_text": "accept",
+    }
+
+
+class _ReviewProject(_Project):
+    """A project whose ledger can carry review events alongside the canary registry."""
+
+    def __init__(self, canaries: list[Canary], rows: list[dict] | None = None) -> None:
+        super().__init__(canaries, [])
+        ledger = self.root / ".gzkit" / "ledger.jsonl"
+        ledger.parent.mkdir()
+        ledger.write_text("".join(json.dumps(r) + "\n" for r in rows or []), encoding="utf-8")
+
+
+class TestReviewIsWitnessedInTheLedger(unittest.TestCase):
+    """A canary is reviewed only when the ledger records the operator's review (GHI #1161).
+
+    ``reviewed_by`` was a writable field any writer could set, so the record could not tell an
+    operator's review from an agent's. The witness is a ``guard_canary_reviewed`` event carrying
+    the binding the operator saw; a rebind therefore needs a fresh review.
+    """
+
+    def test_a_hand_set_reviewed_by_with_no_event_is_still_unreviewed(self):
+        canary = _canary().model_copy(update={"reviewed_by": "g0"})
+        with _ReviewProject([canary]) as root:
+            self.assertEqual(gc.unreviewed(root), [_CLAIM])
+
+    def test_an_event_for_the_current_binding_marks_the_canary_reviewed(self):
+        pending, seen = _canary(), _canary(claim_id=_OTHER_CLAIM)
+        rows = [_review_row(_OTHER_CLAIM, seen.binding_sha256)]
+        with _ReviewProject([pending, seen], rows) as root:
+            self.assertEqual(gc.unreviewed(root), [_CLAIM])
+
+    def test_a_review_of_an_earlier_binding_does_not_count(self):
+        canary = _canary()
+        with _ReviewProject([canary], [_review_row(_CLAIM, "0" * 64)]) as root:
+            self.assertEqual(gc.unreviewed(root), [_CLAIM])
+
+    def test_a_review_of_another_claim_does_not_count(self):
+        canary = _canary()
+        rows = [_review_row(_OTHER_CLAIM, canary.binding_sha256)]
+        with _ReviewProject([canary], rows) as root:
+            self.assertEqual(gc.unreviewed(root), [_CLAIM])
+
+
+class TestRecordingAReview(unittest.TestCase):
+    """``record_review`` writes the witness; any refusal writes nothing (GHI #1161)."""
+
+    def test_each_claim_gets_one_event_with_the_verbatim_words_and_its_binding(self):
+        first, second = _canary(), _canary(claim_id=_OTHER_CLAIM)
+        with _ReviewProject([first, second]) as root:
+            gc.record_review(
+                root,
+                [_CLAIM, _OTHER_CLAIM],
+                attestor="g0",
+                operator_text="accept all 8",
+                ruling_source="7f1ace88f",
+            )
+            rows = [r for r in _ledger_rows(root) if r["event"] == "guard_canary_reviewed"]
+            self.assertEqual(
+                [(r["id"], r["binding_sha256"]) for r in rows],
+                [(_CLAIM, first.binding_sha256), (_OTHER_CLAIM, second.binding_sha256)],
+            )
+            self.assertTrue(all(r["operator_text"] == "accept all 8" for r in rows))
+            self.assertTrue(all(r["ruling_source"] == "7f1ace88f" for r in rows))
+            self.assertEqual(gc.unreviewed(root), [])
+            self.assertEqual({c.reviewed_by for c in gc.load_canaries(root)}, {"g0"})
+
+    def test_an_empty_operator_text_is_refused_and_nothing_is_written(self):
+        with _ReviewProject([_canary()]) as root:
+            with self.assertRaises(gz_errors.ValidationError):
+                gc.record_review(root, [_CLAIM], attestor="g0", operator_text="   ")
+            self.assertEqual(_ledger_rows(root), [])
+
+    def test_an_empty_attestor_is_refused_and_nothing_is_written(self):
+        with _ReviewProject([_canary()]) as root:
+            with self.assertRaises(gz_errors.ValidationError):
+                gc.record_review(root, [_CLAIM], attestor=" ", operator_text="accept")
+            self.assertEqual(_ledger_rows(root), [])
+
+    def test_one_unknown_claim_refuses_the_whole_review(self):
+        with _ReviewProject([_canary()]) as root:
+            with self.assertRaises(gz_errors.ValidationError):
+                gc.record_review(
+                    root, [_CLAIM, "no-such-claim"], attestor="g0", operator_text="accept"
+                )
+            self.assertEqual(_ledger_rows(root), [])
+
+    def test_a_stale_binding_is_a_policy_breach_and_nothing_is_written(self):
+        stale = _canary(binding_sha256="f" * 64)
+        with _ReviewProject([stale, _canary(claim_id=_OTHER_CLAIM)]) as root:
+            with self.assertRaises(gz_errors.PolicyBreachError):
+                gc.record_review(
+                    root, [_OTHER_CLAIM, _CLAIM], attestor="g0", operator_text="accept"
+                )
+            self.assertEqual(_ledger_rows(root), [])
 
 
 if __name__ == "__main__":

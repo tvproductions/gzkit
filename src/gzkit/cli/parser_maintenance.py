@@ -36,6 +36,72 @@ def register_maintenance_parsers(commands: argparse._SubParsersAction) -> None:
     _register_flag_parsers(commands)
     _register_frontmatter_parsers(commands)
     register_handoff_parsers(commands)
+    _register_canary_parsers(commands)
+
+
+def _register_canary_parsers(commands: argparse._SubParsersAction) -> None:
+    """Register ``gz canary`` subcommands (GHI #1161)."""
+    p_canary = commands.add_parser(
+        "canary",
+        help="Guard mutation canaries: record the operator's review",
+        description="Commands over the reviewed guard mutation canaries.",
+        epilog=build_epilog(
+            ['gz canary review --claim gate-enrollment --attestor g0 --operator-text "a"'],
+        ),
+    )
+    canary_commands = p_canary.add_subparsers(dest="canary_command")
+    canary_commands.required = True
+
+    p_review = canary_commands.add_parser(
+        "review",
+        help="Record the operator's review of one or more canaries in the ledger",
+        description=(
+            "Book one guard_canary_reviewed ledger event per claim, carrying the\n"
+            "operator's verbatim words and the binding they reviewed. A canary counts\n"
+            "as reviewed only through this event. Nothing is written if a claim is\n"
+            "unknown (exit 1) or a binding is stale (exit 3)."
+        ),
+        epilog=build_epilog(
+            [
+                'gz canary review --claim gate-enrollment --attestor g0 --operator-text "a"',
+            ]
+        ),
+    )
+    p_review.add_argument(
+        "--claim",
+        dest="claims",
+        action="append",
+        required=True,
+        help="Claim id whose canary was reviewed (repeatable)",
+    )
+    p_review.add_argument(
+        "--operator-text",
+        required=True,
+        help="The operator's verbatim review words",
+    )
+    # Human-act verb under the GHI #1036 ruling ("All but the 7 human-act"): the
+    # contract records the operator's own act of review, so the attestor is typed
+    # and never defaults from the configured handle.
+    p_review.add_argument(
+        "--attestor",
+        required=True,
+        help="Operator identity that reviewed (required; never defaulted)",
+    )
+    p_review.add_argument(
+        "--ruling-source",
+        default=None,
+        help="Where the words were first recorded, when booking a review after the fact",
+    )
+    add_json_flag(p_review)
+    p_review.set_defaults(
+        func=lambda a: _lazy("canary_review_cmd")(
+            claims=a.claims,
+            operator_text=a.operator_text,
+            attestor=a.attestor,
+            ruling_source=a.ruling_source,
+            as_json=a.as_json,
+        )
+    )
 
 
 def _register_frontmatter_parsers(commands: argparse._SubParsersAction) -> None:

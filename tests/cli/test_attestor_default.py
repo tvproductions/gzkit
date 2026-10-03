@@ -51,6 +51,8 @@ _HUMAN_ACT = frozenset(
         "gz mx exit",
         "gz ledger correct",
         "gz obpi acceptance",
+        # GHI #1161: records the operator's own act of reviewing a canary's mutant.
+        "gz canary review",
     }
 )
 

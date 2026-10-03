@@ -92,6 +92,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 | [`gz handoff create`](handoff-create.md) | Author a handoff, fail-closed through the validation gate |
 | [`gz handoff rulings`](handoff-rulings.md) | Read the append-only settled-ruling corpus carried across sessions |
 | [`gz handoff decide`](handoff-decide.md) | Book the operator's transit decision on a resumed handoff (advisory record; it gates nothing) |
+| [`gz canary review`](canary-review.md) | Record the operator's review of guard mutation canaries as ledger witnesses |
 | [`gz handoff authorize`](handoff-authorize.md) | Deprecated alias for `gz handoff decide` |
 | [`gz handoff archive`](handoff-archive.md) | Move handoffs older than a threshold into `.gzkit/handoffs/archive/` (move-not-delete) |
 | [`gz roles`](roles.md) | List pipeline agent roles and handoff contracts |

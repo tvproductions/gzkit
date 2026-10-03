@@ -68,6 +68,12 @@ _NO_SKILL_VERBS: dict[str, str] = {
         "Subcommand group (`gz frontmatter reconcile/check`); consumed "
         "inside gz-adr-recon and state-doctrine skills."
     ),
+    "canary": (
+        "Subcommand group (`gz canary review`, GHI #1161); relays an operator ruling, "
+        "prompted by session orientation's pending-canary list. Like `gz handoff decide`, "
+        "it books words the operator already gave, so there is no workflow for a skill to "
+        "own; the operator runbook and governance runbook document the moment."
+    ),
     "justify": (
         "CLI surface landed in ADR-0.0.19 OBPI-02 ahead of its wielding skill; "
         "the `gz-justify` skill ships in OBPI-0.0.19-04 per the ADR's "

@@ -2297,6 +2297,34 @@
         }
       }
     },
+    "guard_canary_reviewed": {
+      "required": [
+        "binding_sha256",
+        "attestor",
+        "operator_text"
+      ],
+      "properties": {
+        "binding_sha256": {
+          "type": "string",
+          "min_length": 64,
+          "max_length": 64
+        },
+        "attestor": {
+          "type": "string",
+          "min_length": 1
+        },
+        "operator_text": {
+          "type": "string",
+          "min_length": 1
+        },
+        "ruling_source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
     "handoff_resume_blocked": {
       "required": [
         "session_id",

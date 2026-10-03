@@ -8,8 +8,9 @@ active campaign (Magna Carta — operator ruling, 2026-06-10) is surfaced
 first: it is the one canonical plan and rules every session.
 
 Sources are tolerant: missing inputs degrade into "(no data)" lines so a
-SessionStart hook never fails the boot. Stdlib + git + gh + `gz` read verbs
-only — no gzkit import.
+SessionStart hook never fails the boot. Stdlib + git + gh + `gz` read verbs at
+module level; gzkit is imported only inside guarded collectors that degrade to
+"(no data)" when it cannot be imported.
 
 The `gz` dependency is deliberate and narrow: OBPI counts are resolved through
 `gz adr status --json`, never recomputed here. Re-deriving a count the CLI
@@ -1044,26 +1045,21 @@ def _render_chore_staleness(lines: list[str], payload: object) -> None:
 
 
 def collect_unreviewed_canaries(repo_root: Path) -> list[str] | None:
-    """Return the claim ids whose guard canary no human has reviewed (GHI #1154).
+    """Return the claim ids whose guard canary has no recorded operator review (GHI #1154).
 
-    ``reviewed_by`` was provenance nothing read back, so a seeded mutant could sit
-    unreviewed with no surface saying so. ``data/guard_canaries.json`` is read
-    directly, as ``data/active_campaign.json`` is: the predicate is the one
-    ``gzkit.guard_canary.unreviewed`` applies, and a test holds the two together.
-    Returns ``None`` when the registry is missing, unreadable or mis-shaped.
+    Delegates to ``gzkit.guard_canary.unreviewed``, whose witness is a
+    ``guard_canary_reviewed`` ledger event at the canary's current binding (GHI #1161).
+    This reader once re-applied a ``reviewed_by`` predicate of its own; a second copy of a
+    predicate is the drift GHI #1162 closed for OBPI ids, so there is now one.
+    Guarded end-to-end: any failure (gzkit not importable, a missing or malformed
+    registry) returns ``None`` so the boot hook never crashes.
     """
-    registry = repo_root / "data" / "guard_canaries.json"
     try:
-        canaries = json.loads(registry.read_text(encoding="utf-8", errors="replace"))["canaries"]
-    except (OSError, ValueError, KeyError, TypeError):
+        from gzkit.guard_canary import unreviewed
+
+        return unreviewed(repo_root)
+    except Exception:  # noqa: BLE001 — boot hook boundary: degrade, never crash
         return None
-    if not isinstance(canaries, list):
-        return None
-    return [
-        str(canary.get("claim_id"))
-        for canary in canaries
-        if isinstance(canary, dict) and not canary.get("reviewed_by")
-    ]
 
 
 def _render_unreviewed_canaries(lines: list[str], payload: object) -> None:
@@ -1075,8 +1071,10 @@ def _render_unreviewed_canaries(lines: list[str], payload: object) -> None:
     overflow = len(payload) - CANARY_ANNOUNCE_LIMIT
     suffix = f" (+{overflow} more)" if overflow > 0 else ""
     lines.append(
-        f"- {len(payload)} canaries carry `reviewed_by: null` in `data/guard_canaries.json`. "
-        "A canary is enforced either way; review records that a human accepted the mutant."
+        f"- {len(payload)} canaries have no operator review recorded at their current binding. "
+        "A canary is enforced either way; review records that a human accepted the mutant. "
+        "Record one with `uv run gz canary review --claim <id> --attestor <id> "
+        '--operator-text "<words>"`.'
     )
     lines.append(f"- Pending: {named}{suffix}")
     lines.append("")

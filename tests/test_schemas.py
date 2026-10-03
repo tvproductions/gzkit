@@ -44,6 +44,7 @@ from gzkit.events import (
     EnforcementClaimVerifiedEvent,
     FoundationGrandfatheredEvent,
     GateCheckedEvent,
+    GuardCanaryReviewedEvent,
     HandoffResumeAuthorizedEvent,
     HandoffResumeBlockedEvent,
     HandoffResumeDecidedEvent,
@@ -352,6 +353,8 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     # Successor carrying a transit decision rather than a consent boolean (GHI #757)
     "handoff_resume_decided": HandoffResumeDecidedEvent,
     "handoff_resume_blocked": HandoffResumeBlockedEvent,
+    # The operator's review of one guard canary (GHI #1161)
+    "guard_canary_reviewed": GuardCanaryReviewedEvent,
     "session_exit_bookmark_skipped": SessionExitBookmarkSkippedEvent,
     # Surface-weight band/floor recalibration witness (ADR-0.0.33 AP#3, GHI #791)
     "surface_weight_recalibrated": SurfaceWeightRecalibratedEvent,

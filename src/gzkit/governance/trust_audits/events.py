@@ -73,6 +73,13 @@ _NO_GRAPH_IMPACT: dict[str, str] = {
         "durable relationship between artifacts, and since the gate's retirement they "
         "gate nothing at all."
     ),
+    "guard_canary_reviewed": (
+        "The operator's review of one guard canary (GHI #1161), written by `gz canary "
+        "review`. Waived: provenance about a record in `data/guard_canaries.json`, not "
+        "artifact lineage. A canary is not a graph node, so the event names no second node "
+        "for an edge. Its one consumer is `gzkit.guard_canary.unreviewed`, which reads it "
+        "as the witness that a human accepted the mutant at the recorded binding."
+    ),
     "stage2_dispatch_recorded": (
         "One mandated Stage-2 role produced receipted independent input (GHI #886). "
         "Process evidence about HOW an OBPI's Stage 2 was executed, not a relationship "

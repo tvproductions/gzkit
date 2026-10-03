@@ -31,6 +31,7 @@ import hashlib
 import importlib
 import importlib.util
 import inspect
+import json
 import shutil
 import sys
 import tempfile
@@ -38,10 +39,15 @@ from pathlib import Path
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from gzkit.core import exceptions as gz_errors
 from gzkit.core.validation_rules import ValidationError
+from gzkit.ledger import Ledger
+from gzkit.ledger_events import guard_canary_reviewed_event
 from gzkit.mutation_witness import Mutation, MutationOutcome, run_mutation_sweep
 from gzkit.registries import load_registry, registry_path
 
+_LEDGER = Path(".gzkit") / "ledger.jsonl"
+_REVIEW_EVENT = "guard_canary_reviewed"
 _CANARY_REGISTRY = "guard_canaries.json"
 _GRANDFATHER_REGISTRY = "guard_canary_grandfather.json"
 _RECOVER = "re-review the canary, then rebind it (see the registry's _doc)"
@@ -249,13 +255,113 @@ def check_canaries(project_root: Path, registered: set[str]) -> list[ValidationE
     return errors
 
 
-def unreviewed(project_root: Path) -> list[str]:
-    """Return the claims whose canary no human has reviewed yet.
+def _ledger_file(project_root: Path, ledger_path: Path | None) -> Path:
+    return ledger_path if ledger_path is not None else project_root / _LEDGER
 
-    Session orientation (``scripts/session_orientation.py``) applies the same predicate to
-    announce them, and a test holds the two readers together.
+
+def review_witnesses(project_root: Path, ledger_path: Path | None = None) -> set[tuple[str, str]]:
+    """Return every (claim id, binding) a ``guard_canary_reviewed`` event records.
+
+    A missing ledger or an unparseable row contributes nothing: a review the ledger cannot
+    show is not a review.
     """
-    return [c.claim_id for c in load_canaries(project_root) if not c.reviewed_by]
+    path = _ledger_file(project_root, ledger_path)
+    if not path.is_file():
+        return set()
+    witnesses: set[tuple[str, str]] = set()
+    for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
+        if _REVIEW_EVENT not in line:
+            continue
+        with contextlib.suppress(ValueError):
+            row = json.loads(line)
+            if isinstance(row, dict) and row.get("event") == _REVIEW_EVENT:
+                witnesses.add((str(row.get("id")), str(row.get("binding_sha256"))))
+    return witnesses
+
+
+def unreviewed(project_root: Path, ledger_path: Path | None = None) -> list[str]:
+    """Return the claims whose canary has no recorded operator review at its current binding.
+
+    The witness is a ``guard_canary_reviewed`` event, never the ``reviewed_by`` field: the
+    field is writable by anyone, so it cannot tell an operator's review from an agent's
+    (GHI #1161). A review of an earlier binding does not count, so a rebound canary must be
+    reviewed again. Session orientation calls this function rather than re-deriving it.
+    """
+    witnesses = review_witnesses(project_root, ledger_path)
+    return [
+        c.claim_id
+        for c in load_canaries(project_root)
+        if (c.claim_id, c.binding_sha256) not in witnesses
+    ]
+
+
+def _stale(canary: Canary) -> bool:
+    resolved = resolve_guard(canary.guard)
+    if resolved is None:
+        return True
+    return binding_hash(resolved[0], canary.claim_id, canary.failing_test) != canary.binding_sha256
+
+
+def record_review(
+    project_root: Path,
+    claim_ids: list[str],
+    *,
+    attestor: str,
+    operator_text: str,
+    ruling_source: str | None = None,
+    ledger_path: Path | None = None,
+) -> list[str]:
+    """Record the operator's review of each named canary; return the claims recorded.
+
+    Every input is checked before anything is written, so a refusal leaves the ledger and
+    the registry untouched. Empty words, an empty attestor or an unknown claim is a usage
+    error. A stale binding is a policy breach: the operator would be accepting a mutant
+    against a guard that has changed since the canary was bound.
+    """
+    words, who = operator_text.strip(), attestor.strip()
+    if not words or not who:
+        raise gz_errors.ValidationError(
+            "A review needs the operator's verbatim words and the attestor: a review that "
+            "names neither cannot be told from one an agent wrote (GHI #1161)."
+        )
+    wanted = list(dict.fromkeys(claim_ids))
+    by_id = {c.claim_id: c for c in load_canaries(project_root)}
+    unknown = [claim for claim in wanted if claim not in by_id]
+    if not wanted or unknown:
+        raise gz_errors.ValidationError(
+            f"No canary is bound to {', '.join(unknown) or 'any claim given'}. "
+            f"Name claims from {_CANARY_REGISTRY}."
+        )
+    stale = [claim for claim in wanted if _stale(by_id[claim])]
+    if stale:
+        raise gz_errors.PolicyBreachError(
+            f"Canary binding is stale for {', '.join(stale)}: the guard, claim or designated "
+            f"test changed since the mutant was bound, so a review now would accept a mutant "
+            f"nobody re-read. {_RECOVER}."
+        )
+    ledger = Ledger(_ledger_file(project_root, ledger_path))
+    for claim in wanted:
+        ledger.append(
+            guard_canary_reviewed_event(
+                claim_id=claim,
+                binding_sha256=by_id[claim].binding_sha256,
+                attestor=who,
+                operator_text=operator_text,
+                ruling_source=ruling_source,
+            )
+        )
+    _project_reviewer(project_root, set(wanted), who)
+    return wanted
+
+
+def _project_reviewer(project_root: Path, claims: set[str], attestor: str) -> None:
+    """Write ``reviewed_by`` as a readable projection of the recorded review."""
+    path = registry_path(project_root, _CANARY_REGISTRY)
+    payload = load_registry(project_root, _CANARY_REGISTRY)
+    for record in payload.get("canaries", []):
+        if isinstance(record, dict) and record.get("claim_id") in claims:
+            record["reviewed_by"] = attestor
+    path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
 
 def _copy_tree(project_root: Path, destination: Path) -> None:

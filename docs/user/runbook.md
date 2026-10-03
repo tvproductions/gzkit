@@ -806,6 +806,19 @@ looked, not yet" is a recordable answer rather than silence. Add `--set-aside "<
 decline; that is the clearance-amendment record. (`gz handoff authorize` is a
 deprecated alias for `decide`.)
 
+When session orientation lists **guard canaries awaiting operator review**,
+review each mutant and have the agent record your verbatim words. The ledger
+event is the only thing that counts as a review; editing `reviewed_by` by hand
+does not:
+
+```bash
+uv run gz canary review --claim <claim-id> --attestor g0 --operator-text "<your exact words>"
+```
+
+A canary rebound since your last review (its guard, claim or designated test
+changed) shows up as pending again. A stale binding refuses with exit 3 and
+writes nothing.
+
 When the store accretes, declutter it with the governed move-not-delete
 retention verb — `gz handoff archive` relocates handoffs older than the
 threshold into `.gzkit/handoffs/archive/`, skipping any that are lock-coupled or
