@@ -43,12 +43,15 @@ Step-4b rule without changing Step 4b: resolution prose records remediation;
 it does not clear a refutation. A subsequent independent re-review of the
 current decision must produce a non-refuting verdict before it can proceed.
 
-Read `src/gzkit/commands/obpi_complete_adversarial.py` as the existing model:
+Read the current Step-4b surfaces as the existing model:
 
-- `ADVERSARY_VERDICTS` supplies the shared verdict vocabulary.
-- `REFUTATION_VERDICTS` includes `refuted` and `refuted-with-caveats`.
-  `_enforce_adversarial_validation` blocks both even when resolution prose is
-  supplied; the original verdict must not be relabeled as clean.
+- `ADVERSARY_VERDICTS` (`src/gzkit/commands/obpi_complete_adversarial.py`)
+  supplies the shared verdict vocabulary.
+- The acceptance reducer holds the rule since GHI #985:
+  `acceptance_store.completion_review` refuses while a finding is open, and
+  `acceptance.assess_readiness` closes a finding only on an independently
+  recorded closure. Resolution prose closes nothing, and the original
+  refutation is kept as history, never relabeled as clean.
 - `_build_adversarial_event` preserves the review and resolution in the ledger.
   The new decision transition must likewise retain the original refutation and
   bind the subsequent independent review to the current OBPI-05 envelope.
@@ -155,7 +158,7 @@ the heightened walkthrough, including the `arb-step-security-scan-*` receipt.
 
 **Prerequisites (check existence, STOP if missing):**
 
-- [ ] `src/gzkit/commands/obpi_complete_adversarial.py` exists and is readable — verified, 387 lines. STOP if missing: there is no shape to generalize from, and inventing one would be the fabrication this ADR was written against.
+- [ ] `src/gzkit/commands/obpi_complete_adversarial.py` exists and is readable. STOP if missing: there is no shape to generalize from, and inventing one would be the fabrication this ADR was written against.
 - [ ] `src/gzkit/events.py`, `src/gzkit/ledger_events.py`, `src/gzkit/schemas/ledger.json` all exist — verified; `audit_event_schemas` returns empty (silently passing) if any is absent, so their presence is a precondition for the checks in Verification to mean anything.
 - [ ] `src/gzkit/governance/trust_audits/events.py::_NO_GRAPH_IMPACT` exists — verified at line 21, a `dict[str, str]` of event name to rationale.
 - [ ] `src/gzkit/second_opinion_envelope.py` exists (created by OBPI-05) — STOP if missing: requirement #6 has no subject to bind to.
@@ -164,9 +167,9 @@ the heightened walkthrough, including the `arb-step-security-scan-*` receipt.
 
 **Existing Code (understand current state):**
 
-- [ ] `src/gzkit/commands/obpi_complete_adversarial.py:47-52` — `ADVERSARY_VERDICTS`. Read the four tokens and import them; do not retype them (requirement #5).
-- [ ] `src/gzkit/commands/obpi_complete_adversarial.py::_enforce_adversarial_validation` — read the unconditional `REFUTATION_VERDICTS` block, the independent re-review recovery, and the requirement to preserve the original verdict.
-- [ ] `src/gzkit/commands/obpi_complete_adversarial.py:137-176` — `_build_adversarial_event`. Note the optional-field pattern (`if value:` — omitted rather than emitted as null, *"matching `_EventBase._serialize`"*); the new event follows it.
+- [ ] `src/gzkit/commands/obpi_complete_adversarial.py::ADVERSARY_VERDICTS`. Read the four tokens and import them; do not retype them (requirement #5).
+- [ ] `src/gzkit/acceptance_store.py::completion_review` and `src/gzkit/acceptance.py::assess_readiness` — read how an open finding blocks completion until an independent closure is recorded, and how the original refutation is preserved.
+- [ ] `src/gzkit/commands/obpi_complete_adversarial.py::_build_adversarial_event`. Note the optional-field pattern (`if value:` — omitted rather than emitted as null, *"matching `_EventBase._serialize`"*); the new event follows it.
 - [ ] `src/gzkit/ledger_events.py::obpi_withdrawn_event` — read one factory end to end for the house shape before adding another.
 - [ ] `src/gzkit/events.py::_EventBase` — the frozen, `extra="forbid"` base and the `schema`/`schema_` mapping every typed event inherits.
 - [ ] `src/gzkit/governance/trust_audits/events.py:21-60` — read two existing `_NO_GRAPH_IMPACT` rationales (`surface_weight_recalibrated`, `session_exit_bookmark_skipped`). Both argue *why the event has no graph node*, at length. Match that standard or add a real handler instead.
@@ -345,6 +348,7 @@ REQ-<semver>-<obpi_item>-<criterion_index>
      Use one bullet per issue so status surfaces can preserve traceability. -->
 
 - GHI #960 — 2026-09-19 draft-only reconciliation of the retired prose-clears-refutation rule with current independent re-review enforcement. Operator (`g0`) explicitly authorized “Draft reconciliation: correct OBPI-0.36.0-07’s requirements and examples without implementing or activating that ADR.” Requirements, examples, and coupled parent text corrected; this records no implementation, completion, or Gate-5 attestation. Status remains Draft.
+- GHI #1163 — 2026-10-03 draft-only premise correction. The brief named `_enforce_adversarial_validation` as the existing model; that function lost its production caller in GHI #985 and was removed. The Objective and Discovery Checklist now name the acceptance reducer. Requirements, acceptance criteria and the Boundary Invariant #1 fence are unchanged. Operator (`g0`) ruled the route: “GHI, remove outright (Recommended)”.
 
 ## Human Attestation
 

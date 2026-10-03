@@ -395,6 +395,16 @@ class AcceptanceStoreTests(ExecutionFixture):
         self.assertTrue(acceptance_status(self.root, OBPI).ready)
         self.assertEqual(load_history(self.root, OBPI).reviews[-1], review)
 
+    def test_review_claiming_its_own_tier_is_refused(self):
+        """The tier is what ran, never what the review says ran (GHI #1163)."""
+        proof = self.prove_and_record()
+        receipt = self.receipt(proof)
+        payload = json.loads(receipt["stdout_tail"].removeprefix("```json\n").removesuffix("\n```"))
+        payload["tier"] = 1
+        receipt["stdout_tail"] = json.dumps(payload)
+        with self.assertRaisesRegex(ValueError, "derived from the execution transport"):
+            review_from_receipt(receipt)
+
     def test_explicit_human_review_preserves_ruling_without_recording_attestation(self):
         proof = self.prove_and_record()
         for stage in ("spec", "quality"):

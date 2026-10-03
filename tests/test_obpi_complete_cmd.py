@@ -777,10 +777,6 @@ class TestObpiCompleteCmdHappyPath(SilencedConsoleTestCase):
                     "- Files: obpi_complete.py, parser_artifacts.py\n- Tests: 11 added"
                 ),
                 key_proof="gz obpi complete OBPI-0.0.14-01 exits 0",
-                # Heavy lane fails closed without a Step-4b verdict (GHI #676).
-                adversary_verdict="not-refuted",
-                adversary="claude/general-purpose",
-                adversary_fallback_reason="codex setup reported ready=false",
                 as_json=False,
                 dry_run=False,
             )
@@ -875,13 +871,6 @@ class TestObpiCompleteCmdRollback(SilencedConsoleTestCase):
                     attestation_text="Verified",
                     implementation_summary="- Files: obpi_complete.py",
                     key_proof="gz obpi complete exits 0",
-                    # Heavy lane fails closed without a Step-4b verdict (GHI #676).
-                    # Supplying one lets the run reach the transaction this test is
-                    # about — and the failing `ledger.append` it trips is now the
-                    # adversarial_validation write, which must roll back like any other.
-                    adversary_verdict="not-refuted",
-                    adversary="claude/general-purpose",
-                    adversary_fallback_reason="codex setup reported ready=false",
                     as_json=False,
                     dry_run=False,
                 )
@@ -968,10 +957,6 @@ class TestObpiCompleteOperatorVerbatimAttestation(SilencedConsoleTestCase):
                 attestation_text="attest completed -- obpi_complete.py verified",
                 implementation_summary="- Files: obpi_complete.py",
                 key_proof="gz obpi complete exits 0",
-                # Heavy lane fails closed without a Step-4b verdict (GHI #676).
-                adversary_verdict="not-refuted",
-                adversary="claude/general-purpose",
-                adversary_fallback_reason="codex setup reported ready=false",
                 as_json=False,
                 dry_run=False,
             )

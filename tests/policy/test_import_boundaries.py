@@ -457,7 +457,6 @@ PRIVATE_CROSS_PACKAGE_IMPORT_BASELINE: dict[str, tuple[str, ...]] = {
         "pipeline_runtime._find_drifted_path",
     ),
     "commands/obpi_precomplete.py": (
-        "governance.trust_audits.adversarial_validation._STEP_4B_RE",
         "governance.trust_audits.briefs._ACCEPTANCE_SECTION",
         "governance.trust_audits.briefs._BRIEF_EVIDENCE_H3_HEADINGS",
         "governance.trust_audits.briefs._LANE_IN_FRONTMATTER",

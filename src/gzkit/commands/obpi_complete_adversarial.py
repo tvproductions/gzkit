@@ -1,45 +1,25 @@
-"""Step-4b adversarial-validation gate for ``gz obpi complete``.
+"""Step-4b vocabulary, cross-vendor receipt proof and ledger event.
 
-Extracted from ``obpi_complete`` under the module-size shrink-only ratchet
-(`.gzkit/chores/module-sloc-cap-radon/`): the GHI #765/#780 receipt requirement
-grew that module past the ceiling its grandfather entry records, and this family
-is the cohesive unit that grew. Nothing here changed in the move -- the gate's
-behavior is pinned by ``tests/test_adversarial_validation_gate.py``, which
-imports these symbols through ``obpi_complete`` and still does.
+The refusal itself lives in the acceptance reducer
+(``acceptance_store.completion_review`` and ``acceptance_blockers``) since GHI
+#985. This module keeps what that path still reads: the verdict vocabulary, the
+argv-based cross-vendor proof ``acceptance_store.review_from_receipt`` applies,
+and the ``adversarial_validation`` event ``gz obpi complete`` writes. The verdict
+gate that once lived here was removed under GHI #1163 after it lost its last
+production caller.
 """
 
 from __future__ import annotations
 
-import json
 from datetime import UTC, datetime
-from pathlib import Path
-from typing import Any, NoReturn
+from typing import Any
 
 from gzkit.ledger import LEDGER_SCHEMA, LedgerEvent
 
-
-def _fail(msg: str, *, exit_code: int, as_json: bool, obpi_id: str) -> NoReturn:
-    """Delegate to ``obpi_complete._fail``.
-
-    Imported at call time, not module scope: ``obpi_complete`` imports this
-    module, so a top-level import back would close a cycle. `.gzkit/rules/pythonic.md`
-    § Imports names cycle avoidance as one of the two carve-outs to the
-    top-level-imports rule. Delegating rather than duplicating also keeps the
-    error surface on ``obpi_complete``'s console, which its tests patch.
-    """
-    from gzkit.commands.obpi_complete import _fail as _delegate  # noqa: PLC0415
-
-    _delegate(msg, exit_code=exit_code, as_json=as_json, obpi_id=obpi_id)
-
-
 __all__ = [
     "ADVERSARY_VERDICTS",
-    "REFUTATION_VERDICTS",
     "_build_adversarial_event",
-    "_enforce_adversarial_validation",
-    "_enforce_adversary_receipt",
     "_is_cross_vendor_adversary",
-    "_load_adversary_receipt",
     "_receipt_binary_name",
     "_receipt_proves_cross_vendor",
 ]
@@ -50,42 +30,6 @@ ADVERSARY_VERDICTS: tuple[str, ...] = (
     "not-refuted",
     "refuted-with-caveats",
     "degraded-human-only",
-)
-
-# The verdicts that LOOP rather than complete (GHI #960). Operator ruling 2026-09-04,
-# verbatim: "refuted is an outcome, but it is an input into if(4a && 4b) pass; else:
-# loop". A refutation is a legitimate OUTCOME of Step 4b — these members stay in
-# `ADVERSARY_VERDICTS` and in the ledger schema, and 13 historical rows carry them —
-# what it is not is a TERMINAL state.
-#
-# The escape hatch this closes was a resolution STRING (GHI #959 made it mandatory;
-# this makes it insufficient). The field is specified to name "what was fixed and how
-# the adversary's own check was re-run" — but if the adversary re-ran its check and it
-# passed, the verdict is `not-refuted`. So a truthful, fully-discharged
-# `refuted + resolution` is a contradiction: a completion recorded against a verdict
-# describing a tree that no longer exists. Binding it to a receipt (the #765/#780
-# proven-vs-declared remedy for the TIER claim) was considered and rejected: it would
-# prove someone typed a true sentence about a stale verdict, instrumenting the hatch
-# instead of removing it.
-#
-# A caveat takes the same exit: it is a refutation the adversary NAMED and did not
-# withdraw ("never hand the operator a known caveat dressed as clean").
-#
-# It lives HERE, beside the vocabulary it subsets, because the chokepoint owns the
-# vocabulary and `obpi_precomplete` already imports `ADVERSARY_VERDICTS` rather than
-# restating it — "a vocabulary maintained in two places is the two-copies-one-binds
-# failure this repository keeps paying for" (that module's own words).
-REFUTATION_VERDICTS: frozenset[str] = frozenset({"refuted", "refuted-with-caveats"})
-
-# Keep receipt-recovery branches on the skill's permitted dispatch surface.
-# The skill resolves the installed plugin path; a versioned cache path is not
-# portable CLI configuration, and raw `codex exec` is not the permitted route.
-_REVIEW_RECOVERY = (
-    "Follow gz-obpi-pipeline Step 4b: independently review the bounded acceptance "
-    "claim through the installed Codex plugin's writable task path "
-    "(codex-companion.mjs task --write, in a disposable checkout). "
-    "Wrap that plugin invocation with uv run gz arb step --name codexadversary -- "
-    "and cite the successful run_id with --adversary-receipt. "
 )
 
 # Step-4b tier order (GHI #678). Codex (a different vendor) is REQUIRED first
@@ -193,24 +137,6 @@ _receipt_binary_name = receipt_binary_name
 _receipt_proves_cross_vendor = receipt_proves_cross_vendor
 
 
-def _load_adversary_receipt(run_id: str, *, root: Path) -> dict[str, Any] | None:
-    """Read the ARB step receipt named by *run_id*, or None when unresolvable.
-
-    Unresolvable covers every way the id can fail to name a real receipt: no such
-    file, unreadable, non-JSON, or a JSON scalar. Each collapses to the same
-    governance meaning — the corroborating artifact is not there.
-    """
-    try:
-        raw = (root / f"{run_id}.json").read_text(encoding="utf-8")
-    except OSError:
-        return None
-    try:
-        receipt = json.loads(raw)
-    except json.JSONDecodeError:
-        return None
-    return receipt if isinstance(receipt, dict) else None
-
-
 def _build_adversarial_event(
     *,
     obpi_id: str,
@@ -224,9 +150,9 @@ def _build_adversarial_event(
 ) -> LedgerEvent | None:
     """Render the Step-4b verdict as an ``adversarial_validation`` ledger event.
 
-    Returns ``None`` when no verdict was supplied — the lite lane, where the gate
-    does not fire. Optional detail fields are omitted rather than emitted as null,
-    matching ``_EventBase._serialize``.
+    Returns ``None`` when no verdict or adversary is supplied. Optional detail
+    fields are omitted rather than emitted as null, matching
+    ``_EventBase._serialize``.
     """
     if not verdict or not adversary:
         return None
@@ -249,220 +175,3 @@ def _build_adversarial_event(
         if value:
             payload[key] = value
     return LedgerEvent.model_validate(payload)
-
-
-def _enforce_adversary_receipt(
-    *,
-    obpi_id: str,
-    receipt: str,
-    receipts_root: Path | None,
-    tier: int | None,
-    as_json: bool,
-) -> bool:
-    """Resolve the cited ARB receipt and report whether it proves a cross-vendor run.
-
-    Fails closed — never returning — when the receipt does not resolve, records a
-    non-zero exit, or contradicts a declared tier 1. Split out of
-    ``_enforce_adversarial_validation`` to hold that gate under the C complexity
-    ceiling (`.pre-commit-config.yaml` xenon) rather than to add a seam (GHI #765).
-    """
-    loaded = (
-        _load_adversary_receipt(receipt, root=receipts_root) if receipts_root is not None else None
-    )
-    if loaded is None:
-        _fail(
-            f"Completion blocked: Step 4b for {obpi_id} cites adversary receipt "
-            f"'{receipt}', which does not resolve to a readable ARB step receipt. "
-            "A receipt id naming no artifact is an assertion wearing the shape of "
-            "proof. " + _REVIEW_RECOVERY,
-            exit_code=1,
-            as_json=as_json,
-            obpi_id=obpi_id,
-        )
-    if loaded.get("exit_status") != 0:
-        _fail(
-            f"Completion blocked: Step 4b for {obpi_id} cites adversary receipt "
-            f"'{receipt}', which records exit_status={loaded.get('exit_status')!r} — "
-            "the adversary run did not succeed. A failed run cannot have re-derived "
-            "the completion claim. " + _REVIEW_RECOVERY,
-            exit_code=1,
-            as_json=as_json,
-            obpi_id=obpi_id,
-        )
-    proven = _receipt_proves_cross_vendor(loaded)
-    if tier == 1 and not proven:
-        _fail(
-            f"Completion blocked: Step 4b for {obpi_id} declares --adversary-tier 1 "
-            f"(cross-vendor) but its receipt '{receipt}' records an argv that did not "
-            "invoke a recognized different-vendor binary. The receipt is the proof "
-            "channel precisely because it records what RAN — a declaration that "
-            "contradicts it is asserting against the caller's own evidence. Either "
-            "cite the receipt of the cross-vendor run, or declare the tier that "
-            "actually ran (--adversary-tier 2) with --adversary-fallback-reason "
-            "'<observed Codex unavailability>'.",
-            exit_code=1,
-            as_json=as_json,
-            obpi_id=obpi_id,
-        )
-    return proven
-
-
-def _enforce_adversarial_validation(
-    *,
-    obpi_id: str,
-    parent_lane: str,
-    verdict: str | None,
-    adversary: str | None,
-    resolution: str | None,
-    as_json: bool,
-    fallback_reason: str | None = None,
-    tier: int | None = None,
-    receipt: str | None = None,
-    receipts_root: Path | None = None,
-) -> None:
-    """Fail closed unless Step 4b's adversary verdict is recorded (GHI #676).
-
-    Step 4b is already a fail-closed gate in the pipeline skill: no OBPI reaches
-    attestation without an independent adversary testing the bounded completion
-    claim in both directions. Nothing enforced it at the chokepoint, so an agent
-    that skipped 4b and one that was refuted and attested anyway left indistinguishable
-    durable records — the verdict lived only in a transcript or a vendor cache.
-
-    Heavy lane only, matching the lane that already carries fail-closed Gate 3/4.
-    Refutation verdicts block even with a recorded resolution: fixes need a new
-    independent review, never a substituted verdict word.
-    """
-    if parent_lane.lower() != "heavy":
-        return
-
-    if not verdict or not adversary:
-        _fail(
-            "Completion blocked: Step 4b independent adversarial validation is not "
-            f"recorded for {obpi_id}. The heavy lane forbids attestation on evidence "
-            "the authoring agent produced alone (GHI #643/#676) — an adversary "
-            "must re-derive and test the bounded completion claim, and its verdict "
-            "must land in the ledger, not a transcript. " + _REVIEW_RECOVERY + "Re-run with "
-            "--adversary-verdict <" + "|".join(ADVERSARY_VERDICTS) + "> "
-            "--adversary <vendor/model>. If neither a different-vendor adversary nor "
-            "an independent subagent could run, record the degraded floor explicitly: "
-            "--adversary-verdict degraded-human-only --adversary human.",
-            exit_code=1,
-            as_json=as_json,
-            obpi_id=obpi_id,
-        )
-
-    if verdict in REFUTATION_VERDICTS:
-        _fail(
-            f"Completion blocked: Step 4b returned '{verdict}' for {obpi_id}, so this OBPI "
-            "LOOPS rather than completes. The verdict itself is a legitimate outcome and is "
-            "not the problem — completion is a conjunction, and 4a passing while 4b refutes "
-            "is the case that sends the work back to Stage 2. Two exits, both ending in a "
-            "non-refuting verdict: FIX the refuted claim and re-run the adversary, or seek "
-            "an operator ruling for a proposed boundary change in the brief's "
-            "'## Threat Model', then obtain independent revalidation. Filing a GHI alone "
-            "does not discharge an unmet requirement. "
-            + _REVIEW_RECOVERY
-            + "Complete on the verdict that round "
-            "returns (--adversary-verdict not-refuted), citing the earlier rounds in "
-            "--adversary-resolution as the record of what was found and discharged. Do NOT "
-            "relabel this round's verdict to get past this message: the brief's Step 4b "
-            "section is read by `gz obpi precomplete`, and a completion disagreeing with it "
-            "is the substitution this gate exists to catch.",
-            exit_code=1,
-            as_json=as_json,
-            obpi_id=obpi_id,
-        )
-
-    # Tier order (GHI #678): Codex (tier 1, different vendor) is REQUIRED first. A
-    # Claude-family adversary shares this agent's blind spots — the exact failure 4b
-    # exists to break — so it is admissible only when Codex was genuinely unavailable,
-    # and that reason must be recorded. The human degraded floor is exempt (its verdict
-    # already flags it); a proven cross-vendor adversary needs no justification.
-    is_human_floor = verdict == "degraded-human-only" or adversary.strip().lower() == "human"
-    if is_human_floor:
-        return
-
-    # A DECLARED tier governs; the name scan is only the fallback for callers predating
-    # the flag. Inference alone was the hole: tier was read off a caller-supplied string
-    # with nothing behind it, so "codex-shaped name" and "ran on Codex" were the same
-    # claim. Declaring a tier that contradicts the name is a contradiction the name scan
-    # cannot see by construction — it fails closed here rather than passing silently.
-    # Precedence: PROVEN (receipt) > DECLARED (tier) > INFERRED (name). A receipt is
-    # written by ARB at invocation time and records the argv that actually ran, so it
-    # is the only channel here not authored by the agent making the claim (GHI #765).
-    proven_cross_vendor: bool | None = None
-    if receipt:
-        proven_cross_vendor = _enforce_adversary_receipt(
-            obpi_id=obpi_id,
-            receipt=receipt,
-            receipts_root=receipts_root,
-            tier=tier,
-            as_json=as_json,
-        )
-
-    name_is_cross_vendor = _is_cross_vendor_adversary(adversary)
-    if proven_cross_vendor is None and tier == 1 and not name_is_cross_vendor:
-        _fail(
-            f"Completion blocked: Step 4b for {obpi_id} declares --adversary-tier 1 "
-            f"(cross-vendor) but names adversary '{adversary}', which is not a recognized "
-            "different-vendor model. Tier 1 is the claim that a DIFFERENT vendor re-derived "
-            "the completion — a Claude validating Claude shares this agent's blind spots. "
-            "Either name the cross-vendor adversary that actually ran, or declare the tier "
-            "that did (--adversary-tier 2) with --adversary-fallback-reason '<observed Codex "
-            "unavailability>'.",
-            exit_code=1,
-            as_json=as_json,
-            obpi_id=obpi_id,
-        )
-
-    if proven_cross_vendor is not None:
-        is_cross_vendor = proven_cross_vendor
-    elif tier is not None:
-        is_cross_vendor = tier == 1
-    else:
-        is_cross_vendor = name_is_cross_vendor
-
-    # A cross-vendor claim is admissible ONLY on receipt proof (GHI #780). GHI #765
-    # made the receipt authoritative when cited and optional when absent, which closed
-    # nothing: the gate cannot tell "no receipt because the adversary could not be
-    # wrapped" from "no receipt because none was run", so the honest and the hollow
-    # completion stayed the same input. Both rungs below `proven` are strings the
-    # claiming agent typed, and their agreement is self-agreement.
-    #
-    # Scope is the RESOLVED claim, not the declared one. Gating `--adversary-tier 1`
-    # alone would fence a path no completion has used: of 17 recorded
-    # adversarial_validation events, zero declare a tier and 14 resolved cross-vendor
-    # through the name scan. The tier-2 path below stays reachable without a receipt
-    # so an unavailable Codex remains recordable rather than pushed into a false tier 1.
-    if is_cross_vendor and proven_cross_vendor is None:
-        claimed_by = "--adversary-tier 1" if tier == 1 else f"the adversary name '{adversary}'"
-        _fail(
-            f"Completion blocked: Step 4b for {obpi_id} claims a cross-vendor (tier-1) "
-            f"adversary via {claimed_by}, with no ARB receipt proving one ran. Tier 1 is "
-            "the claim that a DIFFERENT vendor re-derived the completion, and a name and "
-            "a declared tier are both typed by the agent making that claim — their "
-            "agreement is self-agreement, not corroboration (GHI #765/#780). A receipt is "
-            "written by ARB at invocation time and records the argv that actually ran. "
-            + _REVIEW_RECOVERY
-            + "If Codex was genuinely unavailable, record the degraded run "
-            "honestly instead: --adversary-tier 2 --adversary-fallback-reason '<observed "
-            "Codex unavailability>'.",
-            exit_code=1,
-            as_json=as_json,
-            obpi_id=obpi_id,
-        )
-
-    if not is_cross_vendor and not (fallback_reason and fallback_reason.strip()):
-        _fail(
-            f"Completion blocked: Step 4b for {obpi_id} used a non-cross-vendor "
-            f"(tier-2 Claude-family) adversary '{adversary}' with no recorded reason "
-            "Codex was unavailable. Codex (tier 1) shares none of this agent's blind "
-            "spots and is REQUIRED first (a Claude validating Claude shares failure "
-            "modes). Run codex:setup: if it reports ready=true, re-run Step 4b through "
-            "Codex. If Codex is genuinely unavailable, record why with "
-            "--adversary-fallback-reason '<observed Codex unavailability, e.g. setup "
-            'ready=false / not authenticated>\'. "It was convenient" is not a reason.',
-            exit_code=1,
-            as_json=as_json,
-            obpi_id=obpi_id,
-        )

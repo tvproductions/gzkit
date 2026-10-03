@@ -113,7 +113,7 @@ in exactly the ad-hoc moments the ADR was written for.
 
 - [ ] `.gzkit/skills/git-sync/SKILL.md` — read the `disable-model-invocation: true` frontmatter key, which is how a skill is made operator-only. This door must NOT set it: OBPI-04 needs the same skill agent-invocable.
 - [ ] `.gzkit/skills/gz-arb/SKILL.md` — read for the standard frontmatter block and Output Contract shape.
-- [ ] `src/gzkit/commands/obpi_complete_adversarial.py::_enforce_adversarial_validation` — read to see precisely what OBPI-scoped coupling this door must NOT inherit.
+- [ ] `src/gzkit/acceptance_store.py::completion_review` — read to see precisely what OBPI-scoped coupling this door must NOT inherit.
 
 ## Quality Gates
 
@@ -243,7 +243,7 @@ uv run gz arb step --name adversary -- codex exec --sandbox read-only "Refute: h
 
 ## Tracked Defects
 
-_No defects tracked._
+- GHI #1163 — 2026-10-03 draft-only correction of one Discovery Checklist reference. `_enforce_adversarial_validation` was removed after losing its production caller in GHI #985; the OBPI-scoped coupling to read is now `acceptance_store.completion_review`. Nothing else in this brief changed. Operator (`g0`) ruled the route: “GHI, remove outright (Recommended)”.
 
 ## Human Attestation
 

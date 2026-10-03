@@ -40,9 +40,6 @@ from gzkit.commands.common import (
 from gzkit.commands.obpi_complete_adversarial import (
     _build_adversarial_event,
 )
-from gzkit.commands.obpi_complete_adversarial import (
-    _enforce_adversarial_validation as _enforce_adversarial_validation,
-)
 from gzkit.commands.validate_task_envelope import pending_obpi_task_envelope_errors
 from gzkit.governance.req_coverage import (
     TestRef,
@@ -1064,14 +1061,9 @@ def obpi_complete_cmd(
     accept_security_floor: str | None = None,
     accept_stale_reconciliation: bool = False,
     accept_stale_reconciliation_reason: str | None = None,
-    adversary_verdict: str | None = None,
-    adversary: str | None = None,
     adversary_job_id: str | None = None,
-    adversary_receipt: str | None = None,
     refuted_claim: str | None = None,
     adversary_resolution: str | None = None,
-    adversary_fallback_reason: str | None = None,
-    adversary_tier: int | None = None,
 ) -> None:
     """Atomically complete an OBPI: validate, write evidence, flip status, emit receipt."""
     config = ensure_initialized()

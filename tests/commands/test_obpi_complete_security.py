@@ -371,10 +371,6 @@ class _ObpiCompleteIntegrationFixture(unittest.TestCase):
                         attestation_text="attest completed",
                         implementation_summary="- Files: obpi_complete.py",
                         key_proof="gz obpi complete fires the walkthrough.",
-                        # Heavy lane fails closed without a Step-4b verdict (GHI #676).
-                        adversary_verdict="not-refuted",
-                        adversary="claude/general-purpose",
-                        adversary_fallback_reason="codex setup reported ready=false",
                         as_json=False,
                         dry_run=False,
                         accept_security_floor=accept_security_floor,

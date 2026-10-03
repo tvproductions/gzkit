@@ -711,23 +711,10 @@ def register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         default=None,
         help="Rationale for --accept-stale-reconciliation (min 10 chars).",
     )
-    # GHI #676 — Step-4b independent adversarial validation. Required on the heavy
-    # lane; the verdict lands in the ledger as an `adversarial_validation` event so
-    # it outlives the session that produced it.
-    p_obpi_complete.add_argument(
-        "--adversary-verdict",
-        dest="adversary_verdict",
-        choices=["refuted", "not-refuted", "refuted-with-caveats", "degraded-human-only"],
-        default=None,
-        help="Step-4b adversary verdict (required on heavy lane).",
-    )
-    p_obpi_complete.add_argument(
-        "--adversary",
-        dest="adversary",
-        metavar="IDENTITY",
-        default=None,
-        help="Adversary identity, e.g. codex/gpt-5.4, or 'human' in degraded mode.",
-    )
+    # Step-4b provenance detail. The verdict, reviewer, tier and receipt are read
+    # from the accepted review (`acceptance_store.completion_review`), never from
+    # the caller (GHI #985, #1163); these three add detail to the
+    # `adversarial_validation` event that completion writes.
     p_obpi_complete.add_argument(
         "--adversary-job-id",
         dest="adversary_job_id",
@@ -736,40 +723,18 @@ def register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         help="Adversary run id, when the runtime supplies one.",
     )
     p_obpi_complete.add_argument(
-        "--adversary-receipt",
-        dest="adversary_receipt",
-        metavar="RUN_ID",
-        default=None,
-        help="ARB step receipt run_id proving the tier from the argv that ran.",
-    )
-    p_obpi_complete.add_argument(
         "--refuted-claim",
         dest="refuted_claim",
         metavar="TEXT",
         default=None,
-        help="The specific claim the adversary broke, verbatim.",
+        help="A claim an earlier round broke, verbatim; recorded on the event.",
     )
     p_obpi_complete.add_argument(
         "--adversary-resolution",
         dest="adversary_resolution",
         metavar="TEXT",
         default=None,
-        help="How a refutation was closed and re-verified. Required when verdict is 'refuted'.",
-    )
-    p_obpi_complete.add_argument(
-        "--adversary-fallback-reason",
-        dest="adversary_fallback_reason",
-        metavar="TEXT",
-        default=None,
-        help="Why Codex was unavailable, if a Claude-family adversary ran (GHI #678).",
-    )
-    p_obpi_complete.add_argument(
-        "--adversary-tier",
-        dest="adversary_tier",
-        type=int,
-        choices=[1, 2, 3],
-        default=None,
-        help="Declared Step-4b tier: 1 cross-vendor, 2 independent same-vendor, 3 degraded.",
+        help="How an earlier refutation was closed and re-verified; recorded on the event.",
     )
     add_json_flag(p_obpi_complete)
     add_dry_run_flag(p_obpi_complete)
@@ -786,14 +751,9 @@ def register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
             accept_security_floor=a.accept_security_floor,
             accept_stale_reconciliation=a.accept_stale_reconciliation,
             accept_stale_reconciliation_reason=a.accept_stale_reconciliation_reason,
-            adversary_verdict=a.adversary_verdict,
-            adversary=a.adversary,
             adversary_job_id=a.adversary_job_id,
-            adversary_receipt=a.adversary_receipt,
             refuted_claim=a.refuted_claim,
             adversary_resolution=a.adversary_resolution,
-            adversary_fallback_reason=a.adversary_fallback_reason,
-            adversary_tier=a.adversary_tier,
             as_json=a.as_json,
             dry_run=a.dry_run,
         )

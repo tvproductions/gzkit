@@ -17,7 +17,6 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from gzkit.commands.obpi_precomplete import _check_adversarial_validation
 from gzkit.governance.trust_audits.adversarial_validation import (
     CUTOVER,
     audit_adversarial_validation,
@@ -28,15 +27,6 @@ _AFTER = (CUTOVER + dt.timedelta(hours=8)).isoformat()
 
 _STEP_4B = (
     "### Step 4b — Independent Adversarial Validation (GHI #643)\n\nCodex verdict: NOT-REFUTED.\n"
-)
-# The clean fixture above records a VERDICT because the precomplete check reads one
-# (GHI #879). It read "Codex refuted it." until 2026-08-27 — so the test asserting the
-# check passes was itself an instance of the defect that GHI records: a brief naming a
-# refutation, waved through on the strength of the heading. The audit half is unaffected
-# either way; it gates on the section existing, which is its declared subject.
-_STEP_4B_REFUTED = (
-    "### Step 4b — Independent Adversarial Validation (GHI #643)\n\n"
-    "Codex verdict: REFUTED — three claims broken.\n"
 )
 
 
@@ -200,49 +190,6 @@ class TestBriefEvidence(_ProjectTest):
         self.p.brief(self.OBPI, _brief())
         (self.p.root / "data" / "adversarial_validation_grandfather.json").unlink()
         self.assertEqual(len(self.p.audit()), 1)
-
-
-class TestPrecompleteCheck(_ProjectTest):
-    """`gz obpi precomplete` reads the brief; the ledger event does not exist yet."""
-
-    OBPI = "OBPI-0.3.0-01-thing"
-
-    def test_heavy_brief_without_section_blocks(self) -> None:
-        path = self.p.brief(self.OBPI, _brief())
-        result = _check_adversarial_validation(path)
-        self.assertFalse(result.ok)
-        self.assertIsNotNone(result.remediation)
-        assert result.remediation is not None
-        # Guardrail-feedback prose: the recovery names a runnable next step.
-        self.assertIn("--adversary-verdict", result.remediation)
-        self.assertIn("degraded-human-only", result.remediation)
-
-    def test_heavy_brief_with_a_clean_verdict_passes(self) -> None:
-        """Step-4b evidence licenses the next step only when the verdict is clean."""
-        path = self.p.brief(self.OBPI, _brief(step_4b=True))
-        self.assertTrue(_check_adversarial_validation(path).ok)
-
-    def test_heavy_brief_recording_a_refutation_blocks(self) -> None:
-        """A refutation in the section must not read as READY (GHI #879).
-
-        The audit half of this module gates on the section EXISTING, which is its
-        declared subject. The pre-flight cannot borrow that predicate: a brief
-        recording `REFUTED` and one recording `NOT-REFUTED` are the same input to a
-        heading match, and the green reading is what licensed attestation on refuted
-        work.
-        """
-        path = self.p.brief(self.OBPI, _brief(step_4b=True).replace(_STEP_4B, _STEP_4B_REFUTED))
-        result = _check_adversarial_validation(path)
-        self.assertFalse(result.ok, msg=result.message)
-        self.assertIn("refuted", result.message.lower())
-
-    def test_lite_brief_is_exempt(self) -> None:
-        path = self.p.brief(self.OBPI, _brief(lane="lite"))
-        self.assertTrue(_check_adversarial_validation(path).ok)
-
-    def test_unreadable_brief_blocks_rather_than_passing(self) -> None:
-        result = _check_adversarial_validation(self.p.root / "does-not-exist.md")
-        self.assertFalse(result.ok)
 
 
 class TestShippedSnapshotIsRatchetRegistered(unittest.TestCase):

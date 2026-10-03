@@ -5,9 +5,9 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-29
+last_reviewed: 2026-10-03
 metadata:
-  skill-version: "6.63.1"
+  skill-version: "6.64.0"
 model: sonnet
 ---
 
@@ -72,7 +72,7 @@ These thoughts mean STOP — you are about to break the pipeline:
 | "`gz obpi complete` needs a TTY, so I'll ask the operator to run it themselves" | No. There is no TTY gate. A plain non-TTY `uv run gz obpi complete ... --attestation-text "<operator's verbatim attestation>"` call completes the brief for every lane / kind / sensitivity. The operator already attested in Stage 4 — relay that phrase, never hand the invocation back. |
 | "The operator said `attest completed` — maybe they want me to explain what to do next" | No. `attest completed` IS the attestation. Run `gz obpi complete` immediately with that phrase (enriched per § Attestation) in `--attestation-text`. Do not produce runbook-style instructions for the operator to execute. |
 | "My Step 4a evidence is green — tests pass, REQs covered — so I can present it and await attestation" | STOP. Green-on-your-own-evidence is the EXACT state Step 4b exists to distrust. You authored that evidence; you are the GHI #643 fabrication surface. You may NOT solicit attestation until applicable independent approval and closure have been imported for the current proof claims. Confidence from the authoring agent is worth zero at this gate. |
-| "Step 4b is probably overkill for this small/authoring-only/obviously-correct OBPI" | Step 4b is expected on every lane, size and kind. `gz obpi complete` enforces it on heavy lane only (`_enforce_adversarial_validation` in `src/gzkit/commands/obpi_complete_adversarial.py` returns early on any other lane), so on lite lane nothing mechanical catches a skip and the discipline is yours (GHI #939). "Obviously correct" is the precise feeling that precedes a hollow-test or fabricated-evidence skip. Dispatch the adversary. You are not the exception. |
+| "Step 4b is probably overkill for this small/authoring-only/obviously-correct OBPI" | Step 4b is expected on every lane, size and kind, and `gz obpi complete` refuses on every lane until the acceptance record holds a current independent adversarial review (`acceptance_store.completion_review`, GHI #985). "Obviously correct" is the precise feeling that precedes a hollow-test or fabricated-evidence skip. Dispatch the adversary. You are not the exception. |
 | "I'll present Step 4a now and run the adversary after the operator responds / in the next turn" | Sequence violation. The adversary runs BEFORE attestation, not after — the operator attests holding the adversary's verdict. Presenting 4a as the terminal step of the turn, with 4b deferred, is the skip this gate forbids. Dispatch any missing required review before soliciting attestation; retain already applicable imported review. |
 | "An independent Claude subagent is fine for 4b — I don't need Codex" | Tier-order bypass (GHI #678). A Claude validating Claude shares this agent's blind spots — the exact failure Step 4b exists to break. Codex (tier 1) is REQUIRED first; tier 2 is permitted ONLY after a checked `ready: false`. Run `codex:setup`; if `ready: true`, the Claude subagent is forbidden. "It was convenient" is not a fallback reason. |
 | "The adversary is there to find problems, so a round that confirms the feature works is a soft round" | Inverted. A second model CONFIRMING the first model's implementation is correct is the entire point of Step 4b; probing is how that confirmation is earned. A round that only lists what it broke, and never demonstrates the feature doing its job, has not done the job. |
@@ -80,7 +80,7 @@ These thoughts mean STOP — you are about to break the pipeline:
 | "I'll tell the adversary to REFUTE the claim — that's what adversarial means" | It is not, and this exact wording cost OBPI-0.35.0-04 six rounds. A model told "your job is to REFUTE this, not to confirm it" will escalate until something falls, and its best available outcome is "I could not refute it" — absence of evidence, never confirmation. Prompt for independent confirmation, with probing as the method. |
 | "This is a security property, so the claim should be absolute" | An absolute claim cannot be refuted in bounded time: the adversary escalates the attacker until something falls. Declare the threat model in the brief FIRST, state it in the prompt, and forbid out-of-scope findings — otherwise the gate never converges. |
 | "The adversary found something, so the OBPI cannot pass" | Apply the September 5 independent-closure rule below: every finding against the agreed requirements or their required proof needs a disposition and independent closure. Severity alone does not clear it. Track independent discoveries without silently making them acceptance prerequisites; never dismiss a relevant finding merely because it arose in an auxiliary audit. |
-| "The round refuted, but I fixed everything it found — I'll complete with `--adversary-verdict refuted` and explain the fixes in the resolution" | **Refused, and a resolution string does not change that (GHI #960).** *"refuted is an outcome, but it is an input into if(4a && 4b) pass; else: loop"* (operator, 2026-09-04). Execute proof for the repaired obligation and import explicit independent closure. The current acceptance records determine readiness; preserve the original refutation as history. |
+| "The round refuted, but I fixed everything it found — I'll complete and explain the fixes in `--adversary-resolution`" | **Refused, and a resolution string does not change that (GHI #960).** *"refuted is an outcome, but it is an input into if(4a && 4b) pass; else: loop"* (operator, 2026-09-04). Execute proof for the repaired obligation and import explicit independent closure. The current acceptance records determine readiness; preserve the original refutation as history. |
 | "The block says refuted can't complete, so I'll pass `not-refuted` since the findings are fixed anyway" | A caller-supplied word cannot close a finding. Import the independent review's actual executed output with its original finding IDs and current proof IDs. `gz obpi acceptance ... status --stage stage4` derives readiness; historical verdicts remain unchanged. |
 
 ### The Plan-Mode Gate
@@ -1205,8 +1205,8 @@ fallback reason in the acceptance record. Completion carries its derived tier
 and provenance into the `adversarial_validation` event (GHI #676, #985).
 A caller declaration cannot promote a same-vendor execution to tier 1 or replace
 missing review evidence. "The Claude subagent was convenient" is not a fallback
-reason. Legacy `--adversary-tier` and `--adversary-fallback-reason` inputs remain
-compatibility fields, not authority over the recorded execution.
+reason. `gz obpi complete` takes no tier, reviewer or fallback-reason flag
+(GHI #1163); the acceptance record is the only source.
 
 **Acceptance transport preserves that tier order (GHI #985).** The acceptance
 importer derives tier from actual execution; do not put a caller-authored `tier`
@@ -1218,8 +1218,7 @@ record their exact ruling with `gz obpi acceptance {OBPI-SLUG} human-review
 --attestor g0 --ruling '<verbatim judgment>'`. This records the current proof
 approval and finding closure as tier 3, without inventing an agent receipt.
 Never infer that ruling from permission to implement or repair, and retain the
-separate completion attestation. Completion records the resulting derived tier;
-legacy tier flags cannot override the imported judgment.
+separate completion attestation. Completion records the resulting derived tier.
 
 > ### 🛑 THE PLUGIN IS THE ONLY TIER-1 DISPATCH SURFACE (operator directive, 2026-08-25)
 >
@@ -1243,56 +1242,31 @@ legacy tier flags cannot override the imported judgment.
 > agent following the example is following this skill. **Never reintroduce a `codex exec`
 > incantation to this file, even as an illustration.**
 
-**Prove the tier; a declaration will not pass (GHI #765, #780).** A declared tier is a
-second assertion from the same caller — as is `--adversary-job-id`, which **nothing
-resolves**. Wrap the PLUGIN invocation in ARB and cite the receipt:
+**Prove the tier; nothing declares it (GHI #765, #780, #985).** The tier is derived
+from the argv the reviewer run executed, never from a flag or a name. Wrap the PLUGIN
+invocation in ARB, then import that run:
 
 ```bash
 uv run gz arb step --name codexadversary --max-output-chars -1 -- \
   node "$HOME/.claude/plugins/cache/openai-codex/codex/<ver>/scripts/codex-companion.mjs" \
   task --write --cwd <checkout> --prompt-file <prompt.md>
 # → arb step name=codexadversary exit_status=0 receipt=.../arb-step-codexadversary-<hash>.json
-uv run gz obpi complete <OBPI> ... --adversary-tier 1 \
-  --adversary-receipt arb-step-codexadversary-<hash>
+uv run gz obpi acceptance <OBPI> review --receipt arb-step-codexadversary-<hash>
 ```
 
-Before completion, import that run with
-`uv run gz obpi acceptance <OBPI> review --receipt arb-step-codexadversary-<hash>`.
 The executed output must contain the structured acceptance judgment described
 below. The receipt's successful exit alone cannot establish acceptance.
 
-If the run cannot be ARB-wrapped, that is a **tier-2 outcome** and must be recorded as one
-(`--adversary-tier 2 --adversary-fallback-reason '<observed>'`). Reaching for `codex exec`
-to make a receipt appear is the substitution this gate exists to catch.
+The importer **resolves** the receipt: it must record `exit_status: 0`, and its
+`step.command` must invoke an agent. The scan walks past a bounded set of runtime
+wrappers (`node`, `npx`, `python`, `uv`, ...) to the binary they front and **stops at
+the first non-wrapper**, so the mandated plugin dispatch `node .../codex-companion.mjs`
+proves tier 1 while a vendor named only in the adversary's PROMPT does not (GHI #884).
 
-The gate **resolves** the receipt: it must exist, record `exit_status: 0`, and its
-`step.command` must invoke a recognized different-vendor binary. The scan walks past a
-bounded set of runtime wrappers (`node`, `npx`, `python`, `uv`, ...) to the binary they
-front and **stops at the first non-wrapper**, so the mandated plugin dispatch
-`node .../codex-companion.mjs` proves tier 1 while a vendor named only in the
-adversary's PROMPT does not (GHI #884). Reading `command[0]` alone saw `node` and
-refused every conforming dispatch. Precedence is **proven > declared > inferred**, and
-a receipt contradicting a declared tier 1 fails closed.
-
-**The receipt is MANDATORY for any cross-vendor claim (GHI #780).** It was optional
-until 2026-08-09, which closed nothing: the gate cannot tell *"no receipt because the
-adversary could not be wrapped"* from *"no receipt because none was run"*, so an honest
-tier-1 run and a hollow one arrived as the same input. A tier-1 claim now fails closed
-without one — and the requirement rides the **resolved** claim, not the declared one, so
-naming a codex-shaped adversary while omitting `--adversary-tier` is refused too. If you
-genuinely cannot wrap the run, that is a tier-2 outcome and must be recorded as one:
-`--adversary-tier 2 --adversary-fallback-reason '<observed unavailability>'`. Do not
-report an unwrappable Codex run as tier 1; that is the substitution the gate exists to
-catch.
-
-> **Why the name scan is left conservative rather than "fixed."** `_is_cross_vendor_adversary`
-> prefix-scans, so `"independent Codex subagent"` reads as NOT cross-vendor and demands a
-> fallback reason. That false negative is a *safe* wrong answer and is deliberate: any scan
-> admitting a *mentioned* vendor would classify the ledger's existing
-> `independent-claude-subagent (codex-unavailable; degraded tier)` as tier 1 — failing OPEN
-> on the exact substitution Step 4b exists to catch. A name can mention; an argv ran.
-
-> This paragraph named `SubagentDispatchRecord` and two fields (`adversary_tier`, `codex_availability_checked`) from 2026-07-12 until 2026-08-07 — a contract no surface implemented. That model is Stage-2 dispatch tracking, it is `extra="forbid"`, and no adversary is ever constructed through it, so an agent following the sentence literally raised `ValidationError` rather than recording anything (GHI #678, reopened). `codex_availability_checked` is deliberately **not** reinstated: the fallback reason must name *observed* unavailability, so it already evidences the check, and a separate boolean is redundant state that can disagree with the reason it duplicates. Omitting `--adversary-tier` no longer preserves name inference for a tier-1 claim — GHI #780 retired that path after measuring that it was not a legacy tail but the only route in use (of 17 recorded `adversarial_validation` events, zero declare a tier and 14 resolved cross-vendor by name).
+If the run cannot be ARB-wrapped there is no receipt to import, and that is a
+**tier-2 outcome**: run the native Claude fallback under ARB with `fallback_reason`
+naming the observed unavailability. Reaching for `codex exec` to make a receipt appear
+is the substitution this gate exists to catch.
 
 **Dispatch contract.** Give the adversary the completion CLAIM (the brief's REQs
 and what the agent says it built), the actual Step-4a packet path, source/test
@@ -1342,7 +1316,7 @@ truthful refutations, so the next round receives the same outstanding obligation
 > *attacked hard and demonstrated working* versus *looked and found nothing*, and that
 > distinction lives in the PROMPT's demand for positive demonstration, never in the verdict
 > word. Two rounds can both land on `not-refuted` and mean entirely different things; the
-> pasted evidence is what tells them apart. Record the outcome through `gz obpi complete`'s adversary flags (`--adversary-verdict`, `--adversary`, `--adversary-tier`, `--adversary-receipt` when the run was ARB-wrapped, and `--adversary-job-id` when the runtime supplies one) — the ledger event is the durable record, not a dispatch marker.
+> pasted evidence is what tells them apart. Record the outcome by importing the review (`gz obpi acceptance <OBPI> review --receipt <run-id>`); `gz obpi complete` writes the `adversarial_validation` event from the accepted review — the ledger event is the durable record, not a dispatch marker.
 
 **Bound the claim BEFORE the first round, or the gate cannot converge (operator ruling 2026-09-03).** An adversary instructed to REFUTE will escalate the attacker one notch each round, so an ABSOLUTE claim ("no X can occur without Y") is unrefutable-in-bounded-time by construction. For any OBPI whose subject is a trust chain, provenance, or a tamper-evidence property, the brief MUST carry a `## Threat Model` section BEFORE Step 4b is first dispatched, naming what an attacker may do and what is an accepted residual — and the dispatch prompt MUST state that boundary and forbid the adversary from reporting an out-of-scope attack as a finding. Measured on OBPI-0.35.0-04: five rounds, 53 minutes of adversary compute across a 12.5-hour wall clock (7%); the rest was fix cycles. Rounds 4 and 5 spent ~9 hours hardening attacks whose reproduction required appending arbitrary rows to `.gzkit/ledger.jsonl` — strictly inside a residual the operator had already accepted for `.gzkit/ownership/`, the same directory and the same access. `docs/governance/trust-doctrine.md` covers AGENT trust-chain poisoning and declares no filesystem threat model, so nothing bounded the adversary and the agent never asked whether the attacker was in scope.
 

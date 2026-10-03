@@ -192,9 +192,10 @@ def _audit_ledger_coherence(
                         f"({receipt_ts.isoformat()}) carries no paired "
                         "'adversarial_validation' ledger event. Step 4b's verdict is "
                         "gate-bearing evidence and must outlive the session that "
-                        "produced it (GHI #643/#676). Recovery: re-run `gz obpi "
-                        "complete` with --adversary-verdict and --adversary, or "
-                        "`gz obpi repudiate` the completion if Step 4b never ran."
+                        "produced it (GHI #643/#676). Recovery: record the "
+                        "independent review with `gz obpi acceptance` and complete "
+                        "again, or `gz obpi repudiate` the completion if Step 4b "
+                        "never ran."
                     ),
                 )
             )

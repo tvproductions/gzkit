@@ -1169,8 +1169,8 @@ def run_adversarial_validation_audit(project_root: Path) -> QualityResult:
     paired `adversarial_validation` ledger event, when a refuted verdict has no
     recorded resolution, or when a terminal heavy-lane brief omits its
     `### Step 4b` evidence section.
-    Recovery: re-run `uv run gz obpi complete` with `--adversary-verdict` and
-    `--adversary`, or add the brief's Step-4b section.
+    Recovery: record the independent review with `uv run gz obpi acceptance`,
+    then re-run `uv run gz obpi complete`, or add the brief's Step-4b section.
     """
     return run_command("uv run gz validate --adversarial-validation", cwd=project_root)
 

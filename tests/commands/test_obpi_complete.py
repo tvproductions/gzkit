@@ -339,10 +339,6 @@ class _ObpiCompleteWireFixture(unittest.TestCase):
                         attestation_text=attestation_text,
                         implementation_summary="- Files: obpi_complete.py",
                         key_proof="gz obpi complete fires the gate.",
-                        # Heavy lane fails closed without a Step-4b verdict (GHI #676).
-                        adversary_verdict="not-refuted",
-                        adversary="claude/general-purpose",
-                        adversary_fallback_reason="codex setup reported ready=false",
                         as_json=False,
                         dry_run=False,
                     )
