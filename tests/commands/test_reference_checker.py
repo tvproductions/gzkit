@@ -624,6 +624,20 @@ class TestCitationsResolveThroughPrefixesTheProseActuallyWrites(unittest.TestCas
 
         self.assertEqual(obpi_ledger_state("OBPI-0.1.0-04", self.root), ReferenceState.UNKNOWN)
 
+    def test_a_lone_withdrawn_obpi_cited_by_short_id_is_still_settled(self) -> None:
+        """Dropping inactive keys must never empty the candidate set (GHI #1162).
+
+        A withdrawn OBPI is a settled citation (ADR-0.0.71). When it is the only
+        key its short id names, filtering it out would answer ``unknown`` for a
+        reference the ledger settles.
+        """
+        self._write(
+            self._obpi("OBPI-0.1.0-05-retired", "2026-01-01T00:00:00+00:00"),
+            self._withdrawn("OBPI-0.1.0-05-retired", "2026-01-02T00:00:00+00:00"),
+        )
+
+        self.assertEqual(obpi_ledger_state("OBPI-0.1.0-05", self.root), ReferenceState.SETTLED)
+
     def test_the_citation_resolver_and_obpi_status_agree_on_every_shape(self) -> None:
         """One short id has one meaning in both resolvers (GHI #1162).
 
