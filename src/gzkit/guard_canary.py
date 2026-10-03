@@ -270,8 +270,6 @@ def review_witnesses(project_root: Path, ledger_path: Path | None = None) -> set
         return set()
     witnesses: set[tuple[str, str]] = set()
     for line in path.read_text(encoding="utf-8", errors="replace").splitlines():
-        if _REVIEW_EVENT not in line:
-            continue
         with contextlib.suppress(ValueError):
             row = json.loads(line)
             if isinstance(row, dict) and row.get("event") == _REVIEW_EVENT:

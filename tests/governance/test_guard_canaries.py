@@ -335,6 +335,20 @@ class TestRecordingAReview(unittest.TestCase):
                 )
             self.assertEqual(_ledger_rows(root), [])
 
+    def test_a_guard_that_no_longer_resolves_is_refused_as_stale_not_a_crash(self):
+        """A moved or deleted guard cannot be re-read, so reviewing it is a policy breach."""
+        gone = _canary(guard="gzkit.guard_canary:no_such_function", binding_sha256="d" * 64)
+        with _ReviewProject([gone]) as root:
+            try:
+                gc.record_review(root, [_CLAIM], attestor="g0", operator_text="accept")
+                outcome = "recorded"
+            except gz_errors.PolicyBreachError:
+                outcome = "policy breach"
+            except Exception as exc:  # noqa: BLE001 — a crash is the outcome under test
+                outcome = f"crash: {type(exc).__name__}"
+            self.assertEqual(outcome, "policy breach")
+            self.assertEqual(_ledger_rows(root), [])
+
     def test_a_stale_binding_is_a_policy_breach_and_nothing_is_written(self):
         stale = _canary(binding_sha256="f" * 64)
         with _ReviewProject([stale, _canary(claim_id=_OTHER_CLAIM)]) as root:

@@ -1195,6 +1195,13 @@ class TestUnreviewedCanariesReachSessionStart(unittest.TestCase):
         self.assertIn("pending-one", out)
         self.assertIn("pending-two", out)
 
+    def test_the_announcement_names_the_verb_that_records_a_review(self):
+        # output-contract: the section tells the operator how to clear it (GHI #1161); a
+        # pending list with no recording verb sends them back to hand-editing reviewed_by.
+        out = self.mod.render({"unreviewed_canaries": ["pending-one"]}, self.now)
+        self.assertIn("gz canary review", out)
+        self.assertNotIn("reviewed_by: null", out)
+
     def test_nothing_pending_renders_no_section(self):
         for label, payload in (("all reviewed", []), ("registry unavailable", None)):
             with self.subTest(label):
