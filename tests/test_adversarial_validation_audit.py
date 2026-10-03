@@ -109,6 +109,14 @@ class TestLedgerCoherence(_ProjectTest):
         self.assertEqual(errors[0].artifact, self.OBPI)
         self.assertIn("no paired", errors[0].message)
 
+    def test_missing_verdict_recovery_names_a_command_that_exists(self) -> None:
+        """The recovery is runnable: the verdict flags it once named are gone (GHI #1163)."""
+        self.p.brief(self.OBPI, _brief(step_4b=True))
+        self.p.receipt(self.OBPI, _AFTER)
+        message = self.p.audit()[0].message
+        self.assertIn("gz obpi acceptance", message)
+        self.assertNotIn("--adversary-verdict", message)
+
     def test_post_cutover_receipt_with_verdict_passes(self) -> None:
         self.p.brief(self.OBPI, _brief(step_4b=True))
         self.p.receipt(self.OBPI, _AFTER)

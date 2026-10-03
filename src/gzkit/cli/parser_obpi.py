@@ -727,7 +727,7 @@ def register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         dest="refuted_claim",
         metavar="TEXT",
         default=None,
-        help="A claim an earlier round broke, verbatim; recorded on the event.",
+        help="The specific claim the adversary broke, verbatim.",
     )
     p_obpi_complete.add_argument(
         "--adversary-resolution",
