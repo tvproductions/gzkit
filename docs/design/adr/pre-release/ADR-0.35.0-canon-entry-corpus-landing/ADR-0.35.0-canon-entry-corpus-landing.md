@@ -1,6 +1,6 @@
 ---
 id: ADR-0.35.0-canon-entry-corpus-landing
-status: Draft
+status: Accepted
 kind: feature
 semver: 0.35.0
 lane: heavy

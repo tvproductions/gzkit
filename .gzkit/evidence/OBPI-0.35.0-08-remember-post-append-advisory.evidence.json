@@ -1,0 +1,43 @@
+{
+  "obpi_id": "OBPI-0.35.0-08-remember-post-append-advisory",
+  "generated_at": "2026-10-03T09:10:09.128974+00:00",
+  "demos": [
+    {
+      "command": "uv run gz content remember AGENTS.md --section behavior-rules --text \"Advisory demonstration entry.\" --tier compressible",
+      "ran": true,
+      "exit_status": 0,
+      "stdout_tail": "Appended corpus entry corpus-behavior-rules-2026-10-03T09:10:05.292308+00:00 to AGENTS.md [behavior-rules].\n\nWarning: this append drifted 1 committed rendition(s) of 'AGENTS.md'\n  (root). They no longer derive from the current corpus,\n  so `gz check` will now fail on:\n    - Rendition freshness\n\n  Why: the corpus->rendition seam (ADR-0.0.37 § Decision Re-Alignment). The\n  corpus is the \"Append-only corpus (source of truth)\" and a committed\n  rendition is derived from it, so this append leaves each one stale\n  until it is landed.\n\n  Land the corpus into every consumer in one governed step. The corpus moved,\n  so the landing takes your attestation of the corpus change:\n    uv run gz content land AGENTS.md \\\n        --attestor <handle> --attestation-text \"<the operator's verbatim words>\""
+    },
+    {
+      "command": "uv run gz content land AGENTS.md --attestor g0 --attestation-text \"demo corpus delta attested\" --dry-run",
+      "ran": true,
+      "exit_status": 0,
+      "stdout_tail": "Landing plan (dry run -- nothing written): landing-20261003T091005Z-3cc52f61\n  (the id is minted per invocation; a real landing records its own)\nSurface: AGENTS.md\nCorpus fingerprint: 4ebf6501ade1... (entries=486)\nAttestation: g0 -- supplied on this invocation\nConsumers: root\n  root (old corpus fingerprint b09f705a8cfb):\n    write     rendition  .gzkit/renditions/AGENTS.md/root.md  old=2ba89ed9d9cd new=92ab48a6eeca\n    write     provenance .gzkit/renditions/AGENTS.md/root.corpus.json  old=8af387370c78 new=87aa3cce34f4\n    write     lineage    .gzkit/renditions/AGENTS.md/root.lineage.json  old=absent new=070f0e995fab\nNext: re-run without --dry-run to land AGENTS.md across every consumer above."
+    }
+  ],
+  "receipts": [
+    {
+      "step": "ruff",
+      "found": true,
+      "receipt_id": "arb-ruff-beeb7f3446134fdd8d54c639fa57a6bc.json",
+      "exit_status": 0
+    },
+    {
+      "step": "typecheck",
+      "found": true,
+      "receipt_id": "arb-step-typecheck-99ecd388c77c46e2a1aa13afb68eec9b.json",
+      "exit_status": 0
+    },
+    {
+      "step": "unittest",
+      "found": true,
+      "receipt_id": "arb-step-unittest-c4592cebdbf84d95902c8fb71f253af5.json",
+      "exit_status": 0
+    }
+  ],
+  "covers_total": 8,
+  "covers_uncovered": 0,
+  "attestable": true,
+  "blockers": [],
+  "review_blockers": []
+}

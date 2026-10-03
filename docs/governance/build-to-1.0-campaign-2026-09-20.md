@@ -89,7 +89,7 @@ computed there.
 
 > **RESEQUENCED 2026-09-27 (operator-ratified): ADR WORK FIRST.** Feature ADRs are worked in ascending order (`0.35.0` → `0.36.0` → `0.37.0` → `0.38.0` → `0.39.0` → the funded amendment ADR) before Movement C refactoring resumes. The 2026-09-02 NEXT-IN-PRIORITY placement of Movement C's family-closure box, recorded below, is SUPERSEDED. See § Amendments 2026-09-27 (3).
 >
-> **Topmost (sequenced):** **AMENDED 2026-10-03 (operator-ratified) — what a session draws: an initiated OBPI first; on its own, a GHI only when it blocks in-flight feature work, a gate or a release (§ Amendments 2026-10-03). Feature ADRs are worked in ascending order ahead of Movement C (§ Amendments 2026-09-27 (3)), so the NEXT-IN-PRIORITY placement of the family-closure box described below is SUPERSEDED.** **`ADR-0.35.0-canon-entry-corpus-landing` is TOPMOST (2026-09-01, operator-ratified, UNCHANGED). AMENDED 2026-09-02 (operator-ratified) — Movement C's `Close the doctrine-declared-without-mechanism family` box is pulled forward to NEXT-IN-PRIORITY, immediately behind TOPMOST and ahead of both Movement B and every other Movement C box; Movement B steps down one place; Movement A remains HELD as a Movement.** The box outranks its own Movement, on the precedent the 2026-09-01 amendment set when Movement A's `ADR-0.35.0` box became TOPMOST inside a HELD Movement. It is placed high because it is drawable without the operator: under the IRON LAW only the operator initiates OBPI work, while this box discharges through rule-text amendment, scorecard scoring and GHI-shaped direct repair. The family's share of the open queue and its production rate are measured in [`f1-family-share-measurement-2026-09-20.md`](f1-family-share-measurement-2026-09-20.md) — re-run its evidence script rather than trusting a figure transcribed here. Instances close same-session while the class keeps producing: that premise was re-measured 2026-09-20 under a shared criterion and VERIFIED, not revised. See § Amendments 2026-09-20. Run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` for its lifecycle and landed count rather than trusting a figure transcribed here. See § Amendments 2026-09-02. From 2026-08-14 to this amendment the plan declared TOPMOST a Movement that ADR order forbade working, while the work drawn every session sat as a box inside a HELD Movement — two amendments (2026-08-16, 2026-08-23) were spent explaining that split rather than removing it. This removes it. Run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` for its lifecycle and landed count rather than trusting a figure transcribed here. See § Amendments 2026-09-01.
+> **Topmost (sequenced):** **AMENDED 2026-10-03 (operator-ratified) — what a session draws: an initiated OBPI first; on its own, a GHI only when it blocks in-flight feature work, a gate or a release (§ Amendments 2026-10-03). Batch initiation is RESCINDED: the operator initiates each OBPI through `gz-obpi-pipeline` (§ Amendments 2026-10-03 (2)). Feature ADRs are worked in ascending order ahead of Movement C (§ Amendments 2026-09-27 (3)), so the NEXT-IN-PRIORITY placement of the family-closure box described below is SUPERSEDED.** **`ADR-0.35.0-canon-entry-corpus-landing` is TOPMOST (2026-09-01, operator-ratified, UNCHANGED). AMENDED 2026-09-02 (operator-ratified) — Movement C's `Close the doctrine-declared-without-mechanism family` box is pulled forward to NEXT-IN-PRIORITY, immediately behind TOPMOST and ahead of both Movement B and every other Movement C box; Movement B steps down one place; Movement A remains HELD as a Movement.** The box outranks its own Movement, on the precedent the 2026-09-01 amendment set when Movement A's `ADR-0.35.0` box became TOPMOST inside a HELD Movement. It is placed high because it is drawable without the operator: under the IRON LAW only the operator initiates OBPI work, while this box discharges through rule-text amendment, scorecard scoring and GHI-shaped direct repair. The family's share of the open queue and its production rate are measured in [`f1-family-share-measurement-2026-09-20.md`](f1-family-share-measurement-2026-09-20.md) — re-run its evidence script rather than trusting a figure transcribed here. Instances close same-session while the class keeps producing: that premise was re-measured 2026-09-20 under a shared criterion and VERIFIED, not revised. See § Amendments 2026-09-20. Run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` for its lifecycle and landed count rather than trusting a figure transcribed here. See § Amendments 2026-09-02. From 2026-08-14 to this amendment the plan declared TOPMOST a Movement that ADR order forbade working, while the work drawn every session sat as a box inside a HELD Movement — two amendments (2026-08-16, 2026-08-23) were spent explaining that split rather than removing it. This removes it. Run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` for its lifecycle and landed count rather than trusting a figure transcribed here. See § Amendments 2026-09-01.
 >
 > **DRAWN-WORK ORDER — AMENDED 2026-09-15 (operator-ratified); SUPERSEDED by § Amendments 2026-09-27 (3) and 2026-10-03, and kept as the record of what was ruled then.** Work a session draws without the operator, at the NEXT-IN-PRIORITY position, is taken in this order: **(a) the R&D front** — the `gz-rnd` skill and the design in `docs/governance/rnd-discipline.md`; **(b) the chore estate** — the conversion directive and the overdue board, the family-closure box's agent-side arm; **(c) GHI direct repair, only** when the GHI closes a named arm of that box, blocks (a) or (b), or is an emergency. TOPMOST and ADR order are unchanged. See § Amendments 2026-09-15.
 >
@@ -612,9 +612,38 @@ had been repeating. All are dispositioned below — none left undefined.
 
 ## Amendments
 
+<a id="amendments-2026-10-03-2"></a>
+
+### 2026-10-03 (2) (latest) — batch initiation is RESCINDED; each OBPI runs through the pipeline skill (operator-ratified)
+
+**Operator (`g0`), verbatim:** *"rescind that... each obpi must be run using the obpi pipeline
+skill"* (2026-10-03, on being told what item 3's batch initiation permitted).
+
+**What changes.**
+
+- **Batch initiation is rescinded.** Item 3 of the entry below let the operator initiate the
+  next N OBPIs of the in-flight ADR in one act, and let a later session draw one by citing the
+  recorded batch. Neither stands. No batch was recorded while it stood, so there is nothing to
+  unwind.
+- **Each OBPI is initiated on its own, through `gz-obpi-pipeline`.** The operator starts the
+  pipeline for that OBPI. A plan record, a handoff or an earlier session does not start one.
+- **The draw order stands.** *"An initiated OBPI"* in item 3 and in the Topmost line means an
+  OBPI the operator has started through the pipeline skill.
+
+**What this leaves open.** The 2026-10-02 measurement found that a session with no initiated
+pipeline has only repair to draw. Batch initiation was this plan's answer to that finding, and
+no other answer replaces it: feature work is drawn when the operator runs the pipeline for an
+OBPI.
+
+**What does not change.** Items 1, 2, 4, 5 and 6 of the entry below, the draw order in item 3,
+the IRON LAW, one-feature-at-a-time and universal Gate 5.
+
 <a id="amendments-2026-10-03"></a>
 
-### 2026-10-03 (latest) — feature work becomes drawable; completion-path additions come to the operator (operator-ratified)
+### 2026-10-03 — feature work becomes drawable; completion-path additions come to the operator (operator-ratified)
+
+> **Item 3's batch initiation was RESCINDED the same day (§ Amendments 2026-10-03 (2)).** The
+> text below is kept as the record of what was ratified.
 
 **Operator (`g0`), verbatim:** *"yes, I think we really need to rethink why the last 4 months
 has greatly expanded fixes with far fewer features being completed"* (2026-10-02), then
@@ -658,7 +687,7 @@ the scripts rather than trusting a figure transcribed anywhere. What it found:
    nothing is not that evidence. The pass produces recommendations; each removal is the
    operator's ruling.
 3. **Feature work becomes drawable.**
-   - **Batch initiation.** The operator may initiate the next N OBPIs of the in-flight ADR in
+   - **Batch initiation — RESCINDED 2026-10-03 (§ Amendments 2026-10-03 (2)).** The operator may initiate the next N OBPIs of the in-flight ADR in
      one act. Each batch is recorded in § Amendments as its own dated line, with the operator's
      verbatim words and the OBPI ids. A session cites that record; a handoff's account of a
      batch advises and does not authorize. Gate 5 still takes the operator's attestation for

@@ -1,6 +1,6 @@
 {
   "obpi_id": "OBPI-0.35.0-08-remember-post-append-advisory",
-  "timestamp": "2026-08-23T13:11:20.678813+00:00",
+  "timestamp": "2026-10-03T06:58:13.590111+00:00",
   "verdict": "PASS",
   "plan_file": "OBPI-0.35.0-08-remember-post-append-advisory.md",
   "gaps_found": 0,
@@ -10,7 +10,8 @@
       "sibling_obpi": "OBPI-0.30.0-04-okf-cli-surface",
       "contested_paths": [
         "src/gzkit/commands/content/remember.py",
-        "src/gzkit/commands/content/_drift.py"
+        "src/gzkit/commands/content/_drift.py",
+        "src/gzkit/commands/content/retire.py"
       ]
     },
     {
@@ -18,7 +19,26 @@
       "sibling_obpi": "OBPI-0.22.0-05-status-and-state-integration",
       "contested_paths": [
         "src/gzkit/commands/content/remember.py",
-        "src/gzkit/commands/content/_drift.py"
+        "src/gzkit/commands/content/_drift.py",
+        "src/gzkit/commands/content/retire.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.39.0",
+      "sibling_obpi": "OBPI-0.39.0-03-settings-debt-fence",
+      "contested_paths": [
+        "src/gzkit/commands/content/remember.py",
+        "src/gzkit/commands/content/_drift.py",
+        "src/gzkit/commands/content/retire.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.39.0",
+      "sibling_obpi": "OBPI-0.39.0-04-config-show-read-path",
+      "contested_paths": [
+        "src/gzkit/commands/content/remember.py",
+        "src/gzkit/commands/content/_drift.py",
+        "src/gzkit/commands/content/retire.py"
       ]
     },
     {
@@ -26,7 +46,8 @@
       "sibling_obpi": "OBPI-0.21.0-04-adr-audit-integration",
       "contested_paths": [
         "src/gzkit/commands/content/remember.py",
-        "src/gzkit/commands/content/_drift.py"
+        "src/gzkit/commands/content/_drift.py",
+        "src/gzkit/commands/content/retire.py"
       ]
     },
     {
@@ -41,7 +62,8 @@
       "sibling_obpi": "OBPI-0.10.0-03-obpi-proof-and-lifecycle-integration",
       "contested_paths": [
         "src/gzkit/commands/content/remember.py",
-        "src/gzkit/commands/content/_drift.py"
+        "src/gzkit/commands/content/_drift.py",
+        "src/gzkit/commands/content/retire.py"
       ]
     },
     {
@@ -49,7 +71,8 @@
       "sibling_obpi": "OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces",
       "contested_paths": [
         "src/gzkit/commands/content/remember.py",
-        "src/gzkit/commands/content/_drift.py"
+        "src/gzkit/commands/content/_drift.py",
+        "src/gzkit/commands/content/retire.py"
       ]
     },
     {
@@ -57,7 +80,8 @@
       "sibling_obpi": "OBPI-0.0.9-02-ledger-first-status-reads",
       "contested_paths": [
         "src/gzkit/commands/content/remember.py",
-        "src/gzkit/commands/content/_drift.py"
+        "src/gzkit/commands/content/_drift.py",
+        "src/gzkit/commands/content/retire.py"
       ]
     },
     {
@@ -72,7 +96,8 @@
       "sibling_obpi": "OBPI-0.0.37-13-reverse-parse-migration",
       "contested_paths": [
         "src/gzkit/commands/content/remember.py",
-        "src/gzkit/commands/content/_drift.py"
+        "src/gzkit/commands/content/_drift.py",
+        "src/gzkit/commands/content/retire.py"
       ]
     },
     {
@@ -131,7 +156,8 @@
       "sibling_obpi": "OBPI-0.0.4-01-cli-module-restructure",
       "contested_paths": [
         "src/gzkit/commands/content/remember.py",
-        "src/gzkit/commands/content/_drift.py"
+        "src/gzkit/commands/content/_drift.py",
+        "src/gzkit/commands/content/retire.py"
       ]
     },
     {
@@ -139,7 +165,8 @@
       "sibling_obpi": "OBPI-0.0.54-03-agents-md-map-conformance-validator",
       "contested_paths": [
         "src/gzkit/commands/content/remember.py",
-        "src/gzkit/commands/content/_drift.py"
+        "src/gzkit/commands/content/_drift.py",
+        "src/gzkit/commands/content/retire.py"
       ]
     }
   ]

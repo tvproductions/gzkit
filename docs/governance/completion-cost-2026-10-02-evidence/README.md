@@ -8,7 +8,8 @@ trusting the figures the draft transcribes.
 **Ruled 2026-10-03.** The operator ratified all six proposals, three of them with a change.
 The ruling is § Amendments 2026-10-03 of
 [`build-to-1.0-campaign-2026-09-20.md`](../build-to-1.0-campaign-2026-09-20.md); the draft
-is kept unedited as the record of what was put to the operator.
+is kept unedited as the record of what was put to the operator. The operator rescinded
+P3's batch initiation the same day (§ Amendments 2026-10-03 (2)); P3's draw order stands.
 
 ## Cost per OBPI completion (`cost_per_completion.py`)
 

@@ -1,120 +1,71 @@
-# Plan — OBPI-0.35.0-08-remember-post-append-advisory (coverage-channel repair)
+# Plan — OBPI-0.35.0-08-remember-post-append-advisory (remaining REQ-04, REQ-06, REQ-02 OSError arm)
 
 ## Context
 
-`gz covers OBPI-0.35.0-08-remember-post-append-advisory --json` measured
-2026-08-23: `total_reqs 8`, `covered_reqs 2`, `behavior_uncovered_reqs 5`.
-Only REQ-03 and REQ-08 carry a `@covers` binding. REQ-01, -02, -04, -05 and -06
-are `[behavior]`, whose sole proof channel under ADR-0.0.59 is a `@covers` test,
-and the OBPI-completion REQ-coverage gate is unwaivable on every lane.
+Operator initiated this pipeline on 2026-10-03 (`/gz-obpi-pipeline OBPI-0.35.0-08`). It supersedes
+the 2026-08-23 coverage-only plan, written when `gz content land` did not exist. OBPI-0.35.0-07 has
+since landed (`uv run gz content land --help` exits 0, measured 2026-10-03), so REQ-04 is unblocked.
 
-The brief's PARTIALLY PRE-LANDED table records REQ-01/-02/-05/-06 as landed on
-prose evidence, citing tests by name. Those tests exist; they carry no decorator.
-The table is Layer-1 authorship, the decorator scan is what the gate queries —
-the two disagree, and the gate is the one that binds.
-
-Scope of this plan is the coverage channel only. Production behaviour landed
-under `48a5f799` (advisory) and `dcf29b95` (regression repair) and is NOT
-re-implemented here.
-
-## Out of scope (named blockers, not deferrals)
-
-- **REQ-04** — requires the advisory to name `gz content land <surface>`.
-  `uv run gz content land --help` exits 2 (measured 2026-08-23); the verb ships
-  in OBPI-0.35.0-07, which is `Draft`. Blocked by construction.
-- **REQ-06** — `CliRunner.invoke` merges stdout and stderr onto one buffer
-  (`tests/commands/common.py`), so the REQ's stream-separation claim cannot be
-  expressed as an assertion through this harness. Operator call.
-- **REQ-07** — `[structural-fence]`; proof channel is the parent-ADR
-  `## Boundary Invariants` entry, audited at ADR closeout. Never a unit test.
-
-This OBPI therefore CANNOT reach Gate 5 in this pass, and no Gate 5 is claimed.
-The pipeline is expected to halt at Stage 3 Phase 1b with REQ-04 and REQ-06
-named. That halt is pre-existing, not created by this work.
-
-## Files
-
-- `tests/commands/test_content_remember.py` — the only file edited (brief
-  allowlist line 114).
-- `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-08-remember-post-append-advisory.md`
-  — evidence-section update recording the coverage repair and the REQ-05 arm-1
-  finding (brief allowlist, this brief's own evidence sections).
-
-No `src/**` file is touched.
+`gz covers` measured 2026-10-03: 8 REQs, 5 covered. Uncovered: REQ-04 and REQ-06 (both `[behavior]`)
+and REQ-07 (`[structural-fence]`, audited at ADR closeout, never a unit test). `gz obpi brief-drift`
+is clean on all five dimensions.
 
 ## Steps
 
-1. **REQ-0.35.0-08-01 — author a covering test, do not merely decorate.**
-   The brief cites `test_warns_naming_the_routed_consumer_not_the_retained_record`
-   for this REQ, but that test asserts `exit_code == 0` and never reads the
-   corpus, so the REQ's "the entry IS appended" half is unasserted. Bolting a
-   decorator onto it would claim proof the assertions do not carry.
-   Author a dedicated test in `TestContentRememberDriftWarning`: seed the surface
-   and a stale on-route committed rendition, run `remember`, then assert BOTH
-   halves — `exit_code == 0` AND the corpus on disk holds exactly the appended
-   entry. Bind `@covers("REQ-0.35.0-08-01")`.
+1. **REQ-0.35.0-08-04 — retarget the advisory prose.** In `src/gzkit/commands/content/_drift.py`
+   the advisory currently recovers via `gz content compose` + `gz content commit` per consumer and
+   does not cite the ADR-0.0.37 corpus->rendition seam. Change it to emit three parts: the count and
+   named drifted renditions (unchanged), the seam cited by ADR-0.0.37 (not paraphrased), and a runnable
+   `uv run gz content land <surface>` invocation. Keep the floor-risk sentence for invariant-tier
+   appends. RED first: a test in `tests/commands/test_content_remember.py` that fails on the current
+   prose for the seam citation and the land invocation, bound `@covers("REQ-0.35.0-08-04")`.
+2. **Retire half of the shared advisory.** `src/gzkit/commands/content/retire.py` calls the same
+   function, so `tests/commands/test_content_retire.py` assertions on the old compose/commit text are
+   updated in the same change (coupled surface, DO IT RIGHT 1a). The retire advisory floor
+   distinction is preserved.
+3. **REQ-0.35.0-08-06 — byte-identical rows and identical exit code.** Author a paired-fixture test
+   with the clock and entry identity controlled: the same append performed once with drift present and
+   once without, comparing the corpus rows byte-for-byte and the exit codes. Bind
+   `@covers("REQ-0.35.0-08-06")`. Stream separation is not claimed (struck 2026-08-24, operator-ruled).
+4. **REQ-0.35.0-08-02 — add the OSError arm.** The Verification Clarifications require both
+   exception branches through the production advisory call; only the ValueError branch is exercised.
+   Add a test that makes drift detection raise OSError and asserts the append and exit 0, bound to
+   REQ-02.
+5. **Docs (heavy lane).** Update the `remember` advisory contract in `docs/user/manpages/content.md`
+   to the new three-part prose, with real captured output.
+6. **BDD (heavy lane).** Add a scenario to `features/content_remember.feature` (steps in the existing
+   steps module) for the advisory naming `gz content land` and the append surviving.
+7. **Brief evidence.** Update the PARTIALLY PRE-LANDED table, REQ-04 and REQ-06 rows, and the
+   evidence sections of the brief; add a `### Change Log` under `## Evidence`.
 
-2. **REQ-0.35.0-08-02 — bind the two existing raising-path tests.**
-   `test_malformed_sidecar_never_costs_the_append_or_the_exit_code` and
-   `test_malformed_manifest_never_costs_the_exit_code` both already assert the
-   REQ's exact semantics (drift detection raises -> entry still appended, exit
-   still 0, corpus read back). Add `@covers("REQ-0.35.0-08-02")` to each. No
-   assertion change is needed; these tests were authored against the REQ.
+## Files
 
-3. **REQ-0.35.0-08-05 — bind the reachable arm; report the unreachable one.**
-   Add `@covers("REQ-0.35.0-08-05")` to
-   `test_silent_when_no_rendition_has_been_committed`, which proves arm 2 ("a
-   surface with no committed renditions at all -> no advisory").
-   Arm 1 ("renditions already on the current corpus fingerprint") is
-   STRUCTURALLY UNREACHABLE for this verb: `warn_on_rendition_drift` computes
-   `current = corpus_fingerprint(load_corpus(...))` AFTER the append
-   (`src/gzkit/commands/content/_drift.py`), and `corpus_fingerprint` digests
-   every entry (`src/gzkit/content/rendition_store.py:56`), so a successful
-   `remember` always moves the fingerprint and no sidecar can match it at the
-   moment the advisory runs. Do NOT author a test that fakes the arm. Record the
-   finding in the brief and route it to the operator alongside REQ-06.
+- `src/gzkit/commands/content/_drift.py`
+- `tests/commands/test_content_remember.py`
+- `tests/commands/test_content_retire.py`
+- `features/content_remember.feature`
+- `docs/user/manpages/content.md`
+- `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-08-remember-post-append-advisory.md`
 
-4. **Record the findings in the brief's PARTIALLY PRE-LANDED table** — REQ-01
-   citation corrected to the new test, REQ-02 and REQ-05 marked bound, REQ-05
-   arm 1 recorded as structurally unreachable pending an operator call.
+Read-only: `src/gzkit/content/rendition_store.py`, `src/gzkit/content/vendors.py`. Every path the
+brief denies is left untouched; the advisory only names the land verb and never invokes it.
 
 ## Verification
 
-- `uv run gz covers OBPI-0.35.0-08-remember-post-append-advisory --json` —
-  expect `covered_reqs` 2 -> 5, `behavior_uncovered_reqs` 5 -> 2 (REQ-04, -06).
-- `uv run gz arb step --name unittest -- uv run -m unittest -q`
-- `uv run gz arb ruff`
-- `uv run gz arb typecheck`
-- `uv run gz validate --req-kind-discipline`
-- Negative control for the REQ-01 test: the RED witness (`gz arb red`) cannot
-  fire here because production already landed, so it returns `not-applicable`.
-  Substitute a manual negative control — break the production behaviour, observe
-  the new test fail on its assertion, restore.
+- `uv run gz covers OBPI-0.35.0-08-remember-post-append-advisory --json` — expect REQ-04 and REQ-06
+  covered, only REQ-07 remaining (structural-fence, ADR closeout).
+- `uv run gz arb ruff`, `uv run gz arb typecheck`, the full unittest sweep through `gz arb step`.
+- `uv run gz validate --req-kind-discipline`, `uv run gz cli audit`, `uv run mkdocs build --strict`.
+- `uv run gz arb red --req REQ-0.35.0-08-04 --obpi OBPI-0.35.0-08-remember-post-append-advisory`
+  and the same for REQ-06, run while the production change is uncommitted.
 
-## Notes — Step 6a disclosures (plan-before-exploration ordering)
+## Notes — Step 6a disclosures
 
-**Destination-in-mind.** Before writing this plan I had already formed the
-conclusion that step 2 and step 3 are pure decorator additions and step 1 is not
-— that the REQ-01 citation was hollow. That conclusion came from reading the
-brief's own COVERAGE CHANNEL WARNING and then the cited test body, in that
-order, so the plan is partly a reconstruction of a destination reached during
-exploration. The REQ-05 arm-1 unreachability was NOT in mind beforehand; it
-surfaced while reading `_drift.py` to check whether arm 1 was testable, and it
-changed the plan from "add three decorators" to what is written above.
+**Destination-in-mind.** I expected REQ-04 to be a prose retarget in one function. Reading the retire
+tests showed the same function is shared, so the change is two test files, not one.
 
-**Rejected alternatives.**
-(a) *Decorate all four cited tests and move on.* Rejected: it would bind
-REQ-01 to a test that cannot fail when the append breaks, producing a green
-coverage gate over an unproven behaviour — the hollow-test family the two-stage
-review exists to catch.
-(b) *Author a test for REQ-05 arm 1 by calling `drifted_consumers` directly with
-a hand-set fingerprint.* Rejected: it would prove a helper, not the REQ, whose
-subject is `remember`'s observable behaviour. Testing the unreachable arm through
-a side door would make the gate green while the stated behaviour stays
-unexercised.
-(c) *Re-word REQ-05 to drop arm 1, and REQ-06 to drop stream separation.*
-Rejected as an agent-side action: amending an acceptance criterion to match what
-is testable is an operator call, not a convenience the implementer takes.
-(d) *Build OBPI-0.35.0-07 first so REQ-04 clears and this OBPI can complete.*
-Rejected because the operator explicitly ruled the coverage work first and set
-that step aside this session.
+**Rejected alternatives.** (a) Keep the compose/commit recovery lines beside the land line: rejected,
+because `gz content land` is the governed single step under one attestation and two recoveries would
+leave the operator a choice the ADR removed. (b) Add a stderr-split runner to prove REQ-06's stream
+claim: rejected, the operator ruled reword over changing the runner on 2026-08-24. (c) Edit the
+read-only rendition-store predicate: rejected, REQ-08 binds the advisory to it as written.
