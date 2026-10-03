@@ -19,12 +19,15 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
+from gzkit.commands.common import _prefix_match_candidates
 from gzkit.commands.reference_checker import (
+    _unique_prefix_entry,
     adr_ledger_state,
     live_reference_checker,
     obpi_ledger_state,
 )
 from gzkit.handoff_api import ReferenceKind, ReferenceState, StepReference
+from gzkit.ledger import Ledger
 
 
 class TestForeignRepositoryReferencesAreNotResolvedLocally(unittest.TestCase):
@@ -492,9 +495,10 @@ class TestCitationsResolveThroughPrefixesTheProseActuallyWrites(unittest.TestCas
     unique ADR prefix (GHI #222); the fallback here extends that rule to the
     other kinds. An AMBIGUOUS prefix resolves ``UNKNOWN`` and is never guessed —
     GHI #826: "never on a prefix derived from it ... one prefix can name two
-    OBPIs under two different parent ADRs." That hazard is live in this
-    repository's own graph, where ``OBPI-0.35.0-08`` extends to both
-    ``-forbid-pytest`` and ``-remember-post-append-advisory``.
+    OBPIs under two different parent ADRs." A parked or withdrawn sibling is not
+    that hazard (GHI #1162): ``OBPI-0.35.0-08`` extends to a parked
+    ``-forbid-pytest`` and the live ``-remember-post-append-advisory``, and names
+    the live one. Ambiguity is two or more ACTIVE siblings.
     """
 
     def setUp(self) -> None:
@@ -559,6 +563,104 @@ class TestCitationsResolveThroughPrefixesTheProseActuallyWrites(unittest.TestCas
         self._write(self._obpi("OBPI-0.1.0-08-forbid-pytest", "2026-01-01T00:00:00+00:00"))
 
         self.assertEqual(obpi_ledger_state("OBPI-0.1.0-08", self.root), ReferenceState.LIVE)
+
+    @staticmethod
+    def _parked(obpi_id: str, ts: str) -> dict[str, object]:
+        return {
+            "schema": "gzkit.ledger.v1",
+            "event": "obpi_parked",
+            "id": obpi_id,
+            "ts": ts,
+            "parent": "ADR-0.1.0-example",
+            "parked_to": "ADR-pool.example",
+            "reason": "pool_demotion",
+        }
+
+    @staticmethod
+    def _withdrawn(obpi_id: str, ts: str) -> dict[str, object]:
+        return {
+            "schema": "gzkit.ledger.v1",
+            "event": "obpi_withdrawn",
+            "id": obpi_id,
+            "ts": ts,
+            "parent": "ADR-0.1.0-example",
+            "reason": "phantom: rescoped; no on-disk file",
+        }
+
+    def test_a_parked_sibling_does_not_hide_the_live_obpi(self) -> None:
+        """A pool demotion parks the old OBPI but the reused semver mints a live one (GHI #1162).
+
+        The parked phantom is LIVE and the real OBPI is SETTLED, so resolving to
+        the phantom and refusing both fail this test, each with its own verdict.
+        """
+        live = "OBPI-0.1.0-02-real-work"
+        self._write(
+            self._obpi("OBPI-0.1.0-02-demoted-work", "2026-01-01T00:00:00+00:00"),
+            self._parked("OBPI-0.1.0-02-demoted-work", "2026-01-02T00:00:00+00:00"),
+            self._obpi(live, "2026-01-03T00:00:00+00:00"),
+            TestObpiCitationsResolveFromTheLedger._completed(live, "2026-01-04T00:00:00+00:00"),
+        )
+
+        self.assertEqual(obpi_ledger_state("OBPI-0.1.0-02", self.root), ReferenceState.SETTLED)
+
+    def test_a_withdrawn_sibling_does_not_hide_the_live_obpi(self) -> None:
+        """A withdrawn phantom is SETTLED and the real OBPI is LIVE: the pick is observable."""
+        self._write(
+            self._obpi("OBPI-0.1.0-03-phantom", "2026-01-01T00:00:00+00:00"),
+            self._withdrawn("OBPI-0.1.0-03-phantom", "2026-01-02T00:00:00+00:00"),
+            self._obpi("OBPI-0.1.0-03-real-work", "2026-01-03T00:00:00+00:00"),
+        )
+
+        self.assertEqual(obpi_ledger_state("OBPI-0.1.0-03", self.root), ReferenceState.LIVE)
+
+    def test_a_prefix_whose_every_candidate_is_inactive_stays_ambiguous(self) -> None:
+        """Inactive siblings are dropped only when a survivor remains; two parked name neither."""
+        self._write(
+            self._obpi("OBPI-0.1.0-04-first", "2026-01-01T00:00:00+00:00"),
+            self._parked("OBPI-0.1.0-04-first", "2026-01-02T00:00:00+00:00"),
+            self._obpi("OBPI-0.1.0-04-second", "2026-01-03T00:00:00+00:00"),
+            self._parked("OBPI-0.1.0-04-second", "2026-01-04T00:00:00+00:00"),
+        )
+
+        self.assertEqual(obpi_ledger_state("OBPI-0.1.0-04", self.root), ReferenceState.UNKNOWN)
+
+    def test_the_citation_resolver_and_obpi_status_agree_on_every_shape(self) -> None:
+        """One short id has one meaning in both resolvers (GHI #1162).
+
+        ``gz obpi status`` resolves through ``common._prefix_match_candidates``;
+        handoff citations through ``reference_checker._unique_prefix_entry``.
+        Before GHI #1162 the first dropped phantoms and the second did not, so
+        the same id resolved in one surface and was ``unknown`` in the other.
+        """
+        self._write(
+            self._obpi("OBPI-0.1.0-02-demoted-work", "2026-01-01T00:00:00+00:00"),
+            self._parked("OBPI-0.1.0-02-demoted-work", "2026-01-02T00:00:00+00:00"),
+            self._obpi("OBPI-0.1.0-02-real-work", "2026-01-03T00:00:00+00:00"),
+            self._obpi("OBPI-0.1.0-03-phantom", "2026-01-01T00:00:00+00:00"),
+            self._withdrawn("OBPI-0.1.0-03-phantom", "2026-01-02T00:00:00+00:00"),
+            self._obpi("OBPI-0.1.0-03-real-work", "2026-01-03T00:00:00+00:00"),
+            self._obpi("OBPI-0.1.0-08-forbid-pytest", "2026-01-01T00:00:00+00:00"),
+            self._obpi("OBPI-0.1.0-08-remember-advisory", "2026-01-02T00:00:00+00:00"),
+            self._obpi("OBPI-0.1.0-09-only-one", "2026-01-01T00:00:00+00:00"),
+        )
+        graph = Ledger(self.ledger).get_artifact_graph()
+        expected = {
+            "OBPI-0.1.0-02": "OBPI-0.1.0-02-real-work",
+            "OBPI-0.1.0-03": "OBPI-0.1.0-03-real-work",
+            "OBPI-0.1.0-08": None,
+            "OBPI-0.1.0-09": "OBPI-0.1.0-09-only-one",
+        }
+
+        for short_id, want in expected.items():
+            with self.subTest(short_id=short_id):
+                status_hits = _prefix_match_candidates(graph, short_id)
+                status_pick = status_hits[0] if len(status_hits) == 1 else None
+                citation_entry = _unique_prefix_entry(graph, short_id)
+                citation_pick = next(
+                    (key for key, info in graph.items() if info is citation_entry), None
+                )
+                self.assertEqual(status_pick, want)
+                self.assertEqual(citation_pick, want)
 
     def test_a_prefix_must_stop_at_a_segment_boundary(self) -> None:
         """``OBPI-0.1.0-1`` is not a prefix of ``OBPI-0.1.0-10-x``.

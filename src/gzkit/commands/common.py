@@ -8,6 +8,7 @@ from typing import Any, cast
 
 from rich.console import Console
 
+from gzkit.artifact_prefix import active_prefix_matches
 from gzkit.color_env import should_disable_color, should_force_terminal
 from gzkit.config import GzkitConfig
 from gzkit.core.exceptions import GzkitError
@@ -377,15 +378,16 @@ def _prefix_match_candidates(
     The ledger is append-only, so an OBPI whose parent ADR was later demoted to
     pool or renamed keeps its ``obpi_created`` event forever. Because an OBPI id
     embeds its parent's semver, a reused semver slot leaves the graph holding a
-    phantom sibling under the same short-form prefix. Phantoms have no brief on
-    disk, so ``docs_root`` presence disambiguates them (GHI #666).
+    phantom sibling under the same short-form prefix. The ledger marks those
+    phantoms parked or withdrawn, and :func:`gzkit.artifact_prefix.active_prefix_matches`
+    drops them — the one rule handoff citations also resolve through, so the two
+    surfaces cannot disagree about a short id (GHI #1162). Phantoms also have no
+    brief on disk, so ``docs_root`` presence remains a second filter (GHI #666).
 
-    Filtering is applied only when it leaves at least one survivor: two REAL
-    briefs stay ambiguous, and a caller working outside a docs tree keeps the
-    pre-filter behaviour.
+    Each filter applies only when it leaves at least one survivor: two REAL
+    briefs stay ambiguous.
     """
-    prefix = canonical_obpi + "-"
-    hits = [k for k, v in graph.items() if v.get("type") == "obpi" and k.startswith(prefix)]
+    hits = active_prefix_matches(graph, canonical_obpi, artifact_type="obpi")
     if len(hits) > 1 and docs_root is not None:
         on_disk = [hit for hit in hits if find_obpi_brief(docs_root, hit) is not None]
         if on_disk:

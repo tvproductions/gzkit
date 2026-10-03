@@ -13,6 +13,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from gzkit.artifact_prefix import active_prefix_matches
 from gzkit.handoff_api import ReferenceChecker, ReferenceKind, ReferenceState, StepReference
 from gzkit.utils import run_exec
 
@@ -65,15 +66,18 @@ def _unique_prefix_entry(
     citation resolving to a numerically adjacent OBPI would be a wrong verdict
     wearing a right one's confidence, and the extractor does produce truncations.
 
-    TWO OR MORE MATCHES RESOLVE TO NOTHING. GHI #826 ruled that an id is matched
-    "on the id the caller SUPPLIED, never on a prefix derived from it", because
-    demoting a feature ADR releases its semver while parked OBPI ids keep it, so
-    one prefix can name two OBPIs under two different parent ADRs. That is not
-    hypothetical here: ``OBPI-0.35.0-08`` extends to both ``-forbid-pytest`` and
-    ``-remember-post-append-advisory``. Refusing is the ruling, not a shortfall.
+    TWO OR MORE ACTIVE MATCHES RESOLVE TO NOTHING. GHI #826 ruled that an id is
+    matched "on the id the caller SUPPLIED, never on a prefix derived from it",
+    because one prefix can name two OBPIs under two different parent ADRs.
+    Refusing that is the ruling, not a shortfall.
+
+    A parked or withdrawn sibling is not that case (GHI #1162). Demoting a feature
+    ADR parks its OBPIs and releases the semver, so ``OBPI-0.35.0-08`` extends to
+    both a parked ``-forbid-pytest`` and the live ``-remember-post-append-advisory``.
+    Candidates come from :func:`gzkit.artifact_prefix.active_prefix_matches`, the
+    rule ``gz obpi status`` also resolves through, so the two cannot disagree.
     """
-    prefix = f"{identifier}-"
-    matches = [key for key in graph if key.startswith(prefix)]
+    matches = active_prefix_matches(graph, identifier)
     if len(matches) == 1:
         return graph[matches[0]]
     return None
