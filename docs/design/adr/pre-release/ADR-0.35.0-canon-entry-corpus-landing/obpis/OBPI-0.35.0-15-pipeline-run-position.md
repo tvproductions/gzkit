@@ -13,6 +13,10 @@ allowlist:
   - src/gzkit/obpi_dispatch_channel.py
   - src/gzkit/commands/obpi_precomplete.py
   - src/gzkit/commands/obpi_complete.py
+  - src/gzkit/commands/obpi_present_evidence.py
+  - src/gzkit/commands/obpi_verify_packet.py
+  - src/gzkit/commands/obpi_acceptance.py
+  - src/gzkit/commands/task.py
   - src/gzkit/pipeline_stage_fence.py
   - src/gzkit/ledger_events.py
   - src/gzkit/events.py
@@ -110,6 +114,8 @@ Constraint inherited, not repaired: `ADR-0.0.9` § Decision, "Layer 3 artifacts 
 - `src/gzkit/obpi_dispatch_channel.py` — the dispatch producer's marker cache write
 - `src/gzkit/commands/obpi_precomplete.py` — the precomplete producer
 - `src/gzkit/commands/obpi_complete.py` — the complete producer (registered security surface)
+- `src/gzkit/commands/obpi_present_evidence.py`, `src/gzkit/commands/obpi_verify_packet.py`, `src/gzkit/commands/obpi_acceptance.py` — the Stage 4 round producers (Open Design Question 1, ruled)
+- `src/gzkit/commands/task.py` — the `gz task` verbs, which mark a Stage 2 task boundary (Open Design Question 1, ruled)
 - `src/gzkit/pipeline_stage_fence.py` — READ-ONLY import of the covering tests for the fence control; never modified by this OBPI
 - `src/gzkit/ledger_events.py` — the constructor for the stage-transition event (registered security surface)
 - `src/gzkit/events.py` — the typed model of that event
@@ -145,7 +151,7 @@ The rulings on the Open Design Questions may add paths. Each addition is named t
 - `src/gzkit/commands/roles.py`, `src/gzkit/commands/obpi_dispatch.py` — consumers and the dispatch CLI wrapper are read, never changed.
 - `data/ledger_vocabulary_grandfather.json` — the new event type fires in this OBPI's own change before the tree is checked, and is never disclosed there as never-fired.
 - A marker rebuild inside the pipeline launcher or a hook — the rebuild is `uv run gz state --repair` alone (Open Design Question 2, ruled).
-- `.gzkit/skills/gz-obpi-pipeline/SKILL.md` and its generated mirrors — the skill's stage procedure is Decision item 13 (OBPI-0.35.0-17). This OBPI adds no step the skill must tell an agent to perform, unless the ruling on Open Design Question 1 says otherwise.
+- `.gzkit/skills/gz-obpi-pipeline/SKILL.md` and its generated mirrors — the skill's stage procedure is Decision item 13 (OBPI-0.35.0-17). This OBPI adds no step the skill must tell an agent to perform (Open Design Question 1, ruled).
 - `src/gzkit/lock_manager.py`, `.gzkit/locks/**` — lock continuity is Decision item 15 (OBPI-0.35.0-19).
 - The next command for a position inside a stage — Decision item 12 (OBPI-0.35.0-16). The outcome of a Stage 2 dispatch — Decision item 14 (OBPI-0.35.0-18).
 - `docs/design/adr/pre-release/ADR-0.13.0-obpi-pipeline-runtime-surface/**`, `docs/design/adr/foundation/ADR-0.0.9-state-doctrine-source-of-truth/**` — validated ADRs and their attested briefs are sealed records. The one exception is the requirement-line note named in Allowed Paths (operator ruling 2026-10-04).
@@ -157,7 +163,7 @@ The rulings on the Open Design Questions may add paths. Each addition is named t
 ## Requirements (FAIL-CLOSED)
 
 1. REQUIREMENT: The recorded position is what the RUN has reached, never what the launch command named. After the run crosses a recorded boundary, a process that did not perform the run reads that boundary from the marker, and `updated_at` is the time of the crossing. A marker that reports the launch stage for a run that has left it is the defect this OBPI repairs (GHI #1172 § Observed).
-2. REQUIREMENT: The stage is one of the four canonical stages named by `pipeline_stage_fence.CANONICAL_STAGES`. The positions inside a stage that are in scope are the four GHI #1172 names: the Stage 2 task, the Stage 3 phase, the Stage 4 round and the Stage 5 step. Which boundaries inside each stage earn a record is Open Design Question 1; the plan MUST NOT choose them.
+2. REQUIREMENT: The stage is one of the four canonical stages named by `pipeline_stage_fence.CANONICAL_STAGES`. The positions inside a stage that are in scope are the four GHI #1172 names: the Stage 2 task, the Stage 3 phase, the Stage 4 round and the Stage 5 step. The boundaries that earn a record are the ones a command the run already invokes marks (operator ruling 2026-10-04, Open Design Question 1): a Stage 2 task at `gz obpi dispatch` and at the `gz task` events; Stage 3 at verification start, pass and fail and at `gz obpi precomplete`; a Stage 4 round at `gz obpi present-evidence`, `gz obpi verify-packet` and each `gz obpi acceptance` review import; a Stage 5 step at `gz obpi precomplete`, `gz obpi complete` and `gz obpi sync`. No position command is added and the skill gains no step. The plan MUST NOT add a boundary or drop one.
 3. REQUIREMENT: A position inside a stage is never written as a new `current_stage` value. The post-Stage-2 fence refuses production writes and commits at any stage outside its authoring and committing sets, and the marker authenticity check refuses a marker whose stage is outside its canonical set, so a new stage value would trip both.
 4. REQUIREMENT: Every position the marker carries is reproducible from canon and ledger. After both marker files are deleted, a rebuild from Layer 1 and Layer 2 alone yields the same stage and the same position inside it. A position with no Layer-1 or Layer-2 source MUST NOT be recorded. The Layer-2 source and the rebuilding verb are ruled under Open Design Question 2 and stated in Requirement 18.
 5. REQUIREMENT (control): A launch with nothing after it reads exactly as it does today, for the full launch and for each `--from` entry: `entry`, `current_stage`, `blockers`, `required_human_action` and `resume_point` as the launch writes them. This brief leaves `next_command` as it finds it and pins no value for it: Decision item 12 (OBPI-0.35.0-16) re-derives it from the run's position (operator ruling 2026-10-04 on that brief's Open Design Question 2). The existing launch-state assertions in `tests/commands/test_obpi_pipeline.py` pass unchanged. If one cannot, STOP and surface it; an assertion bound to an attested `REQ-0.13.0-*` is never edited to fit. The one known exception, the marker state after a successful verification, is ruled under Open Design Question 4 and carried by Requirement 16.
@@ -187,6 +193,7 @@ GHI #1172 § Closure contract lists the first three as known uncertainties. The 
 - B. A, plus an explicit position command the skill calls where no command marks a boundary. Finer, but the record then depends on the agent remembering to call it, which is the attention failure the review record names. Adds a CLI surface, the skill and its mirrors.
 - C. Stage level only. Does not meet the GHI's boundary, which puts the four positions in scope.
 - **Recommendation: A.**
+- **RULED 2026-10-04: A.** Asked "which boundaries inside a stage earn a record?" with the three options above, the operator answered, verbatim: "A". Requirement 2 carries the set. The allowlist gains the three Stage 4 command modules the option names, and `src/gzkit/commands/task.py`: under the ruling on Open Design Question 2 a position is never inferred from another event, so the `gz task` verbs append the transition themselves.
 
 **2. Whether a stage transition becomes a ledger event, and which verb rebuilds.** Rebuildability needs a Layer-2 source. `ADR-0.0.9` deferred "ledger events for stage transitions" to a Pipeline Lifecycle ADR that was never authored. `docs/governance/pipeline-marker-migration-path.md`, the deliverable of `OBPI-0.0.9-06`, names the event types, names `ADR-0.13.0` as the vehicle and names `uv run gz state --repair` as the rebuild; `gz state --repair` reconciles frontmatter only today.
 
@@ -250,6 +257,7 @@ GHI #1172 § Closure contract lists the first three as known uncertainties. The 
 - [ ] `src/gzkit/pipeline_markers.py` — `pipeline_marker_payload` sets the stage from the `--from` flag; `write_pipeline_markers` replaces the whole payload on every launch and re-entry; `refresh_pipeline_markers` derives the stage output from `entry`, not from the stage, so it would drop the blockers of a run whose `entry` is `full`; `find_stale_pipeline_markers` reads `updated_at`
 - [ ] `src/gzkit/commands/obpi_cmd.py` — `obpi_pipeline_cmd`: the marker write, the `pipeline_launched` event carrying the nonce, and the dispatch to each stage runner
 - [ ] `src/gzkit/commands/obpi_stages.py` — the verify runner writes the marker only on failure and chains into the ceremony without a write; the sync runner removes the markers at the end
+- [ ] `src/gzkit/commands/obpi_present_evidence.py`, `src/gzkit/commands/obpi_verify_packet.py`, `src/gzkit/commands/obpi_acceptance.py` and `src/gzkit/commands/task.py` — what each writes to the ledger today, and where a stage-transition event is appended beside it
 - [ ] `src/gzkit/obpi_dispatch_channel.py` and `src/gzkit/pipeline_runtime.py` — `record_dispatch`, `declare_single_driver` and `persist_dispatch_state` write the per-OBPI marker only
 - [ ] `src/gzkit/pipeline_stage_fence.py`, `src/gzkit/hooks/guards.py` and `src/gzkit/commands/adr_audit.py` — the readers of `current_stage` that this OBPI must leave working: the fence, the pre-commit guard, the authenticity check (which reads `started_at` for freshness, not `updated_at`) and the ADR-audit marker written with `current_stage: audit` into the same directory
 - [ ] `scripts/session_orientation.py` — `collect_adr_pipeline` and `_render_adr_pipeline`
