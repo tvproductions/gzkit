@@ -96,6 +96,13 @@ exclude = [
     "src/gzkit/chores/*/proofs/**",
 ]
 
+[tool.uv]
+# The one uv version this repository runs on, locally and in CI. uv refuses to
+# run on any other version, and `astral-sh/setup-uv` installs exactly this one in
+# every workflow, so the two cannot drift. Move it with the binary in the same
+# pass (`gz-deps-upgrade` step 1): `uv self update`, then this line.
+required-version = "==0.12.23"
+
 [tool.ruff]
 target-version = "py313"
 line-length = 100

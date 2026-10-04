@@ -31,11 +31,10 @@ jobs:
         with:
           python-version: "3.13.15"
 
+      # Through setup-uv, as every other workflow does: it installs the version
+      # `pyproject.toml` pins, where the shell installer takes whatever is latest.
       - name: Install uv
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
-
-      - name: Add uv to PATH
-        run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
+        uses: astral-sh/setup-uv@v10.2.0
 
       - name: Sync dependencies
         run: uv sync --frozen --all-extras
@@ -54,7 +53,7 @@ jobs:
           printf '{"tag": "%s", "sha": "%s"}\n' "$tag" "${{ github.sha }}" > site/build-info.json
 
       - name: Upload site artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: site
           path: ./site
@@ -84,7 +83,7 @@ jobs:
       group: "vps"
       cancel-in-progress: false
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: site
           path: ./site

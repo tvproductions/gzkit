@@ -5,10 +5,10 @@ description: Move the toolchain and dependencies to current upstream in one pass
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-27
+last_reviewed: 2026-10-04
 model: haiku
 metadata:
-  skill-version: "1.2.0"
+  skill-version: "1.3.0"
 ---
 
 # gz deps-upgrade
@@ -40,6 +40,15 @@ order, not skipping the floor-bump or the verification step.
    # OR, if self-update is disabled: brew upgrade uv  /  pipx upgrade uv
    uv --version                      # after — confirm it moved (or already latest)
    ```
+
+   **Move the pin with the binary.** `pyproject.toml` `[tool.uv]
+   required-version` pins the exact uv version for this repository, and it is
+   the one authority: uv refuses to run here on any other version, and
+   `astral-sh/setup-uv` installs exactly that version in every workflow. Once
+   the binary has moved, every `uv` command in the repository fails until the
+   pin names the new version, so set `required-version = "==<new version>"`
+   before the next step. CI follows in the same commit; no workflow carries a
+   uv version of its own.
 
    Skipping uv itself is a half-upgrade: the rest of the pass runs on a stale
    resolver. Never skip this step.
@@ -176,6 +185,7 @@ skip the upgrade for the rest of the surface.
 - `uv.lock` resolves cleanly with no churn on the second `uv lock` run
 - `.python-version` names the newest installed 3.13 patch, and
   `uv run gz validate --python-version-pins` exits 0
+- `uv --version` equals the `[tool.uv] required-version` pin in `pyproject.toml`
 - ARB unittest receipt at `exit_status=0` exists in
   `artifacts/receipts/`
 
@@ -196,6 +206,7 @@ These thoughts mean STOP — you are about to ship a half-upgrade:
 ## Red Flags
 
 - `uv` binary left un-upgraded (Step 1 skipped) — the rest of the pass ran on a stale resolver
+- `uv` binary upgraded and the `required-version` pin left behind — every `uv` command now fails, and CI still installs the old version
 - `uv.lock` and `pyproject.toml` floors disagree by more than a patch level after the upgrade
 - Pinned (`==`) deps left at versions older than current PyPI latest
 - `gz check` skipped, downgraded, or run only on a subset
