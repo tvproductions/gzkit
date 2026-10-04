@@ -170,12 +170,6 @@ def register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         action="store_true",
         help="Remove pipeline markers older than 24 hours",
     )
-    p_obpi_pipeline.add_argument(
-        "--no-subagents",
-        dest="no_subagents",
-        action="store_true",
-        help="Disable subagent dispatch (single-session fallback)",
-    )
     p_obpi_pipeline.set_defaults(
         func=lambda a: _lazy("obpi_pipeline_cmd")(
             obpi=a.obpi,

@@ -88,7 +88,7 @@ Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
 - [x] REQ-0.18.0-05-08: REQUIREMENT: BDD scenarios MUST cover the full dispatch lifecycle: plan → dispatch → review → verify → ceremony → sync.
 - [x] REQ-0.18.0-05-09: REQUIREMENT: The four agent files (`.claude/agents/implementer.md`, `spec-reviewer.md`, `quality-reviewer.md`, `narrator.md`) MUST be validated as part of OBPI-05 integration — verifying tool restrictions, model defaults, maxTurns, and hooks are correctly wired.
 - [x] REQ-0.18.0-05-10: NEVER: Break the Iron Law — all 5 stages must still run to completion.
-- [x] REQ-0.18.0-05-11: ALWAYS: Subagent dispatch is opt-in per pipeline invocation (default: enabled). A `--no-subagents` flag allows fallback to inline execution for debugging.
+- [x] REQ-0.18.0-05-11: ALWAYS: Subagent dispatch is opt-in per pipeline invocation (default: enabled). A `--no-subagents` flag allows fallback to inline execution for debugging. Amended 2026-10-04 by operator ruling on GHI #1166 (verbatim: "Remove the flag (Recommended)"; record reconciliation, verbatim: "Remove, amend REQs in place (Recommended)"): the `--no-subagents` flag is removed from `gz obpi pipeline`. It was parsed and read nowhere, and since GHI #886 a single-session run is permitted only when declared on the ledger. Dispatch stays the default; the fallback to inline execution is the declaration `gz obpi dispatch <OBPI-ID> --single-driver --reason "<why>"`. The attested text above is kept as the record of what was decided on its date, as `docs/governance/attested-req-subject-retirement.md` § Worked example 4 records.
 
 
 ## Model Routing (Design Input)

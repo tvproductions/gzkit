@@ -183,7 +183,7 @@ existing pool ADR proposes this.
 1. **Lane/kind at promotion** — heavy + foundation (it changes a runtime
    contract and an app invariant: how stages execute) vs heavy + feature?
 2. **Substrate availability contract** — what is the fallback when the Workflow
-   tool is unavailable (e.g. `--no-subagents` single-session mode)? The fence
+   tool is unavailable (e.g. a declared single-driver run)? The fence
    (TS-2) and ledger-truth constraint must hold in both modes.
 3. **Sequencing** — this is queued *behind* the active Magna Carta campaign's
    topmost item (MX lean kernel → `0.29.0`). Promotion is operator-ratified, not

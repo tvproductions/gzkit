@@ -74,7 +74,7 @@ Backfilled 2026-04-15 under GHI #160 Phase 3 from REQUIREMENTS prose above.
 - [x] REQ-0.18.0-07-05: REQUIREMENT: Review findings MUST be recorded as structured data in the pipeline marker with severity levels (`critical`, `major`, `minor`, `info`).
 - [x] REQ-0.18.0-07-06: REQUIREMENT: Critical findings MUST trigger a fix cycle — redispatch the implementer with the finding as context, then re-review.
 - [x] REQ-0.18.0-07-07: REQUIREMENT: Fix cycles MUST be bounded — maximum 2 fix cycles per task before escalating to the user.
-- [x] REQ-0.18.0-07-08: REQUIREMENT: `--no-subagents` flag MUST skip review dispatch (inline execution has no independent review).
+- [x] REQ-0.18.0-07-08: REQUIREMENT: `--no-subagents` flag MUST skip review dispatch (inline execution has no independent review). Amended 2026-10-04 by operator ruling on GHI #1166 (verbatim: "Remove the flag (Recommended)"; record reconciliation, verbatim: "Remove, amend REQs in place (Recommended)"): the `--no-subagents` flag is removed from `gz obpi pipeline`. It was parsed and read nowhere, and since GHI #886 a single-session run is permitted only when declared on the ledger. A run declared with `gz obpi dispatch <OBPI-ID> --single-driver --reason "<why>"` has no review dispatch; the declaration is what the Stage-5 dispatch verdict reads. The attested text above is kept as the record of what was decided on its date, as `docs/governance/attested-req-subject-retirement.md` § Worked example 4 records.
 - [x] REQ-0.18.0-07-09: NEVER: Allow the implementer subagent to also perform its own review. Separation of concerns is the point.
 - [x] REQ-0.18.0-07-10: ALWAYS: Record review timing and finding counts for quality metrics.
 

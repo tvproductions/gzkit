@@ -167,3 +167,33 @@ class TestStableArgumentParserIntegration(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestObpiPipelineOffersNoInertOption(unittest.TestCase):
+    """GHI #1166: `gz obpi pipeline` does not accept an option nothing reads.
+
+    `--no-subagents` was parsed, documented on four surfaces and passed to no
+    handler. A single-session run is declared on the ledger with
+    `gz obpi dispatch --single-driver --reason`; the launch has no flag for it.
+    """
+
+    def _parse(self, argv: list[str]) -> argparse.Namespace:
+        from gzkit.cli.main import _build_parser
+
+        return _build_parser().parse_args(argv)
+
+    def test_no_subagents_is_refused_as_an_unknown_option(self) -> None:
+        stderr = io.StringIO()
+        original = sys.stderr
+        sys.stderr = stderr
+        try:
+            with self.assertRaises(SystemExit) as ctx:
+                self._parse(["obpi", "pipeline", "OBPI-0.1.0-01", "--no-subagents"])
+        finally:
+            sys.stderr = original
+        self.assertEqual(ctx.exception.code, EXIT_SYSTEM_ERROR)
+
+    def test_launch_without_the_option_still_parses(self) -> None:
+        args = self._parse(["obpi", "pipeline", "OBPI-0.1.0-01", "--from", "verify"])
+        self.assertEqual(args.start_from, "verify")
+        self.assertFalse(hasattr(args, "no_subagents"))

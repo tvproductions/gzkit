@@ -1109,8 +1109,12 @@ class TestStage3VerificationDispatchContract(unittest.TestCase):
         )
         self.assertGreater(metrics.elapsed_seconds, 0)
 
-    def test_no_subagents_flag_uses_sequential(self):
-        """--no-subagents forces sequential fallback regardless of plan."""
+    def test_plan_without_test_paths_uses_sequential(self):
+        """A plan with no test paths falls back to sequential verification.
+
+        Renamed under GHI #1166: this test was named for a `--no-subagents`
+        flag it never passed, and the flag is gone.
+        """
         from gzkit.pipeline_runtime import (
             prepare_stage3_verification,
             should_fallback_to_sequential,

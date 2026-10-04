@@ -205,7 +205,7 @@ feature)?"*
   this adapter is the specific runtime surface behind it.
 - **ADR-0.18.0 — subagent-driven pipeline execution.** One execution strategy
   for the pipeline runtime — subagent dispatch — behind the same OBPI-pipeline
-  contract. Its `--no-subagents` fallback preserves inline execution, which is
+  contract. Its declared single-driver fallback preserves inline execution, which is
   the adapter tell: it is *one way* of executing, not the invariant.
 - **ADR-0.12.0 — OBPI pipeline enforcement parity.** One specific
   AirlineOps-style enforcement implementation behind the pipeline contract.

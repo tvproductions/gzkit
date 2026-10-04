@@ -201,8 +201,9 @@ uv run gz roles --pipeline OBPI-<X.Y.Z-NN>
 #    Each task is classified by complexity (simple/standard/complex) and
 #    routed to the appropriate model tier (haiku/sonnet/opus).
 #
-#    --no-subagents flag disables dispatch and runs Stage 2 inline (single
-#    session, current behavior preserved as fallback for debugging).
+#    A run declared single-driver runs Stage 2 inline in one session:
+#      uv run gz obpi dispatch OBPI-<X.Y.Z-NN> --single-driver --reason "<why>"
+#    The declaration is a ledger event; an undeclared inline run is refused.
 #
 #    If a task returns BLOCKED after retry, Stage 2 halts and creates a
 #    handoff. Inspect dispatch state in the pipeline marker:
@@ -221,7 +222,8 @@ uv run gz roles --pipeline OBPI-<X.Y.Z-NN>
 #    redispatched with the finding as context, then re-reviewed.
 #    Maximum 2 fix cycles per task before escalating to the user.
 #
-#    --no-subagents skips review dispatch (inline mode has no independent review).
+#    A declared single-driver run has no review dispatch (inline mode has no
+#    independent review).
 #
 #    Review findings are recorded in the dispatch state alongside
 #    implementer records for the Stage 4 ceremony.
@@ -249,8 +251,8 @@ uv run gz lint
 #    single subagent. Requirements with non-overlapping paths dispatch
 #    concurrently via `isolation: worktree` + `run_in_background: true`.
 #
-#    --no-subagents skips parallel verification dispatch and runs all
-#    verification sequentially inline (same as pre-0.18.0 behavior).
+#    A declared single-driver run skips parallel verification dispatch and
+#    runs all verification sequentially inline (same as pre-0.18.0 behavior).
 #
 #    Wall-clock timing metrics are recorded for parallel vs sequential
 #    comparison. Inspect via the pipeline marker:

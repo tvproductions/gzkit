@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-10-04
 metadata:
-  skill-version: "6.64.2"
+  skill-version: "6.64.3"
 model: sonnet
 ---
 
@@ -343,7 +343,7 @@ assertions. Do not build an all-assertions classifier or count mutations as cove
 > is not tautological. Do not report "RGR followed" when the only red observed
 > was an import/collection error.
 
-**Check the `--no-subagents` flag first.** If set, skip to the [Inline Fallback](#inline-fallback-no-subagents) below.
+**Check for a single-driver declaration first.** If this run is declared single-driver, skip to the [Inline Fallback](#inline-fallback-declared-single-driver) below.
 
 #### Subagent Dispatch Mode (default)
 
@@ -530,9 +530,9 @@ assertions. Do not build an all-assertions classifier or count mutations as cove
 
 **Abort if:** Any task returns `BLOCKED` after retry or after exhausting review fix cycles. Surrender the lock per [Abort surrender](#abort-surrender), create handoff, and stop.
 
-#### Inline Fallback (`--no-subagents`)
+#### Inline Fallback (declared single-driver)
 
-When `--no-subagents` is set, Stage 2 runs entirely in the main session (no Agent tool dispatch):
+When the run is declared single-driver, Stage 2 runs entirely in the main session (no Agent tool dispatch):
 
 1. Create task list from plan steps (same as above)
 2. Follow the approved plan step by step
@@ -544,9 +544,10 @@ When `--no-subagents` is set, Stage 2 runs entirely in the main session (no Agen
 5. Run `uv run ruff check . --fix && uv run ruff format .` after code changes
 6. Run `uv run gz test` after implementation
 
-Record the existing single-driver declaration in the ledger via
-`gz obpi dispatch ... --single-driver --reason ...`. That declaration preserves
-the Stage-2 spec/quality exception; a marker flag alone does not. Execute the same
+The declaration is the only route to this mode: `uv run gz obpi dispatch {OBPI-SLUG} --single-driver --reason "<why>"`
+records it on the ledger, and the Stage-5 dispatch verdict reads that event.
+`gz obpi pipeline` has no flag for it (GHI #1166). Declare when the session
+cannot dispatch or the operator has ruled a single-session run. Execute the same
 proof commands and retain mapped findings. Step 4b remains mandatory, and neither
 the declaration nor an inline implementation can close its own acceptance finding.
 
@@ -674,7 +675,7 @@ to satisfy a requirement that asks for production behavior.
 
 #### Phase 2: REQ-Level Verification Dispatch
 
-**Check the `--no-subagents` flag first.** If set, skip to the [Inline Verification Fallback](#inline-verification-fallback) below.
+**Check for a single-driver declaration first.** If this run is declared single-driver, skip to the [Inline Verification Fallback](#inline-verification-fallback) below.
 
 After baseline checks pass, dispatch parallel verification subagents for the brief's requirements:
 
@@ -725,7 +726,7 @@ After baseline checks pass, dispatch parallel verification subagents for the bri
 
 #### Inline Verification Fallback
 
-When `--no-subagents` is set, or when the verification plan strategy is `sequential`:
+When the run is declared single-driver, or when the verification plan strategy is `sequential`:
 
 1. Run each brief-specific verification command sequentially inline.
 2. Run any commands from the brief's Verification section.

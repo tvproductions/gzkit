@@ -59,6 +59,8 @@ completion, a dispatch summary is written for historical queries.
 
 ## Fallback Mode
 
-Use `--no-subagents` on `gz obpi pipeline` to run the entire pipeline in a
-single session (current inline behavior). Useful for debugging or environments
-without subagent support.
+To run the pipeline in a single session, declare it after launch:
+`uv run gz obpi dispatch <OBPI-ID> --single-driver --reason "<why>"`. The
+declaration is recorded on the ledger, and the Stage-5 dispatch verdict reads
+it; an undeclared single-session run is refused. Useful for debugging or
+environments without subagent support.
