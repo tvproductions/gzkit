@@ -424,7 +424,8 @@ def _blockers(results: list[TranscriptResult], transcripts: list[Transcript]) ->
             blockers.append(
                 f"Command timed out after {_COMMAND_TIMEOUT_SECONDS}s: {result.command}"
             )
-            continue
+        # The next two are read off the command text, so a timeout cannot hide them
+        # (GHI #1164); everything after them judges output a timed-out run never gave.
         if result.masked_verifier:
             blockers.append(
                 f"Command discards {result.masked_verifier}'s exit status, so the replay "
@@ -439,6 +440,8 @@ def _blockers(results: list[TranscriptResult], transcripts: list[Transcript]) ->
                 f"leaves no trace in the output: {result.command}. Drop the suffix, or "
                 'write `<cmd>; echo "exit $?"` so the status itself reproduces.'
             )
+        if result.timed_out:
+            continue
         if result.exit_status != 0:
             blockers.append(
                 f"Command exited {result.exit_status} (expected 0): {result.command}. A "

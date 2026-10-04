@@ -354,9 +354,43 @@ class TestExitStatus(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             tmp = Path(td)
             body = "```\n$ uv run gz check > log 2>&1; tail -6 log\nAll checks passed\n```\n"
-            result = verify_packet(tmp, _packet(tmp, body))
+            # The refusal is read off the command text, so the replay is stubbed:
+            # spawning the real gate made this test's verdict the runner's clock
+            # (GHI #1164).
+            replayed = (0, "All checks passed\n", False)
+            with mock.patch.object(stage4_packet, "_run", return_value=replayed):
+                result = verify_packet(tmp, _packet(tmp, body))
         self.assertFalse(result.verified)
         self.assertTrue(any("exit status" in b for b in result.blockers), result.blockers)
+
+    def test_a_timeout_cannot_hide_a_refusal_the_command_text_decides(self) -> None:
+        # Masking and status suppression are properties of the command, known
+        # before it runs. A slow host must still be told why the packet can never
+        # verify, not only that the replay ran out of time (GHI #1164).
+        commands = {
+            "uv run gz check > log 2>&1; tail -6 log": "exit status",
+            "sleep 30; true": "discards the command's exit status",
+        }
+        for command, refusal in commands.items():
+            with self.subTest(command=command), tempfile.TemporaryDirectory() as td:
+                tmp = Path(td)
+                body = f"```\n$ {command}\ndone\n```\n"
+                with mock.patch.object(stage4_packet, "_run", return_value=(-1, "", True)):
+                    result = verify_packet(tmp, _packet(tmp, body))
+                self.assertFalse(result.verified)
+                self.assertTrue(any("timed out" in b for b in result.blockers), result.blockers)
+                self.assertTrue(any(refusal in b for b in result.blockers), result.blockers)
+
+    def test_an_honest_command_that_times_out_reports_only_the_timeout(self) -> None:
+        # The control: with no output to judge, the output-dependent blockers
+        # stay silent rather than accusing a timed-out command of fabrication.
+        with tempfile.TemporaryDirectory() as td:
+            tmp = Path(td)
+            body = "```\n$ sleep 30\ndone\n```\n"
+            with mock.patch.object(stage4_packet, "_run", return_value=(-1, "", True)):
+                result = verify_packet(tmp, _packet(tmp, body))
+        self.assertEqual(len(result.blockers), 1, result.blockers)
+        self.assertIn("timed out", result.blockers[0])
 
     def test_a_sequenced_verifier_that_reads_its_status_is_accepted(self) -> None:
         # The preserved half, pinned on this surface too: a packet showing an
