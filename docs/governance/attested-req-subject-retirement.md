@@ -70,8 +70,8 @@ escalation: the attestation is a true historical record of what was decided on
 its date, the ruling is a true statement of what is decided now, and
 reconciling two true records on an unamendable artifact is a governance
 decision rather than an editing task. Do not stretch the procedure above to
-cover it. One instance has been escalated and ruled (§ Worked example 3); that
-ruling decided its own case and is not a procedure for the next one.
+cover it. Three instances have been escalated and ruled (§ Worked examples 3
+and 4); each ruling decided its own case and none is a procedure for the next one.
 
 ## Worked example 1 — four `@covers` tests (GHI #819, `da935dc35`, 2026-08-17)
 
@@ -143,6 +143,46 @@ place (Recommended)"*. So:
 - the REQ's second clause (`recommended_move` never fabricated) was
   doctrine-neutral and kept its original covering test unchanged — step 1
   applied clause by clause.
+
+## Worked example 4 — REQs that name a command line (GHI #1166 and #1167, 2026-10-04)
+
+Two more discriminator cases, found the same day while repairing defects in the
+pipeline skill. In each, an attested REQ under a Validated ADR named a literal
+command that a later ruling had made inert or refused.
+
+**GHI #1166.** `ADR-0.18.0` carried four attested REQs naming the
+`--no-subagents` flag of `gz obpi pipeline` (`REQ-0.18.0-05-11`, `-06-06`,
+`-07-08`, `-08-07`), for example *"`--no-subagents` flag MUST bypass dispatch
+and execute inline"*. The flag was parsed and read by no code; since GHI #886 a
+single-session run is permitted only when declared on the ledger with
+`gz obpi dispatch --single-driver --reason`. Escalated with three choices:
+remove the flag and amend the REQs, wire the flag so the REQs became true as
+written, or hold. The operator ruled, verbatim: *"Remove the flag
+(Recommended)"* and *"Remove, amend REQs in place (Recommended)"*.
+
+**GHI #1167.** `REQ-0.0.14-03-07` (`ADR-0.0.14`) read *"Abort/handoff instructs
+`gz obpi lock release --force`"*, and its covering test required that string in
+the pipeline skill. `ADR-0.0.41` made that command exit 3 on a held lock.
+Escalated with three choices: amend in place, keep `--force` beside `--abandon`
+so the text stayed literally true, or revert the fix. The operator ruled,
+verbatim: *"Amend in place (Recommended)"*.
+
+So, in both:
+
+- each REQ line keeps its attested text and gains a dated `Amended 2026-10-04`
+  note quoting the ruling and naming the surviving route;
+- where a covering test existed it keeps its `@covers` binding and asserts the
+  amended instruction, with its docstring recording why; the four `ADR-0.18.0`
+  REQs had no covering test, so no binding moved;
+- the ADR bodies, which name the same commands, are terminal and are left as
+  written.
+
+What these add to example 3: neither conflict was found by reading the REQ
+first. The #1166 choice was put to the operator before the owning ADR was read,
+and had to be put again; the #1167 conflict surfaced only when the unit tier
+failed on the covering test. Before removing or rewording a command an
+operator-facing surface names, search the ADR tree and the tests for REQs that
+name it.
 
 ## What this is not
 

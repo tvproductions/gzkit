@@ -215,7 +215,7 @@ uv run mkdocs build --strict
 - [ ] REQ-0.0.14-03-04: Lock skill delegates entirely to `gz obpi lock` subcommands
 - [ ] REQ-0.0.14-03-05: No fallback direct-write language in either skill
 - [ ] REQ-0.0.14-03-06: Pipeline stage structure unchanged (5 stages)
-- [ ] REQ-0.0.14-03-07: Abort/handoff instructs `gz obpi lock release --force`
+- [ ] REQ-0.0.14-03-07: Abort/handoff instructs `gz obpi lock release --force` Amended 2026-10-04 by operator ruling on GHI #1167 (verbatim: "Amend in place (Recommended)"): an abort surrenders the lock with `gz obpi lock release <OBPI-ID> --abandon <category>:<reason>`. Since ADR-0.0.41 (OBPI-0.0.41-03) a held lock is released only against an exchange record or an `--abandon` category, and `--force` waives the ownership check alone, so the attested instruction exits 3. The attested text above is kept as the record of what was decided on its date, as `docs/governance/attested-req-subject-retirement.md` § Worked example 4 records.
 
 ### Static Verification (REQs 8-10)
 

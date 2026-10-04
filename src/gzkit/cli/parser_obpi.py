@@ -829,10 +829,7 @@ def register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
         dest="abandon",
         default=None,
         metavar="CATEGORY:REASON",
-        help=(
-            "Record abandonment; writes a degenerate exchange record. "
-            "See manpage for category enum."
-        ),
+        help="Record abandonment in a degenerate exchange record. See manpage for categories.",
     )
     add_json_flag(p_lock_release)
     p_lock_release.set_defaults(

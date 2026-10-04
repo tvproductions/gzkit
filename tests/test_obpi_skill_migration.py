@@ -158,19 +158,35 @@ class TestPipelineStageCount(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
-# Abort/handoff instructs gz obpi lock release --force
+# Abort/handoff instructs gz obpi lock release --abandon (REQ amended, GHI #1167)
 # ---------------------------------------------------------------------------
 
 
 @covers("OBPI-0.0.14-03")
 class TestAbortHandoff(unittest.TestCase):
-    """REQ-0.0.14-03-07: Abort/handoff instructs gz obpi lock release --force."""
+    """REQ-0.0.14-03-07, as amended 2026-10-04: abort surrenders with `--abandon`.
+
+    The REQ was attested reading "Abort/handoff instructs `gz obpi lock release
+    --force`", and this test required that string in the pipeline skill. ADR-0.0.41
+    made that command exit 3 on a held lock, so the test was pinning an instruction
+    that cannot succeed. Operator ruling on GHI #1167, verbatim: "Amend in place
+    (Recommended)". The binding stays; the asserted instruction moves
+    (``docs/governance/attested-req-subject-retirement.md`` § Worked example 4).
+    """
 
     @covers("REQ-0.0.14-03-07")
-    def test_pipeline_references_release_force(self):
+    def test_pipeline_abort_surrenders_with_abandon(self):
         content = _read(_PIPELINE_SKILL)
-        matches = re.findall(r"release\s+--force", content)
-        self.assertGreater(len(matches), 0, "Pipeline must reference 'release --force' for abort")
+        section = content.split("### Abort surrender", 1)[1].split("\n---", 1)[0]
+        self.assertRegex(
+            section, r"gz obpi lock release \{OBPI-SLUG\} --abandon <category>:<reason>"
+        )
+
+    @covers("REQ-0.0.14-03-07")
+    def test_pipeline_prescribes_no_forced_release(self):
+        content = _read(_PIPELINE_SKILL)
+        forced = re.findall(r"lock release[^\n|]*--force", content)
+        self.assertEqual(forced, [], "a forced release cannot surrender a held lock")
 
 
 # ---------------------------------------------------------------------------
