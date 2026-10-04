@@ -301,7 +301,7 @@ def register_obpi_parsers(commands: argparse._SubParsersAction) -> None:
             "Mechanical pre-flight checklist: brief readiness, frontmatter "
             "idempotence, lock ownership, ARB receipts, plan-audit receipt. "
             "Each check exits with a named remediation when it fails. Closes "
-            "the reactive-triage class of failure (GHI #196)."
+            "the reactive-triage class of failure (GHI #195)."
         ),
         epilog=build_epilog(
             [

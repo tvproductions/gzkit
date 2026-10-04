@@ -1,4 +1,4 @@
-"""Tests for `gz obpi precomplete` (GHI #196).
+"""Tests for `gz obpi precomplete` (GHI #195).
 
 Each precondition check has a positive test (passes when the precondition
 holds) and a negative test (fails with a named remediation when it doesn't).

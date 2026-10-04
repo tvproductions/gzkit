@@ -5,9 +5,9 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-03
+last_reviewed: 2026-10-04
 metadata:
-  skill-version: "6.64.0"
+  skill-version: "6.64.1"
 model: sonnet
 ---
 
@@ -1341,7 +1341,7 @@ Git-sync #1 commits these governance edits, the Step 4b brief section and marker
 cleanup. Git-sync #2 commits
 the reconcile output and ADR status refresh.
 
-0. **Pre-flight checklist (MANDATORY, GHI #196)** — `uv run gz obpi precomplete {OBPI-SLUG}`
+0. **Pre-flight checklist (MANDATORY, GHI #195)** — `uv run gz obpi precomplete {OBPI-SLUG}`
    Mechanical verification of all Stage 5 preconditions, each with a named
    remediation: brief authored readiness, reconcile idempotence (catches GHI
    #193 drift before it bites), lock ownership, ARB receipts passed (the newest

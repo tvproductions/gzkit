@@ -1,4 +1,4 @@
-"""Stage 5 pre-flight checklist for OBPI completion (GHI #196).
+"""Stage 5 pre-flight checklist for OBPI completion (GHI #195).
 
 Reactive triage at Stage 5 — discovering brief readiness gaps, frontmatter
 drift, lock ownership mismatches, missing ARB receipts, or stale plan-audit
