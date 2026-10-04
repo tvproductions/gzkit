@@ -980,6 +980,49 @@ def collect_obpi_locks(repo_root: Path) -> list[dict]:
         return []
 
 
+def collect_adr_pipeline(repo_root: Path) -> list[dict]:
+    """Return one entry per OBPI whose pipeline marker says a run is in flight (GHI #1168).
+
+    Reads the active markers under the plans directory: every per-OBPI marker,
+    then the legacy single marker, which duplicates the per-OBPI one for the
+    same run and is reported once. A marker is a Layer-3 cache of what the
+    launch recorded (``docs/governance/state-doctrine.md``), so this reports a
+    marker reading and decides nothing; ``gz obpi status`` is the ledger reading.
+
+    Guarded end-to-end: any failure (gzkit not importable, an unreadable or
+    malformed marker) degrades to fewer entries or an empty list so the boot
+    hook never crashes (module docstring contract).
+    """
+    try:
+        from gzkit.pipeline_markers import (
+            PIPELINE_LEGACY_MARKER,
+            load_pipeline_json,
+            pipeline_plans_dir,
+            pipeline_resume_command,
+        )
+
+        plans_dir = pipeline_plans_dir(repo_root)
+        marker_paths = sorted(plans_dir.glob(".pipeline-active-*.json"))
+        marker_paths.append(plans_dir / PIPELINE_LEGACY_MARKER)
+        runs: dict[str, dict] = {}
+        for marker_path in marker_paths:
+            marker = load_pipeline_json(marker_path)
+            if not isinstance(marker, dict):
+                continue
+            obpi_id = str(marker.get("obpi_id") or "").strip()
+            if not obpi_id or obpi_id in runs:
+                continue
+            runs[obpi_id] = {
+                "obpi_id": obpi_id,
+                "parent_adr": str(marker.get("parent_adr") or "").strip(),
+                "stage": str(marker.get("current_stage") or "").strip(),
+                "resume_command": pipeline_resume_command(marker),
+            }
+        return list(runs.values())
+    except Exception:
+        return []
+
+
 def collect_chore_staleness() -> dict | None:
     """Read every chore's staleness band from the governed verb (GHI #936).
 
@@ -1080,6 +1123,29 @@ def _render_unreviewed_canaries(lines: list[str], payload: object) -> None:
     lines.append("")
 
 
+def _render_adr_pipeline(lines: list[str], payload: object) -> None:
+    """Name each in-flight pipeline run, its recorded stage and its resume command."""
+    runs = [run for run in payload if isinstance(run, dict)] if isinstance(payload, list) else []
+    if not runs:
+        lines.append("- (no active pipeline markers)")
+        lines.append("")
+        return
+    for run in runs:
+        obpi = run.get("obpi_id") or "?"
+        parent = run.get("parent_adr")
+        owner = f" ({parent})" if parent else ""
+        lines.append(f"- {obpi}{owner} — stage: {run.get('stage') or '?'}")
+        resume = run.get("resume_command")
+        if resume:
+            lines.append(f"  - Resume command recorded by the marker: `{resume}`")
+    lines.append(
+        "- Read from the pipeline markers, a cache of what each launch recorded; "
+        "`uv run gz obpi status <OBPI-ID>` is the ledger reading. Only the operator "
+        "initiates or resumes OBPI work through `gz-obpi-pipeline`."
+    )
+    lines.append("")
+
+
 def collect_state(repo_root: Path, now: datetime) -> dict:
     """Aggregate authoritative state. Best-effort; never raises."""
     campaign = collect_campaign(repo_root)
@@ -1095,7 +1161,7 @@ def collect_state(repo_root: Path, now: datetime) -> dict:
         "exit_bookmarks": collect_exit_bookmarks(repo_root, now),
         "session_handoff_ghis": collect_session_handoff_ghis(),
         "obpi_locks": collect_obpi_locks(repo_root),
-        "adr_pipeline": [],
+        "adr_pipeline": collect_adr_pipeline(repo_root),
         "recent_events": collect_recent_events(repo_root / ".gzkit" / "ledger.jsonl", now),
         "chore_staleness": collect_chore_staleness(),
         "unreviewed_canaries": collect_unreviewed_canaries(repo_root),
@@ -1236,14 +1302,7 @@ def render(state: dict, now: datetime) -> str:
     lines.append("")
 
     lines.append("## Active ADR pipeline state")
-    pipeline = state.get("adr_pipeline") or []
-    if isinstance(pipeline, list) and pipeline:
-        for adr in pipeline:
-            if isinstance(adr, dict):
-                lines.append(f"- {adr.get('id', '?')} — {adr.get('status', '?')}")
-    else:
-        lines.append("- (no in-progress ADRs)")
-    lines.append("")
+    _render_adr_pipeline(lines, state.get("adr_pipeline"))
 
     lines.append("## Recent ledger events (last 24h)")
     events = state.get("recent_events") or []

@@ -936,6 +936,176 @@ class TestCollectObpiLocks(unittest.TestCase):
             self.assertEqual(self.mod.collect_obpi_locks(Path(tmp)), [])
 
 
+class TestCollectPipelineRuns(unittest.TestCase):
+    """GHI #1168: the pipeline section reports the runs the markers record.
+
+    ``collect_state`` carried ``"adr_pipeline": []`` as a constant, so a session
+    resuming after ``/clear`` or compaction was told no pipeline was in flight
+    while a marker and a lock both said otherwise.
+    """
+
+    OBPI = "OBPI-0.3.0-01-example"
+    RESUME = f"uv run gz obpi pipeline {OBPI} --from=verify"
+
+    def setUp(self):
+        self.mod = _load_orientation_module()
+        self.now = datetime(2026, 10, 4, 12, 0, 0, tzinfo=UTC)
+
+    @staticmethod
+    def _write_marker(root: Path, name: str, payload: object) -> None:
+        plans = root / ".claude" / "plans"
+        plans.mkdir(parents=True, exist_ok=True)
+        text = payload if isinstance(payload, str) else json.dumps(payload)
+        (plans / name).write_text(text, encoding="utf-8")
+
+    def _marker(self, obpi_id: str, stage: str = "implement") -> dict:
+        return {
+            "obpi_id": obpi_id,
+            "parent_adr": "ADR-0.3.0-example",
+            "current_stage": stage,
+            "resume_point": "verify",
+            "next_command": f"uv run gz obpi pipeline {obpi_id} --from=verify",
+        }
+
+    def test_no_markers_reports_no_runs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            self.assertEqual(self.mod.collect_adr_pipeline(Path(tmp)), [])
+
+    def test_one_marker_reports_obpi_stage_and_resume_command(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_marker(root, f".pipeline-active-{self.OBPI}.json", self._marker(self.OBPI))
+
+            runs = self.mod.collect_adr_pipeline(root)
+
+        self.assertEqual(len(runs), 1)
+        self.assertEqual(runs[0]["obpi_id"], self.OBPI)
+        self.assertEqual(runs[0]["parent_adr"], "ADR-0.3.0-example")
+        self.assertEqual(runs[0]["stage"], "implement")
+        self.assertEqual(runs[0]["resume_command"], self.RESUME)
+
+    def test_legacy_marker_duplicating_a_per_obpi_marker_is_reported_once(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_marker(root, f".pipeline-active-{self.OBPI}.json", self._marker(self.OBPI))
+            self._write_marker(root, ".pipeline-active.json", self._marker(self.OBPI))
+
+            runs = self.mod.collect_adr_pipeline(root)
+
+        self.assertEqual([run["obpi_id"] for run in runs], [self.OBPI])
+
+    def test_legacy_marker_alone_is_reported(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_marker(root, ".pipeline-active.json", self._marker(self.OBPI, "verify"))
+
+            runs = self.mod.collect_adr_pipeline(root)
+
+        self.assertEqual([(run["obpi_id"], run["stage"]) for run in runs], [(self.OBPI, "verify")])
+
+    def test_two_markers_report_two_runs(self):
+        other = "OBPI-0.4.0-02-other"
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_marker(root, f".pipeline-active-{self.OBPI}.json", self._marker(self.OBPI))
+            self._write_marker(root, f".pipeline-active-{other}.json", self._marker(other))
+
+            runs = self.mod.collect_adr_pipeline(root)
+
+        self.assertEqual(sorted(run["obpi_id"] for run in runs), [self.OBPI, other])
+
+    def test_unreadable_marker_is_skipped_and_the_readable_one_is_reported(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_marker(root, ".pipeline-active-OBPI-0.1.0-01-broken.json", "{not json")
+            self._write_marker(
+                root, ".pipeline-active-OBPI-0.2.0-01-list.json", ["not", "a", "run"]
+            )
+            self._write_marker(root, f".pipeline-active-{self.OBPI}.json", self._marker(self.OBPI))
+
+            runs = self.mod.collect_adr_pipeline(root)
+
+        self.assertEqual([run["obpi_id"] for run in runs], [self.OBPI])
+
+    def test_per_obpi_marker_is_the_reading_when_the_legacy_marker_disagrees(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_marker(
+                root, f".pipeline-active-{self.OBPI}.json", self._marker(self.OBPI, "verify")
+            )
+            self._write_marker(root, ".pipeline-active.json", self._marker(self.OBPI, "implement"))
+
+            runs = self.mod.collect_adr_pipeline(root)
+
+        self.assertEqual([(run["obpi_id"], run["stage"]) for run in runs], [(self.OBPI, "verify")])
+
+    def test_marker_naming_no_obpi_is_not_a_run(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_marker(root, ".pipeline-active-anonymous.json", {"current_stage": "verify"})
+
+            self.assertEqual(self.mod.collect_adr_pipeline(root), [])
+
+    def test_a_failing_marker_read_degrades_to_no_runs(self):
+        """The boot hook never raises: a collector failure reports nothing."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_marker(root, f".pipeline-active-{self.OBPI}.json", self._marker(self.OBPI))
+            with mock.patch(
+                "gzkit.pipeline_markers.load_pipeline_json", side_effect=RuntimeError("boom")
+            ):
+                runs = self.mod.collect_adr_pipeline(root)
+
+        self.assertEqual(runs, [])
+
+    def test_the_boot_state_carries_the_collected_runs(self):
+        """The defect was the constant in ``collect_state``, not a missing renderer."""
+        others = [
+            name
+            for name in dir(self.mod)
+            if name.startswith("collect_") and name not in {"collect_state", "collect_adr_pipeline"}
+        ]
+        with tempfile.TemporaryDirectory() as tmp, contextlib.ExitStack() as stack:
+            root = Path(tmp)
+            self._write_marker(root, f".pipeline-active-{self.OBPI}.json", self._marker(self.OBPI))
+            for name in others:
+                stack.enter_context(mock.patch.object(self.mod, name, return_value=None))
+            state = self.mod.collect_state(root, self.now)
+
+        self.assertEqual([run["obpi_id"] for run in state["adr_pipeline"]], [self.OBPI])
+
+    def _pipeline_section(self, rendered: str) -> str:
+        section = rendered.split("## Active ADR pipeline state", 1)[1]
+        return section.split("\n## ", 1)[0]
+
+    def test_render_names_obpi_stage_and_resume_command(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_marker(root, f".pipeline-active-{self.OBPI}.json", self._marker(self.OBPI))
+            runs = self.mod.collect_adr_pipeline(root)
+
+        section = self._pipeline_section(self.mod.render({"adr_pipeline": runs}, self.now))
+
+        self.assertIn(self.OBPI, section)
+        self.assertIn("ADR-0.3.0-example", section)
+        self.assertIn("implement", section)
+        self.assertIn(self.RESUME, section)
+
+    def test_render_reports_absence_only_when_no_run_is_in_flight(self):
+        empty = self._pipeline_section(self.mod.render({"adr_pipeline": []}, self.now))
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._write_marker(root, f".pipeline-active-{self.OBPI}.json", self._marker(self.OBPI))
+            runs = self.mod.collect_adr_pipeline(root)
+        live = self._pipeline_section(self.mod.render({"adr_pipeline": runs}, self.now))
+
+        absence = [line for line in empty.splitlines() if line.startswith("- (no ")]
+        self.assertEqual(len(absence), 1)
+        self.assertNotIn(absence[0], live)
+        # With nothing in flight the section says so and says nothing else.
+        self.assertEqual([line for line in empty.splitlines() if line.strip()], absence)
+
+
 class TestLiveAdrCountsOverrideCampaignProse(unittest.TestCase):
     """A count transcribed into campaign prose rots; the banner must not carry the rot.
 
