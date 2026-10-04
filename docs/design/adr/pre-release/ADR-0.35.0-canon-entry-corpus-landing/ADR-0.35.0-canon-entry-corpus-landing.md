@@ -84,6 +84,33 @@ than assumed. The gate reads the RENDITION delta, not the corpus retirement log.
 clause was hand-authored text in an unowned span until 2026-09-17, never a corpus entry,
 so a gate over corpus retirements alone would have passed the very loss that motivated it.
 
+AMENDED 2026-10-04 (operator-ruled) -- FIVE REPAIR ASSIGNMENTS ON THE OBPI PIPELINE ARE
+CARRIED BY THIS ADR, as § Decision items 11-15 and checklist items 15-19. Operator, verbatim:
+*"ghis do not have obpi ceremony and checks. i meant extending in-flight adrs."*; *"if the
+adr is a minor bucket, and has been misused, then adr-as-bucket can work."*; and, on the
+drafting itself, *"yes, draft the five briefs under 0.35.0"*.
+
+WHAT THESE ARE. They are not corrections to this ADR's intent and they do not extend "make
+canon capture safe". Each is an assignment to repair an obligation that an earlier ADR
+stated and its shipped surface does not meet: `ADR-0.13.0-obpi-pipeline-runtime-surface`,
+`ADR-0.18.0-subagent-driven-pipeline-execution` and `ADR-0.0.41-token-block-lock-discipline`.
+Those ADRs are `Validated` and are not reopened. The obligations keep their original
+identities, and each brief cites the one it repairs. This follows the ownership ruling of
+2026-09-25 (campaign § Amendments 2026-09-25): durable requirements have authority
+independent of any one work package, and a brief's assignment may repair an obligation it
+does not own. This ADR carries the five because it is the bounded advance in flight, which
+is where a brief gets its gates and its attestation.
+
+WHY NOW. The campaign names the tune-up of session management, phasing, subagent use and
+modularity the priority (campaign § Amendments 2026-10-04 (2)). Its evidence is the dated
+record `docs/governance/context-phase-review-2026-10-04-evidence/README.md`. The findings
+are GHI #1172, #1173, #1174, #1175 and #1176, each of which states the observed behaviour
+and the obligation it falls short of.
+
+WHAT IT COSTS THIS ADR. Closeout now waits on five more items, on a subject other than the
+corpus. No control of the pipeline is removed by any of them (campaign § Amendments
+2026-10-04 (2): "none is removed by this entry").
+
 ## Decision
 
 <!-- The tombstone fold's algebra is pinned in item 1 below. It is the one
@@ -152,6 +179,16 @@ SOURCE-OF-TRUTH DIRECTION (operator-ruled this session, stated explicitly rather
    - **Storage.** The map is persisted as a `<consumer>.retention.json` sidecar, never inside `RenditionProvenance` (BI-03, § Alternatives O).
    - **Vacuous cases.** The gate has nothing to check when no block was removed: a first commit, a pure re-render, or additions only.
    - **Residual, named rather than hidden.** The tool can prove that a quoted condition exists, but not that the reviewer extracted every condition, not that a KEPT span carries the same meaning as its quote, and not that a drop id in the attestation text came from the operator. Character-level coverage bounds the first. The second is held by the independent reviewer's check of each KEPT quote→span pair and by the commit output printing every pair for the operator. The third is held by the rule against fabricating operator words.
+
+11. A PIPELINE RUN'S POSITION IS READABLE FROM DISK (operator-ruled 2026-10-04, GHI #1172; repair assignment, amendment in § Intent). The stage a run has reached, and its position inside that stage, are recorded as the run crosses each boundary, so a process that did not perform the run can read them. Obligation repaired: `ADR-0.13.0` § Intent, "one canonical command contract for launch, stage progression, resume, abort, and sync", and § Decision, "Persist pipeline stage state in a repository-local, machine-readable form". The marker stays Layer 3 under `ADR-0.0.9`: rebuildable from canon and ledger, and never gate evidence.
+
+12. THE RUNTIME STATES THE NEXT COMMAND FOR WHERE THE RUN IS (operator-ruled 2026-10-04, GHI #1173; repair assignment). At every boundary a run crosses, the runtime states the one next command for that position; a blocked position states its blocker and no next command. Obligation repaired: `ADR-0.13.0` § Decision, "Expose structured stage outputs for current stage, blockers, required human action, and next command or resume point". The rule against stopping between stages keeps its purpose and gains this as its mechanism. Depends on item 11.
+
+13. THE PIPELINE SKILL'S STAGE PROCEDURE IS SERVED BY THE RUNTIME, ONE STAGE AT A TIME (operator-ruled 2026-10-04, GHI #1174; repair assignment). The procedure an agent follows for a stage is delivered when that stage is entered. Every control the skill states today is still delivered at the stage where it applies; this is a change of delivery, never a shortening. Obligation repaired: `ADR-0.13.0` § Decision, "Make skills, hooks, and future agent control surfaces call into the same runtime engine instead of re-implementing stage logic in prose". Depends on item 12.
+
+14. A STAGE 2 DISPATCH'S OUTCOME IS RECORDED BY THE RUNTIME (operator-ruled 2026-10-04, GHI #1175; repair assignment). The runtime records how each dispatch ended, from the subagent's structured result: its status, the files it changed, the tests it added, its concerns, and the fix cycles and review findings that followed. Obligation repaired: `REQ-0.18.0-02-04`, "Each subagent MUST return a structured result: `{status, files_changed, tests_added, concerns}`", and `OBPI-0.18.0-05`, "Pipeline runtime MUST track subagent dispatch state". Stage 2 dispatch credit stays Layer-2 evidence.
+
+15. A CHANGE OF OCCUPANT BETWEEN SESSIONS LEAVES A REGISTER ENTRY (operator-ruled 2026-10-04, GHI #1176; repair assignment). A session that continues an OBPI another session holds either leaves a register entry naming both occupants, or is refused with the recovery named. Obligation repaired: `ADR-0.0.41`, "intermediate handovers without register entries lose intent at exactly the boundaries this ADR exists to protect". No abandon category is added; a run that aborts after failed verification is answered by continuity.
 
 PRECEDENT NOTED (operator-ruled): attested-record edit is decided locally, scoped to corpus entries -- an attested invariant entry may be superseded by an appended tombstone carrying attestor + reason, never edited or deleted in place. Recorded in Boundary Invariants so `ADR-pool.attested-record-edit-doctrine` inherits rather than re-litigates. This ADR does not block on that pool item.
 
@@ -329,6 +366,11 @@ Planning estimates, not elapsed-time evidence or implementation authorization:
 | 11 | 1–2 | Completed 01 |
 | 12 | 3–5 | 01/02/05/06/07 |
 | 13 | 2–3 | 05/06/07/09 |
+| 15 | 2–3 | none inside this ADR (amendment 2026-10-04) |
+| 16 | 1–2 | 15 |
+| 17 | 3–5 | 16 |
+| 18 | 2–3 | none inside this ADR |
+| 19 | 2–3 | none inside this ADR |
 
 The dependency spine is 05 -> 06 -> 14 -> 07 -> downstream completion (14 inserted by
 operator ruling 2026-09-24, so that 07 builds on a promotion seam that already refuses
@@ -348,7 +390,12 @@ remaining work has 15–24 estimated engineering days before those external wait
 07 and 12 deliberately score lower on Size: recovery and complete authority migration are
 broad transactions. Their plans must preserve the three bounded test groups in each brief;
 a newly discovered independent product requires a decomposition decision, not silent
-expansion or deletion of a failure scenario. The current count remains thirteen.
+expansion or deletion of a failure scenario. The count is the Decomposition Scorecard's
+`Final Target OBPI Count`.
+
+Items 15-19 (amendment 2026-10-04) stand off the corpus spine: none depends on items 01-14
+and none of those depends on them. 15 -> 16 -> 17 is their only internal order. Where they
+sit relative to the unlanded corpus items is the operator's to rule and is not ruled here.
 
 ## Decomposition Scorecard
 
@@ -362,13 +409,13 @@ expansion or deletion of a failure scenario. The current count remains thirteen.
 - Lineage: 2
 - Dimension Total: 10
 - Baseline Range: 5+
-- Baseline Selected: 11
+- Baseline Selected: 16
 - Split Single-Narrative: 1
 - Split Surface Boundary: 1
 - Split State Anchor: 0
 - Split Testability Ceiling: 1
 - Split Total: 3
-- Final Target OBPI Count: 14
+- Final Target OBPI Count: 19
 
 <!-- Scoring basis (each dimension scored against the matrix, not asserted):
      Data/State 2      — new `CorpusEntry` fields, new `<consumer>.lineage.json`
@@ -415,6 +462,14 @@ expansion or deletion of a failure scenario. The current count remains thirteen.
        clusters and splits again into "atomic write" / "resume, status,
        rollback". Flagged up front rather than discovered mid-flight; that
        contingency has NOT fired, and if it does the target goes 10 -> 11.
+
+     AMENDED 2026-10-04 (operator-ruled, GHI #1172-#1176): 16 + 3 = 19. Five repair
+       assignments on the OBPI pipeline enter as ADDED scope (§ Intent amendment
+       2026-10-04), so on this ADR's own precedent they raise the BASELINE and are not
+       splits. The dimension scores are UNCHANGED and were scored for the corpus seam;
+       they do not describe the pipeline work, which this ADR carries as the bounded
+       advance in flight and did not design. Each of the five is one narrative unit
+       with its own finding and its own repaired obligation.
 
      AMENDED 2026-09-24 (operator-ruled, GHI #1090): 11 + 3 = 14. Meaning preservation
        enters as ADDED scope (§ Intent amendment 2026-09-24), so on this ADR's own
@@ -465,6 +520,11 @@ expansion or deletion of a failure scenario. The current count remains thirteen.
 - [ ] Corpus the `.gzkit/rules/**` family -- the canonical rule files become addressed corpus entries under their own surface, closing the largest remaining under-population named in the SOURCE-OF-TRUTH DIRECTION above; the generated nested `AGENTS.md` render from the corpus rather than from uncorpused rule text (GHI #921)
 - [ ] Render-order permutation for truncation survival -- order `AGENTS.md` sections so every rank at or above `must_survive_through_rank` renders before the consuming vendor's project-doc byte cap; ranking source is the ratified `data/agents_md_survival_declaration.json`, never inferred criticality. Absorbed from `ADR-pool.render-order-truncation-survival` by operator ruling 2026-09-02 (GHI #815)
 - [ ] Meaning-preserving landing -- a candidate that removes any block of the prior committed rendition is promoted only with a retention map. Each condition of each removed block is either KEPT at a quoted candidate span or DROPPED with a reason the operator approves; the conditions are extracted by an independent reviewer; the map is persisted as `<consumer>.retention.json`. Sequenced before item 7 by operator ruling 2026-09-24 (GHI #1090)
+- [ ] Pipeline run position on disk -- the stage a run has reached and its position inside that stage are recorded as the run crosses each boundary, readable by a process that did not perform the run; the marker stays rebuildable Layer 3. Repair assignment against `ADR-0.13.0` (GHI #1172, amendment 2026-10-04)
+- [ ] Next command for the run's position -- at every boundary the runtime states the one next command for where the run is, or the blocker when there is none. Repair assignment against `ADR-0.13.0` (GHI #1173, amendment 2026-10-04)
+- [ ] Stage procedure served by the runtime -- the pipeline skill's procedure for a stage is delivered when that stage is entered, with every control it states today still delivered at its stage. Repair assignment against `ADR-0.13.0` (GHI #1174, amendment 2026-10-04)
+- [ ] Stage 2 dispatch outcome recording -- the runtime records each dispatch's status, changed files, added tests, concerns, fix cycles and review findings from the subagent's structured result. Repair assignment against `ADR-0.18.0` (GHI #1175, amendment 2026-10-04)
+- [ ] Lock continuity across sessions -- a session continuing an OBPI another session holds leaves a register entry naming both occupants, or is refused with the recovery named. Repair assignment against `ADR-0.0.41` (GHI #1176, amendment 2026-10-04)
 
 ## Q&A Transcript
 
