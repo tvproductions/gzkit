@@ -7,6 +7,19 @@ name: CI
 on:
   push:
     branches: [main]
+    # A push that changes nothing but session records does not run the sweep.
+    # These three paths are what a `gz git-sync` governance commit carries (a
+    # handoff or exit bookmark, the ruling store, an insight row, ledger rows),
+    # and each such push cost a full two-platform run of about twenty minutes
+    # for a markdown file. The filter applies only when EVERY changed file
+    # matches, so a push that also touches code, docs or a workflow still runs.
+    # What is given up: these files are validated server-side only at the next
+    # push that is not ignored. The pre-push `gz check` still validates them
+    # locally on every sync.
+    paths-ignore:
+      - ".gzkit/handoffs/**"
+      - ".gzkit/insights/**"
+      - ".gzkit/ledger.jsonl"
   pull_request:
 
 permissions:
