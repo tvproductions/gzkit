@@ -293,6 +293,23 @@ class TestOrphanedImplementation(unittest.TestCase):
             )
             self.assertEqual(audit_orphaned_implementation(root), [])
 
+    def test_fresh_claim_after_force_release_clears_the_finding(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_brief(root, "OBPI-0.0.99-11-x", "Draft", ["docs/sample.md"])
+            orphaned = [
+                _claim("OBPI-0.0.99-11-x", "2026-05-10T10:00:00+00:00"),
+                _edited("docs/sample.md", "2026-05-10T10:30:00+00:00"),
+                _release("OBPI-0.0.99-11-x", "2026-05-10T11:00:00+00:00", force=True),
+            ]
+            _write_ledger(root, orphaned)
+            self.assertEqual(len(audit_orphaned_implementation(root)), 1)
+            _write_ledger(
+                root,
+                [*orphaned, _claim("OBPI-0.0.99-11-x", "2026-05-10T12:00:00+00:00")],
+            )
+            self.assertEqual(audit_orphaned_implementation(root), [])
+
     def test_real_project_passes(self) -> None:
         from gzkit.commands.common import get_project_root
 
@@ -303,6 +320,35 @@ class TestOrphanedImplementation(unittest.TestCase):
             [],
             f"orphaned-implementation audit reported findings on the real project: {errors}",
         )
+
+
+class RecoveryProseRendering(unittest.TestCase):
+    """The finding's prose, per `.gzkit/rules/guardrail-feedback-prose.md` § Invariant."""
+
+    def _message(self) -> str:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_brief(root, "OBPI-0.0.99-12-x", "Draft", ["docs/sample.md"])
+            _write_ledger(
+                root,
+                [
+                    _claim("OBPI-0.0.99-12-x", "2026-05-10T10:00:00+00:00"),
+                    _edited("docs/sample.md", "2026-05-10T10:30:00+00:00"),
+                    _release("OBPI-0.0.99-12-x", "2026-05-10T11:00:00+00:00", force=True),
+                ],
+            )
+            return audit_orphaned_implementation(root)[0].message
+
+    def test_names_the_reclaim_for_work_still_in_flight(self) -> None:
+        self.assertIn("uv run gz obpi lock claim OBPI-0.0.99-12-x", self._message())
+
+    def test_cites_the_rule_the_finding_rests_on(self) -> None:
+        self.assertIn("docs/governance/state-doctrine.md", self._message())
+
+    def test_keeps_the_ceremony_and_declared_intent_recoveries(self) -> None:
+        message = self._message()
+        self.assertIn("uv run gz obpi pipeline OBPI-0.0.99-12-x --from=verify", message)
+        self.assertIn("<!-- gz-validate-skip: orphaned-implementation GHI-<num> -->", message)
 
 
 if __name__ == "__main__":

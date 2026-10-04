@@ -9,10 +9,13 @@ the lock without running ``gz obpi complete``. Frontmatter still says
 ``Draft``, the audit row already exists, and downstream reconciliation
 does not surface the mismatch.
 
-Recovery: either complete the ceremony with
-``uv run gz obpi pipeline <OBPI-ID> --from=verify``, or — when the
+Recovery, by case. Work still in flight (a TTL reap or an ended
+session): the operator re-claims the lock with
+``uv run gz obpi lock claim <OBPI-ID>``; a claim later than the
+force-release clears the finding. Work ready for ceremony: complete it
+with ``uv run gz obpi pipeline <OBPI-ID> --from=verify``. When the
 implementation landing is intentional without ceremony (a GHI explains
-why) — opt out by placing the line
+why), opt out by placing the line
 ``<!-- gz-validate-skip: orphaned-implementation GHI-<num> -->``
 anywhere in the brief body. The marker follows the shape established by
 the GHI #432 speculative-skip convention in
@@ -192,8 +195,13 @@ def _build_error(
         f"{obpi_id}: lock force-released at {release_ts.isoformat()} after edits to "
         f"allowed-path artifacts ({preview}{more}) without an obpi_completion_* event "
         f"since lock claim at {claim_ts.isoformat()}. Implementation may have landed "
-        f"without ceremony — run `uv run gz obpi pipeline {obpi_id} --from=verify` to "
-        "investigate, or declare intent with "
+        "without ceremony, and only a ledger completion event makes an OBPI complete "
+        "(docs/governance/state-doctrine.md Rule 1). Recover by the case that applies. "
+        "Work still in flight (a TTL reap or an ended session): the operator re-claims "
+        f"the lock with `uv run gz obpi lock claim {obpi_id}`; a claim later than the "
+        "force-release clears this finding. Work ready for ceremony: the operator runs "
+        f"`uv run gz obpi pipeline {obpi_id} --from=verify`. Landed without ceremony on "
+        "purpose: declare intent with "
         "`<!-- gz-validate-skip: orphaned-implementation GHI-<num> -->` in the brief body."
     )
     return ValidationError(type="orphaned_implementation", artifact=rel, message=message)

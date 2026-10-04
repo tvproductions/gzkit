@@ -1358,7 +1358,7 @@ gz validate --orphaned-implementation --json
 | Code | Meaning | Recovery |
 |------|---------|----------|
 | 0 | No orphaned implementations, or all flagged briefs carry the skip marker | — |
-| 3 | One or more non-completed briefs have lock-claim + force-release + allowed-path edits without `obpi_completion_*` | Run `uv run gz obpi pipeline <OBPI-ID> --from=verify` to finish the ceremony, or — if the implementation is intentional without ceremony — file a tracking GHI and add the skip marker to the brief body |
+| 3 | One or more non-completed briefs have lock-claim + force-release + allowed-path edits without `obpi_completion_*` | By case. Work still in flight (a TTL reap or an ended session): the operator re-claims the lock with `uv run gz obpi lock claim <OBPI-ID>`; a claim later than the force-release clears the finding. Work ready for ceremony: run `uv run gz obpi pipeline <OBPI-ID> --from=verify`. Intentional without ceremony: file a tracking GHI and add the skip marker to the brief body |
 
 Included in `gz validate --audits` and `gz check` aggregate passes.
 
