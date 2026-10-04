@@ -10,14 +10,17 @@ allowlist:
   - src/gzkit/pipeline_next_command.py
   - src/gzkit/pipeline_runtime.py
   - src/gzkit/commands/obpi_stages.py
+  - src/gzkit/commands/status.py
   - scripts/session_orientation.py
   - tests/test_pipeline_next_command.py
   - tests/test_pipeline_runtime.py
   - tests/commands/test_obpi_pipeline.py
+  - tests/commands/test_status.py
   - tests/scripts/test_session_orientation.py
   - features/obpi_pipeline_next_command.feature
   - features/steps/obpi_pipeline_next_command_steps.py
   - docs/user/manpages/obpi-pipeline.md
+  - docs/user/manpages/obpi-status.md
   - docs/user/runbook.md
   - docs/governance/GovZero/obpi-runtime-contract.md
   - .gzkit/skills/gz-obpi-pipeline/SKILL.md
@@ -35,7 +38,7 @@ reqs:
   - REQ-0.35.0-16-06
   - REQ-0.35.0-16-07
 verification:
-  - uv run -m unittest tests.test_pipeline_next_command tests.test_pipeline_runtime tests.commands.test_obpi_pipeline tests.scripts.test_session_orientation tests.test_hooks
+  - uv run -m unittest tests.test_pipeline_next_command tests.test_pipeline_runtime tests.commands.test_obpi_pipeline tests.commands.test_status tests.scripts.test_session_orientation tests.test_hooks
   - uv run -m behave features/obpi_pipeline_next_command.feature
   - uv run gz validate --documents --req-kind-discipline --cli-alignment --behave-req-tags
   - uv run gz cli audit
@@ -69,7 +72,7 @@ This is a repair assignment (parent ADR § Intent, amendment 2026-10-04). The ob
 > documentation, and template-only work stays Lite unless it changes one of
 > those external surfaces.
 
-The contract that changes is what the pipeline states as the next command: the documented marker field `next_command`, and the text that the pipeline commands, the completion reminder and the session orientation print. A new option, subcommand or output field is held until Open Design Question 1 is ruled.
+The contract that changes is what the pipeline states as the next command: the documented marker field `next_command`, and the text that the pipeline commands, the completion reminder and the session orientation print. By the ruling on Open Design Question 1 it is also the output of `gz obpi status`, human and `--json`, which gains the run's next command.
 
 **Sensitivity: security, declared as the floor.** `src/gzkit/pipeline_markers.py` is a registered surface in `data/security_surfaces.json`, and the function this brief repairs lives in it. `.gzkit/rules/security-sensitivity.md` § `gz validate --sensitivity` requires the declaration for any overlap. The overlap is incidental: stating a next command spawns no subprocess and decides no attestation. The heightened Gate 5 walkthrough of that rule applies.
 
@@ -79,14 +82,17 @@ The contract that changes is what the pipeline states as the next command: the d
 - `src/gzkit/pipeline_next_command.py` — **CREATE**, beside `src/gzkit/pipeline_stage_fence.py`; a pure module (stdlib + Pydantic) for the position-to-command table, if the plan places the table outside `pipeline_markers.py`, which is already past the module size guidance of `.gzkit/rules/pythonic.md`
 - `src/gzkit/pipeline_runtime.py` — the re-export block for `pipeline_markers` symbols; a new public symbol is re-exported here
 - `src/gzkit/commands/obpi_stages.py` — the closing lines each stage runner prints (`_print_pipeline_implementation_next_steps`, the verify-failure blockers, the ceremony guidance)
+- `src/gzkit/commands/status.py` — `obpi_status_cmd` and what it renders: the read-only query a fresh process asks (Open Design Question 1, ruled)
 - `scripts/session_orientation.py` — `collect_adr_pipeline` and its rendering: the fresh session's reading of an in-flight run
 - `tests/test_pipeline_next_command.py` — **CREATE**, following `tests/test_pipeline_stage_fence.py`; holds the table-driven test over positions
 - `tests/test_pipeline_runtime.py` — the existing tests of `pipeline_resume_command` and the completion reminder
 - `tests/commands/test_obpi_pipeline.py` — command-level tests through the launch. Its existing assertions of the values `REQ-0.13.0-03-01`, `-02` and `-04` attest change only under the ruling on Open Design Question 2
+- `tests/commands/test_status.py` — the `gz obpi status` output, human and `--json`
 - `tests/scripts/test_session_orientation.py` — the orientation's reading of markers
 - `features/obpi_pipeline_next_command.feature` — **CREATE**, following `features/obpi_lock.feature`
 - `features/steps/obpi_pipeline_next_command_steps.py` — **CREATE**, following `features/steps/obpi_lock_steps.py`
 - `docs/user/manpages/obpi-pipeline.md` — § Runtime Behavior: the command contract bullets and the `next_command` and `resume_point` definitions
+- `docs/user/manpages/obpi-status.md` — the next-command lines of the human output and the `--json` field
 - `docs/user/runbook.md` — § Step 2: Execute the OBPI through the staged pipeline
 - `docs/governance/GovZero/obpi-runtime-contract.md` — § Active Pipeline Marker Fields: the `blockers`, `next_command` and `resume_point` definitions
 - `.gzkit/skills/gz-obpi-pipeline/SKILL.md` — § The Iron Law only, plus the `skill-version` and `last_reviewed` frontmatter that every skill edit moves
@@ -96,7 +102,7 @@ The contract that changes is what the pipeline states as the next command: the d
 
 ## Denied Paths
 
-- `src/gzkit/commands/obpi_cmd.py`, `src/gzkit/cli/parser_obpi.py`, `src/gzkit/commands/status.py`, `docs/user/manpages/obpi-status.md` — no option, subcommand or output field is added until Open Design Question 1 is ruled. The ruling names which of these enter the allowlist. `obpi_cmd.py` is also a registered security surface
+- `src/gzkit/commands/obpi_cmd.py`, `src/gzkit/cli/parser_obpi.py` — no option or subcommand is added. The query is the existing `gz obpi status` (Open Design Question 1, ruled), and `gz obpi pipeline` gains nothing. `obpi_cmd.py` is also a registered security surface
 - The recording of the run's position — the writes that advance the marker, and any ledger event for a stage transition. `OBPI-0.35.0-15-pipeline-run-position` owns them. This brief reads the position and never writes or defines it
 - `src/gzkit/ledger_events.py`, `src/gzkit/schemas/ledger.json` — no ledger event is added. A stated next command is a Layer-3 statement
 - `src/gzkit/obpi_lifecycle.py` and every gate, guard and completion check — none reads the stated next command (`ADR-0.0.9` Rule 5, quoted in `obpi_lifecycle.py`)
@@ -121,7 +127,7 @@ The contract that changes is what the pipeline states as the next command: the d
 8. REQUIREMENT: A process holding only the repository can obtain the next command of an in-flight run. That read changes no marker field and appends no ledger event.
 9. NEVER: The stated next command is never gate evidence. No gate, hook refusal or completion check reads it (`ADR-0.0.9` Rule 5; the marker is Layer 3).
 10. NEVER: Remove or weaken a pipeline control (campaign § Amendments 2026-10-04 (2): "none is removed by this entry"). The `--from` entry points, the Stage 4 human-attestation pause, Step 4b, the Stage 4 round bound, `gz obpi precomplete` and the stale-marker handling all stand.
-11. NEVER: Add a CLI option, a subcommand, an output field or a second state file before the operator rules Open Design Question 1. When ruled, the Heavy-lane obligations of that surface (manpage row, help example, BDD scenario, `gz cli audit` clean) are part of this brief.
+11. REQUIREMENT (operator ruling 2026-10-04, Open Design Question 1): each command that moves a run across a boundary ends its output with the next command, and the read-only `gz obpi status` states the run's next command, or its blockers, in its human and `--json` output. No CLI option, subcommand or second state file is added. The Heavy-lane obligations of the changed `gz obpi status` output (the manpage, a BDD scenario, `gz cli audit` clean) are part of this brief.
 12. NEVER: Change a value an attested `REQ-0.13.0-*` literally asserts, or an assertion of its covering test, beyond what Open Design Question 2 rules. Ruled 2026-10-04 (A): the `next_command` value of `REQ-0.13.0-03-01` and the command clause of `REQ-0.13.0-03-04` change and are carried by Requirement 16. The human-action clause of `REQ-0.13.0-03-04`, all of `REQ-0.13.0-03-03`, and the other fields `REQ-0.13.0-03-01` names stand as attested. `ADR-0.13.0` is terminal, so `AGENTS.md` § OBPI Acceptance Protocol makes any further change an operator escalation, not an edit.
 13. ALWAYS: Edit the skill in `.gzkit/skills/` and in § The Iron Law only. The edit keeps the completion statement, the no-summary rule, the Stage 4 pause after Step 4b and the round-bound stop. It does not grow the body past its ceiling in `src/gzkit/skill_body_grandfather.json` (`.gzkit/rules/skill-authoring.md` § Parsimony item 6). It moves `skill-version` and `last_reviewed`, and `uv run gz agent sync control-surfaces` writes the mirrors.
 14. ALWAYS: Keep existing marker consumers working, including a marker written before `OBPI-0.35.0-15` that carries no recorded position. Such a marker reads as its launch position.
@@ -147,6 +153,8 @@ If B or C, where the query lives:
 - **(iii)** The read surface `OBPI-0.35.0-15` lands for the position, if it lands one.
 
 Recommendation: (iii) when it exists, otherwise (i). `gz obpi pipeline` with the option left off launches a run, writes the markers and appends `pipeline_launched` (`src/gzkit/commands/obpi_cmd.py` lines 893-903), so a mistyped query on that verb is a launch. `OBPI-0.13.0-03` denied itself "new CLI flags, JSON stdout modes, or alternate runtime subcommands"; that brief is sealed and does not bind this ruling.
+
+- **RULED 2026-10-04: C, with the query at (i).** Asked "how does a consumer obtain the next command?" with printing at each boundary plus a query on `gz obpi status` as option A, the operator answered, verbatim: "A". The options were put as one choice: print plus a query on `gz obpi status`; print plus an option on `gz obpi pipeline`; print only; a query only. Location (iii) does not exist, because OBPI-0.35.0-15 as ruled lands no query verb. Requirement 11 carries it.
 
 **2. The values three attested requirements literally assert.** `REQ-0.13.0-03-01`, `-02` and `-04` assert the launch-entry values (`--from=verify` at full launch, `--from=ceremony` after verify, the guarded-sync command at ceremony), and `tests/commands/test_obpi_pipeline.py` asserts them at lines 177-181, 345-349 and 446-450. Only the last of those tests carries a `@covers` binding (`REQ-0.13.0-03-04`, line 423); the `@covers("REQ-0.13.0-03-01")` binding sits on the resume-fallback test at `tests/test_pipeline_runtime.py` line 131. The skill prescribes other commands at those positions (rows 1, 5 and 10 below).
 
@@ -220,6 +228,7 @@ A dated record, read 2026-10-04 at `skill-version` 6.64.3. The skill and the cod
 - [ ] `src/gzkit/pipeline_markers.py` — `pipeline_resume_command` (652-667) falls back from an empty `next_command` to `resume_point`, and `pipeline_completion_reminder_message` (713-768) falls back again to `--from=verify`
 - [ ] `src/gzkit/commands/obpi_stages.py` — what each stage runner prints as it ends (227-233, 280-304, 327-358), and that a passed verification chains into ceremony in the same process
 - [ ] `src/gzkit/commands/obpi_cmd.py` — `obpi_pipeline_cmd` (796-982): the launch writes the markers once (884-903) and `--from=sync` requires `--attestor` and `--evidence-json` (960-973)
+- [ ] `src/gzkit/commands/status.py` — `obpi_status_cmd`, `_build_obpi_status_entry` and `_render_obpi_status_details`: what the verb returns today, and that it writes nothing
 - [ ] `scripts/session_orientation.py` — `collect_adr_pipeline` reports `stage` and `resume_command` from the marker and carries no blockers (line 1019)
 - [ ] `src/gzkit/hooks/scripts/pipeline.py` — the completion-reminder hook passes the marker to `pipeline_completion_reminder_message` (57-81)
 - [ ] `tests/test_pipeline_runtime.py` lines 131-167 — two attested tests pin today's fallbacks: the resume command from `resume_point`, and a reminder that carries blockers and the `--from=verify` command together
@@ -251,6 +260,7 @@ A dated record, read 2026-10-04 at `skill-version` 6.64.3. The skill and the cod
 ### Gate 3: Docs (Heavy only)
 
 - [ ] `docs/user/manpages/obpi-pipeline.md` § Runtime Behavior states where the next command is stated, how a fresh process obtains it and what a blocked position shows. Its per-stage statements match the runtime; the statements at lines 51-57 and 83-85, found stale at authoring, are corrected in the same patch
+- [ ] `docs/user/manpages/obpi-status.md` shows the next-command output, human and `--json`
 - [ ] `docs/user/runbook.md` § Step 2 describes the flow as the runtime now states it
 - [ ] `docs/governance/GovZero/obpi-runtime-contract.md` § Active Pipeline Marker Fields matches the marker
 - [ ] Docs build: `uv run mkdocs build --strict`
@@ -267,7 +277,7 @@ A dated record, read 2026-10-04 at `skill-version` 6.64.3. The skill and the cod
 ## Verification
 
 ```bash
-uv run -m unittest tests.test_pipeline_next_command tests.test_pipeline_runtime tests.commands.test_obpi_pipeline tests.scripts.test_session_orientation tests.test_hooks
+uv run -m unittest tests.test_pipeline_next_command tests.test_pipeline_runtime tests.commands.test_obpi_pipeline tests.commands.test_status tests.scripts.test_session_orientation tests.test_hooks
 uv run -m behave features/obpi_pipeline_next_command.feature
 uv run gz validate --documents --req-kind-discipline --cli-alignment --behave-req-tags
 uv run gz cli audit
@@ -283,7 +293,7 @@ The feature drives the real commands in a throwaway workspace, so no marker or l
 uv run -m behave features/obpi_pipeline_next_command.feature
 ```
 
-The product invocation of the read surface is added here when Open Design Question 1 is ruled. It is read-only, so it may run against this repository's own in-flight run.
+The read surface is `gz obpi status` (Open Design Question 1, ruled). The feature invokes it in the throwaway workspace; its output against this repository's own in-flight run is captured in Key Proof (Requirement 15).
 
 ## Acceptance Criteria
 
@@ -291,11 +301,11 @@ The product invocation of the read surface is added here when Open Design Questi
 
 - [ ] REQ-0.35.0-16-01 [BEHAVIOR]: Given every position a pipeline run can record, when the runtime derives the next command for that position, then it is the command `.gzkit/skills/gz-obpi-pipeline/SKILL.md` prescribes there, or the operator-ruled value for a row ruled under Open Design Question 3. One table-driven test holds a row per position, each row citing the skill section it transcribes, and a recordable position with no row fails the test
 - [ ] REQ-0.35.0-16-02 [BEHAVIOR]: Given a run launched with any entry (full, `--from=verify`, `--from=ceremony`, `--from=sync`) whose recorded position has advanced past the launch, when the next command is stated, then it is the command for the recorded position and not the command for the launch entry. A run with no boundary crossed since launch states the launch position's command
-- [ ] REQ-0.35.0-16-03 [BEHAVIOR]: Given an in-flight run whose position is recorded on disk, and a new process that holds only the repository (no conversation, no environment inherited from the run), when that process reads the run through the session orientation, and through the query surface if Open Design Question 1 rules one, then it obtains the command REQ-0.35.0-16-01 specifies for that position, and the read changes no marker field and appends no ledger event
+- [ ] REQ-0.35.0-16-03 [BEHAVIOR]: Given an in-flight run whose position is recorded on disk, and a new process that holds only the repository (no conversation, no environment inherited from the run), when that process reads the run through the session orientation and through `gz obpi status` (human and `--json`), then it obtains the command REQ-0.35.0-16-01 specifies for that position, and the read changes no marker field and appends no ledger event
 - [ ] REQ-0.35.0-16-04 [BEHAVIOR]: Given a blocked position (a failed verification command, or an `obpi_blocked_on_operator` event standing for the OBPI), when the marker stage output, the resume command, the completion reminder or the session orientation reports the run, then each states every blocker and none states a next command. When the blocker clears, the next command for the position is stated again
 - [ ] REQ-0.35.0-16-05 [BEHAVIOR]: Given the Stage 4 awaiting-attestation position on any lane and kind, when the runtime states the position, then the required human action is stated, and every consumer that states a command there states the human action with it
 - [ ] REQ-0.35.0-16-06 [SUPPORT]: `.gzkit/skills/gz-obpi-pipeline/SKILL.md` § The Iron Law names the runtime's stated next command as what carries a run across a boundary, and keeps the completion statement, the no-summary rule, the Stage 4 attestation pause after Step 4b and the round-bound stop. Witnessed by `artifact_edited` citing `.gzkit/skills/gz-obpi-pipeline/SKILL.md` + `gz validate --cli-alignment`.
-- [ ] REQ-0.35.0-16-07 [SUPPORT]: `docs/user/manpages/obpi-pipeline.md` states where the next command is stated at each boundary, how a fresh process obtains it and what a blocked position shows, and its per-stage statements match the runtime. `docs/user/runbook.md` § Step 2 and `docs/governance/GovZero/obpi-runtime-contract.md` § Active Pipeline Marker Fields agree with it. Witnessed by `artifact_edited` citing `docs/user/manpages/obpi-pipeline.md` + `gz validate --cli-alignment`.
+- [ ] REQ-0.35.0-16-07 [SUPPORT]: `docs/user/manpages/obpi-pipeline.md` states where the next command is stated at each boundary, how a fresh process obtains it and what a blocked position shows, and its per-stage statements match the runtime. `docs/user/manpages/obpi-status.md` shows the next-command output, and `docs/user/runbook.md` § Step 2 and `docs/governance/GovZero/obpi-runtime-contract.md` § Active Pipeline Marker Fields agree with it. Witnessed by `artifact_edited` citing `docs/user/manpages/obpi-pipeline.md` + `gz validate --cli-alignment`.
 
 ## Completion Checklist
 
