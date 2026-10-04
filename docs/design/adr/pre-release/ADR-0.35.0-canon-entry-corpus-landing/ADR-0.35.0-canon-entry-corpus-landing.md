@@ -111,6 +111,15 @@ WHAT IT COSTS THIS ADR. Closeout now waits on five more items, on a subject othe
 corpus. No control of the pipeline is removed by any of them (campaign § Amendments
 2026-10-04 (2): "none is removed by this entry").
 
+AMENDED 2026-10-04 (2) (operator-ruled) -- CHECKLIST ITEM 17 IS DELIVERED AS TWO ITEMS, 17
+AND 20. Asked whether the brief for item 17 is split in two (`OBPI-0.35.0-17` § Open Design
+Questions, Q6), the operator answered, verbatim: *"A"*. Item 17 makes the control inventory
+of the pipeline skill's body and serves each stage's procedure from the runtime, with the
+skill body untouched. Item 20 performs the cutover: the skill body keeps its invocation
+text only. The operator attests the inventory at item 17, before any text is removed. No
+scope is added and § Decision item 13 requires what it required before; the scorecard
+records a split, not a baseline raise.
+
 ## Decision
 
 <!-- The tombstone fold's algebra is pinned in item 1 below. It is the one
@@ -184,7 +193,7 @@ SOURCE-OF-TRUTH DIRECTION (operator-ruled this session, stated explicitly rather
 
 12. THE RUNTIME STATES THE NEXT COMMAND FOR WHERE THE RUN IS (operator-ruled 2026-10-04, GHI #1173; repair assignment). At every boundary a run crosses, the runtime states the one next command for that position; a blocked position states its blocker and no next command. Obligation repaired: `ADR-0.13.0` § Decision, "Expose structured stage outputs for current stage, blockers, required human action, and next command or resume point". The rule against stopping between stages keeps its purpose and gains this as its mechanism. Depends on item 11.
 
-13. THE PIPELINE SKILL'S STAGE PROCEDURE IS SERVED BY THE RUNTIME, ONE STAGE AT A TIME (operator-ruled 2026-10-04, GHI #1174; repair assignment). The procedure an agent follows for a stage is delivered when that stage is entered. Every control the skill states today is still delivered at the stage where it applies; this is a change of delivery, never a shortening. Obligation repaired: `ADR-0.13.0` § Decision, "Make skills, hooks, and future agent control surfaces call into the same runtime engine instead of re-implementing stage logic in prose". Depends on item 12.
+13. THE PIPELINE SKILL'S STAGE PROCEDURE IS SERVED BY THE RUNTIME, ONE STAGE AT A TIME (operator-ruled 2026-10-04, GHI #1174; repair assignment). The procedure an agent follows for a stage is delivered when that stage is entered. Every control the skill states today is still delivered at the stage where it applies; this is a change of delivery, never a shortening. Obligation repaired: `ADR-0.13.0` § Decision, "Make skills, hooks, and future agent control surfaces call into the same runtime engine instead of re-implementing stage logic in prose". Depends on item 12. AMENDED 2026-10-04 (operator-ruled, `OBPI-0.35.0-17` Q6): delivered as checklist items 17 and 20. Item 17 makes the control inventory and the runtime serving with the skill body untouched; item 20 performs the cutover, after the operator has attested the inventory.
 
 14. A STAGE 2 DISPATCH'S OUTCOME IS RECORDED BY THE RUNTIME (operator-ruled 2026-10-04, GHI #1175; repair assignment). The runtime records how each dispatch ended, from the subagent's structured result: its status, the files it changed, the tests it added, its concerns, and the fix cycles and review findings that followed. Obligation repaired: `REQ-0.18.0-02-04`, "Each subagent MUST return a structured result: `{status, files_changed, tests_added, concerns}`", and `OBPI-0.18.0-05`, "Pipeline runtime MUST track subagent dispatch state". Stage 2 dispatch credit stays Layer-2 evidence.
 
@@ -368,9 +377,10 @@ Planning estimates, not elapsed-time evidence or implementation authorization:
 | 13 | 2–3 | 05/06/07/09 |
 | 15 | 2–3 | none inside this ADR (amendment 2026-10-04) |
 | 16 | 1–2 | 15 |
-| 17 | 3–5 | 16 |
+| 17 | 2–3 | 16 |
 | 18 | 2–3 | none inside this ADR |
 | 19 | 2–3 | none inside this ADR |
+| 20 | 1–2 | 17, attested (split from 17, amendment 2026-10-04 (2)) |
 
 The dependency spine is 05 -> 06 -> 14 -> 07 -> downstream completion (14 inserted by
 operator ruling 2026-09-24, so that 07 builds on a promotion seam that already refuses
@@ -393,8 +403,9 @@ a newly discovered independent product requires a decomposition decision, not si
 expansion or deletion of a failure scenario. The count is the Decomposition Scorecard's
 `Final Target OBPI Count`.
 
-Items 15-19 (amendment 2026-10-04) stand off the corpus spine: none depends on items 01-14
-and none of those depends on them. 15 -> 16 -> 17 is their only internal order. Where they
+Items 15-20 (amendments 2026-10-04) stand off the corpus spine: none depends on items 01-14
+and none of those depends on them. 15 -> 16 -> 17 -> 20 is their only internal order. Rows
+17 and 20 divide the estimate row 17 carried before the split. Where they
 sit relative to the unlanded corpus items is the operator's to rule and is not ruled here.
 
 ## Decomposition Scorecard
@@ -412,10 +423,10 @@ sit relative to the unlanded corpus items is the operator's to rule and is not r
 - Baseline Selected: 16
 - Split Single-Narrative: 1
 - Split Surface Boundary: 1
-- Split State Anchor: 0
+- Split State Anchor: 1
 - Split Testability Ceiling: 1
-- Split Total: 3
-- Final Target OBPI Count: 19
+- Split Total: 4
+- Final Target OBPI Count: 20
 
 <!-- Scoring basis (each dimension scored against the matrix, not asserted):
      Data/State 2      — new `CorpusEntry` fields, new `<consumer>.lineage.json`
@@ -462,6 +473,14 @@ sit relative to the unlanded corpus items is the operator's to rule and is not r
        clusters and splits again into "atomic write" / "resume, status,
        rollback". Flagged up front rather than discovered mid-flight; that
        contingency has NOT fired, and if it does the target goes 10 -> 11.
+
+     AMENDED 2026-10-04 (2) (operator-ruled, `OBPI-0.35.0-17` Q6): 16 + 4 = 20. Item 17
+       is split in two, so this is a SPLIT ADDER and the baseline is unchanged: the split
+       rules divide a fixed scope, and no scope is added. The rule is State Anchor
+       ("Isolate any component that writes to the Ledger or modifies persistent state").
+       The cutover removes text from the pipeline skill's body, a persistent canonical
+       surface, and is isolated from the inventory and the runtime serving, which add
+       files and remove nothing. Item 20 carries the cutover.
 
      AMENDED 2026-10-04 (operator-ruled, GHI #1172-#1176): 16 + 3 = 19. Five repair
        assignments on the OBPI pipeline enter as ADDED scope (§ Intent amendment
@@ -522,9 +541,10 @@ sit relative to the unlanded corpus items is the operator's to rule and is not r
 - [ ] Meaning-preserving landing -- a candidate that removes any block of the prior committed rendition is promoted only with a retention map. Each condition of each removed block is either KEPT at a quoted candidate span or DROPPED with a reason the operator approves; the conditions are extracted by an independent reviewer; the map is persisted as `<consumer>.retention.json`. Sequenced before item 7 by operator ruling 2026-09-24 (GHI #1090)
 - [ ] Pipeline run position on disk -- the stage a run has reached and its position inside that stage are recorded as the run crosses each boundary, readable by a process that did not perform the run; the marker stays rebuildable Layer 3. Repair assignment against `ADR-0.13.0` (GHI #1172, amendment 2026-10-04)
 - [ ] Next command for the run's position -- at every boundary the runtime states the one next command for where the run is, or the blocker when there is none. Repair assignment against `ADR-0.13.0` (GHI #1173, amendment 2026-10-04)
-- [ ] Stage procedure served by the runtime -- the pipeline skill's procedure for a stage is delivered when that stage is entered, with every control it states today still delivered at its stage. Repair assignment against `ADR-0.13.0` (GHI #1174, amendment 2026-10-04)
+- [ ] Stage procedure served by the runtime -- a control inventory of the pipeline skill's body is made first, and each stage's procedure is delivered when that stage is entered, with the skill body untouched. Repair assignment against `ADR-0.13.0` (GHI #1174, amendment 2026-10-04; split 2026-10-04, see item 20)
 - [ ] Stage 2 dispatch outcome recording -- the runtime records each dispatch's status, changed files, added tests, concerns, fix cycles and review findings from the subagent's structured result. Repair assignment against `ADR-0.18.0` (GHI #1175, amendment 2026-10-04)
 - [ ] Lock continuity across sessions -- a session continuing an OBPI another session holds leaves a register entry naming both occupants, or is refused with the recovery named. Repair assignment against `ADR-0.0.41` (GHI #1176, amendment 2026-10-04)
+- [ ] Pipeline skill cutover to the served procedure -- the skill body keeps its invocation text only, with every control in the item 17 inventory still delivered at its stage, every reader and audit of the skill body following the text to where it is served, and the incident history kept in a rationale record. Repair assignment against `ADR-0.13.0` (GHI #1174, split from item 17 by amendment 2026-10-04 (2))
 
 ## Q&A Transcript
 

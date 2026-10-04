@@ -14,33 +14,18 @@ allowlist:
   - src/gzkit/governance/pipeline_control_inventory.py
   - src/gzkit/commands/obpi_stages.py
   - src/gzkit/pipeline_runtime.py
-  - src/gzkit/governance/trust_audits/cli.py
-  - src/gzkit/skill_body_grandfather.json
   - src/gzkit/registries.py
   - src/gzkit/content/retention.py
   - data/obpi_pipeline_control_inventory.json
   - data/config_registry.json
-  - data/mandated_tier1_dispatch.json
   - tests/governance/test_pipeline_control_inventory.py
   - tests/test_pipeline_procedure.py
   - tests/commands/test_obpi_stages.py
   - tests/commands/test_obpi_pipeline.py
-  - tests/governance/test_cli_alignment_scope.py
-  - tests/governance/test_audit_skill_alignment_seam.py
-  - tests/governance/test_skill_code_citations.py
-  - tests/test_obpi_skill_migration.py
-  - tests/skills/test_skill_surface_sync_justify.py
-  - tests/governance/test_skill_self_close_drift.py
-  - tests/governance/test_agent_contract_fold.py
-  - tests/governance/test_mandated_tier1_dispatch.py
   - features/obpi_pipeline_stage_procedure.feature
   - features/steps/obpi_pipeline_stage_procedure_steps.py
   - docs/user/manpages/obpi-pipeline.md
   - docs/user/runbook.md
-  - docs/user/concepts/subagent-pipeline.md
-  - docs/user/skills/gz-obpi-pipeline.md
-  - docs/governance/governance_runbook.md
-  - docs/governance/obpi-pipeline-control-rationale.md
   - docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-17-stage-procedure-served-by-runtime.md
 reqs:
   - REQ-0.35.0-17-01
@@ -50,9 +35,6 @@ reqs:
   - REQ-0.35.0-17-05
   - REQ-0.35.0-17-06
   - REQ-0.35.0-17-07
-  - REQ-0.35.0-17-08
-  - REQ-0.35.0-17-09
-  - REQ-0.35.0-17-10
 verification:
   - uv run -m unittest tests.governance.test_pipeline_control_inventory tests.test_pipeline_procedure
   - uv run -m unittest tests.commands.test_obpi_stages tests.commands.test_obpi_pipeline
@@ -70,10 +52,12 @@ verification:
 ## ADR Item
 
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/ADR-0.35.0-canon-entry-corpus-landing.md`
-- **Checklist Item:** #17 - "Stage procedure served by the runtime -- the pipeline skill's procedure for a stage is delivered when that stage is entered, with every control it states today still delivered at its stage. Repair assignment against `ADR-0.13.0` (GHI #1174, amendment 2026-10-04)"
+- **Checklist Item:** #17 - "Stage procedure served by the runtime -- a control inventory of the pipeline skill's body is made first, and each stage's procedure is delivered when that stage is entered, with the skill body untouched. Repair assignment against `ADR-0.13.0` (GHI #1174, amendment 2026-10-04; split 2026-10-04, see item 20)"
 - **Decision Item:** § Decision item 13, verbatim - "THE PIPELINE SKILL'S STAGE PROCEDURE IS SERVED BY THE RUNTIME, ONE STAGE AT A TIME (operator-ruled 2026-10-04, GHI #1174; repair assignment). The procedure an agent follows for a stage is delivered when that stage is entered. Every control the skill states today is still delivered at the stage where it applies; this is a change of delivery, never a shortening. Obligation repaired: `ADR-0.13.0` § Decision, "Make skills, hooks, and future agent control surfaces call into the same runtime engine instead of re-implementing stage logic in prose". Depends on item 12."
 
 **Status:** Draft
+
+**Split 2026-10-04 (operator-ruled, Q6).** This brief is the first of two that deliver § Decision item 13. It makes the control inventory and the runtime serving, and it leaves the skill body untouched. `OBPI-0.35.0-20-pipeline-skill-cutover` performs the cutover after this brief is attested.
 
 **This is a repair assignment.** It repairs an obligation that `ADR-0.13.0-obpi-pipeline-runtime-surface` stated and its shipped surface does not meet. That ADR is `Validated` and is not reopened or edited. The obligation keeps its original identity:
 
@@ -86,7 +70,7 @@ Numbering: the Decision item's "Depends on item 12" names § Decision item 12, w
 
 ## Objective
 
-When a pipeline run enters a stage, the runtime delivers that stage's procedure, and the text loaded when the `gz-obpi-pipeline` skill is invoked carries no stage's procedure. A control inventory, made before the skill body is touched, lists every control the skill states today and shows each one delivered at every stage where it applies afterwards. None is dropped and none is shortened.
+When a pipeline run enters a stage, the runtime delivers that stage's procedure, copied verbatim from the `gz-obpi-pipeline` skill body, which this OBPI does not edit. A control inventory, made first, lists every control the skill states today and shows each one delivered at every stage where it applies. Nothing is removed here, so nothing can be dropped or shortened; the cutover that reduces the skill body to its invocation text is `OBPI-0.35.0-20`.
 
 ## Lane
 
@@ -100,33 +84,26 @@ The contract changes are the stage-entry output of `gz obpi pipeline` (it now de
 
 ## Allowed Paths
 
-Paths marked (Q1), (Q2) or (Q4) follow the recommended option of that question in § Open Design Questions. A different ruling changes those paths by an operator-ratified allowlist amendment before the plan is audited.
+Paths marked (Q1) or (Q4) follow the recommended option of that question in § Open Design Questions. A different ruling changes those paths by an operator-ratified allowlist amendment before the plan is audited.
 
-- `.gzkit/skills/gz-obpi-pipeline/SKILL.md` — the canonical skill body: after this OBPI it holds the invocation text only
+- `.gzkit/skills/gz-obpi-pipeline/SKILL.md` — the `skill-version` and `last_reviewed` frontmatter only, which move because the package gains files; the body is not edited (Requirement 8)
 - `.gzkit/skills/gz-obpi-pipeline/references/**` — (Q1) the per-stage procedure files are created here, beside the three reference files the skill already has; **CREATE** for each new stage file
 - `src/gzkit/skills/gz-obpi-pipeline/**`, `.claude/skills/gz-obpi-pipeline/**`, `.agents/skills/gz-obpi-pipeline/**` — the wheel copy and the vendor mirrors, written only by the control-surface sync, never hand-edited
 - `src/gzkit/pipeline_procedure.py` — **CREATE**, sibling of the existing pipeline stage-fence module in the same directory: resolves the procedure for a stage and reports when it cannot
 - `src/gzkit/governance/pipeline_control_inventory.py` — **CREATE**, sibling of the brief-path-validity module in the same directory: the inventory model and the pure, total checker
 - `src/gzkit/commands/obpi_stages.py` — the stage runners and the full-launch handoff printer, where stage-entry output is produced
 - `src/gzkit/pipeline_runtime.py` — the shared engine the CLI and the generated hooks read
-- `src/gzkit/governance/trust_audits/cli.py` — the three audits that read skill text from the skill body file only (verb resolution, wielding skill, source-path citations); they must read the served procedure text too
-- `src/gzkit/skill_body_grandfather.json` — the fixed body ceiling for this skill: lowered or removed, never raised
 - `src/gzkit/registries.py` — READ-ONLY: the single read seam for a registry under the data directory, imported by the inventory loader
 - `src/gzkit/content/retention.py` — READ-ONLY: (Q4) the block splitter and coverage primitives of OBPI-0.35.0-14, imported if the ruling is to reuse them
 - `data/obpi_pipeline_control_inventory.json` — **CREATE** (Q4), sibling of the mandated-dispatch registry in the same directory: the control inventory
 - `data/config_registry.json` — declares the new registry and its code owner; without the entry the config-registry gate fails closed
-- `data/mandated_tier1_dispatch.json` — its two directive paths name the skill body as the file that carries the Step 4b dispatch; they follow that text to where it is delivered
 - `tests/governance/test_pipeline_control_inventory.py` — **CREATE**, sibling of the mandated-dispatch test in the same directory
 - `tests/test_pipeline_procedure.py` — **CREATE**, sibling of the pipeline stage-fence test in the same directory
 - `tests/commands/test_obpi_stages.py`, `tests/commands/test_obpi_pipeline.py` — stage-entry output through the command layer
-- `tests/governance/test_cli_alignment_scope.py`, `tests/governance/test_audit_skill_alignment_seam.py`, `tests/governance/test_skill_code_citations.py` — the audits' source sets
-- `tests/test_obpi_skill_migration.py`, `tests/skills/test_skill_surface_sync_justify.py`, `tests/governance/test_skill_self_close_drift.py`, `tests/governance/test_agent_contract_fold.py`, `tests/governance/test_mandated_tier1_dispatch.py` — existing tests that read the skill body for stage text, most of them proofs of attested REQs (Requirement 9)
 - `features/obpi_pipeline_stage_procedure.feature` — **CREATE**, sibling of the subagent-pipeline feature in the same directory
 - `features/steps/obpi_pipeline_stage_procedure_steps.py` — **CREATE**, sibling of the subagent-pipeline steps in the same directory
 - `docs/user/manpages/obpi-pipeline.md` — the command contract: what stage entry delivers, the refusal and its recovery
-- `docs/user/runbook.md`, `docs/governance/governance_runbook.md` — the operator and governance flows where they describe the skill
-- `docs/user/concepts/subagent-pipeline.md`, `docs/user/skills/gz-obpi-pipeline.md` — where they say the skill body is the execution contract
-- `docs/governance/obpi-pipeline-control-rationale.md` — **CREATE** (Q2), sibling of the skill-surface-sync rationale in the same directory: the rationale record keyed by control
+- `docs/user/runbook.md` — the operator flow where it describes what a stage entry prints
 - `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-17-stage-procedure-served-by-runtime.md`
 
 ## Denied Paths
@@ -134,7 +111,8 @@ Paths marked (Q1), (Q2) or (Q4) follow the recommended option of that question i
 - `src/gzkit/commands/obpi_cmd.py`, `src/gzkit/pipeline_markers.py` — both are registered security surfaces (`data/security_surfaces.json`: `auth_boundaries`, `subprocess_user_input`), and both belong to the position and next-command work of items 15 and 16. This OBPI consumes what those items land. If the surface OBPI-0.35.0-16 lands can only be extended inside one of these files, that is an allowlist amendment and a `sensitivity: security` declaration by operator ruling, not an in-flight edit.
 - `src/gzkit/cli/parser_obpi.py` — no verb and no flag is added here. The stage-entry surface is OBPI-0.35.0-16's.
 - `.claude/hooks/**`, `src/gzkit/hooks/**` — no hook is changed. The hooks are the hard enforcement the skill's own design notes name, and changing one is a change to a control.
-- `src/gzkit/skill_contract.py`, `src/gzkit/skills_audit.py` — the body limits and the audit stay as they are. Only this skill's grandfather entry moves, and only downward.
+- The body text of `.gzkit/skills/gz-obpi-pipeline/SKILL.md`, `src/gzkit/governance/trust_audits/cli.py`, `src/gzkit/skill_body_grandfather.json`, `data/mandated_tier1_dispatch.json`, every test that reads the skill body for stage text, and the rationale record — the cutover is `OBPI-0.35.0-20`. This OBPI removes nothing from the skill body and repoints no reader of it.
+- `src/gzkit/skill_contract.py`, `src/gzkit/skills_audit.py` — the body limits and the audit stay as they are.
 - `src/gzkit/sync_skills.py`, `src/gzkit/sync_surfaces.py`, `src/gzkit/skills_mirror.py`, `pyproject.toml` — the delivery machinery is unchanged under the recommended Q1 option. The wheel already ships every Markdown file of a skill package, and the sync already mirrors a skill's supporting files.
 - `src/gzkit/ledger_events.py`, `src/gzkit/schemas/ledger.json` — no ledger event is added. Recording a run's position is item 15's.
 - `.gzkit/skills/**` outside `gz-obpi-pipeline` — no other skill is converted. The catalog-wide form is `ADR-pool.skill-runtime-authority-inversion`, which stays in the pool.
@@ -147,19 +125,19 @@ Paths marked (Q1), (Q2) or (Q4) follow the recommended option of that question i
 ## Requirements (FAIL-CLOSED)
 
 1. REQUIREMENT: This OBPI repairs `ADR-0.13.0` § Decision and § Promotion Criteria item 4, as quoted under § ADR Item. Its evidence is cited against those quotes. It does not edit `ADR-0.13.0`, does not reopen `OBPI-0.13.0-05`, and does not claim any `REQ-0.13.0-*`.
-2. REQUIREMENT: The inventory is made BEFORE any edit to the skill body. The first plan task pins the baseline (the commit, the skill version and the SHA-256 of the body) and produces the complete before-state. No later task may edit the pinned baseline, and no task may edit the skill body until the before-state passes REQ-0.35.0-17-02.
+2. REQUIREMENT: The inventory is made BEFORE any edit to the skill body. The first plan task pins the baseline (the commit, the skill version and the SHA-256 of the body) and produces the complete before-state. No later task may edit the pinned baseline. No task of this OBPI edits the skill body at all; the first edit to it is OBPI-0.35.0-20's, after this OBPI is attested.
 3. REQUIREMENT: Nothing is dropped. The inventory model has no "removed" or "dropped" disposition for a control. Every control row is delivered at every position in its `applies_at`. Two controls that contradict each other are both carried as written and put to the operator; a correction is made only by a ruling recorded in the Change Log. Three are already known: `SKILL.md:1549` prescribes native plan mode where `SKILL.md:88-98` prescribes the plan-audit skill first; `SKILL.md:1654` names an abort release with `--force` where `SKILL.md:1562-1575` requires an abandon category; and the `--from` table at `SKILL.md:163-167` lists two entry points where the parser registers three (`verify`, `ceremony`, `sync`).
 4. REQUIREMENT: Delivery is verbatim. A control's delivered span equals its baseline quote byte for byte. A row may differ only when it declares the rewording with a reason (a cross-reference that no longer resolves, or a ruled correction), and every reworded row id is named in the operator's attestation text. Operator quotations and the blocks the skill marks as verbatim canon (§ Work selection) are never reworded.
-5. REQUIREMENT: Incident history is inventoried like every other block. A sentence inside a history paragraph that binds behaviour is a control row and is delivered at its stage. Only text that binds nothing moves to the rationale record, verbatim, under the id of the control it explains. Classifying a block as history never removes it from coverage. This is the fence against the hazard GHI #1091 records.
+5. REQUIREMENT: Incident history is inventoried like every other block. A sentence inside a history paragraph that binds behaviour is a control row and is delivered at its stage. Text that binds nothing is classed `rationale` under the id of the control it explains. It stays in the served copy in this OBPI and moves to the rationale record, verbatim, in OBPI-0.35.0-20. Classifying a block as history never removes it from coverage. This is the fence against the hazard GHI #1091 records.
 6. REQUIREMENT: A stage's procedure is delivered when the stage is entered, through the surface OBPI-0.35.0-16 lands. A stage entered through `--from` receives the same bytes as the same stage reached in sequence. This holds for every `--from` value the parser registers, not only the two the skill's table lists.
 7. REQUIREMENT: Delivery fails closed. When a stage's procedure is missing, unreadable, empty or (if delivered by pointer) not the bytes the runtime expects, stage entry exits non-zero, enters nothing, and prints three-part recovery prose per `.gzkit/rules/guardrail-feedback-prose.md`. The covering test asserts the prose.
-8. REQUIREMENT: The skill body holds the invocation text only: what the skill is for, when to use it, how the runtime is launched, and the controls that apply before any stage or at every stage. It states that each stage's procedure is served by the runtime on entry. Its body length is at or below the new ceiling, and the ceiling is lowered to that length or removed.
-9. REQUIREMENT: Every existing reader of the skill body is repaired in the same change. The known readers are the five test modules and the registry named in Allowed Paths; the plan searches for others before the body is edited. Where a reader proves an attested REQ of a terminal ADR (`REQ-0.0.14-03-*`, `REQ-0.0.19-04-06`, `REQ-0.0.36-05-06`), `docs/governance/attested-req-subject-retirement.md` governs: read what the REQ literally asserts, repoint the proof at the place the text is now delivered, keep the `@covers` binding, and record the amendment in the test. A REQ that literally asserts the text lives in the skill body file is escalated to the operator, not rewritten.
-10. REQUIREMENT: The audits read what the agent is served. `gz validate --cli-alignment`, `gz validate --skill-alignment` and the source-path citation audit read every served stage procedure. A check that stays green because it no longer reads the moved text is a failure of this OBPI.
+8. REQUIREMENT: The skill body is not edited. Its digest at completion equals the `body_sha256` the inventory pins. Each stage's procedure is COPIED into the served text, so between this OBPI and OBPI-0.35.0-20 a stage's procedure loads twice, once from the body and once from the runtime. The split ruling accepts that cost.
+9. REQUIREMENT: No reader of the skill body is changed. The tests and the registry that read it for stage text pass unchanged, which is the control that the body was not touched. Repointing them is OBPI-0.35.0-20's.
+10. REQUIREMENT: Nothing served is unaudited. The audits keep reading the skill body, which still carries every stage's text, and each served procedure equals baseline text those audits already read (Requirement 4). Widening `gz validate --cli-alignment`, `gz validate --skill-alignment` and the source-path citation audit to the served files is OBPI-0.35.0-20's, and lands there before any text leaves the body.
 11. REQUIREMENT: Skill edits are made in `.gzkit/skills/` only. The skill version and `last_reviewed` move in the same edit, and `uv run gz agent sync control-surfaces` regenerates the wheel copy and the mirrors (`.gzkit/rules/skill-surface-sync.md`).
-12. REQUIREMENT: One real run is performed under the new delivery and recorded in Key Proof with each stage-entry output it received. Which run counts is Q6.
+12. REQUIREMENT: The stage-entry output is observed on a real run and recorded in Key Proof: this OBPI's own Stages 3 to 5, entered after the serving is in the tree. The full run under the new delivery, from Stage 1, is OBPI-0.35.0-20's own run (Q6, ruled).
 13. NEVER change, disable or weaken a hook, a validator, a gate, a `gz check` step or a runtime refusal. No control of the pipeline is removed (campaign § Amendments 2026-10-04 (2): "none is removed by this entry").
-14. NEVER compress, merge, summarize or reword to save length. This is a change of delivery, never a shortening (§ Decision item 13; operator under GHI #460: "i don't trust shortening though"). See Q5 for the rule this sets aside for this OBPI.
+14. NEVER compress, merge, summarize or reword to save length. This is a change of delivery, never a shortening (§ Decision item 13; operator under GHI #460: "i don't trust shortening though"). The rule this sets aside is Q5, which now sits in OBPI-0.35.0-20 with the cutover.
 15. NEVER record a run's position or derive its next command here. Those are items 15 and 16. This OBPI adds the procedure to the surface they land.
 16. ALWAYS disclose the residual. The inventory proves that a control's text is present in what a stage is served. It does not prove that an agent reads or follows it, that extraction caught every sub-clause, or that one run generalizes.
 
@@ -208,6 +186,8 @@ The inventory is `data/obpi_pipeline_control_inventory.json` (Q4). It is a compl
 
 The checker is pure and total: given the inventory, the baseline body, the invocation text, the text served per stage and the rationale record, it returns every violation, never the first only. Violations: the blocks do not reproduce the baseline digest; a block has an uncovered meaningful character; a quote is not a substring of its block; a control has an empty or unknown `applies_at`; a control's `delivered_span` is absent from the text delivered at one of its positions; a `delivered_span` differs from its quote without a declared rewording and reason; a `non_control` entry has no class or an empty reason; a `rationale` quote is absent from the rationale record under the id it explains; two rows share an id; `extracted_by` or `mapped_by` is empty, or the two are equal after case-folding and trimming.
 
+Phasing after the split (Q6, ruled). This OBPI runs every check on the real tree except two that have no subject until the cutover: the rationale-record check, and the placement check that no stage's control sits in the invocation text. Both are proven here on synthetic fixtures (REQ-0.35.0-17-01) and applied to the real tree by OBPI-0.35.0-20. Until then the invocation text is the untouched skill body, which carries every control.
+
 Dated record, 2026-10-04, skill version 6.64.3, re-measure before relying on it: the body is 1,697 lines as the skill audit counts them, against a ceiling of 1,710 in `src/gzkit/skill_body_grandfather.json`; the five stage sections hold 93,677 of the file's 123,582 characters, and Stage 4 alone holds 44,456. One reader's hand count found about 224 distinct binding statements, with a restatement counted once (22 before any stage, 19 in Stage 1, 48 in Stage 2, 30 in Stage 3, 67 in Stage 4, 18 in Stage 5, 20 in the cross-stage sections after Stage 5). That count is a sizing estimate. It is not the inventory, and the inventory's extraction is independent of it.
 
 ## Open Design Questions (operator rules before plan)
@@ -215,11 +195,12 @@ Dated record, 2026-10-04, skill version 6.64.3, re-measure before relying on it:
 The GHI leaves each of these open. The brief is written to the recommended option so that it is checkable, and names what a different ruling changes.
 
 - **Q1. Where the stage procedures live once they leave the skill body.** (a) Per-stage Markdown files inside the skill package, read and served by the runtime. (b) Package data under `src/gzkit/`, read through `importlib.resources`. (c) Text held in runtime code. **Recommended: (a).** The procedures stay operator-authored canon under `.gzkit/skills/` with the existing version, mirror, wheel and audit machinery, and the verbs they name keep a wielding skill. (b) ties the procedure to the runtime version an adopter has installed, which is its real advantage, but creates a canonical surface outside `.gzkit/` and needs the sync, the distribution audit and `pyproject.toml`. Under (a) or (b) the audits in Requirement 10 must be widened either way: today they read the skill body file only (`src/gzkit/governance/trust_audits/cli.py:163`, `:364`, `:521`).
-- **Q2. Where the incident history goes.** (a) `docs/governance/obpi-pipeline-control-rationale.md`, keyed by control id, following the existing rationale documents. (b) A reference file beside the skill, which the mirrors and the wheel carry. (c) Inside the inventory rows. **Recommended: (a)**, with each delivered control gaining a pointer to its entry. `.gzkit/rules/skill-authoring.md` § Parsimony clause 1 also asks for "one sentence of reason" in the body; where the control's own sentence already gives its reason it stays, and no new summary sentence is written, because a summary is a rewording (Requirement 14). (a) is not delivered to adopters; (b) is, at the cost of loading history beside the procedure again.
-- **Q3. Whether the runtime prints the procedure or points at it, and in what unit.** (a) Print the stage's text at entry. (b) Print a path and a digest; the agent reads the file. (c) Serve by sub-stage position (4a, 4a-v, 4b), which needs the positions item 15 records. **Recommended: (b), with (c) considered once item 15 has landed.** Stage 4 is 44,456 characters today. A harness that truncates long command output would cut that text with no marker, and a control lost in transport is a dropped control. Measure the harness limit before choosing (a). The cost of (b) is one more step the agent must take; REQ-0.35.0-17-06 covers the missing file, not the unread one.
+- **Q2. Where the incident history goes.** Moved with the cutover: the question and its ruling are in `OBPI-0.35.0-20` § Open Design Questions.
+- **Q3. Whether the runtime prints the procedure or points at it, and in what unit.** (a) Print the stage's text at entry. (b) Print a path and a digest; the agent reads the file. (c) Serve by sub-stage position (4a, 4a-v, 4b), which needs the positions item 15 records. **Recommended: (b), with (c) considered once item 15 has landed.** Stage 4 is 44,456 characters today. A harness that truncates long command output would cut that text with no marker, and a control lost in transport is a dropped control. Measure the harness limit before choosing (a). The cost of (b) is one more step the agent must take; REQ-0.35.0-17-05 covers the missing file, not the unread one.
 - **Q4. The inventory's home, its independence rule and its standing check.** The brief puts it in `data/` (declared in `data/config_registry.json`), requires that the agent who extracts controls is not the agent who maps and moves them (the rule § Decision item 10 set for retention maps), and keeps the check as a unit test that runs in `gz check`. Alternatives: the inventory beside the skill (it would then be mirrored into every vendor surface); no independence rule (cheaper, and the shape GHI #1091 records); a new `gz validate` scope instead of a test (a standing gate with its own flag, manpage row and registry entries). A ruling against independence removes that violation from REQ-0.35.0-17-01. Also ruled here: whether the checker reuses the block splitter and coverage check of `src/gzkit/content/retention.py` (recommended, read-only) or carries its own.
-- **Q5. A rule and a directive conflict; both are quoted.** `.gzkit/rules/skill-authoring.md` § Parsimony clause 6: "Lifting to `references/` is the move after that search, not instead of it, and the commit says what was compressed as well as what was lifted." `AGENTS.md` § Behavior Rules: "A size limit triggers a compress-and-merge pass before any growth or extraction; say what was compressed." Against them, § Decision item 13: "this is a change of delivery, never a shortening." **Recommended:** the Decision governs this OBPI, as the later and surface-specific ruling. Nothing is compressed, and the commit says so. Any compression of the served procedures is later work, fenced by this inventory.
+- **Q5. A rule and a directive conflict.** Moved with the cutover: the question and its ruling are in `OBPI-0.35.0-20` § Open Design Questions. Nothing is lifted out of the skill body in this OBPI.
 - **Q6. Proposed split, and which run is the real run.** Authored as one brief, as assigned. It carries ten REQs over four surfaces, and it asks one pass to make the before-inventory and then remove the text the inventory protects, so no gate can fire between "inventory accepted" and "text removed". **Proposed:** two briefs. The first adds the inventory's before-state and the runtime serving, with each stage's procedure copied verbatim and the skill body untouched; nothing can be lost, and the operator attests the inventory. The second performs the cutover (REQ-04 and REQ-07 to REQ-10, Requirement 9) and is itself executed, from Stage 1, under the delivery the first one landed, which makes it the real run. The cost is one more checklist item and scorecard amendment on the ADR, and each stage's procedure loading twice between the two. If the brief stays whole, the real run can only be this OBPI's own Stages 3 to 5 re-entered after the cutover, with the first full run being the next operator-initiated OBPI, and GHI #1174 stays open until that run is cited.
+  - **RULED 2026-10-04: split.** Asked "is brief 17 split in two?", the operator answered, verbatim: "A". This brief keeps the inventory and the runtime serving. `OBPI-0.35.0-20-pipeline-skill-cutover` carries the cutover as parent checklist item 20 (§ Intent amendment 2026-10-04 (2)). REQ numbers changed with the split. The text above uses the old ones: the former `-05` and `-06` are now `REQ-0.35.0-17-04` and `-05`; the former `-04` and `-07` to `-10` are `REQ-0.35.0-20-01` and `REQ-0.35.0-20-03` to `-06`; `REQ-0.35.0-17-06` and `-07` are new.
 
 ## Discovery Checklist
 
@@ -250,7 +231,7 @@ The GHI leaves each of these open. The brief is written to the recommended optio
 **Prerequisites (check existence, STOP if missing):**
 
 - [ ] `OBPI-0.35.0-16-next-command-for-position` is completed in the ledger, and with it `OBPI-0.35.0-15-pipeline-run-position`. This OBPI extends the surface they land and duplicates none of it. STOP if either is not completed.
-- [ ] The operator's rulings on Q1 to Q6 are recorded in this brief, and the Allowed Paths, Verification and Demo are reconciled with them and with OBPI-16's landed surface (`uv run gz obpi validate --authored` on this brief passes after the reconcile).
+- [ ] The operator's rulings on Q1, Q3 and Q4 are recorded in this brief (Q6 is ruled; Q2 and Q5 moved to OBPI-0.35.0-20), and the Allowed Paths, Verification and Demo are reconciled with them and with OBPI-16's landed surface (`uv run gz obpi validate --authored` on this brief passes after the reconcile).
 - [ ] Required path exists: `.gzkit/skills/gz-obpi-pipeline/SKILL.md`, read whole, with its version and body digest recorded as the baseline
 - [ ] Required path exists or is intentionally created in this OBPI: `data/obpi_pipeline_control_inventory.json`
 - [ ] Parent ADR evidence artifacts referenced by this brief are present
@@ -262,11 +243,10 @@ The GHI leaves each of these open. The brief is written to the recommended optio
 - [ ] `src/gzkit/commands/obpi_cmd.py` — `obpi_pipeline_cmd`: the order of checks before a stage runner is called, read only
 - [ ] `src/gzkit/pipeline_markers.py` — `pipeline_stage_output` and `pipeline_stage_labels`, read only, together with what OBPI-15 and OBPI-16 changed there
 - [ ] `src/gzkit/governance/trust_audits/cli.py` — `_cli_alignment_sources`, `audit_skill_code_citations` and `_collect_skill_verb_refs`: each globs for the skill body file by name
-- [ ] `src/gzkit/skills_audit.py` and `src/gzkit/skill_contract.py` — the body line count, the ceiling lookup, and the test that lets a ceiling only shrink (`tests/test_skill_body_audit.py`)
 - [ ] `src/gzkit/skills_mirror.py` and `src/gzkit/sync_surfaces.py` — how a skill's supporting files are mirrored and checked for parity, and the wheel's include block in `pyproject.toml`
 - [ ] `src/gzkit/registries.py` and `data/config_registry.json` — the read seam and the ownership declaration a new registry needs
 - [ ] `src/gzkit/content/retention.py` — the block splitter and coverage check, for the Q4 reuse decision
-- [ ] The five test modules of Requirement 9 and the REQ each one covers, read against `docs/governance/attested-req-subject-retirement.md`
+- [ ] The test modules that read the skill body for stage text, listed in `OBPI-0.35.0-20` § Allowed Paths: they pass unchanged in this OBPI (Requirement 9)
 - [ ] `features/subagent_pipeline.feature` and its steps — fixture and step conventions
 - [ ] `docs/user/manpages/obpi-pipeline.md` lines 33-34 ("thin alias") and lines 55 and 85, which still describe attestation as lane-dependent against the universal Gate 5 of ADR-0.0.36; the file is in scope, so the statements are corrected in this OBPI's docs pass
 - [ ] Parent ADR integration points reviewed for local conventions
@@ -293,11 +273,11 @@ The GHI leaves each of these open. The brief is written to the recommended optio
 ### Gate 3: Docs (Heavy only)
 
 - [ ] Docs build: `uv run mkdocs build --strict`
-- [ ] Relevant docs updated: the pipeline manpage, both runbooks, the subagent-pipeline concept page and the skill's user page
+- [ ] Relevant docs updated: the pipeline manpage and the operator runbook
 
 ### Gate 4: BDD (Heavy only)
 
-- [ ] Acceptance scenarios pass: `uv run -m behave features/obpi_pipeline_stage_procedure.feature`, each scenario tagged with the REQ it proves (`@REQ-0.35.0-17-05`, `@REQ-0.35.0-17-06`) so Stage 3 can scope the run
+- [ ] Acceptance scenarios pass: `uv run -m behave features/obpi_pipeline_stage_procedure.feature`, each scenario tagged with the REQ it proves (`@REQ-0.35.0-17-04`, `@REQ-0.35.0-17-05`) so Stage 3 can scope the run
 
 ### Gate 5: Human (Heavy only)
 
@@ -319,7 +299,7 @@ uv run mkdocs build --strict
 
 ## Demo
 
-Both commands are self-contained and exit non-zero on a bad state. The first runs the checker over the committed inventory against what the runtime serves in this tree: the before-state reproduces the pinned baseline, every control is delivered at each stage it applies to, and the invocation text carries no stage's procedure. The second drives the runtime through every stage entry in a throwaway project, in sequence and through each `--from` value, and compares the procedure each entry received.
+Both commands are self-contained and exit non-zero on a bad state. The first runs the checker over the committed inventory against what the runtime serves in this tree: the before-state reproduces the pinned baseline, every control is delivered at each stage it applies to, and the skill body still equals the pinned baseline. The second drives the runtime through every stage entry in a throwaway project, in sequence and through each `--from` value, and compares the procedure each entry received.
 
 ```bash
 uv run -m unittest tests.governance.test_pipeline_control_inventory -v
@@ -335,13 +315,10 @@ The stage-entry command line itself is fixed by OBPI-0.35.0-16. When that brief 
 - [ ] REQ-0.35.0-17-01 [BEHAVIOR]: Given an inventory, a baseline body, an invocation text, a served text per stage and a rationale record, when the checker runs, then it returns every violation the § Control Inventory Contract lists and not only the first, and it returns none for a complete inventory. Each violation kind is proven on a synthetic fixture by a case that fails when that check is removed.
 - [ ] REQ-0.35.0-17-02 [BEHAVIOR]: Given the committed inventory and the baseline it pins, when the checker runs the before-state checks, then the blocks reproduce the baseline body digest, every block is fully covered, and no violation is returned. Removing one control row or one covered sentence from the inventory makes the check fail and name the uncovered text.
 - [ ] REQ-0.35.0-17-03 [BEHAVIOR]: Given the committed inventory, when the checker runs against the invocation text and the procedure the runtime serves for each stage in this repository, then every control's delivered span is present at every position in its `applies_at`, every span equals its baseline quote unless the row declares a rewording with a reason, and no violation is returned. Deleting one control's text from a served procedure makes the check fail and name that control's id.
-- [ ] REQ-0.35.0-17-04 [BEHAVIOR]: Given the committed inventory, when the invocation text and each stage's served procedure are examined, then no control whose `applies_at` omits `invocation` has its delivered span in the invocation text, and no control has its delivered span in the procedure of a stage outside its `applies_at`. Copying one Stage 4 control into the skill body makes the check fail.
-- [ ] REQ-0.35.0-17-05 [BEHAVIOR]: Given a pipeline run, when it enters a stage in sequence or through any `--from` value the parser registers, then the runtime's stage-entry output delivers that stage's procedure and no other stage's, and the procedure delivered through `--from` is byte-identical to the one delivered for the same stage in sequence.
-- [ ] REQ-0.35.0-17-06 [BEHAVIOR]: Given a stage whose procedure is missing, unreadable, empty or not the bytes the runtime expects, when the run enters that stage, then the command exits non-zero, the stage is not entered, and the output names what failed, the rule it breaks and the command that recovers.
-- [ ] REQ-0.35.0-17-07 [BEHAVIOR]: Given a served stage procedure that names an unregistered `gz` verb or cites a source path that does not exist, when the verb-resolution audit and the citation audit run, then each reports it against that file; and given a verb named only in a served stage procedure, when the wielding-skill audit runs, then the verb counts as wielded.
-- [ ] REQ-0.35.0-17-08 [SUPPORT]: The skill body is edited in canon only, with its skill version and `last_reviewed` moved in the same edit. The wheel copy and every enabled vendor mirror, supporting files included, are regenerated by the control-surface sync. `uv run gz skill audit` reports no mirror, asset or body finding for this skill, and the skill's entry in `src/gzkit/skill_body_grandfather.json` is lowered to the new body length or removed. Witnessed by `artifact_edited` citing `.gzkit/skills/gz-obpi-pipeline/SKILL.md` + `gz validate --distribution`.
-- [ ] REQ-0.35.0-17-09 [SUPPORT]: The pipeline manpage states what stage entry delivers, the refusal of Requirement 7 and its recovery, and no longer states that attestation depends on lane. The two runbooks, the subagent-pipeline concept page and the skill's user page say that each stage's procedure is served by the runtime on entry, and none says the skill body is the execution contract for a stage. Witnessed by `artifact_edited` citing `docs/user/manpages/obpi-pipeline.md` + `gz validate --cli-alignment`.
-- [ ] REQ-0.35.0-17-10 [SUPPORT]: The rationale record holds, under the id of the control it explains, every baseline passage the inventory classes as `rationale`, verbatim, and each delivered control that had such a passage carries a pointer to its entry. Witnessed by `artifact_edited` citing `docs/governance/obpi-pipeline-control-rationale.md` + `gz validate --cli-alignment`.
+- [ ] REQ-0.35.0-17-04 [BEHAVIOR]: Given a pipeline run, when it enters a stage in sequence or through any `--from` value the parser registers, then the runtime's stage-entry output delivers that stage's procedure and no other stage's, and the procedure delivered through `--from` is byte-identical to the one delivered for the same stage in sequence.
+- [ ] REQ-0.35.0-17-05 [BEHAVIOR]: Given a stage whose procedure is missing, unreadable, empty or not the bytes the runtime expects, when the run enters that stage, then the command exits non-zero, the stage is not entered, and the output names what failed, the rule it breaks and the command that recovers.
+- [ ] REQ-0.35.0-17-06 [SUPPORT]: Each stage's procedure file is created in canon under the skill package, and the skill body is not edited: its digest equals the baseline the inventory pins. The skill version and `last_reviewed` move in the same edit, and the wheel copy and every enabled vendor mirror, supporting files included, are regenerated by the control-surface sync. `uv run gz skill audit` reports no mirror or asset finding for this skill. Witnessed by `artifact_edited` citing `.gzkit/skills/gz-obpi-pipeline/SKILL.md` + `gz validate --distribution`.
+- [ ] REQ-0.35.0-17-07 [SUPPORT]: The pipeline manpage states what stage entry delivers, the refusal of Requirement 7 and its recovery, and that the skill body carries the same procedure until `OBPI-0.35.0-20` lands; it no longer states that attestation depends on lane. `docs/user/runbook.md` agrees with it. Witnessed by `artifact_edited` citing `docs/user/manpages/obpi-pipeline.md` + `gz validate --cli-alignment`.
 
 ## Completion Checklist
 
