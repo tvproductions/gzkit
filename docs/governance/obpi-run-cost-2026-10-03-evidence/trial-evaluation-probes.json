@@ -1,0 +1,220 @@
+{
+  "head": "3c207fcac42b45702ac3141214f7ce29bd073fcc",
+  "behavior_probes": [
+    {
+      "case": "valid canonical owned mapping retains rule",
+      "errors": 0,
+      "messages": [],
+      "population": [
+        {
+          "section_id": "independent-contract",
+          "row_number": "1",
+          "rule": "The independent example must be retained.",
+          "source": "AGENTS.md",
+          "scorecard_classification": "Judgment",
+          "classification": "Mechanical",
+          "authority": "corpus",
+          "entry_id": "independent-entry"
+        }
+      ]
+    },
+    {
+      "case": "owned Mechanical overrides Judgment",
+      "errors": 1,
+      "messages": [
+        "Bullet-retention violation: invariant-tier 'Mechanical' bullet not found verbatim in per-turn surface.\n  Bullet: 'The independent example must be retained.'\n  Classification source: corpus entry 'independent-entry' (section 'owned' of AGENTS.md is corpus-owned; ADR-0.35.0 \u00a7 Decision item 9).\n  Why: ADR-0.0.33 Invariant 1 requires invariant-tier content to render verbatim at every setpoint (tier-scoped amendment 2026-06-03).\n  Fix: restore the bullet text verbatim to AGENTS.md/CLAUDE.md/.claude/rules, or re-classify it compressible in the corpus and record an advisor-QC verdict.\n  Source: docs/governance/advisory-rules-audit.md"
+      ],
+      "population": [
+        {
+          "section_id": "independent-contract",
+          "row_number": "1",
+          "rule": "The independent example must be retained.",
+          "source": "AGENTS.md",
+          "scorecard_classification": "Judgment",
+          "classification": "Mechanical",
+          "authority": "corpus",
+          "entry_id": "independent-entry"
+        }
+      ]
+    },
+    {
+      "case": "canonical owned source missing entry",
+      "errors": 1,
+      "messages": [
+        "Bullet-retention mapping violation: scorecard row independent-contract #1 sits in corpus-owned section 'owned' but cites no entry id.\n  Bullet: 'The independent example must be retained.'\n  Why: ADR-0.35.0 \u00a7 Decision item 9 \u2014 every row names the one surface that classifies it, and a row whose mapping is broken is never answered by the scorecard instead.\n  Fix: record `source=<path>#<section-id> entry=<entry-id>` in the row's Notes column (live entry ids are in .gzkit/corpus/<surface>.jsonl), then re-run `uv run gz validate --bullet-retention`.\n  Source: docs/governance/advisory-rules-audit.md"
+      ],
+      "population": []
+    },
+    {
+      "case": "same owned source with dot slash missing entry",
+      "errors": 0,
+      "messages": [],
+      "population": [
+        {
+          "section_id": "independent-contract",
+          "row_number": "1",
+          "rule": "The independent example must be retained.",
+          "source": "./AGENTS.md",
+          "scorecard_classification": "Judgment",
+          "classification": "Judgment",
+          "authority": "scorecard",
+          "entry_id": null
+        }
+      ]
+    },
+    {
+      "case": "canonical skill source lacks rule",
+      "errors": 1,
+      "messages": [
+        "Bullet-retention violation: 'Mechanical' scorecard row independent-contract #1 is not found verbatim in its attributed source '.gzkit/skills/example/SKILL.md'.\n  Bullet: 'The independent example must be retained.'\n  Why: ADR-0.0.33 Invariant 1, source-aware per OBPI-0.35.0-10 (GHI #939) \u2014 a skill- or ADR-sourced discipline is retained against that source's own text and is never exempt.\n  Fix: restore the bullet text verbatim to .gzkit/skills/example/SKILL.md, or correct the row's `source=` attribution, then re-run `uv run gz validate --bullet-retention`.\n  Source: docs/governance/advisory-rules-audit.md"
+      ],
+      "population": [
+        {
+          "section_id": "independent-contract",
+          "row_number": "1",
+          "rule": "The independent example must be retained.",
+          "source": ".gzkit/skills/example/SKILL.md",
+          "scorecard_classification": "Mechanical",
+          "classification": "Mechanical",
+          "authority": "scorecard",
+          "entry_id": null
+        }
+      ]
+    },
+    {
+      "case": "same skill source with dot slash lacks rule",
+      "errors": 0,
+      "messages": [],
+      "population": [
+        {
+          "section_id": "independent-contract",
+          "row_number": "1",
+          "rule": "The independent example must be retained.",
+          "source": "./.gzkit/skills/example/SKILL.md",
+          "scorecard_classification": "Mechanical",
+          "classification": "Mechanical",
+          "authority": "scorecard",
+          "entry_id": null
+        }
+      ]
+    },
+    {
+      "case": "unmapped Ambiguous entry with ownership",
+      "errors": 1,
+      "messages": [
+        "Bullet-retention classification violation: corpus-owned section 'owned' of 'AGENTS.md' carries the capture default 'Ambiguous' on: independent-entry.\n  Why: ADR-0.35.0 \u00a7 Decision item 9 \u2014 owning a section makes its entries' classification binding, so an unreviewed capture default may not author a gate verdict.\n  Fix: for each entry run `uv run gz content retire AGENTS.md --entry <id> --reason \"<why>\"`, capture the reviewed class with `uv run gz content remember AGENTS.md --section owned --text \"<text>\" --classification <Mechanical|Promotable|Judgment>`, publish with `uv run gz content land AGENTS.md`, then re-run `uv run gz validate --bullet-retention`.\n  Source: docs/governance/advisory-rules-audit.md"
+      ],
+      "population": [
+        {
+          "section_id": "independent-contract",
+          "row_number": "1",
+          "rule": "The independent example must be retained.",
+          "source": "AGENTS.md",
+          "scorecard_classification": "Judgment",
+          "classification": "Judgment",
+          "authority": "scorecard",
+          "entry_id": null
+        }
+      ]
+    },
+    {
+      "case": "ownership declaration deleted genesis remains",
+      "errors": 0,
+      "messages": [],
+      "population": [
+        {
+          "section_id": "independent-contract",
+          "row_number": "1",
+          "rule": "The independent example must be retained.",
+          "source": "AGENTS.md",
+          "scorecard_classification": "Judgment",
+          "classification": "Judgment",
+          "authority": "scorecard",
+          "entry_id": null
+        }
+      ]
+    },
+    {
+      "case": "no parsed rows despite owned Ambiguous entry",
+      "errors": 0,
+      "messages": [],
+      "population": []
+    },
+    {
+      "case": "ownership JSON is a list",
+      "exception": "AttributeError",
+      "message": "'list' object has no attribute 'get'"
+    },
+    {
+      "case": "ownership floor is null",
+      "exception": "TypeError",
+      "message": "'>' not supported between instances of 'int' and 'NoneType'"
+    }
+  ],
+  "population": {
+    "actual_before": 178,
+    "actual_after": 178,
+    "removed": [],
+    "added": [],
+    "audited_count": 173,
+    "omitted": [
+      {
+        "identity": [
+          "changelog-release-notes-gzkit-rules-changelog-release-notes-md",
+          "65"
+        ],
+        "score": "**Mechanical** (changelog structure) / **Judgment** (release-notes curation)",
+        "attributed": false
+      },
+      {
+        "identity": [
+          "data-models-gzkit-rules-models-md",
+          "27"
+        ],
+        "score": "**Mechanical**",
+        "attributed": false
+      },
+      {
+        "identity": [
+          "map-not-encyclopedia-doctrine-gzkit-rules-agents-md-map-doctrine-md",
+          "58"
+        ],
+        "score": "**Mechanical** (shape invariant); per-section size targets remain **Judgment**",
+        "attributed": false
+      },
+      {
+        "identity": [
+          "model-selection-gzkit-rules-model-selection-md",
+          "52"
+        ],
+        "score": "**Mechanical**",
+        "attributed": false
+      },
+      {
+        "identity": [
+          "pythonic-standards-gzkit-rules-pythonic-md",
+          "22"
+        ],
+        "score": "**Mechanical**",
+        "attributed": false
+      }
+    ]
+  },
+  "freshness": {
+    "files_changed": [
+      "docs/governance/advisory-rules-audit.md",
+      "docs/user/manpages/validate.md",
+      ".gzkit/corpus/AGENTS.md.jsonl",
+      ".gzkit/ownership/AGENTS.md.json",
+      "AGENTS.md"
+    ],
+    "roster_unchanged": true,
+    "included": {
+      "docs/governance/advisory-rules-audit.md": false,
+      "docs/user/manpages/validate.md": false,
+      ".gzkit/corpus/AGENTS.md.jsonl": false,
+      ".gzkit/ownership/AGENTS.md.json": false,
+      "AGENTS.md": false
+    }
+  }
+}

@@ -69,3 +69,11 @@ records. The ledger then marks the completion `degraded-human-only`.
 
 The same three groups for the OBPI-0.35.0-10 session, beside the size of the change it
 lands. The two OBPIs differ in scope, so the comparison is indicative, not controlled.
+
+## Remaining evaluation
+
+The [independent trial evaluation](trial-evaluation.md), measured 2026-10-04 UTC,
+records the full-session cost comparison, verification results, requirement review,
+reproducible defects and limits. The unchanged implementation fails independent
+review despite passing the listed checks; the lower recorded cost does not establish
+equivalent quality. No completion or apparatus change was authorized by that result.

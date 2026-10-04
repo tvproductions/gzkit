@@ -1,0 +1,71 @@
+{
+  "evaluated_head": "3c207fcac",
+  "implementation": "4893b7321",
+  "baseline_implementation": "2f39139d7",
+  "measured_utc": "2026-10-04T00:37:12Z",
+  "baseline": {
+    "session": {
+      "files": 1,
+      "calls": 260,
+      "first_context": 55206,
+      "peak_context": 743855,
+      "cache_read_input_tokens": 118627618,
+      "cache_creation_input_tokens": 1676930,
+      "input_tokens": 602,
+      "output_tokens": 299116
+    },
+    "subagents": {
+      "files": 3,
+      "calls": 145,
+      "first_context": 16277,
+      "peak_context": 232736,
+      "cache_read_input_tokens": 13390717,
+      "cache_creation_input_tokens": 1712721,
+      "input_tokens": 318,
+      "output_tokens": 10698
+    },
+    "siblings": {
+      "files": 12,
+      "calls": 152,
+      "first_context": 17321,
+      "peak_context": 269644,
+      "cache_read_input_tokens": 21910398,
+      "cache_creation_input_tokens": 2866542,
+      "input_tokens": 280,
+      "output_tokens": 358223
+    }
+  },
+  "trial": {
+    "session": {
+      "files": 1,
+      "calls": 98,
+      "first_context": 55088,
+      "peak_context": 410992,
+      "cache_read_input_tokens": 25639640,
+      "cache_creation_input_tokens": 721805,
+      "input_tokens": 204,
+      "output_tokens": 170922
+    },
+    "subagents": {
+      "files": 0
+    },
+    "siblings": {
+      "files": 0
+    }
+  },
+  "verification": {
+    "scoped_unit": "....................................................\n----------------------------------------------------------------------\nRan 52 tests in 0.363s\n\nOK\n",
+    "bdd": "5 scenarios, 32 steps passed; exit 0",
+    "lint": "All checks passed!\n\nADR path contract check passed.\nNo Path(__file__).parents[N] violations found.\nLint passed.\n",
+    "typecheck": "All checks passed!\n\nType check passed.\n",
+    "validators": "[advisory] bullet-retention: scorecard row local-agent-rules-claude-md-local-agent-rules #7 scores 'Mechanical' but corpus entry 'corpus-execution-rules-2026-09-17T11:39:35.178468+00:00' classifies it 'Judgment'; the corpus value binds (ADR-0.35.0 § Decision item 9). Reconcile the row's Score in docs/governance/advisory-rules-audit.md or the entry in .gzkit/corpus/AGENTS.md.jsonl so the two agree.\n[advisory] bullet-retention: scorecard row local-agent-rules-claude-md-local-agent-rules #8 scores 'Judgment' but corpus entry 'corpus-execution-rules-2026-09-17T11:39:35.331784+00:00' classifies it 'Mechanical'; the corpus value binds (ADR-0.35.0 § Decision item 9). Reconcile the row's Score in docs/governance/advisory-rules-audit.md or the entry in .gzkit/corpus/AGENTS.md.jsonl so the two agree.\n[advisory] bullet-retention: scorecard row local-agent-rules-claude-md-local-agent-rules #10 scores 'Mechanical' but corpus entry 'corpus-attestation-2026-09-17T11:39:35.990401+00:00' classifies it 'Judgment'; the corpus value binds (ADR-0.35.0 § Decision item 9). Reconcile the row's Score in docs/governance/advisory-rules-audit.md or the entry in .gzkit/corpus/AGENTS.md.jsonl so the two agree.\n[advisory] bullet-retention: scorecard row governance-core-gzkit-rules-governance-core-md #14 scores 'Mechanical' but corpus entry 'corpus-project-identity-2026-09-17T11:40:15.738676+00:00' classifies it 'Judgment'; the corpus value binds (ADR-0.35.0 § Decision item 9). Reconcile the row's Score in docs/governance/advisory-rules-audit.md or the entry in .gzkit/corpus/AGENTS.md.jsonl so the two agree.\n[advisory] bullet-retention: scorecard row governance-core-gzkit-rules-governance-core-md #16 scores 'Mechanical' but corpus entry 'corpus-behavior-rules-2026-09-17T11:39:31.740284+00:00' classifies it 'Judgment'; the corpus value binds (ADR-0.35.0 § Decision item 9). Reconcile the row's Score in docs/governance/advisory-rules-audit.md or the entry in .gzkit/corpus/AGENTS.md.jsonl so the two agree.\n[advisory] bullet-retention: scorecard row governance-core-gzkit-rules-governance-core-md #17a scores 'Mechanical' but corpus entry 'corpus-behavior-rules-2026-09-17T11:39:31.433847+00:00' classifies it 'Judgment'; the corpus value binds (ADR-0.35.0 § Decision item 9). Reconcile the row's Score in docs/governance/advisory-rules-audit.md or the entry in .gzkit/corpus/AGENTS.md.jsonl so the two agree.\nValidated: documents, advisory_scorecard, bullet_retention, req_kind_discipline\n\n✓ All validations passed (4 scopes).\n",
+    "docs": "uv run mkdocs build --strict: exit 0; Documentation built in 15.03 seconds. INFO diagnostics omitted.",
+    "full_unit": "uv run gz test: Ran 11430 tests in 103.571s. OK (skipped=7). Exit 0. Initial sandboxed run failed 5 tests; rerun outside sandbox passed."
+  },
+  "limits": [
+    "Baseline and trial implement different OBPIs; comparison is not controlled.",
+    "Sibling session membership is the existing script's time-window heuristic.",
+    "These transcript totals exclude this subsequent independent evaluation and do not represent price, wall-clock savings, unique tokens, or operator attention.",
+    "Trial not completed or attested; no repair was made during this evaluation."
+  ]
+}
