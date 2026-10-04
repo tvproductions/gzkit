@@ -48,8 +48,24 @@ def skill_mirror_roots(project_root: Path | None = None) -> tuple[Path, ...]:
     return tuple(root / rel for name, rel, _ in _VENDOR_SURFACES if name in enabled)
 
 
+def skill_switched_off(skill_slug: str, project_root: Path | None = None) -> bool:
+    """Whether the central switch (``.gzkit.json`` ``disabled.skills``) names *skill_slug*.
+
+    A switched-off skill stays canonical and is not mirrored (operator ruling
+    2026-10-04; docs/governance/control-switchboard-2026-10-04.md), so no test may
+    expect a mirror for it. Read the switch here rather than restating the list.
+    """
+    root = project_root or PROJECT_ROOT
+    return skill_slug in GzkitConfig.load(root / ".gzkit.json").disabled.skills
+
+
 def skill_mirror_paths(skill_slug: str, project_root: Path | None = None) -> tuple[Path, ...]:
-    """``SKILL.md`` paths for *skill_slug* across every rendered vendor mirror."""
+    """``SKILL.md`` paths for *skill_slug* across every rendered vendor mirror.
+
+    Empty for a skill the project switched off: the sync writes no mirror for it.
+    """
+    if skill_switched_off(skill_slug, project_root):
+        return ()
     return tuple(mirror / skill_slug / "SKILL.md" for mirror in skill_mirror_roots(project_root))
 
 

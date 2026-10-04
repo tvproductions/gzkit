@@ -614,7 +614,63 @@ had been repeating. All are dispositioned below — none left undefined.
 
 <a id="amendments-2026-10-03-2"></a>
 
-### 2026-10-03 (2) (latest) — batch initiation is RESCINDED; each OBPI runs through the pipeline skill (operator-ratified)
+### 2026-10-04 (latest) — automatic authority is switched off, control by control, behind one central switch (operator-ratified)
+
+**Operator (`g0`), verbatim, in order:** *"go ahead with the switch-off (can they be turned back
+on later?)"*; *"no, i want to be able to enable. maybe we turn off then see the effects of
+turning things back on?"*; *"will we build a central switch for this toggle?"*; *"try again"*
+(2026-10-04; the last after the harness refused the first attempt to write the switches).
+
+**Evidence, as dated records; re-run their scripts rather than trusting a transcribed figure.**
+The gate-by-gate value read
+([`gate-value-read-2026-10-03-evidence/`](gate-value-read-2026-10-03-evidence/README.md)):
+three controls have a recorded history of catching defects behind green tests, the plain
+checks, the cross-vendor adversary and the operator's directed audits; eleven attested
+completions were later repudiated with no gate as the finder. The OBPI-0.35.0-10 trial
+([`trial-evaluation.md`](obpi-run-cost-2026-10-03-evidence/trial-evaluation.md)): a direct
+session at roughly one sixth of the pipeline's recorded calls and tokens passed every check,
+every validator and nine of ten acceptance proofs, and failed independent review on five of
+ten requirements.
+
+**What changes.**
+
+1. **Automatic standing is switched off for every control with no recorded catch:** 14
+   harness hooks, 60 of 67 `gz check` steps, 52 of 73 active skills, the chores section of the
+   session orientation, four pre-commit hooks, and CI's full sweep, which becomes plain
+   `gz check` plus `behave`. Nothing is deleted; every verb stays callable; `gz check --full`
+   runs the whole estate on demand. The inventory, each switch's location and the stale prose
+   it leaves are in [`control-switchboard-2026-10-04.md`](control-switchboard-2026-10-04.md).
+2. **The switch is central and per control.** `.gzkit.json` § `disabled` carries `hooks`,
+   `skills`, `check_steps` and `orientation_sections`, honoured by the settings generator and
+   merge, the skill mirrors, catalog, list and audit, the check runner in every scope but
+   `--full`, and the orientation (commit `73e42d63a`). A control comes back by deleting its
+   name and running `gz agent sync control-surfaces`.
+3. **The method is off first, then on one at a time**, to see what each control does for the
+   operator. A switched-off control regains automatic standing on a recorded catch.
+4. **The bar for automatic standing**, adopted verbatim from the dismissed reviewer's
+   recommendation: *"Lack of catch history warrants removing automatic authority, not
+   claiming the tool can never help."* For automatic standing this supersedes the scorecard's
+   *"burden alone is still not a removal rationale; degraded steering is."* Deleting a control
+   still takes named steering-failure evidence.
+
+**Conflict named, not resolved.** § Amendments 2026-10-03 (2) rules *"each obpi must be run
+using the obpi pipeline skill"*. Item 1 switches that skill off from the catalog; its canonical
+file remains callable. How an initiated OBPI runs is the operator's to rule. This entry
+initiates nothing and changes neither the Topmost line nor the IRON LAW.
+
+**Not ratified.** The 2026-10-04 draft's freeze with a named exit, its delivery path, its
+commit-bound acceptance record, its disposition of `ADR-0.35.0` and OBPI-0.35.0-10, and its
+checkpoint with an archive trigger were presented and not ruled on. They are summarised in the
+switchboard record for a later ruling and are not in force.
+
+**What does not change.** Gate 5 is universal. Only the operator initiates OBPI work. The
+Prime Directive, the operator-PII rule, the plain checks and ascending ADR order stand.
+
+**Review record (item 6 of 2026-10-03).** Not run; the operator did not call for it.
+
+<a id="amendments-2026-10-04"></a>
+
+### 2026-10-03 (2) — batch initiation is RESCINDED; each OBPI runs through the pipeline skill (operator-ratified)
 
 **Operator (`g0`), verbatim:** *"rescind that... each obpi must be run using the obpi pipeline
 skill"* (2026-10-03, on being told what item 3's batch initiation permitted).

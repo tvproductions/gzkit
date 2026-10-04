@@ -106,7 +106,9 @@ class TestLoadFrameworkPrompt(unittest.TestCase):
 
     @covers("REQ-0.0.5-04-05")
     def test_loads_from_real_assets(self) -> None:
-        assets = Path(".claude/skills/gz-adr-evaluate/assets")
+        # Canonical assets; the vendor mirror is a copy written only while the skill
+        # is not switched off (`.gzkit.json` `disabled.skills`, ruling 2026-10-04).
+        assets = Path(".gzkit/skills/gz-adr-evaluate/assets")
         self.assertTrue(assets.exists(), "Skill assets not available")
         prompt = load_framework_redteam_prompt(assets)
         self.assertIn("red team", prompt.lower())

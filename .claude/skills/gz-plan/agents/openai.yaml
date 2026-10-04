@@ -1,4 +1,0 @@
-interface:
-  display_name: "gz plan"
-  short_description: "Scaffold and book a feature or pool ADR"
-  default_prompt: "Use $gz-plan to create an ADR with gz plan create for this task."

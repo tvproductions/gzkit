@@ -1123,7 +1123,7 @@ def _record_and_announce_pass(project_root: pathlib.Path, *, scope: str) -> None
     console.print(
         "\n[green]✓ All per-change checks passed.[/green] "
         f"[dim]({', '.join(sorted(_scope_skips(scope)))} are heavy-lane / CI scope: "
-        "`gz check --full` runs them, and CI runs the full sweep)[/dim]"
+        "`gz check --full` runs them)[/dim]"
     )
 
 

@@ -21,7 +21,7 @@ from pathlib import Path
 from gzkit.skills import _parse_frontmatter
 from gzkit.traceability import covers
 from tests.commands.common import _isolated_git_env
-from tests.vendor_surfaces import skill_mirror_paths
+from tests.vendor_surfaces import skill_mirror_paths, skill_switched_off
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 _CANONICAL_SKILL = _REPO_ROOT / ".gzkit" / "skills" / "gz-foundation-triage" / "SKILL.md"
@@ -82,6 +82,13 @@ class TestREQ03_SkillIsRegistered(unittest.TestCase):
         from gzkit.skills import list_skills
 
         names = [s.name for s in list_skills(_REPO_ROOT)]
+        if skill_switched_off("gz-foundation-triage"):
+            # Switched off by the central switch (ruling 2026-10-04): hidden from the
+            # active catalog, still registered and shown by `gz skill list --all`.
+            self.assertNotIn("gz-foundation-triage", names)
+            everything = [s.name for s in list_skills(_REPO_ROOT, include_retired=True)]
+            self.assertIn("gz-foundation-triage", everything)
+            return
         self.assertIn("gz-foundation-triage", names)
 
 
@@ -170,6 +177,11 @@ class TestREQ06_VendorMirrorByteParity(unittest.TestCase):
 
     @covers("REQ-0.0.57-03-06")
     def test_claude_mirror_byte_equals_canonical(self) -> None:
+        if skill_switched_off("gz-foundation-triage"):
+            self.assertFalse(
+                _CLAUDE_MIRROR.exists(), "no mirror is written for a switched-off skill"
+            )
+            return
         self.assertTrue(_CLAUDE_MIRROR.exists(), f"missing claude mirror: {_CLAUDE_MIRROR}")
         self.assertEqual(
             _CANONICAL_SKILL.read_bytes(),
@@ -194,6 +206,11 @@ class TestREQ06_VendorMirrorByteParity(unittest.TestCase):
 
     @covers("REQ-0.0.57-03-06")
     def test_agents_mirror_byte_equals_canonical(self) -> None:
+        if skill_switched_off("gz-foundation-triage"):
+            self.assertFalse(
+                _AGENTS_MIRROR.exists(), "no mirror is written for a switched-off skill"
+            )
+            return
         self.assertTrue(_AGENTS_MIRROR.exists(), f"missing agents mirror: {_AGENTS_MIRROR}")
         self.assertEqual(
             _CANONICAL_SKILL.read_bytes(),

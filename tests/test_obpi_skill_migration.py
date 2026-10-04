@@ -26,9 +26,12 @@ def covers(target: str):  # noqa: D401
 # ---------------------------------------------------------------------------
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
-_PIPELINE_SKILL = _PROJECT_ROOT / ".claude" / "skills" / "gz-obpi-pipeline" / "SKILL.md"
-_PIPELINE_DISPATCH = _PROJECT_ROOT / ".claude" / "skills" / "gz-obpi-pipeline" / "DISPATCH.md"
-_LOCK_SKILL = _PROJECT_ROOT / ".claude" / "skills" / "gz-obpi-lock" / "SKILL.md"
+# Canonical skill files. These tests assert the skills' CONTENT, which lives in
+# `.gzkit/skills`; the vendor mirrors are copies the sync writes only for skills the
+# project has not switched off (`.gzkit.json` `disabled.skills`, ruling 2026-10-04).
+_PIPELINE_SKILL = _PROJECT_ROOT / ".gzkit" / "skills" / "gz-obpi-pipeline" / "SKILL.md"
+_PIPELINE_DISPATCH = _PROJECT_ROOT / ".gzkit" / "skills" / "gz-obpi-pipeline" / "DISPATCH.md"
+_LOCK_SKILL = _PROJECT_ROOT / ".gzkit" / "skills" / "gz-obpi-lock" / "SKILL.md"
 
 
 def _read(path: Path) -> str:

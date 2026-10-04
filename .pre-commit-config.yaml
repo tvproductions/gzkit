@@ -14,12 +14,14 @@ fail_fast: true
 repos:
   - repo: local
     hooks:
-      - id: task-trailer-stamp
-        name: "stamp Task: trailers from active TASKs"
-        entry: .gzkit/hooks/prepare-commit-msg-task-trailers
-        language: system
-        stages: [prepare-commit-msg]
-        always_run: true
+      # SWITCHED OFF 2026-10-04 by operator ruling; re-enable by uncommenting this block.
+      # Record: docs/governance/control-switchboard-2026-10-04.md
+      # - id: task-trailer-stamp
+      #   name: "stamp Task: trailers from active TASKs"
+      #   entry: .gzkit/hooks/prepare-commit-msg-task-trailers
+      #   language: system
+      #   stages: [prepare-commit-msg]
+      #   always_run: true
       - id: ruff-check
         name: ruff check (lint)
         entry: uv run ruff check --fix
@@ -70,26 +72,32 @@ repos:
         types: [python]
         stages: [pre-commit]
 
-      - id: surface-fidelity-cheap
-        name: surface-fidelity cheap subset (invariants 1, 2, 3)
-        entry: uv run gz validate --bullet-retention --surface-weight --pointer-anchors
-        language: system
-        pass_filenames: false
-        stages: [pre-commit]
+      # SWITCHED OFF 2026-10-04 by operator ruling; re-enable by uncommenting this block.
+      # Record: docs/governance/control-switchboard-2026-10-04.md
+      # - id: surface-fidelity-cheap
+      #   name: surface-fidelity cheap subset (invariants 1, 2, 3)
+      #   entry: uv run gz validate --bullet-retention --surface-weight --pointer-anchors
+      #   language: system
+      #   pass_filenames: false
+      #   stages: [pre-commit]
 
-      - id: validator-reachability-ratchet
-        name: validator reachability (ungated scopes may only shrink)
-        entry: uv run python .gzkit/chores/control-surface-validator-reachability/check_reachability.py
-        language: system
-        pass_filenames: false
-        stages: [pre-commit]
+      # SWITCHED OFF 2026-10-04 by operator ruling; re-enable by uncommenting this block.
+      # Record: docs/governance/control-switchboard-2026-10-04.md
+      # - id: validator-reachability-ratchet
+      #   name: validator reachability (ungated scopes may only shrink)
+      #   entry: uv run python .gzkit/chores/control-surface-validator-reachability/check_reachability.py
+      #   language: system
+      #   pass_filenames: false
+      #   stages: [pre-commit]
 
-      - id: ledger-vocabulary-inertness
-        name: ledger vocabulary (never-fired types must stay disclosed)
-        entry: uv run python .gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py
-        language: system
-        pass_filenames: false
-        stages: [pre-commit]
+      # SWITCHED OFF 2026-10-04 by operator ruling; re-enable by uncommenting this block.
+      # Record: docs/governance/control-switchboard-2026-10-04.md
+      # - id: ledger-vocabulary-inertness
+      #   name: ledger vocabulary (never-fired types must stay disclosed)
+      #   entry: uv run python .gzkit/chores/ledger-vocabulary-inertness/check_ledger_inertness.py
+      #   language: system
+      #   pass_filenames: false
+      #   stages: [pre-commit]
 
       - id: check-todos-fixmes
         name: check TODO/FIXME (flagged, informational)

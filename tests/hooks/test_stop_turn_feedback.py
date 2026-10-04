@@ -21,6 +21,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from gzkit.config import GzkitConfig
 from gzkit.traceability import covers
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -331,14 +332,20 @@ class TestSettingsWiring(unittest.TestCase):
         settings = json.loads(
             (_REPO_ROOT / ".claude" / "settings.json").read_text(encoding="utf-8")
         )
-        stop_entries = settings["hooks"]["Stop"]
+        stop_entries = settings.get("hooks", {}).get("Stop", [])
         commands = [
             hook["command"]
             for entry in stop_entries
             for hook in entry["hooks"]
             if hook.get("type") == "command"
         ]
-        self.assertTrue(any("stop-turn-feedback.py" in cmd for cmd in commands))
+        wired = any("stop-turn-feedback.py" in cmd for cmd in commands)
+        switched_off = (
+            "stop-turn-feedback.py" in GzkitConfig.load(_REPO_ROOT / ".gzkit.json").disabled.hooks
+        )
+        # The central switch (ruling 2026-10-04) decides whether the hook is wired;
+        # the script itself stays on disk either way.
+        self.assertEqual(wired, not switched_off)
         self.assertTrue(_HOOK_PATH.is_file())
 
 

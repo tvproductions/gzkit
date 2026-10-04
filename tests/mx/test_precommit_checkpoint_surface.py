@@ -39,10 +39,10 @@ _NOT_A_GZKIT_GUARD = {
     "gitleaks": "third-party secrets scanner; `secrets` is a gate5 floor member and "
     "stays hard by construction -- over-strict, never under-strict",
     "check-todos-fixmes": "informational only; `|| true` can never fail",
-    "task-trailer-stamp": "prepare-commit-msg stamper, not a gate",
+    # `task-trailer-stamp` and `surface-fidelity-cheap` were excused here until they
+    # were switched off on 2026-10-04 (docs/governance/control-switchboard-2026-10-04.md);
+    # re-enabling either hook means restoring its excuse.
     "unittest": "test runner, manual stage",
-    "surface-fidelity-cheap": "`gz validate` scopes -- already checkpointed at "
-    "validate_cmd.py `_run_scope_checks`",
     "authorship": "`gz validate` scope -- checkpointed, and pinned CRITICAL so it "
     "never demotes (GHI #852)",
     "gz-check-pre-push": "`gz check` -- already checkpointed at quality.py `_apply_mx_seam`",

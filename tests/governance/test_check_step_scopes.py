@@ -129,7 +129,7 @@ class TestOnlyScopesCoveringTheGateRecord(unittest.TestCase):
         from unittest import mock  # noqa: PLC0415
 
         with mock.patch("gzkit.commands.quality._load_check_step_scopes", return_value={}):
-            self.assertEqual(_scope_skips("change"), frozenset())
+            self.assertEqual(_scope_skips("change", GzkitConfig()), frozenset())
             self.assertTrue(_scope_records_verified("change"))
             self.assertFalse(_scope_records_verified("fast"))
 
