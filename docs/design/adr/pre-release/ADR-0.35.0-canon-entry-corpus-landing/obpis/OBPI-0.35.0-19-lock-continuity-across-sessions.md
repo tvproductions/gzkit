@@ -174,10 +174,10 @@ This brief:
 
 ## Denied Paths
 
-- `src/gzkit/ledger_events.py`, `src/gzkit/events.py`, `src/gzkit/schemas/ledger.json` — no new ledger event type and no new payload key. The recommended ruling on question 1 is expressible with the existing `obpi_lock_released` and `obpi_lock_claimed` events, and the `handoff_path` key is frozen on the wire (GHI #763). `ledger_events.py` is a registered security surface; a ruling that needs a new event type amends this list first.
+- `src/gzkit/ledger_events.py`, `src/gzkit/events.py`, `src/gzkit/schemas/ledger.json` — no new ledger event type and no new payload key. The ruling on question 1 (A, 2026-10-04) is expressible with the existing `obpi_lock_released` and `obpi_lock_claimed` events, and the `handoff_path` key is frozen on the wire (GHI #763). `ledger_events.py` is a registered security surface; a ruling that needs a new event type amends this list first.
 - `src/gzkit/handoff_api.py`, `src/gzkit/handoff_validation.py`, `src/gzkit/session_exit.py`, `.gzkit/skills/gz-session-handoff/**`, `.gzkit/handoffs/**` — the session system. A change of occupant is an exchange matter (`.gzkit/rules/token-block-discipline.md` § Three subjects); a session handoff is never the continuity record and never its evidence.
 - `scripts/session_orientation.py`, `src/gzkit/commands/preflight.py` — the SessionStart and preflight reapers. A TTL reap behaves as it does now.
-- `.claude/hooks/**`, `src/gzkit/hooks/**` — the pipeline gate's lock-keyed arm reads the same per-agent helper and is not changed. This holds under the recommended ruling on question 1; a ruling for a recorded second occupant amends this list.
+- `.claude/hooks/**`, `src/gzkit/hooks/**` — the pipeline gate's lock-keyed arm reads the same per-agent helper and is not changed. This holds under the ruling on question 1 (A, 2026-10-04): the continuing session becomes the holder.
 - `src/gzkit/pipeline_markers.py`, `src/gzkit/commands/obpi_stages.py` — marker shape and stage records belong to checklist items 15-18 of the parent ADR. This brief reads the lock at launch and writes no marker field.
 - `.gzkit/ledger.jsonl`, `.gzkit/locks/**` — live locks, exchange records and ledger rows are written only by `gz` commands run for real work. Fixtures live in temporary directories.
 - `docs/design/adr/foundation/ADR-0.0.41-token-block-lock-discipline/**`, `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/ADR-0.35.0-canon-entry-corpus-landing.md` — the repaired ADR is `Validated` and unamendable; the parent ADR is not edited by this OBPI.
@@ -212,6 +212,7 @@ Each question names a choice the GHI leaves open. The REQs below are written to 
    - (B) Record: the prior session's lock stays; the record names the second occupant.
    - Recommendation: A. Every reader keys on the holder being the current agent: the claim conflict (`obpi_lock.py:65`), the release ownership check (`obpi_lock.py:186`) and the per-agent helper that arms the pipeline gate (`pipeline_runtime.py:122-133`). Under B the continuing session is never the holder, its gate arm never arms, its own abort needs `--force`, and the TTL still runs from the first claim. A is expressible as an existing `obpi_lock_released` citing the record followed by an existing `obpi_lock_claimed`, so the validator sees it with no new event type; B needs one, in a registered security surface.
    - Cost of A: `gz obpi precomplete` counts ARB receipts "since the lock claim". A new claim time puts the first session's receipts out of scope, so the continuing session re-runs them.
+   - **RULED 2026-10-04: A, transfer.** Asked "when a new session continues an OBPI another session holds, what happens to the lock?", the operator answered, verbatim: "A". The cost above was stated with the question and is accepted.
 2. **Does the pipeline launch REFUSE, or RECORD the continuation itself?**
    - Recommendation: refuse and name the continuation command. `ADR-0.0.41` § Alternatives Considered 1 places the invariant at "the lock-release CLI verb itself, where the operator and agent share an explicit synchronous decision point"; a launch that takes over a block as a side effect hides the act.
    - Unchanged either way: a launch with no lock at all proceeds today and is caught only by `gz obpi precomplete` at Stage 5.
@@ -386,7 +387,7 @@ Authoring obligation before Stage 2 (Requirement 12): replace this block with th
      operator explicitly requests an issue; link it back to the owning work.
      Keep this subsection under Evidence so history is not treated as contract. -->
 
-_No substantive adjustments recorded yet._
+- 2026-10-04 — Open Design Question 1 ruled before the plan (Requirement 12). Operator, verbatim: "A". A continuation transfers the lock: the prior occupancy ends against the continuity record and the continuing session becomes the holder. Allowed Paths already cover this ruling and are unchanged. Questions 2 to 6 are open.
 
 ### Gate 1 (ADR)
 
