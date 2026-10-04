@@ -16,6 +16,8 @@
 > relationship, request for deeper comparison, and subsequent narrowing to
 > separation of ADRs, requirements, and release/backlog planning. It also retains
 > the subsequently requested mADR alternative for comparison.
+> **Update 2026-10-04:** `Q-18` records the operator's direction for what succeeds
+> the stopgap (m)ADR. It selects no name and opens no phase.
 > Each ruling is recorded under its question; the questions are kept as asked,
 > because the record of what was asked is part of the record of what was decided.
 >
@@ -30,7 +32,7 @@ Three kinds, kept separate because they resolve by different means:
    settles these; they are choices about what this project is.
 2. **Further measurement** — held as the measurement program `M-A` … `M-H` in
    [`01 § 12`](01-engineering-method-2026-09-22.md), not duplicated here.
-3. **Meta** — `Q-11` … `Q-17`, about the conduct of the investigation itself.
+3. **Meta** — `Q-11` … `Q-18`, about the conduct of the investigation itself.
 
 ---
 
@@ -571,9 +573,67 @@ identifiers, parsers, proof bindings and historical ledger subjects remain until
 governed migration. The candidate pilot, executable catalog and identity grammar
 remain unimplemented proposals. No campaign order, 1.0 gate or finding status changes.
 
+### Q-18 — What succeeds the stopgap (m)ADR?
+
+**RULED 2026-10-04 — the (m)ADR is a stopgap release-increment bucket, and its
+successor is a feature bundle.** Operator: **g0**. This records a direction. It
+selects no name, schema or migration, and it authorizes none of phases 5 to 8.
+
+The question arose outside this investigation, in a design dialogue on tuning the
+OBPI pipeline. Five corrections to obligations that earlier ADRs stated needed a
+home that carries brief ceremony, and the in-flight ADR became that home.
+
+Operator words, verbatim, in order (spelling preserved):
+
+> ghis do not have obpi ceremony and checks. i meant extending in-flight adrs.
+
+> if the adr is a minor bucket, and has been misused, then adr-as-bucket can work.
+
+> the new loosening law here is we need to be able to revise an adr to allow for more obpis - the document and briefs table gets updated. this lets the madr be a release bucket somewhere between BDD and SDD
+
+> A, in-flight only - I always used "foundation" adrs as - 'damn, I'm backed into a corner and I'm missing a foundational feature that gzkit is going to need going forward'. our new plan is to keep the (m)ADR as a release increment bucket. However, I wanted it to be themematically cohesive, which is why I originally misappropriated the ADR.
+
+> whatever we develop beyond the stopgap (m)ADR, will be closer to a feature bucket/bundle and in between the BDD/SDD materials here
+
+> you remember it, we'll pick better names in the future.
+
+The operator then approved this wording as drafted (verbatim: "A"):
+
+> An ADR in flight may be revised to take more OBPIs. The revision updates the document (an Intent amendment, a Decision item, a checklist item and the scorecard baseline) and the briefs table in the same change. A Validated ADR is not revised: scope missed from one enters the in-flight ADR as a repair assignment that cites the obligation it repairs. An item off the ADR's theme is labelled as such in the Intent amendment.
+>
+> The (m)ADR is a stopgap: a release-increment bucket, meant to be thematically cohesive. Its successor is a feature bundle between an enhancement proposal and a feature specification. Names are chosen later.
+
+**What "between" refers to.** The operator set the successor between two rows of
+a comparison of release containers pasted into the dialogue: an enhancement
+proposal (API contracts and architectural boundaries) and a feature
+specification (domain behaviour and bounded contexts). That comparison came from
+an external model. It is reference material, and none of it is adopted here
+beyond the two terms the approved wording uses.
+
+**Relation to the anchor.** `Q-17`'s five roles stand. This ruling says the mADR
+role is held by a stopgap, and gives the direction of what replaces it. The
+"Rename the campaign step" candidate in
+[`design-candidates.md`](design-candidates.md#decisions-work-ownership-and-names)
+still reads that no replacement name is selected, and that remains true.
+
+**Where the operative rule lives.** The revision law is carried by the
+work-order ruling at the skills that hold it, and by the
+[campaign amendment of 2026-10-04 (3)](../build-to-1.0-campaign-2026-09-20.md#amendments-2026-10-04-3),
+which also retires the next-semver route for corrections. This entry is the
+record of the successor direction only.
+
+**Scope.** `Q-08` and `Q-10` remain ruled. Phases 5 to 8 remain unauthorised. No
+finding changes status, and no identifier, parser or proof binding changes.
+
 ---
 
 ## Amendments
+
+- **2026-10-04 — `Q-18` records the successor direction for the (m)ADR.**
+  Preserved the operator's words on the stopgap bucket, thematic cohesion, the
+  feature-bundle successor and deferred names, with the approved wording of the
+  revision law. Named the external comparison as reference only. No name,
+  schema, phase authorization or finding status changed.
 
 - **2026-09-25 — `Q-17` records explicit adoption of the ownership relationship.**
   Linked the operator-ratified Magna Carta §3 amendment and distinguished adopted

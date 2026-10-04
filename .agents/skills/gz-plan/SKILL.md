@@ -3,10 +3,10 @@ name: gz-plan
 description: Create ADR artifacts for planned change. Use when recording architecture intent and lane-specific scope.
 category: adr-lifecycle
 metadata:
-  skill-version: "1.7.0"
+  skill-version: "1.8.0"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-29
+last_reviewed: 2026-10-04
 model: opus
 ---
 
@@ -63,7 +63,7 @@ Decomposition Gate.
 
 ## Work order (operator ruling, verbatim canon)
 
-- Work feature ADRs in ascending semver order: the lowest version with unlanded OBPIs is in flight. Do not work, author, or recommend a higher feature ADR ahead of it. The campaign selects work but cannot override that order. If campaign sequencing conflicts, semver governs; surface the conflict to the operator rather than silently resolving it. “One feature at a time” does not authorize swapping the order. Exception — corrections to a Validated ADR: residual scope re-homed from a terminal (Validated) ADR because the shipped surface does not fulfill its declared intent takes the next unallocated feature semver and may be authored and worked ahead of the in-flight ADR; new-design work stays in strict order (operator rulings: 'Exempt corrections (Recommended)', 2026-09-28; 'canon plus campaign', 2026-09-29; GHI #871).
+- Work feature ADRs in ascending semver order: the lowest version with unlanded OBPIs is in flight. Do not work, author, or recommend a higher feature ADR ahead of it. The campaign selects work but cannot override that order. If campaign sequencing conflicts, semver governs; surface the conflict to the operator rather than silently resolving it. “One feature at a time” does not authorize swapping the order. An ADR in flight may be revised to take more OBPIs. The revision updates the document (an Intent amendment, a Decision item, a checklist item and the scorecard baseline) and the briefs table in the same change. A Validated ADR is not revised: scope missed from one enters the in-flight ADR as a repair assignment that cites the obligation it repairs. An item off the ADR's theme is labelled as such in the Intent amendment. The (m)ADR is a stopgap: a release-increment bucket, meant to be thematically cohesive. Its successor is a feature bundle between an enhancement proposal and a feature specification. Names are chosen later. This replaces the exception of 2026-09-29 (GHI #871), by which a correction to a Validated ADR took the next unallocated feature semver and could be worked ahead of the in-flight ADR; that route is retired (operator rulings 2026-10-04: 'the new loosening law here is we need to be able to revise an adr to allow for more obpis - the document and briefs table gets updated'; 'A, in-flight only'; the wording and the retirement, each 'A').
 
 > Carried verbatim from root `AGENTS.md` § Operator Doctrine on 2026-09-17 (GHI #921), and into this skill on 2026-09-24 (GHI #1091, sweep finding S06): the ruling governs authoring and recommending, not only working. The corpus `.gzkit/corpus/AGENTS.md.jsonl` keeps the ruling's history.
 

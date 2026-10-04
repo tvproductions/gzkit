@@ -33,7 +33,7 @@ to the anchor, read the [dated session record](design-pivot-session-2026-09-25.m
 |---|---|---|
 | [`FINDINGS.md`](FINDINGS.md) | **canonical** | The findings, with status and evidence pointers. Living; amended in place |
 | [`DISAGREEMENTS.md`](DISAGREEMENTS.md) | **canonical** | Where Agent 0 and Agent 1 disagree, preserved unresolved |
-| [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) | **canonical** | Operator questions and rulings, including successive-change evaluation (`Q-15`) and the FDAU origin and retained hypothesis (`Q-16`) |
+| [`OPEN-QUESTIONS.md`](OPEN-QUESTIONS.md) | **canonical** | Operator questions and rulings, including successive-change evaluation (`Q-15`), the FDAU origin and retained hypothesis (`Q-16`) and the successor direction for the stopgap (m)ADR (`Q-18`) |
 | [`design-candidates.md`](design-candidates.md) | **accepted grounding; proposed mechanics** | `Q-17`'s grounding/anchoring pivot, requirement classification, revision/acceptance model, alternatives, review, and pilot specification. Ownership relationship adopted in Magna Carta §3; catalog mechanics remain proposed |
 | [Design pivot session](design-pivot-session-2026-09-25.md) | **deliberation and provenance** | Why the pivot arose; recovery choices; conventional ADR, capability and mADR alternatives; attachment strands; source limits; unresolved cost. History, not a second candidate home |
 | [`consequence-bands.md`](consequence-bands.md) | **canonical, PROVISIONAL** | Operator-ruled consequence scale (`Q-04`). Kept PROVISIONAL by operator ruling 2026-09-23: three rows have no finding behind them, and four rest on F-022 (`OPEN`) or F-021 (`DISPUTED`); the lift is decided when Phase 4 is authorised |
@@ -689,6 +689,10 @@ the governance pipeline, and nothing here creates one.**
 ---
 
 ## Amendments
+
+- **2026-10-04 — Successor direction for the (m)ADR recorded (`Q-18`).**
+  Added the pointer in the file table. The ruling selects no name and opens no
+  phase; `Q-17`'s roles and every phase authorization are unchanged.
 
 - **2026-09-25 — Design-session retention expanded after operator review.**
   Added the dated deliberation record and linked the expanded candidate

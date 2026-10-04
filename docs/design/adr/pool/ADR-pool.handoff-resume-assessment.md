@@ -22,6 +22,11 @@ a feature is not an enhancement, it is a correction."* A `Validated` ADR is neve
 residual is re-homed here (campaign § Amendments 2026-09-29). Operator ruling 2026-09-29, verbatim:
 *"this could ONLY be a pool adr at this point"*. It takes a feature semver at promotion.
 
+**Route superseded 2026-10-04 (campaign § Amendments 2026-10-04 (3)).** The next-semver route for
+corrections is retired. When the operator draws this work, its scope enters the in-flight ADR as
+repair assignments that cite the `ADR-0.0.65` obligation they repair, and it takes no feature
+semver of its own. The sentence above is kept as the record of the 2026-09-29 ruling.
+
 Observed on `main`, 2026-09-29:
 
 1. **RESUME never validates the document it loads.** `validate_handoff_document` runs inside

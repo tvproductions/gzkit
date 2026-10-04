@@ -1,10 +1,10 @@
 {
   "algorithm": "sha256",
-  "corpus_fingerprint": "b09f705a8cfb40da3812f54c30a01f6e7d78c26a15a24a5af6c2766757b4df38",
-  "corpus_entry_count": 485,
+  "corpus_fingerprint": "2d5bd6b46c80bcaeb08f1396061b2251273733c7c899f61cbd64c9930def3bb3",
+  "corpus_entry_count": 487,
   "rendition_fingerprint": "2ba89ed9d9cd4458ea58d6a5d8a5ce631e8637297365dd3cdbd509666f315711",
-  "committed_ts": "2026-09-29T08:56:24.547431+00:00",
+  "committed_ts": "2026-10-04T19:05:50.344957+00:00",
   "attestor": "g0",
-  "attestation_text": "attest to this edit",
+  "attestation_text": "attest to this edit. Evidence: corpus entry corpus-operator-doctrine-verbatim-canon-2026-10-04T19:02:07.787569+00:00 (the in-flight ADR revision law, replacing the GHI #871 next-semver exception) and its history-only retraction; root AGENTS.md byte-unchanged; the ruling is carried at gz-obpi-pipeline, gz-adr-create, gz-design, gz-plan and gz-status.",
   "landing_id": null
 }

@@ -612,9 +612,69 @@ had been repeating. All are dispositioned below — none left undefined.
 
 ## Amendments
 
+<a id="amendments-2026-10-04-3"></a>
+
+### 2026-10-04 (3) (latest) — an ADR in flight may be revised to take more OBPIs; the next-semver route for corrections is retired (operator-ratified)
+
+**Operator (`g0`), verbatim, in order (2026-10-04):** *"there is no "correction adr," we are just
+going to have to authorize, via a GHI, needed work."*; *"ghis do not have obpi ceremony and
+checks. i meant extending in-flight adrs."*; *"if the adr is a minor bucket, and has been misused,
+then adr-as-bucket can work."*; *"the new loosening law here is we need to be able to revise an adr
+to allow for more obpis - the document and briefs table gets updated."*; *"A, in-flight only"*;
+*"our new plan is to keep the (m)ADR as a release increment bucket. However, I wanted it to be
+themematically cohesive"*; *"whatever we develop beyond the stopgap (m)ADR, will be closer to a
+feature bucket/bundle and in between the BDD/SDD materials here"*; *"we'll pick better names in
+the future"*. Spelling preserved. On the two questions then put to the operator: *"A"*, approving
+the wording below as drafted; *"A"*, retiring the next-semver route.
+
+**The law, as approved.**
+
+> An ADR in flight may be revised to take more OBPIs. The revision updates the document (an Intent
+> amendment, a Decision item, a checklist item and the scorecard baseline) and the briefs table in
+> the same change. A Validated ADR is not revised: scope missed from one enters the in-flight ADR
+> as a repair assignment that cites the obligation it repairs. An item off the ADR's theme is
+> labelled as such in the Intent amendment.
+>
+> The (m)ADR is a stopgap: a release-increment bucket, meant to be thematically cohesive. Its
+> successor is a feature bundle between an enhancement proposal and a feature specification. Names
+> are chosen later.
+
+The sentence on an item off the ADR's theme was drafted by the agent and approved with the rest.
+Every other sentence restates a ruling quoted above.
+
+**What changes.**
+
+- **A correction to a `Validated` ADR has one home: the in-flight ADR.** It enters as a repair
+  assignment, and the obligation it repairs keeps its identity in the ADR that stated it.
+- **§ Amendments 2026-09-29 is superseded.** A correction no longer takes the next unallocated
+  feature semver and is no longer authored or worked ahead of the in-flight ADR. Ascending order
+  has no exception.
+- **Canon carries it, not this plan alone.** The work-order ruling carries the law in place of the
+  exception at every skill that holds it verbatim (`gz-obpi-pipeline`, `gz-adr-create`,
+  `gz-design`, `gz-plan`, `gz-status`). The AGENTS.md corpus records the amended wording in its
+  history. This entry is the campaign's half.
+- **`ADR-pool.handoff-resume-assessment` was pooled under the retired exception.** When the
+  operator draws it, its scope enters the in-flight ADR as repair assignments. It takes no feature
+  semver of its own.
+- **The successor direction is recorded** at
+  [`ieee/OPEN-QUESTIONS.md` `Q-18`](ieee/OPEN-QUESTIONS.md#q-18-what-succeeds-the-stopgap-madr).
+
+**Already applied.** Both 2026-10-04 amendments of `ADR-0.35.0` rest on this law: checklist items
+15 to 19, and the split of item 17 into items 17 and 20. Each names its items as off the ADR's
+theme in its Intent amendment.
+
+**What does not change.** Only the operator initiates OBPI work (IRON LAW). A GHI still authorizes
+direct repair, and defects in hand are still fixed under `AGENTS.md` § PRIME DIRECTIVE. A
+`Validated` ADR is never reopened. `ADR-0.37.0`, authored before this law, stands as it is.
+`ADR-0.35.0` remains TOPMOST. The IEEE record's `Q-08` and `Q-10` rulings stand, its phases 5 to 8
+stay unauthorised, and no replacement name is selected.
+
+**Open.** Where items 15 to 20 of `ADR-0.35.0` sit in the working order relative to its unlanded
+items 10 to 13 is the operator's to rule.
+
 <a id="amendments-2026-10-04-2"></a>
 
-### 2026-10-04 (2) (latest) — the switch-off is reversed in full; gzkit's method is tuned, not reduced (operator-ratified)
+### 2026-10-04 (2) — the switch-off is reversed in full; gzkit's method is tuned, not reduced (operator-ratified)
 
 **Operator (`g0`), verbatim, in order (2026-10-04):** *"I do not want to curtail ANYTHING (I
 change my mind). I want a thorough review that keeps EVERYTHING we've fought hard for over the
@@ -877,6 +937,10 @@ checked.
 <a id="amendments-2026-09-29"></a>
 
 ### 2026-09-29 — corrections to a Validated ADR are exempt from strict ascending order (operator-ratified)
+
+> **SUPERSEDED 2026-10-04 (§ Amendments 2026-10-04 (3)).** A correction to a `Validated` ADR now
+> enters the in-flight ADR as a repair assignment, and the next-semver route is retired. The text
+> below is kept as the record of what was ratified.
 
 **Operator (`g0`), verbatim:** *"Exempt corrections (Recommended)"* (ruling docket, 2026-09-28, GHI #871),
 then, choosing how to carry it, *"canon plus campaign"* (2026-09-29).
