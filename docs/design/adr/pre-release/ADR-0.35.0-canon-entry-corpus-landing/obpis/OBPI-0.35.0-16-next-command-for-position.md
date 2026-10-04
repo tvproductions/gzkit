@@ -24,6 +24,7 @@ allowlist:
   - src/gzkit/skills/gz-obpi-pipeline/SKILL.md
   - .claude/skills/gz-obpi-pipeline/SKILL.md
   - .agents/skills/gz-obpi-pipeline/SKILL.md
+  - docs/design/adr/pre-release/ADR-0.13.0-obpi-pipeline-runtime-surface/obpis/OBPI-0.13.0-03-structured-stage-outputs.md
   - docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-16-next-command-for-position.md
 reqs:
   - REQ-0.35.0-16-01
@@ -90,6 +91,7 @@ The contract that changes is what the pipeline states as the next command: the d
 - `docs/governance/GovZero/obpi-runtime-contract.md` — § Active Pipeline Marker Fields: the `blockers`, `next_command` and `resume_point` definitions
 - `.gzkit/skills/gz-obpi-pipeline/SKILL.md` — § The Iron Law only, plus the `skill-version` and `last_reviewed` frontmatter that every skill edit moves
 - `src/gzkit/skills/gz-obpi-pipeline/SKILL.md`, `.claude/skills/gz-obpi-pipeline/SKILL.md`, `.agents/skills/gz-obpi-pipeline/SKILL.md` — generated mirrors, written only by `uv run gz agent sync control-surfaces`, never hand-edited
+- `docs/design/adr/pre-release/ADR-0.13.0-obpi-pipeline-runtime-surface/obpis/OBPI-0.13.0-03-structured-stage-outputs.md` — the dated amendment notes on the `REQ-0.13.0-03-01` and `REQ-0.13.0-03-04` lines only (Requirement 16); nothing else in this sealed brief changes
 - `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-16-next-command-for-position.md`
 
 ## Denied Paths
@@ -102,7 +104,7 @@ The contract that changes is what the pipeline states as the next command: the d
 - Every section of `.gzkit/skills/gz-obpi-pipeline/SKILL.md` other than § The Iron Law — the stage procedure text is `OBPI-0.35.0-17-stage-procedure-served-by-runtime`'s subject
 - `src/gzkit/pipeline_dispatch.py` — dispatch outcome recording is `OBPI-0.35.0-18-dispatch-outcome-recording`'s subject
 - `src/gzkit/lock_manager.py` — lock continuity is `OBPI-0.35.0-19-lock-continuity-across-sessions`'s subject
-- `docs/design/adr/pre-release/ADR-0.13.0-obpi-pipeline-runtime-surface/**` — `Validated`, not reopened
+- `docs/design/adr/pre-release/ADR-0.13.0-obpi-pipeline-runtime-surface/**` — `Validated`, not reopened. The one exception is the requirement-line notes named in Allowed Paths (operator ruling 2026-10-04)
 - Paths not listed in Allowed Paths
 - New dependencies
 - CI files, lockfiles
@@ -120,10 +122,12 @@ The contract that changes is what the pipeline states as the next command: the d
 9. NEVER: The stated next command is never gate evidence. No gate, hook refusal or completion check reads it (`ADR-0.0.9` Rule 5; the marker is Layer 3).
 10. NEVER: Remove or weaken a pipeline control (campaign § Amendments 2026-10-04 (2): "none is removed by this entry"). The `--from` entry points, the Stage 4 human-attestation pause, Step 4b, the Stage 4 round bound, `gz obpi precomplete` and the stale-marker handling all stand.
 11. NEVER: Add a CLI option, a subcommand, an output field or a second state file before the operator rules Open Design Question 1. When ruled, the Heavy-lane obligations of that surface (manpage row, help example, BDD scenario, `gz cli audit` clean) are part of this brief.
-12. NEVER: Change a marker value that `REQ-0.13.0-03-01`, `-02` or `-04` literally asserts, or an assertion of their covering tests, before the operator rules Open Design Question 2. `ADR-0.13.0` is terminal, so `AGENTS.md` § OBPI Acceptance Protocol makes that an operator escalation, not an edit.
+12. NEVER: Change a value an attested `REQ-0.13.0-*` literally asserts, or an assertion of its covering test, beyond what Open Design Question 2 rules. Ruled 2026-10-04 (A): the `next_command` value of `REQ-0.13.0-03-01` and the command clause of `REQ-0.13.0-03-04` change and are carried by Requirement 16. The human-action clause of `REQ-0.13.0-03-04`, all of `REQ-0.13.0-03-03`, and the other fields `REQ-0.13.0-03-01` names stand as attested. `ADR-0.13.0` is terminal, so `AGENTS.md` § OBPI Acceptance Protocol makes any further change an operator escalation, not an edit.
 13. ALWAYS: Edit the skill in `.gzkit/skills/` and in § The Iron Law only. The edit keeps the completion statement, the no-summary rule, the Stage 4 pause after Step 4b and the round-bound stop. It does not grow the body past its ceiling in `src/gzkit/skill_body_grandfather.json` (`.gzkit/rules/skill-authoring.md` § Parsimony item 6). It moves `skill-version` and `last_reviewed`, and `uv run gz agent sync control-surfaces` writes the mirrors.
 14. ALWAYS: Keep existing marker consumers working, including a marker written before `OBPI-0.35.0-15` that carries no recorded position. Such a marker reads as its launch position.
 15. ALWAYS: Take the Key Proof from one real pipeline run, not from a fixture: the stated next command observed at two or more positions of that run, and a fresh process obtaining it (GHI #1173 exit condition). This OBPI's own run qualifies from the stage at which the repair is in the tree.
+16. ALWAYS (operator ruling 2026-10-04, Open Design Question 2): amend `REQ-0.13.0-03-01` and `REQ-0.13.0-03-04` in place in the same change that makes `next_command` position-derived. Each line in the sealed `OBPI-0.13.0-03` brief keeps the attested text and gains a dated note that quotes the ruling, says `next_command` is the command the pipeline skill prescribes at the run's recorded position, and names which attested clauses still stand. The form is the note on `REQ-0.0.14-03-07` (`docs/governance/attested-req-subject-retirement.md` § Worked example 4). Each covering test asserts the amended behaviour and its docstring records why. `REQ-0.13.0-03-02` is amended by OBPI-0.35.0-15 and its note already holds under this ruling.
+17. ALWAYS (operator ruling 2026-10-04): the `@covers` binding for `REQ-0.13.0-03-01` moves off the resume-command fallback test it sits on today and onto the test that asserts the requirement. The move and its reason are recorded in the test's docstring and the commit body. The binding for `REQ-0.13.0-03-04` already sits on the right test and stays.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt.
 
@@ -149,6 +153,7 @@ Recommendation: (iii) when it exists, otherwise (i). `gz obpi pipeline` with the
 - **A. One statement.** `next_command` becomes position-derived. The operator rules how each of the three requirements and its covering test is carried, under `docs/governance/attested-req-subject-retirement.md`. Recommended: one field with one meaning, and Decision item 12 says "the one next command".
 - **B. Two statements.** The marker's `next_command` and `resume_point` keep the attested stage re-entry values. The position's next command is stated separately, and it is the one every consumer presents. The three requirements stay literally true. Cost: a marker with two "next" values, one of them the value GHI #1173 reports.
 - **C. Launch instants keep the attested values.** Only later positions are position-derived. Cost: `--from=verify` is still stated at the launch position, which is the instance GHI #1173 observed.
+- **RULED 2026-10-04: A.** Asked "what does the marker's `next_command` mean?", the operator answered, verbatim: "A". Two rulings followed the same day, each answered "A": the requirements are amended in place (Requirement 16), and the misplaced `@covers` binding moves to the test that asserts its requirement (Requirement 17). OBPI-0.35.0-15 no longer pins a `next_command` value at launch, so this brief amends nothing that brief attests.
 
 **3. Rows where the skill and the runtime disagree today.** The GHI names the skill as the oracle. At Stage 3 and at Stage 5 the runtime has one composite command where the skill prescribes a sequence, and the two differ in content (rows 4, 11 and 12 below).
 
