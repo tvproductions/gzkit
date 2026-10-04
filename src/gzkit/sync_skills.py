@@ -200,14 +200,18 @@ def _retired_skill_names(skills_root: Path) -> set[str]:
 def collect_skills_catalog(
     project_root: Path,
     skills_dir: str,
+    *,
+    exclude: frozenset[str] = frozenset(),
 ) -> list[dict[str, str]]:
     """Collect canonical skill metadata from the configured skills directory.
 
-    Retired skills are excluded from the catalog.
+    Retired skills are excluded from the catalog, and so is every skill named in
+    *exclude* (the project's ``disabled.skills`` list).
 
     Args:
         project_root: Project root directory.
         skills_dir: Relative path to canonical skills directory.
+        exclude: Skill directory names to leave out (the project's ``disabled.skills``).
 
     Returns:
         Sorted list of skill metadata records.
@@ -224,7 +228,7 @@ def collect_skills_catalog(
             continue
 
         state = _extract_skill_frontmatter_field(skill_file, "lifecycle_state")
-        if state == "retired":
+        if state == "retired" or skill_dir.name in exclude:
             continue
 
         skills.append(
@@ -542,7 +546,7 @@ def find_stale_mirror_paths(project_root: Path, config: GzkitConfig | None = Non
     if not canonical_root.exists():
         return []
 
-    retired = _retired_skill_names(canonical_root)
+    retired = _retired_skill_names(canonical_root) | set(config.disabled.skills)
 
     stale_paths: list[str] = []
     for mirror_root in _mirror_roots(project_root, config):
@@ -596,7 +600,7 @@ def sync_skill_mirrors(
         "codex": config.paths.codex_skills,
     }
 
-    retired = _retired_skill_names(project_root / config.paths.skills)
+    retired = _retired_skill_names(project_root / config.paths.skills) | set(config.disabled.skills)
     updated: list[str] = []
     seen: set[str] = set()
     for vendor_name, target in vendor_skill_map.items():
@@ -617,7 +621,7 @@ def sync_skill_mirrors(
 
 def sync_claude_skills(project_root: Path, config: GzkitConfig) -> list[str]:
     """Backward-compatible wrapper for older call sites."""
-    retired = _retired_skill_names(project_root / config.paths.skills)
+    retired = _retired_skill_names(project_root / config.paths.skills) | set(config.disabled.skills)
     return sync_skill_mirror(
         project_root,
         config.paths.skills,

@@ -264,7 +264,9 @@ uv run gz test                       # Run tests""".format(module=project_name.r
     # Note: Could read existing CLAUDE.md here to preserve context
     # For now, we regenerate from templates
 
-    skills = collect_skills_catalog(project_root, config.paths.skills)
+    skills = collect_skills_catalog(
+        project_root, config.paths.skills, exclude=frozenset(config.disabled.skills)
+    )
     skills_catalog = render_skills_catalog(skills)
 
     return {

@@ -205,7 +205,7 @@ def generate_claude_settings(config: GzkitConfig) -> dict:
 
     """
     hooks_dir = config.paths.claude_hooks
-    return {
+    settings = {
         "enabledPlugins": {"superpowers@claude-plugins-official": False},
         "hooks": {
             "PreToolUse": [
@@ -350,6 +350,38 @@ def generate_claude_settings(config: GzkitConfig) -> dict:
             ],
         },
     }
+    return _without_disabled_hooks(settings, config.disabled.hooks)
+
+
+def _hook_script_name(command: str) -> str:
+    """Return the script file name a generated hook command runs."""
+    return command.rstrip('"').rsplit("/", 1)[-1]
+
+
+def _without_disabled_hooks(settings: dict, disabled: list[str]) -> dict:
+    """Drop every hook whose script is named in *disabled* (``.gzkit.json`` ``disabled.hooks``).
+
+    A matcher group left with no hooks disappears, and so does a phase left with no
+    groups, so the merge drops the settings file's stale copies instead of keeping
+    an empty shell. An empty *disabled* returns *settings* unchanged.
+    """
+    if not disabled:
+        return settings
+    names = set(disabled)
+    phases: dict[str, list[dict]] = {}
+    for phase, groups in settings["hooks"].items():
+        kept_groups = []
+        for group in groups:
+            hooks = [
+                hook
+                for hook in group.get("hooks", [])
+                if _hook_script_name(hook.get("command", "")) not in names
+            ]
+            if hooks:
+                kept_groups.append({**group, "hooks": hooks})
+        if kept_groups:
+            phases[phase] = kept_groups
+    return {**settings, "hooks": phases}
 
 
 def _is_gzkit_owned_hook(hook_entry: dict, hooks_dir: str) -> bool:
@@ -482,7 +514,9 @@ def merge_settings(
         if phase not in merged_hooks:
             merged_hooks[phase] = gzkit_hooks.get(phase, [])
 
-    merged["hooks"] = merged_hooks
+    # A phase whose every hook was switched off (`.gzkit.json` `disabled.hooks`) is
+    # dropped rather than written as an empty list.
+    merged["hooks"] = {phase: groups for phase, groups in merged_hooks.items() if groups}
     return merged
 
 

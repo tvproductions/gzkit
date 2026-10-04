@@ -165,6 +165,38 @@ class SmokeConfig(BaseModel):
     )
 
 
+class DisabledControlsConfig(BaseModel):
+    """Controls switched off for this project, named one by one.
+
+    A name here removes a control's AUTOMATIC standing and nothing else: the hook
+    script stays on disk and the skill stays canonical, so the switch reverses by
+    deleting the name and running ``gz agent sync control-surfaces``. Operator
+    ruling 2026-10-04; the record is docs/governance/control-switchboard-2026-10-04.md.
+    """
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    hooks: list[str] = Field(
+        default_factory=list,
+        description="Hook script file names omitted from the generated .claude/settings.json",
+    )
+    skills: list[str] = Field(
+        default_factory=list,
+        description="Skill directory names left out of the vendor mirrors and the catalog",
+    )
+    check_steps: list[str] = Field(
+        default_factory=list,
+        description=(
+            "`gz check` step names dropped from every scope except `--full`, "
+            "in addition to data/check_step_scopes.json"
+        ),
+    )
+    orientation_sections: list[str] = Field(
+        default_factory=list,
+        description="Session-orientation section headings that are no longer collected or shown",
+    )
+
+
 class GzkitConfig(BaseModel):
     """Root configuration for a gzkit-enabled project."""
 
@@ -176,6 +208,7 @@ class GzkitConfig(BaseModel):
     arb: ArbConfig = Field(default_factory=ArbConfig)
     authorship: AuthorshipConfig = Field(default_factory=AuthorshipConfig)
     smoke: SmokeConfig = Field(default_factory=SmokeConfig)
+    disabled: DisabledControlsConfig = Field(default_factory=DisabledControlsConfig)
     project_name: str = ""
 
     @classmethod

@@ -614,7 +614,8 @@ def list_skills(
 
     By default, retired skills are excluded so the CLI discovery surface matches
     the generated AGENTS.md skill catalog (see :mod:`gzkit.sync_skills`). Pass
-    ``include_retired=True`` to surface retired/archived compatibility skills.
+    ``include_retired=True`` to surface retired/archived compatibility skills and
+    the skills the project switched off in ``.gzkit.json`` ``disabled.skills``.
 
     Args:
         project_root: Project root directory.
@@ -640,7 +641,8 @@ def list_skills(
         if not skill_file.exists():
             continue
         lifecycle_state = _read_lifecycle_state(skill_file)
-        if lifecycle_state == "retired" and not include_retired:
+        switched_off = lifecycle_state == "retired" or skill_path.name in config.disabled.skills
+        if switched_off and not include_retired:
             continue
         skills.append(
             Skill(

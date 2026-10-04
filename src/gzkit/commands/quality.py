@@ -18,6 +18,7 @@ from typing import Any
 from rich.markup import escape
 
 from gzkit.commands.common import console, get_project_root
+from gzkit.config import GzkitConfig
 from gzkit.quality import (
     DriftAdvisoryResult,
     QualityResult,
@@ -702,17 +703,34 @@ def _load_check_step_scopes() -> dict[str, dict[str, Any]]:
     return scopes if isinstance(scopes, dict) else {}
 
 
-def _scope_skips(scope: str) -> frozenset[str]:
-    """Return the step names *scope* drops, empty for an undeclared scope.
+def _switched_off_check_steps(config: GzkitConfig | None = None) -> frozenset[str]:
+    """Return the steps the central switch (``.gzkit.json`` ``disabled.check_steps``) drops.
+
+    Operator ruling 2026-10-04: a step named there loses its automatic standing in
+    every scope except ``full``, which keeps running the whole estate on demand.
+    Each name is its own switch; deleting it restores the step. Record:
+    docs/governance/control-switchboard-2026-10-04.md.
+    """
+    if config is None:
+        config = GzkitConfig.load(get_project_root() / ".gzkit.json")
+    return frozenset(config.disabled.check_steps)
+
+
+def _scope_skips(scope: str, config: GzkitConfig | None = None) -> frozenset[str]:
+    """Return the step names *scope* drops: its declared skips plus the project's switches.
 
     Polarity is deliberate: a scope names what it DROPS, so a newly registered
     step runs everywhere until someone excludes it, and an unknown scope name
-    (a typo, a missing file) drops nothing rather than silently emptying the
-    gate.
+    (a typo, a missing file) declares nothing rather than silently emptying the
+    gate. The central switch (``disabled.check_steps``) applies to every scope
+    but ``full``.
     """
     entry = _load_check_step_scopes().get(scope) or {}
     skips = entry.get("skips")
-    return frozenset(skips) if isinstance(skips, list) else frozenset()
+    declared = frozenset(skips) if isinstance(skips, list) else frozenset()
+    if scope == "full":
+        return declared
+    return declared | _switched_off_check_steps(config)
 
 
 def _scope_records_verified(scope: str) -> bool:
