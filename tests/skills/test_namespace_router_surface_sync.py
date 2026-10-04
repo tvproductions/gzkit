@@ -9,7 +9,7 @@ import unittest
 from pathlib import Path
 
 from gzkit.skills import list_skills
-from tests.vendor_surfaces import skill_mirror_roots, skill_switched_off
+from tests.vendor_surfaces import skill_mirror_roots
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 CANONICAL_ROOT = PROJECT_ROOT / ".gzkit" / "skills"
@@ -38,8 +38,6 @@ class TestVendorMirrorByteParity(unittest.TestCase):
 
     def test_each_router_byte_equivalent_in_every_vendor_mirror(self) -> None:
         for slug in ROUTER_SLUGS:
-            if skill_switched_off(slug):
-                continue  # no mirror is written for a switched-off skill
             canonical = _read_bytes(CANONICAL_ROOT, slug)
             for mirror_root in VENDOR_MIRROR_ROOTS:
                 with self.subTest(slug=slug, mirror=mirror_root.name):
@@ -88,15 +86,8 @@ class TestRoutersDiscoverableInActiveCatalog(unittest.TestCase):
 
     def test_each_router_listed_active_in_skill_catalog(self) -> None:
         active = {s.name: s for s in list_skills(PROJECT_ROOT)}
-        everything = {s.name for s in list_skills(PROJECT_ROOT, include_retired=True)}
         for slug in ROUTER_SLUGS:
             with self.subTest(slug=slug):
-                if skill_switched_off(slug):
-                    # The central switch's contract (ruling 2026-10-04): hidden from the
-                    # active catalog, still canonical and shown by `gz skill list --all`.
-                    self.assertNotIn(slug, active)
-                    self.assertIn(slug, everything)
-                    continue
                 self.assertIn(
                     slug,
                     active,

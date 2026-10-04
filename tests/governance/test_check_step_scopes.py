@@ -21,9 +21,7 @@ from gzkit.commands.quality import (
     _scope_records_verified,
     _scope_skips,
     _select_check_steps,
-    _switched_off_check_steps,
 )
-from gzkit.config import GzkitConfig
 from gzkit.traceability import covers
 
 _CONFIG = Path(__file__).resolve().parents[2] / "data" / "check_step_scopes.json"
@@ -36,13 +34,10 @@ class TestScopeDeclarationIsRead(unittest.TestCase):
     def test_the_change_scope_drops_exactly_what_the_config_declares(self) -> None:
         scopes = json.loads(_CONFIG.read_text(encoding="utf-8"))["scopes"]
         declared = set(scopes["change"]["skips"])
-        switched_off = set(
-            GzkitConfig.load(_CONFIG.parents[1] / ".gzkit.json").disabled.check_steps
-        )
         self.assertEqual(
             _scope_skips("change"),
-            declared | switched_off,
-            "the runner must read both declarations, not carry a second copy of either",
+            declared,
+            "the runner must read the declaration, not carry a second copy of it",
         )
 
     @covers("REQ-0.0.68-01-01")
@@ -78,11 +73,7 @@ class TestScopePolarityIsConservative(unittest.TestCase):
         The inverse polarity — unknown scope means "skip everything not listed" —
         would turn a typo in a scope name into a silently empty gate.
         """
-        self.assertEqual(
-            _scope_skips("no-such-scope"),
-            _switched_off_check_steps(),
-            "an unknown scope drops nothing beyond the project's own switches",
-        )
+        self.assertEqual(_scope_skips("no-such-scope"), frozenset())
         self.assertEqual(
             len(_select_check_steps("full")),
             len(_build_check_steps()),
@@ -129,7 +120,7 @@ class TestOnlyScopesCoveringTheGateRecord(unittest.TestCase):
         from unittest import mock  # noqa: PLC0415
 
         with mock.patch("gzkit.commands.quality._load_check_step_scopes", return_value={}):
-            self.assertEqual(_scope_skips("change", GzkitConfig()), frozenset())
+            self.assertEqual(_scope_skips("change"), frozenset())
             self.assertTrue(_scope_records_verified("change"))
             self.assertFalse(_scope_records_verified("fast"))
 

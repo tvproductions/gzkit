@@ -1,0 +1,4 @@
+interface:
+  display_name: "gz constitute"
+  short_description: "Scaffold a CONSTITUTION-<SLUG>-<semver> doc and draft it with the operator"
+  default_prompt: "Use $gz-constitute to scaffold a constitution with gz constitute and draft its sections with me."

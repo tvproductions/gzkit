@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "gzkit competitor radar registry",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "discovery_posture",
+    "execution_posture",
+    "report_structure",
+    "competitors",
+    "strength_patterns"
+  ],
+  "properties": {
+    "schema_version": { "type": "string" },
+    "discovery_posture": { "type": "string" },
+    "execution_posture": { "type": "string" },
+    "report_structure": { "type": "string" },
+    "competitors": { "type": "array" },
+    "strength_patterns": { "type": "array" }
+  },
+  "additionalProperties": true
+}

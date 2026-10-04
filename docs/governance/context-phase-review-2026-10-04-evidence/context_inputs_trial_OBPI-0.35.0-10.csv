@@ -1,0 +1,164 @@
+enters_at_call,timestamp,category,sub,chars,est_tokens
+0,2026-10-03T12:06:50.173Z,hook_outputs,hook_success:SessionStart:clear,2349,587
+0,2026-10-03T12:06:50.173Z,hook_outputs,hook_additional_context:SessionStart,2219,555
+0,2026-10-03T12:06:34.261Z,everything_else,harness user row,217,54
+0,2026-10-03T12:06:33.944Z,everything_else,harness user row,130,32
+0,2026-10-03T12:06:50.190Z,operator_prompts,prompt,68,17
+0,2026-10-03T12:06:50.189Z,session_start_attachments,environment,700,175
+0,2026-10-03T12:06:50.189Z,session_start_attachments,model,161,40
+0,2026-10-03T12:06:50.189Z,session_start_attachments,deferred_tools_delta,906,226
+0,2026-10-03T12:06:50.189Z,session_start_attachments,agent_listing_delta,3866,966
+0,2026-10-03T12:06:50.189Z,session_start_attachments,mcp_instructions_delta,2053,513
+0,2026-10-03T12:06:50.189Z,session_start_attachments,skill_listing,29982,7496
+0,2026-10-03T12:06:50.314Z,session_start_attachments,instructions,28215,7054
+0,2026-10-03T12:06:50.314Z,session_start_attachments,session_context,1264,316
+0,2026-10-03T12:06:50.314Z,session_start_attachments,date,64,16
+1,2026-10-03T12:06:52.698Z,file_reads,docs/governance/obpi-run-cost-2026-10-03-evidence/README.md,3892,973
+1,2026-10-03T12:06:52.957Z,file_reads,.gzkit/handoffs/20261003T120228Z-obpi-08-cost-measured-obpi-10-trial-ruled.md,8630,2158
+1,2026-10-03T12:06:52.992Z,rule_injections,gate5-runbook-code-covenant.md,3333,833
+1,2026-10-03T12:06:52.992Z,rule_injections,agent-failure-modes.md,3719,930
+1,2026-10-03T12:06:52.992Z,rule_injections,token-block-discipline.md,7779,1945
+2,2026-10-03T12:07:14.973Z,bash_outputs,gz obpi other,590,148
+2,2026-10-03T12:07:14.982Z,file_reads,docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-10-classification-reader-and-ownership.md,23764,5941
+2,2026-10-03T12:07:14.996Z,rule_injections,gh-cli.md,5570,1392
+2,2026-10-03T12:07:14.996Z,rule_injections,security-sensitivity.md,5367,1342
+2,2026-10-03T12:07:14.996Z,rule_injections,task-discovery.md,6380,1595
+2,2026-10-03T12:07:14.997Z,rule_injections,brief-heading-conventions.md,2354,588
+2,2026-10-03T12:07:14.997Z,rule_injections,adr-audit.md,5106,1276
+3,2026-10-03T12:07:32.668Z,bash_outputs,gz obpi other,526,132
+4,2026-10-03T12:07:37.049Z,bash_outputs,gz obpi other,6906,1726
+5,2026-10-03T12:07:43.015Z,bash_outputs,gz obpi other,1369,342
+6,2026-10-03T12:07:45.852Z,bash_outputs,gz obpi other,543,136
+7,2026-10-03T12:07:52.167Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",2409,602
+7,2026-10-03T12:07:52.569Z,file_reads,src/gzkit/governance/trust_audits/bullet_retention.py,13301,3325
+7,2026-10-03T12:07:52.595Z,rule_injections,hexagonal-architecture.md,6764,1691
+7,2026-10-03T12:07:52.595Z,rule_injections,pythonic.md,7657,1914
+7,2026-10-03T12:07:52.595Z,rule_injections,models.md,1960,490
+7,2026-10-03T12:07:52.595Z,rule_injections,cross-platform.md,5379,1345
+7,2026-10-03T12:07:52.595Z,rule_injections,guardrail-feedback-prose.md,4458,1114
+8,2026-10-03T12:07:56.816Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",6697,1674
+9,2026-10-03T12:08:01.124Z,file_reads,src/gzkit/content/ownership.py,9854,2464
+9,2026-10-03T12:08:01.163Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",3526,882
+10,2026-10-03T12:08:06.706Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",7510,1878
+11,2026-10-03T12:08:35.445Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",8049,2012
+11,2026-10-03T12:08:35.548Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",15916,3979
+12,2026-10-03T12:10:16.726Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",7602,1900
+12,2026-10-03T12:10:16.729Z,other_harness_reminders,silent_turn_reminder,133,33
+13,2026-10-03T12:10:22.884Z,bash_outputs,gz other,1789,447
+14,2026-10-03T12:10:29.324Z,bash_outputs,gz other,6077,1519
+15,2026-10-03T12:10:39.743Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",3548,887
+16,2026-10-03T12:11:14.540Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",2961,740
+17,2026-10-03T12:12:20.731Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",5040,1260
+17,2026-10-03T12:12:20.734Z,other_harness_reminders,silent_turn_reminder,133,33
+18,2026-10-03T12:13:36.097Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",7468,1867
+19,2026-10-03T12:13:39.866Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",7139,1785
+20,2026-10-03T12:14:41.521Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",6458,1614
+21,2026-10-03T12:14:43.837Z,file_reads,tests/governance/test_bullet_retention.py,1425,356
+21,2026-10-03T12:14:44.642Z,file_reads,tests/governance/test_bullet_retention.py,1686,422
+21,2026-10-03T12:14:44.670Z,rule_injections,tests.md,11189,2797
+22,2026-10-03T12:15:14.420Z,edit_write_results,Edit,114,28
+22,2026-10-03T12:15:14.637Z,edit_write_results,Edit,114,28
+23,2026-10-03T12:15:20.746Z,bash_outputs,unittest,890,222
+24,2026-10-03T12:16:07.581Z,bash_outputs,gz other,3483,871
+25,2026-10-03T12:17:25.482Z,edit_write_results,Edit,192,48
+25,2026-10-03T12:17:25.720Z,edit_write_results,Edit,192,48
+25,2026-10-03T12:17:25.947Z,edit_write_results,Edit,192,48
+26,2026-10-03T12:17:38.994Z,bash_outputs,unittest,2045,511
+27,2026-10-03T12:17:45.752Z,edit_write_results,Edit,114,28
+27,2026-10-03T12:17:46.010Z,edit_write_results,Edit,114,28
+27,2026-10-03T12:17:46.525Z,bash_outputs,unittest,339,85
+27,2026-10-03T12:17:46.909Z,other_harness_reminders,edited_text_file,418,104
+27,2026-10-03T12:17:46.911Z,other_harness_reminders,edited_text_file,430,108
+28,2026-10-03T12:17:50.335Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",118,30
+29,2026-10-03T12:17:52.128Z,file_reads,tests/governance/test_bullet_retention.py,1742,436
+30,2026-10-03T12:19:16.755Z,edit_write_results,Edit,114,28
+31,2026-10-03T12:19:18.987Z,file_reads,tests/governance/test_bullet_retention.py,747,187
+32,2026-10-03T12:19:24.524Z,edit_write_results,Edit,114,28
+32,2026-10-03T12:19:24.639Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",638,160
+33,2026-10-03T12:19:34.598Z,edit_write_results,Edit,114,28
+33,2026-10-03T12:19:34.834Z,edit_write_results,Edit,114,28
+33,2026-10-03T12:19:35.511Z,bash_outputs,unittest,354,88
+34,2026-10-03T12:19:52.749Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",22804,5701
+35,2026-10-03T12:20:33.907Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",2304,576
+36,2026-10-03T12:21:06.299Z,edit_write_results,Write,213,53
+36,2026-10-03T12:21:06.442Z,other_harness_reminders,silent_turn_reminder,133,33
+37,2026-10-03T12:21:13.117Z,bash_outputs,gz other,2673,668
+38,2026-10-03T12:21:27.351Z,bash_outputs,git,1356,339
+39,2026-10-03T12:21:31.436Z,bash_outputs,git,1070,268
+40,2026-10-03T12:21:40.143Z,bash_outputs,unittest,350,88
+41,2026-10-03T12:21:52.960Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",4852,1213
+42,2026-10-03T12:22:31.074Z,edit_write_results,Write,170,42
+42,2026-10-03T12:22:31.229Z,edit_write_results,Write,177,44
+42,2026-10-03T12:22:31.783Z,bash_outputs,other: reads the run's own logs in the scratchpad,2279,570
+43,2026-10-03T12:22:37.613Z,file_reads,docs/governance/advisory-rules-audit.md,6714,1678
+43,2026-10-03T12:22:37.635Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",2751,688
+44,2026-10-03T12:22:43.531Z,bash_outputs,gz other,80,20
+45,2026-10-03T12:23:00.128Z,file_reads,docs/user/manpages/validate.md,3460,865
+45,2026-10-03T12:23:01.423Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",295,74
+46,2026-10-03T12:23:15.903Z,bash_outputs,other: reads the run's own logs in the scratchpad,1951,488
+47,2026-10-03T12:23:23.031Z,bash_outputs,other: reads the run's own logs in the scratchpad,3605,901
+48,2026-10-03T12:23:58.169Z,edit_write_results,Edit,103,26
+48,2026-10-03T12:23:58.187Z,file_reads,src/gzkit/governance/trust_audits/bullet_retention.py,777,194
+48,2026-10-03T12:23:58.211Z,other_harness_reminders,silent_turn_reminder,133,33
+49,2026-10-03T12:24:06.791Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",601,150
+50,2026-10-03T12:24:13.830Z,edit_write_results,Edit,126,32
+50,2026-10-03T12:24:14.043Z,edit_write_results,Edit,126,32
+50,2026-10-03T12:24:14.044Z,edit_write_results,Edit,100,25
+51,2026-10-03T12:24:20.420Z,edit_write_results,Edit,114,28
+51,2026-10-03T12:24:20.437Z,file_reads,docs/governance/advisory-rules-audit.md,2176,544
+52,2026-10-03T12:24:40.359Z,edit_write_results,Edit,112,28
+52,2026-10-03T12:24:40.523Z,edit_write_results,Edit,112,28
+52,2026-10-03T12:24:40.750Z,edit_write_results,Edit,107,27
+53,2026-10-03T12:24:46.247Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",597,149
+53,2026-10-03T12:24:46.251Z,other_harness_reminders,silent_turn_reminder,133,33
+54,2026-10-03T12:24:54.041Z,bash_outputs,unittest,351,88
+54,2026-10-03T12:24:54.047Z,other_harness_reminders,edited_text_file,425,106
+55,2026-10-03T12:24:59.831Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",231,58
+56,2026-10-03T12:25:01.996Z,file_reads,src/gzkit/governance/trust_audits/bullet_retention.py,8493,2123
+57,2026-10-03T12:25:20.032Z,edit_write_results,Edit,126,32
+58,2026-10-03T12:25:27.671Z,bash_outputs,gz other,1592,398
+59,2026-10-03T12:25:39.862Z,bash_outputs,gz obpi other,693,173
+59,2026-10-03T12:25:39.864Z,other_harness_reminders,silent_turn_reminder,133,33
+60,2026-10-03T12:25:55.581Z,bash_outputs,unittest,926,232
+61,2026-10-03T12:26:00.545Z,file_reads,src/gzkit/governance/trust_audits/bullet_retention.py,846,212
+62,2026-10-03T12:26:07.698Z,edit_write_results,Edit,126,32
+62,2026-10-03T12:26:08.572Z,bash_outputs,gz other,100,25
+63,2026-10-03T12:28:10.426Z,bash_outputs,unittest,1622,406
+64,2026-10-03T12:28:21.294Z,bash_outputs,gz other,1255,314
+65,2026-10-03T12:28:40.856Z,bash_outputs,git,1315,329
+66,2026-10-03T12:30:42.446Z,operator_prompts,prompt,28,7
+67,2026-10-03T12:33:09.763Z,operator_prompts,prompt,102,26
+68,2026-10-03T12:33:23.634Z,bash_outputs,gz obpi other,5776,1444
+69,2026-10-03T12:33:44.278Z,bash_outputs,gz obpi acceptance,2802,700
+70,2026-10-03T12:34:05.905Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",1610,402
+71,2026-10-03T12:34:19.294Z,bash_outputs,unittest,1702,426
+72,2026-10-03T12:35:17.388Z,operator_prompts,prompt,39,10
+73,2026-10-03T12:35:23.834Z,bash_outputs,gz obpi other,1200,300
+74,2026-10-03T12:35:32.209Z,bash_outputs,gz arb,1768,442
+75,2026-10-03T12:35:49.345Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",5262,1316
+76,2026-10-03T12:35:52.016Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",17247,4312
+77,2026-10-03T12:38:19.672Z,bash_outputs,gz arb,357,89
+77,2026-10-03T12:38:19.685Z,file_reads,docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-10-classification-reader-and-ownership.md,1823,456
+78,2026-10-03T12:38:32.372Z,edit_write_results,Edit,198,50
+78,2026-10-03T12:38:32.835Z,bash_outputs,gz obpi acceptance,1903,476
+79,2026-10-03T12:39:17.755Z,bash_outputs,gz obpi acceptance,1517,379
+80,2026-10-03T12:40:02.451Z,bash_outputs,gz obpi acceptance,2871,718
+81,2026-10-03T12:40:09.609Z,bash_outputs,other: reads the run's own logs in the scratchpad,1455,364
+82,2026-10-03T12:40:14.518Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",2657,664
+83,2026-10-03T12:40:17.738Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",4399,1100
+84,2026-10-03T12:40:55.671Z,bash_outputs,gz obpi acceptance,2224,556
+85,2026-10-03T12:41:04.828Z,bash_outputs,gz obpi acceptance,2091,523
+86,2026-10-03T12:41:14.308Z,bash_outputs,gz obpi other,345,86
+86,2026-10-03T12:41:14.310Z,other_harness_reminders,silent_turn_reminder,133,33
+87,2026-10-03T23:44:03.986Z,operator_prompts,prompt,119,30
+88,2026-10-03T23:46:15.317Z,operator_prompts,prompt,21,5
+89,2026-10-03T23:46:23.722Z,skill_bodies,gz-session-handoff (Skill tool result),35,9
+89,2026-10-03T23:46:23.720Z,skill_bodies,gz-session-handoff,37023,9256
+90,2026-10-03T23:46:54.798Z,bash_outputs,gz other,3881,970
+91,2026-10-03T23:47:50.444Z,bash_outputs,gz obpi acceptance,243,61
+92,2026-10-03T23:47:54.369Z,bash_outputs,git,999,250
+93,2026-10-03T23:48:32.567Z,bash_outputs,gz obpi acceptance,113,28
+94,2026-10-03T23:48:40.947Z,bash_outputs,gz other,1202,300
+95,2026-10-03T23:48:51.815Z,bash_outputs,gz other,2323,581
+96,2026-10-03T23:49:24.212Z,bash_outputs,git,2133,533
+97,2026-10-03T23:51:37.217Z,bash_outputs,gz other,610,152

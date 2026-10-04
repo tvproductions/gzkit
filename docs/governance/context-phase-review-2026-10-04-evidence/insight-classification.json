@@ -1,0 +1,7636 @@
+{
+ "source": ".gzkit/insights/agent-insights.jsonl (snapshot of 2026-10-04; `n` is the 1-based line number)",
+ "caveat": "One reader's classification (one model, eight parallel passes under one written rubric, see insight-classification-rubric.txt). Not adjudicated by a second reader.",
+ "classes": {
+  "a": "context or attention",
+  "b": "fabrication or overclaim",
+  "c": "apparatus defect",
+  "d": "product defect",
+  "e": "process or scope judgment",
+  "f": "other"
+ },
+ "normalisation": "17 rows moved c->e after the passes (brief allowlist/REQ under-declaration where the gate behaved correctly); listed by adjusted_from. No row was moved into or out of classes a or b.",
+ "rows": [
+  {
+   "n": 1,
+   "ts": "2026-02-22",
+   "type": "defect",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up d; no agent behaviour stated"
+  },
+  {
+   "n": 3,
+   "ts": "2026-03-01T15:38:30Z",
+   "type": "defect",
+   "class": "f",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 4,
+   "ts": "2026-03-01T15:45:00Z",
+   "type": "defect",
+   "class": "f",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 5,
+   "ts": "2026-03-05T01:10:26Z",
+   "type": "defect",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up b; row does not attribute the unproven completion to an agent claim"
+  },
+  {
+   "n": 7,
+   "ts": "2026-03-05T07:39:11Z",
+   "type": "defect",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up b; same shape as n=5"
+  },
+  {
+   "n": 9,
+   "ts": "2026-03-06T06:00:00Z",
+   "type": "defect",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up a; row does not say who skipped the gates"
+  },
+  {
+   "n": 10,
+   "ts": "2026-03-07T11:06:00Z",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 12,
+   "ts": "2026-03-10T08:34:57Z",
+   "type": "defect",
+   "class": "d",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up c; gz plan is a governance command but the defect is scaffolding"
+  },
+  {
+   "n": 13,
+   "ts": "2026-03-13T19:00:00Z",
+   "type": "defect",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 14,
+   "ts": "2026-03-22T20:25:00Z",
+   "type": "defect",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up d; brief authoring defects found by evaluation"
+  },
+  {
+   "n": 16,
+   "ts": "2026-03-22T21:05:00Z",
+   "type": "defect",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up d; brief authoring defects found by evaluation"
+  },
+  {
+   "n": 18,
+   "ts": "2026-04-05T15:55:00Z",
+   "type": "improvement",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up f; reads as enhancement to Stage 4 template"
+  },
+  {
+   "n": 19,
+   "ts": "2026-04-30T09:15:00+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up a; row recommends a new rule, shows none existing"
+  },
+  {
+   "n": 20,
+   "ts": "2026-04-30T23:50:00+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "context_size"
+   ],
+   "note": "runner-up c; row also says no validator bound the doctrine"
+  },
+  {
+   "n": 21,
+   "ts": "2026-05-01T01:50:00Z",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 22,
+   "ts": "2026-05-01T08:50:00+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 23,
+   "ts": "2026-05-02T14:38:28.111050+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up b; brief cited fabricated receipt ID, origin named as AGENTS.md example drift"
+  },
+  {
+   "n": 24,
+   "ts": "2026-05-02T20:40:00+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": "runner-up e; evidence cites existing DO IT RIGHT 1a"
+  },
+  {
+   "n": 25,
+   "ts": "2026-05-02T18:40:00+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up c; failing tests are partly governance audits"
+  },
+  {
+   "n": 26,
+   "ts": "2026-05-02T21:04:00+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up a; operator says do not forget, no rule cited"
+  },
+  {
+   "n": 27,
+   "ts": "2026-05-03T12:35:00+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up e; names DO IT RIGHT 1 and 3 as the rule not applied"
+  },
+  {
+   "n": 28,
+   "ts": "2026-05-03T18:23:51.323849+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up d; cause named is /tmp path mapping on Windows"
+  },
+  {
+   "n": 29,
+   "ts": "2026-05-04T09:19:35+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "compaction"
+   ],
+   "note": ""
+  },
+  {
+   "n": 30,
+   "ts": "2026-05-04T23:35:00+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up e; brief authoring contradiction, no validator caught it"
+  },
+  {
+   "n": 31,
+   "ts": "2026-05-05T07:40:37+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up a; brief violated existing skill-surface-sync Rule 4"
+  },
+  {
+   "n": 32,
+   "ts": "2026-05-06T10:45:00+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 33,
+   "ts": "2026-05-06T13:30:00+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up e; mentions earlier hedged recommendations logged elsewhere"
+  },
+  {
+   "n": 34,
+   "ts": "2026-05-07T01:50:00+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 35,
+   "ts": "2026-05-07T12:30:00+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "compaction",
+    "handoff"
+   ],
+   "note": "runner-up e; acted instead of asking, but summary and Rule 7 existed"
+  },
+  {
+   "n": 36,
+   "ts": "2026-05-07T12:42:11+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 37,
+   "ts": "2026-05-07T13:30:49Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up e; operator says specs were given and ignored"
+  },
+  {
+   "n": 38,
+   "ts": "2026-05-08T01:59:51.164630+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": ""
+  },
+  {
+   "n": 39,
+   "ts": "2026-05-08T02:50:00+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up c; undefined steps from earlier OBPIs"
+  },
+  {
+   "n": 40,
+   "ts": "2026-05-08T10:35:00+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 41,
+   "ts": "2026-05-08T12:30:00Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up e; row calls the doctrine binding but cites no rule text"
+  },
+  {
+   "n": 42,
+   "ts": "2026-05-09T10:45:00Z",
+   "type": "improvement",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 43,
+   "ts": "2026-05-09T17:12:33Z",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 44,
+   "ts": "2026-05-09T17:30:00Z",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up e; no agent miss stated, forward-binding directive"
+  },
+  {
+   "n": 45,
+   "ts": "2026-05-10T07:30:00Z",
+   "type": "improvement",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up a; skill already called --help the weakest demo"
+  },
+  {
+   "n": 46,
+   "ts": "2026-05-10T11:05:00Z",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 47,
+   "ts": "2026-05-10T12:10:00Z",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 48,
+   "ts": "2026-05-10T13:55:00Z",
+   "type": "improvement",
+   "class": "b",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up a or e; row names it safeguard circumvention, an existing failure mode"
+  },
+  {
+   "n": 49,
+   "ts": "2026-05-10T14:15:00Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up e; gz-design Step 8 forbade invoking implementation skill"
+  },
+  {
+   "n": 50,
+   "ts": "2026-05-10T23:35:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up a; AGENTS.md lane definition cited, registry already had the conflation"
+  },
+  {
+   "n": 51,
+   "ts": "2026-05-11T08:55:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 52,
+   "ts": "2026-05-11T09:58:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 53,
+   "ts": "2026-05-11T10:25:00Z",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up e; failure named is hypothetical"
+  },
+  {
+   "n": 54,
+   "ts": "2026-05-11T10:55:00Z",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 55,
+   "ts": "2026-05-11T11:20:00Z",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [
+    "subagent",
+    "compaction"
+   ],
+   "note": "flags are literal mentions in a list of harness surfaces, not a failure context"
+  },
+  {
+   "n": 56,
+   "ts": "2026-05-12T08:57:00Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 57,
+   "ts": "2026-05-12T09:05:00Z",
+   "type": "improvement",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 58,
+   "ts": "2026-05-12T12:00:00Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": "runner-up c; row also records unenforceable marker path"
+  },
+  {
+   "n": 59,
+   "ts": "2026-05-14T01:58:00Z",
+   "type": "improvement",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "subagent",
+    "long_session"
+   ],
+   "note": "long_session flag refers to run duration, not drift"
+  },
+  {
+   "n": 60,
+   "ts": "2026-05-14T02:55:00Z",
+   "type": "improvement",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up a or f; operator had to restate a ruling across sessions"
+  },
+  {
+   "n": 61,
+   "ts": "2026-05-14T09:45:00Z",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up a; logged operator rulings were not consulted"
+  },
+  {
+   "n": 62,
+   "ts": "2026-05-14T10:05:00Z",
+   "type": "defect",
+   "class": "d",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up c; failing scenarios test the distribution validator"
+  },
+  {
+   "n": 63,
+   "ts": "2026-05-14T11:24:32Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "compaction",
+    "context_size",
+    "handoff",
+    "long_session"
+   ],
+   "note": ""
+  },
+  {
+   "n": 64,
+   "ts": "2026-05-14T11:57:08Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 65,
+   "ts": "2026-05-16T13:51:06Z",
+   "type": "improvement",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 66,
+   "ts": "2026-05-16T13:51:07Z",
+   "type": "improvement",
+   "class": "d",
+   "basis": "inferred",
+   "flags": [
+    "subagent"
+   ],
+   "note": ""
+  },
+  {
+   "n": 67,
+   "ts": "2026-05-17T00:26:01Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 68,
+   "ts": "2026-05-17T08:50:00+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up a; Operator Economy existed, but skill text told agent to ask"
+  },
+  {
+   "n": 69,
+   "ts": "2026-05-17T18:00:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up c; agent asked correctly, the brief scope was the defect"
+  },
+  {
+   "n": 70,
+   "ts": "2026-05-18T02:15:00+00:00",
+   "type": "improvement",
+   "class": "d",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up a; coupled tests left behind by an earlier fix"
+  },
+  {
+   "n": 71,
+   "ts": "2026-05-18T11:11:12.485686Z",
+   "type": "improvement",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 72,
+   "ts": "2026-05-18T22:58:00.000000Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up e; wrong route twice, row cites the existing thresholds rule"
+  },
+  {
+   "n": 73,
+   "ts": "2026-05-19T00:30:00.000000Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 74,
+   "ts": "2026-05-19T00:50:00.000000Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 76,
+   "ts": "2026-05-19T10:53:55+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 77,
+   "ts": "2026-05-19T10:53:55+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 78,
+   "ts": "2026-05-19T12:26:02+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 79,
+   "ts": "2026-05-19T12:26:02+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up a; an agent wrote an invalid type earlier"
+  },
+  {
+   "n": 80,
+   "ts": "2026-05-19T12:26:02+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up d; doc examples in pending briefs"
+  },
+  {
+   "n": 81,
+   "ts": "2026-05-20T09:23:13+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 82,
+   "ts": "2026-05-20T11:11:14+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up d; ledger and ADR body disagree"
+  },
+  {
+   "n": 83,
+   "ts": "2026-05-21T10:30:00+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 84,
+   "ts": "2026-05-21T12:30:00+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up b; summary also mischaracterized the Behave failure as WIP"
+  },
+  {
+   "n": 85,
+   "ts": "2026-05-21T12:31:00+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up b; OBPIs attested complete without a behave receipt"
+  },
+  {
+   "n": 86,
+   "ts": "2026-05-22T00:57:31+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "inferred",
+   "flags": [
+    "subagent"
+   ],
+   "note": "runner-up e; subagent flag is a literal mention of a harness capability"
+  },
+  {
+   "n": 87,
+   "ts": "2026-05-22T01:02:39+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up e; wrong route, row cites existing Defect-fix routing"
+  },
+  {
+   "n": 88,
+   "ts": "2026-05-22T01:55:04+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": "runner-up e; handoff flag is a literal mention only"
+  },
+  {
+   "n": 89,
+   "ts": "2026-05-22T06:44:29+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up e; row cites ghi-close shape table that already routed 'dominant choice' to act."
+  },
+  {
+   "n": 90,
+   "ts": "2026-05-22T08:41:48.716501+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [
+    "subagent"
+   ],
+   "note": "Runner-up a: cd used against explicit absolute-path guidance; primary per scope is the escalation."
+  },
+  {
+   "n": 91,
+   "ts": "2026-05-22T10:21:41.821941+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 92,
+   "ts": "2026-05-22T10:21:41.821941+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Row n=94 later says this finding was a misread; classified on this row's own words."
+  },
+  {
+   "n": 94,
+   "ts": "2026-05-22T10:38:39.391872+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up a: prior art already read this session was missed."
+  },
+  {
+   "n": 95,
+   "ts": "2026-05-22T11:07:00+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 96,
+   "ts": "2026-05-22T18:30:00+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 97,
+   "ts": "2026-05-22T20:50:00+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up e; row cites existing direct-fix thresholds and PRIME DIRECTIVE 5."
+  },
+  {
+   "n": 98,
+   "ts": "2026-05-23T15:45:00+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up c: REQ-coverage gate passed despite gap; tie-break 4 applied."
+  },
+  {
+   "n": 99,
+   "ts": "2026-05-23T16:33:00+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up e: second correction (project-scoped hooks) was a new ruling."
+  },
+  {
+   "n": 100,
+   "ts": "2026-05-23T20:55:00+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 101,
+   "ts": "2026-05-24T16:00:00+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": "Runner-up a: audit step skipped, gh issue create used directly."
+  },
+  {
+   "n": 102,
+   "ts": "2026-05-25T02:50:00+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up e: brief authoring omission; row stresses missing coverage-feasibility validator."
+  },
+  {
+   "n": 103,
+   "ts": "2026-05-25T03:15:00+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up f: operator clarification of wording; no prior instruction shown."
+  },
+  {
+   "n": 104,
+   "ts": "2026-05-25T17:30:00Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up e: first correction is validator built against derived surface."
+  },
+  {
+   "n": 105,
+   "ts": "2026-05-25T18:40:00Z",
+   "type": "improvement",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": "Runner-up a: miscategorization carried forward through handoff."
+  },
+  {
+   "n": 106,
+   "ts": "2026-05-25T19:00:00Z",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": "Runner-up a: wrong estimate carried across sessions via handoff; never true, so tie-break 2 gives b."
+  },
+  {
+   "n": 107,
+   "ts": "2026-05-25T19:40:00Z",
+   "type": "improvement",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "long_session"
+   ],
+   "note": "Runner-up a: prior OBPIs attested without regenerating coupled manifest; agent worked freeform."
+  },
+  {
+   "n": 108,
+   "ts": "2026-05-25T20:10:00Z",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [
+    "handoff",
+    "subagent"
+   ],
+   "note": "Very close to a: mandated pipeline skipped all session; tie-break 2 applied literally."
+  },
+  {
+   "n": 109,
+   "ts": "2026-05-27T07:54:36Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up c: rule text tagged 'binding' encoded the over-literal read."
+  },
+  {
+   "n": 110,
+   "ts": "2026-05-27T08:00:00Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": "Runner-up c: validators all passed; completion layer lacks the check."
+  },
+  {
+   "n": 111,
+   "ts": "2026-05-27T08:30:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": "Runner-up c: demo extractor splits heredocs per line; tie-break 4 applied."
+  },
+  {
+   "n": 112,
+   "ts": "2026-05-27T12:30:00Z",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up e: scope recommendation."
+  },
+  {
+   "n": 113,
+   "ts": "2026-05-27T12:50:00Z",
+   "type": "improvement",
+   "class": "b",
+   "basis": "inferred",
+   "flags": [
+    "context_size"
+   ],
+   "note": "Runner-up a (Behavior Rule 7 cited) and e (wrong route: new ADR)."
+  },
+  {
+   "n": 114,
+   "ts": "2026-05-27T13:25:00+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 115,
+   "ts": "2026-05-28T01:25:00+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 116,
+   "ts": "2026-05-29T01:09:16+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "inferred",
+   "flags": [
+    "context_size"
+   ],
+   "note": "Runner-up e; row describes existing generated-surface doctrine but not as forgotten."
+  },
+  {
+   "n": 117,
+   "ts": "2026-05-29T01:52:55+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up d: governance artifact content defect, validator worked correctly."
+  },
+  {
+   "n": 118,
+   "ts": "2026-05-29T05:34:36+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 119,
+   "ts": "2026-05-29T05:48:52+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 120,
+   "ts": "2026-05-29T05:59:52+00:00",
+   "type": "improvement",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 121,
+   "ts": "2026-05-29T06:48:20Z",
+   "type": "improvement",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up f: row says validator works correctly; records debt only."
+  },
+  {
+   "n": 122,
+   "ts": "2026-05-29T07:27:55Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 123,
+   "ts": "2026-05-29T13:10:00Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 124,
+   "ts": "2026-05-29T19:20:00Z",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Also self-revert of working file and tool-batch thrash."
+  },
+  {
+   "n": 125,
+   "ts": "2026-05-30T00:32:00Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 126,
+   "ts": "2026-05-30T01:10:00Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up e; row cites proof-channel matrix and PRIME DIRECTIVE."
+  },
+  {
+   "n": 127,
+   "ts": "2026-05-30T02:30:00Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 128,
+   "ts": "2026-05-30T02:45:00Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 129,
+   "ts": "2026-05-30T10:40:00Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": ""
+  },
+  {
+   "n": 130,
+   "ts": "2026-05-30T10:40:30Z",
+   "type": "defect",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 131,
+   "ts": "2026-05-30T11:37:09Z",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up c: new gate had no path for its introducing ADR's briefs."
+  },
+  {
+   "n": 132,
+   "ts": "2026-05-30T12:13:01.131851+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [
+    "subagent"
+   ],
+   "note": "Runner-up d: latent duplication, no misbehaviour yet."
+  },
+  {
+   "n": 133,
+   "ts": "2026-05-30T12:13:01.131851+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": ""
+  },
+  {
+   "n": 134,
+   "ts": "2026-05-30T13:20:04Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up e; row says the sequence violated the repo's no-vibe standard, not a named rule."
+  },
+  {
+   "n": 135,
+   "ts": "2026-05-30T14:44:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up f: reporting-cadence ruling."
+  },
+  {
+   "n": 136,
+   "ts": "2026-05-30T14:18:24Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up f: reporting-style ruling."
+  },
+  {
+   "n": 137,
+   "ts": "2026-05-30T14:39:06Z",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 138,
+   "ts": "2026-05-30T14:46:00Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 139,
+   "ts": "2026-05-30T14:54:44Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up f: reporting-style ruling."
+  },
+  {
+   "n": 140,
+   "ts": "2026-05-30T15:05:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up a: AGENTS.md uv run rule cited in evidence."
+  },
+  {
+   "n": 141,
+   "ts": "2026-05-30T15:11:00Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 142,
+   "ts": "2026-05-30T15:23:00Z",
+   "type": "defect",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up b: backfilled @covers is a coverage overclaim in attested work."
+  },
+  {
+   "n": 143,
+   "ts": "2026-05-30T15:15:10Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up e; row cites existing CMS doc and operator 'we have a CMS process now'."
+  },
+  {
+   "n": 144,
+   "ts": "2026-05-30T15:30:00Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 145,
+   "ts": "2026-05-30T21:30:00Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Also slid into unrequested fix work (e)."
+  },
+  {
+   "n": 146,
+   "ts": "2026-05-30T23:32:53Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "context_size"
+   ],
+   "note": ""
+  },
+  {
+   "n": 147,
+   "ts": "2026-05-31T07:38:35Z",
+   "type": "improvement",
+   "class": "f",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 148,
+   "ts": "2026-05-31T18:00:37Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up b: recommendation made before checking."
+  },
+  {
+   "n": 149,
+   "ts": "2026-06-01T08:39:46Z",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 150,
+   "ts": "2026-06-01T11:30:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": "Runner-up c: skill defines only create and resume."
+  },
+  {
+   "n": 151,
+   "ts": "2026-06-01T20:32:00Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up e; row cites Operator-Economy claim 6 and repeated direction."
+  },
+  {
+   "n": 152,
+   "ts": "2026-06-01T23:24:21Z",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Tie-break 2 applied. Primary miss is gate weakening against cited AGENTS.md rule (a)."
+  },
+  {
+   "n": 153,
+   "ts": "2026-06-02T09:30:00Z",
+   "type": "improvement",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up d; rendered AGENTS.md treated as control surface."
+  },
+  {
+   "n": 154,
+   "ts": "2026-06-02T10:00:00Z",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 155,
+   "ts": "2026-06-02T23:56:55Z",
+   "type": "defect",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up d: portability bug in governance commands."
+  },
+  {
+   "n": 156,
+   "ts": "2026-06-03T07:05:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up f; narrative also overstated the pairing."
+  },
+  {
+   "n": 157,
+   "ts": "2026-06-03T11:32:52Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up f: operator redesign recorded as new doctrine."
+  },
+  {
+   "n": 158,
+   "ts": "2026-06-04T07:47:18Z",
+   "type": "improvement",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up e: agent had deferred the failures to an open GHI."
+  },
+  {
+   "n": 159,
+   "ts": "2026-06-04T08:03:35Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up e; also a status-render bug (withdrawn shown as PENDING)."
+  },
+  {
+   "n": 160,
+   "ts": "2026-06-04T08:29:13Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up c: stale authored-gate defects in briefs."
+  },
+  {
+   "n": 161,
+   "ts": "2026-06-04T09:19:15Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up e; row cites ADR-0.0.37 purpose as the existing rule."
+  },
+  {
+   "n": 162,
+   "ts": "2026-06-04T10:00:23Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up d: tautological tests."
+  },
+  {
+   "n": 163,
+   "ts": "2026-06-04T10:48:46Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 164,
+   "ts": "2026-06-05",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": ""
+  },
+  {
+   "n": 165,
+   "ts": "2026-06-05T08:30:00Z",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 166,
+   "ts": "2026-06-05T08:45:00Z",
+   "type": "defect",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up a: a prior session skipped subdivision."
+  },
+  {
+   "n": 167,
+   "ts": "2026-06-05T11:48:55Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up a if write-forward doctrine predated the proposal; row does not show it."
+  },
+  {
+   "n": 168,
+   "ts": "2026-06-06T06:10:00+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up c: stale dry-run advisory text in the tool."
+  },
+  {
+   "n": 169,
+   "ts": "2026-06-06T08:05:00Z",
+   "type": "improvement",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up f: records an operator decision at a fail-closed gate."
+  },
+  {
+   "n": 170,
+   "ts": "2026-06-07T12:34:35Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "handoff",
+    "context_size"
+   ],
+   "note": "Runner-up e: unratified structure written into canon."
+  },
+  {
+   "n": 171,
+   "ts": "2026-06-07T13:43:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 172,
+   "ts": "2026-06-07T15:52:35Z",
+   "type": "improvement",
+   "class": "f",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 173,
+   "ts": "2026-06-08T01:05:19Z",
+   "type": "improvement",
+   "class": "b",
+   "basis": "inferred",
+   "flags": [
+    "handoff"
+   ],
+   "note": "Near-miss, caught before report. Runner-up c: no structural Stage 3 guard."
+  },
+  {
+   "n": 174,
+   "ts": "2026-06-08T01:05:19Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up e: scoping undercount."
+  },
+  {
+   "n": 175,
+   "ts": "2026-06-08T22:15:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up f: communication style."
+  },
+  {
+   "n": 177,
+   "ts": "2026-06-09T06:35:00Z",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": ""
+  },
+  {
+   "n": 178,
+   "ts": "2026-06-09T15:56:10Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up c: closeout skill text conflicted with the moratorium."
+  },
+  {
+   "n": 180,
+   "ts": "2026-06-09T23:14:27Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 181,
+   "ts": "2026-06-09T23:48:23Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 184,
+   "ts": "2026-06-10T07:05:00Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 185,
+   "ts": "2026-06-10T07:15:00Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 186,
+   "ts": "2026-06-10T08:10:00Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 187,
+   "ts": "2026-06-10T07:45:00Z",
+   "type": "improvement",
+   "class": "f",
+   "basis": "explicit",
+   "flags": [
+    "subagent",
+    "handoff"
+   ],
+   "note": "Records a success in a fresh session; the failure it resolves is class a."
+  },
+  {
+   "n": 188,
+   "ts": "2026-06-10T07:23:35Z",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [
+    "handoff"
+   ],
+   "note": "Runner-up e: reductive recommendations deferred."
+  },
+  {
+   "n": 189,
+   "ts": "2026-06-10T08:12:56Z",
+   "type": "improvement",
+   "class": "f",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 190,
+   "ts": "2026-06-10T08:29:36Z",
+   "type": "improvement",
+   "class": "f",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 191,
+   "ts": "2026-06-10T23:22:27Z",
+   "type": "improvement",
+   "class": "f",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 192,
+   "ts": "2026-06-11T10:50:10Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up f; evidence cites existing AGENTS.md ADR-to-OBPI rule."
+  },
+  {
+   "n": 193,
+   "ts": "2026-06-11T11:12:06Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up f: new operator ruling overrode the written routing matrix."
+  },
+  {
+   "n": 194,
+   "ts": "2026-06-12T02:08:48Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 195,
+   "ts": "2026-06-12T08:21:03.676206+00:00",
+   "type": "improvement",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up e: concurrent process in working directory."
+  },
+  {
+   "n": 196,
+   "ts": "2026-06-12T08:46:55.131337+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 197,
+   "ts": "2026-06-12T08:43:12.364402+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up e: misread booking directive as implement."
+  },
+  {
+   "n": 198,
+   "ts": "2026-06-12T09:50:00+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "inferred",
+   "flags": [
+    "handoff"
+   ],
+   "note": "Runner-up f: row records the operator's decision, not a new miss."
+  },
+  {
+   "n": 199,
+   "ts": "2026-06-12T11:26:19.321764+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up e."
+  },
+  {
+   "n": 200,
+   "ts": "2026-06-13T01:04:00.580277+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 201,
+   "ts": "2026-06-13T01:23:11.139404+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up c: skill Trust Model text was false."
+  },
+  {
+   "n": 202,
+   "ts": "2026-06-13T07:07:53Z",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 203,
+   "ts": "2026-06-13T10:51:10.477394+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up e."
+  },
+  {
+   "n": 204,
+   "ts": "2026-06-13T12:32:41.510321+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up e: principle newly stated by operator; ghi-author table cited as pre-existing."
+  },
+  {
+   "n": 205,
+   "ts": "2026-06-13T13:41:32.135620+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up c: validator false drift."
+  },
+  {
+   "n": 206,
+   "ts": "2026-06-13T15:57:04.429400+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 207,
+   "ts": "2026-06-13T16:09:05.494737+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": "Runner-up a: label carried forward from a prior handoff."
+  },
+  {
+   "n": 208,
+   "ts": "2026-06-13T22:08:34.045522+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 209,
+   "ts": "2026-06-13T23:04:30.851788+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "subagent",
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 210,
+   "ts": "2026-06-13T23:23:01.093205+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Row 211 retracts this diagnosis; classified as recorded."
+  },
+  {
+   "n": 211,
+   "ts": "2026-06-13T23:32:38.587070+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up c: brief-format drift across seven briefs."
+  },
+  {
+   "n": 212,
+   "ts": "2026-06-14T14:06:44.004605+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [
+    "subagent"
+   ],
+   "note": "Runner-up f: new operator directive on gate resolution."
+  },
+  {
+   "n": 213,
+   "ts": "2026-06-14T14:13:48.128672+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 214,
+   "ts": "2026-06-14T16:51:40.018239+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": "Runner-up a: AGENTS.md Never #7 existed and was not applied."
+  },
+  {
+   "n": 215,
+   "ts": "2026-06-14T19:20:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [
+    "subagent"
+   ],
+   "note": "Runner-up a: REQ-03 wording existed and the first pass did not meet it."
+  },
+  {
+   "n": 216,
+   "ts": "2026-06-14T20:45:00Z",
+   "type": "improvement",
+   "class": "b",
+   "basis": "inferred",
+   "flags": [
+    "subagent",
+    "handoff"
+   ],
+   "note": "Runner-up e: wrong test design; handoff flag is the product under change."
+  },
+  {
+   "n": 217,
+   "ts": "2026-06-15T02:45:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 218,
+   "ts": "2026-06-15T09:35:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 219,
+   "ts": "2026-06-15T09:50:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up e: authoring scope judgment."
+  },
+  {
+   "n": 220,
+   "ts": "2026-06-15T10:40:00Z",
+   "type": "improvement",
+   "class": "b",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up a: flagged the divergence one turn earlier, then dropped it."
+  },
+  {
+   "n": 221,
+   "ts": "2026-06-15T10:55:42Z",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": ""
+  },
+  {
+   "n": 222,
+   "ts": "2026-06-15T11:12:37Z",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": ""
+  },
+  {
+   "n": 223,
+   "ts": "2026-06-15T11:30:00Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up e: ambiguous operator phrase misread."
+  },
+  {
+   "n": 224,
+   "ts": "2026-06-15T23:05:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 225,
+   "ts": "2026-06-15T23:30:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 226,
+   "ts": "2026-06-15T23:50:00Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up e: rule 1a is cited, not said to be forgotten."
+  },
+  {
+   "n": 227,
+   "ts": "2026-06-16T03:30:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up c: the code itself carried the borrowed vocabulary."
+  },
+  {
+   "n": 228,
+   "ts": "2026-06-17T05:45:59Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up e: over-interpretation; row cites Operator Economy of Effort."
+  },
+  {
+   "n": 230,
+   "ts": "2026-06-17T08:55:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [
+    "subagent"
+   ],
+   "note": ""
+  },
+  {
+   "n": 231,
+   "ts": "2026-06-18T06:40:00Z",
+   "type": "improvement",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up b: agent-built tautological corpus presented as proof."
+  },
+  {
+   "n": 233,
+   "ts": "2026-06-18T11:45:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 234,
+   "ts": "2026-06-19T01:35:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up f: gate behaved correctly; brief scope lagged recovery work."
+  },
+  {
+   "n": 235,
+   "ts": "2026-06-19T14:00:00Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 236,
+   "ts": "2026-06-19T14:00:01Z",
+   "type": "defect",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up d: unmapped path literals in source."
+  },
+  {
+   "n": 237,
+   "ts": "2026-06-19T14:00:02Z",
+   "type": "defect",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 238,
+   "ts": "2026-06-19T14:00:03Z",
+   "type": "defect",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 239,
+   "ts": "2026-06-19T14:00:04Z",
+   "type": "defect",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [
+    "subagent"
+   ],
+   "note": ""
+  },
+  {
+   "n": 244,
+   "ts": "2026-06-19T16:30:00Z",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 246,
+   "ts": "2026-06-19T19:58:27Z",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up a: AGENTS.md Never #7 existed and was not applied."
+  },
+  {
+   "n": 247,
+   "ts": "2026-06-19T21:36:28Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up e: outcome was correct, basis was wrong."
+  },
+  {
+   "n": 248,
+   "ts": "2026-06-20T06:01:19Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up a: append-only corpus was hand-mutated; CLI help also mislabels Gate 5."
+  },
+  {
+   "n": 249,
+   "ts": "2026-06-20T08:31:10Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": "Runner-up e."
+  },
+  {
+   "n": 250,
+   "ts": "2026-06-20T14:14:27.525382+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 251,
+   "ts": "2026-06-20T16:42:23Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [
+    "subagent",
+    "handoff"
+   ],
+   "note": "Runner-up a: stale handoff snapshot carried forward."
+  },
+  {
+   "n": 252,
+   "ts": "2026-06-20T16:56:39Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 253,
+   "ts": "2026-06-20T17:14:03Z",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up a: third routing reflex after being told."
+  },
+  {
+   "n": 254,
+   "ts": "2026-06-20T18:45:07Z",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": ""
+  },
+  {
+   "n": 255,
+   "ts": "2026-06-21T14:38:20Z",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 256,
+   "ts": "2026-06-21T23:52:54Z",
+   "type": "improvement",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 257,
+   "ts": "2026-06-22T01:47:48+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 258,
+   "ts": "2026-06-22T08:30:00Z",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up e: agent's premature 'thin/placeholder' verdict was corrected."
+  },
+  {
+   "n": 259,
+   "ts": "2026-06-22T11:36:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 260,
+   "ts": "2026-06-23T01:30:00Z",
+   "type": "defect",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up a: validator's named remediation was bypassed; also c (gate not in gz check)."
+  },
+  {
+   "n": 261,
+   "ts": "2026-06-23T02:30:00Z",
+   "type": "improvement",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 262,
+   "ts": "2026-06-23T06:47:35-05:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 263,
+   "ts": "2026-06-23T14:50:00-05:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up a: partial read."
+  },
+  {
+   "n": 264,
+   "ts": "2026-06-23T18:45:00-05:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 265,
+   "ts": "2026-06-24T00:55:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 267,
+   "ts": "2026-06-24T11:45:00Z",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": "Runner-up a: pipeline-mandated two-stage review was skipped."
+  },
+  {
+   "n": 268,
+   "ts": "2026-06-24T11:45:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [
+    "subagent"
+   ],
+   "note": ""
+  },
+  {
+   "n": 269,
+   "ts": "2026-06-25T07:05:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [
+    "subagent"
+   ],
+   "note": "Runner-up c: plan-audit does not check coupled-surface reachability."
+  },
+  {
+   "n": 270,
+   "ts": "2026-06-25T11:15:00Z",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": "Runner-up e."
+  },
+  {
+   "n": 271,
+   "ts": "2026-06-26T05:49:25Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up a: row calls it DO-IT-RIGHT 1a at authoring time."
+  },
+  {
+   "n": 272,
+   "ts": "2026-06-26T07:53:52Z",
+   "type": "improvement",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 273,
+   "ts": "2026-06-26T08:17:50Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up b: earlier insight claimed the fix landed cleanly."
+  },
+  {
+   "n": 274,
+   "ts": "2026-06-27T11:26:57.085941+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": ""
+  },
+  {
+   "n": 275,
+   "ts": "2026-06-27T12:50:00+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": "Runner-up c: pipeline printed a false 'lock released' message."
+  },
+  {
+   "n": 276,
+   "ts": "2026-06-27T14:05:00+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": ""
+  },
+  {
+   "n": 277,
+   "ts": "2026-06-27T14:30:00Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "inferred",
+   "flags": [
+    "subagent"
+   ],
+   "note": "Runner-up e: rule is cited as basis of the fix, not as forgotten."
+  },
+  {
+   "n": 278,
+   "ts": "2026-06-27T16:35:46Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up c: briefs authored non-gz demos; ceremony did not enforce Rule #4."
+  },
+  {
+   "n": 279,
+   "ts": "2026-06-28T00:11:08Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": "Runner-up e: a rule was misapplied rather than forgotten."
+  },
+  {
+   "n": 280,
+   "ts": "2026-06-29T00:29:46Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": "Runner-up d: test defect."
+  },
+  {
+   "n": 281,
+   "ts": "2026-06-29T00:29:46Z",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": "Runner-up e: retag moved the misattribution."
+  },
+  {
+   "n": 282,
+   "ts": "2026-06-29T01:50:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 283,
+   "ts": "2026-06-29T10:42:00Z",
+   "type": "improvement",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [
+    "subagent"
+   ],
+   "note": "Runner-up b: brief overstated what the validator proves."
+  },
+  {
+   "n": 284,
+   "ts": "2026-06-29T11:30:00Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": ""
+  },
+  {
+   "n": 286,
+   "ts": "2026-06-29T23:59:00Z",
+   "type": "defect",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [
+    "subagent"
+   ],
+   "note": "Runner-up d: ordinary test defect; or a, a named anti-pattern repeated."
+  },
+  {
+   "n": 287,
+   "ts": "2026-06-30T08:13:00Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 288,
+   "ts": "2026-06-30T08:20:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up a: 'foundation' framing echoed stale corpus after abolition."
+  },
+  {
+   "n": 289,
+   "ts": "2026-06-30T08:34:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up b: called a major public project the operator's fork."
+  },
+  {
+   "n": 290,
+   "ts": "2026-06-30T08:48:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up f: mostly operator design rulings."
+  },
+  {
+   "n": 291,
+   "ts": "2026-06-30T09:05:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up b: relied on a stale dep characterization"
+  },
+  {
+   "n": 292,
+   "ts": "2026-06-30T09:25:00Z",
+   "type": "improvement",
+   "class": "f",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 293,
+   "ts": "2026-06-30T09:45:00Z",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up e: enums-vs-models phrasing corrected"
+  },
+  {
+   "n": 294,
+   "ts": "2026-06-30T10:05:00Z",
+   "type": "improvement",
+   "class": "f",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 295,
+   "ts": "2026-06-30T12:57:53Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up e: asked a wrong question; row cites existing redirect GHI #525"
+  },
+  {
+   "n": 296,
+   "ts": "2026-07-01T00:00:00Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up e"
+  },
+  {
+   "n": 297,
+   "ts": "2026-07-01T00:10:00Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 298,
+   "ts": "2026-07-02T00:00:00Z",
+   "type": "improvement",
+   "class": "f",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 299,
+   "ts": "2026-07-02T10:59:05Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up e: acted instead of waiting; row cites Always #7 and operator doctrine"
+  },
+  {
+   "n": 300,
+   "ts": "2026-07-02T11:36:20Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 301,
+   "ts": "2026-07-04T04:49:49.697282+00:00",
+   "type": "improvement",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [
+    "subagent"
+   ],
+   "note": "runner-up d"
+  },
+  {
+   "n": 302,
+   "ts": "2026-07-04T04:49:49.697282+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 303,
+   "ts": "2026-07-04T09:02:24.772272+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up a: repeats n=299 but row does not cite the earlier ruling"
+  },
+  {
+   "n": 304,
+   "ts": "2026-07-04T22:28:31.680972+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up b: output presented as product demos"
+  },
+  {
+   "n": 305,
+   "ts": "2026-07-05T10:19:47.917379+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up e: earlier campaign text over-reached"
+  },
+  {
+   "n": 306,
+   "ts": "2026-07-05T17:17:43.477485+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 307,
+   "ts": "2026-07-06T08:55:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 308,
+   "ts": "2026-07-06T09:10:00+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up c: governance artifact out of line with floor rule"
+  },
+  {
+   "n": 309,
+   "ts": "2026-07-06T09:30:00+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": "runner-up d"
+  },
+  {
+   "n": 312,
+   "ts": "2026-07-06T11:26:00+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 313,
+   "ts": "2026-07-06T11:52:00+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 314,
+   "ts": "2026-07-06T16:51:53+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 315,
+   "ts": "2026-07-06T18:02:03+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 316,
+   "ts": "2026-07-06T21:06:55+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [
+    "subagent"
+   ],
+   "note": ""
+  },
+  {
+   "n": 317,
+   "ts": "2026-07-06T22:37:44.440273+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up f: gate worked, drift handled properly"
+  },
+  {
+   "n": 318,
+   "ts": "2026-07-06T23:30:00+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [
+    "subagent"
+   ],
+   "note": "runner-up d: REQ-03 refuted by adversary"
+  },
+  {
+   "n": 319,
+   "ts": "2026-07-07T23:37:50.114024+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 320,
+   "ts": "2026-07-08T09:15:05.251822+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [
+    "context_size"
+   ],
+   "note": "runner-up f: design dialogue record"
+  },
+  {
+   "n": 321,
+   "ts": "2026-07-08T23:40:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up a: same lesson logged at n=316 two days earlier"
+  },
+  {
+   "n": 322,
+   "ts": "2026-07-08T23:55:00Z",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": ""
+  },
+  {
+   "n": 323,
+   "ts": "2026-07-09T00:20:00Z",
+   "type": "defect",
+   "class": "d",
+   "basis": "inferred",
+   "flags": [
+    "subagent"
+   ],
+   "note": "runner-up c: events.py is ledger machinery"
+  },
+  {
+   "n": 326,
+   "ts": "2026-07-09T01:06:00Z",
+   "type": "improvement",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": "runner-up e: agent treated chat as retention"
+  },
+  {
+   "n": 327,
+   "ts": "2026-07-09T01:25:00Z",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 328,
+   "ts": "2026-07-09T10:05:00Z",
+   "type": "improvement",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 329,
+   "ts": "2026-07-09T10:25:00Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up b: nearly reported phantom failures as pre-existing"
+  },
+  {
+   "n": 330,
+   "ts": "2026-07-09T14:10:00Z",
+   "type": "improvement",
+   "class": "d",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up f: technique discovery, no control at fault"
+  },
+  {
+   "n": 331,
+   "ts": "2026-07-10T06:27:45Z",
+   "type": "improvement",
+   "class": "b",
+   "basis": "inferred",
+   "flags": [
+    "subagent",
+    "compaction"
+   ],
+   "note": "runner-up e: flags are feature-inventory mentions, not causes"
+  },
+  {
+   "n": 332,
+   "ts": "2026-07-10T06:35:41Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 333,
+   "ts": "2026-07-10T10:55:14Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up e: operator had said proceed at n=332"
+  },
+  {
+   "n": 334,
+   "ts": "2026-07-10T11:20:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 335,
+   "ts": "2026-07-10T11:26:00Z",
+   "type": "improvement",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 336,
+   "ts": "2026-07-11T00:15:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up c: cli-audit printed pass while exit=1; tail read masked it"
+  },
+  {
+   "n": 337,
+   "ts": "2026-07-11T09:00:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up a: same gap already noted for OBPI-02"
+  },
+  {
+   "n": 338,
+   "ts": "2026-07-11T10:44:15.669764+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up a: existing single-membrane design not applied"
+  },
+  {
+   "n": 339,
+   "ts": "2026-07-11T10:59:12.238799+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 340,
+   "ts": "2026-07-11T22:20:43.246216+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up f: gate worked, drift handled properly"
+  },
+  {
+   "n": 341,
+   "ts": "2026-07-11T22:58:33.674562+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up a: checklist logged at n=336 same day"
+  },
+  {
+   "n": 342,
+   "ts": "2026-07-11T23:59:24.923428+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": ""
+  },
+  {
+   "n": 343,
+   "ts": "2026-07-12T20:58:36.890242+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up a: state doctrine on Layer-3 views not applied"
+  },
+  {
+   "n": 344,
+   "ts": "2026-07-13T00:30:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": ""
+  },
+  {
+   "n": 345,
+   "ts": "2026-07-13T00:45:00Z",
+   "type": "improvement",
+   "class": "b",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up a: witnessed GHI #664 decision not read; also e (wrong fix route)"
+  },
+  {
+   "n": 346,
+   "ts": "2026-07-13T01:37:00Z",
+   "type": "improvement",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [
+    "subagent",
+    "handoff"
+   ],
+   "note": "handoff flag is the product under change, not a session event"
+  },
+  {
+   "n": 347,
+   "ts": "2026-07-13T08:05:00Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 348,
+   "ts": "2026-07-13T08:20:00Z",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up e: wrong route; same miss as n=297"
+  },
+  {
+   "n": 349,
+   "ts": "2026-07-13T09:31:48Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 350,
+   "ts": "2026-07-13T10:31:06Z",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up a: correction-vs-enhancement intent test exists"
+  },
+  {
+   "n": 351,
+   "ts": "2026-07-13T11:28:25.192201+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 352,
+   "ts": "2026-07-13T22:51:00.827265+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up f: new lifecycle doctrine"
+  },
+  {
+   "n": 353,
+   "ts": "2026-07-13T23:00:57.148201+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 355,
+   "ts": "2026-07-14T09:09:22.114492+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 356,
+   "ts": "2026-07-15T08:50:00.654680+00:00",
+   "type": "improvement",
+   "class": "d",
+   "basis": "inferred",
+   "flags": [
+    "handoff"
+   ],
+   "note": "runner-up e; handoff flag is the product under change"
+  },
+  {
+   "n": 358,
+   "ts": "2026-07-15T18:44:39.772275+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [
+    "subagent"
+   ],
+   "note": "runner-up c: skill text did not name the command"
+  },
+  {
+   "n": 359,
+   "ts": "2026-07-15T21:53:23.104197+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 360,
+   "ts": "2026-07-16T10:23:00.919753+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 361,
+   "ts": "2026-07-17T00:55:38.775468+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up a: stale blocker trusted from description"
+  },
+  {
+   "n": 362,
+   "ts": "2026-07-17T01:36:16.357464+00:00",
+   "type": "defect",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": "runner-up a: Never #2 violated by hand-editing ledger"
+  },
+  {
+   "n": 363,
+   "ts": "2026-07-17T02:22:54.175408+00:00",
+   "type": "improvement",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 364,
+   "ts": "2026-07-17T10:37:31.200573+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": "runner-up e"
+  },
+  {
+   "n": 365,
+   "ts": "2026-07-17T17:05:31.605062+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "inferred",
+   "flags": [
+    "handoff"
+   ],
+   "note": "runner-up e: asked instead of proceeding"
+  },
+  {
+   "n": 366,
+   "ts": "2026-07-17T17:39:37.363380+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": "runner-up e"
+  },
+  {
+   "n": 367,
+   "ts": "2026-07-18T04:08:24.473784+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": ""
+  },
+  {
+   "n": 369,
+   "ts": "2026-07-18T13:27:08.691994+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up e"
+  },
+  {
+   "n": 370,
+   "ts": "2026-07-18T13:27:12.544930+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up c: governance docs have no retrieval mechanism"
+  },
+  {
+   "n": 371,
+   "ts": "2026-07-18T14:03:17.389649+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up e; row cites existing Invariant 1 but states the miss only by implication."
+  },
+  {
+   "n": 372,
+   "ts": "2026-07-18T14:03:20.769697+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up d."
+  },
+  {
+   "n": 373,
+   "ts": "2026-07-18T19:56:41.196633+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [
+    "subagent",
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 374,
+   "ts": "2026-07-19T20:19:13.988749+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up b."
+  },
+  {
+   "n": 375,
+   "ts": "2026-07-20T01:07:41.413846+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up c; brief treated as work-order scope, not a control."
+  },
+  {
+   "n": 376,
+   "ts": "2026-07-20T01:22:08.252772+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 377,
+   "ts": "2026-07-20T08:30:11.695317+00:00",
+   "type": "defect",
+   "class": "b",
+   "basis": "inferred",
+   "flags": [
+    "subagent"
+   ],
+   "note": "Runner-up e; also contains a product defect the adversary found."
+  },
+  {
+   "n": 378,
+   "ts": "2026-07-20T08:51:06.892937+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 379,
+   "ts": "2026-07-20T11:03:41.650247+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 380,
+   "ts": "2026-07-21T00:26:45.490976+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [
+    "handoff"
+   ],
+   "note": "Runner-up c; gate prose instructed the wait."
+  },
+  {
+   "n": 381,
+   "ts": "2026-07-21T01:03:38.580136+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 382,
+   "ts": "2026-07-21T07:09:24.423128+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 384,
+   "ts": "2026-07-21T09:47:56.039906+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 385,
+   "ts": "2026-07-21T10:07:21.225450+00:00",
+   "type": "defect",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 386,
+   "ts": "2026-07-21T10:23:42.986903+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 387,
+   "ts": "2026-07-21T11:12:55.907697+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [
+    "handoff"
+   ],
+   "note": "Runner-up c; tool narrowing forced adr_id."
+  },
+  {
+   "n": 388,
+   "ts": "2026-07-22T00:11:04.019430+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 389,
+   "ts": "2026-07-22T10:23:42.058151+00:00",
+   "type": "improvement",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up e; agent missed the sibling gate."
+  },
+  {
+   "n": 390,
+   "ts": "2026-07-22T10:32:43.305173+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 391,
+   "ts": "2026-07-23T10:56:12.674790+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up e."
+  },
+  {
+   "n": 392,
+   "ts": "2026-07-24T00:11:41.714658+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up b."
+  },
+  {
+   "n": 393,
+   "ts": "2026-07-24T00:22:20.191410+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up f; row reads partly as a new ruling."
+  },
+  {
+   "n": 395,
+   "ts": "2026-07-24T02:32:14.831070+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up e; ruling dated same day."
+  },
+  {
+   "n": 397,
+   "ts": "2026-07-24T10:23:18.828005+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up a."
+  },
+  {
+   "n": 398,
+   "ts": "2026-07-24T10:43:40.685560+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up c; fail-closed gate over-reached onto adopters."
+  },
+  {
+   "n": 399,
+   "ts": "2026-07-25T00:24:14.856413+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up e."
+  },
+  {
+   "n": 400,
+   "ts": "2026-07-25T00:42:03.518647+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 401,
+   "ts": "2026-07-25T00:42:06.926417+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 404,
+   "ts": "2026-07-25T17:32:47.450074+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 405,
+   "ts": "2026-07-25T20:33:53.222309+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up b; asserted cause was also wrong."
+  },
+  {
+   "n": 406,
+   "ts": "2026-07-26T10:14:06.627306+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up e."
+  },
+  {
+   "n": 407,
+   "ts": "2026-07-26T14:56:58.198727+00:00",
+   "type": "improvement",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 409,
+   "ts": "2026-07-26T20:11:59.780257+00:00",
+   "type": "improvement",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up f; row mostly records the fix."
+  },
+  {
+   "n": 410,
+   "ts": "2026-07-27T10:14:14.672945+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up e."
+  },
+  {
+   "n": 411,
+   "ts": "2026-07-27T12:37:13.361048+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 412,
+   "ts": "2026-07-28T00:31:09.136264+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 413,
+   "ts": "2026-07-28T00:38:49.016255+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up c; names mechanization and export as the defects."
+  },
+  {
+   "n": 414,
+   "ts": "2026-07-28T01:07:47.571855+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 415,
+   "ts": "2026-07-28T07:49:14.446417+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up f."
+  },
+  {
+   "n": 416,
+   "ts": "2026-07-29T01:59:24.968257+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up a; sibling ruling existed. Also c (gate livelock)."
+  },
+  {
+   "n": 417,
+   "ts": "2026-07-29T02:08:51.851086+00:00",
+   "type": "improvement",
+   "class": "d",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up e."
+  },
+  {
+   "n": 418,
+   "ts": "2026-07-29T09:35:40.416836+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 420,
+   "ts": "2026-07-29T11:30:52.578463+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": "Runner-up a; block prose instruction was not followed."
+  },
+  {
+   "n": 421,
+   "ts": "2026-07-30T01:49:14.414287+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up c."
+  },
+  {
+   "n": 422,
+   "ts": "2026-07-30T01:58:15.014012+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 423,
+   "ts": "2026-07-30T10:41:05.149009+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up c."
+  },
+  {
+   "n": 424,
+   "ts": "2026-07-31T08:54:56.333933+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 429,
+   "ts": "2026-08-02T18:33:54.299744+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up a; deprecation predated the miss but row does not show agent had it."
+  },
+  {
+   "n": 432,
+   "ts": "2026-08-04T06:20:55.794474+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 433,
+   "ts": "2026-08-04T06:48:38.806606+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up b; deferral claim was false."
+  },
+  {
+   "n": 435,
+   "ts": "2026-08-05T01:09:25.853062+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 440,
+   "ts": "2026-08-06T05:32:13.392472+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [
+    "handoff"
+   ],
+   "note": "Runner-up a; row cites no pre-existing rule."
+  },
+  {
+   "n": 441,
+   "ts": "2026-08-06T07:32:55.992396+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up b."
+  },
+  {
+   "n": 443,
+   "ts": "2026-08-06T20:02:50.870724+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up b."
+  },
+  {
+   "n": 444,
+   "ts": "2026-08-07T00:00:33.429673+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "inferred",
+   "flags": [
+    "context_size",
+    "subagent"
+   ],
+   "note": "Runner-up f; summary is new doctrine, evidence is the overclaim."
+  },
+  {
+   "n": 445,
+   "ts": "2026-08-07T00:21:44.411222+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up e."
+  },
+  {
+   "n": 446,
+   "ts": "2026-08-07T01:53:36.575973+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up f."
+  },
+  {
+   "n": 448,
+   "ts": "2026-08-07T02:54:57.258211+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 450,
+   "ts": "2026-08-07T08:27:54.231655+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": "Runner-up e."
+  },
+  {
+   "n": 451,
+   "ts": "2026-08-07T10:56:47.710912+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up e; second instance followed first correction in session."
+  },
+  {
+   "n": 452,
+   "ts": "2026-08-07T16:07:50.056071+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up b."
+  },
+  {
+   "n": 453,
+   "ts": "2026-08-07T17:03:48.037478+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up a; operator verbatim is dated the same day."
+  },
+  {
+   "n": 454,
+   "ts": "2026-08-07T19:15:40.942016+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 455,
+   "ts": "2026-08-08T00:06:06.879476+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [
+    "handoff"
+   ],
+   "note": "Runner-up a (carried handoff transcription) or b."
+  },
+  {
+   "n": 462,
+   "ts": "2026-08-08T09:26:23.558554+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 464,
+   "ts": "2026-08-08T14:22:39.991832+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 465,
+   "ts": "2026-08-08T18:33:11.946910+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": "Runner-up e."
+  },
+  {
+   "n": 466,
+   "ts": "2026-08-08T19:38:10.535283+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 467,
+   "ts": "2026-08-08T23:35:19.344276+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 468,
+   "ts": "2026-08-08T23:50:46.772476+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 469,
+   "ts": "2026-08-09T10:25:27.726745+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [
+    "subagent"
+   ],
+   "note": ""
+  },
+  {
+   "n": 470,
+   "ts": "2026-08-09T18:19:19.958634+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up e."
+  },
+  {
+   "n": 471,
+   "ts": "2026-08-09T23:39:50.126166+00:00",
+   "type": "improvement",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": "Runner-up a; ruling lost across sessions."
+  },
+  {
+   "n": 472,
+   "ts": "2026-08-10T00:04:59.982020+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up d (Windows glob defect)."
+  },
+  {
+   "n": 473,
+   "ts": "2026-08-10T00:21:30.356781+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Agent followed skill Risk notes; runner-up f."
+  },
+  {
+   "n": 474,
+   "ts": "2026-08-10T00:48:46.304532+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up b."
+  },
+  {
+   "n": 476,
+   "ts": "2026-08-10T11:18:34.270021+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 477,
+   "ts": "2026-08-10T11:39:25.102254+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 478,
+   "ts": "2026-08-11T10:09:50.754753+00:00",
+   "type": "defect",
+   "class": "b",
+   "basis": "inferred",
+   "flags": [
+    "handoff"
+   ],
+   "note": "Runner-up a."
+  },
+  {
+   "n": 479,
+   "ts": "2026-08-11T10:34:23.131933+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 480,
+   "ts": "2026-08-11T11:20:43.157097+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 483,
+   "ts": "2026-08-12T11:03:49.023349+00:00",
+   "type": "improvement",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [
+    "handoff"
+   ],
+   "note": "Runner-up e; summary is phrased as an agent instruction."
+  },
+  {
+   "n": 484,
+   "ts": "2026-08-13T08:55:22.730348+00:00",
+   "type": "improvement",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 485,
+   "ts": "2026-08-13T11:22:50.514687+00:00",
+   "type": "improvement",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [
+    "handoff"
+   ],
+   "note": "Runner-up f."
+  },
+  {
+   "n": 486,
+   "ts": "2026-08-13T11:58:24.527161+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 487,
+   "ts": "2026-08-14T02:08:29.101300+00:00",
+   "type": "improvement",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 488,
+   "ts": "2026-08-14T06:58:33.299354+00:00",
+   "type": "improvement",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 489,
+   "ts": "2026-08-14T08:14:28.972867+00:00",
+   "type": "improvement",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 490,
+   "ts": "2026-08-14T10:36:37.025092+00:00",
+   "type": "improvement",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 491,
+   "ts": "2026-08-15T07:06:44.182850+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": "Runner-up b."
+  },
+  {
+   "n": 492,
+   "ts": "2026-08-15T08:34:55.580391+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up c; skill step numbering invites the order."
+  },
+  {
+   "n": 493,
+   "ts": "2026-08-15T11:35:12.541371+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up b (pre-fix figures) and e."
+  },
+  {
+   "n": 494,
+   "ts": "2026-08-15T19:38:48.032411+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": "Runner-up a (stale clone state)."
+  },
+  {
+   "n": 495,
+   "ts": "2026-08-15T20:47:10.106424+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 496,
+   "ts": "2026-08-16T00:21:36.076275+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 497,
+   "ts": "2026-08-16T01:50:13.389628+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [
+    "handoff"
+   ],
+   "note": "Runner-up a."
+  },
+  {
+   "n": 498,
+   "ts": "2026-08-16T07:51:41.298313+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up d."
+  },
+  {
+   "n": 501,
+   "ts": "2026-08-16T08:25:05.785434+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 503,
+   "ts": "2026-08-17T00:42:36.101358+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 504,
+   "ts": "2026-08-17T01:02:44.610026+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [
+    "handoff"
+   ],
+   "note": "Runner-up e."
+  },
+  {
+   "n": 505,
+   "ts": "2026-08-17T01:02:59.261857+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 506,
+   "ts": "2026-08-17T01:13:33.543788+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 507,
+   "ts": "2026-08-17T09:34:37.766212+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up a (partial read)."
+  },
+  {
+   "n": 508,
+   "ts": "2026-08-17T10:12:46.870999+00:00",
+   "type": "defect",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 510,
+   "ts": "2026-08-17T11:50:58.556792+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 511,
+   "ts": "2026-08-17T17:36:33.970819+00:00",
+   "type": "defect",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 512,
+   "ts": "2026-08-17T19:04:32.120469+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up e."
+  },
+  {
+   "n": 513,
+   "ts": "2026-08-18T00:14:56.813863+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 514,
+   "ts": "2026-08-18T01:20:23.552627+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 515,
+   "ts": "2026-08-18T01:47:59.714952+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 516,
+   "ts": "2026-08-18T02:04:13.130225+00:00",
+   "type": "improvement",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 517,
+   "ts": "2026-08-18T09:26:49.095950+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "inferred",
+   "flags": [
+    "handoff"
+   ],
+   "note": "Runner-up e."
+  },
+  {
+   "n": 518,
+   "ts": "2026-08-19T08:36:52.579630+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 519,
+   "ts": "2026-08-19T08:36:52.699683+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 520,
+   "ts": "2026-08-19T08:37:02.392164+00:00",
+   "type": "defect",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 521,
+   "ts": "2026-08-19T08:37:02.509407+00:00",
+   "type": "defect",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 522,
+   "ts": "2026-08-19T10:53:50.018033+00:00",
+   "type": "defect",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 523,
+   "ts": "2026-08-19T10:53:50.164402+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 524,
+   "ts": "2026-08-19T11:23:33.652556+00:00",
+   "type": "defect",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": "Runner-up c; nothing owns committing bookmarks."
+  },
+  {
+   "n": 525,
+   "ts": "2026-08-19T11:58:51.063537+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up c; AGENTS.md still taught the kind. Even, so agent class."
+  },
+  {
+   "n": 526,
+   "ts": "2026-08-20T00:34:13.638892+00:00",
+   "type": "defect",
+   "class": "a",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up b (attested complete while owed) and c."
+  },
+  {
+   "n": 527,
+   "ts": "2026-08-20T00:50:15.607248+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [
+    "handoff"
+   ],
+   "note": "Runner-up a."
+  },
+  {
+   "n": 528,
+   "ts": "2026-08-20T06:34:46.029046+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up f."
+  },
+  {
+   "n": 529,
+   "ts": "2026-08-20T06:46:28.504353+00:00",
+   "type": "improvement",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up a; g0 canon existed."
+  },
+  {
+   "n": 531,
+   "ts": "2026-08-20T07:45:12.966634+00:00",
+   "type": "defect",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up d."
+  },
+  {
+   "n": 532,
+   "ts": "2026-08-20T09:32:08.769341+00:00",
+   "type": "defect",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 536,
+   "ts": "2026-08-21T01:07:07.246814+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 537,
+   "ts": "2026-08-21T05:02:18.734171+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "handoff",
+    "subagent"
+   ],
+   "note": "Runner-up a (state lost across handoff) and b."
+  },
+  {
+   "n": 541,
+   "ts": "2026-08-21T08:52:50.314832+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "subagent",
+    "long_session"
+   ],
+   "note": ""
+  },
+  {
+   "n": 542,
+   "ts": "2026-08-21T11:50:43.146907+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 543,
+   "ts": "2026-08-22T11:30:25.091561+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 544,
+   "ts": "2026-08-22T13:38:55.446129+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up c (raise direction has no witness)."
+  },
+  {
+   "n": 545,
+   "ts": "2026-08-22T13:38:55.583975+00:00",
+   "type": "defect",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 546,
+   "ts": "2026-08-22T14:24:07.259012+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up c."
+  },
+  {
+   "n": 547,
+   "ts": "2026-08-22T15:28:01.346634+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": "Runner-up b."
+  },
+  {
+   "n": 548,
+   "ts": "2026-08-22T16:53:22.163672+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 549,
+   "ts": "2026-08-22T19:28:21.768963+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "explicit",
+   "flags": [],
+   "note": "Runner-up e."
+  },
+  {
+   "n": 550,
+   "ts": "2026-08-22T19:28:27.656658+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 551,
+   "ts": "2026-08-23T07:19:09.176991+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 555,
+   "ts": "2026-08-23T14:05:25.754092+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up e; row frames it as a fresh ruling but cites verbatim canon."
+  },
+  {
+   "n": 556,
+   "ts": "2026-08-23T14:12:36.341469+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "context_size"
+   ],
+   "note": "context_size flag rests only on the word tokens (cost), not window size."
+  },
+  {
+   "n": 557,
+   "ts": "2026-08-23T20:39:07.723318+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 559,
+   "ts": "2026-08-24T01:23:07.619075+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 560,
+   "ts": "2026-08-24T08:33:54.605905+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [
+    "subagent"
+   ],
+   "note": "Runner-up b (hollow covering test)."
+  },
+  {
+   "n": 561,
+   "ts": "2026-08-25T02:15:15.875923+00:00",
+   "type": "improvement",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 562,
+   "ts": "2026-08-25T06:31:12.342259+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up c (brief-drift cannot see it)."
+  },
+  {
+   "n": 563,
+   "ts": "2026-08-25T08:22:05.150712+00:00",
+   "type": "improvement",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": ""
+  },
+  {
+   "n": 564,
+   "ts": "2026-08-25T10:07:18.334688+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 566,
+   "ts": "2026-08-26T09:55:03.353644+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up c."
+  },
+  {
+   "n": 569,
+   "ts": "2026-08-27T09:54:16.583725+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": "Runner-up a (carried earlier ruling past its scope)."
+  },
+  {
+   "n": 570,
+   "ts": "2026-08-27T11:51:29.676019+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 571,
+   "ts": "2026-08-28T01:52:52.215739+00:00",
+   "type": "improvement",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up e."
+  },
+  {
+   "n": 572,
+   "ts": "2026-08-30T00:13:52.833679+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "inferred",
+   "flags": [],
+   "note": "Runner-up e."
+  },
+  {
+   "n": 575,
+   "ts": "2026-08-30T22:12:59.846336+00:00",
+   "type": "defect",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": "Runner-up a."
+  },
+  {
+   "n": 576,
+   "ts": "2026-08-31T06:35:09.195625+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 577,
+   "ts": "2026-09-01T14:06:27.042000+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 578,
+   "ts": "2026-09-02T05:57:44.244394+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up a: displaced an ADR ratified TOPMOST one day earlier"
+  },
+  {
+   "n": 580,
+   "ts": "2026-09-02T09:43:29.309483+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up a: misread scope of a settled ruling"
+  },
+  {
+   "n": 581,
+   "ts": "2026-09-02T10:14:46.878878+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 582,
+   "ts": "2026-09-02T10:14:47.000493+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 583,
+   "ts": "2026-09-02T11:28:56.319053+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 584,
+   "ts": "2026-09-02T11:29:39.270163+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up e"
+  },
+  {
+   "n": 585,
+   "ts": "2026-09-02T11:39:47.086682+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up e"
+  },
+  {
+   "n": 586,
+   "ts": "2026-09-02T11:44:44.375486+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [
+    "context_size"
+   ],
+   "note": ""
+  },
+  {
+   "n": 587,
+   "ts": "2026-09-02T12:07:17.422609+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 589,
+   "ts": "2026-09-02T12:07:17.888635+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [
+    "context_size"
+   ],
+   "note": ""
+  },
+  {
+   "n": 590,
+   "ts": "2026-09-02T12:07:18.184435+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 592,
+   "ts": "2026-09-02T13:18:12.342141+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 594,
+   "ts": "2026-09-02T14:52:45.294930+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up c: specify skill does not prompt for the coupled file"
+  },
+  {
+   "n": 596,
+   "ts": "2026-09-02T15:20:52.316202+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 597,
+   "ts": "2026-09-02T15:56:54.064803+00:00",
+   "type": "improvement",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [
+    "context_size",
+    "subagent"
+   ],
+   "note": "runner-up a or f: operator-raised deferred design concern about context rot in implementers"
+  },
+  {
+   "n": 598,
+   "ts": "2026-09-02T20:29:47.324947+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 599,
+   "ts": "2026-09-02T20:38:02.816324+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up c: output of a validator"
+  },
+  {
+   "n": 600,
+   "ts": "2026-09-02T20:42:21.803083+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "inferred",
+   "flags": [
+    "subagent"
+   ],
+   "note": "runner-up c"
+  },
+  {
+   "n": 601,
+   "ts": "2026-09-02T21:37:25.644566+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [
+    "subagent"
+   ],
+   "note": ""
+  },
+  {
+   "n": 602,
+   "ts": "2026-09-02T22:06:34.182191+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 603,
+   "ts": "2026-09-02T22:40:10.080733+00:00",
+   "type": "defect",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 604,
+   "ts": "2026-09-02T23:09:52.519357+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 605,
+   "ts": "2026-09-03T00:32:55.116797+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 608,
+   "ts": "2026-09-03T10:25:31.527449+00:00",
+   "type": "improvement",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [
+    "subagent",
+    "context_size",
+    "long_session"
+   ],
+   "note": "runner-up e: agent chose dispatch route for mechanical work"
+  },
+  {
+   "n": 609,
+   "ts": "2026-09-03T10:28:58.403005+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 610,
+   "ts": "2026-09-03T10:48:28.883234+00:00",
+   "type": "improvement",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "subagent",
+    "long_session"
+   ],
+   "note": ""
+  },
+  {
+   "n": 611,
+   "ts": "2026-09-03T10:54:22.889767+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [
+    "subagent"
+   ],
+   "note": "runner-up f: status-reporting conduct, no prior rule shown"
+  },
+  {
+   "n": 612,
+   "ts": "2026-09-03T11:13:58.829071+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "long_session"
+   ],
+   "note": "runner-up e: agent wrote the absolute prompts and never asked"
+  },
+  {
+   "n": 613,
+   "ts": "2026-09-03T11:25:17.495946+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 614,
+   "ts": "2026-09-04T01:31:13.841079+00:00",
+   "type": "improvement",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 617,
+   "ts": "2026-09-04T08:29:47.289157+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up a: AGENTS.md names the gate command"
+  },
+  {
+   "n": 618,
+   "ts": "2026-09-04T09:07:47.371361+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 619,
+   "ts": "2026-09-04T09:07:47.500290+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up d"
+  },
+  {
+   "n": 620,
+   "ts": "2026-09-04T09:25:49.595855+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up d"
+  },
+  {
+   "n": 623,
+   "ts": "2026-09-04T09:49:37.925490+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up c"
+  },
+  {
+   "n": 624,
+   "ts": "2026-09-04T11:46:56.318330+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up c: chokepoint omits resolution requirement"
+  },
+  {
+   "n": 625,
+   "ts": "2026-09-05T05:23:33.899283+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 628,
+   "ts": "2026-09-05T05:37:10.998536+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up e: sequencing judgment"
+  },
+  {
+   "n": 629,
+   "ts": "2026-09-05T06:32:33.765066+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": "runner-up e: asked instead of acting"
+  },
+  {
+   "n": 630,
+   "ts": "2026-09-05T07:39:59.260413+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": "runner-up e: scope judgment on a review finding"
+  },
+  {
+   "n": 631,
+   "ts": "2026-09-05T09:39:37.550169+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up d"
+  },
+  {
+   "n": 632,
+   "ts": "2026-09-05T09:41:48.364532+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 634,
+   "ts": "2026-09-05T11:02:34.194833+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [
+    "handoff"
+   ],
+   "note": "runner-up f; handoff flag is an evidence path only"
+  },
+  {
+   "n": 635,
+   "ts": "2026-09-05T11:25:04.246967+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [
+    "subagent"
+   ],
+   "note": ""
+  },
+  {
+   "n": 636,
+   "ts": "2026-09-05T11:56:09.563033+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up c"
+  },
+  {
+   "n": 637,
+   "ts": "2026-09-05T11:59:18.129598+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 638,
+   "ts": "2026-09-05T12:08:09.963471+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 639,
+   "ts": "2026-09-05T12:15:54.503818+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [
+    "subagent"
+   ],
+   "note": "runner-up e"
+  },
+  {
+   "n": 640,
+   "ts": "2026-09-05T13:12:02.113282+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 641,
+   "ts": "2026-09-05T14:03:58.718473+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 643,
+   "ts": "2026-09-05T15:37:35.448761+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "context_size",
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 644,
+   "ts": "2026-09-05T15:40:45.827942+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up e"
+  },
+  {
+   "n": 645,
+   "ts": "2026-09-05T19:05:07.994820+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 646,
+   "ts": "2026-09-05T19:40:42.255895+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": ""
+  },
+  {
+   "n": 647,
+   "ts": "2026-09-05T19:48:28.292633+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 648,
+   "ts": "2026-09-05T19:49:46.040902+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 649,
+   "ts": "2026-09-05T20:34:30.358506+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "inferred",
+   "flags": [
+    "context_size"
+   ],
+   "note": "runner-up e"
+  },
+  {
+   "n": 650,
+   "ts": "2026-09-05T20:50:46.725611+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up c"
+  },
+  {
+   "n": 651,
+   "ts": "2026-09-05T20:54:15.870245+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": "runner-up e: asked instead of acting"
+  },
+  {
+   "n": 652,
+   "ts": "2026-09-05T21:15:09.300234+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [
+    "context_size"
+   ],
+   "note": ""
+  },
+  {
+   "n": 653,
+   "ts": "2026-09-06T01:10:03.678162+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up a: stopped early"
+  },
+  {
+   "n": 656,
+   "ts": "2026-09-06T01:22:30.663442+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 657,
+   "ts": "2026-09-06T11:33:19.283989+00:00",
+   "type": "defect",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 658,
+   "ts": "2026-09-06T13:54:08.057930+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 659,
+   "ts": "2026-09-06T15:16:22.330939+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up b: carve-out's stated protection was never tested"
+  },
+  {
+   "n": 660,
+   "ts": "2026-09-06T16:02:39.757905+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [
+    "handoff"
+   ],
+   "note": "runner-up a: append-only rule existed; agent reasoned an exemption"
+  },
+  {
+   "n": 662,
+   "ts": "2026-09-06T16:36:42.453812+00:00",
+   "type": "defect",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up c: no mechanical witness"
+  },
+  {
+   "n": 663,
+   "ts": "2026-09-06T20:52:34.752645+00:00",
+   "type": "improvement",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up d"
+  },
+  {
+   "n": 664,
+   "ts": "2026-09-06T21:50:40.419265+00:00",
+   "type": "improvement",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up b: producer audit's coverage claim false"
+  },
+  {
+   "n": 665,
+   "ts": "2026-09-06T23:09:57.107021+00:00",
+   "type": "improvement",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up d"
+  },
+  {
+   "n": 666,
+   "ts": "2026-09-07T01:37:35.180590+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 669,
+   "ts": "2026-09-07T06:49:39.181504+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up d"
+  },
+  {
+   "n": 670,
+   "ts": "2026-09-07T06:49:39.297931+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 671,
+   "ts": "2026-09-07T06:49:39.414111+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up d: ordinary test defect"
+  },
+  {
+   "n": 672,
+   "ts": "2026-09-07T08:19:59.285031+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up c"
+  },
+  {
+   "n": 673,
+   "ts": "2026-09-07T11:30:46.042696+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 675,
+   "ts": "2026-09-07T12:57:26.946220+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 676,
+   "ts": "2026-09-07T14:18:12.697936+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 677,
+   "ts": "2026-09-07T15:25:27.485291+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 678,
+   "ts": "2026-09-07T17:37:59.073243+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 679,
+   "ts": "2026-09-07T18:23:11.687244+00:00",
+   "type": "defect",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up c: advisory gap"
+  },
+  {
+   "n": 680,
+   "ts": "2026-09-07T18:42:13.543075+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up f"
+  },
+  {
+   "n": 681,
+   "ts": "2026-09-07T18:44:53.525796+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up d"
+  },
+  {
+   "n": 683,
+   "ts": "2026-09-07T19:00:08.670954+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up c"
+  },
+  {
+   "n": 684,
+   "ts": "2026-09-08T07:40:30.309879+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up f"
+  },
+  {
+   "n": 685,
+   "ts": "2026-09-08T08:06:50.784317+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up f"
+  },
+  {
+   "n": 686,
+   "ts": "2026-09-08T08:16:02.557686+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": "runner-up c: no gate catches it"
+  },
+  {
+   "n": 688,
+   "ts": "2026-09-08T11:21:14.918860+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 689,
+   "ts": "2026-09-08T11:39:34.786429+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up d"
+  },
+  {
+   "n": 690,
+   "ts": "2026-09-08T23:50:34.974184+00:00",
+   "type": "improvement",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "long_session",
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 691,
+   "ts": "2026-09-09T00:07:25.079504+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": ""
+  },
+  {
+   "n": 692,
+   "ts": "2026-09-09T00:17:05.600125+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up c"
+  },
+  {
+   "n": 693,
+   "ts": "2026-09-09T01:03:14.468998+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up e: finding filed against wrong REQ"
+  },
+  {
+   "n": 694,
+   "ts": "2026-09-09T04:49:52.900955+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up e"
+  },
+  {
+   "n": 695,
+   "ts": "2026-09-09T05:27:14.474471+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up c: validator scope gap"
+  },
+  {
+   "n": 696,
+   "ts": "2026-09-09T08:00:29.273572+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 697,
+   "ts": "2026-09-09T08:00:29.439811+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up c"
+  },
+  {
+   "n": 698,
+   "ts": "2026-09-09T11:58:02.085947+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up d: substrate doc wrong"
+  },
+  {
+   "n": 699,
+   "ts": "2026-09-09T12:06:48.811978+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 700,
+   "ts": "2026-09-10T10:01:28.124612+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up b: record audit presented without separating it from execution"
+  },
+  {
+   "n": 701,
+   "ts": "2026-09-10T11:03:31.360921+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 702,
+   "ts": "2026-09-11T00:16:05.368936+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": "runner-up a: stale ids carried forward as fresh"
+  },
+  {
+   "n": 703,
+   "ts": "2026-09-11T01:18:30.215808+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 704,
+   "ts": "2026-09-11T08:45:49.282506+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 705,
+   "ts": "2026-09-11T09:02:03.112356+00:00",
+   "type": "improvement",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 706,
+   "ts": "2026-09-11T09:16:16.268961+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up c"
+  },
+  {
+   "n": 708,
+   "ts": "2026-09-12T00:19:56.203608+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 709,
+   "ts": "2026-09-12T14:20:32.510042+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up b: declared lineage internal from a partial excerpt"
+  },
+  {
+   "n": 710,
+   "ts": "2026-09-12T15:43:30.401712+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up f"
+  },
+  {
+   "n": 712,
+   "ts": "2026-09-12T17:42:07.925162+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 713,
+   "ts": "2026-09-12T17:42:08.074812+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 714,
+   "ts": "2026-09-12T17:42:08.217891+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 715,
+   "ts": "2026-09-12T17:42:08.364098+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 716,
+   "ts": "2026-09-12T17:42:08.508790+00:00",
+   "type": "defect",
+   "class": "b",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up c: record defect; row does not say who authored it"
+  },
+  {
+   "n": 717,
+   "ts": "2026-09-12T17:42:08.652561+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 719,
+   "ts": "2026-09-12T17:42:08.951684+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up c"
+  },
+  {
+   "n": 721,
+   "ts": "2026-09-12T18:01:53.070643+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [
+    "handoff"
+   ],
+   "note": "handoff named only as a work front"
+  },
+  {
+   "n": 722,
+   "ts": "2026-09-12T18:09:42.594233+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 724,
+   "ts": "2026-09-12T19:41:35.964813+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [
+    "context_size"
+   ],
+   "note": "runner-up f"
+  },
+  {
+   "n": 727,
+   "ts": "2026-09-12T23:19:47.163294+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 728,
+   "ts": "2026-09-12T23:50:50.697442+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 729,
+   "ts": "2026-09-13T00:52:52.832561+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "handoff",
+    "subagent"
+   ],
+   "note": ""
+  },
+  {
+   "n": 730,
+   "ts": "2026-09-13T00:55:51.223939+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up c"
+  },
+  {
+   "n": 731,
+   "ts": "2026-09-13T01:05:06.452214+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 732,
+   "ts": "2026-09-13T02:31:18.778521+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "inferred",
+   "flags": [
+    "handoff"
+   ],
+   "note": "runner-up e: row cites no prior rule; placed in a as work handed back in a summary"
+  },
+  {
+   "n": 733,
+   "ts": "2026-09-13T08:10:16.578164+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": "runner-up e; handoff flag is subject matter only"
+  },
+  {
+   "n": 734,
+   "ts": "2026-09-13T12:18:37.136388+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 736,
+   "ts": "2026-09-13T15:00:31.027730+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 738,
+   "ts": "2026-09-14T08:30:40.822419+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 739,
+   "ts": "2026-09-14T11:29:59.069585+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "inferred",
+   "flags": [
+    "handoff"
+   ],
+   "note": "runner-up e: prioritisation"
+  },
+  {
+   "n": 741,
+   "ts": "2026-09-14T23:02:05.109961+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up c: cli audit scope gap"
+  },
+  {
+   "n": 744,
+   "ts": "2026-09-15T01:41:13.701762+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up c; row 746 later calls this a settled matter"
+  },
+  {
+   "n": 745,
+   "ts": "2026-09-15T01:48:01.439636+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 746,
+   "ts": "2026-09-15T02:18:37.233162+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 747,
+   "ts": "2026-09-15T09:47:49.069293+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 748,
+   "ts": "2026-09-15T09:57:28.239819+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": "runner-up e: repair out-ranking feature work"
+  },
+  {
+   "n": 749,
+   "ts": "2026-09-15T09:58:29.465656+00:00",
+   "type": "defect",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": "runner-up b: claim was true when written, stale when relayed"
+  },
+  {
+   "n": 750,
+   "ts": "2026-09-15T10:18:48.220467+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 751,
+   "ts": "2026-09-15T10:32:35.868344+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up a: row cites no prior rule"
+  },
+  {
+   "n": 752,
+   "ts": "2026-09-16T00:20:00.479837+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": "runner-up e; handoff flag is an evidence path only"
+  },
+  {
+   "n": 753,
+   "ts": "2026-09-16T07:00:03.112511+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 754,
+   "ts": "2026-09-16T07:04:31.433438+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up e"
+  },
+  {
+   "n": 755,
+   "ts": "2026-09-16T07:29:45.897634+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 756,
+   "ts": "2026-09-17T02:16:34.974852+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up e: recommendation calibration; placed in a only because the row cites DO IT RIGHT #10"
+  },
+  {
+   "n": 757,
+   "ts": "2026-09-17T09:44:33.529386+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 758,
+   "ts": "2026-09-17T09:44:33.668173+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up f"
+  },
+  {
+   "n": 759,
+   "ts": "2026-09-17T09:47:31.185735+00:00",
+   "type": "defect",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 760,
+   "ts": "2026-09-17T10:05:54.067448+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up f: operator preference on presentation"
+  },
+  {
+   "n": 762,
+   "ts": "2026-09-17T11:23:57.264852+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 763,
+   "ts": "2026-09-17T11:52:40.488741+00:00",
+   "type": "improvement",
+   "class": "d",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up c: tests guard a control surface"
+  },
+  {
+   "n": 764,
+   "ts": "2026-09-18T08:56:39.562531+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 765,
+   "ts": "2026-09-18T09:45:58.117424+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 766,
+   "ts": "2026-09-18T09:45:58.258354+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up b: unmeasured value proposed"
+  },
+  {
+   "n": 768,
+   "ts": "2026-09-19T09:32:04.223854+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up f: operator preference"
+  },
+  {
+   "n": 769,
+   "ts": "2026-09-19T14:16:26.557914+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up b: passing checks presented as addressing assessment"
+  },
+  {
+   "n": 770,
+   "ts": "2026-09-19T14:37:54.691532+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up e"
+  },
+  {
+   "n": 771,
+   "ts": "2026-09-19T15:30:59.094932+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up a: 'repeated' planning after authorization"
+  },
+  {
+   "n": 772,
+   "ts": "2026-09-19T15:40:14.267656+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up c: gz test is a gate command"
+  },
+  {
+   "n": 773,
+   "ts": "2026-09-19T18:21:38.593622+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up a: drift from stated objective"
+  },
+  {
+   "n": 774,
+   "ts": "2026-09-19T19:44:09.211236+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 775,
+   "ts": "2026-09-19T20:19:52.704861+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up e: wrong prioritisation"
+  },
+  {
+   "n": 776,
+   "ts": "2026-09-19T21:07:23.967007+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up e: work ran without a GHI"
+  },
+  {
+   "n": 777,
+   "ts": "2026-09-19T21:17:17.958934+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up a"
+  },
+  {
+   "n": 778,
+   "ts": "2026-09-19T21:36:26.294701+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up e: asked instead of acting"
+  },
+  {
+   "n": 779,
+   "ts": "2026-09-19T22:12:57.400874+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 780,
+   "ts": "2026-09-19T22:46:39.538487+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 781,
+   "ts": "2026-09-19T23:05:31.839879+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up f: row states a limit, no miss"
+  },
+  {
+   "n": 782,
+   "ts": "2026-09-19T23:11:51.248631+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up d"
+  },
+  {
+   "n": 783,
+   "ts": "2026-09-19T23:55:35.445058+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 784,
+   "ts": "2026-09-20T00:24:37.289869+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 786,
+   "ts": "2026-09-20T09:46:00.438100+00:00",
+   "type": "improvement",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up e: design choice in newly authored skill"
+  },
+  {
+   "n": 788,
+   "ts": "2026-09-20T11:55:37.009504+00:00",
+   "type": "defect",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 791,
+   "ts": "2026-09-20T13:55:42.947028+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 792,
+   "ts": "2026-09-20T15:22:51.146229+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up a: shape 'already decided and recorded'"
+  },
+  {
+   "n": 793,
+   "ts": "2026-09-21T00:26:16.427980+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 794,
+   "ts": "2026-09-21T02:18:02.416464+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 798,
+   "ts": "2026-09-21T07:57:40.819292+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": "runner-up a: stale claim carried across two sessions"
+  },
+  {
+   "n": 799,
+   "ts": "2026-09-21T08:58:06.611137+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": "runner-up c"
+  },
+  {
+   "n": 803,
+   "ts": "2026-09-21T10:54:50.568141+00:00",
+   "type": "defect",
+   "class": "a",
+   "basis": "inferred",
+   "flags": [
+    "handoff"
+   ],
+   "note": "runner-up c: validator does not scan history"
+  },
+  {
+   "n": 805,
+   "ts": "2026-09-22T08:21:02.315791+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [
+    "handoff",
+    "subagent"
+   ],
+   "note": ""
+  },
+  {
+   "n": 807,
+   "ts": "2026-09-22T11:10:28.298536+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 808,
+   "ts": "2026-09-22T11:31:38.462869+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up e: premature phase output"
+  },
+  {
+   "n": 810,
+   "ts": "2026-09-22T23:58:35.861760+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up c"
+  },
+  {
+   "n": 812,
+   "ts": "2026-09-23T01:20:00.279905+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": "runner-up d"
+  },
+  {
+   "n": 815,
+   "ts": "2026-09-23T08:00:49.810348+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up e"
+  },
+  {
+   "n": 816,
+   "ts": "2026-09-24T01:00:41.741371+00:00",
+   "type": "improvement",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up a: agent still ran full check after new binding"
+  },
+  {
+   "n": 817,
+   "ts": "2026-09-24T07:04:12.097961+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 818,
+   "ts": "2026-09-24T07:54:45.001478+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 819,
+   "ts": "2026-09-24T09:27:23.144537+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 820,
+   "ts": "2026-09-24T09:39:11.298225+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up a: no-deferral rule exists but row does not cite it"
+  },
+  {
+   "n": 821,
+   "ts": "2026-09-25T00:56:29.690994+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 822,
+   "ts": "2026-09-25T01:04:34.587302+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "context_size"
+   ],
+   "note": ""
+  },
+  {
+   "n": 823,
+   "ts": "2026-09-25T01:09:59.999738+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 824,
+   "ts": "2026-09-25T07:55:23.546065+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 825,
+   "ts": "2026-09-25T08:20:12.040001+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up d"
+  },
+  {
+   "n": 826,
+   "ts": "2026-09-25T08:32:49.054578+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [
+    "subagent"
+   ],
+   "note": "runner-up e: prompt was hand-authored by the agent"
+  },
+  {
+   "n": 827,
+   "ts": "2026-09-25T08:39:31.339871+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 828,
+   "ts": "2026-09-25T08:59:47.254067+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 829,
+   "ts": "2026-09-25T09:24:48.129286+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 831,
+   "ts": "2026-09-25T09:27:18.877691+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 832,
+   "ts": "2026-09-25T09:34:10.587750+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 833,
+   "ts": "2026-09-25T09:50:21.683844+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up e"
+  },
+  {
+   "n": 834,
+   "ts": "2026-09-25T09:55:11.866553+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "inferred",
+   "flags": [
+    "handoff"
+   ],
+   "note": "runner-up e: row does not quote the initiation rule"
+  },
+  {
+   "n": 835,
+   "ts": "2026-09-25T10:16:13.521696+00:00",
+   "type": "improvement",
+   "class": "f",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up e"
+  },
+  {
+   "n": 836,
+   "ts": "2026-09-25T10:32:20.027886+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up a: session reasoning would be lost"
+  },
+  {
+   "n": 839,
+   "ts": "2026-09-26T00:56:55.211933+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 842,
+   "ts": "2026-09-26T07:14:17.232804+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up e"
+  },
+  {
+   "n": 843,
+   "ts": "2026-09-26T07:47:08.457165+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 847,
+   "ts": "2026-09-26T08:56:03.541276+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 848,
+   "ts": "2026-09-26T08:56:03.691066+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up c: advisor is advisory governance tooling"
+  },
+  {
+   "n": 849,
+   "ts": "2026-09-26T08:56:03.837455+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 850,
+   "ts": "2026-09-26T08:56:03.985042+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 856,
+   "ts": "2026-09-27T01:35:56.300706+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 857,
+   "ts": "2026-09-27T02:15:16.413571+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 858,
+   "ts": "2026-09-27T08:01:46.484044+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 859,
+   "ts": "2026-09-27T09:07:43.051255+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 862,
+   "ts": "2026-09-27T10:47:48.603501+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 863,
+   "ts": "2026-09-27T10:47:48.747476+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 864,
+   "ts": "2026-09-27T10:47:48.890931+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 865,
+   "ts": "2026-09-27T10:47:49.035091+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up d"
+  },
+  {
+   "n": 866,
+   "ts": "2026-09-27T10:47:49.178294+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up d"
+  },
+  {
+   "n": 867,
+   "ts": "2026-09-27T10:47:49.324295+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up d: mostly CLI help and output defects"
+  },
+  {
+   "n": 868,
+   "ts": "2026-09-27T10:47:49.470840+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up d"
+  },
+  {
+   "n": 869,
+   "ts": "2026-09-27T10:47:49.615054+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 870,
+   "ts": "2026-09-27T10:47:49.760044+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up c: some are rule files"
+  },
+  {
+   "n": 871,
+   "ts": "2026-09-27T10:47:49.904343+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up c"
+  },
+  {
+   "n": 872,
+   "ts": "2026-09-27T10:47:56.859047+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 874,
+   "ts": "2026-09-27T17:18:36.464633+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": ""
+  },
+  {
+   "n": 875,
+   "ts": "2026-09-27T19:21:08.299716+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up e"
+  },
+  {
+   "n": 877,
+   "ts": "2026-09-27T21:53:43.399530+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up b; refusal message itself was also wrong (c)"
+  },
+  {
+   "n": 878,
+   "ts": "2026-09-27T21:56:07.419665+00:00",
+   "type": "defect",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up f: external keyword side effect"
+  },
+  {
+   "n": 879,
+   "ts": "2026-09-27T21:59:49.929753+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up d: document staleness"
+  },
+  {
+   "n": 880,
+   "ts": "2026-09-27T22:59:34.655001+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 881,
+   "ts": "2026-09-27T23:00:47.325292+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 882,
+   "ts": "2026-09-28T00:35:28.764157+00:00",
+   "type": "defect",
+   "class": "a",
+   "basis": "inferred",
+   "flags": [
+    "subagent"
+   ],
+   "note": "runner-up b: fabricated attestation text reached the ledger; also e (unsafe cd chain)"
+  },
+  {
+   "n": 883,
+   "ts": "2026-09-28T00:35:54.591195+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": ""
+  },
+  {
+   "n": 885,
+   "ts": "2026-09-28T01:34:24.732970+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up d: portability"
+  },
+  {
+   "n": 886,
+   "ts": "2026-09-28T02:20:05.068596+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 887,
+   "ts": "2026-09-28T02:32:43.374824+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up c: item 3 is a proof-channel gap"
+  },
+  {
+   "n": 888,
+   "ts": "2026-09-28T02:34:01.926401+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "compaction"
+   ],
+   "note": ""
+  },
+  {
+   "n": 889,
+   "ts": "2026-09-28T02:34:40.028403+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": "runner-up d: portability"
+  },
+  {
+   "n": 892,
+   "ts": "2026-09-28T03:22:21.386308+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up d"
+  },
+  {
+   "n": 893,
+   "ts": "2026-09-28T09:00:49.347474+00:00",
+   "type": "defect",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up f: shell mechanics accident"
+  },
+  {
+   "n": 894,
+   "ts": "2026-09-28T09:13:07.178642+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 895,
+   "ts": "2026-09-28T09:14:14.090120+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 896,
+   "ts": "2026-09-28T09:16:59.607487+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 898,
+   "ts": "2026-09-28T23:36:40.017651+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up d: ADR document content"
+  },
+  {
+   "n": 899,
+   "ts": "2026-09-29T00:11:31.385001+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up d"
+  },
+  {
+   "n": 900,
+   "ts": "2026-09-29T00:18:15.229851+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 901,
+   "ts": "2026-09-29T00:21:01.467300+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up d"
+  },
+  {
+   "n": 902,
+   "ts": "2026-09-29T00:40:33.046670+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up e"
+  },
+  {
+   "n": 903,
+   "ts": "2026-09-29T01:13:46.910229+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up b: unchecked premise"
+  },
+  {
+   "n": 904,
+   "ts": "2026-09-29T01:27:00.108108+00:00",
+   "type": "defect",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up a: ghi-close step 7f skipped"
+  },
+  {
+   "n": 905,
+   "ts": "2026-09-29T08:07:28.744963+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 908,
+   "ts": "2026-09-29T08:29:01.959818+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 909,
+   "ts": "2026-09-29T09:30:20.256278+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up c: cli-audit does not require it"
+  },
+  {
+   "n": 910,
+   "ts": "2026-09-29T09:30:20.400329+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 911,
+   "ts": "2026-09-29T23:03:57.042165+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 912,
+   "ts": "2026-09-29T23:42:54.278426+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up b: unchecked premise written into GHI"
+  },
+  {
+   "n": 913,
+   "ts": "2026-09-30T00:25:34.747601+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up b: ids treated as allocated without checking"
+  },
+  {
+   "n": 914,
+   "ts": "2026-09-30T00:36:10.054060+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 916,
+   "ts": "2026-09-30T04:03:46.696669+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up c: code under test is a witness tool"
+  },
+  {
+   "n": 917,
+   "ts": "2026-09-30T04:03:47.179842+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up c"
+  },
+  {
+   "n": 918,
+   "ts": "2026-09-30T08:56:03.467279+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 921,
+   "ts": "2026-09-30T23:11:02.952496+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": ""
+  },
+  {
+   "n": 922,
+   "ts": "2026-09-30T23:18:47.619640+00:00",
+   "type": "improvement",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up a: repeated in same session after recording it"
+  },
+  {
+   "n": 923,
+   "ts": "2026-09-30T23:33:59.726306+00:00",
+   "type": "defect",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up c: pre-push passed, validator exits 0"
+  },
+  {
+   "n": 924,
+   "ts": "2026-10-01T06:12:48.097483+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 926,
+   "ts": "2026-10-01T06:30:43.216879+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up d: portability"
+  },
+  {
+   "n": 928,
+   "ts": "2026-10-01T07:24:20.129976+00:00",
+   "type": "defect",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up c: completion does not cross-check"
+  },
+  {
+   "n": 929,
+   "ts": "2026-10-02T08:20:04.155126+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 930,
+   "ts": "2026-10-02T08:20:04.305637+00:00",
+   "type": "improvement",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up e: stopped instead of surfacing"
+  },
+  {
+   "n": 931,
+   "ts": "2026-10-02T09:10:10.310151+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 932,
+   "ts": "2026-10-03T06:48:35.958338+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up f"
+  },
+  {
+   "n": 935,
+   "ts": "2026-10-03T07:10:22.584874+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up c: ledger module"
+  },
+  {
+   "n": 936,
+   "ts": "2026-10-03T07:18:31.277775+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 937,
+   "ts": "2026-10-03T07:34:17.644580+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 939,
+   "ts": "2026-10-03T11:21:09.452287+00:00",
+   "type": "defect",
+   "class": "b",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up a: Phase 1c table step not applied; also c (validator scope)"
+  },
+  {
+   "n": 940,
+   "ts": "2026-10-03T11:27:23.145328+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 941,
+   "ts": "2026-10-03T11:31:18.750776+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [
+    "context_size"
+   ],
+   "note": "runner-up f: operator ruling on cost"
+  },
+  {
+   "n": 943,
+   "ts": "2026-10-03T12:25:39.259901+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up d"
+  },
+  {
+   "n": 944,
+   "ts": "2026-10-03T12:25:39.405470+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 945,
+   "ts": "2026-10-03T12:25:39.551763+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "inferred",
+   "flags": [],
+   "note": "runner-up d: document drift"
+  },
+  {
+   "n": 946,
+   "ts": "2026-10-03T12:25:39.692642+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up c"
+  },
+  {
+   "n": 947,
+   "ts": "2026-10-03T12:25:39.835457+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": ""
+  },
+  {
+   "n": 948,
+   "ts": "2026-10-03T12:40:55.646861+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [
+    "subagent"
+   ],
+   "note": "flag quote is from the scope field"
+  },
+  {
+   "n": 949,
+   "ts": "2026-10-04T00:12:32.797889+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 950,
+   "ts": "2026-10-04T00:44:29.389658+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 951,
+   "ts": "2026-10-04T00:44:29.553099+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 952,
+   "ts": "2026-10-04T00:44:29.712352+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 953,
+   "ts": "2026-10-04T00:44:29.873976+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 954,
+   "ts": "2026-10-04T00:44:30.030441+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 955,
+   "ts": "2026-10-04T00:44:30.175640+00:00",
+   "type": "defect",
+   "class": "c",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 956,
+   "ts": "2026-10-04T03:06:24.641323+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 957,
+   "ts": "2026-10-04T03:06:24.803048+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "inferred",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 958,
+   "ts": "2026-10-04T06:34:37.113693+00:00",
+   "type": "defect",
+   "class": "d",
+   "basis": "explicit",
+   "flags": [],
+   "note": "runner-up c"
+  },
+  {
+   "n": 959,
+   "ts": "2026-10-04T06:34:37.252975+00:00",
+   "type": "defect",
+   "class": "a",
+   "basis": "explicit",
+   "flags": [
+    "handoff"
+   ],
+   "note": ""
+  },
+  {
+   "n": 960,
+   "ts": "2026-10-04T06:39:03.596796+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 961,
+   "ts": "2026-10-04T06:47:13.573131+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [],
+   "note": ""
+  },
+  {
+   "n": 962,
+   "ts": "2026-10-04T07:06:40.512517+00:00",
+   "type": "improvement",
+   "class": "e",
+   "basis": "explicit",
+   "flags": [
+    "context_size",
+    "compaction"
+   ],
+   "note": ""
+  }
+ ]
+}

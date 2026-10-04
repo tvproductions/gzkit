@@ -1,0 +1,4 @@
+interface:
+  display_name: "gz prd"
+  short_description: "Scaffold a PRD-<SLUG>-<semver> doc and fill its author prompts with the operator"
+  default_prompt: "Use $gz-prd to scaffold a PRD with gz prd and interview me for its sections."

@@ -1,0 +1,65 @@
+RUBRIC for classifying agent-insights rows (types: improvement, defect). One class per row.
+
+Classify by THE FAILURE THE ROW RECORDS (what went wrong), not by the fix that was applied.
+Read S (summary), E (evidence) and N (next_action) of every row in full before deciding.
+
+CLASSES
+a  context or attention. An instruction, rule, skill step or operator ruling that already existed
+   and was available to the agent was forgotten or not applied; state was lost across a session,
+   a compaction or a handoff; a stage or step was skipped; work stopped early with a summary;
+   a stale claim was carried forward; a question already settled was re-asked; drift late in a
+   long session; the agent read only part of an output/file and acted on the part.
+b  fabrication or overclaim. Something was reported as done, run, observed, verified, absent or
+   present when it was not (or was not checked). Includes asserting a fact from a keyword search
+   or from memory, a fabricated receipt/ID, "tests pass" without a run, a count that was not counted.
+c  apparatus defect. A control or governance tool misbehaved: gate, hook, validator, lock,
+   ledger/pipeline machinery, `gz` governance command, skill text, rule text, template or control
+   surface. False refusal, false pass, wrong recovery text, bug, drift between a rule and its
+   enforcement, missing check that a rule promised.
+d  product defect. A defect in shipped behaviour that is not a control: rendering/report output,
+   scaffolding/init, packaging/distribution, portability, performance, ordinary docs content,
+   data files, ordinary test defects.
+e  process or scope judgment. Wrong route, wrong scope, asked instead of acting or acted instead
+   of asking, wrong design choice, wrong prioritisation, where the row does NOT show a
+   pre-existing instruction that was forgotten.
+f  other. Operator preference, wording or style ruling, design decision or new doctrine recorded
+   without a failure, positive note, anything that fits none of the above.
+
+TIE-BREAKS (apply in order)
+1. If the row records agent behaviour going wrong, choose among a / b / e. Otherwise choose
+   among c / d / f.
+2. b beats a when a false or unverified statement was made to the operator or written into a
+   record. (A STALE claim that was once true and was carried forward without re-checking is a.)
+3. a beats e only when the row itself shows the instruction/ruling/step/state existed before the
+   miss (it cites the rule, skill, AGENTS.md, an earlier ruling, an earlier session, or says
+   "again", "already", "forgot", "skipped", "re-asked"). Do not assume it existed. If the row does
+   not show it, use e.
+4. A row that records both an agent miss and a tool bug: classify by what the row says is the
+   primary thing that went wrong; when even, prefer the agent-behaviour class and say so in note.
+5. Do not lean toward any class. The requester holds a hypothesis that most failures are class a;
+   that hypothesis is not evidence. Classify what the row says.
+
+FIELDS TO WRITE PER ROW (JSON object)
+ n       line number from the row header
+ cls     one of "a","b","c","d","e","f"
+ basis   "explicit" if the row's own words state the deciding fact (e.g. names the existing rule
+         that was not applied, or states the claim was unverified); "inferred" otherwise
+ sub     short tag for the failure, free text, at most 6 words (e.g. "skipped stage",
+         "stopped early with summary", "re-asked settled question", "false refusal by hook")
+ flags   list, any of: "long_session", "context_size", "compaction", "handoff", "subagent".
+         Set a flag ONLY when the row's text actually mentions it:
+           long_session  session length, late-session drift, multi-hour/multi-day session, fatigue
+           context_size  context window, context budget, tokens, file too big to hold, context loss
+           compaction    compaction, /compact, summarised context, post-compaction
+           handoff       session handoff, resume, cross-session transfer, handoff document
+           subagent      subagent, delegation, dispatch, implementer/reviewer agent, parallel agents,
+                         worktree agent, fork
+         Flag every row, whatever its class.
+ fq      for each flag set, one verbatim quote (exact substring of the row, at most 220 characters)
+         that shows the mention; object keyed by flag name. Copy characters exactly.
+ rep     integer 0-3: how representative and quotable the row is for its class (3 = textbook case)
+ note    optional, at most 20 words, only when the call was close: name the runner-up class.
+
+OUTPUT
+ Write a JSON array of these objects, one per row in the chunk, in row order, to
+ <scratch>/class_chunk<K>.json . Every row in the chunk must appear exactly once.

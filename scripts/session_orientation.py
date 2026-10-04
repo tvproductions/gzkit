@@ -1080,21 +1080,6 @@ def _render_unreviewed_canaries(lines: list[str], payload: object) -> None:
     lines.append("")
 
 
-def _section_switched_off(heading: str, config_path: Path) -> bool:
-    """Whether the central switch (``disabled.orientation_sections``) names *heading*.
-
-    Operator ruling 2026-10-04. A switched-off section is neither collected nor
-    rendered; delete its heading from the list to bring it back. Record:
-    docs/governance/control-switchboard-2026-10-04.md.
-    """
-    from gzkit.config import GzkitConfig  # noqa: PLC0415 — the script imports gzkit lazily
-
-    try:
-        return heading in GzkitConfig.load(config_path).disabled.orientation_sections
-    except Exception:
-        return False
-
-
 def collect_state(repo_root: Path, now: datetime) -> dict:
     """Aggregate authoritative state. Best-effort; never raises."""
     campaign = collect_campaign(repo_root)
@@ -1112,11 +1097,7 @@ def collect_state(repo_root: Path, now: datetime) -> dict:
         "obpi_locks": collect_obpi_locks(repo_root),
         "adr_pipeline": [],
         "recent_events": collect_recent_events(repo_root / ".gzkit" / "ledger.jsonl", now),
-        "chore_staleness": (
-            None
-            if _section_switched_off("Chores due or overdue", repo_root / ".gzkit.json")
-            else collect_chore_staleness()
-        ),
+        "chore_staleness": collect_chore_staleness(),
         "unreviewed_canaries": collect_unreviewed_canaries(repo_root),
         "blockers": [],
     }

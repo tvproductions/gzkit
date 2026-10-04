@@ -1,5 +1,11 @@
 # Record — control switchboard, 2026-10-04
 
+> **Reversed in full the same day.** By operator ruling of 2026-10-04 every switch described
+> below was turned back on and the central switch itself was removed
+> ([campaign plan § Amendments 2026-10-04 (2)](build-to-1.0-campaign-2026-09-20.md#amendments-2026-10-04-2)).
+> `.gzkit.json` no longer carries a `disabled` block. The text below is kept as the record of
+> what was done and why; none of it describes the current state.
+
 This is a **dated record**, written 2026-10-04 when the switches were flipped. It states
 what was switched off, where each switch lives and how to turn one back on. It rules on
 nothing. Every list here is illustrative; the switches themselves are the authority:

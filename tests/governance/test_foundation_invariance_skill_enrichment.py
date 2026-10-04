@@ -11,7 +11,7 @@ import unittest
 from pathlib import Path
 
 from gzkit.traceability import covers
-from tests.vendor_surfaces import skill_mirror_roots, skill_switched_off
+from tests.vendor_surfaces import skill_mirror_roots
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 _CANONICAL_SKILLS_ROOT = _PROJECT_ROOT / ".gzkit" / "skills"
@@ -148,10 +148,6 @@ class TestSkillMirrorParity(unittest.TestCase):
     def _assert_mirror_parity(self, slug: str, mirror_root: Path) -> None:
         canonical = (_CANONICAL_SKILLS_ROOT / slug / "SKILL.md").read_bytes()
         mirror_path = mirror_root / slug / "SKILL.md"
-        if skill_switched_off(slug):
-            # The switch's contract: a switched-off skill stays canonical and is not mirrored.
-            self.assertFalse(mirror_path.exists(), f"Mirror written for switched-off {slug}")
-            return
         self.assertTrue(mirror_path.exists(), f"Mirror missing: {mirror_path}")
         mirror = mirror_path.read_bytes()
         self.assertEqual(

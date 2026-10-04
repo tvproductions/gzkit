@@ -1,0 +1,397 @@
+enters_at_call,timestamp,category,sub,chars,est_tokens
+0,2026-10-03T06:29:25.665Z,hook_outputs,hook_success:SessionStart:clear,2349,587
+0,2026-10-03T06:29:25.665Z,hook_outputs,hook_additional_context:SessionStart,2256,564
+0,2026-10-03T06:29:10.045Z,everything_else,harness user row,217,54
+0,2026-10-03T06:29:09.701Z,everything_else,harness user row,130,32
+0,2026-10-03T06:29:25.686Z,operator_prompts,prompt,10,2
+0,2026-10-03T06:29:25.686Z,session_start_attachments,environment,700,175
+0,2026-10-03T06:29:25.686Z,session_start_attachments,model,161,40
+0,2026-10-03T06:29:25.686Z,session_start_attachments,deferred_tools_delta,906,226
+0,2026-10-03T06:29:25.686Z,session_start_attachments,agent_listing_delta,3866,966
+0,2026-10-03T06:29:25.686Z,session_start_attachments,mcp_instructions_delta,2053,513
+0,2026-10-03T06:29:25.686Z,session_start_attachments,skill_listing,30077,7519
+0,2026-10-03T06:29:25.820Z,session_start_attachments,instructions,28215,7054
+0,2026-10-03T06:29:25.820Z,session_start_attachments,session_context,1327,332
+0,2026-10-03T06:29:25.820Z,session_start_attachments,date,64,16
+1,2026-10-03T06:29:28.091Z,skill_bodies,gz-session-handoff (Skill tool result),35,9
+1,2026-10-03T06:29:28.090Z,skill_bodies,gz-session-handoff,37042,9260
+1,2026-10-03T06:29:28.811Z,file_reads,.gzkit/handoffs/20261003T061711Z-amendment-ratified-1163-closed-debt-drained.md,10647,2662
+1,2026-10-03T06:29:29.798Z,file_reads,<transcripts>/553e5afb-48e8-4cae-be4a-db046a3690ba/tool-results/hook-eca5de98-181c-4d23-9307-ada75659944a-stdout.txt,21992,5498
+1,2026-10-03T06:29:29.826Z,other_harness_reminders,model,165,41
+1,2026-10-03T06:29:29.827Z,rule_injections,token-block-discipline.md,7779,1945
+2,2026-10-03T06:29:40.930Z,bash_outputs,gz other,7397,1849
+2,2026-10-03T06:29:41.888Z,bash_outputs,git,1739,435
+2,2026-10-03T06:29:54.387Z,bash_outputs,gz other,3038,760
+2,2026-10-03T06:29:56.867Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",102,26
+2,2026-10-03T06:29:57.105Z,bash_outputs,gz obpi other,16,4
+2,2026-10-03T06:29:59.297Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",314,78
+2,2026-10-03T06:30:02.628Z,bash_outputs,gz obpi other,1643,411
+2,2026-10-03T06:30:02.816Z,bash_outputs,gz obpi other,11428,2857
+3,2026-10-03T06:30:11.379Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",490,122
+4,2026-10-03T06:30:14.519Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",410,102
+5,2026-10-03T06:34:23.872Z,operator_prompts,prompt,34,8
+5,2026-10-03T06:34:23.871Z,other_harness_reminders,model,161,40
+6,2026-10-03T06:34:27.297Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",703,176
+7,2026-10-03T06:34:29.172Z,file_reads,docs/governance/build-to-1.0-campaign-2026-09-20.md,7425,1856
+7,2026-10-03T06:34:29.211Z,rule_injections,gate5-runbook-code-covenant.md,3333,833
+7,2026-10-03T06:34:29.212Z,rule_injections,agent-failure-modes.md,3719,930
+8,2026-10-03T06:47:57.797Z,operator_prompts,prompt,67,17
+9,2026-10-03T06:48:19.630Z,skill_bodies,gz-insights-remember (Skill tool result),37,9
+9,2026-10-03T06:48:19.630Z,skill_bodies,gz-insights-remember,2826,706
+9,2026-10-03T06:48:23.337Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",9284,2321
+9,2026-10-03T06:48:23.403Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",1803,451
+10,2026-10-03T06:48:35.985Z,bash_outputs,gz other,880,220
+10,2026-10-03T06:48:36.637Z,file_reads,docs/governance/build-to-1.0-campaign-2026-09-20.md,2075,519
+10,2026-10-03T06:48:38.676Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",3828,957
+11,2026-10-03T06:48:51.784Z,file_reads,docs/governance/build-to-1.0-campaign-2026-09-20.md,3331,833
+11,2026-10-03T06:48:51.891Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",137,34
+12,2026-10-03T06:49:03.475Z,edit_write_results,Edit,124,31
+12,2026-10-03T06:49:03.641Z,edit_write_results,Edit,124,31
+12,2026-10-03T06:49:03.815Z,edit_write_results,Edit,124,31
+13,2026-10-03T06:49:08.906Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",338,84
+13,2026-10-03T06:49:08.908Z,other_harness_reminders,silent_turn_reminder,133,33
+14,2026-10-03T06:49:14.444Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",381,95
+14,2026-10-03T06:51:13.080Z,bash_outputs,gz other,6,2
+15,2026-10-03T06:51:17.140Z,file_reads,docs/governance/completion-cost-2026-10-02-evidence/README.md,851,213
+15,2026-10-03T06:51:18.716Z,bash_outputs,other: reads the run's own logs in the scratchpad,2294,574
+16,2026-10-03T06:51:23.478Z,edit_write_results,Edit,134,34
+16,2026-10-03T06:53:30.268Z,bash_outputs,gz other,189,47
+17,2026-10-03T06:56:24.004Z,operator_prompts,prompt,142,36
+17,2026-10-03T06:56:24.004Z,skill_bodies,gz-obpi-pipeline,122408,30602
+18,2026-10-03T06:56:31.250Z,bash_outputs,gz obpi other,5184,1296
+18,2026-10-03T06:56:31.566Z,file_reads,docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-08-remember-post-append-advisory.md,34341,8585
+18,2026-10-03T06:56:31.612Z,other_harness_reminders,model,165,41
+18,2026-10-03T06:56:31.612Z,rule_injections,gh-cli.md,5570,1392
+18,2026-10-03T06:56:31.612Z,rule_injections,security-sensitivity.md,5367,1342
+18,2026-10-03T06:56:31.613Z,rule_injections,task-discovery.md,6380,1595
+18,2026-10-03T06:56:31.613Z,rule_injections,brief-heading-conventions.md,2354,588
+18,2026-10-03T06:56:31.613Z,rule_injections,adr-audit.md,5106,1276
+19,2026-10-03T06:56:38.702Z,bash_outputs,gz obpi other,1584,396
+19,2026-10-03T06:56:40.514Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",12284,3071
+19,2026-10-03T06:56:40.555Z,bash_outputs,git,2865,716
+20,2026-10-03T06:56:49.181Z,bash_outputs,gz obpi other,5184,1296
+21,2026-10-03T06:56:54.643Z,bash_outputs,other: reads the run's own logs in the scratchpad,10840,2710
+22,2026-10-03T06:57:02.833Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",3352,838
+22,2026-10-03T06:57:02.847Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",9438,2360
+23,2026-10-03T06:57:11.123Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",5915,1479
+24,2026-10-03T06:57:13.385Z,skill_bodies,gz-plan-audit (Skill tool result),30,8
+24,2026-10-03T06:57:13.382Z,skill_bodies,gz-plan-audit,13105,3276
+25,2026-10-03T06:57:20.014Z,bash_outputs,gz other,4703,1176
+26,2026-10-03T06:57:24.540Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",66,16
+27,2026-10-03T06:57:27.465Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",6016,1504
+28,2026-10-03T06:57:36.752Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",6878,1720
+28,2026-10-03T06:57:38.609Z,everything_else,harness user row,224,56
+29,2026-10-03T06:57:59.542Z,edit_write_results,Write,200,50
+29,2026-10-03T06:57:59.563Z,rule_injections,skill-surface-sync.md,5658,1414
+30,2026-10-03T06:58:05.981Z,bash_outputs,gz other,952,238
+31,2026-10-03T06:58:13.149Z,edit_write_results,Edit,200,50
+31,2026-10-03T06:58:13.633Z,bash_outputs,gz other,247,62
+32,2026-10-03T06:58:26.022Z,bash_outputs,gz obpi other,1771,443
+33,2026-10-03T06:58:35.127Z,bash_outputs,gz obpi other,1865,466
+34,2026-10-03T06:58:47.874Z,bash_outputs,gz other,262,66
+35,2026-10-03T06:58:58.639Z,bash_outputs,gz obpi acceptance,4389,1097
+35,2026-10-03T06:58:58.742Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",9731,2433
+35,2026-10-03T06:58:58.744Z,other_harness_reminders,silent_turn_reminder,133,33
+36,2026-10-03T06:59:06.972Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",2124,531
+37,2026-10-03T06:59:10.169Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",922,230
+38,2026-10-03T06:59:33.116Z,bash_outputs,unittest,25,6
+39,2026-10-03T06:59:35.399Z,file_reads,/private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/553e5afb-48e8-4cae-be4a-db046a3690ba/scratchpad/implementer-task1.md,9212,2303
+40,2026-10-03T06:59:43.773Z,agent_results,Agent tool result,1065,266
+41,2026-10-03T06:59:49.247Z,bash_outputs,gz obpi other,485,121
+42,2026-10-03T07:01:32.110Z,agent_results,user-row peer,4250,1062
+43,2026-10-03T07:01:40.977Z,bash_outputs,git,2241,560
+43,2026-10-03T07:01:41.767Z,bash_outputs,git,6470,1618
+43,2026-10-03T07:01:44.162Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",8557,2139
+43,2026-10-03T07:01:32.093Z,agent_results,queued task-notification,1407,352
+43,2026-10-03T07:01:44.168Z,other_harness_reminders,model,161,40
+44,2026-10-03T07:02:06.278Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",4093,1023
+44,2026-10-03T07:02:06.281Z,everything_else,ToolSearch tool result,54,14
+45,2026-10-03T07:02:25.846Z,agent_results,SendMessage tool result,163,41
+46,2026-10-03T07:02:29.610Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",166,42
+47,2026-10-03T07:02:31.251Z,file_reads,docs/user/manpages/obpi-acceptance.md,5099,1275
+48,2026-10-03T07:03:06.207Z,agent_results,user-row peer,4314,1078
+49,2026-10-03T07:03:17.203Z,bash_outputs,unittest,1936,484
+49,2026-10-03T07:03:17.314Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",2902,726
+49,2026-10-03T07:03:06.186Z,agent_results,queued task-notification,1406,352
+50,2026-10-03T07:03:26.186Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",7305,1826
+51,2026-10-03T07:03:36.066Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",2994,748
+52,2026-10-03T07:04:19.260Z,bash_outputs,gz other,40,10
+53,2026-10-03T07:04:26.016Z,agent_results,Agent tool result,1065,266
+53,2026-10-03T07:04:26.505Z,bash_outputs,gz obpi other,408,102
+54,2026-10-03T07:04:59.764Z,bash_outputs,gz other,425,106
+54,2026-10-03T07:04:59.770Z,other_harness_reminders,silent_turn_reminder,133,33
+55,2026-10-03T07:05:29.097Z,agent_results,user-row peer,4489,1122
+56,2026-10-03T07:05:35.313Z,bash_outputs,git,6344,1586
+56,2026-10-03T07:05:29.076Z,agent_results,queued task-notification,1404,351
+57,2026-10-03T07:05:48.917Z,agent_results,SendMessage tool result,163,41
+58,2026-10-03T07:06:02.953Z,agent_results,user-row peer,2983,746
+59,2026-10-03T07:06:38.564Z,edit_write_results,Edit,258,64
+59,2026-10-03T07:06:38.724Z,edit_write_results,Edit,258,64
+59,2026-10-03T07:06:38.877Z,edit_write_results,Edit,258,64
+59,2026-10-03T07:06:39.043Z,edit_write_results,Edit,258,64
+59,2026-10-03T07:06:39.208Z,edit_write_results,Edit,258,64
+59,2026-10-03T07:06:39.366Z,edit_write_results,Edit,258,64
+59,2026-10-03T07:06:02.934Z,agent_results,queued task-notification,1404,351
+60,2026-10-03T07:06:48.043Z,bash_outputs,gz other,2701,675
+61,2026-10-03T07:06:58.246Z,bash_outputs,gz other,3828,957
+62,2026-10-03T07:07:15.213Z,bash_outputs,gz other,1030,258
+62,2026-10-03T07:07:15.468Z,other_harness_reminders,edited_text_file,496,124
+63,2026-10-03T07:07:18.246Z,file_reads,docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-08-remember-post-append-advisory.md,440,110
+64,2026-10-03T07:07:24.965Z,edit_write_results,Edit,192,48
+64,2026-10-03T07:07:24.983Z,other_harness_reminders,silent_turn_reminder,133,33
+65,2026-10-03T07:07:38.307Z,bash_outputs,gz other,343,86
+66,2026-10-03T07:08:18.232Z,bash_outputs,gz obpi acceptance,323,81
+67,2026-10-03T07:08:23.700Z,bash_outputs,other: reads the run's own logs in the scratchpad,5269,1317
+68,2026-10-03T07:08:28.517Z,bash_outputs,other: reads the run's own logs in the scratchpad,6523,1631
+69,2026-10-03T07:08:43.886Z,bash_outputs,unittest,2236,559
+70,2026-10-03T07:09:26.012Z,bash_outputs,git,1621,405
+71,2026-10-03T07:10:22.612Z,bash_outputs,unittest,664,166
+72,2026-10-03T07:10:33.827Z,agent_results,SendMessage tool result,163,41
+73,2026-10-03T07:10:42.464Z,bash_outputs,other: reads the run's own logs in the scratchpad,2939,735
+73,2026-10-03T07:10:42.474Z,other_harness_reminders,silent_turn_reminder,133,33
+74,2026-10-03T07:10:58.388Z,agent_results,user-row peer,3544,886
+75,2026-10-03T07:11:08.542Z,edit_write_results,Edit,192,48
+75,2026-10-03T07:11:45.894Z,bash_outputs,gz obpi acceptance,811,203
+75,2026-10-03T07:10:58.371Z,agent_results,queued task-notification,1405,351
+76,2026-10-03T07:11:56.991Z,bash_outputs,gz obpi acceptance,2732,683
+77,2026-10-03T07:12:30.902Z,bash_outputs,git,394,98
+78,2026-10-03T07:12:45.571Z,bash_outputs,gz arb,430,108
+78,2026-10-03T07:12:45.663Z,bash_outputs,gz arb,430,108
+78,2026-10-03T07:12:46.736Z,bash_outputs,gz obpi other,478,120
+79,2026-10-03T07:17:53.563Z,agent_results,user-row task-notification,405,101
+80,2026-10-03T07:17:59.806Z,bash_outputs,other: reads the run's own logs in the scratchpad,6321,1580
+81,2026-10-03T07:18:17.185Z,bash_outputs,gz obpi acceptance,4811,1203
+82,2026-10-03T07:18:31.304Z,bash_outputs,gz other,180,45
+83,2026-10-03T07:19:34.263Z,agent_results,user-row task-notification,408,102
+84,2026-10-03T07:19:41.989Z,bash_outputs,other: reads the run's own logs in the scratchpad,7643,1911
+85,2026-10-03T07:20:24.876Z,bash_outputs,gz obpi acceptance,2614,654
+86,2026-10-03T07:20:48.936Z,agent_results,SendMessage tool result,163,41
+87,2026-10-03T07:20:55.018Z,bash_outputs,gz obpi other,62,16
+87,2026-10-03T07:20:55.261Z,other_harness_reminders,edited_text_file,496,124
+88,2026-10-03T07:22:47.652Z,agent_results,user-row peer,10457,2614
+89,2026-10-03T07:23:12.799Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",4809,1202
+89,2026-10-03T07:23:12.807Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",5102,1276
+89,2026-10-03T07:22:47.629Z,agent_results,queued task-notification,1408,352
+90,2026-10-03T07:23:41.784Z,agent_results,SendMessage tool result,163,41
+91,2026-10-03T07:23:47.960Z,bash_outputs,gz obpi other,303,76
+92,2026-10-03T07:24:09.730Z,agent_results,SendMessage tool result,163,41
+93,2026-10-03T07:24:35.886Z,agent_results,user-row peer,6241,1560
+94,2026-10-03T07:24:52.049Z,agent_results,SendMessage tool result,163,41
+94,2026-10-03T07:24:35.867Z,agent_results,queued task-notification,1404,351
+94,2026-10-03T07:24:39.869Z,agent_results,queued peer,4385,1096
+94,2026-10-03T07:24:39.875Z,agent_results,queued task-notification,1406,352
+95,2026-10-03T07:25:06.421Z,bash_outputs,gz other,196,49
+96,2026-10-03T07:25:42.648Z,agent_results,user-row peer,9034,2258
+97,2026-10-03T07:25:54.889Z,bash_outputs,gz arb,3026,756
+97,2026-10-03T07:25:42.627Z,agent_results,queued task-notification,1405,351
+98,2026-10-03T07:26:01.077Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",258,64
+99,2026-10-03T07:26:04.395Z,file_reads,docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-08-remember-post-append-advisory.md,1637,409
+100,2026-10-03T07:26:23.282Z,edit_write_results,Edit,192,48
+100,2026-10-03T07:26:28.926Z,bash_outputs,gz other,241,60
+100,2026-10-03T07:26:29.171Z,other_harness_reminders,edited_text_file,496,124
+101,2026-10-03T07:26:41.660Z,bash_outputs,gz obpi other,1309,327
+102,2026-10-03T07:26:49.479Z,bash_outputs,git,3931,983
+102,2026-10-03T07:26:49.482Z,other_harness_reminders,silent_turn_reminder,133,33
+103,2026-10-03T07:27:04.804Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",355,89
+104,2026-10-03T07:27:07.289Z,file_reads,docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-08-remember-post-append-advisory.md,343,86
+105,2026-10-03T07:27:16.229Z,edit_write_results,Edit,192,48
+105,2026-10-03T07:27:58.626Z,bash_outputs,gz obpi acceptance,458,114
+106,2026-10-03T07:28:13.861Z,bash_outputs,gz obpi acceptance,1235,309
+107,2026-10-03T07:28:42.879Z,bash_outputs,gz other,346,86
+107,2026-10-03T07:28:42.881Z,other_harness_reminders,silent_turn_reminder,133,33
+108,2026-10-03T07:28:53.791Z,bash_outputs,gz arb,430,108
+108,2026-10-03T07:28:53.884Z,bash_outputs,gz arb,430,108
+108,2026-10-03T07:28:54.937Z,bash_outputs,gz obpi other,60,15
+109,2026-10-03T07:33:39.763Z,agent_results,user-row task-notification,416,104
+110,2026-10-03T07:33:47.646Z,bash_outputs,other: reads the run's own logs in the scratchpad,4913,1228
+111,2026-10-03T07:34:08.459Z,bash_outputs,gz obpi acceptance,1278,320
+112,2026-10-03T07:34:17.666Z,bash_outputs,gz other,14,4
+113,2026-10-03T07:34:35.413Z,agent_results,user-row task-notification,413,103
+114,2026-10-03T07:34:42.482Z,bash_outputs,other: reads the run's own logs in the scratchpad,4329,1082
+115,2026-10-03T07:35:04.746Z,bash_outputs,gz obpi acceptance,1131,283
+116,2026-10-03T07:35:24.133Z,agent_results,SendMessage tool result,163,41
+116,2026-10-03T07:35:24.172Z,agent_results,SendMessage tool result,163,41
+117,2026-10-03T07:35:37.283Z,bash_outputs,gz obpi other,242,60
+117,2026-10-03T07:35:36.694Z,agent_results,queued peer,3169,792
+117,2026-10-03T07:35:36.699Z,agent_results,queued task-notification,1403,351
+118,2026-10-03T07:35:51.055Z,agent_results,user-row peer,2957,739
+119,2026-10-03T07:36:52.205Z,bash_outputs,gz arb,704,176
+119,2026-10-03T07:35:51.039Z,agent_results,queued task-notification,1406,352
+119,2026-10-03T07:36:52.456Z,other_harness_reminders,edited_text_file,496,124
+120,2026-10-03T07:37:20.587Z,bash_outputs,gz obpi acceptance,377,94
+121,2026-10-03T07:37:33.543Z,bash_outputs,other: reads the run's own logs in the scratchpad,291,73
+122,2026-10-03T07:37:44.495Z,bash_outputs,gz arb,430,108
+122,2026-10-03T07:37:44.591Z,bash_outputs,gz arb,430,108
+122,2026-10-03T07:37:45.608Z,bash_outputs,gz obpi other,60,15
+123,2026-10-03T07:41:49.356Z,agent_results,user-row task-notification,413,103
+124,2026-10-03T07:41:56.638Z,bash_outputs,other: reads the run's own logs in the scratchpad,2751,688
+125,2026-10-03T07:42:02.272Z,bash_outputs,gz obpi acceptance,181,45
+126,2026-10-03T07:42:35.737Z,agent_results,user-row task-notification,416,104
+127,2026-10-03T07:42:43.556Z,bash_outputs,other: reads the run's own logs in the scratchpad,2105,526
+128,2026-10-03T07:42:56.565Z,bash_outputs,gz obpi acceptance,81,20
+129,2026-10-03T07:44:52.436Z,bash_outputs,gz arb,720,180
+130,2026-10-03T07:44:57.477Z,bash_outputs,other: reads the run's own logs in the scratchpad,31,8
+131,2026-10-03T07:45:02.976Z,bash_outputs,unittest,485,121
+132,2026-10-03T07:45:06.684Z,bash_outputs,other: reads the run's own logs in the scratchpad,2433,608
+133,2026-10-03T07:45:22.101Z,bash_outputs,git,3327,832
+134,2026-10-03T07:45:38.929Z,bash_outputs,unittest,247,62
+135,2026-10-03T07:47:29.382Z,bash_outputs,gz arb,822,206
+135,2026-10-03T07:47:29.386Z,other_harness_reminders,silent_turn_reminder,133,33
+136,2026-10-03T07:47:44.237Z,bash_outputs,gz arb,730,182
+137,2026-10-03T07:47:57.889Z,bash_outputs,gz other,1710,428
+138,2026-10-03T07:49:01.064Z,bash_outputs,gz arb,2580,645
+139,2026-10-03T07:49:16.687Z,bash_outputs,other: reads the run's own logs in the scratchpad,170,42
+140,2026-10-03T07:49:38.517Z,bash_outputs,gz obpi acceptance,2114,528
+140,2026-10-03T07:49:38.520Z,other_harness_reminders,silent_turn_reminder,133,33
+141,2026-10-03T07:49:51.640Z,bash_outputs,git,2591,648
+142,2026-10-03T07:49:58.755Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",3333,833
+143,2026-10-03T07:50:02.441Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",2426,606
+144,2026-10-03T07:50:05.626Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",2299,575
+145,2026-10-03T07:50:14.990Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",2465,616
+145,2026-10-03T07:50:14.993Z,other_harness_reminders,silent_turn_reminder,133,33
+146,2026-10-03T07:50:45.481Z,bash_outputs,gz obpi other,4803,1201
+147,2026-10-03T07:50:53.540Z,file_reads,docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-08-remember-post-append-advisory.md,873,218
+148,2026-10-03T07:51:08.384Z,edit_write_results,Edit,192,48
+148,2026-10-03T07:51:59.230Z,bash_outputs,gz obpi acceptance,6669,1667
+149,2026-10-03T07:52:29.157Z,bash_outputs,gz obpi acceptance,1507,377
+150,2026-10-03T07:52:40.251Z,bash_outputs,gz arb,430,108
+150,2026-10-03T07:52:40.353Z,bash_outputs,gz arb,430,108
+150,2026-10-03T07:52:41.397Z,bash_outputs,gz obpi other,66,16
+151,2026-10-03T07:52:50.042Z,bash_outputs,other: reads the run's own logs in the scratchpad,1719,430
+152,2026-10-03T07:57:04.126Z,agent_results,user-row task-notification,413,103
+153,2026-10-03T07:57:12.561Z,bash_outputs,gz obpi acceptance,2175,544
+153,2026-10-03T07:57:07.930Z,agent_results,queued task-notification,947,237
+154,2026-10-03T07:57:33.833Z,bash_outputs,gz obpi acceptance,969,242
+155,2026-10-03T07:57:55.477Z,bash_outputs,other: reads the run's own logs in the scratchpad,3391,848
+156,2026-10-03T07:58:42.476Z,bash_outputs,gz obpi acceptance,625,156
+157,2026-10-03T07:58:47.610Z,agent_results,Agent tool result,1065,266
+157,2026-10-03T07:58:47.642Z,other_harness_reminders,silent_turn_reminder,133,33
+158,2026-10-03T07:59:30.688Z,bash_outputs,unittest,117,29
+159,2026-10-03T08:00:12.835Z,agent_results,user-row task-notification,1202,300
+160,2026-10-03T08:00:17.058Z,bash_outputs,git,939,235
+161,2026-10-03T08:00:25.665Z,agent_results,SendMessage tool result,163,41
+162,2026-10-03T08:03:35.307Z,agent_results,user-row peer,6003,1501
+163,2026-10-03T08:03:40.270Z,file_reads,.gzkit/evidence/OBPI-0.35.0-08-remember-post-append-advisory.stage4a.md,15423,3856
+163,2026-10-03T08:03:35.281Z,agent_results,queued task-notification,1405,351
+164,2026-10-03T08:03:52.738Z,edit_write_results,Edit,210,52
+164,2026-10-03T08:03:57.435Z,bash_outputs,gz obpi other,1208,302
+165,2026-10-03T08:04:12.488Z,bash_outputs,gz obpi other,362,90
+166,2026-10-03T08:04:26.021Z,bash_outputs,other: reads the run's own logs in the scratchpad,593,148
+166,2026-10-03T08:04:26.121Z,bash_outputs,gz arb,430,108
+167,2026-10-03T08:04:33.397Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",1656,414
+168,2026-10-03T08:04:39.199Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",942,236
+169,2026-10-03T08:19:36.030Z,agent_results,user-row task-notification,445,111
+170,2026-10-03T08:19:41.048Z,bash_outputs,other: reads the run's own logs in the scratchpad,1107,277
+171,2026-10-03T08:19:49.884Z,bash_outputs,other: reads the run's own logs in the scratchpad,11880,2970
+172,2026-10-03T08:20:19.799Z,bash_outputs,gz obpi acceptance,2651,663
+173,2026-10-03T08:20:44.963Z,bash_outputs,other: reads the run's own logs in the scratchpad,5039,1260
+174,2026-10-03T08:20:52.380Z,bash_outputs,other: reads the run's own logs in the scratchpad,4272,1068
+175,2026-10-03T08:21:19.216Z,agent_results,SendMessage tool result,163,41
+176,2026-10-03T08:21:26.428Z,bash_outputs,gz obpi other,516,129
+176,2026-10-03T08:21:26.671Z,other_harness_reminders,edited_text_file,496,124
+176,2026-10-03T08:21:26.673Z,other_harness_reminders,silent_turn_reminder,133,33
+177,2026-10-03T08:21:45.674Z,agent_results,SendMessage tool result,163,41
+177,2026-10-03T08:21:47.250Z,bash_outputs,gz obpi other,1628,407
+178,2026-10-03T08:22:03.109Z,agent_results,user-row peer,2777,694
+179,2026-10-03T08:22:05.606Z,hook_outputs,stop hook feedback (user row),1092,273
+180,2026-10-03T08:22:13.539Z,bash_outputs,other: reads the run's own logs in the scratchpad,304,76
+180,2026-10-03T08:22:03.091Z,agent_results,queued task-notification,1403,351
+181,2026-10-03T08:23:01.030Z,agent_results,user-row peer,9850,2462
+182,2026-10-03T08:23:34.182Z,bash_outputs,unittest,229,57
+182,2026-10-03T08:23:01.012Z,agent_results,queued task-notification,1408,352
+183,2026-10-03T08:24:35.787Z,bash_outputs,gz obpi acceptance,401,100
+184,2026-10-03T08:25:13.567Z,bash_outputs,gz obpi acceptance,642,160
+185,2026-10-03T08:25:28.444Z,bash_outputs,gz arb,430,108
+185,2026-10-03T08:25:28.537Z,bash_outputs,gz arb,430,108
+185,2026-10-03T08:27:18.464Z,bash_outputs,gz arb,877,219
+186,2026-10-03T08:27:58.256Z,bash_outputs,gz arb,810,202
+187,2026-10-03T08:30:53.560Z,agent_results,user-row task-notification,416,104
+188,2026-10-03T08:30:59.211Z,bash_outputs,gz obpi acceptance,4785,1196
+189,2026-10-03T08:31:31.744Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",1645,411
+189,2026-10-03T08:31:21.884Z,agent_results,queued task-notification,944,236
+190,2026-10-03T08:31:41.575Z,bash_outputs,gz obpi acceptance,4575,1144
+191,2026-10-03T08:32:02.735Z,agent_results,SendMessage tool result,163,41
+191,2026-10-03T08:32:04.288Z,bash_outputs,gz obpi acceptance,110,28
+192,2026-10-03T08:32:18.829Z,agent_results,user-row peer,2230,558
+193,2026-10-03T08:32:44.794Z,bash_outputs,gz arb,1652,413
+193,2026-10-03T08:32:18.811Z,agent_results,queued task-notification,1403,351
+194,2026-10-03T08:33:17.181Z,agent_results,SendMessage tool result,163,41
+195,2026-10-03T08:33:56.620Z,bash_outputs,unittest,99,25
+196,2026-10-03T08:35:58.158Z,agent_results,user-row peer,6512,1628
+197,2026-10-03T08:36:03.704Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",1287,322
+197,2026-10-03T08:35:58.135Z,agent_results,queued task-notification,1405,351
+197,2026-10-03T08:36:03.714Z,other_harness_reminders,edited_text_file,448,112
+198,2026-10-03T08:36:26.312Z,bash_outputs,gz obpi other,539,135
+199,2026-10-03T08:36:33.467Z,bash_outputs,gz arb,430,108
+200,2026-10-03T08:36:37.211Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",634,158
+201,2026-10-03T08:36:41.868Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",457,114
+202,2026-10-03T08:58:37.609Z,agent_results,user-row task-notification,441,110
+203,2026-10-03T08:58:46.308Z,bash_outputs,other: reads the run's own logs in the scratchpad,9648,2412
+204,2026-10-03T08:59:12.661Z,bash_outputs,gz obpi acceptance,4279,1070
+205,2026-10-03T08:59:18.910Z,bash_outputs,other: reads the run's own logs in the scratchpad,545,136
+206,2026-10-03T09:00:25.654Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",4000,1000
+207,2026-10-03T09:00:36.359Z,bash_outputs,git,3364,841
+207,2026-10-03T09:00:36.362Z,other_harness_reminders,silent_turn_reminder,133,33
+208,2026-10-03T09:01:00.797Z,bash_outputs,gz obpi other,657,164
+209,2026-10-03T09:01:22.437Z,bash_outputs,other: reads the run's own logs in the scratchpad,136,34
+209,2026-10-03T09:01:22.525Z,bash_outputs,gz arb,430,108
+210,2026-10-03T09:09:17.780Z,agent_results,user-row task-notification,457,114
+211,2026-10-03T09:09:29.376Z,bash_outputs,other: reads the run's own logs in the scratchpad,978,244
+212,2026-10-03T09:09:41.188Z,bash_outputs,gz obpi acceptance,640,160
+213,2026-10-03T09:10:23.338Z,bash_outputs,gz obpi acceptance,918,230
+214,2026-10-03T09:10:47.494Z,agent_results,SendMessage tool result,163,41
+215,2026-10-03T09:12:44.826Z,agent_results,user-row peer,6250,1562
+216,2026-10-03T09:13:13.551Z,bash_outputs,gz obpi acceptance,660,165
+216,2026-10-03T09:12:44.802Z,agent_results,queued task-notification,1404,351
+217,2026-10-03T11:13:55.586Z,operator_prompts,prompt,16,4
+218,2026-10-03T11:14:38.102Z,bash_outputs,gz obpi other,4651,1163
+219,2026-10-03T11:15:20.957Z,bash_outputs,gz arb,282,70
+220,2026-10-03T11:15:32.263Z,bash_outputs,gz obpi other,434,108
+221,2026-10-03T11:15:39.394Z,bash_outputs,gz obpi other,533,133
+222,2026-10-03T11:16:03.384Z,bash_outputs,gz obpi other,179,45
+223,2026-10-03T11:16:26.423Z,bash_outputs,gz obpi other,512,128
+224,2026-10-03T11:16:38.003Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",305,76
+225,2026-10-03T11:16:40.807Z,file_reads,docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-08-remember-post-append-advisory.md,4472,1118
+226,2026-10-03T11:16:55.629Z,edit_write_results,Edit,192,48
+227,2026-10-03T11:17:05.052Z,bash_outputs,gz other,2141,535
+228,2026-10-03T11:19:19.481Z,bash_outputs,gz other,2096,524
+229,2026-10-03T11:19:26.398Z,bash_outputs,other: reads the run's own logs in the scratchpad,1197,299
+230,2026-10-03T11:19:34.120Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",2406,602
+231,2026-10-03T11:21:09.510Z,bash_outputs,gz other,274,68
+232,2026-10-03T11:21:25.026Z,agent_results,SendMessage tool result,163,41
+233,2026-10-03T11:21:31.599Z,bash_outputs,gz obpi other,263,66
+233,2026-10-03T11:21:31.857Z,other_harness_reminders,edited_text_file,496,124
+234,2026-10-03T11:22:24.165Z,agent_results,user-row peer,6164,1541
+235,2026-10-03T11:23:28.989Z,bash_outputs,gz obpi acceptance,455,114
+235,2026-10-03T11:22:24.143Z,agent_results,queued task-notification,1407,352
+236,2026-10-03T11:24:08.193Z,bash_outputs,gz obpi acceptance,618,154
+237,2026-10-03T11:24:20.480Z,bash_outputs,gz arb,430,108
+237,2026-10-03T11:24:20.579Z,bash_outputs,gz arb,430,108
+237,2026-10-03T11:26:03.289Z,bash_outputs,gz arb,258,64
+237,2026-10-03T11:25:30.472Z,operator_prompts,queued prompt,388,97
+238,2026-10-03T11:27:13.525Z,everything_else,AskUserQuestion tool result,254,64
+239,2026-10-03T11:27:23.173Z,bash_outputs,gz other,57,14
+240,2026-10-03T11:29:21.490Z,agent_results,user-row task-notification,413,103
+241,2026-10-03T11:29:27.916Z,bash_outputs,gz obpi acceptance,3561,890
+242,2026-10-03T11:30:11.069Z,agent_results,user-row task-notification,416,104
+243,2026-10-03T11:30:18.355Z,bash_outputs,gz obpi acceptance,4523,1131
+244,2026-10-03T11:30:59.615Z,bash_outputs,gz arb,454,114
+244,2026-10-03T11:30:39.145Z,operator_prompts,queued prompt,678,170
+245,2026-10-03T11:31:20.040Z,bash_outputs,gz other,1203,301
+245,2026-10-03T11:31:06.417Z,operator_prompts,queued prompt,376,94
+246,2026-10-03T11:31:33.318Z,bash_outputs,git,2240,560
+247,2026-10-03T11:31:58.851Z,bash_outputs,gz other,1104,276
+247,2026-10-03T11:31:59.096Z,other_harness_reminders,silent_turn_reminder,133,33
+248,2026-10-03T11:34:19.548Z,bash_outputs,gz other,602,150
+249,2026-10-03T11:34:48.576Z,bash_outputs,gz obpi other,1551,388
+250,2026-10-03T11:34:54.162Z,bash_outputs,"other: repo inspection (grep, sed, cat, python, gh)",1418,354
+251,2026-10-03T11:35:59.908Z,bash_outputs,gz obpi other,112,28
+252,2026-10-03T11:38:16.308Z,bash_outputs,gz obpi other,741,185
+253,2026-10-03T11:38:23.128Z,bash_outputs,other: reads the run's own logs in the scratchpad,1196,299
+254,2026-10-03T11:38:56.525Z,bash_outputs,gz other,163,41
+255,2026-10-03T11:41:13.536Z,bash_outputs,gz obpi other,418,104
+256,2026-10-03T11:41:26.075Z,everything_else,SendFeedback tool result,179,45
+257,2026-10-03T11:42:16.549Z,operator_prompts,prompt,1576,394
+258,2026-10-03T11:43:01.945Z,bash_outputs,gz obpi other,217,54
+258,2026-10-03T11:42:29.146Z,operator_prompts,queued prompt,333,83
+259,2026-10-03T11:45:19.275Z,bash_outputs,gz other,94,24

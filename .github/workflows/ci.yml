@@ -2,8 +2,8 @@ name: CI
 
 # Full gate runs server-side so the local loop can stay light.
 # Locally: ruff + ty + `gz test --obpi <id>` (~3s) for iteration;
-# Plain `gz check` is the per-change gate (GHI #1088). Since 2026-10-04 CI runs it plus
-# behave; the full sweep's governance steps are switched off (see the switchboard record).
+# `gz check --full` is the heavy sweep and belongs here, not on every keyboard;
+# plain `gz check` is the per-change gate (GHI #1088).
 on:
   push:
     branches: [main]
@@ -68,12 +68,5 @@ jobs:
       - name: Sync dependencies
         run: uv sync --frozen --all-extras
 
-      # Switched 2026-10-04 by operator ruling from `gz check --full` to the per-change gate
-      # plus behave: the governance steps the full sweep adds are switched off. Restore the
-      # single `uv run gz check --full` step to re-enable them in CI. Record:
-      # docs/governance/control-switchboard-2026-10-04.md
-      - name: Run gz check (lint, format, typecheck, test, docs build)
-        run: uv run gz check
-
-      - name: Run behave (acceptance scenarios)
-        run: uv run -m behave features/
+      - name: Run gz check --full (lint, format, typecheck, test, behave, validators)
+        run: uv run gz check --full

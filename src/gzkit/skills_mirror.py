@@ -7,7 +7,6 @@ and non-SKILL.md supporting files must all agree with canonical.
 
 from pathlib import Path
 
-from gzkit.config import GzkitConfig
 from gzkit.skills import SkillAuditIssue, _parse_frontmatter
 from gzkit.skills_audit import (
     KEBAB_CASE_RE,
@@ -254,13 +253,12 @@ def validate_mirror_root(
             "Mirrored skill directory name must be kebab-case.",
         )
 
-    # Retired and switched-off skills are not mirrored — exclude from expected set.
+    # Retired skills should not be mirrored — exclude from expected set.
     retired = {
         name
         for name, path in canonical_dirs.items()
         if (fm := _read_frontmatter(path / "SKILL.md")) and fm.get("lifecycle_state") == "retired"
     }
-    retired |= set(GzkitConfig.load(project_root / ".gzkit.json").disabled.skills)
     canonical_names = set(canonical_dirs.keys()) - retired
     mirror_names = set(mirror_dirs.keys())
 

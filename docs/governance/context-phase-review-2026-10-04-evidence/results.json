@@ -1,0 +1,4434 @@
+{
+  "method": "Where the context of an agent session grew, and what grew it.\n\nRead-only. Stdlib only. Reads Claude Code transcripts (JSONL) and writes a JSON\nresults file and CSV files beside this script.\n\nMethod, kept consistent with\ndocs/governance/obpi-run-cost-2026-10-03-evidence/session_token_cost.py:\none usage record per API call, de-duplicated by message id (first appearance fixes\nthe order, the last row for an id supplies the usage), and\n\n    context = input_tokens + cache_read_input_tokens + cache_creation_input_tokens\n\nMeasured: everything taken from a `usage` record (context, cache-read, output).\nEstimated: every figure derived from a character count (tokens ~ chars / 4).\nProjected: section `projection`, which is arithmetic on the measured curve.\n\nRun from the repository root:\n\n    uv run python docs/governance/context-phase-review-2026-10-04-evidence/context_analysis.py\n",
+  "generated": "2026-10-04T02:46:23-05:00",
+  "sessions": {
+    "baseline_OBPI-0.35.0-08": {
+      "session_id": "553e5afb-48e8-4cae-be4a-db046a3690ba",
+      "totals": {
+        "calls": 260,
+        "cache_read_input_tokens": 118627618,
+        "cache_creation_input_tokens": 1676930,
+        "input_tokens": 602,
+        "output_tokens": 299116,
+        "first_context": 55206,
+        "peak_context": 743855,
+        "peak_context_call": 259,
+        "last_context": 743855,
+        "context_decreases": 0,
+        "calls_growing_less_than_previous_output": 0,
+        "models": {
+          "claude-opus-5-5": 235,
+          "claude-sonnet-5-5": 25
+        },
+        "cache_read_by_model": {
+          "claude-opus-5-5": 113002250,
+          "claude-sonnet-5-5": 5625368
+        }
+      },
+      "boundaries": [
+        {
+          "name": "0 pre-pipeline work",
+          "start": 0,
+          "located_by": "session start"
+        },
+        {
+          "name": "1 pipeline launch to first dispatch",
+          "start": 17,
+          "located_by": "first call after the /gz-obpi-pipeline skill load"
+        },
+        {
+          "name": "2a implementation (implementer dispatched)",
+          "start": 39,
+          "located_by": "first Agent call with subagent_type=implementer"
+        },
+        {
+          "name": "2b review and fix cycles",
+          "start": 77,
+          "located_by": "first `claude --agent spec-reviewer|quality-reviewer`"
+        },
+        {
+          "name": "3 verification baseline",
+          "start": 128,
+          "located_by": "first of gz arb ruff/typecheck/step unittest, gz covers, gz arb red"
+        },
+        {
+          "name": "4 evidence and adversarial review",
+          "start": 139,
+          "located_by": "first of present-evidence, verify-packet, codex-companion task, acceptance review, acceptance --stage stage4"
+        },
+        {
+          "name": "5 completion and sync",
+          "start": 217,
+          "located_by": "the `gz obpi precomplete` nearest before the first `gz obpi complete`"
+        }
+      ],
+      "segments": [
+        {
+          "segment": "0 pre-pipeline work",
+          "located_by": "session start",
+          "first_call": 0,
+          "last_call": 16,
+          "start_time": "2026-10-03T06:29:27.726Z",
+          "end_time": "2026-10-03T06:53:36.973Z",
+          "calls": 17,
+          "context_at_entry": 55206,
+          "context_at_exit": 129900,
+          "context_growth": 74694,
+          "context_before_entry": null,
+          "step_at_entry": null,
+          "growth_including_entry_step": 74694,
+          "context_at_next_entry": 170282,
+          "peak_context": 129900,
+          "cache_read_tokens": 1761771,
+          "cache_creation_tokens": 101776,
+          "output_tokens": 14579,
+          "models": {
+            "claude-opus-5-5": 17
+          },
+          "est_tokens_arriving_by_category": {
+            "session_start_attachments": 16842,
+            "bash_outputs": 11605,
+            "file_reads": 11580,
+            "skill_bodies": 9985,
+            "rule_injections": 3708,
+            "hook_outputs": 1151,
+            "edit_write_results": 126,
+            "other_harness_reminders": 115,
+            "everything_else": 87,
+            "operator_prompts": 28
+          }
+        },
+        {
+          "segment": "1 pipeline launch to first dispatch",
+          "located_by": "first call after the /gz-obpi-pipeline skill load",
+          "first_call": 17,
+          "last_call": 38,
+          "start_time": "2026-10-03T06:56:27.903Z",
+          "end_time": "2026-10-03T06:59:35.359Z",
+          "calls": 22,
+          "context_at_entry": 170282,
+          "context_at_exit": 258840,
+          "context_growth": 88558,
+          "context_before_entry": 129900,
+          "step_at_entry": 40382,
+          "growth_including_entry_step": 128940,
+          "context_at_next_entry": 262574,
+          "peak_context": 258840,
+          "cache_read_tokens": 4840418,
+          "cache_creation_tokens": 227988,
+          "output_tokens": 16816,
+          "models": {
+            "claude-sonnet-5-5": 22
+          },
+          "est_tokens_arriving_by_category": {
+            "skill_bodies": 33886,
+            "bash_outputs": 24149,
+            "file_reads": 8585,
+            "rule_injections": 7609,
+            "edit_write_results": 100,
+            "other_harness_reminders": 74,
+            "everything_else": 56,
+            "operator_prompts": 36
+          }
+        },
+        {
+          "segment": "2a implementation (implementer dispatched)",
+          "located_by": "first Agent call with subagent_type=implementer",
+          "first_call": 39,
+          "last_call": 76,
+          "start_time": "2026-10-03T06:59:40.999Z",
+          "end_time": "2026-10-03T07:12:09.849Z",
+          "calls": 38,
+          "context_at_entry": 262574,
+          "context_at_exit": 362462,
+          "context_growth": 99888,
+          "context_before_entry": 258840,
+          "step_at_entry": 3734,
+          "growth_including_entry_step": 103622,
+          "context_at_next_entry": 366022,
+          "peak_context": 362462,
+          "cache_read_tokens": 11710200,
+          "cache_creation_tokens": 340274,
+          "output_tokens": 48306,
+          "models": {
+            "claude-sonnet-5-5": 3,
+            "claude-opus-5-5": 35
+          },
+          "est_tokens_arriving_by_category": {
+            "bash_outputs": 18846,
+            "agent_results": 7306,
+            "file_reads": 3688,
+            "edit_write_results": 483,
+            "other_harness_reminders": 264,
+            "everything_else": 14
+          }
+        },
+        {
+          "segment": "2b review and fix cycles",
+          "located_by": "first `claude --agent spec-reviewer|quality-reviewer`",
+          "first_call": 77,
+          "last_call": 127,
+          "start_time": "2026-10-03T07:12:38.308Z",
+          "end_time": "2026-10-03T07:42:49.095Z",
+          "calls": 51,
+          "context_at_entry": 366022,
+          "context_at_exit": 465896,
+          "context_growth": 99874,
+          "context_before_entry": 362462,
+          "step_at_entry": 3560,
+          "growth_including_entry_step": 103434,
+          "context_at_next_entry": 466936,
+          "peak_context": 465896,
+          "cache_read_tokens": 21396197,
+          "cache_creation_tokens": 103183,
+          "output_tokens": 53098,
+          "models": {
+            "claude-opus-5-5": 51
+          },
+          "est_tokens_arriving_by_category": {
+            "bash_outputs": 16272,
+            "agent_results": 12031,
+            "file_reads": 495,
+            "other_harness_reminders": 438,
+            "edit_write_results": 96
+          }
+        },
+        {
+          "segment": "3 verification baseline",
+          "located_by": "first of gz arb ruff/typecheck/step unittest, gz covers, gz arb red",
+          "first_call": 128,
+          "last_call": 138,
+          "start_time": "2026-10-03T07:42:58.545Z",
+          "end_time": "2026-10-03T07:49:13.049Z",
+          "calls": 11,
+          "context_at_entry": 466936,
+          "context_at_exit": 480772,
+          "context_growth": 13836,
+          "context_before_entry": 465896,
+          "step_at_entry": 1040,
+          "growth_including_entry_step": 14876,
+          "context_at_next_entry": 482307,
+          "peak_context": 480772,
+          "cache_read_tokens": 5185405,
+          "cache_creation_tokens": 14876,
+          "output_tokens": 9204,
+          "models": {
+            "claude-opus-5-5": 11
+          },
+          "est_tokens_arriving_by_category": {
+            "bash_outputs": 3292,
+            "other_harness_reminders": 33
+          }
+        },
+        {
+          "segment": "4 evidence and adversarial review",
+          "located_by": "first of present-evidence, verify-packet, codex-companion task, acceptance review, acceptance --stage stage4",
+          "first_call": 139,
+          "last_call": 216,
+          "start_time": "2026-10-03T07:49:24.077Z",
+          "end_time": "2026-10-03T09:13:34.829Z",
+          "calls": 78,
+          "context_at_entry": 482307,
+          "context_at_exit": 653093,
+          "context_growth": 170786,
+          "context_before_entry": 480772,
+          "step_at_entry": 1535,
+          "growth_including_entry_step": 172321,
+          "context_at_next_entry": 658104,
+          "peak_context": 653093,
+          "cache_read_tokens": 44249815,
+          "cache_creation_tokens": 171470,
+          "output_tokens": 94836,
+          "models": {
+            "claude-opus-5-5": 78
+          },
+          "est_tokens_arriving_by_category": {
+            "bash_outputs": 29528,
+            "agent_results": 12340,
+            "file_reads": 4074,
+            "other_harness_reminders": 402,
+            "hook_outputs": 273,
+            "edit_write_results": 100
+          }
+        },
+        {
+          "segment": "5 completion and sync",
+          "located_by": "the `gz obpi precomplete` nearest before the first `gz obpi complete`",
+          "first_call": 217,
+          "last_call": 259,
+          "start_time": "2026-10-03T11:14:16.337Z",
+          "end_time": "2026-10-03T11:45:24.361Z",
+          "calls": 43,
+          "context_at_entry": 658104,
+          "context_at_exit": 743855,
+          "context_growth": 85751,
+          "context_before_entry": 653093,
+          "step_at_entry": 5011,
+          "growth_including_entry_step": 90762,
+          "context_at_next_entry": null,
+          "peak_context": 743855,
+          "cache_read_tokens": 29483812,
+          "cache_creation_tokens": 717363,
+          "output_tokens": 62277,
+          "models": {
+            "claude-opus-5-5": 43
+          },
+          "est_tokens_arriving_by_category": {
+            "bash_outputs": 9280,
+            "agent_results": 2141,
+            "file_reads": 1118,
+            "operator_prompts": 842,
+            "other_harness_reminders": 157,
+            "everything_else": 108,
+            "edit_write_results": 48
+          }
+        }
+      ],
+      "marker_hits": {
+        "skill:gz-session-handoff": [
+          0
+        ],
+        "skill:gz-insights-remember": [
+          8
+        ],
+        "s3_covers": [
+          18,
+          19,
+          135,
+          185
+        ],
+        "skill:gz-plan-audit": [
+          23
+        ],
+        "pipeline_launch": [
+          31
+        ],
+        "agent_dispatch:implementer": [
+          39,
+          52
+        ],
+        "send_message_to_subagent": [
+          44,
+          56,
+          71,
+          85,
+          89,
+          91,
+          93,
+          115,
+          115,
+          160,
+          174,
+          176,
+          190,
+          193,
+          213,
+          231
+        ],
+        "reviewer_dispatch": [
+          77,
+          107,
+          121,
+          149,
+          184,
+          236
+        ],
+        "s4_acceptance_review": [
+          80,
+          84,
+          110,
+          114,
+          124,
+          127,
+          152,
+          153,
+          171,
+          187,
+          189,
+          203,
+          211,
+          240,
+          242
+        ],
+        "s3_arb_ruff": [
+          128,
+          184,
+          218,
+          236
+        ],
+        "s3_arb_typecheck": [
+          128,
+          184,
+          218,
+          236
+        ],
+        "s3_arb_unittest": [
+          128,
+          134,
+          184,
+          218,
+          236
+        ],
+        "s3_arb_red": [
+          137,
+          185,
+          243
+        ],
+        "s4_present_evidence": [
+          139,
+          147,
+          153,
+          192,
+          203,
+          212
+        ],
+        "s4_acceptance_stage4_status": [
+          139,
+          155,
+          171,
+          192,
+          203,
+          211,
+          212,
+          215,
+          218
+        ],
+        "s5_precomplete": [
+          145,
+          212,
+          215,
+          217,
+          221
+        ],
+        "s4_verify_packet": [
+          155,
+          163,
+          197,
+          215
+        ],
+        "agent_dispatch:narrator": [
+          156
+        ],
+        "s4_codex_companion": [
+          165,
+          198,
+          205,
+          208
+        ],
+        "s5_complete": [
+          219,
+          220,
+          222
+        ],
+        "s5_git_sync": [
+          244,
+          247,
+          251,
+          254,
+          258
+        ]
+      },
+      "cache_rewrite_events": [
+        {
+          "call": 17,
+          "timestamp": "2026-10-03T06:56:27.903Z",
+          "context": 170282,
+          "cache_read": 27569,
+          "cache_creation": 142709,
+          "previous_model": "claude-opus-5-5",
+          "model": "claude-sonnet-5-5",
+          "seconds_since_previous_call": 171
+        },
+        {
+          "call": 42,
+          "timestamp": "2026-10-03T07:01:38.983Z",
+          "context": 271590,
+          "cache_read": 27569,
+          "cache_creation": 244017,
+          "previous_model": "claude-sonnet-5-5",
+          "model": "claude-opus-5-5",
+          "seconds_since_previous_call": 107
+        },
+        {
+          "call": 217,
+          "timestamp": "2026-10-03T11:14:16.337Z",
+          "context": 658104,
+          "cache_read": 25559,
+          "cache_creation": 632541,
+          "previous_model": "claude-opus-5-5",
+          "model": "claude-opus-5-5",
+          "seconds_since_previous_call": 7242
+        }
+      ],
+      "growth_sources": {
+        "categories": [
+          {
+            "category": "bash_outputs",
+            "items": 222,
+            "chars": 451888,
+            "est_tokens": 112972
+          },
+          {
+            "category": "skill_bodies",
+            "items": 7,
+            "chars": 175483,
+            "est_tokens": 43871
+          },
+          {
+            "category": "agent_results",
+            "items": 71,
+            "chars": 135270,
+            "est_tokens": 33818
+          },
+          {
+            "category": "file_reads",
+            "items": 15,
+            "chars": 118161,
+            "est_tokens": 29540
+          },
+          {
+            "category": "session_start_attachments",
+            "items": 9,
+            "chars": 67369,
+            "est_tokens": 16842
+          },
+          {
+            "category": "rule_injections",
+            "items": 9,
+            "chars": 45266,
+            "est_tokens": 11316
+          },
+          {
+            "category": "other_harness_reminders",
+            "items": 25,
+            "chars": 5938,
+            "est_tokens": 1484
+          },
+          {
+            "category": "hook_outputs",
+            "items": 3,
+            "chars": 5697,
+            "est_tokens": 1424
+          },
+          {
+            "category": "edit_write_results",
+            "items": 19,
+            "chars": 3816,
+            "est_tokens": 954
+          },
+          {
+            "category": "operator_prompts",
+            "items": 10,
+            "chars": 3620,
+            "est_tokens": 905
+          },
+          {
+            "category": "everything_else",
+            "items": 6,
+            "chars": 1058,
+            "est_tokens": 264
+          }
+        ],
+        "skill_bodies": [
+          {
+            "key": "gz-obpi-pipeline",
+            "count": 1,
+            "chars": 122408,
+            "est_tokens": 30602
+          },
+          {
+            "key": "gz-session-handoff",
+            "count": 1,
+            "chars": 37042,
+            "est_tokens": 9260
+          },
+          {
+            "key": "gz-plan-audit",
+            "count": 1,
+            "chars": 13105,
+            "est_tokens": 3276
+          },
+          {
+            "key": "gz-insights-remember",
+            "count": 1,
+            "chars": 2826,
+            "est_tokens": 706
+          },
+          {
+            "key": "gz-insights-remember (Skill tool result)",
+            "count": 1,
+            "chars": 37,
+            "est_tokens": 9
+          },
+          {
+            "key": "gz-session-handoff (Skill tool result)",
+            "count": 1,
+            "chars": 35,
+            "est_tokens": 9
+          },
+          {
+            "key": "gz-plan-audit (Skill tool result)",
+            "count": 1,
+            "chars": 30,
+            "est_tokens": 8
+          }
+        ],
+        "file_reads_top20": [
+          {
+            "key": "docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-08-remember-post-append-advisory.md",
+            "count": 6,
+            "chars": 42106,
+            "est_tokens": 10526
+          },
+          {
+            "key": "<transcripts>/553e5afb-48e8-4cae-be4a-db046a3690ba/tool-results/hook-eca5de98-181c-4d23-9307-ada75659944a-stdout.txt",
+            "count": 1,
+            "chars": 21992,
+            "est_tokens": 5498
+          },
+          {
+            "key": ".gzkit/evidence/OBPI-0.35.0-08-remember-post-append-advisory.stage4a.md",
+            "count": 1,
+            "chars": 15423,
+            "est_tokens": 3856
+          },
+          {
+            "key": "docs/governance/build-to-1.0-campaign-2026-09-20.md",
+            "count": 3,
+            "chars": 12831,
+            "est_tokens": 3208
+          },
+          {
+            "key": ".gzkit/handoffs/20261003T061711Z-amendment-ratified-1163-closed-debt-drained.md",
+            "count": 1,
+            "chars": 10647,
+            "est_tokens": 2662
+          },
+          {
+            "key": "/private/tmp/claude-501/-Users-jeff-Documents-Code-gzkit/553e5afb-48e8-4cae-be4a-db046a3690ba/scratchpad/implementer-task1.md",
+            "count": 1,
+            "chars": 9212,
+            "est_tokens": 2303
+          },
+          {
+            "key": "docs/user/manpages/obpi-acceptance.md",
+            "count": 1,
+            "chars": 5099,
+            "est_tokens": 1275
+          },
+          {
+            "key": "docs/governance/completion-cost-2026-10-02-evidence/README.md",
+            "count": 1,
+            "chars": 851,
+            "est_tokens": 213
+          }
+        ],
+        "file_reads_repeated": [
+          {
+            "key": "docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-08-remember-post-append-advisory.md",
+            "count": 6,
+            "chars": 42106,
+            "est_tokens": 10526
+          },
+          {
+            "key": "docs/governance/build-to-1.0-campaign-2026-09-20.md",
+            "count": 3,
+            "chars": 12831,
+            "est_tokens": 3208
+          }
+        ],
+        "file_reads_distinct_files": 8,
+        "bash_outputs_by_family": [
+          {
+            "key": "other: repo inspection (grep, sed, cat, python, gh)",
+            "count": 45,
+            "chars": 136330,
+            "est_tokens": 34082
+          },
+          {
+            "key": "other: reads the run's own logs in the scratchpad",
+            "count": 29,
+            "chars": 100857,
+            "est_tokens": 25214
+          },
+          {
+            "key": "gz obpi acceptance",
+            "count": 33,
+            "chars": 63298,
+            "est_tokens": 15824
+          },
+          {
+            "key": "gz obpi other",
+            "count": 36,
+            "chars": 51472,
+            "est_tokens": 12868
+          },
+          {
+            "key": "git",
+            "count": 13,
+            "chars": 38066,
+            "est_tokens": 9516
+          },
+          {
+            "key": "gz other",
+            "count": 30,
+            "chars": 36462,
+            "est_tokens": 9116
+          },
+          {
+            "key": "gz arb",
+            "count": 27,
+            "chars": 19365,
+            "est_tokens": 4841
+          },
+          {
+            "key": "unittest",
+            "count": 9,
+            "chars": 6038,
+            "est_tokens": 1510
+          }
+        ],
+        "agent_results": [
+          {
+            "key": "user-row peer",
+            "count": 16,
+            "chars": 88055,
+            "est_tokens": 22014
+          },
+          {
+            "key": "queued task-notification",
+            "count": 20,
+            "chars": 27184,
+            "est_tokens": 6796
+          },
+          {
+            "key": "queued peer",
+            "count": 2,
+            "chars": 7554,
+            "est_tokens": 1888
+          },
+          {
+            "key": "user-row task-notification",
+            "count": 14,
+            "chars": 6674,
+            "est_tokens": 1668
+          },
+          {
+            "key": "Agent tool result",
+            "count": 3,
+            "chars": 3195,
+            "est_tokens": 799
+          },
+          {
+            "key": "SendMessage tool result",
+            "count": 16,
+            "chars": 2608,
+            "est_tokens": 652
+          }
+        ],
+        "rule_injections": [
+          {
+            "key": "token-block-discipline.md",
+            "count": 1,
+            "chars": 7779,
+            "est_tokens": 1945
+          },
+          {
+            "key": "task-discovery.md",
+            "count": 1,
+            "chars": 6380,
+            "est_tokens": 1595
+          },
+          {
+            "key": "skill-surface-sync.md",
+            "count": 1,
+            "chars": 5658,
+            "est_tokens": 1414
+          },
+          {
+            "key": "gh-cli.md",
+            "count": 1,
+            "chars": 5570,
+            "est_tokens": 1392
+          },
+          {
+            "key": "security-sensitivity.md",
+            "count": 1,
+            "chars": 5367,
+            "est_tokens": 1342
+          },
+          {
+            "key": "adr-audit.md",
+            "count": 1,
+            "chars": 5106,
+            "est_tokens": 1276
+          },
+          {
+            "key": "agent-failure-modes.md",
+            "count": 1,
+            "chars": 3719,
+            "est_tokens": 930
+          },
+          {
+            "key": "gate5-runbook-code-covenant.md",
+            "count": 1,
+            "chars": 3333,
+            "est_tokens": 833
+          },
+          {
+            "key": "brief-heading-conventions.md",
+            "count": 1,
+            "chars": 2354,
+            "est_tokens": 588
+          }
+        ],
+        "hook_outputs": [
+          {
+            "key": "hook_success:SessionStart:clear",
+            "count": 1,
+            "chars": 2349,
+            "est_tokens": 587
+          },
+          {
+            "key": "hook_additional_context:SessionStart",
+            "count": 1,
+            "chars": 2256,
+            "est_tokens": 564
+          },
+          {
+            "key": "stop hook feedback (user row)",
+            "count": 1,
+            "chars": 1092,
+            "est_tokens": 273
+          }
+        ],
+        "session_start_attachments": [
+          {
+            "key": "skill_listing",
+            "count": 1,
+            "chars": 30077,
+            "est_tokens": 7519
+          },
+          {
+            "key": "instructions",
+            "count": 1,
+            "chars": 28215,
+            "est_tokens": 7054
+          },
+          {
+            "key": "agent_listing_delta",
+            "count": 1,
+            "chars": 3866,
+            "est_tokens": 966
+          },
+          {
+            "key": "mcp_instructions_delta",
+            "count": 1,
+            "chars": 2053,
+            "est_tokens": 513
+          },
+          {
+            "key": "session_context",
+            "count": 1,
+            "chars": 1327,
+            "est_tokens": 332
+          },
+          {
+            "key": "deferred_tools_delta",
+            "count": 1,
+            "chars": 906,
+            "est_tokens": 226
+          },
+          {
+            "key": "environment",
+            "count": 1,
+            "chars": 700,
+            "est_tokens": 175
+          },
+          {
+            "key": "model",
+            "count": 1,
+            "chars": 161,
+            "est_tokens": 40
+          },
+          {
+            "key": "date",
+            "count": 1,
+            "chars": 64,
+            "est_tokens": 16
+          }
+        ],
+        "other_harness_reminders": [
+          {
+            "key": "edited_text_file",
+            "count": 7,
+            "chars": 3424,
+            "est_tokens": 856
+          },
+          {
+            "key": "silent_turn_reminder",
+            "count": 14,
+            "chars": 1862,
+            "est_tokens": 466
+          },
+          {
+            "key": "model",
+            "count": 4,
+            "chars": 652,
+            "est_tokens": 163
+          }
+        ],
+        "operator_prompts": [
+          {
+            "key": "prompt",
+            "count": 6,
+            "chars": 1845,
+            "est_tokens": 461
+          },
+          {
+            "key": "queued prompt",
+            "count": 4,
+            "chars": 1775,
+            "est_tokens": 444
+          }
+        ],
+        "edit_write_results": [
+          {
+            "key": "Edit",
+            "count": 18,
+            "chars": 3616,
+            "est_tokens": 904
+          },
+          {
+            "key": "Write",
+            "count": 1,
+            "chars": 200,
+            "est_tokens": 50
+          }
+        ],
+        "everything_else": [
+          {
+            "key": "harness user row",
+            "count": 3,
+            "chars": 571,
+            "est_tokens": 143
+          },
+          {
+            "key": "AskUserQuestion tool result",
+            "count": 1,
+            "chars": 254,
+            "est_tokens": 64
+          },
+          {
+            "key": "SendFeedback tool result",
+            "count": 1,
+            "chars": 179,
+            "est_tokens": 45
+          },
+          {
+            "key": "ToolSearch tool result",
+            "count": 1,
+            "chars": 54,
+            "est_tokens": 14
+          }
+        ],
+        "attachments_recorded_but_not_rendered": {
+          "hook_outputs|hook_success:SessionStart:clear": 1,
+          "session_start_attachments|credential_org": 1,
+          "session_start_attachments|prompt_snapshot": 1,
+          "other_harness_reminders|command_permissions": 4,
+          "other_harness_reminders|prompt_snapshot": 1,
+          "other_harness_reminders|deferred_tools_record": 12,
+          "hook_outputs|hook_non_blocking_error:PostToolUse:Edit": 1
+        },
+        "assistant_output": {
+          "text_chars": 36819,
+          "thinking_text_chars": 27530,
+          "thinking_signature_chars": 655960,
+          "tool_call_argument_chars": 378847,
+          "output_tokens_measured": 299116,
+          "tool_call_argument_chars_by_tool": {
+            "Bash": 292243,
+            "SendMessage": 52267,
+            "Edit": 21586,
+            "Write": 4885,
+            "Read": 2360,
+            "SendFeedback": 2049,
+            "Agent": 2038,
+            "AskUserQuestion": 1206,
+            "Skill": 164,
+            "ToolSearch": 49
+          },
+          "visible_chars_total": 443196,
+          "visible_est_tokens": 110799
+        },
+        "calibration": {
+          "note": "Checks the chars/4 estimate against the measured curve. Assumes every earlier assistant output (thinking included) stays in context.",
+          "measured_context_growth_first_to_last_call": 688649,
+          "measured_output_tokens_before_last_call": 298798,
+          "implied_user_side_tokens": 389851,
+          "est_user_side_tokens_after_first_call": 235309,
+          "implied_chars_per_token": 2.41,
+          "user_side_chars_before_first_call": 72331,
+          "first_call_context_measured": 55206
+        }
+      },
+      "context_curve": [
+        {
+          "call": 0,
+          "timestamp": "2026-10-03T06:29:27.726Z",
+          "context": 55206,
+          "output_tokens": 416
+        },
+        {
+          "call": 1,
+          "timestamp": "2026-10-03T06:29:37.614Z",
+          "context": 85554,
+          "output_tokens": 1724
+        },
+        {
+          "call": 2,
+          "timestamp": "2026-10-03T06:30:09.973Z",
+          "context": 98898,
+          "output_tokens": 808
+        },
+        {
+          "call": 3,
+          "timestamp": "2026-10-03T06:30:13.125Z",
+          "context": 99940,
+          "output_tokens": 309
+        },
+        {
+          "call": 4,
+          "timestamp": "2026-10-03T06:30:26.962Z",
+          "context": 100488,
+          "output_tokens": 1259
+        },
+        {
+          "call": 5,
+          "timestamp": "2026-10-03T06:34:26.030Z",
+          "context": 101817,
+          "output_tokens": 287
+        },
+        {
+          "call": 6,
+          "timestamp": "2026-10-03T06:34:29.121Z",
+          "context": 102375,
+          "output_tokens": 137
+        },
+        {
+          "call": 7,
+          "timestamp": "2026-10-03T06:34:35.606Z",
+          "context": 108113,
+          "output_tokens": 554
+        },
+        {
+          "call": 8,
+          "timestamp": "2026-10-03T06:48:19.264Z",
+          "context": 108694,
+          "output_tokens": 2367
+        },
+        {
+          "call": 9,
+          "timestamp": "2026-10-03T06:48:32.617Z",
+          "context": 117206,
+          "output_tokens": 1548
+        },
+        {
+          "call": 10,
+          "timestamp": "2026-10-03T06:48:48.787Z",
+          "context": 121561,
+          "output_tokens": 1356
+        },
+        {
+          "call": 11,
+          "timestamp": "2026-10-03T06:48:54.949Z",
+          "context": 124413,
+          "output_tokens": 1407
+        },
+        {
+          "call": 12,
+          "timestamp": "2026-10-03T06:49:07.047Z",
+          "context": 126069,
+          "output_tokens": 424
+        },
+        {
+          "call": 13,
+          "timestamp": "2026-10-03T06:49:10.653Z",
+          "context": 126711,
+          "output_tokens": 474
+        },
+        {
+          "call": 14,
+          "timestamp": "2026-10-03T06:51:16.148Z",
+          "context": 127382,
+          "output_tokens": 457
+        },
+        {
+          "call": 15,
+          "timestamp": "2026-10-03T06:51:21.230Z",
+          "context": 129256,
+          "output_tokens": 431
+        },
+        {
+          "call": 16,
+          "timestamp": "2026-10-03T06:53:36.973Z",
+          "context": 129900,
+          "output_tokens": 621
+        },
+        {
+          "call": 17,
+          "timestamp": "2026-10-03T06:56:27.903Z",
+          "context": 170282,
+          "output_tokens": 545
+        },
+        {
+          "call": 18,
+          "timestamp": "2026-10-03T06:56:38.527Z",
+          "context": 196836,
+          "output_tokens": 1154
+        },
+        {
+          "call": 19,
+          "timestamp": "2026-10-03T06:56:42.342Z",
+          "context": 204503,
+          "output_tokens": 423
+        },
+        {
+          "call": 20,
+          "timestamp": "2026-10-03T06:56:53.961Z",
+          "context": 207328,
+          "output_tokens": 346
+        },
+        {
+          "call": 21,
+          "timestamp": "2026-10-03T06:57:01.568Z",
+          "context": 211709,
+          "output_tokens": 1095
+        },
+        {
+          "call": 22,
+          "timestamp": "2026-10-03T06:57:10.142Z",
+          "context": 217836,
+          "output_tokens": 451
+        },
+        {
+          "call": 23,
+          "timestamp": "2026-10-03T06:57:13.240Z",
+          "context": 220592,
+          "output_tokens": 226
+        },
+        {
+          "call": 24,
+          "timestamp": "2026-10-03T06:57:17.503Z",
+          "context": 226099,
+          "output_tokens": 390
+        },
+        {
+          "call": 25,
+          "timestamp": "2026-10-03T06:57:23.479Z",
+          "context": 228884,
+          "output_tokens": 380
+        },
+        {
+          "call": 26,
+          "timestamp": "2026-10-03T06:57:27.055Z",
+          "context": 229306,
+          "output_tokens": 217
+        },
+        {
+          "call": 27,
+          "timestamp": "2026-10-03T06:57:36.613Z",
+          "context": 232435,
+          "output_tokens": 416
+        },
+        {
+          "call": 28,
+          "timestamp": "2026-10-03T06:57:46.515Z",
+          "context": 235786,
+          "output_tokens": 2548
+        },
+        {
+          "call": 29,
+          "timestamp": "2026-10-03T06:58:03.517Z",
+          "context": 240758,
+          "output_tokens": 388
+        },
+        {
+          "call": 30,
+          "timestamp": "2026-10-03T06:58:10.918Z",
+          "context": 241597,
+          "output_tokens": 813
+        },
+        {
+          "call": 31,
+          "timestamp": "2026-10-03T06:58:23.253Z",
+          "context": 242679,
+          "output_tokens": 774
+        },
+        {
+          "call": 32,
+          "timestamp": "2026-10-03T06:58:34.546Z",
+          "context": 244429,
+          "output_tokens": 534
+        },
+        {
+          "call": 33,
+          "timestamp": "2026-10-03T06:58:45.938Z",
+          "context": 245995,
+          "output_tokens": 1142
+        },
+        {
+          "call": 34,
+          "timestamp": "2026-10-03T06:58:54.389Z",
+          "context": 247262,
+          "output_tokens": 1166
+        },
+        {
+          "call": 35,
+          "timestamp": "2026-10-03T06:59:06.596Z",
+          "context": 253704,
+          "output_tokens": 751
+        },
+        {
+          "call": 36,
+          "timestamp": "2026-10-03T06:59:09.706Z",
+          "context": 255529,
+          "output_tokens": 185
+        },
+        {
+          "call": 37,
+          "timestamp": "2026-10-03T06:59:16.855Z",
+          "context": 256065,
+          "output_tokens": 2753
+        },
+        {
+          "call": 38,
+          "timestamp": "2026-10-03T06:59:35.359Z",
+          "context": 258840,
+          "output_tokens": 119
+        },
+        {
+          "call": 39,
+          "timestamp": "2026-10-03T06:59:40.999Z",
+          "context": 262574,
+          "output_tokens": 584
+        },
+        {
+          "call": 40,
+          "timestamp": "2026-10-03T06:59:47.370Z",
+          "context": 263542,
+          "output_tokens": 462
+        },
+        {
+          "call": 41,
+          "timestamp": "2026-10-03T06:59:51.509Z",
+          "context": 264223,
+          "output_tokens": 84
+        },
+        {
+          "call": 42,
+          "timestamp": "2026-10-03T07:01:38.983Z",
+          "context": 271590,
+          "output_tokens": 1190
+        },
+        {
+          "call": 43,
+          "timestamp": "2026-10-03T07:02:05.912Z",
+          "context": 280486,
+          "output_tokens": 2072
+        },
+        {
+          "call": 44,
+          "timestamp": "2026-10-03T07:02:17.608Z",
+          "context": 286138,
+          "output_tokens": 1950
+        },
+        {
+          "call": 45,
+          "timestamp": "2026-10-03T07:02:28.235Z",
+          "context": 288187,
+          "output_tokens": 263
+        },
+        {
+          "call": 46,
+          "timestamp": "2026-10-03T07:02:31.212Z",
+          "context": 288529,
+          "output_tokens": 130
+        },
+        {
+          "call": 47,
+          "timestamp": "2026-10-03T07:02:42.394Z",
+          "context": 290528,
+          "output_tokens": 1077
+        },
+        {
+          "call": 48,
+          "timestamp": "2026-10-03T07:03:11.354Z",
+          "context": 293258,
+          "output_tokens": 941
+        },
+        {
+          "call": 49,
+          "timestamp": "2026-10-03T07:03:23.925Z",
+          "context": 296638,
+          "output_tokens": 866
+        },
+        {
+          "call": 50,
+          "timestamp": "2026-10-03T07:03:35.661Z",
+          "context": 300652,
+          "output_tokens": 911
+        },
+        {
+          "call": 51,
+          "timestamp": "2026-10-03T07:03:55.733Z",
+          "context": 302616,
+          "output_tokens": 4182
+        },
+        {
+          "call": 52,
+          "timestamp": "2026-10-03T07:04:22.994Z",
+          "context": 306822,
+          "output_tokens": 618
+        },
+        {
+          "call": 53,
+          "timestamp": "2026-10-03T07:04:46.253Z",
+          "context": 308048,
+          "output_tokens": 3879
+        },
+        {
+          "call": 54,
+          "timestamp": "2026-10-03T07:05:02.124Z",
+          "context": 312168,
+          "output_tokens": 126
+        },
+        {
+          "call": 55,
+          "timestamp": "2026-10-03T07:05:31.120Z",
+          "context": 313921,
+          "output_tokens": 392
+        },
+        {
+          "call": 56,
+          "timestamp": "2026-10-03T07:05:46.158Z",
+          "context": 317484,
+          "output_tokens": 1269
+        },
+        {
+          "call": 57,
+          "timestamp": "2026-10-03T07:05:50.659Z",
+          "context": 318847,
+          "output_tokens": 55
+        },
+        {
+          "call": 58,
+          "timestamp": "2026-10-03T07:06:18.981Z",
+          "context": 319904,
+          "output_tokens": 4103
+        },
+        {
+          "call": 59,
+          "timestamp": "2026-10-03T07:06:45.034Z",
+          "context": 325364,
+          "output_tokens": 652
+        },
+        {
+          "call": 60,
+          "timestamp": "2026-10-03T07:06:55.890Z",
+          "context": 327286,
+          "output_tokens": 867
+        },
+        {
+          "call": 61,
+          "timestamp": "2026-10-03T07:07:09.370Z",
+          "context": 329683,
+          "output_tokens": 1333
+        },
+        {
+          "call": 62,
+          "timestamp": "2026-10-03T07:07:17.104Z",
+          "context": 331827,
+          "output_tokens": 225
+        },
+        {
+          "call": 63,
+          "timestamp": "2026-10-03T07:07:24.765Z",
+          "context": 332338,
+          "output_tokens": 703
+        },
+        {
+          "call": 64,
+          "timestamp": "2026-10-03T07:07:29.575Z",
+          "context": 333172,
+          "output_tokens": 598
+        },
+        {
+          "call": 65,
+          "timestamp": "2026-10-03T07:07:42.356Z",
+          "context": 333906,
+          "output_tokens": 328
+        },
+        {
+          "call": 66,
+          "timestamp": "2026-10-03T07:08:20.631Z",
+          "context": 334408,
+          "output_tokens": 395
+        },
+        {
+          "call": 67,
+          "timestamp": "2026-10-03T07:08:25.933Z",
+          "context": 337561,
+          "output_tokens": 347
+        },
+        {
+          "call": 68,
+          "timestamp": "2026-10-03T07:08:41.253Z",
+          "context": 341083,
+          "output_tokens": 1507
+        },
+        {
+          "call": 69,
+          "timestamp": "2026-10-03T07:09:24.434Z",
+          "context": 343519,
+          "output_tokens": 3950
+        },
+        {
+          "call": 70,
+          "timestamp": "2026-10-03T07:10:17.622Z",
+          "context": 348151,
+          "output_tokens": 5094
+        },
+        {
+          "call": 71,
+          "timestamp": "2026-10-03T07:10:33.453Z",
+          "context": 353472,
+          "output_tokens": 1094
+        },
+        {
+          "call": 72,
+          "timestamp": "2026-10-03T07:10:38.616Z",
+          "context": 354665,
+          "output_tokens": 748
+        },
+        {
+          "call": 73,
+          "timestamp": "2026-10-03T07:10:45.271Z",
+          "context": 356851,
+          "output_tokens": 162
+        },
+        {
+          "call": 74,
+          "timestamp": "2026-10-03T07:11:00.711Z",
+          "context": 358324,
+          "output_tokens": 945
+        },
+        {
+          "call": 75,
+          "timestamp": "2026-10-03T07:11:51.313Z",
+          "context": 360335,
+          "output_tokens": 892
+        },
+        {
+          "call": 76,
+          "timestamp": "2026-10-03T07:12:09.849Z",
+          "context": 362462,
+          "output_tokens": 3312
+        },
+        {
+          "call": 77,
+          "timestamp": "2026-10-03T07:12:38.308Z",
+          "context": 366022,
+          "output_tokens": 1364
+        },
+        {
+          "call": 78,
+          "timestamp": "2026-10-03T07:12:48.714Z",
+          "context": 368027,
+          "output_tokens": 67
+        },
+        {
+          "call": 79,
+          "timestamp": "2026-10-03T07:17:56.163Z",
+          "context": 368474,
+          "output_tokens": 366
+        },
+        {
+          "call": 80,
+          "timestamp": "2026-10-03T07:18:14.107Z",
+          "context": 371688,
+          "output_tokens": 1568
+        },
+        {
+          "call": 81,
+          "timestamp": "2026-10-03T07:18:28.113Z",
+          "context": 375286,
+          "output_tokens": 1341
+        },
+        {
+          "call": 82,
+          "timestamp": "2026-10-03T07:18:33.247Z",
+          "context": 376743,
+          "output_tokens": 59
+        },
+        {
+          "call": 83,
+          "timestamp": "2026-10-03T07:19:41.594Z",
+          "context": 377181,
+          "output_tokens": 577
+        },
+        {
+          "call": 84,
+          "timestamp": "2026-10-03T07:20:18.720Z",
+          "context": 380615,
+          "output_tokens": 3878
+        },
+        {
+          "call": 85,
+          "timestamp": "2026-10-03T07:20:30.339Z",
+          "context": 385648,
+          "output_tokens": 2278
+        },
+        {
+          "call": 86,
+          "timestamp": "2026-10-03T07:20:53.861Z",
+          "context": 388025,
+          "output_tokens": 339
+        },
+        {
+          "call": 87,
+          "timestamp": "2026-10-03T07:20:57.884Z",
+          "context": 388579,
+          "output_tokens": 149
+        },
+        {
+          "call": 88,
+          "timestamp": "2026-10-03T07:23:07.861Z",
+          "context": 392687,
+          "output_tokens": 2115
+        },
+        {
+          "call": 89,
+          "timestamp": "2026-10-03T07:23:25.380Z",
+          "context": 398944,
+          "output_tokens": 2709
+        },
+        {
+          "call": 90,
+          "timestamp": "2026-10-03T07:23:46.741Z",
+          "context": 401747,
+          "output_tokens": 352
+        },
+        {
+          "call": 91,
+          "timestamp": "2026-10-03T07:24:01.834Z",
+          "context": 402255,
+          "output_tokens": 1906
+        },
+        {
+          "call": 92,
+          "timestamp": "2026-10-03T07:24:12.223Z",
+          "context": 404260,
+          "output_tokens": 98
+        },
+        {
+          "call": 93,
+          "timestamp": "2026-10-03T07:24:42.145Z",
+          "context": 406615,
+          "output_tokens": 1428
+        },
+        {
+          "call": 94,
+          "timestamp": "2026-10-03T07:25:01.126Z",
+          "context": 410752,
+          "output_tokens": 1462
+        },
+        {
+          "call": 95,
+          "timestamp": "2026-10-03T07:25:08.924Z",
+          "context": 412330,
+          "output_tokens": 130
+        },
+        {
+          "call": 96,
+          "timestamp": "2026-10-03T07:25:48.072Z",
+          "context": 415398,
+          "output_tokens": 978
+        },
+        {
+          "call": 97,
+          "timestamp": "2026-10-03T07:26:00.299Z",
+          "context": 418032,
+          "output_tokens": 501
+        },
+        {
+          "call": 98,
+          "timestamp": "2026-10-03T07:26:04.353Z",
+          "context": 418669,
+          "output_tokens": 176
+        },
+        {
+          "call": 99,
+          "timestamp": "2026-10-03T07:26:14.383Z",
+          "context": 419521,
+          "output_tokens": 1993
+        },
+        {
+          "call": 100,
+          "timestamp": "2026-10-03T07:26:37.403Z",
+          "context": 421939,
+          "output_tokens": 781
+        },
+        {
+          "call": 101,
+          "timestamp": "2026-10-03T07:26:47.590Z",
+          "context": 423432,
+          "output_tokens": 570
+        },
+        {
+          "call": 102,
+          "timestamp": "2026-10-03T07:27:03.149Z",
+          "context": 425792,
+          "output_tokens": 1291
+        },
+        {
+          "call": 103,
+          "timestamp": "2026-10-03T07:27:07.252Z",
+          "context": 427241,
+          "output_tokens": 176
+        },
+        {
+          "call": 104,
+          "timestamp": "2026-10-03T07:27:12.218Z",
+          "context": 427572,
+          "output_tokens": 847
+        },
+        {
+          "call": 105,
+          "timestamp": "2026-10-03T07:28:05.893Z",
+          "context": 428795,
+          "output_tokens": 1299
+        },
+        {
+          "call": 106,
+          "timestamp": "2026-10-03T07:28:16.845Z",
+          "context": 430819,
+          "output_tokens": 2893
+        },
+        {
+          "call": 107,
+          "timestamp": "2026-10-03T07:28:44.765Z",
+          "context": 433946,
+          "output_tokens": 1087
+        },
+        {
+          "call": 108,
+          "timestamp": "2026-10-03T07:28:56.909Z",
+          "context": 435491,
+          "output_tokens": 73
+        },
+        {
+          "call": 109,
+          "timestamp": "2026-10-03T07:33:47.118Z",
+          "context": 435947,
+          "output_tokens": 620
+        },
+        {
+          "call": 110,
+          "timestamp": "2026-10-03T07:34:06.034Z",
+          "context": 438486,
+          "output_tokens": 1742
+        },
+        {
+          "call": 111,
+          "timestamp": "2026-10-03T07:34:11.946Z",
+          "context": 440721,
+          "output_tokens": 816
+        },
+        {
+          "call": 112,
+          "timestamp": "2026-10-03T07:34:19.492Z",
+          "context": 441548,
+          "output_tokens": 52
+        },
+        {
+          "call": 113,
+          "timestamp": "2026-10-03T07:34:42.047Z",
+          "context": 441977,
+          "output_tokens": 605
+        },
+        {
+          "call": 114,
+          "timestamp": "2026-10-03T07:34:58.616Z",
+          "context": 444221,
+          "output_tokens": 1891
+        },
+        {
+          "call": 115,
+          "timestamp": "2026-10-03T07:35:15.017Z",
+          "context": 446622,
+          "output_tokens": 1796
+        },
+        {
+          "call": 116,
+          "timestamp": "2026-10-03T07:35:30.535Z",
+          "context": 448661,
+          "output_tokens": 1068
+        },
+        {
+          "call": 117,
+          "timestamp": "2026-10-03T07:35:39.602Z",
+          "context": 451497,
+          "output_tokens": 58
+        },
+        {
+          "call": 118,
+          "timestamp": "2026-10-03T07:35:54.506Z",
+          "context": 452587,
+          "output_tokens": 1792
+        },
+        {
+          "call": 119,
+          "timestamp": "2026-10-03T07:36:58.373Z",
+          "context": 455450,
+          "output_tokens": 2765
+        },
+        {
+          "call": 120,
+          "timestamp": "2026-10-03T07:37:26.870Z",
+          "context": 458420,
+          "output_tokens": 1256
+        },
+        {
+          "call": 121,
+          "timestamp": "2026-10-03T07:37:38.229Z",
+          "context": 459855,
+          "output_tokens": 1040
+        },
+        {
+          "call": 122,
+          "timestamp": "2026-10-03T07:37:48.001Z",
+          "context": 461359,
+          "output_tokens": 111
+        },
+        {
+          "call": 123,
+          "timestamp": "2026-10-03T07:41:56.190Z",
+          "context": 461854,
+          "output_tokens": 605
+        },
+        {
+          "call": 124,
+          "timestamp": "2026-10-03T07:42:00.017Z",
+          "context": 463506,
+          "output_tokens": 351
+        },
+        {
+          "call": 125,
+          "timestamp": "2026-10-03T07:42:04.175Z",
+          "context": 463975,
+          "output_tokens": 33
+        },
+        {
+          "call": 126,
+          "timestamp": "2026-10-03T07:42:43.080Z",
+          "context": 464395,
+          "output_tokens": 645
+        },
+        {
+          "call": 127,
+          "timestamp": "2026-10-03T07:42:49.095Z",
+          "context": 465896,
+          "output_tokens": 1001
+        },
+        {
+          "call": 128,
+          "timestamp": "2026-10-03T07:42:58.545Z",
+          "context": 466936,
+          "output_tokens": 607
+        },
+        {
+          "call": 129,
+          "timestamp": "2026-10-03T07:44:54.945Z",
+          "context": 467949,
+          "output_tokens": 269
+        },
+        {
+          "call": 130,
+          "timestamp": "2026-10-03T07:45:02.541Z",
+          "context": 468233,
+          "output_tokens": 391
+        },
+        {
+          "call": 131,
+          "timestamp": "2026-10-03T07:45:06.174Z",
+          "context": 468881,
+          "output_tokens": 170
+        },
+        {
+          "call": 132,
+          "timestamp": "2026-10-03T07:45:20.159Z",
+          "context": 469861,
+          "output_tokens": 1407
+        },
+        {
+          "call": 133,
+          "timestamp": "2026-10-03T07:45:32.754Z",
+          "context": 472722,
+          "output_tokens": 1546
+        },
+        {
+          "call": 134,
+          "timestamp": "2026-10-03T07:45:44.077Z",
+          "context": 474399,
+          "output_tokens": 453
+        },
+        {
+          "call": 135,
+          "timestamp": "2026-10-03T07:47:35.179Z",
+          "context": 475336,
+          "output_tokens": 996
+        },
+        {
+          "call": 136,
+          "timestamp": "2026-10-03T07:47:50.382Z",
+          "context": 476713,
+          "output_tokens": 1008
+        },
+        {
+          "call": 137,
+          "timestamp": "2026-10-03T07:48:05.472Z",
+          "context": 478501,
+          "output_tokens": 903
+        },
+        {
+          "call": 138,
+          "timestamp": "2026-10-03T07:49:13.049Z",
+          "context": 480772,
+          "output_tokens": 1454
+        },
+        {
+          "call": 139,
+          "timestamp": "2026-10-03T07:49:24.077Z",
+          "context": 482307,
+          "output_tokens": 1177
+        },
+        {
+          "call": 140,
+          "timestamp": "2026-10-03T07:49:48.980Z",
+          "context": 484419,
+          "output_tokens": 1150
+        },
+        {
+          "call": 141,
+          "timestamp": "2026-10-03T07:49:58.253Z",
+          "context": 486852,
+          "output_tokens": 435
+        },
+        {
+          "call": 142,
+          "timestamp": "2026-10-03T07:50:02.047Z",
+          "context": 488477,
+          "output_tokens": 235
+        },
+        {
+          "call": 143,
+          "timestamp": "2026-10-03T07:50:05.185Z",
+          "context": 489687,
+          "output_tokens": 191
+        },
+        {
+          "call": 144,
+          "timestamp": "2026-10-03T07:50:12.948Z",
+          "context": 490806,
+          "output_tokens": 768
+        },
+        {
+          "call": 145,
+          "timestamp": "2026-10-03T07:50:29.026Z",
+          "context": 492653,
+          "output_tokens": 1319
+        },
+        {
+          "call": 146,
+          "timestamp": "2026-10-03T07:50:53.481Z",
+          "context": 496127,
+          "output_tokens": 666
+        },
+        {
+          "call": 147,
+          "timestamp": "2026-10-03T07:51:01.012Z",
+          "context": 497149,
+          "output_tokens": 1605
+        },
+        {
+          "call": 148,
+          "timestamp": "2026-10-03T07:52:04.671Z",
+          "context": 501816,
+          "output_tokens": 2874
+        },
+        {
+          "call": 149,
+          "timestamp": "2026-10-03T07:52:33.791Z",
+          "context": 505437,
+          "output_tokens": 1090
+        },
+        {
+          "call": 150,
+          "timestamp": "2026-10-03T07:52:46.773Z",
+          "context": 506989,
+          "output_tokens": 575
+        },
+        {
+          "call": 151,
+          "timestamp": "2026-10-03T07:52:57.041Z",
+          "context": 508468,
+          "output_tokens": 556
+        },
+        {
+          "call": 152,
+          "timestamp": "2026-10-03T07:57:11.498Z",
+          "context": 509409,
+          "output_tokens": 679
+        },
+        {
+          "call": 153,
+          "timestamp": "2026-10-03T07:57:19.703Z",
+          "context": 511356,
+          "output_tokens": 1200
+        },
+        {
+          "call": 154,
+          "timestamp": "2026-10-03T07:57:52.371Z",
+          "context": 513061,
+          "output_tokens": 1988
+        },
+        {
+          "call": 155,
+          "timestamp": "2026-10-03T07:58:02.823Z",
+          "context": 516504,
+          "output_tokens": 4416
+        },
+        {
+          "call": 156,
+          "timestamp": "2026-10-03T07:58:47.088Z",
+          "context": 521332,
+          "output_tokens": 381
+        },
+        {
+          "call": 157,
+          "timestamp": "2026-10-03T07:58:55.559Z",
+          "context": 522125,
+          "output_tokens": 4443
+        },
+        {
+          "call": 158,
+          "timestamp": "2026-10-03T07:59:32.410Z",
+          "context": 526614,
+          "output_tokens": 51
+        },
+        {
+          "call": 159,
+          "timestamp": "2026-10-03T08:00:14.649Z",
+          "context": 527319,
+          "output_tokens": 302
+        },
+        {
+          "call": 160,
+          "timestamp": "2026-10-03T08:00:20.696Z",
+          "context": 528098,
+          "output_tokens": 719
+        },
+        {
+          "call": 161,
+          "timestamp": "2026-10-03T08:00:27.809Z",
+          "context": 528914,
+          "output_tokens": 60
+        },
+        {
+          "call": 162,
+          "timestamp": "2026-10-03T08:03:38.498Z",
+          "context": 531219,
+          "output_tokens": 335
+        },
+        {
+          "call": 163,
+          "timestamp": "2026-10-03T08:03:45.657Z",
+          "context": 538760,
+          "output_tokens": 1202
+        },
+        {
+          "call": 164,
+          "timestamp": "2026-10-03T08:04:04.546Z",
+          "context": 540668,
+          "output_tokens": 1198
+        },
+        {
+          "call": 165,
+          "timestamp": "2026-10-03T08:04:20.308Z",
+          "context": 542091,
+          "output_tokens": 1273
+        },
+        {
+          "call": 166,
+          "timestamp": "2026-10-03T08:04:31.871Z",
+          "context": 543880,
+          "output_tokens": 595
+        },
+        {
+          "call": 167,
+          "timestamp": "2026-10-03T08:04:37.449Z",
+          "context": 545431,
+          "output_tokens": 436
+        },
+        {
+          "call": 168,
+          "timestamp": "2026-10-03T08:04:41.542Z",
+          "context": 546304,
+          "output_tokens": 104
+        },
+        {
+          "call": 169,
+          "timestamp": "2026-10-03T08:19:40.609Z",
+          "context": 546807,
+          "output_tokens": 313
+        },
+        {
+          "call": 170,
+          "timestamp": "2026-10-03T08:19:43.103Z",
+          "context": 547587,
+          "output_tokens": 837
+        },
+        {
+          "call": 171,
+          "timestamp": "2026-10-03T08:20:14.419Z",
+          "context": 553408,
+          "output_tokens": 2616
+        },
+        {
+          "call": 172,
+          "timestamp": "2026-10-03T08:20:42.923Z",
+          "context": 557260,
+          "output_tokens": 2377
+        },
+        {
+          "call": 173,
+          "timestamp": "2026-10-03T08:20:50.053Z",
+          "context": 561820,
+          "output_tokens": 527
+        },
+        {
+          "call": 174,
+          "timestamp": "2026-10-03T08:21:18.803Z",
+          "context": 564085,
+          "output_tokens": 2652
+        },
+        {
+          "call": 175,
+          "timestamp": "2026-10-03T08:21:24.960Z",
+          "context": 566836,
+          "output_tokens": 419
+        },
+        {
+          "call": 176,
+          "timestamp": "2026-10-03T08:21:32.819Z",
+          "context": 567691,
+          "output_tokens": 2011
+        },
+        {
+          "call": 177,
+          "timestamp": "2026-10-03T08:21:50.289Z",
+          "context": 570637,
+          "output_tokens": 119
+        },
+        {
+          "call": 178,
+          "timestamp": "2026-10-03T08:22:05.474Z",
+          "context": 571691,
+          "output_tokens": 95
+        },
+        {
+          "call": 179,
+          "timestamp": "2026-10-03T08:22:08.607Z",
+          "context": 572292,
+          "output_tokens": 637
+        },
+        {
+          "call": 180,
+          "timestamp": "2026-10-03T08:22:16.035Z",
+          "context": 573582,
+          "output_tokens": 98
+        },
+        {
+          "call": 181,
+          "timestamp": "2026-10-03T08:23:15.277Z",
+          "context": 577317,
+          "output_tokens": 3590
+        },
+        {
+          "call": 182,
+          "timestamp": "2026-10-03T08:23:38.604Z",
+          "context": 581573,
+          "output_tokens": 1517
+        },
+        {
+          "call": 183,
+          "timestamp": "2026-10-03T08:24:43.005Z",
+          "context": 583298,
+          "output_tokens": 3911
+        },
+        {
+          "call": 184,
+          "timestamp": "2026-10-03T08:25:18.299Z",
+          "context": 587574,
+          "output_tokens": 1613
+        },
+        {
+          "call": 185,
+          "timestamp": "2026-10-03T08:27:25.372Z",
+          "context": 590129,
+          "output_tokens": 1056
+        },
+        {
+          "call": 186,
+          "timestamp": "2026-10-03T08:28:00.949Z",
+          "context": 591647,
+          "output_tokens": 154
+        },
+        {
+          "call": 187,
+          "timestamp": "2026-10-03T08:30:58.131Z",
+          "context": 592184,
+          "output_tokens": 311
+        },
+        {
+          "call": 188,
+          "timestamp": "2026-10-03T08:31:31.097Z",
+          "context": 594399,
+          "output_tokens": 2610
+        },
+        {
+          "call": 189,
+          "timestamp": "2026-10-03T08:31:37.511Z",
+          "context": 598061,
+          "output_tokens": 677
+        },
+        {
+          "call": 190,
+          "timestamp": "2026-10-03T08:31:49.705Z",
+          "context": 600547,
+          "output_tokens": 2143
+        },
+        {
+          "call": 191,
+          "timestamp": "2026-10-03T08:32:06.871Z",
+          "context": 602876,
+          "output_tokens": 94
+        },
+        {
+          "call": 192,
+          "timestamp": "2026-10-03T08:32:21.323Z",
+          "context": 603737,
+          "output_tokens": 1181
+        },
+        {
+          "call": 193,
+          "timestamp": "2026-10-03T08:32:54.463Z",
+          "context": 606408,
+          "output_tokens": 3212
+        },
+        {
+          "call": 194,
+          "timestamp": "2026-10-03T08:33:22.866Z",
+          "context": 609717,
+          "output_tokens": 4218
+        },
+        {
+          "call": 195,
+          "timestamp": "2026-10-03T08:33:58.468Z",
+          "context": 613981,
+          "output_tokens": 52
+        },
+        {
+          "call": 196,
+          "timestamp": "2026-10-03T08:36:00.805Z",
+          "context": 616546,
+          "output_tokens": 378
+        },
+        {
+          "call": 197,
+          "timestamp": "2026-10-03T08:36:18.204Z",
+          "context": 618072,
+          "output_tokens": 1532
+        },
+        {
+          "call": 198,
+          "timestamp": "2026-10-03T08:36:30.469Z",
+          "context": 619931,
+          "output_tokens": 568
+        },
+        {
+          "call": 199,
+          "timestamp": "2026-10-03T08:36:36.799Z",
+          "context": 620674,
+          "output_tokens": 267
+        },
+        {
+          "call": 200,
+          "timestamp": "2026-10-03T08:36:39.839Z",
+          "context": 621328,
+          "output_tokens": 309
+        },
+        {
+          "call": 201,
+          "timestamp": "2026-10-03T08:36:44.126Z",
+          "context": 621855,
+          "output_tokens": 89
+        },
+        {
+          "call": 202,
+          "timestamp": "2026-10-03T08:58:45.814Z",
+          "context": 622333,
+          "output_tokens": 731
+        },
+        {
+          "call": 203,
+          "timestamp": "2026-10-03T08:58:54.785Z",
+          "context": 627105,
+          "output_tokens": 1660
+        },
+        {
+          "call": 204,
+          "timestamp": "2026-10-03T08:59:17.826Z",
+          "context": 630731,
+          "output_tokens": 355
+        },
+        {
+          "call": 205,
+          "timestamp": "2026-10-03T08:59:30.997Z",
+          "context": 631310,
+          "output_tokens": 1092
+        },
+        {
+          "call": 206,
+          "timestamp": "2026-10-03T09:00:35.729Z",
+          "context": 634007,
+          "output_tokens": 850
+        },
+        {
+          "call": 207,
+          "timestamp": "2026-10-03T09:00:50.907Z",
+          "context": 636475,
+          "output_tokens": 1992
+        },
+        {
+          "call": 208,
+          "timestamp": "2026-10-03T09:01:05.344Z",
+          "context": 638840,
+          "output_tokens": 2105
+        },
+        {
+          "call": 209,
+          "timestamp": "2026-10-03T09:01:25.067Z",
+          "context": 641259,
+          "output_tokens": 102
+        },
+        {
+          "call": 210,
+          "timestamp": "2026-10-03T09:09:28.701Z",
+          "context": 641756,
+          "output_tokens": 978
+        },
+        {
+          "call": 211,
+          "timestamp": "2026-10-03T09:09:33.227Z",
+          "context": 643201,
+          "output_tokens": 803
+        },
+        {
+          "call": 212,
+          "timestamp": "2026-10-03T09:09:48.025Z",
+          "context": 644365,
+          "output_tokens": 1820
+        },
+        {
+          "call": 213,
+          "timestamp": "2026-10-03T09:10:31.790Z",
+          "context": 646611,
+          "output_tokens": 2350
+        },
+        {
+          "call": 214,
+          "timestamp": "2026-10-03T09:10:49.659Z",
+          "context": 649058,
+          "output_tokens": 44
+        },
+        {
+          "call": 215,
+          "timestamp": "2026-10-03T09:12:48.502Z",
+          "context": 651501,
+          "output_tokens": 745
+        },
+        {
+          "call": 216,
+          "timestamp": "2026-10-03T09:13:34.829Z",
+          "context": 653093,
+          "output_tokens": 5003
+        },
+        {
+          "call": 217,
+          "timestamp": "2026-10-03T11:14:16.337Z",
+          "context": 658104,
+          "output_tokens": 2275
+        },
+        {
+          "call": 218,
+          "timestamp": "2026-10-03T11:14:46.180Z",
+          "context": 662308,
+          "output_tokens": 4612
+        },
+        {
+          "call": 219,
+          "timestamp": "2026-10-03T11:15:29.826Z",
+          "context": 667028,
+          "output_tokens": 1051
+        },
+        {
+          "call": 220,
+          "timestamp": "2026-10-03T11:15:38.235Z",
+          "context": 668276,
+          "output_tokens": 520
+        },
+        {
+          "call": 221,
+          "timestamp": "2026-10-03T11:15:45.801Z",
+          "context": 669076,
+          "output_tokens": 642
+        },
+        {
+          "call": 222,
+          "timestamp": "2026-10-03T11:16:05.213Z",
+          "context": 669810,
+          "output_tokens": 556
+        },
+        {
+          "call": 223,
+          "timestamp": "2026-10-03T11:16:37.558Z",
+          "context": 670616,
+          "output_tokens": 971
+        },
+        {
+          "call": 224,
+          "timestamp": "2026-10-03T11:16:40.758Z",
+          "context": 671752,
+          "output_tokens": 176
+        },
+        {
+          "call": 225,
+          "timestamp": "2026-10-03T11:16:55.315Z",
+          "context": 673867,
+          "output_tokens": 1630
+        },
+        {
+          "call": 226,
+          "timestamp": "2026-10-03T11:16:58.198Z",
+          "context": 675597,
+          "output_tokens": 725
+        },
+        {
+          "call": 227,
+          "timestamp": "2026-10-03T11:17:12.446Z",
+          "context": 677441,
+          "output_tokens": 846
+        },
+        {
+          "call": 228,
+          "timestamp": "2026-10-03T11:19:23.497Z",
+          "context": 679185,
+          "output_tokens": 424
+        },
+        {
+          "call": 229,
+          "timestamp": "2026-10-03T11:19:33.587Z",
+          "context": 680173,
+          "output_tokens": 628
+        },
+        {
+          "call": 230,
+          "timestamp": "2026-10-03T11:21:04.565Z",
+          "context": 681777,
+          "output_tokens": 8259
+        },
+        {
+          "call": 231,
+          "timestamp": "2026-10-03T11:21:24.489Z",
+          "context": 690160,
+          "output_tokens": 1398
+        },
+        {
+          "call": 232,
+          "timestamp": "2026-10-03T11:21:30.646Z",
+          "context": 691657,
+          "output_tokens": 377
+        },
+        {
+          "call": 233,
+          "timestamp": "2026-10-03T11:21:37.543Z",
+          "context": 692336,
+          "output_tokens": 389
+        },
+        {
+          "call": 234,
+          "timestamp": "2026-10-03T11:22:28.187Z",
+          "context": 695011,
+          "output_tokens": 2041
+        },
+        {
+          "call": 235,
+          "timestamp": "2026-10-03T11:23:39.165Z",
+          "context": 697838,
+          "output_tokens": 3805
+        },
+        {
+          "call": 236,
+          "timestamp": "2026-10-03T11:24:13.394Z",
+          "context": 701993,
+          "output_tokens": 1218
+        },
+        {
+          "call": 237,
+          "timestamp": "2026-10-03T11:26:21.671Z",
+          "context": 703894,
+          "output_tokens": 1668
+        },
+        {
+          "call": 238,
+          "timestamp": "2026-10-03T11:27:16.923Z",
+          "context": 705644,
+          "output_tokens": 778
+        },
+        {
+          "call": 239,
+          "timestamp": "2026-10-03T11:27:25.184Z",
+          "context": 706457,
+          "output_tokens": 65
+        },
+        {
+          "call": 240,
+          "timestamp": "2026-10-03T11:29:26.748Z",
+          "context": 706901,
+          "output_tokens": 336
+        },
+        {
+          "call": 241,
+          "timestamp": "2026-10-03T11:29:30.971Z",
+          "context": 708768,
+          "output_tokens": 168
+        },
+        {
+          "call": 242,
+          "timestamp": "2026-10-03T11:30:16.170Z",
+          "context": 709319,
+          "output_tokens": 389
+        },
+        {
+          "call": 243,
+          "timestamp": "2026-10-03T11:30:31.619Z",
+          "context": 711592,
+          "output_tokens": 2976
+        },
+        {
+          "call": 244,
+          "timestamp": "2026-10-03T11:31:11.959Z",
+          "context": 714990,
+          "output_tokens": 1694
+        },
+        {
+          "call": 245,
+          "timestamp": "2026-10-03T11:31:32.838Z",
+          "context": 717316,
+          "output_tokens": 1054
+        },
+        {
+          "call": 246,
+          "timestamp": "2026-10-03T11:31:44.731Z",
+          "context": 719294,
+          "output_tokens": 1135
+        },
+        {
+          "call": 247,
+          "timestamp": "2026-10-03T11:32:01.386Z",
+          "context": 720840,
+          "output_tokens": 368
+        },
+        {
+          "call": 248,
+          "timestamp": "2026-10-03T11:34:28.778Z",
+          "context": 721480,
+          "output_tokens": 1265
+        },
+        {
+          "call": 249,
+          "timestamp": "2026-10-03T11:34:52.520Z",
+          "context": 723496,
+          "output_tokens": 388
+        },
+        {
+          "call": 250,
+          "timestamp": "2026-10-03T11:35:15.730Z",
+          "context": 724583,
+          "output_tokens": 6759
+        },
+        {
+          "call": 251,
+          "timestamp": "2026-10-03T11:36:04.799Z",
+          "context": 731409,
+          "output_tokens": 367
+        },
+        {
+          "call": 252,
+          "timestamp": "2026-10-03T11:38:19.856Z",
+          "context": 732109,
+          "output_tokens": 429
+        },
+        {
+          "call": 253,
+          "timestamp": "2026-10-03T11:38:37.982Z",
+          "context": 733090,
+          "output_tokens": 2734
+        },
+        {
+          "call": 254,
+          "timestamp": "2026-10-03T11:39:01.471Z",
+          "context": 735911,
+          "output_tokens": 367
+        },
+        {
+          "call": 255,
+          "timestamp": "2026-10-03T11:41:19.150Z",
+          "context": 736481,
+          "output_tokens": 1085
+        },
+        {
+          "call": 256,
+          "timestamp": "2026-10-03T11:41:34.650Z",
+          "context": 737627,
+          "output_tokens": 763
+        },
+        {
+          "call": 257,
+          "timestamp": "2026-10-03T11:42:32.890Z",
+          "context": 738960,
+          "output_tokens": 4086
+        },
+        {
+          "call": 258,
+          "timestamp": "2026-10-03T11:43:06.093Z",
+          "context": 743258,
+          "output_tokens": 542
+        },
+        {
+          "call": 259,
+          "timestamp": "2026-10-03T11:45:24.361Z",
+          "context": 743855,
+          "output_tokens": 318
+        }
+      ],
+      "projection": {
+        "label": "PROJECTION - arithmetic on the measured curve, not a measurement",
+        "save_point_tokens": 20000,
+        "reset_context_tokens": 75206,
+        "resets": 6,
+        "segments": [
+          {
+            "segment": "0 pre-pipeline work",
+            "calls": 17,
+            "reset_applied": false,
+            "actual_cache_read": 1761771,
+            "projected_cache_read": 1761771,
+            "actual_cache_creation": 101776,
+            "projected_cache_creation": 101776,
+            "actual_peak_context": 129900,
+            "projected_peak_context": 129900
+          },
+          {
+            "segment": "1 pipeline launch to first dispatch",
+            "calls": 22,
+            "reset_applied": true,
+            "actual_cache_read": 4840418,
+            "projected_cache_read": 2843822,
+            "actual_cache_creation": 227988,
+            "projected_cache_creation": 132912,
+            "actual_peak_context": 258840,
+            "projected_peak_context": 163764
+          },
+          {
+            "segment": "2a implementation (implementer dispatched)",
+            "calls": 38,
+            "reset_applied": true,
+            "actual_cache_read": 11710200,
+            "projected_cache_read": 4733683,
+            "actual_cache_creation": 340274,
+            "projected_cache_creation": 196807,
+            "actual_peak_context": 362462,
+            "projected_peak_context": 175094
+          },
+          {
+            "segment": "2b review and fix cycles",
+            "calls": 51,
+            "reset_applied": true,
+            "actual_cache_read": 21396197,
+            "projected_cache_read": 6520506,
+            "actual_cache_creation": 103183,
+            "projected_cache_creation": 147258,
+            "actual_peak_context": 465896,
+            "projected_peak_context": 175080
+          },
+          {
+            "segment": "3 verification baseline",
+            "calls": 11,
+            "reset_applied": true,
+            "actual_cache_read": 5185405,
+            "projected_cache_read": 829780,
+            "actual_cache_creation": 14876,
+            "projected_cache_creation": 61471,
+            "actual_peak_context": 480772,
+            "projected_peak_context": 89042
+          },
+          {
+            "segment": "4 evidence and adversarial review",
+            "calls": 78,
+            "reset_applied": true,
+            "actual_cache_read": 44249815,
+            "projected_cache_read": 12449837,
+            "actual_cache_creation": 171470,
+            "projected_cache_creation": 217570,
+            "actual_peak_context": 653093,
+            "projected_peak_context": 245992
+          },
+          {
+            "segment": "5 completion and sync",
+            "calls": 43,
+            "reset_applied": true,
+            "actual_cache_read": 29483812,
+            "projected_cache_read": 5002096,
+            "actual_cache_creation": 717363,
+            "projected_cache_creation": 134465,
+            "actual_peak_context": 743855,
+            "projected_peak_context": 160957
+          }
+        ],
+        "actual_cache_read": 118627618,
+        "projected_cache_read": 34141495,
+        "cache_read_reduction_pct": 71.2,
+        "actual_cache_creation": 1676930,
+        "projected_cache_creation": 992259,
+        "projected_peak_context": 245992,
+        "assumptions": [
+          "Same API calls, in the same order, with the same per-call output.",
+          "Within a segment each call keeps its measured offset above the segment's entry context.",
+          "At each boundary the context becomes a fixed load (55206) + a 20000-token save point = 75206; the pre-pipeline segment is not reset.",
+          "The save point carries everything the next stage needs: no file is re-read, no skill is re-loaded, no extra call is spent writing or reading the save point.",
+          "The first call after a reset reads 27569 tokens from cache; the rest of the reset context is a cache write.",
+          "Later calls in a segment read from cache what they read in the run, less the dropped history. A call that missed the cache in the run still misses it.",
+          "Model switches and idle gaps fall where they fell in the run.",
+          "Subagent and reviewer sessions are unchanged and not included."
+        ]
+      },
+      "files": {
+        "curve_csv": "docs/governance/context-phase-review-2026-10-04-evidence/context_curve_baseline_OBPI-0.35.0-08.csv",
+        "inputs_csv": "docs/governance/context-phase-review-2026-10-04-evidence/context_inputs_baseline_OBPI-0.35.0-08.csv"
+      },
+      "projection_sensitivity_subagent_load": {
+        "label": "PROJECTION, sensitivity - same arithmetic with the fixed load of a fresh in-process implementer subagent instead of the orchestrator's first-call context; assumes each stage could run in such an agent, which nothing here measures",
+        "save_point_tokens": 20000,
+        "reset_context_tokens": 36277,
+        "resets": 6,
+        "segments": [
+          {
+            "segment": "0 pre-pipeline work",
+            "calls": 17,
+            "reset_applied": false,
+            "actual_cache_read": 1761771,
+            "projected_cache_read": 1761771,
+            "actual_cache_creation": 101776,
+            "projected_cache_creation": 101776,
+            "actual_peak_context": 129900,
+            "projected_peak_context": 129900
+          },
+          {
+            "segment": "1 pipeline launch to first dispatch",
+            "calls": 22,
+            "reset_applied": true,
+            "actual_cache_read": 4840418,
+            "projected_cache_read": 1998744,
+            "actual_cache_creation": 227988,
+            "projected_cache_creation": 121552,
+            "actual_peak_context": 258840,
+            "projected_peak_context": 124835
+          },
+          {
+            "segment": "2a implementation (implementer dispatched)",
+            "calls": 38,
+            "reset_applied": true,
+            "actual_cache_read": 11710200,
+            "projected_cache_read": 3277101,
+            "actual_cache_creation": 340274,
+            "projected_cache_creation": 174087,
+            "actual_peak_context": 362462,
+            "projected_peak_context": 136165
+          },
+          {
+            "segment": "2b review and fix cycles",
+            "calls": 51,
+            "reset_applied": true,
+            "actual_cache_read": 21396197,
+            "projected_cache_read": 4546487,
+            "actual_cache_creation": 103183,
+            "projected_cache_creation": 135898,
+            "actual_peak_context": 465896,
+            "projected_peak_context": 136151
+          },
+          {
+            "segment": "3 verification baseline",
+            "calls": 11,
+            "reset_applied": true,
+            "actual_cache_read": 5185405,
+            "projected_cache_read": 412921,
+            "actual_cache_creation": 14876,
+            "projected_cache_creation": 50111,
+            "actual_peak_context": 480772,
+            "projected_peak_context": 50113
+          },
+          {
+            "segment": "4 evidence and adversarial review",
+            "calls": 78,
+            "reset_applied": true,
+            "actual_cache_read": 44249815,
+            "projected_cache_read": 9424735,
+            "actual_cache_creation": 171470,
+            "projected_cache_creation": 206210,
+            "actual_peak_context": 653093,
+            "projected_peak_context": 207063
+          },
+          {
+            "segment": "5 completion and sync",
+            "calls": 43,
+            "reset_applied": true,
+            "actual_cache_read": 29483812,
+            "projected_cache_read": 3341519,
+            "actual_cache_creation": 717363,
+            "projected_cache_creation": 121095,
+            "actual_peak_context": 743855,
+            "projected_peak_context": 122028
+          }
+        ],
+        "actual_cache_read": 118627618,
+        "projected_cache_read": 24763278,
+        "cache_read_reduction_pct": 79.1,
+        "actual_cache_creation": 1676930,
+        "projected_cache_creation": 910729,
+        "projected_peak_context": 207063,
+        "assumptions": [
+          "Same API calls, in the same order, with the same per-call output.",
+          "Within a segment each call keeps its measured offset above the segment's entry context.",
+          "At each boundary the context becomes a fixed load (16277) + a 20000-token save point = 36277; the pre-pipeline segment is not reset.",
+          "The save point carries everything the next stage needs: no file is re-read, no skill is re-loaded, no extra call is spent writing or reading the save point.",
+          "The first call after a reset reads 0 tokens from cache; the rest of the reset context is a cache write.",
+          "Later calls in a segment read from cache what they read in the run, less the dropped history. A call that missed the cache in the run still misses it.",
+          "Model switches and idle gaps fall where they fell in the run.",
+          "Subagent and reviewer sessions are unchanged and not included."
+        ]
+      }
+    },
+    "trial_OBPI-0.35.0-10": {
+      "session_id": "a0f543a5-5dc2-41ff-949b-f036f79ce0a1",
+      "totals": {
+        "calls": 98,
+        "cache_read_input_tokens": 25639640,
+        "cache_creation_input_tokens": 721805,
+        "input_tokens": 204,
+        "output_tokens": 170922,
+        "first_context": 55088,
+        "peak_context": 410992,
+        "peak_context_call": 97,
+        "last_context": 410992,
+        "context_decreases": 0,
+        "calls_growing_less_than_previous_output": 0,
+        "models": {
+          "claude-opus-5-5": 98
+        },
+        "cache_read_by_model": {
+          "claude-opus-5-5": 25639640
+        }
+      },
+      "boundaries": [
+        {
+          "name": "0 pre-pipeline work",
+          "start": 0,
+          "located_by": "session start"
+        },
+        {
+          "name": "1 pipeline launch to first dispatch",
+          "start": 2,
+          "located_by": "first `gz obpi pipeline` invocation or Skill load"
+        },
+        {
+          "name": "2a implementation (single driver, no Agent dispatch)",
+          "start": 5,
+          "located_by": "`gz obpi dispatch --single-driver` declaration"
+        },
+        {
+          "name": "3 verification baseline",
+          "start": 63,
+          "located_by": "first of gz arb ruff/typecheck/step unittest, gz covers, gz arb red"
+        },
+        {
+          "name": "4 evidence and adversarial review",
+          "start": 68,
+          "located_by": "first of present-evidence, verify-packet, codex-companion task, acceptance review, acceptance --stage stage4"
+        },
+        {
+          "name": "5 completion and sync",
+          "start": 93,
+          "located_by": "first `gz git-sync` (no `gz obpi complete` was run in this session)"
+        }
+      ],
+      "segments": [
+        {
+          "segment": "0 pre-pipeline work",
+          "located_by": "session start",
+          "first_call": 0,
+          "last_call": 1,
+          "start_time": "2026-10-03T12:06:52.084Z",
+          "end_time": "2026-10-03T12:07:10.804Z",
+          "calls": 2,
+          "context_at_entry": 55088,
+          "context_at_exit": 66091,
+          "context_growth": 11003,
+          "context_before_entry": null,
+          "step_at_entry": null,
+          "growth_including_entry_step": 11003,
+          "context_at_next_entry": 87985,
+          "peak_context": 66091,
+          "cache_read_tokens": 82655,
+          "cache_creation_tokens": 38521,
+          "output_tokens": 2237,
+          "models": {
+            "claude-opus-5-5": 2
+          },
+          "est_tokens_arriving_by_category": {
+            "session_start_attachments": 16803,
+            "rule_injections": 3708,
+            "file_reads": 3130,
+            "hook_outputs": 1142,
+            "everything_else": 87,
+            "operator_prompts": 17
+          }
+        },
+        {
+          "segment": "1 pipeline launch to first dispatch",
+          "located_by": "first `gz obpi pipeline` invocation or Skill load",
+          "first_call": 2,
+          "last_call": 4,
+          "start_time": "2026-10-03T12:07:28.717Z",
+          "end_time": "2026-10-03T12:07:39.793Z",
+          "calls": 3,
+          "context_at_entry": 87985,
+          "context_at_exit": 93921,
+          "context_growth": 5936,
+          "context_before_entry": 66091,
+          "step_at_entry": 21894,
+          "growth_including_entry_step": 27830,
+          "context_at_next_entry": 95040,
+          "peak_context": 93921,
+          "cache_read_tokens": 243883,
+          "cache_creation_tokens": 27829,
+          "output_tokens": 2114,
+          "models": {
+            "claude-opus-5-5": 3
+          },
+          "est_tokens_arriving_by_category": {
+            "rule_injections": 6194,
+            "file_reads": 5941,
+            "bash_outputs": 2006
+          }
+        },
+        {
+          "segment": "2a implementation (single driver, no Agent dispatch)",
+          "located_by": "`gz obpi dispatch --single-driver` declaration",
+          "first_call": 5,
+          "last_call": 62,
+          "start_time": "2026-10-03T12:07:45.242Z",
+          "end_time": "2026-10-03T12:26:12.612Z",
+          "calls": 58,
+          "context_at_entry": 95040,
+          "context_at_exit": 309686,
+          "context_growth": 214646,
+          "context_before_entry": 93921,
+          "step_at_entry": 1119,
+          "growth_including_entry_step": 215765,
+          "context_at_next_entry": 311543,
+          "peak_context": 309686,
+          "cache_read_tokens": 13187633,
+          "cache_creation_tokens": 215765,
+          "output_tokens": 111977,
+          "models": {
+            "claude-opus-5-5": 58
+          },
+          "est_tokens_arriving_by_category": {
+            "bash_outputs": 38357,
+            "file_reads": 12805,
+            "rule_injections": 9352,
+            "edit_write_results": 800,
+            "other_harness_reminders": 518
+          }
+        },
+        {
+          "segment": "3 verification baseline",
+          "located_by": "first of gz arb ruff/typecheck/step unittest, gz covers, gz arb red",
+          "first_call": 63,
+          "last_call": 67,
+          "start_time": "2026-10-03T12:28:16.638Z",
+          "end_time": "2026-10-03T12:33:17.698Z",
+          "calls": 5,
+          "context_at_entry": 311543,
+          "context_at_exit": 320398,
+          "context_growth": 8855,
+          "context_before_entry": 309686,
+          "step_at_entry": 1857,
+          "growth_including_entry_step": 10712,
+          "context_at_next_entry": 323520,
+          "peak_context": 320398,
+          "cache_read_tokens": 1572349,
+          "cache_creation_tokens": 5363,
+          "output_tokens": 8537,
+          "models": {
+            "claude-opus-5-5": 5
+          },
+          "est_tokens_arriving_by_category": {
+            "bash_outputs": 1048,
+            "operator_prompts": 32
+          }
+        },
+        {
+          "segment": "4 evidence and adversarial review",
+          "located_by": "first of present-evidence, verify-packet, codex-companion task, acceptance review, acceptance --stage stage4",
+          "first_call": 68,
+          "last_call": 92,
+          "start_time": "2026-10-03T12:33:26.537Z",
+          "end_time": "2026-10-03T23:47:59.765Z",
+          "calls": 25,
+          "context_at_entry": 323520,
+          "context_at_exit": 399952,
+          "context_growth": 76432,
+          "context_before_entry": 320398,
+          "step_at_entry": 3122,
+          "growth_including_entry_step": 79554,
+          "context_at_next_entry": 404818,
+          "peak_context": 399952,
+          "cache_read_tokens": 8524371,
+          "cache_creation_tokens": 423287,
+          "output_tokens": 41977,
+          "models": {
+            "claude-opus-5-5": 25
+          },
+          "est_tokens_arriving_by_category": {
+            "bash_outputs": 15577,
+            "skill_bodies": 9264,
+            "file_reads": 456,
+            "edit_write_results": 50,
+            "operator_prompts": 45,
+            "other_harness_reminders": 33
+          }
+        },
+        {
+          "segment": "5 completion and sync",
+          "located_by": "first `gz git-sync` (no `gz obpi complete` was run in this session)",
+          "first_call": 93,
+          "last_call": 97,
+          "start_time": "2026-10-03T23:48:37.036Z",
+          "end_time": "2026-10-03T23:51:43.213Z",
+          "calls": 5,
+          "context_at_entry": 404818,
+          "context_at_exit": 410992,
+          "context_growth": 6174,
+          "context_before_entry": 399952,
+          "step_at_entry": 4866,
+          "growth_including_entry_step": 11040,
+          "context_at_next_entry": null,
+          "peak_context": 410992,
+          "cache_read_tokens": 2028749,
+          "cache_creation_tokens": 11040,
+          "output_tokens": 4080,
+          "models": {
+            "claude-opus-5-5": 5
+          },
+          "est_tokens_arriving_by_category": {
+            "bash_outputs": 1595
+          }
+        }
+      ],
+      "marker_hits": {
+        "pipeline_launch": [
+          2,
+          4
+        ],
+        "single_driver_dispatch": [
+          5
+        ],
+        "s3_covers": [
+          63
+        ],
+        "s4_acceptance_stage4_status": [
+          68,
+          83,
+          84,
+          90,
+          92
+        ],
+        "s5_precomplete": [
+          68,
+          83,
+          90,
+          92
+        ],
+        "s3_arb_ruff": [
+          73
+        ],
+        "s3_arb_typecheck": [
+          73
+        ],
+        "s3_arb_unittest": [
+          76
+        ],
+        "skill:gz-session-handoff": [
+          88
+        ],
+        "s5_git_sync": [
+          93,
+          96
+        ]
+      },
+      "cache_rewrite_events": [
+        {
+          "call": 87,
+          "timestamp": "2026-10-03T23:44:26.584Z",
+          "context": 372599,
+          "cache_read": 25559,
+          "cache_creation": 347036,
+          "previous_model": "claude-opus-5-5",
+          "model": "claude-opus-5-5",
+          "seconds_since_previous_call": 39781
+        }
+      ],
+      "growth_sources": {
+        "categories": [
+          {
+            "category": "bash_outputs",
+            "items": 77,
+            "chars": 234333,
+            "est_tokens": 58583
+          },
+          {
+            "category": "file_reads",
+            "items": 16,
+            "chars": 89330,
+            "est_tokens": 22332
+          },
+          {
+            "category": "rule_injections",
+            "items": 14,
+            "chars": 77015,
+            "est_tokens": 19254
+          },
+          {
+            "category": "session_start_attachments",
+            "items": 9,
+            "chars": 67211,
+            "est_tokens": 16803
+          },
+          {
+            "category": "skill_bodies",
+            "items": 2,
+            "chars": 37058,
+            "est_tokens": 9264
+          },
+          {
+            "category": "hook_outputs",
+            "items": 2,
+            "chars": 4568,
+            "est_tokens": 1142
+          },
+          {
+            "category": "edit_write_results",
+            "items": 25,
+            "chars": 3398,
+            "est_tokens": 850
+          },
+          {
+            "category": "other_harness_reminders",
+            "items": 10,
+            "chars": 2204,
+            "est_tokens": 551
+          },
+          {
+            "category": "operator_prompts",
+            "items": 6,
+            "chars": 377,
+            "est_tokens": 94
+          },
+          {
+            "category": "everything_else",
+            "items": 2,
+            "chars": 347,
+            "est_tokens": 87
+          }
+        ],
+        "skill_bodies": [
+          {
+            "key": "gz-session-handoff",
+            "count": 1,
+            "chars": 37023,
+            "est_tokens": 9256
+          },
+          {
+            "key": "gz-session-handoff (Skill tool result)",
+            "count": 1,
+            "chars": 35,
+            "est_tokens": 9
+          }
+        ],
+        "file_reads_top20": [
+          {
+            "key": "docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-10-classification-reader-and-ownership.md",
+            "count": 2,
+            "chars": 25587,
+            "est_tokens": 6397
+          },
+          {
+            "key": "src/gzkit/governance/trust_audits/bullet_retention.py",
+            "count": 4,
+            "chars": 23417,
+            "est_tokens": 5854
+          },
+          {
+            "key": "src/gzkit/content/ownership.py",
+            "count": 1,
+            "chars": 9854,
+            "est_tokens": 2464
+          },
+          {
+            "key": "docs/governance/advisory-rules-audit.md",
+            "count": 2,
+            "chars": 8890,
+            "est_tokens": 2222
+          },
+          {
+            "key": ".gzkit/handoffs/20261003T120228Z-obpi-08-cost-measured-obpi-10-trial-ruled.md",
+            "count": 1,
+            "chars": 8630,
+            "est_tokens": 2158
+          },
+          {
+            "key": "tests/governance/test_bullet_retention.py",
+            "count": 4,
+            "chars": 5600,
+            "est_tokens": 1400
+          },
+          {
+            "key": "docs/governance/obpi-run-cost-2026-10-03-evidence/README.md",
+            "count": 1,
+            "chars": 3892,
+            "est_tokens": 973
+          },
+          {
+            "key": "docs/user/manpages/validate.md",
+            "count": 1,
+            "chars": 3460,
+            "est_tokens": 865
+          }
+        ],
+        "file_reads_repeated": [
+          {
+            "key": "docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-10-classification-reader-and-ownership.md",
+            "count": 2,
+            "chars": 25587,
+            "est_tokens": 6397
+          },
+          {
+            "key": "src/gzkit/governance/trust_audits/bullet_retention.py",
+            "count": 4,
+            "chars": 23417,
+            "est_tokens": 5854
+          },
+          {
+            "key": "docs/governance/advisory-rules-audit.md",
+            "count": 2,
+            "chars": 8890,
+            "est_tokens": 2222
+          },
+          {
+            "key": "tests/governance/test_bullet_retention.py",
+            "count": 4,
+            "chars": 5600,
+            "est_tokens": 1400
+          }
+        ],
+        "file_reads_distinct_files": 8,
+        "bash_outputs_by_family": [
+          {
+            "key": "other: repo inspection (grep, sed, cat, python, gh)",
+            "count": 28,
+            "chars": 150689,
+            "est_tokens": 37672
+          },
+          {
+            "key": "gz other",
+            "count": 12,
+            "chars": 25065,
+            "est_tokens": 6266
+          },
+          {
+            "key": "gz obpi other",
+            "count": 9,
+            "chars": 17948,
+            "est_tokens": 4487
+          },
+          {
+            "key": "gz obpi acceptance",
+            "count": 8,
+            "chars": 13764,
+            "est_tokens": 3441
+          },
+          {
+            "key": "other: reads the run's own logs in the scratchpad",
+            "count": 4,
+            "chars": 9290,
+            "est_tokens": 2322
+          },
+          {
+            "key": "unittest",
+            "count": 9,
+            "chars": 8579,
+            "est_tokens": 2145
+          },
+          {
+            "key": "git",
+            "count": 5,
+            "chars": 6873,
+            "est_tokens": 1718
+          },
+          {
+            "key": "gz arb",
+            "count": 2,
+            "chars": 2125,
+            "est_tokens": 531
+          }
+        ],
+        "agent_results": [],
+        "rule_injections": [
+          {
+            "key": "tests.md",
+            "count": 1,
+            "chars": 11189,
+            "est_tokens": 2797
+          },
+          {
+            "key": "token-block-discipline.md",
+            "count": 1,
+            "chars": 7779,
+            "est_tokens": 1945
+          },
+          {
+            "key": "pythonic.md",
+            "count": 1,
+            "chars": 7657,
+            "est_tokens": 1914
+          },
+          {
+            "key": "hexagonal-architecture.md",
+            "count": 1,
+            "chars": 6764,
+            "est_tokens": 1691
+          },
+          {
+            "key": "task-discovery.md",
+            "count": 1,
+            "chars": 6380,
+            "est_tokens": 1595
+          },
+          {
+            "key": "gh-cli.md",
+            "count": 1,
+            "chars": 5570,
+            "est_tokens": 1392
+          },
+          {
+            "key": "cross-platform.md",
+            "count": 1,
+            "chars": 5379,
+            "est_tokens": 1345
+          },
+          {
+            "key": "security-sensitivity.md",
+            "count": 1,
+            "chars": 5367,
+            "est_tokens": 1342
+          },
+          {
+            "key": "adr-audit.md",
+            "count": 1,
+            "chars": 5106,
+            "est_tokens": 1276
+          },
+          {
+            "key": "guardrail-feedback-prose.md",
+            "count": 1,
+            "chars": 4458,
+            "est_tokens": 1114
+          },
+          {
+            "key": "agent-failure-modes.md",
+            "count": 1,
+            "chars": 3719,
+            "est_tokens": 930
+          },
+          {
+            "key": "gate5-runbook-code-covenant.md",
+            "count": 1,
+            "chars": 3333,
+            "est_tokens": 833
+          },
+          {
+            "key": "brief-heading-conventions.md",
+            "count": 1,
+            "chars": 2354,
+            "est_tokens": 588
+          },
+          {
+            "key": "models.md",
+            "count": 1,
+            "chars": 1960,
+            "est_tokens": 490
+          }
+        ],
+        "hook_outputs": [
+          {
+            "key": "hook_success:SessionStart:clear",
+            "count": 1,
+            "chars": 2349,
+            "est_tokens": 587
+          },
+          {
+            "key": "hook_additional_context:SessionStart",
+            "count": 1,
+            "chars": 2219,
+            "est_tokens": 555
+          }
+        ],
+        "session_start_attachments": [
+          {
+            "key": "skill_listing",
+            "count": 1,
+            "chars": 29982,
+            "est_tokens": 7496
+          },
+          {
+            "key": "instructions",
+            "count": 1,
+            "chars": 28215,
+            "est_tokens": 7054
+          },
+          {
+            "key": "agent_listing_delta",
+            "count": 1,
+            "chars": 3866,
+            "est_tokens": 966
+          },
+          {
+            "key": "mcp_instructions_delta",
+            "count": 1,
+            "chars": 2053,
+            "est_tokens": 513
+          },
+          {
+            "key": "session_context",
+            "count": 1,
+            "chars": 1264,
+            "est_tokens": 316
+          },
+          {
+            "key": "deferred_tools_delta",
+            "count": 1,
+            "chars": 906,
+            "est_tokens": 226
+          },
+          {
+            "key": "environment",
+            "count": 1,
+            "chars": 700,
+            "est_tokens": 175
+          },
+          {
+            "key": "model",
+            "count": 1,
+            "chars": 161,
+            "est_tokens": 40
+          },
+          {
+            "key": "date",
+            "count": 1,
+            "chars": 64,
+            "est_tokens": 16
+          }
+        ],
+        "other_harness_reminders": [
+          {
+            "key": "edited_text_file",
+            "count": 3,
+            "chars": 1273,
+            "est_tokens": 318
+          },
+          {
+            "key": "silent_turn_reminder",
+            "count": 7,
+            "chars": 931,
+            "est_tokens": 233
+          }
+        ],
+        "operator_prompts": [
+          {
+            "key": "prompt",
+            "count": 6,
+            "chars": 377,
+            "est_tokens": 94
+          }
+        ],
+        "edit_write_results": [
+          {
+            "key": "Edit",
+            "count": 22,
+            "chars": 2838,
+            "est_tokens": 710
+          },
+          {
+            "key": "Write",
+            "count": 3,
+            "chars": 560,
+            "est_tokens": 140
+          }
+        ],
+        "everything_else": [
+          {
+            "key": "harness user row",
+            "count": 2,
+            "chars": 347,
+            "est_tokens": 87
+          }
+        ],
+        "attachments_recorded_but_not_rendered": {
+          "hook_outputs|hook_success:SessionStart:clear": 1,
+          "session_start_attachments|credential_org": 1,
+          "session_start_attachments|prompt_snapshot": 1,
+          "other_harness_reminders|prompt_snapshot": 1,
+          "other_harness_reminders|deferred_tools_record": 84,
+          "hook_outputs|hook_success:PostToolUse:Edit": 10,
+          "hook_outputs|hook_success:PostToolUse:Write": 2,
+          "hook_outputs|hook_success:PreToolUse:Bash": 2,
+          "other_harness_reminders|command_permissions": 1
+        },
+        "assistant_output": {
+          "text_chars": 19707,
+          "thinking_text_chars": 2185,
+          "thinking_signature_chars": 394768,
+          "tool_call_argument_chars": 176025,
+          "output_tokens_measured": 170922,
+          "tool_call_argument_chars_by_tool": {
+            "Bash": 81636,
+            "Edit": 77448,
+            "Write": 14882,
+            "Read": 2028,
+            "Skill": 31
+          },
+          "visible_chars_total": 197917,
+          "visible_est_tokens": 49479
+        },
+        "calibration": {
+          "note": "Checks the chars/4 estimate against the measured curve. Assumes every earlier assistant output (thinking included) stays in context.",
+          "measured_context_growth_first_to_last_call": 355904,
+          "measured_output_tokens_before_last_call": 170467,
+          "implied_user_side_tokens": 185437,
+          "est_user_side_tokens_after_first_call": 110912,
+          "implied_chars_per_token": 2.39,
+          "user_side_chars_before_first_call": 72194,
+          "first_call_context_measured": 55088
+        }
+      },
+      "context_curve": [
+        {
+          "call": 0,
+          "timestamp": "2026-10-03T12:06:52.084Z",
+          "context": 55088,
+          "output_tokens": 261
+        },
+        {
+          "call": 1,
+          "timestamp": "2026-10-03T12:07:10.804Z",
+          "context": 66091,
+          "output_tokens": 1976
+        },
+        {
+          "call": 2,
+          "timestamp": "2026-10-03T12:07:28.717Z",
+          "context": 87985,
+          "output_tokens": 1530
+        },
+        {
+          "call": 3,
+          "timestamp": "2026-10-03T12:07:34.098Z",
+          "context": 89811,
+          "output_tokens": 207
+        },
+        {
+          "call": 4,
+          "timestamp": "2026-10-03T12:07:39.793Z",
+          "context": 93921,
+          "output_tokens": 377
+        },
+        {
+          "call": 5,
+          "timestamp": "2026-10-03T12:07:45.242Z",
+          "context": 95040,
+          "output_tokens": 215
+        },
+        {
+          "call": 6,
+          "timestamp": "2026-10-03T12:07:49.390Z",
+          "context": 95501,
+          "output_tokens": 717
+        },
+        {
+          "call": 7,
+          "timestamp": "2026-10-03T12:07:54.518Z",
+          "context": 113040,
+          "output_tokens": 343
+        },
+        {
+          "call": 8,
+          "timestamp": "2026-10-03T12:07:58.751Z",
+          "context": 116785,
+          "output_tokens": 474
+        },
+        {
+          "call": 9,
+          "timestamp": "2026-10-03T12:08:03.164Z",
+          "context": 122934,
+          "output_tokens": 536
+        },
+        {
+          "call": 10,
+          "timestamp": "2026-10-03T12:08:30.121Z",
+          "context": 126588,
+          "output_tokens": 3037
+        },
+        {
+          "call": 11,
+          "timestamp": "2026-10-03T12:10:13.641Z",
+          "context": 139590,
+          "output_tokens": 9834
+        },
+        {
+          "call": 12,
+          "timestamp": "2026-10-03T12:10:21.157Z",
+          "context": 152934,
+          "output_tokens": 606
+        },
+        {
+          "call": 13,
+          "timestamp": "2026-10-03T12:10:28.420Z",
+          "context": 154304,
+          "output_tokens": 515
+        },
+        {
+          "call": 14,
+          "timestamp": "2026-10-03T12:10:32.521Z",
+          "context": 157427,
+          "output_tokens": 1093
+        },
+        {
+          "call": 15,
+          "timestamp": "2026-10-03T12:11:08.884Z",
+          "context": 160221,
+          "output_tokens": 3381
+        },
+        {
+          "call": 16,
+          "timestamp": "2026-10-03T12:12:17.080Z",
+          "context": 165012,
+          "output_tokens": 6165
+        },
+        {
+          "call": 17,
+          "timestamp": "2026-10-03T12:13:35.821Z",
+          "context": 173398,
+          "output_tokens": 1892
+        },
+        {
+          "call": 18,
+          "timestamp": "2026-10-03T12:13:37.981Z",
+          "context": 178359,
+          "output_tokens": 312
+        },
+        {
+          "call": 19,
+          "timestamp": "2026-10-03T12:14:38.448Z",
+          "context": 181534,
+          "output_tokens": 5844
+        },
+        {
+          "call": 20,
+          "timestamp": "2026-10-03T12:14:43.300Z",
+          "context": 190017,
+          "output_tokens": 285
+        },
+        {
+          "call": 21,
+          "timestamp": "2026-10-03T12:14:48.632Z",
+          "context": 196136,
+          "output_tokens": 3905
+        },
+        {
+          "call": 22,
+          "timestamp": "2026-10-03T12:15:17.820Z",
+          "context": 200189,
+          "output_tokens": 505
+        },
+        {
+          "call": 23,
+          "timestamp": "2026-10-03T12:16:05.385Z",
+          "context": 201028,
+          "output_tokens": 5169
+        },
+        {
+          "call": 24,
+          "timestamp": "2026-10-03T12:16:11.279Z",
+          "context": 207432,
+          "output_tokens": 10569
+        },
+        {
+          "call": 25,
+          "timestamp": "2026-10-03T12:17:34.588Z",
+          "context": 218295,
+          "output_tokens": 1266
+        },
+        {
+          "call": 26,
+          "timestamp": "2026-10-03T12:17:40.980Z",
+          "context": 220469,
+          "output_tokens": 663
+        },
+        {
+          "call": 27,
+          "timestamp": "2026-10-03T12:17:49.252Z",
+          "context": 221693,
+          "output_tokens": 317
+        },
+        {
+          "call": 28,
+          "timestamp": "2026-10-03T12:17:52.088Z",
+          "context": 222075,
+          "output_tokens": 127
+        },
+        {
+          "call": 29,
+          "timestamp": "2026-10-03T12:18:23.904Z",
+          "context": 222900,
+          "output_tokens": 10236
+        },
+        {
+          "call": 30,
+          "timestamp": "2026-10-03T12:19:18.241Z",
+          "context": 233187,
+          "output_tokens": 155
+        },
+        {
+          "call": 31,
+          "timestamp": "2026-10-03T12:19:22.388Z",
+          "context": 233673,
+          "output_tokens": 564
+        },
+        {
+          "call": 32,
+          "timestamp": "2026-10-03T12:19:27.135Z",
+          "context": 234592,
+          "output_tokens": 1102
+        },
+        {
+          "call": 33,
+          "timestamp": "2026-10-03T12:19:49.229Z",
+          "context": 236040,
+          "output_tokens": 1747
+        },
+        {
+          "call": 34,
+          "timestamp": "2026-10-03T12:20:29.164Z",
+          "context": 248003,
+          "output_tokens": 4408
+        },
+        {
+          "call": 35,
+          "timestamp": "2026-10-03T12:20:43.956Z",
+          "context": 253491,
+          "output_tokens": 3813
+        },
+        {
+          "call": 36,
+          "timestamp": "2026-10-03T12:21:10.527Z",
+          "context": 257436,
+          "output_tokens": 480
+        },
+        {
+          "call": 37,
+          "timestamp": "2026-10-03T12:21:24.621Z",
+          "context": 259176,
+          "output_tokens": 1329
+        },
+        {
+          "call": 38,
+          "timestamp": "2026-10-03T12:21:30.138Z",
+          "context": 261048,
+          "output_tokens": 278
+        },
+        {
+          "call": 39,
+          "timestamp": "2026-10-03T12:21:36.244Z",
+          "context": 261828,
+          "output_tokens": 711
+        },
+        {
+          "call": 40,
+          "timestamp": "2026-10-03T12:21:50.236Z",
+          "context": 262689,
+          "output_tokens": 1261
+        },
+        {
+          "call": 41,
+          "timestamp": "2026-10-03T12:22:06.842Z",
+          "context": 265903,
+          "output_tokens": 4792
+        },
+        {
+          "call": 42,
+          "timestamp": "2026-10-03T12:22:34.807Z",
+          "context": 271648,
+          "output_tokens": 618
+        },
+        {
+          "call": 43,
+          "timestamp": "2026-10-03T12:22:40.435Z",
+          "context": 276003,
+          "output_tokens": 444
+        },
+        {
+          "call": 44,
+          "timestamp": "2026-10-03T12:22:59.252Z",
+          "context": 276491,
+          "output_tokens": 1823
+        },
+        {
+          "call": 45,
+          "timestamp": "2026-10-03T12:23:04.608Z",
+          "context": 279951,
+          "output_tokens": 1574
+        },
+        {
+          "call": 46,
+          "timestamp": "2026-10-03T12:23:17.585Z",
+          "context": 282421,
+          "output_tokens": 498
+        },
+        {
+          "call": 47,
+          "timestamp": "2026-10-03T12:23:33.784Z",
+          "context": 284538,
+          "output_tokens": 4272
+        },
+        {
+          "call": 48,
+          "timestamp": "2026-10-03T12:24:06.666Z",
+          "context": 289258,
+          "output_tokens": 661
+        },
+        {
+          "call": 49,
+          "timestamp": "2026-10-03T12:24:09.895Z",
+          "context": 290150,
+          "output_tokens": 816
+        },
+        {
+          "call": 50,
+          "timestamp": "2026-10-03T12:24:16.404Z",
+          "context": 291189,
+          "output_tokens": 703
+        },
+        {
+          "call": 51,
+          "timestamp": "2026-10-03T12:24:30.623Z",
+          "context": 292848,
+          "output_tokens": 2469
+        },
+        {
+          "call": 52,
+          "timestamp": "2026-10-03T12:24:43.289Z",
+          "context": 295538,
+          "output_tokens": 479
+        },
+        {
+          "call": 53,
+          "timestamp": "2026-10-03T12:24:49.358Z",
+          "context": 296281,
+          "output_tokens": 641
+        },
+        {
+          "call": 54,
+          "timestamp": "2026-10-03T12:24:58.884Z",
+          "context": 297198,
+          "output_tokens": 501
+        },
+        {
+          "call": 55,
+          "timestamp": "2026-10-03T12:25:01.953Z",
+          "context": 297789,
+          "output_tokens": 135
+        },
+        {
+          "call": 56,
+          "timestamp": "2026-10-03T12:25:13.573Z",
+          "context": 301193,
+          "output_tokens": 2246
+        },
+        {
+          "call": 57,
+          "timestamp": "2026-10-03T12:25:26.309Z",
+          "context": 303498,
+          "output_tokens": 682
+        },
+        {
+          "call": 58,
+          "timestamp": "2026-10-03T12:25:38.717Z",
+          "context": 304733,
+          "output_tokens": 1229
+        },
+        {
+          "call": 59,
+          "timestamp": "2026-10-03T12:25:45.273Z",
+          "context": 306375,
+          "output_tokens": 1197
+        },
+        {
+          "call": 60,
+          "timestamp": "2026-10-03T12:25:59.679Z",
+          "context": 307990,
+          "output_tokens": 454
+        },
+        {
+          "call": 61,
+          "timestamp": "2026-10-03T12:26:04.538Z",
+          "context": 308767,
+          "output_tokens": 760
+        },
+        {
+          "call": 62,
+          "timestamp": "2026-10-03T12:26:12.612Z",
+          "context": 309686,
+          "output_tokens": 1129
+        },
+        {
+          "call": 63,
+          "timestamp": "2026-10-03T12:28:16.638Z",
+          "context": 311543,
+          "output_tokens": 720
+        },
+        {
+          "call": 64,
+          "timestamp": "2026-10-03T12:28:35.870Z",
+          "context": 312877,
+          "output_tokens": 1521
+        },
+        {
+          "call": 65,
+          "timestamp": "2026-10-03T12:28:59.164Z",
+          "context": 315009,
+          "output_tokens": 2877
+        },
+        {
+          "call": 66,
+          "timestamp": "2026-10-03T12:31:02.266Z",
+          "context": 317899,
+          "output_tokens": 2468
+        },
+        {
+          "call": 67,
+          "timestamp": "2026-10-03T12:33:17.698Z",
+          "context": 320398,
+          "output_tokens": 951
+        },
+        {
+          "call": 68,
+          "timestamp": "2026-10-03T12:33:26.537Z",
+          "context": 323520,
+          "output_tokens": 574
+        },
+        {
+          "call": 69,
+          "timestamp": "2026-10-03T12:34:03.983Z",
+          "context": 325439,
+          "output_tokens": 1747
+        },
+        {
+          "call": 70,
+          "timestamp": "2026-10-03T12:34:18.677Z",
+          "context": 327834,
+          "output_tokens": 1426
+        },
+        {
+          "call": 71,
+          "timestamp": "2026-10-03T12:34:39.413Z",
+          "context": 329934,
+          "output_tokens": 2195
+        },
+        {
+          "call": 72,
+          "timestamp": "2026-10-03T12:35:19.859Z",
+          "context": 332148,
+          "output_tokens": 525
+        },
+        {
+          "call": 73,
+          "timestamp": "2026-10-03T12:35:26.229Z",
+          "context": 333213,
+          "output_tokens": 653
+        },
+        {
+          "call": 74,
+          "timestamp": "2026-10-03T12:35:48.239Z",
+          "context": 334842,
+          "output_tokens": 1729
+        },
+        {
+          "call": 75,
+          "timestamp": "2026-10-03T12:35:51.626Z",
+          "context": 339067,
+          "output_tokens": 205
+        },
+        {
+          "call": 76,
+          "timestamp": "2026-10-03T12:36:30.754Z",
+          "context": 345316,
+          "output_tokens": 4580
+        },
+        {
+          "call": 77,
+          "timestamp": "2026-10-03T12:38:27.195Z",
+          "context": 351175,
+          "output_tokens": 1218
+        },
+        {
+          "call": 78,
+          "timestamp": "2026-10-03T12:38:53.571Z",
+          "context": 353332,
+          "output_tokens": 4741
+        },
+        {
+          "call": 79,
+          "timestamp": "2026-10-03T12:39:20.704Z",
+          "context": 358911,
+          "output_tokens": 539
+        },
+        {
+          "call": 80,
+          "timestamp": "2026-10-03T12:40:05.175Z",
+          "context": 360954,
+          "output_tokens": 541
+        },
+        {
+          "call": 81,
+          "timestamp": "2026-10-03T12:40:13.178Z",
+          "context": 362345,
+          "output_tokens": 413
+        },
+        {
+          "call": 82,
+          "timestamp": "2026-10-03T12:40:17.336Z",
+          "context": 363920,
+          "output_tokens": 207
+        },
+        {
+          "call": 83,
+          "timestamp": "2026-10-03T12:40:33.513Z",
+          "context": 365765,
+          "output_tokens": 2034
+        },
+        {
+          "call": 84,
+          "timestamp": "2026-10-03T12:40:59.359Z",
+          "context": 368954,
+          "output_tokens": 628
+        },
+        {
+          "call": 85,
+          "timestamp": "2026-10-03T12:41:08.326Z",
+          "context": 370781,
+          "output_tokens": 494
+        },
+        {
+          "call": 86,
+          "timestamp": "2026-10-03T12:41:25.957Z",
+          "context": 371487,
+          "output_tokens": 1066
+        },
+        {
+          "call": 87,
+          "timestamp": "2026-10-03T23:44:26.584Z",
+          "context": 372599,
+          "output_tokens": 2185
+        },
+        {
+          "call": 88,
+          "timestamp": "2026-10-03T23:46:23.408Z",
+          "context": 374796,
+          "output_tokens": 604
+        },
+        {
+          "call": 89,
+          "timestamp": "2026-10-03T23:46:51.364Z",
+          "context": 389016,
+          "output_tokens": 2743
+        },
+        {
+          "call": 90,
+          "timestamp": "2026-10-03T23:47:10.512Z",
+          "context": 393238,
+          "output_tokens": 5844
+        },
+        {
+          "call": 91,
+          "timestamp": "2026-10-03T23:47:53.026Z",
+          "context": 399178,
+          "output_tokens": 291
+        },
+        {
+          "call": 92,
+          "timestamp": "2026-10-03T23:47:59.765Z",
+          "context": 399952,
+          "output_tokens": 4795
+        },
+        {
+          "call": 93,
+          "timestamp": "2026-10-03T23:48:37.036Z",
+          "context": 404818,
+          "output_tokens": 520
+        },
+        {
+          "call": 94,
+          "timestamp": "2026-10-03T23:48:50.652Z",
+          "context": 405878,
+          "output_tokens": 928
+        },
+        {
+          "call": 95,
+          "timestamp": "2026-10-03T23:48:58.236Z",
+          "context": 407798,
+          "output_tokens": 1786
+        },
+        {
+          "call": 96,
+          "timestamp": "2026-10-03T23:49:25.917Z",
+          "context": 410313,
+          "output_tokens": 391
+        },
+        {
+          "call": 97,
+          "timestamp": "2026-10-03T23:51:43.213Z",
+          "context": 410992,
+          "output_tokens": 455
+        }
+      ],
+      "projection": {
+        "label": "PROJECTION - arithmetic on the measured curve, not a measurement",
+        "save_point_tokens": 20000,
+        "reset_context_tokens": 75088,
+        "resets": 5,
+        "segments": [
+          {
+            "segment": "0 pre-pipeline work",
+            "calls": 2,
+            "reset_applied": false,
+            "actual_cache_read": 82655,
+            "projected_cache_read": 82655,
+            "actual_cache_creation": 38521,
+            "projected_cache_creation": 38521,
+            "actual_peak_context": 66091,
+            "projected_peak_context": 66091
+          },
+          {
+            "segment": "1 pipeline launch to first dispatch",
+            "calls": 3,
+            "reset_applied": true,
+            "actual_cache_read": 243883,
+            "projected_cache_read": 179568,
+            "actual_cache_creation": 27829,
+            "projected_cache_creation": 53453,
+            "actual_peak_context": 93921,
+            "projected_peak_context": 81024
+          },
+          {
+            "segment": "2a implementation (single driver, no Agent dispatch)",
+            "calls": 58,
+            "reset_applied": true,
+            "actual_cache_read": 13187633,
+            "projected_cache_read": 11984019,
+            "actual_cache_creation": 215765,
+            "projected_cache_creation": 262163,
+            "actual_peak_context": 309686,
+            "projected_peak_context": 289734
+          },
+          {
+            "segment": "3 verification baseline",
+            "calls": 5,
+            "reset_applied": true,
+            "actual_cache_read": 1572349,
+            "projected_cache_read": 344414,
+            "actual_cache_creation": 5363,
+            "projected_cache_creation": 51023,
+            "actual_peak_context": 320398,
+            "projected_peak_context": 83943
+          },
+          {
+            "segment": "4 evidence and adversarial review",
+            "calls": 25,
+            "reset_applied": true,
+            "actual_cache_read": 8524371,
+            "projected_cache_read": 2517610,
+            "actual_cache_creation": 423287,
+            "projected_cache_creation": 219248,
+            "actual_peak_context": 399952,
+            "projected_peak_context": 151520
+          },
+          {
+            "segment": "5 completion and sync",
+            "calls": 5,
+            "reset_applied": true,
+            "actual_cache_read": 2028749,
+            "projected_cache_read": 337448,
+            "actual_cache_creation": 11040,
+            "projected_cache_creation": 53691,
+            "actual_peak_context": 410992,
+            "projected_peak_context": 81262
+          }
+        ],
+        "actual_cache_read": 25639640,
+        "projected_cache_read": 15445714,
+        "cache_read_reduction_pct": 39.8,
+        "actual_cache_creation": 721805,
+        "projected_cache_creation": 678099,
+        "projected_peak_context": 289734,
+        "assumptions": [
+          "Same API calls, in the same order, with the same per-call output.",
+          "Within a segment each call keeps its measured offset above the segment's entry context.",
+          "At each boundary the context becomes a fixed load (55088) + a 20000-token save point = 75088; the pre-pipeline segment is not reset.",
+          "The save point carries everything the next stage needs: no file is re-read, no skill is re-loaded, no extra call is spent writing or reading the save point.",
+          "The first call after a reset reads 27569 tokens from cache; the rest of the reset context is a cache write.",
+          "Later calls in a segment read from cache what they read in the run, less the dropped history. A call that missed the cache in the run still misses it.",
+          "Model switches and idle gaps fall where they fell in the run.",
+          "Subagent and reviewer sessions are unchanged and not included."
+        ]
+      },
+      "files": {
+        "curve_csv": "docs/governance/context-phase-review-2026-10-04-evidence/context_curve_trial_OBPI-0.35.0-10.csv",
+        "inputs_csv": "docs/governance/context-phase-review-2026-10-04-evidence/context_inputs_trial_OBPI-0.35.0-10.csv"
+      }
+    }
+  },
+  "sanity_check": {
+    "orchestrator": {
+      "calls": {
+        "expected": 260,
+        "measured": 260,
+        "match": true
+      },
+      "cache_read_input_tokens": {
+        "expected": 118627618,
+        "measured": 118627618,
+        "match": true
+      },
+      "first_context": {
+        "expected": 55206,
+        "measured": 55206,
+        "match": true
+      },
+      "peak_context": {
+        "expected": 743855,
+        "measured": 743855,
+        "match": true
+      }
+    },
+    "in_process_subagents": {
+      "calls": {
+        "expected": 145,
+        "measured": 145,
+        "match": true
+      },
+      "cache_read_input_tokens": {
+        "expected": 13390717,
+        "measured": 13390717,
+        "match": true
+      },
+      "peak_context": {
+        "expected": 232736,
+        "measured": 232736,
+        "match": true
+      }
+    },
+    "never_compacted": {
+      "compaction_rows_found": 0,
+      "context_decreases_between_calls": 0
+    },
+    "sibling_reviewer_sessions": {
+      "files": {
+        "expected": 12,
+        "measured": 12,
+        "match": true
+      },
+      "calls": {
+        "expected": 152,
+        "measured": 152,
+        "match": true
+      },
+      "cache_read_input_tokens": {
+        "expected": 21910398,
+        "measured": 21910398,
+        "match": true
+      },
+      "peak_context": {
+        "expected": 269644,
+        "measured": 269644,
+        "match": true
+      }
+    }
+  },
+  "baseline_subagents": [
+    {
+      "transcript": "agent-a178f3fd443f6d5c6.jsonl",
+      "agent_type": "implementer",
+      "description": "Implement task 1: advisory retarget",
+      "models": {
+        "claude-sonnet-5-5": 78
+      },
+      "calls": 78,
+      "first_call_context": 16277,
+      "first_call_cache_read": 0,
+      "first_call_cache_creation": 16275,
+      "peak_context": 161030,
+      "last_context": 161030,
+      "cache_read_tokens": 7502855,
+      "cache_creation_tokens": 718010,
+      "output_tokens": 2527,
+      "first_call_time": "2026-10-03T06:59:46.236Z",
+      "last_call_time": "2026-10-03T11:22:23.432Z"
+    },
+    {
+      "transcript": "agent-a39ce8201cba81cc4.jsonl",
+      "agent_type": "narrator",
+      "description": "Narrator: compose Step-4a packet",
+      "models": {
+        "claude-opus-5-5": 30
+      },
+      "calls": 30,
+      "first_call_context": 15881,
+      "first_call_cache_read": 0,
+      "first_call_cache_creation": 15879,
+      "peak_context": 232736,
+      "last_context": 232736,
+      "cache_read_tokens": 3712759,
+      "cache_creation_tokens": 579704,
+      "output_tokens": 5517,
+      "first_call_time": "2026-10-03T07:58:49.226Z",
+      "last_call_time": "2026-10-03T09:12:44.455Z"
+    },
+    {
+      "transcript": "agent-ac0c82017b3127d03.jsonl",
+      "agent_type": "implementer",
+      "description": "Implement task 2: manpage and BDD",
+      "models": {
+        "claude-sonnet-5-5": 37
+      },
+      "calls": 37,
+      "first_call_context": 16329,
+      "first_call_cache_read": 4111,
+      "first_call_cache_creation": 12216,
+      "peak_context": 95974,
+      "last_context": 95974,
+      "cache_read_tokens": 2175103,
+      "cache_creation_tokens": 415007,
+      "output_tokens": 2654,
+      "first_call_time": "2026-10-03T07:04:28.439Z",
+      "last_call_time": "2026-10-03T08:32:18.202Z"
+    }
+  ],
+  "baseline_sibling_sessions": {
+    "window": [
+      "2026-10-03T06:55:00+00:00",
+      "2026-10-03T11:35:00+00:00"
+    ],
+    "heuristic": "transcripts whose every timestamped row falls inside the window",
+    "sessions": [
+      {
+        "transcript": "431047a2-db49-4c2b-b8ee-b817ab823c57.jsonl",
+        "agent": "spec-reviewer",
+        "models": {
+          "claude-opus-5-5": 13
+        },
+        "calls": 13,
+        "first_call_context": 17321,
+        "peak_context": 254741,
+        "cache_read_tokens": 1902092,
+        "first_call_time": "2026-10-03T07:52:59.040Z"
+      },
+      {
+        "transcript": "5522b5bf-ce27-4897-9adf-91b5f282961c.jsonl",
+        "agent": "spec-reviewer",
+        "models": {
+          "claude-opus-5-5": 11
+        },
+        "calls": 11,
+        "first_call_context": 17318,
+        "peak_context": 248705,
+        "cache_read_tokens": 1648303,
+        "first_call_time": "2026-10-03T07:38:02.808Z"
+      },
+      {
+        "transcript": "5bd9f24e-c749-4c1e-a3d5-17b8201edbd8.jsonl",
+        "agent": "spec-reviewer",
+        "models": {
+          "claude-opus-5-5": 12
+        },
+        "calls": 12,
+        "first_call_context": 17321,
+        "peak_context": 257380,
+        "cache_read_tokens": 2103667,
+        "first_call_time": "2026-10-03T07:13:05.059Z"
+      },
+      {
+        "transcript": "688ec357-fdad-4062-9369-b06e1e2211a6.jsonl",
+        "agent": "spec-reviewer",
+        "models": {
+          "claude-opus-5-5": 12
+        },
+        "calls": 12,
+        "first_call_context": 17318,
+        "peak_context": 247946,
+        "cache_read_tokens": 1826206,
+        "first_call_time": "2026-10-03T11:24:41.522Z"
+      },
+      {
+        "transcript": "6f1a50d6-3b59-4ce1-a5a7-9f2bfc108bf3.jsonl",
+        "agent": "spec-reviewer",
+        "models": {
+          "claude-opus-5-5": 15
+        },
+        "calls": 15,
+        "first_call_context": 17327,
+        "peak_context": 269644,
+        "cache_read_tokens": 2554074,
+        "first_call_time": "2026-10-03T07:29:12.866Z"
+      },
+      {
+        "transcript": "845dd480-e976-4e73-ba22-542ad0bf0656.jsonl",
+        "agent": "quality-reviewer",
+        "models": {
+          "claude-opus-5-5": 13
+        },
+        "calls": 13,
+        "first_call_context": 17309,
+        "peak_context": 232714,
+        "cache_read_tokens": 1853179,
+        "first_call_time": "2026-10-03T07:38:02.261Z"
+      },
+      {
+        "transcript": "8e1dfcfa-68aa-4262-8e17-99ab1ce54dd0.jsonl",
+        "agent": "quality-reviewer",
+        "models": {
+          "claude-opus-5-5": 12
+        },
+        "calls": 12,
+        "first_call_context": 17315,
+        "peak_context": 263285,
+        "cache_read_tokens": 1884581,
+        "first_call_time": "2026-10-03T07:13:04.471Z"
+      },
+      {
+        "transcript": "9af8d515-2423-427b-9771-6aabb1bd02bf.jsonl",
+        "agent": "quality-reviewer",
+        "models": {
+          "claude-opus-5-5": 16
+        },
+        "calls": 16,
+        "first_call_context": 17310,
+        "peak_context": 199918,
+        "cache_read_tokens": 1949594,
+        "first_call_time": "2026-10-03T07:52:59.167Z"
+      },
+      {
+        "transcript": "b6b5ec29-2b1d-4a95-a1ce-7fd2300a14ae.jsonl",
+        "agent": "quality-reviewer",
+        "models": {
+          "claude-opus-5-5": 11
+        },
+        "calls": 11,
+        "first_call_context": 17320,
+        "peak_context": 246929,
+        "cache_read_tokens": 1625263,
+        "first_call_time": "2026-10-03T08:25:49.568Z"
+      },
+      {
+        "transcript": "c1797edb-1c60-438d-871c-1be5bb77642c.jsonl",
+        "agent": "quality-reviewer",
+        "models": {
+          "claude-opus-5-5": 13
+        },
+        "calls": 13,
+        "first_call_context": 17309,
+        "peak_context": 215280,
+        "cache_read_tokens": 1634529,
+        "first_call_time": "2026-10-03T11:24:42.224Z"
+      },
+      {
+        "transcript": "c922dca0-df8f-4f06-8986-13c5bb98a71c.jsonl",
+        "agent": "quality-reviewer",
+        "models": {
+          "claude-opus-5-5": 12
+        },
+        "calls": 12,
+        "first_call_context": 17317,
+        "peak_context": 241857,
+        "cache_read_tokens": 1500105,
+        "first_call_time": "2026-10-03T07:29:12.748Z"
+      },
+      {
+        "transcript": "de1f51c1-b3c2-49e9-b7ba-70f5a8c1b404.jsonl",
+        "agent": "spec-reviewer",
+        "models": {
+          "claude-opus-5-5": 12
+        },
+        "calls": 12,
+        "first_call_context": 17329,
+        "peak_context": 216039,
+        "cache_read_tokens": 1428805,
+        "first_call_time": "2026-10-03T08:25:50.631Z"
+      }
+    ]
+  }
+}

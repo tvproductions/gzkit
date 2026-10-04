@@ -13,7 +13,7 @@ from pathlib import Path
 from gzkit.core.models import SkillFrontmatter
 from gzkit.core.validation_rules import parse_frontmatter
 from gzkit.governance.trust_audits.router_tables import audit_router_tables
-from tests.vendor_surfaces import skill_mirror_roots, skill_switched_off
+from tests.vendor_surfaces import skill_mirror_roots
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 CANONICAL_ROOT = PROJECT_ROOT / ".gzkit" / "skills"
@@ -213,8 +213,6 @@ class TestChoresRouterMirrorParity(unittest.TestCase):
             canonical_bytes,
             "gz-chores pkg copy byte-divergent from canonical",
         )
-        if skill_switched_off("gz-chores"):
-            return  # no mirror is written for a switched-off skill (ruling 2026-10-04)
         for mirror_root in VENDOR_MIRROR_ROOTS:
             with self.subTest(mirror=mirror_root.name):
                 mirror_path = mirror_root / "gz-chores" / "SKILL.md"

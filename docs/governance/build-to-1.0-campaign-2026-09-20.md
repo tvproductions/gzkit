@@ -89,7 +89,7 @@ computed there.
 
 > **RESEQUENCED 2026-09-27 (operator-ratified): ADR WORK FIRST.** Feature ADRs are worked in ascending order (`0.35.0` → `0.36.0` → `0.37.0` → `0.38.0` → `0.39.0` → the funded amendment ADR) before Movement C refactoring resumes. The 2026-09-02 NEXT-IN-PRIORITY placement of Movement C's family-closure box, recorded below, is SUPERSEDED. See § Amendments 2026-09-27 (3).
 >
-> **Topmost (sequenced):** **AMENDED 2026-10-03 (operator-ratified) — what a session draws: an initiated OBPI first; on its own, a GHI only when it blocks in-flight feature work, a gate or a release (§ Amendments 2026-10-03). Batch initiation is RESCINDED: the operator initiates each OBPI through `gz-obpi-pipeline` (§ Amendments 2026-10-03 (2)). Feature ADRs are worked in ascending order ahead of Movement C (§ Amendments 2026-09-27 (3)), so the NEXT-IN-PRIORITY placement of the family-closure box described below is SUPERSEDED.** **`ADR-0.35.0-canon-entry-corpus-landing` is TOPMOST (2026-09-01, operator-ratified, UNCHANGED). AMENDED 2026-09-02 (operator-ratified) — Movement C's `Close the doctrine-declared-without-mechanism family` box is pulled forward to NEXT-IN-PRIORITY, immediately behind TOPMOST and ahead of both Movement B and every other Movement C box; Movement B steps down one place; Movement A remains HELD as a Movement.** The box outranks its own Movement, on the precedent the 2026-09-01 amendment set when Movement A's `ADR-0.35.0` box became TOPMOST inside a HELD Movement. It is placed high because it is drawable without the operator: under the IRON LAW only the operator initiates OBPI work, while this box discharges through rule-text amendment, scorecard scoring and GHI-shaped direct repair. The family's share of the open queue and its production rate are measured in [`f1-family-share-measurement-2026-09-20.md`](f1-family-share-measurement-2026-09-20.md) — re-run its evidence script rather than trusting a figure transcribed here. Instances close same-session while the class keeps producing: that premise was re-measured 2026-09-20 under a shared criterion and VERIFIED, not revised. See § Amendments 2026-09-20. Run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` for its lifecycle and landed count rather than trusting a figure transcribed here. See § Amendments 2026-09-02. From 2026-08-14 to this amendment the plan declared TOPMOST a Movement that ADR order forbade working, while the work drawn every session sat as a box inside a HELD Movement — two amendments (2026-08-16, 2026-08-23) were spent explaining that split rather than removing it. This removes it. Run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` for its lifecycle and landed count rather than trusting a figure transcribed here. See § Amendments 2026-09-01.
+> **Topmost (sequenced):** **AMENDED 2026-10-04 (operator-ratified) — the 2026-10-04 switch-off is REVERSED in full and every control stands; the operator has named the tune-up of session management, phasing, subagent use and modularity the priority, with no control removed (§ Amendments 2026-10-04 (2)).** **AMENDED 2026-10-03 (operator-ratified) — what a session draws: an initiated OBPI first; on its own, a GHI only when it blocks in-flight feature work, a gate or a release (§ Amendments 2026-10-03). Batch initiation is RESCINDED: the operator initiates each OBPI through `gz-obpi-pipeline` (§ Amendments 2026-10-03 (2)). Feature ADRs are worked in ascending order ahead of Movement C (§ Amendments 2026-09-27 (3)), so the NEXT-IN-PRIORITY placement of the family-closure box described below is SUPERSEDED.** **`ADR-0.35.0-canon-entry-corpus-landing` is TOPMOST (2026-09-01, operator-ratified, UNCHANGED). AMENDED 2026-09-02 (operator-ratified) — Movement C's `Close the doctrine-declared-without-mechanism family` box is pulled forward to NEXT-IN-PRIORITY, immediately behind TOPMOST and ahead of both Movement B and every other Movement C box; Movement B steps down one place; Movement A remains HELD as a Movement.** The box outranks its own Movement, on the precedent the 2026-09-01 amendment set when Movement A's `ADR-0.35.0` box became TOPMOST inside a HELD Movement. It is placed high because it is drawable without the operator: under the IRON LAW only the operator initiates OBPI work, while this box discharges through rule-text amendment, scorecard scoring and GHI-shaped direct repair. The family's share of the open queue and its production rate are measured in [`f1-family-share-measurement-2026-09-20.md`](f1-family-share-measurement-2026-09-20.md) — re-run its evidence script rather than trusting a figure transcribed here. Instances close same-session while the class keeps producing: that premise was re-measured 2026-09-20 under a shared criterion and VERIFIED, not revised. See § Amendments 2026-09-20. Run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` for its lifecycle and landed count rather than trusting a figure transcribed here. See § Amendments 2026-09-02. From 2026-08-14 to this amendment the plan declared TOPMOST a Movement that ADR order forbade working, while the work drawn every session sat as a box inside a HELD Movement — two amendments (2026-08-16, 2026-08-23) were spent explaining that split rather than removing it. This removes it. Run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` for its lifecycle and landed count rather than trusting a figure transcribed here. See § Amendments 2026-09-01.
 >
 > **DRAWN-WORK ORDER — AMENDED 2026-09-15 (operator-ratified); SUPERSEDED by § Amendments 2026-09-27 (3) and 2026-10-03, and kept as the record of what was ruled then.** Work a session draws without the operator, at the NEXT-IN-PRIORITY position, is taken in this order: **(a) the R&D front** — the `gz-rnd` skill and the design in `docs/governance/rnd-discipline.md`; **(b) the chore estate** — the conversion directive and the overdue board, the family-closure box's agent-side arm; **(c) GHI direct repair, only** when the GHI closes a named arm of that box, blocks (a) or (b), or is an emergency. TOPMOST and ADR order are unchanged. See § Amendments 2026-09-15.
 >
@@ -612,9 +612,89 @@ had been repeating. All are dispositioned below — none left undefined.
 
 ## Amendments
 
-<a id="amendments-2026-10-03-2"></a>
+<a id="amendments-2026-10-04-2"></a>
 
-### 2026-10-04 (latest) — automatic authority is switched off, control by control, behind one central switch (operator-ratified)
+### 2026-10-04 (2) (latest) — the switch-off is reversed in full; gzkit's method is tuned, not reduced (operator-ratified)
+
+**Operator (`g0`), verbatim, in order (2026-10-04):** *"I do not want to curtail ANYTHING (I
+change my mind). I want a thorough review that keeps EVERYTHING we've fought hard for over the
+last 6-7 months and rather focuses on context, phase, and focus/attention management for the
+model."*; *"priority now is to revert to 24/48 hours ago and do the tune up, fine tune, audit,
+context/session management fix, not the reduction/simplification fix. A dumber gzkit isn't the
+way. We needed to have made it smarter."*; *"I want a FULL reversion to before the experiment, I
+am unwilling to give up ANY of gzkit's behaviors, I'd rather optimize the sessions and
+readjudicate the parts, one-by-one, rather than capitulate based on one experiment."*; *"book
+all of this to a handoff and a campaign note - we will fix gzkit's method - the responses that
+gzkit employs are all rational reactions to real experiences with model behavior over time, I
+have overreacted in my response to a single experiment."* On the three questions then put to the
+operator: *"Remove it too (Recommended)"* for the central switch; *"Leave it in progress
+(Recommended)"* for OBPI-0.35.0-10; *"Commit and push (Recommended)"* for landing.
+
+**Evidence, as a dated record; re-run its script rather than trusting a transcribed figure.**
+The context, phase and session review
+([`context-phase-review-2026-10-04-evidence/`](context-phase-review-2026-10-04-evidence/README.md)):
+the measured pipeline run's cost is context re-read, concentrated in its late stages; the
+controls' own output is a small share of what entered context; nine pieces of run state live
+only in the conversation; by the causes the pipeline skill cites, most of its controls answer a
+failure of the model's attention or of its honesty about its own work; and hooks and validators
+leave no record of a refusal, so the gate-by-gate read of 2026-10-03 could not count them. The
+trial changed the route, the ceremony and the context size at once, on a different OBPI.
+
+**What changes.**
+
+1. **The entry below is reversed in full.** Every control has the automatic standing it had
+   before 2026-10-04: the harness hooks, the `gz check` steps, the skill catalog, the orientation
+   sections, the pre-commit hooks, and CI's `gz check --full`. The central switch of commit
+   `73e42d63a` is removed with it and stays in git history.
+2. **Item 4 of the entry below is withdrawn.** The scorecard's bar stands: *"burden alone is
+   still not a removal rationale; degraded steering is."*
+3. **The unratified draft items of the entry below are withdrawn.** So are the freeze text and
+   the pipeline-profile names (`fast`, `standard`, `max`) ruled in conversation earlier the same
+   day and never landed; the rulings above supersede them.
+4. **The priority is a tune-up of gzkit's method**, in the operator's words: *"session
+   management, multi-phasing, better subagent use, and better modularity in how a complex and
+   long-running process is subdivided for better manageability"*. Controls are re-adjudicated
+   one by one, never in bulk, and none is removed by this entry. The starting list is the review
+   record's:
+   - **Phase and state.** A save point written by the runtime at each stage and sub-stage
+     boundary; a marker that advances within a run and an orientation that shows pipeline state;
+     three ways to a fresh context, each where it fits (a thin orchestrator with phase agents, a
+     new session at the human boundary, compaction as the fallback inside a stage); the rule
+     against stopping between stages kept, with a mechanical next command as its mechanism; a
+     lock rule for continuing across a phase boundary; proof staleness scoped to what a proof
+     names.
+   - **Load.** The pipeline skill split by stage, with its incident history moved to a rationale
+     record keyed by control; the orientation's open-checkboxes line as a pointer; commands and
+     agents returning a file path and an exit code.
+   - **Witness data.** Every hook and validator recording its refusals to the ledger; each run
+     recording context size per stage.
+   - **Defects to tighten**, each recorded as an insight and none repaired: the unread
+     `--no-subagents` flag; the skill's abort path, which prescribes a lock release that exits 3;
+     the orientation's always-empty pipeline section; the skill's citation of GHI #196 where the
+     issue is GHI #195.
+5. **Routes.** These change runtime and CLI contracts, so each takes its governed route: design
+   through `gz-design`, ADR and OBPI work the operator initiates, and a GHI for a defect on the
+   operator's direction. This entry initiates nothing.
+
+**Conflict resolved.** § Amendments 2026-10-03 (2) stands without conflict: `gz-obpi-pipeline`
+is back in the catalog.
+
+**What does not change.** The IRON LAW, universal Gate 5, ascending ADR order, the Prime
+Directive and the operator-PII rule. `ADR-0.35.0` remains the in-flight feature ADR; where the
+tune-up sits relative to it is the operator's to rule when the design is drawn. The 2026-10-03
+and 2026-10-04 evidence records remain as dated records.
+
+**Open.** OBPI-0.35.0-10 stays in progress with the independent review's FAIL verdict recorded;
+its disposition is the operator's.
+
+**Review record (item 6 of 2026-10-03).** Not run; the operator did not call for it.
+
+<a id="amendments-2026-10-04"></a>
+
+### 2026-10-04 — automatic authority is switched off, control by control, behind one central switch (operator-ratified)
+
+> **REVERSED in full the same day (§ Amendments 2026-10-04 (2)).** The text below is kept as the
+> record of what was ratified.
 
 **Operator (`g0`), verbatim, in order:** *"go ahead with the switch-off (can they be turned back
 on later?)"*; *"no, i want to be able to enable. maybe we turn off then see the effects of
@@ -668,7 +748,7 @@ Prime Directive, the operator-PII rule, the plain checks and ascending ADR order
 
 **Review record (item 6 of 2026-10-03).** Not run; the operator did not call for it.
 
-<a id="amendments-2026-10-04"></a>
+<a id="amendments-2026-10-03-2"></a>
 
 ### 2026-10-03 (2) — batch initiation is RESCINDED; each OBPI runs through the pipeline skill (operator-ratified)
 

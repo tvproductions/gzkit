@@ -1,0 +1,4 @@
+interface:
+  display_name: "gz plan audit"
+  short_description: "Audit ADR, OBPI brief, and plan alignment before implementation"
+  default_prompt: "Use $gz-plan-audit to audit ADR, OBPI brief, and plan alignment for this OBPI."

@@ -21,18 +21,12 @@ gz check [OPTIONS]
 
 ### Default scope: the per-change gate
 
-Plain `gz check` runs the `change` scope declared in `data/check_step_scopes.json`,
-minus every step the project's central switch names in `.gzkit.json` under
-`disabled.check_steps`. Those two files are the authority for what runs; the list
-here is illustrative. Since the operator ruling of 2026-10-04 the gate keeps `Lint`,
-`Format`, `Typecheck`, `Test`, `Docs build`, `Validate default scopes` and
-`Authorship policy`; every other step is named in the switch, where each name is
-its own toggle: delete the name and the step runs again. A switched-off step still
-runs under `--full` and by its own `gz validate` flag. `AGENTS.md` § Gate Covenant
-binds the unit tier to every change and `behave` to heavy-lane OBPI work and CI,
-never to a per-change gate (GHI #1088). CI runs plain `gz check` plus `behave`. The
-record of what was switched off and why is
-[`control-switchboard-2026-10-04.md`](../../governance/control-switchboard-2026-10-04.md).
+Plain `gz check` runs the `change` scope declared in `data/check_step_scopes.json`:
+every step except `Behave` and `Preflight`. `AGENTS.md` § Gate Covenant binds the
+unit tier to every change and `behave` to heavy-lane OBPI work and CI, never to a
+per-change gate (GHI #1088). `Preflight` is a janitorial scan whose verdict tracks
+wall-clock age rather than the content being pushed. Both still run under
+`--full`, and CI runs `--full` on every commit.
 
 ### `--full`
 
