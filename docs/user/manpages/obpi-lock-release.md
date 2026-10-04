@@ -16,7 +16,7 @@ gz obpi lock release OBPI-X.Y.Z-NN [--force] [--agent NAME]
 | `OBPI-X.Y.Z-NN` | OBPI identifier to release |
 | `--force` | Release lock even if held by another agent |
 | `--agent NAME` | Agent identity (default: from environment) |
-| `--abandon CATEGORY:REASON` | Record abandonment with degenerate handoff (see below) |
+| `--abandon CATEGORY:REASON` | Record abandonment with a degenerate exchange record (see below) |
 | `--json` | Machine-readable JSON output |
 
 ## Runtime Behavior
@@ -29,7 +29,7 @@ gz obpi lock release OBPI-X.Y.Z-NN [--force] [--agent NAME]
 ## `--abandon` flag (token-block discipline, ADR-0.0.41)
 
 `--abandon <category>:<reason>` records the lock release as an
-abandonment and writes a degenerate handoff under `.gzkit/handoffs/`.
+abandonment and writes a degenerate exchange record under `.gzkit/locks/exchange/`.
 The ledger event then carries `handoff_path` pointing at the written
 register entry, closing the audit-coupling gap the token-block
 doctrine names. The colon delimits category and reason; whitespace
@@ -52,9 +52,10 @@ categories are rejected at parse time (exit 1).
 ### Fail-closed release (OBPI-03, landed)
 
 Releasing a held lock without `--abandon` AND without a matching register
-entry under `.gzkit/handoffs/` is **fail-closed**: the command prints a
-`FAIL-CLOSED` message naming both the `gz-session-handoff` skill and the
-`--abandon` flag as remediation, and exits 3 (policy breach). A token cannot
+entry under `.gzkit/locks/exchange/` is **fail-closed**: the command prints a
+`FAIL-CLOSED` message naming both `gz obpi complete` and the `--abandon` flag
+as remediation, and exits 3 (policy breach). A session handoff under
+`.gzkit/handoffs/` is not a register entry and is not searched (GHI #763). A token cannot
 be surrendered without a register entry (token-block discipline
 § Sub-Invariant 5). The lock is left in place. `--force` overrides ownership
 validation but does NOT bypass the register-entry requirement.
@@ -64,7 +65,7 @@ validation but does NOT bypass the register-entry requirement.
 `lock_manager.reap_expired_locks` (invoked by `gz obpi lock list` and the
 SessionStart hook) makes forcible surrender as auditable as voluntary
 release. For each expired lock the reaper writes an `abandoned_by_reaper`
-register entry to `.gzkit/handoffs/` **before** deleting the lock — frontmatter
+register entry to `.gzkit/locks/exchange/` **before** deleting the lock — frontmatter
 carries `abandoned: true`, `category: reaping`, `abandoned_by`, `abandoned_at`,
 `previous_agent`, plus the Sub-Invariant 2 minimum-information fields — then
 emits an `obpi_lock_released` ledger event whose `handoff_path` cites that

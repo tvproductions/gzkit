@@ -105,9 +105,9 @@ grounds (GHI #587) stands unchanged.
 5. Updates brief with evidence, attestation, and Completed status
 6. Emits `obpi_receipt_emitted` event to main ledger
 7. Surrenders the work lock mechanically (token-block exit edge, GHI #619):
-   writes a completion handoff as the register entry under `.gzkit/handoffs/`
-   and, if a lock is held for the OBPI, releases it and emits
-   `obpi_lock_released` citing that handoff. No manual `gz obpi lock release`
+   writes a completion exchange record as the register entry under
+   `.gzkit/locks/exchange/` and, if a lock is held for the OBPI, releases it and
+   emits `obpi_lock_released` citing that record. No manual `gz obpi lock release`
    is required; the manual release path remains for mid-traversal surrender.
 
 Steps 1-6 are the all-or-nothing transaction: if any step fails, all changes are

@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-10-04
 metadata:
-  skill-version: "6.64.1"
+  skill-version: "6.64.2"
 model: sonnet
 ---
 
@@ -266,7 +266,7 @@ Stage 4 = HUMAN GATE (wait for attestation) — universal per ADR-0.0.36
 
 **Abort if:** brief not found, brief already `Completed`, or plan receipt verdict is `FAIL`.
 
-**On any abort:** Release lock via `uv run gz obpi lock release {OBPI-SLUG} --force`, then run `/gz-session-handoff` to preserve context.
+**On any abort:** Surrender the lock per [Abort surrender](#abort-surrender), then run `/gz-session-handoff` to preserve context.
 
 #### Stage 1→2 Justification Gate
 
@@ -528,7 +528,7 @@ assertions. Do not build an all-assertions classifier or count mutations as cove
 > task-envelope chokepoint gate (Stage 5 Step 0 / `gz obpi complete`), so
 > deferring the decision only stalls completion.
 
-**Abort if:** Any task returns `BLOCKED` after retry or after exhausting review fix cycles. Release lock via `uv run gz obpi lock release {OBPI-SLUG} --force`, create handoff, and stop.
+**Abort if:** Any task returns `BLOCKED` after retry or after exhausting review fix cycles. Surrender the lock per [Abort surrender](#abort-surrender), create handoff, and stop.
 
 #### Inline Fallback (`--no-subagents`)
 
@@ -550,7 +550,7 @@ the Stage-2 spec/quality exception; a marker flag alone does not. Execute the sa
 proof commands and retain mapped findings. Step 4b remains mandatory, and neither
 the declaration nor an inline implementation can close its own acceptance finding.
 
-**Abort if:** Tests fail after 2 fix attempts. Release lock via `uv run gz obpi lock release {OBPI-SLUG} --force`, create handoff, and stop.
+**Abort if:** Tests fail after 2 fix attempts. Surrender the lock per [Abort surrender](#abort-surrender), create handoff, and stop.
 
 **MANDATORY TRANSITION → Stage 3.** Do not summarize. Do not report. Proceed.
 
@@ -596,7 +596,7 @@ the pre-push `gz check` does, so it isn't bypassed — just not re-run
 synchronously at every OBPI increment. Heavy-lane BDD runs via
 `gz test --bdd` at ADR closeout.
 
-If any baseline check fails, attempt fix and re-verify once. If still failing, release lock via `uv run gz obpi lock release {OBPI-SLUG} --force`, create handoff, and stop.
+If any baseline check fails, attempt fix and re-verify once. If still failing, surrender the lock per [Abort surrender](#abort-surrender), create handoff, and stop.
 
 #### Phase 1b: REQ → @covers Parity Gate (#113)
 
@@ -721,7 +721,7 @@ After baseline checks pass, dispatch parallel verification subagents for the bri
 
 8. **Handle aggregate results:**
    - All REQs pass → advance to Stage 4.
-   - Any REQ fails → attempt fix and re-verify once. If still failing, release lock via `uv run gz obpi lock release {OBPI-SLUG} --force`, create handoff, and stop.
+   - Any REQ fails → attempt fix and re-verify once. If still failing, surrender the lock per [Abort surrender](#abort-surrender), create handoff, and stop.
 
 #### Inline Verification Fallback
 
@@ -733,7 +733,7 @@ When `--no-subagents` is set, or when the verification plan strategy is `sequent
 
 No subagent dispatch, no worktree isolation, no parallel execution.
 
-**Abort if:** Any verification fails. Attempt fix, re-verify once. If still failing, release lock via `uv run gz obpi lock release {OBPI-SLUG} --force`, create handoff, and stop.
+**Abort if:** Any verification fails. Attempt fix, re-verify once. If still failing, surrender the lock per [Abort surrender](#abort-surrender), create handoff, and stop.
 
 **MANDATORY TRANSITION → Stage 4.** Do not summarize. Do not report. Proceed.
 
@@ -1543,20 +1543,37 @@ verified reality — fewer GHIs, less friction, the brief stays honest.
 
 | Failure Point | Action |
 |---------------|--------|
-| Brief not found | Report error, `gz obpi lock release --force`, stop |
-| Receipt verdict FAIL | Report audit failure, `gz obpi lock release --force`, stop |
+| Brief not found | Report error, abort surrender (below), stop |
+| Receipt verdict FAIL | Report audit failure, abort surrender (below), stop |
 | No receipt found (full run) | STOP — enter plan mode, get approval, then resume pipeline |
 | No receipt found (`--from` set) | Proceed — user is resuming a partial pipeline |
-| Tests fail during implementation | Attempt fix (2 tries), then `gz obpi lock release --force` + handoff |
-| Verification fails | Attempt fix (1 try), then `gz obpi lock release --force` + handoff |
+| Tests fail during implementation | Attempt fix (2 tries), then abort surrender (below) + handoff |
+| Verification fails | Attempt fix (1 try), then abort surrender (below) + handoff |
 | Human rejects attestation | Record feedback, return to Stage 2 with corrections |
 | `git sync` fails or repo remains unsynced | Stop before `gz obpi complete` and repair blockers |
 | Gate blocks on stale brief/allowlist (reconcile drift, security floor, under-declared coupled surface) | Run the **Gate Friction: Evaluator Escalation** loop (above) — dispatch evaluator → determination → operator approval → surgical brief amendment + documented override. Do NOT contort code to fit the brief or file a GHI to stall. |
 | A lock survives `gz obpi complete` | The completion register entry could not be written, so the lock was left for TTL reaping (Stage 5 step 3). Report it; never `--abandon` a completed OBPI. |
 
-**Lock bracket:** Lock is claimed at Stage 1 and released by `gz obpi complete` at Stage 5, or explicitly on any abort/handoff. No orphaned locks.
+**Lock bracket:** Lock is claimed at Stage 1 and surrendered by `gz obpi complete` at Stage 5, or by an abort surrender.
 
-**Handoff creation:** On any abort, release lock via `uv run gz obpi lock release {OBPI-SLUG} --force`, then run `/gz-session-handoff` to preserve context for the next session.
+### Abort surrender
+
+On an abort the lock is surrendered with a recorded category (GHI #1167):
+
+```bash
+uv run gz obpi lock release {OBPI-SLUG} --abandon <category>:<reason>
+```
+
+A release without `--abandon` exits 3 and leaves the lock in place
+(`.gzkit/rules/token-block-discipline.md` § Sub-Invariant 5). `--force` waives
+the ownership check only. A session handoff is not an exchange record and
+discharges nothing. The categories are a closed enum, listed in
+`docs/user/manpages/obpi-lock-release.md`; if none describes the abort, do not
+pick one that misdescribes it. Leave the lock held, name it in the handoff and
+report it to the operator; a lock past its TTL is reaped with its own register
+entry.
+
+**Handoff creation:** On any abort, after the surrender, run `/gz-session-handoff` to preserve context for the next session.
 
 ---
 

@@ -5,9 +5,9 @@ description: Claim or release OBPI-level work locks for multi-agent coordination
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-24
+last_reviewed: 2026-10-04
 metadata:
-  skill-version: "6.3.0"
+  skill-version: "6.3.1"
 model: haiku
 ---
 
@@ -24,7 +24,7 @@ These thoughts mean STOP — you are about to bypass coordination:
 | "No one else is working on this, I don't need to lock" | You do not know what other agents are doing. The lock is coordination, not permission. |
 | "I'll just do a quick fix, no need for a lock" | Quick fixes that conflict with another agent's work create merge conflicts. Lock first, always. |
 | "The lock expired, so I'll just re-claim it" | An expired lock may mean another agent started work. Check status before re-claiming. |
-| "I'll release the lock manually later" | The pipeline releases at Stage 5. Manual release outside the pipeline risks orphaned work. |
+| "I'll release the lock manually later" | `gz obpi complete` surrenders it at Stage 5. Manual release outside the pipeline risks orphaned work. |
 | "Lock conflicts slow me down" | Merge conflict resolution after concurrent edits is far slower than waiting for a lock. |
 
 ### Red Flags
@@ -86,7 +86,7 @@ Path: `.gzkit/locks/obpi/{OBPI-ID}.lock.json`
 
 1. **Claim succeeds** if no lock file exists or existing lock is expired (past TTL)
 2. **Claim fails** if lock exists and is not expired — show who holds it
-3. **Release** deletes the lock file
+3. **Release** deletes the lock file once the surrender is accounted for: an exchange record that postdates the claim, or an `--abandon` category
 4. **Stale lock detection** — locks older than TTL are automatically released on next claim attempt
 5. **Same-agent re-claim** — if the claiming agent already holds the lock, refresh the timestamp
 6. **Concurrent locks** — Multiple OBPIs from the same ADR can be locked concurrently by different agents when their allowed paths are non-overlapping. One lock per OBPI at a time; each OBPI's human attestation is independent (universal per ADR-0.0.36).
@@ -110,10 +110,13 @@ Exit code 0 = claimed, 1 = conflict (another agent holds it).
 ```bash
 uv run gz obpi lock release OBPI-X.Y.Z-NN
 uv run gz obpi lock release OBPI-X.Y.Z-NN --json
-uv run gz obpi lock release OBPI-X.Y.Z-NN --force   # abort/handoff — bypass ownership check
+uv run gz obpi lock release OBPI-X.Y.Z-NN --abandon <category>:<reason>   # abort — surrender with a recorded category
+uv run gz obpi lock release OBPI-X.Y.Z-NN --force   # waives the ownership check only
 ```
 
-Exit code 0 = released (or no lock found), 1 = ownership error (without `--force`).
+Exit code 0 = released (or no lock found), 1 = ownership error (without `--force`) or an invalid `--abandon` spec, 3 = refused: no exchange record postdates the claim and no `--abandon` was given.
+
+A held lock is released only against a register entry (`.gzkit/rules/token-block-discipline.md` § Sub-Invariant 5). `gz obpi complete` writes that entry and surrenders the lock itself. Before completion the route is `--abandon`, whose categories are a closed enum listed in `docs/user/manpages/obpi-lock-release.md`. `--force` does not bypass the register entry, and a session handoff is not one (GHI #1167).
 
 ### Check (single OBPI)
 
@@ -149,7 +152,7 @@ Agents identify themselves by environment:
 
 ## Integration with Pipeline
 
-The pipeline calls `uv run gz obpi lock claim` at Stage 1 (Load Context) and `uv run gz obpi lock release` at Stage 5 (Sync). On any abort or handoff, the pipeline releases the lock via `uv run gz obpi lock release {OBPI-SLUG} --force` to prevent orphaned locks.
+The pipeline calls `uv run gz obpi lock claim` at Stage 1 (Load Context). At Stage 5 `uv run gz obpi complete` writes the completion exchange record and surrenders the lock; no separate release runs. On an abort the pipeline surrenders with `uv run gz obpi lock release {OBPI-SLUG} --abandon <category>:<reason>`; when no category describes the abort the lock stays held, is named in the handoff, and is reaped at its TTL.
 
 ---
 
@@ -231,6 +234,6 @@ git worktree remove ../gzkit-claude-code
 
 ## Related
 
-- Pipeline integration: `gz obpi lock claim` (Stage 1), `gz obpi lock release` (Stage 5)
-- Session handoff: `/gz-session-handoff` (preserves lock context)
+- Pipeline integration: `gz obpi lock claim` (Stage 1), `gz obpi complete` (Stage 5 surrender)
+- Session handoff: `/gz-session-handoff` (session memory; it names a held lock and never releases one)
 - Agent profiles: `AGENTS.md` § Agent Profiles
