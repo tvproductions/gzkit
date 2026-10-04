@@ -477,7 +477,9 @@ class TestStatusCommand(unittest.TestCase):
             self.assertFalse(payload["linked_in_ledger"])
             self.assertTrue(payload["found_file"])
             self.assertEqual(payload["parent_adr"], "ADR-0.1.0-f")
-            self.assertEqual(payload["attestation_requirement"], "optional")
+            # An uncompleted OBPI owes its attestation: Gate 5 is universal (GHI #1170).
+            self.assertEqual(payload["attestation_requirement"], "required")
+            self.assertEqual(payload["attestation_state"], "missing")
 
     def test_obpi_reconcile_json_passes_for_completed_obpi(self) -> None:
         """obpi sync passes when ledger, file, and proof are coherent."""

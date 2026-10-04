@@ -58,7 +58,7 @@ OBPI reconcile: OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces
   File: docs/design/adr/pre-release/ADR-0.10.0-obpi-runtime-surface/obpis/OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces.md
   Runtime State: PENDING
   Proof State: missing
-  Attestation State: not_required
+  Attestation State: missing
 BLOCKERS:
 - ledger proof of completion is missing
 ```

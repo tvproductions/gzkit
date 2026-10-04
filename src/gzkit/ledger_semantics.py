@@ -13,8 +13,34 @@ from gzkit.ledger_proof import normalize_req_proof_inputs, summarize_req_proof_i
 from gzkit.utils import list_changed_files_between, resolve_git_head_commit
 
 
-def _resolve_attestation_requirement(evidence: dict[str, Any], obpi_completion: Any) -> str:
-    """Resolve whether explicit human attestation evidence is required."""
+def _uncompleted_attestation_requirement() -> str:
+    """Return the requirement that governs a completion that has not happened yet.
+
+    Gate 5 is universal (ADR-0.0.36): every OBPI completion needs a human
+    attestation in every lane, kind and sensitivity. ``gz obpi complete`` asks
+    ``commands.adr_audit._requires_human_obpi_attestation``, a private symbol
+    this package may not import (``tests/policy/test_import_boundaries.py``), so
+    ``tests/test_ledger.py`` holds this answer and that predicate together.
+    """
+    return "required"
+
+
+def _resolve_attestation_requirement(
+    evidence: dict[str, Any],
+    obpi_completion: Any,
+    *,
+    ledger_completed: bool,
+) -> str:
+    """Resolve whether explicit human attestation evidence is required.
+
+    A recorded completion is read from its own receipt. A completion that has
+    not happened is judged by the rule that will govern it, never by the absence
+    of a receipt or by what an earlier receipt declared: an uncompleted OBPI
+    used to read ``optional`` and render ``Attestation State: not_required``
+    against universal Gate 5 (GHI #1170).
+    """
+    if not ledger_completed:
+        return _uncompleted_attestation_requirement()
     requirement = evidence.get("attestation_requirement")
     if isinstance(requirement, str):
         return requirement
@@ -444,12 +470,16 @@ def _repudiated_obpi_semantics() -> dict[str, Any]:
     completion. ``ledger.py`` clears ``repudiated`` when a later genuine
     completion lands, so this branch only fires while repudiation is the live
     state.
+
+    The attestation is owed, not waived: the completion was reversed and the
+    OBPI is re-completable only by attesting it again (GHI #1170).
     """
+    attestation_requirement = _uncompleted_attestation_requirement()
     return {
         "runtime_state": "repudiated",
         "proof_state": "missing",
-        "attestation_requirement": "optional",
-        "attestation_state": "not_required",
+        "attestation_requirement": attestation_requirement,
+        "attestation_state": _derive_attestation_state(attestation_requirement, False),
         "req_proof_state": "missing",
         "req_proof_inputs": [],
         "req_proof_summary": {"state": "missing", "present": 0, "total": 0},
@@ -495,7 +525,9 @@ def derive_obpi_semantics(
     if not isinstance(evidence, dict):
         evidence = {}
 
-    attestation_requirement = _resolve_attestation_requirement(evidence, obpi_completion)
+    attestation_requirement = _resolve_attestation_requirement(
+        evidence, obpi_completion, ledger_completed=ledger_completed
+    )
 
     req_proof_inputs = normalize_req_proof_inputs(
         evidence.get("req_proof_inputs"),

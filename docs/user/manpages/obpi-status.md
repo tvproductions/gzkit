@@ -62,7 +62,7 @@ OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces
   File: docs/design/adr/pre-release/ADR-0.10.0-obpi-runtime-surface/obpis/OBPI-0.10.0-02-obpi-query-and-reconcile-command-surfaces.md
   Runtime State: PENDING
   Proof State: missing
-  Attestation State: not_required
+  Attestation State: missing
   Anchor State: not_applicable
   Anchor Commit: (none)
   Current HEAD: (unknown)

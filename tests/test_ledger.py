@@ -899,7 +899,15 @@ class TestLedger(unittest.TestCase):
 
     @covers("REQ-0.10.0-01-01")
     def test_derive_obpi_semantics_reports_pending_without_proof(self) -> None:
-        """Absent proof and brief completion remain pending."""
+        """Absent proof and brief completion remain pending.
+
+        Amended under GHI #1170. This test pinned ``attestation_requirement ==
+        "optional"`` for a pending OBPI, which ADR-0.0.36 retired: Gate 5 is
+        universal, so a completion that has not happened still needs its
+        attestation. The REQ asserts that the states are defined
+        deterministically, not that attestation is optional, so the binding
+        stays and the pinned value moves (``attested-req-subject-retirement.md``).
+        """
         semantics = derive_obpi_semantics(
             {},
             found_file=True,
@@ -909,7 +917,102 @@ class TestLedger(unittest.TestCase):
         )
         self.assertEqual(semantics["runtime_state"], "pending")
         self.assertEqual(semantics["proof_state"], "missing")
+        self.assertEqual(semantics["attestation_requirement"], "required")
+        self.assertEqual(semantics["attestation_state"], "missing")
+
+    def test_uncompleted_obpi_awaits_attestation_whatever_its_receipts_say(self) -> None:
+        """An OBPI with no ledger completion reads `missing`, never `not_required` (GHI #1170).
+
+        Covers the uncompleted states: launched, partially proven, and carrying a
+        stale pre-ADR-0.0.36 receipt that declared the requirement optional.
+        """
+        cases: dict[str, dict[str, Any]] = {
+            "launched": {"pipeline_launched": True},
+            "partial proof": {"latest_evidence": {"key_proof": "uv run gz test"}},
+            "stale optional receipt": {
+                "latest_receipt_event": "validated",
+                "latest_evidence": {"attestation_requirement": "optional"},
+            },
+        }
+        for label, info in cases.items():
+            with self.subTest(label):
+                semantics = derive_obpi_semantics(
+                    info,
+                    found_file=True,
+                    file_completed=False,
+                    implementation_evidence_ok=False,
+                    key_proof_ok=False,
+                )
+                self.assertFalse(semantics["ledger_completed"])
+                self.assertEqual(semantics["attestation_requirement"], "required")
+                self.assertEqual(semantics["attestation_state"], "missing")
+
+    def test_uncompleted_requirement_agrees_with_the_completion_gate(self) -> None:
+        """The status label and `gz obpi complete` answer one question one way (GHI #1170).
+
+        `ledger_semantics` states the universal rule itself because it may not
+        import the completion gate's private predicate. This test is what keeps
+        the two from drifting: if the predicate ever stops being universal, the
+        label must follow it.
+        """
+        from gzkit.commands.adr_audit import _requires_human_obpi_attestation  # noqa: PLC0415
+
+        cases = (
+            ("ADR-0.0.99-some-foundation", "lite"),
+            ("ADR-0.0.99-some-foundation", "heavy"),
+            ("ADR-0.1.0-some-feature", "lite"),
+            ("ADR-0.1.0-some-feature", "heavy"),
+            (None, "lite"),
+        )
+        for parent, lane in cases:
+            with self.subTest(parent=parent, lane=lane):
+                gate = "required" if _requires_human_obpi_attestation(parent, lane) else "optional"
+                semantics = derive_obpi_semantics(
+                    {"parent": parent, "lane": lane},
+                    found_file=True,
+                    file_completed=False,
+                    implementation_evidence_ok=False,
+                    key_proof_ok=False,
+                )
+                self.assertEqual(semantics["attestation_requirement"], gate)
+
+    def test_withdrawn_obpi_needs_no_attestation(self) -> None:
+        """A withdrawn OBPI is retired for good: nothing remains to attest (control)."""
+        semantics = derive_obpi_semantics(
+            {"withdrawn": True, "type": "obpi"},
+            found_file=False,
+            file_completed=False,
+            implementation_evidence_ok=False,
+            key_proof_ok=False,
+        )
         self.assertEqual(semantics["attestation_requirement"], "optional")
+        self.assertEqual(semantics["attestation_state"], "not_required")
+
+    def test_historical_completion_keeps_the_requirement_its_receipt_recorded(self) -> None:
+        """A completed OBPI is read from its receipt, not re-judged (control, GHI #1170)."""
+        evidence = {"value_narrative": "shipped", "key_proof": "uv run gz test"}
+        cases = {
+            "no requirement recorded": dict(evidence),
+            "optional recorded": {**evidence, "attestation_requirement": "optional"},
+        }
+        for label, latest_evidence in cases.items():
+            with self.subTest(label):
+                semantics = derive_obpi_semantics(
+                    {
+                        "latest_receipt_event": "completed",
+                        "obpi_completion": "completed",
+                        "ledger_completed": True,
+                        "latest_evidence": latest_evidence,
+                    },
+                    found_file=True,
+                    file_completed=True,
+                    implementation_evidence_ok=True,
+                    key_proof_ok=True,
+                )
+                self.assertEqual(semantics["runtime_state"], "completed")
+                self.assertEqual(semantics["attestation_requirement"], "optional")
+                self.assertEqual(semantics["attestation_state"], "not_required")
+                self.assertTrue(semantics["completed"])
 
     def test_derive_obpi_semantics_reports_in_progress_when_pipeline_launched(self) -> None:
         """A launched-but-unevidenced OBPI resolves in_progress, not pending (GHI #646).

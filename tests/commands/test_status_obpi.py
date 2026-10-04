@@ -56,7 +56,10 @@ class TestRepudiatedRuntimeState(unittest.TestCase):
         self.assertEqual(semantics["runtime_state"], "repudiated")
         self.assertFalse(semantics["completed"])
         self.assertFalse(semantics["ledger_completed"])
-        self.assertNotEqual(semantics["attestation_state"], "recorded")
+        # Re-completable only by a genuine re-attestation (ADR-0.0.71), so the
+        # attestation is owed, not waived (GHI #1170).
+        self.assertEqual(semantics["attestation_requirement"], "required")
+        self.assertEqual(semantics["attestation_state"], "missing")
 
     def test_render_repudiated_is_not_attested_completed(self) -> None:
         """The runtime-state renderer labels 'repudiated' as REPUDIATED, not the
