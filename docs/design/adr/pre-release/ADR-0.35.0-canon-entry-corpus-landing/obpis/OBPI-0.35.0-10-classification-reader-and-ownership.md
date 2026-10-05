@@ -32,7 +32,7 @@ req_atomic:
   - REQ-0.35.0-10-02  # One population contract: identity and source parsing with the scorecard fallback; one unit.
   - REQ-0.35.0-10-03  # One advisory emitted at the single point where the corpus class binds; one unit.
   - REQ-0.35.0-10-04  # One fence over the owned sections of the effective corpus; one unit.
-  - REQ-0.35.0-10-05  # One append-only reconciliation walk proven on a fixture; the live corpus needed no change.
+  - REQ-0.35.0-10-05  # One append-only reconciliation walk proven on a fixture; the live reconciliation of 2026-10-05 was twelve governed appends, no code labor.
   - REQ-0.35.0-10-06  # One doctrine paragraph in the scorecard; one SUPPORT authoring unit.
   - REQ-0.35.0-10-07  # Fenced by parent-ADR BI-04; no labor of its own in this OBPI.
   - REQ-0.35.0-10-08  # One retention arm for skill- and ADR-sourced rows; one unit.
@@ -293,8 +293,10 @@ uv run gz validate --bullet-retention --json
 # `Ambiguous` entry refuses to bind, and names the entries to reconcile.
 uv run gz validate --bullet-retention
 
-# Provenance of the reconciliation — appended rows, never edited ones.
-uv run gz content show AGENTS.md --section prime-directive-ownership
+# Provenance of the reconciliation — appended rows, never edited ones:
+# every retraction row in the corpus, the six reconciliations included,
+# has its ledger witness.
+uv run gz validate --corpus-retirement-witness
 ```
 
 ## Acceptance Criteria
@@ -391,6 +393,8 @@ before this OBPI, because the corpus value reached no consumer.
 - 2026-10-05 — **REQ-0.35.0-10-10 witness clause** now cites `docs/user/manpages/validate.md`. It read "citing both paths", which the support resolver parsed as a path named "both" and returned unproven. The requirement's statement is unchanged. Operator ruling, verbatim selection: "A: Cite the manpage (Recommended)". Every proof is re-run against the amended contract.
 - 2026-10-05 — **Mapping reviewed.** The Identity and Reconciliation Contract requires the row-to-entry mapping to be reviewed at planning; the trial ran no planning step. Put to the operator on measured evidence: 31 rows cite a corpus entry; 25 carry rule text contained verbatim in the cited entry; 6 are paraphrases (Governance Core #17, #17c, #17d; Defect-fix Routing #46, #47; Agent Contract #53c), all Judgment in both surfaces. The mandatory source attribution, the two rows attributed to the scorecard itself and the requote of Local Agent Rules #8 were named in the same question. Operator ruling, verbatim selection: "A: Accept as measured (Recommended)".
 - 2026-10-05 — **Six class disagreements reconciled in the corpus.** Local Agent Rules #7, #10 and Governance Core #14, #16, #17a were Mechanical in the scorecard and Judgment in the corpus; Local Agent Rules #8 was the reverse. All six corpus classes came from one batch capture on 2026-09-17. Operator ruling, verbatim selection: "A: Corpus adopts scorecard (Recommended)". Done by governed retire and remember of the unchanged text, published with an unchanged candidate through compose and commit, not through the item 7 orchestrator, because its generated candidate reorders two blocks of the root surface. Retirement and replacement ids are recorded in the Implementation Summary.
+- 2026-10-05 — **`req_atomic` note for REQ-0.35.0-10-05 corrected.** It said the live corpus needed no change, which stopped being true when the six reconciliations appended twelve rows. Found by the narrator while composing the Stage 4 packet.
+- 2026-10-05 — **Third Demo command replaced.** `gz content show` takes a file and a content type and has no section option, so the command exited 2 and blocked the evidence packet; the trial recorded this as an insight on 2026-10-03. The replacement is `gz validate --corpus-retirement-witness`, which passes only when every retraction row in the corpus has its ledger witness. A `git diff --numstat` over the reconciliation commit was tried first and withdrawn: the Demo runs in a copy of the tree with no history. That figure, twelve lines added and none removed between 7c05949ee and 3c53720ab, is recorded here instead. No requirement changed.
 - 2026-10-05 — **Allowed Paths bullet split.** The behave feature and its steps file shared one bullet; the plan audit reads the first path on a bullet and reported the steps file as out of scope. No path was added; the frontmatter allowlist already carried both.
 
 ## Tracked Defects
