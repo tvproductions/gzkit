@@ -83,7 +83,7 @@ The contract changes are the content of the wheel-delivered `gz-obpi-pipeline` s
 
 ## Allowed Paths
 
-The path marked (Q2) follows the recommended option of that question in § Open Design Questions. A different ruling changes it by an operator-ratified allowlist amendment before the plan is audited. Two paths are created by `OBPI-0.35.0-17` and do not exist until it lands; each says so.
+The path marked (Q2) follows the ruling on that question in § Open Design Questions. Two paths are created by `OBPI-0.35.0-17` and do not exist until it lands; each says so.
 
 - `.gzkit/skills/gz-obpi-pipeline/SKILL.md` — the canonical skill body: after this OBPI it holds the invocation text only
 - `.gzkit/skills/gz-obpi-pipeline/references/**` — the per-stage procedure files `OBPI-0.35.0-17` created: a passage classed `rationale` leaves for the rationale record, and each control that had one gains a pointer to its entry
@@ -140,6 +140,7 @@ The path marked (Q2) follows the recommended option of that question in § Open 
 Both questions were drafted in `OBPI-0.35.0-17` and moved here with the cutover on the 2026-10-04 split. The brief is written to the recommended option so that it is checkable, and names what a different ruling changes.
 
 - **Q2. Where the incident history goes.** (a) `docs/governance/obpi-pipeline-control-rationale.md`, keyed by control id, following the existing rationale documents. (b) A reference file beside the skill, which the mirrors and the wheel carry. (c) Inside the inventory rows. **Recommended: (a)**, with each delivered control gaining a pointer to its entry. `.gzkit/rules/skill-authoring.md` § Parsimony clause 1 also asks for "one sentence of reason" in the body; where the control's own sentence already gives its reason it stays, and no new summary sentence is written, because a summary is a rewording (Requirement 12). (a) is not delivered to adopters; (b) is, at the cost of loading history beside the procedure again.
+  - **RULED 2026-10-05: (a).** Asked where the incident history goes, the operator answered, verbatim: "A". The history moves verbatim to `docs/governance/obpi-pipeline-control-rationale.md`, keyed by control id, and each delivered control that had such a passage gains a pointer to its entry. The inventory in `OBPI-0.35.0-17` keeps the shape that brief states, so its Q2 prerequisite is met.
 - **Q5. A rule and a directive conflict; both are quoted.** `.gzkit/rules/skill-authoring.md` § Parsimony clause 6: "Lifting to `references/` is the move after that search, not instead of it, and the commit says what was compressed as well as what was lifted." `AGENTS.md` § Behavior Rules: "A size limit triggers a compress-and-merge pass before any growth or extraction; say what was compressed." Against them, § Decision item 13: "this is a change of delivery, never a shortening." **Recommended:** the Decision governs this OBPI, as the later and surface-specific ruling. Nothing is compressed, and the commit says so. Any compression of the served procedures is later work, fenced by the inventory.
 
 ## Discovery Checklist
