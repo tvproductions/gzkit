@@ -261,7 +261,6 @@ dev = [
     # native binary rather than a Python package.
     "unittest-parallel>=1.8.6",
     "vulture>=2.16",
-    "wily>=1.12.2",
     "xenon>=0.9.3",
 ]
 
