@@ -223,6 +223,7 @@ GHI #1175's boundary names "the consumers `gz roles` and the resume rendering". 
 - B. Add the outcome to that output in this brief.
 
 **Recommendation: A.** Under B, move `src/gzkit/pipeline_markers.py` from Denied Paths to Allowed Paths.
+**RULED 2026-10-04: A.** Asked whether the resume output shows dispatch outcomes, the operator answered, verbatim: "A". The resume and reminder output are unchanged here; `gz roles --pipeline` is the reader of record, and `src/gzkit/pipeline_markers.py` stays denied.
 
 ## Measured Ground Truth (2026-10-04)
 
@@ -392,7 +393,8 @@ uv run gz roles --pipeline OBPI-0.35.0-18-dispatch-outcome-recording --json
 - 2026-10-04 — Open Design Question 1 ruled before the plan. Operator, verbatim: "A", to the option that is C in this brief's lettering. A ledger event is the record of a dispatch's outcome; the marker and the completion summary are caches rebuilt from it. The ledger-event paths stay in Allowed Paths, and Requirement 15 is added.
 - 2026-10-04 — Open Design Question 2 ruled before the plan. Operator, verbatim: "A". `gz obpi dispatch` gains the outcome-recording form and no subcommand is added. Allowed Paths are unchanged.
 - 2026-10-04 — Open Design Question 3 settled by canon, not by a new ruling: `.gzkit/rules/model-selection.md` operative claim 5. A recorded outcome is the subagent's report, labelled as reported and read by no gate.
-- 2026-10-04 — Open Design Question 4 ruled before the plan. Operator, verbatim: "A". A reviewer's dispatch outcome is derived from the acceptance store's review for the same receipt; Requirements 1 and 2 are amended to say so. Allowed Paths are unchanged. Question 5 is open.
+- 2026-10-04 — Open Design Question 4 ruled before the plan. Operator, verbatim: "A". A reviewer's dispatch outcome is derived from the acceptance store's review for the same receipt; Requirements 1 and 2 are amended to say so. Allowed Paths are unchanged.
+- 2026-10-04 — Open Design Question 5 ruled before the plan. Operator, verbatim: "A". The resume and reminder output are not consumers in this brief. Denied Paths are unchanged. All five questions are now closed.
 
 ### Gate 1 (ADR)
 
