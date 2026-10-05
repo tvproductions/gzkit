@@ -405,8 +405,9 @@ expansion or deletion of a failure scenario. The count is the Decomposition Scor
 
 Items 15-20 (amendments 2026-10-04) stand off the corpus spine: none depends on items 01-14
 and none of those depends on them. 15 -> 16 -> 17 -> 20 is their only internal order. Rows
-17 and 20 divide the estimate row 17 carried before the split. Where they
-sit relative to the unlanded corpus items is the operator's to rule and is not ruled here.
+17 and 20 divide the estimate row 17 carried before the split. The working
+order is item 10, then items 15 to 20, then items 11 to 13 (operator-ruled 2026-10-05, verbatim:
+*"A"*; campaign § Amendments 2026-10-05). This orders the work and initiates none.
 
 ## Decomposition Scorecard
 

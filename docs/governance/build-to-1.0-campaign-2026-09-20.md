@@ -89,7 +89,7 @@ computed there.
 
 > **RESEQUENCED 2026-09-27 (operator-ratified): ADR WORK FIRST.** Feature ADRs are worked in ascending order (`0.35.0` → `0.36.0` → `0.37.0` → `0.38.0` → `0.39.0` → the funded amendment ADR) before Movement C refactoring resumes. The 2026-09-02 NEXT-IN-PRIORITY placement of Movement C's family-closure box, recorded below, is SUPERSEDED. See § Amendments 2026-09-27 (3).
 >
-> **Topmost (sequenced):** **AMENDED 2026-10-04 (operator-ratified) — the 2026-10-04 switch-off is REVERSED in full and every control stands; the operator has named the tune-up of session management, phasing, subagent use and modularity the priority, with no control removed (§ Amendments 2026-10-04 (2)).** **AMENDED 2026-10-03 (operator-ratified) — what a session draws: an initiated OBPI first; on its own, a GHI only when it blocks in-flight feature work, a gate or a release (§ Amendments 2026-10-03). Batch initiation is RESCINDED: the operator initiates each OBPI through `gz-obpi-pipeline` (§ Amendments 2026-10-03 (2)). Feature ADRs are worked in ascending order ahead of Movement C (§ Amendments 2026-09-27 (3)), so the NEXT-IN-PRIORITY placement of the family-closure box described below is SUPERSEDED.** **`ADR-0.35.0-canon-entry-corpus-landing` is TOPMOST (2026-09-01, operator-ratified, UNCHANGED). AMENDED 2026-09-02 (operator-ratified) — Movement C's `Close the doctrine-declared-without-mechanism family` box is pulled forward to NEXT-IN-PRIORITY, immediately behind TOPMOST and ahead of both Movement B and every other Movement C box; Movement B steps down one place; Movement A remains HELD as a Movement.** The box outranks its own Movement, on the precedent the 2026-09-01 amendment set when Movement A's `ADR-0.35.0` box became TOPMOST inside a HELD Movement. It is placed high because it is drawable without the operator: under the IRON LAW only the operator initiates OBPI work, while this box discharges through rule-text amendment, scorecard scoring and GHI-shaped direct repair. The family's share of the open queue and its production rate are measured in [`f1-family-share-measurement-2026-09-20.md`](f1-family-share-measurement-2026-09-20.md) — re-run its evidence script rather than trusting a figure transcribed here. Instances close same-session while the class keeps producing: that premise was re-measured 2026-09-20 under a shared criterion and VERIFIED, not revised. See § Amendments 2026-09-20. Run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` for its lifecycle and landed count rather than trusting a figure transcribed here. See § Amendments 2026-09-02. From 2026-08-14 to this amendment the plan declared TOPMOST a Movement that ADR order forbade working, while the work drawn every session sat as a box inside a HELD Movement — two amendments (2026-08-16, 2026-08-23) were spent explaining that split rather than removing it. This removes it. Run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` for its lifecycle and landed count rather than trusting a figure transcribed here. See § Amendments 2026-09-01.
+> **Topmost (sequenced):** **AMENDED 2026-10-05 (operator-ratified) — inside `ADR-0.35.0` the working order is item 10, then the tune-up items 15 to 20, then items 11 to 13 (§ Amendments 2026-10-05).** **AMENDED 2026-10-04 (operator-ratified) — the 2026-10-04 switch-off is REVERSED in full and every control stands; the operator has named the tune-up of session management, phasing, subagent use and modularity the priority, with no control removed (§ Amendments 2026-10-04 (2)).** **AMENDED 2026-10-03 (operator-ratified) — what a session draws: an initiated OBPI first; on its own, a GHI only when it blocks in-flight feature work, a gate or a release (§ Amendments 2026-10-03). Batch initiation is RESCINDED: the operator initiates each OBPI through `gz-obpi-pipeline` (§ Amendments 2026-10-03 (2)). Feature ADRs are worked in ascending order ahead of Movement C (§ Amendments 2026-09-27 (3)), so the NEXT-IN-PRIORITY placement of the family-closure box described below is SUPERSEDED.** **`ADR-0.35.0-canon-entry-corpus-landing` is TOPMOST (2026-09-01, operator-ratified, UNCHANGED). AMENDED 2026-09-02 (operator-ratified) — Movement C's `Close the doctrine-declared-without-mechanism family` box is pulled forward to NEXT-IN-PRIORITY, immediately behind TOPMOST and ahead of both Movement B and every other Movement C box; Movement B steps down one place; Movement A remains HELD as a Movement.** The box outranks its own Movement, on the precedent the 2026-09-01 amendment set when Movement A's `ADR-0.35.0` box became TOPMOST inside a HELD Movement. It is placed high because it is drawable without the operator: under the IRON LAW only the operator initiates OBPI work, while this box discharges through rule-text amendment, scorecard scoring and GHI-shaped direct repair. The family's share of the open queue and its production rate are measured in [`f1-family-share-measurement-2026-09-20.md`](f1-family-share-measurement-2026-09-20.md) — re-run its evidence script rather than trusting a figure transcribed here. Instances close same-session while the class keeps producing: that premise was re-measured 2026-09-20 under a shared criterion and VERIFIED, not revised. See § Amendments 2026-09-20. Run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` for its lifecycle and landed count rather than trusting a figure transcribed here. See § Amendments 2026-09-02. From 2026-08-14 to this amendment the plan declared TOPMOST a Movement that ADR order forbade working, while the work drawn every session sat as a box inside a HELD Movement — two amendments (2026-08-16, 2026-08-23) were spent explaining that split rather than removing it. This removes it. Run `uv run gz adr status ADR-0.35.0-canon-entry-corpus-landing` for its lifecycle and landed count rather than trusting a figure transcribed here. See § Amendments 2026-09-01.
 >
 > **DRAWN-WORK ORDER — AMENDED 2026-09-15 (operator-ratified); SUPERSEDED by § Amendments 2026-09-27 (3) and 2026-10-03, and kept as the record of what was ruled then.** Work a session draws without the operator, at the NEXT-IN-PRIORITY position, is taken in this order: **(a) the R&D front** — the `gz-rnd` skill and the design in `docs/governance/rnd-discipline.md`; **(b) the chore estate** — the conversion directive and the overdue board, the family-closure box's agent-side arm; **(c) GHI direct repair, only** when the GHI closes a named arm of that box, blocks (a) or (b), or is an emergency. TOPMOST and ADR order are unchanged. See § Amendments 2026-09-15.
 >
@@ -612,9 +612,32 @@ had been repeating. All are dispositioned below — none left undefined.
 
 ## Amendments
 
+<a id="amendments-2026-10-05"></a>
+
+### 2026-10-05 (latest) — inside `ADR-0.35.0`: item 10, then the tune-up, then items 11 to 13 (operator-ratified)
+
+**Operator (`g0`), verbatim (2026-10-05):** *"A"*, to the question of where checklist items 15 to
+20 sit in the working order relative to the unlanded corpus items 10 to 13. The three options put
+were: finish item 10, then the tune-up, then items 11 to 13; the tune-up first; items 10 to 13
+first.
+
+**What changes.**
+
+- **Item 10 is finished first.** `OBPI-0.35.0-10` is already in progress and holds the only lock.
+- **The tune-up items follow:** 15, 16, 17 and 20 in that order, which is their only internal
+  order. Items 18 and 19 depend on none of them and are drawn anywhere inside this block.
+- **Items 11, 12 and 13 follow the tune-up,** so they run under the tuned pipeline.
+
+**What does not change.** Only the operator initiates each OBPI, through `gz-obpi-pipeline`. This
+entry orders work and initiates none. Each item's own entry conditions in the ADR's delivery plan
+still hold. `ADR-0.35.0` remains TOPMOST and ascending ADR order is unchanged.
+
+**Open.** `OBPI-0.35.0-10` carries an independent review's FAIL verdict; its disposition is the
+operator's. The agent recommended this order with that question unsettled and said so.
+
 <a id="amendments-2026-10-04-3"></a>
 
-### 2026-10-04 (3) (latest) — an ADR in flight may be revised to take more OBPIs; the next-semver route for corrections is retired (operator-ratified)
+### 2026-10-04 (3) — an ADR in flight may be revised to take more OBPIs; the next-semver route for corrections is retired (operator-ratified)
 
 **Operator (`g0`), verbatim, in order (2026-10-04):** *"there is no "correction adr," we are just
 going to have to authorize, via a GHI, needed work."*; *"ghis do not have obpi ceremony and
@@ -669,8 +692,8 @@ direct repair, and defects in hand are still fixed under `AGENTS.md` § PRIME DI
 `ADR-0.35.0` remains TOPMOST. The IEEE record's `Q-08` and `Q-10` rulings stand, its phases 5 to 8
 stay unauthorised, and no replacement name is selected.
 
-**Open.** Where items 15 to 20 of `ADR-0.35.0` sit in the working order relative to its unlanded
-items 10 to 13 is the operator's to rule.
+**Open at the time; ruled 2026-10-05 (§ Amendments 2026-10-05).** Where items 15 to 20 of
+`ADR-0.35.0` sit in the working order relative to its unlanded items 10 to 13.
 
 <a id="amendments-2026-10-04-2"></a>
 
