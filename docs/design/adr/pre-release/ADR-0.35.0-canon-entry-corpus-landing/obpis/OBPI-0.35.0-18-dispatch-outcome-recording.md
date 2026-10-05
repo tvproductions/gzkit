@@ -94,7 +94,7 @@ When a Stage 2 subagent (Implementer, SpecReviewer, QualityReviewer) or a Stage 
 > documentation, and template-only work stays Lite unless it changes one of
 > those external surfaces.
 
-The contract changes are an outcome-recording surface on the dispatch command (Open Design Question 2), new fields in the `gz roles --pipeline` JSON output, and a new ledger event type (Question 1, ruled).
+The contract changes are an outcome-recording form of `gz obpi dispatch` (Question 2, ruled), new fields in the `gz roles --pipeline` JSON output, and a new ledger event type (Question 1, ruled).
 
 **Sensitivity: security.** The Allowed Paths overlap registered security surfaces in `data/security_surfaces.json`: `src/gzkit/pipeline_dispatch.py` (category `deserialization_user_input`) under every answer to the open questions, and `src/gzkit/ledger_events.py` with `src/gzkit/ledger.py` (category `ledger_integrity`) under the ruling on Question 1. `.gzkit/rules/security-sensitivity.md` makes the declaration mandatory on overlap, so it is not a design choice. The work is what the registry describes: text returned by a subagent is parsed and written to a durable record. `gz obpi complete` therefore runs the extended Gate 5 walkthrough with the security-scan receipt.
 
@@ -106,7 +106,7 @@ The contract changes are an outcome-recording surface on the dispatch command (O
 - `src/gzkit/pipeline_runtime.py` — the dispatch record model and its completion, persistence, aggregation and summary functions
 - `src/gzkit/pipeline_dispatch.py` — the result parsers and the task-status and fix-cycle logic. Registered security surface.
 - `src/gzkit/pipeline_verification.py` — Stage 3 verification result parsing and its dispatch records
-- `src/gzkit/commands/obpi_dispatch.py` — the dispatch command handler (recommended home of outcome recording, Question 2)
+- `src/gzkit/commands/obpi_dispatch.py` — the dispatch command handler, home of outcome recording (Question 2, ruled)
 - `src/gzkit/cli/parser_obpi.py` — the dispatch parser: arguments, help text and exit codes
 - `src/gzkit/commands/roles.py` — the reader: outcome, fix cycles and aggregation in the pipeline view
 
@@ -200,6 +200,7 @@ B is the smallest change and needs no ledger files. It is permissible only becau
 
 Either way the returned text reaches the command as a file or standard input that the orchestrator passes unedited, and the exit code for a missing or invalid block is settled in the plan.
 **Recommendation: A.** The module docstring of `src/gzkit/commands/obpi_dispatch.py` calls this verb "the call"; a second verb would split one record across two commands. Under B, add `config/doc-coverage.json`, a new manpage, `docs/user/manpages/index.md` and a wielding-skill line to Allowed Paths.
+**RULED 2026-10-04: A.** Asked which command records an outcome, the operator answered, verbatim: "A". `gz obpi dispatch` gains the outcome-recording form; no subcommand is added. The flag and the exit code for a missing or invalid block are settled in the plan. Allowed Paths already cover the ruling.
 
 **3. Whether a subagent's own claim counts as evidence.**
 - A. Record it as a claim, labelled as reported, read by no gate. This is canon today: `.gzkit/rules/model-selection.md` operative claim 5, "A subagent's claim is not evidence."
@@ -334,7 +335,7 @@ uv run gz check
 
 ## Demo
 
-The yielded product is a real run's outcome read back by a process that did not record it (Requirement 14). The commands name this OBPI because its own Stage 2 can be that run once the surface exists; the plan may name another real run instead. Both commands are read-only, and each exits 1 when there is nothing to show. Pipeline markers are tracked files, so the disposable Demo copy carries them. The invocation that records an outcome joins this section once Question 2 is ruled; its shape is the operator's to decide and is not written here.
+The yielded product is a real run's outcome read back by a process that did not record it (Requirement 14). The commands name this OBPI because its own Stage 2 can be that run once the surface exists; the plan may name another real run instead. Both commands are read-only, and each exits 1 when there is nothing to show. Pipeline markers are tracked files, so the disposable Demo copy carries them. The outcome is recorded by a form of `gz obpi dispatch` (Question 2, ruled); its invocation joins this section when the plan has settled the flag.
 
 ```bash
 uv run gz obpi dispatch OBPI-0.35.0-18-dispatch-outcome-recording
@@ -386,7 +387,8 @@ uv run gz roles --pipeline OBPI-0.35.0-18-dispatch-outcome-recording --json
      operator explicitly requests an issue; link it back to the owning work.
      Keep this subsection under Evidence so history is not treated as contract. -->
 
-- 2026-10-04 — Open Design Question 1 ruled before the plan. Operator, verbatim: "A", to the option that is C in this brief's lettering. A ledger event is the record of a dispatch's outcome; the marker and the completion summary are caches rebuilt from it. The ledger-event paths stay in Allowed Paths, and Requirement 15 is added. Questions 2 to 5 are open.
+- 2026-10-04 — Open Design Question 1 ruled before the plan. Operator, verbatim: "A", to the option that is C in this brief's lettering. A ledger event is the record of a dispatch's outcome; the marker and the completion summary are caches rebuilt from it. The ledger-event paths stay in Allowed Paths, and Requirement 15 is added.
+- 2026-10-04 — Open Design Question 2 ruled before the plan. Operator, verbatim: "A". `gz obpi dispatch` gains the outcome-recording form and no subcommand is added. Allowed Paths are unchanged. Questions 3 to 5 are open.
 
 ### Gate 1 (ADR)
 
