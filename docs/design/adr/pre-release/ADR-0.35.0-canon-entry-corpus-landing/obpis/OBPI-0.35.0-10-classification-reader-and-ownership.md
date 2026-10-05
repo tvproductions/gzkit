@@ -136,7 +136,8 @@ this ADR exists to kill.
 - `AGENTS.md` — generated playback only; never manually edited to satisfy the audit
 - `docs/user/manpages/validate.md` — observed classification-source and recovery examples
 - `docs/governance/advisory-rules-audit.md` — the scorecard states its own now-narrowed authority
-- `features/classification_ownership.feature`, `features/steps/classification_ownership_steps.py` — **CREATE**, Gate 4 scenarios
+- `features/classification_ownership.feature` — **CREATE**, Gate 4 scenarios
+- `features/steps/classification_ownership_steps.py` — **CREATE**, the steps for those scenarios
 - `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-10-classification-reader-and-ownership.md` — this brief's evidence sections
 
 ## Denied Paths
@@ -307,7 +308,7 @@ uv run gz content show AGENTS.md --section prime-directive-ownership
 - [ ] REQ-0.35.0-10-07 [structural-fence]: no classification surface exists without a reader, and no bullet resolves from two surfaces at once, after every ADR-0.35.0 OBPI has landed
 - [ ] REQ-0.35.0-10-08 [behavior]: Given a scorecard section whose attributed source is a `.gzkit/skills/*/SKILL.md` or an ADR file, when `validate_bullet_retention` runs, then its `Mechanical`/`Promotable` rows are retention-checked against that source's text and not the per-turn surface, while rows attributed to the per-turn surface keep their current tier-scoped check
 - [ ] REQ-0.35.0-10-09 [behavior]: Given a skill- or ADR-sourced row whose source file is missing or whose text is absent from it, when the audit runs, then it fails closed naming the row identity, the attributed source path, the rule that binds, and the runnable next step
-- [ ] REQ-0.35.0-10-10 [support]: `docs/user/manpages/validate.md` § `--bullet-retention` and `docs/governance/advisory-rules-audit.md` state the source-aware retention scope. Witnessed by `artifact_edited` citing both paths + `gz validate --documents`.
+- [ ] REQ-0.35.0-10-10 [support]: `docs/user/manpages/validate.md` § `--bullet-retention` and `docs/governance/advisory-rules-audit.md` state the source-aware retention scope. Witnessed by `artifact_edited` citing `docs/user/manpages/validate.md` + `gz validate --documents`.
 
 ## Completion Checklist
 
@@ -382,6 +383,15 @@ before this OBPI, because the corpus value reached no consumer.
 - Date completed:
 - Attestation status:
 - Defects noted:
+
+### Change Log
+
+- 2026-10-05 — **Plan written after implementation.** The 2026-10-03 single-session trial skipped plan mode, so the plan audit had no subject. `.claude/plans/classification-reader-and-ownership-OBPI-0.35.0-10.md` records what was built and plans the remaining stages; it is labelled as written after the code. Operator ruling 2026-10-05, booked in the handoff rulings store: CI goes green by working item 10, its plan audit re-run to a pass.
+- 2026-10-05 — **Parent ADR Decision item 9 amended** to carry the source-aware retention scope (REQ-08 to REQ-10), which the 2026-09-29 amendment had written into this brief only. Finding: plan audit, ADR to OBPI, no scope creep. Operator ruling, verbatim selection: "A: Amend Decision 9 (Recommended)". Checklist item 10 is unchanged.
+- 2026-10-05 — **REQ-0.35.0-10-10 witness clause** now cites `docs/user/manpages/validate.md`. It read "citing both paths", which the support resolver parsed as a path named "both" and returned unproven. The requirement's statement is unchanged. Operator ruling, verbatim selection: "A: Cite the manpage (Recommended)". Every proof is re-run against the amended contract.
+- 2026-10-05 — **Mapping reviewed.** The Identity and Reconciliation Contract requires the row-to-entry mapping to be reviewed at planning; the trial ran no planning step. Put to the operator on measured evidence: 31 rows cite a corpus entry; 25 carry rule text contained verbatim in the cited entry; 6 are paraphrases (Governance Core #17, #17c, #17d; Defect-fix Routing #46, #47; Agent Contract #53c), all Judgment in both surfaces. The mandatory source attribution, the two rows attributed to the scorecard itself and the requote of Local Agent Rules #8 were named in the same question. Operator ruling, verbatim selection: "A: Accept as measured (Recommended)".
+- 2026-10-05 — **Six class disagreements reconciled in the corpus.** Local Agent Rules #7, #10 and Governance Core #14, #16, #17a were Mechanical in the scorecard and Judgment in the corpus; Local Agent Rules #8 was the reverse. All six corpus classes came from one batch capture on 2026-09-17. Operator ruling, verbatim selection: "A: Corpus adopts scorecard (Recommended)". Done by governed retire and remember of the unchanged text, published with an unchanged candidate through compose and commit, not through the item 7 orchestrator, because its generated candidate reorders two blocks of the root surface. Retirement and replacement ids are recorded in the Implementation Summary.
+- 2026-10-05 — **Allowed Paths bullet split.** The behave feature and its steps file shared one bullet; the plan audit reads the first path on a bullet and reported the steps file as out of scope. No path was added; the frontmatter allowlist already carried both.
 
 ## Tracked Defects
 
