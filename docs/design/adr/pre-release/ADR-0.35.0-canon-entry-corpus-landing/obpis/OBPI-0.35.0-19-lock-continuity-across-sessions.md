@@ -59,6 +59,8 @@ reqs:
   - REQ-0.35.0-19-11
   - REQ-0.35.0-19-12
   - REQ-0.35.0-19-13
+  - REQ-0.35.0-19-14
+  - REQ-0.35.0-19-15
 verification:
   - uv run -m unittest tests.governance.test_lock_continuity tests.governance.test_lock_exchange_coupling_validator tests.governance.test_token_block_discipline tests.governance.test_obpi_complete_lock_release tests.test_obpi_lock_cmd tests.commands.test_obpi_pipeline
   - uv run -m behave features/obpi_lock_continuity.feature features/obpi_lock.feature features/lock_exchange_coupling.feature
@@ -120,7 +122,7 @@ The contract changes are a continuation route on the lock CLI, new refusal text 
 
 ## Allowed Paths
 
-This list covers the recommended rulings in § Open Design Questions. A different ruling on question 1, 3 or 6 amends it before the plan is written.
+This list covers the rulings recorded in § Open Design Questions.
 
 Source:
 
@@ -130,7 +132,7 @@ Source:
 - `src/gzkit/exchange_records.py` — the continuity record's writer, and the admit predicate that keeps it from discharging a later surrender
 - `src/gzkit/governance/trust_audits/lock_exchange_coupling.py` — the validator: both identities and the four fields on a continuity record
 - `src/gzkit/commands/obpi_cmd.py` — the pipeline launch and every `--from` entry read the lock (registered security surface)
-- `src/gzkit/commands/obpi_complete.py`, `src/gzkit/commands/obpi_precomplete.py` — changed only if question 6(i) rules completion by a non-holder into this brief; otherwise read by the REQ-09 control tests and left untouched
+- `src/gzkit/commands/obpi_complete.py`, `src/gzkit/commands/obpi_precomplete.py` — completion by a non-holder is refused (question 6(i), ruled into this brief); the holder's completion surrender is unchanged (`obpi_complete.py` is a registered security surface)
 - `src/gzkit/pipeline_runtime.py` — READ-ONLY import of the REQ-10 control test (the helper listing OBPIs locked by the current agent); never modified by this OBPI
 
 Tests and scenarios:
@@ -187,8 +189,8 @@ This brief:
 
 ## Requirements (FAIL-CLOSED)
 
-1. REQUIREMENT: A change of occupant is a session whose resolved identity differs from the holder of an unexpired lock on the same OBPI. It MUST end in exactly one of two states: a continuity record exists (Requirement 2), or the command was refused and wrote nothing (Requirement 4). No path through lock claim, lock release, the pipeline launch or a `--from` re-entry leaves work proceeding under another session's lock with no record.
-2. REQUIREMENT: The continuity record is an exchange record under `.gzkit/locks/exchange/`, written by an exchange writer in `src/gzkit/exchange_records.py` and by nothing else. It carries, on the structured channel the validator reads, the four Sub-Invariant 2 fields (`last_lock_event_timestamp` equal to the prior occupant's claim time, `last_commit_sha`, `branch`, and a `## Decisions Made` section) and both identities: the prior occupant and the continuing occupant. `## Decisions Made` states who continued from whom and why. Free-body prose does not satisfy the identity requirement. By the ruling on question 4 (2026-10-04) the record also carries, on the structured channel, the continuing agent's reason and the operator's direction, verbatim. A continuation with an empty reason or an empty direction is refused and writes nothing. The agent passes the operator's words unchanged and never authors them.
+1. REQUIREMENT: A change of occupant is a session whose resolved identity differs from the holder of an unexpired lock on the same OBPI. It MUST end in exactly one of two states: a continuity record exists (Requirement 2), or the command was refused and wrote nothing (Requirement 4). No path through lock claim, lock release, the pipeline launch, a `--from` re-entry or completion leaves work proceeding under another session's lock with no record. A claim over another agent's EXPIRED lock is a reap and leaves a reaping record (operator ruling 2026-10-05, question 6).
+2. REQUIREMENT: The continuity record is an exchange record under `.gzkit/locks/exchange/`, written by an exchange writer in `src/gzkit/exchange_records.py` and by nothing else. It carries, on the structured channel the validator reads, the four Sub-Invariant 2 fields (`last_lock_event_timestamp` equal to the prior occupant's claim time, `last_commit_sha`, `branch`, and a `## Decisions Made` section) and both identities: the prior occupant and the continuing occupant. `## Decisions Made` states who continued from whom and why. Each identity is the agent name with that session's `session_id` beside it (question 6(iii), ruled). Free-body prose does not satisfy the identity requirement. By the ruling on question 4 (2026-10-04) the record also carries, on the structured channel, the continuing agent's reason and the operator's direction, verbatim. A continuation with an empty reason or an empty direction is refused and writes nothing. The agent passes the operator's words unchanged and never authors them.
 3. REQUIREMENT: The record is written BEFORE any lock, marker or ledger change that depends on it. If it cannot be written, nothing else changes and the command reports the failure. This is the order Sub-Invariants 3 and 6 already use.
 4. REQUIREMENT: Every refusal emits three-part recovery prose (`.gzkit/rules/guardrail-feedback-prose.md`): what was refused (the holder, its claim time, the remaining TTL), why (token-block discipline: a change of occupant needs a register entry), and the runnable continuation command. A refusal never names `--force` alone or an `--abandon` category that misdescribes the situation (GHI #1167). Each refusing surface asserts its own prose in its covering test.
 5. REQUIREMENT: `gz validate --lock-exchange-coupling` reaches a continuity record from the ledger replay and fails closed (exit 3), naming the OBPI, when the record is absent from disk, is not in git's index, lacks any Sub-Invariant 2 field, lacks either identity, or lacks the operator's direction. It imposes nothing on events recorded before this brief lands: it stays green over the real ledger.
@@ -234,6 +236,7 @@ Each question names a choice the GHI leaves open. The REQs below are written to 
    - (ii) A claim over an EXPIRED lock held by another agent deletes it with no reaping record and no release event (`obpi_lock.py:65-79`), unlike `reap_expired_locks`.
    - (iii) Identity is asserted, not proven: `--agent NAME` lets a session claim or release as the holder, and every Codex session resolves to the constant `codex` (`lock_manager.py:112-113`), so two Codex sessions are one occupant.
    - Recommendation: (i) and (ii) in, each adding one BEHAVIOR REQ (numbered from REQ-0.35.0-19-14) before the plan; (ii) is Sub-Invariant 3 applied to the claim path. (iii) stays a named residual (Requirement 13), with the record carrying both sessions' `session_id` beside the agent names. Rekeying occupancy to the session id is not recommended here: `resolve_session_id` falls back to the process id (`lock_manager.py:117-123`), which would make every command of a harness without a session variable a change of occupant.
+   - **RULED 2026-10-05: (i) and (ii) in, (iii) a named residual.** Asked whether the three routes are in this brief, the operator answered, verbatim: "A". Completion by a non-holder is refused with the continuation command named (REQ-0.35.0-19-14). A claim over another agent's expired lock writes a reaping record before the delete (REQ-0.35.0-19-15). Asserted identity stays a disclosed residual under Requirement 13, and the continuity record carries both sessions' `session_id`. Occupancy is not rekeyed to the session id.
 
 ## Discovery Checklist
 
@@ -360,6 +363,8 @@ Authoring obligation before Stage 2 (Requirement 12): replace this block with th
 - [ ] REQ-0.35.0-19-11 [SUPPORT]: The lock manpages, `docs/user/manpages/obpi-pipeline.md`, `docs/user/manpages/validate.md` and `docs/user/runbook.md` describe the refusal and its recovery, the continuation route, the continuity record's fields and location, and what the coupling validator checks on it, in the words the code prints. Witnessed by `artifact_edited` citing `docs/user/manpages/obpi-lock-claim.md` + `gz validate --cli-alignment`.
 - [ ] REQ-0.35.0-19-12 [SUPPORT]: The canonical rule states, in the form and wording the operator rules (question 5), that a change of occupant between sessions leaves a register entry naming both occupants or is refused, that no abandon category is added for it, and that a continuity record discharges no later surrender; its version is bumped, the superseded version line is lifted to `docs/governance/rule-version-history.md`, and the scorecard carries the clause. Witnessed by `artifact_edited` citing `.gzkit/rules/token-block-discipline.md` + `gz validate --rule-version-markers`.
 - [ ] REQ-0.35.0-19-13 [SUPPORT]: The pipeline skill's Stage 1 lock step, § Abort surrender and § Error Recovery, and the lock skill's Lock Rules and pipeline integration, tell a session that meets another session's lock to continue by the continuation route, and tell an aborting session that a lock left held is continued by the next session, with the pipeline skill's body kept within its ceiling. Witnessed by `artifact_edited` citing `.gzkit/skills/gz-obpi-pipeline/SKILL.md` + `gz validate --skill-alignment`.
+- [ ] REQ-0.35.0-19-14 [BEHAVIOR]: Given an unexpired lock held by agent A and no continuation by agent B, when B runs `gz obpi complete` for that OBPI, then the command exits non-zero, A's lock file is unchanged, no completion exchange record and no `obpi_lock_released` event is written, and the output names the holder and the continuation command; `gz obpi precomplete` run by B does not report the lock check as satisfied; and once B has continued by the continuation route, the same completion proceeds
+- [ ] REQ-0.35.0-19-15 [BEHAVIOR]: Given a lock past its TTL held by agent A, when a different agent B runs `gz obpi lock claim` for that OBPI, then a `category: reaping` exchange record naming A as `previous_agent` is written before A's lock is deleted, the `obpi_lock_released` event for A's lock cites that record, and B's claim then succeeds with no continuity record; and when the reaping record cannot be written, A's lock is left in place and B's claim fails
 
 ## Completion Checklist
 
@@ -395,7 +400,8 @@ Authoring obligation before Stage 2 (Requirement 12): replace this block with th
 - 2026-10-04 — Open Design Question 2 ruled before the plan (Requirement 12). Operator, verbatim: "A". The pipeline launch refuses when another session holds the lock and names the continuation command; it never records a continuation itself. REQ-0.35.0-19-04 is amended to the refusal. Allowed Paths are unchanged.
 - 2026-10-04 — Open Design Question 3 ruled before the plan (Requirement 12). Operator, verbatim: "A". The continuation is an option on `gz obpi lock claim`. Allowed Paths already cover it and are unchanged.
 - 2026-10-04 — Open Design Question 4 ruled before the plan (Requirement 12). Operator, verbatim: "A", to the option put first, which is (B) in this brief's lettering. A continuation carries the agent's reason and the operator's direction verbatim in the record, and is refused when either is empty. Requirements 2 and 5 and REQ-0.35.0-19-01 and -02 are amended. Allowed Paths are unchanged.
-- 2026-10-04 — Open Design Question 5 ruled before the plan (Requirement 12). Operator, verbatim: "A". Continuity is stated as a new Sub-Invariant 8 of the token-block rule, with a minor version bump; the wording is ruled from a draft at plan time. Allowed Paths are unchanged. Question 6 is open.
+- 2026-10-04 — Open Design Question 5 ruled before the plan (Requirement 12). Operator, verbatim: "A". Continuity is stated as a new Sub-Invariant 8 of the token-block rule, with a minor version bump; the wording is ruled from a draft at plan time. Allowed Paths are unchanged.
+- 2026-10-05 — Open Design Question 6 ruled before the plan (Requirement 12). Operator, verbatim: "A". Routes (i) and (ii) are in this brief as REQ-0.35.0-19-14 and REQ-0.35.0-19-15; route (iii) is a named residual, and the continuity record carries both sessions' `session_id`. Requirements 1 and 2 and the Allowed Paths note on the completion modules are amended. All six questions are now ruled; the Demo block is still owed before Stage 2.
 
 ### Gate 1 (ADR)
 
