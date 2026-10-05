@@ -32,7 +32,7 @@ Validated: corpus_retirement_witness
 ✓ All validations passed (1 scopes).
 ```
 
-Executed proof record `proof-8f28374cf329416a8af803c2dee2bbd6` (REQ-0.35.0-10-03): with the production line that binds the corpus class replaced by one that binds the scorecard class (control `scorecard-class-binds-owned-row`), `test_corpus_change_alone_changes_the_verdict` failed on its assertion; with the disagreement report silenced (control `disagreement-silenced`), the other two tests failed; the source was restored and the tests were green afterwards.
+Executed proof record `proof-3828d9e64a4b4910a6079338508de753` (REQ-0.35.0-10-03): with the production line that binds the corpus class replaced by one that binds the scorecard class (control `scorecard-class-binds-owned-row`), `test_corpus_change_alone_changes_the_verdict` failed on its assertion; with the disagreement report silenced (control `disagreement-silenced`), the other two tests failed; the source was restored and the tests were green afterwards.
 
 **3. Evidence**
 
@@ -40,17 +40,17 @@ Executed proof record `proof-8f28374cf329416a8af803c2dee2bbd6` (REQ-0.35.0-10-03
 
 | Check | Command | Result |
 |---|---|---|
-| Lint | `uv run gz arb ruff` | exit 0; `arb-ruff-9a63461499704f3188d3dfc8e3fd0476` |
-| Typecheck | `uv run gz arb typecheck` | exit 0; `arb-step-typecheck-633060176b264272a96f8959b70a5558` |
-| Tests (full suite) | `arb:unittest` | 11455 tests, OK, 7 skipped; `arb-step-unittest-f5fdef8ed36244e5aba245db3214e7f5` |
-| Docs | `arb:mkdocs` | exit 0; `arb-step-mkdocs-f015095c9381479c8d85a9fc1a598e52` |
-| Behave | `arb:behave` | 5 scenarios passed, 0 failed; `arb-step-behave-c9665e00a2794e06b82bb82ed461fc95` |
-| OBPI tests | `arb:obpi-tests` | 52 tests OK; `arb-step-unittest-0b9faf606a17499184f1f2e58df84c01` |
+| Lint | `uv run gz arb ruff` | exit 0; `arb-ruff-186b806c47494166ae2fa5d105a428c0` |
+| Typecheck | `uv run gz arb typecheck` | exit 0; `arb-step-typecheck-7cc73ee1581b49df92c24f605784c503` |
+| Tests (full suite) | `arb:unittest` | 11456 tests, OK, 7 skipped; `arb-step-unittest-db420c449325416cb9f99d8440e8d24c` |
+| Docs | `arb:mkdocs` | exit 0; `arb-step-mkdocs-0f63553f385246608ab5507ebcc210fe` |
+| Behave | `arb:behave` | 5 scenarios passed, 0 failed; `arb-step-behave-169dcb2d18bc4dbdbd35b85df70c3541` |
+| OBPI tests | `arb:obpi-tests` | 53 tests OK; `arb-step-unittest-c6a5ea9a82d141c49c15dbf742b588cd` |
 | Validation scopes | `validate:scopes` | six scopes, each exit 0; no receipt |
 | REQ coverage | `covers` | 10 REQs; behavior_uncovered_reqs 0 |
 | Precomplete | `uv run gz obpi precomplete` | every check passes except adversarial_validation, which waits on Step 4b |
 
-All six receipts record exit_status 0 and were recorded after the lock claim. `arb:obpi-tests` ran before the corpus reconciliation; `arb:unittest` (the full suite) ran after it. The three REQs without a covering test are the two SUPPORT REQs and the STRUCTURAL-FENCE REQ, by proof channel.
+All six receipts record exit_status 0 and were recorded after the lock claim, on the tree that carries the round 1 repair. The three REQs without a covering test are the two SUPPORT REQs and the STRUCTURAL-FENCE REQ, by proof channel.
 
 ```bash
 # arb:unittest
@@ -83,7 +83,7 @@ Commit 4893b7321 (2026-10-03, the single-session trial):
 
 Commit 4893b7321:
 
-- `src/gzkit/governance/trust_audits/bullet_retention.py` (the resolver, the mapping fence, the Ambiguous fence, source-aware retention; 674 lines)
+- `src/gzkit/governance/trust_audits/bullet_retention.py` (the resolver, the mapping fence, the Ambiguous fence, source-aware retention)
 - `tests/governance/test_bullet_retention.py` (six new test classes)
 - `src/gzkit/content/models/corpus.py` (docstring only)
 - `docs/user/manpages/validate.md` (classification source and source-aware retention)
@@ -98,48 +98,57 @@ Commit 4893b7321:
 - `docs/governance/advisory-rules-audit.md` (six rows repointed to the new entry ids)
 - `.claude/plans/classification-reader-and-ownership-OBPI-0.35.0-10.md` (plan, written after implementation and labelled so)
 
+Round 1 repair (2026-10-05, commit 60e622dee):
+
+- `src/gzkit/governance/trust_audits/bullet_retention.py` (a row with no row number is refused by name; 679 lines)
+- `tests/governance/test_bullet_retention.py` (`test_missing_row_number_fails_closed_naming_the_row`)
+- `docs/user/manpages/validate.md`, `docs/governance/advisory-rules-audit.md` (the fail-closed list names the missing row number)
+
 **REQ coverage:**
 
 | REQ | Kind | Mechanism | Proof location | Proof | Result |
 |---|---|---|---|---|---|
-| REQ-0.35.0-10-01 | BEHAVIOR | 3 tests; 2 controls killed | `TestOwnedBulletResolvesFromCorpus` | `proof-8ed3d69d` | behavioral proof valid |
-| REQ-0.35.0-10-02 | BEHAVIOR | 7 tests; 2 controls killed | `TestUnownedBulletResolvesFromScorecard` | `proof-92d2622c` | behavioral proof valid |
-| REQ-0.35.0-10-03 | BEHAVIOR | 3 tests; 2 controls killed | `TestOwnedDisagreementIsReported` | `proof-8f28374c` | behavioral proof valid |
-| REQ-0.35.0-10-04 | BEHAVIOR | 5 tests; 2 controls killed | `TestCaptureDefaultNeverBinds` | `proof-53b950ce` | behavioral proof valid |
-| REQ-0.35.0-10-05 | BEHAVIOR | 1 test; 1 control killed | `TestReconciliationIsAppendOnly` | `proof-794a8cf9` | behavioral proof valid |
-| REQ-0.35.0-10-06 | SUPPORT | `resolve_support_proof` | `artifact_edited` + `--documents` | `proof-6f7cd6b4` | pass |
-| REQ-0.35.0-10-07 | STRUCTURAL-FENCE | `resolve_fence_proof` | ADR-0.35.0 BI-04 | `proof-9466151a` | pass |
-| REQ-0.35.0-10-08 | BEHAVIOR | 2 tests; 1 control killed | `TestDeclaredSourceRetention` | `proof-450c798d` | behavioral proof valid |
-| REQ-0.35.0-10-09 | BEHAVIOR | 1 test; 1 control killed | `TestDeclaredSourceRetention` | `proof-97649539` | behavioral proof valid |
-| REQ-0.35.0-10-10 | SUPPORT | `resolve_support_proof` | `artifact_edited` + `--documents` | `proof-fef990d7` | pass |
+| REQ-0.35.0-10-01 | BEHAVIOR | 3 tests; 2 controls killed | `TestOwnedBulletResolvesFromCorpus` | `proof-42ff88a9` | behavioral proof valid |
+| REQ-0.35.0-10-02 | BEHAVIOR | 8 tests; 3 controls killed | `TestUnownedBulletResolvesFromScorecard` | `proof-4a087137` | behavioral proof valid |
+| REQ-0.35.0-10-03 | BEHAVIOR | 3 tests; 2 controls killed | `TestOwnedDisagreementIsReported` | `proof-3828d9e6` | behavioral proof valid |
+| REQ-0.35.0-10-04 | BEHAVIOR | 5 tests; 2 controls killed | `TestCaptureDefaultNeverBinds` | `proof-422d8cde` | behavioral proof valid |
+| REQ-0.35.0-10-05 | BEHAVIOR | 1 test; 1 control killed | `TestReconciliationIsAppendOnly` | `proof-e5f93b0d` | behavioral proof valid |
+| REQ-0.35.0-10-06 | SUPPORT | `resolve_support_proof` | file on disk + `--documents` | `proof-719f97b9` | pass |
+| REQ-0.35.0-10-07 | STRUCTURAL-FENCE | `resolve_fence_proof` | ADR-0.35.0 BI-04 | `proof-ee97a10d` | pass |
+| REQ-0.35.0-10-08 | BEHAVIOR | 2 tests; 1 control killed | `TestDeclaredSourceRetention` | `proof-4af3a36d` | behavioral proof valid |
+| REQ-0.35.0-10-09 | BEHAVIOR | 1 test; 1 control killed | `TestDeclaredSourceRetention` | `proof-e06037c1` | behavioral proof valid |
+| REQ-0.35.0-10-10 | SUPPORT | `resolve_support_proof` | file on disk + `--documents` | `proof-d17394e4` | pass |
 
 ```text
 Test file for every BEHAVIOR row: tests/governance/test_bullet_retention.py
-All ten proof records are valid against input digest aed47c90d763…
+All ten proof records are valid against input digest 883b5c8a8095…
 
-REQ-0.35.0-10-01  proof-8ed3d69d50ea4417a34a6db3b04926f9
+REQ-0.35.0-10-01  proof-42ff88a901194284b303a053eb9890b0
   killed controls: scorecard-class-binds-owned-row, wrong-section-entry-binds
-REQ-0.35.0-10-02  proof-92d2622c44e74bdea41f176c48c12a5f
-  killed controls: duplicate-identity-accepted, unowned-section-demands-corpus-entry
-REQ-0.35.0-10-03  proof-8f28374cf329416a8af803c2dee2bbd6
+REQ-0.35.0-10-02  proof-4a087137f9294193976b40fd548223b0
+  killed controls: duplicate-identity-accepted, unowned-section-demands-corpus-entry,
+  blank-row-number-accepted (added in the round 1 repair)
+REQ-0.35.0-10-03  proof-3828d9e64a4b4910a6079338508de753
   killed controls: disagreement-silenced, scorecard-class-binds-owned-row
-REQ-0.35.0-10-04  proof-53b950cea3cd4a50a82989386aae9880
+REQ-0.35.0-10-04  proof-422d8cde5a8742e79fba93ca6ea2c224
   killed controls: capture-default-binds, unloadable-ownership-falls-back-to-scorecard
-REQ-0.35.0-10-05  proof-794a8cf9ece24eadb21d401653475573
+REQ-0.35.0-10-05  proof-e5f93b0d3f8d4f1f9855cb79d3c08efb
   killed controls: fence-reads-raw-log
-REQ-0.35.0-10-06  proof-6f7cd6b4dac34a7593eb11ae3e41df41
-  SUPPORT: ledger event artifact_edited citing docs/governance/advisory-rules-audit.md,
-  plus `uv run gz validate --documents`
-REQ-0.35.0-10-07  proof-9466151a397e4bc6b8d6cb98a09ab4f8
+REQ-0.35.0-10-06  proof-719f97b96cc54e5ba2708b1135a21598
+  SUPPORT: the witness clause names artifact_edited citing docs/governance/advisory-rules-audit.md.
+  No ledger event cites that path. The resolver passed on its second arm: the cited file
+  exists on disk and `uv run gz validate --documents` admits it.
+REQ-0.35.0-10-07  proof-ee97a10dd84e420dbdff2a8bca1a2bd8
   STRUCTURAL-FENCE: Boundary Invariants of ADR-0.35.0-canon-entry-corpus-landing, BI-04;
   audited at ADR closeout
-REQ-0.35.0-10-08  proof-450c798db98b4b45a793be81b4896f3e
+REQ-0.35.0-10-08  proof-4af3a36d721342359bbce91d40459e90
   killed controls: declared-source-checked-against-surface
-REQ-0.35.0-10-09  proof-976495390ffe467e9570d4521748ca7b
+REQ-0.35.0-10-09  proof-e06037c14936463fb96cf653f5a2e7d9
   killed controls: absent-text-reads-as-retained
-REQ-0.35.0-10-10  proof-fef990d7255642319f1c7acecdcb293f
-  SUPPORT: ledger event artifact_edited citing docs/user/manpages/validate.md,
-  plus `uv run gz validate --documents`
+REQ-0.35.0-10-10  proof-d17394e48a0d446d8aa8be8f45c51527
+  SUPPORT: the witness clause names artifact_edited citing docs/user/manpages/validate.md.
+  No ledger event cites that path. The resolver passed on its second arm: the cited file
+  exists on disk and `uv run gz validate --documents` admits it.
 
 Corpus reconciliation of 2026-10-05 (six owned rows; corpus adopts the scorecard class).
 Each row: scorecard identity | class change | old entry id -> new entry id | tombstone id
@@ -170,6 +179,18 @@ governance-core-gzkit-rules-governance-core-md#17a | Judgment -> Mechanical
   tombstone: corpus-retraction-corpus-behavior-rules-2026-09-17T11:39:31.433847+00:00-2026-10-05T21:33:08.464416+00:00
 ```
 
+**Review history**
+
+Round 1 — Codex (tier 1), receipt `arb-step-codexadversary-c47b21f19ded456989a48f7dbb25e5e6`, reviewed commit e8617ba90. Verdict NOT-CORROBORATED, token refuted. It replayed all 11 recorded controls (each killed on its own assertion, source restored), ran the live audit (0 errors, 173 rows, 31 answered by the corpus), ran six probes of its own, and approved seven of ten proofs. Three findings:
+
+| Finding | REQ | What it found | Repair |
+|---|---|---|---|
+| `codex-035010-missing-row-number` | 02 | a row with a blank number cell was audited with an empty identity and no error | the identity check refuses it by name; new test written first and observed failing on its assertion; new control `blank-row-number-accepted` killed |
+| `codex-035010-scorecard-edit-witness` | 06 | this packet said a ledger event cites the scorecard; none does | packet now states the resolver arm that passed |
+| `codex-035010-manpage-edit-witness` | 10 | this packet said a ledger event cites the manpage; none does | packet now states the resolver arm that passed |
+
+The reviewer also named the weakest point: the REQ-02 population test derives its expected identities from the same scorecard it audits. The repair closes the blank-number case it demonstrated; a pinned baseline of identities was not added.
+
 **Limits and disclosures**
 
 - The RED falsifiability witness (`gz arb red`) was run for all seven BEHAVIOR REQs and returned failure_class=error on a reconstructed base for every one. That is inconclusive, not a RED. The executed proof records with killed controls are the evidence that each test can fail.
@@ -177,9 +198,8 @@ governance-core-gzkit-rules-governance-core-md#17a | Judgment -> Mechanical
 - The plan was written after the implementation and is labelled so.
 - The ten proof specifications reuse the trial's controls, recovered from the ledger's earlier proof records. Whether each control expresses its requirement is for the independent reviewer to judge.
 - The 31-row mapping was accepted by the operator on a text-match measurement: 25 verbatim-contained, 6 paraphrases, all six paraphrases Judgment in both surfaces. The 25 were not re-derived beyond the text match.
-- The source module is 674 lines against a 600-line authoring guidance that nothing gates.
-- The `arb:obpi-tests` receipt (52 tests) was recorded before the corpus reconciliation. The full-suite receipt was recorded after it.
+- The source module is 679 lines against a 600-line authoring guidance that nothing gates.
 - The narrator found the brief's atomicity note for REQ-0.35.0-10-05 saying the live corpus needed no change, after twelve rows had been appended. The note was corrected before this packet was replayed.
-- Step 4b (independent review by Codex) has not run when this packet is written.
+- Step 4b round 1 ran on commit e8617ba90 and refuted (see Review history). Round 2, the focused follow-up on the repaired tree, has not run when this revision is written.
 
 **4. Awaiting attestation.** Step 4b (independent review) runs before attestation is solicited.
