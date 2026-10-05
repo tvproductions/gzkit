@@ -208,6 +208,7 @@ Either way the returned text reaches the command as a file or standard input tha
 - C. Treat the recorded outcome as evidence. This contradicts claim 5.
 
 **Recommendation: A.** B is new design that GHI #1175 does not ask for. Requirement 9 holds under A and B; C would need it rewritten and a ruling against claim 5.
+**SETTLED BY CANON 2026-10-04: A.** Not put to the operator as a choice. `.gzkit/rules/model-selection.md` operative claim 5 already rules it: "A subagent's claim is not evidence." Option C contradicts that rule, and option B is new design outside a repair assignment. The operator was told and may rule otherwise; Requirement 9 stands as written.
 
 **4. Where a reviewer's outcome comes from.**
 - A. Derive it from the review the acceptance store already holds for the same receipt (the `acceptance_recorded` ledger row written by the acceptance review import). One record of the findings; the dispatch outcome points at it.
@@ -388,7 +389,8 @@ uv run gz roles --pipeline OBPI-0.35.0-18-dispatch-outcome-recording --json
      Keep this subsection under Evidence so history is not treated as contract. -->
 
 - 2026-10-04 — Open Design Question 1 ruled before the plan. Operator, verbatim: "A", to the option that is C in this brief's lettering. A ledger event is the record of a dispatch's outcome; the marker and the completion summary are caches rebuilt from it. The ledger-event paths stay in Allowed Paths, and Requirement 15 is added.
-- 2026-10-04 — Open Design Question 2 ruled before the plan. Operator, verbatim: "A". `gz obpi dispatch` gains the outcome-recording form and no subcommand is added. Allowed Paths are unchanged. Questions 3 to 5 are open.
+- 2026-10-04 — Open Design Question 2 ruled before the plan. Operator, verbatim: "A". `gz obpi dispatch` gains the outcome-recording form and no subcommand is added. Allowed Paths are unchanged.
+- 2026-10-04 — Open Design Question 3 settled by canon, not by a new ruling: `.gzkit/rules/model-selection.md` operative claim 5. A recorded outcome is the subagent's report, labelled as reported and read by no gate. Questions 4 and 5 are open.
 
 ### Gate 1 (ADR)
 
