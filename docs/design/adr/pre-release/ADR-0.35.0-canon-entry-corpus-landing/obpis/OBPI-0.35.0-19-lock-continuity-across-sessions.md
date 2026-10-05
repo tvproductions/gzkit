@@ -228,6 +228,7 @@ Each question names a choice the GHI leaves open. The REQs below are written to 
 5. **Does `.gzkit/rules/token-block-discipline.md` gain a new Sub-Invariant?** A rule change needs the operator's ruling.
    - (A) A new Sub-Invariant 8 for continuity. (B) An amendment inside Sub-Invariant 5. (C) No rule change.
    - Recommendation: A, with a minor version bump and wording the operator rules from a draft presented at plan time. C is not available: the rule describes how a block changes hands, and code that adds a way the rule does not state is doctrine drift.
+   - **RULED 2026-10-04: A.** Asked how the rule states continuity, the operator answered, verbatim: "A". The rule gains a new Sub-Invariant 8 with a minor version bump. Its wording is put to the operator as a draft at plan time and is not written here.
 6. **Three further routes change the occupant with no register entry (code reading, 2026-10-04). Are they in this brief?** The GHI's boundary names claim, release, launch and `--from` re-entry.
    - (i) Completion by a non-holder. `gz obpi precomplete` passes `lock_held` on any lock file for the OBPI (`obpi_precomplete.py:284-305`), and completion then deletes that lock and emits a release naming only the completing session (`obpi_complete.py:1430-1459`).
    - (ii) A claim over an EXPIRED lock held by another agent deletes it with no reaping record and no release event (`obpi_lock.py:65-79`), unlike `reap_expired_locks`.
@@ -393,7 +394,8 @@ Authoring obligation before Stage 2 (Requirement 12): replace this block with th
 - 2026-10-04 — Open Design Question 1 ruled before the plan (Requirement 12). Operator, verbatim: "A". A continuation transfers the lock: the prior occupancy ends against the continuity record and the continuing session becomes the holder. Allowed Paths already cover this ruling and are unchanged.
 - 2026-10-04 — Open Design Question 2 ruled before the plan (Requirement 12). Operator, verbatim: "A". The pipeline launch refuses when another session holds the lock and names the continuation command; it never records a continuation itself. REQ-0.35.0-19-04 is amended to the refusal. Allowed Paths are unchanged.
 - 2026-10-04 — Open Design Question 3 ruled before the plan (Requirement 12). Operator, verbatim: "A". The continuation is an option on `gz obpi lock claim`. Allowed Paths already cover it and are unchanged.
-- 2026-10-04 — Open Design Question 4 ruled before the plan (Requirement 12). Operator, verbatim: "A", to the option put first, which is (B) in this brief's lettering. A continuation carries the agent's reason and the operator's direction verbatim in the record, and is refused when either is empty. Requirements 2 and 5 and REQ-0.35.0-19-01 and -02 are amended. Allowed Paths are unchanged. Questions 5 and 6 are open.
+- 2026-10-04 — Open Design Question 4 ruled before the plan (Requirement 12). Operator, verbatim: "A", to the option put first, which is (B) in this brief's lettering. A continuation carries the agent's reason and the operator's direction verbatim in the record, and is refused when either is empty. Requirements 2 and 5 and REQ-0.35.0-19-01 and -02 are amended. Allowed Paths are unchanged.
+- 2026-10-04 — Open Design Question 5 ruled before the plan (Requirement 12). Operator, verbatim: "A". Continuity is stated as a new Sub-Invariant 8 of the token-block rule, with a minor version bump; the wording is ruled from a draft at plan time. Allowed Paths are unchanged. Question 6 is open.
 
 ### Gate 1 (ADR)
 
