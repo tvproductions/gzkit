@@ -111,7 +111,7 @@ The path marked (Q2) follows the ruling on that question in § Open Design Quest
 - `src/gzkit/ledger_events.py`, `src/gzkit/schemas/ledger.json` — no ledger event is added.
 - `.gzkit/skills/**` outside `gz-obpi-pipeline` — no other skill is converted. The catalog-wide form is `ADR-pool.skill-runtime-authority-inversion`, which stays in the pool.
 - `docs/design/adr/pre-release/ADR-0.13.0-obpi-pipeline-runtime-surface/**`, `docs/design/adr/pool/**` — the repaired ADR is `Validated` and is not reopened; the pool ADR is not promoted or edited.
-- `AGENTS.md`, `.gzkit/corpus/**`, `.gzkit/rules/**` — no canon or rule changes. The rule conflict in Q5 is put to the operator, not edited away.
+- `AGENTS.md`, `.gzkit/corpus/**`, `.gzkit/rules/**` — no canon or rule changes. The rule conflict in Q5 is ruled as an exception for this OBPI, not edited away.
 - Paths not listed in Allowed Paths
 - New dependencies
 - CI files, lockfiles
@@ -129,7 +129,7 @@ The path marked (Q2) follows the ruling on that question in § Open Design Quest
 9. REQUIREMENT: Skill edits are made in `.gzkit/skills/` only. The skill version and `last_reviewed` move in the same edit, and `uv run gz agent sync control-surfaces` regenerates the wheel copy and the mirrors (`.gzkit/rules/skill-surface-sync.md`).
 10. REQUIREMENT: This OBPI's own pipeline run is the real run. It is executed from Stage 1 under the delivery `OBPI-0.35.0-17` landed, and Key Proof records each stage-entry output the run received. Its Stages 3 to 5 run after the cutover, so they are served with the skill body already reduced.
 11. NEVER change, disable or weaken a hook, a validator, a gate, a `gz check` step or a runtime refusal. No control of the pipeline is removed (campaign § Amendments 2026-10-04 (2): "none is removed by this entry").
-12. NEVER compress, merge, summarize or reword to save length. This is a change of delivery, never a shortening (§ Decision item 13; operator under GHI #460: "i don't trust shortening though"). See Q5 for the rule this sets aside for this OBPI.
+12. NEVER compress, merge, summarize or reword to save length. This is a change of delivery, never a shortening (§ Decision item 13; operator under GHI #460: "i don't trust shortening though"). By the ruling on Q5 the Decision governs over the compress-before-lifting rules for this OBPI, and the commit states that nothing was compressed.
 13. NEVER record a run's position or derive its next command here. Those are items 15 and 16.
 14. ALWAYS disclose the residual. The inventory proves that a control's text is present in what a stage is served. It does not prove that an agent reads or follows it, that extraction caught every sub-clause, or that one run generalizes.
 
@@ -142,6 +142,7 @@ Both questions were drafted in `OBPI-0.35.0-17` and moved here with the cutover 
 - **Q2. Where the incident history goes.** (a) `docs/governance/obpi-pipeline-control-rationale.md`, keyed by control id, following the existing rationale documents. (b) A reference file beside the skill, which the mirrors and the wheel carry. (c) Inside the inventory rows. **Recommended: (a)**, with each delivered control gaining a pointer to its entry. `.gzkit/rules/skill-authoring.md` § Parsimony clause 1 also asks for "one sentence of reason" in the body; where the control's own sentence already gives its reason it stays, and no new summary sentence is written, because a summary is a rewording (Requirement 12). (a) is not delivered to adopters; (b) is, at the cost of loading history beside the procedure again.
   - **RULED 2026-10-05: (a).** Asked where the incident history goes, the operator answered, verbatim: "A". The history moves verbatim to `docs/governance/obpi-pipeline-control-rationale.md`, keyed by control id, and each delivered control that had such a passage gains a pointer to its entry. The inventory in `OBPI-0.35.0-17` keeps the shape that brief states, so its Q2 prerequisite is met.
 - **Q5. A rule and a directive conflict; both are quoted.** `.gzkit/rules/skill-authoring.md` § Parsimony clause 6: "Lifting to `references/` is the move after that search, not instead of it, and the commit says what was compressed as well as what was lifted." `AGENTS.md` § Behavior Rules: "A size limit triggers a compress-and-merge pass before any growth or extraction; say what was compressed." Against them, § Decision item 13: "this is a change of delivery, never a shortening." **Recommended:** the Decision governs this OBPI, as the later and surface-specific ruling. Nothing is compressed, and the commit says so. Any compression of the served procedures is later work, fenced by the inventory.
+  - **RULED 2026-10-05: the Decision governs.** With both rules and § Decision item 13 quoted, the operator answered, verbatim: "A". Nothing is compressed in this OBPI, and the commit says so in plain words. The two rules are not edited; this is an exception for this OBPI alone. Requirement 12 stands as written.
 
 ## Discovery Checklist
 
