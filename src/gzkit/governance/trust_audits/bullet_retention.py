@@ -275,7 +275,12 @@ def _identity_errors(rows: list[_Row]) -> list[ValidationError]:
         for row in rows
         if row.section_id is None
     ]
-    sectioned = [row for row in rows if row.section_id is not None]
+    errors.extend(
+        _mapping_error(row, "has no row number, so it has no identity")
+        for row in rows
+        if row.section_id is not None and not row.number
+    )
+    sectioned = [row for row in rows if row.section_id is not None and row.number]
     counts = Counter(_identity(row) for row in sectioned)
     reported: set[str] = set()
     for row in sectioned:

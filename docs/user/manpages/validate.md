@@ -335,7 +335,7 @@ source=<path>[#<section-id>] [entry=<entry-id>]
 | A `.gzkit/skills/*/SKILL.md` or an ADR file under `docs/design/adr/` | The row's Score cell | That source file's own text (GHI #939) |
 
 Exactly one surface classifies a row. A row's identity is its scorecard section
-id plus its row number. A row with no attribution, a duplicated identity, a
+id plus its row number. A row with no row number, no attribution, a duplicated identity, a
 section the declaration does not name, or an entry id that is retired, unknown
 or addressed to another section fails closed and is never answered from the
 scorecard instead. A corpus-owned section whose live entries still carry the

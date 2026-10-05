@@ -935,6 +935,20 @@ class TestUnownedBulletResolvesFromScorecard(_OwnershipFixtureMixin, unittest.Te
                 self.assertIn(f"{_SCORECARD_SECTION} #1", errors[0].message)
 
     @covers("REQ-0.35.0-10-02")
+    def test_missing_row_number_fails_closed_naming_the_row(self) -> None:
+        """A row whose number cell is blank has no identity and is refused by name."""
+        scorecard = _scorecard(
+            ("1", "a numbered rule", "Judgment", _UNOWNED_NOTE),
+            (" ", _UNOWNED_RULE, "Judgment", _UNOWNED_NOTE),
+        )
+        self._enroll(_entry("e-alpha", "Judgment"), scorecard=scorecard)
+        errors, _ = self._audit()
+        self.assertEqual(len(errors), 1)
+        self.assertIn("has no row number", errors[0].message)
+        self.assertIn(_SCORECARD_SECTION, errors[0].message)
+        self.assertIn(_UNOWNED_RULE, errors[0].message)
+
+    @covers("REQ-0.35.0-10-02")
     def test_rule_file_row_keeps_the_per_turn_surface_check(self) -> None:
         """A non-AgentContract row is retained against the per-turn surface, as before."""
         scorecard = _scorecard(
