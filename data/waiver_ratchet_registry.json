@@ -191,7 +191,7 @@
       "gates_step": "advisory scorecard mechanical-row witness (gz validate --advisory-scorecard)",
       "mechanism": "shrink-ratchet",
       "entries_path": "unwitnessed_mechanical_rows",
-      "baseline_count": 64,
+      "baseline_count": 65,
       "identity": {
         "kind": "fields",
         "fields": [

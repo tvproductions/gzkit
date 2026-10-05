@@ -19,7 +19,6 @@ from __future__ import annotations
 import io
 import json
 import os
-import re
 import tempfile
 import unittest
 from contextlib import redirect_stderr
@@ -856,15 +855,32 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 def _table_identities(scorecard_text: str) -> list[tuple[str | None, str]]:
-    """Read ``(section id, row number)`` straight off a scorecard's tables (the oracle)."""
+    """Read ``(section id, row number)`` straight off a scorecard's tables (the oracle).
+
+    Independent of the audit's row grammar: every line of a ``| # | Rule | Score |``
+    table, or of a pipe block with no header row, counts, whatever its cells hold.
+    """
     identities: list[tuple[str | None, str]] = []
     section: str | None = None
-    for line in scorecard_text.splitlines():
+    lines = [line.strip() for line in scorecard_text.splitlines()]
+    counting = in_block = False
+    for index, line in enumerate(lines):
         if line.startswith("### "):
             section = section_id(line[4:])
-        cells = [cell.strip() for cell in line.split("|")]
-        if len(cells) > 4 and re.fullmatch(r"\*\*[A-Za-z]+\*\*", cells[3]):
-            identities.append((section, cells[1]))
+        if not line.startswith("|"):
+            in_block = False
+            continue
+        first, second = (line.split("|") + ["", ""])[1:3]
+        ruled = set(line) <= set("|-: ")
+        if not in_block:
+            in_block = True
+            following = lines[index + 1] if index + 1 < len(lines) else ""
+            headed = following.startswith("|") and set(following) <= set("|-: ")
+            counting = not headed or (first.strip(), second.strip().lower()) == ("#", "rule")
+            if headed:
+                continue
+        if counting and not ruled:
+            identities.append((section, first.strip()))
     return identities
 
 
@@ -947,6 +963,67 @@ class TestUnownedBulletResolvesFromScorecard(_OwnershipFixtureMixin, unittest.Te
         self.assertIn("has no row number", errors[0].message)
         self.assertIn(_SCORECARD_SECTION, errors[0].message)
         self.assertIn(_UNOWNED_RULE, errors[0].message)
+
+    @covers("REQ-0.35.0-10-02")
+    def test_unreadable_rule_row_fails_closed_and_is_never_skipped(self) -> None:
+        """A rule-table row the audit cannot read is refused by name, not dropped."""
+        good = _scorecard(("1", "a numbered rule", "Judgment", _UNOWNED_NOTE))
+        unreadable = {
+            "an empty number cell": f"|| {_UNOWNED_RULE} | **Judgment** | {_UNOWNED_NOTE} |",
+            "a score that is not bold": f"| 2 | {_UNOWNED_RULE} | Judgment | {_UNOWNED_NOTE} |",
+            "an empty rule cell": f"| 2 || **Judgment** | {_UNOWNED_NOTE} |",
+        }
+        for named, line in unreadable.items():
+            with self.subTest(named=named):
+                self.setUp()
+                self._enroll(_entry("e-alpha", "Judgment"), scorecard=f"{good}{line}\n")
+                errors, _ = self._audit()
+                self.assertEqual(len(errors), 1)
+                self.assertIn("cannot read", errors[0].message)
+                self.assertIn(_SCORECARD_SECTION, errors[0].message)
+                self.assertIn("uv run gz validate --bullet-retention", errors[0].message)
+                with redirect_stderr(io.StringIO()):
+                    audited = [b.row_number for b in audited_population(self._root)]
+                self.assertEqual(audited, ["1"])
+
+    @covers("REQ-0.35.0-10-02")
+    def test_escaped_pipe_row_is_audited_with_its_pipe_restored(self) -> None:
+        """A rule whose text carries an escaped pipe keeps its identity and its text."""
+        scorecard = _scorecard(
+            ("1", "a numbered rule", "Judgment", _UNOWNED_NOTE),
+            ("2", "use `str \\| None` for an optional", "Judgment", _UNOWNED_NOTE),
+        )
+        self._enroll(_entry("e-alpha", "Judgment"), scorecard=scorecard)
+        errors, _ = self._audit()
+        self.assertEqual(errors, [])
+        self.assertEqual(self._bullet("2").rule, "use `str | None` for an optional")
+
+    @covers("REQ-0.35.0-10-02")
+    def test_score_cell_binds_its_leading_class_and_keeps_a_qualifier(self) -> None:
+        """A score cell that qualifies its class is read by the class it leads with."""
+        qualified = "Mechanical** (shape invariant); size targets remain **Judgment"
+        scorecard = _scorecard(
+            ("1", "a numbered rule", "Judgment", _UNOWNED_NOTE),
+            ("2", "rule file rule kept", qualified, _RULE_NOTE),
+        )
+        self._enroll(
+            _entry("e-alpha", "Judgment"), scorecard=scorecard, rule_content="rule file rule kept"
+        )
+        errors, _ = self._audit()
+        self.assertEqual(errors, [])
+        self.assertEqual(self._bullet("2").classification, "Mechanical")
+
+    @covers("REQ-0.35.0-10-02")
+    def test_table_of_another_shape_holds_no_rule_rows(self) -> None:
+        """A table that is not a rule table is neither audited nor refused."""
+        legend = "\n| Score | Meaning |\n|---|---|\n| **Mechanical** | enforced by a check |\n"
+        scorecard = _scorecard(("1", "a numbered rule", "Judgment", _UNOWNED_NOTE)) + legend
+        self._enroll(_entry("e-alpha", "Judgment"), scorecard=scorecard)
+        errors, _ = self._audit()
+        self.assertEqual(errors, [])
+        with redirect_stderr(io.StringIO()):
+            audited = [b.row_number for b in audited_population(self._root)]
+        self.assertEqual(audited, ["1"])
 
     @covers("REQ-0.35.0-10-02")
     def test_rule_file_row_keeps_the_per_turn_surface_check(self) -> None:

@@ -4,7 +4,7 @@
   "gates_step": "advisory scorecard mechanical-row witness (gz validate --advisory-scorecard)",
   "mechanism": "shrink-ratchet",
   "entries_path": "unwitnessed_mechanical_rows",
-  "baseline_count": 64,
+  "baseline_count": 65,
   "unwitnessed_mechanical_rows": [
     {
       "key": "architectural-boundaries-claude-md-architectural-boundaries#1",
@@ -304,6 +304,12 @@
       "key": "distribution-invariant-doctrine-t0-docs-governance-trust-doctrine-md-t0-layer-adr-0-0-31#57",
       "gates": [
         "--distribution"
+      ]
+    },
+    {
+      "key": "model-selection-gzkit-rules-model-selection-md#52",
+      "gates": [
+        "--surfaces"
       ]
     },
     {

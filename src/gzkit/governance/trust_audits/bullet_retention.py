@@ -97,6 +97,14 @@ _TABLE_ROW_RE = re.compile(
 )
 
 
+# A cell boundary is a pipe the author did not escape; `\\|` is a literal pipe in a cell.
+_CELL_BOUNDARY_RE = re.compile(r"(?<!\\)\|")
+_SEPARATOR_CELL_RE = re.compile(r"^:?-+:?$")
+# A score cell leads with its bold class; text after it qualifies the score, never rebinds it.
+_SCORE_CELL_RE = re.compile(r"^\*\*(?P<cls>[^*]+)\*\*")
+_RULE_TABLE_HEADER = ("#", "rule", "score")
+
+
 class AuditedBullet(BaseModel):
     """One scorecard row as the audit resolved it: who classified it, and from where.
 
@@ -150,11 +158,7 @@ def validate_bullet_retention(project_root: Path) -> list[ValidationError]:
     if not scorecard.exists():
         return []
 
-    rows = _parse_scorecard(scorecard)
-    if not rows:
-        return []
-
-    resolved, errors = _resolve_population(project_root, rows)
+    resolved, errors = _resolve_population(project_root, _parse_scorecard(scorecard))
     for item in resolved:
         if item.entry is not None and _disagrees(item.entry, item.row):
             emit_advisory(_disagreement_message(item.row, item.entry))
@@ -189,13 +193,15 @@ def _resolve_population(
     """Decide which single surface classifies each row; fail closed on a broken mapping.
 
     With no ownership declaration and no attributed row the project is not
-    enrolled: every row is answered by the scorecard, as before this reader.
+    enrolled: every row is answered by the scorecard, as before this reader. An
+    enrolled project's rows are re-read strictly, so no rule-table row is skipped.
     """
     surfaces = _enrolled_surfaces(project_root)
     if not surfaces and not any(row.source for row in rows):
         return [_Resolved(row, None) for row in rows], []
 
-    errors = _identity_errors(rows)
+    rows, errors = _read_rule_rows(project_root / _SCORECARD_PATH)
+    errors.extend(_identity_errors(rows))
     ownership = {surface: _load_ownership(project_root, surface) for surface in surfaces}
     errors.extend(o for o in ownership.values() if isinstance(o, ValidationError))
     errors.extend(_capture_default_errors(ownership))
@@ -275,12 +281,7 @@ def _identity_errors(rows: list[_Row]) -> list[ValidationError]:
         for row in rows
         if row.section_id is None
     ]
-    errors.extend(
-        _mapping_error(row, "has no row number, so it has no identity")
-        for row in rows
-        if row.section_id is not None and not row.number
-    )
-    sectioned = [row for row in rows if row.section_id is not None and row.number]
+    sectioned = [row for row in rows if row.section_id is not None]
     counts = Counter(_identity(row) for row in sectioned)
     reported: set[str] = set()
     for row in sectioned:
@@ -558,6 +559,99 @@ def _parse_scorecard(path: Path) -> list[_Row]:
             )
         )
     return results
+
+
+def _read_rule_rows(path: Path) -> tuple[list[_Row], list[ValidationError]]:
+    """Read every rule-table row of an enrolled scorecard; refuse a row that cannot be read.
+
+    A rule table is a block of pipe lines headed ``| # | Rule | Score | ... |``, or a
+    block with no header row (a table a blank line split). A table of any other shape
+    holds no rows. Nothing inside a rule table is skipped.
+    """
+    try:
+        lines = [line.strip() for line in path.read_text(encoding="utf-8").splitlines()]
+    except OSError:
+        return [], []
+
+    rows: list[_Row] = []
+    errors: list[ValidationError] = []
+    section: str | None = None
+    in_block = is_rule_table = False
+    for index, line in enumerate(lines):
+        if line.startswith(_SECTION_HEADING):
+            section = section_id(line[len(_SECTION_HEADING) :])
+        if not line.startswith("|"):
+            in_block = False
+            continue
+        cells = _cells(line)
+        if not in_block:
+            in_block = True
+            following = lines[index + 1] if index + 1 < len(lines) else ""
+            headed = following.startswith("|") and _is_separator(_cells(following))
+            is_rule_table = not headed or tuple(c.lower() for c in cells[:3]) == _RULE_TABLE_HEADER
+            if headed:
+                continue
+        if not is_rule_table or _is_separator(cells):
+            continue
+        outcome = _rule_row(section, cells)
+        if isinstance(outcome, str):
+            errors.append(_unreadable_row_error(section, index + 1, line, outcome))
+        else:
+            rows.append(outcome)
+    return rows, errors
+
+
+def _cells(line: str) -> list[str]:
+    """Split a table line on its unescaped pipes; an escaped pipe is restored as cell text."""
+    parts = _CELL_BOUNDARY_RE.split(line)[1:]
+    if parts and not parts[-1]:
+        parts.pop()
+    return [part.strip().replace("\\|", "|") for part in parts]
+
+
+def _is_separator(cells: list[str]) -> bool:
+    """Return True for a table's ``|---|---|`` separator line."""
+    return bool(cells) and all(_SEPARATOR_CELL_RE.match(cell) for cell in cells)
+
+
+def _rule_row(section: str | None, cells: list[str]) -> _Row | str:
+    """Build the row a rule-table line declares, or say why it cannot be read."""
+    if len(cells) < 3:
+        return "has fewer than three cells"
+    number, rule, score = cells[:3]
+    if not number:
+        return "has no row number, so it has no identity"
+    if not rule:
+        return "has no rule text"
+    scored = _SCORE_CELL_RE.match(score)
+    if scored is None:
+        return "has no bold `**Score**` cell"
+    attribution = _ATTRIBUTION_RE.search(" | ".join(cells[3:]))
+    return _Row(
+        section_id=section,
+        number=number,
+        rule=rule,
+        classification=scored.group("cls").strip(),
+        source=attribution.group("path") if attribution else None,
+        source_section=attribution.group("section") if attribution else None,
+        entry_id=attribution.group("entry") if attribution else None,
+    )
+
+
+def _unreadable_row_error(
+    section: str | None, line_number: int, text: str, problem: str
+) -> ValidationError:
+    """Build the fail-closed error for a rule-table row the audit cannot read."""
+    where = f"section {section}" if section else "outside any `###` section"
+    return _error(
+        f"Bullet-retention mapping violation: scorecard line {line_number} ({where}) is a "
+        f"rule-table row the audit cannot read: it {problem}.\n"
+        f"  Row: {text[:160]!r}\n"
+        f"  Why: {_DECISION} — the audited population never shrinks; a row the audit "
+        f"cannot read is refused, never skipped.\n"
+        f"  Fix: give the row a number, a rule and a bold `**Score**` cell, writing a "
+        f"literal pipe inside a cell as `\\|`, then {_RERUN}."
+    )
 
 
 def _collect_surface_corpus(project_root: Path) -> str:

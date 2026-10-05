@@ -1921,5 +1921,13 @@
       "precomplete-check::_check_task_envelope_coherence"
     ]
   },
-  "authorizations": []
+  "authorizations": [
+    {
+      "data_file": "data/mechanical_witness_grandfather.json",
+      "identity": "model-selection-gzkit-rules-model-selection-md#52",
+      "reason": "Scored Mechanical before the 2026-08-10 witness ruling and missed by its census, which could not read a rule cell carrying escaped pipes. Requoting the row under OBPI-0.35.0-10 made it visible. No registered negative control plants a missing model: field, so the row is recorded as unwitnessed debt.",
+      "authorized_by": "g0",
+      "ruling": "A: Freeze as missed debt (Recommended)"
+    }
+  ]
 }
