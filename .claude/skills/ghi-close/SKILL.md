@@ -5,9 +5,9 @@ description: Do the work described in a GHI, then close it with verifiable evide
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-29
+last_reviewed: 2026-10-05
 metadata:
-  skill-version: "2.11.0"
+  skill-version: "2.12.0"
 model: opus
 ---
 
@@ -181,8 +181,8 @@ If a GHI's prescribed work is genuinely *new capability* (not a remedy
 for broken behavior), the GHI is mis-labeled. It is routed, not fixed:
 author its destination in this session and close `superseded` against it,
 or leave it open with a blocker comment (dead-letter doctrine, rule 1).
-That is the only legitimate path from a GHI to planned work, and it is a
-route correction, not a fix execution.
+That, and a repair assignment the operator rules into the in-flight ADR
+([`references/repair-assignment.md`](references/repair-assignment.md)), are the only paths from a GHI to planned work.
 
 ## Trigger
 
@@ -278,7 +278,7 @@ Four-phase protocol: **read**, **execute**, **verify**, **close**.
      `git log --since='60 days ago' --oneline --grep='^fix('` — and ask.
      The choices are "direct fix now", "split into smaller direct fixes",
      or "wait for an unlanded upstream"; "author an OBPI" is never one of
-     them.
+     them. Unmet ADR intent is the operator's to route: [`references/repair-assignment.md`](references/repair-assignment.md).
    - **Route correction (only when the GHI is mis-labeled feature work,
      not a defect at all)**: the work is *new capability* that belongs in
      a planned increment. Author the destination in this session and close
@@ -491,7 +491,7 @@ These thoughts mean STOP — you are about to either leave a corrupted audit tra
 - Commit claimed to fix but has no `(GHI #N)` trailer and no follow-up amendment
 - Personal email or other PII in the close comment
 - Closing a `heavy`-lane or `foundation`-kind GHI without ARB receipts
-- **Authoring or specifying a new OBPI as the resolution path for a `defect`-labeled GHI, or handing off mid-Phase-2 to `gz-obpi-specify`** — defect remedies are direct fixes (§ Doctrine — defect remedies are direct fixes, NEVER new OBPIs)
+- **Authoring or specifying a new OBPI as the resolution path for a `defect`-labeled GHI, or handing off mid-Phase-2 to `gz-obpi-specify`** — defect remedies are direct fixes (§ Doctrine — defect remedies are direct fixes, NEVER new OBPIs); the one exception is a repair assignment the operator ruled ([`references/repair-assignment.md`](references/repair-assignment.md))
 
 ## Related Skills
 

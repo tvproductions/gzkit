@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "gzkit_version": "0.34.7",
+  "gzkit_version": "0.34.8",
   "surfaces": {
     "personas": [
       "flight-test-engineer.md",
@@ -43,6 +43,7 @@
       "ghi-author/SKILL.md",
       "ghi-author/references/examples.md",
       "ghi-close/SKILL.md",
+      "ghi-close/references/repair-assignment.md",
       "ghi-triage/SKILL.md",
       "git-sync/SKILL.md",
       "gz-adr-audit/SKILL.md",

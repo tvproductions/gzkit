@@ -5,9 +5,9 @@ description: Author a GitHub Issue (GHI) when a finding needs an independent wor
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-03
+last_reviewed: 2026-10-05
 metadata:
-  skill-version: "1.10.0"
+  skill-version: "1.11.0"
 model: sonnet
 ---
 
@@ -112,7 +112,9 @@ Produce a GHI whose body contains enough evidence for a future agent or
 reviewer to re-apply the routing matrix without re-investigating. The
 authoring pass does **not** decide direct-fix vs. OBPI ceremony — that is
 AGENTS.md § Defect-fix routing's job at fix time. It does produce the evidence the
-routing matrix will consume.
+routing matrix will consume. When the finding is that a shipped surface does not
+fulfil an ADR's declared intent, quote that intent: it is the one case the operator
+may rule into the in-flight ADR as a repair assignment, and never the agent's to route.
 
 ## Prerequisites
 
