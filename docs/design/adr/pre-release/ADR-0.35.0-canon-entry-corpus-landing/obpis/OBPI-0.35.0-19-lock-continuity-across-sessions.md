@@ -220,6 +220,7 @@ Each question names a choice the GHI leaves open. The REQs below are written to 
 3. **What verb performs a continuation?** Any answer is a CLI contract change.
    - (A) An option on `gz obpi lock claim`. (B) A new subcommand under `gz obpi lock`. (C) No new surface: the launch does it (only with question 2 = record).
    - Recommendation: A. The claim is where the second session is refused today. An option carries the New Flag obligations of `.gzkit/rules/cli.md`; a subcommand carries all seven New Subcommand obligations and widens Allowed Paths (a new manpage, `docs/user/manpages/index.md`, `config/doc-coverage.json`, `docs/governance/governance_runbook.md`).
+   - **RULED 2026-10-04: A.** Asked which command performs a continuation, the operator answered, verbatim: "A". The continuation is an option on `gz obpi lock claim`; no subcommand is added. The flag's name is settled in the plan.
 4. **What must a continuation show before it displaces an unexpired holder?** Two live sessions on one OBPI is what the lock prevents, and the runtime cannot tell that the first has ended. Sub-Invariant 4 already requires "the operator's explicit `--force`" to reap before expiry.
    - (A) The continuing agent's explicit act with a required, non-empty reason, recorded in `## Decisions Made`. (B) A plus the operator's direction, carried verbatim in the record.
    - Recommendation: A as the mechanism, with the rule stating that continuing while the holder may be live needs the operator's direction, on the same standing as an early reap.
@@ -332,7 +333,7 @@ uv run gz check
 
 ## Demo
 
-The continuation command's spelling is operator-ruled (§ Open Design Questions 2 and 3), so this section cannot yet show it. Until the ruling, the runnable demonstration is the acceptance feature. In a throwaway workspace it seeds session A's lock, shows session B refused with the recovery named, performs the continuation, reads the record's four fields and two identities, and runs the coupling validator over the result. It exits non-zero if any of those outcomes fails.
+The continuation is an option on `gz obpi lock claim` (§ Open Design Questions 2 and 3, ruled); its flag is named in the plan, so this section cannot yet show the invocation. Until then, the runnable demonstration is the acceptance feature. In a throwaway workspace it seeds session A's lock, shows session B refused with the recovery named, performs the continuation, reads the record's four fields and two identities, and runs the coupling validator over the result. It exits non-zero if any of those outcomes fails.
 
 ```bash
 uv run -m behave features/obpi_lock_continuity.feature
@@ -389,7 +390,8 @@ Authoring obligation before Stage 2 (Requirement 12): replace this block with th
      Keep this subsection under Evidence so history is not treated as contract. -->
 
 - 2026-10-04 — Open Design Question 1 ruled before the plan (Requirement 12). Operator, verbatim: "A". A continuation transfers the lock: the prior occupancy ends against the continuity record and the continuing session becomes the holder. Allowed Paths already cover this ruling and are unchanged.
-- 2026-10-04 — Open Design Question 2 ruled before the plan (Requirement 12). Operator, verbatim: "A". The pipeline launch refuses when another session holds the lock and names the continuation command; it never records a continuation itself. REQ-0.35.0-19-04 is amended to the refusal. Allowed Paths are unchanged. Questions 3 to 6 are open.
+- 2026-10-04 — Open Design Question 2 ruled before the plan (Requirement 12). Operator, verbatim: "A". The pipeline launch refuses when another session holds the lock and names the continuation command; it never records a continuation itself. REQ-0.35.0-19-04 is amended to the refusal. Allowed Paths are unchanged.
+- 2026-10-04 — Open Design Question 3 ruled before the plan (Requirement 12). Operator, verbatim: "A". The continuation is an option on `gz obpi lock claim`. Allowed Paths already cover it and are unchanged. Questions 4 to 6 are open.
 
 ### Gate 1 (ADR)
 
