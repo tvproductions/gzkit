@@ -163,8 +163,8 @@ The contract changes are an outcome-recording form of `gz obpi dispatch` (Questi
 
 ## Requirements (FAIL-CLOSED)
 
-1. REQUIREMENT: The runtime does the parse. The outcome of a dispatch is recorded from the text the subagent returned, parsed by `parse_handoff_result` (Implementer), `parse_review_result` (both reviewers) or `parse_verification_results` (Stage 3). The orchestrating model MUST NOT supply a parsed status, a field value or a count in place of that text.
-2. REQUIREMENT: A recorded Implementer outcome carries the four `HandoffResult` fields (`status`, `files_changed`, `tests_added`, `concerns`) and a completion time. A recorded reviewer outcome carries the verdict, the findings with their severities, the verification gaps and a completion time. Every recorded dispatch of the three mandated roles names its role's agent file.
+1. REQUIREMENT: The runtime does the parse. The outcome of a dispatch is recorded from the text the subagent returned, parsed by `parse_handoff_result` (Implementer) or `parse_verification_results` (Stage 3). A reviewer's outcome is derived from the review the acceptance store holds for the same receipt, which the acceptance review import recorded from the reviewer's text; the dispatch record points at that review and holds no second copy of its findings (operator ruling 2026-10-04, Question 4). The orchestrating model MUST NOT supply a parsed status, a field value or a count in place of that text.
+2. REQUIREMENT: A recorded Implementer outcome carries the four `HandoffResult` fields (`status`, `files_changed`, `tests_added`, `concerns`) and a completion time. A recorded reviewer outcome carries a completion time and, by reference to the acceptance store's review for the same receipt, the verdict, the findings with their severities and the verification gaps; a reviewer dispatch with no such review is recorded as missing or invalid (Requirement 4). Every recorded dispatch of the three mandated roles names its role's agent file.
 3. REQUIREMENT: Every recorded outcome is readable from disk by a process that shares no memory with the one that recorded it. The reader of record is `gz roles --pipeline` with `--json`, for an active run and for a completed one (`REQ-0.18.0-05-06`).
 4. REQUIREMENT: Returned text with no result block, unparseable JSON, an unknown status, or a field outside the contract is recorded as an outcome that names the block missing or invalid. One such state is enough; the two need not be told apart. That outcome is never `done`, `done_with_concerns` or `PASS`, is never counted as completed, and no reader renders it as success. A dispatch with no outcome recorded reads as unrecorded, never as success.
 5. REQUIREMENT: A fix cycle is one re-dispatch of the Implementer for a task after a review that blocks advancement. The count per task is recorded when the cycle happens. A later session reads the same count, and the reader states whether the count has reached `MAX_REVIEW_FIX_CYCLES`. Dispatches of different roles for one task are not fix cycles. Implementer retries for `NEEDS_CONTEXT` and `BLOCKED` are not fix cycles; recorded outcomes make them countable, and this brief adds no enforcement for them.
@@ -215,6 +215,7 @@ Either way the returned text reaches the command as a file or standard input tha
 - B. Parse the reviewer's text a second time into the dispatch record. Two records of one review, held together by REQ-0.35.0-18-03's agreement clause.
 
 **Recommendation: A** (`.gzkit/rules/hexagonal-architecture.md` operative rule 8: prefer subsumption to a parallel model). Both options leave the acceptance store unedited.
+**RULED 2026-10-04: A.** Asked where a reviewer's outcome comes from, the operator answered, verbatim: "A". The dispatch outcome points at the review the acceptance store already holds for the same receipt. Requirements 1 and 2 carry it.
 
 **5. Whether the resume rendering is a consumer.**
 GHI #1175's boundary names "the consumers `gz roles` and the resume rendering". Measured: nothing in `src/gzkit/pipeline_markers.py` reads `dispatch_state`; its only readers are `gz roles` and the recorder.
@@ -390,7 +391,8 @@ uv run gz roles --pipeline OBPI-0.35.0-18-dispatch-outcome-recording --json
 
 - 2026-10-04 — Open Design Question 1 ruled before the plan. Operator, verbatim: "A", to the option that is C in this brief's lettering. A ledger event is the record of a dispatch's outcome; the marker and the completion summary are caches rebuilt from it. The ledger-event paths stay in Allowed Paths, and Requirement 15 is added.
 - 2026-10-04 — Open Design Question 2 ruled before the plan. Operator, verbatim: "A". `gz obpi dispatch` gains the outcome-recording form and no subcommand is added. Allowed Paths are unchanged.
-- 2026-10-04 — Open Design Question 3 settled by canon, not by a new ruling: `.gzkit/rules/model-selection.md` operative claim 5. A recorded outcome is the subagent's report, labelled as reported and read by no gate. Questions 4 and 5 are open.
+- 2026-10-04 — Open Design Question 3 settled by canon, not by a new ruling: `.gzkit/rules/model-selection.md` operative claim 5. A recorded outcome is the subagent's report, labelled as reported and read by no gate.
+- 2026-10-04 — Open Design Question 4 ruled before the plan. Operator, verbatim: "A". A reviewer's dispatch outcome is derived from the acceptance store's review for the same receipt; Requirements 1 and 2 are amended to say so. Allowed Paths are unchanged. Question 5 is open.
 
 ### Gate 1 (ADR)
 
