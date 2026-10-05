@@ -94,9 +94,9 @@ When a Stage 2 subagent (Implementer, SpecReviewer, QualityReviewer) or a Stage 
 > documentation, and template-only work stays Lite unless it changes one of
 > those external surfaces.
 
-The contract changes are an outcome-recording surface on the dispatch command (Open Design Question 2), new fields in the `gz roles --pipeline` JSON output, and a new ledger event type if the operator rules Question 1 that way.
+The contract changes are an outcome-recording surface on the dispatch command (Open Design Question 2), new fields in the `gz roles --pipeline` JSON output, and a new ledger event type (Question 1, ruled).
 
-**Sensitivity: security.** The Allowed Paths overlap registered security surfaces in `data/security_surfaces.json`: `src/gzkit/pipeline_dispatch.py` (category `deserialization_user_input`) under every answer to the open questions, and `src/gzkit/ledger_events.py` with `src/gzkit/ledger.py` (category `ledger_integrity`) under the recommended answer to Question 1. `.gzkit/rules/security-sensitivity.md` makes the declaration mandatory on overlap, so it is not a design choice. The work is what the registry describes: text returned by a subagent is parsed and written to a durable record. `gz obpi complete` therefore runs the extended Gate 5 walkthrough with the security-scan receipt.
+**Sensitivity: security.** The Allowed Paths overlap registered security surfaces in `data/security_surfaces.json`: `src/gzkit/pipeline_dispatch.py` (category `deserialization_user_input`) under every answer to the open questions, and `src/gzkit/ledger_events.py` with `src/gzkit/ledger.py` (category `ledger_integrity`) under the ruling on Question 1. `.gzkit/rules/security-sensitivity.md` makes the declaration mandatory on overlap, so it is not a design choice. The work is what the registry describes: text returned by a subagent is parsed and written to a durable record. `gz obpi complete` therefore runs the extended Gate 5 walkthrough with the security-scan receipt.
 
 ## Allowed Paths
 
@@ -110,7 +110,7 @@ The contract changes are an outcome-recording surface on the dispatch command (O
 - `src/gzkit/cli/parser_obpi.py` — the dispatch parser: arguments, help text and exit codes
 - `src/gzkit/commands/roles.py` — the reader: outcome, fix cycles and aggregation in the pipeline view
 
-**Ledger event files: in scope ONLY if the operator rules Question 1 as ledger-backed (options A or C); removed from this brief otherwise**
+**Ledger event files: in scope by the ruling on Question 1 (ledger-backed)**
 
 - `src/gzkit/events.py` — the typed event model
 - `src/gzkit/ledger_events.py` — the event constructor. Registered security surface.
@@ -177,6 +177,7 @@ The contract changes are an outcome-recording surface on the dispatch command (O
 12. ALWAYS: Edit the skill in `.gzkit/skills/`, bump `metadata.skill-version` and `last_reviewed`, and run `uv run gz agent sync control-surfaces`. The skill body may not grow past its ceiling in `src/gzkit/skill_body_grandfather.json`: compress first (`.gzkit/rules/skill-authoring.md` § Parsimony 6).
 13. ALWAYS: Correct, in the same change, every doc passage that describes recording which does not happen today (§ Measured Ground Truth names them).
 14. ALWAYS: Before acceptance, show one real dispatched Stage 2 run whose outcomes the delivered surface recorded and a fresh process read back. A fixture run does not discharge this. `uv run gz check` is green on the final tree.
+15. REQUIREMENT (operator ruling 2026-10-04, Question 1): each recorded outcome appends one ledger event, and that event is the record. The marker's `dispatch_state` and the completion summary are caches written after it and rebuilt from those events, in the order `record_dispatch` uses. The event type is added with every coupled surface a ledger event type has, and the plan sequences the first real recording before the tree is checked, because a declared event type that has never fired trips the ledger-vocabulary inertness check.
 
 > STOP-on-BLOCKERS: if prerequisites are missing, print a BLOCKERS list and halt. The five Open Design Questions below are prerequisites: no plan is written until the operator has ruled each.
 
@@ -191,6 +192,7 @@ Each question names what changes in this brief if the ruling differs from the re
 
 B is the smallest change and needs no ledger files. It is permissible only because no gate reads the outcome. It loses the outcome when the marker is cleared by `gz obpi pipeline --clear-stale`, which is the loss GHI #886 measured for credit, and it leaves the marker holding state that cannot be rebuilt from the ledger, against § Decision item 11's "rebuildable from canon and ledger". A and C survive both. C keeps `gz roles` working without a ledger scan.
 **Recommendation: C**, in the order `record_dispatch` already uses (ledger first, cache second). Under B, remove the seven ledger-event paths. Under A or C, note that a declared event type which has not yet fired trips the ledger-vocabulary inertness check: the plan must sequence the first real recording before the tree is checked. `data/ledger_vocabulary_grandfather.json` is denied.
+**RULED 2026-10-04: C.** Asked where a dispatch's outcome lives, with the ledger event as the record and the marker and summary as caches put as option A, the operator answered, verbatim: "A". Option B, marker only, was not put: § Decision item 11 keeps the marker rebuildable from canon and ledger, and the ruling on `OBPI-0.35.0-15` Open Design Question 2 already makes the ledger the record. Requirement 15 carries the ruling.
 
 **2. What CLI surface records an outcome.**
 - A. Extend `gz obpi dispatch`: the existing verb gains the outcome-recording form. A new flag is a Heavy contract change with a manpage row.
@@ -384,7 +386,7 @@ uv run gz roles --pipeline OBPI-0.35.0-18-dispatch-outcome-recording --json
      operator explicitly requests an issue; link it back to the owning work.
      Keep this subsection under Evidence so history is not treated as contract. -->
 
-_No substantive adjustments recorded yet._
+- 2026-10-04 — Open Design Question 1 ruled before the plan. Operator, verbatim: "A", to the option that is C in this brief's lettering. A ledger event is the record of a dispatch's outcome; the marker and the completion summary are caches rebuilt from it. The ledger-event paths stay in Allowed Paths, and Requirement 15 is added. Questions 2 to 5 are open.
 
 ### Gate 1 (ADR)
 
