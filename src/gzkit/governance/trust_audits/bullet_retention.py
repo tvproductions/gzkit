@@ -32,9 +32,12 @@ while the corpus value binds. A row attributed to a ``SKILL.md`` or an ADR file 
 retention-checked against that file, not the per-turn surface (GHI #939). An
 enrolled project pins its row identities in ``data/advisory_scorecard_identities.json``:
 a pinned identity the audit no longer reads, or a row that is not pinned, fails
-closed, so a row the reader stops recognising cannot leave unseen. An absent
-scorecard fails closed the same way while any identity is pinned. A project with
-no enrollment and no attribution keeps the legacy audit unchanged.
+closed, so a row the reader stops recognising cannot leave unseen. The pinned
+file alone decides that check: a project that pins any identity is held to the
+list whatever its scorecard, ownership declarations or attributions say, so an
+absent or emptied scorecard fails closed the same way. A file the audit cannot
+decode as UTF-8 is a finding, never a crash. A project with nothing pinned, no
+enrollment and no attribution keeps the legacy audit unchanged.
 
 Returns a ``ValidationError(type="bullet_retention")`` for every retention
 violation. An empty list means the surface is clean.
@@ -162,11 +165,7 @@ class _Ownership(NamedTuple):
 
 def validate_bullet_retention(project_root: Path) -> list[ValidationError]:
     """Return ValidationErrors for enforced bullets whose tier-scoped retention fails."""
-    scorecard = project_root / _SCORECARD_PATH
-    if not scorecard.exists():
-        return _absent_scorecard_errors(project_root)
-
-    resolved, errors = _resolve_population(project_root, _parse_scorecard(scorecard))
+    resolved, errors = _resolve_population(project_root)
     for item in resolved:
         if item.entry is not None and _disagrees(item.entry, item.row):
             emit_advisory(_disagreement_message(item.row, item.entry))
@@ -176,10 +175,7 @@ def validate_bullet_retention(project_root: Path) -> list[ValidationError]:
 
 def audited_population(project_root: Path) -> list[AuditedBullet]:
     """Return every scorecard row the audit resolved, with its classification authority."""
-    scorecard = project_root / _SCORECARD_PATH
-    if not scorecard.exists():
-        return []
-    resolved, _ = _resolve_population(project_root, _parse_scorecard(scorecard))
+    resolved, _ = _resolve_population(project_root)
     return [
         AuditedBullet(
             section_id=row.section_id,
@@ -195,28 +191,34 @@ def audited_population(project_root: Path) -> list[AuditedBullet]:
     ]
 
 
-def _absent_scorecard_errors(project_root: Path) -> list[ValidationError]:
-    """Hold an absent scorecard against the project's pinned row identities.
+def _pins_identities(project_root: Path) -> bool:
+    """Return True when the project's pinned file lists any identity, or cannot be read.
 
-    A project with no scorecard and nothing pinned has nothing to audit: a surface
-    can be enrolled for section ownership and carry no advisory scorecard. A project
-    that pinned row identities had the rows, so its scorecard going missing is every
-    pinned row leaving at once.
+    This alone decides whether the pinned check runs, so nothing the audit reads from
+    the scorecard, the ownership declarations or the attributions can switch it off.
+    A pinned file that is absent or lists nothing pins nothing.
     """
-    pinned_file = registry_path(project_root, _PINNED_IDENTITIES)
-    if not pinned_file.exists():
-        return []
+    if not registry_path(project_root, _PINNED_IDENTITIES).exists():
+        return False
+    pinned = _load_pinned_identities(project_root)
+    return isinstance(pinned, str) or bool(pinned)
+
+
+def _absent_scorecard_errors(project_root: Path) -> list[ValidationError]:
+    """Hold an absent scorecard against the row identities the project pins.
+
+    A project that pinned row identities had the rows, so its scorecard going
+    missing is every pinned row leaving at once.
+    """
     pinned = _load_pinned_identities(project_root)
     if isinstance(pinned, str):
         return _pinned_identity_errors(project_root, [])
-    if not pinned:
-        return []
-    pinned_path = pinned_file.relative_to(project_root).as_posix()
+    pinned_path = registry_path(project_root, _PINNED_IDENTITIES).relative_to(project_root)
     return [
         _error(
             f"Bullet-retention identity violation: the scorecard "
             f"{_SCORECARD_PATH.as_posix()} is absent while {len(pinned)} scorecard row "
-            f"identities are pinned in {pinned_path}.\n"
+            f"identities are pinned in {pinned_path.as_posix()}.\n"
             f"  Why: {_DECISION} — the audited population never shrinks; removing the "
             f"scorecard removes every pinned row from the audit at once.\n"
             f"  Fix: restore the file with `git checkout -- {_SCORECARD_PATH.as_posix()}`, "
@@ -225,20 +227,30 @@ def _absent_scorecard_errors(project_root: Path) -> list[ValidationError]:
     ]
 
 
-def _resolve_population(
-    project_root: Path, rows: list[_Row]
-) -> tuple[list[_Resolved], list[ValidationError]]:
+def _resolve_population(project_root: Path) -> tuple[list[_Resolved], list[ValidationError]]:
     """Decide which single surface classifies each row; fail closed on a broken mapping.
 
-    With no ownership declaration and no attributed row the project is not
-    enrolled: every row is answered by the scorecard, as before this reader. An
-    enrolled project's rows are re-read strictly, so no rule-table row is skipped.
+    A project that pins row identities is held to them first, whatever its
+    scorecard, ownership declarations or attributions say. With nothing pinned, no
+    ownership declaration and no attributed row the project is not enrolled: every
+    row is answered by the scorecard, as before this reader. Every other project's
+    rows are re-read strictly, so no rule-table row is skipped. A project with no
+    scorecard and nothing pinned has nothing to audit: a surface can be enrolled
+    for section ownership and carry no advisory scorecard.
     """
+    scorecard = project_root / _SCORECARD_PATH
+    pins = _pins_identities(project_root)
+    if not scorecard.exists():
+        return [], _absent_scorecard_errors(project_root) if pins else []
+    undecodable = _undecodable_scorecard_error(scorecard)
+    if undecodable is not None:
+        return [], [undecodable]
     surfaces = _enrolled_surfaces(project_root)
-    if not surfaces and not any(row.source for row in rows):
-        return [_Resolved(row, None) for row in rows], []
+    legacy = _parse_scorecard(scorecard)
+    if not pins and not surfaces and not any(row.source for row in legacy):
+        return [_Resolved(row, None) for row in legacy], []
 
-    rows, errors = _read_rule_rows(project_root / _SCORECARD_PATH)
+    rows, errors = _read_rule_rows(scorecard)
     errors.extend(_identity_errors(rows))
     errors.extend(_pinned_identity_errors(project_root, rows))
     ownership = {surface: _load_ownership(project_root, surface) for surface in surfaces}
@@ -333,9 +345,10 @@ def _identity_errors(rows: list[_Row]) -> list[ValidationError]:
 
 def _load_pinned_identities(project_root: Path) -> set[str] | str:
     """Return the project's pinned row identities, or why they could not be read."""
+    # The registry seam raises a file that is not UTF-8 as the raw decode error.
     try:
         payload = load_registry(project_root, _PINNED_IDENTITIES)
-    except RegistryError as exc:
+    except (RegistryError, UnicodeDecodeError) as exc:
         return str(exc)
     identities = payload.get("identities") if isinstance(payload, dict) else None
     if not isinstance(identities, list) or not all(isinstance(i, str) for i in identities):
@@ -499,7 +512,7 @@ def _read_source(project_root: Path, source: str) -> str:
     """Return an attributed source file's text, or empty text when it cannot be read."""
     try:
         return (project_root / source).read_text(encoding="utf-8")
-    except OSError:
+    except (OSError, UnicodeDecodeError):
         return ""
 
 
@@ -631,6 +644,30 @@ def _compressible_unwitnessed_error(
     )
 
 
+def _undecodable_scorecard_error(path: Path) -> ValidationError | None:
+    """Return the finding for a scorecard that is not UTF-8, or ``None`` when it decodes.
+
+    A scorecard that cannot be opened is left to the readers: it reads as holding no
+    rows, which the pinned check then holds against the identities the project pins.
+    """
+    try:
+        path.read_text(encoding="utf-8")
+    except OSError:
+        return None
+    except UnicodeDecodeError as exc:
+        return _error(
+            f"Bullet-retention violation: the scorecard {_SCORECARD_PATH.as_posix()} "
+            f"could not be decoded as UTF-8.\n"
+            f"  Detail: {exc}\n"
+            f"  Why: ADR-0.0.33 Invariant 1 — every Mechanical or Promotable bullet is "
+            f"retention-checked, and a scorecard the audit cannot decode hides all of "
+            f"them.\n"
+            f"  Fix: restore the file with `git checkout -- {_SCORECARD_PATH.as_posix()}`, "
+            f"or re-save it as UTF-8, then {_RERUN}."
+        )
+    return None
+
+
 def _parse_scorecard(path: Path) -> list[_Row]:
     """Parse advisory-rules-audit.md into rows keyed by ``(section id, row number)``."""
     try:
@@ -668,7 +705,7 @@ def _parse_scorecard(path: Path) -> list[_Row]:
 
 
 def _read_rule_rows(path: Path) -> tuple[list[_Row], list[ValidationError]]:
-    """Read every rule-table row of an enrolled scorecard; refuse a row that cannot be read.
+    """Read every rule-table row of a strictly read scorecard; refuse a row that cannot be read.
 
     A rule table is a block of pipe lines headed ``| # | Rule | Score | ... |``, or a
     block with no header row (a table a blank line split). A table of any other shape
@@ -772,13 +809,13 @@ def _collect_surface_corpus(project_root: Path) -> str:
     for name in _SURFACE_FILES:
         path = project_root / name
         if path.exists():
-            with contextlib.suppress(OSError):
+            with contextlib.suppress(OSError, UnicodeDecodeError):
                 parts.append(path.read_text(encoding="utf-8"))
 
     rules_root = project_root / ".claude" / "rules"
     if rules_root.exists():
         for rule_path in sorted(rules_root.rglob("*.md")):
-            with contextlib.suppress(OSError):
+            with contextlib.suppress(OSError, UnicodeDecodeError):
                 parts.append(rule_path.read_text(encoding="utf-8"))
 
     return "\n".join(parts)
@@ -880,6 +917,6 @@ def _receipt_exit_status_ok(project_root: Path, receipt_id: str) -> bool:
         return False
     try:
         receipt = json.loads(receipt_file.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
         return False
     return receipt.get("exit_status") == 0

@@ -347,9 +347,20 @@ An enrolled project pins its row identities in
 against that list and fails closed in four cases: a pinned identity it no longer
 reads, whatever became of the row; a row that is not pinned; a pinned file that is
 missing or unreadable, in which case the error lists the identities read now; and
-the scorecard itself being absent while any identity is pinned. A project with no
-scorecard and nothing pinned has nothing to audit. Add a row's identity in the commit that adds the row. Deleting an identity
-removes a row from the audited population, so it follows an operator ruling.
+the scorecard itself being absent while any identity is pinned. The pinned file
+alone decides whether this check runs: a project whose file lists any identity,
+or whose file cannot be read, is held to it whatever the scorecard, the ownership
+declarations or the attributions say, so emptying the scorecard or replacing it
+with prose fails closed on every pinned row. A file that lists no identity pins
+nothing. A project with no scorecard and nothing pinned has nothing to audit. Add
+a row's identity in the commit that adds the row. Deleting an identity removes a
+row from the audited population, so it follows an operator ruling.
+
+A file the audit cannot decode as UTF-8 is reported, never raised. An undecodable
+scorecard fails closed naming the scorecard, in any project. An undecodable pinned
+file is an unreadable pinned file. An undecodable per-turn surface file, attributed
+source file or advisor-QC receipt retains or witnesses nothing, so the rows that
+depend on it fail closed.
 
 A row with no attribution, a duplicated identity, a
 section the declaration does not name, or an entry id that is retired, unknown
@@ -358,8 +369,8 @@ scorecard instead. A corpus-owned section whose live entries still carry the
 capture default `Ambiguous` fails closed naming each entry. When the scorecard
 and the corpus disagree on an owned row, the corpus value binds and the
 disagreement is printed as an advisory; it does not change the exit code. A
-project with no ownership declaration and no attributed row keeps the audit
-described above, with the scorecard classifying every row.
+project with no pinned identity, no ownership declaration and no attributed row
+keeps the audit described above, with the scorecard classifying every row.
 
 ```bash
 # Audit the per-turn surface against the advisory scorecard (tier-scoped)

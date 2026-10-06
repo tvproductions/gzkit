@@ -145,3 +145,27 @@ def step_pinned_row_gone(context) -> None:
 @given("the scorecard file is removed")
 def step_scorecard_removed(context) -> None:
     _scorecard_path(context).unlink()
+
+
+@given("the project carries no ownership declaration")
+def step_no_ownership_declaration(context) -> None:
+    declaration_path(context.root, _SURFACE).unlink()
+
+
+@given("the scorecard's only row is pinned and attributed to a skill file")
+def step_only_row_pinned_and_skill_sourced(context) -> None:
+    path = _scorecard_path(context)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        f"{_SCORECARD_HEAD}| 1 | {_SKILL_RULE} | **Mechanical** | `source={_SKILL_SOURCE}` |\n",
+        encoding="utf-8",
+    )
+    _pin(context, "1")
+    skill = context.root / _SKILL_SOURCE
+    skill.parent.mkdir(parents=True, exist_ok=True)
+    skill.write_text(f"- {_SKILL_RULE}\n", encoding="utf-8")
+
+
+@given("the scorecard is emptied")
+def step_scorecard_emptied(context) -> None:
+    _scorecard_path(context).write_text("", encoding="utf-8")

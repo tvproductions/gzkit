@@ -218,6 +218,20 @@ class TestBulletAbsentReturnsError(unittest.TestCase):
             self.assertEqual(len(errors), 1, "Exactly one error expected for one missing bullet")
 
     @covers("REQ-0.0.33-01-02")
+    def test_bullet_only_in_a_surface_file_that_is_not_utf8_emits_error(self) -> None:
+        """A per-turn file the audit cannot decode retains nothing; it never stops the audit."""
+        for surface_file in ("AGENTS.md", ".claude/rules/test-rule.md"):
+            with self.subTest(surface_file=surface_file), tempfile.TemporaryDirectory() as tmp:
+                root = _make_tree(tmp, scorecard_content=_SCORECARD_MECHANICAL, rule_content="")
+                (root / surface_file).write_bytes(b"\xff\xfe use uv run for commands\n")
+                try:
+                    errors = validate_bullet_retention(root)
+                except UnicodeDecodeError as exc:
+                    self.fail(f"the audit raised instead of returning its finding: {exc}")
+                self.assertEqual(len(errors), 1)
+                self.assertIn("use uv run for commands", errors[0].message)
+
+    @covers("REQ-0.0.33-01-02")
     def test_missing_bullet_error_type_is_bullet_retention(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = _make_tree(
@@ -625,6 +639,27 @@ class TestCompressibleTierUnwitnessedFailsClosed(unittest.TestCase):
                 )
 
     @covers("REQ-0.0.37-25-03")
+    def test_compressible_with_a_receipt_that_is_not_utf8_fails_closed(self) -> None:
+        """A receipt the audit cannot decode witnesses nothing; it never stops the audit."""
+        with tempfile.TemporaryDirectory() as tmp:
+            receipts = Path(tmp) / "receipts"
+            with mock.patch.dict(os.environ, {"GZKIT_ARB_RECEIPTS_ROOT": str(receipts)}):
+                root = _make_tree(
+                    tmp,
+                    scorecard_content=_SCORECARD_TIER,
+                    agents_content="reworded surface text without the verbatim bullet",
+                )
+                _seed_corpus(root, tier="compressible", text=f"{_TIER_BULLET} in all shells")
+                receipt_id = _seed_advisor_witness(root)
+                self.assertEqual(validate_bullet_retention(root), [], "the witness is valid")
+                (receipts / f"{receipt_id}.json").write_bytes(b"\xff\xfe")
+                try:
+                    errors = validate_bullet_retention(root)
+                except UnicodeDecodeError as exc:
+                    self.fail(f"the audit raised instead of returning its finding: {exc}")
+                self.assertEqual(len(errors), 1)
+
+    @covers("REQ-0.0.37-25-03")
     def test_compressible_witness_for_other_surface_does_not_satisfy(self) -> None:
         """A verdict event for a different surface does not witness this surface's retention."""
         with tempfile.TemporaryDirectory() as tmp:
@@ -867,6 +902,8 @@ class TestOwnedBulletResolvesFromCorpus(_OwnershipFixtureMixin, unittest.TestCas
 
 _RULE_NOTE = "`source=.claude/rules/test-rule.md`"
 _UNOWNED_NOTE = "`source=AGENTS.md#unowned-section`"
+_SKILL_SOURCE = ".gzkit/skills/demo/SKILL.md"
+_SKILL_RULE = "skill rule zeta must hold"
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -1114,6 +1151,28 @@ class TestUnownedBulletResolvesFromScorecard(_OwnershipFixtureMixin, unittest.Te
                     self.assertIn(expected, errors[0].message)
 
     @covers("REQ-0.35.0-10-02")
+    def test_pinned_set_that_is_not_utf8_fails_closed_with_recovery(self) -> None:
+        """A pinned file the audit cannot decode is an unreadable pinned set, not a crash."""
+        self._enroll(
+            _entry("e-alpha", "Judgment"),
+            scorecard=_scorecard(("1", "a numbered rule", "Judgment", _UNOWNED_NOTE)),
+        )
+        (self._root / "data" / _IDENTITIES_FILE).write_bytes(b"\xff\xfe")
+        try:
+            errors, _ = self._audit()
+        except UnicodeDecodeError as exc:
+            self.fail(f"the audit raised instead of returning its finding: {exc}")
+        self.assertEqual(len(errors), 1)
+        for expected in (
+            f"data/{_IDENTITIES_FILE}",
+            "could not be read",
+            "ADR-0.35.0 § Decision item 9",
+            f"{_SCORECARD_SECTION} #1",
+            "uv run gz validate --bullet-retention",
+        ):
+            self.assertIn(expected, errors[0].message)
+
+    @covers("REQ-0.35.0-10-02")
     def test_absent_scorecard_fails_closed_while_identities_stay_pinned(self) -> None:
         """Removing the scorecard removes every row at once, and the pinned set says so."""
         scorecard = _scorecard(
@@ -1174,6 +1233,82 @@ class TestUnownedBulletResolvesFromScorecard(_OwnershipFixtureMixin, unittest.Te
                 else:
                     path.write_text(content, encoding="utf-8")
                 self.assertEqual(self._audit()[0], [])
+
+    def _pin_without_enrollment(self, scorecard: str) -> None:
+        """Write a project with no ownership declaration whose one pinned row a skill retains."""
+        _make_tree(str(self._root), scorecard_content=scorecard)
+        _pin(self._root, _pinned("1"))
+        skill = self._root / _SKILL_SOURCE
+        skill.parent.mkdir(parents=True, exist_ok=True)
+        skill.write_text(f"- {_SKILL_RULE}\n", encoding="utf-8")
+
+    @covers("REQ-0.35.0-10-02")
+    def test_pinned_identity_is_held_when_nothing_else_enrolls_the_project(self) -> None:
+        """The pinned file alone decides the check: no scorecard edit takes a pinned row out."""
+        row = _scorecard(("1", _SKILL_RULE, "Mechanical", f"`source={_SKILL_SOURCE}`"))
+        self._pin_without_enrollment(row)
+        self.assertEqual(self._audit()[0], [], "the fixture is clean while its row is read")
+        self.assertEqual(self._bullet("1").source, _SKILL_SOURCE)
+
+        unread = {
+            "the scorecard emptied": "",
+            "the scorecard replaced with prose": "This scorecard has been retired.\n",
+            "the row's leading pipe removed": row.replace("| 1 |", "1 |"),
+        }
+        for named, scorecard in unread.items():
+            with self.subTest(named=named):
+                (self._root / _SCORECARD_FILE).write_text(scorecard, encoding="utf-8")
+                errors, _ = self._audit()
+                held = [e for e in errors if f"data/{_IDENTITIES_FILE}" in e.message]
+                self.assertEqual(len(held), 1, "the pinned identity must be named as lost")
+                for expected in (
+                    f"{_SCORECARD_SECTION} #1",
+                    "ADR-0.35.0 § Decision item 9",
+                    "uv run gz validate --bullet-retention",
+                ):
+                    self.assertIn(expected, held[0].message)
+
+    @covers("REQ-0.35.0-10-02")
+    def test_pinned_file_listing_no_identity_enrolls_nothing(self) -> None:
+        """An empty pinned list pins nothing, so by itself it leaves the legacy audit alone."""
+        _make_tree(str(self._root), scorecard_content=_SCORECARD_MIXED, agents_content="")
+        _pin(self._root, ())
+        errors, _ = self._audit()
+        self.assertEqual(len(errors), 2, "both enforced rows are absent from the surface")
+        with redirect_stderr(io.StringIO()):
+            population = audited_population(self._root)
+        self.assertEqual([b.authority for b in population], ["scorecard"] * 3)
+
+    @covers("REQ-0.35.0-10-02")
+    def test_scorecard_that_is_not_utf8_is_a_finding_of_the_audit_not_a_crash(self) -> None:
+        """A scorecard the audit cannot decode hides every row, so it is refused by name."""
+        for enrolled in (True, False):
+            with self.subTest(enrolled=enrolled):
+                self.setUp()
+                if enrolled:
+                    self._enroll(
+                        _entry("e-alpha", "Judgment"),
+                        scorecard=_scorecard(("1", "a numbered rule", "Judgment", _UNOWNED_NOTE)),
+                    )
+                else:
+                    _make_tree(str(self._root), scorecard_content=_SCORECARD_MIXED)
+                (self._root / _SCORECARD_FILE).write_bytes(
+                    b"\xff\xfe| 1 | a rule | **Judgment** |\n"
+                )
+                try:
+                    errors, _ = self._audit()
+                    population = audited_population(self._root)
+                except UnicodeDecodeError as exc:
+                    self.fail(f"the audit raised instead of returning its finding: {exc}")
+                self.assertEqual(len(errors), 1)
+                for expected in (
+                    _SCORECARD_FILE.as_posix(),
+                    "UTF-8",
+                    "ADR-0.0.33 Invariant 1",
+                    "uv run gz validate --bullet-retention",
+                ):
+                    self.assertIn(expected, errors[0].message)
+                self.assertEqual(population, [])
 
     @covers("REQ-0.35.0-10-02")
     def test_rule_file_row_keeps_the_per_turn_surface_check(self) -> None:
@@ -1445,6 +1580,23 @@ class TestDeclaredSourceRetention(_OwnershipFixtureMixin, unittest.TestCase):
                         "gz validate --bullet-retention",
                     ):
                         self.assertIn(named, errors[0].message)
+
+    @covers("REQ-0.35.0-10-09")
+    def test_source_that_is_not_utf8_fails_closed_naming_the_row(self) -> None:
+        """A source file the audit cannot decode retains nothing; the row is refused by name."""
+        for source in self._SOURCES:
+            with self.subTest(source=source):
+                self._enroll_sourced(source, source_text=None, surface=self._RULE)
+                path = self._root / source
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(b"\xff\xfe " + self._RULE.encode("utf-8"))
+                try:
+                    errors, _ = self._audit()
+                except UnicodeDecodeError as exc:
+                    self.fail(f"the audit raised instead of returning its finding: {exc}")
+                self.assertEqual(len(errors), 1)
+                for named in (f"{_SCORECARD_SECTION} #1", source):
+                    self.assertIn(named, errors[0].message)
 
 
 if __name__ == "__main__":

@@ -4,8 +4,9 @@ Feature: gz validate --bullet-retention — classification ownership and source-
   from the corpus entry it cites, never from the scorecard cell. A disagreement
   is reported while the corpus value binds, an unreviewed capture default refuses
   to bind, a skill-sourced row is retained against its own source file, a
-  pinned row the audit no longer reads is named, and an absent scorecard is
-  refused while its rows stay pinned
+  pinned row the audit no longer reads is named, an absent scorecard is
+  refused while its rows stay pinned, and a pinned row is held when nothing
+  but the pinned file enrolls the project
   (ADR-0.35.0 § Decision item 9; GHI #737, GHI #939).
 
   Background:
@@ -36,6 +37,15 @@ Feature: gz validate --bullet-retention — classification ownership and source-
     When I run "gz validate --bullet-retention"
     Then the command exits non-zero
     And the output includes "is absent"
+
+  @REQ-0.35.0-10-02
+  Scenario: A pinned row is held when nothing but the pinned file enrolls the project
+    Given the project carries no ownership declaration
+    And the scorecard's only row is pinned and attributed to a skill file
+    And the scorecard is emptied
+    When I run "gz validate --bullet-retention"
+    Then the command exits non-zero
+    And the output includes "fixture-contract #1"
 
   @REQ-0.35.0-10-03
   Scenario: A disagreement is reported while the corpus value binds
