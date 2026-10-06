@@ -30,7 +30,6 @@ from gzkit.content import advisor_qc
 from gzkit.content.corpus_store import append_entry, corpus_path, load_corpus
 from gzkit.content.models.corpus import Corpus, CorpusEntry
 from gzkit.content.ownership import declaration_path, sections_digest
-from gzkit.content.parse import section_id
 from gzkit.content.rendition_store import corpus_fingerprint
 from gzkit.governance.events import emit_section_ownership_genesis
 from gzkit.governance.trust_audits.bullet_retention import (
@@ -39,6 +38,7 @@ from gzkit.governance.trust_audits.bullet_retention import (
 )
 from gzkit.ledger import Ledger
 from gzkit.ledger_events import rendition_advisor_verdict_event
+from gzkit.registries import load_registry
 from gzkit.traceability import covers
 
 # ---------------------------------------------------------------------------
@@ -703,6 +703,19 @@ _UNOWNED_CHUNK = f"## Unowned Section\n{_UNOWNED_RULE}\n"
 _OWN_SECTIONS = {"owned-section": "corpus-owned", "unowned-section": "unowned"}
 _SCORECARD_SECTION = "fixture-contract"
 _OWNED_NOTE = "`source=AGENTS.md#owned-section entry=e-alpha`"
+_IDENTITIES_FILE = "advisory_scorecard_identities.json"
+
+
+def _pinned(*numbers: str, section: str = _SCORECARD_SECTION) -> tuple[str, ...]:
+    """Name the identities of rows *numbers* in *section*, as the pinned file writes them."""
+    return tuple(f"{section} #{number}" for number in numbers)
+
+
+def _pin(root: Path, identities: tuple[str, ...]) -> None:
+    """Commit *identities* as the project's pinned scorecard row identities."""
+    path = root / "data" / _IDENTITIES_FILE
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({"identities": list(identities)}), encoding="utf-8")
 
 
 def _scorecard(*rows: tuple[str, str, str, str], heading: str = "Fixture Contract") -> str:
@@ -740,8 +753,10 @@ class _OwnershipFixtureMixin:
         owned_body: str = "",
         scorecard: str,
         rule_content: str | None = None,
+        pinned: tuple[str, ...] = _pinned("1"),
     ) -> None:
-        """Write the surface, its witnessed ownership declaration, corpus and scorecard."""
+        """Write the surface, its ownership declaration, corpus, scorecard and pinned identities."""
+        _pin(self._root, pinned)
         _make_tree(
             str(self._root),
             scorecard_content=scorecard,
@@ -854,36 +869,6 @@ _UNOWNED_NOTE = "`source=AGENTS.md#unowned-section`"
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
-def _table_identities(scorecard_text: str) -> list[tuple[str | None, str]]:
-    """Read ``(section id, row number)`` straight off a scorecard's tables (the oracle).
-
-    Independent of the audit's row grammar: every line of a ``| # | Rule | Score |``
-    table, or of a pipe block with no header row, counts, whatever its cells hold.
-    """
-    identities: list[tuple[str | None, str]] = []
-    section: str | None = None
-    lines = [line.strip() for line in scorecard_text.splitlines()]
-    counting = in_block = False
-    for index, line in enumerate(lines):
-        if line.startswith("### "):
-            section = section_id(line[4:])
-        if not line.startswith("|"):
-            in_block = False
-            continue
-        first, second = (line.split("|") + ["", ""])[1:3]
-        ruled = set(line) <= set("|-: ")
-        if not in_block:
-            in_block = True
-            following = lines[index + 1] if index + 1 < len(lines) else ""
-            headed = following.startswith("|") and set(following) <= set("|-: ")
-            counting = not headed or (first.strip(), second.strip().lower()) == ("#", "rule")
-            if headed:
-                continue
-        if counting and not ruled:
-            identities.append((section, first.strip()))
-    return identities
-
-
 class TestUnownedBulletResolvesFromScorecard(_OwnershipFixtureMixin, unittest.TestCase):
     """REQ-0.35.0-10-02 — unowned rows keep scorecard authority; no identity is lost."""
 
@@ -897,6 +882,7 @@ class TestUnownedBulletResolvesFromScorecard(_OwnershipFixtureMixin, unittest.Te
                 ("2", "absent rule gamma", "Mechanical", _UNOWNED_NOTE),
                 ("3", "absent rule delta", "Judgment", _UNOWNED_NOTE),
             ),
+            pinned=_pinned("1", "2", "3"),
         )
         errors, advisories = self._audit()
         self.assertEqual(len(errors), 1)
@@ -916,6 +902,7 @@ class TestUnownedBulletResolvesFromScorecard(_OwnershipFixtureMixin, unittest.Te
             owned_body=_OWNED_RULE,
             scorecard=scorecard,
             rule_content=_OWNED_RULE,
+            pinned=_pinned("1") + _pinned("1", section="rule-file-contract"),
         )
         errors, _ = self._audit()
         self.assertEqual(errors, [])
@@ -993,7 +980,7 @@ class TestUnownedBulletResolvesFromScorecard(_OwnershipFixtureMixin, unittest.Te
             ("1", "a numbered rule", "Judgment", _UNOWNED_NOTE),
             ("2", "use `str \\| None` for an optional", "Judgment", _UNOWNED_NOTE),
         )
-        self._enroll(_entry("e-alpha", "Judgment"), scorecard=scorecard)
+        self._enroll(_entry("e-alpha", "Judgment"), scorecard=scorecard, pinned=_pinned("1", "2"))
         errors, _ = self._audit()
         self.assertEqual(errors, [])
         self.assertEqual(self._bullet("2").rule, "use `str | None` for an optional")
@@ -1007,7 +994,10 @@ class TestUnownedBulletResolvesFromScorecard(_OwnershipFixtureMixin, unittest.Te
             ("2", "rule file rule kept", qualified, _RULE_NOTE),
         )
         self._enroll(
-            _entry("e-alpha", "Judgment"), scorecard=scorecard, rule_content="rule file rule kept"
+            _entry("e-alpha", "Judgment"),
+            scorecard=scorecard,
+            rule_content="rule file rule kept",
+            pinned=_pinned("1", "2"),
         )
         errors, _ = self._audit()
         self.assertEqual(errors, [])
@@ -1026,6 +1016,103 @@ class TestUnownedBulletResolvesFromScorecard(_OwnershipFixtureMixin, unittest.Te
         self.assertEqual(audited, ["1"])
 
     @covers("REQ-0.35.0-10-02")
+    def test_table_line_without_a_leading_pipe_is_refused_not_dropped(self) -> None:
+        """A table runs to its first blank line: a line in it with no leading pipe is a row."""
+        scorecard = (
+            _scorecard(("1", "a numbered rule", "Judgment", _UNOWNED_NOTE))
+            + f" 2 | {_UNOWNED_RULE} | **Judgment** | {_UNOWNED_NOTE} |\n"
+            + f"| 3 | a later rule | **Judgment** | {_UNOWNED_NOTE} |\n"
+        )
+        self._enroll(_entry("e-alpha", "Judgment"), scorecard=scorecard, pinned=_pinned("1", "3"))
+        errors, _ = self._audit()
+        self.assertEqual(len(errors), 1)
+        self.assertIn("does not begin with a pipe", errors[0].message)
+        self.assertIn(_UNOWNED_RULE, errors[0].message)
+        self.assertIn("uv run gz validate --bullet-retention", errors[0].message)
+        with redirect_stderr(io.StringIO()):
+            audited = [b.row_number for b in audited_population(self._root)]
+        self.assertEqual(audited, ["1", "3"])
+
+    @covers("REQ-0.35.0-10-02")
+    def test_pinned_identity_the_audit_no_longer_reads_fails_closed(self) -> None:
+        """A row that stops being read, whatever the reason, is named from the pinned set."""
+        kept = _scorecard(("1", "a numbered rule", "Judgment", _UNOWNED_NOTE))
+        lost_row = f"2 | {_UNOWNED_RULE} | **Judgment** | {_UNOWNED_NOTE} |"
+        cases = {
+            "the row deleted": kept,
+            "the row outside any table, with no leading pipe": f"{kept}\n{lost_row}\n",
+            "the row under a table of another shape": f"{kept}\n| Score | Meaning |\n"
+            f"|---|---|\n| {lost_row}\n",
+        }
+        for named, scorecard in cases.items():
+            with self.subTest(named=named):
+                self.setUp()
+                self._enroll(
+                    _entry("e-alpha", "Judgment"), scorecard=scorecard, pinned=_pinned("1", "2")
+                )
+                errors, _ = self._audit()
+                self.assertEqual(len(errors), 1)
+                for expected in (
+                    f"{_SCORECARD_SECTION} #2",
+                    f"data/{_IDENTITIES_FILE}",
+                    "ADR-0.35.0 § Decision item 9",
+                    "uv run gz validate --bullet-retention",
+                ):
+                    self.assertIn(expected, errors[0].message)
+                self.assertNotIn(f"{_SCORECARD_SECTION} #1", errors[0].message)
+
+    @covers("REQ-0.35.0-10-02")
+    def test_row_the_pinned_set_does_not_list_fails_closed(self) -> None:
+        """A new row is pinned in the commit that adds it, or it could later vanish unseen."""
+        scorecard = _scorecard(
+            ("1", "a numbered rule", "Judgment", _UNOWNED_NOTE),
+            ("2", _UNOWNED_RULE, "Judgment", _UNOWNED_NOTE),
+        )
+        self._enroll(_entry("e-alpha", "Judgment"), scorecard=scorecard, pinned=_pinned("1"))
+        errors, _ = self._audit()
+        self.assertEqual(len(errors), 1)
+        for expected in (
+            f"{_SCORECARD_SECTION} #2",
+            f"data/{_IDENTITIES_FILE}",
+            "ADR-0.35.0 § Decision item 9",
+            "uv run gz validate --bullet-retention",
+        ):
+            self.assertIn(expected, errors[0].message)
+        self.assertNotIn(f"{_SCORECARD_SECTION} #1", errors[0].message)
+
+    @covers("REQ-0.35.0-10-02")
+    def test_missing_or_unreadable_pinned_set_fails_closed_with_recovery(self) -> None:
+        """An enrolled project with no readable pinned set has no witness, so it is refused."""
+        unreadable: dict[str, str | None] = {
+            "the file absent": None,
+            "the file not JSON": "{not json",
+            "no identities list": json.dumps({"rows": []}),
+            "identities not a list of strings": json.dumps({"identities": [1, 2]}),
+        }
+        for named, content in unreadable.items():
+            with self.subTest(named=named):
+                self.setUp()
+                self._enroll(
+                    _entry("e-alpha", "Judgment"),
+                    scorecard=_scorecard(("1", "a numbered rule", "Judgment", _UNOWNED_NOTE)),
+                )
+                path = self._root / "data" / _IDENTITIES_FILE
+                if content is None:
+                    path.unlink()
+                else:
+                    path.write_text(content, encoding="utf-8")
+                errors, _ = self._audit()
+                self.assertEqual(len(errors), 1)
+                for expected in (
+                    f"data/{_IDENTITIES_FILE}",
+                    "could not be read",
+                    "ADR-0.35.0 § Decision item 9",
+                    f"{_SCORECARD_SECTION} #1",
+                    "uv run gz validate --bullet-retention",
+                ):
+                    self.assertIn(expected, errors[0].message)
+
+    @covers("REQ-0.35.0-10-02")
     def test_rule_file_row_keeps_the_per_turn_surface_check(self) -> None:
         """A non-AgentContract row is retained against the per-turn surface, as before."""
         scorecard = _scorecard(
@@ -1033,7 +1120,10 @@ class TestUnownedBulletResolvesFromScorecard(_OwnershipFixtureMixin, unittest.Te
             ("2", "rule file rule lost", "Promotable", _RULE_NOTE),
         )
         self._enroll(
-            _entry("e-alpha", "Judgment"), scorecard=scorecard, rule_content="rule file rule kept"
+            _entry("e-alpha", "Judgment"),
+            scorecard=scorecard,
+            rule_content="rule file rule kept",
+            pinned=_pinned("1", "2"),
         )
         errors, _ = self._audit()
         self.assertEqual(len(errors), 1)
@@ -1073,17 +1163,13 @@ class TestUnownedBulletResolvesFromScorecard(_OwnershipFixtureMixin, unittest.Te
         self.assertEqual([b.authority for b in population], ["scorecard"] * 3)
 
     @covers("REQ-0.35.0-10-02")
-    def test_live_scorecard_population_keeps_every_table_identity(self) -> None:
-        """Every row identity in the committed scorecard is audited once, with a source."""
-        scorecard = (_REPO_ROOT / "docs" / "governance" / "advisory-rules-audit.md").read_text(
-            encoding="utf-8"
-        )
-        expected = _table_identities(scorecard)
+    def test_live_scorecard_population_is_the_committed_pinned_set(self) -> None:
+        """The committed scorecard yields each committed identity once, with a source."""
+        pinned = load_registry(_REPO_ROOT, _IDENTITIES_FILE)["identities"]
         with redirect_stderr(io.StringIO()):
             population = audited_population(_REPO_ROOT)
         self.assertEqual(
-            sorted((b.section_id or "", b.row_number) for b in population),
-            sorted((section or "", number) for section, number in expected),
+            sorted(f"{b.section_id} #{b.row_number}" for b in population), sorted(pinned)
         )
         self.assertEqual([b for b in population if not b.source], [])
 

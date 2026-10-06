@@ -3,7 +3,8 @@ Feature: gz validate --bullet-retention — classification ownership and source-
   A scorecard row attributed to a corpus-owned section takes its classification
   from the corpus entry it cites, never from the scorecard cell. A disagreement
   is reported while the corpus value binds, an unreviewed capture default refuses
-  to bind, and a skill-sourced row is retained against its own source file
+  to bind, a skill-sourced row is retained against its own source file, and a
+  pinned row the audit no longer reads is named
   (ADR-0.35.0 § Decision item 9; GHI #737, GHI #939).
 
   Background:
@@ -16,6 +17,15 @@ Feature: gz validate --bullet-retention — classification ownership and source-
     When I run "gz validate --bullet-retention"
     Then the command exits non-zero
     And the output includes "e-owned"
+
+  @REQ-0.35.0-10-02
+  Scenario: A pinned row the scorecard no longer carries fails closed
+    Given the owned corpus entry is classified "Judgment"
+    And the scorecard scores the owned bullet "Judgment"
+    And the pinned identities list a row the scorecard no longer carries
+    When I run "gz validate --bullet-retention"
+    Then the command exits non-zero
+    And the output includes "fixture-contract #2"
 
   @REQ-0.35.0-10-03
   Scenario: A disagreement is reported while the corpus value binds

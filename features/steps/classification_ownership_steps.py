@@ -3,10 +3,11 @@
 Fixture shape mirrors `tests/governance/test_bullet_retention.py`: a two-section
 control surface (one section the ownership declaration marks corpus-owned, one it
 marks unowned), an ownership declaration backed by a real ledger genesis event,
-one corpus entry for the owned section, and a scorecard whose rows name their
-source in the Notes column.
+one corpus entry for the owned section, a scorecard whose rows name their
+source in the Notes column, and the pinned row identities of that scorecard.
 
 @covers REQ-0.35.0-10-01
+@covers REQ-0.35.0-10-02
 @covers REQ-0.35.0-10-03
 @covers REQ-0.35.0-10-04
 @covers REQ-0.35.0-10-08
@@ -37,6 +38,7 @@ _SECTIONS = {"owned-section": "corpus-owned", "unowned-section": "unowned"}
 _SCORECARD_HEAD = (
     "### Fixture Contract\n\n| # | Rule | Score | Notes |\n|---|------|-------|-------|\n"
 )
+_SCORECARD_SECTION = "fixture-contract"
 
 #: The "I run \"{command}\"" @when and the "the command exits 0" / "the command
 #: exits non-zero" / "the output includes" @then steps are deliberately NOT
@@ -47,6 +49,14 @@ _SCORECARD_HEAD = (
 
 def _scorecard_path(context) -> Path:
     return context.root / "docs" / "governance" / "advisory-rules-audit.md"
+
+
+def _pin(context, *numbers: str) -> None:
+    """Commit the identities of scorecard rows *numbers* as the project's pinned set."""
+    path = context.root / "data" / "advisory_scorecard_identities.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    identities = [f"{_SCORECARD_SECTION} #{number}" for number in numbers]
+    path.write_text(json.dumps({"identities": identities}), encoding="utf-8")
 
 
 @given("a project whose control surface has one corpus-owned section")
@@ -104,12 +114,14 @@ def step_scorecard_owned_row(context, score: str) -> None:
         f"`source={_SURFACE}#owned-section entry=e-owned` |\n",
         encoding="utf-8",
     )
+    _pin(context, "1")
 
 
 def _add_skill_row(context, skill_text: str) -> None:
     path = _scorecard_path(context)
     row = f"| 2 | {_SKILL_RULE} | **Mechanical** | `source={_SKILL_SOURCE}` |\n"
     path.write_text(path.read_text(encoding="utf-8") + row, encoding="utf-8")
+    _pin(context, "1", "2")
     skill = context.root / _SKILL_SOURCE
     skill.parent.mkdir(parents=True, exist_ok=True)
     skill.write_text(skill_text, encoding="utf-8")
@@ -123,3 +135,8 @@ def step_skill_row_retained(context) -> None:
 @given("a Mechanical scorecard row attributed to a skill file that lacks its text")
 def step_skill_row_absent(context) -> None:
     _add_skill_row(context, "The skill says something else.\n")
+
+
+@given("the pinned identities list a row the scorecard no longer carries")
+def step_pinned_row_gone(context) -> None:
+    _pin(context, "1", "2")

@@ -11,6 +11,11 @@
       "kind": "code",
       "purpose": "Complexity advisor archetype matching rules."
     },
+    "advisory_scorecard_identities.json": {
+      "owner": "gzkit/governance/trust_audits/bullet_retention.py",
+      "kind": "code",
+      "purpose": "Pinned `<section id> #<row number>` identities of the advisory scorecard's rule rows; `gz validate --bullet-retention` fails closed when one is no longer read or a row is not listed (ADR-0.35.0 § Decision item 9, OBPI-0.35.0-10)."
+    },
     "agents_md_survival_declaration.json": {
       "owner": "gzkit/governance/trust_audits/surface_delivery_witness.py",
       "kind": "code",

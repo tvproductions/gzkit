@@ -29,8 +29,11 @@ from that ``CorpusEntry.classification``; every other row resolves from the
 scorecard. Exactly one surface answers for a bullet, a broken owned mapping fails
 closed instead of falling back, and a corpus/scorecard disagreement is reported
 while the corpus value binds. A row attributed to a ``SKILL.md`` or an ADR file is
-retention-checked against that file, not the per-turn surface (GHI #939). A
-project with no enrollment and no attribution keeps the legacy audit unchanged.
+retention-checked against that file, not the per-turn surface (GHI #939). An
+enrolled project pins its row identities in ``data/advisory_scorecard_identities.json``:
+a pinned identity the audit no longer reads, or a row that is not pinned, fails
+closed, so a row the reader stops recognising cannot leave unseen. A project with
+no enrollment and no attribution keeps the legacy audit unchanged.
 
 Returns a ``ValidationError(type="bullet_retention")`` for every retention
 violation. An empty list means the surface is clean.
@@ -63,8 +66,11 @@ from gzkit.content.ownership import declaration_path, load_declaration
 from gzkit.content.parse import section_id
 from gzkit.core.validation_rules import ValidationError
 from gzkit.ledger import Ledger
+from gzkit.registries import RegistryError, load_registry, registry_path
 
 _SCORECARD_PATH = Path("docs") / "governance" / "advisory-rules-audit.md"
+# The committed `<scorecard section id> #<row number>` identities of an enrolled project.
+_PINNED_IDENTITIES = "advisory_scorecard_identities.json"
 _DECISION = "ADR-0.35.0 § Decision item 9"
 _RERUN = "re-run `uv run gz validate --bullet-retention`"
 _OWNED = "corpus-owned"
@@ -103,6 +109,7 @@ _SEPARATOR_CELL_RE = re.compile(r"^:?-+:?$")
 # A score cell leads with its bold class; text after it qualifies the score, never rebinds it.
 _SCORE_CELL_RE = re.compile(r"^\*\*(?P<cls>[^*]+)\*\*")
 _RULE_TABLE_HEADER = ("#", "rule", "score")
+_NO_LEADING_PIPE = "does not begin with a pipe"
 
 
 class AuditedBullet(BaseModel):
@@ -202,6 +209,7 @@ def _resolve_population(
 
     rows, errors = _read_rule_rows(project_root / _SCORECARD_PATH)
     errors.extend(_identity_errors(rows))
+    errors.extend(_pinned_identity_errors(project_root, rows))
     ownership = {surface: _load_ownership(project_root, surface) for surface in surfaces}
     errors.extend(o for o in ownership.values() if isinstance(o, ValidationError))
     errors.extend(_capture_default_errors(ownership))
@@ -289,6 +297,73 @@ def _identity_errors(rows: list[_Row]) -> list[ValidationError]:
         if counts[key] > 1 and key not in reported:
             reported.add(key)
             errors.append(_mapping_error(row, f"shares its identity with {counts[key] - 1} other"))
+    return errors
+
+
+def _load_pinned_identities(project_root: Path) -> set[str] | str:
+    """Return the project's pinned row identities, or why they could not be read."""
+    try:
+        payload = load_registry(project_root, _PINNED_IDENTITIES)
+    except RegistryError as exc:
+        return str(exc)
+    identities = payload.get("identities") if isinstance(payload, dict) else None
+    if not isinstance(identities, list) or not all(isinstance(i, str) for i in identities):
+        return 'the file must be an object whose "identities" is a list of strings'
+    return set(identities)
+
+
+def _pinned_identity_errors(project_root: Path, rows: list[_Row]) -> list[ValidationError]:
+    """Hold the rows the audit read against the project's committed row identities.
+
+    The reader decides what a row is, so a row it stops recognising leaves no trace
+    in what it read. The pinned set is the witness that does not depend on the
+    reader: an identity pinned there and no longer read is named.
+    """
+    pinned_path = registry_path(project_root, _PINNED_IDENTITIES).relative_to(project_root)
+    read = {_identity(row) for row in rows if row.section_id is not None}
+    pinned = _load_pinned_identities(project_root)
+    if isinstance(pinned, str):
+        return [
+            _error(
+                f"Bullet-retention identity violation: the pinned scorecard row identities "
+                f"in {pinned_path.as_posix()} could not be read.\n"
+                f"  Detail: {pinned}\n"
+                f"  Why: {_DECISION} — the audited population never shrinks; without the "
+                f"pinned identities nothing names a row the audit stops reading.\n"
+                f"  Fix: restore {pinned_path.as_posix()} from version control, or write it "
+                f'as {{"identities": [...]}} listing the rows read now, then {_RERUN}.\n'
+                f"  Read now: {', '.join(sorted(read))}"
+            )
+        ]
+    errors: list[ValidationError] = []
+    lost = sorted(pinned - read)
+    if lost:
+        errors.append(
+            _error(
+                f"Bullet-retention identity violation: the audit no longer reads "
+                f"{len(lost)} scorecard row(s) pinned in {pinned_path.as_posix()}: "
+                f"{', '.join(lost)}.\n"
+                f"  Why: {_DECISION} — the audited population never shrinks; a pinned row "
+                f"identity must still be read from the scorecard, whatever became of its "
+                f"row.\n"
+                f"  Fix: restore each row to its rule table in {_SCORECARD_PATH.as_posix()} "
+                f"(a row begins with a pipe, under a `| # | Rule | Score |` header); when "
+                f"the operator has ruled a row's removal, delete its identity from "
+                f"{pinned_path.as_posix()} in the same commit; then {_RERUN}."
+            )
+        )
+    unpinned = sorted(read - pinned)
+    if unpinned:
+        errors.append(
+            _error(
+                f"Bullet-retention identity violation: {len(unpinned)} scorecard row(s) "
+                f"are not pinned in {pinned_path.as_posix()}: {', '.join(unpinned)}.\n"
+                f"  Why: {_DECISION} — the audited population never shrinks; a row that "
+                f"is not pinned could later stop being read with nothing to name it.\n"
+                f'  Fix: add each identity to the "identities" list of '
+                f"{pinned_path.as_posix()} in the commit that adds its row, then {_RERUN}."
+            )
+        )
     return errors
 
 
@@ -566,7 +641,9 @@ def _read_rule_rows(path: Path) -> tuple[list[_Row], list[ValidationError]]:
 
     A rule table is a block of pipe lines headed ``| # | Rule | Score | ... |``, or a
     block with no header row (a table a blank line split). A table of any other shape
-    holds no rows. Nothing inside a rule table is skipped.
+    holds no rows. A table runs to its first blank line or heading, so a line inside a
+    rule table that does not begin with a pipe is a row and is refused. Nothing inside
+    a rule table is skipped.
     """
     try:
         lines = [line.strip() for line in path.read_text(encoding="utf-8").splitlines()]
@@ -581,7 +658,10 @@ def _read_rule_rows(path: Path) -> tuple[list[_Row], list[ValidationError]]:
         if line.startswith(_SECTION_HEADING):
             section = section_id(line[len(_SECTION_HEADING) :])
         if not line.startswith("|"):
-            in_block = False
+            if line and not line.startswith("#") and in_block and is_rule_table:
+                errors.append(_unreadable_row_error(section, index + 1, line, _NO_LEADING_PIPE))
+            else:
+                in_block = False
             continue
         cells = _cells(line)
         if not in_block:
@@ -649,8 +729,9 @@ def _unreadable_row_error(
         f"  Row: {text[:160]!r}\n"
         f"  Why: {_DECISION} — the audited population never shrinks; a row the audit "
         f"cannot read is refused, never skipped.\n"
-        f"  Fix: give the row a number, a rule and a bold `**Score**` cell, writing a "
-        f"literal pipe inside a cell as `\\|`, then {_RERUN}."
+        f"  Fix: begin the row with a pipe and give it a number, a rule and a bold "
+        f"`**Score**` cell, writing a literal pipe inside a cell as `\\|`; if the line is "
+        f"not a row, put a blank line between the table and it; then {_RERUN}."
     )
 
 
