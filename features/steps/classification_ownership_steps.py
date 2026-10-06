@@ -140,3 +140,8 @@ def step_skill_row_absent(context) -> None:
 @given("the pinned identities list a row the scorecard no longer carries")
 def step_pinned_row_gone(context) -> None:
     _pin(context, "1", "2")
+
+
+@given("the scorecard file is removed")
+def step_scorecard_removed(context) -> None:
+    _scorecard_path(context).unlink()

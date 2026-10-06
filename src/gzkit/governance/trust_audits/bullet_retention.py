@@ -32,7 +32,8 @@ while the corpus value binds. A row attributed to a ``SKILL.md`` or an ADR file 
 retention-checked against that file, not the per-turn surface (GHI #939). An
 enrolled project pins its row identities in ``data/advisory_scorecard_identities.json``:
 a pinned identity the audit no longer reads, or a row that is not pinned, fails
-closed, so a row the reader stops recognising cannot leave unseen. A project with
+closed, so a row the reader stops recognising cannot leave unseen. An absent
+scorecard fails closed the same way while any identity is pinned. A project with
 no enrollment and no attribution keeps the legacy audit unchanged.
 
 Returns a ``ValidationError(type="bullet_retention")`` for every retention
@@ -163,7 +164,7 @@ def validate_bullet_retention(project_root: Path) -> list[ValidationError]:
     """Return ValidationErrors for enforced bullets whose tier-scoped retention fails."""
     scorecard = project_root / _SCORECARD_PATH
     if not scorecard.exists():
-        return []
+        return _absent_scorecard_errors(project_root)
 
     resolved, errors = _resolve_population(project_root, _parse_scorecard(scorecard))
     for item in resolved:
@@ -191,6 +192,36 @@ def audited_population(project_root: Path) -> list[AuditedBullet]:
             entry_id=entry.id if entry is not None else None,
         )
         for row, entry in resolved
+    ]
+
+
+def _absent_scorecard_errors(project_root: Path) -> list[ValidationError]:
+    """Hold an absent scorecard against the project's pinned row identities.
+
+    A project with no scorecard and nothing pinned has nothing to audit: a surface
+    can be enrolled for section ownership and carry no advisory scorecard. A project
+    that pinned row identities had the rows, so its scorecard going missing is every
+    pinned row leaving at once.
+    """
+    pinned_file = registry_path(project_root, _PINNED_IDENTITIES)
+    if not pinned_file.exists():
+        return []
+    pinned = _load_pinned_identities(project_root)
+    if isinstance(pinned, str):
+        return _pinned_identity_errors(project_root, [])
+    if not pinned:
+        return []
+    pinned_path = pinned_file.relative_to(project_root).as_posix()
+    return [
+        _error(
+            f"Bullet-retention identity violation: the scorecard "
+            f"{_SCORECARD_PATH.as_posix()} is absent while {len(pinned)} scorecard row "
+            f"identities are pinned in {pinned_path}.\n"
+            f"  Why: {_DECISION} — the audited population never shrinks; removing the "
+            f"scorecard removes every pinned row from the audit at once.\n"
+            f"  Fix: restore the file with `git checkout -- {_SCORECARD_PATH.as_posix()}`, "
+            f"then {_RERUN}."
+        )
     ]
 
 

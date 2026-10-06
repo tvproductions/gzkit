@@ -344,10 +344,11 @@ by the bold class it leads with; text after it only qualifies the score.
 An enrolled project pins its row identities in
 `data/advisory_scorecard_identities.json`, as
 `{"identities": ["<section-id> #<row>", ...]}`. The audit holds the rows it read
-against that list and fails closed in three cases: a pinned identity it no longer
-reads, whatever became of the row; a row that is not pinned; and a pinned file
-that is missing or unreadable, in which case the error lists the identities read
-now. Add a row's identity in the commit that adds the row. Deleting an identity
+against that list and fails closed in four cases: a pinned identity it no longer
+reads, whatever became of the row; a row that is not pinned; a pinned file that is
+missing or unreadable, in which case the error lists the identities read now; and
+the scorecard itself being absent while any identity is pinned. A project with no
+scorecard and nothing pinned has nothing to audit. Add a row's identity in the commit that adds the row. Deleting an identity
 removes a row from the audited population, so it follows an operator ruling.
 
 A row with no attribution, a duplicated identity, a

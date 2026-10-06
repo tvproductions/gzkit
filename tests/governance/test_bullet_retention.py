@@ -704,6 +704,7 @@ _OWN_SECTIONS = {"owned-section": "corpus-owned", "unowned-section": "unowned"}
 _SCORECARD_SECTION = "fixture-contract"
 _OWNED_NOTE = "`source=AGENTS.md#owned-section entry=e-alpha`"
 _IDENTITIES_FILE = "advisory_scorecard_identities.json"
+_SCORECARD_FILE = Path("docs") / "governance" / "advisory-rules-audit.md"
 
 
 def _pinned(*numbers: str, section: str = _SCORECARD_SECTION) -> tuple[str, ...]:
@@ -1111,6 +1112,68 @@ class TestUnownedBulletResolvesFromScorecard(_OwnershipFixtureMixin, unittest.Te
                     "uv run gz validate --bullet-retention",
                 ):
                     self.assertIn(expected, errors[0].message)
+
+    @covers("REQ-0.35.0-10-02")
+    def test_absent_scorecard_fails_closed_while_identities_stay_pinned(self) -> None:
+        """Removing the scorecard removes every row at once, and the pinned set says so."""
+        scorecard = _scorecard(
+            ("1", "a numbered rule", "Judgment", _UNOWNED_NOTE),
+            ("2", _UNOWNED_RULE, "Judgment", _UNOWNED_NOTE),
+        )
+        self._enroll(_entry("e-alpha", "Judgment"), scorecard=scorecard, pinned=_pinned("1", "2"))
+        self.assertEqual(self._audit()[0], [], "the fixture is clean while its scorecard exists")
+
+        (self._root / _SCORECARD_FILE).unlink()
+        errors, _ = self._audit()
+
+        self.assertEqual(len(errors), 1)
+        for expected in (
+            _SCORECARD_FILE.as_posix(),
+            "is absent",
+            "2 scorecard row identities",
+            f"data/{_IDENTITIES_FILE}",
+            "ADR-0.35.0 § Decision item 9",
+            "uv run gz validate --bullet-retention",
+        ):
+            self.assertIn(expected, errors[0].message)
+
+    @covers("REQ-0.35.0-10-02")
+    def test_absent_scorecard_with_an_unreadable_pinned_set_fails_closed(self) -> None:
+        """With the scorecard gone, a pinned file that cannot be read is still refused."""
+        self._enroll(
+            _entry("e-alpha", "Judgment"),
+            scorecard=_scorecard(("1", "a numbered rule", "Judgment", _UNOWNED_NOTE)),
+        )
+        (self._root / _SCORECARD_FILE).unlink()
+        (self._root / "data" / _IDENTITIES_FILE).write_text("{not json", encoding="utf-8")
+
+        errors, _ = self._audit()
+
+        self.assertEqual(len(errors), 1)
+        for expected in (f"data/{_IDENTITIES_FILE}", "could not be read"):
+            self.assertIn(expected, errors[0].message)
+
+    @covers("REQ-0.35.0-10-02")
+    def test_project_with_no_scorecard_and_nothing_pinned_has_nothing_to_audit(self) -> None:
+        """A surface can be enrolled for section ownership with no advisory scorecard at all."""
+        unpinned: dict[str, str | None] = {
+            "no pinned file": None,
+            "a pinned file listing no rows": json.dumps({"identities": []}),
+        }
+        for named, content in unpinned.items():
+            with self.subTest(named=named):
+                self.setUp()
+                self._enroll(
+                    _entry("e-alpha", "Judgment"),
+                    scorecard=_scorecard(("1", "a numbered rule", "Judgment", _UNOWNED_NOTE)),
+                )
+                (self._root / _SCORECARD_FILE).unlink()
+                path = self._root / "data" / _IDENTITIES_FILE
+                if content is None:
+                    path.unlink()
+                else:
+                    path.write_text(content, encoding="utf-8")
+                self.assertEqual(self._audit()[0], [])
 
     @covers("REQ-0.35.0-10-02")
     def test_rule_file_row_keeps_the_per_turn_surface_check(self) -> None:
