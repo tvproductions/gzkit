@@ -28,6 +28,7 @@ TTL-bearing coordination records for agents, not kernel locks on a file.
 from __future__ import annotations
 
 import contextlib
+import errno
 import sys
 from collections.abc import Iterator
 from pathlib import Path
@@ -36,10 +37,24 @@ from typing import IO
 if sys.platform == "win32":  # pragma: no cover - selected by platform, not by test
 
     def _take_exclusive(handle: IO[bytes]) -> None:
-        """Block until this process holds the lock byte (Windows)."""
+        """Block until this process holds the lock byte (Windows).
+
+        ``LK_LOCK`` alone does not block: it polls once a second and raises
+        ``OSError`` with ``EDEADLK`` after ten tries, where ``flock`` waits
+        without bound. An expired wait is contention, so the call is made
+        again; any other ``OSError`` is a failure of the handle and is raised
+        (GHI #1178).
+        """
         import msvcrt  # noqa: PLC0415 - platform-conditional, unimportable elsewhere
 
-        msvcrt.locking(handle.fileno(), msvcrt.LK_LOCK, 1)
+        while True:
+            try:
+                msvcrt.locking(handle.fileno(), msvcrt.LK_LOCK, 1)
+            except OSError as exc:
+                if exc.errno != errno.EDEADLK:
+                    raise
+            else:
+                return
 
     def _release_exclusive(handle: IO[bytes]) -> None:
         """Release the lock byte (Windows)."""

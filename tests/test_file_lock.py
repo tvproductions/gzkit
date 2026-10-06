@@ -16,11 +16,17 @@ kernel lock on the same sidecar.
 
 from __future__ import annotations
 
+import errno
+import importlib.util
+import sys
 import tempfile
 import threading
+import types
 import unittest
 from pathlib import Path
+from unittest import mock
 
+from gzkit import file_lock
 from gzkit.file_lock import exclusive_file_lock
 
 # Long enough that a released lock is reacquired well inside it, short
@@ -127,6 +133,103 @@ class TestExclusiveFileLock(unittest.TestCase):
         )
         other.join()
         held.join()
+
+
+class TestContendedWindowsAcquirerKeepsWaiting(unittest.TestCase):
+    """Taking the lock succeeds or keeps waiting; it never gives up (GHI #1178).
+
+    The Windows lock call is a bounded wait: it polls once a second and
+    raises ``OSError`` with ``EDEADLK`` after ten tries. The POSIX call has
+    no bound. These tests execute the module's Windows branch on every
+    platform, with the lock call injected in place of ``msvcrt``.
+    """
+
+    _LK_UNLCK = 0
+    _LK_LOCK = 1
+
+    def setUp(self) -> None:
+        self._tempdir = tempfile.TemporaryDirectory()
+        self.target = Path(self._tempdir.name) / "store.jsonl"
+
+    def tearDown(self) -> None:
+        self._tempdir.cleanup()
+
+    def _lock_through_the_windows_branch(self, locking) -> list[Exception]:
+        """Take and release the lock on the Windows branch; return what it raised.
+
+        The branch is chosen when the module is executed, so a second copy is
+        executed with the platform reading ``win32``. The lock is taken off
+        the main thread because waiting forever is correct under contention:
+        a wait that never returned would hang the suite instead of failing it.
+        """
+        stand_in = types.SimpleNamespace(
+            LK_LOCK=self._LK_LOCK, LK_UNLCK=self._LK_UNLCK, locking=locking
+        )
+        spec = importlib.util.spec_from_file_location("file_lock_on_windows", file_lock.__file__)
+        assert spec is not None and spec.loader is not None
+        on_windows = importlib.util.module_from_spec(spec)
+        raised: list[Exception] = []
+
+        def run() -> None:
+            try:
+                with on_windows.exclusive_file_lock(self.target):
+                    pass
+            except (OSError, AssertionError) as exc:
+                raised.append(exc)
+
+        thread = threading.Thread(target=run, daemon=True)
+        with (
+            mock.patch.object(sys, "platform", "win32"),
+            mock.patch.dict(sys.modules, {"msvcrt": stand_in}),
+        ):
+            spec.loader.exec_module(on_windows)
+            thread.start()
+            thread.join(_ACQUIRE_TIMEOUT)
+        self.assertFalse(thread.is_alive(), "the acquirer never returned")
+        return raised
+
+    def test_an_acquirer_that_outlasts_the_bounded_wait_still_acquires(self) -> None:
+        """A holder slower than one bounded wait delays the next writer, no more."""
+        expired_waits = 3
+        modes: list[int] = []
+
+        def locking(_fd: int, mode: int, _nbytes: int) -> None:
+            modes.append(mode)
+            takes = modes.count(self._LK_LOCK)
+            if mode == self._LK_LOCK and takes <= expired_waits:
+                raise OSError(errno.EDEADLK, "Resource deadlock avoided")
+            # Not an OSError, so a loop that tries again while holding the
+            # lock fails here instead of spinning.
+            if mode == self._LK_LOCK and takes > expired_waits + 1:
+                raise AssertionError("tried again after the lock was acquired")
+
+        raised = self._lock_through_the_windows_branch(locking)
+
+        self.assertEqual(raised, [], "an expired wait must not fail the acquirer")
+        self.assertEqual(
+            modes,
+            [self._LK_LOCK] * (expired_waits + 1) + [self._LK_UNLCK],
+            "the acquirer tries again after each expired wait, then holds and releases once",
+        )
+
+    def test_a_failure_that_is_not_contention_is_raised(self) -> None:
+        """Only an expired wait is waited out; a broken handle is not."""
+        modes: list[int] = []
+
+        def locking(_fd: int, mode: int, _nbytes: int) -> None:
+            modes.append(mode)
+            # Not an OSError, so a loop that waits out every failure fails
+            # here instead of spinning.
+            if len(modes) > 1:
+                raise AssertionError("retried a failure that is not contention")
+            raise OSError(errno.EBADF, "Bad file descriptor")
+
+        raised = self._lock_through_the_windows_branch(locking)
+
+        self.assertEqual(len(raised), 1, "the failure must reach the caller")
+        self.assertIsInstance(raised[0], OSError)
+        self.assertEqual(getattr(raised[0], "errno", None), errno.EBADF)
+        self.assertEqual(modes, [self._LK_LOCK], "a lock that was never held is not retried")
 
 
 class TestOneImplementationTwoCallers(unittest.TestCase):
