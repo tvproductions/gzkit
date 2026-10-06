@@ -1,6 +1,6 @@
 {
   "obpi_id": "OBPI-0.35.0-10-classification-reader-and-ownership",
-  "generated_at": "2026-10-06T00:32:41.829466+00:00",
+  "generated_at": "2026-10-06T06:11:00.948812+00:00",
   "demos": [
     {
       "command": "uv run gz validate --bullet-retention --json",
@@ -25,19 +25,19 @@
     {
       "step": "ruff",
       "found": true,
-      "receipt_id": "arb-ruff-7e9fffa140324cc9a53200c7a34a65a9.json",
+      "receipt_id": "arb-ruff-fff92a26b85243e3957ff797ea8ad5c6.json",
       "exit_status": 0
     },
     {
       "step": "typecheck",
       "found": true,
-      "receipt_id": "arb-step-typecheck-6dc81edb9b2548ec99883565620503a6.json",
+      "receipt_id": "arb-step-typecheck-40be8d4f425f48228dedca95f2a07213.json",
       "exit_status": 0
     },
     {
       "step": "unittest",
       "found": true,
-      "receipt_id": "arb-step-unittest-8774adeeb8984199b189ecd9de1af549.json",
+      "receipt_id": "arb-step-unittest-a333abd5b3a341f791e12b41d7c7a18a.json",
       "exit_status": 0
     }
   ],
@@ -48,22 +48,24 @@
     "Acceptance blocked: Finding codex-035010-missing-row-number: REQ-0.35.0-10-02 requires verified closure. Required proof and independent closure must remain bound to canon (GHI #985; T1/T2/T3). Run `gz obpi acceptance OBPI-0.35.0-10-classification-reader-and-ownership status --stage stage2` and repair the named obligation through the existing pipeline.",
     "Acceptance blocked: Finding codex-035010-scorecard-edit-witness: REQ-0.35.0-10-06 requires verified closure. Required proof and independent closure must remain bound to canon (GHI #985; T1/T2/T3). Run `gz obpi acceptance OBPI-0.35.0-10-classification-reader-and-ownership status --stage stage2` and repair the named obligation through the existing pipeline.",
     "Acceptance blocked: Finding codex-035010-manpage-edit-witness: REQ-0.35.0-10-10 requires verified closure. Required proof and independent closure must remain bound to canon (GHI #985; T1/T2/T3). Run `gz obpi acceptance OBPI-0.35.0-10-classification-reader-and-ownership status --stage stage2` and repair the named obligation through the existing pipeline.",
-    "Acceptance blocked: Finding codex-035010-empty-number-cell-dropped-r2: REQ-0.35.0-10-02 requires verified closure. Required proof and independent closure must remain bound to canon (GHI #985; T1/T2/T3). Run `gz obpi acceptance OBPI-0.35.0-10-classification-reader-and-ownership status --stage stage2` and repair the named obligation through the existing pipeline."
+    "Acceptance blocked: Finding codex-035010-empty-number-cell-dropped-r2: REQ-0.35.0-10-02 requires verified closure. Required proof and independent closure must remain bound to canon (GHI #985; T1/T2/T3). Run `gz obpi acceptance OBPI-0.35.0-10-classification-reader-and-ownership status --stage stage2` and repair the named obligation through the existing pipeline.",
+    "Acceptance blocked: Finding codex-035010-leading-pipe-row-dropped-r3: REQ-0.35.0-10-02 requires verified closure. Required proof and independent closure must remain bound to canon (GHI #985; T1/T2/T3). Run `gz obpi acceptance OBPI-0.35.0-10-classification-reader-and-ownership status --stage stage2` and repair the named obligation through the existing pipeline."
   ],
   "review_blockers": [
-    "Acceptance blocked: REQ-0.35.0-10-01: proof proof-4c2b83db6a9b498c9fb6f995ccef3aba lacks accepted adversarial review. Required proof and independent closure must remain bound to canon (GHI #985; T1/T2/T3). Run `gz obpi acceptance OBPI-0.35.0-10-classification-reader-and-ownership status --stage stage4` and repair the named obligation through the existing pipeline.",
-    "Acceptance blocked: REQ-0.35.0-10-02: proof proof-e63644fb4f4c43e085ba9c50d9078096 lacks accepted adversarial review. Required proof and independent closure must remain bound to canon (GHI #985; T1/T2/T3). Run `gz obpi acceptance OBPI-0.35.0-10-classification-reader-and-ownership status --stage stage4` and repair the named obligation through the existing pipeline.",
-    "Acceptance blocked: REQ-0.35.0-10-03: proof proof-1a0b6a5d16d346e1abf5fccc1ffa9d4e lacks accepted adversarial review. Required proof and independent closure must remain bound to canon (GHI #985; T1/T2/T3). Run `gz obpi acceptance OBPI-0.35.0-10-classification-reader-and-ownership status --stage stage4` and repair the named obligation through the existing pipeline.",
-    "Acceptance blocked: REQ-0.35.0-10-04: proof proof-6f71bc532bfd41bf961b8050bf7f1a38 lacks accepted adversarial review. Required proof and independent closure must remain bound to canon (GHI #985; T1/T2/T3). Run `gz obpi acceptance OBPI-0.35.0-10-classification-reader-and-ownership status --stage stage4` and repair the named obligation through the existing pipeline.",
-    "Acceptance blocked: REQ-0.35.0-10-05: proof proof-b9b05fe632a74457b42ea60241f31334 lacks accepted adversarial review. Required proof and independent closure must remain bound to canon (GHI #985; T1/T2/T3). Run `gz obpi acceptance OBPI-0.35.0-10-classification-reader-and-ownership status --stage stage4` and repair the named obligation through the existing pipeline.",
-    "Acceptance blocked: REQ-0.35.0-10-06: proof proof-e6cac2bc017843909ace54611d1520fb lacks accepted adversarial review. Required proof and independent closure must remain bound to canon (GHI #985; T1/T2/T3). Run `gz obpi acceptance OBPI-0.35.0-10-classification-reader-and-ownership status --stage stage4` and repair the named obligation through the existing pipeline.",
-    "Acceptance blocked: REQ-0.35.0-10-07: proof proof-2d3f902d4dbb4913b3cf2f6cac1ee465 lacks accepted adversarial review. Required proof and independent closure must remain bound to canon (GHI #985; T1/T2/T3). Run `gz obpi acceptance OBPI-0.35.0-10-classification-reader-and-ownership status --stage stage4` and repair the named obligation through the existing pipeline.",
-    "Acceptance blocked: REQ-0.35.0-10-08: proof proof-bc7ce59362484fac9848be0c4807109a lacks accepted adversarial review. Required proof and independent closure must remain bound to canon (GHI #985; T1/T2/T3). Run `gz obpi acceptance OBPI-0.35.0-10-classification-reader-and-ownership status --stage stage4` and repair the named obligation through the existing pipeline.",
-    "Acceptance blocked: REQ-0.35.0-10-09: proof proof-41146872d32f4742b1271f92669cf2e2 lacks accepted adversarial review. Required proof and independent closure must remain bound to canon (GHI #985; T1/T2/T3). Run `gz obpi acceptance OBPI-0.35.0-10-classification-reader-and-ownership status --stage stage4` and repair the named obligation through the existing pipeline.",
-    "Acceptance blocked: REQ-0.35.0-10-10: proof proof-17e05a06912a4847a9b4af6db32e2269 lacks accepted adversarial review. Required proof and independent closure must remain bound to canon (GHI #985; T1/T2/T3). Run `gz obpi acceptance OBPI-0.35.0-10-classification-reader-and-ownership status --stage stage4` and repair the named obligation through the existing pipeline.",
+    "Acceptance blocked: REQ-0.35.0-10-01: proof proof-4051afbe1b6841afa2759ce449089311 lacks accepted adversarial review. Required proof and independent closure must remain bound to canon (GHI #985; T1/T2/T3). Run `gz obpi acceptance OBPI-0.35.0-10-classification-reader-and-ownership status --stage stage4` and repair the named obligation through the existing pipeline.",
+    "Acceptance blocked: REQ-0.35.0-10-02: proof proof-c1cb02b8b35c4f6c851ea5cab0b9564f lacks accepted adversarial review. Required proof and independent closure must remain bound to canon (GHI #985; T1/T2/T3). Run `gz obpi acceptance OBPI-0.35.0-10-classification-reader-and-ownership status --stage stage4` and repair the named obligation through the existing pipeline.",
+    "Acceptance blocked: REQ-0.35.0-10-03: proof proof-6f1adf345f784227903325b03a71cf83 lacks accepted adversarial review. Required proof and independent closure must remain bound to canon (GHI #985; T1/T2/T3). Run `gz obpi acceptance OBPI-0.35.0-10-classification-reader-and-ownership status --stage stage4` and repair the named obligation through the existing pipeline.",
+    "Acceptance blocked: REQ-0.35.0-10-04: proof proof-e028e23957584a0dad93142807b99ceb lacks accepted adversarial review. Required proof and independent closure must remain bound to canon (GHI #985; T1/T2/T3). Run `gz obpi acceptance OBPI-0.35.0-10-classification-reader-and-ownership status --stage stage4` and repair the named obligation through the existing pipeline.",
+    "Acceptance blocked: REQ-0.35.0-10-05: proof proof-35d1c474e1c54b81af10583ac6d61bd3 lacks accepted adversarial review. Required proof and independent closure must remain bound to canon (GHI #985; T1/T2/T3). Run `gz obpi acceptance OBPI-0.35.0-10-classification-reader-and-ownership status --stage stage4` and repair the named obligation through the existing pipeline.",
+    "Acceptance blocked: REQ-0.35.0-10-06: proof proof-fe39538d49df4d65bc4cf79b38060f30 lacks accepted adversarial review. Required proof and independent closure must remain bound to canon (GHI #985; T1/T2/T3). Run `gz obpi acceptance OBPI-0.35.0-10-classification-reader-and-ownership status --stage stage4` and repair the named obligation through the existing pipeline.",
+    "Acceptance blocked: REQ-0.35.0-10-07: proof proof-3f3c08d9a3d746328a7be43437e97f87 lacks accepted adversarial review. Required proof and independent closure must remain bound to canon (GHI #985; T1/T2/T3). Run `gz obpi acceptance OBPI-0.35.0-10-classification-reader-and-ownership status --stage stage4` and repair the named obligation through the existing pipeline.",
+    "Acceptance blocked: REQ-0.35.0-10-08: proof proof-99f66e0f0fa848bc922c183f6c59ce10 lacks accepted adversarial review. Required proof and independent closure must remain bound to canon (GHI #985; T1/T2/T3). Run `gz obpi acceptance OBPI-0.35.0-10-classification-reader-and-ownership status --stage stage4` and repair the named obligation through the existing pipeline.",
+    "Acceptance blocked: REQ-0.35.0-10-09: proof proof-b21be2ae1c8041b3a1e7b34c99146ed9 lacks accepted adversarial review. Required proof and independent closure must remain bound to canon (GHI #985; T1/T2/T3). Run `gz obpi acceptance OBPI-0.35.0-10-classification-reader-and-ownership status --stage stage4` and repair the named obligation through the existing pipeline.",
+    "Acceptance blocked: REQ-0.35.0-10-10: proof proof-1986839fc8aa4282ab96f0a33d1751f1 lacks accepted adversarial review. Required proof and independent closure must remain bound to canon (GHI #985; T1/T2/T3). Run `gz obpi acceptance OBPI-0.35.0-10-classification-reader-and-ownership status --stage stage4` and repair the named obligation through the existing pipeline.",
     "Acceptance blocked: Finding codex-035010-missing-row-number: REQ-0.35.0-10-02 requires verified closure. Required proof and independent closure must remain bound to canon (GHI #985; T1/T2/T3). Run `gz obpi acceptance OBPI-0.35.0-10-classification-reader-and-ownership status --stage stage4` and repair the named obligation through the existing pipeline.",
     "Acceptance blocked: Finding codex-035010-scorecard-edit-witness: REQ-0.35.0-10-06 requires verified closure. Required proof and independent closure must remain bound to canon (GHI #985; T1/T2/T3). Run `gz obpi acceptance OBPI-0.35.0-10-classification-reader-and-ownership status --stage stage4` and repair the named obligation through the existing pipeline.",
     "Acceptance blocked: Finding codex-035010-manpage-edit-witness: REQ-0.35.0-10-10 requires verified closure. Required proof and independent closure must remain bound to canon (GHI #985; T1/T2/T3). Run `gz obpi acceptance OBPI-0.35.0-10-classification-reader-and-ownership status --stage stage4` and repair the named obligation through the existing pipeline.",
-    "Acceptance blocked: Finding codex-035010-empty-number-cell-dropped-r2: REQ-0.35.0-10-02 requires verified closure. Required proof and independent closure must remain bound to canon (GHI #985; T1/T2/T3). Run `gz obpi acceptance OBPI-0.35.0-10-classification-reader-and-ownership status --stage stage4` and repair the named obligation through the existing pipeline."
+    "Acceptance blocked: Finding codex-035010-empty-number-cell-dropped-r2: REQ-0.35.0-10-02 requires verified closure. Required proof and independent closure must remain bound to canon (GHI #985; T1/T2/T3). Run `gz obpi acceptance OBPI-0.35.0-10-classification-reader-and-ownership status --stage stage4` and repair the named obligation through the existing pipeline.",
+    "Acceptance blocked: Finding codex-035010-leading-pipe-row-dropped-r3: REQ-0.35.0-10-02 requires verified closure. Required proof and independent closure must remain bound to canon (GHI #985; T1/T2/T3). Run `gz obpi acceptance OBPI-0.35.0-10-classification-reader-and-ownership status --stage stage4` and repair the named obligation through the existing pipeline."
   ]
 }
