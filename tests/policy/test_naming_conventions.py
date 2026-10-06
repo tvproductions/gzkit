@@ -69,12 +69,8 @@ def _is_snake_case(name: str) -> bool:
 class TestModuleNamingConventions(unittest.TestCase):
     """All .py module stems under src/gzkit/ must use snake_case."""
 
-    def test_src_root_exists(self) -> None:
-        """Sanity check: src/gzkit/ directory exists."""
-        self.assertTrue(SRC_ROOT.is_dir(), f"Expected src/gzkit/ at {SRC_ROOT}")
-
     def test_py_files_exist(self) -> None:
-        """Sanity check: at least one .py file exists under src/gzkit/."""
+        """Sanity check: src/gzkit/ exists and holds at least one .py file."""
         files = _collect_py_files(SRC_ROOT)
         self.assertGreater(len(files), 0, f"No .py files found under {SRC_ROOT}")
 

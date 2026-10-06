@@ -774,6 +774,61 @@ class TestSkillAuditMirrorContracts(unittest.TestCase):
                 )
             )
 
+    def test_canonical_skill_naming_contract(self) -> None:
+        """A canonical skill is a kebab-case directory whose SKILL.md names it."""
+        cases = [
+            ("kebab directory naming itself", "demo-skill", "demo-skill", set()),
+            (
+                "directory and name not kebab-case",
+                "DemoSkill",
+                "DemoSkill",
+                {"SKA-CANONICAL-DIR-NOT-KEBAB", "SKA-NAME-NOT-KEBAB"},
+            ),
+            ("name differs from directory", "demo-skill", "other-skill", {"SKA-NAME-MISMATCH"}),
+            ("name absent", "demo-skill", "", {"SKA-NAME-MISSING"}),
+        ]
+        naming_codes = {
+            "SKA-CANONICAL-DIR-NOT-KEBAB",
+            "SKA-CANONICAL-SKILL-FILE-MISSING",
+            "SKA-NAME-MISSING",
+            "SKA-NAME-MISMATCH",
+            "SKA-NAME-NOT-KEBAB",
+        }
+        for label, dir_name, declared_name, expected in cases:
+            with self.subTest(label), tempfile.TemporaryDirectory() as tmpdir:
+                project_root = Path(tmpdir)
+                config = GzkitConfig(project_name="gzkit-test")
+                _write_skill(
+                    project_root,
+                    config.paths.skills,
+                    dir_name,
+                    frontmatter=_skill_frontmatter(declared_name),
+                )
+
+                report = audit_skills(project_root, config)
+
+                canonical = f"{config.paths.skills}/{dir_name}"
+                found = {
+                    issue.code
+                    for issue in report.issues
+                    if issue.path.startswith(canonical) and issue.code in naming_codes
+                }
+                self.assertEqual(found, expected)
+
+    def test_canonical_skill_directory_without_skill_file_blocks_audit(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            project_root = Path(tmpdir)
+            config = GzkitConfig(project_name="gzkit-test")
+            (project_root / config.paths.skills / "demo-skill").mkdir(parents=True)
+
+            report = audit_skills(project_root, config)
+
+            self.assertFalse(report.valid)
+            self.assertIn(
+                ("SKA-CANONICAL-SKILL-FILE-MISSING", f"{config.paths.skills}/demo-skill"),
+                {(issue.code, issue.path) for issue in report.issues},
+            )
+
     def test_mirror_directory_name_must_be_kebab_case(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             project_root = Path(tmpdir)
