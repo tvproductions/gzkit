@@ -2,7 +2,7 @@
 
 **1. Value Narrative**
 
-Before, the classification field of a corpus entry was schema-required and part of the baseline identity fingerprint, and nothing in `src/` read it; the binding copy of the same concept was a hand-maintained markdown table (`docs/governance/advisory-rules-audit.md`). Now `uv run gz validate --bullet-retention` reads an owned row's class from the corpus entry it cites and an unowned row's from the scorecard, fails closed on a broken owned mapping, refuses to bind an owned section that holds a live Ambiguous entry, and retains a row attributed to a SKILL.md or an ADR file against that file. An enrolled project's audit now also refuses, by name, any rule-table row it cannot read; before the round 2 repair such a row was dropped with no error. On the live repo 178 scorecard rows are audited, 31 answered by the corpus and 147 by the scorecard; six owned rows disagreed between the two surfaces, the operator ruled on 2026-10-05 that the corpus adopts the scorecard class, and the audit prints zero advisories.
+Before, the classification field of a corpus entry was schema-required and part of the baseline identity fingerprint, and nothing in `src/` read it; the binding copy of the same concept was a hand-maintained markdown table (`docs/governance/advisory-rules-audit.md`). Now `uv run gz validate --bullet-retention` reads an owned row's class from the corpus entry it cites and an unowned row's from the scorecard, fails closed on a broken owned mapping, refuses to bind an owned section that holds a live Ambiguous entry, and retains a row attributed to a SKILL.md or an ADR file against that file. An enrolled project's audit now also refuses, by name, a rule-table row it cannot read, where before the round 2 repair such a row was dropped with no error; round 3 found one shape that is still dropped, a row whose line has no leading pipe, and that finding is open (see Review history). On the live repo 178 scorecard rows are audited, 31 answered by the corpus and 147 by the scorecard; six owned rows disagreed between the two surfaces, the operator ruled on 2026-10-05 that the corpus adopts the scorecard class, and the audit prints zero advisories.
 
 **2. Key Proof**
 
@@ -52,7 +52,7 @@ Executed proof record `proof-1a0b6a5d16d346e1abf5fccc1ffa9d4e` (REQ-0.35.0-10-03
 | Evidence packet | `present-evidence` | exit 3; attestable false; blocked only on the four open findings; three Demo commands exit 0 |
 | Precomplete | `precomplete` | exit 3; eight checks pass; adversarial_validation waits on Step 4b |
 
-All six receipts record exit_status 0 and were recorded in this session (2026-10-06 UTC) on commit e59763ff9 with a clean tree; the commit that carries this revision of the packet sits on top of it. The three REQs without a covering test are the two SUPPORT REQs and the STRUCTURAL-FENCE REQ, by proof channel. `present-evidence` exits 3 because four findings await independent closure (see Review history): its `blockers` list holds those four and nothing else, and its `review_blockers` list adds that each of the ten current proofs still lacks an accepted independent review, which is what round 3 supplies. Precomplete passes brief_readiness, reconcile_idempotent, lock_held, arb_receipts, plan_audit_receipt, brief_headings, behave_req_coverage and task_envelope_coherence, and fails adversarial_validation for the same reason.
+All six receipts record exit_status 0 and were recorded in this session (2026-10-06 UTC) on commit e59763ff9 with a clean tree; the commit that carries this revision of the packet sits on top of it. The three REQs without a covering test are the two SUPPORT REQs and the STRUCTURAL-FENCE REQ, by proof channel. `present-evidence` exits 3 because four findings await independent closure (see Review history): its `blockers` list holds those four and nothing else, and its `review_blockers` list adds that each of the ten current proofs still lacks an accepted independent review. Those two commands were run before round 3; after it the acceptance status lists one blocker, the round 3 finding. Precomplete passes brief_readiness, reconcile_idempotent, lock_held, arb_receipts, plan_audit_receipt, brief_headings, behave_req_coverage and task_envelope_coherence, and fails adversarial_validation for the same reason.
 
 ```bash
 # arb:unittest
@@ -231,18 +231,26 @@ After round 2 (rulings are verbatim in the brief's Change Log entries of 2026-10
 - The strict reader surfaced five live rows that had never been audited: Pythonic #22, Data Models #27 and Model Selection #52 (escaped pipes in the rule cell), Map Doctrine #58 and Changelog #65 (a Score cell carrying two classes). Operator ruling, verbatim selection: "A: Apply as drafted (Recommended)". Each was requoted to verbatim rule-file wording and attributed. The audited population went from 173 to 178 rows; no identity was removed.
 - Model Selection #52 was frozen as witness debt; the shrink-only baseline moved from 64 to 65. Operator ruling, verbatim selection: "A: Freeze as missed debt (Recommended)".
 
-Four findings are open in the acceptance record:
+Four findings were open in the acceptance record when round 3 was dispatched:
 
-| Finding | REQ | Raised | State |
+| Finding | REQ | Raised | State before round 3 |
 |---|---|---|---|
-| `codex-035010-missing-row-number` | 02 | round 1 | left open by round 2; repair landed in ca8ab6534; closure is the reviewer's |
-| `codex-035010-empty-number-cell-dropped-r2` | 02 | round 2 | repair landed in ca8ab6534; closure is the reviewer's |
-| `codex-035010-scorecard-edit-witness` | 06 | round 1 | closed by round 2 against `proof-719f97b9`; needs closure again against `proof-e6cac2bc` |
-| `codex-035010-manpage-edit-witness` | 10 | round 1 | closed by round 2 against `proof-d17394e4`; needs closure again against `proof-17e05a06` |
+| `codex-035010-missing-row-number` | 02 | round 1 | left open by round 2; repair landed in ca8ab6534 |
+| `codex-035010-empty-number-cell-dropped-r2` | 02 | round 2 | repair landed in ca8ab6534 |
+| `codex-035010-scorecard-edit-witness` | 06 | round 1 | closed by round 2 against `proof-719f97b9`; needed closure again against `proof-e6cac2bc` |
+| `codex-035010-manpage-edit-witness` | 10 | round 1 | closed by round 2 against `proof-d17394e4`; needed closure again against `proof-17e05a06` |
 
-The two SUPPORT findings reappear only because the re-run superseded the proofs round 2 closed them against; the acceptance record requires verified closure against the current proof ids. Nothing about those two requirements changed, and this packet's wording for them is what round 2 closed.
+The two SUPPORT findings reappeared only because the re-run superseded the proofs round 2 closed them against; the acceptance record requires verified closure against the current proof ids. Nothing about those two requirements changed.
 
-Round 3 is the last permitted round (two follow-ups after round 1). It has not run when this revision is written.
+Round 3 — Codex (tier 1), reviewer id `codex-independent-035010-round3`, receipt `arb-step-codexadversary-32d287557baa4a10b11ac9e4b9683a41`, reviewed commit 23eced80f in a disposable checkout (source digest e04f6e17044a…). Verdict refuted. It approved all ten current proofs, recorded 15 replays (every recorded control failed its nominated tests on their own assertions; source restored), and closed all four findings above against the current proof ids: both earlier missing-number counterexamples now produce one named error at scorecard line 107. Its own probes with an empty rule cell, an unbold score, too few cells and an unescaped pipe in the rule text were each refused by name; escaped-pipe text and a qualified score were audited; a table of another shape was ignored. It raised one new finding:
+
+| Finding | REQ | What it found |
+|---|---|---|
+| `codex-035010-leading-pipe-row-dropped-r3` | 02 | removing only the leading pipe from Local Agent Rules row 7's line drops the row with no error: the audit reports 0 errors, 177 rows and 30 corpus-resolved rows, against 0, 178 and 31 on the restored file. The reader skips any line without a leading pipe before validating it, and the live-population test makes the same exclusion, so it still passes under the edit |
+
+The orchestrator reproduced the counterexample in the same checkout: 0 errors, 177 rows, row 7 absent; 178 rows after restoring the file. The reviewer named the weakest point as the leading-pipe assumption shared by production and the population oracle, the same family as the weakest point of rounds 1 and 2.
+
+Round 3 was the last permitted round (two follow-ups after round 1). One mapped finding is open, so the OBPI is recorded as blocked on the operator (`gz obpi block`, 2026-10-06 UTC) and no fourth round was dispatched. Attestation is not solicited.
 
 **Limits and disclosures**
 
@@ -257,4 +265,4 @@ Round 3 is the last permitted round (two follow-ups after round 1). It has not r
 - The reviewer's checkout has no git metadata; in rounds 1 and 2 it could not check commit ancestry or historical byte equality.
 - The narrator found the brief's atomicity note for REQ-0.35.0-10-05 saying the live corpus needed no change, after twelve rows had been appended. The note was corrected before the first revision of this packet was replayed.
 
-**4. Awaiting attestation.** Step 4b round 3 (independent review, the last permitted round) runs before attestation is solicited.
+**4. Not awaiting attestation.** Step 4b round 3 refuted with one open finding on REQ-0.35.0-10-02. The OBPI is blocked on an operator ruling.
