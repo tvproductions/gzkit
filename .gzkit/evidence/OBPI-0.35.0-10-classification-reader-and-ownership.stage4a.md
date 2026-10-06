@@ -2,7 +2,7 @@
 
 **1. Value Narrative**
 
-Before, the classification field of a corpus entry was schema-required and part of the baseline identity fingerprint, and nothing in `src/` read it; the binding copy of the same concept was a hand-maintained markdown table (`docs/governance/advisory-rules-audit.md`). Now `uv run gz validate --bullet-retention` reads an owned row's class from the corpus entry it cites and an unowned row's from the scorecard, fails closed on a broken owned mapping, refuses to bind an owned section that holds a live Ambiguous entry, and retains a row attributed to a SKILL.md or an ADR file against that file. An enrolled project's audit also refuses, by name, a rule-table row it cannot read, where before the round 2 repair such a row was dropped with no error; the row shape round 3 found, a table line with no leading pipe, is now refused, and an enrolled project's rows are held against a committed list of identities, so a row the reader stops recognising is named. Round 4 confirmed that repair independently and then found one route it did not cover: with the scorecard file itself removed, the audit returned no errors and no rows while the identities stayed pinned. The round 4 repair (4839e2cf1) refuses that route: with the scorecard absent and identities pinned, the audit returns one error naming the scorecard path, the count of pinned identities and the pinned file. Round 5 confirmed that repair independently and then found one more route: a project enrolled only by an attributed scorecard row, with no ownership declaration, whose scorecard stops yielding an attributed row is read as not enrolled, and its pinned identities are not checked. That finding is open (see Review history). The live repository carries an ownership declaration; the round 5 reviewer observed its emptied, prose-only, directory and unreadable scorecards each failing closed through the pinned check. On the live repo 178 scorecard rows are audited, 31 answered by the corpus and 147 by the scorecard; six owned rows disagreed between the two surfaces, the operator ruled on 2026-10-05 that the corpus adopts the scorecard class, and the audit prints zero advisories.
+Before, the classification field of a corpus entry was schema-required and part of the baseline identity fingerprint, and nothing in `src/` read it; the binding copy of the same concept was a hand-maintained markdown table (`docs/governance/advisory-rules-audit.md`). Now `uv run gz validate --bullet-retention` reads an owned row's class from the corpus entry it cites and an unowned row's from the scorecard, fails closed on a broken owned mapping, refuses to bind an owned section that holds a live Ambiguous entry, and retains a row attributed to a SKILL.md or an ADR file against that file. An enrolled project's audit also refuses, by name, a rule-table row it cannot read, where before the round 2 repair such a row was dropped with no error; the row shape round 3 found, a table line with no leading pipe, is now refused, and an enrolled project's rows are held against a committed list of identities, so a row the reader stops recognising is named. Round 4 confirmed that repair independently and then found one route it did not cover: with the scorecard file itself removed, the audit returned no errors and no rows while the identities stayed pinned. The round 4 repair (4839e2cf1) refuses that route: with the scorecard absent and identities pinned, the audit returns one error naming the scorecard path, the count of pinned identities and the pinned file. Round 5 confirmed that repair independently and then found one more route: a project enrolled only by an attributed scorecard row, with no ownership declaration, whose scorecard stops yielding an attributed row is read as not enrolled, and its pinned identities are not checked. The round 5 repair (92c12bdd5) makes the pinned file alone decide whether the pinned check runs, so a project that pins any identity is held to the list whatever its scorecard, ownership declarations or attributions say, and a file the audit cannot decode as UTF-8 is a finding where it raised. That repair awaits round 6's closure (see Review history). A change made to the scorecard and the pinned file in one edit can pass clean; the operator ruled that boundary out of scope on 2026-10-06, and it is written into the brief's Threat Model. The live repository carries an ownership declaration; the round 5 reviewer observed its emptied, prose-only, directory and unreadable scorecards each failing closed through the pinned check. On the live repo 178 scorecard rows are audited, 31 answered by the corpus and 147 by the scorecard; six owned rows disagreed between the two surfaces, the operator ruled on 2026-10-05 that the corpus adopts the scorecard class, and the audit prints zero advisories.
 
 **2. Key Proof**
 
@@ -32,7 +32,7 @@ Validated: corpus_retirement_witness
 ✓ All validations passed (1 scopes).
 ```
 
-Executed proof record `proof-6186cbdbdd704e86bd1e7aab47f4b882` (REQ-0.35.0-10-03), re-run after the round 4 repair: with the disagreement report silenced (control `disagreement-silenced`), two of the three tests failed on their assertions (`test_disagreement_names_the_row_the_entry_and_both_values` and `test_scorecard_change_alone_never_changes_the_verdict`); with the production line that binds the corpus class replaced by one that binds the scorecard class (control `scorecard-class-binds-owned-row`), all three failed on their assertions; the source was restored and the tests were green afterwards.
+Executed proof record `proof-d2546eb8de9e481c9545c5f1bd4569e8` (REQ-0.35.0-10-03), re-run after the round 5 repair and the brief amendment: with the disagreement report silenced (control `disagreement-silenced`), two of the three tests failed on their assertions (`test_disagreement_names_the_row_the_entry_and_both_values` and `test_scorecard_change_alone_never_changes_the_verdict`); with the production line that binds the corpus class replaced by one that binds the scorecard class (control `scorecard-class-binds-owned-row`), all three failed on their assertions; the source was restored and the tests were green afterwards.
 
 **3. Evidence**
 
@@ -40,19 +40,19 @@ Executed proof record `proof-6186cbdbdd704e86bd1e7aab47f4b882` (REQ-0.35.0-10-03
 
 | Check | Command | Result |
 |---|---|---|
-| Lint | `uv run gz arb ruff` | exit 0; `arb-ruff-82c1c0a0960344f8b9dd20ca6bccee08` |
-| Typecheck | `uv run gz arb typecheck` | exit 0; `arb-step-typecheck-1c8f1bf7588449c9a96869fa1185120c` |
-| Tests (full suite) | `arb:unittest` | 11469 tests, OK, 7 skipped; `arb-step-unittest-95997dbe75684cfdb5c96e47ca40b7a9` |
-| Docs | `arb:mkdocs` | exit 0; `arb-step-mkdocs-8676554c2a6f48abb3e5b44246347790` |
-| Behave | `arb:behave` | 7 scenarios, 46 steps passed, 0 failed; `arb-step-behave-51a785b4f3244307b110b09b5db7f109` |
-| OBPI tests | `arb:obpi-tests` | 64 tests OK; `arb-step-unittest-8c0ef40be3064fc4a7657ff97c39b43a` |
-| Validation scopes | `validate:scopes` | nine scopes, each exit 0; no receipt |
-| REQ coverage | `covers` | 10 REQs; uncovered_reqs 3; behavior_uncovered_reqs 0 |
-| Brief drift | `brief-drift` | clean; deltas all 0 |
-| Evidence packet | `present-evidence` | exit 3; attestable false; blocked only on the six findings open before round 5; three Demo commands exit 0 |
-| Precomplete | `precomplete` | exit 3; ten checks pass; adversarial_validation waits on Step 4b |
+| Lint | `uv run gz arb ruff` | exit 0; `arb-ruff-890637c24ed94fa590f5e9e5ef6c5f2c` |
+| Typecheck | `uv run gz arb typecheck` | exit 0; `arb-step-typecheck-1f68cbe2743f47f289d58add74c71e7a` |
+| Tests (full suite) | `arb:unittest` | 11476 tests, OK, 7 skipped; `arb-step-unittest-ff410e92a866415ca8c76d3746c019af` |
+| Docs | `arb:mkdocs` | exit 0; `arb-step-mkdocs-0b67da2c160042f0a21e77fc1a256065` |
+| Behave | `arb:behave` | 8 scenarios, 53 steps passed, 0 failed; `arb-step-behave-672c45b33af5432fb42e2a703d275e20` |
+| OBPI tests | `arb:obpi-tests` | 71 tests OK; `arb-step-unittest-cad416370b9045f4a0e5c5d81a7efd84` |
+| Validation scopes | `validate:scopes` | nine scopes, each run alone after each proof run, each exit 0; no receipt |
+| REQ coverage | `covers` | 10 REQs; covered 7; uncovered_reqs 3; behavior_uncovered_reqs 0 |
+| Brief drift | `brief-drift` | clean; deltas all 0; re-run after the Threat Model section was added |
+| Evidence packet | `present-evidence` | exit 3; attestable false; blocked only on the seven findings awaiting independent closure; three Demo commands each exit 0 |
+| Precomplete | `precomplete` | exit 3; ten checks pass, one fails; adversarial_validation waits on Step 4b |
 
-All six receipts were recorded in this session (2026-10-06 UTC) on commit a6fe3e0d6 with a clean tree; each receipt's git field reads dirty false. The receipts were recorded after the pending ledger rows were committed, so unlike the previous run none reads dirty. The full-suite count of 11469 is 11464 plus the 3 tests of this repair plus the 2 tests of the unrelated file-lock fix (eeb4f2758). The nine validation scopes were each run alone, and `--bullet-retention` printed no advisory lines. The three REQs without a covering test are the two SUPPORT REQs and the STRUCTURAL-FENCE REQ, by proof channel. `present-evidence` exits 3 because six findings await independent closure (see Review history): its `blockers` list holds those six and nothing else, and its `review_blockers` list holds 16, those six plus one for each current proof lacking an accepted adversarial review. Those two commands were run before round 5; after it the acceptance status lists one blocker, the round 5 finding. Precomplete passes brief_readiness, reconcile_idempotent, lock_held, arb_receipts, plan_audit_receipt, brief_headings, behave_req_coverage, task_envelope_coherence, operator_block and stage2_dispatch, and fails adversarial_validation, which waits on Step 4b. The per-change check (`uv run gz check`) produces no receipt and is not cited as evidence here; the pre-push gate runs it on the sync that carries this packet.
+All six receipts were recorded in this session (2026-10-06 UTC) on commit 33f36a47e, the sync commit that follows the repair commit 92c12bdd5, with a clean tree; each receipt's git field reads dirty false. The brief's Threat Model section and its Change Log entry were written after the receipts; they change the brief only, no source, test, feature, data or doc file the receipts exercise. The full-suite count of 11476 is 11469 plus the 7 tests of this repair. The nine validation scopes were each run alone after each proof run, and `--bullet-retention` printed no advisory lines. The three REQs without a covering test are the two SUPPORT REQs and the STRUCTURAL-FENCE REQ, by proof channel. `present-evidence` exits 3 because seven findings await independent closure (see Review history): its `blockers` list holds those seven and nothing else, and its `review_blockers` list holds 17, those seven plus one for each current proof lacking an accepted adversarial review. The acceptance status reads not ready and lists the same seven findings as open. Precomplete passes brief_readiness, reconcile_idempotent, lock_held, arb_receipts, plan_audit_receipt, brief_headings, behave_req_coverage, task_envelope_coherence, operator_block and stage2_dispatch, and fails adversarial_validation, which waits on Step 4b. The per-change check (`uv run gz check`) produces no receipt and is not cited as evidence here; it is run on the staged packet before the sync that precedes round 6.
 
 ```bash
 # arb:unittest
@@ -87,7 +87,7 @@ uv run gz obpi precomplete OBPI-0.35.0-10-classification-reader-and-ownership
 
 Commit 4893b7321 (2026-10-03, the single-session trial):
 
-- `features/classification_ownership.feature` (5 Gate 4 scenarios at that commit; 6 after 2346d91c5; 7 after 4839e2cf1)
+- `features/classification_ownership.feature` (5 Gate 4 scenarios at that commit; 6 after 2346d91c5; 7 after 4839e2cf1; 8 after 92c12bdd5)
 - `features/steps/classification_ownership_steps.py` (the steps for those scenarios)
 
 Commit 2346d91c5 (2026-10-06, the round 3 repair):
@@ -143,47 +143,63 @@ Round 3 repair, operator-ruled (2026-10-06, commit 2346d91c5):
 
 Round 4 repair, operator-ruled (2026-10-06, commit 4839e2cf1):
 
-- `src/gzkit/governance/trust_audits/bullet_retention.py` (when the scorecard is absent, `validate_bullet_retention` no longer returns an empty result unconditionally; it calls a new function, `_absent_scorecard_errors`, which returns nothing when the project has no pinned file, returns the existing "could not be read" error when the pinned file cannot be read, returns nothing when the pinned file lists no identities, and otherwise returns one error naming the scorecard path, the count of pinned identities, the pinned file, ADR-0.35.0 § Decision item 9 and the re-run command; `audited_population` is unchanged; 885 lines, 854 before)
-- `tests/governance/test_bullet_retention.py` (three tests written first, all tagged `@covers("REQ-0.35.0-10-02")`: `test_absent_scorecard_fails_closed_while_identities_stay_pinned`, `test_absent_scorecard_with_an_unreadable_pinned_set_fails_closed` and `test_project_with_no_scorecard_and_nothing_pinned_has_nothing_to_audit`; 64 tests, up from 61)
-- `features/classification_ownership.feature` (one new scenario tagged @REQ-0.35.0-10-02, "An absent scorecard fails closed while its rows stay pinned"; 7 scenarios)
+- `src/gzkit/governance/trust_audits/bullet_retention.py` (when the scorecard is absent, `validate_bullet_retention` no longer returns an empty result unconditionally; it calls a new function, `_absent_scorecard_errors`, which returns nothing when the project has no pinned file, returns the existing "could not be read" error when the pinned file cannot be read, returns nothing when the pinned file lists no identities, and otherwise returns one error naming the scorecard path, the count of pinned identities, the pinned file, ADR-0.35.0 § Decision item 9 and the re-run command; `audited_population` is unchanged at that commit; 885 lines at that commit, 854 before; the two exits that return nothing moved into `_pins_identities` in 92c12bdd5)
+- `tests/governance/test_bullet_retention.py` (three tests written first, all tagged `@covers("REQ-0.35.0-10-02")`: `test_absent_scorecard_fails_closed_while_identities_stay_pinned`, `test_absent_scorecard_with_an_unreadable_pinned_set_fails_closed` and `test_project_with_no_scorecard_and_nothing_pinned_has_nothing_to_audit`; 64 tests at that commit, up from 61)
+- `features/classification_ownership.feature` (one new scenario tagged @REQ-0.35.0-10-02, "An absent scorecard fails closed while its rows stay pinned"; 7 scenarios at that commit)
 - `features/steps/classification_ownership_steps.py` (one new step that removes the scorecard file)
 - `docs/user/manpages/validate.md` (lists the absent scorecard among the fail-closed cases; says a project with no scorecard and nothing pinned has nothing to audit)
 - `docs/governance/advisory-rules-audit.md` (lists the absent scorecard among the fail-closed cases)
 - the brief (Change Log entry of 2026-10-06 recording the ruling and the repair; no requirement and no allowlist entry changed)
 
-Not part of this OBPI: two later commits sit between ca8ab6534 and e59763ff9. Commit 6396fb3cc upgrades Python to 3.13.16, refreshes `uv.lock`, removes wily and edits four workflow files. Commit 6268e2398 retires two duplicate tests elsewhere in `tests/` and regenerates `data/tautological_test_baseline.json`. Neither touches a file on this brief's allowlist. The input digest the proofs are bound to changed after ca8ab6534, which is why all ten proofs were re-run on e59763ff9. The round 3 repair changed the digest again, and all ten proofs were re-run on 2346d91c5. Commit eeb4f2758 (2026-10-06), a direct fix for GHI #1178 in `src/gzkit/file_lock.py` with two tests in `tests/test_file_lock.py`, landed between round 4 and the round 4 repair. It touches no file on this brief's allowlist. It changed the input digest on its own, before the repair did. All ten proofs were re-executed on the repaired tree; the proof ids below are from that run.
+Round 5 repair, operator-ruled (2026-10-06, commit 92c12bdd5):
+
+- `src/gzkit/governance/trust_audits/bullet_retention.py` (a new function, `_pins_identities`, is true when the pinned file exists and either lists at least one identity or cannot be read, and false when the file is absent or lists nothing; `_resolve_population` takes only the project root and makes the whole entry decision: an absent scorecard returns `_absent_scorecard_errors` when identities are pinned and nothing otherwise, a scorecard that is not UTF-8 returns one finding naming the scorecard, the legacy return requires nothing pinned, no ownership declaration and no attributed row together, and every other project takes the strict read with the pinned check, unchanged; `validate_bullet_retention` and `audited_population` both call it and no longer test for the scorecard themselves; `_absent_scorecard_errors` keeps its two error outcomes and loses its two early exits; a new function, `_undecodable_scorecard_error`, returns the finding for a scorecard that is not UTF-8; `_parse_scorecard` and `_read_rule_rows` keep their signatures; four more reads treat a file that is not UTF-8 as unreadable where they raised: the pinned file, the per-turn surface files, an attributed skill or ADR file, and an advisor-QC receipt; the module docstring states the rule; 922 lines, 885 before)
+- `tests/governance/test_bullet_retention.py` (seven tests, each written before the code it drives: four tagged `@covers("REQ-0.35.0-10-02")`, one tagged `@covers("REQ-0.35.0-10-09")`, and two under other briefs' requirements, REQ-0.0.33-01-02 and REQ-0.0.37-25-03; 71 tests, up from 64)
+- `features/classification_ownership.feature` (one new scenario tagged @REQ-0.35.0-10-02, "A pinned row is held when nothing but the pinned file enrolls the project"; 8 scenarios)
+- `features/steps/classification_ownership_steps.py` (three new steps)
+- `docs/user/manpages/validate.md` (says the pinned file alone decides whether the check runs and that a scorecard that is not UTF-8 fails closed by name; lists the other four undecodable reads; says the legacy audit requires no pinned identity)
+- `docs/governance/advisory-rules-audit.md` (says the pinned file alone decides whether the check runs and that a scorecard that is not UTF-8 fails closed by name)
+- the brief (Change Log entry of 2026-10-06 recording the ruling and the repair; no requirement and no allowlist entry changed)
+
+Scope ruling (2026-10-06; written after the receipts, not part of 92c12bdd5):
+
+- the brief (a `## Threat Model` section holding the text the operator selected, placed after the Identity and Reconciliation Contract, and a Change Log entry for the ruling; no requirement, allowlist entry, source or test changed)
+
+Not part of this OBPI: two later commits sit between ca8ab6534 and e59763ff9. Commit 6396fb3cc upgrades Python to 3.13.16, refreshes `uv.lock`, removes wily and edits four workflow files. Commit 6268e2398 retires two duplicate tests elsewhere in `tests/` and regenerates `data/tautological_test_baseline.json`. Neither touches a file on this brief's allowlist. The input digest the proofs are bound to changed after ca8ab6534, which is why all ten proofs were re-run on e59763ff9. The round 3 repair changed the digest again, and all ten proofs were re-run on 2346d91c5. Commit eeb4f2758 (2026-10-06), a direct fix for GHI #1178 in `src/gzkit/file_lock.py` with two tests in `tests/test_file_lock.py`, landed between round 4 and the round 4 repair. It touches no file on this brief's allowlist. It changed the input digest on its own, before the repair did. All ten proofs were re-executed on the tree repaired by 4839e2cf1. The round 5 repair (92c12bdd5) changed the digest again, and all ten were re-executed on the repaired tree (digest cd893928…); that run is superseded. The Threat Model section is part of the proof contract: adding it made all ten proofs read "stale contract" and "stale inputs", and all ten were re-executed against the amended brief. The proof ids below are from that second run.
 
 **REQ coverage:**
 
 | REQ | Kind | Mechanism | Proof location | Proof | Result |
 |---|---|---|---|---|---|
-| REQ-0.35.0-10-01 | BEHAVIOR | 3 selectors; 2 controls killed | `TestOwnedBulletResolvesFromCorpus` | `proof-3b43f4fb` | behavioral proof valid |
-| REQ-0.35.0-10-02 | BEHAVIOR | 19 selectors; 14 controls killed | `TestUnownedBulletResolvesFromScorecard` | `proof-f723da05` | behavioral proof valid |
-| REQ-0.35.0-10-03 | BEHAVIOR | 3 selectors; 2 controls killed | `TestOwnedDisagreementIsReported` | `proof-6186cbdb` | behavioral proof valid |
-| REQ-0.35.0-10-04 | BEHAVIOR | 5 selectors; 2 controls killed | `TestCaptureDefaultNeverBinds` | `proof-6cd73683` | behavioral proof valid |
-| REQ-0.35.0-10-05 | BEHAVIOR | 1 selector; 1 control killed | `TestReconciliationIsAppendOnly` | `proof-ed83432b` | behavioral proof valid |
-| REQ-0.35.0-10-06 | SUPPORT | `resolve_support_proof` | file on disk + `--documents` | `proof-6811368d` | pass |
-| REQ-0.35.0-10-07 | STRUCTURAL-FENCE | `resolve_fence_proof` | ADR-0.35.0 BI-04 | `proof-c92fddeb` | pass |
-| REQ-0.35.0-10-08 | BEHAVIOR | 2 selectors; 1 control killed | `TestDeclaredSourceRetention` | `proof-2a6c0989` | behavioral proof valid |
-| REQ-0.35.0-10-09 | BEHAVIOR | 1 selector; 1 control killed | `TestDeclaredSourceRetention` | `proof-91f46149` | behavioral proof valid |
-| REQ-0.35.0-10-10 | SUPPORT | `resolve_support_proof` | file on disk + `--documents` | `proof-030611d7` | pass |
+| REQ-0.35.0-10-01 | BEHAVIOR | 3 selectors; 2 controls killed | `TestOwnedBulletResolvesFromCorpus` | `proof-abc9288e` | behavioral proof valid |
+| REQ-0.35.0-10-02 | BEHAVIOR | 23 selectors; 18 controls killed | `TestUnownedBulletResolvesFromScorecard` | `proof-9595e0fa` | behavioral proof valid |
+| REQ-0.35.0-10-03 | BEHAVIOR | 3 selectors; 2 controls killed | `TestOwnedDisagreementIsReported` | `proof-d2546eb8` | behavioral proof valid |
+| REQ-0.35.0-10-04 | BEHAVIOR | 5 selectors; 2 controls killed | `TestCaptureDefaultNeverBinds` | `proof-7aeae83b` | behavioral proof valid |
+| REQ-0.35.0-10-05 | BEHAVIOR | 1 selector; 1 control killed | `TestReconciliationIsAppendOnly` | `proof-d89849e2` | behavioral proof valid |
+| REQ-0.35.0-10-06 | SUPPORT | `resolve_support_proof` | file on disk + `--documents` | `proof-b1bdb3e5` | pass |
+| REQ-0.35.0-10-07 | STRUCTURAL-FENCE | `resolve_fence_proof` | ADR-0.35.0 BI-04 | `proof-4ffce7c5` | pass |
+| REQ-0.35.0-10-08 | BEHAVIOR | 2 selectors; 1 control killed | `TestDeclaredSourceRetention` | `proof-89465c15` | behavioral proof valid |
+| REQ-0.35.0-10-09 | BEHAVIOR | 2 selectors; 2 controls killed | `TestDeclaredSourceRetention` | `proof-1bd5d1e6` | behavioral proof valid |
+| REQ-0.35.0-10-10 | SUPPORT | `resolve_support_proof` | file on disk + `--documents` | `proof-173b4199` | pass |
 
 ```text
 Test file for every BEHAVIOR row: tests/governance/test_bullet_retention.py
 All ten proof records are valid against input digest
-73fa08cc456b7d2ed2d7aad026ee8b7b5d33385e9752a4468d72ce54f128be76
-Twenty-three controls in all. Every control below: outcome killed, failure_class assertion;
-source sha256 restored; restored run green.
+829bd985fc73025175023c08cdb94fead25dd030dc6a9e8d111a5989e7049f8b
+Twenty-eight controls in all. Every control below: outcome killed, failure_class assertion;
+source sha256 restored (501bba87ca73… before and after the whole run); restored run green.
 
-REQ-0.35.0-10-01  proof-3b43f4fb08ca4378abb7aaa04cf35c86
+REQ-0.35.0-10-01  proof-abc9288eea174fb1b21f4c78ae09091a
   killed controls: scorecard-class-binds-owned-row, wrong-section-entry-binds
-REQ-0.35.0-10-02  proof-f723da05be4e476fa4f5e820ee51ad10
+REQ-0.35.0-10-02  proof-9595e0fac63842d897616049780a2db7
   killed controls: duplicate-identity-accepted, unowned-section-demands-corpus-entry,
   unreadable-row-skipped, escaped-pipe-splits-cell, score-qualifier-refused,
   any-table-read-as-rules, pipeless-table-line-skipped, lost-pinned-identity-ignored,
-  unpinned-row-accepted, unreadable-pinned-set-ignored, absent-scorecard-returns-clean,
-  absent-scorecard-unreadable-pinned-set-ignored, unpinned-project-demands-a-pinned-file,
-  empty-pinned-set-refused
+  unpinned-row-accepted, unreadable-pinned-set-ignored,
+  absent-scorecard-unreadable-pinned-set-ignored, absent-scorecard-returns-clean,
+  unpinned-project-demands-a-pinned-file, empty-pinned-list-enrolls-the-project,
+  unreadable-pinned-file-pins-nothing, pinned-file-no-longer-decides-the-check,
+  undecodable-scorecard-not-reported, undecodable-pinned-file-raises
   The round 1 control blank-row-number-accepted no longer exists: the guard it mutated
   was subsumed by the strict reader and removed in ca8ab6534. unreadable-row-skipped
   fails test_missing_row_number_fails_closed_naming_the_row and
@@ -197,41 +213,65 @@ REQ-0.35.0-10-02  proof-f723da05be4e476fa4f5e820ee51ad10
       -> test_row_the_pinned_set_does_not_list_fails_closed
     unreadable-pinned-set-ignored
       -> test_missing_or_unreadable_pinned_set_fails_closed_with_recovery
-  The four controls added with the round 4 repair (4839e2cf1) and the test each fails:
+  Of the four controls added with the round 4 repair (4839e2cf1), one is unchanged, two
+  are rewritten against the code of 92c12bdd5 because the lines they named were removed,
+  and one is replaced. Each, and the test it fails:
+    absent-scorecard-unreadable-pinned-set-ignored
+    (unchanged)
+      -> test_absent_scorecard_with_an_unreadable_pinned_set_fails_closed
     absent-scorecard-returns-clean
-    (the call to _absent_scorecard_errors replaced by return [])
+    (rewritten: the absent-scorecard return replaced by return [], [])
       -> test_absent_scorecard_fails_closed_while_identities_stay_pinned
       -> test_absent_scorecard_with_an_unreadable_pinned_set_fails_closed
-    absent-scorecard-unreadable-pinned-set-ignored
-      -> test_absent_scorecard_with_an_unreadable_pinned_set_fails_closed
     unpinned-project-demands-a-pinned-file
-    (the "no pinned file" exit disabled)
+    (rewritten: the "no pinned file" exit of _pins_identities disabled)
       -> test_project_with_no_scorecard_and_nothing_pinned_has_nothing_to_audit
-    empty-pinned-set-refused
-    (the "no identities" exit disabled)
+      -> test_unenrolled_project_keeps_the_legacy_audit
+    empty-pinned-list-enrolls-the-project
+    (replaces empty-pinned-set-refused: _pins_identities made to return True always)
       -> test_project_with_no_scorecard_and_nothing_pinned_has_nothing_to_audit
-  absent-scorecard-returns-clean is the control that operates at the entry point
-  round 4 named as the weakest point.
+      -> test_pinned_file_listing_no_identity_enrolls_nothing
+  The four controls added with the round 5 repair (92c12bdd5) and the test each fails:
+    unreadable-pinned-file-pins-nothing
+    (an unreadable pinned file no longer counts as pinning)
+      -> test_absent_scorecard_with_an_unreadable_pinned_set_fails_closed
+    pinned-file-no-longer-decides-the-check
+    ("not pins" removed from the legacy return, which restores the pre-repair entry decision)
+      -> test_pinned_identity_is_held_when_nothing_else_enrolls_the_project
+    undecodable-scorecard-not-reported
+    (the undecodable return disabled)
+      -> test_scorecard_that_is_not_utf8_is_a_finding_of_the_audit_not_a_crash
+    undecodable-pinned-file-raises
+    (the decode error no longer caught for the pinned file)
+      -> test_pinned_set_that_is_not_utf8_fails_closed_with_recovery
+  pinned-file-no-longer-decides-the-check is the control that operates at the entry
+  decision round 5 named as the weakest point.
+  absent-scorecard-returns-clean mutates the absent-scorecard return, which now sits in
+  _resolve_population; round 4 named that return, then in validate_bullet_retention, as
+  the weakest point.
   escaped-pipe-splits-cell also nominates the renamed live test
   test_live_scorecard_population_is_the_committed_pinned_set.
-REQ-0.35.0-10-03  proof-6186cbdbdd704e86bd1e7aab47f4b882
+REQ-0.35.0-10-03  proof-d2546eb8de9e481c9545c5f1bd4569e8
   killed controls: disagreement-silenced, scorecard-class-binds-owned-row
-REQ-0.35.0-10-04  proof-6cd7368382c44f5e822b1d23b05da3be
+REQ-0.35.0-10-04  proof-7aeae83b0f754902b4ab6bc9d592d265
   killed controls: capture-default-binds, unloadable-ownership-falls-back-to-scorecard
-REQ-0.35.0-10-05  proof-ed83432b055a4a538a6f702d93499454
+REQ-0.35.0-10-05  proof-d89849e2bc994b9b8aaed51d82a944ac
   killed controls: fence-reads-raw-log
-REQ-0.35.0-10-06  proof-6811368d306242eb94937becb68d5358
+REQ-0.35.0-10-06  proof-b1bdb3e5ca704af082ac2cb6acb7efbb
   SUPPORT: the witness clause names artifact_edited citing docs/governance/advisory-rules-audit.md.
   No ledger event cites that path. The resolver passed on its second arm: the cited file
   exists on disk and `uv run gz validate --documents` admits it.
-REQ-0.35.0-10-07  proof-c92fddeb4fef4e8595741517e1ba4bd9
+REQ-0.35.0-10-07  proof-4ffce7c587ce4414b3f51e810db00653
   STRUCTURAL-FENCE: Boundary Invariants of ADR-0.35.0-canon-entry-corpus-landing, BI-04;
   audited at ADR closeout
-REQ-0.35.0-10-08  proof-2a6c0989427e4ab0ba81ca6eed30fcc5
+REQ-0.35.0-10-08  proof-89465c15b65c42ba91ff2db57d6145dc
   killed controls: declared-source-checked-against-surface
-REQ-0.35.0-10-09  proof-91f46149005444e38a8163c0fd8b55e5
-  killed controls: absent-text-reads-as-retained
-REQ-0.35.0-10-10  proof-030611d796c6492f8c1ad22ab9b7897f
+REQ-0.35.0-10-09  proof-1bd5d1e672bf4be5972202549ab6c524
+  killed controls: absent-text-reads-as-retained, undecodable-source-raises
+  undecodable-source-raises, added with the round 5 repair
+  (the decode error no longer caught for an attributed source)
+      -> test_source_that_is_not_utf8_fails_closed_naming_the_row
+REQ-0.35.0-10-10  proof-173b41995d74462a9693485d04b98fa8
   SUPPORT: the witness clause names artifact_edited citing docs/user/manpages/validate.md.
   No ledger event cites that path. The resolver passed on its second arm: the cited file
   exists on disk and `uv run gz validate --documents` admits it.
@@ -360,18 +400,18 @@ Bullet-retention identity violation: the scorecard docs/governance/advisory-rule
   Fix: restore the file with `git checkout -- docs/governance/advisory-rules-audit.md`, then re-run `uv run gz validate --bullet-retention`.
 ```
 
-Six findings are open in the acceptance record before round 5:
+Six findings were open in the acceptance record when round 5 was dispatched:
 
 | Finding | REQ | Raised | State before round 5 |
 |---|---|---|---|
-| `codex-035010-missing-scorecard-bypasses-pins-r4` | 02 | round 4 | repair in 4839e2cf1; closure is round 5's to give |
+| `codex-035010-missing-scorecard-bypasses-pins-r4` | 02 | round 4 | repair in 4839e2cf1; closure was round 5's to give |
 | `codex-035010-leading-pipe-row-dropped-r3` | 02 | round 3 | closed by round 4 against `proof-c1cb02b8`; needs closure again against `proof-f723da05` |
 | `codex-035010-missing-row-number` | 02 | round 1 | closed by round 4 against `proof-c1cb02b8`; needs closure again against `proof-f723da05` |
 | `codex-035010-empty-number-cell-dropped-r2` | 02 | round 2 | closed by round 4 against `proof-c1cb02b8`; needs closure again against `proof-f723da05` |
 | `codex-035010-scorecard-edit-witness` | 06 | round 1 | closed by round 4 against `proof-fe39538d`; needs closure again against `proof-6811368d` |
 | `codex-035010-manpage-edit-witness` | 10 | round 1 | closed by round 4 against `proof-1986839f`; needs closure again against `proof-030611d7` |
 
-Round 4 closed five of these against the proofs current then. The re-run superseded those proofs, so the record lists the five as requiring verified closure again. For REQ-06 and REQ-10 the two documents each gained a sentence about the absent scorecard; the witness clause and the resolver arm that passes are unchanged. Round 5 is authorized by the operator's ruling "A" and is the fourth round past the first, two more than the standing bound of two follow-ups; the third was authorized by the earlier "A".
+Round 4 closed five of these against the proofs current then. The re-run superseded those proofs, so the record lists the five as requiring verified closure again. For REQ-06 and REQ-10 the two documents each gained a sentence about the absent scorecard; the witness clause and the resolver arm that passes are unchanged. Round 5 was authorized by the operator's ruling "A" and was the fourth round past the first, two more than the standing bound of two follow-ups; the third was authorized by the earlier "A".
 
 Round 5 — Codex (tier 1), reviewer id `codex-independent-035010-round5`, receipt `arb-step-codexadversary-b1e97958254b472193064ffcee97e1bf`, reviewed commit b1c510a7a in a disposable checkout (source digest 133a894a6331…). Verdict NOT-CORROBORATED, token refuted. It approved all ten current proofs, recorded 23 replays (every control failed its nominated tests on their own assertions; source restored), ran the 64 module tests, and closed all six findings above against the current proof ids. With the live scorecard removed the audit now prints 1 error and 0 rows, naming the scorecard, the 178 pinned identities, the pinned file, Decision item 9 and the recovery. The three earlier row counterexamples on row 7 each yield 2 errors, 177 rows and 30 corpus-resolved rows. A live scorecard that is empty, prose only, a directory or unreadable fails closed through the pinned check. An enrolled project with no scorecard and no pinned file, or with an empty pinned list, returns no error. It judged that `audited_population` returning no rows for an absent scorecard reports what was read, and that the count-bearing message satisfies the repair. It raised one new finding:
 
@@ -383,36 +423,127 @@ The orchestrator reproduced the counterexample on a copy of the reviewer's fixtu
 
 The reviewer also observed, as an observation and not a finding, that a scorecard holding invalid UTF-8 raises `UnicodeDecodeError` and exits 1: not a clean result, and not the audit's normal actionable error.
 
-Round 5 was the one round the ruling authorized. With one mapped finding open, the OBPI is recorded as blocked on the operator a third time (`gz obpi block`, 2026-10-06 UTC). No repair was attempted and no sixth round dispatched. Attestation is not solicited.
+Round 5 was the one round the ruling authorized. With one mapped finding open, the OBPI was recorded as blocked on the operator a third time (`gz obpi block`, 2026-10-06 UTC). No repair was attempted and no sixth round was dispatched at that point.
+
+After round 5 (rulings are verbatim in the brief's Change Log entries of 2026-10-06):
+
+- The decision was put to the operator with four options: (A) redesign the entry decision so that a pinned identities file alone puts a project on the strict path, and run a sixth focused Codex round; (B) the same redesign closed by the operator's own review, recorded as the human-adversary tier; (C) rule a project enrolled by attribution alone out of scope in the brief; (D) hold item 10 and move to the tune-up items. Operator ruling, verbatim: "A, but we need a h/o and git sync". The ruling was booked on the handoff with `gz handoff decide` and the block was cleared with `gz obpi unblock` carrying it. A handoff was written and synced; no repair was started in that session.
+- In the next session the handoff was presented with its claims checked against live state, and the operator ruled, verbatim: "proceed". That ruling is booked on the handoff.
+- Repair (92c12bdd5), all in files on the brief's allowlist: the pinned file alone decides whether the pinned check runs. A new function, `_pins_identities`, is true when `data/advisory_scorecard_identities.json` exists and either lists at least one identity or cannot be read, and false when the file is absent or lists nothing. `_resolve_population` takes only the project root and makes the whole entry decision, in this order: read `_pins_identities`; scorecard absent, return `_absent_scorecard_errors` when identities are pinned and nothing otherwise; scorecard not UTF-8, return one finding naming the scorecard; the legacy return, which requires nothing pinned, no ownership declaration and no attributed row together; otherwise the strict read with the pinned check, unchanged.
+- `validate_bullet_retention` and `audited_population` no longer test for the scorecard's existence themselves; both call `_resolve_population`. `_absent_scorecard_errors` lost its two early exits (no pinned file; pinned list empty), which `_pins_identities` decides before it is called; its two error outcomes are unchanged.
+- Folded in, as the ruled option said it would be: the decode error the round 5 reviewer observed. A new function, `_undecodable_scorecard_error`, returns the finding for a scorecard that is not UTF-8. Four more reads treat a file that is not UTF-8 as unreadable where they raised: the pinned file, the per-turn surface files (AGENTS.md, CLAUDE.md and each rule file), an attributed skill or ADR file, and an advisor-QC receipt.
+- Seven tests were written, each before the code it drives. The module holds 71 tests, up from 64.
+  - `test_pinned_identity_is_held_when_nothing_else_enrolls_the_project` (REQ-02) is the reviewer's counterexample: clean with 1 row at baseline, then the scorecard emptied, replaced with prose, and the row's leading pipe removed. It was observed failing on its assertion (`0 != 1`) in all three sub-cases before the code existed.
+  - `test_pinned_file_listing_no_identity_enrolls_nothing` (REQ-02) is the control for the boundary. It passed before the code existed and after.
+  - `test_scorecard_that_is_not_utf8_is_a_finding_of_the_audit_not_a_crash` (REQ-02; two sub-cases, a project that pins its rows and a project on the legacy audit), `test_pinned_set_that_is_not_utf8_fails_closed_with_recovery` (REQ-02) and `test_source_that_is_not_utf8_fails_closed_naming_the_row` (REQ-09; skill file and ADR file) were each observed failing because the audit raised.
+  - `test_bullet_only_in_a_surface_file_that_is_not_utf8_emits_error` (covers REQ-0.0.33-01-02; AGENTS.md and a rule file) and `test_compressible_with_a_receipt_that_is_not_utf8_fails_closed` (covers REQ-0.0.37-25-03) cover the two decode repairs under other briefs' requirements. Each was observed failing because the audit raised. They have no control in these ten proofs, which are scoped to this brief's requirements.
+- The feature gained one scenario tagged @REQ-0.35.0-10-02, "A pinned row is held when nothing but the pinned file enrolls the project", for 8 scenarios, and the steps file gained three steps. The scenario was run against the pre-repair source and observed failing (7 passed, 1 failed), then passing with the repair; the source was restored byte-identical between the two runs.
+- `docs/user/manpages/validate.md` and `docs/governance/advisory-rules-audit.md` each now say the pinned file alone decides whether the check runs, and that a scorecard that is not UTF-8 fails closed by name. The manpage also lists the other four undecodable reads and says the legacy audit requires no pinned identity.
+- The brief gained a Change Log entry of 2026-10-06 recording the ruling and the repair. No requirement and no allowlist entry changed.
+- A first attempt at the commit was refused by the typecheck hook. The repair had changed `_parse_scorecard` to take text, and a dated evidence script outside this brief, `docs/governance/obpi-run-cost-2026-10-03-evidence/trial_eval_probes.py`, imports that private function with a path. The orchestrator's search for callers had covered `src`, `tests`, `features` and `scripts` and missed `docs`. The two readers' signatures were restored and the decode check moved in front of them; the evidence script is untouched.
+- Controls: the REQ-02 proof carries 18. Eleven earlier controls are unchanged; of the four added with the round 4 repair, two are rewritten against the new code and one is replaced, because the lines they named were removed; four are new. `pinned-file-no-longer-decides-the-check` is the control that operates at the entry decision round 5 named as the weakest point. The REQ-09 proof gained `undecodable-source-raises`. The fenced block under REQ coverage lists each control and the test it fails.
+- The orchestrator ran the round 5 counterexample on a scratch fixture against the repaired source: no ownership declaration, one Mechanical row attributed to `.gzkit/skills/demo/SKILL.md` with matching text, one pinned identity. Observed output follows. The emptied and prose cases each name the lost identity from the pinned file; the leading-pipe case gives two errors, the row refused by name and the lost identity. The independent re-run is round 6's.
+
+```text
+baseline: 0 errors, 1 rows
+scorecard emptied: 1 errors, 0 rows
+scorecard prose: 1 errors, 0 rows
+leading pipe removed: 2 errors, 0 rows
+scorecard removed: 1 errors, 0 rows
+scorecard not utf-8: 1 errors, 0 rows
+scorecard a directory: 1 errors, 0 rows
+pinned file not utf-8: 1 errors, 1 rows
+pinned not utf-8 + scorecard emptied: 1 errors, 0 rows
+pinned file a directory: 1 errors, 1 rows
+pinned not json + scorecard emptied: 1 errors, 0 rows
+pinned removed alone: 1 errors, 1 rows
+pinned emptied alone: 1 errors, 1 rows
+pinned removed + scorecard emptied: 0 errors, 0 rows
+pinned emptied + scorecard emptied: 0 errors, 0 rows
+pinned removed + scorecard removed: 0 errors, 0 rows
+```
+
+- Scope ruling. After the repair, the baseline and the first proof run, the orchestrator ran single and coordinated edits on a throwaway copy of the live audit inputs at commit 33f36a47e (a `git archive` of the per-turn surfaces, `.gzkit`, the scorecard, the ADR tree and `data`). Observed output follows. Each of the five edits confined to one file returned an error. Four of the five coordinated edits of the scorecard and the pinned file returned none.
+
+```text
+live copy, untouched: 0 errors, 178 rows
+scorecard emptied alone: 1 errors, 0 rows
+scorecard removed alone: 1 errors, 0 rows
+pinned file removed alone: 1 errors, 178 rows
+pinned list emptied alone: 1 errors, 178 rows
+COORDINATED: scorecard removed + pinned file removed: 0 errors, 0 rows
+COORDINATED: scorecard emptied + pinned file removed: 1 errors, 0 rows
+COORDINATED: scorecard emptied + pinned list emptied: 0 errors, 0 rows
+COORDINATED: scorecard removed + pinned list emptied: 0 errors, 0 rows
+one row removed alone (local-agent-rules-claude-md-local-agent-rules #7): 1 errors, 177 rows
+COORDINATED: one row removed + its identity removed (local-agent-rules-claude-md-local-agent-rules #7): 0 errors, 177 rows
+live copy, restored: 0 errors, 178 rows
+```
+
+- The boundary was put to the operator with those measurements and four options: out of scope and written into the brief; in scope, with a shrink-only guard on the pinned file before round 6; leave it unruled; or hold. Operator ruling, verbatim selection: "Out of scope, in the brief (Recommended)". The brief now carries a `## Threat Model` section holding the text the operator selected, after the Identity and Reconciliation Contract, and a Change Log entry for the ruling. The section reads:
+
+> The audit holds the scorecard against the pinned row identities and reports any difference between them. An edit confined to the scorecard, or to the pinned file, fails closed.
+>
+> Out of scope: a change made to both in one edit (a row removed together with its identity; the scorecard emptied or removed together with the pinned list or file). Both are committed files of record, the change is visible as a diff of `data/advisory_scorecard_identities.json`, and deleting an identity follows an operator ruling.
+>
+> Also out of scope: anyone who can write the project's files of record directly (ledger, corpus, ownership declarations, the pinned file).
+
+- One measured case is narrower than the section's words: with an ownership declaration present, the scorecard emptied together with the pinned file removed still fails closed (1 error), because the declaration sends the project to the strict path. The section rules the class out of scope; the audit catches that member of it.
+- Refresh. The Threat Model section is part of the proof contract: adding it made all ten proofs read "stale contract" and "stale inputs". All ten were re-executed against the amended brief. The first run (digest cd893928…, before the section) is superseded; the proof ids in this packet are from the second run, and all ten are valid against digest 829bd985….
+- A defect outside this brief was found and recorded as an insight, not repaired: `load_registry` in `src/gzkit/registries.py` raises a raw `UnicodeDecodeError` for a registry that is not UTF-8, where its own docstring promises one exception type. That file is named by Draft brief OBPI-0.39.0-02-tolerance-contract (ADR-0.39.0), so its route is the operator's. This brief's audit catches the error locally for the pinned file.
+- Live audit, re-observed this session: 178 rows, 31 answered by the corpus, 147 by the scorecard; zero advisories.
+
+Seven findings are open in the acceptance record before round 6:
+
+| Finding | REQ | Raised | State before round 6 |
+|---|---|---|---|
+| `codex-035010-attribution-enrollment-bypasses-pins-r5` | 02 | round 5 | repair in 92c12bdd5; closure is round 6's to give |
+| `codex-035010-missing-scorecard-bypasses-pins-r4` | 02 | round 4 | closed by round 5 against `proof-f723da05`; needs closure again against `proof-9595e0fa` |
+| `codex-035010-leading-pipe-row-dropped-r3` | 02 | round 3 | closed by round 5 against `proof-f723da05`; needs closure again against `proof-9595e0fa` |
+| `codex-035010-missing-row-number` | 02 | round 1 | closed by round 5 against `proof-f723da05`; needs closure again against `proof-9595e0fa` |
+| `codex-035010-empty-number-cell-dropped-r2` | 02 | round 2 | closed by round 5 against `proof-f723da05`; needs closure again against `proof-9595e0fa` |
+| `codex-035010-scorecard-edit-witness` | 06 | round 1 | closed by round 5 against `proof-6811368d`; needs closure again against `proof-b1bdb3e5` |
+| `codex-035010-manpage-edit-witness` | 10 | round 1 | closed by round 5 against `proof-030611d7`; needs closure again against `proof-173b4199` |
+
+Round 5 closed six of these against the proofs current then. The re-runs superseded those proofs, so the record lists the six as requiring verified closure again. For REQ-06 and REQ-10 the two documents each gained text about the pinned file deciding the check and about undecodable files; the witness clause and the resolver arm that passes are unchanged. Round 6 is authorized by the operator's ruling "A, but we need a h/o and git sync" and is the fifth round past the first, three more than the standing bound of two follow-ups. Round 6 has not run.
 
 **Limits and disclosures**
 
-- Single driver: the implementation and the first three repairs were done by one session under the operator-ruled 2026-10-03 trial declaration. No implementer, spec-reviewer or quality-reviewer subagent was dispatched, for the round 3 repair as for the two before it. The declaration is on the ledger. Continuing single-driver for those three repairs was the agent's choice and is unreviewed by the operator. The round 4 repair was also done by one session under the 2026-10-03 declaration, the fourth repair so; that is also unreviewed by the operator.
-- The RED falsifiability witness (`gz arb red`) was run for all seven BEHAVIOR REQs and returned failure_class=error on a reconstructed base for every one. That is inconclusive, not a RED. The executed proof records with killed controls are the evidence that each test can fail.
+- Single driver: the implementation and the first three repairs were done by one session under the operator-ruled 2026-10-03 trial declaration. No implementer, spec-reviewer or quality-reviewer subagent was dispatched, for the round 3 repair as for the two before it. The declaration is on the ledger. Continuing single-driver for those three repairs was the agent's choice and is unreviewed by the operator. The round 4 repair was also done by one session under the 2026-10-03 declaration, the fourth repair so; that is also unreviewed by the operator. The round 5 repair was also done by one session under the 2026-10-03 declaration, the fifth repair so. The orchestrator asked the operator, when presenting the handoff, whether this repair should run single-driver or with dispatch; the operator answered "proceed" and did not choose. Continuing single-driver is the orchestrator's reading of the recorded declaration.
+- The RED falsifiability witness (`gz arb red`) was run for all seven BEHAVIOR REQs and returned failure_class=error on a reconstructed base for every one. That is inconclusive, not a RED. The executed proof records with killed controls are the evidence that each test can fail. For REQ-0.35.0-10-02 the witness was run once more in this session, before the repair commit (`uv run gz arb red --req REQ-0.35.0-10-02`): it used a reconstructed base (2136c07888be) and returned failure_class=error, which is inconclusive; receipt `arb-red-REQ-0.35.0-10-02-5e63772bebc34ff9a2abff163591b6ba`. It was not run for the other REQs this session.
 - The plan was written after the implementation and is labelled so.
-- The proof specifications were rebuilt from the ledger's newest proof record per requirement (selectors, source, mutations). For the run on 2346d91c5 the REQ-02 specification was then extended by the orchestrator with the four new tests, the renamed live test and four new controls; the other nine were reused unchanged. For the run on the tree repaired by 4839e2cf1 the REQ-02 specification was extended by the orchestrator with the three new tests and four new controls; the other nine specifications were rebuilt from the ledger's newest record per requirement and reused unchanged. Each mutation's find text was confirmed present exactly once in the source before running. The run carries the trial's controls, the REQ-02 controls added with the round 2 repair, the four added with the round 3 repair and the four added with the round 4 repair. Whether each control expresses its requirement is for the independent reviewer to judge.
+- The proof specifications were rebuilt from the ledger's newest proof record per requirement (selectors, source, mutations). For the run on 2346d91c5 the REQ-02 specification was then extended by the orchestrator with the four new tests, the renamed live test and four new controls; the other nine were reused unchanged. For the run on the tree repaired by 4839e2cf1 the REQ-02 specification was extended by the orchestrator with the three new tests and four new controls; the other nine specifications were rebuilt from the ledger's newest record per requirement and reused unchanged. For the runs on the tree repaired by 92c12bdd5 the REQ-02 and REQ-09 proof specifications were extended by the orchestrator (REQ-02: four new tests, three rewritten controls, four new controls; REQ-09: one new test, one new control); the other eight were rebuilt from the round 5 specifications and reused unchanged. Each mutation's find text was confirmed present exactly once in the source before running. The current run carries the trial's controls, the REQ-02 controls added with the round 2 repair, the four added with the round 3 repair, the four added with the round 4 repair (one unchanged, two rewritten, one replaced) and the five added with the round 5 repair (four for REQ-02, one for REQ-09). Whether each control expresses its requirement is for the independent reviewer to judge.
 - The fourth test written first for the round 3 repair, `test_missing_or_unreadable_pinned_set_fails_closed_with_recovery`, first failed on an unhandled exception, not an assertion.
-- Of the three tests written first for the round 4 repair, `test_project_with_no_scorecard_and_nothing_pinned_has_nothing_to_audit` passed before the code existed and after; it was not observed failing first. Controls `unpinned-project-demands-a-pinned-file` and `empty-pinned-set-refused` each fail it.
+- Of the three tests written first for the round 4 repair, `test_project_with_no_scorecard_and_nothing_pinned_has_nothing_to_audit` passed before the code existed and after; it was not observed failing first. In the current run controls `unpinned-project-demands-a-pinned-file` and `empty-pinned-list-enrolls-the-project`, which replaces `empty-pinned-set-refused`, each fail it.
+- Of the seven tests written first for the round 5 repair, `test_pinned_file_listing_no_identity_enrolls_nothing` passed before the code existed and after; it was not observed failing first. Control `empty-pinned-list-enrolls-the-project` fails it.
+- The five decode tests were observed failing because the audit raised, not on a value assertion. Each wraps the call so that a raise becomes an assertion failure; that is what lets a control count as killed on an assertion.
+- An unreadable pinned file counts as pinning. That keeps the round 4 behaviour (an absent scorecard with an unreadable pinned file fails closed) and means a project with no declaration, no attribution and a corrupt pinned file is read strictly, not by the legacy audit.
+- The scorecard is now read up to three times in one audit (the decode check, the legacy reader, the strict reader). The readers' signatures were kept so the dated evidence script outside this brief still imports.
+- The pinned-file decode error is caught in this module, not at its source in `src/gzkit/registries.py`, which is outside this brief. Recorded as an insight.
+- The two decode repairs under other briefs' requirements (the per-turn surface files and the advisor-QC receipt) have tests in the module and the full suite and no control in these ten proofs.
 - The orchestrator did not re-run the round 3 counterexample on the repaired tree outside the test suite.
 - The orchestrator's re-run of the round 4 counterexample used a copy assembled from the live files, not the reviewer's checkout.
-- `audited_population` still returns no rows for an absent scorecard. That is a statement of what was read, and the failure is reported by `validate_bullet_retention`; whether that satisfies the reviewer's reading of the finding is round 5's to judge.
-- A project that pins identities, then loses both the scorecard and the pinned file in one change, reads as a project with nothing to audit. That is a coordinated edit of two committed files, on the same footing as the coordinated edit of the scorecard and the pinned file the round 4 reviewer was told is out of scope. It is unruled by the operator for this case.
+- The orchestrator's counterexample runs after the round 5 repair used scratch fixtures and a `git archive` copy of the live inputs, not the round 5 reviewer's checkout.
+- `audited_population` still returns no rows for an absent scorecard. That is a statement of what was read, and the failure is reported by `validate_bullet_retention`; the round 5 reviewer judged that it reports what was read (see Review history).
+- A change made to the scorecard and the pinned file in one edit can pass clean. On a copy of the live inputs at 33f36a47e, one row removed together with its identity, the scorecard emptied or removed together with the pinned list emptied, and the scorecard removed together with the pinned file removed each returned 0 errors. This boundary is now ruled by the operator (verbatim selection: "Out of scope, in the brief (Recommended)") and written into the brief's Threat Model. One measured member of the class still fails closed: with an ownership declaration present, the scorecard emptied together with the pinned file removed returns 1 error.
 - The error for an absent scorecard gives the count of pinned identities and does not list them.
 - The pinned set is an equality check: it names a row that leaves or arrives, and it cannot say whether deleting an identity from the file was ruled. That deletion is visible only as a diff of a committed file.
 - The pinned file was seeded by the audit's own reader; its independence rests on being committed, on round 3's independent confirmation of the 178-row population, and on the crude cross-check described under "After round 3".
 - `data/config_registry.json` joined the allowlist on the orchestrator's reading of the ruling.
 - Round 4 ran past the two-follow-up round bound, on the operator's ruling.
 - Round 5 ran past the two-follow-up bound, on the operator's ruling.
-- The round 5 paragraphs of this packet, the sentence on it in the Value Narrative and section 4 were written by the orchestrator from the reviewer's report and its own reproduction, not by the narrator.
-- The round 5 reviewer was told that a coordinated removal of the scorecard and the pinned file is out of scope, alongside the earlier statement on a coordinated edit of the two. Both statements are the orchestrator's and unruled by the operator. The reviewer's finding uses neither.
+- Round 6 runs past the two-follow-up bound, on the operator's ruling.
+- The round 5 paragraphs of the Review history and the sentence describing the round 5 finding in the Value Narrative were written by the orchestrator from the reviewer's report and its own reproduction, not by the narrator. The narrator revised the packet after the round 5 repair from the orchestrator's record of observed facts, checked against the brief, the source, the tests and the acceptance status; the narrator ran no test, validator or `gz` command.
+- Rounds 4 and 5 were given that boundary as the orchestrator's statement, before the ruling existed: each was told that a coordinated edit of the scorecard and the pinned file is out of scope, and round 5 also that a coordinated removal of both is. The round 5 reviewer's finding uses neither statement.
+- The Threat Model section and its Change Log entry were written after the six receipts. They change the brief only; all ten proofs were re-executed against the amended brief.
 - The round 5 reviewer could not authenticate the six quality receipts, which are not in its checkout, and did not rerun the full suite, lint, typecheck, the docs build or behave.
-- The docs changed in 2346d91c5 say a pinned identity the audit no longer reads fails closed; round 4 showed that was not true when the scorecard file itself is absent. The round 4 repair makes it true for an absent scorecard, and both documents now state that case.
-- The six receipts of this run read clean: each was recorded on commit a6fe3e0d6 with a clean tree and its git field reads dirty false. The receipts of the previous run read dirty.
+- The docs changed in 2346d91c5 say a pinned identity the audit no longer reads fails closed; round 4 showed that was not true when the scorecard file itself is absent. The round 4 repair makes it true for an absent scorecard, and both documents now state that case. After the round 5 repair both documents also say the pinned file alone decides whether the check runs.
+- The six receipts of this run read clean: each was recorded on commit 33f36a47e with a clean tree and its git field reads dirty false. The receipts of the run before round 5 (a6fe3e0d6) also read clean; this packet recorded then that the receipts of the run before that read dirty.
 - The 31-row mapping was accepted by the operator on a text-match measurement: 25 verbatim-contained, 6 paraphrases, all six paraphrases Judgment in both surfaces. The 25 were not re-derived beyond the text match.
-- The resolver module is 885 lines against a 600-line authoring guidance that nothing gates.
+- The resolver module is now 922 lines against a 600-line authoring guidance that nothing gates (885 before this repair).
 - Pythonic #22 and Data Models #27 are scored Mechanical with no property-level witness and remain invisible to the advisory-scorecard scope. This is recorded as an insight, outside this brief.
-- The baseline was re-run on a tree that also carries a Python patch upgrade (3.13.16) and a refreshed lockfile, neither part of this OBPI. The tree of this run also carries the file-lock fix eeb4f2758, not part of this OBPI; two of the 11469 tests are its.
+- The baseline was re-run on a tree that also carries a Python patch upgrade (3.13.16) and a refreshed lockfile, neither part of this OBPI. The tree of this run also carries the file-lock fix eeb4f2758, not part of this OBPI; two of the 11476 tests are its.
 - The reviewer's checkout has no git metadata; in rounds 1 and 2 it could not check commit ancestry or historical byte equality.
 - The narrator found the brief's atomicity note for REQ-0.35.0-10-05 saying the live corpus needed no change, after twelve rows had been appended. The note was corrected before the first revision of this packet was replayed.
 
-**4. Not awaiting attestation.** Step 4b round 5 refuted with one open finding on REQ-0.35.0-10-02. The OBPI is blocked on an operator ruling.
+**4. Not awaiting attestation.** This packet is prepared for Step 4b round 6, which has not run. Attestation is not solicited until the acceptance status reads ready.
