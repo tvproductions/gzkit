@@ -3,7 +3,7 @@ id: OBPI-0.35.0-10-classification-reader-and-ownership
 parent: ADR-0.35.0-canon-entry-corpus-landing
 item: 10
 lane: Heavy
-status: Active
+status: Completed
 allowlist:
   - src/gzkit/governance/trust_audits/bullet_retention.py
   - tests/governance/test_bullet_retention.py
@@ -74,7 +74,7 @@ tasks:
 - **Source ADR:** `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/ADR-0.35.0-canon-entry-corpus-landing.md`
 - **Checklist Item:** #10 - "`classification` reader -- corpus-owned sections resolve from `CorpusEntry.classification`, scorecard elsewhere; the 36 `Ambiguous` capture-defaults reconciled before ownership binds (GHI #737)"
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -402,18 +402,85 @@ unreviewed default.
 
 ### Key Proof
 
-One concrete example recorded at completion: a corpus-owned bullet whose
-`gz validate --bullet-retention` verdict changes when its `CorpusEntry.classification`
-changes and its scorecard row does not — the observation that was impossible
-before this OBPI, because the corpus value reached no consumer.
+
+The live audit passes with the corpus answering its owned rows, observed 2026-10-06 on the completed tree:
+
+```text
+$ uv run gz validate --bullet-retention
+Validated: bullet_retention
+✓ All validations passed (1 scopes).
+```
+
+178 scorecard rows are audited, 31 answered by `CorpusEntry.classification` and 147 by the scorecard, with zero advisories.
+
+A corpus-owned bullet's verdict changes when its corpus classification changes and its scorecard row does not. Executed proof `proof-d2546eb8de9e481c9545c5f1bd4569e8` (REQ-0.35.0-10-03): with the production line that binds the corpus class replaced by one that binds the scorecard class (control `scorecard-class-binds-owned-row`), all three tests of `TestOwnedDisagreementIsReported` failed on their assertions; the source was restored and the tests were green afterwards.
+
+No edit confined to the scorecard takes a pinned row out unseen. On a fixture with no ownership declaration, one skill-attributed row and one pinned identity, the audit printed 0 errors and 1 row at baseline, then 1 error and 0 rows with the scorecard emptied, 1 error and 0 rows with it replaced by prose, and 2 errors and 0 rows with the row's leading pipe removed. Executed proof `proof-9595e0fac63842d897616049780a2db7` (REQ-0.35.0-10-02): 23 selectors, 18 controls, each killed on its own assertion.
+
+All ten proofs are valid at input digest `829bd985fc73025175023c08cdb94fead25dd030dc6a9e8d111a5989e7049f8b`; 28 controls in all. Receipts on commit 33f36a47e, each reading dirty false: full suite 11476 tests OK with 7 skipped (`arb-step-unittest-ff410e92a866415ca8c76d3746c019af`); the module's 71 tests (`arb-step-unittest-cad416370b9045f4a0e5c5d81a7efd84`); lint (`arb-ruff-890637c24ed94fa590f5e9e5ef6c5f2c`); typecheck (`arb-step-typecheck-1f68cbe2743f47f289d58add74c71e7a`); the strict docs build (`arb-step-mkdocs-0b67da2c160042f0a21e77fc1a256065`); the behave feature, 8 scenarios (`arb-step-behave-672c45b33af5432fb42e2a703d275e20`). Independent review: Step 4b round 6, Codex, tier 1, `arb-step-codexadversary-60bd7975823d4d7182d839b10f419579`, accepted all ten proofs and closed all seven findings.
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Decision implemented: ADR-0.35.0 § Decision item 9, quoted verbatim: "`classification` IS CORPUS-OWNED WHERE THE CORPUS OWNS THE SECTION (operator-ruled 2026-08-02, GHI #737). `CorpusEntry.classification` is schema-required and part of the baseline identity fingerprint but has NO reader anywhere in `src/` -- every hit is a declaration or a writer. The binding copy lives instead in `docs/governance/advisory-rules-audit.md`, which `bullet_retention.py:141-163` parses. Two differently-typed representations of one governance concept, the structured one inert and the markdown one binding, is precisely the shape `.claude/rules/hexagonal-architecture.md` § Operative rules 8 forbids. Resolution: `bullet_retention` resolves a bullet's classification from the corpus when that bullet's section is corpus-owned, and from the scorecard otherwise -- one reader, declared precedence. Pointing the audit wholesale at the corpus (the shape GHI #737 proposed) is REJECTED on measurement: the scorecard carries 144 rows against the corpus's 52 over 8 sections, so a wholesale swap is a ~64% coverage REGRESSION, not a clean substitution. The two surfaces classify overlapping but unequal populations, which is why the field went inert rather than being wired up. This is item 3's section-ownership seam applied to the classification axis: owning a section makes its entries' classification BINDING, so the 36 `Ambiguous` capture-defaults (all `origin: cli:content-remember`, never revisited) must be reconciled BEFORE ownership binds, not after. The field is never dropped -- it is baseline identity, and removal re-fingerprints every committed rendition. AMENDED 2026-10-05 (operator-ruled 2026-09-28, GHI #939; brief amendment 2026-09-29). The same reader also decides where a row is retained. A scorecard row attributed to a skill or an ADR source is retention-checked against that source's own text and is never exempted; rows attributed to the per-turn surface keep their tier-scoped check. A missing source file or absent row text fails closed. This adds REQ-0.35.0-10-08 to -10 to item 10 and opens no new checklist item; the scorecard baseline is unchanged."
+- Files created: `features/classification_ownership.feature` (8 Gate 4 scenarios); `features/steps/classification_ownership_steps.py`; `data/advisory_scorecard_identities.json` (178 pinned row identities).
+- Files modified: `src/gzkit/governance/trust_audits/bullet_retention.py` (the classification reader, source-aware retention, the strict rule-table reader, the pinned-identity check and its entry decision, fail-closed handling of a file that is not UTF-8); `tests/governance/test_bullet_retention.py`; `src/gzkit/content/models/corpus.py` (docstring naming the reader); `.gzkit/corpus/AGENTS.md.jsonl` and `.gzkit/renditions/AGENTS.md/` (governed appends and publication only); `docs/user/manpages/validate.md`; `docs/governance/advisory-rules-audit.md`; `data/mechanical_witness_grandfather.json`, `data/waiver_ratchet_registry.json`, `data/waiver_identity_baseline.json` (Model Selection #52 frozen by operator ruling); `data/config_registry.json` (the declaration for the pinned file); this brief.
+- Commits: 4893b7321 (the 2026-10-03 trial implementation), 60e622dee, ca8ab6534, 2346d91c5, 4839e2cf1 and 92c12bdd5 (the repairs after Step 4b rounds 1 to 5).
+- Tests: `tests/governance/test_bullet_retention.py` holds 71 tests at completion. 39 of them are the selectors of this brief's seven BEHAVIOR proofs (REQ-01: 3, REQ-02: 23, REQ-03: 3, REQ-04: 5, REQ-05: 1, REQ-08: 2, REQ-09: 2). The feature holds 8 behave scenarios.
+- Live population: 178 scorecard rows audited, 31 answered by the corpus and 147 by the scorecard; zero advisories.
+- Reconciliation ids (2026-10-05, six owned rows, corpus adopts the scorecard class; scorecard identity, class change, old entry id, new entry id, tombstone id):
+  - local-agent-rules-claude-md-local-agent-rules#7, Judgment to Mechanical: old `corpus-execution-rules-2026-09-17T11:39:35.178468+00:00`; new `corpus-execution-rules-2026-10-05T21:33:07.026263+00:00`; tombstone `corpus-retraction-corpus-execution-rules-2026-09-17T11:39:35.178468+00:00-2026-10-05T21:33:06.862515+00:00`
+  - local-agent-rules-claude-md-local-agent-rules#8, Mechanical to Judgment: old `corpus-execution-rules-2026-09-17T11:39:35.331784+00:00`; new `corpus-execution-rules-2026-10-05T21:33:07.346566+00:00`; tombstone `corpus-retraction-corpus-execution-rules-2026-09-17T11:39:35.331784+00:00-2026-10-05T21:33:07.185828+00:00`
+  - local-agent-rules-claude-md-local-agent-rules#10, Judgment to Mechanical: old `corpus-attestation-2026-09-17T11:39:35.990401+00:00`; new `corpus-attestation-2026-10-05T21:33:07.666420+00:00`; tombstone `corpus-retraction-corpus-attestation-2026-09-17T11:39:35.990401+00:00-2026-10-05T21:33:07.505922+00:00`
+  - governance-core-gzkit-rules-governance-core-md#14, Judgment to Mechanical: old `corpus-project-identity-2026-09-17T11:40:15.738676+00:00`; new `corpus-project-identity-2026-10-05T21:33:07.986003+00:00`; tombstone `corpus-retraction-corpus-project-identity-2026-09-17T11:40:15.738676+00:00-2026-10-05T21:33:07.826719+00:00`
+  - governance-core-gzkit-rules-governance-core-md#16, Judgment to Mechanical: old `corpus-behavior-rules-2026-09-17T11:39:31.740284+00:00`; new `corpus-behavior-rules-2026-10-05T21:33:08.305718+00:00`; tombstone `corpus-retraction-corpus-behavior-rules-2026-09-17T11:39:31.740284+00:00-2026-10-05T21:33:08.144665+00:00`
+  - governance-core-gzkit-rules-governance-core-md#17a, Judgment to Mechanical: old `corpus-behavior-rules-2026-09-17T11:39:31.433847+00:00`; new `corpus-behavior-rules-2026-10-05T21:33:08.624072+00:00`; tombstone `corpus-retraction-corpus-behavior-rules-2026-09-17T11:39:31.433847+00:00-2026-10-05T21:33:08.464416+00:00`
+- Date completed: 2026-10-06
+- Attestation status: attested by the operator (g0) on 2026-10-06, verbatim "attest completed", after Step 4b round 6 accepted the current state.
+- Defects noted: seven findings across Step 4b rounds 1 to 5, each repaired and independently closed in round 6 (see the Change Log). Recorded as insights and outside this brief: Pythonic #22 and Data Models #27 scored Mechanical with no property-level witness; the registry loader `src/gzkit/registries.py` raising a raw decode error for a registry that is not UTF-8. Tracked issues: GHI #939, GHI #799, GHI #737 (see Tracked Defects).
+
+### Step 4b — Independent Adversarial Validation
+
+**Adversary identity and tier.** Tier 1, cross-vendor: OpenAI Codex dispatched through the
+`openai-codex` Claude Code plugin (`codex-companion.mjs task --write --cwd <disposable checkout>`),
+ARB-wrapped on every round. Each round ran in a throwaway writable copy of the reviewed tree, so
+the adversary replayed the recorded proofs and ran its own probes.
+Codex reported `ready: true` before round 6, so tiers 2 and 3 were forbidden.
+
+**The adversary refuted this OBPI five times before accepting it.** Every claim it broke was
+against the proof or the behavior of three requirements: REQ-0.35.0-10-02 (five counterexamples
+in which a scorecard row left the audited population with no error), and REQ-0.35.0-10-06 and
+-10 (the packet claimed a ledger witness that does not exist).
+
+| Round | Receipt | Verdict | Claims broken / outcome |
+|---|---|---|---|
+| 1 | `arb-step-codexadversary-c47b21f19ded456989a48f7dbb25e5e6` | **NOT-CORROBORATED / refuted** | 7 of 10 proofs approved, 11 replays. `codex-035010-missing-row-number` (REQ-02): a row with a blank number cell was audited with an empty identity. `codex-035010-scorecard-edit-witness` (REQ-06) and `codex-035010-manpage-edit-witness` (REQ-10): the packet said a ledger event cites each document; none does |
+| 2 | `arb-step-codexadversary-89c8da29860546c38621432ec67acf05` | **refuted** | 9 of 10 proofs approved, 9 replays, both SUPPORT findings closed. `codex-035010-empty-number-cell-dropped-r2` (REQ-02): an empty number cell (`\|\|`) was dropped before the identity check. The receipt is a formatting-only re-emission; the first, `arb-step-codexadversary-7ad9ace1ea1e488390fa039a0847de2a`, was refused by the importer |
+| 3 | `arb-step-codexadversary-32d287557baa4a10b11ac9e4b9683a41` | **refuted** | 10 of 10 proofs approved, 15 replays, four findings closed. `codex-035010-leading-pipe-row-dropped-r3` (REQ-02): a table line with no leading pipe was dropped with no error |
+| 4 | `arb-step-codexadversary-25f144e1dcdd4461984e783878b6eb4e` | **NOT-CORROBORATED / refuted** | 10 of 10 proofs approved, 19 replays, five findings closed. `codex-035010-missing-scorecard-bypasses-pins-r4` (REQ-02): with the scorecard file removed the audit returned no errors while 178 identities stayed pinned |
+| 5 | `arb-step-codexadversary-b1e97958254b472193064ffcee97e1bf` | **NOT-CORROBORATED / refuted** | 10 of 10 proofs approved, 23 replays, six findings closed. `codex-035010-attribution-enrollment-bypasses-pins-r5` (REQ-02): with no ownership declaration, emptying the scorecard made the audit return no errors while one identity stayed pinned |
+| 6 | `arb-step-codexadversary-60bd7975823d4d7182d839b10f419579` | **CORROBORATED-WITH-CAVEATS / not-refuted; accepted** (the imported record) | 10 of 10 proofs approved, 28 replays, all seven findings closed, none raised. Its own rebuild of the round 5 counterexample failed closed in all three shapes; the four earlier counterexamples failed closed on the live scorecard |
+
+**How each was resolved.** The Change Log carries each repair, its tests and its ruling. In
+order: the identity check names a row with no number (round 1); an enrolled project's scorecard
+is re-read strictly and any rule-table row it cannot read is refused, by operator ruling "A"
+(round 2); a table runs to its first blank line, and the row identities are pinned in
+`data/advisory_scorecard_identities.json`, by operator ruling "A" (round 3); an absent scorecard
+is held against the pinned identities, by operator ruling "A" (round 4); the pinned file alone
+decides whether the pinned check runs, by operator ruling "A, but we need a h/o and git sync"
+(round 5). The two SUPPORT findings were resolved by correcting the packet to state the resolver
+arm that actually passed; no ledger row was written to manufacture a witness. Rounds 4, 5 and 6
+ran past the standing bound of two follow-up rounds, each on an operator ruling. Before round 6
+the operator ruled the boundary on coordinated edits (verbatim selection: "Out of scope, in the
+brief (Recommended)"), and the `## Threat Model` section carries it.
+
+**What the adversary left open, unmapped to any requirement.** Its weakest point in round 6:
+historical byte preservation for REQ-0.35.0-10-05 is corroborated by the current prefix
+fingerprints and append events but cannot be compared against earlier bytes in a checkout with no
+git history; it called that a verification gap, not a counterexample. It could not authenticate
+the six quality receipts and did not rerun the full suite, lint, typecheck, the docs build or
+behave. It treated no coordinated edit of the scorecard and the pinned file as a finding, under
+the Threat Model.
 
 ### Change Log
 
@@ -448,12 +515,12 @@ before this OBPI, because the corpus value reached no consumer.
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — Step 4b round 6 (Codex, tier 1, receipt arb-step-codexadversary-60bd7975823d4d7182d839b10f419579, reviewed commit d14696086) accepted all ten proofs, replayed all 28 controls and closed all seven findings with none raised; acceptance status ready at input digest 829bd985fc73025175023c08cdb94fead25dd030dc6a9e8d111a5989e7049f8b; precomplete 11 of 11. Receipts on commit 33f36a47e: full suite 11476 tests OK, 7 skipped (arb-step-unittest-ff410e92a866415ca8c76d3746c019af); module 71 tests (arb-step-unittest-cad416370b9045f4a0e5c5d81a7efd84); lint (arb-ruff-890637c24ed94fa590f5e9e5ef6c5f2c); typecheck (arb-step-typecheck-1f68cbe2743f47f289d58add74c71e7a); docs (arb-step-mkdocs-0b67da2c160042f0a21e77fc1a256065); behave 8 scenarios (arb-step-behave-672c45b33af5432fb42e2a703d275e20). Packet .gzkit/evidence/OBPI-0.35.0-10-classification-reader-and-ownership.stage4a.md replayed VERIFIED. Source src/gzkit/governance/trust_audits/bullet_retention.py; final repair commit 92c12bdd5.
+- Date: 2026-10-06
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-10-06
 
 **Evidence Hash:** -
