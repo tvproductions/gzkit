@@ -2,7 +2,7 @@
 
 **1. Value Narrative**
 
-Before, the classification field of a corpus entry was schema-required and part of the baseline identity fingerprint, and nothing in `src/` read it; the binding copy of the same concept was a hand-maintained markdown table (`docs/governance/advisory-rules-audit.md`). Now `uv run gz validate --bullet-retention` reads an owned row's class from the corpus entry it cites and an unowned row's from the scorecard, fails closed on a broken owned mapping, refuses to bind an owned section that holds a live Ambiguous entry, and retains a row attributed to a SKILL.md or an ADR file against that file. An enrolled project's audit also refuses, by name, a rule-table row it cannot read, where before the round 2 repair such a row was dropped with no error; the row shape round 3 found, a table line with no leading pipe, is now refused, and an enrolled project's rows are held against a committed list of identities, so a row the reader stops recognising is named. Independent confirmation of this repair is round 4's and has not happened yet. On the live repo 178 scorecard rows are audited, 31 answered by the corpus and 147 by the scorecard; six owned rows disagreed between the two surfaces, the operator ruled on 2026-10-05 that the corpus adopts the scorecard class, and the audit prints zero advisories.
+Before, the classification field of a corpus entry was schema-required and part of the baseline identity fingerprint, and nothing in `src/` read it; the binding copy of the same concept was a hand-maintained markdown table (`docs/governance/advisory-rules-audit.md`). Now `uv run gz validate --bullet-retention` reads an owned row's class from the corpus entry it cites and an unowned row's from the scorecard, fails closed on a broken owned mapping, refuses to bind an owned section that holds a live Ambiguous entry, and retains a row attributed to a SKILL.md or an ADR file against that file. An enrolled project's audit also refuses, by name, a rule-table row it cannot read, where before the round 2 repair such a row was dropped with no error; the row shape round 3 found, a table line with no leading pipe, is now refused, and an enrolled project's rows are held against a committed list of identities, so a row the reader stops recognising is named. Round 4 confirmed that repair independently and then found one route it does not cover: with the scorecard file itself removed, the audit returns no errors and no rows while the identities stay pinned. That finding is open (see Review history). On the live repo 178 scorecard rows are audited, 31 answered by the corpus and 147 by the scorecard; six owned rows disagreed between the two surfaces, the operator ruled on 2026-10-05 that the corpus adopts the scorecard class, and the audit prints zero advisories.
 
 **2. Key Proof**
 
@@ -49,10 +49,10 @@ Executed proof record `proof-6f1adf345f784227903325b03a71cf83` (REQ-0.35.0-10-03
 | Validation scopes | `validate:scopes` | nine scopes, each exit 0; no receipt |
 | REQ coverage | `covers` | 10 REQs; uncovered_reqs 3; behavior_uncovered_reqs 0 |
 | Brief drift | `brief-drift` | clean; deltas all 0 |
-| Evidence packet | `present-evidence` | exit 3; attestable false; blocked only on the five open findings; three Demo commands exit 0 |
+| Evidence packet | `present-evidence` | exit 3; attestable false; blocked only on the five findings open before round 4; three Demo commands exit 0 |
 | Precomplete | `precomplete` | exit 3; ten checks pass; adversarial_validation waits on Step 4b |
 
-All six receipts record exit_status 0 and were recorded in this session (2026-10-06 UTC) on commit 2346d91c5; each receipt's git field reads dirty, and the only uncommitted file was `.gzkit/ledger.jsonl`. The reviewed revision will be the sync commit on top of 2346d91c5. The nine validation scopes were each run alone, and `--bullet-retention` printed no advisory lines. The three REQs without a covering test are the two SUPPORT REQs and the STRUCTURAL-FENCE REQ, by proof channel. `present-evidence` exits 3 because five findings await independent closure (see Review history): its `blockers` list holds those five and nothing else, and its `review_blockers` list holds 15, those five plus one for each of the ten current proofs, which still lacks an accepted independent review. Precomplete passes brief_readiness, reconcile_idempotent, lock_held, arb_receipts, plan_audit_receipt, brief_headings, behave_req_coverage, task_envelope_coherence, operator_block and stage2_dispatch, and fails adversarial_validation, which waits on Step 4b. The per-change check (`uv run gz check`) passed on the staged repair before it was committed; it produces no receipt.
+All six receipts record exit_status 0 and were recorded in this session (2026-10-06 UTC) on commit 2346d91c5; each receipt's git field reads dirty, and the only uncommitted file was `.gzkit/ledger.jsonl`. The reviewed revision will be the sync commit on top of 2346d91c5. The nine validation scopes were each run alone, and `--bullet-retention` printed no advisory lines. The three REQs without a covering test are the two SUPPORT REQs and the STRUCTURAL-FENCE REQ, by proof channel. `present-evidence` exits 3 because five findings await independent closure (see Review history): its `blockers` list holds those five and nothing else, and its `review_blockers` list holds 15, those five plus one for each of the ten current proofs, which still lacks an accepted independent review. Those two commands were run before round 4; after it the acceptance status lists one blocker, the round 4 finding. Precomplete passes brief_readiness, reconcile_idempotent, lock_held, arb_receipts, plan_audit_receipt, brief_headings, behave_req_coverage, task_envelope_coherence, operator_block and stage2_dispatch, and fails adversarial_validation, which waits on Step 4b. The per-change check (`uv run gz check`) passed on the staged repair before it was committed; it produces no receipt.
 
 ```bash
 # arb:unittest
@@ -292,17 +292,27 @@ After round 3:
 - Live audit after the repair: 0 errors, 178 rows, 31 answered by the corpus, 147 by the scorecard; zero advisories.
 - The orchestrator did not re-run the round 3 counterexample on the repaired tree. The covering test `test_table_line_without_a_leading_pipe_is_refused_not_dropped` and control `pipeless-table-line-skipped` are the evidence; the independent re-run is round 4's.
 
-Five findings are open in the acceptance record:
+Five findings were open in the acceptance record when round 4 was dispatched:
 
-| Finding | REQ | Raised | State now |
+| Finding | REQ | Raised | State before round 4 |
 |---|---|---|---|
-| `codex-035010-leading-pipe-row-dropped-r3` | 02 | round 3 | repair in 2346d91c5; closure is round 4's |
+| `codex-035010-leading-pipe-row-dropped-r3` | 02 | round 3 | repair in 2346d91c5; closure was round 4's to give |
 | `codex-035010-missing-row-number` | 02 | round 1 | closed by round 3 against `proof-e63644fb`; needs closure again against `proof-c1cb02b8` |
 | `codex-035010-empty-number-cell-dropped-r2` | 02 | round 2 | closed by round 3 against `proof-e63644fb`; needs closure again against `proof-c1cb02b8` |
 | `codex-035010-scorecard-edit-witness` | 06 | round 1 | closed by round 3 against `proof-e6cac2bc`; needs closure again against `proof-fe39538d` |
 | `codex-035010-manpage-edit-witness` | 10 | round 1 | closed by round 3 against `proof-17e05a06`; needs closure again against `proof-1986839f` |
 
-The block was cleared by the operator's ruling. Round 3 closed four of these five against the proofs current then; the re-run after the repair superseded those proofs, so the record lists the four as requiring verified closure again against the current ids. For REQ-06 and REQ-10 nothing changed. For REQ-02 the repair changed the reader, so round 4 re-verifies those two closures as well. Round 4 is authorized by the operator's ruling "A" past the two-follow-up bound, and it has not run when this revision is written.
+The block was cleared by the operator's ruling. Round 3 closed four of these five against the proofs current then; the re-run after the repair superseded those proofs, so the record lists the four as requiring verified closure again against the current ids. For REQ-06 and REQ-10 nothing changed. For REQ-02 the repair changed the reader, so round 4 re-verifies those two closures as well. Round 4 was authorized by the operator's ruling "A" past the two-follow-up bound.
+
+Round 4 — Codex (tier 1), reviewer id `codex-independent-035010-round4`, receipt `arb-step-codexadversary-25f144e1dcdd4461984e783878b6eb4e`, reviewed commit 0171dd746 in a disposable checkout (source digest 63c5cdc1654c…). Verdict NOT-CORROBORATED, token refuted. It approved all ten current proofs, recorded 19 replays (every control failed its nominated tests on their own assertions; source restored), ran the 61 module tests, and closed all five findings above against the current proof ids. Removing only row 7's leading pipe now yields 2 errors, 177 rows and 30 corpus-resolved rows: one error names scorecard line 107 and one names the lost pinned identity. The blank-number and empty-number counterexamples each yield the same two kinds of named refusal. It asserted no contradiction between any requirement's text and the stated boundary on coordinated edits of the scorecard and the pinned file. It raised one new finding:
+
+| Finding | REQ | What it found |
+|---|---|---|
+| `codex-035010-missing-scorecard-bypasses-pins-r4` | 02 | removing only `docs/governance/advisory-rules-audit.md`, with the 178 pinned identities, the ownership declaration, the corpus and the ledger untouched, makes the audit report 0 errors and 0 rows. `validate_bullet_retention` returns an empty result when the scorecard is absent, before the enrolled path and the pinned check are reached; `audited_population` has the same early return |
+
+The orchestrator reproduced the counterexample in the same checkout: 0 errors and 0 rows with the file removed; 0 errors, 178 rows and 31 corpus-resolved after restoring it. The reviewer named the weakest point as that entry-point early return: every recorded control operates below it, so their replay cannot rule the route out. This is a different root from the one rounds 1 to 3 named (a row shape the reader excluded before validating it).
+
+Round 4 was the one round the ruling authorized. With one mapped finding open, the OBPI is recorded as blocked on the operator again (`gz obpi block`, 2026-10-06 UTC). No repair was attempted and no fifth round dispatched. Attestation is not solicited.
 
 **Limits and disclosures**
 
@@ -315,7 +325,8 @@ The block was cleared by the operator's ruling. Round 3 closed four of these fiv
 - The pinned set is an equality check: it names a row that leaves or arrives, and it cannot say whether deleting an identity from the file was ruled. That deletion is visible only as a diff of a committed file.
 - The pinned file was seeded by the audit's own reader; its independence rests on being committed, on round 3's independent confirmation of the 178-row population, and on the crude cross-check described under "After round 3".
 - `data/config_registry.json` joined the allowlist on the orchestrator's reading of the ruling.
-- Round 4 runs past the two-follow-up round bound, on the operator's ruling.
+- Round 4 ran past the two-follow-up round bound, on the operator's ruling.
+- The docs changed in 2346d91c5 say a pinned identity the audit no longer reads fails closed; round 4 showed that is not true when the scorecard file itself is absent. The docs are unchanged since, pending the operator's ruling on the finding.
 - Each of the six receipts was recorded with its git field reading dirty; the only uncommitted file was `.gzkit/ledger.jsonl`.
 - The 31-row mapping was accepted by the operator on a text-match measurement: 25 verbatim-contained, 6 paraphrases, all six paraphrases Judgment in both surfaces. The 25 were not re-derived beyond the text match.
 - The resolver module is 854 lines against a 600-line authoring guidance that nothing gates.
@@ -324,4 +335,4 @@ The block was cleared by the operator's ruling. Round 3 closed four of these fiv
 - The reviewer's checkout has no git metadata; in rounds 1 and 2 it could not check commit ancestry or historical byte equality.
 - The narrator found the brief's atomicity note for REQ-0.35.0-10-05 saying the live corpus needed no change, after twelve rows had been appended. The note was corrected before the first revision of this packet was replayed.
 
-**4. Awaiting attestation.** Step 4b round 4 (independent review, operator-authorized past the round bound) runs before attestation is solicited.
+**4. Not awaiting attestation.** Step 4b round 4 refuted with one open finding on REQ-0.35.0-10-02. The OBPI is blocked on an operator ruling.
