@@ -348,7 +348,8 @@
     "chores/decommission-tautological-tests/check_debt_target.py": [
       "0b8b1ffdcab29d6eaac3d9a844434c6059b8acddbb597c7f08c4968fadfbf11a",
       "5307231304b78938369a62669df9ff75e675182f40fffeef6de4b8d9a95b9282",
-      "5a1b9898aad12bcecc46dd6cd74bd094333dc3418a2b76c2c6dcea8a052413f0"
+      "5a1b9898aad12bcecc46dd6cd74bd094333dc3418a2b76c2c6dcea8a052413f0",
+      "9aef54bd5b5cb02f205d57e73df31e98f9155285e0945c2dab07bf8133a76bcb"
     ],
     "chores/dependency-currency/CHORE.md": [
       "21390baceb753fb55a21543325ff675ec17ddc6f94b7d59335cb296d3685189e",

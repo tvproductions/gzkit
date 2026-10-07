@@ -13,10 +13,14 @@ itself, not re-measured here.
 
 from __future__ import annotations
 
+import contextlib
 import importlib.util
+import io
 import unittest
-from datetime import date
+from datetime import UTC, date, datetime, timedelta, timezone
+from pathlib import Path
 from types import ModuleType
+from unittest import mock
 
 from gzkit.commands.common import get_project_root
 
@@ -30,12 +34,22 @@ _SCRIPT = (
     / "check_debt_target.py"
 )
 
+# The generated copy is the one an adopter's gate resolves, having no overlay.
+_SHIPPED = (
+    get_project_root()
+    / "src"
+    / "gzkit"
+    / "chores"
+    / "decommission-tautological-tests"
+    / "check_debt_target.py"
+)
 
-def _load_gate() -> ModuleType:
+
+def _load_gate(script: Path = _SCRIPT) -> ModuleType:
     """Import the chore script by path; its directory name is not an identifier."""
-    spec = importlib.util.spec_from_file_location("_tautological_debt_gate", _SCRIPT)
+    spec = importlib.util.spec_from_file_location("_tautological_debt_gate", script)
     if spec is None or spec.loader is None:
-        raise unittest.SkipTest(f"cannot load {_SCRIPT}")
+        raise unittest.SkipTest(f"cannot load {script}")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
@@ -108,6 +122,48 @@ class TestVerdict(unittest.TestCase):
     def test_a_negative_rate_is_refused(self) -> None:
         with self.assertRaises(ValueError):
             self.gate.validate_target(_target(rate=-5))
+
+
+class TestScheduleDate(unittest.TestCase):
+    """One instant yields one schedule date on every machine (GHI #1177)."""
+
+    script = _SCRIPT
+
+    def setUp(self) -> None:
+        self.gate = _load_gate(self.script)
+        # 2026-10-06T00:03Z: the UTC date has turned and a caller at UTC-5 still
+        # reads 2026-10-05 on its wall clock.
+        self.instant = datetime(2026, 10, 6, 0, 3, tzinfo=UTC)
+
+    def test_callers_east_and_west_of_utc_compute_the_same_ceiling(self) -> None:
+        target = {"start_date": "2026-09-28", "start_count": 232, "decline_per_month": 20}
+        west = self.instant.astimezone(timezone(timedelta(hours=-5)))
+        east = self.instant.astimezone(timezone(timedelta(hours=9)))
+        self.assertNotEqual(west.date(), east.date())
+        dates = {self.gate.schedule_date(now) for now in (west, east)}
+        self.assertEqual(dates, {date(2026, 10, 6)})
+        self.assertEqual({self.gate.ceiling_on(target, day) for day in dates}, {227})
+
+    def test_the_schedule_date_is_the_utc_date_of_the_instant(self) -> None:
+        west = self.instant.astimezone(timezone(timedelta(hours=-5)))
+        self.assertEqual(self.gate.schedule_date(west), date(2026, 10, 6))
+
+    def test_the_verdict_is_computed_on_the_schedule_date(self) -> None:
+        out, err = io.StringIO(), io.StringIO()
+        with (
+            mock.patch.object(self.gate, "schedule_date", return_value=date(2100, 1, 1)),
+            contextlib.redirect_stdout(out),
+            contextlib.redirect_stderr(err),
+        ):
+            code = self.gate.main([])
+        self.assertEqual(code, 3)
+        self.assertIn("ceiling 0 on 2100-01-01 UTC", out.getvalue())
+
+
+class TestScheduleDateShippedCopy(TestScheduleDate):
+    """The same contract holds for the copy an adopter's gate runs."""
+
+    script = _SHIPPED
 
 
 if __name__ == "__main__":

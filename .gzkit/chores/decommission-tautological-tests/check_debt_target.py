@@ -15,6 +15,8 @@ schedule, declared in the ``tautological_test_debt_target.json`` registry:
   2026-09-28, GHI #808)
 
 ``ceiling = max(0, start_count - floor(decline_per_month * months_elapsed))``.
+Elapsed time is measured to the UTC date, never the caller's local calendar, so
+a tree has one verdict on every machine and CI's run binds (GHI #1177).
 Outstanding debt above the ceiling is a breach, so a chore that stops being
 worked turns red on its own rather than passing silently. Debt is every live
 scanned op not discharged by a file waiver in its own file, the same slot
@@ -34,7 +36,7 @@ import contextlib
 import math
 import sys
 from collections import Counter
-from datetime import date
+from datetime import UTC, date, datetime
 
 from gzkit.commands.common import get_project_root
 from gzkit.registries import RegistryError, load_registry, registry_path
@@ -79,6 +81,15 @@ def outstanding_debt(live_files: list[str], waivers: dict[str, list[str]]) -> in
     per_file = Counter(live_files)
     waived = sum(min(len(keys), per_file[path]) for path, keys in waivers.items())
     return len(live_files) - waived
+
+
+def schedule_date(now: datetime | None = None) -> date:
+    """Return the UTC date of *now*: the gate's only read of the machine clock.
+
+    The local calendar would give one tree two verdicts for a window each day
+    equal to the caller's UTC offset, and CI is the binding run (GHI #1177).
+    """
+    return (now if now is not None else datetime.now(UTC)).astimezone(UTC).date()
 
 
 def is_breach(debt: int, target: dict, today: date) -> bool:
@@ -128,10 +139,10 @@ def main(argv: list[str] | None = None) -> int:
     waivers = load_registry(_PROJECT_ROOT, _WAIVERS).get("file_waivers", {})
     ops = scan_test_tree(_PROJECT_ROOT / "tests")
     debt = outstanding_debt([op.file_path for op in ops], waivers)
-    today = date.today()
+    today = schedule_date()
     ceiling = ceiling_on(target, today)
     print(
-        f"tautological-test debt: {debt} outstanding, ceiling {ceiling} on {today.isoformat()} "
+        f"tautological-test debt: {debt} outstanding, ceiling {ceiling} on {today.isoformat()} UTC "
         f"(from {target['start_count']} on {target['start_date']}, "
         f"-{target['decline_per_month']}/month)"
     )
