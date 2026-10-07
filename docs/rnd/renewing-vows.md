@@ -455,6 +455,71 @@ What this corrects in the nomenclature table's Assurance register:
   where a registry of surfaces (`data/security_surfaces.json`) and a path-overlap floor
   (`gz validate --sensitivity`) let a brief escalate and never escape.
 
+## source · repository canon on chore run records, read 2026-10-07
+
+Read for frontier question 3. In full: `src/gzkit/commands/chores_staleness.py`;
+`docs/governance/state-doctrine.md` § Three-Layer Model and § Five Authority Rules. By
+section: `docs/governance/chore-class-system.md` (the opening through § Operator directives,
+§ Staleness, § Suppression, § Declared non-authority, § Implementation order, § What this
+record does not license). By excerpt: `src/gzkit/commands/chores_exec.py`, the tail of one
+`CHORE-LOG.md`, `us-gov-14cfr-43-9.md`. Measured: `gz chores status --json`; the ledger and
+its schema for chore event types; `gz handoff rulings --search` for "chore" (64 results, the
+first eighteen read), "logbook", "chore run", "pass stamp" (none) and "ledger event" (seven).
+
+Where a run is recorded today. `chores_staleness.py`, module docstring:
+
+> The run witness is the timestamped PASS block ``gz chores run`` appends to
+> ``CHORE-LOG.md``.
+
+The board reads it with a regular expression over that Markdown file (`_RUN_HEADING`). The
+ledger carries one chore event type, `chore_decommission_processed`, fired 5 times, emitted
+by one chore; no event records that any chore ran. A finding has no structured form: a run's
+log holds each criterion's captured output as text.
+
+The ratified design chose against a second register. `chore-class-system.md` ("design
+record, operator-ratified 2026-09-12"; ratification verbatim: 'I ratify, with great
+enthusiasm, the entire plan.') § Derive last-run from the artifact:
+
+> Generalize it. Do not build a parallel register — node_exporter's
+> `node_textfile_mtime_seconds` is the precedent: derive the last-run signal from the
+> proof artifact itself. One fewer thing to keep honest.
+
+Staleness does not gate, § Indicator, not gate, operator verbatim:
+
+> indicators, chores shouldn't have a bunch of gates like the adr/obpi system
+
+The same record says of itself: "It is a design record, not canon". Its § Implementation
+order step 2 records that the landed witness already departed from the proof's commit date
+to the PASS block, because the log's commit date "moves on a FAIL run too".
+
+Two canon lines pull the other way. `AGENTS.md` § Governance doctrine surfaces: "Execution
+reads thresholds, budgets, rosters and state from JSON or code." `state-doctrine.md` Layer 2:
+the ledger "records every governance event — completions, attestations, receipts, audits,
+and reconciliations" and "Defines *what has happened*"; Rule 5: "Only L1 (canon) and L2
+(events) can be gate evidence." The one class the design lets gate on staleness (Currency)
+gates today on a Markdown stamp or a scan record's commit date.
+
+Precedents for moving a signal from a document to an event: the ruling on GHI #766 (rulings
+store: "retire the bookmark document, keep the signal as a ledger event") and, for this
+discipline, 'yes to ledger'. The fence on vocabulary: an event type lands with its producer
+(`rnd-discipline.md` § Ledger events; the `ledger-vocabulary-inertness` chore).
+
+On findings. Operator, 2026-09-12 (`chore-class-system.md` § Operator directives): "A chore
+doesn't always need to make a GHI and should do so sparringly and in consultation with the
+operator." Operator, 2026-10-05 (insight 21:01:04): 'squawks are line-discovered issues
+(ghis)'. The design record names SARIF and Django's `CheckMessage` as models for a
+structured finding; none is built.
+
+The aviation text, landed and verified (`us-gov-14cfr-43-9.md`): 14 CFR § 43.9(a) requires a
+maintenance record entry from "each person who maintains", carrying a description of the
+work, "(2) The date of completion of the work performed", the performer's name where it
+differs, and the approver's signature. The entry is per work performed. It is not a register
+of defects found.
+
+Measured 2026-10-07 (a dated record): the board reads 35 overdue, 3 unmeasured, 2 current of
+40; 6 chores have no last run on record. GHI #935 and GHI #936 are closed; GHI #1009
+(accumulated-work declares no counter) is open.
+
 ---
 
 ## decision · the run opens from staged material; slug `renewing-vows`
@@ -785,6 +850,35 @@ behind them and four rest on findings that are open or disputed.
 **commissions:** 1 — propose an engineering order for the assurance-level axis, after briefs
 15 to 20, conditional on the operator lifting PROVISIONAL; 4 — the corrected nomenclature rows.
 
+## decision · a chore run is a ledger event; a chore finding is not
+
+Frontier question 3 asked whether chore runs and findings become ledger events. Two canon
+lines disagree on it (source entry *repository canon on chore run records*): the ratified
+chore design refuses a parallel register and derives last-run from the artifact; `AGENTS.md`
+and the state doctrine put state in JSON or code and what has happened in the ledger. Put to
+the operator 2026-10-07 with three answers: runs yes and findings no; both; neither. Operator
+selection, verbatim: 'Runs yes, findings no (Recommended)'.
+
+What the ruling fixes:
+
+- A chore run becomes one ledger event. That event replaces the PASS block in `CHORE-LOG.md`
+  as the run witness, so one register remains; the log stays as the readable transcript.
+- This amends one line of the 2026-09-12 chore design, § Derive last-run from the artifact.
+  The amendment keeps that section's reason ("One fewer thing to keep honest") and changes
+  which artifact is the one.
+- A finding does not become a ledger event. It keeps its present routes: fixed in the run, or
+  a GHI "sparringly and in consultation with the operator". No structured finding object is
+  commissioned.
+- Staleness still announces and does not gate. The event is a record, in the sense of the
+  14 CFR § 43.9(a) entry: one per work performed.
+- The event type lands with the code that emits it, never before.
+
+What it does not do: it does not move the board. 35 of 40 overdue is cadence, which row 3
+carries.
+
+**commissions:** 1 — propose the chore run event as the maintenance logbook item, after briefs
+15 to 20; 4 — on that proposal's landing, the amended line in `chore-class-system.md`.
+
 ## decision · corrections booked during the dialogue
 
 Insights 20:01:34, 20:04:41, 21:01:04, 21:07:34: the agent led with critique of the source
@@ -837,7 +931,7 @@ staleness items repaired. Everything not named is post-IOC by default.
 
 | # | Disposition | State | What | Reason |
 |---|---|---|---|---|
-| 1 | ADR / OBPI | commissioned | Proposed only, after briefs 15–20: engineering orders for the crew split (constraints, red, green) with the tasking event and the sortie matrix; the assurance-level axis beside lane (the consequence bands, with a surface registry and overlap floor as witness), conditional on the operator lifting PROVISIONAL on the bands; combat assessment with a collateral owner and one assessment record; the maintenance logbook to L2; identifier migration at IOC. | Each passes the admission question — hard to reverse, surprising without this record, a real trade-off; each depends on the spine. The operator initiates, or not (IRON LAW). |
+| 1 | ADR / OBPI | commissioned | Proposed only, after briefs 15–20: engineering orders for the crew split (constraints, red, green) with the tasking event and the sortie matrix; the assurance-level axis beside lane (the consequence bands, with a surface registry and overlap floor as witness), conditional on the operator lifting PROVISIONAL on the bands; combat assessment with a collateral owner and one assessment record; the maintenance logbook to L2 (one ledger event per chore run, replacing the PASS block as the run witness; findings are not events — ruled 2026-10-07); identifier migration at IOC. | Each passes the admission question — hard to reverse, surprising without this record, a real trade-off; each depends on the spine. The operator initiates, or not (IRON LAW). |
 | 2 | GHI / direct fix | commissioned | (a) The four theatre-canon staleness items (insight 21:34:40: dead constitution link; stale non-goal; INV-007 vs ADR-0.0.36; lodestar README vs Boundary #5) via `ghi-author`. (b) Routing of the malformed `@covers` tags insight 21:30:15 recorded (525 findings on 2026-10-05; re-measured 2026-10-06, still present): one GHI for direct repair of foundation-era tags to REQ ids, or a parser rule for OBPI-id tags — the operator picks. (c) Nothing lints Markdown under `docs/`: `run_pymarkdown` has no caller, the `lint()` docstring names a linter that never runs, and pymarkdown is not installed or declared (insight 2026-10-06T10:49:46Z; found in passing by the research pass, verified by the session). Route: a direct fix of the docstring and the dead function, or a dependency decision under STDLIB-FIRST — the operator picks. | Defects by the PRIME DIRECTIVE, each tracked by an insight line today. Item 10's run has completed and no lock is held, so (b) is no longer another session's. Filing waits on the operator's go on this row. |
 | 3 | chore | commissioned | Advise only: sort per-flight conformance checks off the interval board into `gz check`; package due interval tasks into named visits (letter checks). | The board's 35 overdue of 40 (measured 2026-10-05) is the signature of per-flight work on an interval board. The operator directs admission. |
 | 4 | control surface, rule, doc, skill, hook | commissioned | The concept of operations in the doctrine library; the campaign plan republished naming it; a PRD amendment pass (the four stale items, the IOC set); the weaponeering rule text; the model-and-effort table in `model-selection.md`, describing the mechanism as the harness has it; the general orders; the nomenclature terms, held here until the glossary home is named. | The deliverable of this run; the operator's go on this row is the fund. The placement is ruled (2026-10-07: apex under the constitution), so the first two are no longer gated by it; the standards must land before any term is cited in doctrine. |
@@ -854,7 +948,8 @@ staleness items repaired. Everything not named is post-IOC by default.
    under the constitution.
 2. *Closed 2026-10-07 by ruling* (decision *assurance level is a second axis beside lane*):
    lane keeps its criterion; the consequence bands are proposed as a second axis.
-3. Whether chore runs and findings become ledger events (moves rows 1 and 3).
+3. *Closed 2026-10-07 by ruling* (decision *a chore run is a ledger event; a chore finding
+   is not*).
 4. The battle rhythm (agent proposal; moves row 4).
 5. The IOC set for the PRD amendment (agent proposal; moves row 4).
 6. The standards verification pass — both halves have landed (27 files). Open remainder:
