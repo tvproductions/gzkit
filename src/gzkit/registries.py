@@ -58,13 +58,15 @@ def load_registry(project_root: Path, name: str) -> Any:
     rosters, and coercing them to one shape here would invent a schema the
     mapping decision has not made yet.
 
-    Raises `RegistryError` on a missing file or malformed JSON, so a config
-    fault is one exception type rather than three.
+    Raises `RegistryError` on a missing file, bytes that are not UTF-8, or
+    malformed JSON, so a config fault is one exception type rather than three.
     """
     path = registry_path(project_root, name)
     try:
         text = path.read_text(encoding="utf-8")
-    except OSError as exc:
+    except (OSError, UnicodeDecodeError) as exc:
+        # UnicodeDecodeError is a ValueError, so `except OSError` alone lets a
+        # registry that is not UTF-8 out as the raw decode error (GHI #1180).
         raise RegistryError(
             f"Config registry {_DATA_DIR}/{name} could not be read: {exc}. "
             f"Every registry is declared in {_DATA_DIR}/config_registry.json or the "

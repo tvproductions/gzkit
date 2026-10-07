@@ -51,6 +51,18 @@ class SeamReads(unittest.TestCase):
         with self.assertRaises(RegistryError):
             load_registry(self.root, "t.json")
 
+    def test_registry_that_is_not_utf8_raises(self) -> None:
+        """Undecodable bytes are a config fault, so they arrive as the one typed error."""
+        (self.root / "data" / "t.json").write_bytes(b'\xff\xfe{"a": 1}')
+        try:
+            load_registry(self.root, "t.json")
+        except RegistryError as exc:
+            self.assertIn("data/t.json", str(exc))
+        except UnicodeDecodeError as exc:
+            self.fail(f"the seam let the raw decode error out: {exc}")
+        else:
+            self.fail("the seam returned a payload from bytes that are not UTF-8")
+
     def test_a_path_instead_of_a_name_is_refused(self) -> None:
         """Passing a path reaches around the seam the seam exists to be."""
         with self.assertRaises(RegistryError):
@@ -89,6 +101,16 @@ class SeamFieldReads(unittest.TestCase):
         (self.root / "data" / "t.json").write_text("{nope", encoding="utf-8")
         with self.assertRaises(RegistryError):
             load_registry_field(self.root, "t.json", "limit", 3)
+
+    def test_registry_that_is_not_utf8_raises_rather_than_defaulting(self) -> None:
+        (self.root / "data" / "t.json").write_bytes(b'\xff\xfe{"limit": 7}')
+        try:
+            value = load_registry_field(self.root, "t.json", "limit", 3)
+        except RegistryError:
+            return
+        except UnicodeDecodeError as exc:
+            self.fail(f"the seam let the raw decode error out: {exc}")
+        self.fail(f"the seam defaulted past bytes that are not UTF-8: {value!r}")
 
     def test_non_object_registry_raises(self) -> None:
         self._write(["a"])
