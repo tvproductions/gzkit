@@ -198,20 +198,35 @@ class TestSkillsAuditImportOrder(unittest.TestCase):
 
     @covers("REQ-0.0.32-01-04")
     def test_audit_imported_first_audits_a_project(self) -> None:
+        """A real small audit: the skill's frontmatter and its body are both read."""
         with tempfile.TemporaryDirectory() as tmp:
+            skill = Path(tmp) / ".gzkit" / "skills" / "demo" / "SKILL.md"
+            skill.parent.mkdir(parents=True)
+            body = "\n".join(f"line {n}" for n in range(400))
+            skill.write_text(f"---\nname: not-demo\n---\n{body}\n", encoding="utf-8")
             result = self._run_fresh(
                 "from pathlib import Path\n"
                 "from gzkit.skills_audit import audit_skills\n"
                 f"report = audit_skills(Path({tmp!r}))\n"
                 "from gzkit.skills import SkillAuditReport\n"
                 "assert isinstance(report, SkillAuditReport)\n"
-                "assert report.checked_skills == 0\n"
+                "assert report.checked_skills == 1, report.checked_skills\n"
+                "codes = {issue.code for issue in report.issues}\n"
+                "assert 'SKA-NAME-MISMATCH' in codes, codes\n"
+                "assert 'SKA-BODY-OVERSIZED' in codes, codes\n"
             )
         self.assertEqual(result.returncode, 0, result.stderr)
 
 
 class TestSharedSkillContract(unittest.TestCase):
     """The frontmatter parser and report types both entry points share (GHI #1039)."""
+
+    def test_the_package_parser_is_the_public_contract_parser(self) -> None:
+        """One parser under two names: the leaf's public one and the package's own."""
+        from gzkit.skill_contract import parse_frontmatter
+        from gzkit.skills import _parse_frontmatter
+
+        self.assertIs(_parse_frontmatter, parse_frontmatter)
 
     def test_content_without_frontmatter_is_returned_whole(self) -> None:
         from gzkit.skills import _parse_frontmatter

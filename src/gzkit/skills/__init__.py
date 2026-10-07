@@ -19,8 +19,10 @@ from gzkit.skill_contract import (
     SUPPORTED_SKILL_HARNESSES,
     SkillAuditIssue,
     SkillAuditReport,
-    _parse_frontmatter,
 )
+
+# The package's own name for the shared parser, kept for its import sites.
+from gzkit.skill_contract import parse_frontmatter as _parse_frontmatter
 
 _CANONICAL_SKILLS_RESOURCE = "gzkit.skills"
 

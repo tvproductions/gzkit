@@ -68,7 +68,7 @@ class SkillAuditReport(BaseModel):
         }
 
 
-def _parse_frontmatter(content: str) -> tuple[dict[str, str], str]:
+def parse_frontmatter(content: str) -> tuple[dict[str, str], str]:
     """Parse top-level YAML frontmatter key-values from markdown."""
     lines = content.splitlines()
     if not lines or lines[0].strip() != "---":

@@ -17,7 +17,7 @@ from gzkit.skill_contract import (
     SUPPORTED_SKILL_HARNESSES,
     SkillAuditIssue,
     SkillAuditReport,
-    _parse_frontmatter,
+    parse_frontmatter,
 )
 
 KEBAB_CASE_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
@@ -112,7 +112,7 @@ def _read_frontmatter(skill_file: Path) -> dict[str, str]:
         content = skill_file.read_text(encoding="utf-8")
     except OSError:
         return {}
-    frontmatter, _ = _parse_frontmatter(content)
+    frontmatter, _ = parse_frontmatter(content)
     return frontmatter
 
 
@@ -651,7 +651,7 @@ def _validate_skill_body(
     """Report mechanically recognizable unfinished canonical procedures."""
     if frontmatter.get("lifecycle_state") == "retired":
         return
-    _, body = _parse_frontmatter(skill_file.read_text(encoding="utf-8"))
+    _, body = parse_frontmatter(skill_file.read_text(encoding="utf-8"))
     line_count = len(body.splitlines())
     if line_count > SKILL_BODY_MAX_LINES:
         ceiling = SKILL_BODY_GRANDFATHER.get(frontmatter.get("name", ""), SKILL_BODY_MAX_LINES)
