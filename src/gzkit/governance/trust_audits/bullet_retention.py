@@ -345,10 +345,9 @@ def _identity_errors(rows: list[_Row]) -> list[ValidationError]:
 
 def _load_pinned_identities(project_root: Path) -> set[str] | str:
     """Return the project's pinned row identities, or why they could not be read."""
-    # The registry seam raises a file that is not UTF-8 as the raw decode error.
     try:
         payload = load_registry(project_root, _PINNED_IDENTITIES)
-    except (RegistryError, UnicodeDecodeError) as exc:
+    except RegistryError as exc:
         return str(exc)
     identities = payload.get("identities") if isinstance(payload, dict) else None
     if not isinstance(identities, list) or not all(isinstance(i, str) for i in identities):

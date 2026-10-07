@@ -273,7 +273,7 @@ _No substantive adjustments recorded yet._
      Change Log above; they do not need a GHI. An issue link does not discharge
      an unmet acceptance obligation. -->
 
-_No defects tracked._
+- GHI #1180 — pre-landed 2026-10-07 by direct fix on the operator's routing: `load_registry` raises `RegistryError` for a registry whose bytes are not UTF-8. This is the decode arm of the existing `data/` seam contract only; the absent and malformed contract of the settings surface remains this brief's to specify and test.
 
 ## Human Attestation
 
