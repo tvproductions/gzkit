@@ -94,14 +94,6 @@ class TestAdrEvaluationEventSchema(unittest.TestCase):
     """Verify the ``adr-evaluation`` event type has a schema entry in ledger.json."""
 
     @covers("REQ-0.0.26-01-03")
-    def test_schema_entry_exists(self) -> None:
-        self.assertTrue(_SCHEMA_PATH.exists(), "ledger.json schema file not found")
-        schema = json.loads(_SCHEMA_PATH.read_text(encoding="utf-8"))
-        self.assertIn(
-            "adr-evaluation", schema.get("events", {}), "adr-evaluation not in schema events"
-        )
-
-    @covers("REQ-0.0.26-01-03")
     def test_schema_has_required_fields(self) -> None:
         schema = json.loads(_SCHEMA_PATH.read_text(encoding="utf-8"))
         event_schema = schema["events"]["adr-evaluation"]

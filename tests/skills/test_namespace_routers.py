@@ -11,6 +11,7 @@ from pathlib import Path
 
 from gzkit.core.models import SkillFrontmatter
 from gzkit.core.validation_rules import parse_frontmatter
+from gzkit.skills import list_skills
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 CANONICAL_SKILLS_ROOT = PROJECT_ROOT / ".gzkit" / "skills"
@@ -43,13 +44,11 @@ class TestRouterFilesExist(unittest.TestCase):
     """
 
     def test_all_six_router_files_exist_under_canonical_skills_root(self) -> None:
-        for slug in ROUTER_SLUGS:
-            with self.subTest(slug=slug):
-                path = _router_path(slug)
-                self.assertTrue(
-                    path.is_file(),
-                    f"canonical router skill missing: {path.relative_to(PROJECT_ROOT).as_posix()}",
-                )
+        # Asked of the product's own discovery, which lists a slug only when its
+        # canonical SKILL.md is present, so a router that exists on disk but that
+        # `gz skill list` cannot see fails here too.
+        discovered = {skill.name for skill in list_skills(PROJECT_ROOT, include_retired=True)}
+        self.assertEqual(set(ROUTER_SLUGS) - discovered, set())
 
 
 class TestRouterFrontmatterValid(unittest.TestCase):

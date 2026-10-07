@@ -400,12 +400,6 @@ class TestBypassFlagLedgerEvent(SilencedConsoleTestCase):
 class TestGrandfatheringCacheFile(unittest.TestCase):
     """REQ-0.0.59-03-06 (SUPPORT): data/req_kind_grandfathering.json exists as valid JSON."""
 
-    def test_grandfathering_json_exists(self) -> None:
-        """data/req_kind_grandfathering.json exists in the repository."""
-        project_root = Path(__file__).parent.parent.parent
-        cache_path = project_root / "data" / "req_kind_grandfathering.json"
-        self.assertTrue(cache_path.exists(), f"Missing: {cache_path}")
-
     def test_grandfathering_json_is_valid_json(self) -> None:
         """data/req_kind_grandfathering.json contains valid JSON."""
         project_root = Path(__file__).parent.parent.parent
