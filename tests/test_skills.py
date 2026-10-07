@@ -15,6 +15,8 @@ package surface rather than rendering stubs.
 from __future__ import annotations
 
 import inspect
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -146,6 +148,140 @@ class TestSkillsAuditSiblingImports(unittest.TestCase):
         from gzkit.skills_mirror import validate_mirror_root  # noqa: F401
 
         self.assertTrue(callable(validate_mirror_root))
+
+
+class TestSkillsAuditImportOrder(unittest.TestCase):
+    """Audit and package entry points resolve whichever is imported first (GHI #1039).
+
+    Each case runs in a fresh interpreter: in this process another test module
+    has already imported the package, which is the order that hides the cycle.
+    """
+
+    def _run_fresh(self, script: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(  # noqa: S603
+            [sys.executable, "-c", script],
+            capture_output=True,
+            text=True,
+            errors="replace",
+            check=False,
+        )
+
+    @covers("REQ-0.0.32-01-04")
+    def test_audit_module_imported_first_resolves(self) -> None:
+        result = self._run_fresh(
+            "from gzkit.skills_audit import DEFAULT_MAX_REVIEW_AGE_DAYS, audit_skills\n"
+            "import gzkit.skills as package\n"
+            "assert package.audit_skills is audit_skills\n"
+            "assert package.DEFAULT_MAX_REVIEW_AGE_DAYS == DEFAULT_MAX_REVIEW_AGE_DAYS\n"
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    @covers("REQ-0.0.32-01-03")
+    def test_package_imported_first_keeps_its_audit_exports(self) -> None:
+        result = self._run_fresh(
+            "from gzkit.skills import (\n"
+            "    DEFAULT_MAX_REVIEW_AGE_DAYS, SkillAuditIssue, SkillAuditReport,\n"
+            "    _parse_frontmatter, audit_skills,\n"
+            ")\n"
+            "import gzkit.skills_audit as audit\n"
+            "assert audit.audit_skills is audit_skills\n"
+            "assert audit.SkillAuditReport is SkillAuditReport\n"
+            "assert audit.SkillAuditIssue is SkillAuditIssue\n"
+            "assert _parse_frontmatter('---\\nname: x\\n---\\nbody')[0] == {'name': 'x'}\n"
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    @covers("REQ-0.0.32-01-04")
+    def test_mirror_module_imported_first_resolves(self) -> None:
+        result = self._run_fresh("from gzkit.skills_mirror import validate_mirror_root\n")
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    @covers("REQ-0.0.32-01-04")
+    def test_audit_imported_first_audits_a_project(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            result = self._run_fresh(
+                "from pathlib import Path\n"
+                "from gzkit.skills_audit import audit_skills\n"
+                f"report = audit_skills(Path({tmp!r}))\n"
+                "from gzkit.skills import SkillAuditReport\n"
+                "assert isinstance(report, SkillAuditReport)\n"
+                "assert report.checked_skills == 0\n"
+            )
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+
+class TestSharedSkillContract(unittest.TestCase):
+    """The frontmatter parser and report types both entry points share (GHI #1039)."""
+
+    def test_content_without_frontmatter_is_returned_whole(self) -> None:
+        from gzkit.skills import _parse_frontmatter
+
+        # A later fence does not make the lines above it frontmatter.
+        content = "# Title\nname: x\n---\nbody\n"
+        self.assertEqual(_parse_frontmatter(content), ({}, content))
+
+    def test_unterminated_frontmatter_is_not_frontmatter(self) -> None:
+        from gzkit.skills import _parse_frontmatter
+
+        content = "---\nname: x\nbody without a closing fence\n"
+        self.assertEqual(_parse_frontmatter(content), ({}, content))
+
+    def test_keys_metadata_map_and_body_are_extracted(self) -> None:
+        from gzkit.skills import _parse_frontmatter
+
+        content = "\n".join(
+            [
+                "---",
+                "# a comment: not a key",
+                "",
+                'name: "x"',
+                "metadata:",
+                "  owner: 'me'",
+                "  # nested comment: not a key",
+                "  a line with no separator",
+                "a line with no separator",
+                "description: d: e",
+                "  stray: outside any map",
+                "empty:",
+                "  child: not a map key",
+                "---",
+                "body one",
+                "later: a body line, not a key",
+            ]
+        )
+        frontmatter, body = _parse_frontmatter(content)
+        self.assertEqual(
+            frontmatter,
+            {"name": "x", "metadata.owner": "me", "description": "d: e", "empty": ""},
+        )
+        self.assertEqual(body, "body one\nlater: a body line, not a key")
+
+    def test_report_serializes_its_issues(self) -> None:
+        from gzkit.skills import SkillAuditIssue, SkillAuditReport
+
+        issue = SkillAuditIssue(
+            severity="error", code="SKA-X", path="a/SKILL.md", message="m", blocking=True
+        )
+        report = SkillAuditReport(
+            valid=False, issues=[issue], checked_skills=3, checked_roots=[".gzkit/skills"]
+        )
+        self.assertEqual(
+            report.to_dict(),
+            {
+                "valid": False,
+                "checked_skills": 3,
+                "checked_roots": [".gzkit/skills"],
+                "issues": [
+                    {
+                        "severity": "error",
+                        "code": "SKA-X",
+                        "path": "a/SKILL.md",
+                        "message": "m",
+                        "blocking": True,
+                    }
+                ],
+            },
+        )
 
 
 class TestScaffolderBodyUnchanged(unittest.TestCase):

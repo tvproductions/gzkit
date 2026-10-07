@@ -15,8 +15,10 @@ from gzkit.skill_contract import (
     SKILL_BODY_MAX_LINES,
     SKILL_DESCRIPTION_MAX_CHARS,
     SUPPORTED_SKILL_HARNESSES,
+    SkillAuditIssue,
+    SkillAuditReport,
+    _parse_frontmatter,
 )
-from gzkit.skills import SkillAuditIssue, SkillAuditReport, _parse_frontmatter
 
 KEBAB_CASE_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 LIFECYCLE_STATES = {"draft", "active", "deprecated", "retired"}

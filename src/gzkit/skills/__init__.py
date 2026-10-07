@@ -14,7 +14,13 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict
 
 from gzkit.config import GzkitConfig
-from gzkit.skill_contract import SKILL_DESCRIPTION_MAX_CHARS, SUPPORTED_SKILL_HARNESSES
+from gzkit.skill_contract import (
+    SKILL_DESCRIPTION_MAX_CHARS,
+    SUPPORTED_SKILL_HARNESSES,
+    SkillAuditIssue,
+    SkillAuditReport,
+    _parse_frontmatter,
+)
 
 _CANONICAL_SKILLS_RESOURCE = "gzkit.skills"
 
@@ -260,92 +266,6 @@ class Skill(BaseModel):
             "description": self.description,
             "lifecycle_state": self.lifecycle_state,
         }
-
-
-class SkillAuditIssue(BaseModel):
-    """Represents one skill-audit finding."""
-
-    model_config = ConfigDict(extra="forbid")
-
-    severity: str  # error | warning
-    code: str
-    path: str
-    message: str
-    blocking: bool
-
-    def to_dict(self) -> dict[str, Any]:
-        """Convert issue to dictionary."""
-        return {
-            "severity": self.severity,
-            "code": self.code,
-            "path": self.path,
-            "message": self.message,
-            "blocking": self.blocking,
-        }
-
-
-class SkillAuditReport(BaseModel):
-    """Structured report from skill audit checks."""
-
-    model_config = ConfigDict(extra="forbid")
-
-    valid: bool
-    issues: list[SkillAuditIssue]
-    checked_skills: int
-    checked_roots: list[str]
-
-    def to_dict(self) -> dict[str, Any]:
-        """Convert report to dictionary."""
-        return {
-            "valid": self.valid,
-            "checked_skills": self.checked_skills,
-            "checked_roots": self.checked_roots,
-            "issues": [issue.to_dict() for issue in self.issues],
-        }
-
-
-def _parse_frontmatter(content: str) -> tuple[dict[str, str], str]:
-    """Parse top-level YAML frontmatter key-values from markdown."""
-    lines = content.splitlines()
-    if not lines or lines[0].strip() != "---":
-        return {}, content
-
-    frontmatter: dict[str, str] = {}
-    active_map_key: str | None = None
-    end_idx = -1
-    for idx, raw in enumerate(lines[1:], start=1):
-        stripped = raw.strip()
-        if stripped == "---":
-            end_idx = idx
-            break
-        if not stripped or raw.lstrip().startswith("#"):
-            continue
-
-        if raw.startswith((" ", "\t")):
-            if active_map_key and ":" in stripped:
-                key, value = stripped.split(":", 1)
-                nested_key = f"{active_map_key}.{key.strip()}"
-                frontmatter[nested_key] = value.strip().strip("\"'")
-            continue
-
-        active_map_key = None
-        if ":" not in stripped:
-            continue
-
-        key, value = stripped.split(":", 1)
-        normalized_key = key.strip()
-        normalized_value = value.strip().strip("\"'")
-        if not value.strip() and normalized_key == "metadata":
-            active_map_key = normalized_key
-            continue
-
-        frontmatter[normalized_key] = normalized_value
-
-    if end_idx == -1:
-        return {}, content
-
-    body = "\n".join(lines[end_idx + 1 :])
-    return frontmatter, body
 
 
 def _body_description(body: str) -> str:
