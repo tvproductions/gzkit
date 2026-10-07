@@ -389,137 +389,6 @@ section only); DO-178C's level E, coverage criteria by level, bidirectional trac
 the § 11.17 number; Krishnan § 4.2.5 (citable only from the operator's licensed copy, with
 the MEAP version stated).
 
-## source · repository canon on lane and consequence, read 2026-10-07
-
-Read in full by this session for frontier question 2: `docs/governance/ieee/consequence-bands.md`;
-`docs/governance/ieee/OPEN-QUESTIONS.md` § Q-04 and § Q-05; the rulings store
-(`gz handoff rulings --search lane`, nine results); `AGENTS.md` § Gate Covenant; the two
-citation records `std-rtca-do-178c.md` and `std-sae-arp4754a.md`. Read by excerpt:
-`docs/design/adr/pool/ADR-pool.agent-reliability-framework.md` (its level table and the
-paragraph on risk).
-
-The lane criterion is ruled, twice, after the consequence scale was authored. Rulings store,
-`ts` 2026-09-23T11:24:23Z and 2026-09-25T00:18:39Z, operator verbatim:
-
-> The distinction is whether the external contract is changed by the OBPI
-
-> consider the distinction between lite and heavy - we shouldn't be changing behavior with lite
-
-> external contract/api behavior must be heavy
-
-`AGENTS.md` § Gate Covenant gives the reason the lane is keyed that way: Gate 4 "asks whether
-a new capability does what its OBPI said it would, and that question has no subject until an
-OBPI changes an external contract — which is what `heavy` means." Lane decides which gates
-have a subject; it is not a measure of how much is at stake.
-
-A consequence scale already exists and is the operator's own. `consequence-bands.md`,
-"Authored live with the operator on 2026-09-22", verbatim:
-
-> **Defining bands is not adopting them.** This file does **not** re-key the lite/heavy
-> lanes, does not change any gate, and authorises no work. Re-keying is a Phase 4 question.
-
-> Operator ruling, 2026-09-22: score two axes, band on the pair.
-
-> **The band is derived, never assigned: `band = D + R`.**
-
-> Banding on blast radius alone would score a loud CLI bug and a silently-wrong validator
-> alike.
-
-Its axes are detectability (`D0` loud, `D1` latent, `D2` silent) and recoverability (`R0`
-trivial, `R1` bounded repair, `R2` forensic); bands run C0 to C3; sixteen surfaces are scored;
-the file is PROVISIONAL by the ruling of 2026-09-23 ('A. Keep PROVISIONAL'), "The lift is
-decided when Phase 4 is authorised, the first point at which a band is consumed." Phase 4 was
-authorised on 2026-09-25 for the requirements pivot only, and `OPEN-QUESTIONS.md` records:
-"Consequence bands stay PROVISIONAL and are not consumed by this candidate."
-
-Two fences from the same thread. `OPEN-QUESTIONS.md` § Q-05, ruled 2026-09-22: a consequence
-threshold that delegates below a line is "**rejected**, not deferred ... **Do not re-propose
-it.**" And the standing constraint of the same date, operator verbatim: 'do not abandon the
-five gates without a discussion with me.'
-
-What this corrects in the nomenclature table's Assurance register:
-
-- The row "lane → assurance level" proposes a change the rulings above already refuse. Lane
-  is not a rigour scale and keeps its criterion.
-- The scale that row reaches for is gzkit's own and is not severity of failure condition: it
-  is detectability plus recoverability, chosen on this repository's evidence in place of the
-  conventional reading. The DO-178C and ARP4754B premise (level assigned from failure-condition
-  severity) stays NOT VERIFIED in this run's records; the consequence scale does not need it.
-  Its stated basis is IEEE 1012 Clause 5, as the IEEE thread read it; this run's
-  `std-ieee-1012.md` did not check that clause.
-- The row "gates → objectives" touches the five-gate vocabulary and falls under the standing
-  constraint; it is a name proposed, not a change of the gates.
-- Prior art for a graduated scheme: `ADR-pool.agent-reliability-framework` (levels AR0 to
-  AR4, "inspired by SLSA Build Levels, DO-178C Design Assurance Levels, and S2C2F maturity").
-- A second axis beside lane has a working precedent with a mechanical witness: `sensitivity`,
-  where a registry of surfaces (`data/security_surfaces.json`) and a path-overlap floor
-  (`gz validate --sensitivity`) let a brief escalate and never escape.
-
-## source · repository canon on chore run records, read 2026-10-07
-
-Read for frontier question 3. In full: `src/gzkit/commands/chores_staleness.py`;
-`docs/governance/state-doctrine.md` § Three-Layer Model and § Five Authority Rules. By
-section: `docs/governance/chore-class-system.md` (the opening through § Operator directives,
-§ Staleness, § Suppression, § Declared non-authority, § Implementation order, § What this
-record does not license). By excerpt: `src/gzkit/commands/chores_exec.py`, the tail of one
-`CHORE-LOG.md`, `us-gov-14cfr-43-9.md`. Measured: `gz chores status --json`; the ledger and
-its schema for chore event types; `gz handoff rulings --search` for "chore" (64 results, the
-first eighteen read), "logbook", "chore run", "pass stamp" (none) and "ledger event" (seven).
-
-Where a run is recorded today. `chores_staleness.py`, module docstring:
-
-> The run witness is the timestamped PASS block ``gz chores run`` appends to
-> ``CHORE-LOG.md``.
-
-The board reads it with a regular expression over that Markdown file (`_RUN_HEADING`). The
-ledger carries one chore event type, `chore_decommission_processed`, fired 5 times, emitted
-by one chore; no event records that any chore ran. A finding has no structured form: a run's
-log holds each criterion's captured output as text.
-
-The ratified design chose against a second register. `chore-class-system.md` ("design
-record, operator-ratified 2026-09-12"; ratification verbatim: 'I ratify, with great
-enthusiasm, the entire plan.') § Derive last-run from the artifact:
-
-> Generalize it. Do not build a parallel register — node_exporter's
-> `node_textfile_mtime_seconds` is the precedent: derive the last-run signal from the
-> proof artifact itself. One fewer thing to keep honest.
-
-Staleness does not gate, § Indicator, not gate, operator verbatim:
-
-> indicators, chores shouldn't have a bunch of gates like the adr/obpi system
-
-The same record says of itself: "It is a design record, not canon". Its § Implementation
-order step 2 records that the landed witness already departed from the proof's commit date
-to the PASS block, because the log's commit date "moves on a FAIL run too".
-
-Two canon lines pull the other way. `AGENTS.md` § Governance doctrine surfaces: "Execution
-reads thresholds, budgets, rosters and state from JSON or code." `state-doctrine.md` Layer 2:
-the ledger "records every governance event — completions, attestations, receipts, audits,
-and reconciliations" and "Defines *what has happened*"; Rule 5: "Only L1 (canon) and L2
-(events) can be gate evidence." The one class the design lets gate on staleness (Currency)
-gates today on a Markdown stamp or a scan record's commit date.
-
-Precedents for moving a signal from a document to an event: the ruling on GHI #766 (rulings
-store: "retire the bookmark document, keep the signal as a ledger event") and, for this
-discipline, 'yes to ledger'. The fence on vocabulary: an event type lands with its producer
-(`rnd-discipline.md` § Ledger events; the `ledger-vocabulary-inertness` chore).
-
-On findings. Operator, 2026-09-12 (`chore-class-system.md` § Operator directives): "A chore
-doesn't always need to make a GHI and should do so sparringly and in consultation with the
-operator." Operator, 2026-10-05 (insight 21:01:04): 'squawks are line-discovered issues
-(ghis)'. The design record names SARIF and Django's `CheckMessage` as models for a
-structured finding; none is built.
-
-The aviation text, landed and verified (`us-gov-14cfr-43-9.md`): 14 CFR § 43.9(a) requires a
-maintenance record entry from "each person who maintains", carrying a description of the
-work, "(2) The date of completion of the work performed", the performer's name where it
-differs, and the approver's signature. The entry is per work performed. It is not a register
-of defects found.
-
-Measured 2026-10-07 (a dated record): the board reads 35 overdue, 3 unmeasured, 2 current of
-40; 6 chores have no last run on record. GHI #935 and GHI #936 are closed; GHI #1009
-(accumulated-work declares no counter) is open.
-
 ---
 
 ## decision · the run opens from staged material; slug `renewing-vows`
@@ -622,37 +491,8 @@ doctrine; the campaign plan names it as companion on republish. The operator's e
 framing *(conversation-captured)* offered both readings: 'a converged and guiding sidecar, or
 binary star, to the magna carta' or 'drastically update the constitution, lodestar, PRD'.
 
-**Ruled 2026-10-07: apex under the constitution.** The question was put with three
-placements: apex over the PRD and the campaign plan with the constitution above it; full
-apex as a new root; sidecar to the campaign plan. Operator selection, verbatim: 'Apex under
-constitution (Recommended)'. What the ruling fixes, and what it corrects in the reasoning
-above:
-
-- The sentence above, "constitution, PRD and campaign plan are renewed from it", went further
-  than the insight it rests on (22:03:25: "above the PRD, not a sidecar to the campaign
-  plan") and collided with a ruling the active campaign plan carries in § 9a (operator,
-  2026-06-14, as booked in `build-to-1.0-campaign-2026-06-10.md`): the Constitution is "the
-  enduring normative charter, **root by stability gradient** (amendment cadence)", the tree
-  "ordered by *rate of change*". That ruling stands. The constitution is not renewed from the
-  concept of operations.
-- The concept of operations ranks above the PRD and the campaign plan. Its seat between the
-  constitution and the PRD is the agent's inference from the booked ranking rule (it changes
-  at a reconceptualisation: slower than a per-major PRD, faster than a charter of
-  invariants), accepted by the selection; canon does not state it.
-- The campaign plan keeps sequencing authority (its § 8: "The campaign rules sequencing").
-  The lodestar is the document's home as doctrine.
-- Facts read 2026-10-07 that the placement rests on: `docs/design/constitutions/` holds only
-  `.gitkeep`, so the root the 2026-06-14 ruling names still has no document; the PRD is
-  `status: Draft`, dated 2026-01-22; `docs/governance/ieee/01-engineering-method-2026-09-22.md`
-  records the PRD as "Superseded in practice by the campaign plan"; the campaign register
-  carries 'sidecar' as "advisory sidecars, not steering surfaces".
-
-*Avoid* "apex" unqualified: it reads as root, which the ruling refuses.
-
-**commissions:** 4 — the concept of operations in the doctrine library, seated above the PRD
-and the campaign plan and under the constitution; the campaign plan republished naming it; a
-PRD amendment pass. The constitution and the PRD are corrected where they contradict it (the
-four stale items), not rewritten from it.
+**commissions:** 4 — the concept of operations in the doctrine library; the campaign plan
+republished naming it; a PRD amendment pass.
 
 ## decision · green keeps local cleanup
 
@@ -783,8 +623,7 @@ standards entry above.
 | | insights file | occurrence reports | ASRS as model |
 | | finding-rate panel | flight operational quality assurance | AC 120-82 |
 | | V.I.B.E.S. | normalisation of deviance | Vaughan |
-| Assurance | lane | lane (unchanged; ruled 2026-10-07) | operator rulings 2026-09-23 and 2026-09-25 |
-| | consequence bands C0 to C3 | assurance level | `consequence-bands.md`; IEEE 1012 Clause 5 as the IEEE thread read it |
+| Assurance | lane | assurance level | DO-178C via ARP4754B (4754A superseded 2023) |
 | | gates | objectives | DO-178C Annex A |
 | | `@covers` | bidirectional traceability; requirements-based testing | DO-178C |
 | | gating validators | qualified tools | DO-330 |
@@ -809,75 +648,13 @@ severity-to-level premise, DO-178C's clause numbers and coverage criteria, EIA-6
 names) carry "clause unverified" until a licensed copy is read.
 
 Three rows change doctrine rather than name it and each needs a witness: assurance level as
-the lane criterion (ruled 2026-10-07: refused as a lane criterion, commissioned as a second
-axis — decision *assurance level is a second axis beside lane*);
+the lane criterion (severity of failure condition, not external contract — frontier);
 weaponeering as a rule (ruled); the tasking event (ruled). Facts on the lane row, gathered
 2026-10-06: `lane` is a required `lite | heavy` field in `src/gzkit/schemas/adr.json`,
 `obpi.json` and `obpi_brief_structure.json`; nothing in `src/gzkit` infers a lane from the
 paths a change touches; the criterion lives in prose (`AGENTS.md` § Gate Covenant) and in the
 interview prompt "heavy = external contracts" (`src/gzkit/interview.py`). An assurance-level
 criterion would need its own witness before it could replace that prose.
-
-## decision · assurance level is a second axis beside lane
-
-Frontier question 2 asked whether assurance level replaces the external-contract lane
-criterion. Canon answered the first half before the question was put (source entry
-*repository canon on lane and consequence*): the lane criterion is ruled twice and stands, so
-"replaces" was not offered. What was put, 2026-10-07, with two answers: a consequence axis
-beside lane, proposed only; or the name alone, not pursued in this run. Operator selection,
-verbatim: 'Second axis, propose only (Recommended)'.
-
-What the ruling fixes:
-
-- Lane keeps its name and its criterion. The table row is corrected.
-- "Assurance level" is the ultimate name for the consequence bands the operator ruled on
-  2026-09-22: detectability plus recoverability, `band = D + R`, C0 to C3. It is not severity
-  of failure condition, and it rests on no DO-178C or ARP4754B text.
-- It is an axis independent of lane, as `kind` and `sensitivity` already are.
-- The witness follows the `sensitivity` precedent: a registry of scored surfaces and a
-  path-overlap floor under which a brief may escalate and may not escape. That is the shape
-  only; its specification is diamond 2.
-- Two fences bind the proposal, both ruled 2026-09-22: a level adds rigour and never lowers
-  the attestation or initiation floor (`OPEN-QUESTIONS.md` § Q-05, "Do not re-propose it");
-  and the five gates are not abandoned or renamed by it.
-
-What it does not settle: the band scores are PROVISIONAL, and the lift is the operator's at
-the first point a band is consumed, which this proposal would be. Three rows have no finding
-behind them and four rest on findings that are open or disputed.
-
-*Avoid* "assurance level" for lane, and *avoid* "severity" for the scale.
-
-**commissions:** 1 — propose an engineering order for the assurance-level axis, after briefs
-15 to 20, conditional on the operator lifting PROVISIONAL; 4 — the corrected nomenclature rows.
-
-## decision · a chore run is a ledger event; a chore finding is not
-
-Frontier question 3 asked whether chore runs and findings become ledger events. Two canon
-lines disagree on it (source entry *repository canon on chore run records*): the ratified
-chore design refuses a parallel register and derives last-run from the artifact; `AGENTS.md`
-and the state doctrine put state in JSON or code and what has happened in the ledger. Put to
-the operator 2026-10-07 with three answers: runs yes and findings no; both; neither. Operator
-selection, verbatim: 'Runs yes, findings no (Recommended)'.
-
-What the ruling fixes:
-
-- A chore run becomes one ledger event. That event replaces the PASS block in `CHORE-LOG.md`
-  as the run witness, so one register remains; the log stays as the readable transcript.
-- This amends one line of the 2026-09-12 chore design, § Derive last-run from the artifact.
-  The amendment keeps that section's reason ("One fewer thing to keep honest") and changes
-  which artifact is the one.
-- A finding does not become a ledger event. It keeps its present routes: fixed in the run, or
-  a GHI "sparringly and in consultation with the operator". No structured finding object is
-  commissioned.
-- Staleness still announces and does not gate. The event is a record, in the sense of the
-  14 CFR § 43.9(a) entry: one per work performed.
-- The event type lands with the code that emits it, never before.
-
-What it does not do: it does not move the board. 35 of 40 overdue is cadence, which row 3
-carries.
-
-**commissions:** 1 — propose the chore run event as the maintenance logbook item, after briefs
-15 to 20; 4 — on that proposal's landing, the amended line in `chore-class-system.md`.
 
 ## decision · corrections booked during the dialogue
 
@@ -931,10 +708,10 @@ staleness items repaired. Everything not named is post-IOC by default.
 
 | # | Disposition | State | What | Reason |
 |---|---|---|---|---|
-| 1 | ADR / OBPI | commissioned | Proposed only, after briefs 15–20: engineering orders for the crew split (constraints, red, green) with the tasking event and the sortie matrix; the assurance-level axis beside lane (the consequence bands, with a surface registry and overlap floor as witness), conditional on the operator lifting PROVISIONAL on the bands; combat assessment with a collateral owner and one assessment record; the maintenance logbook to L2 (one ledger event per chore run, replacing the PASS block as the run witness; findings are not events — ruled 2026-10-07); identifier migration at IOC. | Each passes the admission question — hard to reverse, surprising without this record, a real trade-off; each depends on the spine. The operator initiates, or not (IRON LAW). |
+| 1 | ADR / OBPI | commissioned | Proposed only, after briefs 15–20: engineering orders for the crew split (constraints, red, green) with the tasking event and the sortie matrix; combat assessment with a collateral owner and one assessment record; the maintenance logbook to L2; identifier migration at IOC. | Each passes the admission question — hard to reverse, surprising without this record, a real trade-off; each depends on the spine. The operator initiates, or not (IRON LAW). |
 | 2 | GHI / direct fix | commissioned | (a) The four theatre-canon staleness items (insight 21:34:40: dead constitution link; stale non-goal; INV-007 vs ADR-0.0.36; lodestar README vs Boundary #5) via `ghi-author`. (b) Routing of the malformed `@covers` tags insight 21:30:15 recorded (525 findings on 2026-10-05; re-measured 2026-10-06, still present): one GHI for direct repair of foundation-era tags to REQ ids, or a parser rule for OBPI-id tags — the operator picks. (c) Nothing lints Markdown under `docs/`: `run_pymarkdown` has no caller, the `lint()` docstring names a linter that never runs, and pymarkdown is not installed or declared (insight 2026-10-06T10:49:46Z; found in passing by the research pass, verified by the session). Route: a direct fix of the docstring and the dead function, or a dependency decision under STDLIB-FIRST — the operator picks. | Defects by the PRIME DIRECTIVE, each tracked by an insight line today. Item 10's run has completed and no lock is held, so (b) is no longer another session's. Filing waits on the operator's go on this row. |
 | 3 | chore | commissioned | Advise only: sort per-flight conformance checks off the interval board into `gz check`; package due interval tasks into named visits (letter checks). | The board's 35 overdue of 40 (measured 2026-10-05) is the signature of per-flight work on an interval board. The operator directs admission. |
-| 4 | control surface, rule, doc, skill, hook | commissioned | The concept of operations in the doctrine library; the campaign plan republished naming it; a PRD amendment pass (the four stale items, the IOC set); the weaponeering rule text; the model-and-effort table in `model-selection.md`, describing the mechanism as the harness has it; the general orders; the nomenclature terms, held here until the glossary home is named. | The deliverable of this run; the operator's go on this row is the fund. The placement is ruled (2026-10-07: apex under the constitution), so the first two are no longer gated by it; the standards must land before any term is cited in doctrine. |
+| 4 | control surface, rule, doc, skill, hook | commissioned | The concept of operations in the doctrine library; the campaign plan republished naming it; a PRD amendment pass (the four stale items, the IOC set); the weaponeering rule text; the model-and-effort table in `model-selection.md`, describing the mechanism as the harness has it; the general orders; the nomenclature terms, held here until the glossary home is named. | The deliverable of this run; the operator's go on this row is the fund. The apex confirmation on the frontier gates the first two; the standards must land before any term is cited in doctrine. |
 | 5 | one-shot refactoring | commissioned | Identifier migration ECP / EO / WP via `gz migrate-semver`, aliases before, timed to IOC. | Ruled 'A' (insight 22:03:25); the PRD-per-major rule puts it at the major boundary. Proposed as a program; the operator selects its route. |
 | 6 | no action | commissioned | Do not build: an `issue-ato` CLI verb from the dialogue; an AST radar as a separate tool; "halt after N amnesiac turns"; a civil softening of the combat register. | The airlock already parses; `BLOCKED` to the operator is the better escalation; the softening was withdrawn by the operator (insight 22:03:25). |
 
@@ -944,12 +721,12 @@ staleness items repaired. Everything not named is post-IOC by default.
 
 **Frontier.** Open at 2026-10-06, in the order the run asks them, one at a time:
 
-1. *Closed 2026-10-07 by ruling* (decision *placement is the apex, not a sidecar*): apex
-   under the constitution.
-2. *Closed 2026-10-07 by ruling* (decision *assurance level is a second axis beside lane*):
-   lane keeps its criterion; the consequence bands are proposed as a second axis.
-3. *Closed 2026-10-07 by ruling* (decision *a chore run is a ledger event; a chore finding
-   is not*).
+1. The operator confirms or corrects the apex reading of 'also, yes to sidecar vs. apex'
+   (moves row 4: the concept of operations' home and the campaign republish).
+2. Whether assurance level (severity of failure condition) replaces the external-contract
+   lane criterion, and what witness would carry it (moves rows 1 and 4; facts under the
+   nomenclature table).
+3. Whether chore runs and findings become ledger events (moves rows 1 and 3).
 4. The battle rhythm (agent proposal; moves row 4).
 5. The IOC set for the PRD amendment (agent proposal; moves row 4).
 6. The standards verification pass — both halves have landed (27 files). Open remainder:
