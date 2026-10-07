@@ -491,8 +491,37 @@ doctrine; the campaign plan names it as companion on republish. The operator's e
 framing *(conversation-captured)* offered both readings: 'a converged and guiding sidecar, or
 binary star, to the magna carta' or 'drastically update the constitution, lodestar, PRD'.
 
-**commissions:** 4 — the concept of operations in the doctrine library; the campaign plan
-republished naming it; a PRD amendment pass.
+**Ruled 2026-10-07: apex under the constitution.** The question was put with three
+placements: apex over the PRD and the campaign plan with the constitution above it; full
+apex as a new root; sidecar to the campaign plan. Operator selection, verbatim: 'Apex under
+constitution (Recommended)'. What the ruling fixes, and what it corrects in the reasoning
+above:
+
+- The sentence above, "constitution, PRD and campaign plan are renewed from it", went further
+  than the insight it rests on (22:03:25: "above the PRD, not a sidecar to the campaign
+  plan") and collided with a ruling the active campaign plan carries in § 9a (operator,
+  2026-06-14, as booked in `build-to-1.0-campaign-2026-06-10.md`): the Constitution is "the
+  enduring normative charter, **root by stability gradient** (amendment cadence)", the tree
+  "ordered by *rate of change*". That ruling stands. The constitution is not renewed from the
+  concept of operations.
+- The concept of operations ranks above the PRD and the campaign plan. Its seat between the
+  constitution and the PRD is the agent's inference from the booked ranking rule (it changes
+  at a reconceptualisation: slower than a per-major PRD, faster than a charter of
+  invariants), accepted by the selection; canon does not state it.
+- The campaign plan keeps sequencing authority (its § 8: "The campaign rules sequencing").
+  The lodestar is the document's home as doctrine.
+- Facts read 2026-10-07 that the placement rests on: `docs/design/constitutions/` holds only
+  `.gitkeep`, so the root the 2026-06-14 ruling names still has no document; the PRD is
+  `status: Draft`, dated 2026-01-22; `docs/governance/ieee/01-engineering-method-2026-09-22.md`
+  records the PRD as "Superseded in practice by the campaign plan"; the campaign register
+  carries 'sidecar' as "advisory sidecars, not steering surfaces".
+
+*Avoid* "apex" unqualified: it reads as root, which the ruling refuses.
+
+**commissions:** 4 — the concept of operations in the doctrine library, seated above the PRD
+and the campaign plan and under the constitution; the campaign plan republished naming it; a
+PRD amendment pass. The constitution and the PRD are corrected where they contradict it (the
+four stale items), not rewritten from it.
 
 ## decision · green keeps local cleanup
 
@@ -711,7 +740,7 @@ staleness items repaired. Everything not named is post-IOC by default.
 | 1 | ADR / OBPI | commissioned | Proposed only, after briefs 15–20: engineering orders for the crew split (constraints, red, green) with the tasking event and the sortie matrix; combat assessment with a collateral owner and one assessment record; the maintenance logbook to L2; identifier migration at IOC. | Each passes the admission question — hard to reverse, surprising without this record, a real trade-off; each depends on the spine. The operator initiates, or not (IRON LAW). |
 | 2 | GHI / direct fix | commissioned | (a) The four theatre-canon staleness items (insight 21:34:40: dead constitution link; stale non-goal; INV-007 vs ADR-0.0.36; lodestar README vs Boundary #5) via `ghi-author`. (b) Routing of the malformed `@covers` tags insight 21:30:15 recorded (525 findings on 2026-10-05; re-measured 2026-10-06, still present): one GHI for direct repair of foundation-era tags to REQ ids, or a parser rule for OBPI-id tags — the operator picks. (c) Nothing lints Markdown under `docs/`: `run_pymarkdown` has no caller, the `lint()` docstring names a linter that never runs, and pymarkdown is not installed or declared (insight 2026-10-06T10:49:46Z; found in passing by the research pass, verified by the session). Route: a direct fix of the docstring and the dead function, or a dependency decision under STDLIB-FIRST — the operator picks. | Defects by the PRIME DIRECTIVE, each tracked by an insight line today. Item 10's run has completed and no lock is held, so (b) is no longer another session's. Filing waits on the operator's go on this row. |
 | 3 | chore | commissioned | Advise only: sort per-flight conformance checks off the interval board into `gz check`; package due interval tasks into named visits (letter checks). | The board's 35 overdue of 40 (measured 2026-10-05) is the signature of per-flight work on an interval board. The operator directs admission. |
-| 4 | control surface, rule, doc, skill, hook | commissioned | The concept of operations in the doctrine library; the campaign plan republished naming it; a PRD amendment pass (the four stale items, the IOC set); the weaponeering rule text; the model-and-effort table in `model-selection.md`, describing the mechanism as the harness has it; the general orders; the nomenclature terms, held here until the glossary home is named. | The deliverable of this run; the operator's go on this row is the fund. The apex confirmation on the frontier gates the first two; the standards must land before any term is cited in doctrine. |
+| 4 | control surface, rule, doc, skill, hook | commissioned | The concept of operations in the doctrine library; the campaign plan republished naming it; a PRD amendment pass (the four stale items, the IOC set); the weaponeering rule text; the model-and-effort table in `model-selection.md`, describing the mechanism as the harness has it; the general orders; the nomenclature terms, held here until the glossary home is named. | The deliverable of this run; the operator's go on this row is the fund. The placement is ruled (2026-10-07: apex under the constitution), so the first two are no longer gated by it; the standards must land before any term is cited in doctrine. |
 | 5 | one-shot refactoring | commissioned | Identifier migration ECP / EO / WP via `gz migrate-semver`, aliases before, timed to IOC. | Ruled 'A' (insight 22:03:25); the PRD-per-major rule puts it at the major boundary. Proposed as a program; the operator selects its route. |
 | 6 | no action | commissioned | Do not build: an `issue-ato` CLI verb from the dialogue; an AST radar as a separate tool; "halt after N amnesiac turns"; a civil softening of the combat register. | The airlock already parses; `BLOCKED` to the operator is the better escalation; the softening was withdrawn by the operator (insight 22:03:25). |
 
@@ -721,8 +750,8 @@ staleness items repaired. Everything not named is post-IOC by default.
 
 **Frontier.** Open at 2026-10-06, in the order the run asks them, one at a time:
 
-1. The operator confirms or corrects the apex reading of 'also, yes to sidecar vs. apex'
-   (moves row 4: the concept of operations' home and the campaign republish).
+1. *Closed 2026-10-07 by ruling* (decision *placement is the apex, not a sidecar*): apex
+   under the constitution.
 2. Whether assurance level (severity of failure condition) replaces the external-contract
    lane criterion, and what witness would carry it (moves rows 1 and 4; facts under the
    nomenclature table).
