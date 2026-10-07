@@ -106,6 +106,19 @@ class TestCommitWitness(_CommitRepo):
         result = run_commit_witness(self.root, self._commit("guard + test, crlf"), runner=_RUNNER)
         self.assertEqual(result.verdict, "driven", result)
 
+    def test_a_hung_baseline_voids_the_experiment_without_raising(self):
+        """The commit's own tests never return on its own tree: nothing can be graded (#1179)."""
+        (self.root / "pkg" / "mod.py").write_text(_GUARDED, encoding="utf-8")
+        self._add_test("\n    def test_negative(self):\n        self.assertEqual(clamp(-1), 0)\n")
+        sha = self._commit("guard + test")
+        hang = subprocess.TimeoutExpired(["unittest"], 600)
+        with mock.patch("gzkit.commit_witness._run", side_effect=hang):
+            result = run_commit_witness(self.root, sha, runner=_RUNNER)
+        self.assertEqual(result.verdict, "inconclusive", result)
+        self.assertEqual(result.hunks, [])
+        self.assertIn("void", result.detail)
+        self.assertIn("600", result.detail)
+
     def test_a_guard_with_no_test_module_is_reported_not_graded(self):
         """No test module in the commit: nothing in it can fail, so no hunk is graded."""
         (self.root / "pkg" / "mod.py").write_text(_GUARDED, encoding="utf-8")
@@ -351,6 +364,24 @@ class TestArbRedCommitCli(unittest.TestCase):
         code, err = self._exit_for("inconclusive", outcome="inconclusive")
         self.assertEqual(code, 0)
         self.assertIn("INCONCLUSIVE", err)
+
+    def test_a_void_experiment_states_why_and_is_not_an_unexpected_error(self):
+        """No hunk rows exist to read a reason from, so the command states it (GHI #1179)."""
+        witness = CommitWitness(
+            commit="a" * 40, verdict="inconclusive", detail="the experiment is void: hung"
+        )
+        out, err = io.StringIO(), io.StringIO()
+        with (
+            tempfile.TemporaryDirectory() as tmp,
+            mock.patch("gzkit.commit_witness.run_commit_witness", return_value=witness),
+            mock.patch("gzkit.commands.common.get_project_root", return_value=Path(tmp)),
+            contextlib.redirect_stdout(out),
+            contextlib.redirect_stderr(err),
+        ):
+            code = arb_red_cmd(commit="HEAD")
+        self.assertEqual(code, 0)
+        self.assertIn("the experiment is void: hung", err.getvalue())
+        self.assertIn("receipt=arb-red-commit-", out.getvalue())
 
     def test_a_witness_that_cannot_run_is_an_internal_error(self):
         with (

@@ -173,6 +173,14 @@ def _run(command: list[str], cwd: Path, pycache_prefix: Path) -> subprocess.Comp
     )
 
 
+def hang_reason(subject: str) -> str:
+    """Say that ``subject`` exceeded the hang bound, which is a fact about the run."""
+    return (
+        f"{subject} exceeded the {_RUN_TIMEOUT_S}s hang bound and was stopped — "
+        "a run that did not finish grades nothing"
+    )
+
+
 def _compiles(source: Path, cwd: Path, pycache_prefix: Path) -> bool:
     """Check syntax only; the test execution must separately establish usable behavior."""
     result = _run(
@@ -224,7 +232,21 @@ def _witness_one(
                 source_changed=True,
                 pycache_prefix=str(prefix),
             )
-        result = _run(command, cwd, prefix)
+        try:
+            result = _run(command, cwd, prefix)
+        except subprocess.TimeoutExpired:
+            # The bound's expiry is an outcome of the sweep, not a crash of it: the
+            # other mutants still have verdicts to report (GHI #1179).
+            return MutationWitness(
+                label=mutation.label,
+                outcome="inconclusive",
+                reason=hang_reason("the mutant's test run"),
+                target_present=True,
+                source_changed=True,
+                compiles=True,
+                source_sha256=hashlib.sha256(mutated.encode("utf-8")).hexdigest(),
+                pycache_prefix=str(prefix),
+            )
         output = (result.stdout or "") + (result.stderr or "")
         executed, failing, count = read_test_observations(output)
 
@@ -286,10 +308,17 @@ def run_mutation_sweep(
     original_bytes = source.read_bytes()
     original = original_bytes.decode("utf-8")
     with tempfile.TemporaryDirectory() as cache:
-        baseline = _run(command, project_root, Path(cache))
-    baseline_output = (baseline.stdout or "") + (baseline.stderr or "")
-    baseline_tests, _, baseline_count = read_test_observations(baseline_output)
-    baseline_green = baseline.returncode == 0 and baseline_count > 0 and bool(baseline_tests)
+        try:
+            baseline = _run(command, project_root, Path(cache))
+        except subprocess.TimeoutExpired:
+            baseline = None
+    if baseline is None:
+        baseline_output = hang_reason("the baseline run")
+        baseline_tests, baseline_count, baseline_green = set(), 0, False
+    else:
+        baseline_output = (baseline.stdout or "") + (baseline.stderr or "")
+        baseline_tests, _, baseline_count = read_test_observations(baseline_output)
+        baseline_green = baseline.returncode == 0 and baseline_count > 0 and bool(baseline_tests)
 
     witnesses: list[MutationWitness] = []
     try:

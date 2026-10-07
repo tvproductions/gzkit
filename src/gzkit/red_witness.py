@@ -149,7 +149,9 @@ def classify_failure(exit_status: int, output: str) -> FailureClass:
         return "none"
     match = _FAILED_SUMMARY_RE.search(output)
     if match is None:
-        # Non-zero with no unittest summary: a crash, a collection error, a timeout.
+        # Non-zero with no unittest summary: a crash or a collection error. A run that
+        # exceeds the hang bound raises before any exit status exists and is voided
+        # by the caller.
         return "error"
     body = match.group("body")
     errors = _ERRORS_RE.search(body)
@@ -532,7 +534,11 @@ def run_red_witness(
             output_tail=f"{note}\n{output}"[-4000:],
         )
 
-    baseline_exit, baseline_output = _run_tests(runner, test_names, project_root)
+    hung = f"exceeded the {_TEST_TIMEOUT_S}s hang bound and was stopped, so the experiment is void"
+    try:
+        baseline_exit, baseline_output = _run_tests(runner, test_names, project_root)
+    except subprocess.TimeoutExpired:
+        return void(0, f"the covering tests' run on the current tree {hung}", "")
     baseline_reason = _baseline_void(baseline_exit, baseline_output)
     if baseline_reason is not None:
         # No base-tree run happened, so its exit status is recorded as the void runs' 0.
@@ -541,7 +547,12 @@ def run_red_witness(
     test_files = changed_test_files(project_root, base, tests_dir)
     with base_tree_worktree(project_root, base) as worktree:
         _graft_test_files(project_root, worktree, test_files)
-        exit_status, output = _run_tests(runner, test_names, worktree)
+        try:
+            exit_status, output = _run_tests(runner, test_names, worktree)
+        except subprocess.TimeoutExpired:
+            # A hang without the implementation is not the assertion a RED needs, and
+            # no exit status exists to classify (GHI #1179).
+            return void(0, f"the covering tests' run on the base tree {hung}", "")
 
     failure_class = classify_failure(exit_status, output)
     # A run that executed no test cannot witness anything either way: a crash before

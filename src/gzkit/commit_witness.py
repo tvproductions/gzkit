@@ -37,6 +37,7 @@ from __future__ import annotations
 
 import ast
 import re
+import subprocess
 import tempfile
 from pathlib import Path
 from typing import Literal
@@ -47,6 +48,7 @@ from gzkit.mutation_witness import (
     Mutation,
     MutationWitness,
     _run,
+    hang_reason,
     run_mutation_sweep,
 )
 from gzkit.red_witness import _git, base_tree_worktree
@@ -401,7 +403,18 @@ def run_commit_witness(
             detail=f"the commit changes {len(production)} production file(s) and no test "
             "module, so nothing in it can fail when its guards are removed",
         )
-    hunks = _sweep_hunks(project_root, sha, production, [*runner, *modules])
+    try:
+        hunks = _sweep_hunks(project_root, sha, production, [*runner, *modules])
+    except subprocess.TimeoutExpired:
+        # Only the commit-tree baseline can still raise here: each mutant's run is
+        # graded inside the sweep. Without a baseline no hunk can be graded (GHI #1179).
+        return CommitWitness(
+            commit=sha,
+            test_modules=modules,
+            verdict="inconclusive",
+            detail="the experiment is void: "
+            + hang_reason("the commit's own tests, run on the commit's own tree,"),
+        )
     if not hunks:
         return CommitWitness(
             commit=sha,

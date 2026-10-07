@@ -15,6 +15,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 from gzkit.red_witness import (
     RedWitness,
@@ -822,3 +823,45 @@ class TestWitnessSufficiencyOfTheNamedTest(_GitFixture):
         witness = self._witness(["tests.test_impl.T.test_added"])
         self.assertEqual(witness.failure_class, "error")
         self.assertTrue(witness.is_red)
+
+
+class TestHungRunIsVoid(_GitFixture):
+    """A run that exceeds the hang bound could not tell; it is not a finding (GHI #1179)."""
+
+    def _witness_with_hang(self, hangs_in_base_tree: bool) -> RedWitness:
+        (self.root / "impl.py").write_text("def value():\n    return 1\n", encoding="utf-8")
+        self._commit("base")
+        (self.root / "impl.py").write_text("def value():\n    return 2\n", encoding="utf-8")
+        (self.root / "tests" / "test_impl.py").write_text(
+            "import unittest\nfrom impl import value\n\n"
+            "class T(unittest.TestCase):\n"
+            "    def test_value(self):\n        self.assertEqual(value(), 2)\n",
+            encoding="utf-8",
+        )
+        real_run = subprocess.run
+
+        def run(command, *args, **kwargs):
+            in_base_tree = Path(kwargs.get("cwd", self.root)).resolve() != self.root.resolve()
+            if "unittest" in command and in_base_tree == hangs_in_base_tree:
+                raise subprocess.TimeoutExpired(command, 600)
+            return real_run(command, *args, **kwargs)
+
+        with mock.patch("gzkit.red_witness.subprocess.run", run):
+            return run_red_witness(
+                project_root=self.root,
+                req_id="REQ-1.2.3-01-01",
+                test_names=["tests.test_impl"],
+                test_runner=_RUNNER,
+            )
+
+    def test_a_hung_baseline_is_not_applicable(self) -> None:
+        witness = self._witness_with_hang(hangs_in_base_tree=False)
+        self.assertEqual(witness.failure_class, "not-applicable")
+        self.assertFalse(witness.is_conclusive)
+        self.assertIn("600", witness.output_tail)
+
+    def test_a_hung_base_tree_run_is_not_applicable(self) -> None:
+        witness = self._witness_with_hang(hangs_in_base_tree=True)
+        self.assertEqual(witness.failure_class, "not-applicable")
+        self.assertFalse(witness.is_red)
+        self.assertIn("600", witness.output_tail)

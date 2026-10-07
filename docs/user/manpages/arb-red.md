@@ -48,7 +48,7 @@ The `failure_class` is the verdict, not decoration.
 | `assertion` | The test failed on an assertion | **Strong RED.** The test genuinely depends on the implementation. |
 | `error` | The test failed on an ImportError or other exception | **Weak RED.** It failed for the wrong reason — usually the new symbol does not exist yet. Recorded as `error`; never silently equated with an assertion RED. |
 | `none` | The test **passed** with the production hunks withheld | **No RED.** The test cannot fail when the business logic changes (`AGENTS.md` § DO IT RIGHT Rule 6), so it witnesses nothing. Blocking. |
-| `not-applicable` | The run could not tell; `output_tail` names the cause | **Not a verdict on the test** (GHI #839). Five causes: nothing was withheld; the base run executed no test; the baseline is invalid because the covering tests do not pass on the **current** tree; a covering test did not execute in the base graft (mismatched source/test identity); or the run failed only in tests the REQ does not name (GHI #1154). An invalid baseline is repaired on HEAD before re-running. |
+| `not-applicable` | The run could not tell; `output_tail` names the cause | **Not a verdict on the test** (GHI #839). Six causes: nothing was withheld; the base run executed no test; the baseline is invalid because the covering tests do not pass on the **current** tree; a covering test did not execute in the base graft (mismatched source/test identity); the run failed only in tests the REQ does not name (GHI #1154); or a run exceeded the hang bound and was stopped, on either tree (GHI #1179). An invalid baseline is repaired on HEAD before re-running. |
 
 ---
 
@@ -81,7 +81,7 @@ such as a signature line or a constant, makes no guard claim: it is listed with
 | `driven` | Every hunk or guard statement was `killed`: a test in the commit fails without it | 0 |
 | `undriven` | A hunk or guard statement `survived`: reverting it left the commit's tests passing | 1 |
 | `no-tests` | The commit changes production code and no test module | 1 |
-| `inconclusive` | A hunk or guard statement could not be graded (baseline not green, or the revert raised an error rather than an assertion) — a claim about the run, not the tests | 0 |
+| `inconclusive` | A hunk or guard statement could not be graded (baseline not green, the revert raised an error rather than an assertion, or its test run exceeded the hang bound) — a claim about the run, not the tests. A hung mutant is one `inconclusive` row and the sweep continues; when the commit's own tests hang on the commit's own tree the experiment is void, no hunk row is printed and the reason is stated (GHI #1179) | 0 |
 | `no-production-hunks` | Nothing behavioral to witness | 0 |
 
 The declared test set is the commit's own test modules, deliberately: a fix that

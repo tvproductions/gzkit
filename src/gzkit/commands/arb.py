@@ -122,9 +122,15 @@ def _arb_red_commit(commit: str, quiet: bool) -> int:
         )
         return 1
     if witness.verdict == "inconclusive":
+        # A void experiment has no hunk rows, so its reason is the witness's detail.
+        cause = (
+            f"at least one hunk of {witness.commit[:12]} could not be graded (see the "
+            "per-hunk reasons)"
+            if witness.hunks
+            else f"{witness.commit[:12]}: {witness.detail}"
+        )
         print(
-            f"RED WITNESS INCONCLUSIVE: at least one hunk of {witness.commit[:12]} could not "
-            "be graded (see the per-hunk reasons). This is a claim about the run, not a "
+            f"RED WITNESS INCONCLUSIVE: {cause}. This is a claim about the run, not a "
             "finding about the tests.",
             file=sys.stderr,
         )

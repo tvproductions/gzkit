@@ -18,10 +18,13 @@ So `killed` and `survived` are claims about the guard, while `invalid` and
 
 from __future__ import annotations
 
+import subprocess
 import unittest
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest import mock
 
+from gzkit import mutation_witness
 from gzkit.mutation_witness import Mutation, run_mutation_sweep
 
 _MODULE = '''"""Subject under mutation."""
@@ -591,3 +594,51 @@ class TestDocumentedTestsAreObservable(unittest.TestCase):
             )
         self.assertIn("test_rejects_zero", " ".join(sweep.baseline_executed_tests))
         self.assertNotIn("test_accepts_one", " ".join(sweep.baseline_executed_tests))
+
+
+class TestHungRun(unittest.TestCase):
+    """A test run that exceeds the hang bound is an outcome about the run (GHI #1179)."""
+
+    def _sweep_with_hang(self, hangs_when) -> object:
+        """Sweep the fixture, expiring the bound whenever ``hangs_when(source_text)``."""
+        real_run = mutation_witness._run
+
+        def run(command, cwd, pycache_prefix):
+            if command == _TEST_CMD and hangs_when((Path(cwd) / "subject.py").read_text("utf-8")):
+                raise subprocess.TimeoutExpired(command, 600)
+            return real_run(command, cwd, pycache_prefix)
+
+        with TemporaryDirectory() as td, mock.patch.object(mutation_witness, "_run", run):
+            root = Path(td)
+            return run_mutation_sweep(
+                root,
+                _fixture(root),
+                [
+                    Mutation(
+                        find="if value <= 0:",
+                        replace="while True:",
+                        label="hangs",
+                        expected_tests=["test_rejects_zero"],
+                    ),
+                    Mutation(
+                        find="return False",
+                        replace="return True",
+                        label="killed",
+                        expected_tests=["test_rejects_zero"],
+                    ),
+                ],
+                _TEST_CMD,
+            )
+
+    def test_a_hung_mutant_is_inconclusive_and_the_sweep_continues(self) -> None:
+        sweep = self._sweep_with_hang(lambda text: "while True:" in text)
+        self.assertEqual([w.outcome for w in sweep.witnesses], ["inconclusive", "killed"])
+        self.assertIn("600", sweep.witnesses[0].reason)
+        self.assertEqual(sweep.restored_source_sha256, sweep.source_sha256)
+        self.assertFalse(sweep.is_conclusive)
+
+    def test_a_hung_baseline_voids_every_mutant(self) -> None:
+        sweep = self._sweep_with_hang(lambda text: True)
+        self.assertFalse(sweep.baseline_green)
+        self.assertIn("600", sweep.baseline_output_tail)
+        self.assertEqual({w.outcome for w in sweep.witnesses}, {"inconclusive"})
