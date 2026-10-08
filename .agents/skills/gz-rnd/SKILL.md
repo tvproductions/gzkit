@@ -6,9 +6,9 @@ category: agent-operations
 lifecycle_state: active
 disable-model-invocation: true
 owner: gzkit-governance
-last_reviewed: 2026-09-28
+last_reviewed: 2026-10-07
 metadata:
-  skill-version: "0.4.0"
+  skill-version: "0.5.0"
 model: opus
 ---
 
@@ -27,19 +27,16 @@ retaining and organizing possible outcomes from an R&D designing session."*
 
 **Two subjects, one frame.** A run studies either something new — pasted material, an
 unexplored capability — or **a population the project already carries**: a recurring defect
-class, a queue that grows faster than it drains, a family of issues that close individually
-and keep producing. The second is as legitimate a subject as the first and was added on the
-operator's direction, 2026-09-20. Ranking what is in the queue belongs to `ghi-triage`;
-asking *why this class keeps producing, and how these issues should be framed, consolidated
-or sequenced* is design work, and it belongs here.
+class, a queue that grows faster than it drains (operator's direction, 2026-09-20). Ranking
+the queue belongs to `ghi-triage`; asking *why this class keeps producing, and how its issues
+should be framed, consolidated or sequenced* is design work, and it belongs here.
 
 Doctrine and the full ruling history:
 [`docs/governance/rnd-discipline.md`](../../../docs/governance/rnd-discipline.md).
 Evidence: `docs/governance/mpas-appropriation-analysis.md`.
 
 **Invocation class.** `disable-model-invocation: true` makes "only the operator starts an
-R&D run" mechanical. This skill reaches model-invoked disciplines; it never starts another
-user-invoked skill on its own.
+R&D run" mechanical. This skill never starts another user-invoked skill on its own.
 
 ## Open the record first
 
@@ -51,6 +48,18 @@ operator's framing verbatim as the challenge.
 **The record accretes entries as they resolve. It is never composed at the end.** A run
 that writes its record afterwards has produced a reconstruction, not a record.
 
+**Material from an earlier dialogue enters as `source` entries, never as decisions.** A
+staged draft is something the run reads. What it concluded is re-derived here, from sources.
+
+## Resuming a run
+
+A later session continues a run only on the operator's own invocation, with the record's
+path as the argument. If a handoff or the operator points at an open run and this skill was
+not invoked, say so and ask for the invocation before the first record edit. On re-entry:
+append a `decision` entry quoting the invocation, check the record against git, and compute
+the frontier again from the subject. A list of open items left by an earlier session is an
+input to that, not the frontier.
+
 ## The two entry kinds
 
 Only two. Append each at the moment it resolves.
@@ -58,10 +67,11 @@ Only two. Append each at the moment it resolves.
 | Kind | Carries |
 |---|---|
 | `source` | a primary source — **cited, never summarized**, with its verbatim quotation and when it was read |
-| `decision` | something crystallized in session, the reasoning behind it, and the operator's verbatim words where they ruled it |
+| `decision` | something crystallized in session, the reasoning behind it, and, where the operator ruled it, the question, the options put and their verbatim words |
 
 A `decision` may carry **`commissions:`** naming the disposition it warrants. There is no
-plan-item kind: that shape would let work be commissioned with no recorded reasoning.
+plan-item kind: that shape would let work be commissioned with no recorded reasoning. An
+answer whose question is not on record is put again, not carried.
 
 **Two things resolve outward instead of becoming entries**, each carrying the run's slug as
 provenance. The record never holds a copy.
@@ -85,14 +95,27 @@ the mechanic, not the posture** — full inventory and the not-appropriated list
 | `prototype` | the throwaway probe, closing on a **one-line verdict** | **no branch** — gzkit forbids them; build outside the mainline and discard |
 | `domain-modeling` *(technique only)* | its glossary behaviours and *"capture them as they happen"*; the `_Avoid_` convention | **never its inline ADR emission** — disposition 1 is proposed, never initiated |
 
-`grill-with-docs` is the shape of the whole run: it emits inline as decisions land, which is
-the record accreting and the disposition map kept live. `grill-me` is stateless and is not
-the model here.
+## Sources before decisions
+
+- **Read the source before anything drawn from it becomes a `decision`**: a name, a
+  mapping, an analogy, a claim about what a standard says. Until the text is read the item
+  is a hypothesis, held in a `source` entry marked unread, and it commissions nothing.
+- **Find the text before researching it.** Check what the project and the operator already
+  hold (`docs/governance/ieee/README.md` § Standards corpus lists the licensed standards).
+  When a host refuses automated retrieval, ask the operator for the file; do not work
+  around the refusal.
+- **A secondary source is cited as secondary.** It shows what an account says and verifies
+  nothing against the text it describes.
+- **Take the source's own term** before coining one, and record where a chosen name departs
+  from what the text says.
 
 ## Interrogate
 
 - **Facts are your job; decisions are the operator's.** Search canon and the codebase
   before asking. Dispatch research subagents for facts and do not block a round on them.
+- **Put the core model first.** The frontier is computed from the subject. Questions about
+  where a document sits or what a milestone is called wait until the operator has ruled on
+  the thing itself.
 - **Ask one question at a time** (operator, verbatim: *"ask me the questions one at a
   time"*), each with a recommended answer and its tradeoffs.
 - **Never ask what canon already answers** (AGENTS.md § Operator Economy #7). Search canon
@@ -143,9 +166,13 @@ Two conditions, and neither substitutes for the other.
    have *changed*);
 3. every one of the six dispositions carries a decision.
 
-**Human — sign-off: kill or fund.** It is a **beat, not a boundary**: it fires in whichever
-session meets the mechanical condition. A run that outgrows one session is carried by the
-handoff system, which already owns that job.
+**Human — review, then sign-off: kill or fund.** Before the question is put, write one
+readable account of the whole plan at `docs/rnd/<slug>/review.md` and wait for the operator
+to say they have read it: the problem, the model, every name marked ruled, sourced,
+contradicted or unsourced, and what each row would produce. It is a view over the record and
+holds no authority. A series of recommended options accepted is not a review. Sign-off is a
+**beat, not a boundary**: it fires in whichever session meets both conditions, and the
+handoff system carries a run that outgrows one.
 
 A run **killed at sign-off ends there.** Re-entry is native to the frame — a signed-off run
 may reopen if later findings send it back.
@@ -159,13 +186,11 @@ the invocation class, which the run cannot change.
 
 ## It's working if
 
-- The record was open before the first question and grew as decisions landed.
-- Every source entry quotes its source verbatim; no summary stands in for a report.
+- Every name and mapping in a `decision` has a `source` entry that was read before it.
 - Terms went to the project glossary (or, until its home is named, into `decision` entries)
   and insights through `gz insights remember`.
 - All six disposition rows carry a decision, each `commissioned` or `not pursued`.
-- The challenge was restated at the close on purpose.
-- No ADR, OBPI or chore was started by the run.
+- The operator read the account before sign-off, and the challenge was restated on purpose.
 - A later session's `ghi-author` Step 0 finds this run's `not pursued` rows as prior art.
 
 ## Red flags
@@ -180,3 +205,9 @@ the invocation class, which the run cannot change.
 - An outcome executed without a row-level go.
 - Asking the operator something canon or the codebase answers.
 - Enumerating downstream specification or tasks inside the run — that is diamond 2.
+- A name or mapping recorded as decided before its source was read, or research sent to
+  confirm a conclusion already written down.
+- Closing frontier items in order to reach the mechanical condition.
+- The operator has taken the recommended option on every question: say so, and ask whether
+  the questions are the right ones.
+- Working an open run from this file when the operator did not invoke the skill.

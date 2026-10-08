@@ -55,7 +55,7 @@ different questions and neither substitutes for the other.
 
 | | Mechanical | Human |
 |---|---|---|
-| **Diamond 1** | the frontier is empty **and** the challenge has been deliberately restated **and** every one of the six dispositions carries a decision | **sign-off — kill or fund** |
+| **Diamond 1** | the frontier is empty **and** the challenge has been deliberately restated **and** every one of the six dispositions carries a decision | the operator's **review** of one readable account of the plan, then **sign-off — kill or fund** (review added 2026-10-07, § Amended 2026-10-07) |
 | **Diamond 2** | every row carries a disposition | the operator agrees convergence is reached |
 
 **"Deliberately restated"** is satisfied by a restatement made on purpose at the close. It
@@ -89,7 +89,7 @@ The record **accretes entries**. It is not a form with sections waiting to be fi
 | Kind | Carries |
 |---|---|
 | `source` | a primary source — **cited, never summarized**, with its verbatim quotation |
-| `decision` | something crystallized in session, with the reasoning that produced it, and the operator's verbatim words where they ruled it |
+| `decision` | something crystallized in session, with the reasoning that produced it, and, where the operator ruled it, the question, the options put and their verbatim words |
 
 A `decision` may carry a **`commissions:`** field naming the fan-out disposition it
 warrants. **A plan item is deliberately not its own kind** — that shape would let work be
@@ -329,6 +329,46 @@ retired shapes.
 Unchanged: invocation class and the sensing-out ruling, the hard stop and its pre-declared
 consultation points, the ADR admission question, no namespace router, MPAS appropriated
 never onboarded, and the rule that an R&D run stands alone with no ADR.
+
+## Amended 2026-10-07 — sources first, a resume step, a review before sign-off
+
+**Status of this amendment.** Operator-directed, verbatim: *"step 1, and improve rnd skill"*.
+The four rules below are the agent's drafting from the run that prompted them and are open to
+the operator's line-by-line correction. They are carried by the skill at version `0.5.0`.
+
+**What prompted it.** The run `renewing-vows` (`docs/rnd/renewing-vows.md`) was signed off on
+2026-10-07 and reopened the same day. Operator, verbatim, in order: *"If you are "phantom"
+running that skill now, then I want to do it properly. What is going on?"*; *"so, you have a
+plan for the renewed vows material and we didn't review it?"*; *"well, what are we going to
+do about the weaknesses? why did the rnd run turn out so poorly?"* The diagnosis is on the
+insights file (2026-10-08T00:14:40Z, scope `gz-rnd:names-before-sources`). Its first cause:
+the run's names and model were produced from memory in a free dialogue, staged, and imported
+as decisions; research was then sent to confirm them. When the operator supplied four of the
+texts, 8 of 55 names were contradicted or strained by what the texts say and 19 had no source.
+
+**The four rules.**
+
+1. **Sources before decisions.** A name, a mapping, an analogy or a claim about a text
+   becomes a `decision` only after the text has a `source` entry that was read. Until then
+   it is a hypothesis and commissions nothing. Material from an earlier dialogue enters as a
+   `source`. The run looks first at what the project and the operator already hold, asks
+   the operator for a file when a host refuses automated retrieval, and cites a secondary
+   source as secondary.
+2. **A ruling is recorded with its question.** A `decision` the operator ruled carries the
+   question and the options that were put. An answer whose question is not on record is put
+   again.
+3. **Resuming is by invocation.** A later session continues a run only when the operator
+   invokes the skill on the record. On re-entry the frontier is computed again from the
+   subject, core model first; a list left by an earlier session is an input to it.
+4. **Review before sign-off.** Before kill-or-fund is put, the agent writes one readable
+   account of the whole plan at `docs/rnd/<slug>/review.md` and the operator says they have
+   read it. The account is a view over the record's entries and holds no authority, which
+   keeps § The record's rule that everything but the entries is derived.
+
+**What this does not settle.** The offer rule this record says is "seated in AGENTS.md or
+`.claude/rules/`" is still seated in neither, and `gz-session-handoff` still does not name
+the invocation for an open run (insight 2026-10-07T08:56:56Z, scope
+`rnd-discipline:offer-and-resume`). Both are the operator's to route.
 
 ## Still out of scope
 
