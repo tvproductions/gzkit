@@ -35,8 +35,14 @@ Verdicts: VERIFIED means public publisher material supports the claim. NOT VERIF
 | `std-easa-part-145.md` | Regulation (EU) No 1321/2014: 145.A.50 and M.A.801 | Yes: consolidated version of 07.08.2026, current to Regulation (EU) 2026/100 | In force | <https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:02014R1321-20260807> | 4 | 0 | 0 |
 | `src-vaughan-1996.md` | Vaughan, *The Challenger Launch Decision* (University of Chicago Press) | Partly: the publisher lists the Enlarged Edition (January 2016, © 2015). The 1996 original is not confirmed by the publisher | In print (Enlarged Edition) | <https://press.uchicago.edu/ucp/books/book/chicago/C/bo22781921.html> | 2 | 2 | 0 |
 | `src-krishnan-sdd-meap.md` | Krishnan, *Spec-Driven Development: Engineering with intent* (Manning MEAP) | Yes: MEAP v2, 4 of 10 chapters released. MEAP began August 2026 | In progress; publication estimated Spring 2027 | <https://www.manning.com/books/spec-driven-development> | 2 | 2 | 0 |
+| `eu-easa-amp-compliance-checklist.md` | EASA Aircraft Maintenance Programme (AMP) Compliance Checklist, TE.CAMO.00011-002 | Undated form; read as page images 2026-10-08, pages 1–5 of 15 | In use (EASA download) | <https://www.easa.europa.eu/en/downloads/138673/en> | 1 | 2 | 0 |
 
-Totals: 41 VERIFIED, 16 NOT VERIFIED, 7 CONTRADICTED.
+Totals: 42 VERIFIED, 18 NOT VERIFIED, 7 CONTRADICTED.
+
+**Secondary sources added 2026-10-07, both supplied by the operator.** They carry no verdicts of their own, because an account of a standard cannot verify a claim against the standard's text; the totals above are unchanged. Each file says which DO-178C claims it supports and which it leaves open.
+
+- `src-parasoft-do-178c-overview.md` — a tool vendor's overview of DO-178C, undated and unsigned.
+- `src-nasa-jacklin-2012-do-178c.md` — an overview of DO-178C and DO-278A by a NASA Ames engineer who sat on the committee that wrote them.
 
 ## Contradictions to carry into the record
 

@@ -815,6 +815,739 @@ source for their terms and on nothing for their clause numbers. And the page sta
 severity model in plain words, which is the model the integrity-level decision says gzkit's
 scale does not use.
 
+## source · FAA Order JO 7110.65BB, Appendix A, supplied by the operator 2026-10-07
+
+`docs/rnd/renewing-vows/sources/us-gov-faa-jo-7110-65-position-relief.md` · the operator's
+whole message was the path to a PDF outside the repository,
+`7110.65BB_Bsc_w_Chg_1_2_and_3_dtd_7-9-26_Final.pdf` (927 pages; SHA-256 in the source
+file) · read by this session 2026-10-07: the title page, paragraph 2−1−24, Appendix A in
+full (its two table pages also as page images), and the Change 3 explanation; the rest of
+the order was searched, not read.
+
+This is the first of the five public texts the ruling of this date ('b') made a condition on
+row 4. It arrived after sign-off and lands under that condition; it changes no ruling. The
+PDF is not vendored. Appendix A is quoted in full in the source file. Three lines, verbatim:
+
+> Major problems occur whenever there is a heavy reliance upon memory, unsupported by
+> routines or systematic reminders. (Appendix A § 2b)
+
+> The relieving specialist and the specialist being relieved must share equal
+> responsibility for the completeness and accuracy of the position relief briefing. (§ 5c)
+
+> Specialists engaged in a position relief briefing for transfer of position responsibility
+> must reference the position relief checklist developed by the facility in accordance with
+> FAA Order JO 7210.3, paragraph 2−2−4 (§ 5e, added by Change 3, 7/9/26)
+
+Verdicts on the five claims the file carried as NOT VERIFIED: four verified, one of them in
+part; one contradicted in part. The paragraph is 2−1−24 and is titled "TRANSFER OF POSITION
+RESPONSIBILITY", not "Position Relief Briefing"; it prescribes nothing itself and points to
+Appendix A.
+
+What the text gives the nomenclature row "session, handoff → watch, position relief
+briefing":
+
+- The process has four parts in a fixed order: preview the position; verbal briefing;
+  assumption of position responsibility; review the position. The transfer is its own part.
+- The preview belongs to the relieving specialist alone and comes first, from the status
+  displays: "a self−briefing concept". Talk is for "Up to the moment information".
+- The review belongs mostly to the specialist being relieved, who stays to check for "known
+  omissions, updates, or inaccuracies" and signs the other on.
+- The briefing's subject is "position responsibility". The order's noun for the thing
+  handed over is the position. "Watch" does not come from this text; that half of the row
+  still has no source.
+- The checklist's required content is governed by FAA Order JO 7210.3 paragraph 2−2−4,
+  which this run has not read.
+
+A defect found in the reading, recorded as an insight (scope
+`campaign-plan:position-relief-quotations`): the campaign plan's § Amendments 2026-08-17 C
+sets five phrases in quotation marks as the FAA's ("... share equal responsibility for the
+completeness and accuracy of the transfer", "confirms SIA data accuracy", "preview
+complete, begin briefing", "I assume position responsibility", a "monitor jack"). None
+occurs anywhere in this copy of the order. They may come from JO 7210.3, an earlier edition
+or a paraphrase. The plan's mapping of four beats survives the text; its quotations do not
+match it.
+
+Bears on the challenge: the handoff row can now be drafted for its "position relief
+briefing" half. Four texts remain with the operator: JP 3-60, JP 3-30, AC 121-22 and the IOC
+and FOC glossary entries.
+
+## source · FAA AC 121-22D, supplied by the operator 2026-10-07
+
+`docs/rnd/renewing-vows/sources/us-gov-faa-ac-121-22-mrb.md` · the operator's whole message
+was the path to a PDF outside the repository, `AC_121-22D.pdf` (10 pages; SHA-256 in the
+source file) · read in full by this session 2026-10-07.
+
+The second of the five public texts, landed after sign-off under the same condition; it
+changes no ruling. The PDF is not vendored. Three lines, verbatim:
+
+> After FAA approval, the requirements become a basis upon which operators develop their
+> own individual maintenance programs. (§ 1.1)
+
+> an MRB formally consists of only FAA personnel. ... The resulting report (MRBR or MTBR) is
+> produced and owned by the OEM/TCH, accepted by the Industry Steering Committee (ISC), and
+> approved by the FAA. (§ 8.1)
+
+> A system for the periodic evaluation of all tasks in the program to eliminate those that
+> are no longer applicable and effective. (§ 14.5.2, item 4)
+
+Verdicts on the four claims the file carried as NOT VERIFIED: one contradicted (the current
+revision is D, dated 5/31/24, and it cancels C), two verified, one verified in part (the
+board's detailed procedure has moved to FAA Order 8900.1 and to the International MRB/MTB
+Process Standard, neither read).
+
+What the text gives the Airworthiness rows:
+
+- The subject is "minimum scheduled maintenance tasking/interval requirements". There are
+  two layers with two owners: the manufacturer's minimum list, and each operator's own
+  program built from it.
+- The test for a task is "applicable and effective", applied when a task is added and again,
+  periodically, to remove tasks that no longer pass. Intervals are adjusted from evidence
+  ("age exploration"). The list is "a dynamic report".
+- A task is validated by performing it: "the procedure can be performed as written and ...
+  meets the intent".
+- MSG-3 is confirmed as the method the board works through.
+
+What the text does not give, and this matters to the table: "letter check", "A-check",
+"C-check", "Maintenance Planning Document" and "continuous airworthiness maintenance
+program" occur nowhere in it. With the finding of 2026-10-06 that Title 14 carries no letter
+check either, the operator's mapping of 2026-10-05 ('chore is level A-D airframe checks')
+has no primary text behind it in this run. It is industry practice; its source would be
+MSG-3 itself or a manufacturer's planning document, neither in hand. The row "maintenance
+planning document" has no source here either.
+
+One disanalogy the text makes plain: the board is the regulator's, and gzkit has no
+regulator. What carries across is the manufacturer and operator split, which is the agent's
+reading and not the circular's: a delivered minimum list and a project's own program built
+on it.
+
+Bears on the challenge: of the five public texts, two are landed. Three remain with the
+operator: JP 3-60, JP 3-30 and the IOC and FOC glossary entries.
+
+## source · JP 3-30, Joint Air Operations, supplied by the operator 2026-10-07
+
+`docs/rnd/renewing-vows/sources/us-gov-jp-3-30.md` · the operator's whole message was the
+path to a PDF outside the repository, `JointAirOperations_jp3_30.pdf` (134 pages, the
+edition of 25 July 2019; SHA-256 in the source file) · read by this session 2026-10-07: the
+Preface, Chapter I §§ 2 and 3, Chapter III § 6 with its figures, the first page of
+Appendix E and the glossary definitions the file quotes; the rest was searched, not read.
+
+The third of the five public texts, landed after sign-off under the same condition; it
+changes no ruling. The PDF is not vendored. Three lines, verbatim:
+
+> No single commander or headquarters can have the necessary situational awareness or
+> maintain the tempo of operations required to effectively execute tactical operations in a
+> highly dynamic combat environment. (Chapter I § 3b(4))
+
+> sortie. In air operations, an operational flight by one aircraft. (Glossary)
+
+> The battle rhythm is a detailed timeline that lists a series of briefings, meetings, etc.,
+> to produce specific products by a specified time to support decision making.
+> (Chapter III § 6b)
+
+All five claims the file carried as NOT VERIFIED are verified, one in the publication's
+wording: the centre is "A jointly staffed facility established for planning, directing, and
+executing joint air operations" and "the centralized control node for tasking"; "senior" is
+not the publication's word.
+
+What the text gives the Operations rows:
+
+- **The frame's central sentence is in the doctrine.** The first quotation is the problem
+  this run restated at its close, in the source's words. The publication's remedy is
+  "centralized control and decentralized execution", with a warning against centralized
+  execution even where technology allows it.
+- **Sortie and mission are distinct, and the table has them the right way round.** A sortie
+  is one flight by one aircraft; a mission is "The dispatching of one or more aircraft to
+  accomplish one particular task." A pipeline run as the mission and a dispatch as the
+  sortie agrees with both definitions.
+- **The tasking order** is "A method used to task and disseminate ... projected sorties,
+  capabilities, and/or forces to targets and specific missions", for one execution period,
+  "normally 24 hours", with several orders in different stages at once.
+- **Special instructions are "located in the air tasking order".** Standing guidance travels
+  inside the order. That is the mechanism the general-orders decision assumed.
+- **Detail scales with coordination**: "very explicit" when several bases or components
+  fly together, "less detail" for one.
+- **The cycle has six named stages**: objectives, effects and guidance; target development;
+  weaponeering and allocation; order production and dissemination; execution planning and
+  force execution; assessment. Assessment "includes a determination and assessment of
+  actual collateral damage".
+- **The prioritised target list** is the product of target development "when approved by
+  the JFC": the commander approves the list, and the centre does not.
+- **The centre is told of every redirection**, including one a delegated commander makes.
+
+Three places where the text does not support what this record holds:
+
+- **"Battle rhythm" means a timeline by the clock.** The publication's rhythm lists events
+  "by a specified time", and it calls its cycle "time-dependent, built around finite time
+  periods". The operator ruled this day that gzkit's two slower tiers come due on a signal
+  and never on a calendar. The ruling stands; the name on its decision entry borrows a term
+  that means the opposite arrangement. Either the name is kept as a stated departure or
+  another is chosen. That is the operator's to rule.
+- **"Weaponeering" may be the wrong half of its stage.** In stage 3, weaponeering matches
+  weapons and aimpoints to an approved target, and allocation turns the commander's
+  priorities into "a total number of sorties by weapon system type available for each
+  objective and task". The rule this record calls weaponeering fixes which sorties fly for
+  a kind of requirement, which reads closer to allocation. JP 3-60 defines weaponeering and
+  is not yet read; the name is not settled until it is.
+- **"Duty officer" and "MISREP" have no source here.** The centre has a director; the only
+  duty officer named is the senior intelligence duty officer. "Mission reports" appears once,
+  undefined, in a figure; "MISREP" does not occur.
+
+Bears on the challenge: three of the five public texts are landed. Two remain with the
+operator: JP 3-60 and the IOC and FOC glossary entries.
+
+## source · JP 3-60, Joint Targeting (2013 edition), supplied by the operator 2026-10-07
+
+`docs/rnd/renewing-vows/sources/us-gov-jp-3-60.md` · the operator's whole message was the
+path to a PDF outside the repository, `Joint_Chiefs-Joint_Targeting_20130131.pdf`
+(138 pages; SHA-256 in the source file) · read by this session 2026-10-07: the Preface,
+Chapter II § 3 through the opening of phase 5, Appendix D § 2b to § 2e and the glossary
+definitions the file quotes; the rest was searched, not read.
+
+The fourth of the five public texts, landed after sign-off under the same condition; it
+changes no ruling. The PDF is not vendored.
+
+**The edition matters.** This copy is dated 31 January 2013. Search results on 2026-10-06
+listed a 28 September 2018 edition, unread and unconfirmed. If it exists this copy is
+superseded, and JP 3-30, read today, is itself dated 2019. Every verdict below is against
+the 2013 text, which may be cited as that edition and not as current joint doctrine.
+
+Three lines, verbatim:
+
+> CA is composed of three related elements: BDA, MEA, and reattack recommendations or
+> future targeting. (Appendix D § 2d)
+
+> weaponeering. The process of determining the quantity of a specific type of lethal or
+> nonlethal means required to create a desired effect on a given target. (Glossary)
+
+> BDA must be treated as an integral component of the joint targeting process and must not
+> be conducted as a separate, post-attack activity. (Appendix D § 2d(1))
+
+Of the seven claims the file carried as NOT VERIFIED: five verified, one verified in part
+(collateral damage estimation is described and its method lives in CJCSI 3160.01, unread),
+and the edition's currency stays not verified.
+
+What the text gives the combat register:
+
+- **Combat assessment has the three parts this record gave it**, and battle damage
+  assessment has three widening phases: physical damage, functional damage, target system.
+  The publication's spelling is "reattack".
+- **Weaponeering is the right name for the rule this record gave it.** The definition is
+  quantity and type of means for a given target, which is what "the requirement kind fixes
+  the sortie set" decides. This answers the doubt the JP 3-30 entry raised: allocation is
+  how the air component divides sorties across objectives; weaponeering is what one target
+  needs.
+- **Collateral damage is estimated before and assessed after.** The estimate is part of
+  capabilities analysis, "normally performed by trained and certified personnel"; and
+  "Collateral damage is also assessed and reported during BDA." Both halves have an owner
+  in the doctrine. The decision that chase and damage assessment are two roles found the
+  second half unowned in gzkit.
+- **The crew's own report is an input, never the verdict.** "MISREPs" is this publication's
+  term, so the mission-report row has its source. Mission reports are one source among
+  several, the first report is "usually derived from a single source", and "The command
+  designated BDA cell is responsible for collating reports and making the final
+  assessment."
+- **Assessment is planned at the start.** Measures are developed in phase 1, and reattack
+  is judged against "predetermined MOEs that were developed at the start of the joint
+  targeting cycle".
+- **Munitions effectiveness compares actual with anticipated** so that the method changes:
+  "methodology, tactics, weapon system". That is the question the regeneration test asks of
+  a model and effort allocation.
+- **Each assessment carries a confidence level and its sources**: CONFIRMED, PROBABLE,
+  POSSIBLE.
+- **Planners get the reasoning with the tasking**: "The work of mission planners is
+  significantly enhanced when they are furnished with detailed insights into the reasoning
+  that resulted in their unit tasking."
+- **A target is revalidated during execution**, "to determine if planned targets still
+  contribute to objectives (including changes to plans and objectives)".
+- **Two fences the table does not yet have**: a no-strike list of protected objects, and a
+  restricted target, "a valid target that has specific restrictions placed on the actions
+  authorized against it". They fit denied and allowed paths more closely than rules of
+  engagement do.
+
+Two places where the text sits against canon or this record:
+
+- **The prioritised list is not the firing order.** "Often, targets are not attacked in the
+  same priority order as they appear on the JIPTL." The campaign plan's ascending order is
+  absolute by the operator's ruling. The row "sequenced campaign items → prioritised target
+  list" names a list that, in its source, the planners may fly out of order. The ruling
+  governs; the analogy is looser than the row suggests.
+- **The targeting cycle is "not time-constrained nor rigidly sequential."** JP 3-30 calls
+  the air tasking cycle "time-dependent". The doctrine keeps two cycles, one paced by the
+  clock and one not. That bears on the battle-rhythm name raised in the JP 3-30 entry: the
+  operator's signal-triggered tiers resemble the targeting cycle's pacing, not the tasking
+  cycle's.
+
+Bears on the challenge: four of the five public texts are landed, one of them in a
+probably superseded edition. One remains with the operator: the IOC and FOC glossary
+entries.
+
+## source · FAR Part 2, Definitions of Words and Terms, supplied by the operator 2026-10-07
+
+`docs/rnd/renewing-vows/sources/us-gov-far-part-2-definitions.md` · the operator's whole
+message was the path to a PDF outside the repository,
+`Part-2---Definitions-of-Words-and-Terms.pdf` (36 pages, exported 2026-10-07; SHA-256 in the
+source file) · read by this session 2026-10-07: the whole text searched, the list of 219
+defined terms read in full, fourteen definitions read in full.
+
+Supplied as the fifth text, for the definitions of initial and full operational capability.
+**It does not contain them.** The file is Part 2 of the Federal Acquisition Regulation, the
+contracting regulation. "Operational capability", "IOC", "FOC", "fielding" and "milestone"
+occur nowhere in it. The two Fielding rows therefore stay as they were: ruled by the
+operator on this date, and NOT VERIFIED against any primary text. The terms belong to the
+defense acquisition system; by the agent's memory, unverified, they are defined in the
+Defense Acquisition University glossary, which refused retrieval on this date.
+
+One line, verbatim, that the run can use:
+
+> Latent defect means a defect that exists at the time of acceptance but cannot be
+> discovered by a reasonable inspection. (2.101)
+
+What the text gives, beside the miss: a regulatory definition of "latent defect" that
+matches the middle value of the detectability axis the integrity levels are built on;
+"first article testing", a different idea from initial operational capability and not a
+substitute for it; and "performance-based acquisition", results "as opposed to the manner by
+which the work is to be performed", which is the contracting form of what JP 3-30 calls
+mission-type orders. "Change order" and "task order" are defined there as orders under a
+contract; the run's change proposal and tasking order do not rest on them.
+
+Bears on the challenge: the condition the ruling of this date set on row 4 is met for four
+of its five texts. The fifth, the IOC and FOC definitions, is still unread, so the Fielding
+rows' wording still waits.
+
+## source · Jacklin (NASA Ames) on DO-178C and DO-278A, supplied by the operator 2026-10-07
+
+`docs/rnd/renewing-vows/sources/src-nasa-jacklin-2012-do-178c.md` · the operator's whole
+message was the path to a PDF outside the repository, `20120016835.pdf` (14 pages; SHA-256
+in the source file) · read in full by this session 2026-10-07.
+
+It arrived after the run asked again for the IOC and FOC definitions. **It does not contain
+them** either: it is a 2012 paper on software certification, and neither term occurs in it.
+It is a source for the DO-178C rows, and a stronger one than the Parasoft page: its author
+sat on RTCA Special Committee 205, which wrote DO-178C. It is still secondary. Cited with
+short quotations; not vendored.
+
+Two lines, verbatim:
+
+> “Software level” in DO-178C was replaced with “assurance level” in DO-278A
+
+> DO-178C states that the tools used to generate software or to verify software must
+> themselves be verified to be correct. This tool verification process is called
+> qualification. Moreover, a tool such as a compiler qualified for one project is not
+> necessarily qualified for a different project.
+
+What it gives the Assurance rows:
+
+- **The severity model, from a committee member.** Its Table 1 keys each level to a
+  "Software Failure Effect Category": catastrophic, hazardous, major, minor, no effect.
+- **A correction to this record's attribution.** DO-178C's word is "software level".
+  "Assurance level" is DO-278A's, for ground systems, and "development assurance level" is
+  the system standard's. The decision that named the axis integrity level said DO-178C
+  uses "assurance level"; it does not. The reason given there for avoiding the term is
+  unchanged and now better founded: in RTCA usage an assurance level is assigned from the
+  failure effect category.
+- **Bidirectional traceability across six named pairs**, with its reason: "This assures
+  that orphan source code and dead source code are not inadvertently produced."
+- **Two kinds of coverage**, requirements-based and structural.
+- **Tool qualification has a gradient that the table's row flattens.** DO-330 "places more
+  stringent verification requirements on tools used to generate code than tools used to
+  verify code", and a qualification does not travel between projects. A gzkit validator is
+  a tool that verifies; an agent that writes code is a tool that generates.
+- **Data that steers behaviour is verified like code.** Parameter data items are "data that
+  influences the behavior of the software without modifying the executable object code" and
+  get "the same verification process". gzkit's canon puts thresholds, rosters and state in
+  JSON, which is such data.
+- **Verification is not validation**: "DO-178C does not provide guidance for software
+  validation testing".
+
+What it leaves where it was: the number § 11.17, any count of objectives, and which
+structural coverage criterion binds at which level.
+
+Bears on the challenge: the DO-178C rows now stand on two secondary sources, one from
+inside the committee, and on nothing for three clause-level details. The IOC and FOC
+definitions are still unread after two attempts by the operator to supply them.
+
+## source · the IOC definition, from the DSCA manual's glossary, read 2026-10-08
+
+`docs/rnd/renewing-vows/sources/us-gov-dsca-esamm-glossary-ioc.md` ·
+`https://samm.dsca.mil/node/8450` · fetched and read by this session 2026-10-08 (HTTP 200;
+SHA-256 in the source file).
+
+Found after the operator, asked whether the planning names should wait for JP 5-0, said,
+verbatim: 'I want to see any relevant references'. An official Department of Defense site
+carries the definition and attributes it to the Defense Acquisition University Glossary.
+Verbatim:
+
+> In general, attained when some units and/or organizations in the force structure
+> scheduled to receive a system have received it and have the ability to employ and
+> maintain it. The specifics for any particular system IOC are defined in that system's
+> Capability Development Document (CDD) and updated CDD.
+
+Verdicts: the IOC claim is VERIFIED. Full operational capability has no entry in this
+manual's glossary and stays NOT VERIFIED, as does the ordering of the two in so many words.
+
+What it gives the Fielding rows: the IOC row now stands on a primary text. And the second
+sentence matters to the ruling of 2026-10-07: each system writes its own IOC conditions, so
+gzkit naming its own (the four engineering orders landed, the first sortie flown, the stale
+canon repaired) is the practice the definition describes, not a departure from it.
+
+**JP 5-0, not reached.** A search listed copies of JP 5-0, *Joint Planning*, on five
+official hosts. The session tried two, the National Defense University's and the Defense
+Technical Information Center's; both answered HTTP 403. It tried no more and worked around
+neither. The planning names proposed on 2026-10-08 therefore still rest on JP 3-60 and
+JP 3-30 alone.
+
+Bears on the challenge: of the two Fielding rows, one is sourced. Still unread and carrying
+a row or a proposal: the FOC definition; JP 5-0.
+
+## source · JP 3-60, Joint Targeting, 28 September 2018, supplied by the operator 2026-10-08
+
+`docs/rnd/renewing-vows/sources/us-gov-jp-3-60-2018.md` · the operator's whole message was
+the path to a PDF outside the repository, `21-F-0520_JP_3-60_9-28-2018.pdf` (133 pages, a
+scan with OCR text; SHA-256 in the source file) · read by this session 2026-10-08: the
+Preface, the Summary of Changes, Chapter II § 3 through phase 6 less the middle of phase 2
+and the first three dynamic-targeting steps, Appendix D and the glossary by passage; the
+cover and glossary page GL-10 as page images; the rest searched, not read.
+
+This is the current edition the run lacked: "This publication supersedes JP 3-60, Joint
+Targeting, 31 January 2013." The caveat on the combat register is lifted, and every row the
+2013 copy carried is now cited to 2018. Not vendored. Three lines, verbatim:
+
+> The joint targeting cycle is a six-phase iterative process that is not time-constrained
+> nor rigidly sequential, as some steps in various phases may be conducted concurrently.
+
+> (1) Upon receipt of component tasking orders, detailed, unit-level planning must be
+> performed for the execution of operations.
+
+> weaponeering. The process of determining the specific means required to create a desired
+> effect on a given target. (Glossary, read from the page image)
+
+All seven claims are verified against this edition, two of them in part. What the newer
+text changes in this record:
+
+- **Two phases are renamed.** Phase 1 is "Commander's Objectives, Targeting Guidance, and
+  Intent"; phase 6 is "Combat Assessment", and the edition "replaces the term "targeting
+  assessment" with "combat assessment" throughout". The core-model table is corrected.
+- **Weaponeering's definition is shorter**: "the specific means required", where 2013 had
+  "the quantity of a specific type of lethal or nonlethal means". The rule this record
+  calls weaponeering still fits it.
+- **The planning levels are named in the text.** Before the cycle: "operational planning",
+  through "JPP mission analysis". After tasking: "detailed, unit-level planning" by "unit
+  mission planners". This is the evidence the planning names of 2026-10-08 were waiting
+  on, short of JP 5-0 itself.
+- **A fragmentary order is a kind of tasking order.** Figure II-8: "Tasking Orders (e.g.,
+  ATO, FRAGORD, OPORD, etc)". The row "campaign amendments → fragmentary orders" has its
+  term; whether an amendment to a plan is a tasking order is another matter.
+- **The no-strike list "is not a target list".**
+- **The prioritised list has a cut line** that "does not guarantee that a specific target
+  will be engaged", and "Targets may not be engaged in the same priority order as they
+  appear on the JIPTL." The finding against the campaign-order row stands in the new text.
+- **One sentence this record quoted is gone.** The 2013 effects estimate said "Sometimes
+  this is done by a command's red team"; 2018 does not. The core-model table no longer
+  quotes it.
+- **A collateral decision is not mechanical**: it "will not be determined solely through a
+  mechanistic or numeric process, nor will it be based on quantified casualty estimates
+  alone."
+
+Bears on the challenge: the combat register stands on the current edition. Still unread and
+carrying a row or a proposal: JP 5-0; the FOC definition; FAA JO 7210.3; a crew resource
+management text.
+
+## source · FAA Order JO 7210.3EE, paragraph 2-2-4, read 2026-10-08
+
+`docs/rnd/renewing-vows/sources/us-gov-faa-jo-7210-3-para-2-2-4.md` · read 2026-10-08 by this
+session from the FAA's live HTML edition in the desktop app's browser pane (faa.gov answers
+HTTP 403 to automated retrieval; the operator's list of 2026-10-08 named it). Edition: JO
+7210.3EE, effective 7/9/2026, Change 3. The paragraph is quoted in full in the source file.
+Verdicts: 5 verified, 1 not verified, 2 contradicted.
+
+> The relieving specialist and the specialist being relieved must share equal responsibility
+> for the completeness and the accuracy of the position relief briefing. (2-2-4)
+
+What it settles. The checklist that JO 7110.65 Appendix A § 5e points to is facility-developed
+and position-tailored, reviewed annually, with the Status Information Area first and traffic
+last, managers free to add items, and the briefing recorded. The campaign plan's quotation
+(§ Amendments 2026-08-17 C) ends "of the transfer"; the order's sentence ends "of the position
+relief briefing", in both orders. The other four phrases the plan sets in quotation marks
+occur in neither order, so they have no source. "Watch" is not this order's noun either; on
+the page it names only the shift ("CIC of the watch").
+
+Bears on the challenge: the handoff row can be drafted whole for its "position relief
+briefing" half; the campaign plan's quotations are a defect to repair (insight
+`campaign-plan:position-relief-quotations`, 2026-10-07, now with the second order read).
+
+## source · DAU Glossary, initial and full operational capability, read 2026-10-08
+
+`docs/rnd/renewing-vows/sources/us-gov-dau-glossary-ioc-foc.md` · read 2026-10-08 by this
+session in the browser pane at the Adaptive Acquisition Framework page "IOC/FOC"
+(`aaf.dau.edu/mca/ioc-foc/`, which redirects to `aaf.waru.edu`); both entries carry
+"Reference Source: DAU Glossary". Verdicts: 4 verified, 1 not verified (the glossary's own
+page was not reached).
+
+> In general, attained when some units and/or organizations in the force structure scheduled
+> to receive a system have received it and have the ability to employ and maintain it.
+> (Initial Operational Capability)
+
+Full operational capability reads the same with "all" for "some". Both say the specifics are
+defined in the system's Capability Development Document. This closes the Fielding rows'
+"not verified" label (frontier item 13, last bullet): the ruling of 2026-10-07, IOC a waypoint
+before 1.0 and 1.0 full operational capability, now stands on the glossary's "some" and "all".
+
+## source · Degani and Wiener, NASA CR-177549, The Normal Checklist (1990), read 2026-10-08
+
+`docs/rnd/renewing-vows/sources/us-gov-nasa-cr-177549-degani-wiener-1990.md` · public domain;
+read 2026-10-08 from the NASA Technical Reports Server as page images (§ 5.2, § 5.3, § 6.4 and
+the contents). The crew-resource-management text the operator's list asked for, for
+"pilot flying / pilot monitoring" and "challenge-and-response checklists". Verdicts: 5
+verified.
+
+> This technique of conducting the checklist undermines the concept behind the step-by-step
+> challenge-and-response procedure. (§ 5.2.3)
+
+What it settles: challenge-and-response is a named flight-deck method in which one pilot reads
+each item and the other verifies and answers it, step by step, ending in a completion call;
+its value is mutual supervision, two people and two looks, which memory and "chunking" defeat.
+The roles are pilot flying and pilot not flying, alternating by leg without relieving the
+captain of command; "pilot monitoring" is the later FAA term (AC 120-71B, on the operator's
+download list) and is not in this text. The nomenclature rows "implementer, reviewers →
+pilot flying, pilot monitoring" and "skills → challenge-and-response checklists" now rest on
+a primary text for the method and the 1990 role names.
+
+## source · Hayhurst et al., NASA/TM-2001-210876, MC/DC tutorial (2001), read 2026-10-08
+
+`docs/rnd/renewing-vows/sources/us-gov-nasa-tm-2001-210876-hayhurst-mcdc.md` · public domain;
+one author is FAA staff; read 2026-10-08 from the NASA Technical Reports Server as page images
+(pages 1–10). Written against DO-178B and not regulatory guidance, by its own statement.
+Verdicts: 2 verified for DO-178B, 2 not verified.
+
+> objective 7 requires statement coverage for software levels A-C; objective 6 requires
+> decision coverage for software levels A-B; objective 5 requires MC/DC for software level A
+> (§ 2.3)
+
+What it settles of DO-178C's three details: coverage per level, as DO-178B's Table A-7 set it
+and public RTCA material says DO-178C kept it (statement A–C, decision A–B, MC/DC A, none at
+D). What it does not: the § 11.17 number and the objective counts, which exist publicly only
+in secondary sources; the standard itself (RTCA store, on the operator's list) is the only
+verification, and the rows keep "clause unverified" until it is read.
+
+## source · EASA Aircraft Maintenance Programme compliance checklist, read 2026-10-08
+
+`docs/rnd/renewing-vows/sources/eu-easa-amp-compliance-checklist.md` · EASA form
+TE.CAMO.00011-002, cited and quoted at two items only; read 2026-10-08 from the EASA download
+as page images (pages 1–5 of 15). Verdicts: 1 verified, 2 not verified.
+
+> 1.7 REFERENCE DOCUMENTS (minimum content – as applicable) — a) TCDS Data; b) MRBR; c) MPD;
+> d) AMM Chapter 5 …
+
+What it settles for the MSG-3 rows: the maintenance planning document is a recognised
+reference document of a maintenance programme beside the MRB report (AMC M.A.302(d)). What it
+does not: that the MPD derives from the MRB report, which is industry description; and
+"letter check", which no regulatory text read in this run uses (not 14 CFR, not AC 121-22D,
+not this checklist). The term is found in Air Force unit instructions and news releases
+(e.g. Little Rock AFB Instruction 21-113, which faa.gov-style refuses automated retrieval) and
+in industry explainers. MSG-3 itself is paid (A4A store, on the operator's list); the chore
+row's "letter check" is operator practice layered on MSG-3 tasks, to be labelled as such.
+
+## source · FAA AC 120-71B, procedures and the monitoring pilot, supplied by the operator 2026-10-08
+
+`docs/rnd/renewing-vows/sources/us-gov-faa-ac-120-71b-sop-pm.md` · the operator's message
+was the path to a PDF outside the repository, `AC_120-71B.pdf` (35 pages, dated 1/10/17;
+SHA-256 in the source file) · read in full 2026-10-08 by the session the operator invoked on
+2026-10-07 (see the note on two writers in the decision *two sessions are writing this
+record*). Not vendored. Three lines, verbatim:
+
+> 8. Pilot Monitoring (PM). The PM monitors the aircraft state and system status, calls out
+> any perceived or potential deviations from the intended flightpath, and intervenes if
+> necessary. (§ 1.4)
+
+> 1. At any point in time during the flight, one pilot is the PF and one pilot is the PM.
+> (§ 6.4)
+
+> While it is important to document and communicate the rationale behind the procedure
+> design, this information should be provided in a separate training manual or other
+> document. (§ 4.1.1)
+
+Verdicts: pilot flying, pilot monitoring and challenge and response are VERIFIED; the tie to
+crew resource management in part; "assessor" and "briefer" are in no text read. It is the
+later FAA text the Degani and Wiener entry above points to for "pilot monitoring".
+
+What the text gives, and what it takes away:
+
+- **The monitor works at the same time as the flyer.** One pilot flies and the other watches
+  the same flight as it happens, calls deviations, and takes control "after two challenges".
+  A review made after the work comes back is a different act. So the row "implementer,
+  reviewers → pilot flying, pilot monitoring" has its terms sourced and its mapping wrong:
+  gzkit's reviewers assess a returned product, which is phase 6 of the targeting cycle, and
+  gzkit has no concurrent monitor of an agent at work other than its hooks.
+- **A checklist is not the procedure.** The crew works a "flow" and then reads a short list
+  of the critical items and of items that "confirm the flow was done correctly". A skill is
+  a procedure in this sense; the per-change gate is the nearer analogue of a checklist.
+- **A checklist starts on a cue**, and a "floating" start is "a high risk". Support from the
+  flight deck for the ruling of 2026-10-07 that the slower tiers come due on a signal.
+- **A transfer of roles is spoken, accepted and briefed**, "to include a short brief of
+  aircraft state". A second source for the handoff.
+- **How to write a procedure** agrees with gzkit's skill-authoring rule nearly point for
+  point: only what is needed to execute; rationale kept elsewhere; emphasis rationed; "If
+  possible, avoid creating new terms."
+- **Monitoring decays when nothing goes wrong**, through "boredom, complacency, or both".
+
+## source · gzkit's own command doctrine, read 2026-10-08 — and not read by this run before
+
+`docs/governance/GovZero/command-doctrine.md` · read in full 2026-10-08 by the session the
+operator invoked on 2026-10-07, after AC 120-71B's reading list named Degani and Wiener's
+"four ‘P’s of flight deck operations" and a search of canon for that phrase found this file.
+
+**The run had not read it.** It is in neither canon list of this record (2026-10-05 or
+2026-10-07), and the placement and constitution questions were put to the operator without
+it, against `AGENTS.md` § Operator Doctrine ("stop and read all docs and all code before
+taking or recommending action"). Recorded as an insight (2026-10-08T07:35:42Z, scope
+`gz-rnd:command-doctrine-unread`).
+
+What the file is, in its own words:
+
+> Status: Canonical doctrine (philosophy layer)
+> Ratified: 2026-06-10 (operator-ratified relocation from working draft)
+
+> **Philosophy** is the command doctrine below: ten articles stating what GovZero believes
+> about authority, accountability, and automation, independent of any model, vendor, or
+> tool.
+
+Its subtitle: "A back-port of the aircrew accountability framing into the philosophy layer
+of GovZero and gzkit". It orders four layers after Degani and Wiener (philosophy, policies,
+procedures, practices), and Article 10 requires that "Every gate, check, and template in
+gzkit must trace upward through a policy to an article of this doctrine." Three articles,
+verbatim, that bear hardest on this run:
+
+> ### Article 3. The model is a crew resource, not a crew member
+>
+> Crew resource management never promoted the first officer to command ... The model is
+> used fully: it drafts, flags, surfaces, challenges, and proposes ... And the model decides
+> nothing that ships.
+
+> ### Article 2. Authority must be instrumented, not asserted
+>
+> ... Authority asserted in the context window is a briefing: necessary, and unenforceable.
+> ... If the harness does not enforce it, the doctrine does not contain it.
+
+> ### Article 4. Uncommanded change is an annunciation failure
+>
+> ... every run is preceded by a scope manifest, every run is followed by a diff of
+> delivered work against commanded scope, and every artifact outside the manifest is
+> annunciated before the run can pass any gate. The model is not asked to behave. The
+> harness is built to notice.
+
+Its worklist names a "captain's-brief structure: scope manifest, stop conditions, expected
+artifacts, explicit prohibitions on out-of-scope change", a scope-conformance report, an
+autonomy span parameter and a proficiency log, tracked in
+`ADR-pool.command-doctrine-internalization`; its appendix scores Articles 5, 6 and 9 as gaps
+and Articles 4 and 10 as partial.
+
+What this does to the run:
+
+- **The apex already has an occupant.** A ratified philosophy layer exists, in an aircrew
+  frame, to which policies and procedures must trace. The ruling of 2026-10-07 seated a new
+  concept of operations "under the constitution, above the PRD" without weighing where it
+  sits against this doctrine, or whether it is this doctrine's policy layer. It was made on
+  an incomplete reading and is to be put again.
+- **The constitution ruling is in the same position.** The agent proposed three draft
+  general orders and four charter principles. Ten ratified articles already state what
+  gzkit believes about authority, accountability and automation, and none was offered.
+- **Article 3 is against naming agents as pilots.** The table calls the implementer the
+  pilot flying. The doctrine says the model is a crew resource and "decides nothing that
+  ships"; the human who signs is the one in command (Article 1). The sortie roles ruled
+  into the core model on 2026-10-08 are roles for agents and may stand; calling any of them
+  a pilot does not agree with canon.
+- **Article 4 already owns one of the two unowned assessment outputs.** A diff of delivered
+  work against commanded scope is the assessment of what a change did beyond its target,
+  and the doctrine's own appendix marks it "Partial — no post-run delivered-vs-commanded
+  scope-conformance gate".
+- **The tasking order has a ratified ancestor**: the captain's brief with its scope
+  manifest.
+
+Bears on the challenge: the run set out to supply a statement of how gzkit operates and did
+not read the statement gzkit already ratified. The model, the names and the two rulings
+above are to be reconciled with it before anything is drafted.
+
+## source · four FAA circulars supplied by the operator 2026-10-08
+
+Each was supplied as a path to a PDF outside the repository and read 2026-10-08 by the
+session the operator invoked on 2026-10-07. None is vendored; each source file carries the
+copy's checksum. They were written as source files while that session held off editing this
+record (decision *two sessions are writing this record*), and entered here on the operator's
+instruction of 2026-10-08, verbatim: 'Yes, use these:' above the list of the four.
+
+**AC 20-115D, Airborne Software Development Assurance Using EUROCAE ED-12( ) and RTCA
+DO-178( )** (07/21/2017) · `sources/us-gov-faa-ac-20-115d-do-178c.md` · read in full. The
+regulator's own recognition of DO-178C, so a primary text for what the FAA says of the
+standard. Verbatim:
+
+> The system safety process assigns the minimum development assurance level based on the
+> severity classifications of failure conditions for a given function. (§ 9b(2))
+
+It verifies what two secondary sources had said: the severity model; "software level" as the
+standard's word; objectives "as listed in the ED-12C/DO-178C Annex A tables"; section 11 as
+the life cycle data; the date December 13, 2011; five tool qualification levels, with
+development tools held to more than verification tools. It adds the change impact analysis:
+"the extent of the modifications, the impact of those modifications, and what verification
+is required". Still only in the standard: § 11.17, any count of objectives, level E.
+
+**AC 00-71, Best Practices for Management of Open Problem Reports** (Sep 16, 2022) ·
+`sources/us-gov-faa-ac-00-71-open-problem-reports.md` · read in full. Verbatim:
+
+> Resolved – A problem report that has been corrected or fully mitigated, for which
+> resolution of the problem has been verified but not formally reviewed and confirmed.
+>
+> Closed – A resolved problem report that underwent a formal review and confirmation of an
+> effective resolution of the problem. (§ 3.2)
+
+It defines the problem report ("adapted from DO-178C/ED-12C"), its four states (recorded,
+classified, resolved, closed) and four classes taken one per report by priority
+(significant, functional, process, life cycle data). An unverified requirement is classed
+up, because its impact "remains undetermined".
+
+**AC 20-189, Management of Open Problem Reports** (Sep 16, 2022) ·
+`sources/us-gov-faa-ac-20-189-open-problem-reports.md` · read in full. The scheme itself.
+Verbatim:
+
+> OPRs classified as ‘Significant’ ... for which no sufficient mitigation or justification
+> exists to substantiate the acceptability of the safety effect, should be resolved prior
+> to approval. (§ 6.3)
+
+An open report may ship if assessed and reported; a report not classed significant or
+functional needs a "justification that the error cannot have a safety or functional
+effect"; a problem found after approval goes through the same process, "and any related
+systemic process issues should be identified and corrected."
+
+What the pair gives the table: the GHI row's "problem report" has a primary definition and
+a life cycle; and the row "operator hold → deferred defect (MEL item)" has a closer term in
+the *open problem report*, "A problem report that has not reached the state ‘closed’ at the
+time of approval".
+
+**AC 120-16G, Air Carrier Maintenance Programs** (1/4/16) ·
+`sources/us-gov-faa-ac-120-16g-maintenance-programs.md` · read: the cover statement,
+§§ 1-4d to 1-7, § 3-3, §§ 5-3 to 5-5 and Chapter 6 in full; § 7-1 and three other passages
+by search; the rest of its 60 pages searched, not read. Verbatim:
+
+> The regulations are broad enough to permit you to organize all of these individual tasks
+> into a series of integrated scheduled work packages of your own design (§ 6-1)
+
+> A primary concept of the RII function is to prevent any person who performs any item of
+> work from performing any required inspection of that work (§ 7-1c)
+
+What it gives the Airworthiness rows: the packaged visit the operator's "letter check"
+mapping reached for is a *scheduled work package*; chores against issues is *scheduled*
+against *unscheduled maintenance*, the second arising from "scheduled maintenance tasks,
+pilot reports, or unforeseen events"; "task cards" is another name for work cards; and
+"engineering orders" is named among work documents. It also states that a program watches
+itself (the continuing analysis and surveillance system), that "more maintenance is not
+always a good idea", and that first intervals are judgment later validated by data.
+
+On "work package": the circular's work package is a set of tasks packaged to be done
+together. The artifact ladder's work package is one bounded assignment, which is also a set
+of tasks worked as a unit. The sense is the same. What differs is the kind of task inside:
+scheduled maintenance in one, new work in the other. The session first reported this to the
+operator as two meanings; the operator asked, verbatim, 'work package: does it really have
+two meanings?', and on rereading it does not.
+
 ---
 
 ## decision · the run opens from staged material; slug `renewing-vows`
@@ -1065,8 +1798,8 @@ standards entry above.
 | | constitution | constitution (standing constraints) | 29148 constraints; Part 119 OpSpecs as analogue |
 | | PRD | functional baseline of a major version | EIA-649; 29148 |
 | | new apex | concept of operations | 29148 ConOps |
-| | campaign amendments | fragmentary orders, folded on republish | OPORD practice |
-| | sequenced campaign items | prioritised target list | JP 3-60 JIPTL |
+| | campaign amendments | fragmentary orders, folded on republish | JP 3-60 (2018) Figure II-8 names the fragmentary order as a tasking order; the mapping is unsourced |
+| | sequenced campaign items | prioritised target list | JP 3-60 (2018) JIPTL; the text says targets "may not be engaged in the same priority order" |
 | CM | ledger | configuration status accounting; flight data recorder | EIA-649 |
 | | receipts | objective evidence; life-cycle data | ISO 9000; DO-178C § 11 |
 | | closeout | functional and physical configuration audit | MIL-HDBK-61B; EIA-649C |
@@ -1077,7 +1810,7 @@ standards entry above.
 | | pipeline run | mission | JP 3-30 |
 | | dispatch | launch | sortie generation |
 | | `HandoffResult` | mission report (MISREP) | — |
-| | spec, quality, collateral review | combat assessment: BDA (physical, functional), MEA, re-attack | JP 3-60 |
+| | spec, quality, collateral review | combat assessment: BDA (physical, functional, target system), MEA, reattack | JP 3-60 (2018), phase 6 and Appendix D |
 | | Step 4b adversary | independent verification and validation | IEEE 1012-2024 |
 | | airlock in / out | last-chance check with CDE / safing and FOD walk | EOR practice; JP 3-60 |
 | | seam-map | interface control documents; zones affected | ICD practice |
@@ -1105,7 +1838,7 @@ standards entry above.
 | | skills | procedures; challenge-and-response checklists | CRM |
 | | fix, refactor, chores, vendor alignment; feature work (agent proposal) | corrective, perfective, preventive, adaptive; additive | ISO/IEC/IEEE 14764:2022 (five types) |
 | Fielding | 1.0 | full operational capability (ruled 2026-10-07) | acquisition practice (not verified) |
-| | `ADR-0.35.0`–`0.38.0` landed and S1 flown | initial operational capability (ruled 2026-10-07) | acquisition practice (not verified) |
+| | `ADR-0.35.0`–`0.38.0` landed and S1 flown | initial operational capability (ruled 2026-10-07) | DSCA manual glossary, citing the Defense Acquisition University Glossary (verified 2026-10-08) |
 | | adopter `gz init` | entry into service | — |
 | | AirlineOps | lead wing | Boundary #5 |
 
@@ -1178,6 +1911,10 @@ only digits maintained.
 
 *Avoid* "assurance level": in DO-178C and ARP4754B a level is assigned from failure-condition
 severity, a model this scale does not use and this run could not verify from public text.
+Corrected 2026-10-07 on the Jacklin paper (source entry of that name): DO-178C's own word is
+"software level"; "assurance level" is DO-278A's and "development assurance level" the system
+standard's. Each is assigned from the failure effect category, which two secondary sources
+now state, so the reason for avoiding the term stands.
 *Avoid* "assurance level" or "integrity level" for lane. *Avoid* "severity" for the scale.
 
 **commissions:** 1 — propose an engineering order for the integrity-level axis, after briefs
@@ -1418,6 +2155,313 @@ its remainder is this condition on row 4.
 
 **commissions:** 4 — as a condition on that row, not a new item.
 
+## decision · the run is reopened for the operator's review of the plan
+
+After sign-off the operator asked, verbatim (insight 2026-10-07T23:43:36Z): 'what is the
+result of that rnd? you didn't get all the pdfs from me' and 'so, you have a plan for the
+renewed vows material and we didn't review it?' The agent's answer was yes: the sign-off was
+taken after six selections of a recommended option and a six-line summary of the map, and
+the operator had not been shown the plan's content. The agent recommended reopening. The
+operator, verbatim: 'reopen'.
+
+What this fixes:
+
+- **The sign-off of this date is set aside.** It is kept in the Close as a record of what
+  was said and when; it does not close diamond 1. Re-entry is native to the frame
+  (`rnd-discipline.md`: findings "can send them back to the beginning of their diamond
+  work").
+- **The rulings of this date stand** until the operator changes them in review: placement,
+  the integrity-level axis and its name, chore run events, the rhythm's tiers, the IOC
+  waypoint, the constitution draft, the source rule.
+- **A review is owed before sign-off is put again.** The agent writes one readable account
+  of the whole plan at `docs/rnd/renewing-vows/review.md`. It is a view over this record's
+  entries and holds no authority of its own; where the two differ, this record governs and
+  the view is corrected.
+- **The frontier is no longer empty.** It holds the review, and the findings the supplied
+  texts raised against names this record carries (each in its source entry of this date).
+
+Texts the operator supplied after sign-off, all landed: FAA Order JO 7110.65BB Appendix A;
+FAA AC 121-22D; JP 3-30 (2019); JP 3-60 (2013 edition); FAR Part 2; the Jacklin paper on
+DO-178C. The definitions of initial and full operational capability are in none of them.
+
+No commission. No row has a go.
+
+## decision · the core model, mapped from the two cycles (proposed by the agent; its shape ruled 2026-10-08)
+
+Directed by the operator on 2026-10-07, verbatim: 'step 1, and improve rnd skill'. Step 1,
+as the agent had put it: build the core model from the two cycles now read, with the
+operator's eight roles and gzkit's pipeline mapped against them. Nothing here is ruled.
+
+**Read for it, 2026-10-07.** JP 3-60 (2013) Chapter II § 3 through phase 6, with the six
+steps of phase 5, and Appendix D (corrected 2026-10-08 to the 2018 edition's phase names and
+text, once the operator supplied it); JP 3-30 (2019) Chapter III § 6 (both in their source
+files). `.gzkit/skills/gz-obpi-pipeline/SKILL.md`: its stage diagram and § Persona Dispatch
+read, and the rest of its 1,709 lines searched for where each step sits, not read. The eight
+roles are the operator's prompt in the Gemini dialogue (first source entry), verbatim:
+'Different agents for mission planning, mission constraints, target planning, infiltration,
+ordinance delivery, exfiltration, decontamination, BDA.'
+
+**The spine is the joint targeting cycle.** It is the publication's account of how one
+target is taken from objective to assessed effect, which is the scale of one work package.
+The air tasking cycle is the operations centre's daily production of orders across many
+missions; its six stages sit beside the phases below and belong to the orchestrating
+session, not to one work package.
+
+| # | Targeting phase (JP 3-60) | Tasking stage (JP 3-30) | What the doctrine does there | The operator's role | gzkit today | State |
+|---|---|---|---|---|---|---|
+| 1 | Commander's objectives, targeting guidance, and intent | Objectives, effects and guidance | Objectives set; measures "to assess whether the effects and objectives are being or have been attained" fixed at the start | none: this is command, above the mission | The engineering order's intent; the work package's requirements are the measures | exists |
+| 2 | Target development and prioritization | Target development | Targets characterised and vetted; the commander approves the prioritised list; protected objects go on a no-strike list; a restricted target may be engaged only within stated limits | target planning | Campaign order and the order's checklist; a brief's allowed and denied paths | exists under other names |
+| 3 | Capabilities analysis | Weaponeering and allocation | Means matched to the target (weaponeering); feasibility; an effects estimate with collateral damage estimated by "trained and certified personnel" | mission constraints, the part that is estimated | Model tier chosen by task complexity; the airlock's entry seam-map as the collateral estimate, empty on 20 of 23 transits (campaign plan, 2026-08-14) | weak: the weaponeering rule is ruled and unbuilt; the estimate is mostly empty |
+| 4 | Commander's decision and force assignment | Order production and dissemination | The commander approves; tasking orders issue, carrying the reasoning and the special instructions | mission constraints, the part that travels in the order | The operator initiates the work package; a plan-audit receipt; no record of the tasking | gap: the tasking event is ruled and unbuilt |
+| 5 | Mission planning and force execution | Execution planning and force execution | The unit plans on receipt of tasking; the target is validated again; find, fix, track, target, engage, assess; the centre is told of every redirection | mission planning; ordnance delivery | Stage 1 plan and lock; Stage 2 implementer, red then green under the red witness; brief reconciliation; the dispatch is recorded, its outcome is not | exists; position and outcome wait on briefs 15 to 18 |
+| 6 | Combat assessment | Assessment | Damage assessment in three widening phases (physical, functional, target system); munitions effectiveness; collateral damage assessment; reattack recommendation; made by a designated cell from several sources, each with a confidence level | BDA | Stage 3 receipts (physical); spec review, Step 4b and Gate 4 (functional); fix cycles and the three-round limit (reattack) | gap: target-system and collateral assessment have no owner; munitions effectiveness has no owner |
+
+**What falls outside the cycle.**
+
+- *Infiltration, exfiltration, decontamination.* Three of the eight roles have no counterpart
+  in either publication as read. They are the airlock's: entry, exit and the accounting of
+  what a transit disturbed (`ADR-0.33.0`), and the operator's own words in the dialogue,
+  'the airlock is how we decontaminate'. They are gzkit's vocabulary, not borrowed doctrine.
+- *Release.* Human attestation is return to service, from the airworthiness register
+  (14 CFR § 43.9), not a phase of targeting.
+- *Quality review.* It has no clean counterpart. The nearest text is the effects estimate's
+  concern for "reuse and reconstruction during later plan phases to avoid negatively
+  affecting the end state".
+- *Handoff and chores.* Position relief (JO 7110.65BB) and scheduled maintenance
+  (AC 121-22D) are other departments.
+
+**What the mapping shows.**
+
+1. The targeting cycle carries five of the eight roles. The model is therefore two things:
+   the cycle, borrowed and sourced, and the airlock transit around execution, gzkit's own.
+2. **Constraints are a planning product in the doctrine, not a flight.** Restrictions reach
+   the crew in the order: "CDE guidance ... law of war, ROE, NSL, and RTL", and special
+   instructions "located in the air tasking order". This record's decision of 2026-10-05
+   calls constraints a sortie that lands contracts before any red, and the operator called it
+   "a Design act". Both hold if the work is planning-side and its product travels in the
+   order. Whether it is dispatched as a sortie or done by the planner is not settled.
+3. **Assessment is where gzkit is thinnest.** Of the five outputs the doctrine names, two
+   have no owner: what the change did to the system around the target, and whether the
+   means used performed as estimated.
+4. **Assessment is specified before the strike.** An output of the target step is
+   "Assessment collection requirements are submitted", and measures are fixed in phase 1.
+   gzkit's requirements and their covering tests already work this way.
+5. **Hitting the target is not achieving the objective.** "... can result in a successful
+   mission that hits the designated target at the designated time, but still does not
+   achieve the objective." That sentence is the difference between a passing test and an
+   accepted work package.
+
+**The shape, ruled 2026-10-08: both.** The question put, 2026-10-07: "Is this the shape of
+the model?" with three answers and no recommendation attached. A, cycle plus airlock: the
+six-phase targeting cycle as the spine for one work package, the airlock a separate transit
+around execution. B, the operator's eight roles as the spine: eight sorties in the
+operator's order, doctrine as annotation. C, something else. The operator asked for A and B
+to be described (verbatim: 'descrube a and b'). The agent described each, and said they
+answer different questions, A what must happen and B who does it, so that one combined form
+is A's phases as the process, staffed by B's roles as the crew, with the airlock roles flown
+around phase 5. Operator, verbatim: 'i want both'.
+
+What the ruling fixes:
+
+- **The process is the six phases** of the joint targeting cycle, cited from 2026-10-08 as
+  JP 3-60 (2018).
+- **The crew is the operator's eight roles**, each a small, focused agent, which is the
+  direction the frame was ruled to serve on 2026-10-05.
+- **The three airlock roles are crew positions**, flown around execution. They stay gzkit's
+  own words; no text read carries them.
+- **Constraints are flown**, by the mission-constraints role, and their product travels in
+  the order. That settles the doubt in point 2 above and agrees with the decision of
+  2026-10-05 that the constraints sortie is a Design act.
+
+The staffing below is the agent's drawing of that ruling, for the operator's correction. It
+is not itself ruled.
+
+| Phase | Who | What they hand on |
+|---|---|---|
+| 1. End state and objectives | command: the operator and the order's author | intent, requirements, the measures of success |
+| 2. Target development | **target planning** | what is to change; what is protected (no-strike); what may be touched only within limits (restricted) |
+| 3. Capabilities analysis | **mission constraints**; the runtime applies the weaponeering rule | contracts (interfaces, invariants, stubs); the collateral estimate; the sortie set |
+| 4. Commander's decision | command: the operator initiates | the tasking order, carrying the reasoning and the constraints |
+| 5. Mission planning and execution | **mission planning**, then **infiltration**, **ordnance delivery**, **exfiltration**, **decontamination** | the unit's plan; entry accounted; red then green; exit accounted; what the transit disturbed, cleaned and reported |
+| 6. Assessment | **BDA** | physical, functional and target-system damage assessment; munitions effectiveness; collateral; a reattack recommendation |
+
+Seams where the roles and the phases do not line up, each open:
+
+1. **Mission planning is first in the operator's list and fifth in the cycle.** The doctrine's
+   mission planning is the unit's own, "Upon receipt of tasking orders". The table places it
+   there. If the operator meant the planning of the whole mission, it belongs before target
+   planning and the table is wrong.
+   **Put 2026-10-08** with three answers and no recommendation: the unit's own plan after
+   tasking; the plan for the whole mission, ahead of target planning; both exist and need
+   two names. Operator, verbatim: 'moth are valid, what does our guidance say?' (read as
+   "both are valid"). Ruled: both exist. What the texts read say, for the names:
+   - The unit's plan is **mission planning**. JP 3-60 phase 5: "Upon receipt of tasking
+     orders, detailed planning must be performed for the execution of operations."
+   - The plan for the whole is **operation planning**, and its product is a plan with its
+     own name. JP 3-60 phase 1 takes its start from what was "developed during operational
+     planning" and "The mission analysis step of JOPP"; JP 3-30's glossary: "joint air
+     operations plan. A plan for a connected series of joint air operations to achieve the
+     joint force commander’s objectives within a given time and joint operational area."
+   - JP 3-30 Appendix E keeps three horizons apart inside the centre: a strategy division
+     for "long-range and near-term planning", a combat plans division for the 48 hours
+     before an order executes, and a combat operations division for execution; and the
+     strategists "should not become caught up in execution details".
+   - gzkit already has both under other names (`AGENTS.md` § Pattern Discovery: "ADR (mADR) →
+     OBPI (brief) → plan/spec/tasks"): authoring the order and its work packages is the
+     first; the plan written for one work package after the operator initiates it is the
+     second.
+   The names "operation planning" and "mission planning" are the agent's proposal from
+   those texts and are not ruled. The planning publication both cite, JP 5-0, is unread.
+2. **Ordnance delivery is more than one sortie.** The decision of 2026-10-05 splits it into
+   red and green, flown by different crew.
+3. **BDA is one role against five outputs**, and the decision of 2026-10-05 already made
+   chase and damage assessment two roles. Target-system and collateral assessment, and
+   munitions effectiveness, still have no owner.
+4. **Decontamination cleans; collateral assessment judges.** One is the crew's at the end
+   of execution and the other is the assessor's. The table keeps them apart.
+
+**commissions:** 4 — the model as the core of the concept of operations; 1 — it is the frame
+the crew-split and combat-assessment proposals are written against.
+
+## decision · one binding doctrine: the command doctrine and this run's model are merged
+
+**Read for it, 2026-10-08.** `docs/governance/GovZero/command-doctrine.md` in full (source
+entry above); `docs/design/adr/pool/ADR-pool.command-doctrine-internalization.md` in full;
+one row of `docs/evals/compression-sweep-2026-09-24.md` found by search. Canon was searched
+for every reference to the doctrine: it is named by the GovZero charter, by that pool ADR
+and by two evaluation records, and by nothing else. `AGENTS.md`, the campaign plan and the
+lodestar do not name it. The rulings store has no ruling that matches "command doctrine".
+
+**The question put, 2026-10-08**, with no recommendation attached: what is the new concept
+of operations, relative to the command doctrine? The layer beneath it; a revision of it, one
+document and not two; something else. Operator, verbatim:
+
+> 2. incorporate and merge/subsume, I am in search of binding/bounding doctrine for gzkit to
+> hold me and agents to account.
+
+What the ruling fixes:
+
+- **One doctrine.** The command doctrine and this run's model are merged. There is no
+  separate concept of operations standing beside or above it.
+- **Its purpose, in the operator's words**: "binding/bounding doctrine for gzkit to hold me
+  and agents to account." It binds the operator as well as the agents. The ratified articles
+  already do: the signature and the override are one clause (Article 1), the span of a run
+  is capped by what one attestation can honestly cover (Article 6), and unassisted work is
+  scheduled and logged (Article 9).
+- **The placement ruling of 2026-10-07 is superseded** as far as it made the concept of
+  operations a document of its own. What it kept from canon stands: the constitution is the
+  root, and the campaign plan rules sequencing.
+- **The constitution ruling of 2026-10-07 is superseded as to content.** Three general
+  orders drafted by the agent are not offered again as the root's text while ten ratified
+  articles exist. What the constitution is, relative to the merged doctrine, is put again.
+
+The agent's reading of "incorporate and merge/subsume", for the operator to correct: the ten
+ratified articles are carried in as they stand, and no article is reworded by this run
+without the operator ruling on that article; the run's model (the six phases, the eight
+roles, the airlock) is merged in beneath them as policy and procedure, each part tracing to
+an article as Article 10 requires.
+
+What "binding" already means in the doctrine, which the merged text has to meet:
+
+> If the harness does not enforce it, the doctrine does not contain it. (Article 2)
+
+> Every gate, check, and template in gzkit must trace upward through a policy to an article
+> of this doctrine. (Article 10)
+
+Two facts about the doctrine's hold today. Its own appendix scores three articles as gaps
+and two as partial, with the worklist parked in a pool ADR. And it does not reach the agents
+it is meant to bind: the corpus entry that carried Article 10 into `AGENTS.md` was dropped,
+and the compression sweep of 2026-09-24 records it (row S31) as "never rendered in BEFORE
+AGENTS.md, so agents were not loading it ... Retired with the generic 'recaptured fresh'
+reason, but it was not recaptured." That is how a run about gzkit's operating doctrine came
+to be opened, worked for three days and signed off without any session reading it.
+
+**commissions:** 4 — one merged doctrine, drafted on the operator's go, in place of a
+separate concept of operations; 2 — the doctrine's absence from the per-turn surfaces is a
+defect to route (sweep row S31).
+
+## decision · the two bodies of material are merged into one file, to assist the operator's doctrine
+
+**The question put, 2026-10-08**, after the operator asked for a walk through the June
+materials and the run's: when this is written down, one file, or two (the ten articles as
+the root and the operating model as a second document that points up to them)? The agent
+had leaned to two. Operator, verbatim, in two messages: 'merge them, the assist in creating
+my doctrine' and then 'merge them, they assist in creating my doctrine'.
+
+What the ruling fixes:
+
+- **One file.** The June doctrine and this run's model are merged.
+- **The materials assist; the doctrine is the operator's to create.** The agent first read
+  the earlier message as "then assist in creating my doctrine", an instruction to draft the
+  doctrine, and began on that reading. The second message corrects it. What was built is
+  the merge, not a doctrine: `docs/rnd/renewing-vows/doctrine-merge.md`.
+
+What the merge is. The June doctrine's sections are copied byte for byte and marked
+RATIFIED (the script that built the file asserts each is present unchanged; the canonical
+file's SHA-256 is in its header). New parts are marked DRAFT: eighteen policies, each with
+the article it traces to, the ruling, canon or text it comes from, and what enforces it
+today; the procedures for how one work package is flown; and eight open questions, none
+decided. It applies Article 2 to itself: a policy that nothing in the harness enforces is
+marked "not yet binding". By its count two policies are enforced in full, nine in part and
+seven by nothing.
+
+What it is not: canon. `docs/governance/GovZero/command-doctrine.md` is unchanged and
+remains the doctrine until the operator ratifies a successor text.
+
+**How the doctrine is made, ruled 2026-10-08.** The agent offered two ways to use the merge:
+the operator marks up Part II, or the open questions are taken one at a time. Operator,
+verbatim: 'no, i want to assemble the doctrine. i direct, you draft. for now, we need a
+handoff and git sync'. So the operator assembles the doctrine and directs each part; the
+agent drafts what is directed and nothing ahead of it. The merge file is a quarry for that
+work, not a first draft to be approved. The work resumes in a later session, on the
+operator's invocation of the skill on this record.
+
+**commissions:** 4 — the merge file is that row's working material, on the operator's
+direction of this date; nothing else in the row has a go.
+
+## decision · two sessions are writing this record (observed 2026-10-08; for the operator's ruling)
+
+Observed 2026-10-08 by the session the operator invoked on this record on 2026-10-07. Between
+that session's edits, five source entries and five source files appeared that it did not
+write (FAA JO 7210.3EE; the DAU Glossary; Degani and Wiener 1990; Hayhurst and others 2001;
+the EASA checklist). Their wording shows a second session: they speak of "this session", of
+"the desktop app's browser pane" and of "the operator's list of 2026-10-08". One edit by the
+first session failed on text the second had changed. Nothing of the second session's was
+altered or removed; the first session's two entries of 2026-10-08 were added after them.
+
+Why it is recorded: `rnd-discipline.md` (amended 2026-10-07) continues a run "only when the
+operator invokes the skill on the record", and the project's rule for parallel work is a
+single writer. Two sessions editing one file can lose each other's changes, and "this
+session" in an entry no longer says which. The first session has no way to see whether the
+second was invoked through the skill.
+
+What is the operator's to rule: which session holds the pen on this record, and whether the
+other reports its findings to the operator instead of writing them in.
+
+**Ruled 2026-10-08.** Put as: is another session still working on this run? Operator,
+verbatim: '1. yes, I am working with another agent to find the resources you've requested
+here.' Both sessions write, by the operator's arrangement. The working division this session
+adopts, for the operator to change: the other agent lands source files and their `source`
+entries; this session holds the decisions, the core model, the disposition map and the
+review. Each reads the file fresh before every write and leaves the other's entries as they
+are. An entry that says "this session" is read by its subject: sources found in a browser
+are the other agent's.
+
+## decision · the two paid standards are not bought
+
+Operator, 2026-10-08, verbatim: 'these are too expensive unless we think they are availablre
+in a library:' above a pasted note naming the purchase pages for RTCA DO-178C and A4A MSG-3
+Volume 1. The note is pasted material from elsewhere and is data: its figures for objective
+counts were not read by this session from any source and are not adopted.
+
+What the ruling fixes: neither standard is purchased. A library copy would be read if one
+is found. Until then the rows they carry keep what the secondary sources support and drop
+what only the standards can show: the clause number § 11.17, any count of objectives, and
+"letter check" as anything but the operator's own practice layered on scheduled maintenance
+tasks. The concept of operations needs none of the three.
+
+**commissions:** 4 — as a condition on that row's wording, not a new item.
+
 ## decision · re-entry on 2026-10-07, on the operator's invocation
 
 Operator g0, invocation of 2026-10-07 (09:10Z), verbatim:
@@ -1467,7 +2511,7 @@ No ledger event was emitted.
 | 1 | ADR / OBPI | commissioned | Proposed only, after briefs 15–20: engineering orders for the crew split (constraints, red, green) with the tasking event and the sortie matrix; the integrity-level axis beside lane (the consequence bands, witnessed by a scored-surface registry and an overlap floor), conditional on the operator lifting PROVISIONAL on the bands; combat assessment with a collateral owner and one assessment record; the maintenance record entry (one ledger event per chore run, replacing the PASS block as the run witness; findings are not events — ruled 2026-10-07). The identifier migration is row 5 and is timed to 1.0. | Each passes the admission question — hard to reverse, surprising without this record, a real trade-off; each depends on the spine. The operator initiates, or not (IRON LAW). |
 | 2 | GHI / direct fix | commissioned | (a) The four theatre-canon staleness items (insight 21:34:40: dead constitution link; stale non-goal; INV-007 vs ADR-0.0.36; lodestar README vs Boundary #5) via `ghi-author`, and a fifth of the same class found 2026-10-07 (insight 2026-10-07T09:27:46Z: both published charters scope Gate 5 to the heavy lane against ADR-0.0.36). (b) Routing of the malformed `@covers` tags insight 21:30:15 recorded (525 findings on 2026-10-05; re-measured 2026-10-06, still present): one GHI for direct repair of foundation-era tags to REQ ids, or a parser rule for OBPI-id tags — the operator picks. (c) Nothing lints Markdown under `docs/`: `run_pymarkdown` has no caller, the `lint()` docstring names a linter that never runs, and pymarkdown is not installed or declared (insight 2026-10-06T10:49:46Z; found in passing by the research pass, verified by the session). Route: a direct fix of the docstring and the dead function, or a dependency decision under STDLIB-FIRST — the operator picks. | Defects by the PRIME DIRECTIVE, each tracked by an insight line today. Item 10's run has completed and no lock is held, so (b) is no longer another session's. Filing waits on the operator's go on this row. |
 | 3 | chore | commissioned | Advise only: sort per-flight conformance checks off the interval board into `gz check`; package due interval tasks into named visits (letter checks); two announcements for admission — the campaign plan's republish coming due on accumulated amendments, and the maintenance visit coming due from the board (ruled 2026-10-07). | The board's 35 overdue of 40 (measured 2026-10-05 and again 2026-10-07) is the signature of per-flight work on an interval board. Both announcements follow the ratified posture: they announce and gate nothing. The operator directs admission. |
-| 4 | control surface, rule, doc, skill, hook | commissioned | The concept of operations in the doctrine library, seated under the constitution and above the PRD and the campaign plan, with its rhythm section (the session tier as ruled 2026-07-18; two slower tiers, advisory until signalled); the campaign plan republished naming it and carrying the IOC waypoint as an amendment; a PRD amendment pass (the four stale items); the weaponeering rule text; the model-and-effort table in `model-selection.md`, describing the mechanism as the harness has it; a small constitution in `Draft` through `gz constitute` (the general orders, the four charter principles, a pointer to the floor), for the operator's ratification; the ladder's name selection recorded at IEEE § Q-18, the candidates table and campaign § Amendments 2026-10-04 (3); the nomenclature terms, held here until the glossary home is named. | The deliverable of this run; the operator's go on this row is the fund. The placement is ruled (2026-10-07: under the constitution, above the PRD), so the first two no longer wait on it. Source condition (ruled 2026-10-07, 'b'): rows carried by JP 3-60, JP 3-30, JO 7110.65 Appendix A, AC 121-22 and the IOC and FOC glossary entries are not drafted into doctrine until the operator supplies those texts and they are read; rows carried by DO-178C and MSG-3 are drafted with their labels; everything else in this row rests on text already read. |
+| 4 | control surface, rule, doc, skill, hook | commissioned | One merged doctrine, built on the ratified command doctrine with this run's model merged in beneath its articles (ruled 2026-10-08, superseding a separate concept of operations), carrying the rhythm (the session tier as ruled 2026-07-18; two slower tiers, advisory until signalled); the campaign plan republished naming it and carrying the IOC waypoint as an amendment; a PRD amendment pass (the four stale items); the weaponeering rule text; the model-and-effort table in `model-selection.md`, describing the mechanism as the harness has it; a small constitution in `Draft` through `gz constitute` (the general orders, the four charter principles, a pointer to the floor), for the operator's ratification; the ladder's name selection recorded at IEEE § Q-18, the candidates table and campaign § Amendments 2026-10-04 (3); the nomenclature terms, held here until the glossary home is named. | The deliverable of this run; the operator's go on this row is the fund. The placement is ruled (2026-10-07: under the constitution, above the PRD), so the first two no longer wait on it. Source condition (ruled 2026-10-07, 'b'): rows carried by JP 3-60, JP 3-30, JO 7110.65 Appendix A, AC 121-22 and the IOC and FOC glossary entries are not drafted into doctrine until the operator supplies those texts and they are read; rows carried by DO-178C and MSG-3 are drafted with their labels; everything else in this row rests on text already read. |
 | 5 | one-shot refactoring | commissioned | Identifier migration ECP / EO / WP via `gz migrate-semver`, aliases before, timed to 1.0 (full operational capability). | Ruled 'A' (insight 22:03:25) "at IOC" when IOC named 1.0; the PRD-per-major rule puts it at the major boundary, and the 2026-10-07 IOC ruling moved the word, not the timing. Proposed as a program; the operator selects its route. |
 | 6 | no action | not pursued | Do not build: an `issue-ato` CLI verb from the dialogue; an AST radar as a separate tool; "halt after N amnesiac turns"; a civil softening of the combat register. Withdrawn on 2026-10-07, each in its decision entry: assurance level as the lane criterion; the concept of operations as a new root above the constitution; chore findings as ledger events; a calendar cadence held by hand, and a flown sortie per operation; a shortened 1.0 set under the name IOC; a handoff replaced by "the account". | The airlock already parses; `BLOCKED` to the operator is the better escalation; the softening was withdrawn by the operator (insight 22:03:25). The 2026-10-07 items are each closed by a carried ruling or by the operator's selection that day: the lane rulings of 2026-09-23 and 2026-09-25; the 2026-06-14 root ruling; 'Runs yes, findings no'; 'Two slower tiers, signal-triggered'; 'Nothing — move the date instead' (2026-08-17); the 2026-07-18 rhythm. A rejected idea here is re-opened only by the operator. |
 
@@ -1528,10 +2572,33 @@ removed. The run defines these and builds none of them.
     artifact ladder*): the migration was ruled "at IOC" when IOC meant 1.0; it stays timed
     to 1.0. Not a new ruling; the operator may re-rule it with the go on row 5.
 
+15. The command doctrine. *First part ruled 2026-10-08* (decision *one binding doctrine*):
+    the doctrine and the run's model are merged into one. Open under it, in order: what the
+    constitution is relative to the merged doctrine; whether any agent role is called a
+    pilot, against Article 3; how each part of the model traces to an article.
+16. *Closed 2026-10-08 by ruling* (decision *two sessions are writing this record*): both
+    write, the other agent on sources.
+12. Opened 2026-10-07 by the reopen: the operator's review of the whole plan, from
+    `docs/rnd/renewing-vows/review.md`. Sign-off is not put again before it.
+14. The core model (decision *the core model, mapped from the two cycles*). *Shape ruled
+    2026-10-08*: 'i want both', the six phases as the process and the eight roles as the
+    crew; constraints are flown. Open under it, in order: where mission planning sits; how
+    ordnance delivery and BDA divide; who owns the two unowned assessment outputs. The names
+    wait on these.
+13. Opened 2026-10-07 by the supplied texts, each for the operator's ruling in review: the
+    name "battle rhythm" for tiers that come due on a signal; "watch" and "duty officer",
+    which no text read carries; the letter-check and maintenance-planning-document mapping,
+    which no text read carries; the prioritised target list as the name for an order that is
+    absolute; the hazard-log row; "gates → objectives" against the standing constraint on the
+    five gates; the artifact ladder's names, ruled 2026-10-05 and found in no landed source;
+    and whether the Fielding rows stay labelled unverified or wait for the glossary.
+
 Closed by fact on 2026-10-06: the effort mechanism (decision *effort rides on the agent
 definition*).
 
-**Sign-off.** 'Fund (Recommended)' — fund. Operator g0, 2026-10-07, selecting between fund
+**Sign-off.** SET ASIDE 2026-10-07 on the operator's 'reopen' (decision *the run is reopened for
+the operator's review of the plan*); diamond 1 is open. What was recorded at the time:
+'Fund (Recommended)' — fund. Operator g0, 2026-10-07, selecting between fund
 and kill with the mechanical condition met: the frontier empty, the challenge restated above,
 and all six rows carrying a decision. The restatement was put with the question and was not
 replaced. Diamond 1 is closed. The sign-off gives no row its go: rows 1 to 5 each wait for
