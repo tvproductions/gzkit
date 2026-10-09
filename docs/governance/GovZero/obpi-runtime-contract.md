@@ -223,6 +223,11 @@ later reconciliation consumes directly from ledger evidence:
 - `recorder_source`
 - `recorder_warnings`
 
+All three producers write this context: `gz obpi complete`, `gz obpi emit-receipt`
+and the recorder hook. Dated record, 2026-10-09: receipts `gz obpi complete` wrote
+from its introduction on 2026-04-05 until the repair under GHI #1181 do not carry
+it, so a consumer must still treat each field as optional.
+
 The intended pipeline ordering in gzkit is:
 
 1. verify

@@ -103,7 +103,14 @@ grounds (GHI #587) stands unchanged.
    `--attestation-text` is required; there is no separate TTY ceremony.
 4. Writes attestation to ADR-local audit ledger
 5. Updates brief with evidence, attestation, and Completed status
-6. Emits `obpi_receipt_emitted` event to main ledger
+6. Emits `obpi_receipt_emitted` event to main ledger. The receipt's evidence
+   carries the same recorder context `gz obpi emit-receipt` writes (GHI #1181):
+   `scope_audit` (`allowlist`, `changed_files`, `out_of_scope_files`),
+   `git_sync_state`, `recorder_source` (`cli:obpi_complete`) and
+   `recorder_warnings`. `changed_files` is the uncommitted working tree as it
+   stood before this command wrote the brief. A file outside the brief's
+   Allowed Paths is recorded in `out_of_scope_files`; it does not stop the
+   completion.
 7. Surrenders the work lock mechanically (token-block exit edge, GHI #619):
    writes a completion exchange record as the register entry under
    `.gzkit/locks/exchange/` and, if a lock is held for the OBPI, releases it and

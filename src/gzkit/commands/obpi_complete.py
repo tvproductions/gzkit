@@ -55,6 +55,7 @@ from gzkit.governance.trust_audits.sensitivity import (
     detect_brief_security_floor,
     detect_brief_security_surfaces,
 )
+from gzkit.hooks.core import enrich_completed_receipt_evidence
 from gzkit.ledger import (
     Ledger,
     LedgerEvent,
@@ -1285,7 +1286,7 @@ def obpi_complete_cmd(
     )
     completion_term = "attested_completed" if requires_human else "completed"
     anchor = capture_validation_anchor(project_root, resolved_parent)
-    evidence: dict[str, Any] = {
+    base_evidence: dict[str, Any] = {
         "value_narrative": effective_summary[:500],
         "key_proof": effective_proof[:500],
         "parent_adr": resolved_parent,
@@ -1294,10 +1295,20 @@ def obpi_complete_cmd(
         "attestation_requirement": "required" if requires_human else "optional",
     }
     if requires_human:
-        evidence["human_attestation"] = True
-        evidence["attestation_text"] = attestation_text
-        evidence["attestation_date"] = today
-        evidence["attestation_type"] = attestation_type
+        base_evidence["human_attestation"] = True
+        base_evidence["attestation_text"] = attestation_text
+        base_evidence["attestation_date"] = today
+        base_evidence["attestation_type"] = attestation_type
+    # GHI #1181: the same envelope `gz obpi emit-receipt` and the recorder hook
+    # attach (REQ-0.11.0-03-02), captured before this command writes the brief.
+    # It records files outside Allowed Paths; it does not refuse on them.
+    evidence, _ = enrich_completed_receipt_evidence(
+        project_root=project_root,
+        content=original_content,
+        base_evidence=base_evidence,
+        parent_adr=resolved_parent,
+        recorder_source="cli:obpi_complete",
+    )
 
     receipt_event = obpi_receipt_emitted_event(
         obpi_id=obpi_id,
