@@ -3789,6 +3789,31 @@ is the operator's.
 
 **commissions:** 2 — (k).
 
+## decision · correction: the scope report was a command's, and the loss is a regression by replacement (2026-10-09)
+
+Asked by the operator, verbatim: "does it correct gz obpi complete to restore incorrectly
+remove prior behavior?" Answering it showed an error in this record and in GHI #1181.
+
+**The error.** This record says the report was produced by the hook path and that
+`build_scope_audit` "is called from `src/gzkit/hooks/core.py` only". The second half is true
+of that one function. The inference was wrong: the function that attaches the report,
+`enrich_completed_receipt_evidence`, is also called by the CLI command `gz obpi emit-receipt`
+(`src/gzkit/commands/adr_audit.py`). By the receipts' own `recorder_source`, that command
+wrote 274 of the 278 receipts that carry the report; the hook wrote 3; the last, on
+2026-06-19, was the command again.
+
+**What is true.** `gz obpi emit-receipt` still exists and still attaches the report.
+`gz obpi complete`, added 2026-04-05, became the way work is completed and builds its own
+receipt evidence without it. The field was never in that file. Nothing was removed from
+`gz obpi complete`; the report was not carried across when it took over.
+
+**What follows.** The work in GHI #1181 is two things. Attaching the same report in
+`gz obpi complete` restores behaviour the system had and lost, which is a plain repair.
+Refusing on an out-of-scope file, and measuring one work package and not the whole dirty
+tree, were done by neither command. The correction is posted on the issue.
+
+**commissions:** nothing new; it restates row 2 (g).
+
 ---
 
 ## Disposition map
