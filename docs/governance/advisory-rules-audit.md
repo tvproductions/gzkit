@@ -332,7 +332,7 @@ The Claude-specific invariant 10a is scored as a row rather than in prose:
 
 | # | Rule | Score | Why |
 |---|------|-------|-----|
-| 49 | Nine-pattern agent failure-mode vocabulary (`Safeguard circumvention` / `Reckless action` / `Fabrication` / `Skipped cheap verification` / `Correction fails` / `Dishonest when caught` / `Hallucinated authorization` / `Security shortcut for expedience` / `Metagaming / gaming the gate`) — sourced to the **current** frontier system cards per the registry-rotated `data/frontier_model_cards.json` (presently Claude Fable 5.1/Mythos 5.1 §§ 2.3.3, 6.2.1, 6.4.2–6.4.5, 6.6.1, Claude Opus 5.5 §§ 6.3.1, 6.4.1, 6.4.3–6.4.5, 6.5.1, and GPT-6 Astra §§ 8.3.1, 8.6, 8.7, 8.8, 9.1–9.2; chore `frontier-model-card-currency`); origin lineage lifted to [Rule Version History](rule-version-history.md#agent-failure-modesmd) per the 2026-08-02 operator ruling that live doctrine retains no superseded-model references. Cited by name when reviewing PRs, filing defects, and extending the scorecard; routes the conversation directly to the engineered backstop instead of re-deriving the failure motivation each time. | **Judgment** | Vocabulary, not mechanical check. The mechanical defenses already exist as separate rules and gates — operator-verbatim attestation + audit (`AGENTS.md` § Never #1) carrying a non-empty `evidence.attestation_text` and a real `--attestor` to the ledger, ARB receipt requirements (`AGENTS.md` § Attestation), hook fail-closed behavior, `gz validate --commit-trailers`, layered-trust T1/T2/T3 invariants — and this rule is the **shared name** they point at. **Backstop citation corrected 2026-08-02:** this cell previously named the TTY + `ATTEST` authenticity gate at `_enforce_human_attestation_authenticity` (`src/gzkit/commands/adr_audit.py`) as the lead defense. That function still exists, but citing a *transport* as the attestation gate contradicts the canon-owner directive that no TTY/PTY mechanism may ever gate human attestation — the same repoint rule version 0.4.0 made and the scorecard never inherited. Promotion candidate `gz validate --failure-mode-coverage` (a self-test confirming every scorecard row names the failure shape it backstops) tracked under follow-up GHIs #308–#312 per ADR-0.0.23 § Decision. `source=.gzkit/rules/agent-failure-modes.md` |
+| 49 | Nine-pattern agent failure-mode vocabulary (`Safeguard circumvention` / `Reckless action` / `Fabrication` / `Skipped cheap verification` / `Correction fails` / `Dishonest when caught` / `Hallucinated authorization` / `Security shortcut for expedience` / `Metagaming / gaming the gate`) — sourced to the **current** frontier system cards per the registry-rotated `data/frontier_model_cards.json` (presently Claude Fable 5.1/Mythos 5.1 §§ 2.3.3, 6.2.1, 6.4.2–6.4.5, 6.6.1, Claude Opus 5.5 §§ 6.3.1, 6.4.1, 6.4.3–6.4.5, 6.5.1, and GPT-6 Astra §§ 8.3.1, 8.6, 8.7, 8.8, 9.1–9.2; chore `frontier-model-card-currency`); origin lineage lifted to [Rule Version History](rule-version-history.md#agent-failure-modesmd) per the 2026-08-02 operator ruling that live doctrine retains no superseded-model references. Cited by name when reviewing PRs, filing defects, and extending the scorecard; routes the conversation directly to the engineered backstop instead of re-deriving the failure motivation each time. | **Judgment** | Vocabulary, not mechanical check. The mechanical defenses already exist as separate rules and gates — operator-verbatim attestation + audit (`AGENTS.md` § Never #1) carrying a non-empty `evidence.attestation_text` and a real `--attestor` to the ledger, ARB receipt requirements (`AGENTS.md` § Attestation), hook fail-closed behavior, `gz validate --commit-trailers`, layered-trust T1/T2/T3 invariants — and this rule is the **shared name** they point at. **Backstop citation corrected 2026-08-02:** this cell previously named the TTY + `ATTEST` authenticity gate at `_enforce_human_attestation_authenticity` (`src/gzkit/commands/adr_audit.py`) as the lead defense. That function still exists, but citing a *transport* as the attestation gate contradicts the canon-owner directive that no TTY/PTY mechanism may ever gate human attestation — the same repoint rule version 0.4.0 made and the scorecard never inherited. Promotion candidate `gz validate --failure-mode-coverage` (a self-test confirming every scorecard row names the failure shape it backstops) tracked under follow-up GHIs #308–#312 per ADR-0.0.23 § Decision. **Pointer corrected 2026-10-09:** #308–#312 are closed and none of them builds this scope; it is not a `gz validate` flag, and no issue titled for it was found by search. `source=.gzkit/rules/agent-failure-modes.md` |
 | 49a | Patterns are maintained against the **current** frontier system cards | **Promotable** | **Scored 2026-08-30 (rule `0.7.0`), GHI #921 — scored separately from row 49 because it is a different claim:** row 49 scores the *vocabulary*, this scores its *currency*. The registry exists and the `frontier-model-card-currency` chore rotates it, so the authority is declared rather than transcribed — the shape row 17h asks for. What is unwitnessed is staleness: nothing fails closed when the registry names a superseded card generation, which is exactly the drift the 2026-08-02 operator ruling (*live doctrine retains no superseded-model references*) exists to prevent. Promotion path: assert every `§` citation in this rule resolves to a card the registry currently declares. `source=.gzkit/rules/agent-failure-modes.md` |
 
 ### Model Selection (`.gzkit/rules/model-selection.md`)
@@ -632,16 +632,18 @@ The nine, by witness status:
 | `distribution_baseline_manifest.json` | **Defeated** — the audit's domain moved to `_CANONICAL_SURFACES`; the manifest is no longer an input to its own scope |
 | `waiver_ratchet_registry.json` | Gap measured **0** (18 registered + 1 excluded + itself = all 20 waiver-shaped files). No witness found that a *new* waiver surface must be registered |
 | `frontier_model_cards.json` | **Zero test references** — the weakest of the nine |
-| `agents_md_survival_declaration.json` | Unread |
-| `instructions_files_budget.json` | Unread |
-| `transcribed_count_surfaces.json` | Unread |
-| `security_surfaces.json` | Unread |
-| `exemplar_corpus.json` | Unread |
+| `agents_md_survival_declaration.json` | **Defeated for sections** (read 2026-10-09) — `surface_delivery_witness.py` reports a rendered `## ` section absent from the declaration, held by `test_rendered_section_absent_from_declaration_gates` and `test_committed_surface_and_declaration_agree`. Open for *surfaces*: only `AGENTS.md` is declared, and `test_absent_declaration_is_not_a_finding` keeps an undeclared surface silent by design, for adopters |
+| `instructions_files_budget.json` | **Partly derived** (read 2026-10-09) — rule files come from a glob over disk, so a new one is measured without being listed. `AGENTS.md` and `CLAUDE.md` are named, and nothing compares the list to the surfaces the enabled vendors receive; the nested `AGENTS.md` files are GHI #922. Advisory until 1.0 (row 17b), so a missing member changes no exit code |
+| `transcribed_count_surfaces.json` | **Defeated for the campaign member** (read 2026-10-09) — `ScannersFollowTheGoverningEdition` holds the scanned campaign to `data/active_campaign.json` (GHI #1064). Open for every other live surface: the file's own comment says an unlisted file *"is not scanned at all"*, and nothing independent names which files make live ADR-count claims |
+| `security_surfaces.json` | **Open for missing members; a dead member found and repaired** (read 2026-10-09) — the nine categories are held to `CANONICAL_CATEGORIES`, and nothing independent says which files belong under them. The reading found the package's former top-level personas module listed under `deserialization_user_input` though it was deleted on 2026-05-12 (`560d76c3e`), with persona frontmatter parsed in `src/gzkit/models/persona.py`, which no glob matched. Repaired under GHI #1182: the entry names the present file, and `test_every_literal_path_resolves` now fails on a listed plain path that does not exist. A wildcard pattern that matches nothing is still accepted, by design |
+| `exemplar_corpus.json` | **Outside the class** (read 2026-10-09) — the corpus is selected, not enumerated from a population, so no member *should* be present that is not (rows 50a and 50b under § Exemplar Corpus Doctrine). The floor that does exist is held: `test_archetypal_cell_coverage_meets_floor` against the ten cells, all ten populated today |
 
-*Unread* means: the file has test references, but **referenced by a test is not
-the same as completeness witnessed.** A test asserting that listed members are
-valid is exactly what a fixed point permits; the question is whether anything
-asserts a member cannot be *missing*. Six such readings are owed.
+**The five readings marked owed on 2026-08-09 were done on 2026-10-09** (this paragraph
+said six; five rows were marked). The distinction it drew held in every case: **referenced by
+a test is not the same as completeness witnessed.** A test asserting that listed members are
+valid is exactly what a fixed point permits; the question is whether anything asserts a member
+cannot be *missing*. Result: two lists are defeated for one class of member each, one is partly
+derived from disk, one is open and carried a dead member, and one is outside the class.
 
 **The two defeated instances carry two different remedies, and the difference is
 the useful part.** `check_scope_membership.json` keeps the file and adds a test
@@ -691,6 +693,27 @@ construction — it means this scorecard makes no claim about it.
 > need"*; it does **not** amend *"never maintenance burden or velocity"* — burden
 > alone is still not a removal rationale; degraded steering is. First subtraction
 > increment landed this date (3 wrapper chores; see CHANGELOG / agent-insights).
+
+**State of this section, 2026-10-09 (a dated record).** The block above is the record of
+2026-06-08 and is kept as written. Three things in it no longer describe the present. Found by
+R&D run `docs/rnd/renewing-vows.md` and corrected on the operator's go of 2026-10-09.
+
+- *"As of 2026-08-08 there are no Promotable rows left"* stopped being true on 2026-08-16
+  (§ Summary, GHI #810). The fenced table in § Summary is the only authority on how many rows
+  stand in that state.
+- *"Subtraction now has equal standing"* was overtaken two days later. The campaign ratified
+  on 2026-06-10 defers reduction to its post-1.0 pass
+  (`docs/governance/build-to-1.0-campaign-2026-06-10.md`: *"Every reductive move (cull, retire,
+  merge, optimize, straighten) is deferred to the post-1.0 reduction pass (Phase H)"*).
+- The track this block opened landed the one increment named above and no other. Its ruled
+  next step was to measure what the cuts changed before cutting more
+  (`.gzkit/handoffs/20260609T022038Z-593-fixed-track2-a1-landed.md`). No measurement was
+  recorded, and none is owed while reduction is deferred.
+
+What still governs is the first paragraph's rule, which the active campaign plan repeats and
+rows in § Scorecard cite: a new mechanical check needs a specific, observed drift instance.
+Operator, 2026-10-09, on what the freeze was: *"an early reaction to a growing gzkit complexity
+and agent input/critique that gzkit is overwrought"*.
 
 Each promotion candidate has a tracking GHI. Close the GHI when the promotion lands per the discipline in § Promotion discipline below.
 

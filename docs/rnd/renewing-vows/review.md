@@ -9,6 +9,16 @@
 > **What it is for.** You signed off on this plan without reading it. Read it here, correct
 > it, and then rule on § 9. Nothing below has been built, and no row has your go.
 
+> **Stale, 2026-10-08. Do not review from this page yet.** It was written before the
+> one-doctrine ruling and before `docs/governance/GovZero/` was read. Sections 8a and 9 are
+> current to 2026-10-08 morning; sections 1 to 8 are not. Known wrong today: § 1 and § 7 still
+> plan a separate concept of operations and a small constitution; § 2 and § 8 item 8 say the
+> ladder's names are unsourced (three are sourced as terms); § 3 quotes the 2013 JP 3-60 and
+> leaves "planned or flown" open (ruled); § 5 rows 5 and 7 and § 6 say FOC is unverified and
+> one text is outstanding (both closed); § 8 item 13 says the eight roles are unmapped (they
+> are mapped in § 3); "nothing owns" the collateral output (it had an owner and lapsed). The
+> record governs. This page is rewritten after your first ruling on the recomputed frontier.
+
 ## 1. The problem in one paragraph
 
 gzkit's trouble is not a shortage of controls. Every control addresses every agent as though

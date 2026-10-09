@@ -17,6 +17,15 @@
 > **What it is for**, in the operator's words, 2026-10-08: *"binding/bounding doctrine for
 > gzkit to hold me and agents to account."*
 
+> **Note, 2026-10-08, after `docs/governance/GovZero/` was read in full.** Parts II and III
+> were drafted before that read and need re-basing before you draw on them. Part III writes
+> procedures beside canonical ones it does not name: the five-stage pipeline runbook, the
+> OBPI transaction contract, the audit protocol and the charter. Part II's "Enforced today
+> by" column does by hand what `docs/governance/advisory-rules-audit.md` already does with a
+> cited witness per row. Policy 9's "System and collateral: **nothing**" is wrong: completed
+> receipts carried a scope audit until 2026-06-19. Part I and the RATIFIED parts are
+> unaffected. Detail: run record, source entry *gzkit's own doctrine layer*.
+
 ## How to read this draft
 
 The June doctrine set four layers and wrote the first. This draft keeps the first as it is

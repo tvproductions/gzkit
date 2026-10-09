@@ -1548,6 +1548,311 @@ scheduled maintenance in one, new work in the other. The session first reported 
 operator as two meanings; the operator asked, verbatim, 'work package: does it really have
 two meanings?', and on rereading it does not.
 
+## source · gzkit's own doctrine layer under `docs/governance/GovZero/`, read 2026-10-08
+
+Read by session `6c08c9d9` after the re-entry of 2026-10-08 (decision of that name), because
+the run had named two of this directory's documents and read one. **Read in full:** the
+twenty-two documents other than `adr-status.md`, the three under `audits/` and the four under
+`releases/`; and, outside the directory, `docs/governance/trust-doctrine.md` and
+`docs/governance/ontology-ownership-plane-doctrine.md`. **Read in part:** `adr-status.md`,
+header only (a generated table); `docs/governance/advisory-rules-audit.md`, lines 1 to 140 of
+a 198,332-byte file, the rest unread. **Measured, a dated record:** `.gzkit/governance/
+ontology.json` by script; `scope_audit` in `src/gzkit` and on the ledger (below).
+`AGENTS.md` § Governance doctrine surfaces names the trust doctrine and the advisory-rules
+audit as reading owed before governance work; this record had cited neither.
+
+**1. The four layers have occupants. The empty one is policies.** The charter places
+itself, verbatim:
+
+> Gate definitions are *procedures* in the Four P's stack. They trace upward to the
+> [GovZero command doctrine](command-doctrine.md) (philosophy layer, Article 10): the
+> doctrine governs *why* the gates exist; this charter remains the sole authority for *what*
+> the gates are.
+
+Philosophy is the ten ratified articles. Procedures are the charter and the documents beside
+it (items 2 to 4). Practice is the code. The command doctrine names its policies in one
+sentence and no document states them.
+
+**2. How one work package is flown is already written down.**
+`obpi-pipeline-runbook.md` (version 2.0, `Status: Draft`, last reviewed 2026-03-17) gives
+five stages and an owner for each: load (script), implement (agent), verify (script), attest
+(human), sync (script). Verbatim:
+
+> **Agent work is Stage 2 only.** Implementation is the one stage that requires creative
+> problem-solving. Everything else is ceremony, verification, and accounting.
+
+> **The skill is a dispatcher, not an engine.**
+
+> **Stop on blockers, never work around.**
+
+Its reason for subagents is "Context contamination", and a subagent returns `DONE |
+DONE_WITH_CONCERNS | BLOCKED` with its files and test result. `obpi-transaction-contract.md`
+(`Status: Active`): "An OBPI is not just a brief file or checklist row. It is a bounded
+transaction with an explicit scope contract"; "Scope isolation is law, not guidance."; and
+"Only one spine-touch OBPI may be active at a time", a spine surface being a lock file, a
+registry, CI configuration or repository-wide doctrine.
+
+**3. Article 4's report was built, recorded for a season, and has stopped.** The transaction
+contract, verbatim: "Completion MUST fail closed when the changed-files audit shows a path
+outside the allowlist." `obpi-runtime-contract.md`: a completed receipt carries
+`scope_audit` with `allowlist`, `changed_files` and `out_of_scope_files`. Measured
+2026-10-08: `build_scope_audit` is defined in `src/gzkit/hooks/obpi.py` and called only from
+`src/gzkit/hooks/core.py`; `src/gzkit/commands/obpi_complete.py` does not name it. On the
+ledger, 278 `obpi_receipt_emitted` lines carry `scope_audit`, and 102 of those list at least
+one out-of-scope file, so the audit recorded and did not refuse. By month: 255 in March, 22
+in April, one in June (2026-06-19, the last), none since, while the completed receipts
+written without it number over three hundred (counted by a line filter, so approximate).
+The command doctrine's own appendix, written 2026-06-10, scores Article 4 "Partial — no
+post-run delivered-vs-commanded scope-conformance gate".
+
+**4. How assessment reaches the human is written down.** `audit-protocol.md` (`Authority:
+Canon`), verbatim:
+
+> The agent presents **paths**, not **conclusions** ... The human **executes and observes
+> directly**, with the agent as a silent index
+
+> The agent cannot corrupt what it does not interpret.
+
+It names the risk "mediated observation". The charter fixes the attestation forms:
+Completed; Completed — Partial; Dropped.
+
+**5. The instrument that measures whether a rule binds exists and is live.**
+`advisory-rules-audit.md`, as far as read: every rule stated to agents is scored
+**Mechanical**, **Promotable**, **Judgment** or **Ambiguous**; verbatim, "Every rule that
+*could* be a test *should* be a test."; "A **Mechanical** score must cite its witness";
+`gz validate --advisory-scorecard` fails closed on a rule bumped past its scored version. One
+condition bears directly on this run: a Mechanical or Promotable row's text must appear in
+the per-turn surface (`AGENTS.md`, `CLAUDE.md`, `.claude/rules/**`) or in the skill or ADR
+file it is attributed to. The command doctrine is none of those, so no article can be scored
+until its text reaches the per-turn surface through the corpus.
+`ADR-pool.command-doctrine-internalization` item 6 already names the route: "extend the
+advisory-rules scorecard with a traces-to-article column".
+
+**6. A second, dormant join table.** `governance-registry-design.md` (`Status: Draft`,
+2026-02-15) designs Doctrine → Policy → Rule → Action objects, each rule with an enforcement
+coverage of `automated`, `human-gated` or `gap` and each action with an authorization of
+`autonomous`, `human-gated` or `prohibited`. Its problem statement, verbatim: "There is **no
+join table**." and
+
+> "What is the full set of constraints an agent must satisfy?"
+
+On disk `.gzkit/governance/ontology.json` is version 0.1.0, last updated 2026-03-09: three
+doctrines, one policy, one rule, thirteen actions; nothing under `src/gzkit` names the file.
+`ontology-ownership-plane-doctrine.md` calls its schema "dormant". The ontology of
+`ADR-0.32.0` is a different thing, a derived graph that "never gates".
+
+**7. Release classes already carry the ladder's top.** `releases/README.md` (`Status:
+DRAFT`, 2026-01-10): a major release's intent carrier is the PRD, a minor's is the ADR with
+its OBPIs, a patch's is the GitHub issue. Verbatim: "A release is a governance assertion,
+not a batch of commits."; "Large OBPI accumulation within a single minor is a drift
+indicator; stop and reclassify."; and a list of "Authorized Agent Challenges" the agent is
+required to raise. `adr-lifecycle.md` (`Authority: Canon`) holds an identifier scheme of its
+own, `0.1.15-obpi.03` and `0.1.15-ghi.67`. `adr-obpi-ghi-audit-linkage.md`: "**OBPIs are
+planned work.** ... **GHIs capture emergent work.**"
+
+**8. Artifacts over narrative has its own doctrine.** `trust-doctrine.md`: "**Trust-chain
+poisoning is not a bug. It is a class of bug.**", four trust layers T0 to T3 and three
+invariants, each with a fail-closed audit. It is Article 7 in mechanical form.
+
+**9. The handoff has a doctrine origin outside the ten articles.** `ADR-0.0.25` (Compounding
+Engineering & Session Handoff Contract) and `session-handoff-obligations.md`; the registry
+design's inventory lists it as `D-SESSION-CONTINUITY`.
+
+**10. The directory is stale as a class, not in two charters.** Gate 5 is defined three
+ways: the charter (human attestation, "Heavy lane only"); `gate5-architecture.md` ("Gate 5
+enforces **code-documentation-intent alignment** for Heavy lane work"); the release doctrine
+(gates named Intent, Design, Implementation, Verification, Human Attestation). The runtime
+and transaction contracts scope attestation to heavy lane and foundation kind. The pipeline
+runbook keeps an "Exception mode — self-close". `architectural-enforcement.md`,
+`gate5-architecture.md` and `ledger-schema.md` carry AirlineOps paths and examples. The four
+handoff documents store handoffs under the ADR package and say a fresh one is resumed
+"directly". Most carry a last review between January and March 2026. Recorded as an insight
+(2026-10-08, scope `theatre-canon:govzero-directory-staleness`).
+
+**Also read, bearing less:** `obpi-decomposition-matrix.md` (`Authority: Canon`) sizes work
+on five dimensions and heads its columns "Atomic (Lite)", "Modular (Heavy)", "Structural
+(Foundation)", so a size scale is already tied to lane and kind; `layered-trust.md` numbers
+tool layers 1 to 3 by their relation to evidence, a different numbering from the state
+doctrine's; `agent-era-prompting-summary.md` and `architectural-enforcement.md`
+("Documentation makes the right answer *findable*. It doesn't make it *unavoidable*.").
+
+Bears on the challenge in five ways.
+
+- What is missing is narrower than a doctrine. The philosophy is ratified. Procedures
+  exist. An instrument that scores whether a rule binds exists. Missing are the policies
+  layer, the trace from each procedure and check up to an article, the articles' reach into
+  what an agent loads, and the currency of the procedure documents.
+- `doctrine-merge.md` Part III drafts procedures beside canonical ones it does not name, and
+  Part II's "Enforced today by" column is the scorecard's job done by hand in Markdown.
+- "Collateral assessment has no owner" is wrong as stated. The delivered-against-commanded
+  record had a producer and 278 receipts, and lapsed. That is a correction to shipped work,
+  not a new capability.
+- The six phases and eight roles describe the same work the five-stage pipeline describes.
+  How the two relate has not been put to the operator.
+- Row 5's identifiers and the ladder's names meet a canonical identifier scheme and a release
+  doctrine this record had not read.
+
+## source · the `gz-obpi-pipeline` skill, read in full 2026-10-08
+
+`.gzkit/skills/gz-obpi-pipeline/SKILL.md`, skill-version 6.65.0, 1,709 lines, read in full by
+session `6c08c9d9`. The core-model decision of 2026-10-07 read its stage diagram and
+§ Persona Dispatch and searched the rest. Read beside it: § Part 1 of
+`docs/governance/GovZero/obpi-pipeline-runbook.md` (Draft v2.0); `ROLE_PERSONA_MAP` in
+`src/gzkit/pipeline_dispatch.py`; the marker stage set in `src/gzkit/commands/adr_audit.py`;
+the rosters under `.gzkit/personas/` and `.claude/agents/`. The skill's three `references/`
+files are not read.
+
+What the text says:
+
+1. **Five stages in one sequence.** "The pipeline executes 5 stages sequentially": load
+   context, implement, verify, present evidence, sync and account. "THE PIPELINE IS NOT
+   COMPLETE UNTIL STAGE 5 FINISHES." Planning sits ahead of it: "Planning happens in Claude
+   Code's native plan mode. This pipeline picks up **after** the plan is approved".
+2. **One session carries every stage.** The `pipeline-orchestrator` does inline: reading the
+   plan receipt and the brief, claiming the lock, writing the markers, applying the allowlist
+   "as the working scope contract", the justification gate, the baseline checks, the covers
+   parity gate and the RED witness, the packet's replay, the closure narrative, completion,
+   marker removal, two syncs and the handoff.
+3. **Agents are dispatched at three stages.** Stage 2: an `implementer` per plan task, its
+   model tier set by the count of allowed files, then a `spec-reviewer` and a
+   `quality-reviewer` ("**Cannot execute** — reviews by reading"). Stage 3 Phase 2:
+   verification subagents in worktrees, one per group of requirements. Stage 4: a `narrator`,
+   and at Step 4b a second vendor's model working in "a THROWAWAY COPY of the reviewed
+   source".
+4. **Red and green are one agent's.** "RED — write ONE minimal test", "GREEN — write the
+   simplest code", and "one implementer at a time, never parallel".
+5. **Assessment is already layered.** In Stage 2, two readers per task and at most two fix
+   cycles. In Stage 3, receipts, parity and the RED witness. In Stage 4, the replay of the
+   packet and "an ACCEPTANCE REVIEW" by "the different eyes", bounded at three rounds, after
+   which the agent is to "put the design to the operator".
+6. **Release is the human's.** "Stage 4 = HUMAN GATE (wait for attestation) — universal per
+   ADR-0.0.36".
+7. **Recovery and cleanup are Stage 5.** Completion surrenders the lock; the markers are
+   removed; "Two-sync pattern"; the adversary's checkout is deleted "when the round ends"; an
+   abort surrenders the lock "with a recorded category".
+8. **A dispatch is a ledger fact.** `stage2_dispatch_recorded`; "Credit is never inferred";
+   "The Stage-4 narrator dispatch has no channel yet."
+9. **What the runtime knows** (measured 2026-10-08): four roles in `ROLE_PERSONA_MAP`
+   (Implementer, Reviewer, QualityReviewer, Narrator); five marker stages (implement, verify,
+   ceremony, sync, audit); seven personas on disk and five agent definitions.
+
+Where the texts disagree:
+
+- The runbook's second design principle is "Agent work is Stage 2 only", and its ownership
+  table gives Stages 1, 3 and 5 to a "CLI script". The skill dispatches agents at Stages 2, 3
+  and 4, and the session carries most of Stages 1, 3 and 5. This is one more member of the
+  class in row 2 (f).
+- The skill cites `src/gzkit/pipeline_runtime.py:129` for the role map. The map is defined in
+  `src/gzkit/pipeline_dispatch.py` (insight 2026-10-09T00:23:00Z, scope
+  `gz-obpi-pipeline:stale-role-map-pointer`; row 2 (h)).
+
+What it bears on, as the agent reads it and not ruled:
+
+- The five stages cover phases 5 and 6 of the targeting cycle, then release and recovery.
+  Phases 1 to 4 happen before launch: the order, the brief, the choice of model tier, the
+  operator's initiation.
+- Two of the eight roles have agents today. Ordnance delivery is the implementer. BDA is in
+  pieces: two readers, the verification agents and the second vendor's model. The unit's
+  mission planning, the constraints, infiltration, exfiltration and decontamination are done
+  inline by the one session. Target planning is brief authoring, ahead of the pipeline.
+- The one session that holds this file and every inline step is an instance of what this
+  record's restated challenge names: a control that addresses an agent "as though that agent
+  could hold the whole".
+
+## source · the scorecard past its rule tables, and the scope audit's owner, read 2026-10-09
+
+Two of the reads the recomputed frontier listed as owed.
+
+**`docs/governance/advisory-rules-audit.md`, lines 510 to 746, read in full.** With lines 1
+to 140 (read 2026-10-08) that is everything in the file except the per-rule tables at lines
+140 to 509, which are not read. Those tables were searched for "command doctrine" and
+"Article <n>": no row has either. That is a search and is reported as one.
+
+1. **Promotion is frozen.** "FROZEN — 2026-06-08 ... the imbalance to correct now is *too
+   much* mechanism, not too little. Promotion is opt-in-with-justification: a new mechanical
+   check is added only when a *specific, observed* drift instance justifies it."
+2. **Removal has equal standing.** "A mechanism that misfires, over-fires, gives false
+   assurance, or only guards other mechanism is removed with *named steering-failure
+   evidence*".
+3. **The criterion every scored clause is held to.** "Every scored clause either carries a
+   mechanical witness or says in its own rule text that it is advisory and names what would
+   reclassify it". A clause that does neither scores Promotable: "a discipline was found
+   declared with neither a witness nor an admission."
+4. **Re-scoring needs a text change.** "Re-scoring without a text edit is laundering
+   (operator ruling 2026-08-08)".
+5. **How a rule becomes mechanical** (§ Promotion discipline): write the audit first and
+   watch it fail; fix or waive what it finds; promote it as a named `gz validate` scope;
+   then "Delete or narrow the advisory rule text."
+6. **The totals are machine-checked** by `gz validate --advisory-scorecard` against the rows;
+   the figures in the prose are not cited here.
+
+The freeze is two days older than the command doctrine. Article 2, ratified 2026-06-10: "If
+the harness does not enforce it, the doctrine does not contain it", and "Authority asserted
+in the context window is a briefing: necessary, and unenforceable." The campaign plan's
+amendments of 2026-10-04 ("every control stands") bear on the removal clause and are read by
+heading only.
+
+**The scope audit's owner.** `build_scope_audit` entered `src/gzkit/hooks/obpi.py` on
+2026-03-12 (commit `704907edd`) and has not changed since. It is called from
+`src/gzkit/hooks/core.py` only. `src/gzkit/commands/obpi_complete.py` was added on 2026-04-05
+and has no reference to it. The obligation is `OBPI-0.11.0-03`'s, status
+`attested_completed`: "completed receipts preserve one deterministic evidence envelope across
+hook-driven and manual completion paths. `scope_audit` now captures the OBPI allowlist plus
+the pre-recorder changed-files snapshot". Its parent `ADR-0.11.0` is Validated. The route for
+scope missed from a Validated ADR is already ruled (operator, 2026-10-04, carried in the
+pipeline skill § Work selection): "A Validated ADR is not revised: scope missed from one
+enters the in-flight ADR as a repair assignment that cites the obligation it repairs."
+
+What it bears on, as the agent reads it and not ruled:
+
+- A policy written under the merged doctrine with neither a witness nor an admission would
+  score Promotable, which is the state the scorecard exists to empty.
+- The frame's new positions are new mechanism if built. The freeze asks for an observed
+  failure before each.
+- The pipeline skill's three `references/` files (46 lines) were also read; they add nothing
+  the skill's body lacks.
+
+## source · what became of the freeze of 2026-06-08, measured 2026-10-09
+
+Read and measured after the operator's remark of 2026-10-09 (decision *the freeze is not
+relied on*). Read in full: handoff `20260609T022038Z-593-fixed-track2-a1-landed.md`. Read in
+part: the campaign plan's Movement C box (two passages); one insight line of 2026-06-10.
+
+1. **What the track was.** The handoff: "governance subtraction 'track 2', increment A1";
+   "Operator chose reading A (housekeeping under the existing 'volume follows steering need',
+   no doctrine amendment). A1 landed: froze the promotion-order backlog and cut 3 wrapper
+   chores". Its ruled sequence: "do reading-A housekeeping cuts first, MEASURE the residual,
+   only THEN consider reading-B". Its first advised step: "Pause-and-measure".
+2. **Nothing after A1.** No measurement is recorded. The name "governance-subtraction" occurs
+   in one handoff, the scorecard and three editions of the campaign plan, and in no ADR, GHI
+   or chore. Two insight lines mention the track or subtraction at all.
+3. **The operator deferred reduction two days later.** Insight 2026-06-10T07:23:35Z, quoting
+   the operator: 'I want to build out gzkit, as found, as comprehended, and ONLY THEN make
+   reductive decisions.'
+4. **The freeze's own text is stale.** It says "As of 2026-08-08 there are no Promotable rows
+   left to stay advisory: the third state is empty". The file's machine-checked summary has
+   Promotable rows today, and rows 76 to 82 and 85 read Promotable. GHI #810, "cli-shape:
+   build the arms for 8 Promotable CLI doctrine rows", is open.
+5. **The validator does not see it.** `uv run gz validate --advisory-scorecard` exits 0 with
+   "All validations passed". It checks that the counts agree with the rows, not that the
+   state the scorecard exists to empty is empty.
+6. **Other work the file says is owed.** Five of nine domain lists are still marked
+   "Unread" from 2026-08-09 ("Six such readings are owed"). "Whether the inverse direction
+   gets an owner is an open operator question". The file's own promotion to a test is "Left
+   as a follow-up". `--failure-mode-coverage` and `--cli-shape` are named and are not flags
+   of `gz validate`.
+7. **Mechanism since the freeze.** The handoff counted 13 pre-commit hooks, 38 chores, 22
+   rules, 62 skills and 6 personas. Today: 18, 40, 26, 73 and 7. The scorecard's own comment
+   has its scored rows going from 69 to 181.
+8. **What still stands of it.** The campaign plan, operator-ratified, cites the freeze as
+   governing: "Under that freeze the default disposition is the amend-the-text-and-re-score
+   arm; mechanization is reserved for a row carrying named, observed drift evidence."
+   `gate5-runbook-code-covenant.md` and `tool-skill-runbook-alignment.md` cite it as their
+   reason not to build a check.
+9. **The command doctrine's audit, for comparison.** Article 10: "The audit runs at every
+   major model transition". No record of a run was found by search. The pool ADR that owns
+   the worklist is named in two ledger events.
+
 ---
 
 ## decision · the run opens from staged material; slug `renewing-vows`
@@ -1863,6 +2168,41 @@ weaponeering as a rule (ruled); the tasking event (ruled). Facts on the lane row
 paths a change touches; the criterion lives in prose (`AGENTS.md` § Gate Covenant) and in the
 interview prompt "heavy = external contracts" (`src/gzkit/interview.py`). An assurance-level
 criterion would need its own witness before it could replace that prose.
+
+**Corrected 2026-10-08 against this record's own source entries.** The table above is
+kept as it was ruled and staged; these are the rows its sources have since moved, each by
+the entry that moved it. Nothing here is a new ruling, and the names still in doubt stay on
+the frontier for the operator.
+
+- The line above the table, "cited from memory until its file lands", no longer holds for
+  the rows whose texts are read: JP 3-60 (2018), JP 3-30, JO 7110.65BB, JO 7210.3EE,
+  AC 121-22D, AC 120-16G, AC 120-71B, AC 20-115D, AC 20-189, AC 00-71 and the DAU Glossary.
+- *new apex → concept of operations*: superseded. There is one doctrine and no separate
+  concept of operations (decision *one binding doctrine*).
+- *session → watch*: "watch" is in neither FAA order; the orders' noun is the position.
+- *implementer, reviewers, narrator → pilot flying, pilot monitoring, assessor, briefer*:
+  the mapping is wrong (AC 120-71B: the monitor works at the same time as the flyer) and
+  against Article 3; "assessor" and "briefer" are in no text read.
+- *failure-mode taxonomy → hazard log*: the phrase is nowhere in Title 14; no source.
+- *chores, registry, `gz mx` → MSG-3 tasks, maintenance planning document, MRO visit*: a
+  packaged visit is a *scheduled work package* (AC 120-16G § 6-1); the planning document
+  is a recognised reference (EASA checklist) with no text behind its mapping to the
+  registry; "letter check" is the operator's own practice (ruled 2026-10-08).
+- *GHI → squawk; problem report*: "problem report" has a primary definition and a life
+  cycle (AC 20-189, AC 00-71). The source "DO-178C § 11.17" is dropped (ruled 2026-10-08).
+- *operator hold → deferred defect (MEL item)*: the nearer cited term is the *open problem
+  report* (AC 20-189).
+- *1.0 → full operational capability*: verified 2026-10-08 from the DAU Glossary; the
+  source cell's "not verified" is withdrawn.
+- *skills → challenge-and-response checklists*: a skill is a procedure; a checklist is a
+  short list read after the flow, nearer the per-change gate (AC 120-71B).
+- *gates → objectives*: stands against the operator's constraint of 2026-09-22 on the five
+  gates; held on the frontier, not corrected here.
+- The ladder (previous decision): "work package" and "task card" are verified as
+  maintenance terms and "engineering order" as a term only (AC 120-16G source file, claims
+  table); "change proposal" and "block" are in no landed source. The ladder also meets a
+  canonical identifier scheme and a release doctrine it was ruled without (source entry
+  *gzkit's own doctrine layer*, item 7).
 
 ## decision · the consequence bands are a second axis beside lane, proposed only
 
@@ -2498,6 +2838,957 @@ unless the operator adds it.
 
 No ledger event was emitted.
 
+## decision · re-entry on 2026-10-08, on the operator's invocation
+
+Operator g0, invocation of 2026-10-08 (after 09:32Z), verbatim:
+
+> /gz-rnd docs/rnd/renewing-vows.md
+
+Entered by a new session (`6c08c9d9`). The session the operator invoked on 2026-10-07
+(`8c72a519`) has exited; its handoff is `20261008T091331Z`. Entries below that say "this
+session" and are dated after this one are `6c08c9d9`'s.
+
+**What happened between that session's exit and this re-entry.** The operator asked for a
+review of the handoff, verbatim: 'review h/o, i am not convinced that the prior rnd work is
+complete'. The session read the handoff, this record in full, `review.md`,
+`doctrine-merge.md` and `ADR-pool.command-doctrine-internalization`, checked the handoff's
+live-state claims, and reported that the run is not complete. It edited nothing in the run,
+because the skill had not been invoked. The findings are one insight
+(2026-10-08T09:23:44Z, scope `gz-rnd:renewing-vows-record-unreconciled`). The operator ruled
+on the handoff, verbatim: 'yes, but you're stalled out and brought in the june 10th material,
+which I appreciate.' Booked as `hold` (ledger event `handoff_resume_decided`, 09:32:52Z). The
+agent reads "stalled out" as the operator's verdict on the run, and said so; the operator
+then invoked the skill.
+
+**Checked against git, before any edit.** `git diff --quiet HEAD -- docs/rnd/renewing-vows.md
+docs/rnd/renewing-vows/` exits 0 at `a72e0c816`; main is 0 ahead and 0 behind origin; no lock
+is held. The second agent's desktop session is listed and idle. The division of 2026-10-08
+is kept: that agent lands sources; this session holds decisions, the model, the map and the
+review, and reads the file fresh before each write.
+
+**What the review found, each for repair in this run.** The record trails its own later
+entries:
+
+- The restated challenge in the Close still defines the problem as a missing concept of
+  operations. The one-doctrine ruling of 2026-10-08 superseded that.
+- Row 4 still carries the small constitution draft the same ruling superseded as to content,
+  and a reason that says the texts are awaited. Row 2 lacks the defect the one-doctrine
+  decision commissions to it (sweep row S31). Row 1 proposes a tasking event and a
+  collateral assessment as new engineering orders, and
+  `ADR-pool.command-doctrine-internalization` items 1 and 3 already own the captain's brief
+  and the scope-conformance report.
+- The nomenclature table was not corrected where its own source entries contradict it.
+- Frontier item 13 and `review.md` say the ladder's names are in no landed source. The
+  AC 120-16G source file verifies "work package", "task card" and "engineering order" as
+  maintenance terms.
+- `review.md` is stale outside its sections 8a and 9.
+- The Shihipar text was never landed and the model-and-effort decision cites it.
+- The read that missed the command doctrine was repaired for that one file. Of the
+  twenty-three documents under `docs/governance/GovZero/`, this record names two.
+
+**The frontier, computed again from the subject.** The subject, in the operator's words of
+2026-10-08, is "binding/bounding doctrine for gzkit to hold me and agents to account". The
+first thing it needs is a fact and not a ruling: what gzkit already holds at the doctrine
+layer. That is the agent's work and comes before any question is put. The order this session
+works in:
+
+1. Read `docs/governance/GovZero/` in full and enter what bears on the subject as a `source`.
+2. Correct the record where its own entries contradict it, each correction dated in place.
+3. Put the open questions to the operator one at a time, the core model first. The list in
+   the Close is an input to that and is recomputed there after step 1.
+
+No row has a go. No ledger event was emitted for the run.
+
+## decision · the frame reaches both ways, into what exists and what is to come (operator, 2026-10-08)
+
+**The question put, 2026-10-08** (frontier item 17): "What is the doctrine you are
+assembling made of?" Three answers, A recommended. A, the policies layer only: the ten
+articles stay as ratified and the standing decisions beneath them are assembled, each traced
+to an article and carried as a scorecard row. B, reopen the articles too: a second edition
+of the command doctrine with the combat frame written in. C, procedures first: settle phases
+and roles against the five-stage pipeline and let policies fall out. The agent said the
+operator had taken the recommended option on six earlier questions and asked whether this was
+the right question.
+
+Operator g0, verbatim:
+
+> the new framing has forwards and backwards influences
+
+**Ruled: none of the three.** The question cut the doctrine by layer and asked which layer to
+work. The answer is that the frame is not held to one layer, nor to new work.
+
+**The agent's reading, for the operator's correction** (corrected by the operator the same
+day; see the next entry). "The new framing" is the military and
+aviation frame with its six phases and eight roles. "Backwards" is what gzkit already holds
+and the frame changes, presses or reads again: ratified articles, written procedures, the
+runtime, the names, the plan. "Forwards" is what does not exist and the frame calls for. A
+second reading is possible, that the frame has things behind it that shaped it and things
+ahead that it shapes. The trace below is the same work under either.
+
+**Read for it, 2026-10-08.** The command doctrine again, in full; the `gz-obpi-pipeline`
+skill in full (source entry of today); the source entry *gzkit's own doctrine layer*; this
+record's map.
+
+**Backwards: what exists and the frame reaches into.**
+
+| Layer | What gzkit holds | What the frame does to it |
+|---|---|---|
+| Philosophy | Article 3, "The model is a crew resource, not a crew member" | The frame gives agents eight positions. The article's allocation stands ("the model decides nothing that ships"). Its title speaks against calling an agent crew, and "crew" is this record's word, not the operator's: the operator said 'Different agents for', and the agent drew 'i want both' as "the crew". |
+| Philosophy | Article 4, scope manifest and the diff of delivered against commanded | The frame calls these the order's restrictions and the collateral assessment. It adds no obligation the article lacks. Built as a receipt field and lapsed (row 2 (g)). |
+| Philosophy | Article 6, a run "capped at the volume of change one attestation can honestly cover" | The frame sizes work by what one agent holds. The article sizes it by what one attestation covers. The two are not reconciled; the doctrine's own Appendix A already names a tension with the decomposition matrix. |
+| Philosophy | no article | Relief of position (handoff) traces to none. |
+| Policies | one sentence in the doctrine naming four | Nothing to reach into. See forwards. |
+| Procedures | the charter's five gates | "gates → objectives" is a name in doubt against the standing constraint on the gates. Gate 5 is the frame's return to service. |
+| Procedures | the five-stage pipeline: runbook (Draft v2.0) and skill 6.65.0 | The stages cover phases 5 and 6, then release and recovery. One session does inline what the frame gives to five positions. The runbook's "Agent work is Stage 2 only" is already untrue of the skill. |
+| Procedures | the transaction contract's fail-closed allowlist | The frame's restricted and protected targets. Same thing, two names. |
+| Procedures | handoff documents (`ADR-0.0.25`) and the chore system | Position relief and scheduled maintenance, "other departments" in the core-model decision. |
+| Practice | the airlock (`ADR-0.33.0`) | Three of the eight roles are its own words. |
+| Practice | the runtime: four roles, five marker stages | Eight positions against four roles. |
+| Names | ADR, OBPI, TASK and their identifiers | Row 5. |
+| Plan | the campaign order; briefs 15 to 20, `ADR-0.36.0` to `ADR-0.38.0`; `ADR-pool.command-doctrine-internalization` | Read again as the machinery the frame needs; pool items 1 and 3 are the tasking order and the collateral report. |
+
+**Forwards: what does not exist and the frame calls for.** The policies layer as a document.
+Six positions with no agent of their own (mission planning, constraints, target planning,
+infiltration, exfiltration, decontamination). Red and green flown by different agents. An
+owner for munitions effectiveness and one assessment record. The integrity-level axis. The
+maintenance record entry. The two slower tiers of the rhythm. The IOC waypoint. The
+weaponeering rule and the model-and-effort table.
+
+**Where canon binds the frame.** The influence also runs from what is ratified onto what is
+new. Article 1 keeps the signature with one human, so release stays outside any agent's
+position. Article 3 closes "pilot" and puts "crew" in doubt. The IRON LAW makes phase 4, the
+commander's decision, the operator's initiation and no agent's. The five gates are a standing
+constraint. Feature orders are worked in ascending order.
+
+**What the ruling changes in this run.**
+
+- Frontier item 17 is closed. No layer is chosen. Each part the operator assembles is stated
+  with its reach in both directions.
+- Item 18 is now first, because it is the largest backward reach and it is the core model.
+- Item 15 gains its candidates from the trace: the word "crew" against Article 3; an article
+  for relief of position; Article 6's sizing against the frame's.
+- `review.md` is written once, ahead of item 12, with every row shown in both directions. It
+  is not rewritten after each ruling. Its dated note stands until then.
+
+**commissions:** nothing new. No row changes state.
+
+## decision · the two frames shape each other, and both reach back into the prior frame (operator, 2026-10-08)
+
+**The agent's reading in the entry above was wrong.** It took "forwards" and "backwards" as
+new work against existing work. The operator corrected it, verbatim:
+
+> the 6/10 system and the military frame will now have mutually shaping influences, which is
+> what i meant by 'forwards,' that command system (likely airline/pilot centric) and this
+> newer military metaphors will exert 'backwards' influence on the prior frame
+
+**Ruled.** There are three things, not two. The command doctrine of 2026-06-10 and the
+military frame of this run shape each other from here on: that is forwards. The two together
+reach back into the frame gzkit had before them: that is backwards. The two tables in the
+entry above are cut on the wrong axis. Their facts stand and are sorted again below.
+
+**"The prior frame", as the agent reads it and for the operator's correction:** gzkit as
+built, apart from the two frames: the five gates, the lanes, the order and work-package
+ladder, the five-stage pipeline, handoffs, chores, the airlock and the flight test.
+
+**The operator's parenthesis, checked.** The command doctrine is airline and cockpit
+throughout. Its sources, by its own citations: 14 C.F.R. § 91.3 (Article 1); crew resource
+management, Helmreich et al. 1999 (Article 3); mode error, Sarter & Woods 1995 (Article 4);
+airline dispatch with inoperative equipment (Article 5); "the autopilot" and "the pilot"
+(Article 6); fuel planning (Article 8); manual flight operations, FAA 2013 (Article 9); the
+Four P's of cockpit operations, Degani & Wiener 1997 (Article 10). Its picture is one human
+in command beside one automation. None of those texts has been read by this run; they are
+cited here as the doctrine cites them.
+
+**How far each frame has already reached, measured 2026-10-08.** The command doctrine is
+named in eight tracked files outside this run: the charter, the pool ADR that carries its
+worklist, the corpus, two evaluation records, one test, the site index and itself. It
+reaches nothing an agent loads each turn (row 2 (d)). Of the military frame's words,
+"ordnance", "weaponeering", "targeting cycle", "tasking order" and "battle damage" occur in
+no tracked file outside this run. "Sortie" occurs in forty-two, from 2026-07-04, through the
+airlock and the flight test, where it is a flight-test word.
+
+**Forwards: where the two frames meet.** The agent's sorting of texts already read, not
+ruled. The military column is JP 3-60 (2018) as entered in the core-model decision.
+
+| Subject | Command doctrine (2026-06-10) | Military frame | What each does to the other |
+|---|---|---|---|
+| Who commands | Article 1: one human signs; authority and responsibility are "one clause, not two" | The commander's objectives (phase 1) and the commander's decision (phase 4) | They agree. The military frame shows command twice in one work package, at the intent and at the decision to task, and a third time at release. The article speaks of one signature. |
+| How command reaches the agent | Article 2: "If the harness does not enforce it, the doctrine does not contain it." Article 4: a scope manifest before every run | The tasking order, carrying the reasoning, the special instructions and the restrictions | The military frame gives the manifest its form. The article says the order binds only as far as the harness enforces it. |
+| What an agent is | Article 3: "a crew resource, not a crew member"; "the model decides nothing that ships" | Eight roles, "Different agents for" each, with an operations centre between the commander and the unit | They collide. The article has one automation and two parties. The frame has many agents and an echelon between. "Crew" for agents is this record's word and the article's title is against it. |
+| Change beyond the order | Article 4: a diff of delivered work against commanded scope, after the run | Collateral damage estimated before (phase 3) and assessed after (phase 6); protected and restricted targets | The frame adds the estimate before the run. The article has only the diff after. |
+| Which means were used | Article 5: the served model is recorded; substitution by "explicit prior relief" | Weaponeering matches means to target (phase 3); munitions effectiveness asks whether they performed (phase 6) | The frame gives the article a before and an after. The article gives weaponeering its rule: a substitution outside policy fails the gate. |
+| How much one run may hold | Article 6: capped by "the volume of change one attestation can honestly cover" | Work sized to what one small agent can hold | Two sizings of the same thing, not reconciled. |
+| What counts as evidence | Article 7: "artifacts, not narration" | Assessment by a designated cell, from several sources, each with a confidence level | The frame adds that the assessor is not the one who flew. The article adds that an agent's account of itself is not a source. |
+| Why a procedure exists | Article 10: every gate traces "through a policy to an article" | Measures of success fixed in phase 1; a mission can hit "the designated target ... but still does not achieve the objective" | They agree. A target traces to an objective as a procedure traces to an article. |
+| Only in the command doctrine | Article 8, efficiency as fuel planning; Article 9, proficiency by deliberate unassisted work; the Four P's | no counterpart in the texts read | The doctrine keeps what the frame lacks. |
+| Only in the military frame | no article | A process in time (six phases); positions; a recommendation to strike again | The frame supplies what the doctrine lacks: an account of one mission from start to end. |
+
+Relief of position is from neither frame. It is air traffic control's (JO 7110.65BB) and
+traces to no article.
+
+**Backwards: what the two reach into.** The rows of the earlier table that name procedures,
+practice, names and plan: the charter's gates, the five-stage pipeline, the transaction
+contract, handoffs and chores, the airlock, the runtime's roles and stages, the ladder's
+names, the campaign order. The command doctrine's reach back has begun (the charter's trace,
+the doctrine's Appendix A, the pool ADR's six items). The military frame's has not begun
+outside this record.
+
+**What the correction changes in this run.**
+
+- Frontier item 18, how the phases and roles relate to the five-stage pipeline, was put on
+  2026-10-08 and not answered. It is a question about the prior frame. It waits until the
+  two frames are fitted to each other.
+- The first question is now where the two frames collide: what an agent is (item 19).
+- Item 15's candidates are the rows above where the frames do not already agree.
+- The option "the ten articles stay as ratified" (A of item 17) is not the operator's
+  direction. Shaping runs into the articles as well as out of them. An amendment to an
+  article is still the operator's, article by article.
+
+**commissions:** nothing new. No row changes state.
+
+## decision · item 19's first two answers were not alternatives (operator's objection, 2026-10-08)
+
+**The question put, 2026-10-08** (frontier item 19): "What is an agent in the merged
+doctrine?" Three answers, A recommended. A, a resource in a position: every agent, the
+orchestrating one included, fills a position; the position carries the order, the limits and
+the record; tasking between positions is the harness's. B, crew without command: agents in
+positions are crew, with crew duties (inform, challenge, no silence) and no authority. C,
+leave Article 3 alone and carry the many-agent structure in policies beneath it.
+
+Operator g0, verbatim:
+
+> i fail to see why a and b are orthogonal
+
+**The objection holds.** A answers where an agent sits and who tasks it. B answers what the
+agent owes while it sits there. Neither excludes the other, and Article 3 as ratified already
+holds B's half: the model "drafts, flags, surfaces, challenges, and proposes", crew resource
+management "made silence a violation", and "the model decides nothing that ships". The only
+thing that set A against B was the word "crew", which is a name and not the thing.
+
+This is the second time in this run. The core-model question of 2026-10-07 put A and B as
+alternatives, the agent then said "they answer different questions", and the operator ruled
+'i want both' (insight 2026-10-09T00:39:59Z, scope `gz-rnd:options-not-exclusive`).
+
+**The two put together, as the agent restates them. Not ruled until the operator says so.**
+
+- From the military frame: the position. It carries the order, the limits, the product and
+  the record. Many agents, one position each.
+- From the command doctrine: what the agent in a position owes. It is used fully, and it
+  surfaces what it sees. Silence is the violation.
+- From both: no agent holds authority, the orchestrating one included. Tasking between
+  positions is the harness's.
+- By Article 2, the duty to surface is built as a harness obligation. The pipeline already
+  has the beginnings (source entry *the `gz-obpi-pipeline` skill*): the implementer's
+  `DONE_WITH_CONCERNS`, `NEEDS_CONTEXT` and `BLOCKED` returns, and the reviewers'
+  `verification_gaps` kept apart from `findings`.
+
+**What stays open under item 19, each its own question:** whether Article 3's text is
+amended to say this of many agents, or policies beneath it carry it; and the word for an
+agent in a position, which is a name, waits on item 13 and on a read of Helmreich et al.
+(1999), which the article cites and this run has not read.
+
+**commissions:** nothing.
+
+## decision · position, role and crew (operator, 2026-10-08)
+
+**The question put, 2026-10-08** (frontier item 19, after the entry above): whether the
+agent's restatement of A and B together was the answer, with "yes" recommended.
+
+Operator g0, verbatim:
+
+> the position is an obligation and a role to fulfill the obligation, the crew is the actor
+> implementing within the bounds and auspices of that role.
+
+**Ruled.** The operator's sentence replaces the agent's restatement. Three terms, held here
+until the glossary's home is named:
+
+- **Position.** An obligation, and a role to fulfil it. The two are parts of one thing.
+- **Role.** What the position gives its holder to fulfil the obligation. It has bounds, and
+  it has auspices: the actor works under the role's authority and has none apart from it.
+- **Crew.** The actor that implements, inside those bounds and under those auspices.
+
+**What this settles.**
+
+- "Crew" is the operator's word for the actor. The earlier remarks in this record that it
+  was only the agent's word (decision *the frame reaches both ways*; decision *the two frames
+  shape each other*, row "What an agent is") are superseded.
+- The obligation belongs to the position and not to whoever fills it. A change of actor does
+  not change what is owed.
+- Authority is the role's. That agrees with "the model decides nothing that ships".
+
+**What it does not settle, stated so it is not read in.** Whether the duty to surface
+concern is part of every position's obligation. Who or what assigns crew to a position.
+Whether a human is ever crew in this sense, or only an agent.
+
+**A conflict with ratified text, quoted on both sides** (`AGENTS.md` § DO IT RIGHT, 6h).
+Article 3's title, ratified 2026-06-10: "The model is a crew resource, not a crew member".
+The operator, 2026-10-08, answering what an agent is: "the crew is the actor implementing
+within the bounds and auspices of that role". If an agent is crew, the title says the
+opposite. The article's body does not: its allocation is about command ("Crew resource
+management never promoted the first officer to command"), and an actor held to a role's
+bounds and auspices commands nothing. So the conflict is in the title's wording and not in
+what the article allocates. It is put to the operator as the next question under item 19.
+
+**commissions:** 4 — the three terms, for the merged doctrine and the glossary.
+
+## decision · Article 3's title is to be amended: an agent is crew (operator, 2026-10-08)
+
+**The question put, 2026-10-08** (frontier item 19): how the conflict between Article 3's
+title and the operator's "crew" is settled. Two answers, A recommended. A, amend the title:
+the agent is crew, an actor in a role, and the body's allocation stands. B, keep the title:
+"crew" means the actor in general and an agent in a role stays a "crew resource".
+
+Operator g0, verbatim:
+
+> a
+
+**Ruled.** An agent is crew. The title of Article 3 is to be amended. What the article
+allocates is unchanged: "the model decides nothing that ships".
+
+**What this is in the run's terms.** It is the first place the military frame changes the
+text ratified on 2026-06-10. The file `docs/governance/GovZero/command-doctrine.md` is not
+edited by this run. The amendment is an item of row 4 and waits on the operator's go on that
+row, and the new title's wording is the operator's to ratify.
+
+**A draft of the title, by the agent, for the operator to accept or replace when row 4 is
+worked:** "The model is crew, never in command". It keeps the old title's two-part form and
+takes its second half from the article's own first sentence ("never promoted the first
+officer to command").
+
+**Left open by the ruling.** Whether the article's body also gains the position and the role,
+or policies beneath it carry them. The body speaks of one model beside one human and says
+nothing of many agents.
+
+**commissions:** 4 — the amendment of Article 3's title.
+
+## decision · the operator holds positions and is a prime decider, both (operator, 2026-10-08)
+
+**The question put, 2026-10-08** (frontier item 20): "Do you hold positions under the same
+construct?" Two answers, A recommended. A, yes: command and release are positions, each an
+obligation and a role, with the operator as the actor. B, no: positions are for agents and
+the operator stands outside them as the source of every role's auspices.
+
+Operator g0, verbatim:
+
+> again A + B are true - i have obligations in gzkit that require my input and attestation,
+> but i am also a prime decider as well
+
+**Ruled: both.** The operator has obligations in gzkit, those that need the operator's input
+and attestation, and the operator is a prime decider.
+
+**The question should not have been put as a choice, on two counts.** The two answers do not
+exclude each other, which is the fault recorded in the entry *item 19's first two answers
+were not alternatives* and repeated one question later (insight 2026-10-09, scope
+`gz-rnd:options-not-exclusive`, type defect). And canon already joins them. Article 1:
+"direct responsibility and final authority are one clause, not two", and "Any proposal that
+separates them, in either direction, is rejected on its face."
+
+**How questions are put from here in this run.** The agent puts a composed statement for the
+operator to correct. A choice is offered only where two answers cannot both hold and no
+article already joins them.
+
+**Where gzkit already waits on the operator, from `AGENTS.md` and the pipeline skill as
+read.** Input: initiating each work package; ruling on a blocked work package
+(`gz obpi unblock --ruling`); ruling on an amendment to requirements, allowlist or threat
+model; ratifying a campaign amendment; ruling on a handoff; directing a chore's admission;
+invoking and signing off an R&D run, and the go on each of its rows. Attestation: Gate 5 on
+every completion; repudiation of one. Articles 6 and 9 put two more obligations on the
+operator, and the doctrine's Appendix A marks both "Gap"; items 4 and 5 of
+`ADR-pool.command-doctrine-internalization` own them.
+
+**What it does not settle.** Whether the operator, in a position, is called crew.
+
+**An assembly of today's rulings with the ratified articles, by the agent, for the
+operator's correction. Not ruled.** Lines 2 and 3 carry links the operator has not stated.
+
+1. One human decides and signs, and the two do not separate. (Article 1; this entry.)
+2. A decision reaches the work as an order. Standing orders bind every position; a tasking
+   order binds one work package. (Articles 2 and 4; decisions *general orders exist and are
+   tiny* and *the tasking order is an L2 ledger event*. That the order is what carries a
+   role's auspices from the decider is the agent's link.)
+3. An order tasks positions. A position is an obligation and a role to fulfil it. (Decision
+   *position, role and crew*. "An order tasks positions" is the agent's link.)
+4. Crew are the actors in roles. They work within the role's bounds and auspices and command
+   nothing. An agent is crew. (Same decision; decision *Article 3's title is to be amended*.)
+5. The operator holds positions as well, those that need the operator's input and
+   attestation, and remains a prime decider. (This entry.)
+6. Whether an obligation was met is shown by records and not by the actor's account.
+   (Article 7.)
+7. Release is the human's. (Article 1; Gate 5.)
+
+**commissions:** 4 — the operator's two standings, for the merged doctrine.
+
+## decision · the operator is commander and captain, and is not crew; the agent is crew (operator, 2026-10-08)
+
+**What was put, 2026-10-08:** the agent's seven-line assembly (entry above), with the
+question "What is wrong or missing in those seven lines?" and the note that one thing was
+left out because the operator had not said it: whether the operator, in a position, is
+called crew.
+
+Operator g0, verbatim:
+
+> i am commander and shape intent, i am not crew, but i am captain, you are crew
+
+**Ruled.**
+
+- The operator is **commander**, and shapes intent.
+- The operator is **captain**.
+- The operator is **not crew**.
+- "You", the session the operator is speaking to, is **crew**.
+
+**What follows from the words, and no further.**
+
+- The operator carries one name from each frame. "Commander" is the military frame's, and
+  intent is its phase 1 ("Commander's objectives, targeting guidance, and intent").
+  "Captain" is the command doctrine's (Article 2: "A captain's authority over a human crew").
+  The agent takes them as two names for one human's standing and has not made them two
+  positions.
+- The ratified text already sets the two apart from crew: Article 3 has "the whole crew"
+  obliged "to keep the commander informed". The ruling agrees with it.
+- The session that orchestrates is crew like any other. That closes, by the operator's word,
+  what the agent had only inferred: no agent holds command, the orchestrating one included.
+- Line 5 of the assembly is corrected below. The operator said nothing of the two links in
+  lines 2 and 3, and silence is not taken as acceptance.
+
+**Where the name departs from usage outside this project.** In airline usage the captain is
+commonly counted among the flight crew. No text saying so is landed in this run, and the
+operator's ruling governs here: captain and crew are distinct.
+
+**The assembly, corrected. Still the agent's, and still not ruled where marked.**
+
+1. One human decides and signs, and the two do not separate. (Article 1.)
+2. That human is commander and captain: the commander shapes intent; the captain holds the
+   signature. The human is not crew. (This entry; "the captain holds the signature" is the
+   agent's pairing of the name with Article 1.)
+3. A decision reaches the work as an order. Standing orders bind every position; a tasking
+   order binds one work package. (Articles 2 and 4. That the order carries a role's auspices
+   from the commander is the agent's link.)
+4. An order tasks positions. A position is an obligation and a role to fulfil it. ("An order
+   tasks positions" is the agent's link.)
+5. Crew are the actors in roles. They work within the role's bounds and auspices and command
+   nothing. Every agent is crew, the session the operator speaks to included.
+6. The operator has obligations of their own, those that need the operator's input and
+   attestation.
+   *Added by the next entry's ruling:* the operator abides by doctrine and policy and
+   encourages adherence, and can override and change policy.
+7. Whether an obligation was met is shown by records and not by the actor's account.
+   (Article 7.)
+8. Release is the captain's. (Article 1; Gate 5.)
+
+**commissions:** 4 — the names commander, captain and crew, for the merged doctrine and the
+glossary.
+
+## decision · the session's position stands as put; the operator abides by doctrine and policy and may override and change policy (operator, 2026-10-08)
+
+**What was put, 2026-10-08** (frontier item 21), as a statement for correction, "the position
+I take the session you speak to to hold":
+
+1. It receives the operator's intent and turns it into orders for the other positions. In
+   the military frame that is the operations centre, not a unit that flies.
+2. It tasks under the operator's auspices and decides nothing that ships. The decision to
+   task a work package stays the operator's.
+3. Where a skill-driven workflow or the runtime can do the tasking, that does it, and the
+   session's judgment is not the instrument.
+4. Today this session also does work that belongs to other positions (planning intake,
+   constraints, entry, exit and cleanup, inline). Under the frame those are handed off.
+
+Operator g0, verbatim:
+
+> these are your guides and roles to follow, but i must also abide by and encourage doctrine
+> and policy adherence. however, i can override and change policy too.
+
+**Ruled.**
+
+- The four statements are the orchestrating session's "guides and roles to follow".
+- The operator "must also abide by and encourage doctrine and policy adherence".
+- The operator "can override and change policy too".
+
+**Read no further than the words.**
+
+- The sentence names **policy** as what the operator can override and change. It does not
+  name doctrine there. The operator did change ratified doctrine today, by ruling an
+  amendment to Article 3's title, so the power exists; how a change to an article differs
+  from a change to a policy is not stated and is not assumed.
+- "Encourage" is the operator's word for the operator's own duty toward adherence. What the
+  duty consists of is not stated.
+
+**What canon already says about a change, so it is not asked.** `AGENTS.md` § MAKE LLM
+STOCHASTIC VIBES INERT: "A silent change to a rule or threshold is doctrine drift. Change
+doctrine only with a recorded witness." Article 6, of its own parameter: "revisable
+deliberately and never by drift". Article 1: "Whoever holds the signature holds override
+authority over every other element of the pipeline". Put with the ruling: until the operator
+changes a policy on the record, it binds the operator as it binds the crew. That last
+sentence is the agent's composition of those texts with the ruling, for correction.
+
+**Reach.** The four statements bind this session from now, by the operator's word. They reach
+no other session until they sit in something an agent loads, which is row 2 (d) and row 4.
+
+**commissions:** 4 — the orchestrating session's position; the commander's duty to abide and
+encourage and power to override and change policy.
+
+## decision · phases, stages and positions: the statement is "a good start" (operator, 2026-10-09)
+
+**What was put, 2026-10-08** (frontier item 18, as a statement for correction):
+
+1. The six phases are the life of one work package, from the operator's intent to an assessed
+   effect.
+2. The five pipeline stages are the part of that life the pipeline runs: execution and
+   assessment, then the operator's release, then recovery.
+3. Everything before launch is the first four phases: the operator's intent, the target and
+   its limits (the brief), the choice of means, and the operator's decision to task.
+4. A stage is a span of the work with its witnesses. A position is an obligation and a role
+   inside it, and one stage can hold several positions.
+5. The stages and their witnesses stay as built. What changes is which crew fill the
+   positions inside them. (Marked when put as the agent's choice.)
+
+Operator g0, 2026-10-09, verbatim:
+
+> i think ths is a good stsrt
+
+**Ruled, as far as the words go.** The five statements stand as a start. They are not said to
+be finished, and nothing in them is closed against later correction. Line 5 stays marked as
+the agent's choice.
+
+**commissions:** 4 — the relation of phases, stages and positions, for the merged doctrine.
+
+## decision · the freeze of 2026-06-08 is not relied on until the operator rules what stands of it (2026-10-09)
+
+**What was put, 2026-10-09**, as a statement for correction, "what a policy is in the merged
+doctrine", five lines. Lines 4 and 5 rested on the scorecard's freeze: a briefing becomes
+enforced only after an observed failure; so the frame's new positions enter as briefings.
+
+Operator g0, verbatim:
+
+> there seens to be rea issues with advisory-rules-audit.md and june 8th - abandonded work
+> withno audits or implementation
+
+**Checked, and it holds in the main** (source entry *what became of the freeze of
+2026-06-08*). The track landed one increment and no measurement; reduction was deferred by
+the operator on 2026-06-10; the freeze's text describes a state the file's own table
+contradicts; the validator passes regardless. One part is not abandoned: the campaign plan,
+ratified since, cites the freeze as governing Movement C's default arm.
+
+**The agent's fault.** It quoted a dated block as live canon without reading its history, and
+built two lines of a statement on it.
+
+**What changes.**
+
+- Lines 4 and 5 of the statement are withdrawn. Lines 1 to 3 do not rest on the freeze: they
+  come from Article 2 and from the scorecard's criterion, which the campaign plan repeats.
+  They stay put for correction and are not ruled.
+- The claim in this record that "the instrument for 'binding' already exists" is narrowed.
+  The scorecard scores rules and its counts are checked. It does not hold itself to its own
+  criterion.
+- Row 2 gains (i).
+
+**commissions:** 2 — (i), the standing of the freeze and the correction of the scorecard's
+text.
+
+## decision · the work of 2026-06-08 to 2026-06-10 is discrepancy, and "what stands" is withdrawn (operator, 2026-10-09)
+
+**What was put, 2026-10-09**, as a statement for correction, "what I take to stand of June
+8": no new check without an observed failure; removal deferred until 1.0; the sequence of
+cut, measure, decide is dead; the scorecard's text corrected to match its table.
+
+Operator g0, verbatim:
+
+> everything you describe about the june 8 to june 10 work sounds like discrepancy
+
+**The agent's reading, with the other reading beside it.** Taken: the acts of those three
+days disagree among themselves, so none of them is a settled base and the agent's "what
+stands" was the wrong kind of statement. Possible: the agent's account does not hang
+together. The pairs below serve either, and the four lines are withdrawn under both.
+
+**The three acts, in order (commit times, UTC).**
+
+- `098a3d013`, 2026-06-09 02:11: the freeze, in `advisory-rules-audit.md`.
+- `e3ecd4193`, 2026-06-10 07:39: the Build-to-1.0 campaign ratified.
+- `251df874e`, 2026-06-10 12:02: the command doctrine and its pool ADR.
+
+**Where they disagree, each side quoted.**
+
+| # | One text | The other | State today |
+|---|---|---|---|
+| 1 | Freeze: "Subtraction now has equal standing." | Campaign, a day later: "Every reductive move (cull, retire, merge, optimize, straighten) is deferred to the post-1.0 reduction pass (Phase H)." | The freeze's sentence was never amended. |
+| 2 | Campaign: reduction deferred until after 1.0. | Command doctrine, four hours later, Article 10: "accumulated ritual, which retires now"; a compensating item is "retired the day it stops earning its place." | Both ratified. Neither names the other. |
+| 3 | Freeze: "the imbalance to correct now is *too much* mechanism, not too little"; a new check "only when a *specific, observed* drift instance justifies it." | Command doctrine, Article 2: "If the harness does not enforce it, the doctrine does not contain it", with a worklist of six new mechanisms, one of them "a gate precondition, not advice." | Both in force as written. |
+| 4 | Campaign: "subsumes and supersedes all prior plans", and it governs work selection. | The command doctrine's worklist landed after it, in a pool ADR. No edition of the campaign plan, of six, names the doctrine or that ADR. | The worklist has no route to work. The pool ADR has two ledger events, both of 2026-06-10. |
+| 5 | Freeze's sequence: cut, "MEASURE the residual, only THEN consider reading-B". | No measurement recorded; no owner. | Dead. |
+| 6 | Freeze's text: "the third state is empty". | The file's own machine-checked table. | Contradicted in the same file. |
+| 7 | Article 10: "The audit runs at every major model transition". | No record of a run found by search; the rule files cite model cards issued since. | Not run, as far as a search shows. |
+
+**What this changes in the run.**
+
+- None of the three is cited by this record to settle a question against another until the
+  operator reconciles them.
+- The subject of the run, a doctrine that binds, now has this in it: the philosophy ratified
+  on 2026-06-10 was outside the plan that selects work from its first day. That is nearer
+  the cause of row 2 (d) than "it reaches nothing an agent loads".
+- Row 2 (i) is restated as the discrepancy among the three acts.
+
+**commissions:** 2 — (i) as restated; 4 — the reconciliation, as part of the merged doctrine.
+
+## decision · a force has doctrine, assets and abilities, and a campaign focuses them (operator, 2026-10-09)
+
+**What was put, 2026-10-09:** seven quoted pairs where the acts of 2026-06-09 and 2026-06-10
+disagree, with the question "What is wrong or missing in that list?"
+
+Operator g0, verbatim:
+
+> that things changed quite a bit around june 8 to 10 and the magna carta began. a force has
+> doctrine, assets (ToE), and abilities. a campaign focuses these abilities for specified
+> goals. there are real contradictions in the june 8 to 10 period but it seems to be the
+> birth of the magna carta. does the command doctrine stem from that period as does the newer
+> military process of command and control? are these two concepts of command incompatible?
+
+**Ruled, as far as the words go.**
+
+- The period is the birth of the Magna Carta, and its contradictions are real. Both hold.
+- **A force has doctrine, assets (ToE), and abilities.**
+- **A campaign focuses these abilities for specified goals.**
+
+Five terms, held here until the glossary's home is named: force, doctrine, assets (table of
+organization and equipment), abilities, campaign.
+
+**The first question, answered from the repository.** "Does the command doctrine stem from
+that period as does the newer military process of command and control?"
+
+- The command doctrine entered canon in that period and was not made in it. Its header:
+  "Ratified: 2026-06-10 (operator-ratified relocation from working draft)", "A back-port of
+  the aircrew accountability framing", "Companion: the Sprint and Drift essay 'The left
+  seat.'" It landed in commit `251df874e` at 12:02 UTC, four and a half hours after the
+  campaign was ratified, in a sync commit. No handoff of June 2026 names it. The working
+  draft and the essay are not in the repository, so their date is not known to this run.
+- The military process came in two parts. The campaign is of that period: "Magna Carta"
+  first occurs under `docs/governance` on 2026-06-10. The process beneath it, the six phases
+  and the eight roles, is of October: it enters with the operator's Gemini dialogue, this
+  record's first source entry. Between them, "airlock" first occurs 2026-06-16, "sortie"
+  2026-07-04 and "Movement A" 2026-07-18.
+- So the two share a birthday at the top only: the campaign and the doctrine were ratified
+  the same morning, and neither text names the other.
+
+**The second question, answered as the agent's finding for the operator's correction.** "Are
+these two concepts of command incompatible?" No, on one condition, and the operator has
+already set the condition.
+
+- They are command at two levels. The command doctrine is command at the point of execution
+  and release: who signs, who can override, what counts as evidence. The military process is
+  command of a force over time: intent, orders, positions, assessment. The operator's ruling
+  of 2026-10-08 already holds both: "i am commander and shape intent", "i am captain".
+- In the operator's terms of today, the command doctrine is the force's doctrine, the
+  military process is how the commander employs the force, and the Magna Carta is the
+  campaign. They are three kinds of thing and not rivals.
+- The condition. A military command structure ordinarily has subordinate commanders who
+  decide within the commander's intent. Article 1 forbids separating authority from the one
+  signature, and Article 3 says "the model decides nothing that ships". The two would be
+  incompatible if an agent were made a subordinate commander. The operator ruled otherwise on
+  2026-10-08: every agent is crew, the orchestrating session included. The military frame is
+  taken without its subordinate commanders. That military command ordinarily delegates in
+  this way is general knowledge and not from a text landed in this run.
+
+**What the operator's five terms do to the pairs of the entry above. The agent's reading,
+not ruled.**
+
+- Pair 4. "Subsumes and supersedes all prior plans" is said of plans. A doctrine is not a
+  plan, so the campaign did not subsume it. But the doctrine carried a plan inside it, the
+  six-item worklist under "What changes in gzkit", and that plan was left with no campaign to
+  select it.
+- Pair 2. Article 10's "retires now" is a doctrine setting a time. When a thing is done is
+  the campaign's to say.
+- Pairs 1 and 3. The freeze is a statement about assets, how much equipment the force
+  carries, written into an audit file in the voice of policy.
+- Pairs 5 to 7 stay as plain lapses.
+
+**commissions:** 4 — the five terms, and the command doctrine, the military process and the
+Magna Carta placed by them.
+
+## decision · the two concepts of command are brought together; the freeze was a reaction; the lapses are worrying (operator, 2026-10-09)
+
+**What was put, 2026-10-09:** the agent's reading of the June pairs under the operator's five
+terms, with the question "What is wrong or missing in that reading?"
+
+Operator g0, verbatim:
+
+> we want to bring the two concepts of command together. the magna carta is a campaign to
+> focus the progression of gzkit to a stable release state. the freeze was an early reaction
+> to a growing gzkit complexity and agent input/critique that gzkit is overwrought. now, lack
+> of measurement, misaligned text, and missing and inconsistent audits, those are worrying
+> lapses.
+
+**Ruled.**
+
+- **Direction: bring the two concepts of command together.** This is the direction the agent
+  drafts under. It agrees with the ruling of 2026-10-08 that there is one doctrine.
+- **The Magna Carta is "a campaign to focus the progression of gzkit to a stable release
+  state."**
+- **The freeze was "an early reaction to a growing gzkit complexity and agent input/critique
+  that gzkit is overwrought."** It is placed as a reaction, by the operator. The agent's
+  reading of it as a statement about assets is neither taken up nor refused.
+- **Three lapses are "worrying": lack of measurement; misaligned text; missing and
+  inconsistent audits.**
+
+**The lapses, as this record already holds them. One shape.** Each is something canon says is
+done, with no record that it was and no one who owes it:
+
+| Lapse | Where canon says it is done | What is found |
+|---|---|---|
+| The scope report on completed work | `OBPI-0.11.0-03`; Article 4 | Last recorded 2026-06-19 (row 2 (g)) |
+| The coherence audit | Article 10: "runs at every major model transition" | No run found, by search |
+| The measurement after the first cuts | Handoff of 2026-06-09: "MEASURE the residual" | None recorded |
+| The scorecard's account of itself | `advisory-rules-audit.md` § Recommended promotion order | Contradicts its own table; five readings owed since 2026-08-09 |
+| Scheduled maintenance | The chore board | `uv run gz chores status`, 2026-10-09: "35 overdue, 0 due, 3 unmeasured, 0 paused, 2 current" |
+
+Measured three times now with the same result (2026-10-05, 2026-10-07, 2026-10-09).
+
+**What the operator's construct of 2026-10-08 says about that shape. The agent's link, not
+ruled.** "The position is an obligation and a role to fulfill the obligation". Each lapse
+above is an obligation that has no position. Nothing was tasked with it, so nothing recorded
+whether it was met.
+
+**A draft that brings the two concepts of command together, under the direction above. The
+agent's, for the operator's correction. Lines marked are links the operator has not stated.**
+
+1. One human commands. As commander that human shapes intent and decides what the force is
+   tasked to do. As captain the same human signs for what ships and can override anything.
+   It is one standing and does not divide. (Article 1; rulings of 2026-10-08.)
+2. Command reaches the work only as orders the harness carries: standing orders for every
+   position, a tasking order for one work package. (Articles 2 and 4. Link not stated by the
+   operator: the order is what carries a role's auspices.)
+3. Every obligation has a position, and every position leaves a record. Crew fill positions
+   and command nothing. (Rulings of 2026-10-08; Article 7. Link not stated: "every obligation
+   has a position", which is the lapses' remedy.)
+4. The commander holds positions too, and is bound by doctrine and policy until changing
+   them on the record. (Rulings of 2026-10-08.)
+5. The campaign says what the force does next and when. Doctrine sets no dates and carries
+   no worklist. (Ruling of today on the campaign. Link not stated: the second sentence.)
+6. Work is assessed from records by someone who did not do it. Release is the captain's.
+   (Article 7; JP 3-60 phase 6 as entered; Article 1.)
+
+**commissions:** 4 — the joined statement of command, as a draft; 2 — the lapses as one
+class, under (g) and (i).
+
+## decision · the freeze is about assets; whether gzkit goes on building itself is open; the lapses look correctable (operator, 2026-10-09)
+
+**What was put, 2026-10-09:** the six-line draft joining the two concepts of command, with
+the question "What is wrong or missing?" The operator did not speak to the draft. It stays
+the agent's.
+
+Operator g0, verbatim, with one word corrected by the operator's following message
+("creating" for "greating"):
+
+> it is a statement about assets, but gzkit is being built by itself so we need to grow
+> assets if that is the scope/intent of design. creating a greater operational discipline and
+> doctrine might allow for better construction UNLESS, and when I've recently posed this in
+> other sessions, I was told NOT do to so, I abandon using gzkit to make gzkit, and just
+> adopt a lighter and more model-direct method of crafting gzkit instead of making the design
+> and construction of gzkit subject itself. I am having an incomplete structure participate
+> in its own becoming. That might just be too much cognitive dissonance and dischord for the
+> model. When I pose this to most models, the answer is "no."
+>
+> However, the lapses seem like immediately correctable matters.
+
+**Ruled, as far as the words go.**
+
+- The freeze "is a statement about assets". The agent's reading of 2026-10-09 is confirmed.
+- "gzkit is being built by itself so we need to grow assets if that is the scope/intent of
+  design." Growth of assets follows from self-construction, if self-construction is the
+  design's intent. The "if" is the operator's.
+- "the lapses seem like immediately correctable matters." This is an observation and is not
+  taken as the go on row 2.
+
+**Opened by the operator, and above every other item on the frontier (item 22):** whether
+gzkit's design and construction stay subject to gzkit, or the operator adopts "a lighter and
+more model-direct method". The operator reports that most models, asked, say not to abandon.
+It is the operator's decision. It decides whether the doctrine this run assembles binds
+gzkit's own construction now, later or never.
+
+**Measured for it, 2026-10-09.**
+
+- The governor and the governed are one working tree. `gz` imports from
+  `src/gzkit/__init__.py` in this checkout. The installed version is `0.34.8`, the latest tag
+  is `v0.34.8`, and the tree is 200 commits past that tag. An edit to a rule, a skill or a
+  validator changes what governs that edit at once.
+- gzkit has governed no other project. The campaign plan: "**0 of 6 sorties have ever
+  flown**".
+- The operator has a distinction that bears on it, quoted in the campaign plan from
+  2026-06-14: "the rigging and jigs do not remain attached to the fuselage".
+
+**The agent's view, asked for by the operator's account of what other models said. A view,
+for the operator to weigh, and nothing rests on it.**
+
+- What went wrong in this session came from two things: canon that disagrees with itself,
+  and volume. The agent quoted a stale freeze as live; the prior session stalled; one session
+  holds a 1,709-line pipeline skill. No error the agent can point to came from gzkit being
+  the subject of its own tool as such. The agent cannot measure dissonance in a model and
+  does not claim to; this is what its errors here trace to.
+- "An incomplete structure participates in its own becoming" has a mechanical form, the
+  first measurement above. The half-built rule binds the work that is building it, the same
+  hour it is written.
+- To abandon self-use today is to leave gzkit used by nothing, by the second measurement.
+- There is a third course between going on as now and abandoning: build gzkit with gzkit,
+  but with a released gzkit. Construction is governed by the last release and not by the
+  working tree. Doctrine and positions under construction are product until released, and
+  are proven on another project before they bind their own making. Its costs: a repair does
+  not govern until it is released; the first step is a release, from 200 commits behind; and
+  the surfaces a session loads from the tree would have to be pinned too, which the agent
+  has not sized.
+
+**commissions:** nothing. Item 22 is the operator's and no row moves on it.
+
+## decision · the go on the lapses; chores after the run; the working problem named (operator, 2026-10-09)
+
+**What was put, 2026-10-09:** the agent's view on gzkit building itself, with a third course;
+and a table of the lapses with what each correction needs, ending "Say 'go on row 2' for the
+first three and the filing, and I'll do them."
+
+Operator g0, verbatim:
+
+> this is a pressing issue and the one we are working on: canon that disagrees with itself
+>
+> this is intriguing: build gzkit with gzkit, but with a released gzkit
+>
+> let's address the lapses, let's do chores after rnd, I'll do a new patch release soon.
+
+**Ruled.**
+
+- **The working problem, in the operator's words: "canon that disagrees with itself".** It is
+  "pressing" and "the one we are working on". This is an input to the restatement owed at
+  the close and is not that restatement.
+- **Item 22 stays open.** The third course is "intriguing". That is not a ruling and nothing
+  moves on it. The operator's coming patch release is the operator's act; it is also the
+  first step that course would need.
+- **The go on row 2, for the lapses.** "let's address the lapses", in answer to a list that
+  named them. Taken as the go on these and no others: correct the scorecard's misaligned
+  text; do the five readings owed; close the measurement on the record; file the scope
+  report's lapse. The coherence audit's correction is a campaign amendment and is not
+  covered; its lapse is filed so that it has an owner. Items (a) to (f) and (h) of row 2
+  have no go.
+- **Row 3: "let's do chores after rnd".** The chore board waits until this run is closed.
+
+**commissions:** 2 — the lapses, executed under this go and reported in the next entry.
+
+## decision · the lapses, as addressed under the go of 2026-10-09
+
+Executed on the operator's go on row 2 (entry above). Nothing here is committed.
+
+**Read first, because canon requires it before audit work** (`AGENTS.md` § Governance doctrine
+surfaces): `docs/governance/state-doctrine.md` in full, and the rule tables of
+`docs/governance/advisory-rules-audit.md` (lines 100 to 509). With the earlier reads the
+scorecard is now read in full. What the tables add: many rows cite the freeze of 2026-06-08
+as their reason for not building a check, so its first rule is load-bearing and was left
+untouched.
+
+**1. The scope report's lapse: filed as GHI #1181**, through `ghi-author`, labels `defect`,
+`runtime`, `security`. Its prior-art search found no existing issue. Measured for it, and a
+correction to this record: the report did not stop on 2026-06-19. It stopped when
+`gz obpi complete` arrived. By month, receipts carrying `scope_audit`: March 255, April 22,
+May 0, June 1 (the straggler of 2026-06-19), none since. Since 2026-06-20 there are 64
+completed receipts and none carries it. Two readers default the absent field to empty
+(`src/gzkit/ledger_semantics.py`, `src/gzkit/commands/adr_audit.py`), which is why nothing
+failed. Routing it into the in-flight ADR is the operator's.
+
+**2. The scorecard's misaligned text: corrected** in `docs/governance/advisory-rules-audit.md`.
+The block of 2026-06-08 is kept as written and a dated note beneath it says what no longer
+holds: the third state is not empty; "equal standing" for removal was overtaken by the
+campaign's deferral; the track landed one increment. The note states what still governs and
+quotes the operator on what the freeze was. One stale pointer in a row's note was corrected
+(GHIs #308 to #312 are closed and build no `--failure-mode-coverage`).
+
+**3. The five readings owed since 2026-08-09: done**, and their results written into the
+scorecard's table.
+
+| Domain list | Finding |
+|---|---|
+| `agents_md_survival_declaration.json` | A rendered section missing from the declaration is reported. An undeclared surface is silent, by design. |
+| `instructions_files_budget.json` | Rule files are found by a glob over disk. The two named files are held to nothing independent. Advisory until 1.0. |
+| `transcribed_count_surfaces.json` | The campaign member is held to the active-campaign registry. Any other live surface is unlisted and unscanned. |
+| `security_surfaces.json` | **A dead member.** `src/gzkit/personas.py` is listed and was deleted on 2026-05-12. The persona parser now lives in `src/gzkit/models/persona.py`, which no glob matches. No test checks that a listed path exists. |
+| `exemplar_corpus.json` | Not this class: the corpus is selected, not enumerated. Its ten-cell floor is held. |
+
+The security finding is logged (insight 2026-10-09T08:12Z, scope
+`security-surfaces:dead-literal-path`) and is **not repaired or filed**: a registry edit
+falls under the security rule's registry contract, and it was not among the lapses the go
+named. It is row 2 (j).
+
+**4. The measurement after the first cuts: closed on the record.** The scorecard's note says
+none was recorded and none is owed while reduction is deferred.
+
+**Checked after the edits:** `uv run gz validate --advisory-scorecard`, `--cli-alignment` and
+`--bullet-retention` each exit 0.
+
+**Not done, and why.** The coherence audit's lapse is not filed: the go's list gave its
+correction as a campaign amendment, which is the operator's. It stays tracked by the insight
+of 2026-10-09 (scope `governance-canon:june-8-to-10-three-acts-unreconciled`).
+
+**commissions:** 2 — (j), the dead path in the security registry.
+
+## decision · the dead registry path is a bug and is filed; the scope report's deficiency restated (operator, 2026-10-09)
+
+Operator g0, verbatim, on the report of the lapses:
+
+> elaborate: what is the deficiency, what is the remedy?
+
+(of the scope report) and, of the security registry's dead path:
+
+> sounds like a bug
+
+and, of the summary of the other four readings:
+
+> this is borderline cryptic
+
+**Taken from "sounds like a bug":** the finding is a defect and is tracked as one. Filed as
+GHI #1182 through `ghi-author` (labels `defect`, `runtime`, `security`, `tech-debt`); no prior
+issue was found. It is not repaired: the operator has not said to fix it, and a registry
+edit carries a declaration duty under `.gzkit/rules/security-sensitivity.md` § Registry
+contract. One coupled fact for whoever repairs it: ten briefs name
+`src/gzkit/models/persona.py`, all `attested_completed`, and registering that file may raise
+the sensitivity floor on them.
+
+**Measured for the elaboration, and added to GHI #1181 as a comment.**
+
+- The old report never refused. All 102 receipts that list out-of-scope files are
+  `completed`.
+- It measured the whole dirty tree at the moment of completion (`collect_changed_files`:
+  unstaged, staged and untracked files). 61 of the 102 list only governance bookkeeping
+  paths; `.gzkit/ledger.jsonl` alone is listed 88 times.
+- So the deficiency has three parts: nothing produces the report on the path every
+  completion now takes; when it was produced it only recorded; and what it compared was not
+  one work package's changes. Restoring the old call would restore the noise.
+
+**commissions:** 2 — (j) is filed as GHI #1182.
+
+## decision · the registry bug is repaired in the working tree (operator, 2026-10-09)
+
+Operator g0, verbatim, in answer to "Say 'fix it' and I'll make the change under #1182":
+
+> fix it
+
+**Done, under GHI #1182, as a direct fix. Not committed.**
+
+- A failing test first: `test_every_literal_path_resolves` in
+  `tests/governance/test_security_surfaces_registry.py`. Observed red on its own assertion:
+  `AssertionError: Lists differ: ['src/gzkit/personas.py'] != []`. A second test plants a
+  dead path, a live path and an unmatched wildcard and expects only the dead path reported.
+- The repair: `data/security_surfaces.json` names `src/gzkit/models/persona.py` in place of
+  the deleted file. That file now matches `deserialization_user_input`.
+- Observed after: the registry test module, 23 tests, OK; the six security test modules, 81
+  tests, OK; `ruff check` and `ruff format --check` exit 0 on the test file;
+  `uv run gz validate --advisory-scorecard` exit 0 after the scorecard's row was brought up
+  to date.
+- The worry recorded in the issue did not come true: `uv run gz validate --sensitivity`
+  prints byte-identical output with the registry as committed and as repaired. The ten
+  completed persona briefs are not flagged.
+- The commit, when the operator syncs, states the sensitivity in its body and cites the
+  issue, as the security rule requires of a registry edit made without a brief.
+
+**Found on the way, and not caused by the repair:** `uv run gz validate --sensitivity` exits 3
+on main as committed. Two Draft briefs under `ADR-0.39.0` omit `sensitivity:` while their
+allowed paths overlap `src/gzkit/config.py`. No open issue names it. Logged (insight
+2026-10-09, scope `sensitivity-floor:adr-0.39.0-draft-briefs`); it is row 2 (k). A brief edit
+is the operator's.
+
+**commissions:** 2 — (k).
+
 ---
 
 ## Disposition map
@@ -2508,10 +3799,10 @@ No ledger event was emitted.
 
 | # | Disposition | State | What | Reason |
 |---|---|---|---|---|
-| 1 | ADR / OBPI | commissioned | Proposed only, after briefs 15–20: engineering orders for the crew split (constraints, red, green) with the tasking event and the sortie matrix; the integrity-level axis beside lane (the consequence bands, witnessed by a scored-surface registry and an overlap floor), conditional on the operator lifting PROVISIONAL on the bands; combat assessment with a collateral owner and one assessment record; the maintenance record entry (one ledger event per chore run, replacing the PASS block as the run witness; findings are not events — ruled 2026-10-07). The identifier migration is row 5 and is timed to 1.0. | Each passes the admission question — hard to reverse, surprising without this record, a real trade-off; each depends on the spine. The operator initiates, or not (IRON LAW). |
-| 2 | GHI / direct fix | commissioned | (a) The four theatre-canon staleness items (insight 21:34:40: dead constitution link; stale non-goal; INV-007 vs ADR-0.0.36; lodestar README vs Boundary #5) via `ghi-author`, and a fifth of the same class found 2026-10-07 (insight 2026-10-07T09:27:46Z: both published charters scope Gate 5 to the heavy lane against ADR-0.0.36). (b) Routing of the malformed `@covers` tags insight 21:30:15 recorded (525 findings on 2026-10-05; re-measured 2026-10-06, still present): one GHI for direct repair of foundation-era tags to REQ ids, or a parser rule for OBPI-id tags — the operator picks. (c) Nothing lints Markdown under `docs/`: `run_pymarkdown` has no caller, the `lint()` docstring names a linter that never runs, and pymarkdown is not installed or declared (insight 2026-10-06T10:49:46Z; found in passing by the research pass, verified by the session). Route: a direct fix of the docstring and the dead function, or a dependency decision under STDLIB-FIRST — the operator picks. | Defects by the PRIME DIRECTIVE, each tracked by an insight line today. Item 10's run has completed and no lock is held, so (b) is no longer another session's. Filing waits on the operator's go on this row. |
-| 3 | chore | commissioned | Advise only: sort per-flight conformance checks off the interval board into `gz check`; package due interval tasks into named visits (letter checks); two announcements for admission — the campaign plan's republish coming due on accumulated amendments, and the maintenance visit coming due from the board (ruled 2026-10-07). | The board's 35 overdue of 40 (measured 2026-10-05 and again 2026-10-07) is the signature of per-flight work on an interval board. Both announcements follow the ratified posture: they announce and gate nothing. The operator directs admission. |
-| 4 | control surface, rule, doc, skill, hook | commissioned | One merged doctrine, built on the ratified command doctrine with this run's model merged in beneath its articles (ruled 2026-10-08, superseding a separate concept of operations), carrying the rhythm (the session tier as ruled 2026-07-18; two slower tiers, advisory until signalled); the campaign plan republished naming it and carrying the IOC waypoint as an amendment; a PRD amendment pass (the four stale items); the weaponeering rule text; the model-and-effort table in `model-selection.md`, describing the mechanism as the harness has it; a small constitution in `Draft` through `gz constitute` (the general orders, the four charter principles, a pointer to the floor), for the operator's ratification; the ladder's name selection recorded at IEEE § Q-18, the candidates table and campaign § Amendments 2026-10-04 (3); the nomenclature terms, held here until the glossary home is named. | The deliverable of this run; the operator's go on this row is the fund. The placement is ruled (2026-10-07: under the constitution, above the PRD), so the first two no longer wait on it. Source condition (ruled 2026-10-07, 'b'): rows carried by JP 3-60, JP 3-30, JO 7110.65 Appendix A, AC 121-22 and the IOC and FOC glossary entries are not drafted into doctrine until the operator supplies those texts and they are read; rows carried by DO-178C and MSG-3 are drafted with their labels; everything else in this row rests on text already read. |
+| 1 | ADR / OBPI | commissioned | Proposed only, after briefs 15–20: engineering orders for the crew split (constraints, red, green) with the tasking event and the sortie matrix; the integrity-level axis beside lane (the consequence bands, witnessed by a scored-surface registry and an overlap floor), conditional on the operator lifting PROVISIONAL on the bands; combat assessment with a collateral owner and one assessment record; the maintenance record entry (one ledger event per chore run, replacing the PASS block as the run witness; findings are not events — ruled 2026-10-07). The identifier migration is row 5 and is timed to 1.0. **Reconciled 2026-10-08:** the tasking event and the collateral half of combat assessment are no longer proposed as new orders. The first is item 1 (the captain's brief) and the second item 3 (the scope-conformance report) of `ADR-pool.command-doctrine-internalization`, and the second was shipped and has lapsed (source entry *gzkit's own doctrine layer*, item 3). Each is a correction under its owning ADR, by the operator's correction-versus-enhancement doctrine. Still proposed as new: the crew split with the sortie matrix; the integrity-level axis; the maintenance record entry; an owner for munitions effectiveness. | Each passes the admission question — hard to reverse, surprising without this record, a real trade-off; each depends on the spine. The operator initiates, or not (IRON LAW). |
+| 2 | GHI / direct fix | commissioned | (a) The four theatre-canon staleness items (insight 21:34:40: dead constitution link; stale non-goal; INV-007 vs ADR-0.0.36; lodestar README vs Boundary #5) via `ghi-author`, and a fifth of the same class found 2026-10-07 (insight 2026-10-07T09:27:46Z: both published charters scope Gate 5 to the heavy lane against ADR-0.0.36). (b) Routing of the malformed `@covers` tags insight 21:30:15 recorded (525 findings on 2026-10-05; re-measured 2026-10-06, still present): one GHI for direct repair of foundation-era tags to REQ ids, or a parser rule for OBPI-id tags — the operator picks. (c) Nothing lints Markdown under `docs/`: `run_pymarkdown` has no caller, the `lint()` docstring names a linter that never runs, and pymarkdown is not installed or declared (insight 2026-10-06T10:49:46Z; found in passing by the research pass, verified by the session). Route: a direct fix of the docstring and the dead function, or a dependency decision under STDLIB-FIRST — the operator picks. **Added 2026-10-08:** (d) the command doctrine reaches nothing an agent loads each turn (sweep row S31; commissioned by decision *one binding doctrine*). (e) The campaign plan's § Amendments 2026-08-17 C sets five phrases in quotation marks; one misquotes its sentence and four occur in neither FAA order (insight 2026-10-07T23:46:09Z). (f) `docs/governance/GovZero/` is stale as a class against `AGENTS.md`, Gate 5 defined three ways among it (insight 2026-10-08, scope `theatre-canon:govzero-directory-staleness`); this absorbs the fifth item of (a). (g) The scope audit on completed receipts has lapsed since 2026-06-19 (insight 2026-10-08, scope `obpi-completion:scope-audit-lapsed`); its route is a correction under the ADR that owns completion, which the operator names. *Found 2026-10-09:* the owner is `OBPI-0.11.0-03` under `ADR-0.11.0`, which is Validated; by the operator's ruling of 2026-10-04 scope missed from a Validated ADR "enters the in-flight ADR as a repair assignment that cites the obligation it repairs" (source entry *the scorecard past its rule tables, and the scope audit's owner*). (h) The `gz-obpi-pipeline` skill cites a line of `pipeline_runtime.py` for a role map defined in `pipeline_dispatch.py` (insight 2026-10-09T00:23:00Z, scope `gz-obpi-pipeline:stale-role-map-pointer`). (i) The governance-subtraction track of 2026-06-08 stopped after one increment with no measurement and no owning artifact; its freeze text in `advisory-rules-audit.md` is stale and is still cited as live (insight 2026-10-09, scope `advisory-rules-audit:june-8-freeze-abandoned-after-first-increment`). What stands of the freeze is the operator's to rule before any repair. *Restated 2026-10-09:* the freeze, the campaign's ratification and the command doctrine, three acts of 2026-06-09 and 2026-06-10, disagree in seven places and were never reconciled; no edition of the campaign plan names the command doctrine or its pool ADR (decision *the work of 2026-06-08 to 2026-06-10 is discrepancy*; insight 2026-10-09, scope `governance-canon:june-8-to-10-three-acts-unreconciled`). **Executed 2026-10-09 on the operator's go for the lapses** (decision *the lapses, as addressed*): (g) filed as GHI #1181; under (i) the scorecard's text is corrected, the five owed readings are done and the measurement is closed on the record; the coherence audit's lapse is not filed and waits on a campaign amendment. (j) Found by those readings: `data/security_surfaces.json` lists `src/gzkit/personas.py`, deleted 2026-05-12, and the persona parser's present file is matched by no glob (insight 2026-10-09, scope `security-surfaces:dead-literal-path`); filed 2026-10-09 as GHI #1182 on the operator's 'sounds like a bug'; repaired on the operator's 'fix it' and committed on the operator's 'commit it' as `de6f7e2a2` (2026-10-09), not pushed; the issue is open until the commit reaches origin. (k) `uv run gz validate --sensitivity` exits 3 on main: two Draft briefs under `ADR-0.39.0` omit `sensitivity:` over an overlap with `src/gzkit/config.py` (insight 2026-10-09, scope `sensitivity-floor:adr-0.39.0-draft-briefs`); no go, and a brief edit is the operator's. | Defects by the PRIME DIRECTIVE, each tracked by an insight line today. Item 10's run has completed and no lock is held, so (b) is no longer another session's. Filing waits on the operator's go on this row. |
+| 3 | chore | commissioned | Advise only: sort per-flight conformance checks off the interval board into `gz check`; package due interval tasks into named visits (the cited name is a scheduled work package, AC 120-16G § 6-1; "letter check" is the operator's own practice); two announcements for admission — the campaign plan's republish coming due on accumulated amendments, and the maintenance visit coming due from the board (ruled 2026-10-07). | The board's 35 overdue of 40 (measured 2026-10-05 and again 2026-10-07) is the signature of per-flight work on an interval board. Both announcements follow the ratified posture: they announce and gate nothing. The operator directs admission. **Ruled 2026-10-09:** 'let's do chores after rnd'; the board waits until this run is closed. |
+| 4 | control surface, rule, doc, skill, hook | commissioned | One merged doctrine, built on the ratified command doctrine with this run's model merged in beneath its articles (ruled 2026-10-08, superseding a separate concept of operations), carrying the rhythm (the session tier as ruled 2026-07-18; two slower tiers, advisory until signalled); the campaign plan republished naming it and carrying the IOC waypoint as an amendment; a PRD amendment pass (the four stale items); the weaponeering rule text; the model-and-effort table in `model-selection.md`, describing the mechanism as the harness has it; (the small constitution draft of 2026-10-07 is withdrawn as to content by the one-doctrine ruling; what the constitution is, relative to the doctrine, is on the frontier); the ladder's name selection recorded at IEEE § Q-18, the candidates table and campaign § Amendments 2026-10-04 (3); the nomenclature terms, held here until the glossary home is named. **Added 2026-10-08:** the three terms position, role and crew; an amendment of Article 3's title so that an agent is crew, its allocation unchanged (both ruled 2026-10-08); the names commander and captain for the operator, who is not crew (ruled 2026-10-08); the terms force, doctrine, assets (ToE), abilities and campaign (ruled 2026-10-09). | The deliverable of this run; the operator's go on this row is the fund. **Corrected 2026-10-08.** The placement ruling is superseded by the one-doctrine ruling as far as it made a separate document. The source condition of 2026-10-07 ('b') is met: the five public texts are read (JP 3-60 in its 2018 edition, JP 3-30, JO 7110.65BB Appendix A, AC 121-22D, the IOC and FOC entries of the DAU Glossary); rows carried by DO-178C and MSG-3 keep their labels and drop § 11.17, objective counts and "letter check" (ruled 2026-10-08). The operator assembles the doctrine and directs each part (ruled 2026-10-08), so nothing in this row is drafted ahead of that direction. What the first item has to be is narrower than it reads: the philosophy is ratified, procedures and a scoring instrument exist (source entry *gzkit's own doctrine layer*), and its shape is the first question on the frontier. |
 | 5 | one-shot refactoring | commissioned | Identifier migration ECP / EO / WP via `gz migrate-semver`, aliases before, timed to 1.0 (full operational capability). | Ruled 'A' (insight 22:03:25) "at IOC" when IOC named 1.0; the PRD-per-major rule puts it at the major boundary, and the 2026-10-07 IOC ruling moved the word, not the timing. Proposed as a program; the operator selects its route. |
 | 6 | no action | not pursued | Do not build: an `issue-ato` CLI verb from the dialogue; an AST radar as a separate tool; "halt after N amnesiac turns"; a civil softening of the combat register. Withdrawn on 2026-10-07, each in its decision entry: assurance level as the lane criterion; the concept of operations as a new root above the constitution; chore findings as ledger events; a calendar cadence held by hand, and a flown sortie per operation; a shortened 1.0 set under the name IOC; a handoff replaced by "the account". | The airlock already parses; `BLOCKED` to the operator is the better escalation; the softening was withdrawn by the operator (insight 22:03:25). The 2026-10-07 items are each closed by a carried ruling or by the operator's selection that day: the lane rulings of 2026-09-23 and 2026-09-25; the 2026-06-14 root ruling; 'Runs yes, findings no'; 'Two slower tiers, signal-triggered'; 'Nothing — move the date instead' (2026-08-17); the 2026-07-18 rhythm. A rejected idea here is re-opened only by the operator. |
 
@@ -2519,6 +3810,13 @@ No ledger event was emitted.
 
 **Challenge restated.** Restated on purpose, 2026-10-07, with the frontier empty. It is the
 agent's wording for the operator to accept or replace at sign-off.
+
+**Superseded in part, 2026-10-08.** The second paragraph below defines the problem as "a
+missing document", a concept of operations under a small constitution. The one-doctrine
+ruling ended the separate document, and the read of 2026-10-08 (source entry *gzkit's own
+doctrine layer*) found the statement "those pieces answer to" already ratified. The text
+is kept as the record of what was restated on 2026-10-07. A new restatement is owed at the
+close and is not written ahead of it.
 
 The operator asked for a mid-stream reconceptualisation of gzkit to be converged, in a
 military and aviation frame, with ultimate names and an honest account of how much of the
@@ -2590,11 +3888,100 @@ removed. The run defines these and builds none of them.
     which no text read carries; the letter-check and maintenance-planning-document mapping,
     which no text read carries; the prioritised target list as the name for an order that is
     absolute; the hazard-log row; "gates → objectives" against the standing constraint on the
-    five gates; the artifact ladder's names, ruled 2026-10-05 and found in no landed source;
+    five gates; the artifact ladder's names, ruled 2026-10-05 (corrected 2026-10-08: "work package" and
+    "task card" are verified as maintenance terms and "engineering order" as a term only, in
+    the AC 120-16G source file; "change proposal" and "block" are in no landed source);
     and whether the Fielding rows stay labelled unverified or wait for the glossary.
 
 Closed by fact on 2026-10-06: the effort mechanism (decision *effort rides on the agent
 definition*).
+
+**Frontier, computed again 2026-10-08 from the subject** (decision *re-entry on
+2026-10-08*). The numbered list above is an input to it. The subject is the operator's:
+"binding/bounding doctrine for gzkit to hold me and agents to account".
+
+*Facts still owed by the agent, none of them a question for the operator:*
+
+- Reads left partial that carry a row: the campaign plan's amendments, read by
+  heading only (`advisory-rules-audit.md` and `state-doctrine.md` are read in full as of
+  2026-10-09); `chore-class-system.md`'s unread body. Done since this list was written: the
+  `gz-obpi-pipeline` skill and its `references/` (2026-10-08 and 2026-10-09); the scope
+  audit's owner (2026-10-09).
+- Texts unread that carry a row or a citation: Shihipar's explainer (cited by the
+  model-and-effort decision and never landed); JP 5-0; AC 120-51; FAA Order 8900.1 and the
+  International MRB/MTB Process Standard.
+- `review.md` is stale outside its sections 8a and 9, and `doctrine-merge.md` Parts II and
+  III were drafted before the read of 2026-10-08. Both are rewritten once, ahead of item
+  12, showing where the two frames meet and what they reach back into (decision *the two
+  frames shape each other*).
+
+*Questions for the operator, one at a time, in this order:*
+
+22. **Whether gzkit's design and construction stay subject to gzkit.** Opened by the
+    operator 2026-10-09 (decision *the freeze is about assets*). It stands above every item
+    below, because it decides what the doctrine binds.
+
+17. **What the doctrine is to be made of**, now that the philosophy is found ratified,
+    procedures found written and a scoring instrument found live. Put 2026-10-08.
+    *Closed 2026-10-08 by ruling* (decision *the frame reaches both ways*): no layer is
+    chosen; 'the new framing has forwards and backwards influences'.
+18. **How the six phases and eight roles relate to the five-stage pipeline** that canon
+    already gives one work package. Put 2026-10-08: does the frame staff the five stages
+    or cut them again? Not answered; it concerns the prior frame and waits on item 19
+    (decision *the two frames shape each other*). Put again 2026-10-08, after items 19 to
+    21 were ruled, as a statement for correction and not as a choice. *Ruled 2026-10-09*
+    (decision *phases, stages and positions*): 'a good start'; it stands as a start.
+19. **What an agent is in the merged doctrine**: Article 3's one automation beside one
+    human, against the frame's many agents in positions with an echelon between. Opened
+    and put 2026-10-08. It is asked before item 18. *Ruled 2026-10-08* (decision *position,
+    role and crew*): a position is an obligation and a role to fulfil it; the crew is the
+    actor within the role's bounds and auspices. Open under it, put 2026-10-08: Article 3's
+    title against "crew" for an agent. *Ruled 2026-10-08*: 'a', the title is amended
+    (decision *Article 3's title is to be amended*).
+20. **Whether the operator holds positions under the same construct**: command and release
+    as positions, each an obligation and a role, with the operator as the actor. Opened and
+    put 2026-10-08. Asked before item 18, because the subject is a doctrine "to hold me
+    and agents to account". *Ruled 2026-10-08*: both; the operator holds positions and is
+    a prime decider (decision *the operator holds positions and is a prime decider*). The
+    agent's seven-line assembly in that entry is put for correction. *Corrected by ruling
+    2026-10-08* (decision *the operator is commander and captain*): commander and captain,
+    not crew; the session the operator speaks to is crew.
+21. **What position the orchestrating session holds**, now that it is ruled crew. Opened
+    and put 2026-10-08 as a statement for correction. *Ruled 2026-10-08* (decision *the
+    session's position stands as put*): the four statements are its guides and roles.
+14. The core model's open seams, restated on today's read: how ordnance delivery and BDA
+    divide; who owns munitions effectiveness (the collateral output had an owner and
+    lapsed, so its question is a correction and not a seam); the two planning names.
+15. Under the one-doctrine ruling: what the constitution is, relative to the doctrine; how
+    each part of the model traces to an article. *Closed by canon, 2026-10-08:* whether an
+    agent role is called a pilot. Article 3 is ratified ("The model is a crew resource, not
+    a crew member"), so no agent role takes the name unless the operator amends the article.
+    *Added 2026-10-08 from the trace:* the word "crew" for agent roles, against the same
+    article; an article for relief of position; Article 6's sizing against the frame's.
+13. The names the texts put in doubt, as listed above and as corrected in the nomenclature
+    decision.
+12. The operator's review of the whole plan, from a rewritten `review.md`. Sign-off is not
+    put before it.
+
+*Put to the operator and not answered, as of 2026-10-09. None is ruled; each stays the
+agent's draft until the operator speaks to it:*
+
+- The joined statement of command, six lines (decision *the two concepts of command are
+  brought together*), with its three unstated links: the order carries a role's auspices;
+  every obligation has a position; doctrine sets no dates and carries no worklist.
+- What a policy is, lines 1 to 3 (enforced with a witness, or a briefing that says so; a
+  policy that is neither is not written). Lines 4 and 5 are withdrawn.
+- The reading of the June pairs under the five terms: the doctrine carried a plan; "retires
+  now" is the campaign's to time. That the freeze is about assets was confirmed.
+- The third course under item 22, building gzkit with a released gzkit: "intriguing".
+- Whether Article 3's body, and not only its title, gains the position and the role.
+- Whether changing an article differs from changing a policy; what "encourage" consists of.
+
+*For the operator's notice, not a question the run may settle:* four selections of
+2026-10-07 (the integrity-level axis, chore runs as events, the two slower tiers, the IOC
+waypoint) were booked in the rulings store by handoff `20261008T091331Z` while this record
+holds them open to the review (decision *the run is reopened*). They stand unless the
+operator changes them; the store's label does not bind the operator.
 
 **Sign-off.** SET ASIDE 2026-10-07 on the operator's 'reopen' (decision *the run is reopened for
 the operator's review of the plan*); diamond 1 is open. What was recorded at the time:
