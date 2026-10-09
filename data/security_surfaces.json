@@ -77,7 +77,7 @@
   {
     "category": "deserialization_user_input",
     "globs": [
-      "src/gzkit/personas.py",
+      "src/gzkit/models/persona.py",
       "src/gzkit/config.py",
       "src/gzkit/handoff_validation.py",
       "src/gzkit/pipeline_dispatch.py",

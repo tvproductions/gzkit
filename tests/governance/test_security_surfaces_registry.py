@@ -23,6 +23,7 @@ from __future__ import annotations
 import json
 import unittest
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import jsonschema
 
@@ -38,6 +39,16 @@ from gzkit.traceability import covers  # noqa: F401
 REPO_ROOT = Path(__file__).resolve().parents[2]
 REGISTRY_PATH = REPO_ROOT / "data" / "security_surfaces.json"
 README_PATH = REPO_ROOT / "data" / "README-security-surfaces.md"
+
+_GLOB_CHARS = frozenset("*?[")
+
+
+def _dead_literal_paths(globs: list[str], root: Path) -> list[str]:
+    """Return the globs that name one file and resolve to nothing under *root*.
+
+    A wildcard pattern is forward-looking and is never reported.
+    """
+    return [g for g in globs if not _GLOB_CHARS & set(g) and not (root / g).is_file()]
 
 
 class TestSchemaIntegrity(unittest.TestCase):
@@ -127,6 +138,19 @@ class TestRegistryContents(unittest.TestCase):
         for category in CANONICAL_CATEGORIES:
             self.assertIn(category, by_category)
             self.assertGreaterEqual(len(by_category[category]), 1)
+
+    def test_every_literal_path_resolves(self) -> None:
+        """A registered file that moved leaves its successor unguarded (GHI #1182)."""
+        entries = load_registry(REGISTRY_PATH)
+        globs = [glob for entry in entries for glob in entry.globs]
+        self.assertEqual(_dead_literal_paths(globs, REPO_ROOT), [])
+
+    def test_a_dead_literal_path_is_reported_and_an_unmatched_pattern_is_not(self) -> None:
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "kept.py").write_text("", encoding="utf-8")
+            globs = ["kept.py", "gone.py", "**/*token*.py"]
+            self.assertEqual(_dead_literal_paths(globs, root), ["gone.py"])
 
     def test_governance_readme_exists(self) -> None:
         self.assertTrue(README_PATH.is_file(), f"missing {README_PATH}")
