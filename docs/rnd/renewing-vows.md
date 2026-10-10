@@ -4049,6 +4049,174 @@ was corrected (insight 2026-10-10, scope `ghi-1181:unobserved-test-count`).
 
 ---
 
+## decision · gzkit is built with a released gzkit (operator, 2026-10-10; frontier item 22)
+
+**What was put, 2026-10-10:** item 22 as a choice, because its three courses cannot all
+hold: A, stay as now, the working tree governing its own construction; B, abandon self-use
+for a lighter model-direct method; C, build gzkit with a released gzkit, construction governed
+by the last release and not the working tree, doctrine and positions under construction being
+product until released and proven on another project before they bind their own making. The
+agent recommended C, as the view already recorded in the decision *the freeze is about
+assets*, and read the operator's "the rigging and jigs do not remain attached to the
+fuselage" (campaign plan, 2026-06-14) as C, marked as the agent's reading.
+
+Operator g0, verbatim: 'C'.
+
+**Ruled.** gzkit's design and construction stay subject to gzkit, through a released gzkit.
+The governor is the last release; the working tree is product. What follows, as the choice
+stated it and nothing more:
+
+- A repair to a rule, skill or validator governs construction only once released. Until
+  then it is product under construction.
+- The first step is a release, from a tree 200 commits past `v0.34.8`. The operator's stated
+  intent of a patch release soon (ruling of 2026-10-09) is the vehicle; the agent does not
+  cut it.
+- The surfaces a session loads from the tree (`AGENTS.md`, rules, skills, hooks) would have
+  to be pinned to the release too. This is unsized and is a fact the agent owes, not a
+  question.
+- Doctrine assembled by this run is proven on another project before it binds gzkit's own
+  making; the first flown sortie (`ADR-0.38.0`) is where that proof is taken.
+
+Item 22 is closed. The doctrine this run assembles binds gzkit's construction, later rather
+than now: on release.
+
+**commissions:** 4 — the merged doctrine states the governor as the last release; 1 —
+proposed only, the pinning of session-loaded surfaces to a release, to be sized before any
+order; nothing executes on this ruling.
+
+## decision · the joined statement of command stands, in seven lines (operator, 2026-10-10)
+
+**What was put, 2026-10-10:** the six-line draft of the decision *the two concepts of command
+are brought together*, with its three unstated links marked, and a seventh line proposed
+under the ruling of the same day (decision *gzkit is built with a released gzkit*), with the
+question "What is wrong or missing?"
+
+Operator g0, verbatim: 'it stands, add the seventh'.
+
+**Ruled.** The statement is the operator's, in seven lines. The three links the draft marked
+as unstated are now stated by this ruling.
+
+1. One human commands. As commander that human shapes intent and decides what the force is
+   tasked to do. As captain the same human signs for what ships and can override anything.
+   It is one standing and does not divide.
+2. Command reaches the work only as orders the harness carries: standing orders for every
+   position, a tasking order for one work package. The order is what carries a role's
+   auspices.
+3. Every obligation has a position, and every position leaves a record. Crew fill positions
+   and command nothing. Every obligation has a position is the lapses' remedy.
+4. The commander holds positions too, and is bound by doctrine and policy until changing
+   them on the record.
+5. The campaign says what the force does next and when. Doctrine sets no dates and carries
+   no worklist.
+6. Work is assessed from records by someone who did not do it. Release is the captain's.
+7. The orders that bind construction are the last release's. Doctrine under construction is
+   product until released, and is proven on another project before it binds its own making.
+
+This closes the first of the statements listed under "Put to the operator and not answered".
+
+**commissions:** 4 — the seven lines are the spine of the merged doctrine's statement of
+command, to be drafted into it on the go for that row.
+
+## decision · the two review documents are rewritten once, ahead of the operator's review (2026-10-10)
+
+Directed by the operator on 2026-10-10 ('do these now please'), on the agent's shortest
+path to the close: rule item 22, rule the statement of command, rewrite the two stale
+documents once, hold the review, restate the problem, sign off, then give row 4 its go. The
+first two are ruled above. This entry is the third.
+
+**Rewritten.** `docs/rnd/renewing-vows/review.md`, whole, current to the rulings through
+2026-10-10: the problem as the operator named it, the rulings by date, the seven-line
+statement and the terms, the flown work package with its open seams, what exists and what is
+new, the names' verification state, the June discrepancy and the lapses, what each row would
+produce, and the questions to rule in order. `docs/rnd/renewing-vows/doctrine-merge.md`
+Parts II and III, re-based: Part II opens with the statement of command and the terms,
+carries twenty policies each traced to a line and an article with the canonical witness
+named and the scorecard as the authority for its grade, and names the June discrepancy as
+unreconciled; Part III names the canonical procedures (`obpi-pipeline-runbook.md`, the two
+contracts, `audit-protocol.md`, `charter.md`, `session-handoff-obligations.md`) and maps the
+six phases onto the five stages with the positions. Part I and every RATIFIED part are
+unchanged. The draft additions and the open questions are refreshed; the items 22 and the
+command statement are listed as closed.
+
+**Not done, and why.** The restatement of the problem is not written into the documents: it
+is put at the review, from the operator's answer to whether § 1 states the problem they
+meant. Nothing in either document is doctrine; row 4 has no go.
+
+**commissions:** 4 — the two documents are the material the operator reviews; nothing else.
+
+## decision · the restatement stands and the run is funded (operator, 2026-10-10)
+
+**What was put, 2026-10-10:** the rewritten `review.md` and `doctrine-merge.md` for the
+operator's review (item 12); its § 9 questions in order; and a draft restatement of the
+challenge, offered for correction and not written into the record ahead of the answer.
+
+Operator g0, verbatim: 'the restatement stands, fund'.
+
+**Ruled.** The restatement is accepted as drafted and is written into the Close. Diamond 1 is
+signed off: **fund**.
+
+**The mechanical condition, stated as it is and not as it would need to be.** The skill's
+close asks for an empty frontier, a deliberate restatement and six rows with a decision. The
+second and third hold. The first does not: items 13, 14 and 15 and four put statements are
+open, and the operator funded the run without ruling them. The sign-off is a beat and not a
+boundary (`rnd-discipline.md`), and the operator rules; so the open items travel with row 4,
+where the operator assembles the doctrine and directs each part, as the design questions of
+the run `design-amendment` travelled to its ADR. Each is listed in the Close under
+"Travelling to row 4". They are not closed and are not forgotten.
+
+**What the sign-off does not do.** It gives no row its go. Rows 1 to 5 each wait for the
+operator's go on that row. No ledger event is emitted, because the run's event types land
+with their producer.
+
+**commissions:** none new; the fund stands over the six rows as drafted.
+
+## decision · the go on row 4; the first part drafted is the statement of command and the terms (operator, 2026-10-10)
+
+Operator g0, verbatim: 'go on row four'. Put with it: the agent's recommendation to start
+with the doctrine's statement of command and terms, since every other part hangs from them;
+the operator named no other part.
+
+**Ruled.** Row 4 has its go. Row 4 is the first and so far the only row with a go. Rows 1, 2,
+3 and 5 wait.
+
+**How row 4 is worked, from the rulings already made.** The operator assembles the doctrine
+and directs each part (2026-10-08); the canonical file
+`docs/governance/GovZero/command-doctrine.md` is ratified canon and is replaced only by the
+operator's ratification with a recorded attestation (`AGENTS.md` § MAKE LLM STOCHASTIC VIBES
+INERT: "Change doctrine only with a recorded witness"). So each part is drafted as candidate
+text in `docs/rnd/renewing-vows/doctrine-merge.md`, Part 0, in the doctrine's own voice and
+traceable line by line, for the operator to accept, correct or replace; the canonical file
+is not edited by the agent. The items travelling to row 4 (13, 14, 15, the four statements)
+are put as each part reaches them.
+
+**Drafted under this go, 2026-10-10:** Part 0 of `doctrine-merge.md`, the candidate preamble:
+the statement of command in seven lines, the terms (position, role, crew; commander and
+captain; force, doctrine, assets, abilities, campaign), and the amended title of Article 3
+with its body unchanged. The campaign republish, the PRD repairs, the weaponeering rule, the
+model-and-effort correction and the names wait on the operator's direction, part by part.
+
+**commissions:** 4 — executing.
+
+## decision · row 4, part 1: the reconciliation of June is drafted as candidate text (operator's direction, 2026-10-10)
+
+Operator g0, verbatim: 'part 1, then git sync'. Part 1 is the reconciliation of June, the
+freeze, the campaign and the doctrine.
+
+**Drafted** into `doctrine-merge.md` Part 0: the seven pairs, each settled by one of the
+seven lines or by one of the operator's three readings (the freeze is about assets; a
+doctrine is not a plan; "retires now" is the campaign's to time), with four resolutions
+marked as the agent's proposals: amending Article 10's wording to drop its date; the campaign
+amendment that adopts the doctrine's six-item worklist; striking the dead measurement; and
+giving the coherence audit a position in the rhythm's maintenance visit, triggered by a model
+transition. Nothing in it amends the campaign plan, the scorecard or the canonical doctrine;
+those are later parts, on the operator's direction.
+
+**Then the sync**, as directed: `git add -A`, the per-change gate, `gz git-sync --apply`.
+The tree carries the other session's staged edit to the OBPI runtime contract; it goes in
+the same sync on the operator's word.
+
+**commissions:** 4 — executing.
+
 ## Disposition map
 
 <!-- All six rows always present. State is `commissioned` or `not pursued` — there is no
@@ -4060,40 +4228,38 @@ was corrected (insight 2026-10-10, scope `ghi-1181:unobserved-test-count`).
 | 1 | ADR / OBPI | commissioned | Proposed only, after briefs 15–20: engineering orders for the crew split (constraints, red, green) with the tasking event and the sortie matrix; the integrity-level axis beside lane (the consequence bands, witnessed by a scored-surface registry and an overlap floor), conditional on the operator lifting PROVISIONAL on the bands; combat assessment with a collateral owner and one assessment record; the maintenance record entry (one ledger event per chore run, replacing the PASS block as the run witness; findings are not events — ruled 2026-10-07). The identifier migration is row 5 and is timed to 1.0. **Reconciled 2026-10-08:** the tasking event and the collateral half of combat assessment are no longer proposed as new orders. The first is item 1 (the captain's brief) and the second item 3 (the scope-conformance report) of `ADR-pool.command-doctrine-internalization`, and the second was shipped and has lapsed (source entry *gzkit's own doctrine layer*, item 3). Each is a correction under its owning ADR, by the operator's correction-versus-enhancement doctrine. Still proposed as new: the crew split with the sortie matrix; the integrity-level axis; the maintenance record entry; an owner for munitions effectiveness. | Each passes the admission question — hard to reverse, surprising without this record, a real trade-off; each depends on the spine. The operator initiates, or not (IRON LAW). |
 | 2 | GHI / direct fix | commissioned | (a) The four theatre-canon staleness items (insight 21:34:40: dead constitution link; stale non-goal; INV-007 vs ADR-0.0.36; lodestar README vs Boundary #5) via `ghi-author`, and a fifth of the same class found 2026-10-07 (insight 2026-10-07T09:27:46Z: both published charters scope Gate 5 to the heavy lane against ADR-0.0.36). (b) Routing of the malformed `@covers` tags insight 21:30:15 recorded (525 findings on 2026-10-05; re-measured 2026-10-06, still present): one GHI for direct repair of foundation-era tags to REQ ids, or a parser rule for OBPI-id tags — the operator picks. (c) Nothing lints Markdown under `docs/`: `run_pymarkdown` has no caller, the `lint()` docstring names a linter that never runs, and pymarkdown is not installed or declared (insight 2026-10-06T10:49:46Z; found in passing by the research pass, verified by the session). Route: a direct fix of the docstring and the dead function, or a dependency decision under STDLIB-FIRST — the operator picks. **Added 2026-10-08:** (d) the command doctrine reaches nothing an agent loads each turn (sweep row S31; commissioned by decision *one binding doctrine*). (e) The campaign plan's § Amendments 2026-08-17 C sets five phrases in quotation marks; one misquotes its sentence and four occur in neither FAA order (insight 2026-10-07T23:46:09Z). (f) `docs/governance/GovZero/` is stale as a class against `AGENTS.md`, Gate 5 defined three ways among it (insight 2026-10-08, scope `theatre-canon:govzero-directory-staleness`); this absorbs the fifth item of (a). (g) The scope audit on completed receipts has lapsed since 2026-06-19 (insight 2026-10-08, scope `obpi-completion:scope-audit-lapsed`); its route is a correction under the ADR that owns completion, which the operator names. *Found 2026-10-09:* the owner is `OBPI-0.11.0-03` under `ADR-0.11.0`, which is Validated; by the operator's ruling of 2026-10-04 scope missed from a Validated ADR "enters the in-flight ADR as a repair assignment that cites the obligation it repairs" (source entry *the scorecard past its rule tables, and the scope audit's owner*). (h) The `gz-obpi-pipeline` skill cites a line of `pipeline_runtime.py` for a role map defined in `pipeline_dispatch.py` (insight 2026-10-09T00:23:00Z, scope `gz-obpi-pipeline:stale-role-map-pointer`). (i) The governance-subtraction track of 2026-06-08 stopped after one increment with no measurement and no owning artifact; its freeze text in `advisory-rules-audit.md` is stale and is still cited as live (insight 2026-10-09, scope `advisory-rules-audit:june-8-freeze-abandoned-after-first-increment`). What stands of the freeze is the operator's to rule before any repair. *Restated 2026-10-09:* the freeze, the campaign's ratification and the command doctrine, three acts of 2026-06-09 and 2026-06-10, disagree in seven places and were never reconciled; no edition of the campaign plan names the command doctrine or its pool ADR (decision *the work of 2026-06-08 to 2026-06-10 is discrepancy*; insight 2026-10-09, scope `governance-canon:june-8-to-10-three-acts-unreconciled`). **Executed 2026-10-09 on the operator's go for the lapses** (decision *the lapses, as addressed*): (g) filed as GHI #1181, and its first part (the completion command attaches the report) repaired on the operator's 'fix the first part under 1181' as `85d55a627` (2026-10-09), the issue staying open for refuse-or-record and the snapshot's base (decision *the first part of GHI #1181 is repaired*); the comparison of delivered work with Allowed Paths filed 2026-10-10 as GHI #1185 against the airlock exit, on the operator's 'ghi the restoration to enhance/strengthen the airlock, if able'; under (i) the scorecard's text is corrected, the five owed readings are done and the measurement is closed on the record; the coherence audit's lapse is not filed and waits on a campaign amendment. (j) Found by those readings: `data/security_surfaces.json` lists `src/gzkit/personas.py`, deleted 2026-05-12, and the persona parser's present file is matched by no glob (insight 2026-10-09, scope `security-surfaces:dead-literal-path`); filed 2026-10-09 as GHI #1182 on the operator's 'sounds like a bug'; repaired on the operator's 'fix it' and committed on the operator's 'commit it' as `de6f7e2a2` (2026-10-09), pushed by the sync of 2026-10-09 (`7959cf9f0`); GHI #1182 closed `fixed` through `ghi-close` the same day. (k) `uv run gz validate --sensitivity` exits 3 on main: two Draft briefs under `ADR-0.39.0` omit `sensitivity:` over an overlap with `src/gzkit/config.py` (insight 2026-10-09, scope `sensitivity-floor:adr-0.39.0-draft-briefs`); no go, and a brief edit is the operator's. | Defects by the PRIME DIRECTIVE, each tracked by an insight line today. Item 10's run has completed and no lock is held, so (b) is no longer another session's. Filing waits on the operator's go on this row. |
 | 3 | chore | commissioned | Advise only: sort per-flight conformance checks off the interval board into `gz check`; package due interval tasks into named visits (the cited name is a scheduled work package, AC 120-16G § 6-1; "letter check" is the operator's own practice); two announcements for admission — the campaign plan's republish coming due on accumulated amendments, and the maintenance visit coming due from the board (ruled 2026-10-07). | The board's 35 overdue of 40 (measured 2026-10-05 and again 2026-10-07) is the signature of per-flight work on an interval board. Both announcements follow the ratified posture: they announce and gate nothing. The operator directs admission. **Ruled 2026-10-09:** 'let's do chores after rnd'; the board waits until this run is closed. |
-| 4 | control surface, rule, doc, skill, hook | commissioned | One merged doctrine, built on the ratified command doctrine with this run's model merged in beneath its articles (ruled 2026-10-08, superseding a separate concept of operations), carrying the rhythm (the session tier as ruled 2026-07-18; two slower tiers, advisory until signalled); the campaign plan republished naming it and carrying the IOC waypoint as an amendment; a PRD amendment pass (the four stale items); the weaponeering rule text; the model-and-effort table in `model-selection.md`, describing the mechanism as the harness has it; (the small constitution draft of 2026-10-07 is withdrawn as to content by the one-doctrine ruling; what the constitution is, relative to the doctrine, is on the frontier); the ladder's name selection recorded at IEEE § Q-18, the candidates table and campaign § Amendments 2026-10-04 (3); the nomenclature terms, held here until the glossary home is named. **Added 2026-10-08:** the three terms position, role and crew; an amendment of Article 3's title so that an agent is crew, its allocation unchanged (both ruled 2026-10-08); the names commander and captain for the operator, who is not crew (ruled 2026-10-08); the terms force, doctrine, assets (ToE), abilities and campaign (ruled 2026-10-09). | The deliverable of this run; the operator's go on this row is the fund. **Corrected 2026-10-08.** The placement ruling is superseded by the one-doctrine ruling as far as it made a separate document. The source condition of 2026-10-07 ('b') is met: the five public texts are read (JP 3-60 in its 2018 edition, JP 3-30, JO 7110.65BB Appendix A, AC 121-22D, the IOC and FOC entries of the DAU Glossary); rows carried by DO-178C and MSG-3 keep their labels and drop § 11.17, objective counts and "letter check" (ruled 2026-10-08). The operator assembles the doctrine and directs each part (ruled 2026-10-08), so nothing in this row is drafted ahead of that direction. What the first item has to be is narrower than it reads: the philosophy is ratified, procedures and a scoring instrument exist (source entry *gzkit's own doctrine layer*), and its shape is the first question on the frontier. |
+| 4 | control surface, rule, doc, skill, hook | commissioned | One merged doctrine, built on the ratified command doctrine with this run's model merged in beneath its articles (ruled 2026-10-08, superseding a separate concept of operations), carrying the rhythm (the session tier as ruled 2026-07-18; two slower tiers, advisory until signalled); the campaign plan republished naming it and carrying the IOC waypoint as an amendment; a PRD amendment pass (the four stale items); the weaponeering rule text; the model-and-effort table in `model-selection.md`, describing the mechanism as the harness has it; (the small constitution draft of 2026-10-07 is withdrawn as to content by the one-doctrine ruling; what the constitution is, relative to the doctrine, is on the frontier); the ladder's name selection recorded at IEEE § Q-18, the candidates table and campaign § Amendments 2026-10-04 (3); the nomenclature terms, held here until the glossary home is named. **Added 2026-10-08:** the three terms position, role and crew; an amendment of Article 3's title so that an agent is crew, its allocation unchanged (both ruled 2026-10-08); the names commander and captain for the operator, who is not crew (ruled 2026-10-08); the terms force, doctrine, assets (ToE), abilities and campaign (ruled 2026-10-09). | **Go given 2026-10-10** ('go on row four'); the first part, the statement of command and the terms, drafted as candidate text in `doctrine-merge.md` Part 0. The deliverable of this run. **Corrected 2026-10-08.** The placement ruling is superseded by the one-doctrine ruling as far as it made a separate document. The source condition of 2026-10-07 ('b') is met: the five public texts are read (JP 3-60 in its 2018 edition, JP 3-30, JO 7110.65BB Appendix A, AC 121-22D, the IOC and FOC entries of the DAU Glossary); rows carried by DO-178C and MSG-3 keep their labels and drop § 11.17, objective counts and "letter check" (ruled 2026-10-08). The operator assembles the doctrine and directs each part (ruled 2026-10-08), so nothing in this row is drafted ahead of that direction. What the first item has to be is narrower than it reads: the philosophy is ratified, procedures and a scoring instrument exist (source entry *gzkit's own doctrine layer*), and its shape is the first question on the frontier. |
 | 5 | one-shot refactoring | commissioned | Identifier migration ECP / EO / WP via `gz migrate-semver`, aliases before, timed to 1.0 (full operational capability). | Ruled 'A' (insight 22:03:25) "at IOC" when IOC named 1.0; the PRD-per-major rule puts it at the major boundary, and the 2026-10-07 IOC ruling moved the word, not the timing. Proposed as a program; the operator selects its route. |
 | 6 | no action | not pursued | Do not build: an `issue-ato` CLI verb from the dialogue; an AST radar as a separate tool; "halt after N amnesiac turns"; a civil softening of the combat register. Withdrawn on 2026-10-07, each in its decision entry: assurance level as the lane criterion; the concept of operations as a new root above the constitution; chore findings as ledger events; a calendar cadence held by hand, and a flown sortie per operation; a shortened 1.0 set under the name IOC; a handoff replaced by "the account". | The airlock already parses; `BLOCKED` to the operator is the better escalation; the softening was withdrawn by the operator (insight 22:03:25). The 2026-10-07 items are each closed by a carried ruling or by the operator's selection that day: the lane rulings of 2026-09-23 and 2026-09-25; the 2026-06-14 root ruling; 'Runs yes, findings no'; 'Two slower tiers, signal-triggered'; 'Nothing — move the date instead' (2026-08-17); the 2026-07-18 rhythm. A rejected idea here is re-opened only by the operator. |
 
 ## Close
 
-**Challenge restated.** Restated on purpose, 2026-10-07, with the frontier empty. It is the
-agent's wording for the operator to accept or replace at sign-off.
+**Challenge restated.** Restated on purpose at the close, 2026-10-10, and accepted by the
+operator in the same words ('the restatement stands, fund'):
 
-**Superseded in part, 2026-10-08.** The second paragraph below defines the problem as "a
-missing document", a concept of operations under a small constitution. The one-doctrine
-ruling ended the separate document, and the read of 2026-10-08 (source entry *gzkit's own
-doctrine layer*) found the statement "those pieces answer to" already ratified. The text
-is kept as the record of what was restated on 2026-10-07. A new restatement is owed at the
-close and is not written ahead of it.
+gzkit's canon disagrees with itself. Three acts of June 2026 set a freeze, a campaign and a
+command doctrine that never named one another, and five obligations canon says are met have
+no position that owes them. The remedy is not a new document above the PRD but one merged
+doctrine: the ten ratified articles, under a seven-line statement of command, in which every
+obligation has a position, crew fill positions and command nothing, the commander is bound by
+doctrine until changing it on the record, the campaign alone sets dates, and the orders that
+bind gzkit's own construction are the last release's. The run defines this and builds none
+of it.
 
-The operator asked for a mid-stream reconceptualisation of gzkit to be converged, in a
-military and aviation frame, with ultimate names and an honest account of how much of the
-remedy is already planned. As the run leaves it: gzkit's trouble is not a shortage of
-controls. It is that every control addresses every agent as though that agent could hold
-the whole. The direction, in the operator's words, is 'a series of much smaller, and much
-more focused agents, being orchestrated, often by skill-driven workflow'. Nearly all of the
-machinery that direction needs is in flight or queued in the ruled order: the runtime that
-holds a run's position (briefs 15 to 20), the second opinion (`ADR-0.36.0`), the airlock's
-bite (`ADR-0.37.0`) and the first flight test (`ADR-0.38.0`). What was missing is the
-statement those pieces answer to, and its seat.
+*The restatement of 2026-10-07, superseded in full and kept as the record of what was
+restated then:* the problem as a missing document, a concept of operations seated under a
+small constitution and above the PRD and the campaign plan, with six things to settle: the
+names and the ladder migrating at 1.0; integrity level as a second axis; a ledger record for
+maintenance performed; a rhythm whose slower beats come due on a signal; a near waypoint, the
+first sortie flown on someone else's substrate, ahead of a 1.0 from which nothing is removed.
 
-So the problem this run defines is a missing document and the six things it has to settle:
-a concept of operations seated under a small written constitution and above the PRD and the
-campaign plan; the names, with the artifact ladder migrating at 1.0; a second axis, integrity
-level, for how much rigour a surface deserves; a ledger record for maintenance performed; a
-rhythm whose slower beats come due on a signal and not on a calendar; and a near waypoint,
-the first sortie flown on someone else's substrate, ahead of a 1.0 from which nothing is
-removed. The run defines these and builds none of them.
+**Travelling to row 4, open at sign-off and not closed by it:** item 14 (where mission
+planning sits; how ordnance delivery and BDA divide; who owns munitions effectiveness); item
+15 (what the constitution is relative to the merged doctrine; Article 3's body; an article
+for relief of position; Article 6's sizing); item 13 (the names still contradicted or
+unsourced); and the four put statements (what a policy is; the June pairs under the five
+terms; article against policy; what "encourage" consists of). The operator rules each as the
+doctrine is assembled.
 
 **Frontier.** Open at 2026-10-06, in the order the run asks them, one at a time. Re-entered
 2026-10-07 with all nine open (decision *re-entry on 2026-10-07*):
@@ -4168,16 +4334,16 @@ definition*).
 - Texts unread that carry a row or a citation: Shihipar's explainer (cited by the
   model-and-effort decision and never landed); JP 5-0; AC 120-51; FAA Order 8900.1 and the
   International MRB/MTB Process Standard.
-- `review.md` is stale outside its sections 8a and 9, and `doctrine-merge.md` Parts II and
-  III were drafted before the read of 2026-10-08. Both are rewritten once, ahead of item
-  12, showing where the two frames meet and what they reach back into (decision *the two
-  frames shape each other*).
+- *Done 2026-10-10* (decision *the two review documents are rewritten once*): `review.md`
+  rewritten whole; `doctrine-merge.md` Parts II and III re-based. Item 12 is now open for
+  the operator's review.
 
 *Questions for the operator, one at a time, in this order:*
 
 22. **Whether gzkit's design and construction stay subject to gzkit.** Opened by the
     operator 2026-10-09 (decision *the freeze is about assets*). It stands above every item
-    below, because it decides what the doctrine binds.
+    below, because it decides what the doctrine binds. *Ruled 2026-10-10* (decision *gzkit
+    is built with a released gzkit*): 'C'. Closed.
 
 17. **What the doctrine is to be made of**, now that the philosophy is found ratified,
     procedures found written and a scoring instrument found live. Put 2026-10-08.
@@ -4218,15 +4384,15 @@ definition*).
     article; an article for relief of position; Article 6's sizing against the frame's.
 13. The names the texts put in doubt, as listed above and as corrected in the nomenclature
     decision.
-12. The operator's review of the whole plan, from a rewritten `review.md`. Sign-off is not
-    put before it.
+12. *Closed 2026-10-10:* the operator reviewed the rewritten `review.md` and
+    `doctrine-merge.md` and signed off (decision *the restatement stands and the run is
+    funded*).
 
 *Put to the operator and not answered, as of 2026-10-09. None is ruled; each stays the
 agent's draft until the operator speaks to it:*
 
-- The joined statement of command, six lines (decision *the two concepts of command are
-  brought together*), with its three unstated links: the order carries a role's auspices;
-  every obligation has a position; doctrine sets no dates and carries no worklist.
+- *Ruled 2026-10-10* (decision *the joined statement of command stands, in seven lines*):
+  'it stands, add the seventh'. The three links are stated by the ruling.
 - What a policy is, lines 1 to 3 (enforced with a witness, or a briefing that says so; a
   policy that is neither is not written). Lines 4 and 5 are withdrawn.
 - The reading of the June pairs under the five terms: the doctrine carried a plan; "retires
@@ -4241,14 +4407,12 @@ waypoint) were booked in the rulings store by handoff `20261008T091331Z` while t
 holds them open to the review (decision *the run is reopened*). They stand unless the
 operator changes them; the store's label does not bind the operator.
 
-**Sign-off.** SET ASIDE 2026-10-07 on the operator's 'reopen' (decision *the run is reopened for
-the operator's review of the plan*); diamond 1 is open. What was recorded at the time:
-'Fund (Recommended)' — fund. Operator g0, 2026-10-07, selecting between fund
-and kill with the mechanical condition met: the frontier empty, the challenge restated above,
-and all six rows carrying a decision. The restatement was put with the question and was not
-replaced. Diamond 1 is closed. The sign-off gives no row its go: rows 1 to 5 each wait for
-the operator's go on that row, and no ledger event was emitted, because the run's event
-types land with their producer.
+**Sign-off.** Operator g0, 2026-10-10, verbatim: 'the restatement stands, fund' — **fund**.
+The set-aside of 2026-10-07 is lifted by this ruling. Diamond 1 is closed on the operator's
+word with items 13, 14 and 15 and four statements travelling to row 4, as recorded in the
+decision *the restatement stands and the run is funded*. The sign-off gives no row its go:
+rows 1 to 5 each wait for the operator's go on that row, and no ledger event was emitted,
+because the run's event types land with their producer.
 
 ## What this record does not license
 
