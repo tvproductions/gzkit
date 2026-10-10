@@ -4338,6 +4338,28 @@ discharges the defect insight of 2026-10-06 (scope `model-selection`), which row
 
 **commissions:** 4 — executing; the names remain.
 
+## decision · row 4, part 7: the names are drafted as a candidate glossary, with items 13, 14 and 15 put (operator's direction, 2026-10-10)
+
+Operator g0, verbatim: 'part 7, then git sync'. Part 7 is the names.
+
+**Drafted** into `doctrine-merge.md` Part 0: a candidate glossary of every name the run
+carries, each with its standing (ruled, sourced, term, dropped, or put), consolidated from
+the nomenclature decision and its corrections of 2026-10-08 and the sources landed since;
+and the three items travelling to row 4, each as a statement for correction and not a
+choice: item 14 (mission planning at phase 5 with the flying crew; ordnance delivery as red
+then green by one position; munitions effectiveness owned by the assessment position), item
+15 (the constitution is Part I ratified as the root; one sentence added to Article 3's body;
+relief of position traced to Articles 1 and 7; Article 6's sizing stands) and item 13 (what
+is kept as a term, what is dropped, what is renamed). The glossary's home is still the DDD
+run's to name; the table is held here until then.
+
+**Then the sync**, as directed. Items 14, 15 and 13 are put to the operator in that order,
+one at a time; each ruling is written into the glossary and the doctrine candidate as it
+lands.
+
+**commissions:** 4 — the last part is drafted; the row's remaining work is the operator's
+rulings on the three items and the ratification of Part 0.
+
 ## Disposition map
 
 <!-- All six rows always present. State is `commissioned` or `not pursued` — there is no

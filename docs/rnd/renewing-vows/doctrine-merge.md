@@ -327,6 +327,122 @@ control surfaces are regenerated.
 
 ---
 
+## The names (candidate glossary, drafted under the go on row 4, 2026-10-10)
+
+> Held here until the glossary's home is named (the DDD-discipline run decides it). Each row
+> carries its standing: **ruled** by the operator; **sourced**, a landed text supports the
+> name; **term**, a plain or industry term with no text behind the mapping, usable as
+> gzkit's own word and not cited as doctrine; **dropped**, withdrawn by a ruling or a
+> source. Rows marked *put* are items 13, 14 and 15 and wait on the operator; the three
+> statements for correction follow the table.
+
+| Register | gzkit term | Name | Standing |
+|---|---|---|---|
+| Command | the operator | commander; captain | ruled 2026-10-08 |
+| | an agent; the orchestrating session | crew | ruled 2026-10-08 |
+| | an obligation and the role to fulfil it | position; role | ruled 2026-10-08 |
+| | the ten articles and the statement of command | the force's doctrine | ruled 2026-10-09 |
+| | the Magna Carta | the campaign | ruled 2026-10-09 |
+| | the last release, as what binds construction | the governor | ruled 2026-10-10 |
+| Guidance | lodestar | doctrine library | term |
+| | constitution | *put* (item 15) | — |
+| | PRD | functional baseline of a major version | sourced: MIL-HDBK-61B |
+| | campaign amendment | fragmentary order, folded on republish | term; JP 3-60 names the fragmentary order as a tasking order, the mapping is gzkit's |
+| | sequenced campaign items | *put* (item 13): prioritised target list | JP 3-60: the list is not a firing order; the ADR order is absolute |
+| Configuration management | ledger | configuration status accounting | sourced: MIL-HDBK-61B |
+| | receipts | objective evidence; life-cycle data | term; DO-178C § 11 by secondary sources only |
+| | closeout | functional and physical configuration audit | sourced: MIL-HDBK-61B |
+| | attestation (Gate 5) | return to service | sourced: 14 CFR § 43.9(a)(4); § 121.709 |
+| | repudiate | release withdrawn | term |
+| | `--distribution` | configuration index | term; DO-178C SCI by secondary sources |
+| Operations | orchestrating session | operations centre | sourced: JP 3-30 |
+| | | duty officer | *put* (item 13): no text carries it |
+| | pipeline run | mission | sourced: JP 3-30 glossary |
+| | dispatch | sortie | sourced: JP 3-30 ("an operational flight by one aircraft") |
+| | `HandoffResult` | mission report | sourced: JP 3-60, an input to assessment |
+| | the tasking order | tasking order; the captain's brief | ruled 2026-10-05; June worklist item 1 |
+| | spec and quality review, Step 4b, the scope report | combat assessment: BDA, MEA, reattack | sourced: JP 3-60 phase 6; *put* (item 14) for who owns MEA |
+| | Step 4b adversary | second opinion | term; not IV&V as IEEE 1012 defines it (three independences) |
+| | airlock in / out | entry and exit accounting; collateral damage estimate | sourced for the estimate (JP 3-60); the rest gzkit's own |
+| | seam-map | interface control documents; zones affected | term |
+| | lock | custody | term |
+| | handoff | position relief briefing; transfer of position responsibility | sourced: JO 7110.65BB App. A; JO 7210.3EE 2-2-4 |
+| | session | *put* (item 13): "watch" | the orders' noun is the position |
+| | allowed and denied paths | no-strike list; restricted target | sourced: JP 3-60 |
+| | tool grants | loadout | term |
+| | the eight roles | mission planning, mission constraints, target planning, infiltration, ordnance delivery, exfiltration, decontamination, BDA | ruled 2026-10-08 as the crew; the first three and the last are JP 3-60's, the airlock's three are gzkit's |
+| | implementer, reviewers | *dropped*: pilot flying, pilot monitoring, assessor, briefer | AC 120-71B: the monitor works concurrently; Article 3; no text has assessor or briefer |
+| Airworthiness | chores | scheduled maintenance tasks | sourced: AC 121-22D, AC 120-16G |
+| | a named maintenance visit | scheduled work package | sourced: AC 120-16G § 6-1 |
+| | | letter check | term: the operator's practice (ruled 2026-10-08), no regulatory text |
+| | the chore registry | *put* (item 13): maintenance planning document | EASA checklist names the MPD as a reference document; nothing maps it to a registry |
+| | `gz check`, CI | preflight; functional check flight | term |
+| | GHI | problem report | sourced: AC 00-71, AC 20-189 (four states, four classes) |
+| | | squawk | term: the operator's word |
+| | operator hold | open problem report | sourced: AC 20-189 |
+| | direct repair, ghi-close | rectification, sign-off | term |
+| | a chore run | maintenance record entry | sourced: 14 CFR § 43.9(a); ruled 2026-10-07 as a ledger event |
+| Safety | governance of governance | safety management system | sourced: 14 CFR § 5.3 |
+| | failure-mode taxonomy | *put* (item 13): hazard log | nowhere in Title 14 |
+| | insights file | occurrence reports | term |
+| | finding-rate panel | flight operational quality assurance | sourced: AC 120-82 (facsimile) |
+| | V.I.B.E.S. | normalisation of deviance | sourced: Vaughan |
+| Assurance | lane | lane | ruled 2026-10-07, unchanged |
+| | consequence bands | integrity level | ruled 2026-10-07; IEEE 1012-2024 cl. 5 |
+| | gates | *put* (item 13): objectives | against the operator's constraint of 2026-09-22 on the five gates |
+| | `@covers` | requirements-based test coverage; traceability | sourced for DO-178B (Hayhurst 2001) |
+| | gating validators | qualified tools | sourced: DO-330 (public material) |
+| | hooks | interlocks | term |
+| | rules | standing orders | ruled by line 2 of the statement |
+| | skills | procedures | sourced: AC 120-71B; a checklist is the per-change gate's shape, not a skill's |
+| | fix, vendor alignment, refactor, chores, feature work | corrective, adaptive, perfective, preventive, additive | sourced: ISO/IEC/IEEE 14764:2022 |
+| Fielding | 1.0 | full operational capability | ruled 2026-10-07; sourced: DAU Glossary |
+| | `ADR-0.35.0` to `0.38.0` landed and S1 flown | initial operational capability | ruled 2026-10-07; sourced: DAU Glossary |
+| | adopter `gz init` | entry into service | term |
+| | AirlineOps | lead wing; first adopter | term; Boundary #5 |
+| The ladder | pool ADR; feature ADR; OBPI; TASK; release | change proposal; engineering order; work package; task card; block | ruled 2026-10-05; "work package" and "task card" sourced (AC 120-16G), "engineering order" a term, "change proposal" and "block" in no landed source; migration at 1.0 |
+
+### Item 14, put for correction: the core model's three seams
+
+1. **Mission planning sits at phase 5, with the crew that flies.** It is the unit's own
+   plan made from the order, after the commander's decision; the operator's list puts it
+   first because it is the first thing a crew does, not because it precedes the order.
+2. **Ordnance delivery is red then green, two sorties by one position.** BDA is a separate
+   position that flew nothing: it assesses from the records, which is line 6.
+3. **Munitions effectiveness is owned by the assessment position (BDA) as its second
+   output**: did the means (the contracts, the tests, the model and effort flown) perform
+   as the order estimated. The collateral output is already owned by the scope report
+   (restored under GHI #1181). So assessment has an owner for all five outputs once BDA is
+   a position and MEA is in its obligation.
+
+### Item 15, put for correction: the constitution and the articles
+
+1. **The constitution is the doctrine's Part I ratified as the root**: the ten articles and
+   the seven-line statement of command, under your 2026-06-14 ruling that a constitution is
+   the root and your 2026-10-08 ruling of one doctrine. Policies and procedures sit beneath
+   it and are not the constitution. No separate constitution is drafted.
+2. **Article 3's body gains one sentence** naming the position and the role: "An agent is
+   crew: it fills a position, an obligation with a role to fulfil it, within the role's
+   bounds and under its auspices." Its allocation ("the model decides nothing that ships")
+   is unchanged.
+3. **Relief of position needs no new article.** Policy 14 traces to Article 1 (the one
+   signature does not transfer) and Article 7 (the briefing is a record, not a narration).
+4. **Article 6's sizing stands.** A run is capped by what one attestation can cover; the
+   frame's units (sortie, mission) nest inside that cap and do not resize it.
+
+### Item 13, put for correction: the names in doubt
+
+Keep as gzkit's own terms, not cited as doctrine: letter check; squawk; loadout; interlocks;
+custody; change proposal; block. **Drop**: "watch" and "duty officer" (the position is the
+noun); "hazard log" (the failure-mode taxonomy keeps its name); "gates → objectives" (the
+five gates keep their name under your 2026-09-22 constraint); "pilot", "assessor" and
+"briefer" for any agent role (the eight roles name the crew). **Rename**: "prioritised
+target list" to **the campaign order**, since the ADR order is absolute and the JIPTL is
+not; "maintenance planning document" for the chore registry to **the maintenance schedule**
+(AC 120-16G's term), with the MPD cited only as the reference document it is.
+
+---
+
 # Part I — Philosophy (RATIFIED, unchanged)
 
 ## The command doctrine
