@@ -211,6 +211,45 @@ status: {status}
             errors,
         )
 
+    @covers("REQ-0.11.0-02-01")
+    def test_validate_completed_does_not_count_the_brief_or_the_ledger(self):
+        # GHI #1181: the brief being completed and the ledger are gzkit's records.
+        obpi_path = self._create_obpi(
+            "ADR-0.1.0",
+            status="Completed",
+            summary="- Task: Finished implementation",
+            proof="Works as expected",
+            relative_path="docs/design/adr/pre-release/ADR-0.1.0/obpis/OBPI-ADR-0.1.0-01.md",
+            allowed_paths=["src/**"],
+        )
+        module_path = self.project_root / "src" / "demo.py"
+        module_path.parent.mkdir(parents=True, exist_ok=True)
+        module_path.write_text("print('ok')\n", encoding="utf-8")
+        self.ledger.append(adr_created_event("ADR-0.9.0", "PRD-TEST", "lite"))
+
+        errors = self.validator.validate_file(obpi_path)
+        self.assertEqual(errors, [])
+
+    @covers("REQ-0.11.0-03-02")
+    def test_recorder_does_not_seal_the_brief_as_out_of_scope(self):
+        rel_path = "docs/design/adr/pre-release/ADR-0.1.0/obpis/OBPI-ADR-0.1.0-01.md"
+        self._create_obpi(
+            "ADR-0.1.0",
+            status="Completed",
+            summary="- Done: Yes",
+            proof="Verified",
+            relative_path=rel_path,
+            allowed_paths=["src/**"],
+        )
+
+        record_artifact_edit(self.project_root, rel_path, session="test-session")
+
+        receipt = [e for e in self.ledger.read_all() if e.event == "obpi_receipt_emitted"][-1]
+        self.assertEqual(
+            receipt.extra["evidence"]["scope_audit"],
+            {"allowlist": ["src/**"], "changed_files": [rel_path], "out_of_scope_files": []},
+        )
+
     @covers("REQ-0.11.0-02-02")
     def test_validate_completed_requires_allowed_paths(self):
         self._register_adr("ADR-0.1.0")

@@ -696,6 +696,7 @@ class TestObpiCompleteRefusesOutOfScopeChange(_ScopeAuditFixture):
             [
                 ".claude/plans/.pipeline-active.json",
                 ".gzkit/ledger.jsonl",
+                "brief.md",  # the brief being completed, at the fixture's root
                 "src/gzkit/commands/obpi_complete.py",
             ]
         )

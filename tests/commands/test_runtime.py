@@ -942,6 +942,71 @@ class TestAdrRuntimeCommands(unittest.TestCase):
             ledger_content = Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8")
             self.assertIn('"obpi_completion":"attested_completed"', ledger_content)
 
+    def test_obpi_emit_receipt_completed_does_not_seal_gzkit_records_as_out_of_scope(
+        self,
+    ) -> None:
+        # GHI #1181: the brief being completed and the ledger are gzkit's records.
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init("heavy")
+            runner.invoke(main, ["plan", "create", "f", "--lane", "heavy", "--kind", "feature"])
+            config = GzkitConfig.load(Path(".gzkit.json"))
+            obpi_path = Path(config.paths.adrs) / "obpis" / "OBPI-0.1.0-01-demo.md"
+            obpi_path.parent.mkdir(parents=True, exist_ok=True)
+            self._write_obpi(
+                path=obpi_path,
+                status="Completed",
+                brief_status="Completed",
+                implementation_line="src/demo.py",
+                lane="Heavy",
+                human_attestation=("human:g0", "attest completed", "2026-03-11"),
+                allowed_paths=["src/**"],
+            )
+            ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+            ledger.append(obpi_created_event("OBPI-0.1.0-01-demo", "ADR-0.1.0-f"))
+            evidence_json = json.dumps(
+                {
+                    "value_narrative": "done",
+                    "key_proof": "verified",
+                    "human_attestation": True,
+                    "attestation_text": "attest completed",
+                    "attestation_date": "2026-03-11",
+                }
+            )
+            changed = [
+                ".gzkit/ledger.jsonl",
+                obpi_path.as_posix(),
+                "docs/outside.md",
+                "src/demo.py",
+            ]
+
+            with patch("gzkit.hooks.obpi.collect_changed_files", return_value=changed):
+                result = runner.invoke(
+                    main,
+                    [
+                        "obpi",
+                        "emit-receipt",
+                        "OBPI-0.1.0-01-demo",
+                        "--event",
+                        "completed",
+                        "--attestor",
+                        "human:g0",
+                        "--evidence-json",
+                        evidence_json,
+                    ],
+                )
+
+            self.assertEqual(result.exit_code, 0, msg=result.output)
+            entries = [
+                json.loads(line)
+                for line in Path(".gzkit/ledger.jsonl").read_text(encoding="utf-8").splitlines()
+                if line
+            ]
+            receipt = [entry for entry in entries if entry["event"] == "obpi_receipt_emitted"][-1]
+            self.assertEqual(
+                receipt["evidence"]["scope_audit"]["out_of_scope_files"], ["docs/outside.md"]
+            )
+
     def test_obpi_emit_receipt_completed_enriches_structured_receipt_context(self) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():

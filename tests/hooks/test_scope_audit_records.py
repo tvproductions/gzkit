@@ -11,7 +11,7 @@ from __future__ import annotations
 import unittest
 from pathlib import Path
 
-from gzkit.hooks.obpi import brief_record_paths, out_of_scope_files
+from gzkit.hooks.obpi import brief_record_paths, out_of_scope_files, scope_finding
 from gzkit.traceability import covers
 
 _ALLOWLIST = ["src/gzkit/widget.py", "tests/widget/**"]
@@ -74,6 +74,23 @@ class TestOutOfScopeFiles(unittest.TestCase):
 
     def test_a_brief_outside_the_project_has_no_record_paths(self) -> None:
         self.assertEqual(brief_record_paths(_ROOT, Path("/elsewhere/brief.md")), [])
+
+
+class TestScopeFinding(unittest.TestCase):
+    """The one finding `gz obpi precomplete` reports and `gz obpi complete` refuses on."""
+
+    @covers("REQ-0.11.0-02-01")
+    def test_no_out_of_scope_file_is_no_finding(self) -> None:
+        self.assertIsNone(scope_finding({"out_of_scope_files": []}))
+
+    @covers("REQ-0.11.0-02-01")
+    def test_every_file_is_counted_and_a_long_list_is_cut_with_its_remainder(self) -> None:
+        outside = [f"docs/outside-{n:02d}.md" for n in range(12)]
+        finding = scope_finding({"out_of_scope_files": outside}) or ""
+        self.assertIn("12 changed file(s)", finding)
+        self.assertIn("docs/outside-09.md", finding)
+        self.assertNotIn("docs/outside-10.md", finding)
+        self.assertIn("(+2 more)", finding)
 
 
 if __name__ == "__main__":
