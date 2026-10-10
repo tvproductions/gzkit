@@ -7,16 +7,16 @@
 
 # Model Selection (gzkit)
 
-<!-- rule-version: 0.6.3 -->
+<!-- rule-version: 0.7.0 -->
 
-> **Rule version:** `0.6.3` — the `effort: max` row no longer names extended thinking, which Opus 5.5 does not toggle (GHI #1097); routing policy is unchanged. Prior history: [Rule Version History](../../docs/governance/rule-version-history.md#model-selectionmd).
+> **Rule version:** `0.7.0` — § Subagent effort levels describes the mechanism the harness has: effort is set on the agent definition (`effort:` frontmatter, values `low`, `medium`, `high`, `xhigh`, `max`), the Agent tool call sets `model` only, and a prompt-level `effort:` line is text the subagent reads (verified 2026-10-06 against the Claude Code documentation; R&D run `renewing-vows`, row 4 part 6, 2026-10-10). The prior text named `light`, which is not a documented value, and a per-call mapping the tool does not have (insight 2026-10-06, scope `model-selection`). The operator's allocation by echelon and role (2026-10-05) is added as advisory. Routing policy is unchanged. Prior history: [Rule Version History](../../docs/governance/rule-version-history.md#model-selectionmd).
 
 ## Operative claims (binding)
 
 1. **Model tier is determined by decision complexity, not task size.** Large read-only tasks use Haiku; small design decisions use Opus.
 2. **Default to the lowest tier that closes the decision space.** Each surface must name what "closing the decision" means.
 3. **Skill SKILL.md files carry explicit `model:` frontmatter.** No inference; declaration is the contract.
-4. **Subagent prompts specify effort level, not model name.** The Agent tool maps effort to model; agents do not hardcode model IDs.
+4. **Subagent effort is set on the agent definition, never on the dispatch call.** An agent's `effort:` frontmatter (or the SDK `AgentDefinition.effort`) carries it; the Agent tool call carries `model` and `subagent_type` only; an `effort:` line written into a prompt is text the subagent reads, not a harness control. Agents do not hardcode model IDs.
 5. **A subagent's claim is not evidence.** Never relay a subagent's factual assertion into ceremony, attestation, or an operator-facing conclusion on the subagent's word — cite the ARB receipt, the file, or re-run the command yourself. The orchestrator owns every claim it passes upward.
 
 ## Routing matrix
@@ -54,19 +54,26 @@ model: haiku  # or: sonnet, opus
 
 ## Subagent effort levels
 
-Subagents use effort directives, not model names. The Agent tool maps effort → model:
+**Where effort is set.** On the agent definition: `.claude/agents/<name>.md` frontmatter `effort:` (documented values `low`, `medium`, `high`, `xhigh`, `max`; default inherits the session's) or the SDK `AgentDefinition.effort`. The Agent tool's per-call inputs are `model` and `subagent_type`; it has no effort input. A prompt-level `effort:` directive has no mechanical effect. (Claude Code documentation, read 2026-10-06; `docs/rnd/renewing-vows/sources/` and the run record's source entry *Claude Code documentation on subagent effort*.) Today every definition under `.claude/agents/` carries `model: inherit` and no `effort:`, so every subagent runs at the session's effort.
 
-- `effort: light` → Haiku (fast, bounded tasks)
-- `effort: high` → Sonnet (moderate complexity, structured output)
-- `effort: xhigh` → Opus (hard problems, novel design, unbounded reasoning)
-- `effort: max` → Opus at `max` effort (genuinely hard; use sparingly). Thinking is always on; effort sets its depth, and no prompt or toggle turns it on
+**The allocation, by echelon and role** (operator ruling 2026-10-05, verbatim *"A (so model + effort)"*; advisory until agent definitions carry `effort:` and the dispatch record names which definition flew):
 
-**Rule:** Prompt the subagent with the effort level needed to close the decision, not the effort level that would be "nice to have."
+| Echelon / role | Model | Effort |
+|---|---|---|
+| Headquarters synthesis; the constraints sortie | strongest available (`opus`, or `fable` where Mythos-class judgment is the surface) | `high` |
+| Elicitation (interviews, intake) | mid-tier | `low` to `medium` |
+| Execution sorties (implementer red and green) | mid-tier | `low` |
+| Assessment (spec and quality review) | strong | `high` |
+| Cross-vendor IV&V; security-sensitive assessment | strongest | `max` |
+| The regeneration test | mid-tier | `low` |
+
+**Rule:** give a subagent the effort needed to close its decision, not the effort that would be "nice to have"; set it on the definition, and define one agent per role × effort band where the bands differ.
 
 ## Do Not
 
 - Declaring `model: opus` for a read-only task (use Haiku)
-- Defaulting subagents to `effort: xhigh` when `effort: light` would suffice
+- Defaulting subagents to `effort: xhigh` when `effort: low` would suffice
+- Writing `effort: high` into a subagent prompt and expecting the harness to honour it (set it on the definition)
 - Hardcoding model IDs in subagent prompts (`claude-opus-4-7`) instead of using effort levels
 - Omitting the `model:` directive from a skill and inferring it at runtime
 - Using Sonnet as a "middle ground" between Haiku and Opus without naming what decision complexity requires it

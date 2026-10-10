@@ -4314,6 +4314,30 @@ added and the surfaces regenerated.
 
 **commissions:** 4 — executing.
 
+## decision · the weaponeering rule is landed; row 4, part 6: the model-and-effort correction is made (operator, 2026-10-10)
+
+Operator g0, verbatim: 'land it, part 6, then git sync'.
+
+**Landed.** `.gzkit/rules/weaponeering.md` at `0.1.0`, as drafted in Part 0 with the
+operator's "land it" recorded in its marker; mirrored to `.claude/rules/` and
+`src/gzkit/rules/` by `gz agent sync control-surfaces`; a `weaponeering.md` section in
+`docs/governance/rule-version-history.md`; the Coverage Ledger row and a scorecard section
+of six rows (98 to 98e), four Promotable and two Judgment, each scored at landing so the
+third state is disclosed rather than accrued; the Summary roll-up recounted to the figures
+`gz validate --advisory-scorecard` reported (Promotable 41, Judgment 77).
+
+**Part 6 made.** `.gzkit/rules/model-selection.md` moved from `0.6.3` to `0.7.0`: claim 4
+and § Subagent effort levels now describe the mechanism the harness has (effort on the agent
+definition, `low` to `max`; the Agent tool call sets `model` only; a prompt-level line is
+text), with the operator's allocation by echelon and role of 2026-10-05 added as an advisory
+table; the Do Not list corrected from `light` to `low`. History entry added with the prior
+marker verbatim; scorecard row 52b added, Promotable, and the ledger moved to `0.7.0`. This
+discharges the defect insight of 2026-10-06 (scope `model-selection`), which row 2 carried.
+
+**Then the sync**, as directed.
+
+**commissions:** 4 — executing; the names remain.
+
 ## Disposition map
 
 <!-- All six rows always present. State is `commissioned` or `not pursued` — there is no

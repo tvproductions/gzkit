@@ -65,7 +65,8 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `gh-cli.md` | `0.7.0` |
 | `hexagonal-architecture.md` | `0.3.0` |
 | `models.md` | `0.2.0` |
-| `model-selection.md` | `0.6.3` |
+| `model-selection.md` | `0.7.0` |
+| `weaponeering.md` | `0.1.0` |
 | `security-sensitivity.md` | `0.6.0` |
 | `skill-surface-sync.md` | `0.13.0` |
 | `skill-authoring.md` | `0.2.0` |
@@ -341,6 +342,20 @@ The Claude-specific invariant 10a is scored as a row rather than in prose:
 |---|------|-------|-----|
 | 52 | Skill SKILL.md files carry explicit `model:` frontmatter. | **Mechanical** | Enforced by `gz validate --surfaces` via `SkillFrontmatter` Pydantic validation — missing or invalid `model:` fails closed (`src/gzkit/core/models.py:127`). All 70 canonical skills declare a tier (33 haiku, 24 sonnet, 13 opus; `fable` is reserved for Mythos-class judgment and currently claimed by none). **Row corrected 2026-08-29 (GHI #921):** it named a three-value `Literal` and a count of 67 while the model has carried four values since `fable` was added and the catalog has grown to 70 — the row was scored before the ledger existed and the drift rode the grandfather pin. `source=.gzkit/rules/model-selection.md` |
 | 52a | **A subagent's claim is not evidence.** Never relay a subagent's factual assertion into ceremony, attestation, or an operator-facing conclusion on the subagent's word — cite the ARB receipt, the file, or re-run the command. The orchestrator owns every claim it passes upward. | **Judgment** | No mechanical witness: attributing an orchestrator's assertion back to a subagent message requires modelling which claims in a turn came from where, which gzkit does not model (the unmodelled-caller ground of row 62b). The adjacent mechanical defenses are the ARB receipt requirement (`AGENTS.md` § Attestation) and `gz arb validate` drift detection — this clause is the shared name they point at. **Added 2026-08-29 (GHI #921):** operative claim 5 of `model-selection.md` carried no row; the rule sat grandfathered, so no version-attributed review had ever asked whether its clauses were all covered. `source=.gzkit/rules/model-selection.md` |
+| 52b | **Subagent effort is set on the agent definition, never on the dispatch call.** | **Promotable** | **Scored 2026-10-10 (rule `0.7.0`) at landing.** No witness today: nothing checks that a definition under `.claude/agents/` carries `effort:`, and no dispatch record names which definition flew. Naming the check is tractable (a validator over agent frontmatter, and an effort field on the dispatch record), and it is tied to the sortie layer of R&D run `renewing-vows` row 1. The prior claim 4 (*"The Agent tool maps effort to model"*) described a mechanism the tool does not have (insight 2026-10-06, scope `model-selection`). `source=.gzkit/rules/model-selection.md` |
+
+### Weaponeering (`.gzkit/rules/weaponeering.md`)
+
+**Landed 2026-10-10 at version `0.1.0` on the operator's *"land it"* (R&D run `renewing-vows`, row 4 part 5).** The rule says of itself that it is advisory until the runtime check lands with the sortie layer; every row below is scored at landing, so the third state is disclosed rather than accrued.
+
+| # | Rule | Score | Why |
+|---|------|-------|-----|
+| 98 | **The kind of a requirement fixes its standard sortie set.** | **Promotable** | **Scored 2026-10-10 at landing.** No witness: nothing reads a sortie set, because no runtime emits one. The check is tractable once the tasking event and dispatch outcomes exist (`ADR-0.35.0` briefs 15 to 18; the sortie layer, run row 1): compare the sorties flown for a REQ against its `[kind]` tag, which `gz validate --req-kind-discipline` already parses. `source=.gzkit/rules/weaponeering.md` |
+| 98a | The constraints sortie is a Design act: contracts land before any failing test, so red fails on an assertion and not on a missing symbol. | **Judgment** | Whether a contract was designed before red is a reading of the work, not a measurable property of a receipt. The nearest signal is the red receipt's failure class (`src/gzkit/red_witness.py`: `error` versus `assertion`), measured 2026-10-05 at 207 `error` of 282, which row 98b uses. `source=.gzkit/rules/weaponeering.md` |
+| 98b | **Subtraction cites evidence.** A standard sortie is skipped only when its product already exists on the ledger and the order cites it: red, when an assertion-class red receipt for the REQ exists on the base tree; constraints, when the contract exists and the brief names the symbol. | **Promotable** | **Scored 2026-10-10 at landing.** No witness: no order carries a skip citation today. Tractable once the tasking event exists: a skipped standard sortie must cite a ledger receipt, and the receipt's class is already recorded by the red witness. `source=.gzkit/rules/weaponeering.md` |
+| 98c | Addition is free: an order may add sorties without justification. | **Judgment** | A permission, not an obligation; nothing to witness. `source=.gzkit/rules/weaponeering.md` |
+| 98d | **Green and assessment are never waived.** | **Promotable** | **Scored 2026-10-10 at landing.** Assessment is already a gate precondition (Step 4b before Gate 5; the REQ-coverage gate for green on BEHAVIOR REQs, `gz obpi complete`). What is unwitnessed is the sortie framing: that green and assessment are flown as sorties of the set rather than reached by other means. Tractable with row 98's check. `source=.gzkit/rules/weaponeering.md` |
+| 98e | **The runtime checks the rule; the planner never decides it.** | **Promotable** | **Scored 2026-10-10 at landing.** This is the rule's own witness clause: it becomes Mechanical the day the runtime refuses a sortie set that departs from rows 98, 98b and 98d, and the rule's § Witness names that reclassification condition. Until then the planner reads the rule and nothing refuses. `source=.gzkit/rules/weaponeering.md` |
 
 ### Verdict <-> Proof Binding (validator-only; binding declared by `src/gzkit/schemas/advisor_diagnosis.json` + `src/gzkit/complexity/advisor/diagnosis.py`)
 
@@ -519,9 +534,9 @@ decays in whichever direction the next reader's grep happens to point.
 
 | Score | Rows | % of scored rows |
 |-------|-------|---|
-| **Mechanical** | 69 | 38% |
-| **Promotable** | 36 | 20% |
-| **Judgment** | 75 | 42% |
+| **Mechanical** | 69 | 37% |
+| **Promotable** | 41 | 22% |
+| **Judgment** | 77 | 41% |
 | **Ambiguous** | 0 | 0% |
 
 <!-- The Rows column is machine-checked by `gz validate --advisory-scorecard`;

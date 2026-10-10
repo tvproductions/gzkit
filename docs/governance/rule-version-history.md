@@ -537,6 +537,18 @@ Lifted 2026-08-29 at version `0.2.0` (rule now at `0.3.0`).
 
 ## `model-selection.md`
 
+### Changed 2026-10-10 at version `0.7.0` (R&D run `renewing-vows`, row 4 part 6)
+
+§ Subagent effort levels claimed *"The Agent tool maps effort → model"* and listed
+`effort: light / high / xhigh / max`. The Agent tool has no effort input, `light` is not a
+documented value, and the documented mechanism is the agent definition's `effort:` field
+(`low`, `medium`, `high`, `xhigh`, `max`), verified 2026-10-06 (insight scope
+`model-selection`). Claim 4 and the section now describe that mechanism; the operator's
+allocation by echelon and role (2026-10-05) is added as an advisory table. Routing policy
+is unchanged. Prior marker, verbatim:
+
+> **Rule version:** `0.6.3` — the `effort: max` row no longer names extended thinking, which Opus 5.5 does not toggle (GHI #1097); routing policy is unchanged.
+
 ### Changed 2026-09-25 at version `0.6.3` (GHI #1097)
 
 The `effort: max` row read *"Opus + extended thinking"*. Opus 5.5 always
@@ -811,3 +823,11 @@ Lifted 2026-08-30 at version `0.4.0` (rule now at `0.5.0`).
 Lifted 2026-08-30 at version `0.1.0` (rule now at `0.2.0`).
 
 > **Rule version:** `0.1.0` — initial shape conformance pass; renamed prohibited heading (OBPI-0.0.54-04).
+
+## `weaponeering.md`
+
+### Created 2026-10-10 at version `0.1.0` (R&D run `renewing-vows`, row 4 part 5; landed on *"land it"*)
+
+First edition. Six operative claims from the operator's ruling of 2026-10-05 (*"A with
+evidence-cited subtraction and free addition"*); advisory until the runtime check lands with
+the sortie layer proposed after `ADR-0.35.0` briefs 15 to 20. No prior marker.
