@@ -4234,6 +4234,39 @@ terms of the 2026-10-07 decision are carried.
 
 **commissions:** 4 — executing.
 
+## decision · row 4, part 3: the campaign amendment is drafted as candidate text (operator's direction, 2026-10-10)
+
+Operator g0, verbatim: 'part 3, then git sync'. Part 3 is the campaign plan republished,
+naming the doctrine and carrying the IOC waypoint.
+
+**Drafted** into `doctrine-merge.md` Part 0, in the plan's own amendment form with its first
+line left for the operator's ratifying words: the campaign names the force's doctrine and
+carries the doctrine's worklist (reconciliation pair 4, the agent's proposal); the IOC
+waypoint as ruled 2026-10-07; the governor as the last release as ruled 2026-10-10; and the
+announcement that the republish signal has fired at 46 amendments. The campaign plan itself
+is not edited ahead of ratification (precedent: the handoff of 2026-10-07, "left the
+campaign plan unedited until the operator ratified the amendment text"). The full republish,
+a new edition folding the amendments, is the operator's to cut under the rhythm's republish
+tier; this part drafts the entry and announces the signal.
+
+**Then the sync**, as directed.
+
+**commissions:** 4 — executing.
+
+## decision · direct fix in flight: the content package's circular import with the CLI (2026-10-10)
+
+Found by the per-change gate while syncing part 2 and again at part 3: one unit test failed
+on an `ImportError` whenever `gzkit.commands.content` was the first gzkit import in a worker,
+reproduced in isolation; the gate was green or red by worker order (insight 2026-10-10, scope
+`commands.content:circular-import`). Routed by `AGENTS.md` § Defect-fix routing (small, one
+surface, in flight, covered by the failing test) and `.gzkit/rules/tests.md` (a direct fix
+carries `Task: TASK-<slug>`; a GHI is never filed to satisfy the trailer). Fixed as
+`3d8b2b275`: the CLI attestor helper is imported lazily inside the one function that applies
+it. The gate then passed on the staged tree. Not a row of this run; recorded here because the
+run's sync depended on it and a lucky re-run would have reported a false green.
+
+**commissions:** none.
+
 ## Disposition map
 
 <!-- All six rows always present. State is `commissioned` or `not pursued` — there is no
