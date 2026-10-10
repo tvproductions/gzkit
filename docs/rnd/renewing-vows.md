@@ -4294,6 +4294,26 @@ class) are not in this pass and keep their standing.
 
 **commissions:** 4 — executing; 2 — (a) narrowed to the fifth item.
 
+## decision · row 4, part 5: the weaponeering rule is drafted as a candidate rule file (operator's direction, 2026-10-10)
+
+Operator g0, verbatim: 'part 5, then git sync'. Part 5 is the weaponeering rule text.
+
+**Drafted** into `doctrine-merge.md` Part 0 in the rules' own form, proposed as
+`.gzkit/rules/weaponeering.md`: six operative claims from the ruling of 2026-10-05 (the kind
+fixes the standard set; constraints as a Design act; evidence-cited subtraction; free
+addition; green and assessment never waived; the runtime checks and the planner never
+decides), a Witness section that says none exists yet and names where it lands, and a Do
+Not list. The rule calls itself advisory until the runtime check lands, which is the one
+state canon allows a declared discipline without a mechanism (`AGENTS.md` § Governance
+doctrine surfaces; the family-closure criterion: a witness or advisory in its own text, no
+third state). The file is not written ahead of the operator's word, because a rule is loaded
+by agents on its paths and needs its scorecard row; on that word the file is written, the row
+added and the surfaces regenerated.
+
+**Then the sync**, as directed.
+
+**commissions:** 4 — executing.
+
 ## Disposition map
 
 <!-- All six rows always present. State is `commissioned` or `not pursued` — there is no

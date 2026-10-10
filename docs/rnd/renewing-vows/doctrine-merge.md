@@ -252,6 +252,81 @@ with the doctrine, not by this entry.
 
 ---
 
+## The weaponeering rule (candidate rule file, drafted under the go on row 4, 2026-10-10)
+
+> Proposed as `.gzkit/rules/weaponeering.md`, in the rules' own form (frontmatter, version
+> marker, binding claims, named witness). It is not written into `.gzkit/rules/` ahead of the
+> operator's word, because a rule file is loaded by agents on the paths it names and the
+> scorecard carries a row per rule. Its witness, the runtime check, lands with the sortie
+> layer after `ADR-0.35.0` briefs 15 to 20 (row 1, proposed); until then the rule says of
+> itself that it is advisory, which is the one state canon allows a declared discipline
+> without a mechanism. Ruled 2026-10-05 ('2. A (but what about C?)', then 'A with
+> evidence-cited subtraction and free addition').
+
+```markdown
+---
+id: weaponeering
+paths:
+  - "src/gzkit/pipeline_dispatch.py"
+  - "src/gzkit/pipeline_runtime.py"
+  - ".gzkit/skills/gz-obpi-pipeline/**"
+  - "docs/design/adr/**/obpis/*.md"
+description: The requirement's kind fixes the sorties a work package flies; subtraction cites evidence, addition is free
+---
+
+<!-- rule-version: 0.1.0 -->
+
+# Weaponeering (gzkit)
+
+> **Rule version:** `0.1.0` — first edition, from R&D run `renewing-vows` (operator ruling
+> 2026-10-05, verbatim: "A with evidence-cited subtraction and free addition"; row 4 go
+> 2026-10-10). **Advisory until its witness lands**: the runtime check is part of the sortie
+> layer proposed after `ADR-0.35.0` briefs 15 to 20. Until then the planner reads this rule
+> and the completion gate does not; a sortie set that departs from it is a finding for the
+> operator, not a refusal.
+
+## Operative claims
+
+1. **The kind of a requirement fixes its standard sortie set.** A `[behavior]` REQ flies
+   three sorties in order: constraints, red, green. A `[support]` REQ flies one documentary
+   sortie. A `[structural-fence]` REQ flies none and is audited at closeout through its
+   proof channel (ADR-0.0.59; `gz validate --req-kind-discipline`).
+2. **The constraints sortie is a Design act.** It lands the contracts the work must obey
+   (interfaces, invariants, stubs) before any failing test, so that red fails on an
+   assertion and not on a missing symbol. Its product travels in the order.
+3. **Subtraction cites evidence.** A standard sortie is skipped only when its product
+   already exists on the ledger and the order cites it: red, when an assertion-class red
+   receipt for the REQ exists on the base tree; constraints, when the contract exists and
+   the brief names the symbol. No other ground skips a sortie.
+4. **Addition is free.** An order may add sorties to the standard set without justification.
+5. **Green and assessment are never waived.**
+6. **The runtime checks the rule; the planner never decides it.** Planner discretion over
+   the sortie set is refused. Until the runtime check exists, this claim is the advisory
+   part of the rule.
+
+## Witness
+
+None yet. The check belongs to the sortie layer (row 1 of the run `renewing-vows`, proposed
+after `ADR-0.35.0` briefs 15 to 20). Measured 2026-10-05 for claim 2: 207 of 282 red
+receipts on the ledger failed on `error` (the symbol did not exist) rather than on an
+assertion. Reclassify this rule from advisory when the runtime refuses a sortie set that
+departs from claims 1, 3 and 5.
+
+## Do Not
+
+- Do not skip red because "the test would obviously fail"; cite the assertion-class receipt
+  or fly it.
+- Do not fold constraints into red; a red that fails on `error` has flown no constraints.
+- Do not let a planner, a skill or a session choose the sortie set; the kind chooses it.
+```
+
+What this candidate does not do: it does not write the file, does not add the scorecard row
+a new rule needs, and does not build the runtime check. On the operator's word the file is
+written, the scorecard row is added with the "Advisory" grade and this witness note, and the
+control surfaces are regenerated.
+
+---
+
 # Part I — Philosophy (RATIFIED, unchanged)
 
 ## The command doctrine
