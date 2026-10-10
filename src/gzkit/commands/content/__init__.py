@@ -10,7 +10,19 @@ from __future__ import annotations
 import argparse
 from typing import Any
 
-from gzkit.cli.helpers.attestor_default import default_attestor_from_config
+
+def _default_attestor_from_config(parser: argparse.ArgumentParser) -> None:
+    """Apply the config-derived ``--attestor`` default, importing the helper lazily.
+
+    ``gzkit.cli.helpers`` lives under the ``gzkit.cli`` package, whose ``__init__``
+    imports ``gzkit.cli.main``, which imports ``register_content_parsers`` from this
+    package. A module-level import here therefore fails whenever this package is the
+    first ``gzkit`` import in a process (``ImportError: partially initialized module``),
+    which made the unit tier pass or fail by worker order.
+    """
+    from gzkit.cli.helpers.attestor_default import default_attestor_from_config  # noqa: PLC0415
+
+    default_attestor_from_config(parser)
 
 
 def _build_epilog(examples: list[str]) -> str:
@@ -383,7 +395,7 @@ def _register_retire(content_commands: argparse._SubParsersAction) -> None:
         default="",
         help="Operator retiring; required when retirement moves invariant-tier liveness.",
     )
-    default_attestor_from_config(p)
+    _default_attestor_from_config(p)
     p.add_argument(
         "--origin",
         default="cli:content-retire",
@@ -431,7 +443,7 @@ def _register_unown(content_commands: argparse._SubParsersAction) -> None:
         default="",
         help="Operator un-owning the section; required and never empty.",
     )
-    default_attestor_from_config(p)
+    _default_attestor_from_config(p)
     p.add_argument(
         "--reason",
         default="",
@@ -478,7 +490,7 @@ def _register_own(content_commands: argparse._SubParsersAction) -> None:
         default="",
         help="Operator attesting the ownership change; required and never empty.",
     )
-    default_attestor_from_config(p)
+    _default_attestor_from_config(p)
     p.add_argument(
         "--reason",
         default="",
@@ -585,7 +597,7 @@ def _register_commit(content_commands: argparse._SubParsersAction) -> None:
         default="",
         help="Operator attesting the corpus delta; required only if canon moved.",
     )
-    default_attestor_from_config(p)
+    _default_attestor_from_config(p)
     p.add_argument(
         "--attestation-text",
         dest="attestation_text",
@@ -649,7 +661,7 @@ def _register_land(content_commands: argparse._SubParsersAction) -> None:
         default="",
         help="Operator attesting the corpus delta; required only if canon moved.",
     )
-    default_attestor_from_config(p)
+    _default_attestor_from_config(p)
     p.add_argument(
         "--attestation-text",
         dest="attestation_text",
