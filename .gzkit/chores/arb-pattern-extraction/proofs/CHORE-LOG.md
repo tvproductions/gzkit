@@ -1003,3 +1003,37 @@ Ran 7704 tests in 78.960s
 
 OK
 ```
+## 2026-10-10T06:28:10-05:00
+- Status: FAIL
+- Chore: arb-pattern-extraction
+- Title: ARB Pattern Extraction (Code Style Feedback Loop)
+- Lane: lite
+- Version: 1.1.0
+- Criteria Results:
+  - [FAIL] `uv run gz arb validate` => rc=1 (0.17s) -- exit 1 != 0
+
+```text
+[uv run gz arb validate] stdout:
+ARB Receipt Validation
+Receipts scanned: 50
+Valid: 47
+Invalid: 3
+Non-canonical provenance: 3
+
+Errors:
+  - arb-step-unittest-cad416370b9045f4a0e5c5d81a7efd84.json: non-canonical provenance: step.name='unittest' requires step.command=['uv', 'run', 'unittest-parallel', '-t', '.', '-s', 'tests', '--buffer'] but got ['uv', 'run', '-m', 'unittest', 'tests.governance.test_bullet_retention', '-v']. Regenerate the receipt with `uv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer`.
+  - arb-step-unittest-8c0ef40be3064fc4a7657ff97c39b43a.json: non-canonical provenance: step.name='unittest' requires step.command=['uv', 'run', 'unittest-parallel', '-t', '.', '-s', 'tests', '--buffer'] but got ['uv', 'run', '-m', 'unittest', 'tests.governance.test_bullet_retention', '-v']. Regenerate the receipt with `uv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer`.
+  - arb-step-unittest-a333abd5b3a341f791e12b41d7c7a18a.json: non-canonical provenance: step.name='unittest' requires step.command=['uv', 'run', 'unittest-parallel', '-t', '.', '-s', 'tests', '--buffer'] but got ['uv', 'run', '-m', 'unittest', 'tests.governance.test_bullet_retention', '-v']. Regenerate the receipt with `uv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer`.
+```
+
+## 2026-10-10 — maintenance visit C: criterion 1 FAIL is a finding about receipts the chore does not own
+
+`uv run -m gzkit arb advise` (proof: `proofs/arb-patterns.txt`): 4 lint receipts readable of 2002 in the
+store, 0 failures, 0 findings — no anti-pattern recurs in ruff receipts. The pattern this visit surfaced
+is in the receipts themselves: `gz arb validate` on the newest 50 finds 3 `arb-step-unittest` receipts
+(2026-10-06, `uv run -m unittest tests.governance.test_bullet_retention -v`) carrying the canonical
+label over a targeted run; store-wide, 107 of 1999 are non-canonical (92 `unittest`, 8 `coverage`,
+7 `typecheck`), 90 of them from April–May before GHI #199's check and **17 since 2026-09-05**. The
+receipts are evidence and are not edited; the remedy is at authoring time (the bespoke `--name <name>`
+form the `gz-arb` skill already names). Recorded as a defect insight, scope `arb/receipt-naming`. The
+criterion stays red until 47 canonical receipts displace the three; nothing here changes the validator.

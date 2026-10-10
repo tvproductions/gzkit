@@ -1,0 +1,34 @@
+{
+  "cluster_key": "dim:Decision Justification:critical",
+  "recurrence_count": 10,
+  "source_artifact_ids": [
+    "ADR-0.0.45",
+    "ADR-0.0.46-pool-management",
+    "ADR-0.0.47-pool-dag-promotion-routing",
+    "ADR-0.0.48-gz-adr-pool-triage",
+    "ADR-0.48.0",
+    "ADR-0.49.0",
+    "ADR-0.50.0",
+    "ADR-0.28.0-focused-context-loader",
+    "ADR-0.0.68",
+    "ADR-0.0.73-verification-layer-binding-audit"
+  ],
+  "source_artifact_paths": [
+    "ADR-0.0.45",
+    "ADR-0.0.46-pool-management",
+    "ADR-0.0.47-pool-dag-promotion-routing",
+    "ADR-0.0.48-gz-adr-pool-triage",
+    "ADR-0.48.0",
+    "ADR-0.49.0",
+    "ADR-0.50.0",
+    "ADR-0.28.0-focused-context-loader",
+    "ADR-0.0.68",
+    "ADR-0.0.73-verification-layer-binding-audit"
+  ],
+  "summary": "Dimension 'Decision Justification' scored in the 'critical' band across 10 distinct artifacts: ADR-0.0.45, ADR-0.0.46-pool-management, ADR-0.0.47-pool-dag-promotion-routing, ADR-0.0.48-gz-adr-pool-triage, ADR-0.0.68, ADR-0.0.73-verification-layer-binding-audit, ADR-0.28.0-focused-context-loader, ADR-0.48.0, ADR-0.49.0, ADR-0.50.0",
+  "proposed_rule_target": "docs/governance/Decision Justification-critical-improvement.md",
+  "content_hash": "bfa3ae02a5f52017",
+  "filed": false,
+  "ghi_url": null,
+  "advisory": false
+}

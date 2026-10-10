@@ -1,0 +1,24 @@
+{
+  "cluster_key": "dim:Feature Checklist:critical",
+  "recurrence_count": 5,
+  "source_artifact_ids": [
+    "ADR-0.0.73-verification-layer-binding-audit",
+    "ADR-0.0.75-enforcement-claim-meta-validator",
+    "ADR-0.33.0-airlock-membrane",
+    "ADR-0.35.0-canon-entry-corpus-landing",
+    "ADR-0.35.0"
+  ],
+  "source_artifact_paths": [
+    "ADR-0.0.73-verification-layer-binding-audit",
+    "ADR-0.0.75-enforcement-claim-meta-validator",
+    "ADR-0.33.0-airlock-membrane",
+    "ADR-0.35.0-canon-entry-corpus-landing",
+    "ADR-0.35.0"
+  ],
+  "summary": "Dimension 'Feature Checklist' scored in the 'critical' band across 5 distinct artifacts: ADR-0.0.73-verification-layer-binding-audit, ADR-0.0.75-enforcement-claim-meta-validator, ADR-0.33.0-airlock-membrane, ADR-0.35.0, ADR-0.35.0-canon-entry-corpus-landing",
+  "proposed_rule_target": "docs/governance/Feature Checklist-critical-improvement.md",
+  "content_hash": "d897f4f08e4ccf46",
+  "filed": false,
+  "ghi_url": null,
+  "advisory": false
+}

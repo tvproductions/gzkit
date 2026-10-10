@@ -1,0 +1,10 @@
+ARB Advice
+Receipts scanned: 4
+Failures: 0
+Findings total (incl. truncated): 0
+coverage: read 4 of 2002 items in /Users/jeff/Documents/Code/gzkit/artifacts/receipts (0%) — TRUNCATED by limit; not readable by this consumer: gzkit.arb.step_receipt.v1 x1360, gzkit.arb.red_receipt.v1 x84, gzkit.arb.red_commit_receipt.v1 x82, gzkit.arb.advisor_verdict.v1 x16, <no-schema> x3
+
+Recommendations:
+  - No findings in recent receipts.
+
+# captured 2026-10-10 (maintenance visit C); gz arb advise reads lint receipts only

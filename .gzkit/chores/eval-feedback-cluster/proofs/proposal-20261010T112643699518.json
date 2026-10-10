@@ -1,0 +1,42 @@
+{
+  "cluster_key": "dim:Architectural Alignment:critical",
+  "recurrence_count": 14,
+  "source_artifact_ids": [
+    "ADR-0.0.26",
+    "ADR-0.0.31",
+    "ADR-0.0.46-pool-management",
+    "ADR-0.0.47-pool-dag-promotion-routing",
+    "ADR-0.0.48-gz-adr-pool-triage",
+    "ADR-0.48.0",
+    "ADR-0.50.0",
+    "ADR-0.0.51",
+    "ADR-0.0.56",
+    "ADR-0.51.0-skill-tuning-feedback-loop",
+    "ADR-0.0.57-foundation-adr-nominal-id-triage",
+    "ADR-0.28.0-focused-context-loader",
+    "ADR-0.0.66-deterministic-steering-substrate",
+    "ADR-0.0.68"
+  ],
+  "source_artifact_paths": [
+    "ADR-0.0.26",
+    "ADR-0.0.31",
+    "ADR-0.0.46-pool-management",
+    "ADR-0.0.47-pool-dag-promotion-routing",
+    "ADR-0.0.48-gz-adr-pool-triage",
+    "ADR-0.48.0",
+    "ADR-0.50.0",
+    "ADR-0.0.51",
+    "ADR-0.0.56",
+    "ADR-0.51.0-skill-tuning-feedback-loop",
+    "ADR-0.0.57-foundation-adr-nominal-id-triage",
+    "ADR-0.28.0-focused-context-loader",
+    "ADR-0.0.66-deterministic-steering-substrate",
+    "ADR-0.0.68"
+  ],
+  "summary": "Dimension 'Architectural Alignment' scored in the 'critical' band across 14 distinct artifacts: ADR-0.0.26, ADR-0.0.31, ADR-0.0.46-pool-management, ADR-0.0.47-pool-dag-promotion-routing, ADR-0.0.48-gz-adr-pool-triage, ADR-0.0.51, ADR-0.0.56, ADR-0.0.57-foundation-adr-nominal-id-triage, ADR-0.0.66-deterministic-steering-substrate, ADR-0.0.68, ADR-0.28.0-focused-context-loader, ADR-0.48.0, ADR-0.50.0, ADR-0.51.0-skill-tuning-feedback-loop",
+  "proposed_rule_target": "docs/governance/Architectural Alignment-critical-improvement.md",
+  "content_hash": "1ddd2a11115f9d49",
+  "filed": false,
+  "ghi_url": null,
+  "advisory": false
+}
