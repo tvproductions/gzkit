@@ -292,7 +292,8 @@
       },
       "binding_sha256": "ef0f1698583eea57664844fcc6b1ad837cbcb922d0eedd1c031a8f502e8c9460",
       "authority": "GHI #1181; operator ruling 2026-10-10 (verbatim: \"refuse, direct fix under 1181\")",
-      "proposed_by": "claude-code session 2026-10-10"
+      "proposed_by": "claude-code session 2026-10-10",
+      "reviewed_by": "g0"
     },
     {
       "claim_id": "completion-scope-records-admitted",
@@ -305,7 +306,8 @@
       },
       "binding_sha256": "54361a466638afe3c4aec5522e48381c0a6909706fa9ba8a3e7adbfaa38083a1",
       "authority": "GHI #1181; operator ruling 2026-10-10 (verbatim: \"refuse, direct fix under 1181\")",
-      "proposed_by": "claude-code session 2026-10-10"
+      "proposed_by": "claude-code session 2026-10-10",
+      "reviewed_by": "g0"
     }
   ]
 }

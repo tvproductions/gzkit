@@ -4523,6 +4523,34 @@ Built and open on the operator's rulings, unchanged by this go:
 **commissions:** 2 — executed as above; row 2's remainder is the four open issues and the
 two rulings.
 
+## decision · the record list stands; the canaries are reviewed; the exit joins Stage 5 now (operator, 2026-10-10)
+
+Operator g0, verbatim: 'record list stands, canaries reviewed, 1185 now, then git sync'.
+
+**Ruled and executed.**
+
+- **The record list stands.** The gzkit records that never count against Allowed Paths at
+  completion (the ledger, handoffs, lock files, insights, evidence, ceremony state, plan
+  markers, the brief being completed and its package's logs), the agent's draft in
+  `hooks.obpi.out_of_scope_files` and the transaction contract, is ratified as written.
+  Nothing changes in code.
+- **The canaries are reviewed.** `gz canary review --claim
+  completion-scope-outside-allowed-paths --claim completion-scope-records-admitted
+  --attestor g0 --operator-text "record list stands, canaries reviewed"` booked one
+  `guard_canary_reviewed` event per claim (exit 0). The two scope-gate canaries now count
+  as reviewed at their current binding.
+- **GHI #1185 now.** The `gz-obpi-pipeline` skill's Stage 5 gains step 3b, exit accounting:
+  `gz airlock out --target {OBPI-SLUG}` before git-sync #1, booking the `airlock_out` event
+  and reporting each changed file outside Allowed Paths. Skill-version `6.66.0`; mirrors
+  regenerated. The issue's remaining exit condition, one outcome shown at a real package
+  completion, is met by the next completion through the skill; the issue closes then.
+
+Row 2 (g) and GHI #1185 have no ruling outstanding. GHI #1181's three statements under
+§ Amendments 2026-10-03 were put on the issue; with the list and the canaries ruled, the
+issue's own closure is the operator's next word.
+
+**commissions:** 2 — executed; the next completion through the skill is the witness.
+
 ## Disposition map
 
 <!-- All six rows always present. State is `commissioned` or `not pursued` — there is no
