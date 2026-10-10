@@ -244,9 +244,18 @@ Anchor-aware reconciliation consumes these fields directly:
 - if `HEAD` moved but no recorded-scope files changed, `anchor_state` remains
   non-blocking (`scope_clean`)
 - if recorded-scope files changed since the completion anchor,
-  `anchor_state = stale` and reconciliation fails closed
-- if the completed receipt is missing anchor data or recorded degraded
-  `git_sync_state`, reconciliation emits explicit blockers
+  `anchor_state = superseded`. Later work on the same files is expected and does
+  not invalidate the anchor
+- if the completed receipt is missing anchor data, `anchor_state = missing`; if
+  the changes since the anchor cannot be inspected, `anchor_state = degraded`.
+  Each carries an anchor issue
+- `git_sync_state` recorded at receipt time is reported as an anchor note
+
+Anchor issues and notes are informational at the OBPI level: they are listed
+with the OBPI's reflection issues and do not change its runtime state. This has
+been the behaviour of `src/gzkit/ledger_semantics.py` since commit `5b68226a1`
+(2026-03-19), which replaced `stale` with `superseded`; this section said
+otherwise until 2026-10-10 (GHI #1181).
 
 The canonical derived anchor states are:
 
@@ -254,9 +263,10 @@ The canonical derived anchor states are:
 - `not_tracked`
 - `current`
 - `scope_clean`
-- `stale`
+- `superseded`
 - `missing`
 - `degraded`
+- `none` (a withdrawn or repudiated OBPI)
 
 ---
 
