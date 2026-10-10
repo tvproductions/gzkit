@@ -1,0 +1,11 @@
+baseline 2026-10-10 (maintenance visit A) — bytes per consumer, measured from the composed candidate
+gz content compose AGENTS.md --consumer root --candidate .gzkit/renditions/AGENTS.md/root.candidate.md
+  invariant=24694B compressible=105B->105B total=25603B setpoint=lite
+  candidate 25603 B == AGENTS.md 25603 B (delivered surface is the root rendition; no routing defect)
+gz validate --instructions-files-budget (exit 0, advisory):
+  AGENTS.md is 25473 chars, exceeds 20000-char budget by 5473
+  surface-delivery-witness: 25603 B against the codex delivery cap 65536 B — 39933 B of headroom
+  codex-delivery-witness: 25603 B of 25603 B delivered
+corpus: 499 entries (299 invariant, 200 compressible, retractions included); live compressible text 105 B
+largest .claude/rules mirrors: tests.md 11276 B, chores.md 8490 B, token-block-discipline.md 8031 B, pythonic.md 7721 B, agents-md-map-doctrine.md 7008 B (per-rule budget 16000, none over)
+skills: 73 SKILL.md, 0 past the 90-day review age (oldest gz-adr-map 69 d), largest gz-session-handoff 37863 B

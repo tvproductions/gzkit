@@ -270,7 +270,7 @@
       "gates_step": "GHI cross-reference staleness (chore: ghi-cross-reference-staleness)",
       "mechanism": "shrink-ratchet",
       "entries_path": "disclosed",
-      "baseline_count": 5,
+      "baseline_count": 3,
       "identity": {
         "kind": "fields",
         "fields": [

@@ -8,18 +8,6 @@
       "note": "Cited in a Related list as context for a scope question recorded and not acted on. Annotation only; the argument does not rest on it."
     },
     {
-      "issue": 894,
-      "cites": 883,
-      "closed": "2026-08-28",
-      "note": "Named as a sibling cut of the same family. Annotation only."
-    },
-    {
-      "issue": 894,
-      "cites": 877,
-      "closed": "2026-09-06",
-      "note": "Named as the third member of a contrast (typed union vs JSON schema). Annotation only."
-    },
-    {
       "issue": 930,
       "cites": 929,
       "closed": "2026-09-02",
