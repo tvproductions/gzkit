@@ -894,19 +894,6 @@ def run_all_checks(project_root: Path) -> CheckResult:
     )
 
 
-def run_pymarkdown(project_root: Path) -> QualityResult:
-    """Run PyMarkdown linting on documentation.
-
-    Args:
-        project_root: Project root directory.
-
-    Returns:
-        QualityResult from PyMarkdown.
-
-    """
-    return run_command("uv run -m pymarkdown scan docs/", cwd=project_root)
-
-
 #: The authority for the docs gate's validation floor (GHI #803). ``--strict``
 #: promotes WARNING-level diagnostics to errors and nothing else, so each key here
 #: must resolve to at least ``warn`` or the strict build is blind to its class.

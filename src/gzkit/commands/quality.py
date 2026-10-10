@@ -170,7 +170,7 @@ def _apply_mx_seam(
 
 
 def lint() -> None:
-    """Run code linting (ruff + pymarkdown)."""
+    """Run code linting: ruff, the ADR path-contract lint and the parents-pattern lint."""
     project_root = get_project_root()
 
     console.print("Running linters...")

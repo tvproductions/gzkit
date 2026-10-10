@@ -289,6 +289,37 @@ class TestTestRunnerBuffersPassingOutput(unittest.TestCase):
         self.assertIn("-t . -s tests", command)
 
 
+class TestLintNamesOnlyWhatRuns(unittest.TestCase):
+    """The lint surface declares exactly the lints it runs (renewing-vows row 2 (c))."""
+
+    def test_run_lint_command_names_the_three_lints_and_no_markdown_linter(self) -> None:
+        """A declared lint with no mechanism is drift; the command string is the declaration."""
+        from gzkit import quality
+        from gzkit.quality import run_lint
+
+        ok = QualityResult(success=True, command="x", stdout="", stderr="", returncode=0)
+        with (
+            tempfile.TemporaryDirectory() as tmpdir,
+            patch("gzkit.quality.run_command", return_value=ok),
+            patch("gzkit.quality.run_adr_path_contract_lint", return_value=ok),
+            patch("gzkit.quality.run_parents_pattern_lint", return_value=ok),
+        ):
+            result = run_lint(Path(tmpdir))
+
+        self.assertEqual(
+            result.command,
+            "uv run ruff check . + ADR path contract lint + parents-pattern lint",
+        )
+        self.assertNotIn("pymarkdown", result.command.lower())
+        self.assertFalse(hasattr(quality, "run_pymarkdown"))
+
+    def test_lint_command_docstring_names_no_markdown_linter(self) -> None:
+        """The CLI docstring is operator-facing and must not promise a linter that never runs."""
+        from gzkit.commands.quality import lint
+
+        self.assertNotIn("pymarkdown", (lint.__doc__ or "").lower())
+
+
 class TestCanonicalQualityPath(unittest.TestCase):
     """run_all_checks must include cli audit and preflight (#133, #139)."""
 
