@@ -30,6 +30,19 @@ class TestAirlockEventParsing(unittest.TestCase):
         self.assertIsInstance(event, AirlockOutEvent)
         self.assertEqual(event.event, "airlock_out")
 
+    def test_airlock_out_carries_the_count_of_files_it_observed(self) -> None:
+        # GHI #1185: the typed union forbids undeclared fields, so the count must be declared.
+        event = parse_typed_event(
+            {
+                "event": "airlock_out",
+                "id": "AIR-5",
+                "ts": "2026-10-10T00:00:00Z",
+                "observed_files": 3,
+            }
+        )
+        self.assertIsInstance(event, AirlockOutEvent)
+        self.assertEqual(event.observed_files, 3)
+
     def test_airlock_in_round_trip_preserves_event_name(self) -> None:
         original = parse_typed_event(
             {"event": "airlock_in", "id": "AIR-3", "ts": "2026-07-08T00:00:00Z"}

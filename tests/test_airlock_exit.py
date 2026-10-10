@@ -374,6 +374,47 @@ class TestFootprintComparison(_AirlockExitCase):
         self.assertEqual(len(findings), 1)
         self.assertIn("docs/user/runbook.md", findings[0])
 
+    @covers("REQ-0.33.0-03-04")
+    def test_stage5_gate_reads_the_working_tree_when_no_receipt_is_sealed(self) -> None:
+        from unittest.mock import patch
+
+        from gzkit.pipeline_runtime import check_airlock_out_gate
+
+        project_root = self.tmp
+        (project_root / ".gzkit").mkdir(exist_ok=True)
+        with patch("gzkit.hooks.obpi.collect_changed_files", return_value=["docs/user/runbook.md"]):
+            findings = check_airlock_out_gate(
+                "OBPI-X", self._brief(), project_root, reach_fn=lambda _n: []
+            )
+        self.assertEqual(len(findings), 1)
+        self.assertIn("docs/user/runbook.md", findings[0])
+
+    @covers("REQ-0.33.0-03-01")
+    def test_the_exit_command_holds_the_working_tree_against_the_footprint(self) -> None:
+        import contextlib
+        import io
+        import json
+        from unittest.mock import patch
+
+        from gzkit.commands import airlock as airlock_command
+
+        def _exit_without_ontology(*args, **kwargs):
+            return airlock_exit(*args, reach_fn=lambda _n: [], **kwargs)
+
+        changed = ["src/gzkit/airlock/exit.py", "docs/user/runbook.md", ".gzkit/ledger.jsonl"]
+        stdout = io.StringIO()
+        with (
+            patch.object(airlock_command, "get_project_root", return_value=self.tmp),
+            patch.object(airlock_command, "find_obpi_brief", return_value=self._brief()),
+            patch.object(airlock_command, "collect_changed_files", return_value=changed),
+            patch.object(airlock_command, "airlock_exit", _exit_without_ontology),
+            contextlib.redirect_stdout(stdout),
+        ):
+            airlock_command.airlock_out_cmd(target="OBPI-X", dry_run=True, as_json=True)
+        payload = json.loads(stdout.getvalue())
+        self.assertEqual(payload["drift"], ["docs/user/runbook.md"])
+        self.assertEqual(payload["verdict"], Verdict.SURFACE.value)
+
 
 if __name__ == "__main__":
     unittest.main()

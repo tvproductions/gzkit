@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 from collections.abc import Callable, Iterable, Mapping
 from datetime import UTC, datetime
+from functools import partial
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -671,24 +672,14 @@ def check_airlock_out_gate(
     from gzkit.ledger import Ledger  # noqa: PLC0415
 
     ledger = Ledger(project_root / ".gzkit" / "ledger.jsonl")
-    changed_files = _transit_changed_files(ledger, obpi_id, project_root)
-    if reach_fn is None:
-        report = airlock_exit(
-            obpi_id,
-            brief_path,
-            ledger=ledger,
-            changed_files=changed_files,
-            project_root=project_root,
-        )
-    else:
-        report = airlock_exit(
-            obpi_id,
-            brief_path,
-            reach_fn=reach_fn,
-            ledger=ledger,
-            changed_files=changed_files,
-            project_root=project_root,
-        )
+    exit_membrane = airlock_exit if reach_fn is None else partial(airlock_exit, reach_fn=reach_fn)
+    report = exit_membrane(
+        obpi_id,
+        brief_path,
+        ledger=ledger,
+        changed_files=_transit_changed_files(ledger, obpi_id, project_root),
+        project_root=project_root,
+    )
     return [
         f"airlock-OUT finding ({f.kind.value}): {f.edge.target} -> {f.recommendation}"
         for f in report.findings
