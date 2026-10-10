@@ -1,0 +1,3 @@
+Validated: type_ignores, utf8_prefix, line_endings
+
+✓ All validations passed (3 scopes).

@@ -692,3 +692,232 @@ Ran 7704 tests in 81.208s
 
 OK
 ```
+## 2026-10-10T07:41:53-05:00
+- Status: FAIL
+- Chore: test-isolation-compliance
+- Title: Test Isolation & Health Compliance
+- Lane: lite
+- Version: 2.2.0
+- Criteria Results:
+  - [FAIL] `uv run python tests/tools/test_health_profiler.py` => rc=1 (486.18s) -- exit 1 != 0
+
+```text
+[uv run python tests/tools/test_health_profiler.py] stdout:
+Tests: 11542  Wall: 100.5s
+Failures: 0  Errors: 0
+
+Top 5 slowest tests:
+  48.107s  test_every_canary_mutant_is_killed_by_its_designated_test (tests.governance.test_guard_canaries.TestTheLiveRegistry.test_every_canary_mutant_is_killed_by_its_designated_test)
+  27.386s  test_fidelity_gate_passes_now_recovery_is_complete (tests.governance.test_qc_binding_self_check.TestQCBindingSelfCheck.test_fidelity_gate_passes_now_recovery_is_complete)
+   8.745s  test_timeout_kills_grandchild_not_just_child (tests.test_quality_command_timeout.TestQualityCommandTimeout.test_timeout_kills_grandchild_not_just_child)
+   6.629s  test_main_returns_zero_on_clean_cwd (tests.test_hooks_guards.TestMain.test_main_returns_zero_on_clean_cwd)
+   6.394s  test_grader_gaming_nc_passes_under_meta_validator (tests.mx.test_proxy_reality.TestProductionDiscoveryWiring.test_grader_gaming_nc_passes_under_meta_validator)
+
+Top 5 modules by time:
+   50.0s    3 tests  16680.0ms/test  tests.governance.test_guard_canaries.TestTheLiveRegistry
+   29.9s    2 tests  14925.0ms/test  tests.governance.test_qc_binding_self_check.TestQCBindingSelfCheck
+   14.8s    8 tests  1855.0ms/test  tests.test_quality_command_timeout.TestQualityCommandTimeout
+   12.6s    2 tests  6290.0ms/test  tests.governance.test_enforcement_meta_validator.TestProductionRegistryDiscovery
+    9.1s    8 tests  1131.2ms/test  tests.commands.test_obpi_acceptance_cli.TestAcceptanceProcessExit
+
+Exempt E2E tests (>3s, allowlisted — not gated, see KNOWN_E2E_TESTS):
+   27.39s  test_fidelity_gate_passes_now_recovery_is_complete (tests.governance.test_qc_binding_self_check.TestQCBindingSelfCheck.test_fidelity_gate_passes_now_recovery_is_complete)
+
+Stdout noise (88 lines):
+  | Owned section 'alpha-section' of 'Doc.md'. Unowned-byte floor fell from 83 to 26 (-57 B). Coverage:
+  | Un-owned section 'doc-title' of 'Doc.md'. Unowned-byte floor rose from 26 to 65 (+39 B). Attested by
+  | Un-owned section 'doc-title' of 'Doc.md'. Unowned-byte floor rose from 26 to 65 (+39 B). Attested by
+  | Un-owned section 'alpha-section' of 'Doc.md'. Unowned-byte floor rose from 65 to 122 (+57 B). Attest
+  | Refreshing canonical surfaces from installed wheel...
+  | IDENTICAL: 0 STALE: 0 EDITED: 0
+  | Chores registry diff:
+  | + arb-pattern-extraction
+  | = my-local-chore (local-only, preserved)
+  | Chores registry diff:
+
+FAILED: 12 violation(s)
+  - Slow test (6.31s): test_no_arg_run_discovers_and_verifies_production_claims (tests.governance.test_enforcement_meta_validator.TestProductionRegistryDiscovery.test_no_arg_run_discovers_and_verifies_production_claims)
+  - Slow test (6.27s): test_production_discovery_includes_qc_binding_and_lifted_ncs (tests.governance.test_enforcement_meta_validator.TestProductionRegistryDiscovery.test_production_discovery_includes_qc_binding_and_lifted_ncs)
+  - Slow test (6.27s): test_default_run_registers_production_claims (tests.governance.test_enforcement_nc_discrimination.TestFloorDiscoversProductionClaims.test_default_run_registers_production_claims)
+  - Slow test (3.50s): test_an_audit_that_ignores_disclosures_fails_the_admit_control (tests.governance.test_gate_population_claims.TestControlsFailWhenTheAuditIsWeakened.test_an_audit_that_ignores_disclosures_fails_the_admit_control)
+  - Slow test (3.59s): test_both_claims_name_the_audit_and_pass (tests.governance.test_gate_population_claims.TestGatePopulationClaims.test_both_claims_name_the_audit_and_pass)
+  - Slow test (48.11s): test_every_canary_mutant_is_killed_by_its_designated_test (tests.governance.test_guard_canaries.TestTheLiveRegistry.test_every_canary_mutant_is_killed_by_its_designated_test)
+  - Slow test (3.52s): test_an_or_else_branch_cannot_present_a_failed_verifier_as_success (tests.governance.test_stage4_packet.TestOrElseConcealment.test_an_or_else_branch_cannot_present_a_failed_verifier_as_success)
+  - Slow test (6.39s): test_meta_validator_fails_closed_on_an_unenrolled_member (tests.mx.test_gate5_enrollment.TestGate5EnrollmentCompleteness.test_meta_validator_fails_closed_on_an_unenrolled_member)
+  - Slow test (6.39s): test_grader_gaming_nc_passes_under_meta_validator (tests.mx.test_proxy_reality.TestProductionDiscoveryWiring.test_grader_gaming_nc_passes_under_meta_validator)
+  - Slow test (6.63s): test_main_returns_zero_on_clean_cwd (tests.test_hooks_guards.TestMain.test_main_returns_zero_on_clean_cwd)
+  - Slow test (8.74s): test_timeout_kills_grandchild_not_just_child (tests.test_quality_command_timeout.TestQualityCommandTimeout.test_timeout_kills_grandchild_not_just_child)
+  - Stdout noise: 88 line(s)
+[uv run python tests/tools/test_health_profiler.py] stderr:
+Refusing to re-baseline: the never-fired set grew. Disclose the new type deliberately rather than letting a re-run absorb it.
+POLICY BREACH: 1 declared event type(s) have no live occurrence, disclosure, or verified isolated producer: c
+  Why: a declared type with no producer is vocabulary that records nothing while reading as a modelled fact. Growth is allowed but must be visible — an undisclosed one is indistinguishable from a wired producer.
+  Next step: WIRE THE PRODUCER and verify actual production use or register a fresh isolated execution, or retire the declaration. ADR-0.0.73 BI #8 registers this surface as a shrink-ratchet -- 'a committed baseline the list can only decrease against' -- so raising 'baseline_count' is not a recovery step and is never an agent's move to make: it is the laundering the ratchet exists to refuse. Draining a type that now fires updates data/ledger_vocabulary_grandfather.json and 'baseline_count' in data/waiver_ratchet_registry.json DOWNWARD together; run this script with --report --write to compute the drained set, which refuses to write when the never-fired set has grown. If a newly declared type genuinely cannot be wired yet, that is an operator ruling on the ratchet, not a line an agent edits to clear its own gate (GHI #611 review, 2026-09-06).
+POLICY BREACH: 1 declared event type(s) have no live occurrence, disclosure, or verified isolated producer: acceptance_recorded
+  Why: a declared type with no producer is vocabulary that records nothing while reading as a modelled fact. Growth is allowed but must be visible — an undisclosed one is indistinguishable from a wired producer.
+  Next step: WIRE THE PRODUCER and verify actual production use or register a fresh isolated execution, or retire the declaration. ADR-0.0.73 BI #8 registers this surface as a shrink-ratchet -- 'a committed baseline the list can only decrease against' -- so raising 'baseline_count' is not a recovery step and is never an agent's move to make: it is the laundering the ratchet exists to refuse. Draining a type that now fires updates data/ledger_vocabulary_grandfather.json and 'baseline_count' in data/waiver_ratchet_registry.json DOWNWARD together; run this script with --report --write to compute the drained set, which refuses to write when the never-fired set has grown. If a newly declared type genuinely cannot be wired yet, that is an operator ruling on the ratchet, not a line an agent edits to clear its own gate (GHI #611 review, 2026-09-06).
+Refusing to re-baseline: the never-fired set grew. Disclose the new type deliberately rather than letting a re-run absorb it.
+POLICY BREACH: 1 declared event type(s) have no live occurrence, disclosure, or verified isolated producer: unregistered_event
+  Why: a declared type with no producer is vocabulary that records nothing while reading as a modelled fact. Growth is allowed but must be visible — an undisclosed one is indistinguishable from a wired producer.
+  Next step: WIRE THE PRODUCER and verify actual production use or register a fresh isolated execution, or retire the declaration. ADR-0.0.73 BI #8 registers this surface as a shrink-ratchet -- 'a committed baseline the list can only decrease against' -- so raising 'baseline_count' is not a recovery step and is never an agent's move to make: it is the laundering the ratchet exists to refuse. Draining a type that now fires updates data/ledger_vocabulary_grandfather.json and 'baseline_count' in data/waiver_ratchet_registry.json DOWNWARD together; run this script with --report --write to compute the drained set, which refuses to write when the never-fired set has grown. If a newly declared type genuinely cannot be wired yet, that is an operator ruling on the ratchet, not a line an agent edits to clear its own gate (GHI #611 review, 2026-09-06).
+BLOCKERS: gz obpi withdraw: error: the following arguments are required: --attestor
+BLOCKERS: gz obpi complete: error: the following arguments are required: --attestor
+[1/1] Test
+Error: the pending-transition journal '.gzkit/ownership/Doc.md.json.journal' is unreadable or malformed: the declaration at '.gzkit/ownership/Doc.md.json' is not the transition this witness would describe (unowned_byte_floor 125 != 26) -- a witness is derived from the state that landed, never from one that was hoped for.
+Why forbidden: an un-owning is completed from its journal, so a journal that cannot be proven to continue the live on-disk predecessor makes an interrupted raise unrecoverable and no further un-owning of this surface may proceed on top of it (REQ-0.35.0-04-02). No ledger witness was written by this run, and the journal is RETAINED.
+  Do NOT delete the journal and do NOT hand-edit the ownership declaration. Identify the interruption state from BOTH signals together -- the `floor_event_id` in '.gzkit/ownership/Doc.md.json' and whether `.gzkit/ledger.jsonl` carries the journal's `event_id` (`gz validate --ledger`):
+    - state A, floor_event_id equals the journal's `parent_event_id` and the ledger has no such row: nothing landed. Move the journal aside for the record, then re-run to start a fresh transition from the declaration on disk.
+    - state B or state C -- INDISTINGUISHABLE from disk, and the retry handles both the same way -- floor_event_id equals the journal's `event_id` and the ledger has no such row: the declaration ALREADY carries this transition, and what is outstanding is its durability barrier, its witness, or both. Re-run the same command; it re-establishes the barrier and appends the missing witness. This is the pair the retired advice treated as proof that nothing landed.
+    - state D, the ledger carries the journal's `event_id`: the transition completed and is witnessed. Re-run the same command. If the surface still carries the bytes the floor was measured against it clears the recovery material; if an editor has since changed them, it refuses naming state D AND state E and hands you the measured bytes -- the SOURCE axis is orthogonal to states A-D, so a witness settles the transition and says nothing about the source.
+  If the journal cannot be parsed at all its `event_id` is unreadable, so `floor_event_id` alone cannot separate state A from state B or state C: capture both files and ask the operator to rule.
+Error: the witness source declaration declares identity 'Other.md', but this transaction's target is 'Doc.md' ('.gzkit/ownership/Doc.md.json').
+Why forbidden: the target fixes ONE identity and its surface, declaration and journal paths for the whole transaction, and every snapshot consumed under its lock must agree with it. Adopting a second identity here would write and witness through paths chosen from different values, and `load_declaration` fails closed when a floor's witness names a surface its declaration does not (REQ-0.35.0-04-02). The journal is RETAINED at '.gzkit/ownership/Doc.md.json.journal', so the transition stays completable.
+  Re-run the same command. The identity is resolved at entry, so a retry either proceeds against the declaration as it now stands or refuses naming the conflict.
+Fidelity validation failed [surface-weight]: Surface weight limit exceeded
+File not written.
+[advisory] WARNING agents-md-map-conformance: AGENTS.md is 25473 chars, exceeds 20000-char budget by 5473. Run /gz-context-diet (or `uv run gz chores show instructions-files-diet`) to lift inline rationale to docs/governance/ behind one-line pointers.
+[advisory] WARNING instructions-files-budget: AGENTS.md is 25473 chars, exceeds 20000-char budget by 5473. Run /gz-context-diet (or `uv run gz chores show instructions-files-diet`) to lift inline pedagogy to docs/governance/ behind one-line pointers.
+[advisory] WARNING agents-md-map-conformance: AGENTS.md is 25473 chars, exceeds 20000-char budget by 5473. Run /gz-context-diet (or `uv run gz chores show instructions-files-diet`) to lift inline rationale to docs/governance/ behind one-line pointers.
+[advisory] WARNING instructions-files-budget: AGENTS.md is 25473 chars, exceeds 20000-char budget by 5473. Run /gz-context-diet (or `uv run gz chores show instructions-files-diet`) to lift inline pedagogy to docs/governance/ behind one-line pointers.
+[advisory] WARNING agents-md-map-conformance: AGENTS.md is 25473 chars, exceeds 20000-char budget by 5473. Run /gz-context-diet (or `uv run gz chores show instructions-files-diet`) to lift inline rationale to docs/governance/ behind one-line pointers.
+[advisory] WARNING agents-md-map-conformance: AGENTS.md is 25473 chars, exceeds 20000-char budget by 5473. Run /gz-context-diet (or `uv run gz chores show instructions-files-diet`) to lift inline rationale to docs/governance/ behind one-line pointers.
+BLOCKERS: gz check: error: argument --full: not allowed with argument --fast
+[advisory] rendition-lineage: What failed: committed rendition 'NCSurface.md/root' declares section 'owned-section' corpus-owned, but its committed bytes differ from what the effective corpus materializes for that section.
+Why forbidden: ADR-0.35.0 § Decision item 4 — a corpus-owned section's bytes are DERIVED from canon, never hand-authored into the rendition, so prose written straight into an owned section is canon drift that no other gate observes. Lowering a section's declared ownership is never the repair for this finding: the declaration's scope changes only through OBPI-0.35.0-04's attested raise-path, as a deliberate governed move, never to clear a gate.
+Next step: land the wording in canon (`gz content remember NCSurface.md ...`), then regenerate and recommit — `gz content compose NCSurface.md --consumer root`, then `gz content commit NCSurface.md --consumer root`.
+[advisory] rendition-lineage: 1 committed rendition(s) graded; 1/2 sections owned, 61/115 bytes owned (53.0%); 0 section(s) / 0 byte(s) UNGRADED (declared corpus-owned with no committed lineage). Unowned and ungraded bytes are measured debt and never change this scope's exit code (ADR-0.35.0 § Decision item 4).
+[advisory] rendition-lineage: What failed: committed rendition 'NCSurface.md/root' declares section 'owned-section' corpus-owned, but its committed bytes differ from what the effective corpus materializes for that section.
+Why forbidden: ADR-0.35.0 § Decision item 4 — a corpus-owned section's bytes are DERIVED from canon, never hand-authored into the rendition, so prose written straight into an owned section is canon drift that no other gate observes. Lowering a section's declared ownership is never the repair for this finding: the declaration's scope changes only through OBPI-0.35.0-04's attested raise-path, as a deliberate governed move, never to clear a gate.
+Next step: land the wording in canon (`gz content remember NCSurface.md ...`), then regenerate and recommit — `gz content compose NCSurface.md --consumer root`, then `gz content commit NCSurface.md --consumer root`.
+[advisory] rendition-lineage: 1 committed rendition(s) graded; 1/2 sections owned, 61/115 bytes owned (53.0%); 0 section(s) / 0 byte(s) UNGRADED (declared corpus-owned with no committed lineage). Unowned and ungraded bytes are measured debt and never change this scope's exit code (ADR-0.35.0 § Decision item 4).
+[advisory] rendition-lineage: What failed: committed rendition 'NCSurface.md/root' declares section 'owned-section' corpus-owned, but its committed bytes differ from what the effective corpus materializes for that section.
+Why forbidden: ADR-0.35.0 § Decision item 4 — a corpus-owned section's bytes are DERIVED from canon, never hand-authored into the rendition, so prose written straight into an owned section is canon drift that no other gate observes. Lowering a section's declared ownership is never the repair for this finding: the declaration's scope changes only through OBPI-0.35.0-04's attested raise-path, as a deliberate governed move, never to clear a gate.
+Next step: land the wording in canon (`gz content remember NCSurface.md ...`), then regenerate and recommit — `gz content compose NCSurface.md --consumer root`, then `gz content commit NCSurface.md --consumer root`.
+[advisory] rendition-lineage: 1 committed rendition(s) graded; 1/2 sections owned, 61/115 bytes owned (53.0%); 0 section(s) / 0 byte(s) UNGRADED (declared corpus-owned with no committed lineage). Unowned and ungraded bytes are measured debt and never change this scope's exit code (ADR-0.35.0 § Decision item 4).
+[advisory] rendition-lineage: What failed: committed rendition 'NCSurface.md/root' declares section 'owned-section' corpus-owned, but its committed bytes differ from what the effective corpus materializes for that section.
+Why forbidden: ADR-0.35.0 § Decision item 4 — a corpus-owned section's bytes are DERIVED from canon, never hand-authored into the rendition, so prose written straight into an owned section is canon drift that no other gate observes. Lowering a section's declared ownership is never the repair for this finding: the declaration's scope changes only through OBPI-0.35.0-04's attested raise-path, as a deliberate governed move, never to clear a gate.
+Next step: land the wording in canon (`gz content remember NCSurface.md ...`), then regenerate and recommit — `gz content compose NCSurface.md --consumer root`, then `gz content commit NCSurface.md --consumer root`.
+[advisory] rendition-lineage: 1 committed rendition(s) graded; 1/2 sections owned, 61/115 bytes owned (53.0%); 0 section(s) / 0 byte(s) UNGRADED (declared corpus-owned with no committed lineage). Unowned and ungraded bytes are measured debt and never change this scope's exit code (ADR-0.35.0 § Decision item 4).
+[advisory] rendition-lineage: What failed: committed rendition 'NCSurface.md/root' declares section 'owned-section' corpus-owned, but its committed bytes differ from what the effective corpus materializes for that section.
+Why forbidden: ADR-0.35.0 § Decision item 4 — a corpus-owned section's bytes are DERIVED from canon, never hand-authored into the rendition, so prose written straight into an owned section is canon drift that no other gate observes. Lowering a section's declared ownership is never the repair for this finding: the declaration's scope changes only through OBPI-0.35.0-04's attested raise-path, as a deliberate governed move, never to clear a gate.
+Next step: land the wording in canon (`gz content remember NCSurface.md ...`), then regenerate and recommit — `gz content compose NCSurface.md --consumer root`, then `gz content commit NCSurface.md --consumer root`.
+[advisory] rendition-lineage: 1 committed rendition(s) graded; 1/2 sections owned, 61/115 bytes owned (53.0%); 0 section(s) / 0 byte(s) UNGRADED (declared corpus-owned with no committed lineage). Unowned and ungraded bytes are measured debt and never change this scope's exit code (ADR-0.35.0 § Decision item 4).
+refused: synthetic monitor verdict
+[advisory] rendition-lineage: What failed: committed rendition 'NCSurface.md/root' declares section 'owned-section' corpus-owned, but its committed bytes differ from what the effective corpus materializes for that section.
+Why forbidden: ADR-0.35.0 § Decision item 4 — a corpus-owned section's bytes are DERIVED from canon, never hand-authored into the rendition, so prose written straight into an owned section is canon drift that no other gate observes. Lowering a section's declared ownership is never the repair for this finding: the declaration's scope changes only through OBPI-0.35.0-04's attested raise-path, as a deliberate governed move, never to clear a gate.
+Next step: land the wording in canon (`gz content remember NCSurface.md ...`), then regenerate and recommit — `gz content compose NCSurface.md --consumer root`, then `gz content commit NCSurface.md --consumer root`.
+[advisory] rendition-lineage: 1 committed rendition(s) graded; 1/2 sections owned, 61/115 bytes owned (53.0%); 0 section(s) / 0 byte(s) UNGRADED (declared corpus-owned with no committed lineage). Unowned and ungraded bytes are measured debt and never change this scope's exit code (ADR-0.35.0 § Decision item 4).
+usage: check_proof_freshness.py <slug of a chore declaring staleness.signal elapsed-time, or content-delta with surfaces>
+
+POLICY BREACH:
+  .gzkit/chores/demo-coherence/proofs/report.md was last committed 1970-01-01, before its audited surface last moved (1970-01-01).
+    Why: this chore's acceptance previously gated on `test -f`, which passes forever once a report exists and cannot see that the evidence now describes a surface that has changed.
+    Fix: re-run the demo-coherence audit and commit refreshed proofs. Touching the file without redoing the analysis restores the green-by-construction gate this replaced.
+distribution-audit: cannot parse pyproject.toml: Expected '=' after a key in a key/value pair (at line 1, column 6)
+Warning: ruff format did not run on /var/folders/7y/cvcpqqnj2_52yy4wl780kmqc0000gn/T/gzkit-hooks-stroqtzk: exited 1
+warning: `VIRTUAL_ENV=/Users/jeff/Documents/Code/gzkit/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+Using CPython 3.14.6
+Creating virtual environment at: .venv
+warning: No `requires-python` value found in the workspace. Defaulting to `>=3.14`.
+   Building probe-tree @ file:///private/var/folders/7y/cvcpqqnj2_52yy4wl780kmqc0000gn/T/gzkit-root-binding-xn5gx27h
+error: Failed to build `probe-tree @ file:///private/var/folders/7y/cvcpqqnj2_52yy4wl780kmqc0000gn/T/gzkit-root-binding-xn5gx27h`
+  cause: The build backend returned an error
+  cause: Call to `gzkit_no_such_backend.get_requires_for_build_editable` failed (exit status: 1)
+
+         [stderr]
+         Traceback (most recent call last):
+           File "<string>", line 8, in <module>
+             import gzkit_no_such_backend as backend
+         ModuleNotFoundError: No module named 'gzkit_no_such_backend'
+
+hint: This error likely indicates that `probe-tree@0.1.0` depends on `gzkit_no_such_backend`, but doesn't declare it as a build dependency. If `probe-tree` is a first-party package, consider adding `gzkit_no_such_backend` to its `build-system.requires`. Otherwise, either add it to your `pyproject.toml` under:
+
+[tool.uv.extra-build-dependencies]
+probe-tree = ["gzkit_no_such_backend"]
+
+or `uv pip install gzkit_no_such_backend` into the environment and re-run with `--no-build-isolation`.
+Warning: ruff format did not run on /var/folders/7y/cvcpqqnj2_52yy4wl780kmqc0000gn/T/gzkit-hooks-cgaxj_jx: exited 1
+warning: `VIRTUAL_ENV=/Users/jeff/Documents/Code/gzkit/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+warning: No `requires-python` value found in the workspace. Defaulting to `>=3.14`.
+   Building probe-tree @ file:///private/var/folders/7y/cvcpqqnj2_52yy4wl780kmqc0000gn/T/gzkit-root-binding-xn5gx27h
+error: Failed to build `probe-tree @ file:///private/var/folders/7y/cvcpqqnj2_52yy4wl780kmqc0000gn/T/gzkit-root-binding-xn5gx27h`
+  cause: The build backend returned an error
+  cause: Call to `gzkit_no_such_backend.get_requires_for_build_editable` failed (exit status: 1)
+
+         [stderr]
+         Traceback (most recent call last):
+           File "<string>", line 8, in <module>
+             import gzkit_no_such_backend as backend
+         ModuleNotFoundError: No module named 'gzkit_no_such_backend'
+
+hint: This error likely indicates that `probe-tree@0.1.0` depends on `gzkit_no_such_backend`, but doesn't declare it as a build dependency. If `probe-tree` is a first-party package, consider adding `gzkit_no_such_backend` to its `build-system.requires`. Otherwise, either add it to your `pyproject.toml` under:
+
+[tool.uv.extra-build-dependencies]
+probe-tree = ["gzkit_no_such_backend"]
+
+or `uv pip install gzkit_no_such_backend` into the environment and re-run with `--no-build-isolation`.
+Warning: ruff format did not run on /var/folders/7y/cvcpqqnj2_52yy4wl780kmqc0000gn/T/gzkit-hooks-5o76xm1b: exited 1
+warning: `VIRTUAL_ENV=/Users/jeff/Documents/Code/gzkit/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+Using CPython 3.14.6
+Creating virtual environment at: .venv
+warning: No `requires-python` value found in the workspace. Defaulting to `>=3.14`.
+   Building probe-tree @ file:///private/var/folders/7y/cvcpqqnj2_52yy4wl780kmqc0000gn/T/gzkit-root-binding-89x3hfwe
+error: Failed to build `probe-tree @ file:///private/var/folders/7y/cvcpqqnj2_52yy4wl780kmqc0000gn/T/gzkit-root-binding-89x3hfwe`
+  cause: The build backend returned an error
+  cause: Call to `gzkit_no_such_backend.get_requires_for_build_editable` failed (exit status: 1)
+
+         [stderr]
+         Traceback (most recent call last):
+           File "<string>", line 8, in <module>
+             import gzkit_no_such_backend as backend
+         ModuleNotFoundError: No module named 'gzkit_no_such_backend'
+
+hint: This error likely indicates that `probe-tree@0.1.0` depends on `gzkit_no_such_backend`, but doesn't declare it as a build dependency. If `probe-tree` is a first-party package, consider adding `gzkit_no_such_backend` to its `build-system.requires`. Otherwise, either add it to your `pyproject.toml` under:
+
+[tool.uv.extra-build-dependencies]
+probe-tree = ["gzkit_no_such_backend"]
+
+or `uv pip install gzkit_no_such_backend` into the environment and re-run with `--no-build-isolation`.
+[advisory] rendition-lineage: What failed: committed rendition 'NCSurface.md/root' declares section 'owned-section' corpus-owned, but its committed bytes differ from what the effective corpus materializes for that section.
+Why forbidden: ADR-0.35.0 § Decision item 4 — a corpus-owned section's bytes are DERIVED from canon, never hand-authored into the rendition, so prose written straight into an owned section is canon drift that no other gate observes. Lowering a section's declared ownership is never the repair for this finding: the declaration's scope changes only through OBPI-0.35.0-04's attested raise-path, as a deliberate governed move, never to clear a gate.
+Next step: land the wording in canon (`gz content remember NCSurface.md ...`), then regenerate and recommit — `gz content compose NCSurface.md --consumer root`, then `gz content commit NCSurface.md --consumer root`.
+[advisory] rendition-lineage: 1 committed rendition(s) graded; 1/2 sections owned, 61/115 bytes owned (53.0%); 0 section(s) / 0 byte(s) UNGRADED (declared corpus-owned with no committed lineage). Unowned and ungraded bytes are measured debt and never change this scope's exit code (ADR-0.35.0 § Decision item 4).
+[advisory] rendition-lineage: What failed: committed rendition 'NCSurface.md/root' declares section 'owned-section' corpus-owned, but its committed bytes differ from what the effective corpus materializes for that section.
+Why forbidden: ADR-0.35.0 § Decision item 4 — a corpus-owned section's bytes are DERIVED from canon, never hand-authored into the rendition, so prose written straight into an owned section is canon drift that no other gate observes. Lowering a section's declared ownership is never the repair for this finding: the declaration's scope changes only through OBPI-0.35.0-04's attested raise-path, as a deliberate governed move, never to clear a gate.
+Next step: land the wording in canon (`gz content remember NCSurface.md ...`), then regenerate and recommit — `gz content compose NCSurface.md --consumer root`, then `gz content commit NCSurface.md --consumer root`.
+[advisory] rendition-lineage: 1 committed rendition(s) graded; 1/2 sections owned, 61/115 bytes owned (53.0%); 0 section(s) / 0 byte(s) UNGRADED (declared corpus-owned with no committed lineage). Unowned and ungraded bytes are measured debt and never change this scope's exit code (ADR-0.35.0 § Decision item 4).
+[advisory] rendition-lineage: What failed: committed rendition 'NCSurface.md/root' declares section 'owned-section' corpus-owned, but its committed bytes differ from what the effective corpus materializes for that section.
+Why forbidden: ADR-0.35.0 § Decision item 4 — a corpus-owned section's bytes are DERIVED from canon, never hand-authored into the rendition, so prose written straight into an owned section is canon drift that no other gate observes. Lowering a section's declared ownership is never the repair for this finding: the declaration's scope changes only through OBPI-0.35.0-04's attested raise-path, as a deliberate governed move, never to clear a gate.
+Next step: land the wording in canon (`gz content remember NCSurface.md ...`), then regenerate and recommit — `gz content compose NCSurface.md --consumer root`, then `gz content commit NCSurface.md --consumer root`.
+[advisory] rendition-lineage: 1 committed rendition(s) graded; 1/2 sections owned, 61/115 bytes owned (53.0%); 0 section(s) / 0 byte(s) UNGRADED (declared corpus-owned with no committed lineage). Unowned and ungraded bytes are measured debt and never change this scope's exit code (ADR-0.35.0 § Decision item 4).
+gzkit: recovered /var/folders/7y/cvcpqqnj2_52yy4wl780kmqc0000gn/T/tmpdhgd8bky/ledger.jsonl — supplied the missing final newline for a complete 119-byte record; no row was discarded
+gzkit: recovered /var/folders/7y/cvcpqqnj2_52yy4wl780kmqc0000gn/T/tmpv3lazmr1/ledger.jsonl — supplied the missing final newline for a complete 119-byte record; no row was discarded
+gzkit: recovered /var/folders/7y/cvcpqqnj2_52yy4wl780kmqc0000gn/T/tmpxny12uk1/ledger.jsonl — supplied the missing final newline for a complete 119-byte record; no row was discarded
+gzkit: recovered /var/folders/7y/cvcpqqnj2_52yy4wl780kmqc0000gn/T/tmpxnfafpr4/ledger.jsonl — discarded 32 byte(s) of an interrupted append before the record boundary
+gzkit: recovered /var/folders/7y/cvcpqqnj2_52yy4wl780kmqc0000gn/T/tmpkt8fb_cu/ledger.jsonl — discarded 44 byte(s) of an interrupted append before the record boundary
+refused: OBPI-test.md carries terminal OBPI status 'abandoned' (no outgoing canonical transition); will not silently write it to 'Completed' — that is the GHI #348 clobber class. Recover with an explicit transition (`gz obpi repudiate` / `gz obpi supersede`) or correct the ledger event, then re-run.
+refused: OBPI-test.md carries terminal OBPI status 'superseded' (no outgoing canonical transition); will not silently write it to 'Completed' — that is the GHI #348 clobber class. Recover with an explicit transition (`gz obpi repudiate` / `gz obpi supersede`) or correct the ledger event, then re-run.
+refused: OBPI-test.md carries terminal OBPI status 'withdrawn' (no outgoing canonical transition); will not silently write it to 'Completed' — that is the GHI #348 clobber class. Recover with an explicit transition (`gz obpi repudiate` / `gz obpi supersede`) or correct the ledger event, then re-run.
+refused: OBPI-test.md carries terminal OBPI status 'superseded' (no outgoing canonical transition); will not silently write it to 'Completed' — that is the GHI #348 clobber class. Recover with an explicit transition (`gz obpi repudiate` / `gz obpi supersede`) or correct the ledger event, then re-run.
+refused: OBPI-test.md carries terminal OBPI status 'withdrawn' (no outgoing canonical transition); will not silently write it to 'Completed' — that is the GHI #348 clobber class. Recover with an explicit transition (`gz obpi repudiate` / `gz obpi supersede`) or correct the ledger event, then re-run.
+BLOCKERS: gz permitted-entry: error: --repair may be given at most once
+BLOCKERS: gz permitted-entry: error: --repair may be given at most once
+BLOCKERS: gz permitted-entry: error: argument --repair: not allowed with argument --recon
+refused: OBPI-test-brief.md carries terminal OBPI status 'abandoned' (no outgoing canonical transition); will not silently write it to 'Active' — that is the GHI #348 clobber class. Recover with an explicit transition (`gz obpi repudiate` / `gz obpi supersede`) or correct the ledger event, then re-run.
+.
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+OK
+BLOCKERS: --apply requires both --attestor and --attestation. The Gate-5 human attestation IS the terminality witness for pre-ledger foundations; without it the backfill has no legitimate witness.
+BLOCKERS: --apply requires both --attestor and --attestation. The Gate-5 human attestation IS the terminality witness for pre-ledger foundations; without it the backfill has no legitimate witness.
+  BLOCKER: ADR-0.0.37 is a declared Sunset prerequisite but no such foundation package is on disk — cannot confirm it is terminal.
+  BLOCKER: ADR-0.0.54 is a declared Sunset prerequisite but no such foundation package is on disk — cannot confirm it is terminal.
+  BLOCKER: ADR-0.0.64 is a declared Sunset prerequisite but no such foundation package is on disk — cannot confirm it is terminal.
+  BLOCKER: ADR-0.0.65 is a declared Sunset prerequisite but no such foundation package is on disk — cannot confirm it is terminal.
+  BLOCKER: ADR-0.0.72 is a declared Sunset prerequisite but no such foundation package is on disk — cannot confirm it is terminal.
+Warning: ruff format did not run on /var/folders/7y/cvcpqqnj2_52yy4wl780kmqc0000gn/T/gzkit-fmt-tbg6vbi2/hooks: exited <MagicMock name='run().returncode' id='4497708368'>
+<MagicMock name='run().stderr.strip()' id='4497706688'>
+Warning: ruff format did not run on /var/folders/7y/cvcpqqnj2_52yy4wl780kmqc0000gn/T/gzkit-fmt-no_uipzb/hooks: exited <MagicMock name='run().returncode' id='4496034848'>
+<MagicMock name='run().stderr.strip()' id='4496031824'>
+```

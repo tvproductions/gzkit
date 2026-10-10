@@ -810,6 +810,47 @@ Source: Architecture Planning Memo Section 12 (Decision Record 2026-03-29).
 5. **Do not let AirlineOps parity become perpetual catch-up.** Current parity is sufficient baseline. Future parity should flow from gzkit innovations adopted by AirlineOps, not gzkit chasing AirlineOps patches.
 6. **Do not let derived views silently become source-of-truth.** `gz status`, pipeline markers, and reconciliation caches are Layer 3; every fact traces to Layer 1 canon or Layer 2 ledger.
 
+## Gate Covenant — BDD and Gate 4 rationale
+
+<!-- lifted-from: AGENTS.md#gate-covenant--bdd-and-gate-4-rationale -->
+
+*Lifted verbatim from `AGENTS.md` § Gate Covenant on 2026-10-10 under the operator's diet ruling
+('do this: What would close the 5,473-char gap is retiring invariant entries from the per-turn
+surface into docs/governance/ with a pointer'), maintenance visit A of the R&D run `renewing-vows`.
+The three corpus entries (`corpus-gate-covenant-2026-09-24T10:04:50.412291+00:00`, `...50.560542+00:00`,
+`...50.709025+00:00`, all `tier: invariant`, class Judgment) are retired in the corpus with this page as
+their destination; the binding gate table, lane rule, universal Gate 5, kinds, 1:1 checklist, closeout
+verbs and undo verbs remain in `AGENTS.md`. The reasoning below is the record of WHY they read as they do.*
+
+BDD is acceptance-scope, and the lane binds the runner, not only the gate. Gate 2 asks whether all code still does what it should, and any change can falsify that, so the unit tier runs on every change. Gate 4 asks whether a new capability does what its OBPI said it would, and that question has no subject until an OBPI changes an external contract — which is what `heavy` means. So `behave` belongs to heavy-lane OBPI work and to CI, never to a per-change gate. Inherited from AirlineOps, which binds it at the directory: `features/` is "BDD scenarios (Behave, Heavy lane only)".
+
+Gate 4 precedes Gate 5 on the heavy lane and nowhere else. It is not a general precursor: Gate 5 is universal, so making Gate 4 its precondition would pull BDD onto every lite-lane OBPI completion — documentation, process and template work — which is the opposite of what the lane is for. The two scope differently because they are different kinds of gate. Gates 1–4 verify the artifact, and whether their question has a subject depends on what changed, so lane scopes them. Gate 5 asks who accepted the work; every completion has an accepter, so nothing scopes it. AirlineOps paired them under one lane axis before that distinction was drawn (`ADR-0.0.32`: "Gate 5 remains human-only... for Heavy lane work"); gzkit separated them deliberately after 42 OBPIs self-closed under the lite cell (ADR-0.0.36, GHI #331, GHI #342).
+
+A high line-overlap between the unit tier and the BDD tier is the expected signature of an acceptance suite re-walking a user path, and is never on its own evidence that a tier is redundant (`M-F`, `docs/governance/ieee/03-gate4-gate2-duplication-2026-09-23.md`).
+
+## Pattern Discovery — the requirements-catalog ruling of 2026-09-26
+
+<!-- lifted-from: AGENTS.md#pattern-discovery--the-requirements-catalog-ruling-of-2026-09-26 -->
+
+*Lifted verbatim from `AGENTS.md` § Pattern Discovery on 2026-10-10 under the same ruling. Corpus
+entry `corpus-pattern-discovery-2026-09-26T00:47:43.730867+00:00` (`tier: invariant`, Judgment) is
+retired with this page as its destination. The ruling binds as written here; it names the catalog
+architecture and defers its mechanics, and nothing in the per-turn surface restates it.*
+
+Constitution → PRD grounds product intent; ADRs remain subject to both. Durable catalog requirements have authority independent of work packages. ADR (mADR) → OBPI (brief) → plan/spec/tasks organizes a bounded advance against referenced requirement states, with local acceptance criteria retained in the brief. Evidence binds assignment, requirement state and product configuration; human attestation accepts work, and release records identify what shipped. During migration, current local REQ → TASK lineage, identifiers, parsers and proof bindings remain in force; this ruling does not implement catalog mechanics.
+
+## Architectural Boundaries — the 2026-09-29 retirements
+
+<!-- lifted-from: AGENTS.md#architectural-boundaries--the-2026-09-29-retirements -->
+
+*Lifted verbatim from `AGENTS.md` § Architectural Boundaries on 2026-10-10 under the same ruling.
+Corpus entry `corpus-architectural-boundaries-2026-09-29T08:08:12.364553+00:00` (`tier: invariant`,
+Judgment) is retired with this page as its destination; the three surviving boundaries (4, 5, 6)
+remain in `AGENTS.md`. See also § Architectural Boundaries — planning-memo rationale above, which
+carries the re-ratification record.*
+
+Boundaries 1–3 were retired 2026-09-29 (GHI #818): 1 is superseded by the Magna Carta's release prioritization, 2 by pool triage (`ADR-pool.pool-management` § 9), and 3 is fulfilled by ADR-0.0.9. The operator's rulings are verbatim in the corpus retirements.
+
 ## Attribution
 
 Consolidation pattern adapted from "Core Operating Behaviors" in
