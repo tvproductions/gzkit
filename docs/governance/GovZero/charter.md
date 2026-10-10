@@ -75,7 +75,7 @@ Audit is a reconciliation mechanism, not an authority mechanism.
 
 **Artifact:** Explicit human attestation recorded with timestamp.
 
-**Applies to:** Heavy lane only (required for ADR closeout).
+**Applies to:** All work (Lite and Heavy lanes). Gate 5 is universal: every OBPI completion in every lane, kind and sensitivity needs the operator's attestation (ADR-0.0.36, GHI #342; `AGENTS.md` § Gate Covenant). It read "Heavy lane only (required for ADR closeout)" until 2026-10-10 (corrected under R&D run `renewing-vows`, row 2 (a)).
 
 **Authority:** Human attestation is the sole authority for ADR closeout.
 Agents present artifacts; humans observe and attest. Audit runs post-attestation.
@@ -86,7 +86,7 @@ Agents present artifacts; humans observe and attest. Audit runs post-attestation
 
 | Lane | Gates | Trigger |
 |------|-------|---------|
-| **Lite** | 1, 2 | Internal-only implementation, documentation, process, or template changes that do not change an external runtime contract |
+| **Lite** | 1, 2, 5 | Internal-only implementation, documentation, process, or template changes that do not change an external runtime contract |
 | **Heavy** | 1, 2, 3, 4, 5 | Changes to commands, APIs, schemas, or other runtime contracts used by humans or external systems |
 
 Default lane is Lite. Escalate to Heavy only when a command, API, schema, or

@@ -1924,6 +1924,8 @@ permitted first operation after a handoff is created."*
 | Assumption | 3 — *"I assume position responsibility"* | `gz handoff decide --operator-text`. The operator is the **only party continuous across both sessions**, therefore the briefing's second party rather than a supervisor. Formal in booking the turnover; **advisory in never blocking work** | **(a)** the operator is the overlap |
 | Deferred review | 4 — overlap, run backwards in time | After working, the incoming session books a **`handoff_discrepancy` finding** for a wrong next step, a stale reference, or an unbriefed abnormal item — attributable to the handoff that misbriefed | **(c)** time-inverted overlap |
 
+> **Correction, 2026-10-10 (R&D run `renewing-vows`, row 2 (e); insight 2026-10-07T23:46:09Z).** The five phrases this entry sets in quotation marks are not the FAA's text. FAA Order JO 7110.65BB Appendix A § 5c and JO 7210.3EE paragraph 2-2-4, both read in full, say "share equal responsibility for the completeness and the accuracy of the position relief briefing", not "of the transfer"; and "confirms SIA data accuracy", "preview complete, begin briefing", "I assume position responsibility" and "monitor jack" occur in neither order. The four beats are Appendix A's (preview the position; verbal briefing; assumption of position responsibility; review the position) and the mapping stands; the quotations are the entry's paraphrases and are read as such. The entry is a dated record and its text is not rewritten.
+
 **Two binding constraints on all of the above.**
 
 - **Advisory, never authorizing.** No beat here may gate anything. This confirms the direction

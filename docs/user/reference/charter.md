@@ -40,7 +40,7 @@ The runtime preserves canonical authority while exposing additive operational se
 | 2 | TDD | All lanes |
 | 3 | Docs | Heavy lane |
 | 4 | BDD | Heavy lane |
-| 5 | Human | Heavy lane |
+| 5 | Human | All lanes (universal, ADR-0.0.36) |
 
 ---
 
