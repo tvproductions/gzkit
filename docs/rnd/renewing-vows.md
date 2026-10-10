@@ -4360,6 +4360,87 @@ lands.
 **commissions:** 4 — the last part is drafted; the row's remaining work is the operator's
 rulings on the three items and the ratification of Part 0.
 
+## decision · item 14 stands: the core model's three seams (operator, 2026-10-10)
+
+**What was put, 2026-10-10:** the three-line statement of Part 0, item 14, with the question
+"What is wrong or missing?"
+
+Operator g0, verbatim: 'it stands, item 15'.
+
+**Ruled.** The three seams are closed as put.
+
+1. Mission planning sits at phase 5, with the crew that flies: the unit's own plan made
+   from the order, after the commander's decision.
+2. Ordnance delivery is red then green, two sorties flown by one position. BDA is a
+   separate position that flew nothing and assesses from the records (line 6).
+3. Munitions effectiveness is owned by the assessment position (BDA) as its second output;
+   the collateral output is owned by the scope report. All five assessment outputs have an
+   owner.
+
+Frontier item 14 is closed. The glossary candidate's *put* marks on the eight roles and on
+combat assessment are lifted by this ruling; the names "mission planning", "ordnance
+delivery" and "BDA" stand as the crew's. Row 1's proposed "owner for munitions
+effectiveness" is no longer a new order: the owner is the assessment position, and its
+obligation gains the output when the position is defined.
+
+**commissions:** 4 — written into Part 0; 1 — the munitions-effectiveness proposal is
+withdrawn as a separate order.
+
+## decision · item 15 stands: the constitution and the articles (operator, 2026-10-10)
+
+**What was put, 2026-10-10:** the four-line statement of Part 0, item 15.
+
+Operator g0, verbatim: 'it stands, item 13'.
+
+**Ruled.**
+
+1. The constitution is the doctrine's Part I ratified as the root: the ten articles and the
+   seven-line statement of command (rulings of 2026-06-14 and 2026-10-08). Policies and
+   procedures sit beneath it and are not the constitution. No separate constitution is
+   drafted; the small-constitution draft of 2026-10-07 is withdrawn in full.
+2. Article 3's body gains one sentence naming the position and the role: "An agent is crew:
+   it fills a position, an obligation with a role to fulfil it, within the role's bounds and
+   under its auspices." The allocation is unchanged.
+3. Relief of position needs no new article; policy 14 traces to Articles 1 and 7.
+4. Article 6's sizing stands; the frame's units nest inside the attestation cap.
+
+Frontier item 15 is closed. The glossary's *put* on "constitution" is lifted: the name
+stands for Part I as the root.
+
+**commissions:** 4 — written into Part 0 (the Article 3 body sentence joins the amended
+title in the candidate); row 2's charter items are unaffected.
+
+## decision · item 13 stands: the names in doubt are kept, dropped or renamed (operator, 2026-10-10)
+
+**What was put, 2026-10-10:** the keep, drop and rename lists of Part 0, item 13.
+
+Operator g0, verbatim: 'it stands, then git sync'.
+
+**Ruled.**
+
+- Kept as gzkit's own terms, never cited as doctrine: letter check; squawk; loadout;
+  interlocks; custody; change proposal; block.
+- Dropped: "watch" and "duty officer"; "hazard log"; "gates → objectives"; "pilot",
+  "assessor" and "briefer" for any agent role.
+- Renamed: the prioritised target list is **the campaign order**; the chore registry's name
+  is **the maintenance schedule** (AC 120-16G), with the maintenance planning document cited
+  only as the reference document it is.
+
+Frontier item 13 is closed. With items 14 and 15 closed the same day, nothing on the
+frontier is open: the four put statements (what a policy is; the June pairs under the five
+terms; article against policy; what "encourage" consists of) are the only unanswered
+drafts, and each is carried inside Part 0 for the operator's ratification rather than as a
+frontier item. The *Avoid* list of the glossary gains: watch, duty officer, hazard log,
+objectives (for gates), pilot (for an agent).
+
+**Row 4 after this ruling.** Every part is drafted and three of them are landed (the
+campaign amendment, the PRD pass, the two rules). What remains of the row is one act, the
+operator's ratification of Part 0 of `doctrine-merge.md`, after which the canonical
+`command-doctrine.md` is replaced with a recorded attestation and the glossary moves to the
+home the DDD run names.
+
+**commissions:** 4 — written into Part 0.
+
 ## Disposition map
 
 <!-- All six rows always present. State is `commissioned` or `not pursued` — there is no
@@ -4518,15 +4599,17 @@ definition*).
     session's position stands as put*): the four statements are its guides and roles.
 14. The core model's open seams, restated on today's read: how ordnance delivery and BDA
     divide; who owns munitions effectiveness (the collateral output had an owner and
-    lapsed, so its question is a correction and not a seam); the two planning names.
+    lapsed, so its question is a correction and not a seam); the two planning names. *Ruled
+    2026-10-10* (decision *item 14 stands*): 'it stands'. Closed.
 15. Under the one-doctrine ruling: what the constitution is, relative to the doctrine; how
-    each part of the model traces to an article. *Closed by canon, 2026-10-08:* whether an
+    each part of the model traces to an article. *Ruled 2026-10-10* (decision *item 15 stands*):
+    'it stands'. Closed. *Closed by canon, 2026-10-08:* whether an
     agent role is called a pilot. Article 3 is ratified ("The model is a crew resource, not
     a crew member"), so no agent role takes the name unless the operator amends the article.
     *Added 2026-10-08 from the trace:* the word "crew" for agent roles, against the same
     article; an article for relief of position; Article 6's sizing against the frame's.
 13. The names the texts put in doubt, as listed above and as corrected in the nomenclature
-    decision.
+    decision. *Ruled 2026-10-10* (decision *item 13 stands*): 'it stands'. Closed.
 12. *Closed 2026-10-10:* the operator reviewed the rewritten `review.md` and
     `doctrine-merge.md` and signed off (decision *the restatement stands and the run is
     funded*).
