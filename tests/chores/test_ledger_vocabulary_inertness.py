@@ -58,6 +58,9 @@ class TheBaselineOnlyEverDecreases(unittest.TestCase):
 
     def setUp(self) -> None:
         self.chore = _load()
+        # The chore script reports to stdout; keep the suite's output to dots
+        # (test-isolation-compliance, maintenance visit D 2026-10-10).
+        self.enterContext(redirect_stdout(StringIO()))
 
     def _root(self, *, declared: list[str], fired: list[str], baseline: list[str]) -> Path:
         root = Path(self.enterContext(tempfile.TemporaryDirectory()))
