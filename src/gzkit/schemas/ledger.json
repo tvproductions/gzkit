@@ -2148,6 +2148,12 @@
             "null"
           ]
         },
+        "observed_files": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
         "drift": {
           "type": [
             "array",

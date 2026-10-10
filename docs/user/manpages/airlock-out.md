@@ -21,6 +21,17 @@ matching INTENT edge is a *"you wrecked something"* finding (you touched what yo
 never declared); an INTENT edge with no matching FACT edge is a *"broken
 contract"* finding (you declared what you never delivered).
 
+The **footprint** is a second fact vein (GHI #1185). `gz airlock out` reads the
+uncommitted working tree and holds each changed file against the brief's
+`Allowed Paths`. A changed file outside them is a *"you wrecked something"*
+finding naming the file. Files gzkit writes as its own record of the work (the
+ledger, handoffs, lock files, plan markers, the brief itself and its ADR
+package's `logs/`) are never findings. The booked event carries
+`observed_files`, the number of changed files the exit looked at; an exit that
+looked at none carries no such field. At the pipeline's Stage 5 seam the exit
+reads the changed files sealed on the completion receipt, because the working
+tree has been committed by then.
+
 ### Diagnostic-only tracer contract
 
 `gz airlock out` is **not fail-closed at the CLI**. Surfaced drift prints
@@ -30,9 +41,10 @@ exit call site (parent ADR § Consequences Negative #5). The only non-zero exit
 is a user error: an unresolvable target brief exits 1.
 
 For a real leaf OBPI target the ontology sonar returns no transitive dependents
-and no parent invariants are supplied, so the two-graph FACT layer is empty, the
-drift-diff is `clean`, and no findings surface. That is the tracer's documented
-calibration frontier, not a defect.
+and no parent invariants are supplied, so the two-graph layer is empty. That is
+the tracer's documented calibration frontier, not a defect. The footprint
+comparison does not depend on it: a changed file outside `Allowed Paths` is a
+finding whatever the ontology returns.
 
 A discovered correction is ROUTED as a FRESH transit through the right door
 (`pipeline | mx | permitted-entry`) — never smuggled inline into the current

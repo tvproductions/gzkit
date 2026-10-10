@@ -284,5 +284,96 @@ class TestNeverWritesL1(_AirlockExitCase):
         )
 
 
+class TestFootprintComparison(_AirlockExitCase):
+    """GHI #1185: the exit holds the files a transit changed against its footprint.
+
+    The exit read the brief's Allowed Paths and booked only their count. A changed
+    file with no matching declared path is the fact edge with no intent edge that
+    REQ-0.33.0-03-01 names "you wrecked something".
+    """
+
+    def _out_event(self, ledger: Ledger):
+        events = [e for e in ledger.read_all() if e.event == "airlock_out"]
+        self.assertEqual(len(events), 1)
+        return events[0]
+
+    @covers("REQ-0.33.0-03-01")
+    def test_a_changed_file_outside_the_footprint_is_a_wrecked_finding(self) -> None:
+        ledger = self._ledger()
+        report = airlock_exit(
+            "OBPI-X",
+            self._brief(),
+            reach_fn=lambda _n: [],
+            ledger=ledger,
+            changed_files=["src/gzkit/airlock/exit.py", "docs/user/runbook.md"],
+        )
+        wrecked = [
+            f.edge.target for f in report.findings if f.kind is FindingKind.WRECKED_SOMETHING
+        ]
+        self.assertEqual(wrecked, ["docs/user/runbook.md"])
+        self.assertIs(report.drift_diff.verdict, Verdict.SURFACE)
+        event = self._out_event(ledger)
+        self.assertEqual(event.extra["drift"], ["docs/user/runbook.md"])
+        self.assertEqual(event.extra["observed_files"], 2)
+
+    @covers("REQ-0.33.0-03-01")
+    def test_changes_inside_the_footprint_and_gzkit_records_are_clean(self) -> None:
+        ledger = self._ledger()
+        report = airlock_exit(
+            "OBPI-X",
+            self._brief(),
+            reach_fn=lambda _n: [],
+            ledger=ledger,
+            changed_files=[
+                "src/gzkit/airlock/exit.py",
+                ".gzkit/ledger.jsonl",
+                ".claude/plans/.pipeline-active.json",
+            ],
+        )
+        self.assertEqual(report.findings, ())
+        self.assertIs(report.drift_diff.verdict, Verdict.CLEAN)
+        self.assertEqual(self._out_event(ledger).extra["observed_files"], 3)
+
+    @covers("REQ-0.33.0-03-04")
+    def test_an_exit_given_no_changed_files_records_that_none_were_observed(self) -> None:
+        ledger = self._ledger()
+        airlock_exit("OBPI-X", self._brief(), reach_fn=lambda _n: [], ledger=ledger)
+        self.assertNotIn("observed_files", self._out_event(ledger).extra)
+
+    @covers("REQ-0.33.0-03-04")
+    def test_stage5_gate_holds_the_sealed_changed_files_against_the_footprint(self) -> None:
+        from gzkit.ledger import adr_created_event, obpi_created_event, obpi_receipt_emitted_event
+        from gzkit.pipeline_runtime import check_airlock_out_gate
+
+        project_root = self.tmp
+        (project_root / ".gzkit").mkdir(exist_ok=True)
+        ledger = Ledger(project_root / ".gzkit" / "ledger.jsonl")
+        ledger.append(adr_created_event("ADR-0.1.0", "PRD-TEST-1.0.0", "lite"))
+        ledger.append(obpi_created_event("OBPI-0.1.0-01", "ADR-0.1.0"))
+        ledger.append(
+            obpi_receipt_emitted_event(
+                obpi_id="OBPI-0.1.0-01",
+                receipt_event="completed",
+                attestor="g0",
+                evidence={
+                    "value_narrative": "sealed",
+                    "key_proof": "sealed",
+                    "scope_audit": {
+                        "allowlist": ["src/gzkit/airlock/exit.py"],
+                        "changed_files": ["src/gzkit/airlock/exit.py", "docs/user/runbook.md"],
+                        "out_of_scope_files": ["docs/user/runbook.md"],
+                    },
+                },
+                parent_adr="ADR-0.1.0",
+                obpi_completion="completed",
+            )
+        )
+        findings = check_airlock_out_gate(
+            "OBPI-0.1.0-01", self._brief(), project_root, reach_fn=lambda _n: []
+        )
+        self.assertEqual(len(findings), 1)
+        self.assertIn("docs/user/runbook.md", findings[0])
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -1218,6 +1218,7 @@ class AirlockOutEvent(_EventBase):
     drift: list[str] | None = None
     routing: list[str] | None = None
     bodies: int | None = None
+    observed_files: int | None = None
     aborted: StrictBool | None = None
     error: str | None = None
 

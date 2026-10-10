@@ -11,9 +11,12 @@ import json
 from collections.abc import Callable, Iterable, Mapping
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel, ConfigDict, Field
+
+if TYPE_CHECKING:
+    from gzkit.ledger import Ledger
 
 from gzkit.lock_manager import list_locks, resolve_agent
 from gzkit.models.persona import load_persona
@@ -625,6 +628,23 @@ def check_airlock_in_gate(
     return []
 
 
+def _transit_changed_files(ledger: Ledger, obpi_id: str, project_root: Path) -> list[str]:
+    """Return the files a transit changed: the sealed set when one exists, else the tree.
+
+    This seam runs after completion and the guarded sync, when the working tree no
+    longer holds the work. The completion receipt sealed the changed files before
+    either, so the receipt is read first (GHI #1185).
+    """
+    from gzkit.hooks.obpi import collect_changed_files, normalize_scope_audit  # noqa: PLC0415
+
+    info = ledger.get_artifact_graph().get(ledger.canonicalize_id(obpi_id), {})
+    evidence = info.get("latest_completion_evidence") or {}
+    sealed = normalize_scope_audit(evidence.get("scope_audit"))
+    if sealed and sealed["changed_files"]:
+        return sealed["changed_files"]
+    return collect_changed_files(project_root)
+
+
 def check_airlock_out_gate(
     obpi_id: str,
     brief_path: Path,
@@ -651,10 +671,24 @@ def check_airlock_out_gate(
     from gzkit.ledger import Ledger  # noqa: PLC0415
 
     ledger = Ledger(project_root / ".gzkit" / "ledger.jsonl")
+    changed_files = _transit_changed_files(ledger, obpi_id, project_root)
     if reach_fn is None:
-        report = airlock_exit(obpi_id, brief_path, ledger=ledger)
+        report = airlock_exit(
+            obpi_id,
+            brief_path,
+            ledger=ledger,
+            changed_files=changed_files,
+            project_root=project_root,
+        )
     else:
-        report = airlock_exit(obpi_id, brief_path, reach_fn=reach_fn, ledger=ledger)
+        report = airlock_exit(
+            obpi_id,
+            brief_path,
+            reach_fn=reach_fn,
+            ledger=ledger,
+            changed_files=changed_files,
+            project_root=project_root,
+        )
     return [
         f"airlock-OUT finding ({f.kind.value}): {f.edge.target} -> {f.recommendation}"
         for f in report.findings

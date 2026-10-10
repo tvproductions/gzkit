@@ -30,6 +30,7 @@ from gzkit.airlock.enter import airlock_enter, build_refusal
 from gzkit.airlock.exit import ExitReport, airlock_exit
 from gzkit.airlock.model import Decision, Preflight
 from gzkit.commands.common import console, get_project_root
+from gzkit.hooks.obpi import collect_changed_files
 from gzkit.ledger import Ledger
 from gzkit.pipeline_markers import find_obpi_brief
 
@@ -147,10 +148,12 @@ def airlock_out_cmd(
 
     Resolves the target's brief, runs ``airlock_exit``, and reports the drift-diff
     verdict, findings + recommendations, the closed decision menu, and any
-    fresh-transit routing. DIAGNOSTIC-ONLY (co-equal with ``gz airlock in``): a
-    surfaced drift prints findings but still exits 0 — it reports, it never
-    blocks. In ``--dry-run`` no ledger is written (no L2 ``airlock_out`` event);
-    otherwise the transit is booked to the project ledger. NEVER writes L1 canon.
+    fresh-transit routing. The uncommitted working tree is held against the brief's
+    Allowed Paths: each changed file outside them is a finding (GHI #1185).
+    DIAGNOSTIC-ONLY (co-equal with ``gz airlock in``): a surfaced drift prints
+    findings but still exits 0 — it reports, it never blocks. In ``--dry-run`` no
+    ledger is written (no L2 ``airlock_out`` event); otherwise the transit is
+    booked to the project ledger. NEVER writes L1 canon.
     """
     project_root = get_project_root()
     docs_root = project_root / "docs" / "design" / "adr"
@@ -160,7 +163,13 @@ def airlock_out_cmd(
         raise SystemExit(1)
 
     ledger = None if dry_run else Ledger(project_root / ".gzkit" / "ledger.jsonl")
-    report = airlock_exit(target, brief_path, ledger=ledger)
+    report = airlock_exit(
+        target,
+        brief_path,
+        ledger=ledger,
+        changed_files=collect_changed_files(project_root),
+        project_root=project_root,
+    )
 
     if as_json:
         print(json.dumps(_exit_payload(target, report), indent=2))  # noqa: T201

@@ -10,11 +10,16 @@ inline) -> log the encounter to L2.
 
 The drift-diff is the symmetric difference of two edge veins: PUSH edges are
 FACT (``OBSERVED`` provenance, from ``gz ontology reach``) and PULL edges are
-INTENT (``LAW`` provenance, from the brief's declared Allowed Paths + parent-ADR
-invariants). A FACT edge with no matching INTENT edge is a "you wrecked
-something" finding (you touched what you never declared); an INTENT edge with no
-matching FACT edge is a "broken contract" finding (you declared what you never
-delivered).
+INTENT (``LAW`` provenance, from the parent-ADR invariants). A FACT edge with no
+matching INTENT edge is a "you wrecked something" finding (you touched what you
+never declared); an INTENT edge with no matching FACT edge is a "broken contract"
+finding (you declared what you never delivered).
+
+The FOOTPRINT is the second fact vein (GHI #1185). When the caller supplies the
+files the transit changed, each one outside the brief's declared Allowed Paths is
+a "you wrecked something" finding of its own. gzkit's own records of the work
+never count. Until 2026-10-10 the exit read the Allowed Paths and booked only
+their count.
 
 Boundary fences held verbatim: the airlock NEVER writes L1 canon — it returns
 ``LawProposal`` objects for governed attestation, never a canon mutation (parent
@@ -28,7 +33,7 @@ from __future__ import annotations
 
 import enum
 import sys
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Any
 
@@ -42,6 +47,8 @@ from gzkit.airlock.model import (
     Verdict,
 )
 from gzkit.governance.brief_path_validity import extract_allowed_paths
+from gzkit.hooks.obpi import brief_record_paths, out_of_scope_files
+from gzkit.hooks.obpi import extract_allowed_paths as extract_scope_allowlist
 from gzkit.ledger import Ledger, LedgerEvent, slug_id_for
 
 
@@ -179,6 +186,32 @@ def compute_drift_diff(
     return DriftDiff(drift=drift, verdict=verdict, resolutions=())
 
 
+def compute_footprint_drift(
+    changed_files: Sequence[str],
+    brief_path: Path,
+    project_root: Path | None = None,
+) -> tuple[SeamEdge, ...]:
+    """Return a PUSH edge for each changed file outside the brief's Allowed Paths.
+
+    The comparison is the one the completion receipt's scope audit makes
+    (``hooks.obpi.out_of_scope_files``), so the exit and the receipt cannot name
+    different files. The brief and its package log are exempt only when
+    *project_root* locates them.
+    """
+    allowlist = extract_scope_allowlist(brief_path.read_text(encoding="utf-8"))
+    own_paths = brief_record_paths(project_root, brief_path) if project_root else []
+    return tuple(
+        SeamEdge(
+            kind=SeamKind.PUSH,
+            provenance=Provenance.OBSERVED,
+            source="airlock-out",
+            target=path,
+            accounted=False,
+        )
+        for path in out_of_scope_files(list(changed_files), allowlist, own_paths=own_paths)
+    )
+
+
 def build_findings(drift: DriftDiff) -> tuple[Finding, ...]:
     """Classify each drift edge and attach a non-empty recommendation (REQ-02).
 
@@ -238,8 +271,15 @@ def airlock_exit(
     parent_invariants: tuple[str, ...] = (),
     reach_fn: Callable[[str], list[str] | None] = _default_reach,
     ledger: Ledger | None = None,
+    changed_files: Sequence[str] | None = None,
+    project_root: Path | None = None,
 ) -> ExitReport:
     """Run the airlock-OUT exit membrane, accounting for what the transit disturbed.
+
+    ``changed_files`` is the set of files the transit changed, as the caller observed
+    it. ``None`` means nothing was observed: no footprint comparison is made and the
+    booked event carries no ``observed_files``, so a clean exit that looked at
+    nothing is distinguishable from one that looked and found nothing.
 
     DECLARE the footprint (the brief's Allowed Paths, seam-as-BODY) -> PING the
     observed reach (FACT edges) -> DRIFT-DIFF against the declared invariants
@@ -255,6 +295,16 @@ def airlock_exit(
         bodies = tuple(extract_allowed_paths(brief_path) or ())  # DECLARE: the footprint
         reach = reach_fn(target) or []  # PING: FACT (OBSERVED), advisory input
         drift = compute_drift_diff(tuple(reach), tuple(parent_invariants))
+        extra: dict[str, Any] = {"bodies": len(bodies)}
+        if changed_files is not None:
+            footprint = compute_footprint_drift(changed_files, brief_path, project_root)
+            edges = (*drift.drift, *footprint)
+            drift = DriftDiff(
+                drift=edges,
+                verdict=Verdict.SURFACE if edges else Verdict.CLEAN,
+                resolutions=(),
+            )
+            extra["observed_files"] = len(changed_files)
         findings = build_findings(drift)
         routing = tuple(
             route_fresh_transit(f) for f in findings if f.kind is FindingKind.WRECKED_SOMETHING
@@ -263,7 +313,7 @@ def airlock_exit(
             _propose_amendment(f) for f in findings if f.kind is FindingKind.BROKEN_CONTRACT
         )
         if ledger is not None:
-            _book_exit(ledger, target, drift, routing, extra={"bodies": len(bodies)})
+            _book_exit(ledger, target, drift, routing, extra=extra)
             booked = True
         return ExitReport(
             drift_diff=drift,
