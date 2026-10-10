@@ -12,10 +12,15 @@ from __future__ import annotations
 import json
 import tempfile
 import unittest
+from contextlib import redirect_stdout
+from io import StringIO
 from pathlib import Path
 
+from gzkit.chores import eval_feedback_cluster_run
 from gzkit.chores.eval_feedback_cluster_lib import (
     ProposalRecord,
+    _build_proposed_rule_target,
+    cluster_buckets,
     run_cluster,
 )
 from gzkit.commands.chores import _load_chores_registry
@@ -404,6 +409,91 @@ class TestProposalRecordFiledFields(unittest.TestCase):
         self.assertFalse(record.filed)
         self.assertIsNone(record.ghi_url)
         self.assertFalse(record.advisory)
+
+
+class TestOperationalRunner(unittest.TestCase):
+    """The chore's run step clusters the project's own evidence (GHI #997).
+
+    Through 1.1.0 the step ran this module's tests; the live ledger was never
+    clustered. The runner must read the project, report what it read, and write
+    proposals only on a write run.
+    """
+
+    def _project(self, root: Path, *, events: int) -> None:
+        ledger_path = root / ".gzkit" / "ledger.jsonl"
+        ledger_path.parent.mkdir(parents=True, exist_ok=True)
+        _write_ledger(
+            ledger_path,
+            [_make_eval_event(f"ADR-0.{i}.0", {"clarity": 2.7}) for i in range(1, events + 1)],
+        )
+        (root / "data").mkdir(exist_ok=True)
+        (root / "data" / "eval_feedback_thresholds.json").write_text(
+            json.dumps(
+                {
+                    "low_score_threshold": 3.0,
+                    "red_team_count_threshold": 3,
+                    "cluster_min_recurrence": 3,
+                }
+            ),
+            encoding="utf-8",
+        )
+
+    def test_dry_run_reports_the_scan_and_writes_nothing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._project(root, events=3)
+            out = StringIO()
+            with redirect_stdout(out):
+                code = eval_feedback_cluster_run.main(["--dry-run", "--project-root", str(root)])
+            self.assertEqual(code, 0)
+            text = out.getvalue()
+            self.assertIn("read 3 adr-evaluation event(s)", text)
+            self.assertIn("1 at or above recurrence 3", text)
+            self.assertIn("dim:clarity:low: 3 distinct artifact(s)", text)
+            self.assertIn("dry run: nothing written", text)
+            self.assertFalse(list(root.rglob("proposal-*.json")))
+
+    def test_write_run_emits_the_qualifying_proposal(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._project(root, events=3)
+            proofs = root / "proofs"
+            with redirect_stdout(StringIO()):
+                code = eval_feedback_cluster_run.main(
+                    ["--project-root", str(root), "--proofs-dir", str(proofs)]
+                )
+            self.assertEqual(code, 0)
+            written = list(proofs.glob("proposal-*.json"))
+            self.assertEqual(len(written), 1)
+            record = json.loads(written[0].read_text(encoding="utf-8"))
+            self.assertEqual(record["cluster_key"], "dim:clarity:low")
+
+    def test_below_threshold_is_a_legible_null_not_an_empty_read(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._project(root, events=2)
+            out = StringIO()
+            with redirect_stdout(out):
+                code = eval_feedback_cluster_run.main(["--project-root", str(root)])
+            self.assertEqual(code, 0)
+            self.assertIn("read 2 adr-evaluation event(s)", out.getvalue())
+            self.assertIn("wrote 0 new proposal record(s)", out.getvalue())
+
+    def test_cluster_buckets_reads_without_writing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._project(root, events=3)
+            summary = cluster_buckets(root)
+            self.assertEqual((summary.events_read, summary.artifacts_read), (3, 0))
+            self.assertEqual(set(summary.buckets), {"dim:clarity:low"})
+            self.assertFalse(list(root.rglob("proposal-*.json")))
+
+
+class TestProposedRuleTargetIsAPath(unittest.TestCase):
+    def test_dimension_names_are_slugified(self) -> None:
+        target = _build_proposed_rule_target("dim:Architectural Alignment:critical")
+        self.assertEqual(target, "docs/governance/architectural-alignment-critical-improvement.md")
+        self.assertNotIn(" ", target)
 
 
 if __name__ == "__main__":  # pragma: no cover

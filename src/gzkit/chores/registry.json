@@ -255,7 +255,7 @@
     {
       "slug": "eval-feedback-cluster",
       "title": "Evaluation Feedback Clustering (ADR-0.0.26)",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "path": ".gzkit/chores/eval-feedback-cluster",
       "lane": "lite",
       "timeoutSeconds": 300,
@@ -423,7 +423,7 @@
     {
       "slug": "memory-hygiene",
       "title": "Audit auto-memory for process drift into governed artifacts",
-      "version": "1.2.1",
+      "version": "1.3.0",
       "path": ".gzkit/chores/memory-hygiene",
       "lane": "lite",
       "vendor": "claude",

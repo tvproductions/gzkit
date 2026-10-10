@@ -324,7 +324,9 @@ def _build_proposed_rule_target(cluster_key: str) -> str:
     """Build a proposed rule target string from cluster_key."""
     if cluster_key.startswith("dim:"):
         _, dim_name, band = cluster_key.split(":", 2)
-        return f"docs/governance/{dim_name}-{band}-improvement.md"
+        # A dimension name is prose ("Architectural Alignment"); a path is not (GHI #997).
+        slug = dim_name.strip().lower().replace(" ", "-")
+        return f"docs/governance/{slug}-{band}-improvement.md"
     if cluster_key.startswith("rt:"):
         challenge_id = cluster_key[3:]
         return f".gzkit/rules/red-team-{challenge_id}.md"
@@ -337,6 +339,43 @@ def _build_proposed_rule_target(cluster_key: str) -> str:
 # ---------------------------------------------------------------------------
 # Main entry point
 # ---------------------------------------------------------------------------
+
+
+class ClusterSummary(BaseModel):
+    """What one clustering pass read and grouped, before any proposal is written."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    events_read: int = Field(..., description="adr-evaluation events read from the ledger")
+    artifacts_read: int = Field(..., description="gz-justify artifacts walked")
+    buckets: dict[str, list[dict]] = Field(
+        ..., description="cluster_key -> member records (artifact_id, artifact_path, ...)"
+    )
+
+
+def cluster_buckets(
+    project_root: Path,
+    *,
+    ledger_path: Path | None = None,
+    justify_root: Path | None = None,
+    score_threshold: float = _DEFAULT_SCORE_THRESHOLD,
+) -> ClusterSummary:
+    """Read the evidence and group it; write nothing.
+
+    The read-only half of :func:`run_cluster`, exposed so the operational runner
+    can report what a pass read even when nothing qualifies (GHI #997, #614).
+    """
+    if ledger_path is None:
+        ledger_path = project_root / ".gzkit" / "ledger.jsonl"
+    if justify_root is None:
+        justify_root = project_root / "artifacts" / "justify"
+    events = _read_adr_evaluation_events(ledger_path)
+    justify_artifacts = _walk_justify_artifacts(justify_root)
+    return ClusterSummary(
+        events_read=len(events),
+        artifacts_read=len(justify_artifacts),
+        buckets=_build_buckets(events, justify_artifacts, score_threshold),
+    )
 
 
 def run_cluster(
@@ -379,9 +418,12 @@ def run_cluster(
     if proofs_dir is None:
         proofs_dir = project_root / ".gzkit" / "chores" / "eval-feedback-cluster" / "proofs"
 
-    events = _read_adr_evaluation_events(ledger_path)
-    justify_artifacts = _walk_justify_artifacts(justify_root)
-    buckets = _build_buckets(events, justify_artifacts, score_threshold)
+    buckets = cluster_buckets(
+        project_root,
+        ledger_path=ledger_path,
+        justify_root=justify_root,
+        score_threshold=score_threshold,
+    ).buckets
     existing_hashes = _load_existing_hashes(proofs_dir)
 
     proposals: list[ProposalRecord] = []
@@ -431,6 +473,8 @@ def run_cluster(
 
 
 __all__ = [
+    "ClusterSummary",
     "ProposalRecord",
+    "cluster_buckets",
     "run_cluster",
 ]

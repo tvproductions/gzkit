@@ -30,7 +30,7 @@
     "ADR-0.0.73-verification-layer-binding-audit"
   ],
   "summary": "Dimension 'Problem Clarity' scored in the 'critical' band across 12 distinct artifacts: ADR-0.0.34, ADR-0.0.46-pool-management, ADR-0.0.47-pool-dag-promotion-routing, ADR-0.0.52, ADR-0.0.60-harness-fitness-report, ADR-0.0.64, ADR-0.0.68, ADR-0.0.73-verification-layer-binding-audit, ADR-0.28.0-focused-context-loader, ADR-0.29.0-precise-auth-boundaries-registration-and-witnessed-floor-override, ADR-0.50.0, ADR-0.51.0-skill-tuning-feedback-loop",
-  "proposed_rule_target": "docs/governance/Problem Clarity-critical-improvement.md",
+  "proposed_rule_target": "docs/governance/problem-clarity-critical-improvement.md",
   "content_hash": "1f5ac1691d5c9977",
   "filed": false,
   "ghi_url": null,

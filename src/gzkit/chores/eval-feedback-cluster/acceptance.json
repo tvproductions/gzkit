@@ -7,6 +7,11 @@
     },
     {
       "type": "exitCodeEquals",
+      "command": "uv run python -m gzkit.chores.eval_feedback_cluster_run --dry-run",
+      "expected": 0
+    },
+    {
+      "type": "exitCodeEquals",
       "command": "uv run gz validate --chores-layout",
       "expected": 0
     }

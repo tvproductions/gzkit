@@ -5,6 +5,10 @@
 
 ---
 
+> **1.2.0 (GHI #997, 2026-10-10)** — the "run clustering" step runs the clustering
+> (`python -m gzkit.chores.eval_feedback_cluster_run`) rather than the library's tests; a
+> dry-run criterion exercises the operation read-only; proposal rule targets are slugs.
+
 ## Overview
 
 Periodically scan recent `adr-evaluation` ledger events and `gz-justify`
@@ -22,11 +26,19 @@ distinct artifacts (ADR-0.0.26 Decision §3).
 
 ## Workflow
 
-### 1. Run clustering — observe
+### 1. Run clustering — propose
 
 ```bash
-uv run -m unittest tests/chores/test_eval_feedback_cluster.py -q
+uv run python -m gzkit.chores.eval_feedback_cluster_run --dry-run
+uv run python -m gzkit.chores.eval_feedback_cluster_run
 ```
+
+The dry run reports what the pass read (events, justify artifacts, clusters, how many
+qualify) and writes nothing; the write run emits the qualifying proposal records. Both
+print the counts so a zero-proposal run is legible as a result and not as an empty
+input (GHI #614). Through 1.1.0 this step ran the library's unit tests instead, so the
+live ledger was never clustered (GHI #997). The unit tests remain the chore's first
+acceptance criterion; they verify the library, not the operation.
 
 ### 2. Review proposals — propose
 
