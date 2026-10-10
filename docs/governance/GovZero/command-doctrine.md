@@ -2,10 +2,10 @@
 
 *A back-port of the aircrew accountability framing into the philosophy layer of GovZero and gzkit*
 
-Status: Canonical doctrine (philosophy layer)
-Ratified: 2026-06-10 (operator-ratified relocation from working draft)
+Status: Canonical doctrine (philosophy layer). Part I of this file, the statement of command and the ten articles, is the constitution: the root (operator rulings 2026-06-14, 2026-10-08 and 2026-10-10, frontier item 15 of R&D run `renewing-vows`).
+Ratified: 2026-06-10 (operator-ratified relocation from working draft). Amended 2026-10-10 by the operator's ratification of Part 0 of `docs/rnd/renewing-vows/doctrine-merge.md`, verbatim: "ratify Part 0"; the run record `docs/rnd/renewing-vows.md` carries each ruling the amendment rests on, with the operator's words.
 Authority: Philosophy layer of the Four P's stack — policies, procedures, and practices trace upward to these articles (Article 10). The [GovZero Charter](charter.md) remains the sole authority for gate definitions; this doctrine is what those definitions trace to.
-Companion: the Sprint and Drift essay "The left seat." Implementation worklist tracked in `ADR-pool.command-doctrine-internalization`.
+Companion: the Sprint and Drift essay "The left seat." The implementation worklist is carried by the campaign (`docs/governance/build-to-1.0-campaign-2026-09-20.md` § Amendments 2026-10-10) through `ADR-pool.command-doctrine-internalization`; doctrine sets no dates and carries no worklist (statement of command, line 5).
 
 ## Why this document exists
 
@@ -23,6 +23,51 @@ The gap has a second cost that is newly urgent. Each model release arrives with 
 
 **Practices** are what actually happens in gzkit sessions, including the drift between procedure as written and procedure as flown. The drift is data. When practice diverges from procedure persistently, either the procedure has stopped tracing to the philosophy and should be fixed, or the practice is a compliance failure and should be named as one. The Four P's give the diagnostic: trace the divergent item upward and see where the chain breaks.
 
+## Statement of command
+
+1. One human commands. As commander that human shapes intent and decides what the force is
+   tasked to do. As captain the same human signs for what ships and can override anything.
+   It is one standing and does not divide. *(Article 1; rulings of 2026-10-08.)*
+2. Command reaches the work only as orders the harness carries: standing orders for every
+   position, a tasking order for one work package. The order is what carries a role's
+   auspices. *(Articles 2 and 4; ruling of 2026-10-10.)*
+3. Every obligation has a position, and every position leaves a record. Crew fill positions
+   and command nothing. Every obligation has a position is the lapses' remedy. *(Article 7;
+   rulings of 2026-10-08 and 2026-10-10.)*
+4. The commander holds positions too, and is bound by doctrine and policy until changing
+   them on the record. *(Article 1; ruling of 2026-10-08.)*
+5. The campaign says what the force does next and when. Doctrine sets no dates and carries
+   no worklist. *(Ruling of 2026-10-09 on the campaign; ruling of 2026-10-10.)*
+6. Work is assessed from records by someone who did not do it. Release is the captain's.
+   *(Article 7; Article 1; Gate 5.)*
+7. The orders that bind construction are the last release's. Doctrine under construction is
+   product until released, and is proven on another project before it binds its own making.
+   *(Ruling of 2026-10-10, frontier item 22.)*
+
+Ruled whole by the operator on 2026-10-10: 'it stands, add the seventh'.
+
+## Terms
+
+- **Commander.** The one human, as the shaper of intent and the decider of what the force is
+  tasked to do. **Captain.** The same human, as the holder of the signature and the override.
+  The operator is both and is not crew. *(Ruling of 2026-10-08: 'i am commander and shape
+  intent, i am not crew, but i am captain, you are crew'.)*
+- **Position.** An obligation and a role to fulfil it. **Role.** What the position gives its
+  holder to fulfil the obligation; it has bounds and auspices, and the holder has no
+  authority apart from it. **Crew.** The actor implementing within the role's bounds and
+  under its auspices. Every agent is crew, the orchestrating session included. *(Ruling of
+  2026-10-08: 'the position is an obligation and a role to fulfill the obligation, the crew
+  is the actor implementing within the bounds and auspices of that role'.)*
+- **Force.** What has doctrine, assets (its table of organization and equipment) and
+  abilities. **Doctrine.** The force's: the ten articles and this statement. **Campaign.**
+  What focuses the force's abilities for specified goals; the Magna Carta is gzkit's.
+  *(Ruling of 2026-10-09: 'a force has doctrine, assets (ToE), and abilities. a campaign
+  focuses these abilities for specified goals'.)*
+- **Order.** How command reaches the work: a standing order binds every position; a tasking
+  order binds one work package and carries the role's auspices. *(Line 2.)*
+- **Release.** The captain's signature on what ships; in gzkit, Gate 5 attestation, which is
+  return to service. *(Line 6; `AGENTS.md` § Gate Covenant; 14 CFR § 43.9 as landed.)*
+
 ## The command doctrine
 
 ### Article 1. Accountability is non-transferable
@@ -33,9 +78,9 @@ One human signs for the work. The signature does not move to the model, the harn
 
 A captain's authority over a human crew rests on shared consequences and a common operating manual. The model shares neither. It follows that command over a model is exactly as real as the harness that enforces it, and no more. Authority asserted in the context window is a briefing: necessary, and unenforceable. Authority implemented in the harness, in CI rules, file checks, diff gates, and halt conditions, is the only kind the model actually answers to. Every article below that imposes an obligation on the model is therefore really an obligation on the harness. If the harness does not enforce it, the doctrine does not contain it.
 
-### Article 3. The model is a crew resource, not a crew member
+### Article 3. The model is crew, never in command
 
-Crew resource management never promoted the first officer to command; it obligated the whole crew to keep the commander informed and made silence a violation (Helmreich et al., 1999). The same allocation applies here, in both directions. The model is used fully: it drafts, flags, surfaces, challenges, and proposes, and a practice that underuses a capable model is leaving crew resources idle, which CRM treats as a failure. And the model decides nothing that ships. Its challenges are inputs to judgment, never substitutes for it. Designing the harness so the model can effectively surface concern is part of the doctrine; treating surfaced concern as approval is a violation of it.
+Crew resource management never promoted the first officer to command; it obligated the whole crew to keep the commander informed and made silence a violation (Helmreich et al., 1999). The same allocation applies here, in both directions. The model is used fully: it drafts, flags, surfaces, challenges, and proposes, and a practice that underuses a capable model is leaving crew resources idle, which CRM treats as a failure. And the model decides nothing that ships. Its challenges are inputs to judgment, never substitutes for it. Designing the harness so the model can effectively surface concern is part of the doctrine; treating surfaced concern as approval is a violation of it. An agent is crew: it fills a position, an obligation with a role to fulfil it, within the role's bounds and under its auspices. (Title and this sentence amended 2026-10-10; the article's allocation is unchanged.)
 
 ### Article 4. Uncommanded change is an annunciation failure
 
@@ -63,23 +108,78 @@ Automation that performs continuously degrades the supervisor's ability to perfo
 
 ### Article 10. Procedures earn compliance through coherence
 
-Every gate, check, and template in gzkit must trace upward through a policy to an article of this doctrine. Anything that cannot be traced is either workaround scaffolding for a past model generation, which retires on its own schedule, or accumulated ritual, which retires now. This is Degani and Wiener's finding turned into a maintenance rule: incoherent procedure is what breeds noncompliance, so coherence is audited, not assumed. The audit runs at every major model transition, and its two questions are fixed. Does this item implement the doctrine? Then it stays, whatever the vendor guidance prefers, and any output-quality cost is paid knowingly and measured. Does it compensate for a model weakness? Then it is benchmarked against the current release and retired the day it stops earning its place. The cure for procedural drift is not fewer procedures. It is procedures that visibly mean something.
+Every gate, check, and template in gzkit must trace upward through a policy to an article of this doctrine. Anything that cannot be traced is either workaround scaffolding for a past model generation, which retires on its own schedule, or accumulated ritual, which is retired when the campaign times it (amended 2026-10-10: doctrine sets no dates). This is Degani and Wiener's finding turned into a maintenance rule: incoherent procedure is what breeds noncompliance, so coherence is audited, not assumed. The audit is a task of the maintenance visit, due on the signal of a major model transition (the rhythm, below), and its two questions are fixed. Does this item implement the doctrine? Then it stays, whatever the vendor guidance prefers, and any output-quality cost is paid knowingly and measured. Does it compensate for a model weakness? Then it is benchmarked against the current release and retired the day it stops earning its place. The cure for procedural drift is not fewer procedures. It is procedures that visibly mean something.
 
 ## What changes in gzkit
 
-The doctrine implies a concrete worklist. Each item below names the article it implements.
+The doctrine implied a worklist here from 2026-06-10 to 2026-10-10. By line 5 of the statement of command, doctrine sets no dates and carries no worklist, so the six items are carried by the campaign (§ Amendments 2026-10-10) through `ADR-pool.command-doctrine-internalization`, each keeping the article it implements: the briefing template (Articles 2, 4, 10); refusal and substitution handling (Article 5); the scope-conformance report (Article 4; restored on completion receipts under GHI #1181, 2026-10-09); the autonomy span parameter (Article 6); the proficiency log (Article 9); the coherence audit (Article 10, now a task of the maintenance visit). The item texts of 2026-06-10 are in the file's history at commit `251df874e` and in the pool ADR.
 
-**Briefing template (Articles 2, 4, 10).** Replace heavyweight in-prompt scaffolding with a captain's-brief structure: scope manifest, stop conditions, expected artifacts, explicit prohibitions on out-of-scope change. Brief and complete are compatible; the template enforces both. Everything removed from the prompt either moves into the harness or is retired by the Article 10 audit.
+## The reconciliation of June (ratified 2026-10-10)
 
-**Refusal and substitution handling (Article 5).** The harness branches explicitly on API-level refusals rather than treating any successful response as usable output. The attestation record gains a served-model field. A substitution policy file states acceptable fallbacks per gate class, and the gate runner enforces it.
+Three acts of 2026-06-09 and 2026-06-10 disagree in seven places and were never reconciled
+(run record, decision *the work of 2026-06-08 to 2026-06-10 is discrepancy*). The operator
+has ruled three readings: the freeze is a statement about assets; a doctrine is not a plan,
+so the campaign did not subsume the doctrine; "retires now" is the campaign's to time. Each
+pair below is settled by one of the seven lines or by one of those readings, or was marked
+as the agent's proposal; the four proposals so marked were ratified with this Part on 2026-10-10.
 
-**Scope-conformance report (Article 4).** A post-run check diffs delivered changes against the scope manifest and annunciates every unrequested artifact, backup, or tidy. The report is a gate precondition, not advice.
+| # | The disagreement | Settled by | Resolution (candidate) |
+|---|---|---|---|
+| 1 | Freeze: subtraction has equal standing. Campaign, a day later: every reductive move is deferred past 1.0. | Line 5; the operator's reading that the freeze is about assets | The freeze states how much mechanism the force carries; when any of it is retired is the campaign's to say. The campaign's deferral governs timing; the freeze's sentence is kept as a statement of assets and loses its standing as a schedule. |
+| 2 | Campaign: reduction deferred. Article 10: accumulated ritual "retires now". | Line 5; the operator's reading | Article 10 keeps its criterion (ritual that stops earning its place is retired) and gives up its date. "Now" is struck from the doctrine's text and the retirement is timed by the campaign. *Agent's proposal: the amendment of Article 10's wording.* |
+| 3 | Freeze: too much mechanism; a new check only on observed drift. Article 2: six new mechanisms, one a gate precondition. | Line 3; line 7 | Both hold at once once positions are distinguished from assets. Article 2's six items are obligations and each gets a position (line 3); whether a position is met by a new mechanism or by a briefing is the policy question put 2026-10-09 (what a policy is, lines 1 to 3, unanswered). Line 7 adds: a new mechanism binds construction only once released. |
+| 4 | Campaign supersedes all prior plans. The doctrine's worklist landed after it and is named by no campaign edition. | Line 5; the operator's reading that a doctrine is not a plan | The doctrine carried a plan it should not carry. The six-item worklist leaves the doctrine's text and enters the campaign as items the operator sequences, each keeping the article it implements. The pool ADR `command-doctrine-internalization` is the vehicle the campaign names. *Agent's proposal: the campaign amendment that adopts the worklist.* |
+| 5 | Freeze: cut, then "measure the residual". No measurement; no owner. | Line 3 | A measurement with no position is a lapse. It gets a position or it is struck. *Agent's proposal: struck, since the operator read the sequence as dead and the campaign deferred reduction.* |
+| 6 | Freeze's text: "the third state is empty". The file's own table contradicts it. | Line 3; corrected 2026-10-09 | The scorecard's text was corrected on the operator's go for the lapses; the freeze block is a dated record and is cited as such. |
+| 7 | Article 10: the coherence audit "runs at every major model transition". No run found. | Line 3 | The audit is an obligation with no position. It gets one, named in the campaign, with its trigger. *Agent's proposal: the position is the maintenance visit of the rhythm's slower tier, due on the signal of a model transition.* |
 
-**Autonomy span parameter (Article 6).** A configured cap on change volume per attestation unit, with a documented re-decision procedure tied to model transitions. The cap appears in the attestation record so its observance is itself attestable. The cap's calibration can be empirical rather than intuitive: validated supervisory-control instruments measure the supervisor directly, with SAGAT estimating situation awareness and NASA TLX measuring mental workload, and Armstrong and Shah (2026) propose exactly this instrumentation for generative AI oversight roles. Measuring the attestor, not just the model, turns the doctrine's most judgment-dependent parameter into one that tracks observed review capacity.
+What this reconciliation does not do: it does not amend the campaign plan or the scorecard;
+those are later parts of row 4. It does not decide what a policy is. It records that the
+three acts are placed by the operator's five terms (the freeze about assets, the doctrine
+the force's, the Magna Carta the campaign) and that under line 5 the doctrine carries no
+worklist and sets no dates.
 
-**Proficiency log (Article 9).** Drift sessions get scheduled and recorded alongside the other governance artifacts, with the skill domains under maintenance named. The log makes skill retention auditable the same way the gates make work auditable.
+## The rhythm (ratified 2026-10-10)
 
-**Coherence audit (Article 10).** A standing checklist run at each major model transition: trace every gzkit item to an article, benchmark every compensation item against the current release, record what was retired and what was retained at known cost. The audit record is the practice's own answer, in advance, to anyone arguing the apparatus is superstition.
+Three tiers. The first is ratified; the two slower ones are advisory until each has a
+signal, and this text says so of itself. *Avoid* "weekly" and "each week" for any tier;
+*avoid* "the account" for the handoff.
+
+**The session tier** (operator-ratified 2026-07-18, verbatim: "AGENTS.md -> how we work;
+magna carta -> what we are working on. handoff -> what we were doing last. airlock -> a
+sortie into the environment. handoff -> a market [marker] for when we leave the session.
+That should be our rhythm."). Each session: `AGENTS.md` is how we work; the campaign plan is
+what we are working on; the handoff is what we were doing last, checked against live state
+before anything is acted on; the airlock is the sortie into the environment; the handoff on
+leaving is the marker. The handoff is briefed as a transfer of position responsibility, in
+four parts: preview from the status displays, verbal briefing, assumption, review (JO
+7110.65BB Appendix A; JO 7210.3EE 2-2-4 for the checklist's content). The briefing gates
+nothing; the relieving session owns the completeness of its own briefing as much as the one
+leaving. *(Line 3; policy 14; ruling of 2026-08-17.)*
+
+**The republish tier** (ruled 2026-10-07: 'Two slower tiers, signal-triggered'). A new
+edition of the campaign plan folds its amendments into the body and the rulings register.
+It comes due on accumulated amendments, announced, never on a calendar, and every ruling is
+carried or withdrawn explicitly in the fold. Advisory until the signal is built; the signal
+today is the count of amendments on the active edition, read by hand. *(Line 5: the campaign
+sets dates, so the republish is the campaign's own beat.)*
+
+**The maintenance tier** (same ruling). Due chores and issue triage are flown together as
+one named maintenance visit, a scheduled work package of the operator's own design (AC
+120-16G § 6-1). It comes due when the chore board announces it; the operator keeps the
+frequency ('I maintain frequency', 2026-09-12). Each run of a chore is a ledger event; a
+finding is not (ruled 2026-10-07). The coherence audit of Article 10 is a task of this
+visit, due on the signal of a model transition. *(Line 3; policy 13; the agent's proposal
+of the reconciliation, pair 7.)* Advisory until the board's signal is wired; the
+accumulated-work signal reads `unmeasured` today (GHI #1009).
+
+**What the rhythm is not.** It is not a calendar, and no tier gates: staleness announces.
+The operation tier adds nothing, because closeout and then release are canon, and the first
+flown sortie is a campaign gate behind `ADR-0.38.0`, not a beat.
+
+## The glossary
+
+The names this doctrine uses for gzkit's surfaces (commander, captain, crew, position, role, force, campaign, order, release, and the registers beneath them) are ratified in `docs/rnd/renewing-vows/doctrine-merge.md` Part 0 and are held there until the glossary's home is named by the DDD-discipline R&D run. The statement of command and the terms above are the part of that glossary this file carries.
 
 ## A note on the standing argument
 
@@ -87,7 +187,7 @@ The throughput position and this doctrine will keep colliding, and the collision
 
 ## Appendix A — Article-to-surface trace
 
-Seed of the Article 10 coherence audit. Each row traces an article to the gzkit surfaces that implement it today; gaps are tracked in `ADR-pool.command-doctrine-internalization`. This table is the audit's working baseline and is re-walked at every major model transition.
+Seed of the Article 10 coherence audit. Each row traces an article to the gzkit surfaces that implement it today; gaps are tracked in `ADR-pool.command-doctrine-internalization`. This table is the audit's working baseline and is re-walked by the maintenance visit due on a major model transition. Article 3's row reads its former title; the table is the June baseline and was not re-walked on 2026-10-10.
 
 | Article | Implementing gzkit surface | Status |
 |---|---|---|

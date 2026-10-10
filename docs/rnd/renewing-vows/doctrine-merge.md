@@ -67,7 +67,9 @@ The gap has a second cost that is newly urgent. Each model release arrives with 
 
 ---
 
-# Part 0 — Candidate text, drafted under the go on row 4 (2026-10-10)
+# Part 0 — Ratified 2026-10-10 (operator, verbatim: "ratify Part 0")
+
+> **Ratified.** The canonical `docs/governance/GovZero/command-doctrine.md` now carries the statement of command, the terms, Article 3's amended title and body sentence, Article 10's amended wording, the reconciliation of June, the rhythm and the worklist's move to the campaign, with the operator's words in its header. The campaign amendment below was appended to the plan on "ratified as drafted"; the weaponeering rule was landed on "land it"; the glossary is held here until the DDD run names its home. Parts II, III and IV remain DRAFT.
 
 > **Candidate, not canon.** The operator gave row 4 its go on 2026-10-10 ('go on row four')
 > and named the statement of command and the terms as the first part. This part is the text
