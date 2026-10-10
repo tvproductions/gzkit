@@ -6,7 +6,7 @@ These are the philosophical, constitutional, and guiding principles that define 
 
 ## Canonical Source
 
-**AirlineOps (`../airlineops/`) is the canonical GovZero implementation.** All governance concepts in gzkit derive from AirlineOps; divergence requires explicit ADR authorization. See [GovZero Doctrine](govzero-doctrine.md) for the full canonical source specification.
+**gzkit leads and AirlineOps (`../airlineops/`) adopts** (`AGENTS.md` Architectural Boundary #5). AirlineOps is part of gzkit's genesis and the first adopter, not a canon gzkit must match: gzkit does not chase AirlineOps patches, and divergence needs no ADR authorization. See [GovZero Doctrine](govzero-doctrine.md) for the source specification as it was extracted. *(Corrected 2026-10-10 under the PRD amendment pass, `PRD-GZKIT-1.0.0` § 19; it read "AirlineOps is the canonical GovZero implementation ... divergence requires explicit ADR authorization" before.)*
 
 ## Documents
 

@@ -36,9 +36,9 @@ See [Section 18: Attestation Block](#18-attestation-block) for attestation statu
 - Product/Feature Name: gzkit (GovZero Kit) 1.0.0
 - Author(s): JB
 - Date Created: 2026-01-13
-- Last Updated: 2026-01-22
+- Last Updated: 2026-10-10 (amendment pass, § 19)
 - Version: 0.3 (Draft - GovZero Depth Expansion)
-- Constitution: [gzkit Charter](../../user/charter.md)
+- Constitution: [gzkit Charter](../../user/reference/charter.md)
 - Lane: Heavy (external CLI contract)
 
 ---
@@ -63,7 +63,7 @@ gzkit is a Python CLI that implements the GovZero development covenant methodolo
 - AI/ML framework or model integration
 - Automated attestation or approval
 - Replacement for human judgment
-- Multi-agent orchestration
+- ~~Multi-agent orchestration~~ *(retired 2026-10-10, § 19: `ADR-0.18.0` Subagent-Driven Pipeline Execution is Validated and the pipeline dispatches three roles per task)*
 - Full spec-kit feature parity (gzkit is GovZero-native, not a spec-kit clone)
 
 ---
@@ -786,7 +786,7 @@ Target: Graduate course demo
 
 | Document | Purpose |
 |----------|---------|
-| [gzkit Charter](../../user/charter.md) | Constitution |
+| [gzkit Charter](../../user/reference/charter.md) | Constitution |
 | [RFC-GZKIT-FOUNDATION](../../user/sources/RFC-GZKIT-FOUNDATION-airlineops.md) | Origin RFC |
 | [GovZero Release Doctrine](../../user/sources/govzero-release-doctrine-airlineops.md) | SemVer governance |
 | [GitHub Spec-kit](https://github.com/github/spec-kit) | Phase model lineage |
@@ -808,7 +808,7 @@ These constraints are non-negotiable. Agents MUST reason against them.
 | INV-004 | ADRs MUST link to briefs |
 | INV-005 | Attestation terms MUST be canonical (Completed / Partial / Dropped) |
 | INV-006 | All commands MUST be deterministic (same input → same output, except timestamps) |
-| INV-007 | Lite lane enforces Gates 1-2 ONLY; Heavy lane enforces Gates 1-5; Gate 5 is Heavy-only |
+| INV-007 | Lite lane enforces Gates 1-2 and Gate 5; Heavy lane enforces Gates 1-5. Gate 5 is universal: every OBPI completion in every lane, kind and sensitivity needs human attestation (ADR-0.0.36, GHI #342; amended 2026-10-10, § 19; it read "Gate 5 is Heavy-only" from 2026-01-22) |
 | INV-008 | Gate failures MUST include file:line evidence |
 | INV-009 | Ledger MUST be append-only; existing events CANNOT be modified |
 | INV-010 | All `gz` commands MUST append events to ledger implicitly |
@@ -860,6 +860,7 @@ Q&A that shaped this PRD (per Human Discipline):
 | 2026-01-13 | Should we use SQLite cache like BEADS? | Uncertain; JSONL sufficient for MVP, SQLite optional | Human |
 | 2026-01-13 | How to track ADR/OBPI/GHI closure? | Claude hooks (PostToolUse) append to ledger on artifact edits | Human |
 | 2026-01-22 | Does Lite lane include Gate 5? | NO. Lite = Gates 1-2 only. Gate 5 is Heavy-only. | Human |
+| 2026-10-10 | Does Lite lane include Gate 5? (re-asked by the amendment pass) | YES. Gate 5 is universal (ADR-0.0.36, GHI #342); the 2026-01-22 answer above is a dated record and is superseded. | Human (operator ruling 2026-10-07, 'A PRD amendment pass') |
 | 2026-01-22 | What is an OBPI? | One Brief Per Item - atomic work unit mapping 1:1 to ADR checklist item | Agent (from airlineops) |
 | 2026-01-22 | What is closeout ceremony? | Mode transition where agent becomes passive presenter; human observes directly | Agent (from airlineops) |
 | 2026-01-22 | Should Q&A interview be mandatory? | YES. Interview shapes PRD/ADR; transcript preserved as artifact | Human |
@@ -883,3 +884,36 @@ Q&A that shaped this PRD (per Human Discipline):
 | Evidence | — |
 
 Human attestation required before promotion to Accepted.
+
+---
+
+## 19. Amendments
+
+A PRD is a per-major-release artifact; 1.0 has not shipped, so this document is amended,
+not replaced (operator, 2026-10-05). Each entry names what it corrects and the ruling it
+rests on. The first three corrections are the stale items recorded on 2026-10-05 (insight
+`theatre-canon:prd-lodestar-staleness`); the fourth is in `docs/design/lodestar/README.md`.
+
+### 2026-10-10 — the amendment pass of R&D run `renewing-vows` (operator-directed: "part 4")
+
+Ruled 2026-10-07 ('A PRD amendment pass (the four stale items)') under row 4 of the run,
+which received its go on 2026-10-10 ('go on row four'); this entry is part 4 of that row.
+
+1. **§ 1 and § 14, the Constitution link.** `../../user/charter.md` did not exist; the
+   charter lives at `docs/user/reference/charter.md` (published) and
+   `docs/governance/GovZero/charter.md`. Both links now point at the published copy.
+2. **§ 2 Non-Goals, "Multi-agent orchestration".** Retired. `ADR-0.18.0` Subagent-Driven
+   Pipeline Execution is Validated and the OBPI pipeline dispatches an implementer, a spec
+   reviewer and a quality reviewer per task. The non-goal stays visible, struck, as the
+   record of what this PRD said at 0.3.
+3. **§ 15 INV-007 and the § 17 row of 2026-01-22.** "Gate 5 is Heavy-only" contradicted
+   `AGENTS.md` § Gate Covenant, which makes Gate 5 universal (ADR-0.0.36, GHI #342). The
+   invariant now states the covenant; the 2026-01-22 row stands as a dated record with a
+   superseding row beneath it.
+4. **Lodestar README.** Its claim that AirlineOps is the canonical GovZero implementation
+   and that divergence requires ADR authorization contradicted `AGENTS.md` Architectural
+   Boundary #5 (gzkit leads and AirlineOps adopts). Corrected in that file the same day.
+
+Not changed by this pass: the PRD's status (Draft), its attestation block, and its
+requirements. The IOC waypoint is sequencing and lives in the campaign plan (§ Amendments
+2026-10-10), not here (ruled 2026-10-07).

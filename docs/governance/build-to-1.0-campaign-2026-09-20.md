@@ -614,7 +614,53 @@ had been repeating. All are dispositioned below — none left undefined.
 
 <a id="amendments-2026-10-07"></a>
 
-### 2026-10-07 (latest) — #1028 hold lifted for the measurement only (operator-ratified)
+<a id="amendments-2026-10-10"></a>
+
+### 2026-10-10 (latest) — the force's doctrine is named; the IOC waypoint; the governor is the last release (operator-ratified)
+
+**Operator (`g0`), verbatim (2026-10-10):** *"ratified as drafted"*. Drafted under the go on
+row 4 of R&D run `renewing-vows` (*"go on row four"*, 2026-10-10), signed off *fund* the same
+day (*"the restatement stands, fund"*); the candidate text is in
+`docs/rnd/renewing-vows/doctrine-merge.md` Part 0 and is carried here unchanged.
+
+**What changes.**
+
+1. **The campaign names the force's doctrine.** A force has doctrine, assets and abilities;
+   a campaign focuses those abilities for specified goals (operator, 2026-10-09). This plan
+   is the campaign. The force's doctrine is `docs/governance/GovZero/command-doctrine.md`,
+   ratified 2026-06-10, as it stands and as amended by the operator from the candidate text
+   in `docs/rnd/renewing-vows/doctrine-merge.md` Part 0. No prior edition named it. Doctrine
+   sets no dates and carries no worklist (statement of command, line 5): the doctrine's
+   six-item worklist ("What changes in gzkit") is therefore carried here, each item keeping
+   the article it implements, through `ADR-pool.command-doctrine-internalization`, which the
+   operator sequences like any other pool item.
+2. **The IOC waypoint** (ruled 2026-10-07: *"A waypoint before 1.0"*). Initial operational
+   capability is a named point on the route: `ADR-0.35.0` through `ADR-0.38.0` landed, S1
+   flown on a non-gzkit substrate (§ 6 Movement E item 3), and the four theatre-canon
+   staleness items repaired. Each condition is read from the ledger or a closed issue, never
+   from prose. 1.0 is full operational capability; § 5's ten gates are untouched; nothing is
+   post-anything by default. The waypoint sequences and excludes nothing. The identifier
+   migration stays timed to 1.0.
+3. **The governor is the last release** (ruled 2026-10-10, frontier item 22: *"C"*). gzkit's
+   construction is governed by the released gzkit, not the working tree; doctrine and
+   positions under construction are product until released and proven on another project
+   before they bind their own making. The operator's intended patch release is the first
+   step. Pinning the surfaces a session loads from the tree to a release is unsized and is
+   proposed only (row 1 of the run).
+4. **The republish signal has fired.** This edition carries 46 dated amendments before this
+   one. Under the rhythm (session tier ratified 2026-07-18; two slower tiers ruled
+   2026-10-07), a new edition folds them into the body and the rulings register; the fold
+   carries or withdraws every ruling explicitly. The operator cuts the edition; this entry
+   announces and gates nothing.
+
+**What does not change.** TOPMOST and the working order inside `ADR-0.35.0` (§ Amendments
+2026-10-05). The IRON LAW. The three-pillars hold on GHI #1028. Rows 1, 2, 3 and 5 of the
+run have no go; chores wait until the run's row-4 work is directed to a close (*"let's do
+chores after rnd"*, 2026-10-09). The freeze of 2026-06-09 stays a dated record; the
+reconciliation of the three June acts is candidate text in the same Part 0 and is ratified
+with the doctrine, not by this entry.
+
+### 2026-10-07 — #1028 hold lifted for the measurement only (operator-ratified)
 
 **Operator (`g0`), verbatim (2026-10-07):** *"A"*, selecting "lift the hold for the measurement
 only". The other options put were to keep the hold, and to lift it in full and work the issue's
