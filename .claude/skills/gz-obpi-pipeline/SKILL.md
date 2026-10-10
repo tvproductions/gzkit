@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-10-10
 metadata:
-  skill-version: "6.65.1"
+  skill-version: "6.66.0"
 model: sonnet
 ---
 
@@ -1457,6 +1457,14 @@ the reconcile output and ADR status refresh.
    afterwards; it prints `No lock found`. If the register entry could not be
    written, the lock is left for TTL reaping. Report that to the operator, and
    never `--abandon` a completed OBPI.
+3b. **Exit accounting (GHI #1185; operator ruling 2026-10-10, "1185 now")** —
+   `uv run gz airlock out --target {OBPI-SLUG}`. Books the `airlock_out` event for
+   this transit, holding the files the transit changed against the brief's Allowed
+   Paths and reporting each one outside them. Run it here, before git-sync #1,
+   while the tree still holds the transit's changes. The exit reports and never
+   refuses; the refusal on an out-of-scope file is `gz obpi complete`'s (step 2,
+   GHI #1181). A finding here after a completion that passed is a defect in one of
+   the two comparisons, not a reason to re-run completion.
 3a. **Heavy lane: author the brief's `### Step 4b — Independent Adversarial
    Validation` section** under `## Evidence`. `gz obpi complete` does not write it,
    and `gz validate --adversarial-validation` (in `gz check`, so the pre-push gate)
