@@ -158,6 +158,46 @@ worklist and sets no dates.
 
 ---
 
+## The rhythm (candidate, drafted under the go on row 4, 2026-10-10)
+
+Three tiers. The first is ratified; the two slower ones are advisory until each has a
+signal, and this text says so of itself. *Avoid* "weekly" and "each week" for any tier;
+*avoid* "the account" for the handoff.
+
+**The session tier** (operator-ratified 2026-07-18, verbatim: "AGENTS.md -> how we work;
+magna carta -> what we are working on. handoff -> what we were doing last. airlock -> a
+sortie into the environment. handoff -> a market [marker] for when we leave the session.
+That should be our rhythm."). Each session: `AGENTS.md` is how we work; the campaign plan is
+what we are working on; the handoff is what we were doing last, checked against live state
+before anything is acted on; the airlock is the sortie into the environment; the handoff on
+leaving is the marker. The handoff is briefed as a transfer of position responsibility, in
+four parts: preview from the status displays, verbal briefing, assumption, review (JO
+7110.65BB Appendix A; JO 7210.3EE 2-2-4 for the checklist's content). The briefing gates
+nothing; the relieving session owns the completeness of its own briefing as much as the one
+leaving. *(Line 3; policy 14; ruling of 2026-08-17.)*
+
+**The republish tier** (ruled 2026-10-07: 'Two slower tiers, signal-triggered'). A new
+edition of the campaign plan folds its amendments into the body and the rulings register.
+It comes due on accumulated amendments, announced, never on a calendar, and every ruling is
+carried or withdrawn explicitly in the fold. Advisory until the signal is built; the signal
+today is the count of amendments on the active edition, read by hand. *(Line 5: the campaign
+sets dates, so the republish is the campaign's own beat.)*
+
+**The maintenance tier** (same ruling). Due chores and issue triage are flown together as
+one named maintenance visit, a scheduled work package of the operator's own design (AC
+120-16G § 6-1). It comes due when the chore board announces it; the operator keeps the
+frequency ('I maintain frequency', 2026-09-12). Each run of a chore is a ledger event; a
+finding is not (ruled 2026-10-07). The coherence audit of Article 10 is a task of this
+visit, due on the signal of a model transition. *(Line 3; policy 13; the agent's proposal
+of the reconciliation, pair 7.)* Advisory until the board's signal is wired; the
+accumulated-work signal reads `unmeasured` today (GHI #1009).
+
+**What the rhythm is not.** It is not a calendar, and no tier gates: staleness announces.
+The operation tier adds nothing, because closeout and then release are canon, and the first
+flown sortie is a campaign gate behind `ADR-0.38.0`, not a beat.
+
+---
+
 # Part I — Philosophy (RATIFIED, unchanged)
 
 ## The command doctrine

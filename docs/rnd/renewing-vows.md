@@ -4217,6 +4217,23 @@ the same sync on the operator's word.
 
 **commissions:** 4 — executing.
 
+## decision · row 4, part 2: the rhythm is drafted as candidate text (operator's direction, 2026-10-10)
+
+Operator g0, verbatim: 'part 2, then git sync'. Part 2 is the rhythm.
+
+**Drafted** into `doctrine-merge.md` Part 0, from the ratified session tier of 2026-07-18
+(quoted verbatim), the handoff as a transfer of position responsibility (2026-08-17; JO
+7110.65BB Appendix A; JO 7210.3EE 2-2-4), and the two slower tiers as ruled 2026-10-07
+('Two slower tiers, signal-triggered'): the republish, due on accumulated amendments, and
+the maintenance visit, due on the board's announcement, each advisory until its signal is
+built and saying so in its own text. One link is the agent's and is marked: the coherence
+audit as a task of the maintenance visit, from the reconciliation's pair 7. The *Avoid*
+terms of the 2026-10-07 decision are carried.
+
+**Then the sync**, as directed.
+
+**commissions:** 4 — executing.
+
 ## Disposition map
 
 <!-- All six rows always present. State is `commissioned` or `not pursued` — there is no
