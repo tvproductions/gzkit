@@ -81,7 +81,11 @@ instead of its source, so it runs first.
 Criteria live in `acceptance.json`, which `gz chores run` executes; render them with `uv run gz chores plan memory-hygiene`. This section explains them and does not restate them (GHI #1002).
 
 `check_memory_drift.py` is the chore's own witness: it resolves the memory directory from the
-checkout path, then fails when any memory file is newer than `proofs/CHORE-LOG.md`.
+checkout path, then fails when any memory file is newer than `proofs/CHORE-LOG.md`. It also
+reports Claude Code's `autoMemoryEnabled` setting from `~/.claude/settings.json` (1.3.0,
+maintenance visit A 2026-10-10): with auto-memory switched off the files on disk are inert and a
+clean verdict says nothing about drift, so the switch is named beside the verdict rather than
+left for the reader to infer. The surviving files are then an archive to curate, not a sensor.
 A memory written after the last pass is the shadow-persistence this chore exists to
 catch. An absent memory directory passes — the surface is vendor-specific and
 machine-local, so its absence is not a finding.
