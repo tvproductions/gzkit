@@ -595,14 +595,13 @@ class TestObpiCompleteFoundationLiteMissing(_ObpiCompleteWireFixture):
             ledger.append.assert_not_called()
 
 
-class TestObpiCompleteReceiptCarriesScopeAudit(_ObpiCompleteWireFixture):
-    """REQ-0.11.0-03-02 — the completion receipt records delivered work against scope.
+class _ScopeAuditFixture(_ObpiCompleteWireFixture):
+    """Drive a heavy-lane completion over a stated set of changed files."""
 
-    ``gz obpi emit-receipt`` attached this envelope; ``gz obpi complete`` took over
-    as the completion path without carrying it across (GHI #1181).
-    """
-
-    def _completion_evidence(self, changed_files: list[str]) -> dict[str, Any]:
+    def _complete(
+        self, changed_files: list[str]
+    ) -> tuple[int | None, list[str], MagicMock, dict[str, str]]:
+        captured: dict[str, str] = {}
         with (
             tempfile.TemporaryDirectory() as receipts_dir,
             patch("gzkit.hooks.obpi.collect_changed_files", return_value=changed_files),
@@ -618,7 +617,7 @@ class TestObpiCompleteReceiptCarriesScopeAudit(_ObpiCompleteWireFixture):
                 step_name="unittest",
                 command=["uv", "run", "-m", "unittest", "-q"],
             )
-            exc_type, _code, _output, ledger = self._run_complete(
+            exc_type, code, output, ledger = self._run_complete(
                 brief_text=_heavy_brief(),
                 obpi_id="OBPI-0.0.24-02-wire-into-completion",
                 parent_adr="ADR-0.0.24-attestation-receipt-binding",
@@ -626,8 +625,11 @@ class TestObpiCompleteReceiptCarriesScopeAudit(_ObpiCompleteWireFixture):
                 kind="foundation",
                 attestation_text=f"Heavy lane attestation citing unittest: receipt {run_id}",
                 receipts_root_dir=receipts_root,
+                captured=captured,
             )
-        self.assertIsNone(exc_type)
+        return (code if exc_type is SystemExit else None), output, ledger, captured
+
+    def _receipt_evidence(self, ledger: MagicMock) -> dict[str, Any]:
         receipts = [
             call.args[0]
             for call in ledger.append.call_args_list
@@ -636,11 +638,20 @@ class TestObpiCompleteReceiptCarriesScopeAudit(_ObpiCompleteWireFixture):
         self.assertEqual(len(receipts), 1)
         return receipts[0].extra["evidence"]
 
+
+class TestObpiCompleteReceiptCarriesScopeAudit(_ScopeAuditFixture):
+    """REQ-0.11.0-03-02 — the completion receipt records delivered work against scope.
+
+    ``gz obpi emit-receipt`` attached this envelope; ``gz obpi complete`` took over
+    as the completion path without carrying it across (GHI #1181).
+    """
+
     @covers("REQ-0.11.0-03-02")
     def test_receipt_records_allowlist_and_changed_files(self) -> None:
-        evidence = self._completion_evidence(["src/gzkit/commands/obpi_complete.py"])
+        code, _output, ledger, _captured = self._complete(["src/gzkit/commands/obpi_complete.py"])
+        self.assertIsNone(code)
         self.assertEqual(
-            evidence["scope_audit"],
+            self._receipt_evidence(ledger)["scope_audit"],
             {
                 "allowlist": ["src/gzkit/commands/obpi_complete.py"],
                 "changed_files": ["src/gzkit/commands/obpi_complete.py"],
@@ -649,18 +660,47 @@ class TestObpiCompleteReceiptCarriesScopeAudit(_ObpiCompleteWireFixture):
         )
 
     @covers("REQ-0.11.0-03-02")
-    def test_file_outside_allowed_paths_is_named_and_completion_still_records(self) -> None:
-        evidence = self._completion_evidence(
-            ["docs/user/runbook.md", "src/gzkit/commands/obpi_complete.py"]
-        )
-        self.assertEqual(evidence["scope_audit"]["out_of_scope_files"], ["docs/user/runbook.md"])
-
-    @covers("REQ-0.11.0-03-02")
     def test_receipt_names_its_producer(self) -> None:
-        evidence = self._completion_evidence([])
+        code, _output, ledger, _captured = self._complete([])
+        self.assertIsNone(code)
+        evidence = self._receipt_evidence(ledger)
         self.assertEqual(evidence["recorder_source"], "cli:obpi_complete")
         self.assertIn("git_sync_state", evidence)
         self.assertIn("recorder_warnings", evidence)
+
+
+class TestObpiCompleteRefusesOutOfScopeChange(_ScopeAuditFixture):
+    """REQ-0.11.0-02-01 — completion fails closed on a change outside Allowed Paths.
+
+    The transaction contract required it and only the brief validator did it, on
+    a path ``gz obpi complete`` never takes (GHI #1181).
+    """
+
+    @covers("REQ-0.11.0-02-01")
+    def test_a_product_file_outside_allowed_paths_refuses_completion(self) -> None:
+        code, output, ledger, captured = self._complete(
+            ["docs/user/runbook.md", "src/gzkit/commands/obpi_complete.py"]
+        )
+        self.assertEqual(code, 3)
+        self.assertEqual(
+            [c.args[0].event for c in ledger.append.call_args_list if c.args],
+            [],
+            "a refused completion writes nothing to the ledger",
+        )
+        self.assertIn("status: Draft", captured["brief"])
+        self.assertIn("docs/user/runbook.md", "\n".join(output))
+
+    @covers("REQ-0.11.0-02-01")
+    def test_gzkit_records_outside_allowed_paths_do_not_refuse(self) -> None:
+        code, _output, ledger, _captured = self._complete(
+            [
+                ".claude/plans/.pipeline-active.json",
+                ".gzkit/ledger.jsonl",
+                "src/gzkit/commands/obpi_complete.py",
+            ]
+        )
+        self.assertIsNone(code)
+        self.assertEqual(self._receipt_evidence(ledger)["scope_audit"]["out_of_scope_files"], [])
 
 
 class TestUpdateHumanAttestationSectionScoping(unittest.TestCase):

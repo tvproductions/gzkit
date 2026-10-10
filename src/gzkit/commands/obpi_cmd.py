@@ -576,6 +576,7 @@ def obpi_emit_receipt_cmd(
             parent_adr=parent_adr if isinstance(parent_adr, str) else None,
             parent_lane=parent_lane,
             attestor=attestor,
+            brief_path=obpi_file,
         )
         # ADR-0.0.24-02 receipt-binding gate: heavy/foundation = fail-closed
         # on unresolvable ARB receipts; lite-non-foundation = warn-only. Runs

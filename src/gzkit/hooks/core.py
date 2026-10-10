@@ -152,10 +152,13 @@ def enrich_completed_receipt_evidence(
     scope_audit: dict[str, list[str]] | None = None,
     git_sync_state: dict[str, Any] | None = None,
     extra_warnings: list[str] | None = None,
+    brief_path: Path | None = None,
 ) -> tuple[dict[str, Any], EventAnchor | None]:
     """Attach structured scope/git metadata and warning-aware anchoring."""
     evidence = dict(base_evidence)
-    evidence["scope_audit"] = scope_audit or build_scope_audit(project_root, content)
+    evidence["scope_audit"] = scope_audit or build_scope_audit(
+        project_root, content, brief_path=brief_path
+    )
 
     normalized_git_sync_state = git_sync_state or normalize_git_sync_state(
         assess_git_sync_readiness(project_root)
@@ -328,7 +331,9 @@ def record_artifact_edit(
             content = obpi_path.read_text(encoding="utf-8")
             status = (parse_frontmatter_value(content, "status") or "").strip().lower()
             if status == "completed":
-                completion_scope_audit = build_scope_audit(project_root, content)
+                completion_scope_audit = build_scope_audit(
+                    project_root, content, brief_path=obpi_path
+                )
 
     config = GzkitConfig.load(project_root / ".gzkit.json")
     ledger_path = project_root / config.paths.ledger

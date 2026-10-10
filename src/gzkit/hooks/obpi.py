@@ -134,17 +134,83 @@ def path_is_allowlisted(path: str, allowlist: list[str]) -> bool:
     return False
 
 
-def build_scope_audit(project_root: Path, content: str) -> dict[str, list[str]]:
+# Paths gzkit writes as its own record of governed work. They change during every
+# work package and are no brief's deliverable, so the scope audit lists them among
+# the changed files and never counts them out of scope (GHI #1181). Canon under
+# `.gzkit/` (skills, rules, corpus) is work product and is deliberately absent.
+GZKIT_RECORD_PATHS: tuple[str, ...] = (
+    ".gzkit/ledger.jsonl",
+    ".gzkit/handoffs/**",
+    ".gzkit/locks/**",
+    ".gzkit/insights/**",
+    ".gzkit/evidence/**",
+    ".gzkit/ceremonies/**",
+    ".claude/plans/**",
+)
+
+
+def brief_record_paths(project_root: Path, brief_path: Path) -> list[str]:
+    """Return the record paths one brief owns: itself and its ADR package's logs."""
+    try:
+        brief_rel = brief_path.relative_to(project_root)
+    except ValueError:
+        return []
+    package = brief_rel.parent.parent
+    return [brief_rel.as_posix(), f"{package.as_posix()}/logs/**"]
+
+
+def out_of_scope_files(
+    changed_files: list[str],
+    allowlist: list[str],
+    *,
+    own_paths: list[str] | None = None,
+) -> list[str]:
+    """Return the changed files that are neither allowlisted nor a gzkit record."""
+    records = [*GZKIT_RECORD_PATHS, *(own_paths or [])]
+    return [
+        path
+        for path in changed_files
+        if not path_is_allowlisted(path, allowlist) and not path_is_allowlisted(path, records)
+    ]
+
+
+_SCOPE_FINDING_LISTED = 10
+
+SCOPE_RECOVERY = (
+    "The OBPI transaction contract fails completion closed on a change outside the "
+    "allowlist (docs/governance/GovZero/obpi-transaction-contract.md, Core Rules). "
+    "A file that is not this package's work is committed on its own or reverted; for a "
+    "file that is, the operator amends the brief's Allowed Paths. Then re-run "
+    "`uv run gz obpi precomplete <OBPI-ID>`."
+)
+
+
+def scope_finding(scope_audit: dict[str, list[str]]) -> str | None:
+    """Return the finding a scope audit owes for files outside Allowed Paths, or None.
+
+    The one decision both ``gz obpi precomplete`` and ``gz obpi complete`` read, so the
+    check that reports before attestation and the gate that refuses cannot disagree.
+    """
+    outside = scope_audit.get("out_of_scope_files") or []
+    if not outside:
+        return None
+    listed = ", ".join(outside[:_SCOPE_FINDING_LISTED])
+    if len(outside) > _SCOPE_FINDING_LISTED:
+        listed += f" (+{len(outside) - _SCOPE_FINDING_LISTED} more)"
+    return f"{len(outside)} changed file(s) outside this brief's Allowed Paths: {listed}"
+
+
+def build_scope_audit(
+    project_root: Path, content: str, *, brief_path: Path | None = None
+) -> dict[str, list[str]]:
     """Build a structured allowlist-vs-changed-files payload."""
     allowlist = extract_allowed_paths(content)
     changed_files = collect_changed_files(project_root)
-    out_of_scope_files = [
-        path for path in changed_files if not path_is_allowlisted(path, allowlist)
-    ]
+    own_paths = brief_record_paths(project_root, brief_path) if brief_path else []
     return {
         "allowlist": allowlist,
         "changed_files": changed_files,
-        "out_of_scope_files": out_of_scope_files,
+        "out_of_scope_files": out_of_scope_files(changed_files, allowlist, own_paths=own_paths),
     }
 
 
@@ -253,9 +319,17 @@ class ObpiValidator:
             return [f"File not found: {obpi_path}"]
 
         content = obpi_path.read_text(encoding="utf-8")
-        return self.validate_content(content, require_authored=require_authored)
+        return self.validate_content(
+            content, require_authored=require_authored, brief_path=obpi_path
+        )
 
-    def validate_content(self, content: str, *, require_authored: bool = False) -> list[str]:
+    def validate_content(
+        self,
+        content: str,
+        *,
+        require_authored: bool = False,
+        brief_path: Path | None = None,
+    ) -> list[str]:
         """Validate OBPI markdown content without requiring a file on disk."""
         from gzkit.ledger import (
             parse_frontmatter_value,
@@ -305,7 +379,8 @@ class ObpiValidator:
                 changed_files = scope_audit.get("changed_files", []) if scope_audit else []
             else:
                 changed_files = collect_changed_files(self.project_root)
-            errors.extend(self._validate_changed_files(changed_files, allowlist))
+            own_paths = brief_record_paths(self.project_root, brief_path) if brief_path else []
+            errors.extend(self._validate_changed_files(changed_files, allowlist, own_paths))
 
         if not use_sealed:
             readiness = assess_git_sync_readiness(self.project_root)
@@ -452,23 +527,23 @@ class ObpiValidator:
             )
         return warnings
 
-    def _validate_changed_files(self, changed_files: list[str], allowlist: list[str]) -> list[str]:
+    def _validate_changed_files(
+        self,
+        changed_files: list[str],
+        allowlist: list[str],
+        own_paths: list[str] | None = None,
+    ) -> list[str]:
         """Validate the live changed-file set against the allowlist."""
-        errors: list[str] = []
         if not changed_files:
-            errors.append(
+            return [
                 "Changed-files audit found no modified paths. "
                 "Completion requires live scope evidence."
-            )
-            return errors
-
-        for path in changed_files:
-            if not path_is_allowlisted(path, allowlist):
-                errors.append(
-                    "Changed-files audit found out-of-allowlist path: "
-                    f"{path}. Amend the OBPI or revert the change."
-                )
-        return errors
+            ]
+        return [
+            f"Changed-files audit found out-of-allowlist path: {path}. "
+            "Amend the OBPI or revert the change."
+            for path in out_of_scope_files(changed_files, allowlist, own_paths=own_paths)
+        ]
 
     def _is_foundation_series(self, adr_id: str) -> bool:
         """Return True if the ADR belongs to the 0.0.x foundation series."""

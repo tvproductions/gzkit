@@ -78,6 +78,17 @@ git diff --name-only
 If the changed-files set contains an unallowlisted path, the OBPI must halt with
 `BLOCKERS` before completion can proceed.
 
+Files gzkit writes as its own record of the work are not the transaction's write
+surface and never count as unallowlisted: the ledger, handoffs, lock files,
+insights, evidence files, ceremony state, plan markers, the brief being completed
+and its ADR package's `logs/`. The list is `GZKIT_RECORD_PATHS` in
+`src/gzkit/hooks/obpi.py`. Canon under `.gzkit/` (skills, rules, corpus) is work
+product and is held to the allowlist like any other file.
+
+`gz obpi precomplete` reports the audit and `gz obpi complete` refuses on it
+(GHI #1181, 2026-10-10). The audit reads the uncommitted working tree. A change
+committed before completion is not held against the allowlist by this audit.
+
 ---
 
 ## Spine Surfaces

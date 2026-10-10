@@ -20,6 +20,7 @@ from gzkit.commands.obpi_precomplete import (
     _check_operator_block,
     _check_plan_audit_receipt,
     _check_reconcile_idempotent,
+    _check_scope_audit,
     _check_task_envelope_coherence,
     _resolve_brief_path,
 )
@@ -265,6 +266,37 @@ class TestPrecompleteReconcileCheck(unittest.TestCase):
                 result.message.lower(),
                 "refused rewrites must be named in the check message, not hidden",
             )
+
+
+class TestPrecompleteScopeCheck(unittest.TestCase):
+    """A changed file outside Allowed Paths is reported before attestation (GHI #1181)."""
+
+    def _check(self, changed_files: list[str]) -> object:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _quick_init()
+            root = Path.cwd()
+            path = _scaffold_authored_brief(root, "ADR-0.1.0", "OBPI-0.1.0-01")
+            with patch("gzkit.hooks.obpi.collect_changed_files", return_value=changed_files):
+                return _check_scope_audit(root, path)
+
+    def test_fails_and_names_a_product_file_outside_allowed_paths(self) -> None:
+        result = self._check(["src/gzkit/ports/base.py", "docs/user/runbook.md"])
+        self.assertFalse(result.ok, msg=result.message)
+        self.assertIn("docs/user/runbook.md", result.message)
+        self.assertNotIn("src/gzkit/ports/base.py", result.message)
+        self.assertIn("Allowed Paths", result.remediation or "")
+
+    def test_passes_when_only_allowed_files_and_gzkit_records_changed(self) -> None:
+        result = self._check(
+            [
+                ".gzkit/ledger.jsonl",
+                ".claude/plans/.pipeline-active.json",
+                "design/adr/pre-release/ADR-0.1.0-test/obpis/OBPI-0.1.0-01-test.md",
+                "src/gzkit/ports/base.py",
+            ]
+        )
+        self.assertTrue(result.ok, msg=result.message)
 
 
 class TestPrecompleteLockCheck(unittest.TestCase):
@@ -565,11 +597,12 @@ class TestPrecompleteCliEndToEnd(unittest.TestCase):
             payload = json.loads(result.output)
             self.assertEqual(payload["obpi_id"], "OBPI-0.1.0-01")
             self.assertIn("ready", payload)
-            self.assertEqual(len(payload["checks"]), 11)
+            self.assertEqual(len(payload["checks"]), 12)
             self.assertEqual(
                 {c["name"] for c in payload["checks"]},
                 {
                     "brief_readiness",
+                    "scope_audit",  # GHI #1181
                     "reconcile_idempotent",
                     "lock_held",
                     "arb_receipts",

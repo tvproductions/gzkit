@@ -950,6 +950,7 @@ def _validate_obpi_completion_evidence(
     parent_adr: str | None,
     parent_lane: str,
     attestor: str,
+    brief_path: Path | None = None,
 ) -> tuple[dict[str, Any], str, EventAnchor | None]:
     """Validate and normalize evidence for OBPI completed receipts."""
     if evidence is None:
@@ -1011,6 +1012,7 @@ def _validate_obpi_completion_evidence(
         recorder_source="cli:obpi_emit_receipt",
         scope_audit=scope_audit,
         git_sync_state=git_sync_state,
+        brief_path=brief_path,
     )
     return enriched_evidence, completion_term, anchor
 

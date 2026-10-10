@@ -95,30 +95,38 @@ grounds (GHI #587) stands unchanged.
 ## Runtime Behavior
 
 1. Validates brief exists and is not already Completed
-2. Checks evidence sufficiency (Implementation Summary, Key Proof)
-3. For a requires-human brief (heavy-lane OR foundation-kind OR
+2. Refuses, exit 3, when a changed file lies outside the brief's Allowed Paths
+   (GHI #1181). The changed files are the uncommitted working tree as it stands
+   before this command writes anything. Files gzkit writes as its own record of
+   the work never count: the ledger, handoffs, lock files, insights, evidence
+   files, ceremony state, plan markers, the brief itself and its ADR package's
+   `logs/`. To recover, commit or revert a file that is not this package's
+   work; for one that is, the operator amends the brief's Allowed Paths.
+   `gz obpi precomplete` reports the same finding before attestation.
+3. Checks evidence sufficiency (Implementation Summary, Key Proof)
+4. For a requires-human brief (heavy-lane OR foundation-kind OR
    `sensitivity: security`), records the operator's verbatim
    `--attestation-text` as the Gate-5 attestation
    (`attestation_type: operator-verbatim-conversational`). A non-empty
    `--attestation-text` is required; there is no separate TTY ceremony.
-4. Writes attestation to ADR-local audit ledger
-5. Updates brief with evidence, attestation, and Completed status
-6. Emits `obpi_receipt_emitted` event to main ledger. The receipt's evidence
+5. Writes attestation to ADR-local audit ledger
+6. Updates brief with evidence, attestation, and Completed status
+7. Emits `obpi_receipt_emitted` event to main ledger. The receipt's evidence
    carries the same recorder context `gz obpi emit-receipt` writes (GHI #1181):
    `scope_audit` (`allowlist`, `changed_files`, `out_of_scope_files`),
    `git_sync_state`, `recorder_source` (`cli:obpi_complete`) and
    `recorder_warnings`. `changed_files` is the uncommitted working tree as it
-   stood before this command wrote the brief. A file outside the brief's
-   Allowed Paths is recorded in `out_of_scope_files`; it does not stop the
-   completion.
-7. Surrenders the work lock mechanically (token-block exit edge, GHI #619):
+   stood before this command wrote the brief, gzkit's own records included.
+   `out_of_scope_files` holds the files the scope refusal above would name, so
+   it is empty on every receipt this command writes.
+8. Surrenders the work lock mechanically (token-block exit edge, GHI #619):
    writes a completion exchange record as the register entry under
    `.gzkit/locks/exchange/` and, if a lock is held for the OBPI, releases it and
    emits `obpi_lock_released` citing that record. No manual `gz obpi lock release`
    is required; the manual release path remains for mid-traversal surrender.
 
-Steps 1-6 are the all-or-nothing transaction: if any step fails, all changes are
-rolled back (no partial writes). Step 7 runs after the transaction commits and is
+Steps 1-7 are the all-or-nothing transaction: if any step fails, all changes are
+rolled back (no partial writes). Step 8 runs after the transaction commits and is
 best-effort — if the register entry cannot be written the lock is left for TTL
 reaping rather than surrendered without one.
 
@@ -129,7 +137,7 @@ reaping rather than surrendered without one.
 | 0 | OBPI completed successfully |
 | 1 | Validation failure (missing brief, already completed, insufficient evidence, or `--accept-uncovered` without `--accept-uncovered-reason`) |
 | 2 | I/O error |
-| 3 | REQ-coverage gate: one or more REQs in `## Acceptance Criteria` lack a passing `@covers`-decorated unit test or `@REQ-*` BDD scenario tag (heavy-lane or foundation-kind briefs); or `--accept-uncovered` named a BEHAVIOR REQ, which cannot be waived on any lane (GHI #537); or reconciliation-receipt gate: no fresh `brief_reconciled` receipt for the OBPI (use `gz obpi brief-drift <OBPI-ID>` or `--accept-stale-reconciliation --reason TEXT` to override); or acceptance blocked: a required proof or independent review is missing, or a finding is open (`gz obpi acceptance <OBPI-ID> status`) |
+| 3 | REQ-coverage gate: one or more REQs in `## Acceptance Criteria` lack a passing `@covers`-decorated unit test or `@REQ-*` BDD scenario tag (heavy-lane or foundation-kind briefs); or `--accept-uncovered` named a BEHAVIOR REQ, which cannot be waived on any lane (GHI #537); or reconciliation-receipt gate: no fresh `brief_reconciled` receipt for the OBPI (use `gz obpi brief-drift <OBPI-ID>` or `--accept-stale-reconciliation --reason TEXT` to override); or acceptance blocked: a required proof or independent review is missing, or a finding is open (`gz obpi acceptance <OBPI-ID> status`); or scope: a changed file lies outside the brief's Allowed Paths (GHI #1181) |
 
 ## Examples
 

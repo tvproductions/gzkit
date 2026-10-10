@@ -126,6 +126,7 @@ _resolve_brief_path = resolve_brief_path  # Compatibility for existing command c
 def _run_all_checks(project_root: Path, brief_path: Path, obpi_id: str) -> Iterable[CheckResult]:
     """Run every Stage 5 precondition check; yield each CheckResult in order."""
     yield _check_brief_readiness(project_root, brief_path)
+    yield _check_scope_audit(project_root, brief_path)
     yield _check_reconcile_idempotent(project_root)
     yield _check_lock_held(project_root, obpi_id)
     yield _check_arb_receipts_passed(project_root, obpi_id)
@@ -230,6 +231,29 @@ def _check_brief_readiness(project_root: Path, brief_path: Path) -> CheckResult:
         name="brief_readiness",
         ok=True,
         message=f"passes --authored validation ({brief_path.name})",
+    )
+
+
+def _check_scope_audit(project_root: Path, brief_path: Path) -> CheckResult:
+    """No changed file may lie outside the brief's Allowed Paths (GHI #1181).
+
+    The same audit `gz obpi complete` refuses on, read here so the refusal is known
+    before the operator is asked to attest. gzkit's own records never count.
+    """
+    from gzkit.hooks.obpi import SCOPE_RECOVERY, build_scope_audit, scope_finding
+
+    audit = build_scope_audit(
+        project_root, brief_path.read_text(encoding="utf-8"), brief_path=brief_path
+    )
+    finding = scope_finding(audit)
+    if finding is not None:
+        return CheckResult(
+            name="scope_audit", ok=False, message=finding, remediation=SCOPE_RECOVERY
+        )
+    return CheckResult(
+        name="scope_audit",
+        ok=True,
+        message=f"{len(audit['changed_files'])} changed file(s), none outside Allowed Paths",
     )
 
 

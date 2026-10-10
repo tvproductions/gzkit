@@ -280,6 +280,32 @@
       "authority": "GHI #1154 item 5 roster shrink, step 5 of the 2026-10-02 handoff (operator, verbatim: \"do all 5 steps\")",
       "proposed_by": "claude-code session 2026-10-02",
       "reviewed_by": "g0"
+    },
+    {
+      "claim_id": "completion-scope-outside-allowed-paths",
+      "guard": "gzkit.hooks.obpi:out_of_scope_files",
+      "failing_test": "tests.commands.test_obpi_scope_gate_claims.TestScopeGateClaims.test_both_claims_name_the_decision_and_pass",
+      "mutation": {
+        "find": "        if not path_is_allowlisted(path, allowlist) and not path_is_allowlisted(path, records)",
+        "replace": "        if False",
+        "label": "no changed file is ever out of scope"
+      },
+      "binding_sha256": "ef0f1698583eea57664844fcc6b1ad837cbcb922d0eedd1c031a8f502e8c9460",
+      "authority": "GHI #1181; operator ruling 2026-10-10 (verbatim: \"refuse, direct fix under 1181\")",
+      "proposed_by": "claude-code session 2026-10-10"
+    },
+    {
+      "claim_id": "completion-scope-records-admitted",
+      "guard": "gzkit.hooks.obpi:out_of_scope_files",
+      "failing_test": "tests.commands.test_obpi_scope_gate_claims.TestScopeGateClaims.test_both_claims_name_the_decision_and_pass",
+      "mutation": {
+        "find": "    records = [*GZKIT_RECORD_PATHS, *(own_paths or [])]",
+        "replace": "    records = []",
+        "label": "gzkit's own records count as out of scope"
+      },
+      "binding_sha256": "54361a466638afe3c4aec5522e48381c0a6909706fa9ba8a3e7adbfaa38083a1",
+      "authority": "GHI #1181; operator ruling 2026-10-10 (verbatim: \"refuse, direct fix under 1181\")",
+      "proposed_by": "claude-code session 2026-10-10"
     }
   ]
 }

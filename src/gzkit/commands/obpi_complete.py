@@ -56,6 +56,7 @@ from gzkit.governance.trust_audits.sensitivity import (
     detect_brief_security_surfaces,
 )
 from gzkit.hooks.core import enrich_completed_receipt_evidence
+from gzkit.hooks.obpi import SCOPE_RECOVERY, build_scope_audit, scope_finding
 from gzkit.ledger import (
     Ledger,
     LedgerEvent,
@@ -997,6 +998,21 @@ def _resolve_evidence(
     return effective_summary, effective_proof
 
 
+def _enforce_scope_gate(
+    scope_audit: dict[str, list[str]], *, obpi_id: str, as_json: bool, dry_run: bool
+) -> None:
+    """Refuse completion when a changed file lies outside the brief's Allowed Paths."""
+    finding = scope_finding(scope_audit)
+    if finding is None or dry_run:
+        return
+    _fail(
+        f"Completion blocked: {finding}. {SCOPE_RECOVERY}",
+        exit_code=3,
+        as_json=as_json,
+        obpi_id=obpi_id,
+    )
+
+
 def _enforce_task_envelope_gate(
     *, obpi_file: Path, project_root: Path, as_json: bool, obpi_id: str
 ) -> None:
@@ -1096,6 +1112,13 @@ def obpi_complete_cmd(
             accept_stale_reconciliation=accept_stale_reconciliation,
             accept_stale_reconciliation_reason=accept_stale_reconciliation_reason,
         )
+
+    # 1b. Scope gate (GHI #1181): the transaction contract fails completion closed
+    # on a changed file outside Allowed Paths. The snapshot is taken here, before
+    # this command writes anything, and the same audit is sealed on the receipt.
+    # Skipped for --dry-run so plans can be previewed headlessly.
+    scope_audit = build_scope_audit(project_root, original_content, brief_path=obpi_file)
+    _enforce_scope_gate(scope_audit, obpi_id=obpi_id, as_json=as_json, dry_run=dry_run)
 
     # 2. Resolve evidence
     effective_summary, effective_proof = _resolve_evidence(
@@ -1300,14 +1323,14 @@ def obpi_complete_cmd(
         base_evidence["attestation_date"] = today
         base_evidence["attestation_type"] = attestation_type
     # GHI #1181: the same envelope `gz obpi emit-receipt` and the recorder hook
-    # attach (REQ-0.11.0-03-02), captured before this command writes the brief.
-    # It records files outside Allowed Paths; it does not refuse on them.
+    # attach (REQ-0.11.0-03-02), carrying the audit the scope gate ruled on.
     evidence, _ = enrich_completed_receipt_evidence(
         project_root=project_root,
         content=original_content,
         base_evidence=base_evidence,
         parent_adr=resolved_parent,
         recorder_source="cli:obpi_complete",
+        scope_audit=scope_audit,
     )
 
     receipt_event = obpi_receipt_emitted_event(
