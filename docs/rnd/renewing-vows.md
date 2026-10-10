@@ -3861,6 +3861,194 @@ stays open for it. Insight 2026-10-10, scope `ghi-1181:refusal-called-never-buil
 
 ---
 
+## decision · part two of GHI #1181: refuse, as a direct fix; two inputs are missing (operator, 2026-10-10)
+
+Asked by the operator, verbatim: "what part 2?" Put to them: the report measures the
+uncommitted tree and not the work; nothing refuses on it; the runtime contract and the code
+disagree on anchor states. Two rulings were asked for, refuse or record, and direct fix or
+repair assignment, with refuse and the repair assignment recommended. Ruled, verbatim:
+"refuse, direct fix under 1181".
+
+**Measured before building.** The refusal that exists in the tree applies the transaction
+contract's audit, the working tree's changed files, with no exemption. gzkit's own state
+files change during every package and are in no brief's Allowed Paths: of the 102 old
+receipts that flag a file, 88 flag `.gzkit/ledger.jsonl`. Those completions went through
+because `gz obpi emit-receipt` did not run the validator. Called from `gz obpi complete` as
+it stands, the refusal would refuse nearly every completion. It was built and it could never
+have passed a real one.
+
+**Committed work has no sound attribution.** The only attribution the repository carries is
+the `Task:` trailer. Over the 11 packages completed since 2026-08-01, taking the commits
+whose trailer names the package's TASKs: 2 have no such commit, 1 is wholly in scope, 4 are
+out of scope only by gzkit state files, 3 carry source, test or data files outside Allowed
+Paths and 1 carries its parent ADR file. The three are not three breaches. The commit hook
+stamps the active TASK on any source or test commit with no authored trailer, so a GHI fix
+made during a package is stamped as the package's (`7c55f4ec9`, GHI #820, under
+`TASK-0.35.0-09`). A refusal on that basis would refuse a completion because the session
+repaired a defect in flight.
+
+**What follows.** "Refuse" stands as ruled. Building it needs two things canon does not
+supply and the agent does not invent: the list of gzkit state paths that never count, which
+is an exemption list on a fail-closed gate, and what counts as a package's committed
+changes. Both are put to the operator. Not built: the refusal.
+
+**Done under the ruling.** The runtime contract's anchor-state section said `stale` and
+"fails closed"; the code has said `superseded`, informational, since commit `5b68226a1`
+(2026-03-19). The section now matches the code. The ruling, the measurements and the
+contract amendment are on the issue.
+
+**commissions:** nothing new; row 2 (g) continues.
+
+---
+
+## source · the airlock's exit, read 2026-10-10 on the operator's correction
+
+Said by the operator, verbatim: "this is part of what the airlock is for, why did this
+behavior disappear?" The agent had read `src/gzkit/airlock/exit.py` while working GHI #1181
+and had not told the operator that a second surface claims the job (insight 2026-10-10,
+scope `ghi-1181:airlock-not-connected`).
+
+**What the text says.** The module's own account, verbatim: "airlock-OUT accounts for what
+a completed transit DISTURBED on the way out", and "A FACT edge with no matching INTENT edge
+is a 'you wrecked something' finding (you touched what you never declared)". It names the
+intent vein as "the brief's declared Allowed Paths + parent-ADR invariants".
+
+**What the code does.** `airlock_exit` reads the Allowed Paths and records only their count
+(`bodies`). The comparison is the ontology's reach of the target against `parent_invariants`,
+which defaults to empty. No changed file is compared with an allowed path.
+
+**Where it runs.** It is called from `_run_pipeline_sync_stage` in
+`src/gzkit/commands/obpi_stages.py`, diagnostic only. The `gz-obpi-pipeline` skill's Stage 5
+is a list of commands the session runs and does not name the airlock. The ledger holds 86
+`airlock_in` events and 3 `airlock_out` events for a work package, all three for
+`OBPI-0.33.0-01` on 2026-07-12. The entry event records a decision and unaccounted seams and
+no commit.
+
+**The completion command's brief.** `OBPI-0.0.14-02`, which added `gz obpi complete` on
+2026-04-05, lists the older command's logic as code to read and has no requirement on scope
+or changed files.
+
+Insight 2026-10-10, scope `airlock:exit-never-runs-and-ignores-allowed-paths`. This is read,
+not ruled: where the scope check lives is the operator's.
+
+---
+
+## decision · the scope check predates the airlock; its restoration is filed against the airlock exit (operator, 2026-10-10)
+
+Told by the agent that the airlock "was built to take the job over". Corrected by the
+operator, verbatim: "no, this predated the airlock, is the airlock even active? ghi the
+restoration to enhance/strengthen the airlock, if able". The agent's sentence was an
+inference with no source: the changed-files check dates from March, the airlock from July
+(insight 2026-10-10, scope `ghi-1185:scope-check-predates-airlock`).
+
+**Is the airlock active.** Measured in the ledger on 2026-10-10. Entry: 86 events, 7 this
+month, on every pipeline launch; 26 of the 57 work-package entries decided `hold`, and the
+call site is diagnostic only, so a hold stops nothing. Exit: 32 events, none since
+2026-09-23; 28 are the permitted-entry door, and the 3 for a work package are all
+`OBPI-0.33.0-01` on 2026-07-12. Every exit booked is `clean`. `ADR-0.33.0` is Validated and
+its own text, attested 2026-07-10, says the wired gate "does not yet bite on a real OBPI
+entry".
+
+**Prior art found before filing.** `ADR-0.37.0-airlock-calibration-and-compulsion`, Draft
+with six Draft briefs, carries the airlock's calibration and Movement B of the campaign. It
+names exit accounting as out of its scope. Its fourth brief would stamp a `Transit:` trailer
+on commits, which is the attribution this run found missing. GHI #807, open, is the same
+membrane's empty invariant input. The campaign's Movement B already tracks that exits are
+not booked.
+
+**Filed.** GHI #1185, "airlock-out: exit never compares changed files with Allowed Paths",
+labels `defect` and `runtime`, through `ghi-author`, cross-linked on #1181 and #807. It is
+labelled a defect by the operator's intent test: the exit's own text says it finds what "you
+touched what you never declared". Authoring only: nothing is built, and routing it into
+`ADR-0.37.0` or as a direct fix is the operator's.
+
+**What it leaves on #1181.** The report on the receipt, landed. The refusal at completion,
+ruled 2026-10-10, which waits on the comparison #1185 describes.
+
+**commissions:** row 2 gains GHI #1185.
+
+---
+
+## source · the campaign's amendments on work order, read 2026-10-10 on the operator's correction
+
+Recommended by the agent: pull `ADR-0.37.0` forward in the campaign and add GHI #1185 to it.
+Said by the operator, verbatim: "this is NOT currently possible". The recommendation was
+made without reading the campaign's amendments, a read this run had listed as owed (insight
+2026-10-10, scope `campaign:recommended-against-unread-amendments`). It is withdrawn.
+
+Read in `docs/governance/build-to-1.0-campaign-2026-09-20.md`, the entries of 2026-10-07,
+2026-10-05, 2026-10-04 (3), 2026-10-03, 2026-09-29 and 2026-09-27 (3). The entries before
+them are still unread.
+
+**§ Amendments 2026-10-04 (3), verbatim.** "A correction to a `Validated` ADR has one home:
+the in-flight ADR. It enters as a repair assignment, and the obligation it repairs keeps its
+identity in the ADR that stated it." "Ascending order has no exception." "`ADR-0.37.0`,
+authored before this law, stands as it is." "An ADR in flight may be revised to take more
+OBPIs."
+
+**§ Amendments 2026-10-03 item 1, verbatim.** "a fix that would add a check, pipeline step,
+dispatch role, hook or `gz check` step to the completion path states three things before it
+lands: the obligation it protects, the defect it answers, and its expected false-refusal
+cost. The operator rules."
+
+**§ Amendments 2026-10-05.** Inside `ADR-0.35.0` the order is item 10, then items 15, 16, 17
+and 20, with 18 and 19 anywhere in that block, then items 11 to 13.
+
+**What follows for GHI #1185 and the refusal under GHI #1181.** Both correct Validated ADRs.
+Their routes are a direct fix under the issue or, on the operator's ruling, a repair
+assignment in `ADR-0.35.0`, which is in flight at 10 of 20. Neither can enter or move
+`ADR-0.37.0`. The refusal adds a check to the completion path, so the three statements are
+owed before it lands. The correction is posted on #1185.
+
+---
+
+## decision · direct fix: the scope gate and the airlock exit are built and held local (operator, 2026-10-10)
+
+Ruled by the operator, verbatim: "direct fix - this is a perfect storm of bad decisions and
+outcomes: 0.33.0 impotence plus a misguide regression in gz obpi complete. bad form." Put to
+them before it: the two routes canon allows for GHI #1185 and the refusal under GHI #1181, a
+direct fix or a repair assignment in `ADR-0.35.0`.
+
+**A claim of the agent's, measured and found wrong.** The agent had said that by completion
+the work is already committed, and had recommended against building the refusal on that
+ground. Over the 11 packages completed since 2026-08-01, the first commit after completion
+carries 6 to 41 files and is mostly the package's work. With gzkit's records excluded, a
+refusal on the uncommitted tree would have passed 10 and refused 1, `OBPI-0.35.0-09`, on
+nine of its own source and schema files that its brief does not allow (insight 2026-10-10,
+scope `ghi-1181:work-already-committed-claim`).
+
+**Built under GHI #1181** (`19342f7c2`, `8babe4d2a`). One comparison,
+`hooks.obpi.out_of_scope_files`, used by `gz obpi complete`, `gz obpi precomplete`, the brief
+validator and the three receipt producers. gzkit's own records never count: the ledger,
+handoffs, lock files, insights, evidence, ceremony state, plan markers, the brief being
+completed and its package's logs. `gz obpi complete` refuses, exit 3, before it writes;
+`gz obpi precomplete` reports the same finding before attestation. Two enforcement claims
+and two guard canaries enrol the gate; both canaries kill their mutant and neither is
+reviewed.
+
+**Built under GHI #1185** (`81435469d`, `eed290d09`). The airlock exit takes the files a
+transit changed and reports each one outside Allowed Paths as a finding, with the same
+comparison. Its event records how many files it looked at. It reports and does not refuse.
+
+**The record list is the agent's draft.** It was put to the operator twice and not ruled.
+It is in code and in the transaction contract, and it is the operator's to correct.
+
+**Held for the operator.** § Amendments 2026-10-03 item 1 requires the obligation, the
+defect and the expected false-refusal cost to be stated before a completion-path addition
+lands, and the operator rules. The three are in the commit and on the issue. The five
+commits are local and not pushed. The canaries need `gz canary review` with the operator's
+words. The exit is still not reached by the skill-driven Stage 5; whether the skill gains
+that step now or with Movement B is put on #1185.
+
+**What the witness said.** `gz arb red` returned `undriven` on both fix commits: hunks no
+test in the commit drove. A follow-up commit adds a test for each, and reverting each
+producer hunk fails its test. A test count was posted on #1181 before it was observed and
+was corrected (insight 2026-10-10, scope `ghi-1181:unobserved-test-count`).
+
+**commissions:** nothing new; row 2 (g) and GHI #1185 are built and await the operator.
+
+---
+
 ## Disposition map
 
 <!-- All six rows always present. State is `commissioned` or `not pursued` — there is no
@@ -3870,7 +4058,7 @@ stays open for it. Insight 2026-10-10, scope `ghi-1181:refusal-called-never-buil
 | # | Disposition | State | What | Reason |
 |---|---|---|---|---|
 | 1 | ADR / OBPI | commissioned | Proposed only, after briefs 15–20: engineering orders for the crew split (constraints, red, green) with the tasking event and the sortie matrix; the integrity-level axis beside lane (the consequence bands, witnessed by a scored-surface registry and an overlap floor), conditional on the operator lifting PROVISIONAL on the bands; combat assessment with a collateral owner and one assessment record; the maintenance record entry (one ledger event per chore run, replacing the PASS block as the run witness; findings are not events — ruled 2026-10-07). The identifier migration is row 5 and is timed to 1.0. **Reconciled 2026-10-08:** the tasking event and the collateral half of combat assessment are no longer proposed as new orders. The first is item 1 (the captain's brief) and the second item 3 (the scope-conformance report) of `ADR-pool.command-doctrine-internalization`, and the second was shipped and has lapsed (source entry *gzkit's own doctrine layer*, item 3). Each is a correction under its owning ADR, by the operator's correction-versus-enhancement doctrine. Still proposed as new: the crew split with the sortie matrix; the integrity-level axis; the maintenance record entry; an owner for munitions effectiveness. | Each passes the admission question — hard to reverse, surprising without this record, a real trade-off; each depends on the spine. The operator initiates, or not (IRON LAW). |
-| 2 | GHI / direct fix | commissioned | (a) The four theatre-canon staleness items (insight 21:34:40: dead constitution link; stale non-goal; INV-007 vs ADR-0.0.36; lodestar README vs Boundary #5) via `ghi-author`, and a fifth of the same class found 2026-10-07 (insight 2026-10-07T09:27:46Z: both published charters scope Gate 5 to the heavy lane against ADR-0.0.36). (b) Routing of the malformed `@covers` tags insight 21:30:15 recorded (525 findings on 2026-10-05; re-measured 2026-10-06, still present): one GHI for direct repair of foundation-era tags to REQ ids, or a parser rule for OBPI-id tags — the operator picks. (c) Nothing lints Markdown under `docs/`: `run_pymarkdown` has no caller, the `lint()` docstring names a linter that never runs, and pymarkdown is not installed or declared (insight 2026-10-06T10:49:46Z; found in passing by the research pass, verified by the session). Route: a direct fix of the docstring and the dead function, or a dependency decision under STDLIB-FIRST — the operator picks. **Added 2026-10-08:** (d) the command doctrine reaches nothing an agent loads each turn (sweep row S31; commissioned by decision *one binding doctrine*). (e) The campaign plan's § Amendments 2026-08-17 C sets five phrases in quotation marks; one misquotes its sentence and four occur in neither FAA order (insight 2026-10-07T23:46:09Z). (f) `docs/governance/GovZero/` is stale as a class against `AGENTS.md`, Gate 5 defined three ways among it (insight 2026-10-08, scope `theatre-canon:govzero-directory-staleness`); this absorbs the fifth item of (a). (g) The scope audit on completed receipts has lapsed since 2026-06-19 (insight 2026-10-08, scope `obpi-completion:scope-audit-lapsed`); its route is a correction under the ADR that owns completion, which the operator names. *Found 2026-10-09:* the owner is `OBPI-0.11.0-03` under `ADR-0.11.0`, which is Validated; by the operator's ruling of 2026-10-04 scope missed from a Validated ADR "enters the in-flight ADR as a repair assignment that cites the obligation it repairs" (source entry *the scorecard past its rule tables, and the scope audit's owner*). (h) The `gz-obpi-pipeline` skill cites a line of `pipeline_runtime.py` for a role map defined in `pipeline_dispatch.py` (insight 2026-10-09T00:23:00Z, scope `gz-obpi-pipeline:stale-role-map-pointer`). (i) The governance-subtraction track of 2026-06-08 stopped after one increment with no measurement and no owning artifact; its freeze text in `advisory-rules-audit.md` is stale and is still cited as live (insight 2026-10-09, scope `advisory-rules-audit:june-8-freeze-abandoned-after-first-increment`). What stands of the freeze is the operator's to rule before any repair. *Restated 2026-10-09:* the freeze, the campaign's ratification and the command doctrine, three acts of 2026-06-09 and 2026-06-10, disagree in seven places and were never reconciled; no edition of the campaign plan names the command doctrine or its pool ADR (decision *the work of 2026-06-08 to 2026-06-10 is discrepancy*; insight 2026-10-09, scope `governance-canon:june-8-to-10-three-acts-unreconciled`). **Executed 2026-10-09 on the operator's go for the lapses** (decision *the lapses, as addressed*): (g) filed as GHI #1181, and its first part (the completion command attaches the report) repaired on the operator's 'fix the first part under 1181' as `85d55a627` (2026-10-09), the issue staying open for refuse-or-record and the snapshot's base (decision *the first part of GHI #1181 is repaired*); under (i) the scorecard's text is corrected, the five owed readings are done and the measurement is closed on the record; the coherence audit's lapse is not filed and waits on a campaign amendment. (j) Found by those readings: `data/security_surfaces.json` lists `src/gzkit/personas.py`, deleted 2026-05-12, and the persona parser's present file is matched by no glob (insight 2026-10-09, scope `security-surfaces:dead-literal-path`); filed 2026-10-09 as GHI #1182 on the operator's 'sounds like a bug'; repaired on the operator's 'fix it' and committed on the operator's 'commit it' as `de6f7e2a2` (2026-10-09), pushed by the sync of 2026-10-09 (`7959cf9f0`); GHI #1182 closed `fixed` through `ghi-close` the same day. (k) `uv run gz validate --sensitivity` exits 3 on main: two Draft briefs under `ADR-0.39.0` omit `sensitivity:` over an overlap with `src/gzkit/config.py` (insight 2026-10-09, scope `sensitivity-floor:adr-0.39.0-draft-briefs`); no go, and a brief edit is the operator's. | Defects by the PRIME DIRECTIVE, each tracked by an insight line today. Item 10's run has completed and no lock is held, so (b) is no longer another session's. Filing waits on the operator's go on this row. |
+| 2 | GHI / direct fix | commissioned | (a) The four theatre-canon staleness items (insight 21:34:40: dead constitution link; stale non-goal; INV-007 vs ADR-0.0.36; lodestar README vs Boundary #5) via `ghi-author`, and a fifth of the same class found 2026-10-07 (insight 2026-10-07T09:27:46Z: both published charters scope Gate 5 to the heavy lane against ADR-0.0.36). (b) Routing of the malformed `@covers` tags insight 21:30:15 recorded (525 findings on 2026-10-05; re-measured 2026-10-06, still present): one GHI for direct repair of foundation-era tags to REQ ids, or a parser rule for OBPI-id tags — the operator picks. (c) Nothing lints Markdown under `docs/`: `run_pymarkdown` has no caller, the `lint()` docstring names a linter that never runs, and pymarkdown is not installed or declared (insight 2026-10-06T10:49:46Z; found in passing by the research pass, verified by the session). Route: a direct fix of the docstring and the dead function, or a dependency decision under STDLIB-FIRST — the operator picks. **Added 2026-10-08:** (d) the command doctrine reaches nothing an agent loads each turn (sweep row S31; commissioned by decision *one binding doctrine*). (e) The campaign plan's § Amendments 2026-08-17 C sets five phrases in quotation marks; one misquotes its sentence and four occur in neither FAA order (insight 2026-10-07T23:46:09Z). (f) `docs/governance/GovZero/` is stale as a class against `AGENTS.md`, Gate 5 defined three ways among it (insight 2026-10-08, scope `theatre-canon:govzero-directory-staleness`); this absorbs the fifth item of (a). (g) The scope audit on completed receipts has lapsed since 2026-06-19 (insight 2026-10-08, scope `obpi-completion:scope-audit-lapsed`); its route is a correction under the ADR that owns completion, which the operator names. *Found 2026-10-09:* the owner is `OBPI-0.11.0-03` under `ADR-0.11.0`, which is Validated; by the operator's ruling of 2026-10-04 scope missed from a Validated ADR "enters the in-flight ADR as a repair assignment that cites the obligation it repairs" (source entry *the scorecard past its rule tables, and the scope audit's owner*). (h) The `gz-obpi-pipeline` skill cites a line of `pipeline_runtime.py` for a role map defined in `pipeline_dispatch.py` (insight 2026-10-09T00:23:00Z, scope `gz-obpi-pipeline:stale-role-map-pointer`). (i) The governance-subtraction track of 2026-06-08 stopped after one increment with no measurement and no owning artifact; its freeze text in `advisory-rules-audit.md` is stale and is still cited as live (insight 2026-10-09, scope `advisory-rules-audit:june-8-freeze-abandoned-after-first-increment`). What stands of the freeze is the operator's to rule before any repair. *Restated 2026-10-09:* the freeze, the campaign's ratification and the command doctrine, three acts of 2026-06-09 and 2026-06-10, disagree in seven places and were never reconciled; no edition of the campaign plan names the command doctrine or its pool ADR (decision *the work of 2026-06-08 to 2026-06-10 is discrepancy*; insight 2026-10-09, scope `governance-canon:june-8-to-10-three-acts-unreconciled`). **Executed 2026-10-09 on the operator's go for the lapses** (decision *the lapses, as addressed*): (g) filed as GHI #1181, and its first part (the completion command attaches the report) repaired on the operator's 'fix the first part under 1181' as `85d55a627` (2026-10-09), the issue staying open for refuse-or-record and the snapshot's base (decision *the first part of GHI #1181 is repaired*); the comparison of delivered work with Allowed Paths filed 2026-10-10 as GHI #1185 against the airlock exit, on the operator's 'ghi the restoration to enhance/strengthen the airlock, if able'; under (i) the scorecard's text is corrected, the five owed readings are done and the measurement is closed on the record; the coherence audit's lapse is not filed and waits on a campaign amendment. (j) Found by those readings: `data/security_surfaces.json` lists `src/gzkit/personas.py`, deleted 2026-05-12, and the persona parser's present file is matched by no glob (insight 2026-10-09, scope `security-surfaces:dead-literal-path`); filed 2026-10-09 as GHI #1182 on the operator's 'sounds like a bug'; repaired on the operator's 'fix it' and committed on the operator's 'commit it' as `de6f7e2a2` (2026-10-09), pushed by the sync of 2026-10-09 (`7959cf9f0`); GHI #1182 closed `fixed` through `ghi-close` the same day. (k) `uv run gz validate --sensitivity` exits 3 on main: two Draft briefs under `ADR-0.39.0` omit `sensitivity:` over an overlap with `src/gzkit/config.py` (insight 2026-10-09, scope `sensitivity-floor:adr-0.39.0-draft-briefs`); no go, and a brief edit is the operator's. | Defects by the PRIME DIRECTIVE, each tracked by an insight line today. Item 10's run has completed and no lock is held, so (b) is no longer another session's. Filing waits on the operator's go on this row. |
 | 3 | chore | commissioned | Advise only: sort per-flight conformance checks off the interval board into `gz check`; package due interval tasks into named visits (the cited name is a scheduled work package, AC 120-16G § 6-1; "letter check" is the operator's own practice); two announcements for admission — the campaign plan's republish coming due on accumulated amendments, and the maintenance visit coming due from the board (ruled 2026-10-07). | The board's 35 overdue of 40 (measured 2026-10-05 and again 2026-10-07) is the signature of per-flight work on an interval board. Both announcements follow the ratified posture: they announce and gate nothing. The operator directs admission. **Ruled 2026-10-09:** 'let's do chores after rnd'; the board waits until this run is closed. |
 | 4 | control surface, rule, doc, skill, hook | commissioned | One merged doctrine, built on the ratified command doctrine with this run's model merged in beneath its articles (ruled 2026-10-08, superseding a separate concept of operations), carrying the rhythm (the session tier as ruled 2026-07-18; two slower tiers, advisory until signalled); the campaign plan republished naming it and carrying the IOC waypoint as an amendment; a PRD amendment pass (the four stale items); the weaponeering rule text; the model-and-effort table in `model-selection.md`, describing the mechanism as the harness has it; (the small constitution draft of 2026-10-07 is withdrawn as to content by the one-doctrine ruling; what the constitution is, relative to the doctrine, is on the frontier); the ladder's name selection recorded at IEEE § Q-18, the candidates table and campaign § Amendments 2026-10-04 (3); the nomenclature terms, held here until the glossary home is named. **Added 2026-10-08:** the three terms position, role and crew; an amendment of Article 3's title so that an agent is crew, its allocation unchanged (both ruled 2026-10-08); the names commander and captain for the operator, who is not crew (ruled 2026-10-08); the terms force, doctrine, assets (ToE), abilities and campaign (ruled 2026-10-09). | The deliverable of this run; the operator's go on this row is the fund. **Corrected 2026-10-08.** The placement ruling is superseded by the one-doctrine ruling as far as it made a separate document. The source condition of 2026-10-07 ('b') is met: the five public texts are read (JP 3-60 in its 2018 edition, JP 3-30, JO 7110.65BB Appendix A, AC 121-22D, the IOC and FOC entries of the DAU Glossary); rows carried by DO-178C and MSG-3 keep their labels and drop § 11.17, objective counts and "letter check" (ruled 2026-10-08). The operator assembles the doctrine and directs each part (ruled 2026-10-08), so nothing in this row is drafted ahead of that direction. What the first item has to be is narrower than it reads: the philosophy is ratified, procedures and a scoring instrument exist (source entry *gzkit's own doctrine layer*), and its shape is the first question on the frontier. |
 | 5 | one-shot refactoring | commissioned | Identifier migration ECP / EO / WP via `gz migrate-semver`, aliases before, timed to 1.0 (full operational capability). | Ruled 'A' (insight 22:03:25) "at IOC" when IOC named 1.0; the PRD-per-major rule puts it at the major boundary, and the 2026-10-07 IOC ruling moved the word, not the timing. Proposed as a program; the operator selects its route. |
