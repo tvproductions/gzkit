@@ -8,41 +8,6 @@
       "assertion_kind": "assertEqual"
     },
     {
-      "file_path": "tests/arb/test_ruff_reporter.py",
-      "line_number": 59,
-      "operation_kind": "read_text",
-      "function_name": "_assert_valid_receipt",
-      "assertion_kind": "assertEqual"
-    },
-    {
-      "file_path": "tests/arb/test_schemas.py",
-      "line_number": 23,
-      "operation_kind": "exists",
-      "function_name": "test_lint_schema_exists_and_is_valid",
-      "assertion_kind": "assertTrue"
-    },
-    {
-      "file_path": "tests/arb/test_schemas.py",
-      "line_number": 36,
-      "operation_kind": "exists",
-      "function_name": "test_step_schema_exists_and_is_valid",
-      "assertion_kind": "assertTrue"
-    },
-    {
-      "file_path": "tests/arb/test_schemas.py",
-      "line_number": 49,
-      "operation_kind": "read_text",
-      "function_name": "test_lint_receipt_shape_matches_schema",
-      "assertion_kind": "assertEqual"
-    },
-    {
-      "file_path": "tests/arb/test_schemas.py",
-      "line_number": 72,
-      "operation_kind": "read_text",
-      "function_name": "test_step_receipt_shape_matches_schema",
-      "assertion_kind": "assertEqual"
-    },
-    {
       "file_path": "tests/cli/test_justify_manpage.py",
       "line_number": 60,
       "operation_kind": "is_file",
@@ -240,42 +205,28 @@
     },
     {
       "file_path": "tests/eval/test_datasets.py",
-      "line_number": 41,
-      "operation_kind": "is_file",
-      "function_name": "test_schema_file_exists",
-      "assertion_kind": "assertTrue"
-    },
-    {
-      "file_path": "tests/eval/test_datasets.py",
-      "line_number": 44,
-      "operation_kind": "read_text",
-      "function_name": "test_schema_is_valid_json",
-      "assertion_kind": "assertIn"
-    },
-    {
-      "file_path": "tests/eval/test_datasets.py",
-      "line_number": 59,
+      "line_number": 102,
       "operation_kind": "read_text",
       "function_name": "test_all_fixtures_valid_json",
       "assertion_kind": "assertIsInstance"
     },
     {
       "file_path": "tests/eval/test_datasets.py",
-      "line_number": 71,
+      "line_number": 114,
       "operation_kind": "read_text",
       "function_name": "test_no_duplicate_case_ids_within_dataset",
       "assertion_kind": "assertEqual"
     },
     {
       "file_path": "tests/eval/test_datasets.py",
-      "line_number": 144,
+      "line_number": 187,
       "operation_kind": "read_text",
       "function_name": "test_no_timestamps_in_fixtures",
       "assertion_kind": "assertEqual"
     },
     {
       "file_path": "tests/eval/test_datasets.py",
-      "line_number": 155,
+      "line_number": 198,
       "operation_kind": "read_text",
       "function_name": "test_no_random_seeds",
       "assertion_kind": "assertNotIn"
@@ -765,49 +716,49 @@
     },
     {
       "file_path": "tests/governance/test_security_surfaces_registry.py",
-      "line_number": 104,
+      "line_number": 115,
       "operation_kind": "is_file",
       "function_name": "test_registry_file_exists",
       "assertion_kind": "assertTrue"
     },
     {
       "file_path": "tests/governance/test_security_surfaces_registry.py",
-      "line_number": 132,
+      "line_number": 156,
       "operation_kind": "is_file",
       "function_name": "test_governance_readme_exists",
       "assertion_kind": "assertTrue"
     },
     {
       "file_path": "tests/governance/test_security_surfaces_registry.py",
-      "line_number": 135,
+      "line_number": 159,
       "operation_kind": "read_text",
       "function_name": "test_governance_readme_documents_contract",
       "assertion_kind": "assertIn"
     },
     {
       "file_path": "tests/governance/test_security_surfaces_registry.py",
-      "line_number": 140,
+      "line_number": 164,
       "operation_kind": "read_text",
       "function_name": "test_governance_readme_records_bootstrap_exception",
       "assertion_kind": "assertIn"
     },
     {
       "file_path": "tests/governance/test_security_surfaces_registry.py",
-      "line_number": 220,
+      "line_number": 244,
       "operation_kind": "is_file",
       "function_name": "test_validate_sensitivity_scope_not_authored",
       "assertion_kind": "assertNotIn"
     },
     {
       "file_path": "tests/governance/test_security_surfaces_registry.py",
-      "line_number": 230,
+      "line_number": 254,
       "operation_kind": "is_file",
       "function_name": "test_security_review_attestation_authored_at_named_path",
       "assertion_kind": "assertTrue"
     },
     {
       "file_path": "tests/governance/test_security_surfaces_registry.py",
-      "line_number": 242,
+      "line_number": 266,
       "operation_kind": "read_text",
       "function_name": "test_security_sensitivity_rule_authored_at_named_path",
       "assertion_kind": "assertTrue"
@@ -1416,56 +1367,56 @@
     },
     {
       "file_path": "tests/test_skills.py",
-      "line_number": 181,
+      "line_number": 332,
       "operation_kind": "exists",
       "function_name": "test_skill_files_present_in_package_surface",
       "assertion_kind": "assertGreater"
     },
     {
       "file_path": "tests/test_skills.py",
-      "line_number": 186,
+      "line_number": 337,
       "operation_kind": "is_dir",
       "function_name": "test_skill_files_retained_at_authored_source",
       "assertion_kind": "assertGreaterEqual"
     },
     {
       "file_path": "tests/test_skills.py",
-      "line_number": 240,
+      "line_number": 391,
       "operation_kind": "read_text",
       "function_name": "test_all_skill_md_files_have_frontmatter",
       "assertion_kind": "assertTrue"
     },
     {
       "file_path": "tests/test_skills.py",
-      "line_number": 247,
+      "line_number": 398,
       "operation_kind": "is_dir",
       "function_name": "test_skills_count_is_full",
       "assertion_kind": "assertGreaterEqual"
     },
     {
       "file_path": "tests/test_skills.py",
-      "line_number": 258,
+      "line_number": 409,
       "operation_kind": "read_text",
       "function_name": "test_pyproject_includes_skills_package_data",
       "assertion_kind": "assertIn"
     },
     {
       "file_path": "tests/test_skills.py",
-      "line_number": 454,
+      "line_number": 605,
       "operation_kind": "read_text",
       "function_name": "test_skill_surface_sync_rule_documents_bootstrap_semantics",
       "assertion_kind": "assertTrue"
     },
     {
       "file_path": "tests/test_skills.py",
-      "line_number": 478,
+      "line_number": 629,
       "operation_kind": "read_text",
       "function_name": "test_init_manpage_documents_skills_scaffolding",
       "assertion_kind": "assertTrue"
     },
     {
       "file_path": "tests/test_skills.py",
-      "line_number": 554,
+      "line_number": 705,
       "operation_kind": "exists",
       "function_name": "test_skills_package_not_flat_module",
       "assertion_kind": "assertTrue"
@@ -1562,5 +1513,5 @@
       "assertion_kind": "assertTrue"
     }
   ],
-  "generated_at": "2026-10-07T00:21:55.893695+00:00"
+  "generated_at": "2026-10-10T10:00:24.703651+00:00"
 }

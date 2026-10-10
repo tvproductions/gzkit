@@ -57,12 +57,6 @@ _SEMVER_RE = re.compile(r"^\d+\.\d+\.\d+$")
 _VALID_CASE_TYPES = {"golden_path", "edge_case"}
 
 
-def _load_schema(schema_path: Path) -> dict[str, object]:
-    """Load the eval dataset JSON schema."""
-    result: dict[str, object] = json.loads(schema_path.read_text(encoding="utf-8"))
-    return result
-
-
 class DatasetValidationError(ValueError):
     """Raised when a dataset fixture fails structural validation."""
 

@@ -48,19 +48,13 @@ class TestRunRuffViaArb(unittest.TestCase):
         self._tempdir.cleanup()
 
     def _assert_valid_receipt(self, path: Path, expected_exit: int) -> dict:
-        from jsonschema import Draft202012Validator
+        """Validate the receipt through the ARB validator that reads receipts in production."""
+        from gzkit.arb.validator import validate_receipts
 
-        schema_path = (
-            Path(__file__).resolve().parents[2]
-            / "data"
-            / "schemas"
-            / "arb_lint_receipt.schema.json"
-        )
-        schema = json.loads(schema_path.read_text(encoding="utf-8"))
-        validator = Draft202012Validator(schema)
+        result = validate_receipts(root=path.parent, limit=-1)
+        self.assertEqual(result.errors, [], msg=f"Receipt invalid: {result.errors}")
+        self.assertEqual((result.scanned, result.valid), (1, 1))
         payload = json.loads(path.read_text(encoding="utf-8"))
-        errors = list(validator.iter_errors(payload))
-        self.assertEqual(errors, [], msg=f"Receipt invalid: {errors}")
         self.assertEqual(payload["schema"], "gzkit.arb.lint_receipt.v1")
         self.assertEqual(payload["exit_status"], expected_exit)
         return payload

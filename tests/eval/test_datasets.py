@@ -16,6 +16,7 @@ from pathlib import Path
 
 from gzkit.eval.datasets import (
     KNOWN_SURFACES,
+    DatasetValidationError,
     EvalDataset,
     EvalDatasetCase,
     list_surfaces,
@@ -34,16 +35,58 @@ _TIMESTAMP_PATTERN = re.compile(
 )
 
 
-class TestSchemaExists(unittest.TestCase):
-    """Verify the JSON schema file exists and is valid JSON."""
+def _minimal_dataset() -> dict[str, object]:
+    return {
+        "surface": "example",
+        "version": "1.0.0",
+        "description": "one case",
+        "cases": [
+            {
+                "id": "case-1",
+                "type": "golden_path",
+                "description": "a case",
+                "input": {},
+                "expected_output": {},
+            }
+        ],
+    }
 
-    def test_schema_file_exists(self) -> None:
-        self.assertTrue(_SCHEMA_PATH.is_file(), f"Schema not found: {_SCHEMA_PATH}")
 
-    def test_schema_is_valid_json(self) -> None:
-        data = json.loads(_SCHEMA_PATH.read_text(encoding="utf-8"))
-        self.assertIn("properties", data)
-        self.assertIn("cases", data["properties"])
+class TestSchemaAndValidatorAgree(unittest.TestCase):
+    """The hand-rolled validator enforces exactly what the JSON schema declares.
+
+    ``validate_dataset_json`` validates without the ``jsonschema`` package, so
+    the schema file and the validator are two statements of one contract. Each
+    field the schema requires must be one the validator refuses to do without,
+    and the validator must accept a dataset built from the schema's own field
+    lists; a field added to one and not the other fails here.
+    """
+
+    def setUp(self) -> None:
+        self.schema = json.loads(_SCHEMA_PATH.read_text(encoding="utf-8"))
+
+    def test_validator_accepts_a_dataset_shaped_by_the_schema(self) -> None:
+        dataset = _minimal_dataset()
+        self.assertEqual(set(dataset), set(self.schema["required"]))
+        case_required = self.schema["properties"]["cases"]["items"]["required"]
+        self.assertEqual(set(dataset["cases"][0]), set(case_required))
+        validate_dataset_json(dataset)
+
+    def test_every_schema_required_top_level_field_is_enforced(self) -> None:
+        for field in self.schema["required"]:
+            with self.subTest(field=field):
+                dataset = _minimal_dataset()
+                del dataset[field]
+                with self.assertRaises(DatasetValidationError):
+                    validate_dataset_json(dataset)
+
+    def test_every_schema_required_case_field_is_enforced(self) -> None:
+        for field in self.schema["properties"]["cases"]["items"]["required"]:
+            with self.subTest(field=field):
+                dataset = _minimal_dataset()
+                del dataset["cases"][0][field]
+                with self.assertRaises(DatasetValidationError):
+                    validate_dataset_json(dataset)
 
 
 class TestDatasetFixtures(unittest.TestCase):
