@@ -1,12 +1,12 @@
 # /airlineops-parity-scan
 
-Run a repeatable governance parity scan between ../airlineops (canon) and gzkit (extraction).
+Run a repeatable governance parity scan that mines ../airlineops, gzkit's genesis and first adopter, for process habits gzkit lacks. gzkit leads; AirlineOps adopts.
 
 ---
 
 ## Purpose
 
-`/airlineops-parity-scan` exposes the canonical airlineops-parity-scan workflow for operator invocation. Run a repeatable governance parity scan between `../airlineops` (canon) and gzkit (extraction).
+`/airlineops-parity-scan` exposes the canonical airlineops-parity-scan workflow for operator invocation. Run a repeatable governance parity scan that mines `../airlineops` for process habits gzkit lacks. gzkit leads and AirlineOps adopts (`AGENTS.md` § Architectural Boundaries, boundary 5); a change in AirlineOps does not trigger a scan.
 
 ## When to Use
 

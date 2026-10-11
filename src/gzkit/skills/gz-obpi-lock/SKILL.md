@@ -5,9 +5,9 @@ description: Claim or release OBPI-level work locks for multi-agent coordination
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-04
+last_reviewed: 2026-10-11
 metadata:
-  skill-version: "6.3.1"
+  skill-version: "6.4.0"
 model: haiku
 ---
 
@@ -205,19 +205,21 @@ If shared files appear in the diff, the agent should:
 
 ## Worktree Isolation (Advanced)
 
-For heavy parallel workloads, each agent can use a separate git worktree:
+For heavy parallel workloads, a subagent may work in an ephemeral local git
+worktree that is never pushed. Its result lands on main through the single
+writer, never by merging a branch (`AGENTS.md` § Operator Doctrine):
 
 ```bash
-# Create agent-specific worktree
-git worktree add ../gzkit-claude-code -b agent/claude-code/obpi-0.0.25-03
+# Detached worktree at HEAD; no branch is created
+git worktree add --detach ../gzkit-claude-code HEAD
 
-# Work in the worktree
-cd ../gzkit-claude-code
+# In the worktree: stage the work and write it out as a patch
+git -C ../gzkit-claude-code add -A
+git -C ../gzkit-claude-code diff --cached --binary HEAD > ../gzkit-claude-code.patch
 
-# Merge back
-cd ../gzkit
-git merge agent/claude-code/obpi-0.0.25-03
-git worktree remove ../gzkit-claude-code
+# On main, the single writer applies the patch and commits through the hooks
+git apply ../gzkit-claude-code.patch
+git worktree remove --force ../gzkit-claude-code
 ```
 
 **When to use worktrees:**
@@ -236,4 +238,3 @@ git worktree remove ../gzkit-claude-code
 
 - Pipeline integration: `gz obpi lock claim` (Stage 1), `gz obpi complete` (Stage 5 surrender)
 - Session handoff: `/gz-session-handoff` (session memory; it names a held lock and never releases one)
-- Agent profiles: `AGENTS.md` § Agent Profiles

@@ -51,5 +51,5 @@ uv run gz frontmatter reconcile --json
 
 - `gz validate --frontmatter` — detect drift without rewriting
 - `gz chores run frontmatter-ledger-coherence` — run the dry-run acceptance criterion
-- `src/gzkit/chores/frontmatter-ledger-coherence/CHORE.md` — operator workflow for the chore (canonical; project overlay at `.gzkit/chores/frontmatter-ledger-coherence/`)
+- `.gzkit/chores/frontmatter-ledger-coherence/CHORE.md` — operator workflow for the chore (authoring source; `src/gzkit/chores/frontmatter-ledger-coherence/` is the generated package copy)
 - ADR-0.0.16 — frontmatter-ledger coherence guard

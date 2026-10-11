@@ -5,9 +5,9 @@ description: Surface Pythonic-design-pattern refactor candidates after ADR close
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-27
+last_reviewed: 2026-10-11
 metadata:
-  skill-version: "1.1.1"
+  skill-version: "1.2.0"
 gz_command: chores run pythonic-design-pattern-detection
 model: sonnet
 ---
@@ -84,7 +84,7 @@ Run the `pythonic-design-pattern-detection` chore to surface structural refactor
 
 - **Scanner self-test fails:** detector set has drifted from its fixtures. Read `scan.py` and the failing fixture; either fix the detector or update the fixture if the rewrite was intentional.
 - **`--out` omitted:** the scanner exits 2 with a usage error; pass the report path. It creates the parent directory itself.
-- **`gz chores show` cannot find the chore:** the project overlay is missing or damaged; `uv run gz chores doctor` re-scaffolds it and keeps `proofs/`.
+- **`gz chores show` cannot find the chore:** the project copy is missing or damaged. Run `uv run gz chores doctor --dry-run` first and sync any unsynced `.gzkit/chores/` edits, because repairing a damaged slug rewrites its surviving definition files (`.gzkit/rules/chores.md` § Two-Surface Layout); then `uv run gz chores doctor` restores it and keeps `proofs/`.
 - **Empty report (`NO_CANDIDATES_DETECTED`):** AST signals returned zero hits. Switch to reference-mode review against local Python examples; do not assume the codebase is Pythonic everywhere — Bridge, Flyweight, Factory Method are not detected mechanically.
 - **Many candidates without xenon overlap:** the structural drift exists but is metric-invisible. Do not skip those — that is exactly the post-post-implementation gap this skill is designed to catch.
 

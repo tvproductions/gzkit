@@ -5,10 +5,10 @@ description: Trim per-turn instruction load (AGENTS.md, CLAUDE.md, `.claude/rule
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-18
+last_reviewed: 2026-10-11
 gz_command: chores show instructions-files-diet
 metadata:
-  skill-version: "1.1.2"
+  skill-version: "1.1.3"
 model: sonnet
 ---
 
@@ -83,8 +83,8 @@ the per-turn surface even before reading `CHORE.md`:
 
 ## Related
 
-- Chore: `src/gzkit/chores/instructions-files-diet/CHORE.md` (canonical),
-  `.gzkit/chores/instructions-files-diet/CHORE.md` (project overlay)
+- Chore: `.gzkit/chores/instructions-files-diet/CHORE.md` (authoring source);
+  `src/gzkit/chores/instructions-files-diet/CHORE.md` is the generated package copy
 - `gz-chore-runner` — generic chore-execution skill; this skill is the
   trigger-discoverable specialization
 - `gz-agent-sync`, `gz-arb`, `gz-validate` — wielded inside the chore

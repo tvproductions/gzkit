@@ -5,9 +5,9 @@ description: Create and semantically author OBPI briefs linked to parent ADR ite
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-27
+last_reviewed: 2026-10-11
 metadata:
-  skill-version: "1.9.2"
+  skill-version: "1.9.3"
 model: opus
 ---
 
@@ -48,8 +48,8 @@ sections MUST be verified against on-disk reality. LLM authoring routinely
 imports model priors from adjacent projects and writes them as if they were
 gzkit conventions. The OBPI-0.0.16-03 brief shipped with fabricated framework
 paths (`config/chores/<slug>.toml`-style layouts); the gzkit chore framework
-uses canonical packages under `src/gzkit/chores/<slug>/` with project overlays
-at `.gzkit/chores/<slug>/` and a JSON registry at `.gzkit/chores/registry.json`,
+authors chores at `.gzkit/chores/<slug>/`, generates the package copy at
+`src/gzkit/chores/<slug>/` and keeps a JSON registry at `.gzkit/chores/registry.json`,
 and the implementer had to rewrite Allowed Paths as a scope amendment.
 
 ### Per-path verification — apply to every Allowed Paths and Denied Paths entry
@@ -83,8 +83,8 @@ For each path:
 Do NOT save a brief if any of the following is true:
 
 - An Allowed Path references a directory tree that does not exist and has
-  no precedent (e.g. `config/chores/<slug>.toml` when chores live in
-  `src/gzkit/chores/<slug>/` + `.gzkit/chores/<slug>/` per ADR-0.0.21).
+  no precedent (e.g. `config/chores/<slug>.toml` when chores are authored in
+  `.gzkit/chores/<slug>/` and generated to `src/gzkit/chores/<slug>/`, GHI #1044).
 - An Allowed Path uses an extension that no sibling file uses
   (e.g. `.toml` when sibling files are `.json`).
 - The author has not personally read at least one existing file in each

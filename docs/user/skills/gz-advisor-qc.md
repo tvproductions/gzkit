@@ -1,6 +1,6 @@
 # /gz-advisor-qc
 
-Judge the information-retained-per-byte of a candidate rendition and record the verdict via `gz content advise-rendition` — advisory, never gating. Use after composing a candidate (`gz content compose`) and before operator attestation, to produce the advisor-QC receipt the operator cites at Gate 5.
+Judge the information-retained-per-byte of a candidate rendition and record the verdict via `gz content advise-rendition` — advisory, never gating. Use after composing a candidate (`gz content compose`) and before operator attestation, to produce the advisor-QC receipt the operator cites in the corpus attestation.
 
 ---
 

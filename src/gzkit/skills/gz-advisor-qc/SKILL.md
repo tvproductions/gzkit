@@ -1,12 +1,12 @@
 ---
 name: gz-advisor-qc
-description: Judge the information-retained-per-byte of a candidate rendition and record the verdict via gz content advise-rendition — advisory, never gating. Use after composing a candidate (gz content compose) and before operator attestation, to produce the advisor-QC receipt the operator cites at Gate 5.
+description: Judge the information-retained-per-byte of a candidate rendition and record the verdict via gz content advise-rendition — advisory, never gating. Use after composing a candidate (gz content compose) and before operator attestation, to produce the advisor-QC receipt the operator cites in the corpus attestation.
 category: agent-operations
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-08-21
+last_reviewed: 2026-10-11
 metadata:
-  skill-version: "0.2.0"
+  skill-version: "0.2.1"
 model: sonnet
 gz_command: gz content advise-rendition
 ---
@@ -46,7 +46,7 @@ This is an **LLM-as-judge** surface governed by ADR-0.0.39 doctrine:
 3. Form a **retention judgment** as a ratio in `[0.0, 1.0]` — information retained per byte
    of the compressed rendition. High = dense retention; low = measurable loss per byte saved.
 4. Write a concise **explanation** naming what was retained, what was combined, and what (if
-   anything) was lost. This is the reasoning the operator reads at Gate 5.
+   anything) was lost. This is the reasoning the operator reads before the corpus attestation.
 5. Record the verdict:
 
    ```bash
@@ -55,8 +55,9 @@ This is an **LLM-as-judge** surface governed by ADR-0.0.39 doctrine:
    ```
 
 6. The verdict is written as an ARB receipt (`arb-step-judge-<hash>`) and witnessed by a
-   `rendition_advisor_verdict` ledger event. Cite the receipt id in the operator's Gate-5
-   attestation.
+   `rendition_advisor_verdict` ledger event. Cite the receipt id in the operator's corpus
+   attestation. It is not Gate 5, which names completed OBPI or ADR work only
+   (`.gzkit/rules/agents-md-map-doctrine.md` § Attestation granularity).
 
 ## Validation
 

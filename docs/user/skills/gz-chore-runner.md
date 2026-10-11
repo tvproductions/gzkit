@@ -9,7 +9,7 @@ validate.
 
 `/gz-chore-runner` is the operator interface for executing scheduled maintenance,
 refactoring, and code quality work items from the chores registry. Chores are
-small, repeatable maintenance tasks defined under `src/gzkit/chores/` (canonical) and resolved via the project-first → package-fallback resolver introduced by ADR-0.0.21 — things
+small, repeatable maintenance tasks authored under `.gzkit/chores/` (the package copy at `src/gzkit/chores/` is generated from it) and resolved via the project-first → package-fallback resolver introduced by ADR-0.0.21 — things
 like cleaning up deprecated patterns, enforcing naming conventions, or running
 coverage sweeps. This skill orchestrates the full chore lifecycle so you don't
 have to remember the command sequence.
@@ -74,8 +74,8 @@ Heavy actions but you're running Lite validation).
 | File | Role | Read/Write |
 |------|------|------------|
 | `.claude/skills/gz-chore-runner/SKILL.md` | Agent execution instructions | Read |
-| `src/gzkit/chores/registry.json` | Canonical chores registry (project overlay at `.gzkit/chores/registry.json` wins when present) | Read |
-| `src/gzkit/chores/{slug}/CHORE.md` | Per-chore workflow and remediation procedure (canonical; project overlay at `.gzkit/chores/{slug}/CHORE.md`) | Read |
+| `.gzkit/chores/registry.json` | Chores registry, authored here (`src/gzkit/chores/registry.json` is the generated package copy) | Read |
+| `.gzkit/chores/{slug}/CHORE.md` | Per-chore workflow and remediation procedure, authored here (`src/gzkit/chores/{slug}/CHORE.md` is the generated package copy) | Read |
 | `.gzkit/chores/{slug}/proofs/CHORE-LOG.md` | Execution log and evidence (project-local only) | Read/Write |
 
 ## Related Skills and Commands

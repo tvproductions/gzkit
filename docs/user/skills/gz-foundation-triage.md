@@ -36,7 +36,8 @@ The skill follows the three-step pattern shared with `/ghi-triage`:
 2. **Cognitive pass** — the agent reads each candidate's Intent +
    Decision sections, composes a rank-input JSON with `{id, severity}`
    entries (plus any `{id, reclassify: "foundation"}` annotations for
-   pool ADRs whose scope authors a port-shape invariant).
+   pool ADRs whose scope authors a port-shape invariant; none where the
+   foundation kind is closed, as it is in gzkit).
 3. **Deterministic rendering** — the script renders the markdown
    deliverable from the rank-input JSON.
 

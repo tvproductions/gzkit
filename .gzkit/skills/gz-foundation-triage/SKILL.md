@@ -7,9 +7,9 @@ description: Rank the in-flight foundation backlog by priority — cross-referen
 category: adr-lifecycle
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-26
+last_reviewed: 2026-10-11
 metadata:
-  skill-version: "1.0.3"
+  skill-version: "1.1.0"
 model: sonnet
 ---
 
@@ -75,6 +75,13 @@ candidate is emitted as `{id, reclassify: "foundation"}` in a separate
 annotation list, NOT as a rank-input entry. Ranked candidates and
 reclassification annotations are mutually exclusive: a single candidate
 appears in one list or the other, never both.
+
+**Where the foundation kind is closed, the annotation list stays empty.** A
+project that has closed the kind carries `data/foundation_grandfather.json`,
+and gzkit has (`AGENTS.md` § Gate Covenant; `gz validate --taxonomy`). A closed
+kind takes no new member, so emit `"reclassify_foundation": []` and rank every
+candidate. Where the kind is open, the check applies as written, and the
+example below shows that case.
 
 Compose a single rank-input JSON document with one entry per candidate the
 agent recommends working on:

@@ -5,9 +5,9 @@ description: Run a gzkit chore end-to-end (show, plan, advise, execute, validate
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-19
+last_reviewed: 2026-10-11
 metadata:
-  skill-version: "1.5.2"
+  skill-version: "1.5.3"
 model: sonnet
 ---
 
@@ -58,7 +58,7 @@ Execute a repository chore using the canonical `gz chores` workflow.
 
 5. If criteria fail, read the CHORE.md workflow and implement fixes:
 
-   - Read `.gzkit/chores/<chore_slug>/CHORE.md` (project overlay) or the package-shipped canonical at `src/gzkit/chores/<chore_slug>/CHORE.md` for the remediation procedure
+   - Read `.gzkit/chores/<chore_slug>/CHORE.md` for the remediation procedure. It is the authoring source; `src/gzkit/chores/<chore_slug>/` is the copy sync generates from it (`.gzkit/rules/chores.md` § Two-Surface Layout). Where the project carries no copy, `uv run gz chores show <chore_slug>` prints the packaged one
    - Apply fixes surgically — minimal diffs, preserve behavior
    - Iterate: fix, validate, repeat
 

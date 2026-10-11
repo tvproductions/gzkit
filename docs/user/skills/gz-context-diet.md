@@ -6,7 +6,7 @@ Trim per-turn agent context weight by lifting pedagogical narrative from AGENTS.
 
 ## Purpose
 
-`/gz-context-diet` is the trigger-discovery wrapper for the `instructions-files-diet` chore. The chore (`src/gzkit/chores/instructions-files-diet/CHORE.md`) is the source of truth for the procedure, acceptance criteria, and common rationalizations; this skill exists so the skill catalogue pattern-matches on operator language ("diet," "progressive disclosure," "trim contract weight") that the generic `gz-chore-runner` description does not surface.
+`/gz-context-diet` is the trigger-discovery wrapper for the `instructions-files-diet` chore. The chore (`.gzkit/chores/instructions-files-diet/CHORE.md`) is the source of truth for the procedure, acceptance criteria, and common rationalizations; this skill exists so the skill catalogue pattern-matches on operator language ("diet," "progressive disclosure," "trim contract weight") that the generic `gz-chore-runner` description does not surface.
 
 ## When to Use
 
@@ -35,7 +35,7 @@ The skill reads its canonical execution contract from `.gzkit/skills/gz-context-
 | `.gzkit/skills/gz-context-diet/SKILL.md` | Canonical skill contract | Read |
 | `.claude/skills/gz-context-diet/SKILL.md` | Claude mirror | Read |
 | `.agents/skills/gz-context-diet/SKILL.md` | Codex mirror | Read |
-| `src/gzkit/chores/instructions-files-diet/CHORE.md` | Underlying chore procedure | Read |
+| `.gzkit/chores/instructions-files-diet/CHORE.md` | Underlying chore procedure | Read |
 
 ## Related Skills and Commands
 

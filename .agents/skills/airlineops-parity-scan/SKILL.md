@@ -1,16 +1,16 @@
 ---
 name: airlineops-parity-scan
 persona: main-session
-description: Run a repeatable governance parity scan between ../airlineops (canon) and gzkit (extraction).
+description: Run a repeatable governance parity scan that mines ../airlineops, gzkit's genesis and first adopter, for process habits gzkit lacks. gzkit leads; AirlineOps adopts.
 category: cross-repository
 # Withheld from delivery: this scan's subject is `../airlineops`, a sibling
 # checkout only the gzkit repository has (GHI #915).
 project_local: true
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-19
+last_reviewed: 2026-10-11
 metadata:
-  skill-version: "1.2.0"
+  skill-version: "1.3.0"
 model: haiku
 ---
 
@@ -18,13 +18,15 @@ model: haiku
 
 ## AirlineOps Parity Scan
 
-Run a repeatable governance parity scan between `../airlineops` (canon) and gzkit (extraction).
+Run a repeatable governance parity scan that mines `../airlineops` for process habits gzkit lacks.
+
+**Direction (`AGENTS.md` § Architectural Boundaries, boundary 5): gzkit leads and AirlineOps adopts.** AirlineOps is part of gzkit's genesis and its first adopter, not a canon gzkit must match. A `Missing` or `Divergent` row is a candidate gzkit weighs by the intake rubric, never an obligation to match. Where this skill says "canonical" of AirlineOps or "extraction" of gzkit, it names the direction of the mining read and confers no authority.
 
 ## Trigger
 
 - Weekly parity check cadence.
 - Before promoting any pool ADR into active implementation.
-- Any time a canonical GovZero skill/doc changes in AirlineOps.
+- On the operator's request. A change in AirlineOps does not trigger a scan: gzkit does not chase AirlineOps patches.
 
 ## Behavior
 
@@ -154,7 +156,7 @@ These thoughts mean STOP — you are about to ship a passive-tracking parity rep
 | "The matrix is filled in — that closes the cycle" | A scan with `Missing` or `Divergent` findings and no execution artifact (or filed defect) is `INCOMPLETE` by definition. Step 13 is mandatory. |
 | "I'll execute the Import Now items next cycle" | Action closure is per-cycle. Deferring is exactly the perpetual-catch-up pattern the constraint was written to prevent. Ship at least one tranche or file a defect now. |
 | "Textual diff is good enough for parity" | Parity is operational, not textual. You must mine procedural sources across all surfaces (`.github/`, `.claude/`, `.codex/`, `.gzkit/`, `AGENTS.md`) and exercise rituals from the gzkit runtime. |
-| "I don't need to read AirlineOps docs — gzkit is the canonical source now" | The scan is `gzkit ← airlineops`. Skipping the canonical mining inventory makes the report a self-portrait, not a parity scan. |
+| "I don't need to read AirlineOps docs — gzkit leads now" | gzkit leads, and the scan still reads AirlineOps: the mining inventory is how gzkit finds a habit worth importing. Without it the report is a self-portrait, not a parity scan. |
 | "Most items are Parity, the report is mostly done" | The report is the easy part. The failing parity items are the work. Don't conflate report completeness with cycle completeness. |
 | "I can write the report without running the runnable ritual checks" | Step 9 ritual checks (`gz cli audit`, `gz check-config-paths`, `gz adr audit-check`, `mkdocs --strict`) provide the procedure-parity evidence. Without them you're claiming parity by inspection. |
 | "Findings only need passive `defer (tracked)` classification" | The constraint explicitly prohibits closing a cycle with only passive tracking. Each finding needs an execution path or a tracked defect — there is no third option. |

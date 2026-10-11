@@ -669,13 +669,16 @@ uv run gz patch release --dry-run --json
 # 3) Bump version and write manifest (no commit/push/release)
 uv run gz patch release
 
-# 4) Edit RELEASE_NOTES.md manually
+# 4) Add the RELEASE_NOTES.md entry as the gz-patch-release skill prescribes (Step 4b)
 
 # 5) Sync the staged release manifest and version bumps
 uv run gz git-sync --apply --lint --test
 
-# 6) Tag and publish the GitHub release
-gh release create vX.Y.Z --title "vX.Y.Z" --notes-file RELEASE_NOTES.md
+# 6) Tag and publish the GitHub release with the newest version block only;
+#    RELEASE_NOTES.md is cumulative (GHI #710)
+BODY="$(mktemp)"
+awk '/^## v/{c++} c==2{exit} c==1' RELEASE_NOTES.md > "$BODY"
+gh release create vX.Y.Z --target main --latest --title "vX.Y.Z" --notes-file "$BODY"
 ```
 
 The discovery JSON includes `ghi_count`, `qualifications` (per-GHI status:

@@ -763,6 +763,22 @@ def _extract_latest_entry(project_root: Path) -> str:
     return m.group(1).strip() if m else ""
 
 
+def _abort_hint_lines(version: str) -> list[str]:
+    """Return the commands that finish a release the operator declined to automate.
+
+    ``RELEASE_NOTES.md`` is cumulative, so the release body is sliced to the
+    newest version block before ``gh release create`` reads it (GHI #710).
+    """
+    return [
+        f"git add -A && git commit -m 'release: v{version}'",
+        "git push origin main",
+        'BODY="$(mktemp)"',
+        "awk '/^## v/{c++} c==2{exit} c==1' RELEASE_NOTES.md > \"$BODY\"",
+        f"gh release create v{version} --target main --title v{version} --latest"
+        ' --notes-file "$BODY"',
+    ]
+
+
 def _commit_release(project_root: Path, version: str) -> None:
     """Stage and commit the release changes."""
     # Stage the files that patch release touches
@@ -1011,14 +1027,9 @@ def patch_release_cmd(*, dry_run: bool, as_json: bool, full: bool = False) -> No
 
     if not _confirm("Proceed with commit, push, and GitHub release?"):
         console.print("[yellow]Aborted. Version bumped but not released.[/yellow]")
-        console.print("  Edit RELEASE_NOTES.md manually, then:")
-        console.print(f"  git add -A && git commit -m 'release: v{proposed_version}'")
-        console.print("  git push origin main")
-        console.print(
-            f"  gh release create v{proposed_version} --target main"
-            f" --title v{proposed_version} --latest"
-            f" --notes-file RELEASE_NOTES.md"
-        )
+        console.print("  The RELEASE_NOTES.md entry is written. To finish by hand:")
+        for line in _abort_hint_lines(proposed_version):
+            console.print(f"  {escape(line)}")
         return
 
     console.print()
