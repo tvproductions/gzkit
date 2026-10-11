@@ -9,9 +9,9 @@ description: Token-efficient model routing across skills, subagents, and work su
 
 # Model Selection (gzkit)
 
-<!-- rule-version: 0.7.0 -->
+<!-- rule-version: 0.7.1 -->
 
-> **Rule version:** `0.7.0` — § Subagent effort levels describes the mechanism the harness has: effort is set on the agent definition (`effort:` frontmatter, values `low`, `medium`, `high`, `xhigh`, `max`), the Agent tool call sets `model` only, and a prompt-level `effort:` line is text the subagent reads (verified 2026-10-06 against the Claude Code documentation; R&D run `renewing-vows`, row 4 part 6, 2026-10-10). The prior text named `light`, which is not a documented value, and a per-call mapping the tool does not have (insight 2026-10-06, scope `model-selection`). The operator's allocation by echelon and role (2026-10-05) is added as advisory. Routing policy is unchanged. Prior history: [Rule Version History](../../docs/governance/rule-version-history.md#model-selectionmd).
+> **Rule version:** `0.7.1` — § Do Not no longer offers prompt-level effort as the alternative to a hardcoded model ID, which claim 4 (0.7.0) declares inert, and its example no longer names a superseded model (found by the rule-conflict audit, maintenance visit E, 2026-10-10). Routing policy and claims unchanged. Prior history, including `0.7.0`: [Rule Version History](../../docs/governance/rule-version-history.md#model-selectionmd).
 
 ## Operative claims (binding)
 
@@ -76,7 +76,7 @@ model: haiku  # or: sonnet, opus
 - Declaring `model: opus` for a read-only task (use Haiku)
 - Defaulting subagents to `effort: xhigh` when `effort: low` would suffice
 - Writing `effort: high` into a subagent prompt and expecting the harness to honour it (set it on the definition)
-- Hardcoding model IDs in subagent prompts (`claude-opus-4-7`) instead of using effort levels
+- Hardcoding a model ID (`claude-<tier>-<n>`) in a subagent prompt or dispatch call; pass the tier alias in `model` and set effort on the definition
 - Omitting the `model:` directive from a skill and inferring it at runtime
 - Using Sonnet as a "middle ground" between Haiku and Opus without naming what decision complexity requires it
 

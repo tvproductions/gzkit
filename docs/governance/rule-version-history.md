@@ -537,6 +537,15 @@ Lifted 2026-08-29 at version `0.2.0` (rule now at `0.3.0`).
 
 ## `model-selection.md`
 
+### Changed 2026-10-10 at version `0.7.1` (maintenance visit E, rule-conflict audit)
+
+The `0.7.0` edit changed claim 4 and § Subagent effort levels and left one line of § Do Not behind:
+*"Hardcoding model IDs in subagent prompts (`claude-opus-4-7`) instead of using effort levels"*. After `0.7.0`
+an effort level written into a prompt is inert, so the line recommended as its alternative the thing claim 4
+says does nothing; its example also named a superseded model, against the operator's 2026-08-02 ruling on
+superseded-model references. The line now names the working alternative (tier alias in `model`, effort on the
+definition) with a placeholder id. Found by the Pass A audit reading the rule whole; a patch, no claim changed.
+
 ### Changed 2026-10-10 at version `0.7.0` (R&D run `renewing-vows`, row 4 part 6)
 
 § Subagent effort levels claimed *"The Agent tool maps effort → model"* and listed

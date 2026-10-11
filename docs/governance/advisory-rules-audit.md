@@ -65,7 +65,7 @@ Before GHI #754 the audit asked only whether a rule's *filename stem* appeared a
 | `gh-cli.md` | `0.7.0` |
 | `hexagonal-architecture.md` | `0.3.0` |
 | `models.md` | `0.2.0` |
-| `model-selection.md` | `0.7.0` |
+| `model-selection.md` | `0.7.1` |
 | `weaponeering.md` | `0.1.0` |
 | `security-sensitivity.md` | `0.6.0` |
 | `skill-surface-sync.md` | `0.13.0` |
