@@ -92,6 +92,26 @@ class ScaffoldPreCommitConfig(unittest.TestCase):
             self.assertFalse((root / ".pre-commit-config.yaml").exists())
 
 
+class ScaffoldedGateDescriptionOutputForm(unittest.TestCase):
+    """What the scaffolded config tells an adopter its pre-push hook runs (GHI #1192)."""
+
+    def test_the_scaffold_describes_the_per_change_gate_and_names_the_full_sweep(self) -> None:
+        # output-contract: the scaffolded comment is the description of the gate
+        # an adopter reads beside the hook. Plain `gz check` is the per-change
+        # gate in every project, so the comment must not call it the full sweep.
+        from gzkit.commands.init_cmd import _scaffold_pre_commit_config
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _worktree(root)
+            _scaffold_pre_commit_config(root)
+            text = (root / ".pre-commit-config.yaml").read_text(encoding="utf-8")
+
+        self.assertIn("the per-change gate", text)
+        self.assertIn("uv run gz check --full", text)
+        self.assertNotIn("the full `gz check` sweep", text)
+
+
 class InstallPreCommitHooks(unittest.TestCase):
     """``gz init`` must activate the gate, not merely declare it."""
 

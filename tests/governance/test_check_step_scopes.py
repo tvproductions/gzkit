@@ -221,6 +221,18 @@ class TestTheDefaultIsThePerChangeGate(unittest.TestCase):
 
         self.assertTrue(_build_parser().parse_args(["check", "--full"]).full)
 
+    def test_the_parsed_command_hands_its_scope_to_the_check_handler(self) -> None:
+        """Parsing a flag is not running it: the dispatch must reach the handler."""
+        from gzkit.cli.main import _build_parser  # noqa: PLC0415
+
+        for argv, full in ((["check"], False), (["check", "--full"], True)):
+            with self.subTest(argv=argv):
+                args = _build_parser().parse_args(argv)
+                handler = mock.MagicMock()
+                with mock.patch("gzkit.cli.parser_maintenance._lazy", return_value=handler):
+                    args.func(args)
+                handler.assert_called_once_with(as_json=False, reuse_verified=False, full=full)
+
     def test_the_retired_fast_flag_is_a_usage_error(self) -> None:
         from gzkit.cli.main import _build_parser  # noqa: PLC0415
 

@@ -131,6 +131,14 @@ class TestTheRun(unittest.TestCase):
         run_command.assert_not_called()
         self.assertEqual(self.result.returncode, 0)
 
+    def test_an_empty_selection_names_the_command_that_runs_the_whole_tier(self) -> None:
+        # output-contract: the result is a selection, never a pass, so its text
+        # must send the reader to the whole unit tier. Plain `gz check` no
+        # longer runs it (GHI #1191).
+        self._run([], {})
+        self.assertIn("uv run gz test", self.result.stdout)
+        self.assertNotIn("uv run gz check", self.result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

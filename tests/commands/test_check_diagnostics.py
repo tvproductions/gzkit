@@ -59,5 +59,28 @@ class TestCheckFailingStepDiagnostics(unittest.TestCase):
         self.assertIn(marker, buf.getvalue())
 
 
+class TestPerChangePassMessageOutputForm(unittest.TestCase):
+    """What a passing per-change run tells the operator about the steps it dropped."""
+
+    def test_the_message_names_the_dropped_steps_and_claims_no_ci(self) -> None:
+        # output-contract: the message ships to every project that installs
+        # gzkit, and such a project has no CI of gzkit's (GHI #1192). It says
+        # how to run the dropped steps; it does not say something already does.
+        buf = io.StringIO()
+        recording = Console(file=buf, width=400, force_terminal=False)
+        with (
+            tempfile.TemporaryDirectory() as scratch,
+            patch.object(quality_mod, "console", recording),
+            patch.object(quality_mod, "_record_pass"),
+        ):
+            quality_mod._record_and_announce_pass(Path(scratch), scope="change")
+
+        out = buf.getvalue()
+        for step in quality_mod._scope_skips("change"):
+            self.assertIn(step, out)
+        self.assertIn("run `gz check --full` in CI and before a release", out)
+        self.assertNotIn("CI runs", out)
+
+
 if __name__ == "__main__":
     unittest.main()

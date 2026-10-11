@@ -320,7 +320,8 @@
       },
       "binding_sha256": "272445cb264e1586696d4cf18f09cdf9aa84bb0d0a1ad4371cb2982e6a3ce799",
       "authority": "GHI #1191 (operator ruling 2026-10-11, verbatim: \"move the canary sweep to the full tier\")",
-      "proposed_by": "claude-code session 2026-10-11"
+      "proposed_by": "claude-code session 2026-10-11",
+      "reviewed_by": "g0"
     }
   ]
 }
