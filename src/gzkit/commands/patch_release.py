@@ -6,7 +6,7 @@ for patch release qualification, and produces dual-format release manifests
 (markdown + JSONL ledger entry).
 
 With ``--full``, executes the complete release ceremony: bump, release-notes,
-commit, push (with lint/test gates), and ``gh release create``.
+commit, push (behind ``gz check --full``), and ``gh release create``.
 """
 
 from __future__ import annotations
@@ -840,19 +840,25 @@ def _commit_release(project_root: Path, version: str) -> None:
 
 
 def _push_release(project_root: Path) -> None:
-    """Push to origin with lint/test gates via git-sync internals."""
-    from gzkit.quality import run_lint, run_tests  # noqa: PLC0415
+    """Push to origin behind the full quality sweep, `gz check --full`.
 
-    # Pre-push gates
-    lint_result = run_lint(project_root)
-    if not lint_result.success:
-        raise GzCliError("Lint failed. Fix before releasing.")
-    console.print("  Lint: passed")
+    A release is where the full tier runs locally (operator ruling 2026-10-11,
+    GHI #1191): the per-change gate runs only the tests a change touches, so the
+    whole unit tier, behave, the docs build and the guard-canary sweep are paid
+    here, once per release. The release commit already exists, so a passing
+    sweep records the tree as verified and the pre-push hook reuses it.
+    """
+    import sys  # noqa: PLC0415
 
-    test_result = run_tests(project_root)
-    if not test_result.success:
-        raise GzCliError("Tests failed. Fix before releasing.")
-    console.print("  Tests: passed")
+    from gzkit.quality import run_command  # noqa: PLC0415
+
+    sweep = run_command([sys.executable, "-m", "gzkit", "check", "--full"], cwd=project_root)
+    if not sweep.success:
+        detail = "\n".join((sweep.stdout + "\n" + sweep.stderr).strip().splitlines()[-40:])
+        raise GzCliError(
+            f"The full quality sweep (`gz check --full`) failed. Fix before releasing.\n{detail}"
+        )
+    console.print("  Full quality sweep: passed")
 
     rc, _out, err = git_cmd(project_root, "push", "origin", "main")
     if rc != 0:

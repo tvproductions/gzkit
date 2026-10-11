@@ -246,6 +246,11 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     "tautological-debt": "tautological-debt-waived",
     # The admit control itself: slot accounting is one count with no further admit path.
     "tautological-debt-waived": EXEMPTS_NONE,
+    # --- GHI #1191 ------------------------------------------------------------
+    # The kill sweep runs every registered canary and admits no outcome but `killed`.
+    # The grandfather roster belongs to the binding check (a claim with no canary),
+    # which this step does not run, and a project with no registry has nothing to sweep.
+    "guard-canary-sweep": EXEMPTS_NONE,
     # --- GHI #1063 ------------------------------------------------------------
     # Each ratchet admits a finding its shrink-only baseline discloses:
     # data/validator_reachability_grandfather.json and

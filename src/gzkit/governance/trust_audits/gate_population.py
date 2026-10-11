@@ -13,7 +13,7 @@ complete refusal or closeout gate is a function in the command's module, reachab
 entry point within that module, that refuses: it raises ``SystemExit``, ``GzCliError`` or
 ``PolicyBreachError``, or calls a refusal helper (``_fail``,
 ``_abort_closeout_with_blockers``), which are mechanisms rather than members. A check step is
-a ``_build_check_steps`` entry, plus the ``Test (changed)`` step ``--fast`` substitutes,
+a ``_build_check_steps`` entry, plus the ``Test (changed)`` step the per-change gate runs,
 whose runner holds no string that IS a ``gz validate`` command.
 
 **Deciding functions.** A member's subject is the member itself plus the gzkit functions it

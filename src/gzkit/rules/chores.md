@@ -6,11 +6,11 @@ paths:
 description: Chores workflow command sequences, two-surface layout, and evidence patterns
 ---
 
-<!-- rule-version: 0.6.0 -->
+<!-- rule-version: 0.6.1 -->
 
 # Chores Workflow (gzkit)
 
-> **Rule version:** `0.6.0` — `.gzkit/chores/` is the authoring source for canonical chores and `src/gzkit/chores/` the generated distribution copy, matching `skill-surface-sync.md` rule 1; damaged-slug recovery is described separately (operator ruling 2026-09-28, GHI #1044). Prior history: [Rule Version History](../../docs/governance/rule-version-history.md#choresmd).
+> **Rule version:** `0.6.1` — § Correct Evidence names `gz check --full` as the full-repository check, since plain `gz check` is the per-change gate (GHI #1191). Prior history: [Rule Version History](../../docs/governance/rule-version-history.md#choresmd).
 
 > **Purpose:** Enable agents to run repository chores effectively with clear,
 > repeatable command sequences, aligned to gzkit guardrails and the two-surface
@@ -131,11 +131,12 @@ project-local-only slugs (REQ-0.0.21-09-06).
 
 For a Lite chore, use the unit-tier validation sequence in § Apply Advice.
 The Lite default limits the chore's own work; it does not waive the full
-repository quality check required before sync. Heavy-lane or separately
-required full-repository verification includes BDD:
+per-change gate the pre-push hook runs at sync. Heavy-lane or separately
+required full-repository verification is the full sweep, which includes the
+whole unit tier and BDD:
 
 ```bash
-uv run gz check
+uv run gz check --full
 uv run behave features/<feature>.feature --tags=@schema
 ```
 

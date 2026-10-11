@@ -88,6 +88,10 @@ _STEP_CLASSIFICATION: dict[str, _StepMeta] = {
     "Tautological debt": ("audit", "tests/", "bound", "subprocess"),
     "Test": ("test", "tests/", "bound", "subprocess"),
     "Behave": ("bdd", "features/", "bound", "subprocess"),
+    # Enrolled the same commit it joined `gz check` (GHI #1191). Subject is
+    # `src/`: the population it mutates is the guard functions there. `bound`:
+    # a mutant its designated test does not kill exits 3.
+    "Guard canary sweep": ("audit", "src/", "bound", "subprocess"),
     "Docs build": ("audit", "docs/", "bound", "subprocess"),
     # One bare `gz validate` gates the whole default tier (GHI #744). Subject is
     # "all" because the tier spans manifest, ledger, docs, briefs and rules.

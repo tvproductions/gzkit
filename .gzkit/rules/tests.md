@@ -5,17 +5,17 @@ paths:
 description: Test policy and coverage requirements
 ---
 
-<!-- rule-version: 0.26.6 -->
+<!-- rule-version: 0.27.0 -->
 
 # Test Policy (canonical)
 
-> **Rule version:** `0.26.6` — § TASK-Driven Workflow distinguishes independent catalog requirements from the current brief-local REQ/TASK lineage (operator hierarchy amendment, 2026-09-25). Rationale: [Tests — Rationale](../../docs/governance/tests-rationale.md); history: [Rule Version History](../../docs/governance/rule-version-history.md#testsmd).
+> **Rule version:** `0.27.0` — § Two runners: the per-change gate runs the tests a change touches, and the whole unit tier runs under `gz check --full` (operator ruling 2026-10-11, GHI #1191). Rationale: [Tests — Rationale](../../docs/governance/tests-rationale.md); history: [Rule Version History](../../docs/governance/rule-version-history.md#testsmd).
 
 ## General Rules (binding)
 
 - Use **stdlib `unittest`**; no pytest — no pytest syntax, fixtures, parametrization or plugins. `unittest.mock` and `tempfile.TemporaryDirectory()` are the fixtures.
 - Table-driven tests with deterministic seeds; no network or external services; fixtures local, small and reproducible.
-- **Smoke/BVT <=60s** — binds the `@smoke`-marked subset run by `uv run gz smoke`, NOT the full unit tier. That verb fails closed (exit 3) on budget breach, or on an empty tier when `.gzkit.json` declares `smoke.required: true`; an empty tier with that setting absent or false passes with an advisory. It runs as the `Smoke tier` step of `gz check`. The full unit tier has no ceiling: it grows with the REQ set, and the canonical "Tests pass" invocation runs it with `unittest-parallel`.
+- **Smoke/BVT <=60s** — binds the `@smoke`-marked subset run by `uv run gz smoke`, NOT the full unit tier. That verb fails closed (exit 3) on budget breach, or on an empty tier when `.gzkit.json` declares `smoke.required: true`; an empty tier with that setting absent or false passes with an advisory. It runs as the `Smoke tier` step of `gz check`. The full unit tier has no ceiling: it grows with the REQ set, and the canonical "Tests pass" invocation runs it with `unittest-parallel`. A comprehensive serial sweep does not belong in it: one test that cannot be split sets the whole tier's wall time (GHI #1191).
 - Unit tests use `tempfile` temp DBs; never a live database.
 - **Git fixture isolation:** every `git` a test spawns passes `env=_isolated_git_env()` from `tests/commands/common.py`, and `tests/__init__.py` drops the same repo-local variables once, so a fixture targeting a temp repository operates on that repository whatever the process inherited — from a linked worktree an unguarded `git init` re-initialises the hosting repo as bare (GHI #977). Fenced by `tests/commands/test_common_fixtures.py::TestEveryGitSpawnIsInsideTheBoundary`.
 - Cleanup through `tempfile.TemporaryDirectory()`; never raw `shutil.rmtree()` in tearDown.
@@ -82,7 +82,7 @@ OBPI-scoped: `gz covers` → `gz task start` → TDD cycle → commit with `Task
 | `unittest` | `tests/` | Pure Python behavior, command contracts | Mocked subprocess boundaries (`_uv_sync_patcher`, `_git_subprocess_patcher`, `_quick_init` in `tests/commands/common.py`); deterministic; < 200ms; `tempfile` DBs |
 | `behave` | `features/` | End-to-end CLI and governance scenarios | Real operator flows; anything needing a real subprocess lives here |
 
-`gz test` runs the unit tier; `gz test --bdd` runs the unit tier then `behave`. The unit tier runs on every change; `behave` is heavy-lane OBPI and CI scope, never a per-change gate (`AGENTS.md` § Gate Covenant). Plain `gz check` is the per-change gate and drops `Behave`; `gz check --full` and CI run both tiers (`data/check_step_scopes.json`).
+`gz test` runs the unit tier; `gz test --bdd` runs the unit tier then `behave`. The whole unit tier runs in CI on every code push, at OBPI completion (Gate 2) and at every release; `behave` is heavy-lane OBPI and CI scope, never a per-change gate (`AGENTS.md` § Gate Covenant). Plain `gz check` is the per-change gate: it runs the tests the change touches and drops the whole unit tier and `Behave`; `gz check --full` and CI run both tiers (`data/check_step_scopes.json`, GHI #1191).
 
 **Behave scenarios covering a REQ carry `@REQ-X.Y.Z-NN-MM`** as a scenario tag — `gz validate --behave-req-tags` (fires on `Completed`/`Validated` briefs; waivers in `data/behave_coverage_waivers.json`). The gate is REQ-kind-aware (GHI #636): a BEHAVIOR REQ is satisfied by a tagged scenario or an `@covers` unit test; SUPPORT and STRUCTURAL-FENCE REQs are exempt by kind; a missing `[kind]` tag defaults to BEHAVIOR.
 

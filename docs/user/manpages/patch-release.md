@@ -13,7 +13,7 @@ qualifiers since the last tag — behavior-level GHIs (cross-validated by
 runtime label AND source diff) and foundation-ADR closeouts (Gate-5
 `validated` receipts in the ledger) — bumps the patch version, and writes
 a dual-format release manifest. With `--full`, also drafts release notes,
-commits, pushes behind lint/test gates, and creates the GitHub release.
+commits, pushes behind the full quality sweep (`gz check --full`), and creates the GitHub release.
 
 Both qualifiers carry equal weight: per the hexagonal port/adapter
 doctrine, foundation ADRs (ports) ship code surfaces just as feature ADRs
@@ -68,7 +68,7 @@ closure commit already claims is not reported.
 :   Emit machine-readable JSON to stdout.
 
 `--full`
-:   Execute the full ceremony in one transaction: bump, draft release notes, commit, push (with lint/test gates), and create the GitHub release.
+:   Execute the full ceremony in one transaction: bump, draft release notes, commit, push (behind the full quality sweep, `gz check --full`), and create the GitHub release.
 
 ## MX HANGAR LOCKOUT
 

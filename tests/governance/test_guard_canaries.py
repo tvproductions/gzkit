@@ -4,14 +4,20 @@ A claim's proof can be erased without anyone deciding to: the guard changes, or 
 kills a mutant of it is renamed, weakened or deleted. Operator ruling (defaults taken
 2026-10-01, "approve all three"): a canary is bound by a hash of the guard source, the claim
 and the designated failing test id. These tests derive from that ruling: they hold the live
-registry to its binding, run every canary's mutant on an isolated copy, and drive each way a
-binding can go stale.
+registry to its binding and drive each way a binding can go stale.
+
+The kill sweep over the whole live registry is the `Guard canary sweep` step of
+`gz check --full` (GHI #1191). It ran here as one test, 22 mutants in series, and set the
+unit tier's wall time. What stays here drives the sweep's own verdicts on a planted tree.
 """
 
 from __future__ import annotations
 
 import hashlib
 import json
+import os
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -109,16 +115,96 @@ class TestTheLiveRegistry(unittest.TestCase):
     def test_every_registered_claim_has_a_bound_canary_or_a_disclosure(self):
         self.assertEqual(gc.check_canaries(_ROOT, _registered()), [])
 
-    def test_every_canary_mutant_is_killed_by_its_designated_test(self):
-        runs = gc.run_canaries(_ROOT)
-        self.assertEqual({r.claim_id for r in runs}, {c.claim_id for c in gc.load_canaries(_ROOT)})
-        self.assertEqual([r for r in runs if r.outcome != "killed"], [])
-
     def test_a_canary_run_leaves_the_working_tree_as_it_found_it(self):
         guard_file = _resolved(gc.load_canaries(_ROOT)[0].guard)[1]
         before = guard_file.read_bytes()
         gc.run_canaries(_ROOT, claim_ids={gc.load_canaries(_ROOT)[0].claim_id})
         self.assertEqual(guard_file.read_bytes(), before)
+
+
+_PLANTED_GUARD = "def refuses(value):\n    return value < 0\n"
+_KILLING_TEST = (
+    "import unittest\n\nfrom ncguard.checks import refuses\n\n\n"
+    "class TestPlanted(unittest.TestCase):\n"
+    "    def test_it(self):\n        self.assertTrue(refuses(-1))\n"
+)
+_BLIND_TEST = (
+    "import unittest\n\n\nclass TestPlanted(unittest.TestCase):\n"
+    "    def test_it(self):\n        self.assertTrue(True)\n"
+)
+
+
+def _sweep(root: Path) -> subprocess.CompletedProcess[str]:
+    """Run the step's own command with *root* as the project root.
+
+    The child imports the `gzkit` this test imported, so a mutant of the sweep in
+    an isolated copy is the code the child runs.
+    """
+    package_parent = str(Path(gc.__file__).resolve().parents[1])
+    return subprocess.run(
+        [sys.executable, "-c", gc.SWEEP_COMMAND_SOURCE],
+        cwd=root,
+        env={**os.environ, "PYTHONPATH": package_parent},
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+    )
+
+
+def _planted_tree(root: Path, test_source: str) -> None:
+    """Write a guard, one designated test and a canary whose mutant disarms the guard."""
+    test_id = "tests.test_planted.TestPlanted.test_it"
+    for rel, text in (
+        ("src/ncguard/__init__.py", ""),
+        ("src/ncguard/checks.py", _PLANTED_GUARD),
+        ("tests/__init__.py", ""),
+        ("tests/test_planted.py", test_source),
+    ):
+        path = root / rel
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(text, encoding="utf-8")
+    canary = {
+        "claim_id": "planted-claim",
+        "guard": "ncguard.checks:refuses",
+        "failing_test": test_id,
+        "mutation": {"find": "return value < 0", "replace": "return False", "label": "m"},
+        "binding_sha256": gc.binding_hash(_PLANTED_GUARD, "planted-claim", test_id),
+        "authority": "test",
+    }
+    registry = root / "data" / "guard_canaries.json"
+    registry.parent.mkdir(parents=True, exist_ok=True)
+    registry.write_text(json.dumps({"canaries": [canary]}), encoding="utf-8")
+
+
+class TestTheKillSweepStep(unittest.TestCase):
+    """GHI #1191: the sweep is a full-tier step, and only a killed mutant passes it."""
+
+    def test_a_mutant_its_designated_test_kills_passes_the_sweep(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            _planted_tree(Path(tmp), _KILLING_TEST)
+            result = _sweep(Path(tmp))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertIn("1 canary mutant(s) killed", result.stdout)
+
+    def test_a_mutant_its_designated_test_does_not_kill_fails_the_sweep(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            _planted_tree(Path(tmp), _BLIND_TEST)
+            result = _sweep(Path(tmp))
+        self.assertEqual(result.returncode, 3, result.stdout + result.stderr)
+        self.assertIn("'planted-claim' was not killed (outcome: survived", result.stdout)
+
+    def test_a_project_with_no_canary_registry_has_nothing_to_sweep(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            result = _sweep(Path(tmp))
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+
+    def test_the_sweep_runs_in_the_full_tier_and_not_per_change(self):
+        from gzkit.commands.quality import _select_check_steps  # noqa: PLC0415
+
+        self.assertIn("Guard canary sweep", [n for n, _ in _select_check_steps("full")])
+        self.assertNotIn("Guard canary sweep", [n for n, _ in _select_check_steps("change")])
 
 
 class TestABindingGoesStale(unittest.TestCase):

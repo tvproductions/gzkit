@@ -5,7 +5,7 @@ description: "Orchestrate the GHI-driven patch release ceremony, and the notes a
 category: adr-audit
 compatibility: GovZero v6 framework; provides ceremony walkthrough for GHI-driven patch releases
 metadata:
-  skill-version: "1.13.0"
+  skill-version: "1.14.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/releases/patch-release.md, docs/design/adr/foundation/ADR-0.0.15-ghi-driven-patch-release-ceremony/ADR-0.0.15-ghi-driven-patch-release-ceremony.md"
@@ -373,14 +373,16 @@ before publish. A discovered GHI with no changelog entry blocks the release — 
 is the networked half of the enforcement the hermetic `gz validate --changelog`
 structural check cannot perform.
 
-#### 4c. Git-sync
+#### 4c. Full quality sweep, then git-sync
 
 ```bash
+git add -A
+uv run gz check --full
 uv run gz git-sync --apply
 ```
 
-This MUST run immediately before `gh release create`. Same policy as the
-closeout ceremony.
+The full sweep is the release's QC (GHI #1191); a failure stops the release.
+Sync MUST run immediately before `gh release create`, as in the closeout ceremony.
 
 #### 4d. GitHub Release (non-Foundation only)
 

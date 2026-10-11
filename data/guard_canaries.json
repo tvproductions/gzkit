@@ -308,6 +308,19 @@
       "authority": "GHI #1181; operator ruling 2026-10-10 (verbatim: \"refuse, direct fix under 1181\")",
       "proposed_by": "claude-code session 2026-10-10",
       "reviewed_by": "g0"
+    },
+    {
+      "claim_id": "guard-canary-sweep",
+      "guard": "gzkit.guard_canary:sweep_main",
+      "failing_test": "tests.governance.test_guard_canaries.TestTheKillSweepStep.test_a_mutant_its_designated_test_does_not_kill_fails_the_sweep",
+      "mutation": {
+        "find": "    if failed or missing:\n        return 3\n",
+        "replace": "    if missing:\n        return 3\n",
+        "label": "a surviving mutant no longer fails the sweep"
+      },
+      "binding_sha256": "272445cb264e1586696d4cf18f09cdf9aa84bb0d0a1ad4371cb2982e6a3ce799",
+      "authority": "GHI #1191 (operator ruling 2026-10-11, verbatim: \"move the canary sweep to the full tier\")",
+      "proposed_by": "claude-code session 2026-10-11"
     }
   ]
 }

@@ -154,7 +154,7 @@ def staged_fingerprint(project_root: Path) -> str | None:
 
 
 #: Scopes whose pass may be recorded: each drops nothing the per-change gate runs
-#: (``data/check_step_scopes.json``; GHI #1088). ``fast`` drops the unit tier.
+#: (``data/check_step_scopes.json``; GHI #1088).
 RECORDABLE_SCOPES: frozenset[str] = frozenset({"change", "full"})
 
 

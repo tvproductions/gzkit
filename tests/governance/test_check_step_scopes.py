@@ -6,7 +6,9 @@ properties that make the declaration trustworthy: it is READ rather than
 restated, its polarity is conservative (unknown scope drops nothing), a scope
 narrower than the per-change gate can never record the fingerprint that gate
 reuses, and the default scope is the per-change gate — `Behave` is heavy-lane
-and CI scope, reached only through `--full` (GHI #1088).
+and CI scope, reached only through `--full` (GHI #1088). Since GHI #1191 the
+per-change gate also drops the whole unit tier and runs the tests the change
+touches in its place.
 """
 
 from __future__ import annotations
@@ -55,12 +57,16 @@ class TestScopeDeclarationIsRead(unittest.TestCase):
         self.assertEqual(
             set(full) - set(change), set(declared), "change drops exactly the declared steps"
         )
-        self.assertEqual(len(full) - len(change), len(declared))
+        self.assertEqual(
+            set(change) - set(full),
+            {"Test (changed)"},
+            "the only step the gate adds is the changed-test run that stands in for Test",
+        )
         for step in declared:
             self.assertIn(step, full, f"{step} must still run in the full sweep")
-        self.assertIn("Test", change, "scoping the gate must not gut it")
         self.assertIn("Lint", change)
         self.assertIn("Typecheck", change)
+        self.assertIn("Smoke tier", change)
 
 
 class TestScopePolarityIsConservative(unittest.TestCase):
@@ -103,8 +109,12 @@ class TestOnlyScopesCoveringTheGateRecord(unittest.TestCase):
                         f"{_scope_skips(name) - gate_skips}, which the per-change gate runs",
                     )
 
-    def test_fast_does_not_record(self) -> None:
-        self.assertFalse(_scope_records_verified("fast"), "fast drops Test itself")
+    def test_a_scope_declared_not_to_record_does_not(self) -> None:
+        from unittest import mock  # noqa: PLC0415
+
+        narrow = {"narrow": {"skips": ["Lint"], "records_verified": False}}
+        with mock.patch("gzkit.commands.quality._load_check_step_scopes", return_value=narrow):
+            self.assertFalse(_scope_records_verified("narrow"))
 
     def test_the_change_and_full_scopes_record(self) -> None:
         self.assertTrue(_scope_records_verified("change"))
@@ -115,48 +125,56 @@ class TestOnlyScopesCoveringTheGateRecord(unittest.TestCase):
 
         A scope that drops nothing ran the full sweep, so refusing to record it
         would silently disable the pre-push reuse in every adopter repository.
-        `fast` still never records: it is the inner loop whatever it drops.
+        It also keeps the whole unit tier: the changed-test run stands in only
+        where `Test` is declared dropped.
         """
         from unittest import mock  # noqa: PLC0415
 
         with mock.patch("gzkit.commands.quality._load_check_step_scopes", return_value={}):
             self.assertEqual(_scope_skips("change"), frozenset())
             self.assertTrue(_scope_records_verified("change"))
-            self.assertFalse(_scope_records_verified("fast"))
+            names = [name for name, _ in _select_check_steps("change")]
+            self.assertIn("Test", names)
+            self.assertNotIn("Test (changed)", names)
 
 
 class TestTheDefaultIsThePerChangeGate(unittest.TestCase):
-    """Plain `gz check` is the per-change gate; `Behave` needs `--full` (GHI #1088).
+    """Plain `gz check` is the per-change gate; the full tier needs `--full`.
 
-    `AGENTS.md` § Gate Covenant: the unit tier runs on every change, and `behave`
-    belongs to heavy-lane OBPI work and to CI, never to a per-change gate.
+    `Behave` left the gate under GHI #1088. The whole unit tier left it under
+    GHI #1191 (operator ruling 2026-10-11): the gate runs the tests the change
+    touches, and `--full` runs the tier in CI, at release and as a chore.
     """
 
-    def test_the_change_scope_drops_behave_and_keeps_the_unit_tier(self) -> None:
+    def test_the_change_scope_drops_behave_and_the_whole_unit_tier(self) -> None:
         change = [name for name, _ in _select_check_steps("change")]
         self.assertNotIn("Behave", change)
-        self.assertIn("Test", change)
+        self.assertNotIn("Test", change)
+        self.assertIn("Test (changed)", change)
 
-    def test_the_full_scope_runs_behave(self) -> None:
-        self.assertIn("Behave", [name for name, _ in _select_check_steps("full")])
+    def test_the_full_scope_runs_behave_and_the_whole_unit_tier(self) -> None:
+        full = [name for name, _ in _select_check_steps("full")]
+        self.assertIn("Behave", full)
+        self.assertIn("Test", full)
+        self.assertNotIn("Test (changed)", full)
 
     def test_plain_gz_check_selects_the_change_scope(self) -> None:
         from gzkit.cli.main import _build_parser  # noqa: PLC0415
 
         args = _build_parser().parse_args(["check"])
         self.assertFalse(args.full)
-        self.assertFalse(args.fast)
 
     def test_full_flag_selects_the_full_scope(self) -> None:
         from gzkit.cli.main import _build_parser  # noqa: PLC0415
 
         self.assertTrue(_build_parser().parse_args(["check", "--full"]).full)
 
-    def test_fast_and_full_are_mutually_exclusive(self) -> None:
+    def test_the_retired_fast_flag_is_a_usage_error(self) -> None:
         from gzkit.cli.main import _build_parser  # noqa: PLC0415
 
-        with self.assertRaises(SystemExit):
-            _build_parser().parse_args(["check", "--fast", "--full"])
+        with self.assertRaises(SystemExit) as raised:
+            _build_parser().parse_args(["check", "--fast"])
+        self.assertEqual(raised.exception.code, 2)
 
 
 if __name__ == "__main__":

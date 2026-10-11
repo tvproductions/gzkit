@@ -646,7 +646,7 @@ as a patch release.
 ### Full ceremony (recommended)
 
 One command does everything: discover GHIs, bump version, author release notes,
-commit (with lint/test gates), push, and create the GitHub release. Pauses for
+commit, push (behind the full quality sweep, `gz check --full`), and create the GitHub release. Pauses for
 operator confirmation before commit/push/release.
 
 ```bash
@@ -992,8 +992,8 @@ Use [`/gz-check`](skills/gz-check.md) to run all quality checks in one pass, or 
 - `uv run gz drift` (detect spec-test-code governance drift)
 - `uv run gz preflight` (detect stale markers and orphan receipts)
 - `uv run gz preflight --apply` (clean up stale artifacts)
-- `uv run gz check` (the per-change gate + advisory drift; `--full` adds behave and preflight)
-- `uv run gz check --full` (the full sweep CI runs)
+- `uv run gz check` (the per-change gate + advisory drift: every validator and the tests the change touches)
+- `uv run gz check --full` (the full sweep CI runs: adds the whole unit tier, behave, the docs build, preflight and the guard-canary sweep; run it before a release)
 - `uv run gz check --json` (machine-readable output with advisory drift section)
 - `uv run gz adr audit-check ADR-<X.Y.Z>`
 - `uv run gz adr covers-check ADR-<X.Y.Z>`

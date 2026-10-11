@@ -408,3 +408,43 @@ def run_canaries(project_root: Path, claim_ids: set[str] | None = None) -> list[
                 CanaryRun(claim_id=canary.claim_id, outcome=witness.outcome, reason=witness.reason)
             )
     return runs
+
+
+#: What the `Guard canary sweep` step runs, from the project root (GHI #1191). The path
+#: bootstrap is the one `_BOOTSTRAP` gives each designated test, so a guard resolves from
+#: the tree the sweep was aimed at.
+SWEEP_COMMAND_SOURCE = (
+    "import sys; sys.path[:0] = ['src', '.']; "
+    "from gzkit.guard_canary import sweep_main; raise SystemExit(sweep_main())"
+)
+
+
+def sweep_main(project_root: Path | None = None) -> int:
+    """Run every canary's mutant and return 3 when one is not killed, else 0.
+
+    The kill sweep is comprehensive and serial: one subprocess per mutant on an isolated
+    copy. It runs in the full tier of `gz check`, never in the unit tier, where it set the
+    whole tier's wall time (GHI #1191). A project with no canary registry has nothing to
+    sweep and passes.
+    """
+    root = (project_root or Path.cwd()).resolve()
+    if not registry_path(root, _CANARY_REGISTRY).is_file():
+        print("guard-canary-sweep: no canary registry; nothing to sweep.")
+        return 0
+    expected = {canary.claim_id for canary in load_canaries(root)}
+    runs = run_canaries(root)
+    missing = sorted(expected - {run.claim_id for run in runs})
+    failed = [run for run in runs if run.outcome != "killed"]
+    for run in failed:
+        print(
+            f"guard-canary-sweep: canary for claim {run.claim_id!r} was not killed "
+            f"(outcome: {run.outcome}{'; ' + run.reason if run.reason else ''}). "
+            "Its designated test no longer fails on the reviewed mutant, so the claim's "
+            f"proof is erased. Recover: {_RECOVER}."
+        )
+    for claim_id in missing:
+        print(f"guard-canary-sweep: canary for claim {claim_id!r} produced no run.")
+    if failed or missing:
+        return 3
+    print(f"guard-canary-sweep: {len(runs)} canary mutant(s) killed by their designated tests.")
+    return 0

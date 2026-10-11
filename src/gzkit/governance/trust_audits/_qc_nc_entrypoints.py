@@ -317,6 +317,20 @@ def _ep_docs_build_validation_floor(root: Path) -> int:
     return int(all(f"validation.{key}" in result.stderr for key in MKDOCS_VALIDATION_FLOOR))
 
 
+def _ep_guard_canary_sweep(root: Path) -> int:
+    """Run the `Guard canary sweep` step itself against the fixture root (GHI #1191).
+
+    The step function is the gate, so the control calls it rather than restating
+    its command. Exit 3 alone could be another refusal, so the verdict is pinned
+    to the survived-mutant text.
+    """
+    from gzkit.quality import run_guard_canary_sweep_audit  # noqa: PLC0415
+
+    result = run_guard_canary_sweep_audit(root)
+    caught = result.returncode == 3 and "was not killed (outcome: survived" in result.stdout
+    return 1 if caught else 0
+
+
 def _ep_behave(root: Path) -> int:
     """Run behave from THIS interpreter, so the installed behave is the one used.
 

@@ -573,6 +573,52 @@ def _build_docs_build_validation_floor() -> Path:
     return root
 
 
+_CANARY_NC_GUARD = "def refuses(value):\n    return value < 0\n"
+
+
+def _build_guard_canary_sweep() -> Path:
+    """Violation: a canary whose designated test passes on the mutant (GHI #1191).
+
+    The planted test never calls the guard, so it passes before and after the
+    mutation and the mutant survives. The binding hash is the real one for the
+    planted guard, so the only thing wrong with this canary is the kill.
+    """
+    from gzkit.guard_canary import binding_hash  # noqa: PLC0415
+
+    root = _mkroot("guard-canary-sweep")
+    claim, test_id = "nc-planted-claim", "tests.test_planted.TestPlanted.test_never_fails"
+    _write(root / "src" / "ncguard" / "__init__.py", "")
+    _write(root / "src" / "ncguard" / "checks.py", _CANARY_NC_GUARD)
+    _write(root / "tests" / "__init__.py", "")
+    _write(
+        root / "tests" / "test_planted.py",
+        "import unittest\n\n\nclass TestPlanted(unittest.TestCase):\n"
+        "    def test_never_fails(self):\n        self.assertTrue(True)\n",
+    )
+    _write(
+        root / "data" / "guard_canaries.json",
+        json.dumps(
+            {
+                "canaries": [
+                    {
+                        "claim_id": claim,
+                        "guard": "ncguard.checks:refuses",
+                        "failing_test": test_id,
+                        "mutation": {
+                            "find": "return value < 0",
+                            "replace": "return False",
+                            "label": "guard never refuses",
+                        },
+                        "binding_sha256": binding_hash(_CANARY_NC_GUARD, claim, test_id),
+                        "authority": "negative control (GHI #1191)",
+                    }
+                ]
+            }
+        ),
+    )
+    return root
+
+
 def _build_behave() -> Path:
     """Build a scenario whose step FAILS — not one whose step is merely undefined.
 
@@ -1709,6 +1755,7 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
     ),
     ("test", _build_test, _ep._ep_test),
     ("behave", _build_behave, _ep._ep_behave),
+    ("guard-canary-sweep", _build_guard_canary_sweep, _ep._ep_guard_canary_sweep),
     ("docs-build", _build_docs_build, _ep._ep_docs_build),
     (
         "docs-build-validation-floor",

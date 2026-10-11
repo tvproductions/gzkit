@@ -9,6 +9,7 @@ in CI, so the swallowed unittest output never reached the log).
 from __future__ import annotations
 
 import io
+import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch
@@ -39,10 +40,15 @@ class TestCheckFailingStepDiagnostics(unittest.TestCase):
         no_drift = MagicMock()
         no_drift.has_drift = False
 
+        # A scratch root declares no scope policy, so the stubbed step is the
+        # whole run. Rooted at the repository, the per-change scope would drop
+        # `Test` and launch the real changed-test run in its place, which
+        # selects this module and never returns (GHI #1191).
         with (
+            tempfile.TemporaryDirectory() as scratch,
             patch.object(quality_mod, "console", recording),
             patch.object(quality_mod, "_build_check_steps", return_value=[("Test", _failing_step)]),
-            patch.object(quality_mod, "get_project_root", return_value=Path(".")),
+            patch.object(quality_mod, "get_project_root", return_value=Path(scratch)),
             patch("gzkit.quality.run_drift_advisory", return_value=no_drift),
             patch("gzkit.flags.registry.load_registry", side_effect=RuntimeError),
             self.assertRaises(SystemExit),

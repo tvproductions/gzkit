@@ -12,10 +12,9 @@ Feature: Distribution invariant T0 smoke test
   never re-measured; the whole Behave step is 29.8s and this scenario is
   about a tenth of it, so the wheel build was never the cost it was taken
   for (GHI #860). It runs in the
-  pre-push `gz check` gate and is NOT excluded by a tag: `gz check --fast`,
-  the inner-loop scope, drops the whole Behave step (_FAST_SKIPPED_STEPS),
-  and `--reuse-verified` stops one tree paying for it twice. Run this
-  scenario alone with:
+  Behave step of `gz check --full`, which CI runs, and is NOT excluded by a
+  tag: plain `gz check`, the per-change gate, drops the whole Behave step
+  (data/check_step_scopes.json). Run this scenario alone with:
     uv run -m behave features/distribution_invariant.feature
 
   This header carried an `@slow` tag and a claim that it excluded the

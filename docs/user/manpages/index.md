@@ -111,7 +111,7 @@ Command reference pages are operator manpages and part of Gate 3 proof.
 
 | Command | Description |
 |---------|-------------|
-| [`gz check`](check.md) | Run full quality checks (lint, typecheck, test) in one pass |
+| [`gz check`](check.md) | Run the per-change quality gate in one pass; `--full` adds the whole unit tier, behave and the full-tier sweeps |
 | [`gz drift`](drift.md) | Detect spec-test-code governance drift |
 | [`gz lint`](lint.md) | Run code linting checks |
 | [`gz format`](format.md) | Auto-format code |

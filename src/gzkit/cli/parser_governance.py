@@ -565,7 +565,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
         description=(
             "Execute the GHI-driven patch release ceremony. "
             "With --full: bump, author release notes, commit, push "
-            "(with lint/test gates), and create the GitHub release "
+            "(behind gz check --full), and create the GitHub release "
             "as one transaction."
         ),
         epilog=build_epilog(

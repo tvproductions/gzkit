@@ -173,13 +173,13 @@ class TestSkipRequiresBothSidesToAgree(unittest.TestCase):
     def test_no_receipt_falls_through(self) -> None:
         self.assertIsNone(already_verified(_repo()))
 
-    def test_a_fast_scope_is_never_recorded(self) -> None:
+    def test_a_scope_outside_the_recordable_set_is_never_recorded(self) -> None:
         root = _repo()
-        record_verified(root, staged_fingerprint(root), scope="fast")
+        record_verified(root, staged_fingerprint(root), scope="narrow")
         self.assertIsNone(
             verified_fingerprint(root),
-            "a scoped run skips the expensive steps by design; letting one satisfy "
-            "the gate is the presence-check failure AGENTS.md names",
+            "a scope narrower than the per-change gate skips steps that gate runs; "
+            "letting one satisfy the gate is the presence-check failure AGENTS.md names",
         )
 
     def test_a_change_scope_pass_satisfies_the_per_change_gate(self) -> None:

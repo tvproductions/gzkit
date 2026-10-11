@@ -1,6 +1,6 @@
 # gz check
 
-Run the per-change quality gate (lint, typecheck, unit tests, validators) and advisory drift detection in a single pass. `--full` adds Behave and preflight, the heavy-lane and CI sweep.
+Run the per-change quality gate (lint, typecheck, validators, the tests the change touches) and advisory drift detection in a single pass. `--full` adds the whole unit tier, Behave, the docs build, preflight and the guard-canary sweep: the CI, release and chore sweep.
 
 ## Usage
 
@@ -13,49 +13,49 @@ gz check [OPTIONS]
 | Flag | Description |
 |------|-------------|
 | `--json` | Output results as JSON to stdout |
-| `--full` | Full sweep: the default steps plus `Behave` and `Preflight`. Heavy-lane and CI scope; CI runs it on every commit |
-| `--fast` | Inner-loop scope: run every lint/type/governance step, plus only the tests the working tree touches. Skips `Test`, `Behave`, and `Docs build`. Never satisfies the pre-push gate |
+| `--full` | Full sweep: the default steps plus `Test`, `Behave`, `Docs build`, `Preflight` and `Guard canary sweep`. CI runs it on every code push |
 | `--reuse-verified` | Skip the run when this exact staged tree already passed a check covering the requested scope. Used by the pre-push gate |
-
-`--full` and `--fast` are mutually exclusive.
 
 ### Default scope: the per-change gate
 
 Plain `gz check` runs the `change` scope declared in `data/check_step_scopes.json`:
-every step except `Behave` and `Preflight`. `AGENTS.md` § Gate Covenant binds the
-unit tier to every change and `behave` to heavy-lane OBPI work and CI, never to a
-per-change gate (GHI #1088). `Preflight` is a janitorial scan whose verdict tracks
-wall-clock age rather than the content being pushed. Both still run under
-`--full`, and CI runs `--full` on every commit.
+lint, format, typecheck, every validator, the smoke tier, and `Test (changed)`,
+the tests the change touches. It drops `Test` (the whole unit tier), `Behave`,
+`Docs build`, `Preflight` and `Guard canary sweep` (GHI #1088, #1191). The
+pre-push hook runs this scope.
+
+`Test (changed)` selects test modules two ways: a changed test module exactly,
+and, for a changed production module, every test module whose filename contains
+its stem. The change is the working tree against `HEAD`, untracked files, and
+the working tree against the upstream branch, so the selection holds at push
+time when the change is already committed. The name match is a heuristic, not a
+dependency graph: it misses a test that exercises a module it is not named
+after. The whole unit tier is what proves the tree, and it runs under `--full`.
+
+Measured 2026-10-11 on a 10-core host (a dated record): the whole unit tier took
+117 s inside the gate, and every other default step together took 16 s.
 
 ### `--full`
 
-Runs every registered step. Use it for heavy-lane closeout and whenever CI's
-verdict is wanted locally. Heavy-lane Gate 4 evidence comes from its own
-canonical behave invocation, not from this sweep.
+Runs every registered step. CI runs it on every code push, `gz chores run
+quality-check` runs it as a chore, and it is the sweep to run before a release.
+Heavy-lane Gate 4 evidence comes from its own canonical behave invocation, not
+from this sweep, and Gate 2 at OBPI completion is `gz test`.
 
-### `--fast`
+`Guard canary sweep` applies every reviewed mutant in `data/guard_canaries.json`
+to an isolated copy of the tree and requires its designated test to fail. It
+exits 3 when a mutant is not killed. A project with no canary registry has
+nothing to sweep.
 
-Runs the full step list minus the three expensive steps, and substitutes a
-`Test (changed)` step that runs only the test modules the working tree touches.
-
-Measured 2026-08-22 on a 10-core host, against a 148 s full run: `Test` 44 s,
-`Behave` 33 s, `Docs build` 4 s. Every other step stays, because the whole
-remainder is cheaper than any one of the three and it is where the governance
-value lives.
-
-**A `--fast` pass never records a verified fingerprint**, so `--reuse-verified`
-cannot be satisfied by one and the pre-push gate still runs its own scope. The test
-selection is a name-match heuristic, not a dependency graph — it will miss a test
-that exercises a module it is not named after. That is a convenience for the
-inner loop, never a claim of coverage, and the output says so.
+The `--fast` flag was retired on 2026-10-11 (GHI #1191): the default scope took
+its shape, so it named nothing the default did not.
 
 ### `--reuse-verified`
 
 Skips the run when this exact **staged tree** already passed a check covering the
 requested scope (GHI #835). A default-scope or `--full` pass satisfies the default
 scope; only a `--full` pass satisfies `--full --reuse-verified`, because a
-default-scope pass never ran `Behave`. Without it a fix pays the gate twice: once when it is verified,
+default-scope pass never ran the full tier. Without it a fix pays the gate twice: once when it is verified,
 then again when `git push` fires the pre-push gate over a tree that has not
 changed. For every step that reads only the tree, the second run cannot reach a
 different verdict. The commit-trailer checks read the commits being pushed, which
@@ -90,7 +90,7 @@ refuse pushes on a repository it merely could not read.
 
 ## Description
 
-Runs the quality assurance suite: linting with Ruff, format check, static type checking with ty, unit tests with unittest, a strict `mkdocs build --strict` docs build (skipped when the project ships no `mkdocs.yml`), skill audit, parity check, readiness audit, CLI documentation audit and surface-fidelity validation. `--full` adds Behave scenarios and the preflight scan for stale pipeline markers and orphan plan-audit receipts. After all blocking checks complete, runs advisory drift detection using the same engine as `gz drift`.
+Runs the per-change quality checks: linting with Ruff, format check, static type checking with ty, the unit tests the change touches, the smoke tier, skill audit, parity check, readiness audit, CLI documentation audit and surface-fidelity validation. `--full` adds the whole unit tier, a strict `mkdocs build --strict` docs build (skipped when the project ships no `mkdocs.yml`), Behave scenarios, the guard-canary sweep and the preflight scan for stale pipeline markers and orphan plan-audit receipts. After all blocking checks complete, runs advisory drift detection using the same engine as `gz drift`.
 
 The `Surface fidelity` step runs `gz validate --surface-fidelity` to verify all four surface-fidelity invariants (ADR-0.0.33-05).
 
@@ -111,9 +111,9 @@ When drift exists, `gz check` appends an advisory section after the blocking che
   ✓ Lint
   ✓ Format
   ✓ Typecheck
-  ✓ Test
+  ✓ Test (changed)
 
-✓ All per-change checks passed. (Behave, Preflight are heavy-lane / CI scope: `gz check --full` runs them, and CI runs the full sweep)
+✓ All per-change checks passed. (Behave, Docs build, Guard canary sweep, Preflight, Test are full-tier scope: `gz check --full` runs them, and CI runs the full sweep)
 
 ⚠ Advisory: spec-test-code drift detected
   Unlinked specs (REQs with no test):
@@ -133,7 +133,7 @@ When drift exists, `gz check` appends an advisory section after the blocking che
     "Lint": true,
     "Format": true,
     "Typecheck": true,
-    "Test": true
+    "Test (changed)": true
   },
   "drift": {
     "advisory": true,

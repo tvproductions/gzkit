@@ -1895,6 +1895,21 @@ def run_tautological_debt_audit(project_root: Path) -> QualityResult:
     return run_command(["uv", "run", "python", str(script)], cwd=project_root)
 
 
+def run_guard_canary_sweep_audit(project_root: Path) -> QualityResult:
+    """Run every reviewed guard canary's mutant; fail when one is not killed (GHI #1191).
+
+    The sweep applies each registered mutant to an isolated copy of the tree and
+    runs its designated test in a subprocess, one after another. It was a single
+    unit test, which a parallel runner cannot split, so the unit tier took as
+    long as the sweep did. It is full-tier work: `data/check_step_scopes.json`
+    drops it from the per-change gate, and the binding check that reports a
+    changed guard, claim or designated test stays in the unit tier.
+    """
+    from gzkit.guard_canary import SWEEP_COMMAND_SOURCE  # noqa: PLC0415
+
+    return run_command([sys.executable, "-c", SWEEP_COMMAND_SOURCE], cwd=project_root)
+
+
 #: The projectLocal ratchets `gz check` runs (GHI #1063), as (slug, script).
 PROJECT_LOCAL_RATCHETS: tuple[tuple[str, str], ...] = (
     ("control-surface-validator-reachability", "check_reachability.py"),

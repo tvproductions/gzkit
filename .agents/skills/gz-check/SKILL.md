@@ -5,10 +5,10 @@ description: Run the per-change quality gate in one pass, or the full sweep with
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-27
+last_reviewed: 2026-10-11
 model: haiku
 metadata:
-  skill-version: "1.6.1"
+  skill-version: "1.7.0"
 ---
 
 # gz check
@@ -29,8 +29,8 @@ Unified quality gate for all code verification. Replaces the individual
 | `uv run gz test --obpi OBPI-X.Y.Z-NN` | Tests covering one OBPI's REQs (pipeline Stage 3) |
 | `uv run gz test` | Full unittest suite |
 | `uv run gz test --bdd` | Unit tests + behave (ADR closeout / Heavy-lane) |
-| `uv run gz check` | Per-change gate: lint, format, typecheck, unit suite, validators, docs build (no behave) |
-| `uv run gz check --full` | The per-change gate plus behave and preflight — heavy-lane closeout and CI (GHI #1088) |
+| `uv run gz check` | Per-change gate: lint, format, typecheck, every validator, the smoke tier and the tests the change touches (GHI #1191) |
+| `uv run gz check --full` | The per-change gate plus the whole unit tier, behave, the docs build, preflight and the guard-canary sweep: CI, release and the `quality-check` chore (GHI #1088, #1191) |
 
 `gz smoke` is the cheapest useful signal: it runs only `@smoke`-marked tests and
 fails closed if they exceed the budget in `.gzkit/rules/tests.md`. An empty tier
@@ -41,10 +41,10 @@ which proves it is correct.
 ## When to Use
 
 - **Quick fix-up:** Run individual commands (`gz lint`, `gz format`) after small edits
-- **Every change, pre-merge / pre-attestation:** Run `gz check` — the per-change gate
+- **Every change:** Run `gz check`, the per-change gate. Run it once per change, after `git add -A`, so the pre-push hook reuses the pass
 - **Before `gz git-sync --apply`:** Run `gz check` first
-- **Before Gate 2 / Gate 3 verification:** `gz check` covers both
-- **Heavy-lane closeout, or to reproduce CI locally:** Run `gz check --full`. Behave belongs to heavy-lane OBPI work and CI, never to a per-change gate (`AGENTS.md` § Gate Covenant)
+- **Gate 2:** `gz test` runs the whole unit tier; plain `gz check` runs only the tests the change touches and is not Gate 2 evidence
+- **Before a release, at heavy-lane closeout, or to reproduce CI locally:** Run `gz check --full`. The whole unit tier, behave, the docs build and the guard-canary sweep are full-tier work: CI runs them on every code push (`data/check_step_scopes.json`)
 
 ## Workflow
 
@@ -96,7 +96,7 @@ uv run gz check
 # Per-change gate (preferred)
 uv run gz check
 
-# Full sweep including behave (heavy-lane closeout, CI parity)
+# Full sweep: whole unit tier, behave, docs build, canary sweep (release, closeout, CI parity)
 uv run gz check --full
 
 # Individual checks when iterating
@@ -116,7 +116,9 @@ These thoughts mean STOP — you are about to skip the gate that catches drift:
 
 | Thought | Reality |
 |---------|---------|
-| "I only changed one file — `gz lint` is enough" | `gz check` is the unified gate for a reason: lint passes can hide type or test regressions. Pre-merge always runs the full suite. |
+| "I only changed one file — `gz lint` is enough" | `gz check` is the unified gate for a reason: lint passes can hide type, validator or test regressions. It runs in seconds; run it. |
+| "`gz check` passed, so the whole unit tier is green" | The per-change gate runs only the tests the change touches, chosen by filename match. The whole tier is `gz test` or `gz check --full`; CI runs it on every code push. |
+| "I'll run `gz check --full` after each edit to be safe" | The full sweep is release, closeout, chore and CI work. Running it per edit is the cost the per-change gate exists to remove (operator ruling 2026-10-11, GHI #1191). |
 | "Tests pass locally, no need to typecheck" | `ty` catches signature drift that unittest can't. The two checks are complementary, not redundant. |
 | "Hook errors at session start are cosmetic" | The Claude surface check is part of `gz check` precisely because hook errors mean an agent is operating against stale governance. Resolve before attestation. |
 | "The mirrors look fine, skip the surface check" | Canon/derived drift is silent until it isn't. The mirror parity check is cheap; the bug it prevents is expensive. |
@@ -127,12 +129,13 @@ These thoughts mean STOP — you are about to skip the gate that catches drift:
 ## Red Flags
 
 - Closing a brief or attestation without running `gz check`
-- Running `gz lint` but not `gz typecheck` or `gz test` before merge
+- Running `gz lint` but not `gz typecheck` or `gz check` before a push
+- Citing a plain `gz check` pass as evidence that the whole unit tier passed
 - Hook errors in session-start output that were never resolved
 - `.claude/skills/` divergent from `.gzkit/skills/` (sync not run)
 - CLAUDE.md over 200 lines (budget exceeded, adherence drops)
 - Coverage dropped below 40% but the brief was marked complete
-- Skipping the full sequence "because nothing meaningful changed"
+- Releasing or closing out an ADR without `gz check --full`
 
 ## References
 

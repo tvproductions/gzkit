@@ -136,16 +136,16 @@ build and venv creation"; that figure was never re-measured and the cost it
 described drove a recommendation to exclude the scenario (GHI #860). Cold-cache
 runtime is higher and has not been measured.
 
-The scenario runs in the **`Behave` step of the full `gz check`**, which is the
-pre-push gate. It is not excluded by a tag, and CI that runs `gz check` is
-already gating on T0 distribution drift — no extra step is needed.
+The scenario runs in the **`Behave` step of `gz check --full`**, which CI runs on
+every code push. It is not excluded by a tag, so CI is already gating on T0
+distribution drift and no extra step is needed.
 
-Two scopes do skip it, both deliberately:
+The per-change gate does not run it, deliberately:
 
 | Scope | Behaviour |
 |---|---|
-| `gz check --fast` | Drops the whole `Behave` step (`_FAST_SKIPPED_STEPS`) — inner-loop scope, and it records no verified fingerprint, so it cannot stand in for the gate |
-| `gz check --reuse-verified` | Skips the run entirely when this exact tree content already passed a full check |
+| `gz check` (default, and the pre-push hook) | Drops the whole `Behave` step, per `data/check_step_scopes.json` (GHI #1088) |
+| `gz check --full --reuse-verified` | Skips the run entirely when this exact tree content already passed a full check |
 
 Invoke the scenario alone when iterating on distribution contract changes:
 

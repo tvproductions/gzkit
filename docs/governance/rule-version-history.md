@@ -157,6 +157,10 @@ Lifted at version `0.3.0` (rule now at `0.3.1`).
 
 ## `chores.md`
 
+Lifted 2026-10-11 at version `0.6.0` (rule now at `0.6.1`).
+
+> **Rule version:** `0.6.0` — `.gzkit/chores/` is the authoring source for canonical chores and `src/gzkit/chores/` the generated distribution copy, matching `skill-surface-sync.md` rule 1; damaged-slug recovery is described separately (operator ruling 2026-09-28, GHI #1044). Prior history: [Rule Version History](#choresmd).
+
 Lifted at version `0.3.2` (rule now at `0.3.3`).
 
 > **Rule version:** `0.3.2` — marks this version-history line `deprecated-verb-ok`, matching the precedent already set at [Rule Version History](#choresmd). `0.3.1` repointed § Correct Evidence off `gz gates`, and recording *which* verb it repointed away from made this line the file's only remaining `gz gates` occurrence — so `gz validate --deprecated-verb-prescription`, the checker shipped alongside that repoint under GHI #705, failed the file for describing the fix it shipped. The escape marker exists for exactly this: a line that documents a deprecation rather than prescribing one. Nothing caught it for the same reason `--audits` sat broken — the scope is not in `gz check`. Binding rules unchanged. Prior `0.3.1` — repointed § Correct Evidence onto `gz check` (`0.3.0`, GHI #705); prior version history lifted to [Rule Version History](#choresmd). <!-- deprecated-verb-ok: version history records the repoint, does not prescribe it -->
@@ -762,6 +766,10 @@ Lifted 2026-09-14 at version `0.23.0` (rule now at `0.24.0`).
 Lifted 2026-09-15 at version `0.24.0` (rule now at `0.25.0`).
 
 > **Rule version:** `0.24.0` — GHI #971 closes the caught `&&` chain in § Verification exit-code integrity: what reports the status is the separator ENDING the verifier's AND-OR list, never its own terminator, and the gate now reads it — and a `$?` read after `&` (the background launch's status) no longer counts as an escape. Prior versions lifted to [Rule Version History](#testsmd). Binding rules unchanged except as stated.
+
+Lifted 2026-10-11 at version `0.26.6` (rule now at `0.27.0`).
+
+> **Rule version:** `0.26.6` — § TASK-Driven Workflow distinguishes independent catalog requirements from the current brief-local REQ/TASK lineage (operator hierarchy amendment, 2026-09-25). Rationale: [Tests — Rationale](tests-rationale.md); history: [Rule Version History](#testsmd).
 
 ## `token-block-discipline.md`
 

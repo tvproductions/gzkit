@@ -196,13 +196,13 @@
       "corpus-execution-rules-2026-09-17T11:39:35.497185+00:00",
       "corpus-execution-rules-2026-09-17T11:39:35.670048+00:00",
       "corpus-execution-rules-2026-09-17T11:39:35.836579+00:00",
-      "corpus-execution-rules-2026-09-24T06:20:45.578325+00:00",
       "corpus-execution-rules-2026-10-05T21:33:07.026263+00:00",
-      "corpus-execution-rules-2026-10-05T21:33:07.346566+00:00"
+      "corpus-execution-rules-2026-10-05T21:33:07.346566+00:00",
+      "corpus-execution-rules-2026-10-11T11:16:46.636331+00:00"
     ],
     "byte_span": [
       13349,
-      14975
+      15085
     ]
   },
   "attestation": {
@@ -213,8 +213,8 @@
       "corpus-attestation-2026-10-05T21:33:07.666420+00:00"
     ],
     "byte_span": [
-      14975,
-      15982
+      15085,
+      16092
     ]
   },
   "defect-fix-routing": {
@@ -226,8 +226,8 @@
       "corpus-defect-fix-routing-2026-09-24T10:04:51.916661+00:00"
     ],
     "byte_span": [
-      15982,
-      16844
+      16092,
+      16954
     ]
   },
   "control-surfaces": {
@@ -236,16 +236,16 @@
       "corpus-control-surfaces-2026-09-17T11:39:37.113322+00:00"
     ],
     "byte_span": [
-      16844,
-      17110
+      16954,
+      17220
     ]
   },
   "local-agent-rules": {
     "owned": false,
     "entry_ids": [],
     "byte_span": [
-      17110,
-      17130
+      17220,
+      17240
     ]
   },
   "operator-doctrine-verbatim-canon": {
@@ -260,8 +260,8 @@
       "corpus-operator-doctrine-verbatim-canon-2026-09-27T20:35:02.678914+00:00"
     ],
     "byte_span": [
-      17130,
-      19804
+      17240,
+      19914
     ]
   },
   "governance-doctrine-surfaces": {
@@ -284,8 +284,8 @@
       "corpus-governance-doctrine-surfaces-2026-09-24T10:35:54.990937+00:00"
     ],
     "byte_span": [
-      19804,
-      23066
+      19914,
+      23176
     ]
   },
   "architectural-boundaries": {
@@ -297,8 +297,8 @@
       "corpus-architectural-boundaries-2026-10-10T13:36:48.462663+00:00"
     ],
     "byte_span": [
-      23066,
-      23950
+      23176,
+      24060
     ]
   }
 }

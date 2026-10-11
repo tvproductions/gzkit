@@ -7,7 +7,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-10-11
 metadata:
-  skill-version: "1.5.3"
+  skill-version: "1.5.4"
 model: sonnet
 ---
 
@@ -71,7 +71,7 @@ Execute a repository chore using the canonical `gz chores` workflow.
    uv run gz test
 
    # Heavy lane (adds gates)
-   uv run gz check
+   uv run gz check --full
    ```
 
 7. Execute the chore to log the result:

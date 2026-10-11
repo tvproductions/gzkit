@@ -64,6 +64,7 @@ _STEP_GUARD_META: dict[str, tuple[str, int]] = {
     "Tautological debt": ("tautological-debt", _mx_levels.ERROR),
     "Test": ("test", _mx_levels.ERROR),
     "Behave": ("behave", _mx_levels.ERROR),
+    "Guard canary sweep": ("guard-canary-sweep", _mx_levels.ERROR),
     "Docs build": ("docs-build", _mx_levels.ERROR),
     "Validate default scopes": ("validate-default-scopes", _mx_levels.ERROR),
     "Skill audit": ("skill-audit", _mx_levels.ERROR),
@@ -556,6 +557,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         run_format_check,
         run_gate_callers_audit,
         run_gate_enrollment_audit,
+        run_guard_canary_sweep_audit,
         run_handoff_document_audit,
         run_insights_shape_audit,
         run_instructions_files_budget_audit,
@@ -609,6 +611,8 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         ("Tautological debt", run_tautological_debt_audit),
         ("Test", run_tests),
         ("Behave", run_behave),
+        # Full tier only (GHI #1191): `data/check_step_scopes.json` drops it per change.
+        ("Guard canary sweep", run_guard_canary_sweep_audit),
         ("Docs build", run_mkdocs),
         ("Validate default scopes", run_validate_default_scopes),
         ("Skill audit", run_skill_audit),
@@ -730,19 +734,24 @@ def _scope_records_verified(scope: str) -> bool:
     entry = _load_check_step_scopes().get(scope)
     if entry is None:
         # Undeclared (an adopter ships no scope file): it drops nothing, so it ran
-        # the full sweep. `fast` never records — it is the inner loop regardless.
-        return scope != "fast"
+        # the full sweep.
+        return True
     return entry.get("records_verified") is True
 
 
 def _select_check_steps(scope: str) -> list[tuple[str, CheckStepRunner]]:
-    """Return the step list for *scope*, substituting scoped tests when fast."""
+    """Return the step list for *scope*.
+
+    A scope that drops ``Test`` runs ``Test (changed)`` in its place: the tests
+    the change touches (GHI #1191). A scope with no declaration drops nothing, so
+    it keeps the whole unit tier.
+    """
     steps = _build_check_steps()
     if scope == "full":
         return steps
     skipped = _scope_skips(scope)
     kept = [(name, runner) for name, runner in steps if name not in skipped]
-    if scope == "fast":
+    if "Test" in skipped:
         kept.append(("Test (changed)", _run_changed_tests))
     return kept
 
@@ -1085,15 +1094,15 @@ def _report_reuse_skip(project_root: pathlib.Path, *, scope: str, as_json: bool)
 def _record_and_announce_pass(project_root: pathlib.Path, *, scope: str) -> None:
     """Announce a passing run, recording the fingerprint only for a recordable scope.
 
-    A ``fast`` pass is deliberately never recorded: it skipped the unit tier by
-    design, and letting a partial verification satisfy the gate is the
-    presence-check failure ``AGENTS.md`` names. A ``change`` pass IS recorded
-    (GHI #1088): it drops only steps the per-change gate never runs, so the
-    pre-push gate reusing it cannot reach a different verdict.
+    A ``change`` pass is recorded (GHI #1088): it drops only steps the per-change
+    gate never runs, so the pre-push gate reusing it cannot reach a different
+    verdict. A scope declared ``records_verified: false`` is never recorded:
+    letting a partial verification satisfy the gate is the presence-check failure
+    ``AGENTS.md`` names.
     """
     if not _scope_records_verified(scope):
         console.print(
-            "\n[green]✓ Fast checks passed.[/green] "
+            "\n[green]✓ Scoped checks passed.[/green] "
             f"[yellow](scoped — {', '.join(sorted(_scope_skips(scope)))} not run; "
             "this does NOT satisfy the pre-push gate)[/yellow]"
         )
@@ -1104,17 +1113,29 @@ def _record_and_announce_pass(project_root: pathlib.Path, *, scope: str) -> None
         return
     console.print(
         "\n[green]✓ All per-change checks passed.[/green] "
-        f"[dim]({', '.join(sorted(_scope_skips(scope)))} are heavy-lane / CI scope: "
+        f"[dim]({', '.join(sorted(_scope_skips(scope)))} are full-tier scope: "
         "`gz check --full` runs them, and CI runs the full sweep)[/dim]"
     )
 
 
+#: Set in the child environment of a changed-test run, so a selected test that
+#: runs the gate cannot start a second one (GHI #1191).
+_IN_CHANGED_TESTS_ENV = "GZKIT_IN_CHANGED_TESTS"
+
+
 def _changed_paths(project_root: pathlib.Path) -> list[str]:
-    """Return repo-relative paths differing from HEAD, plus untracked files."""
+    """Return repo-relative paths the change touches.
+
+    Three arms: the working tree against HEAD, untracked files, and the working
+    tree against the upstream branch. The third is what makes the selection hold
+    at push time, when the change is already committed and the first two are
+    empty (GHI #1191). Without an upstream that arm contributes nothing.
+    """
     paths: set[str] = set()
     for args in (
         ["diff", "--name-only", "HEAD"],
         ["ls-files", "--others", "--exclude-standard"],
+        ["diff", "--name-only", "@{upstream}"],
     ):
         try:
             out = subprocess.run(
@@ -1140,9 +1161,10 @@ def _select_changed_tests(project_root: pathlib.Path, changed: list[str]) -> lis
     Two arms, and the second is a HEURISTIC stated as one: a changed test module
     is selected exactly, and a changed production module selects test modules whose
     filename contains its stem. Name matching is not a dependency graph — it will
-    miss a test that exercises a module it is not named after. That is why a
-    ``--fast`` pass is never recorded as verified: the selection is a convenience
-    for the inner loop, never a claim of coverage.
+    miss a test that exercises a module it is not named after. The whole unit
+    tier is what proves the tree: it runs under ``gz check --full``, in CI on
+    every code push, at OBPI completion and at release. A deleted test module is
+    a changed path with nothing to run, so it is not selected.
     """
     selected: set[str] = set()
     stems: set[str] = set()
@@ -1151,7 +1173,8 @@ def _select_changed_tests(project_root: pathlib.Path, changed: list[str]) -> lis
         if not posix.endswith(".py"):
             continue
         if posix.startswith("tests/"):
-            selected.add(posix[: -len(".py")].replace("/", "."))
+            if (project_root / posix).is_file():
+                selected.add(posix[: -len(".py")].replace("/", "."))
         elif posix.startswith("src/"):
             stem = pathlib.Path(posix).stem
             if stem not in ("__init__", "__main__"):
@@ -1165,8 +1188,26 @@ def _select_changed_tests(project_root: pathlib.Path, changed: list[str]) -> lis
 
 
 def _run_changed_tests(project_root: pathlib.Path) -> QualityResult:
-    """Run only the test modules the working tree touches (``gz check --fast``)."""
+    """Run only the test modules the change touches (the per-change gate).
+
+    The selection goes to the canonical unit-tier runner as ``-k`` patterns, one
+    per module with a trailing dot so a module never selects a longer-named
+    sibling. Measured 2026-10-11 (a dated record): eleven selected modules took
+    113s through the serial stdlib runner and 31s through the parallel one.
+    """
+    from gzkit.canonical_steps import CANONICAL_STEP_COMMANDS  # noqa: PLC0415
     from gzkit.quality import run_command  # noqa: PLC0415
+
+    if os.environ.get(_IN_CHANGED_TESTS_ENV):
+        # A selected test that itself runs the gate would start this run again,
+        # selecting the same test, without end. The outer run already covers it.
+        return QualityResult(
+            success=True,
+            command="(nested changed-test run not started)",
+            stdout="Already inside a changed-test run; the outer run covers the selection.",
+            stderr="",
+            returncode=0,
+        )
 
     modules = _select_changed_tests(project_root, _changed_paths(project_root))
     if not modules:
@@ -1174,38 +1215,35 @@ def _run_changed_tests(project_root: pathlib.Path) -> QualityResult:
             success=True,
             command="(no changed tests selected)",
             stdout=(
-                "No test module matched the working tree's changes. This is a SELECTION "
-                "result, never a pass: run `uv run gz check` for the full suite."
+                "No test module matched the change. This is a SELECTION result, never "
+                "a pass: run `uv run gz test` for the whole unit tier."
             ),
             stderr="",
             returncode=0,
         )
-    return run_command(["uv", "run", "-m", "unittest", "-q", *modules], cwd=project_root)
+    patterns = [arg for module in modules for arg in ("-k", f"{module}.")]
+    return run_command(
+        [*CANONICAL_STEP_COMMANDS["unittest"], *patterns],
+        cwd=project_root,
+        env_overrides={_IN_CHANGED_TESTS_ENV: "1"},
+    )
 
 
-#: Steps a ``--fast`` run drops. Measured 2026-08-22 on a 10-core host against a
-#: 148s full run: Test 44s, Behave 33s, Docs build 4s. Everything else — lint,
-#: format, typecheck, and every governance validator — stays, because the whole
-#: remainder is cheaper than any one of these three and it is where the
-#: governance value lives.
 def check(
     as_json: bool = False,
-    fast: bool = False,
     reuse_verified: bool = False,
     full: bool = False,
 ) -> None:
     """Run the quality checks for the selected scope (lint, format, typecheck, test, audits).
 
-    The default is the ``change`` scope, the per-change gate (GHI #1088): the unit
-    tier and every validator, without ``Behave`` or ``Preflight``. ``AGENTS.md`` §
-    Gate Covenant binds the unit tier to every change and ``behave`` to heavy-lane
-    OBPI work and CI, never to a per-change gate. ``full`` is the explicit full
-    sweep — CI runs it on every commit.
-
-    ``fast`` drops the three expensive steps and runs only the tests the working
-    tree touches. It is an INNER-LOOP scope and never records a verified
-    fingerprint, so it cannot stand in for the gate — a partial verification that
-    could satisfy a gate is the presence-check failure ``AGENTS.md`` names.
+    The default is the ``change`` scope, the per-change gate (GHI #1088, #1191):
+    lint, format, typecheck, every validator, the smoke tier and the tests the
+    change touches. It drops the whole unit tier, ``Behave``, the docs build,
+    ``Preflight`` and the guard-canary sweep (``data/check_step_scopes.json``).
+    ``full`` is the explicit full sweep: CI runs it on every code push, and it
+    belongs at release and in the ``quality-check`` chore. Measured 2026-10-11 (a
+    dated record) on a 10-core host: the unit tier 117s in-gate, the remaining
+    steps 16s together.
 
     ``reuse_verified`` skips the run when this exact tree CONTENT already passed a
     check covering the requested scope (GHI #835). A fix used to pay the gate
@@ -1223,13 +1261,9 @@ def check(
 
     project_root = get_project_root()
     fmt = OutputFormatter()
-    scope = "fast" if fast else "full" if full else "change"
+    scope = "full" if full else "change"
 
-    if (
-        reuse_verified
-        and scope != "fast"
-        and _report_reuse_skip(project_root, scope=scope, as_json=as_json)
-    ):
+    if reuse_verified and _report_reuse_skip(project_root, scope=scope, as_json=as_json):
         return
 
     steps = _select_check_steps(scope)
@@ -1261,7 +1295,7 @@ def check(
             "drift": drift.to_dict(),
         }
         # Only a scope that drops nothing the per-change gate runs may mint the
-        # reuse fingerprint (GHI #950, #1088); `fast` drops the unit tier.
+        # reuse fingerprint (GHI #950, #1088).
         if all(r.success for _, r in results) and _scope_records_verified(scope):
             _record_pass(project_root, scope)
         if flag_health is not None:

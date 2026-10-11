@@ -5,9 +5,9 @@ Run the full gz quality gate set and capture deterministic evidence.
 ## Quick Start
 
 ```bash
-uv run gz check
+uv run gz check --full
 ```
 
 ## Lane
 
-**lite**
+**heavy**

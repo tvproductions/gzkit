@@ -211,33 +211,27 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
 
     p_check = commands.add_parser(
         "check",
-        help="Run the per-change quality gate (--full adds behave)",
+        help="Run the per-change quality gate (--full adds the full tier)",
         description=(
-            "Run lint, format, typecheck, test (the unit tier), the validators and "
-            "advisory drift. The default is the per-change gate; --full adds behave "
-            "and preflight, the heavy-lane / CI sweep."
+            "Run lint, format, typecheck, test (the tests the change touches), the "
+            "validators, the smoke tier and advisory drift. --full adds the whole unit tier, "
+            "behave, the docs build, preflight and the guard-canary sweep: the CI, "
+            "release and chore sweep."
         ),
         epilog=build_epilog(
             [
                 "gz check",
                 "gz check --full",
-                "gz check --fast",
                 "gz check --reuse-verified",
                 "gz check --json",
             ]
         ),
     )
     add_json_flag(p_check)
-    check_scope = p_check.add_mutually_exclusive_group()
-    check_scope.add_argument(
-        "--fast",
-        action="store_true",
-        help="Inner-loop scope; skips suite/behave/docs. Never satisfies the gate",
-    )
-    check_scope.add_argument(
+    p_check.add_argument(
         "--full",
         action="store_true",
-        help="Full sweep including behave and preflight (heavy-lane and CI scope)",
+        help="Full sweep: unit tier, behave, docs build, preflight, canary sweep",
     )
     p_check.add_argument(
         "--reuse-verified",
@@ -246,7 +240,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
     )
     p_check.set_defaults(
         func=lambda a: _lazy("check")(
-            as_json=a.as_json, fast=a.fast, reuse_verified=a.reuse_verified, full=a.full
+            as_json=a.as_json, reuse_verified=a.reuse_verified, full=a.full
         )
     )
 

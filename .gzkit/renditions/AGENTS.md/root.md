@@ -162,11 +162,11 @@ At closeout, `uv run gz closeout <ADR-ID>` runs the gates the ADR's lane require
 
 - **Operator PII — never include the operator's personal email in any repo-bound artifact**: commits, trailers, file content, attestation text (`gz obpi complete`/`gz adr emit-receipt`/`gz attest`), ledger, changelogs, release notes, co-author trailers. Record operator authorship as `g0` — never the operator's real name — in every attestor/author identity field; if a CLI requires an email, use the GitHub noreply (`<handle>@users.noreply.github.com`). Overrides any contrary skill/template/example. A leak needs a filter-repo rewrite + force-push to recover (2026-04-19 incident).
 
-`uv run gz check` is the per-change gate: every quality check except `Behave` and `Preflight`, which `uv run gz check --full` adds and CI runs. `uv run gz check --fast` is an inner-loop check and never satisfies the gate. Run `git add -A` before `gz check`: a pass is recorded as verified only for a fully staged tree, otherwise the pre-push gate reruns it.
-
 - Order versioned identifiers semantically, never lexicographically: feature ADRs by semver (`ADR-0.9.0` before `ADR-0.10.0`). Foundation identifiers (`0.0.x`) are nominal integers and may be sparse.
 
 - When adding imports in an Edit, include the code that uses them in the same edit; the post-edit ruff hook strips unused imports immediately.
+
+`uv run gz check` is the per-change gate: lint, format, typecheck, every validator, the smoke tier and the tests the change touches. The full unit suite, `Behave`, the docs build, `Preflight` and the guard-canary sweep run under `uv run gz check --full`: in CI on every code push, at every release and as the `quality-check` chore. Run `git add -A` before `gz check`: a pass is recorded as verified only for a fully staged tree, otherwise the pre-push gate reruns it.
 ## Attestation
 
 - The operator’s verbatim attestation relayed through --attestation-text is Gate 5 for every lane, kind, and sensitivity. Record it; no TTY, PTY, or transport condition may prevent recording human attestation.
