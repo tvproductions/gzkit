@@ -175,3 +175,28 @@ POLICY BREACH:
     Why: this chore's acceptance previously gated on `test -f`, which passes forever once a report exists and cannot see that the evidence now describes a surface that has changed.
     Fix: re-run the control-surface-skill-rule-reachability audit and commit refreshed proofs. Touching the file without redoing the analysis restores the green-by-construction gate this replaced.
 ```
+## 2026-10-10T20:24:56-05:00
+- Status: PASS
+- Chore: control-surface-skill-rule-reachability
+- Title: Control Surface Audit — Skill/Rule Reachability Matrix (Pass B)
+- Lane: lite
+- Version: 1.1.1
+- Criteria Results:
+  - [PASS] `uv run python scripts/check_proof_freshness.py control-surface-skill-rule-reachability` => rc=0 (0.14s) -- exit 0 == 0
+  - [PASS] `file-exists: .gzkit/chores/control-surface-skill-rule-reachability/proofs/skill-inventory.md` => rc=0 (0.00s) -- file exists: .gzkit/chores/control-surface-skill-rule-reachability/proofs/skill-inventory.md
+  - [PASS] `file-exists: .gzkit/chores/control-surface-skill-rule-reachability/proofs/reachability-matrix.md` => rc=0 (0.00s) -- file exists: .gzkit/chores/control-surface-skill-rule-reachability/proofs/reachability-matrix.md
+  - [PASS] `file-exists: .gzkit/chores/control-surface-skill-rule-reachability/proofs/ghi-cross-reference.md` => rc=0 (0.00s) -- file exists: .gzkit/chores/control-surface-skill-rule-reachability/proofs/ghi-cross-reference.md
+  - [PASS] `file-exists: .gzkit/chores/control-surface-skill-rule-reachability/proofs/summary.md` => rc=0 (0.00s) -- file exists: .gzkit/chores/control-surface-skill-rule-reachability/proofs/summary.md
+
+```text
+[uv run python scripts/check_proof_freshness.py control-surface-skill-rule-reachability] stdout:
+proof-freshness gate — control-surface-skill-rule-reachability
+  audited surfaces:  .gzkit/rules, .gzkit/skills
+  surface last moved: 2026-10-11
+  ghi-cross-reference.md       2026-10-11  fresh
+  reachability-matrix.md       2026-10-11  fresh
+  skill-inventory.md           2026-10-11  fresh
+  summary.md                   2026-10-11  fresh
+
+PASS: every proof postdates the surfaces it audits.
+```
