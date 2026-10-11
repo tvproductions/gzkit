@@ -8,13 +8,16 @@
 > **1.2.0 (GHI #997, 2026-10-10)** — the "run clustering" step runs the clustering
 > (`python -m gzkit.chores.eval_feedback_cluster_run`) rather than the library's tests; a
 > dry-run criterion exercises the operation read-only; proposal rule targets are slugs.
+> **1.2.1 (GHI #997, 2026-10-11)** — the population is stated: every matching event, no window.
 
 ## Overview
 
 Periodically scan recent `adr-evaluation` ledger events and `gz-justify`
 artifacts, cluster by recurring weak-dimension or confusion-shape patterns,
 and emit structured proposal records when a pattern recurs ≥3 times across
-distinct artifacts (ADR-0.0.26 Decision §3).
+distinct artifacts (ADR-0.0.26 Decision §3). A run reads every matching event
+and artifact; there is no recency window. "Recent" is carried by running
+periodically: a cluster already proposed is not proposed again.
 
 ## Policy and Guardrails
 

@@ -387,7 +387,7 @@
     {
       "slug": "eval-feedback-cluster",
       "title": "Evaluation Feedback Clustering (ADR-0.0.26)",
-      "version": "1.2.0",
+      "version": "1.2.1",
       "path": ".gzkit/chores/eval-feedback-cluster",
       "lane": "lite",
       "timeoutSeconds": 300,

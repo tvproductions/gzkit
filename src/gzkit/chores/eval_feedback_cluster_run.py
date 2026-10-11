@@ -18,9 +18,9 @@ import sys
 from pathlib import Path
 
 from gzkit.chores.eval_feedback_cluster_lib import cluster_buckets, run_cluster
-from gzkit.registries import RegistryError, load_registry
+from gzkit.registries import RegistryError, load_registry, registry_path
 
-_THRESHOLDS_REGISTRY = "eval_feedback_thresholds"
+_THRESHOLDS_REGISTRY = "eval_feedback_thresholds.json"
 _DEFAULTS = {"cluster_min_recurrence": 3, "low_score_threshold": 3.0}
 
 
@@ -28,13 +28,19 @@ def load_thresholds(project_root: Path) -> dict[str, float]:
     """Return the chore's thresholds from the ``eval_feedback_thresholds`` registry.
 
     Read through the single registry seam (GHI #1067). A project without the
-    registry runs on the library's defaults.
+    registry runs on the library's defaults, and the run says so. A registry
+    that is present and unreadable raises: defaulting past a broken file would
+    report a configured run that was not one.
     """
-    try:
-        raw = load_registry(project_root, _THRESHOLDS_REGISTRY)
-    except RegistryError:
+    if not thresholds_configured(project_root):
         return dict(_DEFAULTS)
+    raw = load_registry(project_root, _THRESHOLDS_REGISTRY)
     return {key: raw.get(key, default) for key, default in _DEFAULTS.items()}
+
+
+def thresholds_configured(project_root: Path) -> bool:
+    """Return True when the project carries the thresholds registry."""
+    return registry_path(project_root, _THRESHOLDS_REGISTRY).is_file()
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -48,7 +54,11 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     root = (args.project_root or Path.cwd()).resolve()
-    thresholds = load_thresholds(root)
+    try:
+        thresholds = load_thresholds(root)
+    except RegistryError as exc:
+        print(f"eval-feedback-cluster: {exc}", file=sys.stderr)
+        return 1
     min_recurrence = int(thresholds["cluster_min_recurrence"])
     score_threshold = float(thresholds["low_score_threshold"])
 
@@ -66,6 +76,8 @@ def main(argv: list[str] | None = None) -> int:
         f"  {len(summary.buckets)} cluster(s); {len(qualifying)} at or above recurrence "
         f"{min_recurrence} (score threshold {score_threshold})"
     )
+    if not thresholds_configured(root):
+        print(f"  thresholds: library defaults (no data/{_THRESHOLDS_REGISTRY} in this project)")
     for key in sorted(qualifying):
         distinct = len({m["artifact_id"] for m in qualifying[key]})
         print(f"  {key}: {distinct} distinct artifact(s)")

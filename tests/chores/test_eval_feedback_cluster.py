@@ -12,7 +12,7 @@ from __future__ import annotations
 import json
 import tempfile
 import unittest
-from contextlib import redirect_stdout
+from contextlib import redirect_stderr, redirect_stdout
 from io import StringIO
 from pathlib import Path
 
@@ -419,7 +419,7 @@ class TestOperationalRunner(unittest.TestCase):
     proposals only on a write run.
     """
 
-    def _project(self, root: Path, *, events: int) -> None:
+    def _project(self, root: Path, *, events: int, min_recurrence: int = 3) -> None:
         ledger_path = root / ".gzkit" / "ledger.jsonl"
         ledger_path.parent.mkdir(parents=True, exist_ok=True)
         _write_ledger(
@@ -432,11 +432,63 @@ class TestOperationalRunner(unittest.TestCase):
                 {
                     "low_score_threshold": 3.0,
                     "red_team_count_threshold": 3,
-                    "cluster_min_recurrence": 3,
+                    "cluster_min_recurrence": min_recurrence,
                 }
             ),
             encoding="utf-8",
         )
+
+    def test_second_run_over_the_same_evidence_writes_no_duplicate(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._project(root, events=3)
+            proofs = root / "proofs"
+            argv = ["--project-root", str(root), "--proofs-dir", str(proofs)]
+            second = StringIO()
+            with redirect_stdout(StringIO()):
+                eval_feedback_cluster_run.main(argv)
+            with redirect_stdout(second):
+                code = eval_feedback_cluster_run.main(argv)
+            self.assertEqual(code, 0)
+            self.assertEqual(len(list(proofs.glob("proposal-*.json"))), 1)
+            self.assertIn("wrote 0 new proposal record(s)", second.getvalue())
+
+    def test_configured_recurrence_reaches_the_clustering(self) -> None:
+        """Two artifacts qualify only when the project's registry lowers the threshold to 2."""
+        for configured, expected in ((3, 0), (2, 1)):
+            with (
+                self.subTest(cluster_min_recurrence=configured),
+                tempfile.TemporaryDirectory() as tmp,
+            ):
+                root = Path(tmp)
+                self._project(root, events=2, min_recurrence=configured)
+                proofs = root / "proofs"
+                with redirect_stdout(StringIO()):
+                    eval_feedback_cluster_run.main(
+                        ["--project-root", str(root), "--proofs-dir", str(proofs)]
+                    )
+                self.assertEqual(len(list(proofs.glob("proposal-*.json"))), expected)
+
+    def test_absent_registry_runs_on_defaults_and_says_so(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._project(root, events=3)
+            (root / "data" / "eval_feedback_thresholds.json").unlink()
+            out = StringIO()
+            with redirect_stdout(out):
+                code = eval_feedback_cluster_run.main(["--dry-run", "--project-root", str(root)])
+            self.assertEqual(code, 0)
+            self.assertIn("library defaults", out.getvalue())
+            self.assertIn("1 at or above recurrence 3", out.getvalue())
+
+    def test_unreadable_registry_fails_instead_of_defaulting(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._project(root, events=3)
+            (root / "data" / "eval_feedback_thresholds.json").write_text("{", encoding="utf-8")
+            with redirect_stdout(StringIO()), redirect_stderr(StringIO()):
+                code = eval_feedback_cluster_run.main(["--dry-run", "--project-root", str(root)])
+            self.assertEqual(code, 1)
 
     def test_dry_run_reports_the_scan_and_writes_nothing(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
