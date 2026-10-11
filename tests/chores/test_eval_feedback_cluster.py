@@ -423,7 +423,9 @@ class TestOperationalRunner(unittest.TestCase):
     proposals only on a write run.
     """
 
-    def _project(self, root: Path, *, events: int, min_recurrence: int = 3) -> None:
+    def _project(
+        self, root: Path, *, events: int, min_recurrence: int = 3, low_score: float = 3.0
+    ) -> None:
         ledger_path = root / ".gzkit" / "ledger.jsonl"
         ledger_path.parent.mkdir(parents=True, exist_ok=True)
         _write_ledger(
@@ -434,7 +436,7 @@ class TestOperationalRunner(unittest.TestCase):
         (root / "data" / "eval_feedback_thresholds.json").write_text(
             json.dumps(
                 {
-                    "low_score_threshold": 3.0,
+                    "low_score_threshold": low_score,
                     "red_team_count_threshold": 3,
                     "cluster_min_recurrence": min_recurrence,
                 }
@@ -466,6 +468,22 @@ class TestOperationalRunner(unittest.TestCase):
             ):
                 root = Path(tmp)
                 self._project(root, events=2, min_recurrence=configured)
+                proofs = root / "proofs"
+                with redirect_stdout(StringIO()):
+                    eval_feedback_cluster_run.main(
+                        ["--project-root", str(root), "--proofs-dir", str(proofs)]
+                    )
+                self.assertEqual(len(list(proofs.glob("proposal-*.json"))), expected)
+
+    def test_configured_score_threshold_reaches_the_clustering(self) -> None:
+        """Three artifacts scoring 2.7 are weak under a threshold of 3.0 and not under 2.5."""
+        for configured, expected in ((3.0, 1), (2.5, 0)):
+            with (
+                self.subTest(low_score_threshold=configured),
+                tempfile.TemporaryDirectory() as tmp,
+            ):
+                root = Path(tmp)
+                self._project(root, events=3, low_score=configured)
                 proofs = root / "proofs"
                 with redirect_stdout(StringIO()):
                     eval_feedback_cluster_run.main(
