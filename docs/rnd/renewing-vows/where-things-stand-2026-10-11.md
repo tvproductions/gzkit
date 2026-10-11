@@ -2,7 +2,8 @@
 
 > A dated record, written for the operator on 2026-10-11 after the maintenance work of the R&D
 > run `renewing-vows`. Figures are as measured that day; the command beside each gives the live
-> value. This page advises and records. It authorizes nothing.
+> value. This page advises and records. It authorizes nothing. Updated the afternoon of
+> 2026-10-11 for the `gz check` rebalance, which came after the page was first written.
 
 ## The three layers
 
@@ -48,6 +49,15 @@ Both rulings are given. 27 of the 35 remain, listed in
 
 - **Patch release** (commit `0efb147ec`): v0.34.9 was approved and published later the same
   day, with 19 issues closed and 3 partial landings.
+- **The quality gate** (commits `701d01506`, `c7b643dfe` and `95dcf448d`; GHI #1191 and
+  GHI #1192, both closed `fixed`): the operator found `gz check` too heavy for how often it
+  runs. Plain `gz check` is now the per-change gate: lint, format, typecheck, every validator,
+  the smoke tier and the tests the change touches. `gz check --full` adds the whole unit tier,
+  `Behave`, the docs build, `Preflight` and the guard-canary sweep, and runs in CI on every
+  code push, at every release and as the `quality-check` chore. The `--fast` flag is retired.
+  The scope policy ships inside the package, so a project that installs gzkit runs the same
+  per-change gate. This was a detour from the recommendation below, taken on the operator's
+  word.
 
 ## Open, and none of it blocks `ADR-0.35.0`
 
@@ -77,13 +87,32 @@ Both rulings are given. 27 of the 35 remain, listed in
 for closure found that its runner had never read the configured thresholds; that is repaired
 in commit `ef5f82fdf`.
 
-**Backlog.** The chore board reads 17 overdue, 11 due, 3 unmeasured and 9 current
-(`uv run gz chores status`); it read 2 current and 35 overdue before the visits. 75 issues are
-open (`gh issue list --state open`; 74 after GHI #997 closed), GHI #1185 among them from the session before the visits.
+**Left open by the `gz check` rebalance.** None has an issue of its own.
+
+- A project gzkit scaffolds has no CI, so nothing runs its whole unit tier on push. Whether
+  `gz init` should scaffold a CI workflow is the operator's call; it is recorded in the close
+  comment of GHI #1192.
+- The tests a change touches are selected by filename match. What that selects in a project
+  whose tests are not named after its modules is unmeasured; also in the close comment of
+  GHI #1192.
+- The unit tier's remaining cost sits in subprocess-heavy governance tests. Recorded as an
+  insight under scope "unit tier wall time".
+- `ADR-0.39.0`'s Draft briefs still list the scope file among the `data/` settings to migrate;
+  the file now lives at `src/gzkit/check_step_scopes.json`.
+- Two unexplained multi-minute stalls on the developer host. Recorded as an insight under
+  scope "developer host stalls".
+
+**Backlog.** The chore board reads 17 overdue, 13 due, 3 unmeasured and 7 current
+(`uv run gz chores status`), as read the afternoon of 2026-10-11. It read 17 overdue, 11 due
+and 9 current that morning, and 2 current and 35 overdue before the visits. 74 issues are open
+(`gh issue list --state open`): 75 that morning, 74 after GHI #997 closed, and unchanged by
+GHI #1191 and GHI #1192, which were filed and closed the same afternoon. GHI #1185 is among
+them, from the session before the visits.
 
 ## Recommended next step
 
 Stop taking maintenance rulings. In the next session, return to `ADR-0.35.0` at item 15, which
-the operator initiates through `gz-obpi-pipeline`. The most recent authored handoff
-(`.gzkit/handoffs/20261010T051502Z-scope-gate-and-airlock-exit-built-held-local.md`) predates
-everything on this page; read this page and the last entries of the run record in its place.
+the operator initiates through `gz-obpi-pipeline`. The recommendation is unchanged by the
+afternoon's work. The most recent authored handoff is
+`.gzkit/handoffs/20261011T172749Z-gz-check-rebalanced-light-gate-full-sweep.md`; it and this
+page agree, and the handoff carries the `gz check` detail.
