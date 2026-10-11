@@ -10,11 +10,15 @@ All tests use tempfile-backed fixtures per .gzkit/rules/tests.md.
 from __future__ import annotations
 
 import json
+import runpy
+import sys
 import tempfile
 import unittest
+import warnings
 from contextlib import redirect_stderr, redirect_stdout
 from io import StringIO
 from pathlib import Path
+from unittest.mock import patch
 
 from gzkit.chores import eval_feedback_cluster_run
 from gzkit.chores.eval_feedback_cluster_lib import (
@@ -468,6 +472,22 @@ class TestOperationalRunner(unittest.TestCase):
                         ["--project-root", str(root), "--proofs-dir", str(proofs)]
                     )
                 self.assertEqual(len(list(proofs.glob("proposal-*.json"))), expected)
+
+    def test_module_entry_exits_with_the_runner_status(self) -> None:
+        """The chore's criterion reads the exit code of `python -m`, so the entry must carry it."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._project(root, events=3)
+            argv = ["eval_feedback_cluster_run", "--dry-run", "--project-root", str(root)]
+            with (
+                patch.object(sys, "argv", argv),
+                redirect_stdout(StringIO()),
+                warnings.catch_warnings(),
+                self.assertRaises(SystemExit) as raised,
+            ):
+                warnings.simplefilter("ignore", RuntimeWarning)
+                runpy.run_module("gzkit.chores.eval_feedback_cluster_run", run_name="__main__")
+            self.assertEqual(raised.exception.code, 0)
 
     def test_absent_registry_runs_on_defaults_and_says_so(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
