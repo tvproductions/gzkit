@@ -69,12 +69,13 @@ Both rulings are given. 27 of the 35 remain, listed in
   until then the hand-over from closeout is done by hand.
 - The row 1 ADR work, after items 15 to 20.
 
-**Ready, waiting on a word.** GHI #997 is repaired (commit `e172045c6`) and still open; it
-needs closing through `ghi-close`.
+**Closed later the same day.** GHI #997, closed `fixed` on the operator's word. Verifying it
+for closure found that its runner had never read the configured thresholds; that is repaired
+in commit `ef5f82fdf`.
 
 **Backlog.** The chore board reads 17 overdue, 11 due, 3 unmeasured and 9 current
 (`uv run gz chores status`); it read 2 current and 35 overdue before the visits. 75 issues are
-open (`gh issue list --state open`), GHI #1185 among them from the session before the visits.
+open (`gh issue list --state open`; 74 after GHI #997 closed), GHI #1185 among them from the session before the visits.
 
 ## Recommended next step
 
