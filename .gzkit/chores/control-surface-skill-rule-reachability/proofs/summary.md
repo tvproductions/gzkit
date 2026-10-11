@@ -54,3 +54,10 @@ Every gap row carries its recommendation in the matrix: 25 reconcile the skill, 
 ## What this run did not do
 
 It repaired nothing. A repair that touches a skill is operator-only (`skill-authoring.md` § Enforcement posture), and this chore is audit-only. No reviewer ran a command, so verbs, flags and exit codes named in skills were read, not observed. The gap list is bounded at eight per partition by the brief the reviewers worked to; partitions P1, P2 and P3 each returned eight, so more may exist there.
+
+## After the run: the sweep of 2026-10-11
+
+"It repaired nothing" describes the run of 2026-10-10. On 2026-10-11 the operator ordered the
+sweep of headline 1, and commit `04fda99d3` repairs it: six rows closed (B01, B06, B14, B18, B20,
+B22), three narrowed and still open (B02, B09, B17), one withdrawn for a ruling (B21). 29 of
+the 35 gaps are open. Row detail and limits are in `reachability-matrix.md`.

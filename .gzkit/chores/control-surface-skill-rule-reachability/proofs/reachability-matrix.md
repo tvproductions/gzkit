@@ -122,3 +122,37 @@ Step 4 pipes into `python3 -c '…'` (`:85`). Root `:6`: *"always `uv run` for P
 ## Limits
 
 No command was run by any reviewer, so no verb, flag or exit code was observed. The honors test credits a citation by filename, which says the skill names the rule, not that it follows it. A gap is a reading of two texts; whether an agent in practice takes the step is not measured here.
+
+## After the run: the sweep of 2026-10-11
+
+Operator g0 ordered the repair of the ten rows of summary headline 1 ("do the skill sweep").
+Evidence: commit `04fda99d3`. One independent reviewer (spec-reviewer persona, read-only) read the
+edits against the rules before the commit. It returned seven rows closed and three partly
+closed; the main session checked each finding it acted on against the files, and the
+states below are after those corrections.
+
+| Row | State | What the skill says now |
+|---|---|---|
+| B01 | closed | `gz-obpi-lock` 6.4.0 teaches a detached worktree and a patch the single writer applies; no branch, no merge. The sequence was run in a throwaway repository first |
+| B06 | closed | `gz-adr-closeout-ceremony` 7.20.0 Step 10 publishes the newest version block only, by `gz-patch-release` Step 4d |
+| B14 | closed | `gz-advisor-qc` 0.2.1 names the corpus attestation |
+| B18 | closed | `gz-chore-runner` 1.5.3, `gz-context-diet` 1.1.3 and `gz-obpi-specify` 1.9.3 name `.gzkit/chores/` the authoring source |
+| B20 | closed | `gz-foundation-triage` 1.1.0 keeps the check (REQ-0.0.57-03-05) and leaves the list empty where the kind is closed |
+| B22 | closed | `gz-pythonic-pattern-detect` 1.2.0 runs the doctor's dry run and a sync before a repair |
+| B02 | open, narrowed | `gz-obpi-pipeline` 6.67.0 cites the rule at the weak-red row of Phase 1c. No stage flies the constraints sortie; the rule gives that to the runtime (claim 6), so the skill does not place it |
+| B09 | open, narrowed | Step 9 follows `gz-patch-release` Steps 2, 3 and 4b. `gz-patch-release:56` still sends minor releases to the closeout ceremony, so the two skills point at each other. One ruling: which surface owns a minor release's notes |
+| B17 | open, narrowed | `airlineops-parity-scan` 1.3.0 states the direction and drops the trigger on an AirlineOps change. Step 13's same-cycle tranche is unchanged: the skill reads "perpetual catch-up" as a reason for it, the reviewer reads it as the chase. One ruling |
+| B21 | open, withdrawn | `gz-complexity-distill` is unchanged at 0.3.2. REQ-0.0.27-04-07, attested, reads "operator-attested at Gate 5", and `ADR-0.0.27` calls the pass a "foundation-kind ceremony at every recurrence"; `AGENTS.md` § Attestation reads "Gate 5 names completed OBPI/ADR work only". A REQ that literally asserts a retired claim goes to the operator (`AGENTS.md` § OBPI Acceptance Protocol) |
+
+**Open gaps after the sweep: 29 of 35** (six closed). The unverified reference
+`gz-obpi-lock:239` ("`AGENTS.md` § Agent Profiles") was confirmed absent by grep and removed.
+
+Same class, outside the skills and corrected in the same commit: six skill manpages, the
+`frontmatter-reconcile` manpage, two runbook lines, and the manual-finish hint of
+`gz patch release`, which printed the cumulative notes file as the release body.
+
+Limits of this addendum. The reviewer read the edited hunks and the cited clauses, not the
+63 unedited skills, and ran no command. The session that wrote the edits also wrote this
+table. Two findings stay open as insights: the closeout CLI's Step 9 text
+(`closeout/ceremony-step-9-release-notes`) and the mirror roster in 38 skill manpages
+(`docs/skill-manpages-stale-mirror-roster`).

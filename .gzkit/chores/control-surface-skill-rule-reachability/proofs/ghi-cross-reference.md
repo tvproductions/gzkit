@@ -45,3 +45,9 @@ Notes on the nearest records found, none of which is the same defect:
 
 - #1013 records that the verifier-pipe gate reads heredoc bodies as shell commands. This session met it four times while writing proofs; it is tracked.
 - #1125 and #1124 bear on the stale `gz-tidy` rationalization row recorded below the bar.
+
+## After the run: the sweep of 2026-10-11
+
+Commit `04fda99d3` closes six rows of the known-blocking list above: B01, B06, B14, B18, B20 and
+B22. B21 stays open with its record, and B09 and B17 stay open, narrowed. The records named
+against each row are unchanged; no issue was filed, commented on or closed by the sweep.
