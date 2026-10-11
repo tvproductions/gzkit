@@ -491,8 +491,10 @@ Thumbs.db
 
 _PRE_COMMIT_CONFIG_CONTENT = """\
 # Session-green gate (ADR-0.0.68). The pre-push hook below is the covenant's
-# between-sessions enforcement point: it runs the full `gz check` sweep before
-# any push leaves the worktree.
+# between-sessions enforcement point: it runs `gz check`, the per-change gate,
+# before any push leaves the worktree. The whole unit tier, behave and the docs
+# build run only under `uv run gz check --full`: run that in CI and before a
+# release.
 #
 # Declaring it is not delivering it. `gz init` also runs `pre-commit install`;
 # `gz check` verifies the hook is on disk. Add your own pre-commit-stage hooks

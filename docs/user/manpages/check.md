@@ -18,7 +18,8 @@ gz check [OPTIONS]
 
 ### Default scope: the per-change gate
 
-Plain `gz check` runs the `change` scope declared in `data/check_step_scopes.json`:
+Plain `gz check` runs the `change` scope declared in `src/gzkit/check_step_scopes.json`, which ships
+inside the gzkit package, so every project that installs gzkit runs this gate:
 lint, format, typecheck, every validator, the smoke tier, and `Test (changed)`,
 the tests the change touches. It drops `Test` (the whole unit tier), `Behave`,
 `Docs build`, `Preflight` and `Guard canary sweep` (GHI #1088, #1191). The
@@ -113,7 +114,7 @@ When drift exists, `gz check` appends an advisory section after the blocking che
   ✓ Typecheck
   ✓ Test (changed)
 
-✓ All per-change checks passed. (Behave, Docs build, Guard canary sweep, Preflight, Test are full-tier scope: `gz check --full` runs them, and CI runs the full sweep)
+✓ All per-change checks passed. (Behave, Docs build, Guard canary sweep, Preflight, Test are full-tier scope: run `gz check --full` in CI and before a release)
 
 ⚠ Advisory: spec-test-code drift detected
   Unlinked specs (REQs with no test):

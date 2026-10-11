@@ -1901,7 +1901,7 @@ def run_guard_canary_sweep_audit(project_root: Path) -> QualityResult:
     The sweep applies each registered mutant to an isolated copy of the tree and
     runs its designated test in a subprocess, one after another. It was a single
     unit test, which a parallel runner cannot split, so the unit tier took as
-    long as the sweep did. It is full-tier work: `data/check_step_scopes.json`
+    long as the sweep did. It is full-tier work: `src/gzkit/check_step_scopes.json`
     drops it from the per-change gate, and the binding check that reports a
     changed guard, claim or designated test stays in the unit tier.
     """

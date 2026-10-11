@@ -144,7 +144,7 @@ The per-change gate does not run it, deliberately:
 
 | Scope | Behaviour |
 |---|---|
-| `gz check` (default, and the pre-push hook) | Drops the whole `Behave` step, per `data/check_step_scopes.json` (GHI #1088) |
+| `gz check` (default, and the pre-push hook) | Drops the whole `Behave` step, per `src/gzkit/check_step_scopes.json` (GHI #1088) |
 | `gz check --full --reuse-verified` | Skips the run entirely when this exact tree content already passed a full check |
 
 Invoke the scenario alone when iterating on distribution contract changes:

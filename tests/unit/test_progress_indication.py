@@ -193,7 +193,9 @@ class TestCheckIntegration(unittest.TestCase):
             ),
             patch("gzkit.flags.registry.load_registry", side_effect=RuntimeError("skip flags")),
         ):
-            quality.check()
+            # The full scope: the per-change scope swaps `Test` for the
+            # changed-test run in every project (GHI #1192).
+            quality.check(full=True)
 
         formatter = _FormatterSpy.instances[-1]
         self.assertIsNotNone(formatter.progress)

@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import importlib.resources
 import json
 import os
 import pathlib
@@ -611,7 +612,7 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
         ("Tautological debt", run_tautological_debt_audit),
         ("Test", run_tests),
         ("Behave", run_behave),
-        # Full tier only (GHI #1191): `data/check_step_scopes.json` drops it per change.
+        # Full tier only (GHI #1191): `check_step_scopes.json` drops it per change.
         ("Guard canary sweep", run_guard_canary_sweep_audit),
         ("Docs build", run_mkdocs),
         ("Validate default scopes", run_validate_default_scopes),
@@ -686,16 +687,27 @@ def _build_check_steps() -> list[tuple[str, CheckStepRunner]]:
     ]
 
 
-def _load_check_step_scopes() -> dict[str, dict[str, Any]]:
-    """Return the per-scope step policy from ``data/check_step_scopes.json``.
+#: The per-scope step policy ships INSIDE the package, never in the invoking
+#: project's `data/` (GHI #1192, operator ruling 2026-10-11, verbatim: "adopters
+#: get the light gate too"): a project that installs gzkit has no `data/` of
+#: gzkit's, and must get the same per-change gate this repository runs.
+CHECK_STEP_SCOPES_FILE = "check_step_scopes.json"
 
-    Deliberately NOT cached, for the same reason as
-    :func:`_load_check_step_classes`: caching against ``get_project_root()`` is
-    the import-time-capture shape that makes a value outlive the cwd it resolved
-    under (GHI #857). A missing or unreadable file returns ``{}``, and every
-    consumer below treats that as "no skips" — the conservative direction.
+
+def _check_step_scopes_file() -> pathlib.Path:
+    """Return the scope declaration shipped with the installed gzkit package."""
+    return pathlib.Path(str(importlib.resources.files("gzkit").joinpath(CHECK_STEP_SCOPES_FILE)))
+
+
+def _load_check_step_scopes() -> dict[str, dict[str, Any]]:
+    """Return the per-scope step policy from the packaged ``check_step_scopes.json``.
+
+    Read from the package, as ``quality_command_timeout.json`` is, so the gate
+    has one shape in every project (GHI #1192). A missing or unreadable file
+    returns ``{}``, and every consumer below treats that as "no skips" — the
+    conservative direction.
     """
-    path = get_project_root() / "data" / "check_step_scopes.json"
+    path = _check_step_scopes_file()
     if not path.is_file():
         return {}
     try:
@@ -733,8 +745,8 @@ def _scope_records_verified(scope: str) -> bool:
         return True
     entry = _load_check_step_scopes().get(scope)
     if entry is None:
-        # Undeclared (an adopter ships no scope file): it drops nothing, so it ran
-        # the full sweep.
+        # Undeclared, or the declaration could not be read: it drops nothing, so
+        # it ran the full sweep.
         return True
     return entry.get("records_verified") is True
 
@@ -1114,7 +1126,7 @@ def _record_and_announce_pass(project_root: pathlib.Path, *, scope: str) -> None
     console.print(
         "\n[green]✓ All per-change checks passed.[/green] "
         f"[dim]({', '.join(sorted(_scope_skips(scope)))} are full-tier scope: "
-        "`gz check --full` runs them, and CI runs the full sweep)[/dim]"
+        "run `gz check --full` in CI and before a release)[/dim]"
     )
 
 
@@ -1239,7 +1251,7 @@ def check(
     The default is the ``change`` scope, the per-change gate (GHI #1088, #1191):
     lint, format, typecheck, every validator, the smoke tier and the tests the
     change touches. It drops the whole unit tier, ``Behave``, the docs build,
-    ``Preflight`` and the guard-canary sweep (``data/check_step_scopes.json``).
+    ``Preflight`` and the guard-canary sweep (``check_step_scopes.json``).
     ``full`` is the explicit full sweep: CI runs it on every code push, and it
     belongs at release and in the ``quality-check`` chore. Measured 2026-10-11 (a
     dated record) on a 10-core host: the unit tier 117s in-gate, the remaining

@@ -8,17 +8,22 @@ narrower than the per-change gate can never record the fingerprint that gate
 reuses, and the default scope is the per-change gate — `Behave` is heavy-lane
 and CI scope, reached only through `--full` (GHI #1088). Since GHI #1191 the
 per-change gate also drops the whole unit tier and runs the tests the change
-touches in its place.
+touches in its place. Since GHI #1192 the declaration ships inside the gzkit
+package, so a project that installs gzkit gets the same gate gzkit runs.
 """
 
 from __future__ import annotations
 
 import json
+import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
+import gzkit
 from gzkit.commands.quality import (
     _build_check_steps,
+    _check_step_scopes_file,
     _load_check_step_scopes,
     _scope_records_verified,
     _scope_skips,
@@ -26,7 +31,7 @@ from gzkit.commands.quality import (
 )
 from gzkit.traceability import covers
 
-_CONFIG = Path(__file__).resolve().parents[2] / "data" / "check_step_scopes.json"
+_CONFIG = _check_step_scopes_file()
 
 
 class TestScopeDeclarationIsRead(unittest.TestCase):
@@ -110,8 +115,6 @@ class TestOnlyScopesCoveringTheGateRecord(unittest.TestCase):
                     )
 
     def test_a_scope_declared_not_to_record_does_not(self) -> None:
-        from unittest import mock  # noqa: PLC0415
-
         narrow = {"narrow": {"skips": ["Lint"], "records_verified": False}}
         with mock.patch("gzkit.commands.quality._load_check_step_scopes", return_value=narrow):
             self.assertFalse(_scope_records_verified("narrow"))
@@ -120,22 +123,71 @@ class TestOnlyScopesCoveringTheGateRecord(unittest.TestCase):
         self.assertTrue(_scope_records_verified("change"))
         self.assertTrue(_scope_records_verified("full"))
 
-    def test_without_a_declaration_the_default_still_records(self) -> None:
-        """An adopter project ships no scope file, so its default drops nothing.
+    def test_an_unreadable_declaration_drops_nothing_and_still_records(self) -> None:
+        """A declaration that cannot be read runs MORE, never less.
 
-        A scope that drops nothing ran the full sweep, so refusing to record it
-        would silently disable the pre-push reuse in every adopter repository.
-        It also keeps the whole unit tier: the changed-test run stands in only
-        where `Test` is declared dropped.
+        A scope that drops nothing ran the full sweep, so it may record. It also
+        keeps the whole unit tier: the changed-test run stands in only where
+        `Test` is declared dropped.
         """
-        from unittest import mock  # noqa: PLC0415
-
         with mock.patch("gzkit.commands.quality._load_check_step_scopes", return_value={}):
             self.assertEqual(_scope_skips("change"), frozenset())
             self.assertTrue(_scope_records_verified("change"))
             names = [name for name, _ in _select_check_steps("change")]
             self.assertIn("Test", names)
             self.assertNotIn("Test (changed)", names)
+
+    def test_a_malformed_declaration_reads_as_no_declaration(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            broken = Path(tmp) / "check_step_scopes.json"
+            broken.write_text("{ not json", encoding="utf-8")
+            with mock.patch("gzkit.commands.quality._check_step_scopes_file", return_value=broken):
+                self.assertEqual(_load_check_step_scopes(), {})
+
+
+class TestEveryProjectGetsThePerChangeGate(unittest.TestCase):
+    """The gate a project runs does not depend on files only gzkit's repository has.
+
+    Operator ruling 2026-10-11 (GHI #1192), verbatim: "adopters get the light
+    gate too". The declaration was read from the invoking project's `data/`,
+    which no installed project has, so everywhere but here plain `gz check`
+    ran the full sweep and `--full` changed nothing.
+    """
+
+    def _steps_in_a_project_without_gzkit_data(self, scope: str) -> list[str]:
+        with (
+            tempfile.TemporaryDirectory() as tmp,
+            mock.patch("gzkit.commands.quality.get_project_root", return_value=Path(tmp)),
+        ):
+            return [name for name, _ in _select_check_steps(scope)]
+
+    def test_a_project_with_no_data_directory_runs_the_per_change_gate(self) -> None:
+        change = self._steps_in_a_project_without_gzkit_data("change")
+        for heavy in ("Test", "Behave", "Docs build", "Preflight", "Guard canary sweep"):
+            self.assertNotIn(heavy, change)
+        self.assertIn("Test (changed)", change)
+        self.assertIn("Lint", change)
+        self.assertIn("Smoke tier", change)
+
+    def test_full_is_a_larger_sweep_in_a_project_with_no_data_directory(self) -> None:
+        change = self._steps_in_a_project_without_gzkit_data("change")
+        full = self._steps_in_a_project_without_gzkit_data("full")
+        self.assertGreater(len(full), len(change))
+        self.assertIn("Test", full)
+        self.assertIn("Behave", full)
+
+    def test_that_project_selects_the_steps_this_repository_selects(self) -> None:
+        for scope in ("change", "full"):
+            with self.subTest(scope=scope):
+                self.assertEqual(
+                    self._steps_in_a_project_without_gzkit_data(scope),
+                    [name for name, _ in _select_check_steps(scope)],
+                )
+
+    def test_the_declaration_is_a_file_of_the_installed_package(self) -> None:
+        package_dir = Path(gzkit.__file__).resolve().parent
+        self.assertEqual(_check_step_scopes_file().resolve().parent, package_dir)
+        self.assertTrue(_check_step_scopes_file().is_file())
 
 
 class TestTheDefaultIsThePerChangeGate(unittest.TestCase):

@@ -257,7 +257,8 @@ Third-axis doctrine: [`.gzkit/rules/security-sensitivity.md`](.gzkit/rules/secur
 Always use `uv run` for Python commands. `gz --help` for full catalog.
 
 ```bash
-uv run gz check     # All quality checks (lint, format, test, typecheck)
+uv run gz check          # Per-change gate: lint, format, typecheck, validators, smoke, tests the change touches
+uv run gz check --full   # Full sweep: whole unit tier, behave, docs build. Run it in CI and before a release
 uv run gz status    # Gate status
 uv run gz state     # Artifact relationships
 uv run gz agent sync control-surfaces  # Regenerate surfaces

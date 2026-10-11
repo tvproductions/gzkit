@@ -40,10 +40,11 @@ class TestCheckFailingStepDiagnostics(unittest.TestCase):
         no_drift = MagicMock()
         no_drift.has_drift = False
 
-        # A scratch root declares no scope policy, so the stubbed step is the
-        # whole run. Rooted at the repository, the per-change scope would drop
-        # `Test` and launch the real changed-test run in its place, which
-        # selects this module and never returns (GHI #1191).
+        # The full scope runs the stubbed step list as given. The per-change
+        # scope would drop `Test` and run the real changed-test selection in its
+        # place (GHI #1191), in every project since the scope policy ships in
+        # the package (GHI #1192). The scratch root keeps the run's cache writes
+        # out of the repository.
         with (
             tempfile.TemporaryDirectory() as scratch,
             patch.object(quality_mod, "console", recording),
@@ -53,7 +54,7 @@ class TestCheckFailingStepDiagnostics(unittest.TestCase):
             patch("gzkit.flags.registry.load_registry", side_effect=RuntimeError),
             self.assertRaises(SystemExit),
         ):
-            quality_mod.check()
+            quality_mod.check(full=True)
 
         self.assertIn(marker, buf.getvalue())
 

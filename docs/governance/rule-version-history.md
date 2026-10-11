@@ -771,6 +771,10 @@ Lifted 2026-10-11 at version `0.26.6` (rule now at `0.27.0`).
 
 > **Rule version:** `0.26.6` — § TASK-Driven Workflow distinguishes independent catalog requirements from the current brief-local REQ/TASK lineage (operator hierarchy amendment, 2026-09-25). Rationale: [Tests — Rationale](tests-rationale.md); history: [Rule Version History](#testsmd).
 
+Lifted 2026-10-11 at version `0.27.0` (rule now at `0.27.1`).
+
+> **Rule version:** `0.27.0` — § Two runners: the per-change gate runs the tests a change touches, and the whole unit tier runs under `gz check --full` (operator ruling 2026-10-11, GHI #1191). Rationale: [Tests — Rationale](tests-rationale.md); history: [Rule Version History](#testsmd).
+
 ## `token-block-discipline.md`
 
 ### Lifted 2026-09-24 at version `0.8.0` (rule now at `0.9.0`)

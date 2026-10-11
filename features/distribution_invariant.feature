@@ -14,7 +14,7 @@ Feature: Distribution invariant T0 smoke test
   for (GHI #860). It runs in the
   Behave step of `gz check --full`, which CI runs, and is NOT excluded by a
   tag: plain `gz check`, the per-change gate, drops the whole Behave step
-  (data/check_step_scopes.json). Run this scenario alone with:
+  (src/gzkit/check_step_scopes.json). Run this scenario alone with:
     uv run -m behave features/distribution_invariant.feature
 
   This header carried an `@slow` tag and a claim that it excluded the

@@ -8,7 +8,7 @@ owner: gzkit-governance
 last_reviewed: 2026-10-11
 model: haiku
 metadata:
-  skill-version: "1.7.0"
+  skill-version: "1.7.1"
 ---
 
 # gz check
@@ -44,7 +44,7 @@ which proves it is correct.
 - **Every change:** Run `gz check`, the per-change gate. Run it once per change, after `git add -A`, so the pre-push hook reuses the pass
 - **Before `gz git-sync --apply`:** Run `gz check` first
 - **Gate 2:** `gz test` runs the whole unit tier; plain `gz check` runs only the tests the change touches and is not Gate 2 evidence
-- **Before a release, at heavy-lane closeout, or to reproduce CI locally:** Run `gz check --full`. The whole unit tier, behave, the docs build and the guard-canary sweep are full-tier work: CI runs them on every code push (`data/check_step_scopes.json`)
+- **Before a release, at heavy-lane closeout, or to reproduce CI locally:** Run `gz check --full`. The whole unit tier, behave, the docs build and the guard-canary sweep are full-tier work: CI runs them on every code push (`src/gzkit/check_step_scopes.json`, shipped in the package)
 
 ## Workflow
 
