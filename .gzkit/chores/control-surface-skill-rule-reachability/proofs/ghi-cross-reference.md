@@ -49,5 +49,5 @@ Notes on the nearest records found, none of which is the same defect:
 ## After the run: the sweep of 2026-10-11
 
 Commit `04fda99d3` closes six rows of the known-blocking list above: B01, B06, B14, B18, B20 and
-B22. B21 was closed the same day by operator ruling (commit `a87603775`), and B09 and B17 stay open, narrowed. The records named
+B22. B21 was closed the same day by operator ruling (commit `a87603775`), B09 was closed the same day by a second ruling (commit `bd8b7d902`), and B17 stays open, narrowed. The records named
 against each row are unchanged; no issue was filed, commented on or closed by the sweep.

@@ -151,7 +151,14 @@ the pass as OBPI work, so the Gate 5 it names is an OBPI's completion attestatio
 The REQ, the ADR and the naming rule keep their text. Recorded as worked example 5 of
 `docs/governance/attested-req-subject-retirement.md`.
 
-**Open gaps after the sweep and the ruling: 28 of 35** (seven closed). The unverified reference
+**Ruling on B09, 2026-10-11.** Operator g0 ruled, verbatim "B", on the option worded
+"gz-patch-release owns all notes and publication. Closeout ends at the bump and hands over."
+Commit `bd8b7d902`: the closeout CLI's Steps 9 and 10 and `gz-adr-closeout-ceremony` 7.21.0 hand
+over, and `gz-patch-release` 1.12.0 takes the hand-over and no longer sends minor releases back.
+**B09 is closed.** Open beside it: `gz patch release` has no path for an already-bumped version
+(insight `patch-release/no-already-bumped-path`).
+
+**Open gaps after the sweep and both rulings: 27 of 35** (eight closed). The unverified reference
 `gz-obpi-lock:239` ("`AGENTS.md` § Agent Profiles") was confirmed absent by grep and removed.
 
 Same class, outside the skills and corrected in the same commit: six skill manpages, the

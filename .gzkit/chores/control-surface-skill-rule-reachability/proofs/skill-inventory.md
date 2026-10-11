@@ -1,6 +1,6 @@
 # Skill inventory — 2026-10-10
 
-Ten rows were refreshed on 2026-10-11 after the skill sweep (commit `04fda99d3`): version, bytes and lines of the ten edited skills. The `gz-complexity-distill` row was refreshed the same day after ruling B (commit `a87603775`). The other 62 rows are as read on 2026-10-10.
+Ten rows were refreshed on 2026-10-11 after the skill sweep (commit `04fda99d3`): version, bytes and lines of the ten edited skills. The `gz-complexity-distill` row was refreshed the same day after ruling B (commit `a87603775`). The `gz-patch-release` and `gz-adr-closeout-ceremony` rows were refreshed after the release-ownership ruling (commit `bd8b7d902`). The other 61 rows are as read on 2026-10-10.
 
 73 skills under `.gzkit/skills/`; 62 model-invocable, 11 user-invoked only (`disable-model-invocation: true`). Vendor mirrors are derivatives and are not inventoried. Generated from frontmatter and body text; `Rules cited` is any mention of a rule filename, by path or bare.
 
@@ -12,7 +12,7 @@ Ten rows were refreshed on 2026-10-11 after the skill sweep (commit `04fda99d3`)
 | `ghi-triage` | 5.4.0 | 12122 | 243 | model | — | `gh-cli.md`, `model-selection.md` | 0 |
 | `git-sync` | 1.4.1 | 5882 | 131 | user | — | — | 1 |
 | `gz-adr-audit` | 6.15.0 | 18682 | 388 | model | `audit` | `tests.md` | 0 |
-| `gz-adr-closeout-ceremony` | 7.20.0 | 24781 | 419 | model | — | — | 1 |
+| `gz-adr-closeout-ceremony` | 7.21.0 | 24675 | 417 | model | — | — | 1 |
 | `gz-adr-create` | 6.12.0 | 20477 | 314 | model | — | — | 1 |
 | `gz-adr-emit-receipt` | 1.1.1 | 2561 | 62 | model | — | — | 0 |
 | `gz-adr-evaluate` | 6.8.2 | 17842 | 363 | model | — | — | 1 |
@@ -62,7 +62,7 @@ Ten rows were refreshed on 2026-10-11 after the skill sweep (commit `04fda99d3`)
 | `gz-obpi-specify` | 1.9.3 | 17223 | 378 | model | — | `agent-failure-modes.md` | 2 |
 | `gz-obpi-sync` | 3.4.0 | 12551 | 331 | model | — | `skill-surface-sync.md` | 0 |
 | `gz-ontology` | 0.1.1 | 2398 | 75 | model | — | — | 0 |
-| `gz-patch-release` | 1.11.1 | 19173 | 457 | model | — | `changelog-release-notes.md`, `hexagonal-architecture.md` | 1 |
+| `gz-patch-release` | 1.12.0 | 19301 | 455 | model | — | `changelog-release-notes.md`, `hexagonal-architecture.md` | 1 |
 | `gz-plan` | 1.8.0 | 8810 | 132 | model | — | — | 0 |
 | `gz-plan-audit` | 6.5.0 | 13909 | 340 | model | — | — | 0 |
 | `gz-prd` | 0.3.0 | 3228 | 67 | model | — | — | 1 |
