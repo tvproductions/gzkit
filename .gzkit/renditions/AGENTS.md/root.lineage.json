@@ -281,11 +281,12 @@
       "corpus-governance-doctrine-surfaces-2026-09-18T01:52:11.381072+00:00",
       "corpus-governance-doctrine-surfaces-2026-09-18T01:52:11.530284+00:00",
       "corpus-governance-doctrine-surfaces-2026-09-24T10:35:54.824200+00:00",
-      "corpus-governance-doctrine-surfaces-2026-09-24T10:35:54.990937+00:00"
+      "corpus-governance-doctrine-surfaces-2026-09-24T10:35:54.990937+00:00",
+      "corpus-governance-doctrine-surfaces-2026-10-11T17:46:43.217551+00:00"
     ],
     "byte_span": [
       19914,
-      23176
+      23395
     ]
   },
   "architectural-boundaries": {
@@ -297,8 +298,8 @@
       "corpus-architectural-boundaries-2026-10-10T13:36:48.462663+00:00"
     ],
     "byte_span": [
-      23176,
-      24060
+      23395,
+      24279
     ]
   }
 }

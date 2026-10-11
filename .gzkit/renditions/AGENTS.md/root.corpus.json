@@ -1,10 +1,10 @@
 {
   "algorithm": "sha256",
-  "corpus_fingerprint": "c3dc0326411e0d46831508fbdfc4d7e6f61af8b58cc3f6d7e88e6f27ab096e12",
-  "corpus_entry_count": 516,
-  "rendition_fingerprint": "e5a141415b87c8ab0f276bfa0b23605bc8d8d408137a41909b4d830c5b4cc7e9",
-  "committed_ts": "2026-10-11T14:45:17.186735+00:00",
+  "corpus_fingerprint": "a367c0eb03f608cb751bf529f574f7715c113333befbc59d8dd217106da05ff8",
+  "corpus_entry_count": 517,
+  "rendition_fingerprint": "22d206f2e4ccadcc7477d616a6f3fd8ad7771e8eef6c628f5ee4f176f2b0423d",
+  "committed_ts": "2026-10-11T17:46:57.623265+00:00",
   "attestor": "g0",
-  "attestation_text": "I attest dropping C2 and C4",
-  "landing_id": "landing-20261011T144517Z-1a7a9970"
+  "attestation_text": "direct fix 1187, then git sync | evidence: GHI #1187, closure contract at issuecomment-6111872871; one entry added, corpus-governance-doctrine-surfaces-2026-10-11T17:46:43.217551+00:00; no block of the prior rendition removed",
+  "landing_id": "landing-20261011T174657Z-a30185b7"
 }

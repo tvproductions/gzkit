@@ -233,6 +233,8 @@ A value written in a Markdown doc is ILLUSTRATIVE, never authoritative. Executio
 - Every `gz <verb>` string appearing in an operator-facing doc must resolve to a registered parser verb, multi-word subcommands included — `gz validate --cli-alignment` over docs, features, skills, chores, rules and root `AGENTS.md`; manpages are `docs/user/manpages/<verb>.md`, never `gz-<verb>.md`. Terminal OBPI briefs are exempt as sealed historical records (`is_terminal_brief_status`). For a planned-but-unlanded CLI surface, file a GHI and put `<!-- gz-validate-skip: command-shape -->` on the preceding line.
 
 - `docs/governance/GovZero/adr-status.md` is a Layer 3 derived view per `docs/governance/state-doctrine.md`, never hand-maintained; regenerate with `uv run gz register-adrs` — `gz validate --adr-status-fresh`, in the default `gz check` (GHI #322).
+
+The constitution is `docs/governance/GovZero/command-doctrine.md` (statement of command, ten articles). Read it before governance code, rule, or audit work: every gate, check, and template traces upward to an article.
 ## Architectural Boundaries
 
 4. Do not let reconciliation remain a maintenance chore. Witness: `gz validate --reconcile-freshness`.
