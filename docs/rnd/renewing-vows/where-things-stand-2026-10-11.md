@@ -109,6 +109,54 @@ and 9 current that morning, and 2 current and 35 overdue before the visits. 74 i
 GHI #1191 and GHI #1192, which were filed and closed the same afternoon. GHI #1185 is among
 them, from the session before the visits.
 
+## Loose ends of the run `renewing-vows`
+
+The run is signed off and its doctrine is ratified. These are what sits beneath or after it,
+each with the door canon names for it. None blocks `ADR-0.35.0`. Issue states were read
+2026-10-11; `gh issue view` gives the live value.
+
+**Doctrine ratified and not yet connected.**
+
+- No agent loads the doctrine. It is reached by nothing loaded each turn (GHI #1187). Door:
+  one corpus entry landed through the content skill with the operator's attestation.
+- The policy layer is a draft. Parts II to IV of
+  [`doctrine-merge.md`](doctrine-merge.md) hold 20 drafted policies and are not ratified. Four
+  statements were put and not answered: what a policy is; the reading of the June pairs under
+  the five terms; whether changing an article differs from changing a policy; what "encourage"
+  consists of. Door: the operator's ratification on the record, as Part 0 entered.
+- Eight policies have no witness: 4, 5, 7, 16, 17, 18, 19 and the slower beats of 15. The
+  draft's question is whether to build each witness or state the policy as advisory. Door:
+  the ruling first, then a pool ADR where a witness is to be built.
+- The June worklist of six items is parked in `ADR-pool.command-doctrine-internalization`.
+  Door: the campaign, which the operator sequences, then promotion. The record found no run
+  of the coherence audit; it is now a task of the maintenance visit.
+- The glossary has no home. It is held in `doctrine-merge.md` Part 0 until a DDD-discipline
+  R&D run names one, and `docs/rnd/` holds no such run.
+- Appendix A of the doctrine was not re-walked and reads Article 3's former title.
+- The two slower tiers of the rhythm are advisory until their signals are built. The
+  campaign plan's republish was announced as due on 2026-10-10.
+- "Built with a released gzkit" (statement of command, line 7) has no witness. Door:
+  `ADR-pool.release-governed-construction`, whose first deliverable is its own sizing.
+
+**Proposed ADR work, parked.** Five pool ADRs wait on the operator's promotion:
+`ADR-pool.sortie-layer-crew-split`, `ADR-pool.integrity-level-axis` (its bands provisional),
+`ADR-pool.maintenance-record-entry` and `ADR-pool.release-governed-construction`, after items
+15 to 20; `ADR-pool.identifier-ladder-migration`, at 1.0.
+
+**Issues the run filed or carried, all open.** GHI #1186 (525 `@covers` tags, two routes for
+the operator's pick); GHI #1188 (the GovZero directory, stale as a class); GHI #1189 (two
+Draft briefs under `ADR-0.39.0` below the sensitivity floor; the brief edit is the
+operator's); GHI #1190 (route unruled); GHI #969 (owed a re-read); GHI #1185, which closes at
+the next real package completion.
+
+**Maintenance tail.** The numbered rulings above; 27 of 35 skill-to-rule gaps; and the advice
+in [`maintenance-visit-advice.md`](maintenance-visit-advice.md) to take fourteen per-flight
+checks off the chore board, which was written and not applied. Insights with no go: 38 skill
+manpages listing a `.github/skills` mirror; the chore-runner stall; shell-mediated writes
+that the write hooks do not see; the bare `python3` rule. Reads the agent still owes: the
+campaign amendments older than 2026-09-27, the body of `chore-class-system.md`, and five
+outside texts the run cites unread.
+
 ## Recommended next step
 
 Stop taking maintenance rulings. In the next session, return to `ADR-0.35.0` at item 15, which
