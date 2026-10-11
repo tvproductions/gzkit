@@ -146,3 +146,33 @@ evaluation sweep over the pre-1.0 corpus, so the recurrence is as much a propert
 rubric as of the ADRs. Routing is the operator's: `gz chores propose-ghi eval-feedback-cluster` files
 them (TTY, PROPOSE confirmation) or marks them advisory. Below threshold: `OBPI Decomposition` (2),
 `Evidence Requirements` (2), `jk:uncertain` (1).
+## 2026-10-11T04:16:32-05:00
+- Status: PASS
+- Chore: eval-feedback-cluster
+- Title: Evaluation Feedback Clustering (ADR-0.0.26)
+- Lane: lite
+- Version: 1.2.1
+- Criteria Results:
+  - [PASS] `uv run -m unittest tests/chores/test_eval_feedback_cluster.py -q` => rc=0 (0.51s) -- exit 0 == 0
+  - [PASS] `uv run python -m gzkit.chores.eval_feedback_cluster_run --dry-run` => rc=0 (0.16s) -- exit 0 == 0
+  - [PASS] `uv run gz validate --chores-layout` => rc=0 (0.39s) -- exit 0 == 0
+
+```text
+[uv run -m unittest tests/chores/test_eval_feedback_cluster.py -q] stderr:
+----------------------------------------------------------------------
+Ran 24 tests in 0.152s
+
+OK
+[uv run python -m gzkit.chores.eval_feedback_cluster_run --dry-run] stdout:
+eval-feedback-cluster: read 168 adr-evaluation event(s) and 6 justify artifact(s) from /Users/jeff/Documents/Code/gzkit
+  7 cluster(s); 4 at or above recurrence 3 (score threshold 3.0)
+  dim:Architectural Alignment:critical: 14 distinct artifact(s)
+  dim:Decision Justification:critical: 10 distinct artifact(s)
+  dim:Feature Checklist:critical: 5 distinct artifact(s)
+  dim:Problem Clarity:critical: 12 distinct artifact(s)
+  dry run: nothing written
+[uv run gz validate --chores-layout] stdout:
+Validated: chores_layout
+
+✓ All validations passed (1 scopes).
+```
