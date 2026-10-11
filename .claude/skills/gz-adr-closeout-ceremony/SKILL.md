@@ -5,7 +5,7 @@ description: Execute the ADR closeout ceremony protocol for human attestation. G
 category: adr-audit
 compatibility: GovZero v6 framework; provides runbook walkthrough for human ADR attestation
 metadata:
-  skill-version: "7.20.0"
+  skill-version: "7.21.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/charter.md, docs/governance/GovZero/audit-protocol.md"
@@ -232,14 +232,12 @@ Then advance via `--next`.
 The CLI automatically handles Foundation vs non-Foundation:
 
 - **Foundation (0.0.x):** Steps 9-10 are skipped automatically by `FOUNDATION_SKIP_STEPS`
-- **Non-Foundation:** The CLI presents RELEASE_NOTES and GitHub Release steps
+- **Non-Foundation:** The CLI presents two release steps, and both hand over
 
-For non-Foundation releases, the entry is authored as the `gz-patch-release` skill prescribes (`.gzkit/rules/changelog-release-notes.md`, release-notes rule 3) and published as `.gzkit/rules/gh-cli.md` § Allowed commands allows:
+For non-Foundation releases the ceremony's release work ends at the version bump. The entry, the changelog and the publication belong to the `gz-patch-release` skill (operator ruling 2026-10-11; `.gzkit/rules/changelog-release-notes.md`, release-notes rule 3):
 
-```bash
-# Step 9: draft the vX.Y.Z entry, take the operator's approval and insert it (gz-patch-release Steps 2, 3 and 4b)
-# Step 10: sync, then publish the newest version block only (gz-patch-release Step 4d, GHI #710)
-uv run gz git-sync --apply
+```text
+Steps 9 and 10: run gz-patch-release from its "Hand-over from closeout" section. Write no entry here.
 ```
 
 After each step, advance via `--next`.

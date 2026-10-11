@@ -1,11 +1,11 @@
 ---
 name: gz-patch-release
 persona: main-session
-description: "Orchestrate the GHI-driven patch release ceremony: draft narrative release notes, operator approval, RELEASE_NOTES update, git-sync, and GitHub release."
+description: "Orchestrate the GHI-driven patch release ceremony, and the notes and publication of a minor release handed over by gz closeout: draft narrative release notes, operator approval, RELEASE_NOTES update, git-sync, and GitHub release."
 category: adr-audit
 compatibility: GovZero v6 framework; provides ceremony walkthrough for GHI-driven patch releases
 metadata:
-  skill-version: "1.11.1"
+  skill-version: "1.12.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/releases/patch-release.md, docs/design/adr/foundation/ADR-0.0.15-ghi-driven-patch-release-ceremony/ADR-0.0.15-ghi-driven-patch-release-ceremony.md"
@@ -13,7 +13,7 @@ metadata:
   govzero_layer: "Layer 2 - Ledger Consumption"
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-19
+last_reviewed: 2026-10-11
 model: sonnet
 ---
 
@@ -50,10 +50,12 @@ using GHI evidence and CLI outputs.
     receipt in the ledger since the last tag (auto-discovered by
     `gz patch release --dry-run`)
 - The operator wants to cut a patch version bump driven by either qualifier
+- The closeout ceremony hands over a release whose version `gz closeout` has
+  already bumped (§ Hand-over from closeout)
 
 ## When NOT to Use
 
-- For minor or major releases — use `gz closeout` ceremony instead
+- To bump a minor or major version — `gz closeout` bumps it, then hands over here
 - When neither qualifier holds — no closed GHIs **and no foundation
   closeouts** surface in `gz patch release --dry-run` since the last tag
 - When the operator wants to manually edit version files — this ceremony owns
@@ -79,6 +81,16 @@ mechanically rather than leaving it to operator memory.
 When the qualifier is a foundation-ADR closeout, the Step 2 narrative
 references the ADR ID and its decision rather than listing GHIs. The release
 flow (Steps 4a–4e) is identical regardless of which qualifier fired.
+
+## Hand-over from closeout
+
+This skill owns the notes, the changelog and the publication of every release
+(operator ruling 2026-10-11; `.gzkit/rules/changelog-release-notes.md`,
+release-notes rule 3). When `gz closeout` has bumped the version for an ADR,
+run Step 1 for the GHIs closed since the last tag, draft the entry around the
+ADR's delivered value, and **skip Step 4a**: the version is bumped and the
+release manifest is written, and `gz patch release` would bump the patch a
+second time. The verb has no path for an already-bumped version yet.
 
 ---
 
@@ -416,20 +428,6 @@ sync, manifest, RELEASE_NOTES.md, CHANGELOG.md and git-sync all run; the GitHub
 release is skipped. This mirrors `FOUNDATION_SKIP_STEPS` in the closeout
 ceremony. A foundation-ADR closeout qualifying an ordinary patch release is
 not a Foundation release.
-
----
-
-## Rules
-
-1. **Draft narrative release notes from GHI content** — never use raw titles.
-2. **Wait for explicit operator approval** (Step 3) before any publish action.
-3. **Run `uv run gz git-sync --apply` immediately before `gh release create`** —
-   never skip it, never reorder it after.
-4. **Skip GitHub release creation only when the release's own version is `0.0.x`.**
-5. **Let `gz patch release` sync versions** (`sync_project_version`) — never
-   manually edit pyproject.toml, `__init__.py` or the README badge.
-6. **Execute Steps 4a–4e without pauses** for confirmation or summaries once
-   the operator has approved.
 
 ---
 

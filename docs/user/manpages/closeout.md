@@ -58,9 +58,10 @@ in-flight release manifest at `docs/releases/RELEASE-v{version}.md`.
 
 The manifest is not bookkeeping — it is the evidence `audit_version_release`
 accepts in place of a `v{version}` git tag. That audit runs inside `gz test`,
-and the ceremony's Step 10 runs `gz git-sync --apply --lint --test` *before*
-`gh release create` makes the tag, so without the manifest the bump would make
-the ceremony's own next mandated step unrunnable (GHI #739). `gz patch release`
+and the release steps, which the ceremony hands to the `gz-patch-release`
+skill, run `gz git-sync --apply` *before* `gh release create` makes the tag,
+so without the manifest the bump would make the next mandated step unrunnable
+(GHI #739). `gz patch release`
 writes the equivalent `PATCH-v{version}.md`; both prefixes are accepted.
 
 An existing manifest for the same version is never overwritten.

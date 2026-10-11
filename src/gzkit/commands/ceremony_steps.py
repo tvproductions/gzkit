@@ -365,19 +365,18 @@ def render_step_9_release_notes(adr_id: str, is_foundation: bool) -> str:
         )
     return "\n".join(
         [
-            "RELEASE NOTES — Update RELEASE_NOTES.md",
+            "RELEASE NOTES — Hand over to gz-patch-release",
             "",
-            "Add a new release entry for this ADR:",
+            f"The version is already bumped for {adr_id}. The release entry, the"
+            "changelog and the publication belong to the gz-patch-release skill;",
+            "no entry is written by hand here.",
             "",
-            "  ## vX.Y.Z (YYYY-MM-DD)",
-            f"  **ADR:** {adr_id}",
-            "  [Brief description of delivered value]",
-            "  ### Delivered",
-            "  - [Key deliverables from each OBPI]",
-            "  ### Gate Evidence",
-            "  All 5 GovZero gates satisfied.",
+            "  Run the gz-patch-release skill from its hand-over section:",
+            "  draft the entry, take the operator's approval, insert it and",
+            "  stamp the changelog. Do not run `gz patch release`: it would",
+            "  bump the patch a second time.",
             "",
-            f"After updating, run `gz closeout {adr_id} --ceremony --next`.",
+            f"Once the entry is written, run `gz closeout {adr_id} --ceremony --next`.",
         ]
     )
 
@@ -397,19 +396,14 @@ def render_step_10_release(adr_id: str, is_foundation: bool) -> str:
         )
     return "\n".join(
         [
-            "RELEASE — Create GitHub Release",
+            "RELEASE — Publish through gz-patch-release",
             "",
-            "  # MANDATORY: sync before release",
-            "  uv run gz git-sync --apply --lint --test",
+            "  Continue the gz-patch-release skill: sync, then publish the newest",
+            "  version block only (its Steps 4c and 4d).",
             "",
             "  # The bump filed docs/releases/RELEASE-vX.Y.Z.md at closeout, which is",
             "  # the in-flight evidence audit_version_release accepts until the tag",
             "  # exists — this is what keeps the sync-before-release order runnable.",
-            "",
-            "  # Verify all version references are in sync",
-            "  # (pyproject.toml, README badge, RELEASE_NOTES.md)",
-            "",
-            '  gh release create vX.Y.Z --title "vX.Y.Z" --notes "..."',
             "",
             f"After creating the release, run `gz closeout {adr_id} --ceremony --next`.",
         ]
