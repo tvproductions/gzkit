@@ -70,8 +70,8 @@ escalation: the attestation is a true historical record of what was decided on
 its date, the ruling is a true statement of what is decided now, and
 reconciling two true records on an unamendable artifact is a governance
 decision rather than an editing task. Do not stretch the procedure above to
-cover it. Three instances have been escalated and ruled (§ Worked examples 3
-and 4); each ruling decided its own case and none is a procedure for the next one.
+cover it. Four instances have been escalated and ruled (§ Worked examples 3,
+4 and 5); each ruling decided its own case and none is a procedure for the next one.
 
 ## Worked example 1 — four `@covers` tests (GHI #819, `da935dc35`, 2026-08-17)
 
@@ -183,6 +183,38 @@ and had to be put again; the #1167 conflict surfaced only when the unit tier
 failed on the covering test. Before removing or rewording a command an
 operator-facing surface names, search the ADR tree and the tests for REQs that
 name it.
+
+## Worked example 5 — a REQ kept true by routing the work (2026-10-11)
+
+`REQ-0.0.27-04-07` (attested, `OBPI-0.0.27-04`, under Validated `ADR-0.0.27`)
+reads: *"Given the OEE-binding requirement, when the document is parsed, then
+each metric's "Practitioner-eye observation" subsection exists and is
+operator-attested at Gate 5."* The ADR adds *"Distillation pass is
+foundation-kind ceremony at every recurrence."* Later canon reads *"Gate 5 names
+completed OBPI/ADR work only"* (`AGENTS.md` § Attestation, GHI #822), the
+foundation kind closed, and the ADR became terminal. A recurring pass run from
+the `gz-complexity-distill` skill would then be attested "at Gate 5" with no
+OBPI completing. The REQ was true of the one document that existed, attested at
+the OBPI's own Gate 5; whether it bound later passes was the question. Found by
+the skill-to-rule audit of 2026-10-10 (row B21). A first edit renamed the
+attestation in the skill and was withdrawn before push, because that edit
+decided the question.
+
+It was escalated with four choices: rename the attestation of a recurring pass,
+run each recurring pass as an OBPI, make distillation an exception to the naming
+rule, or hold. The operator ruled, verbatim: *"B"*, the option worded *"Gate 5,
+kept literal. Each recurring pass runs as an OBPI you initiate under a feature
+ADR."* So:
+
+- the REQ, the ADR and the naming rule keep their text, and no amendment note is
+  added, because none of the three is contradicted;
+- the skill (`0.4.0`) says a cadence trigger makes a pass due and that the pass
+  is OBPI work the operator initiates under a feature ADR;
+- the attestation of a recurring pass is that OBPI's Gate 5, recorded on the
+  ledger.
+
+This is the first of the escalations resolved without amending a REQ: the work
+was routed so that the literal assertion stays true.
 
 ## What this is not
 

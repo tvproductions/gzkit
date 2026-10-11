@@ -1,9 +1,10 @@
 # /gz-complexity-distill
 
 Run a complexity distillation pass against the exemplar corpus to refresh the
-distilled-characteristics doctrine. Invoke at the cadence triggers below
-(annual calendar, advisor verdict-frequency drift > 25% from baseline, or
-operator judgment for a ground-breaking project).
+distilled-characteristics doctrine. A cadence trigger below (annual calendar,
+advisor verdict-frequency drift > 25% from baseline, or operator judgment for a
+ground-breaking project) makes a pass due; the pass itself is OBPI work the
+operator initiates.
 
 ---
 
@@ -15,12 +16,14 @@ ADR-0.0.28 → ADR-0.0.29 → ADR-0.0.30). Distillation produces a dated
 distilled-characteristics document at
 `docs/governance/complexity/distilled-characteristics-{YYYY-MM-DD}.md`,
 authored jointly by the agent (metric-aggregate prose) and the operator
-(practitioner-eye observation per metric) under foundation-kind brief-level
-Gate 5 attestation per OBPI-0.0.27-04's contract.
+(practitioner-eye observation per metric) and attested at Gate 5. The first
+document was attested at OBPI-0.0.27-04's Gate 5. Each recurring pass runs as
+an OBPI under a feature ADR and is attested at that OBPI's Gate 5 (operator
+ruling 2026-10-11): `ADR-0.0.27` is terminal and the foundation kind is closed.
 
 ## When to Use
 
-Three triggers, any of which fires a distillation pass:
+Three triggers, any of which makes a distillation pass due:
 
 1. **Annual calendar (default).** Re-distillation runs once per year.
 2. **Drift signal.** Advisor verdict-frequency drift > 25% from the
@@ -44,13 +47,10 @@ shape, and the no-overwrite preservation discipline.
 /gz-complexity-distill
 ```
 
-The destination CLI verb is **deferred** under
-[GHI #400](https://github.com/tvproductions/gzkit/issues/400) per
-OBPI-0.0.27-06 REQUIREMENT 9 waiver path. Until #400 lands, the
-operator can invoke the underlying engine directly via
-`src/gzkit/complexity/distillation.py` (`render_document`,
-`render_diff_section`, `render_metric_triple`, `_DOCTRINAL_FRAMES`),
-following OBPI-0.0.27-04's evidence as the worked-example reference.
+The destination CLI verb is `uv run gz complexity distill`
+([manpage](../manpages/complexity-distill.md)). It landed under
+[GHI #400](https://github.com/tvproductions/gzkit/issues/400), which closed
+the OBPI-0.0.27-06 waiver path.
 
 ## Output Contract
 
@@ -79,6 +79,6 @@ existing same-date document — REQ-0.0.27-04-05 no-overwrite guard).
 | Related | Relationship |
 |---------|-------------|
 | [`/gz-justify`](gz-justify.md) | Pre-execution reasoning if methodology trade-offs feel ambiguous |
-| [`/gz-obpi-pipeline`](gz-obpi-pipeline.md) | Distillation pass runs as an OBPI under foundation-kind brief-level Gate 5 |
+| [`/gz-obpi-pipeline`](gz-obpi-pipeline.md) | A recurring pass runs as an OBPI the operator initiates under a feature ADR; that OBPI's Gate 5 is the attestation |
 | [skills index](index.md) | Browse the full skill catalog |
 | [governance runbook](../../governance/governance_runbook.md) | Workflow context |

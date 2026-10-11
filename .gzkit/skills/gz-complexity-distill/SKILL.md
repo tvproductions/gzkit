@@ -1,12 +1,12 @@
 ---
 name: gz-complexity-distill
-description: Run a complexity distillation pass against the exemplar corpus to refresh distilled-characteristics doctrine. Use when the operator says "run distillation", "refresh complexity corpus", or "distill complexity" — and at the cadence triggers below (annual calendar, advisor verdict-frequency drift > 25% from baseline, or operator judgment for a ground-breaking project).
+description: Run a complexity distillation pass against the exemplar corpus to refresh distilled-characteristics doctrine. Use when the operator says "run distillation", "refresh complexity corpus", or "distill complexity" — or when a cadence trigger below makes a pass due (annual calendar, advisor verdict-frequency drift > 25% from baseline, or operator judgment for a ground-breaking project). A pass is OBPI work the operator initiates.
 category: code-quality
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-19
+last_reviewed: 2026-10-11
 metadata:
-  skill-version: "0.3.2"
+  skill-version: "0.4.0"
   govzero-framework-version: "v6"
   govzero_layer: "Layer 3 - File Sync"
 gz_command: complexity distill
@@ -26,7 +26,7 @@ the four-ADR complexity-doctrine cluster's distillation cadence
 
 ## When to Use
 
-Three triggers, any of which fires a distillation pass:
+Three triggers, any of which makes a distillation pass due:
 
 1. **Annual calendar (default).** Re-distillation runs once per year.
    Rationale from ADR-0.0.27 § Decision Cadence: the Python ecosystem
@@ -42,6 +42,15 @@ Three triggers, any of which fires a distillation pass:
 
 The cadence is itself amendable per OBPI-0.0.27-01's protocol; this skill
 mechanizes the cadence the parent ADR codifies.
+
+**A pass is OBPI work the operator initiates** (operator ruling 2026-10-11). A
+trigger says a pass is due; it does not start one. `ADR-0.0.27` is terminal and
+the foundation kind is closed to new authoring, so a recurring pass is proposed
+as a Feature Checklist item of a feature ADR and runs through
+`gz-obpi-pipeline` once the operator initiates it (`AGENTS.md` § OBPI
+Acceptance Protocol). This skill is the method inside that OBPI, and the Gate 5
+named below is that OBPI's completion attestation, recorded with
+`gz obpi complete`.
 
 ## Corpus
 
