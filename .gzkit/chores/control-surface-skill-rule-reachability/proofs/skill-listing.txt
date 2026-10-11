@@ -17,6 +17,7 @@ gz-advisor-qc
 gz-agent-sync
 gz-airlock
 gz-arb
+gz-big-picture
 gz-check
 gz-check-config-paths
 gz-chore-runner
@@ -36,9 +37,12 @@ gz-design
 gz-flighttest
 gz-foundation-triage
 gz-governance
+gz-health-audit
+gz-how
 gz-implement
 gz-init
 gz-insights-remember
+gz-intent-trace
 gz-issue-file
 gz-justify
 gz-manage
@@ -59,8 +63,9 @@ gz-project
 gz-pythonic-pattern-apply
 gz-pythonic-pattern-detect
 gz-quality
+gz-rnd
 gz-session-handoff
-gz-skill-router
+gz-skill-review
 gz-state
 gz-status
 gz-tech-debt-review

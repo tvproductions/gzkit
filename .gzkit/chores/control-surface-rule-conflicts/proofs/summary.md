@@ -1,28 +1,42 @@
-# Rule-conflict assessment — 2026-09-19
+# Rule-conflict assessment — 2026-10-10
 
-Persona: main-session. Audit population: every Markdown file recursively under `.gzkit/rules/`, plus root `AGENTS.md` and `CLAUDE.md`.
+Persona: main-session. Run under maintenance visit E of the R&D run `renewing-vows`, admitted by the operator ('admit visit E'). Audit population: every Markdown file under `.gzkit/rules/`, plus root `AGENTS.md` and `CLAUDE.md`: 29 files, 406 unordered pairs.
 
-28 files and all 378 unordered pairs were reviewed against baseline `3dc6f613042117838f4f4cad55abe0b2e3044d35`. Three independent partitions retained full-file read records and pair reasoning. After six rule edits, all 147 affected pairs were re-reviewed (154 pairs total, including seven unchanged pairs). The combined record binds current hashes. This establishes coverage of the declared review, not exhaustive semantic correctness.
+## Counts
 
-## Findings and action
+| Measure | Value |
+|---|---|
+| Files in scope | 29 (28 in September; `weaponeering.md` is new) |
+| Files changed since the 2026-09-19 baseline | 11 |
+| Pairs re-reviewed | 253 |
+| Pairs carried unchanged | 153 |
+| Concrete conflicts open | **0** |
+| Rows closed this period | 2 (R01, F1) |
+| Candidates, unproven | 7 |
 
-Remaining concrete conflicts: blocking 0; episodic 0; theoretical 1 (R01, GHI #1044). There are no evidenced blocking rows to rank as a top five. Chore/MX scope remains an unproven candidate on GHI #943, excluded from concrete-conflict counts.
+Severity of open rows: blocking 0, episodic 0, theoretical 0. There is no top five to rank.
 
-Four authorized direct-repair work orders corrected five stale prescriptions: GHI #1040 version metadata, #1041 release-approval terminology, #1042 test-tier scope, and #1043's two CLI authoring alternatives. Canonical rules, release-skill metadata, the scorecard and generated deliveries were updated together. No runtime behavior, thresholds, model routing, OBPI state or new gate was introduced. Full before snapshots and independent after reviews are retained alongside this report.
+## What changed
 
-The remaining priority is GHI #1044: distinguish authoring authority from damaged-slug recovery and decide how an otherwise valid local edit is preserved during recovery. Current doctor behavior was traced, not executed against live damaged content. It remains unchanged. The other four control-surface audit chores are not claimed complete by Pass A.
+**R01 is closed.** The one conflict September left open, `chores.md` against `skill-surface-sync.md` on which chore copy is canonical, was settled by operator ruling on 2026-09-28 (`chores.md` 0.6.0, GHI #1044). Both rules now name `.gzkit/chores/` the authoring source.
+
+**F1 was opened and closed today, and this session caused it.** The diet landing of 2026-10-10 lifted two Gate Covenant paragraphs out of `AGENTS.md` as rationale. Each carried one binding sentence, and `tests.md`, `data/check_step_scopes.json`, the `gz-check` skill and a test docstring cite them at that section. The sentences are restored verbatim as one bullet; the rationale stays in `docs/governance/agent-contract-rationale.md`. The diet's net saving is 1,653 bytes, not the 1,795 reported at the landing.
+
+**One leftover line repaired.** `model-selection.md` 0.7.1 corrects a Do Not line that this session's 0.7.0 edit left contradicting the rule's own claim 4.
+
+## Follow-up list
+
+1. **`gh-cli.md` allowlist completeness.** The § Allowed commands block omits `gh issue view`, `gh issue edit` and the `gh api` forms the rule itself prescribes, and three skills step outside it (reachability audit, rows B08 and B25). One operator ruling: is the block exhaustive, and if so which verbs join it. Sized for a direct rule fix.
+2. **`model-selection.md` tier mapping.** `haiku` and `sonnet` map to superseded ids. Route through `frontier-model-card-currency`.
+3. **GHI #943** still carries the chore-scope candidate; nothing new closes it.
 
 ## Evidence and limits
 
-- `rule-inventory.md`: full path, headings, line counts and current SHA-256 per file.
-- `review-20260919-part*.json`: initial independent 126-pair partitions.
-- `postrepair-20260919-part*.json`: affected-pair review and repair-contract assessment.
-- `current-pair-review.json`: merged 378-pair record and changed-surface coverage.
-- `repair-before-3dc6f6130/`: full before text, including historical prose.
-- `archive/2026-09-12/`: previous audit preserved as a dated record.
+- `rule-inventory.md`: path, version, line and byte counts, SHA-256 and headings per file, hashed after this run's two repairs.
+- `current-pair-review.json`: 406 pair records, each naming whether it was re-reviewed or carried.
+- `conflict-matrix.md`: the two closed rows with resolvable evidence, the in-file findings and the seven candidates.
+- `archive/2026-09-19/`: the September proofs, unchanged.
 
-Observed checks before repository validation: the old model-selection field map returns `SKA-METADATA-SKILL-VERSION-MISSING`; the nested control returns no issue. The actual test help describes the default as the full unit tier and BDD as an added selector. Full test-handler and alignment-audit bodies were read. Generated mirrors were synchronized through the governed command. Independent reviewers accepted all four documentary closure contracts and found no new contrary actions in affected pairs.
+One reviewer did this pass; the September pass used three independent partitions. The review was diff-driven: a pair between two unchanged files was not re-read, on the ground that neither side moved. A contradiction that existed in September and was missed then is still missed.
 
-Repository quality results and the chore's actual acceptance outcome are recorded in `CHORE-LOG.md`/the closure comments when executed, not predicted here. Freshness uses committed timestamps: the new audit and rule repairs must land before the tracked replacement proofs can satisfy freshness. Historical proofs are archived, not relabeled fresh.
-
-This work improves instruction consistency. It does not establish improved model performance. The separate three-pillars six-case comparison remains 6/6 for both variants, with no demonstrated benefit; its assessment is `docs/evals/three-pillars-2026-09-19/assessment.md`.
+This audit reads rule text against rule text. It says nothing about whether an agent follows a rule, and the session that ran it is evidence of the gap: it ran a bare `python3` forty times against the root contract's `uv run` rule, and nothing in the rule set or the hook layer observed it. That finding is recorded in the permission-consent audit of the same visit.

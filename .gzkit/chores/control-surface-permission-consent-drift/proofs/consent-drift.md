@@ -1,165 +1,50 @@
 # Consent Drift Ledger — Pass D
 
-> Chore: `control-surface-permission-consent-drift` (Lite lane, audit-only, advisory)
-> Run: **2026-08-09**. Supersedes the 2026-08-01 ledger.
-> Scope: context-free prohibitions only. Context-dependent prohibitions and
-> known-broad allow rules are in [`unwitnessable.md`](unwitnessable.md), which is
-> a required artifact of every run — read it before reading this file as coverage.
+> Chore: `control-surface-permission-consent-drift` (Lite lane, advisory)
+> Run: **2026-10-10**, maintenance visit E. Supersedes the 2026-08-09 ledger.
 
-**Read this ledger's length as a measure of what is auditable, never of what is safe.**
-Six rows here sit against fourteen entries in the unwitnessable ledger.
+A drift row is an allow rule that **mentions** a command token a context-free prohibition
+forbids. Sixteen context-free doctrine rows (`doctrine-map.md` rows 1 to 16) were walked against
+25 allow rules.
+
+## Rows
 
 | Severity | Count |
 |---|---|
-| `live` | 5 |
-| `neutralized` | 1 |
+| `live` | **0** |
+| `neutralized` | 0 |
 | `historical` | 0 |
 
----
+**No allow rule on either surface names a prohibited token.** The walk, row by row:
 
-## D1 — `live` — standing consent to commit with the secret scanner disabled
+| Doctrine row | Tokens | Allow rules mentioning a token |
+|---|---|---|
+| 1 `uv run` for Python | `python`, `python3`, `pip` | none |
+| 2 ledger only through `gz` | writers to `.gzkit/ledger.jsonl` | none |
+| 3 commit through hooks | `--no-verify`, `commit -n`, `hooksPath`, `SKIP=` | none; no `git commit` or `git push` is allowed at all |
+| 4 `PYTHONUTF8=1` prefix | `PYTHONUTF8=1` | none |
+| 5 operator PII | `git config user.email`, `--author` | none |
+| 6 no branches | `git checkout -b`, `git switch -c`, `git branch`, `git merge` | none; allowed git verbs are `status`, `log`, `diff`, `show`, `rev-parse`, `rev-list`, `fetch` |
+| 7 no pytest | `pytest` | none |
+| 8, 9, 10 generated surfaces | writes, `cp`, `mv` into mirrors and package copies | none |
+| 11 suppression writers | `--add-noqa`, `--add-ignore` | none |
+| 12 raw SQL | `sqlite3`, `psql` | none |
+| 13 `gh` settings, secrets, force push, PR merge | `gh repo`, `gh secret`, `gh auth`, `git push --force`, `gh pr merge` | none; allowed `gh` verbs are `issue list`, `issue view`, `run list`, `run view` |
+| 14 `gh` verbs outside the rule's allowlist | `gh issue edit` | none. Note the reverse: `gh issue view` is granted here and prescribed by skills, and `gh-cli.md` § Allowed commands does not list it |
+| 15 release notes by hand | writes to `RELEASE_NOTES.md`, `CHANGELOG.md` | none |
+| 16 harness session trailer | `Claude-Session:` | none |
 
-- **Doctrine:** `AGENTS.md` § Behavior Rules — Never #10 — *"Never commit with `--no-verify`. All commits and pushes must run through the configured hooks and quality gates."*
-- **Allow:** `Bash(SKIP=gitleaks uv run gz git-sync --apply --lint --test)` (`.claude/settings.local.json:80`)
-- **Deny cover:** none.
-- **Verified this run:**
+## The August rows, accounted for
 
-```
-$ grep -n "SKIP=gitleaks" .claude/settings.local.json
-80:      "Bash(SKIP=gitleaks uv run gz git-sync --apply --lint --test)",
+D1 (`SKIP=gitleaks … git-sync`), D2 (five `cp` grants into mirrors), D3, D4, D5 (`live`) and D6
+(`neutralized`) all lived in the 180-rule local file. That file was lost and rebuilt on
+2026-08-29 with 25 rules; none of the six survives. They are **closed by reconstruction**, not
+by a repair: nothing was decided about them. The `SKIP=` channel behind D1 is still undefended
+by any deny rule (see `settings-patch.md`).
 
-$ grep -n "gitleaks" .pre-commit-config.yaml
-97:      - id: gitleaks
-98:        name: gitleaks (secrets scanner)
-99:        entry: gitleaks protect --staged --redact
+## Reading this ledger
 
-$ python3 -c "import json; d=json.load(open('.claude/settings.json')); \
-    print([r for r in d['permissions']['deny'] if 'SKIP' in r] or 'NONE')"
-NONE
-```
-
-**Why this is the ledger's most serious row.** `gitleaks` is a configured
-pre-commit hook, so `SKIP=gitleaks` is a hook bypass by the environment-variable
-channel rather than the flag channel. The deny list already blocks the flag
-channel four ways (`--no-verify` x2, `commit -n` x2) and the config channel twice
-(`hooksPath`), which establishes that its authors were defending hook-bypass as a
-*category* — `SKIP=` is a gap in that defense, not a category they declined to
-cover.
-
-The bypassed hook is the secrets scanner, on a repository whose
-`AGENTS.md` § Local Agent Rules records that a **2026-04-19 operator-PII leak
-required a `filter-repo` rewrite and force-push to recover**. This is the one
-grant whose cost of being wrong has already been paid once.
-
-**Routing:** direct-fix. Either remove the grant, or add
-`Bash(SKIP=*)` to `settings.json`'s deny list so the environment channel is
-covered on the same terms as the flag channel. The second is preferable — it
-closes the class rather than the instance, and `settings.json` is the committed,
-CI-visible surface.
-
----
-
-## D2 — `live` — standing consent to hand-copy skill files into generated mirrors
-
-- **Doctrine:** `.gzkit/rules/skill-surface-sync.md` § Do Not — *"Do not manually copy skill files between surfaces — use the sync command"*, with § Non-negotiable rules #4 — *"**Never edit vendor mirrors directly.** `.claude/skills/`, `.claude/rules/`, `.github/skills/`, and `.github/instructions/` are generated outputs."*
-- **Allow (5 rules, all `.claude/settings.local.json`):**
-
-```
-Bash(cp .github/skills/gz-obpi-pipeline/SKILL.md .claude/skills/gz-obpi-pipeline/SKILL.md)
-Bash(cp .github/skills/gz-obpi-pipeline/DISPATCH.md .claude/skills/gz-obpi-pipeline/DISPATCH.md)
-Bash(cp .github/skills/gz-obpi-pipeline/VERIFICATION.md .claude/skills/gz-obpi-pipeline/VERIFICATION.md)
-Bash(cp .github/skills/gz-obpi-pipeline/REFERENCE.md .claude/skills/gz-obpi-pipeline/REFERENCE.md)
-Bash(cp .gzkit/skills/gz-plan-audit/SKILL.md "$mirror/gz-plan-audit/SKILL.md")
-```
-
-- **Deny cover:** none.
-- **Note:** each rule is *verbatim the prohibited act* — a manual skill-file copy
-  between surfaces with a generated mirror as destination. Four of the five copy
-  **mirror → mirror** (`.github/skills` → `.claude/skills`), so neither side is
-  canonical and the next `gz agent sync control-surfaces` silently reverts the
-  destination.
-
-  **Second-order finding:** because the write happens under `Bash` rather than
-  `Edit`/`Write`, it also evades every `PreToolUse`/`PostToolUse` hook in
-  `settings.json` — those match `Write|Edit|NotebookEdit` only. A `cp` is a file
-  write the hook layer cannot see.
-
-**Routing:** direct-fix — remove all five grants. They encode a workaround for a
-sync failure; the sync command is the sanctioned path and these make the
-unsanctioned one frictionless.
-
----
-
-## D3 — `live` — `Edit(src/**)` covers the four derived roots
-
-- **Doctrine:** `.gzkit/rules/skill-surface-sync.md` § Non-negotiable rules #5 — *"**Never edit `src/gzkit/<surface>/` directly.** `src/gzkit/skills/`, `src/gzkit/rules/`, `src/gzkit/personas/`, and `src/gzkit/templates/` are derived outputs regenerated by sync. Only the sync mechanism (`sync_pkg_surfaces`) writes to them."*
-- **Allow:** `Edit(src/**)` (`.claude/settings.local.json`)
-- **Deny cover:** none — `settings.json` carries no `Edit`/`Write` deny at all.
-- **Note:** the glob matches all four forbidden roots by prefix, so an agent
-  editing `src/gzkit/rules/tests.md` gets no interposition. This sits at the
-  boundary of § Known coverage limits #2: the rule is broad, but it *does* cover
-  the prohibited path rather than missing it silently, which is why it is admitted
-  as a row rather than filed as a blind spot.
-
-**Routing:** direct-fix — add the four derived roots to `settings.json`'s deny
-list. Deny wins over allow, so this needs no change to the local surface.
-
----
-
-## D4 — `live` — `Bash(gh auth:*)` vs "explicit approval" for secret/token management
-
-- **Doctrine:** `.gzkit/rules/gh-cli.md` § Prohibited without explicit approval — *"Secret/token management"*
-- **Allow:** `Bash(gh auth:*)` (`.claude/settings.local.json`)
-- **Deny cover:** none.
-- **Note:** covers `gh auth token`, `gh auth login`, `gh auth logout`,
-  `gh auth refresh`. A standing allow is precisely the removal of the
-  "explicit approval" channel the prohibition depends on: the permission prompt
-  is the only mechanism that could have supplied that approval.
-
----
-
-## D5 — `live` — `Bash(gh repo:*)` vs "explicit approval" for settings mutations
-
-- **Doctrine:** `.gzkit/rules/gh-cli.md` § Prohibited without explicit approval — *"Repository/org settings mutations"*
-- **Allow:** `Bash(gh repo:*)` (`.claude/settings.local.json`)
-- **Deny cover:** none.
-- **Note:** covers `gh repo edit`, `gh repo archive`, `gh repo delete`,
-  `gh repo set-default`. **Discount this row relative to D1–D3:** the rule names a
-  *capability category*, not verbs, so the category→command-family mapping is an
-  interpretive step this pass took. An operator reading "settings mutations"
-  narrowly may not accept it.
-
----
-
-## D6 — `neutralized` — `Bash(git *)` vs the hook-bypass deny list
-
-- **Doctrine:** `AGENTS.md` § Behavior Rules — Never #10 — *"Never commit with `--no-verify`."*
-- **Allow:** `Bash(git *)` (`.claude/settings.local.json`)
-- **Deny cover:** all six rules in `.claude/settings.json`:
-
-```
-Bash(git *--no-verify*)      Bash(git *--no-verify)
-Bash(git *commit -n *)       Bash(git *commit -n)
-Bash(git *hooksPath=*)       Bash(git *config *hooksPath *)
-```
-
-- **Note:** recorded deliberately, though it is not drift. It is the one place the
-  surface works as designed — a committed project-level deny overriding a local
-  blanket allow — and it is the evidence that makes D1 a *gap* rather than a
-  category its authors declined to cover.
-
----
-
-## Closed since the prior run
-
-**The chore's founding case is gone.** `Bash(python3:*)` — the 2026-07-16
-discovery that motivated Pass D — is absent from both surfaces:
-
-```
-$ grep -c "python3" .claude/settings.local.json .claude/settings.json
-.claude/settings.local.json:0
-.claude/settings.json:0
-```
-
-Also absent: `PYTHONUTF8`, `pytest`, `pip install`, `sqlite`. Recorded as closed
-rather than carried, so a future run does not re-derive it.
+An empty drift ledger measures what a string match can see. Read it beside
+[`unwitnessable.md`](unwitnessable.md), which this run grew from 14 entries to 20, and beside
+the observed breaches recorded there: a clean permission file did not stop a context-free
+prohibition from being broken 40 times in the session that produced this ledger.

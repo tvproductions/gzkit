@@ -1,0 +1,1342 @@
+[
+ {
+  "id": "G001",
+  "expected": "gz-context-diet",
+  "kind": "edge",
+  "pick": "gz-context-diet",
+  "runner_up": "gz-chore-runner",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Lift the narrative out of the per-turn rules and into the governance docs."
+ },
+ {
+  "id": "G002",
+  "expected": "gz-agent-sync",
+  "kind": "edge",
+  "pick": "gz-agent-sync",
+  "runner_up": "gz-tidy",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Push that rule change out to every vendor surface."
+ },
+ {
+  "id": "G003",
+  "expected": "ghi-close",
+  "kind": "edge",
+  "pick": "ghi-close",
+  "runner_up": "ghi-triage",
+  "confidence": "medium",
+  "hit": true,
+  "goal": "That bug was fixed in a commit last week but the issue is still open. Deal with it."
+ },
+ {
+  "id": "G004",
+  "expected": "gz-cli-audit",
+  "kind": "edge",
+  "pick": "gz-cli-audit",
+  "runner_up": "gz-validate",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Are the headings in our command documentation in parity with what the parser registers?"
+ },
+ {
+  "id": "G005",
+  "expected": "gz-obpi-pipeline",
+  "kind": "edge",
+  "pick": "gz-obpi-pipeline",
+  "runner_up": "gz-implement",
+  "confidence": "high",
+  "hit": true,
+  "goal": "The implementation already exists. Run governance over it from verification onward."
+ },
+ {
+  "id": "G006",
+  "expected": "gz-adr-evaluate",
+  "kind": "edge",
+  "pick": "gz-adr-evaluate",
+  "runner_up": "gz-plan-audit",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Red-team the new briefs. Are they decomposed well enough to proceed?"
+ },
+ {
+  "id": "G007",
+  "expected": "gz-design",
+  "kind": "edge",
+  "pick": "gz-design",
+  "runner_up": "gz-migrate-semver",
+  "confidence": "high",
+  "hit": true,
+  "goal": "I want to build an identifier migration. Talk it through with me before any code is written."
+ },
+ {
+  "id": "G008",
+  "expected": "gz-constitute",
+  "kind": "tp",
+  "pick": "gz-constitute",
+  "runner_up": "gz-init",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Create the project constitution."
+ },
+ {
+  "id": "G009",
+  "expected": "gz-pythonic-pattern-detect",
+  "kind": "tp",
+  "pick": "gz-pythonic-pattern-detect",
+  "runner_up": "gz-tech-debt-review",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Find the class shapes in our code that should really be plain functions."
+ },
+ {
+  "id": "G010",
+  "expected": "none",
+  "kind": "plain",
+  "pick": "none",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Rename this local variable throughout the function."
+ },
+ {
+  "id": "G011",
+  "expected": "gz-arb",
+  "kind": "edge",
+  "pick": "gz-arb",
+  "runner_up": "gz-tech-debt-review",
+  "confidence": "high",
+  "hit": true,
+  "goal": "What recurring lint patterns do our stored QA receipts show?"
+ },
+ {
+  "id": "G012",
+  "expected": "gz-deps-upgrade",
+  "kind": "tp",
+  "pick": "gz-deps-upgrade",
+  "runner_up": "gz-chore-runner",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Bring uv, Python and our dependency pins up to current."
+ },
+ {
+  "id": "G013",
+  "expected": "ghi-close",
+  "kind": "tp",
+  "pick": "ghi-close",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Do the work issue 1190 describes and close it with evidence."
+ },
+ {
+  "id": "G014",
+  "expected": "gz-obpi-simplify",
+  "kind": "edge",
+  "pick": "gz-obpi-simplify",
+  "runner_up": "gz-obpi-sync",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Implementation is done. Tighten what sits inside the brief's allowed paths before reconciling."
+ },
+ {
+  "id": "G015",
+  "expected": "gz-prd",
+  "kind": "tp",
+  "pick": "gz-prd",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Write the product requirements document."
+ },
+ {
+  "id": "G016",
+  "expected": "gz-state",
+  "kind": "tp",
+  "pick": "gz-state",
+  "runner_up": "gz-ontology",
+  "confidence": "medium",
+  "hit": true,
+  "goal": "What is the lineage of OBPI-0.25.0-33?"
+ },
+ {
+  "id": "G017",
+  "expected": "gz-obpi-lock",
+  "kind": "tp",
+  "pick": "gz-obpi-lock",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Claim OBPI-0.35.0-11 before work starts."
+ },
+ {
+  "id": "G018",
+  "expected": "gz-design",
+  "kind": "tp",
+  "pick": "gz-design",
+  "runner_up": "gz-plan",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Let's design a new capability for release governance."
+ },
+ {
+  "id": "G019",
+  "expected": "gz-adr-sync",
+  "kind": "edge",
+  "pick": "gz-adr-sync",
+  "runner_up": "gz-obpi-sync",
+  "confidence": "medium",
+  "hit": true,
+  "goal": "The ADR status table looks stale and the coverage evidence has not been picked up. Bring it all back in line."
+ },
+ {
+  "id": "G020",
+  "expected": "gz-obpi-sync",
+  "kind": "tp",
+  "pick": "gz-obpi-sync",
+  "runner_up": "gz-adr-sync",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Reconcile the briefs and the ADR table from the ledger."
+ },
+ {
+  "id": "G021",
+  "expected": "gz-chore-runner",
+  "kind": "edge",
+  "pick": "gz-chore-runner",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Do the scheduled maintenance item for docstring coverage."
+ },
+ {
+  "id": "G022",
+  "expected": "none",
+  "kind": "plain",
+  "pick": "none",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Write a regular expression that matches ISO dates."
+ },
+ {
+  "id": "G023",
+  "expected": "gz-adr-closeout-ceremony",
+  "kind": "edge",
+  "pick": "gz-adr-closeout-ceremony",
+  "runner_up": "gz-adr-audit",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Every brief under this ADR is finished. Run the human sign-off protocol for the ADR."
+ },
+ {
+  "id": "G024",
+  "expected": "gz-obpi-brief-drift",
+  "kind": "edge",
+  "pick": "gz-obpi-brief-drift",
+  "runner_up": "gz-obpi-sync",
+  "confidence": "high",
+  "hit": true,
+  "goal": "The brief's verification commands may have rotted. Reconcile it and write the amendments I will attest."
+ },
+ {
+  "id": "G025",
+  "expected": "gz-adr-create",
+  "kind": "tp",
+  "pick": "gz-adr-create",
+  "runner_up": "gz-plan",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Create the new ADR with its briefs for the feature we just designed and book it."
+ },
+ {
+  "id": "G026",
+  "expected": "gz-session-handoff",
+  "kind": "edge",
+  "pick": "gz-session-handoff",
+  "runner_up": "gz-status",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Pick up from where the last session left off."
+ },
+ {
+  "id": "G027",
+  "expected": "gz-deps-upgrade",
+  "kind": "edge",
+  "pick": "gz-deps-upgrade",
+  "runner_up": "gz-chore-runner",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Refresh the lockfile and the toolchain in one pass."
+ },
+ {
+  "id": "G028",
+  "expected": "gz-obpi-specify",
+  "kind": "edge",
+  "pick": "gz-obpi-specify",
+  "runner_up": "gz-adr-create",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Decompose the ADR into implementation increments."
+ },
+ {
+  "id": "G029",
+  "expected": "gz-check",
+  "kind": "edge",
+  "pick": "gz-check",
+  "runner_up": "gz-arb",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Do the full sweep, acceptance scenarios included, the way CI does."
+ },
+ {
+  "id": "G030",
+  "expected": "gz-context-diet",
+  "kind": "tp",
+  "pick": "gz-context-diet",
+  "runner_up": "gz-content-compose",
+  "confidence": "high",
+  "hit": true,
+  "goal": "The agent contract has grown too heavy. Put it on a diet."
+ },
+ {
+  "id": "G031",
+  "expected": "gz-cli-audit",
+  "kind": "tp",
+  "pick": "gz-cli-audit",
+  "runner_up": "gz-validate",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Verify every command has a manpage and an index entry."
+ },
+ {
+  "id": "G032",
+  "expected": "gz-agent-sync",
+  "kind": "tp",
+  "pick": "gz-agent-sync",
+  "runner_up": "gz-tidy",
+  "confidence": "high",
+  "hit": true,
+  "goal": "I edited a skill. Regenerate the mirrors."
+ },
+ {
+  "id": "G033",
+  "expected": "none",
+  "kind": "plain",
+  "pick": "none",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "What does HTTP status 409 mean?"
+ },
+ {
+  "id": "G034",
+  "expected": "gz-validate",
+  "kind": "tp",
+  "pick": "gz-validate",
+  "runner_up": "gz-check-config-paths",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Validate the ledger and the manifest against their schemas."
+ },
+ {
+  "id": "G035",
+  "expected": "ghi-triage",
+  "kind": "tp",
+  "pick": "ghi-triage",
+  "runner_up": "gz-foundation-triage",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Go through the whole open issue queue and rank what matters most."
+ },
+ {
+  "id": "G036",
+  "expected": "gz-arb",
+  "kind": "tp",
+  "pick": "gz-arb",
+  "runner_up": "gz-check",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Wrap the lint and test runs so I have receipts I can cite when attesting."
+ },
+ {
+  "id": "G037",
+  "expected": "gz-ontology",
+  "kind": "tp",
+  "pick": "gz-ontology",
+  "runner_up": "gz-state",
+  "confidence": "medium",
+  "hit": true,
+  "goal": "Show me the current shape of the governance graph."
+ },
+ {
+  "id": "G038",
+  "expected": "gz-check-config-paths",
+  "kind": "tp",
+  "pick": "gz-check-config-paths",
+  "runner_up": "gz-validate",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Check that the configured paths and the manifest agree with each other."
+ },
+ {
+  "id": "G039",
+  "expected": "gz-adr-audit",
+  "kind": "tp",
+  "pick": "gz-adr-audit",
+  "runner_up": "gz-adr-closeout-ceremony",
+  "confidence": "high",
+  "hit": true,
+  "goal": "ADR-0.31.0 has been attested. Run the audit on it."
+ },
+ {
+  "id": "G040",
+  "expected": "gz-airlock",
+  "kind": "tp",
+  "pick": "gz-airlock",
+  "runner_up": "gz-ontology",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Inspect the seam map of this module before I touch it."
+ },
+ {
+  "id": "G041",
+  "expected": "gz-tidy",
+  "kind": "edge",
+  "pick": "gz-tidy",
+  "runner_up": "gz-validate",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Report the governance maintenance findings and fail if there is a breach."
+ },
+ {
+  "id": "G042",
+  "expected": "gz-chore-runner",
+  "kind": "tp",
+  "pick": "gz-chore-runner",
+  "runner_up": "gz-deps-upgrade",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Run the dependency-currency chore end to end."
+ },
+ {
+  "id": "G043",
+  "expected": "gz-tidy",
+  "kind": "tp",
+  "pick": "gz-tidy",
+  "runner_up": "gz-agent-sync",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Run repository hygiene and regenerate the surfaces."
+ },
+ {
+  "id": "G044",
+  "expected": "gz-patch-release",
+  "kind": "edge",
+  "pick": "gz-patch-release",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Draft the release notes from the closed issues and publish the GitHub release once I approve."
+ },
+ {
+  "id": "G045",
+  "expected": "gz-justify",
+  "kind": "edge",
+  "pick": "gz-justify",
+  "runner_up": "gz-adr-evaluate",
+  "confidence": "high",
+  "hit": true,
+  "goal": "The evaluation came back under 3. Produce the reasoning scaffold I need to fill in."
+ },
+ {
+  "id": "G046",
+  "expected": "gz-foundation-triage",
+  "kind": "edge",
+  "pick": "gz-foundation-triage",
+  "runner_up": "ghi-triage",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Which of the foundation ADRs still in flight should we finish first?"
+ },
+ {
+  "id": "G047",
+  "expected": "gz-mx",
+  "kind": "edge",
+  "pick": "gz-mx",
+  "runner_up": "gz-airlock",
+  "confidence": "medium",
+  "hit": true,
+  "goal": "We need to repair governance surfaces with the guards advisory. Set that up, and close it cleanly afterwards."
+ },
+ {
+  "id": "G048",
+  "expected": "ghi-author",
+  "kind": "edge",
+  "pick": "ghi-author",
+  "runner_up": "gz-insights-remember",
+  "confidence": "high",
+  "hit": true,
+  "goal": "I found a defect unrelated to what we are doing right now. Get it on the tracker so it is not lost."
+ },
+ {
+  "id": "G049",
+  "expected": "none",
+  "kind": "user-invoked:gz-health-audit",
+  "pick": "gz-intent-trace",
+  "runner_up": "gz-tidy",
+  "confidence": "low",
+  "hit": false,
+  "goal": "Governance feels wobbly lately. Check whether the declared mechanisms still hold."
+ },
+ {
+  "id": "G050",
+  "expected": "gz-insights-remember",
+  "kind": "tp",
+  "pick": "gz-insights-remember",
+  "runner_up": "ghi-author",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Record that defect as an insight."
+ },
+ {
+  "id": "G051",
+  "expected": "gz-flighttest",
+  "kind": "tp",
+  "pick": "gz-flighttest",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Fly sortie S3 against the sample repository."
+ },
+ {
+  "id": "G052",
+  "expected": "none",
+  "kind": "user-invoked:gz-rnd",
+  "pick": "none",
+  "runner_up": "gz-competitor-radar",
+  "confidence": "low",
+  "hit": true,
+  "goal": "Here is an article I pasted. Is there something in it this project is missing?"
+ },
+ {
+  "id": "G053",
+  "expected": "none",
+  "kind": "plain",
+  "pick": "none",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Explain what a Python context manager is."
+ },
+ {
+  "id": "G054",
+  "expected": "gz-state",
+  "kind": "edge",
+  "pick": "gz-state",
+  "runner_up": "gz-status",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Which artifacts are ready and how do they relate to their parents?"
+ },
+ {
+  "id": "G055",
+  "expected": "gz-content-compose",
+  "kind": "edge",
+  "pick": "gz-content-compose",
+  "runner_up": "gz-context-diet",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Stage the trimmed contract and give me the byte evidence for it."
+ },
+ {
+  "id": "G056",
+  "expected": "gz-adr-map",
+  "kind": "tp",
+  "pick": "gz-adr-map",
+  "runner_up": "gz-state",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Show me which tests and files trace back to ADR-0.25.0."
+ },
+ {
+  "id": "G057",
+  "expected": "gz-pythonic-pattern-apply",
+  "kind": "edge",
+  "pick": "gz-pythonic-pattern-apply",
+  "runner_up": "gz-pythonic-pattern-detect",
+  "confidence": "high",
+  "hit": true,
+  "goal": "The detector marked this candidate as applied. Record the mechanical delta proof."
+ },
+ {
+  "id": "G058",
+  "expected": "gz-complexity-distill",
+  "kind": "edge",
+  "pick": "gz-complexity-distill",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "It has been a year. Re-derive the complexity doctrine from the reference projects."
+ },
+ {
+  "id": "G059",
+  "expected": "gz-how",
+  "kind": "tp",
+  "pick": "gz-how",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "How do I retire a completed OBPI?"
+ },
+ {
+  "id": "G060",
+  "expected": "gz-obpi-specify",
+  "kind": "tp",
+  "pick": "gz-obpi-specify",
+  "runner_up": "gz-adr-create",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Write the OBPI briefs for this ADR's checklist items."
+ },
+ {
+  "id": "G061",
+  "expected": "gz-plan",
+  "kind": "edge",
+  "pick": "gz-plan",
+  "runner_up": "gz-adr-create",
+  "confidence": "low",
+  "hit": true,
+  "goal": "Park this idea as a pool ADR on the heavy lane."
+ },
+ {
+  "id": "G062",
+  "expected": "gz-adr-status",
+  "kind": "edge",
+  "pick": "gz-adr-status",
+  "runner_up": "gz-status",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Where is ADR-0.35.0 in its lifecycle and which of its briefs are still open?"
+ },
+ {
+  "id": "G063",
+  "expected": "gz-insights-remember",
+  "kind": "edge",
+  "pick": "gz-insights-remember",
+  "runner_up": "gz-content-remember",
+  "confidence": "high",
+  "hit": true,
+  "goal": "I was course-corrected in the middle of the task. Log it the governed way."
+ },
+ {
+  "id": "G064",
+  "expected": "gz-init",
+  "kind": "tp",
+  "pick": "gz-init",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Bootstrap gzkit in this new repository."
+ },
+ {
+  "id": "G065",
+  "expected": "gz-prd",
+  "kind": "edge",
+  "pick": "gz-prd",
+  "runner_up": "gz-constitute",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Project-level intent has changed. Revise it before we plan any ADRs."
+ },
+ {
+  "id": "G066",
+  "expected": "airlineops-parity-scan",
+  "kind": "edge",
+  "pick": "airlineops-parity-scan",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Has the project we were extracted from changed how it handles gates since we last looked?"
+ },
+ {
+  "id": "G067",
+  "expected": "ghi-author",
+  "kind": "tp",
+  "pick": "ghi-author",
+  "runner_up": "gz-issue-file",
+  "confidence": "medium",
+  "hit": true,
+  "goal": "This validator bug deserves its own tracked issue; write it up properly."
+ },
+ {
+  "id": "G068",
+  "expected": "none",
+  "kind": "plain",
+  "pick": "none",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Pretty-print this JSON blob."
+ },
+ {
+  "id": "G069",
+  "expected": "gz-adr-sync",
+  "kind": "tp",
+  "pick": "gz-adr-sync",
+  "runner_up": "gz-obpi-sync",
+  "confidence": "medium",
+  "hit": true,
+  "goal": "Reconcile the ADR registry and the ledger with what is on disk."
+ },
+ {
+  "id": "G070",
+  "expected": "gz-session-handoff",
+  "kind": "tp",
+  "pick": "gz-session-handoff",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Write a handoff for the next session."
+ },
+ {
+  "id": "G071",
+  "expected": "gz-plan-audit",
+  "kind": "tp",
+  "pick": "gz-plan-audit",
+  "runner_up": "gz-justify",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Before implementation starts, check the plan against the ADR and the brief."
+ },
+ {
+  "id": "G072",
+  "expected": "gz-adr-create",
+  "kind": "edge",
+  "pick": "gz-adr-create",
+  "runner_up": "gz-plan",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Allocate the next identifier and scaffold the whole decision package with its work items."
+ },
+ {
+  "id": "G073",
+  "expected": "gz-content-compose",
+  "kind": "tp",
+  "pick": "gz-content-compose",
+  "runner_up": "gz-advisor-qc",
+  "confidence": "high",
+  "hit": true,
+  "goal": "I have decided which corpus entries to drop and combine. Validate and stage the candidate."
+ },
+ {
+  "id": "G074",
+  "expected": "gz-adr-audit",
+  "kind": "edge",
+  "pick": "gz-adr-audit",
+  "runner_up": "gz-adr-emit-receipt",
+  "confidence": "medium",
+  "hit": true,
+  "goal": "Verify the completion claims of that decision record with reproducible evidence and emit the validation record."
+ },
+ {
+  "id": "G075",
+  "expected": "none",
+  "kind": "plain",
+  "pick": "none",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Summarise this stack trace for me."
+ },
+ {
+  "id": "G076",
+  "expected": "gz-advisor-qc",
+  "kind": "edge",
+  "pick": "gz-advisor-qc",
+  "runner_up": "gz-content-compose",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Before I attest the trimmed agent contract I need the quality receipt for it."
+ },
+ {
+  "id": "G077",
+  "expected": "gz-justify",
+  "kind": "tp",
+  "pick": "gz-justify",
+  "runner_up": "gz-plan-audit",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Before implementing this issue, walk through the reasoning with evidence anchors."
+ },
+ {
+  "id": "G078",
+  "expected": "gz-obpi-brief-drift",
+  "kind": "tp",
+  "pick": "gz-obpi-brief-drift",
+  "runner_up": "gz-obpi-sync",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Check whether this brief's allowed paths and requirement count still match reality."
+ },
+ {
+  "id": "G079",
+  "expected": "gz-constitute",
+  "kind": "edge",
+  "pick": "gz-constitute",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Our governance constitution is out of date and needs refreshing."
+ },
+ {
+  "id": "G080",
+  "expected": "gz-adr-evaluate",
+  "kind": "tp",
+  "pick": "gz-adr-evaluate",
+  "runner_up": "gz-justify",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Score this draft ADR for quality before I defend it."
+ },
+ {
+  "id": "G081",
+  "expected": "gz-content-remember",
+  "kind": "tp",
+  "pick": "gz-content-remember",
+  "runner_up": "gz-insights-remember",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Remember this ruling in the agent contract's source of truth."
+ },
+ {
+  "id": "G082",
+  "expected": "gz-ontology",
+  "kind": "edge",
+  "pick": "gz-ontology",
+  "runner_up": "gz-state",
+  "confidence": "high",
+  "hit": true,
+  "goal": "What sits downstream of this node if I change it?"
+ },
+ {
+  "id": "G083",
+  "expected": "gz-complexity-distill",
+  "kind": "tp",
+  "pick": "gz-complexity-distill",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Refresh the distilled complexity characteristics from the exemplar corpus."
+ },
+ {
+  "id": "G084",
+  "expected": "gz-pythonic-pattern-apply",
+  "kind": "tp",
+  "pick": "gz-pythonic-pattern-apply",
+  "runner_up": "gz-pythonic-pattern-detect",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Apply the Strategy-to-function rewrite and capture the before and after evidence."
+ },
+ {
+  "id": "G085",
+  "expected": "gz-flighttest",
+  "kind": "edge",
+  "pick": "gz-flighttest",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Prove the init-to-status workflow end to end on a fresh project, with a go or no-go from me."
+ },
+ {
+  "id": "G086",
+  "expected": "gz-adr-closeout-ceremony",
+  "kind": "tp",
+  "pick": "gz-adr-closeout-ceremony",
+  "runner_up": "gz-adr-audit",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Walk me through closing out ADR-0.33.0 so I can attest."
+ },
+ {
+  "id": "G087",
+  "expected": "gz-adr-emit-receipt",
+  "kind": "edge",
+  "pick": "gz-adr-emit-receipt",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Book the completed receipt for that ADR, scoped to today's evidence."
+ },
+ {
+  "id": "G088",
+  "expected": "gz-adr-map",
+  "kind": "edge",
+  "pick": "gz-adr-map",
+  "runner_up": "gz-state",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Build the trace from that decision to the artifacts that implement it."
+ },
+ {
+  "id": "G089",
+  "expected": "gz-how",
+  "kind": "edge",
+  "pick": "gz-how",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Two of our procedures look alike here and I am not sure which one applies. Which flow am I in?"
+ },
+ {
+  "id": "G090",
+  "expected": "gz-check",
+  "kind": "tp",
+  "pick": "gz-check",
+  "runner_up": "gz-arb",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Run the quality gate before I push."
+ },
+ {
+  "id": "G091",
+  "expected": "gz-patch-release",
+  "kind": "tp",
+  "pick": "gz-patch-release",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Cut the patch release."
+ },
+ {
+  "id": "G092",
+  "expected": "gz-skill-review",
+  "kind": "edge",
+  "pick": "gz-skill-review",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "The audit warns that a skill's review is going stale."
+ },
+ {
+  "id": "G093",
+  "expected": "gz-intent-trace",
+  "kind": "edge",
+  "pick": "gz-intent-trace",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "This capability exists but does not really work. Trace it back to the intent."
+ },
+ {
+  "id": "G094",
+  "expected": "gz-obpi-sync",
+  "kind": "edge",
+  "pick": "gz-obpi-sync",
+  "runner_up": "gz-obpi-brief-drift",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Audit the briefs against their evidence and tell me what only I can resolve."
+ },
+ {
+  "id": "G095",
+  "expected": "gz-obpi-lock",
+  "kind": "edge",
+  "pick": "gz-obpi-lock",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Which OBPIs are held by agents right now?"
+ },
+ {
+  "id": "G096",
+  "expected": "gz-status",
+  "kind": "edge",
+  "pick": "gz-status",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "What is blocking us and what comes next across the fronts?"
+ },
+ {
+  "id": "G097",
+  "expected": "gz-migrate-semver",
+  "kind": "tp",
+  "pick": "gz-migrate-semver",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Record the identifier rename events for the ADR renumbering."
+ },
+ {
+  "id": "G098",
+  "expected": "gz-implement",
+  "kind": "tp",
+  "pick": "gz-implement",
+  "runner_up": "gz-check",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Run Gate 2 for ADR-0.31.0 and record the result."
+ },
+ {
+  "id": "G099",
+  "expected": "none",
+  "kind": "user-invoked:gz-big-picture",
+  "pick": "none",
+  "runner_up": "gz-status",
+  "confidence": "low",
+  "hit": true,
+  "goal": "Step back: what is this project by design and where is it heading?"
+ },
+ {
+  "id": "G100",
+  "expected": "gz-adr-emit-receipt",
+  "kind": "tp",
+  "pick": "gz-adr-emit-receipt",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Record the validated receipt event for ADR-0.30.0 with the evidence payload."
+ },
+ {
+  "id": "G101",
+  "expected": "gz-complexity-guide",
+  "kind": "edge",
+  "pick": "gz-complexity-guide",
+  "runner_up": "gz-complexity-advisor",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Preview what the advise band would say about this file before I commit."
+ },
+ {
+  "id": "G102",
+  "expected": "gz-adr-status",
+  "kind": "tp",
+  "pick": "gz-adr-status",
+  "runner_up": "gz-status",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Give me the ADR table."
+ },
+ {
+  "id": "G103",
+  "expected": "gz-implement",
+  "kind": "edge",
+  "pick": "gz-implement",
+  "runner_up": "gz-check",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Confirm the tests pass for this ADR and book that as a gate event."
+ },
+ {
+  "id": "G104",
+  "expected": "gz-advisor-qc",
+  "kind": "tp",
+  "pick": "gz-advisor-qc",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Judge how much information the candidate rendition retained for its size and record the verdict."
+ },
+ {
+  "id": "G105",
+  "expected": "gz-issue-file",
+  "kind": "tp",
+  "pick": "gz-issue-file",
+  "runner_up": "ghi-author",
+  "confidence": "high",
+  "hit": true,
+  "goal": "From this consumer repository, report a bug in the gz command-line tool to its own tracker."
+ },
+ {
+  "id": "G106",
+  "expected": "gz-plan-audit",
+  "kind": "edge",
+  "pick": "gz-plan-audit",
+  "runner_up": "gz-obpi-brief-drift",
+  "confidence": "high",
+  "hit": true,
+  "goal": "I am leaving plan mode. Verify that scope has not drifted."
+ },
+ {
+  "id": "G107",
+  "expected": "gz-obpi-pipeline",
+  "kind": "tp",
+  "pick": "gz-obpi-pipeline",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Execute OBPI-0.35.0-11."
+ },
+ {
+  "id": "G108",
+  "expected": "gz-complexity-guide",
+  "kind": "tp",
+  "pick": "gz-complexity-guide",
+  "runner_up": "gz-complexity-advisor",
+  "confidence": "medium",
+  "hit": true,
+  "goal": "Give me complexity hints for this function while I am still writing it."
+ },
+ {
+  "id": "G109",
+  "expected": "gz-validate",
+  "kind": "edge",
+  "pick": "gz-validate",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Check that the governance documents are schema-valid."
+ },
+ {
+  "id": "G110",
+  "expected": "gz-pythonic-pattern-detect",
+  "kind": "edge",
+  "pick": "gz-pythonic-pattern-detect",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Lint and types are clean, but does the shape of the code still look like Java?"
+ },
+ {
+  "id": "G111",
+  "expected": "gz-airlock",
+  "kind": "edge",
+  "pick": "gz-airlock",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Account for what this unit of work disturbed on its way out."
+ },
+ {
+  "id": "G112",
+  "expected": "gz-skill-review",
+  "kind": "tp",
+  "pick": "gz-skill-review",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Review this skill against the code it wields and correct it."
+ },
+ {
+  "id": "G113",
+  "expected": "gz-mx",
+  "kind": "tp",
+  "pick": "gz-mx",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Open the maintenance hangar."
+ },
+ {
+  "id": "G114",
+  "expected": "gz-intent-trace",
+  "kind": "tp",
+  "pick": "gz-intent-trace",
+  "runner_up": "gz-adr-audit",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Does what shipped for these ADRs actually fulfil what was decided?"
+ },
+ {
+  "id": "G115",
+  "expected": "none",
+  "kind": "user-invoked:git-sync",
+  "pick": "none",
+  "runner_up": "gz-check",
+  "confidence": "medium",
+  "hit": true,
+  "goal": "Commit everything and push it."
+ },
+ {
+  "id": "G116",
+  "expected": "gz-adr-promote",
+  "kind": "edge",
+  "pick": "gz-adr-promote",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "That backlog idea is ready to become active work. Make it so."
+ },
+ {
+  "id": "G117",
+  "expected": "gz-issue-file",
+  "kind": "edge",
+  "pick": "gz-issue-file",
+  "runner_up": "ghi-author",
+  "confidence": "high",
+  "hit": true,
+  "goal": "The validator that ships in the package is wrong. We are in a downstream project; file it where it belongs."
+ },
+ {
+  "id": "G118",
+  "expected": "airlineops-parity-scan",
+  "kind": "tp",
+  "pick": "airlineops-parity-scan",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Compare our governance surfaces with the sibling airline project and tell me what has drifted between the two."
+ },
+ {
+  "id": "G119",
+  "expected": "gz-status",
+  "kind": "tp",
+  "pick": "gz-status",
+  "runner_up": "gz-adr-status",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Where do we stand?"
+ },
+ {
+  "id": "G120",
+  "expected": "gz-init",
+  "kind": "edge",
+  "pick": "gz-init",
+  "runner_up": "gz-mx",
+  "confidence": "medium",
+  "hit": true,
+  "goal": "The governance scaffolding in this repo is damaged. Repair it."
+ },
+ {
+  "id": "G121",
+  "expected": "gz-plan",
+  "kind": "tp",
+  "pick": "gz-plan",
+  "runner_up": "gz-adr-create",
+  "confidence": "medium",
+  "hit": true,
+  "goal": "Record the architecture intent for this change as an ADR."
+ },
+ {
+  "id": "G122",
+  "expected": "gz-competitor-radar",
+  "kind": "tp",
+  "pick": "gz-competitor-radar",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Run this month's scan of competing spec-driven agent tools."
+ },
+ {
+  "id": "G123",
+  "expected": "gz-complexity-advisor",
+  "kind": "tp",
+  "pick": "gz-complexity-advisor",
+  "runner_up": "gz-complexity-guide",
+  "confidence": "high",
+  "hit": true,
+  "goal": "What does the advisor say about this module's complexity?"
+ },
+ {
+  "id": "G124",
+  "expected": "gz-tech-debt-review",
+  "kind": "edge",
+  "pick": "gz-tech-debt-review",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Give me a prioritised debt report for the whole repository with a route for each finding."
+ },
+ {
+  "id": "G125",
+  "expected": "gz-check-config-paths",
+  "kind": "edge",
+  "pick": "gz-check-config-paths",
+  "runner_up": "gz-validate",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Something in the configuration points at a directory that does not exist. Diagnose the path drift."
+ },
+ {
+  "id": "G126",
+  "expected": "gz-foundation-triage",
+  "kind": "tp",
+  "pick": "gz-foundation-triage",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Rank the in-flight foundation backlog."
+ },
+ {
+  "id": "G127",
+  "expected": "gz-obpi-simplify",
+  "kind": "tp",
+  "pick": "gz-obpi-simplify",
+  "runner_up": "gz-tech-debt-review",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Review the code this OBPI touched for reuse and simplification."
+ },
+ {
+  "id": "G128",
+  "expected": "gz-competitor-radar",
+  "kind": "edge",
+  "pick": "gz-competitor-radar",
+  "runner_up": "-",
+  "confidence": "medium",
+  "hit": true,
+  "goal": "What have similar governance tools shipped lately that we should consider adopting?"
+ },
+ {
+  "id": "G129",
+  "expected": "gz-migrate-semver",
+  "kind": "edge",
+  "pick": "gz-migrate-semver",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Apply the canonical OBPI renaming migration."
+ },
+ {
+  "id": "G130",
+  "expected": "gz-complexity-advisor",
+  "kind": "edge",
+  "pick": "gz-complexity-advisor",
+  "runner_up": "gz-complexity-guide",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Is an intrinsic-complexity attestation the right call for this function?"
+ },
+ {
+  "id": "G131",
+  "expected": "ghi-triage",
+  "kind": "edge",
+  "pick": "ghi-triage",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Before we plan next week, which of the open defects are the most severe?"
+ },
+ {
+  "id": "G132",
+  "expected": "gz-adr-promote",
+  "kind": "tp",
+  "pick": "gz-adr-promote",
+  "runner_up": "-",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Move the pool entry on sortie layers into a real versioned ADR."
+ },
+ {
+  "id": "G133",
+  "expected": "gz-tech-debt-review",
+  "kind": "tp",
+  "pick": "gz-tech-debt-review",
+  "runner_up": "gz-obpi-simplify",
+  "confidence": "high",
+  "hit": true,
+  "goal": "Survey the technical debt in the files we touched."
+ },
+ {
+  "id": "G134",
+  "expected": "gz-content-remember",
+  "kind": "edge",
+  "pick": "gz-content-remember",
+  "runner_up": "gz-insights-remember",
+  "confidence": "high",
+  "hit": true,
+  "goal": "I was just corrected on a standing rule. Make that persist in the corpus, not in the rendered file."
+ }
+]

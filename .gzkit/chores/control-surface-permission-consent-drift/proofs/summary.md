@@ -1,134 +1,78 @@
 # Pass D Summary — Rule Prose vs. Permission Standing Consent
 
-> Chore: `control-surface-permission-consent-drift` (Lite lane, audit-only, **advisory — never gating**)
-> Date: **2026-08-09** (prior run: 2026-08-01)
-> Inputs: `doctrine-map.md`, `permission-inventory.md`, `consent-drift.md`, `unwitnessable.md`
-> Trigger: `scripts/check_proof_freshness.py` failed closed — proofs predated
-> `.gzkit/rules` (last moved 2026-08-08, `9771ec1bd`).
+> Chore: `control-surface-permission-consent-drift` (Lite lane, **advisory — never gating**)
+> Scan date: **2026-10-10** (prior scan: 2026-08-09, 62 days before, against a 30-day interval)
+> Maintenance visit E of the R&D run `renewing-vows`, admitted by the operator.
+> Inputs: `doctrine-map.md`, `permission-inventory.md`, `consent-drift.md`, `unwitnessable.md`,
+> `settings-patch.md`
 
-Doctrine map **re-derived from the corpus**, not carried forward (CHORE.md § 1).
-Surface: 28 prohibitions enumerated, 2 permission files, 186 rules read verbatim.
+Doctrine map re-derived from the current files, not carried forward (CHORE.md § 1): root
+`AGENTS.md` and all 26 authored rules read whole. Surface: 29 prohibitions enumerated, 2 permission
+files, 67 rules read verbatim.
 
 ## Counts
 
-| Severity | Count | Rows |
-|---|---|---|
-| `live` | 5 | D1, D2, D3, D4, D5 |
-| `neutralized` | 1 | D6 |
-| `historical` | 0 | — |
-| **Unwitnessable entries** | **14** | U1–U14 |
-
-**The ratio is the finding.** Six auditable rows against fourteen entries this pass
-structurally cannot check. Read the drift ledger's length as a measure of what is
-auditable, never of what is safe.
+| Severity | Count |
+|---|---|
+| `live` | **0** |
+| `neutralized` | 0 |
+| `historical` | 0 |
+| **Unwitnessable entries** | **20** (U1 to U20; 14 in August) |
 
 | Permission surface | allow | deny |
 |---|---|---|
-| `.claude/settings.json` (committed) | 0 | 6 |
-| `.claude/settings.local.json` (gitignored) | 180 | 0 |
+| `.claude/settings.json` (committed) | 0 | 42 |
+| `.claude/settings.local.json` (gitignored, present) | 25 | 0 |
 
-Every deny rule in the project lives in the committed surface; the local surface
-carries none.
+## Headline: the ledger is empty because the file was rebuilt, and that says little
 
-## Headline: standing consent to commit with the secret scanner disabled
+August's six rows all lived in a 180-rule local file. That file was lost with the repository and
+rebuilt on 2026-08-29 with 25 rules. None of the six survives. They are closed by reconstruction;
+nothing was decided about them, and the `SKIP=` channel behind the worst of them is still
+undefended by any deny rule.
 
-`.claude/settings.local.json:80` grants:
+The rebuilt file's own comment says mutating and outward-facing commands are absent "so they
+still prompt". Two of its rules, `Bash(uv run gz:*)` and `Bash(uv run -m:*)`, pre-authorize every
+`gz` verb, including the commit-and-push, canon-landing and attestation verbs (U13, U14).
 
-```
-Bash(SKIP=gitleaks uv run gz git-sync --apply --lint --test)
-```
+## Second finding: three limits measured on the session that ran this audit
 
-`gitleaks` is a configured pre-commit hook (`.pre-commit-config.yaml:97`, entry
-`gitleaks protect --staged --redact`), so this is a hook bypass by the
-**environment-variable channel**. `AGENTS.md` § Never #10 forbids it: *"Never commit
-with `--no-verify`. All commits and pushes must run through the configured hooks and
-quality gates."*
+- **Mode-blindness (U17).** The session ran in an auto permission mode. Commands no allow rule
+  grants ran in it. The permission files describe one mode's prompts and nothing else.
+- **A context-free prohibition broken 40 times, unobserved (U18).** "Always `uv run` for Python
+  commands": 39 `python3` and 1 `python`, counted from the transcript. No rule, hook or validator
+  looks at it.
+- **Bash writes bypass every write hook (U19).** 96 file-writing Bash calls, no Edit or Write
+  call, across four visits. Six hooks never fired and no path-scoped rule loaded. An edit to a
+  generated file was silently reverted by sync the same day.
 
-The deny list blocks the **flag** channel four ways and the **config** channel twice —
-so its authors were defending hook-bypass as a category. None of the six mentions
-`SKIP` (verified this run). That makes this a gap in the defense, not a category
-declined.
+These are this session's own breaches and they are reported as such.
 
-The bypassed hook is the secrets scanner, on the repository whose `AGENTS.md`
-§ Local Agent Rules records a **2026-04-19 operator-PII leak that required a
-`filter-repo` rewrite and force-push to recover.** This is the one grant whose cost
-of being wrong has already been paid once.
+## Closed and added since August
 
-## Second finding: a write channel the hook layer cannot see
+- Closed by reconstruction: D1 to D6.
+- Added to the committed deny list since August: 36 `Read` and `Edit` rules over secret-shaped
+  files.
+- New doctrine rows: package chore copies, suppression writers, the `gh` allowlist read as
+  exhaustive, the closed trailer set.
 
-Five grants (row D2) authorize `cp` of skill files into generated mirrors — verbatim
-the act `skill-surface-sync.md` § Do Not prohibits. Four copy **mirror → mirror**
-(`.github/skills` → `.claude/skills`), so neither side is canonical and the next
-`gz agent sync control-surfaces` silently reverts the destination.
+## Proposed patch
 
-Because the write happens under `Bash` rather than `Edit`/`Write`, it also evades
-every `PreToolUse`/`PostToolUse` hook in `settings.json` — those match
-`Write|Edit|NotebookEdit` only. **A `cp` is a file write the hook layer does not
-observe.** That generalizes past this chore.
+`settings-patch.md`, drafted and **not applied**: sixteen committed deny rules for context-free
+prohibitions, with two written procedures that must be repaired first; three options for the
+local allow list; one item that is design work, not a patch. Applying any of it is step 6, in a
+run the operator starts.
 
-## Closed since the prior run
+## Known coverage limits (binding — restated verbatim from CHORE.md)
 
-The chore's founding case is gone. `Bash(python3:*)` — the 2026-07-16 discovery that
-motivated Pass D — is absent from both surfaces (`grep -c python3` → 0, 0), as are
-`PYTHONUTF8`, `pytest`, `pip install`, and `sqlite`. Recorded as closed rather than
-carried.
+1. **Context-dependence — the hard ceiling.** Much of `AGENTS.md` forbids an action *in a context*: "never call `gh issue create` **outside this skill**" (Always #13), "never X directly", "never X without ceremony". Permission rules are context-free string matches. The sanctioned and forbidden invocations are byte-identical. `Bash(gh issue:*)` is **load-bearing, not drift** — `/ghi-author` invokes `gh issue create` at `SKILL.md:199` as its own final step, and denying it would break the only sanctioned path for filing a GHI. Any context-dependent prohibition is **out of scope for a Pass D row** and belongs in `proofs/unwitnessable.md`.
+2. **Broad-rule blindness.** A drift row can only be raised against a rule that *mentions* the prohibited token. `Bash(git *)` permits `git checkout -b feature/foo`, contradicting operator canon (verbatim, 2026-06-16: never create feature branches, work directly on main), but contains no matching substring. Broad rules are the more dangerous class and this pass cannot see them. Record known-broad rules in `proofs/unwitnessable.md` rather than silently passing them.
+3. **CI-blindness.** The committed `.claude/settings.json` is checkable anywhere; `.claude/settings.local.json` exists only on the operator's machine. This chore is therefore **local-run only** and its findings are not reproducible in CI. Never wire it to a CI gate.
+4. **Curated-list drift.** The doctrine→pattern mapping in `proofs/doctrine-map.md` is hand-maintained and can itself drift from `AGENTS.md`, reproducing the drift failure one level up. Step 1 re-derives the map from the corpus each run rather than trusting the prior run's map.
 
-## § Known coverage limits — restated verbatim (binding, GHI #690)
+A fifth, found this run and not yet in the chore text: **mode-blindness** (U17).
 
-A summary that does not restate these overstates what was audited.
+## Verification
 
-1. **Context-dependence — the hard ceiling.** Much of `AGENTS.md` forbids an action
-   *in a context*: "never call `gh issue create` **outside this skill**" (Always #13),
-   "never X directly", "never X without ceremony". Permission rules are context-free
-   string matches. The sanctioned and forbidden invocations are byte-identical.
-   `Bash(gh issue:*)` is **load-bearing, not drift** — `/ghi-author` invokes
-   `gh issue create` at `SKILL.md:199` as its own final step, and denying it would
-   break the only sanctioned path for filing a GHI. Any context-dependent prohibition
-   is **out of scope for a Pass D row** and belongs in `proofs/unwitnessable.md`.
-2. **Broad-rule blindness.** A drift row can only be raised against a rule that
-   *mentions* the prohibited token. `Bash(git *)` permits
-   `git checkout -b feature/foo`, contradicting operator canon (verbatim, 2026-06-16:
-   never create feature branches, work directly on main), but contains no matching
-   substring. Broad rules are the more dangerous class and this pass cannot see them.
-   Record known-broad rules in `proofs/unwitnessable.md` rather than silently passing
-   them.
-3. **CI-blindness.** The committed `.claude/settings.json` is checkable anywhere;
-   `.claude/settings.local.json` exists only on the operator's machine. This chore is
-   therefore **local-run only** and its findings are not reproducible in CI. Never
-   wire it to a CI gate.
-4. **Curated-list drift.** The doctrine→pattern mapping in `proofs/doctrine-map.md`
-   is hand-maintained and can itself drift from `AGENTS.md`, reproducing the drift
-   failure one level up. Step 1 re-derives the map from the corpus each run rather
-   than trusting the prior run's map.
-
-## Routing list
-
-Operator canon: a GHI-tracked defect repair routes to **direct fix** — never spin up
-an ADR or OBPI to discharge one. All remediation targets are permission surfaces,
-which this chore may not edit (§ Policy and Guardrails: read-only).
-
-| # | Row | Target | Fix | Size |
-|---|---|---|---|---|
-| 1 | **D1** | `.claude/settings.json` deny list | Add `Bash(SKIP=*)` so the environment channel is covered on the same terms as the flag channel. **Prefer this over removing the local grant** — it closes the class, and `settings.json` is the committed, CI-visible surface. | 1 line |
-| 2 | **D2** | `.claude/settings.local.json` | Remove the five `cp`-to-mirror grants. They encode a workaround for a sync failure and make the unsanctioned path frictionless. | 5 lines |
-| 3 | **D3** | `.claude/settings.json` deny list | Deny the four derived roots (`src/gzkit/{skills,rules,personas,templates}/**`). Deny wins over allow, so the local surface needs no change. | 4 lines |
-| 4 | **D4, D5** | operator ruling, then deny | `Bash(gh auth:*)` and `Bash(gh repo:*)` remove the "explicit approval" channel `gh-cli.md` depends on. D5 rests on an interpretive category→verb mapping and should be ruled before acting. | <=2 lines |
-| 5 | **U2, U5** | operator ruling | `Bash(git *)` and `Bash(gh api:*)` are the two broadest grants and each can express prohibitions naming no matchable token. Narrowing them is a real ergonomics cost; this is a posture decision, not a defect fix. | — |
-
-**Not routed:** every `U` entry that is load-bearing (U1, U6, U9) or outside the
-mechanism's reach (U13). Recorded permanently so future runs do not re-derive them.
-
-## Audit posture
-
-- **Lane:** Lite — audit-only, advisory, and **must never acquire a `gz validate`
-  scope without operator ruling** (§ Policy and Guardrails). This run edited exactly
-  six files, all under this chore's `proofs/`.
-- **Read-only on permission surfaces:** `.claude/settings.json`,
-  `.claude/settings.local.json`, `AGENTS.md`, and every rule file were read and not
-  modified. Remediation is routed above, not applied.
-- **First-party verification:** the D1 headline was re-verified directly by the
-  session (grant line number, hook registration, and the absence of any `SKIP` deny),
-  not accepted from the reader that surfaced it.
-- **Mechanically generated:** `permission-inventory.md` is emitted verbatim from the
-  two JSON surfaces; `surface-listing.txt` from the prescribed evidence commands.
-  Neither requires judgment to regenerate.
+Read-only except for this chore's `proofs/`. Whether a `Read(...)` deny stops a `cat` under a
+standing `Bash(cat:*)` allow was not tested (U16). No settings file was changed.

@@ -139,6 +139,8 @@ A size limit triggers a compress-and-merge pass before any growth or extraction;
 At closeout, `uv run gz closeout <ADR-ID>` runs the gates the ADR's lane requires and records each result in the ledger (`--dry-run` shows the plan); `uv run gz implement --adr <ADR-ID>` runs Gate 2 alone at any time. The command behind each gate is `.gzkit/manifest.json` § `verification`.
 
 > See [Gate Covenant — BDD and Gate 4 rationale](docs/governance/agent-contract-rationale.md#gate-covenant--bdd-and-gate-4-rationale) for why BDD binds to the heavy lane and CI, why Gate 4 precedes Gate 5 only there, and why unit/BDD line-overlap is not evidence of redundancy.
+
+- `behave` belongs to heavy-lane OBPI work and to CI, never to a per-change gate; Gate 4 precedes Gate 5 on the heavy lane and nowhere else.
 ## OBPI Acceptance Protocol
 
 - `security` sensitivity adds security-scan requirements to Gate 5 (`.gzkit/rules/security-sensitivity.md`).

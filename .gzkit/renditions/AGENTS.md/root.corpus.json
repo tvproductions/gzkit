@@ -1,10 +1,10 @@
 {
   "algorithm": "sha256",
-  "corpus_fingerprint": "ad6c3cc8a87dc3320e583247283903977ab7a57c0609b64ed3d455f81e067158",
-  "corpus_entry_count": 513,
-  "rendition_fingerprint": "51ddc34be976e2084abba4934d869a222dbf47f872d7ab6ad2af83882f037bb0",
-  "committed_ts": "2026-10-10T13:37:04.340973+00:00",
+  "corpus_fingerprint": "bf9614952a4d40301bfa42bbbdfa6d172c9abb9f0b52699de3b36028ca54327d",
+  "corpus_entry_count": 514,
+  "rendition_fingerprint": "09a40f1a61adde862678806a14a2117b47e04531ab1c0b971373e5a64c602622",
+  "committed_ts": "2026-10-11T01:06:55.936242+00:00",
   "attestor": "g0",
-  "attestation_text": "do this: What would close the 5,473-char gap is retiring invariant entries from the per-turn surface into docs/governance/ with a pointer, which the chore may not do without your ruling per entry. — Evidence appended by the agent: re-landing after re-capturing the three pointer entries whose em dashes a shell step escaped to a literal backslash-u2014 sequence; dropped conditions P1 P2 P3 are the escaped copies, replaced in place by the verbatim pointers; no doctrine changed.",
-  "landing_id": "landing-20261010T133704Z-75d6bbe0"
+  "attestation_text": "do this: What would close the 5,473-char gap is retiring invariant entries from the per-turn surface into docs/governance/ with a pointer, which the chore may not do without your ruling per entry. — Evidence appended by the agent: correction to this ruling's execution, made on 2026-10-10 during maintenance visit E. The landing lifted two binding sentences along with the rationale; data/check_step_scopes.json, .gzkit/rules/tests.md, .gzkit/skills/gz-check/SKILL.md and tests/governance/test_check_step_scopes.py cite them at AGENTS.md § Gate Covenant. They are restored verbatim as one bullet (145 B); the rationale stays lifted. No new doctrine; the operator may retire the bullet again.",
+  "landing_id": "landing-20261011T010655Z-348538b1"
 }

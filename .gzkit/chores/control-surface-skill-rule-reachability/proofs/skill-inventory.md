@@ -1,91 +1,79 @@
-# Skill Inventory — Pass B
+# Skill inventory — 2026-10-10
 
-> Chore: `control-surface-skill-rule-reachability` (Lite lane, audit-only)
-> Run: **2026-08-09**. Generated mechanically from `.gzkit/skills/*/SKILL.md`.
-> A citation is counted when the rule's filename appears anywhere in the body.
-> **mirror-only** means the only path form present is `.claude/rules/<file>` —
-> the canonical `.gzkit/rules/` path is never named, so the citation routes
-> through a generated surface.
+73 skills under `.gzkit/skills/`; 62 model-invocable, 11 user-invoked only (`disable-model-invocation: true`). Vendor mirrors are derivatives and are not inventoried. Generated from frontmatter and body text; `Rules cited` is any mention of a rule filename, by path or bare.
 
-**68 skills** audited against **26 canonical rules**.
-
-| Skill | Version | Last reviewed | Rules cited | Mirror-only |
-|---|---|---|---|---|
-| `airlineops-parity-scan` | 1.1.1 | 2026-07-12 | `AGENTS.md` | — |
-| `ghi-author` | 1.3.1 | 2026-07-25 | `AGENTS.md`, `cli.md`, `gh-cli.md`, `security-sensitivity.md` | — |
-| `ghi-close` | 2.7.0 | 2026-08-07 | `AGENTS.md`, `cli.md`, `gh-cli.md`, `tests.md`, `tool-skill-runbook-alignment.md` | `gh-cli.md`, `tool-skill-runbook-alignment.md` |
-| `ghi-triage` | 5.2.0 | 2026-07-25 | `AGENTS.md`, `cli.md`, `gh-cli.md` | `gh-cli.md` |
-| `git-sync` | 1.2.4 | 2026-07-25 | — | — |
-| `gz-adr-audit` | 6.13.0 | 2026-07-26 | `AGENTS.md`, `tests.md` | — |
-| `gz-adr-closeout-ceremony` | 7.17.0 | 2026-08-02 | `AGENTS.md` | — |
-| `gz-adr-create` | 6.7.0 | 2026-08-08 | `governance-core.md` | `governance-core.md` |
-| `gz-adr-emit-receipt` | 1.0.2 | 2026-07-18 | `AGENTS.md` | — |
-| `gz-adr-evaluate` | 6.6.0 | 2026-08-08 | — | — |
-| `gz-adr-map` | 1.2.2 | 2026-08-02 | — | — |
-| `gz-adr-promote` | 1.6.0 | 2026-06-07 | — | — |
-| `gz-adr-status` | 1.12.1 | 2026-06-10 | — | — |
-| `gz-adr-sync` | 7.1.0 | 2026-06-07 | — | — |
-| `gz-advisor-qc` | 0.1.0 | 2026-06-15 | `AGENTS.md` | — |
-| `gz-agent-sync` | 1.1.1 | 2026-07-12 | — | — |
-| `gz-airlock` | 1.1.0 | 2026-07-28 | — | — |
-| `gz-arb` | 1.2.1 | 2026-08-08 | `AGENTS.md` | — |
-| `gz-check` | 1.5.0 | 2026-07-27 | `tests.md` | — |
-| `gz-check-config-paths` | 0.1.1 | 2026-07-25 | — | — |
-| `gz-chore-runner` | 1.3.0 | 2026-07-21 | — | — |
-| `gz-chores` | 0.1.1 | 2026-07-25 | — | — |
-| `gz-cli-audit` | 0.1.1 | 2026-07-25 | — | — |
-| `gz-competitor-radar` | 1.0.1 | 2026-07-25 | — | — |
-| `gz-complexity-advisor` | 0.1.2 | 2026-07-25 | — | — |
-| `gz-complexity-distill` | 0.2.1 | 2026-07-25 | `complexity-doctrine.md`, `skill-surface-sync.md`, `tool-skill-runbook-alignment.md` | — |
-| `gz-complexity-guide` | 0.1.2 | 2026-07-25 | — | — |
-| `gz-constitute` | 0.1.1 | 2026-07-25 | — | — |
-| `gz-content-compose` | 1.0.1 | 2026-08-02 | `AGENTS.md` | — |
-| `gz-content-remember` | 0.1.0 | 2026-06-05 | `AGENTS.md` | — |
-| `gz-context` | 0.5.0 | 2026-07-13 | — | — |
-| `gz-context-diet` | 1.1.1 | 2026-07-25 | `AGENTS.md` | — |
-| `gz-deps-upgrade` | 1.1.0 | 2026-06-22 | `AGENTS.md` | — |
-| `gz-design` | 1.4.0 | 2026-07-28 | `AGENTS.md`, `hexagonal-architecture.md` | — |
-| `gz-flighttest` | 0.1.0 | 2026-07-05 | — | — |
-| `gz-foundation-triage` | 1.0.1 | 2026-06-27 | `AGENTS.md` | — |
-| `gz-governance` | 0.7.0 | 2026-07-26 | — | — |
-| `gz-implement` | 0.1.1 | 2026-07-25 | — | — |
-| `gz-init` | 6.0.1 | 2026-07-15 | — | — |
-| `gz-insights-remember` | 0.1.0 | 2026-07-13 | — | — |
-| `gz-issue-file` | 1.0.1 | 2026-07-25 | `AGENTS.md`, `agent-failure-modes.md`, `cli.md`, `gh-cli.md` | — |
-| `gz-justify` | 6.1.2 | 2026-08-08 | `AGENTS.md` | — |
-| `gz-manage` | 0.5.0 | 2026-07-12 | — | — |
-| `gz-migrate-semver` | 0.1.1 | 2026-07-25 | — | — |
-| `gz-mx` | 1.0.1 | 2026-07-24 | `mx-mode.md` | — |
-| `gz-obpi-brief-drift` | 0.5.0 | 2026-07-26 | — | — |
-| `gz-obpi-lock` | 6.2.0 | 2026-07-26 | `AGENTS.md` | — |
-| `gz-obpi-pipeline` | 6.35.0 | 2026-08-09 | `AGENTS.md` | — |
-| `gz-obpi-simplify` | 6.1.0 | 2026-07-26 | — | — |
-| `gz-obpi-specify` | 1.8.1 | 2026-08-02 | `agent-failure-modes.md` | — |
-| `gz-obpi-sync` | 3.3.0 | 2026-07-26 | `skill-surface-sync.md` | — |
-| `gz-ontology` | 0.1.0 | 2026-07-06 | — | — |
-| `gz-patch-release` | 1.9.0 | 2026-07-25 | `AGENTS.md`, `changelog-release-notes.md`, `hexagonal-architecture.md` | — |
-| `gz-plan` | 1.3.3 | 2026-07-25 | `AGENTS.md` | — |
-| `gz-plan-audit` | 6.4.1 | 2026-08-08 | — | — |
-| `gz-prd` | 0.1.1 | 2026-07-25 | — | — |
-| `gz-project` | 0.3.1 | 2026-07-25 | — | — |
-| `gz-pythonic-pattern-apply` | 1.0.1 | 2026-07-25 | `AGENTS.md`, `tests.md` | — |
-| `gz-pythonic-pattern-detect` | 1.0.1 | 2026-07-25 | `AGENTS.md`, `tests.md` | — |
-| `gz-quality` | 0.3.1 | 2026-07-25 | — | — |
-| `gz-session-handoff` | 6.26.0 | 2026-08-08 | `AGENTS.md` | — |
-| `gz-skill-router` | 6.3.0 | 2026-07-26 | `AGENTS.md` | — |
-| `gz-state` | 0.1.1 | 2026-07-25 | — | — |
-| `gz-status` | 1.1.0 | 2026-06-07 | — | — |
-| `gz-tech-debt-review` | 1.3.0 | 2026-07-09 | `AGENTS.md`, `pythonic.md` | `pythonic.md` |
-| `gz-tidy` | 1.1.1 | 2026-07-12 | — | — |
-| `gz-validate` | 0.1.1 | 2026-07-25 | — | — |
-| `gz-workflow` | 0.2.1 | 2026-07-25 | — | — |
-
-## Totals
-
-- Skills with **zero** rule citations: **36 of 68**
-- Total citations: **53**
-- Of those, mirror-only: **5**
-
-A mirror-only citation is a live pointer into a generated surface. It resolves
-today, but `skill-surface-sync.md` #4 forbids editing that surface, so the
-citation names a file no one may correct in place.
+| Skill | Version | Bytes | Lines | Invocation | gz_command | Rules cited | Validator scopes named |
+|---|---|---|---|---|---|---|---|
+| `airlineops-parity-scan` | 1.2.0 | 8546 | 176 | model | — | — | 0 |
+| `ghi-author` | 1.11.0 | 30361 | 391 | model | — | `gh-cli.md`, `security-sensitivity.md` | 0 |
+| `ghi-close` | 2.12.0 | 44532 | 515 | model | — | `gh-cli.md`, `tests.md` | 1 |
+| `ghi-triage` | 5.4.0 | 12122 | 243 | model | — | `gh-cli.md`, `model-selection.md` | 0 |
+| `git-sync` | 1.4.1 | 5882 | 131 | user | — | — | 1 |
+| `gz-adr-audit` | 6.15.0 | 18682 | 388 | model | `audit` | `tests.md` | 0 |
+| `gz-adr-closeout-ceremony` | 7.19.0 | 24540 | 420 | model | — | — | 1 |
+| `gz-adr-create` | 6.12.0 | 20477 | 314 | model | — | — | 1 |
+| `gz-adr-emit-receipt` | 1.1.1 | 2561 | 62 | model | — | — | 0 |
+| `gz-adr-evaluate` | 6.8.2 | 17842 | 363 | model | — | — | 1 |
+| `gz-adr-map` | 1.2.2 | 1534 | 49 | model | `state` | — | 0 |
+| `gz-adr-promote` | 1.8.1 | 11680 | 211 | model | — | — | 0 |
+| `gz-adr-status` | 1.13.1 | 4352 | 96 | model | `adr status` | — | 0 |
+| `gz-adr-sync` | 7.1.2 | 2310 | 75 | model | `register-adrs` | — | 0 |
+| `gz-advisor-qc` | 0.2.0 | 4154 | 82 | model | `gz content advise-rendition` | — | 0 |
+| `gz-agent-sync` | 1.3.0 | 7012 | 130 | model | — | — | 1 |
+| `gz-airlock` | 1.2.0 | 7188 | 143 | model | `airlock` | — | 0 |
+| `gz-arb` | 1.4.0 | 5889 | 111 | model | `arb advise` | — | 0 |
+| `gz-big-picture` | 0.3.0 | 11735 | 206 | user | `report publish` | — | 0 |
+| `gz-check` | 1.6.1 | 6275 | 141 | model | — | `tests.md` | 1 |
+| `gz-check-config-paths` | 0.2.1 | 1384 | 44 | model | — | — | 0 |
+| `gz-chore-runner` | 1.5.2 | 5197 | 135 | model | — | `chores.md` | 0 |
+| `gz-chores` | 0.2.0 | 786 | 27 | user | — | — | 0 |
+| `gz-cli-audit` | 0.2.0 | 2050 | 54 | model | — | — | 0 |
+| `gz-competitor-radar` | 1.1.0 | 5841 | 150 | model | — | — | 0 |
+| `gz-complexity-advisor` | 0.2.3 | 5259 | 113 | model | `complexity advise` | `pythonic.md` | 1 |
+| `gz-complexity-distill` | 0.3.2 | 7973 | 161 | model | `complexity distill` | `complexity-doctrine.md`, `skill-surface-sync.md`, `tool-skill-runbook-alignment.md` | 0 |
+| `gz-complexity-guide` | 0.2.2 | 3445 | 87 | model | `complexity guide` | — | 0 |
+| `gz-constitute` | 0.3.0 | 3061 | 64 | model | — | — | 1 |
+| `gz-content-compose` | 1.1.0 | 6515 | 123 | model | `gz content compose` | — | 1 |
+| `gz-content-remember` | 0.2.0 | 5143 | 100 | model | `gz content remember` | — | 0 |
+| `gz-context` | 0.6.0 | 1675 | 40 | user | — | — | 0 |
+| `gz-context-diet` | 1.1.2 | 4126 | 96 | model | `chores show instructions-files-diet` | — | 2 |
+| `gz-deps-upgrade` | 1.3.0 | 9286 | 224 | model | — | — | 1 |
+| `gz-design` | 1.9.0 | 12174 | 219 | model | — | `hexagonal-architecture.md` | 0 |
+| `gz-flighttest` | 0.1.1 | 9497 | 179 | model | — | — | 0 |
+| `gz-foundation-triage` | 1.0.3 | 6508 | 163 | model | — | — | 0 |
+| `gz-governance` | 0.8.0 | 1091 | 37 | user | — | — | 0 |
+| `gz-health-audit` | 1.4.0 | 12672 | 191 | user | — | — | 0 |
+| `gz-how` | 1.0.1 | 12084 | 274 | model | — | — | 1 |
+| `gz-implement` | 0.2.0 | 1830 | 50 | model | — | — | 0 |
+| `gz-init` | 6.4.0 | 5949 | 116 | model | `init` | — | 1 |
+| `gz-insights-remember` | 0.1.1 | 3325 | 75 | model | `gz insights remember` | — | 0 |
+| `gz-intent-trace` | 1.0.2 | 6895 | 149 | model | — | — | 1 |
+| `gz-issue-file` | 1.0.3 | 4702 | 114 | model | — | `agent-failure-modes.md`, `gh-cli.md` | 0 |
+| `gz-justify` | 6.4.0 | 14444 | 178 | model | `justify` | — | 1 |
+| `gz-manage` | 0.6.0 | 906 | 31 | user | — | — | 0 |
+| `gz-migrate-semver` | 0.2.0 | 1918 | 51 | model | — | — | 0 |
+| `gz-mx` | 1.1.1 | 3945 | 111 | model | `mx` | `mx-mode.md` | 0 |
+| `gz-obpi-brief-drift` | 0.8.0 | 4229 | 86 | model | `gz obpi brief-drift` | — | 0 |
+| `gz-obpi-lock` | 6.3.1 | 8996 | 240 | model | — | `token-block-discipline.md` | 0 |
+| `gz-obpi-pipeline` | 6.66.0 | 125793 | 1718 | model | — | `tests.md`, `token-block-discipline.md` | 3 |
+| `gz-obpi-simplify` | 6.1.1 | 7171 | 198 | model | — | — | 0 |
+| `gz-obpi-specify` | 1.9.2 | 17204 | 378 | model | — | `agent-failure-modes.md` | 2 |
+| `gz-obpi-sync` | 3.4.0 | 12551 | 331 | model | — | `skill-surface-sync.md` | 0 |
+| `gz-ontology` | 0.1.1 | 2398 | 75 | model | — | — | 0 |
+| `gz-patch-release` | 1.11.1 | 19173 | 457 | model | — | `changelog-release-notes.md`, `hexagonal-architecture.md` | 1 |
+| `gz-plan` | 1.8.0 | 8810 | 132 | model | — | — | 0 |
+| `gz-plan-audit` | 6.5.0 | 13909 | 340 | model | — | — | 0 |
+| `gz-prd` | 0.3.0 | 3228 | 67 | model | — | — | 1 |
+| `gz-project` | 0.5.1 | 753 | 27 | user | — | — | 0 |
+| `gz-pythonic-pattern-apply` | 1.1.0 | 9604 | 140 | model | `chores run pythonic-design-pattern-application` | `tests.md` | 0 |
+| `gz-pythonic-pattern-detect` | 1.1.1 | 8378 | 131 | model | `chores run pythonic-design-pattern-detection` | `tests.md` | 0 |
+| `gz-quality` | 0.4.0 | 790 | 27 | user | — | — | 0 |
+| `gz-rnd` | 0.5.0 | 12171 | 214 | user | — | — | 0 |
+| `gz-session-handoff` | 7.6.1 | 37863 | 515 | model | — | — | 1 |
+| `gz-skill-review` | 1.0.0 | 4408 | 92 | model | — | `tests.md` | 0 |
+| `gz-state` | 0.2.0 | 2092 | 55 | model | — | — | 0 |
+| `gz-status` | 1.7.0 | 6786 | 100 | model | — | — | 0 |
+| `gz-tech-debt-review` | 1.4.0 | 21241 | 380 | model | — | `pythonic.md` | 7 |
+| `gz-tidy` | 1.3.0 | 7003 | 138 | model | — | — | 3 |
+| `gz-validate` | 0.2.0 | 2141 | 54 | model | — | — | 3 |
+| `gz-workflow` | 0.4.0 | 815 | 28 | user | — | — | 0 |

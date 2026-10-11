@@ -1,52 +1,47 @@
 # GHI Cross-Reference — Pass B
 
 > Chore: `control-surface-skill-rule-reachability` (Lite lane, audit-only)
-> Run: **2026-08-09**. Supersedes the 2026-08-01 cross-reference.
+> Run: **2026-10-10**, maintenance visit E. Supersedes the 2026-08-09 cross-reference.
 
-CHORE.md § Workflow 3: a `no` row with a historical GHI hit is a **known-blocking**
-gap; a `no` row without one is **latent**. The distinction is what separates a
-reachability gap that has already cost something from one that has not yet.
+A gap is **known-blocking** when a filed GHI, or a rule's own version note, records the defect
+its pattern produces. It is **latent** when no record was found. Each lookup below was a named
+issue read by number, or one scoped keyword search of the first four matches. A scoped search
+supports "no match in the first four", never "no such issue exists" (`gh-cli.md` § Census).
+Issue states are not transcribed here; GitHub renders them at each reference.
 
-**9 of 11 gaps carry a GHI.** That ratio is the finding: these are not hypothetical
-collisions. Each named issue is a case where the gap already produced a defect
-someone had to file.
+## Known-blocking (17)
 
-| Gap | Skill | Rule | GHI | What the GHI recorded |
-|---|---|---|---|---|
-| N1 | `gz-agent-sync` | `skill-surface-sync.md` #6 | **#492** | `skill-version` / `last_reviewed` coupling — the promotion is parked in `ADR-pool.skill-version-review-coupling`, unbuilt |
-| N2 | `gz-obpi-pipeline` | `model-selection.md` #4 | **#284** | subagent dispatch naming a model instead of an effort directive |
-| N3 | `gz-obpi-pipeline` | `model-selection.md` #5 | **#643** | subagent factual assertions relayed into ceremony without re-derivation |
-| N4 | `gz-obpi-lock` | `token-block-discipline.md` SI-5 | **#619** | lock release without an exchange register entry or `--abandon` |
-| N7 | `gz-check` | `gate5-runbook-code-covenant.md` § Do Not | **#317** | bare commands cited as attestation evidence; no `arb-*` receipt |
-| N8 | `gz-tidy`, `gz-check` | `agents-md-map-doctrine.md` § Budget | **#373** | per-file instruction budgets duplicated into prose and drifting from the JSON |
-| N9 | `ghi-close` | `task-discovery.md` § Invariant | **#552** | `src/**`/`tests/**` commits missing the mandatory `Task:` trailer |
-| N10 | `gz-obpi-simplify` | `complexity-thresholds.md` § Invariant | **#652** | a second threshold authority contradicting the canonical table |
-| N11 | `gz-cli-audit` | `cli.md` § Consistency | **#353** | per-flag documentation backlog accumulating behind a report-only audit |
-| N5 | `gz-adr-audit` | `adr-audit.md` § Audit sequence | *none* | **latent** — bare verification commands feeding an evidence index, and an `--evidence-json` payload with no `receipts` key |
-| N6 | `gz-adr-audit` | `adr-audit.md` § Rules | *none* | **latent** — `gz audit` invoked three times before attestation, against a flat prohibition |
+| Row | Record | Why it matches |
+|---|---|---|
+| N1 | #492 | the missing coupling check between `skill-version` and `last_reviewed` |
+| N7 | #317 | bare verification commands where ARB receipts are required |
+| N8 | #373 | the instructions-files budget the skill restates as a line count |
+| N9 | #552, #1017 | src and tests commits landing without a `Task:` trailer |
+| N10, B23 | #652 | the 600-line module limit applied as a binding threshold |
+| B01 | #1139 | worktree-and-branch premises falsified by later canon |
+| B06 | #710 | the whole cumulative `RELEASE_NOTES.md` passed as a release body; fixed in `gz-patch-release`, not here |
+| B08 | `gh-cli.md` 0.6.0 and 0.7.0 notes | the operator twice widened the allowlist after a skill step proved unreachable (`comment`, `reopen`); `gh issue edit` is the third instance |
+| B12 | #643 | agent-authored acceptance evidence presented unverified; fixed for the pipeline, not for the closeout ceremony |
+| B14, B21 | #822 | "Gate 5" naming a step that is not OBPI or ADR completion; these two skills were not swept |
+| B15 | insight `session/uv-run-rule` | 40 bare interpreter calls in the session that ran this audit, 2026-10-10 |
+| B18, B22 | #1044 | the canonical chore copy; the rule changed on 2026-09-28 and four skills kept the old label or the old recovery step |
+| B20 | #837 | promotion criteria routed through the sealed foundation kind |
+| B26 | #492 | a skill edit with no version or review-date bump |
 
-## Reading the pattern
+## Latent (18)
 
-**Both latent rows are in the same skill**, `gz-adr-audit`, and both concern the
-same subject: the ordering and receipt-form of audit evidence. A skill that has
-accumulated two independent, un-filed collisions with the one rule named after it
-is the strongest candidate in this matrix for a reconcile pass.
+N5, B02, B03, B04, B05, B07, B09, B10, B11, B13, B16, B17, B19, B24, B25, B27, B28, B29.
 
-**Five of the nine known-blocking gaps name a promotion that was never built:**
-#492 (`--skill-version-review-coupling`, parked in an unpromoted pool ADR), #643
-(`--pipeline-review-receipts`, cited twice in the skill and *not registered* in
-`validate_cmd.py`), #284, #619, #353. In each case the skill and the rule both
-exist, both are correct in isolation, and the arm that would have reconciled them
-is the thing missing.
+Notes on the nearest records found, none of which is the same defect:
 
-That is the Pass B analogue of what Pass A and Pass C each found independently
-today: **the gap is never the rule and rarely the skill — it is the absent
-witness.**
+- B02 is latent by design: `weaponeering.md` landed 2026-10-10 as advisory, and the pipeline change belongs to the sortie layer proposed in `ADR-pool.sortie-layer-crew-split`.
+- B05: #886 records pipeline state living in a Layer-3 marker; it does not record the hand-author fallback.
+- B07, B11: #1030 records that the `gz issue file` Step 0 pre-flight has no mechanism.
+- B13: #262 records the closeout ceremony running on whatever model defaulted.
+- B17: #818 re-ratified the boundaries on 2026-09-29; the skill predates that ruling.
+- B04: #284 was N2's record and concerns a pinned model, not tier selection by file count.
 
-## Not carried forward
+## Found while cross-referencing
 
-The prior run's cross-reference is superseded rather than merged: every GHI above
-was re-checked this run against the current skill and rule text, and rows whose
-skill or rule moved (N1, N4, N7, N8, N10) were re-derived from the current
-`file:line`, not copied. No prior GHI hit was dropped without a verdict — see
-`reachability-matrix.md` § Prior-row accounting.
+- #1013 records that the verifier-pipe gate reads heredoc bodies as shell commands. This session met it four times while writing proofs; it is tracked.
+- #1125 and #1124 bear on the stale `gz-tidy` rationalization row recorded below the bar.

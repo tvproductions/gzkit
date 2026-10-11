@@ -1,142 +1,90 @@
 # Unwitnessable Ledger — Pass D
 
-> Chore: `control-surface-permission-consent-drift` (Lite lane, audit-only, advisory)
-> Run: **2026-08-09**. Supersedes the 2026-08-01 ledger.
+> Chore: `control-surface-permission-consent-drift` (Lite lane, advisory)
+> Run: **2026-10-10**, maintenance visit E. Supersedes the 2026-08-09 ledger.
 
-**This artifact is the point of the chore as much as the drift ledger** (CHORE.md § 4).
-It is the honest record of what was *not* checked, and it is what stops a reader from
-mistaking a six-row drift ledger for a clean permission surface.
+**This artifact is the point of the chore as much as the drift ledger** (CHORE.md § 4). It is
+the record of what was not checked. **20 entries here against 0 drift rows.**
 
-**14 entries here against 6 drift rows.** Most of this surface is not auditable by
-this mechanism, and the unauditable part contains the more dangerous class.
+## A. Context-dependent prohibitions — the hard ceiling (12)
 
----
+Permission rules are context-free string matches. Where doctrine forbids an act in a context,
+the sanctioned and forbidden invocations are the same string. Numbers are `doctrine-map.md` rows.
 
-## Context-dependent prohibitions — the hard ceiling
+| # | Prohibition | Why no pattern can audit it |
+|---|---|---|
+| U1 (17) | `gh issue create` outside `ghi-author` | the skill's own Step 5 runs the identical command; **load-bearing, never drift** |
+| U2 (18) | independent OBPI lock, TASK, marker, dispatch or brief acts | the operator's initiation is the context; `gz obpi lock claim` is the same string either way |
+| U3 (19) | Gate 5 by anyone but the operator | `--attestor g0 --attestation-text "…"` is typed by the agent relaying the operator; the words are the witness, not the command |
+| U4 (20) | launching unrequested implementation | no command names "unrequested" |
+| U5 (21) | masking a verifier's exit status | position in a pipeline; **this one has a mechanical witness**, the `verifier-pipe-gate` PreToolUse hook on `Bash` |
+| U6 (22) | `gz mx enter` / `exit` outside the skill | same string from the skill and from a shell step |
+| U7 (23) | `gz audit` before attestation | temporal; the verb is reported to refuse an unattested ADR (not observed this run) |
+| U8 (24) | reaping a lock before expiry | `--force` is the operator's flag; the string does not say who typed it |
+| U9 (25) | filing a GHI to satisfy a trailer | motive |
+| U10 (26) | editing the security registry without a sensitivity declaration | the declaration lives in a brief or a commit body |
+| U11 (27) | an ordinary session resizing a render surface | "ordinary" is the context |
+| U12 (28) | silent threshold edits | validator-witnessed, not permission-expressible |
 
-Permission rules are context-free string matches. Where doctrine forbids an action
-*in a context*, the sanctioned and forbidden invocations are byte-identical.
+## B. Broad allow rules this pass structurally cannot audit (4)
 
-**U1 — `gh issue create` — LOAD-BEARING, NOT DRIFT.**
-`.gzkit/rules/gh-cli.md`: *"**`gh issue create` is forbidden as a direct agent
-invocation** … The prohibition is on the **caller**, not the string."*
-`AGENTS.md` § Always #13 says the same. But `/ghi-author` invokes `gh issue create`
-at `SKILL.md:199` as its own final step, so `Bash(gh issue:*)` is what makes the
-*sanctioned* path work. Denying the pattern would break the only legitimate way to
-file a GHI. Recorded permanently so no future run raises it as a row.
+A drift row needs a rule that mentions the token. These four mention none and cover a great deal.
 
-**U6 — verifier pipes.** `.gzkit/rules/tests.md` § Verification exit-code integrity:
-*"NEVER pipe `unittest`/`behave`/`mkdocs --strict` … through `tail`/`head`/`grep`."*
-The tokens are prohibited only in a *pipeline position*, never as commands, and
-standalone `grep` is load-bearing for every read verb in this audit.
-**A T2 witness exists and it is not the permission surface:** the
-`verifier-pipe-gate.py` `PreToolUse` hook over `Bash` (GHI #589) refuses a verifier
-in any non-final stage. Correctly enforced elsewhere.
+**U13 — `Bash(uv run gz:*)`.** Every `gz` verb, including the ones rows U2, U3, U6 and U7 reserve
+to the operator or to a skill: `gz obpi lock claim`, `gz task start`, `gz obpi complete --attestor`,
+`gz attest`, `gz obpi repudiate`, `gz mx enter`, `gz audit`, and the outward-facing
+`gz git-sync --apply` (commits and pushes), `gz issue file` (creates an issue) and
+`gz content land --attestor` (changes canon). The file's own `_comment` says mutating and
+outward-facing commands "are deliberately absent so they still prompt". Under this rule they
+do not prompt. This session ran `gz git-sync --apply` after every visit and landed the corpus three
+times with `gz content land --attestor g0` (the landings are in the ledger); both strings match it.
 
-**U7 — MX entry.** `.gzkit/rules/mx-mode.md` § Do Not: *"Do not invoke `gz mx enter`
-or `gz mx exit` directly in a shell step — use the `gz-mx` skill."* The skill's own
-sanctioned execution shells the identical string; the discriminator is the caller.
+**U14 — `Bash(uv run -m:*)`.** Any module: `uv run -m gzkit <verb>` is U13 again by another
+spelling, and `uv run -m pytest` and `uv run -m pip` are covered without being named
+(doctrine rows 1 and 7).
 
-**U8 — audit ordering.** `.gzkit/rules/adr-audit.md` § Do Not: *"Do not run
-`gz audit` before attestation."* A temporal precondition against ledger state.
-Permission rules are stateless string matches with no access to gate history.
+**U15 — `Bash(find:*)`.** `find` with `-delete` or `-exec` is a write channel under a rule the
+`_comment` calls read-only.
 
----
+**U16 — `Bash(cat:*)`, `head`, `tail`, `grep`, `rg`, `jq` against the `Read(...)` deny rules.**
+Whether a `Read(.env)` deny stops `cat .env` under a standing `Bash(cat:*)` allow was **not
+tested** (it would mean reading a secret-shaped file to find out). Recorded as unknown.
 
-## Broad-rule blindness — the more dangerous class
+## C. Limits found by observing the session that ran this audit (4)
 
-A drift row can only be raised against a rule that *mentions* the prohibited token.
-These grant the prohibited action while naming nothing this pass can match.
+**U17 — The permission prompt is not an interposition point in every session.** The harness
+reported this session as running in an auto permission mode. Commands that no allow rule grants
+ran in it: `git commit`, `git add`, `gh issue create`, `gh issue comment`, and a bare interpreter.
+Whether any prompt was shown to the operator cannot be observed from inside the session. The
+chore's premise, that the prompt is "the one mechanical interposition point", holds only for a
+session whose mode prompts; the permission files say nothing about the others.
 
-**U2 — `Bash(git *)`.** Permits `git checkout -b feature/foo`, against
-`AGENTS.md` § Operator Doctrine (verbatim 2026-06-16: *"Never create feature
-branches — work directly on main"*), and `git push --force`, against
-`gh-cli.md` § Prohibited without explicit approval. Neither prohibition's tokens
-appear in the rule. This is § Known coverage limits #2 verbatim.
+**U18 — A context-free prohibition was broken 40 times with nothing observing it.** Doctrine row 1
+("always `uv run` for Python commands"): the session ran `python3` 39 times and `python` once,
+counted from its own transcript (530 Bash calls). No allow rule grants it, no deny rule forbids
+it, no hook looks for it, and `gz validate --utf8-prefix` checks documents, not commands.
+Insight scope `session/uv-run-rule`. Two written procedures breach the same clause:
+`gz-deps-upgrade/SKILL.md:85` and `frontier-model-card-currency/CHORE.md:103`.
 
-**U3 — `Bash(uv run *)`.** Subsumes every governed CLI verb — `gz obpi complete`,
-`gz attest`, `gz adr emit-receipt`. Any prohibition about *how* a governance verb is
-reached (Never #9: *"Run every stage through the governing skill, not via direct
-CLI"*) has no token the matcher can see. Enforcement for these lives inside the CLI.
+**U19 — File writes through `Bash` bypass every write hook and all path-scoped rule loading.**
+The hooks that guard writes are matched on `Write|Edit|NotebookEdit`. This session made 96
+file-writing Bash calls and no Edit or Write call across maintenance visits A to D, so
+`pipeline-gate`, `obpi-completion-validator`, `instruction-router`, `session-staleness-check`,
+`post-edit-ruff` and `ledger-writer` never fired. `chores.md` loaded into the session for the
+first time when this run used a file tool on a `.gzkit/chores/` path, after 36 Bash calls had
+written into that tree. One consequence was observed the same day: an edit to the generated
+`src/gzkit/chores/` copy of a library was silently reverted by the next sync. August recorded the
+class in one sentence ("A `cp` is a file write the hook layer does not observe"); this is its
+measured size. Insight scope `hooks/bash-write-blindness`.
 
-**U4 — in-place writers.** `Bash(sed:*)`, `Bash(do sed:*)`, `Bash(perl -i -pe ' *)`.
-General writers that can target `.gzkit/ledger.jsonl` or
-`.gzkit/insights/agent-insights.jsonl` without naming them. **The two strongest
-write-path prohibitions in the corpus — Never #2 (do not modify the ledger directly)
-and Always #11 (never hand-append the insights jsonl) — are therefore unauditable
-against these grants, even though no allow rule mentions either path.**
-Partially mitigated elsewhere: `forbid_manual_ledger_edits` in
-`src/gzkit/hooks/guards.py` rejects non-append staged ledger edits at commit time.
+**U20 — A path-scoped rule does not load when its subject is a command.** `gh-cli.md` is scoped to
+`.github/**`, `docs/design/adr/**` and one source file. Running `gh issue comment` touches none
+of them, so the rule that governs the command is not in context when the command runs. This
+session posted a comment on GHI #997 whose last paragraph narrates progress, which the rule
+forbids ("A comment is not a place to narrate progress"). The comment is a dated record and is
+not edited.
 
-**U5 — `Bash(gh api:*)`.** A generic GitHub transport. It can express every item in
-`gh-cli.md` § Prohibited without explicit approval — settings mutation
-(`-X PATCH /repos/…`), secret write (`-X PUT /repos/…/actions/secrets/…`), PR merge
-(`-X PUT /repos/…/pulls/…/merge`) — while naming none of them. `Bash(git *)`'s
-equivalent on the GitHub surface.
+## Known coverage limits (CHORE.md, restated verbatim in the summary)
 
-**U11 — dispatch primitives.** `Bash(xargs -I {} bash -c "…")`,
-`Bash(xargs -I {} sh -c '…')`, `Bash(for f:*)`, `Bash(for dir:*)`, `Bash(for cmd:*)`,
-`Bash(for skill:*)`, `Bash(for mirror:*)`, `Bash(while read:*)`, `Bash(do)`,
-`Bash(do sed:*)`, `Bash(do basename:*)`, `Bash(bash /tmp/time_tests.sh)`.
-The body of a loop or a `bash -c` string is not a token the matcher inspects, so any
-prohibited command executed inside one is unmatchable **by construction** — a
-second-order form of § Known coverage limits #2.
-
-**U12 — `Read(//Users/jeff/**)`, `Read(//opt/homebrew/**)`, `Read(//tmp/**)`.**
-Whole-home read consent. The operator-PII rule governs *writing* the address into
-repo-bound artifacts, so no prohibition token matches a read grant — but the grant
-widens the surface from which PII can enter context in the first place. No doctrine
-hook exists to hang a row on.
-
----
-
-## Category the mechanism does not reach
-
-**U9 — `uvx` invocations vs "Always use `uv run` for Python commands".**
-`Bash(uvx ty:*)`, `Bash(uvx xenon:*)`, `Bash(uvx radon *)`,
-`Bash(uvx unittest-parallel *)`, `Bash(uvx ruff check src tests)`,
-`Bash(uvx ruff format --check .)` are literally non-`uv run` Python invocations under
-standing consent. **Not raised as a row:** `.gzkit/rules/chores.md` § 3 Apply Advice
-*prescribes* `uvx ty check . --exclude 'features/**'`, so the grants are load-bearing.
-The inconsistency is **rule-vs-rule**, which is Pass A's subject
-(`control-surface-rule-conflicts`), not permission drift. Raising it here would be
-pattern-matching a prohibition whose scope its own sibling surface contests.
-
-**U13 — prohibitions with no command or path token at all.**
-`.gzkit/rules/tests.md` (*"unit tests MUST use `tempfile` temp DBs; NEVER use
-live/production databases"*, *"NEVER use raw `shutil.rmtree()` in tearDown"*);
-`.gzkit/rules/adr-audit.md` (*"Never backfill a cosmetic `@covers` decorator"*);
-`AGENTS.md` § Operator Doctrine (*"Never spin up an ADR or OBPI merely to discharge a
-GHI"*); `AGENTS.md` § Never #1/#8 (Gate 5 bypass). These govern code content,
-artifact semantics, or process choice. The permission surface cannot express them in
-either direction — not a gap in this pass, a category the mechanism does not reach.
-
----
-
-## Scope boundaries of the pass itself
-
-**U10 — permission surfaces outside CHORE § 2's scope.** `~/.claude/settings.json`
-(user-level; read this run only far enough to confirm it declares
-`permissions.defaultMode: "auto"` with no `allow`/`deny` keys), enterprise/managed
-settings, and session-level permission-mode overrides. **Any of these can moot every
-row in the drift ledger by changing whether prompts fire at all.** This pass reads
-none of them beyond that one confirmation.
-
-> Relayed as a finding, not acted on: the subagent that performed this walk reported
-> a session-level flag that disables permission prompting wholesale as belonging to
-> this category. It is named here only to record that the category exists and is
-> unaudited. This chore neither recommends nor uses it.
-
-**U14 — the local surface is gitignored and single-machine.**
-
-```
-$ git check-ignore -v .claude/settings.local.json
-.gitignore:54:.claude/settings.local.json	.claude/settings.local.json
-```
-
-CHORE § Known coverage limits #3. Findings are a snapshot of one machine, not
-reproducible in CI, and **no git history exists to date any grant or recover the
-session that produced it** — the same unrecoverable-origin condition the chore's
-founding `Bash(python3:*)` case had. Every "always allow" click converts a one-time
-situational judgment into a permanent rule that outlives its context, with no record
-of the context.
+Context-dependence, broad-rule blindness, CI-blindness and curated-list drift. Section C adds a
+fifth that the chore text does not name: **mode-blindness** (U17).

@@ -95,3 +95,27 @@ POLICY BREACH:
     Why: this chore's subject moves where no commit records it, so only its scan observes that; its other criteria report green for as long as nobody looks, and re-running them is not looking.
     Fix: perform the scan its CHORE.md describes, writing its scan record, then run `uv run gz chores run control-surface-permission-consent-drift` and commit both.
 ```
+## 2026-10-10T20:16:57-05:00
+- Status: PASS
+- Chore: control-surface-permission-consent-drift
+- Title: Control Surface Audit — Rule Prose vs. Permission Standing Consent (Pass D)
+- Lane: lite
+- Version: 1.1.0
+- Criteria Results:
+  - [PASS] `uv run python scripts/check_proof_freshness.py control-surface-permission-consent-drift` => rc=0 (0.08s) -- exit 0 == 0
+  - [PASS] `file-exists: .gzkit/chores/control-surface-permission-consent-drift/proofs/doctrine-map.md` => rc=0 (0.00s) -- file exists: .gzkit/chores/control-surface-permission-consent-drift/proofs/doctrine-map.md
+  - [PASS] `file-exists: .gzkit/chores/control-surface-permission-consent-drift/proofs/permission-inventory.md` => rc=0 (0.00s) -- file exists: .gzkit/chores/control-surface-permission-consent-drift/proofs/permission-inventory.md
+  - [PASS] `file-exists: .gzkit/chores/control-surface-permission-consent-drift/proofs/consent-drift.md` => rc=0 (0.00s) -- file exists: .gzkit/chores/control-surface-permission-consent-drift/proofs/consent-drift.md
+  - [PASS] `file-exists: .gzkit/chores/control-surface-permission-consent-drift/proofs/unwitnessable.md` => rc=0 (0.00s) -- file exists: .gzkit/chores/control-surface-permission-consent-drift/proofs/unwitnessable.md
+  - [PASS] `file-exists: .gzkit/chores/control-surface-permission-consent-drift/proofs/summary.md` => rc=0 (0.00s) -- file exists: .gzkit/chores/control-surface-permission-consent-drift/proofs/summary.md
+  - [PASS] `file-exists: .gzkit/chores/control-surface-permission-consent-drift/proofs/settings-patch.md` => rc=0 (0.00s) -- file exists: .gzkit/chores/control-surface-permission-consent-drift/proofs/settings-patch.md
+
+```text
+[uv run python scripts/check_proof_freshness.py control-surface-permission-consent-drift] stdout:
+scan-interval gate — control-surface-permission-consent-drift
+  maximum age:  30d
+  scan record:  .gzkit/chores/control-surface-permission-consent-drift/proofs/summary.md
+  last scan:    2026-10-11 (0d ago)
+
+PASS: the scan record changed within the scan interval.
+```

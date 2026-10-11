@@ -1,271 +1,124 @@
 # Reachability Matrix — Skill ↔ Rule (Pass B)
 
 > Chore: `control-surface-skill-rule-reachability` (Lite lane, audit-only)
-> Run: **2026-08-09**. Supersedes the 2026-08-01 matrix.
-> Surface: **68 skills** under `.gzkit/skills/**` × 26 canonical rules.
+> Run: **2026-10-10**, maintenance visit E. Supersedes the 2026-08-09 matrix.
+> Surface: **73 skills** under `.gzkit/skills/**` × 26 authored rules plus root `AGENTS.md`.
 > Vendor mirrors are derivatives and were not audited.
 
-**Applicability test** (CHORE.md): a rule applies when (a) `paths:` frontmatter
-overlaps, (b) the skill's procedure invokes a CLI verb the rule governs, or (c) the
-skill modifies files the rule's `paths:` covers.
+**Method.** Four independent reviewers (spec-reviewer persona, read-only) each read all 27 files
+under `.gzkit/rules/` and root `AGENTS.md` whole, then every skill in one partition whole
+(10, 16, 24 and 23 skills). Each gap carries a verbatim quote from the skill and from the rule
+with line numbers. The main session checked all 83 quoted lines against the files by text and
+by line (83 of 83 verbatim, each within three lines of the cited line) and re-verified first-party
+the code claims repeated below. No reviewer ran a command.
 
-**Honors test:** the skill body cites the rule by filename **or** enforces its
-invariant mechanically. Absence of both is a reachability gap.
+**Applicability test** (CHORE.md): a rule applies when (a) its `paths:` cover the skill, (b) the
+skill's procedure invokes a CLI verb the rule governs, or (c) the skill modifies files the rule's
+`paths:` cover. Root `AGENTS.md` has no `paths:` and applies everywhere.
 
-**Admission bar:** a `no` row requires a **concrete worked example** — a specific
-point in the procedure where following it violates the rule. "The skill doesn't
-mention the rule" is not a gap.
+**Admission bar:** a gap requires a concrete worked example: a step that, followed as written,
+breaks a named clause. Silence about a rule is not a gap.
 
 ## Counts
 
 | Measure | Value |
 |---|---|
-| Skills audited | **68** |
-| Applicable pairs | **624** (618 by path overlap, +6 by CLI-verb basis) |
-| Honored by citation | 21 — **4 of which resolve only through a `.claude/rules/` mirror** |
-| Honored mechanically | 8 |
-| **Gaps with a worked example** | **11** (9 known-blocking, 2 latent) |
+| Skills audited | **73** (68 in August; six added, one removed) |
+| Authored rules | 26 |
+| Applicable pairs by path overlap | **294** (four rules name `.gzkit/skills/**`; `mx-mode.md` and `weaponeering.md` name one skill each) |
+| Applicable pairs honored by citation | 5 |
+| Rule citations in skill bodies, any form | 28, across 20 skills; **53 of 73 skills cite no rule** |
+| Skills naming at least one validator scope | 24 |
+| **Gaps with a worked example** | **35**: 6 carried from August, 29 new |
+| Confidence of the 29 new gaps | 10 high, 19 medium |
 
-The citation rate is 21 of 624 applicable pairs. That number is not itself the
-finding — most pairs are trivially applicable via a broad `paths:` glob. The finding
-is the 11 rows below, each of which has a procedure that can actually collide.
+The August count of 624 applicable pairs is not comparable: `task-discovery.md` and others have
+since narrowed their `paths:`. The citation rate is not the finding. The 35 rows are.
 
----
+## Prior rows (August), accounted for
 
-## Gaps — known-blocking
-
-### N1 · `gz-agent-sync` (1.1.1) ↛ `skill-surface-sync.md` § Non-negotiable #6 · GHI #492
-
-**Basis:** path-overlap + file-modification — the skill's entire subject is
-propagating skill surfaces.
-
-§ Common Rationalizations answers *"I bumped `last_reviewed` instead of
-`skill-version`"* with *"Version mismatch is the conflict-resolution signal…
-**Bump the version.**"* An agent taking that remedy lands `skill-version`
-incremented with `last_reviewed` unchanged — **exactly the state rule #6 forbids**
-(*"Any commit that increments `skill-version:` … MUST also set `last_reviewed:` to
-today's date"*). § Red Flags reinforces the asymmetry: it lists *"Skill edits
-without a `skill-version` bump"* and never the `last_reviewed` half.
-
-**No mechanical arm exists.** `gz validate --skill-version-review-coupling` was
-never built; it is parked in the unpromoted `ADR-pool.skill-version-review-coupling`.
-`skills_audit._validate_last_reviewed` checks only 90-day staleness in isolation, so
-it cannot see the coupling.
-
-### N2 · `gz-obpi-pipeline` (6.35.0) ↛ `model-selection.md` § Operative claims #4 · GHI #284
-
-**Basis:** path-overlap — the rule's `paths:` names `.gzkit/skills/**/SKILL.md` and
-`src/gzkit/pipeline_runtime.py`, which the skill declares as its runtime.
-
-Stage 2 step b (`:273-276`) selects `simple → haiku / standard → sonnet /
-complex → opus`, and step d (`:290-297`) passes `model: <selected tier from step b>`
-into the Agent call — **a model name**. The rule: *"Subagents use effort directives,
-not model names. The Agent tool maps effort → model"*; claim 4: *"Subagent prompts
-specify effort level, not model name."* Repeats at the review dispatch (`:313`,
-`:327-338`). No skill in the catalog cites `model-selection.md`; no validator arm.
-
-### N3 · `gz-obpi-pipeline` (6.35.0) ↛ `model-selection.md` § Operative claims #5 · GHI #643
-
-**Basis:** path-overlap + procedure — the skill dispatches all four personas and
-relays their output into Gate 5.
-
-Stage 4 (`:551`) dispatches a `narrator` subagent to *"render the final attestation
-surface"*, and that template is immediately called *"the human's attestation surface.
-They cannot provide attestation without seeing this output."* **No step instructs
-the orchestrator to re-derive** the narrator's Value Narrative / Key Proof /
-files-created rows before presenting. Claim 5: *"Never relay a subagent's factual
-assertion into ceremony, attestation, or an operator-facing conclusion on the
-subagent's word — cite the ARB receipt, the file, or re-run the command yourself."*
-
-The `gz validate --pipeline-review-receipts` the skill names at `:40`/`:551` would
-attest only that the dispatch happened — and both mentions say it awaits pool-ADR
-promotion. **The flag is not registered in `validate_cmd.py` today.**
-
-### N4 · `gz-obpi-lock` (6.2.0) ↛ `token-block-discipline.md` § Binding Sub-Invariant 5 · GHI #619
-
-**Basis:** cli-verb (`gz obpi lock release`, named verbatim in the rule) +
-path-overlap (`.gzkit/locks/exchange/**`).
-
-§ Procedure → Release (`:105-110`) prescribes
-`uv run gz obpi lock release OBPI-X.Y.Z-NN --force` with the comment
-*"abort/handoff — bypass ownership check"* and asserts *"Exit code 0 = released
-(or no lock found)"*. But `--force` bypasses **only** the ownership check: Sub-Invariant
-5 refuses release unless a valid exchange register entry exists **or** the caller
-passes `--abandon <category>:<reason>` — a real registered flag
-(`obpi_lock.py:130-156`, whose docstring reads *"Releasing without `--abandon` AND
-without a matching register entry is [refused]"*).
-
-**The strings `--abandon`, `exchange`, and `register entry` appear zero times in the
-skill.** Compounding: `:82` teaches *"**Release** deletes the lock file"* and `:84`
-*"locks older than TTL are automatically released on next claim attempt"* — the
-latter is verbatim the rule's § Sub-Invariant 3 anti-pattern.
-
-### N7 · `gz-check` (1.5.0) ↛ `gate5-runbook-code-covenant.md` § Do Not · GHI #317
-
-**Basis:** path-overlap + cli-verb.
-
-§ Full Quality Evidence Sequence (`:75-84`) is headed *"When deterministic receipts
-are needed (e.g., for audit evidence):"* and then prescribes **bare** `uv run gz lint`,
-`uv run gz typecheck`, `uv run gz test --bdd`, `uv run gz check`. The rule's § Do Not:
-*"Do not cite bare `uv run gz lint` … as attestation evidence — they produce no
-`arb-*` receipt"*; § Validation bundle: bare commands *"**do not satisfy** the Gate-5
-evidence requirement"*.
-
-An agent following the skill — per its own § When to Use, *"Pre-merge /
-pre-attestation"* — carries a **zero-receipt sequence into attestation.**
-
-### N8 · `gz-tidy` (1.1.1) and `gz-check` (1.5.0) ↛ `agents-md-map-doctrine.md` § Budget · GHI #373
-
-**One class, two instances.** Basis: path-overlap + file-modification.
-
-`gz-tidy:45` — *"**CLAUDE.md budget**: Check CLAUDE.md line count. If over 200
-lines, flag for pruning"* (reinforced `:79`); `gz-check:70-73` repeats it. The rule
-(`:30`): *"The **live enforced budgets are the values in
-`data/instructions_files_budget.json`** … This doctrine never duplicates those
-numbers into prose: a duplicated number drifts from what is enforced."*
-
-**The enforced value is `"CLAUDE.md": 15000` chars — not 200 lines.** Neither skill
-references the JSON, `gz validate --instructions-files-budget`, or `/gz-context-diet`
-(grep count 0 in both). This is the doctrine's own prohibition, violated by two
-skills, in the exact way it predicts.
-
-### N9 · `ghi-close` (2.7.0) ↛ `task-discovery.md` § Invariant · GHI #552
-
-**Basis:** file-modification — the skill's Phase 2 authors commits touching
-`src/gzkit/**` and `tests/**`; its own worked example (`:384`) names
-`src/gzkit/governance/trust_audits.py`, `src/gzkit/schemas/adr.json`, and two new
-unit tests.
-
-Step 6 (`:255`) — *"**Commit with the trailer.** Every closing commit body MUST
-contain `(GHI #N)` or a `Closes #N` / `Fixes #N` trailer"* — presents the GHI form
-as the **complete** trailer contract, and Step 7a's verification (`:261`) greps only
-those three forms. The rule's floor: *"any commit touching `src/**` or `tests/**`
-MUST additionally carry a `Task:` trailer"*, fail-closed by
-`gz validate --commit-trailers`.
-
-**`Task:` appears zero times in `ghi-close/SKILL.md`**, and the direct-fix path it
-prescribes has no in-progress TASK for the `prepare-commit-msg-task-trailers`
-producer to stamp from.
-
-### N10 · `gz-obpi-simplify` (6.1.0) ↛ `complexity-thresholds.md` § Invariant · GHI #652
-
-**Basis:** file-modification.
-
-Dimension 2 (`:144`) flags *"Functions exceeding 50 lines or modules exceeding 600
-lines"*; `:158` says *"For each finding: fix it directly."* The rule: *"A new
-threshold authority appearing anywhere else is doctrine drift by another name."*
-The canonical table blocks `lizard_nloc` at **37.00** and `radon_raw_nloc` at
-**1031.90** — so the skill **rewrites modules the table does not warn on and passes
-functions the table blocks**, in both directions.
-
-`pythonic.md:29` already carries the resolution and the skill does not follow it:
-*"treat <=300 as binding (it gates), <=50 and <=600 as guidance, and **cite the
-table — not this rule — for any threshold claim**."* The sibling chore
-`module-sloc-cap-radon` was repointed off these identical numbers on 2026-08-01
-quoting this same Invariant; `gz-obpi-simplify` (`last_reviewed: 2026-07-26`) was
-not swept.
-
-### N11 · `gz-cli-audit` (0.1.1) ↛ `cli.md` § Core Principles — Consistency · GHI #353
-
-**Basis:** cli-verb — `cli.md:15` declares *"**Mechanical check:** `uv run gz cli
-audit`"*, and the skill's entire Workflow is that one verb.
-
-The skill's terminal step (`:23`) is *"Summarize results, including evidence and any
-follow-up gates."* The rule binds: *"If coverage is missing, author the missing
-artifacts in the same patch — the audit is the mechanical check, not operator
-taste."* **The skill has no remediation step and no exit-code contract**, so a red
-`gz cli audit` legitimately terminates it with a report plus a deferral — which is
-how the 48-item per-flag documentation backlog accumulated.
-
-## Gaps — latent
-
-### N5 · `gz-adr-audit` (6.13.0) ↛ `adr-audit.md` § Audit sequence steps 2 and 4
-
-Step 2's re-verification block (`:168-169`) runs **bare** `uv run -m unittest -q`
-and `uv run mkdocs build -q`, redirecting into
-`docs/design/adr/…/audit/proofs/*.txt`, which Step 4 (`:201`) indexes as
-*"Evidence index"*. Rule step 2: *"Run quality checks via the **ARB-wrapped
-canonical invocations**. Bare commands emit no receipt; step 4 then fail-closes at
-exit 3."* (`mkdocs build -q` is not even the canonical `--strict` form.) Step 8.3
-(`:259-263`) emits `--evidence-json` with **no `receipts` key**, and the skill's own
-"Recommended evidence fields" table (`:317-323`) never lists `receipts` — the exact
-zero-citation payload the rule says fail-closes.
-
-### N6 · `gz-adr-audit` (6.13.0) ↛ `adr-audit.md` § Rules
-
-The rule states flatly *"Do not run `gz audit` before attestation."* The skill
-instructs `uv run gz audit <adr-id>` at `:92`, `:146`, and `:156` — all preceding
-Step 7 "Mark VALIDATED" and Step 8 "Emit Validation Receipt". Nothing cites
-`adr-audit.md`; the ordering has no validator arm.
-
----
-
-## Prior-row accounting — all 25 rows plus the six structural notes
-
-Every prior row has a verdict. **Carried: 23. Closed: 2. Refuted: 1 premise.**
-
-| Prior row | Verdict | Basis |
+| Row | Verdict | Basis |
 |---|---|---|
-| 1 `adr-audit.md` | carried | Zero skill cites; `gz-adr-audit` cites `tests.md` and never the audit rule |
-| 2 `agent-failure-modes.md` | carried | Cites rose 1→2 (`gz-issue-file:82`, `gz-obpi-specify:127`); 66 of 68 skills still never name it |
-| 3 `agents-md-map-doctrine.md` | carried | `gz-context-diet:39` still the only mechanical arm; `--agents-md-map-conformance` invoked by zero skills |
-| 4 `brief-heading-conventions.md` | carried | Zero cites; `--brief-headings` invoked by zero skill bodies |
-| 5 `changelog-release-notes.md` | carried (non-gap) | `gz-patch-release` cites at `:226`/`:298` and invokes `--changelog` at `:310`/`:316` |
-| 6 `chores.md` | carried | Zero cites; rule § Related names `gz-chore-runner`, which does not name it back |
-| 7 `cli.md` | carried | Zero cites — the prior run's four apparent hits were `gh-cli.md` substring matches; a boundary-anchored grep returns none |
-| 8 `complexity-doctrine.md` | carried (non-gap) | `gz-complexity-distill:55, :152` |
-| 9 `complexity-thresholds.md` | carried | Zero cites; now has a worked example (N10) |
-| 10 `cross-platform.md` | carried | Zero cites; no ruff arm |
-| 11 `gate5-runbook-code-covenant.md` | carried | Rule 0.2.0→0.3.0; reachability unchanged; § Do Not now has a worked example (N7) |
-| 12 `gh-cli.md` | carried | 4 cites; `git-sync` still cites nothing |
-| 13 `governance-core.md` | carried | Sole cite is the **mirror** path (`gz-adr-create:113, :270`) |
-| 14 `guardrail-feedback-prose.md` | carried (posture re-based) | Rule 0.1.0→0.2.0 replaced § Mechanical promotion path with § Enforcement posture — the row's "no mechanical arm" is now the rule's **settled disposition**, not a pending promotion |
-| 15 `hexagonal-architecture.md` | carried | `gz-design:137`, `gz-patch-release:65` both point at the `docs/governance/` copy; the rule file is named by zero skills |
-| 16 `model-selection.md` | carried | Path-bound to all 68 skills; zero cites. Rule 0.3.0→0.5.1 added two new binding clauses no skill routes to (N2, N3) |
-| 17 `models.md` | carried | `gz-deps-upgrade` cites AGENTS.md § STDLIB-FIRST and never `models.md` |
-| 18 `mx-mode.md` | **closed** (rule-internal) + carried (reachability) | Marker/blockquote mismatch closed at `afa215257`; a repo-wide comparison now returns zero mismatches |
-| 19 `pythonic.md` | carried | Sole cite is the **mirror** (`gz-tech-debt-review:197`) |
-| 20 `security-sensitivity.md` | carried | Sole cite `ghi-author:149`; `--sensitivity` invoked by zero skills |
-| 21 `skill-surface-sync.md` | carried | `gz-agent-sync` — the rule's own wielder — still doesn't name it; now has a worked example (N1) |
-| 22 `task-discovery.md` | carried | `grep -cniE "task:\|trailer\|@advances\|TASK-" git-sync/SKILL.md` → **0**, unchanged |
-| 23 `tests.md` | carried | Best-cited; same 5 skills |
-| 24 `token-block-discipline.md` | carried (arm renamed) | Mechanical arm moved with GHI #763 — `gz-session-handoff:101` now invokes `--lock-exchange-coupling`. The `gz-obpi-lock` release arm is still unrouted (N4) |
-| 25 `tool-skill-runbook-alignment.md` | carried | Rule 0.2.0→0.3.0 added § Enforcement posture (Inv 1 mechanical, Inv 2/3 advisory **by design**) |
-| D1 dangling `§ Commit-message discipline` | carried (worsened) | No such section exists in the rule; content lives in the rationale doc. `ghi-close` cite sites grew 2→3, all on the mirror path |
-| D2 `gz ledger tail` | **closed** | `6a4620985` (GHI #745) — replaced by a `grep` at `gz-content-compose:56`; root cause also gone (extraction consolidated into `verb_references.py`, with `.gzkit/skills/**/SKILL.md` now in `_cli_alignment_sources`) |
-| D3 `gz-deps-upgrade` H1 | carried | `SKILL.md:14` is still `# gz deps-upgrade`; a markdown H1 matches none of the four recognizers in `verb_references.py`, so it escapes `--cli-alignment` |
-| D4 `tests.md § Tests assert semantics` | carried | Still a bold lead-in at `tests.md:65`, not a heading; five call sites unchanged |
-| D5 `.claude/rules/arb.md` | carried (not a defect) | `ghi-close:350` quotes GHI #291's title; sealed record |
-| Mirror-path table | carried | Five mirror cites unchanged in kind |
-| Name-collision hazard | carried | `.gzkit/rules/hexagonal-architecture.md` ↔ `docs/governance/hexagonal-architecture.md` and `.gzkit/rules/AGENTS.md` ↔ `docs/governance/AGENTS.md` both still exist; both skill cites resolve to the docs copy |
+| N1 `gz-agent-sync` ↛ `skill-surface-sync.md` #6 | **carried** | `:106` still says "Bump the version anyway" with no `last_reviewed` half |
+| N2 `gz-obpi-pipeline` ↛ `model-selection.md` claim 4 | closed, premise changed | rule 0.7.0 now says the dispatch call carries `model`; the skill passes a tier alias |
+| N3 `gz-obpi-pipeline` ↛ `model-selection.md` claim 5 | closed | Step 4a-v (`gz obpi verify-packet`, `:1014-1025`) replays the packet before presentation; behaviour not observed |
+| N4 `gz-obpi-lock` ↛ `token-block-discipline.md` Sub-Invariant 5 | closed | `:119` cites the rule and documents `--abandon` and exit 3 |
+| N5 `gz-adr-audit` ↛ `adr-audit.md` step 2 | **carried** | `:164` still runs bare `uv run gz test > …/unittest.txt` where the rule requires ARB-wrapped invocations |
+| N6 `gz-adr-audit` ↛ `adr-audit.md` § Rules | closed, premise refuted | the rule's own sequence attests before `gz audit`; the skill's prerequisite is a completed ADR |
+| N7 `gz-check` ↛ `gate5-runbook-code-covenant.md` § Do Not | **carried** | `:79-86` lists bare commands under "When deterministic receipts are needed" |
+| N8 `gz-check` ↛ `agents-md-map-doctrine.md` § Budget | **carried** (gz-check half) | `:72` still checks "≤ 200" lines; the budget file holds characters. The `gz-tidy` half is closed: it now runs the validator |
+| N9 `ghi-close` ↛ `task-discovery.md` § Invariant | **carried** | the skill contains no `Task:` anywhere (grep count 0); `:303` requires only the GHI trailer |
+| N10 `gz-obpi-simplify` ↛ `complexity-thresholds.md` § Invariant | **carried** | `:144` flags 50 and 600 lines; `:158` "For each finding: fix it directly." |
+| N11 `gz-cli-audit` ↛ `cli.md` Consistency | closed | 0.2.0 added the remediation loop |
 
-### Refuted premise — the row set was never single
+## New gaps — high confidence
 
-**`src/gzkit/chores/control-surface-skill-rule-reachability/proofs/` is a second,
-stale copy shipped in the wheel.** Its `reachability-matrix.md` is 24 KB, dated
-2026-05-08, skill-centric, 50 rows — a different document from the project copy
-this ledger accounts for.
+**B01 · `gz-obpi-lock` 6.3.1 ↛ root `AGENTS.md` § Operator Doctrine (no branches).**
+§ Worktree Isolation tells the agent to run `git worktree add ../gzkit-claude-code -b agent/claude-code/obpi-0.0.25-03` (`:212`) and then `git merge agent/claude-code/obpi-0.0.25-03` (`:219`). Root `:202`: *"its result lands on main through the single writer, never by merging a branch. The no-branches directive is unchanged."*
 
-Verified this run, and the scope is wider than one chore:
+**B02 · `gz-obpi-pipeline` 6.66.0 ↛ `weaponeering.md` claims 1 to 3.**
+Stage 2 opens at "RED — write ONE minimal test" (`:301`) with no constraints sortie, and Stage 3 proceeds on a `working-tree` base whatever the failure class (`:639`). Rule `:33`: *"Do not fold constraints into red; a red that fails on `error` has flown no constraints."* Expected: the rule landed 2026-10-10 as advisory and names this skill in its `paths:`; the departure is a finding for the operator, not a refusal.
 
-```
-$ ls -d src/gzkit/chores/*/proofs | wc -l
-29
-$ find src/gzkit/chores -path '*/proofs/*' -type f | wc -l
-71
-$ grep -n "always project-local" .gzkit/rules/chores.md
-35:`proofs/` is **always project-local, never canonical** — execution evidence is
-$ python3 -c "…json.load(open('data/distribution_baseline_manifest.json'))…"
-proofs mentions in baseline manifest: 0
-```
+**B06 · `gz-adr-closeout-ceremony` 7.19.0 ↛ `gh-cli.md` § Allowed commands.**
+`:243` runs `gh release create vX.Y.Z --title "vX.Y.Z" --notes-file RELEASE_NOTES.md`. Rule `:31`: *"# never the cumulative RELEASE_NOTES.md (GHI #710)"*.
 
-**29 chore directories ship a `proofs/` folder into the wheel surface — 71 files —
-from a location two rules declare carries no proofs content**
-(`chores.md` § Two-Surface Layout; `skill-surface-sync.md` § class-classifier). The
-distribution baseline manifest does not mention `proofs` at all, so
-`gz validate --distribution` has nothing to compare against.
+**B07 · `gz-issue-file` 1.0.3 ↛ `gh-cli.md` § Filing an issue.**
+`:46` sends a consumer-owned defect to the "consumer's tracker via plain `gh issue create`." Rule `:20`: *"**`gh issue create` is forbidden as a direct agent invocation**"*.
 
-Consequence: the 50 rows the 2026-08-01 pass dropped did not disappear — **they are
-still shipping to adopters**, alongside 70 other stale evidence files, from a
-surface that is supposed to be regenerated-only. Routed as a defect below; not
-fixed here (this chore is read-only on everything but its own `proofs/`).
+**B08 · `gz-patch-release` 1.11.1 ↛ `gh-cli.md` § Allowed commands.**
+Step 1a.3 runs `gh issue edit <N> --add-label runtime` (`:151`). The rule's block carries no `gh issue edit`, and its 0.7.0 note treats the block as an allowlist (*"this allowlist did not carry the verb"*). `ghi-author` says outright that `gh issue edit` is outside it. Repair is on the rule side or the skill side; the operator rules which.
+
+**B09 · `gz-adr-closeout-ceremony` 7.19.0 ↛ `changelog-release-notes.md` release-notes rule 3.**
+`:240` "# Step 9: Update RELEASE_NOTES.md (agent edits the file)". Rule `:41`: *"Authored and updated through the `gz-patch-release` skill, not by hand."*
+
+**B14 · `gz-advisor-qc` 0.2.0 ↛ `agents-md-map-doctrine.md` § Attestation granularity.**
+`:58` "Cite the receipt id in the operator's Gate-5" attestation. Rule `:44`: *"Do not call a build step "Gate 5." The content surface's attestation is named CORPUS ATTESTATION."*
+
+**B15 · `gz-deps-upgrade` 1.3.0 ↛ root `AGENTS.md` § Project Identity.**
+Step 4 pipes into `python3 -c '…'` (`:85`). Root `:6`: *"always `uv run` for Python commands."* The same clause was breached 40 times by the session that ran this audit (insight scope `session/uv-run-rule`).
+
+**B22 · `gz-pythonic-pattern-detect` 1.1.1 ↛ `chores.md` damaged-slug recovery.**
+`:87` prescribes a bare `uv run gz chores doctor` for a "missing or damaged" overlay. Rule `:55` requires `--dry-run` first and a sync of unsynced edits, because a damaged repair rewrites surviving definition files.
+
+**B23 · `gz-tech-debt-review` 1.4.0 ↛ `pythonic.md` § Size Limits.**
+`:117` grades "Module >600 LOC, function >50 LOC" as breaking a binding rule. Rule `:56`: *"<=600 as guidance, and cite the table — not this rule — for any threshold claim."* Same class as N10.
+
+## New gaps — medium confidence
+
+| Row | Skill (version) | Rule clause | Step, in one line |
+|---|---|---|---|
+| B03 | `gz-obpi-lock` (6.3.1) | root `AGENTS.md:146`, never independently claim or release OBPI locks | `:25` "Lock first, always" extends claiming to an agent's own quick fix |
+| B04 | `gz-obpi-pipeline` (6.66.0) | `model-selection.md:18`, tier by decision complexity, not task size | `:356` classifies by allowed file count and maps it to a tier |
+| B05 | `gz-obpi-pipeline` (6.66.0) | root `AGENTS.md:108`, never hand-write markers | `:222` "Hand-author fallback" writes the pipeline-active marker, and `:236` says it unblocks the gate hook |
+| B10 | `ghi-author` (1.11.0) | root `AGENTS.md:177`, do not create an ADR or OBPI to discharge a GHI | `:317` routes a finding to a new OBPI brief and closes the GHI `superseded` |
+| B11 | `gz-issue-file` (1.0.3) | root `AGENTS.md:181`, defect-fix routing | `:49` attributes a "≥3 recent `fix(` precedents" test the section does not hold and omits its covering-test condition |
+| B12 | `gz-adr-closeout-ceremony` (7.19.0) | `model-selection.md:22`, a subagent's claim is not evidence | `:60` synthesizes attestation evidence from three subagent reads with no re-derivation step |
+| B13 | `gz-patch-release` (1.11.1) | `model-selection.md:34`, release notes on the Opus tier | `:17` declares `model: sonnet` for a skill whose core act is writing release notes |
+| B16 | `gz-chore-runner` (1.5.2) | root `AGENTS.md:90`, author GHIs through `ghi-author` | `:87` routes tracking to `gz chores propose-ghi`, which calls `gh issue create` with no prior-art lookup (`chores_propose_ghi_cmd.py:94-104`) |
+| B17 | `airlineops-parity-scan` (1.2.0) | root `AGENTS.md:238`, gzkit leads and AirlineOps adopts | `:27` triggers a scan on any AirlineOps change and requires a same-cycle tranche |
+| B18 | `gz-chore-runner` (1.5.2) | `chores.md:21`, edit `.gzkit/chores/` only | `:61` calls the package copy "canonical"; `gz-context-diet:86` and `gz-obpi-specify:51` carry the same inverted label |
+| B19 | `gz-complexity-advisor` (0.2.3) | root `AGENTS.md:94`, commit through the configured hooks | `:77` offers `SKIP=complexity-advisor-auto-chain git commit`; the hook is not installed here |
+| B20 | `gz-foundation-triage` (1.0.3) | root `AGENTS.md:133`, foundation is closed to new authoring | `:74` emits candidates for reclassification to foundation |
+| B21 | `gz-complexity-distill` (0.3.2) | root `AGENTS.md:172`, Gate 5 names completed OBPI or ADR work only | `:66` has the operator attest a distillation "at Gate 5" |
+| B24 | `gz-pythonic-pattern-detect` (1.1.1) | `chores.md:62`, plan before any run | `:80` runs the chore with no `gz chores plan` or `advise`; `gz-pythonic-pattern-apply` and `gz-tech-debt-review` do the same (grep count 0 in all three) |
+| B25 | `gz-skill-review` (1.0.0) | `gh-cli.md` § Allowed commands | `:53` uses `gh issue view <N>`, which the block does not list; `gz-status:41`, `ghi-close` and this chore's own evidence gate use it too |
+| B26 | `gz-how` (1.0.1), `references/skill-maintenance.md` | `skill-surface-sync.md:20`, bump the version on every edit | `:10` has the agent add rows to two skills with no version or review-date bump |
+| B27 | `gz-state` (0.2.0) | root `AGENTS.md:146`, never independently edit briefs | `:44` tells the operator, then runs `gz state --repair`, which rewrites brief status with no dry run and no wait |
+| B28 | `gz-migrate-semver` (0.2.0) | root `AGENTS.md:108`, write the ledger only through `gz` commands | `:31` routes a slug correction to `python -m gzkit.governance.obpi_slug_rename`, which appends to the ledger (`obpi_slug_rename.py:130`) and calls itself "Not a ``gz`` verb" (`:22`) |
+| B29 | `gz-skill-review` (1.0.0) | `skill-authoring.md:53`, a repair that touches a skill is operator-only | `:4` lets an audit warning trigger a rewrite, version bump, sync, commit and push |
+
+## Below the bar, verified
+
+- `gz-tidy:123` says "Tidy exits 0 whatever it reports." `src/gzkit/commands/tidy.py:171` raises `SystemExit(3)`. Stale since GHI #1124; no rule clause is broken by following it.
+- `gz-deps-upgrade` frontmatter is not valid YAML under a strict parser: its `description:` contains an unquoted `: ` ("in one pass: uv itself"). gzkit's own reader accepts it. Whether every consumer of skill frontmatter does was not tested.
+- `ghi-close:404` cites `.claude/rules/arb.md` inside an example; no `arb.md` exists in either rules directory. `ghi-triage:118` and `gz-obpi-pipeline:1706` cite mirror paths where a canonical path exists.
+- `gz-insights-remember` declares `gz_command: gz insights remember`; siblings omit the `gz ` prefix.
+- Numbered references that no longer resolve in the unnumbered root contract: `gz-obpi-pipeline` ("Always #18", "#9", "#6", "#11"), `gz-intent-trace:141` ("Behavior Rule 9"), `gz-justify:56` ("6b", "6e"). `skill-authoring.md` Parsimony clause 2 requires text attributed to `AGENTS.md` to be quoted from the current file.
+
+## Unverified references (reviewers could not run commands)
+
+`gz-obpi-lock:239` "`AGENTS.md` § Agent Profiles"; `gz-adr-closeout-ceremony:418` `docs/user/operator_runbook.md`; `git-sync:128-130` related skills `lint`, `test`, `format`; `gz-airlock:138` and `gz-ontology:73` relative manpage links one level short; `gz-intent-trace:138` "Magna Carta (`AGENTS.md` § Operator Doctrine)"; `gz-obpi-pipeline:543` `TempDBMixin`; `gz-obpi-pipeline:1490` `ghi-close` pinned at v2.4.0 (it is 2.12.0); `ghi-author:134` BSD-only `date -v-30d` in the mandatory Step 0 query. Each is a reference a reviewer could not find stated where it points; none was asserted absent.
+
+## Limits
+
+No command was run by any reviewer, so no verb, flag or exit code was observed. The honors test credits a citation by filename, which says the skill names the rule, not that it follows it. A gap is a reading of two texts; whether an agent in practice takes the step is not measured here.

@@ -1,14 +1,53 @@
 # Permission Inventory — Pass D
 
-> Chore: `control-surface-permission-consent-drift` (Lite lane, audit-only)
-> Run: **2026-08-09**. Generated mechanically from the two surfaces; verbatim.
-> `deny` takes precedence over `allow`.
+> Chore: `control-surface-permission-consent-drift` (Lite lane, advisory)
+> Run: **2026-10-10**, maintenance visit E. Both files read verbatim.
 
-## `.claude/settings.json`
+| Surface | allow | deny | ask |
+|---|---|---|---|
+| `.claude/settings.json` (committed; the `permissions` block is hand-kept and preserved by `sync_claude_settings`' merge) | 0 | 42 | 0 |
+| `.claude/settings.local.json` (gitignored at `.gitignore:54`; present on this machine) | 25 | 0 | 0 |
 
-allow: **0** | deny: **6** | ask: **0**
+August read 180 allow rules in the local file. That file was lost with the repository and rebuilt;
+its own `_comment` says so:
 
-### deny (6)
+> "Reconstructed 2026-08-29 from 203 session transcripts (24,466 Bash calls) after the original
+> was lost with the repo. Read-only and project-CLI verbs only; mutating and outward-facing
+> commands are deliberately absent so they still prompt."
+
+## `.claude/settings.local.json` — allow (25)
+
+```
+Bash(uv run gz:*)
+Bash(uv run ruff:*)
+Bash(uv run -m:*)
+Bash(git status:*)
+Bash(git log:*)
+Bash(git diff:*)
+Bash(git show:*)
+Bash(git rev-parse:*)
+Bash(git rev-list:*)
+Bash(git fetch:*)
+Bash(grep:*)
+Bash(rg:*)
+Bash(ls:*)
+Bash(cat:*)
+Bash(head:*)
+Bash(tail:*)
+Bash(wc:*)
+Bash(find:*)
+Bash(jq:*)
+Bash(gh issue list:*)
+Bash(gh issue view:*)
+Bash(gh run list:*)
+Bash(gh run view:*)
+WebSearch
+Bash(shasum:*)
+```
+
+## `.claude/settings.json` — deny (42)
+
+Hook-bypass, six rules:
 
 ```
 Bash(git *--no-verify*)
@@ -19,203 +58,22 @@ Bash(git *hooksPath=*)
 Bash(git *config *hooksPath *)
 ```
 
-## `.claude/settings.local.json`
-
-allow: **180** | deny: **0** | ask: **0**
-
-### allow (180)
+Secret-shaped files, 18 `Read(...)` rules and the same 18 as `Edit(...)`, new since August:
 
 ```
-Edit(docs/**)
-Edit(src/**)
-Edit(tests/**)
-Bash(grep:*)
-WebFetch(domain:github.com)
-WebFetch(domain:medium.com)
-WebFetch(domain:redreamality.com)
-WebFetch(domain:openspec.pro)
-Bash(uvx ruff check src tests)
-Bash(uvx ruff format --check .)
-WebFetch(domain:promptkit.natebjones.com)
-Bash(gh repo:*)
-Bash(gh api:*)
-WebFetch(domain:raw.githubusercontent.com)
-Bash(for dir:*)
-Bash(do echo:*)
-Bash(done)
-WebFetch(domain:www.anthropic.com)
-WebFetch(domain:openai.github.io)
-Bash(xargs -I {} dirname {})
-WebFetch(domain:openai.com)
-WebFetch(domain:docs.github.com)
-WebSearch
-WebFetch(domain:developers.openai.com)
-WebFetch(domain:code.visualstudio.com)
-Read(//tmp/**)
-Bash(find:*)
-Bash(ls:*)
-Bash(uvx ty:*)
-Bash(wc:*)
-WebFetch(domain:slsa.dev)
-Bash(sort -t. -k1,1n -k2,2n -k3,3n)
-WebFetch(domain:www.ntia.gov)
-Bash(gh auth:*)
-Bash(gh issue:*)
-Bash(for cmd:*)
-Bash(do)
-Bash(echo "OK: gz $cmd")
-Bash(echo "FAIL: gz $cmd")
-Bash(awk 'NR>=17 && NR<=46' /Users/jeff/Documents/Code/gzkit/src/gzkit/commands/preflight.py)
-Bash(awk 'NR>=91 && NR<=141' /Users/jeff/Documents/Code/gzkit/src/gzkit/commands/preflight.py)
-Bash(xargs -I {} basename {})
-Bash(while read:*)
-Bash(do basename:*)
-Bash(sort -t. -k2,2n -k3,3n)
-WebFetch(domain:alignment.anthropic.com)
-WebFetch(domain:docs.anthropic.com)
-mcp__plugin_playwright_playwright__browser_navigate
-Bash(npx playwright:*)
-Bash(PLAYWRIGHT_BROWSERS_PATH="$HOME/Library/Caches/ms-playwright" npx playwright install --list 2>&1)
-WebFetch(domain:arxiv.org)
-WebFetch(domain:transformer-circuits.pub)
-WebFetch(domain:www.lesswrong.com)
-Bash(cp .github/skills/gz-obpi-pipeline/SKILL.md .claude/skills/gz-obpi-pipeline/SKILL.md)
-Bash(cp .github/skills/gz-obpi-pipeline/DISPATCH.md .claude/skills/gz-obpi-pipeline/DISPATCH.md)
-Bash(cp .github/skills/gz-obpi-pipeline/VERIFICATION.md .claude/skills/gz-obpi-pipeline/VERIFICATION.md)
-Bash(cp .github/skills/gz-obpi-pipeline/REFERENCE.md .claude/skills/gz-obpi-pipeline/REFERENCE.md)
-WebFetch(domain:x.com)
-WebFetch(domain:nitter.net)
-WebFetch(domain:threadreaderapp.com)
-Bash(for skill:*)
-Bash(echo "=== $skill ===")
-Bash(for mirror:*)
-Bash(cp .gzkit/skills/gz-plan-audit/SKILL.md "$mirror/gz-plan-audit/SKILL.md")
-Bash(echo "Synced: $mirror")
-Bash(uv build:*)
-Bash(uv tool:*)
-Bash(head -50 /Users/jeff/Documents/Code/gzkit/docs/design/adr/pre-release/ADR-0.14.0*/ADR*.md)
-Bash(gh label:*)
-Bash(export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH")
-Bash(for f:*)
-Bash(do sed:*)
-Bash(brew --prefix gh)
-Read(//opt/homebrew/**)
-Bash(export PATH="/opt/homebrew/bin:/opt/homebrew/Cellar/gh/2.89.0/bin:$HOME/.local/bin:$HOME/.cargo/bin:$PATH")
-Bash(export PATH="/opt/homebrew/bin:$HOME/.local/bin:$HOME/.cargo/bin:$PATH")
-Bash(SKIP=gitleaks uv run gz git-sync --apply --lint --test)
-Bash(echo PATH=$PATH)
-Bash(echo SHELL=$SHELL)
-Read(//Users/jeff/**)
-Bash(source ~/.zprofile)
-Bash(source ~/.zshrc)
-WebFetch(domain:strategicdecisionsolutions.com)
-WebFetch(domain:www.sei.cmu.edu)
-WebFetch(domain:ardura.consulting)
-WebFetch(domain:nazdelam.medium.com)
-WebFetch(domain:www.theuncertaintyproject.org)
-WebFetch(domain:www.viewpoints-and-perspectives.info)
-WebFetch(domain:www.geeksforgeeks.org)
-WebFetch(domain:wellarchitected.github.com)
-WebFetch(domain:www.techtarget.com)
-WebFetch(domain:continuousarchitecture.com)
-WebFetch(domain:www.humintell.com)
-WebFetch(domain:problemsolving.engin.umich.edu)
-WebFetch(domain:rogermartin.medium.com)
-Bash(gh release:*)
-Bash(uvx xenon:*)
-WebFetch(domain:pydantic.dev)
-Bash(sed:*)
-Bash(curl -sL "https://transformer-circuits.pub/2025/attribution-graphs/biology.html" -o /tmp/biology.html)
-Bash(curl -sL -A "Mozilla/5.0" "https://blog.bytebytego.com/p/how-anthropics-claude-thinks" -o /tmp/bbg.html)
-Bash(git *)
-Bash(gh search:*)
-Bash(cat)
-Bash(bash /tmp/time_tests.sh)
-Bash(gh run *)
-WebFetch(domain:tvproductions.github.io)
-Bash(gh workflow *)
-Bash(/usr/bin/time -p uv run gz --help)
-Bash(uv pip *)
-Bash(curl -s https://pypi.org/pypi/ty/json)
-Bash(awk '{print $2}')
-Bash(perl -i -pe ' *)
-Bash(perl -i -pe 's/^from typing import Any, Callable$/from collections.abc import Callable\\nfrom typing import Any/' src/gzkit/cli/parser_artifacts.py src/gzkit/cli/parser_governance.py src/gzkit/cli/parser_maintenance.py)
-Bash(uv sync *)
-Bash(uvx unittest-parallel *)
-Bash(time GZKIT_TIER=integration uv run -m unittest discover tests/integration)
-Bash(GZKIT_TIER=integration uv run -m unittest discover tests/integration)
-Bash(GZKIT_TIER=integration uv run -m unittest tests.integration.commands.test_audit.TestConfigAndCliAuditCommands.test_cli_audit_detects_mismatch)
-Bash(awk -F':' '{print $2}')
-Bash(mv docs/design/adr/pre-release/ADR-0.42.0-frontmatter-ledger-coherence-guard docs/design/adr/foundation/ADR-0.0.16-frontmatter-ledger-coherence-guard)
-Bash(mv docs/design/adr/ADR-0.0.16.md docs/design/adr/foundation/ADR-0.0.16-frontmatter-ledger-coherence-guard/ADR-0.0.16-frontmatter-ledger-coherence-guard.md)
-Bash(echo "EXIT: $?")
-WebFetch(domain:agents.md)
-WebFetch(domain:claude.com)
-Bash(xargs -I {} bash -c "ls -la {} 2>/dev/null | grep -E 'output-styles|statusline'")
-WebFetch(domain:deploymentsafety.openai.com)
-WebFetch(domain:cdn.sanity.io)
-Bash(curl -sL -o /tmp/syscards/gpt-5-5.pdf "https://deploymentsafety.openai.com/gpt-5-5/gpt-5-5.pdf")
-Bash(curl -sL -o /tmp/syscards/anthropic.pdf "https://cdn.sanity.io/files/4zrzovbb/website/037f06850df7fbe871e206dad004c3db5fd50340.pdf")
-Bash(pdftotext -layout gpt-5-5.pdf gpt-5-5.txt)
-Bash(pdftotext -layout anthropic.pdf anthropic.txt)
-Bash(wait)
-Bash(codex --help)
-Bash(codex plugin *)
-Bash(curl -s https://tvproductions.github.io/gzkit/user/)
-Bash(xargs -I {} sh -c 'echo "=== {} ===" && head -40 "{}"')
-Bash(GZKIT_DOCS_VERSION=v0.test uv run -m mkdocs build --strict --site-dir /tmp/gzkit-test-site)
-WebFetch(domain:gzkit.readthedocs.io)
-Bash(curl -sS https://gzkit.readthedocs.io/en/latest/user/runbook/)
-Bash(uvx radon *)
-Bash(tee .gzkit/audits/tech-debt/2026-04-29-ADR-0.0.21/probes/size-cap.txt)
-Bash(awk '{print $1, $3}')
-Bash(sort -k2 -n -r)
-Bash(tee .gzkit/audits/tech-debt/2026-04-29-ADR-0.0.21/probes/complexity.txt)
-Bash(uv run *)
-Bash(tee .gzkit/audits/tech-debt/2026-04-29-ADR-0.0.21/probes/lint.txt)
-Bash(tee .gzkit/audits/tech-debt/2026-04-29-ADR-0.0.21/probes/types.txt)
-Bash(tee .gzkit/audits/tech-debt/2026-04-29-ADR-0.0.21/probes/cli-drift.txt)
-Bash(tee -a .gzkit/audits/tech-debt/2026-04-29-ADR-0.0.21/probes/cli-drift.txt)
-Bash(tee .gzkit/audits/tech-debt/2026-04-29-ADR-0.0.21/probes/governance.txt)
-Bash(tee .gzkit/audits/tech-debt/2026-04-29-ADR-0.0.21/probes/todo-rot.txt)
-Bash(tee .gzkit/audits/tech-debt/2026-04-29-ADR-0.0.21/probes/types-suppression.txt)
-Bash(tee .gzkit/audits/tech-debt/2026-04-29-ADR-0.0.21/probes/tests.txt)
-Bash(tee -a .gzkit/audits/tech-debt/2026-04-29-ADR-0.0.21/probes/tests.txt)
-Bash(tee .gzkit/audits/tech-debt/2026-04-29-ADR-0.0.21/probes/validators.txt)
-Bash(tee .gzkit/audits/tech-debt/2026-04-29-ADR-0.0.21/probes/cc.txt)
-Bash(echo "exit=$?")
-Bash(echo "---exit=$?---")
-Bash(echo "ADR-0.0.16 audit-check exit=$?")
-Bash(tee .gzkit/chores/instructions-files-diet/proofs/post-trim-2026-05-04.txt)
-Bash(chmod +x *)
-Bash(xargs -I {} basename {} .py)
-Skill(git-commit:*)
-Bash([ -f ".claude/skills/$skill/SKILL.md" ])
-Bash([ -f ".github/skills/$skill/SKILL.md" ])
-Bash(echo "Exit code: $?")
-Bash([ -f "docs/user/commands/$f.md" ])
-Bash(rmdir docs/user/commands/)
-Bash(echo "---EXIT: $?")
-Bash(mkdir *)
-Bash(/Users/jeff/Documents/Code/gzkit/.venv/bin/gz --version)
-Bash(rm -rf /tmp/gz-personas-demo2)
-Bash(/Users/jeff/Documents/Code/gzkit/.venv/bin/gz init *)
-Bash(rm -rf /tmp/gz-templates-demo)
-Bash(echo "captured exit=$?")
-Skill(ghi-author)
-Bash(date -v-30d +%Y-%m-%d)
-Bash(kill -9 3820 3525 3816 3521)
-Bash(ps -Ao pid,rss,args)
+.env  .env.*  *.pem  *.key  *.p12  *.pfx  *.jks  *.keystore
+id_rsa  id_dsa  id_ecdsa  id_ed25519  .netrc  .credentials.json
+~/.ssh/id_*  ~/.aws/credentials  ~/.config/gcloud/**  ~/.claude/.credentials.json
 ```
 
-## Totals
+## Hook matchers in `.claude/settings.json` (context for the unwitnessable ledger)
 
-| Surface | allow | deny |
+| Event | Matcher | Hooks |
 |---|---|---|
-| `.claude/settings.json` | 0 | 6 |
-| `.claude/settings.local.json` | 180 | 0 |
+| PreToolUse | `Bash` | verifier-pipe-gate, pipeline-completion-reminder, ghi-triage-chat-silence |
+| PreToolUse | `Write\|Edit\|NotebookEdit` | session-staleness-check, pipeline-gate, obpi-completion-validator, instruction-router |
+| PostToolUse | `Edit\|Write` | post-edit-ruff, ledger-writer |
+| PreToolUse / PostToolUse | `ExitPlanMode` | plan-audit-gate / pipeline-router |
+| SessionStart, PreCompact, Stop, UserPromptSubmit, SessionEnd | `*` | orientation, advisement, settings-local backup, stop-turn feedback, mx-awareness, exit bookmark |
 
-**Every `deny` rule in the project lives in the committed surface; the local surface
-carries none.** That asymmetry is what lets a project-level deny override a local
-blanket allow (drift row D6) — and it is why a gap in the deny list (row D1) is not
-recoverable from the local side.
+No hook that guards a file write is matched on `Bash`.

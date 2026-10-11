@@ -167,11 +167,12 @@
       "corpus-gate-covenant-2026-09-24T10:04:50.114064+00:00",
       "corpus-gate-covenant-2026-09-24T10:04:50.263111+00:00",
       "corpus-gate-covenant-2026-09-27T07:04:55.362786+00:00",
-      "corpus-gate-covenant-2026-10-10T13:36:48.167118+00:00"
+      "corpus-gate-covenant-2026-10-10T13:36:48.167118+00:00",
+      "corpus-gate-covenant-2026-10-11T01:06:55.421395+00:00"
     ],
     "byte_span": [
       9106,
-      11456
+      11598
     ]
   },
   "obpi-acceptance-protocol": {
@@ -185,8 +186,8 @@
       "corpus-obpi-acceptance-protocol-2026-09-24T10:04:51.311314+00:00"
     ],
     "byte_span": [
-      11456,
-      13207
+      11598,
+      13349
     ]
   },
   "execution-rules": {
@@ -200,8 +201,8 @@
       "corpus-execution-rules-2026-10-05T21:33:07.346566+00:00"
     ],
     "byte_span": [
-      13207,
-      14833
+      13349,
+      14975
     ]
   },
   "attestation": {
@@ -212,8 +213,8 @@
       "corpus-attestation-2026-10-05T21:33:07.666420+00:00"
     ],
     "byte_span": [
-      14833,
-      15840
+      14975,
+      15982
     ]
   },
   "defect-fix-routing": {
@@ -225,8 +226,8 @@
       "corpus-defect-fix-routing-2026-09-24T10:04:51.916661+00:00"
     ],
     "byte_span": [
-      15840,
-      16702
+      15982,
+      16844
     ]
   },
   "control-surfaces": {
@@ -235,16 +236,16 @@
       "corpus-control-surfaces-2026-09-17T11:39:37.113322+00:00"
     ],
     "byte_span": [
-      16702,
-      16968
+      16844,
+      17110
     ]
   },
   "local-agent-rules": {
     "owned": false,
     "entry_ids": [],
     "byte_span": [
-      16968,
-      16988
+      17110,
+      17130
     ]
   },
   "operator-doctrine-verbatim-canon": {
@@ -259,8 +260,8 @@
       "corpus-operator-doctrine-verbatim-canon-2026-09-27T20:35:02.678914+00:00"
     ],
     "byte_span": [
-      16988,
-      19662
+      17130,
+      19804
     ]
   },
   "governance-doctrine-surfaces": {
@@ -283,8 +284,8 @@
       "corpus-governance-doctrine-surfaces-2026-09-24T10:35:54.990937+00:00"
     ],
     "byte_span": [
-      19662,
-      22924
+      19804,
+      23066
     ]
   },
   "architectural-boundaries": {
@@ -296,8 +297,8 @@
       "corpus-architectural-boundaries-2026-10-10T13:36:48.462663+00:00"
     ],
     "byte_span": [
-      22924,
-      23808
+      23066,
+      23950
     ]
   }
 }
