@@ -26,10 +26,11 @@ class TestReleaseStepsHandOverRendering(unittest.TestCase):
         self.assertNotIn("### Delivered", text)
         self.assertNotIn("## vX.Y.Z", text)
 
-    def test_step_9_warns_off_a_second_bump(self) -> None:
+    def test_step_9_says_the_version_is_not_bumped_again(self) -> None:
         text = render_step_9_release_notes(_ADR, is_foundation=False)
-        self.assertIn("gz patch release", text)
         self.assertIn("already bumped", text)
+        self.assertIn("does not bump it again", text)
+        self.assertNotIn("Do not run", text)
 
     def test_step_10_routes_publication_to_the_owning_skill(self) -> None:
         text = render_step_10_release(_ADR, is_foundation=False)

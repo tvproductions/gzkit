@@ -28,6 +28,7 @@ from gzkit.commands.common import (
     get_project_root,
 )
 from gzkit.commands.version_sync import (
+    _parse_semver_tuple,
     _read_current_project_version,
     compute_patch_increment,
     sync_project_version,
@@ -175,6 +176,24 @@ def _get_latest_tag(project_root: Path) -> tuple[str | None, str | None]:
         return tag_name, None
 
     return tag_name, date_str.strip()
+
+
+def _version_in_flight(current_version: str | None, tag: str | None) -> bool:
+    """Return True when the declared version is ahead of the latest tag.
+
+    A declared version with no tag of its own is a release in flight: ``gz
+    closeout`` bumped it for an ADR, or an earlier run of this command bumped it
+    and stopped before publishing. Bumping again would skip a version nobody
+    released, so the caller releases this one. A newest tag that is not a
+    version reads as not in flight, which keeps the ordinary bump.
+    """
+    if not current_version or not tag:
+        return False
+    try:
+        tagged = _parse_semver_tuple(tag.removeprefix("v"))
+        return _parse_semver_tuple(current_version) > tagged
+    except ValueError:
+        return False
 
 
 def _discover_ghis(project_root: Path, base_ref: str | None) -> list[GhiRecord]:
@@ -577,7 +596,11 @@ def _render_dry_run_rich(result: DiscoveryResult) -> None:
         console.print(f"  Latest tag: {result.tag} ({result.tag_date or 'unknown date'})")
     else:
         console.print("  Latest tag: [dim]none (all closed GHIs are candidates)[/dim]")
-    if result.current_version and result.proposed_version:
+    if result.current_version and result.proposed_version == result.current_version:
+        console.print(
+            f"  Version: {result.current_version} (already bumped, no tag yet; released as is)"
+        )
+    elif result.current_version and result.proposed_version:
         console.print(
             f"  Version: {result.current_version} -> {result.proposed_version} (proposed)"
         )
@@ -758,9 +781,14 @@ def _extract_latest_entry(project_root: Path) -> str:
     if not rn_path.exists():
         return ""
     content = rn_path.read_text(encoding="utf-8")
-    # Find first ## vX.Y.Z section and extract until the next ---
-    m = re.search(r"(## v\d+\.\d+\.\d+.*?)(?=\n---\n)", content, re.DOTALL)
-    return m.group(1).strip() if m else ""
+    # RELEASE_NOTES.md is cumulative (GHI #710): the body is the first version
+    # block, which ends at the next version header. An entry may or may not be
+    # closed by a rule, so the rule is not what delimits it.
+    headers = list(re.finditer(r"^## v\d+\.\d+\.\d+", content, re.MULTILINE))
+    if not headers:
+        return ""
+    end = headers[1].start() if len(headers) > 1 else len(content)
+    return content[headers[0].start() : end].strip().removesuffix("---").strip()
 
 
 def _abort_hint_lines(version: str) -> list[str]:
@@ -879,6 +907,78 @@ def _verify_release(project_root: Path, version: str) -> None:
         console.print("  [yellow]Warning: working tree has uncommitted changes[/yellow]")
 
 
+def _propose_version(current_version: str | None, tag: str | None) -> tuple[str | None, bool]:
+    """Return the version this run releases and whether it is already bumped."""
+    if _version_in_flight(current_version, tag):
+        return current_version, True
+    return (compute_patch_increment(current_version) if current_version else None), False
+
+
+def _apply_version(
+    project_root: Path,
+    current_version: str,
+    proposed_version: str,
+    tag: str | None,
+    *,
+    in_flight: bool,
+) -> tuple[list[str], str]:
+    """Sync the version files unless the version is in flight.
+
+    Returns the files updated and the version this release follows: the tag's
+    for a version in flight, the pre-bump one otherwise.
+    """
+    if in_flight and tag is not None:
+        return [], tag.removeprefix("v")
+    return sync_project_version(project_root, proposed_version), current_version
+
+
+def _run_full_ceremony(
+    project_root: Path,
+    version: str,
+    *,
+    in_flight: bool,
+    qualifications: list[GhiQualification],
+    foundation_closeouts: list[FoundationCloseout],
+) -> None:
+    """Release notes, commit, push, GitHub release and verification for ``--full``."""
+    # --- Full ceremony: release notes, commit, push, release, verify ---
+    console.print()
+    console.print("[bold]Release notes[/bold]")
+    entry = _extract_latest_entry(project_root)
+    if in_flight and entry.startswith(f"## v{version} "):
+        console.print("  Using the entry already written for this version.")
+    else:
+        entry = _author_release_notes(project_root, version, qualifications, foundation_closeouts)
+    # Release notes are Markdown, never console markup: `[#944]` would be eaten.
+    console.print(entry, markup=False)
+
+    if not _confirm("Proceed with commit, push, and GitHub release?"):
+        console.print("[yellow]Aborted. Version bumped but not released.[/yellow]")
+        console.print("  The RELEASE_NOTES.md entry is written. To finish by hand:")
+        for line in _abort_hint_lines(version):
+            console.print(f"  {escape(line)}")
+        return
+
+    console.print()
+    console.print("[bold]Committing[/bold]")
+    _commit_release(project_root, version)
+
+    console.print()
+    console.print("[bold]Pushing (with gates)[/bold]")
+    _push_release(project_root)
+
+    console.print()
+    console.print("[bold]Creating GitHub release[/bold]")
+    _create_gh_release(project_root, version)
+
+    console.print()
+    console.print("[bold]Verifying[/bold]")
+    _verify_release(project_root, version)
+
+    console.print()
+    console.print(f"[green bold]v{version} released successfully.[/green bold]")
+
+
 # ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
@@ -915,7 +1015,7 @@ def patch_release_cmd(*, dry_run: bool, as_json: bool, full: bool = False) -> No
     foundation_closeouts = _discover_foundation_closeouts(ledger, tag_date)
 
     current_version = _read_current_project_version(project_root)
-    proposed_version = compute_patch_increment(current_version) if current_version else None
+    proposed_version, in_flight = _propose_version(current_version, tag)
 
     top_warnings: list[str] = []
     if tag is None:
@@ -954,7 +1054,9 @@ def patch_release_cmd(*, dry_run: bool, as_json: bool, full: bool = False) -> No
     # current_version is non-None here: proposed_version requires it
     assert current_version is not None
 
-    updated_files = sync_project_version(project_root, proposed_version)
+    updated_files, previous_version = _apply_version(
+        project_root, current_version, proposed_version, tag, in_flight=in_flight
+    )
 
     # Build manifest (Pydantic validates — REQ-04)
     manifest_ghis = [
@@ -969,7 +1071,7 @@ def patch_release_cmd(*, dry_run: bool, as_json: bool, full: bool = False) -> No
     ]
     manifest = PatchManifest(
         version=proposed_version,
-        previous_version=current_version,
+        previous_version=previous_version,
         date=datetime.now(UTC).strftime("%Y-%m-%d"),
         tag=tag,
         ghis=manifest_ghis,
@@ -990,7 +1092,7 @@ def patch_release_cmd(*, dry_run: bool, as_json: bool, full: bool = False) -> No
     ]
     event = patch_release_event(
         version=proposed_version,
-        previous_version=current_version,
+        previous_version=previous_version,
         tag=tag,
         ghi_summary=ghi_summary,
         manifest_path=str(manifest_rel),
@@ -1007,7 +1109,13 @@ def patch_release_cmd(*, dry_run: bool, as_json: bool, full: bool = False) -> No
 
     _render_dry_run_rich(result)
     console.print()
-    console.print(f"[green]Version bumped: {current_version} -> {proposed_version}[/green]")
+    if in_flight:
+        console.print(
+            f"[green]Version {proposed_version} is already bumped and has no tag; "
+            "not bumped again.[/green]"
+        )
+    else:
+        console.print(f"[green]Version bumped: {current_version} -> {proposed_version}[/green]")
     for f in updated_files:
         console.print(f"  Updated: {f}")
     console.print(f"  Manifest: {manifest_rel}")
@@ -1016,37 +1124,10 @@ def patch_release_cmd(*, dry_run: bool, as_json: bool, full: bool = False) -> No
     if not full:
         return
 
-    # --- Full ceremony: release notes, commit, push, release, verify ---
-    console.print()
-    console.print("[bold]Release notes[/bold]")
-    entry = _author_release_notes(
-        project_root, proposed_version, qualifications, foundation_closeouts
+    _run_full_ceremony(
+        project_root,
+        proposed_version,
+        in_flight=in_flight,
+        qualifications=qualifications,
+        foundation_closeouts=foundation_closeouts,
     )
-    # Release notes are Markdown, never console markup: `[#944]` would be eaten.
-    console.print(entry, markup=False)
-
-    if not _confirm("Proceed with commit, push, and GitHub release?"):
-        console.print("[yellow]Aborted. Version bumped but not released.[/yellow]")
-        console.print("  The RELEASE_NOTES.md entry is written. To finish by hand:")
-        for line in _abort_hint_lines(proposed_version):
-            console.print(f"  {escape(line)}")
-        return
-
-    console.print()
-    console.print("[bold]Committing[/bold]")
-    _commit_release(project_root, proposed_version)
-
-    console.print()
-    console.print("[bold]Pushing (with gates)[/bold]")
-    _push_release(project_root)
-
-    console.print()
-    console.print("[bold]Creating GitHub release[/bold]")
-    _create_gh_release(project_root, proposed_version)
-
-    console.print()
-    console.print("[bold]Verifying[/bold]")
-    _verify_release(project_root, proposed_version)
-
-    console.print()
-    console.print(f"[green bold]v{proposed_version} released successfully.[/green bold]")

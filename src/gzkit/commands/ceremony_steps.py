@@ -373,8 +373,8 @@ def render_step_9_release_notes(adr_id: str, is_foundation: bool) -> str:
             "",
             "  Run the gz-patch-release skill from its hand-over section:",
             "  draft the entry, take the operator's approval, insert it and",
-            "  stamp the changelog. Do not run `gz patch release`: it would",
-            "  bump the patch a second time.",
+            "  stamp the changelog. `gz patch release` sees that the version",
+            "  has no tag yet and does not bump it again.",
             "",
             f"Once the entry is written, run `gz closeout {adr_id} --ceremony --next`.",
         ]

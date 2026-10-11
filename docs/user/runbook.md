@@ -666,7 +666,8 @@ uv run gz patch release --dry-run
 # 2) Inspect machine-readable discovery output
 uv run gz patch release --dry-run --json
 
-# 3) Bump version and write manifest (no commit/push/release)
+# 3) Bump version and write manifest (no commit/push/release);
+#    a version already ahead of its tag is released as is, not bumped again
 uv run gz patch release
 
 # 4) Add the RELEASE_NOTES.md entry as the gz-patch-release skill prescribes (Step 4b)

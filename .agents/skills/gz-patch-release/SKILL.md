@@ -5,7 +5,7 @@ description: "Orchestrate the GHI-driven patch release ceremony, and the notes a
 category: adr-audit
 compatibility: GovZero v6 framework; provides ceremony walkthrough for GHI-driven patch releases
 metadata:
-  skill-version: "1.12.0"
+  skill-version: "1.13.0"
   govzero-framework-version: "v6"
   govzero-author: "GovZero governance team"
   govzero-spec-references: "docs/governance/GovZero/releases/patch-release.md, docs/design/adr/foundation/ADR-0.0.15-ghi-driven-patch-release-ceremony/ADR-0.0.15-ghi-driven-patch-release-ceremony.md"
@@ -87,10 +87,10 @@ flow (Steps 4a–4e) is identical regardless of which qualifier fired.
 This skill owns the notes, the changelog and the publication of every release
 (operator ruling 2026-10-11; `.gzkit/rules/changelog-release-notes.md`,
 release-notes rule 3). When `gz closeout` has bumped the version for an ADR,
-run Step 1 for the GHIs closed since the last tag, draft the entry around the
-ADR's delivered value, and **skip Step 4a**: the version is bumped and the
-release manifest is written, and `gz patch release` would bump the patch a
-second time. The verb has no path for an already-bumped version yet.
+run Step 1 for the GHIs closed since the last tag and draft the entry around
+the ADR's delivered value. Step 4a runs as usual: `gz patch release` sees a
+version ahead of its tag, leaves it alone, and writes the manifest and the
+ledger record. The same holds when an earlier run bumped and then stopped.
 
 ---
 
@@ -342,7 +342,7 @@ uv run gz patch release
 This atomically:
 
 - Bumps the patch version via `sync_project_version` (pyproject.toml,
-  `__init__.py`, README badge)
+  `__init__.py`, README badge), unless the version is already ahead of its tag
 - Writes the markdown manifest to `docs/releases/PATCH-vX.Y.Z.md`
 - Appends the JSONL ledger entry
 

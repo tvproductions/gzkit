@@ -20,6 +20,21 @@ doctrine, foundation ADRs (ports) ship code surfaces just as feature ADRs
 (adapters) do, so a foundation closeout is a release-worthy event in its
 own right.
 
+## A VERSION THAT IS ALREADY BUMPED
+
+A declared version ahead of the latest tag is a release in flight: `gz
+closeout` bumped it for an ADR, or an earlier run of this command bumped it
+and stopped before publishing. The command releases that version and does
+not bump it again. It still writes the manifest and the ledger record, and
+the dry run prints `already bumped, no tag yet; released as is` in place of
+a proposed version. With `--full`, an entry already written for that version
+at the top of `RELEASE_NOTES.md` is used and no second entry is added. A
+newest tag that is not a version reads as not in flight, and the ordinary
+bump applies.
+
+The GitHub release body is the newest version block of `RELEASE_NOTES.md`,
+which ends at the next version header whether or not a rule closes it.
+
 ## QUALIFICATION BUCKETS
 
 Every discovered GHI lands in exactly one bucket. The first four are

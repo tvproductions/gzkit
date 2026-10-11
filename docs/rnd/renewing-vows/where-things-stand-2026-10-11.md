@@ -68,8 +68,9 @@ Both rulings are given. 27 of the 35 remain, listed in
 
 **Work only the operator starts.**
 
-- A path in `gz patch release` for a version that is already bumped. Wanted before v0.35.0;
-  until then the hand-over from closeout is done by hand.
+- (Done 2026-10-11 on the operator's word.) `gz patch release` now releases a version that
+  is already bumped and does not bump it again, so the hand-over from closeout runs through
+  the verb.
 - The row 1 ADR work, after items 15 to 20.
 
 **Closed later the same day.** GHI #997, closed `fixed` on the operator's word. Verifying it
