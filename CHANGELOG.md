@@ -17,6 +17,50 @@ Canonical shape: `.gzkit/templates/changelog.md`. Discipline: `.gzkit/rules/chan
 
 ## [Unreleased]
 
+## v0.34.9 (2026-10-11)
+
+### Release highlights
+
+- Replays of author-declared commands no longer run in the live checkout: ADR fidelity assertions run in a detached worktree at HEAD and packet transcripts in a disposable copy (GHI #1156, GHI #1157)
+- `gz obpi complete` refuses a change outside the brief's Allowed Paths, and completion receipts carry the scope report again (GHI #1181)
+- The windows-latest CI job is reliable: the gate hang bound, the ledger lock wait and a replay timeout that hid a refusal are corrected (GHI #1165, GHI #1178, GHI #1164)
+
+### Added
+
+- `gz canary review` records the operator's review of a guard canary as a `guard_canary_reviewed` ledger event carrying the claim, its current binding hash, the attestor and the operator's verbatim words; a canary counts as reviewed only when an event exists at its current binding, a hand-set `reviewed_by` counts for nothing, and a rebind needs a fresh review (GHI #1161)
+- `gz validate --gate-enrollment` reads the gate population from code (validate scopes, precomplete checks, completion refusals, closeout gates and check steps) and fails `gz check` on a new gate that no registered `@enforces` claim names; gates with no claim at the cutover are disclosed on the shrink-only `data/gate_enrollment_grandfather.json`. Partial landing; the issue stays open (GHI #1155)
+- Guard canaries: each registered enforcement claim is bound to a reviewed mutant by a hash of the guard source, the claim and the designated failing test, so a changed guard or a weakened test no longer leaves the claim reading green; session orientation names canaries awaiting review. Partial landing; the issue stays open (GHI #1154)
+
+### Changed
+
+- The quality-gate hang bound in `src/gzkit/quality_command_timeout.json` is 1800 s, raised from 900 s after healthy unit tiers on windows-latest measured 696 to 895 s and three runs were killed at the bound with no failing test (GHI #1165)
+- `gz airlock out` takes the files a transit changed, books each one outside the brief's Allowed Paths as a finding in the event's `drift`, and records `observed_files`, so an exit that looked at nothing is distinguishable from a clean one. Partial landing; the issue stays open (GHI #1185)
+
+### Fixed
+
+- `gz obpi complete` built its receipt without the recorder context, so 333 of the 342 completed receipts written since 2026-04-05 carried no `scope_audit`; receipts carry it again, the command refuses (exit 3) before writing anything when a changed file lies outside the brief's Allowed Paths, and `gz obpi precomplete` reports the same finding first. Files gzkit writes as its own record (the ledger, handoffs, locks, insights, plan markers) never count (GHI #1181)
+- `run_fidelity_gate` ran each ADR fidelity assertion in the caller's working directory, so an uncommitted file could satisfy one and a command could write into the tree being attested; each assertion now runs in its own detached worktree at HEAD and fails closed (`WORKTREE_UNAVAILABLE`) when none can be built, for the closeout ceremony, `gz audit` and `gz adr fidelity` (GHI #1156)
+- `gz obpi verify-packet` re-ran every `$` transcript with the project root as its working directory, so a packet line could write into the checkout under review and the packet still verified; transcripts now run in one disposable copy of the working tree, and when no copy can be built every transcript is reported not run and the packet is not verified (GHI #1157)
+- `validate_stage4_evidence` had no production caller while its docstring and a blocker message said it re-ran the Demo at `gz obpi complete`; the function, its helper and the three tests that called it are removed, and the text no longer claims a completion re-run (GHI #1158)
+- `gz validate --red-parity` kept the last non-void RED per REQ and read a missing `base_provenance` as working-tree, so a later provenance-less `error` replaced a standing `none` (18 `none` rows across 16 REQs on the 2026-10-01 ledger); a stored `none` is now displaced only by an `assertion` or by an `error` with explicit working-tree provenance (GHI #1159)
+- `gz obpi status` printed `Attestation State: not_required` for an OBPI with no completion and for a repudiated one; an OBPI with no ledger completion now derives `required` / `missing`, a recorded completion is still read from its own receipt, and a withdrawn OBPI stays `not_required` (GHI #1170)
+- `gz obpi verify-packet` reported only a replay timeout for a transcript whose command masks a verifier's exit status; the two refusals decided from the command text are reported before the timeout short-circuit (GHI #1164)
+- On Windows `msvcrt.locking` with `LK_LOCK` gives up after ten one-second tries, so a contended ledger writer raised `EDEADLK` where the POSIX branch waits without bound; the Windows branch now repeats the bounded call for as long as it expires (GHI #1178)
+- The tautological-debt check computed its ceiling on `date.today()`, so for a window each day one tree passed locally and failed in CI; the ceiling is computed on the UTC date and the report line labels it (GHI #1177)
+- `gz arb red --commit` exited 1 with no receipt and no hunk row when a mutant's test run exceeded the 600 s bound; a hung mutant is now one `inconclusive` row, the source is restored and the remaining mutants are graded, and a commit whose own tests hang yields an `inconclusive` verdict (GHI #1179)
+- Brief reconcile existence-checked the whole token of a `path:symbol` Discovery citation, so `features/environment.py:before_scenario` read as a missing path; the symbol suffix is stripped and the file is still checked (GHI #1160)
+- Handoff citation resolution answered `unknown` for a short OBPI id that prefixes both a parked or withdrawn phantom and the live OBPI (87 of the 90 such ids on the live ledger); both resolvers now drop parked and withdrawn keys when an active key remains (GHI #1162)
+- `load_registry` let a registry that is not UTF-8 out as a raw `UnicodeDecodeError`; it now raises `RegistryError`, as for a missing file or malformed JSON (GHI #1180)
+- A fresh interpreter importing `gzkit.skills_audit` first failed on a circular import with `gzkit.skills`; the three shared definitions moved to `gzkit.skill_contract`, and existing import sites resolve unchanged (GHI #1039)
+- The `eval-feedback-cluster` chore's run step invoked the library's unit tests, so the live ledger was never clustered; `python -m gzkit.chores.eval_feedback_cluster_run [--dry-run]` runs the clustering and reports what it read. The runner also reads `data/eval_feedback_thresholds.json`, which it had fallen back from on every run; an absent registry is reported, an unreadable one exits 1, and proposal rule targets are slugified paths (GHI #997)
+- A zero-exit unit run that executed no test, or fewer than the floor in `data/unit_collection_floor.json`, is refused (exit 3); `gz obpi complete` reads a covering run's own summary instead of its exit code; ADR closeout applies the REQ-kind distinction completion applies; a RED counts only when the named covering test produced it; and a shrink-ratchet surface is checked by entry identity, not only by count. Partial landing; the issue stays open (GHI #1154)
+- Seven gates gain a registered load-bearing claim: the Step-4b refusal (bound to the reducer's completion runs), the ARB-receipt gate at precomplete, the `gz validate --json` exit classification, the SUPPORT proof declaration, both pointer-integrity arms and the `gz tidy` verdict; a claim whose gate runs behind a subprocess declares its command. Partial landing; the issue stays open (GHI #1155)
+
+### Breaking changes
+
+- `gz obpi complete` no longer accepts `--adversary-verdict`, `--adversary`, `--adversary-receipt`, `--adversary-fallback-reason` or `--adversary-tier`. None was read: the completion path computes verdict, reviewer, tier and receipt from the accepted review. The uncalled Step-4b verdict gate and its precomplete twin are removed with them (GHI #1163)
+- `gz obpi pipeline` no longer accepts `--no-subagents`, which was parsed and passed to no handler; argparse now refuses it (exit 2). A single-session run is declared with `gz obpi dispatch <OBPI> --single-driver --reason "<why>"` (GHI #1166)
+
 ## v0.34.8 (2026-10-01)
 
 ### Release highlights

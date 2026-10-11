@@ -1,5 +1,119 @@
 # gzkit Release Notes
 
+## v0.34.9 (2026-10-11)
+
+### Highlights
+
+A short repair release that finishes the audit v0.34.8 opened. The four findings
+that release listed as "not yet confirmed" are confirmed and fixed: closeout and
+packet replays no longer run in, or write to, the live checkout; a completion
+gate nothing called is gone along with the documentation that said it enforced;
+and a weak falsifiability record can no longer hide a finding that a test could
+not fail.
+
+Completion is held to its declared scope again, the operator's review of a
+guard canary is now a ledger record, and the Windows CI job is reliable.
+
+Upgrade note: `gz obpi complete` no longer accepts the five `--adversary-*`
+flags named under #1163, and `gz obpi pipeline` no longer accepts
+`--no-subagents`. None of them had any effect; passing one now exits 2.
+
+### New features
+
+- **#1161** — `gz canary review` records the operator's review of a guard
+  canary on the ledger with their words. A hand-edited field no longer counts
+  as a review.
+
+### Improvements
+
+- **#1165** — The quality-gate hang bound is 1800 s, above a healthy unit tier
+  on the slowest CI host.
+- **#1154** (still open) — A unit run that executed no test is refused, a
+  covering run must execute, and a falsifiability record counts only when the
+  named covering test produced it. Every registered enforcement claim has a
+  reviewed mutant bound to it, and session start names canaries awaiting review.
+- **#1155** (still open) — Seven gates that had no registered control have one,
+  and `gz validate` inventories the scopes and gates no enforcement claim names.
+- **#1185** (still open) — `gz airlock out` holds the files a transit changed
+  against the brief's Allowed Paths and books them on the exit record.
+- Release notes have one owner: the closeout ceremony stops at the version bump
+  and hands notes, changelog and publication to `gz-patch-release`
+  (`bd8b7d902`). Ten skills were corrected where a rule had moved and the skill
+  had not (`04fda99d3`).
+
+### Bug fixes
+
+- **#1181** — Completion receipts carried no scope report since June. `gz obpi
+  complete` now refuses a change outside the brief's Allowed Paths, `gz obpi
+  precomplete` reports it first, and receipts carry the report again.
+- **#1156** — ADR fidelity assertions ran in the live checkout, where an
+  uncommitted file could satisfy one and a demo could write into the tree.
+- **#1157** — `gz obpi verify-packet` replayed commands in the checkout under
+  review and could change it while reporting the packet verified.
+- **#1158** — A Stage 4 evidence gate with no caller was documented as running
+  at completion.
+- **#1159** — A later weak falsifiability record could replace an earlier
+  finding that a test could not fail; on gzkit's own ledger 18 of 21 such
+  findings were hidden.
+- **#1163** — `gz obpi complete` accepted five Step 4b flags it never read, one
+  documented as required.
+- **#1166** — `gz obpi pipeline --no-subagents` was parsed and never read.
+- **#1170** — `gz obpi status` showed Attestation State `not_required` for
+  uncompleted and repudiated work packages.
+- **#1164** — On a slow host, a replay timeout replaced the refusal of a
+  transcript that masks a verifier's exit status.
+- **#1178** — On Windows a writer waiting for the ledger lock failed after ten
+  seconds.
+- **#1177** — The tautological-debt ceiling used the local date, so CI and a
+  developer machine could disagree about the same tree.
+- **#1179** — `gz arb red` crashed with no receipt when a mutant hung its tests.
+- **#1160** — A `path:symbol` citation in a brief was reported as a missing path.
+- **#1162** — A handoff citing a short work-package id read it as unknown when
+  a parked sibling shared the prefix.
+- **#1180** — A registry file that was not UTF-8 raised a raw decode error.
+- **#1039** — Importing the skills audit first in a fresh process failed.
+- **#997** — The evaluation-feedback chore ran its library's tests instead of
+  clustering the project's evidence, and its runner never read the configured
+  thresholds.
+- Without an issue: a repudiated work package read as Completed to the
+  frontmatter validator, so reconcile could have undone the repudiation
+  (`1c8430f08`); `gz lint` claimed a Markdown lint that never ran (`1a351e3f4`);
+  the `gz patch release` manual-finish hint published the whole notes file
+  (`04fda99d3`); the docs site root served a contributor page (`6a2d59365`).
+
+### Known issues
+
+- `gz patch release` has no path for a version `gz closeout` has already
+  bumped, so a minor release's hand-over is done by hand.
+- #1154, #1155 and #1185 remain open.
+- Four completions were repudiated on 2026-10-01 (OBPI-0.0.24-04, -0.0.26-02,
+  -0.34.0-02, -0.35.0-09). OBPI-0.35.0-09 is still repudiated.
+- The v0.34.8 tag push never reached PyPI; that version was published by
+  workflow dispatch (`129327afe`, `40f7c3b71`).
+
+### Gate Evidence
+
+- Qualifier: behavior-level GHIs closed since `v0.34.8`
+  (2026-09-30T19:39:41-05:00). 26 discovered: 19 qualified, 3 `open_upstream`,
+  2 `diff_only`, 1 `label_only`, 1 `excluded`. No foundation closeouts.
+- § Step 1a: #1167 and #1169 stay excluded; their `src/gzkit/` changes are help
+  text, a docstring and skill text.
+- § Step 1b: #1154, #1155 and #1185 ruled still-open trackers; each is described
+  only by what landed and is not counted in Stats.
+- `label_only` excluded: #1182. `excluded`: #1168.
+- Changes without an issue are named by commit. `CHANGELOG.md` carries issue
+  entries only, as its rule requires.
+- Work in progress under `ADR-0.35.0` (items 8 and 10) is in this build and is
+  described at v0.35.0.
+- The upgrade note in Highlights was added after approval; it restates the
+  removal of the flags named in #1163 and #1166.
+- Operator approval, verbatim: "approved, then git sync".
+
+### Stats
+
+- 19 GHIs closed
+- 3 partial landings under open trackers: #1154, #1155, #1185
+
 ## v0.34.8 (2026-10-01)
 
 ### Highlights
