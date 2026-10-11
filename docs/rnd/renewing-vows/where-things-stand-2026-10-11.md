@@ -46,6 +46,9 @@ Both rulings are given. 27 of the 35 remain, listed in
 - **Release notes** (commit `bd8b7d902`): `gz-patch-release` owns the notes, the changelog and
   the publication of every release; the closeout ceremony hands over after the version bump.
 
+- **Patch release** (commit `0efb147ec`): v0.34.9 was approved and published later the same
+  day, with 19 issues closed and 3 partial landings.
+
 ## Open, and none of it blocks `ADR-0.35.0`
 
 **Decisions waiting on the operator.** Numbers are the run record's.
