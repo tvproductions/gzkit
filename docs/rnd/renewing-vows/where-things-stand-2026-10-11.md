@@ -104,10 +104,10 @@ in commit `ef5f82fdf`.
 
 **Backlog.** The chore board reads 17 overdue, 13 due, 3 unmeasured and 7 current
 (`uv run gz chores status`), as read the afternoon of 2026-10-11. It read 17 overdue, 11 due
-and 9 current that morning, and 2 current and 35 overdue before the visits. 74 issues are open
-(`gh issue list --state open`): 75 that morning, 74 after GHI #997 closed, and unchanged by
-GHI #1191 and GHI #1192, which were filed and closed the same afternoon. GHI #1185 is among
-them, from the session before the visits.
+and 9 current that morning, and 2 current and 35 overdue before the visits. 73 issues are open
+(by the search total, `gh api search/issues`): 75 that morning, 74 after GHI #997 closed,
+unchanged by GHI #1191 and GHI #1192, which were filed and closed the same afternoon, and 73
+after GHI #1187 closed. GHI #1185 is among them, from the session before the visits.
 
 ## Loose ends of the run `renewing-vows`
 
@@ -117,8 +117,11 @@ each with the door canon names for it. None blocks `ADR-0.35.0`. Issue states we
 
 **Doctrine ratified and not yet connected.**
 
-- No agent loads the doctrine. It is reached by nothing loaded each turn (GHI #1187). Door:
-  one corpus entry landed through the content skill with the operator's attestation.
+- (Done 2026-10-11 on the operator's word, "direct fix 1187".) Root `AGENTS.md` names the
+  doctrine as the constitution again, under § Governance doctrine surfaces: one corpus entry,
+  commit `6948212bb`, GHI #1187 closed `fixed`. The entry is invariant tier, so the floor gate
+  holds it in every rendition. Not held: a later rewrite that retires it without recapturing
+  it, which is how the pointer was lost on 2026-09-17; recorded as an insight.
 - The policy layer is a draft. Parts II to IV of
   [`doctrine-merge.md`](doctrine-merge.md) hold 20 drafted policies and are not ratified. Four
   statements were put and not answered: what a policy is; the reading of the June pairs under
