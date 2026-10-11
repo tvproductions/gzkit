@@ -144,7 +144,14 @@ states below are after those corrections.
 | B17 | open, narrowed | `airlineops-parity-scan` 1.3.0 states the direction and drops the trigger on an AirlineOps change. Step 13's same-cycle tranche is unchanged: the skill reads "perpetual catch-up" as a reason for it, the reviewer reads it as the chase. One ruling |
 | B21 | open, withdrawn | `gz-complexity-distill` is unchanged at 0.3.2. REQ-0.0.27-04-07, attested, reads "operator-attested at Gate 5", and `ADR-0.0.27` calls the pass a "foundation-kind ceremony at every recurrence"; `AGENTS.md` § Attestation reads "Gate 5 names completed OBPI/ADR work only". A REQ that literally asserts a retired claim goes to the operator (`AGENTS.md` § OBPI Acceptance Protocol) |
 
-**Open gaps after the sweep: 29 of 35** (six closed). The unverified reference
+**Ruling on B21, 2026-10-11.** Operator g0 ruled, verbatim "B", on the option worded "Gate 5, kept
+literal. Each recurring pass runs as an OBPI you initiate under a feature ADR." Commit `a87603775`:
+`gz-complexity-distill` 0.4.0 says a cadence trigger makes a pass due and the operator initiates
+the pass as OBPI work, so the Gate 5 it names is an OBPI's completion attestation. **B21 is closed.**
+The REQ, the ADR and the naming rule keep their text. Recorded as worked example 5 of
+`docs/governance/attested-req-subject-retirement.md`.
+
+**Open gaps after the sweep and the ruling: 28 of 35** (seven closed). The unverified reference
 `gz-obpi-lock:239` ("`AGENTS.md` § Agent Profiles") was confirmed absent by grep and removed.
 
 Same class, outside the skills and corrected in the same commit: six skill manpages, the

@@ -1,6 +1,6 @@
 # Skill inventory — 2026-10-10
 
-Ten rows were refreshed on 2026-10-11 after the skill sweep (commit `04fda99d3`): version, bytes and lines of the ten edited skills. The other 63 rows are as read on 2026-10-10.
+Ten rows were refreshed on 2026-10-11 after the skill sweep (commit `04fda99d3`): version, bytes and lines of the ten edited skills. The `gz-complexity-distill` row was refreshed the same day after ruling B (commit `a87603775`). The other 62 rows are as read on 2026-10-10.
 
 73 skills under `.gzkit/skills/`; 62 model-invocable, 11 user-invoked only (`disable-model-invocation: true`). Vendor mirrors are derivatives and are not inventoried. Generated from frontmatter and body text; `Rules cited` is any mention of a rule filename, by path or bare.
 
@@ -32,7 +32,7 @@ Ten rows were refreshed on 2026-10-11 after the skill sweep (commit `04fda99d3`)
 | `gz-cli-audit` | 0.2.0 | 2050 | 54 | model | — | — | 0 |
 | `gz-competitor-radar` | 1.1.0 | 5841 | 150 | model | — | — | 0 |
 | `gz-complexity-advisor` | 0.2.3 | 5259 | 113 | model | `complexity advise` | `pythonic.md` | 1 |
-| `gz-complexity-distill` | 0.3.2 | 7973 | 161 | model | `complexity distill` | `complexity-doctrine.md`, `skill-surface-sync.md`, `tool-skill-runbook-alignment.md` | 0 |
+| `gz-complexity-distill` | 0.4.0 | 8574 | 170 | model | `complexity distill` | `complexity-doctrine.md`, `skill-surface-sync.md`, `tool-skill-runbook-alignment.md` | 0 |
 | `gz-complexity-guide` | 0.2.2 | 3445 | 87 | model | `complexity guide` | — | 0 |
 | `gz-constitute` | 0.3.0 | 3061 | 64 | model | — | — | 1 |
 | `gz-content-compose` | 1.1.0 | 6515 | 123 | model | `gz content compose` | — | 1 |

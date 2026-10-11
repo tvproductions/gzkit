@@ -59,5 +59,7 @@ It repaired nothing. A repair that touches a skill is operator-only (`skill-auth
 
 "It repaired nothing" describes the run of 2026-10-10. On 2026-10-11 the operator ordered the
 sweep of headline 1, and commit `04fda99d3` repairs it: six rows closed (B01, B06, B14, B18, B20,
-B22), three narrowed and still open (B02, B09, B17), one withdrawn for a ruling (B21). 29 of
-the 35 gaps are open. Row detail and limits are in `reachability-matrix.md`.
+B22), three narrowed and still open (B02, B09, B17), one withdrawn for a ruling (B21). The
+operator ruled on B21 the same day ("B": each recurring pass runs as an OBPI the operator
+initiates) and commit `a87603775` closes it. 28 of the 35 gaps are open. Row detail and limits
+are in `reachability-matrix.md`.
