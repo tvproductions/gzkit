@@ -41,10 +41,10 @@ This implements the preferred resolution in GHI #221.
 ## Repair Mode
 
 `--repair` makes two repairs, both from ledger-derived state. It
-force-reconciles every OBPI brief's frontmatter status, and it rebuilds the
-pipeline marker of a run in flight whose marker file is gone. It is the
-operator recovery tool for drift between the L3 caches (frontmatter, pipeline
-markers) and the ledger (L2 authority).
+force-reconciles every OBPI brief's frontmatter status, and it restores or
+rebuilds the pipeline marker files of the run in flight that was launched
+last. It is the operator recovery tool for drift between the L3 caches
+(frontmatter, pipeline markers) and the ledger (L2 authority).
 
 ### Frontmatter reconciliation
 
@@ -59,57 +59,83 @@ markers) and the ledger (L2 authority).
 
 ### Pipeline marker rebuild
 
-`gz state --repair` is the one command that rebuilds a missing or deleted
-pipeline marker. Nothing else does: the pipeline launcher, the hooks and the
-commands that record a run's position all leave a missing marker missing.
+`gz state --repair` is the one command that restores or rebuilds a missing or
+deleted pipeline marker. Nothing else does: the pipeline launcher, the hooks
+and the commands that record a run's position all leave a missing marker
+missing.
 
 A run is in flight from its latest `pipeline_launched` event until its
-completion receipt, or until its OBPI is parked or withdrawn. For each run in
-flight whose per-OBPI marker file is not on disk, the repair writes both marker
-files (`.claude/plans/.pipeline-active-<OBPI-ID>.json` and
-`.claude/plans/.pipeline-active.json`) from the ledger alone:
+completion receipt, or until its OBPI is parked, withdrawn or superseded. A run
+has two marker files: its own, `.claude/plans/.pipeline-active-<OBPI-ID>.json`,
+and the legacy marker, `.claude/plans/.pipeline-active.json`. The legacy marker
+is one file for the whole project and names the run launched last. The repair
+therefore acts on one run, the run in flight that was launched last, and does
+one of two things for it.
+
+**One file missing: restored as a copy.** When exactly one of the run's two
+marker files is on disk and reads as that run's marker, the missing one is
+created as a copy of it, byte for byte. Everything the file on disk carries
+survives, including `dispatch_state`, `single_driver_declaration`, `started_at`
+and `updated_at`, and the file on disk is not moved. Nothing is read from the
+ledger for a copy, so a marker that is behind the ledger stays behind it.
+
+**Both files missing: rebuilt.** When neither file is on disk, the repair
+writes both. Most keys come from the ledger, and two do not:
 
 - `obpi_id`, `parent_adr`, `lane`, `entry`, `nonce` and `started_at` come from
   the `pipeline_launched` event.
-- `current_stage`, `position`, `blockers`, `required_human_action`,
-  `next_command` and `resume_point` come from the last
-  `pipeline_stage_transition` event after that launch. A launch with nothing
+- `current_stage`, `position` and `blockers` come from the last
+  `pipeline_stage_transition` event after that launch, and
+  `required_human_action`, `next_command` and `resume_point` are what the
+  runtime derives for that stage and those blockers. A launch with nothing
   after it rebuilds to its launch values and carries no `position`.
 - `updated_at` is the time of that last recorded crossing, never the time of
   the repair, so a rebuild cannot make an abandoned run look live.
-- `receipt_state` is read back from the plan-audit receipt file, and is
-  `missing` when there is none.
+- `receipt_state` is not on the ledger. It is read back from the plan-audit
+  receipt file at the time of the repair, and is `missing` when there is none.
+- `execution_mode` is not on the ledger either. It is the launcher's constant.
 
-**Not restored.** The `dispatch_state` and `single_driver_declaration` keys are
-caches of ledger records and are not rebuilt. Stage 2 dispatch credit and the
+**Not restored by a rebuild.** The `dispatch_state` and
+`single_driver_declaration` keys are caches of ledger records and are not
+rebuilt from the ledger; a copy keeps them. Stage 2 dispatch credit and the
 single-driver declaration are read from the ledger, so no gate depends on them.
 
-**Never moved.** A marker file that is on disk is left exactly as it is. A run
-whose per-OBPI marker is on disk is not touched, even when only the legacy
-marker is gone.
+**Never overwritten.** A marker file that is on disk is never rewritten. When
+both of the run's files are on disk and read as its marker, the repair does
+nothing for it and reports nothing.
 
 **Declined, and reported with the reason.** The repair names each run in flight
-that it does not rebuild:
+that it does not repair:
 
-- The run's last recorded crossing is older than the stale-marker bound. Its
-  marker would be stale on arrival, and a resurrected marker would block every
-  other OBPI's launch. Launch the run again with `gz obpi pipeline` to resume it.
+- A later run is in flight. The legacy marker belongs to the run launched
+  last, so no file is restored or written for an older run, whatever files are
+  on disk. An older run can then never take the legacy marker and block the
+  live one.
+- Neither file is on disk and the run's last recorded crossing is older than
+  the stale-marker bound, or its time cannot be read. Its marker would be stale
+  on arrival, and a resurrected marker would block every other OBPI's launch.
+  Launch the run again with `gz obpi pipeline` to resume it.
+- Neither file is on disk and the run's `pipeline_launched` event records no
+  nonce. A rebuild invents none.
 - The legacy marker is on disk and names another OBPI, or cannot be read. A
-  rebuild writes both files and overwrites no other run's marker. When two runs
-  are in flight with no markers, the one launched last is rebuilt.
+  repair overwrites no file and no other run's marker.
 - The run's own marker file is on disk and cannot be read. Clear it with
   `gz obpi pipeline --clear-stale`, then repair again.
 
 A run that has ended, an OBPI that was parked and later unparked but not
 launched again, and an ADR audit ceremony are not runs in flight; they are
-neither rebuilt nor reported.
+neither repaired nor reported.
 
 ### Output
 
 Human-readable by default: a table of the frontmatter fields changed, then one
-line for each marker rebuilt and each run declined. `--json` prints one object.
-`changes` and `total` describe the frontmatter reconciliation; `markers` lists
-the runs rebuilt and the runs declined.
+line for each marker rebuilt, each marker file restored and each run declined.
+`--json` prints one object. `changes` and `total` describe the frontmatter
+reconciliation; `markers` lists the runs rebuilt, the files restored and the
+runs declined. A `restored` entry carries `obpi_id`, `file` (the marker file
+created) and `copied_from` (the marker file it copies). Only the run launched
+last is repaired, so one report holds at most one entry across `rebuilt` and
+`restored`.
 
 ```json
 {
@@ -135,6 +161,7 @@ the runs rebuilt and the runs declined.
         "updated_at": "2026-10-12T00:51:51.180096+00:00"
       }
     ],
+    "restored": [],
     "declined": [
       {
         "obpi_id": "OBPI-0.1.0-01-abandoned",

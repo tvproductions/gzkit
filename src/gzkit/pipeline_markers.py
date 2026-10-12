@@ -379,7 +379,9 @@ def rewrite_pipeline_markers(plans_dir: Path, obpi_id: str, payload: dict[str, A
     The single writer for a live marker: the dispatch writers once wrote the
     per-OBPI file alone and the legacy marker fell behind (OBPI-0.35.0-15
     Requirement 7). A file naming another OBPI is skipped and a missing file
-    stays missing; only ``gz state --repair`` rebuilds one (Requirement 18).
+    stays missing; only ``gz state --repair`` restores or rebuilds one
+    (Requirement 18), through :func:`restore_pipeline_marker_twin` and
+    :func:`write_pipeline_markers`.
     """
     encoded = json.dumps(payload, indent=2) + "\n"
     for marker_path in pipeline_marker_paths(plans_dir, obpi_id):
@@ -387,6 +389,35 @@ def rewrite_pipeline_markers(plans_dir: Path, obpi_id: str, payload: dict[str, A
         if marker is None or marker.get("obpi_id") != obpi_id:
             continue
         marker_path.write_text(encoded, encoding="utf-8")
+
+
+def restore_pipeline_marker_twin(plans_dir: Path, obpi_id: str) -> tuple[Path, Path] | None:
+    """Restore the one missing marker file of a run as a copy of its twin on disk.
+
+    A run's per-OBPI file and the legacy file carry one payload (OBPI-0.35.0-15
+    Requirement 7). When exactly one of the two is on disk and reads as
+    ``obpi_id``'s marker, the other is created holding the same bytes, so
+    everything the surviving file carries survives: both times, the nonce and
+    the dispatch caches. The file on disk is read and never written, and the
+    missing file is created exclusively, so no file on disk is overwritten.
+    Which run may hold the legacy marker is the caller's rule:
+    ``gz state --repair`` is the one caller (Requirement 18).
+
+    Returns ``(restored, copied_from)``, or ``None`` when there is nothing to
+    restore: both files are on disk, neither is, or the one on disk does not
+    read as this OBPI's marker.
+    """
+    per_obpi, legacy = pipeline_marker_paths(plans_dir, obpi_id)
+    for source, missing in ((per_obpi, legacy), (legacy, per_obpi)):
+        if missing.exists() or not marker_matches(source, obpi_id):
+            continue
+        try:
+            with missing.open("xb") as restored:
+                restored.write(source.read_bytes())
+        except FileExistsError:
+            continue
+        return missing, source
+    return None
 
 
 #: What a position inside a stage is, as the marker carries it.

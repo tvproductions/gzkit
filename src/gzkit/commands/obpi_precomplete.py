@@ -70,24 +70,32 @@ def obpi_precomplete_cmd(*, obpi_id: str, as_json: bool = False) -> int:
     whatever the checks find. This command is a check: it never moves the
     stage, and the record changes no verdict.
 
-    The OBPI is named once, here. The brief is resolved from the id as typed,
-    and every check, the position record and the report then use the id that
-    brief carries. A short ``OBPI-<semver>-<item>`` id therefore reads the
-    same operator block, the same marker and the same dispatch records as the
-    full id, whether or not a run is in flight. No check reads the typing.
+    The OBPI is named once, here, for the checks. The brief is resolved from
+    the id as typed, and every check and the report then use the id that brief
+    carries. A short ``OBPI-<semver>-<item>`` id therefore reads the same
+    operator block, the same marker and the same dispatch records as the full
+    id, whether or not a run is in flight. No check reads the typing.
+
+    The position record is the one reader of the id as typed. Which run an id
+    names is the recorder's rule and no command's: the launch in flight that
+    carries the id, or the one launch in flight whose short form it is. With
+    two briefs on disk under one short form the brief resolved may belong to a
+    retired sibling, whose id names no run, while the id as typed still names
+    the live one.
     """
     from gzkit.pipeline_runtime import RunCrossing, record_run_position
 
     project_root = get_project_root()
 
-    brief_path = _resolve_brief_path(project_root, obpi_id)
+    typed = obpi_id
+    brief_path = _resolve_brief_path(project_root, typed)
     if brief_path is None:
-        console.print(f"[red]Brief not found for {obpi_id}[/red]")
+        console.print(f"[red]Brief not found for {typed}[/red]")
         raise SystemExit(EXIT_USER_ERROR)
-    obpi_id = _canonical_obpi_id(brief_path, obpi_id)
+    obpi_id = _canonical_obpi_id(brief_path, typed)
 
     checks = list(_run_all_checks(project_root, brief_path, obpi_id))
-    record_run_position(project_root, obpi_id, RunCrossing(boundary="precomplete"))
+    record_run_position(project_root, typed, RunCrossing(boundary="precomplete"))
 
     if as_json:
         print(

@@ -12,8 +12,10 @@ and the marker files are real.
 
 from __future__ import annotations
 
+import importlib.util
 import io
 import json
+import sys
 import tempfile
 from collections.abc import Callable
 from contextlib import redirect_stderr, redirect_stdout
@@ -477,6 +479,81 @@ def step_launch_count(context, count: int) -> None:
 
 
 # ---------------------------------------------------------------------------
+# The session orientation's reading of a run
+# ---------------------------------------------------------------------------
+
+_ORIENTATION_SCRIPT = Path(__file__).resolve().parents[2] / "scripts" / "session_orientation.py"
+
+
+def _orientation_module() -> Any:
+    """Load the session-orientation script, which lives outside the package."""
+    spec = importlib.util.spec_from_file_location("session_orientation", _ORIENTATION_SCRIPT)
+    assert spec is not None and spec.loader is not None, f"cannot load {_ORIENTATION_SCRIPT}"
+    module = importlib.util.module_from_spec(spec)
+    sys.modules["session_orientation"] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+@when("the session orientation is collected")
+def step_collect_orientation(context) -> None:
+    """Collect the runs and render the section a new process is shown."""
+    orientation = _orientation_module()
+    context.orientation_runs = orientation.collect_adr_pipeline(context.run_root)
+    rendered = orientation.render({"adr_pipeline": context.orientation_runs}, datetime.now(UTC))
+    section = rendered.split("## Active ADR pipeline state", 1)[1].split("\n## ", 1)[0]
+    context.orientation_section = section.splitlines()
+
+
+def _oriented_run(context) -> dict[str, Any]:
+    named = [run for run in context.orientation_runs if run["obpi_id"] == context.run_obpi]
+    assert len(named) == 1, context.orientation_runs
+    return named[0]
+
+
+@then('the orientation reports the run at stage "{stage}" with a "{kind}" position')
+def step_orientation_stage_and_kind(context, stage: str, kind: str) -> None:
+    run = _oriented_run(context)
+    launch_stage = context.launch_payload["current_stage"]
+    assert stage != launch_stage, "the example must leave the launch stage to prove anything"
+    assert run["stage"] == stage, run
+    assert run["position"] is not None, run
+    assert run["position"]["kind"] == kind, run
+
+
+@then("the orientation position is the last boundary the ledger recorded")
+def step_orientation_position_is_the_ledgers(context) -> None:
+    recorded = _transitions(context)[-1]
+    position = _oriented_run(context)["position"]
+    expected = {
+        "kind": recorded["position_kind"],
+        "label": recorded["position_label"],
+        "boundary": recorded["boundary"],
+    }
+    assert position == expected, (position, expected)
+
+
+@then('the orientation section names stage "{stage}" and that position, not the launch stage')
+def step_orientation_section(context, stage: str) -> None:
+    launch_stage = context.launch_payload["current_stage"]
+    position = _oriented_run(context)["position"]
+    lines = context.orientation_section
+    named = [index for index, line in enumerate(lines) if line.startswith(f"- {context.run_obpi}")]
+    assert len(named) == 1, lines
+    headline = lines[named[0]]
+    assert stage in headline, headline
+    assert launch_stage not in headline, headline
+    under = []
+    for line in lines[named[0] + 1 :]:
+        if not line.startswith("  "):
+            break
+        under.append(line)
+    positioned = [line for line in under if position["kind"] in line and position["label"] in line]
+    assert len(positioned) == 1, under
+    assert launch_stage not in positioned[0], positioned
+
+
+# ---------------------------------------------------------------------------
 # A marker rebuilt by gz state --repair
 # ---------------------------------------------------------------------------
 
@@ -584,7 +661,30 @@ def step_markers_untouched(context) -> None:
 
 @then("the repair reports nothing rebuilt and nothing declined")
 def step_nothing_reported(context) -> None:
-    assert context.repair == {"rebuilt": [], "declined": []}, context.repair
+    assert context.repair == {"rebuilt": [], "restored": [], "declined": []}, context.repair
+
+
+@when("the legacy marker file is deleted")
+def step_delete_legacy_marker(context) -> None:
+    _per_obpi, legacy = context.run_markers
+    legacy.unlink()
+
+
+@then("the per-OBPI marker file is byte for byte what it was before the repair")
+def step_per_obpi_untouched(context) -> None:
+    per_obpi, _legacy = context.run_markers
+    assert context.markers_before[0] is not None, "the scenario needs the per-OBPI marker on disk"
+    assert per_obpi.read_bytes() == context.markers_before[0], "the repair moved the file on disk"
+
+
+@then("the repair reports the legacy marker file restored and nothing rebuilt or declined")
+def step_reported_restored(context) -> None:
+    per_obpi, legacy = context.run_markers
+    assert context.markers_before[1] is None, "the scenario needs the legacy marker deleted"
+    assert context.repair["rebuilt"] == [], context.repair
+    assert context.repair["declined"] == [], context.repair
+    expected = {"obpi_id": context.run_obpi, "file": legacy.name, "copied_from": per_obpi.name}
+    assert context.repair["restored"] == [expected], context.repair
 
 
 @then("no marker file is on disk")

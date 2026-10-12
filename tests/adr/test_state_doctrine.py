@@ -1,8 +1,9 @@
 """Tests for gz state --repair (OBPI-0.0.9-03: State Repair Command).
 
 Validates that state_repair force-reconciles frontmatter status from
-ledger-derived state, reports changes, and is idempotent; and that it rebuilds
-a deleted pipeline marker from the ledger alone (OBPI-0.35.0-15).
+ledger-derived state, reports changes, and is idempotent; and that it restores
+one deleted pipeline marker file as a copy of its twin, and rebuilds both from
+the ledger when neither is on disk (OBPI-0.35.0-15).
 """
 
 import json
@@ -30,11 +31,17 @@ from gzkit.ledger import (
     pipeline_launched_event,
     pipeline_stage_transition_event,
 )
-from gzkit.ledger_events import obpi_parked_event, obpi_unparked_event, obpi_withdrawn_event
+from gzkit.ledger_events import (
+    obpi_parked_event,
+    obpi_superseded_event,
+    obpi_unparked_event,
+    obpi_withdrawn_event,
+)
 from gzkit.pipeline_runtime import (
     STALE_MARKER_HOURS,
     RunCrossing,
     find_stale_pipeline_markers,
+    pipeline_concurrency_blockers,
     pipeline_marker_paths,
     pipeline_marker_payload,
     pipeline_receipt_path,
@@ -365,6 +372,11 @@ _LAUNCHED_AS: dict[str | None, tuple[str, str, str | None, bool]] = {
 }
 
 
+#: The ``markers`` object of a repair that found no marker to rebuild or restore
+#: and no run to decline.
+_NOTHING_REPAIRED: dict[str, list[Any]] = {"rebuilt": [], "restored": [], "declined": []}
+
+
 def _ago(hours: float) -> str:
     """Return the ledger timestamp of a moment ``hours`` before now."""
     return (datetime.now(UTC) - timedelta(hours=hours)).isoformat()
@@ -526,6 +538,7 @@ class TestRepairRebuildsADeletedMarker(_RepairableRun):
                                 "updated_at": last.ts,
                             }
                         ],
+                        "restored": [],
                         "declined": [],
                     },
                 )
@@ -626,25 +639,30 @@ class TestRepairRebuildsOnlyARunInFlightWhoseMarkerIsGone(_RepairableRun):
     """A rebuild moves no marker on disk and writes nothing the ledger does not hold."""
 
     def test_a_marker_on_disk_is_never_moved(self) -> None:
-        """Even behind the ledger, and even when only the legacy file is gone."""
+        """Both files on disk are left as they are, even behind the ledger.
+
+        With one of the two gone the other is still not moved: the missing
+        one is restored as a copy of it (``TestRepairRestoresAMarkersTwin``).
+        """
         self._launch()
         self._cross("verification")
         self._crossed_at(_ago(-0.01))
-        for gone in ((), (self.legacy,)):
-            with self.subTest(gone=[path.name for path in gone]):
-                for marker_path in gone:
-                    marker_path.unlink()
-                held = self.per_obpi.read_bytes()
-                on_disk = self._markers_on_disk()
+        held = (self.per_obpi.read_bytes(), self.legacy.read_bytes())
+        on_disk = self._markers_on_disk()
 
-                report = self._repair()
+        report = self._repair()
 
-                self.assertEqual(self.per_obpi.read_bytes(), held)
-                self.assertEqual(self._markers_on_disk(), on_disk)
-                self.assertEqual(report["markers"], {"rebuilt": [], "declined": []})
+        self.assertEqual((self.per_obpi.read_bytes(), self.legacy.read_bytes()), held)
+        self.assertEqual(self._markers_on_disk(), on_disk)
+        self.assertEqual(report["markers"], _NOTHING_REPAIRED)
 
     def test_a_run_that_is_not_in_flight_is_not_rebuilt(self) -> None:
-        """The recorder's own rule: ended by its completion, parked, withdrawn, unparked."""
+        """The recorder's own rule: completed, parked, withdrawn, superseded, unparked.
+
+        A supersede ends a run by the operator's ruling of 2026-10-12 (Open
+        Design Question 16), so the repair writes no marker for the launch of
+        an OBPI that was superseded.
+        """
         completed = obpi_receipt_emitted_event(
             _RUN,
             receipt_event="completed",
@@ -657,6 +675,9 @@ class TestRepairRebuildsOnlyARunInFlightWhoseMarkerIsGone(_RepairableRun):
             "completed": [completed],
             "parked": [parked],
             "withdrawn": [obpi_withdrawn_event(_RUN, _RUN_ADR, "superseded", "g0")],
+            "superseded": [
+                obpi_superseded_event(_RUN, _RUN_ADR, _OTHER_RUN, "replaced by its successor", "g0")
+            ],
             "parked, then unparked and not launched again": [
                 parked,
                 obpi_unparked_event(_RUN, _RUN_ADR, "ADR-pool.interrogate"),
@@ -674,7 +695,7 @@ class TestRepairRebuildsOnlyARunInFlightWhoseMarkerIsGone(_RepairableRun):
                 report = self._repair()
 
                 self.assertEqual(self._markers_on_disk(), [])
-                self.assertEqual(report["markers"], {"rebuilt": [], "declined": []})
+                self.assertEqual(report["markers"], _NOTHING_REPAIRED)
 
     def test_a_receipt_that_is_not_a_completion_leaves_the_run_to_be_rebuilt(self) -> None:
         self._launch()
@@ -706,7 +727,7 @@ class TestRepairRebuildsOnlyARunInFlightWhoseMarkerIsGone(_RepairableRun):
         report = self._repair()
 
         self.assertEqual(self._markers_on_disk(), [])
-        self.assertEqual(report["markers"], {"rebuilt": [], "declined": []})
+        self.assertEqual(report["markers"], _NOTHING_REPAIRED)
 
     def test_another_runs_marker_file_is_never_overwritten(self) -> None:
         """A rebuild writes both files, so it stands down when either is not its own."""
@@ -741,6 +762,45 @@ class TestRepairRebuildsOnlyARunInFlightWhoseMarkerIsGone(_RepairableRun):
                 self.assertEqual(declined["obpi_id"], _RUN)
                 self.assertTrue(declined["reason"])
 
+    @covers("REQ-0.35.0-15-03")
+    def test_a_launch_that_records_no_nonce_is_declined_and_no_nonce_is_invented(self) -> None:
+        """A rebuilt marker carries a nonce a launch recorded, or there is no marker.
+
+        The nonce pairs a marker with its ``pipeline_launched`` row (GHI #412),
+        so one made up at repair time would pair with nothing on the ledger.
+        A launch row that carries no nonce, or an empty one, is declined and
+        named, and no marker file is written for it.
+        """
+        launch = pipeline_launched_event(
+            obpi_id=_RUN,
+            parent_adr=_RUN_ADR,
+            lane="heavy",
+            nonce="0123456789abcdef0123456789abcdef",
+            marker_path=f".claude/plans/.pipeline-active-{_RUN}.json",
+            entry="full",
+        )
+        recorded: dict[str, dict[str, Any]] = {
+            "no nonce": {key: value for key, value in launch.extra.items() if key != "nonce"},
+            "an empty nonce": {**launch.extra, "nonce": ""},
+        }
+        for name, extra in recorded.items():
+            with self.subTest(launch_records=name):
+                self._start_over()
+                self.ledger.append(launch.model_copy(update={"extra": extra, "ts": _ago(1)}))
+                rows = list(Ledger(self.ledger.path).read_all())
+
+                rebuild = rebuild_marker(rows, self.plans, _RUN, now=datetime.now(UTC))
+                report = self._repair()
+
+                self.assertIsNotNone(rebuild, "the run is in flight and its marker is gone")
+                assert rebuild is not None
+                self.assertIsNone(rebuild.payload)
+                self.assertTrue(rebuild.declined)
+                self.assertEqual(self._markers_on_disk(), [])
+                self.assertEqual(report["markers"]["rebuilt"], [])
+                declined = [each["obpi_id"] for each in report["markers"]["declined"]]
+                self.assertEqual(declined, [_RUN])
+
     def test_of_two_runs_in_flight_the_one_launched_last_is_rebuilt(self) -> None:
         """The legacy marker is one file: it names the latest launch, as a launch leaves it."""
         self._launch(ts=_ago(3))
@@ -754,6 +814,147 @@ class TestRepairRebuildsOnlyARunInFlightWhoseMarkerIsGone(_RepairableRun):
         self.assertEqual([each["obpi_id"] for each in report["markers"]["declined"]], [_RUN])
         self.assertEqual(_read_marker(self.legacy)["obpi_id"], _OTHER_RUN)
         self.assertFalse(self.per_obpi.exists())
+
+
+class TestRepairRestoresAMarkersTwin(_RepairableRun):
+    """Requirements 7 and 18: a missing twin is restored as a copy, never rewritten.
+
+    A run's two marker files carry one payload. When one of them is gone and
+    the other is on disk reading as the run's marker, the repair creates the
+    missing one holding the same bytes, so what the ledger does not carry (the
+    dispatch caches, the launcher's own clock reading) survives and the file
+    on disk is not moved. The legacy marker is one file for the whole project:
+    it is restored or written only for the run launched last.
+    """
+
+    def _restored(self, report: dict[str, Any]) -> list[tuple[str, str, str]]:
+        return [
+            (each["obpi_id"], each["file"], each["copied_from"])
+            for each in report["markers"]["restored"]
+        ]
+
+    #: What a twin restored as a copy still carries and a rebuild from the
+    #: ledger could not give back: the dispatch caches, which no launch or
+    #: crossing carries, and the launcher's own reading of the clock.
+    _ONLY_A_COPY_KEEPS = ("dispatch_state", "single_driver_declaration", "started_at")
+
+    def _run_with_caches_and_a_ledger_ahead_of_its_marker(self) -> dict[str, Any]:
+        """Launch a run, record a dispatch and a declaration, then cross twice.
+
+        The second crossing is appended to the ledger alone, so the marker on
+        disk is behind the ledger: a file rebuilt from the ledger would differ
+        from the file on disk, and a copy would not.
+        """
+        self._launch()
+        chan.record_dispatch(self.root, _RUN, role="Implementer", model="sonnet", task_id=1)
+        chan.declare_single_driver(self.root, _RUN, reason="cron run, no Agent tool")
+        self._cross("verification")
+        self._crossed_at(_ago(-0.01))
+        self.assertEqual(self.per_obpi.read_bytes(), self.legacy.read_bytes())
+        marker = _read_marker(self.per_obpi)
+        for key in self._ONLY_A_COPY_KEEPS:
+            self.assertIn(key, marker)
+        return marker
+
+    @covers("REQ-0.35.0-15-03")
+    def test_a_deleted_legacy_file_is_restored_as_a_copy_of_the_per_obpi_file(self) -> None:
+        marker = self._run_with_caches_and_a_ledger_ahead_of_its_marker()
+        held = self.per_obpi.read_bytes()
+        self.legacy.unlink()
+
+        report = self._repair()
+
+        self.assertEqual(self.per_obpi.read_bytes(), held, "the file on disk is not moved")
+        self.assertTrue(self.legacy.is_file(), "the legacy file was not restored")
+        self.assertEqual(self.legacy.read_bytes(), held)
+        self.assertEqual(self._restored(report), [(_RUN, self.legacy.name, self.per_obpi.name)])
+        self.assertEqual((report["markers"]["rebuilt"], report["markers"]["declined"]), ([], []))
+        restored = _read_marker(self.legacy)
+        for key in self._ONLY_A_COPY_KEEPS:
+            self.assertEqual(restored[key], marker[key])
+
+    @covers("REQ-0.35.0-15-03")
+    def test_a_deleted_per_obpi_file_is_restored_as_a_copy_of_the_legacy_file(self) -> None:
+        """The legacy file on disk keeps its bytes: it is copied, never rewritten."""
+        marker = self._run_with_caches_and_a_ledger_ahead_of_its_marker()
+        held = self.legacy.read_bytes()
+        self.per_obpi.unlink()
+
+        report = self._repair()
+
+        self.assertEqual(self.legacy.read_bytes(), held, "the file on disk is not moved")
+        self.assertTrue(self.per_obpi.is_file(), "the per-OBPI file was not restored")
+        self.assertEqual(self.per_obpi.read_bytes(), held)
+        self.assertEqual(self._restored(report), [(_RUN, self.per_obpi.name, self.legacy.name)])
+        self.assertEqual((report["markers"]["rebuilt"], report["markers"]["declined"]), ([], []))
+        restored = _read_marker(self.per_obpi)
+        for key in self._ONLY_A_COPY_KEEPS:
+            self.assertEqual(restored[key], marker[key])
+
+    @covers("REQ-0.35.0-15-05")
+    def test_an_older_run_never_takes_the_legacy_marker_from_the_run_launched_last(self) -> None:
+        """Requirement 6: a repair makes no older run look live and blocks no live one.
+
+        Review finding t3-AUX-a-skipped-latest-run-lets-an-older-run-take-the-legacy-marker.
+        The run launched last has its own marker on disk and only the legacy
+        file is gone. An older run was never ended, has no marker on disk and
+        last crossed inside the stale bound. The legacy file is restored for
+        the run launched last, the older run is declined and gets no file, and
+        the concurrency block then reports nothing against the live run.
+        """
+        self._launch(obpi_id=_OTHER_RUN, ts=_ago(3))
+        self._crossed_at(_ago(2), obpi_id=_OTHER_RUN)
+        self._delete_markers(obpi_id=_OTHER_RUN)
+        self._launch(ts=_ago(1))
+        self._cross("verification")
+        held = self.per_obpi.read_bytes()
+        self.legacy.unlink()
+
+        report = self._repair()
+
+        self.assertEqual(self._restored(report), [(_RUN, self.legacy.name, self.per_obpi.name)])
+        self.assertEqual(report["markers"]["rebuilt"], [])
+        self.assertEqual([each["obpi_id"] for each in report["markers"]["declined"]], [_OTHER_RUN])
+        self.assertEqual(self._markers_on_disk(), sorted([self.legacy.name, self.per_obpi.name]))
+        self.assertEqual(self.legacy.read_bytes(), held)
+        self.assertEqual(self.per_obpi.read_bytes(), held)
+        self.assertEqual(pipeline_concurrency_blockers(self.plans, _RUN), [])
+
+    @covers("REQ-0.35.0-15-05")
+    def test_an_older_run_is_declined_while_a_later_one_is_in_flight(self) -> None:
+        """Whatever files are on disk, and whether or not the later run is repaired.
+
+        The legacy marker belongs to the run launched last. Here that run is
+        itself declined, its last crossing past the stale bound, so no file
+        stands in the older run's way; the older run last crossed inside the
+        bound. A marker written for it would name it in the legacy file and
+        block every other OBPI's launch, the live one included. It is
+        declined, the reason names the later run, and no file is written,
+        with none of its files on disk and with its own per-OBPI file on disk.
+        """
+        older_per_obpi, _legacy = pipeline_marker_paths(self.plans, _OTHER_RUN)
+        for name, keeps_its_own_file in (("no file", False), ("its per-OBPI file", True)):
+            with self.subTest(the_older_run_has_on_disk=name):
+                self._start_over()
+                older = self._launch(obpi_id=_OTHER_RUN, ts=_ago(STALE_MARKER_HOURS + 3))
+                self._crossed_at(_ago(1), obpi_id=_OTHER_RUN)
+                self._launch(ts=_ago(STALE_MARKER_HOURS + 2))
+                self._delete_markers()
+                self._delete_markers(obpi_id=_OTHER_RUN)
+                if keeps_its_own_file:
+                    older_per_obpi.write_text(json.dumps(older, indent=2) + "\n", encoding="utf-8")
+                held = {path.name: path.read_bytes() for path in self.plans.iterdir()}
+
+                report = self._repair()
+
+                after = {path.name: path.read_bytes() for path in self.plans.iterdir()}
+                self.assertEqual(after, held, "the repair wrote or moved a file")
+                self.assertEqual((report["markers"]["rebuilt"], self._restored(report)), ([], []))
+                declined = {
+                    each["obpi_id"]: each["reason"] for each in report["markers"]["declined"]
+                }
+                self.assertEqual(list(declined), [_RUN, _OTHER_RUN])
+                self.assertIn(_RUN, declined[_OTHER_RUN])
 
 
 class TestRepairDeclinesARunStaleOnArrival(_RepairableRun):
@@ -795,14 +996,20 @@ class TestRepairDeclinesARunStaleOnArrival(_RepairableRun):
     def test_a_run_whose_last_crossing_time_cannot_be_placed_is_declined(self) -> None:
         """A time the rebuild cannot place against now is never taken for a recent one.
 
-        Requirement 6: a rebuild cannot make an abandoned run look live, and
-        stale detection treats a marker with no readable time as stale. A last
+        Requirement 6: a rebuild cannot make an abandoned run look live. A last
         crossing whose time is no time, or names no zone and so cannot be
         compared with the clock, says nothing about how long ago the run
-        stopped. Its marker would be stale on arrival, so the run is declined:
-        by the rebuild itself, and by ``gz state --repair``, which writes no
-        file. The zoneless time is an hour old by the wall clock on purpose:
-        read as a time, it would pass for a live run.
+        stopped, so the run is declined: by the rebuild itself, and by
+        ``gz state --repair``, which writes no file. The zoneless time is an
+        hour old by the wall clock on purpose: read as a time, it would pass
+        for a live run.
+
+        This is the rebuild's own rule, and stale detection on a marker on
+        disk agrees with it for one of the two shapes only. A marker whose
+        ``updated_at`` is no time at all is reported stale. One whose time
+        names no zone is not: ``find_stale_pipeline_markers`` raises on it.
+        That raise is older than this OBPI, is tracked, and is not changed
+        here (Requirement 6 leaves stale-marker handling as it is).
         """
         an_hour_ago = datetime.now(UTC) - timedelta(hours=1)
         unplaceable = {
@@ -850,6 +1057,17 @@ class TestRepairReportRendering(_RepairableRun):
         shown = self._render()
 
         self.assertIn(f"Rebuilt pipeline marker: {_RUN} at stage verify", shown)
+
+    def test_a_restored_file_is_named_with_the_file_it_copies(self) -> None:
+        # output-contract: `gz state --repair` reports each marker file it restores.
+        self._launch()
+        self._cross("verification")
+        self.legacy.unlink()
+
+        shown = self._render()
+
+        self.assertIn(f"Restored pipeline marker file: {self.legacy.name} for {_RUN}", shown)
+        self.assertIn(self.per_obpi.name, shown)
 
     def test_a_declined_run_is_named_with_its_reason(self) -> None:
         # output-contract: `gz state --repair` reports each run it declines, and why.

@@ -116,6 +116,21 @@ Feature: Pipeline run position
     Then the command recorded the "phase" "precomplete" inside stage "verify"
     And the ledger says the run has reached stage "verify"
 
+  @REQ-0.35.0-15-06
+  Scenario Outline: The session orientation shows the stage a run has reached and its position
+    Given a project whose run was launched in full through gz obpi pipeline
+    And the run has reached stage "<stage>"
+    When the session orientation is collected
+    Then the orientation reports the run at stage "<stage>" with a "<kind>" position
+    And the orientation position is the last boundary the ledger recorded
+    And the orientation section names stage "<stage>" and that position, not the launch stage
+
+    Examples: a run that has left the stage its launch named
+      | stage    | kind  |
+      | verify   | phase |
+      | ceremony | round |
+      | sync     | step  |
+
   @REQ-0.35.0-15-03
   Scenario Outline: gz state --repair rebuilds a deleted marker to the stage and position it held
     Given a project whose run was launched in full through gz obpi pipeline
@@ -142,6 +157,16 @@ Feature: Pipeline run position
     And both rebuilt marker files read stage "implement" and no position
     And the rebuilt marker carries the time of the launch event
     And the rebuilt marker carries the nonce and the entry the launch event recorded
+
+  @REQ-0.35.0-15-03
+  Scenario: gz state --repair restores a deleted legacy marker as a copy of the per-OBPI marker
+    Given a project whose run was launched in full through gz obpi pipeline
+    And the run has reached stage "verify"
+    When the legacy marker file is deleted
+    And gz state --repair is run
+    Then both marker files hold the same bytes
+    And the per-OBPI marker file is byte for byte what it was before the repair
+    And the repair reports the legacy marker file restored and nothing rebuilt or declined
 
   @REQ-0.35.0-15-05
   Scenario: gz state --repair leaves a marker on disk exactly as it is

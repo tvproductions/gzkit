@@ -17,9 +17,11 @@ command hands over the OBPI id it holds, and the recorder finds the run among
 the launches in flight on the ledger, so no command resolves an id for it.
 
 When a run is in flight is said once as well, in :func:`_launches_in_flight`.
-The recorder and the marker rebuild both read it. :func:`rebuild_marker` builds
-the payload ``gz state --repair`` writes for a run whose marker is gone, from
-the ledger rows it is handed; the command writes it through the marker module.
+The recorder and the marker rebuild both read it. :func:`rebuild_marker` decides
+what ``gz state --repair`` does for the run launched last: restore one missing
+marker file as a copy of its twin on disk, or, with neither file on disk, write
+the payload it builds from the ledger rows it is handed. The command carries
+out either through the marker module.
 """
 
 from __future__ import annotations
@@ -303,12 +305,14 @@ _RUN_ENTRIES = frozenset({"full", *(stage for stage in CANONICAL_STAGES if stage
 _COMPLETION_RECEIPT = "completed"
 
 #: The events that retire an OBPI and so end its run with no receipt (operator
-#: ruling 2026-10-11, Open Design Question 12: retirement ends a run). No
+#: ruling 2026-10-11, Open Design Question 12: retirement ends a run; operator
+#: ruling 2026-10-12, Open Design Question 16: "supersede ends a run"). No
 #: command writes a receipt for a retired OBPI, so its launch would otherwise
-#: stay a run in flight for good. ``obpi_unparked`` is deliberately absent from
-#: every rule here: unparking releases the OBPI for work and resumes nothing,
-#: and "a later launch starts a new run" (the same ruling).
-_RETIRING_EVENTS = frozenset({"obpi_parked", "obpi_withdrawn"})
+#: stay a run in flight for good. ``obpi_superseded`` is the row ``gz obpi
+#: supersede`` writes under the superseded OBPI's id. ``obpi_unparked`` is
+#: deliberately absent from every rule here: unparking releases the OBPI for
+#: work and resumes nothing, and "a later launch starts a new run" (Question 12).
+_RETIRING_EVENTS = frozenset({"obpi_parked", "obpi_withdrawn", "obpi_superseded"})
 
 
 def _starts_run(row: PipelineLedgerRow) -> bool:
@@ -322,8 +326,9 @@ def _starts_run(row: PipelineLedgerRow) -> bool:
 def _ends_run(row: PipelineLedgerRow) -> bool:
     """Return whether ``row`` ends the run of the id it carries.
 
-    The completion receipt ends it, and so does the OBPI being parked or
-    withdrawn. A receipt of any other kind, or of no kind, ends nothing.
+    The completion receipt ends it, and so does the OBPI being parked,
+    withdrawn or superseded. A receipt of any other kind, or of no kind, ends
+    nothing.
     """
     if row.event == "obpi_receipt_emitted":
         return row.extra.get("receipt_event") == _COMPLETION_RECEIPT
@@ -369,7 +374,7 @@ def _runs_named(events: Iterable[PipelineLedgerRow], obpi_id: str) -> list[Pipel
     nothing of the slug, so a sibling's full id names no run but its own.
 
     Only a run in flight is a candidate, and a run ends at its receipt or when
-    its OBPI is parked or withdrawn (:func:`_launches_in_flight`). A sibling
+    its OBPI is parked, withdrawn or superseded (:func:`_launches_in_flight`). A sibling
     under a reused semver is therefore no ambiguity once it is finished or
     retired, whether or not it was ever launched. Two siblings both launched
     and neither ended are two runs, and the short form then names neither.
@@ -533,7 +538,12 @@ def _record_crossing(
 
 
 class MarkerRebuild(BaseModel):
-    """What a rebuild decides for one run in flight whose marker is not on disk."""
+    """What a repair decides for one run in flight whose two marker files are not both on disk.
+
+    Exactly one of three: the marker the ledger rebuilds, written to both
+    files when neither is on disk; the missing file to restore as a copy of
+    its twin, when one of the two is on disk; or the reason the run is declined.
+    """
 
     model_config = ConfigDict(frozen=True, extra="forbid")
 
@@ -541,12 +551,17 @@ class MarkerRebuild(BaseModel):
     payload: dict[str, Any] | None = Field(
         None, description="The marker the ledger rebuilds; None when the run is not rebuilt"
     )
-    declined: str | None = Field(None, description="Why the run is not rebuilt; None when it is")
+    restores: str | None = Field(
+        None,
+        description="Name of the missing marker file to restore as a copy of its twin on disk",
+    )
+    declined: str | None = Field(None, description="Why the run is not repaired; None when it is")
 
     @model_validator(mode="after")
-    def _rebuilds_or_declines(self) -> MarkerRebuild:
-        if (self.payload is None) == (self.declined is None):
-            msg = "a rebuild carries a payload or the reason it declined, never both or neither"
+    def _decides_one_thing(self) -> MarkerRebuild:
+        decided = [self.payload, self.restores, self.declined]
+        if sum(each is not None for each in decided) != 1:
+            msg = "a rebuild carries a payload, a file to restore or the reason it declined: one"
             raise ValueError(msg)
         return self
 
@@ -611,22 +626,36 @@ def _stale_on_arrival(updated_at: str, now: datetime) -> bool:
         return True
 
 
-def _rebuild_refusal(
-    plans_dir: Path, launch: PipelineLedgerRow, reached: PipelineReplay, now: datetime
-) -> str | None:
-    """Return why the run's marker is not rebuilt, or ``None`` when it may be.
+def _file_in_the_way(per_obpi: Path, legacy: Path, obpi_id: str) -> str | None:
+    """Return why a file on disk stops the repair, or ``None`` when none does.
 
-    A rebuild writes both marker files, so it stands down when either is on
-    disk and is not this run's own to write. It invents no nonce. And it
-    writes no marker that stale detection would flag the moment it landed.
+    A repair overwrites no file. A marker file that is on disk and does not
+    read as this run's marker, whether it names another run or cannot be
+    read, is left exactly as it is, and the run is declined.
     """
-    per_obpi, legacy = pipeline_marker_paths(plans_dir, launch.id)
-    if per_obpi.exists():
+    if per_obpi.exists() and not marker_matches(per_obpi, obpi_id):
         return (
             f"its marker file {per_obpi.name} is on disk and does not read as this "
-            "run's marker; a rebuild overwrites no file. Clear it with "
+            "run's marker; a repair overwrites no file. Clear it with "
             "`uv run gz obpi pipeline --clear-stale`, then repair again"
         )
+    if legacy.exists() and not marker_matches(legacy, obpi_id):
+        named = (load_pipeline_json(legacy) or {}).get("obpi_id") or "no readable run"
+        return (
+            f"the legacy marker {legacy.name} is on disk and names {named}; a repair "
+            "overwrites no file and no other run's marker"
+        )
+    return None
+
+
+def _rebuild_refusal(
+    launch: PipelineLedgerRow, reached: PipelineReplay, now: datetime
+) -> str | None:
+    """Return why the ledger rebuilds no marker for the run, or ``None`` when it may.
+
+    A rebuild invents no nonce, and it writes no marker that stale detection
+    would flag the moment it landed.
+    """
     if not launch.extra.get("nonce"):
         return "its pipeline_launched event records no nonce, and a rebuild invents none"
     if _stale_on_arrival(reached.updated_at, now):
@@ -635,42 +664,66 @@ def _rebuild_refusal(
             f"{STALE_MARKER_HOURS} hours, so its marker would be stale on arrival; "
             "launch the run again to resume it"
         )
-    if legacy.exists() and not marker_matches(legacy, launch.id):
-        named = (load_pipeline_json(legacy) or {}).get("obpi_id") or "no readable run"
-        return (
-            f"the legacy marker {legacy.name} is on disk and names {named}; a rebuild "
-            "writes both marker files and overwrites no other run's marker"
-        )
     return None
 
 
 def rebuild_marker(
     events: Iterable[PipelineLedgerRow], plans_dir: Path, obpi_id: str, *, now: datetime
 ) -> MarkerRebuild | None:
-    """Return what the ledger rebuilds for the run ``obpi_id`` carries, or ``None``.
+    """Return what a repair does for the run ``obpi_id`` carries, or ``None``.
 
     ``gz state --repair`` is the one caller and the one verb that rebuilds a
     marker (OBPI-0.35.0-15 Requirement 18). ``obpi_id`` is the id a launch in
     flight carries (:func:`runs_in_flight`). ``None`` means there is nothing
-    to rebuild: no run is in flight under that id, or its per-OBPI marker is
-    on disk and reads as its own, in which case nothing is moved.
+    to repair: no run is in flight under that id, or both its marker files
+    are on disk and read as its own, in which case nothing is moved.
 
-    Otherwise the result carries the payload to write, built from the ledger
-    rows alone and the plan-audit receipt read back from disk, or the reason
-    the run is declined (:func:`_rebuild_refusal`). ``updated_at`` is the time
-    of the last recorded crossing and never ``now``, which only decides
-    whether that crossing is already past the stale bound. This function
-    reads the plans directory and writes nothing: the caller hands the payload
-    to the marker module's writer.
+    Only the run launched last is repaired. The legacy marker is one file for
+    the whole project and names the latest launch, as a launch leaves it, so
+    an older run in flight is declined while a later one is in flight,
+    whatever files are on disk: a marker written for it could take the legacy
+    file and block the live run (Requirement 6).
+
+    For the run launched last the result is one of three. A file on disk that
+    does not read as its marker declines it (:func:`_file_in_the_way`): a
+    repair overwrites no file. With exactly one of its two files on disk, the
+    result names the missing one, which the caller restores as a copy of its
+    twin, byte for byte, so nothing on disk is moved (Requirement 7). With
+    neither on disk, the result carries the payload to write, built from the
+    ledger rows, the plan-audit receipt read back from disk and the
+    launcher's constants, or the reason the ledger rebuilds none
+    (:func:`_rebuild_refusal`). A rebuilt ``updated_at`` is the time of the
+    last recorded crossing and never ``now``, which only decides whether that
+    crossing is already past the stale bound. This function reads the plans
+    directory and writes nothing: the caller hands the decision to the marker
+    module's writers.
     """
     rows = list(events)
-    launch = _launches_in_flight(rows).get(obpi_id)
+    in_flight = _launches_in_flight(rows)
+    launch = in_flight.get(obpi_id)
     reached = replay_pipeline_position(rows, obpi_id)
     if launch is None or reached is None:
         return None
-    if marker_matches(pipeline_marker_paths(plans_dir, obpi_id)[0], obpi_id):
+    launched_last = next(reversed(in_flight))
+    if obpi_id != launched_last:
+        return MarkerRebuild(
+            obpi_id=obpi_id,
+            declined=(
+                f"a later run is in flight ({launched_last}); the legacy marker belongs to "
+                "the run launched last, and a repair writes no marker for an older one"
+            ),
+        )
+    per_obpi, legacy = pipeline_marker_paths(plans_dir, obpi_id)
+    own = [path for path in (per_obpi, legacy) if marker_matches(path, obpi_id)]
+    if len(own) == 2:
         return None
-    refusal = _rebuild_refusal(plans_dir, launch, reached, now)
+    in_the_way = _file_in_the_way(per_obpi, legacy, obpi_id)
+    if in_the_way is not None:
+        return MarkerRebuild(obpi_id=obpi_id, declined=in_the_way)
+    if own:
+        missing = legacy if own[0] == per_obpi else per_obpi
+        return MarkerRebuild(obpi_id=obpi_id, restores=missing.name)
+    refusal = _rebuild_refusal(launch, reached, now)
     if refusal is not None:
         return MarkerRebuild(obpi_id=obpi_id, declined=refusal)
     receipt_state = load_plan_audit_receipt(plans_dir, obpi_id)[0]

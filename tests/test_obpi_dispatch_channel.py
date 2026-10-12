@@ -230,11 +230,13 @@ _ID_TAKING_PRECOMPLETE_CHECKS = (
 class TestPrecompleteNamesTheObpiOnceAtEntry(unittest.TestCase):
     """Every precomplete control reads the same OBPI however its id was spelled.
 
-    ``gz obpi precomplete`` resolves a brief from the id as typed. Every check,
-    and the position record, then uses the canonical id that brief carries, so
-    the short ``OBPI-<semver>-<item>`` form reads the same operator block, the
-    same marker and the same dispatch records as the full id, whether or not a
-    run is in flight. Review findings, each a defect older than OBPI-0.35.0-15
+    ``gz obpi precomplete`` resolves a brief from the id as typed. Every check
+    then uses the canonical id that brief carries, so the short
+    ``OBPI-<semver>-<item>`` form reads the same operator block, the same
+    marker and the same dispatch records as the full id, whether or not a run
+    is in flight. The position record alone takes the id as typed, because the
+    recorder's own rule says which run an id names. Review findings, each a
+    defect older than OBPI-0.35.0-15
     in a control Requirement 11 names: the Stage 2 dispatch check looked for
     the marker under the id as typed and passed a short id as "not assessable"
     (fc1-AUX-precomplete-checks-still-run-under-the-typed-id), still did once
@@ -242,7 +244,9 @@ class TestPrecompleteNamesTheObpiOnceAtEntry(unittest.TestCase):
     (fc3-aux-precomplete-dispatch-check-reads-the-typed-id-once-the-run-is-retired),
     and the operator block check read the block under the id as typed
     (fc2-aux-precomplete-operator-block-check-still-reads-the-id-as-typed).
-    These are controls and no acceptance criterion, so no REQ is bound here.
+    These are controls and no acceptance criterion, so no REQ is bound to them.
+    The one test of the position record is bound to REQ-0.35.0-15-02, whose
+    subject it is.
 
     The command is run whole. Each control is unchanged for a full id, which
     the full-id assertions below pin, and no weaker for a short one.
@@ -429,20 +433,60 @@ class TestPrecompleteNamesTheObpiOnceAtEntry(unittest.TestCase):
                     by_full["checks"]["operator_block"]["message"],
                 )
 
-    def test_every_check_and_the_position_record_use_the_id_the_brief_carries(self) -> None:
+    def _recorded_positions(self) -> list[LedgerEvent]:
+        return [
+            row
+            for row in Ledger(self.ledger.path).read_all()
+            if row.event == "pipeline_stage_transition"
+        ]
+
+    def test_every_check_uses_the_id_the_brief_carries_and_the_run_is_recorded(self) -> None:
         self._launch()
 
         found = self._precomplete(self._SHORT)
 
         self.assertEqual(found["report"]["obpi_id"], self._FULL)
         self.assertEqual(found["handed"], dict.fromkeys(_ID_TAKING_PRECOMPLETE_CHECKS, self._FULL))
-        recorded = [
-            row
-            for row in Ledger(self.ledger.path).read_all()
-            if row.event == "pipeline_stage_transition"
-        ]
+        recorded = self._recorded_positions()
         self.assertEqual([row.id for row in recorded], [self._FULL])
         self.assertEqual(recorded[0].extra["position_label"], "precomplete")
+
+    @covers("REQ-0.35.0-15-02")
+    def test_a_short_id_records_under_the_live_run_when_a_retired_brief_sorts_first(self) -> None:
+        """The position record takes the id as typed, and the recorder names the run.
+
+        Review finding
+        t3-AUX-precomplete-short-id-follows-the-first-sorted-brief-for-the-position-record.
+        Two briefs sit on disk under one short form, and the one that sorts
+        first belongs to a retired sibling that was never launched. The brief
+        a short id resolves to is then the sibling's. Handing that brief's id
+        to the position record named no run, so the live run's ``precomplete``
+        boundary went unrecorded. The recorder's own rule is the one that
+        says which run an id means (Requirement 2): the one run in flight
+        whose short form is the id typed. The checks keep the id the resolved
+        brief carries, as before.
+        """
+        retired = "OBPI-0.12.0-04-abandoned-first"
+        briefs = self.root / "design" / "adr" / self._ADR / "obpis"
+        (briefs / f"{retired}.md").write_text(
+            f"---\nid: {retired}\nparent: {self._ADR}\nitem: 4\nlane: heavy\n"
+            "status: Abandoned\n---\n\n# Abandoned first\n",
+            encoding="utf-8",
+        )
+        self.assertLess(f"{retired}.md", f"{self._FULL}.md", "the retired brief sorts first")
+        self._start_over(
+            obpi_withdrawn_event(retired, self._ADR, "superseded", "g0"),
+            self._launch_row(self._FULL),
+        )
+
+        found = self._precomplete(self._SHORT)
+
+        self.assertEqual(found["handed"], dict.fromkeys(_ID_TAKING_PRECOMPLETE_CHECKS, retired))
+        recorded = self._recorded_positions()
+        self.assertEqual([row.id for row in recorded], [self._FULL])
+        self.assertEqual(recorded[0].extra["position_label"], "precomplete")
+        marker = json.loads(_marker(self.root, self._FULL).read_text(encoding="utf-8"))
+        self.assertEqual(marker["position"]["label"], "precomplete")
 
 
 class TestCreditOutlivesTheMarker(unittest.TestCase):

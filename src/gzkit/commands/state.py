@@ -19,7 +19,11 @@ from gzkit.commands.common import (
 )
 from gzkit.commands.task import _load_tasks_for_obpi
 from gzkit.ledger import Ledger, parse_frontmatter_value, resolve_adr_lane
-from gzkit.pipeline_markers import pipeline_plans_dir, write_pipeline_markers
+from gzkit.pipeline_markers import (
+    pipeline_plans_dir,
+    restore_pipeline_marker_twin,
+    write_pipeline_markers,
+)
 from gzkit.pipeline_position import rebuild_marker, runs_in_flight
 from gzkit.sync import parse_artifact_metadata, scan_existing_artifacts
 
@@ -274,37 +278,50 @@ def _resolve_expected_statuses(
 def _rebuild_pipeline_markers(
     project_root: Path, ledger: Ledger
 ) -> dict[str, list[dict[str, Any]]]:
-    """Rebuild the marker of each run in flight whose marker is gone (OBPI-0.35.0-15).
+    """Repair the marker files of the run in flight that was launched last (OBPI-0.35.0-15).
 
-    The ledger alone says which runs are in flight and what each has reached;
-    ``pipeline_position`` builds the payload and ``pipeline_markers`` writes it.
-    Runs are taken latest launch first and the disk is read again for each, so
-    the legacy marker goes to the run launched last, as a launch leaves it. A
-    marker on disk is never moved. Returns the runs rebuilt and the runs the
-    rebuild declined, each declined run with its reason.
+    The ledger alone says which runs are in flight and what each has reached.
+    ``pipeline_position`` decides what is done for each and ``pipeline_markers``
+    writes it. With exactly one of the run's two marker files on disk, the
+    missing one is restored as a copy of it, byte for byte. With neither on
+    disk, both are written from the payload the ledger rebuilds; its
+    ``receipt_state`` is read back from the plan-audit receipt file and its
+    ``execution_mode`` is the launcher's constant. No file on disk is
+    overwritten or moved. An older run in flight is declined while a later one
+    is in flight, so the legacy marker stays with the run launched last.
+    Returns the runs rebuilt, the files restored and the runs declined, each
+    declined run with its reason.
     """
     rows = list(ledger.read_all())
     plans_dir = pipeline_plans_dir(project_root)
     now = datetime.now(UTC)
     rebuilt: list[dict[str, Any]] = []
+    restored: list[dict[str, Any]] = []
     declined: list[dict[str, Any]] = []
     for obpi_id in runs_in_flight(rows):
         rebuild = rebuild_marker(rows, plans_dir, obpi_id, now=now)
         if rebuild is None:
             continue
-        if rebuild.payload is None:
+        if rebuild.declined is not None:
             declined.append({"obpi_id": obpi_id, "reason": rebuild.declined})
-            continue
-        write_pipeline_markers(plans_dir, rebuild.payload)
-        rebuilt.append(
-            {
-                "obpi_id": obpi_id,
-                "current_stage": rebuild.payload["current_stage"],
-                "position": rebuild.payload.get("position"),
-                "updated_at": rebuild.payload["updated_at"],
-            }
-        )
-    return {"rebuilt": rebuilt, "declined": declined}
+        elif rebuild.payload is not None:
+            write_pipeline_markers(plans_dir, rebuild.payload)
+            rebuilt.append(
+                {
+                    "obpi_id": obpi_id,
+                    "current_stage": rebuild.payload["current_stage"],
+                    "position": rebuild.payload.get("position"),
+                    "updated_at": rebuild.payload["updated_at"],
+                }
+            )
+        else:
+            twin = restore_pipeline_marker_twin(plans_dir, obpi_id)
+            if twin is not None:
+                missing, on_disk = twin
+                restored.append(
+                    {"obpi_id": obpi_id, "file": missing.name, "copied_from": on_disk.name}
+                )
+    return {"rebuilt": rebuilt, "restored": restored, "declined": declined}
 
 
 def _render_frontmatter_repairs(changes: list[dict[str, str]]) -> None:
@@ -332,11 +349,16 @@ def _render_frontmatter_repairs(changes: list[dict[str, str]]) -> None:
 
 
 def _render_marker_rebuilds(markers: dict[str, list[dict[str, Any]]]) -> None:
-    """Render each pipeline marker rebuilt, and each run declined with its reason.
+    """Render each marker rebuilt, each file restored and each run declined with its reason.
 
     A position label and a decline reason are free text, so each is escaped
     where it is printed: Rich would otherwise read a bracket in one as markup.
     """
+    for restored in markers["restored"]:
+        console.print(
+            f"Restored pipeline marker file: {restored['file']} for {restored['obpi_id']}, "
+            f"a copy of {restored['copied_from']}"
+        )
     for rebuilt in markers["rebuilt"]:
         position = rebuilt["position"]
         inside = f"{position['kind']} {position['label']}" if position else "its launch"
@@ -355,10 +377,12 @@ def state_repair(as_json: bool) -> None:
     """Reconcile OBPI frontmatter from the ledger and rebuild deleted pipeline markers.
 
     Two repairs, both from ledger-derived state. Every OBPI brief's frontmatter
-    status is force-reconciled. Then the marker of each pipeline run in flight
-    whose marker file is gone is rebuilt from its ``pipeline_launched`` event
-    and the ``pipeline_stage_transition`` events after it; a run the rebuild
-    declines is reported with its reason.
+    status is force-reconciled. Then the marker files of the pipeline run in
+    flight that was launched last are repaired: one missing file is restored
+    as a copy of the one on disk, and with neither on disk both are rebuilt
+    from the run's ``pipeline_launched`` event and the
+    ``pipeline_stage_transition`` events after it. A run the repair declines
+    is reported with its reason.
     """
     config = ensure_initialized()
     project_root = get_project_root()

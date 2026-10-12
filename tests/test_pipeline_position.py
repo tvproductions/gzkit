@@ -10,6 +10,7 @@ after it reads as it always did (REQ-0.35.0-15-04), and a marker advanced past
 
 from __future__ import annotations
 
+import importlib.util
 import json
 import subprocess
 import sys
@@ -37,6 +38,7 @@ from gzkit.ledger import (
 from gzkit.ledger_events import (
     brief_reconciled_event,
     obpi_parked_event,
+    obpi_superseded_event,
     obpi_unparked_event,
     obpi_withdrawn_event,
 )
@@ -138,10 +140,15 @@ _CLI_ADR = "ADR-0.13.0-obpi-pipeline-runtime-surface"
 _CLI_REQS = ("REQ-0.13.0-01-01", "REQ-0.13.0-01-02")
 
 #: The ledger row that retires an OBPI with no receipt, by how it was retired
-#: (operator ruling 2026-10-11, Open Design Question 12: retirement ends a run).
+#: (operator ruling 2026-10-11, Open Design Question 12: retirement ends a run;
+#: operator ruling 2026-10-12, Open Design Question 16: "supersede ends a run").
+#: Each row carries the retired OBPI's own id, as the command that writes it does.
 _RETIREMENTS: dict[str, Callable[[str, str], LedgerEvent]] = {
     "parked": lambda obpi_id, adr: obpi_parked_event(obpi_id, adr, "ADR-pool.interrogate"),
     "withdrawn": lambda obpi_id, adr: obpi_withdrawn_event(obpi_id, adr, "superseded", "g0"),
+    "superseded": lambda obpi_id, adr: obpi_superseded_event(
+        obpi_id, adr, _OTHER_OBPI, "replaced by its successor", "g0"
+    ),
 }
 
 
@@ -619,7 +626,7 @@ class _RecordingFixture(_RunFixture):
         )
 
     def _retire_on_ledger(self, how: str, *, obpi_id: str = _OBPI) -> None:
-        """Append the row that retires ``obpi_id``: ``parked`` or ``withdrawn``."""
+        """Append the row that retires ``obpi_id``: a key of ``_RETIREMENTS``."""
         self.ledger.append(_RETIREMENTS[how](obpi_id, _ADR))
 
     def _empty_the_ledger(self) -> None:
@@ -1228,6 +1235,15 @@ class TestTheRecorderFindsTheRunItself(_RecordingFixture):
         self._assert_a_retired_siblings_launch_is_no_second_run("parked")
 
     @covers("REQ-0.35.0-15-02")
+    def test_a_superseded_sibling_that_was_launched_is_no_second_run(self) -> None:
+        """A supersede ends a run (Open Design Question 16): one run in flight, no warning.
+
+        No command writes a receipt for a superseded OBPI either, so its
+        launch stayed a run in flight for good and the short form named two.
+        """
+        self._assert_a_retired_siblings_launch_is_no_second_run("superseded")
+
+    @covers("REQ-0.35.0-15-02")
     def test_a_parked_obpi_launched_again_is_in_flight_again(self) -> None:
         """Parking ends the run, and a later launch starts a new one.
 
@@ -1247,6 +1263,53 @@ class TestTheRecorderFindsTheRunItself(_RecordingFixture):
 
         self.assertEqual([row.id for row in self._crossings()], [_OBPI, _OBPI])
         self.assertIsNotNone(reached)
+        self.assertEqual(_read(self.per_obpi)["position"]["label"], "verification-passed")
+
+    @covers("REQ-0.35.0-15-02")
+    def test_a_superseded_obpis_own_id_names_no_run(self) -> None:
+        """Neither the launch id nor its short form names a run once it is superseded.
+
+        Open Design Question 16: "supersede ends a run". The recorder then
+        records nothing for either spelling, warns of nothing, and leaves the
+        ledger and both marker files as they were.
+        """
+        self._launch_on_ledger()
+        self._record("verification")
+        self._retire_on_ledger("superseded")
+        rows = list(Ledger(self.ledger.path).read_all())
+        before = self._markers()
+
+        for name, given in (("the launch id", _OBPI), ("its short form", _SHORT_OBPI)):
+            with self.subTest(given=name):
+                self.assertIsNone(in_flight_launch_id(rows, given))
+                with self.assertNoLogs("gzkit.pipeline_position", level="WARNING"):
+                    recorded = self._record("verification-passed", obpi_id=given)
+
+                self.assertIsNone(recorded)
+                self.assertEqual(len(self._crossings()), 1, "nothing after the supersede")
+                self.assertEqual(self._markers(), before)
+
+    @covers("REQ-0.35.0-15-02")
+    def test_a_superseded_obpi_launched_again_is_in_flight_again(self) -> None:
+        """A supersede ends the run it finds; a launch after it starts a new one.
+
+        The rule is the ledger's order and nothing else (Open Design Questions
+        12 and 16): the run in flight is the latest launch with no row after
+        it that ends a run. Whether a superseded OBPI may be launched is the
+        launcher's to decide, not the recorder's.
+        """
+        self._launch_on_ledger()
+        self._retire_on_ledger("superseded")
+        self._launch_on_ledger("verify")
+        rows = list(Ledger(self.ledger.path).read_all())
+
+        for name, given in (("the launch id", _OBPI), ("its short form", _SHORT_OBPI)):
+            with self.subTest(given=name):
+                self.assertEqual(in_flight_launch_id(rows, given), _OBPI)
+        reached = self._record("verification-passed", obpi_id=_SHORT_OBPI)
+
+        self.assertIsNotNone(reached)
+        self.assertEqual([row.id for row in self._crossings()], [_OBPI])
         self.assertEqual(_read(self.per_obpi)["position"]["label"], "verification-passed")
 
     @covers("REQ-0.35.0-15-02")
@@ -2747,7 +2810,9 @@ class TestAnIdNamesTheRunInFlightOrNone(unittest.TestCase):
 
     @covers("REQ-0.35.0-15-02")
     def test_a_run_ends_when_its_obpi_is_parked_or_withdrawn(self) -> None:
-        """Retirement ends a run as a receipt does (Open Design Question 12).
+        """Retirement ends a run as a receipt does (Open Design Questions 12 and 16).
+
+        Parked, withdrawn or superseded: every way ``_RETIREMENTS`` names.
 
         The run that ends is the retired id's own, and a later launch of that
         id starts a new one. A retired sibling's launch is then no candidate
@@ -3192,6 +3257,195 @@ class TestStaleMarkerHandlingIsUnchanged(unittest.TestCase):
                 self._write(raw)
 
                 self.assertEqual(pipeline_concurrency_blockers(self.plans, self._OTHER), [])
+
+
+_ORIENTATION_SCRIPT = Path(__file__).resolve().parents[1] / "scripts" / "session_orientation.py"
+
+
+def _load_orientation_module() -> Any:
+    """Load ``scripts/session_orientation.py``, which lives outside the package.
+
+    The way ``tests/scripts/test_session_orientation.py`` loads it. The tests
+    bound to REQ-0.35.0-15-06 sit in this module and not that one because a
+    bound test module's reach is read as the brief's, and that module's other
+    tests reach modules the brief does not allow.
+    """
+    spec = importlib.util.spec_from_file_location("session_orientation", _ORIENTATION_SCRIPT)
+    assert spec is not None and spec.loader is not None, f"cannot load {_ORIENTATION_SCRIPT}"
+    module = importlib.util.module_from_spec(spec)
+    sys.modules["session_orientation"] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+class TestPipelineSectionShowsWhereARunIs(unittest.TestCase):
+    """Requirement 10 of OBPI-0.35.0-15: the stage reached and the position inside it.
+
+    GHI #1172: a marker named the stage the launch command named for the whole
+    run, so a new process read ``implement`` for a run already in its ceremony.
+    Each case here launches a run and crosses boundaries through the recorder,
+    as the run's own commands do, and then reads the orientation. What is
+    expected comes from Requirement 2: the stage a work-starting boundary
+    enters, the kind of position that stage holds (the Stage 2 task, the
+    Stage 3 phase, the Stage 4 round, the Stage 5 step) and the label the
+    boundary gives it.
+    """
+
+    OBPI = "OBPI-0.3.0-01-example"
+    ADR = "ADR-0.3.0-example"
+    TASK = "TASK-0.3.0-01-01-01"
+
+    #: (``--from`` value, boundaries crossed, launch stage, stage reached,
+    #: kind, label). ``None`` is the full launch.
+    ADVANCED: tuple[tuple[str | None, tuple[tuple[str, str | None], ...], str, str, str, str], ...]
+    ADVANCED = (
+        (None, (("verification", None),), "implement", "verify", "phase", "verification"),
+        (
+            None,
+            (("verification", None), ("verification-passed", None), ("present-evidence", None)),
+            "implement",
+            "ceremony",
+            "round",
+            "present-evidence",
+        ),
+        (None, (("ceremony", None), ("complete", None)), "implement", "sync", "step", "complete"),
+        ("verify", (("task-start", TASK),), "verify", "implement", "task", TASK),
+    )
+
+    def setUp(self) -> None:
+        self.mod = _load_orientation_module()
+        self.now = datetime(2026, 10, 12, 12, 0, 0, tzinfo=UTC)
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.root = Path(tmp.name)
+        self.plans = self.root / ".claude" / "plans"
+        (self.root / ".gzkit").mkdir()
+        self.ledger = Ledger(self.root / ".gzkit" / "ledger.jsonl")
+
+    def _launch(self, start_from: str | None) -> dict:
+        """Write both markers and append the launch, as the pipeline launcher does."""
+        payload = pipeline_marker_payload(self.OBPI, self.ADR, "heavy", start_from, "pass")
+        per_obpi, _legacy = write_pipeline_markers(self.plans, payload)
+        self.ledger.append(
+            pipeline_launched_event(
+                obpi_id=self.OBPI,
+                parent_adr=self.ADR,
+                lane="heavy",
+                nonce=str(payload["nonce"]),
+                marker_path=per_obpi.relative_to(self.root).as_posix(),
+                entry=str(payload["entry"]),
+            )
+        )
+        return payload
+
+    def _advance(self, start_from: str | None, crossings: tuple) -> None:
+        launched = self._launch(start_from)
+        self.assertNotIn("position", launched)
+        for boundary, task in crossings:
+            crossing = RunCrossing(boundary=boundary, task=task)
+            self.assertIsNotNone(record_position(self.ledger, self.plans, self.OBPI, crossing))
+
+    def _start_over(self) -> None:
+        self.ledger.path.write_text("", encoding="utf-8")
+        for left in self.plans.glob(".pipeline-active*.json"):
+            left.unlink()
+
+    @covers("REQ-0.35.0-15-06")
+    def test_an_advanced_run_reports_the_stage_reached_and_its_position(self) -> None:
+        for start_from, crossings, launch_stage, stage, kind, label in self.ADVANCED:
+            with self.subTest(reached=stage):
+                self._start_over()
+                self._advance(start_from, crossings)
+
+                (run,) = self.mod.collect_adr_pipeline(self.root)
+
+                self.assertEqual(run["obpi_id"], self.OBPI)
+                self.assertEqual(run["stage"], stage)
+                self.assertNotEqual(run["stage"], launch_stage)
+                self.assertIsNotNone(run["position"])
+                self.assertEqual((run["position"]["kind"], run["position"]["label"]), (kind, label))
+
+    @covers("REQ-0.35.0-15-06")
+    def test_a_position_the_marker_does_not_hold_whole_is_reported_as_none(self) -> None:
+        """A marker is a cache anyone can write: a part of a position is no position.
+
+        The run and its stage are still reported, so a marker edited by hand
+        degrades to what the orientation said before positions existed.
+        """
+        not_a_position = {
+            "a string": "phase verification",
+            "a list": ["phase", "verification"],
+            "a kind with no label": {"kind": "phase", "boundary": "gz obpi pipeline"},
+            "a label with no kind": {"label": "verification", "boundary": "gz obpi pipeline"},
+            "an empty label": {"kind": "phase", "label": " ", "boundary": "gz obpi pipeline"},
+            "a kind that is no text": {"kind": 3, "label": "verification"},
+        }
+        for name, held in not_a_position.items():
+            with self.subTest(position=name):
+                self._start_over()
+                self._advance(None, (("verification", None),))
+                for marker_path in self.plans.glob(".pipeline-active*.json"):
+                    marker = json.loads(marker_path.read_text(encoding="utf-8"))
+                    marker["position"] = held
+                    marker_path.write_text(json.dumps(marker), encoding="utf-8")
+
+                (run,) = self.mod.collect_adr_pipeline(self.root)
+
+                self.assertEqual((run["obpi_id"], run["stage"]), (self.OBPI, "verify"))
+                self.assertIsNone(run["position"])
+
+    def _run_lines(self) -> tuple[str, list[str]]:
+        """Return the rendered line that names the run, and the lines under it."""
+        runs = self.mod.collect_adr_pipeline(self.root)
+        rendered = self.mod.render({"adr_pipeline": runs}, self.now)
+        section = rendered.split("## Active ADR pipeline state", 1)[1].split("\n## ", 1)[0]
+        lines = section.splitlines()
+        (named,) = [index for index, line in enumerate(lines) if line.startswith(f"- {self.OBPI}")]
+        under = []
+        for line in lines[named + 1 :]:
+            if not line.startswith("  "):
+                break
+            under.append(line)
+        return lines[named], under
+
+    @covers("REQ-0.35.0-15-06")
+    def test_the_section_shows_the_stage_reached_and_its_position(self) -> None:
+        """The launch stage never stands in for the stage reached or the position."""
+        # output-contract: the orientation section is what a new process reads.
+        for start_from, crossings, launch_stage, stage, kind, label in self.ADVANCED:
+            with self.subTest(reached=stage):
+                self._start_over()
+                self._advance(start_from, crossings)
+
+                headline, under = self._run_lines()
+
+                self.assertIn(stage, headline)
+                self.assertNotIn(launch_stage, headline)
+                positioned = [line for line in under if kind in line and label in line]
+                self.assertEqual(len(positioned), 1, under)
+                self.assertNotIn(launch_stage, positioned[0])
+
+    @covers("REQ-0.35.0-15-06")
+    def test_a_launch_with_nothing_after_it_shows_its_stage_and_claims_no_position(self) -> None:
+        """No boundary crossed is no position: the section invents none (Requirement 4)."""
+        # output-contract: the orientation section is what a new process reads.
+        self._advance(None, (("verification", None),))
+        _headline, positioned = self._run_lines()
+        position_lines = [line for line in positioned if "phase" in line]
+        self.assertEqual(len(position_lines), 1, positioned)
+        said = position_lines[0].split("phase", 1)[0]
+        for start_from, launch_stage in ((None, "implement"), ("ceremony", "ceremony")):
+            with self.subTest(entry=start_from or "full"):
+                self._start_over()
+                self._launch(start_from)
+
+                (run,) = self.mod.collect_adr_pipeline(self.root)
+                headline, under = self._run_lines()
+
+                self.assertEqual(run["stage"], launch_stage)
+                self.assertIsNone(run["position"])
+                self.assertIn(launch_stage, headline)
+                self.assertEqual([line for line in under if line.startswith(said)], [])
 
 
 if __name__ == "__main__":

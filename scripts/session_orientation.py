@@ -980,14 +980,36 @@ def collect_obpi_locks(repo_root: Path) -> list[dict]:
         return []
 
 
+def _marker_position(marker: dict) -> dict | None:
+    """Return the position inside its stage a marker records, or ``None``.
+
+    A position is the last recorded boundary the run crossed: a ``kind`` (the
+    Stage 2 task, the Stage 3 phase, the Stage 4 round or the Stage 5 step), a
+    ``label`` naming which one, and the ``boundary`` command that marked it. A
+    launch with nothing after it records none. Anything short of a kind and a
+    label in text is reported as no position, never as part of one.
+    """
+    held = marker.get("position")
+    if not isinstance(held, dict):
+        return None
+    kind, label, boundary = (held.get(key) for key in ("kind", "label", "boundary"))
+    if not all(isinstance(part, str) and part.strip() for part in (kind, label)):
+        return None
+    marked_by = boundary.strip() if isinstance(boundary, str) else ""
+    return {"kind": kind.strip(), "label": label.strip(), "boundary": marked_by}
+
+
 def collect_adr_pipeline(repo_root: Path) -> list[dict]:
     """Return one entry per OBPI whose pipeline marker says a run is in flight (GHI #1168).
 
     Reads the active markers under the plans directory: every per-OBPI marker,
     then the legacy single marker, which duplicates the per-OBPI one for the
-    same run and is reported once. A marker is a Layer-3 cache of what the
-    launch recorded (``docs/governance/state-doctrine.md``), so this reports a
-    marker reading and decides nothing; ``gz obpi status`` is the ledger reading.
+    same run and is reported once. Each entry carries the stage the run has
+    reached and its position inside that stage, which the marker records at
+    every boundary the run crosses (GHI #1172); the stage is not the one the
+    launch named. A marker is a Layer-3 cache of what the ledger records
+    (``docs/governance/state-doctrine.md``), so this reports a marker reading
+    and decides nothing; ``gz obpi status`` is the ledger reading.
 
     Guarded end-to-end: any failure (gzkit not importable, an unreadable or
     malformed marker) degrades to fewer entries or an empty list so the boot
@@ -1016,6 +1038,7 @@ def collect_adr_pipeline(repo_root: Path) -> list[dict]:
                 "obpi_id": obpi_id,
                 "parent_adr": str(marker.get("parent_adr") or "").strip(),
                 "stage": str(marker.get("current_stage") or "").strip(),
+                "position": _marker_position(marker),
                 "resume_command": pipeline_resume_command(marker),
             }
         return list(runs.values())
@@ -1124,7 +1147,12 @@ def _render_unreviewed_canaries(lines: list[str], payload: object) -> None:
 
 
 def _render_adr_pipeline(lines: list[str], payload: object) -> None:
-    """Name each in-flight pipeline run, its recorded stage and its resume command."""
+    """Name each in-flight run, the stage it has reached, its position and its resume command.
+
+    The stage is the one the run has reached, and the position is the last
+    recorded boundary it crossed inside that stage (GHI #1172). A run with
+    nothing recorded after its launch shows its stage and no position line.
+    """
     runs = [run for run in payload if isinstance(run, dict)] if isinstance(payload, list) else []
     if not runs:
         lines.append("- (no active pipeline markers)")
@@ -1135,13 +1163,21 @@ def _render_adr_pipeline(lines: list[str], payload: object) -> None:
         parent = run.get("parent_adr")
         owner = f" ({parent})" if parent else ""
         lines.append(f"- {obpi}{owner} — stage: {run.get('stage') or '?'}")
+        position = run.get("position")
+        if isinstance(position, dict) and position.get("kind") and position.get("label"):
+            marked_by = position.get("boundary")
+            source = f", marked by `{marked_by}`" if marked_by else ""
+            lines.append(
+                f"  - Position inside the stage: {position['kind']} `{position['label']}`{source}"
+            )
         resume = run.get("resume_command")
         if resume:
             lines.append(f"  - Resume command recorded by the marker: `{resume}`")
     lines.append(
-        "- Read from the pipeline markers, a cache of what each launch recorded; "
-        "`uv run gz obpi status <OBPI-ID>` is the ledger reading. Only the operator "
-        "initiates or resumes OBPI work through `gz-obpi-pipeline`."
+        "- Read from the pipeline markers, a cache of the stage each run has reached and "
+        "the last boundary it crossed; `uv run gz obpi status <OBPI-ID>` is the ledger "
+        "reading. Only the operator initiates or resumes OBPI work through "
+        "`gz-obpi-pipeline`."
     )
     lines.append("")
 

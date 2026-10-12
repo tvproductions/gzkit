@@ -95,6 +95,7 @@ from gzkit.pipeline_markers import (
     purge_orphaned_active_markers,
     remove_pipeline_artifacts,
     remove_pipeline_markers,
+    restore_pipeline_marker_twin,
     rewrite_pipeline_markers,
     stale_pipeline_marker_message,
     validate_brief_for_pipeline,
@@ -809,6 +810,7 @@ __all__ = [
     "stale_pipeline_marker_message",
     "validate_brief_for_pipeline",
     "write_pipeline_markers",
+    "restore_pipeline_marker_twin",
     # pipeline_position
     "PipelineLedgerRow",
     "PipelinePosition",
