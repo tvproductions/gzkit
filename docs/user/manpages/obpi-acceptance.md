@@ -259,7 +259,19 @@ positional arguments:
 
 - `0`: initialization or review import succeeded, proof was valid, or requested
   readiness is satisfied.
+- `1`: `review` or `human-review` was given an id that names no single OBPI.
+  Nothing is read, imported or recorded.
 - `3`: proof/readiness is blocked or the acceptance command rejects the request.
+
+`review` and `human-review` mark a boundary of the pipeline run, so each names
+the OBPI once, at entry, by the rule `gz obpi pipeline` launches by: the full
+id, a short `OBPI-<semver>-<item>` id, a longer prefix that ends on a whole
+word of the id, or an id the ledger renamed. An id that names no OBPI, names
+two, or names one with no brief on disk exits `1` with the resolver's message,
+printed as an `{"error": ...}` object under `--json`; it is a user error and
+not a blocked acceptance. The boundary is recorded under the ledger's id for
+the OBPI. The acceptance records stay keyed by the id as typed, and `init`,
+`prove` and `status` take the id as they did.
 
 A successful review import can record a refutation. Run `status` to determine
 readiness; importing a review is not itself approval.

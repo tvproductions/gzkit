@@ -1,6 +1,6 @@
 {
   "obpi_id": "OBPI-0.35.0-15-pipeline-run-position",
-  "timestamp": "2026-10-12T08:02:11.487406+00:00",
+  "timestamp": "2026-10-12T08:43:37.515424+00:00",
   "verdict": "PASS",
   "plan_file": "pipeline-run-position-OBPI-0.35.0-15.md",
   "gaps_found": 0,
@@ -390,7 +390,8 @@
         "src/gzkit/schemas/ledger.json",
         "src/gzkit/ontology/corpus.py",
         "docs/user/manpages/obpi-pipeline.md",
-        "docs/user/manpages/state.md"
+        "docs/user/manpages/state.md",
+        "docs/user/manpages/obpi-acceptance.md"
       ]
     },
     {

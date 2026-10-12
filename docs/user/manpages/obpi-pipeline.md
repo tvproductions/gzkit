@@ -191,9 +191,13 @@ id, or from an id the ledger renamed. `gz obpi precomplete` and
 `gz obpi present-evidence` name the OBPI that way once, at entry, and run
 their checks, write their report and record their boundary under that one id.
 They exit `1`, check nothing and record nothing for an id that names no OBPI,
-names two, or names one with no brief on disk. `gz obpi verify-packet` and a
-review recorded through `gz obpi acceptance` record their boundary under the
-same id.
+names two, or names one with no brief on disk. The `review` and `human-review`
+actions of `gz obpi acceptance` do the same: they name the OBPI at entry,
+record their boundary under that id, and exit `1` with nothing imported and
+nothing recorded for an id the rule refuses; the acceptance records
+themselves stay keyed by the id as typed. `gz obpi verify-packet` takes a
+packet path and no id: it records under the id the rule gives the packet's
+file name, and records nothing for a packet whose name names no run.
 
 ### Re-entering `implement`
 

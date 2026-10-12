@@ -19,8 +19,9 @@ from gzkit.acceptance_store import (
     resolve_brief,
 )
 from gzkit.arb.paths import receipts_root
+from gzkit.cli.helpers.exit_codes import EXIT_USER_ERROR
 from gzkit.commands.common import get_project_root
-from gzkit.commands.obpi_precomplete import recorded_obpi_id
+from gzkit.commands.obpi_precomplete import ObpiEntryError, resolve_obpi_at_entry
 from gzkit.config import GzkitConfig
 from gzkit.mutation_witness import Mutation
 from gzkit.pipeline_runtime import RunCrossing, record_run_position
@@ -53,7 +54,15 @@ def obpi_acceptance_cmd(
     attestor: str | None = None,
     ruling: str | None = None,
 ) -> int:
-    """Use the same durable records for Stage 2, 4a, 4b and completion."""
+    """Use the same durable records for Stage 2, 4a, 4b and completion.
+
+    Exit codes: ``0`` when the action succeeded, ``3`` when acceptance is
+    blocked, and ``1`` when ``review`` or ``human-review`` is given an id the
+    launcher's resolver cannot give to exactly one OBPI with a brief on disk
+    (OBPI-0.35.0-15, operator ruling 2026-10-12 on Open Design Question 20).
+    That refusal is a user error and prints the resolver's own message:
+    nothing is read, imported or recorded.
+    """
     root = get_project_root()
     try:
         result, successful = _execute(
@@ -68,6 +77,9 @@ def obpi_acceptance_cmd(
             attestor=attestor,
             ruling=ruling,
         )
+    except ObpiEntryError as exc:
+        print(json.dumps({"error": str(exc)}) if as_json else str(exc))  # noqa: T201
+        return EXIT_USER_ERROR
     except (ValueError, OSError, KeyError) as exc:
         message = (
             f"Acceptance blocked: {exc}. GHI #985 and T1/T2/T3 require current, "
@@ -94,7 +106,25 @@ def _execute(
     attestor: str | None = None,
     ruling: str | None = None,
 ) -> tuple[dict, bool]:
-    """Keep executable producers separate from status presentation."""
+    """Keep executable producers separate from status presentation.
+
+    A review import marks a boundary of the run, so ``review`` and
+    ``human-review`` name the OBPI once, here, by the launcher's resolver
+    before anything is read or imported (:func:`resolve_obpi_at_entry`). The
+    boundary is recorded under the id it returns. The acceptance records stay
+    keyed by ``obpi_id`` as typed, and ``init``, ``prove`` and ``status``
+    resolve nothing.
+
+    Raises:
+        ObpiEntryError: when ``review`` or ``human-review`` is given an id that
+            names no single OBPI with a brief on disk.
+
+    """
+    if action in ("review", "human-review"):
+        launch_id = resolve_obpi_at_entry(root, obpi_id)[0]
+        if action == "review":
+            return _execute_review(root, obpi_id, receipt, launch_id)
+        return _execute_human_review(root, obpi_id, attestor, ruling, launch_id)
     if action == "init":
         if not author:
             raise ValueError("init requires --author naming the implementing session")
@@ -102,10 +132,6 @@ def _execute(
         return contract.model_dump(mode="json"), True
     if action == "prove":
         return _execute_proof(root, obpi_id, specification)
-    if action == "review":
-        return _execute_review(root, obpi_id, receipt)
-    if action == "human-review":
-        return _execute_human_review(root, obpi_id, attestor, ruling)
     if action != "status" or stage not in ("stage2", "stage4"):
         raise ValueError("Use init, prove, review or status with stage2/stage4")
     return _status_report(root, obpi_id, stage, req_ids)
@@ -131,7 +157,7 @@ def _execute_proof(root: Path, obpi_id: str, specification: str | None) -> tuple
     return proof.model_dump(mode="json"), proof.valid
 
 
-def _record_review_round(root: Path, obpi_id: str) -> None:
+def _record_review_round(root: Path, launch_id: str) -> None:
     """Record the boundary a successful review import marks (OBPI-0.35.0-15).
 
     Called for an adversarial review and for a human review only (operator
@@ -139,21 +165,25 @@ def _record_review_round(root: Path, obpi_id: str) -> None:
     imported during Stage 2 and marks no boundary. An import is a check, so it
     is recorded inside the stage the run has reached and never moves it
     (Question 9). Nothing is recorded unless a pipeline run is in flight for
-    ``obpi_id``, and a refused import never reaches this call.
+    ``launch_id``, and a refused import never reaches this call.
 
-    The acceptance records stay keyed by the id as typed. The position is
-    recorded under the id the launcher's resolver gives that typing
-    (``recorded_obpi_id``; operator ruling 2026-10-12, Open Design Question
-    19), so a review imported under any spelling the launcher accepts lands on
-    the launch's id.
+    ``launch_id`` is the id the launcher's resolver gave the id as typed, at
+    the command's entry (operator rulings 2026-10-12, Open Design Questions 19
+    and 20), so a review imported under any spelling the launcher accepts
+    lands on the launch's id. There is no fallback to the id as typed: an id
+    the resolver cannot name is refused before the import.
     """
-    record_run_position(
-        root, recorded_obpi_id(root, obpi_id), RunCrossing(boundary="acceptance-review")
-    )
+    record_run_position(root, launch_id, RunCrossing(boundary="acceptance-review"))
 
 
-def _execute_review(root: Path, obpi_id: str, receipt: str | None) -> tuple[dict, bool]:
-    """Resolve the named transport receipt and retain its independent judgment."""
+def _execute_review(
+    root: Path, obpi_id: str, receipt: str | None, launch_id: str
+) -> tuple[dict, bool]:
+    """Resolve the named transport receipt and retain its independent judgment.
+
+    The review is stored under ``obpi_id`` as typed; an adversarial review's
+    boundary is recorded under ``launch_id``, the resolver's id for it.
+    """
     if not receipt or Path(receipt).name != receipt:
         raise ValueError("review requires --receipt with an ARB run ID")
     config = GzkitConfig.load(root / ".gzkit.json")
@@ -163,18 +193,22 @@ def _execute_review(root: Path, obpi_id: str, receipt: str | None) -> tuple[dict
         raise ValueError("Receipt filename and execution identity disagree")
     review = record_review(root, obpi_id, captured)
     if review.stage == "adversarial":
-        _record_review_round(root, obpi_id)
+        _record_review_round(root, launch_id)
     return review.model_dump(mode="json"), True
 
 
 def _execute_human_review(
-    root: Path, obpi_id: str, attestor: str | None, ruling: str | None
+    root: Path, obpi_id: str, attestor: str | None, ruling: str | None, launch_id: str
 ) -> tuple[dict, bool]:
-    """Record an explicitly supplied operator ruling against current proof."""
+    """Record an explicitly supplied operator ruling against current proof.
+
+    The ruling is stored under ``obpi_id`` as typed; its boundary is recorded
+    under ``launch_id``, the resolver's id for it.
+    """
     if not attestor or not ruling:
         raise ValueError("human-review requires --attestor and the operator's verbatim --ruling")
     review = record_human_review(root, obpi_id, attestor=attestor, ruling=ruling)
-    _record_review_round(root, obpi_id)
+    _record_review_round(root, launch_id)
     return review.model_dump(mode="json"), True
 
 

@@ -199,13 +199,15 @@ def resolve_obpi_at_entry(project_root: Path, typed: str) -> tuple[str, Path]:
 def recorded_obpi_id(project_root: Path, named: str) -> str:
     """Return the id a position is recorded under for a command that checks nothing by id.
 
-    ``gz obpi verify-packet`` holds only a packet's file name, and the review
-    import of ``gz obpi acceptance`` keys its records by the id as typed. Both
-    hand the recorder the id :func:`resolve_obpi_at_entry` gives, so a spelling
-    the launcher accepts records under the launch id. An id the resolver gives
-    to no single OBPI is handed on unchanged, and the recorder's own rule then
-    says whether it names a run: a failed lookup never fails a command whose
-    verdict does not depend on it.
+    ``gz obpi verify-packet`` is the one caller: it takes a packet path and no
+    OBPI id, and holds only the packet's file name. It hands the recorder the
+    id :func:`resolve_obpi_at_entry` gives that name, so a spelling the
+    launcher accepts records under the launch id. A name the resolver gives to
+    no single OBPI is handed on unchanged, and the recorder's own rule then
+    says whether it names a run: a packet may be named anything, and a failed
+    lookup never fails a command whose verdict does not depend on it. A
+    command that takes an OBPI id refuses instead (the review imports of
+    ``gz obpi acceptance``, Open Design Question 20).
     """
     try:
         return resolve_obpi_at_entry(project_root, named)[0]

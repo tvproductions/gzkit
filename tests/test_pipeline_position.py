@@ -2171,23 +2171,8 @@ class TestABoundaryIsRecordedUnderTheIdTheLaunchCarries(_LaunchableThroughTheCli
         crossed and none goes unrecorded.
         """
         self._gz("obpi", "pipeline", _CLI_OBPI)
-
-        def _seed_a_live_sibling() -> None:
-            brief = next(Path.cwd().rglob(f"{_CLI_OBPI}.md"))
-            brief.with_name(f"{_CLI_SIBLING_OBPI}.md").write_text(
-                brief.read_text(encoding="utf-8").replace(_CLI_OBPI, _CLI_SIBLING_OBPI),
-                encoding="utf-8",
-            )
-            Ledger(Path(".gzkit/ledger.jsonl")).append(
-                obpi_created_event(_CLI_SIBLING_OBPI, _CLI_ADR)
-            )
-
-        refused: tuple[tuple[str, str, Callable[[], None]], ...] = (
-            ("a prefix that stops inside a word", f"{_CLI_SHORT_OBPI}-runt", lambda: None),
-            ("a short form two live OBPIs share", _CLI_SHORT_OBPI, _seed_a_live_sibling),
-        )
         recorded = len(self._rows("pipeline_stage_transition"))
-        for name, given, seed in refused:
+        for name, given, seed in self._ids_naming_no_single_obpi():
             seed()
             with self.subTest(refused=name, command="gz obpi precomplete"):
                 with precomplete_checks_replaced() as checks:
@@ -2205,6 +2190,115 @@ class TestABoundaryIsRecordedUnderTheIdTheLaunchCarries(_LaunchableThroughTheCli
                 generate.assert_not_called()
                 write.assert_not_called()
                 self.assertEqual(len(self._rows("pipeline_stage_transition")), recorded)
+
+    def _seed_a_live_sibling(self) -> None:
+        """Register a second live OBPI under the run's short form, with its brief on disk."""
+        brief = next(Path.cwd().rglob(f"{_CLI_OBPI}.md"))
+        brief.with_name(f"{_CLI_SIBLING_OBPI}.md").write_text(
+            brief.read_text(encoding="utf-8").replace(_CLI_OBPI, _CLI_SIBLING_OBPI),
+            encoding="utf-8",
+        )
+        Ledger(Path(".gzkit/ledger.jsonl")).append(obpi_created_event(_CLI_SIBLING_OBPI, _CLI_ADR))
+
+    def _ids_naming_no_single_obpi(self) -> tuple[tuple[str, str, Callable[[], None]], ...]:
+        """Each ``(name, id, seed)``: an id the resolver refuses once ``seed`` has run."""
+        return (
+            ("a prefix that stops inside a word", f"{_CLI_SHORT_OBPI}-runt", lambda: None),
+            ("a short form two live OBPIs share", _CLI_SHORT_OBPI, self._seed_a_live_sibling),
+        )
+
+    @contextmanager
+    def _review_imports_replaced(self) -> Iterator[tuple[Mock, Mock]]:
+        """Replace the store's two review imports; yield them, review then human review."""
+        review = Mock(stage="adversarial")
+        review.model_dump.return_value = {}
+        module = "gzkit.commands.obpi_acceptance"
+        with (
+            patch(f"{module}.record_review", return_value=review) as imported,
+            patch(f"{module}.record_human_review", return_value=review) as ruled,
+            patch(f"{module}.receipts_root", return_value=Path("receipts").resolve()),
+        ):
+            yield imported, ruled
+
+    def _review_actions(self) -> tuple[tuple[str, tuple[str, ...]], ...]:
+        """The two actions of ``gz obpi acceptance`` that import a review, with their arguments."""
+        return (
+            ("review", ("review", "--receipt", write_review_receipt())),
+            ("human-review", ("human-review", "--attestor", "g0", "--ruling", "accepted")),
+        )
+
+    @covers("REQ-0.35.0-15-02")
+    def test_a_review_import_refuses_an_id_naming_no_single_obpi_and_imports_nothing(self) -> None:
+        """``review`` and ``human-review`` import nothing under an id the resolver refuses.
+
+        Operator ruling 2026-10-12 on Open Design Question 20. The acceptance
+        store finds its brief by a file glob and keys its records by the id as
+        typed, so a prefix that stops inside a word of the id could carry the
+        whole acceptance sequence: the review was imported, the recorder found
+        no run under that id, and the boundary went unrecorded with no
+        warning. Each action now names the OBPI by the launcher's resolver
+        before anything is read or imported. An id that names no OBPI, or
+        two, exits 1 as a user error and not as a blocked acceptance.
+        """
+        self._gz("obpi", "pipeline", _CLI_OBPI)
+        recorded = len(self._rows("pipeline_stage_transition"))
+        for name, given, seed in self._ids_naming_no_single_obpi():
+            seed()
+            for action, args in self._review_actions():
+                for as_json in (False, True):
+                    with (
+                        self.subTest(refused=name, action=action, json=as_json),
+                        self._review_imports_replaced() as (imported, ruled),
+                    ):
+                        printed = self._gz(
+                            *("obpi", "acceptance", given, *args),
+                            *(("--json",) if as_json else ()),
+                            exit_code=1,
+                        )
+
+                        imported.assert_not_called()
+                        ruled.assert_not_called()
+                        self.assertNotIn("Acceptance blocked", printed)
+                        if as_json:
+                            self.assertIn(given, json.loads(printed)["error"])
+                        self.assertEqual(len(self._rows("pipeline_stage_transition")), recorded)
+
+    @covers("REQ-0.35.0-15-02")
+    def test_a_review_import_keeps_its_records_under_the_id_typed_and_its_position_on_the_run(
+        self,
+    ) -> None:
+        """The store stays keyed by the id as typed; the position lands on the launch's id.
+
+        A control for the ruling on Question 20: resolving the id at entry
+        changes what a review import refuses and the id its boundary is
+        recorded under, and nothing about where the acceptance records live.
+        """
+        self._gz("obpi", "pipeline", _CLI_OBPI)
+        for given in (_CLI_OBPI, _CLI_SHORT_OBPI, _CLI_SLUG_PREFIX):
+            for action, args in self._review_actions():
+                with (
+                    self.subTest(given=given, action=action),
+                    self._review_imports_replaced() as (imported, ruled),
+                ):
+                    before = len(self._crossings())
+
+                    self._gz("obpi", "acceptance", given, *args)
+
+                    store = imported if action == "review" else ruled
+                    store.assert_called_once()
+                    self.assertEqual(store.call_args.args[1], given)
+                    self._assert_crossed(
+                        before,
+                        stage="implement",
+                        kind="task",
+                        label="acceptance-review",
+                        boundary="gz obpi acceptance",
+                    )
+        self.assertEqual(
+            {row.id for row in self._rows("pipeline_stage_transition")},
+            {_CLI_OBPI},
+            "no crossing is filed under the id as typed",
+        )
 
     def _seed_a_parked_sibling(self) -> None:
         """Put a second key under the run's short form on the ledger graph.
