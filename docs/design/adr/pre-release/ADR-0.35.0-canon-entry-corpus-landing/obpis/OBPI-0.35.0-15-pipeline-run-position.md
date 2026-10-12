@@ -523,6 +523,7 @@ The real-run half of the exit condition is not a Demo command, because `gz obpi 
 
 No GitHub issue has been filed from this run; these are recorded through `gz insights remember` (`.gzkit/insights/agent-insights.jsonl`, 2026-10-11) and await the operator's routing. None discharges an obligation of this brief.
 
+- **GHI #1193, filed 2026-10-11 on the operator's instruction ("track it as a defect").** `gz obpi acceptance prove` records the mutated source file's host-absolute path in each proof row's `evidence.sweep.source`. Found while committing this run's proof rows; the writer is `src/gzkit/mutation_witness.py`, outside this brief's Allowed Paths.
 - **Sibling brief names a removed function.** `OBPI-0.35.0-16-next-command-for-position.md` names `refresh_pipeline_markers` in its Allowed Paths note and its Discovery Checklist. This brief removed it once nothing consumed it. That brief is not this run's to edit and reconciles when the operator initiates it.
 - **Acceptance import refuses a restated finding.** `acceptance._record_findings` voids a whole review when an earlier finding identifier returns with any field changed, and the review frame does not tell reviewers that a prior identifier may appear only in a closure. Three reviews in this run could not be imported for it and were re-run whole.
 - **`gz plan audit` passes a plan whose tasks complete no REQ.** Such a task cannot be reviewed, because a review context requires an executed proof for every scoped obligation.
