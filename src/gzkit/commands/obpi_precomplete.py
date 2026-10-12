@@ -31,7 +31,13 @@ from gzkit.cli.helpers.exit_codes import (
     EXIT_SUCCESS,
     EXIT_USER_ERROR,
 )
-from gzkit.commands.common import console, get_project_root
+from gzkit.commands.common import (
+    GzCliError,
+    ObpiAmbiguityError,
+    console,
+    get_project_root,
+    resolve_obpi_file,
+)
 from gzkit.commands.validate_task_envelope import pending_obpi_task_envelope_errors
 from gzkit.governance.req_coverage import discover_covers, parse_brief_req_kinds
 
@@ -70,32 +76,31 @@ def obpi_precomplete_cmd(*, obpi_id: str, as_json: bool = False) -> int:
     whatever the checks find. This command is a check: it never moves the
     stage, and the record changes no verdict.
 
-    The OBPI is named once, here, for the checks. The brief is resolved from
-    the id as typed, and every check and the report then use the id that brief
-    carries. A short ``OBPI-<semver>-<item>`` id therefore reads the same
-    operator block, the same marker and the same dispatch records as the full
-    id, whether or not a run is in flight. No check reads the typing.
+    The OBPI is named once, here, by the resolver the launcher and
+    ``gz obpi complete`` use (:func:`resolve_obpi_at_entry`; operator ruling
+    2026-10-12 on Open Design Question 19). Every check, the report and the
+    position record use the one id it returns and the one brief it finds, so
+    a short ``OBPI-<semver>-<item>`` id, an id the ledger renamed and the full
+    id all read the same operator block, the same marker and the same dispatch
+    records, and the run recorded is the run checked. No check reads the
+    typing, a brief's frontmatter id or the order a file glob sorts in.
 
-    The position record is the one reader of the id as typed. Which run an id
-    names is the recorder's rule and no command's: the launch in flight that
-    carries the id, or the one launch in flight whose short form it is. With
-    two briefs on disk under one short form the brief resolved may belong to a
-    retired sibling, whose id names no run, while the id as typed still names
-    the live one.
+    An id the resolver cannot give to exactly one OBPI with a brief on disk is
+    refused with exit 1 and the resolver's own message. Nothing is checked and
+    nothing is recorded.
     """
     from gzkit.pipeline_runtime import RunCrossing, record_run_position
 
     project_root = get_project_root()
 
-    typed = obpi_id
-    brief_path = _resolve_brief_path(project_root, typed)
-    if brief_path is None:
-        console.print(f"[red]Brief not found for {typed}[/red]")
-        raise SystemExit(EXIT_USER_ERROR)
-    obpi_id = _canonical_obpi_id(brief_path, typed)
+    try:
+        obpi_id, brief_path = resolve_obpi_at_entry(project_root, obpi_id)
+    except ObpiEntryError as exc:
+        console.print(f"[red]{escape(str(exc))}[/red]")
+        raise SystemExit(EXIT_USER_ERROR) from exc
 
     checks = list(_run_all_checks(project_root, brief_path, obpi_id))
-    record_run_position(project_root, typed, RunCrossing(boundary="precomplete"))
+    record_run_position(project_root, obpi_id, RunCrossing(boundary="precomplete"))
 
     if as_json:
         print(
@@ -149,20 +154,63 @@ def resolve_brief_path(project_root: Path, obpi_id: str) -> Path | None:
 _resolve_brief_path = resolve_brief_path  # Compatibility for existing command callers.
 
 
-def _canonical_obpi_id(brief_path: Path, typed: str) -> str:
-    """Return the id the resolved brief carries: the one name every check reads under.
+class ObpiEntryError(Exception):
+    """The id a command was given names no single OBPI with a brief on disk."""
 
-    The brief's frontmatter ``id`` is the id the launcher, the lock, the
-    operator block and the dispatch records are all filed under. A brief that
-    carries none, or cannot be read, leaves the id as typed: nothing is guessed.
+
+def resolve_obpi_at_entry(project_root: Path, typed: str) -> tuple[str, Path]:
+    """Name the OBPI a command was given, once, by the launcher's resolver.
+
+    One rule says which OBPI an id names (operator ruling 2026-10-12, Open
+    Design Question 19): ``resolve_obpi`` in the command layer, the rule
+    ``gz obpi pipeline`` and ``gz obpi complete`` already follow. It reads the
+    ledger graph, follows renames, expands a short ``OBPI-<semver>-<item>`` id
+    to the one live OBPI it prefixes, and refuses an id that names two.
+    ``gz obpi precomplete`` and ``gz obpi present-evidence`` once named the
+    OBPI by a glob over brief file names and took the first sorted match, so a
+    brief whose name extended the id typed, or whose frontmatter kept an id the
+    ledger renamed, lent the command another OBPI's controls.
+
+    Returns ``(obpi_id, brief_path)``: the ledger's id for the OBPI and its
+    brief.
+
+    Raises:
+        ObpiEntryError: carrying the resolver's own message when the id names
+            no OBPI, names more than one, or names one with no brief on disk,
+            and when the project's configuration cannot be read.
+
     """
-    from gzkit.ledger import parse_frontmatter_value
+    from gzkit.config import GzkitConfig
+    from gzkit.ledger import Ledger
 
     try:
-        content = brief_path.read_text(encoding="utf-8")
-    except (OSError, UnicodeDecodeError):
-        return typed
-    return (parse_frontmatter_value(content, "id") or "").strip() or typed
+        config = GzkitConfig.load(project_root / ".gzkit.json")
+    except (OSError, ValueError) as exc:
+        msg = f"Cannot read .gzkit.json to resolve {typed}: {exc}"
+        raise ObpiEntryError(msg) from exc
+    ledger = Ledger(project_root / config.paths.ledger)
+    try:
+        brief_path, obpi_id = resolve_obpi_file(project_root, config, ledger, typed)
+    except (GzCliError, ObpiAmbiguityError) as exc:
+        raise ObpiEntryError(str(exc)) from exc
+    return obpi_id, brief_path
+
+
+def recorded_obpi_id(project_root: Path, named: str) -> str:
+    """Return the id a position is recorded under for a command that checks nothing by id.
+
+    ``gz obpi verify-packet`` holds only a packet's file name, and the review
+    import of ``gz obpi acceptance`` keys its records by the id as typed. Both
+    hand the recorder the id :func:`resolve_obpi_at_entry` gives, so a spelling
+    the launcher accepts records under the launch id. An id the resolver gives
+    to no single OBPI is handed on unchanged, and the recorder's own rule then
+    says whether it names a run: a failed lookup never fails a command whose
+    verdict does not depend on it.
+    """
+    try:
+        return resolve_obpi_at_entry(project_root, named)[0]
+    except ObpiEntryError:
+        return named
 
 
 def _run_all_checks(project_root: Path, brief_path: Path, obpi_id: str) -> Iterable[CheckResult]:

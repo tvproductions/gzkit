@@ -67,6 +67,7 @@ from gzkit.pipeline_runtime import (
     rebuild_marker,
     record_position,
     replay_pipeline_position,
+    restore_pipeline_marker_twin,
     runs_in_flight,
     write_pipeline_markers,
 )
@@ -136,6 +137,8 @@ _CLI_OBPI = "OBPI-0.13.0-01-runtime-command-contract"
 _CLI_SHORT_OBPI = "OBPI-0.13.0-01"
 #: A second ledger-graph key under that short form: created, parked, never launched.
 _CLI_SIBLING_OBPI = "OBPI-0.13.0-01-interrogate"
+#: A prefix of the launch id longer than its short form, ending on a whole word.
+_CLI_SLUG_PREFIX = "OBPI-0.13.0-01-runtime"
 _CLI_ADR = "ADR-0.13.0-obpi-pipeline-runtime-surface"
 #: The acceptance criteria of a seeded brief that has any: one TASK each at launch.
 _CLI_REQS = ("REQ-0.13.0-01-01", "REQ-0.13.0-01-02")
@@ -390,6 +393,40 @@ class _RunFixture(unittest.TestCase):
             blockers=blockers or [],
             requires_human_attestation=True,
         )
+
+
+class TestTheTwinRestoreReadsBeforeItCreates(_RunFixture):
+    """A restore that cannot read its source leaves no marker file behind.
+
+    Review finding fin-specB-twin-restore-creates-its-target-before-reading-its-source.
+    ``gz state --repair`` restores the one missing marker file of a run as a
+    copy of its twin. The target was created before the source was read, so a
+    read that failed left an empty file where a marker is expected: unreadable
+    as a marker, and in the way of the next restore. This is a property of a
+    writer and no acceptance criterion, so no REQ is bound to it.
+    """
+
+    def test_a_source_that_cannot_be_read_leaves_no_target_behind(self) -> None:
+        for lost in ("legacy", "per_obpi"):
+            with self.subTest(missing=lost):
+                self._launch()
+                missing = getattr(self, lost)
+                source = self.per_obpi if missing == self.legacy else self.legacy
+                missing.unlink()
+
+                with (
+                    patch.object(Path, "read_bytes", side_effect=OSError("unreadable")),
+                    self.assertRaises(OSError),
+                ):
+                    restore_pipeline_marker_twin(self.plans, _OBPI)
+
+                self.assertFalse(missing.exists(), "a failed read creates nothing")
+                self.assertEqual(
+                    restore_pipeline_marker_twin(self.plans, _OBPI),
+                    (missing, source),
+                    "and the restore still succeeds once the source reads",
+                )
+                self.assertEqual(missing.read_bytes(), source.read_bytes())
 
 
 class TestAnAdvancedMarkerKeepsEveryReaderWorking(_RunFixture):
@@ -1983,9 +2020,11 @@ class TestABoundaryIsRecordedUnderTheIdTheLaunchCarries(_LaunchableThroughTheCli
         OBPI id is crossed here with the short form; the packet names its OBPI
         by its file name, and a dispatch is recorded through the channel the
         dispatch command calls. ``gz obpi complete`` is last, because its
-        receipt ends the run. Every crossing lands on the launch's id. No
-        command resolves the id for the recorder: the recorder finds the run.
-        The ``gz task`` verbs take a TASK id and are crossed in the next test.
+        receipt ends the run. Every crossing lands on the launch's id. The
+        commands that take an OBPI id name it by the launcher's resolver
+        (operator ruling 2026-10-12, Open Design Question 19); a dispatch
+        reaches the recorder with the id as given, and the recorder finds the
+        run. The ``gz task`` verbs take a TASK id and are crossed further on.
         """
         self._gz("obpi", "pipeline", _CLI_OBPI)
         short = _CLI_SHORT_OBPI
@@ -2023,6 +2062,12 @@ class TestABoundaryIsRecordedUnderTheIdTheLaunchCarries(_LaunchableThroughTheCli
             ),
             ("gz obpi complete", "complete", lambda: self._complete(obpi_id=short)),
         )
+        self._assert_each_crossing_lands_on_the_launch_id(producers)
+
+    def _assert_each_crossing_lands_on_the_launch_id(
+        self, producers: tuple[tuple[str, str, Callable[[], object]], ...]
+    ) -> None:
+        """Each ``(boundary, label, cross)`` appends one event, on the launch's id alone."""
         for boundary, label, cross in producers:
             with self.subTest(boundary=boundary, label=label):
                 before = len(self._crossings())
@@ -2044,6 +2089,122 @@ class TestABoundaryIsRecordedUnderTheIdTheLaunchCarries(_LaunchableThroughTheCli
             {_CLI_OBPI},
             "no crossing is filed under the id as typed",
         )
+
+    @covers("REQ-0.35.0-15-02")
+    def test_a_prefix_longer_than_the_short_form_records_under_the_launch_id(self) -> None:
+        """A prefix the launcher's resolver expands names the run for every command.
+
+        Review finding
+        fin-REQ02-a-slug-prefix-id-is-accepted-by-precomplete-and-records-nothing.
+        ``gz obpi precomplete`` and ``gz obpi present-evidence`` found the
+        brief by a file glob on the id as typed, so they accepted a prefix of
+        the launch id longer than its short form and handed the recorder an
+        id that names no run: the boundary was crossed and never recorded. A
+        Step-4a packet named by that prefix and a review imported under it
+        went the same way. Each command now names the OBPI by the resolver the
+        launcher uses, and each crossing lands on the launch's id.
+        """
+        self._gz("obpi", "pipeline", _CLI_OBPI)
+        prefix = _CLI_SLUG_PREFIX
+        self.assertTrue(_CLI_OBPI.startswith(f"{prefix}-"), "a prefix ending on a whole word")
+        self.assertNotEqual(prefix, _CLI_SHORT_OBPI, "longer than the short form")
+        acceptance = ("obpi", "acceptance", prefix)
+        self._assert_each_crossing_lands_on_the_launch_id(
+            (
+                ("gz obpi precomplete", "precomplete", lambda: self._precomplete(obpi_id=prefix)),
+                (
+                    "gz obpi present-evidence",
+                    "present-evidence",
+                    lambda: self._gz("obpi", "present-evidence", prefix, "--json"),
+                ),
+                (
+                    "gz obpi verify-packet",
+                    "verify-packet",
+                    lambda: self._gz(
+                        "obpi", "verify-packet", write_stage4_packet(prefix), "--json"
+                    ),
+                ),
+                (
+                    "gz obpi acceptance",
+                    "acceptance-review",
+                    lambda: self._gz(*acceptance, "review", "--receipt", write_review_receipt()),
+                ),
+                (
+                    "gz obpi acceptance",
+                    "acceptance-review",
+                    lambda: self._gz(
+                        *acceptance, "human-review", "--attestor", "g0", "--ruling", "accepted"
+                    ),
+                ),
+            )
+        )
+
+    @covers("REQ-0.35.0-15-02")
+    def test_present_evidence_writes_its_packet_for_the_obpi_the_resolver_names(self) -> None:
+        """The packet is generated from the resolved brief, under the launch's id."""
+        self._gz("obpi", "pipeline", _CLI_OBPI)
+        brief = next(Path.cwd().rglob(f"{_CLI_OBPI}.md"))
+        for given in (_CLI_SHORT_OBPI, _CLI_SLUG_PREFIX, _CLI_OBPI):
+            with self.subTest(given=given), stage4_work_replaced():
+                packet = Mock(blockers=[], review_blockers=[])
+                packet.model_dump_json.return_value = "{}"
+                with patch(
+                    "gzkit.commands.obpi_present_evidence.generate_evidence_packet",
+                    return_value=packet,
+                ) as generate:
+                    self._gz("obpi", "present-evidence", given, "--json")
+
+                generate.assert_called_once()
+                _root, from_brief, under = generate.call_args.args
+                self.assertEqual(under, _CLI_OBPI)
+                self.assertEqual(from_brief.resolve(), brief.resolve())
+
+    @covers("REQ-0.35.0-15-02")
+    def test_an_id_naming_no_single_obpi_is_refused_and_no_boundary_is_crossed(self) -> None:
+        """``precomplete`` and ``present-evidence`` do no work under an id the resolver refuses.
+
+        Two inputs the file glob accepted. A prefix that stops inside a word
+        of the id names no OBPI: the commands ran and the recorder found no
+        run. A short form two live OBPIs share names two: the commands ran
+        against whichever brief sorted first. Each is refused with exit 1
+        before a check runs or a packet is generated, so no boundary is
+        crossed and none goes unrecorded.
+        """
+        self._gz("obpi", "pipeline", _CLI_OBPI)
+
+        def _seed_a_live_sibling() -> None:
+            brief = next(Path.cwd().rglob(f"{_CLI_OBPI}.md"))
+            brief.with_name(f"{_CLI_SIBLING_OBPI}.md").write_text(
+                brief.read_text(encoding="utf-8").replace(_CLI_OBPI, _CLI_SIBLING_OBPI),
+                encoding="utf-8",
+            )
+            Ledger(Path(".gzkit/ledger.jsonl")).append(
+                obpi_created_event(_CLI_SIBLING_OBPI, _CLI_ADR)
+            )
+
+        refused: tuple[tuple[str, str, Callable[[], None]], ...] = (
+            ("a prefix that stops inside a word", f"{_CLI_SHORT_OBPI}-runt", lambda: None),
+            ("a short form two live OBPIs share", _CLI_SHORT_OBPI, _seed_a_live_sibling),
+        )
+        recorded = len(self._rows("pipeline_stage_transition"))
+        for name, given, seed in refused:
+            seed()
+            with self.subTest(refused=name, command="gz obpi precomplete"):
+                with precomplete_checks_replaced() as checks:
+                    self._gz("obpi", "precomplete", given, "--json", exit_code=1)
+                checks.assert_not_called()
+                self.assertEqual(len(self._rows("pipeline_stage_transition")), recorded)
+            with self.subTest(refused=name, command="gz obpi present-evidence"):
+                with (
+                    patch(
+                        "gzkit.commands.obpi_present_evidence.generate_evidence_packet"
+                    ) as generate,
+                    patch("gzkit.commands.obpi_present_evidence.write_packet") as write,
+                ):
+                    self._gz("obpi", "present-evidence", given, "--json", exit_code=1)
+                generate.assert_not_called()
+                write.assert_not_called()
+                self.assertEqual(len(self._rows("pipeline_stage_transition")), recorded)
 
     def _seed_a_parked_sibling(self) -> None:
         """Put a second key under the run's short form on the ledger graph.

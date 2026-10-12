@@ -17,15 +17,17 @@ from typing import Any
 from unittest.mock import patch
 
 from gzkit import obpi_dispatch_channel as chan
-from gzkit.cli.helpers.exit_codes import EXIT_POLICY_BREACH, EXIT_SUCCESS
+from gzkit.cli.helpers.exit_codes import EXIT_POLICY_BREACH, EXIT_SUCCESS, EXIT_USER_ERROR
 from gzkit.commands.obpi_precomplete import CheckResult, obpi_precomplete_cmd
 from gzkit.ledger import (
     Ledger,
     LedgerEvent,
+    obpi_created_event,
     obpi_receipt_emitted_event,
     pipeline_launched_event,
 )
 from gzkit.ledger_events import (
+    artifact_renamed_event,
     obpi_blocked_on_operator_event,
     obpi_parked_event,
     obpi_unparked_event,
@@ -230,12 +232,14 @@ _ID_TAKING_PRECOMPLETE_CHECKS = (
 class TestPrecompleteNamesTheObpiOnceAtEntry(unittest.TestCase):
     """Every precomplete control reads the same OBPI however its id was spelled.
 
-    ``gz obpi precomplete`` resolves a brief from the id as typed. Every check
-    then uses the canonical id that brief carries, so the short
-    ``OBPI-<semver>-<item>`` form reads the same operator block, the same
-    marker and the same dispatch records as the full id, whether or not a run
-    is in flight. The position record alone takes the id as typed, because the
-    recorder's own rule says which run an id names. Review findings, each a
+    ``gz obpi precomplete`` names the OBPI once, at entry, by the resolver the
+    launcher uses (operator ruling 2026-10-12, Open Design Question 19: "one
+    resolver at command entry"). Every check, the report and the position
+    record use the id the ledger holds for it, so the short
+    ``OBPI-<semver>-<item>`` form, a renamed id and the full id read the same
+    operator block, the same marker and the same dispatch records, whether or
+    not a run is in flight. An id the resolver gives to no single OBPI is
+    refused before any check runs. Review findings, each a
     defect older than OBPI-0.35.0-15
     in a control Requirement 11 names: the Stage 2 dispatch check looked for
     the marker under the id as typed and passed a short id as "not assessable"
@@ -244,8 +248,11 @@ class TestPrecompleteNamesTheObpiOnceAtEntry(unittest.TestCase):
     (fc3-aux-precomplete-dispatch-check-reads-the-typed-id-once-the-run-is-retired),
     and the operator block check read the block under the id as typed
     (fc2-aux-precomplete-operator-block-check-still-reads-the-id-as-typed).
+    The final round added three on the same root: a brief whose file name
+    extends the id typed, a brief whose frontmatter keeps an id the ledger
+    renamed, and a prefix of the launch id longer than its short form.
     These are controls and no acceptance criterion, so no REQ is bound to them.
-    The one test of the position record is bound to REQ-0.35.0-15-02, whose
+    The tests of the position record are bound to REQ-0.35.0-15-02, whose
     subject it is.
 
     The command is run whole. Each control is unchanged for a full id, which
@@ -264,15 +271,20 @@ class TestPrecompleteNamesTheObpiOnceAtEntry(unittest.TestCase):
         (self.root / ".claude" / "plans").mkdir(parents=True)
         (self.root / ".gzkit").mkdir()
         self.ledger = Ledger(self.root / ".gzkit" / "ledger.jsonl")
-        briefs = self.root / "design" / "adr" / self._ADR / "obpis"
-        briefs.mkdir(parents=True)
-        (briefs / f"{self._FULL}.md").write_text(
-            f"---\nid: {self._FULL}\nparent: {self._ADR}\nitem: 4\nlane: heavy\n"
-            "status: in_progress\n---\n\n# Dispatch channel\n",
-            encoding="utf-8",
-        )
+        self.ledger.append(obpi_created_event(self._FULL, self._ADR))
+        (self.root / "design" / "adr" / self._ADR / "obpis").mkdir(parents=True)
+        self._brief(self._FULL)
         _marker(self.root, self._FULL).write_text(
             json.dumps({"obpi_id": self._FULL, "parent_adr": self._ADR, "current_stage": "verify"}),
+            encoding="utf-8",
+        )
+
+    def _brief(self, name: str, *, carries: str | None = None, status: str = "in_progress") -> None:
+        """Write the brief file ``name``, whose frontmatter carries the id ``carries``."""
+        briefs = self.root / "design" / "adr" / self._ADR / "obpis"
+        (briefs / f"{name}.md").write_text(
+            f"---\nid: {carries or name}\nparent: {self._ADR}\nitem: 4\nlane: heavy\n"
+            f"status: {status}\n---\n\n# {name}\n",
             encoding="utf-8",
         )
 
@@ -289,11 +301,15 @@ class TestPrecompleteNamesTheObpiOnceAtEntry(unittest.TestCase):
     def _launch(self) -> None:
         self.ledger.append(self._launch_row(self._FULL))
 
-    def _start_over(self, *rows: LedgerEvent) -> None:
-        """Empty the ledger, then append ``rows``."""
+    def _start_over(self, *rows: LedgerEvent, registered: tuple[LedgerEvent, ...] = ()) -> None:
+        """Empty the ledger, register the OBPI on it, then append ``rows``.
+
+        ``registered`` replaces the one row that registers the OBPI under its
+        full id, for a ledger that came to that id another way.
+        """
         self.ledger.path.write_text("", encoding="utf-8")
         self.ledger = Ledger(self.ledger.path)
-        for row in rows:
+        for row in (*(registered or (obpi_created_event(self._FULL, self._ADR),)), *rows):
             self.ledger.append(row)
 
     def _dispatch_the_roster(self) -> None:
@@ -332,8 +348,8 @@ class TestPrecompleteNamesTheObpiOnceAtEntry(unittest.TestCase):
                 code = int(exc.code or 0)
         for each in patches:
             each.stop()
-        report = json.loads(printed.call_args[0][0])
-        checks = {check["name"]: check for check in report["checks"]}
+        report = json.loads(printed.call_args[0][0]) if printed.call_args else None
+        checks = {check["name"]: check for check in report["checks"]} if report else {}
         return {"exit": code, "report": report, "checks": checks, "handed": handed}
 
     def _check(self, obpi_id: str) -> dict[str, Any]:
@@ -433,6 +449,132 @@ class TestPrecompleteNamesTheObpiOnceAtEntry(unittest.TestCase):
                     by_full["checks"]["operator_block"]["message"],
                 )
 
+    def test_a_full_id_reads_its_own_controls_beside_a_brief_whose_name_extends_it(self) -> None:
+        """A second brief named ``<id>-<more>`` lends the id typed none of its controls.
+
+        Review finding
+        fin-AUX-precomplete-full-id-beside-a-hyphen-extended-sibling-brief-reads-the-siblings-controls.
+        A glob on ``<id>*.md`` sorts ``<id>-<more>.md`` before ``<id>.md``, and
+        the checks then ran under the id that brief carries: the standing
+        operator block and the unrecorded Stage 2 dispatch of the OBPI typed
+        no longer failed the command (Requirement 11). The OBPI is the one the
+        ledger names for the id.
+        """
+        extended = f"{self._FULL}-extended"
+        self._brief(extended)
+        self.assertLess(f"{extended}.md", f"{self._FULL}.md", "the extending brief sorts first")
+        block = obpi_blocked_on_operator_event(
+            self._FULL, self._ADR, "the boundary set needs a ruling", "rule on Question 9"
+        )
+        self._start_over(
+            obpi_created_event(extended, self._ADR), self._launch_row(self._FULL), block
+        )
+
+        found = self._precomplete(self._FULL)
+
+        self.assertEqual(found["handed"], dict.fromkeys(_ID_TAKING_PRECOMPLETE_CHECKS, self._FULL))
+        self.assertEqual(found["report"]["obpi_id"], self._FULL)
+        self.assertFalse(found["checks"]["operator_block"]["ok"])
+        self.assertIn(
+            "the boundary set needs a ruling", found["checks"]["operator_block"]["message"]
+        )
+        self.assertFalse(found["checks"]["stage2_dispatch"]["ok"])
+        self.assertIn("NOT DISPATCHED", found["checks"]["stage2_dispatch"]["message"])
+        self.assertEqual(found["exit"], EXIT_POLICY_BREACH)
+
+    def test_a_renamed_id_reads_its_controls_under_the_id_the_ledger_holds(self) -> None:
+        """A brief that keeps the id the ledger renamed lends the checks no stale name.
+
+        Review finding
+        fin-aux-precomplete-checks-read-under-the-briefs-frontmatter-id-which-can-differ-from-the-ledger-id.
+        The ledger renamed the short form to the full id and the brief's
+        frontmatter was never rewritten, as for ten ``ADR-0.1.0`` briefs. The
+        checks ran under the frontmatter id, where no operator block and no
+        dispatch record is filed, so a standing block and an unrecorded
+        Stage 2 dispatch stopped failing the command (Requirement 11).
+        """
+        self._brief(self._FULL, carries=self._SHORT)
+        block = obpi_blocked_on_operator_event(
+            self._FULL, self._ADR, "the boundary set needs a ruling", "rule on Question 9"
+        )
+        self._start_over(
+            self._launch_row(self._FULL),
+            block,
+            registered=(
+                obpi_created_event(self._SHORT, self._ADR),
+                artifact_renamed_event(self._SHORT, self._FULL),
+            ),
+        )
+        for spelled, given in (("full", self._FULL), ("short", self._SHORT)):
+            with self.subTest(spelled=spelled):
+                found = self._precomplete(given)
+
+                self.assertEqual(
+                    found["handed"], dict.fromkeys(_ID_TAKING_PRECOMPLETE_CHECKS, self._FULL)
+                )
+                self.assertEqual(found["report"]["obpi_id"], self._FULL)
+                self.assertFalse(found["checks"]["operator_block"]["ok"])
+                self.assertFalse(found["checks"]["stage2_dispatch"]["ok"])
+                self.assertIn("NOT DISPATCHED", found["checks"]["stage2_dispatch"]["message"])
+                self.assertEqual(found["exit"], EXIT_POLICY_BREACH)
+
+    @covers("REQ-0.35.0-15-02")
+    def test_a_prefix_the_resolver_expands_is_checked_and_recorded_under_the_launch_id(
+        self,
+    ) -> None:
+        """A prefix longer than the short form names the run, for the checks and the record.
+
+        Review finding
+        fin-REQ02-a-slug-prefix-id-is-accepted-by-precomplete-and-records-nothing.
+        A file glob accepted ``<short>-dispatch`` and the recorder, handed the
+        id as typed, found no run: the boundary was crossed and never
+        recorded. The resolver expands a prefix that ends on a whole word of
+        the id, so the command runs and its crossing is on the launch id.
+        """
+        block = obpi_blocked_on_operator_event(
+            self._FULL, self._ADR, "the boundary set needs a ruling", "rule on Question 9"
+        )
+        self._start_over(self._launch_row(self._FULL), block)
+
+        found = self._precomplete(f"{self._SHORT}-dispatch")
+
+        self.assertEqual(found["handed"], dict.fromkeys(_ID_TAKING_PRECOMPLETE_CHECKS, self._FULL))
+        self.assertFalse(found["checks"]["operator_block"]["ok"])
+        self.assertFalse(found["checks"]["stage2_dispatch"]["ok"])
+        self.assertEqual(found["exit"], EXIT_POLICY_BREACH)
+        recorded = self._recorded_positions()
+        self.assertEqual([row.id for row in recorded], [self._FULL])
+        self.assertEqual(recorded[0].extra["position_label"], "precomplete")
+
+    @covers("REQ-0.35.0-15-02")
+    def test_an_id_naming_no_single_obpi_is_refused_before_any_check_or_record(self) -> None:
+        """Nothing is checked and nothing is recorded under an id the resolver refuses.
+
+        A prefix that stops inside a word of the id names no OBPI, and a short
+        form two live OBPIs share names two. The glob accepted both: the
+        first gave the recorder an id naming no run, and the second ran the
+        checks against whichever brief sorted first. Each is refused with the
+        user-error exit before a check runs, so no boundary is crossed.
+        """
+        refused: dict[str, tuple[str, tuple[LedgerEvent, ...]]] = {
+            "a prefix that stops inside a word": (f"{self._SHORT}-disp", ()),
+            "a short form two live OBPIs share": (
+                self._SHORT,
+                (obpi_created_event(self._SIBLING, self._ADR),),
+            ),
+        }
+        self._brief(self._SIBLING)
+        for name, (given, rows) in refused.items():
+            with self.subTest(refused=name):
+                self._start_over(*rows, self._launch_row(self._FULL))
+
+                found = self._precomplete(given)
+
+                self.assertEqual(found["exit"], EXIT_USER_ERROR)
+                self.assertIsNone(found["report"], "no report: nothing was checked")
+                self.assertEqual(found["handed"], {})
+                self.assertEqual(self._recorded_positions(), [])
+
     def _recorded_positions(self) -> list[LedgerEvent]:
         return [
             row
@@ -453,18 +595,22 @@ class TestPrecompleteNamesTheObpiOnceAtEntry(unittest.TestCase):
 
     @covers("REQ-0.35.0-15-02")
     def test_a_short_id_records_under_the_live_run_when_a_retired_brief_sorts_first(self) -> None:
-        """The position record takes the id as typed, and the recorder names the run.
+        """A short id names the live OBPI for the checks and for the position record.
 
         Review finding
         t3-AUX-precomplete-short-id-follows-the-first-sorted-brief-for-the-position-record.
         Two briefs sit on disk under one short form, and the one that sorts
-        first belongs to a retired sibling that was never launched. The brief
-        a short id resolves to is then the sibling's. Handing that brief's id
-        to the position record named no run, so the live run's ``precomplete``
-        boundary went unrecorded. The recorder's own rule is the one that
-        says which run an id means (Requirement 2): the one run in flight
-        whose short form is the id typed. The checks keep the id the resolved
-        brief carries, as before.
+        first belongs to a retired sibling that was never launched. A glob
+        gave a short id the sibling's brief. Handing that brief's id to the
+        position record named no run, so the live run's ``precomplete``
+        boundary went unrecorded. The resolver drops the withdrawn sibling,
+        as the launcher does, so the short id names the live OBPI.
+
+        Amended 2026-10-12 with the ruling on Open Design Question 19: this
+        test once asserted that the checks ran under the retired sibling's id
+        while the record went to the live run. That split is the defect the
+        ruling removes, so the checks are asserted under the live OBPI's id,
+        the one the record is filed under.
         """
         retired = "OBPI-0.12.0-04-abandoned-first"
         briefs = self.root / "design" / "adr" / self._ADR / "obpis"
@@ -481,7 +627,8 @@ class TestPrecompleteNamesTheObpiOnceAtEntry(unittest.TestCase):
 
         found = self._precomplete(self._SHORT)
 
-        self.assertEqual(found["handed"], dict.fromkeys(_ID_TAKING_PRECOMPLETE_CHECKS, retired))
+        self.assertEqual(found["handed"], dict.fromkeys(_ID_TAKING_PRECOMPLETE_CHECKS, self._FULL))
+        self.assertEqual(found["report"]["obpi_id"], self._FULL)
         recorded = self._recorded_positions()
         self.assertEqual([row.id for row in recorded], [self._FULL])
         self.assertEqual(recorded[0].extra["position_label"], "precomplete")

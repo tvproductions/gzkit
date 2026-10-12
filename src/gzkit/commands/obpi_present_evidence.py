@@ -8,7 +8,7 @@ at Stage 4. The agent relays this output; it does not type the evidence.
 
 Exit codes (`.claude/rules/cli.md`):
   0 = Stage-4a proof packet is ready for independent review
-  1 = user/config error (brief not found)
+  1 = user/config error (the id names no single OBPI with a brief on disk)
   3 = Stage-4a proof has blockers
 
 ``attestable`` remains false until independent review also clears. Producing
@@ -16,14 +16,19 @@ the review input must not require the review that consumes it.
 
 Writing the packet begins a Stage 4 round (OBPI-0.35.0-15): when a pipeline run
 is in flight for the OBPI, the run moves to ``ceremony`` and its position is
-recorded as ``present-evidence``.
+recorded as ``present-evidence``. The OBPI is named once, at entry, by the
+resolver the launcher uses, so the packet, its file and the position record all
+carry the id the ledger holds for it (operator ruling 2026-10-12, Open Design
+Question 19).
 """
 
 from __future__ import annotations
 
+from rich.markup import escape
+
 from gzkit.cli.helpers.exit_codes import EXIT_POLICY_BREACH, EXIT_SUCCESS, EXIT_USER_ERROR
 from gzkit.commands.common import console, get_project_root
-from gzkit.commands.obpi_precomplete import _resolve_brief_path
+from gzkit.commands.obpi_precomplete import ObpiEntryError, resolve_obpi_at_entry
 from gzkit.governance.stage4_evidence import (
     EvidencePacket,
     generate_evidence_packet,
@@ -68,12 +73,17 @@ def obpi_present_evidence_cmd(*, obpi_id: str, as_json: bool = False) -> int:
     Generates and persists the tool-derived evidence packet. Returns
     ``EXIT_POLICY_BREACH`` (3) when required proof has blockers. Pending review
     permits packet generation but still prevents final acceptance.
+
+    An id the resolver cannot give to exactly one OBPI with a brief on disk is
+    refused with exit 1 and the resolver's own message: no packet is generated
+    or written, and nothing is recorded.
     """
     project_root = get_project_root()
-    brief_path = _resolve_brief_path(project_root, obpi_id)
-    if brief_path is None:
-        console.print(f"[red]Brief not found for {obpi_id}[/red]")
-        raise SystemExit(EXIT_USER_ERROR)
+    try:
+        obpi_id, brief_path = resolve_obpi_at_entry(project_root, obpi_id)
+    except ObpiEntryError as exc:
+        console.print(f"[red]{escape(str(exc))}[/red]")
+        raise SystemExit(EXIT_USER_ERROR) from exc
 
     packet = generate_evidence_packet(project_root, brief_path, obpi_id)
     packet_file = write_packet(project_root, packet)

@@ -1,7 +1,7 @@
 # OBPI Runtime Contract
 
 **Status:** Active
-**Last reviewed:** 2026-03-10
+**Last reviewed:** 2026-10-11
 **Parent ADR:** `ADR-0.10.0-obpi-runtime-surface`
 
 ---

@@ -60,9 +60,9 @@ last. It is the operator recovery tool for drift between the L3 caches
 ### Pipeline marker rebuild
 
 `gz state --repair` is the one command that restores or rebuilds a missing or
-deleted pipeline marker. Nothing else does: the pipeline launcher, the hooks
-and the commands that record a run's position all leave a missing marker
-missing.
+deleted pipeline marker. A launch through `gz obpi pipeline` writes fresh
+markers for the run it starts. Nothing else writes one: the hooks and the
+commands that record a run's position all leave a missing marker missing.
 
 A run is in flight from its latest `pipeline_launched` event until its
 completion receipt, or until its OBPI is parked, withdrawn or superseded. A run
@@ -157,35 +157,33 @@ created) and `copied_from` (the marker file it copies). Only the run launched
 last is repaired, so one report holds at most one entry across `rebuilt` and
 `restored`.
 
+This report was captured from a temporary project in which two runs were in
+flight and both marker files of the one launched last had been deleted. That
+run was rebuilt at the boundary it had last recorded, and the older run was
+declined:
+
 ```json
 {
-  "changes": [
-    {
-      "obpi_id": "OBPI-0.1.0-01",
-      "file": "docs/design/adr/ADR-0.1.0/obpis/OBPI-0.1.0-01-feature.md",
-      "old_status": "Draft",
-      "new_status": "Completed"
-    }
-  ],
-  "total": 1,
+  "changes": [],
+  "total": 0,
   "markers": {
     "rebuilt": [
       {
-        "obpi_id": "OBPI-0.1.0-02-in-flight",
-        "current_stage": "verify",
+        "obpi_id": "OBPI-0.13.0-01-runtime-command-contract",
+        "current_stage": "ceremony",
         "position": {
-          "kind": "phase",
-          "label": "verification",
-          "boundary": "gz obpi pipeline"
+          "kind": "round",
+          "label": "present-evidence",
+          "boundary": "gz obpi present-evidence"
         },
-        "updated_at": "2026-10-12T00:51:51.180096+00:00"
+        "updated_at": "2026-10-12T08:14:29.578691+00:00"
       }
     ],
     "restored": [],
     "declined": [
       {
-        "obpi_id": "OBPI-0.1.0-01-abandoned",
-        "reason": "its last recorded crossing (2026-10-10T18:51:51.179191+00:00) is older than 24 hours, so its marker would be stale on arrival; launch the run again to resume it"
+        "obpi_id": "OBPI-0.13.0-02-an-older-run",
+        "reason": "a later run is in flight (OBPI-0.13.0-01-runtime-command-contract); the legacy marker belongs to the run launched last, and a repair writes no marker for an older one"
       }
     ]
   }

@@ -28,6 +28,7 @@ from rich.markup import escape
 
 from gzkit.cli.helpers.exit_codes import EXIT_POLICY_BREACH, EXIT_SUCCESS, EXIT_USER_ERROR
 from gzkit.commands.common import console, get_project_root
+from gzkit.commands.obpi_precomplete import recorded_obpi_id
 from gzkit.governance.stage4_packet import PacketVerification, verify_packet
 from gzkit.pipeline_runtime import RunCrossing, record_run_position
 
@@ -39,9 +40,11 @@ def _packet_obpi_id(packet_path: Path) -> str:
     """Return the OBPI a Step-4a packet names by its file name.
 
     The command takes a packet path and no OBPI id, so the name is the only
-    thing that says whose round this is. The id it carries may be the short
-    form; the recorder resolves it to the id the launch carries. A packet named
-    any other way names no run, and no position is recorded for it.
+    thing that says whose round this is. Whatever spelling it carries is named
+    by the resolver the launcher uses (``recorded_obpi_id``; operator ruling
+    2026-10-12, Open Design Question 19), so a short form or a longer prefix
+    records under the id the launch carries. A packet named any other way
+    names no run, and no position is recorded for it.
     """
     return packet_path.name.removesuffix(_PACKET_SUFFIX)
 
@@ -90,7 +93,9 @@ def obpi_verify_packet_cmd(*, packet: str, as_json: bool = False) -> int:
 
     result = verify_packet(project_root, packet_path)
     record_run_position(
-        project_root, _packet_obpi_id(packet_path), RunCrossing(boundary="verify-packet")
+        project_root,
+        recorded_obpi_id(project_root, _packet_obpi_id(packet_path)),
+        RunCrossing(boundary="verify-packet"),
     )
 
     if as_json:

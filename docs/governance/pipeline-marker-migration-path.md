@@ -142,7 +142,7 @@ The plan this document first carried differs from what was ruled and built in th
 | Stale detection compares markers against ledger events in place of a time bound | Not built. Stale detection, `--clear-stale` and the launcher's purge of a marker whose OBPI is `attested_completed` are unchanged, and `updated_at` moves only when the run crosses a recorded boundary |
 | `gz state --json` exposes a `pipeline` key | Not built. `gz state --json` prints the artifact graph; the repair's report is the `markers` object of `gz state --repair --json` |
 
-One limit of the built design: a launch that is abandoned with no ledger event (no receipt, park, withdrawal or supersede) still reads as a run in flight on the ledger. Once its last recorded crossing is older than the stale bound, the repair declines it.
+One limit of the built design: a launch that is abandoned with no ledger event (no receipt, park, withdrawal or supersede) still reads as a run in flight on the ledger. Once its last recorded crossing is older than the stale bound and neither of its marker files is on disk, the repair declines it; while one file is on disk the repair restores the other as a copy of it.
 
 ---
 

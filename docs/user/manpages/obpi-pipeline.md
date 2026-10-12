@@ -184,6 +184,17 @@ An I/O failure while recording a position warns and leaves the outcome of the
 command that marked the boundary as it was. No gate reads a position: it is
 orientation, not evidence.
 
+One rule says which OBPI an id names, the rule this command launches by: the
+ledger's id for it, reached from the full id, from a short
+`OBPI-<semver>-<item>` id or a longer prefix that ends on a whole word of the
+id, or from an id the ledger renamed. `gz obpi precomplete` and
+`gz obpi present-evidence` name the OBPI that way once, at entry, and run
+their checks, write their report and record their boundary under that one id.
+They exit `1`, check nothing and record nothing for an id that names no OBPI,
+names two, or names one with no brief on disk. `gz obpi verify-packet` and a
+review recorded through `gz obpi acceptance` record their boundary under the
+same id.
+
 ### Re-entering `implement`
 
 The post-Stage-2 fence reads `current_stage`. It refuses a production write
@@ -202,9 +213,10 @@ do not move the stage. Do not edit the marker by hand.
 ### A deleted marker
 
 `gz state --repair` is the one command that restores or rebuilds a missing
-pipeline marker; the launcher, the hooks and the commands that record a
-position all leave a missing marker missing. It acts on the run in flight that
-was launched last:
+pipeline marker. A launch writes fresh markers for the run it starts; every
+other command, the hooks and the commands that record a position among them,
+leaves a missing marker missing. The repair acts on the run in flight that was
+launched last:
 
 - When one of the run's two marker files is on disk, the missing one is
   restored as a byte-for-byte copy of it.
@@ -214,11 +226,13 @@ was launched last:
   and its `updated_at` is the time of that last crossing, never the time of the
   repair. The `dispatch_state` and `single_driver_declaration` caches are not
   rebuilt from the ledger.
-- A run whose last recorded crossing is older than `STALE_MARKER_HOURS` is
-  declined, because its marker would be stale on arrival; launch it again to
-  resume it. An older run is declined while a later one is in flight, because
-  the legacy marker belongs to the run launched last. Each declined run is
-  reported with its reason.
+- With neither file on disk, a run whose last recorded crossing is older than
+  `STALE_MARKER_HOURS` is declined, because its marker would be stale on
+  arrival; launch it again to resume it. The stale bound applies only then:
+  with one file on disk the missing one is restored as a copy of it, however
+  old that copy is. An older run is declined while a later one is in flight,
+  because the legacy marker belongs to the run launched last. Each declined
+  run is reported with its reason.
 
 `gz state --repair --json` reports this in a `markers` object with three
 lists, `rebuilt`, `restored` and `declined`. See [gz state](state.md) for the

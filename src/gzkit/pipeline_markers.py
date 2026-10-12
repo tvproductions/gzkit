@@ -400,6 +400,8 @@ def restore_pipeline_marker_twin(plans_dir: Path, obpi_id: str) -> tuple[Path, P
     everything the surviving file carries survives: both times, the nonce and
     the dispatch caches. The file on disk is read and never written, and the
     missing file is created exclusively, so no file on disk is overwritten.
+    The source is read before the target is created, so a read that fails
+    raises its ``OSError`` and leaves no file behind.
     Which run may hold the legacy marker is the caller's rule:
     ``gz state --repair`` is the one caller (Requirement 18).
 
@@ -411,9 +413,10 @@ def restore_pipeline_marker_twin(plans_dir: Path, obpi_id: str) -> tuple[Path, P
     for source, missing in ((per_obpi, legacy), (legacy, per_obpi)):
         if missing.exists() or not marker_matches(source, obpi_id):
             continue
+        payload = source.read_bytes()
         try:
             with missing.open("xb") as restored:
-                restored.write(source.read_bytes())
+                restored.write(payload)
         except FileExistsError:
             continue
         return missing, source

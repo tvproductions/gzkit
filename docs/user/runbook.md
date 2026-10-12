@@ -280,10 +280,6 @@ uv run gz lint
 #
 #    A declared single-driver run skips parallel verification dispatch and
 #    runs all verification sequentially inline (same as pre-0.18.0 behavior).
-#
-#    Wall-clock timing metrics are recorded for parallel vs sequential
-#    comparison. Inspect via the pipeline marker:
-#      cat .claude/plans/.pipeline-active-OBPI-<X.Y.Z-NN>.json | python -m json.tool
 
 # 4) Present the OBPI ceremony and only then update the brief
 #    (status Completed only after attestation when required)
@@ -527,7 +523,9 @@ on second run) and works after `git clone` with no dependency on L3 caches or
 markers.
 
 Pipeline markers are Layer 3 artifacts, and `gz state --repair` is the one
-command that brings a missing one back. Each boundary a run crosses is a
+command that brings a missing one back. A launch writes fresh markers for the
+run it starts, and every other command leaves a missing marker missing. Each
+boundary a run crosses is a
 `pipeline_stage_transition` ledger event, so the marker is a cache of the
 ledger (see `docs/governance/pipeline-marker-migration-path.md`):
 
@@ -539,11 +537,14 @@ ledger (see `docs/governance/pipeline-marker-migration-path.md`):
   of that last crossing, never the time of the repair. The `dispatch_state` and
   `single_driver_declaration` caches are not rebuilt from the ledger; dispatch
   credit is read from the ledger, so no gate depends on them.
-- **Declined, and reported with the reason.** A run whose last recorded
-  crossing is older than `STALE_MARKER_HOURS` (`src/gzkit/pipeline_markers.py`)
-  is not rebuilt, because its marker would be stale on arrival; launch it again
-  with `uv run gz obpi pipeline` to resume it. An older run is declined while a
-  later one is in flight. A marker file that is on disk is never overwritten.
+- **Declined, and reported with the reason.** With neither file on disk, a
+  run whose last recorded crossing is older than `STALE_MARKER_HOURS`
+  (`src/gzkit/pipeline_markers.py`) is not rebuilt, because its marker would be
+  stale on arrival; launch it again with `uv run gz obpi pipeline` to resume
+  it. The stale bound applies only then: with one file on disk the missing one
+  is restored as a copy of it, however old that copy is. An older run is
+  declined while a later one is in flight. A marker file that is on disk is
+  never overwritten.
 
 A run is in flight from its latest launch until its completion receipt, or
 until its OBPI is parked, withdrawn or superseded.

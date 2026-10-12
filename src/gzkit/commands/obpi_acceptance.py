@@ -20,6 +20,7 @@ from gzkit.acceptance_store import (
 )
 from gzkit.arb.paths import receipts_root
 from gzkit.commands.common import get_project_root
+from gzkit.commands.obpi_precomplete import recorded_obpi_id
 from gzkit.config import GzkitConfig
 from gzkit.mutation_witness import Mutation
 from gzkit.pipeline_runtime import RunCrossing, record_run_position
@@ -139,8 +140,16 @@ def _record_review_round(root: Path, obpi_id: str) -> None:
     is recorded inside the stage the run has reached and never moves it
     (Question 9). Nothing is recorded unless a pipeline run is in flight for
     ``obpi_id``, and a refused import never reaches this call.
+
+    The acceptance records stay keyed by the id as typed. The position is
+    recorded under the id the launcher's resolver gives that typing
+    (``recorded_obpi_id``; operator ruling 2026-10-12, Open Design Question
+    19), so a review imported under any spelling the launcher accepts lands on
+    the launch's id.
     """
-    record_run_position(root, obpi_id, RunCrossing(boundary="acceptance-review"))
+    record_run_position(
+        root, recorded_obpi_id(root, obpi_id), RunCrossing(boundary="acceptance-review")
+    )
 
 
 def _execute_review(root: Path, obpi_id: str, receipt: str | None) -> tuple[dict, bool]:

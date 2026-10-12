@@ -6,7 +6,7 @@ lifecycle_state: active
 owner: gzkit-governance
 last_reviewed: 2026-10-12
 metadata:
-  skill-version: "0.3.0"
+  skill-version: "0.3.1"
 model: haiku
 ---
 
@@ -41,9 +41,10 @@ run, and makes two repairs from the ledger:
   last, and is the only command that does. With one of the run's two files on
   disk it restores the missing one as a copy; with neither it rebuilds both
   from the run's `pipeline_launched` and `pipeline_stage_transition` events.
-  It overwrites no marker file, and it declines a run whose last recorded
-  boundary is past the stale bound and an older run while a later one is in
-  flight. The manpage `docs/user/manpages/state.md` states the whole contract.
+  It overwrites no marker file. With neither file on disk it declines a run
+  whose last recorded boundary is past the stale bound; with one file on disk
+  the stale bound does not apply and the copy is restored. It declines an
+  older run while a later one is in flight. The manpage `docs/user/manpages/state.md` states the whole contract.
 
 ## Workflow
 
