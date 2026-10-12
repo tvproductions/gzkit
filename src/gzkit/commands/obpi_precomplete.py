@@ -742,43 +742,6 @@ def _check_task_envelope_coherence(project_root: Path, brief_path: Path) -> Chec
     )
 
 
-def _ledger_renames(events: list[dict]) -> dict[str, str]:
-    """Return every id an ``artifact_renamed`` ledger row renames, with its new id.
-
-    ``events`` are raw ledger rows as dicts, where the new id is the row's
-    top-level ``new_id`` key. A row naming no new id renames nothing.
-    """
-    renames: dict[str, str] = {}
-    for event in events:
-        old_id = event.get("id")
-        new_id = event.get("new_id") if event.get("event") == "artifact_renamed" else None
-        if isinstance(old_id, str) and isinstance(new_id, str) and new_id:
-            renames[old_id] = new_id
-    return renames
-
-
-def _current_name(renames: dict[str, str], artifact_id: str) -> str:
-    """Return ``artifact_id`` taken through ``renames`` to the end of its chain.
-
-    An id never renamed is its own current name. A cycle is not followed for
-    ever: the walk stops before it would return to an id it has passed. The
-    recorder states the same rule for a run's id (``pipeline_position``).
-    """
-    passed = {artifact_id}
-    while (renamed := renames.get(artifact_id)) is not None and renamed not in passed:
-        passed.add(renamed)
-        artifact_id = renamed
-    return artifact_id
-
-
-def _under_current_name(renames: dict[str, str], event: dict) -> dict:
-    """Return ``event`` carrying its id's current name, as a copy when that differs."""
-    event_id = event.get("id")
-    if not isinstance(event_id, str) or event_id not in renames:
-        return event
-    return {**event, "id": _current_name(renames, event_id)}
-
-
 def _check_operator_block(project_root: Path, obpi_id: str) -> CheckResult:
     """Refuse READY while ``obpi_id`` awaits an operator ruling (GHI #887).
 
@@ -796,40 +759,53 @@ def _check_operator_block(project_root: Path, obpi_id: str) -> CheckResult:
     fabricating one would make the check unfalsifiable in a fresh project tree.
 
     The block follows the OBPI through the ledger's renames (OBPI-0.35.0-15,
-    operator ruling 2026-10-12, Open Design Question 21). ``obpi_id`` is the
-    id the resolver gives at entry, which is the new id once the ledger has
-    renamed the OBPI, while a block recorded earlier carries the old one. The
-    block and unblock rows are therefore read under each row id's current
-    name and the OBPI is looked up under its own, so a block recorded under
-    the old id still refuses READY and an unblock recorded under either id
-    clears it.
+    operator rulings 2026-10-12, Open Design Questions 21 and 22). ``obpi_id``
+    is the id the resolver gives at entry, which is the id the OBPI has now,
+    while a block recorded earlier carries the id it had then. The block and
+    unblock rows are therefore read under each row id's current name and the
+    OBPI is looked up under its own, so a block recorded under another of its
+    ids still refuses READY and an unblock recorded under any of them clears
+    it. An id's current name is the ledger's own answer,
+    :func:`gzkit.obpi_lifecycle.fold_renames`, the fold the resolver and the
+    run-position recorder read; no rename is followed here. The pairs it folds
+    are taken as the resolver takes them (``Ledger._build_rename_map``): a row
+    whose new id is not a string renames nothing.
+
+    The rows are read netted of corrections
+    (:func:`~gzkit.ledger.read_corrected_rows`), the stream the launcher's
+    operator-block gate and the recorder read, so a rename that a correction
+    has voided renames nothing here either. That reader skips a line that does
+    not decode, as this check always has.
     """
-    from gzkit.obpi_lifecycle import operator_block_state  # noqa: PLC0415
+    from gzkit.ledger import read_corrected_rows  # noqa: PLC0415
+    from gzkit.obpi_lifecycle import fold_renames, operator_block_state  # noqa: PLC0415
 
     ledger_path = project_root / ".gzkit" / "ledger.jsonl"
     try:
-        text = ledger_path.read_text(encoding="utf-8", errors="replace")
+        events = read_corrected_rows(ledger_path) if ledger_path.is_file() else None
     except OSError:
+        events = None
+    if events is None:
         return CheckResult(
             name="operator_block",
             ok=True,
             message="no ledger readable; no operator block recorded",
         )
 
-    events: list[dict] = []
-    for line in text.splitlines():
-        if not line.strip():
-            continue
-        try:
-            parsed = json.loads(line)
-        except json.JSONDecodeError:
-            continue
-        if isinstance(parsed, dict):
-            events.append(parsed)
-
-    renames = _ledger_renames(events)
-    by_current_name = [_under_current_name(renames, event) for event in events]
-    entry = operator_block_state(by_current_name).get(_current_name(renames, obpi_id))
+    current_names = fold_renames(
+        (old_id, new_id)
+        for event in events
+        if event.get("event") == "artifact_renamed"
+        and isinstance(old_id := event.get("id"), str)
+        and isinstance(new_id := event.get("new_id"), str)
+    )
+    under_current_names = [
+        {**event, "id": current_names[event_id]}
+        if isinstance(event_id := event.get("id"), str) and event_id in current_names
+        else event
+        for event in events
+    ]
+    entry = operator_block_state(under_current_names).get(current_names.get(obpi_id, obpi_id))
     if entry is None:
         return CheckResult(
             name="operator_block",

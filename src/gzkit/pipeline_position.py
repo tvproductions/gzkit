@@ -38,6 +38,7 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_valida
 
 from gzkit.ledger import LedgerEvent, pipeline_stage_transition_event
 from gzkit.ledger_semantics import _uncompleted_attestation_requirement
+from gzkit.obpi_lifecycle import fold_renames
 from gzkit.pipeline_markers import (
     STALE_MARKER_HOURS,
     advance_pipeline_markers,
@@ -378,57 +379,52 @@ def _launches_in_flight(events: Iterable[PipelineLedgerRow]) -> dict[str, Pipeli
     crossing, and a stale one would invent a run. The launches come back
     oldest first, by the order their runs began.
 
-    "The same id" is the same CURRENT NAME (:func:`_current_name`; operator
-    ruling 2026-10-12, Open Design Question 21): a rename ends no run, a
-    receipt or a retirement written under the new id ends the run launched
-    under the old one, and a later launch under either id starts a new run in
-    its place. Each launch is still keyed by the id its own row carries, the
-    one key the replay, the rebuild and the marker files share.
+    "The same id" is the same CURRENT NAME (operator rulings 2026-10-12, Open
+    Design Questions 21 and 22): a rename ends no run, a receipt or a
+    retirement written under the new id ends the run launched under the old
+    one, and a later launch under either id starts a new run in its place. An
+    id's current name is the ledger's own answer to where an artifact is now,
+    :func:`gzkit.obpi_lifecycle.fold_renames` over the rename rows
+    (:func:`_renames`), so a rename that is later reversed leaves both ids
+    with the one name the OBPI has. Each launch is still keyed by the id its
+    own row carries, the one key the replay, the rebuild and the marker files
+    share.
     """
     rows = list(events)
-    by_name = _launches_by_current_name(rows, _renames(rows))
+    by_name = _launches_by_current_name(rows, fold_renames(_renames(rows)))
     return {launch.id: launch for launch in by_name.values()}
 
 
-def _renames(rows: Iterable[PipelineLedgerRow]) -> dict[str, str]:
-    """Return every id an ``artifact_renamed`` row renames, with the id it is renamed to.
+def _renames(rows: Iterable[PipelineLedgerRow]) -> list[tuple[str, str]]:
+    """Return the ``(id, new id)`` pair of every ``artifact_renamed`` row, in ledger order.
 
     The rows are the ledger rows the recorder already reads: this module opens
-    no ledger of its own. A row naming no new id renames nothing.
+    no ledger of its own. A row naming no new id contributes no pair. The
+    pairs are what :func:`gzkit.obpi_lifecycle.fold_renames` folds; no rename
+    is followed here.
     """
-    renames: dict[str, str] = {}
+    pairs: list[tuple[str, str]] = []
     for row in rows:
         new_id = row.extra.get("new_id") if row.event == "artifact_renamed" else None
         if isinstance(new_id, str) and new_id:
-            renames[row.id] = new_id
-    return renames
-
-
-def _current_name(renames: Mapping[str, str], obpi_id: str) -> str:
-    """Return ``obpi_id`` taken through ``renames`` to the end of its chain.
-
-    An id never renamed is its own current name. A cycle is not followed for
-    ever: the walk stops before it would return to an id it has passed.
-    """
-    passed = {obpi_id}
-    while (renamed := renames.get(obpi_id)) is not None and renamed not in passed:
-        passed.add(renamed)
-        obpi_id = renamed
-    return obpi_id
+            pairs.append((row.id, new_id))
+    return pairs
 
 
 def _launches_by_current_name(
-    rows: Iterable[PipelineLedgerRow], renames: Mapping[str, str]
+    rows: Iterable[PipelineLedgerRow], current_names: Mapping[str, str]
 ) -> dict[str, PipelineLedgerRow]:
     """Return the launch of every run in flight, keyed by its id's current name.
 
     The loop of the in-flight rule (:func:`_launches_in_flight`): a launch
     replaces the run in flight under the same current name, and a row that
-    ends a run ends the one under its id's current name.
+    ends a run ends the one under its id's current name. ``current_names`` is
+    the fold of the ledger's renames; an id it does not hold was never
+    renamed and is its own current name.
     """
     launches: dict[str, PipelineLedgerRow] = {}
     for row in rows:
-        name = _current_name(renames, row.id)
+        name = current_names.get(row.id, row.id)
         if _starts_run(row):
             launches.pop(name, None)
             launches[name] = row
@@ -460,17 +456,19 @@ def _runs_named(events: Iterable[PipelineLedgerRow], obpi_id: str) -> list[Pipel
     retired, whether or not it was ever launched. Two siblings both launched
     and neither ended are two runs, and the short form then names neither.
 
-    Ids are compared by current name (:func:`_current_name`; Open Design
-    Question 21), because the resolver the commands name an OBPI by follows
-    the ledger's renames: the id IS a launch's id when the two have one
-    current name, so the old id and the new id both name a run launched
-    before the rename. The short form is that of the launch row's own id, the
-    form its TASK ids carry, or of its current name.
+    Ids are compared by current name (Open Design Questions 21 and 22),
+    because the resolver the commands name an OBPI by follows the ledger's
+    renames, and by the same fold
+    (:func:`gzkit.obpi_lifecycle.fold_renames`): the id IS a launch's id when
+    the two have one current name, so the old id and the new id both name a
+    run launched before the rename, or between a rename and its reversal. The
+    short form is that of the launch row's own id, the form its TASK ids
+    carry, or of its current name.
     """
     rows = list(events)
-    renames = _renames(rows)
-    by_name = _launches_by_current_name(rows, renames)
-    exact = by_name.get(_current_name(renames, obpi_id))
+    current_names = fold_renames(_renames(rows))
+    by_name = _launches_by_current_name(rows, current_names)
+    exact = by_name.get(current_names.get(obpi_id, obpi_id))
     if exact is not None:
         return [exact]
     return [

@@ -237,7 +237,11 @@ uv run gz roles --pipeline OBPI-<X.Y.Z-NN>
 #
 #    Each dispatch recorded with `uv run gz obpi dispatch` is a ledger event,
 #    and dispatch credit is read from the ledger. The marker's `dispatch_state`
-#    is a cache of those records, one entry for each recorded dispatch:
+#    is a cache and never the record. Every launch writes the marker afresh
+#    with no `dispatch_state`, and a rebuilt marker has none, so the cache
+#    holds one entry for each dispatch recorded since the marker was last
+#    written that way, and none from before it. A dispatch recorded while no
+#    marker is on disk is on the ledger and in no cache:
 #      cat .claude/plans/.pipeline-active-OBPI-<X.Y.Z-NN>.json | python -m json.tool
 #
 #    An entry holds what the dispatch wrote and nothing more: task_id, role,
@@ -533,8 +537,9 @@ markers.
 
 Pipeline markers are Layer 3 artifacts, and `gz state --repair` is the one
 command that brings a missing one back. A launch writes fresh markers for the
-run it starts, and every other command leaves a missing marker missing. Each
-boundary a run crosses is a
+run it starts. The one other writer is `gz adr audit-begin`, whose file is an
+audit ceremony's marker and no run's. Every other command leaves a missing
+marker missing. Each boundary a run crosses is a
 `pipeline_stage_transition` ledger event, so the marker is a cache of the
 ledger (see `docs/governance/pipeline-marker-migration-path.md`):
 

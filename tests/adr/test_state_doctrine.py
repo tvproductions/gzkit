@@ -32,6 +32,7 @@ from gzkit.ledger import (
     pipeline_stage_transition_event,
 )
 from gzkit.ledger_events import (
+    artifact_renamed_event,
     obpi_parked_event,
     obpi_superseded_event,
     obpi_unparked_event,
@@ -696,6 +697,70 @@ class TestRepairRebuildsOnlyARunInFlightWhoseMarkerIsGone(_RepairableRun):
 
                 self.assertEqual(self._markers_on_disk(), [])
                 self.assertEqual(report["markers"], _NOTHING_REPAIRED)
+
+    @covers("REQ-0.35.0-15-05")
+    def test_a_renamed_run_completed_under_the_other_name_is_not_rebuilt(self) -> None:
+        """A completed OBPI's launch is not in flight, whatever the ledger renamed it to.
+
+        Review finding
+        fin-fc5-qB-REQ05-a-rename-round-trip-leaves-a-completed-obpis-launch-in-flight-and-the-repair-acts-on-it
+        (operator ruling 2026-10-12, Open Design Question 22). The run is
+        launched under one id and its completion receipt is written under the
+        other id the ledger gives the OBPI. Where the rename was reversed
+        while the run was in flight, the recorder's own reading of the rename
+        rows gave the launch and the receipt each other's names, so the launch
+        stayed in flight and the repair wrote a marker for a completed OBPI,
+        which reads as a live run and blocks every other OBPI's launch. An
+        id's current name is the ledger's fold of its renames, so the receipt
+        ends the run and the repair writes nothing.
+        """
+        renamed = "OBPI-0.99.0-01-run-position-renamed"
+
+        def _completed(obpi_id: str) -> LedgerEvent:
+            return obpi_receipt_emitted_event(
+                obpi_id,
+                receipt_event="completed",
+                attestor="test",
+                obpi_completion="attested_completed",
+                parent_adr=_RUN_ADR,
+            )
+
+        there, back = artifact_renamed_event(renamed, _RUN), artifact_renamed_event(_RUN, renamed)
+        ledgers: dict[str, tuple[list[LedgerEvent], list[LedgerEvent]]] = {
+            "renamed after the launch, completed under the new id": (
+                [],
+                [back, _completed(renamed)],
+            ),
+            "launched under an intermediate name, renamed back, completed under its id now": (
+                [there],
+                [back, _completed(renamed)],
+            ),
+            "launched under an intermediate name, renamed back, completed under the launch id": (
+                [there],
+                [back, _completed(_RUN)],
+            ),
+        }
+        for name, (before_the_launch, after_it) in ledgers.items():
+            with self.subTest(ledger=name):
+                self._start_over()
+                for row in before_the_launch:
+                    self.ledger.append(row)
+                self._launch()
+                self._cross("verification")
+                for row in after_it:
+                    self.ledger.append(row)
+                self._delete_markers()
+                rows = list(Ledger(self.ledger.path).read_all())
+
+                report = self._repair()
+
+                self.assertEqual(self._markers_on_disk(), [], "a marker was written for it")
+                self.assertEqual(report["markers"], _NOTHING_REPAIRED)
+                for given in (_RUN, renamed):
+                    self.assertIsNone(
+                        rebuild_marker(rows, self.plans, given, now=datetime.now(UTC)),
+                        f"{given} still names a run in flight",
+                    )
 
     def test_a_receipt_that_is_not_a_completion_leaves_the_run_to_be_rebuilt(self) -> None:
         self._launch()

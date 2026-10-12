@@ -28,6 +28,7 @@ from gzkit.ledger import (
 )
 from gzkit.ledger_events import (
     artifact_renamed_event,
+    ledger_event_corrected_event,
     obpi_blocked_on_operator_event,
     obpi_parked_event,
     obpi_unblocked_event,
@@ -652,6 +653,232 @@ class TestPrecompleteNamesTheObpiOnceAtEntry(unittest.TestCase):
 
                 self.assertTrue(found["checks"]["operator_block"]["ok"])
                 self.assertEqual(found["exit"], EXIT_SUCCESS)
+
+    @covers("REQ-0.35.0-15-02")
+    def test_a_block_under_an_intermediate_name_still_fails_after_the_rename_back(self) -> None:
+        """An operator block follows the OBPI through a rename that is later reversed.
+
+        Operator ruling 2026-10-12 on Open Design Question 22. The OBPI is
+        renamed from its first id to the id it is launched under, blocked
+        under that id, and renamed back while the run is in flight. The
+        resolver then gives every spelling the first id. The check once read
+        the rename rows by a rule of its own, which gave the first id the
+        launch id's name and the block's id the first id's, so the block was
+        looked up where it was not filed and a standing block stopped failing
+        the command (Requirement 11). Each id's current name is the ledger's
+        fold of its renames: the block refuses READY whichever id is typed,
+        and an unblock recorded under either id clears it.
+        """
+        first_id = "OBPI-0.12.0-04-dispatch-roster"
+        there = artifact_renamed_event(first_id, self._FULL)
+        back = artifact_renamed_event(self._FULL, first_id)
+        block = obpi_blocked_on_operator_event(
+            self._FULL, self._ADR, "the boundary set needs a ruling", "rule on Question 9"
+        )
+        rows = (there, self._launch_row(self._FULL), block, back)
+        for given in (first_id, self._FULL, self._SHORT):
+            with self.subTest(given=given, ledger="a block between the two renames"):
+                self._start_over(*rows)
+                self._dispatch_the_roster()
+
+                found = self._precomplete(given)
+
+                self.assertEqual(found["report"]["obpi_id"], first_id)
+                check = found["checks"]["operator_block"]
+                self.assertFalse(check["ok"])
+                self.assertIn("the boundary set needs a ruling", check["message"])
+                self.assertFalse(found["report"]["ready"])
+                self.assertEqual(found["exit"], EXIT_POLICY_BREACH)
+                recorded = self._recorded_positions()
+                self.assertEqual([row.id for row in recorded][-1:], [self._FULL])
+                self.assertEqual(recorded[-1].extra["position_label"], "precomplete")
+            for unblocked_under in (first_id, self._FULL):
+                with self.subTest(given=given, unblocked_under=unblocked_under):
+                    unblock = obpi_unblocked_event(
+                        unblocked_under, self._ADR, "the amended set governs", "g0"
+                    )
+                    self._start_over(*rows, unblock)
+                    self._dispatch_the_roster()
+
+                    found = self._precomplete(given)
+
+                    self.assertTrue(found["checks"]["operator_block"]["ok"])
+                    self.assertEqual(found["exit"], EXIT_SUCCESS)
+
+    def test_a_block_on_another_obpi_that_is_renamed_and_renamed_back_blocks_nothing_here(
+        self,
+    ) -> None:
+        """Control: another OBPI's block stays its own through that OBPI's rename round trip."""
+        other, between = "OBPI-0.12.0-05-roles", "OBPI-0.12.0-05-role-roster"
+        self._start_over(
+            self._launch_row(self._FULL),
+            artifact_renamed_event(other, between),
+            obpi_blocked_on_operator_event(between, self._ADR, "another matter", "rule on it"),
+            artifact_renamed_event(between, other),
+        )
+        self._dispatch_the_roster()
+        for given in (self._FULL, self._SHORT):
+            with self.subTest(given=given):
+                found = self._precomplete(given)
+
+                self.assertTrue(found["checks"]["operator_block"]["ok"])
+                self.assertEqual(found["exit"], EXIT_SUCCESS)
+
+    def test_a_rename_a_correction_voided_brings_no_other_obpis_block_here(self) -> None:
+        """Control: the check reads the ledger netted, so a voided rename renames nothing.
+
+        Another OBPI is blocked, and a rename row then names this OBPI's id as
+        its new id: a mistake, which a correction voids. Read with the voided
+        row still in it, the fold would give the other OBPI this one's name
+        and its block would refuse READY here. The check reads the stream the
+        launcher's operator-block gate reads, in which the voided rename is
+        absent. Written after the code it pins; no REQ is bound.
+        """
+        other = "OBPI-0.12.0-05-roles"
+        self._start_over(
+            self._launch_row(self._FULL),
+            obpi_blocked_on_operator_event(other, self._ADR, "another matter", "rule on it"),
+            artifact_renamed_event(other, self._FULL),
+        )
+        (mistaken,) = [
+            row for row in Ledger(self.ledger.path).read_all() if row.event == "artifact_renamed"
+        ]
+        self._dispatch_the_roster()
+        for given in (self._FULL, self._SHORT):
+            with self.subTest(given=given, the_rename="stands"):
+                check = self._precomplete(given)["checks"]["operator_block"]
+
+                self.assertFalse(check["ok"], "the fold gives the other OBPI this one's name")
+                self.assertIn("another matter", check["message"])
+        Ledger(self.ledger.path).append(
+            ledger_event_corrected_event(
+                subject_event=mistaken.event,
+                subject_id=mistaken.id,
+                subject_ts=mistaken.ts,
+                disposition="void",
+                cause="agent-error",
+                attestor="g0",
+                reason="the rename named the wrong OBPI",
+            )
+        )
+        for given in (self._FULL, self._SHORT):
+            with self.subTest(given=given, the_rename="voided"):
+                found = self._precomplete(given)
+
+                self.assertTrue(found["checks"]["operator_block"]["ok"])
+                self.assertEqual(found["exit"], EXIT_SUCCESS)
+
+    def _rename_row_whose_new_id_is(self, obpi_id: str, new_id: object) -> None:
+        """Append a rename row for ``obpi_id`` and give it ``new_id``, which is no string."""
+        self.ledger.append(artifact_renamed_event(obpi_id, "OBPI-0.12.0-09-placeholder"))
+        lines = self.ledger.path.read_text(encoding="utf-8").splitlines()
+        row = json.loads(lines[-1])
+        self.assertIn("new_id", row, "a stored rename row carries its new id at the top level")
+        row["new_id"] = new_id
+        lines[-1] = json.dumps(row)
+        self.ledger.path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+        self.ledger = Ledger(self.ledger.path)
+
+    @covers("REQ-0.35.0-15-02")
+    def test_a_rename_row_whose_new_id_is_no_string_renames_nothing_for_the_block_check(
+        self,
+    ) -> None:
+        """The check takes the ledger's renames as the resolver takes them.
+
+        Open Design Question 22: one rule for where an artifact is now. The
+        resolver and the run-position recorder take a rename only from a row
+        whose new id is a string. The check once took every rename row and
+        read its new id as text, so a row whose new id is null renamed its
+        OBPI to the id ``None``: two OBPIs with such a row then shared one
+        name, and one's block refused READY for the other. Such a row renames
+        nothing, so another OBPI's block stays its own, and this OBPI's own
+        block, recorded under its id, still refuses READY.
+        """
+        other = "OBPI-0.12.0-05-roles"
+        theirs = obpi_blocked_on_operator_event(other, self._ADR, "another matter", "rule on it")
+        ours = obpi_blocked_on_operator_event(
+            self._FULL, self._ADR, "the boundary set needs a ruling", "rule on Question 9"
+        )
+        for new_id in (None, 7):
+            with self.subTest(new_id=new_id, blocked="the other OBPI"):
+                self._start_over(self._launch_row(self._FULL), theirs)
+                self._rename_row_whose_new_id_is(other, new_id)
+                self._rename_row_whose_new_id_is(self._FULL, new_id)
+                self._dispatch_the_roster()
+
+                found = self._precomplete(self._FULL)
+
+                self.assertEqual(
+                    found["report"]["obpi_id"], self._FULL, "the resolver renames none"
+                )
+                self.assertTrue(found["checks"]["operator_block"]["ok"])
+                self.assertEqual(found["exit"], EXIT_SUCCESS)
+            with self.subTest(new_id=new_id, blocked="this OBPI"):
+                self._start_over(self._launch_row(self._FULL), ours)
+                self._rename_row_whose_new_id_is(other, new_id)
+                self._rename_row_whose_new_id_is(self._FULL, new_id)
+                self._dispatch_the_roster()
+
+                found = self._precomplete(self._FULL)
+
+                check = found["checks"]["operator_block"]
+                self.assertFalse(check["ok"])
+                self.assertIn("the boundary set needs a ruling", check["message"])
+                self.assertEqual(found["exit"], EXIT_POLICY_BREACH)
+
+    def _void_the_one(self, event: str) -> None:
+        """Append the correction that voids the ledger's one ``event`` row."""
+        (subject,) = [row for row in Ledger(self.ledger.path).read_all() if row.event == event]
+        Ledger(self.ledger.path).append(
+            ledger_event_corrected_event(
+                subject_event=subject.event,
+                subject_id=subject.id,
+                subject_ts=subject.ts,
+                disposition="void",
+                cause="agent-error",
+                attestor="g0",
+                reason="the row recorded what was never the case",
+            )
+        )
+
+    def test_a_voided_block_or_unblock_row_is_not_read_by_the_block_check(self) -> None:
+        """Control: the check reads its block and unblock rows netted of corrections.
+
+        Pins the netting of Open Design Question 22 (plan item 10b): the check
+        reads the stream the launcher's operator-block gate reads, where it
+        once read every line of the file. Two directions. A block row that a
+        correction voided records a block that was never the case, so it does
+        not refuse READY: read raw, a block the launcher no longer sees would
+        still stop the command, with no unblock owed. An unblock row that a
+        correction voided records a ruling that was never made, so the block
+        it answered still refuses READY: read raw, a voided ruling would go on
+        clearing a standing block. Written after the code it pins; no REQ is
+        bound.
+        """
+        block = obpi_blocked_on_operator_event(
+            self._FULL, self._ADR, "the boundary set needs a ruling", "rule on Question 9"
+        )
+        unblock = obpi_unblocked_event(self._FULL, self._ADR, "the amended set governs", "g0")
+        with self.subTest(voided="the block"):
+            self._start_over(self._launch_row(self._FULL), block)
+            self._void_the_one(block.event)
+            self._dispatch_the_roster()
+
+            found = self._precomplete(self._FULL)
+
+            self.assertTrue(found["checks"]["operator_block"]["ok"])
+            self.assertEqual(found["exit"], EXIT_SUCCESS)
+        with self.subTest(voided="the unblock"):
+            self._start_over(self._launch_row(self._FULL), block, unblock)
+            self._void_the_one(unblock.event)
+            self._dispatch_the_roster()
+
+            found = self._precomplete(self._FULL)
+
+            check = found["checks"]["operator_block"]
+            self.assertFalse(check["ok"])
+            self.assertIn("the boundary set needs a ruling", check["message"])
+            self.assertEqual(found["exit"], EXIT_POLICY_BREACH)
 
     def test_a_block_on_another_obpi_that_is_then_renamed_blocks_nothing_here(self) -> None:
         """Control: another OBPI's block stays its own through that OBPI's rename."""

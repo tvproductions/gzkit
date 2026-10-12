@@ -2369,6 +2369,72 @@ class TestABoundaryIsRecordedUnderTheIdTheLaunchCarries(_LaunchableThroughTheCli
         rows = list(Ledger(Path(".gzkit/ledger.jsonl")).read_all())
         self.assertEqual(runs_in_flight(rows), [], "the receipt under the new id ended the run")
 
+    @covers("REQ-0.35.0-15-02")
+    def test_a_run_launched_under_an_intermediate_name_and_renamed_back_records_every_boundary(
+        self,
+    ) -> None:
+        """A rename that is reversed while the run is in flight hides no boundary.
+
+        Review findings
+        fin-fc5A-REQ02-a-rename-back-to-an-earlier-id-leaves-the-resolvers-id-naming-no-run
+        and
+        fin-fc5A-REQ02-a-rename-reverted-after-the-launch-leaves-the-run-named-by-no-id-the-resolver-returns
+        (operator ruling 2026-10-12, Open Design Question 22). The ledger
+        renames the OBPI from its first id to the id it is launched under, and
+        renames it back while the run is in flight. The resolver then gives
+        every spelling the first id. The recorder once read the rename rows by
+        a rule of its own, which gave the first id the launch id's name and
+        the launch id the first id's, so the id the resolver returns named no
+        run and each command crossed its boundary unrecorded. Each command is
+        crossed here under the first id, the launch id and the short form, and
+        ``gz obpi complete`` last: its receipt, written under the first id,
+        ends the run.
+        """
+        first_id, launch_id = _CLI_RENAMED_OBPI, _CLI_OBPI
+        ledger = Ledger(Path(".gzkit/ledger.jsonl"))
+        ledger.append(artifact_renamed_event(first_id, launch_id))
+        self._gz("obpi", "pipeline", launch_id)
+        self.assertEqual([row.id for row in self._rows("pipeline_launched")], [launch_id])
+        ledger.append(artifact_renamed_event(launch_id, first_id))
+        rows = list(Ledger(Path(".gzkit/ledger.jsonl")).read_all())
+        for given in (first_id, launch_id, _CLI_SHORT_OBPI):
+            with self.subTest(named_by=given):
+                self.assertEqual(in_flight_launch_id(rows, given), launch_id)
+            acceptance = ("obpi", "acceptance", given)
+            self._assert_each_crossing_lands_on_the_launch_id(
+                (
+                    (
+                        "gz obpi precomplete",
+                        "precomplete",
+                        lambda given=given: self._precomplete(obpi_id=given),
+                    ),
+                    (
+                        "gz obpi present-evidence",
+                        "present-evidence",
+                        lambda given=given: self._gz("obpi", "present-evidence", given, "--json"),
+                    ),
+                    (
+                        "gz obpi acceptance",
+                        "acceptance-review",
+                        lambda acceptance=acceptance: self._gz(
+                            *acceptance, "review", "--receipt", write_review_receipt()
+                        ),
+                    ),
+                    (
+                        "gz obpi acceptance",
+                        "acceptance-review",
+                        lambda acceptance=acceptance: self._gz(
+                            *acceptance, "human-review", "--attestor", "g0", "--ruling", "accepted"
+                        ),
+                    ),
+                )
+            )
+        self._assert_each_crossing_lands_on_the_launch_id(
+            (("gz obpi complete", "complete", lambda: self._complete(obpi_id=first_id)),)
+        )
+        rows = list(Ledger(Path(".gzkit/ledger.jsonl")).read_all())
+        self.assertEqual(runs_in_flight(rows), [], "the receipt under the first id ended the run")
+
     def _seed_a_parked_sibling(self) -> None:
         """Put a second key under the run's short form on the ledger graph.
 
@@ -3270,6 +3336,112 @@ class TestARenameNeitherEndsARunNorHidesIt(unittest.TestCase):
         for name, rows, given, expected in cases:
             with self.subTest(case=name):
                 self.assertEqual(in_flight_launch_id(rows, given), expected)
+
+    @covers("REQ-0.35.0-15-02")
+    def test_a_run_launched_under_an_intermediate_name_and_renamed_back_is_named_by_every_spelling(
+        self,
+    ) -> None:
+        """An id's current name is the ledger's fold of its renames, round trips included.
+
+        Review findings
+        fin-fc5A-REQ02-a-rename-back-to-an-earlier-id-leaves-the-resolvers-id-naming-no-run
+        and
+        fin-fc5A-REQ02-a-rename-reverted-after-the-launch-leaves-the-run-named-by-no-id-the-resolver-returns
+        (operator ruling 2026-10-12, Open Design Question 22). The OBPI is
+        renamed, launched under the name it then has, and renamed back while
+        the run is in flight. The resolver gives every spelling the id the
+        OBPI has now, the earlier one, and that id must name the run, as the
+        launch row's own id and each short form do. The record is still filed
+        under the launch row's id.
+        """
+        there_and_back: dict[str, tuple[tuple[str, ...], tuple[str, ...]]] = {
+            "the slug changes": ((_RENAMED_OBPI,), (_OBPI, _RENAMED_OBPI, _SHORT_OBPI)),
+            "the semver and the item change": (
+                (_MOVED_OBPI,),
+                (_OBPI, _MOVED_OBPI, _SHORT_OBPI, "OBPI-0.98.0-07"),
+            ),
+            "back through a third id": (
+                (_RENAMED_OBPI, _MOVED_OBPI),
+                (_OBPI, _RENAMED_OBPI, _MOVED_OBPI, _SHORT_OBPI),
+            ),
+        }
+        for name, (through, spellings) in there_and_back.items():
+            between = through[0]
+            rows = [
+                _renamed(_OBPI, between, _LAUNCHED_AT),
+                _launched("full", _CROSSED_AT, obpi_id=between),
+                *(
+                    _renamed(old_id, new_id, _CROSSED_LATER_AT)
+                    for old_id, new_id in zip(through, (*through[1:], _OBPI), strict=True)
+                ),
+            ]
+            for given in spellings:
+                with self.subTest(renamed=name, given=given):
+                    self.assertEqual(in_flight_launch_id(rows, given), between)
+            with self.subTest(renamed=name):
+                self.assertEqual(runs_in_flight(rows), [between], "the run keeps its launch id")
+
+    @covers("REQ-0.35.0-15-02")
+    def test_a_run_renamed_back_ends_under_either_of_its_ids(self) -> None:
+        """A receipt or a retirement under either id ends a run whose rename was reversed."""
+        rows = [
+            _renamed(_OBPI, _RENAMED_OBPI, _LAUNCHED_AT),
+            _launched("full", _CROSSED_AT, obpi_id=_RENAMED_OBPI),
+            _renamed(_RENAMED_OBPI, _OBPI, _CROSSED_LATER_AT),
+        ]
+        for ended_under in (_OBPI, _RENAMED_OBPI):
+            endings = {
+                "completion receipt": _receipted(_CROSSED_LATER_AT, obpi_id=ended_under),
+                **{
+                    how: _retired(how, _CROSSED_LATER_AT, obpi_id=ended_under)
+                    for how in _RETIREMENTS
+                },
+            }
+            for how, ending in endings.items():
+                with self.subTest(ended_by=how, ended_under=ended_under):
+                    self.assertEqual(runs_in_flight([*rows, ending]), [])
+                    for given in (_OBPI, _RENAMED_OBPI, _SHORT_OBPI):
+                        self.assertIsNone(in_flight_launch_id([*rows, ending], given))
+
+    @covers("REQ-0.35.0-15-02")
+    def test_a_rename_round_trip_of_another_obpi_changes_nothing_for_this_run(self) -> None:
+        """Another OBPI that is renamed and renamed back is where it was, and so is this run.
+
+        The other OBPI passes through an id that shares this run's short
+        form and returns to its own. It then has its first name again, so the
+        short form names this run alone and the boundary is recorded on it.
+        """
+        rows = [
+            _launched("full", _LAUNCHED_AT),
+            _launched("full", _CROSSED_AT, obpi_id=_OTHER_OBPI),
+            _renamed(_OTHER_OBPI, _SIBLING_OBPI, _CROSSED_AT),
+            _renamed(_SIBLING_OBPI, _OTHER_OBPI, _CROSSED_LATER_AT),
+        ]
+        named = {
+            _OBPI: _OBPI,
+            _SHORT_OBPI: _OBPI,
+            _OTHER_OBPI: _OTHER_OBPI,
+            "OBPI-0.99.0-02": _OTHER_OBPI,
+            _SIBLING_OBPI: _OTHER_OBPI,
+        }
+        for given, launch_id in named.items():
+            with self.subTest(given=given):
+                self.assertEqual(in_flight_launch_id(rows, given), launch_id)
+        self.assertEqual(runs_in_flight(rows), [_OTHER_OBPI, _OBPI], "the latest launched first")
+        with tempfile.TemporaryDirectory() as tmp:
+            ledger = Ledger(Path(tmp) / "ledger.jsonl")
+            for row in rows:
+                ledger.append(row)
+            plans = Path(tmp) / "plans"
+            plans.mkdir()
+
+            record_position(ledger, plans, _SHORT_OBPI, RunCrossing(boundary="precomplete"))
+
+            recorded = [
+                row for row in ledger.read_all() if row.event == "pipeline_stage_transition"
+            ]
+            self.assertEqual([row.id for row in recorded], [_OBPI])
+            self.assertEqual(recorded[0].extra["position_label"], "precomplete")
 
 
 class TestAnIdNamesTheRunInFlightOrNone(unittest.TestCase):
