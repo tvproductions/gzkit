@@ -1,7 +1,11 @@
 """Pipeline marker I/O, discovery, receipt loading, and message builders.
 
-Extracted from pipeline_runtime.py to keep module sizes under 600 lines.
-All public symbols are re-exported from pipeline_runtime for backward compatibility.
+Extracted from pipeline_runtime.py. All public symbols are re-exported from
+pipeline_runtime for backward compatibility.
+
+Every marker file write lives here. The position a run has reached, its model
+and its ledger replay live in pipeline_position, which imports this module;
+this module never imports it, and takes a position as a plain mapping.
 """
 
 from __future__ import annotations
@@ -14,6 +18,8 @@ from collections.abc import Mapping
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, cast
+
+from gzkit.pipeline_stage_fence import CANONICAL_STAGES
 
 
 def _claude_home() -> Path:
@@ -222,11 +228,16 @@ def find_plan_for_obpi(project_root: Path, obpi_id: str) -> Path | None:
 
 
 def load_pipeline_json(path: Path) -> dict[str, Any] | None:
-    """Best-effort JSON loader for pipeline receipts and markers."""
+    """Best-effort JSON loader for pipeline receipts and markers.
+
+    A receipt or marker is a JSON object in UTF-8. Anything else on disk is
+    unreadable, and reads as ``None`` like a missing or truncated file.
+    """
     try:
-        return cast(dict[str, Any], json.loads(path.read_text(encoding="utf-8")))
-    except (OSError, json.JSONDecodeError):
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
         return None
+    return cast(dict[str, Any], payload) if isinstance(payload, dict) else None
 
 
 def pipeline_marker_paths(plans_dir: Path, obpi_id: str) -> tuple[Path, Path]:
@@ -353,19 +364,100 @@ def write_pipeline_markers(plans_dir: Path, payload: dict[str, Any]) -> tuple[Pa
     return per_obpi_marker, legacy_marker
 
 
-def refresh_pipeline_markers(plans_dir: Path, obpi_id: str, *, blockers: list[str]) -> None:
-    """Refresh active marker stage-output fields for the target OBPI."""
-    timestamp = datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
-    per_obpi_marker, legacy_marker = pipeline_marker_paths(plans_dir, obpi_id)
-    for marker_path in (per_obpi_marker, legacy_marker):
+def load_obpi_pipeline_marker(plans_dir: Path, obpi_id: str) -> dict[str, Any] | None:
+    """Return this OBPI's marker payload: the per-OBPI file, the legacy file as fallback."""
+    for marker_path in pipeline_marker_paths(plans_dir, obpi_id):
+        marker = load_pipeline_json(marker_path)
+        if marker is not None and marker.get("obpi_id") == obpi_id:
+            return marker
+    return None
+
+
+def rewrite_pipeline_markers(plans_dir: Path, obpi_id: str, payload: dict[str, Any]) -> None:
+    """Write ONE payload to every marker file that names this OBPI.
+
+    The single writer for a live marker: the dispatch writers once wrote the
+    per-OBPI file alone and the legacy marker fell behind (OBPI-0.35.0-15
+    Requirement 7). A file naming another OBPI is skipped and a missing file
+    stays missing; only ``gz state --repair`` rebuilds one (Requirement 18).
+    """
+    encoded = json.dumps(payload, indent=2) + "\n"
+    for marker_path in pipeline_marker_paths(plans_dir, obpi_id):
         marker = load_pipeline_json(marker_path)
         if marker is None or marker.get("obpi_id") != obpi_id:
             continue
-        entry = str(marker.get("entry") or "full")
-        start_from = None if entry == "full" else entry
-        marker.update(pipeline_stage_output(obpi_id, start_from, blockers=blockers))
-        marker["updated_at"] = timestamp
-        marker_path.write_text(json.dumps(marker, indent=2) + "\n", encoding="utf-8")
+        marker_path.write_text(encoded, encoding="utf-8")
+
+
+#: What a position inside a stage is, as the marker carries it.
+_POSITION_KEYS = frozenset({"kind", "label", "boundary"})
+
+
+def _position_payload(position: Mapping[str, str]) -> dict[str, str]:
+    """Return ``position`` as the marker carries it, refusing any other shape.
+
+    The model that validates a position lives in ``pipeline_position``, which
+    this module never imports, so the shape is checked here: exactly a
+    non-empty ``kind``, ``label`` and ``boundary``. Anything else is a position
+    no replay of the ledger could produce.
+    """
+    well_formed = set(position) == _POSITION_KEYS and all(
+        isinstance(value, str) and value for value in position.values()
+    )
+    if not well_formed:
+        msg = f"a position is exactly a non-empty {sorted(_POSITION_KEYS)}, got {dict(position)!r}"
+        raise ValueError(msg)
+    return dict(position)
+
+
+def advance_pipeline_markers(
+    plans_dir: Path,
+    obpi_id: str,
+    *,
+    stage: str,
+    position: Mapping[str, str],
+    updated_at: str,
+    blockers: list[str],
+    requires_human_attestation: bool,
+) -> dict[str, Any] | None:
+    """Record the stage and position a run has reached in both marker files.
+
+    ``position`` is plain data (``kind``, ``label``, ``boundary``): the position
+    model lives in ``pipeline_position``, which this module never imports. The
+    stage-output fields become what :func:`pipeline_stage_output` returns
+    for ``stage``; every other key is kept. ``updated_at`` is the crossing's own
+    time (the ledger event's ``ts``), so a replay restores the same value. The
+    caller appends the ledger event first. Returns the payload written, or
+    ``None`` when no marker names ``obpi_id``.
+
+    Raises:
+        ValueError: when ``stage`` is not canonical, or ``position`` is not
+            exactly a non-empty ``kind``, ``label`` and ``boundary``. A position
+            is never written as a ``current_stage`` value: the post-Stage-2
+            fence and the marker authenticity check both refuse a stage outside
+            the canonical set.
+
+    """
+    if stage not in CANONICAL_STAGES:
+        msg = f"{stage!r} is not a canonical pipeline stage {CANONICAL_STAGES}"
+        raise ValueError(msg)
+    recorded_position = _position_payload(position)
+    marker = load_obpi_pipeline_marker(plans_dir, obpi_id)
+    if marker is None:
+        return None
+    marker["current_stage"] = stage
+    marker["position"] = recorded_position
+    marker["updated_at"] = updated_at
+    marker.update(
+        pipeline_stage_output(
+            obpi_id,
+            stage,
+            blockers=blockers,
+            requires_human_attestation=requires_human_attestation,
+        )
+    )
+    rewrite_pipeline_markers(plans_dir, obpi_id, marker)
+    return marker
 
 
 def remove_pipeline_markers(plans_dir: Path, obpi_id: str) -> None:

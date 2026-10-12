@@ -204,6 +204,15 @@ _NO_GRAPH_IMPACT: dict[str, str] = {
         "by an operator-initiated 'gz obpi pipeline' run rather than a forged "
         "file. Does not modify the artifact graph."
     ),
+    "pipeline_stage_transition": (
+        "Run-position record (OBPI-0.35.0-15, GHI #1172) — one row per boundary a "
+        "pipeline run crosses, appended before the pipeline marker is advanced. "
+        "It is the Layer-2 source `gz state --repair` replays to rebuild a deleted "
+        "marker, read by the marker replay and never by the graph builder. It says "
+        "where a run of an existing OBPI stands; it creates no artifact, changes no "
+        "lifecycle state and is never gate evidence, so it does not modify the "
+        "artifact graph."
+    ),
     "intrinsic-complexity-attestation": (
         "Attestation record for functions with irreducibly intrinsic cyclomatic "
         "complexity (OBPI-0.0.29-07). Consumed by gz complexity advise advisor "
@@ -294,7 +303,7 @@ def audit_event_handlers(project_root: Path) -> list[ValidationError]:
                     f"Ledger event `{unclaimed}` is emitted but no graph handler "
                     "claims it and no waiver exists. Add a handler in "
                     "src/gzkit/ledger.py or add a rationale to "
-                    "tests/governance/test_ledger_event_handler_coverage.py::NO_GRAPH_IMPACT."
+                    "src/gzkit/governance/trust_audits/events.py::_NO_GRAPH_IMPACT."
                 ),
             )
         )

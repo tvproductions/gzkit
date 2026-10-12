@@ -23,10 +23,11 @@ from gzkit.commands.common import GzCliError, _cli_main, console
 from gzkit.decomposition import extract_markdown_section
 from gzkit.pipeline_markers import find_obpi_brief
 from gzkit.pipeline_runtime import (
+    RunCrossing,
     check_airlock_out_gate,
     pipeline_command,
     pipeline_git_sync_command,
-    refresh_pipeline_markers,
+    record_run_position,
     remove_pipeline_artifacts,
 )
 from gzkit.quality import QualityResult
@@ -238,6 +239,15 @@ def _print_pipeline_implementation_next_steps(obpi_id: str) -> None:
 # ---------------------------------------------------------------------------
 
 
+def _record_boundary(
+    project_root: Path, obpi_id: str, boundary: str, blockers: list[str] | None = None
+) -> None:
+    """Record a boundary a stage runner marks, by its name in the ruled set."""
+    record_run_position(
+        project_root, obpi_id, RunCrossing(boundary=boundary, blockers=blockers or [])
+    )
+
+
 def _run_pipeline_verify_stage(
     *,
     project_root: Path,
@@ -250,11 +260,17 @@ def _run_pipeline_verify_stage(
     attestor: str | None,
     evidence_json: str | None,
 ) -> None:
-    """Run the verify stage, then chain into ceremony and sync."""
+    """Run the verify stage, then chain into ceremony and sync.
+
+    The run's position is recorded at each Stage 3 boundary: when verification
+    starts, which moves the run to ``verify``, and when it fails (with its
+    blockers) or passes, which records the result in place.
+    """
     blockers = acceptance_blockers(project_root, obpi_id, stage="stage2")
     if blockers:
         _print_pipeline_blockers(obpi_id, blockers)
         raise SystemExit(3)
+    _record_boundary(project_root, obpi_id, "verification")
     behave_tags: list[str] | None = None
     if lane == "heavy":
         from gzkit.commands.quality import resolve_obpi_behave_tags  # noqa: PLC0415
@@ -278,16 +294,18 @@ def _run_pipeline_verify_stage(
             failures.append((command, detail))
             console.print(f"[red]FAIL[/red] {command}")
     if failures:
-        refresh_pipeline_markers(
-            plans_dir,
+        _record_boundary(
+            project_root,
             obpi_id,
-            blockers=[f"{command}: {detail}" for command, detail in failures],
+            "verification-failed",
+            [f"{command}: {detail}" for command, detail in failures],
         )
         console.print("BLOCKERS:")
         for command, detail in failures:
             console.print(f"- {command}: {escape(detail)}")
         raise SystemExit(1)
 
+    _record_boundary(project_root, obpi_id, "verification-passed")
     console.print("")
     console.print("Verification passed. Chaining into ceremony.")
 
@@ -316,11 +334,16 @@ def _run_pipeline_ceremony_stage(
     evidence_json: str | None,
     verification_results: list[tuple[str, bool, str]] | None = None,
 ) -> None:
-    """Render evidence and either pause for human gate or self-close and chain into sync."""
+    """Render evidence and either pause for human gate or self-close and chain into sync.
+
+    Entering the ceremony is a recorded boundary: after a passed verification
+    the run has reached Stage 4, and the marker says so.
+    """
     blockers = acceptance_blockers(project_root, obpi_id, stage="stage2")
     if blockers:
         _print_pipeline_blockers(obpi_id, blockers)
         raise SystemExit(3)
+    _record_boundary(project_root, obpi_id, "ceremony")
     console.print("")
     console.print("[bold]Stage 4: Ceremony[/bold]")
 

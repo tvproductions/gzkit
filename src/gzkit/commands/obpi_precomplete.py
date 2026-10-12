@@ -61,7 +61,17 @@ def obpi_precomplete_cmd(*, obpi_id: str, as_json: bool = False) -> int:
     Non-zero exit codes are propagated via ``SystemExit`` so
     ``gzkit.cli.main`` terminates the process with the correct code — its
     else-branch swallows handler return values otherwise.
+
+    Running the checks is a recorded boundary (OBPI-0.35.0-15, operator ruling
+    2026-10-11 on Open Design Question 9): the verify runner runs this command
+    as its last, and the pipeline skill runs it again as Stage 5 Step 0. When a
+    pipeline run is in flight for the OBPI, its position is recorded as
+    ``precomplete`` inside the stage the ledger says the run has reached,
+    whatever the checks find. This command is a check: it never moves the
+    stage, and the record changes no verdict.
     """
+    from gzkit.pipeline_runtime import RunCrossing, record_run_position
+
     project_root = get_project_root()
 
     brief_path = _resolve_brief_path(project_root, obpi_id)
@@ -70,6 +80,7 @@ def obpi_precomplete_cmd(*, obpi_id: str, as_json: bool = False) -> int:
         raise SystemExit(EXIT_USER_ERROR)
 
     checks = list(_run_all_checks(project_root, brief_path, obpi_id))
+    record_run_position(project_root, obpi_id, RunCrossing(boundary="precomplete"))
 
     if as_json:
         print(
@@ -163,15 +174,24 @@ def _check_stage2_dispatch(project_root: Path, obpi_id: str) -> CheckResult:
     Declared single-driver PASSES. Silent single-driver does not. That asymmetry
     is the whole point: a gate with no compliant path for a session that cannot
     dispatch is un-compliable, and an un-compliable gate gets worked around.
+
+    The run is named as its position is recorded (OBPI-0.35.0-15): by the id
+    the launch in flight carries, found from ``obpi_id`` or from its short
+    ``OBPI-<semver>-<item>`` form. The marker and the channel are both read
+    under that id, so the short form no longer reports "no active pipeline
+    marker" for a run in flight. When ``obpi_id`` names no one run in flight
+    the check reads under the id as given, as it always did.
     """
     from gzkit.obpi_dispatch_channel import (
         dispatch_channel,
         is_single_driver,
+        project_ledger,
         render_dispatch_channel,
         single_driver_declaration,
     )
-    from gzkit.pipeline_runtime import pipeline_plans_dir
+    from gzkit.pipeline_runtime import in_flight_launch_id, pipeline_plans_dir
 
+    obpi_id = in_flight_launch_id(project_ledger(project_root).read_all(), obpi_id) or obpi_id
     plans_dir = pipeline_plans_dir(project_root)
     if not (plans_dir / f".pipeline-active-{obpi_id}.json").is_file():
         # Say it rather than pass silently: "no pipeline ran" and "the pipeline

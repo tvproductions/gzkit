@@ -1066,6 +1066,51 @@
         }
       }
     },
+    "pipeline_stage_transition": {
+      "required": [
+        "stage",
+        "position_kind",
+        "position_label",
+        "boundary"
+      ],
+      "properties": {
+        "stage": {
+          "type": "string",
+          "enum": [
+            "implement",
+            "verify",
+            "ceremony",
+            "sync"
+          ]
+        },
+        "position_kind": {
+          "type": "string",
+          "enum": [
+            "task",
+            "phase",
+            "round",
+            "step"
+          ]
+        },
+        "position_label": {
+          "type": "string",
+          "min_length": 1
+        },
+        "boundary": {
+          "type": "string",
+          "min_length": 1
+        },
+        "blockers": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "task_started": {
       "required": [
         "task_id",

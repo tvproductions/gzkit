@@ -155,6 +155,12 @@ _ACKNOWLEDGED_NON_CORPUS_EVENT_TYPES: frozenset[str] = frozenset(
         "obpi_lock_ttl_warning",
         "patch-release",
         "pipeline_marker_purged",
+        # One boundary a pipeline run crossed (OBPI-0.35.0-15, GHI #1172). It
+        # records WHERE a run of an existing OBPI stands, the Layer-2 source a
+        # deleted pipeline marker is rebuilt from. The OBPI is already a node via
+        # `obpi_created`, and a run's position is no lineage between artifacts,
+        # so there is no second node for an edge.
+        "pipeline_stage_transition",
         "project_init",
         "red_receipt_emitted",
         # `red_commit_receipt_emitted` (GHI #1152) is its commit-keyed sibling:

@@ -143,7 +143,7 @@ uv run -m behave features/
 ## Acceptance Criteria
 
 - [x] REQ-0.13.0-03-01: Full launch writes marker payloads that expose `blockers=[]`, `required_human_action=null`, `next_command=uv run gz obpi pipeline <OBPI> --from=verify`, and `resume_point=verify`.
-- [x] REQ-0.13.0-03-02: Verify success writes marker payloads that expose the follow-up `--from=ceremony` command and `resume_point=ceremony` before cleanup.
+- [x] REQ-0.13.0-03-02: Verify success writes marker payloads that expose the follow-up `--from=ceremony` command and `resume_point=ceremony` before cleanup. Amended 2026-10-11 by operator ruling of 2026-10-04 on OBPI-0.35.0-15 Open Design Question 4 (GHI #1172; asked "when a run moves to the next stage, does the marker's `current_stage` change?" and then whether this REQ is amended in place, the operator answered each, verbatim: "A"): after a passed verification the marker reports the stage the run has reached. The runtime chains a passed verification straight into the ceremony, so the run has reached the ceremony, and both marker files say so with stage-output fields that agree with that stage. The attested text above is kept as the record of what was decided on its date, as `docs/governance/attested-req-subject-retirement.md` § Worked example 4 records.
 - [x] REQ-0.13.0-03-03: Verify failure leaves markers in place with structured blocker strings, `next_command=null`, and `resume_point=verify`.
 - [x] REQ-0.13.0-03-04: Ceremony launch writes marker payloads that expose the required human action and guarded-sync next command.
 - [x] REQ-0.13.0-03-05: [doc] Existing hook consumers remain compatible when markers include the new stage-output fields.

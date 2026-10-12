@@ -13,6 +13,10 @@ Exit codes (`.claude/rules/cli.md`):
 
 ``attestable`` remains false until independent review also clears. Producing
 the review input must not require the review that consumes it.
+
+Writing the packet begins a Stage 4 round (OBPI-0.35.0-15): when a pipeline run
+is in flight for the OBPI, the run moves to ``ceremony`` and its position is
+recorded as ``present-evidence``.
 """
 
 from __future__ import annotations
@@ -25,6 +29,7 @@ from gzkit.governance.stage4_evidence import (
     generate_evidence_packet,
     write_packet,
 )
+from gzkit.pipeline_runtime import RunCrossing, record_run_position
 
 
 def _render_human(packet: EvidencePacket, packet_file: str) -> None:
@@ -72,6 +77,7 @@ def obpi_present_evidence_cmd(*, obpi_id: str, as_json: bool = False) -> int:
 
     packet = generate_evidence_packet(project_root, brief_path, obpi_id)
     packet_file = write_packet(project_root, packet)
+    record_run_position(project_root, obpi_id, RunCrossing(boundary="present-evidence"))
     rel = packet_file.relative_to(project_root).as_posix()
 
     if as_json:

@@ -8,11 +8,28 @@ compliable so it is obeyed rather than worked around.
 from __future__ import annotations
 
 import json
+import shutil
 import tempfile
 import unittest
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 from gzkit import obpi_dispatch_channel as chan
+from gzkit.ledger import (
+    Ledger,
+    LedgerEvent,
+    obpi_receipt_emitted_event,
+    pipeline_launched_event,
+)
+from gzkit.pipeline_runtime import (
+    RunCrossing,
+    advance_pipeline_markers,
+    pipeline_marker_payload,
+    record_position,
+    write_pipeline_markers,
+)
+from gzkit.traceability import covers
 
 
 def _plans(stage: str | None = "implement", **marker_extra: object) -> tuple[Path, str]:
@@ -175,6 +192,130 @@ class TestPrecompleteSurfacesTheChannel(unittest.TestCase):
         self.assertIn("no active pipeline marker", result.message)
 
 
+class TestPrecompleteNamesTheRunForItsDispatchCheck(unittest.TestCase):
+    """The Stage 2 dispatch control finds the run however the OBPI was spelled.
+
+    Review finding fc1-AUX-precomplete-checks-still-run-under-the-typed-id, a
+    defect older than OBPI-0.35.0-15: the check decided whether a pipeline ran
+    by looking for the marker file under the id as typed. The launcher names
+    the marker by the full slug, so the short ``OBPI-<semver>-<item>`` form
+    found no file and the check passed as "not assessable" while a run was in
+    flight. The check now names the run as its position is recorded: by the id
+    the launch in flight carries. This is the control of Requirement 11 and no
+    acceptance criterion of OBPI-0.35.0-15, so no REQ is bound here.
+    """
+
+    _SHORT = "OBPI-0.12.0-04"
+    _FULL = "OBPI-0.12.0-04-dispatch-channel"
+    _SIBLING = "OBPI-0.12.0-04-interrogate"
+
+    def setUp(self) -> None:
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.root = Path(tmp.name)
+        (self.root / ".claude" / "plans").mkdir(parents=True)
+        (self.root / ".gzkit").mkdir()
+        self.ledger = Ledger(self.root / ".gzkit" / "ledger.jsonl")
+        _marker(self.root, self._FULL).write_text(
+            json.dumps(
+                {"obpi_id": self._FULL, "parent_adr": "ADR-0.12.0", "current_stage": "verify"}
+            ),
+            encoding="utf-8",
+        )
+
+    def _launch_row(self, obpi_id: str) -> LedgerEvent:
+        return pipeline_launched_event(
+            obpi_id=obpi_id,
+            parent_adr="ADR-0.12.0",
+            lane="heavy",
+            nonce="0123456789abcdef0123456789abcdef",
+            marker_path=f".claude/plans/.pipeline-active-{obpi_id}.json",
+            entry="full",
+        )
+
+    def _launch(self) -> None:
+        self.ledger.append(self._launch_row(self._FULL))
+
+    def _dispatch_the_roster(self) -> None:
+        for task, role in enumerate(chan.MANDATED_STAGE2_ROLES, start=1):
+            chan.record_dispatch(self.root, self._FULL, role=role, model="sonnet", task_id=task)
+
+    def _check(self, obpi_id: str) -> Any:
+        from gzkit.commands.obpi_precomplete import _check_stage2_dispatch
+
+        return _check_stage2_dispatch(self.root, obpi_id)
+
+    def test_a_short_id_no_longer_passes_a_run_that_dispatched_nothing(self) -> None:
+        """The silent single-driver run the gate refuses is refused by either spelling."""
+        self._launch()
+
+        result = self._check(self._SHORT)
+
+        self.assertFalse(result.ok)
+        self.assertIn("NOT DISPATCHED", result.message)
+        self.assertIsNotNone(result.remediation)
+        self.assertEqual(result, self._check(self._FULL))
+
+    def test_a_short_id_reads_what_the_run_recorded(self) -> None:
+        """A dispatched roster and a declared single driver pass, and say which they are."""
+        recorded: dict[str, Callable[[], None]] = {
+            "DISPATCHED": self._dispatch_the_roster,
+            "SINGLE-DRIVER DECLARED": lambda: chan.declare_single_driver(
+                self.root, self._FULL, reason="cron run, no Agent tool"
+            ),
+        }
+        for said, record in recorded.items():
+            with self.subTest(recorded=said):
+                self.ledger.path.write_text("", encoding="utf-8")
+                self.ledger = Ledger(self.ledger.path)
+                self._launch()
+                record()
+
+                result = self._check(self._SHORT)
+
+                self.assertTrue(result.ok)
+                self.assertIn(said, result.message)
+                self.assertNotIn("no active pipeline marker", result.message)
+                self.assertEqual(result, self._check(self._FULL))
+
+    def test_with_no_one_run_in_flight_the_check_reads_as_it_always_did(self) -> None:
+        """The control: nothing changes for a full id, or when the id names no one run.
+
+        Never launched, ended by its receipt, or two runs in flight under the
+        one short form: the short id names no run, so the check looks for the
+        marker under the id as typed, as before. The full id finds its marker
+        whatever the ledger holds, as before.
+        """
+        ended = obpi_receipt_emitted_event(
+            self._FULL,
+            receipt_event="completed",
+            attestor="test",
+            obpi_completion="attested_completed",
+            parent_adr="ADR-0.12.0",
+        )
+        launch = self._launch_row(self._FULL)
+        ledgers: dict[str, list[LedgerEvent]] = {
+            "never launched": [],
+            "ended by its receipt": [launch, ended],
+            "two runs in flight": [launch, self._launch_row(self._SIBLING)],
+        }
+        for name, rows in ledgers.items():
+            with self.subTest(ledger=name):
+                self.ledger.path.write_text("", encoding="utf-8")
+                self.ledger = Ledger(self.ledger.path)
+                for row in rows:
+                    self.ledger.append(row)
+
+                by_short = self._check(self._SHORT)
+                by_full = self._check(self._FULL)
+
+                self.assertTrue(by_short.ok)
+                self.assertIn("no active pipeline marker", by_short.message)
+                self.assertFalse(by_full.ok)
+                self.assertIn("NOT DISPATCHED", by_full.message)
+                self.assertIn(self._FULL, by_full.remediation)
+
+
 class TestCreditOutlivesTheMarker(unittest.TestCase):
     """Stage-2 dispatch credit is Layer-2 evidence, not a pipeline-marker key (GHI #886).
 
@@ -293,5 +434,221 @@ class TestCreditOutlivesTheMarker(unittest.TestCase):
         self.assertIn("DISPATCHED", result.message)
 
 
+class TestBothMarkerFilesAgreeAfterADispatch(unittest.TestCase):
+    """The legacy marker never falls behind the per-OBPI marker (OBPI-0.35.0-15).
+
+    A launch writes one payload to both files and ``OBPI-0.13.0-02`` Requirement 4
+    has them stay that way. They diverged after the first dispatch, because the
+    dispatch record and the single-driver declaration were written to the
+    per-OBPI file alone, so a reader of the legacy marker saw a run with no
+    dispatch at all.
+    """
+
+    _OBPI = "OBPI-0.12.0-04"
+
+    def setUp(self) -> None:
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.root = Path(tmp.name)
+        self.plans = self.root / ".claude" / "plans"
+        (self.root / ".gzkit").mkdir(parents=True)
+        (self.root / ".gzkit" / "ledger.jsonl").touch()
+        payload = pipeline_marker_payload(self._OBPI, "ADR-0.12.0", "heavy", None, "pass")
+        self.per_obpi, self.legacy = write_pipeline_markers(self.plans, payload)
+
+    @staticmethod
+    def _read(path: Path) -> dict[str, object]:
+        return json.loads(path.read_text(encoding="utf-8"))
+
+    @covers("REQ-0.35.0-15-07")
+    def test_a_recorded_dispatch_reaches_both_marker_files(self) -> None:
+        chan.record_dispatch(self.root, self._OBPI, role="Implementer", model="sonnet", task_id=1)
+
+        dispatched = self._read(self.legacy).get("dispatch_state")
+        self.assertIsInstance(dispatched, list)
+        assert isinstance(dispatched, list)
+        self.assertEqual([record["role"] for record in dispatched], ["Implementer"])
+        self.assertEqual(self.per_obpi.read_bytes(), self.legacy.read_bytes())
+
+    @covers("REQ-0.35.0-15-07")
+    def test_a_single_driver_declaration_reaches_both_marker_files(self) -> None:
+        chan.declare_single_driver(self.root, self._OBPI, reason="harness forbids subagents")
+
+        declaration = self._read(self.legacy).get("single_driver_declaration")
+        self.assertIsInstance(declaration, dict)
+        assert isinstance(declaration, dict)
+        self.assertEqual(declaration["reason"], "harness forbids subagents")
+        self.assertEqual(self.per_obpi.read_bytes(), self.legacy.read_bytes())
+
+    @covers("REQ-0.35.0-15-07")
+    def test_a_dispatch_after_an_advance_keeps_the_stage_and_position(self) -> None:
+        """A dispatch adds its record and moves nothing else the advance wrote."""
+        position = {"kind": "phase", "label": "verification", "boundary": "gz obpi pipeline"}
+        advance_pipeline_markers(
+            self.plans,
+            self._OBPI,
+            stage="verify",
+            position=position,
+            updated_at="2026-10-11T10:30:00.250000+00:00",
+            blockers=[],
+            requires_human_attestation=True,
+        )
+        advanced = self._read(self.per_obpi)
+
+        chan.record_dispatch(self.root, self._OBPI, role="SpecReviewer", model="opus", task_id=1)
+
+        for marker_path in (self.per_obpi, self.legacy):
+            marker = self._read(marker_path)
+            self.assertEqual(marker["current_stage"], "verify")
+            self.assertEqual(marker["position"], position)
+            self.assertEqual(marker["updated_at"], advanced["updated_at"])
+            self.assertIn("dispatch_state", marker)
+        self.assertEqual(self.per_obpi.read_bytes(), self.legacy.read_bytes())
+
+    def test_a_declaration_leaves_another_obpis_legacy_marker_alone(self) -> None:
+        self.legacy.write_text(json.dumps({"obpi_id": "OBPI-0.12.0-99"}), encoding="utf-8")
+        foreign = self.legacy.read_bytes()
+
+        chan.declare_single_driver(self.root, self._OBPI, reason="harness forbids subagents")
+
+        self.assertIn("single_driver_declaration", self._read(self.per_obpi))
+        self.assertEqual(self.legacy.read_bytes(), foreign)
+
+    def _dispatch_parents(self) -> list[object]:
+        """Return the parent ADR each recorded dispatch names on the ledger."""
+        ledger = (self.root / ".gzkit" / "ledger.jsonl").read_text(encoding="utf-8")
+        rows = [json.loads(line) for line in ledger.splitlines() if line.strip()]
+        return [row.get("parent") for row in rows if row["event"] == "stage2_dispatch_recorded"]
+
+    def test_a_dispatch_after_the_per_obpi_marker_is_gone_keeps_the_earlier_records(self) -> None:
+        """The cache is read from the file it is written to: the legacy marker as fallback.
+
+        Read from the per-OBPI file alone the earlier records were not seen, and
+        the write that followed replaced them in the legacy marker with one
+        record. The parent ADR on the ledger row comes from the same read.
+        """
+        chan.record_dispatch(self.root, self._OBPI, role="Implementer", model="sonnet", task_id=1)
+        self.per_obpi.unlink()
+
+        chan.record_dispatch(self.root, self._OBPI, role="SpecReviewer", model="opus", task_id=1)
+
+        dispatched = self._read(self.legacy).get("dispatch_state")
+        assert isinstance(dispatched, list)
+        self.assertEqual([record["role"] for record in dispatched], ["Implementer", "SpecReviewer"])
+        self.assertEqual(self._dispatch_parents(), ["ADR-0.12.0", "ADR-0.12.0"])
+        self.assertFalse(self.per_obpi.exists())
+
+    def test_an_unreadable_per_obpi_marker_costs_the_legacy_marker_nothing(self) -> None:
+        """A per-OBPI file that is not this run's marker reads as absent.
+
+        The declaration then lands on the legacy marker beside what it already
+        carried. Read on its own terms, an empty object became the payload
+        written over the legacy marker, and the run lost its marker.
+        """
+        corruptions = (
+            ("truncated JSON", b'{"obpi_id": '),
+            ("JSON that is not an object", b"[]"),
+            ("an object naming no OBPI", b"{}"),
+            ("bytes that are not UTF-8", b"\xff\xfe{}"),
+        )
+        for name, content in corruptions:
+            with self.subTest(per_obpi=name):
+                payload = pipeline_marker_payload(self._OBPI, "ADR-0.12.0", "heavy", None, "pass")
+                write_pipeline_markers(self.plans, payload)
+                chan.record_dispatch(
+                    self.root, self._OBPI, role="Implementer", model="sonnet", task_id=1
+                )
+                before = self._read(self.legacy)
+                self.per_obpi.write_bytes(content)
+
+                chan.declare_single_driver(self.root, self._OBPI, reason="no subagents here")
+
+                after = self._read(self.legacy)
+                declaration = after.pop("single_driver_declaration", None)
+                assert isinstance(declaration, dict)
+                self.assertEqual(declaration["reason"], "no subagents here")
+                self.assertEqual(after, before)
+                self.assertEqual(self.per_obpi.read_bytes(), content)
+
+
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestADispatchRecordsTheTaskAndCreditStaysOnTheLedger(unittest.TestCase):
+    """OBPI-0.35.0-15: a dispatch marks a Stage 2 task; its credit is unchanged.
+
+    A position is never gate evidence (Requirement 12). The dispatch appends its
+    own ``stage2_dispatch_recorded`` row, which is what credit reads, and one
+    ``pipeline_stage_transition`` row, which is what the position reads. Neither
+    stands in for the other.
+    """
+
+    def setUp(self) -> None:
+        self.root, self.obpi_id = _plans()
+        self.addCleanup(shutil.rmtree, self.root, ignore_errors=True)
+        self.ledger = Ledger(self.root / ".gzkit" / "ledger.jsonl")
+
+    def _launch(self) -> None:
+        self.ledger.append(
+            pipeline_launched_event(
+                obpi_id=self.obpi_id,
+                parent_adr="ADR-0.12.0",
+                lane="heavy",
+                nonce="0123456789abcdef0123456789abcdef",
+                marker_path=f".claude/plans/.pipeline-active-{self.obpi_id}.json",
+                entry="full",
+            )
+        )
+
+    def _crossings(self) -> list[dict]:
+        return [
+            row.extra
+            for row in Ledger(self.ledger.path).read_all()
+            if row.event == "pipeline_stage_transition" and row.id == self.obpi_id
+        ]
+
+    def _credited(self) -> set[str]:
+        return {
+            entry.role
+            for entry in chan.dispatch_channel(self.root, self.obpi_id)
+            if entry.disposition is chan.DispatchDisposition.DISPATCHED
+        }
+
+    def test_a_dispatch_in_a_run_in_flight_names_the_task_it_dispatched(self) -> None:
+        self._launch()
+
+        chan.record_dispatch(self.root, self.obpi_id, role="Implementer", model="sonnet", task_id=3)
+
+        (crossing,) = self._crossings()
+        self.assertEqual(crossing["stage"], "implement")
+        self.assertEqual(crossing["position_kind"], "task")
+        self.assertEqual(crossing["position_label"], "task 3")
+        marker = json.loads(_marker(self.root, self.obpi_id).read_text(encoding="utf-8"))
+        self.assertEqual(marker["current_stage"], "implement")
+        self.assertEqual(marker["position"]["label"], "task 3")
+        self.assertEqual(len(marker["dispatch_state"]), 1)
+
+    @covers("REQ-0.35.0-15-02")
+    def test_a_dispatch_with_no_run_in_flight_records_no_position(self) -> None:
+        chan.record_dispatch(self.root, self.obpi_id, role="Implementer", model="sonnet", task_id=1)
+
+        self.assertEqual(self._crossings(), [])
+        self.assertEqual(self._credited(), {"Implementer"})
+
+    def test_dispatch_credit_reads_the_ledger_whatever_the_position_says(self) -> None:
+        """A recorded position grants no credit, and losing the marker costs none."""
+        self._launch()
+        record_position(
+            self.ledger,
+            self.root / ".claude" / "plans",
+            self.obpi_id,
+            RunCrossing(boundary="dispatch", task="task 1"),
+        )
+        self.assertEqual(len(self._crossings()), 1)
+        self.assertEqual(self._credited(), set(), "a position is not a dispatch record")
+
+        chan.record_dispatch(self.root, self.obpi_id, role="Implementer", model="sonnet", task_id=1)
+        _marker(self.root, self.obpi_id).unlink()
+
+        self.assertEqual(self._credited(), {"Implementer"})

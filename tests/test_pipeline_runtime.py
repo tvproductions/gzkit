@@ -9,21 +9,28 @@ from unittest.mock import patch
 from gzkit.ledger import pipeline_marker_purged_event
 from gzkit.pipeline_runtime import (
     STALE_MARKER_HOURS,
+    advance_pipeline_markers,
     clear_stale_pipeline_markers,
+    create_subagent_dispatch_record,
     extract_brief_status,
     find_active_pipeline_marker,
     find_plan_for_obpi,
     find_stale_pipeline_markers,
+    load_dispatch_state,
     load_plan_audit_receipt,
+    persist_dispatch_state,
     pipeline_command,
     pipeline_completion_reminder_message,
     pipeline_gate_message,
+    pipeline_marker_paths,
+    pipeline_marker_payload,
     pipeline_plan_search_dirs,
     pipeline_receipt_path,
     pipeline_resume_command,
     pipeline_router_message,
     purge_orphaned_active_markers,
     remove_pipeline_artifacts,
+    write_pipeline_markers,
 )
 from gzkit.traceability import covers
 
@@ -51,7 +58,6 @@ class TestPipelineRuntime(unittest.TestCase):
             assert receipt is not None
             self.assertEqual(receipt["obpi_id"], "OBPI-0.13.0-05-runtime-engine-integration")
 
-    @covers("REQ-0.13.0-02-01")
     def test_find_active_pipeline_marker_prefers_per_obpi_marker(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             plans_dir = Path(tmpdir)
@@ -179,7 +185,6 @@ class TestPipelineRuntime(unittest.TestCase):
 
     # --- Issue #20: Per-OBPI receipts ---
 
-    @covers("REQ-0.13.0-02-02")
     def test_load_receipt_prefers_per_obpi_receipt_over_legacy(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             plans_dir = Path(tmpdir)
@@ -234,7 +239,6 @@ class TestPipelineRuntime(unittest.TestCase):
 
     # --- Issue #20: Stale marker detection ---
 
-    @covers("REQ-0.13.0-03-03")
     def test_find_stale_markers_detects_old_markers(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             plans_dir = Path(tmpdir)
@@ -1305,6 +1309,144 @@ class TestCheckReconcileReceiptGate(unittest.TestCase):
 
             blockers = check_reconcile_receipt_gate("OBPI-0.0.37-07-test", brief, root)
             self.assertEqual(blockers, [])
+
+
+class TestMarkerWritersFollowTheStageReached(unittest.TestCase):
+    """Every writer of a live marker acts on the stage reached, in both files.
+
+    OBPI-0.35.0-15: ``persist_dispatch_state`` wrote the per-OBPI file alone, so
+    the legacy marker fell behind after the first dispatch (Requirement 7). The
+    marker refresh that derived its stage output from ``entry`` is gone: the
+    recorder advances the marker, and ``tests/test_pipeline_position.py`` holds
+    the test that a failed verification keeps its blockers (Requirement 9).
+
+    These assert REQ-0.35.0-15-07 but carry no ``@covers``: the bindings sit in
+    ``tests/test_pipeline_position.py`` and ``tests/test_obpi_dispatch_channel.py``.
+    A binding here makes this module a covering file of that brief, and
+    ``gz validate --brief-reconcile`` then reports this module's other imports
+    (``adr_eval``, ``pipeline_dispatch``) as allowlist drift.
+    """
+
+    _OBPI = "OBPI-0.99.0-01-run-position-demo"
+    _CROSSED_AT = "2026-10-11T10:30:00.250000+00:00"
+
+    def setUp(self) -> None:
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.plans = Path(tmp.name)
+        self.per_obpi, self.legacy = pipeline_marker_paths(self.plans, self._OBPI)
+
+    def _launch(self, start_from: str | None = None) -> dict[str, Any]:
+        payload = pipeline_marker_payload(
+            self._OBPI,
+            "ADR-0.99.0-run-position-demo",
+            "heavy",
+            start_from,
+            "pass",
+            requires_human_attestation=True,
+        )
+        write_pipeline_markers(self.plans, payload)
+        return payload
+
+    def _advance(self, stage: str, kind: str, label: str) -> None:
+        advance_pipeline_markers(
+            self.plans,
+            self._OBPI,
+            stage=stage,
+            position={"kind": kind, "label": label, "boundary": "gz obpi pipeline"},
+            updated_at=self._CROSSED_AT,
+            blockers=[],
+            requires_human_attestation=True,
+        )
+
+    @staticmethod
+    def _read(path: Path) -> dict[str, Any]:
+        return json.loads(path.read_text(encoding="utf-8"))
+
+    def test_persist_dispatch_state_writes_one_payload_to_both_marker_files(self) -> None:
+        self._launch()
+        self._advance("ceremony", "round", "present-evidence")
+
+        persist_dispatch_state(
+            self.plans, self._OBPI, [create_subagent_dispatch_record(1, "Implementer", "sonnet")]
+        )
+
+        self.assertEqual(len(load_dispatch_state(self.plans, self._OBPI)), 1)
+        legacy = self._read(self.legacy)
+        self.assertEqual(len(legacy.get("dispatch_state", [])), 1)
+        self.assertEqual(legacy["current_stage"], "ceremony")
+        self.assertEqual(self.per_obpi.read_bytes(), self.legacy.read_bytes())
+
+    def test_persist_dispatch_state_leaves_another_obpis_legacy_marker_alone(self) -> None:
+        self._launch()
+        self.legacy.write_text(
+            json.dumps({"obpi_id": "OBPI-0.99.0-02-another-run"}) + "\n", encoding="utf-8"
+        )
+        foreign = self.legacy.read_bytes()
+
+        persist_dispatch_state(
+            self.plans, self._OBPI, [create_subagent_dispatch_record(1, "Implementer", "sonnet")]
+        )
+
+        self.assertEqual(len(load_dispatch_state(self.plans, self._OBPI)), 1)
+        self.assertEqual(self.legacy.read_bytes(), foreign)
+
+
+#: Per-OBPI marker contents that are not the run's marker.
+_UNREADABLE_MARKERS: tuple[tuple[str, bytes], ...] = (
+    ("truncated JSON", b'{"obpi_id": '),
+    ("JSON that is not an object", b"[]"),
+    ("an object naming no OBPI", b"{}"),
+    ("bytes that are not UTF-8", b"\xff\xfe{}"),
+)
+
+
+class TestTheDispatchCacheReadsWhatItWrites(unittest.TestCase):
+    """``load_dispatch_state`` reads the marker ``persist_dispatch_state`` wrote.
+
+    OBPI-0.35.0-15: the writer loads the per-OBPI marker with the legacy marker
+    as fallback, and the reader opened the per-OBPI file alone. With that file
+    missing or unreadable the reader returned nothing or raised, so the next
+    dispatch replaced the legacy marker's records with its own.
+    """
+
+    _OBPI = "OBPI-0.99.0-01-run-position-demo"
+
+    def setUp(self) -> None:
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.plans = Path(tmp.name)
+        payload = pipeline_marker_payload(
+            self._OBPI, "ADR-0.99.0-run-position-demo", "heavy", None, "pass"
+        )
+        self.per_obpi, self.legacy = write_pipeline_markers(self.plans, payload)
+        persist_dispatch_state(
+            self.plans, self._OBPI, [create_subagent_dispatch_record(1, "Implementer", "sonnet")]
+        )
+
+    def _roles(self) -> list[str]:
+        return [record.role for record in load_dispatch_state(self.plans, self._OBPI)]
+
+    def test_records_are_read_from_the_legacy_marker_when_the_per_obpi_file_is_gone(self) -> None:
+        self.per_obpi.unlink()
+
+        self.assertEqual(self._roles(), ["Implementer"])
+
+    def test_an_unreadable_per_obpi_marker_reads_as_absent(self) -> None:
+        """Each corruption falls through to the legacy marker, as a missing file does."""
+        for name, content in _UNREADABLE_MARKERS:
+            with self.subTest(per_obpi=name):
+                self.per_obpi.write_bytes(content)
+
+                self.assertEqual(self._roles(), ["Implementer"])
+
+    def test_no_readable_marker_reads_as_no_records(self) -> None:
+        self.legacy.unlink()
+        for name, content in _UNREADABLE_MARKERS:
+            with self.subTest(per_obpi=name):
+                self.per_obpi.write_bytes(content)
+
+                self.assertEqual(self._roles(), [])
 
 
 if __name__ == "__main__":

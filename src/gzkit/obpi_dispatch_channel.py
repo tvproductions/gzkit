@@ -41,7 +41,6 @@ consults it.
 
 from __future__ import annotations
 
-import json
 from datetime import UTC, datetime
 from enum import StrEnum
 from pathlib import Path
@@ -86,26 +85,28 @@ def _plans_dir(project_root: Path) -> Path:
     return pipeline_plans_dir(project_root)
 
 
-def _marker_path(project_root: Path, obpi_id: str) -> Path:
-    """Return the active pipeline marker path for ``obpi_id``."""
-    return _plans_dir(project_root) / f".pipeline-active-{obpi_id}.json"
-
-
 def _read_marker(project_root: Path, obpi_id: str) -> dict | None:
-    """Return the marker payload, or None when absent/unreadable."""
-    try:
-        payload = json.loads(_marker_path(project_root, obpi_id).read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return None
-    return payload if isinstance(payload, dict) else None
+    """Return this OBPI's marker payload, or None when absent/unreadable.
+
+    Read through the loader the marker cache is written through: the per-OBPI
+    file, the legacy file as fallback, and only a payload that names this OBPI.
+    A reader of the per-OBPI file alone disagreed with the writer about which
+    file holds the run's marker.
+    """
+    from gzkit.pipeline_markers import load_obpi_pipeline_marker
+
+    return load_obpi_pipeline_marker(_plans_dir(project_root), obpi_id)
 
 
-def _ledger(project_root: Path) -> Ledger:
+def project_ledger(project_root: Path) -> Ledger:
     """Return the project ledger, honouring ``.gzkit.json`` when it is readable.
 
     Falls back to the canonical relative path rather than raising: a fixture or a
     partially-initialized tree must still be able to READ an empty channel, and a
     config failure is a different defect with its own surface.
+
+    The one opener of the project ledger for the pipeline's runtime modules:
+    the run-position adapter in ``pipeline_runtime`` opens it through here too.
     """
     rel = ".gzkit/ledger.jsonl"
     try:
@@ -136,7 +137,7 @@ def _obpi_events(project_root: Path, obpi_id: str, event_type: str) -> list[dict
     """
     return [
         event.extra
-        for event in _ledger(project_root).read_all()
+        for event in project_ledger(project_root).read_all()
         if event.event == event_type and event.id == obpi_id
     ]
 
@@ -202,15 +203,23 @@ def record_dispatch(
     Ledger first, marker second, deliberately: if the marker write fails the
     credit still exists, whereas the reverse order could leave a cache claiming a
     dispatch that no gate would ever credit.
+
+    A dispatch also marks a Stage 2 task boundary (OBPI-0.35.0-15): when a run is
+    in flight, its position is recorded as the task dispatched, and the run
+    re-enters ``implement``, because a dispatch begins work. That record is a
+    separate ledger row and is never read for credit.
     """
     from gzkit.ledger import stage2_dispatch_recorded_event
     from gzkit.pipeline_runtime import (
+        RunCrossing,
         create_subagent_dispatch_record,
         load_dispatch_state,
         persist_dispatch_state,
+        record_run_position,
     )
 
-    _ledger(project_root).append(
+    ledger = project_ledger(project_root)
+    ledger.append(
         stage2_dispatch_recorded_event(
             obpi_id=obpi_id,
             parent=_parent_adr(project_root, obpi_id),
@@ -223,6 +232,9 @@ def record_dispatch(
     records = list(load_dispatch_state(plans_dir, obpi_id))
     records.append(create_subagent_dispatch_record(task_id, role, model))
     persist_dispatch_state(plans_dir, obpi_id, records)
+    record_run_position(
+        project_root, obpi_id, RunCrossing(boundary="dispatch", task=f"task {task_id}")
+    )
 
 
 def declare_single_driver(project_root: Path, obpi_id: str, *, reason: str) -> None:
@@ -236,17 +248,18 @@ def declare_single_driver(project_root: Path, obpi_id: str, *, reason: str) -> N
     carries the same durability requirement as the dispatch records themselves
     (GHI #886). Storing it only in the marker would have left the gate
     half-durable: a ``--clear-stale`` would return a knowingly-declared run to
-    the silent single-driver state this gate exists to refuse.
+    the silent single-driver state this gate exists to refuse. The marker cache
+    is written to both marker files through the shared writer.
     """
-    marker_path = _marker_path(project_root, obpi_id)
     marker = _read_marker(project_root, obpi_id)
     if marker is None:
         msg = f"no active pipeline marker for {obpi_id}; cannot declare single-driver"
         raise FileNotFoundError(msg)
 
     from gzkit.ledger import stage2_single_driver_declared_event
+    from gzkit.pipeline_markers import rewrite_pipeline_markers
 
-    _ledger(project_root).append(
+    project_ledger(project_root).append(
         stage2_single_driver_declared_event(
             obpi_id=obpi_id,
             parent=_parent_adr(project_root, obpi_id),
@@ -257,7 +270,7 @@ def declare_single_driver(project_root: Path, obpi_id: str, *, reason: str) -> N
         "reason": reason,
         "declared_at": datetime.now(UTC).isoformat(),
     }
-    marker_path.write_text(json.dumps(marker, indent=2) + "\n", encoding="utf-8")
+    rewrite_pipeline_markers(_plans_dir(project_root), obpi_id, marker)
 
 
 def single_driver_declaration(project_root: Path, obpi_id: str) -> dict | None:

@@ -599,6 +599,40 @@ class PipelineLaunchedEvent(_EventBase):
     entry: str | None = None
 
 
+class PipelineStageTransitionEvent(_EventBase):
+    """pipeline_stage_transition event — one boundary a pipeline run crossed (GHI #1172).
+
+    The Layer-2 source for a run's position (OBPI-0.35.0-15 Requirement 18). A
+    pipeline marker under ``.claude/plans/`` is Layer 3 and is deleted by the
+    sanctioned recovery paths, so a position recorded only there is lost with
+    it. Each recorded boundary appends one of these BEFORE the marker is
+    written, and ``gz state --repair`` rebuilds a missing marker by replaying
+    them after the run's ``pipeline_launched`` event.
+
+    ``stage`` is closed over the four canonical stages named by
+    ``pipeline_stage_fence.CANONICAL_STAGES``. A position inside a stage is
+    carried by the ``position_*`` fields and never as a stage value: the
+    post-Stage-2 fence and the marker authenticity check both refuse a stage
+    outside the canonical set, and this row is what a rebuild writes back.
+    """
+
+    event: Literal["pipeline_stage_transition"]
+    stage: Literal["implement", "verify", "ceremony", "sync"] = Field(
+        ..., description="Canonical stage the run has reached"
+    )
+    position_kind: Literal["task", "phase", "round", "step"] = Field(
+        ...,
+        description="Position inside the stage: Stage 2 task, 3 phase, 4 round or 5 step",
+    )
+    position_label: str = Field(
+        ..., min_length=1, description="Which task, phase, round or step was reached"
+    )
+    boundary: str = Field(..., min_length=1, description="Command that marked the crossing")
+    blockers: list[str] | None = Field(
+        default=None, description="Blockers the boundary recorded, when it recorded any"
+    )
+
+
 # ---------------------------------------------------------------------------
 # TASK ledger events (ADR-0.22.0 / OBPI-0.22.0-02)
 # ---------------------------------------------------------------------------
@@ -1602,6 +1636,7 @@ TypedLedgerEvent = Annotated[
     | PatchReleaseEvent
     | PipelineMarkerPurgedEvent
     | PipelineLaunchedEvent
+    | PipelineStageTransitionEvent
     | TaskStartedEvent
     | TaskCompletedEvent
     | TaskBlockedEvent

@@ -4,9 +4,10 @@ parent: ADR-0.35.0-canon-entry-corpus-landing
 item: 15
 lane: Heavy
 sensitivity: security
-status: Draft
+status: Active
 allowlist:
   - src/gzkit/pipeline_markers.py
+  - src/gzkit/pipeline_position.py
   - src/gzkit/pipeline_runtime.py
   - src/gzkit/commands/obpi_cmd.py
   - src/gzkit/commands/obpi_stages.py
@@ -60,6 +61,16 @@ verification:
   - uv run gz validate --documents --req-kind-discipline --cli-alignment
   - uv run gz cli audit
   - uv run mkdocs build --strict
+tasks:
+  - TASK-0.35.0-15-01-01
+  - TASK-0.35.0-15-02-01
+  - TASK-0.35.0-15-03-01
+  - TASK-0.35.0-15-04-01
+  - TASK-0.35.0-15-05-01
+  - TASK-0.35.0-15-06-01
+  - TASK-0.35.0-15-07-01
+  - TASK-0.35.0-15-08-01
+  - TASK-0.35.0-15-09-01
 ---
 
 # OBPI-0.35.0-15-pipeline-run-position: Pipeline Run Position
@@ -107,14 +118,17 @@ Constraint inherited, not repaired: `ADR-0.0.9` § Decision, "Layer 3 artifacts 
 
 ## Allowed Paths
 
-- `src/gzkit/pipeline_markers.py` — marker payload, refresh, resume command and stale-marker handling (registered security surface)
+- `src/gzkit/pipeline_markers.py` — marker payload, refresh, resume command and stale-marker handling (registered security surface). Every marker file write stays here.
+- `src/gzkit/pipeline_position.py` — **CREATE** (Open Design Question 6, ruled 2026-10-11): the run-position concept: the position model, the pure ledger replay, the recorder (ledger first, marker second) and the payload a rebuild writes. It depends on `src/gzkit/pipeline_markers.py` and is never imported by it.
 - `src/gzkit/pipeline_runtime.py` — the re-export surface and the dispatch-state marker cache writer
 - `src/gzkit/commands/obpi_cmd.py` — the launch producer and each re-entry by stage (registered security surface)
 - `src/gzkit/commands/obpi_stages.py` — the verification, ceremony and sync runners
 - `src/gzkit/obpi_dispatch_channel.py` — the dispatch producer's marker cache write
 - `src/gzkit/commands/obpi_precomplete.py` — the precomplete producer
 - `src/gzkit/commands/obpi_complete.py` — the complete producer (registered security surface)
-- `src/gzkit/commands/obpi_present_evidence.py`, `src/gzkit/commands/obpi_verify_packet.py`, `src/gzkit/commands/obpi_acceptance.py` — the Stage 4 round producers (Open Design Question 1, ruled)
+- `src/gzkit/commands/obpi_present_evidence.py` — a Stage 4 round producer (Open Design Question 1, ruled)
+- `src/gzkit/commands/obpi_verify_packet.py` — a Stage 4 round producer (Open Design Question 1, ruled)
+- `src/gzkit/commands/obpi_acceptance.py` — the Stage 4 review-import producer (Open Design Question 1, ruled)
 - `src/gzkit/commands/task.py` — the `gz task` verbs, which mark a Stage 2 task boundary (Open Design Question 1, ruled)
 - `src/gzkit/pipeline_stage_fence.py` — READ-ONLY import of the covering tests for the fence control; never modified by this OBPI
 - `src/gzkit/ledger_events.py` — the constructor for the stage-transition event (registered security surface)
@@ -142,7 +156,7 @@ Constraint inherited, not repaired: `ADR-0.0.9` § Decision, "Layer 3 artifacts 
 - `docs/design/adr/pre-release/ADR-0.13.0-obpi-pipeline-runtime-surface/obpis/OBPI-0.13.0-03-structured-stage-outputs.md` — the dated amendment note on the `REQ-0.13.0-03-02` line only (Requirement 16); nothing else in this sealed brief changes
 - `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-15-pipeline-run-position.md`
 
-The rulings on the Open Design Questions may add paths. Each addition is named there and is made as a brief amendment before the plan, never during implementation.
+The rulings on the Open Design Questions may add paths. Each addition is named there and is made as a brief amendment. An addition that implementation shows is warranted is assessed at that point, with its consumers and coupled surfaces named, and is made only on the operator's ruling (Open Design Question 6). This replaces the earlier wording, "never during implementation".
 
 ## Denied Paths
 
@@ -163,7 +177,7 @@ The rulings on the Open Design Questions may add paths. Each addition is named t
 ## Requirements (FAIL-CLOSED)
 
 1. REQUIREMENT: The recorded position is what the RUN has reached, never what the launch command named. After the run crosses a recorded boundary, a process that did not perform the run reads that boundary from the marker, and `updated_at` is the time of the crossing. A marker that reports the launch stage for a run that has left it is the defect this OBPI repairs (GHI #1172 § Observed).
-2. REQUIREMENT: The stage is one of the four canonical stages named by `pipeline_stage_fence.CANONICAL_STAGES`. The positions inside a stage that are in scope are the four GHI #1172 names: the Stage 2 task, the Stage 3 phase, the Stage 4 round and the Stage 5 step. The boundaries that earn a record are the ones a command the run already invokes marks (operator ruling 2026-10-04, Open Design Question 1): a Stage 2 task at `gz obpi dispatch` and at the `gz task` events; Stage 3 at verification start, pass and fail and at `gz obpi precomplete`; a Stage 4 round at `gz obpi present-evidence`, `gz obpi verify-packet` and each `gz obpi acceptance` review import; a Stage 5 step at `gz obpi precomplete`, `gz obpi complete` and `gz obpi sync`. No position command is added and the skill gains no step. The plan MUST NOT add a boundary or drop one.
+2. REQUIREMENT: The stage is one of the four canonical stages named by `pipeline_stage_fence.CANONICAL_STAGES`. The positions inside a stage that are in scope are the four GHI #1172 names: the Stage 2 task, the Stage 3 phase, the Stage 4 round and the Stage 5 step. The boundaries that earn a record are the ones a command the run already invokes marks (operator ruling 2026-10-04, Open Design Question 1): a Stage 2 task at `gz obpi dispatch` and at the `gz task` events; Stage 3 at verification start, pass and fail and at `gz obpi precomplete`; a Stage 4 round at `gz obpi present-evidence`, `gz obpi verify-packet` and each `gz obpi acceptance` review import; a Stage 5 step at `gz obpi precomplete`, `gz obpi complete` and `gz obpi sync`. No position command is added and the skill gains no step. The plan MUST NOT add a boundary or drop one. **Amended 2026-10-11 on operator rulings (Open Design Questions 7, 8, 9 and 10), each made when implementation showed how the commands are invoked. The amended set governs where it differs from the sentence above.** (a) Only a command that begins a stage's work moves the stage (Question 9): the launch and each `--from` re-entry, the verify runner (to `verify`), the ceremony runner's entry and `gz obpi present-evidence` (to `ceremony`), `gz obpi complete` (to `sync`), and `gz task start` and `gz obpi dispatch` (to `implement`, the recorded re-entry). (b) A check or a bookkeeping event records its position inside the stage the run has already reached and never changes that stage: `gz obpi precomplete`, `gz obpi verify-packet`, an adversarial or human review import, the verification pass and fail, and `gz task complete`, `block` and `escalate`. The position's kind is the kind of the stage reached (task, phase, round or step) and its label names the command's own boundary. (c) A spec or quality review import records nothing (Question 7). (d) `gz obpi sync` is not a recorded boundary, because the completion receipt ends the run; `gz obpi complete` records its step as its transaction starts, before that receipt (Question 8). (e) The ceremony runner's entry is a recorded boundary (Question 10).
 3. REQUIREMENT: A position inside a stage is never written as a new `current_stage` value. The post-Stage-2 fence refuses production writes and commits at any stage outside its authoring and committing sets, and the marker authenticity check refuses a marker whose stage is outside its canonical set, so a new stage value would trip both.
 4. REQUIREMENT: Every position the marker carries is reproducible from canon and ledger. After both marker files are deleted, a rebuild from Layer 1 and Layer 2 alone yields the same stage and the same position inside it. A position with no Layer-1 or Layer-2 source MUST NOT be recorded. The Layer-2 source and the rebuilding verb are ruled under Open Design Question 2 and stated in Requirement 18.
 5. REQUIREMENT (control): A launch with nothing after it reads exactly as it does today, for the full launch and for each `--from` entry: `entry`, `current_stage`, `blockers`, `required_human_action` and `resume_point` as the launch writes them. This brief leaves `next_command` as it finds it and pins no value for it: Decision item 12 (OBPI-0.35.0-16) re-derives it from the run's position (operator ruling 2026-10-04 on that brief's Open Design Question 2). The existing launch-state assertions in `tests/commands/test_obpi_pipeline.py` pass unchanged. If one cannot, STOP and surface it; an assertion bound to an attested `REQ-0.13.0-*` is never edited to fit. The one known exception, the marker state after a successful verification, is ruled under Open Design Question 4 and carried by Requirement 16.
@@ -219,6 +233,71 @@ GHI #1172 § Closure contract lists the first three as known uncertainties. The 
 - B. Position is written to a separate key and `current_stage` keeps the launch value. Nothing attested moves and the fence stays dormant on full launches, but every reader of `current_stage` still reads launch state, which is the contradiction GHI #1172 names.
 - **Recommendation: A.**
 - **RULED 2026-10-04: A.** Asked "when a run moves to the next stage, does the marker's `current_stage` change?", the operator answered, verbatim: "A". Two rulings followed the same day, each answered "A": `REQ-0.13.0-03-02` is amended in place (Requirement 16), and each misplaced `@covers` binding moves to the test that asserts its requirement (Requirement 17).
+
+**5. Which stage `gz obpi precomplete` records.** Requirement 2 lists `gz obpi precomplete` as a boundary in both the Stage 3 set and the Stage 5 set, and one invocation records one transition.
+
+- A. Stage 5 step only: precomplete records `stage=sync`, step `precomplete`. Matches the skill (Stage 5 Step 0); Stage 3 ends at verification pass or fail.
+- B. Stage 3 phase only.
+- C. Two transitions per invocation.
+- **Recommendation: A.**
+- **RULED 2026-10-11: A.** Asked which stage a precomplete records, with the three options above, the operator answered, verbatim: "Stage 5 step only (Recommended)". Requirement 2's Stage 3 mention of precomplete is read as a drafting overlap; the set of boundaries is otherwise unchanged.
+- **SUPERSEDED 2026-10-11, the same day.** The question was put on a wrong premise: the agent had not read `_pipeline_verification_commands` (`src/gzkit/commands/obpi_stages.py`), which appends `gz obpi precomplete` as the verify runner's last command. Requirement 2 lists precomplete under Stage 3 and Stage 5 because it runs in both; under ruling A every Stage 3 run would have recorded `verify`, `sync`, `verify`, `ceremony`. Asked again with the fact stated ("Which stage should it record? This would supersede the Question 5 ruling I obtained on a wrong premise") and the options stage-relative, always Stage 5, always Stage 3, the operator answered, verbatim: "Stage-relative (Recommended)". Precomplete records the Stage 3 phase when the run is at `verify` and the Stage 5 step otherwise. **This re-ruling was itself superseded the same day by Question 9**, after two independent reviews showed that its "otherwise" arm let a check move the stage the fence reads.
+
+**6. Where the run-position code lives (raised in Stage 2, 2026-10-11).** The first implementation put the position model, the replay and the marker advance in `src/gzkit/pipeline_markers.py`, which grew from 825 to 976 lines against the 600-line guidance in `.gzkit/rules/pythonic.md` and gained a second reason to change, the ledger event shape (quality review `arb-step-qualityreview-59190a1829eb48e2bd0ea32ef4fb3a9c`, finding QR1-AUX-03). The recorder was planned for `src/gzkit/obpi_dispatch_channel.py` and the rebuild for `src/gzkit/commands/state.py`, so the concept was spread across three modules. Allowed Paths then said an addition is "never" made "during implementation".
+
+- Assessment at the point of growth. Consumers of the position code: `src/gzkit/pipeline_markers.py`, `src/gzkit/pipeline_runtime.py`, `src/gzkit/obpi_dispatch_channel.py`, three test modules and the BDD steps, all already allowlisted; a new module adds no consumer. `gz airlock in --dry-run` and `gz ontology reach` could not size the change: source modules are not ontology nodes (`ADR-0.33.0` § Calibration frontier), so the assessment was made by reading the importers. Keeping every marker file write in `src/gzkit/pipeline_markers.py` leaves the registered security surface unchanged, so `data/security_surfaces.json` needs no edit.
+- A. Full concept: a new `src/gzkit/pipeline_position.py` owns the position model, the pure replay, the recorder and the rebuild payload; `src/gzkit/pipeline_markers.py` keeps marker file I/O; the dependency runs one way.
+- B. The model and the replay only move; the recorder and the rebuild stay as planned.
+- C. No new module; the extraction is a follow-up.
+- **Recommendation: A.**
+- **RULED 2026-10-11: A.** The operator first said of the freeze, verbatim: "that might be outmoded thinking" and "The impact of new additions is the best time to consider the implications of addition"; then, of the extraction: "it just seems that the point of insertion/growth is the time to consider the design." Asked "Do you ratify amending the OBPI-0.35.0-15 brief to add `src/gzkit/pipeline_position.py`, and if so, how much moves into it?" with the three options above, the operator answered, verbatim: "Full concept (Recommended)". Allowed Paths carries the path and the reworded closing sentence. No requirement and no acceptance criterion changes.
+
+**7. Which review imports record a position (raised in Stage 2, 2026-10-11).** `gz obpi acceptance` imports the spec and quality reviews in Stage 2 and the adversarial review in Stage 4. Requirement 2 names "each `gz obpi acceptance` review import" as a Stage 4 round. Recording `ceremony` for every import would make a run still in Stage 2 read `ceremony` and arm the post-Stage-2 fence during implementation. The imported review carries its own stage.
+
+- A. Adversarial and human-review imports record the Stage 4 round; spec and quality imports record nothing.
+- B. All imports record, each in its own stage; this adds a Stage 2 boundary to the set ruled under Question 1.
+- C. Every import records `ceremony`.
+- **Recommendation: A.**
+- **RULED 2026-10-11: A.** Asked "Which imports record a position?" with the three options above, the operator answered, verbatim: "Stage 4 imports only (Recommended)". Requirement 2 carries it.
+
+**8. Where a run ends, and what records in Stage 5 (raised in Stage 2, 2026-10-11).** `gz obpi complete` emits the completion receipt. `gz obpi sync` runs after it, and in the pipeline skill's flow after the markers have been removed; its handler, `obpi_reconcile_cmd`, is in `src/gzkit/commands/status.py`, outside Allowed Paths. A run cannot both end at its receipt and record boundaries after it.
+
+- A. The receipt ends the run. `gz obpi complete` records its step as its transaction starts, before the receipt. `gz obpi sync` leaves the boundary set. Stage 5 records precomplete and complete.
+- B. A run ends at a recorded `sync` step; this adds `src/gzkit/commands/status.py` to Allowed Paths and needs the rebuild to skip completed OBPIs separately.
+- C. Stage 5 records precomplete only.
+- **Recommendation: A.**
+- **RULED 2026-10-11: A.** Asked "Where does a run end, and what records in Stage 5?" with the three options above, the operator answered, verbatim: "Receipt ends the run (Recommended)". Requirement 2 carries it. A position recorded at `complete` says the run reached that step, not that completion succeeded; the outcome is the receipt.
+
+**9. Which commands may move the stage the fence reads (raised by the Task 2 reviews, 2026-10-11).** As first built, every boundary command recorded its own stage. `gz task complete`, `block` and `escalate` therefore returned a run at `ceremony` to `implement`, reopening production writes on a bookkeeping event without the launcher's gates; and `gz obpi precomplete`, a check, moved a run at `ceremony` to `sync`, the one post-authoring stage where the pre-commit fence admits a production commit, and a run at `implement` to `sync`. The quality review (`arb-step-qualityreview-55341fa39e0645d1a6b3be30cca6d1f4`, QR2-AUX-fence-input-moved-by-non-entry-commands) and both spec reviews raised it for the operator's reading of Requirement 11. The fence code is untouched in every option.
+
+- A. Work-starting commands only move the stage: the launch, the verify runner, the ceremony runner, `gz obpi present-evidence`, `gz obpi complete`, `gz task start` and `gz obpi dispatch`. Checks and bookkeeping record their position inside the stage the run has reached and never change it.
+- B. As built: every boundary records its own stage.
+- C. Only the `gz task` verbs are narrowed; precomplete keeps the stage-relative ruling.
+- **Recommendation: A.**
+- **RULED 2026-10-11: A.** Asked "Which commands may move the stage that the post-Stage-2 fence reads?" with the three options above, the operator answered, verbatim: "Work-starting only (Recommended)". Requirement 2 (a) and (b) carry it. It supersedes the Question 5 re-ruling. A run reaches `sync` at `gz obpi complete` or at a `--from=sync` launch, and never at a check.
+
+**10. The ceremony runner's entry (raised by the Task 2 quality review, 2026-10-11).** The ceremony runner records its entry, which REQ-0.35.0-15-01 and Requirement 16 need after a passed verification, but Requirement 2's Stage 4 list named only `gz obpi present-evidence`, `gz obpi verify-packet` and the review import, and said the plan must add no boundary (QR2-AUX-ceremony-entry-outside-requirement-2-list).
+
+- A. Requirement 2 names the ceremony runner's entry as a recorded boundary.
+- B. The ceremony runner records nothing, and the marker stays at `verify` after a passed verification until `gz obpi present-evidence` runs, which contradicts the Question 4 ruling.
+- **Recommendation: A.**
+- **RULED 2026-10-11: A.** Asked "Ratify adding it to Requirement 2?", the operator answered, verbatim: "Ratify (Recommended)". Requirement 2 (e) carries it.
+
+**11. Whether the blocker-summary cut is policy (raised in Task 2 fix cycle 1, 2026-10-11).** A failed verification's blockers go onto the transition event, and the quality review found the whole command output was written to the append-only ledger (QR2-AUX-unbounded-blockers-on-ledger). The repair cuts each blocker to a one-line summary of 240 characters. Its constant, named in the policy shape, tripped `gz validate --config-registry`, whose recovery is "Put the value in the config surface, or rename it out of the policy shape if it is an implementation detail" (GHI #1066). The roster's own description says the name pattern is deliberately broad and that "a reader judges individual rows". Nothing gates on the number, and the console still prints the full output. Dropping the output from the ledger is not available: an attested test pins the marker's blocker as command plus detail.
+
+- A. Implementation detail: rename it out of the policy shape, with a comment saying what it is.
+- B. Config surface: `data/pipeline_position.json` and its `data/config_registry.json` entry join Allowed Paths, and the recorder must tolerate a missing registry without failing its host.
+- C. Reuse the ARB step receipt's retention default.
+- **Recommendation: A.**
+- **RULED 2026-10-11: A.** Asked "Is it policy that belongs in the config surface, or an implementation detail?" with the three options above, the operator answered, verbatim: "Implementation detail (Recommended)". The constant is renamed and commented; no path is added.
+
+**12. When a run stops being in flight, and a third fix cycle (raised by the third Task 2 review round, 2026-10-11).** Task 2 used both fix cycles the pipeline allows. The third quality review (`arb-step-qualityreview-77c07f52211d411382fa73ef9e941844`) closed the three earlier findings and accepted both proofs, then refuted REQ-0.35.0-15-02 on `fc2-REQ02-a-retired-siblings-unreceipted-launch-is-still-a-run-in-flight`: the recorder ended a run only at `obpi_receipt_emitted`, so a launched OBPI later parked or withdrawn stayed in flight for good. The live ledger held two: `OBPI-0.0.37-17`, launched then withdrawn, and a second, launched twice then parked, whose ADR package is no longer on disk (its id is in the `obpi_blocked_on_operator` ledger row for this brief). The block was recorded with `gz obpi block` and put to the operator. Question 8 ruled where a completed run ends; it did not rule a retired one.
+
+- A. One more fix cycle, scoped to this rule: a run ends at its completion receipt, or when its OBPI is parked or withdrawn, which is how the launcher's `active_prefix_matches` already resolves an id. If the next round refutes REQ-0.35.0-15-02 again, stop and escalate the design; no fourth cycle.
+- B. As A, and a run also ends when its lock is released with an abandon category. This reads lock events, which Decision item 15 (OBPI-0.35.0-19) owns.
+- C. Hold the block.
+- **Recommendation: A.**
+- **RULED 2026-10-11: A.** Asked "How do you rule?" with the three options above, the operator answered, verbatim: "Third cycle, retirement ends a run (Recommended)". The block was cleared with `gz obpi unblock` on that ruling. A launch abandoned with no ledger event still reads as in flight; that is recorded under Tracked Defects for OBPI-0.35.0-19.
 
 ## Discovery Checklist
 
@@ -367,7 +446,22 @@ The real-run half of the exit condition is not a Demo command, because `gz obpi 
      operator explicitly requests an issue; link it back to the owning work.
      Keep this subsection under Evidence so history is not treated as contract. -->
 
-_No substantive adjustments recorded yet._
+- **2026-10-11, plan task cut.** The first plan grouped work by surface, so its Task 1 completed no REQ and could not be reviewed (`acceptance_context._review_subject` requires an executed proof for every scoped obligation). The plan was re-cut by the REQs each task completes and re-audited PASS. No contract clause changed.
+- **2026-10-11, Open Design Question 5 (ruled).** `gz obpi precomplete` records a Stage 5 step only. Requirement 2's Stage 3 mention is read as a drafting overlap.
+- **2026-10-11, Allowed Paths bullet split.** The three Stage 4 producers shared one bullet, which `gz plan audit` read as one path. Each now has its own line; no path was added or removed.
+- **2026-10-11, REQ-0.35.0-15-04 covering test.** The first bound test compared the marker to values computed by the code under test. It was replaced by a CLI launch test pinning the literal launch values, bound in `tests/test_pipeline_position.py` so that `gz validate --brief-reconcile` reads no unrelated import as allowlist drift. Proof `proof-42abf58010164b05b7c9dbc31dd0c0e4`.
+- **2026-10-11, Task 1 review (REQ-0.35.0-15-04, REQ-0.35.0-15-07).** Spec `arb-step-specreview-8fcedfb07f7f47dbbd1c57e4dd79e426` and quality `arb-step-qualityreview-59190a1829eb48e2bd0ea32ef4fb3a9c` both accepted proofs `proof-42abf58010164b05b7c9dbc31dd0c0e4` and `proof-b888112820d4492893f6615ac8b15476`. Their unmapped observations are carried into the next dispatch as corrections: the replay's defaults for a malformed row and its cyclomatic complexity (QR1-AUX-01), the dispatch-cache read/write asymmetry (QR1-AUX-02, `aux-dispatch-cache-legacy-fallback-asymmetry`), and the REQ-04 fixture and assertions (`aux-req04-fixture-brief-has-no-reqs`, `aux-test-placement-differs-from-task-text`). An earlier REQ-07 proof, `proof-556f4b0dd39e40b99ee50cd701c04ff2`, is invalid and retained: one orchestrator control raised `KeyError` instead of failing an assertion.
+- **2026-10-11, Open Design Question 6 (ruled).** `src/gzkit/pipeline_position.py` is added to Allowed Paths and the "never during implementation" sentence is reworded, on the operator's ruling.
+- **2026-10-11, Open Design Questions 5 (superseded and re-ruled), 7 and 8 (ruled).** Requirement 2 is amended in place: precomplete is stage-relative, only Stage 4 review imports record, and `gz obpi sync` leaves the boundary set because the receipt ends the run. The first Question 5 ruling rested on the agent's unread premise and is kept as history.
+- **2026-10-11, Task 2 review (REQ-0.35.0-15-01, REQ-0.35.0-15-02).** Spec `arb-step-specreview-2c81301fde654042a22c4de6bb37f54a` accepted proofs `proof-e5b8e29492fc40d5ac95d9f858674838` and `proof-f9413fe9d8414ca59ce78e2870777223`. An earlier spec run, `arb-step-specreview-8da5d9d6c04f4710bba7d50b9f3aa387`, reached the same verdict but could not be imported: it reused a finding identifier an earlier review of other obligations had taken. Quality `arb-step-qualityreview-55341fa39e0645d1a6b3be30cca6d1f4` **refuted**: it accepted the REQ-01 proof and not the REQ-02 proof, on mapped finding `QR2-REQ02-noncanonical-id-records-nothing` (a boundary crossed with a short OBPI id is silently unrecorded). That finding is open until repaired, re-proved and independently closed.
+- **2026-10-11, third Task 2 review round and the block.** Spec `arb-step-specreview-8c11989e03054bc2ba099b8318b90814` accepted proofs `proof-233bf07e8786418fa7b71f965550dd7c` and `proof-6f56d74b58d14c72aef330bb13c9799b` and closed `QR2-REQ02-noncanonical-id-records-nothing`, `fc1-REQ02-task-verbs-resolve-the-obpi-apart-from-the-launcher` and `fc1-REQ02-task-start-resolves-its-obpi-id-unlike-the-launcher`. Quality `arb-step-qualityreview-77c07f52211d411382fa73ef9e941844` closed the same three and accepted both proofs, then **refuted** on `fc2-REQ02-a-retired-siblings-unreceipted-launch-is-still-a-run-in-flight`. Both fix cycles being used, the run was blocked (`gz obpi block`) and unblocked on the operator's ruling (Question 12).
+- **2026-10-11, Task 2 fix cycle 3 (authorized by Question 12).** A run ends at its receipt or when its OBPI is parked or withdrawn. The finding's second half: the `gz task` verbs name the run by the TASK's own short form, because a TASK started under a retired sibling's slug would otherwise name a run that no longer exists. `fc2-AUX-short-form-is-two-digits-in-the-recorder-and-any-digits-in-the-id-grammar`: the recorder's short form is the whole `OBPI-<semver>-<item>`, whatever the item's width.
+- **2026-10-11, Task 2 fix-cycle reviews.** Both reviewers accepted the REQ-0.35.0-15-01 proof `proof-b6b2cb57b71548d1ae4ac1f124eeaae4`. Both **refuted** REQ-0.35.0-15-02 (proof `proof-c160c2070ed648389670078fbf5df304`): spec `arb-step-specreview-611f71213a0c4d6eb62f97b6f86d5a6b` on `fc1-REQ02-task-start-resolves-its-obpi-id-unlike-the-launcher`, quality `arb-step-qualityreview-49de4512a4a34337b0d11aa152d08a6d` on `fc1-REQ02-task-verbs-resolve-the-obpi-apart-from-the-launcher`. Same root as `QR2-REQ02-noncanonical-id-records-nothing`: fix cycle 1 repaired id resolution in each caller, and `gz task start`, on a TASK's first start, still reached the recorder with the short id when the ledger graph held a second key under that prefix (the live ledger has one for this very OBPI). Three findings are open. Two earlier runs of the same reviews (`arb-step-qualityreview-472831148c8c4fa6bdabe3af15cb9cc1`, accepted with a closure; `arb-step-specreview-4a4f8f277b5f4c9da09fb68e0d59e426`, refuted) could not be imported, because each restated an earlier unmapped finding under its old identifier; they are not on the acceptance record.
+- **2026-10-11, Task 2 fix cycle 2 (the last the pipeline allows this task).** The id rule moves into the recorder: a run is matched by its launch id or that id's short form among launches in flight, and recorded under the launch id; the caller-side resolution and its import of the command layer are removed. `gz obpi precomplete`'s Stage 2 dispatch check names the marker the same way (`fc1-AUX-precomplete-checks-still-run-under-the-typed-id`, a pre-existing defect that made the check pass for a short id). An in-place record carries the run's blockers forward (`fc1-aux-in-place-record-after-failed-verification-drops-blockers`).
+- **2026-10-11, Task 2 fix cycle 1.** QR2-REQ02-noncanonical-id-records-nothing: every producer now resolves its OBPI id the way the launcher does, with a test crossing six id-taking producers by short id. Question 9: one table, `RULED_BOUNDARIES` in `src/gzkit/pipeline_position.py`, says which boundaries move the stage; a fence test shows no check or bookkeeping command changes the fence's verdict at any stage. QR2-AUX-unbounded-blockers-on-ledger: blockers on the ledger are one-line summaries (Question 11). QR2-AUX-position-record-failure-surfaces-as-host-failure and `t2-aux-position-append-failure-aborts-the-producer`: an I/O failure while recording warns and returns, and the host's outcome stands. `t2-aux-req01-verify-reading-is-the-reentry-launch`: REQ-0.35.0-15-01 is also proven on a run that stays `entry: full` to `ceremony` and `sync`. QR2-AUX-bdd-scenarios-drive-recorder-not-producers and `aux-bdd-scenarios-cross-through-the-recorder`: the REQ-01 and REQ-02 scenarios drive the real commands. QR2-AUX-size-and-residue: `refresh_pipeline_markers` had no consumer left and is removed; the sibling OBPI-0.35.0-16 brief still names it in its Allowed Paths note and Discovery Checklist and reconciles when that brief starts.
+- **2026-10-11, Open Design Question 11 (ruled).** The blocker-summary cut is an implementation detail, renamed out of the policy shape.
+- **2026-10-11, Open Design Questions 9 and 10 (ruled).** Only work-starting commands move the stage; checks and bookkeeping record in place. The ceremony runner's entry is named in Requirement 2. Question 9 supersedes the Question 5 re-ruling.
+- **2026-10-11, extraction and Task 1 review corrections.** The position model and the pure replay moved to `src/gzkit/pipeline_position.py`; `src/gzkit/pipeline_markers.py` does not import it and went from 976 to 914 lines. QR1-AUX-01: the replay no longer reads a row lacking a required field as a crossing, and its cyclomatic complexity went from 16 to 9. QR1-AUX-02 and `aux-dispatch-cache-legacy-fallback-asymmetry`: the dispatch cache is read through the loader it is written through; one case was destructive (an empty-object per-OBPI marker let a single-driver declaration overwrite the legacy marker). `aux-req04-fixture-brief-has-no-reqs` and `aux-test-placement-differs-from-task-text`: the REQ-0.35.0-15-04 test asserts `blockers` and `required_human_action` per entry, and a second bound test launches a brief whose TASKs auto-start. Found in flight: `load_pipeline_json` let a non-UTF-8 marker raise, and now reads it, and JSON that is not an object, as unreadable. These edits supersede the Task 1 proofs and reviews; REQ-0.35.0-15-04 and REQ-0.35.0-15-07 are re-proved and re-reviewed on the finished tree.
 
 ### Gate 1 (ADR)
 
@@ -426,7 +520,16 @@ _No substantive adjustments recorded yet._
      Change Log above; they do not need a GHI. An issue link does not discharge
      an unmet acceptance obligation. -->
 
-_No defects tracked._
+No GitHub issue has been filed from this run; these are recorded through `gz insights remember` (`.gzkit/insights/agent-insights.jsonl`, 2026-10-11) and await the operator's routing. None discharges an obligation of this brief.
+
+- **Sibling brief names a removed function.** `OBPI-0.35.0-16-next-command-for-position.md` names `refresh_pipeline_markers` in its Allowed Paths note and its Discovery Checklist. This brief removed it once nothing consumed it. That brief is not this run's to edit and reconciles when the operator initiates it.
+- **Acceptance import refuses a restated finding.** `acceptance._record_findings` voids a whole review when an earlier finding identifier returns with any field changed, and the review frame does not tell reviewers that a prior identifier may appear only in a closure. Three reviews in this run could not be imported for it and were re-run whole.
+- **`gz plan audit` passes a plan whose tasks complete no REQ.** Such a task cannot be reviewed, because a review context requires an executed proof for every scoped obligation.
+- **`data/ledger_vocabulary_grandfather.json` carries two event types that now fire** (`ledger_event_corrected`, `unowned_ratchet_updated`). Pre-existing; a path this brief denies.
+- **`ADR-0.33.0` calibration frontier, two measured instances.** Source modules are not ontology nodes, and a transit's own RED receipts read as un-accounted seams.
+- **No ledger event ends an abandoned run.** A launch that is neither completed, parked nor withdrawn reads as in flight for good. Lock continuity is Decision item 15 (OBPI-0.35.0-19).
+- **TASK identity under a reused semver.** A TASK id carries only semver and item, and the launch-time auto-start skips a TASK id already started under any OBPI slug, so a TASK's own ledger rows can name a retired sibling (`fc2-aux-task-verbs-hand-over-the-slug-the-tasks-own-ledger-row-names`). Predates this brief.
+- **`src/gzkit/pipeline_markers.py` is over the module-size guidance** (917 lines), with three pre-existing functions at or above the threshold table's cyclomatic block entry.
 
 ## Human Attestation
 

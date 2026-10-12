@@ -22,6 +22,7 @@ from gzkit.arb.paths import receipts_root
 from gzkit.commands.common import get_project_root
 from gzkit.config import GzkitConfig
 from gzkit.mutation_witness import Mutation
+from gzkit.pipeline_runtime import RunCrossing, record_run_position
 
 
 class ProofRequest(BaseModel):
@@ -129,6 +130,19 @@ def _execute_proof(root: Path, obpi_id: str, specification: str | None) -> tuple
     return proof.model_dump(mode="json"), proof.valid
 
 
+def _record_review_round(root: Path, obpi_id: str) -> None:
+    """Record the boundary a successful review import marks (OBPI-0.35.0-15).
+
+    Called for an adversarial review and for a human review only (operator
+    ruling 2026-10-11, Open Design Question 7): a spec or quality review is
+    imported during Stage 2 and marks no boundary. An import is a check, so it
+    is recorded inside the stage the run has reached and never moves it
+    (Question 9). Nothing is recorded unless a pipeline run is in flight for
+    ``obpi_id``, and a refused import never reaches this call.
+    """
+    record_run_position(root, obpi_id, RunCrossing(boundary="acceptance-review"))
+
+
 def _execute_review(root: Path, obpi_id: str, receipt: str | None) -> tuple[dict, bool]:
     """Resolve the named transport receipt and retain its independent judgment."""
     if not receipt or Path(receipt).name != receipt:
@@ -139,6 +153,8 @@ def _execute_review(root: Path, obpi_id: str, receipt: str | None) -> tuple[dict
     if captured.get("run_id") != receipt:
         raise ValueError("Receipt filename and execution identity disagree")
     review = record_review(root, obpi_id, captured)
+    if review.stage == "adversarial":
+        _record_review_round(root, obpi_id)
     return review.model_dump(mode="json"), True
 
 
@@ -149,6 +165,7 @@ def _execute_human_review(
     if not attestor or not ruling:
         raise ValueError("human-review requires --attestor and the operator's verbatim --ruling")
     review = record_human_review(root, obpi_id, attestor=attestor, ruling=ruling)
+    _record_review_round(root, obpi_id)
     return review.model_dump(mode="json"), True
 
 

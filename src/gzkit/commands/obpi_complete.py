@@ -1375,6 +1375,23 @@ def obpi_complete_cmd(
     )
     # 6-8. Execute atomic transaction
     try:
+        # The run's position is recorded as the transaction starts, before the
+        # receipt that ends the run (OBPI-0.35.0-15, operator ruling 2026-10-11
+        # on Open Design Question 8). It says the run reached this step, not
+        # that completion succeeded, so a rolled-back completion keeps it; the
+        # outcome is the receipt.
+        from gzkit.pipeline_runtime import (  # noqa: PLC0415
+            RunCrossing,
+            pipeline_plans_dir,
+            record_position,
+        )
+
+        record_position(
+            ledger,
+            pipeline_plans_dir(project_root),
+            obpi_id,
+            RunCrossing(boundary="complete"),
+        )
         _execute_transaction(
             obpi_file=obpi_file,
             original_content=original_content,

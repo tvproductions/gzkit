@@ -1537,6 +1537,7 @@ from gzkit.ledger_events import (  # noqa: E402, F401
     obpi_withdrawn_event,
     pipeline_launched_event,
     pipeline_marker_purged_event,
+    pipeline_stage_transition_event,
     prd_created_event,
     project_init_event,
     stage2_dispatch_recorded_event,

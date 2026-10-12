@@ -69,6 +69,7 @@ from gzkit.events import (
     PatchReleaseEvent,
     PipelineLaunchedEvent,
     PipelineMarkerPurgedEvent,
+    PipelineStageTransitionEvent,
     PrdCreatedEvent,
     ProjectInitEvent,
     RedCommitReceiptEmittedEvent,
@@ -94,12 +95,13 @@ from gzkit.events import (
     ValidatesEvent,
     parse_typed_event,
 )
-from gzkit.ledger import ledger_row
+from gzkit.ledger import ledger_row, pipeline_stage_transition_event
 from gzkit.models.frontmatter import (
     AdrFrontmatter,
     ObpiFrontmatter,
     PrdFrontmatter,
 )
+from gzkit.pipeline_stage_fence import CANONICAL_STAGES
 from gzkit.schemas import get_schema_path, load_schema
 from gzkit.traceability import covers  # noqa: F401
 
@@ -311,6 +313,9 @@ _EVENT_MODELS: dict[str, type[BaseModel]] = {
     "patch-release": PatchReleaseEvent,
     "pipeline_marker_purged": PipelineMarkerPurgedEvent,
     "pipeline_launched": PipelineLaunchedEvent,
+    # One recorded boundary of a pipeline run: the Layer-2 source a deleted
+    # marker is rebuilt from (OBPI-0.35.0-15 Requirement 18, GHI #1172)
+    "pipeline_stage_transition": PipelineStageTransitionEvent,
     "intrinsic-complexity-attestation": IntrinsicComplexityAttestationEvent,
     "task_started": TaskStartedEvent,
     "task_completed": TaskCompletedEvent,
@@ -540,6 +545,20 @@ def _live_event_discriminators() -> set[str]:
     return {get_args(member.model_fields["event"].annotation)[0] for member in get_args(union)}
 
 
+def _live_union_member(tag: str) -> type[BaseModel] | None:
+    """Return the ``TypedLedgerEvent`` member discriminated by ``tag``, if any.
+
+    Read off the live union for the reason `_live_event_discriminators` gives: a
+    model that is authored and exported but never wired into the union has no
+    typed reader, so it is the union's member that the contract is asserted on.
+    """
+    union, _field = get_args(TypedLedgerEvent)
+    for member in get_args(union):
+        if tag in get_args(member.model_fields["event"].annotation):
+            return member
+    return None
+
+
 class TestSectionOwnershipReanchoredRegistration(unittest.TestCase):
     """``section_ownership_reanchored`` -- the CHAINED re-anchor (OBPI-0.35.0-04).
 
@@ -732,6 +751,194 @@ class TestUnownedRatchetUpdatedOwningArm(unittest.TestCase):
             {"surface", "prior_unowned_byte_floor", "new_unowned_byte_floor"},
             "the owning fields are ADDITIVE; the map-invariant producer owes none of them",
         )
+
+
+class TestPipelineStageTransitionRegistration(unittest.TestCase):
+    """``pipeline_stage_transition`` -- one recorded boundary of a run (OBPI-0.35.0-15).
+
+    Requirement 18 makes each boundary a pipeline run crosses a ledger event, so
+    a deleted marker can be rebuilt from Layer 2. The event is that Layer-2
+    source, and it is only as good as its vocabulary: a stage the fence does not
+    know, written to the ledger, is a stage ``gz state --repair`` would then
+    write back into a marker.
+    """
+
+    _TAG = "pipeline_stage_transition"
+
+    #: The four positions GHI #1172 puts in scope (OBPI-0.35.0-15 Requirement 2):
+    #: the Stage 2 task, the Stage 3 phase, the Stage 4 round, the Stage 5 step.
+    _POSITION_KINDS = ("task", "phase", "round", "step")
+
+    _BOUNDARY_PAYLOAD = {
+        "schema": "gzkit.ledger.v1",
+        "event": "pipeline_stage_transition",
+        "id": "OBPI-0.35.0-15-pipeline-run-position",
+        "ts": "2026-10-11T00:00:00+00:00",
+        "parent": "ADR-0.35.0-canon-entry-corpus-landing",
+        "stage": "verify",
+        "position_kind": "phase",
+        "position_label": "verification-failed",
+        "boundary": "gz obpi pipeline",
+    }
+
+    def _model(self) -> type[BaseModel]:
+        model = _live_union_member(self._TAG)
+        self.assertIsNotNone(
+            model,
+            f"{self._TAG} has no member in the live TypedLedgerEvent union, so a "
+            "recorded boundary would have no typed reader",
+        )
+        assert model is not None
+        return model
+
+    def test_stage_literal_is_the_fence_canonical_stage_tuple(self) -> None:
+        """The stages an event may carry are the fence's, in the fence's order.
+
+        Requirement 2 names ``pipeline_stage_fence.CANONICAL_STAGES`` as the
+        authority and Requirement 3 forbids a position inside a stage from
+        becoming a stage value. A ``Literal`` cannot import a tuple, so the two
+        are held together here: adding a stage to one and not the other fails.
+        """
+        stage = self._model().model_fields.get("stage")
+        self.assertIsNotNone(stage, "a transition that names no stage records no boundary")
+        assert stage is not None
+        self.assertIs(get_origin(stage.annotation), Literal)
+        self.assertEqual(get_args(stage.annotation), CANONICAL_STAGES)
+
+    def test_a_transition_owes_a_complete_position(self) -> None:
+        """A row names its stage, the position inside it and the command that marked it.
+
+        ``gz state --repair`` writes back exactly what the row holds, and
+        Requirement 4 forbids recording a position with no Layer-2 source. A row
+        free to omit its position would rebuild a marker that says less than the
+        one that was deleted.
+        """
+        self.assertEqual(
+            _pydantic_required_fields(self._model()) - _BASE_FIELDS,
+            {"stage", "position_kind", "position_label", "boundary"},
+        )
+
+    def test_position_kind_is_closed_over_the_four_in_scope_positions(self) -> None:
+        """Requirement 2 puts exactly four positions in scope; the row admits no fifth."""
+        kind = self._model().model_fields.get("position_kind")
+        self.assertIsNotNone(kind, "a transition must say which kind of position it records")
+        assert kind is not None
+        self.assertIs(get_origin(kind.annotation), Literal)
+        self.assertEqual(get_args(kind.annotation), self._POSITION_KINDS)
+
+    def test_blockers_ride_the_row_only_when_the_boundary_has_them(self) -> None:
+        """A failed verification records its blockers; a clean crossing records none.
+
+        The marker's ``blockers`` must be rebuildable too (Requirement 9: the
+        stage-output fields never contradict the recorded stage), so they are
+        carried on the row -- optionally, because most boundaries have none.
+        """
+        blockers = self._model().model_fields.get("blockers")
+        self.assertIsNotNone(blockers, "a failed verification's blockers need a Layer-2 source")
+        assert blockers is not None
+        self.assertFalse(blockers.is_required())
+
+        blocked = parse_typed_event(
+            dict(self._BOUNDARY_PAYLOAD) | {"blockers": ["uv run gz test: exit 1"]}
+        )
+        self.assertEqual(blocked.extra["blockers"], ["uv run gz test: exit 1"])
+        clean = parse_typed_event(dict(self._BOUNDARY_PAYLOAD))
+        self.assertNotIn("blockers", clean.extra)
+        self.assertEqual(
+            clean.extra,
+            {
+                "stage": "verify",
+                "position_kind": "phase",
+                "position_label": "verification-failed",
+                "boundary": "gz obpi pipeline",
+            },
+        )
+
+    def test_ledger_schema_declares_the_contract_the_model_requires(self) -> None:
+        """`gz validate --ledger` reads the JSON schema, never the model.
+
+        A stage or position kind the model refuses and the schema admits is one
+        an on-disk row can carry while the ledger validator still reads green.
+        """
+        rules = load_schema("ledger").get("events", {}).get(self._TAG, {})
+        properties = rules.get("properties", {})
+        self.assertEqual(
+            set(rules.get("required", ())),
+            _pydantic_required_fields(self._model()) - _BASE_FIELDS,
+            "the on-disk contract must demand the position the model demands",
+        )
+        self.assertEqual(
+            tuple(properties.get("stage", {}).get("enum", ())),
+            CANONICAL_STAGES,
+            "the schema's stages are the fence's, as the model's are",
+        )
+        self.assertEqual(
+            tuple(properties.get("position_kind", {}).get("enum", ())),
+            self._POSITION_KINDS,
+        )
+        for field in ("position_label", "boundary"):
+            with self.subTest(field=field):
+                self.assertEqual(properties.get(field), {"type": "string", "min_length": 1})
+        self.assertEqual(
+            properties.get("blockers"),
+            {"type": ["array", "null"], "items": {"type": "string"}},
+            "nullable on the schema exactly as on the model: most boundaries have none",
+        )
+
+    def test_constructor_row_is_one_the_typed_reader_accepts(self) -> None:
+        """What a producer appends is what the replay reads back, field for field.
+
+        The constructor writes the row and the typed union reads it; a field
+        named differently on the two sides is a boundary the ledger holds and a
+        rebuild cannot see.
+        """
+        row = pipeline_stage_transition_event(
+            obpi_id="OBPI-0.35.0-15-pipeline-run-position",
+            parent_adr="ADR-0.35.0-canon-entry-corpus-landing",
+            stage="verify",
+            position_kind="phase",
+            position_label="verification-failed",
+            boundary="gz obpi pipeline",
+            blockers=["uv run gz test: exit 1"],
+        )
+        self.assertEqual(row.event, self._TAG)
+        self.assertEqual(row.id, "OBPI-0.35.0-15-pipeline-run-position")
+        self.assertEqual(row.parent, "ADR-0.35.0-canon-entry-corpus-landing")
+        self.assertEqual(
+            row.extra,
+            {
+                "stage": "verify",
+                "position_kind": "phase",
+                "position_label": "verification-failed",
+                "boundary": "gz obpi pipeline",
+                "blockers": ["uv run gz test: exit 1"],
+            },
+        )
+        typed = parse_typed_event(row.model_dump())
+        self.assertIsInstance(typed, PipelineStageTransitionEvent)
+        self.assertEqual(typed.extra, row.extra)
+        self.assertEqual((typed.id, typed.parent), (row.id, row.parent))
+
+    def test_constructor_writes_no_blockers_key_for_a_clean_crossing(self) -> None:
+        """A boundary with no blockers says nothing about blockers, on disk as in the model."""
+        row = pipeline_stage_transition_event(
+            obpi_id="OBPI-0.35.0-15-pipeline-run-position",
+            parent_adr="ADR-0.35.0-canon-entry-corpus-landing",
+            stage="implement",
+            position_kind="task",
+            position_label="task 1",
+            boundary="gz obpi dispatch",
+        )
+        self.assertEqual(
+            row.extra,
+            {
+                "stage": "implement",
+                "position_kind": "task",
+                "position_label": "task 1",
+                "boundary": "gz obpi dispatch",
+            },
+        )
+        self.assertNotIn("blockers", parse_typed_event(row.model_dump()).extra)
 
 
 # ---------------------------------------------------------------------------

@@ -19,6 +19,8 @@ from gzkit.events import (
     TaskStartedEvent,
 )
 from gzkit.ledger import LEDGER_SCHEMA, Ledger, ledger_row
+from gzkit.pipeline_markers import pipeline_plans_dir
+from gzkit.pipeline_position import RunCrossing, record_position
 from gzkit.tasks import TaskId, TaskStatus, derive_req_task_id, get_task_registry, next_seq_for_req
 from gzkit.triangle import extract_reqs_from_brief
 
@@ -171,6 +173,35 @@ def _emit_task_event(
     ledger.append(ledger_row(event_model))
 
 
+def _record_task_position(
+    ledger: Ledger, project_root: Path, task_id: TaskId, *, verb: str
+) -> None:
+    """Record the TASK a ``gz task`` verb just marked (OBPI-0.35.0-15).
+
+    Called after the verb's own event, and only by the verbs an operator or
+    agent invokes: the launch-time auto-start and the completion-time
+    auto-complete mark no boundary. Nothing is recorded unless the ledger shows
+    a pipeline run in flight for the TASK's OBPI. The recorder is handed the
+    ``OBPI-<semver>-<item>`` the TASK id itself carries, and finds the one run
+    in flight that short form names. It is never handed the id the verb's own
+    event carries: that is the slug of whichever OBPI the TASK was first
+    started under (GHI #653), and under a reused semver that OBPI may be a
+    sibling since parked or withdrawn, whose run has ended (operator ruling
+    2026-10-11, Open Design Question 12). ``gz task start`` begins work, so
+    during Stage 3 or Stage 4 it re-enters ``implement``: the recorded re-entry
+    a repair needs before the post-Stage-2 fence admits a production write.
+    ``complete``, ``block`` and ``escalate`` are bookkeeping and record the TASK
+    inside the stage the run has reached (operator ruling 2026-10-11, Open
+    Design Question 9).
+    """
+    record_position(
+        ledger,
+        pipeline_plans_dir(project_root),
+        f"OBPI-{task_id.semver}-{task_id.obpi_item}",
+        RunCrossing(boundary=f"task-{verb}", task=str(task_id)),
+    )
+
+
 def auto_start_obpi_tasks(
     ledger: Ledger,
     *,
@@ -310,6 +341,7 @@ def task_start_cmd(task_id_str: str, *, as_json: bool = False) -> None:
     )
     _emit_task_event(ledger, event)
     _stamp_brief_task_declaration(project_root, obpi_id, str(task_id))
+    _record_task_position(ledger, project_root, task_id, verb="start")
 
     if as_json:
         print(  # noqa: T201
@@ -351,6 +383,7 @@ def task_complete_cmd(task_id_str: str, *, as_json: bool = False) -> None:
         agent="claude-code",
     )
     _emit_task_event(ledger, event)
+    _record_task_position(ledger, project_root, task_id, verb="complete")
 
     if as_json:
         print(  # noqa: T201
@@ -392,6 +425,7 @@ def task_block_cmd(task_id_str: str, reason: str, *, as_json: bool = False) -> N
         reason=reason,
     )
     _emit_task_event(ledger, event)
+    _record_task_position(ledger, project_root, task_id, verb="block")
 
     if as_json:
         print(  # noqa: T201
@@ -434,6 +468,7 @@ def task_escalate_cmd(task_id_str: str, reason: str, *, as_json: bool = False) -
         reason=reason,
     )
     _emit_task_event(ledger, event)
+    _record_task_position(ledger, project_root, task_id, verb="escalate")
 
     if as_json:
         print(  # noqa: T201
@@ -505,6 +540,7 @@ def task_start_by_req_cmd(req_id: str, seq_arg: str, *, as_json: bool = False) -
     )
     _emit_task_event(ledger, event)
     _stamp_brief_task_declaration(project_root, obpi_id, task_id_str)
+    _record_task_position(ledger, project_root, task_id, verb="start")
 
     if as_json:
         print(  # noqa: T201

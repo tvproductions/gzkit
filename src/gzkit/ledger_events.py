@@ -807,6 +807,45 @@ def pipeline_marker_purged_event(
     )
 
 
+def pipeline_stage_transition_event(
+    obpi_id: str,
+    parent_adr: str,
+    stage: str,
+    position_kind: str,
+    position_label: str,
+    boundary: str,
+    blockers: list[str] | None = None,
+) -> LedgerEvent:
+    """Record one boundary a pipeline run crossed (OBPI-0.35.0-15, GHI #1172).
+
+    The Layer-2 source for a run's position. Each recorded boundary appends one
+    of these BEFORE the pipeline marker is advanced, the order ``record_dispatch``
+    uses, so the marker never holds a position the ledger lacks and
+    ``gz state --repair`` can rebuild a deleted marker by replaying them after
+    the run's ``pipeline_launched`` event.
+
+    ``stage`` is one of ``pipeline_stage_fence.CANONICAL_STAGES``.
+    ``position_kind`` and ``position_label`` name the position inside it (the
+    Stage 2 task, Stage 3 phase, Stage 4 round or Stage 5 step) and ``boundary``
+    names the command that marked the crossing. ``blockers`` is written only
+    when the boundary recorded any, as a failed verification does.
+    """
+    extra: dict[str, Any] = {
+        "stage": stage,
+        "position_kind": position_kind,
+        "position_label": position_label,
+        "boundary": boundary,
+    }
+    if blockers is not None:
+        extra["blockers"] = list(blockers)
+    return LedgerEvent(
+        event="pipeline_stage_transition",
+        id=obpi_id,
+        parent=parent_adr,
+        extra=extra,
+    )
+
+
 def distribution_baseline_regenerated_event(
     surfaces_walked: list[str],
     file_count: int,

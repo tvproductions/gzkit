@@ -16,7 +16,7 @@ from gzkit.ledger import (
 )
 from gzkit.ledger_events import brief_reconciled_event
 from gzkit.quality import QualityResult
-from gzkit.traceability import covers  # noqa: F401
+from gzkit.traceability import covers
 from tests.commands.common import CliRunner, _quick_init
 
 # Derived from the canonical table, never re-spelled (GHI #856): these tests pinned
@@ -149,7 +149,16 @@ class TestObpiPipelineCommand(unittest.TestCase):
             )
         )
 
+    @covers("REQ-0.13.0-02-01")
     def test_full_launch_accepts_short_id_and_creates_markers(self) -> None:
+        """A full launch writes both enriched marker files.
+
+        ``REQ-0.13.0-02-01`` is bound here since 2026-10-11 (OBPI-0.35.0-15
+        Requirement 17, operator ruling 2026-10-04): this test asserts
+        ``entry=full``, ``current_stage=implement`` and the parent, lane and
+        receipt metadata in both files. The binding sat on a marker-lookup test
+        in ``tests/test_pipeline_runtime.py``, which asserts none of that.
+        """
         runner = CliRunner()
         with runner.isolated_filesystem():
             self._seed_runtime(runner)
@@ -209,7 +218,6 @@ class TestObpiPipelineCommand(unittest.TestCase):
 
     @patch("gzkit.commands.obpi_stages.acceptance_blockers", new=lambda *_args, **_kwargs: [])
     @patch("gzkit.cli.main.run_command")
-    @covers("REQ-0.13.0-03-02")
     def test_verify_runs_commands_and_preserves_markers(self, run_command_mock) -> None:
         runner = CliRunner()
         with runner.isolated_filesystem():
@@ -317,7 +325,28 @@ class TestObpiPipelineCommand(unittest.TestCase):
 
     @patch("gzkit.commands.obpi_stages.acceptance_blockers", new=lambda *_args, **_kwargs: [])
     @patch("gzkit.cli.main.run_command")
+    @covers("REQ-0.13.0-03-02")
     def test_verify_rewrites_markers_with_verify_stage_state(self, run_command_mock) -> None:
+        """After a passed verification the marker reads the stage the run has reached.
+
+        ``REQ-0.13.0-03-02`` was attested when a passed verification left the
+        marker at ``verify``, pointing at the ceremony as the follow-up. The
+        runtime now chains a passed verification straight into the ceremony,
+        and since OBPI-0.35.0-15 the marker records each stage the run crosses
+        into, so after the pass both files read ``ceremony`` with the
+        stage-output fields of that stage. Amended in place by operator ruling
+        2026-10-04 on that brief's Open Design Question 4 (verbatim: "A";
+        Requirement 16); the dated note is on the REQ line of the sealed
+        OBPI-0.13.0-03 brief. ``entry`` still names the launch.
+
+        No command line is pinned for ``next_command``: OBPI-0.35.0-16
+        re-derives it from the run's position. What holds is that the marker no
+        longer sends a run that has reached the ceremony back to enter it.
+
+        The binding is on this test since 2026-10-11 (Requirement 17): it sat on
+        a verify-commands test and a ceremony-entry test, neither of which reads
+        the marker payload after a passed verification.
+        """
         runner = CliRunner()
         with runner.isolated_filesystem():
             self._seed_runtime(runner)
@@ -338,22 +367,40 @@ class TestObpiPipelineCommand(unittest.TestCase):
             marker_path, legacy_path = self._pipeline_paths(Path.cwd())
             payload = self._load_json(marker_path)
             self.assertEqual(payload["entry"], "verify")
-            self.assertEqual(payload["current_stage"], "verify")
+            self.assertEqual(payload["current_stage"], "ceremony")
             self.assertEqual(payload["receipt_state"], "missing")
             self.assertEqual(payload["blockers"], [])
-            self.assertIsNone(payload["required_human_action"])
             self.assertEqual(
+                payload["required_human_action"],
+                "Present evidence and obtain explicit human attestation before "
+                "completion accounting.",
+            )
+            self.assertNotEqual(
                 payload["next_command"],
                 "uv run gz obpi pipeline OBPI-0.13.0-01-runtime-command-contract --from=ceremony",
             )
-            self.assertEqual(payload["resume_point"], "ceremony")
+            self.assertEqual(payload["resume_point"], "sync")
             self.assertEqual(payload["parent_adr"], "ADR-0.13.0-obpi-pipeline-runtime-surface")
             self.assertEqual(payload["lane"], "heavy")
             self.assertEqual(payload, self._load_json(legacy_path))
 
     @patch("gzkit.commands.obpi_stages.acceptance_blockers", new=lambda *_args, **_kwargs: [])
     @patch("gzkit.cli.main.run_command")
+    @covers("REQ-0.13.0-02-02")
+    @covers("REQ-0.13.0-03-03")
     def test_verify_failure_persists_blockers_and_resume_point(self, run_command_mock) -> None:
+        """A failed verification leaves both markers in place, in Stage 3.
+
+        Two bindings are on this test since 2026-10-11 (OBPI-0.35.0-15
+        Requirement 17, operator ruling 2026-10-04), because it asserts them.
+        ``REQ-0.13.0-03-03``: the markers stay, with structured blocker strings,
+        no next command and ``resume_point=verify``; it sat on a stale-marker
+        test, which reads no verification outcome. ``REQ-0.13.0-02-02``, its
+        ``--from=verify`` half: the marker carries ``entry=verify`` and
+        ``current_stage=verify`` before cleanup; it sat on a plan-audit receipt
+        test, which reads no marker. The ``--from=ceremony`` half is bound on
+        ``test_ceremony_rewrites_markers_with_ceremony_stage_state``.
+        """
         runner = CliRunner()
         with runner.isolated_filesystem():
             self._seed_runtime(runner)
@@ -398,7 +445,6 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertEqual(payload, self._load_json(legacy_path))
 
     @patch("gzkit.commands.obpi_stages.acceptance_blockers", new=lambda *_args, **_kwargs: [])
-    @covers("REQ-0.13.0-03-02")
     @covers("REQ-0.13.0-01-03")
     def test_ceremony_prints_next_steps_and_preserves_markers(self) -> None:
         runner = CliRunner()
@@ -421,7 +467,16 @@ class TestObpiPipelineCommand(unittest.TestCase):
 
     @patch("gzkit.commands.obpi_stages.acceptance_blockers", new=lambda *_args, **_kwargs: [])
     @covers("REQ-0.13.0-03-04")
+    @covers("REQ-0.13.0-02-02")
     def test_ceremony_rewrites_markers_with_ceremony_stage_state(self) -> None:
+        """A ceremony launch writes both markers with the ceremony's stage state.
+
+        ``REQ-0.13.0-02-02``, its ``--from=ceremony`` half, is bound here since
+        2026-10-11 (OBPI-0.35.0-15 Requirement 17, operator ruling 2026-10-04):
+        this test asserts ``entry=ceremony`` and ``current_stage=ceremony`` in
+        both files. The binding sat on a plan-audit receipt test in
+        ``tests/test_pipeline_runtime.py``, which reads no marker.
+        """
         runner = CliRunner()
         with runner.isolated_filesystem():
             self._seed_runtime(runner)

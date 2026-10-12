@@ -63,6 +63,7 @@ from gzkit.pipeline_markers import (
     PIPELINE_LEGACY_MARKER,
     PIPELINE_RECEIPT_FILE,
     STALE_MARKER_HOURS,
+    advance_pipeline_markers,
     check_adr_evaluation_verdict,
     clear_stale_pipeline_markers,
     completion_receipt_missing_message,
@@ -72,6 +73,7 @@ from gzkit.pipeline_markers import (
     find_plan_for_obpi,
     find_stale_pipeline_markers,
     generate_pipeline_nonce,
+    load_obpi_pipeline_marker,
     load_pipeline_json,
     load_plan_audit_receipt,
     marker_matches,
@@ -91,12 +93,28 @@ from gzkit.pipeline_markers import (
     pipeline_stage_name,
     pipeline_stage_output,
     purge_orphaned_active_markers,
-    refresh_pipeline_markers,
     remove_pipeline_artifacts,
     remove_pipeline_markers,
+    rewrite_pipeline_markers,
     stale_pipeline_marker_message,
     validate_brief_for_pipeline,
     write_pipeline_markers,
+)
+
+# ---------------------------------------------------------------------------
+# Re-exports: pipeline_position (the run-position model and its ledger replay)
+# ---------------------------------------------------------------------------
+from gzkit.pipeline_position import (
+    BLOCKER_SUMMARY_WIDTH,
+    RULED_BOUNDARIES,
+    STAGE_POSITION_KIND,
+    PipelineLedgerRow,
+    PipelinePosition,
+    PipelineReplay,
+    RunCrossing,
+    in_flight_launch_id,
+    record_position,
+    replay_pipeline_position,
 )
 
 # ---------------------------------------------------------------------------
@@ -294,24 +312,28 @@ def persist_dispatch_state(
     obpi_id: str,
     records: list[SubagentDispatchRecord],
 ) -> None:
-    """Persist dispatch records into the active pipeline marker."""
-    marker_path = plans_dir / f".pipeline-active-{obpi_id}.json"
-    if not marker_path.is_file():
+    """Persist dispatch records into the active pipeline marker, in both files."""
+    marker = load_obpi_pipeline_marker(plans_dir, obpi_id)
+    if marker is None:
         return
-    marker = json.loads(marker_path.read_text(encoding="utf-8"))
     marker["dispatch_state"] = [r.model_dump() for r in records]
-    marker_path.write_text(json.dumps(marker, indent=2) + "\n", encoding="utf-8")
+    rewrite_pipeline_markers(plans_dir, obpi_id, marker)
 
 
 def load_dispatch_state(
     plans_dir: Path,
     obpi_id: str,
 ) -> list[SubagentDispatchRecord]:
-    """Load dispatch records from the active pipeline marker."""
-    marker_path = plans_dir / f".pipeline-active-{obpi_id}.json"
-    if not marker_path.is_file():
+    """Load dispatch records from the active pipeline marker.
+
+    Read through the loader :func:`persist_dispatch_state` writes through: the
+    per-OBPI marker, the legacy marker as fallback. Read from the per-OBPI file
+    alone, a run whose marker survived only in the legacy file read as having
+    no records, and the next dispatch replaced them.
+    """
+    marker = load_obpi_pipeline_marker(plans_dir, obpi_id)
+    if marker is None:
         return []
-    marker = json.loads(marker_path.read_text(encoding="utf-8"))
     raw_records = marker.get("dispatch_state", [])
     if not isinstance(raw_records, list):
         return []
@@ -686,6 +708,23 @@ def check_airlock_out_gate(
     ]
 
 
+def record_run_position(project_root: Path, obpi_id: str, crossing: RunCrossing) -> None:
+    """Record a boundary a run of this project crossed (OBPI-0.35.0-15).
+
+    The adapter the pipeline commands share. :func:`record_position` takes its
+    ledger as a parameter and opens none; this opens the project's own ledger
+    and plans directory and hands them over. ``obpi_id`` goes through as the
+    command holds it: the recorder finds the run it names among the launches
+    in flight on that ledger, so no command resolves an id for the recorder.
+    Nothing is recorded unless the ledger shows that run.
+    """
+    from gzkit.obpi_dispatch_channel import project_ledger  # noqa: PLC0415
+
+    record_position(
+        project_ledger(project_root), pipeline_plans_dir(project_root), obpi_id, crossing
+    )
+
+
 def validate_agent_files(project_root: Path) -> list[str]:
     """Validate that all pipeline agent files exist with required frontmatter.
 
@@ -731,6 +770,7 @@ __all__ = [
     "PIPELINE_LEGACY_MARKER",
     "PIPELINE_RECEIPT_FILE",
     "STALE_MARKER_HOURS",
+    "advance_pipeline_markers",
     "check_adr_evaluation_verdict",
     "clear_stale_pipeline_markers",
     "completion_receipt_missing_message",
@@ -740,6 +780,7 @@ __all__ = [
     "find_plan_for_obpi",
     "find_stale_pipeline_markers",
     "generate_pipeline_nonce",
+    "load_obpi_pipeline_marker",
     "load_pipeline_json",
     "load_plan_audit_receipt",
     "marker_matches",
@@ -759,12 +800,23 @@ __all__ = [
     "pipeline_stage_name",
     "pipeline_stage_output",
     "purge_orphaned_active_markers",
-    "refresh_pipeline_markers",
     "remove_pipeline_artifacts",
     "remove_pipeline_markers",
+    "rewrite_pipeline_markers",
     "stale_pipeline_marker_message",
     "validate_brief_for_pipeline",
     "write_pipeline_markers",
+    # pipeline_position
+    "PipelineLedgerRow",
+    "PipelinePosition",
+    "PipelineReplay",
+    "in_flight_launch_id",
+    "record_position",
+    "BLOCKER_SUMMARY_WIDTH",
+    "RULED_BOUNDARIES",
+    "STAGE_POSITION_KIND",
+    "RunCrossing",
+    "replay_pipeline_position",
     # pipeline_dispatch
     "DISPATCH_MODEL_MAP",
     "MAX_BLOCKED_FIX_ATTEMPTS",
@@ -831,5 +883,6 @@ __all__ = [
     "persist_dispatch_state",
     "persist_dispatch_summary",
     "prepend_persona_to_prompt",
+    "record_run_position",
     "validate_agent_files",
 ]
