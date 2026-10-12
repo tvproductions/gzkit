@@ -108,13 +108,16 @@ from gzkit.pipeline_position import (
     BLOCKER_SUMMARY_WIDTH,
     RULED_BOUNDARIES,
     STAGE_POSITION_KIND,
+    MarkerRebuild,
     PipelineLedgerRow,
     PipelinePosition,
     PipelineReplay,
     RunCrossing,
     in_flight_launch_id,
+    rebuild_marker,
     record_position,
     replay_pipeline_position,
+    runs_in_flight,
 )
 
 # ---------------------------------------------------------------------------
@@ -817,6 +820,9 @@ __all__ = [
     "STAGE_POSITION_KIND",
     "RunCrossing",
     "replay_pipeline_position",
+    "MarkerRebuild",
+    "rebuild_marker",
+    "runs_in_flight",
     # pipeline_dispatch
     "DISPATCH_MODEL_MAP",
     "MAX_BLOCKED_FIX_ATTEMPTS",

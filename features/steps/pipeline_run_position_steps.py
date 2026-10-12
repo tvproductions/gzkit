@@ -17,7 +17,7 @@ import json
 import tempfile
 from collections.abc import Callable
 from contextlib import redirect_stderr, redirect_stdout
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -41,6 +41,7 @@ from gzkit.ledger import (
     pipeline_stage_transition_event,
 )
 from gzkit.pipeline_runtime import (
+    STALE_MARKER_HOURS,
     advance_pipeline_markers,
     load_dispatch_state,
     pipeline_marker_paths,
@@ -473,3 +474,129 @@ def step_launch_count(context, count: int) -> None:
         if row.event == "pipeline_launched" and row.id == context.run_obpi
     ]
     assert len(launches) == count, launches
+
+
+# ---------------------------------------------------------------------------
+# A marker rebuilt by gz state --repair
+# ---------------------------------------------------------------------------
+
+
+def _run_rows(context, event: str) -> list[Any]:
+    return [
+        row
+        for row in _ledger(context).read_all()
+        if row.event == event and row.id == context.run_obpi
+    ]
+
+
+def _rebuilt_markers(context) -> list[dict[str, Any]]:
+    """Return both marker files, each of which the repair must have written."""
+    for marker_path in context.run_markers:
+        assert marker_path.is_file(), f"{marker_path.name} was not rebuilt"
+    return [_read(marker_path) for marker_path in context.run_markers]
+
+
+@given("every ledger event of the run is older than the stale bound")
+def step_age_the_run(context) -> None:
+    """Rewrite the scenario project's own ledger so the run was abandoned long ago."""
+    ledger_path = context.run_root / ".gzkit" / "ledger.jsonl"
+    assert not (context.run_root / "pyproject.toml").exists(), "never a real repository's ledger"
+    long_ago = (datetime.now(UTC) - timedelta(hours=STALE_MARKER_HOURS + 1)).isoformat()
+    aged: list[str] = []
+    for line in ledger_path.read_text(encoding="utf-8").splitlines():
+        row = json.loads(line)
+        if row.get("id") == context.run_obpi and row.get("event") in (
+            "pipeline_launched",
+            "pipeline_stage_transition",
+        ):
+            row["ts"] = long_ago
+        aged.append(json.dumps(row))
+    ledger_path.write_text("\n".join(aged) + "\n", encoding="utf-8")
+    context.aged_to = long_ago
+
+
+@when("gz state --repair is run")
+def step_repair(context) -> None:
+    context.markers_before = [
+        marker_path.read_bytes() if marker_path.exists() else None
+        for marker_path in context.run_markers
+    ]
+    printed = _gz(context, "state", "--repair", "--json")
+    report, _end = json.JSONDecoder().raw_decode(printed[printed.index("{") :])
+    context.repair = report["markers"]
+
+
+@when("gz obpi pipeline --clear-stale is run")
+def step_clear_stale(context) -> None:
+    _gz(context, "obpi", "pipeline", "--clear-stale")
+
+
+@then('the repair reports the run rebuilt at stage "{stage}"')
+def step_reported_rebuilt(context, stage: str) -> None:
+    assert context.repair["declined"] == [], context.repair
+    assert len(context.repair["rebuilt"]) == 1, context.repair
+    (rebuilt,) = context.repair["rebuilt"]
+    assert rebuilt["obpi_id"] == context.run_obpi, rebuilt
+    assert rebuilt["current_stage"] == stage, rebuilt
+
+
+@then("the rebuilt marker carries the time of the last recorded crossing")
+def step_rebuilt_time_of_last_crossing(context) -> None:
+    last = _run_rows(context, "pipeline_stage_transition")[-1]
+    for marker in _rebuilt_markers(context):
+        assert marker["updated_at"] == last.ts, (marker["updated_at"], last.ts)
+
+
+@then("the rebuilt marker carries the time of the launch event")
+def step_rebuilt_time_of_launch(context) -> None:
+    launch = _run_rows(context, "pipeline_launched")[-1]
+    for marker in _rebuilt_markers(context):
+        assert marker["updated_at"] == launch.ts, (marker["updated_at"], launch.ts)
+        assert marker["started_at"] == launch.ts, (marker["started_at"], launch.ts)
+
+
+@then("the rebuilt marker carries the nonce and the entry the launch event recorded")
+def step_rebuilt_nonce(context) -> None:
+    """The run is its latest launch: a ``--from`` re-entry is a launch with its own nonce."""
+    launch = _run_rows(context, "pipeline_launched")[-1]
+    for marker in _rebuilt_markers(context):
+        assert marker["nonce"] == launch.extra["nonce"], marker
+        assert marker["entry"] == launch.extra["entry"], marker
+    per_obpi, legacy = context.run_markers
+    assert per_obpi.read_bytes() == legacy.read_bytes(), "the two marker files diverged"
+
+
+@then('both rebuilt marker files read stage "{stage}" and no position')
+def step_rebuilt_launch_values(context, stage: str) -> None:
+    for marker in _rebuilt_markers(context):
+        assert marker["current_stage"] == stage, marker
+        assert "position" not in marker, marker
+        for key in ("blockers", "required_human_action", "resume_point"):
+            assert marker[key] == context.launch_payload[key], (key, marker)
+
+
+@then("both marker files are byte for byte what they were before the repair")
+def step_markers_untouched(context) -> None:
+    after = [marker_path.read_bytes() for marker_path in context.run_markers]
+    assert None not in context.markers_before, "the scenario needs both markers on disk"
+    assert after == context.markers_before, "the repair moved a marker that was on disk"
+
+
+@then("the repair reports nothing rebuilt and nothing declined")
+def step_nothing_reported(context) -> None:
+    assert context.repair == {"rebuilt": [], "declined": []}, context.repair
+
+
+@then("no marker file is on disk")
+def step_no_marker(context) -> None:
+    left = sorted(path.name for path in context.run_plans.glob(".pipeline-active*.json"))
+    assert left == [], left
+
+
+@then("the repair declines the run and says why")
+def step_declined(context) -> None:
+    assert context.repair["rebuilt"] == [], context.repair
+    assert len(context.repair["declined"]) == 1, context.repair
+    (declined,) = context.repair["declined"]
+    assert declined["obpi_id"] == context.run_obpi, declined
+    assert context.aged_to in declined["reason"], declined

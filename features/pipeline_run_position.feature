@@ -115,3 +115,58 @@ Feature: Pipeline run position
     And the run crosses the boundary "gz obpi precomplete"
     Then the command recorded the "phase" "precomplete" inside stage "verify"
     And the ledger says the run has reached stage "verify"
+
+  @REQ-0.35.0-15-03
+  Scenario Outline: gz state --repair rebuilds a deleted marker to the stage and position it held
+    Given a project whose run was launched in full through gz obpi pipeline
+    And the run has reached stage "<stage>"
+    When both marker files are deleted
+    And gz state --repair is run
+    Then the repair reports the run rebuilt at stage "<stage>"
+    And both marker files name what the ledger last recorded
+    And the rebuilt marker carries the time of the last recorded crossing
+    And the rebuilt marker carries the nonce and the entry the launch event recorded
+
+    Examples: a run that has crossed a recorded boundary
+      | stage    |
+      | verify   |
+      | ceremony |
+      | sync     |
+
+  @REQ-0.35.0-15-03
+  Scenario: gz state --repair rebuilds a launch with nothing after it to its launch values
+    Given a project whose run was launched in full through gz obpi pipeline
+    When both marker files are deleted
+    And gz state --repair is run
+    Then the repair reports the run rebuilt at stage "implement"
+    And both rebuilt marker files read stage "implement" and no position
+    And the rebuilt marker carries the time of the launch event
+    And the rebuilt marker carries the nonce and the entry the launch event recorded
+
+  @REQ-0.35.0-15-05
+  Scenario: gz state --repair leaves a marker on disk exactly as it is
+    Given a project whose run was launched in full through gz obpi pipeline
+    And the run has reached stage "verify"
+    When gz state --repair is run
+    Then both marker files are byte for byte what they were before the repair
+    And the repair reports nothing rebuilt and nothing declined
+
+  @REQ-0.35.0-15-05
+  Scenario: A rebuilt marker keeps the time of its last crossing and is not cleared as stale
+    Given a project whose run was launched in full through gz obpi pipeline
+    And the run has reached stage "verify"
+    When both marker files are deleted
+    And gz state --repair is run
+    And gz obpi pipeline --clear-stale is run
+    Then both marker files name what the ledger last recorded
+    And the rebuilt marker carries the time of the last recorded crossing
+
+  @REQ-0.35.0-15-05
+  Scenario: gz state --repair declines a run whose last crossing is past the stale bound
+    Given a project whose run was launched in full through gz obpi pipeline
+    And the run has reached stage "verify"
+    And every ledger event of the run is older than the stale bound
+    When both marker files are deleted
+    And gz state --repair is run
+    Then no marker file is on disk
+    And the repair declines the run and says why

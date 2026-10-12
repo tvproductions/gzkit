@@ -17,7 +17,7 @@ import tempfile
 import unittest
 from collections.abc import Callable, Iterator
 from contextlib import ExitStack, contextmanager
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 from unittest.mock import Mock, patch
@@ -34,24 +34,37 @@ from gzkit.ledger import (
     pipeline_launched_event,
     pipeline_stage_transition_event,
 )
-from gzkit.ledger_events import brief_reconciled_event, obpi_parked_event, obpi_withdrawn_event
+from gzkit.ledger_events import (
+    brief_reconciled_event,
+    obpi_parked_event,
+    obpi_unparked_event,
+    obpi_withdrawn_event,
+)
 from gzkit.pipeline_runtime import (
     BLOCKER_SUMMARY_WIDTH,
     RULED_BOUNDARIES,
     STAGE_POSITION_KIND,
+    STALE_MARKER_HOURS,
     PipelinePosition,
     RunCrossing,
     advance_pipeline_markers,
+    clear_stale_pipeline_markers,
+    find_stale_pipeline_markers,
     in_flight_launch_id,
     load_dispatch_state,
+    load_obpi_pipeline_marker,
     pipeline_command,
     pipeline_completion_reminder_message,
+    pipeline_concurrency_blockers,
     pipeline_marker_paths,
     pipeline_marker_payload,
     pipeline_resume_command,
     pipeline_stage_output,
+    purge_orphaned_active_markers,
+    rebuild_marker,
     record_position,
     replay_pipeline_position,
+    runs_in_flight,
     write_pipeline_markers,
 )
 from gzkit.pipeline_stage_fence import (
@@ -597,6 +610,14 @@ class _RecordingFixture(_RunFixture):
             )
         )
 
+    def _validate_on_ledger(self, *, obpi_id: str = _OBPI) -> None:
+        """Append a receipt that is not a completion: a ``validated`` one."""
+        self.ledger.append(
+            obpi_receipt_emitted_event(
+                obpi_id, receipt_event="validated", attestor="test", parent_adr=_ADR
+            )
+        )
+
     def _retire_on_ledger(self, how: str, *, obpi_id: str = _OBPI) -> None:
         """Append the row that retires ``obpi_id``: ``parked`` or ``withdrawn``."""
         self.ledger.append(_RETIREMENTS[how](obpi_id, _ADR))
@@ -726,6 +747,53 @@ class TestRecordPositionWritesTheLedgerThenTheMarker(_RecordingFixture):
 
         self.assertEqual(len(self._crossings()), 1)
         self.assertEqual(_read(self.per_obpi)["position"]["label"], "verification-passed")
+
+    @covers("REQ-0.35.0-15-02")
+    def test_a_receipt_that_is_not_a_completion_leaves_the_run_in_flight(self) -> None:
+        """Only the completion receipt ends a run (Open Design Question 8).
+
+        ``obpi_receipt_emitted`` also carries a ``validated`` receipt, which
+        completes nothing. A boundary crossed after one is still recorded; the
+        completion receipt then ends the run as before.
+        """
+        self._launch_on_ledger()
+        self._validate_on_ledger()
+
+        recorded = self._record("verification")
+
+        self.assertIsNotNone(recorded)
+        self.assertEqual([row.extra["stage"] for row in self._crossings()], ["verify"])
+        self.assertEqual(_read(self.per_obpi)["current_stage"], "verify")
+
+        self._complete_on_ledger()
+
+        self.assertIsNone(self._record("verification-passed"))
+        self.assertEqual(len(self._crossings()), 1)
+
+    @covers("REQ-0.35.0-15-02")
+    def test_an_unparked_obpi_has_no_run_until_it_is_launched_again(self) -> None:
+        """Unpark starts no run: "a later launch starts a new run" (Question 12).
+
+        The park ended the run. Unparking releases the OBPI for work and
+        resumes nothing, so a boundary crossed before the next launch is
+        recorded nowhere, by the launch id or by its short form.
+        """
+        self._launch_on_ledger()
+        self._retire_on_ledger("parked")
+        self.ledger.append(obpi_unparked_event(_OBPI, _ADR, "ADR-pool.interrogate"))
+        before = self._markers()
+
+        for given in (_OBPI, _SHORT_OBPI):
+            with self.subTest(given=given):
+                self.assertIsNone(self._record("verification", obpi_id=given))
+                self.assertIsNone(in_flight_launch_id(Ledger(self.ledger.path).read_all(), given))
+        self.assertEqual(self._crossings(), [])
+        self.assertEqual(self._markers(), before)
+
+        self._launch_on_ledger("verify")
+
+        self.assertIsNotNone(self._record("verification-passed"))
+        self.assertEqual(len(self._crossings()), 1)
 
     def test_a_deleted_marker_does_not_drop_the_crossing(self) -> None:
         """The ledger keeps the crossing; only ``gz state --repair`` rebuilds a marker."""
@@ -2658,12 +2726,13 @@ class TestReplayReadsTheRunPositionFromTheLedger(unittest.TestCase):
                 )
 
 
-def _receipted(ts: str, *, obpi_id: str = _OBPI) -> LedgerEvent:
+def _receipted(ts: str, *, obpi_id: str = _OBPI, receipt_event: str = "completed") -> LedgerEvent:
+    """Return a receipt row; only a ``completed`` one records a completion state."""
     event = obpi_receipt_emitted_event(
         obpi_id,
-        receipt_event="completed",
+        receipt_event=receipt_event,
         attestor="test",
-        obpi_completion="attested_completed",
+        obpi_completion="attested_completed" if receipt_event == "completed" else None,
         parent_adr=_ADR,
     )
     return event.model_copy(update={"ts": ts})
@@ -2723,6 +2792,63 @@ class TestAnIdNamesTheRunInFlightOrNone(unittest.TestCase):
             for name, rows, given, expected in cases:
                 with self.subTest(retired=how, case=name):
                     self.assertEqual(in_flight_launch_id(rows, given), expected)
+
+    @covers("REQ-0.35.0-15-02")
+    def test_only_a_completion_receipt_ends_a_run(self) -> None:
+        """The completion receipt ends the run; any other receipt ends nothing.
+
+        Open Design Question 8 rules that the COMPLETION receipt ends a run.
+        The receipt event also carries a ``validated`` receipt, and a row that
+        names no kind at all is no completion either: nothing is defaulted.
+        """
+        launch = _launched("full", _LAUNCHED_AT)
+        validated = _receipted(_CROSSED_AT, receipt_event="validated")
+        completed = _receipted(_CROSSED_LATER_AT)
+        unnamed = completed.model_copy(
+            update={"extra": {k: v for k, v in completed.extra.items() if k != "receipt_event"}}
+        )
+        cases: tuple[tuple[str, list[LedgerEvent], str, str | None], ...] = (
+            ("validated, by the launch id", [launch, validated], _OBPI, _OBPI),
+            ("validated, by the short form", [launch, validated], _SHORT_OBPI, _OBPI),
+            ("a receipt naming no kind", [launch, unnamed], _OBPI, _OBPI),
+            ("completed", [launch, completed], _OBPI, None),
+            ("validated, then completed", [launch, validated, completed], _SHORT_OBPI, None),
+            ("completed, then validated", [launch, completed, validated], _OBPI, None),
+        )
+
+        for name, rows, given, expected in cases:
+            with self.subTest(case=name):
+                self.assertEqual(in_flight_launch_id(rows, given), expected)
+
+    @covers("REQ-0.35.0-15-02")
+    def test_an_adr_audit_ceremony_is_no_pipeline_run(self) -> None:
+        """``gz adr audit`` writes ``pipeline_launched`` too, and launches no run.
+
+        Its row carries the ADR's id and the entry ``audit``. A run is what
+        ``gz obpi pipeline`` launches: the full launch or a ``--from`` entry.
+        A launch row with no entry is the full launch, as the replay reads it.
+        """
+        audit = pipeline_launched_event(
+            obpi_id=_ADR,
+            parent_adr=_ADR,
+            lane="audit",
+            nonce=_NONCE,
+            marker_path=f".gzkit/audits/{_ADR}.json",
+            entry="audit",
+        )
+        launch = _launched("full", _LAUNCHED_AT)
+        no_entry = launch.model_copy(
+            update={"extra": {k: v for k, v in launch.extra.items() if k != "entry"}}
+        )
+
+        self.assertIsNone(in_flight_launch_id([audit], _ADR))
+        self.assertEqual(in_flight_launch_id([audit, launch], _OBPI), _OBPI)
+        self.assertEqual(in_flight_launch_id([no_entry], _OBPI), _OBPI)
+        for entry in ("full", "verify", "ceremony", "sync"):
+            with self.subTest(entry=entry):
+                self.assertEqual(
+                    in_flight_launch_id([_launched(entry, _LAUNCHED_AT)], _OBPI), _OBPI
+                )
 
     @covers("REQ-0.35.0-15-02")
     def test_the_short_form_is_the_whole_of_the_item_number(self) -> None:
@@ -2808,6 +2934,264 @@ class TestAnIdNamesTheRunInFlightOrNone(unittest.TestCase):
         for name, rows, given, expected in cases:
             with self.subTest(case=name):
                 self.assertEqual(in_flight_launch_id(rows, given), expected)
+
+
+class TestNeitherAReadNorARebuildMovesUpdatedAt(_RecordingFixture):
+    """Requirement 6: ``updated_at`` moves only when the run crosses a boundary."""
+
+    @covers("REQ-0.35.0-15-05")
+    def test_reading_a_position_moves_no_marker_and_appends_nothing(self) -> None:
+        """Every reader of the run's position leaves both files byte for byte."""
+        self._launch_on_ledger()
+        self._record("verification")
+        (crossing,) = self._crossings()
+        held = self._markers()
+        rows_held = self.ledger.path.read_bytes()
+        rows = list(Ledger(self.ledger.path).read_all())
+        now = datetime.fromisoformat(crossing.ts) + timedelta(hours=1)
+        readers: dict[str, Callable[[], object]] = {
+            "the ledger replay": lambda: replay_pipeline_position(rows, _OBPI),
+            "the run in flight": lambda: in_flight_launch_id(rows, _SHORT_OBPI),
+            "the runs in flight": lambda: runs_in_flight(rows),
+            "the marker loader": lambda: load_obpi_pipeline_marker(self.plans, _OBPI),
+            "the dispatch cache": lambda: load_dispatch_state(self.plans, _OBPI),
+            "the fence": lambda: marker_stage(self.per_obpi),
+            "the resume command": lambda: pipeline_resume_command(_read(self.per_obpi)),
+            "stale detection": lambda: find_stale_pipeline_markers(self.plans),
+            "a rebuild with the marker on disk": lambda: rebuild_marker(
+                rows, self.plans, _OBPI, now=now
+            ),
+        }
+
+        for name, read in readers.items():
+            with self.subTest(reader=name):
+                read()
+
+                self.assertEqual(self._markers(), held)
+                self.assertEqual(_read(self.per_obpi)["updated_at"], crossing.ts)
+                self.assertEqual(self.ledger.path.read_bytes(), rows_held)
+
+    @covers("REQ-0.35.0-15-05")
+    def test_a_rebuild_restores_the_time_of_the_last_crossing_whenever_it_runs(self) -> None:
+        """The time rebuilt is the crossing's, never the clock's, up to the stale bound.
+
+        Past the bound the marker would be stale on arrival, so none is
+        built: a rebuild cannot make an abandoned run look live. The bound is
+        the one stale detection uses, older than ``STALE_MARKER_HOURS``.
+        """
+        rows = [
+            _launched("full", _LAUNCHED_AT),
+            _crossed("verify", "phase", "verification", _CROSSED_AT),
+        ]
+        crossed = datetime.fromisoformat(_CROSSED_AT)
+        bound = timedelta(hours=STALE_MARKER_HOURS)
+        live = {
+            "a minute after the crossing": timedelta(minutes=1),
+            "a minute inside the bound": bound - timedelta(minutes=1),
+            "at the bound": bound,
+        }
+        for name, after in live.items():
+            with self.subTest(rebuilt=name):
+                rebuild = rebuild_marker(rows, self.plans, _OBPI, now=crossed + after)
+
+                assert rebuild is not None and rebuild.payload is not None
+                self.assertEqual(rebuild.payload["updated_at"], _CROSSED_AT)
+                self.assertEqual(rebuild.payload["started_at"], _LAUNCHED_AT)
+                self.assertIsNone(rebuild.declined)
+        abandoned = {
+            "a minute past the bound": bound + timedelta(minutes=1),
+            "a month after the crossing": timedelta(days=30),
+        }
+        for name, after in abandoned.items():
+            with self.subTest(rebuilt=name):
+                rebuild = rebuild_marker(rows, self.plans, _OBPI, now=crossed + after)
+
+                assert rebuild is not None
+                self.assertIsNone(rebuild.payload)
+                self.assertIn(_CROSSED_AT, rebuild.declined or "")
+        self.assertEqual(list(self.plans.iterdir()), [])
+
+    @covers("REQ-0.35.0-15-05")
+    def test_a_launch_never_crossed_is_stale_by_the_time_of_its_launch(self) -> None:
+        rows = [_launched("verify", _LAUNCHED_AT)]
+        launched = datetime.fromisoformat(_LAUNCHED_AT)
+        bound = timedelta(hours=STALE_MARKER_HOURS)
+
+        inside = rebuild_marker(rows, self.plans, _OBPI, now=launched + bound)
+        past = rebuild_marker(rows, self.plans, _OBPI, now=launched + bound + timedelta(minutes=1))
+
+        assert inside is not None and inside.payload is not None and past is not None
+        self.assertEqual(inside.payload["updated_at"], _LAUNCHED_AT)
+        self.assertNotIn("position", inside.payload)
+        self.assertIsNone(past.payload)
+
+
+def _hours_ago(hours: float) -> str:
+    moment = datetime.now(UTC) - timedelta(hours=hours)
+    return moment.replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+class TestStaleMarkerHandlingIsUnchanged(unittest.TestCase):
+    """Requirement 6 of OBPI-0.35.0-15: recording a position changes no stale rule.
+
+    Each marker here is one the run-position work could have disturbed: it
+    carries a recorded position, or it is one of the shapes the loader reads
+    as unreadable. Stale detection, ``--clear-stale``, the launcher's orphan
+    purge and the concurrency block treat each as they did before.
+
+    These tests are bound here and not in ``tests/test_pipeline_runtime.py``,
+    where the plan placed them: brief reconciliation reads the imports of every
+    module that binds a REQ as that brief's reach, and that module reaches
+    ``adr_eval`` and ``pipeline_dispatch``, which this OBPI does not touch.
+    """
+
+    _OBPI = "OBPI-0.99.0-01-run-position-demo"
+    _OTHER = "OBPI-0.99.0-02-another-run"
+    _ADR = "ADR-0.99.0-run-position-demo"
+
+    #: Marker contents no loader reads: the unreadable marker the suite always
+    #: had, and the two shapes the loader reads as unreadable since Task 1.
+    _UNREADABLE: tuple[tuple[str, bytes], ...] = (
+        ("text that is not JSON", b"CORRUPT"),
+        ("JSON that is not an object", b'["OBPI-0.99.0-01-run-position-demo"]'),
+        ("bytes that are not UTF-8", b"\xff\xfe\x00{}"),
+    )
+
+    def setUp(self) -> None:
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.plans = Path(tmp.name)
+        self.per_obpi, self.legacy = pipeline_marker_paths(self.plans, self._OBPI)
+
+    def _advanced(self, obpi_id: str, updated_at: str | None) -> dict[str, Any]:
+        """Return a marker advanced to ``verify`` with a position, last updated then."""
+        payload = pipeline_marker_payload(obpi_id, self._ADR, "heavy", None, "pass")
+        payload["current_stage"] = "verify"
+        payload["position"] = {
+            "kind": "phase",
+            "label": "verification",
+            "boundary": "gz obpi pipeline",
+        }
+        if updated_at is None:
+            del payload["updated_at"]
+        else:
+            payload["updated_at"] = updated_at
+        return payload
+
+    def _write(self, content: bytes | dict[str, Any]) -> None:
+        """Write the same content to the per-OBPI and the legacy marker file."""
+        raw = content if isinstance(content, bytes) else json.dumps(content).encode("utf-8")
+        for marker_path in (self.per_obpi, self.legacy):
+            marker_path.write_bytes(raw)
+
+    def _stale_shapes(self) -> list[tuple[str, bytes | dict[str, Any], dict[str, Any], str]]:
+        """Return each stale shape: its content, the payload reported, the id cleared."""
+        old = self._advanced(self._OBPI, _hours_ago(STALE_MARKER_HOURS + 1))
+        timeless = self._advanced(self._OBPI, None)
+        unreadable_time = self._advanced(self._OBPI, "yesterday")
+        shapes: list[tuple[str, bytes | dict[str, Any], dict[str, Any], str]] = [
+            ("older than the stale bound", old, old, self._OBPI),
+            ("no updated_at", timeless, timeless, self._OBPI),
+            ("an updated_at that is no time", unreadable_time, unreadable_time, self._OBPI),
+        ]
+        shapes.extend((name, raw, {}, "unknown") for name, raw in self._UNREADABLE)
+        return shapes
+
+    @covers("REQ-0.35.0-15-05")
+    def test_stale_detection_flags_each_stale_shape_and_no_live_marker(self) -> None:
+        for name, content, reported, _cleared_as in self._stale_shapes():
+            with self.subTest(marker=name):
+                self._write(content)
+
+                stale = find_stale_pipeline_markers(self.plans)
+
+                self.assertEqual(stale, [(self.per_obpi, reported), (self.legacy, reported)])
+        with self.subTest(marker="advanced within the stale bound"):
+            self._write(self._advanced(self._OBPI, _hours_ago(STALE_MARKER_HOURS - 1)))
+
+            self.assertEqual(find_stale_pipeline_markers(self.plans), [])
+
+    @covers("REQ-0.35.0-15-05")
+    def test_clear_stale_removes_each_stale_shape_and_keeps_a_live_marker(self) -> None:
+        for name, content, _reported, cleared_as in self._stale_shapes():
+            with self.subTest(marker=name):
+                self._write(content)
+
+                removed = clear_stale_pipeline_markers(self.plans)
+
+                self.assertEqual(removed, [(self.per_obpi, cleared_as), (self.legacy, cleared_as)])
+                self.assertFalse(self.per_obpi.exists() or self.legacy.exists())
+        with self.subTest(marker="advanced within the stale bound"):
+            live = self._advanced(self._OBPI, _hours_ago(1))
+            self._write(live)
+
+            self.assertEqual(clear_stale_pipeline_markers(self.plans), [])
+            self.assertEqual(json.loads(self.per_obpi.read_text(encoding="utf-8")), live)
+            self.assertEqual(self.per_obpi.read_bytes(), self.legacy.read_bytes())
+
+    @covers("REQ-0.35.0-15-05")
+    def test_the_orphan_purge_removes_only_a_marker_whose_obpi_is_attested_completed(
+        self,
+    ) -> None:
+        """An advanced marker is purged or kept on its OBPI's ledger state alone.
+
+        Its stage, its position and its age decide nothing. A marker the
+        loader cannot read names no OBPI and is left for stale detection.
+        """
+
+        def _graph(completion: str) -> dict[str, dict[str, Any]]:
+            return {
+                self._OBPI: {"type": "obpi", "parent": self._ADR, "obpi_completion": completion}
+            }
+
+        attested = _graph("attested_completed")
+        for age in (1, STALE_MARKER_HOURS + 1):
+            with self.subTest(obpi="attested_completed", hours_old=age):
+                self._write(self._advanced(self._OBPI, _hours_ago(age)))
+
+                purged = purge_orphaned_active_markers(self.plans, attested)
+
+                self.assertEqual(
+                    purged,
+                    [
+                        (self.per_obpi, self._OBPI, self._ADR),
+                        (self.legacy, self._OBPI, self._ADR),
+                    ],
+                )
+                self.assertFalse(self.per_obpi.exists() or self.legacy.exists())
+            with self.subTest(obpi="pending", hours_old=age):
+                self._write(self._advanced(self._OBPI, _hours_ago(age)))
+                held = self.per_obpi.read_bytes()
+
+                self.assertEqual(purge_orphaned_active_markers(self.plans, _graph("pending")), [])
+                self.assertEqual(
+                    (self.per_obpi.read_bytes(), self.legacy.read_bytes()), (held, held)
+                )
+        for name, raw in self._UNREADABLE:
+            with self.subTest(marker=name):
+                self._write(raw)
+
+                self.assertEqual(purge_orphaned_active_markers(self.plans, attested), [])
+                self.assertEqual((self.per_obpi.read_bytes(), self.legacy.read_bytes()), (raw, raw))
+
+    @covers("REQ-0.35.0-15-05")
+    def test_the_concurrency_block_is_unchanged_by_a_recorded_position(self) -> None:
+        """Another OBPI's marker blocks a launch, in either file; a run's own never does."""
+        for age in (1, STALE_MARKER_HOURS + 1):
+            with self.subTest(hours_old=age):
+                self._write(self._advanced(self._OBPI, _hours_ago(age)))
+
+                blocked = pipeline_concurrency_blockers(self.plans, self._OTHER)
+
+                self.assertEqual(len(blocked), 2)
+                for blocker in blocked:
+                    self.assertIn(self._OBPI, blocker)
+                self.assertEqual(pipeline_concurrency_blockers(self.plans, self._OBPI), [])
+        for name, raw in self._UNREADABLE:
+            with self.subTest(marker=name):
+                self._write(raw)
+
+                self.assertEqual(pipeline_concurrency_blockers(self.plans, self._OTHER), [])
 
 
 if __name__ == "__main__":

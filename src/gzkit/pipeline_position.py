@@ -1,4 +1,4 @@
-"""The position a pipeline run has reached: its model, its replay and its recorder.
+"""The position a pipeline run has reached: its model, replay, recorder and rebuild.
 
 One module owns the run-position concept (OBPI-0.35.0-15, operator ruling on
 Open Design Question 6). The dependency runs one way: this module imports
@@ -15,6 +15,11 @@ stage from that table and the ledger, so no command chooses a stage.
 Which run a command means is said once too, in :func:`in_flight_launch_id`. A
 command hands over the OBPI id it holds, and the recorder finds the run among
 the launches in flight on the ledger, so no command resolves an id for it.
+
+When a run is in flight is said once as well, in :func:`_launches_in_flight`.
+The recorder and the marker rebuild both read it. :func:`rebuild_marker` builds
+the payload ``gz state --repair`` writes for a run whose marker is gone, from
+the ledger rows it is handed; the command writes it through the marker module.
 """
 
 from __future__ import annotations
@@ -22,6 +27,7 @@ from __future__ import annotations
 import logging
 import re
 from collections.abc import Iterable, Mapping
+from datetime import datetime
 from pathlib import Path
 from types import MappingProxyType
 from typing import Any, Protocol
@@ -30,7 +36,17 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_valida
 
 from gzkit.ledger import LedgerEvent, pipeline_stage_transition_event
 from gzkit.ledger_semantics import _uncompleted_attestation_requirement
-from gzkit.pipeline_markers import advance_pipeline_markers, pipeline_stage_name
+from gzkit.pipeline_markers import (
+    STALE_MARKER_HOURS,
+    advance_pipeline_markers,
+    load_pipeline_json,
+    load_plan_audit_receipt,
+    marker_matches,
+    pipeline_marker_paths,
+    pipeline_marker_payload,
+    pipeline_stage_name,
+    pipeline_stage_output,
+)
 from gzkit.pipeline_stage_fence import CANONICAL_STAGES
 
 logger = logging.getLogger(__name__)
@@ -272,30 +288,65 @@ def replay_pipeline_position(
     return reached if reached is not None else _launch_replay(launch)
 
 
-#: The events that end a run for the id they carry (operator ruling 2026-10-11,
-#: OBPI-0.35.0-15 brief, Open Design Question 12: retirement ends a run). The
-#: completion receipt ends it, and so does the OBPI being parked or withdrawn:
-#: no command writes a receipt for a retired OBPI, so its launch would otherwise
-#: stay a run in flight for good. ``obpi_parked`` and ``obpi_withdrawn`` are the
-#: two events that make a ledger-graph key inactive for the launcher's short-id
-#: resolution (``gzkit.artifact_prefix``).
-_RUN_ENDING_EVENTS = frozenset({"obpi_receipt_emitted", "obpi_parked", "obpi_withdrawn"})
+#: The entries ``gz obpi pipeline`` launches a run with: the full launch and each
+#: ``--from`` re-entry. ``pipeline_launched`` is also written when ``gz adr
+#: audit`` opens an audit ceremony, under the ADR's id and the entry ``audit``
+#: (GHI #412: the nonce pairs a marker with its ledger row). That is no OBPI
+#: pipeline run: it has no stage, no position and no marker in the plans
+#: directory, so it is never a run in flight.
+_RUN_ENTRIES = frozenset({"full", *(stage for stage in CANONICAL_STAGES if stage != "implement")})
+
+#: The receipt that ends a run (operator ruling 2026-10-11, OBPI-0.35.0-15
+#: brief, Open Design Question 8: "Receipt ends the run"). The ruling is the
+#: COMPLETION receipt. ``obpi_receipt_emitted`` carries other kinds too
+#: (``validated``), and those end nothing.
+_COMPLETION_RECEIPT = "completed"
+
+#: The events that retire an OBPI and so end its run with no receipt (operator
+#: ruling 2026-10-11, Open Design Question 12: retirement ends a run). No
+#: command writes a receipt for a retired OBPI, so its launch would otherwise
+#: stay a run in flight for good. ``obpi_unparked`` is deliberately absent from
+#: every rule here: unparking releases the OBPI for work and resumes nothing,
+#: and "a later launch starts a new run" (the same ruling).
+_RETIRING_EVENTS = frozenset({"obpi_parked", "obpi_withdrawn"})
+
+
+def _starts_run(row: PipelineLedgerRow) -> bool:
+    """Return whether ``row`` launches an OBPI pipeline run.
+
+    A launch row that names no entry is the full launch, as the replay reads it.
+    """
+    return row.event == "pipeline_launched" and (row.extra.get("entry") or "full") in _RUN_ENTRIES
+
+
+def _ends_run(row: PipelineLedgerRow) -> bool:
+    """Return whether ``row`` ends the run of the id it carries.
+
+    The completion receipt ends it, and so does the OBPI being parked or
+    withdrawn. A receipt of any other kind, or of no kind, ends nothing.
+    """
+    if row.event == "obpi_receipt_emitted":
+        return row.extra.get("receipt_event") == _COMPLETION_RECEIPT
+    return row.event in _RETIRING_EVENTS
 
 
 def _launches_in_flight(events: Iterable[PipelineLedgerRow]) -> dict[str, PipelineLedgerRow]:
     """Return the launch of every run in flight, keyed by the id it carries.
 
-    A run is in flight from its latest ``pipeline_launched`` until one of
-    :data:`_RUN_ENDING_EVENTS` follows it under the same id, in ledger order;
-    a ``pipeline_launched`` after that starts a new run. The marker is not
-    consulted: a deleted marker would otherwise drop a crossing, and a stale
-    one would invent a run.
+    The one rule for when a run is in flight, read by the recorder and by the
+    marker rebuild alike. A run is in flight from its latest launch
+    (:func:`_starts_run`) until a row that ends it (:func:`_ends_run`) follows
+    under the same id, in ledger order; a launch after that starts a new run.
+    The marker is not consulted: a deleted marker would otherwise drop a
+    crossing, and a stale one would invent a run. The launches come back
+    oldest first, by the order their runs began.
     """
     launches: dict[str, PipelineLedgerRow] = {}
     for row in events:
-        if row.event == "pipeline_launched":
+        if _starts_run(row):
+            launches.pop(row.id, None)
             launches[row.id] = row
-        elif row.event in _RUN_ENDING_EVENTS:
+        elif _ends_run(row):
             launches.pop(row.id, None)
     return launches
 
@@ -479,3 +530,150 @@ def _record_crossing(
             requires_human_attestation=_uncompleted_attestation_requirement() == "required",
         )
     return reached
+
+
+class MarkerRebuild(BaseModel):
+    """What a rebuild decides for one run in flight whose marker is not on disk."""
+
+    model_config = ConfigDict(frozen=True, extra="forbid")
+
+    obpi_id: str = Field(..., description="The id the run's launch carries")
+    payload: dict[str, Any] | None = Field(
+        None, description="The marker the ledger rebuilds; None when the run is not rebuilt"
+    )
+    declined: str | None = Field(None, description="Why the run is not rebuilt; None when it is")
+
+    @model_validator(mode="after")
+    def _rebuilds_or_declines(self) -> MarkerRebuild:
+        if (self.payload is None) == (self.declined is None):
+            msg = "a rebuild carries a payload or the reason it declined, never both or neither"
+            raise ValueError(msg)
+        return self
+
+
+def runs_in_flight(events: Iterable[PipelineLedgerRow]) -> list[str]:
+    """Return the id of every run in flight, the latest launched first.
+
+    The runs are the recorder's own (:func:`_launches_in_flight`): a rebuild
+    considers exactly the runs a boundary would be recorded for.
+    """
+    return list(reversed(_launches_in_flight(events)))
+
+
+def _marker_from_ledger(
+    launch: PipelineLedgerRow, reached: PipelineReplay, receipt_state: str
+) -> dict[str, Any]:
+    """Return the marker a run's launch and its last crossing give, and nothing else.
+
+    The payload is built as the launcher builds it and then advanced as the
+    recorder advances it, so it holds what the deleted marker held. Its two
+    times are the ledger's: the launch event's and the last crossing's. The
+    dispatch caches are not here, because no launch or crossing carries them.
+    """
+    entry = str(launch.extra.get("entry") or "full")
+    asks_a_human = _uncompleted_attestation_requirement() == "required"
+    payload = pipeline_marker_payload(
+        launch.id,
+        launch.parent or "",
+        str(launch.extra.get("lane") or ""),
+        None if entry == "full" else entry,
+        receipt_state,
+        requires_human_attestation=asks_a_human,
+        nonce=str(launch.extra["nonce"]),
+    )
+    payload["started_at"] = launch.ts
+    payload["updated_at"] = reached.updated_at
+    if reached.position is not None:
+        payload["current_stage"] = reached.stage
+        payload["position"] = reached.position.model_dump()
+        payload.update(
+            pipeline_stage_output(
+                launch.id,
+                reached.stage,
+                blockers=reached.blockers,
+                requires_human_attestation=asks_a_human,
+            )
+        )
+    return payload
+
+
+def _stale_on_arrival(updated_at: str, now: datetime) -> bool:
+    """Return whether a marker last updated at ``updated_at`` would be stale at ``now``.
+
+    The rule ``find_stale_pipeline_markers`` applies to a marker on disk,
+    applied to one before it is written: older than ``STALE_MARKER_HOURS``, or
+    a time that cannot be read.
+    """
+    try:
+        crossed = datetime.fromisoformat(updated_at.replace("Z", "+00:00"))
+        return (now - crossed).total_seconds() / 3600 > STALE_MARKER_HOURS
+    except (ValueError, TypeError):
+        return True
+
+
+def _rebuild_refusal(
+    plans_dir: Path, launch: PipelineLedgerRow, reached: PipelineReplay, now: datetime
+) -> str | None:
+    """Return why the run's marker is not rebuilt, or ``None`` when it may be.
+
+    A rebuild writes both marker files, so it stands down when either is on
+    disk and is not this run's own to write. It invents no nonce. And it
+    writes no marker that stale detection would flag the moment it landed.
+    """
+    per_obpi, legacy = pipeline_marker_paths(plans_dir, launch.id)
+    if per_obpi.exists():
+        return (
+            f"its marker file {per_obpi.name} is on disk and does not read as this "
+            "run's marker; a rebuild overwrites no file. Clear it with "
+            "`uv run gz obpi pipeline --clear-stale`, then repair again"
+        )
+    if not launch.extra.get("nonce"):
+        return "its pipeline_launched event records no nonce, and a rebuild invents none"
+    if _stale_on_arrival(reached.updated_at, now):
+        return (
+            f"its last recorded crossing ({reached.updated_at}) is older than "
+            f"{STALE_MARKER_HOURS} hours, so its marker would be stale on arrival; "
+            "launch the run again to resume it"
+        )
+    if legacy.exists() and not marker_matches(legacy, launch.id):
+        named = (load_pipeline_json(legacy) or {}).get("obpi_id") or "no readable run"
+        return (
+            f"the legacy marker {legacy.name} is on disk and names {named}; a rebuild "
+            "writes both marker files and overwrites no other run's marker"
+        )
+    return None
+
+
+def rebuild_marker(
+    events: Iterable[PipelineLedgerRow], plans_dir: Path, obpi_id: str, *, now: datetime
+) -> MarkerRebuild | None:
+    """Return what the ledger rebuilds for the run ``obpi_id`` carries, or ``None``.
+
+    ``gz state --repair`` is the one caller and the one verb that rebuilds a
+    marker (OBPI-0.35.0-15 Requirement 18). ``obpi_id`` is the id a launch in
+    flight carries (:func:`runs_in_flight`). ``None`` means there is nothing
+    to rebuild: no run is in flight under that id, or its per-OBPI marker is
+    on disk and reads as its own, in which case nothing is moved.
+
+    Otherwise the result carries the payload to write, built from the ledger
+    rows alone and the plan-audit receipt read back from disk, or the reason
+    the run is declined (:func:`_rebuild_refusal`). ``updated_at`` is the time
+    of the last recorded crossing and never ``now``, which only decides
+    whether that crossing is already past the stale bound. This function
+    reads the plans directory and writes nothing: the caller hands the payload
+    to the marker module's writer.
+    """
+    rows = list(events)
+    launch = _launches_in_flight(rows).get(obpi_id)
+    reached = replay_pipeline_position(rows, obpi_id)
+    if launch is None or reached is None:
+        return None
+    if marker_matches(pipeline_marker_paths(plans_dir, obpi_id)[0], obpi_id):
+        return None
+    refusal = _rebuild_refusal(plans_dir, launch, reached, now)
+    if refusal is not None:
+        return MarkerRebuild(obpi_id=obpi_id, declined=refusal)
+    receipt_state = load_plan_audit_receipt(plans_dir, obpi_id)[0]
+    return MarkerRebuild(
+        obpi_id=obpi_id, payload=_marker_from_ledger(launch, reached, receipt_state)
+    )

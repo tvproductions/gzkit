@@ -14,13 +14,22 @@ import unittest
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
+from unittest.mock import patch
 
 from gzkit import obpi_dispatch_channel as chan
+from gzkit.cli.helpers.exit_codes import EXIT_POLICY_BREACH, EXIT_SUCCESS
+from gzkit.commands.obpi_precomplete import CheckResult, obpi_precomplete_cmd
 from gzkit.ledger import (
     Ledger,
     LedgerEvent,
     obpi_receipt_emitted_event,
     pipeline_launched_event,
+)
+from gzkit.ledger_events import (
+    obpi_blocked_on_operator_event,
+    obpi_parked_event,
+    obpi_unparked_event,
+    obpi_withdrawn_event,
 )
 from gzkit.pipeline_runtime import (
     RunCrossing,
@@ -192,22 +201,57 @@ class TestPrecompleteSurfacesTheChannel(unittest.TestCase):
         self.assertIn("no active pipeline marker", result.message)
 
 
-class TestPrecompleteNamesTheRunForItsDispatchCheck(unittest.TestCase):
-    """The Stage 2 dispatch control finds the run however the OBPI was spelled.
+#: The precomplete checks that judge evidence a bare project root does not hold.
+#: They are replaced with a pass that keeps what it was handed; the operator
+#: block check and the Stage 2 dispatch check, the two under test, are real.
+_REPLACED_PRECOMPLETE_CHECKS = (
+    "_check_brief_readiness",
+    "_check_scope_audit",
+    "_check_reconcile_idempotent",
+    "_check_lock_held",
+    "_check_arb_receipts_passed",
+    "_check_plan_audit_receipt",
+    "_check_brief_headings_scoped",
+    "_check_behave_req_coverage_scoped",
+    "_check_task_envelope_coherence",
+    "_check_acceptance_records",
+)
 
-    Review finding fc1-AUX-precomplete-checks-still-run-under-the-typed-id, a
-    defect older than OBPI-0.35.0-15: the check decided whether a pipeline ran
-    by looking for the marker file under the id as typed. The launcher names
-    the marker by the full slug, so the short ``OBPI-<semver>-<item>`` form
-    found no file and the check passed as "not assessable" while a run was in
-    flight. The check now names the run as its position is recorded: by the id
-    the launch in flight carries. This is the control of Requirement 11 and no
-    acceptance criterion of OBPI-0.35.0-15, so no REQ is bound here.
+#: The replaced checks that read under an OBPI id, as their last argument.
+_ID_TAKING_PRECOMPLETE_CHECKS = (
+    "_check_lock_held",
+    "_check_arb_receipts_passed",
+    "_check_plan_audit_receipt",
+    "_check_behave_req_coverage_scoped",
+    "_check_acceptance_records",
+)
+
+
+class TestPrecompleteNamesTheObpiOnceAtEntry(unittest.TestCase):
+    """Every precomplete control reads the same OBPI however its id was spelled.
+
+    ``gz obpi precomplete`` resolves a brief from the id as typed. Every check,
+    and the position record, then uses the canonical id that brief carries, so
+    the short ``OBPI-<semver>-<item>`` form reads the same operator block, the
+    same marker and the same dispatch records as the full id, whether or not a
+    run is in flight. Review findings, each a defect older than OBPI-0.35.0-15
+    in a control Requirement 11 names: the Stage 2 dispatch check looked for
+    the marker under the id as typed and passed a short id as "not assessable"
+    (fc1-AUX-precomplete-checks-still-run-under-the-typed-id), still did once
+    the run was retired
+    (fc3-aux-precomplete-dispatch-check-reads-the-typed-id-once-the-run-is-retired),
+    and the operator block check read the block under the id as typed
+    (fc2-aux-precomplete-operator-block-check-still-reads-the-id-as-typed).
+    These are controls and no acceptance criterion, so no REQ is bound here.
+
+    The command is run whole. Each control is unchanged for a full id, which
+    the full-id assertions below pin, and no weaker for a short one.
     """
 
     _SHORT = "OBPI-0.12.0-04"
     _FULL = "OBPI-0.12.0-04-dispatch-channel"
     _SIBLING = "OBPI-0.12.0-04-interrogate"
+    _ADR = "ADR-0.12.0"
 
     def setUp(self) -> None:
         tmp = tempfile.TemporaryDirectory()
@@ -216,17 +260,22 @@ class TestPrecompleteNamesTheRunForItsDispatchCheck(unittest.TestCase):
         (self.root / ".claude" / "plans").mkdir(parents=True)
         (self.root / ".gzkit").mkdir()
         self.ledger = Ledger(self.root / ".gzkit" / "ledger.jsonl")
+        briefs = self.root / "design" / "adr" / self._ADR / "obpis"
+        briefs.mkdir(parents=True)
+        (briefs / f"{self._FULL}.md").write_text(
+            f"---\nid: {self._FULL}\nparent: {self._ADR}\nitem: 4\nlane: heavy\n"
+            "status: in_progress\n---\n\n# Dispatch channel\n",
+            encoding="utf-8",
+        )
         _marker(self.root, self._FULL).write_text(
-            json.dumps(
-                {"obpi_id": self._FULL, "parent_adr": "ADR-0.12.0", "current_stage": "verify"}
-            ),
+            json.dumps({"obpi_id": self._FULL, "parent_adr": self._ADR, "current_stage": "verify"}),
             encoding="utf-8",
         )
 
     def _launch_row(self, obpi_id: str) -> LedgerEvent:
         return pipeline_launched_event(
             obpi_id=obpi_id,
-            parent_adr="ADR-0.12.0",
+            parent_adr=self._ADR,
             lane="heavy",
             nonce="0123456789abcdef0123456789abcdef",
             marker_path=f".claude/plans/.pipeline-active-{obpi_id}.json",
@@ -236,14 +285,56 @@ class TestPrecompleteNamesTheRunForItsDispatchCheck(unittest.TestCase):
     def _launch(self) -> None:
         self.ledger.append(self._launch_row(self._FULL))
 
+    def _start_over(self, *rows: LedgerEvent) -> None:
+        """Empty the ledger, then append ``rows``."""
+        self.ledger.path.write_text("", encoding="utf-8")
+        self.ledger = Ledger(self.ledger.path)
+        for row in rows:
+            self.ledger.append(row)
+
     def _dispatch_the_roster(self) -> None:
         for task, role in enumerate(chan.MANDATED_STAGE2_ROLES, start=1):
             chan.record_dispatch(self.root, self._FULL, role=role, model="sonnet", task_id=task)
 
-    def _check(self, obpi_id: str) -> Any:
-        from gzkit.commands.obpi_precomplete import _check_stage2_dispatch
+    def _precomplete(self, obpi_id: str) -> dict[str, Any]:
+        """Run ``gz obpi precomplete <obpi_id> --json`` on the project.
 
-        return _check_stage2_dispatch(self.root, obpi_id)
+        Returns its exit code, its report, and the id each replaced id-taking
+        check was handed.
+        """
+        handed: dict[str, str] = {}
+
+        def _replaced(name: str) -> Callable[..., CheckResult]:
+            def _check(*args: Any) -> CheckResult:
+                if name in _ID_TAKING_PRECOMPLETE_CHECKS:
+                    handed[name] = args[-1]
+                return CheckResult(name=name, ok=True, message="replaced")
+
+            return _check
+
+        module = "gzkit.commands.obpi_precomplete"
+        patches = [
+            patch(f"{module}.{name}", new=_replaced(name)) for name in _REPLACED_PRECOMPLETE_CHECKS
+        ]
+        patches.append(patch(f"{module}.get_project_root", return_value=self.root))
+        for each in patches:
+            each.start()
+            self.addCleanup(each.stop)
+        code = EXIT_SUCCESS
+        with patch("builtins.print") as printed:
+            try:
+                obpi_precomplete_cmd(obpi_id=obpi_id, as_json=True)
+            except SystemExit as exc:
+                code = int(exc.code or 0)
+        for each in patches:
+            each.stop()
+        report = json.loads(printed.call_args[0][0])
+        checks = {check["name"]: check for check in report["checks"]}
+        return {"exit": code, "report": report, "checks": checks, "handed": handed}
+
+    def _check(self, obpi_id: str) -> dict[str, Any]:
+        """Return the Stage 2 dispatch check as the command reported it."""
+        return self._precomplete(obpi_id)["checks"]["stage2_dispatch"]
 
     def test_a_short_id_no_longer_passes_a_run_that_dispatched_nothing(self) -> None:
         """The silent single-driver run the gate refuses is refused by either spelling."""
@@ -251,9 +342,9 @@ class TestPrecompleteNamesTheRunForItsDispatchCheck(unittest.TestCase):
 
         result = self._check(self._SHORT)
 
-        self.assertFalse(result.ok)
-        self.assertIn("NOT DISPATCHED", result.message)
-        self.assertIsNotNone(result.remediation)
+        self.assertFalse(result["ok"])
+        self.assertIn("NOT DISPATCHED", result["message"])
+        self.assertIsNotNone(result["remediation"])
         self.assertEqual(result, self._check(self._FULL))
 
     def test_a_short_id_reads_what_the_run_recorded(self) -> None:
@@ -266,54 +357,92 @@ class TestPrecompleteNamesTheRunForItsDispatchCheck(unittest.TestCase):
         }
         for said, record in recorded.items():
             with self.subTest(recorded=said):
-                self.ledger.path.write_text("", encoding="utf-8")
-                self.ledger = Ledger(self.ledger.path)
-                self._launch()
+                self._start_over(self._launch_row(self._FULL))
                 record()
 
                 result = self._check(self._SHORT)
 
-                self.assertTrue(result.ok)
-                self.assertIn(said, result.message)
-                self.assertNotIn("no active pipeline marker", result.message)
+                self.assertTrue(result["ok"])
+                self.assertIn(said, result["message"])
+                self.assertNotIn("no active pipeline marker", result["message"])
                 self.assertEqual(result, self._check(self._FULL))
 
-    def test_with_no_one_run_in_flight_the_check_reads_as_it_always_did(self) -> None:
-        """The control: nothing changes for a full id, or when the id names no one run.
+    def test_a_short_id_reads_the_marker_the_full_id_reads_whatever_the_ledger_holds(self) -> None:
+        """No run in flight, or two: the short id still reads what the full id reads.
 
-        Never launched, ended by its receipt, or two runs in flight under the
-        one short form: the short id names no run, so the check looks for the
-        marker under the id as typed, as before. The full id finds its marker
-        whatever the ledger holds, as before.
+        The control is the full id, which finds its marker whatever the ledger
+        holds and is refused for the dispatch nobody recorded, as it always
+        was. The short id once looked for a marker under the id as typed in
+        every one of these cases, found none and passed as "not assessable".
         """
+        launch = self._launch_row(self._FULL)
         ended = obpi_receipt_emitted_event(
             self._FULL,
             receipt_event="completed",
             attestor="test",
             obpi_completion="attested_completed",
-            parent_adr="ADR-0.12.0",
+            parent_adr=self._ADR,
         )
-        launch = self._launch_row(self._FULL)
+        parked = obpi_parked_event(self._FULL, self._ADR, "ADR-pool.dispatch")
+        unparked = obpi_unparked_event(self._FULL, self._ADR, "ADR-pool.dispatch")
         ledgers: dict[str, list[LedgerEvent]] = {
             "never launched": [],
             "ended by its receipt": [launch, ended],
+            "parked": [launch, parked],
+            "withdrawn": [launch, obpi_withdrawn_event(self._FULL, self._ADR, "superseded", "g0")],
+            "parked, unparked and not launched again": [launch, parked, unparked],
             "two runs in flight": [launch, self._launch_row(self._SIBLING)],
         }
         for name, rows in ledgers.items():
             with self.subTest(ledger=name):
-                self.ledger.path.write_text("", encoding="utf-8")
-                self.ledger = Ledger(self.ledger.path)
-                for row in rows:
-                    self.ledger.append(row)
+                self._start_over(*rows)
 
                 by_short = self._check(self._SHORT)
                 by_full = self._check(self._FULL)
 
-                self.assertTrue(by_short.ok)
-                self.assertIn("no active pipeline marker", by_short.message)
-                self.assertFalse(by_full.ok)
-                self.assertIn("NOT DISPATCHED", by_full.message)
-                self.assertIn(self._FULL, by_full.remediation)
+                self.assertFalse(by_full["ok"])
+                self.assertIn("NOT DISPATCHED", by_full["message"])
+                self.assertIn(self._FULL, by_full["remediation"])
+                self.assertEqual(by_short, by_full)
+
+    def test_an_operator_block_refuses_a_short_id_as_it_refuses_the_full_id(self) -> None:
+        """A standing operator block is read under the OBPI's id, not the typing."""
+        block = obpi_blocked_on_operator_event(
+            self._FULL, self._ADR, "the boundary set needs a ruling", "rule on Question 9"
+        )
+        for standing, rows in (("no block", []), ("a block standing", [block])):
+            self._start_over(self._launch_row(self._FULL), *rows)
+            self._dispatch_the_roster()
+            by_full = self._precomplete(self._FULL)
+            for spelled, given in (("full", self._FULL), ("short", self._SHORT)):
+                with self.subTest(block=standing, spelled=spelled):
+                    found = self._precomplete(given)
+
+                    blocked = bool(rows)
+                    self.assertEqual(found["checks"]["operator_block"]["ok"], not blocked)
+                    self.assertEqual(found["report"]["ready"], not blocked)
+                    self.assertEqual(found["exit"], EXIT_POLICY_BREACH if blocked else EXIT_SUCCESS)
+                    self.assertEqual(found["report"], by_full["report"])
+            if rows:
+                self.assertIn(
+                    "the boundary set needs a ruling",
+                    by_full["checks"]["operator_block"]["message"],
+                )
+
+    def test_every_check_and_the_position_record_use_the_id_the_brief_carries(self) -> None:
+        self._launch()
+
+        found = self._precomplete(self._SHORT)
+
+        self.assertEqual(found["report"]["obpi_id"], self._FULL)
+        self.assertEqual(found["handed"], dict.fromkeys(_ID_TAKING_PRECOMPLETE_CHECKS, self._FULL))
+        recorded = [
+            row
+            for row in Ledger(self.ledger.path).read_all()
+            if row.event == "pipeline_stage_transition"
+        ]
+        self.assertEqual([row.id for row in recorded], [self._FULL])
+        self.assertEqual(recorded[0].extra["position_label"], "precomplete")
 
 
 class TestCreditOutlivesTheMarker(unittest.TestCase):

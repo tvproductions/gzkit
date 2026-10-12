@@ -69,6 +69,12 @@ def obpi_precomplete_cmd(*, obpi_id: str, as_json: bool = False) -> int:
     ``precomplete`` inside the stage the ledger says the run has reached,
     whatever the checks find. This command is a check: it never moves the
     stage, and the record changes no verdict.
+
+    The OBPI is named once, here. The brief is resolved from the id as typed,
+    and every check, the position record and the report then use the id that
+    brief carries. A short ``OBPI-<semver>-<item>`` id therefore reads the
+    same operator block, the same marker and the same dispatch records as the
+    full id, whether or not a run is in flight. No check reads the typing.
     """
     from gzkit.pipeline_runtime import RunCrossing, record_run_position
 
@@ -78,6 +84,7 @@ def obpi_precomplete_cmd(*, obpi_id: str, as_json: bool = False) -> int:
     if brief_path is None:
         console.print(f"[red]Brief not found for {obpi_id}[/red]")
         raise SystemExit(EXIT_USER_ERROR)
+    obpi_id = _canonical_obpi_id(brief_path, obpi_id)
 
     checks = list(_run_all_checks(project_root, brief_path, obpi_id))
     record_run_position(project_root, obpi_id, RunCrossing(boundary="precomplete"))
@@ -134,6 +141,22 @@ def resolve_brief_path(project_root: Path, obpi_id: str) -> Path | None:
 _resolve_brief_path = resolve_brief_path  # Compatibility for existing command callers.
 
 
+def _canonical_obpi_id(brief_path: Path, typed: str) -> str:
+    """Return the id the resolved brief carries: the one name every check reads under.
+
+    The brief's frontmatter ``id`` is the id the launcher, the lock, the
+    operator block and the dispatch records are all filed under. A brief that
+    carries none, or cannot be read, leaves the id as typed: nothing is guessed.
+    """
+    from gzkit.ledger import parse_frontmatter_value
+
+    try:
+        content = brief_path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return typed
+    return (parse_frontmatter_value(content, "id") or "").strip() or typed
+
+
 def _run_all_checks(project_root: Path, brief_path: Path, obpi_id: str) -> Iterable[CheckResult]:
     """Run every Stage 5 precondition check; yield each CheckResult in order."""
     yield _check_brief_readiness(project_root, brief_path)
@@ -175,23 +198,20 @@ def _check_stage2_dispatch(project_root: Path, obpi_id: str) -> CheckResult:
     is the whole point: a gate with no compliant path for a session that cannot
     dispatch is un-compliable, and an un-compliable gate gets worked around.
 
-    The run is named as its position is recorded (OBPI-0.35.0-15): by the id
-    the launch in flight carries, found from ``obpi_id`` or from its short
-    ``OBPI-<semver>-<item>`` form. The marker and the channel are both read
-    under that id, so the short form no longer reports "no active pipeline
-    marker" for a run in flight. When ``obpi_id`` names no one run in flight
-    the check reads under the id as given, as it always did.
+    ``obpi_id`` is the canonical id ``obpi_precomplete_cmd`` named at entry
+    (OBPI-0.35.0-15), the id the launcher names the marker by. The marker and
+    the channel are both read under it, so a short id as typed never reports
+    "no active pipeline marker" for an OBPI whose marker is on disk, with a
+    run in flight or without one.
     """
     from gzkit.obpi_dispatch_channel import (
         dispatch_channel,
         is_single_driver,
-        project_ledger,
         render_dispatch_channel,
         single_driver_declaration,
     )
-    from gzkit.pipeline_runtime import in_flight_launch_id, pipeline_plans_dir
+    from gzkit.pipeline_runtime import pipeline_plans_dir
 
-    obpi_id = in_flight_launch_id(project_ledger(project_root).read_all(), obpi_id) or obpi_id
     plans_dir = pipeline_plans_dir(project_root)
     if not (plans_dir / f".pipeline-active-{obpi_id}.json").is_file():
         # Say it rather than pass silently: "no pipeline ran" and "the pipeline
