@@ -275,10 +275,17 @@ not a blocked acceptance. The boundary is recorded for the run that id names,
 under the id the run was launched with. The acceptance records stay keyed by
 the id as typed, and `init`, `prove` and `status` take the id as they did.
 
-A rename does not end a run. A run launched before the ledger renamed its
-OBPI is named by the old id, the new id and the short form alike, and it
-keeps its launch id for its records and its two marker files; a completion
-receipt or a retirement written under the new id ends it.
+A rename does not end a run, and neither does a rename that is later
+reversed. A run is named by every id whose current name is the current name
+of its launch id, where an id's current name is where the ledger's
+`artifact_renamed` events leave it now, by the rule the launcher follows
+renames by. So a run launched before a rename is named by the old id and the
+new id, and a run launched under a name the ledger later renamed back is
+named by that name and by the id the OBPI has now. The short form of the
+launch id, or of that current name, names the run when it names only one run
+in flight. The run keeps its launch id for its records and its two marker
+files; a completion receipt or a retirement written under any id with that
+current name ends it.
 
 A successful review import can record a refutation. Run `status` to determine
 readiness; importing a review is not itself approval.

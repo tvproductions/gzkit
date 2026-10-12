@@ -191,22 +191,32 @@ id, or from an id the ledger renamed. A prefix shorter than the short form,
 `OBPI-<semver>`, is accepted too when it names one live OBPI.
 `gz obpi precomplete` and
 `gz obpi present-evidence` name the OBPI that way once, at entry, and run
-their checks, write their report and record their boundary under that one id.
+their checks and write their report under that one id. Their boundary is
+recorded for the run that id names, and the record is filed under that run's
+launch id.
 They exit `1`, check nothing and record nothing for an id that names no OBPI,
 names two, or names one with no brief on disk. The `review` and `human-review`
 actions of `gz obpi acceptance` do the same: they name the OBPI at entry,
-record their boundary under that id, and exit `1` with nothing imported and
-nothing recorded for an id the rule refuses; the acceptance records
-themselves stay keyed by the id as typed. `gz obpi verify-packet` takes a
-packet path and no id, and never refuses on the packet's name: it records
-under the id the rule gives that name. When the rule gives the name no id,
-the boundary is recorded only if the name is itself the launch id of a run in
-flight or its short form, and otherwise nothing is recorded.
+record their boundary for the run that id names, and exit `1` with nothing
+imported and nothing recorded for an id the rule refuses; the acceptance
+records themselves stay keyed by the id as typed. `gz obpi verify-packet`
+takes a packet path and no id, and never refuses on the packet's name: it
+records the boundary for the run named by the id the rule gives that name.
+When the rule gives the name no id, the boundary is recorded only if the name
+itself names a run in flight, by the rule in the next paragraph, and
+otherwise nothing is recorded.
 
-A rename does not end a run. A run launched before the ledger renamed its
-OBPI is named by the old id, the new id and the short form alike, and it
-keeps its launch id for its records and its two marker files; a completion
-receipt or a retirement written under the new id ends it.
+A rename does not end a run, and neither does a rename that is later
+reversed. A run is named by every id whose current name is the current name
+of its launch id, where an id's current name is where the ledger's
+`artifact_renamed` events leave it now, by the rule the launcher follows
+renames by. So a run launched before a rename is named by the old id and the
+new id, and a run launched under a name the ledger later renamed back is
+named by that name and by the id the OBPI has now. The short form of the
+launch id, or of that current name, names the run when it names only one run
+in flight. The run keeps its launch id for its records and its two marker
+files; a completion receipt or a retirement written under any id with that
+current name ends it.
 
 ### Re-entering `implement`
 
