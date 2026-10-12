@@ -30,6 +30,7 @@ from gzkit.ledger_events import (
     artifact_renamed_event,
     obpi_blocked_on_operator_event,
     obpi_parked_event,
+    obpi_unblocked_event,
     obpi_unparked_event,
     obpi_withdrawn_event,
 )
@@ -574,6 +575,99 @@ class TestPrecompleteNamesTheObpiOnceAtEntry(unittest.TestCase):
                 self.assertIsNone(found["report"], "no report: nothing was checked")
                 self.assertEqual(found["handed"], {})
                 self.assertEqual(self._recorded_positions(), [])
+
+    def test_a_renamed_run_still_fails_precomplete_for_an_unrecorded_dispatch(self) -> None:
+        """The dispatch check reads the marker and the channel of the run, by its launch id.
+
+        Review finding
+        fin-fc4-aux-stage2-dispatch-check-reads-no-marker-once-the-ledger-renames-a-launched-obpi
+        (operator ruling 2026-10-12, Open Design Question 21). The run was
+        launched under the full id, so its marker file and its dispatch
+        records carry that id, and the ledger then renamed the OBPI. The
+        check looked for a marker under the new id, found none and passed as
+        "not assessable": an unrecorded Stage 2 dispatch stopped failing the
+        command (Requirement 11). A control and no acceptance criterion, so
+        no REQ is bound.
+        """
+        renamed = "OBPI-0.12.0-04-dispatch-roster"
+        rename = artifact_renamed_event(self._FULL, renamed)
+        for given in (renamed, self._FULL, self._SHORT):
+            with self.subTest(given=given, dispatched="nothing"):
+                self._start_over(self._launch_row(self._FULL), rename)
+
+                found = self._precomplete(given)
+
+                self.assertEqual(found["report"]["obpi_id"], renamed)
+                check = found["checks"]["stage2_dispatch"]
+                self.assertFalse(check["ok"])
+                self.assertIn("NOT DISPATCHED", check["message"])
+                self.assertIn(self._FULL, check["remediation"])
+                self.assertEqual(found["exit"], EXIT_POLICY_BREACH)
+            with self.subTest(given=given, dispatched="the roster"):
+                self._start_over(self._launch_row(self._FULL), rename)
+                self._dispatch_the_roster()
+
+                check = self._precomplete(given)["checks"]["stage2_dispatch"]
+
+                self.assertTrue(check["ok"])
+                self.assertNotIn("no active pipeline marker", check["message"])
+                self.assertNotIn("NOT DISPATCHED", check["message"])
+
+    def test_a_block_recorded_before_a_rename_still_fails_precomplete(self) -> None:
+        """An operator block follows the OBPI through the ledger's renames.
+
+        Operator ruling 2026-10-12 on Open Design Question 21 (plan item 8).
+        The block was recorded under the id the OBPI had then, and the ledger
+        renamed the OBPI afterwards. The check looked the block up under the
+        id the resolver gives now, found none and reported no outstanding
+        ruling, whichever id was typed: a standing block stopped failing the
+        command (Requirement 11). The block and unblock rows are read under
+        each row id's current name, so an unblock recorded under the new id
+        clears a block recorded under the old one. Controls and no acceptance
+        criterion, so no REQ is bound.
+        """
+        renamed = "OBPI-0.12.0-04-dispatch-roster"
+        rename = artifact_renamed_event(self._FULL, renamed)
+        block = obpi_blocked_on_operator_event(
+            self._FULL, self._ADR, "the boundary set needs a ruling", "rule on Question 9"
+        )
+        unblock = obpi_unblocked_event(renamed, self._ADR, "the amended set governs", "g0")
+        for given in (self._FULL, renamed, self._SHORT):
+            with self.subTest(given=given, ledger="a block, then the rename"):
+                self._start_over(self._launch_row(self._FULL), block, rename)
+                self._dispatch_the_roster()
+
+                found = self._precomplete(given)
+
+                check = found["checks"]["operator_block"]
+                self.assertFalse(check["ok"])
+                self.assertIn("the boundary set needs a ruling", check["message"])
+                self.assertFalse(found["report"]["ready"])
+                self.assertEqual(found["exit"], EXIT_POLICY_BREACH)
+            with self.subTest(given=given, ledger="then an unblock under the new id"):
+                self._start_over(self._launch_row(self._FULL), block, rename, unblock)
+                self._dispatch_the_roster()
+
+                found = self._precomplete(given)
+
+                self.assertTrue(found["checks"]["operator_block"]["ok"])
+                self.assertEqual(found["exit"], EXIT_SUCCESS)
+
+    def test_a_block_on_another_obpi_that_is_then_renamed_blocks_nothing_here(self) -> None:
+        """Control: another OBPI's block stays its own through that OBPI's rename."""
+        other, other_renamed = "OBPI-0.12.0-05-roles", "OBPI-0.12.0-05-role-roster"
+        self._start_over(
+            self._launch_row(self._FULL),
+            obpi_blocked_on_operator_event(other, self._ADR, "another matter", "rule on it"),
+            artifact_renamed_event(other, other_renamed),
+        )
+        self._dispatch_the_roster()
+        for given in (self._FULL, self._SHORT):
+            with self.subTest(given=given):
+                found = self._precomplete(given)
+
+                self.assertTrue(found["checks"]["operator_block"]["ok"])
+                self.assertEqual(found["exit"], EXIT_SUCCESS)
 
     def _recorded_positions(self) -> list[LedgerEvent]:
         return [

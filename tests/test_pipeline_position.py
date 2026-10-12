@@ -30,6 +30,7 @@ from gzkit.ledger import (
     Ledger,
     LedgerEvent,
     adr_created_event,
+    artifact_renamed_event,
     obpi_created_event,
     obpi_receipt_emitted_event,
     pipeline_launched_event,
@@ -139,6 +140,8 @@ _CLI_SHORT_OBPI = "OBPI-0.13.0-01"
 _CLI_SIBLING_OBPI = "OBPI-0.13.0-01-interrogate"
 #: A prefix of the launch id longer than its short form, ending on a whole word.
 _CLI_SLUG_PREFIX = "OBPI-0.13.0-01-runtime"
+#: What the ledger renames the launched OBPI to in the rename tests.
+_CLI_RENAMED_OBPI = "OBPI-0.13.0-01-runtime-command-surface"
 _CLI_ADR = "ADR-0.13.0-obpi-pipeline-runtime-surface"
 #: The acceptance criteria of a seeded brief that has any: one TASK each at launch.
 _CLI_REQS = ("REQ-0.13.0-01-01", "REQ-0.13.0-01-02")
@@ -2300,6 +2303,72 @@ class TestABoundaryIsRecordedUnderTheIdTheLaunchCarries(_LaunchableThroughTheCli
             "no crossing is filed under the id as typed",
         )
 
+    def _rename_the_launched_obpi(self) -> None:
+        """Append the ledger row that renames the launched OBPI; its brief is left as it is."""
+        Ledger(Path(".gzkit/ledger.jsonl")).append(
+            artifact_renamed_event(_CLI_OBPI, _CLI_RENAMED_OBPI)
+        )
+
+    @covers("REQ-0.35.0-15-02")
+    def test_an_obpi_renamed_after_its_launch_records_every_boundary_under_the_launch_id(
+        self,
+    ) -> None:
+        """A rename hides no boundary: each command still records on the launch row's id.
+
+        Review finding
+        fin-fc4-REQ02-an-obpi-renamed-after-its-launch-crosses-every-id-taking-boundary-unrecorded.
+        The resolver gives every spelling the id the ledger renamed the OBPI
+        to, and the recorder once knew the run only by the id its launch row
+        carries, so each command crossed its boundary and recorded nothing.
+        The old id, the new id and the short form are each crossed here
+        through the whole command. ``gz obpi complete`` is last: its receipt
+        is written under the new id, and it ends the run launched under the
+        old one.
+        """
+        self._gz("obpi", "pipeline", _CLI_OBPI)
+        self._rename_the_launched_obpi()
+        for given in (_CLI_RENAMED_OBPI, _CLI_OBPI, _CLI_SHORT_OBPI):
+            acceptance = ("obpi", "acceptance", given)
+            self._assert_each_crossing_lands_on_the_launch_id(
+                (
+                    (
+                        "gz obpi precomplete",
+                        "precomplete",
+                        lambda given=given: self._precomplete(obpi_id=given),
+                    ),
+                    (
+                        "gz obpi present-evidence",
+                        "present-evidence",
+                        lambda given=given: self._gz("obpi", "present-evidence", given, "--json"),
+                    ),
+                    (
+                        "gz obpi acceptance",
+                        "acceptance-review",
+                        lambda acceptance=acceptance: self._gz(
+                            *acceptance, "review", "--receipt", write_review_receipt()
+                        ),
+                    ),
+                    (
+                        "gz obpi acceptance",
+                        "acceptance-review",
+                        lambda acceptance=acceptance: self._gz(
+                            *acceptance, "human-review", "--attestor", "g0", "--ruling", "accepted"
+                        ),
+                    ),
+                )
+            )
+        self._assert_each_crossing_lands_on_the_launch_id(
+            (
+                (
+                    "gz obpi complete",
+                    "complete",
+                    lambda: self._complete(obpi_id=_CLI_RENAMED_OBPI),
+                ),
+            )
+        )
+        rows = list(Ledger(Path(".gzkit/ledger.jsonl")).read_all())
+        self.assertEqual(runs_in_flight(rows), [], "the receipt under the new id ended the run")
+
     def _seed_a_parked_sibling(self) -> None:
         """Put a second key under the run's short form on the ledger graph.
 
@@ -3059,6 +3128,148 @@ def _receipted(ts: str, *, obpi_id: str = _OBPI, receipt_event: str = "completed
 
 def _retired(how: str, ts: str, *, obpi_id: str = _OBPI) -> LedgerEvent:
     return _RETIREMENTS[how](obpi_id, _ADR).model_copy(update={"ts": ts})
+
+
+#: What the ledger renames ``_OBPI`` to: the same semver and item, another slug.
+_RENAMED_OBPI = "OBPI-0.99.0-01-run-position-renamed"
+#: A rename that changes the semver and the item, so the short form changes too.
+_MOVED_OBPI = "OBPI-0.98.0-07-run-position-moved"
+
+
+def _renamed(old_id: str, new_id: str, ts: str = _CROSSED_AT) -> LedgerEvent:
+    return artifact_renamed_event(old_id, new_id).model_copy(update={"ts": ts})
+
+
+class TestARenameNeitherEndsARunNorHidesIt(unittest.TestCase):
+    """REQ-0.35.0-15-02: the recorder follows the ledger's renames.
+
+    Review findings
+    fin-fc4-REQ02-an-obpi-renamed-after-its-launch-crosses-every-id-taking-boundary-unrecorded
+    and fin-fc4A-REQ02-an-obpi-renamed-after-its-launch-records-no-boundary-under-any-spelling
+    (operator ruling 2026-10-12, Open Design Question 21). A run is launched
+    under one id and the ledger then renames the OBPI. The resolver every
+    command names the OBPI by follows renames, so it hands the recorder the
+    new id, and the recorder keyed its runs by the launch row's raw id: no
+    run, no record, no warning. The in-flight rule and the matching rule
+    compare current names. A record is still filed under the launch row's own
+    id, the one key the replay, the rebuild and the marker files share.
+    """
+
+    @covers("REQ-0.35.0-15-02")
+    def test_a_run_renamed_after_its_launch_is_named_by_every_spelling(self) -> None:
+        launch = _launched("full", _LAUNCHED_AT)
+        later = "OBPI-0.99.0-01-run-position-renamed-again"
+        cases: tuple[tuple[str, list[LedgerEvent], str], ...] = (
+            ("the old id", [launch, _renamed(_OBPI, _RENAMED_OBPI)], _OBPI),
+            ("the new id", [launch, _renamed(_OBPI, _RENAMED_OBPI)], _RENAMED_OBPI),
+            ("the short form", [launch, _renamed(_OBPI, _RENAMED_OBPI)], _SHORT_OBPI),
+            (
+                "the end of a chain of renames",
+                [launch, _renamed(_OBPI, _RENAMED_OBPI), _renamed(_RENAMED_OBPI, later)],
+                later,
+            ),
+            (
+                "the middle of a chain of renames",
+                [launch, _renamed(_OBPI, _RENAMED_OBPI), _renamed(_RENAMED_OBPI, later)],
+                _RENAMED_OBPI,
+            ),
+            (
+                "a rename recorded before the launch",
+                [_renamed(_OBPI, _RENAMED_OBPI), launch],
+                _OBPI,
+            ),
+        )
+        for name, rows, given in cases:
+            with self.subTest(given=name):
+                self.assertEqual(in_flight_launch_id(rows, given), _OBPI)
+                self.assertEqual(runs_in_flight(rows), [_OBPI], "the run keeps its launch id")
+
+    @covers("REQ-0.35.0-15-02")
+    def test_a_rename_that_moves_the_semver_keeps_the_short_form_the_tasks_carry(self) -> None:
+        """A TASK id holds the short form of the launch id, whatever the OBPI is called now."""
+        rows = [_launched("full", _LAUNCHED_AT), _renamed(_OBPI, _MOVED_OBPI)]
+        spellings = {
+            "the short form of the launch id": _SHORT_OBPI,
+            "the short form of the new id": "OBPI-0.98.0-07",
+            "the new id": _MOVED_OBPI,
+            "the old id": _OBPI,
+        }
+        for name, given in spellings.items():
+            with self.subTest(given=name):
+                self.assertEqual(in_flight_launch_id(rows, given), _OBPI)
+
+    @covers("REQ-0.35.0-15-02")
+    def test_a_receipt_or_a_retirement_under_the_new_id_ends_the_run(self) -> None:
+        """The row that ends a run carries the id the OBPI has when it is written."""
+        launch = _launched("full", _LAUNCHED_AT)
+        rename = _renamed(_OBPI, _RENAMED_OBPI)
+        endings = {
+            "completion receipt": _receipted(_CROSSED_LATER_AT, obpi_id=_RENAMED_OBPI),
+            **{
+                how: _retired(how, _CROSSED_LATER_AT, obpi_id=_RENAMED_OBPI) for how in _RETIREMENTS
+            },
+        }
+        for how, ending in endings.items():
+            rows = [launch, rename, ending]
+            for given in (_OBPI, _RENAMED_OBPI, _SHORT_OBPI):
+                with self.subTest(ended_by=how, given=given):
+                    self.assertIsNone(in_flight_launch_id(rows, given))
+            with self.subTest(ended_by=how):
+                self.assertEqual(runs_in_flight(rows), [])
+
+    @covers("REQ-0.35.0-15-02")
+    def test_a_relaunch_under_the_new_id_is_the_one_run_in_flight(self) -> None:
+        """A later launch under either id starts a new run in place of the old one."""
+        rows = [
+            _launched("full", _LAUNCHED_AT),
+            _renamed(_OBPI, _RENAMED_OBPI),
+            _launched("verify", _CROSSED_LATER_AT, obpi_id=_RENAMED_OBPI),
+        ]
+        for given in (_OBPI, _RENAMED_OBPI, _SHORT_OBPI):
+            with self.subTest(given=given):
+                self.assertEqual(in_flight_launch_id(rows, given), _RENAMED_OBPI)
+        self.assertEqual(runs_in_flight(rows), [_RENAMED_OBPI])
+
+    @covers("REQ-0.35.0-15-02")
+    def test_two_runs_one_id_names_after_a_rename_record_nothing_and_warn(self) -> None:
+        """A rename that brings a second run under one short form makes that form name two."""
+        rows = [
+            _launched("full", _LAUNCHED_AT),
+            _launched("full", _CROSSED_AT, obpi_id=_OTHER_OBPI),
+            _renamed(_OTHER_OBPI, _SIBLING_OBPI, _CROSSED_LATER_AT),
+        ]
+        self.assertIsNone(in_flight_launch_id(rows, _SHORT_OBPI))
+        self.assertEqual(in_flight_launch_id(rows, _OBPI), _OBPI)
+        self.assertEqual(in_flight_launch_id(rows, _SIBLING_OBPI), _OTHER_OBPI)
+        with tempfile.TemporaryDirectory() as tmp:
+            ledger = Ledger(Path(tmp) / "ledger.jsonl")
+            for row in rows:
+                ledger.append(row)
+            with self.assertLogs(level="WARNING") as logged:
+                reached = record_position(
+                    ledger, Path(tmp) / "plans", _SHORT_OBPI, RunCrossing(boundary="precomplete")
+                )
+            self.assertIsNone(reached)
+            self.assertIn("names 2 runs in flight", "\n".join(logged.output))
+            self.assertEqual(
+                [row for row in ledger.read_all() if row.event == "pipeline_stage_transition"], []
+            )
+
+    def test_a_rename_of_another_obpi_changes_nothing_for_this_run(self) -> None:
+        """Controls: these read the same before and after the recorder followed renames."""
+        launch = _launched("full", _LAUNCHED_AT)
+        elsewhere = _renamed(_OTHER_OBPI, "OBPI-0.99.0-02-another-name")
+        cycle = [_renamed(_OBPI, _RENAMED_OBPI), _renamed(_RENAMED_OBPI, _OBPI)]
+        cases: tuple[tuple[str, list[LedgerEvent], str, str | None], ...] = (
+            ("the launch id", [launch, elsewhere], _OBPI, _OBPI),
+            ("the short form", [launch, elsewhere], _SHORT_OBPI, _OBPI),
+            ("the other OBPI's new id", [launch, elsewhere], "OBPI-0.99.0-02-another-name", None),
+            ("a rename and no launch", [_renamed(_OBPI, _RENAMED_OBPI)], _RENAMED_OBPI, None),
+            ("a cycle of renames is not followed for ever", [launch, *cycle], _OBPI, _OBPI),
+        )
+        for name, rows, given, expected in cases:
+            with self.subTest(case=name):
+                self.assertEqual(in_flight_launch_id(rows, given), expected)
 
 
 class TestAnIdNamesTheRunInFlightOrNone(unittest.TestCase):

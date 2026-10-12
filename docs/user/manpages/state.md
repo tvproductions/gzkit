@@ -61,8 +61,10 @@ last. It is the operator recovery tool for drift between the L3 caches
 
 `gz state --repair` is the one command that restores or rebuilds a missing or
 deleted pipeline marker. A launch through `gz obpi pipeline` writes fresh
-markers for the run it starts. Nothing else writes one: the hooks and the
-commands that record a run's position all leave a missing marker missing.
+markers for the run it starts. The one other writer is `gz adr audit-begin`,
+whose file is an audit ceremony's marker and no run's. Nothing else writes
+one: the hooks and the commands that record a run's position all leave a
+missing marker missing.
 
 A run is in flight from its latest `pipeline_launched` event until its
 completion receipt, or until its OBPI is parked, withdrawn or superseded. A run

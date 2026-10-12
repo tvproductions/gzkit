@@ -266,12 +266,19 @@ positional arguments:
 `review` and `human-review` mark a boundary of the pipeline run, so each names
 the OBPI once, at entry, by the rule `gz obpi pipeline` launches by: the full
 id, a short `OBPI-<semver>-<item>` id, a longer prefix that ends on a whole
-word of the id, or an id the ledger renamed. An id that names no OBPI, names
-two, or names one with no brief on disk exits `1` with the resolver's message,
+word of the id, or an id the ledger renamed. A prefix shorter than the short
+form, `OBPI-<semver>`, is accepted too when it names one live OBPI. An id that
+names no OBPI, names two, or names one with no brief on disk exits `1` with
+the resolver's message,
 printed as an `{"error": ...}` object under `--json`; it is a user error and
-not a blocked acceptance. The boundary is recorded under the ledger's id for
-the OBPI. The acceptance records stay keyed by the id as typed, and `init`,
-`prove` and `status` take the id as they did.
+not a blocked acceptance. The boundary is recorded for the run that id names,
+under the id the run was launched with. The acceptance records stay keyed by
+the id as typed, and `init`, `prove` and `status` take the id as they did.
+
+A rename does not end a run. A run launched before the ledger renamed its
+OBPI is named by the old id, the new id and the short form alike, and it
+keeps its launch id for its records and its two marker files; a completion
+receipt or a retirement written under the new id ends it.
 
 A successful review import can record a refutation. Run `status` to determine
 readiness; importing a review is not itself approval.

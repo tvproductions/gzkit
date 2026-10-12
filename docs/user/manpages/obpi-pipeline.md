@@ -187,7 +187,9 @@ orientation, not evidence.
 One rule says which OBPI an id names, the rule this command launches by: the
 ledger's id for it, reached from the full id, from a short
 `OBPI-<semver>-<item>` id or a longer prefix that ends on a whole word of the
-id, or from an id the ledger renamed. `gz obpi precomplete` and
+id, or from an id the ledger renamed. A prefix shorter than the short form,
+`OBPI-<semver>`, is accepted too when it names one live OBPI.
+`gz obpi precomplete` and
 `gz obpi present-evidence` name the OBPI that way once, at entry, and run
 their checks, write their report and record their boundary under that one id.
 They exit `1`, check nothing and record nothing for an id that names no OBPI,
@@ -196,8 +198,15 @@ actions of `gz obpi acceptance` do the same: they name the OBPI at entry,
 record their boundary under that id, and exit `1` with nothing imported and
 nothing recorded for an id the rule refuses; the acceptance records
 themselves stay keyed by the id as typed. `gz obpi verify-packet` takes a
-packet path and no id: it records under the id the rule gives the packet's
-file name, and records nothing for a packet whose name names no run.
+packet path and no id, and never refuses on the packet's name: it records
+under the id the rule gives that name. When the rule gives the name no id,
+the boundary is recorded only if the name is itself the launch id of a run in
+flight or its short form, and otherwise nothing is recorded.
+
+A rename does not end a run. A run launched before the ledger renamed its
+OBPI is named by the old id, the new id and the short form alike, and it
+keeps its launch id for its records and its two marker files; a completion
+receipt or a retirement written under the new id ends it.
 
 ### Re-entering `implement`
 
@@ -217,10 +226,11 @@ do not move the stage. Do not edit the marker by hand.
 ### A deleted marker
 
 `gz state --repair` is the one command that restores or rebuilds a missing
-pipeline marker. A launch writes fresh markers for the run it starts; every
-other command, the hooks and the commands that record a position among them,
-leaves a missing marker missing. The repair acts on the run in flight that was
-launched last:
+pipeline marker. A launch writes fresh markers for the run it starts. The one
+other writer is `gz adr audit-begin`, whose file is an audit ceremony's marker
+and no run's. Every other command, the hooks and the commands that record a
+position among them, leaves a missing marker missing. The repair acts on the
+run in flight that was launched last:
 
 - When one of the run's two marker files is on disk, the missing one is
   restored as a byte-for-byte copy of it.

@@ -257,10 +257,18 @@ def _check_stage2_dispatch(project_root: Path, obpi_id: str) -> CheckResult:
     dispatch is un-compliable, and an un-compliable gate gets worked around.
 
     ``obpi_id`` is the canonical id ``obpi_precomplete_cmd`` named at entry
-    (OBPI-0.35.0-15), the id the launcher names the marker by. The marker and
-    the channel are both read under it, so a short id as typed never reports
-    "no active pipeline marker" for an OBPI whose marker is on disk, with a
-    run in flight or without one.
+    (OBPI-0.35.0-15), so a short id as typed never reports "no active pipeline
+    marker" for an OBPI whose marker is on disk, with a run in flight or
+    without one.
+
+    The marker, the dispatch channel and the single-driver declaration are
+    read under the launch id of the run ``obpi_id`` names, and under
+    ``obpi_id`` itself when it names no run in flight (operator ruling
+    2026-10-12, Open Design Question 21). A run's marker file and its dispatch
+    records carry the id its launch row carries. For an OBPI the ledger never
+    renamed the two ids are one; for an OBPI renamed after its launch the
+    check once looked under the new id, found no marker and passed as "not
+    assessable".
     """
     from gzkit.obpi_dispatch_channel import (
         dispatch_channel,
@@ -268,8 +276,9 @@ def _check_stage2_dispatch(project_root: Path, obpi_id: str) -> CheckResult:
         render_dispatch_channel,
         single_driver_declaration,
     )
-    from gzkit.pipeline_runtime import pipeline_plans_dir
+    from gzkit.pipeline_runtime import pipeline_plans_dir, run_launch_id
 
+    obpi_id = run_launch_id(project_root, obpi_id) or obpi_id
     plans_dir = pipeline_plans_dir(project_root)
     if not (plans_dir / f".pipeline-active-{obpi_id}.json").is_file():
         # Say it rather than pass silently: "no pipeline ran" and "the pipeline
@@ -733,6 +742,43 @@ def _check_task_envelope_coherence(project_root: Path, brief_path: Path) -> Chec
     )
 
 
+def _ledger_renames(events: list[dict]) -> dict[str, str]:
+    """Return every id an ``artifact_renamed`` ledger row renames, with its new id.
+
+    ``events`` are raw ledger rows as dicts, where the new id is the row's
+    top-level ``new_id`` key. A row naming no new id renames nothing.
+    """
+    renames: dict[str, str] = {}
+    for event in events:
+        old_id = event.get("id")
+        new_id = event.get("new_id") if event.get("event") == "artifact_renamed" else None
+        if isinstance(old_id, str) and isinstance(new_id, str) and new_id:
+            renames[old_id] = new_id
+    return renames
+
+
+def _current_name(renames: dict[str, str], artifact_id: str) -> str:
+    """Return ``artifact_id`` taken through ``renames`` to the end of its chain.
+
+    An id never renamed is its own current name. A cycle is not followed for
+    ever: the walk stops before it would return to an id it has passed. The
+    recorder states the same rule for a run's id (``pipeline_position``).
+    """
+    passed = {artifact_id}
+    while (renamed := renames.get(artifact_id)) is not None and renamed not in passed:
+        passed.add(renamed)
+        artifact_id = renamed
+    return artifact_id
+
+
+def _under_current_name(renames: dict[str, str], event: dict) -> dict:
+    """Return ``event`` carrying its id's current name, as a copy when that differs."""
+    event_id = event.get("id")
+    if not isinstance(event_id, str) or event_id not in renames:
+        return event
+    return {**event, "id": _current_name(renames, event_id)}
+
+
 def _check_operator_block(project_root: Path, obpi_id: str) -> CheckResult:
     """Refuse READY while ``obpi_id`` awaits an operator ruling (GHI #887).
 
@@ -748,6 +794,15 @@ def _check_operator_block(project_root: Path, obpi_id: str) -> CheckResult:
 
     A missing or unreadable ledger passes. Absence of evidence is not a blocker —
     fabricating one would make the check unfalsifiable in a fresh project tree.
+
+    The block follows the OBPI through the ledger's renames (OBPI-0.35.0-15,
+    operator ruling 2026-10-12, Open Design Question 21). ``obpi_id`` is the
+    id the resolver gives at entry, which is the new id once the ledger has
+    renamed the OBPI, while a block recorded earlier carries the old one. The
+    block and unblock rows are therefore read under each row id's current
+    name and the OBPI is looked up under its own, so a block recorded under
+    the old id still refuses READY and an unblock recorded under either id
+    clears it.
     """
     from gzkit.obpi_lifecycle import operator_block_state  # noqa: PLC0415
 
@@ -772,7 +827,9 @@ def _check_operator_block(project_root: Path, obpi_id: str) -> CheckResult:
         if isinstance(parsed, dict):
             events.append(parsed)
 
-    entry = operator_block_state(events).get(obpi_id)
+    renames = _ledger_renames(events)
+    by_current_name = [_under_current_name(renames, event) for event in events]
+    entry = operator_block_state(by_current_name).get(_current_name(renames, obpi_id))
     if entry is None:
         return CheckResult(
             name="operator_block",

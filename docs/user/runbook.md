@@ -233,10 +233,18 @@ uv run gz roles --pipeline OBPI-<X.Y.Z-NN>
 #    The declaration is a ledger event; an undeclared inline run is refused.
 #
 #    If a task returns BLOCKED after retry, Stage 2 halts and creates a
-#    handoff. Inspect dispatch state in the pipeline marker:
+#    handoff.
+#
+#    Each dispatch recorded with `uv run gz obpi dispatch` is a ledger event,
+#    and dispatch credit is read from the ledger. The marker's `dispatch_state`
+#    is a cache of those records, one entry for each recorded dispatch:
 #      cat .claude/plans/.pipeline-active-OBPI-<X.Y.Z-NN>.json | python -m json.tool
 #
-#    Dispatch records show: task_id, role, model, timestamps, status, result.
+#    An entry holds what the dispatch wrote and nothing more: task_id, role,
+#    agent_file, model, isolation, background, dispatched_at and the status
+#    `in_progress`. Its completed_at, result and persona_loaded are null: no
+#    command writes a result, a completion time or a review finding into the
+#    marker.
 #
 # 2d) Two-stage review dispatch
 #    After each implementer task completes (DONE or DONE_WITH_CONCERNS),
@@ -252,8 +260,9 @@ uv run gz roles --pipeline OBPI-<X.Y.Z-NN>
 #    A declared single-driver run has no review dispatch (inline mode has no
 #    independent review).
 #
-#    Review findings are recorded in the dispatch state alongside
-#    implementer records for the Stage 4 ceremony.
+#    Review findings are not in the marker. They are in the acceptance
+#    record; read them with:
+#      uv run gz obpi acceptance OBPI-<X.Y.Z-NN> status
 
 # 3) Verify this increment
 #    Skill shortcuts — run all quality checks in one pass or with receipt artifacts:

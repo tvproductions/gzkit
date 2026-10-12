@@ -719,8 +719,12 @@ def record_run_position(project_root: Path, obpi_id: str, crossing: RunCrossing)
     The adapter the pipeline commands share. :func:`record_position` takes its
     ledger as a parameter and opens none; this opens the project's own ledger
     and plans directory and hands them over. ``obpi_id`` goes through as the
-    command holds it: the recorder finds the run it names among the launches
-    in flight on that ledger, so no command resolves an id for the recorder.
+    command holds it. A command that takes an OBPI id names the OBPI by the
+    launcher's resolver first and hands over the ledger's id for it; a
+    ``gz task`` verb and ``gz obpi dispatch`` hand over the id they were
+    given. Either way the recorder finds the run that id names among the
+    launches in flight on that ledger, following the ledger's renames, and
+    files the record under the launch row's own id.
     Nothing is recorded unless the ledger shows that run.
     """
     from gzkit.obpi_dispatch_channel import project_ledger  # noqa: PLC0415
@@ -728,6 +732,25 @@ def record_run_position(project_root: Path, obpi_id: str, crossing: RunCrossing)
     record_position(
         project_ledger(project_root), pipeline_plans_dir(project_root), obpi_id, crossing
     )
+
+
+def run_launch_id(project_root: Path, obpi_id: str) -> str | None:
+    """Return the launch id of the run ``obpi_id`` names on this project's ledger.
+
+    The read-side twin of :func:`record_run_position`: it opens the project's
+    ledger and asks the recorder's own rule (:func:`in_flight_launch_id`). A
+    run's marker files and its dispatch records carry the id its launch row
+    carries, which is no longer the OBPI's id once the ledger renames it
+    (OBPI-0.35.0-15, Open Design Question 21). ``None`` when the id names no
+    run in flight, names more than one, or the ledger cannot be read.
+    """
+    from gzkit.obpi_dispatch_channel import project_ledger  # noqa: PLC0415
+
+    try:
+        rows = list(project_ledger(project_root).read_all())
+    except OSError:
+        return None
+    return in_flight_launch_id(rows, obpi_id)
 
 
 def validate_agent_files(project_root: Path) -> list[str]:
@@ -894,5 +917,6 @@ __all__ = [
     "persist_dispatch_summary",
     "prepend_persona_to_prompt",
     "record_run_position",
+    "run_launch_id",
     "validate_agent_files",
 ]

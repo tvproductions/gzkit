@@ -377,14 +377,63 @@ def _launches_in_flight(events: Iterable[PipelineLedgerRow]) -> dict[str, Pipeli
     The marker is not consulted: a deleted marker would otherwise drop a
     crossing, and a stale one would invent a run. The launches come back
     oldest first, by the order their runs began.
+
+    "The same id" is the same CURRENT NAME (:func:`_current_name`; operator
+    ruling 2026-10-12, Open Design Question 21): a rename ends no run, a
+    receipt or a retirement written under the new id ends the run launched
+    under the old one, and a later launch under either id starts a new run in
+    its place. Each launch is still keyed by the id its own row carries, the
+    one key the replay, the rebuild and the marker files share.
+    """
+    rows = list(events)
+    by_name = _launches_by_current_name(rows, _renames(rows))
+    return {launch.id: launch for launch in by_name.values()}
+
+
+def _renames(rows: Iterable[PipelineLedgerRow]) -> dict[str, str]:
+    """Return every id an ``artifact_renamed`` row renames, with the id it is renamed to.
+
+    The rows are the ledger rows the recorder already reads: this module opens
+    no ledger of its own. A row naming no new id renames nothing.
+    """
+    renames: dict[str, str] = {}
+    for row in rows:
+        new_id = row.extra.get("new_id") if row.event == "artifact_renamed" else None
+        if isinstance(new_id, str) and new_id:
+            renames[row.id] = new_id
+    return renames
+
+
+def _current_name(renames: Mapping[str, str], obpi_id: str) -> str:
+    """Return ``obpi_id`` taken through ``renames`` to the end of its chain.
+
+    An id never renamed is its own current name. A cycle is not followed for
+    ever: the walk stops before it would return to an id it has passed.
+    """
+    passed = {obpi_id}
+    while (renamed := renames.get(obpi_id)) is not None and renamed not in passed:
+        passed.add(renamed)
+        obpi_id = renamed
+    return obpi_id
+
+
+def _launches_by_current_name(
+    rows: Iterable[PipelineLedgerRow], renames: Mapping[str, str]
+) -> dict[str, PipelineLedgerRow]:
+    """Return the launch of every run in flight, keyed by its id's current name.
+
+    The loop of the in-flight rule (:func:`_launches_in_flight`): a launch
+    replaces the run in flight under the same current name, and a row that
+    ends a run ends the one under its id's current name.
     """
     launches: dict[str, PipelineLedgerRow] = {}
-    for row in events:
+    for row in rows:
+        name = _current_name(renames, row.id)
         if _starts_run(row):
-            launches.pop(row.id, None)
-            launches[row.id] = row
+            launches.pop(name, None)
+            launches[name] = row
         elif _ends_run(row):
-            launches.pop(row.id, None)
+            launches.pop(name, None)
     return launches
 
 
@@ -410,18 +459,33 @@ def _runs_named(events: Iterable[PipelineLedgerRow], obpi_id: str) -> list[Pipel
     under a reused semver is therefore no ambiguity once it is finished or
     retired, whether or not it was ever launched. Two siblings both launched
     and neither ended are two runs, and the short form then names neither.
+
+    Ids are compared by current name (:func:`_current_name`; Open Design
+    Question 21), because the resolver the commands name an OBPI by follows
+    the ledger's renames: the id IS a launch's id when the two have one
+    current name, so the old id and the new id both name a run launched
+    before the rename. The short form is that of the launch row's own id, the
+    form its TASK ids carry, or of its current name.
     """
-    in_flight = _launches_in_flight(events)
-    exact = in_flight.get(obpi_id)
+    rows = list(events)
+    renames = _renames(rows)
+    by_name = _launches_by_current_name(rows, renames)
+    exact = by_name.get(_current_name(renames, obpi_id))
     if exact is not None:
         return [exact]
-    return [launch for launch_id, launch in in_flight.items() if _short_form(launch_id) == obpi_id]
+    return [
+        launch
+        for name, launch in by_name.items()
+        if obpi_id in (_short_form(launch.id), _short_form(name))
+    ]
 
 
 def in_flight_launch_id(events: Iterable[PipelineLedgerRow], obpi_id: str) -> str | None:
     """Return the id the launch of the run ``obpi_id`` names carries, or ``None``.
 
-    ``obpi_id`` is the launch id or its short ``OBPI-<semver>-<item>`` form.
+    ``obpi_id`` is the launch id, an id the ledger renamed it to or from, or
+    the short ``OBPI-<semver>-<item>`` form of either. The id returned is the
+    launch row's own, whatever the OBPI is called now.
     ``None`` when it names no run in flight, and when it names more than one:
     two runs in flight sharing a short form are not told apart by a guess.
     Pure: it reads the rows it is handed and nothing else.
@@ -494,8 +558,9 @@ def record_position(
     """Record one boundary a run crossed: the ledger first, the marker second.
 
     Nothing is recorded unless the ledger shows the run ``obpi_id`` names in
-    flight: the launch that carries that id, or the one launch whose short
-    ``OBPI-<semver>-<item>`` form it is (:func:`in_flight_launch_id`). The
+    flight: the launch that carries that id or an id the ledger renamed it to
+    or from, or the one launch whose short ``OBPI-<semver>-<item>`` form it is
+    (:func:`in_flight_launch_id`). The
     record is filed under THAT LAUNCH'S id, never the id as given, so a
     command that holds only the short form still records the boundary where
     every reader looks for it. An id that names two runs in flight records

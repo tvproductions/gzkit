@@ -122,7 +122,7 @@ Each declined run is reported with its reason.
 
 - **A run idle past the stale bound.** With neither file on disk, a run whose last recorded crossing is older than `STALE_MARKER_HOURS`, or whose time cannot be read, is not rebuilt: its marker would be stale on arrival, and a resurrected marker would block every other OBPI's launch (ruled 2026-10-12, Open Design Question 15). Launch the run again to resume it.
 - **An older run while a later one is in flight.** The legacy marker belongs to the run launched last, so no file is restored or written for an older run.
-- **A launch with no nonce.** A rebuild invents none.
+- **A launch with no nonce.** With neither file on disk, a run whose `pipeline_launched` event records no nonce is not rebuilt: a rebuild invents none. With one file on disk the missing one is restored as a copy of it, nonce and all.
 - **A file in the way.** A marker file on disk that does not read as the run's marker is never overwritten.
 
 The command contract, with its output, is in [`gz state`](../user/manpages/state.md#repair-mode).
@@ -137,7 +137,7 @@ The plan this document first carried differs from what was ruled and built in th
 |------------|----------|
 | Seven `pipeline-*` event types (`pipeline-started`, `pipeline-stage-entered`, `pipeline-stage-completed`, `pipeline-blocked`, `pipeline-resumed`, `pipeline-aborted`, `pipeline-completed`) | Two event types. `pipeline_launched` records a launch and each `--from` re-entry. `pipeline_stage_transition` records every boundary, a verification result and its blockers included. A run's end is read from the completion receipt or from the event that parks, withdraws or supersedes its OBPI |
 | `ADR-0.13.0` OBPIs carry the migration in four phases | One OBPI, `OBPI-0.35.0-15`, assigned as a repair against `ADR-0.13.0` |
-| The runtime rebuilds a missing marker before proceeding | Only `uv run gz state --repair` restores or rebuilds one. A launch writes fresh markers; every other command leaves a missing marker missing |
+| The runtime rebuilds a missing marker before proceeding | Only `uv run gz state --repair` restores or rebuilds one. A launch writes fresh markers, and `uv run gz adr audit-begin` writes an audit ceremony's marker, which is no run's; every other command leaves a missing marker missing |
 | Hooks fall back to the ledger when a marker is absent | Not built |
 | Stale detection compares markers against ledger events in place of a time bound | Not built. Stale detection, `--clear-stale` and the launcher's purge of a marker whose OBPI is `attested_completed` are unchanged, and `updated_at` moves only when the run crosses a recorded boundary |
 | `gz state --json` exposes a `pipeline` key | Not built. `gz state --json` prints the artifact graph; the repair's report is the `markers` object of `gz state --repair --json` |
