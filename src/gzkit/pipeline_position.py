@@ -76,6 +76,38 @@ STAGE_POSITION_KIND: Mapping[str, str] = MappingProxyType(
     {"implement": "task", "verify": "phase", "ceremony": "round", "sync": "step"}
 )
 
+
+def marker_position(marker: Mapping[str, Any]) -> dict[str, str] | None:
+    """Return the position inside its stage that ``marker`` records, or ``None``.
+
+    This decides what counts as a recorded position when a marker is read, as
+    the session orientation reads one for every run in flight (OBPI-0.35.0-15
+    Requirement 10). A position is the last recorded boundary the run crossed:
+    a ``kind`` (the Stage 2 task, the Stage 3 phase, the Stage 4 round or the
+    Stage 5 step) and a ``label`` naming which one, each as text that is not
+    blank, with the ``boundary`` command that marked the crossing. Anything
+    short of a kind and a label in text is no position, never part of one: a
+    launch with nothing after it records none, and a marker is a cache any
+    process can write. A boundary that is missing or is no text is reported
+    as empty and the position is still returned. Text comes back without the
+    space around it.
+
+    The result is plain data in the marker's own keys. It is a reading and no
+    gate: nothing is refused on what a marker says (Requirement 12), and what
+    a run has reached is decided from the ledger (:func:`replay_pipeline_position`).
+    """
+    held = marker.get("position")
+    if not isinstance(held, Mapping):
+        return None
+    kind, label, boundary = (held.get(key) for key in ("kind", "label", "boundary"))
+    if not isinstance(kind, str) or not isinstance(label, str):
+        return None
+    if not kind.strip() or not label.strip():
+        return None
+    marked_by = boundary.strip() if isinstance(boundary, str) else ""
+    return {"kind": kind.strip(), "label": label.strip(), "boundary": marked_by}
+
+
 _PIPELINE = "gz obpi pipeline"
 
 #: The short form of an OBPI id: its leading ``OBPI-<semver>-<item>``, which is

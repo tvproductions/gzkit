@@ -55,6 +55,7 @@ from gzkit.pipeline_runtime import (
     in_flight_launch_id,
     load_dispatch_state,
     load_obpi_pipeline_marker,
+    marker_position,
     pipeline_command,
     pipeline_completion_reminder_message,
     pipeline_concurrency_blockers,
@@ -3446,6 +3447,53 @@ class TestPipelineSectionShowsWhereARunIs(unittest.TestCase):
                 self.assertIsNone(run["position"])
                 self.assertIn(launch_stage, headline)
                 self.assertEqual([line for line in under if line.startswith(said)], [])
+
+
+class TestAMarkerRecordsAWholePositionOrNone(unittest.TestCase):
+    """Requirement 10 of OBPI-0.35.0-15: what counts as a position on a marker.
+
+    The session orientation shows the position inside the stage for every run
+    in flight, and it reads that position from a marker, a cache any process
+    can write. One function decides what the marker records: a kind and a
+    label in text, with the boundary that marked them. Anything short of that
+    is no position, and the orientation then shows the stage alone. Nothing
+    is refused on what a marker says (Requirement 12): a marker with no whole
+    position is read, not rejected.
+    """
+
+    _WHOLE = {"kind": "phase", "label": "verification", "boundary": "gz obpi pipeline"}
+
+    @covers("REQ-0.35.0-15-06")
+    def test_a_kind_and_a_label_in_text_are_a_position_and_nothing_less_is(self) -> None:
+        whole = dict(self._WHOLE)
+        no_boundary = {"kind": "phase", "label": "verification", "boundary": ""}
+        cases: tuple[tuple[str, dict[str, Any], dict[str, str] | None], ...] = (
+            ("a whole position", {"position": dict(whole)}, whole),
+            (
+                "text with space around it",
+                {"position": {"kind": " phase ", "label": " verification\n", "boundary": " x "}},
+                {"kind": "phase", "label": "verification", "boundary": "x"},
+            ),
+            ("no position key", {"current_stage": "verify"}, None),
+            ("a position that is null", {"position": None}, None),
+            ("a position that is text", {"position": "phase verification"}, None),
+            ("a position that is a list", {"position": ["phase", "verification"]}, None),
+            ("no kind", {"position": {"label": "verification", "boundary": "b"}}, None),
+            ("a blank kind", {"position": {**whole, "kind": "  "}}, None),
+            ("a kind that is no text", {"position": {**whole, "kind": 3}}, None),
+            ("no label", {"position": {"kind": "phase", "boundary": "b"}}, None),
+            ("a blank label", {"position": {**whole, "label": ""}}, None),
+            ("a label that is no text", {"position": {**whole, "label": ["verification"]}}, None),
+            (
+                "no boundary",
+                {"position": {"kind": "phase", "label": "verification"}},
+                no_boundary,
+            ),
+            ("a boundary that is no text", {"position": {**whole, "boundary": 7}}, no_boundary),
+        )
+        for name, marker, expected in cases:
+            with self.subTest(marker_holds=name):
+                self.assertEqual(marker_position(marker), expected)
 
 
 if __name__ == "__main__":

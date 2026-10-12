@@ -980,25 +980,6 @@ def collect_obpi_locks(repo_root: Path) -> list[dict]:
         return []
 
 
-def _marker_position(marker: dict) -> dict | None:
-    """Return the position inside its stage a marker records, or ``None``.
-
-    A position is the last recorded boundary the run crossed: a ``kind`` (the
-    Stage 2 task, the Stage 3 phase, the Stage 4 round or the Stage 5 step), a
-    ``label`` naming which one, and the ``boundary`` command that marked it. A
-    launch with nothing after it records none. Anything short of a kind and a
-    label in text is reported as no position, never as part of one.
-    """
-    held = marker.get("position")
-    if not isinstance(held, dict):
-        return None
-    kind, label, boundary = (held.get(key) for key in ("kind", "label", "boundary"))
-    if not all(isinstance(part, str) and part.strip() for part in (kind, label)):
-        return None
-    marked_by = boundary.strip() if isinstance(boundary, str) else ""
-    return {"kind": kind.strip(), "label": label.strip(), "boundary": marked_by}
-
-
 def collect_adr_pipeline(repo_root: Path) -> list[dict]:
     """Return one entry per OBPI whose pipeline marker says a run is in flight (GHI #1168).
 
@@ -1007,9 +988,12 @@ def collect_adr_pipeline(repo_root: Path) -> list[dict]:
     same run and is reported once. Each entry carries the stage the run has
     reached and its position inside that stage, which the marker records at
     every boundary the run crosses (GHI #1172); the stage is not the one the
-    launch named. A marker is a Layer-3 cache of what the ledger records
-    (``docs/governance/state-doctrine.md``), so this reports a marker reading
-    and decides nothing; ``gz obpi status`` is the ledger reading.
+    launch named. What counts as a recorded position is decided by
+    ``gzkit.pipeline_position.marker_position``: a kind and a label in text,
+    and anything short of that is reported as ``None``. A marker is a Layer-3
+    cache of what the ledger records (``docs/governance/state-doctrine.md``),
+    so this reports a marker reading and decides nothing; ``gz obpi status``
+    is the ledger reading.
 
     Guarded end-to-end: any failure (gzkit not importable, an unreadable or
     malformed marker) degrades to fewer entries or an empty list so the boot
@@ -1022,6 +1006,7 @@ def collect_adr_pipeline(repo_root: Path) -> list[dict]:
             pipeline_plans_dir,
             pipeline_resume_command,
         )
+        from gzkit.pipeline_position import marker_position
 
         plans_dir = pipeline_plans_dir(repo_root)
         marker_paths = sorted(plans_dir.glob(".pipeline-active-*.json"))
@@ -1038,7 +1023,7 @@ def collect_adr_pipeline(repo_root: Path) -> list[dict]:
                 "obpi_id": obpi_id,
                 "parent_adr": str(marker.get("parent_adr") or "").strip(),
                 "stage": str(marker.get("current_stage") or "").strip(),
-                "position": _marker_position(marker),
+                "position": marker_position(marker),
                 "resume_command": pipeline_resume_command(marker),
             }
         return list(runs.values())
