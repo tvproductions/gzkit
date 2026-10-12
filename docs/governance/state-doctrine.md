@@ -130,7 +130,7 @@ L2 (Ledger events)  >  L1 (Canon files)  >  L3 (Derived state)
 When drift is detected between layers, the canonical repair sequence is:
 
 ```bash
-uv run gz state --repair       # Force-reconcile all frontmatter from ledger
+uv run gz state --repair       # Reconcile all frontmatter from ledger; restore or rebuild a missing pipeline marker
 uv run gz obpi sync <ID>  # Reconcile one OBPI
 uv run gz adr audit-check <ADR-ID>  # Verify no evidence gaps remain
 ```

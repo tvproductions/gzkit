@@ -4,9 +4,9 @@ description: Query artifact relationships and readiness state. Use when reportin
 category: governance-infrastructure
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-09-26
+last_reviewed: 2026-10-12
 metadata:
-  skill-version: "0.2.0"
+  skill-version: "0.3.0"
 model: haiku
 ---
 
@@ -31,19 +31,32 @@ through `gz obpi status` or `gz adr status`.
 - Withdrawn OBPIs are hidden, and removed from their parent's children;
   `--include-withdrawn` shows them.
 
-`--repair` is the one mode that writes. It ignores the query flags and sets
-each OBPI brief's frontmatter `status` from the ledger: `Completed` when the
-ledger records completion, `Abandoned` when it records withdrawal, unchanged
-otherwise. A terminal brief is never overwritten. It has no dry run.
+`--repair` is the one mode that writes. It ignores the query flags, has no dry
+run, and makes two repairs from the ledger:
+
+- It sets each OBPI brief's frontmatter `status`: `Completed` when the ledger
+  records completion, `Abandoned` when it records withdrawal, unchanged
+  otherwise. A terminal brief is never overwritten.
+- It repairs the pipeline marker files of the run in flight that was launched
+  last, and is the only command that does. With one of the run's two files on
+  disk it restores the missing one as a copy; with neither it rebuilds both
+  from the run's `pipeline_launched` and `pipeline_stage_transition` events.
+  It overwrites no marker file, and it declines a run whose last recorded
+  boundary is past the stale bound and an older run while a later one is in
+  flight. The manpage `docs/user/manpages/state.md` states the whole contract.
 
 ## Workflow
 
 1. Query: `uv run gz state`, or `--json`, `--blocked`, `--ready`,
    `--include-withdrawn` as the question needs. Add `--full` when IDs are
    quoted as evidence.
-2. Before `--repair`, tell the operator that it edits brief files. Run it, then
-   report its `State Repair Results` table, or `All frontmatter is aligned with
-   ledger state. No changes.`, and include the changed files in the commit.
+2. Before `--repair`, tell the operator that it edits brief files and may write
+   pipeline marker files under `.claude/plans/`. Run it, then report its
+   `State Repair Results` table, or `All frontmatter is aligned with ledger
+   state. No changes.`, and each `Restored pipeline marker file`, `Rebuilt
+   pipeline marker` and `Pipeline marker not rebuilt` line it prints, the last
+   with its reason. With `--json` these are the `markers` object: `rebuilt`,
+   `restored` and `declined`. Include the changed brief files in the commit.
 
 ## Example
 

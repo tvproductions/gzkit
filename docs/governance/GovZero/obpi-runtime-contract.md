@@ -68,40 +68,78 @@ fields:
 - `entry`
 - `execution_mode`
 - `current_stage`
+- `position`
 - `started_at`
 - `updated_at`
 - `receipt_state`
+- `nonce`
 - `blockers`
 - `required_human_action`
 - `next_command`
 - `resume_point`
 
-`entry` is one of:
+`entry` is how the run was launched and does not change as the run advances.
+It is one of:
 
 - `full`
 - `verify`
 - `ceremony`
+- `sync`
 
-`current_stage` is one of:
+`current_stage` is the stage the run has reached, which a full launch leaves
+behind as it advances. It is one of the four canonical stages
+(`CANONICAL_STAGES` in `src/gzkit/pipeline_stage_fence.py`):
 
 - `implement`
 - `verify`
 - `ceremony`
+- `sync`
+
+`position` is where the run is inside `current_stage`: the last recorded
+boundary it crossed. It is absent until a boundary is recorded after the
+launch, and is never written as a `current_stage` value. It is an object with
+exactly these fields, each a non-empty string:
+
+- `kind` — `task` at `implement`, `phase` at `verify`, `round` at `ceremony`,
+  `step` at `sync`
+- `label` — the task the boundary marked, otherwise the boundary's name
+- `boundary` — the command that marked the crossing
+
+Each recorded boundary appends one `pipeline_stage_transition` event to the
+ledger and then writes the same payload to both marker files, so every
+position a marker carries has a Layer 2 source. A command that begins a
+stage's work moves `current_stage`; a check or a bookkeeping event records its
+position inside the stage already reached. The set of boundaries is
+`RULED_BOUNDARIES` in `src/gzkit/pipeline_position.py`, and
+[`gz obpi pipeline`](../../user/manpages/obpi-pipeline.md#where-the-run-is-stage-and-position)
+lists it for operators. `uv run gz state --repair` restores a missing marker
+file from its twin, or rebuilds both from those events
+([`gz state`](../../user/manpages/state.md#repair-mode)).
+
+`started_at` is the time of the launch. `updated_at` is the time of the last
+recorded boundary, or of the launch when nothing follows it; reading a marker
+never moves it.
 
 `receipt_state` mirrors the Stage 1 plan-audit receipt classification used by
 the runtime (`missing`, `pass`, `fail`, `invalid`, `other_obpi`, `unknown`).
 
-`blockers` is a plain list of blocker strings for the active stage.
+`nonce` pairs the marker with its `pipeline_launched` ledger event.
+
+`blockers` is a plain list of blocker strings for the active stage: what the
+last failed verification found.
 
 `required_human_action` is either `null` or the current stage's explicit human
-action summary. Ceremony-state markers populate it only when the parent ADR
-requires human attestation for OBPI completion, so Lite-lane ceremony markers
-leave it `null`.
+action summary. It is populated while the run is at `ceremony`, in every lane:
+human attestation is required for every OBPI completion (ADR-0.0.36).
 
 `next_command` is either `null` or the next canonical operator command.
 
 `resume_point` is either `null` or the stage label the operator should resume
 from after clearing blockers or finishing the current stage.
+
+A marker may also carry `dispatch_state` and `single_driver_declaration`,
+caches of ledger records that no gate reads; a rebuild from the ledger does not
+restore them.
 
 Consumers must remain backward-compatible with older marker payloads that only
 carry `obpi_id` and timestamp fields, and must ignore unknown future keys.

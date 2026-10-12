@@ -6,7 +6,7 @@ Query artifact relationships and readiness state. Use when reporting lineage or 
 
 ## Purpose
 
-`/gz-state` exposes the canonical gz-state workflow for operator invocation. It reads the ledger's artifact graph — relationships, attestation and readiness — and, with `--repair`, sets OBPI brief status from the ledger.
+`/gz-state` exposes the canonical gz-state workflow for operator invocation. It reads the ledger's artifact graph — relationships, attestation and readiness — and, with `--repair`, makes two repairs from the ledger: it sets OBPI brief frontmatter status, and it restores or rebuilds a missing pipeline marker file of the run in flight that was launched last. It reports the frontmatter fields it changed, each marker file it restored, each marker it rebuilt and each run it declined with the reason; `--repair --json` carries the last three in a `markers` object (`rebuilt`, `restored`, `declined`).
 
 ## When to Use
 

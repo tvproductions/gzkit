@@ -428,7 +428,7 @@ def register_governance_parsers(commands: argparse._SubParsersAction) -> None:  
     p_state.add_argument(
         "--repair",
         action="store_true",
-        help="Force-reconcile all frontmatter status from ledger-derived state",
+        help="Reconcile frontmatter from ledger; restore or rebuild a missing pipeline marker",
     )
     p_state.add_argument(
         "--full",

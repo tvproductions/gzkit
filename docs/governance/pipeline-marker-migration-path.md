@@ -6,189 +6,170 @@
 
 **Related:** [State Doctrine — Three-Layer Model](state-doctrine.md) | [ADR-0.13.0 — OBPI Pipeline Runtime Surface](../design/adr/pre-release/ADR-0.13.0-obpi-pipeline-runtime-surface/ADR-0.13.0-obpi-pipeline-runtime-surface.md)
 
-**Purpose:** Define how pipeline markers migrate from Layer 3 (derived state) to Layer 2 (ledger events), the ledger event types that replace them, and when migration begins.
+**Purpose:** State where a pipeline run's stage and position are recorded on the ledger (Layer 2), how the pipeline markers (Layer 3) are written from that record, and how a deleted marker is rebuilt from it.
+
+**Status:** Ruled and built. This document was written under `OBPI-0.0.9-06` as a plan for a future migration. The operator ruled the Layer-2 source and the rebuilding verb on 2026-10-04, and `OBPI-0.35.0-15-pipeline-run-position` built them. The sections below describe the runtime as it is; [What the first plan proposed](#what-the-first-plan-proposed) records where the built design departs from that plan. Dates in this document are records of when a ruling was made.
 
 ---
 
-## Current State: Markers as Layer 3
+## The Ruling
 
-Pipeline markers are JSON files managed by `src/gzkit/pipeline_markers.py`. They track which OBPI pipeline is active and what stage it has reached.
+`ADR-0.0.9` deferred "ledger events for stage transitions" to a later ADR. The question was put to the operator in the `OBPI-0.35.0-15` brief as Open Design Question 2, with three options: infer position from events the ledger already held, append one transition event per recorded boundary, or mix the two. Ruled 2026-10-04:
+
+- **Each recorded boundary appends one stage-transition event to the ledger before the marker is written.** A position is declared, never inferred from another event's side effect.
+- **`uv run gz state --repair` rebuilds a missing or deleted marker from those events.** Nothing else rebuilds one.
+- **No second state file.** Position lives in the two existing marker files, and the ledger is the system of record (Open Design Question 3).
+
+`OBPI-0.35.0-15` is Decision item 11 of `ADR-0.35.0`, a repair assignment against `ADR-0.13.0` (GHI #1172). Later rulings on that brief, made on 2026-10-11 and 2026-10-12, fixed which boundaries move the stage, where a run ends and what the repair declines; they are carried in the sections below.
+
+---
+
+## Markers Are Layer 3
+
+Pipeline markers are JSON files written by `src/gzkit/pipeline_markers.py`. They record which OBPI pipeline is active and what the run has reached.
 
 ### Marker Files
 
 | File | Purpose |
 |------|---------|
 | `.claude/plans/.pipeline-active-{OBPI-ID}.json` | Per-OBPI active pipeline state |
-| `.claude/plans/.pipeline-active.json` | Legacy compatibility marker (same payload) |
+| `.claude/plans/.pipeline-active.json` | Legacy compatibility marker (same payload); one file for the whole project, naming the run launched last |
 
 ### Marker Payload
 
 Each marker records:
 
 - `obpi_id`, `parent_adr`, `lane` — identity
-- `current_stage` — which pipeline stage is active (implement, verify, ceremony, sync)
-- `execution_mode` — normal or exception
-- `started_at`, `updated_at` — timestamps
+- `entry` — how the run was launched (full, verify, ceremony, sync)
+- `nonce` — pairs the marker with its `pipeline_launched` ledger event
+- `current_stage` — the stage the run has reached (implement, verify, ceremony, sync)
+- `position` — the last recorded boundary the run crossed inside that stage: `kind`, `label` and `boundary`. Absent until a boundary is recorded after the launch
+- `execution_mode` — the launcher's constant, `normal`
+- `started_at`, `updated_at` — the time of the launch and the time of the last recorded boundary
 - `receipt_state` — plan-audit receipt verdict
-- `blockers` — active blockers preventing stage progression
+- `blockers` — what the last failed verification found
 - `required_human_action` — what the operator must do before the pipeline can continue
-- `next_command`, `resume_point` — the canonical next step
+- `next_command`, `resume_point` — the canonical next step for the stage reached
+- `dispatch_state`, `single_driver_declaration` — optional caches of dispatch records the ledger holds
 
 ### Layer 3 Characteristics
 
-Pipeline markers exhibit all Layer 3 properties defined in the [State Doctrine](state-doctrine.md):
+Pipeline markers have the Layer 3 properties defined in the [State Doctrine](state-doctrine.md):
 
-- **Ephemeral:** Delete all markers and no governance state is lost. The pipeline can be re-entered from any stage.
-- **Rebuildable:** Given the ledger and brief state, the current pipeline position can be inferred.
-- **Cannot block gates:** Markers are used for runtime coordination (hooks, resume hints), not as gate evidence.
-- **Stale-prone:** Markers can become orphaned when a session is interrupted. `clear_stale_pipeline_markers()` cleans them up.
-
----
-
-## Target State: Stage Transitions as Layer 2 Events
-
-After migration, the ledger records stage transitions as first-class events. Markers become a pure rebuildable cache — a convenience layer rebuilt from ledger events on demand.
-
-### Ledger Event Types for Stage Transitions
-
-The following event types will replace marker state:
-
-| Event Type | Replaces | Payload |
-|------------|----------|---------|
-| `pipeline-started` | Marker creation | `obpi_id`, `parent_adr`, `lane`, `execution_mode`, `entry_point` |
-| `pipeline-stage-entered` | `current_stage` field updates | `obpi_id`, `stage` (implement, verify, ceremony, sync), `timestamp` |
-| `pipeline-stage-completed` | Implicit (next stage entered) | `obpi_id`, `stage`, `outcome` (passed, failed, skipped), `evidence` |
-| `pipeline-blocked` | `blockers` field | `obpi_id`, `stage`, `blocker_reason`, `required_action` |
-| `pipeline-resumed` | Marker re-read after session restart | `obpi_id`, `resume_stage`, `previous_session` |
-| `pipeline-aborted` | Marker deletion on abort | `obpi_id`, `stage`, `abort_reason`, `handoff_created` |
-| `pipeline-completed` | Marker deletion on success | `obpi_id`, `final_stage`, `sync_commit` |
-
-### Event Authority
-
-After migration, the ledger event stream is the authoritative record for:
-
-- Whether a pipeline is active for an OBPI
-- Which stage the pipeline has reached
-- Why a pipeline was blocked or aborted
-- Whether a pipeline completed successfully
-
-This follows Rule 1 of the State Doctrine: the ledger is authoritative for all runtime status.
-
-### Marker Role After Migration
-
-After migration, markers become a **pure rebuildable cache**:
-
-- **Rebuild command:** `uv run gz state --repair` regenerates markers from the latest ledger events for any active pipeline.
-- **Purpose:** Markers continue to exist for fast local reads by hooks and the pipeline runtime. Reading the full ledger to determine active pipeline state on every hook invocation would be too slow.
-- **Deletable without data loss:** Delete all `.claude/plans/.pipeline-active*.json` files. Run `gz state --repair`. All active pipeline state reconstructs from ledger events. No stage history is lost because every transition was recorded in L2.
-- **No behavioral change on deletion:** If a marker is missing but the ledger shows an active pipeline, the runtime rebuilds the marker before proceeding. If the ledger shows no active pipeline, the absence of a marker is correct.
+- **Ephemeral:** Delete both markers and no governance state is lost. The stage and position are on the ledger.
+- **Rebuildable:** `uv run gz state --repair` writes them back from the ledger. See [The Rebuild](#the-rebuild) for what it restores and what it declines.
+- **Cannot block gates:** No gate reads a position. A missing or wrong position may warn and never fails a check closed. Stage 2 dispatch credit and the single-driver declaration are read from the ledger, never from the marker's caches.
+- **Stale-prone:** A marker can be orphaned when a session is interrupted. Stale detection reads the marker's own `updated_at` against `STALE_MARKER_HOURS` (`find_stale_pipeline_markers` in `src/gzkit/pipeline_markers.py`); `clear_stale_pipeline_markers()` removes what it finds.
 
 ---
 
-## What Changes and What Stays the Same
+## The Layer 2 Source
 
-### Changes
+Two ledger event types carry a run's stage and position. The run-position concept lives in one module, `src/gzkit/pipeline_position.py`, which reads and appends through the ledger it is handed and leaves every marker file write to `src/gzkit/pipeline_markers.py`.
 
-| Before (L3-only) | After (L2 + L3 cache) |
-|---|---|
-| Stage transitions update marker JSON | Stage transitions emit ledger events AND update marker cache |
-| Interrupted session loses stage context | Ledger preserves full stage history; sessions resume from ledger truth |
-| Stale markers require TTL-based cleanup | Stale markers are detectable by comparing against ledger events |
-| `pipeline_markers.py` is the sole write path | `pipeline_markers.py` writes cache; a new ledger emitter writes L2 events |
-| Hook reads marker to decide if pipeline is active | Hook reads marker (fast path) with ledger fallback (authoritative path) |
+| Event type | Appended by | Payload |
+|------------|-------------|---------|
+| `pipeline_launched` | `gz obpi pipeline`, on a full launch and on each `--from` entry | `id` (the OBPI), `parent`, `lane`, `nonce`, `marker_path`, `entry` |
+| `pipeline_stage_transition` | The command that marks a recorded boundary | `id` (the OBPI), `parent`, `stage` (implement, verify, ceremony, sync), `position_kind` (task, phase, round, step), `position_label`, `boundary` (the command), and `blockers` when a verification result set any |
 
-### Stays the Same
+### Order of Writes
 
-- The pipeline skill (`gz-obpi-pipeline`) orchestrates the same 5-stage sequence.
-- The pipeline runtime (`pipeline_runtime.py`) remains the canonical engine.
-- Hooks (`pipeline-gate.py`) continue reading markers for fast-path decisions.
-- The human attestation gate at Stage 4 (Normal mode) is unchanged.
-- Exception mode concurrent execution is unchanged.
+Ledger first, marker second. `record_position` appends the `pipeline_stage_transition` event, replays the ledger, and only then advances both marker files to what the replay says. A marker therefore never holds a position the ledger lacks, and its `updated_at` is the event's own time.
 
----
+### Which Boundaries Are Recorded
 
-## Migration Vehicle
+The set is `RULED_BOUNDARIES` in `src/gzkit/pipeline_position.py`. It is the one place that says which boundaries move the stage.
 
-**[ADR-0.13.0 — OBPI Pipeline Runtime Surface](../design/adr/pre-release/ADR-0.13.0-obpi-pipeline-runtime-surface/ADR-0.13.0-obpi-pipeline-runtime-surface.md)** is the vehicle for this migration.
+- **A command that begins a stage's work moves the stage:** `gz obpi dispatch` and `gz task start` (to `implement`), the verify stage of `gz obpi pipeline` (to `verify`), the ceremony stage of `gz obpi pipeline` and `gz obpi present-evidence` (to `ceremony`), and `gz obpi complete` (to `sync`). A launch moves it too, through its `pipeline_launched` event.
+- **A check or a bookkeeping event records in place:** `gz task complete`, `gz task block`, `gz task escalate`, a verification pass or fail, `gz obpi precomplete`, `gz obpi verify-packet`, and an adversarial or human review recorded through `gz obpi acceptance`. Its stage is the one the ledger replay says the run has reached.
+- **Not recorded:** a spec or quality review recorded through `gz obpi acceptance`, and `gz obpi sync`, which runs after the receipt that ends the run.
 
-ADR-0.13.0 elevates the pipeline from a skill-only workflow into a first-class runtime surface. Its scope includes:
+The operator-facing tables are in [`gz obpi pipeline`](../user/manpages/obpi-pipeline.md#where-the-run-is-stage-and-position).
 
-- Persisting pipeline stage state in a repository-local, machine-readable form
-- Exposing structured stage outputs for current stage, blockers, required human action, and next command
+### When a Run Is in Flight
 
-The marker-to-ledger migration is a natural extension of this work: "repository-local, machine-readable form" becomes ledger events (L2) rather than marker files (L3). The structured stage outputs remain available — they are simply derived from ledger events instead of being the primary storage.
+A run is in flight from its latest `pipeline_launched` event until an event that ends it follows under the same id: an `obpi_receipt_emitted` event whose `receipt_event` is `completed`, or an `obpi_parked`, `obpi_withdrawn` or `obpi_superseded` event. A later launch starts a new run. The marker is not consulted for this, so a deleted marker drops no crossing and a stale one invents no run. A boundary is recorded only for a run in flight, and the rebuild considers exactly the same runs (`_launches_in_flight`).
 
-### Migration Scope Within ADR-0.13.0
+A `pipeline_launched` event with the entry `audit`, which `gz adr audit-begin` writes under an ADR's id, starts no pipeline run.
 
-The following ADR-0.13.0 OBPIs will carry the migration work:
+### Reading Position Back
 
-1. **Ledger event schema** — Define the `pipeline-*` event types and validate them against the existing ledger schema.
-2. **Dual-write phase** — `pipeline_markers.py` writes both ledger events and marker files. Existing hooks continue reading markers (no behavioral change during migration).
-3. **Ledger-authoritative phase** — Hooks fall back to ledger reads when markers are absent. Markers are rebuilt from ledger on `gz state --repair`.
-4. **Marker cache phase** — Markers are documented as pure cache. `clear_stale_pipeline_markers()` compares against ledger truth instead of TTL heuristics.
+`replay_pipeline_position` takes the latest `pipeline_launched` event for the OBPI and the last well-formed `pipeline_stage_transition` event after it. With no transition after the launch, the run reads the launch stage and has no position. A transition row that lacks a required field is skipped: a position with no Layer-2 source is never invented.
 
 ---
 
-## Timeline and Trigger
+## The Rebuild
 
-### Trigger Condition
+`uv run gz state --repair` keeps its frontmatter reconciliation and also repairs the marker files of the run in flight that was launched last. It is the only writer of a missing marker: the launcher writes markers at a launch, and no other command or hook writes one that is missing.
 
-Migration begins when **ADR-0.13.0 enters active implementation** (status changes from `Proposed` to `In Progress`).
+| Files on disk for the run | What the repair does |
+|---------------------------|----------------------|
+| Both, each reading as the run's marker | Nothing, and nothing is reported |
+| Exactly one | Restores the missing file as a byte-for-byte copy of its twin (`restore_pipeline_marker_twin`). Nothing is read from the ledger, and the file on disk is not moved |
+| Neither | Rebuilds both from the ledger (`rebuild_marker`) |
 
-### Prerequisites
+A rebuilt marker takes `obpi_id`, `parent_adr`, `lane`, `entry`, `nonce` and `started_at` from the `pipeline_launched` event, and `current_stage`, `position` and `blockers` from the last transition after it. Its `updated_at` is the time of that last crossing and never the time of the repair, so a rebuild cannot make an abandoned run look live.
 
-Before migration can start:
+### What a Rebuild Does Not Take From the Ledger
 
-1. **ADR-0.0.9 complete** — The State Doctrine must be fully ratified so the three-layer model and authority rules are locked. In-progress state doctrine work creates a moving target for migration design.
-2. **Ledger schema supports pipeline events** — The global ledger schema (`.gzkit/ledger.jsonl`) must accept `pipeline-*` event types without validation failures.
-3. **`gz state --repair` exists** — The force-reconciliation command from OBPI-0.0.9-03 must be implemented so markers can be rebuilt from ledger events during migration.
+- `receipt_state` is read back from the plan-audit receipt file at the time of the repair, and is `missing` when there is none.
+- `execution_mode` is the launcher's constant.
+- `dispatch_state` and `single_driver_declaration` are not rebuilt. A copy from a twin keeps them; a rebuild from the ledger omits them. No gate depends on them.
 
-### Phases
+### What the Repair Declines
 
-| Phase | Description | Duration | Exit Criteria |
-|-------|-------------|----------|---------------|
-| **1. Schema** | Define `pipeline-*` event types; add to ledger schema | 1 OBPI | Schema validates all event types |
-| **2. Dual-write** | Emit ledger events alongside marker writes; no read-path changes | 1 OBPI | Ledger events appear for all stage transitions |
-| **3. Ledger-authoritative** | Hooks and runtime read ledger when markers are absent; `gz state --repair` rebuilds markers | 1-2 OBPIs | Deleting all markers and running repair produces correct state |
-| **4. Cache-only** | Markers documented as pure cache; stale detection uses ledger comparison | 1 OBPI | Stale marker cleanup no longer uses TTL heuristics |
+Each declined run is reported with its reason.
 
-### Post-Migration State
+- **A run idle past the stale bound.** With neither file on disk, a run whose last recorded crossing is older than `STALE_MARKER_HOURS`, or whose time cannot be read, is not rebuilt: its marker would be stale on arrival, and a resurrected marker would block every other OBPI's launch (ruled 2026-10-12, Open Design Question 15). Launch the run again to resume it.
+- **An older run while a later one is in flight.** The legacy marker belongs to the run launched last, so no file is restored or written for an older run.
+- **A launch with no nonce.** A rebuild invents none.
+- **A file in the way.** A marker file on disk that does not read as the run's marker is never overwritten.
 
-After all four phases complete:
+The command contract, with its output, is in [`gz state`](../user/manpages/state.md#repair-mode).
 
-- Pipeline markers are **deletable without data loss** — they are pure cache rebuilt from L2
-- Every stage transition is **auditable** — the ledger records who, when, and why
-- Session interruptions are **recoverable** — the ledger preserves full stage history
-- The pipeline runtime has **one source of truth** — the ledger, not a collection of JSON files
+---
+
+## What the First Plan Proposed
+
+The plan this document first carried differs from what was ruled and built in these ways. They are recorded so that a reader who met the earlier text is not misled.
+
+| First plan | As built |
+|------------|----------|
+| Seven `pipeline-*` event types (`pipeline-started`, `pipeline-stage-entered`, `pipeline-stage-completed`, `pipeline-blocked`, `pipeline-resumed`, `pipeline-aborted`, `pipeline-completed`) | Two event types. `pipeline_launched` records a launch and each `--from` re-entry. `pipeline_stage_transition` records every boundary, a verification result and its blockers included. A run's end is read from the completion receipt or from the event that parks, withdraws or supersedes its OBPI |
+| `ADR-0.13.0` OBPIs carry the migration in four phases | One OBPI, `OBPI-0.35.0-15`, assigned as a repair against `ADR-0.13.0` |
+| The runtime rebuilds a missing marker before proceeding | Only `uv run gz state --repair` restores or rebuilds one. A launch writes fresh markers; every other command leaves a missing marker missing |
+| Hooks fall back to the ledger when a marker is absent | Not built |
+| Stale detection compares markers against ledger events in place of a time bound | Not built. Stale detection, `--clear-stale` and the launcher's purge of a marker whose OBPI is `attested_completed` are unchanged, and `updated_at` moves only when the run crosses a recorded boundary |
+| `gz state --json` exposes a `pipeline` key | Not built. `gz state --json` prints the artifact graph; the repair's report is the `markers` object of `gz state --repair --json` |
+
+One limit of the built design: a launch that is abandoned with no ledger event (no receipt, park, withdrawal or supersede) still reads as a run in flight on the ledger. Once its last recorded crossing is older than the stale bound, the repair declines it.
 
 ---
 
 ## Verification
 
-To confirm migration is complete, the following must hold:
+To observe the rebuild on a run in flight:
 
 ```bash
-# 1. Delete all pipeline markers
+# 1. Delete both pipeline markers of the run launched last
 rm -f .claude/plans/.pipeline-active*.json
 
-# 2. Rebuild from ledger
-uv run gz state --repair
-
-# 3. Verify markers match ledger-derived state
-uv run gz state --json | jq '.pipeline'
-# Should show active pipeline state if one exists, empty otherwise
-
-# 4. Run a full pipeline cycle and confirm ledger events
-uv run gz obpi pipeline OBPI-X.Y.Z-NN --from=verify
-# Ledger should contain pipeline-started, pipeline-stage-entered, etc.
+# 2. Rebuild from the ledger
+uv run gz state --repair --json
 ```
+
+The `markers.rebuilt` list of the report names the run with its `current_stage`, `position` and `updated_at`, and both marker files are back on disk with one payload. `markers.declined` names any run the repair did not rebuild, with the reason.
+
+The behaviour is proved by `tests/test_pipeline_position.py`, by the repair tests in `tests/adr/test_state_doctrine.py`, and by the scenarios in `features/pipeline_run_position.feature`.
 
 ---
 
 ## References
 
 - [State Doctrine — Three-Layer Model](state-doctrine.md) — Layer definitions and authority rules
-- [ADR-0.0.9 — State Doctrine](../design/adr/foundation/ADR-0.0.9-state-doctrine-source-of-truth/ADR-0.0.9-state-doctrine-source-of-truth.md) — Parent ADR
-- [ADR-0.13.0 — OBPI Pipeline Runtime Surface](../design/adr/pre-release/ADR-0.13.0-obpi-pipeline-runtime-surface/ADR-0.13.0-obpi-pipeline-runtime-surface.md) — Migration vehicle
-- `src/gzkit/pipeline_markers.py` — Current marker implementation
-- `src/gzkit/pipeline_runtime.py` — Pipeline runtime engine
+- [ADR-0.0.9 — State Doctrine](../design/adr/foundation/ADR-0.0.9-state-doctrine-source-of-truth/ADR-0.0.9-state-doctrine-source-of-truth.md) — Source ADR
+- [ADR-0.13.0 — OBPI Pipeline Runtime Surface](../design/adr/pre-release/ADR-0.13.0-obpi-pipeline-runtime-surface/ADR-0.13.0-obpi-pipeline-runtime-surface.md) — The runtime surface the repair was assigned against
+- `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-15-pipeline-run-position.md` — The brief that carries the rulings
+- `src/gzkit/pipeline_position.py` — Position model, ledger replay, recorder and rebuild decision
+- `src/gzkit/pipeline_markers.py` — Every marker file write
+- `src/gzkit/commands/state.py` — `gz state --repair`

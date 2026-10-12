@@ -190,6 +190,33 @@ uv run gz obpi dispatch OBPI-<X.Y.Z-NN> --single-driver --reason "<why>"
 > `rm` marker files; just re-invoke `uv run gz obpi pipeline …` and
 > the orphan clears itself.
 
+**Where a run is.** Both marker files stay in place from the launch until
+Stage 5 removes them; `--from=verify` and `--from=ceremony` keep them. The
+marker's `current_stage` is the stage the run has reached (`implement`,
+`verify`, `ceremony` or `sync`), and its `position` names the last recorded
+boundary the run crossed inside that stage, in three fields: `kind` (`task`,
+`phase`, `round` or `step`), `label` and `boundary` (the command that marked
+it). Each boundary is appended to the ledger as a `pipeline_stage_transition`
+event before the markers are written, and the session orientation shows the
+stage and the position each marker records. A command that begins a
+stage's work moves the stage: the launch and each `--from` entry, the verify
+and ceremony stages of `gz obpi pipeline`, `gz obpi present-evidence`,
+`gz obpi complete`, `gz task start` and `gz obpi dispatch`. A check or a
+bookkeeping event (`gz obpi precomplete`, `gz obpi verify-packet`, an
+adversarial or human review recorded through `gz obpi acceptance`, a
+verification result, `gz task complete`, `gz task block`, `gz task escalate`)
+records its position inside the stage already reached. The boundary tables are
+in [`gz obpi pipeline`](manpages/obpi-pipeline.md#where-the-run-is-stage-and-position).
+
+**Repairing production code after Stage 2.** The post-Stage-2 fence refuses a
+`src/**` write once `current_stage` has left `implement`. Re-enter Stage 2
+through the runtime, as the refusal prescribes: `uv run gz task start` or
+`uv run gz obpi dispatch` moves the run back to `implement` and records the
+re-entry. Do not edit the marker by hand.
+
+**A deleted marker.** `uv run gz state --repair` restores or rebuilds it; see
+[State Repair](#state-repair-recovery-tool).
+
 ```bash
 
 # 2b) Inspect pipeline roles and dispatch history
@@ -485,20 +512,72 @@ clone, which already carries `.pre-commit-config.yaml` and does not re-run init.
 
 ## State Repair (Recovery Tool)
 
-The three layer model documentation lives in `docs/governance/state-doctrine.md`. When frontmatter (L3 cache) drifts from
-ledger-derived state (L2 authority), use `gz state --repair` to
-force-reconcile all OBPI brief frontmatter:
+The three layer model documentation lives in `docs/governance/state-doctrine.md`. When an L3 cache drifts from
+ledger-derived state (L2 authority), use `gz state --repair`. It makes two
+repairs: it force-reconciles all OBPI brief frontmatter, and it restores or
+rebuilds the pipeline marker files of the run in flight that was launched last:
 
 ```bash
-uv run gz state --repair           # Human-readable diff report
+uv run gz state --repair           # Human-readable report
 uv run gz state --repair --json    # Machine-readable JSON output
 ```
 
-The repair command is idempotent (running twice produces no changes on second
-run) and works after `git clone` with no dependency on L3 caches or markers.
+The frontmatter reconciliation is idempotent (running twice produces no changes
+on second run) and works after `git clone` with no dependency on L3 caches or
+markers.
 
-Pipeline markers are Layer 3 artifacts with a documented marker migration path
-to Layer 2 ledger events (see `docs/governance/pipeline-marker-migration-path.md`).
+Pipeline markers are Layer 3 artifacts, and `gz state --repair` is the one
+command that brings a missing one back. Each boundary a run crosses is a
+`pipeline_stage_transition` ledger event, so the marker is a cache of the
+ledger (see `docs/governance/pipeline-marker-migration-path.md`):
+
+- **One of the run's two marker files is missing.** It is restored as a
+  byte-for-byte copy of the one on disk, which is not moved.
+- **Both are missing.** Both are rebuilt from the run's `pipeline_launched`
+  event and the last `pipeline_stage_transition` event after it, so the marker
+  reads the same `current_stage` and `position`. Its `updated_at` is the time
+  of that last crossing, never the time of the repair. The `dispatch_state` and
+  `single_driver_declaration` caches are not rebuilt from the ledger; dispatch
+  credit is read from the ledger, so no gate depends on them.
+- **Declined, and reported with the reason.** A run whose last recorded
+  crossing is older than `STALE_MARKER_HOURS` (`src/gzkit/pipeline_markers.py`)
+  is not rebuilt, because its marker would be stale on arrival; launch it again
+  with `uv run gz obpi pipeline` to resume it. An older run is declined while a
+  later one is in flight. A marker file that is on disk is never overwritten.
+
+A run is in flight from its latest launch until its completion receipt, or
+until its OBPI is parked, withdrawn or superseded.
+
+With one deleted marker rebuilt, the human-readable report reads:
+
+```text
+All frontmatter is aligned with ledger state. No changes.
+Rebuilt pipeline marker: OBPI-0.1.0-02-in-flight at stage ceremony (round present-evidence), last crossing 2026-10-12T02:04:04.075795+00:00
+```
+
+`--json` prints one object. `changes` and `total` describe the frontmatter
+reconciliation, and `markers` holds three lists: `rebuilt`, `restored` and
+`declined`. Here the legacy marker was restored from the run's own file:
+
+```json
+{
+  "changes": [],
+  "total": 0,
+  "markers": {
+    "rebuilt": [],
+    "restored": [
+      {
+        "obpi_id": "OBPI-0.1.0-02-in-flight",
+        "file": ".pipeline-active.json",
+        "copied_from": ".pipeline-active-OBPI-0.1.0-02-in-flight.json"
+      }
+    ],
+    "declined": []
+  }
+}
+```
+
+The full contract is in [`gz state`](manpages/state.md#repair-mode).
 
 ---
 

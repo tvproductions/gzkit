@@ -83,7 +83,9 @@ ledger for a copy, so a marker that is behind the ledger stays behind it.
 writes both. Most keys come from the ledger, and two do not:
 
 - `obpi_id`, `parent_adr`, `lane`, `entry`, `nonce` and `started_at` come from
-  the `pipeline_launched` event.
+  the `pipeline_launched` event. `started_at` is that event's own time, which
+  the launcher records a moment after it writes the marker, so it can differ
+  from the deleted marker's `started_at` by that moment.
 - `current_stage`, `position` and `blockers` come from the last
   `pipeline_stage_transition` event after that launch, and
   `required_human_action`, `next_command` and `resume_point` are what the
@@ -126,10 +128,28 @@ A run that has ended, an OBPI that was parked and later unparked but not
 launched again, and an ADR audit ceremony are not runs in flight; they are
 neither repaired nor reported.
 
+The boundaries a run records, and which of them move its stage, are listed in
+[gz obpi pipeline](obpi-pipeline.md#where-the-run-is-stage-and-position).
+
 ### Output
 
 Human-readable by default: a table of the frontmatter fields changed, then one
-line for each marker rebuilt, each marker file restored and each run declined.
+line for each marker file restored, each marker rebuilt and each run declined.
+A repair that found the frontmatter aligned and rebuilt one deleted marker
+prints:
+
+```text
+All frontmatter is aligned with ledger state. No changes.
+Rebuilt pipeline marker: OBPI-0.1.0-02-in-flight at stage ceremony (round present-evidence), last crossing 2026-10-12T02:04:04.075795+00:00
+```
+
+A repair that restored the legacy marker from the run's own file prints:
+
+```text
+All frontmatter is aligned with ledger state. No changes.
+Restored pipeline marker file: .pipeline-active.json for OBPI-0.1.0-02-in-flight, a copy of .pipeline-active-OBPI-0.1.0-02-in-flight.json
+```
+
 `--json` prints one object. `changes` and `total` describe the frontmatter
 reconciliation; `markers` lists the runs rebuilt, the files restored and the
 runs declined. A `restored` entry carries `obpi_id`, `file` (the marker file
