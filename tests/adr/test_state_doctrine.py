@@ -38,6 +38,7 @@ from gzkit.pipeline_runtime import (
     pipeline_marker_paths,
     pipeline_marker_payload,
     pipeline_receipt_path,
+    rebuild_marker,
     record_position,
     write_pipeline_markers,
 )
@@ -690,7 +691,7 @@ class TestRepairRebuildsOnlyARunInFlightWhoseMarkerIsGone(_RepairableRun):
         self.assertEqual(self._rebuilt()["current_stage"], "verify")
 
     def test_an_adr_audit_ceremony_is_not_rebuilt_as_a_run(self) -> None:
-        """``gz adr audit`` writes ``pipeline_launched`` under the ADR's id; it is no run."""
+        """``gz adr audit-begin`` writes ``pipeline_launched`` under the ADR's id; it is no run."""
         self.ledger.append(
             pipeline_launched_event(
                 obpi_id=_RUN_ADR,
@@ -789,6 +790,45 @@ class TestRepairDeclinesARunStaleOnArrival(_RepairableRun):
 
         self.assertEqual(self._rebuilt()["updated_at"], last_crossing)
         self.assertEqual(find_stale_pipeline_markers(self.plans), [])
+
+    @covers("REQ-0.35.0-15-05")
+    def test_a_run_whose_last_crossing_time_cannot_be_placed_is_declined(self) -> None:
+        """A time the rebuild cannot place against now is never taken for a recent one.
+
+        Requirement 6: a rebuild cannot make an abandoned run look live, and
+        stale detection treats a marker with no readable time as stale. A last
+        crossing whose time is no time, or names no zone and so cannot be
+        compared with the clock, says nothing about how long ago the run
+        stopped. Its marker would be stale on arrival, so the run is declined:
+        by the rebuild itself, and by ``gz state --repair``, which writes no
+        file. The zoneless time is an hour old by the wall clock on purpose:
+        read as a time, it would pass for a live run.
+        """
+        an_hour_ago = datetime.now(UTC) - timedelta(hours=1)
+        unplaceable = {
+            "a time that is no time": "yesterday",
+            "a time that names no zone": an_hour_ago.replace(tzinfo=None).isoformat(),
+        }
+        for name, last_crossing in unplaceable.items():
+            with self.subTest(last_crossing=name):
+                self._start_over()
+                self._launch(ts=_ago(2))
+                self._crossed_at(last_crossing)
+                self._delete_markers()
+                rows = list(Ledger(self.ledger.path).read_all())
+                self.assertEqual(rows[-1].ts, last_crossing)
+
+                rebuild = rebuild_marker(rows, self.plans, _RUN, now=datetime.now(UTC))
+                report = self._repair()
+
+                self.assertIsNotNone(rebuild, "the run is in flight and its marker is gone")
+                assert rebuild is not None
+                self.assertIsNone(rebuild.payload)
+                self.assertTrue(rebuild.declined)
+                self.assertEqual(self._markers_on_disk(), [])
+                self.assertEqual(report["markers"]["rebuilt"], [])
+                declined = [each["obpi_id"] for each in report["markers"]["declined"]]
+                self.assertEqual(declined, [_RUN])
 
 
 @patch("gzkit.commands.state.console", _quiet_console)

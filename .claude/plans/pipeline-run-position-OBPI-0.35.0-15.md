@@ -37,7 +37,7 @@ Tests: CREATE `tests/test_pipeline_position.py`; `tests/commands/test_obpi_pipel
 
 Docs: `docs/user/manpages/obpi-pipeline.md`, `docs/user/manpages/state.md`, `docs/user/runbook.md`, `docs/governance/GovZero/obpi-runtime-contract.md`, `docs/governance/pipeline-marker-migration-path.md`, the `REQ-0.13.0-03-02` line of `docs/design/adr/pre-release/ADR-0.13.0-obpi-pipeline-runtime-surface/obpis/OBPI-0.13.0-03-structured-stage-outputs.md`, and the OBPI-0.35.0-15 brief (Change Log, Evidence).
 
-`src/gzkit/pipeline_stage_fence.py` is imported read-only for the fence control. Nothing else changes: no hook, guard, ADR-audit, roles, dispatch-wrapper, skill or lock file.
+`src/gzkit/pipeline_stage_fence.py` is imported read-only for the fence control. Nothing else changes: no hook, guard, ADR-audit, roles, dispatch-wrapper or lock file, and no skill but `gz-state` (brief Question 14).
 
 ## Steps
 
@@ -110,7 +110,7 @@ Fix cycle 3, authorized by the operator past the two-cycle bound (brief Question
 2. A rebuild never moves a live marker and never writes a position that has no ledger source. The rebuilt `updated_at` is the last recorded crossing, so a rebuild cannot make an abandoned run look live. A run whose last recorded crossing is older than `STALE_MARKER_HOURS` is not rebuilt at all: its marker would be stale on arrival, and the live ledger holds launches that were never completed (measured 2026-10-11: `OBPI-0.47.0-02` and `OBPI-0.0.37-17`), whose resurrected markers would trip the concurrency block. `--repair` reports each run it declines to rebuild and why.
 3. Not rebuilt, and stated in `docs/user/manpages/state.md`: the `dispatch_state` and `single_driver_declaration` caches. Dispatch credit reads the ledger, so no gate depends on them.
 4. REQ-03 tests (`tests/adr/test_state_doctrine.py`): delete both markers mid-run, run `--repair`, and assert the same `current_stage` and `position`, a `nonce` a `pipeline_launched` event recorded, and the `updated_at` of the last crossing; a launch with nothing after it rebuilds to the launch values.
-5. REQ-05 tests (`tests/test_pipeline_runtime.py`, `tests/test_pipeline_position.py`): a marker older than `STALE_MARKER_HOURS`, an unreadable one, one with no `updated_at` and one whose OBPI is `attested_completed` each behave as before under stale detection, `--clear-stale` and the orphan purge; reading a position or rebuilding a marker does not move `updated_at`; the concurrency block is unchanged.
+5. REQ-05 tests (`tests/test_pipeline_position.py` and `tests/adr/test_state_doctrine.py`; corrected 2026-10-12 from `tests/test_pipeline_runtime.py`, whose other tests reach modules outside Allowed Paths, and a bound test module's reach is read as the brief's): a marker older than `STALE_MARKER_HOURS`, an unreadable one, one with no `updated_at` and one whose OBPI is `attested_completed` each behave as before under stale detection, `--clear-stale` and the orphan purge; reading a position or rebuilding a marker does not move `updated_at`; the concurrency block is unchanged.
 
 Corrections carried into this task from the Task 2 review rounds (unmapped observations and one pre-existing defect in a named control; each is recorded in the brief's Change Log). They touch `src/gzkit/pipeline_position.py`, so REQ-0.35.0-15-01 and REQ-0.35.0-15-02 are re-proved with the rest on the finished tree:
 
@@ -121,6 +121,8 @@ Corrections carried into this task from the Task 2 review rounds (unmapped obser
 10. **REQ-05, the two new unreadable shapes.** The marker loader now reads JSON that is not an object, and bytes that are not UTF-8, as unreadable. The REQ-05 tests cover both shapes under stale detection, `--clear-stale` and the orphan purge, beside the unreadable marker the suite already had.
 11. **The command's own page.** `docs/user/manpages/state.md` states the rebuild, what it does not restore (item 3) and that it reports each run it declines to rebuild, in the same change as the code. Task 5 checks it against the other docs.
 
+12. **An ADR audit launch is not a pipeline run** (brief Question 13, ruled 2026-10-12). `gz adr audit-begin` writes `pipeline_launched` under an ADR id with the entry `audit`; it starts no run for the recorder and is never rebuilt. The exclusion sits in the one rule the recorder and the rebuild share.
+
 ### Task 4 — Orientation (completes REQ-0.35.0-15-06; Requirement 10)
 
 `collect_adr_pipeline` in `scripts/session_orientation.py` also reports `position`; `_render_adr_pipeline` shows the stage reached and the position inside it. Tests in `tests/scripts/test_session_orientation.py`: an in-flight run advanced past its launch stage renders the stage reached and its position, not the launch stage.
@@ -128,6 +130,8 @@ Corrections carried into this task from the Task 2 review rounds (unmapped obser
 ### Task 5 — Docs, in the same change (completes REQ-0.35.0-15-08 and REQ-0.35.0-15-09; Requirements 14, 18)
 
 `docs/user/manpages/obpi-pipeline.md` states the marker contract, including `position`, and corrects two misstatements: `--from=verify` "clears active markers on success" and `--from=ceremony` "clears active markers on exit"; the runtime keeps both markers until Stage 5. It also says a `gz task` event re-enters `implement`, and how a deleted marker is rebuilt. `docs/user/runbook.md` agrees with it. `docs/user/manpages/state.md` states the rebuild and what it omits. `docs/governance/GovZero/obpi-runtime-contract.md` § Active Pipeline Marker Fields adds `position` and the `sync` value of `entry` and `current_stage`. `docs/governance/pipeline-marker-migration-path.md` describes the Layer-2 source and the rebuild as ruled, not as future intent.
+
+Added on the operator's ruling of 2026-10-12 (brief Question 14), three surfaces that still describe `gz state --repair` as frontmatter-only: the `--repair` help text in `src/gzkit/cli/parser_governance.py` (the string only; `uv run gz cli audit` stays green), the repair-sequence line in `docs/governance/state-doctrine.md`, and `.gzkit/skills/gz-state/SKILL.md`, edited at the canonical path with `skill-version` and `last_reviewed` bumped and its mirrors regenerated by `uv run gz agent sync control-surfaces`. `docs/user/manpages/state.md`, written in Task 3, is checked against them, and `docs/user/runbook.md` and the manpages state the `markers` object that `gz state --repair --json` now returns.
 
 ### After the tasks — verify and prove (Requirement 15)
 

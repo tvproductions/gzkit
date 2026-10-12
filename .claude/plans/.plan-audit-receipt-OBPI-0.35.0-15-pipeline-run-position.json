@@ -1,6 +1,6 @@
 {
   "obpi_id": "OBPI-0.35.0-15-pipeline-run-position",
-  "timestamp": "2026-10-12T00:34:14.984520+00:00",
+  "timestamp": "2026-10-12T01:12:29.452117+00:00",
   "verdict": "PASS",
   "plan_file": "pipeline-run-position-OBPI-0.35.0-15.md",
   "gaps_found": 0,
@@ -66,7 +66,8 @@
       "sibling_adr": "ADR-0.30.0",
       "sibling_obpi": "OBPI-0.30.0-03-okf-conformance-validator",
       "contested_paths": [
-        "src/gzkit/governance/trust_audits/events.py"
+        "src/gzkit/governance/trust_audits/events.py",
+        "src/gzkit/cli/parser_governance.py"
       ]
     },
     {
@@ -95,7 +96,8 @@
         "src/gzkit/commands/obpi_verify_packet.py",
         "src/gzkit/commands/obpi_acceptance.py",
         "src/gzkit/commands/task.py",
-        "src/gzkit/commands/state.py"
+        "src/gzkit/commands/state.py",
+        "src/gzkit/cli/parser_governance.py"
       ]
     },
     {
@@ -376,7 +378,8 @@
       "contested_paths": [
         "src/gzkit/pipeline_runtime.py",
         "src/gzkit/commands/obpi_stages.py",
-        "docs/user/runbook.md"
+        "docs/user/runbook.md",
+        "src/gzkit/cli/parser_governance.py"
       ]
     },
     {
@@ -396,14 +399,16 @@
       "contested_paths": [
         "src/gzkit/pipeline_runtime.py",
         "src/gzkit/commands/obpi_cmd.py",
-        "docs/user/runbook.md"
+        "docs/user/runbook.md",
+        "src/gzkit/cli/parser_governance.py"
       ]
     },
     {
       "sibling_adr": "ADR-0.33.0",
       "sibling_obpi": "OBPI-0.33.0-05-airlock-permitted-entry-door",
       "contested_paths": [
-        "docs/user/runbook.md"
+        "docs/user/runbook.md",
+        "src/gzkit/cli/parser_governance.py"
       ]
     },
     {
@@ -463,7 +468,8 @@
       "sibling_obpi": "OBPI-0.32.0-03-gz-ontology-interface",
       "contested_paths": [
         "src/gzkit/commands/state.py",
-        "docs/user/runbook.md"
+        "docs/user/runbook.md",
+        "src/gzkit/cli/parser_governance.py"
       ]
     },
     {
@@ -546,6 +552,13 @@
         "src/gzkit/commands/obpi_acceptance.py",
         "src/gzkit/commands/task.py",
         "src/gzkit/commands/state.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.9",
+      "sibling_obpi": "OBPI-0.0.9-01-three-layer-model-documentation",
+      "contested_paths": [
+        "docs/governance/state-doctrine.md"
       ]
     },
     {
@@ -749,6 +762,13 @@
     },
     {
       "sibling_adr": "ADR-0.0.74",
+      "sibling_obpi": "OBPI-0.0.74-04-mx-enter",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.74",
       "sibling_obpi": "OBPI-0.0.74-16-meta-validator-runner",
       "contested_paths": [
         "src/gzkit/events.py",
@@ -791,7 +811,8 @@
       "sibling_adr": "ADR-0.0.32",
       "sibling_obpi": "OBPI-0.0.32-05-init-update-flag",
       "contested_paths": [
-        "docs/user/runbook.md"
+        "docs/user/runbook.md",
+        "src/gzkit/cli/parser_governance.py"
       ]
     },
     {
@@ -819,7 +840,8 @@
       "sibling_adr": "ADR-0.0.32",
       "sibling_obpi": "OBPI-0.0.32-14-gz-upgrade-subcommand",
       "contested_paths": [
-        "docs/user/runbook.md"
+        "docs/user/runbook.md",
+        "src/gzkit/cli/parser_governance.py"
       ]
     },
     {
@@ -905,6 +927,13 @@
     },
     {
       "sibling_adr": "ADR-0.0.15",
+      "sibling_obpi": "OBPI-0.0.15-01-cli-command-scaffold",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.15",
       "sibling_obpi": "OBPI-0.0.15-04-dual-format-manifest",
       "contested_paths": [
         "src/gzkit/ledger_events.py"
@@ -957,7 +986,8 @@
         "src/gzkit/commands/obpi_verify_packet.py",
         "src/gzkit/commands/obpi_acceptance.py",
         "src/gzkit/commands/task.py",
-        "src/gzkit/commands/state.py"
+        "src/gzkit/commands/state.py",
+        "src/gzkit/cli/parser_governance.py"
       ]
     },
     {
@@ -1045,6 +1075,13 @@
       ]
     },
     {
+      "sibling_adr": "ADR-0.0.73",
+      "sibling_obpi": "OBPI-0.0.73-03-fidelity-assertions-and-gate",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py"
+      ]
+    },
+    {
       "sibling_adr": "ADR-0.0.25",
       "sibling_obpi": "OBPI-0.0.25-03-bdd-and-doc",
       "contested_paths": [
@@ -1094,7 +1131,8 @@
         "src/gzkit/commands/obpi_acceptance.py",
         "src/gzkit/commands/task.py",
         "src/gzkit/governance/trust_audits/events.py",
-        "src/gzkit/commands/state.py"
+        "src/gzkit/commands/state.py",
+        "src/gzkit/cli/parser_governance.py"
       ]
     },
     {
@@ -1105,10 +1143,18 @@
       ]
     },
     {
+      "sibling_adr": "ADR-0.0.13",
+      "sibling_obpi": "OBPI-0.0.13-05-persona-drift-monitoring",
+      "contested_paths": [
+        "src/gzkit/cli/parser_governance.py"
+      ]
+    },
+    {
       "sibling_adr": "ADR-0.0.11",
       "sibling_obpi": "OBPI-0.0.11-02-persona-control-surface-definition",
       "contested_paths": [
-        "src/gzkit/pipeline_runtime.py"
+        "src/gzkit/pipeline_runtime.py",
+        "src/gzkit/cli/parser_governance.py"
       ]
     },
     {
@@ -1137,6 +1183,13 @@
       "sibling_obpi": "OBPI-0.0.35-01-concept-page",
       "contested_paths": [
         "docs/user/runbook.md"
+      ]
+    },
+    {
+      "sibling_adr": "ADR-0.0.16",
+      "sibling_obpi": "OBPI-0.0.16-05-status-vocab-mapping",
+      "contested_paths": [
+        "docs/governance/state-doctrine.md"
       ]
     }
   ]

@@ -2822,7 +2822,7 @@ class TestAnIdNamesTheRunInFlightOrNone(unittest.TestCase):
 
     @covers("REQ-0.35.0-15-02")
     def test_an_adr_audit_ceremony_is_no_pipeline_run(self) -> None:
-        """``gz adr audit`` writes ``pipeline_launched`` too, and launches no run.
+        """``gz adr audit-begin`` writes ``pipeline_launched`` too, and launches no run.
 
         Its row carries the ADR's id and the entry ``audit``. A run is what
         ``gz obpi pipeline`` launches: the full launch or a ``--from`` entry.

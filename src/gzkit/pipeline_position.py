@@ -290,10 +290,10 @@ def replay_pipeline_position(
 
 #: The entries ``gz obpi pipeline`` launches a run with: the full launch and each
 #: ``--from`` re-entry. ``pipeline_launched`` is also written when ``gz adr
-#: audit`` opens an audit ceremony, under the ADR's id and the entry ``audit``
-#: (GHI #412: the nonce pairs a marker with its ledger row). That is no OBPI
-#: pipeline run: it has no stage, no position and no marker in the plans
-#: directory, so it is never a run in flight.
+#: audit-begin`` opens an audit ceremony, under the ADR's id and the entry
+#: ``audit`` (GHI #412: the nonce pairs a marker with its ledger row). That is
+#: no OBPI pipeline run: the ceremony's marker carries the stage ``audit``,
+#: which is no canonical stage, and no position, so it is never a run in flight.
 _RUN_ENTRIES = frozenset({"full", *(stage for stage in CANONICAL_STAGES if stage != "implement")})
 
 #: The receipt that ends a run (operator ruling 2026-10-11, OBPI-0.35.0-15
