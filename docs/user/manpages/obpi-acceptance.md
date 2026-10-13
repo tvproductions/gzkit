@@ -275,16 +275,14 @@ not a blocked acceptance. The boundary is recorded for the run that id names,
 under the id the run was launched with. The acceptance records stay keyed by
 the id as typed, and `init`, `prove` and `status` take the id as they did.
 
-The run position is promised for a run whose OBPI is not renamed while the
-run is in flight and is the only OBPI under its semver and item that is not
-retired (parked, withdrawn or superseded) while the run is in flight. A
-rename made while a run is in flight is followed by the ledger's own rule
-for renames as best effort, which the rest of this paragraph describes, and
-a boundary crossed after such a rename can go unrecorded, with no warning.
-If, at any time while the run is in flight, a second OBPI under the same
-semver and item is not retired, a boundary can go unrecorded or be recorded
-on the other OBPI's run, and a retirement or completion of one can end the
-run of the other, with no warning. A rename is not one of the events that end a
+A boundary is recorded by the id its command supplies: when that id names
+exactly one run in flight, the boundary is recorded for that run; when it
+names no run in flight, nothing is recorded; when it names more than one,
+nothing is recorded and a warning is logged. Which ids name which run after
+a rename, beside a second OBPI under the same semver and item, or after a
+retirement follows from what the rename, launch and retirement commands have
+written to the ledger and from the ledger's rule for renames, and is not
+promised here. A rename is not one of the events that end a
 run, and neither is a rename that is later reversed. A run is named by every
 id whose current name is the current name of its launch id, where an id's
 current name is where the ledger's `artifact_renamed` events leave it now, by

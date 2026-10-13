@@ -54,7 +54,9 @@ Current command contract:
 - before the verification or ceremony work the next two bullets describe,
   `--from=verify` and `--from=ceremony` each check the OBPI's Stage 2
   acceptance. While it is blocked, the command prints `BLOCKERS:`, exits `3`,
-  does none of that work and records no boundary
+  does none of that work and records no boundary; the launch has by then
+  written both markers afresh and appended its `pipeline_launched` event, as
+  every launch does
 - `--from=verify` reruns Stage 1, executes the baseline checks and the
   verification commands from the OBPI brief, adds Heavy-lane docs/BDD checks,
   and ends with `gz obpi precomplete`. A failed verification command records
@@ -218,16 +220,14 @@ When the rule gives the name no id, the boundary is recorded only if the name
 itself names a run in flight, by the rule in the next paragraph, and
 otherwise nothing is recorded.
 
-The run position is promised for a run whose OBPI is not renamed while the
-run is in flight and is the only OBPI under its semver and item that is not
-retired (parked, withdrawn or superseded) while the run is in flight. A
-rename made while a run is in flight is followed by the ledger's own rule
-for renames as best effort, which the rest of this paragraph describes, and
-a boundary crossed after such a rename can go unrecorded, with no warning.
-If, at any time while the run is in flight, a second OBPI under the same
-semver and item is not retired, a boundary can go unrecorded or be recorded
-on the other OBPI's run, and a retirement or completion of one can end the
-run of the other, with no warning. A rename is not one of the events that end a
+A boundary is recorded by the id its command supplies: when that id names
+exactly one run in flight, the boundary is recorded for that run; when it
+names no run in flight, nothing is recorded; when it names more than one,
+nothing is recorded and a warning is logged. Which ids name which run after
+a rename, beside a second OBPI under the same semver and item, or after a
+retirement follows from what the rename, launch and retirement commands have
+written to the ledger and from the ledger's rule for renames, and is not
+promised here. A rename is not one of the events that end a
 run, and neither is a rename that is later reversed. A run is named by every
 id whose current name is the current name of its launch id, where an id's
 current name is where the ledger's `artifact_renamed` events leave it now, by
@@ -293,7 +293,6 @@ to this command contract instead of re-explaining the stage engine in prose.
 
 The command exits non-zero and prints `BLOCKERS:` when:
 
-- the OBPI brief cannot be resolved
 - the OBPI brief is already completed
 - the OBPI brief fails authored-readiness validation (including scaffold placeholders) before execution
 - the parent ADR evaluation scorecard has a NO GO verdict (detected by `check_adr_evaluation_verdict`)
@@ -301,6 +300,10 @@ The command exits non-zero and prints `BLOCKERS:` when:
 - another OBPI is already active in the pipeline markers
 - any verification command fails in `--from=verify`
 - the OBPI's Stage 2 acceptance is blocked in `--from=verify` or `--from=ceremony`
+
+A launch whose OBPI id resolves to no brief is refused before any of these
+checks: the command prints one error message naming the id and no
+`BLOCKERS:` line, and exits `1`.
 
 Missing or unreadable plan-audit receipts are warnings, not blockers.
 Missing evaluation scorecards are not blockers (evaluation is advisory until run).

@@ -452,8 +452,10 @@ def _runs_named(events: Iterable[PipelineLedgerRow], obpi_id: str) -> list[Pipel
 
     Only a run in flight is a candidate, and a run ends at its receipt or when
     its OBPI is parked, withdrawn or superseded (:func:`_launches_in_flight`). A sibling
-    under a reused semver is therefore no ambiguity once it is finished or
-    retired, whether or not it was ever launched. Two siblings both launched
+    under a reused semver is no ambiguity once its run has ended, or if it was
+    never launched. A run is ended only by a row that follows its launch in the
+    ledger, so a sibling launched after it was retired holds a run in flight
+    until a later row ends it. Two siblings both launched
     and neither ended are two runs, and the short form then names neither.
 
     Ids are compared by current name (Open Design Questions 21 and 22),
@@ -578,8 +580,9 @@ def record_position(
     so a malformed one has already raised ``ValueError``, and any other defect
     in the record still raises.
 
-    Returns what the ledger says the run has reached, or ``None`` when no run
-    is in flight or the record could not be written.
+    Returns what the ledger says the run has reached, or ``None`` when the id
+    names no run in flight or names more than one, or the record could not be
+    written.
     """
     try:
         return _record_crossing(ledger, plans_dir, obpi_id, crossing)

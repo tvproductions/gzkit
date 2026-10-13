@@ -3454,9 +3454,9 @@ class TestAnIdNamesTheRunInFlightOrNone(unittest.TestCase):
         Parked, withdrawn or superseded: every way ``_RETIREMENTS`` names.
 
         The run that ends is the retired id's own, and a later launch of that
-        id starts a new one. A retired sibling's launch is then no candidate
-        for the short form: beside a live run it is no ambiguity, and alone
-        it is no run, so nothing is filed under an OBPI that was retired.
+        id starts a new one. A sibling's launch that its retirement followed
+        is then no candidate for the short form: beside a live run it is no
+        ambiguity, and alone it is no run.
         """
         launch = _launched("full", _LAUNCHED_AT)
         sibling = _launched("full", _LAUNCHED_AT, obpi_id=_SIBLING_OBPI)
