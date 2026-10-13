@@ -97,6 +97,13 @@ QC_CLAIM_EXEMPTS: dict[str, str] = {
     # defines what a violation IS -- the threshold case the bar above excludes --
     # and the .md-only walk is a scope predicate, also excluded. GHI #900.
     "wheel-path-literals": EXEMPTS_NONE,
+    # Measures live briefs against packaged bounds. A project may record a ceiling
+    # for a brief already over a bound, which is an admit path a project controls,
+    # so it is exercised by a registered control rather than declared away. The
+    # terminal-status skip is a scope predicate, as on `brief-structure`. GHI #1196.
+    "brief-size": "brief-size-grandfathered",
+    # The admit half reads the same gate and admits nothing of its own.
+    "brief-size-grandfathered": EXEMPTS_NONE,
     # AST scan of tests/** for a literal `git` argv spawned without the boundary
     # env. No waiver table, allowlist, escape marker or opt-in flag admits an
     # offender; the literal-argv scope is a scope predicate, disclosed in the

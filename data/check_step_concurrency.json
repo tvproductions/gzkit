@@ -37,6 +37,10 @@
       "measured_seconds": 29.17,
       "shards": 4
     },
+    "Brief size": {
+      "class": "read_only",
+      "measured_seconds": 0.69
+    },
     "Brief structure": {
       "class": "read_only",
       "measured_seconds": 0.24

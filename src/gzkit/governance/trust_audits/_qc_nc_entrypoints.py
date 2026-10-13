@@ -612,6 +612,29 @@ def _ep_invariant_coherence(root: Path) -> list[ValidationError]:
     return validate_invariant_coherence(root)
 
 
+def _ep_brief_size(root: Path) -> list[ValidationError]:
+    """Return the finding against the over brief, and nothing when a decoy fired.
+
+    The runner passes a control on any truthy result that carries the expected
+    text, so findings returned unfiltered would let a gate that also measures a
+    sealed brief, or refuses the bound itself, pass. A finding against anything
+    but the over brief therefore reports no catch, and the control fails.
+    """
+    from gzkit.governance.trust_audits.brief_size import audit_brief_size  # noqa: PLC0415
+
+    errors = audit_brief_size(root)
+    if any("OBPI-0.0.99-01-over" not in error.artifact for error in errors):
+        return []
+    return errors
+
+
+def _ep_brief_size_admits_grandfathered(root: Path) -> int:
+    """Truthy only when the gate ADMITS a brief at its recorded ceiling."""
+    from gzkit.governance.trust_audits.brief_size import audit_brief_size  # noqa: PLC0415
+
+    return 0 if audit_brief_size(root) else 1
+
+
 def _ep_brief_structure(root: Path) -> list[ValidationError]:
     from gzkit.governance.trust_audits.brief_structure import (  # noqa: PLC0415
         validate_brief_structure,

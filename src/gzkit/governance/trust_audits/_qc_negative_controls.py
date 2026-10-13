@@ -1277,6 +1277,69 @@ def _build_invariant_coherence() -> Path:
     return root
 
 
+def _brief_size_brief(slug: str, status: str, reqs: int) -> str:
+    """Render a brief carrying ``reqs`` acceptance criteria and nothing else of size."""
+    criteria = "".join(
+        f"- [ ] REQ-0.0.99-01-{n:02d} [BEHAVIOR]: Given a, when b, then c\n"
+        for n in range(1, reqs + 1)
+    )
+    return (
+        "---\n"
+        f"id: OBPI-0.0.99-01-{slug}\n"
+        "parent: ADR-0.0.99-negative-control\n"
+        "lane: Lite\n"
+        f"status: {status}\n"
+        "---\n\n"
+        f"# OBPI-0.0.99-01-{slug}\n\n"
+        "## Allowed Paths\n\n- `src/gzkit/alpha.py`\n\n"
+        "## Requirements (FAIL-CLOSED)\n\n1. REQUIREMENT: one\n\n"
+        f"## Acceptance Criteria\n\n{criteria}\n"
+        "## Evidence\n\n- none\n"
+    )
+
+
+def _build_brief_size() -> Path:
+    """Build a LIVE brief one REQ past the bound — the gate MUST fire (GHI #1196).
+
+    Two decoys carry the property under control: a TERMINAL brief further past
+    the bound, and a live brief exactly AT the bound. Both must stay silent, and
+    the entrypoint reports no catch when either fires, so the control fails on an
+    arm that measures sealed records or refuses the bound itself. The count is
+    read from the declared bound, never written here, so the fixture follows a
+    re-ruled bound.
+    """
+    from gzkit.governance.trust_audits.brief_size import load_bounds  # noqa: PLC0415
+
+    bound = load_bounds()["reqs"]
+    obpis = _mkroot("brief-size") / "docs" / "design" / "adr" / "pkg" / "obpis"
+    _write(obpis / "OBPI-0.0.99-01-over.md", _brief_size_brief("over", "Draft", bound + 1))
+    _write(obpis / "OBPI-0.0.99-01-sealed.md", _brief_size_brief("sealed", "Completed", bound + 9))
+    _write(obpis / "OBPI-0.0.99-01-at.md", _brief_size_brief("at", "Draft", bound))
+    return obpis.parents[4]
+
+
+def _build_brief_size_grandfathered() -> Path:
+    """Build a live brief past the bound and AT its recorded ceiling — the gate MUST admit it.
+
+    The admit half of the gate (GHI #797 precedent). A gate that stopped
+    honouring a recorded ceiling would hold every project with a brief already
+    over a bound red at cutover. The refuse half is proven by ``brief-size``.
+    """
+    from gzkit.governance.trust_audits.brief_size import load_bounds  # noqa: PLC0415
+
+    over = load_bounds()["reqs"] + 2
+    root = _mkroot("brief-size-grandfathered")
+    _write(
+        root / "docs" / "design" / "adr" / "pkg" / "obpis" / "OBPI-0.0.99-01-held.md",
+        _brief_size_brief("held", "Draft", over),
+    )
+    _write(
+        root / "data" / "brief_size_grandfather.json",
+        json.dumps({"ceilings": {"OBPI-0.0.99-01-held": {"reqs": over}}}),
+    )
+    return root
+
+
 def _build_brief_structure() -> Path:
     """Build a LIVE brief with no structured frontmatter — the gate MUST fire (GHI #615).
 
@@ -1847,6 +1910,13 @@ _QC_NEGATIVE_CONTROL_TABLE: tuple[tuple[Any, ...], ...] = (
     ("invariant-coherence", _build_invariant_coherence, _ep._ep_invariant_coherence),
     ("corpus-retirement-witness", _cr.build_retirement_witness, _ep._ep_corpus_retirement_witness),
     ("brief-structure", _build_brief_structure, _ep._ep_brief_structure),
+    ("brief-size", _build_brief_size, _ep._ep_brief_size, "OBPI-0.0.99-01-over measures"),
+    # Admit half: a recorded ceiling, exercised at a brief past the bound (GHI #1196).
+    (
+        "brief-size-grandfathered",
+        _build_brief_size_grandfathered,
+        _ep._ep_brief_size_admits_grandfathered,
+    ),
     (
         "session-green-gate",
         _build_session_green_gate,

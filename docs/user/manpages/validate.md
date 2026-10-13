@@ -19,6 +19,7 @@ gz validate [--manifest] [--documents] [--surfaces] [--ledger]
             [--rendition-floor-coherence] [--rendition-lineage]
             [--corpus-retirement-witness]
             [--invariant-coherence] [--invariant-witness] [--brief-reconcile] [--brief-structure]
+            [--brief-size]
             [--router-tables]
             [--kind-invariance] [--persona-witness] [--req-kind-discipline] [--brief-command-shape]
             [--status-writer-coverage]
@@ -2274,6 +2275,61 @@ Runs in the default `gz check` pipeline as **Brief structure**.
 
 **Related:** GHI #615 (schema built but never enforced), ADR-0.0.37-04 (`BriefStructure`).
 
+### `--brief-size`
+
+Measures every **live** OBPI brief on five dimensions and fails closed (exit 3) on
+any that exceeds its declared bound:
+
+| Dimension | What is measured |
+|-----------|------------------|
+| `reqs` | Distinct REQ ids in `## Acceptance Criteria` |
+| `requirements` | Numbered items in `## Requirements (FAIL-CLOSED)` |
+| `allowed_paths` | Distinct entries in `## Allowed Paths`, as the scope hook reads them |
+| `contract_bytes` | Bytes of the brief before `## Evidence` |
+| `total_bytes` | Bytes of the whole brief |
+
+The first four describe the brief as authored, so a brief born too large is refused
+before its run starts. `total_bytes` includes `## Evidence`, so a run that only
+appends to its brief is stopped as well.
+
+The bounds are the table in `src/gzkit/brief_size_bounds.json`, which ships in the
+package and records the corpus measurement each bound was derived from. A project
+may hold ceilings for briefs that were already over a bound at cutover, in
+`data/brief_size_grandfather.json`. A ceiling admits its own brief on its own
+dimension up to the recorded value and nothing else; entries and values may only be
+removed or lowered (`gz validate --waiver-ratchet` holds the entries,
+`tests/governance/test_brief_size.py` holds the values). A ceiling file that cannot
+be read is itself a finding and admits nothing.
+
+Terminal briefs are **out of scope**, for the reason `--brief-structure` gives.
+
+**Usage:**
+
+```bash
+gz validate --brief-size
+```
+
+**Observed output:**
+
+```console
+$ uv run gz validate --brief-size
+Validated: brief_size
+
+✓ All validations passed (1 scopes).
+```
+
+**Exit codes:**
+
+| Code | Meaning | Recovery |
+|------|---------|----------|
+| 0 | Every live brief is inside its bounds or its recorded ceilings | — |
+| 3 | A live brief exceeds a bound or a ceiling, or the ceiling file is unusable | Split the brief under its parent ADR or cut it back, then re-run `gz validate --brief-size` |
+
+Runs in the default `gz check` pipeline as **Brief size**.
+
+**Related:** GHI #1196 (no size bound was measured at authoring or during a run),
+`docs/governance/GovZero/obpi-decomposition-matrix.md` (the rule this scope witnesses).
+
 ### `--router-tables`
 
 Audits the six namespace-router skills authored under ADR-0.27.0 (`gz-workflow`,
@@ -2814,6 +2870,7 @@ part of `gz validate --audits` / `gz check` aggregate passes.
 | `--tautological-test-audit` | opt-in | Fail closed (exit 3) when tautological-test count exceeds baseline + waivers; `current > baseline + W` → exit 3; waivers at `data/tautological_test_waivers.json` (OBPI-0.0.59-04) |
 | `--task-envelope-coherence` | opt-in | Fail closed (exit 3) on TASK attribution drift: worklog without task_id, all-seq=01 without req_atomic, layer-drift across channels, or obpi_id divergence on one task_id (ADR-0.0.64 / OBPI-04, GHI #653) |
 | `--brief-reconcile` | opt-in | Check the OBPI brief corpus against project shape across five drift dimensions (frontmatter coherence, lane mismatch, unreplaced scaffold defaults, and more) (ADR-0.0.37) |
+| `--brief-size` | opt-in | Every live OBPI brief is inside its declared size bounds on REQs, requirements, allowed paths, contract bytes and total bytes (GHI #1196) |
 | `--brief-structure` | opt-in | Every live OBPI brief carries valid structured frontmatter (`allowlist`, `reqs`, `verification`) instead of falling back to `LegacyBriefShape` |
 | `--changelog` | opt-in | Hermetic structural audit of `CHANGELOG.md` against `.gzkit/templates/changelog.md`: version headers and section headings (GHI #685) |
 | `--config-registry` | opt-in | Every top-level registry under `data/` is declared, with an owner and a loader (GHI #929) |

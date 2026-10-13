@@ -904,6 +904,12 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
         help="Every live OBPI brief satisfies the BriefStructure schema, exit 3 (GHI #615).",
     )
     p_validate.add_argument(
+        "--brief-size",
+        dest="check_brief_size",
+        action="store_true",
+        help="Every live OBPI brief is inside its declared size bounds, exit 3 (GHI #1196).",
+    )
+    p_validate.add_argument(
         "--distribution",
         dest="check_distribution",
         action="store_true",
@@ -1170,6 +1176,7 @@ def _register_quality_parsers(commands: argparse._SubParsersAction) -> None:
             check_invariant_witness=a.check_invariant_witness,
             check_brief_reconcile=a.check_brief_reconcile,
             check_brief_structure=a.check_brief_structure,
+            check_brief_size=a.check_brief_size,
             check_router_tables=a.check_router_tables,
             check_req_kind_discipline=a.check_req_kind_discipline,
             check_status_writer_coverage=a.check_status_writer_coverage,

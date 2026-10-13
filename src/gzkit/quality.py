@@ -1235,6 +1235,19 @@ def run_brief_structure_audit(project_root: Path) -> QualityResult:
     return run_command("uv run gz validate --brief-structure", cwd=project_root)
 
 
+def run_brief_size_audit(project_root: Path) -> QualityResult:
+    """Run the OBPI brief size gate (GHI #1196).
+
+    Fails closed when a live (non-terminal) brief exceeds a declared bound on its
+    REQ count, requirement count, allowed-path count, contract bytes or total
+    bytes. The decomposition matrix required an oversized unit to be split and
+    nothing measured one brief, so a brief could be authored oversized and grow
+    through its run. Recovery: split or cut back the brief, then
+    `uv run gz validate --brief-size`.
+    """
+    return run_command("uv run gz validate --brief-size", cwd=project_root)
+
+
 def run_invariant_coherence_audit(project_root: Path) -> QualityResult:
     """Run the composition-drift gate: AGENTS.md vs committed rendition playback.
 

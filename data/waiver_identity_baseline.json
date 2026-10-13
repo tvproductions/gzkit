@@ -1919,6 +1919,17 @@
       "precomplete-check::_check_reconcile_idempotent",
       "precomplete-check::_check_stage2_dispatch",
       "precomplete-check::_check_task_envelope_coherence"
+    ],
+    "data/brief_size_grandfather.json": [
+      "OBPI-0.34.0-02-authoring-time-kind-rejection",
+      "OBPI-0.35.0-09-codex-playback-wiring",
+      "OBPI-0.35.0-12-rules-corpus-onboarding",
+      "OBPI-0.35.0-16-next-command-for-position",
+      "OBPI-0.35.0-17-stage-procedure-served-by-runtime",
+      "OBPI-0.35.0-18-dispatch-outcome-recording",
+      "OBPI-0.35.0-19-lock-continuity-across-sessions",
+      "OBPI-0.35.0-20-pipeline-skill-cutover",
+      "OBPI-0.36.0-09-asked-question-gate-dark"
     ]
   },
   "authorizations": [

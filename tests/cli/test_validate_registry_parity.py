@@ -179,6 +179,11 @@ _POST_SNAPSHOT_EXPLICIT_ADDITIONS: frozenset[str] = frozenset(
         # remembers the flag would never fire on the commit that introduced it.
         "python_version_pins",
         "rendition_lineage",
+        # Per-brief size bounds (GHI #1196). Explicit tier beside `brief_structure`,
+        # whose subject it shares: the live briefs under `docs/design/adr`.
+        # `in_check` from the outset, because a brief grows inside a run and a
+        # gate that waits for an operator to pass the flag never sees it grow.
+        "brief_size",
     }
 )
 

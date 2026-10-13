@@ -344,6 +344,16 @@
       "identity": {
         "kind": "strings"
       }
+    },
+    {
+      "data_file": "data/brief_size_grandfather.json",
+      "gates_step": "Brief size (gz validate --brief-size)",
+      "mechanism": "shrink-ratchet",
+      "entries_path": "ceilings",
+      "baseline_count": 9,
+      "identity": {
+        "kind": "keys"
+      }
     }
   ],
   "excluded": [

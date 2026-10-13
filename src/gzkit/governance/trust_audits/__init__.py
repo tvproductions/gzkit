@@ -49,6 +49,9 @@ from gzkit.governance.trust_audits.authorship import (
 from gzkit.governance.trust_audits.brief_reconcile import (
     validate_brief_reconcile,
 )
+from gzkit.governance.trust_audits.brief_size import (
+    audit_brief_size,
+)
 from gzkit.governance.trust_audits.brief_structure import (
     validate_brief_structure,
 )
@@ -231,6 +234,7 @@ __all__ = [
     "evaluate_python_version_pins",
     "audit_brief_demo_section",
     "audit_brief_headings",
+    "audit_brief_size",
     "audit_agents_md_map_conformance",
     "audit_chore_metadata_authority",
     "audit_chore_rung_conformance",

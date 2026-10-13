@@ -1,0 +1,48 @@
+{
+  "_doc": "Cutover ceilings for live OBPI briefs that were over a bound in src/gzkit/brief_size_bounds.json when gz validate --brief-size landed (GHI #1196). A ceiling admits its own brief on its own dimension up to the recorded value. Entries and values may only be removed or lowered. Accepted at cutover by operator ruling 2026-10-13, verbatim: \"ratify the bounds and ceilings, land it\".",
+  "ceilings": {
+    "OBPI-0.34.0-02-authoring-time-kind-rejection": {
+      "total_bytes": 32068
+    },
+    "OBPI-0.35.0-09-codex-playback-wiring": {
+      "reqs": 11,
+      "contract_bytes": 26079,
+      "total_bytes": 40812
+    },
+    "OBPI-0.35.0-12-rules-corpus-onboarding": {
+      "allowed_paths": 45
+    },
+    "OBPI-0.35.0-16-next-command-for-position": {
+      "requirements": 17,
+      "allowed_paths": 48,
+      "contract_bytes": 36167,
+      "total_bytes": 38352
+    },
+    "OBPI-0.35.0-17-stage-procedure-served-by-runtime": {
+      "requirements": 16,
+      "contract_bytes": 39489,
+      "total_bytes": 41674
+    },
+    "OBPI-0.35.0-18-dispatch-outcome-recording": {
+      "requirements": 15,
+      "allowed_paths": 36,
+      "contract_bytes": 37543,
+      "total_bytes": 40909
+    },
+    "OBPI-0.35.0-19-lock-continuity-across-sessions": {
+      "reqs": 15,
+      "requirements": 13,
+      "allowed_paths": 44,
+      "contract_bytes": 42092,
+      "total_bytes": 46183
+    },
+    "OBPI-0.35.0-20-pipeline-skill-cutover": {
+      "requirements": 14,
+      "contract_bytes": 27610
+    },
+    "OBPI-0.36.0-09-asked-question-gate-dark": {
+      "allowed_paths": 36,
+      "contract_bytes": 25141
+    }
+  }
+}

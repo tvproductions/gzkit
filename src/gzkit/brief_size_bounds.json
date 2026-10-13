@@ -1,0 +1,18 @@
+{
+  "_doc": "Per-brief size bounds read by gz validate --brief-size (GHI #1196). A live OBPI brief whose measured value exceeds `max` on any dimension fails closed. Authority for the rule: docs/governance/GovZero/obpi-decomposition-matrix.md (Refining Overlay). The numbers are the 95th percentile of the terminal brief corpus, the block percentile .gzkit/rules/complexity-thresholds.json uses; re-derive them, do not hand-tune them.",
+  "derivation": {
+    "population": "terminal OBPI briefs under docs/design/adr (is_terminal_brief_status)",
+    "population_size": 523,
+    "measured_at_commit": "f588f570b",
+    "measured_on": "2026-10-13",
+    "method": "linear-interpolated percentile of measure_brief() over the population, floored to an integer",
+    "ratified": "operator ruling 2026-10-13, verbatim: \"ratify the bounds and ceilings, land it\""
+  },
+  "bounds": {
+    "reqs": {"corpus_percentile": 95, "max": 10},
+    "requirements": {"corpus_percentile": 95, "max": 12},
+    "allowed_paths": {"corpus_percentile": 95, "max": 29},
+    "contract_bytes": {"corpus_percentile": 95, "max": 21804},
+    "total_bytes": {"corpus_percentile": 95, "max": 30481}
+  }
+}

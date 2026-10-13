@@ -322,6 +322,34 @@
       "authority": "GHI #1191 (operator ruling 2026-10-11, verbatim: \"move the canary sweep to the full tier\")",
       "proposed_by": "claude-code session 2026-10-11",
       "reviewed_by": "g0"
+    },
+    {
+      "claim_id": "brief-size",
+      "guard": "gzkit.governance.trust_audits.brief_size:audit_brief_size",
+      "failing_test": "tests.governance.test_brief_size.TestBriefSizeScope.test_each_counted_dimension_fails_closed_one_past_its_bound",
+      "mutation": {
+        "find": "            if size[dimension] <= limit:\n",
+        "replace": "            if True:\n",
+        "label": "a measured size is never compared with its bound"
+      },
+      "binding_sha256": "321b762160713fae6697d25b0d87f82a253429c1e5cd8c83fef5004b3c8c774c",
+      "authority": "GHI #1196",
+      "proposed_by": "claude-code session 2026-10-13",
+      "reviewed_by": null
+    },
+    {
+      "claim_id": "brief-size-grandfathered",
+      "guard": "gzkit.governance.trust_audits.brief_size:audit_brief_size",
+      "failing_test": "tests.governance.test_brief_size.TestGrandfatherCeilings.test_a_ceiling_admits_the_brief_up_to_the_ceiling_and_no_further",
+      "mutation": {
+        "find": "            limit = bounds[dimension] if ceiling is None else ceiling\n",
+        "replace": "            limit = bounds[dimension]\n",
+        "label": "a recorded ceiling is never honoured"
+      },
+      "binding_sha256": "b9fd7498070d46384c54f2b502bd3d8b70a655b2c2d0fe196a959598222180ac",
+      "authority": "GHI #1196",
+      "proposed_by": "claude-code session 2026-10-13",
+      "reviewed_by": null
     }
   ]
 }

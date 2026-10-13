@@ -118,6 +118,13 @@ ADR checklist count MUST equal `Final Target OBPI Count`.
 This is enforced as a mechanics contract in gzkit command surfaces (`gz plan` seed + `gz specify`
 binding + validation checks).
 
+### Step 5: Per-Brief Size Bounds
+
+Steps 1 to 4 set how many briefs an ADR has. They do not measure one brief. Each live brief is
+also held to size bounds on its REQs, requirements, allowed paths, contract bytes and total bytes
+by `gz validate --brief-size`, which runs in `gz check`. The bounds are the table in
+`src/gzkit/brief_size_bounds.json`; a brief past one is split, as the Refining Overlay requires.
+
 ### Calibration Policy
 
 Cutoffs are notional defaults, not immutable constants. They MUST be reviewed and tuned from project

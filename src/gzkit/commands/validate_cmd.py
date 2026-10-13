@@ -458,6 +458,7 @@ VALIDATOR_REGISTRY: tuple[_ScopeEntry, ...] = (
     _ScopeEntry(
         "brief_structure", "explicit", True, lambda r, _f: _ta().validate_brief_structure(r)
     ),
+    _ScopeEntry("brief_size", "explicit", True, lambda r, _f: _ta().audit_brief_size(r)),
     _ScopeEntry("router_tables", "explicit", True, lambda r, _f: _ta().audit_router_tables(r)),
     _ScopeEntry(
         "req_kind_discipline", "explicit", True, lambda r, _f: _validate_req_kind_discipline(r)
@@ -1152,6 +1153,7 @@ _POLICY_BREACH_ERROR_TYPES: frozenset[str] = frozenset(
         "invariant_witness",
         "brief_reconcile",
         "brief_structure",
+        "brief_size",
         "router_tables",
         "req_kind_discipline",
         "status_writer_coverage",
@@ -1541,6 +1543,7 @@ def validate(
     check_invariant_witness: bool = False,
     check_brief_reconcile: bool = False,
     check_brief_structure: bool = False,
+    check_brief_size: bool = False,
     check_router_tables: bool = False,
     check_req_kind_discipline: bool = False,
     check_status_writer_coverage: bool = False,
@@ -1684,6 +1687,7 @@ def validate(
         "invariant_witness": check_invariant_witness,
         "brief_reconcile": check_brief_reconcile,
         "brief_structure": check_brief_structure,
+        "brief_size": check_brief_size,
         "router_tables": check_router_tables,
         "req_kind_discipline": check_req_kind_discipline,
         "status_writer_coverage": check_status_writer_coverage,
