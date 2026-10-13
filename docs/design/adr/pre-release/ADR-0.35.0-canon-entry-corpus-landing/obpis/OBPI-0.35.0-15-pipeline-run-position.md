@@ -4,7 +4,7 @@ parent: ADR-0.35.0-canon-entry-corpus-landing
 item: 15
 lane: Heavy
 sensitivity: security
-status: Active
+status: Completed
 allowlist:
   - src/gzkit/pipeline_markers.py
   - src/gzkit/pipeline_position.py
@@ -71,6 +71,13 @@ tasks:
   - TASK-0.35.0-15-07-01
   - TASK-0.35.0-15-08-01
   - TASK-0.35.0-15-09-01
+  - TASK-0.35.0-15-02-02
+  - TASK-0.35.0-15-08-02
+# TASK-0.35.0-15-02-02 and TASK-0.35.0-15-08-02 were minted on 2026-10-13 at Stage 5, with the operator's approval
+# ("approve ... the retroactive task subdivision"), as RETROACTIVE attribution (GHI #590). The labour they stand for
+# was done earlier under the seq=01 TASKs and was not subdivided when it happened: for REQ-0.35.0-15-02, fix cycles 1 to 9;
+# for REQ-0.35.0-15-08, the Task 5 fix cycles. Every commit of that labour carries the seq=01 trailer. No req_atomic
+# exemption is declared, because those two requirements were not atomic.
 ---
 
 # OBPI-0.35.0-15-pipeline-run-position: Pipeline Run Position
@@ -83,7 +90,7 @@ tasks:
 
 > 11. A PIPELINE RUN'S POSITION IS READABLE FROM DISK (operator-ruled 2026-10-04, GHI #1172; repair assignment, amendment in § Intent). The stage a run has reached, and its position inside that stage, are recorded as the run crosses each boundary, so a process that did not perform the run can read them. Obligation repaired: `ADR-0.13.0` § Intent, "one canonical command contract for launch, stage progression, resume, abort, and sync", and § Decision, "Persist pipeline stage state in a repository-local, machine-readable form". The marker stays Layer 3 under `ADR-0.0.9`: rebuildable from canon and ledger, and never gate evidence.
 
-**Status:** Draft
+**Status:** Completed
 
 ## Objective
 
@@ -548,6 +555,34 @@ The real-run half of the exit condition is not a Demo command, because `gz obpi 
 <!-- Record observations during/after implementation.
      Command outputs, file:line references, dates. -->
 
+### Step 4b — Independent Adversarial Validation
+
+**Adversary identity and tier.** Tier 1, cross-vendor: OpenAI Codex dispatched through the
+`openai-codex` Claude Code plugin (`codex-companion.mjs task --write --cwd <disposable checkout>`),
+ARB-wrapped on both rounds. Each round ran in a throwaway writable copy of the reviewed tree built
+by `gz obpi adversary-workspace`. `codex-companion.mjs setup --json` reported `ready: true` before
+round 1, so tiers 2 and 3 were not used. The brief carries no Threat Model section, by operator
+ruling ("No section (Recommended)"); the prompt said the brief asserts no tamper resistance.
+
+| Round | Receipt | Verdict | Claims broken / outcome |
+|---|---|---|---|
+| 1 | `arb-step-codexadversary-1724336063044e33bb799eef0d714298` | **NOT-CORROBORATED / refuted** | 7 of 9 proofs approved after 14 replays (two substitutions per BEHAVIOR requirement, each failing on an assertion and restoring green) and its own end-to-end script. `fin-4b1-REQ08-missing-cited-edit-event` and `fin-4b1-REQ09-missing-cited-edit-event`: each SUPPORT requirement names an `artifact_edited` row citing its document; the ledger holds none; the resolver passed on the document existing. The document content was corroborated. It also said the Step 4a packet's "edit record" description overstated the proof |
+| 2 | `arb-step-codexadversary-f306181059844d2fbfd942ed4d088a50` | **CORROBORATED-WITH-CAVEATS / accepted** (focused follow-up on REQ-0.35.0-15-08 and -09 only) | Both findings closed and both proofs approved "under the operator's recorded reading: document on disk plus its validator". Caveat, verbatim: "The unchanged clauses still literally name absent edit events. These closures depend on the explicit, unit-specific operator interpretation ... The general resolver defect remains open." |
+
+**How each was resolved.** No code and no requirement text changed between the rounds. The run was
+blocked with `gz obpi block`. Asked "How do you rule on Codex's two findings, that REQ-0.35.0-15-08
+and -09 name an artifact_edited ledger witness that does not exist?", the operator answered,
+verbatim: "A. Rule on the reading (Recommended)": the witness is read as the resolver defines it,
+the document on disk plus its validator. The packet's description of the two proofs was corrected
+to say that no such ledger row exists and that the earlier description was wrong. The class, that
+`docs/governance/req-scope-discipline.md` requires a ledger event the hooks cannot record for these
+paths while `resolve_support_proof` accepts the file existing, is GHI #1202, open.
+
+**What the adversary did not confirm.** The full unit suite, lint, typecheck, docs build and
+`gz check` (it read their receipts); every recorded substitution (it replayed two per BEHAVIOR
+requirement); an unmocked end-to-end completion; real git hooks; the packet's replay verdict in
+round 2.
+
 ### Change Log
 
 <!-- Keep substantive implementation, test, documentation, and evidence
@@ -616,53 +651,85 @@ The real-run half of the exit condition is not a Demo command, because `gz obpi 
 
 ### Gate 1 (ADR)
 
-- [ ] Intent and scope recorded
+- [x] Intent and scope recorded
 
 ### Gate 2 (TDD — Red-Green-Refactor)
 
 ```text
-# Paste test output here
+# uv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer
+Ran 11772 tests in 133.539s
+OK (skipped=4)
+receipt arb-step-unittest-4c66fba2a5634fdda9ed4d5fb80186d0, exit_status 0
 ```
 
 ### Code Quality
 
 ```text
-# Paste lint/format/type check output here
+# uv run gz arb ruff
+receipt arb-ruff-e58e877fec34403e9cdcadcc6ac1be2d, exit_status 0
+# uv run gz arb typecheck
+receipt arb-step-typecheck-8de481c0b00641fdb8dc499484fb24f2, exit_status 0
 ```
 
 ### Gate 3 (Docs)
 
 ```text
-# Paste docs-build output here when Gate 3 applies
+# uv run gz arb step --name mkdocs -- uv run mkdocs build --strict
+receipt arb-step-mkdocs-99e9aa2578ef404d98efb8dafb26b8d7, exit_status 0
 ```
 
 ### Gate 4 (BDD)
 
 ```text
-# Paste behave output here when Gate 4 applies
+# uv run gz arb step --name behave -- uv run -m behave features/pipeline_run_position.feature
+1 feature passed, 0 failed, 0 skipped
+40 scenarios passed, 0 failed, 0 skipped
+270 steps passed, 0 failed, 0 skipped
+receipt arb-step-behave-725360f5030146b6af03e5f4b6ff19fd, exit_status 0
 ```
 
 ### Gate 5 (Human)
 
 ```text
-# Record attestation text here when required by parent lane
+Operator g0, 2026-10-13, verbatim: "attest completed"
+Then, verbatim: "approve the security-floor override with that reason, and the retroactive task subdivision"
+Given against the replay-VERIFIED Step 4a packet at .gzkit/evidence/OBPI-0.35.0-15-pipeline-run-position.stage4a.md.
 ```
 
 ### Value Narrative
 
-<!-- What problem existed before this OBPI, and what capability exists now? -->
+Before this OBPI a pipeline marker recorded the stage the launch named. A run launched in full read `implement` for its whole life, so a new session's orientation could not say where the run was, and the post-Stage-2 fence never bound a full run.
+
+Now each ruled boundary appends one `pipeline_stage_transition` event to the ledger and then advances both marker files. The marker carries the stage reached and a `position` (kind, label, boundary); `gz state --repair` rebuilds a deleted marker from the ledger; the session orientation shows the stage reached and the position inside it.
+
+This holds for boundaries the recorder records for the run its own rule names (Open Design Question 26). Which ids name which run after a rename, beside a second OBPI under the same semver and item, or after a retirement is not asserted, and its gaps are GHI #1194, GHI #1195 and GHI #1199. REQ-0.35.0-15-02 was refuted nine times in Stage 2 before it was restated to that narrower claim.
 
 ### Key Proof
 
-<!-- One concrete usage example, command, or before/after behavior. -->
+
+This OBPI's own run, launched in full on 2026-10-11 (entry `full`, launch stage `implement`), read by a new process after it crossed `gz obpi present-evidence` (Requirement 15):
+
+```text
+$ uv run python scripts/session_orientation.py
+...
+## Active ADR pipeline state
+- OBPI-0.35.0-15-pipeline-run-position (ADR-0.35.0-canon-entry-corpus-landing) — stage: ceremony
+  - Position inside the stage: round `present-evidence`, marked by `gz obpi present-evidence`
+...
+```
+
+Executed proof `proof-ea77aca538b24c87a6c1b7bf9e16ee3f` (REQ-0.35.0-15-06): 5 covering tests, 3 substitutions killed on an assertion. The rebuild of a deleted marker is `proof-6705a688eb384821a8e280ab0ac0d7e9` (REQ-0.35.0-15-03). The acceptance feature passed 40 scenarios (`arb-step-behave-725360f5030146b6af03e5f4b6ff19fd`) and the full unit suite 11772 tests (`arb-step-unittest-4c66fba2a5634fdda9ed4d5fb80186d0`). `gz obpi verify-packet` replayed the Step 4a packet as VERIFIED, and the Codex adversary replayed 14 substitutions in a disposable copy (`arb-step-codexadversary-1724336063044e33bb799eef0d714298`).
 
 ### Implementation Summary
 
-- Files created/modified:
-- Tests added:
-- Date completed:
-- Attestation status:
-- Defects noted:
+
+- Files created/modified: created `src/gzkit/pipeline_position.py`, `tests/test_pipeline_position.py`, `features/pipeline_run_position.feature` and its steps; modified `src/gzkit/pipeline_markers.py`, `pipeline_runtime.py`, `obpi_dispatch_channel.py`, eight command modules, the ledger event surfaces, `scripts/session_orientation.py`, five test modules, six documents and the `gz-state` skill (44 paths in 32 commits, `4091cfa1b` to `87aa2613e`)
+- What it does: each ruled boundary appends one `pipeline_stage_transition` event and then advances both marker files; the marker carries the stage reached and a `position`; `gz state --repair` rebuilds a deleted marker from the ledger; the session orientation shows stage and position
+- Tests added: 116 in `tests/test_pipeline_position.py`, with additions in four other modules and 40 BDD scenarios; full suite 11772 tests, 4 skipped (`arb-step-unittest-4c66fba2a5634fdda9ed4d5fb80186d0`)
+- Date completed: 2026-10-13
+- Attestation status: operator `g0` attested "attest completed" against the replay-VERIFIED Step 4a packet; Step 4b Codex tier 1, two rounds (`arb-step-codexadversary-1724336063044e33bb799eef0d714298`, `arb-step-codexadversary-f306181059844d2fbfd942ed4d088a50`)
+- Limits accepted: REQ-0.35.0-15-02 asserts only what the recorder does with the id handed in (Open Design Question 26, after nine Stage 2 refutations); REQ-0.35.0-15-01 is read under Requirement 2 (f); the two SUPPORT proofs rest on the document existing plus a validator, by operator ruling
+- Defects noted: GHI #1193, #1194, #1195, #1198, #1199 and #1202 filed from this run and open; unrepaired reviewer observations are indexed in the Change Log
 
 ## Tracked Defects
 
@@ -697,12 +764,12 @@ Six issues are filed from this run (GHI #1193, #1194, #1195, #1198, #1199, #1202
 
 ## Human Attestation
 
-- Attestor: `<name>` when required, otherwise `n/a`
-- Attestation: substantive attestation text or `n/a`
-- Date: YYYY-MM-DD or `n/a`
+- Attestor: `g0`
+- Attestation: attest completed — and, verbatim: "approve the security-floor override with that reason, and the retroactive task subdivision". Evidence, 2026-10-13, HEAD bbb00ef7d (code and tests of ba7e20341): full unit suite 11772 tests, 4 skipped, exit 0 (arb-step-unittest-4c66fba2a5634fdda9ed4d5fb80186d0); lint arb-ruff-e58e877fec34403e9cdcadcc6ac1be2d; typecheck arb-step-typecheck-8de481c0b00641fdb8dc499484fb24f2; docs arb-step-mkdocs-99e9aa2578ef404d98efb8dafb26b8d7; behave 40 scenarios passed (arb-step-behave-725360f5030146b6af03e5f4b6ff19fd). Nine current executed proofs on acceptance digest b659edd6bce1; six Stage 2 reviews accepted (arb-step-specreview-4f35e1ba0af64f0d8e5d1864a44f5378, arb-step-qualityreview-d0f92a31a7654af688224fff4c4e0ecc, arb-step-specreview-0e6e7c5fe4f2481a82efb9548c51560c, arb-step-qualityreview-f2521d837300417e8770c7ec7e34b7c5, arb-step-specreview-3e40eb0363224b63962c3eadeb73ef1d, arb-step-qualityreview-24b4055993364b2e874bee7258a239cc). Step 4b, Codex tier 1: round 1 arb-step-codexadversary-1724336063044e33bb799eef0d714298 refuted REQ-0.35.0-15-08 and -09 on a missing artifact_edited witness and accepted seven proofs after 14 replays; operator ruling "A. Rule on the reading (Recommended)"; round 2 arb-step-codexadversary-f306181059844d2fbfd942ed4d088a50 closed both findings under that reading. Packet .gzkit/evidence/OBPI-0.35.0-15-pipeline-run-position.stage4a.md replays VERIFIED. Attested with these limits disclosed: REQ-0.35.0-15-02 restated under Open Design Question 26 after nine Stage 2 refutations, with naming gaps tracked as GHI #1194, #1195 and #1199; REQ-0.35.0-15-01 read under Requirement 2 (f) by operator ruling; the two SUPPORT proofs rest on the document existing plus a validator (GHI #1202); no Threat Model section by operator ruling; security-scan slot empty, override approved after an independent evaluator determination of NOT-SECURITY-RELEVANT with one stated qualification.
+- Date: 2026-10-13
 
 ---
 
-**Date Completed:** -
+**Date Completed:** 2026-10-13
 
 **Evidence Hash:** -
