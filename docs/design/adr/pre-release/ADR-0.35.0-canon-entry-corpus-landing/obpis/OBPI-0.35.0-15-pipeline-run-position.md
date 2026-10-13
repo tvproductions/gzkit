@@ -738,7 +738,7 @@ Executed proof `proof-ea77aca538b24c87a6c1b7bf9e16ee3f` (REQ-0.35.0-15-06): 5 co
      Change Log above; they do not need a GHI. An issue link does not discharge
      an unmet acceptance obligation. -->
 
-Six issues are filed from this run (GHI #1193, #1194, #1195, #1198, #1199, #1202); the other entries are recorded through `gz insights remember` (`.gzkit/insights/agent-insights.jsonl`, 2026-10-11) and await the operator's routing. None discharges an obligation of this brief.
+Thirteen issues are filed from this run (GHI #1193, #1194, #1195, #1198, #1199, #1202, and after completion #1203 to #1209); the other entries are recorded through `gz insights remember` (`.gzkit/insights/agent-insights.jsonl`, 2026-10-11) and await the operator's routing. None discharges an obligation of this brief.
 
 - **GHI #1193, filed 2026-10-11 on the operator's instruction ("track it as a defect").** `gz obpi acceptance prove` records the mutated source file's host-absolute path in each proof row's `evidence.sweep.source`. Found while committing this run's proof rows; the writer is `src/gzkit/mutation_witness.py`, outside this brief's Allowed Paths.
 - **Sibling brief names a removed function.** `OBPI-0.35.0-16-next-command-for-position.md` names `refresh_pipeline_markers` in its Allowed Paths note and its Discovery Checklist. This brief removed it once nothing consumed it. That brief is not this run's to edit and reconciles when the operator initiates it.
@@ -761,6 +761,15 @@ Six issues are filed from this run (GHI #1193, #1194, #1195, #1198, #1199, #1202
 - **GHI #1198, filed 2026-10-12. `gz obpi dispatch` refusals return 1 and the process exits 0.** The CLI entry point discards a handler's return value and this command's parser entry has no adapter; its manpage says exit 1. Found by both group C reviews of the round after fix cycle 7 and confirmed by execution. Both files are outside Allowed Paths.
 - **The single-driver declaration raises where the dispatch command's guard has passed.** `declare_single_driver` raises `FileNotFoundError` when the per-OBPI marker file is on disk and neither marker file reads as the run's own, and the handler of `gz obpi dispatch` does not catch it. Found by the fix cycle 7 implementer reading the handler, which is outside Allowed Paths; not executed.
 - **The launcher's operator-block gate follows no rename.** `operator_block_blockers` looks a block up under the exact id the resolver returns, where the precomplete check reads each row under its current name, so for an OBPI renamed after a block the two gates can answer differently. Raised unmapped by the group A spec review of the round after fix cycle 6; code this brief did not change.
+- **GHI #1202, filed 2026-10-13. A SUPPORT proof citing `artifact_edited` passes on the file existing.** The class behind the two Step 4b findings on REQ-0.35.0-15-08 and -09; the doctrine requires a ledger event the hooks cannot record for these paths.
+- **Filed 2026-10-13 after completion, on the operator's instruction ("file GHIs for the reviewer questions and the evaluator's qualification"; then "links there, create issue").** Each was raised unmapped in the round after fix cycle 9 or at Stage 4 and is open and unselected:
+  - **GHI #1203.** A recorded run position has no operator-facing reader when no marker names the run and the repair declines it (the reviewers' question on what "reads" means in REQ-0.35.0-15-02).
+  - **GHI #1204.** Requirements 4 and 6 and REQ-0.35.0-15-03 say more than was accepted: they were not restated with Open Design Question 26, and REQ-0.35.0-15-03 names none of the repair's ruled declines.
+  - **GHI #1205.** Stale-marker detection raises `TypeError` on a zoneless `updated_at`; with it, the question of whether Requirement 6 froze a crash on a malformed marker.
+  - **GHI #1206.** `gz task start` and `gz obpi dispatch` return a run to `implement` without the launcher's gates (the security evaluator's qualification; built as ruled under Open Design Question 9).
+  - **GHI #1207.** Two launch blockers the pipeline manpage's Failure Modes section lists have never had a caller, and two refusals the launcher makes are not listed.
+  - **GHI #1208.** `record_dispatch` refreshes the marker cache, uncontained, before it records the position, so a cache fault drops the position row.
+  - **GHI #1209.** Docstrings and document sentences about the run position that disagree with the code or read two ways.
 
 ## Human Attestation
 
