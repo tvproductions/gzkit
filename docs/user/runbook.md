@@ -230,18 +230,30 @@ uv run gz roles --pipeline OBPI-<X.Y.Z-NN>
 #
 #    A run declared single-driver runs Stage 2 inline in one session:
 #      uv run gz obpi dispatch OBPI-<X.Y.Z-NN> --single-driver --reason "<why>"
-#    The declaration is a ledger event; an undeclared inline run is refused.
+#    The declaration is a ledger event. While the run's per-OBPI marker file
+#    is on disk, `uv run gz obpi precomplete` refuses READY for a run with
+#    neither a recorded dispatch of every mandated role nor a declaration.
 #
 #    If a task returns BLOCKED after retry, Stage 2 halts and creates a
 #    handoff.
 #
-#    Each dispatch recorded with `uv run gz obpi dispatch` is a ledger event,
-#    and dispatch credit is read from the ledger. The marker's `dispatch_state`
-#    is a cache and never the record. Every launch writes the marker afresh
-#    with no `dispatch_state`, and a rebuilt marker has none, so the cache
-#    holds one entry for each dispatch recorded since the marker was last
-#    written that way, and none from before it. A dispatch recorded while no
-#    marker is on disk is on the ledger and in no cache:
+#    `uv run gz obpi dispatch` records nothing and exits 1 unless the run's
+#    per-OBPI marker file, `.pipeline-active-<id>.json`, is on disk under the
+#    id exactly as given: give it the full id the run was launched under.
+#    The legacy `.pipeline-active.json` alone does not satisfy it, and the
+#    `--single-driver` form is refused the same way. The refusal names the
+#    launch command, `uv run gz obpi pipeline`. `uv run gz state --repair`
+#    puts a missing marker file back for the run in flight that was launched
+#    last, and can decline it; see State Repair below.
+#
+#    Each dispatch the command records (`--role` with `--model`) is a ledger
+#    event, and dispatch credit is read from the ledger. The marker's
+#    `dispatch_state` is a cache and never the record. Every launch writes
+#    the marker afresh with no `dispatch_state`, and a rebuilt marker has
+#    none, so the cache holds no dispatch from before the marker was last
+#    written that way. A dispatch recorded after that is added to the cache
+#    in each marker file that reads as the run's own; when neither file
+#    does, the dispatch is on the ledger and in no cache:
 #      cat .claude/plans/.pipeline-active-OBPI-<X.Y.Z-NN>.json | python -m json.tool
 #
 #    An entry holds what the dispatch wrote and nothing more: task_id, role,

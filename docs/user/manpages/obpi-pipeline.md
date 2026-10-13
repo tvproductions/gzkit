@@ -71,7 +71,9 @@ Current command contract:
 No stage before Stage 5 removes a marker. Apart from that removal, the runtime
 removes a marker only as cleanup: `--clear-stale` and `gz preflight --apply`
 remove stale markers, and the launcher purges a marker whose OBPI the ledger
-already reads as `attested_completed`.
+already reads as `attested_completed`. `gz adr audit-end` removes the file
+that `gz adr audit-begin` wrote for an ADR's audit ceremony; that file is no
+run's marker.
 
 The active marker files are also the machine-readable stage-state contract while
 the pipeline is running. They are runtime-managed and should not be edited or
@@ -191,7 +193,13 @@ id, or from an id the ledger renamed. A prefix shorter than the short form,
 `OBPI-<semver>`, is accepted too when it names one live OBPI.
 `gz obpi precomplete` and
 `gz obpi present-evidence` name the OBPI that way once, at entry, and run
-their checks and write their report under that one id. Their boundary is
+their checks and write their report under that one id. One check reads under
+another id when the two differ: the Stage 2 dispatch check of
+`gz obpi precomplete` looks for the per-OBPI marker file, and reads the
+dispatch records and the single-driver declaration, under the launch id of
+the run in flight that the one id names, and under the one id when it names
+no single run in flight. The two are one unless the run was launched under
+another id, as a run launched before a rename was. Their boundary is
 recorded for the run that id names, and the record is filed under that run's
 launch id.
 They exit `1`, check nothing and record nothing for an id that names no OBPI,
@@ -206,13 +214,18 @@ When the rule gives the name no id, the boundary is recorded only if the name
 itself names a run in flight, by the rule in the next paragraph, and
 otherwise nothing is recorded.
 
-A rename does not end a run, and neither does a rename that is later
-reversed. A run is named by every id whose current name is the current name
-of its launch id, where an id's current name is where the ledger's
-`artifact_renamed` events leave it now, by the rule the launcher follows
-renames by. So a run launched before a rename is named by the old id and the
-new id, and a run launched under a name the ledger later renamed back is
-named by that name and by the id the OBPI has now. The short form of the
+The run position is promised for a run whose OBPI is not renamed while the
+run is in flight. A rename made while a run is in flight is followed by the
+ledger's own rule for renames as best effort, which the rest of this
+paragraph describes, and a boundary crossed after such a rename can go
+unrecorded, with no warning. A rename does not end a run, and neither does a
+rename that is later reversed. A run is named by every id whose current name
+is the current name of its launch id, where an id's current name is where
+the ledger's `artifact_renamed` events leave it now, by the rule the launcher
+follows renames by. So a run in flight is named by the id it was launched
+under, and by another id the OBPI has or had while that rule leaves the two
+with one current name: ordinarily the old id and the new id after a rename,
+and both names after a rename that is later reversed. The short form of the
 launch id, or of that current name, names the run when it names only one run
 in flight. The run keeps its launch id for its records and its two marker
 files; a completion receipt or a retirement written under any id with that

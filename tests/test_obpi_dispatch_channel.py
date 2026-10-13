@@ -880,6 +880,65 @@ class TestPrecompleteNamesTheObpiOnceAtEntry(unittest.TestCase):
             self.assertIn("the boundary set needs a ruling", check["message"])
             self.assertEqual(found["exit"], EXIT_POLICY_BREACH)
 
+    def _discharge_the_one(self, event: str) -> None:
+        """Append the correction that discharges the ledger's one ``event`` row."""
+        (subject,) = [row for row in Ledger(self.ledger.path).read_all() if row.event == event]
+        Ledger(self.ledger.path).append(
+            ledger_event_corrected_event(
+                subject_event=subject.event,
+                subject_id=subject.id,
+                subject_ts=subject.ts,
+                disposition="discharged",
+                cause="condition-resolved",
+                attestor="g0",
+                reason="the condition the row recorded has ended",
+            )
+        )
+
+    def test_a_discharged_block_or_unblock_row_is_not_read_by_the_block_check(self) -> None:
+        """Control: a row a correction discharged is no longer in force for the check.
+
+        Pins the netting the operator ratified under Open Design Question 24
+        (ruling 2026-10-12, "A. Ratify (Recommended)"): the check reads the
+        ledger's live stream, which drops a discharged row as it drops a
+        voided one. A discharged row is not a false one: the correction says
+        its condition ended, so it differs from the voided rows of the test
+        above in what the correction claims and not in what the check does.
+        Two directions. A block row that a correction discharged records a
+        block whose condition ended, so it does not refuse READY: read as
+        evidence, where a discharged row survives, a block nobody is waiting
+        on would stop the command until an unblock that no one owes. An
+        unblock row that a correction discharged records a ruling that no
+        longer stands, so the block it answered still refuses READY: read as
+        evidence, a withdrawn ruling would go on clearing a standing block and
+        completion could be solicited with the decision outstanding. Written
+        after the code it pins and passing on its first run; no REQ is bound.
+        """
+        block = obpi_blocked_on_operator_event(
+            self._FULL, self._ADR, "the boundary set needs a ruling", "rule on Question 9"
+        )
+        unblock = obpi_unblocked_event(self._FULL, self._ADR, "the amended set governs", "g0")
+        with self.subTest(discharged="the block"):
+            self._start_over(self._launch_row(self._FULL), block)
+            self._discharge_the_one(block.event)
+            self._dispatch_the_roster()
+
+            found = self._precomplete(self._FULL)
+
+            self.assertTrue(found["checks"]["operator_block"]["ok"])
+            self.assertEqual(found["exit"], EXIT_SUCCESS)
+        with self.subTest(discharged="the unblock"):
+            self._start_over(self._launch_row(self._FULL), block, unblock)
+            self._discharge_the_one(unblock.event)
+            self._dispatch_the_roster()
+
+            found = self._precomplete(self._FULL)
+
+            check = found["checks"]["operator_block"]
+            self.assertFalse(check["ok"])
+            self.assertIn("the boundary set needs a ruling", check["message"])
+            self.assertEqual(found["exit"], EXIT_POLICY_BREACH)
+
     def test_a_block_on_another_obpi_that_is_then_renamed_blocks_nothing_here(self) -> None:
         """Control: another OBPI's block stays its own through that OBPI's rename."""
         other, other_renamed = "OBPI-0.12.0-05-roles", "OBPI-0.12.0-05-role-roster"

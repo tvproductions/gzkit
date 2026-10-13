@@ -48,6 +48,7 @@ from gzkit.pipeline_runtime import (
     pipeline_receipt_path,
     rebuild_marker,
     record_position,
+    runs_in_flight,
     write_pipeline_markers,
 )
 from gzkit.traceability import covers
@@ -756,11 +757,11 @@ class TestRepairRebuildsOnlyARunInFlightWhoseMarkerIsGone(_RepairableRun):
 
                 self.assertEqual(self._markers_on_disk(), [], "a marker was written for it")
                 self.assertEqual(report["markers"], _NOTHING_REPAIRED)
-                for given in (_RUN, renamed):
-                    self.assertIsNone(
-                        rebuild_marker(rows, self.plans, given, now=datetime.now(UTC)),
-                        f"{given} still names a run in flight",
-                    )
+                self.assertEqual(runs_in_flight(rows), [], "a run is still in flight")
+                self.assertIsNone(
+                    rebuild_marker(rows, self.plans, _RUN, now=datetime.now(UTC)),
+                    f"{_RUN} still names a run in flight",
+                )
 
     def test_a_receipt_that_is_not_a_completion_leaves_the_run_to_be_rebuilt(self) -> None:
         self._launch()
