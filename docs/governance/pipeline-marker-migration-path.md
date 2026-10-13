@@ -26,7 +26,7 @@
 
 ## Markers Are Layer 3
 
-Pipeline markers are JSON files written by `src/gzkit/pipeline_markers.py`. They record which OBPI pipeline is active and what the run has reached.
+A run's pipeline markers are JSON files written by `src/gzkit/pipeline_markers.py`. They record which OBPI pipeline is active and what the run has reached.
 
 ### Marker Files
 
@@ -65,7 +65,7 @@ Pipeline markers have the Layer 3 properties defined in the [State Doctrine](sta
 
 ## The Layer 2 Source
 
-Two ledger event types carry a run's stage and position. The run-position concept lives in one module, `src/gzkit/pipeline_position.py`, which reads and appends through the ledger it is handed and leaves every marker file write to `src/gzkit/pipeline_markers.py`.
+Two ledger event types carry a run's stage and position. The run-position concept lives in one module, `src/gzkit/pipeline_position.py`, which reads and appends through the ledger it is handed and leaves every write of a run's marker files to `src/gzkit/pipeline_markers.py`.
 
 | Event type | Appended by | Payload |
 |------------|-------------|---------|
@@ -90,7 +90,7 @@ The operator-facing tables are in [`gz obpi pipeline`](../user/manpages/obpi-pip
 
 A run is in flight from its latest `pipeline_launched` event until an event that ends it follows under an id whose current name is the current name of the launch's id: an `obpi_receipt_emitted` event whose `receipt_event` is `completed`, or an `obpi_parked`, `obpi_withdrawn` or `obpi_superseded` event. An id's current name is the id taken through the ledger's `artifact_renamed` rows by the ledger's one fold (`fold_renames` in `src/gzkit/obpi_lifecycle.py`), and an id never renamed is its own current name, so a rename is not an event that ends a run, and a rename that is later reversed leaves both ids with the one name the OBPI has. A later launch under an id with that current name starts a new run in its place. The marker is not consulted for this, so a deleted marker drops no crossing and a stale one invents no run. A boundary is recorded only for a run in flight, and the rebuild considers exactly the same runs (`_launches_in_flight`).
 
-The run position is promised for a run whose OBPI is not renamed while the run is in flight (operator ruling 2026-10-12, Open Design Question 23 of the OBPI-0.35.0-15 brief). No command refuses a rename while a run is in flight; one made then is followed by that fold as best effort, a boundary crossed after it can go unrecorded with no warning, and what the recorder and the rebuild do for such a run is not asserted here.
+The run position is promised for a run whose OBPI is not renamed while the run is in flight and is the only OBPI under its semver and item that is not retired (parked, withdrawn or superseded) while the run is in flight (operator rulings 2026-10-12, Open Design Questions 23 and 25 of the OBPI-0.35.0-15 brief). No command refuses a rename while a run is in flight; one made then is followed by that fold as best effort, a boundary crossed after it can go unrecorded with no warning, and what the recorder and the rebuild do for such a run is not asserted here. If, at any time while the run is in flight, a second OBPI under the same semver and item is not retired, a boundary can go unrecorded or be recorded on the other OBPI's run, and a retirement or completion of one can end the run of the other, with no warning; what the recorder and the rebuild do for such a run is not asserted here either.
 
 A `pipeline_launched` event with the entry `audit`, which `gz adr audit-begin` writes under an ADR's id, starts no pipeline run.
 
@@ -173,5 +173,5 @@ The behaviour is proved by `tests/test_pipeline_position.py`, by the repair test
 - [ADR-0.13.0 — OBPI Pipeline Runtime Surface](../design/adr/pre-release/ADR-0.13.0-obpi-pipeline-runtime-surface/ADR-0.13.0-obpi-pipeline-runtime-surface.md) — The runtime surface the repair was assigned against
 - `docs/design/adr/pre-release/ADR-0.35.0-canon-entry-corpus-landing/obpis/OBPI-0.35.0-15-pipeline-run-position.md` — The brief that carries the rulings
 - `src/gzkit/pipeline_position.py` — Position model, ledger replay, recorder and rebuild decision
-- `src/gzkit/pipeline_markers.py` — Every marker file write
+- `src/gzkit/pipeline_markers.py` — Every write of a run's marker files
 - `src/gzkit/commands/state.py` — `gz state --repair`

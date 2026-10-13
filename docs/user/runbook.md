@@ -171,7 +171,9 @@ uv run gz obpi dispatch OBPI-<X.Y.Z-NN> --role QualityReviewer --model <tier> --
 ```
 
 If the session genuinely cannot dispatch, declare it rather than running
-silently — declared single-driver passes Stage 5, silent single-driver does not:
+silently — the Stage 2 dispatch check of `gz obpi precomplete` passes a
+declared single-driver run and, while the run's per-OBPI marker file is on
+disk, refuses a silent one (step 2c below):
 
 ```bash
 uv run gz obpi dispatch OBPI-<X.Y.Z-NN> --single-driver --reason "<why>"
@@ -231,15 +233,18 @@ uv run gz roles --pipeline OBPI-<X.Y.Z-NN>
 #    A run declared single-driver runs Stage 2 inline in one session:
 #      uv run gz obpi dispatch OBPI-<X.Y.Z-NN> --single-driver --reason "<why>"
 #    The declaration is a ledger event. While the run's per-OBPI marker file
-#    is on disk, `uv run gz obpi precomplete` refuses READY for a run with
-#    neither a recorded dispatch of every mandated role nor a declaration.
+#    is on disk, `uv run gz obpi precomplete` refuses READY when the ledger
+#    holds, under the id that file is named for, neither a recorded dispatch
+#    of every mandated role nor a declaration, whichever launch they were
+#    recorded in.
 #
 #    If a task returns BLOCKED after retry, Stage 2 halts and creates a
 #    handoff.
 #
-#    `uv run gz obpi dispatch` records nothing and exits 1 unless the run's
-#    per-OBPI marker file, `.pipeline-active-<id>.json`, is on disk under the
-#    id exactly as given: give it the full id the run was launched under.
+#    `uv run gz obpi dispatch` prints a refusal and records nothing unless
+#    the run's per-OBPI marker file, `.pipeline-active-<id>.json`, is on disk
+#    under the id exactly as given: give it the full id the run was launched
+#    under.
 #    The legacy `.pipeline-active.json` alone does not satisfy it, and the
 #    `--single-driver` form is refused the same way. The refusal names the
 #    launch command, `uv run gz obpi pipeline`. `uv run gz state --repair`
