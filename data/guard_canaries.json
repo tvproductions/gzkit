@@ -335,7 +335,7 @@
       "binding_sha256": "321b762160713fae6697d25b0d87f82a253429c1e5cd8c83fef5004b3c8c774c",
       "authority": "GHI #1196",
       "proposed_by": "claude-code session 2026-10-13",
-      "reviewed_by": null
+      "reviewed_by": "g0"
     },
     {
       "claim_id": "brief-size-grandfathered",
@@ -349,7 +349,7 @@
       "binding_sha256": "b9fd7498070d46384c54f2b502bd3d8b70a655b2c2d0fe196a959598222180ac",
       "authority": "GHI #1196",
       "proposed_by": "claude-code session 2026-10-13",
-      "reviewed_by": null
+      "reviewed_by": "g0"
     }
   ]
 }
