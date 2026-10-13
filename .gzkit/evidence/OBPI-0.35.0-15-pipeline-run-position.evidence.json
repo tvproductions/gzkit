@@ -1,0 +1,43 @@
+{
+  "obpi_id": "OBPI-0.35.0-15-pipeline-run-position",
+  "generated_at": "2026-10-13T08:26:06.086276+00:00",
+  "demos": [
+    {
+      "command": "uv run -m behave features/pipeline_run_position.feature",
+      "ran": true,
+      "exit_status": 0,
+      "stdout_tail": "    Given a project whose run was launched in full through gz obpi pipeline                      # features/steps/pipeline_run_position_steps.py:402\n    And the run has reached stage \"verify\"                                                       # features/steps/pipeline_run_position_steps.py:415\n    When the legacy marker file is deleted                                                       # features/steps/pipeline_run_position_steps.py:667\n    And gz state --repair is run                                                                 # features/steps/pipeline_run_position_steps.py:595\n    Then both marker files hold the same bytes                                                   # features/steps/pipeline_run_position_steps.py:231\n    And the per-OBPI marker file is byte for byte what it was before the repair                  # features/steps/pipeline_run_position_steps.py:673\n    And the repair reports the legacy marker file restored and nothing rebuilt or declined       # features/steps/pipeline_run_position_steps.py:680\n\n  @REQ-0.35.0-15-05\n  Scenario: gz state --repair leaves a marker on disk exactly as it is        # features/pipeline_run_position.feature:172\n    Given a project whose run was launched in full through gz obpi pipeline   # features/steps/pipeline_run_position_steps.py:402\n    And the run has reached stage \"verify\"                                    # features/steps/pipeline_run_position_steps.py:415\n    When gz state --repair is run                                             # features/steps/pipeline_run_position_steps.py:595\n    Then both marker files are byte for byte what they were before the repair # features/steps/pipeline_run_position_steps.py:655\n    And the repair reports nothing rebuilt and nothing declined               # features/steps/pipeline_run_position_steps.py:662\n\n  @REQ-0.35.0-15-05\n  Scenario: A rebuilt marker keeps the time of its last crossing and is not cleared as stale  # features/pipeline_run_position.feature:180\n    Given a project whose run was launched in full through gz obpi pipeline                   # features/steps/pipeline_run_position_steps.py:402\n    And the run has reached stage \"verify\"                                                    # features/steps/pipeline_run_position_steps.py:415\n    When both marker files are deleted                                                        # features/steps/pipeline_run_position_steps.py:113\n    And gz state --repair is run                                                              # features/steps/pipeline_run_position_steps.py:595\n    And gz obpi pipeline --clear-stale is run                                                 # features/steps/pipeline_run_position_steps.py:606\n    Then both marker files name what the ledger last recorded                                 # features/steps/pipeline_run_position_steps.py:446\n    And the rebuilt marker carries the time of the last recorded crossing                     # features/steps/pipeline_run_position_steps.py:620\n\n  @REQ-0.35.0-15-05\n  Scenario: gz state --repair declines a run whose last crossing is past the stale bound  # features/pipeline_run_position.feature:190\n    Given a project whose run was launched in full through gz obpi pipeline               # features/steps/pipeline_run_position_steps.py:402\n    And the run has reached stage \"verify\"                                                # features/steps/pipeline_run_position_steps.py:415\n    And every ledger event of the run is older than the stale bound                       # features/steps/pipeline_run_position_steps.py:576\n    When both marker files are deleted                                                    # features/steps/pipeline_run_position_steps.py:113\n    And gz state --repair is run                                                          # features/steps/pipeline_run_position_steps.py:595\n    Then no marker file is on disk                                                        # features/steps/pipeline_run_position_steps.py:690\n    And the repair declines the run and says why                                          # features/steps/pipeline_run_position_steps.py:696\n\n1 feature passed, 0 failed, 0 skipped\n40 scenarios passed, 0 failed, 0 skipped\n270 steps passed, 0 failed, 0 skipped\nTook 0min 1.146s"
+    },
+    {
+      "command": "uv run -m unittest tests.test_pipeline_position",
+      "ran": true,
+      "exit_status": 0,
+      "stdout_tail": "....................................................................................................................\n----------------------------------------------------------------------\nRan 116 tests in 1.699s\n\nOK"
+    }
+  ],
+  "receipts": [
+    {
+      "step": "ruff",
+      "found": true,
+      "receipt_id": "arb-ruff-e58e877fec34403e9cdcadcc6ac1be2d.json",
+      "exit_status": 0
+    },
+    {
+      "step": "typecheck",
+      "found": true,
+      "receipt_id": "arb-step-typecheck-8de481c0b00641fdb8dc499484fb24f2.json",
+      "exit_status": 0
+    },
+    {
+      "step": "unittest",
+      "found": true,
+      "receipt_id": "arb-step-unittest-4c66fba2a5634fdda9ed4d5fb80186d0.json",
+      "exit_status": 0
+    }
+  ],
+  "covers_total": 9,
+  "covers_uncovered": 0,
+  "attestable": true,
+  "blockers": [],
+  "review_blockers": []
+}

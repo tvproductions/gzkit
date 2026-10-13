@@ -4,15 +4,15 @@
   "lane": "heavy",
   "entry": "full",
   "execution_mode": "normal",
-  "current_stage": "implement",
+  "current_stage": "ceremony",
   "started_at": "2026-10-11T18:06:16Z",
-  "updated_at": "2026-10-13T07:27:51.807003+00:00",
+  "updated_at": "2026-10-13T08:26:16.931812+00:00",
   "receipt_state": "pass",
   "nonce": "7bad36d937f1e1737fb6b7b34b6ab32e",
   "blockers": [],
-  "required_human_action": null,
-  "next_command": "uv run gz obpi pipeline OBPI-0.35.0-15-pipeline-run-position --from=verify",
-  "resume_point": "verify",
+  "required_human_action": "Present evidence and obtain explicit human attestation before completion accounting.",
+  "next_command": "uv run gz obpi pipeline OBPI-0.35.0-15-pipeline-run-position --from=sync",
+  "resume_point": "sync",
   "dispatch_state": [
     {
       "task_id": 1,
@@ -1069,8 +1069,8 @@
     }
   ],
   "position": {
-    "kind": "task",
-    "label": "task 5",
-    "boundary": "gz obpi dispatch"
+    "kind": "round",
+    "label": "verify-packet",
+    "boundary": "gz obpi verify-packet"
   }
 }
