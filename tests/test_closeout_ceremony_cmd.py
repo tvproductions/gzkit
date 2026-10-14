@@ -639,11 +639,19 @@ class TestFlagValidation(unittest.TestCase):
             _init_git_repo(Path.cwd())
             _quick_init()
             runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
-            result = runner.invoke(
-                main,
-                ["closeout", "ADR-0.1.0-f", "--ceremony", "--next", "--attest", "Completed"],
+            # Asserting the exit code alone could not fail: with no ceremony in
+            # progress each flag exits 1 on "No ceremony in progress" anyway.
+            combinations = (
+                ["--next", "--attest", "Completed"],
+                ["--next", "--pause"],
+                ["--attest", "Completed", "--pause"],
+                ["--next", "--attest", "Completed", "--pause"],
             )
-            self.assertNotEqual(result.exit_code, 0)
+            for flags in combinations:
+                with self.subTest(flags=flags):
+                    result = runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony", *flags])
+                    self.assertNotEqual(result.exit_code, 0)
+                    self.assertIn("Cannot combine --next, --attest, and --pause.", result.output)
 
 
 class TestStep5PerDemoCadence(unittest.TestCase):
