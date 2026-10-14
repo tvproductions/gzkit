@@ -560,10 +560,15 @@ class TestObpiCompleteLiteNonFoundationMissing(_ObpiCompleteWireFixture):
                 exc_type is SystemExit and _code == 3,
                 msg=f"unexpected SystemExit(3); output:\n{joined}",
             )
-            # No assertion on ledger.append: the brief is in Draft so the
-            # subsequent completion path may exit on a different reason.
-            del ledger
-            del exc_type
+            # Warn-only binds nothing: no meta-receipt-bind event may be
+            # recorded, whatever later stage the Draft brief stops at.
+            meta_calls = [
+                call.args[0]
+                for call in ledger.append.call_args_list
+                if call.args[0].event == "audit_receipt_emitted"
+                and call.args[0].extra.get("receipt_event") == "meta-receipt-bind"
+            ]
+            self.assertEqual(meta_calls, [])
 
 
 # ---------------------------------------------------------------------------
