@@ -1520,5 +1520,70 @@ class TestTierTagsOnFeatureFiles(unittest.TestCase):
             self.assertEqual(audit_test_tiers(root), [])
 
 
+class TestTierDirectoriesAndParserFlags(unittest.TestCase):
+    """The directory and parser-flag arms of ``audit_test_tiers`` each fail a test.
+
+    A one-guard-at-a-time removal sweep (2026-10-14, ``60b994228``) found both
+    arms unwitnessed: the full unit suite stayed green with either one gone
+    (GHI #1217 to #1220). ``test_test_tiers_rule_37`` runs the audit on the live
+    tree, which carries no forbidden tier, so it passes whether the arms run or not.
+    """
+
+    _DIRS = ("integration", "e2e", "slow", "bdd")
+    _FLAGS = ("--integration", "--e2e", "--slow", "--bdd-only")
+
+    @staticmethod
+    def _parser(root: Path, text: str) -> str:
+        cli = root / "src" / "gzkit" / "cli"
+        cli.mkdir(parents=True)
+        (cli / "parser_test.py").write_text(text, encoding="utf-8")
+        return "src/gzkit/cli/parser_test.py"
+
+    def test_each_forbidden_tier_directory_is_reported(self) -> None:
+        for name in self._DIRS:
+            with self.subTest(tier=name), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                (root / "tests" / name).mkdir(parents=True)
+                errors = audit_test_tiers(root)
+                self.assertEqual([e.artifact for e in errors], [f"tests/{name}"])
+
+    def test_every_planted_tier_directory_yields_its_own_finding(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for name in self._DIRS:
+                (root / "tests" / name).mkdir(parents=True)
+            artifacts = {e.artifact for e in audit_test_tiers(root)}
+            self.assertEqual(artifacts, {f"tests/{n}" for n in self._DIRS})
+
+    def test_ordinary_test_directories_are_not_reported(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "tests" / "commands").mkdir(parents=True)
+            (root / "tests" / "governance").mkdir(parents=True)
+            self.assertEqual(audit_test_tiers(root), [])
+
+    def test_each_forbidden_parser_flag_is_reported(self) -> None:
+        for flag in self._FLAGS:
+            with self.subTest(flag=flag), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                artifact = self._parser(root, f'parser.add_argument("{flag}")\n')
+                errors = audit_test_tiers(root)
+                self.assertEqual([e.artifact for e in errors], [artifact])
+                self.assertIn(flag, errors[0].message)
+
+    def test_every_planted_flag_yields_its_own_finding(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._parser(root, "".join(f'p.add_argument("{f}")\n' for f in self._FLAGS))
+            reported = [f for f in self._FLAGS for e in audit_test_tiers(root) if f in e.message]
+            self.assertEqual(sorted(reported), sorted(self._FLAGS))
+
+    def test_parser_without_tier_flags_is_not_reported(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            self._parser(root, 'parser.add_argument("--bdd")\nparser.add_argument("--full")\n')
+            self.assertEqual(audit_test_tiers(root), [])
+
+
 if __name__ == "__main__":
     unittest.main()
