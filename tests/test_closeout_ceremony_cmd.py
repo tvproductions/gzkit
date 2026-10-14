@@ -583,6 +583,29 @@ class TestCeremonyPause(unittest.TestCase):
             state = load_ceremony_state(Path.cwd(), "ADR-0.1.0-f")
             self.assertIsNotNone(state.paused_at)
 
+    @patch("gzkit.commands.closeout_ceremony._adr_closeout_readiness")
+    def test_pause_refuses_a_completed_ceremony(self, mock_readiness):
+        """GHI #1221: a completed ceremony is not paused and its state is untouched."""
+        mock_readiness.return_value = {"blockers": [], "ready": True}
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            _init_git_repo(Path.cwd())
+            _quick_init()
+            runner.invoke(main, ["plan", "create", "f", "--kind", "feature"])
+            completed = CeremonyState(
+                adr_id="ADR-0.1.0-f",
+                current_step=11,
+                is_foundation=False,
+                started_at="2026-03-30T00:00:00Z",
+                updated_at="2026-03-30T00:00:00Z",
+                completed_at="2026-03-30T01:00:00Z",
+            )
+            save_ceremony_state(Path.cwd(), completed)
+            result = runner.invoke(main, ["closeout", "ADR-0.1.0-f", "--ceremony", "--pause"])
+            self.assertNotEqual(result.exit_code, 0, result.output)
+            self.assertIn("already completed", result.output)
+            self.assertEqual(load_ceremony_state(Path.cwd(), "ADR-0.1.0-f"), completed)
+
 
 class TestNonCeremonyUnchanged(unittest.TestCase):
     """Existing closeout without --ceremony still works."""
