@@ -20,6 +20,7 @@ from gzkit.commands.obpi_complete import (
     _read_existing_key_proof,
     _read_existing_summary,
     _replace_h3_section,
+    _resolve_evidence,
     _rollback_audit_ledger,
     _update_human_attestation,
     _validate_would_be_content,
@@ -194,6 +195,44 @@ class TestReadExistingKeyProof(unittest.TestCase):
         )
         result = _read_existing_key_proof(brief)
         self.assertIsNotNone(result)
+
+
+class TestResolveEvidenceKeyProof(unittest.TestCase):
+    """GHI #1223: completion refuses when neither the flag nor the brief gives a key proof."""
+
+    _SUMMARY = "src/gzkit/commands/obpi_complete.py changed"
+    _BRIEF_PROOF = "gz obpi complete OBPI-0.0.14-01 --attestor g0 exits 0"
+
+    def _refusal(self, key_proof: str | None) -> tuple[int | str | None, dict]:
+        out = StringIO()
+        with patch("sys.stdout", out), self.assertRaises(SystemExit) as raised:
+            _resolve_evidence(_MINIMAL_BRIEF, self._SUMMARY, key_proof, "OBPI-0.0.14-01", True)
+        return raised.exception.code, json.loads(out.getvalue())
+
+    def test_no_flag_and_placeholder_brief_refuses(self) -> None:
+        code, payload = self._refusal(None)
+        self.assertEqual(code, 1)
+        self.assertEqual(payload["status"], "error")
+        self.assertIn("Key proof is required", payload["error"])
+
+    def test_whitespace_only_flag_refuses(self) -> None:
+        code, payload = self._refusal("   \n\t")
+        self.assertEqual(code, 1)
+        self.assertIn("Key proof is required", payload["error"])
+
+    def test_flag_supplies_the_proof(self) -> None:
+        summary, proof = _resolve_evidence(
+            _MINIMAL_BRIEF, self._SUMMARY, self._BRIEF_PROOF, "OBPI-0.0.14-01", True
+        )
+        self.assertEqual((summary, proof), (self._SUMMARY, self._BRIEF_PROOF))
+
+    def test_substantive_brief_section_supplies_the_proof(self) -> None:
+        brief = _MINIMAL_BRIEF.replace(
+            "<!-- One concrete usage example, command, or before/after behavior. -->",
+            self._BRIEF_PROOF,
+        )
+        _, proof = _resolve_evidence(brief, self._SUMMARY, None, "OBPI-0.0.14-01", True)
+        self.assertIn(self._BRIEF_PROOF, proof)
 
 
 @covers("OBPI-0.0.14-02")
