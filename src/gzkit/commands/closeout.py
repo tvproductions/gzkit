@@ -236,7 +236,7 @@ def _prompt_closeout_attestation(*, quiet: bool = False) -> tuple[str, str | Non
         reason = input("" if quiet else "Reason: ").strip()
         if not reason:
             msg = "Reason required for partial attestation"
-        raise GzCliError(msg)  # noqa: TRY003
+            raise GzCliError(msg)  # noqa: TRY003
         return "partial", reason
     if selection == "3":
         reason = input("" if quiet else "Reason: ").strip()
