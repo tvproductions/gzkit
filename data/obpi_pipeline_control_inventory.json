@@ -1978,9 +1978,8 @@
    "non_control": [
     {
      "quote": "This block supersedes the trigger it was authored with — Prime Directive invariant 11's \"less than 90% sure\" — which the operator retired on 2026-08-17 (`AGENTS.md` § Operator Doctrine: \"Stop and ask the operator in case of uncertainty… Supersedes the prior '90% convinced/confident' framing\").",
-     "class": "rationale",
-     "explains": "S1-030",
-     "reason": "what the retired 90% trigger was"
+     "class": "structure",
+     "reason": "A citation an attested REQ requires in the delivered block, not history that leaves it: REQ-0.0.19-04-06 as ruled 2026-09-18 (GHI #1025) asserts the Stage 1→2 block still cites invariant 11 as the trigger it supersedes. Reclassified from rationale (explains S1-030) on 2026-10-15 under OBPI-0.35.0-20 by the pilot; no control row changed."
     }
    ]
   },

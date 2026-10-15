@@ -104,9 +104,16 @@ class TestAgentContractFold(unittest.TestCase):
         # never by the sentence that used to carry it. The pipeline-stage rule was
         # ruled out of the per-turn contract and is checked at its home, the
         # pipeline skill.
-        pipeline_skill = (
-            REPO_ROOT / ".gzkit" / "skills" / "gz-obpi-pipeline" / "SKILL.md"
-        ).read_text(encoding="utf-8")
+        # The skill is delivered as its body plus the served stage procedures
+        # (OBPI-0.35.0-20), so the lifecycle is read from the whole.
+        pipeline_dir = REPO_ROOT / ".gzkit" / "skills" / "gz-obpi-pipeline"
+        pipeline_skill = "\n".join(
+            path.read_text(encoding="utf-8")
+            for path in [
+                pipeline_dir / "SKILL.md",
+                *sorted((pipeline_dir / "references").glob("stage-*.md")),
+            ]
+        )
         lowered = agents_text.lower()
         expected_markers: dict[str, tuple[str, ...]] = {
             "craftsmanship 6c (defect-fix-routing)": ("(6c)", "defect-fix routing"),

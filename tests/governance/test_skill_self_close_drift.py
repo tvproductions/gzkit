@@ -290,18 +290,22 @@ class TestSkillSelfCloseDrift(unittest.TestCase):
         each cross-reference ghi-close's NEVER, EVER, EVER dead-letter doctrine where
         closure-flow prose discusses GHI lifecycle.
         """
+        # AMENDED 2026-10-15 (OBPI-0.35.0-20): the pipeline's closure-flow prose is
+        # served with Stage 5, so its delivered text is the skill file plus that file.
         skills_requiring_crossref = [
-            ".gzkit/skills/gz-obpi-pipeline/SKILL.md",
-            ".gzkit/skills/gz-adr-closeout-ceremony/SKILL.md",
+            (
+                ".gzkit/skills/gz-obpi-pipeline/SKILL.md",
+                ".gzkit/skills/gz-obpi-pipeline/references/stage-5-sync-and-account.md",
+            ),
+            (".gzkit/skills/gz-adr-closeout-ceremony/SKILL.md",),
         ]
         # The cross-reference must cite the dead-letter doctrine from ghi-close.
         # Check for "dead-letter" language near GHI context in these skills.
         dead_letter_patterns = ["dead-letter", "dead_letter", "NEVER.*EVER.*dead"]
-        for rel_path in skills_requiring_crossref:
-            path = REPO_ROOT / rel_path
-            if not path.exists():
-                self.fail(f"Skill not found: {rel_path}")
-            text = path.read_text(encoding="utf-8")
+        for rel_paths in skills_requiring_crossref:
+            rel_path = rel_paths[0]
+            # A missing file raises here, which names it as plainly as a pre-check would.
+            text = "\n".join((REPO_ROOT / rel).read_text(encoding="utf-8") for rel in rel_paths)
             found = any(re.search(p, text, re.IGNORECASE | re.DOTALL) for p in dead_letter_patterns)
             self.assertTrue(
                 found,

@@ -143,7 +143,8 @@ def _pipeline_verification_commands(
     When ``behave_tags`` is provided (heavy lane, OBPI-scoped pipeline
     invocation), the Stage 3 behave run is scoped to those ``@REQ-...``
     tags so cross-OBPI feature-file rot does not block this OBPI — see
-    GHI #420 and ``gz-obpi-pipeline`` SKILL.md § Phase 1 (Scope discipline).
+    GHI #420 and the served Stage 3 procedure, ``gz-obpi-pipeline``
+    ``references/stage-3-verify.md`` § Phase 1 (Scope discipline).
     A non-``None`` empty list means the OBPI has no @REQ-tagged scenarios;
     behave is skipped at Stage 3 in that case (the full ``features/``
     sweep runs at ADR closeout).

@@ -524,7 +524,12 @@ def _collect_skill_verb_refs(
 ) -> dict[str, set[str]]:
     """Return ``{verb: {skill-rel-path, …}}`` for every verb referenced by a skill."""
     refs: dict[str, set[str]] = {verb: set() for verb in known_verbs}
-    for skill_md in sorted(skills_root.rglob("SKILL.md")):
+    # A verb named only in a served stage procedure is wielded: the agent executes
+    # from that file as it does from the skill body (OBPI-0.35.0-20, REQ-03).
+    surfaces = sorted(skills_root.rglob("SKILL.md")) + sorted(
+        skills_root.rglob("references/stage-*.md")
+    )
+    for skill_md in surfaces:
         try:
             content = skill_md.read_text(encoding="utf-8")
         except UnicodeDecodeError:
@@ -585,7 +590,8 @@ def audit_skill_alignment(project_root: Path) -> list[ValidationError]:
     """Invariant 1: every registered CLI verb is referenced by at least one skill.
 
     Scans ``.gzkit/skills/**/SKILL.md`` (authored source) frontmatter
-    (``gz_command:``) and body prose for each registered CLI verb path —
+    (``gz_command:``), body prose and the served ``references/stage-*.md``
+    procedures for each registered CLI verb path —
     including multi-word subcommands (``gz obpi complete``, ``gz adr status``),
     not just top-level verbs (GHI #588). A verb with no wielding skill and no
     explicit (or group-cascading) waiver is a defect signal per

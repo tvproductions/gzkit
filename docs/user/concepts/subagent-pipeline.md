@@ -4,6 +4,10 @@ The gz-obpi-pipeline uses a controller/worker architecture for implementation
 and verification stages. The main session orchestrates governance stages and
 dispatches fresh subagents for task-level work.
 
+Each stage's procedure is served by the runtime at stage entry: `gz obpi pipeline`
+prints a `Stage N procedure: <path> (sha256 <digest>)` pointer and the agent reads
+that file; the skill body holds the invocation text only (OBPI-0.35.0-20).
+
 ## Controller/Worker Architecture
 
 The pipeline controller (main session) manages the five governance stages. During

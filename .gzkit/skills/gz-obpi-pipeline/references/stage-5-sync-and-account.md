@@ -1,4 +1,4 @@
-<!-- Stage 5 procedure, served by the runtime at stage entry (OBPI-0.35.0-17). Every block below is verbatim from the attested baseline of .gzkit/skills/gz-obpi-pipeline/SKILL.md (body sha256 fe97fe3139282b0ceec5b11866e97efad11761d8e35a5e4977c84f3d6b388367), selected by data/obpi_pipeline_control_inventory.json: the stage's own section first, then every block from another section holding a control whose applies_at names this stage. Nothing is reworded. -->
+<!-- Stage 5 procedure, served by the runtime at stage entry (OBPI-0.35.0-17; cut over in OBPI-0.35.0-20). Rendered from data/obpi_pipeline_control_inventory.json by gzkit.governance.pipeline_procedure_render: the stage's own section first, then every block from another section holding a control whose applies_at names this stage. Every control is verbatim from the attested baseline of .gzkit/skills/gz-obpi-pipeline/SKILL.md (072317673, body sha256 fe97fe3139282b0ceec5b11866e97efad11761d8e35a5e4977c84f3d6b388367); passages the inventory classes as rationale are in docs/governance/obpi-pipeline-control-rationale.md under the control they explain, and a control that applies elsewhere is left out of its block here. Nothing is reworded. Do not edit by hand: tests/governance/test_pipeline_procedure_render.py holds this file to the render. -->
 
 # Stage 5: Sync And Account — served procedure
 
@@ -6,42 +6,20 @@
 
 After attestation:
 
-**Two-sync pattern:** Stage 5 uses two git-sync cycles. The `gz obpi complete`
-command atomically writes the attestation to the ADR-level audit ledger, updates
-the brief to Completed, emits the completion receipt, and surrenders the lock.
+**Two-sync pattern:** Stage 5 uses two git-sync cycles.
 Git-sync #1 commits these governance edits, the Step 4b brief section and marker
 cleanup. Git-sync #2 commits
 the reconcile output and ADR status refresh.
 
 0. **Pre-flight checklist (MANDATORY, GHI #195)** — `uv run gz obpi precomplete {OBPI-SLUG}`
-   Mechanical verification of all Stage 5 preconditions, each with a named
-   remediation: brief authored readiness, reconcile idempotence (catches GHI
-   #193 drift before it bites), lock ownership, ARB receipts passed (the newest
-   lint/typecheck/unittest receipt since the lock claim each records exit 0 —
-   GHI #889), plan-audit
-   receipt PASS, brief-heading shape, scoped behave REQ coverage, and
-   **task-envelope coherence** (GHI #590 — early warning that the OBPI would
-   close with residue on any of the three signatures: Sig (a) a worklog event
-   under an active TASK with no `task_id`, Sig (b) `seq=01`-only without a
-   `req_atomic:` exemption, Sig (c) layer-drift across discovery channels;
-   remediation: subdivide labor via `uv run gz task start --seq next` or declare
-   `req_atomic:` (Sig b), attribute worklog events with a `task_id` (Sig a),
-   reconcile divergent TASK ids across channels (Sig c) —
-   `uv run gz task envelope diagnose {OBPI-SLUG}`), and **current acceptance
-   proof plus independent closure** (GHI #985). The acceptance records are
-   already in the ledger before this check; Markdown review history does not
-   supply the current verdict.
    **If exit code is non-zero, do NOT invoke `gz obpi complete` — fix each
-   reported precondition first using the named remediation.** Exit 0 here is
-   the gate that prevents the reactive-triage class of failure (the original
-   OBPI-04 Stage 5 cost ~3 turns to discover the same gaps one at a time).
-   Note: `gz obpi complete` **independently re-enforces** the task-envelope,
-   REQ-coverage, and Step-4b gates fail-closed (precomplete is the bypassable
-   pre-flight; the completion command is the chokepoint), so the residue cannot
-   reach `main` even if this step is skipped. `gz check` then re-audits the
-   captured verdict repo-wide via `gz validate --adversarial-validation`.
+   reported precondition first using the named remediation.**
 
-1. **Closure-narrative gate (MANDATORY, GHI #267)** — Before invoking `gz obpi complete`, present the resolved Implementation Summary and Key Proof prose to the operator inline, in the exact form that will be written to the brief. This is the brief-narrative analog of the Stage 4 evidence gate: the brief is Layer 1 canon authorship surface, and a future reader six months from now will read the brief, not the ledger event. Empty or placeholder prose is a defect — `gz obpi complete` fails closed on it (exit 1, no ledger event, no brief mutation), but the skill must catch it before the CLI does.
+> Rationale: docs/governance/obpi-pipeline-control-rationale.md § S5-004, § S5-005
+
+1. **Closure-narrative gate (MANDATORY, GHI #267)** — Before invoking `gz obpi complete`, present the resolved Implementation Summary and Key Proof prose to the operator inline, in the exact form that will be written to the brief. Empty or placeholder prose is a defect — `gz obpi complete` fails closed on it (exit 1, no ledger event, no brief mutation), but the skill must catch it before the CLI does.
+
+> Rationale: docs/governance/obpi-pipeline-control-rationale.md § S5-006
 
    **Required walkthrough format:**
 
@@ -62,22 +40,17 @@ the reconcile output and ADR status refresh.
    **Source:** [--key-proof flag | existing brief body at <line range>]
    ```
 
-   The operator already attested in Stage 4, but the prose is the artifact that survives the ledger event — name it explicitly so the operator can refuse before write.
-
    If the operator silently accepts (no objection), proceed. If they reject, return to authoring the brief sections directly, then re-present.
 
 2. **Complete OBPI atomically** — `uv run gz obpi complete {OBPI-SLUG} --attestor {attestor} --attestation-text "{text}" [--implementation-summary "{summary}"] [--key-proof "{proof}"]`
-   This single command atomically: validates brief state, writes attestation to the
-   ADR-level audit ledger, updates the brief (status, evidence sections, human
-   attestation), and emits the completion receipt to the main ledger. If any step
-   fails, all changes are rolled back — no partial writes.
    - Pass the operator's attestation phrase (e.g. "attest completed") verbatim through `--attestation-text`, enriched per `AGENTS.md` § Attestation (em-dash + session evidence + receipt IDs). The operator's `attest completed` (or equivalent) IS the attestation — it is not a request for more instructions. Do not stop the turn to ask the operator to run the command themselves.
    - Use `--implementation-summary` and `--key-proof` to supply evidence sections.
      If omitted, the command reads existing content from the brief — but it MUST
      be substantive (non-empty, non-placeholder, satisfies
      `_has_substantive_implementation_summary` / `_has_substantive_key_proof`),
-     or the command exits 1 with a recovery hint. The Step 1 walkthrough above
-     is what catches this before the CLI does.
+     or the command exits 1 with a recovery hint.
+
+> Rationale: docs/governance/obpi-pipeline-control-rationale.md § S5-015
 
    **Gate-5 attestation.** The operator's Stage-4 verbatim attestation
    (e.g. "attest completed"), relayed via `--attestation-text`, IS the
@@ -90,20 +63,18 @@ the reconcile output and ADR status refresh.
    exits 1. Never hand the invocation back to the operator — they already
    attested in Stage 4.
 
-   **Completion uses the imported current review (GHI #985).** The command
-   derives the accepted adversarial judgment from durable acceptance records
-   after every current obligation and mapped finding clears. Legacy
+Legacy
    `--adversary-*` arguments remain compatibility/provenance inputs; they cannot
    replace a missing review, invent approval, or discharge a finding. Preserve
    the binding tier and observed fallback requirements in Step 4b.
 
-   Operator ruling 2026-09-04 remains verbatim: ***"refuted is an outcome, but it
-   is an input into if(4a && 4b) pass; else: loop"***. The loop now preserves the
-   obligation and verified closure. Fix the required behavior or obtain the
+Fix the required behavior or obtain the
    existing operator ruling for an actual contract boundary amendment, then
    independently verify the changed proof. A GHI or resolution paragraph alone
    cannot satisfy a missing obligation. Historical round verdicts remain exact;
    no authored standing line determines the current acceptance decision.
+
+> Rationale: docs/governance/obpi-pipeline-control-rationale.md § S5-025
 
    ```bash
    uv run gz obpi complete {OBPI-SLUG} \
@@ -120,33 +91,25 @@ the reconcile output and ADR status refresh.
    `--key-proof` payloads to `/tmp/*.txt|md` first to keep the invocation
    tractable.
 
-3. **Confirm the lock is gone — `gz obpi complete` released it.** After its
-   atomic transaction commits, `gz obpi complete` writes the completion register
-   entry (`.gzkit/locks/exchange/<ts>-{OBPI-SLUG}-complete.md`) and, if a lock is
-   held, deletes it and emits `obpi_lock_released` citing that entry (GHI #619,
-   `_surrender_lock_at_completion` in `src/gzkit/commands/obpi_complete.py`). Run
+3. **Confirm the lock is gone — `gz obpi complete` released it.** Run
    `uv run gz obpi lock list` to confirm. Do not run `gz obpi lock release`
    afterwards; it prints `No lock found`. If the register entry could not be
    written, the lock is left for TTL reaping. Report that to the operator, and
    never `--abandon` a completed OBPI.
 
+> Rationale: docs/governance/obpi-pipeline-control-rationale.md § S5-030
+
 3b. **Exit accounting (GHI #1185; operator ruling 2026-10-10, "1185 now")** —
-   `uv run gz airlock out --target {OBPI-SLUG}`. Books the `airlock_out` event for
-   this transit, holding the files the transit changed against the brief's Allowed
-   Paths and reporting each one outside them. Run it here, before git-sync #1,
-   while the tree still holds the transit's changes. The exit reports and never
-   refuses; the refusal on an out-of-scope file is `gz obpi complete`'s (step 2,
-   GHI #1181). A finding here after a completion that passed is a defect in one of
-   the two comparisons, not a reason to re-run completion.
+   `uv run gz airlock out --target {OBPI-SLUG}`. Run it here, before git-sync #1,
+   while the tree still holds the transit's changes.
 3a. **Heavy lane: author the brief's `### Step 4b — Independent Adversarial
-   Validation` section** under `## Evidence`. `gz obpi complete` does not write it,
-   and `gz validate --adversarial-validation` (in `gz check`, so the pre-push gate)
-   fails a Completed or Validated heavy-lane brief without it. It carries the
+   Validation` section** under `## Evidence`. It carries the
    adversary's identity and tier, one row per round (ARB receipt, verdict, claims
    broken), and how each finding was resolved, citing operator rulings verbatim.
 
-4. Remove `.claude/plans/.pipeline-active-{OBPI-ID}.json` if it was created.
+> Rationale: docs/governance/obpi-pipeline-control-rationale.md § S5-034, § S5-036
 
+4. Remove `.claude/plans/.pipeline-active-{OBPI-ID}.json` if it was created.
 5. Remove `.claude/plans/.pipeline-active.json` only when it still points at
    the same OBPI as the per-OBPI marker.
 
@@ -154,7 +117,6 @@ the reconcile output and ADR status refresh.
    Commits all governance edits from steps 2-5. Tree is now clean.
 
 7. Run `uv run gz obpi sync {OBPI-SLUG}` to confirm receipt and brief agree.
-
 8. Run `uv run gz adr status {PARENT-ADR} --json` so the parent ADR view
    reflects the reconciled OBPI state.
 
@@ -182,18 +144,14 @@ GHI for the binding rule.
 THE PIPELINE IS NOT COMPLETE UNTIL STAGE 5 FINISHES.
 ```
 
-Every stage flows into the next. No "stop and summarize" between stages. No pause except the Stage 4 human attestation in Normal mode — and that pause comes only **after** Step 4b (the independent adversary) has run and its verdict is on the table. Soliciting attestation with Step 4b skipped is not a valid pause; it is a gate bypass. If you have not reached the end of Stage 5, you are not done — and violating the spirit of this rule is violating the rule. One other stop is legitimate: when Stage 4's round bound is reached or a round repeats the prior round's root, record `gz obpi block` and put the decision to the operator (§ Stage 4 — The review window, the bound, and the exit). That is the pipeline working, not a premature summary.
+Every stage flows into the next. No "stop and summarize" between stages. If you have not reached the end of Stage 5, you are not done — and violating the spirit of this rule is violating the rule.
 
 These thoughts mean STOP — you are about to break the pipeline:
 
 | "The hook blocked me, I'll work around it" | Hook blocks are signals. Diagnose the cause. NEVER create marker files manually to bypass. |
-
 | "`gz obpi complete` needs a TTY, so I'll ask the operator to run it themselves" | No. There is no TTY gate. A plain non-TTY `uv run gz obpi complete ... --attestation-text "<operator's verbatim attestation>"` call completes the brief for every lane / kind / sensitivity. The operator already attested in Stage 4 — relay that phrase, never hand the invocation back. |
-
 | "The operator said `attest completed` — maybe they want me to explain what to do next" | No. `attest completed` IS the attestation. Run `gz obpi complete` immediately with that phrase (enriched per § Attestation) in `--attestation-text`. Do not produce runbook-style instructions for the operator to execute. |
-
 | "The round refuted, but I fixed everything it found — I'll complete and explain the fixes in `--adversary-resolution`" | **Refused, and a resolution string does not change that (GHI #960).** *"refuted is an outcome, but it is an input into if(4a && 4b) pass; else: loop"* (operator, 2026-09-04). Execute proof for the repaired obligation and import explicit independent closure. The current acceptance records determine readiness; preserve the original refutation as history. |
-
 | "The block says refuted can't complete, so I'll pass `not-refuted` since the findings are fixed anyway" | A caller-supplied word cannot close a finding. Import the independent review's actual executed output with its original finding IDs and current proof IDs. `gz obpi acceptance ... status --stage stage4` derives readiness; historical verdicts remain unchanged. |
 
 The pipeline executes 5 stages sequentially. **Stage 4 behavior depends on execution mode** — all other stages are autonomous.
@@ -214,17 +172,15 @@ The pipeline executes 5 stages sequentially. **Stage 4 behavior depends on execu
 Stage 4 = HUMAN GATE (wait for attestation) — universal per ADR-0.0.36
 ```
 
-A pipeline gate (Stage 1 reconcile; Stage 5 `precomplete` / `gz obpi complete`
-reconcile-freshness, lock-handoff coupling, or security floor) can block not
-because the *work* is wrong but because the *brief/OBPI has drifted from current
-repo reality* — a stale allowlist, an under-declared coupled surface, a missing
-`sensitivity:` axis, or a plan authored against an earlier tree. The two wrong
-responses are (a) contorting convention-correct code to satisfy a stale brief,
-and (b) filing a GHI and stalling. **The brief is the artifact that adjusts to
+**The brief is the artifact that adjusts to
 reality; code that follows established convention is usually right.**
+
+> Rationale: docs/governance/obpi-pipeline-control-rationale.md § T-001
 
 When a gate blocks and you suspect the brief — not the code — is stale, run the
 **implementer → evaluator → human-approval** loop instead of working around it:
+
+> Rationale: docs/governance/obpi-pipeline-control-rationale.md § T-002
 
 1. **Dispatch an evaluator agent** (Agent tool; `general-purpose` or a review
    persona; read-only) with a `Why` naming the suspected staleness and the
@@ -260,9 +216,7 @@ When a gate blocks and you suspect the brief — not the code — is stale, run 
 > allowlist — fix the brief, not the code.
 
 | `git sync` fails or repo remains unsynced | Stop before `gz obpi complete` and repair blockers |
-
 | Gate blocks on stale brief/allowlist (reconcile drift, security floor, under-declared coupled surface) | Run the **Gate Friction: Evaluator Escalation** loop (above) — dispatch evaluator → determination → operator approval → surgical brief amendment + documented override. Do NOT contort code to fit the brief or file a GHI to stall. |
-
 | A lock survives `gz obpi complete` | The completion register entry could not be written, so the lock was left for TTL reaping (Stage 5 step 3). Report it; never `--abandon` a completed OBPI. |
 
 **Lock bracket:** Lock is claimed at Stage 1 and surrendered by `gz obpi complete` at Stage 5, or by an abort surrender.
@@ -279,12 +233,15 @@ the ownership check only. A session handoff is not an exchange record and
 discharges nothing. The categories are a closed enum, listed in
 `docs/user/manpages/obpi-lock-release.md`; if none describes the abort, do not
 pick one that misdescribes it. Leave the lock held, name it in the handoff and
-report it to the operator; a lock past its TTL is reaped with its own register
-entry.
+report it to the operator
+
+> Rationale: docs/governance/obpi-pipeline-control-rationale.md § T-024
 
 **Handoff creation:** On any abort, after the surrender, run `/gz-session-handoff` to preserve context for the next session.
 
 **When the next legitimate action is a human's, say so in the ledger and stop.**
+
+> Rationale: docs/governance/obpi-pipeline-control-rationale.md § T-026
 
 ```bash
 uv run gz obpi block {OBPI-SLUG} \
@@ -292,18 +249,18 @@ uv run gz obpi block {OBPI-SLUG} \
   --next-action "<the concrete decision the operator owes>"
 ```
 
-While the block stands, `gz obpi pipeline` refuses to launch against the OBPI
-(exit 3) and `gz obpi precomplete` reports it instead of `READY`. The operator
+> Rationale: docs/governance/obpi-pipeline-control-rationale.md § T-027
+
+The operator
 clears it with their own words:
 
 ```bash
 uv run gz obpi unblock {OBPI-SLUG} --ruling "<decision>" --operator "<who>"
 ```
 
-**No attestor is required to record a block.** Requiring a human to authorize
-the statement *"a human is needed"* would reproduce the deadlock it exists to
-break. The ruling that clears it is the operator's; the observation that one is
-needed is the agent's, and recording it is the honest act.
+**No attestor is required to record a block.**
+
+> Rationale: docs/governance/obpi-pipeline-control-rationale.md § T-030
 
 Use one writer per governed checkout. Read-only investigation may run independently.
 Only the operator initiates OBPI work; separate sessions do not grant initiation.
@@ -317,15 +274,10 @@ All OBPIs require per-OBPI human attestation (universal per ADR-0.0.36).
 The pipeline is complete when — and ONLY when — all of these are true:
 
 1. `gz obpi complete` ran successfully — attestation, brief and receipt written atomically, and the lock surrendered (Stage 5, Steps 2–3)
-
 2. Heavy lane: the brief carries its `### Step 4b` section (Stage 5, Step 3a)
-
 3. Pipeline markers cleaned (Stage 5, Steps 4–5)
-
 4. Git-sync #1 committed governance edits (Stage 5, Step 6)
-
 5. `gz obpi sync` passed (Stage 5, Step 7)
-
 6. Git-sync #2 committed reconcile output (Stage 5, Step 9)
 
 If any of these have not happened, the pipeline is not complete. Do not claim otherwise.

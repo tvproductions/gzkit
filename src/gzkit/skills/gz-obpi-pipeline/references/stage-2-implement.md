@@ -1,4 +1,4 @@
-<!-- Stage 2 procedure, served by the runtime at stage entry (OBPI-0.35.0-17). Every block below is verbatim from the attested baseline of .gzkit/skills/gz-obpi-pipeline/SKILL.md (body sha256 fe97fe3139282b0ceec5b11866e97efad11761d8e35a5e4977c84f3d6b388367), selected by data/obpi_pipeline_control_inventory.json: the stage's own section first, then every block from another section holding a control whose applies_at names this stage. Nothing is reworded. -->
+<!-- Stage 2 procedure, served by the runtime at stage entry (OBPI-0.35.0-17; cut over in OBPI-0.35.0-20). Rendered from data/obpi_pipeline_control_inventory.json by gzkit.governance.pipeline_procedure_render: the stage's own section first, then every block from another section holding a control whose applies_at names this stage. Every control is verbatim from the attested baseline of .gzkit/skills/gz-obpi-pipeline/SKILL.md (072317673, body sha256 fe97fe3139282b0ceec5b11866e97efad11761d8e35a5e4977c84f3d6b388367); passages the inventory classes as rationale are in docs/governance/obpi-pipeline-control-rationale.md under the control they explain, and a control that applies elsewhere is left out of its block here. Nothing is reworded. Do not edit by hand: tests/governance/test_pipeline_procedure_render.py holds this file to the render. -->
 
 # Stage 2: Implement — served procedure
 
@@ -22,56 +22,47 @@ The per-behavior cycle (never batch all tests then implement the whole unit):
    - it fails because **the feature is missing**, not because of a typo or a
      missing import.
 
-   *"If you didn't watch the test fail, you don't know if it tests the right
-   thing."*
+> Rationale: docs/governance/obpi-pipeline-control-rationale.md § S2-005
 
 3. **GREEN — write the simplest code** that makes that one test pass.
-
 4. **REFACTOR** — clean up (duplication, names, helpers) with the bar staying green.
-
 5. Repeat for the next behavior.
 
 **Execute acceptance proof before review (GHI #985).** For the current task's
 BEHAVIOR obligations, write a proof specification naming its production source,
 full covering test IDs, and exact behavioral substitutions; run
-`uv run gz obpi acceptance {OBPI-SLUG} prove --spec {controls.json}`. The command
-observes the baseline, activated controls, nominated assertion failures, source
-restoration, and restored green run. A runtime error or skipped selector cannot
+`uv run gz obpi acceptance {OBPI-SLUG} prove --spec {controls.json}`. A runtime error or skipped selector cannot
 earn a behavioral kill. SUPPORT and STRUCTURAL-FENCE specifications name only the
-REQ; the command executes their existing canonical proof resolvers. The complete
-schema is in the acceptance manpage. Historical RED evidence remains useful, but
+REQ; the command executes their existing canonical proof resolvers. Historical RED evidence remains useful, but
 does not substitute for this current execution record.
+
+> Rationale: docs/governance/obpi-pipeline-control-rationale.md § S2-009
 
 The reviewer must still judge whether the oracle and control express the
 requirement, exercise production behavior, and include legitimate positive cases.
-The command proves recorded observations, not the semantic adequacy of arbitrary
-assertions. Do not build an all-assertions classifier or count mutations as coverage.
+Do not build an all-assertions classifier or count mutations as coverage.
 
-> **Anti-pattern — the import-error red (the false red).** A first run that
+> A first run that
 > ERRORs with `ModuleNotFoundError` / `ImportError` / `AttributeError` because
 > the module or symbol under construction does not exist yet is **not a verified
-> red**. It proves the *module is absent* — it does **not** prove the test's
-> assertion bites the behavior, because no assertion ran. A test that can only
-> fail on a missing import cannot distinguish "behavior present" from "behavior
-> absent" — the tautological/facade smell gzkit exists to kill. **Recovery:** get
+> red**. **Recovery:** get
 > to an assertion-level failure first — create the importable skeleton (define
 > the symbol as a no-op stub so the test imports cleanly), then watch each test
 > fail on its OWN assertion for the right reason, *then* implement the behavior.
-> Seeing the assertion-level red is the cheap negative control proving the test
-> is not tautological. Do not report "RGR followed" when the only red observed
+> Do not report "RGR followed" when the only red observed
 > was an import/collection error.
+
+> Rationale: docs/governance/obpi-pipeline-control-rationale.md § S2-015, § S2-016
 
 **Check for a single-driver declaration first.** If this run is declared single-driver, skip to the [Inline Fallback](#inline-fallback-declared-single-driver) below.
 
 #### Subagent Dispatch Mode (default)
 
 1. **Extract plan tasks** from the approved plan file using `extract_plan_tasks()` patterns (headings or numbered items).
-
 2. **Create task list:**
    - Last task MUST be "Present OBPI Acceptance Ceremony" (universal human gate per ADR-0.0.36)
 
 3. **Read brief requirements** — extract the `## Requirements (FAIL-CLOSED)` section from the OBPI brief. These are passed to each implementer as scoped context.
-
 4. **For each plan task** (sequential — one implementer at a time, never parallel):
 
    a. **Classify complexity** based on allowed file count:
@@ -89,10 +80,7 @@ assertions. Do not build an all-assertions classifier or count mutations as cove
       - Allowed files from the brief allowlist
       - Test expectations from the brief
       - Brief requirements (the FAIL-CLOSED list)
-      - `why` and `project_root` are required keyword arguments (GHI #861). The
-        composer emits the `implementer` persona frame from `project_root` and a
-        `### Why` block from `why` — AGENTS.md § Behavior Rules — Always #6 makes
-        the Why unconditional, so omitting it is a `TypeError`, not a thinner prompt.
+      - `why` and `project_root` are required keyword arguments (GHI #861).
       - The Red-Green-Refactor rules, including the `gz arb red` witness, are
         emitted by the composer and match `.claude/agents/implementer.md` — do not
         restate them by hand and do not weaken them
@@ -101,6 +89,8 @@ assertions. Do not build an all-assertions classifier or count mutations as cove
         (the assertion-level failure message), not merely that it wrote tests.
         A `HandoffResult` claiming RGR whose only red was an import error is a
         red-verification miss — treat it as a review finding in step h.
+
+> Rationale: docs/governance/obpi-pipeline-control-rationale.md § S2-026
 
    d. **Dispatch via Agent tool:**
       ```
@@ -113,7 +103,9 @@ assertions. Do not build an all-assertions classifier or count mutations as cove
 
    e. **Parse HandoffResult** from the subagent output — look for a JSON code block with `status`, `files_changed`, `tests_added`, `concerns` fields.
 
-   f. **Record dispatch** — run `uv run gz obpi dispatch <OBPI-ID> --role Implementer --model <tier> --task <n>`. This appends a `stage2_dispatch_recorded` event to the ledger, which is what Stage 5 credits; the marker's `dispatch_state` is refreshed only as a cache. The credit therefore SURVIVES `--clear-stale` and a relaunch (GHI #886) — it did not before 2026-08-27, and a compliant 3/3 run lost its whole review record to that sanctioned recovery path. **Credit is never inferred** — `gz obpi precomplete` fails closed on an unrecorded Stage-2 dispatch, and the presence of code proves nothing about who wrote it (GHI #845). If this session genuinely cannot dispatch, declare it instead: `uv run gz obpi dispatch <OBPI-ID> --single-driver --reason "<why>"`. Declared single-driver passes Stage 5; silent single-driver does not.
+   f. **Record dispatch** — run `uv run gz obpi dispatch <OBPI-ID> --role Implementer --model <tier> --task <n>`. **Credit is never inferred** — `gz obpi precomplete` fails closed on an unrecorded Stage-2 dispatch, and the presence of code proves nothing about who wrote it (GHI #845). If this session genuinely cannot dispatch, declare it instead: `uv run gz obpi dispatch <OBPI-ID> --single-driver --reason "<why>"`. Declared single-driver passes Stage 5; silent single-driver does not.
+
+> Rationale: docs/governance/obpi-pipeline-control-rationale.md § S2-032
 
    g. **Handle result status:**
       - `DONE` or `DONE_WITH_CONCERNS` → proceed to **two-stage review** (step h)
@@ -147,26 +139,25 @@ assertions. Do not build an all-assertions classifier or count mutations as cove
          (and dirty-tree source identity), command, actual result, and failure
          traceback for any RED or negative-control claim. If missing, obtain the
          record from the implementer; do not reconstruct it from a summary.
-         Reviewers read the records against the code and contract. A green
-         coverage inventory does not establish semantic adequacy. Check where
+         Reviewers read the records against the code and contract. Check where
          expected values come from and whether the test exercises production
          behavior; shared-parser agreement is not independent boundary proof.
 
+> Rationale: docs/governance/obpi-pipeline-control-rationale.md § S2-045
+
          Supply `acceptance_context` from
          `uv run gz obpi acceptance {OBPI-SLUG} status --stage stage2 --json`.
-         A blocked status before reviews is expected; its payload contains the
-         canonical obligations, actual proofs, and retained findings. The composer
+The composer
          requests one `gzkit.acceptance.review.v1` envelope only; `parse_review_result`
          derives `ReviewResult` from it (GHI #1095). The reviewer uses actual IDs and digest from
-         that context and explicitly lists `accepted_proof_ids`; the importer
-         assigns the review and receipt IDs. Missing proof is recorded as a
+         that context and explicitly lists `accepted_proof_ids`; Missing proof is recorded as a
          mapped `missing-proof` finding with no invented proof or approval ID.
          Each approved proof carries a `grounds` citation: the file the reviewer
          read (or the proof's recorded evidence) and an excerpt copied from it.
-         The importer refuses an uncited approval from a reviewer whose grant has
-         no shell or cannot be resolved (no single plain `--agent` persona, or a
-         tool-override flag), and any excerpt that is not where it says (GHI #994). A check
+A check
          the reviewer could not perform stays in `verification_gaps`.
+
+> Rationale: docs/governance/obpi-pipeline-control-rationale.md § S2-047, § S2-049, § S2-051
 
       iv. **Dispatch both reviewers concurrently through receipted agent execution.**
          Preserve the selected model, the `spec-reviewer` and `quality-reviewer`
@@ -188,8 +179,9 @@ assertions. Do not build an all-assertions classifier or count mutations as cove
          `uv run gz obpi acceptance {OBPI-SLUG} review --receipt {arb-run-id}`.
          A native Agent-tool summary alone does not supply the required receipt.
 
-      v. **Record review dispatches** — run `uv run gz obpi dispatch <OBPI-ID> --role SpecReviewer --model <tier> --task <n>` and the same for `--role QualityReviewer`. Partial dispatch is still SINGLE-DRIVER: the reviewers catch what the implementer cannot see in its own work, so recording only the implementer launders the review that never ran. This records one `stage2_dispatch_recorded` ledger event per
-         reviewer, and refreshes the marker's `SubagentDispatchRecord` cache with model, timestamps, and result.
+      v. **Record review dispatches** — run `uv run gz obpi dispatch <OBPI-ID> --role SpecReviewer --model <tier> --task <n>` and the same for `--role QualityReviewer`. Partial dispatch is still SINGLE-DRIVER: the reviewers catch what the implementer cannot see in its own work, so recording only the implementer launders the review that never ran.
+
+> Rationale: docs/governance/obpi-pipeline-control-rationale.md § S2-060
 
       vi. **Handle review results** via `handle_review_cycle(state, task_index, spec_result, quality_result, acceptance=...)`:
          - Both reviewers pass AND current task-scoped Stage-2 acceptance is ready
@@ -236,19 +228,16 @@ assertions. Do not build an all-assertions classifier or count mutations as cove
          a finding because the reviewer also lacks an execution tool.
 
 5. **Persist dispatch state** after each task completes (success or failure), including review results.
-
 6. **After all tasks complete:** persist dispatch summary for `gz roles --pipeline` queries.
 
-> **Labor-subdivision discipline (GHI #590).** The pipeline mints one
-> `seq=01` TASK per REQ as the coarse default bucket. When a REQ's labor was
+> When a REQ's labor was
 > genuinely multi-step, subdivide it — `uv run gz task start --seq next` mints
 > `seq=02`, `seq=03`, … so the attribution matches the work. When every REQ is
 > genuinely one indivisible unit (no labor below the REQ), declare
 > `req_atomic:` in the brief frontmatter with inline per-REQ rationale. Make
-> this call **here**, where the labor happens — an OBPI that reaches Stage 5
-> `seq=01`-only without a `req_atomic:` exemption is blocked fail-closed by the
-> task-envelope chokepoint gate (Stage 5 Step 0 / `gz obpi complete`), so
-> deferring the decision only stalls completion.
+> this call **here**, where the labor happens
+
+> Rationale: docs/governance/obpi-pipeline-control-rationale.md § S2-071, § S2-073
 
 **Abort if:** Any task returns `BLOCKED` after retry or after exhausting review fix cycles. Surrender the lock per [Abort surrender](#abort-surrender), create handoff, and stop.
 
@@ -257,26 +246,24 @@ assertions. Do not build an all-assertions classifier or count mutations as cove
 When the run is declared single-driver, Stage 2 runs entirely in the main session (no Agent tool dispatch):
 
 1. Create task list from plan steps (same as above)
-
 2. Follow the approved plan step by step
-
 3. Keep edits inside the brief allowlist and transaction contract
-
 4. Implement each behavior via the **Red-Green-Refactor discipline above**: one
    minimal test → watch it fail on its assertion for the right reason (not an
    import error) → simplest code to pass → refactor green. Use `unittest`,
    `TempDBMixin` for DB, coverage >= 40%. Do not batch all tests then implement.
 
 5. Run `uv run ruff check . --fix && uv run ruff format .` after code changes
-
 6. Run `uv run gz test` after implementation
 
 The declaration is the only route to this mode: `uv run gz obpi dispatch {OBPI-SLUG} --single-driver --reason "<why>"`
 records it on the ledger, and the Stage-5 dispatch verdict reads that event.
-`gz obpi pipeline` has no flag for it (GHI #1166). Declare when the session
+Declare when the session
 cannot dispatch or the operator has ruled a single-session run. Execute the same
 proof commands and retain mapped findings. Step 4b remains mandatory, and neither
 the declaration nor an inline implementation can close its own acceptance finding.
+
+> Rationale: docs/governance/obpi-pipeline-control-rationale.md § S2-082
 
 **Abort if:** Tests fail after 2 fix attempts. Surrender the lock per [Abort surrender](#abort-surrender), create handoff, and stop.
 
@@ -284,24 +271,27 @@ the declaration nor an inline implementation can close its own acceptance findin
 
 ## Controls carried into Stage 2 from other sections
 
+| Persona | Function in this ceremony | Invoked at |
+|---|---|---|
 | `implementer` | Methodical, test-first code authoring per the approved plan; one task at a time; complete units (imports + usage + tests + docs as one edit) | Stage 2 step c–g (see § Stage 2 for dispatch mechanics) |
-
 | `spec-reviewer` | Independent requirement-tracing against the brief's `## Requirements (FAIL-CLOSED)` list; each REQ must map to implementation and test. **Cannot execute** — reviews by reading (GHI #941, #968) | Stage 2 step h.i–viii (two-stage review) |
-
 | `quality-reviewer` | Independent architectural assessment: SOLID, size-discipline, maintainability of the produced diff. **Cannot execute** — reviews by reading (GHI #941, #968) | Stage 2 step h.i–viii (two-stage review) |
 
-The mechanical attestation that these dispatches occurred was scoped by `ADR-pool.obpi-pipeline-dispatch-attestation` Target Scopes #5/#6. That ADR is **Superseded** (`absorbed_into: ADR-0.0.73`, itself Validated 9/9), so there is no promotion pending and nothing arrives from one — the absorption delivered an absorption-marker audit, and that ADR's own § Notes place the receipt machinery (ledger events, bail-to-inline gates, validator scopes) in "a future feature-kind ADR work surface" that is not yet authored (GHI #846). **Stage-2 dispatch IS attestable today**: record each one with `uv run gz obpi dispatch <OBPI-ID> --role <Role> --model <tier>`, and `gz obpi precomplete` fails closed on a silent single-driver run (GHI #845). Credit is never inferred. The Stage-4 narrator dispatch has no channel yet.
+**Stage-2 dispatch IS attestable today**: record each one with `uv run gz obpi dispatch <OBPI-ID> --role <Role> --model <tier>`, and `gz obpi precomplete` fails closed on a silent single-driver run (GHI #845). Credit is never inferred.
+
+> Rationale: docs/governance/obpi-pipeline-control-rationale.md § I-010
 
 ```
 THE PIPELINE IS NOT COMPLETE UNTIL STAGE 5 FINISHES.
 ```
 
-Every stage flows into the next. No "stop and summarize" between stages. No pause except the Stage 4 human attestation in Normal mode — and that pause comes only **after** Step 4b (the independent adversary) has run and its verdict is on the table. Soliciting attestation with Step 4b skipped is not a valid pause; it is a gate bypass. If you have not reached the end of Stage 5, you are not done — and violating the spirit of this rule is violating the rule. One other stop is legitimate: when Stage 4's round bound is reached or a round repeats the prior round's root, record `gz obpi block` and put the decision to the operator (§ Stage 4 — The review window, the bound, and the exit). That is the pipeline working, not a premature summary.
+Every stage flows into the next. No "stop and summarize" between stages. If you have not reached the end of Stage 5, you are not done — and violating the spirit of this rule is violating the rule.
 
 These thoughts mean STOP — you are about to break the pipeline:
 
+| Thought | Reality |
+|---------|---------|
 | "Implementation/tests done, let me summarize" | You are between stages. The pipeline runs to Stage 5. Proceed. |
-
 | "The hook blocked me, I'll work around it" | Hook blocks are signals. Diagnose the cause. NEVER create marker files manually to bypass. |
 
 Within an operator-initiated OBPI, implementation, test, documentation, and
@@ -321,9 +311,8 @@ repairs together, not every edit or command. Link receipts and transcripts rathe
 than reproducing them. Keep approved amendments in their normative sections and
 reference the operator ruling from the log; history cannot amend the contract.
 
-The log is a human-readable index. Existing ledger records continue to govern
-proof, review, closure, and readiness. Optional commentary does not create a new
-deliverable, and historical prose edits alone do not require another review.
+> Rationale: docs/governance/obpi-pipeline-control-rationale.md § I-051
+
 A concrete counterexample against an obligation or its required proof still does.
 For existing briefs, add the log during the authorized run; do not retrofit other
 live or completed briefs. Keep independently routed issue links in Tracked Defects.
@@ -362,12 +351,15 @@ the ownership check only. A session handoff is not an exchange record and
 discharges nothing. The categories are a closed enum, listed in
 `docs/user/manpages/obpi-lock-release.md`; if none describes the abort, do not
 pick one that misdescribes it. Leave the lock held, name it in the handoff and
-report it to the operator; a lock past its TTL is reaped with its own register
-entry.
+report it to the operator
+
+> Rationale: docs/governance/obpi-pipeline-control-rationale.md § T-024
 
 **Handoff creation:** On any abort, after the surrender, run `/gz-session-handoff` to preserve context for the next session.
 
 **When the next legitimate action is a human's, say so in the ledger and stop.**
+
+> Rationale: docs/governance/obpi-pipeline-control-rationale.md § T-026
 
 ```bash
 uv run gz obpi block {OBPI-SLUG} \
@@ -375,18 +367,18 @@ uv run gz obpi block {OBPI-SLUG} \
   --next-action "<the concrete decision the operator owes>"
 ```
 
-While the block stands, `gz obpi pipeline` refuses to launch against the OBPI
-(exit 3) and `gz obpi precomplete` reports it instead of `READY`. The operator
+> Rationale: docs/governance/obpi-pipeline-control-rationale.md § T-027
+
+The operator
 clears it with their own words:
 
 ```bash
 uv run gz obpi unblock {OBPI-SLUG} --ruling "<decision>" --operator "<who>"
 ```
 
-**No attestor is required to record a block.** Requiring a human to authorize
-the statement *"a human is needed"* would reproduce the deadlock it exists to
-break. The ruling that clears it is the operator's; the observation that one is
-needed is the agent's, and recording it is the honest act.
+**No attestor is required to record a block.**
+
+> Rationale: docs/governance/obpi-pipeline-control-rationale.md § T-030
 
 Use one writer per governed checkout. Read-only investigation may run independently.
 Only the operator initiates OBPI work; separate sessions do not grant initiation.
@@ -398,5 +390,7 @@ Never stash, pop, reset, revert, or sync another active run's work to clean the 
 All OBPIs require per-OBPI human attestation (universal per ADR-0.0.36).
 
 **This is the failure mode this skill exists to prevent.** If you find yourself writing a summary after Stage 2 or Stage 3, you are committing this exact anti-pattern. Stop writing the summary. Start the next stage.
+
+> Rationale: docs/governance/obpi-pipeline-control-rationale.md § T-047
 
 If a pipeline hook blocks a write, that means the pipeline is not active or evidence is missing. The correct response is to diagnose the cause — NOT to manually create marker files or ledger entries to bypass the hook. Manually creating files to bypass hooks defeats the entire enforcement mechanism.

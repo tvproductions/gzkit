@@ -3,8 +3,8 @@
   "mandated": [
     {
       "surface": "OpenAI Codex plugin for Claude Code (openai/codex-plugin-cc)",
-      "directive": "gz-obpi-pipeline SKILL.md, section 'THE PLUGIN IS THE ONLY TIER-1 DISPATCH SURFACE' (operator directive, 2026-08-25)",
-      "directive_path": ".gzkit/skills/gz-obpi-pipeline/SKILL.md",
+      "directive": "gz-obpi-pipeline references/stage-4-present-evidence.md (served Stage 4 procedure), section 'THE PLUGIN IS THE ONLY TIER-1 DISPATCH SURFACE' (operator directive, 2026-08-25)",
+      "directive_path": ".gzkit/skills/gz-obpi-pipeline/references/stage-4-present-evidence.md",
       "runtime": "node",
       "binary": "codex-companion.mjs",
       "argv": [
@@ -19,8 +19,8 @@
     },
     {
       "surface": "OpenAI Codex plugin for Claude Code (openai/codex-plugin-cc), writable replay path",
-      "directive": "gz-obpi-pipeline SKILL.md, section 'THE REVIEWER REPLAYS IN A DISPOSABLE WRITABLE CHECKOUT' (operator instruction, 2026-09-10, GHI #961)",
-      "directive_path": ".gzkit/skills/gz-obpi-pipeline/SKILL.md",
+      "directive": "gz-obpi-pipeline references/stage-4-present-evidence.md (served Stage 4 procedure), section 'THE REVIEWER REPLAYS IN A DISPOSABLE WRITABLE CHECKOUT' (operator instruction, 2026-09-10, GHI #961)",
+      "directive_path": ".gzkit/skills/gz-obpi-pipeline/references/stage-4-present-evidence.md",
       "runtime": "node",
       "binary": "codex-companion.mjs",
       "argv": [

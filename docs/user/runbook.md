@@ -138,7 +138,8 @@ exit-code matrix and option reference.
 
 Each stage entry prints `Stage N procedure: <path> (sha256 <digest>)`; read that
 file before acting in the stage. The runtime refuses a stage whose procedure
-is missing or altered (OBPI-0.35.0-17).
+is missing or altered (OBPI-0.35.0-17). The skill body holds the invocation text
+only; each stage's procedure lives in the file served at its entry (OBPI-0.35.0-20).
 
 | Skill (preferred) | CLI equivalent |
 |---|---|

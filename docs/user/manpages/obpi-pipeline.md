@@ -45,9 +45,11 @@ Current command contract:
   writes a marker; a stage whose procedure is missing, unreadable, empty or not
   the expected bytes is refused with three-part recovery prose (exit `1`,
   nothing entered). The procedure served through `--from` is the same file, so
-  it is byte-identical to the one served in sequence. Until
-  `OBPI-0.35.0-20` lands, the skill body still carries each stage's procedure
-  as well (OBPI-0.35.0-17)
+  it is byte-identical to the one served in sequence. The skill body holds the
+  invocation text only; the stage files are rendered from the attested control
+  inventory, and the rationale passages they once carried are in
+  `docs/governance/obpi-pipeline-control-rationale.md`, keyed by control
+  (OBPI-0.35.0-17, OBPI-0.35.0-20)
 - every launch records the parent ADR as `Accepted` before writing markers: a
   `Proposed` ADR transitions `Proposed -> Accepted`, and a `Draft` ADR walks
   `Draft -> Proposed -> Accepted` through the lifecycle state machine, whose

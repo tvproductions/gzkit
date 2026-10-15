@@ -87,3 +87,35 @@ class TestAuditSkillAlignmentSeam(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestWieldingReadsServedProcedures(unittest.TestCase):
+    """REQ-0.35.0-20-03: a verb named only in a served stage procedure counts as wielded."""
+
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name)
+        self.skill = self.root / ".gzkit" / "skills" / "gz-demo"
+        (self.skill / "references").mkdir(parents=True)
+        (self.skill / "SKILL.md").write_text(
+            "---\nname: gz-demo\n---\n\n# demo\n", encoding="utf-8"
+        )
+
+    def tearDown(self) -> None:
+        self._tmp.cleanup()
+
+    def _orphans(self) -> list[str]:
+        from gzkit.governance.trust_audits import cli as cli_module
+
+        with unittest.mock.patch.object(
+            cli_module, "_known_cli_verb_paths", return_value=frozenset({"demoverb"})
+        ):
+            errors = audit_skill_alignment(self.root)
+        return [e.artifact for e in errors if e.artifact == "gz demoverb"]
+
+    def test_a_verb_named_only_in_a_served_stage_procedure_is_wielded(self) -> None:
+        self.assertEqual(self._orphans(), ["gz demoverb"])
+        (self.skill / "references" / "stage-2-implement.md").write_text(
+            "Run `gz demoverb` here.\n", encoding="utf-8"
+        )
+        self.assertEqual(self._orphans(), [])

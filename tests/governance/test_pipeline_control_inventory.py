@@ -285,13 +285,47 @@ class TestReadSkillBody(unittest.TestCase):
         self.assertEqual(body, "---\nname: x\n# Body\n")
 
 
-class TestCommittedInventoryPinsTheBody(unittest.TestCase):
-    """The committed inventory's blocks reproduce the current skill body."""
+def _baseline_body(root: Path, inventory: ControlInventory) -> str | None:
+    """Return the skill body at the commit the inventory pins, or None without history.
 
-    def test_committed_inventory_matches_the_skill_body(self):
+    AMENDED 2026-10-15 (OBPI-0.35.0-20): the cutover reduced the live body to the
+    invocation text, so the before-state checks read the baseline the inventory
+    pins (commit, path, digest) from history; the live tree is checked by
+    ``tests/governance/test_pipeline_procedure_render.py``.
+    """
+    import subprocess
+
+    from tests.commands.common import _isolated_git_env
+
+    baseline = inventory.baseline
+    shown = subprocess.run(
+        ["git", "show", f"{baseline.commit}:{baseline.path}"],
+        cwd=root,
+        env=_isolated_git_env(),
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        check=False,
+    )
+    if shown.returncode:
+        return None
+    with tempfile.TemporaryDirectory() as tmp:
+        copy = Path(tmp) / baseline.path
+        copy.parent.mkdir(parents=True)
+        copy.write_text(shown.stdout, encoding="utf-8", newline="")
+        return read_skill_body(Path(tmp), inventory)
+
+
+class TestCommittedInventoryPinsTheBody(unittest.TestCase):
+    """The committed inventory's blocks reproduce the baseline body it pins."""
+
+    def test_committed_inventory_matches_the_pinned_baseline(self):
         root = Path(__file__).resolve().parents[2]
         inventory = load_inventory(root)
-        body = read_skill_body(root, inventory)
+        body = _baseline_body(root, inventory)
+        if body is None:
+            self.skipTest("the pinned baseline commit is not in this checkout's history")
         kinds = _kinds(check_before_state(inventory, body))
         self.assertNotIn("digest-mismatch", kinds, "the pinned digest no longer matches the body")
         self.assertNotIn(
@@ -302,7 +336,9 @@ class TestCommittedInventoryPinsTheBody(unittest.TestCase):
         """REQ-0.35.0-17-02: every block fully covered, every row well formed, no violation."""
         root = Path(__file__).resolve().parents[2]
         inventory = load_inventory(root)
-        body = read_skill_body(root, inventory)
+        body = _baseline_body(root, inventory)
+        if body is None:
+            self.skipTest("the pinned baseline commit is not in this checkout's history")
         violations = check_before_state(inventory, body)
         self.assertEqual(
             violations, [], "\n".join(f"{v.kind} {v.where}: {v.detail}" for v in violations[:12])

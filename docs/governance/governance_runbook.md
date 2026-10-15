@@ -578,7 +578,9 @@ uv run gz obpi validate <path-to-brief> --authored
 ```
 
 3. Plan the OBPI and exit plan mode with an approved plan.
-4. Invoke the OBPI execution pipeline.
+4. Invoke the OBPI execution pipeline. Each stage's procedure is served by the
+   runtime at stage entry as a `Stage N procedure: <path> (sha256 <digest>)`
+   pointer; the skill body carries the invocation text only (OBPI-0.35.0-20).
 
 ```text
 /gz-obpi-pipeline OBPI-<X.Y.Z-NN>

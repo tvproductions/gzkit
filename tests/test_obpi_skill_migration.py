@@ -27,12 +27,27 @@ def covers(target: str):  # noqa: D401
 
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 _PIPELINE_SKILL = _PROJECT_ROOT / ".claude" / "skills" / "gz-obpi-pipeline" / "SKILL.md"
+_PIPELINE_REFERENCES = _PROJECT_ROOT / ".claude" / "skills" / "gz-obpi-pipeline" / "references"
 _PIPELINE_DISPATCH = _PROJECT_ROOT / ".claude" / "skills" / "gz-obpi-pipeline" / "DISPATCH.md"
 _LOCK_SKILL = _PROJECT_ROOT / ".claude" / "skills" / "gz-obpi-lock" / "SKILL.md"
 
 
 def _read(path: Path) -> str:
     return path.read_text(encoding="utf-8")
+
+
+def _pipeline_text() -> str:
+    """Return the pipeline skill as delivered: its body plus the served stage procedures.
+
+    AMENDED 2026-10-15 (OBPI-0.35.0-20): each stage's procedure is served by the
+    runtime at stage entry from ``references/stage-*.md`` and the body holds the
+    invocation text only. REQ-0.0.14-03-* assert what the pipeline instructs, so
+    the proof reads the delivered whole and keeps its ``@covers`` binding
+    (``docs/governance/attested-req-subject-retirement.md``).
+    """
+    parts = [_read(_PIPELINE_SKILL)]
+    parts.extend(_read(path) for path in sorted(_PIPELINE_REFERENCES.glob("stage-*.md")))
+    return "\n".join(parts)
 
 
 # ---------------------------------------------------------------------------
@@ -46,7 +61,7 @@ class TestPipelineStage1LockClaim(unittest.TestCase):
 
     @covers("REQ-0.0.14-03-01")
     def test_pipeline_references_gz_obpi_lock_claim(self):
-        content = _read(_PIPELINE_SKILL)
+        content = _pipeline_text()
         matches = re.findall(r"gz obpi lock claim", content)
         self.assertGreater(len(matches), 0, "Pipeline SKILL.md must reference 'gz obpi lock claim'")
 
@@ -62,7 +77,7 @@ class TestPipelineStage5Complete(unittest.TestCase):
 
     @covers("REQ-0.0.14-03-02")
     def test_pipeline_references_gz_obpi_complete(self):
-        content = _read(_PIPELINE_SKILL)
+        content = _pipeline_text()
         matches = re.findall(r"gz obpi complete", content)
         self.assertGreater(len(matches), 0, "Pipeline SKILL.md must reference 'gz obpi complete'")
 
@@ -78,7 +93,7 @@ class TestPipelineStage5LockRelease(unittest.TestCase):
 
     @covers("REQ-0.0.14-03-03")
     def test_pipeline_references_gz_obpi_lock_release(self):
-        content = _read(_PIPELINE_SKILL)
+        content = _pipeline_text()
         matches = re.findall(r"gz obpi lock release", content)
         self.assertGreater(
             len(matches), 0, "Pipeline SKILL.md must reference 'gz obpi lock release'"
@@ -122,7 +137,7 @@ class TestNoFallbackDirectWrites(unittest.TestCase):
 
     @covers("REQ-0.0.14-03-05")
     def test_pipeline_no_write_tool_to_locks(self):
-        content = _read(_PIPELINE_SKILL)
+        content = _pipeline_text()
         # Match "Write" tool usage targeting lock paths
         write_to_locks = re.findall(r"Write.*\.gzkit/locks", content, re.IGNORECASE)
         self.assertEqual(
@@ -149,7 +164,7 @@ class TestPipelineStageCount(unittest.TestCase):
 
     @covers("REQ-0.0.14-03-06")
     def test_pipeline_has_five_stages(self):
-        content = _read(_PIPELINE_SKILL)
+        content = _pipeline_text()
         # Look for Stage N headers or numbered stage references
         stage_headers = re.findall(r"Stage\s+(\d+)", content)
         unique_stages = sorted({int(s) for s in stage_headers})
@@ -176,7 +191,7 @@ class TestAbortHandoff(unittest.TestCase):
 
     @covers("REQ-0.0.14-03-07")
     def test_pipeline_abort_surrenders_with_abandon(self):
-        content = _read(_PIPELINE_SKILL)
+        content = _pipeline_text()
         section = content.split("### Abort surrender", 1)[1].split("\n---", 1)[0]
         self.assertRegex(
             section, r"gz obpi lock release \{OBPI-SLUG\} --abandon <category>:<reason>"
@@ -184,7 +199,7 @@ class TestAbortHandoff(unittest.TestCase):
 
     @covers("REQ-0.0.14-03-07")
     def test_pipeline_prescribes_no_forced_release(self):
-        content = _read(_PIPELINE_SKILL)
+        content = _pipeline_text()
         forced = re.findall(r"lock release[^\n|]*--force", content)
         self.assertEqual(forced, [], "a forced release cannot surrender a held lock")
 
@@ -200,7 +215,7 @@ class TestZeroWriteToLockPaths(unittest.TestCase):
 
     @covers("REQ-0.0.14-03-08")
     def test_pipeline_no_write_to_lock_json(self):
-        content = _read(_PIPELINE_SKILL)
+        content = _pipeline_text()
         hits = re.findall(r"Write.*\.lock\.json", content, re.IGNORECASE)
         self.assertEqual(len(hits), 0, "Pipeline must not Write to .lock.json files")
 
@@ -213,7 +228,7 @@ class TestZeroWriteToLockPaths(unittest.TestCase):
     @covers("REQ-0.0.14-03-08")
     def test_dispatch_no_write_to_lock_json(self):
         # DISPATCH.md consolidated into SKILL.md — verify same invariant there
-        content = _read(_PIPELINE_SKILL)
+        content = _pipeline_text()
         hits = re.findall(r"Write.*\.lock\.json", content, re.IGNORECASE)
         self.assertEqual(len(hits), 0, "Pipeline skill must not Write to .lock.json files")
 
@@ -229,14 +244,14 @@ class TestZeroEditBriefStatus(unittest.TestCase):
 
     @covers("REQ-0.0.14-03-09")
     def test_pipeline_no_edit_brief_status(self):
-        content = _read(_PIPELINE_SKILL)
+        content = _pipeline_text()
         # Check for Edit tool instructions targeting brief status fields
         edit_status = re.findall(r"Edit.*Brief Status", content, re.IGNORECASE)
         self.assertEqual(len(edit_status), 0, "Pipeline must not Edit brief status directly")
 
     @covers("REQ-0.0.14-03-09")
     def test_pipeline_no_edit_frontmatter_status(self):
-        content = _read(_PIPELINE_SKILL)
+        content = _pipeline_text()
         edit_fm = re.findall(r"Edit.*status:\s*(Draft|Completed)", content, re.IGNORECASE)
         self.assertEqual(len(edit_fm), 0, "Pipeline must not Edit frontmatter status directly")
 
@@ -252,7 +267,7 @@ class TestSkillsReferenceGzObpi(unittest.TestCase):
 
     @covers("REQ-0.0.14-03-10")
     def test_pipeline_references_gz_obpi(self):
-        content = _read(_PIPELINE_SKILL)
+        content = _pipeline_text()
         matches = re.findall(r"gz obpi", content)
         self.assertGreater(len(matches), 0, "Pipeline must reference 'gz obpi' commands")
 
@@ -274,7 +289,7 @@ class TestPipelineToolUsePattern(unittest.TestCase):
 
     @covers("REQ-0.0.14-03-11")
     def test_pipeline_instructs_gz_obpi_via_bash(self):
-        content = _read(_PIPELINE_SKILL)
+        content = _pipeline_text()
         # Pipeline must instruct gz obpi commands (inline or code blocks)
         # These are Bash-executed commands, not Write/Edit tool calls
         gz_obpi_refs = re.findall(r"(?:uv run )?gz obpi (?:lock |complete)", content)
@@ -286,7 +301,7 @@ class TestPipelineToolUsePattern(unittest.TestCase):
 
     @covers("REQ-0.0.14-03-11")
     def test_pipeline_no_write_edit_tool_to_governance_in_code_blocks(self):
-        content = _read(_PIPELINE_SKILL)
+        content = _pipeline_text()
         # Extract all code blocks and verify none instruct Write/Edit to governance paths
         code_blocks = re.findall(r"```[^`]*```", content, re.DOTALL)
         for block in code_blocks:
@@ -302,7 +317,7 @@ class TestPipelineToolUsePattern(unittest.TestCase):
     @covers("REQ-0.0.14-03-11")
     def test_dispatch_code_blocks_use_gz_obpi(self):
         # DISPATCH.md consolidated into SKILL.md — verify same invariant there
-        content = _read(_PIPELINE_SKILL)
+        content = _pipeline_text()
         gz_obpi_refs = re.findall(r"gz obpi", content)
         self.assertGreater(
             len(gz_obpi_refs),
@@ -323,21 +338,21 @@ class TestPipelineLedgerEventParity(unittest.TestCase):
     @covers("REQ-0.0.14-03-12")
     def test_pipeline_references_lock_claim_which_emits_ledger_event(self):
         """Lock claim is referenced in pipeline and its event emission is tested in OBPI-01."""
-        content = _read(_PIPELINE_SKILL)
+        content = _pipeline_text()
         self.assertIn("gz obpi lock claim", content)
         # The command itself emits obpi_lock_claimed — tested in test_obpi_lock_cmd.py
 
     @covers("REQ-0.0.14-03-12")
     def test_pipeline_references_lock_release_which_emits_ledger_event(self):
         """Lock release is referenced in pipeline and its event emission is tested in OBPI-01."""
-        content = _read(_PIPELINE_SKILL)
+        content = _pipeline_text()
         self.assertIn("gz obpi lock release", content)
         # The command itself emits obpi_lock_released — tested in test_obpi_lock_cmd.py
 
     @covers("REQ-0.0.14-03-12")
     def test_pipeline_references_complete_which_emits_receipt(self):
         """Complete is referenced in pipeline and its receipt emission is tested in OBPI-02."""
-        content = _read(_PIPELINE_SKILL)
+        content = _pipeline_text()
         self.assertIn("gz obpi complete", content)
         # The command itself emits obpi_receipt_emitted — tested in test_obpi_complete_cmd.py
 

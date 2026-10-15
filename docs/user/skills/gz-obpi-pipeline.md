@@ -14,7 +14,7 @@ Invoke this skill when the task described above matches your current workflow st
 
 ## What to Expect
 
-The skill reads its canonical execution contract from `.gzkit/skills/gz-obpi-pipeline/SKILL.md` (mirrored into `.claude/skills/`, `.agents/skills/`, and `.github/skills/`). Follow the agent-facing instructions in that file for the exact execution protocol, stages, and evidence requirements.
+The skill body at `.gzkit/skills/gz-obpi-pipeline/SKILL.md` (mirrored into every enabled vendor's `skills/` directory) holds the invocation text: what the skill is for, when to use it, how the runtime is launched, and the controls that apply before any stage or at every stage. Each stage's procedure is served by the runtime at stage entry: `gz obpi pipeline` prints `Stage N procedure: <path> (sha256 <digest>)` and the agent reads that file from `references/` beside the skill. The rationale passages those files once carried are in `docs/governance/obpi-pipeline-control-rationale.md`, keyed by control (OBPI-0.35.0-17, OBPI-0.35.0-20).
 
 Reviewers receive the execution records supporting each requirement, including
 observed failure evidence where claimed. Stage 4 presents one current proof table
@@ -59,7 +59,10 @@ from proof identities, explicit independent approvals, and verified closure.
 
 | File | Role | Read/Write |
 |------|------|------------|
-| `.gzkit/skills/gz-obpi-pipeline/SKILL.md` | Canonical skill contract | Read |
+| `.gzkit/skills/gz-obpi-pipeline/SKILL.md` | Canonical skill body: invocation text | Read |
+| `.gzkit/skills/gz-obpi-pipeline/references/stage-1-load-context.md` … `stage-5-sync-and-account.md` | Served stage procedures, rendered from the control inventory | Read at stage entry |
+| `data/obpi_pipeline_control_inventory.json` | Attested control inventory the stage files are rendered from | Read |
+| `docs/governance/obpi-pipeline-control-rationale.md` | Rationale record, keyed by control id | Read |
 | `.claude/skills/gz-obpi-pipeline/SKILL.md` | Claude mirror | Read |
 | `.agents/skills/gz-obpi-pipeline/SKILL.md` | Codex mirror | Read |
 

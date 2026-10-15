@@ -31,6 +31,18 @@ def _read_skill(name: str) -> str:
     return (CANONICAL_SKILLS / name / "SKILL.md").read_text(encoding="utf-8")
 
 
+def _read_skill_delivered(name: str) -> str:
+    """Return the skill file plus the stage procedures the runtime serves beside it.
+
+    OBPI-0.35.0-20 cut each stage's procedure over to ``references/stage-*.md``;
+    a REQ about what the skill instructs reads the delivered whole.
+    """
+    parts = [_read_skill(name)]
+    references = CANONICAL_SKILLS / name / "references"
+    parts.extend(path.read_text(encoding="utf-8") for path in sorted(references.glob("stage-*.md")))
+    return "\n".join(parts)
+
+
 def _parse_frontmatter(text: str) -> tuple[dict[str, object], str]:
     if not text.startswith("---\n"):
         raise AssertionError("skill does not begin with YAML frontmatter")
@@ -122,7 +134,9 @@ class TestGzObpiPipelineConfidenceBlock(unittest.TestCase):
 
     @covers("REQ-0.0.19-04-06")
     def test_obpi_pipeline_has_low_confidence_block(self) -> None:
-        text = _read_skill("gz-obpi-pipeline")
+        # AMENDED 2026-10-15 (OBPI-0.35.0-20): the block is served with Stage 1, so the
+        # proof reads the delivered whole; the version is still the skill file's.
+        text = _read_skill_delivered("gz-obpi-pipeline")
         fm, body = _parse_frontmatter(text)
         version = _skill_version(fm)
         self.assertIsNotNone(version, "skill-version missing from gz-obpi-pipeline")
