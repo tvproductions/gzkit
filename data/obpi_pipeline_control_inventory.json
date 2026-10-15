@@ -3505,321 +3505,1169 @@
   {
    "text": "### Stage 3: Verify (skipped by `--from=ceremony`)",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "### Stage 3: Verify (skipped by `--from=ceremony`)",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "Stage 3 runs two phases: **baseline quality checks** and **REQ-level verification dispatch**.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-001",
+     "quote": "Stage 3 runs two phases: **baseline quality checks** and **REQ-level verification dispatch**.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "Stage 3 runs two phases: **baseline quality checks** and **REQ-level verification dispatch**.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "#### Phase 1: Baseline Quality Checks",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "#### Phase 1: Baseline Quality Checks",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "Run the standard quality checks sequentially (these are always inline, never dispatched). Each baseline command is ARB-wrapped so a green Stage 3 result emits canonical attestation receipts at parity with `AGENTS.md` § Attestation (GHI #317):",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S3-002",
+     "quote": "Run the standard quality checks sequentially (these are always inline, never dispatched).",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "Run the standard quality checks sequentially (these are always inline, never dispatched).",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "Each baseline command is ARB-wrapped so a green Stage 3 result emits canonical attestation receipts at parity with `AGENTS.md` § Attestation (GHI #317):",
+     "class": "rationale",
+     "explains": "S3-002",
+     "reason": "why the commands are ARB-wrapped"
+    }
+   ]
   },
   {
    "text": "```bash\n# Always — emits arb-ruff-*, arb-step-typecheck-*, arb-step-unittest-* receipts\nuv run gz arb ruff\nuv run gz arb typecheck\nuv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer\n\n# If Heavy lane (emits arb-step-mkdocs-* and arb-step-behave-* receipts)\nuv run gz arb step --name mkdocs -- uv run mkdocs build --strict\nuv run gz arb step --name behave -- uv run -m behave --tags=@REQ-X.Y.Z-NN-MM,... features/\nuv run gz validate --documents\n```",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-003",
+     "quote": "```bash\n# Always — emits arb-ruff-*, arb-step-typecheck-*, arb-step-unittest-* receipts\nuv run gz arb ruff\nuv run gz arb typecheck\nuv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer\n\n# If Heavy lane (emits arb-step-mkdocs-* and arb-step-behave-* receipts)\nuv run gz arb step --name mkdocs -- uv run mkdocs build --strict\nuv run gz arb step --name behave -- uv run -m behave --tags=@REQ-X.Y.Z-NN-MM,... features/\nuv run gz validate --documents\n```",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": "GHI #317",
+     "delivered_span": "```bash\n# Always — emits arb-ruff-*, arb-step-typecheck-*, arb-step-unittest-* receipts\nuv run gz arb ruff\nuv run gz arb typecheck\nuv run gz arb step --name unittest -- uv run unittest-parallel -t . -s tests --buffer\n\n# If Heavy lane (emits arb-step-mkdocs-* and arb-step-behave-* receipts)\nuv run gz arb step --name mkdocs -- uv run mkdocs build --strict\nuv run gz arb step --name behave -- uv run -m behave --tags=@REQ-X.Y.Z-NN-MM,... features/\nuv run gz validate --documents\n```",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "**Verification exit-code integrity (binding, GHI #589).** NEVER pipe a\nverification command through `tail`/`head`/`grep`/`Select-Object`. A shell pipe\nreports the *last* process's exit code (the filter's — always 0), masking a\nnon-zero unittest/behave/mkdocs exit: a green-looking Stage 3 over a red suite.\nThe harness `Background command … (exit code 0)` notification on a piped command\nis the filter's status, not the verifier's — treat it as unverified. The\nARB receipt records the true `exit_status` (GHI #317): after each `gz arb step`,\nread the emitted `arb-step-*` receipt and confirm `exit_status == 0` before\nadvancing to Stage 4. If you must trim console output for readability, redirect\nto a file (`> out.log 2>&1`) and read the receipt — never `| tail`.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S3-004",
+     "quote": "**Verification exit-code integrity (binding, GHI #589).** NEVER pipe a\nverification command through `tail`/`head`/`grep`/`Select-Object`.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": "GHI #589",
+     "delivered_span": "**Verification exit-code integrity (binding, GHI #589).** NEVER pipe a\nverification command through `tail`/`head`/`grep`/`Select-Object`.",
+     "reworded": null
+    },
+    {
+     "id": "S3-005",
+     "quote": "The harness `Background command … (exit code 0)` notification on a piped command\nis the filter's status, not the verifier's — treat it as unverified.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "The harness `Background command … (exit code 0)` notification on a piped command\nis the filter's status, not the verifier's — treat it as unverified.",
+     "reworded": null
+    },
+    {
+     "id": "S3-006",
+     "quote": "after each `gz arb step`,\nread the emitted `arb-step-*` receipt and confirm `exit_status == 0` before\nadvancing to Stage 4.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": "GHI #317",
+     "delivered_span": "after each `gz arb step`,\nread the emitted `arb-step-*` receipt and confirm `exit_status == 0` before\nadvancing to Stage 4.",
+     "reworded": null
+    },
+    {
+     "id": "S3-007",
+     "quote": "If you must trim console output for readability, redirect\nto a file (`> out.log 2>&1`) and read the receipt — never `| tail`.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "If you must trim console output for readability, redirect\nto a file (`> out.log 2>&1`) and read the receipt — never `| tail`.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "A shell pipe\nreports the *last* process's exit code (the filter's — always 0), masking a\nnon-zero unittest/behave/mkdocs exit: a green-looking Stage 3 over a red suite.",
+     "class": "rationale",
+     "explains": "S3-004",
+     "reason": "why a pipe masks the verifier"
+    },
+    {
+     "quote": "The\nARB receipt records the true `exit_status` (GHI #317):",
+     "class": "rationale",
+     "explains": "S3-006",
+     "reason": "what the receipt records"
+    }
+   ]
   },
   {
    "text": "**Scope discipline (GHI #160, #185, #420).** At OBPI Stage 3, the\nruntime resolves this OBPI's `@REQ-...` behave tags via\n`resolve_obpi_behave_tags` and scopes the behave invocation to those\ntags. When the OBPI has no @REQ-tagged scenarios, behave is omitted\nfrom Stage 3 entirely — the full `features/` sweep is deferred to ADR\ncloseout (Stage 5 of the parent ADR), where cross-OBPI interactions\nare caught. Commit hooks don't run the suite (`unittest` is `stages: [manual]`);\nthe pre-push `gz check` does, so it isn't bypassed — just not re-run\nsynchronously at every OBPI increment. Heavy-lane BDD runs via\n`gz test --bdd` at ADR closeout.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S3-008",
+     "quote": "When the OBPI has no @REQ-tagged scenarios, behave is omitted\nfrom Stage 3 entirely",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": "GHI #160, #185, #420",
+     "delivered_span": "When the OBPI has no @REQ-tagged scenarios, behave is omitted\nfrom Stage 3 entirely",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "**Scope discipline (GHI #160, #185, #420).** At OBPI Stage 3, the\nruntime resolves this OBPI's `@REQ-...` behave tags via\n`resolve_obpi_behave_tags` and scopes the behave invocation to those\ntags.",
+     "class": "rationale",
+     "explains": "S3-008",
+     "reason": "how the runtime scopes behave"
+    },
+    {
+     "quote": "— the full `features/` sweep is deferred to ADR\ncloseout (Stage 5 of the parent ADR), where cross-OBPI interactions\nare caught. Commit hooks don't run the suite (`unittest` is `stages: [manual]`);\nthe pre-push `gz check` does, so it isn't bypassed — just not re-run\nsynchronously at every OBPI increment. Heavy-lane BDD runs via\n`gz test --bdd` at ADR closeout.",
+     "class": "rationale",
+     "explains": "S3-008",
+     "reason": "where the full sweep runs instead"
+    }
+   ]
   },
   {
    "text": "If any baseline check fails, attempt fix and re-verify once. If still failing, surrender the lock per [Abort surrender](#abort-surrender), create handoff, and stop.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-009",
+     "quote": "If any baseline check fails, attempt fix and re-verify once. If still failing, surrender the lock per [Abort surrender](#abort-surrender), create handoff, and stop.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "If any baseline check fails, attempt fix and re-verify once. If still failing, surrender the lock per [Abort surrender](#abort-surrender), create handoff, and stop.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "#### Phase 1b: REQ → @covers Parity Gate (#113)",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "#### Phase 1b: REQ → @covers Parity Gate (#113)",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "Every **BEHAVIOR** REQ defined in the brief MUST be reachable from a `@covers` reference in the test tree. The pipeline does not advance to Stage 4 until parity holds for those REQs.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-010",
+     "quote": "Every **BEHAVIOR** REQ defined in the brief MUST be reachable from a `@covers` reference in the test tree. The pipeline does not advance to Stage 4 until parity holds for those REQs.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": "GHI #113",
+     "delivered_span": "Every **BEHAVIOR** REQ defined in the brief MUST be reachable from a `@covers` reference in the test tree. The pipeline does not advance to Stage 4 until parity holds for those REQs.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "**Proof channels are per-kind (ADR-0.0.59).** SUPPORT REQs are proven by a ledger event plus a structural validator scope; STRUCTURAL-FENCE REQs by a parent-ADR `## Boundary Invariants` entry. Neither carries a `@covers` test. **Never author a unit test merely to make a non-BEHAVIOR REQ appear covered** — that is the exact category error ADR-0.0.59 exists to prohibit (GHI #531 -> #571).",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S3-011",
+     "quote": "**Proof channels are per-kind (ADR-0.0.59).** SUPPORT REQs are proven by a ledger event plus a structural validator scope; STRUCTURAL-FENCE REQs by a parent-ADR `## Boundary Invariants` entry. Neither carries a `@covers` test.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": "ADR-0.0.59",
+     "delivered_span": "**Proof channels are per-kind (ADR-0.0.59).** SUPPORT REQs are proven by a ledger event plus a structural validator scope; STRUCTURAL-FENCE REQs by a parent-ADR `## Boundary Invariants` entry. Neither carries a `@covers` test.",
+     "reworded": null
+    },
+    {
+     "id": "S3-012",
+     "quote": "**Never author a unit test merely to make a non-BEHAVIOR REQ appear covered**",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": "ADR-0.0.59",
+     "delivered_span": "**Never author a unit test merely to make a non-BEHAVIOR REQ appear covered**",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "— that is the exact category error ADR-0.0.59 exists to prohibit (GHI #531 -> #571).",
+     "class": "rationale",
+     "explains": "S3-012",
+     "reason": "the category error and its issues"
+    }
+   ]
   },
   {
    "text": "```bash\nuv run gz covers {OBPI-SLUG} --json\n```",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-013",
+     "quote": "```bash\nuv run gz covers {OBPI-SLUG} --json\n```",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "```bash\nuv run gz covers {OBPI-SLUG} --json\n```",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "Read the JSON output. **If `summary.uncovered_reqs > 0`, parity has failed.** The list of unreachable REQs is in `entries` (each entry with `covered: false`).",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S3-014",
+     "quote": "Read the JSON output. **If `summary.uncovered_reqs > 0`, parity has failed.**",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "Read the JSON output. **If `summary.uncovered_reqs > 0`, parity has failed.**",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "The list of unreachable REQs is in `entries` (each entry with `covered: false`).",
+     "class": "rationale",
+     "explains": "S3-014",
+     "reason": "where the list is"
+    }
+   ]
   },
   {
    "text": "When parity fails:",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-015",
+     "quote": "When parity fails:",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "When parity fails:",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "1. Identify each uncovered REQ.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-016",
+     "quote": "1. Identify each uncovered REQ.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "1. Identify each uncovered REQ.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "2. Add a `@covers REQ-X.Y.Z-NN-MM` reference in the relevant test — either as a decorator (`@covers(\"REQ-X.Y.Z-NN-MM\")`) or in the test docstring (`@covers REQ-X.Y.Z-NN-MM`). Both forms are detected by the canonical scanner (#120).",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S3-017",
+     "quote": "Add a `@covers REQ-X.Y.Z-NN-MM` reference in the relevant test — either as a decorator (`@covers(\"REQ-X.Y.Z-NN-MM\")`) or in the test docstring (`@covers REQ-X.Y.Z-NN-MM`).",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "Add a `@covers REQ-X.Y.Z-NN-MM` reference in the relevant test — either as a decorator (`@covers(\"REQ-X.Y.Z-NN-MM\")`) or in the test docstring (`@covers REQ-X.Y.Z-NN-MM`).",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "Both forms are detected by the canonical scanner (#120).",
+     "class": "rationale",
+     "explains": "S3-017",
+     "reason": "which forms the scanner reads"
+    }
+   ]
   },
   {
    "text": "3. Re-run `uv run gz covers {OBPI-SLUG} --json` and confirm `uncovered_reqs == 0`.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-018",
+     "quote": "3. Re-run `uv run gz covers {OBPI-SLUG} --json` and confirm `uncovered_reqs == 0`.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "3. Re-run `uv run gz covers {OBPI-SLUG} --json` and confirm `uncovered_reqs == 0`.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "The Stage 4 evidence template requires the `@covers` location for every REQ — the parity gate makes that requirement mechanical instead of aspirational.",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "The Stage 4 evidence template requires the `@covers` location for every REQ — the parity gate makes that requirement mechanical instead of aspirational.",
+     "class": "rationale",
+     "explains": "S3-010",
+     "reason": "why parity is mechanical"
+    }
+   ]
   },
   {
    "text": "**Anti-pattern:** Filling in the Stage 4 REQ coverage table without first running the parity gate. The table is verified evidence, not author-attestation prose.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S3-019",
+     "quote": "**Anti-pattern:** Filling in the Stage 4 REQ coverage table without first running the parity gate.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "**Anti-pattern:** Filling in the Stage 4 REQ coverage table without first running the parity gate.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "The table is verified evidence, not author-attestation prose.",
+     "class": "rationale",
+     "explains": "S3-019",
+     "reason": "what the table is"
+    }
+   ]
   },
   {
    "text": "#### Phase 1c: RED Falsifiability Witness (GHI #642)",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "#### Phase 1c: RED Falsifiability Witness (GHI #642)",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "Phase 1b proves every REQ **has** a covering test. It never proves that test **can fail**. A BEHAVIOR test authored after the production code, passing on its first run, is byte-indistinguishable from a genuine RED-first test — `@covers` parity, the two-stage review, and Gate 5 all accept both identically.",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "Phase 1b proves every REQ **has** a covering test. It never proves that test **can fail**. A BEHAVIOR test authored after the production code, passing on its first run, is byte-indistinguishable from a genuine RED-first test — `@covers` parity, the two-stage review, and Gate 5 all accept both identically.",
+     "class": "rationale",
+     "explains": "S3-020",
+     "reason": "why a covering test must be shown to fail (GHI #642)"
+    }
+   ]
   },
   {
    "text": "For each **BEHAVIOR** REQ in the brief (SUPPORT and STRUCTURAL-FENCE REQs are exempt by proof channel — they carry no `@covers` test):",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-020",
+     "quote": "For each **BEHAVIOR** REQ in the brief (SUPPORT and STRUCTURAL-FENCE REQs are exempt by proof channel — they carry no `@covers` test):",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": "GHI #642",
+     "delivered_span": "For each **BEHAVIOR** REQ in the brief (SUPPORT and STRUCTURAL-FENCE REQs are exempt by proof channel — they carry no `@covers` test):",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "```bash\nuv run gz arb red --req {REQ-ID} --obpi {OBPI-SLUG}\n```",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-021",
+     "quote": "```bash\nuv run gz arb red --req {REQ-ID} --obpi {OBPI-SLUG}\n```",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": "GHI #642",
+     "delivered_span": "```bash\nuv run gz arb red --req {REQ-ID} --obpi {OBPI-SLUG}\n```",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "This reconstructs the base tree in a throwaway git worktree, copies in **only** the test files, and runs the covering test there. The production hunks are deliberately withheld — that asymmetry is the experiment. It emits an `arb-red-<REQ>` receipt and a `red_receipt_emitted` ledger event.",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "This reconstructs the base tree in a throwaway git worktree, copies in **only** the test files, and runs the covering test there. The production hunks are deliberately withheld — that asymmetry is the experiment. It emits an `arb-red-<REQ>` receipt and a `red_receipt_emitted` ledger event.",
+     "class": "rationale",
+     "explains": "S3-021",
+     "reason": "what the witness does"
+    }
+   ]
   },
   {
    "text": "| `failure_class` | Meaning | Action |",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "| `failure_class` | Meaning | Action |",
+     "class": "structure",
+     "explains": null,
+     "reason": "table header"
+    }
+   ]
   },
   {
    "text": "|---|---|---|",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "|---|---|---|",
+     "class": "structure",
+     "explains": null,
+     "reason": "table separator"
+    }
+   ]
   },
   {
    "text": "| `assertion` | Strong RED — the test failed on an assertion | Proceed |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-022",
+     "quote": "| `assertion` | Strong RED — the test failed on an assertion | Proceed |",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "| `assertion` | Strong RED — the test failed on an assertion | Proceed |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| `error` | Weak RED — failed for the wrong reason (usually a not-yet-existing symbol) | Proceed **only on a `working-tree` base**; on a `reconstructed` base it is inconclusive (below). **Never** report it as an assertion RED. Report it to the operator as a constraints sortie not flown (`.gzkit/rules/weaponeering.md`, advisory: a finding, not a refusal) |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-023",
+     "quote": "| `error` | Weak RED — failed for the wrong reason (usually a not-yet-existing symbol) | Proceed **only on a `working-tree` base**; on a `reconstructed` base it is inconclusive (below). **Never** report it as an assertion RED. Report it to the operator as a constraints sortie not flown (`.gzkit/rules/weaponeering.md`, advisory: a finding, not a refusal) |",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "| `error` | Weak RED — failed for the wrong reason (usually a not-yet-existing symbol) | Proceed **only on a `working-tree` base**; on a `reconstructed` base it is inconclusive (below). **Never** report it as an assertion RED. Report it to the operator as a constraints sortie not flown (`.gzkit/rules/weaponeering.md`, advisory: a finding, not a refusal) |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| `none` | The test PASSED without its implementation | **Blocking.** Rewrite the test to assert the REQ's semantics, then re-run |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-024",
+     "quote": "| `none` | The test PASSED without its implementation | **Blocking.** Rewrite the test to assert the REQ's semantics, then re-run |",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "| `none` | The test PASSED without its implementation | **Blocking.** Rewrite the test to assert the REQ's semantics, then re-run |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| `not-applicable` | The run could not tell; `output_tail` names why: nothing withheld, nothing executed, an invalid baseline (the covering test fails on the current tree), a covering test absent from the base graft, or a failure only in tests the REQ does not name (GHI #1154) | **Non-blocking.** NOT a finding about the test; do **not** rewrite it for that. An invalid baseline is repaired on HEAD and re-run; otherwise note in the evidence that the witness did not run |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-025",
+     "quote": "| `not-applicable` | The run could not tell; `output_tail` names why: nothing withheld, nothing executed, an invalid baseline (the covering test fails on the current tree), a covering test absent from the base graft, or a failure only in tests the REQ does not name (GHI #1154) | **Non-blocking.** NOT a finding about the test; do **not** rewrite it for that. An invalid baseline is repaired on HEAD and re-run; otherwise note in the evidence that the witness did not run |",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": "GHI #1154",
+     "delivered_span": "| `not-applicable` | The run could not tell; `output_tail` names why: nothing withheld, nothing executed, an invalid baseline (the covering test fails on the current tree), a covering test absent from the base graft, or a failure only in tests the REQ does not name (GHI #1154) | **Non-blocking.** NOT a finding about the test; do **not** rewrite it for that. An invalid baseline is repaired on HEAD and re-run; otherwise note in the evidence that the witness did not run |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "Every receipt and ledger event also records a **`base_provenance`**, and it changes what `error` means:",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "Every receipt and ledger event also records a **`base_provenance`**, and it changes what `error` means:",
+     "class": "rationale",
+     "explains": "S3-023",
+     "reason": "introduces base_provenance"
+    }
+   ]
   },
   {
    "text": "| `base_provenance` | Which tree | What `error` means there |",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "| `base_provenance` | Which tree | What `error` means there |",
+     "class": "structure",
+     "explains": null,
+     "reason": "table header"
+    }
+   ]
   },
   {
    "text": "|---|---|---|",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "|---|---|---|",
+     "class": "structure",
+     "explains": null,
+     "reason": "table separator"
+    }
+   ]
   },
   {
    "text": "| `working-tree` | HEAD, with the production change still uncommitted | A weak RED. The withheld hunk is the only difference, so the import can only have failed for the missing implementation |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-026",
+     "quote": "| `working-tree` | HEAD, with the production change still uncommitted | A weak RED. The withheld hunk is the only difference, so the import can only have failed for the missing implementation |",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "| `working-tree` | HEAD, with the production change still uncommitted | A weak RED. The withheld hunk is the only difference, so the import can only have failed for the missing implementation |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| `reconstructed` | The parent of the commit that introduced the covering test | **Inconclusive — not a RED and not an accusation.** The tree can be months older than the test, so the import is as likely to have failed on unrelated drift |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-027",
+     "quote": "| `reconstructed` | The parent of the commit that introduced the covering test | **Inconclusive — not a RED and not an accusation.** The tree can be months older than the test, so the import is as likely to have failed on unrelated drift |",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "| `reconstructed` | The parent of the commit that introduced the covering test | **Inconclusive — not a RED and not an accusation.** The tree can be months older than the test, so the import is as likely to have failed on unrelated drift |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "A `none` verdict means the test cannot fail when the business logic changes (AGENTS.md § DO IT RIGHT Rule 6), so it witnesses nothing. `uv run gz validate --red-parity`, a bound `gz check` step, re-audits this repo-wide past the cutover. It also accepts a valid executed acceptance proof with at least one killed mutation control as the REQ's witness (GHI #1094), which is the only witness still obtainable once the production hunks have landed.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S3-028",
+     "quote": "It also accepts a valid executed acceptance proof with at least one killed mutation control as the REQ's witness (GHI #1094), which is the only witness still obtainable once the production hunks have landed.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": "GHI #1094",
+     "delivered_span": "It also accepts a valid executed acceptance proof with at least one killed mutation control as the REQ's witness (GHI #1094), which is the only witness still obtainable once the production hunks have landed.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "A `none` verdict means the test cannot fail when the business logic changes (AGENTS.md § DO IT RIGHT Rule 6), so it witnesses nothing.",
+     "class": "rationale",
+     "explains": "S3-024",
+     "reason": "why none is blocking"
+    },
+    {
+     "quote": "`uv run gz validate --red-parity`, a bound `gz check` step, re-audits this repo-wide past the cutover.",
+     "class": "rationale",
+     "explains": "S3-024",
+     "reason": "the repo-wide re-audit"
+    }
+   ]
   },
   {
    "text": "**On the `--from=verify` path the witness now runs, against a reconstructed base (GHI #849).** It used to be inert there: the base was HEAD, so once the production code landed the base tree already carried the implementation, nothing was withheld, and every BEHAVIOR REQ returned `not-applicable` — the pipeline mandating, on its own already-implemented path, a check that structurally could not execute. The base is now resolved from the commit that introduced the REQ's covering test, whose parent predates both the test and its implementation.",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "**On the `--from=verify` path the witness now runs, against a reconstructed base (GHI #849).** It used to be inert there: the base was HEAD, so once the production code landed the base tree already carried the implementation, nothing was withheld, and every BEHAVIOR REQ returned `not-applicable` — the pipeline mandating, on its own already-implemented path, a check that structurally could not execute. The base is now resolved from the commit that introduced the REQ's covering test, whose parent predates both the test and its implementation.",
+     "class": "rationale",
+     "explains": "S3-021",
+     "reason": "how the --from=verify base is resolved (GHI #849)"
+    }
+   ]
   },
   {
    "text": "**What that path can and cannot conclude.** A `none` is a real finding on either base — a test that passes against a tree without its implementation cannot fail, whichever tree it was. An `error` is not: see the provenance table above. So `--from=verify` can still catch a hollow test, and cannot bank a weak RED. `not-applicable` survives for the case where no earlier tree exists at all (the `@covers` string is absent from the test tree's history, or the commit that introduced it is a root commit).",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S3-029",
+     "quote": "**What that path can and cannot conclude.** A `none` is a real finding on either base — a test that passes against a tree without its implementation cannot fail, whichever tree it was.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "**What that path can and cannot conclude.** A `none` is a real finding on either base — a test that passes against a tree without its implementation cannot fail, whichever tree it was.",
+     "reworded": null
+    },
+    {
+     "id": "S3-030",
+     "quote": "An `error` is not: see the provenance table above.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "An `error` is not: see the provenance table above.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "So `--from=verify` can still catch a hollow test, and cannot bank a weak RED. `not-applicable` survives for the case where no earlier tree exists at all (the `@covers` string is absent from the test tree's history, or the commit that introduced it is a root commit).",
+     "class": "rationale",
+     "explains": "S3-029",
+     "reason": "what --from=verify can and cannot bank"
+    }
+   ]
   },
   {
    "text": "Read a non-verdict as *the experiment had no premise*, never as a verdict — a `none` that means \"I could not run the experiment\" must not share a name with a `none` that means \"your test cannot fail\", and the locally obvious response to ten blocking verdicts (rewrite ten passing tests until the witness goes quiet) weakens real assertions to satisfy a degenerate experiment. The strongest evidence still comes from running the witness **while the work is in flight**, before it lands: that is the only condition under which `error` counts for anything.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-031",
+     "quote": "Read a non-verdict as *the experiment had no premise*, never as a verdict — a `none` that means \"I could not run the experiment\" must not share a name with a `none` that means \"your test cannot fail\", and the locally obvious response to ten blocking verdicts (rewrite ten passing tests until the witness goes quiet) weakens real assertions to satisfy a degenerate experiment.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "Read a non-verdict as *the experiment had no premise*, never as a verdict — a `none` that means \"I could not run the experiment\" must not share a name with a `none` that means \"your test cannot fail\", and the locally obvious response to ten blocking verdicts (rewrite ten passing tests until the witness goes quiet) weakens real assertions to satisfy a degenerate experiment.",
+     "reworded": null
+    },
+    {
+     "id": "S3-032",
+     "quote": "The strongest evidence still comes from running the witness **while the work is in flight**, before it lands: that is the only condition under which `error` counts for anything.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "The strongest evidence still comes from running the witness **while the work is in flight**, before it lands: that is the only condition under which `error` counts for anything.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "**Anti-pattern:** Treating the `error` class as equivalent to `assertion`. An ImportError proves only that the symbol is absent — not that the test asserts the REQ's semantics.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S3-033",
+     "quote": "**Anti-pattern:** Treating the `error` class as equivalent to `assertion`.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "**Anti-pattern:** Treating the `error` class as equivalent to `assertion`.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "An ImportError proves only that the symbol is absent — not that the test asserts the REQ's semantics.",
+     "class": "rationale",
+     "explains": "S3-033",
+     "reason": "why error is not assertion"
+    }
+   ]
   },
   {
    "text": "The historical RED classifications above do not determine acceptance readiness.\nThe current `acceptance prove` record supplies the executed behavioral control;\nspec and quality reviewers judge its adequacy. Preserve RED receipts without\npromoting a weak or unavailable experiment into a current proof.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S3-034",
+     "quote": "The historical RED classifications above do not determine acceptance readiness.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "The historical RED classifications above do not determine acceptance readiness.",
+     "reworded": null
+    },
+    {
+     "id": "S3-035",
+     "quote": "Preserve RED receipts without\npromoting a weak or unavailable experiment into a current proof.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "Preserve RED receipts without\npromoting a weak or unavailable experiment into a current proof.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "The current `acceptance prove` record supplies the executed behavioral control;\nspec and quality reviewers judge its adequacy.",
+     "class": "rationale",
+     "explains": "S3-034",
+     "reason": "what supplies the current control"
+    }
+   ]
   },
   {
    "text": "**Behavioral evidence remains necessary (GHI #984).** The provenance rules above\nclassify the RED experiment; they do not certify the covering test's assertions.\nWhere that experiment cannot demonstrate the required behavior, inspect the\ntest and use a focused behavioral control for the unresolved claim under\n`.gzkit/rules/tests.md`. Preserve its green baseline, activated change, selector,\nactual failure and restoration result. A non-zero run does not identify the\nguard or assertion that failed. If a claim names that assertion, inspect the\ntraceback; if another guard masks it, repair the fixture. Do not infer exclusive\ndetection or comparative strength, and do not build an all-assertions classifier\nto satisfy a requirement that asks for production behavior.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S3-036",
+     "quote": "Where that experiment cannot demonstrate the required behavior, inspect the\ntest and use a focused behavioral control for the unresolved claim under\n`.gzkit/rules/tests.md`.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": "GHI #984",
+     "delivered_span": "Where that experiment cannot demonstrate the required behavior, inspect the\ntest and use a focused behavioral control for the unresolved claim under\n`.gzkit/rules/tests.md`.",
+     "reworded": null
+    },
+    {
+     "id": "S3-037",
+     "quote": "Preserve its green baseline, activated change, selector,\nactual failure and restoration result.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "Preserve its green baseline, activated change, selector,\nactual failure and restoration result.",
+     "reworded": null
+    },
+    {
+     "id": "S3-038",
+     "quote": "If a claim names that assertion, inspect the\ntraceback; if another guard masks it, repair the fixture.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "If a claim names that assertion, inspect the\ntraceback; if another guard masks it, repair the fixture.",
+     "reworded": null
+    },
+    {
+     "id": "S3-039",
+     "quote": "Do not infer exclusive\ndetection or comparative strength, and do not build an all-assertions classifier\nto satisfy a requirement that asks for production behavior.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "Do not infer exclusive\ndetection or comparative strength, and do not build an all-assertions classifier\nto satisfy a requirement that asks for production behavior.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "**Behavioral evidence remains necessary (GHI #984).** The provenance rules above\nclassify the RED experiment; they do not certify the covering test's assertions.",
+     "class": "rationale",
+     "explains": "S3-036",
+     "reason": "what the provenance rules do not certify"
+    },
+    {
+     "quote": "A non-zero run does not identify the\nguard or assertion that failed.",
+     "class": "rationale",
+     "explains": "S3-038",
+     "reason": "why the traceback is read"
+    }
+   ]
   },
   {
    "text": "#### Phase 2: REQ-Level Verification Dispatch",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "#### Phase 2: REQ-Level Verification Dispatch",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "**Check for a single-driver declaration first.** If this run is declared single-driver, skip to the [Inline Verification Fallback](#inline-verification-fallback) below.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-040",
+     "quote": "**Check for a single-driver declaration first.** If this run is declared single-driver, skip to the [Inline Verification Fallback](#inline-verification-fallback) below.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "**Check for a single-driver declaration first.** If this run is declared single-driver, skip to the [Inline Verification Fallback](#inline-verification-fallback) below.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "After baseline checks pass, dispatch parallel verification subagents for the brief's requirements:",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-041",
+     "quote": "After baseline checks pass, dispatch parallel verification subagents for the brief's requirements:",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "After baseline checks pass, dispatch parallel verification subagents for the brief's requirements:",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "1. **Extract verification scopes** from the brief using `prepare_stage3_verification(brief_content, test_paths)`. Each numbered `REQUIREMENT:` line becomes one `VerificationScope`.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-042",
+     "quote": "1. **Extract verification scopes** from the brief using `prepare_stage3_verification(brief_content, test_paths)`. Each numbered `REQUIREMENT:` line becomes one `VerificationScope`.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "1. **Extract verification scopes** from the brief using `prepare_stage3_verification(brief_content, test_paths)`. Each numbered `REQUIREMENT:` line becomes one `VerificationScope`.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "2. **Analyze path overlap** — the `VerificationPlan` partitions requirements into independent groups:\n   - Requirements with **non-overlapping test paths** are placed in **separate groups** (can run in parallel).\n   - Requirements with **overlapping test paths** are merged into the **same group** (must run sequentially within a single subagent).\n   - **NEVER dispatch parallel verification for overlapping file paths** — data corruption risk.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-043",
+     "quote": "2. **Analyze path overlap** — the `VerificationPlan` partitions requirements into independent groups:\n   - Requirements with **non-overlapping test paths** are placed in **separate groups** (can run in parallel).\n   - Requirements with **overlapping test paths** are merged into the **same group** (must run sequentially within a single subagent).\n   - **NEVER dispatch parallel verification for overlapping file paths** — data corruption risk.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "2. **Analyze path overlap** — the `VerificationPlan` partitions requirements into independent groups:\n   - Requirements with **non-overlapping test paths** are placed in **separate groups** (can run in parallel).\n   - Requirements with **overlapping test paths** are merged into the **same group** (must run sequentially within a single subagent).\n   - **NEVER dispatch parallel verification for overlapping file paths** — data corruption risk.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "3. **Dispatch strategy selection:**\n   - `parallel` — all groups are singletons (fully parallel dispatch)\n   - `mixed` — some groups have multiple REQs (parallel between groups, sequential within)\n   - `sequential` — single group or no test paths (fall back to inline)",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-044",
+     "quote": "3. **Dispatch strategy selection:**\n   - `parallel` — all groups are singletons (fully parallel dispatch)\n   - `mixed` — some groups have multiple REQs (parallel between groups, sequential within)\n   - `sequential` — single group or no test paths (fall back to inline)",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "3. **Dispatch strategy selection:**\n   - `parallel` — all groups are singletons (fully parallel dispatch)\n   - `mixed` — some groups have multiple REQs (parallel between groups, sequential within)\n   - `sequential` — single group or no test paths (fall back to inline)",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "4. **For each independent group** (concurrent dispatch using `run_in_background: true`):",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-045",
+     "quote": "4. **For each independent group** (concurrent dispatch using `run_in_background: true`):",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "4. **For each independent group** (concurrent dispatch using `run_in_background: true`):",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "   a. **Compose verification prompt** via `compose_verification_prompt(group_scopes, group_label=...)`. Each subagent receives:\n      - Requirement text for each REQ in the group\n      - Test file paths to run\n      - Expected pass criteria\n      - Current branch state (included in prompt context)",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-046",
+     "quote": "   a. **Compose verification prompt** via `compose_verification_prompt(group_scopes, group_label=...)`. Each subagent receives:\n      - Requirement text for each REQ in the group\n      - Test file paths to run\n      - Expected pass criteria\n      - Current branch state (included in prompt context)",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "   a. **Compose verification prompt** via `compose_verification_prompt(group_scopes, group_label=...)`. Each subagent receives:\n      - Requirement text for each REQ in the group\n      - Test file paths to run\n      - Expected pass criteria\n      - Current branch state (included in prompt context)",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "   b. **Dispatch verification subagent:**\n      ```\n      Agent tool call:\n        subagent_type: \"general-purpose\"\n        isolation: \"worktree\"\n        run_in_background: true\n        prompt: <verification prompt from step a>\n        description: \"Verify REQ group N\"\n      ```",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-047",
+     "quote": "   b. **Dispatch verification subagent:**\n      ```\n      Agent tool call:\n        subagent_type: \"general-purpose\"\n        isolation: \"worktree\"\n        run_in_background: true\n        prompt: <verification prompt from step a>\n        description: \"Verify REQ group N\"\n      ```",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "   b. **Dispatch verification subagent:**\n      ```\n      Agent tool call:\n        subagent_type: \"general-purpose\"\n        isolation: \"worktree\"\n        run_in_background: true\n        prompt: <verification prompt from step a>\n        description: \"Verify REQ group N\"\n      ```",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "   c. Worktree cleanup is **automatic** — the Agent tool cleans up the worktree when the subagent completes or fails. No orphaned worktrees.",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "   c. Worktree cleanup is **automatic** — the Agent tool cleans up the worktree when the subagent completes or fails. No orphaned worktrees.",
+     "class": "rationale",
+     "explains": "S3-047",
+     "reason": "cleanup is the Agent tool's"
+    }
+   ]
   },
   {
    "text": "5. **Wait for all verification subagents to complete.** All subagents MUST finish before Stage 3 advances.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-048",
+     "quote": "5. **Wait for all verification subagents to complete.** All subagents MUST finish before Stage 3 advances.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "5. **Wait for all verification subagents to complete.** All subagents MUST finish before Stage 3 advances.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "6. **Parse and aggregate results:**\n   - Parse each subagent output via `parse_verification_results(agent_output)`.\n   - Aggregate via `aggregate_verification_results(results, expected_req_indices)`.\n   - Create dispatch records via `create_verification_dispatch_records(plan, results)` and persist in the pipeline marker.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-049",
+     "quote": "6. **Parse and aggregate results:**\n   - Parse each subagent output via `parse_verification_results(agent_output)`.\n   - Aggregate via `aggregate_verification_results(results, expected_req_indices)`.\n   - Create dispatch records via `create_verification_dispatch_records(plan, results)` and persist in the pipeline marker.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "6. **Parse and aggregate results:**\n   - Parse each subagent output via `parse_verification_results(agent_output)`.\n   - Aggregate via `aggregate_verification_results(results, expected_req_indices)`.\n   - Create dispatch records via `create_verification_dispatch_records(plan, results)` and persist in the pipeline marker.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "7. **Record timing metrics** via `compute_verification_timing(start_ns, end_ns, strategy, group_count)`. Always record wall-clock time savings from parallel vs sequential execution.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-050",
+     "quote": "7. **Record timing metrics** via `compute_verification_timing(start_ns, end_ns, strategy, group_count)`. Always record wall-clock time savings from parallel vs sequential execution.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "7. **Record timing metrics** via `compute_verification_timing(start_ns, end_ns, strategy, group_count)`. Always record wall-clock time savings from parallel vs sequential execution.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "8. **Handle aggregate results:**\n   - All REQs pass → advance to Stage 4.\n   - Any REQ fails → attempt fix and re-verify once. If still failing, surrender the lock per [Abort surrender](#abort-surrender), create handoff, and stop.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-051",
+     "quote": "8. **Handle aggregate results:**\n   - All REQs pass → advance to Stage 4.\n   - Any REQ fails → attempt fix and re-verify once. If still failing, surrender the lock per [Abort surrender](#abort-surrender), create handoff, and stop.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "8. **Handle aggregate results:**\n   - All REQs pass → advance to Stage 4.\n   - Any REQ fails → attempt fix and re-verify once. If still failing, surrender the lock per [Abort surrender](#abort-surrender), create handoff, and stop.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "#### Inline Verification Fallback",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "#### Inline Verification Fallback",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "When the run is declared single-driver, or when the verification plan strategy is `sequential`:",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-052",
+     "quote": "When the run is declared single-driver, or when the verification plan strategy is `sequential`:",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "When the run is declared single-driver, or when the verification plan strategy is `sequential`:",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "1. Run each brief-specific verification command sequentially inline.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-053",
+     "quote": "1. Run each brief-specific verification command sequentially inline.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "1. Run each brief-specific verification command sequentially inline.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "2. Run any commands from the brief's Verification section.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-054",
+     "quote": "2. Run any commands from the brief's Verification section.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "2. Run any commands from the brief's Verification section.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "3. Record all outputs as evidence.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-055",
+     "quote": "3. Record all outputs as evidence.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "3. Record all outputs as evidence.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "No subagent dispatch, no worktree isolation, no parallel execution.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-056",
+     "quote": "No subagent dispatch, no worktree isolation, no parallel execution.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "No subagent dispatch, no worktree isolation, no parallel execution.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "**Abort if:** Any verification fails. Attempt fix, re-verify once. If still failing, surrender the lock per [Abort surrender](#abort-surrender), create handoff, and stop.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-057",
+     "quote": "**Abort if:** Any verification fails. Attempt fix, re-verify once. If still failing, surrender the lock per [Abort surrender](#abort-surrender), create handoff, and stop.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "**Abort if:** Any verification fails. Attempt fix, re-verify once. If still failing, surrender the lock per [Abort surrender](#abort-surrender), create handoff, and stop.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "**MANDATORY TRANSITION → Stage 4.** Do not summarize. Do not report. Proceed.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S3-058",
+     "quote": "**MANDATORY TRANSITION → Stage 4.** Do not summarize. Do not report. Proceed.",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "**MANDATORY TRANSITION → Stage 4.** Do not summarize. Do not report. Proceed.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
