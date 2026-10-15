@@ -612,11 +612,38 @@ had been repeating. All are dispositioned below — none left undefined.
 
 ## Amendments
 
+<a id="amendments-2026-10-15"></a>
+
+### 2026-10-15 (latest) — martial law: the harbor pilotage is entered under a ratified contract (operator-ratified)
+
+**Operator (`g0`), verbatim (2026-10-15):** *"ratify the contract, draft the three catalog
+shapes"*. The contract's § Authority carries the directive in full, from *"BOOK THAT MODEL
+NOW"* to *"martial law to get us on the diagram's plan including control plane and
+work/design modularization, then a return to magna carta (civilian rule)"*.
+
+**What changes.** The binding text is
+[`harbor-pilotage-candidate-2026-10-15.md`](harbor-pilotage-candidate-2026-10-15.md),
+ratified as drafted and pointed at from here rather than copied. For the duration it
+suspends the IRON LAW's initiation clause, ascending ADR order and the Decomposition
+Matrix's arithmetic for the re-cut of `OBPI-0.35.0-16` to `-20`, and the pipeline's full
+ceremony for pilot work. It suspends nothing else: Gate 5, the ledger rule, every control
+standing under § Amendments 2026-10-04 (2), the operator-PII rule and the operator's
+authority over structure stand. The pilotage ends on the contract's seven measured exit
+conditions or at the operator's word; its handback is the next entry here, listing every
+pilot commit as kept or reverted and restoring the IRON LAW's initiation clause.
+
+**What does not change.** TOPMOST remains `ADR-0.35.0`; the pilotage works inside it. The
+campaign keeps sequencing. The IOC waypoint and the governor ruling of 2026-10-10 stand.
+
+**Passage so far.** Commit `99acdc8a0` (GHI #1242, closed): the SessionStart orientation's
+campaign block bounded to pointers, 19,431 bytes to 1,570, the whole orientation 22,500 to
+5,524.
+
 <a id="amendments-2026-10-07"></a>
 
 <a id="amendments-2026-10-10"></a>
 
-### 2026-10-10 (latest) — the force's doctrine is named; the IOC waypoint; the governor is the last release (operator-ratified)
+### 2026-10-10 — the force's doctrine is named; the IOC waypoint; the governor is the last release (operator-ratified)
 
 **Operator (`g0`), verbatim (2026-10-10):** *"ratified as drafted"*. Drafted under the go on
 row 4 of R&D run `renewing-vows` (*"go on row four"*, 2026-10-10), signed off *fund* the same

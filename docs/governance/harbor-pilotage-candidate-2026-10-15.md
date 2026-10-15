@@ -1,11 +1,11 @@
 # Martial law to civil rule — the harbor pilotage contract
 
-Status: **CANDIDATE, awaiting operator ratification.** A dated record drafted 2026-10-15 in
-session `4fd13b45-724e-4433-ab23-fd6c5df2b932`. It binds nothing until the operator
-ratifies it; on ratification its text is carried unchanged into
-[`build-to-1.0-campaign-2026-09-20.md`](build-to-1.0-campaign-2026-09-20.md) § Amendments,
-on the precedent of the 2026-10-10 entry. Until then the pilot acts on the operator's
-verbatim words below and on nothing wider.
+Status: **RATIFIED 2026-10-15** (operator, verbatim: *"ratify the contract, draft the three
+catalog shapes"*). Drafted the same day in session `4fd13b45-724e-4433-ab23-fd6c5df2b932`.
+This file is the binding text; the campaign plan carries a pointer entry at
+[`build-to-1.0-campaign-2026-09-20.md`](build-to-1.0-campaign-2026-09-20.md)
+§ Amendments 2026-10-15 so that the plan, which the orientation and every session read for
+sequencing, knows the phase is in force and where its terms are.
 
 ## Authority
 
@@ -172,6 +172,98 @@ pilot's, because they carry the catalog's shape and the re-cut, which the operat
 Not work orders under martial law: the identifier ladder's timing, the crew split's final
 shape, the second-substrate sortie, the Matrix's replacement text. These are civil-rule
 decisions this pilotage prepares.
+
+### WO-4 draft — the three catalog shapes (drafted 2026-10-15, for ruling)
+
+Three shapes, each composed from fields the candidate design already names
+([`ieee/design-candidates.md`](ieee/design-candidates.md) § Requirement, assignment, and
+evidence identity) and from readers that already exist. Nothing below renames a historical
+identifier; legacy `REQ-X.Y.Z-NN-MM` ids become aliases, and every proof channel keeps
+binding to the alias until the acceptance store's transition is designed under civil rule.
+The worked example is a real obligation of `OBPI-0.35.0-16`.
+
+**Shape 1 — the catalog entry.** One per obligation, in a git-versioned JSON file read by
+code (`data/requirements_catalog.json`; registries under `data/` are the precedent, and
+execution reads state from JSON, never prose). A Markdown view of the catalog is derived,
+never authored.
+
+```json
+{
+  "id": "REQ-C0001",
+  "statement": "Given an in-flight pipeline run whose position is recorded on disk, when a process holding only the repository reads the run through `gz obpi status` or the session orientation, then it obtains the next command for that position, and the read changes no marker field and appends no ledger event.",
+  "kind": "BEHAVIOR",
+  "category": "pipeline runtime",
+  "source": ["ADR-0.13.0 § Decision", "ADR-0.35.0 checklist item 16"],
+  "applicability": "gzkit >= 0.35.0",
+  "state": "approved",
+  "revision": 1,
+  "history": [{"revision": 1, "date": "2026-10-15", "change": "entered from REQ-0.35.0-16-03", "by": "g0"}],
+  "aliases": ["REQ-0.35.0-16-03"],
+  "contract": "see shape 2",
+  "proof": {"channel": "covers", "tests": []}
+}
+```
+
+`id` is a sequential integer under a `REQ-C` prefix and is never reused; `category` is
+navigation metadata, so moving an entry between categories changes no identity. `state` is
+one of `proposed`, `approved`, `implemented`, `verified`, `retired`; a retirement is a new
+revision with the reason, never a deletion. `kind` and `proof.channel` keep the three kinds
+and their channels from ADR-0.0.59.
+
+**Shape 2 — the contract on the entry.** The design the REQ carries, versioned with the
+entry's revision, which is what "design exists within the REQ" means mechanically. It is
+what the constraints sortie lands before any red, so the red witness classifies on an
+assertion and not on a missing symbol.
+
+```json
+"contract": {
+  "interfaces": ["gzkit.pipeline_next_command.next_command(position: PipelinePosition) -> NextCommand"],
+  "invariants": ["reading the next command writes no marker field and appends no ledger event"],
+  "modules": ["src/gzkit/pipeline_next_command.py", "src/gzkit/commands/status.py", "scripts/session_orientation.py"],
+  "stub": "next_command exists and returns NextCommand(command=None, blockers=()) until its TASK lands, so a covering test reaches its assertion",
+  "witness": ["tests/test_pipeline_next_command.py"]
+}
+```
+
+`modules` is the binding the airlock derives a slice from, and the obligation column of the
+scorecard points at the contract a control protects. A work package selects entries whose
+contracts share a module set.
+
+**Shape 3 — the assignment row in a brief.** Machine-readable, in the brief's frontmatter
+beside `tasks:` and `req_atomic:`, which the frontmatter readers already parse. The brief's
+Acceptance Criteria keep one line per assignment carrying the legacy id as the alias the
+proof channels bind to.
+
+```yaml
+assignments:
+  - req: REQ-C0001
+    revision: 1
+    contribution: implement
+    acceptance: "both consumers state the next command for a recorded position; the read is pure"
+    constraints: ["contract.invariants[0]"]
+    proof:
+      channel: covers
+      tests: ["tests/test_pipeline_next_command.py::TestNextCommand::test_fresh_process_reads_the_recorded_position"]
+    tasks: ["TASK-0.35.0-16-03-01"]
+```
+
+`contribution` is one of `implement`, `refine`, `verify`, `repair`, `retire`. A brief may
+carry several assignments; an entry may have assignments in several briefs; no assignment
+needs its own document. Completing the brief accepts its contributions; whole-requirement
+satisfaction is the entry's `state`, a separate claim.
+
+**Three rulings these shapes need.**
+
+1. The id grammar: `REQ-C<n>` sequential, category as metadata (recommended), or an id that
+   encodes the category.
+2. The home: one JSON file under `data/` read by code with a derived Markdown view
+   (recommended), or authored Markdown entries.
+3. The assignment channel: brief frontmatter with the legacy line kept as alias
+   (recommended), or a Markdown table in the brief body.
+
+With the three ruled, WO-4 authors the entries for the obligations of `OBPI-0.35.0-16` to
+`-20`, thirty-three BEHAVIOR and twelve SUPPORT lines today, each with its contract, and
+WO-7 re-cuts the briefs as work packages by contract.
 
 ## What does not change
 
