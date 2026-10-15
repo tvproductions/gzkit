@@ -38,6 +38,16 @@ the generated Claude pipeline hooks.
 
 Current command contract:
 
+- every stage entry prints the stage's served procedure as a pointer, `Stage N
+  procedure: <path> (sha256 <digest>)`, and the agent reads that file; the files
+  live under `.gzkit/skills/gz-obpi-pipeline/references/` and the runtime pins
+  the bytes it expects. A launch resolves every stage it will visit before it
+  writes a marker; a stage whose procedure is missing, unreadable, empty or not
+  the expected bytes is refused with three-part recovery prose (exit `1`,
+  nothing entered). The procedure served through `--from` is the same file, so
+  it is byte-identical to the one served in sequence. Until
+  `OBPI-0.35.0-20` lands, the skill body still carries each stage's procedure
+  as well (OBPI-0.35.0-17)
 - every launch records the parent ADR as `Accepted` before writing markers: a
   `Proposed` ADR transitions `Proposed -> Accepted`, and a `Draft` ADR walks
   `Draft -> Proposed -> Accepted` through the lifecycle state machine, whose
@@ -300,6 +310,10 @@ The command exits non-zero and prints `BLOCKERS:` when:
 - another OBPI is already active in the pipeline markers
 - any verification command fails in `--from=verify`
 - the OBPI's Stage 2 acceptance is blocked in `--from=verify` or `--from=ceremony`
+
+A stage whose served procedure is missing, unreadable, empty or altered is
+refused at launch, before any marker is written, with prose naming the file,
+the rule (OBPI-0.35.0-17, Requirement 7) and the recovery command, and exits `1`.
 
 A launch whose OBPI id resolves to no brief is refused before any of these
 checks: the command prints one error message naming the id and no

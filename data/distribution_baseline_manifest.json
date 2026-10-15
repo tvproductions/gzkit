@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "gzkit_version": "0.34.8",
+  "gzkit_version": "0.34.9",
   "surfaces": {
     "personas": [
       "flight-test-engineer.md",
@@ -118,10 +118,16 @@
       "gz-mx/SKILL.md",
       "gz-obpi-brief-drift/SKILL.md",
       "gz-obpi-lock/SKILL.md",
+      "gz-obpi-pipeline/AGENTS.md",
       "gz-obpi-pipeline/SKILL.md",
       "gz-obpi-pipeline/references/design-notes.md",
       "gz-obpi-pipeline/references/evidence-capture.md",
       "gz-obpi-pipeline/references/plan-audit-receipt-contract.md",
+      "gz-obpi-pipeline/references/stage-1-load-context.md",
+      "gz-obpi-pipeline/references/stage-2-implement.md",
+      "gz-obpi-pipeline/references/stage-3-verify.md",
+      "gz-obpi-pipeline/references/stage-4-present-evidence.md",
+      "gz-obpi-pipeline/references/stage-5-sync-and-account.md",
       "gz-obpi-simplify/SKILL.md",
       "gz-obpi-specify/SKILL.md",
       "gz-obpi-specify/assets/HEAVY_LANE_PLAN_TEMPLATE.md",

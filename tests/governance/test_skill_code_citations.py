@@ -63,6 +63,21 @@ class SkillCodeCitationBehavior(unittest.TestCase):
         self.assertEqual(errors[0].type, "skill_code_citation")
         self.assertIn("src/gzkit/gone.py", errors[0].message)
 
+    def test_dangling_citation_in_a_served_stage_procedure_is_flagged(self) -> None:
+        """A stage file the runtime serves is read as the skill body is (OBPI-0.35.0-17)."""
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            _write_skill(root, slug="gz-thing", body="no citation here")
+            stage = root / ".gzkit" / "skills" / "gz-thing" / "references" / "stage-2-implement.md"
+            stage.parent.mkdir(parents=True)
+            stage.write_text("- Dispatch: `src/gzkit/gone.py`\n", encoding="utf-8")
+            errors = audit_skill_code_citations(root)
+
+        self.assertEqual(len(errors), 1, f"expected one error, got {errors}")
+        self.assertEqual(
+            errors[0].artifact, ".gzkit/skills/gz-thing/references/stage-2-implement.md:1"
+        )
+
     def test_resolving_citation_is_not_flagged(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

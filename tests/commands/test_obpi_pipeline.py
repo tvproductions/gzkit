@@ -15,6 +15,7 @@ from gzkit.ledger import (
     obpi_receipt_emitted_event,
 )
 from gzkit.ledger_events import brief_reconciled_event
+from gzkit.pipeline_procedure import resolve_stage_procedure
 from gzkit.quality import QualityResult
 from gzkit.traceability import covers
 from tests.commands.common import CliRunner, _quick_init
@@ -238,6 +239,11 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             self.assertIn("Verification passed. Chaining into ceremony.", result.output)
             self.assertIn("Stage 4: Ceremony", result.output)
+            # Stage entry serves the stage's procedure (OBPI-0.35.0-17).
+            self.assertIn(
+                "Stage 3 procedure: .gzkit/skills/gz-obpi-pipeline/references/stage-3-verify.md",
+                " ".join(result.output.split()),
+            )
             self.assertIn("Human attestation required.", result.output)
             self.assertIn("--from=sync", result.output)
             # Verify the verification commands were executed.
@@ -626,6 +632,12 @@ class TestObpiPipelineCommand(unittest.TestCase):
 
             self.assertEqual(result.exit_code, 0)
             self.assertIn("Stage 5: Sync And Account", result.output)
+            # Stage entry serves the stage's procedure (OBPI-0.35.0-17).
+            self.assertIn(
+                "Stage 5 procedure: "
+                ".gzkit/skills/gz-obpi-pipeline/references/stage-5-sync-and-account.md",
+                " ".join(result.output.split()),
+            )
             self.assertIn("Pipeline complete.", result.output)
             marker_path, legacy_path = self._pipeline_paths(Path.cwd())
             self.assertFalse(marker_path.exists())
@@ -734,3 +746,59 @@ class TestObpiPipelineCommand(unittest.TestCase):
             self.assertEqual(result.exit_code, 1)
             self.assertIn("BLOCKERS:", result.output)
             self.assertIn("already completed", result.output)
+
+
+class TestStageEntryServesProcedures(unittest.TestCase):
+    """OBPI-0.35.0-17: stage entry prints the served procedure's pointer; a missing one refuses."""
+
+    @staticmethod
+    def _one_line(output: str) -> str:
+        # The console wraps long lines at the runner's width; the pointer is one line of text.
+        return " ".join(output.split())
+
+    _seed_runtime = TestObpiPipelineCommand._seed_runtime
+    _seed_parent_adr = staticmethod(TestObpiPipelineCommand._seed_parent_adr)
+    _seed_obpi = staticmethod(TestObpiPipelineCommand._seed_obpi)
+    _pipeline_paths = staticmethod(TestObpiPipelineCommand._pipeline_paths)
+
+    def test_full_launch_prints_stage_one_and_stage_two_pointers(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            self._seed_runtime(runner)
+            result = runner.invoke(main, ["obpi", "pipeline", "0.13.0-01-runtime-command-contract"])
+            self.assertEqual(result.exit_code, 0, result.output)
+            references = ".gzkit/skills/gz-obpi-pipeline/references"
+            output = self._one_line(result.output)
+            self.assertIn(
+                f"Stage 1 procedure: {references}/stage-1-load-context.md (sha256 ", output
+            )
+            self.assertIn(f"Stage 2 procedure: {references}/stage-2-implement.md (sha256 ", output)
+
+    def test_missing_procedure_refuses_the_launch_before_any_marker(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            self._seed_runtime(runner)
+            Path(".gzkit/skills/gz-obpi-pipeline/references/stage-2-implement.md").unlink()
+            result = runner.invoke(main, ["obpi", "pipeline", "0.13.0-01-runtime-command-contract"])
+            self.assertEqual(result.exit_code, 1, result.output)
+            self.assertIn("stage-2-implement.md is missing", result.output)
+            self.assertIn("WHY:", result.output)
+            self.assertIn("NEXT STEP:", result.output)
+            marker_path, legacy_path = self._pipeline_paths(Path.cwd())
+            self.assertFalse(marker_path.exists())
+            self.assertFalse(legacy_path.exists())
+
+    @patch("gzkit.commands.obpi_stages.acceptance_blockers", new=lambda *_args, **_kwargs: [])
+    def test_from_ceremony_prints_stage_four_pointer_with_the_sequence_digest(self) -> None:
+        runner = CliRunner()
+        with runner.isolated_filesystem():
+            self._seed_runtime(runner)
+            expected = resolve_stage_procedure(Path.cwd(), "stage4").sha256
+            result = runner.invoke(
+                main, ["obpi", "pipeline", "0.13.0-01-runtime-command-contract", "--from=ceremony"]
+            )
+            references = ".gzkit/skills/gz-obpi-pipeline/references"
+            self.assertIn(
+                f"Stage 4 procedure: {references}/stage-4-present-evidence.md (sha256 {expected})",
+                self._one_line(result.output),
+            )

@@ -88,6 +88,18 @@ class TestSkillsAreInScope(_Tree):
         self.assertIn("nosuchverb", errors[0].message)
         self.assertIn("SKILL.md", errors[0].artifact)
 
+    def test_served_stage_procedure_with_unregistered_verb_is_reported(self) -> None:
+        """The per-stage files the runtime serves are executed from like the skill body
+        (OBPI-0.35.0-17); a verb there resolves or is reported."""
+        self.write(
+            ".gzkit/skills/gz-demo/references/stage-3-verify.md",
+            "# Stage 3\n\n```bash\ngz nosuchverb tail --event composition_emitted\n```\n",
+        )
+        errors = audit_cli_alignment(self.root)
+        self.assertEqual(len(errors), 1, f"expected one finding, got {errors}")
+        self.assertIn("nosuchverb", errors[0].message)
+        self.assertIn("references/stage-3-verify.md", errors[0].artifact)
+
     def test_governance_runbook_is_in_scope(self) -> None:
         """The rule names `docs/governance/governance_runbook.md` explicitly."""
         self.write(

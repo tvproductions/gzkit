@@ -22,6 +22,7 @@ from gzkit.canonical_steps import CANONICAL_STEP_COMMANDS
 from gzkit.commands.common import GzCliError, _cli_main, console
 from gzkit.decomposition import extract_markdown_section
 from gzkit.pipeline_markers import find_obpi_brief
+from gzkit.pipeline_procedure import render_pointer, resolve_stage_procedure
 from gzkit.pipeline_runtime import (
     RunCrossing,
     check_airlock_out_gate,
@@ -225,9 +226,10 @@ def _print_pipeline_header(
         console.print(f"  Warning: {escape(warning)}")
 
 
-def _print_pipeline_implementation_next_steps(obpi_id: str) -> None:
-    """Render Stage 2 guidance after a full launch."""
+def _print_pipeline_implementation_next_steps(obpi_id: str, project_root: Path) -> None:
+    """Render Stage 2 guidance after a full launch, its served procedure first."""
     console.print("")
+    console.print(render_pointer(resolve_stage_procedure(project_root, "stage2")))
     console.print("Next:")
     console.print("- Implement the approved OBPI within the brief allowlist.")
     console.print(f"- When implementation is ready, run: {pipeline_command(obpi_id, 'verify')}")
@@ -281,6 +283,7 @@ def _run_pipeline_verify_stage(
     )
     console.print("")
     console.print("[bold]Stage 3: Verification[/bold]")
+    console.print(render_pointer(resolve_stage_procedure(project_root, "stage3")))
 
     def _runner(command: str) -> QualityResult:
         return _cli_main().run_command(command, cwd=project_root)
@@ -346,6 +349,7 @@ def _run_pipeline_ceremony_stage(
     _record_boundary(project_root, obpi_id, "ceremony")
     console.print("")
     console.print("[bold]Stage 4: Ceremony[/bold]")
+    console.print(render_pointer(resolve_stage_procedure(project_root, "stage4")))
 
     review_blockers = acceptance_blockers(project_root, obpi_id)
     if review_blockers:
@@ -569,6 +573,7 @@ def _run_pipeline_sync_stage(
     """Run Stage 5: sync and account deterministically, then clear markers."""
     console.print("")
     console.print("[bold]Stage 5: Sync And Account[/bold]")
+    console.print(render_pointer(resolve_stage_procedure(project_root, "stage5")))
 
     steps = _build_sync_stage_steps(
         obpi_id=obpi_id,

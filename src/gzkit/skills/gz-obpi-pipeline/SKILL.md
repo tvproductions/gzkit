@@ -5,9 +5,9 @@ description: Post-plan OBPI execution pipeline — implement, verify, present ev
 category: obpi-pipeline
 lifecycle_state: active
 owner: gzkit-governance
-last_reviewed: 2026-10-11
+last_reviewed: 2026-10-15
 metadata:
-  skill-version: "6.67.0"
+  skill-version: "6.68.0"
 model: sonnet
 ---
 

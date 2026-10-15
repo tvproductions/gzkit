@@ -136,6 +136,10 @@ exit-code matrix and option reference.
 
 ### Step 2: Execute the OBPI through the staged pipeline
 
+Each stage entry prints `Stage N procedure: <path> (sha256 <digest>)`; read that
+file before acting in the stage. The runtime refuses a stage whose procedure
+is missing or altered (OBPI-0.35.0-17).
+
 | Skill (preferred) | CLI equivalent |
 |---|---|
 | `/gz-obpi-pipeline OBPI-<X.Y.Z-NN>` | `uv run gz obpi pipeline OBPI-<X.Y.Z-NN>` |

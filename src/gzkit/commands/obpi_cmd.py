@@ -53,6 +53,7 @@ from gzkit.ledger_events import (
     obpi_completion_repudiated_event,
     obpi_superseded_event,
 )
+from gzkit.pipeline_procedure import render_pointer, resolve_launch_procedures
 from gzkit.pipeline_runtime import (
     check_airlock_in_gate,
     check_reconcile_receipt_gate,
@@ -882,6 +883,9 @@ def obpi_pipeline_cmd(
 
     lane = resolve_adr_lane(graph.get(resolved_parent, {}), config.mode)
     requires_human_attestation = _requires_human_obpi_attestation(resolved_parent, lane)
+    # Every stage this launch visits must have its served procedure before anything
+    # is written: a missing one refuses the launch here (OBPI-0.35.0-17, Req. 7).
+    procedures = resolve_launch_procedures(project_root, start_from)
     marker_payload = pipeline_marker_payload(
         obpi_id,
         resolved_parent,
@@ -919,6 +923,7 @@ def obpi_pipeline_cmd(
         warnings=warnings,
         receipt=receipt,
     )
+    console.print(f"  {render_pointer(procedures['stage1'])}")
 
     if start_from is None:
         _run_pipeline_full_launch_task_start(
@@ -928,7 +933,7 @@ def obpi_pipeline_cmd(
             obpi_content=obpi_content,
             project_root=project_root,
         )
-        _print_pipeline_implementation_next_steps(obpi_id)
+        _print_pipeline_implementation_next_steps(obpi_id, project_root)
         return
 
     if start_from == "verify":

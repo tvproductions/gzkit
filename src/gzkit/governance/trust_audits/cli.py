@@ -161,6 +161,9 @@ def _cli_alignment_sources(project_root: Path) -> list[Path]:
     skills_root = project_root / ".gzkit" / "skills"
     if skills_root.is_dir():
         sources.extend(sorted(skills_root.rglob("SKILL.md")))
+        # The procedures the runtime serves per stage are read as the skill body
+        # is: an agent executes from them (OBPI-0.35.0-17, brief 20 Requirement 7).
+        sources.extend(sorted(skills_root.rglob("references/stage-*.md")))
     chores_root = project_root / ".gzkit" / "chores"
     if chores_root.is_dir():
         sources.extend(
@@ -361,7 +364,10 @@ def audit_skill_code_citations(project_root: Path) -> list[ValidationError]:
     skills_root = project_root / ".gzkit" / "skills"
     if not skills_root.is_dir():
         return errors
-    for skill_md in sorted(skills_root.rglob("SKILL.md")):
+    surfaces = sorted(skills_root.rglob("SKILL.md")) + sorted(
+        skills_root.rglob("references/stage-*.md")
+    )
+    for skill_md in surfaces:
         try:
             text = skill_md.read_text(encoding="utf-8")
         except (UnicodeDecodeError, OSError):

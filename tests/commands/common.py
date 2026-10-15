@@ -425,6 +425,11 @@ def _quick_init(mode: str = "lite") -> None:
     project_root = Path.cwd()
     gzkit_dir = project_root / ".gzkit"
     gzkit_dir.mkdir(exist_ok=True)
+    # The runtime refuses stage entry without the served procedures
+    # (OBPI-0.35.0-17); a seeded project carries them as `gz init` would.
+    from gzkit.pipeline_procedure import seed_stage_procedures
+
+    seed_stage_procedures(project_root)
 
     config = GzkitConfig(mode=mode, project_name="test-project")
     config.save(project_root / ".gzkit.json")

@@ -2015,6 +2015,7 @@
       "bb715480a9d507dcc747c38cd105c1199418f0b6c0bb4ddca58f5faca4e3ba52",
       "bccb391d9a5c0f21432b7363322fe4b3b7b1850420ccc191675950c3d069dd85",
       "bd9d00fe3d35c2eea20b680bb1870af56833ec6b49ee6170ee1c8c37ae437160",
+      "bdab612f8c6a0817c06720fb268c8840b75ffb7f24a829e26c15c30f5c92fc9d",
       "be00306cc5d1b2faf5ecc7d92d5e4384e7e62b6c81a9a4d26b371e22d0f431ac",
       "c023d8c5fbc5b425bc5a304ac174bdcb05be3c2c80b63e1912b77c886fc056b6",
       "c14c0b1abe6bbb4289adda39f3123cde21483f706011dad43d302a728744da30",
@@ -2044,6 +2045,21 @@
     ],
     "skills/gz-obpi-pipeline/references/plan-audit-receipt-contract.md": [
       "187c27f83025fa4b17a948beb062338242a19c1ef1118d64e60bf65ef2e3c6d1"
+    ],
+    "skills/gz-obpi-pipeline/references/stage-1-load-context.md": [
+      "53ddd000823c5cfba9dc9796660daf8592ea80f88cdfb6fb0e7d2f24ce92d34c"
+    ],
+    "skills/gz-obpi-pipeline/references/stage-2-implement.md": [
+      "0aa6730d7c28f6645fe21c0f1d28b6497e41c0b4ce62aaa4605644f0cee34b0c"
+    ],
+    "skills/gz-obpi-pipeline/references/stage-3-verify.md": [
+      "e1325e3ba8e8bb3381e04bb77120343e9c38bed44b77dac511c2489ecb15489d"
+    ],
+    "skills/gz-obpi-pipeline/references/stage-4-present-evidence.md": [
+      "95d19998209eb30c68d1aa07cd5b9e08787a10266f95d75228568fdb8a488a1e"
+    ],
+    "skills/gz-obpi-pipeline/references/stage-5-sync-and-account.md": [
+      "b7961d0c5734481d049c87fcdf44c864fbb010d199ec572d34c054d3944c9fab"
     ],
     "skills/gz-obpi-reconcile/SKILL.md": [
       "1acb08d93c597dbf3df0fb0f0ee359056c4729ccb3a86ffdae0babbd0a7031ce",
