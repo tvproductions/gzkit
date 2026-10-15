@@ -413,131 +413,652 @@
   {
    "text": "### Stage 1: Load Context",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "### Stage 1: Load Context",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "1. Read this OBPI's plan-audit receipt, `.claude/plans/.plan-audit-receipt-<OBPI-ID>.json`, to find the approved plan (the bare `.plan-audit-receipt.json` is the legacy name, accepted only as a fallback)\n   - If receipt exists and OBPI matches: load the plan file from `.claude/plans/`, extract implementation steps\n   - If receipt verdict is `FAIL`: **abort** — plan did not pass audit\n   - If no receipt found AND `--from` flag is NOT set: **STOP — invoke `/gz-plan-audit <OBPI-ID>` in this same turn** (see § The Plan-Mode Gate for why this comes before native plan mode — GHI #288). The skill authors a canonical-name plan in `.claude/plans/` and writes the receipt directly. Only resume the pipeline after the plan-audit receipt is written. Do NOT \"derive tasks informally\" or \"proceed without a plan.\" The plan-audit handoff is a governance checkpoint, not an optimization.\n   - If no receipt found AND `--from=verify` or `--from=ceremony`: proceed (the user is explicitly resuming a partially-completed pipeline where implementation already happened)",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S1-001",
+     "quote": "Read this OBPI's plan-audit receipt, `.claude/plans/.plan-audit-receipt-<OBPI-ID>.json`, to find the approved plan (the bare `.plan-audit-receipt.json` is the legacy name, accepted only as a fallback)",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "Read this OBPI's plan-audit receipt, `.claude/plans/.plan-audit-receipt-<OBPI-ID>.json`, to find the approved plan (the bare `.plan-audit-receipt.json` is the legacy name, accepted only as a fallback)",
+     "reworded": null
+    },
+    {
+     "id": "S1-002",
+     "quote": "- If receipt exists and OBPI matches: load the plan file from `.claude/plans/`, extract implementation steps",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "- If receipt exists and OBPI matches: load the plan file from `.claude/plans/`, extract implementation steps",
+     "reworded": null
+    },
+    {
+     "id": "S1-003",
+     "quote": "- If receipt verdict is `FAIL`: **abort** — plan did not pass audit",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "- If receipt verdict is `FAIL`: **abort** — plan did not pass audit",
+     "reworded": null
+    },
+    {
+     "id": "S1-004",
+     "quote": "- If no receipt found AND `--from` flag is NOT set: **STOP — invoke `/gz-plan-audit <OBPI-ID>` in this same turn**",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": "GHI #288",
+     "delivered_span": "- If no receipt found AND `--from` flag is NOT set: **STOP — invoke `/gz-plan-audit <OBPI-ID>` in this same turn**",
+     "reworded": null
+    },
+    {
+     "id": "S1-005",
+     "quote": "The skill authors a canonical-name plan in `.claude/plans/` and writes the receipt directly. Only resume the pipeline after the plan-audit receipt is written. Do NOT \"derive tasks informally\" or \"proceed without a plan.\"",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "The skill authors a canonical-name plan in `.claude/plans/` and writes the receipt directly. Only resume the pipeline after the plan-audit receipt is written. Do NOT \"derive tasks informally\" or \"proceed without a plan.\"",
+     "reworded": null
+    },
+    {
+     "id": "S1-006",
+     "quote": "- If no receipt found AND `--from=verify` or `--from=ceremony`: proceed (the user is explicitly resuming a partially-completed pipeline where implementation already happened)",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "- If no receipt found AND `--from=verify` or `--from=ceremony`: proceed (the user is explicitly resuming a partially-completed pipeline where implementation already happened)",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "(see § The Plan-Mode Gate for why this comes before native plan mode — GHI #288).",
+     "class": "rationale",
+     "explains": "S1-004",
+     "reason": "pointer to the rationale section and the issue"
+    },
+    {
+     "quote": "The plan-audit handoff is a governance checkpoint, not an optimization.",
+     "class": "rationale",
+     "explains": "S1-004",
+     "reason": "why the gate exists"
+    }
+   ]
   },
   {
    "text": "2. Locate the OBPI brief under:\n   - `docs/design/adr/**/obpis/OBPI-{id}-*.md`\n   - `docs/design/adr/**/briefs/OBPI-{id}-*.md`",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S1-007",
+     "quote": "2. Locate the OBPI brief under:\n   - `docs/design/adr/**/obpis/OBPI-{id}-*.md`\n   - `docs/design/adr/**/briefs/OBPI-{id}-*.md`",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "2. Locate the OBPI brief under:\n   - `docs/design/adr/**/obpis/OBPI-{id}-*.md`\n   - `docs/design/adr/**/briefs/OBPI-{id}-*.md`",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "3. **Resolve the full OBPI slug** from the brief's frontmatter `id` field (e.g.\n   `OBPI-0.0.12-02-implementer-agent-persona`). Use this full slug for ALL\n   subsequent `gz obpi` commands (`reconcile`, `complete`, `lock claim`,\n   `lock release`). The short form (e.g. `OBPI-0.0.12-02`) may fail ledger\n   lookup. Set a variable like `obpi_slug` at this step and reuse it throughout.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S1-008",
+     "quote": "**Resolve the full OBPI slug** from the brief's frontmatter `id` field (e.g.\n   `OBPI-0.0.12-02-implementer-agent-persona`). Use this full slug for ALL\n   subsequent `gz obpi` commands (`reconcile`, `complete`, `lock claim`,\n   `lock release`).",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "**Resolve the full OBPI slug** from the brief's frontmatter `id` field (e.g.\n   `OBPI-0.0.12-02-implementer-agent-persona`). Use this full slug for ALL\n   subsequent `gz obpi` commands (`reconcile`, `complete`, `lock claim`,\n   `lock release`).",
+     "reworded": null
+    },
+    {
+     "id": "S1-009",
+     "quote": "Set a variable like `obpi_slug` at this step and reuse it throughout.",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "Set a variable like `obpi_slug` at this step and reuse it throughout.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "The short form (e.g. `OBPI-0.0.12-02`) may fail ledger\n   lookup.",
+     "class": "rationale",
+     "explains": "S1-008",
+     "reason": "why the full slug is required"
+    }
+   ]
   },
   {
    "text": "5. Extract: objective, requirements, allowed/denied paths, acceptance criteria, lane, verification commands",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S1-010",
+     "quote": "5. Extract: objective, requirements, allowed/denied paths, acceptance criteria, lane, verification commands",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "5. Extract: objective, requirements, allowed/denied paths, acceptance criteria, lane, verification commands",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "6. Identify the parent ADR and inherit its lane and execution constraints.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S1-011",
+     "quote": "6. Identify the parent ADR and inherit its lane and execution constraints.",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "6. Identify the parent ADR and inherit its lane and execution constraints.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "7. All OBPIs require human attestation — universal per ADR-0.0.36.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S1-012",
+     "quote": "7. All OBPIs require human attestation — universal per ADR-0.0.36.",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": "ADR-0.0.36",
+     "delivered_span": "7. All OBPIs require human attestation — universal per ADR-0.0.36.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "8. Check for existing handoffs and resume context when present:\n   - `uv run gz handoff resume --adr <ADR-ID>` — handoffs live in `.gzkit/handoffs/`; the per-ADR `handoffs/` folders were retired (ADR-0.0.65)",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S1-013",
+     "quote": "Check for existing handoffs and resume context when present:",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "Check for existing handoffs and resume context when present:",
+     "reworded": null
+    },
+    {
+     "id": "S1-014",
+     "quote": "- `uv run gz handoff resume --adr <ADR-ID>` — handoffs live in `.gzkit/handoffs/`;",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": "ADR-0.0.65",
+     "delivered_span": "- `uv run gz handoff resume --adr <ADR-ID>` — handoffs live in `.gzkit/handoffs/`;",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "the per-ADR `handoffs/` folders were retired (ADR-0.0.65)",
+     "class": "rationale",
+     "explains": "S1-014",
+     "reason": "history of the handoff location"
+    }
+   ]
   },
   {
    "text": "9. Claim OBPI lock: `uv run gz obpi lock claim {OBPI-SLUG}` (use the full slug from step 3)",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S1-015",
+     "quote": "9. Claim OBPI lock: `uv run gz obpi lock claim {OBPI-SLUG}` (use the full slug from step 3)",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "9. Claim OBPI lock: `uv run gz obpi lock claim {OBPI-SLUG}` (use the full slug from step 3)",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "10. Create pipeline markers. **Preferred path: invoke the runtime to author the marker.**\n    The runtime writes the canonical marker shape (including a ledger-witnessed\n    `nonce` the validator binds against) — hand-authored markers are a maintenance\n    surface that drifts (GHI #586).",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S1-016",
+     "quote": "Create pipeline markers. **Preferred path: invoke the runtime to author the marker.**",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": "GHI #586",
+     "delivered_span": "Create pipeline markers. **Preferred path: invoke the runtime to author the marker.**",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "The runtime writes the canonical marker shape (including a ledger-witnessed\n    `nonce` the validator binds against) — hand-authored markers are a maintenance\n    surface that drifts (GHI #586).",
+     "class": "rationale",
+     "explains": "S1-016",
+     "reason": "why the runtime path is preferred"
+    }
+   ]
   },
   {
    "text": "    - Preferred: `uv run gz obpi pipeline {OBPI-SLUG}` (the runtime writes\n      `.claude/plans/.pipeline-active-{OBPI-SLUG}.json` and the legacy\n      `.pipeline-active.json` with the canonical schema).\n    - Hand-author fallback (only when the runtime cannot be invoked):\n      - `.claude/plans/.pipeline-active-{OBPI-ID}.json`\n      - `.claude/plans/.pipeline-active.json` as a legacy compatibility marker\n        for the same OBPI\n      - Marker payload MUST include `obpi_id`, `parent_adr`, `lane`, `entry`,\n        `execution_mode`, `current_stage`, `started_at`, `updated_at`,\n        `receipt_state`, `blockers`, `required_human_action`, `next_command`,\n        and `resume_point`.\n      - `current_stage` MUST be one of the canonical enum values the validator\n        accepts (`adr_audit.py` `_PIPELINE_MARKER_VALID_STAGES`):\n        `implement` | `verify` | `ceremony` | `sync` | `audit`. Prose stage\n        headings like `\"Stage 2: Implement\"` are **rejected** by the validator\n        and are not the same string as the enum. Set `current_stage` to the\n        enum value matching the lifecycle step in progress.\n    - This unblocks the pipeline-gate PreToolUse hook for src/ and tests/ writes.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S1-017",
+     "quote": "- Preferred: `uv run gz obpi pipeline {OBPI-SLUG}` (the runtime writes\n      `.claude/plans/.pipeline-active-{OBPI-SLUG}.json` and the legacy\n      `.pipeline-active.json` with the canonical schema).",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "- Preferred: `uv run gz obpi pipeline {OBPI-SLUG}` (the runtime writes\n      `.claude/plans/.pipeline-active-{OBPI-SLUG}.json` and the legacy\n      `.pipeline-active.json` with the canonical schema).",
+     "reworded": null
+    },
+    {
+     "id": "S1-018",
+     "quote": "- Hand-author fallback (only when the runtime cannot be invoked):\n      - `.claude/plans/.pipeline-active-{OBPI-ID}.json`\n      - `.claude/plans/.pipeline-active.json` as a legacy compatibility marker\n        for the same OBPI",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "- Hand-author fallback (only when the runtime cannot be invoked):\n      - `.claude/plans/.pipeline-active-{OBPI-ID}.json`\n      - `.claude/plans/.pipeline-active.json` as a legacy compatibility marker\n        for the same OBPI",
+     "reworded": null
+    },
+    {
+     "id": "S1-019",
+     "quote": "- Marker payload MUST include `obpi_id`, `parent_adr`, `lane`, `entry`,\n        `execution_mode`, `current_stage`, `started_at`, `updated_at`,\n        `receipt_state`, `blockers`, `required_human_action`, `next_command`,\n        and `resume_point`.",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "- Marker payload MUST include `obpi_id`, `parent_adr`, `lane`, `entry`,\n        `execution_mode`, `current_stage`, `started_at`, `updated_at`,\n        `receipt_state`, `blockers`, `required_human_action`, `next_command`,\n        and `resume_point`.",
+     "reworded": null
+    },
+    {
+     "id": "S1-020",
+     "quote": "- `current_stage` MUST be one of the canonical enum values the validator\n        accepts (`adr_audit.py` `_PIPELINE_MARKER_VALID_STAGES`):\n        `implement` | `verify` | `ceremony` | `sync` | `audit`.",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "- `current_stage` MUST be one of the canonical enum values the validator\n        accepts (`adr_audit.py` `_PIPELINE_MARKER_VALID_STAGES`):\n        `implement` | `verify` | `ceremony` | `sync` | `audit`.",
+     "reworded": null
+    },
+    {
+     "id": "S1-021",
+     "quote": "Set `current_stage` to the\n        enum value matching the lifecycle step in progress.",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "Set `current_stage` to the\n        enum value matching the lifecycle step in progress.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "Prose stage\n        headings like `\"Stage 2: Implement\"` are **rejected** by the validator\n        and are not the same string as the enum.",
+     "class": "rationale",
+     "explains": "S1-020",
+     "reason": "why prose headings are rejected"
+    },
+    {
+     "quote": "- This unblocks the pipeline-gate PreToolUse hook for src/ and tests/ writes.",
+     "class": "rationale",
+     "explains": "S1-017",
+     "reason": "effect of the marker, binds nothing"
+    }
+   ]
   },
   {
    "text": "11. Apply the brief allowlist as the working scope contract before any edits.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S1-022",
+     "quote": "11. Apply the brief allowlist as the working scope contract before any edits.",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "11. Apply the brief allowlist as the working scope contract before any edits.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "12. Initialize the acceptance population once:\n    `uv run gz obpi acceptance {OBPI-SLUG} init --author {implementing-session-id}`.\n    Reuse the recorded author and obligations when resuming. Initialization reads\n    the canonical brief and parent ADR; it cannot erase history or silently\n    replace the obligation roster. `--from` does not waive current proof or review.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S1-023",
+     "quote": "Initialize the acceptance population once:\n    `uv run gz obpi acceptance {OBPI-SLUG} init --author {implementing-session-id}`.",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "Initialize the acceptance population once:\n    `uv run gz obpi acceptance {OBPI-SLUG} init --author {implementing-session-id}`.",
+     "reworded": null
+    },
+    {
+     "id": "S1-024",
+     "quote": "Reuse the recorded author and obligations when resuming.",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "Reuse the recorded author and obligations when resuming.",
+     "reworded": null
+    },
+    {
+     "id": "S1-025",
+     "quote": "`--from` does not waive current proof or review.",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "`--from` does not waive current proof or review.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "Initialization reads\n    the canonical brief and parent ADR; it cannot erase history or silently\n    replace the obligation roster.",
+     "class": "rationale",
+     "explains": "S1-023",
+     "reason": "what init reads and cannot do"
+    }
+   ]
   },
   {
    "text": "> **In-flight status is advanced AT LAUNCH (GHI #646, corrected by GHI #992).**\n> Launching the pipeline emits `pipeline_launched`, which IS the `in_progress`\n> transition — `_derive_obpi_runtime_state` resolves a launched OBPI to\n> `in_progress`, and `status_vocab` maps that to frontmatter `Active`. Layer-1\n> mirrors that truth **inside the launch transaction**: `obpi_pipeline_cmd`\n> calls `_advance_brief_status_on_launch` immediately after appending the\n> event.\n>\n> **Derived never meant deferred.** Operator ruling 2026-09-11, verbatim: *\"if\n> we start work on a obpi with draft status, its not draft.\"* Until #992 the\n> flip waited on a human typing `uv run gz frontmatter reconcile`, so a\n> launched brief asserted `Draft` for the entire in-flight window and the\n> pre-push `gz check` blocked every push on a frontmatter mismatch. The only\n> mandatory catch was `gz obpi precomplete`'s `_check_reconcile_idempotent` —\n> self-described *\"Reactive triage at Stage 5\"*, the far end of the pipeline\n> from where the drift is created.\n>\n> Do not hand-write the lifecycle field here. The advance routes through\n> `guarded_obpi_status_write`, so the terminal-clobber verdict stays in the one\n> monitor ADR-0.31.0 Decision item 4 declares — a terminal brief is refused,\n> and a re-launch is a no-op (mirrors how completion is surfaced, not authored,\n> by the pipeline).",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S1-026",
+     "quote": "Do not hand-write the lifecycle field here.",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": "operator ruling 2026-09-11",
+     "delivered_span": "Do not hand-write the lifecycle field here.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "**In-flight status is advanced AT LAUNCH (GHI #646, corrected by GHI #992).**\n> Launching the pipeline emits `pipeline_launched`, which IS the `in_progress`\n> transition — `_derive_obpi_runtime_state` resolves a launched OBPI to\n> `in_progress`, and `status_vocab` maps that to frontmatter `Active`. Layer-1\n> mirrors that truth **inside the launch transaction**: `obpi_pipeline_cmd`\n> calls `_advance_brief_status_on_launch` immediately after appending the\n> event.",
+     "class": "rationale",
+     "explains": "S1-026",
+     "reason": "history of the launch-time status advance (GHI #646, #992)"
+    },
+    {
+     "quote": "**Derived never meant deferred.** Operator ruling 2026-09-11, verbatim: *\"if\n> we start work on a obpi with draft status, its not draft.\"* Until #992 the\n> flip waited on a human typing `uv run gz frontmatter reconcile`, so a\n> launched brief asserted `Draft` for the entire in-flight window and the\n> pre-push `gz check` blocked every push on a frontmatter mismatch. The only\n> mandatory catch was `gz obpi precomplete`'s `_check_reconcile_idempotent` —\n> self-described *\"Reactive triage at Stage 5\"*, the far end of the pipeline\n> from where the drift is created.",
+     "class": "rationale",
+     "explains": "S1-026",
+     "reason": "operator ruling 2026-09-11 and the drift it closed"
+    },
+    {
+     "quote": "The advance routes through\n> `guarded_obpi_status_write`, so the terminal-clobber verdict stays in the one\n> monitor ADR-0.31.0 Decision item 4 declares — a terminal brief is refused,\n> and a re-launch is a no-op (mirrors how completion is surfaced, not authored,\n> by the pipeline).",
+     "class": "rationale",
+     "explains": "S1-026",
+     "reason": "how the advance is routed"
+    }
+   ]
   },
   {
    "text": "**Abort if:** brief not found, brief already `Completed`, or plan receipt verdict is `FAIL`.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S1-027",
+     "quote": "**Abort if:** brief not found, brief already `Completed`, or plan receipt verdict is `FAIL`.",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "**Abort if:** brief not found, brief already `Completed`, or plan receipt verdict is `FAIL`.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "**On any abort:** Surrender the lock per [Abort surrender](#abort-surrender), then run `/gz-session-handoff` to preserve context.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S1-028",
+     "quote": "**On any abort:** Surrender the lock per [Abort surrender](#abort-surrender), then run `/gz-session-handoff` to preserve context.",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "**On any abort:** Surrender the lock per [Abort surrender](#abort-surrender), then run `/gz-session-handoff` to preserve context.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "#### Stage 1→2 Justification Gate",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "#### Stage 1→2 Justification Gate",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "Before Stage 2 begins, check the approved plan against the brief for three conditions. Do not rate your confidence: a self-reported figure has no basis. This block supersedes the trigger it was authored with — Prime Directive invariant 11's \"less than 90% sure\" — which the operator retired on 2026-08-17 (`AGENTS.md` § Operator Doctrine: \"Stop and ask the operator in case of uncertainty… Supersedes the prior '90% convinced/confident' framing\").",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S1-029",
+     "quote": "Before Stage 2 begins, check the approved plan against the brief for three conditions.",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": "ADR-0.0.19",
+     "delivered_span": "Before Stage 2 begins, check the approved plan against the brief for three conditions.",
+     "reworded": null
+    },
+    {
+     "id": "S1-030",
+     "quote": "Do not rate your confidence: a self-reported figure has no basis.",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": "operator ruling 2026-08-17",
+     "delivered_span": "Do not rate your confidence: a self-reported figure has no basis.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "This block supersedes the trigger it was authored with — Prime Directive invariant 11's \"less than 90% sure\" — which the operator retired on 2026-08-17 (`AGENTS.md` § Operator Doctrine: \"Stop and ask the operator in case of uncertainty… Supersedes the prior '90% convinced/confident' framing\").",
+     "class": "rationale",
+     "explains": "S1-030",
+     "reason": "what the retired 90% trigger was"
+    }
+   ]
   },
   {
    "text": "Run the walkthrough when any of these holds:",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S1-031",
+     "quote": "Run the walkthrough when any of these holds:",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "Run the walkthrough when any of these holds:",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "1. The brief's scope boundary is ambiguous: an allowed or denied path the plan touches is unclear, or the plan reaches a surface the brief does not name.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S1-032",
+     "quote": "1. The brief's scope boundary is ambiguous: an allowed or denied path the plan touches is unclear, or the plan reaches a surface the brief does not name.",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "1. The brief's scope boundary is ambiguous: an allowed or denied path the plan touches is unclear, or the plan reaches a surface the brief does not name.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "2. The plan leaves an integration point unresolved: a caller, consumer, validator or mirror it has not named.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S1-033",
+     "quote": "2. The plan leaves an integration point unresolved: a caller, consumer, validator or mirror it has not named.",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "2. The plan leaves an integration point unresolved: a caller, consumer, validator or mirror it has not named.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "3. The plan relies on a surface you have not read, only searched or inferred.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S1-034",
+     "quote": "3. The plan relies on a surface you have not read, only searched or inferred.",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "3. The plan relies on a surface you have not read, only searched or inferred.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "```bash\nuv run -m gzkit justify <current-OBPI-id> --save\n```",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S1-035",
+     "quote": "```bash\nuv run -m gzkit justify <current-OBPI-id> --save\n```",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "```bash\nuv run -m gzkit justify <current-OBPI-id> --save\n```",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "The walkthrough renders an 8-section scaffold grounded in gathered evidence (matching rules, ledger events, recent commits, related anchors, regression taxonomy). Fill each `_[To be filled]_` block per the `gz-justify` skill's Procedure — no fabrication, every citation grounded in the gathered evidence. Then validate the filled artifact via `uv run -m gzkit justify validate <file>` and cite the artifact path in the subsequent implementer prompts (Stage 2) and in the Key Proof evidence (Stage 4).",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S1-036",
+     "quote": "Fill each `_[To be filled]_` block per the `gz-justify` skill's Procedure — no fabrication, every citation grounded in the gathered evidence.",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "Fill each `_[To be filled]_` block per the `gz-justify` skill's Procedure — no fabrication, every citation grounded in the gathered evidence.",
+     "reworded": null
+    },
+    {
+     "id": "S1-037",
+     "quote": "Then validate the filled artifact via `uv run -m gzkit justify validate <file>` and cite the artifact path in the subsequent implementer prompts (Stage 2) and in the Key Proof evidence (Stage 4).",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "Then validate the filled artifact via `uv run -m gzkit justify validate <file>` and cite the artifact path in the subsequent implementer prompts (Stage 2) and in the Key Proof evidence (Stage 4).",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "The walkthrough renders an 8-section scaffold grounded in gathered evidence (matching rules, ledger events, recent commits, related anchors, regression taxonomy).",
+     "class": "rationale",
+     "explains": "S1-036",
+     "reason": "what the walkthrough produces"
+    }
+   ]
   },
   {
    "text": "The walkthrough takes 3-10 minutes on a clear anchor and 15-30 minutes on an ambiguous one; both are an order of magnitude cheaper than a discarded Stage 2 pass.",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "The walkthrough takes 3-10 minutes on a clear anchor and 15-30 minutes on an ambiguous one; both are an order of magnitude cheaper than a discarded Stage 2 pass.",
+     "class": "rationale",
+     "explains": "S1-029",
+     "reason": "timing of the walkthrough, binds nothing"
+    }
+   ]
   },
   {
    "text": "When none of the three holds, proceed to Stage 2 and say so in one line naming what you read. When one holds and the walkthrough does not resolve it, stop and ask the operator.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S1-038",
+     "quote": "When none of the three holds, proceed to Stage 2 and say so in one line naming what you read.",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "When none of the three holds, proceed to Stage 2 and say so in one line naming what you read.",
+     "reworded": null
+    },
+    {
+     "id": "S1-039",
+     "quote": "When one holds and the walkthrough does not resolve it, stop and ask the operator.",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "When one holds and the walkthrough does not resolve it, stop and ask the operator.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
