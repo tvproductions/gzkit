@@ -842,6 +842,136 @@ class TestRenderCampaignBlock(unittest.TestCase):
         self.assertIn("document order", rendered)
 
 
+class TestCampaignBlockIsBounded(unittest.TestCase):
+    """The campaign block is a pointer, bounded regardless of the plan's size.
+
+    Campaign § Amendments 2026-10-04 (2), item 4 "Load": *the orientation's
+    open-checkboxes line as a pointer*. Measured 2026-10-15 the block was
+    19,431 of the orientation's ~22,500 bytes because the Topmost line, three
+    checkboxes and the Workflow fronts section were injected verbatim.
+    """
+
+    CAP = 2500
+
+    def setUp(self):
+        self.mod = _load_orientation_module()
+        self.now = datetime(2026, 10, 15, 12, 0, 0, tzinfo=UTC)
+
+    @staticmethod
+    def _base_state(campaign):
+        return {
+            "campaign": campaign,
+            "remote_state": None,
+            "handoff": None,
+            "session_handoff_ghis": [],
+            "obpi_locks": [],
+            "adr_pipeline": [],
+            "recent_events": [],
+            "blockers": [],
+        }
+
+    @staticmethod
+    def _campaign_section(rendered: str) -> str:
+        start = rendered.index("## Active campaign — Magna Carta")
+        end = rendered.index("## Git remote state")
+        return rendered[start:end]
+
+    def test_long_plan_prose_renders_as_bounded_pointers(self):
+        topmost = "ADR-0.35.0 is TOPMOST. " + (
+            "AMENDED 2026-10-05 (operator-ratified) prose. " * 140
+        )
+        item = "**Install the critic.** " + ("Carried design rulings that bind the build. " * 70)
+        fronts = "\n".join(
+            [
+                "- **handoff system** — " + ("preserve the session's model. " * 40),
+                "- **ghi triage** — " + ("read the live issue queue. " * 40),
+                "- **adr/obpi campaign** — " + ("honor the lowest feature ADR. " * 40),
+                "- **new R&D** — " + ("the headwater of most design. " * 40),
+                "",
+                "### Three-pillars continuity — 2026-09-19",
+                "Repairs delivered; " * 60,
+            ]
+        )
+        campaign = {
+            "path": "docs/governance/build-to-1.0-campaign-2026-09-20.md",
+            "done": 7,
+            "total": 30,
+            "next_items": [item, item, item],
+            "topmost": topmost,
+            "workflow_fronts": fronts,
+        }
+        rendered = self.mod.render(self._base_state(campaign), self.now)
+        section = self._campaign_section(rendered)
+        self.assertLess(
+            len(section.encode("utf-8")),
+            self.CAP,
+            f"campaign block is {len(section.encode('utf-8'))} bytes; it must be bounded",
+        )
+        self.assertNotIn(topmost, rendered, "the full Topmost prose must not be injected")
+        self.assertNotIn(item, rendered, "a full checkbox paragraph must not be injected")
+        self.assertIn("7/30 checklist items done", section)
+        self.assertIn("ADR-0.35.0 is TOPMOST.", section)
+        for front in ("handoff system", "ghi triage", "adr/obpi campaign", "new R&D"):
+            self.assertIn(front, section)
+        self.assertIn("#workflow-fronts", section)
+        self.assertIn("3 open checkboxes", section)
+        self.assertIn("the campaign governs", section)
+
+    def test_short_topmost_still_renders_whole(self):
+        campaign = {
+            "path": "docs/governance/build-to-1.0-campaign-2026-09-20.md",
+            "done": 1,
+            "total": 4,
+            "next_items": ["0.2 Source + Config-First AST guard"],
+            "topmost": "ADR-0.0.73 meta-audit (0/7) -> B.1 rebuild",
+            "workflow_fronts": "- **handoff system** — short.\n- **ghi triage** — short.",
+        }
+        rendered = self.mod.render(self._base_state(campaign), self.now)
+        self.assertIn(
+            "Topmost (sequenced): ADR-0.0.73 meta-audit (0/7) -> B.1 rebuild (read § Topmost",
+            rendered,
+            "a short Topmost renders whole, with no truncation mark, then the pointer",
+        )
+        self.assertIn("0.2 Source + Config-First AST guard", rendered)
+        self.assertNotIn("…", rendered)
+
+    def test_long_prose_stops_at_its_first_sentence(self):
+        topmost = "ADR-0.35.0 is TOPMOST. AMENDED 2026-10-05 (operator-ratified) and more. " * 4
+        campaign = {
+            "path": "docs/governance/build-to-1.0-campaign-2026-09-20.md",
+            "done": 1,
+            "total": 4,
+            "next_items": [],
+            "topmost": topmost,
+            "workflow_fronts": "",
+        }
+        rendered = self.mod.render(self._base_state(campaign), self.now)
+        self.assertIn("Topmost (sequenced): ADR-0.35.0 is TOPMOST. (read § Topmost", rendered)
+        self.assertNotIn("AMENDED 2026-10-05", rendered, "the second sentence is not injected")
+
+    def test_long_prose_with_no_sentence_break_is_truncated_with_a_mark(self):
+        item = "checkbox " * 40  # 360 characters, no sentence break
+        campaign = {
+            "path": "docs/governance/build-to-1.0-campaign-2026-09-20.md",
+            "done": 1,
+            "total": 4,
+            "next_items": [item],
+            "topmost": None,
+            "workflow_fronts": "",
+        }
+        rendered = self.mod.render(self._base_state(campaign), self.now)
+        self.assertNotIn(item.strip(), rendered, "the full checkbox is not injected")
+        line = next(ln for ln in rendered.splitlines() if ln.startswith("- Next (document order"))
+        self.assertTrue(line.endswith(" …"), line)
+        head = line.split(": ", 1)[1]
+        self.assertLessEqual(len(head), self.mod.CAMPAIGN_CHECKBOX_HEAD_CHARS + 2)
+        self.assertIn("checkbox checkbox", head)
+
+    def test_campaign_head_flattens_whitespace_and_keeps_short_text_whole(self):
+        head = self.mod._campaign_head("line one\n   line two", 100)
+        self.assertEqual(head, "line one line two")
+
+
 class TestCollectObpiLocks(unittest.TestCase):
     """Defect 5: SessionStart orientation reaps past-TTL locks and surfaces
     held ones — the auto-reap cadence token-block-discipline § Sub-Invariant 4

@@ -240,6 +240,32 @@ def _campaign_adr_refs(topmost: str | None, limit: int = CAMPAIGN_ADR_REF_LIMIT)
     return list(ordered)[:limit]
 
 
+CAMPAIGN_TOPMOST_HEAD_CHARS = 240
+CAMPAIGN_CHECKBOX_HEAD_CHARS = 120
+_CAMPAIGN_FRONT_NAME_RE = re.compile(r"^- \*\*(.+?)\*\*", re.MULTILINE)
+
+
+def _campaign_head(text: str, limit: int = CAMPAIGN_TOPMOST_HEAD_CHARS) -> str:
+    """Return the first sentence of ``text``, or its first ``limit`` characters.
+
+    The orientation points at the plan; it does not reproduce it. A Topmost
+    line or checkbox is amendment history, and its head is enough to name the
+    item a session is oriented to (GHI #1242).
+    """
+    flat = " ".join(text.split())
+    end = flat.find(". ")
+    if 0 <= end < limit:
+        return flat[: end + 1]
+    if len(flat) <= limit:
+        return flat
+    return flat[:limit].rstrip() + " …"
+
+
+def _campaign_front_names(fronts: str | None) -> list[str]:
+    """Return the bold front names from a ``## Workflow fronts`` section body."""
+    return _CAMPAIGN_FRONT_NAME_RE.findall(fronts or "")
+
+
 def classify_freshness(now: datetime, ts: datetime) -> str:
     """Map handoff age onto the gz-session-handoff bucket vocabulary."""
     age = now - ts
@@ -1201,11 +1227,19 @@ def render(state: dict, now: datetime) -> str:
     if isinstance(campaign, dict):
         done = campaign.get("done", 0)
         total = campaign.get("total", 0)
-        lines.append(f"- Plan: `{campaign.get('path', '?')}` — {done}/{total} checklist items done")
+        plan_path = campaign.get("path", "?")
+        lines.append(f"- Plan: `{plan_path}` — {done}/{total} checklist items done")
         next_items = campaign.get("next_items") or []
         topmost = campaign.get("topmost")
+        # Pointers, not prose (campaign § Amendments 2026-10-04 (2), item 4
+        # "Load"; GHI #1242): the Topmost line, the checkboxes and the fronts
+        # section are amendment history that grows with the plan, and the
+        # block injected at every session start is bounded independent of it.
         if topmost:
-            lines.append(f"- Topmost (sequenced): {topmost}")
+            lines.append(
+                f"- Topmost (sequenced): {_campaign_head(topmost)} "
+                f"(read § Topmost in `{plan_path}`)"
+            )
             live_counts = campaign.get("live_adr_counts") or []
             if live_counts:
                 rendered = " · ".join(
@@ -1218,18 +1252,35 @@ def render(state: dict, now: datetime) -> str:
                     f"count quoted in the line above, which is transcribed prose): {rendered}"
                 )
             if next_items:
+                heads = "; ".join(
+                    _campaign_head(item, CAMPAIGN_CHECKBOX_HEAD_CHARS) for item in next_items
+                )
                 lines.append(
-                    "- Open checkboxes (document order, NOT the pull order): "
-                    + "; ".join(next_items)
+                    f"- {len(next_items)} open checkboxes (document order, NOT the pull "
+                    f"order; read § 6 The Queue in the plan): {heads}"
                 )
         else:
             for item in next_items:
-                lines.append(f"- Next (document order; prose sequencing governs): {item}")
+                lines.append(
+                    "- Next (document order; prose sequencing governs): "
+                    f"{_campaign_head(item, CAMPAIGN_CHECKBOX_HEAD_CHARS)}"
+                )
         lines.append(f"- {CAMPAIGN_AUTHORITY_NOTE}")
         lines.append("")
         lines.append("### Workflow fronts — declared campaign context")
-        lines.append(f"Source: `{campaign.get('path', '?')}#workflow-fronts`")
-        lines.append(campaign.get("workflow_fronts") or "(Workflow fronts unavailable in campaign)")
+        lines.append(
+            f"Source: `{plan_path}#workflow-fronts` (read the fronts there; names only here)"
+        )
+        fronts_body = campaign.get("workflow_fronts") or ""
+        front_names = _campaign_front_names(fronts_body)
+        if front_names:
+            lines.append("- Fronts: " + ", ".join(front_names))
+        elif fronts_body.strip():
+            # A fronts section with no bold names still reaches the digest,
+            # as a bounded head, so an edit to it is visible at boot.
+            lines.append(f"- Fronts: {_campaign_head(fronts_body)}")
+        else:
+            lines.append("(Workflow fronts unavailable in campaign)")
     else:
         lines.append(
             "- (no ACTIVE campaign found — flag this to the operator; "
