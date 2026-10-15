@@ -7581,592 +7581,2152 @@
   {
    "text": "### Stage 5: Sync And Account",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "### Stage 5: Sync And Account",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "After attestation:",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "After attestation:",
+     "class": "structure",
+     "explains": null,
+     "reason": "lead-in"
+    }
+   ]
   },
   {
    "text": "**Two-sync pattern:** Stage 5 uses two git-sync cycles. The `gz obpi complete`\ncommand atomically writes the attestation to the ADR-level audit ledger, updates\nthe brief to Completed, emits the completion receipt, and surrenders the lock.\nGit-sync #1 commits these governance edits, the Step 4b brief section and marker\ncleanup. Git-sync #2 commits\nthe reconcile output and ADR status refresh.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S5-001",
+     "quote": "**Two-sync pattern:** Stage 5 uses two git-sync cycles.",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "**Two-sync pattern:** Stage 5 uses two git-sync cycles.",
+     "reworded": null
+    },
+    {
+     "id": "S5-002",
+     "quote": "Git-sync #1 commits these governance edits, the Step 4b brief section and marker\ncleanup.",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "Git-sync #1 commits these governance edits, the Step 4b brief section and marker\ncleanup.",
+     "reworded": null
+    },
+    {
+     "id": "S5-003",
+     "quote": "Git-sync #2 commits\nthe reconcile output and ADR status refresh.",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "Git-sync #2 commits\nthe reconcile output and ADR status refresh.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "The `gz obpi complete`\ncommand atomically writes the attestation to the ADR-level audit ledger, updates\nthe brief to Completed, emits the completion receipt, and surrenders the lock.",
+     "class": "rationale",
+     "explains": "S5-015",
+     "reason": "what complete does"
+    }
+   ]
   },
   {
    "text": "0. **Pre-flight checklist (MANDATORY, GHI #195)** — `uv run gz obpi precomplete {OBPI-SLUG}`\n   Mechanical verification of all Stage 5 preconditions, each with a named\n   remediation: brief authored readiness, reconcile idempotence (catches GHI\n   #193 drift before it bites), lock ownership, ARB receipts passed (the newest\n   lint/typecheck/unittest receipt since the lock claim each records exit 0 —\n   GHI #889), plan-audit\n   receipt PASS, brief-heading shape, scoped behave REQ coverage, and\n   **task-envelope coherence** (GHI #590 — early warning that the OBPI would\n   close with residue on any of the three signatures: Sig (a) a worklog event\n   under an active TASK with no `task_id`, Sig (b) `seq=01`-only without a\n   `req_atomic:` exemption, Sig (c) layer-drift across discovery channels;\n   remediation: subdivide labor via `uv run gz task start --seq next` or declare\n   `req_atomic:` (Sig b), attribute worklog events with a `task_id` (Sig a),\n   reconcile divergent TASK ids across channels (Sig c) —\n   `uv run gz task envelope diagnose {OBPI-SLUG}`), and **current acceptance\n   proof plus independent closure** (GHI #985). The acceptance records are\n   already in the ledger before this check; Markdown review history does not\n   supply the current verdict.\n   **If exit code is non-zero, do NOT invoke `gz obpi complete` — fix each\n   reported precondition first using the named remediation.** Exit 0 here is\n   the gate that prevents the reactive-triage class of failure (the original\n   OBPI-04 Stage 5 cost ~3 turns to discover the same gaps one at a time).\n   Note: `gz obpi complete` **independently re-enforces** the task-envelope,\n   REQ-coverage, and Step-4b gates fail-closed (precomplete is the bypassable\n   pre-flight; the completion command is the chokepoint), so the residue cannot\n   reach `main` even if this step is skipped. `gz check` then re-audits the\n   captured verdict repo-wide via `gz validate --adversarial-validation`.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S5-004",
+     "quote": "0. **Pre-flight checklist (MANDATORY, GHI #195)** — `uv run gz obpi precomplete {OBPI-SLUG}`",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": "GHI #195",
+     "delivered_span": "0. **Pre-flight checklist (MANDATORY, GHI #195)** — `uv run gz obpi precomplete {OBPI-SLUG}`",
+     "reworded": null
+    },
+    {
+     "id": "S5-005",
+     "quote": "**If exit code is non-zero, do NOT invoke `gz obpi complete` — fix each\n   reported precondition first using the named remediation.**",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "**If exit code is non-zero, do NOT invoke `gz obpi complete` — fix each\n   reported precondition first using the named remediation.**",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "Mechanical verification of all Stage 5 preconditions, each with a named\n   remediation: brief authored readiness, reconcile idempotence (catches GHI\n   #193 drift before it bites), lock ownership, ARB receipts passed (the newest\n   lint/typecheck/unittest receipt since the lock claim each records exit 0 —\n   GHI #889), plan-audit\n   receipt PASS, brief-heading shape, scoped behave REQ coverage, and\n   **task-envelope coherence** (GHI #590 — early warning that the OBPI would\n   close with residue on any of the three signatures: Sig (a) a worklog event\n   under an active TASK with no `task_id`, Sig (b) `seq=01`-only without a\n   `req_atomic:` exemption, Sig (c) layer-drift across discovery channels;\n   remediation: subdivide labor via `uv run gz task start --seq next` or declare\n   `req_atomic:` (Sig b), attribute worklog events with a `task_id` (Sig a),\n   reconcile divergent TASK ids across channels (Sig c) —\n   `uv run gz task envelope diagnose {OBPI-SLUG}`), and **current acceptance\n   proof plus independent closure** (GHI #985). The acceptance records are\n   already in the ledger before this check; Markdown review history does not\n   supply the current verdict.",
+     "class": "rationale",
+     "explains": "S5-004",
+     "reason": "what precomplete checks"
+    },
+    {
+     "quote": "Exit 0 here is\n   the gate that prevents the reactive-triage class of failure (the original\n   OBPI-04 Stage 5 cost ~3 turns to discover the same gaps one at a time).",
+     "class": "rationale",
+     "explains": "S5-005",
+     "reason": "why exit 0 is the gate"
+    },
+    {
+     "quote": "Note: `gz obpi complete` **independently re-enforces** the task-envelope,\n   REQ-coverage, and Step-4b gates fail-closed (precomplete is the bypassable\n   pre-flight; the completion command is the chokepoint), so the residue cannot\n   reach `main` even if this step is skipped. `gz check` then re-audits the\n   captured verdict repo-wide via `gz validate --adversarial-validation`.",
+     "class": "rationale",
+     "explains": "S5-004",
+     "reason": "what completion re-enforces"
+    }
+   ]
   },
   {
    "text": "1. **Closure-narrative gate (MANDATORY, GHI #267)** — Before invoking `gz obpi complete`, present the resolved Implementation Summary and Key Proof prose to the operator inline, in the exact form that will be written to the brief. This is the brief-narrative analog of the Stage 4 evidence gate: the brief is Layer 1 canon authorship surface, and a future reader six months from now will read the brief, not the ledger event. Empty or placeholder prose is a defect — `gz obpi complete` fails closed on it (exit 1, no ledger event, no brief mutation), but the skill must catch it before the CLI does.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S5-006",
+     "quote": "1. **Closure-narrative gate (MANDATORY, GHI #267)** — Before invoking `gz obpi complete`, present the resolved Implementation Summary and Key Proof prose to the operator inline, in the exact form that will be written to the brief.",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": "GHI #267",
+     "delivered_span": "1. **Closure-narrative gate (MANDATORY, GHI #267)** — Before invoking `gz obpi complete`, present the resolved Implementation Summary and Key Proof prose to the operator inline, in the exact form that will be written to the brief.",
+     "reworded": null
+    },
+    {
+     "id": "S5-007",
+     "quote": "Empty or placeholder prose is a defect — `gz obpi complete` fails closed on it (exit 1, no ledger event, no brief mutation), but the skill must catch it before the CLI does.",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "Empty or placeholder prose is a defect — `gz obpi complete` fails closed on it (exit 1, no ledger event, no brief mutation), but the skill must catch it before the CLI does.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "This is the brief-narrative analog of the Stage 4 evidence gate: the brief is Layer 1 canon authorship surface, and a future reader six months from now will read the brief, not the ledger event.",
+     "class": "rationale",
+     "explains": "S5-006",
+     "reason": "why the prose is previewed"
+    }
+   ]
   },
   {
    "text": "   **Required walkthrough format:**",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "   **Required walkthrough format:**",
+     "class": "structure",
+     "explains": null,
+     "reason": "label"
+    }
+   ]
   },
   {
    "text": "   ```\n   ## Stage 5: Closure Narrative (preview before gz obpi complete)",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S5-008",
+     "quote": "   ```\n   ## Stage 5: Closure Narrative (preview before gz obpi complete)",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "   ```\n   ## Stage 5: Closure Narrative (preview before gz obpi complete)",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "   **Implementation Summary** (will be written to ### Implementation Summary):",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S5-009",
+     "quote": "   **Implementation Summary** (will be written to ### Implementation Summary):",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "   **Implementation Summary** (will be written to ### Implementation Summary):",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "   <verbatim text — bulleted \"- Key: value\" form preferred so the\n    `_has_substantive_implementation_summary` check accepts it>",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S5-010",
+     "quote": "   <verbatim text — bulleted \"- Key: value\" form preferred so the\n    `_has_substantive_implementation_summary` check accepts it>",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "   <verbatim text — bulleted \"- Key: value\" form preferred so the\n    `_has_substantive_implementation_summary` check accepts it>",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "   **Key Proof** (will be written to ### Key Proof):",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S5-011",
+     "quote": "   **Key Proof** (will be written to ### Key Proof):",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "   **Key Proof** (will be written to ### Key Proof):",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "   <verbatim text — at least one concrete command + observed output,\n    with ARB receipt ID(s) cited inline per AGENTS.md § Attestation>",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S5-012",
+     "quote": "   <verbatim text — at least one concrete command + observed output,\n    with ARB receipt ID(s) cited inline per AGENTS.md § Attestation>",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "   <verbatim text — at least one concrete command + observed output,\n    with ARB receipt ID(s) cited inline per AGENTS.md § Attestation>",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "   **Source:** [--implementation-summary flag | existing brief body at <line range>]\n   **Source:** [--key-proof flag | existing brief body at <line range>]\n   ```",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S5-013",
+     "quote": "   **Source:** [--implementation-summary flag | existing brief body at <line range>]\n   **Source:** [--key-proof flag | existing brief body at <line range>]\n   ```",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "   **Source:** [--implementation-summary flag | existing brief body at <line range>]\n   **Source:** [--key-proof flag | existing brief body at <line range>]\n   ```",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "   The operator already attested in Stage 4, but the prose is the artifact that survives the ledger event — name it explicitly so the operator can refuse before write.",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "   The operator already attested in Stage 4, but the prose is the artifact that survives the ledger event — name it explicitly so the operator can refuse before write.",
+     "class": "rationale",
+     "explains": "S5-006",
+     "reason": "why the prose is named before write"
+    }
+   ]
   },
   {
    "text": "   If the operator silently accepts (no objection), proceed. If they reject, return to authoring the brief sections directly, then re-present.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S5-014",
+     "quote": "   If the operator silently accepts (no objection), proceed. If they reject, return to authoring the brief sections directly, then re-present.",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "   If the operator silently accepts (no objection), proceed. If they reject, return to authoring the brief sections directly, then re-present.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "2. **Complete OBPI atomically** — `uv run gz obpi complete {OBPI-SLUG} --attestor {attestor} --attestation-text \"{text}\" [--implementation-summary \"{summary}\"] [--key-proof \"{proof}\"]`\n   This single command atomically: validates brief state, writes attestation to the\n   ADR-level audit ledger, updates the brief (status, evidence sections, human\n   attestation), and emits the completion receipt to the main ledger. If any step\n   fails, all changes are rolled back — no partial writes.\n   - Pass the operator's attestation phrase (e.g. \"attest completed\") verbatim through `--attestation-text`, enriched per `AGENTS.md` § Attestation (em-dash + session evidence + receipt IDs). The operator's `attest completed` (or equivalent) IS the attestation — it is not a request for more instructions. Do not stop the turn to ask the operator to run the command themselves.\n   - Use `--implementation-summary` and `--key-proof` to supply evidence sections.\n     If omitted, the command reads existing content from the brief — but it MUST\n     be substantive (non-empty, non-placeholder, satisfies\n     `_has_substantive_implementation_summary` / `_has_substantive_key_proof`),\n     or the command exits 1 with a recovery hint. The Step 1 walkthrough above\n     is what catches this before the CLI does.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S5-015",
+     "quote": "2. **Complete OBPI atomically** — `uv run gz obpi complete {OBPI-SLUG} --attestor {attestor} --attestation-text \"{text}\" [--implementation-summary \"{summary}\"] [--key-proof \"{proof}\"]`",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "2. **Complete OBPI atomically** — `uv run gz obpi complete {OBPI-SLUG} --attestor {attestor} --attestation-text \"{text}\" [--implementation-summary \"{summary}\"] [--key-proof \"{proof}\"]`",
+     "reworded": null
+    },
+    {
+     "id": "S5-016",
+     "quote": "- Pass the operator's attestation phrase (e.g. \"attest completed\") verbatim through `--attestation-text`, enriched per `AGENTS.md` § Attestation (em-dash + session evidence + receipt IDs). The operator's `attest completed` (or equivalent) IS the attestation — it is not a request for more instructions. Do not stop the turn to ask the operator to run the command themselves.",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "- Pass the operator's attestation phrase (e.g. \"attest completed\") verbatim through `--attestation-text`, enriched per `AGENTS.md` § Attestation (em-dash + session evidence + receipt IDs). The operator's `attest completed` (or equivalent) IS the attestation — it is not a request for more instructions. Do not stop the turn to ask the operator to run the command themselves.",
+     "reworded": null
+    },
+    {
+     "id": "S5-017",
+     "quote": "- Use `--implementation-summary` and `--key-proof` to supply evidence sections.",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "- Use `--implementation-summary` and `--key-proof` to supply evidence sections.",
+     "reworded": null
+    },
+    {
+     "id": "S5-018",
+     "quote": "If omitted, the command reads existing content from the brief — but it MUST\n     be substantive (non-empty, non-placeholder, satisfies\n     `_has_substantive_implementation_summary` / `_has_substantive_key_proof`),\n     or the command exits 1 with a recovery hint.",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "If omitted, the command reads existing content from the brief — but it MUST\n     be substantive (non-empty, non-placeholder, satisfies\n     `_has_substantive_implementation_summary` / `_has_substantive_key_proof`),\n     or the command exits 1 with a recovery hint.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "This single command atomically: validates brief state, writes attestation to the\n   ADR-level audit ledger, updates the brief (status, evidence sections, human\n   attestation), and emits the completion receipt to the main ledger. If any step\n   fails, all changes are rolled back — no partial writes.",
+     "class": "rationale",
+     "explains": "S5-015",
+     "reason": "what the command does atomically"
+    },
+    {
+     "quote": "The Step 1 walkthrough above\n     is what catches this before the CLI does.",
+     "class": "rationale",
+     "explains": "S5-006",
+     "reason": "the walkthrough's purpose"
+    }
+   ]
   },
   {
    "text": "   **Gate-5 attestation.** The operator's Stage-4 verbatim attestation\n   (e.g. \"attest completed\"), relayed via `--attestation-text`, IS the\n   Gate-5 attestation for every lane / kind / sensitivity — the completion\n   receipt records `attestation_type: operator-verbatim-conversational`.\n   There is no TTY-typed `ATTEST` ceremony, no `--attestor-present`\n   co-presence proxy, and no PTY launcher: a plain non-TTY `uv run gz obpi\n   complete ...` call from the Bash tool completes the brief. A non-empty\n   `--attestation-text` is required (it IS the attestation); an empty one\n   exits 1. Never hand the invocation back to the operator — they already\n   attested in Stage 4.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S5-019",
+     "quote": "**Gate-5 attestation.** The operator's Stage-4 verbatim attestation\n   (e.g. \"attest completed\"), relayed via `--attestation-text`, IS the\n   Gate-5 attestation for every lane / kind / sensitivity — the completion\n   receipt records `attestation_type: operator-verbatim-conversational`.",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": "ADR-0.0.36",
+     "delivered_span": "**Gate-5 attestation.** The operator's Stage-4 verbatim attestation\n   (e.g. \"attest completed\"), relayed via `--attestation-text`, IS the\n   Gate-5 attestation for every lane / kind / sensitivity — the completion\n   receipt records `attestation_type: operator-verbatim-conversational`.",
+     "reworded": null
+    },
+    {
+     "id": "S5-020",
+     "quote": "There is no TTY-typed `ATTEST` ceremony, no `--attestor-present`\n   co-presence proxy, and no PTY launcher: a plain non-TTY `uv run gz obpi\n   complete ...` call from the Bash tool completes the brief.",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "There is no TTY-typed `ATTEST` ceremony, no `--attestor-present`\n   co-presence proxy, and no PTY launcher: a plain non-TTY `uv run gz obpi\n   complete ...` call from the Bash tool completes the brief.",
+     "reworded": null
+    },
+    {
+     "id": "S5-021",
+     "quote": "A non-empty\n   `--attestation-text` is required (it IS the attestation); an empty one\n   exits 1.",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "A non-empty\n   `--attestation-text` is required (it IS the attestation); an empty one\n   exits 1.",
+     "reworded": null
+    },
+    {
+     "id": "S5-022",
+     "quote": "Never hand the invocation back to the operator — they already\n   attested in Stage 4.",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "Never hand the invocation back to the operator — they already\n   attested in Stage 4.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "   **Completion uses the imported current review (GHI #985).** The command\n   derives the accepted adversarial judgment from durable acceptance records\n   after every current obligation and mapped finding clears. Legacy\n   `--adversary-*` arguments remain compatibility/provenance inputs; they cannot\n   replace a missing review, invent approval, or discharge a finding. Preserve\n   the binding tier and observed fallback requirements in Step 4b.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S5-023",
+     "quote": "Legacy\n   `--adversary-*` arguments remain compatibility/provenance inputs; they cannot\n   replace a missing review, invent approval, or discharge a finding.",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": "GHI #985",
+     "delivered_span": "Legacy\n   `--adversary-*` arguments remain compatibility/provenance inputs; they cannot\n   replace a missing review, invent approval, or discharge a finding.",
+     "reworded": null
+    },
+    {
+     "id": "S5-024",
+     "quote": "Preserve\n   the binding tier and observed fallback requirements in Step 4b.",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "Preserve\n   the binding tier and observed fallback requirements in Step 4b.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "**Completion uses the imported current review (GHI #985).** The command\n   derives the accepted adversarial judgment from durable acceptance records\n   after every current obligation and mapped finding clears.",
+     "class": "rationale",
+     "explains": "S5-015",
+     "reason": "what completion derives (GHI #985)"
+    }
+   ]
   },
   {
    "text": "   Operator ruling 2026-09-04 remains verbatim: ***\"refuted is an outcome, but it\n   is an input into if(4a && 4b) pass; else: loop\"***. The loop now preserves the\n   obligation and verified closure. Fix the required behavior or obtain the\n   existing operator ruling for an actual contract boundary amendment, then\n   independently verify the changed proof. A GHI or resolution paragraph alone\n   cannot satisfy a missing obligation. Historical round verdicts remain exact;\n   no authored standing line determines the current acceptance decision.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S5-025",
+     "quote": "Fix the required behavior or obtain the\n   existing operator ruling for an actual contract boundary amendment, then\n   independently verify the changed proof.",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": "operator ruling 2026-09-04",
+     "delivered_span": "Fix the required behavior or obtain the\n   existing operator ruling for an actual contract boundary amendment, then\n   independently verify the changed proof.",
+     "reworded": null
+    },
+    {
+     "id": "S5-026",
+     "quote": "A GHI or resolution paragraph alone\n   cannot satisfy a missing obligation.",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "A GHI or resolution paragraph alone\n   cannot satisfy a missing obligation.",
+     "reworded": null
+    },
+    {
+     "id": "S5-027",
+     "quote": "Historical round verdicts remain exact;\n   no authored standing line determines the current acceptance decision.",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "Historical round verdicts remain exact;\n   no authored standing line determines the current acceptance decision.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "Operator ruling 2026-09-04 remains verbatim: ***\"refuted is an outcome, but it\n   is an input into if(4a && 4b) pass; else: loop\"***. The loop now preserves the\n   obligation and verified closure.",
+     "class": "rationale",
+     "explains": "S5-025",
+     "reason": "the operator's ruling"
+    }
+   ]
   },
   {
    "text": "   ```bash\n   uv run gz obpi complete {OBPI-SLUG} \\\n     --attestor '{attestor}' \\\n     --attestation-text \"$(cat /tmp/obpi-attestation.txt)\" \\\n     --implementation-summary \"$(cat /tmp/obpi-summary.md)\" \\\n     --key-proof \"$(cat /tmp/obpi-keyproof.md)\" \\\n     [--adversary-job-id '{job-id}'] \\\n     [--refuted-claim \"$(cat /tmp/obpi-refuted-claim.txt)\"] \\\n     [--adversary-resolution \"$(cat /tmp/obpi-adversary-resolution.txt)\"]\n   ```",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S5-028",
+     "quote": "   ```bash\n   uv run gz obpi complete {OBPI-SLUG} \\\n     --attestor '{attestor}' \\\n     --attestation-text \"$(cat /tmp/obpi-attestation.txt)\" \\\n     --implementation-summary \"$(cat /tmp/obpi-summary.md)\" \\\n     --key-proof \"$(cat /tmp/obpi-keyproof.md)\" \\\n     [--adversary-job-id '{job-id}'] \\\n     [--refuted-claim \"$(cat /tmp/obpi-refuted-claim.txt)\"] \\\n     [--adversary-resolution \"$(cat /tmp/obpi-adversary-resolution.txt)\"]\n   ```",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "   ```bash\n   uv run gz obpi complete {OBPI-SLUG} \\\n     --attestor '{attestor}' \\\n     --attestation-text \"$(cat /tmp/obpi-attestation.txt)\" \\\n     --implementation-summary \"$(cat /tmp/obpi-summary.md)\" \\\n     --key-proof \"$(cat /tmp/obpi-keyproof.md)\" \\\n     [--adversary-job-id '{job-id}'] \\\n     [--refuted-claim \"$(cat /tmp/obpi-refuted-claim.txt)\"] \\\n     [--adversary-resolution \"$(cat /tmp/obpi-adversary-resolution.txt)\"]\n   ```",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "   Write long `--attestation-text` / `--implementation-summary` /\n   `--key-proof` payloads to `/tmp/*.txt|md` first to keep the invocation\n   tractable.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S5-029",
+     "quote": "   Write long `--attestation-text` / `--implementation-summary` /\n   `--key-proof` payloads to `/tmp/*.txt|md` first to keep the invocation\n   tractable.",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "   Write long `--attestation-text` / `--implementation-summary` /\n   `--key-proof` payloads to `/tmp/*.txt|md` first to keep the invocation\n   tractable.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "3. **Confirm the lock is gone — `gz obpi complete` released it.** After its\n   atomic transaction commits, `gz obpi complete` writes the completion register\n   entry (`.gzkit/locks/exchange/<ts>-{OBPI-SLUG}-complete.md`) and, if a lock is\n   held, deletes it and emits `obpi_lock_released` citing that entry (GHI #619,\n   `_surrender_lock_at_completion` in `src/gzkit/commands/obpi_complete.py`). Run\n   `uv run gz obpi lock list` to confirm. Do not run `gz obpi lock release`\n   afterwards; it prints `No lock found`. If the register entry could not be\n   written, the lock is left for TTL reaping. Report that to the operator, and\n   never `--abandon` a completed OBPI.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S5-030",
+     "quote": "3. **Confirm the lock is gone — `gz obpi complete` released it.**",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": "GHI #619",
+     "delivered_span": "3. **Confirm the lock is gone — `gz obpi complete` released it.**",
+     "reworded": null
+    },
+    {
+     "id": "S5-031",
+     "quote": "Run\n   `uv run gz obpi lock list` to confirm.",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "Run\n   `uv run gz obpi lock list` to confirm.",
+     "reworded": null
+    },
+    {
+     "id": "S5-032",
+     "quote": "Do not run `gz obpi lock release`\n   afterwards; it prints `No lock found`.",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "Do not run `gz obpi lock release`\n   afterwards; it prints `No lock found`.",
+     "reworded": null
+    },
+    {
+     "id": "S5-033",
+     "quote": "If the register entry could not be\n   written, the lock is left for TTL reaping. Report that to the operator, and\n   never `--abandon` a completed OBPI.",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "If the register entry could not be\n   written, the lock is left for TTL reaping. Report that to the operator, and\n   never `--abandon` a completed OBPI.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "After its\n   atomic transaction commits, `gz obpi complete` writes the completion register\n   entry (`.gzkit/locks/exchange/<ts>-{OBPI-SLUG}-complete.md`) and, if a lock is\n   held, deletes it and emits `obpi_lock_released` citing that entry (GHI #619,\n   `_surrender_lock_at_completion` in `src/gzkit/commands/obpi_complete.py`).",
+     "class": "rationale",
+     "explains": "S5-030",
+     "reason": "how completion surrenders the lock"
+    }
+   ]
   },
   {
    "text": "3b. **Exit accounting (GHI #1185; operator ruling 2026-10-10, \"1185 now\")** —\n   `uv run gz airlock out --target {OBPI-SLUG}`. Books the `airlock_out` event for\n   this transit, holding the files the transit changed against the brief's Allowed\n   Paths and reporting each one outside them. Run it here, before git-sync #1,\n   while the tree still holds the transit's changes. The exit reports and never\n   refuses; the refusal on an out-of-scope file is `gz obpi complete`'s (step 2,\n   GHI #1181). A finding here after a completion that passed is a defect in one of\n   the two comparisons, not a reason to re-run completion.\n3a. **Heavy lane: author the brief's `### Step 4b — Independent Adversarial\n   Validation` section** under `## Evidence`. `gz obpi complete` does not write it,\n   and `gz validate --adversarial-validation` (in `gz check`, so the pre-push gate)\n   fails a Completed or Validated heavy-lane brief without it. It carries the\n   adversary's identity and tier, one row per round (ARB receipt, verdict, claims\n   broken), and how each finding was resolved, citing operator rulings verbatim.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S5-034",
+     "quote": "3b. **Exit accounting (GHI #1185; operator ruling 2026-10-10, \"1185 now\")** —\n   `uv run gz airlock out --target {OBPI-SLUG}`.",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": "GHI #1185",
+     "delivered_span": "3b. **Exit accounting (GHI #1185; operator ruling 2026-10-10, \"1185 now\")** —\n   `uv run gz airlock out --target {OBPI-SLUG}`.",
+     "reworded": null
+    },
+    {
+     "id": "S5-035",
+     "quote": "Run it here, before git-sync #1,\n   while the tree still holds the transit's changes.",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "Run it here, before git-sync #1,\n   while the tree still holds the transit's changes.",
+     "reworded": null
+    },
+    {
+     "id": "S5-036",
+     "quote": "3a. **Heavy lane: author the brief's `### Step 4b — Independent Adversarial\n   Validation` section** under `## Evidence`.",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "3a. **Heavy lane: author the brief's `### Step 4b — Independent Adversarial\n   Validation` section** under `## Evidence`.",
+     "reworded": null
+    },
+    {
+     "id": "S5-037",
+     "quote": "It carries the\n   adversary's identity and tier, one row per round (ARB receipt, verdict, claims\n   broken), and how each finding was resolved, citing operator rulings verbatim.",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "It carries the\n   adversary's identity and tier, one row per round (ARB receipt, verdict, claims\n   broken), and how each finding was resolved, citing operator rulings verbatim.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "Books the `airlock_out` event for\n   this transit, holding the files the transit changed against the brief's Allowed\n   Paths and reporting each one outside them.",
+     "class": "rationale",
+     "explains": "S5-034",
+     "reason": "what the exit books"
+    },
+    {
+     "quote": "The exit reports and never\n   refuses; the refusal on an out-of-scope file is `gz obpi complete`'s (step 2,\n   GHI #1181). A finding here after a completion that passed is a defect in one of\n   the two comparisons, not a reason to re-run completion.",
+     "class": "rationale",
+     "explains": "S5-034",
+     "reason": "what the exit does not do"
+    },
+    {
+     "quote": "`gz obpi complete` does not write it,\n   and `gz validate --adversarial-validation` (in `gz check`, so the pre-push gate)\n   fails a Completed or Validated heavy-lane brief without it.",
+     "class": "rationale",
+     "explains": "S5-036",
+     "reason": "who writes it and what fails without it"
+    }
+   ]
   },
   {
    "text": "4. Remove `.claude/plans/.pipeline-active-{OBPI-ID}.json` if it was created.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S5-038",
+     "quote": "4. Remove `.claude/plans/.pipeline-active-{OBPI-ID}.json` if it was created.",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "4. Remove `.claude/plans/.pipeline-active-{OBPI-ID}.json` if it was created.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "5. Remove `.claude/plans/.pipeline-active.json` only when it still points at\n   the same OBPI as the per-OBPI marker.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S5-039",
+     "quote": "5. Remove `.claude/plans/.pipeline-active.json` only when it still points at\n   the same OBPI as the per-OBPI marker.",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "5. Remove `.claude/plans/.pipeline-active.json` only when it still points at\n   the same OBPI as the per-OBPI marker.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "6. **Git-sync #1** — `uv run gz git-sync --apply`\n   Commits all governance edits from steps 2-5. Tree is now clean.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S5-040",
+     "quote": "6. **Git-sync #1** — `uv run gz git-sync --apply`\n   Commits all governance edits from steps 2-5. Tree is now clean.",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "6. **Git-sync #1** — `uv run gz git-sync --apply`\n   Commits all governance edits from steps 2-5. Tree is now clean.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "7. Run `uv run gz obpi sync {OBPI-SLUG}` to confirm receipt and brief agree.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S5-041",
+     "quote": "7. Run `uv run gz obpi sync {OBPI-SLUG}` to confirm receipt and brief agree.",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "7. Run `uv run gz obpi sync {OBPI-SLUG}` to confirm receipt and brief agree.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "8. Run `uv run gz adr status {PARENT-ADR} --json` so the parent ADR view\n   reflects the reconciled OBPI state.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S5-042",
+     "quote": "8. Run `uv run gz adr status {PARENT-ADR} --json` so the parent ADR view\n   reflects the reconciled OBPI state.",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "8. Run `uv run gz adr status {PARENT-ADR} --json` so the parent ADR view\n   reflects the reconciled OBPI state.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "9. **Git-sync #2** — `uv run gz git-sync --apply`\n   Commits the reconcile output (step 7) and ADR status refresh (step 8).",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S5-043",
+     "quote": "9. **Git-sync #2** — `uv run gz git-sync --apply`\n   Commits the reconcile output (step 7) and ADR status refresh (step 8).",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "9. **Git-sync #2** — `uv run gz git-sync --apply`\n   Commits the reconcile output (step 7) and ADR status refresh (step 8).",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "10. Author the session handoff with `/gz-session-handoff`. Its \"Pending Work /\n    Open Loops\" names the remaining parent-ADR OBPIs and any deferred follow-up.\n    The completion register entry from step 3 is the lock's exchange record, not\n    this handoff.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "S5-044",
+     "quote": "10. Author the session handoff with `/gz-session-handoff`. Its \"Pending Work /\n    Open Loops\" names the remaining parent-ADR OBPIs and any deferred follow-up.\n    The completion register entry from step 3 is the lock's exchange record, not\n    this handoff.",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "10. Author the session handoff with `/gz-session-handoff`. Its \"Pending Work /\n    Open Loops\" names the remaining parent-ADR OBPIs and any deferred follow-up.\n    The completion register entry from step 3 is the lock's exchange record, not\n    this handoff.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "**GHI closure discipline (cross-reference):** When a GHI is closed as part of\npipeline execution or handoff, apply `ghi-close` v2.4.0's dead-letter doctrine:\nevery close MUST cite a real, registered destination (commit SHA, ADR ID visible\nin `gz adr report`, OBPI brief ID, or higher-numbered open GHI). A GHI closed\nwith a vague route-promise (\"should become an ADR\", \"the operator can handle this\nlater\") is a dead-letter and is forbidden. If no destination exists yet, leave the\nGHI open with a blocker comment naming the next concrete operator action. See\n`.gzkit/skills/ghi-close/SKILL.md` § Doctrine — NEVER, EVER, EVER dead-letter a\nGHI for the binding rule.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "S5-045",
+     "quote": "**GHI closure discipline (cross-reference):** When a GHI is closed as part of\npipeline execution or handoff, apply `ghi-close` v2.4.0's dead-letter doctrine:\nevery close MUST cite a real, registered destination (commit SHA, ADR ID visible\nin `gz adr report`, OBPI brief ID, or higher-numbered open GHI).",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "**GHI closure discipline (cross-reference):** When a GHI is closed as part of\npipeline execution or handoff, apply `ghi-close` v2.4.0's dead-letter doctrine:\nevery close MUST cite a real, registered destination (commit SHA, ADR ID visible\nin `gz adr report`, OBPI brief ID, or higher-numbered open GHI).",
+     "reworded": null
+    },
+    {
+     "id": "S5-046",
+     "quote": "A GHI closed\nwith a vague route-promise (\"should become an ADR\", \"the operator can handle this\nlater\") is a dead-letter and is forbidden.",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "A GHI closed\nwith a vague route-promise (\"should become an ADR\", \"the operator can handle this\nlater\") is a dead-letter and is forbidden.",
+     "reworded": null
+    },
+    {
+     "id": "S5-047",
+     "quote": "If no destination exists yet, leave the\nGHI open with a blocker comment naming the next concrete operator action.",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "If no destination exists yet, leave the\nGHI open with a blocker comment naming the next concrete operator action.",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "See\n`.gzkit/skills/ghi-close/SKILL.md` § Doctrine — NEVER, EVER, EVER dead-letter a\nGHI for the binding rule.",
+     "class": "structure",
+     "explains": null,
+     "reason": "pointer to the ghi-close doctrine"
+    }
+   ]
   },
   {
    "text": "---",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "---",
+     "class": "structure",
+     "explains": null,
+     "reason": "rule"
+    }
+   ]
   },
   {
    "text": "## Gate Friction: Evaluator Escalation (stale brief/OBPI vs. reality)",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "## Gate Friction: Evaluator Escalation (stale brief/OBPI vs. reality)",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "A pipeline gate (Stage 1 reconcile; Stage 5 `precomplete` / `gz obpi complete`\nreconcile-freshness, lock-handoff coupling, or security floor) can block not\nbecause the *work* is wrong but because the *brief/OBPI has drifted from current\nrepo reality* — a stale allowlist, an under-declared coupled surface, a missing\n`sensitivity:` axis, or a plan authored against an earlier tree. The two wrong\nresponses are (a) contorting convention-correct code to satisfy a stale brief,\nand (b) filing a GHI and stalling. **The brief is the artifact that adjusts to\nreality; code that follows established convention is usually right.**",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "T-001",
+     "quote": "**The brief is the artifact that adjusts to\nreality; code that follows established convention is usually right.**",
+     "applies_at": [
+      "stage1",
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "**The brief is the artifact that adjusts to\nreality; code that follows established convention is usually right.**",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "A pipeline gate (Stage 1 reconcile; Stage 5 `precomplete` / `gz obpi complete`\nreconcile-freshness, lock-handoff coupling, or security floor) can block not\nbecause the *work* is wrong but because the *brief/OBPI has drifted from current\nrepo reality* — a stale allowlist, an under-declared coupled surface, a missing\n`sensitivity:` axis, or a plan authored against an earlier tree. The two wrong\nresponses are (a) contorting convention-correct code to satisfy a stale brief,\nand (b) filing a GHI and stalling.",
+     "class": "rationale",
+     "explains": "T-001",
+     "reason": "why a gate can block on a stale brief"
+    }
+   ]
   },
   {
    "text": "When a gate blocks and you suspect the brief — not the code — is stale, run the\n**implementer → evaluator → human-approval** loop instead of working around it:",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-002",
+     "quote": "When a gate blocks and you suspect the brief — not the code — is stale, run the\n**implementer → evaluator → human-approval** loop instead of working around it:",
+     "applies_at": [
+      "stage1",
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "When a gate blocks and you suspect the brief — not the code — is stale, run the\n**implementer → evaluator → human-approval** loop instead of working around it:",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "1. **Dispatch an evaluator agent** (Agent tool; `general-purpose` or a review\n   persona; read-only) with a `Why` naming the suspected staleness and the\n   decision it drives. Ask it to determine, with cited evidence:\n   - The established convention / prior art — how sibling code and sibling\n     briefs handled the *identical* pattern (file placement, allowlist\n     declaration, sensitivity, override precedent).\n   - Whether the brief/OBPI under-declared or mis-declared the surface the gate\n     is blocking on.\n   - Whether the actual change is what the gate fears (e.g. a genuine security\n     change) or a false positive (additive, no new surface introduced).\n   - One concrete recommended resolution.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-003",
+     "quote": "1. **Dispatch an evaluator agent** (Agent tool; `general-purpose` or a review\n   persona; read-only) with a `Why` naming the suspected staleness and the\n   decision it drives. Ask it to determine, with cited evidence:\n   - The established convention / prior art — how sibling code and sibling\n     briefs handled the *identical* pattern (file placement, allowlist\n     declaration, sensitivity, override precedent).\n   - Whether the brief/OBPI under-declared or mis-declared the surface the gate\n     is blocking on.\n   - Whether the actual change is what the gate fears (e.g. a genuine security\n     change) or a false positive (additive, no new surface introduced).\n   - One concrete recommended resolution.",
+     "applies_at": [
+      "stage1",
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "1. **Dispatch an evaluator agent** (Agent tool; `general-purpose` or a review\n   persona; read-only) with a `Why` naming the suspected staleness and the\n   decision it drives. Ask it to determine, with cited evidence:\n   - The established convention / prior art — how sibling code and sibling\n     briefs handled the *identical* pattern (file placement, allowlist\n     declaration, sensitivity, override precedent).\n   - Whether the brief/OBPI under-declared or mis-declared the surface the gate\n     is blocking on.\n   - Whether the actual change is what the gate fears (e.g. a genuine security\n     change) or a false positive (additive, no new surface introduced).\n   - One concrete recommended resolution.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "2. **Make a determination** from the evidence. Do not rubber-stamp — confirm the\n   citations resolve (file paths, line numbers, sibling-brief frontmatter).",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-004",
+     "quote": "2. **Make a determination** from the evidence. Do not rubber-stamp — confirm the\n   citations resolve (file paths, line numbers, sibling-brief frontmatter).",
+     "applies_at": [
+      "stage1",
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "2. **Make a determination** from the evidence. Do not rubber-stamp — confirm the\n   citations resolve (file paths, line numbers, sibling-brief frontmatter).",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "3. **Present the recommendation(s) to the operator** — the determination, the\n   evidence, and the proposed brief/OBPI adjustment (allowlist amendment,\n   sensitivity declaration, override flag + reason). One tight decision with a\n   recommendation, not a re-derivation (operator economy of effort).",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-005",
+     "quote": "3. **Present the recommendation(s) to the operator** — the determination, the\n   evidence, and the proposed brief/OBPI adjustment (allowlist amendment,\n   sensitivity declaration, override flag + reason). One tight decision with a\n   recommendation, not a re-derivation (operator economy of effort).",
+     "applies_at": [
+      "stage1",
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "3. **Present the recommendation(s) to the operator** — the determination, the\n   evidence, and the proposed brief/OBPI adjustment (allowlist amendment,\n   sensitivity declaration, override flag + reason). One tight decision with a\n   recommendation, not a re-derivation (operator economy of effort).",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "4. **On operator approval, adjust the brief/OBPI to fit reality** — amend the\n   allowlist *surgically* (only genuinely-touched coupled surfaces, never the\n   false positives the gate over-flagged), then proceed with the documented\n   override (`--accept-stale-reconciliation --reason '<text>'`,\n   `--accept-security-floor '<reason>'`, etc.). Append an `improvement` insight\n   (Behavior Rule Always #11) capturing the staleness and the adjustment.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-006",
+     "quote": "4. **On operator approval, adjust the brief/OBPI to fit reality** — amend the\n   allowlist *surgically* (only genuinely-touched coupled surfaces, never the\n   false positives the gate over-flagged), then proceed with the documented\n   override (`--accept-stale-reconciliation --reason '<text>'`,\n   `--accept-security-floor '<reason>'`, etc.). Append an `improvement` insight\n   (Behavior Rule Always #11) capturing the staleness and the adjustment.",
+     "applies_at": [
+      "stage1",
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "4. **On operator approval, adjust the brief/OBPI to fit reality** — amend the\n   allowlist *surgically* (only genuinely-touched coupled surfaces, never the\n   false positives the gate over-flagged), then proceed with the documented\n   override (`--accept-stale-reconciliation --reason '<text>'`,\n   `--accept-security-floor '<reason>'`, etc.). Append an `improvement` insight\n   (Behavior Rule Always #11) capturing the staleness and the adjustment.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "This loop keeps the human as final witness (the operator approves the\nadjustment) while letting the system adjust the governance artifact to match\nverified reality — fewer GHIs, less friction, the brief stays honest.",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "This loop keeps the human as final witness (the operator approves the\nadjustment) while letting the system adjust the governance artifact to match\nverified reality — fewer GHIs, less friction, the brief stays honest.",
+     "class": "rationale",
+     "explains": "T-002",
+     "reason": "what the loop preserves"
+    }
+   ]
   },
   {
    "text": "> **Anti-pattern:** silently applying an `--accept-*` override without the\n> evaluator determination + operator approval. The override is the *outcome* of\n> the loop, not a shortcut around it. Equally an anti-pattern: relocating\n> convention-correct code into an awkward home purely to satisfy a stale\n> allowlist — fix the brief, not the code.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-007",
+     "quote": "> **Anti-pattern:** silently applying an `--accept-*` override without the\n> evaluator determination + operator approval. The override is the *outcome* of\n> the loop, not a shortcut around it. Equally an anti-pattern: relocating\n> convention-correct code into an awkward home purely to satisfy a stale\n> allowlist — fix the brief, not the code.",
+     "applies_at": [
+      "stage1",
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "> **Anti-pattern:** silently applying an `--accept-*` override without the\n> evaluator determination + operator approval. The override is the *outcome* of\n> the loop, not a shortcut around it. Equally an anti-pattern: relocating\n> convention-correct code into an awkward home purely to satisfy a stale\n> allowlist — fix the brief, not the code.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "---",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "---",
+     "class": "structure",
+     "explains": null,
+     "reason": "rule"
+    }
+   ]
   },
   {
    "text": "## Error Recovery",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "## Error Recovery",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "| Failure Point | Action |",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "| Failure Point | Action |",
+     "class": "structure",
+     "explains": null,
+     "reason": "table header"
+    }
+   ]
   },
   {
    "text": "|---------------|--------|",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "|---------------|--------|",
+     "class": "structure",
+     "explains": null,
+     "reason": "table separator"
+    }
+   ]
   },
   {
    "text": "| Brief not found | Report error, abort surrender (below), stop |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-008",
+     "quote": "| Brief not found | Report error, abort surrender (below), stop |",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "| Brief not found | Report error, abort surrender (below), stop |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| Receipt verdict FAIL | Report audit failure, abort surrender (below), stop |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-009",
+     "quote": "| Receipt verdict FAIL | Report audit failure, abort surrender (below), stop |",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "| Receipt verdict FAIL | Report audit failure, abort surrender (below), stop |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| No receipt found (full run) | STOP — enter plan mode, get approval, then resume pipeline |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-010",
+     "quote": "| No receipt found (full run) | STOP — enter plan mode, get approval, then resume pipeline |",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "| No receipt found (full run) | STOP — enter plan mode, get approval, then resume pipeline |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| No receipt found (`--from` set) | Proceed — user is resuming a partial pipeline |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-011",
+     "quote": "| No receipt found (`--from` set) | Proceed — user is resuming a partial pipeline |",
+     "applies_at": [
+      "stage1"
+     ],
+     "cause": null,
+     "delivered_span": "| No receipt found (`--from` set) | Proceed — user is resuming a partial pipeline |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| Tests fail during implementation | Attempt fix (2 tries), then abort surrender (below) + handoff |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-012",
+     "quote": "| Tests fail during implementation | Attempt fix (2 tries), then abort surrender (below) + handoff |",
+     "applies_at": [
+      "stage2"
+     ],
+     "cause": null,
+     "delivered_span": "| Tests fail during implementation | Attempt fix (2 tries), then abort surrender (below) + handoff |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| Verification fails | Attempt fix (1 try), then abort surrender (below) + handoff |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-013",
+     "quote": "| Verification fails | Attempt fix (1 try), then abort surrender (below) + handoff |",
+     "applies_at": [
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "| Verification fails | Attempt fix (1 try), then abort surrender (below) + handoff |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| Human rejects attestation | Record feedback, return to Stage 2 with corrections |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-014",
+     "quote": "| Human rejects attestation | Record feedback, return to Stage 2 with corrections |",
+     "applies_at": [
+      "stage4"
+     ],
+     "cause": null,
+     "delivered_span": "| Human rejects attestation | Record feedback, return to Stage 2 with corrections |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| `git sync` fails or repo remains unsynced | Stop before `gz obpi complete` and repair blockers |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-015",
+     "quote": "| `git sync` fails or repo remains unsynced | Stop before `gz obpi complete` and repair blockers |",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "| `git sync` fails or repo remains unsynced | Stop before `gz obpi complete` and repair blockers |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| Gate blocks on stale brief/allowlist (reconcile drift, security floor, under-declared coupled surface) | Run the **Gate Friction: Evaluator Escalation** loop (above) — dispatch evaluator → determination → operator approval → surgical brief amendment + documented override. Do NOT contort code to fit the brief or file a GHI to stall. |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-016",
+     "quote": "| Gate blocks on stale brief/allowlist (reconcile drift, security floor, under-declared coupled surface) | Run the **Gate Friction: Evaluator Escalation** loop (above) — dispatch evaluator → determination → operator approval → surgical brief amendment + documented override. Do NOT contort code to fit the brief or file a GHI to stall. |",
+     "applies_at": [
+      "stage1",
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "| Gate blocks on stale brief/allowlist (reconcile drift, security floor, under-declared coupled surface) | Run the **Gate Friction: Evaluator Escalation** loop (above) — dispatch evaluator → determination → operator approval → surgical brief amendment + documented override. Do NOT contort code to fit the brief or file a GHI to stall. |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| A lock survives `gz obpi complete` | The completion register entry could not be written, so the lock was left for TTL reaping (Stage 5 step 3). Report it; never `--abandon` a completed OBPI. |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-017",
+     "quote": "| A lock survives `gz obpi complete` | The completion register entry could not be written, so the lock was left for TTL reaping (Stage 5 step 3). Report it; never `--abandon` a completed OBPI. |",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "| A lock survives `gz obpi complete` | The completion register entry could not be written, so the lock was left for TTL reaping (Stage 5 step 3). Report it; never `--abandon` a completed OBPI. |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "**Lock bracket:** Lock is claimed at Stage 1 and surrendered by `gz obpi complete` at Stage 5, or by an abort surrender.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-018",
+     "quote": "**Lock bracket:** Lock is claimed at Stage 1 and surrendered by `gz obpi complete` at Stage 5, or by an abort surrender.",
+     "applies_at": [
+      "invocation",
+      "stage1",
+      "stage2",
+      "stage3",
+      "stage4",
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "**Lock bracket:** Lock is claimed at Stage 1 and surrendered by `gz obpi complete` at Stage 5, or by an abort surrender.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "### Abort surrender",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "### Abort surrender",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "On an abort the lock is surrendered with a recorded category (GHI #1167):",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-019",
+     "quote": "On an abort the lock is surrendered with a recorded category (GHI #1167):",
+     "applies_at": [
+      "invocation",
+      "stage1",
+      "stage2",
+      "stage3",
+      "stage4",
+      "stage5"
+     ],
+     "cause": "GHI #1167",
+     "delivered_span": "On an abort the lock is surrendered with a recorded category (GHI #1167):",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "```bash\nuv run gz obpi lock release {OBPI-SLUG} --abandon <category>:<reason>\n```",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-020",
+     "quote": "```bash\nuv run gz obpi lock release {OBPI-SLUG} --abandon <category>:<reason>\n```",
+     "applies_at": [
+      "invocation",
+      "stage1",
+      "stage2",
+      "stage3",
+      "stage4",
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "```bash\nuv run gz obpi lock release {OBPI-SLUG} --abandon <category>:<reason>\n```",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "A release without `--abandon` exits 3 and leaves the lock in place\n(`.gzkit/rules/token-block-discipline.md` § Sub-Invariant 5). `--force` waives\nthe ownership check only. A session handoff is not an exchange record and\ndischarges nothing. The categories are a closed enum, listed in\n`docs/user/manpages/obpi-lock-release.md`; if none describes the abort, do not\npick one that misdescribes it. Leave the lock held, name it in the handoff and\nreport it to the operator; a lock past its TTL is reaped with its own register\nentry.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "T-021",
+     "quote": "A release without `--abandon` exits 3 and leaves the lock in place\n(`.gzkit/rules/token-block-discipline.md` § Sub-Invariant 5). `--force` waives\nthe ownership check only.",
+     "applies_at": [
+      "invocation",
+      "stage1",
+      "stage2",
+      "stage3",
+      "stage4",
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "A release without `--abandon` exits 3 and leaves the lock in place\n(`.gzkit/rules/token-block-discipline.md` § Sub-Invariant 5). `--force` waives\nthe ownership check only.",
+     "reworded": null
+    },
+    {
+     "id": "T-022",
+     "quote": "A session handoff is not an exchange record and\ndischarges nothing.",
+     "applies_at": [
+      "invocation",
+      "stage1",
+      "stage2",
+      "stage3",
+      "stage4",
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "A session handoff is not an exchange record and\ndischarges nothing.",
+     "reworded": null
+    },
+    {
+     "id": "T-023",
+     "quote": "The categories are a closed enum, listed in\n`docs/user/manpages/obpi-lock-release.md`; if none describes the abort, do not\npick one that misdescribes it.",
+     "applies_at": [
+      "invocation",
+      "stage1",
+      "stage2",
+      "stage3",
+      "stage4",
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "The categories are a closed enum, listed in\n`docs/user/manpages/obpi-lock-release.md`; if none describes the abort, do not\npick one that misdescribes it.",
+     "reworded": null
+    },
+    {
+     "id": "T-024",
+     "quote": "Leave the lock held, name it in the handoff and\nreport it to the operator",
+     "applies_at": [
+      "invocation",
+      "stage1",
+      "stage2",
+      "stage3",
+      "stage4",
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "Leave the lock held, name it in the handoff and\nreport it to the operator",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "; a lock past its TTL is reaped with its own register\nentry.",
+     "class": "rationale",
+     "explains": "T-024",
+     "reason": "what happens to a lock past TTL"
+    }
+   ]
   },
   {
    "text": "**Handoff creation:** On any abort, after the surrender, run `/gz-session-handoff` to preserve context for the next session.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-025",
+     "quote": "**Handoff creation:** On any abort, after the surrender, run `/gz-session-handoff` to preserve context for the next session.",
+     "applies_at": [
+      "invocation",
+      "stage1",
+      "stage2",
+      "stage3",
+      "stage4",
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "**Handoff creation:** On any abort, after the surrender, run `/gz-session-handoff` to preserve context for the next session.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "---",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "---",
+     "class": "structure",
+     "explains": null,
+     "reason": "rule"
+    }
+   ]
   },
   {
    "text": "## Blocked on the Operator (GHI #887)",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "## Blocked on the Operator (GHI #887)",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "**When the next legitimate action is a human's, say so in the ledger and stop.**",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-026",
+     "quote": "**When the next legitimate action is a human's, say so in the ledger and stop.**",
+     "applies_at": [
+      "invocation",
+      "stage1",
+      "stage2",
+      "stage3",
+      "stage4",
+      "stage5"
+     ],
+     "cause": "GHI #887",
+     "delivered_span": "**When the next legitimate action is a human's, say so in the ledger and stop.**",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "A brief becomes *blocked* — not failed, not abandoned — when every remaining\nfinding needs an operator decision rather than an implementation: a REQ amendment\nunder attestation, an allowlist widening, a Denied-Path collision, a\nconflicting-canon ruling. `AGENTS.md` § Behavior Rules — Always #18 and #9 both\naddress the agent here (*\"Surface blocking failures clearly and upfront\"*;\n*\"STOP, name confusion, present tradeoff, wait\"*), and until GHI #887 neither had\na state the pipeline could enter.",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "A brief becomes *blocked* — not failed, not abandoned — when every remaining\nfinding needs an operator decision rather than an implementation: a REQ amendment\nunder attestation, an allowlist widening, a Denied-Path collision, a\nconflicting-canon ruling. `AGENTS.md` § Behavior Rules — Always #18 and #9 both\naddress the agent here (*\"Surface blocking failures clearly and upfront\"*;\n*\"STOP, name confusion, present tradeoff, wait\"*), and until GHI #887 neither had\na state the pipeline could enter.",
+     "class": "rationale",
+     "explains": "T-026",
+     "reason": "what a block is and the rules it serves"
+    }
+   ]
   },
   {
    "text": "```bash\nuv run gz obpi block {OBPI-SLUG} \\\n  --reason \"<what cannot proceed without a human>\" \\\n  --next-action \"<the concrete decision the operator owes>\"\n```",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-027",
+     "quote": "```bash\nuv run gz obpi block {OBPI-SLUG} \\\n  --reason \"<what cannot proceed without a human>\" \\\n  --next-action \"<the concrete decision the operator owes>\"\n```",
+     "applies_at": [
+      "invocation",
+      "stage1",
+      "stage2",
+      "stage3",
+      "stage4",
+      "stage5"
+     ],
+     "cause": "GHI #887",
+     "delivered_span": "```bash\nuv run gz obpi block {OBPI-SLUG} \\\n  --reason \"<what cannot proceed without a human>\" \\\n  --next-action \"<the concrete decision the operator owes>\"\n```",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "While the block stands, `gz obpi pipeline` refuses to launch against the OBPI\n(exit 3) and `gz obpi precomplete` reports it instead of `READY`. The operator\nclears it with their own words:",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "T-028",
+     "quote": "The operator\nclears it with their own words:",
+     "applies_at": [
+      "invocation",
+      "stage1",
+      "stage2",
+      "stage3",
+      "stage4",
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "The operator\nclears it with their own words:",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "While the block stands, `gz obpi pipeline` refuses to launch against the OBPI\n(exit 3) and `gz obpi precomplete` reports it instead of `READY`.",
+     "class": "rationale",
+     "explains": "T-027",
+     "reason": "what the block does to the pipeline"
+    }
+   ]
   },
   {
    "text": "```bash\nuv run gz obpi unblock {OBPI-SLUG} --ruling \"<decision>\" --operator \"<who>\"\n```",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-029",
+     "quote": "```bash\nuv run gz obpi unblock {OBPI-SLUG} --ruling \"<decision>\" --operator \"<who>\"\n```",
+     "applies_at": [
+      "invocation",
+      "stage1",
+      "stage2",
+      "stage3",
+      "stage4",
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "```bash\nuv run gz obpi unblock {OBPI-SLUG} --ruling \"<decision>\" --operator \"<who>\"\n```",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "**Why this is not a lock, a park, or a withdrawal.** The lock says *who is\nworking*; `obpi_parked` says *the parent ADR left active status* (its `parked_to`\nis a pool id, and here the parent is live); withdrawal is permanent and attested.\nA block says only that a decision is owed, and it is reversible by construction.",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "**Why this is not a lock, a park, or a withdrawal.** The lock says *who is\nworking*; `obpi_parked` says *the parent ADR left active status* (its `parked_to`\nis a pool id, and here the parent is live); withdrawal is permanent and attested.\nA block says only that a decision is owed, and it is reversible by construction.",
+     "class": "rationale",
+     "explains": "T-026",
+     "reason": "why a block is not a lock, a park or a withdrawal"
+    }
+   ]
   },
   {
    "text": "**No attestor is required to record a block.** Requiring a human to authorize\nthe statement *\"a human is needed\"* would reproduce the deadlock it exists to\nbreak. The ruling that clears it is the operator's; the observation that one is\nneeded is the agent's, and recording it is the honest act.",
-   "controls": [],
-   "non_control": []
+   "controls": [
+    {
+     "id": "T-030",
+     "quote": "**No attestor is required to record a block.**",
+     "applies_at": [
+      "invocation",
+      "stage1",
+      "stage2",
+      "stage3",
+      "stage4",
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "**No attestor is required to record a block.**",
+     "reworded": null
+    }
+   ],
+   "non_control": [
+    {
+     "quote": "Requiring a human to authorize\nthe statement *\"a human is needed\"* would reproduce the deadlock it exists to\nbreak. The ruling that clears it is the operator's; the observation that one is\nneeded is the agent's, and recording it is the honest act.",
+     "class": "rationale",
+     "explains": "T-030",
+     "reason": "why no attestor is required"
+    }
+   ]
   },
   {
    "text": "**Measured cost of not having this** (`OBPI-0.35.0-02`, 2026-08-25/26): 21\n`red_receipt_emitted`, 10 `task_started`, **zero** `task_completed`, four\n`pipeline_launched` and three adversary rounds in the 24 hours after the brief\nbecame structurally uncompletable. Four agents each re-derived that a human was\nneeded; none could record it, so each kept working the surrounding surface.",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "**Measured cost of not having this** (`OBPI-0.35.0-02`, 2026-08-25/26): 21\n`red_receipt_emitted`, 10 `task_started`, **zero** `task_completed`, four\n`pipeline_launched` and three adversary rounds in the 24 hours after the brief\nbecame structurally uncompletable. Four agents each re-derived that a human was\nneeded; none could record it, so each kept working the surrounding surface.",
+     "class": "rationale",
+     "explains": "T-026",
+     "reason": "the measured cost of having no block state"
+    }
+   ]
   },
   {
    "text": "---",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "---",
+     "class": "structure",
+     "explains": null,
+     "reason": "rule"
+    }
+   ]
   },
   {
    "text": "## Evidence Capture",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "## Evidence Capture",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "> See references/evidence-capture.md for the full stage-by-stage evidence table.",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "> See references/evidence-capture.md for the full stage-by-stage evidence table.",
+     "class": "structure",
+     "explains": null,
+     "reason": "pointer"
+    }
+   ]
   },
   {
    "text": "---",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "---",
+     "class": "structure",
+     "explains": null,
+     "reason": "rule"
+    }
+   ]
   },
   {
    "text": "## Plan-Audit-Receipt Contract",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "## Plan-Audit-Receipt Contract",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "> See references/plan-audit-receipt-contract.md for the receipt JSON schema and contract details.",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "> See references/plan-audit-receipt-contract.md for the receipt JSON schema and contract details.",
+     "class": "structure",
+     "explains": null,
+     "reason": "pointer"
+    }
+   ]
   },
   {
    "text": "---",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "---",
+     "class": "structure",
+     "explains": null,
+     "reason": "rule"
+    }
+   ]
   },
   {
    "text": "## Parallel Execution",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "## Parallel Execution",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "Use one writer per governed checkout. Read-only investigation may run independently.\nOnly the operator initiates OBPI work; separate sessions do not grant initiation.\nCapture the contract and input components before review and verify applicability\nbefore consuming it. Sequence shared acceptance/schema writes outside review windows.\nIf another run changes the subject, identify affected evidence before continuing.\nNever stash, pop, reset, revert, or sync another active run's work to clean the tree.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-031",
+     "quote": "Use one writer per governed checkout. Read-only investigation may run independently.\nOnly the operator initiates OBPI work; separate sessions do not grant initiation.\nCapture the contract and input components before review and verify applicability\nbefore consuming it. Sequence shared acceptance/schema writes outside review windows.\nIf another run changes the subject, identify affected evidence before continuing.\nNever stash, pop, reset, revert, or sync another active run's work to clean the tree.",
+     "applies_at": [
+      "invocation",
+      "stage1",
+      "stage2",
+      "stage3",
+      "stage4",
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "Use one writer per governed checkout. Read-only investigation may run independently.\nOnly the operator initiates OBPI work; separate sessions do not grant initiation.\nCapture the contract and input components before review and verify applicability\nbefore consuming it. Sequence shared acceptance/schema writes outside review windows.\nIf another run changes the subject, identify affected evidence before continuing.\nNever stash, pop, reset, revert, or sync another active run's work to clean the tree.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "All OBPIs require per-OBPI human attestation (universal per ADR-0.0.36).",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-032",
+     "quote": "All OBPIs require per-OBPI human attestation (universal per ADR-0.0.36).",
+     "applies_at": [
+      "invocation",
+      "stage1",
+      "stage2",
+      "stage3",
+      "stage4",
+      "stage5"
+     ],
+     "cause": "ADR-0.0.36",
+     "delivered_span": "All OBPIs require per-OBPI human attestation (universal per ADR-0.0.36).",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "---",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "---",
+     "class": "structure",
+     "explains": null,
+     "reason": "rule"
+    }
+   ]
   },
   {
    "text": "## Relationship to Existing Skills",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "## Relationship to Existing Skills",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "| CLI Command / Skill | Role in Pipeline |",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "| CLI Command / Skill | Role in Pipeline |",
+     "class": "structure",
+     "explains": null,
+     "reason": "table header"
+    }
+   ]
   },
   {
    "text": "|---------------------|-----------------|",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "|---------------------|-----------------|",
+     "class": "structure",
+     "explains": null,
+     "reason": "table separator"
+    }
+   ]
   },
   {
    "text": "| `gz obpi lock claim/release` | Stage 1 claim, Stage 5 release, abort release (`--force`) |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-033",
+     "quote": "| `gz obpi lock claim/release` | Stage 1 claim, Stage 5 release, abort release (`--force`) |",
+     "applies_at": [
+      "invocation"
+     ],
+     "cause": null,
+     "delivered_span": "| `gz obpi lock claim/release` | Stage 1 claim, Stage 5 release, abort release (`--force`) |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| `/gz-plan-audit` | Pre-pipeline — runs in plan mode, produces receipt |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-034",
+     "quote": "| `/gz-plan-audit` | Pre-pipeline — runs in plan mode, produces receipt |",
+     "applies_at": [
+      "invocation"
+     ],
+     "cause": null,
+     "delivered_span": "| `/gz-plan-audit` | Pre-pipeline — runs in plan mode, produces receipt |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| `gz obpi complete` | Stage 5 atomic completion (attestation + brief + receipt) |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-035",
+     "quote": "| `gz obpi complete` | Stage 5 atomic completion (attestation + brief + receipt) |",
+     "applies_at": [
+      "invocation"
+     ],
+     "cause": null,
+     "delivered_span": "| `gz obpi complete` | Stage 5 atomic completion (attestation + brief + receipt) |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| `gz obpi sync` | Stage 5 confirmation — receipt and brief agree |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-036",
+     "quote": "| `gz obpi sync` | Stage 5 confirmation — receipt and brief agree |",
+     "applies_at": [
+      "invocation"
+     ],
+     "cause": null,
+     "delivered_span": "| `gz obpi sync` | Stage 5 confirmation — receipt and brief agree |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "| `/gz-session-handoff` | Error recovery — preserves context on abort |",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-037",
+     "quote": "| `/gz-session-handoff` | Error recovery — preserves context on abort |",
+     "applies_at": [
+      "invocation"
+     ],
+     "cause": null,
+     "delivered_span": "| `/gz-session-handoff` | Error recovery — preserves context on abort |",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "---",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "---",
+     "class": "structure",
+     "explains": null,
+     "reason": "rule"
+    }
+   ]
   },
   {
    "text": "## Completion Contract",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "## Completion Contract",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "The pipeline is complete when — and ONLY when — all of these are true:",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-038",
+     "quote": "The pipeline is complete when — and ONLY when — all of these are true:",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "The pipeline is complete when — and ONLY when — all of these are true:",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "1. `gz obpi complete` ran successfully — attestation, brief and receipt written atomically, and the lock surrendered (Stage 5, Steps 2–3)",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-039",
+     "quote": "1. `gz obpi complete` ran successfully — attestation, brief and receipt written atomically, and the lock surrendered (Stage 5, Steps 2–3)",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "1. `gz obpi complete` ran successfully — attestation, brief and receipt written atomically, and the lock surrendered (Stage 5, Steps 2–3)",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "2. Heavy lane: the brief carries its `### Step 4b` section (Stage 5, Step 3a)",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-040",
+     "quote": "2. Heavy lane: the brief carries its `### Step 4b` section (Stage 5, Step 3a)",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "2. Heavy lane: the brief carries its `### Step 4b` section (Stage 5, Step 3a)",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "3. Pipeline markers cleaned (Stage 5, Steps 4–5)",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-041",
+     "quote": "3. Pipeline markers cleaned (Stage 5, Steps 4–5)",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "3. Pipeline markers cleaned (Stage 5, Steps 4–5)",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "4. Git-sync #1 committed governance edits (Stage 5, Step 6)",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-042",
+     "quote": "4. Git-sync #1 committed governance edits (Stage 5, Step 6)",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "4. Git-sync #1 committed governance edits (Stage 5, Step 6)",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "5. `gz obpi sync` passed (Stage 5, Step 7)",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-043",
+     "quote": "5. `gz obpi sync` passed (Stage 5, Step 7)",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "5. `gz obpi sync` passed (Stage 5, Step 7)",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "6. Git-sync #2 committed reconcile output (Stage 5, Step 9)",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-044",
+     "quote": "6. Git-sync #2 committed reconcile output (Stage 5, Step 9)",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "6. Git-sync #2 committed reconcile output (Stage 5, Step 9)",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "If any of these have not happened, the pipeline is not complete. Do not claim otherwise.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-045",
+     "quote": "If any of these have not happened, the pipeline is not complete. Do not claim otherwise.",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "If any of these have not happened, the pipeline is not complete. Do not claim otherwise.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "**What \"done\" looks like:** The final output of a successful pipeline run is a short status line confirming Stage 5 completed — not a summary of the implementation, not a recap of what was built. Just: \"Pipeline complete. OBPI-X.Y.Z-NN synced.\"",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-046",
+     "quote": "**What \"done\" looks like:** The final output of a successful pipeline run is a short status line confirming Stage 5 completed — not a summary of the implementation, not a recap of what was built. Just: \"Pipeline complete. OBPI-X.Y.Z-NN synced.\"",
+     "applies_at": [
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "**What \"done\" looks like:** The final output of a successful pipeline run is a short status line confirming Stage 5 completed — not a summary of the implementation, not a recap of what was built. Just: \"Pipeline complete. OBPI-X.Y.Z-NN synced.\"",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "### Anti-Pattern: The Premature Summary",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "### Anti-Pattern: The Premature Summary",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "The single most common pipeline failure is: the agent finishes writing code, prints a summary of files created and tests passing, and stops. This abandons the OBPI in a half-finished governance state — implemented but unverified, unattested, unsynced. The operator must then manually re-invoke the pipeline with `--from=verify` to finish the job.",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "The single most common pipeline failure is: the agent finishes writing code, prints a summary of files created and tests passing, and stops. This abandons the OBPI in a half-finished governance state — implemented but unverified, unattested, unsynced. The operator must then manually re-invoke the pipeline with `--from=verify` to finish the job.",
+     "class": "rationale",
+     "explains": "T-047",
+     "reason": "the most common failure and its cost"
+    }
+   ]
   },
   {
    "text": "**This is the failure mode this skill exists to prevent.** If you find yourself writing a summary after Stage 2 or Stage 3, you are committing this exact anti-pattern. Stop writing the summary. Start the next stage.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-047",
+     "quote": "**This is the failure mode this skill exists to prevent.** If you find yourself writing a summary after Stage 2 or Stage 3, you are committing this exact anti-pattern. Stop writing the summary. Start the next stage.",
+     "applies_at": [
+      "stage2",
+      "stage3"
+     ],
+     "cause": null,
+     "delivered_span": "**This is the failure mode this skill exists to prevent.** If you find yourself writing a summary after Stage 2 or Stage 3, you are committing this exact anti-pattern. Stop writing the summary. Start the next stage.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "### Anti-Pattern: Hook Bypass",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "### Anti-Pattern: Hook Bypass",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "If a pipeline hook blocks a write, that means the pipeline is not active or evidence is missing. The correct response is to diagnose the cause — NOT to manually create marker files or ledger entries to bypass the hook. Manually creating files to bypass hooks defeats the entire enforcement mechanism.",
-   "controls": [],
+   "controls": [
+    {
+     "id": "T-048",
+     "quote": "If a pipeline hook blocks a write, that means the pipeline is not active or evidence is missing. The correct response is to diagnose the cause — NOT to manually create marker files or ledger entries to bypass the hook. Manually creating files to bypass hooks defeats the entire enforcement mechanism.",
+     "applies_at": [
+      "invocation",
+      "stage1",
+      "stage2",
+      "stage3",
+      "stage4",
+      "stage5"
+     ],
+     "cause": null,
+     "delivered_span": "If a pipeline hook blocks a write, that means the pipeline is not active or evidence is missing. The correct response is to diagnose the cause — NOT to manually create marker files or ledger entries to bypass the hook. Manually creating files to bypass hooks defeats the entire enforcement mechanism.",
+     "reworded": null
+    }
+   ],
    "non_control": []
   },
   {
    "text": "---",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "---",
+     "class": "structure",
+     "explains": null,
+     "reason": "rule"
+    }
+   ]
   },
   {
    "text": "## Design Notes",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "## Design Notes",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "> See references/design-notes.md for architectural context, hook enforcement details, and AirlineOps lineage.",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "> See references/design-notes.md for architectural context, hook enforcement details, and AirlineOps lineage.",
+     "class": "structure",
+     "explains": null,
+     "reason": "pointer"
+    }
+   ]
   },
   {
    "text": "---",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "---",
+     "class": "structure",
+     "explains": null,
+     "reason": "rule"
+    }
+   ]
   },
   {
    "text": "## Related",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "## Related",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "- OBPI Acceptance Protocol: `AGENTS.md` § OBPI Acceptance Protocol",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "- OBPI Acceptance Protocol: `AGENTS.md` § OBPI Acceptance Protocol",
+     "class": "structure",
+     "explains": null,
+     "reason": "reference"
+    }
+   ]
   },
   {
    "text": "- Plan audit: `.claude/skills/gz-plan-audit/SKILL.md`",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "- Plan audit: `.claude/skills/gz-plan-audit/SKILL.md`",
+     "class": "structure",
+     "explains": null,
+     "reason": "reference"
+    }
+   ]
   },
   {
    "text": "- Session handoff: `.gzkit/skills/gz-session-handoff/SKILL.md`",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "- Session handoff: `.gzkit/skills/gz-session-handoff/SKILL.md`",
+     "class": "structure",
+     "explains": null,
+     "reason": "reference"
+    }
+   ]
   },
   {
    "text": "- Governance workflow: `docs/user/concepts/workflow.md`",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "- Governance workflow: `docs/user/concepts/workflow.md`",
+     "class": "structure",
+     "explains": null,
+     "reason": "reference"
+    }
+   ]
   },
   {
    "text": "- Runbook: `docs/user/runbook.md`",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "- Runbook: `docs/user/runbook.md`",
+     "class": "structure",
+     "explains": null,
+     "reason": "reference"
+    }
+   ]
   },
   {
    "text": "- Transaction contract: `docs/governance/GovZero/obpi-transaction-contract.md`",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "- Transaction contract: `docs/governance/GovZero/obpi-transaction-contract.md`",
+     "class": "structure",
+     "explains": null,
+     "reason": "reference"
+    }
+   ]
   },
   {
    "text": "## Related ADRs",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "## Related ADRs",
+     "class": "structure",
+     "explains": null,
+     "reason": "heading"
+    }
+   ]
   },
   {
    "text": "- **ADR-0.0.19** — Pre-execution reasoning walkthrough. The Stage 1→2\n  Justification Gate routes a plan with an ambiguous scope boundary, an\n  unresolved integration point or an unread surface into the `gz-justify`\n  walkthrough before implementation begins.",
    "controls": [],
-   "non_control": []
+   "non_control": [
+    {
+     "quote": "- **ADR-0.0.19** — Pre-execution reasoning walkthrough. The Stage 1→2\n  Justification Gate routes a plan with an ambiguous scope boundary, an\n  unresolved integration point or an unread surface into the `gz-justify`\n  walkthrough before implementation begins.",
+     "class": "structure",
+     "explains": null,
+     "reason": "reference"
+    }
+   ]
   }
  ]
 }

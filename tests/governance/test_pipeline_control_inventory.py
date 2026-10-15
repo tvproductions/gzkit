@@ -298,6 +298,17 @@ class TestCommittedInventoryPinsTheBody(unittest.TestCase):
             "blocks-differ", kinds, "the committed blocks no longer reproduce the body"
         )
 
+    def test_committed_inventory_is_a_complete_partition(self):
+        """REQ-0.35.0-17-02: every block fully covered, every row well formed, no violation."""
+        root = Path(__file__).resolve().parents[2]
+        inventory = load_inventory(root)
+        body = read_skill_body(root, inventory)
+        violations = check_before_state(inventory, body)
+        self.assertEqual(
+            violations, [], "\n".join(f"{v.kind} {v.where}: {v.detail}" for v in violations[:12])
+        )
+        self.assertTrue(all(block.controls or block.non_control for block in inventory.blocks))
+
 
 if __name__ == "__main__":
     unittest.main()
