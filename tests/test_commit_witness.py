@@ -147,7 +147,37 @@ _CALLER_NEW = (
 )
 
 
-class TestDependentHunks(_CommitRepo):
+class TestBehaveStepsAreTestCode(_CommitRepo):
+    """A behave step module is test code the unit runner never imports, not a production hunk.
+
+    Measured 2026-10-15 on the OBPI-0.35.0-20 cutover commit: its five-scenario
+    step module survived every revert, because no unit test exercises behave
+    steps, and the verdict read ``undriven`` for a commit whose production
+    hunks were all killed. A heavy-lane commit must carry Gate 4 scenarios, so
+    the witness would call every such commit undriven.
+    """
+
+    def _add_steps(self) -> None:
+        steps = self.root / "features" / "steps"
+        steps.mkdir(parents=True)
+        steps.joinpath("mod_steps.py").write_text(
+            "from pkg.mod import clamp\n\n\ndef step_clamps(context):\n    assert clamp(-1) == 0\n",
+            encoding="utf-8",
+        )
+
+    def test_a_step_module_beside_a_driven_guard_does_not_change_the_verdict(self):
+        (self.root / "pkg" / "mod.py").write_text(_GUARDED, encoding="utf-8")
+        self._add_test("\n    def test_negative(self):\n        self.assertEqual(clamp(-1), 0)\n")
+        self._add_steps()
+        result = run_commit_witness(self.root, self._commit("guard + test + steps"), runner=_RUNNER)
+        self.assertEqual(result.verdict, "driven", result)
+        self.assertEqual(sorted({h.path for h in result.hunks}), ["pkg/mod.py"])
+
+    def test_a_commit_of_only_step_modules_has_no_production_hunks(self):
+        self._add_steps()
+        result = run_commit_witness(self.root, self._commit("steps only"), runner=_RUNNER)
+        self.assertEqual(result.verdict, "no-production-hunks", result)
+
     """GHI #1153: a fix whose hunks depend on each other still gets its guards graded.
 
     Reverting a new helper's definition alone, or a signature without its callers,

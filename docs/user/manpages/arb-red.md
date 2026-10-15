@@ -59,7 +59,9 @@ A guard added on the direct-fix route (`fix(<scope>): … (GHI #N)`) has no REQ,
 each production hunk the commit **added** is reverted to its parent's text, one at
 a time, and the test modules **the same commit touched** are run against the
 mutant through `gzkit.mutation_witness` (baseline, activation, bytecode isolation
-and failure cause all verified). Hunks that change only comments, docstrings or
+and failure cause all verified). A `.py` file under `tests/` is a test module; one
+under `features/` is a behave step module, test code the unit runner never imports,
+so it is neither a production hunk nor a test module here. Hunks that change only comments, docstrings or
 blank lines are skipped, and pure deletions are not mutated. So are hunks that only
 change a function's argument or return annotations in a module with
 `from __future__ import annotations`, unless the function carries a decorator that

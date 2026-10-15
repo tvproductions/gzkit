@@ -377,16 +377,26 @@ def run_commit_witness(
     commit: str,
     tests_dir: str = "tests",
     runner: tuple[str, ...] = DEFAULT_RUNNER,
+    features_dir: str = "features",
 ) -> CommitWitness:
-    """Sweep every production hunk ``commit`` added against the tests it touched."""
+    """Sweep every production hunk ``commit`` added against the tests it touched.
+
+    A behave step module under ``features_dir`` is test code the unit runner never
+    imports: it is neither a production hunk nor a test module here. Counting it as
+    production made every commit that carries its Gate 4 scenarios read
+    ``undriven`` whatever its guards did (measured 2026-10-15, OBPI-0.35.0-20).
+    """
     resolved = _git(["rev-parse", "--verify", f"{commit}^{{commit}}"], project_root)
     if resolved.returncode != 0:
         raise RuntimeError(f"cannot resolve commit {commit!r}: {resolved.stderr.strip()}")
     sha = resolved.stdout.strip()
     prefix = f"{tests_dir.rstrip('/')}/"
+    behave_prefix = f"{features_dir.rstrip('/')}/"
     live = [p for s, p in _changed_files(project_root, sha) if not s.startswith("D")]
     tests = sorted(p for p in live if p.startswith(prefix))
-    production = sorted(p for p in live if not p.startswith(prefix))
+    production = sorted(
+        p for p in live if not p.startswith(prefix) and not p.startswith(behave_prefix)
+    )
     modules = [_module_name(p) for p in tests]
 
     if not production:
